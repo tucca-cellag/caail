@@ -3,13 +3,13 @@ This document presents the core research papers at the intersection of Cellular 
 
 | | Media Optimization | Cell line development | Bioprocess control | Sensory Prediction |
 |---|---|---|---|---| 
-| Bayesian Optimization | [1](#1),[2](#2),[3](#3),[4](#4),[5](#5)| [4](#4),[5](#5) | [4](#4) | |
-| Deep Learning | | [6](#6),[7](#7),[8](#8),[9](#9), | | |
-| Neural Networks | [1](#1) | | [4](#4),[10](#10),[11](#11)| |
-| Genetic Algorithms | [1](#1),[3](#3) | [4](#4),[5](#5) | | 
-| GAN / VAE | | [12](#12),[13](#13),[14](#14) | | [15](#15) |
-| GNN | | [16](#16),[17](#17)| | [18](#18) |
-| CNN | | | | [15](#15) |
+| [Bayesian Optimization](https://en.wikipedia.org/wiki/Bayesian_optimization) | [1](#1),[2](#2),[3](#3),[4](#4),[5](#5)| [4](#4),[5](#5) | [4](#4) | |
+| [Deep Learning](https://en.wikipedia.org/wiki/Deep_learning) | | [6](#6),[7](#7),[8](#8),[9](#9), | | |
+| [Neural Networks](https://en.wikipedia.org/wiki/Neural_network) | [1](#1) | | [4](#4),[10](#10),[11](#11)| |
+| [Genetic Algorithms](https://en.wikipedia.org/wiki/Genetic_algorithm) | [1](#1),[3](#3) | [4](#4),[5](#5) | | 
+| [GAN](https://en.wikipedia.org/wiki/Generative_adversarial_network) / [VAE](https://en.wikipedia.org/wiki/Variational_autoencoder) | | [12](#12),[13](#13),[14](#14) | | [15](#15) |
+| [GNN](https://en.wikipedia.org/wiki/Graph_neural_network) | | [16](#16),[17](#17)| | [18](#18) |
+| [CNN](https://en.wikipedia.org/wiki/Convolutional_neural_network) | | | | [15](#15) |
 
 ## References
 
