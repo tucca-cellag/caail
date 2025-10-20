@@ -1,19 +1,22 @@
 # Paper matrix
 This document presents the core research papers at the intersection of Cellular Agriculture and AI. The papers are organized by problem and AI type, to indicate which approaches have been successful in a given research area.
 
-| | Media Optimization | Cell line development | Bioprocess control | Sensory Prediction |
-|---|---|---|---|---| 
-| [Bayesian Optimization](https://en.wikipedia.org/wiki/Bayesian_optimization) | [1](#1),[2](#2),[3](#3),[4](#4),[5](#5)| [4](#4),[5](#5) | [4](#4) | |
-| [Deep Learning](https://en.wikipedia.org/wiki/Deep_learning) | | [6](#6),[7](#7),[8](#8),[9](#9), | | |
-| [Neural Networks](https://en.wikipedia.org/wiki/Neural_network) | [1](#1) | | [4](#4),[10](#10),[11](#11)| |
+| | Media Optimization | Cellular Engineering | Bioprocess control | Scaffolding  | Sensory Prediction |
+|---|---|---|---|---|---| 
+| [Bayesian Optimization](https://en.wikipedia.org/wiki/Bayesian_optimization) | [1](#1),[2](#2),[3](#3),[4](#4),[5](#5),[19](#19),[20](#20),[22](#22) | [4](#4),[5](#5),[20](#20) | [4](#4) | | |
+| [Deep Learning](https://en.wikipedia.org/wiki/Deep_learning) | [19](#19),[21](#21),[22](#22) | [6](#6),[7](#7),[8](#8),[9](#9), | | [24](#24) | |
+| [Neural Networks](https://en.wikipedia.org/wiki/Neural_network) | [1](#1),[21](#21),[22](#22) | | [4](#4),[10](#10),[11](#11) | [24](#24) | |
 | [Genetic Algorithms](https://en.wikipedia.org/wiki/Genetic_algorithm) | [1](#1),[3](#3) | [4](#4),[5](#5) | | 
-| [GAN](https://en.wikipedia.org/wiki/Generative_adversarial_network) / [VAE](https://en.wikipedia.org/wiki/Variational_autoencoder) | | [12](#12),[13](#13),[14](#14) | | [15](#15) |
-| [GNN](https://en.wikipedia.org/wiki/Graph_neural_network) | | [16](#16),[17](#17)| | [18](#18) |
-| [CNN](https://en.wikipedia.org/wiki/Convolutional_neural_network) | | | | [15](#15) |
+| [GAN](https://en.wikipedia.org/wiki/Generative_adversarial_network) / [VAE](https://en.wikipedia.org/wiki/Variational_autoencoder) | | [12](#12),[13](#13),[14](#14) | | | [15](#15) |
+| [GNN](https://en.wikipedia.org/wiki/Graph_neural_network) | | [16](#16),[17](#17)| | | [18](#18) |
+| [CNN](https://en.wikipedia.org/wiki/Convolutional_neural_network) | | | | [23](#23) | [15](#15) |
+| [SVM](https://en.wikipedia.org/wiki/Support_vector_machine) | [25](#25) | [4](#4),[26](#26) | |  |  |
+| [Active Learning](https://en.wikipedia.org/wiki/Active_learning_(machine_learning)) | [27](#27),[28](#28),[29](#29) | | |  | |
+
 
 ## References
 
-<a id="1">1</a> Nikkhah, A., Rohani, A., Zarei, M., Kulkarni, A., Batarseh, F. A., Blackstone, N. T., et al. (2023). Toward sustainable culture media: using artificial intelligence to optimize reduced-serum formulations for cultivated meat. *Sci. Total Environ.* 894:164988. doi: 10.1016/j.scitotenv.2023.164988
+<a id="1">1</a> Nikkhah, A., Rohani, A., Zarei, M., Kulkarni, A., Batarseh, F. A., Blackstone, N. T., & Ovissipour, R. (2023). Toward sustainable culture media: Using artificial intelligence to optimize reduced-serum formulations for cultivated meat. *Science of The Total Environment, 894,* 164988. https://doi.org/10.1016/j.scitotenv.2023.164988
 
 <a id="2">2</a> Cosenza, Z., Block, D. E., Baar, K., and Chen, X. (2023). Multi-objective Bayesian
 algorithm automatically discovers low-cost high-growth serum-free media for cellular
@@ -55,3 +58,25 @@ potent method for improved secondary metabolite production of solanaceous plants
 <a id="17">17</a> Wang, J., Ma, A., Chang, Y., Gong, J., Jiang, Y., Qi, R., et al. (2021). scGNN is a novel graph neural network framework for single-cell RNA-Seq analyses. *Nat. Commun.* 12:1882. doi: 10.1038/s41467-021-22197-x
 
 <a id="18">18</a> Lee, B. K., Mayhew, E. J., Sanchez-Lengeling, B., Wei, J. N., Qian, W. W., Little, K. A., et al. (2023). A principal odor map unifies diverse tasks in olfactory perception. *Science* 381, 999–1006. doi: 10.1126/science.ade4401
+
+<a id="19">19</a> Yoshida, K., Watanabe, K., Chiou, T.-Y., & Konishi, M. (2023). High throughput optimization of medium composition for Escherichia coli protein expression using deep learning and Bayesian optimization. *Journal of Bioscience and Bioengineering, 135*(2), 127–133. https://doi.org/10.1016/j.jbiosc.2022.12.004
+
+<a id="20">20</a> Kanda, G. N., Tsuzuki, T., Terada, M., Sakai, N., Motozawa, N., Masuda, T., Nishida, M., Watanabe, C. T., Higashi, T., Horiguchi, S. A., Kudo, T., Kamei, M., Sunagawa, G. A., Matsukuma, K., Sakurada, T., Ozawa, Y., Takahashi, M., Takahashi, K., & Natsume, T. (2022). Robotic search for optimal cell culture in regenerative medicine. *eLife, 11,* e77007. https://doi.org/10.7554/eLife.77007
+
+<a id="21">21</a> Cosenza, Z., & Block, D. E. (2021). A generalizable hybrid search framework for optimizing expensive design problems using surrogate models. *Engineering Optimization, 53*(10), 1772–1785. https://doi.org/10.1080/0305215X.2020.1826466
+
+<a id="22">22</a> Cosenza, Z. A. (2022). *Sequential Learning Methods for the Experimental Optimization of Cell Culture Media for Cellular Agriculture* [UC Davis]. https://escholarship.org/uc/item/119489fc
+
+<a id="23">23</a> Bermejillo Barrera, M. D., Franco-Martínez, F., & Díaz Lantada, A. (2021). Artificial Intelligence Aided Design of Tissue Engineering Scaffolds Employing Virtual Tomography and 3D Convolutional Neural Networks. *Materials, 14*(18), 5278. https://doi.org/10.3390/ma14185278
+
+<a id="24">24</a> Rafieyan, S., Ansari, E., & Vasheghani-Farahani, E. (2024). A practical machine learning approach for predicting the quality of 3D (bio)printed scaffolds. *Biofabrication, 16*(4), 045014. https://doi.org/10.1088/1758-5090/ad6374
+
+<a id="25">25</a> Xu, J., Yan, F., Li, Z., Wang, D., Sheng, H., & Liu, Y. (2014). Serum-Free Medium Optimization Based on Trial Design and Support Vector Regression. *BioMed Research International, 2014,* 1–7. https://doi.org/10.1155/2014/269305
+
+<a id="26">26</a> Lao, Z., Matsui, Y., Ijichi, S., & Ying, B.-W. (2022). Global coordination of the mutation and growth rates across the genetic and nutritional variety in Escherichia coli. *Frontiers in Microbiology, 13,* 990969. https://doi.org/10.3389/fmicb.2022.990969
+
+<a id="27">27</a> Zhang, S., Aida, H., & Ying, B.-W. (2023). Employing Active Learning in Medium Optimization for Selective Bacterial Growth. *Applied Microbiology, 3*(4), 1355–1369. https://doi.org/10.3390/applmicrobiol3040091
+
+<a id="28">28</a> Hashizume, T., Ozawa, Y., & Ying, B.-W. (2022). *Employing active learning in the optimization of culture medium for mammalian cells.* https://doi.org/10.1101/2022.12.24.521878
+
+<a id="29">29</a> Ozawa, Y., Hashizume, T., & Ying, B.-W. (2025). A data-driven approach for cell culture medium optimization. *Biochemical Engineering Journal, 214,* 109591. https://doi.org/10.1016/j.bej.2024.109591
