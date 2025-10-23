@@ -20,21 +20,37 @@ This document presents the core research papers at the intersection of Cellular 
 
 <a id="2">2</a> Cosenza, Z., Block, D. E., Baar, K., & Chen, X. (2023). Multi‐objective Bayesian algorithm automatically discovers low‐cost high‐growth serum‐free media for cellular agriculture application. *Engineering in Life Sciences, 23*(8), e2300005. https://doi.org/10.1002/elsc.202300005
 
+> **Code**: https://github.com/ZacharyCosenza/GradStuff_Cosenza
+
 <a id="3">3</a> Cosenza, Z., Astudillo, R., Frazier, P. I., Baar, K., & Block, D. E. (2022). Multi‐information source Bayesian optimization of culture media for cellular agriculture. *Biotechnology and Bioengineering, 119*(9), 2447–2458. https://doi.org/10.1002/bit.28132
+
+> **Code**: https://github.com/ZacharyCosenza/GradStuff_Cosenza
 
 <a id="4">4</a> Chen, Y., Li, Y., Narayan, R., Subramanian, A., & Xie, X. (2016). Gene expression inference with deep learning. *Bioinformatics, 32*(12), 1832–1839. https://doi.org/10.1093/bioinformatics/btw074
 
+> **Code**: https://github.com/uci-cbcl/D-GEX
+
 <a id="5">5</a> Li, X., Wang, K., Lyu, Y., Pan, H., Zhang, J., Stambolian, D., Susztak, K., Reilly, M. P., Hu, G., & Li, M. (2020). Deep learning enables accurate clustering with batch effect removal in single-cell RNA-seq analysis. *Nature Communications, 11*(1), 2338. https://doi.org/10.1038/s41467-020-15851-3
 
+> **Code**: https://github.com/eleozzr/desc
+
 <a id="6">6</a> Ji, Y., Zhou, Z., Liu, H., & Davuluri, R. V. (2021). DNABERT: pre-trained Bidirectional Encoder Representations from Transformers model for DNA-language in genome. *Bioinformatics, 37*(15), 2112–2120. https://doi.org/10.1093/bioinformatics/btab083
+
+> **Code**: https://github.com/jerryji1993/DNABERT
 
 <a id="7">7</a> Tamburini, E., Marchetti, M., & Pedrini, P. (2014). Monitoring Key Parameters in Bioprocesses Using Near-Infrared Technology. *Sensors, 14*(10), 18941–18959. https://doi.org/10.3390/s141018941
 
 <a id="8">8</a> Ciortan, M., & Defrance, M. (2022). GNN-based embedding for clustering scRNA-seq data. *Bioinformatics, 38*(4), 1037–1044. https://doi.org/10.1093/bioinformatics/btab787
 
+> **Code**: https://github.com/ciortanmadalina/graph-sc
+
 <a id="9">9</a> Lin, E., Mukherjee, S., & Kannan, S. (2020). A deep adversarial variational autoencoder model for dimensionality reduction in single-cell RNA sequencing analysis. *BMC Bioinformatics, 21*(1), 64. https://doi.org/10.1186/s12859-020-3401-5
 
+> **Code**: https://github.com/epierson9/ZIFA
+
 <a id="10">10</a> Zrimec, J., Fu, X., Muhammad, A. S., Skrekas, C., Jauniskis, V., Speicher, N. K., Börlin, C. S., Verendel, V., Chehreghani, M. H., Dubhashi, D., Siewers, V., David, F., Nielsen, J., & Zelezniak, A. (2022). Controlling gene expression with deep generative design of regulatory DNA. *Nature Communications, 13*(1), 5099. https://doi.org/10.1038/s41467-022-32818-8
+
+> **Code**: https://github.com/JanZrimec/ExpressionGAN
 
 <a id="11">11</a> Shen, C., Wang, R., Jin, Q., Chen, X., Cai, K., & Xu, B. (2024). Chemometrics methods, sensory evaluation and intelligent sensory technologies combined with GAN-based integrated deep-learning framework to discriminate salted goose breeds. *Food Chemistry, 461,* 140919. https://doi.org/10.1016/j.foodchem.2024.140919
 
@@ -42,15 +58,17 @@ This document presents the core research papers at the intersection of Cellular 
 
 <a id="13">13</a> Wang, J., Ma, A., Chang, Y., Gong, J., Jiang, Y., Qi, R., Wang, C., Fu, H., Ma, Q., & Xu, D. (2021). scGNN is a novel graph neural network framework for single-cell RNA-Seq analyses. *Nature Communications, 12*(1), 1882. https://doi.org/10.1038/s41467-021-22197-x
 
-
+> **Code**: https://github.com/juexinwang/scGNN
 
 <a id="14">14</a> Lee, B. K., Mayhew, E. J., Sanchez-Lengeling, B., Wei, J. N., Qian, W. W., Little, K. A., Andres, M., Nguyen, B. B., Moloy, T., Yasonik, J., Parker, J. K., Gerkin, R. C., Mainland, J. D., & Wiltschko, A. B. (2023). A principal odor map unifies diverse tasks in olfactory perception. *Science, 381*(6661), 999–1006. https://doi.org/10.1126/science.ade4401
 
-
+> **Code**: https://github.com/osmoai/publications/tree/main/lee_et_al_2023
 
 <a id="15">15</a> Yoshida, K., Watanabe, K., Chiou, T.-Y., & Konishi, M. (2023). High throughput optimization of medium composition for Escherichia coli protein expression using deep learning and Bayesian optimization. *Journal of Bioscience and Bioengineering, 135*(2), 127–133. https://doi.org/10.1016/j.jbiosc.2022.12.004
 
 <a id="16">16</a> Kanda, G. N., Tsuzuki, T., Terada, M., Sakai, N., Motozawa, N., Masuda, T., Nishida, M., Watanabe, C. T., Higashi, T., Horiguchi, S. A., Kudo, T., Kamei, M., Sunagawa, G. A., Matsukuma, K., Sakurada, T., Ozawa, Y., Takahashi, M., Takahashi, K., & Natsume, T. (2022). Robotic search for optimal cell culture in regenerative medicine. *eLife, 11,* e77007. https://doi.org/10.7554/eLife.77007
+
+> **Code**: https://github.com/labauto/LabDroid_optimizer
 
 <a id="17">17</a> Cosenza, Z., & Block, D. E. (2021). A generalizable hybrid search framework for optimizing expensive design problems using surrogate models. *Engineering Optimization, 53*(10), 1772–1785. https://doi.org/10.1080/0305215X.2020.1826466
 
@@ -60,6 +78,8 @@ This document presents the core research papers at the intersection of Cellular 
 
 <a id="20">20</a> Rafieyan, S., Ansari, E., & Vasheghani-Farahani, E. (2024). A practical machine learning approach for predicting the quality of 3D (bio)printed scaffolds. *Biofabrication, 16*(4), 045014. https://doi.org/10.1088/1758-5090/ad6374
 
+> **Code**: https://github.com/saeedrafieyan/MLATE
+
 <a id="21">21</a> Xu, J., Yan, F., Li, Z., Wang, D., Sheng, H., & Liu, Y. (2014). Serum-Free Medium Optimization Based on Trial Design and Support Vector Regression. *BioMed Research International, 2014,* 1–7. https://doi.org/10.1155/2014/269305
 
 <a id="22">22</a> Lao, Z., Matsui, Y., Ijichi, S., & Ying, B.-W. (2022). Global coordination of the mutation and growth rates across the genetic and nutritional variety in Escherichia coli. *Frontiers in Microbiology, 13,* 990969. https://doi.org/10.3389/fmicb.2022.990969
@@ -68,4 +88,8 @@ This document presents the core research papers at the intersection of Cellular 
 
 <a id="24">24</a> Hashizume, T., Ozawa, Y., & Ying, B.-W. (2022). *Employing active learning in the optimization of culture medium for mammalian cells.* https://doi.org/10.1101/2022.12.24.521878
 
+> **Code**: https://github.com/hashizume711/medium_optimization
+
 <a id="25">25</a> Ozawa, Y., Hashizume, T., & Ying, B.-W. (2025). A data-driven approach for cell culture medium optimization. *Biochemical Engineering Journal, 214,* 109591. https://doi.org/10.1016/j.bej.2024.109591
+
+> **Code**: https://github.com/yuki020527/medium_optimization
