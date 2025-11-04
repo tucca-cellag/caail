@@ -11,5 +11,5 @@ We organize and host links to public resources across key areas of research:
 
 * [Papers & Preprints](./Papers.md): Core research literature focusing on computational biology, modeling, and machine learning applied to cell culture, bioprocessing, and tissue engineering.
 * [Software & Code](./Software.md): Links to open-source tools, code repositories, and specialized algorithms used for media optimization, bioreactor modeling, and image analysis.
-* Datasets: References and links to publicly available datasets (e.g., proteomics, genomics, high-throughput screening data) relevant to cellular agriculture.
+* [Datasets][./Data.md]: References and links to publicly available datasets (e.g., proteomics, genomics, high-throughput screening data) relevant to cellular agriculture.
 * Other Educational Materials: Key lectures and articles relevant to the field.
