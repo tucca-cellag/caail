@@ -6,10 +6,12 @@ This document presents the core research papers at the intersection of Cellular 
 | [Bayesian Optimization](https://en.wikipedia.org/wiki/Bayesian_optimization) | [2](#2),[3](#3),[15](#15),[16](#16),[18](#18) | [16](#16) | | | |
 | [Deep Learning](https://en.wikipedia.org/wiki/Deep_learning) | [1](#1),[15](#15),[17](#17),[18](#18) | [4](#4),[5](#5),[6](#6) | [7](#7) | [20](#20) | |
 | [GNN](https://en.wikipedia.org/wiki/Graph_neural_network) | | [8](#8),[12](#12),[13](#13)| | | [14](#14) |
-| [CNN](https://en.wikipedia.org/wiki/Convolutional_neural_network) | | | | [19](#19) | [11](#11) |
+| [CNN](https://en.wikipedia.org/wiki/Convolutional_neural_network) | | | | [19](#19) | [11](#11), [26](#26) |
 | [GAN](https://en.wikipedia.org/wiki/Generative_adversarial_network) / [VAE](https://en.wikipedia.org/wiki/Variational_autoencoder) | | [9](#9),[10](#10) | | | [11](#11) |
 | [Genetic Algorithms](https://en.wikipedia.org/wiki/Genetic_algorithm) | [1](#1),[17](#17) |  | | 
 | [SVM](https://en.wikipedia.org/wiki/Support_vector_machine) | [21](#21) | [22](#22) | |  |  |
+| [Ensemble Learning](https://en.wikipedia.org/wiki/Ensemble_learning) | | | | | [27](#27) |
+| [K-Nearest Neighbors](https://en.wikipedia.org/wiki/K-nearest_neighbors_algorithm) | | | | | [28](#28) |
 | [Active Learning](https://en.wikipedia.org/wiki/Active_learning_(machine_learning)) | [23](#23),[24](#24),[25](#25) | | | | |
 
 
@@ -92,3 +94,16 @@ This document presents the core research papers at the intersection of Cellular 
 <a id="25">25</a> Ozawa, Y., Hashizume, T., & Ying, B.-W. (2025). A data-driven approach for cell culture medium optimization. *Biochemical Engineering Journal, 214,* 109591. https://doi.org/10.1016/j.bej.2024.109591
 
 > **Code**: https://github.com/yuki020527/medium_optimization
+
+<a id="26">26</a> Sun, D., Zhou, C., Hu, J., Li, L., & Ye, H. (2023). Off-flavor profiling of cultured salmonids using hyperspectral imaging combined with machine learning. *Food Chemistry, 408*, 135166. https://doi.org/10.1016/j.foodchem.2022.135166
+
+<a id="27">27</a> Du, L., Wang, S., Chen, Y., Zhu, Z., Sun, H.-X., & Chiu, T.-Y. (2025). Machine learning-based prediction of volatile compounds profiles in Saccharomyces cerevisiae fermentation simulating canned meat. *Npj Science of Food, 9*(1), 92. https://doi.org/10.1038/s41538-025-00435-6
+
+> **Code**: https://github.com/illuminate6060/ML_S.cerevisiae
+
+<a id="28">28</a> Sun, Y., Zhang, Q., Lin, H., Lu, J., Zhang, H., Su, C., Huang, S., Pang, J., & Li, X. (2026). Engineering odor control in algal foods: Machine learning for quality enhancement. *Journal of Food Engineering, 402*, 112676. https://doi.org/10.1016/j.jfoodeng.2025.112676
+
+> **Code**: https://github.com/llllhhhhkkkk/odor-prediction-ML
+
+
+
