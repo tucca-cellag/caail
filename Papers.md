@@ -6,10 +6,10 @@ This document presents the core research papers at the intersection of Cellular 
 | [Bayesian Optimization](https://en.wikipedia.org/wiki/Bayesian_optimization) | [2](#2),[3](#3),[15](#15),[16](#16),[18](#18) | [16](#16) | | | |
 | [Deep Learning](https://en.wikipedia.org/wiki/Deep_learning) | [1](#1),[15](#15),[17](#17),[18](#18) | [4](#4),[5](#5),[6](#6) | [7](#7) | [20](#20) | |
 | [GNN](https://en.wikipedia.org/wiki/Graph_neural_network) | | [8](#8),[12](#12),[13](#13)| | | [14](#14) |
-| [CNN](https://en.wikipedia.org/wiki/Convolutional_neural_network) | | | | [19](#19) | [11](#11), [26](#26) |
+| [CNN](https://en.wikipedia.org/wiki/Convolutional_neural_network) | | | [29](#29), [33](#33) | [19](#19) | [11](#11), [26](#26) |
 | [GAN](https://en.wikipedia.org/wiki/Generative_adversarial_network) / [VAE](https://en.wikipedia.org/wiki/Variational_autoencoder) | | [9](#9),[10](#10) | | | [11](#11) |
-| [Genetic Algorithms](https://en.wikipedia.org/wiki/Genetic_algorithm) | [1](#1),[17](#17) |  | | 
-| [SVM](https://en.wikipedia.org/wiki/Support_vector_machine) | [21](#21) | [22](#22) | |  |  |
+| [Genetic Algorithms](https://en.wikipedia.org/wiki/Genetic_algorithm) | [1](#1),[17](#17) | | [30](#30), [31](#31) | |
+| [SVM](https://en.wikipedia.org/wiki/Support_vector_machine) | [21](#21) | [22](#22) | [31](#31), [32](#32) | |  |
 | [Ensemble Learning](https://en.wikipedia.org/wiki/Ensemble_learning) | | | | | [27](#27) |
 | [K-Nearest Neighbors](https://en.wikipedia.org/wiki/K-nearest_neighbors_algorithm) | | | | | [28](#28) |
 | [Active Learning](https://en.wikipedia.org/wiki/Active_learning_(machine_learning)) | [23](#23),[24](#24),[25](#25) | | | | |
@@ -104,6 +104,18 @@ This document presents the core research papers at the intersection of Cellular 
 <a id="28">28</a> Sun, Y., Zhang, Q., Lin, H., Lu, J., Zhang, H., Su, C., Huang, S., Pang, J., & Li, X. (2026). Engineering odor control in algal foods: Machine learning for quality enhancement. *Journal of Food Engineering, 402*, 112676. https://doi.org/10.1016/j.jfoodeng.2025.112676
 
 > **Code**: https://github.com/llllhhhhkkkk/odor-prediction-ML
+
+<a id="29">29</a> Del Rio‐Chanona, E. A., Wagner, J. L., Ali, H., Fiorelli, F., Zhang, D., & Hellgardt, K. (2019). Deep learning‐based surrogate modeling and optimization for microalgal biofuel production and photobioreactor design. *AIChE Journal, 65*(3), 915–923. https://doi.org/10.1002/aic.16473
+
+<a id="30">30</a> Peng, J., Meng, F., & Ai, Y. (2013). Time-dependent fermentation control strategies for enhancing synthesis of marine bacteriocin 1701 using artificial neural network and genetic algorithm. *Bioresource Technology, 138*, 345–352. https://doi.org/10.1016/j.biortech.2013.03.194
+
+<a id="31">31</a> Zhang, L., Chao, B., & Zhang, X. (2020). Modeling and optimization of microbial lipid fermentation from cellulosic ethanol wastewater by Rhodotorula glutinis based on the support vector machine. *Bioresource Technology, 301*, 122781. https://doi.org/10.1016/j.biortech.2020.122781
+
+<a id="32">32</a> Roell, G. W., Sathish, A., Wan, N., Cheng, Q., Wen, Z., Tang, Y. J., & Bao, F. S. (2022). A comparative evaluation of machine learning algorithms for predicting syngas fermentation outcomes. *Biochemical Engineering Journal, 186*, 108578. https://doi.org/10.1016/j.bej.2022.108578
+
+> **Code** https://github.com/garrettroell/SyngasMachineLearning
+
+<a id="33">33</a> Rojek, K., Wyrzykowski, R., & Gepner, P. (2021). AI-Accelerated CFD Simulation Based on OpenFOAM and CPU/GPU Computing. In M. Paszynski, D. Kranzlmüller, V. V. Krzhizhanovskaya, J. J. Dongarra, & P. M. A. Sloot (Eds.), *Computational Science – ICCS 2021* (pp. 373–385). Springer International Publishing. https://doi.org/10.1007/978-3-030-77964-1_29
 
 
 
