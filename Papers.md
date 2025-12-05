@@ -1,14 +1,14 @@
 # Paper matrix
 This document presents the core research papers at the intersection of Cellular Agriculture and AI. The papers are organized by problem and AI type, to indicate which approaches have been successful in a given research area.
 
-| | Media Optimization | Cellular Engineering | Bioprocess control | Scaffolding  | Sensory Prediction |
+| | [Media Optimization](./ResearchAreas/MediaOptimization.md) | [Cellular Engineering](./ResearchAreas/CellEngineering.md) | [Bioprocess control](./ResearchAreas/Bioprocess.md) | [Scaffolding](./ResearchAreas/Scaffolding.md)  | [Sensory Prediction](./ResearchAreas/SensoryPrediction.md) |
 |---|---|---|---|---|---| 
 | [Bayesian Optimization](https://en.wikipedia.org/wiki/Bayesian_optimization) | [2](#2),[3](#3),[15](#15),[16](#16),[18](#18) | [16](#16) | | | |
 | [Deep Learning](https://en.wikipedia.org/wiki/Deep_learning) | [1](#1),[15](#15),[17](#17),[18](#18) | [4](#4),[5](#5),[6](#6) | [7](#7) | [20](#20),[35](#35) | |
 | [GNN](https://en.wikipedia.org/wiki/Graph_neural_network) | | [8](#8),[12](#12),[13](#13)| | | [14](#14) |
-| [CNN](https://en.wikipedia.org/wiki/Convolutional_neural_network) | | | [29](#29), [33](#33) | [19](#19) | [11](#11), [26](#26) |
+| [CNN](https://en.wikipedia.org/wiki/Convolutional_neural_network) | | | [29](#29), [33](#33) | [19](#19) | [11](#11),[26](#26) |
 | [GAN](https://en.wikipedia.org/wiki/Generative_adversarial_network) / [VAE](https://en.wikipedia.org/wiki/Variational_autoencoder) | | [9](#9),[10](#10) | | | [11](#11) |
-| [Genetic Algorithms](https://en.wikipedia.org/wiki/Genetic_algorithm) | [1](#1),[17](#17) | | [30](#30), [31](#31) | |
+| [Genetic Algorithms](https://en.wikipedia.org/wiki/Genetic_algorithm) | [1](#1),[17](#17) | | [30](#30),[31](#31) | |
 | [SVM](https://en.wikipedia.org/wiki/Support_vector_machine) | [21](#21) | [22](#22) | [31](#31), [32](#32) | [34](#34) |  |
 | [Ensemble Learning](https://en.wikipedia.org/wiki/Ensemble_learning) | | | | | [27](#27) |
 | [K-Nearest Neighbors](https://en.wikipedia.org/wiki/K-nearest_neighbors_algorithm) | | | | | [28](#28) |
