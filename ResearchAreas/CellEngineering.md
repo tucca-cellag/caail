@@ -1,0 +1,5 @@
+The design and optimization of cells is a key challenge in cellular agriculture, as different cells and cell types will have vastly different suitabilities for different uses.  We're beginning to see the application of Artificial intelligence methods to solve some of the problems inherent in cell selection and modification.
+
+Single-cell RNA sequencing is one technique that has shown promise in cell classification.  Adding AI on top of this can make the data produced more meaningful. Several deep learning models have been developed like GLAE (Shan et al., 2023), DESC (Li et al., 2020), scGNN (Wang et al., 2021), and graph-sc (Ciortan & Defrance, 2022).  These use graph neural networks for cell clustering, dimensionality reduction, and batch effect removal.
+
+AI is also employed in designing and predicting cellular functions. Generative adversarial networks attempt to create novel genetic sequences with specified functions. Zrimec et al. (2022) demonstrated a technique for deep generative design of regulatory DNA for controlling gene expression. DNABERT (Ji et al., 2021) is a Transformer-based model that aims to interpret gene regulatory codes.
