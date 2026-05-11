@@ -38,3 +38,5 @@ This section catalogs general-purpose AI infrastructure — agent frameworks, fo
 ### [ToolUniverse](https://github.com/mims-harvard/ToolUniverse)
 
 Summary: An ecosystem for building AI scientists from any language or reasoning model, providing a unified interface across open- and closed-weight models and a shared tool/data/analysis environment. Provides infrastructure that bespoke biomedical AI agent projects have historically had to reinvent. Companion to the Gao et al. 2025 paper introducing ToolUniverse ([Papers.md ref #41](./Papers.md#41)).
+
+Project page: <https://aiscientist.tools/>. Docs: <https://zitniklab.hms.harvard.edu/ToolUniverse/>.
