@@ -22,14 +22,16 @@ Faster to merge, and you get authorship credit in the Git history. Branch from `
 
 ## Adding a paper to `Papers.md`
 
-`Papers.md` has two parts that must be kept in sync:
+First decide which **kind** of paper you're adding — the file has two homes for entries:
 
-1. A matrix at the top, organized by AI method (rows) and research area (columns).
-2. A numbered reference list below.
+- **Primary research** (a paper applying a specific AI method to a specific cell-ag problem) → goes in the matrix + `## References` section. *Most papers go here.*
+- **Review, perspective, position paper, or commentary** (a paper surveying the field or opining on it rather than applying one method) → goes in the `## Reviews & Perspectives` section only, with no matrix cell. See "Adding a review or perspective paper" below.
 
-To add a paper:
+### Primary research
 
-1. **Pick the next ID.** Scan the reference list for the highest existing `<a id="N">` number and use `N+1`. Reference IDs are permanent — please don't renumber existing entries, since the matrix cells (and any external links) point at them by ID.
+The matrix and the `## References` list must be kept in sync:
+
+1. **Pick the next ID.** Scan both the `## References` list and the `## Reviews & Perspectives` section for the highest existing `<a id="N">` number and use `N+1` (the two sections share one numeric counter). Reference IDs are permanent — please don't renumber existing entries, since the matrix cells (and any external links) point at them by ID.
 2. **Append the reference** at the end of the `## References` section in APA style:
 
    ```markdown
@@ -43,11 +45,16 @@ To add a paper:
    ```markdown
    > **Code**: https://github.com/<owner>/<repo>
    ```
+
 4. **Add the paper to every applicable matrix cell.** For each AI method (row) and research area (column) the paper covers, add `[42](#42)` to the corresponding cell — comma-separated with any existing entries:
 
    ```markdown
    | [Bayesian Optimization](...) | [2](#2),[3](#3),[42](#42) | ... |
    ```
+
+   Current matrix rows: Bayesian Optimization, Deep Learning, GNN, CNN, GAN/VAE, Genetic Algorithms, SVM, Ensemble Learning, K-Nearest Neighbors, Active Learning, LLMs / AI Agents.
+
+   Current matrix columns: Media Optimization, Cellular Engineering, Bioprocess Control, Scaffolding, Sensory Prediction, AI Tooling / Methodology.
 
 5. **If the paper uses an AI method that isn't yet a row**, add a new row. The row label should link to the Wikipedia article for that method (so the link stays stable):
 
@@ -57,7 +64,24 @@ To add a paper:
 
 6. **If the paper covers a research area that isn't yet a column**, see "Adding a new research area" below.
 
+7. **The `AI Tooling / Methodology` column** is for papers about general-purpose AI methods or agent frameworks that don't yet have a specific cell-ag application (e.g. a paper introducing a biomedical AI agent that *could* be applied to media optimization). When a follow-up paper applies one of these tools to a specific area, it goes in that area's column instead.
+
 Before opening the PR, double-check that every matrix `[N](#N)` you added resolves to a reference entry, and that your new reference is reachable from at least one matrix cell.
+
+### Adding a review or perspective paper
+
+Reviews, position papers, and commentaries don't participate in the matrix. Add them to the `## Reviews & Perspectives` section instead:
+
+1. **Pick the next ID** (same counter as primary references — see step 1 above).
+2. **Append the reference** at the end of the `## Reviews & Perspectives` section, in the same APA format as primary references:
+
+   ```markdown
+   <a id="43">43</a> Author, A. B. (2024). Title of the review. *Journal, vol*(issue), pp. https://doi.org/...
+   ```
+
+3. **Do not add a matrix cell** — reviews stay out of the matrix.
+
+If you're unsure whether a paper is "primary research" or "review/perspective," err on the side of the matrix when the paper has a clear single contribution (new method, new application) and on the side of Reviews & Perspectives when it surveys multiple methods or zooms out to the field as a whole.
 
 ## Adding software, datasets, or other resources
 
@@ -98,6 +122,7 @@ A research area is a column in the `Papers.md` matrix, backed by a deep-dive pag
    ```markdown
    | | ... | [Protein Design](./ResearchAreas/ProteinDesign.md) | ... |
    ```
+
 3. **Link your new area from the README's "What's Inside" section** if it stands as a primary entry point. (Not every research area needs to — small/exploratory areas can live only inside `Papers.md`.)
 4. **Backfill matrix cells** for any existing references that also apply to your new area.
 
@@ -105,7 +130,7 @@ A research area is a column in the `Papers.md` matrix, backed by a deep-dive pag
 
 We use APA throughout `Papers.md`. In short: author last name, initials, year, title, italicized journal/venue, volume(issue), pages, DOI.
 
-```
+```text
 Author, A. B., Coauthor, C. D., & Third, E. F. (2024). Title of the paper. *Journal Name, 12*(3), 456–478. https://doi.org/10.xxxx/yyyy
 ```
 

@@ -4,9 +4,35 @@ CAAIL (Cellular Agriculture AI Library) is a **curated, markdown-only resource l
 
 The repository is owned by [tucca-cellag](https://github.com/tucca-cellag) (Tufts University Center for Cellular Agriculture). Content is licensed CC BY 4.0; see `LICENSE` and the README for attribution.
 
+## Companion Zotero group library — full-text access for AI agents
+
+The **`caail` Zotero group library (ID `6549203`)** is a private, members-only group library maintained by core TUCCA members. Its purpose is **not** to be an open contribution channel — external contributors suggest entries via GitHub issues / PRs (see `CONTRIBUTING.md`). Its purpose is to give **AI coding agents running on TUCCA member machines** direct access to the full text of papers under consideration.
+
+Why this matters for AI workflows:
+
+- Crossref / arXiv / scite APIs return metadata and (sometimes) abstracts — not full text.
+- Accurate classification of a paper into the matrix (AI method × research area) often requires reading the methods section, not just the abstract — especially for papers that combine multiple techniques or apply general-purpose AI agents to a specific cell-ag problem.
+- Zotero attached PDFs are full-text-indexed locally. AI agents (Claude Code with the [`benjibromberg/zotero-context`](https://github.com/benjibromberg/zotero-context) plugin, or any client of the local Zotero API at `http://localhost:23119`) can pull excerpts from the actual paper text rather than guessing from titles.
+
+### Access (core TUCCA members only)
+
+- **Membership** is restricted to core TUCCA members. Don't direct external contributors to request access; route them through `CONTRIBUTING.md` instead.
+- **Local path (no auth, preferred):** Zotero desktop running with "Allow other applications" enabled (Preferences → Advanced), the caail group synced locally, and the AI agent on the same machine. Endpoint: `http://localhost:23119/api/groups/6549203/...`.
+- **Web API path:** a Zotero API key scoped to the caail group (generated at `https://www.zotero.org/settings/keys`), used via `https://api.zotero.org/groups/6549203/...`. Only needed when running an agent off the member's local machine.
+
+### When working on this repo as an AI agent
+
+If you're an AI agent running on a TUCCA member's machine and you need to classify a paper for `Papers.md`:
+
+1. Look up the paper in the caail Zotero library by DOI or title (most papers under consideration will be there).
+2. Pull the full text via `get_fulltext` on the attached PDF (or read the PDF directly via the Zotero storage path).
+3. Use the methods section to inform the matrix classification — don't rely on the abstract alone.
+
+If the paper isn't in the Zotero library, fall back to Crossref / arXiv / scite for metadata and flag the classification confidence as lower.
+
 ## Repository layout
 
-```
+```text
 README.md              Landing page + license/contributing pointers
 Papers.md              Peer-reviewed papers (matrix + numbered references)
 Software.md            Open-source tools grouped by application area
@@ -26,26 +52,38 @@ LICENSE                Verbatim CC BY 4.0 legal text
 
 ### `Papers.md` — the most important schema
 
-`Papers.md` has **two coordinated parts** that must stay in sync:
+`Papers.md` has **three coordinated parts**:
 
-1. **A 2D matrix table** at the top:
-   - **Rows** = AI/ML method (Bayesian Optimization, Deep Learning, GNN, CNN, GAN/VAE, Genetic Algorithms, SVM, Ensemble Learning, KNN, Active Learning, ...). Each row label links to its Wikipedia article.
-   - **Columns** = research area, each linked to the matching `ResearchAreas/*.md` page.
+1. **A 2D matrix table** at the top, for **primary research** applying a specific AI method to a specific cell-ag problem:
+   - **Rows** = AI/ML method. Current rows: Bayesian Optimization, Deep Learning, GNN, CNN, GAN/VAE, Genetic Algorithms, SVM, Ensemble Learning, K-Nearest Neighbors, Active Learning, **LLMs / AI Agents**. Each row label links to its Wikipedia article (or to a representative reference for emerging categories without a dedicated Wikipedia page).
+   - **Columns** = research area, each linked to the matching `ResearchAreas/*.md` page. Current columns: Media Optimization, Cellular Engineering, Bioprocess Control, Scaffolding, Sensory Prediction, **AI Tooling / Methodology**.
    - **Cells** = comma-separated anchor links to numbered references, e.g. `[2](#2),[3](#3),[15](#15)`.
 
-2. **A `## References` list** below the matrix:
+2. **A `## References` list** below the matrix — *primary research only*:
    - Each reference is anchored: `<a id="N">N</a> Author, A., & Author, B. (YEAR). Title. *Journal, vol*(issue), pp. https://doi.org/...`
    - Citations are **APA style**, journal italicized with `*…*`, DOI as a full `https://doi.org/...` hyperlink.
    - If the paper has associated code, follow the citation with a blockquote on the next line:
-     ```
+
+     ```markdown
      > **Code**: https://github.com/<owner>/<repo>
      ```
+
+3. **A `## Reviews & Perspectives` section** below `## References` — for review articles, position papers, and commentaries that survey or opine on the field rather than applying a specific method:
+   - Same anchor format and APA style as the primary references.
+   - **No matrix participation.** Reviews don't get cell anchors in the matrix — they live only in this section.
+   - Share the same numeric ID space as primary references (don't restart numbering — a review just gets the next available ID after the latest primary ref).
+
+**Why two sections?** The matrix is built for "AI method × research area" pairs. Reviews and commentaries survey many methods or zoom out to the field as a whole, so forcing them into the matrix either (a) pollutes many cells with the same reference number, or (b) misrepresents what the paper is. The separate section keeps them discoverable without distorting the matrix.
+
+**The `AI Tooling / Methodology` column** is the home for papers about general-purpose AI methods, agents, or tools that *could be applied* to cell-ag but don't yet have a specific application — e.g. a TxAgent or ToolUniverse paper that describes a general biomedical agent framework. When a follow-up paper applies one of these tools to (say) media optimization, that follow-up goes in the appropriate research-area column instead.
+
+**The `LLMs / AI Agents` row** captures large-language-model and agentic-AI methods. This is distinct from "Deep Learning" because LLM agents involve tool use, retrieval, and reasoning architectures that aren't accurately described by the deep-learning row alone.
 
 **Stability rules** (these prevent silently breaking links):
 
 - **Reference IDs are permanent.** Never renumber an existing entry — the matrix points at them by ID and external readers may bookmark anchor URLs.
-- **New papers get the next available ID** (max existing ID + 1). Append to the end of the reference list, then add the anchor link(s) to the appropriate matrix cell(s).
-- **Every reference must appear in at least one matrix cell**, otherwise it is unreachable from the matrix view.
+- **New entries get the next available ID** (max existing ID + 1), regardless of whether they go in `## References` or `## Reviews & Perspectives` — both sections share one ID counter.
+- **Every primary-research reference must appear in at least one matrix cell**, otherwise it is unreachable from the matrix view. Reviews & Perspectives entries are exempt — they're reached via the dedicated section.
 - **Every matrix anchor link must resolve to an existing reference ID**, otherwise the link 404s within the page.
 
 ### `Software.md` and `Data.md`

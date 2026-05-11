@@ -6,7 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Use this when you think there's a distinct research area within cellular agriculture that isn't yet a column in the Papers.md matrix. Existing areas: Media Optimization, Cellular Engineering, Bioprocess Control, Scaffolding, Sensory Prediction.
+        Use this when you think there's a distinct research area within cellular agriculture that isn't yet a column in the Papers.md matrix. Existing areas: Media Optimization, Cellular Engineering, Bioprocess Control, Scaffolding, Sensory Prediction, AI Tooling / Methodology.
 
   - type: input
     id: area_name
