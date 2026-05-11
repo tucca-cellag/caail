@@ -124,6 +124,8 @@ This document presents the core research papers at the intersection of Cellular 
 
 <a id="36">36</a> Qian, W. W., Wei, J. N., Sanchez-Lengeling, B., Lee, B. K., Luo, Y., Vlot, M., Dechering, K., Peng, J., Gerkin, R. C., Wiltschko, A. B., Bhalla, U. S., & King, A. J. (2023). Metabolic activity organizes olfactory representations. *eLife, 12,* e82502. https://doi.org/10.7554/eLife.82502
 
+> **Code**: https://github.com/osmoai/publications/tree/main/qian_et_al_2023
+
 <a id="40">40</a> Gao, S., Zhu, R., Kong, Z., Noori, A., Su, X., Ginder, C., Tsiligkaridis, T., & Zitnik, M. (2025). *TxAgent: An AI Agent for Therapeutic Reasoning Across a Universe of Tools.* arXiv. https://doi.org/10.48550/arXiv.2503.10970
 
 <a id="41">41</a> Gao, S., Zhu, R., Sui, P., Kong, Z., Aldogom, S., Huang, Y., Noori, A., Shamji, R., Parvataneni, K., Tsiligkaridis, T., & Zitnik, M. (2025). *Democratizing AI scientists using ToolUniverse.* arXiv. https://doi.org/10.48550/arXiv.2509.23426
