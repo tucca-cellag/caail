@@ -104,6 +104,46 @@ BMDB is a comprehensive resource of metabolites found in beef cattle (*Bos tauru
 
 BRENDA (BRaunschweig ENzyme DAtabase) is the most comprehensive collection of enzyme information available, maintained at the Technische Universität Braunschweig, covering >90,000 enzyme entries with detailed kinetic parameters, substrate specificities, inhibitors, optimal reaction conditions, and reaction mechanisms aggregated from primary literature. Each entry provides Km, Vmax, Kcat, Ki, optimal pH and temperature, organism-specific variations, and links to associated metabolic pathways. For cellular agriculture, BRENDA is the canonical source of enzyme kinetic data needed for kinetic models of cell metabolism, flux-balance analysis of metabolic engineering interventions, and ML models predicting media component effects on metabolic flux. Programmatic access via the BRENDA SOAP API and downloadable text files for academic use.
 
+## Cell-Ag Species Metabolic Models (GEMs)
+
+A small but growing collection of genome-scale metabolic models (GEMs) for the species most relevant to cellular agriculture. GEMs are SBML-formatted reconstructions of an organism's metabolic network — every reaction, every metabolite, every gene-protein-reaction mapping — and are the input data structure for the constraint-based modeling tools listed in [Software.md / Metabolic Modeling & Strain Design](./Software.md#metabolic-modeling--strain-design). The cell-ag GEM ecosystem is currently fragmented across preprints, supplementary materials, and individual GitHub repos rather than centralized in any single database; this section is a curated inventory pending the emergence of a canonical home (BiGG Models currently hosts microbial GEMs but few of the cell-ag species below).
+
+### BtaSBML2986 — *Bos taurus* (bovine)
+
+The first cultivated-meat-focused genome-scale metabolic reconstruction of cattle, published 2024 by Lee et al. as a bioRxiv preprint. The model integrates multi-omics data (genomics, transcriptomics, proteomics) and contains ~13,278 reactions across 2,986 genes, with biomass functions parameterized for cultivated-meat-relevant bovine cell types. Designed to support FBA-driven identification of media supplement combinations and metabolic bottlenecks for cultivated beef production. SBML files are distributed via the preprint's supplementary materials.
+
+Reference: Lee et al. (2024). *Multi-omics analysis and genome-scale metabolic reconstruction of cattle Bos taurus for optimal production of cultured meat.* bioRxiv. <https://doi.org/10.1101/2024.12.09.627468>.
+
+### iES1300 — *Gallus gallus* (chicken)
+
+Generic genome-scale metabolic reconstruction of chicken, published 2022 in *PLOS ONE* by Salehabadi, Motamedian, and Shojaosadati. Contains 2,427 reactions across 1,300 genes (hence the `i...1300` name); used to investigate network connectivity and identify potential biomarkers across chicken tissues. The reference GEM for cultivated chicken cell-line metabolic modeling, with SBML files provided as supplementary data.
+
+Reference: Salehabadi, Motamedian, & Shojaosadati (2022). *Reconstruction of a generic genome-scale metabolic network for chicken: Investigating network connectivity and finding potential biomarkers.* PLOS ONE. <https://doi.org/10.1371/journal.pone.0254270>.
+
+### PigGEM2025 — *Sus scrofa* (porcine)
+
+Proteome-constrained metabolic model of pig muscle stem cells for cultivated meat production, published 2025 by Qiu et al. as a bioRxiv preprint (a Sticta × Meatable collaboration with GFI grant funding). Tailored to the porcine muscle satellite cell context, enabling FBA / FVA analysis of cultivated pork media formulations and metabolic-engineering targets. SBML files released alongside the preprint.
+
+Reference: Qiu et al. (2025). *Proteome constrained metabolic modeling of Sus scrofa muscle stem cells for cultured meat production.* bioRxiv. <https://doi.org/10.1101/2025.09.30.679571>.
+
+### SALARECON — *Salmo salar* (Atlantic salmon)
+
+Whole-genome metabolic reconstruction of Atlantic salmon, published 2022 in *PLOS Computational Biology* with a focus on connecting genome content to growth and feed-efficiency phenotypes. The reference GEM for cultivated salmonid work — directly relevant to the cultivated seafood category (salmon, trout) that has begun attracting investment (Umami Bioworks, BlueNalu, Wildtype). SBML files distributed via the paper's supplementary materials and the SALARECON GitHub repository.
+
+Reference: (2022). *SALARECON connects the Atlantic salmon genome to growth and feed efficiency.* PLOS Computational Biology. <https://doi.org/10.1371/journal.pcbi.1010194>.
+
+### iCHO1766 / iCHO2048 / CHOmpact — Chinese Hamster Ovary (biopharma-adjacent reference)
+
+The CHO cell line is the mammalian biopharma workhorse, and its GEM family is the most-developed mammalian GEM ecosystem available — Hefzi et al.'s iCHO1766 (2016, *Cell Systems*) is the consensus reconstruction; iCHO2048 (2018) extends the secretory pathway; CHOmpact (2024) and follow-on Bayesian-flux-estimation pipelines (2025) produce reduced models for digital-twin work. CHO is not itself a cellular agriculture species, but its biomass parameterization, perfusion-process methodology, and reduction techniques translate directly to cell-ag GEMs (bovine, porcine, avian) currently under construction.
+
+Reference: Hefzi et al. (2016). *A Consensus Genome-scale Reconstruction of Chinese Hamster Ovary Cell Metabolism.* Cell Systems. <https://doi.org/10.1016/j.cels.2016.10.020>.
+
+### Recon3D / Human1 / HMR — *Homo sapiens* (template / upstream reference)
+
+The human genome-scale metabolic reconstructions — Recon3D (Brunk et al. 2018, *Nature Biotechnology*), Human-GEM / Human1 (Robinson et al. 2020, *Science Signaling*), and the underlying HMR2 — are the foundational human GEMs from which most mammalian-cell models (including the cell-ag GEMs above) inherit reaction networks, biomass equations, and curation conventions. Direct use in cell-ag is rare; they're more often used as homology templates or biomass-function donors for species-specific reconstructions.
+
+References: Brunk et al. (2018). *Recon3D enables a three-dimensional view of gene variation in human metabolism.* Nature Biotechnology. <https://doi.org/10.1038/nbt.4072>. Robinson et al. (2020). *An atlas of human metabolism.* Science Signaling. <https://doi.org/10.1126/scisignal.aaz1482>.
+
 ## Chemistry & Compound Data
 
 Resources for media component selection, growth-factor mimetics, and small-molecule supplements.
