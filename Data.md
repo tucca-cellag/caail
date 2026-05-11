@@ -122,9 +122,9 @@ Reference: Salehabadi, Motamedian, & Shojaosadati (2022). *Reconstruction of a g
 
 ### PigGEM2025 — *Sus scrofa* (porcine)
 
-Proteome-constrained metabolic model of pig muscle stem cells for cultivated meat production, published 2025 by Qiu et al. as a bioRxiv preprint (a Sticta × Meatable collaboration with GFI grant funding). Tailored to the porcine muscle satellite cell context, enabling FBA / FVA analysis of cultivated pork media formulations and metabolic-engineering targets. SBML files released alongside the preprint.
+Proteome-constrained metabolic model of pig muscle stem cells for cultivated meat production, published 2026 in *Metabolic Engineering* by Qiu et al. (a Sticta × Meatable collaboration with GFI grant funding; initially deposited as a bioRxiv preprint in September 2025). Tailored to the porcine muscle satellite cell context, enabling FBA / FVA analysis of cultivated pork media formulations and metabolic-engineering targets. SBML files released alongside the paper.
 
-Reference: Qiu et al. (2025). *Proteome constrained metabolic modeling of Sus scrofa muscle stem cells for cultured meat production.* bioRxiv. <https://doi.org/10.1101/2025.09.30.679571>.
+Reference: Qiu et al. (2026). *Proteome constrained metabolic modeling of Sus scrofa muscle stem cells for cultured meat production.* Metabolic Engineering, 94, 252–263. <https://doi.org/10.1016/j.ymben.2026.01.001>.
 
 ### SALARECON — *Salmo salar* (Atlantic salmon)
 
