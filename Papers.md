@@ -4,7 +4,7 @@ This document presents the core research papers at the intersection of Cellular 
 | | [Media Optimization](./ResearchAreas/MediaOptimization.md) | [Cellular Engineering](./ResearchAreas/CellEngineering.md) | [Bioprocess control](./ResearchAreas/Bioprocess.md) | [Scaffolding](./ResearchAreas/Scaffolding.md)  | [Sensory Prediction](./ResearchAreas/SensoryPrediction.md) | [AI Tooling / Methodology](./ResearchAreas/AITooling.md) |
 |---|---|---|---|---|---|---|
 | [Bayesian Optimization](https://en.wikipedia.org/wiki/Bayesian_optimization) | [2](#2),[3](#3),[15](#15),[16](#16),[18](#18) | [16](#16) | | | | |
-| [Deep Learning](https://en.wikipedia.org/wiki/Deep_learning) | [1](#1),[15](#15),[17](#17),[18](#18) | [4](#4),[5](#5),[6](#6) | [7](#7) | [20](#20),[35](#35) | | |
+| [Deep Learning](https://en.wikipedia.org/wiki/Deep_learning) | [1](#1),[15](#15),[17](#17),[18](#18) | [4](#4),[5](#5),[6](#6),[57](#57) | [7](#7) | [20](#20),[35](#35) | | |
 | [GNN](https://en.wikipedia.org/wiki/Graph_neural_network) | | [8](#8),[12](#12),[13](#13)| | | [14](#14),[36](#36) | [52](#52) |
 | [CNN](https://en.wikipedia.org/wiki/Convolutional_neural_network) | | | [29](#29), [33](#33) | [19](#19) | [11](#11),[26](#26) | |
 | [GAN](https://en.wikipedia.org/wiki/Generative_adversarial_network) / [VAE](https://en.wikipedia.org/wiki/Variational_autoencoder) | | [9](#9),[10](#10) | | | [11](#11) | |
@@ -13,7 +13,7 @@ This document presents the core research papers at the intersection of Cellular 
 | [Ensemble Learning](https://en.wikipedia.org/wiki/Ensemble_learning) | | | | | [27](#27) | |
 | [K-Nearest Neighbors](https://en.wikipedia.org/wiki/K-nearest_neighbors_algorithm) | | | | | [28](#28) | |
 | [Active Learning](https://en.wikipedia.org/wiki/Active_learning_(machine_learning)) | [23](#23),[24](#24),[25](#25) | | | | | |
-| [LLMs](https://en.wikipedia.org/wiki/Large_language_model) / [AI Agents](https://en.wikipedia.org/wiki/Intelligent_agent) | | | | | | [40](#40),[41](#41),[42](#42),[43](#43),[44](#44),[45](#45),[46](#46),[47](#47),[48](#48),[49](#49),[50](#50),[51](#51) |
+| [LLMs](https://en.wikipedia.org/wiki/Large_language_model) / [AI Agents](https://en.wikipedia.org/wiki/Intelligent_agent) | | | | | | [40](#40),[41](#41),[42](#42),[43](#43),[44](#44),[45](#45),[46](#46),[47](#47),[48](#48),[49](#49),[50](#50),[51](#51),[53](#53),[54](#54),[55](#55),[56](#56) |
 
 
 ## References
@@ -161,6 +161,16 @@ This document presents the core research papers at the intersection of Cellular 
 <a id="51">51</a> Sui, P., Li, M. M., Gao, S., Shen, W., Giunchiglia, V., Shen, A., Huang, Y., Kong, Z., & Zitnik, M. (2026). *Medea: An omics AI agent for therapeutic discovery.* bioRxiv. https://doi.org/10.64898/2026.01.16.696667
 
 <a id="52">52</a> Mulyadi, A. W., Wehling, L., Kumar, A., Boucher, N., Abdessalem, F., Jager, S., Mosa, M. H., Klabunde, T., Andreani, T., & Singh, G. (2025). *BioMedReasoner: Towards Multi-Hop Reasoning using Path-based Relational Learning on Biomedical Knowledge Graphs* [Poster, NeurIPS 2025 AI for Science Workshop]. https://openreview.net/forum?id=FmDuKzM8f7
+
+<a id="53">53</a> Liu, T., Han, S., Wang, H., Luo, X., Lu, P., Zhu, B., Wang, Y., Li, K., Chen, J., Qu, R., Liu, Y., Cui, X., Yaish, A., Chen, Y., Hao, M., Li, C., Li, K., Lu, Y., Wei, X., Xing, Q., Panescu, A., Wang, M., Annaswamy, V., Sanchez, A., Cloherty, J., Cohan, A., Xu, H., Gerstein, M., Zou, J., & Zhao, H. (2026). *Advancing AI Research Assistants with Expert-Involved Learning.* arXiv. https://doi.org/10.48550/arXiv.2505.04638
+
+<a id="54">54</a> Ying, K., Tyshkovskiy, A., Moldakozhayev, A., Wang, H., Magalhães, C. G. De, Iqbal, S., Garza, A. E., Tskhay, A., Poganik, J. R., Huang, K., Qu, Y., Glubokov, D., Jin, C., Lee, D., Liu, H., Leote, C., Trapp, A., Camillo, L. P. de L., Kerepesi, C., Moqri, M., Zhang, O., Jiang, K., Galkin, F., Zhavoronkov, A., Van Raamsdonk, J. M., Wang, M., Cong, L., Regev, A., Leskovec, J., Wyss-Coray, T., & Gladyshev, V. N. (2025). *Autonomous AI Agents Discover Aging Interventions from Millions of Molecular Profiles.* bioRxiv. https://doi.org/10.1101/2023.02.28.530532
+
+<a id="55">55</a> Sadhuka, S., Prinster, D., Fannjiang, C., Scalia, G., Regev, A., & Wang, H. (2025). *E-valuator: Reliable Agent Verifiers with Sequential Hypothesis Testing.* arXiv. https://doi.org/10.48550/arXiv.2512.03109
+
+<a id="56">56</a> Wang, H., He, Y., Coelho, P. P., Bucci, M., Nazir, A., Chen, B., Trinh, L., Zhang, S., Huang, K., Chandrasekar, V., Chung, D. C., Hao, M., Leote, A. C., Lee, Y., Li, B., Liu, T., Liu, J., Lopez, R., Lucas, T., Ma, M., Makarov, N., McGinnis, L., Peng, L., Ra, S., Scalia, G., Singh, A., Tao, L., Uehara, M., Wang, C., Wei, R., Copping, R., Rozenblatt-Rosen, O., Leskovec, J., & Regev, A. (2025). *SpatialAgent: An autonomous AI agent for spatial biology.* bioRxiv. https://doi.org/10.1101/2025.04.03.646459
+
+<a id="57">57</a> Adduri, A. K., Gautam, D., Bevilacqua, B., Imran, A., Shah, R., Naghipourfar, M., Teyssier, N., Ilango, R., Nagaraj, S., Dong, M., Ricci-Tam, C., Carpenter, C., Subramanyam, V., Winters, A., Tirukkovular, S., Sullivan, J., Plosky, B. S., Eraslan, B., Youngblut, N. D., Leskovec, J., Gilbert, L. A., Konermann, S., Hsu, P. D., Dobin, A., Burke, D. P., Goodarzi, H., & Roohani, Y. H. (2025). *Predicting cellular responses to perturbation across diverse contexts with State.* bioRxiv. https://doi.org/10.1101/2025.06.26.661135
 
 ## Reviews & Perspectives
 
