@@ -116,6 +116,10 @@ Currently a YouTube section; add new sections (e.g. `## Podcasts`, `## Courses`)
 
 Per-area deep-dive page. Linked from the column header of the `Papers.md` matrix. When you add a new column to the matrix, you must also create the corresponding file under `ResearchAreas/` and link to it from the column header.
 
+## Curated summaries are compressed — fetch canonical sources for substantive work
+
+The per-entry summaries in `Data.md`, `Software.md`, and `OtherResources.md` are deliberately compressed for human readability. When an AI session needs substantive information about a listed resource — data schema, API limits, license terms, specific record counts, recent version changes — fetch the canonical site rather than paraphrasing the local summary. The linked sources are authoritative; this repo's curation is a navigation layer, not a knowledge base. The same principle applies to the citation lines in `Papers.md`: those identify a paper but are not a substitute for reading it.
+
 ## Citation style
 
 - **APA** throughout.
