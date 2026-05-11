@@ -1,0 +1,56 @@
+name: Propose a new research area
+description: Propose a new research area (column in the Papers.md matrix and a new page under ResearchAreas/).
+title: "[Research Area] <Area name>"
+labels: ["suggestion", "research-area"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this when you think there's a distinct research area within cellular agriculture that isn't yet a column in the Papers.md matrix. Existing areas: Media Optimization, Cellular Engineering, Bioprocess Control, Scaffolding, Sensory Prediction.
+
+  - type: input
+    id: area_name
+    attributes:
+      label: Proposed area name
+      description: Use the form you'd want as a matrix column header (Title Case).
+      placeholder: e.g. Protein Design, Differentiation Control, Tissue Maturation
+    validations:
+      required: true
+
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope and motivation
+      description: What does this area cover? Why is it a distinct enough subfield to warrant its own column rather than being folded into an existing one?
+    validations:
+      required: true
+
+  - type: textarea
+    id: example_papers
+    attributes:
+      label: Example papers in this area
+      description: List at least 2–3 papers (with DOIs) that would populate this column. If any are already in Papers.md, give the reference number; if not, link to the DOI.
+      placeholder: |
+        - [Existing] Reference #14 — already in Papers.md
+        - [New] Author et al. (2024). Title. https://doi.org/...
+        - [New] Author et al. (2023). Title. https://doi.org/...
+    validations:
+      required: true
+
+  - type: textarea
+    id: ai_methods
+    attributes:
+      label: AI methods commonly applied to this area
+      description: Which rows in the matrix would have entries for this column? (Deep Learning, GNN, Bayesian Optimization, etc.)
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: confirmations
+    attributes:
+      label: Confirmations
+      options:
+        - label: I've checked the current ResearchAreas/ directory and this area is not already covered.
+          required: true
+        - label: I understand that contributions to this repository are licensed under CC BY 4.0.
+          required: true
