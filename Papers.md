@@ -13,7 +13,7 @@ This document presents the core research papers at the intersection of Cellular 
 | [Ensemble Learning](https://en.wikipedia.org/wiki/Ensemble_learning) | | | | | [27](#27) | |
 | [K-Nearest Neighbors](https://en.wikipedia.org/wiki/K-nearest_neighbors_algorithm) | | | | | [28](#28) | |
 | [Active Learning](https://en.wikipedia.org/wiki/Active_learning_(machine_learning)) | [23](#23),[24](#24),[25](#25),[58](#58) | | | | | [63](#63) |
-| [LLMs](https://en.wikipedia.org/wiki/Large_language_model) / [AI Agents](https://en.wikipedia.org/wiki/Intelligent_agent) | | | [61](#61),[62](#62) | | | [40](#40),[41](#41),[42](#42),[43](#43),[44](#44),[45](#45),[46](#46),[47](#47),[48](#48),[49](#49),[50](#50),[51](#51),[53](#53),[54](#54),[55](#55),[56](#56) |
+| [LLMs](https://en.wikipedia.org/wiki/Large_language_model) / [AI Agents](https://en.wikipedia.org/wiki/Intelligent_agent) | | | [61](#61),[62](#62) | | | [40](#40),[41](#41),[42](#42),[43](#43),[44](#44),[45](#45),[46](#46),[47](#47),[48](#48),[49](#49),[50](#50),[51](#51),[53](#53),[54](#54),[55](#55),[56](#56),[64](#64),[65](#65),[66](#66),[67](#67),[68](#68),[69](#69),[70](#70),[71](#71) |
 
 
 ## References
@@ -183,6 +183,22 @@ This document presents the core research papers at the intersection of Cellular 
 <a id="62">62</a> Qiu, Y., Huang, Z., Wang, Z., Liu, H., Qiao, Y., Hu, Y., Sun, S., Peng, H., Xu, R. X., & Sun, M. (2025). *BioMARS: A Multi-Agent Robotic System for Autonomous Biological Experiments.* arXiv. https://doi.org/10.48550/arXiv.2507.01485
 
 <a id="63">63</a> Pandi, A., Diehl, C., Yazdizadeh Kharrazi, A., Scholz, S., Bobkova, E., Faure, L., Nattermann, M., Adam, D., Chapin, N., Foroughijabbari, Y., Moritz, C., Paczia, N., Cortina, N., Faulon, J.-L., & Erb, T. J. (2022). A versatile active learning workflow for optimization of genetic and metabolic networks. *Nature Communications, 13*(1). https://doi.org/10.1038/s41467-022-31245-z
+
+<a id="64">64</a> Tiukova, I. A., Brunnsåker, D., Bjurström, E. Y., Gower, A. H., Kronström, F., Reder, G. K., Reiserer, R. S., Korovin, K., Soldatova, L. B., Wikswo, J. P., & King, R. D. (2024). *Genesis: Towards the Automation of Systems Biology Research.* arXiv. https://doi.org/10.48550/arXiv.2408.10689
+
+<a id="65">65</a> Brunnsåker, D., Gower, A., Naval, P., Bjurström, E., Kronström, F., Tiukova, I., & King, R. (2025). *Agentic AI Integrated with Scientific Knowledge: Laboratory Validation in Systems Biology.* bioRxiv. https://doi.org/10.1101/2025.06.24.661378
+
+<a id="66">66</a> Singh, A., Kaufmann-Malaga, B., Lerman, J., Dougherty, D., Zhang, Y., Kilbo, A., Wilson, E., Ng, C., Erbilgin, O., Curran, K., Reeves, C., Hung, J., Mantovani, S., King, Z., Ayson, M., Denery, J., Lu, C., Norton, P., Tran, C., Platt, D., Cherry, J., Chandran, S., & Meadows, A. (2023). *An Automated Scientist to Design and Optimize Microbial Strains for the Industrial Production of Small Molecules.* bioRxiv. https://doi.org/10.1101/2023.01.03.521657
+
+<a id="67">67</a> Ruscone, M., Vazquez, M., & Valencia, A. (2025). *Intelligent Tool Orchestration for Rapid Mechanistic Model Prototyping: MCP Servers as AI-Biology Interfaces.* bioRxiv. https://doi.org/10.1101/2025.09.10.675105
+
+<a id="68">68</a> Li, X., Liang, Z., Guo, Z., Liu, Z., Wu, K., Luo, J., Zhang, Y., Liu, L., Sun, M., Huang, Y., Tang, H., Chen, Y., Yu, T., Nielsen, J., & Li, F. (2024). *Leveraging large language models for metabolic engineering design.* bioRxiv. https://doi.org/10.1101/2024.09.09.612023
+
+<a id="69">69</a> Maeda, K., & Kurata, H. (2023). Automatic Generation of SBML Kinetic Models from Natural Language Texts Using GPT. *International Journal of Molecular Sciences, 24*(8), 7296. https://doi.org/10.3390/ijms24087296
+
+<a id="70">70</a> Boiko, D. A., MacKnight, R., Kline, B., & Gomes, G. (2023). Autonomous chemical research with large language models. *Nature, 624,* 570–578. https://doi.org/10.1038/s41586-023-06792-0
+
+<a id="71">71</a> Bran, A. M., Cox, S., Schilter, O., Baldassari, C., White, A. D., & Schwaller, P. (2024). Augmenting large language models with chemistry tools. *Nature Machine Intelligence.* https://doi.org/10.1038/s42256-024-00832-8
 
 ## Reviews & Perspectives
 
