@@ -13,7 +13,7 @@ This document presents the core research papers at the intersection of Cellular 
 | [Ensemble Learning](https://en.wikipedia.org/wiki/Ensemble_learning) | | | | | [27](#27) | |
 | [K-Nearest Neighbors](https://en.wikipedia.org/wiki/K-nearest_neighbors_algorithm) | | | | | [28](#28) | |
 | [Active Learning](https://en.wikipedia.org/wiki/Active_learning_(machine_learning)) | [23](#23),[24](#24),[25](#25) | | | | | |
-| [LLMs](https://en.wikipedia.org/wiki/Large_language_model) / [AI Agents](https://en.wikipedia.org/wiki/Intelligent_agent) | | | | | | [40](#40),[41](#41),[42](#42),[43](#43) |
+| [LLMs](https://en.wikipedia.org/wiki/Large_language_model) / [AI Agents](https://en.wikipedia.org/wiki/Intelligent_agent) | | | | | | [40](#40),[41](#41),[42](#42),[43](#43),[44](#44),[45](#45),[46](#46),[47](#47) |
 
 
 ## References
@@ -133,6 +133,18 @@ This document presents the core research papers at the intersection of Cellular 
 <a id="42">42</a> Sypetkowski, M., Krawczyk, J., Smoliński, Ł., Kinas, R., Pietrzak, P., Jetka, T., & Powalski, R. (2026). *OmicsLM: A Multimodal Large Language Model for Multi-Sample Omics Reasoning.* arXiv. https://doi.org/10.48550/arXiv.2605.06728
 
 <a id="43">43</a> Lee, D., Kim, D., Ko, S., Park, S.-Y., & Cho, J. (2025). *Development of an Agentic AI Model for NGS Downstream Analysis Targeting Researchers with Limited Biological Background.* arXiv. https://doi.org/10.48550/arXiv.2512.09964
+
+<a id="44">44</a> Lála, J., O'Donoghue, O., Shtedritski, A., Cox, S., Rodriques, S. G., & White, A. D. (2023). *PaperQA: Retrieval-Augmented Generative Agent for Scientific Research.* arXiv. https://doi.org/10.48550/arXiv.2312.07559
+
+<a id="45">45</a> Lu, C., Lu, C., Lange, R. T., Foerster, J., Clune, J., & Ha, D. (2024). *The AI Scientist: Towards Fully Automated Open-Ended Scientific Discovery.* arXiv. https://doi.org/10.48550/arXiv.2408.06292
+
+> **Code**: https://github.com/SakanaAI/AI-Scientist
+
+<a id="46">46</a> Skarlinski, M. D., Cox, S., Laurent, J. M., Braza, J. D., Hinks, M., Hammerling, M. J., Ponnapati, M., Rodriques, S. G., & White, A. D. (2024). *Language agents achieve superhuman synthesis of scientific knowledge.* arXiv. https://doi.org/10.48550/arXiv.2409.13740
+
+<a id="47">47</a> Yamada, Y., Lange, R. T., Lu, C., Hu, S., Lu, C., Foerster, J., Clune, J., & Ha, D. (2025). *The AI Scientist-v2: Workshop-Level Automated Scientific Discovery via Agentic Tree Search.* arXiv. https://doi.org/10.48550/arXiv.2504.08066
+
+> **Code**: https://github.com/SakanaAI/AI-Scientist-v2
 
 ## Reviews & Perspectives
 
