@@ -13,7 +13,7 @@ This document presents the core research papers at the intersection of Cellular 
 | [Ensemble Learning](https://en.wikipedia.org/wiki/Ensemble_learning) | | | | | [27](#27) | |
 | [K-Nearest Neighbors](https://en.wikipedia.org/wiki/K-nearest_neighbors_algorithm) | | | | | [28](#28) | |
 | [Active Learning](https://en.wikipedia.org/wiki/Active_learning_(machine_learning)) | [23](#23),[24](#24),[25](#25) | | | | | |
-| [LLMs](https://en.wikipedia.org/wiki/Large_language_model) / [AI Agents](https://en.wikipedia.org/wiki/Intelligent_agent) | | | | | | [40](#40),[41](#41),[42](#42),[43](#43),[44](#44),[45](#45),[46](#46),[47](#47) |
+| [LLMs](https://en.wikipedia.org/wiki/Large_language_model) / [AI Agents](https://en.wikipedia.org/wiki/Intelligent_agent) | | | | | | [40](#40),[41](#41),[42](#42),[43](#43),[44](#44),[45](#45),[46](#46),[47](#47),[48](#48),[49](#49),[50](#50),[51](#51) |
 
 
 ## References
@@ -145,6 +145,18 @@ This document presents the core research papers at the intersection of Cellular 
 <a id="47">47</a> Yamada, Y., Lange, R. T., Lu, C., Hu, S., Lu, C., Foerster, J., Clune, J., & Ha, D. (2025). *The AI Scientist-v2: Workshop-Level Automated Scientific Discovery via Agentic Tree Search.* arXiv. https://doi.org/10.48550/arXiv.2504.08066
 
 > **Code**: https://github.com/SakanaAI/AI-Scientist-v2
+
+<a id="48">48</a> Lobentanzer, S., Feng, S., Bruderer, N., Maier, A., Wang, C., Baumbach, J., Abreu-Vicente, J., Krehl, N., Ma, Q., Lemberger, T., & Saez-Rodriguez, J. (2025). A platform for the biomedical application of large language models. *Nature Biotechnology, 43*(2), 166–169. https://doi.org/10.1038/s41587-024-02534-3
+
+<a id="49">49</a> Huang, K., Zhang, S., Wang, H., Qu, Y., Lu, Y., Roohani, Y., Li, R., Qiu, L., Li, G., Zhang, J., Yin, D., Marwaha, S., Carter, J. N., Zhou, X., Wheeler, M., Bernstein, J. A., Wang, M., He, P., Zhou, J., Snyder, M., Cong, L., Regev, A., & Leskovec, J. (2025). *Biomni: A General-Purpose Biomedical AI Agent.* bioRxiv. https://doi.org/10.1101/2025.05.30.656746
+
+> **Code**: https://github.com/snap-stanford/Biomni
+
+<a id="50">50</a> Wehling, L., Singh, G., Mulyadi, A. W., Sreenath, R. H., Hermjakob, H., Nguyen, T. V. N., Rückle, T., Mosa, M. H., Cordes, H., Andreani, T., Klabunde, T., Malik Sheriff, R. S., & McCloskey, D. (2025). Talk2Biomodels: AI agent-based open-source LLM initiative for kinetic biological models. *BMC Bioinformatics, 26*(1), 276. https://doi.org/10.1186/s12859-025-06310-1
+
+> **Code**: https://github.com/VirtualPatientEngine/AIAgents4Pharma
+
+<a id="51">51</a> Sui, P., Li, M. M., Gao, S., Shen, W., Giunchiglia, V., Shen, A., Huang, Y., Kong, Z., & Zitnik, M. (2026). *Medea: An omics AI agent for therapeutic discovery.* bioRxiv. https://doi.org/10.64898/2026.01.16.696667
 
 ## Reviews & Perspectives
 
