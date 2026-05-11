@@ -30,3 +30,11 @@ Summary: A modeling environment for simulating cell-cell and cell-environment in
 ### [PhysiCell](https://github.com/MathCancer/PhysiCell/)
 
 Summary: A physics-based framework specialized for multi-cell simulations. Can be used to model complex cell behaviors, including differentiation and nutrient limitations in tissue cultures.
+
+## AI Agents & Foundation Models
+
+This section catalogs general-purpose AI infrastructure — agent frameworks, foundation models for biology, and tool ecosystems — that can be applied across cellular agriculture problems. See also the `AI Tooling / Methodology` column in [Papers.md](./Papers.md) for the research papers describing these systems.
+
+### [ToolUniverse](https://github.com/mims-harvard/ToolUniverse)
+
+Summary: An ecosystem for building AI scientists from any language or reasoning model, providing a unified interface across open- and closed-weight models and a shared tool/data/analysis environment. Provides infrastructure that bespoke biomedical AI agent projects have historically had to reinvent. Companion to the Gao et al. 2025 paper introducing ToolUniverse ([Papers.md ref #41](./Papers.md#41)).
