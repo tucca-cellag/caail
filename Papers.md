@@ -5,7 +5,7 @@ This document presents the core research papers at the intersection of Cellular 
 |---|---|---|---|---|---| 
 | [Bayesian Optimization](https://en.wikipedia.org/wiki/Bayesian_optimization) | [2](#2),[3](#3),[15](#15),[16](#16),[18](#18) | [16](#16) | | | |
 | [Deep Learning](https://en.wikipedia.org/wiki/Deep_learning) | [1](#1),[15](#15),[17](#17),[18](#18) | [4](#4),[5](#5),[6](#6) | [7](#7) | [20](#20),[35](#35) | |
-| [GNN](https://en.wikipedia.org/wiki/Graph_neural_network) | | [8](#8),[12](#12),[13](#13)| | | [14](#14) |
+| [GNN](https://en.wikipedia.org/wiki/Graph_neural_network) | | [8](#8),[12](#12),[13](#13)| | | [14](#14),[36](#36) |
 | [CNN](https://en.wikipedia.org/wiki/Convolutional_neural_network) | | | [29](#29), [33](#33) | [19](#19) | [11](#11),[26](#26) |
 | [GAN](https://en.wikipedia.org/wiki/Generative_adversarial_network) / [VAE](https://en.wikipedia.org/wiki/Variational_autoencoder) | | [9](#9),[10](#10) | | | [11](#11) |
 | [Genetic Algorithms](https://en.wikipedia.org/wiki/Genetic_algorithm) | [1](#1),[17](#17) | | [30](#30),[31](#31) | |
@@ -120,3 +120,15 @@ This document presents the core research papers at the intersection of Cellular 
 <a id="34">34</a> Andrews, A. E., Dickinson, H., & Hague, J. P. (2025). *Designing cultured tissue moulds using evolutionary strategies*. arXiv. https://doi.org/10.48550/ARXIV.2508.00769
 
 <a id="35">35</a> Andrews, A. E., Dickinson, H., & Hague, J. P. (2023). Rapid prediction of lab-grown tissue properties using deep learning. *Physical Biology, 20*(6), 066005. https://doi.org/10.1088/1478-3975/ad0019
+
+<a id="36">36</a> Qian, W. W., Wei, J. N., Sanchez-Lengeling, B., Lee, B. K., Luo, Y., Vlot, M., Dechering, K., Peng, J., Gerkin, R. C., Wiltschko, A. B., Bhalla, U. S., & King, A. J. (2023). Metabolic activity organizes olfactory representations. *eLife, 12,* e82502. https://doi.org/10.7554/eLife.82502
+
+## Reviews & Perspectives
+
+This section lists review articles, position papers, and commentaries that survey the field or opine on it, rather than applying a specific AI method to a specific cell-ag problem. Entries here share the same reference-ID counter as the primary references above but do not participate in the matrix.
+
+<a id="37">37</a> Kuhl, E. (2025). AI for food: accelerating and democratizing discovery and innovation. *npj Science of Food, 9*(1). https://doi.org/10.1038/s41538-025-00441-8
+
+<a id="38">38</a> McNulty, M. J., Stout, A. J., & Kaplan, D. L. (2025). Meating the moment. *EMBO Reports, 26*(13), 3229–3235. https://doi.org/10.1038/s44319-025-00492-8
+
+<a id="39">39</a> Datta, B., Buehler, M. J., Chow, Y., Gligoric, K., Jurafsky, D., Kaplan, D. L., Ledesma-Amaro, R., Del Missier, G., Neidhardt, L., Pichara, K., Sanchez-Lengeling, B., Schlangen, M., St. Pierre, S. R., Tagkopoulos, I., Thomas, A., Watson, N. J., & Kuhl, E. (2026). Artificial Intelligence for Food Innovation. *arXiv.* https://doi.org/10.48550/arXiv.2509.21556
