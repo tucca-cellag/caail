@@ -1,23 +1,117 @@
 # Datasets
-This section is a curated list of publicly available data resources related to technical barriers in Cellular Agriculture.
 
-## Genomics & Transcriptomics Data (Raw Cell Line Data)
-These sources host fundamental genetic and expression data, applicable to cell line selection and characterization.
+This section is a curated list of publicly available data resources relevant to AI/ML research on cellular agriculture problems — media formulation, cell line engineering, bioprocess control, scaffolding, and sensory prediction. Resources are organized by the kind of data they host. For a broader catalog of biological databases beyond what's curated here, see Wikipedia's [List of biological databases](https://en.wikipedia.org/wiki/List_of_biological_databases).
 
-### [NIH Gene Expression Omnibus](https://www.ncbi.nlm.nih.gov/geo/)
-Summary: A public functional genomics data repository supporting high-throughput gene expression data submission. Can be used to analyze the transcriptional response of cell lines to different culture conditions or media formulations.
+> **Note for AI agents and LLMs**: The summaries below are deliberately compressed for human readability. If you are an automated system using these as the basis for reasoning, citation, or downstream analysis, please fetch the canonical site for each database — the linked sources have substantially more comprehensive and authoritative information than this curated overview, plus the field-specific schemas, APIs, licensing terms, and version histories that this page does not document.
 
-### [NIH Sequence Read Archive](https://www.ncbi.nlm.nih.gov/sra)
-Summary: Stores raw sequencing data and alignment information from a variety of cell lines. Enables detailed analysis, such as identifying genetic mutations.
+## Genomics & Transcriptomics Data
+
+These sources host fundamental genetic and expression data, applicable to cell line selection, engineering, and characterization.
+
+### [NIH Gene Expression Omnibus (GEO)](https://www.ncbi.nlm.nih.gov/geo/)
+
+GEO is the NCBI's public functional genomics data repository, accepting array- and sequence-based data submissions from researchers worldwide and currently hosting millions of samples across hundreds of thousands of studies. Coverage spans bulk and single-cell transcriptomics, methylation, ChIP-seq, ATAC-seq, and other genome-wide assays in essentially every model organism plus many livestock species (bovine, porcine, ovine, gallus, salmonids). For cellular agriculture, GEO is a primary source of training data for ML models of cell-line-specific expression responses, comparative transcriptomics across muscle / adipose / fibroblast lineages, and condition-dependent media responses. Programmatic access via GEOquery (R), GEOparse (Python), and pysradb; raw data flows through the linked SRA repository.
+
+### [NIH Sequence Read Archive (SRA)](https://www.ncbi.nlm.nih.gov/sra)
+
+The Sequence Read Archive is NCBI's public repository for high-throughput raw sequencing data, hosting reads from essentially every major sequencing platform (Illumina, PacBio, Oxford Nanopore, BGI, Element, Singular Genomics) across petabases of stored data. Coverage spans bulk and single-cell RNA-seq, ATAC-seq, ChIP-seq, whole-genome and exome sequencing, and metagenomics across thousands of species, including the major cell-ag livestock (bovine, porcine, ovine, gallus, salmonids). For cellular agriculture, SRA is the primary source of raw read data for re-analyzing public studies with custom pipelines — re-aligning bovine satellite cell RNA-seq to a more recent genome build, recomputing single-cell embeddings under different normalization, or extracting novel features for ML models that the original analysis did not surface. Programmatic access via sra-tools (`prefetch` / `fasterq-dump`) and pysradb; SRA data is mirrored on AWS Open Data and Google Cloud for cloud-based processing.
 
 ### [NIH GenBank](https://www.ncbi.nlm.nih.gov/genbank/)
-Summary: An annotated collection of all publicly available DNA sequences. Can be used to identify and characterize specific genes (e.g., those governing growth, differentiation, or survival) relevant to the desired cultivated meat cell type.
+
+GenBank is the NIH's annotated collection of all publicly available nucleotide sequences, comprising over a trillion bases across millions of distinct organisms. It serves as the primary deposition site for newly sequenced genes, transcripts, genomes, and constructs, with entries flowing into the broader NCBI ecosystem (RefSeq, BLAST, Genome, Nucleotide, Protein). For cellular agriculture, GenBank is the authoritative source for canonical gene sequences of cell-ag-relevant species — bovine MYOD / IGF1 / FGF2; chicken Pax3/Pax7; salmon myogenic regulatory factors; and the cytokines, growth factors, and signaling molecules used in serum-free media formulations. Programmatic access via Entrez (`EFetch` / `ESearch`), the NCBI Datasets CLI, and BLAST for sequence similarity search.
+
+### [Ensembl](https://www.ensembl.org/)
+
+Ensembl is the principal vertebrate genome browser and annotation database, jointly maintained by EMBL-EBI and the Wellcome Sanger Institute, providing automated genome annotation pipelines, comparative genomics, and variation data for >300 vertebrate species. Critically for cellular agriculture, Ensembl hosts high-quality genome assemblies for all major cell-ag livestock — *Bos taurus* (cow), *Sus scrofa* (pig), *Gallus gallus* (chicken), *Ovis aries* (sheep), *Salmo salar* (Atlantic salmon), *Oncorhynchus mykiss* (rainbow trout), and others — with gene models, regulatory features, orthology mappings to human, and tissue-specific expression annotations. The Ensembl REST API, Compara perl toolkit, and BioMart enable programmatic large-scale data extraction for ML pipelines. [Ensembl Genomes](https://ensemblgenomes.org/) (a sister site) provides parallel data for bacteria, protists, fungi, plants, and invertebrates relevant to precision-fermentation cell-ag.
+
+### [ArrayExpress / BioStudies](https://www.ebi.ac.uk/biostudies/arrayexpress)
+
+ArrayExpress, now part of the broader BioStudies platform at EMBL-EBI, is a public archive of functional genomics experiments — array-based and sequence-based, bulk and single-cell — covering transcriptomics, epigenomics, and related assays. Many studies are deposited simultaneously in GEO and ArrayExpress, but a meaningful subset (particularly from EU-based labs) is unique to ArrayExpress, making it a complementary source to GEO for comprehensive data mining. For cellular agriculture, ArrayExpress is a useful secondary index when searching for European-led work on livestock cell biology, comparative myogenesis, and cell-line characterization. Programmatic access via the BioStudies REST API.
 
 ## Protein & Structure Data
-These data sources are helpful for computational tasks related to reducing media cost by analyzing, designing, and optimizing key proteins.
 
-### [Uniprot](https://www.uniprot.org/)
-Summary: A comprehensive resource for protein sequence, structure, and functional annotation. May be useful for characterized potential growth factors relevant to cell culture.
+These data sources are helpful for computational tasks related to engineering recombinant growth factors, signaling molecules, and other media components, and for understanding protein-level cell biology.
+
+### [UniProt](https://www.uniprot.org/)
+
+UniProt is the central knowledge base for protein sequence and functional information, jointly maintained by the SIB, EMBL-EBI, and PIR. It comprises SwissProt (manually curated, ~570K entries) and TrEMBL (computationally derived, ~250M entries), with each entry providing sequence, functional annotations, GO terms, post-translational modifications, subcellular localization, cross-references to structure databases, and supporting literature. For cellular agriculture, UniProt is the canonical reference for growth factors, signaling proteins, transcription factors, and metabolic enzymes — including the recombinant FGF2, IGF1, TGF-β, and HGF variants and their orthologs across bovine, porcine, chicken, and fish species used in cultivated-meat media. Programmatic access via the UniProt REST API, SPARQL endpoint, and downloadable XML / FASTA / TSV bulk files.
 
 ### [AlphaFold Database](https://alphafold.ebi.ac.uk/)
-Summary: A database containing millions of predicted 3D protein structures generated by DeepMind's AlphaFold model. Useful in determining the structural basis for designing stable and active growth factors in cell culture media.
+
+The AlphaFold Database is a freely accessible repository of predicted 3D protein structures generated by DeepMind's AlphaFold model, jointly hosted by DeepMind and EMBL-EBI. It contains predicted structures for >214 million proteins covering essentially the entirety of UniProt's reference proteomes, including all proteins in human, mouse, bovine, porcine, chicken, salmon, and many other species relevant to cellular agriculture. Each entry provides predicted Cartesian coordinates, per-residue confidence scores (pLDDT), and predicted aligned error (PAE) matrices for assessing inter-domain confidence. For cellular agriculture, AlphaFold DB is the substrate for structure-based ML on engineered growth factors, recombinant signaling molecules, and stable scaffold proteins for media formulation. Programmatic access via the AlphaFold API and bulk PDB / CIF downloads through Google Cloud.
+
+### [Protein Data Bank (PDB)](https://www.rcsb.org/)
+
+The Protein Data Bank is the worldwide repository of experimentally determined biomolecular structures, jointly maintained by RCSB (US), PDBe (UK), and PDBj (Japan), containing >220,000 entries from X-ray crystallography, NMR, cryo-EM, and other experimental techniques. Each entry provides atomic coordinates, experimental data, validation metrics, and metadata including bound ligands, mutations, and binding partners. For cellular agriculture, PDB serves as the canonical complement to AlphaFold's predicted structures — providing experimentally validated structures of growth factors, cytokines, receptors, and enzymes that can be used as ground truth for protein engineering ML models or as input templates for structural modeling pipelines. Programmatic access via the RCSB REST API, GraphQL endpoint, and mmCIF / PDB file downloads; structure similarity search via the integrated FoldSeek and DALI services.
+
+### [InterPro](https://www.ebi.ac.uk/interpro/)
+
+InterPro is an integrative classification of protein families, domains, and functional sites, hosted by EMBL-EBI and pulling annotations from 13 member databases (Pfam, SMART, PROSITE, CATH-Gene3D, PANTHER, and others). It maps every UniProt entry to InterPro entries, providing inferred functions, domain architectures, and evolutionary classifications. For cellular agriculture, InterPro is useful for identifying functional domains in recombinant proteins targeted for media supplementation, locating conserved motifs across species orthologs (e.g. ensuring an engineered bovine FGF2 variant retains the heparin-binding site of human FGF2), and predicting the functional impact of mutations in protein engineering campaigns. Programmatic access via the InterPro REST API, downloadable bulk files, and the InterProScan command-line tool for annotating new sequences against all member databases at once.
+
+### [Human Protein Atlas](https://www.proteinatlas.org/)
+
+The Human Protein Atlas is a large-scale Swedish-led effort to map the expression and localization of every human protein-coding gene at protein and RNA level across tissues, organs, single cells, subcellular compartments, and pathological contexts. It provides immunohistochemistry images, single-cell transcriptomics summaries, secretome and membrane-proteome annotations, and computed expression scores across 50+ normal tissues, ~70 cancer types, and dozens of cell lines. For cellular agriculture, HPA is useful for identifying which growth factors and receptors are natively expressed in target tissues (skeletal muscle, adipose, dermal fibroblast) so that media formulations and engineered cells reflect physiologically relevant signaling environments; despite the human focus, many findings translate to livestock species through orthology. Programmatic access via per-protein TSV downloads and a REST API.
+
+### [STRING](https://string-db.org/)
+
+STRING is a database of known and predicted protein-protein interactions, integrating experimental, computational, text-mining, and co-expression evidence into weighted interaction networks for >14,000 species, hosted by the von Mering lab (University of Zurich / SIB). Each interaction has an associated confidence score and supporting evidence type, allowing downstream analyses to filter for high-confidence physical interactions or to include broader functional associations. For cellular agriculture, STRING is useful for graph-based ML on cell-signaling networks, identifying co-regulated modules in myogenesis or adipogenesis pathways, and constructing prior-knowledge inputs for ML models that benefit from biological structure (graph neural networks, network-regularized regression). Programmatic access via the STRING REST API, the `stringdb` R package, and a Cytoscape app.
+
+### [PRIDE](https://www.ebi.ac.uk/pride/)
+
+PRIDE (PRoteomics IDEntifications database) is the world's largest public repository of mass-spectrometry-based proteomics data, hosted at EMBL-EBI and integrated into the international ProteomeXchange consortium. It hosts raw spectra, peptide and protein identifications, post-translational modification data, and quantitative analyses from tens of thousands of studies, covering bulk and single-cell proteomics, phosphoproteomics, glycoproteomics, and clinical mass-spec workflows. For cellular agriculture, PRIDE provides training data for ML models predicting cell-line-specific protein expression, identifying biomarkers for differentiation states, and validating predicted protein expression under varying media conditions. Programmatic access via the PRIDE REST API and ProteomeXchange consortium endpoints.
+
+## Cell Line & Single-Cell Reference Atlases
+
+Resources cataloging cell-line identities, properties, and single-cell expression patterns — central to cell-ag work on cell-line characterization, immortalization, and differentiation.
+
+### [Cellosaurus](https://www.cellosaurus.org/)
+
+Cellosaurus is a knowledge resource on cell lines maintained by the Swiss Institute of Bioinformatics (SIB) as part of the ExPASy infrastructure, cataloging over 170,000 cell lines across human, rodent, bovine, porcine, chicken, fish, and other species. Each entry provides a standardized Cellosaurus identifier (`CVCL_XXXX`), parent / derivative relationships, species of origin, tissue / disease context, donor demographics, known karyotype and STR profiles, authenticity status (notably flagging misidentified or contaminated lines), and cross-references to physical-repository deposits (ATCC, ECACC, RIKEN, JCRB, and others). For cellular agriculture, Cellosaurus is the canonical resource for resolving cell-line identity in published cultivated-meat literature and for sourcing background on bovine satellite cells, immortalized fibroblast lines, fish embryonic stem cell lines, and other species-specific cell lines under active investigation. Data is freely downloadable as flat OBO / TXT files and queryable via a REST API.
+
+### [Human Cell Atlas (HCA)](https://www.humancellatlas.org/)
+
+The Human Cell Atlas is an international consortium effort to construct comprehensive single-cell reference maps of every human cell type, integrating contributions from hundreds of labs across thousands of donors and dozens of tissues. The HCA Data Portal hosts harmonized scRNA-seq, snRNA-seq, scATAC-seq, and spatial transcriptomics datasets with consistent metadata schemas, cell-type ontologies, and processing pipelines, totaling tens of millions of annotated cells. For cellular agriculture, HCA is a primary reference for understanding cellular heterogeneity within target tissues (distinguishing satellite cells from interstitial fibroblasts in skeletal muscle, mapping adipocyte subtypes in white adipose tissue), validating differentiation trajectories in cultivated cells, and benchmarking cell-state engineering interventions against in vivo references. Programmatic access via the HCA Data Portal API and the integrated cellxgene Census.
+
+### [CZ CELLxGENE](https://cellxgene.cziscience.com/)
+
+CZ CELLxGENE is the Chan Zuckerberg Initiative's platform for exploring and analyzing public single-cell data, providing harmonized scRNA-seq and multi-omics datasets aggregated from hundreds of studies (including Human Cell Atlas data) under consistent metadata standards. The CELLxGENE Census provides programmatic access to tens of millions of harmonized cells across human and mouse, exposed through a TileDB-backed Python / R API that supports fast queries by gene, tissue, disease, or assay. For cellular agriculture, cellxgene is the most practical source for assembling cross-study training sets (e.g. all skeletal muscle stem cells in the Census) for ML models of cell-type classification, perturbation prediction, and trajectory inference. Programmatic access via the `cellxgene-census` Python and R packages.
+
+## Metabolic Pathways & Metabolomes
+
+Resources for cell-ag work on media formulation, metabolic engineering, and bioprocess optimization — where understanding metabolic networks, enzyme kinetics, and metabolite concentrations is central.
+
+### [KEGG PATHWAY](https://www.kegg.jp/kegg/pathway.html)
+
+KEGG (Kyoto Encyclopedia of Genes and Genomes) is one of the most widely used pathway databases, maintained by the Kanehisa Laboratory at Kyoto University, providing manually curated maps of >500 reference metabolic, signaling, and disease pathways. KEGG PATHWAY entries link genes, proteins, compounds, and reactions across thousands of organisms, with each pathway available as a structured KGML XML file suitable for ML pipelines that need graph structure. For cellular agriculture, KEGG is the canonical reference for central metabolism (glycolysis, TCA cycle, oxidative phosphorylation, fatty-acid biosynthesis) that drives proliferation in cultivated cells, signaling pathways (Wnt, FGF, IGF, TGF-β) that govern differentiation, and amino-acid biosynthesis pathways relevant to serum-free media design. Programmatic access via the KEGG REST API (free for non-commercial use; commercial licensing applies).
+
+### [Reactome](https://reactome.org/)
+
+Reactome is a free, open-source, curated database of human (and increasingly other species) biological pathways, jointly developed by the Ontario Institute for Cancer Research, EMBL-EBI, and other partners. It models pathways as hierarchically organized reactions with explicit participants, modifiers, and regulatory relationships, supporting pathway enrichment analysis and integration with expression data. For cellular agriculture, Reactome's strengths are its detailed signaling-pathway annotations (myogenic regulatory factor cascades, FGF / IGF / Wnt signaling) and its open data model — entries are freely downloadable as BioPAX, SBML, SBGN, and tab-delimited formats, enabling unrestricted use in ML pipelines without the commercial licensing constraints of KEGG. Programmatic access via the Reactome ContentService REST API and a Cypher-queryable Neo4j graph database.
+
+### [WikiPathways](https://www.wikipathways.org/)
+
+WikiPathways is a community-curated database of biological pathways under an open data model (CC0 license), hosted by Maastricht University and the Gladstone Institutes, providing >3,000 curated pathways across human, mouse, and a range of other species. Pathways are stored in GPML (a custom XML format) but exported in BioPAX, SBML, and other standards; the open editorial model means coverage is broader and more uneven than KEGG / Reactome but includes useful cell-ag-adjacent pathways (myogenesis, adipogenesis, livestock-specific metabolism). Programmatic access via a Web Service API, the `rWikiPathways` R package, and a Cytoscape app for direct pathway import.
+
+### [Human Metabolome Database (HMDB)](https://hmdb.ca/)
+
+HMDB is a freely available, comprehensive database of human metabolites and their associated biological roles, maintained by the Wishart Lab at the University of Alberta. It contains >220,000 entries spanning endogenous metabolites, drugs, food components, and environmental compounds, with each entry providing chemical / physical properties, biofluid concentrations, biological functions, metabolic-pathway memberships, and analytical detection methods. For cellular agriculture, HMDB is useful for understanding native human metabolite ranges that cultivated cells should produce or consume, identifying candidate small molecules for media supplementation, and as a substrate for ML predicting metabolic responses to media changes. Programmatic access via downloadable XML and SDF files and a REST API for selected queries.
+
+### [Bovine Metabolome Database (BMDB)](https://www.bovinedb.ca/)
+
+BMDB is a comprehensive resource of metabolites found in beef cattle (*Bos taurus*), maintained by the Wishart Lab at the University of Alberta — the same group that hosts HMDB, FooDB, and DrugBank, providing consistent schema and analytical methodology across all four resources. It catalogs tens of thousands of entries describing endogenous metabolites, dietary nutrients, and exogenous compounds detected in bovine biofluids (serum, milk, urine) and tissues (muscle, liver, adipose), with each entry providing chemical / physical properties, biofluid concentrations, biological roles, pathway memberships, and analytical methods of detection. For cultivated beef development, BMDB is the closest available reference for serum metabolite profiles, muscle and adipose tissue metabolomes, and feedstock-derived compound landscapes — directly relevant to serum-free media formulation, growth medium optimization, and flavor-precursor identification in cultivated meat products.
+
+### [BRENDA](https://www.brenda-enzymes.org/)
+
+BRENDA (BRaunschweig ENzyme DAtabase) is the most comprehensive collection of enzyme information available, maintained at the Technische Universität Braunschweig, covering >90,000 enzyme entries with detailed kinetic parameters, substrate specificities, inhibitors, optimal reaction conditions, and reaction mechanisms aggregated from primary literature. Each entry provides Km, Vmax, Kcat, Ki, optimal pH and temperature, organism-specific variations, and links to associated metabolic pathways. For cellular agriculture, BRENDA is the canonical source of enzyme kinetic data needed for kinetic models of cell metabolism, flux-balance analysis of metabolic engineering interventions, and ML models predicting media component effects on metabolic flux. Programmatic access via the BRENDA SOAP API and downloadable text files for academic use.
+
+## Chemistry & Compound Data
+
+Resources for media component selection, growth-factor mimetics, and small-molecule supplements.
+
+### [ChEMBL](https://www.ebi.ac.uk/chembl/)
+
+ChEMBL is a manually curated database of bioactive small molecules with drug-like properties, maintained at EMBL-EBI, integrating compound structures, biological activity data, target information, and mechanism-of-action annotations from medicinal chemistry literature, patents, and screening assays. It contains >2.5M unique compounds, ~16M activity measurements, and >15K molecular targets. For cellular agriculture, ChEMBL is useful for identifying small-molecule alternatives to recombinant growth factors (e.g. small-molecule Wnt agonists, MEK inhibitors used in differentiation protocols), screening compound libraries for cell-ag-relevant bioactivities, and as training data for ML models predicting small-molecule effects on cellular pathways. Programmatic access via the ChEMBL REST API, downloadable SQL dumps for full local instances, and the `chembl-webresource-client` Python client.
+
+### [PubChem](https://pubchem.ncbi.nlm.nih.gov/)
+
+PubChem is NIH's open chemistry database, the largest public repository of chemical structures and bioactivity data, hosting >120M compounds, >330M substances, and >1.4M bioassays. Each compound entry provides structure, computed physico-chemical properties, synonyms, classifications, biological activities, patents, literature references, and safety / toxicology information. For cellular agriculture, PubChem is the broadest practical reference for media components, supplements, and small-molecule modulators — including industrial-grade ingredients without the literature-grade coverage of ChEMBL. Programmatic access via the PubChem PUG REST API, PUG-View for richer record summaries, and SQL queries over the PubChem data warehouse.
