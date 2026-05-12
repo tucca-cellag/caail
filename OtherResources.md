@@ -17,3 +17,13 @@ Talks on AI agents, foundation models, and language-model-based scientific reaso
 * [MIA: Abhinav Adduri, Multi-Scale Modeling of Cellular Responses to Perturbation with STATE](https://www.youtube.com/watch?v=jqSs6KfAd78) (Broad Institute, 2026)
 * [Colby Ford: Building Multi-agentic Bioworkflows with Microsoft Foundry and Nextflow](https://www.youtube.com/watch?v=oxhXGVFUZvQ) (2026)
 * [Florian Wuennemann: From Copilot to Co-scientist: Agents Lend a Hand](https://www.youtube.com/watch?v=eHlzUdAvqW0) (2026)
+
+## AI Fundamentals
+
+Educational playlists for wet-lab researchers — biologists, biochemists, bioprocess engineers, and cell-ag practitioners — who want to build foundational understanding of the AI / ML methods catalogued throughout the rest of this library. Curated for the audience that approaches machine learning from the biology side rather than the computer-science side; these are starting points, not exhaustive references. Once you have the basics, the matrix in [Papers.md](./Papers.md) and the tools in [Software.md](./Software.md) become much more navigable.
+
+* [AI Fundamentals](https://www.youtube.com/playlist?list=PLOspHqNVtKADfxkuDuHduUkDExBpEt3DF) — introductory AI concepts, intended as a first entry point.
+* [Machine Learning](https://www.youtube.com/playlist?list=PLblh5JKOoLUICTaGLRoHQDuF_7q2GfuJF) — broader ML topics covered as a non-intimidating tour through the field.
+* [Neural Networks / Deep Learning](https://www.youtube.com/playlist?list=PLblh5JKOoLUIxGDQs4LFFD--41Vzf-ME1) — neural network fundamentals through transformer architecture (the foundation of ChatGPT and modern LLMs).
+* [AI Models Explained](https://www.youtube.com/playlist?list=PLOspHqNVtKAC-FUNMq8qjYVw6_semZHw0) — overview of common AI model architectures and where each is used.
+* [AI Agents Explained](https://www.youtube.com/playlist?list=PLOspHqNVtKAB6AzNie7BrFhbg4dv4Gfz8) — overview of AI agent systems; pairs naturally with the LLMs / AI Agents row in [Papers.md](./Papers.md) and the AI Agents & Foundation Models section in [Software.md](./Software.md).
