@@ -247,6 +247,10 @@ Project page: <https://k-dense.ai>.
 
 Summary: Seqera Cloud's AI assistant for bioinformatics workflows, providing an interactive co-scientist that helps users author and debug Nextflow pipelines, query workflow run data, and interpret results. Accessible through the Seqera CLI and Seqera Platform; no companion paper at time of curation.
 
+### [Dotmatics Luma](https://go.dotmatics.com/luma-lab-orchestration)
+
+A commercial lab-orchestration platform from Dotmatics that connects laboratory instruments, data systems, and AI assistance into a unified "connected digital lab" workflow — covering instrument integration, automated data flow, electronic-lab-notebook integration, and agent-assisted experimental planning. Marketed primarily to biopharma and biotech R&D groups; representative of the commercial-tooling layer that cell-ag startups increasingly evaluate as they scale beyond bench-scale workflows. See also the [Dotmatics Luma webinar](./OtherResources.md#ai-agents--foundation-models-for-biology) in OtherResources.md for an overview of the platform.
+
 ### [TranscriptFormer](https://virtualcellmodels.cziscience.com/model/transcriptformer)
 
 A family of generative foundation models for single-cell transcriptomics from the Chan Zuckerberg Initiative, trained on up to 112 million cells spanning 1.53 billion years of evolution across 12 species (Pearce et al. 2026, *Science*; see [Papers.md ref #92](./Papers.md#92)). Provides state-of-the-art performance on cell-type classification and supports cross-species reasoning over transcriptomic data — directly relevant to cell-ag for translating biological knowledge between bovine, porcine, chicken, salmonid, and other livestock cells where annotated reference data is sparse. Distributed via CZI's Virtual Cells Platform with versioned releases.

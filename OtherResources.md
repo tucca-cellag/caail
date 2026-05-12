@@ -17,6 +17,7 @@ Talks on AI agents, foundation models, and language-model-based scientific reaso
 * [MIA: Abhinav Adduri, Multi-Scale Modeling of Cellular Responses to Perturbation with STATE](https://www.youtube.com/watch?v=jqSs6KfAd78) (Broad Institute, 2026)
 * [Colby Ford: Building Multi-agentic Bioworkflows with Microsoft Foundry and Nextflow](https://www.youtube.com/watch?v=oxhXGVFUZvQ) (2026)
 * [Florian Wuennemann: From Copilot to Co-scientist: Agents Lend a Hand](https://www.youtube.com/watch?v=eHlzUdAvqW0) (2026)
+* [Connecting Instruments, Data, and AI in the Orchestrated Lab](https://www.youtube.com/watch?v=PO7xOOs-1JA) (Dotmatics Luma webinar, 2026) — commercial perspective on connecting laboratory instruments, data systems, and AI agents into orchestrated R&D workflows; companion to the [Dotmatics Luma entry in Software.md](./Software.md#dotmatics-luma).
 
 ## AI Fundamentals
 
