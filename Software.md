@@ -107,6 +107,46 @@ An open-source C++ framework with Python bindings (pyOpenMS) for mass-spectromet
 
 Project page: <https://openms.de/>. pyOpenMS docs: <https://pyopenms.readthedocs.io/>.
 
+### [MZmine 3](https://mzmine.github.io/)
+
+A modular, open-source platform for LC-MS / GC-MS / IMS-MS data processing, maintained by the Pluskal lab (University of Münster) and the international MZmine consortium. Schmid et al. 2023 (*Nat Biotech*) describes the v3 release with multimodal MS support (LC-MS, IMS-MS, MS-imaging). Provides feature detection, alignment, gap-filling, MS/MS networking integrations (GNPS / FBMN, SIRIUS), and a CLI for batch processing. Standard preprocessor for flavor and natural-products metabolomics workflows.
+
+Source: <https://github.com/mzmine/mzmine>.
+
+### [MS-DIAL](http://prime.psc.riken.jp/compms/msdial/main.html)
+
+A standalone Windows tool for DIA / DDA MS/MS spectral deconvolution and metabolite / lipid annotation, developed by Tsugawa et al. at RIKEN (Tsugawa et al. 2015, *Nat Methods*; the 2020 *Nat Biotech* lipidomics atlas paper extended MS-DIAL 4 to lipid identification). The de-facto standard for GC-MS deconvolution in flavor and food chemistry labs; ships with extensive built-in spectral libraries.
+
+Source: <https://github.com/systemsomicslab/MsdialWorkbench>.
+
+### [XCMS](https://github.com/sneumann/xcms)
+
+The most-cited R / Bioconductor package for LC-MS / GC-MS metabolomics preprocessing, originally Smith et al. 2006 (*Anal Chem*) and continuously maintained since. Provides nonlinear retention-time alignment, peak picking, grouping, and gap-filling — the analytical workhorse of many academic metabolomics pipelines including the Galaxy-based Workflow4Metabolomics platform.
+
+Bioconductor: <https://bioconductor.org/packages/xcms/>.
+
+### [ProteoWizard / msconvert](https://proteowizard.sourceforge.io/)
+
+A cross-platform C++ library and command-line toolkit for mass-spectrometry data conversion and analysis, maintained by the Mallick lab at Stanford and an international community (Chambers et al. 2012, *Nat Biotech*). The `msconvert` utility is the universal first step in essentially every open MS pipeline — converting vendor-locked binary formats (.RAW, .D, .lcd, .wiff) to open standards (mzML, mzXML, MGF) so downstream tools can ingest the data.
+
+Source: <https://github.com/ProteoWizard/pwiz>.
+
+### [SIRIUS + CSI:FingerID](https://bio.informatik.uni-jena.de/software/sirius/)
+
+Java application for in-silico molecular formula determination and structure annotation from MS/MS spectra, maintained by the Böcker lab (University of Jena). SIRIUS 4 (Dührkop et al. 2019, *Nat Methods*) integrates fragmentation-tree-based formula prediction, CSI:FingerID for structure database search, CANOPUS for compound-class prediction, and COSMIC for confidence scoring. Standard tool for de-novo annotation in untargeted metabolomics and natural-products work.
+
+Source: <https://github.com/boecker-lab/sirius>.
+
+### [MetFrag](https://ipb-halle.github.io/MetFrag/)
+
+In-silico fragmenter for MS/MS-based compound identification, originally Wolf et al. 2010 (*BMC Bioinformatics*) and substantially revised in MetFrag Relaunched (Ruttkies et al. 2016, *J Cheminform*). Scores candidate structures from compound databases (PubChem, ChemSpider, KEGG) against measured fragmentation spectra. Integrated into many metabolomics workflows including nf-core/metaboigniter and Workflow4Metabolomics.
+
+Source: <https://github.com/c-ruttkies/MetFragRelaunched>.
+
+### [MS2Query](https://github.com/iomega/ms2query)
+
+A machine-learning-based mass-spectral analogue search tool from the iomega consortium (de Jonge et al. 2023, *Nat Comms*). Uses Spec2Vec and MS2DeepScore embeddings to find spectral analogues in reference libraries, including for compounds without exact matches — directly addressing the long-tail "unknown unknowns" problem in flavor and natural-products metabolomics.
+
 ### [ropls](http://bioconductor.org/packages/ropls/)
 
 An R package on Bioconductor implementing PCA, PLS, OPLS, and OPLS-DA for chemometric analysis of metabolomics and other -omics data (Thévenot et al. 2015, *J Proteome Res*). Provides the multivariate engine in the Workflow4Metabolomics Galaxy platform and is widely used in flavor / sensory metabolomics for sensory-instrumental correlation, biomarker discovery, and quality-control modeling. See also [`ropls` in the K-Dense-AI scientific-agent-skills collection](https://github.com/K-Dense-AI/scientific-agent-skills) for an agent-callable wrapper.
