@@ -27,3 +27,16 @@ Educational playlists for wet-lab researchers — biologists, biochemists, biopr
 * [Neural Networks / Deep Learning](https://www.youtube.com/playlist?list=PLblh5JKOoLUIxGDQs4LFFD--41Vzf-ME1) — neural network fundamentals through transformer architecture (the foundation of ChatGPT and modern LLMs).
 * [AI Models Explained](https://www.youtube.com/playlist?list=PLOspHqNVtKAC-FUNMq8qjYVw6_semZHw0) — overview of common AI model architectures and where each is used.
 * [AI Agents Explained](https://www.youtube.com/playlist?list=PLOspHqNVtKAB6AzNie7BrFhbg4dv4Gfz8) — overview of AI agent systems; pairs naturally with the LLMs / AI Agents row in [Papers.md](./Papers.md) and the AI Agents & Foundation Models section in [Software.md](./Software.md).
+
+## Cellular Agriculture Field Overviews
+
+Introductory primers, industry-state reports, and field overviews — curated for AI / ML researchers approaching cellular agriculture from the computer-science side. These are starting points for understanding the science, the commercial landscape, and the people doing the work; once you have the field context, the AI × cell-ag work catalogued throughout the rest of this library becomes much more navigable. (Wet-lab researchers approaching AI from the biology side should see the complementary [AI Fundamentals](#ai-fundamentals) section above.)
+
+The Good Food Institute (GFI) publishes the de-facto annual *State of the Industry* reports across three tracks (cultivated, fermentation, plant-based); full PDFs and supplementary data are at GFI's [State of the Industry downloads page](https://gfi.org/resource/state-of-the-industry-downloads/).
+
+* [Introduction to Cellular Agriculture](https://www.youtube.com/watch?v=-0eap5cg6mE) (TUCCA — Tufts University Center for Cellular Agriculture) — primer covering the science, motivation, and current state of the field.
+* [Fireside Chat: Bruce Friedrich and David Kaplan](https://www.youtube.com/watch?v=59NrhsHQT0U) (Tufts Future Food Innovation Day, 2026) — conversation between the GFI founder and the TUCCA / Tufts cell-ag program lead on the field's direction.
+* [MEAT by Bruce Friedrich](https://meatbook.org/) — book by GFI's founder covering the case for cellular agriculture and alternative proteins.
+* [2026 State of the Industry: Cultivated meat, seafood, and ingredients](https://www.youtube.com/watch?v=F1s702taM5o) (GFI, 2026).
+* [2026 State of the Industry: Fermentation for meat, seafood, eggs, dairy, and ingredients](https://www.youtube.com/watch?v=eCBclCUZOg0) (GFI, 2026).
+* [2026 State of the Industry: Plant-based meat, seafood, eggs, dairy, and ingredients](https://www.youtube.com/watch?v=OEuehZB7YVM) (GFI, 2026).
