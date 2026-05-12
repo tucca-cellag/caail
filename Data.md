@@ -206,7 +206,9 @@ FlavorDB is a comprehensive database of flavor molecules developed by the Comple
 
 ### [BitterDB](https://bitterdb.agri.huji.ac.il/)
 
-BitterDB is a curated database of bitter compounds and bitter taste receptors (T2Rs), maintained at the Hebrew University of Jerusalem (Niv group). Contains hundreds of compounds with chemical properties, sources, and human T2R-binding data; companion tools (BitterPredict, BitterX) leverage the data for predictive modeling. For cellular agriculture and alt-protein work, BitterDB is essential for identifying and predicting bitter off-flavors — a primary sensory barrier in plant-based protein products and a potential concern in cultivated tissues with elevated metabolite content.
+BitterDB is a curated database of bitter compounds and bitter taste receptors (T2Rs), maintained at the Hebrew University of Jerusalem (Niv group). Contains hundreds of compounds with chemical properties, sources, and human T2R-binding data; companion tools (BitterPredict, BitterMatch, BitterMasS) leverage the data for predictive modeling. For cellular agriculture and alt-protein work, BitterDB is essential for identifying and predicting bitter off-flavors — a primary sensory barrier in plant-based protein products and a potential concern in cultivated tissues with elevated metabolite content.
+
+Canonical references: [Papers.md #99](./Papers.md#99) (Wiener et al. 2012, *NAR*) for the original release; [Papers.md #100](./Papers.md#100) (Dagan-Wiener et al. 2019, *NAR*) for the 2019 update; [Papers.md #101](./Papers.md#101) (Ziaikin et al. 2025, *NAR*) for the 2024 update. Related ML / analytical papers from the same group are in matrix [refs #102](./Papers.md#102), [#103](./Papers.md#103), [#104](./Papers.md#104), [#105](./Papers.md#105) and Sensory & Flavor Reference Work [ref #106](./Papers.md#106).
 
 ### [Pherobase](https://www.pherobase.com/)
 
