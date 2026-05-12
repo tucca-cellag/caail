@@ -211,3 +211,23 @@ BitterDB is a curated database of bitter compounds and bitter taste receptors (T
 ### [Pherobase](https://www.pherobase.com/)
 
 A comprehensive database of insect and animal pheromones, semiochemicals, and other behaviorally active compounds, maintained by Ashraf El-Sayed. Contains tens of thousands of compounds with biological activity, taxonomic distribution, and analytical data (GC retention indices, mass spectra). For cellular agriculture, Pherobase has indirect but useful relevance — many flavor-active compounds in meat / dairy / fish are downstream of pheromonal or species-specific biochemistry, and the database serves as a reference for distinguishing odor compounds that evolved for animal-animal signaling versus those that drive food-grade flavor perception.
+
+### [Flavornet](https://www.flavornet.org/)
+
+Flavornet, maintained at Cornell by Acree and Arn, is a database of GC olfactometry (GC-O) results — compound identities keyed to Kováts retention indices on standard GC columns plus consensus odor descriptors from sensory panels. The original open-access reference for matching sniff-port observations to molecular identities in GC-O work. For cellular agriculture, Flavornet is the canonical lookup table for connecting volatile compounds detected in cultivated tissues, fermented alt-protein products, and spent media to their human-perceived odor profiles.
+
+### [The Good Scents Company](https://www.thegoodscentscompany.com/)
+
+A long-established industry reference platform for the flavor, fragrance, food, and cosmetics industries, providing odor descriptors, organoleptic properties, regulatory status, and supplier information for thousands of aroma chemicals and natural extracts. While maintained by the F&F industry rather than as an academic resource, GoodScents is widely cross-referenced in flavor research papers and is the de-facto industry-standard descriptor source for many compounds not formally characterized in academic odor-threshold compendia.
+
+## Agricultural Literature Repositories
+
+Free open-access search platforms for agricultural research literature — useful for cellular agriculture as context resources covering animal nutrition, feed-stream economics, livestock genetics, food technology regulation, and broader agricultural science that intersects with cell-ag at the technology / commercial / regulatory boundary.
+
+### [AGRIS (FAO)](https://agris.fao.org/)
+
+AGRIS is the United Nations Food and Agriculture Organization's global agricultural research index, providing access to over 12 million bibliographic records covering food, agriculture, environment, and rural development since 1970. Each record includes title, authors, abstract, subject keywords (drawn from the multilingual AGROVOC ontology), and full-text links where available. For cellular agriculture, AGRIS is the most comprehensive free index for international agricultural research — useful for feed formulation, plant-based media components, livestock nutrition, and crop-genomics work that intersects with cell-ag.
+
+### [USDA National Agricultural Library Search](https://search.nal.usda.gov/)
+
+The National Agricultural Library Search is the USDA's federated search platform across its digital collections, including PubAg (agricultural research literature), the NAL Catalog, and other USDA-curated resources. For cellular agriculture, NAL Search is the canonical entry point for USDA-funded research on animal nutrition, feed efficiency, livestock genetics, food technology, and food safety — relevant context for cultivated-meat scaling economics, regulatory engagement, and feed-stream cost analysis. Free open access; AGRICOLA-derived records are included alongside open-access NAL collections.
