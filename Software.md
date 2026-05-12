@@ -255,6 +255,18 @@ Not an MCP server but a documentation-and-prompt-context layer that pairs well w
 
 Project page: <https://k-dense.ai>.
 
+### [Superpowers](https://github.com/obra/superpowers)
+
+Summary: An agentic skills framework and software-development methodology authored by Jesse "obra" Vincent (`obra/superpowers`) — one of the most-starred Claude Code skill collections. Provides domain-agnostic skills for planning, debugging, code review, and execution that compose cleanly with cell-ag-specific skill packs (e.g. [K-Dense-AI's scientific-agent-skills](#k-dense-ai)) when assembling an agent stack for a cell-ag lab. Shell-based, MIT-licensed.
+
+### [Skill Seekers](https://github.com/yusufkaraaslan/Skill_Seekers)
+
+Summary: A meta-tool that converts documentation websites, GitHub repositories, and PDFs into Claude AI skills with automatic conflict detection. The closest existing automation for the pattern an AI-augmented cell-ag lab needs as it scales: turn a new wet-lab protocol PDF, a new bioinformatics package's docs, or a new GitHub library's README into a Claude Code / Cursor skill that the lab's agents can call directly — without hand-curating each integration. Python, MIT-licensed.
+
+### [AI Research Skills Library](https://github.com/orchestra-research/AI-research-SKILLs)
+
+Summary: An open-source library of AI research and engineering skills covering vLLM, Megatron, GRPO, HuggingFace, and the broader LLM training and serving stack — maintained by [Orchestra Research](https://github.com/orchestra-research). Designed to package skills into Claude Code, Codex, or Gemini agents so they operate as fully-equipped AI research agents. Cell-ag teams building or fine-tuning their own biology foundation models (cf. [TranscriptFormer](#transcriptformer)) or running large-scale agentic workflows can pull from this library for the ML-training and serving infrastructure layer rather than reinventing it. MIT-licensed.
+
 ### [Seqera AI / Co-Scientist](https://docs.seqera.io/platform-cloud/seqera-ai/)
 
 Summary: Seqera Cloud's AI assistant for bioinformatics workflows, providing an interactive co-scientist that helps users author and debug Nextflow pipelines, query workflow run data, and interpret results. Accessible through the Seqera CLI and Seqera Platform; no companion paper at time of curation.
