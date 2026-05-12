@@ -72,6 +72,8 @@ Methodological infrastructure for evaluating AI agents — sequential hypothesis
 - [#55 E-valuator](../Papers.md#55) (Sadhuka et al. 2025) — reliable agent verifiers with sequential hypothesis testing.
 - [#89 AssayBench](../Papers.md#89) (Brouwer et al. 2026) — assay-level virtual-cell benchmark for LLMs and agents.
 - [#108 BixBench](../Papers.md#108) (Mitchener et al. 2025, FutureHouse) — comprehensive benchmark for LLM-based agents in computational biology spanning 50+ real-world bioinformatics scenarios; the closest existing eval suite for measuring autonomous bioinformatics workflow execution.
+- [#109 MassSpecGym](../Papers.md#109) (Bushuiev et al. 2024, NeurIPS Spotlight, Pluskal lab) — benchmark for the discovery and identification of molecules from MS/MS spectra; directly relevant to the cell-ag sensomics workflow as the substrate for ML-based flavor-compound identification.
+- [#110 PubChem LLM Retrieval Eval](../Papers.md#110) (Sze & Hassoun 2024, *Bioinformatics Advances*, Tufts) — evaluation of search-enabled pretrained LLMs on retrieval tasks for the PubChem database; benchmarks how reliably agents can pull structured chemical metadata into downstream cell-ag workflows.
 
 ## Agent Infrastructure (Frameworks, KGs, Protocols)
 

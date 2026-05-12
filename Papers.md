@@ -19,7 +19,7 @@ This document presents the core research papers at the intersection of Cellular 
 | [Chemistry / Synthesis Agents](./ResearchAreas/AITooling.md#chemistry--synthesis-agents) | | | | | | [70](#70),[71](#71) |
 | [Domain-Specific Biomedical Agents](./ResearchAreas/AITooling.md#domain-specific-biomedical-agents) | | [90](#90),[93](#93),[97](#97) | | | | [43](#43),[50](#50),[51](#51),[54](#54),[56](#56),[66](#66),[68](#68),[69](#69) |
 | [Robot Scientists & Lab Automation](https://en.wikipedia.org/wiki/Robot_scientist) | | | [61](#61),[62](#62) | | | [64](#64),[65](#65) |
-| [Benchmarks & Evaluation Frameworks](./ResearchAreas/AITooling.md#benchmarks--evaluation-frameworks) | | | | | | [55](#55),[89](#89),[108](#108) |
+| [Benchmarks & Evaluation Frameworks](./ResearchAreas/AITooling.md#benchmarks--evaluation-frameworks) | | | | | | [55](#55),[89](#89),[108](#108),[109](#109),[110](#110) |
 | [Agent Infrastructure (Frameworks, KGs, Protocols)](./ResearchAreas/AITooling.md#agent-infrastructure-frameworks-kgs-protocols) | | | | | | [41](#41),[48](#48),[67](#67) |
 
 
@@ -250,6 +250,12 @@ This document presents the core research papers at the intersection of Cellular 
 <a id="108">108</a> Mitchener, L., Laurent, J. M., Andonian, A., Tenmann, B., Narayanan, S., Wellawatte, G. P., White, A. D., Sani, L., & Rodriques, S. G. (2025). *BixBench: a Comprehensive Benchmark for LLM-based Agents in Computational Biology.* arXiv. https://doi.org/10.48550/arXiv.2503.00096
 
 > **Code**: https://github.com/Future-House/BixBench
+
+<a id="109">109</a> Bushuiev, R., Bushuiev, A., de Jonge, N. F., Young, A., Kretschmer, F., Samusevich, R., Heirman, J., Wang, F., Zhang, L., Dührkop, K., Ludwig, M., Haupt, N. A., Kalia, A., Brungs, C., Schmid, R., Greiner, R., Wang, B., Wishart, D. S., Liu, L.-P., Rousu, J., Bittremieux, W., Rost, H., Mak, T. D., Hassoun, S., Huber, F., van der Hooft, J. J. J., Stravs, M. A., Böcker, S., Sivic, J., & Pluskal, T. (2024). *MassSpecGym: A benchmark for the discovery and identification of molecules.* arXiv (NeurIPS 2024 Spotlight). https://doi.org/10.48550/arXiv.2410.23326
+
+> **Code**: https://github.com/pluskal-lab/MassSpecGym
+
+<a id="110">110</a> Sze, A., & Hassoun, S. (2024). Evaluation of search-enabled pretrained Large Language Models on retrieval tasks for the PubChem database. *Bioinformatics Advances, 5*(1), vbaf064. https://doi.org/10.1093/bioadv/vbaf064
 
 ## Sensory & Flavor Reference Work
 
