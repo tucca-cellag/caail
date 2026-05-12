@@ -4,7 +4,7 @@ This document presents the core research papers at the intersection of Cellular 
 | | [Media Optimization](./ResearchAreas/MediaOptimization.md) | [Cellular Engineering](./ResearchAreas/CellEngineering.md) | [Bioprocess control](./ResearchAreas/Bioprocess.md) | [Scaffolding](./ResearchAreas/Scaffolding.md)  | [Sensory Prediction](./ResearchAreas/SensoryPrediction.md) | [AI Tooling / Methodology](./ResearchAreas/AITooling.md) |
 |---|---|---|---|---|---|---|
 | [Bayesian Optimization](https://en.wikipedia.org/wiki/Bayesian_optimization) | [2](#2),[3](#3),[15](#15),[16](#16),[18](#18),[58](#58) | [16](#16) | [59](#59) | | | |
-| [Deep Learning](https://en.wikipedia.org/wiki/Deep_learning) | [1](#1),[15](#15),[17](#17),[18](#18) | [4](#4),[5](#5),[6](#6),[57](#57),[60](#60) | [7](#7) | [20](#20),[35](#35) | | |
+| [Deep Learning](https://en.wikipedia.org/wiki/Deep_learning) | [1](#1),[15](#15),[17](#17),[18](#18) | [4](#4),[5](#5),[6](#6),[57](#57),[60](#60),[92](#92) | [7](#7) | [20](#20),[35](#35) | | [91](#91) |
 | [GNN](https://en.wikipedia.org/wiki/Graph_neural_network) | | [8](#8),[12](#12),[13](#13)| | | [14](#14),[36](#36) | [52](#52) |
 | [CNN](https://en.wikipedia.org/wiki/Convolutional_neural_network) | | | [29](#29), [33](#33) | [19](#19) | [11](#11),[26](#26) | |
 | [GAN](https://en.wikipedia.org/wiki/Generative_adversarial_network) / [VAE](https://en.wikipedia.org/wiki/Variational_autoencoder) | | [9](#9),[10](#10) | | | [11](#11) | |
@@ -13,7 +13,7 @@ This document presents the core research papers at the intersection of Cellular 
 | [Ensemble Learning](https://en.wikipedia.org/wiki/Ensemble_learning) | | | | | [27](#27),[72](#72),[80](#80) | |
 | [K-Nearest Neighbors](https://en.wikipedia.org/wiki/K-nearest_neighbors_algorithm) | | | | | [28](#28) | |
 | [Active Learning](https://en.wikipedia.org/wiki/Active_learning_(machine_learning)) | [23](#23),[24](#24),[25](#25),[58](#58) | | | | | [63](#63) |
-| [LLMs](https://en.wikipedia.org/wiki/Large_language_model) / [AI Agents](https://en.wikipedia.org/wiki/Intelligent_agent) | | | [61](#61),[62](#62) | | | [40](#40),[41](#41),[42](#42),[43](#43),[44](#44),[45](#45),[46](#46),[47](#47),[48](#48),[49](#49),[50](#50),[51](#51),[53](#53),[54](#54),[55](#55),[56](#56),[64](#64),[65](#65),[66](#66),[67](#67),[68](#68),[69](#69),[70](#70),[71](#71) |
+| [LLMs](https://en.wikipedia.org/wiki/Large_language_model) / [AI Agents](https://en.wikipedia.org/wiki/Intelligent_agent) | | [90](#90) | [61](#61),[62](#62) | | | [40](#40),[41](#41),[42](#42),[43](#43),[44](#44),[45](#45),[46](#46),[47](#47),[48](#48),[49](#49),[50](#50),[51](#51),[53](#53),[54](#54),[55](#55),[56](#56),[64](#64),[65](#65),[66](#66),[67](#67),[68](#68),[69](#69),[70](#70),[71](#71),[88](#88),[89](#89) |
 
 
 ## References
@@ -205,6 +205,16 @@ This document presents the core research papers at the intersection of Cellular 
 > **Code**: https://github.com/Resende-Lab/metabolomic_selection_for_enhanced_fruit_flavor
 
 <a id="80">80</a> Keller, A., Gerkin, R. C., Guan, Y., Dhurandhar, A., Turu, G., Szalai, B., Mainland, J. D., Ihara, Y., Yu, C. W., Wolfinger, R., Vens, C., Schietgat, L., De Grave, K., Norel, R., DREAM Olfaction Prediction Consortium, Stolovitzky, G., Cecchi, G. A., Vosshall, L. B., & Meyer, P. (2017). Predicting human olfactory perception from chemical features of odor molecules. *Science, 355*(6327), 820–826. https://doi.org/10.1126/science.aal2014
+
+<a id="88">88</a> Su, Y., Chen, J., Jiang, Z., Zhong, Z., Wang, L., Liu, Q., & Zhang, Z. (2026). *SpectraLLM: Uncovering the Ability of LLMs for Molecular Structure Elucidation from Multi-Spectral Data.* arXiv. https://doi.org/10.48550/arXiv.2508.08441
+
+<a id="89">89</a> Brouwer, E., Edwards, C., Wu, A., Collier, J., Heimberg, G., Li, X., Subramaniam, M., Hajiramezanali, E., Richmond, D., Hütter, J., Mostafavi, S., & Scalia, G. (2026). *AssayBench: An Assay-Level Virtual Cell Benchmark for LLMs and Agents.* arXiv. https://doi.org/10.48550/arXiv.2605.10876
+
+<a id="90">90</a> Yu, X., Yang, Y., Liu, Q., Du, Y., McSweeney, S., & Lin, Y. (2026). *GenCellAgent: Generalizable, Training-Free Cellular Image Segmentation via Large Language Model Agents.* arXiv. https://doi.org/10.48550/arXiv.2510.13896
+
+<a id="91">91</a> Ding, Y., Qiang, B., Li, S., Zhou, Y., Yu, J., Li, Q., Shi, C., Zhang, L., Wang, Y., Zheng, N., & Liu, Z. (2026). Pretraining a foundation model for small-molecule natural products. *Nature Machine Intelligence*. https://doi.org/10.1038/s42256-026-01226-8
+
+<a id="92">92</a> Pearce, J., Simmonds, S., Mahmoudabadi, G., Krishnan, L., Palla, G., Istrate, A., Tarashansky, A., Nelson, B., Valenzuela, O., Li, D., Quake, S., & Karaletsos, T. (2026). TranscriptFormer: A generative cell atlas across 1.5 billion years of evolution. *Science*. https://doi.org/10.1126/science.aec8514
 
 ## Sensory & Flavor Reference Work
 
