@@ -151,9 +151,21 @@ A machine-learning-based mass-spectral analogue search tool from the iomega cons
 
 An R package on Bioconductor implementing PCA, PLS, OPLS, and OPLS-DA for chemometric analysis of metabolomics and other -omics data (Thévenot et al. 2015, *J Proteome Res*). Provides the multivariate engine in the Workflow4Metabolomics Galaxy platform and is widely used in flavor / sensory metabolomics for sensory-instrumental correlation, biomarker discovery, and quality-control modeling. See also [`ropls` in the K-Dense-AI scientific-agent-skills collection](https://github.com/K-Dense-AI/scientific-agent-skills) for an agent-callable wrapper.
 
+### [MetaboAnalyst](https://www.metaboanalyst.ca/)
+
+A comprehensive web-based and R-based platform for statistical, functional, and visual analysis of metabolomics data, maintained by the Xia lab at McGill in collaboration with the Wishart lab (current v6, Pang et al. 2024, *Nucleic Acids Research*). Provides modules for univariate / multivariate statistics, pathway enrichment, network analysis, biomarker discovery, time-series and dose-response analysis, plus a companion R package `MetaboAnalystR` for scripted workflows. The most-cited tool in food metabolomics applications; widely used for sensory-instrumental data analysis in flavor and off-flavor work.
+
 ## Workflow-Manager Pipelines
 
 Reproducible, container-based workflow-manager pipelines for omics and microbiome analysis — Nextflow / Snakemake / CWL / Galaxy. None of these are sensomics-specific, but each is a directly applicable preprocessing or microbiome layer for cultivated-meat spent-media, fermentation, or flavor-volatilome work. For containerized, reproducible cell-ag analytical pipelines, these are the upstream substrate that any sensomics-aware workflow would be built on.
+
+### [nf-core/metaboigniter](https://nf-co.re/metaboigniter)
+
+A community-curated Nextflow pipeline for untargeted LC-MS metabolomics preprocessing, identification, and analysis within the nf-core consortium. Provides a containerized, parameterizable chain from raw MS data through peak picking (XCMS, CAMERA), alignment, annotation (MetFrag, CSI:FingerID), and statistical analysis. The most directly applicable existing reproducible Nextflow pipeline for flavor and off-flavor metabolomics work in cell-ag contexts.
+
+### [Workflow4Metabolomics (W4M)](https://workflow4metabolomics.usegalaxy.fr/)
+
+A Galaxy-based collaborative research infrastructure for metabolomics, providing a large library of workflow modules for LC-MS, GC-MS, FIA-MS, and NMR preprocessing, identification, and statistical analysis (Giacomoni et al. 2015, *Bioinformatics*). Integrates XCMS, ropls, MetFrag, CAMERA, and many other established tools into a single web-based interface backed by French institutional compute (IFB), accessible without local installation. The closest "one-stop" reproducible food / flavor metabolomics platform; widely used in academic flavor metabolomics work.
 
 ### [UmetaFlow](https://github.com/biosustain/snakemake_UmetaFlow)
 
