@@ -151,6 +151,22 @@ A machine-learning-based mass-spectral analogue search tool from the iomega cons
 
 An R package on Bioconductor implementing PCA, PLS, OPLS, and OPLS-DA for chemometric analysis of metabolomics and other -omics data (Thévenot et al. 2015, *J Proteome Res*). Provides the multivariate engine in the Workflow4Metabolomics Galaxy platform and is widely used in flavor / sensory metabolomics for sensory-instrumental correlation, biomarker discovery, and quality-control modeling. See also [`ropls` in the K-Dense-AI scientific-agent-skills collection](https://github.com/K-Dense-AI/scientific-agent-skills) for an agent-callable wrapper.
 
+## Workflow-Manager Pipelines
+
+Reproducible, container-based workflow-manager pipelines for omics and microbiome analysis — Nextflow / Snakemake / CWL / Galaxy. None of these are sensomics-specific, but each is a directly applicable preprocessing or microbiome layer for cultivated-meat spent-media, fermentation, or flavor-volatilome work. For containerized, reproducible cell-ag analytical pipelines, these are the upstream substrate that any sensomics-aware workflow would be built on.
+
+### [UmetaFlow](https://github.com/biosustain/snakemake_UmetaFlow)
+
+A Snakemake workflow for untargeted LC-MS/MS metabolomics, maintained by the Biosustain group at DTU (Kontou et al. 2023, *J Cheminform*). Wraps MZmine 3, SIRIUS, GNPS / FBMN, and Ion Identity Molecular Networking (IIMN) into a containerized, parameterizable pipeline that produces feature tables, annotations, and molecular networks from raw MS data. Closest existing Snakemake pipeline that flavor-metabolomics work can build on.
+
+### [nf-core/ampliseq](https://nf-co.re/ampliseq)
+
+A community-curated Nextflow pipeline for amplicon sequencing analysis (16S, 18S, ITS) within the nf-core consortium (Straub et al. 2020). Provides a full preprocessing + ASV-calling + taxonomic-assignment + diversity-analysis chain (Cutadapt → DADA2 → QIIME 2 → Picrust2) suitable for microbiome work in fermented foods, fermentation-based alt-protein, and the microbial communities relevant to cultivated-meat bioreactors. Routinely used for the microbiome arm of multi-omics flavor studies.
+
+### [nf-core/mag](https://nf-co.re/mag)
+
+A community-curated Nextflow pipeline for shotgun metagenomic assembly and binning (Krakau et al. 2022, *NAR Genomics and Bioinformatics*). Produces metagenome-assembled genomes (MAGs) with quality control, taxonomic classification, and functional annotation — the analytical complement to ampliseq for higher-resolution microbial-community profiling. Relevant to cultivated-meat work involving complex bioreactor microbiomes, scaffold biofilms, or fermentation co-culture analysis.
+
 ## AI Agents & Foundation Models
 
 This section catalogs general-purpose AI infrastructure — agent frameworks, foundation models for biology, and tool ecosystems — that can be applied across cellular agriculture problems. See also the `AI Tooling / Methodology` column in [Papers.md](./Papers.md) for the research papers describing these systems.
