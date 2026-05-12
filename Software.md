@@ -147,6 +147,14 @@ Source: <https://github.com/c-ruttkies/MetFragRelaunched>.
 
 A machine-learning-based mass-spectral analogue search tool from the iomega consortium (de Jonge et al. 2023, *Nat Comms*). Uses Spec2Vec and MS2DeepScore embeddings to find spectral analogues in reference libraries, including for compounds without exact matches — directly addressing the long-tail "unknown unknowns" problem in flavor and natural-products metabolomics.
 
+### [MS-FINDER](https://systemsomicslab.github.io/compms/msfinder/main.html)
+
+A standalone tool for in-silico compound identification from MS/MS spectra, developed by Tsugawa et al. at RIKEN as a companion to MS-DIAL. Combines isotope pattern matching, formula prediction, in-silico fragmentation, and database search against curated reference libraries (HMDB, FooDB, ChEBI, PubChem, KEGG) to score candidate structures. Widely used in untargeted flavor metabolomics for annotating unknown compounds from GC-MS / LC-MS spectra.
+
+### [GNPS](https://gnps.ucsd.edu/)
+
+The Global Natural Products Social Molecular Networking platform — a web-based MS/MS analysis platform from the Dorrestein lab at UCSD (Wang et al. 2016, *Nat Biotech*). Provides community-curated reference spectral libraries, Feature-Based Molecular Networking (FBMN), Ion Identity Molecular Networking (IIMN), and analog search via spectral similarity. Standard tool for compound annotation, dereplication, and pattern discovery in flavor and natural-products metabolomics workflows.
+
 ### [ropls](http://bioconductor.org/packages/ropls/)
 
 An R package on Bioconductor implementing PCA, PLS, OPLS, and OPLS-DA for chemometric analysis of metabolomics and other -omics data (Thévenot et al. 2015, *J Proteome Res*). Provides the multivariate engine in the Workflow4Metabolomics Galaxy platform and is widely used in flavor / sensory metabolomics for sensory-instrumental correlation, biomarker discovery, and quality-control modeling. See also [`ropls` in the K-Dense-AI scientific-agent-skills collection](https://github.com/K-Dense-AI/scientific-agent-skills) for an agent-callable wrapper.
@@ -154,6 +162,14 @@ An R package on Bioconductor implementing PCA, PLS, OPLS, and OPLS-DA for chemom
 ### [MetaboAnalyst](https://www.metaboanalyst.ca/)
 
 A comprehensive web-based and R-based platform for statistical, functional, and visual analysis of metabolomics data, maintained by the Xia lab at McGill in collaboration with the Wishart lab (current v6, Pang et al. 2024, *Nucleic Acids Research*). Provides modules for univariate / multivariate statistics, pathway enrichment, network analysis, biomarker discovery, time-series and dose-response analysis, plus a companion R package `MetaboAnalystR` for scripted workflows. The most-cited tool in food metabolomics applications; widely used for sensory-instrumental data analysis in flavor and off-flavor work.
+
+### [mixOmics](https://mixomics.org/)
+
+An R / Bioconductor package for the integration and exploration of single- and multi-omics datasets, maintained by the Le Cao group (University of Melbourne) (Rohart et al. 2017, *PLOS Computational Biology*). Implements PCA, PLS, sparse PLS-DA, and the **DIABLO** method for multi-block supervised classification across heterogeneous data blocks. The methodological standard for fusing sensory panel scores, instrumental volatilome / non-volatilome data, and microbiome / -omics layers — directly applicable to multi-omics flavor and cell-ag quality-prediction work.
+
+### [SensoMineR](https://cran.r-project.org/web/packages/SensoMineR/index.html)
+
+A food-specific R package for the analysis of sensory data, maintained by the Le and Husson group at Agrocampus Ouest (Lê & Husson 2008, *J Sensory Studies*). Implements QDA, napping, sorted napping, projective mapping, preference mapping, and panel performance diagnostics; built on top of FactoMineR. The de-facto open-source tool for descriptive-analysis sensory panel data in academic food science, including alt-protein flavor benchmarking.
 
 ## Workflow-Manager Pipelines
 
