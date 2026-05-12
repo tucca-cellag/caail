@@ -13,7 +13,7 @@ This document presents the core research papers at the intersection of Cellular 
 | [Ensemble Learning](https://en.wikipedia.org/wiki/Ensemble_learning) | | | | | [27](#27),[72](#72),[80](#80) | |
 | [K-Nearest Neighbors](https://en.wikipedia.org/wiki/K-nearest_neighbors_algorithm) | | | | | [28](#28) | |
 | [Active Learning](https://en.wikipedia.org/wiki/Active_learning_(machine_learning)) | [23](#23),[24](#24),[25](#25),[58](#58) | | | | | [63](#63) |
-| [LLMs](https://en.wikipedia.org/wiki/Large_language_model) / [AI Agents](https://en.wikipedia.org/wiki/Intelligent_agent) | | [90](#90) | [61](#61),[62](#62) | | | [40](#40),[41](#41),[42](#42),[43](#43),[44](#44),[45](#45),[46](#46),[47](#47),[48](#48),[49](#49),[50](#50),[51](#51),[53](#53),[54](#54),[55](#55),[56](#56),[64](#64),[65](#65),[66](#66),[67](#67),[68](#68),[69](#69),[70](#70),[71](#71),[88](#88),[89](#89) |
+| [LLMs](https://en.wikipedia.org/wiki/Large_language_model) / [AI Agents](https://en.wikipedia.org/wiki/Intelligent_agent) | | [90](#90),[93](#93),[97](#97) | [61](#61),[62](#62) | | | [40](#40),[41](#41),[42](#42),[43](#43),[44](#44),[45](#45),[46](#46),[47](#47),[48](#48),[49](#49),[50](#50),[51](#51),[53](#53),[54](#54),[55](#55),[56](#56),[64](#64),[65](#65),[66](#66),[67](#67),[68](#68),[69](#69),[70](#70),[71](#71),[88](#88),[89](#89),[94](#94),[95](#95),[96](#96),[98](#98) |
 
 
 ## References
@@ -215,6 +215,22 @@ This document presents the core research papers at the intersection of Cellular 
 <a id="91">91</a> Ding, Y., Qiang, B., Li, S., Zhou, Y., Yu, J., Li, Q., Shi, C., Zhang, L., Wang, Y., Zheng, N., & Liu, Z. (2026). Pretraining a foundation model for small-molecule natural products. *Nature Machine Intelligence*. https://doi.org/10.1038/s42256-026-01226-8
 
 <a id="92">92</a> Pearce, J., Simmonds, S., Mahmoudabadi, G., Krishnan, L., Palla, G., Istrate, A., Tarashansky, A., Nelson, B., Valenzuela, O., Li, D., Quake, S., & Karaletsos, T. (2026). TranscriptFormer: A generative cell atlas across 1.5 billion years of evolution. *Science*. https://doi.org/10.1126/science.aec8514
+
+<a id="93">93</a> Tang, X., Yu, Z., Chen, J., Cui, Y., Shao, D., Wang, W., Wu, F., Zhuang, Y., Shi, W., Huang, Z., Cohan, A., Lin, X., Theis, F., Krishnaswamy, S., & Gerstein, M. (2026). *CellForge: Agentic Design of Virtual Cell Models.* arXiv. https://doi.org/10.48550/arXiv.2508.02276
+
+> **Code**: https://github.com/gersteinlab/CellForge
+
+<a id="94">94</a> Pickard, J., Prakash, R., Choi, M., Oliven, N., Stansbury, C., Cwycyshyn, J., Galioto, N., Gorodetsky, A., Velasquez, A., & Rajapakse, I. (2025). Automatic biomarker discovery and enrichment with BRAD. *Bioinformatics, 41*, btaf159. https://doi.org/10.1093/bioinformatics/btaf159
+
+> **Code**: https://github.com/Jpickard1/BRAD
+
+<a id="95">95</a> Riffle, D., Shirooni, N., He, C., Murali, M., Nayak, S., Gopalan, R., & Lopez, D. (2025). *OLAF: An Open Life Science Analysis Framework for Conversational Bioinformatics Powered by Large Language Models.* arXiv. https://doi.org/10.48550/arXiv.2504.03976
+
+<a id="96">96</a> Jin, R., Zhang, Z., Wang, M., & Cong, L. (2025). *STELLA: Self-Evolving LLM Agent for Biomedical Research.* arXiv. https://doi.org/10.48550/arXiv.2507.02004
+
+<a id="97">97</a> Hao, M., Lee, Y., Wang, H., Scalia, G., & Regev, A. (2025). *PerTurboAgent: A Self-Planning Agent for Boosting Sequential Perturb-seq Experiments.* bioRxiv. https://doi.org/10.1101/2025.05.25.656020
+
+<a id="98">98</a> Dong, Z., Zhou, H., Jiang, Y., Zhong, V., & Lu, Y. (2024). *Simplifying bioinformatics data analysis through conversation* [BioMANIA]. bioRxiv. https://doi.org/10.1101/2023.10.29.564479
 
 ## Sensory & Flavor Reference Work
 
