@@ -104,6 +104,26 @@ BMDB is a comprehensive resource of metabolites found in beef cattle (*Bos tauru
 
 BRENDA (BRaunschweig ENzyme DAtabase) is the most comprehensive collection of enzyme information available, maintained at the Technische Universität Braunschweig, covering >90,000 enzyme entries with detailed kinetic parameters, substrate specificities, inhibitors, optimal reaction conditions, and reaction mechanisms aggregated from primary literature. Each entry provides Km, Vmax, Kcat, Ki, optimal pH and temperature, organism-specific variations, and links to associated metabolic pathways. For cellular agriculture, BRENDA is the canonical source of enzyme kinetic data needed for kinetic models of cell metabolism, flux-balance analysis of metabolic engineering interventions, and ML models predicting media component effects on metabolic flux. Programmatic access via the BRENDA SOAP API and downloadable text files for academic use.
 
+### [SMPDB (Small Molecule Pathway Database)](https://smpdb.ca/)
+
+SMPDB is the Wishart lab's curated database of small-molecule pathways, with over 600 interactive visual pathway maps spanning human metabolism, signaling, drug action, disease processes, and physiological functions. Each pathway entry provides labeled compounds, enzymes, transporters, and reactions in a custom interactive viewer, with links to HMDB / DrugBank / UniProt cross-references. For cellular agriculture, SMPDB serves as a visualization-rich complement to KEGG and Reactome for understanding the metabolic context of media supplements, growth factors, and signaling pathways relevant to cultivated cells. Free open access; data exportable as SBML, BioPAX, KGML, and PWML.
+
+### [BioCyc / MetaCyc](https://biocyc.org/)
+
+BioCyc is an SRI International–maintained collection of >20,000 organism-specific Pathway / Genome Databases (PGDBs), built on the MetaCyc reference pathway database. MetaCyc itself catalogs >3,000 experimentally elucidated metabolic pathways across all domains of life, with >18,000 reactions and >19,000 metabolites; BioCyc PGDBs extend this to specific organisms with computationally predicted pathways. For cellular agriculture, BioCyc is the canonical reference for non-mammalian metabolism — particularly the yeast and bacterial PGDBs used in precision-fermentation alt-protein work, and emerging livestock-species PGDBs that complement species-specific GEMs. MetaCyc is freely accessible at <https://metacyc.org/>; BioCyc has tiered access with substantial free use plus subscription-based bulk download.
+
+## Mass Spectrometry Spectral Databases
+
+Reference spectral data resources for compound identification in mass-spectrometry workflows — essential analytical infrastructure for flavor metabolomics, off-flavor characterization, and spent-media analysis in cultivated meat. Pair these databases with the MS preprocessing / annotation tools in [Software.md / Mass Spectrometry & Chemometrics](./Software.md#mass-spectrometry--chemometrics).
+
+### [MassBank](https://massbank.eu/)
+
+MassBank is the world's first open-access mass-spectrometry spectral database, hosted as a federation of European, Japanese, and US instances with >400,000 spectra contributed by >50 institutions. Each entry provides the recorded mass spectrum, instrumental parameters, fragmentation conditions, and the precursor compound identity (InChI, SMILES, structure). For cellular agriculture, MassBank is foundational reference data for identifying volatile and non-volatile metabolites in cultivated tissues, characterizing off-flavors, and analyzing spent media — particularly when paired with MS-DIAL, MZmine 3, or SIRIUS for automated annotation. Programmatic access via REST API; bulk records available via Git.
+
+### [NIST Chemistry WebBook](https://webbook.nist.gov/chemistry/)
+
+The US National Institute of Standards and Technology's reference compendium of chemistry data, covering >100,000 compounds with thermochemical data (heats of formation, enthalpies), gas chromatography retention indices, mass spectra, infrared / UV / NMR spectra, and ion energetics. For cellular agriculture, the NIST WebBook is the canonical reference for confirming media component identity via spectroscopic comparison (matching unknown GC-MS peaks against the NIST EI library is standard practice) and for thermodynamic calculations in metabolic engineering. Free open-web access; the bundled NIST 23 EI library (commercial) is the industry-standard companion for GC-MS workflows.
+
 ## Cell-Ag Species Metabolic Models (GEMs)
 
 A small but growing collection of genome-scale metabolic models (GEMs) for the species most relevant to cellular agriculture. GEMs are SBML-formatted reconstructions of an organism's metabolic network — every reaction, every metabolite, every gene-protein-reaction mapping — and are the input data structure for the constraint-based modeling tools listed in [Software.md / Metabolic Modeling & Strain Design](./Software.md#metabolic-modeling--strain-design). The cell-ag GEM ecosystem is currently fragmented across preprints, supplementary materials, and individual GitHub repos rather than centralized in any single database; this section is a curated inventory pending the emergence of a canonical home (BiGG Models currently hosts microbial GEMs but few of the cell-ag species below).
@@ -155,6 +175,22 @@ ChEMBL is a manually curated database of bioactive small molecules with drug-lik
 ### [PubChem](https://pubchem.ncbi.nlm.nih.gov/)
 
 PubChem is NIH's open chemistry database, the largest public repository of chemical structures and bioactivity data, hosting >120M compounds, >330M substances, and >1.4M bioassays. Each compound entry provides structure, computed physico-chemical properties, synonyms, classifications, biological activities, patents, literature references, and safety / toxicology information. For cellular agriculture, PubChem is the broadest practical reference for media components, supplements, and small-molecule modulators — including industrial-grade ingredients without the literature-grade coverage of ChEMBL. Programmatic access via the PubChem PUG REST API, PUG-View for richer record summaries, and SQL queries over the PubChem data warehouse.
+
+### [DrugBank](https://go.drugbank.com/)
+
+DrugBank is a comprehensive bioinformatics / cheminformatics resource maintained by the Wishart lab at the University of Alberta, cataloging >13,000 drug entries — including ~2,200 FDA-approved small molecules, ~340 FDA-approved biologics, ~93 nutraceuticals, and >5,000 experimental drugs — with detailed chemistry, pharmacology, pharmaceutical, and pharmacological-target data. For cellular agriculture, DrugBank is useful for identifying small-molecule alternatives to recombinant growth factors (many drug-like compounds modulate cell-signaling pathways relevant to differentiation and proliferation), for cross-referencing media supplements against known pharmacological activities, and as a sister resource to HMDB / BMDB / SMPDB in the Wishart-lab ecosystem. Programmatic access via REST API; downloads require academic registration.
+
+### [ChemSpider](https://www.chemspider.com/)
+
+ChemSpider is the Royal Society of Chemistry's free chemical structure search platform, aggregating ~88 million unique chemical structures from over 270 data sources including PubChem, ChEBI, FDA, EPA, vendor catalogs, and primary literature. Each entry provides identifiers (InChI, SMILES, CAS, IUPAC name), structure depiction, computed physicochemical properties, and source provenance. For cellular agriculture, ChemSpider serves as a comprehensive fallback when ChEMBL or PubChem don't cover a particular media component or flavor precursor — particularly useful for obscure natural products or vendor-specific compounds.
+
+### [ChEBI](https://www.ebi.ac.uk/chebi/)
+
+ChEBI (Chemical Entities of Biological Interest) is EMBL-EBI's curated ontology of biologically relevant chemical entities, with ~200,000 annotated compounds spanning metabolites, drugs, nutrients, and toxins. Each entry includes structures, ontological classifications (biological role, chemical class), cross-references to other databases, and contributor-curated literature. For cellular agriculture, ChEBI is the structured chemical ontology underlying many pathway databases (KEGG, Reactome, BioCyc), making it useful as a controlled vocabulary for annotating compound roles in cell-ag-relevant metabolic networks and for cross-database identifier mapping. Programmatic access via REST API and SOAP web services.
+
+### [T3DB (Toxin and Toxin-Target Database)](https://www.t3db.ca/)
+
+T3DB is the Wishart lab's curated database of toxic-exposome compounds, cataloging ~3,500 environmental contaminants, pollutants, industrial chemicals, and endogenous toxic metabolites along with their molecular targets and biological effects. Each entry provides chemical / physical properties, biological mechanism of action, toxicity references, and analytical methods of detection. For cellular agriculture, T3DB is useful for identifying potential off-flavor or off-odor compounds in cultivated tissues (some volatile toxins overlap with food chemistry — aldehydes, aromatic compounds, sulfides), for media-safety screening, and for understanding adulterant detection in regulatory contexts.
 
 ## Flavor & Taste Compound Databases
 
