@@ -217,6 +217,14 @@ Summary: An open-source AI-agent platform from VirtualPatientEngine targeting dr
 
 Docs: <https://virtualpatientengine.github.io/AIAgents4Pharma/>.
 
+### [BRAD](https://github.com/Jpickard1/BRAD)
+
+Summary: A bioinformatics-focused LLM agent (Bioinformatics Retrieval Augmented Digital Assistant) combining retrieval-augmented generation with bioinformatics tool orchestration. Targets automatic biomarker discovery, enrichment analysis, and general bioinformatics automation — patterns that map cleanly onto cell-ag tasks like cell-type marker discovery and pathway-enrichment analysis on cultivated-tissue scRNA-seq. Companion to [Papers.md ref #94](./Papers.md#94) (Pickard et al. 2025, *Bioinformatics*).
+
+### [CellForge](https://github.com/gersteinlab/CellForge)
+
+Summary: An agentic system for the design of virtual cell models from the [Gerstein lab](http://www.gersteinlab.org/) at Yale. Coordinates multiple LLM agents to plan, configure, and execute cell-modeling workflows — directly relevant to cell-ag for cell-type-specific virtual-cell pipelines that media-optimization, perturbation-response prediction, and bioprocess workflows can build on. Companion to [Papers.md ref #93](./Papers.md#93) (Tang et al. 2026).
+
 ### [AI Scientist](https://github.com/SakanaAI/AI-Scientist)
 
 Summary: Sakana AI's framework for fully automated open-ended scientific discovery via large language models, performing end-to-end idea generation, experimentation, and paper drafting. Version 2 ([SakanaAI/AI-Scientist-v2](https://github.com/SakanaAI/AI-Scientist-v2)) extends the system to workshop-level automated discovery via agentic tree search. Companion to Lu et al. 2024 ([Papers.md ref #45](./Papers.md#45)) and Yamada et al. 2025 ([Papers.md ref #47](./Papers.md#47)).
