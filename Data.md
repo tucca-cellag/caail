@@ -155,3 +155,19 @@ ChEMBL is a manually curated database of bioactive small molecules with drug-lik
 ### [PubChem](https://pubchem.ncbi.nlm.nih.gov/)
 
 PubChem is NIH's open chemistry database, the largest public repository of chemical structures and bioactivity data, hosting >120M compounds, >330M substances, and >1.4M bioassays. Each compound entry provides structure, computed physico-chemical properties, synonyms, classifications, biological activities, patents, literature references, and safety / toxicology information. For cellular agriculture, PubChem is the broadest practical reference for media components, supplements, and small-molecule modulators — including industrial-grade ingredients without the literature-grade coverage of ChEMBL. Programmatic access via the PubChem PUG REST API, PUG-View for richer record summaries, and SQL queries over the PubChem data warehouse.
+
+## Flavor & Taste Compound Databases
+
+Curated databases of flavor molecules, taste-active compounds, and odor descriptors — the analytical reference layer for sensomics work on cultivated meat, alt-protein flavor optimization, and any cell-ag effort that needs to map detected volatiles to known organoleptic properties.
+
+### [FlavorDB / FlavorDB2](https://cosylab.iiitd.edu.in/flavordb/)
+
+FlavorDB is a comprehensive database of flavor molecules developed by the Complex Systems Lab at IIIT-Delhi (Bagler group). The original release (Garg et al. 2018, *Nucleic Acids Research*) catalogued 25,595 flavor molecules across 936 ingredients, integrating data from FooDB, BitterDB, SuperSweet, and Flavornet. FlavorDB2 (Goel et al. 2024, *Journal of Food Science*) extends coverage with regulatory status, consumption statistics, taste/aroma threshold values, reported food uses, and synthesis pathways. For cellular agriculture, FlavorDB2 is a key reference for connecting volatile compounds detected in cultivated tissues (e.g., GC-MS of cultivated pork fat or salmonid muscle) to known flavor characteristics, organoleptic thresholds, and food applications.
+
+### [BitterDB](https://bitterdb.agri.huji.ac.il/)
+
+BitterDB is a curated database of bitter compounds and bitter taste receptors (T2Rs), maintained at the Hebrew University of Jerusalem (Niv group). Contains hundreds of compounds with chemical properties, sources, and human T2R-binding data; companion tools (BitterPredict, BitterX) leverage the data for predictive modeling. For cellular agriculture and alt-protein work, BitterDB is essential for identifying and predicting bitter off-flavors — a primary sensory barrier in plant-based protein products and a potential concern in cultivated tissues with elevated metabolite content.
+
+### [Pherobase](https://www.pherobase.com/)
+
+A comprehensive database of insect and animal pheromones, semiochemicals, and other behaviorally active compounds, maintained by Ashraf El-Sayed. Contains tens of thousands of compounds with biological activity, taxonomic distribution, and analytical data (GC retention indices, mass spectra). For cellular agriculture, Pherobase has indirect but useful relevance — many flavor-active compounds in meat / dairy / fish are downstream of pheromonal or species-specific biochemistry, and the database serves as a reference for distinguishing odor compounds that evolved for animal-animal signaling versus those that drive food-grade flavor perception.
