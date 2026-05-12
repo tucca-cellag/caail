@@ -229,6 +229,10 @@ Summary: An open-source retrieval-augmented generative agent for answering quest
 
 FutureHouse cookbook (docs): <https://futurehouse.gitbook.io/futurehouse-cookbook>. Commercial spinout — Edison Scientific: <https://edisonscientific.com/> ([docs](https://docs.edisonscientific.com)).
 
+### [BixBench](https://github.com/Future-House/BixBench)
+
+Summary: A comprehensive benchmark for LLM-based agents in computational biology, comprising 50+ real-world bioinformatics scenarios derived from peer-reviewed papers and their associated data and code. Released by [FutureHouse](https://www.futurehouse.org/) — the same lab behind PaperQA — to fill the gap in standardized evaluation for autonomous AI-driven bioinformatics discovery. Directly relevant to cell-ag as the AI-agent layer matures: BixBench is the closest existing evaluation suite for measuring whether agents can plan and execute multi-step bioinformatics workflows of the kind cell-ag teams increasingly delegate to LLM agents. Companion to [Papers.md ref #108](./Papers.md#108) (Mitchener et al. 2025).
+
 ### [K-Dense-AI](https://github.com/K-Dense-AI)
 
 K-Dense-AI is an AI co-scientist ecosystem combining a commercial agent platform ([K-Dense Web](https://k-dense.ai), which autonomously executes complex science / engineering / healthcare / finance tasks end-to-end) with a substantial open-source stack of agent infrastructure:

@@ -19,7 +19,7 @@ This document presents the core research papers at the intersection of Cellular 
 | [Chemistry / Synthesis Agents](./ResearchAreas/AITooling.md#chemistry--synthesis-agents) | | | | | | [70](#70),[71](#71) |
 | [Domain-Specific Biomedical Agents](./ResearchAreas/AITooling.md#domain-specific-biomedical-agents) | | [90](#90),[93](#93),[97](#97) | | | | [43](#43),[50](#50),[51](#51),[54](#54),[56](#56),[66](#66),[68](#68),[69](#69) |
 | [Robot Scientists & Lab Automation](https://en.wikipedia.org/wiki/Robot_scientist) | | | [61](#61),[62](#62) | | | [64](#64),[65](#65) |
-| [Benchmarks & Evaluation Frameworks](./ResearchAreas/AITooling.md#benchmarks--evaluation-frameworks) | | | | | | [55](#55),[89](#89) |
+| [Benchmarks & Evaluation Frameworks](./ResearchAreas/AITooling.md#benchmarks--evaluation-frameworks) | | | | | | [55](#55),[89](#89),[108](#108) |
 | [Agent Infrastructure (Frameworks, KGs, Protocols)](./ResearchAreas/AITooling.md#agent-infrastructure-frameworks-kgs-protocols) | | | | | | [41](#41),[48](#48),[67](#67) |
 
 
@@ -246,6 +246,10 @@ This document presents the core research papers at the intersection of Cellular 
 <a id="104">104</a> Margulis, E., Slavutsky, Y., Lang, T., Behrens, M., Benjamini, Y., & Niv, M. Y. (2022). BitterMatch: recommendation systems for matching molecules with bitter taste receptors. *Journal of Cheminformatics, 14*(1), 45. https://doi.org/10.1186/s13321-022-00612-9
 
 <a id="105">105</a> Ziaikin, E., Tello, E., Peterson, D. G., & Niv, M. Y. (2024). BitterMasS: Predicting Bitterness from Mass Spectra. *Journal of Agricultural and Food Chemistry, 72*(18), 10537–10547. https://doi.org/10.1021/acs.jafc.3c09767
+
+<a id="108">108</a> Mitchener, L., Laurent, J. M., Andonian, A., Tenmann, B., Narayanan, S., Wellawatte, G. P., White, A. D., Sani, L., & Rodriques, S. G. (2025). *BixBench: a Comprehensive Benchmark for LLM-based Agents in Computational Biology.* arXiv. https://doi.org/10.48550/arXiv.2503.00096
+
+> **Code**: https://github.com/Future-House/BixBench
 
 ## Sensory & Flavor Reference Work
 

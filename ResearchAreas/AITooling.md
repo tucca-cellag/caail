@@ -71,6 +71,7 @@ Methodological infrastructure for evaluating AI agents — sequential hypothesis
 
 - [#55 E-valuator](../Papers.md#55) (Sadhuka et al. 2025) — reliable agent verifiers with sequential hypothesis testing.
 - [#89 AssayBench](../Papers.md#89) (Brouwer et al. 2026) — assay-level virtual-cell benchmark for LLMs and agents.
+- [#108 BixBench](../Papers.md#108) (Mitchener et al. 2025, FutureHouse) — comprehensive benchmark for LLM-based agents in computational biology spanning 50+ real-world bioinformatics scenarios; the closest existing eval suite for measuring autonomous bioinformatics workflow execution.
 
 ## Agent Infrastructure (Frameworks, KGs, Protocols)
 
