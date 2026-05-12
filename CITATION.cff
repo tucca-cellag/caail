@@ -1,0 +1,35 @@
+cff-version: 1.2.0
+message: "If you reference CAAIL or build on its curated content, please cite it as below."
+type: software
+title: "CAAIL: Cellular Agriculture AI Library"
+abstract: >-
+  A curated, markdown-only resource library at the intersection of Cellular
+  Agriculture and AI — peer-reviewed papers organized as a method × research-area
+  matrix, open-source software, datasets, research-area deep dives, and
+  educational resources for the cell-ag and AI/ML communities.
+authors:
+  - family-names: Plotts
+    given-names: Jim
+    affiliation: "Tufts University Center for Cellular Agriculture (TUCCA)"
+  - family-names: Bromberg
+    given-names: Benji
+    affiliation: "Tufts University Center for Cellular Agriculture (TUCCA)"
+  - name: "Tufts University Center for Cellular Agriculture (TUCCA)"
+    website: "https://cellularagriculture.tufts.edu/"
+  - name: "The CAAIL Contributors"
+    website: "https://github.com/tucca-cellag/caail/graphs/contributors"
+url: "https://github.com/tucca-cellag/caail"
+repository-code: "https://github.com/tucca-cellag/caail"
+license: CC-BY-4.0
+keywords:
+  - cellular agriculture
+  - cultivated meat
+  - alternative proteins
+  - artificial intelligence
+  - machine learning
+  - bioinformatics
+  - sensory prediction
+  - metabolic modeling
+  - awesome-list
+version: "1.0.0"
+date-released: "2026-05-12"

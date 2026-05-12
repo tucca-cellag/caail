@@ -1,5 +1,5 @@
 # CAAIL: Cellular Agriculture AI Library
-This repository, CAAIL (Cellular Agriculture AI Library), is a curated, open-source collection of resources dedicated to the intersection of Cellular Agriculture and AI.
+This repository, CAAIL (Cellular Agriculture AI Library), is a curated, open-source collection of resources dedicated to the intersection of Cellular Agriculture and AI. CAAIL is maintained by [The Tufts University Center for Cellular Agriculture (TUCCA)](https://cellularagriculture.tufts.edu/) — see TUCCA's [GitHub organization](https://github.com/tucca-cellag) for related projects and follow [@tuftscellag](https://twitter.com/tuftscellag) for updates.
 
 # The Goal
 Cellular Agriculture faces major technical barriers to wide-spread adoption, particularly around cost, media formulation, and scaling. We believe that AI can provide crucial insights to address these challenges.
@@ -17,7 +17,29 @@ We organize and host links to public resources across key areas of research:
 # Contributing
 Suggestions of papers, software, datasets, and other resources are welcome. See [CONTRIBUTING.md](./CONTRIBUTING.md) for how to propose additions via pull request or GitHub issue.
 
+# Citing CAAIL
+If you reference CAAIL or build on its curated content, please cite this repository. GitHub renders a "Cite this repository" button in the sidebar from the [`CITATION.cff`](./CITATION.cff) at the repo root.
+
+A recommended human-readable citation:
+
+> Plotts, J., Bromberg, B., [The Tufts University Center for Cellular Agriculture (TUCCA)](https://cellularagriculture.tufts.edu/), and the [CAAIL Contributors](https://github.com/tucca-cellag/caail/graphs/contributors). (2026). *CAAIL: Cellular Agriculture AI Library* (Version 1.0.0). https://github.com/tucca-cellag/caail
+
+BibTeX:
+
+```bibtex
+@misc{caail2026,
+  author       = {Plotts, Jim and Bromberg, Benji and {The Tufts University Center for Cellular Agriculture (TUCCA)} and {The CAAIL Contributors}},
+  title        = {{CAAIL}: Cellular Agriculture {AI} Library},
+  year         = {2026},
+  version      = {1.0.0},
+  url          = {https://github.com/tucca-cellag/caail},
+  note         = {Resource library, CC BY 4.0 licensed}
+}
+```
+
+When citing a specific catalogued resource (paper, software tool, dataset), cite the original source directly rather than CAAIL — the DOIs and canonical URLs in [Papers.md](./Papers.md), [Software.md](./Software.md), and [Data.md](./Data.md) are authoritative.
+
 # License
-&copy; 2026 Tufts University Center for Cellular Agriculture (TUCCA) and CAAIL contributors.
+&copy; 2026 [The Tufts University Center for Cellular Agriculture (TUCCA)](https://cellularagriculture.tufts.edu/) and CAAIL contributors.
 
 Content in this repository is licensed under the [Creative Commons Attribution 4.0 International License (CC BY 4.0)](./LICENSE). You are free to share and adapt the material for any purpose, including commercially, as long as you give appropriate credit and indicate if changes were made.
