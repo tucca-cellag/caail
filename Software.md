@@ -97,6 +97,20 @@ Docs: <https://cnapy-org.github.io/CNApy-guide/>.
 
 **Agent integration.** Code-execution agents (Cursor, Claude Code, Biomni) can invoke any of these tools as Python; for COBRApy specifically, the [`cobrapy` skill from K-Dense-AI's scientific-agent-skills](https://github.com/K-Dense-AI/scientific-agent-skills/tree/main/scientific-skills/cobrapy) (see the [K-Dense-AI entry below](#k-dense-ai)) provides curated recipes that make this reliable in agent loops.
 
+## Mass Spectrometry & Chemometrics
+
+Tooling for mass-spectrometry-based proteomics and metabolomics workflows, plus multivariate statistical analysis ("chemometrics") of the resulting data. Used heavily in flavor / off-flavor metabolomics, spent-media analysis for cultivated meat, and sensory-instrumental data fusion. See also the [`pyopenms` skill](https://github.com/K-Dense-AI/scientific-agent-skills/tree/main/scientific-skills/pyopenms) in [K-Dense-AI](#k-dense-ai) for an agent-callable wrapper around OpenMS.
+
+### [OpenMS / pyOpenMS](https://github.com/OpenMS/OpenMS)
+
+An open-source C++ framework with Python bindings (pyOpenMS) for mass-spectrometry data analysis, from raw spectra processing through quantitative proteomics and metabolomics. Maintained by an international consortium led by the Kohlbacher lab (Tübingen); OpenMS 3 (Pfeuffer et al. 2024, *Nat Methods*) provides a modular toolkit (TOPP), Python bindings, KNIME nodes, Galaxy wrappers, and integrations with nf-core pipelines (e.g. nf-core/quantms). Widely used for flavor metabolomics, off-flavor characterization, and as a building block in larger workflow-manager pipelines.
+
+Project page: <https://openms.de/>. pyOpenMS docs: <https://pyopenms.readthedocs.io/>.
+
+### [ropls](http://bioconductor.org/packages/ropls/)
+
+An R package on Bioconductor implementing PCA, PLS, OPLS, and OPLS-DA for chemometric analysis of metabolomics and other -omics data (Thévenot et al. 2015, *J Proteome Res*). Provides the multivariate engine in the Workflow4Metabolomics Galaxy platform and is widely used in flavor / sensory metabolomics for sensory-instrumental correlation, biomarker discovery, and quality-control modeling. See also [`ropls` in the K-Dense-AI scientific-agent-skills collection](https://github.com/K-Dense-AI/scientific-agent-skills) for an agent-callable wrapper.
+
 ## AI Agents & Foundation Models
 
 This section catalogs general-purpose AI infrastructure — agent frameworks, foundation models for biology, and tool ecosystems — that can be applied across cellular agriculture problems. See also the `AI Tooling / Methodology` column in [Papers.md](./Papers.md) for the research papers describing these systems.
