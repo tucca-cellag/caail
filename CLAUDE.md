@@ -2,7 +2,7 @@
 
 CAAIL (Cellular Agriculture AI Library) is a **curated, markdown-only resource library** at the intersection of Cellular Agriculture and AI. There is no source code, no build step, no test suite — every file is human-readable Markdown rendered by GitHub.
 
-The repository is owned by [tucca-cellag](https://github.com/tucca-cellag) (Tufts University Center for Cellular Agriculture). Content is licensed CC BY 4.0; see `LICENSE` and the README for attribution.
+The repository is owned by [tucca-cellag](https://github.com/tucca-cellag) (Tufts University Center for Cellular Agriculture). Content is licensed under the MIT License; see `LICENSE` and the README for attribution.
 
 ## Companion Zotero group library — full-text access for AI agents
 
@@ -45,7 +45,7 @@ ResearchAreas/         Per-area deep-dive pages
   Scaffolding.md
   SensoryPrediction.md
 CONTRIBUTING.md        How to add resources (read before editing)
-LICENSE                Verbatim CC BY 4.0 legal text
+LICENSE                MIT License
 ```
 
 ## Conventions by file
@@ -142,4 +142,4 @@ Per-area deep-dive page. Linked from the column header of the `Papers.md` matrix
 
 ## License
 
-Content: CC BY 4.0 (see `LICENSE`). When adding linked resources, link to the canonical source — don't mirror copyrighted abstracts or full text into this repo.
+Content: MIT License (see `LICENSE`). When adding linked resources, link to the canonical source — don't mirror copyrighted abstracts or full text into this repo, since the third-party content remains under its original license regardless of CAAIL's.

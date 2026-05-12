@@ -20,7 +20,7 @@ authors:
     website: "https://github.com/tucca-cellag/caail/graphs/contributors"
 url: "https://github.com/tucca-cellag/caail"
 repository-code: "https://github.com/tucca-cellag/caail"
-license: CC-BY-4.0
+license: MIT
 keywords:
   - cellular agriculture
   - cultivated meat

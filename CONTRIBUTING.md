@@ -151,7 +151,7 @@ Before opening a PR, please confirm:
 
 ## Licensing of contributions
 
-This repository is licensed under [CC BY 4.0](./LICENSE). By submitting a contribution (pull request, issue, or other form), you agree that your contribution is offered under the same license, and you confirm that you have the right to do so. We don't host copyrighted abstracts or full text — please link to the canonical source instead.
+This repository is licensed under the [MIT License](./LICENSE). By submitting a contribution (pull request, issue, or other form), you agree that your contribution is offered under the same license, and you confirm that you have the right to do so. We don't host copyrighted abstracts or full text — please link to the canonical source instead, since third-party content stays under its original license regardless of CAAIL's.
 
 ## Questions
 

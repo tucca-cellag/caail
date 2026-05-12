@@ -33,7 +33,7 @@ BibTeX:
   year         = {2026},
   version      = {1.0.0},
   url          = {https://github.com/tucca-cellag/caail},
-  note         = {Resource library, CC BY 4.0 licensed}
+  note         = {Resource library, MIT licensed}
 }
 ```
 
@@ -42,4 +42,4 @@ When citing a specific catalogued resource (paper, software tool, dataset), cite
 # License
 &copy; 2026 [The Tufts University Center for Cellular Agriculture (TUCCA)](https://cellularagriculture.tufts.edu/) and CAAIL contributors.
 
-Content in this repository is licensed under the [Creative Commons Attribution 4.0 International License (CC BY 4.0)](./LICENSE). You are free to share and adapt the material for any purpose, including commercially, as long as you give appropriate credit and indicate if changes were made.
+Content in this repository is licensed under the [MIT License](./LICENSE). You are free to use, copy, modify, and redistribute the material — including commercially — provided that the copyright notice and license text are included with substantial portions of the work.
