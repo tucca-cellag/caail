@@ -10,7 +10,7 @@ This document presents the core research papers at the intersection of Cellular 
 | [GAN](https://en.wikipedia.org/wiki/Generative_adversarial_network) / [VAE](https://en.wikipedia.org/wiki/Variational_autoencoder) | | [9](#9),[10](#10) | | | [11](#11) | |
 | [Genetic Algorithms](https://en.wikipedia.org/wiki/Genetic_algorithm) | [1](#1),[17](#17) | | [30](#30),[31](#31) | | | |
 | [SVM](https://en.wikipedia.org/wiki/Support_vector_machine) | [21](#21) | [22](#22) | [31](#31), [32](#32) | [34](#34) |  | |
-| [Ensemble Learning](https://en.wikipedia.org/wiki/Ensemble_learning) | | | | | [27](#27) | |
+| [Ensemble Learning](https://en.wikipedia.org/wiki/Ensemble_learning) | | | | | [27](#27),[72](#72),[80](#80) | |
 | [K-Nearest Neighbors](https://en.wikipedia.org/wiki/K-nearest_neighbors_algorithm) | | | | | [28](#28) | |
 | [Active Learning](https://en.wikipedia.org/wiki/Active_learning_(machine_learning)) | [23](#23),[24](#24),[25](#25),[58](#58) | | | | | [63](#63) |
 | [LLMs](https://en.wikipedia.org/wiki/Large_language_model) / [AI Agents](https://en.wikipedia.org/wiki/Intelligent_agent) | | | [61](#61),[62](#62) | | | [40](#40),[41](#41),[42](#42),[43](#43),[44](#44),[45](#45),[46](#46),[47](#47),[48](#48),[49](#49),[50](#50),[51](#51),[53](#53),[54](#54),[55](#55),[56](#56),[64](#64),[65](#65),[66](#66),[67](#67),[68](#68),[69](#69),[70](#70),[71](#71) |
@@ -200,6 +200,24 @@ This document presents the core research papers at the intersection of Cellular 
 
 <a id="71">71</a> Bran, A. M., Cox, S., Schilter, O., Baldassari, C., White, A. D., & Schwaller, P. (2024). Augmenting large language models with chemistry tools. *Nature Machine Intelligence.* https://doi.org/10.1038/s42256-024-00832-8
 
+<a id="72">72</a> Colantonio, V., Ferrão, L. F. V., Tieman, D. M., Bliznyuk, N., Sims, C., Klee, H. J., Munoz, P., & Resende, M. F. R. (2022). Metabolomic selection for enhanced fruit flavor. *Proceedings of the National Academy of Sciences, 119*(7), e2115865119. https://doi.org/10.1073/pnas.2115865119
+
+> **Code**: https://github.com/Resende-Lab/metabolomic_selection_for_enhanced_fruit_flavor
+
+<a id="80">80</a> Keller, A., Gerkin, R. C., Guan, Y., Dhurandhar, A., Turu, G., Szalai, B., Mainland, J. D., Ihara, Y., Yu, C. W., Wolfinger, R., Vens, C., Schietgat, L., De Grave, K., Norel, R., DREAM Olfaction Prediction Consortium, Stolovitzky, G., Cecchi, G. A., Vosshall, L. B., & Meyer, P. (2017). Predicting human olfactory perception from chemical features of odor molecules. *Science, 355*(6327), 820–826. https://doi.org/10.1126/science.aal2014
+
+## Sensory & Flavor Reference Work
+
+This section catalogs foundational primary research and methodology papers in sensory science, flavor chemistry, and analytical sensomics relevant to cellular agriculture, cultivated meat, and alt-protein products. Entries here do not apply a specific AI / ML method to a specific cell-ag problem (otherwise they would live in the matrix), but they are essential reference work — empirical studies, methodology frameworks, and applied chemometric analyses — that any AI/ML application in this space should build on. The same numeric ID counter is shared with the primary references above; no matrix participation.
+
+<a id="73">73</a> Nicolotti, L., Mall, V., & Schieberle, P. (2019). Characterization of Key Aroma Compounds in a Commercial Rum and an Australian Red Wine by Means of a New Sensomics-Based Expert System (SEBES)—An Approach To Use Artificial Intelligence in Determining Food Odor Codes. *Journal of Agricultural and Food Chemistry, 67*(14), 4011–4022. https://doi.org/10.1021/acs.jafc.9b00708
+
+<a id="74">74</a> Spaccasassi, A., Utz, F., Dunkel, A., Aragao Börner, R., Ye, L., De Franceschi, F., Bogicevic, B., Glabasnia, A., Hofmann, T., & Dawid, C. (2024). Screening of a Microbial Culture Collection: Empowering Selection of Starters for Enhanced Sensory Attributes of Pea-Protein-Based Beverages. *Journal of Agricultural and Food Chemistry, 72*(28), 15890–15905. https://doi.org/10.1021/acs.jafc.4c02316
+
+<a id="75">75</a> Lew, E., Yuen, J., Zhang, K., Fuller, K., Frost, S., & Kaplan, D. L. (2024). Chemical and sensory analyses of cultivated pork fat tissue as a flavor enhancer for meat alternatives. *Scientific Reports, 14*(1), 17643. https://doi.org/10.1038/s41598-024-68247-4
+
+<a id="77">77</a> O'Neill, E. N., Ansel, J. C., Kwong, G. A., Plastino, M. E., Nelson, J., Baar, K., & Block, D. E. (2022). Spent media analysis suggests cultivated meat media will require species and cell type optimization. *npj Science of Food, 6*(1), 46. https://doi.org/10.1038/s41538-022-00157-z
+
 ## Reviews & Perspectives
 
 This section lists review articles, position papers, and commentaries that survey the field or opine on it, rather than applying a specific AI method to a specific cell-ag problem. Entries here share the same reference-ID counter as the primary references above but do not participate in the matrix.
@@ -209,3 +227,9 @@ This section lists review articles, position papers, and commentaries that surve
 <a id="38">38</a> McNulty, M. J., Stout, A. J., & Kaplan, D. L. (2025). Meating the moment. *EMBO Reports, 26*(13), 3229–3235. https://doi.org/10.1038/s44319-025-00492-8
 
 <a id="39">39</a> Datta, B., Buehler, M. J., Chow, Y., Gligoric, K., Jurafsky, D., Kaplan, D. L., Ledesma-Amaro, R., Del Missier, G., Neidhardt, L., Pichara, K., Sanchez-Lengeling, B., Schlangen, M., St. Pierre, S. R., Tagkopoulos, I., Thomas, A., Watson, N. J., & Kuhl, E. (2026). Artificial Intelligence for Food Innovation. *arXiv.* https://doi.org/10.48550/arXiv.2509.21556
+
+<a id="76">76</a> Wang, Y., Tuccillo, F., Lampi, A.-M., Knaapila, A., Pulkkinen, M., Kariluoto, S., Coda, R., Edelmann, M., Jouppila, K., Sandell, M., Piironen, V., & Katina, K. (2022). Flavor challenges in extruded plant-based meat alternatives: A review. *Comprehensive Reviews in Food Science and Food Safety, 21*(3), 2898–2929. https://doi.org/10.1111/1541-4337.12964
+
+<a id="78">78</a> Mittermeier-Kleßinger, V. K., Hofmann, T., & Dawid, C. (2021). Mitigating Off-Flavors of Plant-Based Proteins. *Journal of Agricultural and Food Chemistry, 69*(32), 9202–9207. https://doi.org/10.1021/acs.jafc.1c03398
+
+<a id="79">79</a> Alasi, S. O., Sanusi, M. S., Sunmonu, M. O., Odewole, M. M., & Adepoju, A. L. (2024). Exploring recent developments in novel technologies and AI integration for plant-based protein functionality: A review. *Journal of Agriculture and Food Research, 15,* 101036. https://doi.org/10.1016/j.jafr.2024.101036
