@@ -218,6 +218,24 @@ This section catalogs foundational primary research and methodology papers in se
 
 <a id="77">77</a> O'Neill, E. N., Ansel, J. C., Kwong, G. A., Plastino, M. E., Nelson, J., Baar, K., & Block, D. E. (2022). Spent media analysis suggests cultivated meat media will require species and cell type optimization. *npj Science of Food, 6*(1), 46. https://doi.org/10.1038/s41538-022-00157-z
 
+## Metabolic Reference Work
+
+This section catalogs foundational primary research papers describing genome-scale metabolic models (GEMs) and related metabolic infrastructure for cellular agriculture. As with the Sensory & Flavor Reference Work above, entries here are primary research where the contribution is the model / data resource itself rather than an applied AI/ML method — the AI/ML work building on these resources lives in the matrix above. Each entry below is the canonical citation for the corresponding data resource in [Data.md / Cell-Ag Species Metabolic Models](./Data.md#cell-ag-species-metabolic-models-gems). Same numeric ID counter as the primary references; no matrix participation.
+
+<a id="81">81</a> Lee, J., Kim, J., Bae, H., Kim, M., Jung, B., Kim, J., Lee, S., & Kim, H. (2024). *Multi-omics analysis and genome-scale metabolic reconstruction of cattle Bos taurus for optimal production of cultured meat.* bioRxiv. https://doi.org/10.1101/2024.12.09.627468
+
+<a id="82">82</a> Salehabadi, E., Motamedian, E., & Shojaosadati, S. A. (2022). Reconstruction of a generic genome-scale metabolic network for chicken: Investigating network connectivity and finding potential biomarkers. *PLOS ONE, 17*(3), e0254270. https://doi.org/10.1371/journal.pone.0254270
+
+<a id="83">83</a> Qiu, S., Kratochvilova, E., Huang, W., Cui, Z., Agnew, T., Yang, A., & Ye, H. (2026). Proteome constrained metabolic modeling of *Sus scrofa* muscle stem cells for cultured meat production. *Metabolic Engineering, 94,* 252–263. https://doi.org/10.1016/j.ymben.2026.01.001
+
+<a id="84">84</a> Zakhartsev, M., Rotnes, F., Gulla, M., Øyås, O., van Dam, J. C. J., Suarez-Diez, M., Grammes, F., Hafþórsson, R., van Helvoirt, W., Koehorst, J. J., Schaap, P. J., Jin, Y., Mydland, L. T., Gjuvsland, A. B., Sandve, S. R., Martins dos Santos, V. A. P., & Vik, J. O. (2022). SALARECON connects the Atlantic salmon genome to growth and feed efficiency. *PLOS Computational Biology, 18*(6), e1010194. https://doi.org/10.1371/journal.pcbi.1010194
+
+<a id="85">85</a> Hefzi, H., Ang, K. S., Hanscho, M., Bordbar, A., Ruckerbauer, D., Lakshmanan, M., Orellana, C. A., Baycin-Hizal, D., Huang, Y., Ley, D., Martinez, V. S., Kyriakopoulos, S., Jiménez, N. E., Zielinski, D. C., Quek, L.-E., Wulff, T., Arnsdorf, J., Li, S., Lee, J. S., Paglia, G., Loira, N., Spahn, P. N., Pedersen, L. E., Gutierrez, J. M., King, Z. A., Lund, A. M., Nagarajan, H., Thomas, A., Abdel-Haleem, A. M., Zanghellini, J., Kildegaard, H. F., Voldborg, B. G., Gerdtzen, Z. P., Betenbaugh, M. J., Palsson, B. O., Andersen, M. R., Nielsen, L. K., Borth, N., Lee, D.-Y., & Lewis, N. E. (2016). A Consensus Genome-scale Reconstruction of Chinese Hamster Ovary Cell Metabolism. *Cell Systems, 3*(5), 434–443.e8. https://doi.org/10.1016/j.cels.2016.10.020
+
+<a id="86">86</a> Brunk, E., Sahoo, S., Zielinski, D. C., Altunkaya, A., Dräger, A., Mih, N., Gatto, F., Nilsson, A., Preciat Gonzalez, G. A., Aurich, M. K., Prlić, A., Sastry, A., Danielsdottir, A. D., Heinken, A., Noronha, A., Rose, P. W., Burley, S. K., Fleming, R. M. T., Nielsen, J., Thiele, I., & Palsson, B. O. (2018). Recon3D enables a three-dimensional view of gene variation in human metabolism. *Nature Biotechnology, 36*(3), 272–281. https://doi.org/10.1038/nbt.4072
+
+<a id="87">87</a> Robinson, J. L., Kocabaş, P., Wang, H., Cholley, P.-E., Cook, D., Nilsson, A., Anton, M., Ferreira, R., Domenzain, I., Billa, V., Limeta, A., Hedin, A., Gustafsson, J., Kerkhoven, E. J., Svensson, L. T., Palsson, B. O., Mardinoglu, A., Hansson, L., Uhlén, M., & Nielsen, J. (2020). An atlas of human metabolism. *Science Signaling, 13*(624), eaaz1482. https://doi.org/10.1126/scisignal.aaz1482
+
 ## Reviews & Perspectives
 
 This section lists review articles, position papers, and commentaries that survey the field or opine on it, rather than applying a specific AI method to a specific cell-ag problem. Entries here share the same reference-ID counter as the primary references above but do not participate in the matrix.

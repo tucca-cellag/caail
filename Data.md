@@ -112,37 +112,37 @@ A small but growing collection of genome-scale metabolic models (GEMs) for the s
 
 The first cultivated-meat-focused genome-scale metabolic reconstruction of cattle, published 2024 by Lee et al. as a bioRxiv preprint. The model integrates multi-omics data (genomics, transcriptomics, proteomics) and contains ~13,278 reactions across 2,986 genes, with biomass functions parameterized for cultivated-meat-relevant bovine cell types. Designed to support FBA-driven identification of media supplement combinations and metabolic bottlenecks for cultivated beef production. SBML files are distributed via the preprint's supplementary materials.
 
-Reference: Lee et al. (2024). *Multi-omics analysis and genome-scale metabolic reconstruction of cattle Bos taurus for optimal production of cultured meat.* bioRxiv. <https://doi.org/10.1101/2024.12.09.627468>.
+Reference: [Papers.md #81](./Papers.md#81) (Lee et al. 2024, bioRxiv).
 
 ### iES1300 — *Gallus gallus* (chicken)
 
 Generic genome-scale metabolic reconstruction of chicken, published 2022 in *PLOS ONE* by Salehabadi, Motamedian, and Shojaosadati. Contains 2,427 reactions across 1,300 genes (hence the `i...1300` name); used to investigate network connectivity and identify potential biomarkers across chicken tissues. The reference GEM for cultivated chicken cell-line metabolic modeling, with SBML files provided as supplementary data.
 
-Reference: Salehabadi, Motamedian, & Shojaosadati (2022). *Reconstruction of a generic genome-scale metabolic network for chicken: Investigating network connectivity and finding potential biomarkers.* PLOS ONE. <https://doi.org/10.1371/journal.pone.0254270>.
+Reference: [Papers.md #82](./Papers.md#82) (Salehabadi, Motamedian, & Shojaosadati 2022, *PLOS ONE*).
 
 ### PigGEM2025 — *Sus scrofa* (porcine)
 
 Proteome-constrained metabolic model of pig muscle stem cells for cultivated meat production, published 2026 in *Metabolic Engineering* by Qiu et al. (a Sticta × Meatable collaboration with GFI grant funding; initially deposited as a bioRxiv preprint in September 2025). Tailored to the porcine muscle satellite cell context, enabling FBA / FVA analysis of cultivated pork media formulations and metabolic-engineering targets. SBML files released alongside the paper.
 
-Reference: Qiu et al. (2026). *Proteome constrained metabolic modeling of Sus scrofa muscle stem cells for cultured meat production.* Metabolic Engineering, 94, 252–263. <https://doi.org/10.1016/j.ymben.2026.01.001>.
+Reference: [Papers.md #83](./Papers.md#83) (Qiu et al. 2026, *Metabolic Engineering*).
 
 ### SALARECON — *Salmo salar* (Atlantic salmon)
 
 Whole-genome metabolic reconstruction of Atlantic salmon, published 2022 in *PLOS Computational Biology* with a focus on connecting genome content to growth and feed-efficiency phenotypes. The reference GEM for cultivated salmonid work — directly relevant to the cultivated seafood category (salmon, trout) that has begun attracting investment (Umami Bioworks, BlueNalu, Wildtype). SBML files distributed via the paper's supplementary materials and the SALARECON GitHub repository.
 
-Reference: (2022). *SALARECON connects the Atlantic salmon genome to growth and feed efficiency.* PLOS Computational Biology. <https://doi.org/10.1371/journal.pcbi.1010194>.
+Reference: [Papers.md #84](./Papers.md#84) (Zakhartsev et al. 2022, *PLOS Computational Biology*).
 
 ### iCHO1766 / iCHO2048 / CHOmpact — Chinese Hamster Ovary (biopharma-adjacent reference)
 
 The CHO cell line is the mammalian biopharma workhorse, and its GEM family is the most-developed mammalian GEM ecosystem available — Hefzi et al.'s iCHO1766 (2016, *Cell Systems*) is the consensus reconstruction; iCHO2048 (2018) extends the secretory pathway; CHOmpact (2024) and follow-on Bayesian-flux-estimation pipelines (2025) produce reduced models for digital-twin work. CHO is not itself a cellular agriculture species, but its biomass parameterization, perfusion-process methodology, and reduction techniques translate directly to cell-ag GEMs (bovine, porcine, avian) currently under construction.
 
-Reference: Hefzi et al. (2016). *A Consensus Genome-scale Reconstruction of Chinese Hamster Ovary Cell Metabolism.* Cell Systems. <https://doi.org/10.1016/j.cels.2016.10.020>.
+Reference: [Papers.md #85](./Papers.md#85) (Hefzi et al. 2016, *Cell Systems*).
 
 ### Recon3D / Human1 / HMR — *Homo sapiens* (template / upstream reference)
 
 The human genome-scale metabolic reconstructions — Recon3D (Brunk et al. 2018, *Nature Biotechnology*), Human-GEM / Human1 (Robinson et al. 2020, *Science Signaling*), and the underlying HMR2 — are the foundational human GEMs from which most mammalian-cell models (including the cell-ag GEMs above) inherit reaction networks, biomass equations, and curation conventions. Direct use in cell-ag is rare; they're more often used as homology templates or biomass-function donors for species-specific reconstructions.
 
-References: Brunk et al. (2018). *Recon3D enables a three-dimensional view of gene variation in human metabolism.* Nature Biotechnology. <https://doi.org/10.1038/nbt.4072>. Robinson et al. (2020). *An atlas of human metabolism.* Science Signaling. <https://doi.org/10.1126/scisignal.aaz1482>.
+References: [Papers.md #86](./Papers.md#86) (Brunk et al. 2018, *Nature Biotechnology*) for Recon3D; [Papers.md #87](./Papers.md#87) (Robinson et al. 2020, *Science Signaling*) for Human-GEM.
 
 ## Chemistry & Compound Data
 
