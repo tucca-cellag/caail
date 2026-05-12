@@ -4,7 +4,7 @@ This document presents the core research papers at the intersection of Cellular 
 | | [Media Optimization](./ResearchAreas/MediaOptimization.md) | [Cellular Engineering](./ResearchAreas/CellEngineering.md) | [Bioprocess control](./ResearchAreas/Bioprocess.md) | [Scaffolding](./ResearchAreas/Scaffolding.md)  | [Sensory Prediction](./ResearchAreas/SensoryPrediction.md) | [AI Tooling / Methodology](./ResearchAreas/AITooling.md) |
 |---|---|---|---|---|---|---|
 | [Bayesian Optimization](https://en.wikipedia.org/wiki/Bayesian_optimization) | [2](#2),[3](#3),[15](#15),[16](#16),[18](#18),[58](#58) | [16](#16) | [59](#59) | | | |
-| [Deep Learning](https://en.wikipedia.org/wiki/Deep_learning) | [1](#1),[15](#15),[17](#17),[18](#18) | [4](#4),[5](#5),[6](#6),[57](#57),[60](#60),[92](#92) | [7](#7) | [20](#20),[35](#35) | | [91](#91) |
+| [Deep Learning](https://en.wikipedia.org/wiki/Deep_learning) | [1](#1),[15](#15),[17](#17),[18](#18) | [4](#4),[5](#5),[6](#6),[57](#57),[60](#60) | [7](#7) | [20](#20),[35](#35) | | |
 | [GNN](https://en.wikipedia.org/wiki/Graph_neural_network) | | [8](#8),[12](#12),[13](#13)| | | [14](#14),[36](#36) | [52](#52) |
 | [CNN](https://en.wikipedia.org/wiki/Convolutional_neural_network) | | | [29](#29), [33](#33) | [19](#19) | [11](#11),[26](#26) | |
 | [GAN](https://en.wikipedia.org/wiki/Generative_adversarial_network) / [VAE](https://en.wikipedia.org/wiki/Variational_autoencoder) | | [9](#9),[10](#10) | | | [11](#11) | |
@@ -13,7 +13,14 @@ This document presents the core research papers at the intersection of Cellular 
 | [Ensemble Learning](https://en.wikipedia.org/wiki/Ensemble_learning) | | | | | [27](#27),[72](#72),[80](#80),[102](#102),[103](#103),[104](#104),[105](#105) | |
 | [K-Nearest Neighbors](https://en.wikipedia.org/wiki/K-nearest_neighbors_algorithm) | | | | | [28](#28) | |
 | [Active Learning](https://en.wikipedia.org/wiki/Active_learning_(machine_learning)) | [23](#23),[24](#24),[25](#25),[58](#58) | | | | | [63](#63) |
-| [LLMs](https://en.wikipedia.org/wiki/Large_language_model) / [AI Agents](https://en.wikipedia.org/wiki/Intelligent_agent) | | [90](#90),[93](#93),[97](#97) | [61](#61),[62](#62) | | | [40](#40),[41](#41),[42](#42),[43](#43),[44](#44),[45](#45),[46](#46),[47](#47),[48](#48),[49](#49),[50](#50),[51](#51),[53](#53),[54](#54),[55](#55),[56](#56),[64](#64),[65](#65),[66](#66),[67](#67),[68](#68),[69](#69),[70](#70),[71](#71),[88](#88),[89](#89),[94](#94),[95](#95),[96](#96),[98](#98) |
+| [Foundation Models](https://en.wikipedia.org/wiki/Foundation_model) | | [92](#92) | | | | [42](#42),[88](#88),[91](#91) |
+| [Scientific Literature & Discovery Agents](./ResearchAreas/AITooling.md#scientific-literature--discovery-agents) | | | | | | [44](#44),[45](#45),[46](#46),[47](#47),[53](#53) |
+| [General-Purpose Biomedical Agents](./ResearchAreas/AITooling.md#general-purpose-biomedical-agents) | | | | | | [40](#40),[49](#49),[94](#94),[95](#95),[96](#96),[98](#98) |
+| [Chemistry / Synthesis Agents](./ResearchAreas/AITooling.md#chemistry--synthesis-agents) | | | | | | [70](#70),[71](#71) |
+| [Domain-Specific Biomedical Agents](./ResearchAreas/AITooling.md#domain-specific-biomedical-agents) | | [90](#90),[93](#93),[97](#97) | | | | [43](#43),[50](#50),[51](#51),[54](#54),[56](#56),[66](#66),[68](#68),[69](#69) |
+| [Robot Scientists & Lab Automation](https://en.wikipedia.org/wiki/Robot_scientist) | | | [61](#61),[62](#62) | | | [64](#64),[65](#65) |
+| [Benchmarks & Evaluation Frameworks](./ResearchAreas/AITooling.md#benchmarks--evaluation-frameworks) | | | | | | [55](#55),[89](#89) |
+| [Agent Infrastructure (Frameworks, KGs, Protocols)](./ResearchAreas/AITooling.md#agent-infrastructure-frameworks-kgs-protocols) | | | | | | [41](#41),[48](#48),[67](#67) |
 
 
 ## References
