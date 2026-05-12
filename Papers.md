@@ -10,7 +10,7 @@ This document presents the core research papers at the intersection of Cellular 
 | [GAN](https://en.wikipedia.org/wiki/Generative_adversarial_network) / [VAE](https://en.wikipedia.org/wiki/Variational_autoencoder) | | [9](#9),[10](#10) | | | [11](#11) | |
 | [Genetic Algorithms](https://en.wikipedia.org/wiki/Genetic_algorithm) | [1](#1),[17](#17) | | [30](#30),[31](#31) | | | |
 | [SVM](https://en.wikipedia.org/wiki/Support_vector_machine) | [21](#21) | [22](#22) | [31](#31), [32](#32) | [34](#34) |  | |
-| [Ensemble Learning](https://en.wikipedia.org/wiki/Ensemble_learning) | | | | | [27](#27),[72](#72),[80](#80) | |
+| [Ensemble Learning](https://en.wikipedia.org/wiki/Ensemble_learning) | | | | | [27](#27),[72](#72),[80](#80),[102](#102),[103](#103),[104](#104),[105](#105) | |
 | [K-Nearest Neighbors](https://en.wikipedia.org/wiki/K-nearest_neighbors_algorithm) | | | | | [28](#28) | |
 | [Active Learning](https://en.wikipedia.org/wiki/Active_learning_(machine_learning)) | [23](#23),[24](#24),[25](#25),[58](#58) | | | | | [63](#63) |
 | [LLMs](https://en.wikipedia.org/wiki/Large_language_model) / [AI Agents](https://en.wikipedia.org/wiki/Intelligent_agent) | | [90](#90),[93](#93),[97](#97) | [61](#61),[62](#62) | | | [40](#40),[41](#41),[42](#42),[43](#43),[44](#44),[45](#45),[46](#46),[47](#47),[48](#48),[49](#49),[50](#50),[51](#51),[53](#53),[54](#54),[55](#55),[56](#56),[64](#64),[65](#65),[66](#66),[67](#67),[68](#68),[69](#69),[70](#70),[71](#71),[88](#88),[89](#89),[94](#94),[95](#95),[96](#96),[98](#98) |
@@ -232,6 +232,14 @@ This document presents the core research papers at the intersection of Cellular 
 
 <a id="98">98</a> Dong, Z., Zhou, H., Jiang, Y., Zhong, V., & Lu, Y. (2024). *Simplifying bioinformatics data analysis through conversation* [BioMANIA]. bioRxiv. https://doi.org/10.1101/2023.10.29.564479
 
+<a id="102">102</a> Dagan-Wiener, A., Nissim, I., Ben Abu, N., Borgonovo, G., Bassoli, A., & Niv, M. Y. (2017). Bitter or not? BitterPredict, a tool for predicting taste from chemical structure. *Scientific Reports, 7*(1), 12074. https://doi.org/10.1038/s41598-017-12359-7
+
+<a id="103">103</a> Margulis, E., Dagan-Wiener, A., Ives, R. S., Jaffari, S., Siems, K., & Niv, M. Y. (2021). Intense bitterness of molecules: Machine learning for expediting drug discovery. *Computational and Structural Biotechnology Journal, 19,* 568–576. https://doi.org/10.1016/j.csbj.2020.12.030
+
+<a id="104">104</a> Margulis, E., Slavutsky, Y., Lang, T., Behrens, M., Benjamini, Y., & Niv, M. Y. (2022). BitterMatch: recommendation systems for matching molecules with bitter taste receptors. *Journal of Cheminformatics, 14*(1), 45. https://doi.org/10.1186/s13321-022-00612-9
+
+<a id="105">105</a> Ziaikin, E., Tello, E., Peterson, D. G., & Niv, M. Y. (2024). BitterMasS: Predicting Bitterness from Mass Spectra. *Journal of Agricultural and Food Chemistry, 72*(18), 10537–10547. https://doi.org/10.1021/acs.jafc.3c09767
+
 ## Sensory & Flavor Reference Work
 
 This section catalogs foundational primary research and methodology papers in sensory science, flavor chemistry, and analytical sensomics relevant to cellular agriculture, cultivated meat, and alt-protein products. Entries here do not apply a specific AI / ML method to a specific cell-ag problem (otherwise they would live in the matrix), but they are essential reference work — empirical studies, methodology frameworks, and applied chemometric analyses — that any AI/ML application in this space should build on. The same numeric ID counter is shared with the primary references above; no matrix participation.
@@ -243,6 +251,16 @@ This section catalogs foundational primary research and methodology papers in se
 <a id="75">75</a> Lew, E., Yuen, J., Zhang, K., Fuller, K., Frost, S., & Kaplan, D. L. (2024). Chemical and sensory analyses of cultivated pork fat tissue as a flavor enhancer for meat alternatives. *Scientific Reports, 14*(1), 17643. https://doi.org/10.1038/s41598-024-68247-4
 
 <a id="77">77</a> O'Neill, E. N., Ansel, J. C., Kwong, G. A., Plastino, M. E., Nelson, J., Baar, K., & Block, D. E. (2022). Spent media analysis suggests cultivated meat media will require species and cell type optimization. *npj Science of Food, 6*(1), 46. https://doi.org/10.1038/s41538-022-00157-z
+
+<a id="99">99</a> Wiener, A., Shudler, M., Levit, A., & Niv, M. Y. (2012). BitterDB: a database of bitter compounds. *Nucleic Acids Research, 40*(D1), D413–D419. https://doi.org/10.1093/nar/gkr755
+
+<a id="100">100</a> Dagan-Wiener, A., Di Pizio, A., Nissim, I., Bahia, M. S., Dubovski, N., Margulis, E., & Niv, M. Y. (2019). BitterDB: taste ligands and receptors database in 2019. *Nucleic Acids Research, 47*(D1), D1179–D1185. https://doi.org/10.1093/nar/gky974
+
+<a id="101">101</a> Ziaikin, E., David, M., Uspenskaya, S., & Niv, M. Y. (2025). BitterDB: 2024 update on bitter ligands and taste receptors. *Nucleic Acids Research, 53*(D1), D1645–D1652. https://doi.org/10.1093/nar/gkae1044
+
+<a id="106">106</a> Nissim, I., Dagan-Wiener, A., & Niv, M. Y. (2017). The taste of toxicity: A quantitative analysis of bitter and toxic molecules. *IUBMB Life, 69*(12), 938–946. https://doi.org/10.1002/iub.1694
+
+<a id="107">107</a> Wang, M., Carver, J. J., Phelan, V. V., Sanchez, L. M., Garg, N., Peng, Y., Nguyen, D. D., Watrous, J., Kapono, C. A., Luzzatto-Knaan, T., Porto, C., Bouslimani, A., Melnik, A. V., Meehan, M. J., Liu, W.-T., Crüsemann, M., Boudreau, P. D., Esquenazi, E., Sandoval-Calderón, M., ... Bandeira, N. (2016). Sharing and community curation of mass spectrometry data with Global Natural Products Social Molecular Networking. *Nature Biotechnology, 34*(8), 828–837. https://doi.org/10.1038/nbt.3597
 
 ## Metabolic Reference Work
 
