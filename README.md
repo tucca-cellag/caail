@@ -22,13 +22,13 @@ If you reference CAAIL or build on its curated content, please cite this reposit
 
 A recommended human-readable citation:
 
-> Plotts, J., Bromberg, B., [The Tufts University Center for Cellular Agriculture (TUCCA)](https://cellularagriculture.tufts.edu/), and the [CAAIL Contributors](https://github.com/tucca-cellag/caail/graphs/contributors). (2026). *CAAIL: Cellular Agriculture AI Library* (Version 1.0.0). https://github.com/tucca-cellag/caail
+> Plotts, J., Bromberg, B., Kaplan, D. L., [The Tufts University Center for Cellular Agriculture (TUCCA)](https://cellularagriculture.tufts.edu/), and the [CAAIL Contributors](https://github.com/tucca-cellag/caail/graphs/contributors). (2026). *CAAIL: Cellular Agriculture AI Library* (Version 1.0.0). https://github.com/tucca-cellag/caail
 
 BibTeX:
 
 ```bibtex
 @misc{caail2026,
-  author       = {Plotts, Jim and Bromberg, Benji and {The Tufts University Center for Cellular Agriculture (TUCCA)} and {The CAAIL Contributors}},
+  author       = {Plotts, Jim and Bromberg, Benji and Kaplan, David L. and {The Tufts University Center for Cellular Agriculture (TUCCA)} and {The CAAIL Contributors}},
   title        = {{CAAIL}: Cellular Agriculture {AI} Library},
   year         = {2026},
   version      = {1.0.0},

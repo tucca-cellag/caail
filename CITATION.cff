@@ -14,6 +14,11 @@ authors:
   - family-names: Bromberg
     given-names: Benji
     affiliation: "Tufts University Center for Cellular Agriculture (TUCCA)"
+    orcid: "https://orcid.org/0009-0001-3166-6329"
+  - family-names: Kaplan
+    given-names: David L.
+    affiliation: "Tufts University Center for Cellular Agriculture (TUCCA)"
+    orcid: "https://orcid.org/0000-0002-9245-7774"
   - name: "Tufts University Center for Cellular Agriculture (TUCCA)"
     website: "https://cellularagriculture.tufts.edu/"
   - name: "The CAAIL Contributors"
