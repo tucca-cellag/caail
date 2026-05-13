@@ -28,7 +28,7 @@ BibTeX:
 
 ```bibtex
 @misc{caail2026,
-  author       = {Plotts, Jim and Bromberg, Benji and Kaplan, David L. and {The Tufts University Center for Cellular Agriculture (TUCCA)} and {The CAAIL Contributors}},
+  author       = {Plotts, Jim and Bromberg, Benjamin and Kaplan, David L. and {The Tufts University Center for Cellular Agriculture (TUCCA)} and {The CAAIL Contributors}},
   title        = {{CAAIL}: Cellular Agriculture {AI} Library},
   year         = {2026},
   version      = {1.0.0},
