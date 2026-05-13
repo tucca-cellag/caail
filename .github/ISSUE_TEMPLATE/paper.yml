@@ -1,0 +1,137 @@
+name: Suggest a paper
+description: Suggest a peer-reviewed paper or preprint to add to Papers.md.
+title: "[Paper] <Author YEAR — short title>"
+labels: ["suggestion", "papers"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting a paper. Fill out as much as you can — the DOI is the most important field. A maintainer will handle the matrix and reference-list edits if you're not opening a PR yourself.
+
+  - type: dropdown
+    id: paper_type
+    attributes:
+      label: Paper type
+      description: |
+        Primary research papers (applying a specific AI method to a specific cell-ag problem) go in the matrix.
+        Reviews, position papers, and commentaries go in a separate "Reviews & Perspectives" section (no matrix cell).
+      options:
+        - Primary research (single method, single application)
+        - Review article
+        - Position paper / perspective
+        - Commentary / opinion
+        - Other (describe in notes)
+    validations:
+      required: true
+
+  - type: input
+    id: title
+    attributes:
+      label: Paper title
+      placeholder: e.g. Multi-objective Bayesian algorithm automatically discovers low-cost high-growth serum-free media for cellular agriculture application
+    validations:
+      required: true
+
+  - type: input
+    id: authors
+    attributes:
+      label: Authors
+      description: Full author list as it appears in the paper (APA style is fine — `Lastname, F. M., & Other, A. B.`).
+    validations:
+      required: true
+
+  - type: input
+    id: year
+    attributes:
+      label: Year
+      placeholder: e.g. 2023
+    validations:
+      required: true
+
+  - type: input
+    id: venue
+    attributes:
+      label: Journal / venue
+      placeholder: e.g. Engineering in Life Sciences
+    validations:
+      required: true
+
+  - type: input
+    id: doi
+    attributes:
+      label: DOI or canonical URL
+      description: A full https://doi.org/... link is preferred. If unpublished, link to the preprint (bioRxiv, arXiv, etc.).
+      placeholder: https://doi.org/10.1002/elsc.202300005
+    validations:
+      required: true
+
+  - type: dropdown
+    id: ai_methods
+    attributes:
+      label: AI / ML method(s) used
+      description: |
+        Select all that apply. If the method isn't listed, choose "Other" and describe it in the notes field.
+        For reviews or commentaries that survey many methods, choose "Not applicable — review or commentary".
+      multiple: true
+      options:
+        - Bayesian Optimization
+        - Deep Learning
+        - GNN (Graph Neural Network)
+        - CNN (Convolutional Neural Network)
+        - GAN / VAE
+        - Genetic Algorithms
+        - SVM (Support Vector Machine)
+        - Ensemble Learning
+        - K-Nearest Neighbors
+        - Active Learning
+        - LLMs / AI Agents
+        - Not applicable — review or commentary
+        - Other (describe in notes)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: research_areas
+    attributes:
+      label: Research area(s) addressed
+      description: |
+        Select all that apply. If the area isn't listed, choose "Other" and describe it in the notes field.
+        Use "AI Tooling / Methodology" for papers about general-purpose AI methods or agent frameworks that don't yet have a specific cell-ag application.
+        For reviews, choose "Not applicable — review or commentary".
+      multiple: true
+      options:
+        - Media Optimization
+        - Cellular Engineering
+        - Bioprocess Control
+        - Scaffolding
+        - Sensory Prediction
+        - AI Tooling / Methodology
+        - Not applicable — review or commentary
+        - Other (describe in notes)
+    validations:
+      required: true
+
+  - type: input
+    id: code_url
+    attributes:
+      label: Associated code repository (optional)
+      description: If the paper publishes code, link to the canonical repo.
+      placeholder: https://github.com/<owner>/<repo>
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Why this paper fits, and any extra notes
+      description: One or two sentences on what the paper contributes to the AI + cellular agriculture intersection. Also use this for anything that didn't fit a structured field (e.g. an AI method not in the dropdown).
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: confirmations
+    attributes:
+      label: Confirmations
+      options:
+        - label: I've searched existing entries in Papers.md and this paper isn't already listed.
+          required: true
+        - label: I understand that contributions to this repository are licensed under CC BY 4.0.
+          required: true

@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Question or general feedback
+    url: https://github.com/tucca-cellag/caail/discussions
+    about: For open-ended questions or discussion that don't fit a specific suggestion template. (If discussions aren't enabled, use one of the templates and prefix the title with "[Question]".)
