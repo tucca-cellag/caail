@@ -284,3 +284,47 @@ A commercial lab-orchestration platform from Dotmatics that connects laboratory 
 A family of generative foundation models for single-cell transcriptomics from the Chan Zuckerberg Initiative, trained on up to 112 million cells spanning 1.53 billion years of evolution across 12 species (Pearce et al. 2026, *Science*; see [Papers.md ref #92](./Papers.md#92)). Provides state-of-the-art performance on cell-type classification and supports cross-species reasoning over transcriptomic data — directly relevant to cell-ag for translating biological knowledge between bovine, porcine, chicken, salmonid, and other livestock cells where annotated reference data is sparse. Distributed via CZI's Virtual Cells Platform with versioned releases.
 
 Quickstart docs: <https://virtualcellmodels.cziscience.com/quickstart/transcriptformer-quickstart>. Announcement: <https://chanzuckerberg.com/blog/transcriptformer-model-overview/>.
+
+### [Geneformer](https://huggingface.co/ctheodoris/Geneformer)
+
+A transformer-based foundation model for transfer learning in network biology from the Theodoris lab (Broad Institute / Gladstone), pretrained on ~30 million human single-cell transcriptomes via rank-encoded masked language modeling. Distributed exclusively through Hugging Face with tokenizer, pretrained weights, and example fine-tuning recipes for cell-type classification, gene-network inference, and *in silico* perturbation prediction; widely used as a single-cell-FM baseline. Companion to [Papers.md ref #111](./Papers.md#111) (Theodoris et al. 2023, *Nature*); pretraining corpus: [Genecorpus-30M in Data.md](./Data.md#genecorpus-30m).
+
+### [scGPT](https://github.com/bowang-lab/scGPT)
+
+A generative pretrained transformer for single-cell multi-omics from the Wang lab at the University Health Network (Toronto), trained on >33M cells spanning scRNA-seq, scATAC-seq, and CITE-seq. Provides downstream fine-tuning recipes for cell-type annotation, multi-batch integration, gene-regulatory-network inference, and perturbation prediction; one of the most-used baselines for newer single-cell foundation models. Companion to [Papers.md ref #117](./Papers.md#117) (Cui et al. 2024, *Nature Methods*). Documentation: <https://scgpt.readthedocs.io/>.
+
+### [scBERT](https://github.com/TencentAILabHealthcare/scBERT)
+
+An early single-cell BERT-style foundation model for cell-type annotation from Tencent AI Lab Healthcare, treating individual genes as tokens with binned expression values. Released alongside [Papers.md ref #112](./Papers.md#112) (Yang et al. 2022, *Nature Machine Intelligence*); the independent re-evaluation in [ref #113](./Papers.md#113) (Boiarsky et al. 2024) and author reply in [ref #114](./Papers.md#114) (Yang et al. 2024) are core methodological reading for anyone benchmarking new single-cell FMs against existing baselines.
+
+### [scFoundation](https://github.com/biomap-research/scFoundation)
+
+A large-scale foundation model on single-cell transcriptomics from BioMap Research, pretrained on ~50M cells with read-depth-aware encoding that explicitly handles the variable sequencing depths characteristic of public scRNA-seq corpora. Provides downstream applications spanning cell-type annotation, drug-response prediction, and perturbation-effect modeling. Companion to [Papers.md ref #116](./Papers.md#116) (Hao et al. 2024, *Nature Methods*).
+
+### [UCE](https://github.com/snap-stanford/UCE)
+
+Universal Cell Embeddings from Stanford's [SNAP lab](https://snap.stanford.edu/) (Leskovec group) — a single-cell foundation model that represents each cell as an unordered set of expressed genes and each gene by its protein-language-model embedding, enabling zero-shot generalization to species and tissues never seen at training time. Releases include pretrained weights and zero-shot inference scripts for novel cell-type discovery across species. Companion to [Papers.md ref #119](./Papers.md#119) (Rosen et al. 2026, bioRxiv; *Nature*, in press at time of curation). The same lab's earlier [SATURN](https://github.com/snap-stanford/SATURN) method ([ref #118](./Papers.md#118), Rosen et al. 2024, *Nature Methods*) introduced the protein-LM-gene-embedding pattern that UCE generalizes — directly relevant to cell-ag where annotated livestock-species single-cell data is sparse and cross-species transfer is essential.
+
+### [tGPT](https://github.com/deeplearningplus/tGPT)
+
+A generative pretraining model for single-cell deciphering, applying GPT-style autoregressive next-token prediction over gene-expression vocabularies. Smaller and earlier than scGPT or Geneformer, but methodologically important as one of the first demonstrations that next-token-prediction objectives (vs. masked-language-modeling) work for single-cell biology — the lineage that now includes Arc's [State](#state--cell-eval) and [Cell2Sentence](#cell2sentence-c2s-scale). Companion to [Papers.md ref #115](./Papers.md#115) (Shen et al. 2023, *iScience*).
+
+### [Cell2Sentence (C2S-Scale)](https://github.com/vandijklab/cell2sentence)
+
+A framework for treating single-cell expression profiles as natural-language sentences — ordered lists of expressed gene symbols ranked by expression — enabling direct reuse of pretrained LLM architectures (and, in C2S-Scale, billion-parameter scaling) for single-cell biology. From the [van Dijk lab](https://www.vandijklab.org/) at Yale. Companion to [Papers.md ref #120](./Papers.md#120) (Rizvi et al. 2026, bioRxiv). C2S-Scale project page: <https://www.vandijklab.org/c2s-scale>.
+
+### [GEARS](https://github.com/snap-stanford/GEARS)
+
+Graph-Enhanced gene-Activation Response Simulator — a graph neural network for predicting transcriptional outcomes of novel multi-gene CRISPR perturbations, including combinations never observed during training. From Stanford's SNAP lab (Leskovec group). Generalizes single-gene perturbation training data to combinatorial perturbation prediction via co-essentiality and gene-ontology graph priors. Companion to [Papers.md ref #121](./Papers.md#121) (Roohani et al. 2024, *Nature Biotechnology*).
+
+### [State + Cell-Eval](https://github.com/ArcInstitute/state)
+
+Arc Institute's first-generation virtual cell model and companion evaluation framework, designed to predict stem-cell, cancer-cell, and immune-cell responses to drugs, cytokines, and genetic perturbations. Trained on ~170M observational and ~100M perturbational single-cell measurements across 70+ cell lines; uses a bidirectional transformer architecture with self-attention over cell sets and reportedly is the first model to consistently beat simple linear baselines on perturbation-response prediction. Released alongside [`cell-eval`](https://github.com/ArcInstitute/cell-eval), the standardized evaluation framework for virtual-cell models. Companion to [Papers.md ref #57](./Papers.md#57) (Adduri et al. 2025, bioRxiv); see also the [Arc Institute news article on State](./OtherResources.md#virtual-cell-initiative--single-cell-foundation-models) in OtherResources.md. The follow-on **Stack** model — companion to [Papers.md ref #124](./Papers.md#124) (Dong et al. 2026) — extends State with in-context learning, simulating cellular conditions via prompt engineering without further fine-tuning.
+
+### [BioDiscoveryAgent](https://github.com/snap-stanford/BioDiscoveryAgent)
+
+An LLM-based AI agent from Stanford's SNAP lab for designing genetic-perturbation experiments — including CRISPR-Cas9 single-gene and combinatorial knockouts — by reasoning over gene-function literature, prior screens, and experimental constraints. Demonstrates that an LLM agent with tool use can match or exceed specialized active-learning methods on hit-rate-driven experimental-design tasks. Companion to [Papers.md ref #125](./Papers.md#125) (Roohani et al. 2025, arXiv). Directly applicable to cell-ag as an off-the-shelf experimental-design layer for cell-line-engineering campaigns (selecting which TFs to overexpress for myogenic vs. adipogenic differentiation, or which media-pathway genes to knock down to test rate-limiting steps).
+
+### [CausalBench](https://github.com/causalbench/causalbench)
+
+A large-scale benchmark for evaluating network-inference methods from single-cell perturbation data — including Perturb-seq, CROP-seq, and ECCITE-seq. Built around interventional ground truth from genome-scale CRISPR screens, providing standardized metrics, baselines, and dataset splits for ML methods that infer gene-regulatory networks. Companion to [Papers.md ref #127](./Papers.md#127) (Chevalley et al. 2025, *Communications Biology*).

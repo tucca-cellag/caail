@@ -76,6 +76,30 @@ The Human Cell Atlas is an international consortium effort to construct comprehe
 
 CZ CELLxGENE is the Chan Zuckerberg Initiative's platform for exploring and analyzing public single-cell data, providing harmonized scRNA-seq and multi-omics datasets aggregated from hundreds of studies (including Human Cell Atlas data) under consistent metadata standards. The CELLxGENE Census provides programmatic access to tens of millions of harmonized cells across human and mouse, exposed through a TileDB-backed Python / R API that supports fast queries by gene, tissue, disease, or assay. For cellular agriculture, cellxgene is the most practical source for assembling cross-study training sets (e.g. all skeletal muscle stem cells in the Census) for ML models of cell-type classification, perturbation prediction, and trajectory inference. Programmatic access via the `cellxgene-census` Python and R packages.
 
+### [Genecorpus-30M](https://huggingface.co/datasets/ctheodoris/Genecorpus-30M)
+
+Genecorpus-30M is the pretraining corpus for [Geneformer](./Software.md#geneformer) — a Hugging Face Datasets collection of ~30 million human single-cell transcriptomes assembled from publicly available scRNA-seq studies covering a broad range of human tissues and cell states. Each cell is encoded as a rank-ordered gene-expression "sentence" suitable for masked-language-model pretraining; the corpus is distributed under standard HF Datasets tooling with versioned snapshots. For cellular agriculture, Genecorpus-30M is the de-facto starting substrate for any human-cell foundation-model training run — and the template that cross-species fine-tuning approaches like [SATURN](https://github.com/snap-stanford/SATURN) ([Papers.md ref #118](./Papers.md#118)) and [UCE](./Software.md#uce) ([ref #119](./Papers.md#119)) build on to transfer to livestock species where annotated single-cell data is sparse. Companion to [Papers.md ref #111](./Papers.md#111) (Theodoris et al. 2023, *Nature*).
+
+### [Perturb-Sapiens](https://huggingface.co/datasets/arcinstitute/Perturb-Sapiens)
+
+Perturb-Sapiens is Arc Institute's Hugging Face Datasets release of large-scale perturbational single-cell measurements aggregated from public Perturb-seq, CROP-seq, and ECCITE-seq experiments, plus internal Arc data, covering 70+ human cell lines. The dataset is the training substrate for Arc's [State virtual cell model](./Software.md#state--cell-eval) ([Papers.md ref #57](./Papers.md#57)) and is a companion data product within the [Arc Virtual Cell Atlas](#arc-virtual-cell-atlas) alongside [Tahoe-100M](#tahoe-100m) and [scBaseCount](#scbasecount). For cellular agriculture, Perturb-Sapiens is the most comprehensive public source of cellular-perturbation-response data available — the methodology template for any future livestock-cell-perturbation atlas, and a useful benchmark for evaluating cross-species transfer of perturbation-response models.
+
+### Arc Virtual Cell Atlas
+
+The [Arc Virtual Cell Atlas](https://github.com/ArcInstitute/arc-virtual-cell-atlas) is Arc Institute's open-data initiative providing the substrate datasets for virtual-cell-modeling research, hosted on GitHub with documentation and uniformly processed releases, plus mirroring on [Google Cloud's BigQuery Public Data marketplace](https://console.cloud.google.com/marketplace/product/bigquery-public-data/arc-institute) for cloud-native analytics. The Atlas aggregates several large-scale single-cell datasets under a single curation umbrella:
+
+#### [Tahoe-100M](https://github.com/ArcInstitute/arc-virtual-cell-atlas/blob/main/tahoe-100M/README.md)
+
+A 100-million-cell drug-perturbation dataset profiling cancer-cell-line responses to >1,100 small molecules across 50+ cancer cell lines via large-scale Perturb-seq. The largest publicly available drug-perturbation single-cell dataset at time of release; methodology directly transferable to any future cell-ag work involving small-molecule modulators of differentiation, proliferation, or media response.
+
+#### [scBaseCount](https://github.com/ArcInstitute/arc-virtual-cell-atlas/blob/main/scBaseCount/README.md)
+
+An AI-agent-curated, uniformly processed, and autonomously updated single-cell data repository aggregating thousands of public scRNA-seq studies into a single harmonized reference — the data-engineering substrate that an autonomously updating virtual-cell atlas requires. Companion to [Papers.md ref #126](./Papers.md#126) (Youngblut et al. 2025).
+
+### [Parse Biosciences 10M PBMC Atlas](https://www.parsebiosciences.com/datasets/10-million-human-pbmcs-in-a-single-experiment/)
+
+A publicly released ~10-million peripheral blood mononuclear cell (PBMC) single-cell RNA-seq experiment from Parse Biosciences, demonstrating the throughput of their Evercode WT Mega platform. Includes harmonized cell-type annotations and represents the largest single-experiment PBMC atlas available at time of release. For cellular agriculture, useful both as a benchmark dataset for evaluating single-cell-FM batch-effect handling and scaling at extreme throughput, and as immune-cell reference data for cultivated-meat applications involving immune-cell co-cultures or contamination screening.
+
 ## Metabolic Pathways & Metabolomes
 
 Resources for cell-ag work on media formulation, metabolic engineering, and bioprocess optimization — where understanding metabolic networks, enzyme kinetics, and metabolite concentrations is central.

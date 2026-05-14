@@ -19,6 +19,16 @@ Talks on AI agents, foundation models, and language-model-based scientific reaso
 * [Florian Wuennemann: From Copilot to Co-scientist: Agents Lend a Hand](https://www.youtube.com/watch?v=eHlzUdAvqW0) (2026)
 * [Connecting Instruments, Data, and AI in the Orchestrated Lab](https://www.youtube.com/watch?v=PO7xOOs-1JA) (Dotmatics Luma webinar, 2026) — commercial perspective on connecting laboratory instruments, data systems, and AI agents into orchestrated R&D workflows; companion to the [Dotmatics Luma entry in Software.md](./Software.md#dotmatics-luma).
 
+## Virtual Cell Initiative & Single-Cell Foundation Models
+
+Companion landing pages, blog posts, and challenge announcements for the virtual-cell initiative — Arc Institute's foundation-model program (State, Stack), the broader CZ Virtual Cells Platform, and the open Virtual Cell Challenge. The conceptual framing for this cluster is in [Papers.md ref #128](./Papers.md#128) (Bunne et al. 2024, *Cell*) and [ref #129](./Papers.md#129) (Roohani et al. 2025, *Cell*); the foundation models themselves live in the [Foundation Models rows of Papers.md](./Papers.md) — split by training paradigm (next-token prediction, masked language modeling, LM + biological priors, cell-state & perturbation prediction) — and in the corresponding entries in [Software.md](./Software.md).
+
+* [Arc Virtual Cell Model: State (landing page)](https://arcinstitute.org/tools/state) — Project home for Arc Institute's State virtual-cell model and the underlying Virtual Cell Atlas.
+* [Arc Institute news: State — predicting cellular responses to perturbation across diverse contexts](https://arcinstitute.org/news/virtual-cell-model-state) (Arc Institute, 2025) — Announcement and overview of the State model and its training methodology; companion to [Papers.md ref #57](./Papers.md#57).
+* [Arc Institute news: Stack — simulating cellular conditions via prompt engineering, without fine-tuning](https://arcinstitute.org/news/foundation-model-stack) (Arc Institute, 2026) — Announcement of the Stack model, demonstrating in-context learning for single-cell biology; companion to [Papers.md ref #124](./Papers.md#124).
+* [Arc Virtual Cell Challenge (README)](https://github.com/ArcInstitute/arc-virtual-cell-atlas/blob/main/virtual-cell-challenge/README.md) — Open challenge for predictive virtual-cell modeling, operationalizing the Cell perspective in [Papers.md ref #129](./Papers.md#129).
+* [Cell2Sentence-Scale (van Dijk lab project page)](https://www.vandijklab.org/c2s-scale) — Yale lab project page for the C2S-Scale model; companion to [Papers.md ref #120](./Papers.md#120) and the [Cell2Sentence entry in Software.md](./Software.md#cell2sentence-c2s-scale).
+
 ## AI Fundamentals
 
 Educational playlists for wet-lab researchers — biologists, biochemists, bioprocess engineers, and cell-ag practitioners — who want to build foundational understanding of the AI / ML methods catalogued throughout the rest of this library. Curated for the audience that approaches machine learning from the biology side rather than the computer-science side; these are starting points, not exhaustive references. Once you have the basics, the matrix in [Papers.md](./Papers.md) and the tools in [Software.md](./Software.md) become much more navigable.
