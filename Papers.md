@@ -359,7 +359,7 @@ This section catalogs foundational primary research papers describing genome-sca
 
 This section catalogs the foundational methods and theory papers — from machine learning and from cell biology — that the AI × cell-ag work in the matrix builds upon, but which do not themselves apply a specific AI/ML method to a specific cell-ag problem (otherwise they would live in the matrix). The transformer architecture underlies every entry in the Foundation Models rows; the Waddington-landscape formalism is the conceptual substrate for the Cell-State & Perturbation Prediction row. Same numeric ID counter as the primary references; no matrix participation.
 
-<a id="130">130</a> Vaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A. N., Kaiser, L., & Polosukhin, I. (2017). *Attention Is All You Need.* arXiv. https://doi.org/10.48550/arXiv.1706.03762
+<a id="130">130</a> Vaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A. N., Kaiser, L., & Polosukhin, I. (2023). *Attention Is All You Need.* arXiv. https://doi.org/10.48550/arXiv.1706.03762
 
 <a id="131">131</a> Wang, J., Zhang, K., Xu, L., & Wang, E. (2011). Quantifying the Waddington landscape and biological paths for development and differentiation. *Proceedings of the National Academy of Sciences, 108*(20), 8257–8262. https://doi.org/10.1073/pnas.1017017108
 
