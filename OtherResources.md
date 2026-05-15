@@ -46,12 +46,28 @@ Introductory primers, industry-state reports, and field overviews — curated fo
 The Good Food Institute (GFI) publishes the de-facto annual *State of the Industry* reports across three tracks (cultivated, fermentation, plant-based); full PDFs and supplementary data are at GFI's [State of the Industry downloads page](https://gfi.org/resource/state-of-the-industry-downloads/).
 
 * [Introduction to Cellular Agriculture](https://www.youtube.com/watch?v=-0eap5cg6mE) (TUCCA — Tufts University Center for Cellular Agriculture) — primer covering the science, motivation, and current state of the field.
-* [Artificial Intelligence in Cellular Agriculture Initiative (AICAI)](https://www.new-harvest.org/artificial-intelligence-in-cellular-agriculture-initiative) (New Harvest) — New Harvest's initiative connecting AI / ML researchers with cellular agriculture, with an overview of how the two fields intersect.
 * [Fireside Chat: Bruce Friedrich and David Kaplan](https://www.youtube.com/watch?v=59NrhsHQT0U) (Tufts Future Food Innovation Day, 2026) — conversation between the GFI founder and the TUCCA / Tufts cell-ag program lead on the field's direction.
 * [MEAT by Bruce Friedrich](https://meatbook.org/) — book by GFI's founder covering the case for cellular agriculture and alternative proteins.
 * [2026 State of the Industry: Cultivated meat, seafood, and ingredients](https://www.youtube.com/watch?v=F1s702taM5o) (GFI, 2026).
 * [2026 State of the Industry: Fermentation for meat, seafood, eggs, dairy, and ingredients](https://www.youtube.com/watch?v=eCBclCUZOg0) (GFI, 2026).
 * [2026 State of the Industry: Plant-based meat, seafood, eggs, dairy, and ingredients](https://www.youtube.com/watch?v=OEuehZB7YVM) (GFI, 2026).
+
+## Cell-Ag Ecosystem Directories & Initiatives
+
+CAAIL's "adjacent universe" — complementary resources that catalogue the *people, companies, regulation, and research programs* of cellular agriculture, where CAAIL itself catalogues *outputs* (papers, software, datasets, educational material). These are resources to link to and draw on rather than duplicate; the New Harvest initiatives in particular produce primary outputs (datasets, working papers) that become cataloguable in CAAIL's core files as they are published.
+
+### New Harvest initiatives
+
+* [AI in Cellular Agriculture Initiative (AICAI)](https://www.new-harvest.org/artificial-intelligence-in-cellular-agriculture-initiative) — New Harvest's programmatic effort connecting AI / ML researchers with cellular agriculture: funding research (including an ML-for-media-optimization residency) and building open datasets. The closest mission-level analogue to CAAIL, though a research *program* rather than a catalogue.
+* [Cellular Agriculture Science Engine](https://www.new-harvest.org/cellular-agriculture-science-engine) — A crowdfunded research-portfolio mechanism (New Harvest with FootPrint Coalition and Experiment.com) that funds cell-ag projects; a source of future cataloguable research outputs.
+* [Cultured Meat Safety Initiative (CMSI)](https://www.new-harvest.org/cultured-meat-safety-initiative-cmsi) — A joint New Harvest / Vireo Advisors initiative convening stakeholders on the safety and regulatory science of cultivated products; outputs (datasets, guidance documents) are cataloguable as they are released.
+
+### Good Food Institute (GFI) directories & trackers
+
+* [Alternative Protein Researcher Directory](https://gfi.org/resource/alternative-protein-researcher-directory/) — GFI's global directory of researchers working on plant-based meat, cultivated meat, and fermentation. Complementary to CAAIL: GFI catalogues *people and labs*, CAAIL catalogues their *outputs*.
+* [Alternative Protein Company Database](https://gfi.org/resource/alternative-protein-company-database/) — GFI's catalogue of alternative-protein companies, including funding status and impact-investment context — the industry-side map of the field.
+* [APAC Alternative Protein Ecosystem Database](https://gfi-apac.org/industry/alternative-protein-ecosystem-database/) — GFI APAC's regional B2B directory of ingredient and equipment suppliers, pilot plants, consultants, and other supply-chain partners across the Asia-Pacific cell-ag ecosystem.
+* [Where Cultivated Meat Can Be Sold](https://gfi.org/resource/where-cultivated-meat-can-be-sold/) — GFI's live tracker of countries where cultivated meat has regulatory approval for sale, with associated companies and product formats — the kind of dynamic regulatory data CAAIL links to rather than duplicates.
 
 ## Curated Bibliographies & Awesome Lists
 
