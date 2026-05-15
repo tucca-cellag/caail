@@ -1,4 +1,7 @@
 # CAAIL: Cellular Agriculture AI Library
+
+[![Zotero group library](https://img.shields.io/badge/Zotero-caail_group_library-CC2936?logo=zotero&logoColor=white)](https://www.zotero.org/groups/6549203/caail/library)
+
 This repository, CAAIL (Cellular Agriculture AI Library), is a curated, open-source collection of resources dedicated to the intersection of Cellular Agriculture and AI. CAAIL is maintained by [The Tufts University Center for Cellular Agriculture (TUCCA)](https://cellularagriculture.tufts.edu/) — see TUCCA's [GitHub organization](https://github.com/tucca-cellag) for related projects and follow [@tuftscellag](https://twitter.com/tuftscellag) for updates.
 
 # The Goal
@@ -13,6 +16,9 @@ We organize and host links to public resources across key areas of research:
 * [Software & Code](./Software.md): Links to open-source tools, code repositories, and specialized algorithms used for media optimization, bioreactor modeling, and image analysis.
 * [Datasets](./Data.md): References and links to publicly available datasets (e.g., proteomics, genomics, high-throughput screening data) relevant to cellular agriculture.
 * [Other Educational Materials](./OtherResources.md): Videos and other resources relevant to the use of AI in cellular agriculture.
+
+# Companion Zotero Library
+CAAIL has a companion [Zotero group library](https://www.zotero.org/groups/6549203/caail/library) maintained by core TUCCA members, holding the full-text PDFs of papers under consideration. Its purpose is to give AI coding agents running on TUCCA members' machines direct access to paper full text — so that resources are classified from the actual methods rather than abstracts alone. It is a members-only working library, not a contribution channel: to suggest a resource, use the GitHub workflow in [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 # Contributing
 Suggestions of papers, software, datasets, and other resources are welcome. See [CONTRIBUTING.md](./CONTRIBUTING.md) for how to propose additions via pull request or GitHub issue.
