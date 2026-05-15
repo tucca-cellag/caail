@@ -4,7 +4,7 @@ This document presents the core research papers at the intersection of Cellular 
 | | [Media Optimization](./ResearchAreas/MediaOptimization.md) | [Cellular Engineering](./ResearchAreas/CellEngineering.md) | [Bioprocess control](./ResearchAreas/Bioprocess.md) | [Scaffolding](./ResearchAreas/Scaffolding.md)  | [Sensory Prediction](./ResearchAreas/SensoryPrediction.md) | [AI Tooling / Methodology](./ResearchAreas/AITooling.md) |
 |---|---|---|---|---|---|---|
 | [Bayesian Optimization](https://en.wikipedia.org/wiki/Bayesian_optimization) | [Cosenza et al. 2023](#2)<br>[Cosenza et al. 2022](#3)<br>[Yoshida et al. 2023](#15)<br>[Kanda et al. 2022](#16)<br>[Cosenza 2022](#18)<br>[Narayanan et al. 2025](#58) | [Kanda et al. 2022](#16) | [Antonakoudis & Richelle 2026](#59) | | | |
-| [Deep Learning](https://en.wikipedia.org/wiki/Deep_learning) | [Nikkhah et al. 2023](#1)<br>[Yoshida et al. 2023](#15)<br>[Cosenza & Block 2021](#17)<br>[Cosenza 2022](#18) | [Chen et al. 2016](#4)<br>[Li et al. 2020](#5)<br>[Ji et al. 2021](#6)<br>[Adduri et al. 2025](#57)<br>[Mathieu et al. 2025](#60)<br>[Magnusson et al. 2024](#122) | [Tamburini et al. 2014](#7) | [Rafieyan et al. 2024](#20)<br>[Andrews et al. 2023](#35) | | |
+| [Deep Learning](https://en.wikipedia.org/wiki/Deep_learning) | [Nikkhah et al. 2023](#1)<br>[Yoshida et al. 2023](#15)<br>[Cosenza & Block 2021](#17)<br>[Cosenza 2022](#18) | [Chen et al. 2016](#4)<br>[Li et al. 2020](#5)<br>[Ji et al. 2021](#6)<br>[Adduri et al. 2025](#57)<br>[Mathieu et al. 2025](#60)<br>[Magnusson et al. 2024](#122)<br>[Xiao et al. 2026](#145) | [Tamburini et al. 2014](#7) | [Rafieyan et al. 2024](#20)<br>[Andrews et al. 2023](#35) | | |
 | [GNN](https://en.wikipedia.org/wiki/Graph_neural_network) | | [Ciortan & Defrance 2022](#8)<br>[Shan et al. 2023](#12)<br>[Wang et al. 2021](#13)<br>[Roohani et al. 2024](#121) | | | [Lee et al. 2023](#14)<br>[Qian et al. 2023](#36) | [Mulyadi et al. 2025](#52) |
 | [CNN](https://en.wikipedia.org/wiki/Convolutional_neural_network) | | | [Del Rio‐Chanona et al. 2019](#29)<br>[Rojek et al. 2021](#33) | [Bermejillo Barrera et al. 2021](#19) | [Shen et al. 2024](#11)<br>[Sun et al. 2023](#26) | |
 | [GAN](https://en.wikipedia.org/wiki/Generative_adversarial_network) / [VAE](https://en.wikipedia.org/wiki/Variational_autoencoder) | | [Lin et al. 2020](#9)<br>[Zrimec et al. 2022](#10) | | | [Shen et al. 2024](#11) | |
@@ -319,6 +319,8 @@ This document presents the core research papers at the intersection of Cellular 
 
 > **Code**: https://github.com/biocontext-ai
 
+<a id="145">145</a> Xiao, W., Zheng, J., & Li, S. Z. (2026). *MetaGEM: Bottom-Up Reconstruction of Genome-Scale Metabolic Networks via Deep Enzyme-Metabolite Interaction Modeling.* arXiv. https://doi.org/10.48550/arXiv.2605.14812
+
 ## Sensory & Flavor Reference Work
 
 This section catalogs foundational primary research and methodology papers in sensory science, flavor chemistry, and analytical sensomics relevant to cellular agriculture, cultivated meat, and alt-protein products. Entries here do not apply a specific AI / ML method to a specific cell-ag problem (otherwise they would live in the matrix), but they are essential reference work — empirical studies, methodology frameworks, and applied chemometric analyses — that any AI/ML application in this space should build on. The same numeric ID counter is shared with the primary references above; no matrix participation.
@@ -366,6 +368,34 @@ This section catalogs the foundational methods and theory papers — from machin
 <a id="130">130</a> Vaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A. N., Kaiser, L., & Polosukhin, I. (2023). *Attention Is All You Need.* arXiv. https://doi.org/10.48550/arXiv.1706.03762
 
 <a id="131">131</a> Wang, J., Zhang, K., Xu, L., & Wang, E. (2011). Quantifying the Waddington landscape and biological paths for development and differentiation. *Proceedings of the National Academy of Sciences, 108*(20), 8257–8262. https://doi.org/10.1073/pnas.1017017108
+
+## Livestock Functional Genomics Reference Work
+
+This section catalogs foundational primary research describing the Farm Animal Genotype–Tissue Expression (FarmGTEx) project and adjacent multi-tissue functional-genomics resources for cell-ag-relevant species (cattle, pig, chicken, sheep). As with the Sensory & Flavor and Metabolic Reference Work sections above, entries here are primary research where the contribution is a large-scale multi-tissue atlas, regulatory-effects map, or annotation resource — substrate that any AI/ML application in livestock cell biology should build on, rather than an applied AI/ML method per se. Same numeric ID counter as the primary references; no matrix participation. Each entry below is the canonical citation for the corresponding data resource in [Databases.md / Livestock Multi-Tissue Atlases & Functional Genomics](./Databases.md#livestock-multi-tissue-atlases--functional-genomics).
+
+<a id="134">134</a> Fang, L., Teng, J., Lin, Q., Bai, Z., Liu, S., Guan, D., Li, B., Gao, Y., Hou, Y., Gong, M., Pan, Z., Yu, Y., Clark, E. L., Smith, J., Rawlik, K., Xiang, R., Chamberlain, A. J., Goddard, M. E., Littlejohn, M., ... Liu, G. E. (2025). The Farm Animal Genotype–Tissue Expression (FarmGTEx) Project. *Nature Genetics, 57*(4), 786–796. https://doi.org/10.1038/s41588-025-02121-5
+
+<a id="135">135</a> Teng, J., Gao, Y., Yin, H., Bai, Z., Liu, S., Zeng, H., Bai, L., Cai, Z., Zhao, B., Li, X., Xu, Z., Lin, Q., Pan, Z., Yang, W., Yu, X., Guan, D., Hou, Y., Keel, B. N., Rohrer, G. A., ... Fang, L. (2024). A compendium of genetic regulatory effects across pig tissues. *Nature Genetics, 56*(1), 112–123. https://doi.org/10.1038/s41588-023-01585-7
+
+<a id="136">136</a> Guan, D., Bai, Z., Zhu, X., Zhong, C., Hou, Y., Zhu, D., Li, H., Lan, F., Diao, S., Yao, Y., Zhao, B., Li, X., Pan, Z., Gao, Y., Wang, Y., Zou, D., Wang, R., Xu, T., Sun, C., ... Fang, L. (2025). Genetic regulation of gene expression across multiple tissues in chickens. *Nature Genetics, 57*(5), 1298–1308. https://doi.org/10.1038/s41588-025-02155-9
+
+<a id="137">137</a> Han, B., Li, H., Zheng, W., Zhang, Q., Chen, A., Zhu, S., Shi, T., Wang, F., Zou, D., Song, Y., Ye, W., Du, A., Fu, Y., Jia, M., Bai, Z., Yuan, Z., Liu, W., Tuo, W., Hope, J. C., MacHugh, D. E., O'Grady, J. F., Madsen, O., Sahana, G., Luo, Y., Lin, L., Li, C., Cai, Z., Li, B., Huang, J., Liu, L., Zhang, Z., Ma, Z., Hou, Y., Liu, G. E., Jiang, Y., Sun, H. Z., Fang, L., & Sun, D. (2025). A multi-tissue single-cell expression atlas in cattle. *Nature Genetics, 57*(10), 2546–2561. https://doi.org/10.1038/s41588-025-02329-5
+
+<a id="138">138</a> Gong, M., Zhuang, Z., Sun, X., Xu, Y., Zhang, H., Wang, Y., Guan, D., Li, R., Lu, X., Bai, Z., Feng, P., Song, M., Tian, M., Lu, J., Wang, M., Lu, X., Wu, D., Su, P., Liu, P., ... Fang, L. (2025). *A multi-tissue atlas of genetic regulatory effects in sheep.* bioRxiv. https://doi.org/10.1101/2025.11.03.686346
+
+<a id="139">139</a> Zeng, H., Zhang, W., Lin, Q., Gao, Y., Teng, J., Xu, Z., Cai, X., Zhong, Z., Wu, J., Liu, Y., Diao, S., Wei, C., Gong, W., Pan, X., Li, Z., Huang, X., Chen, X., Du, J., The PigGTEx Consortium, Zhao, F., Zhao, Y., Ballester, M., Crespo-Piazuelo, D., Amills, M., Clop, A., Karlskov-Mortensen, P., Fredholm, M., Li, P., Huang, R., Tang, G., Li, M., Liu, X., Chen, Y., Zhang, Q., Li, J., Yuan, X., Ding, X., Fang, L., & Zhang, Z. (2024). PigBiobank: a valuable resource for understanding genetic and biological mechanisms of diverse complex traits in pigs. *Nucleic Acids Research, 52*(D1), D980–D989. https://doi.org/10.1093/nar/gkad1080
+
+<a id="140">140</a> Xu, Z., Lin, Q., Cai, X., Zhong, Z., Teng, J., Li, B., Zeng, H., Gao, Y., Cai, Z., Wang, X., Shi, L., Wang, X., Wang, Y., Zhang, Z., Lin, Y., Liu, S., Yin, H., Bai, Z., Wei, C., ... Zhang, Z. (2025). Integrating large-scale meta-GWAS and PigGTEx resources to decipher the genetic basis of complex traits in the pig. *National Science Review, 12*(5), nwaf048. https://doi.org/10.1093/nsr/nwaf048
+
+<a id="141">141</a> Pan, X., Gong, W., Cai, X., Teng, J., Cai, J., Zeng, H., Ayalew, W., Shen, Q., Zhong, Z., Wang, Y., Zhang, W., Tian, Y., Xu, D., Gao, Y., Yin, H., Zhang, Y., Hou, J., Zhou, T., Li, J., Fang, L., Yuan, X., & Zhang, Z. (2026). Multi-Tissue Genetic Regulation of RNA Editing in Pigs. *Advanced Science, 13*(17), e18238. https://doi.org/10.1002/advs.202518238
+
+<a id="142">142</a> Chen, L., Li, H., Teng, J., Wang, Z., Qu, X., Chen, Z., Cai, X., Zeng, H., Bai, Z., Li, J., Pan, X., Yan, L., Wang, F., Lin, L., Luo, Y., Sahana, G., Lund, M. S., Ballester, M., Crespo-Piazuelo, D., Karlskov-Mortensen, P., Fredholm, M., Clop, A., Amills, M., Loving, C., Tuggle, C. K., Madsen, O., Li, J., Zhang, Z., Liu, G. E., Jiang, J., Fang, L., & Yi, G. (2026). Construction of a Multitissue Cell Atlas Reveals Cell-Type-Specific Regulation of Molecular and Complex Phenotypes in Pigs. *Advanced Science, 13*(8), e04961. https://doi.org/10.1002/advs.202504961
+
+<a id="143">143</a> Teng, J., Zhang, W., Gong, W., Chen, J., Gao, Y., Fang, L., & Zhang, Z. (2026). OmiGA for ultra-efficient molecular quantitative trait loci mapping. *Nature Communications, 17*(1), 2680. https://doi.org/10.1038/s41467-026-68978-0
+
+> **Code**: https://omiga.bio/
+
+<a id="144">144</a> Clark, E. L., Archibald, A. L., Daetwyler, H. D., Groenen, M. A. M., Harrison, P. W., Houston, R. D., Kühn, C., Lien, S., Macqueen, D. J., Reecy, J. M., Robledo, D., Watson, M., Tuggle, C. K., & Giuffra, E. (2020). From FAANG to fork: application of highly annotated genomes to improve farmed animal production and welfare. *Genome Biology, 21*(1), 285. https://doi.org/10.1186/s13059-020-02197-8
 
 ## Reviews & Perspectives
 
