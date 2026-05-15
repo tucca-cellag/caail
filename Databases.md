@@ -28,6 +28,38 @@ Ensembl is the principal vertebrate genome browser and annotation database, join
 
 ArrayExpress, now part of the broader BioStudies platform at EMBL-EBI, is a public archive of functional genomics experiments — array-based and sequence-based, bulk and single-cell — covering transcriptomics, epigenomics, and related assays. Many studies are deposited simultaneously in GEO and ArrayExpress, but a meaningful subset (particularly from EU-based labs) is unique to ArrayExpress, making it a complementary source to GEO for comprehensive data mining. For cellular agriculture, ArrayExpress is a useful secondary index when searching for European-led work on livestock cell biology, comparative myogenesis, and cell-line characterization. Programmatic access via the BioStudies REST API.
 
+## Livestock Multi-Tissue Atlases & Functional Genomics
+
+Per-species multi-tissue expression, regulatory-effects, and functional-genomics atlases for cell-ag-relevant livestock species. The Farm Animal Genotype–Tissue Expression (FarmGTEx) project family is the canonical effort here — modeled after human GTEx, scaled across cattle, pig, chicken, and sheep — paired with the broader FAANG (Functional Annotation of Animal Genomes) network and species-specific biobank portals. For the foundational papers, see [Papers.md / Livestock Functional Genomics Reference Work](./Papers.md#livestock-functional-genomics-reference-work); for the analysis tooling, see [Software.md / Quantitative Genetics & Multi-Omics Analysis](./Software.md#quantitative-genetics--multi-omics-analysis).
+
+### [FarmGTEx](https://www.farmgtex.org/)
+
+The Farm Animal Genotype–Tissue Expression project — an international consortium developing GTEx-style multi-tissue resources for livestock species. Hosts the umbrella project portal plus links to per-species sub-portals (PigGTEx, ChickenGTEx, CattleGTEx) and shared infrastructure (TWAS-Server, PigBiobank). The canonical entry point for livestock systems-genetics work. Companion to [Papers.md ref #134](./Papers.md#134) (Fang et al. 2025, *Nature Genetics*).
+
+### [PigGTEx-Portal](https://piggtex.farmgtex.org/)
+
+Pig sub-portal of the FarmGTEx consortium, providing browse and query access to multi-tissue expression QTL (eQTL), splice QTL (sQTL), and related molecular-QTL maps across pig tissues. Companion to [Papers.md ref #135](./Papers.md#135) (Teng et al. 2024, *Nature Genetics*) and complemented by [PigBiobank](#pigbiobank) for trait-data integration.
+
+### [ChickenGTEx-Portal](https://chicken.farmgtex.org/)
+
+Chicken sub-portal of FarmGTEx, providing multi-tissue genetic-regulation maps across chicken tissues — the first GTEx-style resource for a non-mammalian amniote livestock species, directly useful for cultivated-chicken cell-line engineering work. Companion to [Papers.md ref #136](./Papers.md#136) (Guan et al. 2025, *Nature Genetics*).
+
+### [CattleGTEx](https://ngdc.cncb.ac.cn/cattleca/home)
+
+Cattle sub-portal of FarmGTEx, providing bulk and single-cell multi-tissue expression atlases for cattle (*Bos taurus*) — directly relevant to cultivated-beef cell-line characterization and engineering. Companion to [Papers.md ref #137](./Papers.md#137) (Han et al. 2025, *Nature Genetics*, the single-cell atlas paper).
+
+### [FarmGTEx TWAS-Server](https://twas.farmgtex.org/)
+
+Server providing transcriptome-wide association study (TWAS) analyses across the FarmGTEx tissue / sample matrix — links expression-genetics signals to complex-trait associations across livestock species. Companion infrastructure to the species-specific FarmGTEx sub-portals above.
+
+### [PigBiobank](https://pigbiobank.farmgtex.org/)
+
+Trait-data biobank coordinated with PigGTEx, integrating phenotypic, genotypic, and expression data on diverse pig traits — complementary to PigGTEx-Portal's molecular-QTL focus. Companion to [Papers.md ref #139](./Papers.md#139) (Zeng et al. 2024, *Nucleic Acids Research*).
+
+### [FAANG (Functional Annotation of Animal Genomes)](https://www.faang.org/)
+
+A global research consortium and resource network for functional annotation of farmed-animal genomes, paralleling ENCODE for human/mouse but focused on livestock species. Predates FarmGTEx and provides the broader functional-annotation substrate (chromatin state, regulatory elements, etc.) that FarmGTEx expression-genetics work builds on. Companion to [Papers.md ref #144](./Papers.md#144) (Clark et al. 2020, *Genome Biology*).
+
 ## Protein & Structure Databases
 
 These data sources are helpful for computational tasks related to engineering recombinant growth factors, signaling molecules, and other media components, and for understanding protein-level cell biology.
