@@ -1,6 +1,6 @@
-# Datasets
+# Databases
 
-This section is a curated list of publicly available data resources relevant to AI/ML research on cellular agriculture problems — media formulation, cell line engineering, bioprocess control, scaffolding, and sensory prediction. Resources are organized by the kind of data they host. For a broader catalog of biological databases beyond what's curated here, see Wikipedia's [List of biological databases](https://en.wikipedia.org/wiki/List_of_biological_databases).
+This page catalogs **living, queryable resources** — repositories, ontologies, structure / compound / pathway databases, spectral libraries, and ecosystem / industry directories — that you query for reference, annotation, or lookup. For fixed train-on data artifacts (corpora, atlases, GEM model files), see [Datasets.md](./Datasets.md). For a broader catalog of biological databases beyond what's curated here, see Wikipedia's [List of biological databases](https://en.wikipedia.org/wiki/List_of_biological_databases).
 
 > **Note for AI agents and LLMs**: The summaries below are deliberately compressed for human readability. If you are an automated system using these as the basis for reasoning, citation, or downstream analysis, please fetch the canonical site for each database — the linked sources have substantially more comprehensive and authoritative information than this curated overview, plus the field-specific schemas, APIs, licensing terms, and version histories that this page does not document.
 
@@ -76,30 +76,6 @@ The Human Cell Atlas is an international consortium effort to construct comprehe
 
 CZ CELLxGENE is the Chan Zuckerberg Initiative's platform for exploring and analyzing public single-cell data, providing harmonized scRNA-seq and multi-omics datasets aggregated from hundreds of studies (including Human Cell Atlas data) under consistent metadata standards. The CELLxGENE Census provides programmatic access to tens of millions of harmonized cells across human and mouse, exposed through a TileDB-backed Python / R API that supports fast queries by gene, tissue, disease, or assay. For cellular agriculture, cellxgene is the most practical source for assembling cross-study training sets (e.g. all skeletal muscle stem cells in the Census) for ML models of cell-type classification, perturbation prediction, and trajectory inference. Programmatic access via the `cellxgene-census` Python and R packages.
 
-### [Genecorpus-30M](https://huggingface.co/datasets/ctheodoris/Genecorpus-30M)
-
-Genecorpus-30M is the pretraining corpus for [Geneformer](./Software.md#geneformer) — a Hugging Face Datasets collection of ~30 million human single-cell transcriptomes assembled from publicly available scRNA-seq studies covering a broad range of human tissues and cell states. Each cell is encoded as a rank-ordered gene-expression "sentence" suitable for masked-language-model pretraining; the corpus is distributed under standard HF Datasets tooling with versioned snapshots. For cellular agriculture, Genecorpus-30M is the de-facto starting substrate for any human-cell foundation-model training run — and the template that cross-species fine-tuning approaches like [SATURN](https://github.com/snap-stanford/SATURN) ([Papers.md ref #118](./Papers.md#118)) and [UCE](./Software.md#uce) ([ref #119](./Papers.md#119)) build on to transfer to livestock species where annotated single-cell data is sparse. Companion to [Papers.md ref #111](./Papers.md#111) (Theodoris et al. 2023, *Nature*).
-
-### [Perturb-Sapiens](https://huggingface.co/datasets/arcinstitute/Perturb-Sapiens)
-
-Perturb-Sapiens is Arc Institute's Hugging Face Datasets release of large-scale perturbational single-cell measurements aggregated from public Perturb-seq, CROP-seq, and ECCITE-seq experiments, plus internal Arc data, covering 70+ human cell lines. The dataset is the training substrate for Arc's [State virtual cell model](./Software.md#state--cell-eval) ([Papers.md ref #57](./Papers.md#57)) and is a companion data product within the [Arc Virtual Cell Atlas](#arc-virtual-cell-atlas) alongside [Tahoe-100M](#tahoe-100m) and [scBaseCount](#scbasecount). For cellular agriculture, Perturb-Sapiens is the most comprehensive public source of cellular-perturbation-response data available — the methodology template for any future livestock-cell-perturbation atlas, and a useful benchmark for evaluating cross-species transfer of perturbation-response models.
-
-### Arc Virtual Cell Atlas
-
-The [Arc Virtual Cell Atlas](https://github.com/ArcInstitute/arc-virtual-cell-atlas) is Arc Institute's open-data initiative providing the substrate datasets for virtual-cell-modeling research, hosted on GitHub with documentation and uniformly processed releases, plus mirroring on [Google Cloud's BigQuery Public Data marketplace](https://console.cloud.google.com/marketplace/product/bigquery-public-data/arc-institute) for cloud-native analytics. The Atlas aggregates several large-scale single-cell datasets under a single curation umbrella:
-
-#### [Tahoe-100M](https://github.com/ArcInstitute/arc-virtual-cell-atlas/blob/main/tahoe-100M/README.md)
-
-A 100-million-cell drug-perturbation dataset profiling cancer-cell-line responses to >1,100 small molecules across 50+ cancer cell lines via large-scale Perturb-seq. The largest publicly available drug-perturbation single-cell dataset at time of release; methodology directly transferable to any future cell-ag work involving small-molecule modulators of differentiation, proliferation, or media response.
-
-#### [scBaseCount](https://github.com/ArcInstitute/arc-virtual-cell-atlas/blob/main/scBaseCount/README.md)
-
-An AI-agent-curated, uniformly processed, and autonomously updated single-cell data repository aggregating thousands of public scRNA-seq studies into a single harmonized reference — the data-engineering substrate that an autonomously updating virtual-cell atlas requires. Companion to [Papers.md ref #126](./Papers.md#126) (Youngblut et al. 2025).
-
-### [Parse Biosciences 10M PBMC Atlas](https://www.parsebiosciences.com/datasets/10-million-human-pbmcs-in-a-single-experiment/)
-
-A publicly released ~10-million peripheral blood mononuclear cell (PBMC) single-cell RNA-seq experiment from Parse Biosciences, demonstrating the throughput of their Evercode WT Mega platform. Includes harmonized cell-type annotations and represents the largest single-experiment PBMC atlas available at time of release. For cellular agriculture, useful both as a benchmark dataset for evaluating single-cell-FM batch-effect handling and scaling at extreme throughput, and as immune-cell reference data for cultivated-meat applications involving immune-cell co-cultures or contamination screening.
-
 ## Metabolic Pathways & Metabolomes
 
 Resources for cell-ag work on media formulation, metabolic engineering, and bioprocess optimization — where understanding metabolic networks, enzyme kinetics, and metabolite concentrations is central.
@@ -151,46 +127,6 @@ The US National Institute of Standards and Technology's reference compendium of 
 ### [MetaboLights](https://www.ebi.ac.uk/metabolights/)
 
 MetaboLights is a public open-access repository for metabolomics experiments hosted at EMBL-EBI — the metabolomics analog of GEO (transcriptomics) or PRIDE (proteomics). Each study deposit includes raw MS / NMR data, processed datasets, sample / treatment metadata in ISA-Tab format, and standardized study-protocol annotations. For cellular agriculture, MetaboLights hosts experiments directly relevant to flavor metabolomics, fermentation chemistry, and cell-culture spent-media analysis — a primary source of training data for sensory-prediction ML and benchmark datasets for analytical pipeline validation. Programmatic access via REST API; bulk download via FTP.
-
-## Cell-Ag Species Metabolic Models (GEMs)
-
-A small but growing collection of genome-scale metabolic models (GEMs) for the species most relevant to cellular agriculture. GEMs are SBML-formatted reconstructions of an organism's metabolic network — every reaction, every metabolite, every gene-protein-reaction mapping — and are the input data structure for the constraint-based modeling tools listed in [Software.md / Metabolic Modeling & Strain Design](./Software.md#metabolic-modeling--strain-design). The cell-ag GEM ecosystem is currently fragmented across preprints, supplementary materials, and individual GitHub repos rather than centralized in any single database; this section is a curated inventory pending the emergence of a canonical home (BiGG Models currently hosts microbial GEMs but few of the cell-ag species below).
-
-### BtaSBML2986 — *Bos taurus* (bovine)
-
-The first cultivated-meat-focused genome-scale metabolic reconstruction of cattle, published 2024 by Lee et al. as a bioRxiv preprint. The model integrates multi-omics data (genomics, transcriptomics, proteomics) and contains ~13,278 reactions across 2,986 genes, with biomass functions parameterized for cultivated-meat-relevant bovine cell types. Designed to support FBA-driven identification of media supplement combinations and metabolic bottlenecks for cultivated beef production. SBML files are distributed via the preprint's supplementary materials.
-
-Reference: [Papers.md #81](./Papers.md#81) (Lee et al. 2024, bioRxiv).
-
-### iES1300 — *Gallus gallus* (chicken)
-
-Generic genome-scale metabolic reconstruction of chicken, published 2022 in *PLOS ONE* by Salehabadi, Motamedian, and Shojaosadati. Contains 2,427 reactions across 1,300 genes (hence the `i...1300` name); used to investigate network connectivity and identify potential biomarkers across chicken tissues. The reference GEM for cultivated chicken cell-line metabolic modeling, with SBML files provided as supplementary data.
-
-Reference: [Papers.md #82](./Papers.md#82) (Salehabadi, Motamedian, & Shojaosadati 2022, *PLOS ONE*).
-
-### PigGEM2025 — *Sus scrofa* (porcine)
-
-Proteome-constrained metabolic model of pig muscle stem cells for cultivated meat production, published 2026 in *Metabolic Engineering* by Qiu et al. (a Sticta × Meatable collaboration with GFI grant funding; initially deposited as a bioRxiv preprint in September 2025). Tailored to the porcine muscle satellite cell context, enabling FBA / FVA analysis of cultivated pork media formulations and metabolic-engineering targets. SBML files released alongside the paper.
-
-Reference: [Papers.md #83](./Papers.md#83) (Qiu et al. 2026, *Metabolic Engineering*).
-
-### SALARECON — *Salmo salar* (Atlantic salmon)
-
-Whole-genome metabolic reconstruction of Atlantic salmon, published 2022 in *PLOS Computational Biology* with a focus on connecting genome content to growth and feed-efficiency phenotypes. The reference GEM for cultivated salmonid work — directly relevant to the cultivated seafood category (salmon, trout) that has begun attracting investment (Umami Bioworks, BlueNalu, Wildtype). SBML files distributed via the paper's supplementary materials and the SALARECON GitHub repository.
-
-Reference: [Papers.md #84](./Papers.md#84) (Zakhartsev et al. 2022, *PLOS Computational Biology*).
-
-### iCHO1766 / iCHO2048 / CHOmpact — Chinese Hamster Ovary (biopharma-adjacent reference)
-
-The CHO cell line is the mammalian biopharma workhorse, and its GEM family is the most-developed mammalian GEM ecosystem available — Hefzi et al.'s iCHO1766 (2016, *Cell Systems*) is the consensus reconstruction; iCHO2048 (2018) extends the secretory pathway; CHOmpact (2024) and follow-on Bayesian-flux-estimation pipelines (2025) produce reduced models for digital-twin work. CHO is not itself a cellular agriculture species, but its biomass parameterization, perfusion-process methodology, and reduction techniques translate directly to cell-ag GEMs (bovine, porcine, avian) currently under construction.
-
-Reference: [Papers.md #85](./Papers.md#85) (Hefzi et al. 2016, *Cell Systems*).
-
-### Recon3D / Human1 / HMR — *Homo sapiens* (template / upstream reference)
-
-The human genome-scale metabolic reconstructions — Recon3D (Brunk et al. 2018, *Nature Biotechnology*), Human-GEM / Human1 (Robinson et al. 2020, *Science Signaling*), and the underlying HMR2 — are the foundational human GEMs from which most mammalian-cell models (including the cell-ag GEMs above) inherit reaction networks, biomass equations, and curation conventions. Direct use in cell-ag is rare; they're more often used as homology templates or biomass-function donors for species-specific reconstructions.
-
-References: [Papers.md #86](./Papers.md#86) (Brunk et al. 2018, *Nature Biotechnology*) for Recon3D; [Papers.md #87](./Papers.md#87) (Robinson et al. 2020, *Science Signaling*) for Human-GEM.
 
 ## Chemistry & Compound Data
 
