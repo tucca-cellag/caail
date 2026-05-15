@@ -147,6 +147,8 @@ A standalone tool for in-silico compound identification from MS/MS spectra, deve
 
 The Global Natural Products Social Molecular Networking platform — a web-based MS/MS analysis platform from the Dorrestein lab at UCSD (Wang et al. 2016, *Nat Biotech*). Provides community-curated reference spectral libraries, Feature-Based Molecular Networking (FBMN), Ion Identity Molecular Networking (IIMN), and analog search via spectral similarity. Standard tool for compound annotation, dereplication, and pattern discovery in flavor and natural-products metabolomics workflows.
 
+*Also listed as a spectral-library reference in [Databases.md / Mass Spectrometry Spectral Databases](./Databases.md#mass-spectrometry-spectral-databases) — dual-listed because the community-curated reference libraries are themselves a queryable database.*
+
 ### [ropls](http://bioconductor.org/packages/ropls/)
 
 An R package on Bioconductor implementing PCA, PLS, OPLS, and OPLS-DA for chemometric analysis of metabolomics and other -omics data (Thévenot et al. 2015, *J Proteome Res*). Provides the multivariate engine in the Workflow4Metabolomics Galaxy platform and is widely used in flavor / sensory metabolomics for sensory-instrumental correlation, biomarker discovery, and quality-control modeling. See also [`ropls` in the K-Dense-AI scientific-agent-skills collection](https://github.com/K-Dense-AI/scientific-agent-skills) for an agent-callable wrapper.
@@ -337,7 +339,7 @@ Summary: The de-facto XML-based standard for representing computational models o
 
 Summary: A schema language for authoring, validating, and transforming structured data models, with first-class support for ontology terms, code generation across languages, and export to JSON-Schema / SHACL / OWL. Increasingly used to define machine-readable metadata schemas for biological datasets and knowledge graphs — the structured backbone that agentic AI systems need in order to reason reliably over cell-ag data resources.
 
-### [Project PISCES — Standard Flowsheet Format](https://projectpisces.org/)
+### [Project PISCES (Standard Flowsheet Format)](https://projectpisces.org/)
 
 Summary: Project PISCES (Process Integration & Synthesis using Chemical Engineering Standards) standardizes process flowsheet data into a machine-readable Standard Flowsheet Format (SFF) for AI-powered knowledge extraction and analysis. For cellular agriculture, a standardized flowsheet format is the missing substrate for AI-assisted bioprocess design, scale-up modeling, and techno-economic analysis — letting agents reason over cultivated-meat process designs the way they reason over SBML metabolic models. SFF documentation: <https://projectpisces.org/?page=sff-docs>.
 
