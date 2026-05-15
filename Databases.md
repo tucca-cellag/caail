@@ -4,7 +4,7 @@ This page catalogs **living, queryable resources** — repositories, ontologies,
 
 > **Note for AI agents and LLMs**: The summaries below are deliberately compressed for human readability. If you are an automated system using these as the basis for reasoning, citation, or downstream analysis, please fetch the canonical site for each database — the linked sources have substantially more comprehensive and authoritative information than this curated overview, plus the field-specific schemas, APIs, licensing terms, and version histories that this page does not document.
 
-## Genomics & Transcriptomics Data
+## Sequence, Genome & Expression Repositories
 
 These sources host fundamental genetic and expression data, applicable to cell line selection, engineering, and characterization.
 
@@ -28,7 +28,7 @@ Ensembl is the principal vertebrate genome browser and annotation database, join
 
 ArrayExpress, now part of the broader BioStudies platform at EMBL-EBI, is a public archive of functional genomics experiments — array-based and sequence-based, bulk and single-cell — covering transcriptomics, epigenomics, and related assays. Many studies are deposited simultaneously in GEO and ArrayExpress, but a meaningful subset (particularly from EU-based labs) is unique to ArrayExpress, making it a complementary source to GEO for comprehensive data mining. For cellular agriculture, ArrayExpress is a useful secondary index when searching for European-led work on livestock cell biology, comparative myogenesis, and cell-line characterization. Programmatic access via the BioStudies REST API.
 
-## Protein & Structure Data
+## Protein & Structure Databases
 
 These data sources are helpful for computational tasks related to engineering recombinant growth factors, signaling molecules, and other media components, and for understanding protein-level cell biology.
 
@@ -76,7 +76,7 @@ The Human Cell Atlas is an international consortium effort to construct comprehe
 
 CZ CELLxGENE is the Chan Zuckerberg Initiative's platform for exploring and analyzing public single-cell data, providing harmonized scRNA-seq and multi-omics datasets aggregated from hundreds of studies (including Human Cell Atlas data) under consistent metadata standards. The CELLxGENE Census provides programmatic access to tens of millions of harmonized cells across human and mouse, exposed through a TileDB-backed Python / R API that supports fast queries by gene, tissue, disease, or assay. For cellular agriculture, cellxgene is the most practical source for assembling cross-study training sets (e.g. all skeletal muscle stem cells in the Census) for ML models of cell-type classification, perturbation prediction, and trajectory inference. Programmatic access via the `cellxgene-census` Python and R packages.
 
-## Metabolic Pathways & Metabolomes
+## Pathways, Metabolism & Metabolic Models
 
 Resources for cell-ag work on media formulation, metabolic engineering, and bioprocess optimization — where understanding metabolic networks, enzyme kinetics, and metabolite concentrations is central.
 
@@ -128,7 +128,7 @@ The US National Institute of Standards and Technology's reference compendium of 
 
 MetaboLights is a public open-access repository for metabolomics experiments hosted at EMBL-EBI — the metabolomics analog of GEO (transcriptomics) or PRIDE (proteomics). Each study deposit includes raw MS / NMR data, processed datasets, sample / treatment metadata in ISA-Tab format, and standardized study-protocol annotations. For cellular agriculture, MetaboLights hosts experiments directly relevant to flavor metabolomics, fermentation chemistry, and cell-culture spent-media analysis — a primary source of training data for sensory-prediction ML and benchmark datasets for analytical pipeline validation. Programmatic access via REST API; bulk download via FTP.
 
-## Chemistry & Compound Data
+## Chemistry & Compound Databases
 
 Resources for media component selection, growth-factor mimetics, and small-molecule supplements.
 
@@ -182,7 +182,11 @@ Flavornet, maintained at Cornell by Acree and Arn, is a database of GC olfactome
 
 A long-established industry reference platform for the flavor, fragrance, food, and cosmetics industries, providing odor descriptors, organoleptic properties, regulatory status, and supplier information for thousands of aroma chemicals and natural extracts. While maintained by the F&F industry rather than as an academic resource, GoodScents is widely cross-referenced in flavor research papers and is the de-facto industry-standard descriptor source for many compounds not formally characterized in academic odor-threshold compendia.
 
-## Agricultural Literature Repositories
+## Seafood Species Reference Databases
+
+*(Section populated in task 4.)*
+
+## Literature & Bibliographic Databases
 
 Free open-access search platforms for agricultural research literature — useful for cellular agriculture as context resources covering animal nutrition, feed-stream economics, livestock genetics, food technology regulation, and broader agricultural science that intersects with cell-ag at the technology / commercial / regulatory boundary.
 
@@ -193,3 +197,7 @@ AGRIS is the United Nations Food and Agriculture Organization's global agricultu
 ### [USDA National Agricultural Library Search](https://search.nal.usda.gov/)
 
 The National Agricultural Library Search is the USDA's federated search platform across its digital collections, including PubAg (agricultural research literature), the NAL Catalog, and other USDA-curated resources. For cellular agriculture, NAL Search is the canonical entry point for USDA-funded research on animal nutrition, feed efficiency, livestock genetics, food technology, and food safety — relevant context for cultivated-meat scaling economics, regulatory engagement, and feed-stream cost analysis. Free open access; AGRICOLA-derived records are included alongside open-access NAL collections.
+
+## Ecosystem & Industry Directories
+
+*(Section populated in task 4.)*
