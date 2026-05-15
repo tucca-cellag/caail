@@ -11,7 +11,7 @@ You don't need to know Git to suggest a resource.
 Pick the template that fits and fill it out:
 
 - [**Suggest a paper**](https://github.com/tucca-cellag/caail/issues/new?template=paper.yml) — for peer-reviewed papers and preprints. Asks for DOI, AI methods, and research areas.
-- [**Suggest software, a dataset, or other resource**](https://github.com/tucca-cellag/caail/issues/new?template=resource.yml) — for entries that would go in `Software.md`, `Data.md`, or `OtherResources.md`.
+- [**Suggest software, a dataset, or other resource**](https://github.com/tucca-cellag/caail/issues/new?template=resource.yml) — for entries that would go in `Software.md`, `Datasets.md`, `Databases.md`, or `OtherResources.md`.
 - [**Propose a new research area**](https://github.com/tucca-cellag/caail/issues/new?template=research-area.yml) — for a new column in the Papers.md matrix.
 
 A maintainer will incorporate accepted suggestions. This is the right path if you're not comfortable with pull requests or just want to flag something quickly.
@@ -85,7 +85,7 @@ If you're unsure whether a paper is "primary research" or "review/perspective," 
 
 ## Adding software, datasets, or other resources
 
-### `Software.md` and `Data.md`
+### `Software.md`, `Datasets.md`, and `Databases.md`
 
 Use the existing hierarchical structure. Each entry is an H3 link, followed by a one-paragraph summary:
 
@@ -93,14 +93,23 @@ Use the existing hierarchical structure. Each entry is an H3 link, followed by a
 ## <Application area>
 Short framing paragraph (optional if the section already exists).
 
-### [<Tool or dataset name>](<canonical URL>)
+### [<Tool or dataset or database name>](<canonical URL>)
 
 Summary: One to three sentences describing what it is and, importantly, *how it applies to cellular agriculture* — not just what it does in general.
 ```
 
 - For software, link to the project's GitHub repo (or canonical home if not on GitHub).
-- For datasets, link to the dataset's primary landing page (NCBI GEO, UniProt, AlphaFold DB, etc.).
+- For datasets, link to the dataset's primary landing page (Hugging Face dataset page, Zenodo record, etc.).
+- For databases, link to the database's primary canonical home (UniProt, KEGG, ChEMBL, etc.).
 - Group new entries under an existing section if one fits. If none does, add a new `##` section.
+
+**Picking between Datasets.md, Databases.md, and OtherResources.md.** CAAIL distinguishes between fixed train-on artifacts and living query/lookup resources:
+
+1. **Train-on artifacts → `Datasets.md`.** ML pretraining corpora, perturbation atlases, downloadable benchmark datasets, individual GEM model artifacts.
+2. **Query / lookup resources → `Databases.md`.** Repositories, ontologies, spectral libraries, structure / compound / pathway databases.
+3. **"Database" in the name, or any directory / registry / tracker → `Databases.md`** — even when the content is people, companies, or regulation rather than scientific data.
+4. **Initiatives and programs → `OtherResources.md`.** Research programs, funding mechanisms, and similar non-database, non-tool resources.
+5. **Borderline cases → dual-listed.** Resources that are genuinely both software and database (e.g. GNPS) get a full entry in their primary-home file and a short cross-referenced entry in the other.
 
 ### `OtherResources.md`
 

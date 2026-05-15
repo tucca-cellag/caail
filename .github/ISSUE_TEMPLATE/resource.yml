@@ -1,5 +1,5 @@
 name: Suggest software, dataset, or other resource
-description: Suggest open-source software (Software.md), a dataset (Data.md), or a video/course/podcast (OtherResources.md).
+description: Suggest open-source software (Software.md), a dataset (Datasets.md), a database (Databases.md), or a video/course/podcast (OtherResources.md).
 title: "[Resource] <Name>"
 labels: ["suggestion", "resources"]
 body:
@@ -15,7 +15,8 @@ body:
       description: Which file would this be added to?
       options:
         - Software (Software.md)
-        - Dataset (Data.md)
+        - Dataset (Datasets.md)
+        - Database (Databases.md)
         - Video, course, podcast, or other educational material (OtherResources.md)
     validations:
       required: true
@@ -32,7 +33,7 @@ body:
     id: url
     attributes:
       label: Canonical URL
-      description: For software, the GitHub repo or project home. For datasets, the dataset's landing page. For videos, the source URL.
+      description: For software, the GitHub repo or project home. For datasets, the dataset's landing page. For databases, the database's canonical home page. For videos, the source URL.
       placeholder: https://...
     validations:
       required: true
@@ -41,8 +42,8 @@ body:
     id: category
     attributes:
       label: Suggested category / section
-      description: Which `## section` heading does this fit under? Check the relevant file (Software.md, Data.md, OtherResources.md) for current sections. If you think a new section is needed, write the proposed name.
-      placeholder: e.g. Media Optimization & Cell Line Engineering / Genomics & Transcriptomics Data / YouTube Videos
+      description: Which `## section` heading does this fit under? Check the relevant file (Software.md, Datasets.md, Databases.md, OtherResources.md) for current sections. If you think a new section is needed, write the proposed name.
+      placeholder: e.g. Media Optimization & Cell Line Engineering / Sequence, Genome & Expression Repositories / YouTube Videos
     validations:
       required: true
 
@@ -67,7 +68,7 @@ body:
     attributes:
       label: Confirmations
       options:
-        - label: I've searched the relevant file (Software.md, Data.md, or OtherResources.md) and this resource isn't already listed.
+        - label: I've searched the relevant file (Software.md, Datasets.md, Databases.md, or OtherResources.md) and this resource isn't already listed.
           required: true
         - label: The link is to the canonical source (not a mirror or third-party summary).
           required: true

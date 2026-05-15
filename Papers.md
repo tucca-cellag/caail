@@ -343,7 +343,7 @@ This section catalogs foundational primary research and methodology papers in se
 
 ## Metabolic Reference Work
 
-This section catalogs foundational primary research papers describing genome-scale metabolic models (GEMs) and related metabolic infrastructure for cellular agriculture. As with the Sensory & Flavor Reference Work above, entries here are primary research where the contribution is the model / data resource itself rather than an applied AI/ML method — the AI/ML work building on these resources lives in the matrix above. Each entry below is the canonical citation for the corresponding data resource in [Data.md / Cell-Ag Species Metabolic Models](./Data.md#cell-ag-species-metabolic-models-gems). Same numeric ID counter as the primary references; no matrix participation.
+This section catalogs foundational primary research papers describing genome-scale metabolic models (GEMs) and related metabolic infrastructure for cellular agriculture. As with the Sensory & Flavor Reference Work above, entries here are primary research where the contribution is the model / data resource itself rather than an applied AI/ML method — the AI/ML work building on these resources lives in the matrix above. Each entry below is the canonical citation for the corresponding data resource in [Datasets.md / Genome-Scale Metabolic Models (GEMs)](./Datasets.md#genome-scale-metabolic-models-gems). Same numeric ID counter as the primary references; no matrix participation.
 
 <a id="81">81</a> Lee, J., Kim, J., Bae, H., Kim, M., Jung, B., Kim, J., Lee, S., & Kim, H. (2024). *Multi-omics analysis and genome-scale metabolic reconstruction of cattle Bos taurus for optimal production of cultured meat.* bioRxiv. https://doi.org/10.1101/2024.12.09.627468
 

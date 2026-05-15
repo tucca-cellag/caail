@@ -281,7 +281,7 @@ Quickstart docs: <https://virtualcellmodels.cziscience.com/quickstart/transcript
 
 ### [Geneformer](https://huggingface.co/ctheodoris/Geneformer)
 
-A transformer-based foundation model for transfer learning in network biology from the Theodoris lab (Broad Institute / Gladstone), pretrained on ~30 million human single-cell transcriptomes via rank-encoded masked language modeling. Distributed exclusively through Hugging Face with tokenizer, pretrained weights, and example fine-tuning recipes for cell-type classification, gene-network inference, and *in silico* perturbation prediction; widely used as a single-cell-FM baseline. Companion to [Papers.md ref #111](./Papers.md#111) (Theodoris et al. 2023, *Nature*); pretraining corpus: [Genecorpus-30M in Data.md](./Data.md#genecorpus-30m).
+A transformer-based foundation model for transfer learning in network biology from the Theodoris lab (Broad Institute / Gladstone), pretrained on ~30 million human single-cell transcriptomes via rank-encoded masked language modeling. Distributed exclusively through Hugging Face with tokenizer, pretrained weights, and example fine-tuning recipes for cell-type classification, gene-network inference, and *in silico* perturbation prediction; widely used as a single-cell-FM baseline. Companion to [Papers.md ref #111](./Papers.md#111) (Theodoris et al. 2023, *Nature*); pretraining corpus: [Genecorpus-30M in Datasets.md](./Datasets.md#genecorpus-30m).
 
 ### [scGPT](https://github.com/bowang-lab/scGPT)
 
@@ -333,7 +333,7 @@ Open standards and schema languages for representing biological models, data, an
 
 ### [SBML (Systems Biology Markup Language)](https://sbml.org/)
 
-Summary: The de-facto XML-based standard for representing computational models of biological processes — metabolic networks, signaling pathways, gene-regulatory networks, and kinetic models. SBML is the interchange format for every genome-scale metabolic model in [Data.md / Cell-Ag Species Metabolic Models](./Data.md#cell-ag-species-metabolic-models-gems) and the lingua franca of the constraint-based and kinetic modeling tools in [Metabolic Modeling & Strain Design](#metabolic-modeling--strain-design). Maintained by the SBML community with libSBML bindings across all major languages.
+Summary: The de-facto XML-based standard for representing computational models of biological processes — metabolic networks, signaling pathways, gene-regulatory networks, and kinetic models. SBML is the interchange format for every genome-scale metabolic model in [Datasets.md / Genome-Scale Metabolic Models (GEMs)](./Datasets.md#genome-scale-metabolic-models-gems) and the lingua franca of the constraint-based and kinetic modeling tools in [Metabolic Modeling & Strain Design](#metabolic-modeling--strain-design). Maintained by the SBML community with libSBML bindings across all major languages.
 
 ### [LinkML (Linked data Modeling Language)](https://linkml.io/)
 
