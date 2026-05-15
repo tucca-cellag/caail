@@ -3,28 +3,28 @@ This document presents the core research papers at the intersection of Cellular 
 
 | | [Media Optimization](./ResearchAreas/MediaOptimization.md) | [Cellular Engineering](./ResearchAreas/CellEngineering.md) | [Bioprocess control](./ResearchAreas/Bioprocess.md) | [Scaffolding](./ResearchAreas/Scaffolding.md)  | [Sensory Prediction](./ResearchAreas/SensoryPrediction.md) | [AI Tooling / Methodology](./ResearchAreas/AITooling.md) |
 |---|---|---|---|---|---|---|
-| [Bayesian Optimization](https://en.wikipedia.org/wiki/Bayesian_optimization) | [2](#2),[3](#3),[15](#15),[16](#16),[18](#18),[58](#58) | [16](#16) | [59](#59) | | | |
-| [Deep Learning](https://en.wikipedia.org/wiki/Deep_learning) | [1](#1),[15](#15),[17](#17),[18](#18) | [4](#4),[5](#5),[6](#6),[57](#57),[60](#60),[122](#122) | [7](#7) | [20](#20),[35](#35) | | |
-| [GNN](https://en.wikipedia.org/wiki/Graph_neural_network) | | [8](#8),[12](#12),[13](#13),[121](#121)| | | [14](#14),[36](#36) | [52](#52) |
-| [CNN](https://en.wikipedia.org/wiki/Convolutional_neural_network) | | | [29](#29), [33](#33) | [19](#19) | [11](#11),[26](#26) | |
-| [GAN](https://en.wikipedia.org/wiki/Generative_adversarial_network) / [VAE](https://en.wikipedia.org/wiki/Variational_autoencoder) | | [9](#9),[10](#10) | | | [11](#11) | |
-| [Genetic Algorithms](https://en.wikipedia.org/wiki/Genetic_algorithm) | [1](#1),[17](#17) | | [30](#30),[31](#31) | | | |
-| [SVM](https://en.wikipedia.org/wiki/Support_vector_machine) | [21](#21) | [22](#22) | [31](#31), [32](#32) | [34](#34) |  | |
-| [Ensemble Learning](https://en.wikipedia.org/wiki/Ensemble_learning) | | | | | [27](#27),[72](#72),[80](#80),[102](#102),[103](#103),[104](#104),[105](#105) | |
-| [K-Nearest Neighbors](https://en.wikipedia.org/wiki/K-nearest_neighbors_algorithm) | | | | | [28](#28) | |
-| [Active Learning](https://en.wikipedia.org/wiki/Active_learning_(machine_learning)) | [23](#23),[24](#24),[25](#25),[58](#58) | | | | | [63](#63) |
-| [Foundation Models: Next-Token Prediction](https://en.wikipedia.org/wiki/Generative_pre-trained_transformer) | | [92](#92),[115](#115),[120](#120) | | | | |
-| [Foundation Models: Masked Language Modeling](https://en.wikipedia.org/wiki/BERT_(language_model)) | | [111](#111),[112](#112),[116](#116),[117](#117),[119](#119) | | | | |
-| [Foundation Models: LM + Biological Priors](#119) | | [118](#118),[119](#119),[123](#123) | | | | |
-| [Foundation Models: Cell-State & Perturbation Prediction](#57) | | [57](#57),[121](#121),[122](#122),[124](#124) | | | | |
-| [Foundation Models (other modalities)](https://en.wikipedia.org/wiki/Foundation_model) | | | | | | [42](#42),[88](#88),[91](#91) |
-| [Scientific Literature & Discovery Agents](./ResearchAreas/AITooling.md#scientific-literature--discovery-agents) | | | | | | [44](#44),[45](#45),[46](#46),[47](#47),[53](#53) |
-| [General-Purpose Biomedical Agents](./ResearchAreas/AITooling.md#general-purpose-biomedical-agents) | | | | | | [40](#40),[49](#49),[94](#94),[95](#95),[96](#96),[98](#98) |
-| [Chemistry / Synthesis Agents](./ResearchAreas/AITooling.md#chemistry--synthesis-agents) | | | | | | [70](#70),[71](#71) |
-| [Domain-Specific Biomedical Agents](./ResearchAreas/AITooling.md#domain-specific-biomedical-agents) | | [90](#90),[93](#93),[97](#97),[125](#125),[126](#126) | | | | [43](#43),[50](#50),[51](#51),[54](#54),[56](#56),[66](#66),[68](#68),[69](#69) |
-| [Robot Scientists & Lab Automation](https://en.wikipedia.org/wiki/Robot_scientist) | | | [61](#61),[62](#62) | | | [64](#64),[65](#65) |
-| [Benchmarks & Evaluation Frameworks](./ResearchAreas/AITooling.md#benchmarks--evaluation-frameworks) | | | | | | [55](#55),[89](#89),[108](#108),[109](#109),[110](#110),[113](#113),[114](#114),[127](#127) |
-| [Agent Infrastructure (Frameworks, KGs, Protocols)](./ResearchAreas/AITooling.md#agent-infrastructure-frameworks-kgs-protocols) | | | | | | [41](#41),[48](#48),[67](#67),[133](#133) |
+| [Bayesian Optimization](https://en.wikipedia.org/wiki/Bayesian_optimization) | [Cosenza et al. 2023](#2)<br>[Cosenza et al. 2022](#3)<br>[Yoshida et al. 2023](#15)<br>[Kanda et al. 2022](#16)<br>[Cosenza 2022](#18)<br>[Narayanan et al. 2025](#58) | [Kanda et al. 2022](#16) | [Antonakoudis & Richelle 2026](#59) | | | |
+| [Deep Learning](https://en.wikipedia.org/wiki/Deep_learning) | [Nikkhah et al. 2023](#1)<br>[Yoshida et al. 2023](#15)<br>[Cosenza & Block 2021](#17)<br>[Cosenza 2022](#18) | [Chen et al. 2016](#4)<br>[Li et al. 2020](#5)<br>[Ji et al. 2021](#6)<br>[Adduri et al. 2025](#57)<br>[Mathieu et al. 2025](#60)<br>[Magnusson et al. 2024](#122) | [Tamburini et al. 2014](#7) | [Rafieyan et al. 2024](#20)<br>[Andrews et al. 2023](#35) | | |
+| [GNN](https://en.wikipedia.org/wiki/Graph_neural_network) | | [Ciortan & Defrance 2022](#8)<br>[Shan et al. 2023](#12)<br>[Wang et al. 2021](#13)<br>[Roohani et al. 2024](#121) | | | [Lee et al. 2023](#14)<br>[Qian et al. 2023](#36) | [Mulyadi et al. 2025](#52) |
+| [CNN](https://en.wikipedia.org/wiki/Convolutional_neural_network) | | | [Del Rio‐Chanona et al. 2019](#29)<br>[Rojek et al. 2021](#33) | [Bermejillo Barrera et al. 2021](#19) | [Shen et al. 2024](#11)<br>[Sun et al. 2023](#26) | |
+| [GAN](https://en.wikipedia.org/wiki/Generative_adversarial_network) / [VAE](https://en.wikipedia.org/wiki/Variational_autoencoder) | | [Lin et al. 2020](#9)<br>[Zrimec et al. 2022](#10) | | | [Shen et al. 2024](#11) | |
+| [Genetic Algorithms](https://en.wikipedia.org/wiki/Genetic_algorithm) | [Nikkhah et al. 2023](#1)<br>[Cosenza & Block 2021](#17) | | [Peng et al. 2013](#30)<br>[Zhang et al. 2020](#31) | | | |
+| [SVM](https://en.wikipedia.org/wiki/Support_vector_machine) | [Xu et al. 2014](#21) | [Lao et al. 2022](#22) | [Zhang et al. 2020](#31)<br>[Roell et al. 2022](#32) | [Andrews et al. 2025](#34) |  | |
+| [Ensemble Learning](https://en.wikipedia.org/wiki/Ensemble_learning) | | | | | [Du et al. 2025](#27)<br>[Colantonio et al. 2022](#72)<br>[Keller et al. 2017](#80)<br>[Dagan-Wiener et al. 2017](#102)<br>[Margulis et al. 2021](#103)<br>[Margulis et al. 2022](#104)<br>[Ziaikin et al. 2024](#105) | |
+| [K-Nearest Neighbors](https://en.wikipedia.org/wiki/K-nearest_neighbors_algorithm) | | | | | [Sun et al. 2026](#28) | |
+| [Active Learning](https://en.wikipedia.org/wiki/Active_learning_(machine_learning)) | [Zhang et al. 2023](#23)<br>[Hashizume et al. 2022](#24)<br>[Ozawa et al. 2025](#25)<br>[Narayanan et al. 2025](#58) | | | | | [Pandi et al. 2022](#63) |
+| [Foundation Models: Next-Token Prediction](https://en.wikipedia.org/wiki/Generative_pre-trained_transformer) | | [Pearce et al. 2026](#92)<br>[Shen et al. 2023](#115)<br>[Rizvi et al. 2026](#120) | | | | |
+| [Foundation Models: Masked Language Modeling](https://en.wikipedia.org/wiki/BERT_(language_model)) | | [Theodoris et al. 2023](#111)<br>[Yang et al. 2022](#112)<br>[Hao et al. 2024](#116)<br>[Cui et al. 2024](#117)<br>[Rosen et al. 2026](#119) | | | | |
+| [Foundation Models: LM + Biological Priors](#119) | | [Rosen et al. 2024](#118)<br>[Rosen et al. 2026](#119)<br>[Littman et al. 2025](#123) | | | | |
+| [Foundation Models: Cell-State & Perturbation Prediction](#57) | | [Adduri et al. 2025](#57)<br>[Roohani et al. 2024](#121)<br>[Magnusson et al. 2024](#122)<br>[Dong et al. 2026](#124) | | | | |
+| [Foundation Models (other modalities)](https://en.wikipedia.org/wiki/Foundation_model) | | | | | | [Sypetkowski et al. 2026](#42)<br>[Su et al. 2026](#88)<br>[Ding et al. 2026](#91) |
+| [Scientific Literature & Discovery Agents](./ResearchAreas/AITooling.md#scientific-literature--discovery-agents) | | | | | | [Lála et al. 2023](#44)<br>[Lu et al. 2024](#45)<br>[Skarlinski et al. 2024](#46)<br>[Yamada et al. 2025](#47)<br>[Liu et al. 2026](#53) |
+| [General-Purpose Biomedical Agents](./ResearchAreas/AITooling.md#general-purpose-biomedical-agents) | | | | | | [Gao et al. 2025a](#40)<br>[Huang et al. 2025](#49)<br>[Pickard et al. 2025](#94)<br>[Riffle et al. 2025](#95)<br>[Jin et al. 2025](#96)<br>[Dong et al. 2024](#98) |
+| [Chemistry / Synthesis Agents](./ResearchAreas/AITooling.md#chemistry--synthesis-agents) | | | | | | [Boiko et al. 2023](#70)<br>[Bran et al. 2024](#71) |
+| [Domain-Specific Biomedical Agents](./ResearchAreas/AITooling.md#domain-specific-biomedical-agents) | | [Yu et al. 2026](#90)<br>[Tang et al. 2026](#93)<br>[Hao et al. 2025](#97)<br>[Roohani et al. 2025a](#125)<br>[Youngblut et al. 2025](#126) | | | | [Lee et al. 2025](#43)<br>[Wehling et al. 2025](#50)<br>[Sui et al. 2026](#51)<br>[Ying et al. 2025](#54)<br>[Wang et al. 2025a](#56)<br>[Singh et al. 2023](#66)<br>[Li et al. 2024](#68)<br>[Maeda & Kurata 2023](#69) |
+| [Robot Scientists & Lab Automation](https://en.wikipedia.org/wiki/Robot_scientist) | | | [Wang et al. 2025b](#61)<br>[Qiu et al. 2025](#62) | | | [Tiukova et al. 2024](#64)<br>[Brunnsåker et al. 2025](#65) |
+| [Benchmarks & Evaluation Frameworks](./ResearchAreas/AITooling.md#benchmarks--evaluation-frameworks) | | | | | | [Sadhuka et al. 2025](#55)<br>[Brouwer et al. 2026](#89)<br>[Mitchener et al. 2025](#108)<br>[Bushuiev et al. 2024](#109)<br>[Sze & Hassoun 2024](#110)<br>[Boiarsky et al. 2024](#113)<br>[Yang et al. 2024](#114)<br>[Chevalley et al. 2025](#127) |
+| [Agent Infrastructure (Frameworks, KGs, Protocols)](./ResearchAreas/AITooling.md#agent-infrastructure-frameworks-kgs-protocols) | | | | | | [Gao et al. 2025b](#41)<br>[Lobentanzer et al. 2025](#48)<br>[Ruscone et al. 2025](#67)<br>[Kuehl et al. 2025](#133) |
 
 
 ## References
