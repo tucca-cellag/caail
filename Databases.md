@@ -192,7 +192,15 @@ A long-established industry reference platform for the flavor, fragrance, food, 
 
 ## Seafood Species Reference Databases
 
-*(Section populated in task 4.)*
+Open-access databases for cataloguing seafood species' biological and culinary characteristics, surfaced by [GFI's alternative-seafood data initiative](https://gfi.org/resource/aggregating-data-for-alternative-seafood/). For cellular agriculture these are direct reference data for the cultivated-seafood sub-domain — complementary to the SALARECON salmon GEM in [Datasets.md](./Datasets.md#salarecon--salmo-salar-atlantic-salmon).
+
+### [PISCES — Phylogenetic Index of Seafood CharactEriStics](https://gfi.org/resource/aggregating-data-for-alternative-seafood/)
+
+PISCES organizes seafood data by phylogenetic relationships, grouping species taxonomically — *Salmo salar* (Atlantic salmon) and *Salmo trutta* (sea trout) sit together under genus *Salmo*. Each species entry compiles cell-line availability, nutritional data, and volatile compounds relevant to cultivated- and plant-based-seafood development. Distributed as an AirTable base linked from the GFI landing page. The canonical taxonomic reference for cultivated-seafood candidate species. Companion to [ATLAS](#atlas--archetype-library-for-alternative-seafood) below, which groups the same species by culinary archetype rather than phylogeny.
+
+### [ATLAS — ArcheType Library for Alternative Seafood](https://gfi.org/resource/aggregating-data-for-alternative-seafood/)
+
+ATLAS groups seafood species into culinary archetypes — *Salmo salar* under "salmon" and *Salmo trutta* under "trout" — and ranks archetypes across sustainability, animal-welfare, public-health, and US-market-size metrics to help prioritize candidate species for alternative-seafood development. Accessed via the GFI landing page, with a ranking tool hosted on mybinder.org. The species-prioritization complement to [PISCES](#pisces--phylogenetic-index-of-seafood-characteristics)'s taxonomic indexing.
 
 ## Literature & Bibliographic Databases
 
@@ -206,6 +214,30 @@ AGRIS is the United Nations Food and Agriculture Organization's global agricultu
 
 The National Agricultural Library Search is the USDA's federated search platform across its digital collections, including PubAg (agricultural research literature), the NAL Catalog, and other USDA-curated resources. For cellular agriculture, NAL Search is the canonical entry point for USDA-funded research on animal nutrition, feed efficiency, livestock genetics, food technology, and food safety — relevant context for cultivated-meat scaling economics, regulatory engagement, and feed-stream cost analysis. Free open access; AGRICOLA-derived records are included alongside open-access NAL collections.
 
+### [GFI Alternative Protein Literature Library](https://gfi.org/resource/alternative-protein-literature-library/)
+
+GFI's curated collection of alternative-protein research resources spanning plant-based, cultivated, and fermentation-derived proteins, maintained by its science and technology team. GFI's nearest analogue to CAAIL's own curation, though not AI-scoped or version-controlled.
+
 ## Ecosystem & Industry Directories
 
-*(Section populated in task 4.)*
+GFI's curated public directories cataloguing the people, companies, supply chain, opportunities, and regulatory status of the alternative-protein and cellular-agriculture field. These are the "domain neighbours" of CAAIL — they catalogue *who is doing the work and where it is being sold*, complementary to CAAIL's catalogue of papers, software, datasets, and educational material. New Harvest's initiatives covering the same space (AICAI, the Cellular Agriculture Science Engine, CMSI) are not databases or directories and live in [OtherResources.md / Cell-Ag Ecosystem Initiatives](./OtherResources.md#cell-ag-ecosystem-initiatives) instead.
+
+### [GFI Alternative Protein Researcher Directory](https://gfi.org/resource/alternative-protein-researcher-directory/)
+
+GFI's global directory of researchers working on plant-based meat, cultivated meat, and fermentation. Complementary to CAAIL: GFI catalogues *people and labs*, CAAIL catalogues their *outputs*.
+
+### [GFI Alternative Protein Company Database](https://gfi.org/resource/alternative-protein-company-database/)
+
+GFI's catalogue of alternative-protein companies, including funding status and impact-investment context — the industry-side map of the field.
+
+### [GFI APAC Alternative Protein Ecosystem Database](https://gfi-apac.org/industry/alternative-protein-ecosystem-database/)
+
+GFI APAC's regional B2B directory of ingredient and equipment suppliers, pilot plants, consultants, and other supply-chain partners across the Asia-Pacific cell-ag ecosystem.
+
+### [GFI Database of Solutions for the Alternative Protein Industry](https://gfi.org/solutions/)
+
+GFI's catalogue of startup ideas, commercial opportunities, research projects, and investment priorities across the alternative-protein supply chain.
+
+### [GFI Where Cultivated Meat Can Be Sold](https://gfi.org/resource/where-cultivated-meat-can-be-sold/)
+
+GFI's live tracker of countries where cultivated meat has regulatory approval for sale, with associated companies and product formats — the kind of dynamic regulatory data CAAIL links to rather than duplicates.

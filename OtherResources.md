@@ -52,9 +52,9 @@ The Good Food Institute (GFI) publishes the de-facto annual *State of the Indust
 * [2026 State of the Industry: Fermentation for meat, seafood, eggs, dairy, and ingredients](https://www.youtube.com/watch?v=eCBclCUZOg0) (GFI, 2026).
 * [2026 State of the Industry: Plant-based meat, seafood, eggs, dairy, and ingredients](https://www.youtube.com/watch?v=OEuehZB7YVM) (GFI, 2026).
 
-## Cell-Ag Ecosystem Directories & Initiatives
+## Cell-Ag Ecosystem Initiatives
 
-CAAIL's "adjacent universe" — complementary resources that catalogue the *people, companies, regulation, and research programs* of cellular agriculture, where CAAIL itself catalogues *outputs* (papers, software, datasets, educational material). These are resources to link to and draw on rather than duplicate; the New Harvest initiatives in particular produce primary outputs (datasets, working papers) that become cataloguable in CAAIL's core files as they are published.
+CAAIL's "adjacent universe" — complementary research programs and initiatives in cellular agriculture. CAAIL itself catalogues *outputs* (papers, software, datasets, educational material); these initiatives produce primary outputs (datasets, working papers) that become cataloguable in CAAIL's core files as they are published. The corresponding *directories and databases* maintained by these organizations live in [Databases.md / Ecosystem & Industry Directories](./Databases.md#ecosystem--industry-directories) and related sections.
 
 ### New Harvest initiatives
 
@@ -62,16 +62,9 @@ CAAIL's "adjacent universe" — complementary resources that catalogue the *peop
 * [Cellular Agriculture Science Engine](https://www.new-harvest.org/cellular-agriculture-science-engine) — A crowdfunded research-portfolio mechanism (New Harvest with FootPrint Coalition and Experiment.com) that funds cell-ag projects; a source of future cataloguable research outputs.
 * [Cultured Meat Safety Initiative (CMSI)](https://www.new-harvest.org/cultured-meat-safety-initiative-cmsi) — A joint New Harvest / Vireo Advisors initiative convening stakeholders on the safety and regulatory science of cultivated products; outputs (datasets, guidance documents) are cataloguable as they are released.
 
-### Good Food Institute (GFI) directories & trackers
+### GFI initiatives
 
-* [Alternative Protein Researcher Directory](https://gfi.org/resource/alternative-protein-researcher-directory/) — GFI's global directory of researchers working on plant-based meat, cultivated meat, and fermentation. Complementary to CAAIL: GFI catalogues *people and labs*, CAAIL catalogues their *outputs*.
-* [Alternative Protein Company Database](https://gfi.org/resource/alternative-protein-company-database/) — GFI's catalogue of alternative-protein companies, including funding status and impact-investment context — the industry-side map of the field.
-* [APAC Alternative Protein Ecosystem Database](https://gfi-apac.org/industry/alternative-protein-ecosystem-database/) — GFI APAC's regional B2B directory of ingredient and equipment suppliers, pilot plants, consultants, and other supply-chain partners across the Asia-Pacific cell-ag ecosystem.
-* [Where Cultivated Meat Can Be Sold](https://gfi.org/resource/where-cultivated-meat-can-be-sold/) — GFI's live tracker of countries where cultivated meat has regulatory approval for sale, with associated companies and product formats — the kind of dynamic regulatory data CAAIL links to rather than duplicates.
-* [Alternative Protein Literature Library](https://gfi.org/resource/alternative-protein-literature-library/) — GFI's curated collection of alternative-protein research resources spanning plant-based, cultivated, and fermentation-derived proteins, maintained by its science and technology team. GFI's nearest analogue to CAAIL's own curation, though not AI-scoped or version-controlled.
-* [Database of Solutions for the Alternative Protein Industry](https://gfi.org/solutions/) — GFI's catalogue of startup ideas, commercial opportunities, research projects, and investment priorities across the alternative-protein supply chain.
-* [Expanding Access to Cultivated Meat Cell Lines](https://gfi.org/resource/expanding-access-to-cell-lines/) — GFI's initiative addressing limited cell-line access — a core bottleneck for cultivated-meat research — and supporting the development of new lines.
-* [Aggregating Data for Alternative Seafood Development](https://gfi.org/resource/aggregating-data-for-alternative-seafood/) — GFI's open-access databases mapping scientific seafood taxonomies and evolutionary relationships onto culinary categories — reference data for cultivated- and plant-based-seafood work.
+* [GFI: Expanding Access to Cultivated Meat Cell Lines](https://gfi.org/resource/expanding-access-to-cell-lines/) — GFI's initiative addressing limited cell-line access — a core bottleneck for cultivated-meat research — and supporting the development of new lines.
 
 ## Curated Bibliographies & Awesome Lists
 
