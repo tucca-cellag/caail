@@ -89,6 +89,14 @@ Docs: <https://cnapy-org.github.io/CNApy-guide/>.
 
 **Agent integration.** Code-execution agents (Cursor, Claude Code, Biomni) can invoke any of these tools as Python; for COBRApy specifically, the [`cobrapy` skill from K-Dense-AI's scientific-agent-skills](https://github.com/K-Dense-AI/scientific-agent-skills/tree/main/scientific-skills/cobrapy) (see the [K-Dense-AI entry below](#k-dense-ai)) provides curated recipes that make this reliable in agent loops.
 
+## Quantitative Genetics & Multi-Omics Analysis
+
+Open-source toolkits for population-genetics analysis of multi-omics data — molecular QTL mapping, gene-expression genetics, and the computational stack underneath FarmGTEx-style multi-tissue functional-genomics atlases. For livestock-species applications, see the corresponding atlases in [Databases.md / Livestock Multi-Tissue Atlases & Functional Genomics](./Databases.md#livestock-multi-tissue-atlases--functional-genomics) and the foundational papers in [Papers.md / Livestock Functional Genomics Reference Work](./Papers.md#livestock-functional-genomics-reference-work).
+
+### [OmiGA](https://omiga.bio/)
+
+Summary: An ultra-efficient toolkit for molecular quantitative trait loci (molQTL) mapping across multi-omics data, from the Zhang group at China Agricultural University. The performance backbone of the FarmGTEx project family — eQTL, sQTL, mQTL, and other molQTL discovery at livestock-atlas scale, optimized for the throughput needed to handle the FarmGTEx tissue / sample matrices. Companion to [Papers.md ref #143](./Papers.md#143) (Teng et al. 2026, *Nature Communications*).
+
 ## Mass Spectrometry & Chemometrics
 
 Tooling for mass-spectrometry-based proteomics and metabolomics workflows, plus multivariate statistical analysis ("chemometrics") of the resulting data. Used heavily in flavor / off-flavor metabolomics, spent-media analysis for cultivated meat, and sensory-instrumental data fusion. See also the [`pyopenms` skill](https://github.com/K-Dense-AI/scientific-agent-skills/tree/main/scientific-skills/pyopenms) in [K-Dense-AI](#k-dense-ai) for an agent-callable wrapper around OpenMS.
@@ -327,6 +335,10 @@ A large-scale benchmark for evaluating network-inference methods from single-cel
 
 Summary: A community hub for agentic biomedical systems — a registry of biomedical Model Context Protocol (MCP) servers plus a knowledgebase MCP server that exposes curated biomedical resources to LLM agents. Lets cell-ag teams plug standardized biomedical tools and data sources into agent stacks (Claude Code, Cursor, Biomni) without bespoke per-resource integration. Companion to [Papers.md ref #133](./Papers.md#133) (Kuehl et al. 2025, *Nature Biotechnology*). GitHub org: <https://github.com/biocontext-ai>.
 
+### [BioMCP](https://github.com/genomoncology/biomcp)
+
+Summary: A one-binary MCP server from GenomOncology unifying many biomedical knowledge sources — PubTator3, Europe PMC, ClinicalTrials.gov, MyVariant.info, cBioPortal, Reactome, Open Targets, MyDisease.info, MONDO, Monarch, DisGeNET — behind a single Model Context Protocol surface for LLM agents. MIT-licensed; the leanest existing MCP-native bridge between general biomedical literature, clinical-trial, and variant data and an agent stack. Sister project to [BioContextAI](#biocontextai), which catalogues biomedical MCP servers including BioMCP.
+
 ## Data Standards & Interchange Formats
 
 Open standards and schema languages for representing biological models, data, and processes in machine-readable form. None are AI methods themselves, but each is the substrate that AI-powered extraction, reasoning, and modeling tools depend on — standardized inputs are what make automated cross-study analysis and agentic workflows tractable for cellular agriculture.
@@ -346,3 +358,23 @@ Summary: Project PISCES (Process Integration & Synthesis using Chemical Engineer
 Process-flowsheet background (what SFF standardizes) — for readers approaching this from the AI / biology side, the [LibreTexts *Foundations of Chemical and Biological Engineering* chapter on chemical processes and process diagrams](https://eng.libretexts.org/Bookshelves/Chemical_Engineering/Foundations_of_Chemical_and_Biological_Engineering_I_(Verret_Qiao_Barghout)/01%3A_Introduction_to_Chemical_Processes_and_Process_Diagrams) and the [ScienceDirect "Flowsheet" topic overview](https://www.sciencedirect.com/topics/chemical-engineering/flowsheet) introduce the flowsheet concept and its notation.
 
 Cell-ag application context — [The Unjournal](https://www.unjournal.org/)'s cultivated-meat cost-modeling work, namely the [`unjournal/cm_pq_modeling` repository](https://github.com/unjournal/cm_pq_modeling) and its [techno-economic comparison of cultured-chicken cost models](https://unjournal.github.io/cm_pq_modeling/compare.html), is exactly the kind of bioprocess techno-economic analysis that a standardized flowsheet format like SFF is designed to make reproducible and machine-comparable.
+
+## Biomedical Ontology & Identifier Infrastructure
+
+Tooling for managing biomedical identifiers, ontologies, synonyms, and cross-references — the substrate that AI agents need to reason reliably across the disconnected biomedical resources catalogued throughout CAAIL. The cluster below is the **Biopragmatics Stack**, a unified ecosystem of tools by Charles Tapley Hoyt and collaborators.
+
+### [Biopragmatics Stack](https://biopragmatics.github.io/)
+
+Summary: An interlocking stack of MIT-licensed Python tools and registries supporting biomedical semantics and pragmatics. Each component is independently usable, and together they cover the full lifecycle of biomedical-entity identification, normalization, and cross-linking. Directly relevant to cell-ag agentic workflows that need to reason consistently across the livestock-genomics, metabolic-modeling, sensomics, and chemistry resources elsewhere in CAAIL.
+
+GitHub org: <https://github.com/biopragmatics>. Core components:
+
+- **[Bioregistry](https://bioregistry.io/)** — A registry of biomedical identifier registries, with prefix normalization, identifier resolution, and a REST API. The meta-resource the rest of the stack builds on.
+- **[pyobo](https://github.com/biopragmatics/pyobo)** — Python library for using ontologies, terminologies, and biomedical nomenclatures.
+- **[bioontologies](https://github.com/biopragmatics/bioontologies)** — Unified access across biomedical ontologies.
+- **[biolookup](https://github.com/biopragmatics/biolookup)** — Service for retrieving metadata and ontological information for biomedical entities.
+- **[Biolexica](https://github.com/biopragmatics/biolexica)** — Generates and applies coherent biomedical lexical indices for named-entity recognition (NER) and normalization (NEN).
+- **[Biosynonyms](https://github.com/biopragmatics/biosynonyms)** — Decentralized database of synonyms for biomedical concepts.
+- **[Biomappings](https://github.com/biopragmatics/biomappings)** — Community-curated and predicted equivalences and related mappings between named biological entities not available from primary sources.
+- **[SemRA](https://github.com/biopragmatics/semra)** — Semantic Mapping Reasoning Assembler, for assembly and reasoning over semantic mappings at scale ([Hoyt et al. 2025, *Bioinformatics*](https://doi.org/10.1093/bioinformatics/btaf542)).
+- **[bioversions](https://github.com/biopragmatics/bioversions)** — Tracks the latest version of each biomedical database — useful as a freshness check across the resources curated in [Databases.md](./Databases.md).
