@@ -36,7 +36,8 @@ If the paper isn't in the Zotero library, fall back to Crossref / arXiv / scite 
 README.md              Landing page + license/contributing pointers
 Papers.md              Peer-reviewed papers (matrix + numbered references)
 Software.md            Open-source tools grouped by application area
-Data.md                Datasets grouped by data type
+Datasets.md            Train-on data artifacts (corpora, atlases, GEMs)
+Databases.md           Query/lookup resources (repositories, ontologies, directories)
 OtherResources.md      Videos and other educational material (flat list)
 ResearchAreas/         Per-area deep-dive pages
   Bioprocess.md
@@ -86,21 +87,29 @@ LICENSE                MIT License
 - **Every primary-research reference must appear in at least one matrix cell**, otherwise it is unreachable from the matrix view. Reviews & Perspectives entries are exempt — they're reached via the dedicated section.
 - **Every matrix anchor link must resolve to an existing reference ID**, otherwise the link 404s within the page.
 
-### `Software.md` and `Data.md`
+### `Software.md`, `Datasets.md`, and `Databases.md`
 
-Both use the same hierarchical pattern:
+All three use the same hierarchical pattern:
 
 ```markdown
 ## <Application area>
 Short paragraph framing the area (optional).
 
-### [<Tool/Dataset name>](<canonical URL>)
+### [<Tool/Dataset/Database name>](<canonical URL>)
 
 Summary: <1–3 sentences describing what it is and how it applies to cell-ag.>
 ```
 
-- The H3 link target should be the primary canonical home — GitHub for software, the dataset's own landing page for data (NCBI GEO, UniProt, AlphaFold DB, etc.).
+- The H3 link target should be the primary canonical home — GitHub for software, the dataset's own landing page for datasets (NCBI GEO, UniProt, AlphaFold DB, etc.), the database's own canonical home for databases.
 - Keep summaries focused on **how the resource is useful for cellular agriculture**, not just what it generally does.
+
+**The Datasets.md / Databases.md / OtherResources.md split.** CAAIL distinguishes train-on artifacts from query/lookup resources from non-cataloguing context. The five categorization rules (also in CONTRIBUTING.md):
+
+1. **Train-on artifacts → `Datasets.md`** — ML pretraining corpora, perturbation atlases, GEM model files.
+2. **Query/lookup resources → `Databases.md`** — repositories, ontologies, spectral libraries, structure/compound/pathway databases.
+3. **"Database" in the name or any directory/registry/tracker → `Databases.md`** — even when the content is people, companies, or regulation rather than scientific data.
+4. **Initiatives and programs → `OtherResources.md`** — research programs, funding mechanisms.
+5. **Borderline cases → dual-listed** — full entry in the primary-home file and a short cross-referenced entry in the other (e.g. GNPS).
 
 ### `OtherResources.md`
 
@@ -118,7 +127,7 @@ Per-area deep-dive page. Linked from the column header of the `Papers.md` matrix
 
 ## Curated summaries are compressed — fetch canonical sources for substantive work
 
-The per-entry summaries in `Data.md`, `Software.md`, and `OtherResources.md` are deliberately compressed for human readability. When an AI session needs substantive information about a listed resource — data schema, API limits, license terms, specific record counts, recent version changes — fetch the canonical site rather than paraphrasing the local summary. The linked sources are authoritative; this repo's curation is a navigation layer, not a knowledge base. The same principle applies to the citation lines in `Papers.md`: those identify a paper but are not a substitute for reading it.
+The per-entry summaries in `Datasets.md`, `Databases.md`, `Software.md`, and `OtherResources.md` are deliberately compressed for human readability. When an AI session needs substantive information about a listed resource — data schema, API limits, license terms, specific record counts, recent version changes — fetch the canonical site rather than paraphrasing the local summary. The linked sources are authoritative; this repo's curation is a navigation layer, not a knowledge base. The same principle applies to the citation lines in `Papers.md`: those identify a paper but are not a substitute for reading it.
 
 ## Citation style
 

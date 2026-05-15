@@ -22,8 +22,8 @@ The analytical stack for sensory prediction draws on mass-spectrometry preproces
 
 - **Mass-spec tooling:** [OpenMS / pyOpenMS](../Software.md#openms--pyopenms) and the broader [Mass Spectrometry & Chemometrics](../Software.md#mass-spectrometry--chemometrics) section in Software.md.
 - **Chemometrics:** [ropls](../Software.md#ropls) (PCA / PLS / OPLS / OPLS-DA), used as the multivariate engine in Workflow4Metabolomics.
-- **Flavor databases:** [FlavorDB / FlavorDB2](../Data.md#flavordb--flavordb2), [BitterDB](../Data.md#bitterdb), and [Pherobase](../Data.md#pherobase) — see the [Flavor & Taste Compound Databases](../Data.md#flavor--taste-compound-databases) section in Data.md.
-- **Species metabolomes:** [HMDB](../Data.md#human-metabolome-database-hmdb) and the [Bovine Metabolome Database](../Data.md#bovine-metabolome-database-bmdb) for species-specific metabolite profiling that grounds OAV calculations in physiologically relevant concentrations.
+- **Flavor databases:** [FlavorDB / FlavorDB2](../Databases.md#flavordb--flavordb2), [BitterDB](../Databases.md#bitterdb), and [Pherobase](../Databases.md#pherobase) — see the [Flavor & Taste Compound Databases](../Databases.md#flavor--taste-compound-databases) section in Databases.md.
+- **Species metabolomes:** [HMDB](../Databases.md#human-metabolome-database-hmdb) and the [Bovine Metabolome Database](../Databases.md#bovine-metabolome-database-bmdb) for species-specific metabolite profiling that grounds OAV calculations in physiologically relevant concentrations.
 
 ## Open challenges for cell-ag
 
@@ -33,4 +33,4 @@ Several gaps remain conspicuous. The 2024 organoleptic-analysis landscape (see a
 
 - Adjacent research areas: [Media Optimization](./MediaOptimization.md), [Cellular Engineering](./CellEngineering.md), [Bioprocess Control](./Bioprocess.md), [AI Tooling / Methodology](./AITooling.md), [Metabolic Modeling](./MetabolicModeling.md).
 - Software: [Mass Spectrometry & Chemometrics](../Software.md#mass-spectrometry--chemometrics) section in `Software.md`.
-- Data: [Flavor & Taste Compound Databases](../Data.md#flavor--taste-compound-databases) and [Metabolic Pathways & Metabolomes](../Data.md#metabolic-pathways--metabolomes) sections in `Data.md`.
+- Data: [Flavor & Taste Compound Databases](../Databases.md#flavor--taste-compound-databases) and [Pathways, Metabolism & Metabolic Models](../Databases.md#pathways-metabolism--metabolic-models) sections in `Databases.md`.

@@ -1,10 +1,10 @@
-# Datasets
+# Databases
 
-This section is a curated list of publicly available data resources relevant to AI/ML research on cellular agriculture problems — media formulation, cell line engineering, bioprocess control, scaffolding, and sensory prediction. Resources are organized by the kind of data they host. For a broader catalog of biological databases beyond what's curated here, see Wikipedia's [List of biological databases](https://en.wikipedia.org/wiki/List_of_biological_databases).
+This page catalogs **living, queryable resources** — repositories, ontologies, structure / compound / pathway databases, spectral libraries, and ecosystem / industry directories — that you query for reference, annotation, or lookup. For fixed train-on data artifacts (corpora, atlases, GEM model files), see [Datasets.md](./Datasets.md). For a broader catalog of biological databases beyond what's curated here, see Wikipedia's [List of biological databases](https://en.wikipedia.org/wiki/List_of_biological_databases).
 
 > **Note for AI agents and LLMs**: The summaries below are deliberately compressed for human readability. If you are an automated system using these as the basis for reasoning, citation, or downstream analysis, please fetch the canonical site for each database — the linked sources have substantially more comprehensive and authoritative information than this curated overview, plus the field-specific schemas, APIs, licensing terms, and version histories that this page does not document.
 
-## Genomics & Transcriptomics Data
+## Sequence, Genome & Expression Repositories
 
 These sources host fundamental genetic and expression data, applicable to cell line selection, engineering, and characterization.
 
@@ -28,7 +28,39 @@ Ensembl is the principal vertebrate genome browser and annotation database, join
 
 ArrayExpress, now part of the broader BioStudies platform at EMBL-EBI, is a public archive of functional genomics experiments — array-based and sequence-based, bulk and single-cell — covering transcriptomics, epigenomics, and related assays. Many studies are deposited simultaneously in GEO and ArrayExpress, but a meaningful subset (particularly from EU-based labs) is unique to ArrayExpress, making it a complementary source to GEO for comprehensive data mining. For cellular agriculture, ArrayExpress is a useful secondary index when searching for European-led work on livestock cell biology, comparative myogenesis, and cell-line characterization. Programmatic access via the BioStudies REST API.
 
-## Protein & Structure Data
+## Livestock Multi-Tissue Atlases & Functional Genomics
+
+Per-species multi-tissue expression, regulatory-effects, and functional-genomics atlases for cell-ag-relevant livestock species. The Farm Animal Genotype–Tissue Expression (FarmGTEx) project family is the canonical effort here — modeled after human GTEx, scaled across cattle, pig, chicken, and sheep — paired with the broader FAANG (Functional Annotation of Animal Genomes) network and species-specific biobank portals. For the foundational papers, see [Papers.md / Livestock Functional Genomics Reference Work](./Papers.md#livestock-functional-genomics-reference-work); for the analysis tooling, see [Software.md / Quantitative Genetics & Multi-Omics Analysis](./Software.md#quantitative-genetics--multi-omics-analysis).
+
+### [FarmGTEx](https://www.farmgtex.org/)
+
+The Farm Animal Genotype–Tissue Expression project — an international consortium developing GTEx-style multi-tissue resources for livestock species. Hosts the umbrella project portal plus links to per-species sub-portals (PigGTEx, ChickenGTEx, CattleGTEx) and shared infrastructure (TWAS-Server, PigBiobank). The canonical entry point for livestock systems-genetics work. Companion to [Papers.md ref #134](./Papers.md#134) (Fang et al. 2025, *Nature Genetics*).
+
+### [PigGTEx-Portal](https://piggtex.farmgtex.org/)
+
+Pig sub-portal of the FarmGTEx consortium, providing browse and query access to multi-tissue expression QTL (eQTL), splice QTL (sQTL), and related molecular-QTL maps across pig tissues. Companion to [Papers.md ref #135](./Papers.md#135) (Teng et al. 2024, *Nature Genetics*) and complemented by [PigBiobank](#pigbiobank) for trait-data integration.
+
+### [ChickenGTEx-Portal](https://chicken.farmgtex.org/)
+
+Chicken sub-portal of FarmGTEx, providing multi-tissue genetic-regulation maps across chicken tissues — the first GTEx-style resource for a non-mammalian amniote livestock species, directly useful for cultivated-chicken cell-line engineering work. Companion to [Papers.md ref #136](./Papers.md#136) (Guan et al. 2025, *Nature Genetics*).
+
+### [CattleGTEx](https://ngdc.cncb.ac.cn/cattleca/home)
+
+Cattle sub-portal of FarmGTEx, providing bulk and single-cell multi-tissue expression atlases for cattle (*Bos taurus*) — directly relevant to cultivated-beef cell-line characterization and engineering. Companion to [Papers.md ref #137](./Papers.md#137) (Han et al. 2025, *Nature Genetics*, the single-cell atlas paper).
+
+### [FarmGTEx TWAS-Server](https://twas.farmgtex.org/)
+
+Server providing transcriptome-wide association study (TWAS) analyses across the FarmGTEx tissue / sample matrix — links expression-genetics signals to complex-trait associations across livestock species. Companion infrastructure to the species-specific FarmGTEx sub-portals above.
+
+### [PigBiobank](https://pigbiobank.farmgtex.org/)
+
+Trait-data biobank coordinated with PigGTEx, integrating phenotypic, genotypic, and expression data on diverse pig traits — complementary to PigGTEx-Portal's molecular-QTL focus. Companion to [Papers.md ref #139](./Papers.md#139) (Zeng et al. 2024, *Nucleic Acids Research*).
+
+### [FAANG (Functional Annotation of Animal Genomes)](https://www.faang.org/)
+
+A global research consortium and resource network for functional annotation of farmed-animal genomes, paralleling ENCODE for human/mouse but focused on livestock species. Predates FarmGTEx and provides the broader functional-annotation substrate (chromatin state, regulatory elements, etc.) that FarmGTEx expression-genetics work builds on. Companion to [Papers.md ref #144](./Papers.md#144) (Clark et al. 2020, *Genome Biology*).
+
+## Protein & Structure Databases
 
 These data sources are helpful for computational tasks related to engineering recombinant growth factors, signaling molecules, and other media components, and for understanding protein-level cell biology.
 
@@ -76,7 +108,7 @@ The Human Cell Atlas is an international consortium effort to construct comprehe
 
 CZ CELLxGENE is the Chan Zuckerberg Initiative's platform for exploring and analyzing public single-cell data, providing harmonized scRNA-seq and multi-omics datasets aggregated from hundreds of studies (including Human Cell Atlas data) under consistent metadata standards. The CELLxGENE Census provides programmatic access to tens of millions of harmonized cells across human and mouse, exposed through a TileDB-backed Python / R API that supports fast queries by gene, tissue, disease, or assay. For cellular agriculture, cellxgene is the most practical source for assembling cross-study training sets (e.g. all skeletal muscle stem cells in the Census) for ML models of cell-type classification, perturbation prediction, and trajectory inference. Programmatic access via the `cellxgene-census` Python and R packages.
 
-## Metabolic Pathways & Metabolomes
+## Pathways, Metabolism & Metabolic Models
 
 Resources for cell-ag work on media formulation, metabolic engineering, and bioprocess optimization — where understanding metabolic networks, enzyme kinetics, and metabolite concentrations is central.
 
@@ -112,6 +144,14 @@ SMPDB is the Wishart lab's curated database of small-molecule pathways, with ove
 
 BioCyc is an SRI International–maintained collection of >20,000 organism-specific Pathway / Genome Databases (PGDBs), built on the MetaCyc reference pathway database. MetaCyc itself catalogs >3,000 experimentally elucidated metabolic pathways across all domains of life, with >18,000 reactions and >19,000 metabolites; BioCyc PGDBs extend this to specific organisms with computationally predicted pathways. For cellular agriculture, BioCyc is the canonical reference for non-mammalian metabolism — particularly the yeast and bacterial PGDBs used in precision-fermentation alt-protein work, and emerging livestock-species PGDBs that complement species-specific GEMs. MetaCyc is freely accessible at <https://metacyc.org/>; BioCyc has tiered access with substantial free use plus subscription-based bulk download.
 
+### [BiGG Models](http://bigg.ucsd.edu/)
+
+Summary: A repository of >75 manually curated, BiGG-standardized genome-scale metabolic models covering bacteria, archaea, fungi, and several eukaryotes, hosted at UCSD (Palsson lab). Each model is provided in SBML, MATLAB `.mat`, and JSON formats, with standardized reaction / metabolite IDs (BiGG nomenclature) that cross-link to MetaNetX, KEGG, and ChEBI. The canonical starting point for any constraint-based modeling work.
+
+### [BioModels](https://www.ebi.ac.uk/biomodels/)
+
+Summary: A free, open-source repository of mathematical models of biological and biomedical systems, hosted by EMBL-EBI, containing thousands of curated SBML models spanning metabolism, signaling, cell-cycle, immunology, and pharmacokinetics. Models are versioned, peer-reviewed via the Curation Service, and accessible programmatically via a REST API. Endorsed companion to the Talk2Biomodels agent ([Papers.md ref #50](./Papers.md#50)).
+
 ## Mass Spectrometry Spectral Databases
 
 Reference spectral data resources for compound identification in mass-spectrometry workflows — essential analytical infrastructure for flavor metabolomics, off-flavor characterization, and spent-media analysis in cultivated meat. Pair these databases with the MS preprocessing / annotation tools in [Software.md / Mass Spectrometry & Chemometrics](./Software.md#mass-spectrometry--chemometrics).
@@ -128,47 +168,11 @@ The US National Institute of Standards and Technology's reference compendium of 
 
 MetaboLights is a public open-access repository for metabolomics experiments hosted at EMBL-EBI — the metabolomics analog of GEO (transcriptomics) or PRIDE (proteomics). Each study deposit includes raw MS / NMR data, processed datasets, sample / treatment metadata in ISA-Tab format, and standardized study-protocol annotations. For cellular agriculture, MetaboLights hosts experiments directly relevant to flavor metabolomics, fermentation chemistry, and cell-culture spent-media analysis — a primary source of training data for sensory-prediction ML and benchmark datasets for analytical pipeline validation. Programmatic access via REST API; bulk download via FTP.
 
-## Cell-Ag Species Metabolic Models (GEMs)
+### [GNPS](https://gnps.ucsd.edu/) (cross-listed)
 
-A small but growing collection of genome-scale metabolic models (GEMs) for the species most relevant to cellular agriculture. GEMs are SBML-formatted reconstructions of an organism's metabolic network — every reaction, every metabolite, every gene-protein-reaction mapping — and are the input data structure for the constraint-based modeling tools listed in [Software.md / Metabolic Modeling & Strain Design](./Software.md#metabolic-modeling--strain-design). The cell-ag GEM ecosystem is currently fragmented across preprints, supplementary materials, and individual GitHub repos rather than centralized in any single database; this section is a curated inventory pending the emergence of a canonical home (BiGG Models currently hosts microbial GEMs but few of the cell-ag species below).
+The Global Natural Products Social Molecular Networking platform from the Dorrestein lab at UCSD provides community-curated MS/MS reference spectral libraries — the database aspect listed here — alongside Feature-Based Molecular Networking, Ion Identity Molecular Networking, and analog-search tooling, which together make it primarily an analysis platform. Full entry and platform-level capabilities are in [Software.md / Mass Spectrometry & Chemometrics](./Software.md#gnps); this dual-listing surfaces it as a spectral database for readers browsing Databases.md.
 
-### BtaSBML2986 — *Bos taurus* (bovine)
-
-The first cultivated-meat-focused genome-scale metabolic reconstruction of cattle, published 2024 by Lee et al. as a bioRxiv preprint. The model integrates multi-omics data (genomics, transcriptomics, proteomics) and contains ~13,278 reactions across 2,986 genes, with biomass functions parameterized for cultivated-meat-relevant bovine cell types. Designed to support FBA-driven identification of media supplement combinations and metabolic bottlenecks for cultivated beef production. SBML files are distributed via the preprint's supplementary materials.
-
-Reference: [Papers.md #81](./Papers.md#81) (Lee et al. 2024, bioRxiv).
-
-### iES1300 — *Gallus gallus* (chicken)
-
-Generic genome-scale metabolic reconstruction of chicken, published 2022 in *PLOS ONE* by Salehabadi, Motamedian, and Shojaosadati. Contains 2,427 reactions across 1,300 genes (hence the `i...1300` name); used to investigate network connectivity and identify potential biomarkers across chicken tissues. The reference GEM for cultivated chicken cell-line metabolic modeling, with SBML files provided as supplementary data.
-
-Reference: [Papers.md #82](./Papers.md#82) (Salehabadi, Motamedian, & Shojaosadati 2022, *PLOS ONE*).
-
-### PigGEM2025 — *Sus scrofa* (porcine)
-
-Proteome-constrained metabolic model of pig muscle stem cells for cultivated meat production, published 2026 in *Metabolic Engineering* by Qiu et al. (a Sticta × Meatable collaboration with GFI grant funding; initially deposited as a bioRxiv preprint in September 2025). Tailored to the porcine muscle satellite cell context, enabling FBA / FVA analysis of cultivated pork media formulations and metabolic-engineering targets. SBML files released alongside the paper.
-
-Reference: [Papers.md #83](./Papers.md#83) (Qiu et al. 2026, *Metabolic Engineering*).
-
-### SALARECON — *Salmo salar* (Atlantic salmon)
-
-Whole-genome metabolic reconstruction of Atlantic salmon, published 2022 in *PLOS Computational Biology* with a focus on connecting genome content to growth and feed-efficiency phenotypes. The reference GEM for cultivated salmonid work — directly relevant to the cultivated seafood category (salmon, trout) that has begun attracting investment (Umami Bioworks, BlueNalu, Wildtype). SBML files distributed via the paper's supplementary materials and the SALARECON GitHub repository.
-
-Reference: [Papers.md #84](./Papers.md#84) (Zakhartsev et al. 2022, *PLOS Computational Biology*).
-
-### iCHO1766 / iCHO2048 / CHOmpact — Chinese Hamster Ovary (biopharma-adjacent reference)
-
-The CHO cell line is the mammalian biopharma workhorse, and its GEM family is the most-developed mammalian GEM ecosystem available — Hefzi et al.'s iCHO1766 (2016, *Cell Systems*) is the consensus reconstruction; iCHO2048 (2018) extends the secretory pathway; CHOmpact (2024) and follow-on Bayesian-flux-estimation pipelines (2025) produce reduced models for digital-twin work. CHO is not itself a cellular agriculture species, but its biomass parameterization, perfusion-process methodology, and reduction techniques translate directly to cell-ag GEMs (bovine, porcine, avian) currently under construction.
-
-Reference: [Papers.md #85](./Papers.md#85) (Hefzi et al. 2016, *Cell Systems*).
-
-### Recon3D / Human1 / HMR — *Homo sapiens* (template / upstream reference)
-
-The human genome-scale metabolic reconstructions — Recon3D (Brunk et al. 2018, *Nature Biotechnology*), Human-GEM / Human1 (Robinson et al. 2020, *Science Signaling*), and the underlying HMR2 — are the foundational human GEMs from which most mammalian-cell models (including the cell-ag GEMs above) inherit reaction networks, biomass equations, and curation conventions. Direct use in cell-ag is rare; they're more often used as homology templates or biomass-function donors for species-specific reconstructions.
-
-References: [Papers.md #86](./Papers.md#86) (Brunk et al. 2018, *Nature Biotechnology*) for Recon3D; [Papers.md #87](./Papers.md#87) (Robinson et al. 2020, *Science Signaling*) for Human-GEM.
-
-## Chemistry & Compound Data
+## Chemistry & Compound Databases
 
 Resources for media component selection, growth-factor mimetics, and small-molecule supplements.
 
@@ -222,7 +226,19 @@ Flavornet, maintained at Cornell by Acree and Arn, is a database of GC olfactome
 
 A long-established industry reference platform for the flavor, fragrance, food, and cosmetics industries, providing odor descriptors, organoleptic properties, regulatory status, and supplier information for thousands of aroma chemicals and natural extracts. While maintained by the F&F industry rather than as an academic resource, GoodScents is widely cross-referenced in flavor research papers and is the de-facto industry-standard descriptor source for many compounds not formally characterized in academic odor-threshold compendia.
 
-## Agricultural Literature Repositories
+## Seafood Species Reference Databases
+
+Open-access databases for cataloguing seafood species' biological and culinary characteristics, surfaced by [GFI's alternative-seafood data initiative](https://gfi.org/resource/aggregating-data-for-alternative-seafood/). For cellular agriculture these are direct reference data for the cultivated-seafood sub-domain — complementary to the SALARECON salmon GEM in [Datasets.md](./Datasets.md#salarecon--salmo-salar-atlantic-salmon).
+
+### [PISCES — Phylogenetic Index of Seafood CharactEriStics](https://gfi.org/resource/aggregating-data-for-alternative-seafood/)
+
+PISCES organizes seafood data by phylogenetic relationships, grouping species taxonomically — *Salmo salar* (Atlantic salmon) and *Salmo trutta* (sea trout) sit together under genus *Salmo*. Each species entry compiles cell-line availability, nutritional data, and volatile compounds relevant to cultivated- and plant-based-seafood development. Distributed as an AirTable base linked from the GFI landing page. The canonical taxonomic reference for cultivated-seafood candidate species. Companion to [ATLAS](#atlas--archetype-library-for-alternative-seafood) below, which groups the same species by culinary archetype rather than phylogeny.
+
+### [ATLAS — ArcheType Library for Alternative Seafood](https://gfi.org/resource/aggregating-data-for-alternative-seafood/)
+
+ATLAS groups seafood species into culinary archetypes — *Salmo salar* under "salmon" and *Salmo trutta* under "trout" — and ranks archetypes across sustainability, animal-welfare, public-health, and US-market-size metrics to help prioritize candidate species for alternative-seafood development. Accessed via the GFI landing page, with a ranking tool hosted on mybinder.org. The species-prioritization complement to [PISCES](#pisces--phylogenetic-index-of-seafood-characteristics)'s taxonomic indexing.
+
+## Literature & Bibliographic Databases
 
 Free open-access search platforms for agricultural research literature — useful for cellular agriculture as context resources covering animal nutrition, feed-stream economics, livestock genetics, food technology regulation, and broader agricultural science that intersects with cell-ag at the technology / commercial / regulatory boundary.
 
@@ -233,3 +249,31 @@ AGRIS is the United Nations Food and Agriculture Organization's global agricultu
 ### [USDA National Agricultural Library Search](https://search.nal.usda.gov/)
 
 The National Agricultural Library Search is the USDA's federated search platform across its digital collections, including PubAg (agricultural research literature), the NAL Catalog, and other USDA-curated resources. For cellular agriculture, NAL Search is the canonical entry point for USDA-funded research on animal nutrition, feed efficiency, livestock genetics, food technology, and food safety — relevant context for cultivated-meat scaling economics, regulatory engagement, and feed-stream cost analysis. Free open access; AGRICOLA-derived records are included alongside open-access NAL collections.
+
+### [GFI Alternative Protein Literature Library](https://gfi.org/resource/alternative-protein-literature-library/)
+
+GFI's curated collection of alternative-protein research resources spanning plant-based, cultivated, and fermentation-derived proteins, maintained by its science and technology team. GFI's nearest analogue to CAAIL's own curation, though not AI-scoped or version-controlled.
+
+## Ecosystem & Industry Directories
+
+GFI's curated public directories cataloguing the people, companies, supply chain, opportunities, and regulatory status of the alternative-protein and cellular-agriculture field. These are the "domain neighbours" of CAAIL — they catalogue *who is doing the work and where it is being sold*, complementary to CAAIL's catalogue of papers, software, datasets, and educational material. New Harvest's initiatives covering the same space (AICAI, the Cellular Agriculture Science Engine, CMSI) are not databases or directories and live in [OtherResources.md / Cell-Ag Ecosystem Initiatives](./OtherResources.md#cell-ag-ecosystem-initiatives) instead.
+
+### [GFI Alternative Protein Researcher Directory](https://gfi.org/resource/alternative-protein-researcher-directory/)
+
+GFI's global directory of researchers working on plant-based meat, cultivated meat, and fermentation. Complementary to CAAIL: GFI catalogues *people and labs*, CAAIL catalogues their *outputs*.
+
+### [GFI Alternative Protein Company Database](https://gfi.org/resource/alternative-protein-company-database/)
+
+GFI's catalogue of alternative-protein companies, including funding status and impact-investment context — the industry-side map of the field.
+
+### [GFI APAC Alternative Protein Ecosystem Database](https://gfi-apac.org/industry/alternative-protein-ecosystem-database/)
+
+GFI APAC's regional B2B directory of ingredient and equipment suppliers, pilot plants, consultants, and other supply-chain partners across the Asia-Pacific cell-ag ecosystem.
+
+### [GFI Database of Solutions for the Alternative Protein Industry](https://gfi.org/solutions/)
+
+GFI's catalogue of startup ideas, commercial opportunities, research projects, and investment priorities across the alternative-protein supply chain.
+
+### [GFI Where Cultivated Meat Can Be Sold](https://gfi.org/resource/where-cultivated-meat-can-be-sold/)
+
+GFI's live tracker of countries where cultivated meat has regulatory approval for sale, with associated companies and product formats — the kind of dynamic regulatory data CAAIL links to rather than duplicates.

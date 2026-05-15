@@ -3,25 +3,30 @@ This document presents the core research papers at the intersection of Cellular 
 
 | | [Media Optimization](./ResearchAreas/MediaOptimization.md) | [Cellular Engineering](./ResearchAreas/CellEngineering.md) | [Bioprocess control](./ResearchAreas/Bioprocess.md) | [Scaffolding](./ResearchAreas/Scaffolding.md)  | [Sensory Prediction](./ResearchAreas/SensoryPrediction.md) | [AI Tooling / Methodology](./ResearchAreas/AITooling.md) |
 |---|---|---|---|---|---|---|
-| [Bayesian Optimization](https://en.wikipedia.org/wiki/Bayesian_optimization) | [2](#2),[3](#3),[15](#15),[16](#16),[18](#18),[58](#58) | [16](#16) | [59](#59) | | | |
-| [Deep Learning](https://en.wikipedia.org/wiki/Deep_learning) | [1](#1),[15](#15),[17](#17),[18](#18) | [4](#4),[5](#5),[6](#6),[57](#57),[60](#60) | [7](#7) | [20](#20),[35](#35) | | |
-| [GNN](https://en.wikipedia.org/wiki/Graph_neural_network) | | [8](#8),[12](#12),[13](#13)| | | [14](#14),[36](#36) | [52](#52) |
-| [CNN](https://en.wikipedia.org/wiki/Convolutional_neural_network) | | | [29](#29), [33](#33) | [19](#19) | [11](#11),[26](#26) | |
-| [GAN](https://en.wikipedia.org/wiki/Generative_adversarial_network) / [VAE](https://en.wikipedia.org/wiki/Variational_autoencoder) | | [9](#9),[10](#10) | | | [11](#11) | |
-| [Genetic Algorithms](https://en.wikipedia.org/wiki/Genetic_algorithm) | [1](#1),[17](#17) | | [30](#30),[31](#31) | | | |
-| [SVM](https://en.wikipedia.org/wiki/Support_vector_machine) | [21](#21) | [22](#22) | [31](#31), [32](#32) | [34](#34) |  | |
-| [Ensemble Learning](https://en.wikipedia.org/wiki/Ensemble_learning) | | | | | [27](#27),[72](#72),[80](#80),[102](#102),[103](#103),[104](#104),[105](#105) | |
-| [K-Nearest Neighbors](https://en.wikipedia.org/wiki/K-nearest_neighbors_algorithm) | | | | | [28](#28) | |
-| [Active Learning](https://en.wikipedia.org/wiki/Active_learning_(machine_learning)) | [23](#23),[24](#24),[25](#25),[58](#58) | | | | | [63](#63) |
-| [Foundation Models](https://en.wikipedia.org/wiki/Foundation_model) | | [92](#92) | | | | [42](#42),[88](#88),[91](#91) |
-| [Scientific Literature & Discovery Agents](./ResearchAreas/AITooling.md#scientific-literature--discovery-agents) | | | | | | [44](#44),[45](#45),[46](#46),[47](#47),[53](#53) |
-| [General-Purpose Biomedical Agents](./ResearchAreas/AITooling.md#general-purpose-biomedical-agents) | | | | | | [40](#40),[49](#49),[94](#94),[95](#95),[96](#96),[98](#98) |
-| [Chemistry / Synthesis Agents](./ResearchAreas/AITooling.md#chemistry--synthesis-agents) | | | | | | [70](#70),[71](#71) |
-| [Domain-Specific Biomedical Agents](./ResearchAreas/AITooling.md#domain-specific-biomedical-agents) | | [90](#90),[93](#93),[97](#97) | | | | [43](#43),[50](#50),[51](#51),[54](#54),[56](#56),[66](#66),[68](#68),[69](#69) |
-| [Robot Scientists & Lab Automation](https://en.wikipedia.org/wiki/Robot_scientist) | | | [61](#61),[62](#62) | | | [64](#64),[65](#65) |
-| [Benchmarks & Evaluation Frameworks](./ResearchAreas/AITooling.md#benchmarks--evaluation-frameworks) | | | | | | [55](#55),[89](#89),[108](#108),[109](#109),[110](#110) |
-| [Agent Infrastructure (Frameworks, KGs, Protocols)](./ResearchAreas/AITooling.md#agent-infrastructure-frameworks-kgs-protocols) | | | | | | [41](#41),[48](#48),[67](#67) |
+| [Bayesian Optimization](https://en.wikipedia.org/wiki/Bayesian_optimization) | [Cosenza et al. 2022](#3)<br>[Kanda et al. 2022](#16)<br>[Cosenza 2022](#18)<br>[Cosenza et al. 2023](#2)<br>[Yoshida et al. 2023](#15)<br>[Narayanan et al. 2025](#58) | [Kanda et al. 2022](#16) | [Antonakoudis & Richelle 2026](#59) | | | |
+| [Deep Learning](https://en.wikipedia.org/wiki/Deep_learning) | [Cosenza & Block 2021](#17)<br>[Cosenza 2022](#18)<br>[Nikkhah et al. 2023](#1)<br>[Yoshida et al. 2023](#15) | [Chen et al. 2016](#4)<br>[Li et al. 2020](#5)<br>[Ji et al. 2021](#6)<br>[Magnusson et al. 2024](#122)<br>[Adduri et al. 2025](#57)<br>[Mathieu et al. 2025](#60)<br>[Xiao et al. 2026](#145) | [Tamburini et al. 2014](#7) | [Andrews et al. 2023](#35)<br>[Rafieyan et al. 2024](#20) | | |
+| [GNN](https://en.wikipedia.org/wiki/Graph_neural_network) | | [Wang et al. 2021](#13)<br>[Ciortan & Defrance 2022](#8)<br>[Shan et al. 2023](#12)<br>[Roohani et al. 2024](#121) | | | [Lee et al. 2023](#14)<br>[Qian et al. 2023](#36) | [Mulyadi et al. 2025](#52) |
+| [CNN](https://en.wikipedia.org/wiki/Convolutional_neural_network) | | | [Del Rio‐Chanona et al. 2019](#29)<br>[Rojek et al. 2021](#33) | [Bermejillo Barrera et al. 2021](#19) | [Sun et al. 2023](#26)<br>[Shen et al. 2024](#11) | |
+| [GAN](https://en.wikipedia.org/wiki/Generative_adversarial_network) / [VAE](https://en.wikipedia.org/wiki/Variational_autoencoder) | | [Lin et al. 2020](#9)<br>[Zrimec et al. 2022](#10) | | | [Shen et al. 2024](#11) | |
+| [Genetic Algorithms](https://en.wikipedia.org/wiki/Genetic_algorithm) | [Cosenza & Block 2021](#17)<br>[Nikkhah et al. 2023](#1) | | [Peng et al. 2013](#30)<br>[Zhang et al. 2020](#31) | | | |
+| [SVM](https://en.wikipedia.org/wiki/Support_vector_machine) | [Xu et al. 2014](#21) | [Lao et al. 2022](#22) | [Zhang et al. 2020](#31)<br>[Roell et al. 2022](#32) | [Andrews et al. 2025](#34) |  | |
+| [Ensemble Learning](https://en.wikipedia.org/wiki/Ensemble_learning) | | | | | [Keller et al. 2017](#80)<br>[Dagan-Wiener et al. 2017](#102)<br>[Margulis et al. 2021](#103)<br>[Colantonio et al. 2022](#72)<br>[Margulis et al. 2022](#104)<br>[Ziaikin et al. 2024](#105)<br>[Du et al. 2025](#27) | |
+| [K-Nearest Neighbors](https://en.wikipedia.org/wiki/K-nearest_neighbors_algorithm) | | | | | [Sun et al. 2026](#28) | |
+| [Active Learning](https://en.wikipedia.org/wiki/Active_learning_(machine_learning)) | [Hashizume et al. 2022](#24)<br>[Zhang et al. 2023](#23)<br>[Ozawa et al. 2025](#25)<br>[Narayanan et al. 2025](#58) | | | | | [Pandi et al. 2022](#63) |
+| [Foundation Models: Next-Token Prediction](https://en.wikipedia.org/wiki/Generative_pre-trained_transformer) | | [Shen et al. 2023](#115)<br>[Pearce et al. 2026](#92)<br>[Rizvi et al. 2026](#120) | | | | |
+| [Foundation Models: Masked Language Modeling](https://en.wikipedia.org/wiki/BERT_(language_model)) | | [Yang et al. 2022](#112)<br>[Theodoris et al. 2023](#111)<br>[Hao et al. 2024](#116)<br>[Cui et al. 2024](#117)<br>[Rosen et al. 2026](#119) | | | | |
+| [Foundation Models: LM + Biological Priors](#119) | | [Rosen et al. 2024](#118)<br>[Littman et al. 2025](#123)<br>[Rosen et al. 2026](#119) | | | | |
+| [Foundation Models: Cell-State & Perturbation Prediction](#57) | | [Roohani et al. 2024](#121)<br>[Magnusson et al. 2024](#122)<br>[Adduri et al. 2025](#57)<br>[Dong et al. 2026](#124) | | | | |
+| [Foundation Models (other modalities)](https://en.wikipedia.org/wiki/Foundation_model) | | | | | | [Sypetkowski et al. 2026](#42)<br>[Su et al. 2026](#88)<br>[Ding et al. 2026](#91) |
+| [Scientific Literature & Discovery Agents](./ResearchAreas/AITooling.md#scientific-literature--discovery-agents) | | | | | | [Lála et al. 2023](#44)<br>[Lu et al. 2024](#45)<br>[Skarlinski et al. 2024](#46)<br>[Yamada et al. 2025](#47)<br>[Liu et al. 2026](#53) |
+| [General-Purpose Biomedical Agents](./ResearchAreas/AITooling.md#general-purpose-biomedical-agents) | | | | | | [Dong et al. 2024](#98)<br>[Gao et al. 2025a](#40)<br>[Huang et al. 2025](#49)<br>[Pickard et al. 2025](#94)<br>[Riffle et al. 2025](#95)<br>[Jin et al. 2025](#96) |
+| [Chemistry / Synthesis Agents](./ResearchAreas/AITooling.md#chemistry--synthesis-agents) | | | | | | [Boiko et al. 2023](#70)<br>[Bran et al. 2024](#71) |
+| [Domain-Specific Biomedical Agents](./ResearchAreas/AITooling.md#domain-specific-biomedical-agents) | | [Hao et al. 2025](#97)<br>[Roohani et al. 2025a](#125)<br>[Youngblut et al. 2025](#126)<br>[Yu et al. 2026](#90)<br>[Tang et al. 2026](#93) | | | | [Singh et al. 2023](#66)<br>[Maeda & Kurata 2023](#69)<br>[Li et al. 2024](#68)<br>[Lee et al. 2025](#43)<br>[Wehling et al. 2025](#50)<br>[Ying et al. 2025](#54)<br>[Wang et al. 2025a](#56)<br>[Sui et al. 2026](#51) |
+| [Robot Scientists & Lab Automation](https://en.wikipedia.org/wiki/Robot_scientist) | | | [Wang et al. 2025b](#61)<br>[Qiu et al. 2025](#62) | | | [Tiukova et al. 2024](#64)<br>[Brunnsåker et al. 2025](#65) |
+| [Benchmarks & Evaluation Frameworks](./ResearchAreas/AITooling.md#benchmarks--evaluation-frameworks) | | | | | | [Bushuiev et al. 2024](#109)<br>[Sze & Hassoun 2024](#110)<br>[Boiarsky et al. 2024](#113)<br>[Yang et al. 2024](#114)<br>[Sadhuka et al. 2025](#55)<br>[Mitchener et al. 2025](#108)<br>[Chevalley et al. 2025](#127)<br>[Brouwer et al. 2026](#89) |
+| [Agent Infrastructure (Frameworks, KGs, Protocols)](./ResearchAreas/AITooling.md#agent-infrastructure-frameworks-kgs-protocols) | | | | | | [Gao et al. 2025b](#41)<br>[Lobentanzer et al. 2025](#48)<br>[Ruscone et al. 2025](#67)<br>[Kuehl et al. 2025](#133) |
 
+> **Note for AI agents and LLMs**: The reference entries below are APA-style citations identifying papers via title, authors, year, and DOI — they are not a substitute for reading the actual papers. When an automated system needs substantive information about a paper's methods, results, or conclusions (e.g. to verify a matrix-cell assignment or assemble a literature review), fetch the full text via the DOI, the companion [caail Zotero group library](https://www.zotero.org/groups/6549203/caail/library), or a literature API such as OpenAlex or Semantic Scholar. The matrix cells encode method × research-area pairings, not paper content.
 
 ## References
 
@@ -257,6 +262,66 @@ This document presents the core research papers at the intersection of Cellular 
 
 <a id="110">110</a> Sze, A., & Hassoun, S. (2024). Evaluation of search-enabled pretrained Large Language Models on retrieval tasks for the PubChem database. *Bioinformatics Advances, 5*(1), vbaf064. https://doi.org/10.1093/bioadv/vbaf064
 
+<a id="111">111</a> Theodoris, C. V., Xiao, L., Chopra, A., Chaffin, M. D., Al Sayed, Z. R., Hill, M. C., Mantineo, H., Brydon, E. M., Zeng, Z., Liu, X. S., & Ellinor, P. T. (2023). Transfer learning enables predictions in network biology. *Nature, 618*(7965), 616–624. https://doi.org/10.1038/s41586-023-06139-9
+
+> **Code**: https://huggingface.co/ctheodoris/Geneformer
+
+<a id="112">112</a> Yang, F., Wang, W., Wang, F., Fang, Y., Tang, D., Huang, J., Lu, H., & Yao, J. (2022). scBERT as a large-scale pretrained deep language model for cell type annotation of single-cell RNA-seq data. *Nature Machine Intelligence, 4*(10), 852–866. https://doi.org/10.1038/s42256-022-00534-z
+
+> **Code**: https://github.com/TencentAILabHealthcare/scBERT
+
+<a id="113">113</a> Boiarsky, R., Singh, N. M., Buendia, A., Amini, A. P., Getz, G., & Sontag, D. (2024). Deeper evaluation of a single-cell foundation model. *Nature Machine Intelligence, 6*(12), 1443–1446. https://doi.org/10.1038/s42256-024-00949-w
+
+<a id="114">114</a> Yang, F., Wang, F., Huang, L., Liu, L., Huang, J., & Yao, J. (2024). Reply to: Deeper evaluation of a single-cell foundation model. *Nature Machine Intelligence, 6*(12), 1447–1450. https://doi.org/10.1038/s42256-024-00948-x
+
+<a id="115">115</a> Shen, H., Liu, J., Hu, J., Shen, X., Zhang, C., Wu, D., Feng, M., Yang, M., Li, Y., Yang, Y., Wang, W., Zhang, Q., Yang, J., Chen, K., & Li, X. (2023). Generative pretraining from large-scale transcriptomes for single-cell deciphering. *iScience, 26*(5), 106536. https://doi.org/10.1016/j.isci.2023.106536
+
+> **Code**: https://github.com/deeplearningplus/tGPT
+
+<a id="116">116</a> Hao, M., Gong, J., Zeng, X., Liu, C., Guo, Y., Cheng, X., Wang, T., Ma, J., Zhang, X., & Song, L. (2024). Large-scale foundation model on single-cell transcriptomics. *Nature Methods, 21*(8), 1481–1491. https://doi.org/10.1038/s41592-024-02305-7
+
+> **Code**: https://github.com/biomap-research/scFoundation
+
+<a id="117">117</a> Cui, H., Wang, C., Maan, H., Pang, K., Luo, F., Duan, N., & Wang, B. (2024). scGPT: toward building a foundation model for single-cell multi-omics using generative AI. *Nature Methods, 21*(8), 1470–1480. https://doi.org/10.1038/s41592-024-02201-0
+
+> **Code**: https://github.com/bowang-lab/scGPT
+
+<a id="118">118</a> Rosen, Y., Brbić, M., Roohani, Y., Swanson, K., Li, Z., & Leskovec, J. (2024). Toward universal cell embeddings: integrating single-cell RNA-seq datasets across species with SATURN. *Nature Methods, 21*(8), 1492–1500. https://doi.org/10.1038/s41592-024-02191-z
+
+<a id="119">119</a> Rosen, Y., Roohani, Y., Agrawal, A., Samotorčan, L., Tabula Sapiens Consortium, Quake, S. R., & Leskovec, J. (2026). *Universal Cell Embeddings: A Foundation Model for Cell Biology.* bioRxiv. https://doi.org/10.1101/2023.11.28.568918
+
+> **Code**: https://github.com/snap-stanford/UCE
+
+<a id="120">120</a> Rizvi, S. A., Levine, D., Patel, A., Zhang, S., Wang, E., Perry, C. J., Vrkic, I., Constante, N. M., Fu, Z., He, S., Zhang, D., Tang, C., Lyu, Z., Darji, R., Li, C., Sun, E., Jeong, D., Zhao, L., Kwan, J., Braun, D., Hafler, B., Chung, H., Dhodapkar, R. M., Jaeger, P., Perozzi, B., Ishizuka, J., Azizi, S., & van Dijk, D. (2026). *Scaling Large Language Models for Next-Generation Single-Cell Analysis.* bioRxiv. https://doi.org/10.1101/2025.04.14.648850
+
+> **Code**: https://github.com/vandijklab/cell2sentence
+
+<a id="121">121</a> Roohani, Y., Huang, K., & Leskovec, J. (2024). Predicting transcriptional outcomes of novel multigene perturbations with GEARS. *Nature Biotechnology, 42*(6), 927–935. https://doi.org/10.1038/s41587-023-01905-6
+
+> **Code**: https://github.com/snap-stanford/GEARS
+
+<a id="122">122</a> Magnusson, J. P., Roohani, Y., Stauber, D., Situ, Y., Teba, P. R. de C., Sandberg, R., Leskovec, J., & Qi, L. S. (2024). *PreciCE: Precision engineering of cell fates via data-driven multi-gene control of transcriptional networks.* bioRxiv. https://doi.org/10.1101/2024.11.04.621938
+
+<a id="123">123</a> Littman, R., Levine, J., Maleki, S., Lee, Y., Ermakov, V., Qiu, L., Wu, A., Huang, K., Lopez, R., Scalia, G., Biancalani, T., Richmond, D., Regev, A., & Hütter, J. C. (2025). *Gene-embedding-based prediction and functional evaluation of perturbation expression responses with PRESAGE.* bioRxiv. https://doi.org/10.1101/2025.06.03.657653
+
+<a id="124">124</a> Dong, M., Adduri, A., Gautam, D., Carpenter, C., Shah, R., Ricci-Tam, C., Kluger, Y., Burke, D. P., & Roohani, Y. H. (2026). *Stack: In-Context Learning of Single-Cell Biology.* bioRxiv. https://doi.org/10.64898/2026.01.09.698608
+
+<a id="125">125</a> Roohani, Y., Lee, A., Huang, Q., Vora, J., Steinhart, Z., Huang, K., Marson, A., Liang, P., & Leskovec, J. (2025). *BioDiscoveryAgent: An AI Agent for Designing Genetic Perturbation Experiments.* arXiv. https://doi.org/10.48550/arXiv.2405.17631
+
+> **Code**: https://github.com/snap-stanford/BioDiscoveryAgent
+
+<a id="126">126</a> Youngblut, N. D., Carpenter, C., Nayebnazar, A., Adduri, A., Shah, R., Ricci-Tam, C., Prashar, J., Ilango, R., Teyssier, N., Konermann, S., Hsu, P. D., Dobin, A., Burke, D. P., Goodarzi, H., & Roohani, Y. H. (2025). *scBaseCount: an AI agent-curated, uniformly processed, and autonomously updated single cell data repository.* bioRxiv. https://doi.org/10.1101/2025.02.27.640494
+
+<a id="127">127</a> Chevalley, M., Roohani, Y. H., Mehrjou, A., Leskovec, J., & Schwab, P. (2025). A large-scale benchmark for network inference from single-cell perturbation data. *Communications Biology, 8*(1), 412. https://doi.org/10.1038/s42003-025-07764-y
+
+> **Code**: https://github.com/causalbench/causalbench
+
+<a id="133">133</a> Kuehl, M., Schaub, D. P., Carli, F., Heumos, L., Hellmig, M., Fernández-Zapata, C., Kaiser, N., Schaul, J., Kulaga, A., Usanov, N., Krebs, C. F., Panzer, U., Bonn, S., Lobentanzer, S., Saez-Rodriguez, J., & Puelles, V. G. (2025). BioContextAI is a community hub for agentic biomedical systems. *Nature Biotechnology, 43*(11), 1755–1757. https://doi.org/10.1038/s41587-025-02900-9
+
+> **Code**: https://github.com/biocontext-ai
+
+<a id="145">145</a> Xiao, W., Zheng, J., & Li, S. Z. (2026). *MetaGEM: Bottom-Up Reconstruction of Genome-Scale Metabolic Networks via Deep Enzyme-Metabolite Interaction Modeling.* arXiv. https://doi.org/10.48550/arXiv.2605.14812
+
 ## Sensory & Flavor Reference Work
 
 This section catalogs foundational primary research and methodology papers in sensory science, flavor chemistry, and analytical sensomics relevant to cellular agriculture, cultivated meat, and alt-protein products. Entries here do not apply a specific AI / ML method to a specific cell-ag problem (otherwise they would live in the matrix), but they are essential reference work — empirical studies, methodology frameworks, and applied chemometric analyses — that any AI/ML application in this space should build on. The same numeric ID counter is shared with the primary references above; no matrix participation.
@@ -281,7 +346,7 @@ This section catalogs foundational primary research and methodology papers in se
 
 ## Metabolic Reference Work
 
-This section catalogs foundational primary research papers describing genome-scale metabolic models (GEMs) and related metabolic infrastructure for cellular agriculture. As with the Sensory & Flavor Reference Work above, entries here are primary research where the contribution is the model / data resource itself rather than an applied AI/ML method — the AI/ML work building on these resources lives in the matrix above. Each entry below is the canonical citation for the corresponding data resource in [Data.md / Cell-Ag Species Metabolic Models](./Data.md#cell-ag-species-metabolic-models-gems). Same numeric ID counter as the primary references; no matrix participation.
+This section catalogs foundational primary research papers describing genome-scale metabolic models (GEMs) and related metabolic infrastructure for cellular agriculture. As with the Sensory & Flavor Reference Work above, entries here are primary research where the contribution is the model / data resource itself rather than an applied AI/ML method — the AI/ML work building on these resources lives in the matrix above. Each entry below is the canonical citation for the corresponding data resource in [Datasets.md / Genome-Scale Metabolic Models (GEMs)](./Datasets.md#genome-scale-metabolic-models-gems). Same numeric ID counter as the primary references; no matrix participation.
 
 <a id="81">81</a> Lee, J., Kim, J., Bae, H., Kim, M., Jung, B., Kim, J., Lee, S., & Kim, H. (2024). *Multi-omics analysis and genome-scale metabolic reconstruction of cattle Bos taurus for optimal production of cultured meat.* bioRxiv. https://doi.org/10.1101/2024.12.09.627468
 
@@ -296,6 +361,42 @@ This section catalogs foundational primary research papers describing genome-sca
 <a id="86">86</a> Brunk, E., Sahoo, S., Zielinski, D. C., Altunkaya, A., Dräger, A., Mih, N., Gatto, F., Nilsson, A., Preciat Gonzalez, G. A., Aurich, M. K., Prlić, A., Sastry, A., Danielsdottir, A. D., Heinken, A., Noronha, A., Rose, P. W., Burley, S. K., Fleming, R. M. T., Nielsen, J., Thiele, I., & Palsson, B. O. (2018). Recon3D enables a three-dimensional view of gene variation in human metabolism. *Nature Biotechnology, 36*(3), 272–281. https://doi.org/10.1038/nbt.4072
 
 <a id="87">87</a> Robinson, J. L., Kocabaş, P., Wang, H., Cholley, P.-E., Cook, D., Nilsson, A., Anton, M., Ferreira, R., Domenzain, I., Billa, V., Limeta, A., Hedin, A., Gustafsson, J., Kerkhoven, E. J., Svensson, L. T., Palsson, B. O., Mardinoglu, A., Hansson, L., Uhlén, M., & Nielsen, J. (2020). An atlas of human metabolism. *Science Signaling, 13*(624), eaaz1482. https://doi.org/10.1126/scisignal.aaz1482
+
+## Foundational Methods Reference Work
+
+This section catalogs the foundational methods and theory papers — from machine learning and from cell biology — that the AI × cell-ag work in the matrix builds upon, but which do not themselves apply a specific AI/ML method to a specific cell-ag problem (otherwise they would live in the matrix). The transformer architecture underlies every entry in the Foundation Models rows; the Waddington-landscape formalism is the conceptual substrate for the Cell-State & Perturbation Prediction row. Same numeric ID counter as the primary references; no matrix participation.
+
+<a id="130">130</a> Vaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A. N., Kaiser, L., & Polosukhin, I. (2023). *Attention Is All You Need.* arXiv. https://doi.org/10.48550/arXiv.1706.03762
+
+<a id="131">131</a> Wang, J., Zhang, K., Xu, L., & Wang, E. (2011). Quantifying the Waddington landscape and biological paths for development and differentiation. *Proceedings of the National Academy of Sciences, 108*(20), 8257–8262. https://doi.org/10.1073/pnas.1017017108
+
+## Livestock Functional Genomics Reference Work
+
+This section catalogs foundational primary research describing the Farm Animal Genotype–Tissue Expression (FarmGTEx) project and adjacent multi-tissue functional-genomics resources for cell-ag-relevant species (cattle, pig, chicken, sheep). As with the Sensory & Flavor and Metabolic Reference Work sections above, entries here are primary research where the contribution is a large-scale multi-tissue atlas, regulatory-effects map, or annotation resource — substrate that any AI/ML application in livestock cell biology should build on, rather than an applied AI/ML method per se. Same numeric ID counter as the primary references; no matrix participation. Each entry below is the canonical citation for the corresponding data resource in [Databases.md / Livestock Multi-Tissue Atlases & Functional Genomics](./Databases.md#livestock-multi-tissue-atlases--functional-genomics).
+
+<a id="134">134</a> Fang, L., Teng, J., Lin, Q., Bai, Z., Liu, S., Guan, D., Li, B., Gao, Y., Hou, Y., Gong, M., Pan, Z., Yu, Y., Clark, E. L., Smith, J., Rawlik, K., Xiang, R., Chamberlain, A. J., Goddard, M. E., Littlejohn, M., ... Liu, G. E. (2025). The Farm Animal Genotype–Tissue Expression (FarmGTEx) Project. *Nature Genetics, 57*(4), 786–796. https://doi.org/10.1038/s41588-025-02121-5
+
+<a id="135">135</a> Teng, J., Gao, Y., Yin, H., Bai, Z., Liu, S., Zeng, H., Bai, L., Cai, Z., Zhao, B., Li, X., Xu, Z., Lin, Q., Pan, Z., Yang, W., Yu, X., Guan, D., Hou, Y., Keel, B. N., Rohrer, G. A., ... Fang, L. (2024). A compendium of genetic regulatory effects across pig tissues. *Nature Genetics, 56*(1), 112–123. https://doi.org/10.1038/s41588-023-01585-7
+
+<a id="136">136</a> Guan, D., Bai, Z., Zhu, X., Zhong, C., Hou, Y., Zhu, D., Li, H., Lan, F., Diao, S., Yao, Y., Zhao, B., Li, X., Pan, Z., Gao, Y., Wang, Y., Zou, D., Wang, R., Xu, T., Sun, C., ... Fang, L. (2025). Genetic regulation of gene expression across multiple tissues in chickens. *Nature Genetics, 57*(5), 1298–1308. https://doi.org/10.1038/s41588-025-02155-9
+
+<a id="137">137</a> Han, B., Li, H., Zheng, W., Zhang, Q., Chen, A., Zhu, S., Shi, T., Wang, F., Zou, D., Song, Y., Ye, W., Du, A., Fu, Y., Jia, M., Bai, Z., Yuan, Z., Liu, W., Tuo, W., Hope, J. C., MacHugh, D. E., O'Grady, J. F., Madsen, O., Sahana, G., Luo, Y., Lin, L., Li, C., Cai, Z., Li, B., Huang, J., Liu, L., Zhang, Z., Ma, Z., Hou, Y., Liu, G. E., Jiang, Y., Sun, H. Z., Fang, L., & Sun, D. (2025). A multi-tissue single-cell expression atlas in cattle. *Nature Genetics, 57*(10), 2546–2561. https://doi.org/10.1038/s41588-025-02329-5
+
+<a id="138">138</a> Gong, M., Zhuang, Z., Sun, X., Xu, Y., Zhang, H., Wang, Y., Guan, D., Li, R., Lu, X., Bai, Z., Feng, P., Song, M., Tian, M., Lu, J., Wang, M., Lu, X., Wu, D., Su, P., Liu, P., ... Fang, L. (2025). *A multi-tissue atlas of genetic regulatory effects in sheep.* bioRxiv. https://doi.org/10.1101/2025.11.03.686346
+
+<a id="139">139</a> Zeng, H., Zhang, W., Lin, Q., Gao, Y., Teng, J., Xu, Z., Cai, X., Zhong, Z., Wu, J., Liu, Y., Diao, S., Wei, C., Gong, W., Pan, X., Li, Z., Huang, X., Chen, X., Du, J., The PigGTEx Consortium, Zhao, F., Zhao, Y., Ballester, M., Crespo-Piazuelo, D., Amills, M., Clop, A., Karlskov-Mortensen, P., Fredholm, M., Li, P., Huang, R., Tang, G., Li, M., Liu, X., Chen, Y., Zhang, Q., Li, J., Yuan, X., Ding, X., Fang, L., & Zhang, Z. (2024). PigBiobank: a valuable resource for understanding genetic and biological mechanisms of diverse complex traits in pigs. *Nucleic Acids Research, 52*(D1), D980–D989. https://doi.org/10.1093/nar/gkad1080
+
+<a id="140">140</a> Xu, Z., Lin, Q., Cai, X., Zhong, Z., Teng, J., Li, B., Zeng, H., Gao, Y., Cai, Z., Wang, X., Shi, L., Wang, X., Wang, Y., Zhang, Z., Lin, Y., Liu, S., Yin, H., Bai, Z., Wei, C., ... Zhang, Z. (2025). Integrating large-scale meta-GWAS and PigGTEx resources to decipher the genetic basis of complex traits in the pig. *National Science Review, 12*(5), nwaf048. https://doi.org/10.1093/nsr/nwaf048
+
+<a id="141">141</a> Pan, X., Gong, W., Cai, X., Teng, J., Cai, J., Zeng, H., Ayalew, W., Shen, Q., Zhong, Z., Wang, Y., Zhang, W., Tian, Y., Xu, D., Gao, Y., Yin, H., Zhang, Y., Hou, J., Zhou, T., Li, J., Fang, L., Yuan, X., & Zhang, Z. (2026). Multi-Tissue Genetic Regulation of RNA Editing in Pigs. *Advanced Science, 13*(17), e18238. https://doi.org/10.1002/advs.202518238
+
+<a id="142">142</a> Chen, L., Li, H., Teng, J., Wang, Z., Qu, X., Chen, Z., Cai, X., Zeng, H., Bai, Z., Li, J., Pan, X., Yan, L., Wang, F., Lin, L., Luo, Y., Sahana, G., Lund, M. S., Ballester, M., Crespo-Piazuelo, D., Karlskov-Mortensen, P., Fredholm, M., Clop, A., Amills, M., Loving, C., Tuggle, C. K., Madsen, O., Li, J., Zhang, Z., Liu, G. E., Jiang, J., Fang, L., & Yi, G. (2026). Construction of a Multitissue Cell Atlas Reveals Cell-Type-Specific Regulation of Molecular and Complex Phenotypes in Pigs. *Advanced Science, 13*(8), e04961. https://doi.org/10.1002/advs.202504961
+
+<a id="143">143</a> Teng, J., Zhang, W., Gong, W., Chen, J., Gao, Y., Fang, L., & Zhang, Z. (2026). OmiGA for ultra-efficient molecular quantitative trait loci mapping. *Nature Communications, 17*(1), 2680. https://doi.org/10.1038/s41467-026-68978-0
+
+> **Code**: https://omiga.bio/
+
+<a id="144">144</a> Clark, E. L., Archibald, A. L., Daetwyler, H. D., Groenen, M. A. M., Harrison, P. W., Houston, R. D., Kühn, C., Lien, S., Macqueen, D. J., Reecy, J. M., Robledo, D., Watson, M., Tuggle, C. K., & Giuffra, E. (2020). From FAANG to fork: application of highly annotated genomes to improve farmed animal production and welfare. *Genome Biology, 21*(1), 285. https://doi.org/10.1186/s13059-020-02197-8
 
 ## Reviews & Perspectives
 
@@ -312,3 +413,9 @@ This section lists review articles, position papers, and commentaries that surve
 <a id="78">78</a> Mittermeier-Kleßinger, V. K., Hofmann, T., & Dawid, C. (2021). Mitigating Off-Flavors of Plant-Based Proteins. *Journal of Agricultural and Food Chemistry, 69*(32), 9202–9207. https://doi.org/10.1021/acs.jafc.1c03398
 
 <a id="79">79</a> Alasi, S. O., Sanusi, M. S., Sunmonu, M. O., Odewole, M. M., & Adepoju, A. L. (2024). Exploring recent developments in novel technologies and AI integration for plant-based protein functionality: A review. *Journal of Agriculture and Food Research, 15,* 101036. https://doi.org/10.1016/j.jafr.2024.101036
+
+<a id="132">132</a> Todhunter, M. E., Jubair, S., Verma, R., Saqe, R., Shen, K., & Duffy, B. (2024). Artificial intelligence and machine learning applications for cultured meat. *Frontiers in Artificial Intelligence, 7,* 1424012. https://doi.org/10.3389/frai.2024.1424012
+
+<a id="128">128</a> Bunne, C., Roohani, Y., Rosen, Y., Gupta, A., Zhang, X., Roed, M., Alexandrov, T., AlQuraishi, M., Brennan, P., Burkhardt, D. B., Califano, A., Cool, J., Dernburg, A. F., Ewing, K., Fox, E. B., Haury, M., Herr, A. E., Horvitz, E., Hsu, P. D., Jain, V., Johnson, G. R., Kalil, T., Kelley, D. R., Kelley, S. O., Kreshuk, A., Mitchison, T., Otte, S., Shendure, J., Sofroniew, N. J., Theis, F., Theodoris, C. V., Upadhyayula, S., Valer, M., Wang, B., Xing, E., Yeung-Levy, S., Zitnik, M., Karaletsos, T., Regev, A., Lundberg, E., Leskovec, J., & Quake, S. R. (2024). How to build the virtual cell with artificial intelligence: Priorities and opportunities. *Cell, 187*(25), 7045–7063. https://doi.org/10.1016/j.cell.2024.11.015
+
+<a id="129">129</a> Roohani, Y. H., Hua, T. J., Tung, P. Y., Bounds, L. R., Yu, F. B., Dobin, A., Teyssier, N., Adduri, A., Woodrow, A., Plosky, B. S., Mehta, R., Hsu, B., Sullivan, J., Ricci-Tam, C., Li, N., Kazaks, J., Gilbert, L. A., Konermann, S., Hsu, P. D., Goodarzi, H., & Burke, D. P. (2025). Virtual Cell Challenge: Toward a Turing test for the virtual cell. *Cell, 188*(13), 3370–3374. https://doi.org/10.1016/j.cell.2025.06.008
