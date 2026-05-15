@@ -24,7 +24,7 @@ This document presents the core research papers at the intersection of Cellular 
 | [Domain-Specific Biomedical Agents](./ResearchAreas/AITooling.md#domain-specific-biomedical-agents) | | [90](#90),[93](#93),[97](#97),[125](#125),[126](#126) | | | | [43](#43),[50](#50),[51](#51),[54](#54),[56](#56),[66](#66),[68](#68),[69](#69) |
 | [Robot Scientists & Lab Automation](https://en.wikipedia.org/wiki/Robot_scientist) | | | [61](#61),[62](#62) | | | [64](#64),[65](#65) |
 | [Benchmarks & Evaluation Frameworks](./ResearchAreas/AITooling.md#benchmarks--evaluation-frameworks) | | | | | | [55](#55),[89](#89),[108](#108),[109](#109),[110](#110),[113](#113),[114](#114),[127](#127) |
-| [Agent Infrastructure (Frameworks, KGs, Protocols)](./ResearchAreas/AITooling.md#agent-infrastructure-frameworks-kgs-protocols) | | | | | | [41](#41),[48](#48),[67](#67) |
+| [Agent Infrastructure (Frameworks, KGs, Protocols)](./ResearchAreas/AITooling.md#agent-infrastructure-frameworks-kgs-protocols) | | | | | | [41](#41),[48](#48),[67](#67),[133](#133) |
 
 
 ## References
@@ -315,6 +315,10 @@ This document presents the core research papers at the intersection of Cellular 
 
 > **Code**: https://github.com/causalbench/causalbench
 
+<a id="133">133</a> Kuehl, M., Schaub, D. P., Carli, F., Heumos, L., Hellmig, M., Fernández-Zapata, C., Kaiser, N., Schaul, J., Kulaga, A., Usanov, N., Krebs, C. F., Panzer, U., Bonn, S., Lobentanzer, S., Saez-Rodriguez, J., & Puelles, V. G. (2025). BioContextAI is a community hub for agentic biomedical systems. *Nature Biotechnology, 43*(11), 1755–1757. https://doi.org/10.1038/s41587-025-02900-9
+
+> **Code**: https://github.com/biocontext-ai
+
 ## Sensory & Flavor Reference Work
 
 This section catalogs foundational primary research and methodology papers in sensory science, flavor chemistry, and analytical sensomics relevant to cellular agriculture, cultivated meat, and alt-protein products. Entries here do not apply a specific AI / ML method to a specific cell-ag problem (otherwise they would live in the matrix), but they are essential reference work — empirical studies, methodology frameworks, and applied chemometric analyses — that any AI/ML application in this space should build on. The same numeric ID counter is shared with the primary references above; no matrix participation.
@@ -378,6 +382,8 @@ This section lists review articles, position papers, and commentaries that surve
 <a id="78">78</a> Mittermeier-Kleßinger, V. K., Hofmann, T., & Dawid, C. (2021). Mitigating Off-Flavors of Plant-Based Proteins. *Journal of Agricultural and Food Chemistry, 69*(32), 9202–9207. https://doi.org/10.1021/acs.jafc.1c03398
 
 <a id="79">79</a> Alasi, S. O., Sanusi, M. S., Sunmonu, M. O., Odewole, M. M., & Adepoju, A. L. (2024). Exploring recent developments in novel technologies and AI integration for plant-based protein functionality: A review. *Journal of Agriculture and Food Research, 15,* 101036. https://doi.org/10.1016/j.jafr.2024.101036
+
+<a id="132">132</a> Todhunter, M. E., Jubair, S., Verma, R., Saqe, R., Shen, K., & Duffy, B. (2024). Artificial intelligence and machine learning applications for cultured meat. *Frontiers in Artificial Intelligence, 7,* 1424012. https://doi.org/10.3389/frai.2024.1424012
 
 <a id="128">128</a> Bunne, C., Roohani, Y., Rosen, Y., Gupta, A., Zhang, X., Roed, M., Alexandrov, T., AlQuraishi, M., Brennan, P., Burkhardt, D. B., Califano, A., Cool, J., Dernburg, A. F., Ewing, K., Fox, E. B., Haury, M., Herr, A. E., Horvitz, E., Hsu, P. D., Jain, V., Johnson, G. R., Kalil, T., Kelley, D. R., Kelley, S. O., Kreshuk, A., Mitchison, T., Otte, S., Shendure, J., Sofroniew, N. J., Theis, F., Theodoris, C. V., Upadhyayula, S., Valer, M., Wang, B., Xing, E., Yeung-Levy, S., Zitnik, M., Karaletsos, T., Regev, A., Lundberg, E., Leskovec, J., & Quake, S. R. (2024). How to build the virtual cell with artificial intelligence: Priorities and opportunities. *Cell, 187*(25), 7045–7063. https://doi.org/10.1016/j.cell.2024.11.015
 

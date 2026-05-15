@@ -328,3 +328,27 @@ An LLM-based AI agent from Stanford's SNAP lab for designing genetic-perturbatio
 ### [CausalBench](https://github.com/causalbench/causalbench)
 
 A large-scale benchmark for evaluating network-inference methods from single-cell perturbation data — including Perturb-seq, CROP-seq, and ECCITE-seq. Built around interventional ground truth from genome-scale CRISPR screens, providing standardized metrics, baselines, and dataset splits for ML methods that infer gene-regulatory networks. Companion to [Papers.md ref #127](./Papers.md#127) (Chevalley et al. 2025, *Communications Biology*).
+
+### [BioContextAI](https://biocontext.ai)
+
+Summary: A community hub for agentic biomedical systems — a registry of biomedical Model Context Protocol (MCP) servers plus a knowledgebase MCP server that exposes curated biomedical resources to LLM agents. Lets cell-ag teams plug standardized biomedical tools and data sources into agent stacks (Claude Code, Cursor, Biomni) without bespoke per-resource integration. Companion to [Papers.md ref #133](./Papers.md#133) (Kuehl et al. 2025, *Nature Biotechnology*). GitHub org: <https://github.com/biocontext-ai>.
+
+## Data Standards & Interchange Formats
+
+Open standards and schema languages for representing biological models, data, and processes in machine-readable form. None are AI methods themselves, but each is the substrate that AI-powered extraction, reasoning, and modeling tools depend on — standardized inputs are what make automated cross-study analysis and agentic workflows tractable for cellular agriculture.
+
+### [SBML (Systems Biology Markup Language)](https://sbml.org/)
+
+Summary: The de-facto XML-based standard for representing computational models of biological processes — metabolic networks, signaling pathways, gene-regulatory networks, and kinetic models. SBML is the interchange format for every genome-scale metabolic model in [Data.md / Cell-Ag Species Metabolic Models](./Data.md#cell-ag-species-metabolic-models-gems) and the lingua franca of the constraint-based and kinetic modeling tools in [Metabolic Modeling & Strain Design](#metabolic-modeling--strain-design). Maintained by the SBML community with libSBML bindings across all major languages.
+
+### [LinkML (Linked data Modeling Language)](https://linkml.io/)
+
+Summary: A schema language for authoring, validating, and transforming structured data models, with first-class support for ontology terms, code generation across languages, and export to JSON-Schema / SHACL / OWL. Increasingly used to define machine-readable metadata schemas for biological datasets and knowledge graphs — the structured backbone that agentic AI systems need in order to reason reliably over cell-ag data resources.
+
+### [Project PISCES — Standard Flowsheet Format](https://projectpisces.org/)
+
+Summary: Project PISCES (Process Integration & Synthesis using Chemical Engineering Standards) standardizes process flowsheet data into a machine-readable Standard Flowsheet Format (SFF) for AI-powered knowledge extraction and analysis. For cellular agriculture, a standardized flowsheet format is the missing substrate for AI-assisted bioprocess design, scale-up modeling, and techno-economic analysis — letting agents reason over cultivated-meat process designs the way they reason over SBML metabolic models. SFF documentation: <https://projectpisces.org/?page=sff-docs>.
+
+Process-flowsheet background (what SFF standardizes) — for readers approaching this from the AI / biology side, the [LibreTexts *Foundations of Chemical and Biological Engineering* chapter on chemical processes and process diagrams](https://eng.libretexts.org/Bookshelves/Chemical_Engineering/Foundations_of_Chemical_and_Biological_Engineering_I_(Verret_Qiao_Barghout)/01%3A_Introduction_to_Chemical_Processes_and_Process_Diagrams) and the [ScienceDirect "Flowsheet" topic overview](https://www.sciencedirect.com/topics/chemical-engineering/flowsheet) introduce the flowsheet concept and its notation.
+
+Cell-ag application context — [The Unjournal](https://www.unjournal.org/)'s cultivated-meat cost-modeling work, namely the [`unjournal/cm_pq_modeling` repository](https://github.com/unjournal/cm_pq_modeling) and its [techno-economic comparison of cultured-chicken cost models](https://unjournal.github.io/cm_pq_modeling/compare.html), is exactly the kind of bioprocess techno-economic analysis that a standardized flowsheet format like SFF is designed to make reproducible and machine-comparable.

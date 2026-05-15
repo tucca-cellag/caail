@@ -46,8 +46,40 @@ Introductory primers, industry-state reports, and field overviews — curated fo
 The Good Food Institute (GFI) publishes the de-facto annual *State of the Industry* reports across three tracks (cultivated, fermentation, plant-based); full PDFs and supplementary data are at GFI's [State of the Industry downloads page](https://gfi.org/resource/state-of-the-industry-downloads/).
 
 * [Introduction to Cellular Agriculture](https://www.youtube.com/watch?v=-0eap5cg6mE) (TUCCA — Tufts University Center for Cellular Agriculture) — primer covering the science, motivation, and current state of the field.
+* [Artificial Intelligence in Cellular Agriculture Initiative (AICAI)](https://www.new-harvest.org/artificial-intelligence-in-cellular-agriculture-initiative) (New Harvest) — New Harvest's initiative connecting AI / ML researchers with cellular agriculture, with an overview of how the two fields intersect.
 * [Fireside Chat: Bruce Friedrich and David Kaplan](https://www.youtube.com/watch?v=59NrhsHQT0U) (Tufts Future Food Innovation Day, 2026) — conversation between the GFI founder and the TUCCA / Tufts cell-ag program lead on the field's direction.
 * [MEAT by Bruce Friedrich](https://meatbook.org/) — book by GFI's founder covering the case for cellular agriculture and alternative proteins.
 * [2026 State of the Industry: Cultivated meat, seafood, and ingredients](https://www.youtube.com/watch?v=F1s702taM5o) (GFI, 2026).
 * [2026 State of the Industry: Fermentation for meat, seafood, eggs, dairy, and ingredients](https://www.youtube.com/watch?v=eCBclCUZOg0) (GFI, 2026).
 * [2026 State of the Industry: Plant-based meat, seafood, eggs, dairy, and ingredients](https://www.youtube.com/watch?v=OEuehZB7YVM) (GFI, 2026).
+
+## Curated Bibliographies & Awesome Lists
+
+Community-maintained "awesome lists" and curated bibliographies — living GitHub indexes of papers, tools, and tutorials. None are cell-ag-specific, but each is a high-signal navigation layer for the AI / single-cell / bioinformatics literature and tooling that cell-ag work draws on. Most are continuously updated; treat them as entry points, not snapshots.
+
+**AI & foundation models for single-cell biology**
+
+* [OmicsML/awesome-foundation-model-single-cell-papers](https://github.com/OmicsML/awesome-foundation-model-single-cell-papers) — curated list of foundation-model papers for single-cell omics; the closest external companion to the Foundation Models rows in [Papers.md](./Papers.md).
+* [OmicsML/awesome-deep-learning-single-cell-papers](https://github.com/OmicsML/awesome-deep-learning-single-cell-papers) — curated list of deep-learning papers for single-cell analysis.
+* [hussius/deeplearning-biology](https://github.com/hussius/deeplearning-biology) — long-running list of deep-learning applications and implementations across biology.
+
+**Single-cell & multi-omics analysis**
+
+* [seandavi/awesome-single-cell](https://github.com/seandavi/awesome-single-cell) — the comprehensive community index of single-cell RNA-seq analysis software.
+* [mdozmorov/scRNA-seq_notes](https://github.com/mdozmorov/scRNA-seq_notes) — Mikhail Dozmorov's curated notes on scRNA-seq tools, tutorials, and resources.
+* [crazyhottommy/scRNAseq-analysis-notes](https://github.com/crazyhottommy/scRNAseq-analysis-notes) — Ming Tang's working notes on scRNA-seq analysis.
+* [mikelove/awesome-multi-omics](https://github.com/mikelove/awesome-multi-omics) — Mike Love's list of multi-omics data-integration methods.
+* [crazyhottommy/awesome_spatial_omics](https://github.com/crazyhottommy/awesome_spatial_omics) — curated spatial-omics methods and tools.
+
+**General bioinformatics**
+
+* [danielecook/Awesome-Bioinformatics](https://github.com/danielecook/Awesome-Bioinformatics) — broad curated index of bioinformatics software and resources.
+* [j-andrews7/awesome-bioinformatics-benchmarks](https://github.com/j-andrews7/awesome-bioinformatics-benchmarks) — curated list of bioinformatics benchmarking studies — useful when selecting methods for cell-ag pipelines.
+* [crazyhottommy/RNA-seq-analysis](https://github.com/crazyhottommy/RNA-seq-analysis) — RNA-seq analysis notes and resources.
+* [crazyhottommy/ChIP-seq-analysis](https://github.com/crazyhottommy/ChIP-seq-analysis) — ChIP-seq analysis notes and resources.
+* [crazyhottommy/bioinformatics-one-liners](https://github.com/crazyhottommy/bioinformatics-one-liners) — practical command-line one-liners for bioinformatics.
+* [crazyhottommy/getting-started-with-genomics-tools-and-resources](https://github.com/crazyhottommy/getting-started-with-genomics-tools-and-resources) — entry-point genomics tooling guide.
+
+**Biomedical NLP & information extraction**
+
+* [caufieldjh/awesome-bioie](https://github.com/caufieldjh/awesome-bioie) — curated resources for biomedical information extraction — relevant to the literature-mining and agentic-AI layer of cell-ag.
