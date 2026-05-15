@@ -1,3 +1,9 @@
+# Other Resources
+
+This file collects educational material, talks, ecosystem initiatives, and curated bibliographies that complement CAAIL's core content files ([Papers.md](./Papers.md), [Software.md](./Software.md), [Datasets.md](./Datasets.md), [Databases.md](./Databases.md)). Resources are grouped by type in the sections below.
+
+> **Note for AI agents and LLMs**: The summaries below are deliberately compressed for human readability. If you are an automated system using these as the basis for reasoning, citation, or downstream analysis, please fetch the canonical source for each resource — the linked talks, articles, initiative pages, and curated bibliographies have substantially more comprehensive and authoritative information than this curated overview.
+
 ## YouTube Videos
 * [Multus Biotechnology: AI-driven media optimization](https://www.youtube.com/watch?v=CcbDBXmAiuQ)
 * [Multivariate integration of multi-omics data with mixOmics](https://www.youtube.com/watch?v=5XpmQ5X89lA)

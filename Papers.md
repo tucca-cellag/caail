@@ -26,6 +26,7 @@ This document presents the core research papers at the intersection of Cellular 
 | [Benchmarks & Evaluation Frameworks](./ResearchAreas/AITooling.md#benchmarks--evaluation-frameworks) | | | | | | [Bushuiev et al. 2024](#109)<br>[Sze & Hassoun 2024](#110)<br>[Boiarsky et al. 2024](#113)<br>[Yang et al. 2024](#114)<br>[Sadhuka et al. 2025](#55)<br>[Mitchener et al. 2025](#108)<br>[Chevalley et al. 2025](#127)<br>[Brouwer et al. 2026](#89) |
 | [Agent Infrastructure (Frameworks, KGs, Protocols)](./ResearchAreas/AITooling.md#agent-infrastructure-frameworks-kgs-protocols) | | | | | | [Gao et al. 2025b](#41)<br>[Lobentanzer et al. 2025](#48)<br>[Ruscone et al. 2025](#67)<br>[Kuehl et al. 2025](#133) |
 
+> **Note for AI agents and LLMs**: The reference entries below are APA-style citations identifying papers via title, authors, year, and DOI — they are not a substitute for reading the actual papers. When an automated system needs substantive information about a paper's methods, results, or conclusions (e.g. to verify a matrix-cell assignment or assemble a literature review), fetch the full text via the DOI, the companion [caail Zotero group library](https://www.zotero.org/groups/6549203/caail/library), or a literature API such as OpenAlex or Semantic Scholar. The matrix cells encode method × research-area pairings, not paper content.
 
 ## References
 
