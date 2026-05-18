@@ -2,7 +2,7 @@
 
 This page describes the **AI Tooling / Methodology** column of the [Papers.md matrix](../Papers.md) — general-purpose AI methods, foundation models, agent frameworks, benchmarks, and infrastructure that could be applied across many cellular-agriculture problems but haven't yet been deployed against any specific one. As of late 2026 this is the highest-traffic column in the matrix, reflecting both the rapid expansion of AI-for-biology research and CAAIL's curatorial decision to track these foundational methods even when their cell-ag application is implicit rather than demonstrated.
 
-The boundary between this column and the applied columns is intentionally pragmatic: a paper that introduces a general method **and** demonstrates it on a cell-ag problem belongs in the applied column for that problem; a paper that introduces a general method without a cell-ag deployment belongs here. As the column has grown, it is now sub-divided into eight method-architecture clusters that each occupy their own matrix row. The sections below mirror those clusters, plus a short section for AI Tooling-column refs that live in other method rows and a final section cross-referencing unpublished agent software catalogued in [`Software.md`](../Software.md).
+The boundary between this column and the applied columns is intentionally pragmatic: a paper that introduces a general method **and** demonstrates it on a cell-ag problem belongs in the applied column for that problem; a paper that introduces a general method without a cell-ag deployment belongs here. As the column has grown, it is now sub-divided into seven method-architecture clusters that each occupy their own matrix row. The sections below mirror those clusters, plus a short section for AI Tooling-column refs that live in other method rows and a final section cross-referencing unpublished agent software catalogued in [`Software.md`](../Software.md). Closely paired is the [AI Evaluation & Benchmarking](./AIEvaluation.md) column, which catalogues papers whose primary contribution is an evaluation suite, benchmark, or eval methodology *for* the tools in this column.
 
 ## Foundation Models for Biology
 
@@ -65,16 +65,6 @@ Closed-loop autonomous research systems integrating LLM agents with wet-lab exec
 
 Sibling refs in this row's `× Bioprocess Control` cell — applied multi-agent lab automation for cell and organoid manufacturing — include [#61 Agentic Lab](../Papers.md#61) (Wang et al. 2025) and [#62 BioMARS](../Papers.md#62) (Qiu et al. 2025). See also [MetabolicModeling.md](./MetabolicModeling.md) for the broader closed-loop FBA / strain-design context.
 
-## Benchmarks & Evaluation Frameworks
-
-Methodological infrastructure for evaluating AI agents — sequential hypothesis testing for verifier reliability, virtual-cell benchmarks for end-task scoring. The cluster is small but growing as the agent literature matures past demos.
-
-- [#55 E-valuator](../Papers.md#55) (Sadhuka et al. 2025) — reliable agent verifiers with sequential hypothesis testing.
-- [#89 AssayBench](../Papers.md#89) (Brouwer et al. 2026) — assay-level virtual-cell benchmark for LLMs and agents.
-- [#108 BixBench](../Papers.md#108) (Mitchener et al. 2025, FutureHouse) — comprehensive benchmark for LLM-based agents in computational biology spanning 50+ real-world bioinformatics scenarios; the closest existing eval suite for measuring autonomous bioinformatics workflow execution.
-- [#109 MassSpecGym](../Papers.md#109) (Bushuiev et al. 2024, NeurIPS Spotlight, Pluskal lab) — benchmark for the discovery and identification of molecules from MS/MS spectra; directly relevant to the cell-ag sensomics workflow as the substrate for ML-based flavor-compound identification.
-- [#110 PubChem LLM Retrieval Eval](../Papers.md#110) (Sze & Hassoun 2024, *Bioinformatics Advances*, Tufts) — evaluation of search-enabled pretrained LLMs on retrieval tasks for the PubChem database; benchmarks how reliably agents can pull structured chemical metadata into downstream cell-ag workflows.
-
 ## Agent Infrastructure (Frameworks, KGs, Protocols)
 
 Substrate platforms — agent frameworks, biomedical knowledge-graph backends, and tool-orchestration protocols — that downstream agents are built on. These are the papers that don't introduce a specific agent but introduce the scaffolding that bespoke agent projects have historically had to reinvent.
@@ -105,5 +95,5 @@ A growing number of AI-agent tools are released as open-source platforms or comm
 ## Further reading
 
 - Software: [AI Agents & Foundation Models](../Software.md#ai-agents--foundation-models) section in `Software.md`.
-- Adjacent research areas: [Media Optimization](./MediaOptimization.md), [Cellular Engineering](./CellEngineering.md), [Bioprocess Control](./Bioprocess.md), [Sensory Prediction](./SensoryPrediction.md), [Metabolic Modeling](./MetabolicModeling.md).
+- Adjacent research areas: [AI Evaluation & Benchmarking](./AIEvaluation.md), [Media Optimization](./MediaOptimization.md), [Cellular Engineering](./CellEngineering.md), [Bioprocess Control](./Bioprocess.md), [Sensory Prediction](./SensoryPrediction.md), [Metabolic Modeling](./MetabolicModeling.md).
 - Talks: [AI Agents & Foundation Models for Biology](../OtherResources.md#ai-agents--foundation-models-for-biology) section in `OtherResources.md`.

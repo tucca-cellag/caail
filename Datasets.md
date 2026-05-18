@@ -69,3 +69,15 @@ Reference: [Papers.md #85](./Papers.md#85) (Hefzi et al. 2016, *Cell Systems*).
 The human genome-scale metabolic reconstructions — Recon3D (Brunk et al. 2018, *Nature Biotechnology*), Human-GEM / Human1 (Robinson et al. 2020, *Science Signaling*), and the underlying HMR2 — are the foundational human GEMs from which most mammalian-cell models (including the cell-ag GEMs above) inherit reaction networks, biomass equations, and curation conventions. Direct use in cell-ag is rare; they're more often used as homology templates or biomass-function donors for species-specific reconstructions.
 
 References: [Papers.md #86](./Papers.md#86) (Brunk et al. 2018, *Nature Biotechnology*) for Recon3D; [Papers.md #87](./Papers.md#87) (Robinson et al. 2020, *Science Signaling*) for Human-GEM.
+
+## Benchmark & Evaluation Datasets
+
+Curated *eval* datasets — released to benchmark AI models rather than to train them. Listed here (rather than in the training-corpus sections above) because their primary use is downstream model evaluation, and because they pair with the [AI Evaluation & Benchmarking](./ResearchAreas/AIEvaluation.md) deep-dive page and column in [Papers.md](./Papers.md).
+
+### [LAB-Bench](https://huggingface.co/datasets/futurehouse/lab-bench)
+
+The Hugging Face Datasets release of the LAB-Bench eval suite from [FutureHouse](https://www.futurehouse.org/) — multiple-choice questions across eight task categories spanning literature reading, figure interpretation, protocol design, DNA/protein sequence manipulation, cloning, and database access. Pairs with the [`Future-House/lab-bench` GitHub repository](https://github.com/Future-House/lab-bench) (scoring code and prompts; see [Software.md / LAB-Bench](./Software.md#lab-bench)) and the [Papers.md ref #146](./Papers.md#146) (Laurent et al. 2024) describing the benchmark design. The single broadest practical-biology eval dataset at time of curation, useful both directly for benchmarking and as a template for cell-ag-specific eval datasets the field will need as livestock-cell-focused agents emerge.
+
+### BioMysteryBench
+
+[Anthropic/BioMysteryBench-full](https://huggingface.co/datasets/Anthropic/BioMysteryBench-full) is Anthropic's open-source benchmark dataset for evaluating LLM capabilities on bioinformatics research tasks — released as the substrate for the [Evaluating Claude's bioinformatics research capabilities](https://www.anthropic.com/research/Evaluating-Claude-For-Bioinformatics-With-BioMysteryBench) study. Provides a vendor-released, cell-ag-adjacent eval dataset for any team comparing frontier LLMs on the kind of multi-step bioinformatics tasks (data exploration, hypothesis generation, code-based analysis) increasingly delegated to agents in cell-ag bioinformatics workflows. No separate companion paper at time of curation; see the [AI Evaluation & Benchmarking](./ResearchAreas/AIEvaluation.md) deep-dive for context.

@@ -54,7 +54,7 @@ The matrix and the `## References` list must be kept in sync:
 
    Current matrix rows: Bayesian Optimization, Deep Learning, GNN, CNN, GAN/VAE, Genetic Algorithms, SVM, Ensemble Learning, K-Nearest Neighbors, Active Learning, LLMs / AI Agents.
 
-   Current matrix columns: Media Optimization, Cellular Engineering, Bioprocess Control, Scaffolding, Sensory Prediction, AI Tooling / Methodology.
+   Current matrix columns: Media Optimization, Cellular Engineering, Bioprocess Control, Scaffolding, Sensory Prediction, AI Tooling / Methodology, AI Evaluation & Benchmarking.
 
 5. **If the paper uses an AI method that isn't yet a row**, add a new row. The row label should link to the Wikipedia article for that method (so the link stays stable):
 

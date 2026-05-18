@@ -245,9 +245,21 @@ FutureHouse cookbook (docs): <https://futurehouse.gitbook.io/futurehouse-cookboo
 
 Summary: A comprehensive benchmark for LLM-based agents in computational biology, comprising 50+ real-world bioinformatics scenarios derived from peer-reviewed papers and their associated data and code. Released by [FutureHouse](https://www.futurehouse.org/) — the same lab behind PaperQA — to fill the gap in standardized evaluation for autonomous AI-driven bioinformatics discovery. Directly relevant to cell-ag as the AI-agent layer matures: BixBench is the closest existing evaluation suite for measuring whether agents can plan and execute multi-step bioinformatics workflows of the kind cell-ag teams increasingly delegate to LLM agents. Companion to [Papers.md ref #108](./Papers.md#108) (Mitchener et al. 2025).
 
+### [LAB-Bench](https://github.com/Future-House/lab-bench)
+
+Summary: A practical-biology evaluation suite for language models — multiple-choice questions spanning literature reading, figure interpretation, protocol design, DNA/protein sequence manipulation, cloning, and database access. Released by [FutureHouse](https://www.futurehouse.org/) — the same lab behind [PaperQA](#paperqa) and [BixBench](#bixbench) — and distributed as both a [GitHub repo](https://github.com/Future-House/lab-bench) and a [Hugging Face dataset](https://huggingface.co/datasets/futurehouse/lab-bench). Complementary to BixBench's end-to-end workflow scoring with atomized question-level scoring; together the two form the FutureHouse eval stack for cell-ag-relevant agentic biology. Companion to [Papers.md ref #146](./Papers.md#146) (Laurent et al. 2024).
+
 ### [MassSpecGym](https://github.com/pluskal-lab/MassSpecGym)
 
 Summary: A benchmark for the discovery and identification of molecules from MS/MS spectra (NeurIPS 2024 Spotlight) from the Pluskal lab — the same group that maintains [MZmine 3](#mzmine-3). Standardizes evaluation across the three core sensomics-relevant tasks: *de novo* structure generation, retrieval against molecular databases, and molecular-property prediction. The closest existing benchmark suite for ML models that turn flavor-relevant mass spectra into compound identifications, with direct cross-link to the cell-ag sensomics workflow described in [`ResearchAreas/SensoryPrediction.md`](./ResearchAreas/SensoryPrediction.md). Companion to [Papers.md ref #109](./Papers.md#109) (Bushuiev et al. 2024).
+
+### [BLADE](https://blade-bench.github.io/)
+
+Summary: A benchmark for evaluating language-model agents on open-ended data-driven science tasks — built around 12 datasets and hundreds of expert decisions that an analyst must defend, not single numerical answers ([Gu et al. 2025](./Papers.md#147), University of Washington). Pairs with the same authors' CHI 2024 studies on how human analysts actually use AI assistants for data analysis ([Papers.md refs #151, #152](./Papers.md#151)) to produce a methodology stack covering both objective benchmark performance and human-AI interaction quality. Companion to [Papers.md ref #147](./Papers.md#147).
+
+### [CompBioBench v1 Leaderboard](https://huggingface.co/spaces/Genentech/compbiobench-leaderboard-v1)
+
+Summary: An open leaderboard hosted on Hugging Face Spaces by Genentech, tracking model performance on the CompBioBench v1 computational-biology benchmark suite. Provides a vendor-neutral, continuously updated comparison point for cell-ag teams evaluating LLMs and agents on bioinformatics tasks before deploying them downstream. No separate companion paper at time of curation.
 
 ### [K-Dense-AI](https://github.com/K-Dense-AI)
 
