@@ -284,7 +284,7 @@ Live, continuously-updated leaderboards and results trackers for AI/ML benchmark
 
 ### [CompBioBench v1 Leaderboard](https://huggingface.co/spaces/Genentech/compbiobench-leaderboard-v1)
 
-Genentech's open leaderboard hosted on Hugging Face Spaces, tracking model performance on the CompBioBench v1 computational-biology benchmark suite. Provides a vendor-neutral, continuously-updated comparison point for cell-ag teams evaluating LLMs and agents on bioinformatics tasks before deploying them downstream. The underlying CompBioBench v1 suite is distributed alongside the leaderboard through the same Hugging Face Space (`Files` tab). No separate companion paper at time of curation.
+Genentech's open leaderboard hosted on Hugging Face Spaces, tracking model performance on the 100-task CompBioBench v1 computational-biology benchmark. Provides a vendor-neutral, continuously-updated comparison point for cell-ag teams evaluating LLMs and agents on bioinformatics tasks before deploying them downstream. The underlying benchmark data — questions plus the BAM/FASTQ/H5AD/MTX/TSV bioinformatics artifacts each task operates over — is catalogued separately at [`Datasets.md / CompBioBench v1`](./Datasets.md#compbiobench-v1) (canonical home: the `Genentech/compbiobench-data-v1` Hugging Face Dataset). Companion to [Papers.md ref #150](./Papers.md#150) (Nair et al. 2026), the bioRxiv methods paper describing the benchmark.
 
 ### [ProteinGym Leaderboard](https://www.proteingym.org/)
 
