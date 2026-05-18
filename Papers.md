@@ -184,6 +184,8 @@ This document presents the core research papers at the intersection of Cellular 
 
 <a id="57">57</a> Adduri, A. K., Gautam, D., Bevilacqua, B., Imran, A., Shah, R., Naghipourfar, M., Teyssier, N., Ilango, R., Nagaraj, S., Dong, M., Ricci-Tam, C., Carpenter, C., Subramanyam, V., Winters, A., Tirukkovular, S., Sullivan, J., Plosky, B. S., Eraslan, B., Youngblut, N. D., Leskovec, J., Gilbert, L. A., Konermann, S., Hsu, P. D., Dobin, A., Burke, D. P., Goodarzi, H., & Roohani, Y. H. (2025). *Predicting cellular responses to perturbation across diverse contexts with State.* bioRxiv. https://doi.org/10.1101/2025.06.26.661135
 
+> **Code**: https://github.com/ArcInstitute/state
+
 <a id="58">58</a> Narayanan, H., Hinckley, J., Barry, R., Dang, B., Wolffe, L., Atari, A., Tseng, Y., & Love, J. (2025). Accelerating cell culture media development using Bayesian optimization-based iterative experimental design. *Nature Communications, 16.* https://doi.org/10.1038/s41467-025-61113-5
 
 <a id="59">59</a> Antonakoudis, A., & Richelle, A. (2026). Systematic data-driven genome-scale metabolic model reduction for bioprocess modeling: CHO culture case study. *npj Systems Biology and Applications.* https://doi.org/10.1038/s41540-026-00704-4
@@ -227,6 +229,8 @@ This document presents the core research papers at the intersection of Cellular 
 <a id="91">91</a> Ding, Y., Qiang, B., Li, S., Zhou, Y., Yu, J., Li, Q., Shi, C., Zhang, L., Wang, Y., Zheng, N., & Liu, Z. (2026). Pretraining a foundation model for small-molecule natural products. *Nature Machine Intelligence*. https://doi.org/10.1038/s42256-026-01226-8
 
 <a id="92">92</a> Pearce, J., Simmonds, S., Mahmoudabadi, G., Krishnan, L., Palla, G., Istrate, A., Tarashansky, A., Nelson, B., Valenzuela, O., Li, D., Quake, S., & Karaletsos, T. (2026). TranscriptFormer: A generative cell atlas across 1.5 billion years of evolution. *Science*. https://doi.org/10.1126/science.aec8514
+
+> **Code**: https://virtualcellmodels.cziscience.com/model/transcriptformer
 
 <a id="93">93</a> Tang, X., Yu, Z., Chen, J., Cui, Y., Shao, D., Wang, W., Wu, F., Zhuang, Y., Shi, W., Huang, Z., Cohan, A., Lin, X., Theis, F., Krishnaswamy, S., & Gerstein, M. (2026). *CellForge: Agentic Design of Virtual Cell Models.* arXiv. https://doi.org/10.48550/arXiv.2508.02276
 
@@ -331,6 +335,8 @@ This document presents the core research papers at the intersection of Cellular 
 > **Code**: https://blade-bench.github.io/
 
 <a id="148">148</a> Notin, P., Kollasch, A. W., Ritter, D., van Niekerk, L., Paul, S., Spinner, H., Rollins, N., Shaw, A., Weitzman, R., Frazer, J., Dias, M., Franceschi, D., Orenbuch, R., Gal, Y., & Marks, D. S. (2023). *ProteinGym: Large-Scale Benchmarks for Protein Design and Fitness Prediction.* bioRxiv. https://doi.org/10.1101/2023.12.07.570727
+
+> **Code**: https://github.com/OATML-Markslab/ProteinGym
 
 <a id="149">149</a> Duan, H., Lu, S. Z., Harrigan, C. F., Desai, N., Lu, J., Koziarski, M., Cotta, L., & Maddison, C. J. (2025). *Measuring Scientific Capabilities of Language Models with a Systems Biology Dry Lab.* arXiv. https://doi.org/10.48550/arXiv.2507.02083
 

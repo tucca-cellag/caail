@@ -111,6 +111,15 @@ Summary: <1–3 sentences describing what it is and how it applies to cell-ag.>
 4. **Initiatives and programs → `OtherResources.md`** — research programs, funding mechanisms.
 5. **Borderline cases → dual-listed** — full entry in the primary-home file and a short cross-referenced entry in the other (e.g. GNPS).
 
+**Benchmark placement (Paper + Dataset + Database triangle).** AI/ML benchmarks have a distinct artifact shape that resolves the categorization ambiguities above. Apply this rule strictly:
+
+- **Paper** describing the benchmark → `Papers.md` with a `> **Code**:` blockquote anchoring the project's canonical home.
+- **The data** (questions / scenarios / spectra / sequences) + any **bundled scoring code shipped with the data** → `Datasets.md` under "Benchmark & Evaluation Datasets". Bundled scoring code does *not* get a separate `Software.md` entry — it's part of the dataset distribution.
+- **Live leaderboard or continuously-updated results tracker** → `Databases.md` under "Benchmark Leaderboards & Results Trackers" (per rule 3, trackers belong in `Databases.md`).
+- **Separately-installable evaluation framework that brings its own data** → `Software.md`. CausalBench is the existing example: a framework that scores models against externally-hosted data (Replogle et al. Perturb-seq) it does not itself distribute. Such frameworks live in `Software.md` and have no `Datasets.md` entry. Bundled-data benchmarks (LAB-Bench, BixBench, BLADE, MassSpecGym, ProteinGym) do *not* belong in `Software.md`.
+
+All entries cross-link via the established `Companion to [Papers.md ref #N]` convention. This rule supersedes the more general 5-rule classification above for the specific case of benchmarks — when in doubt, follow this section. Also documented in `CONTRIBUTING.md`.
+
 ### `OtherResources.md`
 
 Flat unordered list, one bullet per resource:

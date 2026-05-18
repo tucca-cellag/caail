@@ -111,6 +111,15 @@ Summary: One to three sentences describing what it is and, importantly, *how it 
 4. **Initiatives and programs → `OtherResources.md`.** Research programs, funding mechanisms, and similar non-database, non-tool resources.
 5. **Borderline cases → dual-listed.** Resources that are genuinely both software and database (e.g. GNPS) get a full entry in their primary-home file and a short cross-referenced entry in the other.
 
+**Benchmark placement (Paper + Dataset + Database triangle).** AI/ML benchmarks have a distinct artifact shape — a paper, a downloadable eval dataset, and (sometimes) a live leaderboard. Place each aspect in its appropriate file:
+
+- **Paper** describing the benchmark → `Papers.md` with a `> **Code**:` blockquote anchoring the project's canonical home.
+- **The data** (questions / scenarios / spectra / sequences) + any **bundled scoring code shipped with the data** → `Datasets.md` under "Benchmark & Evaluation Datasets". The bundled scoring code is *not* a separate `Software.md` entry — it's part of the dataset distribution.
+- **Live leaderboard or continuously-updated results tracker** → `Databases.md` under "Benchmark Leaderboards & Results Trackers" (per rule 3, trackers belong in `Databases.md`).
+- **Separately-installable evaluation framework that brings its own data** (e.g. a framework that scores models against externally-hosted data the framework does not itself distribute) → `Software.md`. CausalBench is the existing example — it's a benchmarking framework, not a bundled-data benchmark, so it lives in `Software.md` and has no `Datasets.md` entry.
+
+All entries cross-link via the established `Companion to [Papers.md ref #N]` convention.
+
 ### `OtherResources.md`
 
 A flat bulleted list under category headings (currently `## YouTube Videos`):
