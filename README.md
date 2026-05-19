@@ -29,7 +29,7 @@ If you reference CAAIL or build on its curated content, please cite this reposit
 
 A recommended human-readable citation:
 
-> Plotts, J., Bromberg, B., Kaplan, D. L., [The Tufts University Center for Cellular Agriculture (TUCCA)](https://cellularagriculture.tufts.edu/), and the [CAAIL Contributors](https://github.com/tucca-cellag/caail/graphs/contributors). (2026). *CAAIL: Cellular Agriculture AI Library* (Version 1.0.0). https://github.com/tucca-cellag/caail
+> Plotts, J., Bromberg, B., Kaplan, D. L., [The Tufts University Center for Cellular Agriculture (TUCCA)](https://cellularagriculture.tufts.edu/), and the [CAAIL Contributors](https://github.com/tucca-cellag/caail/graphs/contributors). (2026). *CAAIL: Cellular Agriculture AI Library* (Version 1.0.0). Zenodo. https://doi.org/10.5281/zenodo.20295590
 
 BibTeX:
 
@@ -39,7 +39,9 @@ BibTeX:
   title        = {{CAAIL}: Cellular Agriculture {AI} Library},
   year         = {2026},
   version      = {1.0.0},
-  url          = {https://github.com/tucca-cellag/caail},
+  doi          = {10.5281/zenodo.20295590},
+  publisher    = {Zenodo},
+  url          = {https://doi.org/10.5281/zenodo.20295590},
   note         = {Resource library, MIT licensed}
 }
 ```
