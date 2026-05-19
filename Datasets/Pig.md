@@ -2,6 +2,20 @@
 
 Pigs are a major cultivated-meat target and, via the FarmGTEx pig effort, one of the best-characterized livestock species at the systems-genetics level. This page collects the fixed data artifacts relevant to cultivated pork: the porcine muscle-stem-cell genome-scale metabolic model, the multi-tissue atlases, and individual deposits spanning myogenesis, the cellular landscape of skeletal muscle, marbling and intramuscular-fat biology, and 3D meat-like tissue work.
 
+## Featured atlases
+
+### [PigGTEx-Portal](https://piggtex.farmgtex.org/)
+
+Pig sub-portal of the FarmGTEx consortium — multi-tissue expression QTL (eQTL), splice QTL (sQTL), and related molecular-QTL maps across pig tissues. Companion to [Papers.md ref #135](../Papers.md#135) (Teng et al. 2024, *Nature Genetics*); see also [Papers.md / Livestock Functional Genomics Reference Work](../Papers.md#livestock-functional-genomics-reference-work) for the full PigGTEx-family citations (refs #135, #139–#142). Full entry in [Databases.md / Livestock Multi-Tissue Atlases](../Databases.md#livestock-multi-tissue-atlases--functional-genomics).
+
+### [GENE-SWitCH](https://www.gene-switch.eu/)
+
+The FAANG consortium's pig + chicken project — *the regulatory GENomE of SWine and CHicken: functional annotation during development*; the [data hub](https://data.faang.org/projects/GENE-SWitCH) hosts its open releases. Substrate for cultivated-pork developmental-biology and lineage-engineering work. Full entry in [Databases.md / Livestock Multi-Tissue Atlases](../Databases.md#livestock-multi-tissue-atlases--functional-genomics).
+
+### [PigBiobank](https://pigbiobank.farmgtex.org/)
+
+Trait-data biobank coordinated with PigGTEx, integrating phenotypic, genotypic, and expression data on diverse pig traits — complementary to PigGTEx-Portal's molecular-QTL focus. Not part of the Todhunter 2024 supplemental; included here as a CAAIL-curated pig resource. Companion to [Papers.md ref #139](../Papers.md#139) (Zeng et al. 2024, *Nucleic Acids Research*). Full entry in [Databases.md / Livestock Multi-Tissue Atlases](../Databases.md#livestock-multi-tissue-atlases--functional-genomics).
+
 ## Genome-scale metabolic models
 
 GEMs are SBML-formatted reconstructions of an organism's metabolic network — every reaction, every metabolite, every gene-protein-reaction mapping — and are the input data structure for the constraint-based modeling tools listed in [Software.md / Metabolic Modeling & Strain Design](../Software.md#metabolic-modeling--strain-design). The porcine reconstruction below inherits network structure from the human reference GEMs catalogued in [HumanReference.md](./HumanReference.md).
@@ -11,6 +25,48 @@ GEMs are SBML-formatted reconstructions of an organism's metabolic network — e
 Proteome-constrained metabolic model of pig muscle stem cells for cultivated meat production, published 2026 in *Metabolic Engineering* by Qiu et al. (a Sticta × Meatable collaboration with GFI grant funding; initially deposited as a bioRxiv preprint in September 2025). Tailored to the porcine muscle satellite cell context, enabling FBA / FVA analysis of cultivated pork media formulations and metabolic-engineering targets. SBML files released alongside the paper.
 
 Reference: [Papers.md #83](../Papers.md#83) (Qiu et al. 2026, *Metabolic Engineering*).
+
+## Embryonic & developmental myogenesis
+
+The largest pig data cluster tracks skeletal-muscle formation from embryo to postnatal growth — the developmental program a cultivated-pork process aims to recapitulate in vitro. Integrative scRNA-seq + ATAC-seq of somites and myotomes (`GSE206914`), chromatin-accessibility profiling of embryonic skeletal muscle at 45/70/100 days post coitus (`CRA003275`), and prenatal comparative transcriptomics of Tongcheng vs Yorkshire pigs (`SRP066398`) resolve the embryonic stages, while single-cell profiling of satellite cells and myoblasts (`PRJNA852173`), postnatal transcriptome dynamics in Tibetan piglets (`PRJNA527944`), and a developmental-stage × genotype transcriptome study (`GSE86441`) extend the picture into postnatal growth.
+
+## Single-cell cellular landscape & muscle evolution
+
+A second cluster builds single-cell references of porcine skeletal muscle. A cellular landscape of the longissimus dorsi in a newborn Suhuai pig (`GSE247753`) and a cross-breed single-cell study spanning wild boars, Laiwu, and Duroc pigs (`CRA011788`) characterise the cell-type composition and its evolutionary divergence under domestication and selection; a scRNA-seq + proteomics association study of Ca²⁺ signalling in muscle-development potential is listed in the inventory though the source survey records no data accession for it.
+
+## Marbling, lipid metabolism & adipogenesis
+
+Intramuscular fat is the defining quality target for cultivated pork. Single-nucleus and bulk RNA-seq with lipidomics of high- vs low-marbled Laiwu pork (`CRA011059`/`CRA011069`), a longissimus-dorsi IMF transcriptome of 28 Duroc pigs (`PRJNA527944`), a lncRNA–mRNA time-series of adipogenic transdifferentiation of porcine satellite cells (`PRJNA820138`), and a Luchuan-vs-Duroc lipidomic/transcriptomic comparison (data in the paper's supplementary Table 1) together map the adipogenic program and the cell-fate switch between myogenesis and adipogenesis.
+
+## Epigenomics, chromatin & cultured-meat tissue
+
+The final cluster covers regulatory-genome and cultured-tissue work: integrative ATAC-seq + RNA-seq of Luchuan vs Duroc longissimus muscle (`GSE180840`), H3K27me3 ChIP-seq during porcine satellite-cell differentiation (`SRP180031`/`SRP180432`), and the multi-species functional-annotation effort (`GSE158430`, which also covers cattle — see [Cow.md](./Cow.md)). Most directly cultivated-meat-relevant is the generation of three-dimensional meat-like tissue from stable pig epiblast stem cells (`GSE223433`, with companion metabolome data), a rare in-vitro cultured-tissue dataset.
+
+## Complete data inventory
+
+A curated snapshot. NCBI / NGDC accessions are the canonical living source — fetch the linked accession for current sample counts, file sizes, and availability.
+
+| Study | Type | Tissue | Description | Size | Area of research |
+|---|---|---|---|---|---|
+| [Integrative single-cell RNA-seq and ATAC-seq analysis of myogenic differentiation in pig](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE206914) | scRNA-seq + ATAC-seq | Muscle | Somites and myotomes at E18, E21, E28 from Tibetan and Duroc×Tibetan pigs | 599.17 Gb | Skeletal muscle ontogeny |
+| [Single-cell transcriptional profiling of porcine muscle satellite cells and myoblasts during myogenesis](https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA852173) | scRNA-seq | Muscle | Longissimus dorsi from 3-day-old piglets | 86 Gb | Porcine muscle myogenesis |
+| [Single-cell RNA sequencing reveals the cellular landscape of longissimus dorsi in a newborn Suhuai pig](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE247753) | scRNA-seq | Muscle | Longissimus dorsi muscle cell atlas of a 1-day-old Suhuai pig | 69.76 Gb | Meat quality |
+| [Single-cell RNA-sequencing provides insight into skeletal muscle evolution during the selection of muscle characteristics](https://ngdc.cncb.ac.cn/gsa/search?searchTerm=CRA011788) | scRNA-seq | Muscle | 60,040 cells from wild boars, Laiwu pigs, and Duroc pigs | 357.09 Gb | Skeletal muscle evolution |
+| [Single-nucleus and bulk RNA sequencing reveal mechanisms underlying lipid dynamics in high-marbled pork](https://ngdc.cncb.ac.cn/gsa/search?searchTerm=CRA011059) | snRNA-seq + RNA-seq + lipidomics | Fat | Laiwu pigs with high vs low intramuscular fat (also `CRA011069`) | 95.95 Gb | Lipid metabolism, marbling |
+| [Integrative ATAC-seq and RNA-seq analysis of the longissimus muscle of Luchuan and Duroc pigs](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE180840) | RNA-seq + ATAC-seq | Muscle | Longissimus muscle of 180-day-old Duroc and Luchuan pigs | 191.21 Gb | Muscle-fibre differences |
+| [H3K27me3 depletion during differentiation promotes myogenic transcription in porcine satellite cells](https://www.ncbi.nlm.nih.gov/sra/?term=SRP180031) | RNA-seq + ChIP-seq | Muscle | Satellite cells from hind-leg muscles of one-week-old Yorkshire male piglets (also `SRP180432`) | 95.5 Gb | Epigenomic myogenesis |
+| [The landscape of chromatin accessibility in skeletal muscle during embryonic development in pigs](https://ngdc.cncb.ac.cn/search/all?q=CRA003275) | RNA-seq + ATAC-seq | Muscle | Skeletal muscle from pig embryos at 45, 70, 100 days post coitus | 205.41 Gb | Embryonic muscle development |
+| [Comparative transcriptomic analysis of skeletal muscle during prenatal stages in Tongcheng and Yorkshire pig](https://www.ncbi.nlm.nih.gov/sra/?term=SRP066398) | RNA-seq | Muscle | Skeletal muscle, Tongcheng vs Yorkshire, at 40/55/63/70/90 d gestation | 69.7 Gb | Transcriptional regulation of myogenesis |
+| [Dynamic transcriptome profiles of postnatal porcine skeletal muscle growth and development](https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA527944) | RNA-seq | Muscle | 12 longissimus dorsi samples from Tibetan piglets at 0/14/30/60 d | 269 Gb | Postnatal transcriptome dynamics |
+| [Muscle transcriptome analysis reveals candidate genes and pathways affecting intramuscular fat content in pigs](https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA527944) | RNA-seq | Muscle | Longissimus dorsi transcriptomes of 28 purebred Duroc pigs | 269 Gb | Intramuscular fat content |
+| [Developmental stage, muscle and genetic type modify muscle transcriptome in pigs](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE86441) | RNA-seq | Muscle | 24 longissimus dorsi samples, Iberian and Iberian×Duroc newborns at birth and 4 months | 153.05 Gb | Gene expression during development |
+| [Time-series clustering of lncRNA-mRNA expression during adipogenic transdifferentiation of porcine skeletal muscle satellite cells](https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA820138) | RNA-seq | Muscle, Fat | 4 timepoints during adipogenic transdifferentiation | 144.9 Gb | Adipogenesis and cell fate |
+| Lipidomic and transcriptomic analysis of the longissimus muscle of Luchuan and Duroc pigs | RNA-seq | Muscle, Fat | 6 Luchuan and Duroc boar pigs at 180 days; data in the paper's supplementary Table 1 (no repository accession) | — | Intramuscular fat between breeds |
+| [Functional annotations of three domestic animal genomes](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE158430) | ChIP-seq + ATAC-seq | 8 tissues incl. skeletal muscle, adipose | ATAC-seq and CTCF ChIP-seq across 8 tissues in 2–3 livestock species; also covers cattle (see [Cow.md](./Cow.md)) | 4.28 B ChIP-seq reads, 1.04 B ATAC-seq reads | Comparative epigenomics |
+| Association analysis of single-cell RNA sequencing and proteomics reveals a vital role of Ca²⁺ signalling in skeletal muscle development potential | scRNA-seq | Muscle | Source survey records no data accession | — | Myogenesis–adipogenesis homeostasis |
+| [Generation of three-dimensional meat-like tissue from stable pig epiblast stem cells](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE223433) | RNA-seq + mass spectrometry | Muscle | Pig stem cells at P30, P200, and during myogenic differentiation; includes metabolome data (also `OMIX005128`) | 95 Gb | Muscle development |
+
+> **Curation source:** The deposit entries above were initially curated from the supplemental Table 1 of Todhunter et al. 2024 ([Papers.md ref #132](../Papers.md#132)). Subsequent additions come from CAAIL contributors.
 
 ## Further reading
 
