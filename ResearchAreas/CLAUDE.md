@@ -8,6 +8,6 @@ The narratives in this directory are deliberately compressed and opinionated for
 
 - For a paper's actual methods, results, or conclusions, fetch the full text via its DOI, the [caail Zotero group library](https://www.zotero.org/groups/6549203/caail/library) (full-text-indexed for core TUCCA members; see [top-level CLAUDE.md](../CLAUDE.md)), or a literature API such as OpenAlex, Semantic Scholar, or scite.
 - For a software tool's API, license, or current version, fetch the linked source from [`../Software.md`](../Software.md).
-- For a dataset or database's schema, scale, licensing terms, or version history, fetch the canonical landing page from [`../Datasets.md`](../Datasets.md) or [`../Databases.md`](../Databases.md).
+- For a dataset or database's schema, scale, licensing terms, or version history, fetch the canonical landing page from the [`../Datasets/`](../Datasets/) directory or [`../Databases.md`](../Databases.md).
 
 The internal cross-references in these pages reliably identify *which* paper, tool, or dataset is being discussed — but the cell containing that reference encodes taxonomic position (which method × research-area pairing), not paper content. The content itself lives at the canonical sources.

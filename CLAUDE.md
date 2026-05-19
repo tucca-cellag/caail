@@ -36,7 +36,12 @@ If the paper isn't in the Zotero library, fall back to Crossref / arXiv / scite 
 README.md              Landing page + license/contributing pointers
 Papers.md              Peer-reviewed papers (matrix + numbered references)
 Software.md            Open-source tools grouped by application area
-Datasets.md            Train-on data artifacts (corpora, atlases, GEMs)
+Datasets/              Train-on data artifacts, organized into per-species pages
+  README.md            Directory landing page + species index
+  CLAUDE.md            Per-page schema + curation conventions
+  Cow.md / Pig.md / Chicken.md / Fish.md / ...   Per-species data pages
+  HumanReference.md / CHOReference.md            Cross-species & biopharma reference
+  Benchmarks.md        AI/ML benchmark & evaluation datasets
 Databases.md           Query/lookup resources (repositories, ontologies, directories)
 OtherResources.md      Videos and other educational material (flat list)
 ResearchAreas/         Per-area deep-dive pages
@@ -87,25 +92,29 @@ LICENSE                MIT License
 - **Every primary-research reference must appear in at least one matrix cell**, otherwise it is unreachable from the matrix view. Reviews & Perspectives entries are exempt — they're reached via the dedicated section.
 - **Every matrix anchor link must resolve to an existing reference ID**, otherwise the link 404s within the page.
 
-### `Software.md`, `Datasets.md`, and `Databases.md`
+### `Software.md` and `Databases.md`
 
-All three use the same hierarchical pattern:
+Both use the same hierarchical pattern:
 
 ```markdown
 ## <Application area>
 Short paragraph framing the area (optional).
 
-### [<Tool/Dataset/Database name>](<canonical URL>)
+### [<Tool/Database name>](<canonical URL>)
 
 Summary: <1–3 sentences describing what it is and how it applies to cell-ag.>
 ```
 
-- The H3 link target should be the primary canonical home — GitHub for software, the dataset's own landing page for datasets (NCBI GEO, UniProt, AlphaFold DB, etc.), the database's own canonical home for databases.
+- The H3 link target should be the primary canonical home — GitHub for software, the database's own canonical home for databases.
 - Keep summaries focused on **how the resource is useful for cellular agriculture**, not just what it generally does.
 
-**The Datasets.md / Databases.md / OtherResources.md split.** CAAIL distinguishes train-on artifacts from query/lookup resources from non-cataloguing context. The five categorization rules (also in CONTRIBUTING.md):
+### The `Datasets/` directory
 
-1. **Train-on artifacts → `Datasets.md`** — ML pretraining corpora, perturbation atlases, GEM model files.
+`Datasets/` is *not* a flat file — it is a directory organized **by species**: one page per cell-ag-relevant species (`Cow.md`, `Pig.md`, `Chicken.md`, `Fish.md`, `Crustacean.md`, `Mollusk.md`, plus sparse extension stubs), two reference pages (`HumanReference.md`, `CHOReference.md`), and one topical page (`Benchmarks.md`). Each per-species page follows a narrative-plus-table schema (editorial intro → featured atlases → GEMs → thematic clusters → complete data-inventory table → curation note → further reading). The directory's own [`Datasets/CLAUDE.md`](./Datasets/CLAUDE.md) is the authoritative description of that schema; [`Datasets/README.md`](./Datasets/README.md) is the landing page and species index.
+
+**The Datasets/ / Databases.md / OtherResources.md split.** CAAIL distinguishes train-on artifacts from query/lookup resources from non-cataloguing context. The categorization rules (also in CONTRIBUTING.md):
+
+1. **Train-on artifacts → the `Datasets/` directory** — ML pretraining corpora, perturbation atlases, GEM model files, and per-species sequencing deposits. Within `Datasets/`, route each entry to its species page (`Cow.md`, `Pig.md`, …), to `HumanReference.md` / `CHOReference.md` for cross-species reference substrate, or to `Benchmarks.md` for AI/ML benchmark datasets.
 2. **Query/lookup resources → `Databases.md`** — repositories, ontologies, spectral libraries, structure/compound/pathway databases.
 3. **"Database" in the name or any directory/registry/tracker → `Databases.md`** — even when the content is people, companies, or regulation rather than scientific data.
 4. **Initiatives and programs → `OtherResources.md`** — research programs, funding mechanisms.
@@ -114,9 +123,9 @@ Summary: <1–3 sentences describing what it is and how it applies to cell-ag.>
 **Benchmark placement (Paper + Dataset + Database triangle).** AI/ML benchmarks have a distinct artifact shape that resolves the categorization ambiguities above. Apply this rule strictly:
 
 - **Paper** describing the benchmark → `Papers.md` with a `> **Code**:` blockquote anchoring the project's canonical home.
-- **The data** (questions / scenarios / spectra / sequences) + any **bundled scoring code shipped with the data** → `Datasets.md` under "Benchmark & Evaluation Datasets". Bundled scoring code does *not* get a separate `Software.md` entry — it's part of the dataset distribution.
+- **The data** (questions / scenarios / spectra / sequences) + any **bundled scoring code shipped with the data** → `Datasets/Benchmarks.md`. Bundled scoring code does *not* get a separate `Software.md` entry — it's part of the dataset distribution.
 - **Live leaderboard or continuously-updated results tracker** → `Databases.md` under "Benchmark Leaderboards & Results Trackers" (per rule 3, trackers belong in `Databases.md`).
-- **Separately-installable evaluation framework that brings its own data** → `Software.md`. CausalBench is the existing example: a framework that scores models against externally-hosted data (Replogle et al. Perturb-seq) it does not itself distribute. Such frameworks live in `Software.md` and have no `Datasets.md` entry. Bundled-data benchmarks (LAB-Bench, BixBench, BLADE, MassSpecGym, ProteinGym) do *not* belong in `Software.md`.
+- **Separately-installable evaluation framework that brings its own data** → `Software.md`. CausalBench is the existing example: a framework that scores models against externally-hosted data (Replogle et al. Perturb-seq) it does not itself distribute. Such frameworks live in `Software.md` and have no `Datasets/` entry. Bundled-data benchmarks (LAB-Bench, BixBench, BLADE, MassSpecGym, ProteinGym) do *not* belong in `Software.md`.
 
 All entries cross-link via the established `Companion to [Papers.md ref #N]` convention. This rule supersedes the more general 5-rule classification above for the specific case of benchmarks — when in doubt, follow this section. Also documented in `CONTRIBUTING.md`.
 
@@ -136,7 +145,7 @@ Per-area deep-dive page. Linked from the column header of the `Papers.md` matrix
 
 ## Curated summaries are compressed — fetch canonical sources for substantive work
 
-The per-entry summaries in `Datasets.md`, `Databases.md`, `Software.md`, and `OtherResources.md` are deliberately compressed for human readability. When an AI session needs substantive information about a listed resource — data schema, API limits, license terms, specific record counts, recent version changes — fetch the canonical site rather than paraphrasing the local summary. The linked sources are authoritative; this repo's curation is a navigation layer, not a knowledge base. The same principle applies to the citation lines in `Papers.md`: those identify a paper but are not a substitute for reading it.
+The per-entry summaries in the `Datasets/` pages, `Databases.md`, `Software.md`, and `OtherResources.md` are deliberately compressed for human readability. When an AI session needs substantive information about a listed resource — data schema, API limits, license terms, specific record counts, recent version changes — fetch the canonical site rather than paraphrasing the local summary. The linked sources are authoritative; this repo's curation is a navigation layer, not a knowledge base. The same principle applies to the citation lines in `Papers.md`: those identify a paper but are not a substitute for reading it.
 
 ## Citation style
 
@@ -161,7 +170,7 @@ The per-entry summaries in `Datasets.md`, `Databases.md`, `Software.md`, and `Ot
 - **Renumbering tempts you to "clean up" gaps.** Don't — if a reference is removed, leave the ID retired rather than shifting subsequent IDs. (If absolutely necessary to renumber, do it as a dedicated PR that updates every matrix link in lockstep.)
 - **GitHub-flavored markdown anchor quirks.** GitHub auto-generates heading anchors from header text. The `<a id="N">N</a>` anchors in `Papers.md` are explicit HTML anchors, which work but bypass GitHub's auto-anchor system. Don't rely on header-derived anchors for references; keep using the explicit `<a id>` form.
 - **Wikipedia method links.** Row labels in the matrix link to Wikipedia for each AI method. When adding a new row, prefer Wikipedia over a paper or vendor page so the link stays stable.
-- **No "moved" / "removed" / "deprecated" placeholders.** When structurally relocating a section — e.g., moving the Benchmarks cluster out of `AITooling.md` into a new `AIEvaluation.md` — delete the original heading cleanly. Don't leave behind a stub like `## X → moved`, `## X (now lives in Y)`, or `<!-- removed: X -->`. The git history is the record of what moved; the file itself should read as if it had always been organized this way. Surface the cross-reference once in the intro paragraph or the "Adjacent research areas" footer instead. The same rule applies to refactors of `Papers.md` reference IDs and `Software.md` / `Datasets.md` entries: deletions should be silent in the file (apart from a single cross-link if the new home isn't obvious), not commented out or annotated as "moved."
+- **No "moved" / "removed" / "deprecated" placeholders.** When structurally relocating a section — e.g., moving the Benchmarks cluster out of `AITooling.md` into a new `AIEvaluation.md` — delete the original heading cleanly. Don't leave behind a stub like `## X → moved`, `## X (now lives in Y)`, or `<!-- removed: X -->`. The git history is the record of what moved; the file itself should read as if it had always been organized this way. Surface the cross-reference once in the intro paragraph or the "Adjacent research areas" footer instead. The same rule applies to refactors of `Papers.md` reference IDs and `Software.md` / `Datasets/` entries: deletions should be silent in the file (apart from a single cross-link if the new home isn't obvious), not commented out or annotated as "moved."
 
 ## License
 
