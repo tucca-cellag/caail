@@ -1,0 +1,43 @@
+{
+  "upload_type": "software",
+  "title": "CAAIL: Cellular Agriculture AI Library",
+  "version": "1.0.0",
+  "language": "eng",
+  "license": "MIT",
+  "access_right": "open",
+  "description": "<p>A curated, markdown-only resource library at the intersection of Cellular Agriculture and AI — peer-reviewed papers organized as a method × research-area matrix, open-source software, datasets, research-area deep dives, and educational resources for the cell-ag and AI/ML communities.</p>",
+  "creators": [
+    {
+      "name": "Plotts, Jim",
+      "affiliation": "Tufts University Center for Cellular Agriculture (TUCCA)",
+      "orcid": "0009-0006-7851-0707"
+    },
+    {
+      "name": "Bromberg, Benjamin",
+      "affiliation": "Tufts University Center for Cellular Agriculture (TUCCA)",
+      "orcid": "0009-0001-3166-6329"
+    },
+    {
+      "name": "Kaplan, David L.",
+      "affiliation": "Tufts University Center for Cellular Agriculture (TUCCA)",
+      "orcid": "0000-0002-9245-7774"
+    },
+    {
+      "name": "Tufts University Center for Cellular Agriculture (TUCCA)"
+    },
+    {
+      "name": "The CAAIL Contributors"
+    }
+  ],
+  "keywords": [
+    "cellular agriculture",
+    "cultivated meat",
+    "alternative proteins",
+    "artificial intelligence",
+    "machine learning",
+    "bioinformatics",
+    "sensory prediction",
+    "metabolic modeling",
+    "awesome-list"
+  ]
+}
