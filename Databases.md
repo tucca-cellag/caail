@@ -60,6 +60,18 @@ Trait-data biobank coordinated with PigGTEx, integrating phenotypic, genotypic, 
 
 A global research consortium and resource network for functional annotation of farmed-animal genomes, paralleling ENCODE for human/mouse but focused on livestock species. Predates FarmGTEx and provides the broader functional-annotation substrate (chromatin state, regulatory elements, etc.) that FarmGTEx expression-genetics work builds on. Companion to [Papers.md ref #144](./Papers.md#144) (Clark et al. 2020, *Genome Biology*).
 
+### [AQUA-FAANG](https://www.aqua-faang.eu/)
+
+The FAANG consortium's aquaculture programme — *Advancing European Aquaculture by Genome Functional Annotation* — generating genome-wide functional annotation maps for six aquaculture species important to European aquaculture (Atlantic salmon, rainbow trout, European sea bass, gilthead sea bream, common carp, turbot). The [data hub](https://data.faang.org/projects/AQUA-FAANG) hosts the project's open releases (55 datasets at time of curation, spanning RNA-seq, ATAC-seq, and ChIP-seq). The closest FAANG-equivalent substrate for cell-ag-relevant aquaculture-cell-line work, paralleling FarmGTEx for terrestrial livestock. Cross-referenced from [Datasets/Fish.md](./Datasets/Fish.md).
+
+### [BovReg](https://bovreg.eu/)
+
+The FAANG consortium's cattle functional-annotation project, generating maps of functionally active genomic features in cattle (*Bos taurus*). The [data hub](https://data.faang.org/projects/BovReg) hosts the open releases (4 datasets at time of curation). Complementary to [CattleGTEx](#cattlegtex) for cell-ag-relevant cattle-cell engineering and atlas work — particularly useful as a regulatory-element substrate for cultivated-beef cell-line characterisation. Cross-referenced from [Datasets/Cow.md](./Datasets/Cow.md).
+
+### [GENE-SWitCH](https://www.gene-switch.eu/)
+
+The FAANG consortium's pig + chicken project — *the regulatory GENomE of SWine and CHicken: functional annotation during development*. The [data hub](https://data.faang.org/projects/GENE-SWitCH) hosts the open releases (19 datasets at time of curation, covering pig and chicken functional genomes during development). Substrate for cultivated-pork and cultivated-chicken developmental-biology and lineage-engineering work; complementary to [PigGTEx-Portal](#piggtex-portal) and [ChickenGTEx-Portal](#chickengtex-portal). Cross-referenced from [Datasets/Pig.md](./Datasets/Pig.md) and [Datasets/Chicken.md](./Datasets/Chicken.md).
+
 ## Protein & Structure Databases
 
 These data sources are helpful for computational tasks related to engineering recombinant growth factors, signaling molecules, and other media components, and for understanding protein-level cell biology.
