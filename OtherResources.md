@@ -122,9 +122,3 @@ Community-maintained "awesome lists" and curated bibliographies — living GitHu
 **Biomedical NLP & information extraction**
 
 * [caufieldjh/awesome-bioie](https://github.com/caufieldjh/awesome-bioie) — curated resources for biomedical information extraction — relevant to the literature-mining and agentic-AI layer of cell-ag.
-
-**General database & reference indexes**
-
-* [Wikipedia: List of biological databases](https://en.wikipedia.org/wiki/List_of_biological_databases) — broad index of biological databases; a navigation layer for resources beyond those catalogued in [Databases.md](./Databases.md).
-* [Wikipedia: List of chemical databases](https://en.wikipedia.org/wiki/List_of_chemical_databases) — broad index of chemical-information databases and chemical lists.
-* [UArk Food Science Research Guide](https://libguides.uark.edu/FoodScience/Databases) — University of Arkansas library guide to food-science databases, journals, and statistics.

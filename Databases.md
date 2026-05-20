@@ -264,6 +264,22 @@ The National Agricultural Library Search is the USDA's federated search platform
 
 GFI's curated collection of alternative-protein research resources spanning plant-based, cultivated, and fermentation-derived proteins, maintained by its science and technology team. GFI's nearest analogue to CAAIL's own curation, though not AI-scoped or version-controlled.
 
+## Database Directories & Reference Guides
+
+Meta-resources — catalogues of databases and curated library guides — that index the broader data landscape. Useful as starting points for locating biological, chemical, and food-science resources beyond those curated here.
+
+### [Wikipedia: List of biological databases](https://en.wikipedia.org/wiki/List_of_biological_databases)
+
+A community-maintained index of biological databases, grouped by type — meta-databases, model-organism, nucleic-acid, protein, pathway, taxonomic, and more. A broad navigation layer for biological data resources beyond those catalogued here.
+
+### [Wikipedia: List of chemical databases](https://en.wikipedia.org/wiki/List_of_chemical_databases)
+
+A community-maintained list of websites and databases of chemical information. Complements the [Chemistry & Compound Databases](#chemistry--compound-databases) section above as a broader navigation layer for chemistry data resources.
+
+### [UArk Food Science Research Guide](https://libguides.uark.edu/FoodScience/Databases)
+
+The University of Arkansas Libraries' research guide for food science, listing relevant databases, journals, and statistical resources — a curated entry point into food-science literature and data infrastructure.
+
 ## Ecosystem & Industry Directories
 
 GFI's curated public directories cataloguing the people, companies, supply chain, opportunities, and regulatory status of the alternative-protein and cellular-agriculture field. These are the "domain neighbours" of CAAIL — they catalogue *who is doing the work and where it is being sold*, complementary to CAAIL's catalogue of papers, software, datasets, and educational material. New Harvest's initiatives covering the same space (AICAI, the Cellular Agriculture Science Engine, CMSI) are not databases or directories and live in [OtherResources.md / Cell-Ag Ecosystem Initiatives](./OtherResources.md#cell-ag-ecosystem-initiatives) instead.
