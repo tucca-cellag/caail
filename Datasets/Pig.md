@@ -36,7 +36,7 @@ A second cluster builds single-cell references of porcine skeletal muscle. A cel
 
 ## Marbling, lipid metabolism & adipogenesis
 
-Intramuscular fat is the defining quality target for cultivated pork. Single-nucleus and bulk RNA-seq with lipidomics of high- vs low-marbled Laiwu pork (`CRA011059`/`CRA011069`), a longissimus-dorsi IMF transcriptome of 28 Duroc pigs (`PRJNA527944`), a lncRNA–mRNA time-series of adipogenic transdifferentiation of porcine satellite cells (`PRJNA820138`), and a Luchuan-vs-Duroc lipidomic/transcriptomic comparison (data in the paper's supplementary Table 1) together map the adipogenic program and the cell-fate switch between myogenesis and adipogenesis.
+Intramuscular fat is a central quality target for cultivated pork. Single-nucleus and bulk RNA-seq with lipidomics of high- vs low-marbled Laiwu pork (`CRA011059`/`CRA011069`), a longissimus-dorsi IMF transcriptome of 28 Duroc pigs (`PRJNA527944`), a lncRNA–mRNA time-series of adipogenic transdifferentiation of porcine satellite cells (`PRJNA820138`), and a Luchuan-vs-Duroc lipidomic/transcriptomic comparison (data in the paper's supplementary Table 1) together map the adipogenic program and the cell-fate switch between myogenesis and adipogenesis.
 
 ## Epigenomics, chromatin & cultured-meat tissue
 

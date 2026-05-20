@@ -1,6 +1,6 @@
 # Cow / *Bos taurus*
 
-Cattle are the highest-profile cultivated-meat target — cultivated beef draws the largest share of cultivated-meat investment, and bovine satellite cells are the most-studied myogenic system in the field. This page collects the fixed data artifacts relevant to engineering and modeling bovine cells for cultivated beef: the genome-scale metabolic model, the multi-tissue atlases, and individual transcriptomic / epigenomic deposits spanning satellite-cell heterogeneity, serum-free differentiation, adipogenesis, and breed comparison.
+Cattle are a leading cultivated-meat target, and bovine satellite cells are among the most-studied myogenic systems in the field. This page collects the fixed data artifacts relevant to engineering and modeling bovine cells for cultivated beef: the genome-scale metabolic model, the multi-tissue atlases, and individual transcriptomic / epigenomic deposits spanning satellite-cell heterogeneity, serum-free differentiation, adipogenesis, and breed comparison.
 
 ## Featured atlases
 

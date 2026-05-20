@@ -1,6 +1,6 @@
 # Chicken / *Gallus gallus*
 
-Chicken is a leading cultivated-meat target — cultivated chicken was among the first products to reach regulatory approval — and *Gallus gallus* is the first non-mammalian livestock species with a GTEx-style atlas. This page collects the fixed data artifacts relevant to cultivated chicken: the chicken genome-scale metabolic model, the multi-tissue atlases, and individual deposits spanning fibroblast immortalization for serum-free production, myogenesis, and skeletal-muscle development.
+Chicken is a leading cultivated-meat target — cultivated chicken was among the first products to reach regulatory approval — and *Gallus gallus* is among the first non-mammalian livestock species to gain a GTEx-style atlas. This page collects the fixed data artifacts relevant to cultivated chicken: the chicken genome-scale metabolic model, the multi-tissue atlases, and individual deposits spanning fibroblast immortalization for serum-free production, myogenesis, and skeletal-muscle development.
 
 ## Featured atlases
 

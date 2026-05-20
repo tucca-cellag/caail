@@ -1,6 +1,6 @@
 # Duck / *Anas platyrhynchos*
 
-Cultivated duck is an early-stage cell-ag target, pursued in part for cultivated foie gras. Dedicated *Anas platyrhynchos* datasets for cultivated-meat work remain sparse. This page collects what exists and will grow as the field's data accumulates.
+Cultivated duck is an early-stage cell-ag target. Dedicated *Anas platyrhynchos* datasets for cultivated-meat work remain sparse. This page collects what exists and will grow as the field's data accumulates.
 
 ## Complete data inventory
 

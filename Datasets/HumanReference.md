@@ -28,7 +28,7 @@ An AI-agent-curated, uniformly processed, and autonomously updated single-cell d
 
 A publicly released ~10-million peripheral blood mononuclear cell (PBMC) single-cell RNA-seq experiment from Parse Biosciences, demonstrating the throughput of their Evercode WT Mega platform. Includes harmonized cell-type annotations and represents the largest single-experiment PBMC atlas available at time of release. For cellular agriculture, useful both as a benchmark dataset for evaluating single-cell-FM batch-effect handling and scaling at extreme throughput, and as immune-cell reference data for cultivated-meat applications involving immune-cell co-cultures or contamination screening.
 
-## Reference genome-scale metabolic models
+## Genome-scale metabolic models
 
 GEMs are SBML-formatted reconstructions of an organism's metabolic network — every reaction, every metabolite, every gene-protein-reaction mapping — and are the input data structure for the constraint-based modeling tools listed in [Software.md / Metabolic Modeling & Strain Design](../Software.md#metabolic-modeling--strain-design). The human reconstructions below are the upstream reference from which the cell-ag livestock GEMs (catalogued on the per-species pages) inherit network structure and curation conventions.
 
@@ -37,6 +37,8 @@ GEMs are SBML-formatted reconstructions of an organism's metabolic network — e
 The human genome-scale metabolic reconstructions — Recon3D (Brunk et al. 2018, *Nature Biotechnology*), Human-GEM / Human1 (Robinson et al. 2020, *Science Signaling*), and the underlying HMR2 — are the foundational human GEMs from which most mammalian-cell models (including the cell-ag GEMs in the per-species pages of this directory) inherit reaction networks, biomass equations, and curation conventions. Direct use in cell-ag is rare; they're more often used as homology templates or biomass-function donors for species-specific reconstructions.
 
 References: [Papers.md #86](../Papers.md#86) (Brunk et al. 2018, *Nature Biotechnology*) for Recon3D; [Papers.md #87](../Papers.md#87) (Robinson et al. 2020, *Science Signaling*) for Human-GEM.
+
+> **Curation source:** These entries are long-standing CAAIL curation, migrated from the prior flat `Datasets.md`. They are cross-species reference substrate rather than cultivated-meat-species data, so — unlike the per-species pages — they are not drawn from the Todhunter et al. 2024 supplemental.
 
 ## Further reading
 

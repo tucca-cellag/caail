@@ -6,7 +6,7 @@ Cultivated seafood — salmon, trout, and other teleosts — is an active cell-a
 
 ### [AQUA-FAANG](https://www.aqua-faang.eu/)
 
-The FAANG consortium's aquaculture programme — *Advancing European Aquaculture by Genome Functional Annotation* — generating genome-wide functional annotation maps for six aquaculture species important to European aquaculture (Atlantic salmon, rainbow trout, European sea bass, gilthead sea bream, common carp, turbot); the [data hub](https://data.faang.org/projects/AQUA-FAANG) hosts its open releases. The closest FAANG-equivalent substrate for cell-ag-relevant aquaculture-cell-line work. Full entry in [Databases.md / Livestock Multi-Tissue Atlases](../Databases.md#livestock-multi-tissue-atlases--functional-genomics).
+The FAANG consortium's aquaculture programme — *Advancing European Aquaculture by Genome Functional Annotation* — generating genome-wide functional annotation maps for six aquaculture species important to European aquaculture (Atlantic salmon, rainbow trout, European sea bass, gilthead sea bream, common carp, turbot); the [data hub](https://data.faang.org/projects/AQUA-FAANG) hosts its open releases. A FAANG functional-annotation substrate for cell-ag-relevant aquaculture-cell-line work. Full entry in [Databases.md / Livestock Multi-Tissue Atlases](../Databases.md#livestock-multi-tissue-atlases--functional-genomics).
 
 ## Genome-scale metabolic models
 
@@ -24,7 +24,7 @@ The bulk of the fish data surveyed here is skeletal-muscle transcriptomics acros
 
 ## Myoblast cell lines & myogenic differentiation
 
-The most directly cultivated-meat-relevant fish datasets are the in-vitro ones. The establishment of a continuous myoblast cell line in the marine teleost *Sebastes schlegelii* (`PRJNA661185`, also CNGB `CNP0000222`) — propagated 50 passages over 150 days — and a proteomic characterisation of primary cultured gilthead sea bream myocytes across myogenic-differentiation stages together provide the closest fish analogue to the bovine and porcine satellite-cell work that anchors cultivated-meat cell biology.
+The most directly cultivated-meat-relevant fish datasets are the in-vitro ones. The establishment of a continuous myoblast cell line in the marine teleost *Sebastes schlegelii* (`PRJNA661185`, also CNGB `CNP0000222`) — propagated 50 passages over 150 days — and a proteomic characterisation of primary cultured gilthead sea bream myocytes across myogenic-differentiation stages together provide a close fish analogue to the bovine and porcine satellite-cell work that anchors cultivated-meat cell biology.
 
 ## Adipocyte differentiation
 

@@ -1,6 +1,6 @@
 # CHO Reference (Chinese Hamster Ovary)
 
-The Chinese Hamster Ovary (CHO) cell line is the mammalian biopharmaceutical workhorse — the production host for most recombinant-protein therapeutics. CHO is not a cellular agriculture species, but it is the closest mature analogue for cell-ag process modeling: its genome-scale metabolic models are the most-developed mammalian-cell GEM ecosystem available, and its biomass parameterization, perfusion-process methodology, and model-reduction techniques translate directly to the cultivated-meat GEMs (bovine, porcine, avian, salmonid) catalogued on the per-species pages of this directory. This page collects the CHO reference reconstructions as a biopharma-adjacent substrate.
+The Chinese Hamster Ovary (CHO) cell line is the dominant mammalian host for recombinant-protein biomanufacturing. CHO is not a cellular agriculture species, but it is the closest mature analogue for cell-ag process modeling: its genome-scale metabolic models are the most-developed mammalian-cell GEM ecosystem available, and its biomass parameterization, perfusion-process methodology, and model-reduction techniques translate directly to the cultivated-meat GEMs (bovine, porcine, avian, salmonid) catalogued on the per-species pages of this directory. This page collects the CHO reference reconstructions as a biopharma-adjacent substrate.
 
 ## Genome-scale metabolic models
 
@@ -9,6 +9,8 @@ The Chinese Hamster Ovary (CHO) cell line is the mammalian biopharmaceutical wor
 The CHO cell line is the mammalian biopharma workhorse, and its GEM family is the most-developed mammalian GEM ecosystem available — Hefzi et al.'s iCHO1766 (2016, *Cell Systems*) is the consensus reconstruction; iCHO2048 (2018) extends the secretory pathway; CHOmpact (2024) and follow-on Bayesian-flux-estimation pipelines (2025) produce reduced models for digital-twin work. CHO is not itself a cellular agriculture species, but its biomass parameterization, perfusion-process methodology, and reduction techniques translate directly to cell-ag GEMs (bovine, porcine, avian) currently under construction.
 
 Reference: [Papers.md #85](../Papers.md#85) (Hefzi et al. 2016, *Cell Systems*).
+
+> **Curation source:** This entry is long-standing CAAIL curation, migrated from the prior flat `Datasets.md`. CHO is a biopharma-adjacent reference rather than a cultivated-meat species, so it is not drawn from the Todhunter et al. 2024 supplemental.
 
 ## Further reading
 
