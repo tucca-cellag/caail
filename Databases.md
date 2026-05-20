@@ -60,6 +60,12 @@ Trait-data biobank coordinated with PigGTEx, integrating phenotypic, genotypic, 
 
 A global research consortium and resource network for functional annotation of farmed-animal genomes, paralleling ENCODE for human/mouse but focused on livestock species. Predates FarmGTEx and provides the broader functional-annotation substrate (chromatin state, regulatory elements, etc.) that FarmGTEx expression-genetics work builds on. Companion to [Papers.md ref #144](./Papers.md#144) (Clark et al. 2020, *Genome Biology*).
 
+Major FAANG sub-projects, each a source of the functional-annotation data the consortium aggregates:
+
+* [BovReg](https://bovreg.eu/) — functional annotation of the cattle genome ([FAANG project page](https://data.faang.org/projects/BovReg)).
+* [GENE-SWitCH](https://www.gene-switch.eu/) — the regulatory genome of swine and chicken, functionally annotated across development ([FAANG project page](https://data.faang.org/projects/GENE-SWitCH)).
+* [AQUA-FAANG](https://www.aqua-faang.eu/) — genome functional annotation advancing European aquaculture, covering the major farmed-fish species ([FAANG project page](https://data.faang.org/projects/AQUA-FAANG)).
+
 ## Protein & Structure Databases
 
 These data sources are helpful for computational tasks related to engineering recombinant growth factors, signaling molecules, and other media components, and for understanding protein-level cell biology.
@@ -226,6 +232,10 @@ Flavornet, maintained at Cornell by Acree and Arn, is a database of GC olfactome
 
 A long-established industry reference platform for the flavor, fragrance, food, and cosmetics industries, providing odor descriptors, organoleptic properties, regulatory status, and supplier information for thousands of aroma chemicals and natural extracts. While maintained by the F&F industry rather than as an academic resource, GoodScents is widely cross-referenced in flavor research papers and is the de-facto industry-standard descriptor source for many compounds not formally characterized in academic odor-threshold compendia.
 
+### [FooDB](https://foodb.ca/)
+
+FooDB is a large open database of food constituents, chemistry, and biology — covering both macronutrients and the thousands of micro-constituents (flavor and aroma compounds among them) found in foods, with chemical, taxonomic, and concentration data. It is one of the upstream sources integrated into [FlavorDB](#flavordb--flavordb2). For cellular agriculture, FooDB is a reference for the compound composition of conventional foods — a comparison baseline when characterizing the metabolite and flavor profile of cultivated tissues and alt-protein products.
+
 ## Seafood Species Reference Databases
 
 Open-access databases for cataloguing seafood species' biological and culinary characteristics, surfaced by [GFI's alternative-seafood data initiative](https://gfi.org/resource/aggregating-data-for-alternative-seafood/). For cellular agriculture these are direct reference data for the cultivated-seafood sub-domain — complementary to the SALARECON salmon GEM in [Datasets.md](./Datasets.md#salarecon--salmo-salar-atlantic-salmon).
@@ -281,6 +291,10 @@ GFI's live tracker of countries where cultivated meat has regulatory approval fo
 ## Benchmark Leaderboards & Results Trackers
 
 Live, continuously-updated leaderboards and results trackers for AI/ML benchmarks — the database side of the **Paper + Dataset + Database** triangle catalogued in the [AI Evaluation & Benchmarking](./ResearchAreas/AIEvaluation.md) research area. The benchmark datasets themselves live in [`Datasets.md / Benchmark & Evaluation Datasets`](./Datasets.md#benchmark--evaluation-datasets); this section catalogues only the *results-tracking* surfaces.
+
+### [CASP — Prediction Center](https://predictioncenter.org/)
+
+The Prediction Center hosts CASP (Critical Assessment of Structure Prediction) — the long-running community experiment and results tracker for protein-structure-prediction methods, run biennially since 1994 and the independent proving ground where AlphaFold's accuracy was first established. For cellular agriculture, CASP is the canonical reference point for judging structure-prediction tools applied to growth factors, recombinant ECM and scaffold proteins, and other engineered proteins in cultivated-meat workflows.
 
 ### [CompBioBench v1 Leaderboard](https://huggingface.co/spaces/Genentech/compbiobench-leaderboard-v1)
 
