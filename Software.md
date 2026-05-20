@@ -113,7 +113,7 @@ Project page: <https://openms.de/>. pyOpenMS docs: <https://pyopenms.readthedocs
 
 A modular, open-source platform for LC-MS / GC-MS / IMS-MS data processing, maintained by the Pluskal lab (University of Münster) and the international MZmine consortium. Schmid et al. 2023 (*Nat Biotech*) describes the v3 release with multimodal MS support (LC-MS, IMS-MS, MS-imaging). Provides feature detection, alignment, gap-filling, MS/MS networking integrations (GNPS / FBMN, SIRIUS), and a CLI for batch processing. Standard preprocessor for flavor and natural-products metabolomics workflows.
 
-Source: <https://github.com/mzmine/mzmine>.
+Source: <https://github.com/mzmine/mzmine>. News and releases from [mzio](https://mzio.io/), the team behind MZmine: <https://mzio.io/mzmine-news/>.
 
 ### [MS-DIAL](http://prime.psc.riken.jp/compms/msdial/main.html)
 
@@ -231,7 +231,7 @@ Summary: An agentic system for the design of virtual cell models from the [Gerst
 
 ### [AI Scientist](https://github.com/SakanaAI/AI-Scientist)
 
-Summary: Sakana AI's framework for fully automated open-ended scientific discovery via large language models, performing end-to-end idea generation, experimentation, and paper drafting. Version 2 ([SakanaAI/AI-Scientist-v2](https://github.com/SakanaAI/AI-Scientist-v2)) extends the system to workshop-level automated discovery via agentic tree search. Companion to Lu et al. 2024 ([Papers.md ref #45](./Papers.md#45)) and Yamada et al. 2025 ([Papers.md ref #47](./Papers.md#47)).
+Summary: Sakana AI's framework for fully automated open-ended scientific discovery via large language models, performing end-to-end idea generation, experimentation, and paper drafting. Version 2 ([SakanaAI/AI-Scientist-v2](https://github.com/SakanaAI/AI-Scientist-v2)) extends the system to workshop-level automated discovery via agentic tree search; the [AI-Scientist-ICLR2025-Workshop-Experiment](https://github.com/SakanaAI/AI-Scientist-ICLR2025-Workshop-Experiment) repository archives the run whose AI-generated paper passed peer review at an ICLR 2025 workshop. Companion to Lu et al. 2024 ([Papers.md ref #45](./Papers.md#45)) and Yamada et al. 2025 ([Papers.md ref #47](./Papers.md#47)).
 
 Project home: <https://sakana.ai/>.
 
