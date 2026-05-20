@@ -35,7 +35,9 @@ does not restate schema rules — read `CLAUDE.md` for them.
 4. **Classify** each genuine gap → target file (see rules below).
 5. **Add** each item in its file's schema (per `CLAUDE.md`). For `Papers.md`,
    edit the matrix cell and the `## References` entry **in the same commit**.
-6. **Integrity check** (see below), then commit with the repo's
+6. **Verify every claim** in each drafted entry against the source full text
+   (see "Verify every claim" below).
+7. **Integrity check** (see below), then commit with the repo's
    conventional-commit scopes (`papers`, `software`, `data`, `databases`,
    `resources`).
 
@@ -72,6 +74,32 @@ citations (a real, observed failure). APA 21+-author rule: list the first 19
 authors, then `…`, then the final author. Journal italic with `*…*`; DOI as a
 full `https://doi.org/…` URL.
 
+## Verify every claim against source full text
+
+Every factual claim in a drafted entry — record/task counts, dataset sizes,
+dates, licences, "first / largest / only", and any statement of what a tool or
+method *does* — must be checked against the **full text of the source**, then
+revised until each one is grounded. Abstracts, dataset cards, and your own
+memory all omit and occasionally misstate; none is sufficient on its own.
+
+Mandatory for every new or changed entry, before it is committed:
+
+1. **Get the source full text.** Papers: Zotero `get_fulltext` on the attached
+   PDF. Tools / datasets / webpages: fetch the canonical page, README, or
+   dataset card in full.
+2. **Adversarial review by a *separate* agent.** Dispatch a subagent with the
+   drafted entry and the source full text. Its task: extract every discrete
+   factual claim and, for each, quote the exact supporting span or mark it
+   `UNSUPPORTED` / `CONTRADICTED`. The reviewer's default is disbelief — a claim
+   it cannot locate in the source has failed. The author of the entry must not
+   also be its reviewer.
+3. **Revise until clean.** Every flagged claim is corrected, softened to exactly
+   what the source supports, or deleted. Re-review if claims changed materially.
+
+Recalled facts — "running since 1994", "the first to…", a remembered version
+number — are the highest-risk and the whole reason this step exists. A claim you
+cannot ground is not "probably fine"; ground it or cut it.
+
 ## Same work, two DOIs
 
 A work stashed as both an arXiv preprint and a published article has **two
@@ -94,4 +122,6 @@ work **once**, citing the peer-reviewed version; suppress the preprint.
 | Skipping the `Datasets.md`/`Databases.md` side of a benchmark | The triangle is mandatory; "general-CS benchmark" is not an exemption. |
 | Filing a Nature `d41586-` editorial in `Papers.md` Reviews | Editorials/news → `OtherResources.md` `## Editorials & Opinion`. |
 | Writing author initials from memory | Copy `creators` verbatim from the Zotero record. |
+| Writing a count, date, or "first/largest" from memory | Every specific claim is verified against source full text by a separate adversarial reviewer, or it is cut. |
+| Verifying a claim against only the abstract or dataset card | Abstracts omit and misstate. Verify against full text. |
 | Adding a reference without touching the matrix | Matrix + references change in one commit — the #1 CAAIL error. |
