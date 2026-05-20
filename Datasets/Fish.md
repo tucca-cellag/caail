@@ -14,7 +14,7 @@ GEMs are SBML-formatted reconstructions of an organism's metabolic network — e
 
 ### SALARECON — *Salmo salar* (Atlantic salmon)
 
-Whole-genome metabolic reconstruction of Atlantic salmon, published 2022 in *PLOS Computational Biology* with a focus on connecting genome content to growth and feed-efficiency phenotypes. The reference GEM for cultivated salmonid work — directly relevant to the cultivated seafood category (salmon, trout) that has begun attracting investment (Umami Bioworks, BlueNalu, Wildtype). SBML files distributed via the paper's supplementary materials and the SALARECON GitHub repository.
+Whole-genome metabolic reconstruction of Atlantic salmon, published 2022 in *PLOS Computational Biology*, built to connect genome content to growth and feed-efficiency phenotypes for aquaculture. It is the most directly applicable existing GEM for cultivated salmonid modelling — though not purpose-built for cultivated meat — and relevant to the cultivated seafood category (salmon, trout) attracting investment from companies such as Umami Bioworks, BlueNalu, and Wildtype. SBML files distributed via the paper's supplementary materials and the SALARECON GitHub repository.
 
 Reference: [Papers.md #84](../Papers.md#84) (Zakhartsev et al. 2022, *PLOS Computational Biology*).
 

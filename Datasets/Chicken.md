@@ -18,7 +18,7 @@ GEMs are SBML-formatted reconstructions of an organism's metabolic network — e
 
 ### iES1300 — *Gallus gallus* (chicken)
 
-Generic genome-scale metabolic reconstruction of chicken, published 2022 in *PLOS ONE* by Salehabadi, Motamedian, and Shojaosadati. Contains 2,427 reactions across 1,300 genes (hence the `i...1300` name); used to investigate network connectivity and identify potential biomarkers across chicken tissues. The reference GEM for cultivated chicken cell-line metabolic modeling, with SBML files provided as supplementary data.
+Generic genome-scale metabolic reconstruction of chicken, published 2022 in *PLOS ONE* by Salehabadi, Motamedian, and Shojaosadati. Contains 2,427 reactions across 1,300 genes (hence the `i...1300` name); used to investigate network connectivity and identify potential biomarkers across chicken tissues. A generic chicken GEM that serves as a starting point for cultivated-chicken cell-line metabolic modelling, with SBML files provided as supplementary data.
 
 Reference: [Papers.md #82](../Papers.md#82) (Salehabadi, Motamedian, & Shojaosadati 2022, *PLOS ONE*).
 

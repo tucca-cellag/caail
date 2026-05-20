@@ -18,7 +18,7 @@ GEMs are SBML-formatted reconstructions of an organism's metabolic network — e
 
 ### BtaSBML2986 — *Bos taurus* (bovine)
 
-The first cultivated-meat-focused genome-scale metabolic reconstruction of cattle, published 2024 by Lee et al. as a bioRxiv preprint. The model integrates multi-omics data (genomics, transcriptomics, proteomics) and contains ~13,278 reactions across 2,986 genes, with biomass functions parameterized for cultivated-meat-relevant bovine cell types. Designed to support FBA-driven identification of media supplement combinations and metabolic bottlenecks for cultivated beef production. SBML files are distributed via the preprint's supplementary materials.
+The first *Bos taurus*-specific genome-scale metabolic model (GEM), built for cultured-meat research and published 2024 by Lee et al. as a bioRxiv preprint. The model integrates multi-omics data, was reconstructed on the human1 GEM as a template, and contains ~13,278 reactions across 2,986 genes, with biomass functions parameterized for cultivated-meat-relevant bovine cell types. Designed to support FBA-driven identification of media supplement combinations and metabolic bottlenecks for cultivated beef production. SBML files are distributed via the preprint's supplementary materials.
 
 Reference: [Papers.md #81](../Papers.md#81) (Lee et al. 2024, bioRxiv).
 
