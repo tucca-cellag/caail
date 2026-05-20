@@ -241,6 +241,14 @@ Summary: An open-source retrieval-augmented generative agent for answering quest
 
 FutureHouse cookbook (docs): <https://futurehouse.gitbook.io/futurehouse-cookbook>. Commercial spinout — Edison Scientific: <https://edisonscientific.com/> ([docs](https://docs.edisonscientific.com)).
 
+### [Aviary](https://github.com/Future-House/aviary)
+
+Summary: A gymnasium of language-agent environments for challenging scientific tasks, from the [FutureHouse](https://www.futurehouse.org/) lab. Agents are framed as Language Decision Processes (LDP) and trained and evaluated against tasks spanning molecular cloning, scientific-literature QA, and protein stability — providing the reusable training-and-evaluation substrate beneath FutureHouse's task-specific agents. Companion to [Papers.md ref #160](./Papers.md#160) (Narayanan et al. 2024). Apache-2.0; built on the [LDP framework](https://docs.edisonscientific.com/ldp-language-decision-processes), with Aviary docs at <https://docs.edisonscientific.com/aviary>.
+
+### [Finch](https://github.com/Future-House/finch)
+
+Summary: An Aviary-based data-science agent that operates inside Jupyter notebooks, also from [FutureHouse](https://www.futurehouse.org/). It plans and executes notebook-based analyses, pairing the [Aviary](#aviary) environment with the kind of exploratory bioinformatics work — single-cell exploration, media-response analysis — that cell-ag teams increasingly delegate to notebook agents. Apache-2.0; no companion paper at time of curation.
+
 ### [K-Dense-AI](https://github.com/K-Dense-AI)
 
 K-Dense-AI is an AI co-scientist ecosystem combining a commercial agent platform ([K-Dense Web](https://k-dense.ai), which autonomously executes complex science / engineering / healthcare / finance tasks end-to-end) with a substantial open-source stack of agent infrastructure:
