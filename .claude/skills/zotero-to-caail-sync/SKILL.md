@@ -87,12 +87,13 @@ Mandatory for every new or changed entry, before it is committed:
 1. **Get the source full text.** Papers: Zotero `get_fulltext` on the attached
    PDF. Tools / datasets / webpages: fetch the canonical page, README, or
    dataset card in full.
-2. **Adversarial review by a *separate* agent.** Dispatch a subagent with the
-   drafted entry and the source full text. Its task: extract every discrete
-   factual claim and, for each, quote the exact supporting span or mark it
-   `UNSUPPORTED` / `CONTRADICTED`. The reviewer's default is disbelief — a claim
-   it cannot locate in the source has failed. The author of the entry must not
-   also be its reviewer.
+2. **Adversarial review by a dedicated subagent.** Dispatch the project reviewer
+   subagent — `caail-citation-reviewer` for `Papers.md` reference entries
+   (bibliographic fields vs the version of record), `caail-claim-reviewer` for
+   every prose entry (each factual claim vs source full text). Give it the
+   drafted entry text and the source URLs/DOIs. These reviewers are read-only by
+   design — they cannot edit, only return `SUPPORTED` / `UNSUPPORTED` /
+   `CONTRADICTED` verdicts. The agent that wrote an entry must never review it.
 3. **Revise until clean.** Every flagged claim is corrected, softened to exactly
    what the source supports, or deleted. Re-review if claims changed materially.
 
