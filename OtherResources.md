@@ -59,6 +59,16 @@ The Good Food Institute (GFI) publishes the de-facto annual *State of the Indust
 * [2026 State of the Industry: Plant-based meat, seafood, eggs, dairy, and ingredients](https://www.youtube.com/watch?v=OEuehZB7YVM) (GFI, 2026).
 * [Foundations of Chemical and Biological Engineering I](https://eng.libretexts.org/Bookshelves/Chemical_Engineering/Foundations_of_Chemical_and_Biological_Engineering_I_(Verret_Qiao_Barghout)) (Verret, Qiao & Barghout, UBC) — an open LibreTexts textbook covering process diagrams, reaction chemistry, mass and energy balances, and process control; foundational background for the bioprocess-engineering side of cultivated-meat scale-up.
 
+## Courses
+
+University courses on cellular agriculture — structured entry points into the field, and reference models for curriculum design.
+
+* [Cellular Agriculture Courses (TUCCA)](https://sites.tufts.edu/cellagcourse/) — the Tufts University Center for Cellular Agriculture's open course-materials site, mostly focused on the bioengineering behind cultivated meat, sharing course materials for educators and students. Individual courses:
+  * [Cellular Agriculture and Biofabricated Foods (BME 173)](https://sites.tufts.edu/cellagcourse/cellular-agriculture-and-biofabricated-foods-bme-173/) — a lecture course introducing the fundamentals of cellular agriculture and biofabricated foods.
+  * [Cellular Agriculture and Cultured Meat Lab (BME 174)](https://sites.tufts.edu/cellagcourse/cell-ag-and-cultured-meat-lab-bme-174/) — a hands-on lab course in which students isolate livestock cells, differentiate them into fat and muscle tissue, generate cultured meat, and analyze the resulting meat constructs.
+  * [Sustainable Materials (BME 0193)](https://sites.tufts.edu/cellagcourse/sustainable-materials-course-bme-0193/) — a course on the use of cellular agriculture in the materials industry.
+* [TUCCA Education — Courses](https://cellularagriculture.tufts.edu/education/courses) — the Tufts University Center for Cellular Agriculture's official course listing on the center's main site.
+
 ## Editorials & Opinion
 
 Journal editorials, news features, and opinion pieces that survey or comment on the state of AI in science and cellular agriculture — distinct from the peer-reviewed review and position papers in [Papers.md / Reviews & Perspectives](./Papers.md#reviews--perspectives). These are the field's running commentary: useful context on how the research community is framing AI's role, not primary research.
