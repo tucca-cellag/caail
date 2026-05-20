@@ -57,6 +57,7 @@ The Good Food Institute (GFI) publishes the de-facto annual *State of the Indust
 * [2026 State of the Industry: Cultivated meat, seafood, and ingredients](https://www.youtube.com/watch?v=F1s702taM5o) (GFI, 2026).
 * [2026 State of the Industry: Fermentation for meat, seafood, eggs, dairy, and ingredients](https://www.youtube.com/watch?v=eCBclCUZOg0) (GFI, 2026).
 * [2026 State of the Industry: Plant-based meat, seafood, eggs, dairy, and ingredients](https://www.youtube.com/watch?v=OEuehZB7YVM) (GFI, 2026).
+* [Foundations of Chemical and Biological Engineering I](https://eng.libretexts.org/Bookshelves/Chemical_Engineering/Foundations_of_Chemical_and_Biological_Engineering_I_(Verret_Qiao_Barghout)) (Verret, Qiao & Barghout, UBC) — an open LibreTexts textbook covering process diagrams, reaction chemistry, mass and energy balances, and process control; foundational background for the bioprocess-engineering side of cultivated-meat scale-up.
 
 ## Editorials & Opinion
 
@@ -64,6 +65,8 @@ Journal editorials, news features, and opinion pieces that survey or comment on 
 
 * [Why AI cannot do good science without humans](https://www.nature.com/articles/d41586-026-01551-3) (*Nature* editorial, 2026) — argues that human wisdom, empathy, and "sheer messiness" remain as much a part of scientific progress as process and efficiency, even as "AI scientists" arrive.
 * [Teams of AI agents boost speed of research](https://www.nature.com/articles/d41586-026-01596-4) (*Nature* news feature, 2026) — overview of multi-agent AI systems that generate hypotheses, interpret data, and suggest ways to develop medicines.
+* [Long-running Claude for scientific computing](https://www.anthropic.com/research/long-running-Claude) (Anthropic) — research post on running Claude as a long-horizon autonomous agent on scientific-computing workloads.
+* [Vibe physics: The AI grad student](https://www.anthropic.com/research/vibe-physics) (Anthropic) — research post on using Claude as an AI research collaborator — an "AI grad student" — for physics problems.
 
 ## Cell-Ag Ecosystem Initiatives
 
@@ -109,3 +112,9 @@ Community-maintained "awesome lists" and curated bibliographies — living GitHu
 **Biomedical NLP & information extraction**
 
 * [caufieldjh/awesome-bioie](https://github.com/caufieldjh/awesome-bioie) — curated resources for biomedical information extraction — relevant to the literature-mining and agentic-AI layer of cell-ag.
+
+**General database & reference indexes**
+
+* [Wikipedia: List of biological databases](https://en.wikipedia.org/wiki/List_of_biological_databases) — broad index of biological databases; a navigation layer for resources beyond those catalogued in [Databases.md](./Databases.md).
+* [Wikipedia: List of chemical databases](https://en.wikipedia.org/wiki/List_of_chemical_databases) — broad index of chemical-information databases and chemical lists.
+* [UArk Food Science Research Guide](https://libguides.uark.edu/FoodScience/Databases) — University of Arkansas library guide to food-science databases, journals, and statistics.
