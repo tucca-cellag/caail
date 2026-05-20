@@ -286,6 +286,18 @@ Live, continuously-updated leaderboards and results trackers for AI/ML benchmark
 
 Genentech's open leaderboard hosted on Hugging Face Spaces, tracking model performance on the 100-task CompBioBench v1 computational-biology benchmark. Provides a vendor-neutral, continuously-updated comparison point for cell-ag teams evaluating LLMs and agents on bioinformatics tasks before deploying them downstream. The underlying benchmark data — questions plus the BAM/FASTQ/H5AD/MTX/TSV bioinformatics artifacts each task operates over — is catalogued separately at [`Datasets.md / CompBioBench v1`](./Datasets.md#compbiobench-v1) (canonical home: the `Genentech/compbiobench-data-v1` Hugging Face Dataset). Companion to [Papers.md ref #150](./Papers.md#150) (Nair et al. 2026), the bioRxiv methods paper describing the benchmark.
 
+### [Humanity's Last Exam Leaderboard](https://lastexam.ai/)
+
+The official results tracker at `lastexam.ai` for Humanity's Last Exam, ranking frontier models on the 2,500-question closed-ended benchmark at the frontier of human knowledge. The companion benchmark *data* is catalogued at [`Datasets.md / Humanity's Last Exam`](./Datasets.md#humanitys-last-exam); paired with [Papers.md ref #158](./Papers.md#158) (Phan et al. 2026). A continuously-updated ceiling check on frontier reasoning for cell-ag teams choosing a general-purpose model.
+
+### [MMLU-Pro Leaderboard](https://huggingface.co/spaces/TIGER-Lab/MMLU-Pro)
+
+The live leaderboard on Hugging Face Spaces for the reasoning-focused MMLU-Pro benchmark, tracking model accuracy across its 14 disciplines. The companion benchmark *data* is catalogued at [`Datasets.md / MMLU-Pro`](./Datasets.md#mmlu-pro); paired with [Papers.md ref #157](./Papers.md#157) (Wang et al. 2024). A vendor-neutral general-reasoning comparison point for sizing up models before cell-ag-specific evaluation.
+
 ### [ProteinGym Leaderboard](https://www.proteingym.org/)
 
 The live leaderboard hosted at `proteingym.org` for the ProteinGym variant-effect benchmark — separate substitution and indel boards covering supervised and zero-shot model categories. The companion benchmark *data* is catalogued at [`Datasets.md / ProteinGym`](./Datasets.md#proteingym); paired with [Papers.md ref #148](./Papers.md#148) (Notin et al. 2023). The dominant variant-effect leaderboard in protein-engineering ML — directly relevant to any cell-ag protein-engineering work (growth factors, scaffolds, recombinant ECM proteins) selecting a protein language model.
+
+### [SWE-bench Leaderboard](https://www.swebench.com/)
+
+The official leaderboard at `swebench.com` tracking agent and model performance on SWE-bench and its variants (Verified, Lite, Multimodal) — the percentage of real GitHub issues resolved with a test-passing patch. The companion benchmark *data* is catalogued at [`Datasets.md / SWE-bench`](./Datasets.md#swe-bench); paired with [Papers.md ref #155](./Papers.md#155) (Jimenez et al. 2024). The standard tracker for whether a coding agent can be trusted with the bioinformatics-pipeline and analysis-code maintenance cell-ag teams increasingly delegate.
