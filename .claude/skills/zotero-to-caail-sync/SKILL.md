@@ -35,8 +35,8 @@ does not restate schema rules — read `CLAUDE.md` for them.
 4. **Classify** each genuine gap → target file (see rules below).
 5. **Add** each item in its file's schema (per `CLAUDE.md`). For `Papers.md`,
    edit the matrix cell and the `## References` entry **in the same commit**.
-6. **Verify every claim** in each drafted entry against the source full text
-   (see "Verify every claim" below).
+6. **Verify every entry** with the dedicated reviewer subagents (see "Verify
+   every entry before committing" below).
 7. **Integrity check** (see below), then commit with the repo's
    conventional-commit scopes (`papers`, `software`, `data`, `databases`,
    `resources`).
@@ -74,30 +74,35 @@ citations (a real, observed failure). APA 21+-author rule: list the first 19
 authors, then `…`, then the final author. Journal italic with `*…*`; DOI as a
 full `https://doi.org/…` URL.
 
-## Verify every claim against source full text
+## Verify every entry before committing
 
-Every factual claim in a drafted entry — record/task counts, dataset sizes,
-dates, licences, "first / largest / only", and any statement of what a tool or
-method *does* — must be checked against the **full text of the source**, then
-revised until each one is grounded. Abstracts, dataset cards, and your own
-memory all omit and occasionally misstate; none is sufficient on its own.
+No new or changed entry is committed until a dedicated, **read-only** reviewer
+subagent has audited it. The reviewers cannot edit — they only return
+`SUPPORTED` / `UNSUPPORTED` / `CONTRADICTED` verdicts — and the agent that wrote
+an entry must never review it. There are two tracks, and a benchmark goes
+through both (its `Papers.md` ref and its `Datasets.md` / `Databases.md` entries).
 
-Mandatory for every new or changed entry, before it is committed:
+**Track 1 — `Papers.md` reference entries → `caail-citation-reviewer`.**
+A bibliographic-fidelity check against the version of record (Crossref +
+publisher): the title is the *article* title, not a benchmark/tool/project name;
+the author list, order, and initials are correct; the APA 21+-author rule lands
+on the genuine final author; year, venue, volume/issue/pages, and DOI all match;
+any `> **Code**:` repo is the paper's real repository. This is a metadata check —
+no source full text required.
 
-1. **Get the source full text.** For papers, prefer the caail Zotero library's
-   locally indexed full text (`get_fulltext` / the Zotero local API) over a
-   publisher fetch — it is the raw text, sidesteps `WebFetch`'s summarization
-   layer, and works for paywalled articles. For tools / datasets / webpages,
-   fetch the canonical page, README, or dataset card in full.
-2. **Adversarial review by a dedicated subagent.** Dispatch the project reviewer
-   subagent — `caail-citation-reviewer` for `Papers.md` reference entries
-   (bibliographic fields vs the version of record), `caail-claim-reviewer` for
-   every prose entry (each factual claim vs source full text). Give it the
-   drafted entry text and the source URLs/DOIs. These reviewers are read-only by
-   design — they cannot edit, only return `SUPPORTED` / `UNSUPPORTED` /
-   `CONTRADICTED` verdicts. The agent that wrote an entry must never review it.
-3. **Revise until clean.** Every flagged claim is corrected, softened to exactly
-   what the source supports, or deleted. Re-review if claims changed materially.
+**Track 2 — prose entries (`Datasets.md`, `Databases.md`, `Software.md`,
+`OtherResources.md`) → `caail-claim-reviewer`.**
+Every factual claim — counts, sizes, dates, licences, "first / largest / only",
+any statement of what a tool or method *does* — is checked against the **source
+full text**. Get that full text first: for a paper, prefer the caail Zotero
+library's locally indexed copy (`get_fulltext` / the Zotero local API) — raw
+text, no `WebFetch` summarization layer, paywall-free; for tools / datasets /
+webpages, fetch the canonical page, README, or dataset card in full. An abstract
+or dataset-card blurb is not sufficient.
+
+Dispatch the reviewer with the drafted entry text and the source URLs/DOIs, then
+**revise until clean** — every flagged item corrected, softened to exactly what
+the source supports, or deleted; re-review if anything changed materially.
 
 Recalled facts — "running since 1994", "the first to…", a remembered version
 number — are the highest-risk and the whole reason this step exists. A claim you
@@ -124,7 +129,7 @@ work **once**, citing the peer-reviewed version; suppress the preprint.
 | Trusting the script's MISSING list as-is | It flags identifier mismatches as missing. Verify each by name. |
 | Skipping the `Datasets.md`/`Databases.md` side of a benchmark | The triangle is mandatory; "general-CS benchmark" is not an exemption. |
 | Filing a Nature `d41586-` editorial in `Papers.md` Reviews | Editorials/news → `OtherResources.md` `## Editorials & Opinion`. |
-| Writing author initials from memory | Copy `creators` verbatim from the Zotero record. |
-| Writing a count, date, or "first/largest" from memory | Every specific claim is verified against source full text by a separate adversarial reviewer, or it is cut. |
-| Verifying a claim against only the abstract or dataset card | Abstracts omit and misstate. Verify against full text. |
+| Writing author initials from memory | Copy `creators` verbatim from the Zotero record; `caail-citation-reviewer` checks them against the Crossref record. |
+| Writing a count, date, or "first/largest" from memory | `caail-claim-reviewer` verifies every specific claim against source full text, or it is cut. |
+| Verifying a claim against only the abstract or dataset card | Abstracts omit and misstate. `caail-claim-reviewer` verifies against full text. |
 | Adding a reference without touching the matrix | Matrix + references change in one commit — the #1 CAAIL error. |
