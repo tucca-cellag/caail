@@ -12,8 +12,9 @@ members stash items there faster than they land in the markdown files. This
 skill reconciles the two. **The mechanical steps are scripted; the judgment
 steps are not — and the judgment is where it goes wrong.**
 
-`CLAUDE.md` is the schema source of truth. This skill is the *workflow*; it
-does not restate schema rules — read `CLAUDE.md` for them.
+`CLAUDE.md` is the schema source of truth (with `Datasets/CLAUDE.md` for the
+per-species data-page schema). This skill is the *workflow*; it does not restate
+schema rules — read `CLAUDE.md` for them.
 
 ## Procedure
 
@@ -51,16 +52,17 @@ does not restate schema rules — read `CLAUDE.md` for them.
 | Journal **editorial / news / News & Views** (e.g. Nature `d41586-` DOIs, usually unsigned) | `OtherResources.md` `## Editorials & Opinion` — **never** `Papers.md` |
 | Software / model / framework (`computerProgram`, or a paper whose subject is a tool that is *not* an AI method) | `Software.md` |
 | Vendor **documentation** webpage | fold as a link into the existing `Software.md` entry for that tool — no standalone entry |
-| Train-on data artifact | `Datasets.md` |
+| Train-on data artifact | the `Datasets/` directory — route to the matching species page, or to `HumanReference.md` / `CHOReference.md` / `Benchmarks.md` (see `Datasets/CLAUDE.md`) |
 | Repository / ontology / registry / directory / "database" | `Databases.md` |
 | Initiative / program / video / course | `OtherResources.md` |
 
 **Benchmark triangle is mandatory** (`CLAUDE.md` "Benchmark placement"). A
-benchmark gets a `Papers.md` ref **and** a `Datasets.md` entry for its data
-**and** a `Databases.md` entry if it has a live leaderboard. The `Datasets.md`
-entry does **not** require its own Zotero record — derive the canonical data
-home (HF dataset / GitHub) yourself. Do not skip the triangle because "it is a
-general-CS benchmark" or "there is no data record in Zotero."
+benchmark gets a `Papers.md` ref **and** a `Datasets/Benchmarks.md` entry for its
+data **and** a `Databases.md` entry if it has a live leaderboard. The
+`Datasets/Benchmarks.md` entry does **not** require its own Zotero record —
+derive the canonical data home (HF dataset / GitHub) yourself. Do not skip the
+triangle because "it is a general-CS benchmark" or "there is no data record in
+Zotero."
 
 A paper whose subject is a non-AI tool already catalogued in `Software.md`/
 `Databases.md` (e.g. the MS-DIAL or COBRApy method paper) is **not** a
@@ -80,7 +82,7 @@ No new or changed entry is committed until a dedicated, **read-only** reviewer
 subagent has audited it. The reviewers cannot edit — they only return
 `SUPPORTED` / `UNSUPPORTED` / `CONTRADICTED` verdicts — and the agent that wrote
 an entry must never review it. There are two tracks, and a benchmark goes
-through both (its `Papers.md` ref and its `Datasets.md` / `Databases.md` entries).
+through both (its `Papers.md` ref and its `Datasets/Benchmarks.md` / `Databases.md` entries).
 
 **Track 1 — `Papers.md` reference entries → `caail-citation-reviewer`.**
 A bibliographic-fidelity check against the version of record (Crossref +
@@ -90,7 +92,7 @@ on the genuine final author; year, venue, volume/issue/pages, and DOI all match;
 any `> **Code**:` repo is the paper's real repository. This is a metadata check —
 no source full text required.
 
-**Track 2 — prose entries (`Datasets.md`, `Databases.md`, `Software.md`,
+**Track 2 — prose entries (`Datasets/`, `Databases.md`, `Software.md`,
 `OtherResources.md`) → `caail-claim-reviewer`.**
 Every factual claim — counts, sizes, dates, licences, "first / largest / only",
 any statement of what a tool or method *does* — is checked against the **source
@@ -127,7 +129,7 @@ work **once**, citing the peer-reviewed version; suppress the preprint.
 |---|---|
 | Querying `items/top?limit=100` once | The library is >400 items. Paginate, or the script does it for you. |
 | Trusting the script's MISSING list as-is | It flags identifier mismatches as missing. Verify each by name. |
-| Skipping the `Datasets.md`/`Databases.md` side of a benchmark | The triangle is mandatory; "general-CS benchmark" is not an exemption. |
+| Skipping the `Datasets/Benchmarks.md`/`Databases.md` side of a benchmark | The triangle is mandatory; "general-CS benchmark" is not an exemption. |
 | Filing a Nature `d41586-` editorial in `Papers.md` Reviews | Editorials/news → `OtherResources.md` `## Editorials & Opinion`. |
 | Writing author initials from memory | Copy `creators` verbatim from the Zotero record; `caail-citation-reviewer` checks them against the Crossref record. |
 | Writing a count, date, or "first/largest" from memory | `caail-claim-reviewer` verifies every specific claim against source full text, or it is cut. |
