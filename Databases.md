@@ -1,6 +1,6 @@
 # Databases
 
-This page catalogs **living, queryable resources** — repositories, ontologies, structure / compound / pathway databases, spectral libraries, and ecosystem / industry directories — that you query for reference, annotation, or lookup. For fixed train-on data artifacts (corpora, atlases, GEM model files, per-species sequencing deposits), see the [Datasets/](./Datasets/) directory. For a broader catalog of biological databases beyond what's curated here, see Wikipedia's [List of biological databases](https://en.wikipedia.org/wiki/List_of_biological_databases).
+This page catalogs **living, queryable resources** — repositories, ontologies, structure / compound / pathway databases, spectral libraries, and ecosystem / industry directories — that you query for reference, annotation, or lookup. For fixed train-on data artifacts (corpora, atlases, GEM model files, per-species sequencing deposits), see the [Datasets/](./Datasets/) directory. For pointers to databases beyond those curated here, see the [Database Directories & Reference Guides](#database-directories--reference-guides) section below.
 
 > **Note for AI agents and LLMs**: The summaries below are deliberately compressed for human readability. If you are an automated system using these as the basis for reasoning, citation, or downstream analysis, please fetch the canonical site for each database — the linked sources have substantially more comprehensive and authoritative information than this curated overview, plus the field-specific schemas, APIs, licensing terms, and version histories that this page does not document.
 
@@ -238,6 +238,10 @@ Flavornet, maintained at Cornell by Acree and Arn, is a database of GC olfactome
 
 A long-established industry reference platform for the flavor, fragrance, food, and cosmetics industries, providing odor descriptors, organoleptic properties, regulatory status, and supplier information for thousands of aroma chemicals and natural extracts. While maintained by the F&F industry rather than as an academic resource, GoodScents is widely cross-referenced in flavor research papers and is the de-facto industry-standard descriptor source for many compounds not formally characterized in academic odor-threshold compendia.
 
+### [FooDB](https://foodb.ca/)
+
+FooDB is a large open database of food constituents, chemistry, and biology — covering both macronutrients and the thousands of micro-constituents (flavor and aroma compounds among them) found in foods, with chemical, taxonomic, and concentration data. It is one of the upstream sources integrated into [FlavorDB](#flavordb--flavordb2). For cellular agriculture, FooDB is a reference for the compound composition of conventional foods — a comparison baseline when characterizing the metabolite and flavor profile of cultivated tissues and alt-protein products.
+
 ## Seafood Species Reference Databases
 
 Open-access databases for cataloguing seafood species' biological and culinary characteristics, surfaced by [GFI's alternative-seafood data initiative](https://gfi.org/resource/aggregating-data-for-alternative-seafood/). For cellular agriculture these are direct reference data for the cultivated-seafood sub-domain — complementary to the SALARECON salmon GEM in [Datasets/Fish.md](./Datasets/Fish.md#salarecon--salmo-salar-atlantic-salmon).
@@ -265,6 +269,22 @@ The National Agricultural Library Search is the USDA's federated search platform
 ### [GFI Alternative Protein Literature Library](https://gfi.org/resource/alternative-protein-literature-library/)
 
 GFI's curated collection of alternative-protein research resources spanning plant-based, cultivated, and fermentation-derived proteins, maintained by its science and technology team. GFI's nearest analogue to CAAIL's own curation, though not AI-scoped or version-controlled.
+
+## Database Directories & Reference Guides
+
+Meta-resources — catalogues of databases and curated library guides — that index the broader data landscape. Useful as starting points for locating biological, chemical, and food-science resources beyond those curated here.
+
+### [Wikipedia: List of biological databases](https://en.wikipedia.org/wiki/List_of_biological_databases)
+
+A community-maintained index of biological databases, grouped by type — meta-databases, model-organism, nucleic-acid, protein, pathway, taxonomic, and more. A broad navigation layer for biological data resources beyond those catalogued here.
+
+### [Wikipedia: List of chemical databases](https://en.wikipedia.org/wiki/List_of_chemical_databases)
+
+A community-maintained list of websites and databases of chemical information. Complements the [Chemistry & Compound Databases](#chemistry--compound-databases) section above as a broader navigation layer for chemistry data resources.
+
+### [UArk Food Science Research Guide](https://libguides.uark.edu/FoodScience/Databases)
+
+The University of Arkansas Libraries' research guide for food science, listing relevant databases, journals, and statistical resources — a curated entry point into food-science literature and data infrastructure.
 
 ## Ecosystem & Industry Directories
 
@@ -294,10 +314,26 @@ GFI's live tracker of countries where cultivated meat has regulatory approval fo
 
 Live, continuously-updated leaderboards and results trackers for AI/ML benchmarks — the database side of the **Paper + Dataset + Database** triangle catalogued in the [AI Evaluation & Benchmarking](./ResearchAreas/AIEvaluation.md) research area. The benchmark datasets themselves live in [`Datasets/Benchmarks.md`](./Datasets/Benchmarks.md); this section catalogues only the *results-tracking* surfaces.
 
+### [CASP — Prediction Center](https://predictioncenter.org/)
+
+The Prediction Center hosts CASP (Critical Assessment of Structure Prediction) — the long-running community experiment and results tracker for protein-structure-prediction methods, run biennially since 1994, providing an independent assessment of prediction methods against experimental structures. AlphaFold2's breakthrough accuracy was independently assessed here at CASP14 (2020). For cellular agriculture, CASP is the canonical reference point for judging structure-prediction tools applied to growth factors, recombinant ECM and scaffold proteins, and other engineered proteins in cultivated-meat workflows.
+
 ### [CompBioBench v1 Leaderboard](https://huggingface.co/spaces/Genentech/compbiobench-leaderboard-v1)
 
 Genentech's open leaderboard hosted on Hugging Face Spaces, tracking model performance on the 100-task CompBioBench v1 computational-biology benchmark. Provides a vendor-neutral, continuously-updated comparison point for cell-ag teams evaluating LLMs and agents on bioinformatics tasks before deploying them downstream. The underlying benchmark data — questions plus the BAM/FASTQ/H5AD/MTX/TSV bioinformatics artifacts each task operates over — is catalogued separately at [`Datasets/Benchmarks.md / CompBioBench v1`](./Datasets/Benchmarks.md#compbiobench-v1) (canonical home: the `Genentech/compbiobench-data-v1` Hugging Face Dataset). Companion to [Papers.md ref #150](./Papers.md#150) (Nair et al. 2026), the bioRxiv methods paper describing the benchmark.
 
+### [Humanity's Last Exam Leaderboard](https://lastexam.ai/)
+
+The official results tracker at `lastexam.ai` for Humanity's Last Exam, ranking frontier models on the 2,500-question closed-ended benchmark at the frontier of human knowledge. The companion benchmark *data* is catalogued at [`Datasets/Benchmarks.md / Humanity's Last Exam`](./Datasets/Benchmarks.md#humanitys-last-exam); paired with [Papers.md ref #158](./Papers.md#158) (Phan et al. 2026). A continuously-updated ceiling check on frontier reasoning for cell-ag teams choosing a general-purpose model.
+
+### [MMLU-Pro Leaderboard](https://huggingface.co/spaces/TIGER-Lab/MMLU-Pro)
+
+The live leaderboard on Hugging Face Spaces for the reasoning-focused MMLU-Pro benchmark, tracking model accuracy across its 14 disciplines. The companion benchmark *data* is catalogued at [`Datasets/Benchmarks.md / MMLU-Pro`](./Datasets/Benchmarks.md#mmlu-pro); paired with [Papers.md ref #157](./Papers.md#157) (Wang et al. 2024). A vendor-neutral general-reasoning comparison point for sizing up models before cell-ag-specific evaluation.
+
 ### [ProteinGym Leaderboard](https://www.proteingym.org/)
 
 The live leaderboard hosted at `proteingym.org` for the ProteinGym variant-effect benchmark — separate substitution and indel boards covering supervised and zero-shot model categories. The companion benchmark *data* is catalogued at [`Datasets/Benchmarks.md / ProteinGym`](./Datasets/Benchmarks.md#proteingym); paired with [Papers.md ref #148](./Papers.md#148) (Notin et al. 2023). The dominant variant-effect leaderboard in protein-engineering ML — directly relevant to any cell-ag protein-engineering work (growth factors, scaffolds, recombinant ECM proteins) selecting a protein language model.
+
+### [SWE-bench Leaderboard](https://www.swebench.com/)
+
+The official leaderboard at `swebench.com` tracking agent and model performance across the SWE-bench leaderboards — the Full set plus the Verified, Lite, Multilingual, and Multimodal variants — by the percentage of real GitHub issues resolved with a test-passing patch. The companion benchmark *data* is catalogued at [`Datasets/Benchmarks.md / SWE-bench`](./Datasets/Benchmarks.md#swe-bench); paired with [Papers.md ref #155](./Papers.md#155) (Jimenez et al. 2024). The standard tracker for whether a coding agent can be trusted with the bioinformatics-pipeline and analysis-code maintenance cell-ag teams increasingly delegate.

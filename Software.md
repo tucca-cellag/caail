@@ -113,7 +113,7 @@ Project page: <https://openms.de/>. pyOpenMS docs: <https://pyopenms.readthedocs
 
 A modular, open-source platform for LC-MS / GC-MS / IMS-MS data processing, maintained by the Pluskal lab (University of Münster) and the international MZmine consortium. Schmid et al. 2023 (*Nat Biotech*) describes the v3 release with multimodal MS support (LC-MS, IMS-MS, MS-imaging). Provides feature detection, alignment, gap-filling, MS/MS networking integrations (GNPS / FBMN, SIRIUS), and a CLI for batch processing. Standard preprocessor for flavor and natural-products metabolomics workflows.
 
-Source: <https://github.com/mzmine/mzmine>.
+Source: <https://github.com/mzmine/mzmine>. News and releases from [mzio](https://mzio.io/), the team behind MZmine: <https://mzio.io/mzmine-news/>.
 
 ### [MS-DIAL](http://prime.psc.riken.jp/compms/msdial/main.html)
 
@@ -231,7 +231,7 @@ Summary: An agentic system for the design of virtual cell models from the [Gerst
 
 ### [AI Scientist](https://github.com/SakanaAI/AI-Scientist)
 
-Summary: Sakana AI's framework for fully automated open-ended scientific discovery via large language models, performing end-to-end idea generation, experimentation, and paper drafting. Version 2 ([SakanaAI/AI-Scientist-v2](https://github.com/SakanaAI/AI-Scientist-v2)) extends the system to workshop-level automated discovery via agentic tree search. Companion to Lu et al. 2024 ([Papers.md ref #45](./Papers.md#45)) and Yamada et al. 2025 ([Papers.md ref #47](./Papers.md#47)).
+Summary: Sakana AI's framework for fully automated open-ended scientific discovery via large language models, performing end-to-end idea generation, experimentation, and paper drafting. Version 2 ([SakanaAI/AI-Scientist-v2](https://github.com/SakanaAI/AI-Scientist-v2)) extends the system to workshop-level automated discovery via agentic tree search; the [AI-Scientist-ICLR2025-Workshop-Experiment](https://github.com/SakanaAI/AI-Scientist-ICLR2025-Workshop-Experiment) repository archives the run whose AI-generated paper passed peer review at an ICLR 2025 workshop. Companion to Lu et al. 2024 ([Papers.md ref #45](./Papers.md#45)) and Yamada et al. 2025 ([Papers.md ref #47](./Papers.md#47)).
 
 Project home: <https://sakana.ai/>.
 
@@ -240,6 +240,14 @@ Project home: <https://sakana.ai/>.
 Summary: An open-source retrieval-augmented generative agent for answering questions over scientific literature with verified citations, from the [FutureHouse](https://www.futurehouse.org/) research lab. Released as PaperQA in 2023 and substantially extended in PaperQA2 (2024), which achieves superhuman synthesis accuracy on literature questions. Companion to [Papers.md ref #44](./Papers.md#44) (PaperQA, Lála et al. 2023) and [ref #46](./Papers.md#46) (PaperQA2, Skarlinski et al. 2024).
 
 FutureHouse cookbook (docs): <https://futurehouse.gitbook.io/futurehouse-cookbook>. Commercial spinout — Edison Scientific: <https://edisonscientific.com/> ([docs](https://docs.edisonscientific.com)).
+
+### [Aviary](https://github.com/Future-House/aviary)
+
+Summary: A gymnasium of language-agent environments for challenging scientific tasks, from the [FutureHouse](https://www.futurehouse.org/) lab. Agents are framed as Language Decision Processes (LDP) and trained and evaluated against tasks spanning molecular cloning, scientific-literature QA, and protein stability — providing the reusable training-and-evaluation substrate beneath FutureHouse's task-specific agents. Companion to [Papers.md ref #160](./Papers.md#160) (Narayanan et al. 2024). Apache-2.0; built on the [LDP framework](https://docs.edisonscientific.com/ldp-language-decision-processes), with Aviary docs at <https://docs.edisonscientific.com/aviary>.
+
+### [Finch](https://github.com/Future-House/finch)
+
+Summary: An Aviary-based data-science agent that operates inside Jupyter notebooks, also from [FutureHouse](https://www.futurehouse.org/). It plans and executes notebook-based analyses, pairing the [Aviary](#aviary) environment with the kind of exploratory bioinformatics work — single-cell exploration, media-response analysis — that cell-ag teams increasingly delegate to notebook agents. Apache-2.0; no companion paper at time of curation.
 
 ### [K-Dense-AI](https://github.com/K-Dense-AI)
 
