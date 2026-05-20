@@ -58,6 +58,13 @@ The Good Food Institute (GFI) publishes the de-facto annual *State of the Indust
 * [2026 State of the Industry: Fermentation for meat, seafood, eggs, dairy, and ingredients](https://www.youtube.com/watch?v=eCBclCUZOg0) (GFI, 2026).
 * [2026 State of the Industry: Plant-based meat, seafood, eggs, dairy, and ingredients](https://www.youtube.com/watch?v=OEuehZB7YVM) (GFI, 2026).
 
+## Editorials & Opinion
+
+Journal editorials, news features, and opinion pieces that survey or comment on the state of AI in science and cellular agriculture — distinct from the peer-reviewed review and position papers in [Papers.md / Reviews & Perspectives](./Papers.md#reviews--perspectives). These are the field's running commentary: useful context on how the research community is framing AI's role, not primary research.
+
+* [Why AI cannot do good science without humans](https://www.nature.com/articles/d41586-026-01551-3) (*Nature* editorial, 2026) — argues that human wisdom, empathy, and "sheer messiness" remain as much a part of scientific progress as process and efficiency, even as "AI scientists" arrive.
+* [Teams of AI agents boost speed of research](https://www.nature.com/articles/d41586-026-01596-4) (*Nature* news feature, 2026) — overview of multi-agent AI systems that generate hypotheses, interpret data, and suggest ways to develop medicines.
+
 ## Cell-Ag Ecosystem Initiatives
 
 CAAIL's "adjacent universe" — complementary research programs and initiatives in cellular agriculture. CAAIL itself catalogues *outputs* (papers, software, datasets, educational material); these initiatives produce primary outputs (datasets, working papers) that become cataloguable in CAAIL's core files as they are published. The corresponding *directories and databases* maintained by these organizations live in [Databases.md / Ecosystem & Industry Directories](./Databases.md#ecosystem--industry-directories) and related sections.
