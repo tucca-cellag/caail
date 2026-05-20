@@ -92,7 +92,7 @@ Genentech's 100-task benchmark for evaluating agentic systems on verifiable comp
 
 ### [FrontierScience](https://huggingface.co/datasets/openai/frontierscience)
 
-OpenAI's benchmark for expert-level scientific reasoning, released as the Hugging Face dataset `openai/frontierscience`. It has two tracks: an **Olympiad** track of IPhO/IChO/IBO-level problems, and a **Research** track of PhD-level, open-ended problems representative of real scientific research sub-tasks — built to resist the saturation that has flattened earlier multiple-choice science benchmarks. Companion to [Papers.md ref #159](./Papers.md#159) (Wang et al. 2026). For cell-ag teams, a frontier check on whether a general-purpose model has the scientific-reasoning depth to be trusted on novel experimental design and analysis rather than recall.
+OpenAI's benchmark for expert-level scientific reasoning, released as the Hugging Face dataset `openai/frontierscience`. It has two tracks: an **Olympiad** track of IPhO/IChO/IBO-level problems, and a **Research** track of PhD-level, open-ended problems representative of sub-tasks in scientific research — built to resist the saturation that has flattened earlier multiple-choice science benchmarks. Companion to [Papers.md ref #159](./Papers.md#159) (Wang et al. 2026). For cell-ag teams, a frontier check on whether a general-purpose model has the scientific-reasoning depth to be trusted on novel experimental design and analysis rather than recall.
 
 ### [GPQA](https://huggingface.co/datasets/Idavidrein/gpqa)
 

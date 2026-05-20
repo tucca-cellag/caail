@@ -294,7 +294,7 @@ Live, continuously-updated leaderboards and results trackers for AI/ML benchmark
 
 ### [CASP — Prediction Center](https://predictioncenter.org/)
 
-The Prediction Center hosts CASP (Critical Assessment of Structure Prediction) — the long-running community experiment and results tracker for protein-structure-prediction methods, run biennially since 1994 and the independent proving ground where AlphaFold's accuracy was first established. For cellular agriculture, CASP is the canonical reference point for judging structure-prediction tools applied to growth factors, recombinant ECM and scaffold proteins, and other engineered proteins in cultivated-meat workflows.
+The Prediction Center hosts CASP (Critical Assessment of Structure Prediction) — the long-running community experiment and results tracker for protein-structure-prediction methods, run biennially since 1994, providing an independent assessment of prediction methods against experimental structures. AlphaFold2's breakthrough accuracy was independently assessed here at CASP14 (2020). For cellular agriculture, CASP is the canonical reference point for judging structure-prediction tools applied to growth factors, recombinant ECM and scaffold proteins, and other engineered proteins in cultivated-meat workflows.
 
 ### [CompBioBench v1 Leaderboard](https://huggingface.co/spaces/Genentech/compbiobench-leaderboard-v1)
 
@@ -314,4 +314,4 @@ The live leaderboard hosted at `proteingym.org` for the ProteinGym variant-effec
 
 ### [SWE-bench Leaderboard](https://www.swebench.com/)
 
-The official leaderboard at `swebench.com` tracking agent and model performance on SWE-bench and its variants (Verified, Lite, Multimodal) — the percentage of real GitHub issues resolved with a test-passing patch. The companion benchmark *data* is catalogued at [`Datasets.md / SWE-bench`](./Datasets.md#swe-bench); paired with [Papers.md ref #155](./Papers.md#155) (Jimenez et al. 2024). The standard tracker for whether a coding agent can be trusted with the bioinformatics-pipeline and analysis-code maintenance cell-ag teams increasingly delegate.
+The official leaderboard at `swebench.com` tracking agent and model performance on SWE-bench and its variants (Verified, Lite, Multilingual, Multimodal) — the percentage of real GitHub issues resolved with a test-passing patch. The companion benchmark *data* is catalogued at [`Datasets.md / SWE-bench`](./Datasets.md#swe-bench); paired with [Papers.md ref #155](./Papers.md#155) (Jimenez et al. 2024). The standard tracker for whether a coding agent can be trusted with the bioinformatics-pipeline and analysis-code maintenance cell-ag teams increasingly delegate.
