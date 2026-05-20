@@ -30,6 +30,8 @@ If you're an AI agent running on a TUCCA member's machine and you need to classi
 
 If the paper isn't in the Zotero library, fall back to Crossref / arXiv / scite for metadata and flag the classification confidence as lower.
 
+For the recurring task of reconciling the whole repo against the Zotero library — finding everything in Zotero not yet catalogued and adding it in schema-correct form — use the project skill **`zotero-to-caail-sync`** (`.claude/skills/zotero-to-caail-sync/`). It paginates and de-duplicates the full library, classifies each gap to its target file, and routes every drafted entry through two read-only adversarial reviewer subagents (`caail-citation-reviewer` and `caail-claim-reviewer`, in `.claude/agents/`) that verify it against the version of record before commit.
+
 ## Repository layout
 
 ```text
@@ -38,7 +40,7 @@ Papers.md              Peer-reviewed papers (matrix + numbered references)
 Software.md            Open-source tools grouped by application area
 Datasets.md            Train-on data artifacts (corpora, atlases, GEMs)
 Databases.md           Query/lookup resources (repositories, ontologies, directories)
-OtherResources.md      Videos and other educational material (flat list)
+OtherResources.md      Videos, editorials & opinion, initiatives, curated bibliographies
 ResearchAreas/         Per-area deep-dive pages
   Bioprocess.md
   CellEngineering.md
@@ -122,13 +124,13 @@ All entries cross-link via the established `Companion to [Papers.md ref #N]` con
 
 ### `OtherResources.md`
 
-Flat unordered list, one bullet per resource:
+A multi-section page for resources that don't belong in the cataloguing files — videos, field overviews, ecosystem initiatives, curated bibliographies, and journal editorials, news, and opinion pieces about the field. Each section is a flat unordered list:
 
 ```markdown
 * [<Title>](<URL>)
 ```
 
-Currently a YouTube section; add new sections (e.g. `## Podcasts`, `## Courses`) as additional categories accumulate rather than overloading the existing list.
+`## Editorials & Opinion` holds journal editorials, news features, and commentary on AI in science / cellular agriculture (e.g. unsigned Nature `d41586-`-prefix items) — deliberately distinct from `Papers.md`'s `## Reviews & Perspectives`, which is reserved for signed, substantive review and position papers cited as numbered references. Add new sections as categories accumulate rather than overloading an existing list.
 
 ### `ResearchAreas/<Area>.md`
 

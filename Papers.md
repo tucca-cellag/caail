@@ -18,13 +18,13 @@ This document presents the core research papers at the intersection of Cellular 
 | [Foundation Models: LM + Biological Priors](#119) | | [Rosen et al. 2024](#118)<br>[Littman et al. 2025](#123)<br>[Rosen et al. 2026](#119) | | | | | |
 | [Foundation Models: Cell-State & Perturbation Prediction](#57) | | [Roohani et al. 2024](#121)<br>[Magnusson et al. 2024](#122)<br>[Adduri et al. 2025](#57)<br>[Dong et al. 2026](#124) | | | | | |
 | [Foundation Models (other modalities)](https://en.wikipedia.org/wiki/Foundation_model) | | | | | | [Sypetkowski et al. 2026](#42)<br>[Su et al. 2026](#88)<br>[Ding et al. 2026](#91) | |
-| [Scientific Literature & Discovery Agents](./ResearchAreas/AITooling.md#scientific-literature--discovery-agents) | | | | | | [Lála et al. 2023](#44)<br>[Lu et al. 2024](#45)<br>[Skarlinski et al. 2024](#46)<br>[Yamada et al. 2025](#47)<br>[Liu et al. 2026](#53) | |
+| [Scientific Literature & Discovery Agents](./ResearchAreas/AITooling.md#scientific-literature--discovery-agents) | | | | | | [Lála et al. 2023](#44)<br>[Lu et al. 2024](#45)<br>[Skarlinski et al. 2024](#46)<br>[Yamada et al. 2025](#47)<br>[Liu et al. 2026](#53)<br>[Gottweis et al. 2026](#153)<br>[Ghareeb et al. 2026](#154) | |
 | [General-Purpose Biomedical Agents](./ResearchAreas/AITooling.md#general-purpose-biomedical-agents) | | | | | | [Dong et al. 2024](#98)<br>[Gao et al. 2025a](#40)<br>[Huang et al. 2025](#49)<br>[Pickard et al. 2025](#94)<br>[Riffle et al. 2025](#95)<br>[Jin et al. 2025](#96) | |
-| [Chemistry / Synthesis Agents](./ResearchAreas/AITooling.md#chemistry--synthesis-agents) | | | | | | [Boiko et al. 2023](#70)<br>[Bran et al. 2024](#71) | |
+| [Chemistry / Synthesis Agents](./ResearchAreas/AITooling.md#chemistry--synthesis-agents) | | | | | | [Boiko et al. 2023](#70)<br>[Bran et al. 2024](#71)<br>[Narayanan et al. 2025](#161) | |
 | [Domain-Specific Biomedical Agents](./ResearchAreas/AITooling.md#domain-specific-biomedical-agents) | | [Hao et al. 2025](#97)<br>[Roohani et al. 2025a](#125)<br>[Youngblut et al. 2025](#126)<br>[Yu et al. 2026](#90)<br>[Tang et al. 2026](#93) | | | | [Singh et al. 2023](#66)<br>[Maeda & Kurata 2023](#69)<br>[Li et al. 2024](#68)<br>[Lee et al. 2025](#43)<br>[Wehling et al. 2025](#50)<br>[Ying et al. 2025](#54)<br>[Wang et al. 2025a](#56)<br>[Sui et al. 2026](#51)<br>[Gu et al. 2024a](#151)<br>[Gu et al. 2024b](#152) | |
 | [Robot Scientists & Lab Automation](https://en.wikipedia.org/wiki/Robot_scientist) | | | [Wang et al. 2025b](#61)<br>[Qiu et al. 2025](#62) | | | [Tiukova et al. 2024](#64)<br>[Brunnsåker et al. 2025](#65) | |
-| [Benchmarks & Evaluation Frameworks](./ResearchAreas/AIEvaluation.md#benchmarks--evaluation-frameworks) | | | | | | | [Sadhuka et al. 2025](#55)<br>[Brouwer et al. 2026](#89)<br>[Mitchener et al. 2025](#108)<br>[Bushuiev et al. 2024](#109)<br>[Sze & Hassoun 2024](#110)<br>[Boiarsky et al. 2024](#113)<br>[Yang et al. 2024](#114)<br>[Chevalley et al. 2025](#127)<br>[Laurent et al. 2024](#146)<br>[Gu et al. 2025](#147)<br>[Notin et al. 2023](#148)<br>[Duan et al. 2025](#149)<br>[Nair et al. 2026](#150) |
-| [Agent Infrastructure (Frameworks, KGs, Protocols)](./ResearchAreas/AITooling.md#agent-infrastructure-frameworks-kgs-protocols) | | | | | | [Gao et al. 2025b](#41)<br>[Lobentanzer et al. 2025](#48)<br>[Ruscone et al. 2025](#67)<br>[Kuehl et al. 2025](#133) | |
+| [Benchmarks & Evaluation Frameworks](./ResearchAreas/AIEvaluation.md#benchmarks--evaluation-frameworks) | | | | | | | [Sadhuka et al. 2025](#55)<br>[Brouwer et al. 2026](#89)<br>[Mitchener et al. 2025](#108)<br>[Bushuiev et al. 2024](#109)<br>[Sze & Hassoun 2024](#110)<br>[Boiarsky et al. 2024](#113)<br>[Yang et al. 2024](#114)<br>[Chevalley et al. 2025](#127)<br>[Laurent et al. 2024](#146)<br>[Gu et al. 2025](#147)<br>[Notin et al. 2023](#148)<br>[Duan et al. 2025](#149)<br>[Nair et al. 2026](#150)<br>[Jimenez et al. 2024](#155)<br>[Rein et al. 2023](#156)<br>[Wang et al. 2024](#157)<br>[Phan et al. 2026](#158)<br>[Wang et al. 2026](#159) |
+| [Agent Infrastructure (Frameworks, KGs, Protocols)](./ResearchAreas/AITooling.md#agent-infrastructure-frameworks-kgs-protocols) | | | | | | [Gao et al. 2025b](#41)<br>[Lobentanzer et al. 2025](#48)<br>[Ruscone et al. 2025](#67)<br>[Kuehl et al. 2025](#133)<br>[Narayanan et al. 2024](#160) | |
 
 > **Note for AI agents and LLMs**: The reference entries below are APA-style citations identifying papers via title, authors, year, and DOI — they are not a substitute for reading the actual papers. When an automated system needs substantive information about a paper's methods, results, or conclusions (e.g. to verify a matrix-cell assignment or assemble a literature review), fetch the full text via the DOI, the companion [caail Zotero group library](https://www.zotero.org/groups/6549203/caail/library), or a literature API such as OpenAlex or Semantic Scholar. The matrix cells encode method × research-area pairings, not paper content.
 
@@ -345,6 +345,38 @@ This document presents the core research papers at the intersection of Cellular 
 <a id="151">151</a> Gu, K., Shang, R., Althoff, T., Wang, C., & Drucker, S. M. (2024). How Do Analysts Understand and Verify AI-Assisted Data Analyses? *Proceedings of the 2024 CHI Conference on Human Factors in Computing Systems,* 1–22. https://doi.org/10.1145/3613904.3642497
 
 <a id="152">152</a> Gu, K., Grunde-McLaughlin, M., McNutt, A., Heer, J., & Althoff, T. (2024). How Do Data Analysts Respond to AI Assistance? A Wizard-of-Oz Study. *Proceedings of the 2024 CHI Conference on Human Factors in Computing Systems,* 1–22. https://doi.org/10.1145/3613904.3641891
+
+<a id="153">153</a> Gottweis, J., Weng, W.-H., Daryin, A., Tu, T., Sirkovic, P., Myaskovsky, A., Glowaty, G., Weissenberger, F., Orlandi, A., Popovici, D., Palepu, A., Rong, K., Tanno, R., Saab, K., Zhang, F., Blum, J., Carroll, A., Kulkarni, K., Tomašev, N., ... Natarajan, V. (2026). Accelerating scientific discovery with Co-Scientist. *Nature.* https://doi.org/10.1038/s41586-026-10644-y
+
+<a id="154">154</a> Ghareeb, A. E., Chang, B., Mitchener, L., Yiu, A., Szostkiewicz, C. J., Shved, D., Gyimesi, G. J., Laurent, J. M., Wright, S. M., Razzak, M. T., White, A. D., Finnemann, S. C., Hinks, M. M., & Rodriques, S. G. (2026). A multi-agent system for automating scientific discovery [Robin]. *Nature.* https://doi.org/10.1038/s41586-026-10652-y
+
+> **Code**: https://github.com/Future-House/robin
+
+<a id="155">155</a> Jimenez, C. E., Yang, J., Wettig, A., Yao, S., Pei, K., Press, O., & Narasimhan, K. (2024). *SWE-bench: Can Language Models Resolve Real-World GitHub Issues?* arXiv. https://doi.org/10.48550/arXiv.2310.06770
+
+> **Code**: https://github.com/SWE-bench/SWE-bench
+
+<a id="156">156</a> Rein, D., Hou, B. L., Stickland, A. C., Petty, J., Pang, R. Y., Dirani, J., Michael, J., & Bowman, S. R. (2023). *GPQA: A Graduate-Level Google-Proof Q&A Benchmark.* arXiv. https://doi.org/10.48550/arXiv.2311.12022
+
+> **Code**: https://github.com/idavidrein/gpqa
+
+<a id="157">157</a> Wang, Y., Ma, X., Zhang, G., Ni, Y., Chandra, A., Guo, S., Ren, W., Arulraj, A., He, X., Jiang, Z., Li, T., Ku, M., Wang, K., Zhuang, A., Fan, R., Yue, X., & Chen, W. (2024). *MMLU-Pro: A More Robust and Challenging Multi-Task Language Understanding Benchmark.* arXiv. https://doi.org/10.48550/arXiv.2406.01574
+
+> **Code**: https://github.com/TIGER-AI-Lab/MMLU-Pro
+
+<a id="158">158</a> Center for AI Safety, Phan, L., Gatti, A., Li, N., Khoja, A., Kim, R., Ren, R., Hausenloy, J., Zhang, O., Mazeika, M., Hendrycks, D., Scale AI, Han, Z., Hu, J., Zhang, H., Zhang, C. B. C., Shaaban, M., Ling, J., Shi, S., ... Scaramuzza, D. (2026). A benchmark of expert-level academic questions to assess AI capabilities [Humanity's Last Exam]. *Nature, 649*(8099), 1139–1146. https://doi.org/10.1038/s41586-025-09962-4
+
+> **Code**: https://github.com/centerforaisafety/hle
+
+<a id="159">159</a> Wang, M., Lin, R., Hu, K., Jiao, J., Chowdhury, N., Chang, E., & Patwardhan, T. (2026). *FrontierScience: Evaluating AI's Ability to Perform Expert-Level Scientific Tasks.* arXiv. https://doi.org/10.48550/arXiv.2601.21165
+
+<a id="160">160</a> Narayanan, S., Braza, J. D., Griffiths, R.-R., Ponnapati, M., Bou, A., Laurent, J., Kabeli, O., Wellawatte, G., Cox, S., Rodriques, S. G., & White, A. D. (2024). *Aviary: Training Language Agents on Challenging Scientific Tasks.* arXiv. https://doi.org/10.48550/arXiv.2412.21154
+
+> **Code**: https://github.com/Future-House/aviary
+
+<a id="161">161</a> Narayanan, S. M., Braza, J. D., Griffiths, R.-R., Bou, A., Wellawatte, G., Ramos, M. C., Mitchener, L., Rodriques, S. G., & White, A. D. (2025). *Training a Scientific Reasoning Model for Chemistry* [ether0]. arXiv. https://doi.org/10.48550/arXiv.2506.17238
+
+> **Code**: https://github.com/Future-House/ether0
 
 ## Sensory & Flavor Reference Work
 

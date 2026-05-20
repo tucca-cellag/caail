@@ -1,0 +1,6 @@
+# Local Claude Code worktrees — not part of the library
+.claude/worktrees/
+
+# Python bytecode
+__pycache__/
+*.pyc
