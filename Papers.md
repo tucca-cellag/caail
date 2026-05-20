@@ -364,7 +364,7 @@ This document presents the core research papers at the intersection of Cellular 
 
 > **Code**: https://github.com/TIGER-AI-Lab/MMLU-Pro
 
-<a id="158">158</a> Phan, L., Gatti, A., Han, Z., Li, N., Hu, J., Zhang, H., Zhang, C. B. C., Shaaban, M., Ling, J., Shi, S., Choi, M., Agrawal, A., Chopra, A., Khoja, A., Kim, R., Ren, R., Hausenloy, J., Zhang, O., Mazeika, M., ... Hendrycks, D. (2026). Humanity's Last Exam. *Nature, 649*(8099), 1139–1146. https://doi.org/10.1038/s41586-025-09962-4
+<a id="158">158</a> Center for AI Safety, Phan, L., Gatti, A., Li, N., Khoja, A., Kim, R., Ren, R., Hausenloy, J., Zhang, O., Mazeika, M., Hendrycks, D., Scale AI, Han, Z., Hu, J., Zhang, H., Zhang, C. B. C., Shaaban, M., Ling, J., Shi, S., ... Scaramuzza, D. (2026). A benchmark of expert-level academic questions to assess AI capabilities [Humanity's Last Exam]. *Nature, 649*(8099), 1139–1146. https://doi.org/10.1038/s41586-025-09962-4
 
 > **Code**: https://github.com/centerforaisafety/hle
 
