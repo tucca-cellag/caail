@@ -84,9 +84,11 @@ memory all omit and occasionally misstate; none is sufficient on its own.
 
 Mandatory for every new or changed entry, before it is committed:
 
-1. **Get the source full text.** Papers: Zotero `get_fulltext` on the attached
-   PDF. Tools / datasets / webpages: fetch the canonical page, README, or
-   dataset card in full.
+1. **Get the source full text.** For papers, prefer the caail Zotero library's
+   locally indexed full text (`get_fulltext` / the Zotero local API) over a
+   publisher fetch — it is the raw text, sidesteps `WebFetch`'s summarization
+   layer, and works for paywalled articles. For tools / datasets / webpages,
+   fetch the canonical page, README, or dataset card in full.
 2. **Adversarial review by a dedicated subagent.** Dispatch the project reviewer
    subagent — `caail-citation-reviewer` for `Papers.md` reference entries
    (bibliographic fields vs the version of record), `caail-claim-reviewer` for

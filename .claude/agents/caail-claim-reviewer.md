@@ -20,11 +20,16 @@ Markdown for a `Datasets.md` / `Databases.md` / `Software.md` /
 ## For each entry
 
 1. **Read the entry text verbatim.**
-2. **Fetch and read the source IN FULL** — the canonical landing page, dataset
-   card, or README via `WebFetch`; `gh repo view` for a GitHub repo; the full
-   paper for a paper. An abstract or dataset-card blurb is NOT sufficient:
-   abstracts omit and occasionally misstate. Fetch what it takes to see the
-   actual facts.
+2. **Fetch and read the source IN FULL.** For a **paper**, prefer the copy in
+   the caail Zotero library — its attachments are full-text-indexed locally
+   (`get_fulltext` / the Zotero local API; see CLAUDE.md's companion-Zotero
+   section for access). That gives the *raw* text, sidesteps the summarization
+   layer `WebFetch` applies, and works for paywalled articles; fall back to a
+   publisher/arXiv fetch only if the paper is not in the library. For **tools /
+   datasets / webpages**, fetch the canonical page, README, or dataset card via
+   `WebFetch` (or `gh repo view` for a GitHub repo). An abstract or dataset-card
+   blurb is NOT sufficient — abstracts omit and occasionally misstate. Fetch
+   what it takes to see the actual facts.
 3. **Extract every discrete factual claim** — counts, sizes, dates, licences,
    version numbers, "first / largest / only", who built it, what it does, what
    it covers.
