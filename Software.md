@@ -18,6 +18,10 @@ Summary: This is a collection of links to Protein Language Models, which are mod
 
 Summary: Search large protein databases using monomers and multimers. Can be used to find known structures to infer function or guide engineering efforts of a new or target protein.
 
+### [amii-cell-ag-tools](https://github.com/Amii-Applied-AI/amii-cell-ag-tools)
+
+Summary: Open-source applied AI research code from the Alberta Machine Intelligence Institute (Amii) targeting cellular agriculture, hosted under the `Amii-Applied-AI` GitHub organization. The repository collects two Python subprojects: `protein-thermostability-data-tools` (code used in the development of a public protein thermostability dataset) and `active-learning-for-cell-media` (active-learning analysis applied to cell media optimization). MIT-licensed.
+
 ## Bioprocess Modeling & Scaling
 This category includes simulation and modeling tools for optimizing the  bioreactor environment.
 
