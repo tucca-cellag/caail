@@ -12,3 +12,4 @@ No individual cultivated-meat data deposits are catalogued for duck yet. Contrib
 - Sequence & expression repositories: [GEO](../Databases.md#nih-gene-expression-omnibus-geo), [SRA](../Databases.md#nih-sequence-read-archive-sra), [Ensembl](../Databases.md#ensembl) (*Anas platyrhynchos* genome assembly).
 - Cross-species modeling tooling: [TranscriptFormer](../Software.md#transcriptformer) and [UCE](../Software.md#uce) in `Software.md` — especially useful where labelled species data is sparse.
 - Related avian page: [Chicken](./Chicken.md). Adjacent research areas: [Cellular Engineering](../ResearchAreas/CellEngineering.md), [Bioprocess Control](../ResearchAreas/Bioprocess.md).
+- Reference substrates: [HumanReference](./HumanReference.md), [CHOReference](./CHOReference.md), [CrossSpecies](./CrossSpecies.md). AI/ML benchmarks: [Benchmarks](./Benchmarks.md).

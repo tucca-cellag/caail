@@ -68,4 +68,4 @@ A curated snapshot spanning many finfish species. NCBI / EBI / Mendeley accessio
 - Seafood species references: [PISCES](../Databases.md#pisces--phylogenetic-index-of-seafood-characteristics) and [ATLAS](../Databases.md#atlas--archetype-library-for-alternative-seafood) in `Databases.md`.
 - Sequence & expression repositories: [GEO](../Databases.md#nih-gene-expression-omnibus-geo), [SRA](../Databases.md#nih-sequence-read-archive-sra), [Ensembl](../Databases.md#ensembl), [GenBank](../Databases.md#nih-genbank) — the canonical living indexes for the deposits curated here.
 - Cross-species modeling tooling: [TranscriptFormer](../Software.md#transcriptformer) and [UCE](../Software.md#uce) in `Software.md`.
-- Reference substrates: [HumanReference](./HumanReference.md), [CHOReference](./CHOReference.md). AI/ML benchmarks: [Benchmarks](./Benchmarks.md).
+- Reference substrates: [HumanReference](./HumanReference.md), [CHOReference](./CHOReference.md), [CrossSpecies](./CrossSpecies.md). AI/ML benchmarks: [Benchmarks](./Benchmarks.md).
