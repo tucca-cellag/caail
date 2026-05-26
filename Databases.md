@@ -1,6 +1,6 @@
 # Databases
 
-This page catalogs **living, queryable resources** — repositories, ontologies, structure / compound / pathway databases, spectral libraries, and ecosystem / industry directories — that you query for reference, annotation, or lookup. For fixed train-on data artifacts (corpora, atlases, GEM model files), see [Datasets.md](./Datasets.md). For pointers to databases beyond those curated here, see the [Database Directories & Reference Guides](#database-directories--reference-guides) section below.
+This page catalogs **living, queryable resources** — repositories, ontologies, structure / compound / pathway databases, spectral libraries, and ecosystem / industry directories — that you query for reference, annotation, or lookup. For fixed train-on data artifacts (corpora, atlases, GEM model files, per-species sequencing deposits), see the [Datasets/](./Datasets/) directory. For pointers to databases beyond those curated here, see the [Database Directories & Reference Guides](#database-directories--reference-guides) section below.
 
 > **Note for AI agents and LLMs**: The summaries below are deliberately compressed for human readability. If you are an automated system using these as the basis for reasoning, citation, or downstream analysis, please fetch the canonical site for each database — the linked sources have substantially more comprehensive and authoritative information than this curated overview, plus the field-specific schemas, APIs, licensing terms, and version histories that this page does not document.
 
@@ -38,15 +38,15 @@ The Farm Animal Genotype–Tissue Expression project — an international consor
 
 ### [PigGTEx-Portal](https://piggtex.farmgtex.org/)
 
-Pig sub-portal of the FarmGTEx consortium, providing browse and query access to multi-tissue expression QTL (eQTL), splice QTL (sQTL), and related molecular-QTL maps across pig tissues. Companion to [Papers.md ref #135](./Papers.md#135) (Teng et al. 2024, *Nature Genetics*) and complemented by [PigBiobank](#pigbiobank) for trait-data integration.
+Pig sub-portal of the FarmGTEx consortium, providing browse and query access to multi-tissue expression QTL (eQTL), splice QTL (sQTL), and related molecular-QTL maps across pig tissues. Companion to [Papers.md ref #135](./Papers.md#135) (Teng et al. 2024, *Nature Genetics*) and complemented by [PigBiobank](#pigbiobank) for trait-data integration. Cross-referenced from [Datasets/Pig.md](./Datasets/Pig.md).
 
 ### [ChickenGTEx-Portal](https://chicken.farmgtex.org/)
 
-Chicken sub-portal of FarmGTEx, providing multi-tissue genetic-regulation maps across chicken tissues — the first GTEx-style resource for a non-mammalian amniote livestock species, directly useful for cultivated-chicken cell-line engineering work. Companion to [Papers.md ref #136](./Papers.md#136) (Guan et al. 2025, *Nature Genetics*).
+Chicken sub-portal of FarmGTEx, providing multi-tissue genetic-regulation maps across chicken tissues — the first GTEx-style resource for a non-mammalian amniote livestock species, directly useful for cultivated-chicken cell-line engineering work. Companion to [Papers.md ref #136](./Papers.md#136) (Guan et al. 2025, *Nature Genetics*). Cross-referenced from [Datasets/Chicken.md](./Datasets/Chicken.md).
 
 ### [CattleGTEx](https://ngdc.cncb.ac.cn/cattleca/home)
 
-Cattle sub-portal of FarmGTEx, providing bulk and single-cell multi-tissue expression atlases for cattle (*Bos taurus*) — directly relevant to cultivated-beef cell-line characterization and engineering. Companion to [Papers.md ref #137](./Papers.md#137) (Han et al. 2025, *Nature Genetics*, the single-cell atlas paper).
+Cattle sub-portal of FarmGTEx, providing bulk and single-cell multi-tissue expression atlases for cattle (*Bos taurus*) — directly relevant to cultivated-beef cell-line characterization and engineering. Companion to [Papers.md ref #137](./Papers.md#137) (Han et al. 2025, *Nature Genetics*, the single-cell atlas paper). Cross-referenced from [Datasets/Cow.md](./Datasets/Cow.md).
 
 ### [FarmGTEx TWAS-Server](https://twas.farmgtex.org/)
 
@@ -54,17 +54,23 @@ Server providing transcriptome-wide association study (TWAS) analyses across the
 
 ### [PigBiobank](https://pigbiobank.farmgtex.org/)
 
-Trait-data biobank coordinated with PigGTEx, integrating phenotypic, genotypic, and expression data on diverse pig traits — complementary to PigGTEx-Portal's molecular-QTL focus. Companion to [Papers.md ref #139](./Papers.md#139) (Zeng et al. 2024, *Nucleic Acids Research*).
+Trait-data biobank coordinated with PigGTEx, integrating phenotypic, genotypic, and expression data on diverse pig traits — complementary to PigGTEx-Portal's molecular-QTL focus. Companion to [Papers.md ref #139](./Papers.md#139) (Zeng et al. 2024, *Nucleic Acids Research*). Cross-referenced from [Datasets/Pig.md](./Datasets/Pig.md).
 
 ### [FAANG (Functional Annotation of Animal Genomes)](https://www.faang.org/)
 
 A global research consortium and resource network for functional annotation of farmed-animal genomes, paralleling ENCODE for human/mouse but focused on livestock species. Predates FarmGTEx and provides the broader functional-annotation substrate (chromatin state, regulatory elements, etc.) that FarmGTEx expression-genetics work builds on. Companion to [Papers.md ref #144](./Papers.md#144) (Clark et al. 2020, *Genome Biology*).
 
-Major FAANG sub-projects, each a source of the functional-annotation data the consortium aggregates:
+### [AQUA-FAANG](https://www.aqua-faang.eu/)
 
-* [BovReg](https://bovreg.eu/) — functional annotation of the cattle genome ([FAANG project page](https://data.faang.org/projects/BovReg)).
-* [GENE-SWitCH](https://www.gene-switch.eu/) — the regulatory genome of swine and chicken, functionally annotated across development ([FAANG project page](https://data.faang.org/projects/GENE-SWitCH)).
-* [AQUA-FAANG](https://www.aqua-faang.eu/) — genome functional annotation advancing European aquaculture, covering the major farmed-fish species ([FAANG project page](https://data.faang.org/projects/AQUA-FAANG)).
+The FAANG consortium's aquaculture programme — *Advancing European Aquaculture by Genome Functional Annotation* — generating genome-wide functional annotation maps for six aquaculture species important to European aquaculture (Atlantic salmon, rainbow trout, European sea bass, gilthead sea bream, common carp, turbot). The [data hub](https://data.faang.org/projects/AQUA-FAANG) hosts the project's open releases (55 datasets at time of curation, spanning RNA-seq, ATAC-seq, and ChIP-seq). A FAANG functional-annotation substrate for aquaculture-cell-line work, paralleling FarmGTEx for terrestrial livestock. Cross-referenced from [Datasets/Fish.md](./Datasets/Fish.md).
+
+### [BovReg](https://bovreg.eu/)
+
+The FAANG consortium's cattle functional-annotation project, generating maps of functionally active genomic features in cattle (*Bos taurus*). The [data hub](https://data.faang.org/projects/BovReg) hosts the open releases (4 datasets at time of curation). Complementary to [CattleGTEx](#cattlegtex) for cell-ag-relevant cattle-cell engineering and atlas work — particularly useful as a regulatory-element substrate for cultivated-beef cell-line characterisation. Cross-referenced from [Datasets/Cow.md](./Datasets/Cow.md).
+
+### [GENE-SWitCH](https://www.gene-switch.eu/)
+
+The FAANG consortium's pig + chicken project — *the regulatory GENomE of SWine and CHicken: functional annotation during development*. The [data hub](https://data.faang.org/projects/GENE-SWitCH) hosts the open releases (19 datasets at time of curation, covering pig and chicken functional genomes during development). Substrate for cultivated-pork and cultivated-chicken developmental-biology and lineage-engineering work; complementary to [PigGTEx-Portal](#piggtex-portal) and [ChickenGTEx-Portal](#chickengtex-portal). Cross-referenced from [Datasets/Pig.md](./Datasets/Pig.md) and [Datasets/Chicken.md](./Datasets/Chicken.md).
 
 ## Protein & Structure Databases
 
@@ -238,7 +244,7 @@ FooDB is a large open database of food constituents, chemistry, and biology — 
 
 ## Seafood Species Reference Databases
 
-Open-access databases for cataloguing seafood species' biological and culinary characteristics, surfaced by [GFI's alternative-seafood data initiative](https://gfi.org/resource/aggregating-data-for-alternative-seafood/). For cellular agriculture these are direct reference data for the cultivated-seafood sub-domain — complementary to the SALARECON salmon GEM in [Datasets.md](./Datasets.md#salarecon--salmo-salar-atlantic-salmon).
+Open-access databases for cataloguing seafood species' biological and culinary characteristics, surfaced by [GFI's alternative-seafood data initiative](https://gfi.org/resource/aggregating-data-for-alternative-seafood/). For cellular agriculture these are direct reference data for the cultivated-seafood sub-domain — complementary to the SALARECON salmon GEM in [Datasets/Fish.md](./Datasets/Fish.md#salarecon--salmo-salar-atlantic-salmon).
 
 ### [PISCES — Phylogenetic Index of Seafood CharactEriStics](https://gfi.org/resource/aggregating-data-for-alternative-seafood/)
 
@@ -306,7 +312,7 @@ GFI's live tracker of countries where cultivated meat has regulatory approval fo
 
 ## Benchmark Leaderboards & Results Trackers
 
-Live, continuously-updated leaderboards and results trackers for AI/ML benchmarks — the database side of the **Paper + Dataset + Database** triangle catalogued in the [AI Evaluation & Benchmarking](./ResearchAreas/AIEvaluation.md) research area. The benchmark datasets themselves live in [`Datasets.md / Benchmark & Evaluation Datasets`](./Datasets.md#benchmark--evaluation-datasets); this section catalogues only the *results-tracking* surfaces.
+Live, continuously-updated leaderboards and results trackers for AI/ML benchmarks — the database side of the **Paper + Dataset + Database** triangle catalogued in the [AI Evaluation & Benchmarking](./ResearchAreas/AIEvaluation.md) research area. The benchmark datasets themselves live in [`Datasets/Benchmarks.md`](./Datasets/Benchmarks.md); this section catalogues only the *results-tracking* surfaces.
 
 ### [CASP — Prediction Center](https://predictioncenter.org/)
 
@@ -314,20 +320,20 @@ The Prediction Center hosts CASP (Critical Assessment of Structure Prediction) �
 
 ### [CompBioBench v1 Leaderboard](https://huggingface.co/spaces/Genentech/compbiobench-leaderboard-v1)
 
-Genentech's open leaderboard hosted on Hugging Face Spaces, tracking model performance on the 100-task CompBioBench v1 computational-biology benchmark. Provides a vendor-neutral, continuously-updated comparison point for cell-ag teams evaluating LLMs and agents on bioinformatics tasks before deploying them downstream. The underlying benchmark data — questions plus the BAM/FASTQ/H5AD/MTX/TSV bioinformatics artifacts each task operates over — is catalogued separately at [`Datasets.md / CompBioBench v1`](./Datasets.md#compbiobench-v1) (canonical home: the `Genentech/compbiobench-data-v1` Hugging Face Dataset). Companion to [Papers.md ref #150](./Papers.md#150) (Nair et al. 2026), the bioRxiv methods paper describing the benchmark.
+Genentech's open leaderboard hosted on Hugging Face Spaces, tracking model performance on the 100-task CompBioBench v1 computational-biology benchmark. Provides a vendor-neutral, continuously-updated comparison point for cell-ag teams evaluating LLMs and agents on bioinformatics tasks before deploying them downstream. The underlying benchmark data — questions plus the BAM/FASTQ/H5AD/MTX/TSV bioinformatics artifacts each task operates over — is catalogued separately at [`Datasets/Benchmarks.md / CompBioBench v1`](./Datasets/Benchmarks.md#compbiobench-v1) (canonical home: the `Genentech/compbiobench-data-v1` Hugging Face Dataset). Companion to [Papers.md ref #150](./Papers.md#150) (Nair et al. 2026), the bioRxiv methods paper describing the benchmark.
 
 ### [Humanity's Last Exam Leaderboard](https://lastexam.ai/)
 
-The official results tracker at `lastexam.ai` for Humanity's Last Exam, ranking frontier models on the 2,500-question closed-ended benchmark at the frontier of human knowledge. The companion benchmark *data* is catalogued at [`Datasets.md / Humanity's Last Exam`](./Datasets.md#humanitys-last-exam); paired with [Papers.md ref #158](./Papers.md#158) (Phan et al. 2026). A continuously-updated ceiling check on frontier reasoning for cell-ag teams choosing a general-purpose model.
+The official results tracker at `lastexam.ai` for Humanity's Last Exam, ranking frontier models on the 2,500-question closed-ended benchmark at the frontier of human knowledge. The companion benchmark *data* is catalogued at [`Datasets/Benchmarks.md / Humanity's Last Exam`](./Datasets/Benchmarks.md#humanitys-last-exam); paired with [Papers.md ref #158](./Papers.md#158) (Phan et al. 2026). A continuously-updated ceiling check on frontier reasoning for cell-ag teams choosing a general-purpose model.
 
 ### [MMLU-Pro Leaderboard](https://huggingface.co/spaces/TIGER-Lab/MMLU-Pro)
 
-The live leaderboard on Hugging Face Spaces for the reasoning-focused MMLU-Pro benchmark, tracking model accuracy across its 14 disciplines. The companion benchmark *data* is catalogued at [`Datasets.md / MMLU-Pro`](./Datasets.md#mmlu-pro); paired with [Papers.md ref #157](./Papers.md#157) (Wang et al. 2024). A vendor-neutral general-reasoning comparison point for sizing up models before cell-ag-specific evaluation.
+The live leaderboard on Hugging Face Spaces for the reasoning-focused MMLU-Pro benchmark, tracking model accuracy across its 14 disciplines. The companion benchmark *data* is catalogued at [`Datasets/Benchmarks.md / MMLU-Pro`](./Datasets/Benchmarks.md#mmlu-pro); paired with [Papers.md ref #157](./Papers.md#157) (Wang et al. 2024). A vendor-neutral general-reasoning comparison point for sizing up models before cell-ag-specific evaluation.
 
 ### [ProteinGym Leaderboard](https://www.proteingym.org/)
 
-The live leaderboard hosted at `proteingym.org` for the ProteinGym variant-effect benchmark — separate substitution and indel boards covering supervised and zero-shot model categories. The companion benchmark *data* is catalogued at [`Datasets.md / ProteinGym`](./Datasets.md#proteingym); paired with [Papers.md ref #148](./Papers.md#148) (Notin et al. 2023). The dominant variant-effect leaderboard in protein-engineering ML — directly relevant to any cell-ag protein-engineering work (growth factors, scaffolds, recombinant ECM proteins) selecting a protein language model.
+The live leaderboard hosted at `proteingym.org` for the ProteinGym variant-effect benchmark — separate substitution and indel boards covering supervised and zero-shot model categories. The companion benchmark *data* is catalogued at [`Datasets/Benchmarks.md / ProteinGym`](./Datasets/Benchmarks.md#proteingym); paired with [Papers.md ref #148](./Papers.md#148) (Notin et al. 2023). The dominant variant-effect leaderboard in protein-engineering ML — directly relevant to any cell-ag protein-engineering work (growth factors, scaffolds, recombinant ECM proteins) selecting a protein language model.
 
 ### [SWE-bench Leaderboard](https://www.swebench.com/)
 
-The official leaderboard at `swebench.com` tracking agent and model performance across the SWE-bench leaderboards — the Full set plus the Verified, Lite, Multilingual, and Multimodal variants — by the percentage of real GitHub issues resolved with a test-passing patch. The companion benchmark *data* is catalogued at [`Datasets.md / SWE-bench`](./Datasets.md#swe-bench); paired with [Papers.md ref #155](./Papers.md#155) (Jimenez et al. 2024). The standard tracker for whether a coding agent can be trusted with the bioinformatics-pipeline and analysis-code maintenance cell-ag teams increasingly delegate.
+The official leaderboard at `swebench.com` tracking agent and model performance across the SWE-bench leaderboards — the Full set plus the Verified, Lite, Multilingual, and Multimodal variants — by the percentage of real GitHub issues resolved with a test-passing patch. The companion benchmark *data* is catalogued at [`Datasets/Benchmarks.md / SWE-bench`](./Datasets/Benchmarks.md#swe-bench); paired with [Papers.md ref #155](./Papers.md#155) (Jimenez et al. 2024). The standard tracker for whether a coding agent can be trusted with the bioinformatics-pipeline and analysis-code maintenance cell-ag teams increasingly delegate.

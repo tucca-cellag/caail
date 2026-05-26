@@ -1,3 +1,9 @@
+# Superpowers and research working artifacts — local design specs, plans, and
+# research notes. Useful while developing a change, but not part of the
+# published CAAIL library, so they are kept out of version control.
+docs/superpowers/
+docs/research/
+
 # Local Claude Code worktrees — not part of the library
 .claude/worktrees/
 

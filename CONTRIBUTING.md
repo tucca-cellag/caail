@@ -11,7 +11,7 @@ You don't need to know Git to suggest a resource.
 Pick the template that fits and fill it out:
 
 - [**Suggest a paper**](https://github.com/tucca-cellag/caail/issues/new?template=paper.yml) — for peer-reviewed papers and preprints. Asks for DOI, AI methods, and research areas.
-- [**Suggest software, a dataset, or other resource**](https://github.com/tucca-cellag/caail/issues/new?template=resource.yml) — for entries that would go in `Software.md`, `Datasets.md`, `Databases.md`, or `OtherResources.md`.
+- [**Suggest software, a dataset, or other resource**](https://github.com/tucca-cellag/caail/issues/new?template=resource.yml) — for entries that would go in `Software.md`, the `Datasets/` directory, `Databases.md`, or `OtherResources.md`.
 - [**Propose a new research area**](https://github.com/tucca-cellag/caail/issues/new?template=research-area.yml) — for a new column in the Papers.md matrix.
 
 A maintainer will incorporate accepted suggestions. This is the right path if you're not comfortable with pull requests or just want to flag something quickly.
@@ -85,7 +85,7 @@ If you're unsure whether a paper is "primary research" or "review/perspective," 
 
 ## Adding software, datasets, or other resources
 
-### `Software.md`, `Datasets.md`, and `Databases.md`
+### `Software.md` and `Databases.md`
 
 Use the existing hierarchical structure. Each entry is an H3 link, followed by a one-paragraph summary:
 
@@ -93,19 +93,26 @@ Use the existing hierarchical structure. Each entry is an H3 link, followed by a
 ## <Application area>
 Short framing paragraph (optional if the section already exists).
 
-### [<Tool or dataset or database name>](<canonical URL>)
+### [<Tool or database name>](<canonical URL>)
 
 Summary: One to three sentences describing what it is and, importantly, *how it applies to cellular agriculture* — not just what it does in general.
 ```
 
 - For software, link to the project's GitHub repo (or canonical home if not on GitHub).
-- For datasets, link to the dataset's primary landing page (Hugging Face dataset page, Zenodo record, etc.).
 - For databases, link to the database's primary canonical home (UniProt, KEGG, ChEMBL, etc.).
 - Group new entries under an existing section if one fits. If none does, add a new `##` section.
 
-**Picking between Datasets.md, Databases.md, and OtherResources.md.** CAAIL distinguishes between fixed train-on artifacts and living query/lookup resources:
+### The `Datasets/` directory
 
-1. **Train-on artifacts → `Datasets.md`.** ML pretraining corpora, perturbation atlases, downloadable benchmark datasets, individual GEM model artifacts.
+`Datasets/` is a directory of per-species pages, not a flat file — see [`Datasets/CLAUDE.md`](./Datasets/CLAUDE.md) for the full per-page schema. To add a data resource:
+
+- **Pick the page.** A species-specific data deposit (e.g. a bovine RNA-seq study) goes on its species page (`Datasets/Cow.md`, `Datasets/Pig.md`, …). Cross-species human pretraining corpora and reference GEMs go on `Datasets/HumanReference.md`; the CHO GEM family on `Datasets/CHOReference.md`; AI/ML benchmark datasets on `Datasets/Benchmarks.md`. If no species page exists for your species, propose a new one (mirror an existing sparse stub like `Datasets/Goat.md`) and add it to the index table in `Datasets/README.md`.
+- **Add a row to the page's "Complete data inventory" table** — `Study` (linked title), data type, tissue, a short description, dataset size, and area of research. If the deposit fits an existing thematic cluster on that page, mention it in the cluster prose too. A sparse stub page (e.g. `Datasets/Goat.md`) has no table yet — its "Complete data inventory" section is a placeholder note; when you add the first deposit, replace that note with a table by copying the column headers from a populated page such as `Datasets/Cow.md`.
+- **Link the canonical accession** — the NCBI SRA/GEO/PRIDE, Mendeley Data, or Hugging Face landing page. If the source has no usable accession (data on request, supplementary-table-only), keep the entry with an explicit note rather than dropping it.
+
+**Picking between `Datasets/`, `Databases.md`, and `OtherResources.md`.** CAAIL distinguishes between fixed train-on artifacts and living query/lookup resources:
+
+1. **Train-on artifacts → the `Datasets/` directory.** ML pretraining corpora, perturbation atlases, downloadable benchmark datasets, individual GEM model artifacts, per-species sequencing deposits.
 2. **Query / lookup resources → `Databases.md`.** Repositories, ontologies, spectral libraries, structure / compound / pathway databases.
 3. **"Database" in the name, or any directory / registry / tracker → `Databases.md`** — even when the content is people, companies, or regulation rather than scientific data.
 4. **Initiatives and programs → `OtherResources.md`.** Research programs, funding mechanisms, and similar non-database, non-tool resources.
@@ -114,9 +121,9 @@ Summary: One to three sentences describing what it is and, importantly, *how it 
 **Benchmark placement (Paper + Dataset + Database triangle).** AI/ML benchmarks have a distinct artifact shape — a paper, a downloadable eval dataset, and (sometimes) a live leaderboard. Place each aspect in its appropriate file:
 
 - **Paper** describing the benchmark → `Papers.md` with a `> **Code**:` blockquote anchoring the project's canonical home.
-- **The data** (questions / scenarios / spectra / sequences) + any **bundled scoring code shipped with the data** → `Datasets.md` under "Benchmark & Evaluation Datasets". The bundled scoring code is *not* a separate `Software.md` entry — it's part of the dataset distribution.
+- **The data** (questions / scenarios / spectra / sequences) + any **bundled scoring code shipped with the data** → `Datasets/Benchmarks.md`. The bundled scoring code is *not* a separate `Software.md` entry — it's part of the dataset distribution.
 - **Live leaderboard or continuously-updated results tracker** → `Databases.md` under "Benchmark Leaderboards & Results Trackers" (per rule 3, trackers belong in `Databases.md`).
-- **Separately-installable evaluation framework that brings its own data** (e.g. a framework that scores models against externally-hosted data the framework does not itself distribute) → `Software.md`. CausalBench is the existing example — it's a benchmarking framework, not a bundled-data benchmark, so it lives in `Software.md` and has no `Datasets.md` entry.
+- **Separately-installable evaluation framework that brings its own data** (e.g. a framework that scores models against externally-hosted data the framework does not itself distribute) → `Software.md`. CausalBench is the existing example — it's a benchmarking framework, not a bundled-data benchmark, so it lives in `Software.md` and has no `Datasets/` entry.
 
 All entries cross-link via the established `Companion to [Papers.md ref #N]` convention.
 

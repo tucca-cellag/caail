@@ -370,6 +370,8 @@ This document presents the core research papers at the intersection of Cellular 
 
 <a id="159">159</a> Wang, M., Lin, R., Hu, K., Jiao, J., Chowdhury, N., Chang, E., & Patwardhan, T. (2026). *FrontierScience: Evaluating AI's Ability to Perform Expert-Level Scientific Tasks.* arXiv. https://doi.org/10.48550/arXiv.2601.21165
 
+> **Data**: https://huggingface.co/datasets/openai/frontierscience
+
 <a id="160">160</a> Narayanan, S., Braza, J. D., Griffiths, R.-R., Ponnapati, M., Bou, A., Laurent, J., Kabeli, O., Wellawatte, G., Cox, S., Rodriques, S. G., & White, A. D. (2024). *Aviary: Training Language Agents on Challenging Scientific Tasks.* arXiv. https://doi.org/10.48550/arXiv.2412.21154
 
 > **Code**: https://github.com/Future-House/aviary
@@ -402,7 +404,7 @@ This section catalogs foundational primary research and methodology papers in se
 
 ## Metabolic Reference Work
 
-This section catalogs foundational primary research papers describing genome-scale metabolic models (GEMs) and related metabolic infrastructure for cellular agriculture. As with the Sensory & Flavor Reference Work above, entries here are primary research where the contribution is the model / data resource itself rather than an applied AI/ML method — the AI/ML work building on these resources lives in the matrix above. Each entry below is the canonical citation for the corresponding data resource in [Datasets.md / Genome-Scale Metabolic Models (GEMs)](./Datasets.md#genome-scale-metabolic-models-gems). Same numeric ID counter as the primary references; no matrix participation.
+This section catalogs foundational primary research papers describing genome-scale metabolic models (GEMs) and related metabolic infrastructure for cellular agriculture. As with the Sensory & Flavor Reference Work above, entries here are primary research where the contribution is the model / data resource itself rather than an applied AI/ML method — the AI/ML work building on these resources lives in the matrix above. Each entry below is the canonical citation for the corresponding genome-scale metabolic model, catalogued on its species page in the [Datasets/](./Datasets/) directory (BtaSBML2986 on [Cow.md](./Datasets/Cow.md), iES1300 on [Chicken.md](./Datasets/Chicken.md), pcPigMNet2025 on [Pig.md](./Datasets/Pig.md), SALARECON on [Fish.md](./Datasets/Fish.md), and the iCHO and Recon3D/Human1 reference models on [CHOReference.md](./Datasets/CHOReference.md) and [HumanReference.md](./Datasets/HumanReference.md)). Same numeric ID counter as the primary references; no matrix participation.
 
 <a id="81">81</a> Lee, J., Kim, J., Bae, H., Kim, M., Jung, B., Kim, J., Lee, S., & Kim, H. (2024). *Multi-omics analysis and genome-scale metabolic reconstruction of cattle Bos taurus for optimal production of cultured meat.* bioRxiv. https://doi.org/10.1101/2024.12.09.627468
 
@@ -471,6 +473,8 @@ This section lists review articles, position papers, and commentaries that surve
 <a id="79">79</a> Alasi, S. O., Sanusi, M. S., Sunmonu, M. O., Odewole, M. M., & Adepoju, A. L. (2024). Exploring recent developments in novel technologies and AI integration for plant-based protein functionality: A review. *Journal of Agriculture and Food Research, 15,* 101036. https://doi.org/10.1016/j.jafr.2024.101036
 
 <a id="132">132</a> Todhunter, M. E., Jubair, S., Verma, R., Saqe, R., Shen, K., & Duffy, B. (2024). Artificial intelligence and machine learning applications for cultured meat. *Frontiers in Artificial Intelligence, 7,* 1424012. https://doi.org/10.3389/frai.2024.1424012
+
+> **Data**: The article's supplemental Table 1 surveys cultured-meat-relevant datasets (through April 2024) across fish, crustaceans, mollusks, cows, pigs, and chickens. It is the curatorial source for the per-species pages in the [Datasets/](./Datasets/) directory.
 
 <a id="128">128</a> Bunne, C., Roohani, Y., Rosen, Y., Gupta, A., Zhang, X., Roed, M., Alexandrov, T., AlQuraishi, M., Brennan, P., Burkhardt, D. B., Califano, A., Cool, J., Dernburg, A. F., Ewing, K., Fox, E. B., Haury, M., Herr, A. E., Horvitz, E., Hsu, P. D., Jain, V., Johnson, G. R., Kalil, T., Kelley, D. R., Kelley, S. O., Kreshuk, A., Mitchison, T., Otte, S., Shendure, J., Sofroniew, N. J., Theis, F., Theodoris, C. V., Upadhyayula, S., Valer, M., Wang, B., Xing, E., Yeung-Levy, S., Zitnik, M., Karaletsos, T., Regev, A., Lundberg, E., Leskovec, J., & Quake, S. R. (2024). How to build the virtual cell with artificial intelligence: Priorities and opportunities. *Cell, 187*(25), 7045–7063. https://doi.org/10.1016/j.cell.2024.11.015
 

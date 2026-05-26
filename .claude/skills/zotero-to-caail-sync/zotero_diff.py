@@ -24,8 +24,10 @@ from pathlib import Path
 GROUP = "6549203"
 API = f"http://localhost:23119/api/groups/{GROUP}/items/top"
 PAGE = 100
-REPO_FILES = ["Papers.md", "Software.md", "Datasets.md", "Databases.md",
+REPO_FILES = ["Papers.md", "Software.md", "Databases.md",
               "OtherResources.md", "README.md"]
+# Per-X directories whose every *.md file counts as repo content.
+REPO_DIRS = ["ResearchAreas", "Datasets"]
 
 # Canonical-type priority for intra-Zotero dedup (lower rank = preferred).
 # A work stashed as both a preprint and a journalArticle keeps the journalArticle;
@@ -68,10 +70,11 @@ def main():
         path = repo / name
         if path.exists():
             blob += path.read_text(encoding="utf-8").lower()
-    ra = repo / "ResearchAreas"
-    if ra.is_dir():
-        for path in ra.glob("*.md"):
-            blob += path.read_text(encoding="utf-8").lower()
+    for dirname in REPO_DIRS:
+        d = repo / dirname
+        if d.is_dir():
+            for path in d.glob("*.md"):
+                blob += path.read_text(encoding="utf-8").lower()
 
     items = fetch_all()
 

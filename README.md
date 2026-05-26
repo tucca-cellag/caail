@@ -14,7 +14,7 @@ We organize and host links to public resources across key areas of research:
 
 * [Papers & Preprints](./Papers.md): Core research literature focusing on computational biology, modeling, and machine learning applied to cell culture, bioprocessing, and tissue engineering.
 * [Software & Code](./Software.md): Links to open-source tools, code repositories, and specialized algorithms used for media optimization, bioreactor modeling, and image analysis.
-* [Datasets](./Datasets.md): Fixed data artifacts — corpora, atlases, and model files (e.g. single-cell pretraining corpora, perturbation atlases, genome-scale metabolic models) you would train or benchmark a model *on*.
+* [Datasets](./Datasets/): Fixed data artifacts — corpora, atlases, sequencing deposits, and model files you would train or benchmark a model *on*, organized into per-species pages (cow, pig, chicken, fish, and more) plus cross-species reference and AI/ML benchmark pages.
 * [Databases](./Databases.md): Living, queryable resources — repositories, ontologies, spectral libraries, and structure / compound / pathway databases — that you query for reference, annotation, or lookup. Also catalogues GFI's alternative-protein ecosystem directories.
 * [Other Educational Materials](./OtherResources.md): Videos and other resources relevant to the use of AI in cellular agriculture.
 
@@ -46,7 +46,7 @@ BibTeX:
 }
 ```
 
-When citing a specific catalogued resource (paper, software tool, dataset), cite the original source directly rather than CAAIL — the DOIs and canonical URLs in [Papers.md](./Papers.md), [Software.md](./Software.md), [Datasets.md](./Datasets.md), and [Databases.md](./Databases.md) are authoritative.
+When citing a specific catalogued resource (paper, software tool, dataset), cite the original source directly rather than CAAIL — the DOIs and canonical URLs in [Papers.md](./Papers.md), [Software.md](./Software.md), [Datasets/](./Datasets/), and [Databases.md](./Databases.md) are authoritative.
 
 # License
 &copy; 2026 [The Tufts University Center for Cellular Agriculture (TUCCA)](https://cellularagriculture.tufts.edu/) and CAAIL contributors.

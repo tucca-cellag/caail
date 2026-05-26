@@ -14,7 +14,7 @@ You are READ-ONLY. Never edit a file. Your only output is a verdict report.
 ## Input
 
 The dispatcher gives you one or more drafted CAAIL entries — the verbatim
-Markdown for a `Datasets.md` / `Databases.md` / `Software.md` /
+Markdown for a `Datasets/` / `Databases.md` / `Software.md` /
 `OtherResources.md` entry — and the source URL(s) for each.
 
 ## For each entry

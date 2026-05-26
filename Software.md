@@ -35,7 +35,7 @@ Summary: A physics-based framework specialized for multi-cell simulations. Can b
 
 ## Metabolic Modeling & Strain Design
 
-This section catalogs the open-source tooling for constraint-based and kinetic metabolic modeling — the computational stack used to build genome-scale metabolic models (GEMs), simulate flux distributions, design strain knockouts, and reason about cell physiology. These tools are the foundation for media-formulation optimization, bioprocess scale-up, and cell-line metabolic engineering in cellular agriculture. For cell-ag-specific GEMs (BtaSBML2986, iES1300, etc.), see [Datasets.md / Genome-Scale Metabolic Models (GEMs)](./Datasets.md#genome-scale-metabolic-models-gems). For canonical model repositories (BiGG Models, BioModels) and pathway / metabolome databases, see [Databases.md / Pathways, Metabolism & Metabolic Models](./Databases.md#pathways-metabolism--metabolic-models).
+This section catalogs the open-source tooling for constraint-based and kinetic metabolic modeling — the computational stack used to build genome-scale metabolic models (GEMs), simulate flux distributions, design strain knockouts, and reason about cell physiology. These tools are the foundation for media-formulation optimization, bioprocess scale-up, and cell-line metabolic engineering in cellular agriculture. For cell-ag-specific GEMs (BtaSBML2986, iES1300, etc.), see the per-species pages in the [`Datasets/`](./Datasets/) directory. For canonical model repositories (BiGG Models, BioModels) and pathway / metabolome databases, see [Databases.md / Pathways, Metabolism & Metabolic Models](./Databases.md#pathways-metabolism--metabolic-models).
 
 ### [COBRApy](https://github.com/opencobra/cobrapy)
 
@@ -120,6 +120,12 @@ Source: <https://github.com/mzmine/mzmine>. News and releases from [mzio](https:
 A standalone Windows tool for DIA / DDA MS/MS spectral deconvolution and metabolite / lipid annotation, developed by Tsugawa et al. at RIKEN (Tsugawa et al. 2015, *Nat Methods*; the 2020 *Nat Biotech* lipidomics atlas paper extended MS-DIAL 4 to lipid identification). The de-facto standard for GC-MS deconvolution in flavor and food chemistry labs; ships with extensive built-in spectral libraries.
 
 Source: <https://github.com/systemsomicslab/MsdialWorkbench>.
+
+### [MRMPROBS](https://systemsomicslab.github.io/compms/mrmprobs/main.html)
+
+A C# tool for widely targeted metabolomics that processes multiple reaction monitoring (MRM) / selected reaction monitoring (SRM) data — plus SCAN and DIA MS/MS — developed by Tsugawa et al. (2013, *Analytical Chemistry*), same first author as the MS-DIAL entry above. Evaluates metabolite peaks by posterior probability and provides large-scale visualisation, data curation, and statistical analysis of widely-targeted metabolomics datasets — the targeted-quantitation complement to MS-DIAL's discovery-focused deconvolution.
+
+Distributed via Zenodo: <https://zenodo.org/records/11219831/latest>.
 
 ### [XCMS](https://github.com/sneumann/xcms)
 
@@ -285,13 +291,13 @@ A commercial lab-orchestration platform from Dotmatics that connects laboratory 
 
 ### [TranscriptFormer](https://virtualcellmodels.cziscience.com/model/transcriptformer)
 
-A family of generative foundation models for single-cell transcriptomics from the Chan Zuckerberg Initiative, trained on up to 112 million cells spanning 1.53 billion years of evolution across 12 species (Pearce et al. 2026, *Science*; see [Papers.md ref #92](./Papers.md#92)). Provides state-of-the-art performance on cell-type classification and supports cross-species reasoning over transcriptomic data — directly relevant to cell-ag for translating biological knowledge between bovine, porcine, chicken, salmonid, and other livestock cells where annotated reference data is sparse. Distributed via CZI's Virtual Cells Platform with versioned releases.
+A family of generative foundation models for single-cell transcriptomics from the Chan Zuckerberg Initiative, trained on up to 112 million cells spanning 1.53 billion years of evolution across 12 species (Pearce et al. 2026, *Science*; see [Papers.md ref #92](./Papers.md#92)). Provides state-of-the-art performance on cell-type classification and supports cross-species reasoning over transcriptomic data — directly relevant to cell-ag for translating biological knowledge between bovine, porcine, chicken, salmonid, and other livestock cells where annotated reference data is sparse (see the per-species pages in [`Datasets/`](./Datasets/) for the cell-ag-relevant data substrate). Distributed via CZI's Virtual Cells Platform with versioned releases.
 
 Quickstart docs: <https://virtualcellmodels.cziscience.com/quickstart/transcriptformer-quickstart>. Announcement: <https://chanzuckerberg.com/blog/transcriptformer-model-overview/>.
 
 ### [Geneformer](https://huggingface.co/ctheodoris/Geneformer)
 
-A transformer-based foundation model for transfer learning in network biology from the Theodoris lab (Broad Institute / Gladstone), pretrained on ~30 million human single-cell transcriptomes via rank-encoded masked language modeling. Distributed exclusively through Hugging Face with tokenizer, pretrained weights, and example fine-tuning recipes for cell-type classification, gene-network inference, and *in silico* perturbation prediction; widely used as a single-cell-FM baseline. Companion to [Papers.md ref #111](./Papers.md#111) (Theodoris et al. 2023, *Nature*); pretraining corpus: [Genecorpus-30M in Datasets.md](./Datasets.md#genecorpus-30m).
+A transformer-based foundation model for transfer learning in network biology from the Theodoris lab (Broad Institute / Gladstone), pretrained on ~30 million human single-cell transcriptomes via rank-encoded masked language modeling. Distributed exclusively through Hugging Face with tokenizer, pretrained weights, and example fine-tuning recipes for cell-type classification, gene-network inference, and *in silico* perturbation prediction; widely used as a single-cell-FM baseline. Companion to [Papers.md ref #111](./Papers.md#111) (Theodoris et al. 2023, *Nature*); pretraining corpus: [Genecorpus-30M in Datasets/HumanReference.md](./Datasets/HumanReference.md#genecorpus-30m).
 
 ### [scGPT](https://github.com/bowang-lab/scGPT)
 
@@ -347,7 +353,7 @@ Open standards and schema languages for representing biological models, data, an
 
 ### [SBML (Systems Biology Markup Language)](https://sbml.org/)
 
-Summary: The de-facto XML-based standard for representing computational models of biological processes — metabolic networks, signaling pathways, gene-regulatory networks, and kinetic models. SBML is the interchange format for every genome-scale metabolic model in [Datasets.md / Genome-Scale Metabolic Models (GEMs)](./Datasets.md#genome-scale-metabolic-models-gems) and the lingua franca of the constraint-based and kinetic modeling tools in [Metabolic Modeling & Strain Design](#metabolic-modeling--strain-design). Maintained by the SBML community with libSBML bindings across all major languages.
+Summary: The de-facto XML-based standard for representing computational models of biological processes — metabolic networks, signaling pathways, gene-regulatory networks, and kinetic models. SBML is the interchange format for every genome-scale metabolic model catalogued in the per-species pages of the [`Datasets/`](./Datasets/) directory and the lingua franca of the constraint-based and kinetic modeling tools in [Metabolic Modeling & Strain Design](#metabolic-modeling--strain-design). Maintained by the SBML community with libSBML bindings across all major languages.
 
 ### [LinkML (Linked data Modeling Language)](https://linkml.io/)
 
