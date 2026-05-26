@@ -12,9 +12,9 @@ members stash items there faster than they land in the markdown files. This
 skill reconciles the two. **The mechanical steps are scripted; the judgment
 steps are not — and the judgment is where it goes wrong.**
 
-`CLAUDE.md` is the schema source of truth (with `Datasets/CLAUDE.md` for the
-per-species data-page schema). This skill is the *workflow*; it does not restate
-schema rules — read `CLAUDE.md` for them.
+`CLAUDE.md` is the schema source of truth (with `Datasets/CLAUDE.md` and
+`ResearchAreas/CLAUDE.md` for the per-directory schemas). This skill is the
+*workflow*; it does not restate schema rules — read `CLAUDE.md` for them.
 
 ## Procedure
 
@@ -34,8 +34,10 @@ schema rules — read `CLAUDE.md` for them.
    homepage and its paper are one resource. Grep the repo for the tool/paper
    *name* before deciding.
 4. **Classify** each genuine gap → target file (see rules below).
-5. **Add** each item in its file's schema (per `CLAUDE.md`). For `Papers.md`,
-   edit the matrix cell and the `## References` entry **in the same commit**.
+5. **Add** each item in its file's schema (per `CLAUDE.md`; for any entry in
+   `Datasets/`, the per-page schema lives in `Datasets/CLAUDE.md`). For
+   `Papers.md`, edit the matrix cell and the `## References` entry **in the
+   same commit**.
 6. **Verify every entry** with the dedicated reviewer subagents (see "Verify
    every entry before committing" below).
 7. **Integrity check** (see below), then commit with the repo's
@@ -58,11 +60,14 @@ schema rules — read `CLAUDE.md` for them.
 
 **Benchmark triangle is mandatory** (`CLAUDE.md` "Benchmark placement"). A
 benchmark gets a `Papers.md` ref **and** a `Datasets/Benchmarks.md` entry for its
-data **and** a `Databases.md` entry if it has a live leaderboard. The
-`Datasets/Benchmarks.md` entry does **not** require its own Zotero record —
-derive the canonical data home (HF dataset / GitHub) yourself. Do not skip the
-triangle because "it is a general-CS benchmark" or "there is no data record in
-Zotero."
+data **and** a `Databases.md` entry if it has a live leaderboard. Even a
+species-flavored benchmark (e.g. a hypothetical cattle-cell perturbation eval)
+still lands in `Datasets/Benchmarks.md`, not its species page —
+`Datasets/Benchmarks.md` is the canonical home for benchmark *data* regardless
+of species. The `Datasets/Benchmarks.md` entry does **not** require its own
+Zotero record — derive the canonical data home (HF dataset / GitHub) yourself.
+Do not skip the triangle because "it is a general-CS benchmark" or "there is no
+data record in Zotero."
 
 A paper whose subject is a non-AI tool already catalogued in `Software.md`/
 `Databases.md` (e.g. the MS-DIAL or COBRApy method paper) is **not** a

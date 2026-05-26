@@ -123,7 +123,7 @@ Source: <https://github.com/systemsomicslab/MsdialWorkbench>.
 
 ### [MRMPROBS](https://systemsomicslab.github.io/compms/mrmprobs/main.html)
 
-A C# tool for widely targeted metabolomics that processes multiple reaction monitoring (MRM) / selected reaction monitoring (SRM) data — plus SCAN and DIA MS/MS — developed by Tsugawa et al. (2013, *Analytical Chemistry*), same first author as the MS-DIAL entry above. Evaluates metabolite peaks by posterior probability and provides large-scale visualisation, data curation, and statistical analysis of widely-targeted metabolomics datasets — the targeted-quantitation complement to MS-DIAL's discovery-focused deconvolution for flavor and food-chemistry workflows.
+A C# tool for widely targeted metabolomics that processes multiple reaction monitoring (MRM) / selected reaction monitoring (SRM) data — plus SCAN and DIA MS/MS — developed by Tsugawa et al. (2013, *Analytical Chemistry*), same first author as the MS-DIAL entry above. Evaluates metabolite peaks by posterior probability and provides large-scale visualisation, data curation, and statistical analysis of widely-targeted metabolomics datasets — the targeted-quantitation complement to MS-DIAL's discovery-focused deconvolution.
 
 Distributed via Zenodo: <https://zenodo.org/records/11219831/latest>.
 
