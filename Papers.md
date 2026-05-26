@@ -370,6 +370,8 @@ This document presents the core research papers at the intersection of Cellular 
 
 <a id="159">159</a> Wang, M., Lin, R., Hu, K., Jiao, J., Chowdhury, N., Chang, E., & Patwardhan, T. (2026). *FrontierScience: Evaluating AI's Ability to Perform Expert-Level Scientific Tasks.* arXiv. https://doi.org/10.48550/arXiv.2601.21165
 
+> **Data**: https://huggingface.co/datasets/openai/frontierscience
+
 <a id="160">160</a> Narayanan, S., Braza, J. D., Griffiths, R.-R., Ponnapati, M., Bou, A., Laurent, J., Kabeli, O., Wellawatte, G., Cox, S., Rodriques, S. G., & White, A. D. (2024). *Aviary: Training Language Agents on Challenging Scientific Tasks.* arXiv. https://doi.org/10.48550/arXiv.2412.21154
 
 > **Code**: https://github.com/Future-House/aviary
