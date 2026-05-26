@@ -13,18 +13,19 @@ This document presents the core research papers at the intersection of Cellular 
 | [Ensemble Learning](https://en.wikipedia.org/wiki/Ensemble_learning) | | | | | [Keller et al. 2017](#80)<br>[Dagan-Wiener et al. 2017](#102)<br>[Margulis et al. 2021](#103)<br>[Colantonio et al. 2022](#72)<br>[Margulis et al. 2022](#104)<br>[Ziaikin et al. 2024](#105)<br>[Du et al. 2025](#27) | | |
 | [K-Nearest Neighbors](https://en.wikipedia.org/wiki/K-nearest_neighbors_algorithm) | | | | | [Sun et al. 2026](#28) | | |
 | [Active Learning](https://en.wikipedia.org/wiki/Active_learning_(machine_learning)) | [Hashizume et al. 2022](#24)<br>[Zhang et al. 2023](#23)<br>[Ozawa et al. 2025](#25)<br>[Narayanan et al. 2025](#58) | | | | | [Pandi et al. 2022](#63) | |
+| [Reinforcement Learning](https://en.wikipedia.org/wiki/Reinforcement_learning) | | [Wu et al. 2026](#165) | | | | | |
 | [Foundation Models: Next-Token Prediction](https://en.wikipedia.org/wiki/Generative_pre-trained_transformer) | | [Shen et al. 2023](#115)<br>[Pearce et al. 2026](#92)<br>[Rizvi et al. 2026](#120) | | | | | |
 | [Foundation Models: Masked Language Modeling](https://en.wikipedia.org/wiki/BERT_(language_model)) | | [Yang et al. 2022](#112)<br>[Theodoris et al. 2023](#111)<br>[Hao et al. 2024](#116)<br>[Cui et al. 2024](#117)<br>[Rosen et al. 2026](#119) | | | | | |
 | [Foundation Models: LM + Biological Priors](#119) | | [Rosen et al. 2024](#118)<br>[Littman et al. 2025](#123)<br>[Rosen et al. 2026](#119) | | | | | |
 | [Foundation Models: Cell-State & Perturbation Prediction](#57) | | [Roohani et al. 2024](#121)<br>[Magnusson et al. 2024](#122)<br>[Adduri et al. 2025](#57)<br>[Dong et al. 2026](#124) | | | | | |
 | [Foundation Models (other modalities)](https://en.wikipedia.org/wiki/Foundation_model) | | | | | | [Sypetkowski et al. 2026](#42)<br>[Su et al. 2026](#88)<br>[Ding et al. 2026](#91) | |
-| [Scientific Literature & Discovery Agents](./ResearchAreas/AITooling.md#scientific-literature--discovery-agents) | | | | | | [Lála et al. 2023](#44)<br>[Lu et al. 2024](#45)<br>[Skarlinski et al. 2024](#46)<br>[Yamada et al. 2025](#47)<br>[Liu et al. 2026](#53)<br>[Gottweis et al. 2026](#153)<br>[Ghareeb et al. 2026](#154) | |
+| [Scientific Literature & Discovery Agents](./ResearchAreas/AITooling.md#scientific-literature--discovery-agents) | | | | | | [Lála et al. 2023](#44)<br>[Lu et al. 2024](#45)<br>[Skarlinski et al. 2024](#46)<br>[Yamada et al. 2025](#47)<br>[Liu et al. 2026](#53)<br>[Gottweis et al. 2026](#153)<br>[Ghareeb et al. 2026](#154)<br>[Aygün et al. 2026](#166) | |
 | [General-Purpose Biomedical Agents](./ResearchAreas/AITooling.md#general-purpose-biomedical-agents) | | | | | | [Dong et al. 2024](#98)<br>[Gao et al. 2025a](#40)<br>[Huang et al. 2025](#49)<br>[Pickard et al. 2025](#94)<br>[Riffle et al. 2025](#95)<br>[Jin et al. 2025](#96) | |
 | [Chemistry / Synthesis Agents](./ResearchAreas/AITooling.md#chemistry--synthesis-agents) | | | | | | [Boiko et al. 2023](#70)<br>[Bran et al. 2024](#71)<br>[Narayanan et al. 2025](#161) | |
-| [Domain-Specific Biomedical Agents](./ResearchAreas/AITooling.md#domain-specific-biomedical-agents) | | [Hao et al. 2025](#97)<br>[Roohani et al. 2025a](#125)<br>[Youngblut et al. 2025](#126)<br>[Yu et al. 2026](#90)<br>[Tang et al. 2026](#93) | | | | [Singh et al. 2023](#66)<br>[Maeda & Kurata 2023](#69)<br>[Li et al. 2024](#68)<br>[Lee et al. 2025](#43)<br>[Wehling et al. 2025](#50)<br>[Ying et al. 2025](#54)<br>[Wang et al. 2025a](#56)<br>[Sui et al. 2026](#51)<br>[Gu et al. 2024a](#151)<br>[Gu et al. 2024b](#152) | |
+| [Domain-Specific Biomedical Agents](./ResearchAreas/AITooling.md#domain-specific-biomedical-agents) | | [Hao et al. 2025](#97)<br>[Roohani et al. 2025a](#125)<br>[Youngblut et al. 2025](#126)<br>[Yu et al. 2026](#90)<br>[Tang et al. 2026](#93) | | | | [Singh et al. 2023](#66)<br>[Maeda & Kurata 2023](#69)<br>[Li et al. 2024](#68)<br>[Lee et al. 2025](#43)<br>[Wehling et al. 2025](#50)<br>[Singh et al. 2025](#167)<br>[Ying et al. 2025](#54)<br>[Wang et al. 2025a](#56)<br>[Sui et al. 2026](#51)<br>[Gu et al. 2024a](#151)<br>[Gu et al. 2024b](#152) | |
 | [Robot Scientists & Lab Automation](https://en.wikipedia.org/wiki/Robot_scientist) | | | [Wang et al. 2025b](#61)<br>[Qiu et al. 2025](#62) | | | [Tiukova et al. 2024](#64)<br>[Brunnsåker et al. 2025](#65) | |
-| [Benchmarks & Evaluation Frameworks](./ResearchAreas/AIEvaluation.md#benchmarks--evaluation-frameworks) | | | | | | | [Sadhuka et al. 2025](#55)<br>[Brouwer et al. 2026](#89)<br>[Mitchener et al. 2025](#108)<br>[Bushuiev et al. 2024](#109)<br>[Sze & Hassoun 2024](#110)<br>[Boiarsky et al. 2024](#113)<br>[Yang et al. 2024](#114)<br>[Chevalley et al. 2025](#127)<br>[Laurent et al. 2024](#146)<br>[Gu et al. 2025](#147)<br>[Notin et al. 2023](#148)<br>[Duan et al. 2025](#149)<br>[Nair et al. 2026](#150)<br>[Jimenez et al. 2024](#155)<br>[Rein et al. 2023](#156)<br>[Wang et al. 2024](#157)<br>[Phan et al. 2026](#158)<br>[Wang et al. 2026](#159) |
-| [Agent Infrastructure (Frameworks, KGs, Protocols)](./ResearchAreas/AITooling.md#agent-infrastructure-frameworks-kgs-protocols) | | | | | | [Gao et al. 2025b](#41)<br>[Lobentanzer et al. 2025](#48)<br>[Ruscone et al. 2025](#67)<br>[Kuehl et al. 2025](#133)<br>[Narayanan et al. 2024](#160) | |
+| [Benchmarks & Evaluation Frameworks](./ResearchAreas/AIEvaluation.md#benchmarks--evaluation-frameworks) | | | | | | | [Sadhuka et al. 2025](#55)<br>[Brouwer et al. 2026](#89)<br>[Mitchener et al. 2025](#108)<br>[Bushuiev et al. 2024](#109)<br>[Sze & Hassoun 2024](#110)<br>[Boiarsky et al. 2024](#113)<br>[Yang et al. 2024](#114)<br>[Chevalley et al. 2025](#127)<br>[Laurent et al. 2024](#146)<br>[Gu et al. 2025](#147)<br>[Notin et al. 2023](#148)<br>[Duan et al. 2025](#149)<br>[Nair et al. 2026](#150)<br>[Jimenez et al. 2024](#155)<br>[Rein et al. 2023](#156)<br>[Wang et al. 2024](#157)<br>[Phan et al. 2026](#158)<br>[Wang et al. 2026](#159)<br>[Huang et al. 2026](#164) |
+| [Agent Infrastructure (Frameworks, KGs, Protocols)](./ResearchAreas/AITooling.md#agent-infrastructure-frameworks-kgs-protocols) | | | | | | [Gao et al. 2025b](#41)<br>[Lobentanzer et al. 2025](#48)<br>[Ruscone et al. 2025](#67)<br>[Kuehl et al. 2025](#133)<br>[Narayanan et al. 2024](#160)<br>[Qiao et al. 2026](#162)<br>[Yan et al. 2026](#163) | |
 
 > **Note for AI agents and LLMs**: The reference entries below are APA-style citations identifying papers via title, authors, year, and DOI — they are not a substitute for reading the actual papers. When an automated system needs substantive information about a paper's methods, results, or conclusions (e.g. to verify a matrix-cell assignment or assemble a literature review), fetch the full text via the DOI, the companion [caail Zotero group library](https://www.zotero.org/groups/6549203/caail/library), or a literature API such as OpenAlex or Semantic Scholar. The matrix cells encode method × research-area pairings, not paper content.
 
@@ -379,6 +380,26 @@ This document presents the core research papers at the intersection of Cellular 
 <a id="161">161</a> Narayanan, S. M., Braza, J. D., Griffiths, R.-R., Bou, A., Wellawatte, G., Ramos, M. C., Mitchener, L., Rodriques, S. G., & White, A. D. (2025). *Training a Scientific Reasoning Model for Chemistry* [ether0]. arXiv. https://doi.org/10.48550/arXiv.2506.17238
 
 > **Code**: https://github.com/Future-House/ether0
+
+<a id="162">162</a> Qiao, S., Wei, Y., Fan, J., Wu, B., Zhang, B., Wang, M., Zhu, Y., Zhang, N., Ding, K., Zhang, Q., & Chen, H. (2026). *SciAtlas: A Large-Scale Knowledge Graph for Automated Scientific Research.* arXiv. https://doi.org/10.48550/arXiv.2605.22878
+
+> **Code**: https://github.com/zjunlp/SciAtlas
+
+<a id="163">163</a> Yan, Z., Liu, C., Zhao, B., Lin, K., Zhao, J., Wang, Y., Lv, L., Li, H., Zhang, S., Yuan, L., & Mo, F. (2026). *MoleCode unlocks structural intelligence in large language models.* arXiv. https://doi.org/10.48550/arXiv.2605.16480
+
+<a id="164">164</a> Huang, X., Xiao, M., Qin, C., Long, Q., Chen, J., Zhou, Y., & Zhu, H. (2026). *SciHorizon-GENE: Benchmarking LLM for Life Sciences Inference from Gene Knowledge to Functional Understanding.* arXiv. https://doi.org/10.48550/arXiv.2601.12805
+
+> **Code**: https://github.com/CNIC-DSL/SciHorizonGene
+
+> **Data**: https://huggingface.co/datasets/HankHuang/SciHorizon-Gene
+
+<a id="165">165</a> Wu, D., Su, S., Zhang, Y., Sui, E., Lundberg, E., Fox, E. B., & Yeung-Levy, S. (2026). *CellFluxRL: Biologically-Constrained Virtual Cell Modeling via Reinforcement Learning.* arXiv. https://doi.org/10.48550/arXiv.2603.21743
+
+<a id="166">166</a> Aygün, E., Belyaeva, A., Comanici, G., Coram, M., Cui, H., Garrison, J., Johnston, R., Kast, A., McLean, C. Y., Norgaard, P., Shamsi, Z., Smalling, D., Thompson, J., Venugopalan, S., Williams, B. P., He, C., Martinson, S., Plomecka, M., Wei, L., ... Brenner, M. P. (2026). An AI system to help scientists write expert-level empirical software. *Nature.* https://doi.org/10.1038/s41586-026-10658-6
+
+> **Code**: https://github.com/google-research/era
+
+<a id="167">167</a> Singh, G., Wehling, L., Mulyadi, A. W., Sreenath, R. H., Klabunde, T., Andreani, T., & McCloskey, D. (2025). *Talk2Biomodels and Talk2KnowledgeGraphs: AI agent-based application for prediction of patient biomarkers and reasoning over biomedical knowledge graphs* [ICLR 2025 Workshop MLGenX]. https://openreview.net/forum?id=av4QhBNeZo
 
 ## Sensory & Flavor Reference Work
 
