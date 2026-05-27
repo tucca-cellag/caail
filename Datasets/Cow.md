@@ -62,3 +62,4 @@ A curated snapshot. NCBI accessions are the canonical living source — fetch th
 - Metabolome reference: [Bovine Metabolome Database (BMDB)](../Databases.md#bovine-metabolome-database-bmdb).
 - Cross-species modeling tooling: [TranscriptFormer](../Software.md#transcriptformer) and [UCE](../Software.md#uce) in `Software.md`.
 - Reference substrates: [HumanReference](./HumanReference.md), [CHOReference](./CHOReference.md), [CrossSpecies](./CrossSpecies.md). AI/ML benchmarks: [Benchmarks](./Benchmarks.md).
+- Reference texts: [*Encyclopedia of Meat Sciences*, 3rd ed.](../OtherResources.md#encyclopedia-of-meat-sciences-3rd-edition) (Dikeman, ed., 2024) — especially [*Flavor development in beef, pork, lamb and goat meat*](https://doi.org/10.1016/B978-0-323-85125-1.00017-X) (Kerth 2024) for the conventional-beef sensory baseline that cultivated-beef work aims to match.
