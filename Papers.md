@@ -23,7 +23,7 @@ This document presents the core research papers at the intersection of Cellular 
 | [General-Purpose Biomedical Agents](./ResearchAreas/AITooling.md#general-purpose-biomedical-agents) | | | | | | [Dong et al. 2024](#98)<br>[Gao et al. 2025a](#40)<br>[Huang et al. 2025](#49)<br>[Pickard et al. 2025](#94)<br>[Riffle et al. 2025](#95)<br>[Jin et al. 2025](#96) | |
 | [Chemistry / Synthesis Agents](./ResearchAreas/AITooling.md#chemistry--synthesis-agents) | | | | | | [Boiko et al. 2023](#70)<br>[Bran et al. 2024](#71)<br>[Narayanan et al. 2025](#161) | |
 | [Domain-Specific Biomedical Agents](./ResearchAreas/AITooling.md#domain-specific-biomedical-agents) | | [Hao et al. 2025](#97)<br>[Roohani et al. 2025a](#125)<br>[Youngblut et al. 2025](#126)<br>[Yu et al. 2026](#90)<br>[Tang et al. 2026](#93) | | | | [Singh et al. 2023](#66)<br>[Maeda & Kurata 2023](#69)<br>[Li et al. 2024](#68)<br>[Lee et al. 2025](#43)<br>[Wehling et al. 2025](#50)<br>[Singh et al. 2025](#167)<br>[Ying et al. 2025](#54)<br>[Wang et al. 2025a](#56)<br>[Sui et al. 2026](#51)<br>[Gu et al. 2024a](#151)<br>[Gu et al. 2024b](#152) | |
-| [Robot Scientists & Lab Automation](https://en.wikipedia.org/wiki/Robot_scientist) | | | [Wang et al. 2025b](#61)<br>[Qiu et al. 2025](#62) | | | [Tiukova et al. 2024](#64)<br>[Brunnsåker et al. 2025](#65) | |
+| [Robot Scientists & Lab Automation](https://en.wikipedia.org/wiki/Robot_scientist) | | | [Wang et al. 2025b](#61)<br>[Qiu et al. 2025](#62) | | | [King et al. 2004](#182)<br>[Tiukova et al. 2024](#64)<br>[Brunnsåker et al. 2025](#65) | |
 | [Benchmarks & Evaluation Frameworks](./ResearchAreas/AIEvaluation.md#benchmarks--evaluation-frameworks) | | | | | | | [Sadhuka et al. 2025](#55)<br>[Brouwer et al. 2026](#89)<br>[Mitchener et al. 2025](#108)<br>[Bushuiev et al. 2024](#109)<br>[Sze & Hassoun 2024](#110)<br>[Boiarsky et al. 2024](#113)<br>[Yang et al. 2024](#114)<br>[Chevalley et al. 2025](#127)<br>[Laurent et al. 2024](#146)<br>[Gu et al. 2025](#147)<br>[Notin et al. 2023](#148)<br>[Duan et al. 2025](#149)<br>[Nair et al. 2026](#150)<br>[Jimenez et al. 2024](#155)<br>[Rein et al. 2023](#156)<br>[Wang et al. 2024](#157)<br>[Phan et al. 2026](#158)<br>[Wang et al. 2026](#159)<br>[Huang et al. 2026](#164) |
 | [Agent Infrastructure (Frameworks, KGs, Protocols)](./ResearchAreas/AITooling.md#agent-infrastructure-frameworks-kgs-protocols) | | | | | | [Gao et al. 2025b](#41)<br>[Lobentanzer et al. 2025](#48)<br>[Ruscone et al. 2025](#67)<br>[Kuehl et al. 2025](#133)<br>[Narayanan et al. 2024](#160)<br>[Qiao et al. 2026](#162)<br>[Yan et al. 2026](#163) | |
 
@@ -407,6 +407,8 @@ This document presents the core research papers at the intersection of Cellular 
 
 <a id="171">171</a> Kircali Ata, S., Shi, J. K., Yao, X., Hua, X. Y., Haldar, S., Chiang, J. H., & Wu, M. (2023). Predicting the Textural Properties of Plant-Based Meat Analogs with Machine Learning. *Foods, 12*(2), 344. https://doi.org/10.3390/foods12020344
 
+<a id="182">182</a> King, R. D., Whelan, K. E., Jones, F. M., Reiser, P. G. K., Bryant, C. H., Muggleton, S. H., Kell, D. B., & Oliver, S. G. (2004). Functional genomic hypothesis generation and experimentation by a robot scientist. *Nature, 427*(6971), 247–252. https://doi.org/10.1038/nature02236
+
 ## Sensory & Flavor Reference Work
 
 This section catalogs foundational primary research and methodology papers in sensory science, flavor chemistry, and analytical sensomics relevant to cellular agriculture, cultivated meat, and alt-protein products. Entries here do not apply a specific AI / ML method to a specific cell-ag problem (otherwise they would live in the matrix), but they are essential reference work — empirical studies, methodology frameworks, and applied chemometric analyses — that any AI/ML application in this space should build on. The same numeric ID counter is shared with the primary references above; no matrix participation.
@@ -428,6 +430,12 @@ This section catalogs foundational primary research and methodology papers in se
 <a id="106">106</a> Nissim, I., Dagan-Wiener, A., & Niv, M. Y. (2017). The taste of toxicity: A quantitative analysis of bitter and toxic molecules. *IUBMB Life, 69*(12), 938–946. https://doi.org/10.1002/iub.1694
 
 <a id="107">107</a> Wang, M., Carver, J. J., Phelan, V. V., Sanchez, L. M., Garg, N., Peng, Y., Nguyen, D. D., Watrous, J., Kapono, C. A., Luzzatto-Knaan, T., Porto, C., Bouslimani, A., Melnik, A. V., Meehan, M. J., Liu, W.-T., Crüsemann, M., Boudreau, P. D., Esquenazi, E., Sandoval-Calderón, M., ... Bandeira, N. (2016). Sharing and community curation of mass spectrometry data with Global Natural Products Social Molecular Networking. *Nature Biotechnology, 34*(8), 828–837. https://doi.org/10.1038/nbt.3597
+
+<a id="189">189</a> Ramalingam, V., Song, Z., & Hwang, I. (2019). The potential role of secondary metabolites in modulating the flavor and taste of the meat. *Food Research International, 122*, 174–182. https://doi.org/10.1016/j.foodres.2019.04.007
+
+<a id="190">190</a> Muroya, S., Ueda, S., Komatsu, T., Miyakawa, T., & Ertbjerg, P. (2020). MEATabolomics: Muscle and Meat Metabolomics in Domestic Animals. *Metabolites, 10*(5), 188. https://doi.org/10.3390/metabo10050188
+
+<a id="191">191</a> Ali, S., Liao, Z., Cheng, Y., Malhi, I. Y., Wang, Y., Peng, S., & Zhang, L. (2025). Lipidomics in chicken meat flavor chemistry: Current understanding, integrated omics approaches, and future perspectives. *Poultry Science, 104*(11), 105700. https://doi.org/10.1016/j.psj.2025.105700
 
 ## Metabolic Reference Work
 
@@ -454,6 +462,20 @@ This section catalogs the foundational methods and theory papers — from machin
 <a id="130">130</a> Vaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A. N., Kaiser, L., & Polosukhin, I. (2023). *Attention Is All You Need.* arXiv. https://doi.org/10.48550/arXiv.1706.03762
 
 <a id="131">131</a> Wang, J., Zhang, K., Xu, L., & Wang, E. (2011). Quantifying the Waddington landscape and biological paths for development and differentiation. *Proceedings of the National Academy of Sciences, 108*(20), 8257–8262. https://doi.org/10.1073/pnas.1017017108
+
+<a id="180">180</a> Orth, J. D., Thiele, I., & Palsson, B. Ø. (2010). What is flux balance analysis? *Nature Biotechnology, 28*(3), 245–248. https://doi.org/10.1038/nbt.1614
+
+<a id="181">181</a> Neftci, E. O., & Averbeck, B. B. (2019). Reinforcement learning in artificial and biological systems. *Nature Machine Intelligence, 1*(3), 133–143. https://doi.org/10.1038/s42256-019-0025-4
+
+<a id="184">184</a> Moses, L., & Pachter, L. (2022). Museum of spatial transcriptomics. *Nature Methods, 19*(5), 534–546. https://doi.org/10.1038/s41592-022-01409-2
+
+<a id="185">185</a> Cuperlovic-Culf, M. (2018). Machine Learning Methods for Analysis of Metabolic Data and Metabolic Pathway Modeling. *Metabolites, 8*(1), 4. https://doi.org/10.3390/metabo8010004
+
+<a id="186">186</a> Vijayakumar, S., Magazzù, G., Moon, P., Occhipinti, A., Angione, C., Cortassa, S., & Aon, M. A. (2022). A Practical Guide to Integrating Multimodal Machine Learning and Metabolic Modeling. In *Computational Systems Biology in Medicine and Biotechnology: Methods and Protocols* (pp. 87–122). Springer. https://doi.org/10.1007/978-1-0716-1831-8_5
+
+<a id="187">187</a> Petrany, M. J., Swoboda, C. O., Sun, C., Chetal, K., Chen, X., Weirauch, M. T., Salomonis, N., & Millay, D. P. (2020). Single-nucleus RNA-seq identifies transcriptional heterogeneity in multinucleated skeletal myofibers. *Nature Communications, 11*(1), 6374. https://doi.org/10.1038/s41467-020-20063-w
+
+<a id="188">188</a> Grindberg, R. V., Yee-Greenbaum, J. L., McConnell, M. J., Novotny, M., O’Shaughnessy, A. L., Lambert, G. M., Araúzo-Bravo, M. J., Lee, J., Fishman, M., Robbins, G. E., Lin, X., Venepally, P., Badger, J. H., Galbraith, D. W., Gage, F. H., & Lasken, R. S. (2013). RNA-sequencing from single nuclei. *Proceedings of the National Academy of Sciences, 110*(49), 19802–19807. https://doi.org/10.1073/pnas.1319700110
 
 ## Livestock Functional Genomics Reference Work
 
@@ -482,6 +504,8 @@ This section catalogs foundational primary research describing the Farm Animal G
 > **Code**: https://omiga.bio/
 
 <a id="144">144</a> Clark, E. L., Archibald, A. L., Daetwyler, H. D., Groenen, M. A. M., Harrison, P. W., Houston, R. D., Kühn, C., Lien, S., Macqueen, D. J., Reecy, J. M., Robledo, D., Watson, M., Tuggle, C. K., & Giuffra, E. (2020). From FAANG to fork: application of highly annotated genomes to improve farmed animal production and welfare. *Genome Biology, 21*(1), 285. https://doi.org/10.1186/s13059-020-02197-8
+
+<a id="192">192</a> Liu, S., Gao, Y., Canela-Xandri, O., Wang, S., Yu, Y., Cai, W., Li, B., Xiang, R., Chamberlain, A. J., Pairo-Castineira, E., D’Mellow, K., Rawlik, K., Xia, C., Yao, Y., Navarro, P., Rocha, D., Li, X., Yan, Z., Li, C., … Fang, L. (2022). A multi-tissue atlas of regulatory variants in cattle. *Nature Genetics, 54*(9), 1438–1447. https://doi.org/10.1038/s41588-022-01153-5
 
 ## Reviews & Perspectives
 
@@ -524,3 +548,5 @@ This section lists review articles, position papers, and commentaries that surve
 <a id="178">178</a> Gu, C., Kim, G. B., Kim, W. J., Kim, H. U., & Lee, S. Y. (2019). Current status and applications of genome-scale metabolic models. *Genome Biology, 20*(1), 121. https://doi.org/10.1186/s13059-019-1730-3
 
 <a id="179">179</a> Gulati, G. S., D'Silva, J. P., Liu, Y., Wang, L., & Newman, A. M. (2025). Profiling cell identity and tissue architecture with single-cell and spatial transcriptomics. *Nature Reviews Molecular Cell Biology, 26*(1), 11–31. https://doi.org/10.1038/s41580-024-00768-2
+
+<a id="183">183</a> Sparkes, A., Aubrey, W., Byrne, E., Clare, A., Khan, M. N., Liakata, M., Markham, M., Rowland, J., Soldatova, L. N., Whelan, K. E., Young, M., & King, R. D. (2010). Towards Robot Scientists for autonomous scientific discovery. *Automated Experimentation, 2*(1), 1. https://doi.org/10.1186/1759-4499-2-1
