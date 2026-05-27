@@ -63,9 +63,13 @@ This document presents the core research papers at the intersection of Cellular 
 
 > **Code**: https://github.com/epierson9/ZIFA
 
+> **Code**: https://github.com/eugenelin1/DRA
+
 <a id="10">10</a> Zrimec, J., Fu, X., Muhammad, A. S., Skrekas, C., Jauniskis, V., Speicher, N. K., Börlin, C. S., Verendel, V., Chehreghani, M. H., Dubhashi, D., Siewers, V., David, F., Nielsen, J., & Zelezniak, A. (2022). Controlling gene expression with deep generative design of regulatory DNA. *Nature Communications, 13*(1), 5099. https://doi.org/10.1038/s41467-022-32818-8
 
 > **Code**: https://github.com/JanZrimec/ExpressionGAN
+
+> **Data**: https://doi.org/10.5281/zenodo.6811225
 
 <a id="11">11</a> Shen, C., Wang, R., Jin, Q., Chen, X., Cai, K., & Xu, B. (2024). Chemometrics methods, sensory evaluation and intelligent sensory technologies combined with GAN-based integrated deep-learning framework to discriminate salted goose breeds. *Food Chemistry, 461,* 140919. https://doi.org/10.1016/j.foodchem.2024.140919
 
@@ -141,6 +145,8 @@ This document presents the core research papers at the intersection of Cellular 
 
 <a id="40">40</a> Gao, S., Zhu, R., Kong, Z., Noori, A., Su, X., Ginder, C., Tsiligkaridis, T., & Zitnik, M. (2025). *TxAgent: An AI Agent for Therapeutic Reasoning Across a Universe of Tools.* arXiv. https://doi.org/10.48550/arXiv.2503.10970
 
+> **Code**: https://github.com/mims-harvard/TxAgent
+
 <a id="41">41</a> Gao, S., Zhu, R., Sui, P., Kong, Z., Aldogom, S., Huang, Y., Noori, A., Shamji, R., Parvataneni, K., Tsiligkaridis, T., & Zitnik, M. (2025). *Democratizing AI scientists using ToolUniverse.* arXiv. https://doi.org/10.48550/arXiv.2509.23426
 
 > **Code**: https://github.com/mims-harvard/ToolUniverse
@@ -163,6 +169,9 @@ This document presents the core research papers at the intersection of Cellular 
 
 <a id="48">48</a> Lobentanzer, S., Feng, S., Bruderer, N., Maier, A., Wang, C., Baumbach, J., Abreu-Vicente, J., Krehl, N., Ma, Q., Lemberger, T., & Saez-Rodriguez, J. (2025). A platform for the biomedical application of large language models. *Nature Biotechnology, 43*(2), 166–169. https://doi.org/10.1038/s41587-024-02534-3
 
+> **Code**: https://github.com/biocypher/biochatter
+> **Data**: https://doi.org/10.5281/zenodo.10777945
+
 <a id="49">49</a> Huang, K., Zhang, S., Wang, H., Qu, Y., Lu, Y., Roohani, Y., Li, R., Qiu, L., Li, G., Zhang, J., Yin, D., Marwaha, S., Carter, J. N., Zhou, X., Wheeler, M., Bernstein, J. A., Wang, M., He, P., Zhou, J., Snyder, M., Cong, L., Regev, A., & Leskovec, J. (2025). *Biomni: A General-Purpose Biomedical AI Agent.* bioRxiv. https://doi.org/10.1101/2025.05.30.656746
 
 > **Code**: https://github.com/snap-stanford/Biomni
@@ -172,6 +181,9 @@ This document presents the core research papers at the intersection of Cellular 
 > **Code**: https://github.com/VirtualPatientEngine/AIAgents4Pharma
 
 <a id="51">51</a> Sui, P., Li, M. M., Gao, S., Shen, W., Giunchiglia, V., Shen, A., Huang, Y., Kong, Z., & Zitnik, M. (2026). *Medea: An omics AI agent for therapeutic discovery.* bioRxiv. https://doi.org/10.64898/2026.01.16.696667
+
+> **Code**: https://github.com/mims-harvard/Medea
+> **Data**: https://huggingface.co/datasets/mims-harvard/MedeaDB
 
 <a id="52">52</a> Mulyadi, A. W., Wehling, L., Kumar, A., Boucher, N., Abdessalem, F., Jager, S., Mosa, M. H., Klabunde, T., Andreani, T., & Singh, G. (2025). *BioMedReasoner: Towards Multi-Hop Reasoning using Path-based Relational Learning on Biomedical Knowledge Graphs* [Poster, NeurIPS 2025 AI for Science Workshop]. https://openreview.net/forum?id=FmDuKzM8f7
 
@@ -183,11 +195,15 @@ This document presents the core research papers at the intersection of Cellular 
 
 <a id="56">56</a> Wang, H., He, Y., Coelho, P. P., Bucci, M., Nazir, A., Chen, B., Trinh, L., Zhang, S., Huang, K., Chandrasekar, V., Chung, D. C., Hao, M., Leote, A. C., Lee, Y., Li, B., Liu, T., Liu, J., Lopez, R., Lucas, T., Ma, M., Makarov, N., McGinnis, L., Peng, L., Ra, S., Scalia, G., Singh, A., Tao, L., Uehara, M., Wang, C., Wei, R., Copping, R., Rozenblatt-Rosen, O., Leskovec, J., & Regev, A. (2025). *SpatialAgent: An autonomous AI agent for spatial biology.* bioRxiv. https://doi.org/10.1101/2025.04.03.646459
 
+> **Code**: https://github.com/Genentech/SpatialAgent
+
 <a id="57">57</a> Adduri, A. K., Gautam, D., Bevilacqua, B., Imran, A., Shah, R., Naghipourfar, M., Teyssier, N., Ilango, R., Nagaraj, S., Dong, M., Ricci-Tam, C., Carpenter, C., Subramanyam, V., Winters, A., Tirukkovular, S., Sullivan, J., Plosky, B. S., Eraslan, B., Youngblut, N. D., Leskovec, J., Gilbert, L. A., Konermann, S., Hsu, P. D., Dobin, A., Burke, D. P., Goodarzi, H., & Roohani, Y. H. (2025). *Predicting cellular responses to perturbation across diverse contexts with State.* bioRxiv. https://doi.org/10.1101/2025.06.26.661135
 
 > **Code**: https://github.com/ArcInstitute/state
 
 <a id="58">58</a> Narayanan, H., Hinckley, J., Barry, R., Dang, B., Wolffe, L., Atari, A., Tseng, Y., & Love, J. (2025). Accelerating cell culture media development using Bayesian optimization-based iterative experimental design. *Nature Communications, 16.* https://doi.org/10.1038/s41467-025-61113-5
+
+> **Data**: https://doi.org/10.5281/zenodo.15466161
 
 <a id="59">59</a> Antonakoudis, A., & Richelle, A. (2026). Systematic data-driven genome-scale metabolic model reduction for bioprocess modeling: CHO culture case study. *npj Systems Biology and Applications.* https://doi.org/10.1038/s41540-026-00704-4
 
@@ -197,11 +213,16 @@ This document presents the core research papers at the intersection of Cellular 
 
 <a id="62">62</a> Qiu, Y., Huang, Z., Wang, Z., Liu, H., Qiao, Y., Hu, Y., Sun, S., Peng, H., Xu, R. X., & Sun, M. (2025). *BioMARS: A Multi-Agent Robotic System for Autonomous Biological Experiments.* arXiv. https://doi.org/10.48550/arXiv.2507.01485
 
+> **Code**: https://github.com/AlexandreQ27/BioMARS
+
 <a id="63">63</a> Pandi, A., Diehl, C., Yazdizadeh Kharrazi, A., Scholz, S., Bobkova, E., Faure, L., Nattermann, M., Adam, D., Chapin, N., Foroughijabbari, Y., Moritz, C., Paczia, N., Cortina, N., Faulon, J.-L., & Erb, T. J. (2022). A versatile active learning workflow for optimization of genetic and metabolic networks. *Nature Communications, 13*(1). https://doi.org/10.1038/s41467-022-31245-z
 
 <a id="64">64</a> Tiukova, I. A., Brunnsåker, D., Bjurström, E. Y., Gower, A. H., Kronström, F., Reder, G. K., Reiserer, R. S., Korovin, K., Soldatova, L. B., Wikswo, J. P., & King, R. D. (2024). *Genesis: Towards the Automation of Systems Biology Research.* arXiv. https://doi.org/10.48550/arXiv.2408.10689
 
 <a id="65">65</a> Brunnsåker, D., Gower, A., Naval, P., Bjurström, E., Kronström, F., Tiukova, I., & King, R. (2025). *Agentic AI Integrated with Scientific Knowledge: Laboratory Validation in Systems Biology.* bioRxiv. https://doi.org/10.1101/2025.06.24.661378
+
+> **Code**: https://github.com/DanielBrunnsaker/GenExp
+> **Data**: https://doi.org/10.5281/zenodo.15730908
 
 <a id="66">66</a> Singh, A., Kaufmann-Malaga, B., Lerman, J., Dougherty, D., Zhang, Y., Kilbo, A., Wilson, E., Ng, C., Erbilgin, O., Curran, K., Reeves, C., Hung, J., Mantovani, S., King, Z., Ayson, M., Denery, J., Lu, C., Norton, P., Tran, C., Platt, D., Cherry, J., Chandran, S., & Meadows, A. (2023). *An Automated Scientist to Design and Optimize Microbial Strains for the Industrial Production of Small Molecules.* bioRxiv. https://doi.org/10.1101/2023.01.03.521657
 
@@ -209,11 +230,17 @@ This document presents the core research papers at the intersection of Cellular 
 
 <a id="68">68</a> Li, X., Liang, Z., Guo, Z., Liu, Z., Wu, K., Luo, J., Zhang, Y., Liu, L., Sun, M., Huang, Y., Tang, H., Chen, Y., Yu, T., Nielsen, J., & Li, F. (2024). *Leveraging large language models for metabolic engineering design.* bioRxiv. https://doi.org/10.1101/2024.09.09.612023
 
+> **Code**: https://github.com/LiLabTsinghua/D2Cell
+
 <a id="69">69</a> Maeda, K., & Kurata, H. (2023). Automatic Generation of SBML Kinetic Models from Natural Language Texts Using GPT. *International Journal of Molecular Sciences, 24*(8), 7296. https://doi.org/10.3390/ijms24087296
+
+> **Code**: https://github.com/kmaeda16/KinModGPT
 
 <a id="70">70</a> Boiko, D. A., MacKnight, R., Kline, B., & Gomes, G. (2023). Autonomous chemical research with large language models. *Nature, 624,* 570–578. https://doi.org/10.1038/s41586-023-06792-0
 
 <a id="71">71</a> Bran, A. M., Cox, S., Schilter, O., Baldassari, C., White, A. D., & Schwaller, P. (2024). Augmenting large language models with chemistry tools. *Nature Machine Intelligence.* https://doi.org/10.1038/s42256-024-00832-8
+
+> **Code**: https://github.com/ur-whitelab/chemcrow-public, https://github.com/ur-whitelab/chemcrow-runs
 
 <a id="72">72</a> Colantonio, V., Ferrão, L. F. V., Tieman, D. M., Bliznyuk, N., Sims, C., Klee, H. J., Munoz, P., & Resende, M. F. R. (2022). Metabolomic selection for enhanced fruit flavor. *Proceedings of the National Academy of Sciences, 119*(7), e2115865119. https://doi.org/10.1073/pnas.2115865119
 
@@ -228,6 +255,8 @@ This document presents the core research papers at the intersection of Cellular 
 <a id="90">90</a> Yu, X., Yang, Y., Liu, Q., Du, Y., McSweeney, S., & Lin, Y. (2026). *GenCellAgent: Generalizable, Training-Free Cellular Image Segmentation via Large Language Model Agents.* arXiv. https://doi.org/10.48550/arXiv.2510.13896
 
 <a id="91">91</a> Ding, Y., Qiang, B., Li, S., Zhou, Y., Yu, J., Li, Q., Shi, C., Zhang, L., Wang, Y., Zheng, N., & Liu, Z. (2026). Pretraining a foundation model for small-molecule natural products. *Nature Machine Intelligence*. https://doi.org/10.1038/s42256-026-01226-8
+
+> **Code**: https://github.com/mwang87/NP-Classifier
 
 <a id="92">92</a> Pearce, J., Simmonds, S., Mahmoudabadi, G., Krishnan, L., Palla, G., Istrate, A., Tarashansky, A., Nelson, B., Valenzuela, O., Li, D., Quake, S., & Karaletsos, T. (2026). TranscriptFormer: A generative cell atlas across 1.5 billion years of evolution. *Science*. https://doi.org/10.1126/science.aec8514
 
@@ -254,6 +283,8 @@ This document presents the core research papers at the intersection of Cellular 
 <a id="103">103</a> Margulis, E., Dagan-Wiener, A., Ives, R. S., Jaffari, S., Siems, K., & Niv, M. Y. (2021). Intense bitterness of molecules: Machine learning for expediting drug discovery. *Computational and Structural Biotechnology Journal, 19,* 568–576. https://doi.org/10.1016/j.csbj.2020.12.030
 
 <a id="104">104</a> Margulis, E., Slavutsky, Y., Lang, T., Behrens, M., Benjamini, Y., & Niv, M. Y. (2022). BitterMatch: recommendation systems for matching molecules with bitter taste receptors. *Journal of Cheminformatics, 14*(1), 45. https://doi.org/10.1186/s13321-022-00612-9
+
+> **Code**: https://github.com/YuliSl/BitterMatch
 
 <a id="105">105</a> Ziaikin, E., Tello, E., Peterson, D. G., & Niv, M. Y. (2024). BitterMasS: Predicting Bitterness from Mass Spectra. *Journal of Agricultural and Food Chemistry, 72*(18), 10537–10547. https://doi.org/10.1021/acs.jafc.3c09767
 
@@ -307,15 +338,21 @@ This document presents the core research papers at the intersection of Cellular 
 
 <a id="122">122</a> Magnusson, J. P., Roohani, Y., Stauber, D., Situ, Y., Teba, P. R. de C., Sandberg, R., Leskovec, J., & Qi, L. S. (2024). *PreciCE: Precision engineering of cell fates via data-driven multi-gene control of transcriptional networks.* bioRxiv. https://doi.org/10.1101/2024.11.04.621938
 
+> **Code**: https://github.com/snap-stanford/precice
+
 <a id="123">123</a> Littman, R., Levine, J., Maleki, S., Lee, Y., Ermakov, V., Qiu, L., Wu, A., Huang, K., Lopez, R., Scalia, G., Biancalani, T., Richmond, D., Regev, A., & Hütter, J. C. (2025). *Gene-embedding-based prediction and functional evaluation of perturbation expression responses with PRESAGE.* bioRxiv. https://doi.org/10.1101/2025.06.03.657653
 
 <a id="124">124</a> Dong, M., Adduri, A., Gautam, D., Carpenter, C., Shah, R., Ricci-Tam, C., Kluger, Y., Burke, D. P., & Roohani, Y. H. (2026). *Stack: In-Context Learning of Single-Cell Biology.* bioRxiv. https://doi.org/10.64898/2026.01.09.698608
+
+> **Models**: https://huggingface.co/arcinstitute/Stack-CellxGene45M, https://huggingface.co/arcinstitute/Stack-Large, https://huggingface.co/arcinstitute/Stack-Large-Aligned
 
 <a id="125">125</a> Roohani, Y., Lee, A., Huang, Q., Vora, J., Steinhart, Z., Huang, K., Marson, A., Liang, P., & Leskovec, J. (2025). *BioDiscoveryAgent: An AI Agent for Designing Genetic Perturbation Experiments.* arXiv. https://doi.org/10.48550/arXiv.2405.17631
 
 > **Code**: https://github.com/snap-stanford/BioDiscoveryAgent
 
 <a id="126">126</a> Youngblut, N. D., Carpenter, C., Nayebnazar, A., Adduri, A., Shah, R., Ricci-Tam, C., Prashar, J., Ilango, R., Teyssier, N., Konermann, S., Hsu, P. D., Dobin, A., Burke, D. P., Goodarzi, H., & Roohani, Y. H. (2025). *scBaseCount: an AI agent-curated, uniformly processed, and autonomously updated single cell data repository.* bioRxiv. https://doi.org/10.1101/2025.02.27.640494
+
+> **Code**: https://github.com/ArcInstitute/scRecounter, https://github.com/ArcInstitute/tiledb-soma-loader, https://github.com/ArcInstitute/scBaseCount_analysis
 
 <a id="127">127</a> Chevalley, M., Roohani, Y. H., Mehrjou, A., Leskovec, J., & Schwab, P. (2025). A large-scale benchmark for network inference from single-cell perturbation data. *Communications Biology, 8*(1), 412. https://doi.org/10.1038/s42003-025-07764-y
 
@@ -324,6 +361,8 @@ This document presents the core research papers at the intersection of Cellular 
 <a id="133">133</a> Kuehl, M., Schaub, D. P., Carli, F., Heumos, L., Hellmig, M., Fernández-Zapata, C., Kaiser, N., Schaul, J., Kulaga, A., Usanov, N., Krebs, C. F., Panzer, U., Bonn, S., Lobentanzer, S., Saez-Rodriguez, J., & Puelles, V. G. (2025). BioContextAI is a community hub for agentic biomedical systems. *Nature Biotechnology, 43*(11), 1755–1757. https://doi.org/10.1038/s41587-025-02900-9
 
 > **Code**: https://github.com/biocontext-ai
+
+> **Code**: https://github.com/biocontext-ai/registry, https://github.com/biocontext-ai/knowledgebase-mcp
 
 <a id="145">145</a> Xiao, W., Zheng, J., & Li, S. Z. (2026). *MetaGEM: Bottom-Up Reconstruction of Genome-Scale Metabolic Networks via Deep Enzyme-Metabolite Interaction Modeling.* arXiv. https://doi.org/10.48550/arXiv.2605.14812
 
@@ -343,6 +382,9 @@ This document presents the core research papers at the intersection of Cellular 
 
 <a id="150">150</a> Nair, S., Gunsalus, L., Orcutt-Jahns, B., Rossen, J., Lal, A., De Donno, C., Çelik, M. H., Fletez-Brant, K., Xie, X., Corrada Bravo, H., & Eraslan, G. (2026). *Agentic systems are adept at solving well-scoped, verifiable problems in computational biology.* bioRxiv. https://doi.org/10.64898/2026.04.06.716850
 
+> **Code**: https://github.com/Genentech/compbiobench-runner
+> **Data**: https://doi.org/10.5281/zenodo.19443185
+
 <a id="151">151</a> Gu, K., Shang, R., Althoff, T., Wang, C., & Drucker, S. M. (2024). How Do Analysts Understand and Verify AI-Assisted Data Analyses? *Proceedings of the 2024 CHI Conference on Human Factors in Computing Systems,* 1–22. https://doi.org/10.1145/3613904.3642497
 
 <a id="152">152</a> Gu, K., Grunde-McLaughlin, M., McNutt, A., Heer, J., & Althoff, T. (2024). How Do Data Analysts Respond to AI Assistance? A Wizard-of-Oz Study. *Proceedings of the 2024 CHI Conference on Human Factors in Computing Systems,* 1–22. https://doi.org/10.1145/3613904.3641891
@@ -352,6 +394,8 @@ This document presents the core research papers at the intersection of Cellular 
 <a id="154">154</a> Ghareeb, A. E., Chang, B., Mitchener, L., Yiu, A., Szostkiewicz, C. J., Shved, D., Gyimesi, G. J., Laurent, J. M., Wright, S. M., Razzak, M. T., White, A. D., Finnemann, S. C., Hinks, M. M., & Rodriques, S. G. (2026). A multi-agent system for automating scientific discovery [Robin]. *Nature.* https://doi.org/10.1038/s41586-026-10652-y
 
 > **Code**: https://github.com/Future-House/robin
+
+> **Data**: https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA1464762 (`PRJNA1464762`)
 
 <a id="155">155</a> Jimenez, C. E., Yang, J., Wettig, A., Yao, S., Pei, K., Press, O., & Narasimhan, K. (2024). *SWE-bench: Can Language Models Resolve Real-World GitHub Issues?* arXiv. https://doi.org/10.48550/arXiv.2310.06770
 
