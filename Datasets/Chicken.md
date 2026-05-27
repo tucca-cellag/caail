@@ -28,7 +28,7 @@ The most directly cultivated-meat-relevant chicken dataset profiles the spontane
 
 ## Myogenesis, satellite cells & nutrient regulation
 
-Two datasets probe the myogenic program and its modulation. RNA-seq of chicken myoblasts under betaine treatment (`CRA006598`) examines nutrient regulation of myogenesis, and RNA-seq of broiler satellite cells under hypoxic culture (`GSE241619`) shows how oxygen tension shifts the balance between proliferation and differentiation — both directly relevant to media and bioprocess design for cultivated chicken.
+Two datasets probe the myogenic program and its modulation. RNA-seq of chicken myoblasts under betaine treatment (`CRA006598`) examines nutrient regulation of myogenesis, and RNA-seq of broiler satellite cells under hypoxic culture (`GSE241619`) shows how oxygen tension shifts the balance between proliferation and differentiation — both directly relevant to media and bioprocess design for cultivated chicken. An earlier RNA-seq study of TP63 isoform regulation in chicken skeletal muscle differentiation (Luo et al. 2018, *Frontiers in Physiology*, `GSE114452`) adds a transcription-factor-level layer to the chicken myogenesis substrate, showing opposite roles for TP63 transcripts in myoblast proliferation vs differentiation.
 
 ## Skeletal-muscle development & profiling
 
@@ -45,6 +45,7 @@ A curated snapshot. NCBI / NGDC accessions are the canonical living source — f
 | [Gene expression profiles of specific chicken skeletal muscles](https://www.ncbi.nlm.nih.gov/sra/?term=SRP374834) | RNA-seq | Muscle | 4 or 6 biological replicates of each skeletal muscle | 418.4 Gb | Chicken skeletal muscle |
 | [Comparative analyses of dynamic transcriptome profiles for muscle development and growth in chicken](https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA729271) | RNA-seq | Muscle | Breast-muscle time-series of fast-growing Arbor Acres and slow-growing Lushi chickens at E10/14/18, post-hatch d1, w1/3/5 | 605 Gb | Breast-muscle development |
 | [Hypoxia promotes proliferation and inhibits myogenesis in broiler satellite cells](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE241619) | RNA-seq | Muscle | Pectoralis-major satellite cells under hypoxic culture, harvested 0/12/24/36/48 h after differentiation | 4 Gb | Muscle growth |
+| [TP63 Transcripts Play Opposite Roles in Chicken Skeletal Muscle Differentiation](https://doi.org/10.3389/fphys.2018.01298) | RNA-seq | Muscle (primary myoblasts) | Chicken primary myoblasts transfected with TAp63α or 1Np63α overexpression vectors vs GFP control; the two TP63 isoforms show opposing proliferation/differentiation roles; NCBI GEO [`GSE114452`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE114452) | — | TF regulation of myogenesis |
 
 > **Curation source:** The deposit entries above were initially curated from the supplemental Table 1 of Todhunter et al. 2024 ([Papers.md ref #132](../Papers.md#132)). Subsequent additions come from CAAIL contributors.
 
