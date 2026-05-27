@@ -101,7 +101,7 @@ Open-source toolkits for population-genetics analysis of multi-omics data — mo
 
 ### [OmiGA](https://omiga.bio/)
 
-Summary: An ultra-efficient toolkit for molecular quantitative trait loci (molQTL) mapping across multi-omics data, from the Zhang group at China Agricultural University. The performance backbone of the FarmGTEx project family — eQTL, sQTL, mQTL, and other molQTL discovery at livestock-atlas scale, optimized for the throughput needed to handle the FarmGTEx tissue / sample matrices. Companion to [Papers.md ref #143](./Papers.md#143) (Teng et al. 2026, *Nature Communications*).
+Summary: An ultra-efficient toolkit for molecular quantitative trait loci (molQTL) mapping across multi-omics data, from the Zhang group at China Agricultural University. The performance backbone of the FarmGTEx project family — eQTL, sQTL, mQTL, and other molQTL discovery at livestock-atlas scale, optimized for the throughput needed to handle the FarmGTEx tissue / sample matrices. Companion to [Papers.md ref #143](./Papers.md#143) (Teng et al. 2026, *Nature Communications*). **Reproducibility deposits**: ENA BioProject [`PRJEB58031`](https://www.ebi.ac.uk/ena/browser/view/PRJEB58031), Zenodo [`10.5281/zenodo.10072081`](https://doi.org/10.5281/zenodo.10072081) and [`10.5281/zenodo.18280923`](https://doi.org/10.5281/zenodo.18280923).
 
 ## Mass Spectrometry & Chemometrics
 
