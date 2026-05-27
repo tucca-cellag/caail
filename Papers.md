@@ -10,9 +10,9 @@ This document presents the core research papers at the intersection of Cellular 
 | [GAN](https://en.wikipedia.org/wiki/Generative_adversarial_network) / [VAE](https://en.wikipedia.org/wiki/Variational_autoencoder) | | [Lin et al. 2020](#9)<br>[Zrimec et al. 2022](#10) | | | [Shen et al. 2024](#11) | | |
 | [Genetic Algorithms](https://en.wikipedia.org/wiki/Genetic_algorithm) | [Cosenza & Block 2021](#17)<br>[Nikkhah et al. 2023](#1) | | [Peng et al. 2013](#30)<br>[Zhang et al. 2020](#31) | | | | |
 | [SVM](https://en.wikipedia.org/wiki/Support_vector_machine) | [Xu et al. 2014](#21) | [Lao et al. 2022](#22) | [Zhang et al. 2020](#31)<br>[Roell et al. 2022](#32) | [Andrews et al. 2025](#34) |  | | |
-| [Ensemble Learning](https://en.wikipedia.org/wiki/Ensemble_learning) | | | | | [Keller et al. 2017](#80)<br>[Dagan-Wiener et al. 2017](#102)<br>[Margulis et al. 2021](#103)<br>[Colantonio et al. 2022](#72)<br>[Margulis et al. 2022](#104)<br>[Ziaikin et al. 2024](#105)<br>[Du et al. 2025](#27) | | |
+| [Ensemble Learning](https://en.wikipedia.org/wiki/Ensemble_learning) | [Gangwar et al. 2024](#170) | | | | [Keller et al. 2017](#80)<br>[Dagan-Wiener et al. 2017](#102)<br>[Margulis et al. 2021](#103)<br>[Colantonio et al. 2022](#72)<br>[Margulis et al. 2022](#104)<br>[Kircali Ata et al. 2023](#171)<br>[Ziaikin et al. 2024](#105)<br>[Du et al. 2025](#27) | | |
 | [K-Nearest Neighbors](https://en.wikipedia.org/wiki/K-nearest_neighbors_algorithm) | | | | | [Sun et al. 2026](#28) | | |
-| [Active Learning](https://en.wikipedia.org/wiki/Active_learning_(machine_learning)) | [Hashizume et al. 2022](#24)<br>[Zhang et al. 2023](#23)<br>[Ozawa et al. 2025](#25)<br>[Narayanan et al. 2025](#58) | | | | | [Pandi et al. 2022](#63) | |
+| [Active Learning](https://en.wikipedia.org/wiki/Active_learning_(machine_learning)) | [Hashizume et al. 2022](#24)<br>[Zhang et al. 2023](#23)<br>[Ozawa et al. 2025](#25)<br>[Narayanan et al. 2025](#58)<br>[Hashizume & Ying 2025](#169) | | | | | [Pandi et al. 2022](#63) | |
 | [Reinforcement Learning](https://en.wikipedia.org/wiki/Reinforcement_learning) | | [Wu et al. 2026](#165) | | | | | |
 | [Foundation Models: Next-Token Prediction](https://en.wikipedia.org/wiki/Generative_pre-trained_transformer) | | [Shen et al. 2023](#115)<br>[Pearce et al. 2026](#92)<br>[Rizvi et al. 2026](#120) | | | | | |
 | [Foundation Models: Masked Language Modeling](https://en.wikipedia.org/wiki/BERT_(language_model)) | | [Yang et al. 2022](#112)<br>[Theodoris et al. 2023](#111)<br>[Hao et al. 2024](#116)<br>[Cui et al. 2024](#117)<br>[Rosen et al. 2026](#119) | | | | | |
@@ -400,6 +400,12 @@ This document presents the core research papers at the intersection of Cellular 
 > **Code**: https://github.com/google-research/era
 
 <a id="167">167</a> Singh, G., Wehling, L., Mulyadi, A. W., Sreenath, R. H., Klabunde, T., Andreani, T., & McCloskey, D. (2025). *Talk2Biomodels and Talk2KnowledgeGraphs: AI agent-based application for prediction of patient biomarkers and reasoning over biomedical knowledge graphs* [ICLR 2025 Workshop MLGenX]. https://openreview.net/forum?id=av4QhBNeZo
+
+<a id="169">169</a> Hashizume, T., & Ying, B.-W. (2025). Biology-aware machine learning for culture medium optimization. *New Biotechnology, 89*, 141–151. https://doi.org/10.1016/j.nbt.2025.07.006
+
+<a id="170">170</a> Gangwar, N., Balraj, K., & Rathore, A. S. (2024). Explainable AI for CHO cell culture media optimization and prediction of critical quality attribute. *Applied Microbiology and Biotechnology, 108*(1), 308. https://doi.org/10.1007/s00253-024-13147-w
+
+<a id="171">171</a> Kircali Ata, S., Shi, J. K., Yao, X., Hua, X. Y., Haldar, S., Chiang, J. H., & Wu, M. (2023). Predicting the Textural Properties of Plant-Based Meat Analogs with Machine Learning. *Foods, 12*(2), 344. https://doi.org/10.3390/foods12020344
 
 ## Sensory & Flavor Reference Work
 
