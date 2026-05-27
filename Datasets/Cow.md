@@ -63,7 +63,8 @@ A curated snapshot. NCBI accessions are the canonical living source — fetch th
 ## Further reading
 
 - Adjacent research areas: [Cellular Engineering](../ResearchAreas/CellEngineering.md), [Media Optimization](../ResearchAreas/MediaOptimization.md) (the FBS-replacement problem that motivates much cultivated-beef media work), [Bioprocess Control](../ResearchAreas/Bioprocess.md), [Metabolic Modeling](../ResearchAreas/MetabolicModeling.md).
-- Atlases & functional genomics: [Livestock Multi-Tissue Atlases & Functional Genomics](../Databases.md#livestock-multi-tissue-atlases--functional-genomics) in `Databases.md`.
+- Atlases & functional genomics: [Livestock Multi-Tissue Atlases & Functional Genomics](../Databases.md#livestock-multi-tissue-atlases--functional-genomics) in `Databases.md`. Foundational reference for the CattleGTEx lineage: [Papers.md #192](../Papers.md#192) (Liu et al. 2022, *Nature Genetics*).
+- Adjacent single-cell atlases: Wang et al. 2023, *Journal of Cachexia, Sarcopenia and Muscle*, [A single‐cell atlas of bovine skeletal muscle reveals mechanisms regulating intramuscular adipogenesis and fibrogenesis](https://doi.org/10.1002/jcsm.13292) — complementary intramuscular-fat-focused atlas to the cultivated-meat-focused deposits inventoried above.
 - Sequence & expression repositories: [GEO](../Databases.md#nih-gene-expression-omnibus-geo), [SRA](../Databases.md#nih-sequence-read-archive-sra), [Ensembl](../Databases.md#ensembl), [GenBank](../Databases.md#nih-genbank) — the canonical living indexes for the deposits curated here.
 - Metabolome reference: [Bovine Metabolome Database (BMDB)](../Databases.md#bovine-metabolome-database-bmdb).
 - Cross-species modeling tooling: [TranscriptFormer](../Software.md#transcriptformer) and [UCE](../Software.md#uce) in `Software.md`.
