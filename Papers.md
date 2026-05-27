@@ -508,3 +508,19 @@ This section lists review articles, position papers, and commentaries that surve
 <a id="129">129</a> Roohani, Y. H., Hua, T. J., Tung, P. Y., Bounds, L. R., Yu, F. B., Dobin, A., Teyssier, N., Adduri, A., Woodrow, A., Plosky, B. S., Mehta, R., Hsu, B., Sullivan, J., Ricci-Tam, C., Li, N., Kazaks, J., Gilbert, L. A., Konermann, S., Hsu, P. D., Goodarzi, H., & Burke, D. P. (2025). Virtual Cell Challenge: Toward a Turing test for the virtual cell. *Cell, 188*(13), 3370–3374. https://doi.org/10.1016/j.cell.2025.06.008
 
 <a id="168">168</a> Ho, Y. Y., Sivakumar, S., Ho, Y. S., & Lakshmanan, M. (2026). Rational design of serum-free media for cultivated meat. *Nature Reviews Bioengineering.* https://doi.org/10.1038/s44222-026-00428-4
+
+<a id="172">172</a> Hashizume, T., & Ying, B.-W. (2024). Challenges in developing cell culture media using machine learning. *Biotechnology Advances, 70*, 108293. https://doi.org/10.1016/j.biotechadv.2023.108293
+
+<a id="173">173</a> Ranpura, S., Maralingannavar, V., Gheorghe, A.-G., Ma, E., Morrissey, J., Betenbaugh, M. J., & Demirhan, D. (2025). Wheels turning: CHO cell modeling moves into a digital biomanufacturing era. *Computational and Structural Biotechnology Journal, 27*, 2796–2813. https://doi.org/10.1016/j.csbj.2025.06.035
+
+<a id="174">174</a> Cai, D., Li, X., Liu, H., Wen, L., & Qu, D. (2024). Machine learning and flavoromics-based research strategies for determining the characteristic flavor of food: A review. *Trends in Food Science & Technology, 154*, 104794. https://doi.org/10.1016/j.tifs.2024.104794
+
+<a id="175">175</a> Gomez Romero, S., & Boyle, N. (2023). Systems biology and metabolic modeling for cultivated meat: A promising approach for cell culture media optimization and cost reduction. *Comprehensive Reviews in Food Science and Food Safety, 22*(4), 3422–3443. https://doi.org/10.1111/1541-4337.13193
+
+<a id="176">176</a> Suthers, P. F., & Maranas, C. D. (2020). Challenges of cultivated meat production and applications of genome-scale metabolic modeling. *AIChE Journal, 66*(6), e16235. https://doi.org/10.1002/aic.16235
+
+<a id="177">177</a> Fang, X., Lloyd, C. J., & Palsson, B. O. (2020). Reconstructing organisms in silico: genome-scale models and their emerging applications. *Nature Reviews Microbiology, 18*(12), 731–743. https://doi.org/10.1038/s41579-020-00440-4
+
+<a id="178">178</a> Gu, C., Kim, G. B., Kim, W. J., Kim, H. U., & Lee, S. Y. (2019). Current status and applications of genome-scale metabolic models. *Genome Biology, 20*(1), 121. https://doi.org/10.1186/s13059-019-1730-3
+
+<a id="179">179</a> Gulati, G. S., D'Silva, J. P., Liu, Y., Wang, L., & Newman, A. M. (2025). Profiling cell identity and tissue architecture with single-cell and spatial transcriptomics. *Nature Reviews Molecular Cell Biology, 26*(1), 11–31. https://doi.org/10.1038/s41580-024-00768-2
