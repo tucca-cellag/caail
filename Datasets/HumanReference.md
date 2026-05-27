@@ -34,7 +34,7 @@ GEMs are SBML-formatted reconstructions of an organism's metabolic network — e
 
 ### Recon3D / Human1 / HMR — *Homo sapiens* (template / upstream reference)
 
-The human genome-scale metabolic reconstructions — Recon3D (Brunk et al. 2018, *Nature Biotechnology*), Human-GEM / Human1 (Robinson et al. 2020, *Science Signaling*), and the underlying HMR2 — are the foundational human GEMs from which most mammalian-cell models (including the cell-ag GEMs in the per-species pages of this directory) inherit reaction networks, biomass equations, and curation conventions. Direct use in cell-ag is rare; they're more often used as homology templates or biomass-function donors for species-specific reconstructions.
+The human genome-scale metabolic reconstructions — Recon3D (Brunk et al. 2018, *Nature Biotechnology*), Human-GEM / Human1 (Robinson et al. 2020, *Science Signaling*), and the underlying HMR2 — are the foundational human GEMs from which most mammalian-cell models (including the cell-ag GEMs in the per-species pages of this directory) inherit reaction networks, biomass equations, and curation conventions. Direct use in cell-ag is rare; they're more often used as homology templates or biomass-function donors for species-specific reconstructions. Recon3D source is at [`github.com/SBRG/Recon3D`](https://github.com/SBRG/Recon3D) with the structural-systems-biology companion library at [`github.com/SBRG/ssbio`](https://github.com/SBRG/ssbio).
 
 References: [Papers.md #86](../Papers.md#86) (Brunk et al. 2018, *Nature Biotechnology*) for Recon3D; [Papers.md #87](../Papers.md#87) (Robinson et al. 2020, *Science Signaling*) for Human-GEM.
 
