@@ -65,6 +65,7 @@ function checkDanglingCitations(model: PapersData, errors: string[]): void {
   // Collect unique (method, area, missingId) tuples to avoid duplicate messages
   // when the same id is missing in multiple cells.
   const seen = new Set<string>();
+  const findings: Array<{ method: string; area: string; refId: number }> = [];
 
   for (const cell of model.cells) {
     for (const refId of cell.refIds) {
@@ -72,17 +73,25 @@ function checkDanglingCitations(model: PapersData, errors: string[]): void {
         const key = `${cell.method}\0${cell.area}\0${refId}`;
         if (!seen.has(key)) {
           seen.add(key);
-          errors.push(
-            `Dangling citation: cell "${cell.method} × ${cell.area}" cites #${refId} but no reference with that id exists`,
-          );
+          findings.push({ method: cell.method, area: cell.area, refId });
         }
       }
     }
   }
 
-  // Sort for deterministic output: by method, then area, then id
-  // (errors were pushed in cell-iteration order; sort in place)
-  errors.sort();
+  // Sort for deterministic output: by method, then area, then ascending refId
+  findings.sort(
+    (a, b) =>
+      a.method.localeCompare(b.method) ||
+      a.area.localeCompare(b.area) ||
+      a.refId - b.refId,
+  );
+
+  for (const { method, area, refId } of findings) {
+    errors.push(
+      `Dangling citation: cell "${method} × ${area}" cites #${refId} but no reference with that id exists`,
+    );
+  }
 }
 
 // ---------------------------------------------------------------------------

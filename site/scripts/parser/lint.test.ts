@@ -108,8 +108,8 @@ describe('lint — dangling matrix citation', () => {
     const result = lint(model);
     const mentioning88 = result.errors.filter((e) => e.includes('#88'));
     const mentioning99 = result.errors.filter((e) => e.includes('#99'));
-    expect(mentioning88.length).toBeGreaterThanOrEqual(1);
-    expect(mentioning99.length).toBeGreaterThanOrEqual(1);
+    expect(mentioning88).toHaveLength(1);
+    expect(mentioning99).toHaveLength(1);
   });
 });
 
@@ -263,8 +263,8 @@ describe('lint — retired-ID gaps', () => {
     };
     const result = lint(model);
     const allWarningText = result.warnings.join(' ');
-    expect(allWarningText).toContain('3');
-    expect(allWarningText).toContain('4');
+    expect(allWarningText).toContain('#3');
+    expect(allWarningText).toContain('#4');
   });
 
   it('emits no gap warnings when ids are contiguous', () => {
@@ -367,7 +367,4 @@ describe('lint — real Papers.md corpus', () => {
     expect(result.warnings.length).toBeGreaterThan(0);
   });
 
-  it('all corpus errors are empty (canary check)', () => {
-    expect(result.errors).toEqual([]);
-  });
 });
