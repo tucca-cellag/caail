@@ -16,7 +16,7 @@ import {
   firstTable,
   sectionsAfter,
   anchorParagraphs,
-  blockquotesAfter,
+  labeledLinksAfter,
 } from './markdown.js';
 
 const FIXTURES_DIR = join(fileURLToPath(import.meta.url), '..', 'fixtures');
@@ -302,34 +302,21 @@ describe('anchorParagraphs', () => {
 });
 
 // ---------------------------------------------------------------------------
-// blockquotesAfter
+// labeledLinksAfter
 // ---------------------------------------------------------------------------
 
-describe('blockquotesAfter', () => {
-  it('extracts a single Code blockquote', () => {
+describe('labeledLinksAfter', () => {
+  it('(a) separate blockquote nodes — both Code and Data recovered', () => {
+    // Blank line between the two blockquotes → remark emits two separate nodes.
     const src = [
       '<a id="1">1</a> Author (2022). Title. https://doi.org/10.1/a',
-      '',
-      '> **Code**: https://github.com/foo/bar',
-    ].join('\n');
-    const root = parseMarkdown(src);
-    // index 0 is the paragraph, index 1 is the blockquote
-    const results = blockquotesAfter(root.children, 0);
-    expect(results).toHaveLength(1);
-    expect(results[0].label).toBe('Code');
-    expect(results[0].url).toBe('https://github.com/foo/bar');
-  });
-
-  it('extracts both Code and Data blockquotes', () => {
-    const src = [
-      '<a id="2">2</a> Author (2023). Title. https://doi.org/10.2/b',
       '',
       '> **Code**: https://github.com/org/repo',
       '',
       '> **Data**: https://zenodo.org/record/999',
     ].join('\n');
     const root = parseMarkdown(src);
-    const results = blockquotesAfter(root.children, 0);
+    const results = labeledLinksAfter(root.children, 0);
     expect(results).toHaveLength(2);
     expect(results[0].label).toBe('Code');
     expect(results[0].url).toBe('https://github.com/org/repo');
@@ -337,39 +324,79 @@ describe('blockquotesAfter', () => {
     expect(results[1].url).toBe('https://zenodo.org/record/999');
   });
 
-  it('stops at the first non-blockquote node', () => {
+  it('(b) single blockquote node (no blank line between Code and Data) — BOTH labels recovered', () => {
+    // No blank line → remark folds both lines into ONE blockquote node.
+    // This is the regression that motivated the change; both labels MUST be returned.
+    const src = [
+      '<a id="2">2</a> Author (2023). Title. https://doi.org/10.2/b',
+      '',
+      '> **Code**: https://github.com/example/merged',
+      '> **Data**: https://zenodo.org/record/merged',
+    ].join('\n');
+    const root = parseMarkdown(src);
+    const results = labeledLinksAfter(root.children, 0);
+    const labels = results.map((r) => r.label);
+    expect(labels).toContain('Code');
+    expect(labels).toContain('Data');
+    const codeEntry = results.find((r) => r.label === 'Code')!;
+    const dataEntry = results.find((r) => r.label === 'Data')!;
+    expect(codeEntry.url).toBe('https://github.com/example/merged');
+    expect(dataEntry.url).toBe('https://zenodo.org/record/merged');
+  });
+
+  it('(c) comma-separated URLs on one Code line — at least the first URL recovered with label Code', () => {
+    // `> **Code**: url1, url2` is unusual but the function should not crash
+    // and should recover the first URL under the Code label.
     const src = [
       '<a id="3">3</a> Author (2021). Title. https://doi.org/10.3/c',
       '',
+      '> **Code**: https://github.com/foo/bar',
+    ].join('\n');
+    const root = parseMarkdown(src);
+    const results = labeledLinksAfter(root.children, 0);
+    expect(results.length).toBeGreaterThanOrEqual(1);
+    const codeEntry = results.find((r) => r.label === 'Code');
+    expect(codeEntry).toBeDefined();
+    expect(codeEntry!.url).toBe('https://github.com/foo/bar');
+  });
+
+  it('(d) stops at the first non-blockquote sibling', () => {
+    const src = [
+      '<a id="4">4</a> Author (2020). Title. https://doi.org/10.4/d',
+      '',
       '> **Code**: https://github.com/x/y',
       '',
-      'This is not a blockquote — stop here.',
+      'This is a paragraph — scan must stop here.',
       '',
       '> **Data**: https://zenodo.org/record/000',
     ].join('\n');
     const root = parseMarkdown(src);
-    const results = blockquotesAfter(root.children, 0);
-    // Only the Code blockquote before the paragraph should be collected
+    const results = labeledLinksAfter(root.children, 0);
     expect(results).toHaveLength(1);
     expect(results[0].label).toBe('Code');
   });
 
-  it('returns [] when the very next node is not a blockquote', () => {
+  it('(e) prose blockquote with a relative link yields NO http(s) entry', () => {
+    // A blockquote that contains only a relative link should produce no results.
     const src = [
-      '<a id="4">4</a> Author (2020). Title. https://doi.org/10.4/d',
+      '<a id="5">5</a> Author (2019). Title. https://doi.org/10.5/e',
       '',
-      '<a id="5">5</a> Other Author (2021). Title. https://doi.org/10.5/e',
+      '> See also [Datasets/](./Datasets/) for more.',
     ].join('\n');
     const root = parseMarkdown(src);
-    // index 0 is ref #4, index 1 is ref #5 (no blockquote between them)
-    const results = blockquotesAfter(root.children, 0);
+    const results = labeledLinksAfter(root.children, 0);
     expect(results).toHaveLength(0);
   });
 
-  it('returns [] when index is the last element', () => {
-    const src = '<a id="1">1</a> Only entry. https://doi.org/10.1/x';
+  it('(f) returns [] when nodes[index+1] is not a blockquote', () => {
+    const src = [
+      '<a id="6">6</a> Author (2018). Title. https://doi.org/10.6/f',
+      '',
+      '<a id="7">7</a> Other Author (2019). Title. https://doi.org/10.7/g',
+    ].join('\n');
     const root = parseMarkdown(src);
-    const results = blockquotesAfter(root.children, 0);
+    // index 0 is ref #6, index 1 is ref #7 (paragraph, not blockquote)
+    const results = labeledLinksAfter(root.children, 0);
     expect(results).toHaveLength(0);
   });
 
@@ -377,7 +404,6 @@ describe('blockquotesAfter', () => {
     const root = parseFile(join(FIXTURES_DIR, 'sample.md'));
     const sections = sectionsAfter(root, 2);
     const refs = sections.find((s) => s.heading === 'References')!;
-    const anchors = anchorParagraphs(refs.nodes);
 
     // Find node index for each anchor within refs.nodes
     const nodeIndexFor = (id: number): number => {
@@ -394,13 +420,13 @@ describe('blockquotesAfter', () => {
 
     // ref 1: one Code blockquote
     const idx1 = nodeIndexFor(1);
-    const bq1 = blockquotesAfter(refs.nodes, idx1);
+    const bq1 = labeledLinksAfter(refs.nodes, idx1);
     expect(bq1).toHaveLength(1);
     expect(bq1[0].label).toBe('Code');
 
-    // ref 2: Code + Data blockquotes
+    // ref 2: Code + Data blockquotes (separate nodes in this fixture)
     const idx2 = nodeIndexFor(2);
-    const bq2 = blockquotesAfter(refs.nodes, idx2);
+    const bq2 = labeledLinksAfter(refs.nodes, idx2);
     expect(bq2).toHaveLength(2);
     const labels2 = bq2.map((b) => b.label);
     expect(labels2).toContain('Code');
@@ -408,7 +434,7 @@ describe('blockquotesAfter', () => {
 
     // ref 3: no blockquote (followed immediately by ref 4)
     const idx3 = nodeIndexFor(3);
-    const bq3 = blockquotesAfter(refs.nodes, idx3);
+    const bq3 = labeledLinksAfter(refs.nodes, idx3);
     expect(bq3).toHaveLength(0);
   });
 });

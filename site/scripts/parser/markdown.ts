@@ -150,69 +150,91 @@ export function anchorParagraphs(
 }
 
 // ---------------------------------------------------------------------------
-// blockquotesAfter
+// labeledLinksAfter
 // ---------------------------------------------------------------------------
+
+/** Only absolute http(s) URLs are accepted as deposit links. */
+const ABSOLUTE_URL_RE = /^https?:\/\//i;
 
 /**
  * Starting at `nodes[index]`, scan FORWARD over immediately-following
- * `blockquote` nodes and extract labeled links of the form
+ * `blockquote` nodes and extract labeled deposit links of the form
  * `> **Label**: https://…`.
  *
  * The scan stops at the FIRST non-blockquote sibling — it does not skip over
- * intervening paragraphs or headings. Blockquotes that do not match the
- * `> **Label**: URL` shape (i.e. no leading bold label or no URL) are skipped
- * (they do NOT stop the scan).
+ * intervening paragraphs or headings.
  *
- * Returns `{ label, url }` for each matching blockquote, where:
- *   - `label` is the bold text (e.g. `"Code"`, `"Data"`)
- *   - `url`   is the href of the link node (or the text of a plain-text URL)
+ * Handles both authoring styles that remark produces:
  *
- * This associates Code/Data blockquotes with the reference paragraph they
- * follow. In Papers.md a reference paragraph is followed by 0–2 such
- * blockquotes before the next reference paragraph.
+ *   Separate-node style (blank line between entries):
+ *     ```
+ *     > **Code**: https://…
+ *
+ *     > **Data**: https://…
+ *     ```
+ *     remark emits two blockquote nodes, each with one paragraph child.
+ *
+ *   Single-node style (no blank line between entries):
+ *     ```
+ *     > **Code**: https://…
+ *     > **Data**: https://…
+ *     ```
+ *     remark folds both lines into ONE blockquote node — either two paragraph
+ *     children, or one paragraph whose inline children are joined by a soft
+ *     `break` node. This function scans ALL paragraph children and ALL
+ *     `strong`→`link` pairs within each paragraph so both labels are recovered
+ *     regardless of authoring style.
+ *
+ * Only absolute http(s) URLs are returned — a relative link such as
+ * `[Datasets/](./Datasets/)` inside a prose blockquote is not a deposit URL
+ * and is silently skipped.
  *
  * @param nodes Sibling nodes to scan
  * @param index Index of the reference paragraph node (scan begins at index+1)
+ * @returns Array of `{ label, url }` pairs in encounter order; label is the
+ *   original-case bold text (e.g. `"Code"`, `"Data"`).
  */
-export function blockquotesAfter(
+export function labeledLinksAfter(
   nodes: RootContent[],
-  index: number
+  index: number,
 ): Array<{ label: string; url: string }> {
   const result: Array<{ label: string; url: string }> = [];
+  const seen = new Set<string>();
 
   for (let i = index + 1; i < nodes.length; i++) {
     const node = nodes[i];
     if (node.type !== 'blockquote') break;
 
-    const bq = node as Blockquote;
-    // A matching blockquote has exactly one paragraph child containing
-    // strong (the label), text ": ", and a link (or text URL).
-    const para = bq.children[0];
-    if (!para || para.type !== 'paragraph') continue;
+    for (const child of (node as Blockquote).children) {
+      if (child.type !== 'paragraph') continue;
 
-    const children = para.children;
-    // Expect: [strong, text(": "), link | text]
-    const strongNode = children[0];
-    if (!strongNode || strongNode.type !== 'strong') continue;
+      // Walk inline children: a `strong` sets the current label; the next
+      // link (or http text run) is its URL.  This handles both one-pair and
+      // multi-pair (soft-break-joined) paragraphs.
+      let currentLabel: string | null = null;
+      for (const inline of (child as Paragraph).children) {
+        if (inline.type === 'strong') {
+          currentLabel = mdastToString(inline).trim();
+          continue;
+        }
+        if (currentLabel === null) continue;
 
-    const label = mdastToString(strongNode);
+        let url: string | null = null;
+        if (inline.type === 'link') {
+          url = inline.url;
+        } else if (inline.type === 'text' && inline.value.trim().startsWith('http')) {
+          url = inline.value.trim();
+        }
 
-    // Find the URL: prefer a link node, fall back to trailing text node.
-    let url = '';
-    for (let j = 1; j < children.length; j++) {
-      const child = children[j];
-      if (child.type === 'link') {
-        url = child.url;
-        break;
+        if (url !== null && ABSOLUTE_URL_RE.test(url)) {
+          const key = currentLabel.toLowerCase();
+          if (!seen.has(key)) {
+            seen.add(key);
+            result.push({ label: currentLabel, url });
+          }
+          currentLabel = null; // consume this label slot
+        }
       }
-      if (child.type === 'text' && child.value.startsWith('http')) {
-        url = child.value.trim();
-        break;
-      }
-    }
-
-    if (label && url) {
-      result.push({ label, url });
     }
   }
 

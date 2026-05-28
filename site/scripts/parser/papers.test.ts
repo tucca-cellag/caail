@@ -49,8 +49,8 @@ describe('buildPapersModel — fixture', () => {
   });
 
   it('emits only populated cells with correct refIds/labels', () => {
-    // Bayesian Optimization × media has #1 and #2; Deep Learning × cell has #1,#4.
-    // The GNN row and all other cells are empty → no entries.
+    // Bayesian Optimization × media has #1 and #2; Deep Learning × cell has #1,#4;
+    // GNN × media has #5 (the merged-blockquote fixture ref).
     expect(model.cells).toEqual([
       {
         method: 'Bayesian Optimization',
@@ -63,6 +63,12 @@ describe('buildPapersModel — fixture', () => {
         area: 'cell',
         refIds: [1, 4],
         labels: ['Cosenza et al. 2022', 'Jones 2020'],
+      },
+      {
+        method: 'GNN',
+        area: 'media',
+        refIds: [5],
+        labels: ['Merged 2024'],
       },
     ]);
   });
@@ -96,6 +102,17 @@ describe('buildPapersModel — fixture', () => {
     expect(ref3.isPrimary).toBe(false);
     expect(ref3.methods).toEqual([]);
     expect(ref3.areas).toEqual([]);
+  });
+
+  it('recovers BOTH codeUrl and dataUrl from a merged single-node blockquote (Fix E)', () => {
+    // ref 5 in the fixture has `> **Code**: …\n> **Data**: …` with NO blank line
+    // between them — remark folds both lines into one blockquote node.
+    const ref5 = model.references.find((r) => r.id === 5)!;
+    expect(ref5.isPrimary).toBe(true);
+    expect(ref5.hasCode).toBe(true);
+    expect(ref5.hasData).toBe(true);
+    expect(ref5.codeUrl).toBe('https://github.com/example/merged');
+    expect(ref5.dataUrl).toBe('https://zenodo.org/record/merged');
   });
 
   it('disambiguates colliding base slugs by ascending id', () => {

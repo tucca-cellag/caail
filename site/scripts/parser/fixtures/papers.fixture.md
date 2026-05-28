@@ -6,7 +6,7 @@ A representative miniature of Papers.md for parser tests.
 |---|---|---|
 | [Bayesian Optimization](https://en.wikipedia.org/wiki/Bayesian_optimization) | [Cosenza et al. 2022](#1)<br>[Cosenza et al. 2022](#2) | |
 | [Deep Learning](https://en.wikipedia.org/wiki/Deep_learning) | | [Cosenza et al. 2022](#1)<br>[Jones 2020](#4) |
-| [GNN](https://en.wikipedia.org/wiki/Graph_neural_network) | | |
+| [GNN](https://en.wikipedia.org/wiki/Graph_neural_network) | [Merged 2024](#5) | |
 
 ## References
 
@@ -21,6 +21,11 @@ A representative miniature of Papers.md for parser tests.
 > **Data**: https://doi.org/10.5281/zenodo.1234567
 
 <a id="4">4</a> Jones, M. (2020). An uncited-in-some-cells deep learning paper. *Bioinformatics, 36*(1), 100–110. https://doi.org/10.1093/bioinformatics/btaa001
+
+<a id="5">5</a> Merged, A., & Block, B. (2024). A paper whose Code and Data share one blockquote node. *Nature Methods, 21*(4), 500–510. https://doi.org/10.1038/s41592-024-00001-0
+
+> **Code**: https://github.com/example/merged
+> **Data**: https://zenodo.org/record/merged
 
 ## Reviews & Perspectives
 

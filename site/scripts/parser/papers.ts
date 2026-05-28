@@ -22,9 +22,9 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { toString as mdToString } from 'mdast-util-to-string';
 import { visit } from 'unist-util-visit';
-import type { Root, TableRow, RootContent, Blockquote, Paragraph } from 'mdast';
+import type { Root, TableRow } from 'mdast';
 
-import { parseFile, firstTable, sectionsAfter, anchorParagraphs } from './markdown.js';
+import { parseMarkdown, firstTable, sectionsAfter, anchorParagraphs, labeledLinksAfter } from './markdown.js';
 import { parseApa } from './apa.js';
 import { areaKeyForLabel } from './areas.js';
 import {
@@ -47,9 +47,6 @@ export const PAPERS_MD_PATH: string = fileURLToPath(
 
 /** Matches a citation-link href of the form `#123`; captures the integer. */
 const CITATION_HREF_RE = /^#(\d+)$/;
-
-/** Only absolute http(s) URLs are accepted as Code/Data deposit links. */
-const ABSOLUTE_URL_RE = /^https?:\/\//i;
 
 // ---------------------------------------------------------------------------
 // Matrix
@@ -142,72 +139,6 @@ function parseMatrix(root: Root): MatrixResult {
 type PartialReference = Omit<Reference, 'isPrimary' | 'methods' | 'areas' | 'slug'>;
 
 /**
- * Extract every labeled deposit link (`> **Label**: URL`) from the blockquotes
- * that immediately follow `nodes[index]`, scanning forward and stopping at the
- * first non-blockquote sibling.
- *
- * Why this exists rather than reusing markdown.ts's `blockquotesAfter`:
- * `blockquotesAfter` is intentionally one-label-per-blockquote-node (it reads
- * only `children[0]`). In Papers.md, Code and Data are sometimes authored on
- * adjacent lines WITHOUT a blank line between them
- * (`> **Code**: …\n> **Data**: …`); remark folds those into a SINGLE blockquote
- * node — either two paragraph children, or one paragraph whose inline children
- * are joined by a soft `break`. `blockquotesAfter` would silently drop the
- * Data line in that shape. This orchestrator-level helper therefore scans ALL
- * paragraph children and ALL `strong`→`link` pairs within each paragraph so
- * both labels are recovered regardless of authoring style.
- *
- * Only absolute http(s) URLs are returned — a relative link such as
- * `[Datasets/](./Datasets/)` inside a prose blockquote is not a real deposit
- * URL (and would fail the schema's `z.string().url()` check), so it is dropped.
- *
- * @returns Map from lowercased label (e.g. "code", "data") → first URL seen.
- */
-function labeledLinksAfter(
-  nodes: RootContent[],
-  index: number,
-): Map<string, string> {
-  const out = new Map<string, string>();
-
-  for (let i = index + 1; i < nodes.length; i++) {
-    const node = nodes[i];
-    if (node.type !== 'blockquote') break;
-
-    for (const child of (node as Blockquote).children) {
-      if (child.type !== 'paragraph') continue;
-
-      // Walk inline children: a `strong` sets the current label; the next
-      // link (or http text run) is its URL. This handles both one-pair and
-      // multi-pair (soft-break-joined) paragraphs.
-      let label: string | null = null;
-      for (const inline of (child as Paragraph).children) {
-        if (inline.type === 'strong') {
-          label = mdToString(inline).trim().toLowerCase();
-          continue;
-        }
-        if (label === null) continue;
-
-        let url: string | null = null;
-        if (inline.type === 'link') {
-          url = inline.url;
-        } else if (inline.type === 'text' && inline.value.trim().startsWith('http')) {
-          url = inline.value.trim();
-        }
-
-        if (url !== null) {
-          if (ABSOLUTE_URL_RE.test(url) && !out.has(label)) {
-            out.set(label, url);
-          }
-          label = null; // consume this label slot
-        }
-      }
-    }
-  }
-
-  return out;
-}
-
-/**
  * Walk every `##` section and build a PartialReference for each anchor
  * paragraph. Code/Data URLs are pulled from the blockquotes that immediately
  * follow the reference paragraph (associated by node index within the section).
@@ -243,8 +174,8 @@ function parseReferences(root: Root, src: string): PartialReference[] {
       const fields = parseApa(raw);
 
       const labeled = labeledLinksAfter(nodes, i);
-      const codeUrl = labeled.get('code') ?? null;
-      const dataUrl = labeled.get('data') ?? null;
+      const codeUrl = labeled.find((e) => e.label.toLowerCase() === 'code')?.url ?? null;
+      const dataUrl = labeled.find((e) => e.label.toLowerCase() === 'data')?.url ?? null;
 
       refs.push({
         id,
@@ -280,26 +211,29 @@ function deriveCellFields(
   partials: PartialReference[],
   cells: Cell[],
 ): Array<PartialReference & { isPrimary: boolean; methods: string[]; areas: string[] }> {
-  // Build id → ordered-unique methods/areas maps from the cells.
-  const methodsById = new Map<number, string[]>();
-  const areasById = new Map<number, string[]>();
+  // Build id → ordered-unique methods/areas using Sets (O(1) membership test,
+  // insertion-order preserved, matches first-appearance semantics of the old
+  // Array.includes approach).
+  const methodsById = new Map<number, Set<string>>();
+  const areasById = new Map<number, Set<string>>();
 
-  const pushUnique = (map: Map<number, string[]>, id: number, value: string) => {
-    const arr = map.get(id) ?? [];
-    if (!arr.includes(value)) arr.push(value);
-    map.set(id, arr);
+  const addUnique = (map: Map<number, Set<string>>, id: number, value: string) => {
+    const set = map.get(id) ?? new Set<string>();
+    set.add(value);
+    map.set(id, set);
   };
 
   for (const cell of cells) {
     for (const id of cell.refIds) {
-      pushUnique(methodsById, id, cell.method);
-      pushUnique(areasById, id, cell.area);
+      addUnique(methodsById, id, cell.method);
+      addUnique(areasById, id, cell.area);
     }
   }
 
   return partials.map((p) => {
-    const methods = methodsById.get(p.id) ?? [];
-    const areas = areasById.get(p.id) ?? [];
+    const methods = [...(methodsById.get(p.id) ?? [])];
+    const areas = [...(areasById.get(p.id) ?? [])];
+    // 'References' is the canonical ## heading for primary-research entries in Papers.md.
     const isPrimary = p.section === 'References' && methods.length > 0;
     return { ...p, methods, areas, isPrimary };
   });
@@ -342,10 +276,16 @@ function baseSlug(ref: PartialReference): string {
   return ref.year !== null ? `${surnameSlug}-${ref.year}` : surnameSlug;
 }
 
-/** Convert a 0-based collision index to a suffix: 0→"", 1→"b", 2→"c", … */
+/**
+ * Convert a 0-based collision index to a suffix: 0→"", 1→"b", 2→"c", …, 25→"z".
+ * For index ≥ 26 (more than 26 same-author-same-year collisions), fall back to
+ * a numeric form: 26→"-26", 27→"-27", … — keeps slugs unambiguous without
+ * producing non-letter characters.
+ */
 function disambiguationSuffix(index: number): string {
-  // index 0 → no suffix; index 1 → 'b' (97), index 2 → 'c', …
-  return index === 0 ? '' : String.fromCharCode(97 + index);
+  if (index === 0) return '';
+  if (index < 26) return String.fromCharCode(97 + index); // 'b'–'z'
+  return `-${index}`; // guard: 27th+ collision → numeric suffix
 }
 
 /**
@@ -360,11 +300,9 @@ function assignSlugs(
 ): Reference[] {
   // Group by base slug.
   const byBase = new Map<string, number[]>();
-  const baseById = new Map<number, string>();
 
   for (const ref of refs) {
     const base = baseSlug(ref);
-    baseById.set(ref.id, base);
     const arr = byBase.get(base) ?? [];
     arr.push(ref.id);
     byBase.set(base, arr);
@@ -393,11 +331,11 @@ function assignSlugs(
  * @returns           A schema-validated PapersData object.
  */
 export function buildPapersModel(papersPath: string = PAPERS_MD_PATH): PapersData {
-  // Read the source once: parseFile (re)reads it for the mdast tree, and
-  // parseReferences slices this same text by node offsets to recover the raw
-  // markdown (with `*…*`) that parseApa needs.
+  // Read the source once; parse from the in-memory string so there is no
+  // second disk read. parseReferences slices this same text by node offsets
+  // to recover the raw markdown (with `*…*`) that parseApa needs.
   const src = readFileSync(papersPath, 'utf-8');
-  const root = parseFile(papersPath);
+  const root = parseMarkdown(src);
 
   const { areas, methods, cells } = parseMatrix(root);
   const partials = parseReferences(root, src);
