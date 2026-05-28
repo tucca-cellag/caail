@@ -31,4 +31,4 @@ A curated snapshot. NCBI / ProteomeXchange accessions are the canonical living s
 - Sequence & expression repositories: [GEO](../Databases.md#nih-gene-expression-omnibus-geo), [SRA](../Databases.md#nih-sequence-read-archive-sra), [Ensembl](../Databases.md#ensembl) — the canonical living indexes for the deposits curated here.
 - Alternative-seafood species references: [Seafood Species Reference Databases](../Databases.md#seafood-species-reference-databases) in `Databases.md`.
 - Cross-species modeling tooling: [TranscriptFormer](../Software.md#transcriptformer) and [UCE](../Software.md#uce) in `Software.md` — relevant where labelled mollusk data is sparse.
-- Reference substrates: [HumanReference](./HumanReference.md), [CHOReference](./CHOReference.md). AI/ML benchmarks: [Benchmarks](./Benchmarks.md).
+- Reference substrates: [HumanReference](./HumanReference.md), [CHOReference](./CHOReference.md), [CrossSpecies](./CrossSpecies.md). AI/ML benchmarks: [Benchmarks](./Benchmarks.md).

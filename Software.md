@@ -18,6 +18,10 @@ Summary: This is a collection of links to Protein Language Models, which are mod
 
 Summary: Search large protein databases using monomers and multimers. Can be used to find known structures to infer function or guide engineering efforts of a new or target protein.
 
+### [amii-cell-ag-tools](https://github.com/Amii-Applied-AI/amii-cell-ag-tools)
+
+Summary: Open-source applied AI research code from the Alberta Machine Intelligence Institute (Amii) targeting cellular agriculture, hosted under the `Amii-Applied-AI` GitHub organization. The repository collects two Python subprojects: `protein-thermostability-data-tools` (code used in the development of a public protein thermostability dataset) and `active-learning-for-cell-media` (active-learning analysis applied to cell media optimization). MIT-licensed.
+
 ## Bioprocess Modeling & Scaling
 This category includes simulation and modeling tools for optimizing the  bioreactor environment.
 
@@ -97,7 +101,7 @@ Open-source toolkits for population-genetics analysis of multi-omics data — mo
 
 ### [OmiGA](https://omiga.bio/)
 
-Summary: An ultra-efficient toolkit for molecular quantitative trait loci (molQTL) mapping across multi-omics data, from the Zhang group at China Agricultural University. The performance backbone of the FarmGTEx project family — eQTL, sQTL, mQTL, and other molQTL discovery at livestock-atlas scale, optimized for the throughput needed to handle the FarmGTEx tissue / sample matrices. Companion to [Papers.md ref #143](./Papers.md#143) (Teng et al. 2026, *Nature Communications*).
+Summary: An ultra-efficient toolkit for molecular quantitative trait loci (molQTL) mapping across multi-omics data, from the Zhang group at China Agricultural University. The performance backbone of the FarmGTEx project family — eQTL, sQTL, mQTL, and other molQTL discovery at livestock-atlas scale, optimized for the throughput needed to handle the FarmGTEx tissue / sample matrices. Companion to [Papers.md ref #143](./Papers.md#143) (Teng et al. 2026, *Nature Communications*). **Reproducibility deposits**: ENA BioProject [`PRJEB58031`](https://www.ebi.ac.uk/ena/browser/view/PRJEB58031), Zenodo [`10.5281/zenodo.10072081`](https://doi.org/10.5281/zenodo.10072081) and [`10.5281/zenodo.18280923`](https://doi.org/10.5281/zenodo.18280923).
 
 ## Mass Spectrometry & Chemometrics
 

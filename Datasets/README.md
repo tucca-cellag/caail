@@ -27,6 +27,7 @@ The directory is organized **by species**: each cell-ag-relevant species has its
 | ---- | ----- |
 | [HumanReference](./HumanReference.md) | Human single-cell pretraining corpora and reference genome-scale metabolic models — the cross-species transfer substrate for cell-ag foundation models |
 | [CHOReference](./CHOReference.md) | Chinese Hamster Ovary GEM family — biopharma-adjacent reference for mammalian-cell process modeling |
+| [CrossSpecies](./CrossSpecies.md) | Engineering substrate — protein-engineering, growth-factor, and media-optimization reference data shared across cultivated-meat species |
 
 ## Topical pages
 
