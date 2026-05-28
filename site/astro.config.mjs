@@ -29,6 +29,7 @@ export default defineConfig({
         // setting `hero: {}` in index.mdx suppresses the auto <PageTitle> h1
         // without injecting Starlight's own hero UI above our custom Hero.
         Hero: './src/components/StarlightHeroOverride.astro',
+        Footer: './src/components/Footer.astro',
       },
     }),
     preact(),
