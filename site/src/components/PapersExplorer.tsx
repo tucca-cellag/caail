@@ -1,11 +1,18 @@
 /** @jsxImportSource preact */
 import './papers-explorer.css';
 import { useMemo, useState } from 'preact/hooks';
-import data from '../content/data/papers.sample.json';
+import data from '../content/data/papers.json';
 
-type Area = { key: string; label: string; color: string };
-type Cell = { method: string; area: string; refIds: number[] };
-type Ref = { id: number; authors: string; year: number; title: string; journal: string; doi: string; codeUrl: string | null; dataUrl: string | null };
+type Area = { key: string; label: string };
+type Cell = { method: string; area: string; refIds: number[]; labels: string[] };
+type Ref = {
+  id: number; section: string; raw: string;
+  authors: string[] | null; authorsText: string;
+  year: number | null; title: string | null; journal: string | null;
+  doi: string | null; codeUrl: string | null; dataUrl: string | null;
+  isPrimary: boolean; hasCode: boolean; hasData: boolean;
+  slug: string; methods: string[]; areas: string[];
+};
 
 const areas = data.areas as Area[];
 const methods = data.methods as string[];
@@ -32,7 +39,7 @@ export default function PapersExplorer() {
     return cell.refIds
       .map((id) => refs.get(id))
       .filter((r): r is Ref => !!r)
-      .filter((r) => !q || `${r.authors} ${r.title} ${r.doi}`.toLowerCase().includes(ql));
+      .filter((r) => !q || `${r.authorsText} ${r.title ?? ''} ${r.doi ?? ''}`.toLowerCase().includes(ql));
   }, [sel, q]);
 
   return (
@@ -46,14 +53,14 @@ export default function PapersExplorer() {
       </div>
 
       <div class="px-legend">
-        {areas.map((a) => <span class="px-lchip"><span class="px-sw" style={{ background: a.color }} />{a.label}</span>)}
+        {areas.map((a) => <span class="px-lchip"><span class="px-sw" style={{ background: `var(--caail-area-${a.key})` }} />{a.label}</span>)}
       </div>
 
       <div class="px-work">
         <div class="px-mxpane">
           <div class="px-mx" style={{ gridTemplateColumns: `190px repeat(${shownAreas.length}, minmax(56px,1fr))` }}>
             <div class="px-corner">method ↓ / area →</div>
-            {shownAreas.map((a) => <div class="px-hd" style={{ borderTopColor: a.color }}>{a.label}</div>)}
+            {shownAreas.map((a) => <div class="px-hd" style={{ borderTopColor: `var(--caail-area-${a.key})` }}>{a.label}</div>)}
             {methods.map((m) => [
               <div class="px-rl">{m}</div>,
               ...shownAreas.map((a) => {
@@ -76,15 +83,14 @@ export default function PapersExplorer() {
             <>
               <p class="px-ptag">Selected cell</p>
               <h3 class="px-ph">{sel.method} × {sel.area.label}</h3>
-              <p class="px-pmeta"><span class="px-sw" style={{ background: sel.area.color }} /> {cellMap.get(`${sel.method}__${sel.area.key}`)?.refIds.length ?? 0} papers</p>
-              {selRefs.length === 0 && <p class="px-empty">Reference details arrive with the M1 parser.</p>}
+              <p class="px-pmeta"><span class="px-sw" style={{ background: `var(--caail-area-${sel.area.key})` }} /> {cellMap.get(`${sel.method}__${sel.area.key}`)?.refIds.length ?? 0} papers</p>
+              {selRefs.length === 0 && <p class="px-empty">No references match.</p>}
               {selRefs.map((r) => (
                 <div class="px-ref">
-                  <div class="px-au">{r.authors} ({r.year})</div>
-                  <div class="px-ti">{r.title}. <span class="px-jo">{r.journal}</span></div>
-                  {/* M1: validate codeUrl/dataUrl/doi are http(s) before rendering as href (fixtures are trusted in M0). */}
+                  <div class="px-au">{r.authorsText}{r.year != null ? ` (${r.year})` : ''}</div>
+                  <div class="px-ti">{r.title ?? ''}{r.journal ? <>. <span class="px-jo">{r.journal}</span></> : ''}</div>
                   <div class="px-badges">
-                    <a class="px-bdg doi" href={`https://doi.org/${r.doi}`}>{r.doi}</a>
+                    {r.doi && <a class="px-bdg doi" href={`https://doi.org/${r.doi}`}>{r.doi}</a>}
                     {r.codeUrl && <a class="px-bdg code" href={r.codeUrl}>⟨⟩ Code</a>}
                     {r.dataUrl && <a class="px-bdg data" href={r.dataUrl}>▤ Data</a>}
                   </div>

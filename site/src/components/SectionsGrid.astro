@@ -1,7 +1,6 @@
 ---
 import { Icon } from 'astro-icon/components';
-import stats from '../content/data/site-stats.sample.json';
-const c = stats.counts;
+import c from '../content/data/counts.json';
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const sections = [
   { icon: 'ph:file-text-duotone', count: c.papers, title: 'Papers', desc: 'The full AI-method × research-area matrix over 193 references, with code & data links.', cta: 'Open the explorer →', href: `${base}/papers/explorer/` },
