@@ -158,14 +158,18 @@ describe('parseApa — graceful degradation and edge cases', () => {
     expect(result.doi).toBe('10.1234/xyz');
   });
 
-  it('single-author reference', () => {
+  it('single-author reference (distinct fixture: LeCun 2022, Nature)', () => {
+    // Deliberately different author, journal, and year from the ref 37 real-corpus test.
     const input =
-      '<a id="37">37</a> Kuhl, E. (2025). AI for food: accelerating and democratizing discovery and innovation. *npj Science of Food, 9*(1). https://doi.org/10.1038/s41538-025-00441-8';
+      '<a id="200">200</a> LeCun, Y. (2022). A path towards autonomous machine intelligence. *Nature, 605*, 32–38. https://doi.org/10.1038/s41586-022-00001-0';
 
     const result = parseApa(input);
 
     expect(result.authors).toHaveLength(1);
-    expect(result.authors![0]).toBe('Kuhl, E.');
+    expect(result.authors![0]).toBe('LeCun, Y.');
+    expect(result.year).toBe(2022);
+    expect(result.journal).toBe('Nature');
+    expect(result.title).toBe('A path towards autonomous machine intelligence');
   });
 
   it('malformed author run: authors null, authorsText preserved', () => {
@@ -214,7 +218,8 @@ describe('parseApa — graceful degradation and edge cases', () => {
 
     expect(result.year).toBe(2022);
     expect(result.doi).toBeNull();
-    // title and journal may be null (graceful)
+    expect(result.title).toBeNull();
+    expect(result.journal).toBeNull();
     expect(typeof result.authorsText).toBe('string');
   });
 

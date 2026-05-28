@@ -48,6 +48,9 @@ const YEAR_RE = /\((\d{4})[a-z]?\)/;
  */
 const INITIALS_RE = /^(?:[A-Z]\.[-\s]?)+$/;
 
+/** Match the first `*…*` italic run; capture group 1 is the content. */
+const ITALIC_RE = /\*([^*]+)\*/;
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -149,8 +152,14 @@ export function parseApa(raw: string): ApaFields {
 
   // ------------------------------------------------------------------
   // Step 3: Split on year to get authorsText and tail.
+  //
+  // Restrict the year search to the portion of the string BEFORE the DOI.
+  // In an APA reference the year always precedes the DOI, so searching the
+  // full string risks matching a parenthesised 4-digit token inside a DOI
+  // path (e.g. "…/(2021)v2") as the publication year.
   // ------------------------------------------------------------------
-  const yearMatch = YEAR_RE.exec(stripped);
+  const yearSearchTarget = doiMatch ? stripped.slice(0, doiMatch.index) : stripped;
+  const yearMatch = YEAR_RE.exec(yearSearchTarget);
 
   if (!yearMatch) {
     // No year found: degrade everything except doi
@@ -183,12 +192,9 @@ export function parseApa(raw: string): ApaFields {
   // ------------------------------------------------------------------
   // Step 5: Parse title and journal from tail.
   //
-  // Find the first italic run `*…*` in the tail.
-  // We use a non-greedy match for content between * delimiters.
-  // Must NOT cross a newline.
+  // Find the first italic run `*…*` in the tail using the module-level
+  // ITALIC_RE (compiled once, not recreated per call).
   // ------------------------------------------------------------------
-  // Find the first `*` and the matching closing `*`
-  const ITALIC_RE = /\*([^*]+)\*/;
   const italicMatch = ITALIC_RE.exec(tail);
 
   if (!italicMatch) {
