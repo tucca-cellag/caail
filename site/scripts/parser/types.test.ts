@@ -98,10 +98,33 @@ describe('PapersDataSchema — valid payloads', () => {
   it('accepts areas array with only key+label (no color field required)', () => {
     const payload = {
       ...validPapersData,
-      areas: [{ key: 'media', label: 'Media Optimization' }],
+      areas: [
+        { key: 'media', label: 'Media Optimization' },
+        { key: 'cell', label: 'Cellular Engineering' },
+      ],
     };
     const result = PapersDataSchema.safeParse(payload);
     expect(result.success).toBe(true);
+  });
+
+  it('accepts a reference with a valid codeUrl', () => {
+    const payload = {
+      ...validPapersData,
+      references: [
+        { ...validReference, codeUrl: 'https://github.com/x/y', hasCode: true },
+      ],
+    };
+    expect(PapersDataSchema.safeParse(payload).success).toBe(true);
+  });
+
+  it('accepts a reference with a valid dataUrl', () => {
+    const payload = {
+      ...validPapersData,
+      references: [
+        { ...validReference, dataUrl: 'https://zenodo.org/record/123', hasData: true },
+      ],
+    };
+    expect(PapersDataSchema.safeParse(payload).success).toBe(true);
   });
 });
 
@@ -185,6 +208,54 @@ describe('PapersDataSchema — invalid payloads are rejected', () => {
   it('rejects when cell is missing labels', () => {
     const { labels: _omit, ...cellWithout } = validCell;
     const payload = { ...validPapersData, cells: [cellWithout] };
+    expect(PapersDataSchema.safeParse(payload).success).toBe(false);
+  });
+
+  it('rejects when reference id is 0 (must be positive)', () => {
+    const payload = {
+      ...validPapersData,
+      references: [{ ...validReference, id: 0 }],
+    };
+    expect(PapersDataSchema.safeParse(payload).success).toBe(false);
+  });
+
+  it('rejects when reference id is negative', () => {
+    const payload = {
+      ...validPapersData,
+      references: [{ ...validReference, id: -1 }],
+    };
+    expect(PapersDataSchema.safeParse(payload).success).toBe(false);
+  });
+
+  it('rejects when refIds contains 0 (must be positive)', () => {
+    const payload = {
+      ...validPapersData,
+      cells: [{ ...validCell, refIds: [0] }],
+    };
+    expect(PapersDataSchema.safeParse(payload).success).toBe(false);
+  });
+
+  it('rejects when refIds contains a negative value', () => {
+    const payload = {
+      ...validPapersData,
+      cells: [{ ...validCell, refIds: [-2] }],
+    };
+    expect(PapersDataSchema.safeParse(payload).success).toBe(false);
+  });
+
+  it('rejects when codeUrl is not a valid URL', () => {
+    const payload = {
+      ...validPapersData,
+      references: [{ ...validReference, codeUrl: 'not-a-url' }],
+    };
+    expect(PapersDataSchema.safeParse(payload).success).toBe(false);
+  });
+
+  it('rejects when dataUrl is not a valid URL', () => {
+    const payload = {
+      ...validPapersData,
+      references: [{ ...validReference, dataUrl: 'not-a-url' }],
+    };
     expect(PapersDataSchema.safeParse(payload).success).toBe(false);
   });
 });

@@ -26,14 +26,14 @@ export const CellSchema = z.object({
   /** Area key (not label), e.g. "media" */
   area: z.string(),
   /** Reference IDs cited in this cell */
-  refIds: z.array(z.number().int()),
+  refIds: z.array(z.number().int().positive()),
   /** Human link labels, e.g. ["Cosenza et al. 2022"] */
   labels: z.array(z.string()),
 });
 
 export const ReferenceSchema = z.object({
   /** Stable numeric ID — never renumbered after assignment */
-  id: z.number().int(),
+  id: z.number().int().positive(),
   /** The `##` heading the anchor lives under, e.g. "References", "Reviews & Perspectives" */
   section: z.string(),
   /** Full citation paragraph text (always preserved) */
@@ -51,9 +51,9 @@ export const ReferenceSchema = z.object({
   /** Bare DOI, e.g. "10.1234/abc" (not the https://doi.org/... URL); null if absent */
   doi: z.string().nullable(),
   /** URL from `> **Code**:` blockquote; null if absent */
-  codeUrl: z.string().nullable(),
+  codeUrl: z.string().url().nullable(),
   /** URL from `> **Data**:` blockquote; null if absent */
-  dataUrl: z.string().nullable(),
+  dataUrl: z.string().url().nullable(),
   /** True if section === "References" AND ≥1 matrix cell cites this ref */
   isPrimary: z.boolean(),
   /** Method labels whose cells cite this reference */
