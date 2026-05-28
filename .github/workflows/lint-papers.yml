@@ -8,6 +8,7 @@ on:
       - Databases.md
       - OtherResources.md
       - Datasets/**
+      - site/scripts/parser/**
   push:
     branches:
       - main
@@ -17,6 +18,7 @@ on:
       - Databases.md
       - OtherResources.md
       - Datasets/**
+      - site/scripts/parser/**
   workflow_dispatch:
 
 concurrency:
