@@ -19,6 +19,11 @@ export default defineConfig({
         { label: 'Home', link: '/' },
         { label: 'Papers', items: [{ label: 'Explorer', link: '/papers/explorer/' }] },
       ],
+      customCss: [
+        './src/styles/fonts.css',
+        './src/styles/tokens.css',
+        './src/styles/starlight-overrides.css',
+      ],
     }),
     preact(),
     icon({ include: { ph: ['*'] } }),
