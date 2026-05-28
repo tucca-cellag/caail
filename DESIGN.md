@@ -80,7 +80,7 @@ Type scale: H1 `clamp(1.8rem, 4vw, 2.3rem)`; section H2 ~1.05–1.15rem; body 0.
 
 ## 6. Dark mode
 
-Dark mode uses **OKLch lightness inversion**, toggled by Starlight via `:root[data-theme='dark']`. Surfaces go navy-black (`--caail-bg` ≈ `#0B1220`), `--caail-ink` becomes near-white (`#E8EDF6`), and `--caail-primary` / `--caail-link` shift lighter (≈ `#5B8AD1`) for contrast on dark. The density ramp inverts (light cells become dark, deep cells become bright navy). Because tokens like `--caail-ink` flip with the theme, the Starlight `--sl-color-white` mapping yields correct high-contrast text in both themes. Categorical area colors keep their hue and are lightened inline (~8%) where needed for AA on dark. The split of `--sl-color-accent-low` into per-theme values matches Starlight's own per-theme accent handling.
+Dark mode uses **OKLch lightness inversion**, toggled by Starlight via `:root[data-theme='dark']`. Surfaces go navy-black (`--caail-bg` ≈ `#0B1220`), `--caail-ink` becomes near-white (`#E8EDF6`), and `--caail-primary` / `--caail-link` shift lighter (≈ `#5B8AD1`) for contrast on dark. The density ramp inverts (light cells become dark, deep cells become bright navy). Because tokens like `--caail-ink` flip with the theme, the Starlight `--sl-color-white` mapping yields correct high-contrast text in both themes. Categorical area colors keep their hue across themes — the Okabe–Ito mid-tones stay legible on the dark surface — and where a tinted element needs more contrast on dark (e.g. the Explorer's Code/Data badges) its foreground is lightened via a `[data-theme='dark']` override. The split of `--sl-color-accent-low` into per-theme values matches Starlight's own per-theme accent handling.
 
 ## 7. Motion
 
