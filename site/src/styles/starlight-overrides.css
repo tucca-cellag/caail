@@ -73,3 +73,12 @@ a.site-title {
 .caail-display {
   font-family: var(--caail-font-display);
 }
+
+/* Homepage two-column (Start here / Recently added) — collapses on narrow screens */
+.caail-two-col { display: grid; grid-template-columns: 1fr 1.15fr; gap: 1.6rem; margin-top: .5rem; }
+@media (max-width: 50rem) { .caail-two-col { grid-template-columns: 1fr; } }
+
+/* Honor reduced-motion (DESIGN.md §7) */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
+}

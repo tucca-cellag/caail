@@ -62,7 +62,7 @@ export default function PapersExplorer() {
                 const isSel = sel?.method === m && sel?.area.key === a.key;
                 return (
                   <button class={`px-c${isSel ? ' sel' : ''}`} style={{ background: densityVar(n), color: textColor(n) }}
-                    disabled={n === 0} aria-label={`${m} × ${a.label}: ${n} papers`}
+                    disabled={n === 0} aria-label={`${m} × ${a.label}: ${n} ${n === 1 ? 'paper' : 'papers'}`}
                     onClick={() => setSel({ method: m, area: a })}>{n || ''}</button>
                 );
               }),
@@ -82,6 +82,7 @@ export default function PapersExplorer() {
                 <div class="px-ref">
                   <div class="px-au">{r.authors} ({r.year})</div>
                   <div class="px-ti">{r.title}. <span class="px-jo">{r.journal}</span></div>
+                  {/* M1: validate codeUrl/dataUrl/doi are http(s) before rendering as href (fixtures are trusted in M0). */}
                   <div class="px-badges">
                     <a class="px-bdg doi" href={`https://doi.org/${r.doi}`}>{r.doi}</a>
                     {r.codeUrl && <a class="px-bdg code" href={r.codeUrl}>⟨⟩ Code</a>}

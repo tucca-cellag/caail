@@ -28,3 +28,5 @@
 .px-bdg.doi { background: color-mix(in oklab, var(--caail-link) 15%, transparent); color: var(--caail-link); font-family: var(--caail-font-mono); font-weight: 500; }
 .px-bdg.code { background: color-mix(in oklab, #009E73 18%, transparent); color: #0c6b4f; }
 .px-bdg.data { background: color-mix(in oklab, #E69F00 22%, transparent); color: #8a6410; }
+:root[data-theme='dark'] .px-bdg.code { background: color-mix(in oklab, #009E73 30%, transparent); color: #74e3b4; }
+:root[data-theme='dark'] .px-bdg.data { background: color-mix(in oklab, #E69F00 32%, transparent); color: #f3c969; }

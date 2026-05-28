@@ -1,49 +1,16 @@
-# Starlight Starter Kit: Basics
+# CAAIL site
 
-[![Built with Starlight](https://astro.badg.es/v2/built-with-starlight/tiny.svg)](https://starlight.astro.build)
+The CAAIL documentation website (Astro Starlight). It is a generated navigation layer over the canonical Markdown in the repo root — never a replacement; site work must not modify the canonical `*.md` files.
 
-```
-pnpm create astro@latest -- --template starlight
-```
+- Design system: see the repo-root `DESIGN.md`.
+- Project/build notes for agents: see the "Documentation site (`site/`)" section of the repo-root `CLAUDE.md`.
+- Requires Node ≥ 22.12 (pinned in `.nvmrc`).
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
-
-## 🚀 Project Structure
-
-Inside of your Astro + Starlight project, you'll see the following folders and files:
-
-```
-.
-├── public/
-├── src/
-│   ├── assets/
-│   ├── content/
-│   │   └── docs/
-│   └── content.config.ts
-├── astro.config.mjs
-├── package.json
-└── tsconfig.json
+```sh
+pnpm install          # first time
+pnpm dev              # local preview at /caail/
+pnpm build            # static build to dist/
+pnpm test:e2e         # Playwright e2e + axe a11y
 ```
 
-Starlight looks for `.md` or `.mdx` files in the `src/content/docs/` directory. Each file is exposed as a route based on its file name.
-
-Images can be added to `src/assets/` and embedded in Markdown with a relative link.
-
-Static assets, like favicons, can be placed in the `public/` directory.
-
-## 🧞 Commands
-
-All commands are run from the root of the project, from a terminal:
-
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `pnpm install`             | Installs dependencies                            |
-| `pnpm dev`             | Starts local dev server at `localhost:4321`      |
-| `pnpm build`           | Build your production site to `./dist/`          |
-| `pnpm preview`         | Preview your build locally, before deploying     |
-| `pnpm astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `pnpm astro -- --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Check out [Starlight’s docs](https://starlight.astro.build/), read [the Astro documentation](https://docs.astro.build), or jump into the [Astro Discord server](https://astro.build/chat).
+M0 renders from committed sample fixtures in `src/content/data/*.sample.json`; a build-time parser (later milestone) will emit the real data in the same shape.

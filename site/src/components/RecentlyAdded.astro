@@ -1,8 +1,8 @@
 ---
 import stats from '../content/data/site-stats.sample.json';
 const areaColor = {
-  media: '#0072B2', cell: '#009E73', bioprocess: '#E69F00', scaffolding: '#56B4E9',
-  sensory: '#D55E00', tooling: '#CC79A7', eval: '#917800',
+  media: 'var(--caail-area-media)', cell: 'var(--caail-area-cell)', bioprocess: 'var(--caail-area-bioprocess)', scaffolding: 'var(--caail-area-scaffolding)',
+  sensory: 'var(--caail-area-sensory)', tooling: 'var(--caail-area-tooling)', eval: 'var(--caail-area-eval)',
 } as const;
 type AreaKey = keyof typeof areaColor;
 ---

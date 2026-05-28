@@ -9,7 +9,7 @@
     { "key": "eval", "label": "AI Evaluation & Benchmarking", "color": "#917800" }
   ],
   "methods": [
-    "Bayesian Optimization", "Deep Learning", "GNN", "CNN", "Ensemble Learning",
+    "Bayesian Optimization", "Deep Learning", "GNN", "Ensemble Learning",
     "Active Learning", "Domain-Specific Biomedical Agents", "Benchmarks & Evaluation Frameworks"
   ],
   "cells": [
