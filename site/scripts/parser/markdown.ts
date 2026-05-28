@@ -13,7 +13,6 @@ import { unified } from 'unified';
 import remarkParse from 'remark-parse';
 import remarkGfm from 'remark-gfm';
 import { toString as mdastToString } from 'mdast-util-to-string';
-import { visit } from 'unist-util-visit';
 import type { Root, Table, RootContent, Heading, Paragraph, Blockquote } from 'mdast';
 
 // ---------------------------------------------------------------------------
@@ -22,7 +21,7 @@ import type { Root, Table, RootContent, Heading, Paragraph, Blockquote } from 'm
 
 /** Parse a Markdown string and return its mdast `Root`. */
 export function parseMarkdown(src: string): Root {
-  return unified().use(remarkParse).use(remarkGfm).parse(src) as Root;
+  return unified().use(remarkParse).use(remarkGfm).parse(src);
 }
 
 /** Read `path` from disk (utf-8) and return the parsed mdast `Root`. */
@@ -36,18 +35,14 @@ export function parseFile(path: string): Root {
 // ---------------------------------------------------------------------------
 
 /**
- * Return the first GFM `table` node in the tree, or `null` if none exists.
+ * Return the first top-level GFM `table` node, or `null` if none exists.
+ *
+ * Only scans direct children of `root` — nested tables inside blockquotes or
+ * other containers are intentionally ignored. The Papers.md matrix table is
+ * always a top-level node, and a DFS could wrongly return a nested table.
  */
 export function firstTable(root: Root): Table | null {
-  let found: Table | null = null;
-  visit(root, 'table', (node: Table) => {
-    if (found === null) {
-      found = node;
-    }
-    // Return false-ish to stop visiting after the first match.
-    return false;
-  });
-  return found;
+  return root.children.find((n): n is Table => n.type === 'table') ?? null;
 }
 
 // ---------------------------------------------------------------------------
@@ -160,8 +155,13 @@ export function anchorParagraphs(
 
 /**
  * Starting at `nodes[index]`, scan FORWARD over immediately-following
- * `blockquote` nodes (stopping at the first non-blockquote) and extract
- * labeled links of the form `> **Label**: https://…`.
+ * `blockquote` nodes and extract labeled links of the form
+ * `> **Label**: https://…`.
+ *
+ * The scan stops at the FIRST non-blockquote sibling — it does not skip over
+ * intervening paragraphs or headings. Blockquotes that do not match the
+ * `> **Label**: URL` shape (i.e. no leading bold label or no URL) are skipped
+ * (they do NOT stop the scan).
  *
  * Returns `{ label, url }` for each matching blockquote, where:
  *   - `label` is the bold text (e.g. `"Code"`, `"Data"`)

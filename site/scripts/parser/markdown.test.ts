@@ -91,15 +91,11 @@ describe('firstTable', () => {
     );
     const table = firstTable(root);
     expect(table).not.toBeNull();
-    // The first table has header row value "A"
-    const firstHeaderCell = table?.children[0]?.children[0];
-    if (firstHeaderCell?.type === 'tableRow') {
-      const cellChild = firstHeaderCell.children[0];
-      if (cellChild.type === 'tableCell') {
-        const inner = cellChild.children[0];
-        expect(inner.type === 'text' ? inner.value : '').toBe('A');
-      }
-    }
+    // table.children[0] is the header tableRow; its first child is a tableCell
+    const firstCell = table?.children[0]?.children[0]; // header row -> first cell
+    expect(firstCell?.type).toBe('tableCell');
+    const inner = firstCell?.children[0];
+    expect(inner?.type === 'text' ? inner.value : '').toBe('A');
   });
 
   it('returns the table from the disk fixture', () => {
