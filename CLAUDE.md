@@ -158,13 +158,24 @@ The per-entry summaries in the `Datasets/` pages, `Databases.md`, `Software.md`,
 
 ## Workflow
 
-- **No build, no tests.** Editing is just text — preview locally in any Markdown viewer or push to a branch and let GitHub render it.
+- **No build, no tests for the canonical content.** Editing the root `*.md` files is just text — preview in any Markdown viewer, or push to a branch and let GitHub render it. (The generated website under `site/` does have a build — see "Documentation site (`site/`)" below.)
 - **Branching.** Work on `<type>/<slug>` branches off `main`; open PRs against `main`. Never commit directly to `main`.
 - **Commits.** Conventional Commits, Angular flavor. Common scopes for this repo: `papers`, `software`, `data`, `resources`, `research-areas`, `docs`.
   - `feat(papers): add Cosenza 2024 multi-fidelity BO paper`
   - `docs(readme): clarify scope of the library`
   - `fix(papers): correct DOI on reference 17`
 - **PRs.** Describe what you added and why it fits — for papers, mention the AI method(s) and research area(s) it spans (i.e. which matrix cells get updated).
+
+## Documentation site (`site/`)
+
+The canonical root content remains build-free, GitHub-rendered Markdown — that is unchanged. Separately, a generated **documentation website** lives in the top-level `site/` directory (Astro Starlight). It is a navigable layer over the canonical Markdown, never a replacement, and **site work must never modify the canonical files** (`Papers.md`, `Software.md`, `Databases.md`, `OtherResources.md`, `ResearchAreas/`, `Datasets/`).
+
+- **Stack:** Astro + Starlight, Preact islands, `astro-icon` (Phosphor icon set), self-hosted fonts via `@fontsource` (Spectral / Inter / JetBrains Mono), OKLch design tokens. The design system is documented in the repo-root `DESIGN.md`.
+- **Node:** requires Node ≥ 22.12 (pinned in `site/.nvmrc`). Run `nvm use 22` (e.g. `source ~/.nvm/nvm.sh && nvm use 22`) before any site command, since the system default may be older.
+- **Commands:** `pnpm --dir site dev` (local preview at `/caail/`), `pnpm --dir site build`, `pnpm --dir site test:e2e` (Playwright + axe a11y). M0 is reviewed locally — there is no CI/Pages deploy yet (that is a later milestone).
+- **Data:** M0 renders from committed sample fixtures (`site/src/content/data/*.sample.json`); a build-time parser in a later milestone will emit the real data in the same shape, so the components won't change.
+- **Gotcha — empty Hero override:** Starlight's `Hero` component is overridden by an intentionally empty `site/src/components/StarlightHeroOverride.astro` so the splash homepage renders no auto page-title `<h1>`. This is registered site-wide but only affects pages that set `hero` frontmatter (currently just the homepage). Any future page that wants a real Starlight hero must revisit this.
+- **Scope/branching:** the site is built one milestone at a time in a worktree off `main`, PR'd back. Issue #13 tracks the full plan (milestones M0–M7); M0 is the prototype (scaffold + homepage + Papers Explorer demo + `DESIGN.md`).
 
 ## Gotchas
 
