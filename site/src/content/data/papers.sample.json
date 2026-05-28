@@ -1,0 +1,37 @@
+{
+  "areas": [
+    { "key": "media", "label": "Media Optimization", "color": "#0072B2" },
+    { "key": "cell", "label": "Cellular Engineering", "color": "#009E73" },
+    { "key": "bioprocess", "label": "Bioprocess Control", "color": "#E69F00" },
+    { "key": "scaffolding", "label": "Scaffolding", "color": "#56B4E9" },
+    { "key": "sensory", "label": "Sensory Prediction", "color": "#D55E00" },
+    { "key": "tooling", "label": "AI Tooling / Methodology", "color": "#CC79A7" },
+    { "key": "eval", "label": "AI Evaluation & Benchmarking", "color": "#917800" }
+  ],
+  "methods": [
+    "Bayesian Optimization", "Deep Learning", "GNN", "Ensemble Learning",
+    "Active Learning", "Domain-Specific Biomedical Agents", "Benchmarks & Evaluation Frameworks"
+  ],
+  "cells": [
+    { "method": "Bayesian Optimization", "area": "media", "refIds": [3, 16, 18, 2, 15, 58] },
+    { "method": "Bayesian Optimization", "area": "cell", "refIds": [16] },
+    { "method": "Deep Learning", "area": "media", "refIds": [17, 18, 1, 15] },
+    { "method": "Deep Learning", "area": "cell", "refIds": [4, 5, 6, 122, 57, 60, 145] },
+    { "method": "Deep Learning", "area": "scaffolding", "refIds": [35, 20] },
+    { "method": "GNN", "area": "cell", "refIds": [13, 8, 12, 121] },
+    { "method": "Ensemble Learning", "area": "sensory", "refIds": [80, 102, 103, 72, 104, 171, 105, 27] },
+    { "method": "Active Learning", "area": "media", "refIds": [24, 23, 25, 58, 169] },
+    { "method": "Domain-Specific Biomedical Agents", "area": "cell", "refIds": [97, 125, 126, 90, 93] },
+    { "method": "Domain-Specific Biomedical Agents", "area": "tooling", "refIds": [66, 69, 68, 43, 50, 167, 54, 56, 51, 151, 152] },
+    { "method": "Benchmarks & Evaluation Frameworks", "area": "eval", "refIds": [55, 89, 108, 109, 110, 113, 114, 127, 146, 147, 148, 149, 150, 155, 156, 157, 158, 159, 164] }
+  ],
+  "references": [
+    { "id": 4, "authors": "Chen, Y., et al.", "year": 2016, "title": "Gene expression inference with deep learning", "journal": "Bioinformatics", "doi": "10.1093/bioinformatics/btw074", "codeUrl": null, "dataUrl": null },
+    { "id": 5, "authors": "Li, X., et al.", "year": 2020, "title": "Deep learning of cell-type resolution from bulk expression", "journal": "Nature Communications", "doi": "10.1038/s41467-020-00000-0", "codeUrl": "https://github.com/example/repo", "dataUrl": null },
+    { "id": 6, "authors": "Ji, Y., et al.", "year": 2021, "title": "DNABERT: pre-trained bidirectional encoder representations from transformers for DNA", "journal": "Bioinformatics", "doi": "10.1093/bioinformatics/btab083", "codeUrl": "https://github.com/jerryji1993/DNABERT", "dataUrl": null },
+    { "id": 57, "authors": "Adduri, A., et al.", "year": 2025, "title": "Predicting cellular responses to perturbation across diverse contexts", "journal": "bioRxiv", "doi": "10.1101/2025.00.00.000000", "codeUrl": "https://github.com/example/state", "dataUrl": "https://doi.org/10.5281/zenodo.0000000" },
+    { "id": 122, "authors": "Magnusson, R., et al.", "year": 2024, "title": "Deep generative modeling of single-cell perturbation response", "journal": "Nature Communications", "doi": "10.1038/s41467-024-00000-0", "codeUrl": "https://github.com/example/scgen", "dataUrl": null },
+    { "id": 60, "authors": "Mathieu, E., et al.", "year": 2025, "title": "Representation learning for single-cell genomics", "journal": "bioRxiv", "doi": "10.1101/2025.11.11.111111", "codeUrl": null, "dataUrl": null },
+    { "id": 145, "authors": "Xiao, J., et al.", "year": 2026, "title": "Foundation models for cell biology", "journal": "Nature Methods", "doi": "10.1038/s41592-026-00000-0", "codeUrl": null, "dataUrl": null }
+  ]
+}

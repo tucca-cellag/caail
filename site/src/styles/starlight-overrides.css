@@ -1,0 +1,84 @@
+/* Map CAAIL tokens onto Starlight's CSS variables.
+ * Loaded first in Page.astro (before @layer declarations) so all unlayered
+ * rules here beat every starlight.* cascade layer without !important.
+ * Ref: Starlight "CSS & Styling" guide; verified against 0.39.2 source.
+ */
+
+/* ── Body & mono fonts ─────────────────────────────────────────────────────
+ * Starlight resolves body font via --__sl-font which is computed as:
+ *   var(--sl-font, var(--sl-font-system)), var(--sl-font-system)
+ * Setting --sl-font here feeds into that computed var at use-time.
+ * Same pattern applies to --sl-font-mono → --__sl-font-mono.
+ */
+:root {
+  --sl-font: var(--caail-font-ui);
+  --sl-font-mono: var(--caail-font-mono);
+}
+
+/* ── Accent palette (dark mode base — matches Starlight :root dark default)
+ * --sl-color-accent-low  = subtle tint for backgrounds/badges
+ * --sl-color-accent      = interactive blue (links, active nav)
+ * --sl-color-accent-high = high-contrast accent text on dark bg
+ * --sl-color-text-accent = accent-colored inline text
+ * --sl-color-white       = Starlight's "high-contrast text" var (headings,
+ *                          asides) — NOT literal white. Dark mode: near-white;
+ *                          light mode: near-black. Mapping to --caail-ink
+ *                          mirrors this flip via tokens.css dark-mode block.
+ */
+:root {
+  --sl-color-accent-low:  oklch(22% 0.08 256);   /* dark-mode: deep navy tint */
+  --sl-color-accent:      var(--caail-link);       /* Tufts Digital Blue */
+  --sl-color-accent-high: var(--caail-primary);    /* Tufts Dark Blue */
+
+  --sl-color-text-accent: var(--caail-link);
+  --sl-color-white:       var(--caail-ink);        /* heading/high-contrast text; flips in dark */
+}
+
+/* ── Light-mode accent overrides ──────────────────────────────────────────
+ * props.css overrides accent vars under [data-theme='light']; we must do
+ * the same so --sl-color-accent-low becomes a pale tint (not the dark navy).
+ */
+:root[data-theme='light'] {
+  --sl-color-accent-low:  oklch(90% 0.04 256);   /* pale Digital-Blue tint on white */
+  --sl-color-accent-high: var(--caail-primary);   /* dark navy for high-contrast on light */
+}
+
+/* ── Display font for headings ────────────────────────────────────────────
+ * Targets Starlight markdown headings (inside .sl-markdown-content) and
+ * the page-title h1 (.page-title). Also hits any bare heading in content.
+ * Uses unlayered specificity to beat starlight.content layer rules.
+ */
+.sl-markdown-content :is(h1, h2, h3, h4, h5, h6),
+.page-title,
+:root h1,
+:root h2,
+:root h3 {
+  font-family: var(--caail-font-display);
+}
+
+/* ── Wordmark / site title ────────────────────────────────────────────────
+ * SiteTitle.astro renders: <a href="…" class="site-title sl-flex">…</a>
+ * Inside @layer starlight.core (weight = layered). Our unlayered rule wins.
+ * Starlight sets font-weight: 600 and color: var(--sl-color-text-accent);
+ * we push to 800 and pin to --caail-primary (navy) for both themes.
+ */
+.site-title,
+a.site-title {
+  font-weight: 800;
+  color: var(--caail-primary);
+  letter-spacing: 0.2px;
+}
+
+/* ── Helper class for explicit display-font usage in components ───────────*/
+.caail-display {
+  font-family: var(--caail-font-display);
+}
+
+/* Homepage two-column (Start here / Recently added) — collapses on narrow screens */
+.caail-two-col { display: grid; grid-template-columns: 1fr 1.15fr; gap: 1.6rem; margin-top: .5rem; }
+@media (max-width: 50rem) { .caail-two-col { grid-template-columns: 1fr; } }
+
+/* Honor reduced-motion (DESIGN.md §7) */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
+}

@@ -1,0 +1,54 @@
+/* CAAIL design tokens — OKLch authored, hex fallbacks in comments. See DESIGN.md §2. */
+:root {
+  /* Chrome — Tufts (light) */
+  --caail-bg: oklch(100% 0 0);                 /* #FFFFFF */
+  --caail-surface: oklch(97.2% 0.006 250);     /* #F4F6FA */
+  --caail-border: oklch(92.5% 0.012 250);      /* #E2E8F1 */
+  --caail-ink: oklch(24% 0.05 264);            /* #14213D */
+  --caail-muted: oklch(50% 0.02 255);          /* #67717F */
+  --caail-primary: oklch(31% 0.12 264);        /* #002E6D Tufts Dark Blue */
+  --caail-primary-hover: oklch(36% 0.13 264);  /* #013A86 */
+  --caail-link: oklch(52% 0.11 256);           /* #3172AE Tufts Digital Blue (AA) */
+  --caail-accent: oklch(40% 0.035 60);         /* #5E4B3C Tufts Brown */
+
+  /* Data — sequential density ramp (single-hue navy, CVD-safe) */
+  --caail-density-0: oklch(97.2% 0.006 250);   /* #F4F6FA */
+  --caail-density-1: oklch(86% 0.04 256);      /* #C9D7EC  1-2 */
+  --caail-density-2: oklch(66% 0.08 258);      /* #7E9BC9  3-4 */
+  --caail-density-3: oklch(43% 0.12 262);      /* #27579F  5-7 */
+  --caail-density-4: oklch(31% 0.12 264);      /* #002E6D  8+ */
+
+  /* Canonical categorical palette: consumed via var() in components; mirrored as hex in papers.sample.json (the island is data-driven). */
+  /* Data — categorical (Okabe–Ito, CVD-safe); 7 research areas */
+  --caail-area-media: #0072B2;
+  --caail-area-cell: #009E73;
+  --caail-area-bioprocess: #E69F00;
+  --caail-area-scaffolding: #56B4E9;
+  --caail-area-sensory: #D55E00;
+  --caail-area-tooling: #CC79A7;
+  --caail-area-eval: #917800;       /* Okabe–Ito yellow darkened to amber for AA on white */
+
+  /* Fonts */
+  --caail-font-display: 'Spectral', Georgia, 'Times New Roman', serif;
+  --caail-font-ui: 'Inter Variable', system-ui, sans-serif;
+  --caail-font-mono: 'JetBrains Mono Variable', ui-monospace, monospace;
+}
+
+/* Dark mode — OKLch lightness inversion (Starlight toggles [data-theme='dark']) */
+:root[data-theme='dark'] {
+  --caail-bg: oklch(17% 0.03 264);             /* ~#0B1220 */
+  --caail-surface: oklch(22% 0.03 264);
+  --caail-border: oklch(30% 0.03 264);
+  --caail-ink: oklch(93% 0.02 255);            /* ~#E8EDF6 */
+  --caail-muted: oklch(72% 0.02 255);
+  --caail-primary: oklch(72% 0.10 256);        /* lighter navy for dark bg */
+  --caail-primary-hover: oklch(80% 0.10 256);
+  --caail-link: oklch(72% 0.10 256);           /* ~#5B8AD1 */
+  --caail-accent: oklch(70% 0.05 60);
+  --caail-density-0: oklch(24% 0.02 264);
+  --caail-density-1: oklch(34% 0.05 260);
+  --caail-density-2: oklch(48% 0.09 260);
+  --caail-density-3: oklch(62% 0.11 258);
+  --caail-density-4: oklch(78% 0.10 256);
+  /* Categorical area colors keep hue; lighten ~8% for AA on dark (kept inline in components) */
+}

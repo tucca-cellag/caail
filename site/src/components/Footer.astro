@@ -1,0 +1,12 @@
+---
+import Default from '@astrojs/starlight/components/Footer.astro';
+---
+<div class="caail-footer">
+  <span>A project of the Tufts University Center for Cellular Agriculture (TUCCA).</span>
+  <span>Content licensed MIT · <a href="https://github.com/tucca-cellag/caail">canonical source on GitHub</a></span>
+</div>
+<Default><slot /></Default>
+<style>
+  .caail-footer { display: flex; justify-content: space-between; flex-wrap: wrap; gap: .5rem; font-size: .72rem; color: var(--caail-muted); border-top: 1px solid var(--caail-border); padding-top: .8rem; margin-top: 1rem; }
+  .caail-footer a { color: var(--caail-link); }
+</style>

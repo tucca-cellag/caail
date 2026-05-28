@@ -1,0 +1,44 @@
+---
+import { Icon } from 'astro-icon/components';
+import stats from '../content/data/site-stats.sample.json';
+const c = stats.counts;
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const sections = [
+  { icon: 'ph:file-text-duotone', count: c.papers, title: 'Papers', desc: 'The full AI-method × research-area matrix over 193 references, with code & data links.', cta: 'Open the explorer →', href: `${base}/papers/explorer/` },
+  { icon: 'ph:code-duotone', count: c.software, title: 'Software', desc: 'Open-source tools grouped by application area, framed for cell-ag use.', cta: 'Browse tools →', href: `${base}/software/` },
+  { icon: 'ph:database-duotone', count: c.databases, title: 'Databases', desc: 'Repositories, ontologies, and lookup resources for query and reference.', cta: 'Browse databases →', href: `${base}/databases/` },
+  { icon: 'ph:dna-duotone', count: c.species, title: 'Datasets by species', desc: 'Cow, pig, chicken, fish & more — atlases, GEMs, deposits, plus benchmarks.', cta: 'Pick a species →', href: `${base}/datasets/` },
+  { icon: 'ph:book-open-duotone', count: c.researchAreas, title: 'Research Areas', desc: 'Deep-dive pages: media, cell engineering, bioprocess, scaffolding, sensory…', cta: 'Read the deep dives →', href: `${base}/research-areas/` },
+  { icon: 'ph:play-circle-duotone', count: c.talks, title: 'Talks & Videos', desc: 'Curated lectures and explainers, playable inline.', cta: 'Watch →', href: `${base}/talks/` },
+];
+---
+<section class="sections">
+  <h2 class="caail-display">Explore the library</h2>
+  <p class="sub">Six collections — everything is cross-linked back to the canonical Markdown.</p>
+  <div class="grid">
+    {sections.map((s) => (
+      <a class="card" href={s.href}>
+        <div class="top"><Icon name={s.icon} /><span class="cnt caail-display">{s.count}</span></div>
+        <h3>{s.title}</h3>
+        <p>{s.desc}</p>
+        <span class="go">{s.cta}</span>
+      </a>
+    ))}
+  </div>
+</section>
+
+<style>
+  .sections { margin: 1.5rem 0; }
+  .sections h2 { font-size: 1.15rem; color: var(--caail-primary); margin: 0 0 .15rem; }
+  .sub { font-size: .8rem; color: var(--caail-muted); margin: 0 0 1rem; }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: .85rem; }
+  @media (max-width: 50rem) { .grid { grid-template-columns: 1fr; } }
+  .card { display: flex; flex-direction: column; gap: .25rem; padding: 1rem; border: 1px solid var(--caail-border); border-radius: 10px; text-decoration: none; color: var(--caail-ink); }
+  .card:hover { border-color: var(--caail-link); box-shadow: 0 6px 18px -14px color-mix(in oklab, var(--caail-primary) 40%, transparent); }
+  .top { display: flex; align-items: center; justify-content: space-between; }
+  .top [data-icon] { width: 1.7rem; height: 1.7rem; color: var(--caail-primary); }
+  .cnt { font-size: 1.6rem; font-weight: 700; color: var(--caail-primary); line-height: 1; }
+  .card h3 { font-size: .9rem; margin: .25rem 0 0; color: var(--caail-ink); }
+  .card p { font-size: .76rem; color: var(--caail-muted); margin: 0; line-height: 1.45; }
+  .go { font-size: .72rem; font-weight: 700; color: var(--caail-link); margin-top: .25rem; }
+</style>
