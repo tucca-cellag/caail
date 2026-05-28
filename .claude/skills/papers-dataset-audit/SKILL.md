@@ -44,7 +44,7 @@ Each ORPHAN block lists the accessions / URLs that triggered the orphan plus, if
    python3 .claude/skills/papers-dataset-audit/audit.py
    ```
 
-   Add `--refs 187,170,171` to audit a subset, `--json` for machine-readable output, `--include-low-confidence` to surface accessions found outside the Data-Availability section (noisier, but catches papers whose deposit pointers live elsewhere).
+   Add `--refs <id>,<id>` to audit a subset, `--json` for machine-readable output, `--include-low-confidence` to surface accessions found outside the Data-Availability section (noisier, but catches papers whose deposit pointers live elsewhere).
 
 3. **Read the ORPHAN section** top-down. For each ORPHAN:
    - Is this a deposit the paper itself created (real gap) or a prior dataset the paper re-analyzes (noise)? Open the PDF's Data Availability section in Zotero to disambiguate.
@@ -91,6 +91,7 @@ _Also matched in-repo:_ <accessions that DID resolve>
 | Some Zotero records lack a populated `.zotero-ft-cache` (recently added PDFs). | Open the paper once in Zotero to trigger full-text indexing, or run the script after a sync. Affected refs show `NO_PDF` even though a PDF is attached. |
 | Tool repos already in `Software.md` may appear as orphans. | A `> **Code**:` blockquote in `Papers.md` doesn't count as a `Datasets/` cross-reference; the audit specifically reports the case where the deposit URL appears nowhere in the entire repo corpus. If you see a GitHub URL flagged but recognize it as already-in-Software.md, the audit's actually right: the *specific URL string* isn't in any file. Either add it to the relevant `Software.md` / `Datasets/` entry or accept the orphan as informational. |
 | Zenodo deposits frequently associated with code repos may double-flag. | A `github.com/X/Y` + `10.5281/zenodo.NNNN` pair is common — the Zenodo deposit is often the code-release archive. Both are valid CAAIL data points but one entry can cover both. |
+| Fixing an orphan with a hand-typed URL. | Copy the accession / repo URL from the audit output (which read it from the PDF), not from memory, and liveness-check it (`gh repo view`, `curl -sI`) before commit — a plausible-looking but dead URL is a silent failure. Drafting + reviewer-gating the fix is `zotero-to-caail-sync`'s job. |
 
 ## CLI reference
 
@@ -118,31 +119,23 @@ optional:
 
 ## Example invocation
 
-Audit the entire Papers.md (193 refs at time of writing):
+Audit the entire Papers.md:
 
 ```bash
 python3 .claude/skills/papers-dataset-audit/audit.py > /tmp/audit-report.md
 ```
 
-Audit a subset:
+Audit a subset, or one ref as JSON for downstream tooling:
 
 ```bash
-python3 .claude/skills/papers-dataset-audit/audit.py --refs 187,170,171,135,136
+python3 .claude/skills/papers-dataset-audit/audit.py --refs <id>,<id>
+python3 .claude/skills/papers-dataset-audit/audit.py --refs <id> --json
 ```
 
-Audit one ref and emit JSON for downstream tooling:
-
-```bash
-python3 .claude/skills/papers-dataset-audit/audit.py --refs 187 --json
-```
-
-Expected order-of-magnitude output (verified by dogfood May 2026 against 193 refs):
-
-- ~70 MATCHED (deposit URLs already cited somewhere in the repo)
-- ~40 ORPHAN (deposits flagged for human triage)
-- ~70 NO_DATA (reviews, methodology overviews, perspective papers)
-- ~10 NO_PDF (PDF attached but ft-cache not yet built)
-- ~1 NO_ZOTERO (citations without DOI / arXiv ID that can't be auto-located)
+Read the report top-down: the status table first, then the ORPHAN section
+(the action items), then the NO_ZOTERO / NO_PDF lists, then MATCHED as a
+sanity check. Expect a substantial NO_DATA bucket (reviews and methodology
+papers have no deposit) and some ORPHAN false positives (see Known pitfalls).
 
 ## Relationship to the other Zotero-workflow skills
 

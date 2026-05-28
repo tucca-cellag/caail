@@ -95,6 +95,7 @@ For each requested collection: recursively walk the collection tree (Zotero's `/
 | Title-only matching is too noisy without an author anchor. | The script does NOT match on title fragments alone. A paper called "single-cell RNA-seq of bovine satellite cells" would otherwise false-match against every similar inventory entry. The author+year+title-word combo is the minimum viable disambiguator. |
 | Skill-rule "leave it" hint is a *prompt*, not a decision. | A `GAP (skill-rule?)` flag means the title mentions a tool already in Software.md/Databases.md, not that the paper is automatically off-limits. The reviewer decides per the `zotero-to-caail-sync` skill rules. |
 | The script reads stdlib-only. | No `pip install` required. Runs on any Python 3.x with the Zotero local API reachable at `http://localhost:23119`. |
+| Hand-typed identifiers feeding the downstream sync. | Every DOI / arXiv ID / accession / URL the report carries comes from Zotero — pass those forward; never type one from memory or hand-build a scan-input list. Liveness-check any URL before it lands in the repo (see `zotero-to-caail-sync`). |
 
 ## CLI reference
 
@@ -119,25 +120,18 @@ optional:
 
 ## Example invocation
 
-Scoping Benji's Cell Ag Library AI/ML + Odor/Flavor + Omics collections:
+Scope one or more collections — repeat `--collection` per collection key; the
+script recurses into subcollections automatically:
 
 ```bash
-python3 .claude/skills/zotero-collection-scope/scope.py --group 5178481 \
-  --collection TVZ38IIX \
-  --collection 77LM68C2 \
-  --collection I7Y3S942 --collection B887SGN8 --collection 36H4LXXG \
-  --collection TWCPXDFB --collection WZQPN4BQ --collection SQDKD4AN \
-  --collection DAKYHEUK --collection FQGL5CK6 --collection M9TWJIFL
+python3 .claude/skills/zotero-collection-scope/scope.py \
+  --group <GROUP_ID> --collection <KEY> [--collection <KEY> ...]
 ```
 
-Expected order-of-magnitude output (verified by dogfood May 2026):
-
-- ~136 distinct paper-type items
-- ~11 already in-repo (mostly via DOI)
-- ~111 GAPS for human review
-- ~14 NO_DOI items (mostly YouTube/website/note-only stubs)
-
-The human reviewer then applies CAAIL-fit judgment to the GAPS (skip cancer pathology DL, generic transfer-learning surveys, tool method papers already represented in Software.md/Databases.md, etc.) to arrive at the actionable set for `zotero-to-caail-sync`.
+The report's GAPS are the deliverable. The human reviewer then applies CAAIL-fit
+judgment (skip out-of-scope DL, generic surveys, tool method papers already in
+Software.md/Databases.md, etc.) to arrive at the actionable set for
+`zotero-to-caail-sync`.
 
 ## Relationship to `zotero-to-caail-sync`
 
