@@ -18,7 +18,7 @@
   --caail-density-3: oklch(43% 0.12 262);      /* #27579F  5-7 */
   --caail-density-4: oklch(31% 0.12 264);      /* #002E6D  8+ */
 
-  /* Canonical categorical palette: consumed via var() in components; mirrored as hex in papers.sample.json (the island is data-driven). */
+  /* Canonical categorical palette: consumed via var(--caail-area-*) in components (the island carries only area keys, never colors). */
   /* Data — categorical (Okabe–Ito, CVD-safe); 7 research areas */
   --caail-area-media: #0072B2;
   --caail-area-cell: #009E73;
