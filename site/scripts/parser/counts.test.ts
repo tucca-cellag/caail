@@ -9,7 +9,7 @@
  *      asserting the verified ground-truth values for all six fields.
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeAll } from 'vitest';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -24,43 +24,38 @@ const FIXTURE_DIR = join(fileURLToPath(import.meta.url), '..', 'fixtures');
 // ---------------------------------------------------------------------------
 
 describe('computeCounts — talks scoping (fixture)', () => {
-  it('counts only list-item links under ## YouTube Videos, not links in other sections', () => {
-    const fixtureRoot = join(FIXTURE_DIR, 'counts-other-resources.fixture.md');
-
-    // Build a minimal stub PapersData — we only care about talks here.
-    const stubModel: PapersData = {
-      areas: [],
+  // Build a minimal stub PapersData — we only care about talks/species/researchAreas here.
+  const stubModel: PapersData = {
+    areas: [],
+    methods: [],
+    cells: [],
+    references: Array.from({ length: 3 }, (_, i) => ({
+      id: i + 1,
+      section: 'References',
+      raw: `Stub, A. (2022). Title ${i + 1}. *Journal*, 1(1), 1. https://doi.org/10.1/a${i}`,
+      authors: [`Stub, A.`],
+      authorsText: 'Stub, A.',
+      year: 2022,
+      title: `Title ${i + 1}`,
+      journal: 'Journal',
+      doi: `10.1/a${i}`,
+      codeUrl: null,
+      dataUrl: null,
+      isPrimary: true,
       methods: [],
-      cells: [],
-      references: Array.from({ length: 3 }, (_, i) => ({
-        id: i + 1,
-        section: 'References',
-        raw: `Stub, A. (2022). Title ${i + 1}. *Journal*, 1(1), 1. https://doi.org/10.1/a${i}`,
-        authors: [`Stub, A.`],
-        authorsText: 'Stub, A.',
-        year: 2022,
-        title: `Title ${i + 1}`,
-        journal: 'Journal',
-        doi: `10.1/a${i}`,
-        codeUrl: null,
-        dataUrl: null,
-        isPrimary: true,
-        methods: [],
-        areas: [],
-        hasCode: false,
-        hasData: false,
-        slug: `stub-2022${'abcdefghijklmnopqrstuvwxyz'[i] ?? String(i)}`,
-      })),
-    };
+      areas: [],
+      hasCode: false,
+      hasData: false,
+      slug: `stub-2022${'abcdefghijklmnopqrstuvwxyz'[i] ?? String(i)}`,
+    })),
+  };
 
-    // Point computeCounts at our fixture directory as the "repo root".
-    // The fixture base dir must have Software.md, Databases.md, OtherResources.md,
-    // Datasets/, and ResearchAreas/ — for this unit test we only care about talks,
-    // so we use a dedicated OtherResources fixture and stub the rest.
-    // Instead, supply a custom repoRoot that holds our fixture file as
-    // OtherResources.md but stub Software.md, Databases.md, Datasets/, ResearchAreas/.
-    const fixtureRepoRoot = join(FIXTURE_DIR, 'counts-repo-root-fixture');
+  // Point computeCounts at our fixture directory as the "repo root".
+  // The fixture base dir holds Software.md, Databases.md, OtherResources.md,
+  // Datasets/, and ResearchAreas/ — all minimal stubs.
+  const fixtureRepoRoot = join(FIXTURE_DIR, 'counts-repo-root-fixture');
 
+  it('counts only list-item links under ## YouTube Videos, not links in other sections', () => {
     const result = computeCounts(stubModel, fixtureRepoRoot);
 
     // The fixture YouTube Videos section has 3 links; a second ## section has
@@ -69,6 +64,18 @@ describe('computeCounts — talks scoping (fixture)', () => {
     // Schema validates
     expect(CountsSchema.safeParse(result).success).toBe(true);
   });
+
+  it('excludes CLAUDE.md and README.md from species and researchAreas counts', () => {
+    const result = computeCounts(stubModel, fixtureRepoRoot);
+
+    // Datasets/ contains: Cow.md, Pig.md (real pages), README.md (excluded),
+    // CLAUDE.md (excluded) → species = 2.
+    expect(result.species).toBe(2);
+
+    // ResearchAreas/ contains: Bioprocess.md, MediaOptimization.md (real pages),
+    // CLAUDE.md (excluded) → researchAreas = 2.
+    expect(result.researchAreas).toBe(2);
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -76,17 +83,14 @@ describe('computeCounts — talks scoping (fixture)', () => {
 // ---------------------------------------------------------------------------
 
 describe('computeCounts — real corpus (ground-truth contract)', () => {
-  let model: PapersData;
   let result: ReturnType<typeof computeCounts>;
 
-  it('builds the real papers model without throwing', () => {
-    expect(() => {
-      model = buildPapersModel();
-    }).not.toThrow();
+  beforeAll(() => {
+    const model = buildPapersModel();
+    result = computeCounts(model);
   });
 
   it('computeCounts returns the verified ground-truth counts', () => {
-    result = computeCounts(model);
     expect(result).toEqual({
       papers: 193,
       software: 70,
