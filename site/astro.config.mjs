@@ -24,6 +24,12 @@ export default defineConfig({
         './src/styles/tokens.css',
         './src/styles/starlight-overrides.css',
       ],
+      components: {
+        // Override Starlight's built-in Hero with an empty component so that
+        // setting `hero: {}` in index.mdx suppresses the auto <PageTitle> h1
+        // without injecting Starlight's own hero UI above our custom Hero.
+        Hero: './src/components/StarlightHeroOverride.astro',
+      },
     }),
     preact(),
     icon({ include: { ph: ['*'] } }),
