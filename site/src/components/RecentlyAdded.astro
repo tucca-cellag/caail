@@ -1,0 +1,29 @@
+---
+import stats from '../content/data/site-stats.sample.json';
+const areaColor = {
+  media: '#0072B2', cell: '#009E73', bioprocess: '#E69F00', scaffolding: '#56B4E9',
+  sensory: '#D55E00', tooling: '#CC79A7', eval: '#917800',
+} as const;
+type AreaKey = keyof typeof areaColor;
+---
+<section class="recent">
+  <h2 class="caail-display">Recently added</h2>
+  {stats.recent.map((r) => (
+    <div class="row">
+      <span class="date">{r.date}</span>
+      <span class="kind">{r.kind}</span>
+      <span class="ttl">{r.title}</span>
+      <span class="dot" style={`background:${areaColor[r.area as AreaKey]}`}></span>
+    </div>
+  ))}
+  <a class="more" href="https://github.com/tucca-cellag/caail/commits/main">View the full changelog →</a>
+</section>
+<style>
+  .recent h2 { font-size: 1.05rem; color: var(--caail-primary); margin: 0 0 .8rem; }
+  .row { display: flex; align-items: center; gap: .7rem; padding: .5rem 0; border-bottom: 1px solid var(--caail-border); font-size: .8rem; }
+  .date { font-family: var(--caail-font-mono); font-size: .68rem; color: var(--caail-muted); white-space: nowrap; }
+  .kind { font-size: .62rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--caail-accent); width: 4rem; }
+  .ttl { flex: 1; color: var(--caail-ink); }
+  .dot { width: .6rem; height: .6rem; border-radius: 3px; }
+  .more { display: inline-block; margin-top: .7rem; font-size: .76rem; font-weight: 700; color: var(--caail-link); }
+</style>
