@@ -11,7 +11,8 @@ test('explorer cell click opens the reference side panel', async ({ page }) => {
   await page.goto('./papers/explorer/');
   await page.getByRole('button', { name: 'Deep Learning × Cellular Engineering: 7 papers' }).click();
   await expect(page.getByRole('heading', { name: 'Deep Learning × Cellular Engineering' })).toBeVisible();
-  await expect(page.getByText('Ji, Y., et al. (2021)')).toBeVisible();
+  await expect(page.getByText(/Ji, Y\..*Davuluri, R\. V\. \(2021\)/)).toBeVisible();
+  await expect(page.getByRole('link', { name: '10.1093/bioinformatics/btab083' })).toBeVisible();
   await expect(page.getByRole('link', { name: '⟨⟩ Code' }).first()).toBeVisible();
 });
 
