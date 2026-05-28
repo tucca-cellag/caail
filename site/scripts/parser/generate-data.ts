@@ -26,7 +26,7 @@ import { PapersDataSchema, CountsSchema, type Counts } from './types.js';
 
 /**
  * Absolute path to site/src/content/data/, resolved from this module's
- * location: generate-data.ts → parser/ → scripts/ → site/ → src/content/data/
+ * location: generate-data.ts → parser/ → scripts/ → src/content/data/
  */
 export const DEFAULT_OUT_DIR: string = fileURLToPath(
   new URL('../../src/content/data/', import.meta.url),

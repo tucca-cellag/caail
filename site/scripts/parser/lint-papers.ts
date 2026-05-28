@@ -85,9 +85,18 @@ const isMain =
   import.meta.url === pathToFileURL(process.argv[1] ?? '').href;
 
 if (isMain) {
-  const model = buildPapersModel();
-  const r = runLint(model);
-  // eslint-disable-next-line no-console
-  console.log(r.report);
-  process.exitCode = r.exitCode;
+  try {
+    const model = buildPapersModel();
+    const r = runLint(model);
+    // eslint-disable-next-line no-console
+    console.log(r.report);
+    process.exitCode = r.exitCode;
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error(
+      'lint:papers: FAILED —',
+      err instanceof Error ? err.message : String(err),
+    );
+    process.exitCode = 1;
+  }
 }

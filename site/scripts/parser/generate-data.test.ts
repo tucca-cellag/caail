@@ -39,10 +39,12 @@ describe('generateData()', () => {
   });
 
   it('papersRefs === 193', () => {
+    // 193 = current Papers.md reference count; bump when refs are added.
     expect(result.papersRefs).toBe(193);
   });
 
   it('counts.papers === 193', () => {
+    // 193 = current Papers.md reference count; bump when refs are added.
     expect(result.counts.papers).toBe(193);
   });
 
@@ -71,12 +73,14 @@ describe('generateData()', () => {
   it('parsed papers.json has references.length === 193', () => {
     const raw = readFileSync(join(tmpDir, 'papers.json'), 'utf-8');
     const parsed = JSON.parse(raw);
+    // 193 = current Papers.md reference count; bump when refs are added.
     expect(parsed.references.length).toBe(193);
   });
 
   it('parsed counts.json has papers === 193', () => {
     const raw = readFileSync(join(tmpDir, 'counts.json'), 'utf-8');
     const parsed = JSON.parse(raw);
+    // 193 = current Papers.md reference count; bump when refs are added.
     expect(parsed.papers).toBe(193);
   });
 

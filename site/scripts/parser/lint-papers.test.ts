@@ -63,7 +63,9 @@ describe('runLint() on a model with a dangling citation', () => {
     references: [
       {
         id: 1,
-        section: 'References',
+        // "Reviews & Perspectives" is exempt from Rule 2 (unreachable primary),
+        // so only Rule 1 (dangling #9999) fires — isolating the test to one rule.
+        section: 'Reviews & Perspectives',
         raw: 'Real, A. (2024). A real paper. *Journal*, 1(1), 1. https://doi.org/10.1/real',
         authors: ['Real, A.'],
         authorsText: 'Real, A.',
@@ -73,7 +75,7 @@ describe('runLint() on a model with a dangling citation', () => {
         doi: '10.1/real',
         codeUrl: null,
         dataUrl: null,
-        isPrimary: false, // not cited by any cell
+        isPrimary: false,
         methods: [],
         areas: [],
         hasCode: false,
@@ -89,16 +91,15 @@ describe('runLint() on a model with a dangling citation', () => {
     expect(result.exitCode).toBe(1);
   });
 
-  it('errors array has at least one entry', () => {
-    expect(result.errors.length).toBeGreaterThanOrEqual(1);
+  it('errors array has exactly one entry (the dangling citation)', () => {
+    expect(result.errors).toHaveLength(1);
   });
 
   it('report contains "ERROR"', () => {
     expect(result.report).toContain('ERROR');
   });
 
-  it('error message mentions the dangling refId', () => {
-    const hasRefId = result.errors.some((e) => e.includes('9999'));
-    expect(hasRefId).toBe(true);
+  it('error message mentions the dangling refId #9999', () => {
+    expect(result.errors[0]).toContain('9999');
   });
 });
