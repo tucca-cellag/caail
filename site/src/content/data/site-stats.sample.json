@@ -1,0 +1,13 @@
+{
+  "counts": {
+    "papers": 193, "software": 70, "databases": 71,
+    "species": 10, "researchAreas": 8, "talks": 25
+  },
+  "recent": [
+    { "date": "2026-05-27", "kind": "Paper", "title": "FrontierScience benchmark + companion dataset", "area": "eval" },
+    { "date": "2026-05-26", "kind": "Software", "title": "MRMPROBS for targeted mass spectrometry", "area": "sensory" },
+    { "date": "2026-05-20", "kind": "Dataset", "title": "Bovine skeletal-muscle single-cell atlas", "area": "cell" },
+    { "date": "2026-05-18", "kind": "Database", "title": "PRIDE proteomics repository", "area": "media" },
+    { "date": "2026-05-14", "kind": "Paper", "title": "Multi-fidelity Bayesian media design", "area": "media" }
+  ]
+}
