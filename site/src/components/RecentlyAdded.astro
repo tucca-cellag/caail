@@ -1,5 +1,5 @@
 ---
-import stats from '../content/data/site-stats.sample.json';
+import recent from '../content/data/recent.json';
 const areaColor = {
   media: 'var(--caail-area-media)', cell: 'var(--caail-area-cell)', bioprocess: 'var(--caail-area-bioprocess)', scaffolding: 'var(--caail-area-scaffolding)',
   sensory: 'var(--caail-area-sensory)', tooling: 'var(--caail-area-tooling)', eval: 'var(--caail-area-eval)',
@@ -8,7 +8,7 @@ type AreaKey = keyof typeof areaColor;
 ---
 <section class="recent">
   <h2 class="caail-display">Recently added</h2>
-  {stats.recent.map((r) => (
+  {recent.map((r) => (
     <div class="row">
       <span class="date">{r.date}</span>
       <span class="kind">{r.kind}</span>
