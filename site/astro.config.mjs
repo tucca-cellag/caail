@@ -1,6 +1,8 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
+import preact from '@astrojs/preact';
+import icon from 'astro-icon';
 
 export default defineConfig({
   site: 'https://tucca-cellag.github.io',
@@ -18,5 +20,7 @@ export default defineConfig({
         { label: 'Papers', items: [{ label: 'Explorer', link: '/papers/explorer/' }] },
       ],
     }),
+    preact(),
+    icon({ include: { ph: ['*'] } }),
   ],
 });
