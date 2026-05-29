@@ -1,3 +1,10 @@
+/* Break the explorer out of Starlight's prose width cap (--sl-content-width,
+ * ~45rem) so the matrix fills the content panel on wide screens instead of
+ * being squished into a centred 720px column. Scoped via :has(.px) so only the
+ * page carrying the matrix is widened — every prose page keeps its readable
+ * width. Unlayered, so it beats Starlight's layered .sl-container rule. */
+.sl-container:has(.px) { max-width: none; }
+
 .px-controls { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: .6rem; }
 .px-search { flex: 1; min-width: 220px; padding: .5rem .7rem; border: 1px solid var(--caail-border); border-radius: 8px; font: inherit; }
 .px-select { padding: .5rem .7rem; border: 1px solid var(--caail-border); border-radius: 8px; font: inherit; }
