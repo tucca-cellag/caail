@@ -218,9 +218,14 @@ export const CAAIL_PAGES = {
     return PAGES[id];
   },
 
-  /** Return all entries as an array of [id, meta] pairs. */
-  all(): Array<[string, PageMeta]> {
-    return Object.entries(PAGES);
+  /**
+   * Return all entries as an array of `{id, ...meta}` objects.
+   *
+   * Each element has the shape `{ id: string } & PageMeta` so callers can
+   * filter/sort/map without needing to destructure a tuple.
+   */
+  all(): Array<{ id: string } & PageMeta> {
+    return Object.entries(PAGES).map(([id, m]) => ({ id, ...m }));
   },
 
   /**

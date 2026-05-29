@@ -15,6 +15,14 @@ describe('CAAIL_PAGES', () => {
     expect(CAAIL_PAGES.byId('research-areas/bioprocess')?.title).toBe('Bioprocess control');
     expect(CAAIL_PAGES.byId('datasets/cow')?.title).toContain('Cow');
   });
+  it('all() returns {id,...meta} objects', () => {
+    const all = CAAIL_PAGES.all();
+    expect(all.length).toBe(24);
+    const cow = all.find((p) => p.id === 'datasets/cow');
+    expect(cow).toMatchObject({ id: 'datasets/cow', group: 'datasets' });
+    expect(typeof cow?.sidebarLabel).toBe('string');
+    expect(typeof cow?.order).toBe('number');
+  });
   it('has an entry for every rendered ResearchAreas and Datasets page (no missing map entries)', () => {
     const ra = readdirSync(`${REPO_ROOT}ResearchAreas`).filter((f) => f.endsWith('.md') && f !== 'CLAUDE.md');
     const ds = readdirSync(`${REPO_ROOT}Datasets`).filter((f) => f.endsWith('.md') && !['CLAUDE.md', 'README.md'].includes(f));
