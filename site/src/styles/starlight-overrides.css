@@ -168,10 +168,11 @@ a.site-title {
 /* ── Collapsible nav sidebars (desktop) ───────────────────────────────────
  * Toggle tabs (NavCollapse.astro) flip data-sidebar-collapsed / data-toc-
  * collapsed on <html>; these rules hide the region and reclaim its width.
- * Gated to the breakpoints where each region is actually a column — the left
- * nav at ≥50rem, the right TOC at ≥72rem (Starlight's own switch points) — so
- * mobile keeps its drawer/dropdown untouched. The toggle for a region only
- * shows when the page has it (html[data-has-sidebar] / [data-has-toc]). */
+ * The left-nav toggle appears from ≥50rem (where the left nav is a column);
+ * the right-TOC toggle from ≥72rem (where the TOC is a real column). Below
+ * 72rem the TOC is Starlight's native collapsible "On this page" (styled tidy
+ * below). A toggle shows only when the page has that region
+ * (html[data-has-sidebar] / [data-has-toc]). */
 .caail-navtoggle {
   display: none;
   position: fixed;
@@ -206,9 +207,20 @@ html[data-toc-collapsed] .caail-navtoggle--right .caail-navtoggle__icon::before 
   html[data-toc-collapsed] .main-pane { flex-grow: 1; }
 }
 @media (min-width: 72rem) {
+  /* The right TOC is a real column only at ≥72rem (Starlight stacks the layout
+   * below that). There it gets our collapse toggle. */
   html[data-has-toc] .caail-navtoggle--right { display: grid; }
   html[data-toc-collapsed] .right-sidebar-container { display: none; }
 }
+
+/* Tablet/phone (<72rem): Starlight renders the TOC as a native collapsible
+ * "On this page" (mobile-starlight-toc, a <details>). Tidy it into a clean
+ * full-width bar instead of the default floating look so it reads as an
+ * intentional, collapsible block rather than clutter. */
+mobile-starlight-toc { margin: 0 0 1rem; }
+mobile-starlight-toc details { border: 1px solid var(--caail-border); border-radius: 8px; background: var(--caail-surface); }
+mobile-starlight-toc summary { padding: 0.5rem 0.8rem; font-size: 0.8rem; font-weight: 600; color: var(--caail-ink); }
+mobile-starlight-toc .dropdown { border-top: 1px solid var(--caail-border); }
 
 /* Honor reduced-motion (DESIGN.md §7) */
 @media (prefers-reduced-motion: reduce) {
