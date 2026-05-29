@@ -54,25 +54,38 @@ const stats = [
 </section>
 
 <style>
-  .hero { position: relative; overflow: clip; display: grid; grid-template-columns: 1fr; gap: 1.75rem; padding: 2.5rem 0 1.75rem; text-align: left; }
+  .hero { position: relative; display: grid; grid-template-columns: 1fr; gap: 1.75rem; padding: 2.5rem 0 1.75rem; text-align: left; }
   @media (min-width: 60rem) {
     .hero { grid-template-columns: minmax(0, 1.1fr) minmax(0, 25rem); align-items: center; gap: 2.5rem; }
   }
   /* hero content sits above the diagonal stripe */
   .hero-text, .hero-art { position: relative; z-index: 1; }
 
-  /* diagonal CAAIL-blue accent band behind the hero (trimgalore-style) */
+  /* Full-bleed diagonal CAAIL-blue band behind the hero (trimgalore-style).
+   * The wrapper breaks out to the full viewport width and self-clips, so the
+   * rotated band reaches both screen edges without causing horizontal scroll.
+   * (Splash homepage has no left sidebar, so the hero is viewport-centered.) */
   .hero-stripe {
     position: absolute;
-    left: -12%; right: -12%; top: 52%;
-    height: clamp(72px, 12vw, 150px);
-    transform: translateY(-50%) rotate(-12deg);
+    top: 0; bottom: 0;
+    left: 50%;
+    width: 100vw;
+    transform: translateX(-50%);
+    overflow: clip;
+    z-index: 0;
+    pointer-events: none;
+  }
+  .hero-stripe::before {
+    content: "";
+    position: absolute;
+    top: 50%; left: -5%;
+    width: 110%;
+    height: clamp(58px, 9vw, 130px);
+    transform: translateY(-50%) rotate(-11deg);
     background: linear-gradient(90deg,
       color-mix(in oklab, var(--caail-link) 24%, transparent),
       color-mix(in oklab, var(--caail-primary) 16%, transparent));
     border-radius: 4px;
-    z-index: 0;
-    pointer-events: none;
   }
 
   .eyebrow { font-size: .72rem; letter-spacing: .14em; text-transform: uppercase; color: var(--caail-accent); font-weight: 700; margin: 0; }
