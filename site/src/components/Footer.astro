@@ -1,6 +1,7 @@
 ---
 import Default from '@astrojs/starlight/components/Footer.astro';
 import NavCollapse from './NavCollapse.astro';
+import DataTableViews from './DataTableViews.astro';
 ---
 <div class="caail-footer">
   <span>A project of the Tufts University Center for Cellular Agriculture (TUCCA).</span>
@@ -8,6 +9,7 @@ import NavCollapse from './NavCollapse.astro';
 </div>
 <Default><slot /></Default>
 <NavCollapse />
+<DataTableViews />
 <style>
   .caail-footer { display: flex; justify-content: space-between; flex-wrap: wrap; gap: .5rem; font-size: .72rem; color: var(--caail-muted); border-top: 1px solid var(--caail-border); padding-top: .8rem; margin-top: 1rem; }
   .caail-footer a { color: var(--caail-link); }
