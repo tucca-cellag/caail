@@ -3,10 +3,57 @@ import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 import preact from '@astrojs/preact';
 import icon from 'astro-icon';
+import { fileURLToPath } from 'node:url';
+import { stripLeadingH1 } from './scripts/remark/strip-leading-h1.ts';
+import { rewriteCaailLinks } from './scripts/remark/rewrite-caail-links.ts';
+import { CAAIL_PAGES } from './src/content/caail-pages.ts';
+
+// astro.config.mjs lives in site/ — one level up is the repo root (trailing slash)
+const REPO_ROOT = fileURLToPath(new URL('../', import.meta.url));
+const BASE = '/caail';
+
+/**
+ * Per-file remark wrapper that applies link-rewrite and H1-strip to canonical
+ * prose pages only (ResearchAreas/*, Datasets/*, CONTRIBUTING.md).
+ * In-repo Starlight MDX (index.mdx, papers/explorer.mdx) are skipped.
+ */
+function caailProseRemark() {
+  return (tree, file) => {
+    // file.history[0] and file.path both carry the absolute FS path.
+    const abs = file?.history?.[0] ?? file?.path ?? '';
+    if (!abs || !abs.startsWith(REPO_ROOT)) return;
+    const sourcePath = abs.slice(REPO_ROOT.length); // e.g. "Datasets/Cow.md"
+    // Guard: only act on canonical prose directories / CONTRIBUTING.md.
+    const isProse =
+      /^(ResearchAreas|Datasets)\//.test(sourcePath) || sourcePath === 'CONTRIBUTING.md';
+    if (!isProse) return;
+    rewriteCaailLinks({ base: BASE, sourcePath })(tree);
+    stripLeadingH1()(tree);
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Build sidebar from the curated map
+// ---------------------------------------------------------------------------
+
+/**
+ * Return sidebar items for a given group, sorted by order.
+ * Links use the `/<id>/` pattern (base is prepended by Starlight from the
+ * configured `base` option — Starlight's `link` values are relative to base).
+ */
+function groupItems(group) {
+  return CAAIL_PAGES.all()
+    .filter((p) => p.group === group)
+    .sort((a, b) => a.order - b.order)
+    .map((p) => ({ label: p.sidebarLabel, link: `/${p.id}/` }));
+}
 
 export default defineConfig({
   site: 'https://tucca-cellag.github.io',
   base: '/caail',
+  markdown: {
+    remarkPlugins: [caailProseRemark],
+  },
   integrations: [
     starlight({
       title: 'CAAIL',
@@ -18,6 +65,9 @@ export default defineConfig({
       sidebar: [
         { label: 'Home', link: '/' },
         { label: 'Papers', items: [{ label: 'Explorer', link: '/papers/explorer/' }] },
+        { label: 'Datasets (by species)', items: groupItems('datasets') },
+        { label: 'Research Areas', items: groupItems('research-areas') },
+        { label: 'Contributing', link: '/contributing/' },
       ],
       customCss: [
         './src/styles/fonts.css',
