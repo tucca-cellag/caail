@@ -78,6 +78,20 @@ a.site-title {
 .caail-two-col { display: grid; grid-template-columns: 1fr 1.15fr; gap: 1.6rem; margin-top: .5rem; }
 @media (max-width: 50rem) { .caail-two-col { grid-template-columns: 1fr; } }
 
+/* ── Wide data tables (Datasets/* inventories, etc.) ──────────────────────
+ * Canonical Markdown tables (e.g. the per-species "Complete data inventory")
+ * are far wider than Starlight's ~45rem prose cap, so by default they scroll
+ * left/right inside the column. Let any page carrying a content table widen
+ * to fill the content panel and render the whole table, while keeping the
+ * narrative prose at a readable measure. Scoped via :has() so only table
+ * pages are affected; the canonical Markdown is never modified.
+ * `width: max-content` keeps narrow tables compact; `overflow-x: auto`
+ * (Starlight default) remains as the fallback for any table still too wide. */
+.sl-container:has(.sl-markdown-content table) { max-width: none; }
+.sl-container:has(.sl-markdown-content table) .sl-markdown-content > :not(table) { max-width: 45rem; }
+.sl-markdown-content table { width: max-content; max-width: 100%; font-size: 0.8rem; }
+.sl-markdown-content :is(th, td) { padding: 0.35rem 0.5rem; }
+
 /* Honor reduced-motion (DESIGN.md §7) */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
