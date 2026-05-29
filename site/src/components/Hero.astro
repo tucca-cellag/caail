@@ -1,41 +1,65 @@
 ---
 import { Icon } from 'astro-icon/components';
-const queries = ['Bayesian optimization', 'media optimization', 'CHO cells', 'single-cell atlas', 'scaffolding'];
+import c from '../content/data/counts.json';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const stats = [
+  { n: c.papers, label: 'Papers' },
+  { n: c.software, label: 'Tools' },
+  { n: c.databases, label: 'Databases' },
+  { n: c.species, label: 'Species' },
+  { n: c.researchAreas, label: 'Research areas' },
+];
 ---
 <section class="hero">
   <p class="eyebrow">Cellular Agriculture × Artificial Intelligence</p>
   <h1 class="caail-display">The curated library where AI meets cultivated meat.</h1>
   <p class="lede">
     Peer-reviewed papers, open-source software, databases, and the per-species datasets the
-    field trains on — one navigable, openly-licensed map. The canonical source stays in Markdown on GitHub.
+    field trains on — one navigable, openly-licensed map, with the canonical source in Markdown on GitHub.
   </p>
-  <button id="hero-search" class="bigsearch" type="button" aria-label="Search the library">
-    <Icon name="ph:magnifying-glass" />
-    <span>Search 193 papers, 70 tools, 71 databases, datasets…</span>
-    <kbd>/</kbd>
-  </button>
-  <p class="qchips"><span>Try:</span>{queries.map((q) => <span class="qchip">{q}</span>)}</p>
+
+  <div class="cta-row">
+    <a class="btn btn-primary" href={`${base}/papers/explorer/`}>
+      <Icon name="ph:squares-four" />
+      Open the Papers Explorer
+    </a>
+    <a class="btn btn-ghost" href="https://github.com/tucca-cellag/caail">
+      <Icon name="ph:github-logo" />
+      Browse on GitHub
+    </a>
+  </div>
+
+  <dl class="stats">
+    {stats.map((s) => (
+      <div class="stat">
+        <dt class="caail-display">{s.n}</dt>
+        <dd>{s.label}</dd>
+      </div>
+    ))}
+  </dl>
 </section>
 
-<script>
-  // Hero search opens Starlight's built-in site search (Pagefind). Progressive enhancement.
-  document.getElementById('hero-search')?.addEventListener('click', () => {
-    const btn = document.querySelector<HTMLButtonElement>('button[data-open-modal], site-search button');
-    btn?.click();
-  });
-</script>
-
 <style>
-  .hero { text-align: center; padding: 2.5rem 0 1.5rem; }
+  .hero { text-align: center; padding: 3.25rem 0 1.75rem; }
   .eyebrow { font-size: .72rem; letter-spacing: .15em; text-transform: uppercase; color: var(--caail-accent); font-weight: 700; margin: 0; }
-  .hero h1 { font-size: clamp(1.8rem, 4vw, 2.3rem); line-height: 1.13; color: var(--caail-primary); margin: .5rem auto .6rem; max-width: 19ch; font-weight: 600; }
-  .lede { font-size: .95rem; line-height: 1.55; color: var(--caail-muted); max-width: 60ch; margin: 0 auto 1.25rem; }
-  .bigsearch { display: flex; align-items: center; gap: .65rem; width: min(580px, 100%); margin: 0 auto; padding: .8rem 1rem;
-    border: 1.5px solid var(--caail-primary); border-radius: 11px; background: var(--caail-bg); color: var(--caail-muted);
-    font: inherit; font-size: .9rem; cursor: pointer; box-shadow: 0 8px 26px -16px color-mix(in oklab, var(--caail-primary) 45%, transparent); }
-  .bigsearch [data-icon] { width: 1.25rem; height: 1.25rem; color: var(--caail-primary); }
-  .bigsearch kbd { margin-left: auto; font-family: var(--caail-font-mono); font-size: .65rem; border: 1px solid var(--caail-border); border-radius: 5px; padding: .1rem .35rem; }
-  .qchips { display: flex; gap: .5rem; justify-content: center; flex-wrap: wrap; margin-top: .8rem; font-size: .72rem; }
-  .qchips > span:first-child { color: var(--caail-muted); align-self: center; }
-  .qchip { color: var(--caail-ink); background: var(--caail-bg); border: 1px solid var(--caail-border); border-radius: 999px; padding: .3rem .65rem; }
+  .hero h1 { font-size: clamp(2.2rem, 5vw, 3.4rem); line-height: 1.05; color: var(--caail-primary); margin: .6rem auto .7rem; max-width: 18ch; font-weight: 700; letter-spacing: -0.01em; }
+  .lede { font-size: 1rem; line-height: 1.6; color: var(--caail-muted); max-width: 58ch; margin: 0 auto 1.6rem; }
+
+  .cta-row { display: flex; gap: .7rem; justify-content: center; flex-wrap: wrap; margin-bottom: 2rem; }
+  .btn { display: inline-flex; align-items: center; gap: .5rem; border-radius: 999px; padding: .8rem 1.5rem; font-size: .92rem; font-weight: 600; text-decoration: none; border: 1.5px solid transparent; transition: background .15s, border-color .15s, color .15s, box-shadow .15s; }
+  .btn [data-icon] { width: 1.15rem; height: 1.15rem; }
+  .btn-primary { background: var(--caail-primary); color: #fff; box-shadow: 0 10px 26px -16px color-mix(in oklab, var(--caail-primary) 70%, transparent); }
+  .btn-primary:hover { background: var(--caail-primary-hover); }
+  .btn-ghost { background: var(--caail-bg); color: var(--caail-ink); border-color: var(--caail-border); }
+  .btn-ghost:hover { border-color: var(--caail-link); color: var(--caail-link); }
+
+  .stats { display: flex; gap: 2.2rem; justify-content: center; flex-wrap: wrap; margin: 0; padding-top: 1.25rem; border-top: 1px solid var(--caail-border); max-width: 46rem; margin-inline: auto; }
+  .stat { display: flex; flex-direction: column; align-items: center; gap: .1rem; }
+  .stat dt { font-size: 1.9rem; font-weight: 700; color: var(--caail-primary); line-height: 1; }
+  .stat dd { margin: 0; font-size: .72rem; letter-spacing: .04em; text-transform: uppercase; color: var(--caail-muted); }
+
+  @media (max-width: 30rem) {
+    .stats { gap: 1.4rem 1.8rem; }
+    .stat dt { font-size: 1.5rem; }
+  }
 </style>
