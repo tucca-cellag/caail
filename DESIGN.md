@@ -65,18 +65,20 @@ Type scale: hero H1 `clamp(2.2rem, 5vw, 3.4rem)` (weight 700, tight line-height)
 
 - Spacing scale in `rem` increments (0.25 / 0.5 / 0.8 / 1 / 1.5 / 2.5rem).
 - Breakpoints: sections grid collapses to one column at `50rem`; the Explorer matrix/side-panel split collapses at `60rem`; the matrix pane scrolls horizontally below `640px` min-width.
-- Content width follows Starlight's default content container; the homepage hero and grids sit within it.
+- Content width follows Starlight's default container for prose; pages with wide data tables widen the container to fit the table while keeping prose centered at a 45rem measure. The Papers Explorer breaks out to the full content width.
 - Layout primitives: centered hero, a 3-column sections grid, and a `1fr 1.15fr` two-column for Start-here / Recently-added.
 
 ## 5. Components
 
-- **Header (Starlight):** "CAAIL" wordmark + tagline, topic nav, **Contribute** as a navy outline button, a **GitHub** social icon (`social` config), search, and the theme toggle. Active nav item: navy with a 2px `--caail-link` underline.
-- **Hero:** Tufts-Brown eyebrow, Spectral H1, Inter lede, a prominent search control (navy 1.5px border, soft shadow) that opens Starlight's Pagefind search, and "Try:" query chips.
-- **Sections grid:** six cards (Papers/Software/Databases/Datasets/Research Areas/Talks), each a Phosphor duotone icon + a large Spectral count + title + one-line description + a CTA; hover raises the border to `--caail-link`.
+- **Header (Starlight):** "CAAIL" wordmark followed by a horizontal **top nav** (Explorer · Datasets · Research Areas · Contributing) via a `SiteTitle` override; search, **GitHub** social icon, and the theme toggle stay right. Nav links are ghost (weight 500, muted); the active section is navy weight-600 via `aria-current`. The top nav hides below `50rem`, where Starlight's hamburger + sidebar drawer take over. The left sidebar and right TOC remain.
+- **Hero:** Tufts-Brown eyebrow, large display H1 (`clamp(2.2rem, 5vw, 3.4rem)`, weight 700), Inter lede, two CTAs — a **primary pill** ("Open the Papers Explorer", navy fill, `border-radius: 999px`) and a **ghost pill** ("Browse on GitHub") — and a stat-badge row (papers / tools / databases / species / research areas from `counts.json`) above a divider. Search lives in the header.
+- **Sections grid:** six cards (Papers/Software/Databases/Datasets/Research Areas/Talks), each a Phosphor duotone icon + a large display-font count + title + one-line description + a CTA; hover raises the border to `--caail-link`.
 - **Start here:** three numbered cards.
 - **Recently added:** rows with a JetBrains-Mono date, a Tufts-Brown kind label, the title, and an Okabe–Ito area dot.
 - **Papers Explorer:** matrix (method rows × area columns) with Okabe–Ito column-header bars and a legend; cells shaded by the density ramp and labeled with the count; search + area filter; a side panel listing the selected cell's references — each entry shows bold author/year, title + italicized journal, then a mono DOI badge, Code badge (green-tinted), and Data badge (amber-tinted).
-- **Buttons:** primary (navy solid), outline (navy), ghost. **Badges:** DOI (mono, link-tinted), Code (green-tinted), Data (amber-tinted).
+- **Buttons:** primary (navy solid **pill**, `border-radius: 999px`), ghost/outline pill, plain ghost. **Badges:** DOI (mono, link-tinted), Code (green-tinted), Data (amber-tinted).
+- **Data tables:** rendered Markdown tables are branded in the site layer (canonical Markdown untouched) — navy sticky header, zebra rows, row hover, rounded bordered container, mono `<code>` cells. On table pages the content widens to fit the table while prose stays centered at a 45rem measure. A **Table ⇄ Cards** toggle (persisted) lets desktop readers switch to a card grid; **mobile always renders cards** (cards are derived client-side from the table by cloning cell nodes).
+- **Collapsible nav:** fixed edge-tab toggles collapse the left sidebar and (≥72rem) the right TOC to reclaim width; state persists and is applied pre-paint (no flash). Below 72rem the TOC is Starlight's native collapsible "On this page", styled as a tidy bordered bar.
 - **Footer:** text-only TUCCA credit + MIT + canonical-on-GitHub, above the default Starlight footer.
 - **States:** hover (border/shadow lift), focus (visible outline using `--caail-link`), active (primary-hover), disabled matrix cells (density-0, non-interactive).
 
@@ -99,7 +101,7 @@ Icons use **Phosphor** (MIT) via `astro-icon`, with a disciplined weight system:
 | Active / selected / emphasis states | **bold** |
 | GitHub mark | `ph:github-logo` (Starlight `social`) |
 
-No emoji anywhere; numerals (Spectral) carry much of the visual weight in the sections grid. Imagery: a simple favicon (monogram on Tufts navy) and a 1200×630 Open Graph image showing the wordmark + tagline on a Tufts-navy field — no Tufts logo or seal in either.
+No emoji anywhere; large display-font numerals carry much of the visual weight in the hero stats and sections grid. Imagery: a simple favicon (monogram on Tufts navy) and a 1200×630 Open Graph image showing the wordmark + tagline on a Tufts-navy field — no Tufts logo or seal in either.
 
 ## 9. Voice & tone
 
