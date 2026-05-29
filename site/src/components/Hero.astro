@@ -13,9 +13,13 @@ const stats = [
 ];
 ---
 <section class="hero">
+  <div class="hero-stripe" aria-hidden="true"></div>
   <div class="hero-text">
     <p class="eyebrow">Cellular Agriculture × Artificial Intelligence</p>
-    <h1 class="h-title caail-display">Cell&nbsp;Ag <span class="x">×</span> AI</h1>
+    <h1 class="h-title caail-display">
+      <span class="l1">Cell&nbsp;Ag</span>
+      <span class="l2"><span class="x">×</span> AI</span>
+    </h1>
 
     <p class="lede">
       The curated library at the intersection of cellular agriculture and AI — peer-reviewed
@@ -50,23 +54,40 @@ const stats = [
 </section>
 
 <style>
-  .hero { display: grid; grid-template-columns: 1fr; gap: 1.75rem; padding: 2.5rem 0 1.75rem; text-align: left; }
+  .hero { position: relative; overflow: clip; display: grid; grid-template-columns: 1fr; gap: 1.75rem; padding: 2.5rem 0 1.75rem; text-align: left; }
   @media (min-width: 60rem) {
     .hero { grid-template-columns: minmax(0, 1.1fr) minmax(0, 25rem); align-items: center; gap: 2.5rem; }
+  }
+  /* hero content sits above the diagonal stripe */
+  .hero-text, .hero-art { position: relative; z-index: 1; }
+
+  /* diagonal CAAIL-blue accent band behind the hero (trimgalore-style) */
+  .hero-stripe {
+    position: absolute;
+    left: -12%; right: -12%; top: 52%;
+    height: clamp(72px, 12vw, 150px);
+    transform: translateY(-50%) rotate(-12deg);
+    background: linear-gradient(90deg,
+      color-mix(in oklab, var(--caail-link) 24%, transparent),
+      color-mix(in oklab, var(--caail-primary) 16%, transparent));
+    border-radius: 4px;
+    z-index: 0;
+    pointer-events: none;
   }
 
   .eyebrow { font-size: .72rem; letter-spacing: .14em; text-transform: uppercase; color: var(--caail-accent); font-weight: 700; margin: 0; }
   .h-title {
-    font-size: clamp(2.8rem, 6.5vw, 4.6rem);
-    line-height: 0.98;
+    font-size: clamp(3.2rem, 8.5vw, 6rem);
+    line-height: 0.92;
     font-weight: 700;
     letter-spacing: -0.02em;
-    margin: .35rem 0 .6rem;
+    margin: .4rem 0 .7rem;
     background: linear-gradient(118deg, var(--caail-primary) 12%, var(--caail-link) 90%);
     -webkit-background-clip: text;
     background-clip: text;
     color: var(--caail-primary);
   }
+  .h-title .l1, .h-title .l2 { display: block; }
   @supports (-webkit-background-clip: text) or (background-clip: text) {
     .h-title { -webkit-text-fill-color: transparent; }
   }

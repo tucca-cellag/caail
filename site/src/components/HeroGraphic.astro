@@ -29,8 +29,9 @@ const show = (v: string) => both || variant === v;
       <rect x="62" y="150" width="176" height="138" rx="26" class="hg-liquid" />
       <!-- impeller (oscillates to read as spinning from the side) -->
       <g class="hg-impeller">
-        <ellipse cx="150" cy="210" rx="34" ry="8" class="hg-blade" />
-        <ellipse cx="150" cy="240" rx="34" ry="8" class="hg-blade" />
+        <ellipse cx="150" cy="225" rx="34" ry="7" class="hg-blade" />
+        <ellipse cx="150" cy="225" rx="7" ry="22" class="hg-blade" />
+        <circle cx="150" cy="225" r="5" class="hg-hub" />
       </g>
       <!-- suspended cells -->
       <circle cx="100" cy="190" r="7" class="hg-cell hg-drift1" />
@@ -65,7 +66,7 @@ const show = (v: string) => both || variant === v;
 </div>
 
 <style>
-  .hg { width: 100%; max-width: 30rem; margin-inline: auto; --hgx: 0; --hgy: 0; }
+  .hg { width: 100%; max-width: 30rem; margin-inline: auto; --hgx: 0; --hgy: 0; --hg-cell: oklch(56% 0.19 25); }
   .hg-svg { width: 100%; height: auto; display: block; transform: translate3d(calc(var(--hgx) * 14px), calc(var(--hgy) * 14px), 0); transition: transform 0.25s ease-out; }
 
   /* shared strokes/fills via currentColor + tokens */
@@ -75,7 +76,8 @@ const show = (v: string) => both || variant === v;
   .hg-shaft { stroke: var(--caail-primary); stroke-width: 3; stroke-linecap: round; }
   .hg-liquid { fill: color-mix(in oklab, var(--caail-link) 14%, transparent); }
   .hg-blade { fill: color-mix(in oklab, var(--caail-primary) 55%, transparent); }
-  .hg-cell { fill: color-mix(in oklab, var(--caail-area-cell) 55%, transparent); stroke: var(--caail-area-cell); stroke-width: 1.5; }
+  .hg-hub { fill: var(--caail-primary); }
+  .hg-cell { fill: color-mix(in oklab, var(--hg-cell) 60%, transparent); stroke: var(--hg-cell); stroke-width: 1.5; }
   .hg-bub { fill: color-mix(in oklab, var(--caail-link) 45%, transparent); }
 
   .hg-membrane { fill: color-mix(in oklab, currentColor 22%, transparent); stroke: currentColor; stroke-width: 1.5; }
@@ -83,14 +85,14 @@ const show = (v: string) => both || variant === v;
 
   /* ambient motion */
   @keyframes hg-rise { 0% { transform: translateY(0); opacity: 0; } 12% { opacity: 1; } 85% { opacity: 0.9; } 100% { transform: translateY(-120px); opacity: 0; } }
-  @keyframes hg-spin { 0%, 100% { transform: scaleX(1); } 50% { transform: scaleX(-0.35); } }
+  @keyframes hg-rotate { to { transform: rotate(360deg); } }
   @keyframes hg-drift { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(6px, -8px); } }
   @keyframes hg-float { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(-5px, 6px) scale(1.05); } }
 
   .hg-bub { animation: hg-rise 3.4s ease-in infinite; transform-box: fill-box; }
   .b1 { animation-delay: 0s; } .b2 { animation-delay: 0.8s; } .b3 { animation-delay: 1.5s; }
   .b4 { animation-delay: 2.1s; } .b5 { animation-delay: 1.1s; }
-  .hg-impeller { transform-box: fill-box; transform-origin: center; animation: hg-spin 2.8s ease-in-out infinite; }
+  .hg-impeller { transform-box: fill-box; transform-origin: center; animation: hg-rotate 4s linear infinite; }
   .hg-drift1 { animation: hg-drift 6s ease-in-out infinite; transform-box: fill-box; }
   .hg-drift2 { animation: hg-drift 7.5s ease-in-out infinite 0.5s; transform-box: fill-box; }
   .hg-drift3 { animation: hg-drift 6.8s ease-in-out infinite 1s; transform-box: fill-box; }
