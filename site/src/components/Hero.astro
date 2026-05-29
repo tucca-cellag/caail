@@ -1,7 +1,17 @@
 ---
 import { Icon } from 'astro-icon/components';
+import HeroGraphic from './HeroGraphic.astro';
 import c from '../content/data/counts.json';
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+
+interface Props {
+  headline?: 'cm' | 'full';
+  graphic?: 'bioreactor' | 'cells';
+  demo?: boolean;
+}
+const { headline = 'cm', graphic = 'bioreactor', demo = false } = Astro.props;
+const showH = (h: string) => demo || headline === h;
+
 const stats = [
   { n: c.papers, label: 'Papers' },
   { n: c.software, label: 'Tools' },
@@ -10,42 +20,94 @@ const stats = [
   { n: c.researchAreas, label: 'Research areas' },
 ];
 ---
-<section class="hero">
-  <p class="eyebrow">Cellular Agriculture × Artificial Intelligence</p>
-  <h1 class="caail-display">The curated library where AI meets cultivated meat.</h1>
-  <p class="lede">
-    Peer-reviewed papers, open-source software, databases, and the per-species datasets the
-    field trains on — one navigable, openly-licensed map, with the canonical source in Markdown on GitHub.
-  </p>
+<section class="hero" data-headline={headline} data-graphic={graphic}>
+  {demo && (
+    <div class="hero-demo">
+      <div class="hero-demo-grp" data-ctrl="headline">
+        <span>Headline</span>
+        <button type="button" data-set="cm">CM × AI</button>
+        <button type="button" data-set="full">Cultivated meat × AI</button>
+      </div>
+      <div class="hero-demo-grp" data-ctrl="graphic">
+        <span>Graphic</span>
+        <button type="button" data-set="bioreactor">Bioreactor</button>
+        <button type="button" data-set="cells">Cells</button>
+      </div>
+    </div>
+  )}
 
-  <div class="cta-row">
-    <a class="btn btn-primary" href={`${base}/papers/explorer/`}>
-      <Icon name="ph:squares-four" />
-      Open the Papers Explorer
-    </a>
-    <a class="btn btn-ghost" href="https://github.com/tucca-cellag/caail">
-      <Icon name="ph:github-logo" />
-      Browse on GitHub
-    </a>
+  <div class="hero-text">
+    {showH('cm') && (
+      <div class="hgroup" data-h="cm">
+        <p class="eyebrow">Cultivated Meat × Artificial Intelligence</p>
+        <h1 class="h-title caail-display">CM <span class="x">×</span> AI</h1>
+      </div>
+    )}
+    {showH('full') && (
+      <div class="hgroup" data-h="full">
+        <p class="eyebrow">Cellular Agriculture × Artificial Intelligence</p>
+        <h1 class="h-title caail-display">Cultivated&nbsp;meat <span class="x">×</span> AI</h1>
+      </div>
+    )}
+
+    <p class="lede">
+      The curated library at the intersection of cultivated meat and AI — peer-reviewed papers,
+      open-source software, databases, and the per-species datasets the field trains on, all
+      cross-linked back to canonical Markdown on GitHub.
+    </p>
+
+    <div class="cta-row">
+      <a class="btn btn-primary" href={`${base}/papers/explorer/`}>
+        <Icon name="ph:squares-four" />
+        Open the Papers Explorer
+      </a>
+      <a class="btn btn-ghost" href="https://github.com/tucca-cellag/caail">
+        <Icon name="ph:github-logo" />
+        Browse on GitHub
+      </a>
+    </div>
+
+    <div class="stats">
+      {stats.map((s) => (
+        <div class="stat">
+          <span class="stat-n caail-display">{s.n}</span>
+          <span class="stat-l">{s.label}</span>
+        </div>
+      ))}
+    </div>
   </div>
 
-  <dl class="stats">
-    {stats.map((s) => (
-      <div class="stat">
-        <dt class="caail-display">{s.n}</dt>
-        <dd>{s.label}</dd>
-      </div>
-    ))}
-  </dl>
+  <div class="hero-art">
+    {demo ? <HeroGraphic both /> : <HeroGraphic variant={graphic} />}
+  </div>
 </section>
 
 <style>
-  .hero { text-align: center; padding: 3.25rem 0 1.75rem; }
-  .eyebrow { font-size: .72rem; letter-spacing: .15em; text-transform: uppercase; color: var(--caail-accent); font-weight: 700; margin: 0; }
-  .hero h1 { font-size: clamp(2.2rem, 5vw, 3.4rem); line-height: 1.05; color: var(--caail-primary); margin: .6rem auto .7rem; max-width: 18ch; font-weight: 700; letter-spacing: -0.01em; }
-  .lede { font-size: 1rem; line-height: 1.6; color: var(--caail-muted); max-width: 58ch; margin: 0 auto 1.6rem; }
+  .hero { display: grid; grid-template-columns: 1fr; gap: 1.75rem; padding: 2.5rem 0 1.75rem; text-align: left; }
+  @media (min-width: 60rem) {
+    .hero { grid-template-columns: minmax(0, 1.1fr) minmax(0, 25rem); align-items: center; gap: 2.5rem; }
+  }
 
-  .cta-row { display: flex; gap: .7rem; justify-content: center; flex-wrap: wrap; margin-bottom: 2rem; }
+  .eyebrow { font-size: .72rem; letter-spacing: .14em; text-transform: uppercase; color: var(--caail-accent); font-weight: 700; margin: 0; }
+  .h-title {
+    font-size: clamp(2.8rem, 6.5vw, 4.6rem);
+    line-height: 0.98;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin: .35rem 0 .6rem;
+    background: linear-gradient(118deg, var(--caail-primary) 12%, var(--caail-link) 90%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: var(--caail-primary);
+  }
+  @supports (-webkit-background-clip: text) or (background-clip: text) {
+    .h-title { -webkit-text-fill-color: transparent; }
+  }
+  .h-title .x { color: var(--caail-accent); -webkit-text-fill-color: var(--caail-accent); font-weight: 600; }
+
+  .lede { font-size: 1rem; line-height: 1.6; color: var(--caail-muted); max-width: 52ch; margin: 0 0 1.5rem; }
+
+  .cta-row { display: flex; gap: .7rem; flex-wrap: wrap; margin-bottom: 1.9rem; }
   .btn { display: inline-flex; align-items: center; gap: .5rem; border-radius: 999px; padding: .8rem 1.5rem; font-size: .92rem; font-weight: 600; text-decoration: none; border: 1.5px solid transparent; transition: background .15s, border-color .15s, color .15s, box-shadow .15s; }
   .btn [data-icon] { width: 1.15rem; height: 1.15rem; }
   .btn-primary { background: var(--caail-primary); color: #fff; box-shadow: 0 10px 26px -16px color-mix(in oklab, var(--caail-primary) 70%, transparent); }
@@ -53,13 +115,57 @@ const stats = [
   .btn-ghost { background: var(--caail-bg); color: var(--caail-ink); border-color: var(--caail-border); }
   .btn-ghost:hover { border-color: var(--caail-link); color: var(--caail-link); }
 
-  .stats { display: flex; gap: 2.2rem; justify-content: center; flex-wrap: wrap; margin: 0; padding-top: 1.25rem; border-top: 1px solid var(--caail-border); max-width: 46rem; margin-inline: auto; }
-  .stat { display: flex; flex-direction: column; align-items: center; gap: .1rem; }
-  .stat dt { font-size: 1.9rem; font-weight: 700; color: var(--caail-primary); line-height: 1; }
-  .stat dd { margin: 0; font-size: .72rem; letter-spacing: .04em; text-transform: uppercase; color: var(--caail-muted); }
+  /* stat row — a grid guarantees every stat's top aligns by row (a <dl> here
+   * inherits Starlight prose styling that nudged the first item 16px high). */
+  .stats { display: grid; grid-template-columns: repeat(5, max-content); gap: .5rem 2rem; margin: 0; padding-top: 1.25rem; border-top: 1px solid var(--caail-border); }
+  @media (max-width: 48rem) { .stats { grid-template-columns: repeat(3, max-content); } }
+  @media (max-width: 26rem) { .stats { grid-template-columns: repeat(2, max-content); } }
+  /* margin-top:0 cancels Starlight's prose `* + *` rhythm, which otherwise
+   * pushes every stat after the first down 16px (the misalignment). */
+  .stat { display: flex; flex-direction: column; gap: .15rem; margin-top: 0; }
+  .stat-n { font-size: 1.9rem; font-weight: 700; color: var(--caail-primary); line-height: 1; }
+  .stat-l { font-size: .68rem; letter-spacing: .05em; text-transform: uppercase; color: var(--caail-muted); }
 
-  @media (max-width: 30rem) {
-    .stats { gap: 1.4rem 1.8rem; }
-    .stat dt { font-size: 1.5rem; }
-  }
+  .hero-art { display: flex; justify-content: center; }
+  @media (max-width: 30rem) { .hero-art { display: none; } }
+
+  /* variant switching (used in demo; harmless in single-variant production) */
+  .hero[data-headline='cm'] .hgroup[data-h='full'],
+  .hero[data-headline='full'] .hgroup[data-h='cm'] { display: none; }
+
+  /* demo control bar */
+  .hero-demo { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 1rem; padding: .6rem .8rem; margin-bottom: .5rem; border: 1px dashed var(--caail-border); border-radius: 10px; background: var(--caail-surface); font-size: .75rem; }
+  .hero-demo-grp { display: flex; align-items: center; gap: .3rem; }
+  .hero-demo-grp > span { color: var(--caail-muted); font-weight: 700; text-transform: uppercase; font-size: .62rem; letter-spacing: .05em; margin-right: .2rem; }
+  .hero-demo button { font: inherit; font-size: .72rem; font-weight: 600; padding: .25rem .6rem; border: 1px solid var(--caail-border); border-radius: 7px; background: var(--caail-bg); color: var(--caail-muted); cursor: pointer; }
+  .hero-demo button[aria-pressed='true'] { background: var(--caail-primary); color: #fff; border-color: var(--caail-primary); }
 </style>
+
+<!-- Cross-component graphic switch (HeroGraphic SVG classes live in another
+     scope). Only relevant when both variants render (demo); harmless in
+     production where only the chosen variant exists. -->
+<style is:global>
+  .hero[data-graphic='bioreactor'] .hg-cells,
+  .hero[data-graphic='cells'] .hg-bioreactor { display: none; }
+</style>
+
+{demo && (
+  <script>
+    const hero = document.querySelector<HTMLElement>('.hero[data-headline]');
+    function sync() {
+      if (!hero) return;
+      document.querySelectorAll<HTMLButtonElement>('.hero-demo [data-set]').forEach((b) => {
+        const ctrl = b.closest<HTMLElement>('[data-ctrl]')!.dataset.ctrl!;
+        b.setAttribute('aria-pressed', String(hero.dataset[ctrl === 'headline' ? 'headline' : 'graphic'] === b.dataset.set));
+      });
+    }
+    document.querySelectorAll<HTMLButtonElement>('.hero-demo [data-set]').forEach((b) => {
+      b.addEventListener('click', () => {
+        const ctrl = b.closest<HTMLElement>('[data-ctrl]')!.dataset.ctrl!;
+        if (hero) hero.dataset[ctrl === 'headline' ? 'headline' : 'graphic'] = b.dataset.set!;
+        sync();
+      });
+    });
+    sync();
+  </script>
+)}
