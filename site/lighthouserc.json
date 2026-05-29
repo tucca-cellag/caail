@@ -1,0 +1,29 @@
+{
+  "ci": {
+    "collect": {
+      "staticDistDir": "./dist",
+      "url": [
+        "http://localhost/",
+        "http://localhost/papers/explorer/"
+      ],
+      "numberOfRuns": 1
+    },
+    "assert": {
+      "assertMatrix": [
+        {
+          "matchingUrlPattern": ".*",
+          "assertions": {
+            "categories:accessibility": ["error", { "minScore": 0.9 }],
+            "categories:performance": ["warn", { "minScore": 0.9 }]
+          }
+        },
+        {
+          "matchingUrlPattern": "http://localhost:[0-9]+/$",
+          "assertions": {
+            "categories:performance": ["error", { "minScore": 0.9 }]
+          }
+        }
+      ]
+    }
+  }
+}

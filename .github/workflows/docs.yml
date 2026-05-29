@@ -1,0 +1,52 @@
+name: Deploy docs site
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - site/**
+      - '*.md'
+      - ResearchAreas/**
+      - Datasets/**
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: site/pnpm-lock.yaml
+      - name: Install
+        run: pnpm --dir site install --frozen-lockfile
+      - name: Build
+        run: pnpm --dir site build
+      - name: Lighthouse (a11y both; perf landing-only)
+        run: pnpm --dir site exec lhci autorun --config=lighthouserc.json
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site/dist
+      - name: Deploy to GitHub Pages
+        id: deploy
+        uses: actions/deploy-pages@v4

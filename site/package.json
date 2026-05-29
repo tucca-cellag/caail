@@ -27,6 +27,7 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.11.3",
+    "@lhci/cli": "^0.15.1",
     "@playwright/test": "^1.60.0",
     "@types/mdast": "^4.0.4",
     "mdast-util-to-string": "^4.0.0",
