@@ -59,6 +59,18 @@ export default defineConfig({
       title: 'CAAIL',
       description:
         'The curated library at the intersection of cellular agriculture and AI.',
+      head: [
+        {
+          // No-flash bootstrap for the collapsible nav sidebars: apply the
+          // persisted collapse state to <html> before first paint so a
+          // collapsed sidebar/TOC never flashes open on load. Paired with
+          // NavCollapse.astro (the toggles) and the .caail-navtoggle CSS in
+          // starlight-overrides.css.
+          tag: 'script',
+          content:
+            "(()=>{try{var d=document.documentElement,s=localStorage;if(s.getItem('caail-nav-collapsed')==='1')d.setAttribute('data-sidebar-collapsed','');if(s.getItem('caail-toc-collapsed')==='1')d.setAttribute('data-toc-collapsed','');}catch(e){}})();",
+        },
+      ],
       social: [
         { icon: 'github', label: 'GitHub', href: 'https://github.com/tucca-cellag/caail' },
       ],

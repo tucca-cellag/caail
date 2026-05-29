@@ -92,6 +92,51 @@ a.site-title {
 .sl-markdown-content table { width: max-content; max-width: 100%; font-size: 0.8rem; }
 .sl-markdown-content :is(th, td) { padding: 0.35rem 0.5rem; }
 
+/* ── Collapsible nav sidebars (desktop) ───────────────────────────────────
+ * Toggle tabs (NavCollapse.astro) flip data-sidebar-collapsed / data-toc-
+ * collapsed on <html>; these rules hide the region and reclaim its width.
+ * Gated to the breakpoints where each region is actually a column — the left
+ * nav at ≥50rem, the right TOC at ≥72rem (Starlight's own switch points) — so
+ * mobile keeps its drawer/dropdown untouched. The toggle for a region only
+ * shows when the page has it (html[data-has-sidebar] / [data-has-toc]). */
+.caail-navtoggle {
+  display: none;
+  position: fixed;
+  z-index: 30;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1.5rem;
+  height: 2.75rem;
+  place-items: center;
+  padding: 0;
+  cursor: pointer;
+  background: var(--sl-color-bg);
+  border: 1px solid var(--caail-border);
+  color: var(--caail-muted);
+  transition: color 0.15s, border-color 0.15s, left 0.15s;
+}
+.caail-navtoggle:hover { color: var(--caail-link); border-color: var(--caail-link); }
+.caail-navtoggle:focus-visible { outline: 2px solid var(--caail-link); outline-offset: 2px; }
+.caail-navtoggle--left { left: var(--sl-content-inline-start); border-inline-start: 0; border-radius: 0 6px 6px 0; }
+.caail-navtoggle--right { right: 0; border-inline-end: 0; border-radius: 6px 0 0 6px; }
+html[data-sidebar-collapsed] .caail-navtoggle--left { left: 0; }
+.caail-navtoggle__icon::before { content: '‹'; font-size: 1rem; line-height: 1; }
+.caail-navtoggle--right .caail-navtoggle__icon::before { content: '›'; }
+html[data-sidebar-collapsed] .caail-navtoggle--left .caail-navtoggle__icon::before { content: '›'; }
+html[data-toc-collapsed] .caail-navtoggle--right .caail-navtoggle__icon::before { content: '‹'; }
+
+@media (min-width: 50rem) {
+  html[data-has-sidebar] .caail-navtoggle--left { display: grid; }
+  html[data-sidebar-collapsed] .sidebar { display: none; }
+  html[data-sidebar-collapsed] .main-frame { padding-inline-start: 0; }
+  html[data-sidebar-collapsed] .main-pane,
+  html[data-toc-collapsed] .main-pane { flex-grow: 1; }
+}
+@media (min-width: 72rem) {
+  html[data-has-toc] .caail-navtoggle--right { display: grid; }
+  html[data-toc-collapsed] .right-sidebar-container { display: none; }
+}
+
 /* Honor reduced-motion (DESIGN.md §7) */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
