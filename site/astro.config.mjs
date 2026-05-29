@@ -87,6 +87,8 @@ export default defineConfig({
         './src/styles/starlight-overrides.css',
       ],
       components: {
+        // Horizontal primary nav next to the wordmark (trimgalore-style).
+        SiteTitle: './src/components/SiteTitle.astro',
         // Override Starlight's built-in Hero with an empty component so that
         // setting `hero: {}` in index.mdx suppresses the auto <PageTitle> h1
         // without injecting Starlight's own hero UI above our custom Hero.
