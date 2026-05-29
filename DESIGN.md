@@ -73,7 +73,7 @@ Type scale: H1 `clamp(1.8rem, 4vw, 2.3rem)`; section H2 ~1.05–1.15rem; body 0.
 - **Sections grid:** six cards (Papers/Software/Databases/Datasets/Research Areas/Talks), each a Phosphor duotone icon + a large Spectral count + title + one-line description + a CTA; hover raises the border to `--caail-link`.
 - **Start here:** three numbered cards.
 - **Recently added:** rows with a JetBrains-Mono date, a Tufts-Brown kind label, the title, and an Okabe–Ito area dot.
-- **Papers Explorer:** matrix (method rows × area columns) with Okabe–Ito column-header bars and a legend; cells shaded by the density ramp and labeled with the count; search + area filter; a side panel listing the selected cell's references with a mono DOI badge and Code/Data badges.
+- **Papers Explorer:** matrix (method rows × area columns) with Okabe–Ito column-header bars and a legend; cells shaded by the density ramp and labeled with the count; search + area filter; a side panel listing the selected cell's references — each entry shows bold author/year, title + italicized journal, then a mono DOI badge, Code badge (green-tinted), and Data badge (amber-tinted).
 - **Buttons:** primary (navy solid), outline (navy), ghost. **Badges:** DOI (mono, link-tinted), Code (green-tinted), Data (amber-tinted).
 - **Footer:** text-only TUCCA credit + MIT + canonical-on-GitHub, above the default Starlight footer.
 - **States:** hover (border/shadow lift), focus (visible outline using `--caail-link`), active (primary-hover), disabled matrix cells (density-0, non-interactive).
