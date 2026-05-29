@@ -45,8 +45,9 @@
  *       files that is a `../`-prefixed path, which is fine — it is only used for
  *       image-reference rewriting (none here) and edit links.
  *
- * Links inside the rendered prose remain raw GitHub-relative links for now; a
- * remark link-rewrite plugin is a separate later task.
+ * Internal `.md` links inside the rendered prose are rewritten at render time
+ * by the `caailProseRemark` wrapper in astro.config.mjs (rewrite-caail-links +
+ * strip-leading-h1), keyed off the `fileURL` passed to `renderMarkdown`.
  */
 
 import { glob } from 'astro/loaders';
