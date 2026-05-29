@@ -52,6 +52,7 @@
 import { glob } from 'astro/loaders';
 import type { Loader, LoaderContext } from 'astro/loaders';
 import { readFile, readdir } from 'node:fs/promises';
+import { relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { CAAIL_PAGES } from '../caail-pages.ts';
 
@@ -101,6 +102,8 @@ export function caailDocsLoader(): Loader {
         }
       }
 
+      const storedIds = new Set<string>();
+
       for (const rel of candidates) {
         const id = CAAIL_PAGES.idForSourcePath(rel);
         const meta = CAAIL_PAGES.byId(id);
@@ -110,7 +113,18 @@ export function caailDocsLoader(): Loader {
         }
 
         const fileURL = new URL(rel, REPO_ROOT);
-        const raw = await readFile(fileURL, 'utf-8');
+        const absFile = fileURLToPath(fileURL);
+
+        let raw: string;
+        try {
+          raw = await readFile(fileURL, 'utf-8');
+        } catch (err) {
+          throw new Error(
+            `caail-docs-loader: failed to read expected canonical source "${rel}" ` +
+              `(resolved: ${absFile}): ${(err as NodeJS.ErrnoException).message}`,
+            { cause: err },
+          );
+        }
 
         // Canonical files have no frontmatter, so the whole file is the body.
         // Inject the curated title so docsSchema() validation passes.
@@ -125,7 +139,7 @@ export function caailDocsLoader(): Loader {
         // filePath relative to the Astro project root (site/), posix-style, to
         // match what the glob loader stores. For repo-root files this is a
         // `../`-prefixed path.
-        const filePath = posixRelativeFromProjectRoot(projectRootPath, fileURLToPath(fileURL));
+        const filePath = relative(projectRootPath, absFile).split(sep).join('/');
 
         context.store.set({
           id,
@@ -135,21 +149,22 @@ export function caailDocsLoader(): Loader {
           digest,
           rendered,
         });
+
+        storedIds.add(id);
+      }
+
+      // Warn about any CAAIL_PAGES prose entries that were not produced from a
+      // real file on disk (catches renamed / removed canonical sources).
+      const proseGroups = new Set(['research-areas', 'datasets', 'top']);
+      const missingFromDisk = CAAIL_PAGES.all()
+        .filter((p) => proseGroups.has(p.group) && !storedIds.has(p.id))
+        .map((p) => p.id);
+      if (missingFromDisk.length > 0) {
+        context.logger.warn(
+          `caail-docs-loader: the following CAAIL_PAGES entries have no matching source file on disk and were NOT rendered: ${missingFromDisk.join(', ')}`,
+        );
       }
     },
   };
 }
 
-/** Posix-style relative path from the project root to an absolute file path. */
-function posixRelativeFromProjectRoot(projectRoot: string, absFile: string): string {
-  // Normalise to posix separators; both inputs are absolute filesystem paths.
-  const root = projectRoot.replace(/\\/g, '/').replace(/\/+$/, '');
-  const file = absFile.replace(/\\/g, '/');
-  const rootParts = root.split('/');
-  const fileParts = file.split('/');
-  let i = 0;
-  while (i < rootParts.length && i < fileParts.length && rootParts[i] === fileParts[i]) i++;
-  const up = rootParts.slice(i).map(() => '..');
-  const down = fileParts.slice(i);
-  return [...up, ...down].join('/');
-}
