@@ -88,9 +88,46 @@ a.site-title {
  * `width: max-content` keeps narrow tables compact; `overflow-x: auto`
  * (Starlight default) remains as the fallback for any table still too wide. */
 .sl-container:has(.sl-markdown-content table) { max-width: none; }
-.sl-container:has(.sl-markdown-content table) .sl-markdown-content > :not(table) { max-width: 45rem; }
-.sl-markdown-content table { width: max-content; max-width: 100%; font-size: 0.8rem; }
-.sl-markdown-content :is(th, td) { padding: 0.35rem 0.5rem; }
+/* Center the narrative prose at a readable measure while tables use the
+ * reclaimed width (margin-inline:auto keeps text centered, not left-hugging). */
+.sl-container:has(.sl-markdown-content table) .sl-markdown-content > :not(table) { max-width: 45rem; margin-inline: auto; }
+
+/* Branded data tables — styled in the site layer; canonical Markdown untouched. */
+.sl-markdown-content table {
+  width: max-content;
+  max-width: 100%;
+  margin-inline: auto;
+  font-size: 0.8rem;
+  border: 1px solid var(--caail-border);
+  border-radius: 10px;
+  border-collapse: separate;
+  border-spacing: 0;
+  overflow: auto; /* fallback scroll for any still-too-wide table; clips the rounded corners */
+}
+.sl-markdown-content :is(th, td) {
+  padding: 0.45rem 0.7rem;
+  border: 0;
+  border-bottom: 1px solid var(--caail-border);
+  text-align: left;
+  vertical-align: top;
+}
+.sl-markdown-content thead th {
+  position: sticky;
+  top: 0;
+  background: var(--caail-primary);
+  color: #fff;
+  font-weight: 600;
+  white-space: nowrap;
+  border-bottom: 0;
+}
+:root[data-theme='dark'] .sl-markdown-content thead th {
+  background: color-mix(in oklab, var(--caail-primary) 45%, var(--caail-surface));
+  color: var(--caail-ink);
+}
+.sl-markdown-content tbody tr:nth-child(even) td { background: color-mix(in oklab, var(--caail-ink) 4%, transparent); }
+.sl-markdown-content tbody tr:hover td { background: color-mix(in oklab, var(--caail-link) 12%, transparent); }
+.sl-markdown-content tbody tr:last-child td { border-bottom: 0; }
+.sl-markdown-content td code { font-size: 0.92em; }
 
 /* ── Collapsible nav sidebars (desktop) ───────────────────────────────────
  * Toggle tabs (NavCollapse.astro) flip data-sidebar-collapsed / data-toc-
