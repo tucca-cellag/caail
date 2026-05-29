@@ -14,6 +14,9 @@ importers:
       '@astrojs/starlight':
         specifier: ^0.39.2
         version: 0.39.2(astro@6.3.8(@types/node@24.12.4)(rollup@4.60.4)(tsx@4.22.3))
+      '@fontsource-variable/bricolage-grotesque':
+        specifier: ^5.2.10
+        version: 5.2.10
       '@fontsource-variable/inter':
         specifier: ^5.2.8
         version: 5.2.8
@@ -564,6 +567,9 @@ packages:
 
   '@expressive-code/plugin-text-markers@0.42.0':
     resolution: {integrity: sha512-l59lUx8fq1v5g6SpmbDjiU0+7IdfbiWnAyRmtTVSpfhyq+nZMN4UcmYyu2b9Mynhzt7Gr+O+cXyEPDNb2AVWVQ==}
+
+  '@fontsource-variable/bricolage-grotesque@5.2.10':
+    resolution: {integrity: sha512-5EDsCqgGpKVcJWE4sg9ydli+t5WM97mISYw5lla/Ev4z71FwXh1oN0YUU8xjkRW9+wBCGD9R+ntAvI8G4bUFJg==}
 
   '@fontsource-variable/inter@5.2.8':
     resolution: {integrity: sha512-kOfP2D+ykbcX/P3IFnokOhVRNoTozo5/JxhAIVYLpea/UBmCQ/YWPBfWIDuBImXX/15KH+eKh4xpEUyS2sQQGQ==}
@@ -4050,6 +4056,8 @@ snapshots:
   '@expressive-code/plugin-text-markers@0.42.0':
     dependencies:
       '@expressive-code/core': 0.42.0
+
+  '@fontsource-variable/bricolage-grotesque@5.2.10': {}
 
   '@fontsource-variable/inter@5.2.8': {}
 

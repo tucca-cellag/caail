@@ -29,7 +29,7 @@
   --caail-area-eval: #917800;       /* Okabe–Ito yellow darkened to amber for AA on white */
 
   /* Fonts */
-  --caail-font-display: 'Spectral', Georgia, 'Times New Roman', serif;
+  --caail-font-display: 'Bricolage Grotesque Variable', 'Inter Variable', system-ui, sans-serif;
   --caail-font-ui: 'Inter Variable', system-ui, sans-serif;
   --caail-font-mono: 'JetBrains Mono Variable', ui-monospace, monospace;
 }

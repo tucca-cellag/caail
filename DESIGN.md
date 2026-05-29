@@ -51,13 +51,15 @@ Values are authored in OKLch; hexes above are the targets. The Contribute action
 
 ## 3. Typography
 
-Tufts' web fonts (FF Meta Serif + Proxima Nova) are commercial Adobe Fonts and cannot be self-hosted, so we honor the spirit with open, self-hostable substitutes via `@fontsource`:
+All three faces are open, self-hostable via `@fontsource`. We use a clean modern
+grotesque for display (a contemporary "modern AI resource" feel) over Inter body, keeping the
+Tufts navy/white palette for brand identity:
 
-- **Display / headings:** `Spectral` (600). Fallback `Georgia, serif`. (Stands in for FF Meta Serif.)
-- **UI / body:** `Inter Variable` (400/500/600/700/800). Fallback `system-ui, sans-serif`. (Stands in for Proxima Nova.)
+- **Display / headings:** `Bricolage Grotesque Variable` (600/700). Fallback `Inter Variable, system-ui, sans-serif`. A characterful modern grotesque used for the hero, section titles, and content headings.
+- **UI / body:** `Inter Variable` (400/500/600/700/800). Fallback `system-ui, sans-serif`.
 - **Mono:** `JetBrains Mono Variable` — DOIs, accessions, code, dates. Fallback `ui-monospace, monospace`.
 
-Type scale: H1 `clamp(1.8rem, 4vw, 2.3rem)`; section H2 ~1.05–1.15rem; body 0.95rem; supporting text 0.72–0.8rem; eyebrow 0.72rem uppercase letterspaced. Headings use the display font via `.caail-display` and the Starlight heading override.
+Type scale: hero H1 `clamp(2.2rem, 5vw, 3.4rem)` (weight 700, tight line-height); section H2 ~1.05–1.15rem; body 0.95rem; supporting text 0.72–0.8rem; eyebrow 0.72rem uppercase letterspaced. Headings use the display font via `.caail-display` and the Starlight heading override.
 
 ## 4. Spacing & layout
 
