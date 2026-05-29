@@ -4,14 +4,6 @@ import HeroGraphic from './HeroGraphic.astro';
 import c from '../content/data/counts.json';
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
-interface Props {
-  headline?: 'cm' | 'full';
-  graphic?: 'bioreactor' | 'cells';
-  demo?: boolean;
-}
-const { headline = 'cm', graphic = 'bioreactor', demo = false } = Astro.props;
-const showH = (h: string) => demo || headline === h;
-
 const stats = [
   { n: c.papers, label: 'Papers' },
   { n: c.software, label: 'Tools' },
@@ -20,40 +12,15 @@ const stats = [
   { n: c.researchAreas, label: 'Research areas' },
 ];
 ---
-<section class="hero" data-headline={headline} data-graphic={graphic}>
-  {demo && (
-    <div class="hero-demo">
-      <div class="hero-demo-grp" data-ctrl="headline">
-        <span>Headline</span>
-        <button type="button" data-set="cm">CM × AI</button>
-        <button type="button" data-set="full">Cultivated meat × AI</button>
-      </div>
-      <div class="hero-demo-grp" data-ctrl="graphic">
-        <span>Graphic</span>
-        <button type="button" data-set="bioreactor">Bioreactor</button>
-        <button type="button" data-set="cells">Cells</button>
-      </div>
-    </div>
-  )}
-
+<section class="hero">
   <div class="hero-text">
-    {showH('cm') && (
-      <div class="hgroup" data-h="cm">
-        <p class="eyebrow">Cultivated Meat × Artificial Intelligence</p>
-        <h1 class="h-title caail-display">CM <span class="x">×</span> AI</h1>
-      </div>
-    )}
-    {showH('full') && (
-      <div class="hgroup" data-h="full">
-        <p class="eyebrow">Cellular Agriculture × Artificial Intelligence</p>
-        <h1 class="h-title caail-display">Cultivated&nbsp;meat <span class="x">×</span> AI</h1>
-      </div>
-    )}
+    <p class="eyebrow">Cellular Agriculture × Artificial Intelligence</p>
+    <h1 class="h-title caail-display">Cell&nbsp;Ag <span class="x">×</span> AI</h1>
 
     <p class="lede">
-      The curated library at the intersection of cultivated meat and AI — peer-reviewed papers,
-      open-source software, databases, and the per-species datasets the field trains on, all
-      cross-linked back to canonical Markdown on GitHub.
+      The curated library at the intersection of cellular agriculture and AI — peer-reviewed
+      papers, open-source software, databases, and the per-species datasets the field trains on,
+      all cross-linked back to canonical Markdown on GitHub.
     </p>
 
     <div class="cta-row">
@@ -78,7 +45,7 @@ const stats = [
   </div>
 
   <div class="hero-art">
-    {demo ? <HeroGraphic both /> : <HeroGraphic variant={graphic} />}
+    <HeroGraphic variant="bioreactor" />
   </div>
 </section>
 
@@ -115,57 +82,15 @@ const stats = [
   .btn-ghost { background: var(--caail-bg); color: var(--caail-ink); border-color: var(--caail-border); }
   .btn-ghost:hover { border-color: var(--caail-link); color: var(--caail-link); }
 
-  /* stat row — a grid guarantees every stat's top aligns by row (a <dl> here
-   * inherits Starlight prose styling that nudged the first item 16px high). */
+  /* stat row — grid aligns tops by row; margin-top:0 cancels Starlight's prose
+   * `* + *` rhythm that otherwise pushes the later stats down 16px. */
   .stats { display: grid; grid-template-columns: repeat(5, max-content); gap: .5rem 2rem; margin: 0; padding-top: 1.25rem; border-top: 1px solid var(--caail-border); }
   @media (max-width: 48rem) { .stats { grid-template-columns: repeat(3, max-content); } }
   @media (max-width: 26rem) { .stats { grid-template-columns: repeat(2, max-content); } }
-  /* margin-top:0 cancels Starlight's prose `* + *` rhythm, which otherwise
-   * pushes every stat after the first down 16px (the misalignment). */
   .stat { display: flex; flex-direction: column; gap: .15rem; margin-top: 0; }
   .stat-n { font-size: 1.9rem; font-weight: 700; color: var(--caail-primary); line-height: 1; }
   .stat-l { font-size: .68rem; letter-spacing: .05em; text-transform: uppercase; color: var(--caail-muted); }
 
   .hero-art { display: flex; justify-content: center; }
   @media (max-width: 30rem) { .hero-art { display: none; } }
-
-  /* variant switching (used in demo; harmless in single-variant production) */
-  .hero[data-headline='cm'] .hgroup[data-h='full'],
-  .hero[data-headline='full'] .hgroup[data-h='cm'] { display: none; }
-
-  /* demo control bar */
-  .hero-demo { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 1rem; padding: .6rem .8rem; margin-bottom: .5rem; border: 1px dashed var(--caail-border); border-radius: 10px; background: var(--caail-surface); font-size: .75rem; }
-  .hero-demo-grp { display: flex; align-items: center; gap: .3rem; }
-  .hero-demo-grp > span { color: var(--caail-muted); font-weight: 700; text-transform: uppercase; font-size: .62rem; letter-spacing: .05em; margin-right: .2rem; }
-  .hero-demo button { font: inherit; font-size: .72rem; font-weight: 600; padding: .25rem .6rem; border: 1px solid var(--caail-border); border-radius: 7px; background: var(--caail-bg); color: var(--caail-muted); cursor: pointer; }
-  .hero-demo button[aria-pressed='true'] { background: var(--caail-primary); color: #fff; border-color: var(--caail-primary); }
 </style>
-
-<!-- Cross-component graphic switch (HeroGraphic SVG classes live in another
-     scope). Only relevant when both variants render (demo); harmless in
-     production where only the chosen variant exists. -->
-<style is:global>
-  .hero[data-graphic='bioreactor'] .hg-cells,
-  .hero[data-graphic='cells'] .hg-bioreactor { display: none; }
-</style>
-
-{demo && (
-  <script>
-    const hero = document.querySelector<HTMLElement>('.hero[data-headline]');
-    function sync() {
-      if (!hero) return;
-      document.querySelectorAll<HTMLButtonElement>('.hero-demo [data-set]').forEach((b) => {
-        const ctrl = b.closest<HTMLElement>('[data-ctrl]')!.dataset.ctrl!;
-        b.setAttribute('aria-pressed', String(hero.dataset[ctrl === 'headline' ? 'headline' : 'graphic'] === b.dataset.set));
-      });
-    }
-    document.querySelectorAll<HTMLButtonElement>('.hero-demo [data-set]').forEach((b) => {
-      b.addEventListener('click', () => {
-        const ctrl = b.closest<HTMLElement>('[data-ctrl]')!.dataset.ctrl!;
-        if (hero) hero.dataset[ctrl === 'headline' ? 'headline' : 'graphic'] = b.dataset.set!;
-        sync();
-      });
-    });
-    sync();
-  </script>
-)}
