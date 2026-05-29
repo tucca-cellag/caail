@@ -69,6 +69,35 @@ a.site-title {
   letter-spacing: 0.2px;
 }
 
+/* Reactive wordmark: a navy→link gradient that sweeps across on hover/focus
+ * (the trimgalore-logo equivalent). Falls back to the solid navy above where
+ * background-clip:text is unsupported; reduced-motion neutralises the sweep
+ * via the global transition-killing block. */
+@supports (-webkit-background-clip: text) or (background-clip: text) {
+  a.site-title {
+    background: linear-gradient(90deg, var(--caail-primary) 0%, var(--caail-primary) 35%, var(--caail-link) 50%, var(--caail-primary) 65%, var(--caail-primary) 100%);
+    background-size: 220% 100%;
+    background-position: 100% 0;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    transition: background-position 0.55s ease;
+  }
+  a.site-title:hover,
+  a.site-title:focus-visible { background-position: 0% 0; }
+}
+
+/* ── Header: compact, right-aligned search ────────────────────────────────
+ * Starlight's header is a 3-col grid (title | search | right-group) where the
+ * search column is 1fr — wide and left-of-centre. Make the title column grow
+ * instead so search + theme + GitHub sit together on the right, and cap the
+ * search to a compact width (trimgalore-style). Desktop only; below 50rem the
+ * topnav hides and Starlight's mobile search/menu takes over. */
+@media (min-width: 50rem) {
+  .header { grid-template-columns: 1fr auto auto; }
+  .header > :nth-child(2) { max-width: 13rem; justify-self: end; }
+}
+
 /* ── Helper class for explicit display-font usage in components ───────────*/
 .caail-display {
   font-family: var(--caail-font-display);
