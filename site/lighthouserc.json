@@ -1,10 +1,11 @@
 {
   "ci": {
     "collect": {
-      "staticDistDir": "./dist",
+      "startServerCommand": "pnpm preview --port 4321",
+      "startServerReadyPattern": "localhost:4321",
       "url": [
-        "http://localhost/",
-        "http://localhost/papers/explorer/"
+        "http://localhost:4321/caail/",
+        "http://localhost:4321/caail/papers/explorer/"
       ],
       "numberOfRuns": 1
     },
@@ -18,7 +19,7 @@
           }
         },
         {
-          "matchingUrlPattern": "http://localhost:[0-9]+/$",
+          "matchingUrlPattern": "http://localhost:4321/caail/$",
           "assertions": {
             "categories:performance": ["error", { "minScore": 0.9 }]
           }
