@@ -78,9 +78,12 @@ const stats = [
   .hero-stripe::before {
     content: "";
     position: absolute;
-    top: 50%; left: -5%;
+    /* --stripe-cy is set by the inline script to the title's vertical centre
+     * (relative to this wrapper) so the band always crosses behind the title,
+     * consistently, at every width. Falls back to the hero's centre. */
+    top: var(--stripe-cy, 50%); left: -5%;
     width: 110%;
-    height: clamp(58px, 9vw, 130px);
+    height: clamp(72px, 9vw, 150px);
     transform: translateY(-50%) rotate(-11deg);
     background: linear-gradient(90deg,
       color-mix(in oklab, var(--caail-link) 24%, transparent),
@@ -125,6 +128,28 @@ const stats = [
   .stat-n { font-size: 1.9rem; font-weight: 700; color: var(--caail-primary); line-height: 1; }
   .stat-l { font-size: .68rem; letter-spacing: .05em; text-transform: uppercase; color: var(--caail-muted); }
 
-  .hero-art { display: flex; justify-content: center; }
-  @media (max-width: 30rem) { .hero-art { display: none; } }
+  /* Graphic only in the wide 2-col layout — below 60rem the hero is text-only
+   * (avoids the oversized graphic stacking below the text at mid widths). */
+  .hero-art { display: none; }
+  @media (min-width: 60rem) { .hero-art { display: flex; justify-content: center; } }
 </style>
+
+<script>
+  // Pin the diagonal stripe's vertical centre to the title's centre so it
+  // always crosses behind "Cell Ag × AI" at every width (the band stays
+  // full-bleed horizontally via the .hero-stripe wrapper). Positioning only —
+  // not animation — so reduced-motion is irrelevant.
+  function positionHeroStripe() {
+    const stripe = document.querySelector<HTMLElement>('.hero-stripe');
+    const title = document.querySelector<HTMLElement>('.h-title');
+    if (!stripe || !title) return;
+    const s = stripe.getBoundingClientRect();
+    const t = title.getBoundingClientRect();
+    stripe.style.setProperty('--stripe-cy', `${t.top - s.top + t.height / 2}px`);
+  }
+  positionHeroStripe();
+  const hero = document.querySelector('.hero');
+  if (hero && 'ResizeObserver' in window) new ResizeObserver(positionHeroStripe).observe(hero);
+  window.addEventListener('resize', positionHeroStripe);
+  if (document.fonts?.ready) document.fonts.ready.then(positionHeroStripe);
+</script>
