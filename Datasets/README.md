@@ -16,7 +16,7 @@ The directory is organized **by species**: each cell-ag-relevant species has its
 | [Fish](./Fish.md) | Salmonids and other aquaculture teleosts; AQUA-FAANG, salmon GEM |
 | [Crustacean](./Crustacean.md) | Shrimp, crab, crayfish muscle and growth datasets |
 | [Mollusk](./Mollusk.md) | Mussel, scallop, snail muscle and tissue datasets |
-| [Sheep / *Ovis aries*](./Sheep.md) | Early-stage; multi-tissue regulatory atlas |
+| [Sheep / *Ovis aries*](./Sheep.md) | Ovine meat-quality proteomics & metabolomics; multi-tissue regulatory atlas |
 | [Goat / *Capra hircus*](./Goat.md) | Early-stage; contributions welcome |
 | [Duck / *Anas platyrhynchos*](./Duck.md) | Early-stage; contributions welcome |
 | [Turkey / *Meleagris gallopavo*](./Turkey.md) | Early-stage; contributions welcome |
