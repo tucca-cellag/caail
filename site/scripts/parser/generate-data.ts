@@ -18,7 +18,15 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import { buildPapersModel } from './papers.js';
 import { computeCounts } from './counts.js';
-import { PapersDataSchema, CountsSchema, type Counts } from './types.js';
+import { buildCatalogModel } from './catalog.js';
+import { buildTalksModel } from './talks.js';
+import {
+  PapersDataSchema,
+  CountsSchema,
+  CatalogSchema,
+  TalksSchema,
+  type Counts,
+} from './types.js';
 
 // ---------------------------------------------------------------------------
 // Default output directory
@@ -53,16 +61,30 @@ export const DEFAULT_OUT_DIR: string = fileURLToPath(
  */
 export function generateData(
   outDir: string = DEFAULT_OUT_DIR,
-): { counts: Counts; papersRefs: number } {
+): { counts: Counts; papersRefs: number; catalogEntries: number; talks: number } {
   // Build and validate the papers model.
   const model = buildPapersModel();
 
   // Compute and validate the aggregate counts.
   const counts = computeCounts(model);
 
-  // Belt-and-suspenders: re-validate both before writing.
+  // Build and validate the catalog (Software + Databases) and talks models.
+  const catalog = buildCatalogModel();
+  const talks = buildTalksModel();
+
+  // Belt-and-suspenders: re-validate all before writing.
   PapersDataSchema.parse(model);
   CountsSchema.parse(counts);
+  CatalogSchema.parse(catalog);
+  TalksSchema.parse(talks);
+
+  // No-drift guard: the homepage counts and the catalog/talks artifacts derive
+  // from the same canonical files, so their tallies must agree exactly. A
+  // mismatch means a parser bug — fail the build loudly rather than ship a
+  // stat that disagrees with the page it links to.
+  assertCountsMatch('software', catalog.software.length, counts.software);
+  assertCountsMatch('databases', catalog.databases.length, counts.databases);
+  assertCountsMatch('talks', talks.talks.length, counts.talks);
 
   // Ensure the output directory exists.
   mkdirSync(outDir, { recursive: true });
@@ -81,7 +103,36 @@ export function generateData(
     'utf-8',
   );
 
-  return { counts, papersRefs: model.references.length };
+  // Write catalog.json.
+  writeFileSync(
+    join(outDir, 'catalog.json'),
+    JSON.stringify(catalog, null, 2) + '\n',
+    'utf-8',
+  );
+
+  // Write talks.json.
+  writeFileSync(
+    join(outDir, 'talks.json'),
+    JSON.stringify(talks, null, 2) + '\n',
+    'utf-8',
+  );
+
+  return {
+    counts,
+    papersRefs: model.references.length,
+    catalogEntries: catalog.software.length + catalog.databases.length,
+    talks: talks.talks.length,
+  };
+}
+
+/** Throw a descriptive error when a catalog/talks tally disagrees with counts.json. */
+function assertCountsMatch(label: string, derived: number, expected: number): void {
+  if (derived !== expected) {
+    throw new Error(
+      `generate-data: ${label} count drift — catalog/talks parser found ${derived} ` +
+        `but counts.json reports ${expected}. These must agree (same source files).`,
+    );
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -93,10 +144,11 @@ const isMain =
 
 if (isMain) {
   try {
-    const { counts, papersRefs } = generateData();
+    const { counts, papersRefs, catalogEntries, talks } = generateData();
     // eslint-disable-next-line no-console
     console.log(
-      `parse: wrote papers.json (${papersRefs} references) and counts.json`,
+      `parse: wrote papers.json (${papersRefs} references), counts.json, ` +
+        `catalog.json (${catalogEntries} entries), and talks.json (${talks} talks)`,
     );
     // eslint-disable-next-line no-console
     console.log('counts:', counts);

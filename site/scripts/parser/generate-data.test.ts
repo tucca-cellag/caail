@@ -13,7 +13,7 @@ import { join } from 'node:path';
 import os from 'node:os';
 
 import { generateData } from './generate-data.js';
-import { PapersDataSchema, CountsSchema } from './types.js';
+import { PapersDataSchema, CountsSchema, CatalogSchema, TalksSchema } from './types.js';
 
 // ---------------------------------------------------------------------------
 // Temp directory setup / teardown
@@ -92,5 +92,29 @@ describe('generateData()', () => {
   it('counts.json is pretty-printed (contains newlines)', () => {
     const raw = readFileSync(join(tmpDir, 'counts.json'), 'utf-8');
     expect(raw).toContain('\n');
+  });
+
+  it('returns catalogEntries and talks tallies', () => {
+    expect(result).toHaveProperty('catalogEntries');
+    expect(result).toHaveProperty('talks');
+    expect(result.catalogEntries).toBe(result.counts.software + result.counts.databases);
+    expect(result.talks).toBe(result.counts.talks);
+  });
+
+  it('writes catalog.json (valid, passes CatalogSchema, counts match)', () => {
+    const path = join(tmpDir, 'catalog.json');
+    expect(existsSync(path)).toBe(true);
+    const parsed = JSON.parse(readFileSync(path, 'utf-8'));
+    expect(CatalogSchema.safeParse(parsed).success).toBe(true);
+    expect(parsed.software.length).toBe(result.counts.software);
+    expect(parsed.databases.length).toBe(result.counts.databases);
+  });
+
+  it('writes talks.json (valid, passes TalksSchema, count matches)', () => {
+    const path = join(tmpDir, 'talks.json');
+    expect(existsSync(path)).toBe(true);
+    const parsed = JSON.parse(readFileSync(path, 'utf-8'));
+    expect(TalksSchema.safeParse(parsed).success).toBe(true);
+    expect(parsed.talks.length).toBe(result.counts.talks);
   });
 });

@@ -68,6 +68,30 @@ export const ReferenceSchema = z.object({
   slug: z.string(),
 });
 
+export const CatalogEntrySchema = z.object({
+  /** Slugified name with a/b disambiguation, e.g. "biometa", "biometa-b" */
+  slug: z.string(),
+  /** Display name (the H3 link text), e.g. "BioMeta" */
+  name: z.string(),
+  /** Canonical home URL (the H3 link target) */
+  url: z.string().url(),
+  /** The H2 section label the entry lives under (application area / category) */
+  group: z.string(),
+  /** One-line description — the first paragraph after the H3 (Software.md's
+   *  leading `Summary:` label is stripped; Databases.md's first paragraph is
+   *  used verbatim). May be empty if no paragraph follows the heading. */
+  summary: z.string(),
+});
+
+export const TalkSchema = z.object({
+  /** List-item link text, e.g. "Multus Biotechnology: AI-driven media optimization" */
+  title: z.string(),
+  /** Full YouTube watch/short URL */
+  url: z.string().url(),
+  /** 11-character YouTube video id extracted from the URL */
+  videoId: z.string(),
+});
+
 // ---------------------------------------------------------------------------
 // Top-level schemas
 // ---------------------------------------------------------------------------
@@ -80,6 +104,22 @@ export const PapersDataSchema = z.object({
   methods: z.array(z.string()),
   cells: z.array(CellSchema),
   references: z.array(ReferenceSchema),
+});
+
+/**
+ * Schema for catalog.json — Software.md and Databases.md entries, each grouped
+ * by its H2 section, in document order.
+ */
+export const CatalogSchema = z.object({
+  software: z.array(CatalogEntrySchema),
+  databases: z.array(CatalogEntrySchema),
+});
+
+/**
+ * Schema for talks.json — curated YouTube videos from OtherResources.md.
+ */
+export const TalksSchema = z.object({
+  talks: z.array(TalkSchema),
 });
 
 /**
@@ -103,3 +143,7 @@ export type Cell = z.infer<typeof CellSchema>;
 export type Reference = z.infer<typeof ReferenceSchema>;
 export type PapersData = z.infer<typeof PapersDataSchema>;
 export type Counts = z.infer<typeof CountsSchema>;
+export type CatalogEntry = z.infer<typeof CatalogEntrySchema>;
+export type Catalog = z.infer<typeof CatalogSchema>;
+export type Talk = z.infer<typeof TalkSchema>;
+export type Talks = z.infer<typeof TalksSchema>;

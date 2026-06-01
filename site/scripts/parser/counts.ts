@@ -16,10 +16,10 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { visit } from 'unist-util-visit';
-import type { Root, Heading, ListItem } from 'mdast';
+import type { Root, Heading } from 'mdast';
 
-import { parseMarkdown, sectionsAfter } from './markdown.js';
+import { parseMarkdown } from './markdown.js';
+import { extractYouTubeVideos } from './talks.js';
 import { CountsSchema, type Counts, type PapersData } from './types.js';
 
 // ---------------------------------------------------------------------------
@@ -47,37 +47,6 @@ function countH3Headings(root: Root): number {
     if (node.type === 'heading' && (node as Heading).depth === 3) {
       count++;
     }
-  }
-  return count;
-}
-
-/**
- * Count list-item links under the first `## YouTube Videos` section in
- * OtherResources.md, stopping at the next `##` heading.
- *
- * "A list-item link" = a `listItem` node that contains at least one `link`
- * child (anywhere in its subtree). We count list items with links rather than
- * counting raw links so that a list item with multiple links still counts once.
- */
-function countYouTubeVideos(root: Root): number {
-  // Use sectionsAfter at depth 2 to isolate `## YouTube Videos`.
-  const sections = sectionsAfter(root, 2);
-  const youtubeSection = sections.find(
-    (s) => s.heading.trim() === 'YouTube Videos',
-  );
-  if (!youtubeSection) return 0;
-
-  let count = 0;
-  for (const node of youtubeSection.nodes) {
-    if (node.type !== 'list') continue;
-    // Walk list items; count each that contains at least one link node.
-    visit(node, 'listItem', (item: ListItem) => {
-      let hasLink = false;
-      visit(item, 'link', () => {
-        hasLink = true;
-      });
-      if (hasLink) count++;
-    });
   }
   return count;
 }
@@ -134,11 +103,13 @@ export function computeCounts(
   ]);
 
   // --- talks: list-item links under ## YouTube Videos in OtherResources.md ---
+  // Shares extractYouTubeVideos with talks.ts so this count and talks.json
+  // are derived from one definition and cannot drift.
   const otherResourcesSrc = readFileSync(
     join(repoRoot, 'OtherResources.md'),
     'utf-8',
   );
-  const talks = countYouTubeVideos(parseMarkdown(otherResourcesSrc));
+  const talks = extractYouTubeVideos(parseMarkdown(otherResourcesSrc)).length;
 
   const result: Counts = {
     papers,
