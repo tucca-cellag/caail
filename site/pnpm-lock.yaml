@@ -32,6 +32,9 @@ importers:
       astro-icon:
         specifier: ^1.1.5
         version: 1.1.5
+      lite-youtube-embed:
+        specifier: ^0.3.4
+        version: 0.3.4
       preact:
         specifier: ^10.29.2
         version: 10.29.2
@@ -2212,6 +2215,9 @@ packages:
     resolution: {integrity: sha512-85WDkjcXAVdlFem9Y6SSxqoKiz/89UsDZhLpeLJIsJ4LlHxw047XTZhlFJmjYCB7K5S1erSBAf5cYLcfyNbH3A==}
     engines: {node: '>=18.20'}
     hasBin: true
+
+  lite-youtube-embed@0.3.4:
+    resolution: {integrity: sha512-aXgxpwK7AIW58GEbRzA8EYaY4LWvF3FKak6B9OtSJmuNyLhX2ouD4cMTxz/yR5HFInhknaYd2jLWOTRTvT8oAw==}
 
   local-pkg@1.2.1:
     resolution: {integrity: sha512-++gUqRDEvcnN6Zhqrr+y/CkVEHhlrR96vZn3nZZPYzMcBUyBtTKzB9NadClFIsIVSsu+3i9tfk/erqy9kAmt7Q==}
@@ -6022,6 +6028,8 @@ snapshots:
       - react-native-b4a
       - supports-color
       - utf-8-validate
+
+  lite-youtube-embed@0.3.4: {}
 
   local-pkg@1.2.1:
     dependencies:

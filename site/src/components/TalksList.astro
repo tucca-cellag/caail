@@ -1,0 +1,41 @@
+---
+/**
+ * TalksList — renders the curated YouTube talks from talks.json as a
+ * responsive grid of facade embeds (lite-youtube-embed). Each embed loads only
+ * a poster thumbnail until clicked, so the page stays fast (no eager iframes).
+ *
+ * No-JS fallback: each <lite-youtube> wraps a plain <a> to the YouTube watch
+ * URL, so with JavaScript disabled the talk is still a working link. The custom
+ * element only upgrades (poster + inline playback) once the client script runs.
+ */
+import talks from '../content/data/talks.json';
+import 'lite-youtube-embed/src/lite-yt-embed.css';
+---
+
+<ul class="talks" role="list">
+  {talks.talks.map((t) => (
+    <li class="talk">
+      <lite-youtube videoid={t.videoId} playlabel={`Play: ${t.title}`}>
+        <a class="talk-fallback" href={t.url} target="_blank" rel="noopener noreferrer">
+          Watch “{t.title}” on YouTube
+        </a>
+      </lite-youtube>
+      <p class="talk-title">{t.title}</p>
+    </li>
+  ))}
+</ul>
+
+<script>
+  // Registers the <lite-youtube> custom element (client-side only).
+  import 'lite-youtube-embed';
+</script>
+
+<style>
+  .talks { list-style: none; padding: 0; margin: 1.25rem 0 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr)); gap: 1.25rem; }
+  .talk { margin: 0; }
+  .talk lite-youtube { border-radius: 10px; overflow: hidden; box-shadow: 0 6px 18px -14px color-mix(in oklab, var(--caail-primary) 50%, transparent); }
+  .talk-title { font-size: .82rem; font-weight: 600; color: var(--caail-ink); line-height: 1.35; margin: .55rem 0 0; }
+  /* No-JS / pre-upgrade fallback link, centered over the facade area. */
+  .talk-fallback { display: flex; align-items: center; justify-content: center; min-height: 8rem; padding: 1rem; text-align: center; font-size: .8rem; color: var(--caail-link); text-decoration: none; }
+  .talk-fallback:hover { text-decoration: underline; }
+</style>
