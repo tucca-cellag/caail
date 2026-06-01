@@ -73,7 +73,7 @@ const REPO_ROOT = new URL('../../../../', import.meta.url);
  */
 const CANONICAL_SOURCES = {
   dirs: ['ResearchAreas', 'Datasets'],
-  files: ['CONTRIBUTING.md'],
+  files: ['CONTRIBUTING.md', 'OtherResources.md'],
 } as const;
 
 export function caailDocsLoader(): Loader {

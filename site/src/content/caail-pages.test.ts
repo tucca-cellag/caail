@@ -10,14 +10,18 @@ describe('CAAIL_PAGES', () => {
     expect(CAAIL_PAGES.idForSourcePath('ResearchAreas/Bioprocess')).toBe('research-areas/bioprocess');
     expect(CAAIL_PAGES.idForSourcePath('Datasets/Cow')).toBe('datasets/cow');
     expect(CAAIL_PAGES.idForSourcePath('CONTRIBUTING')).toBe('contributing');
+    // multi-word top-level file gets an explicit hyphenated id (not "otherresources")
+    expect(CAAIL_PAGES.idForSourcePath('OtherResources')).toBe('other-resources');
+    expect(CAAIL_PAGES.idForSourcePath('OtherResources.md')).toBe('other-resources');
   });
   it('returns title + sidebar metadata by id', () => {
     expect(CAAIL_PAGES.byId('research-areas/bioprocess')?.title).toBe('Bioprocess control');
     expect(CAAIL_PAGES.byId('datasets/cow')?.title).toContain('Cow');
+    expect(CAAIL_PAGES.byId('other-resources')).toMatchObject({ group: 'top', title: 'Other Resources' });
   });
   it('all() returns {id,...meta} objects', () => {
     const all = CAAIL_PAGES.all();
-    expect(all.length).toBe(24);
+    expect(all.length).toBe(25);
     const cow = all.find((p) => p.id === 'datasets/cow');
     expect(cow).toMatchObject({ id: 'datasets/cow', group: 'datasets' });
     expect(typeof cow?.sidebarLabel).toBe('string');

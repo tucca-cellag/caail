@@ -172,6 +172,12 @@ const PAGES: Record<string, PageMeta> = {
     group: 'top',
     order: 1,
   },
+  'other-resources': {
+    title: 'Other Resources',
+    sidebarLabel: 'Other Resources',
+    group: 'top',
+    order: 2,
+  },
 };
 
 // ---------------------------------------------------------------------------
@@ -203,7 +209,9 @@ export const CAAIL_PAGES = {
 
     const slashIdx = stripped.indexOf('/');
     if (slashIdx === -1) {
-      // Top-level file (e.g. CONTRIBUTING)
+      // Top-level file (e.g. CONTRIBUTING). Multi-word names get an explicit
+      // hyphenated route id (the default lowercasing would merge the words).
+      if (stripped === 'OtherResources') return 'other-resources';
       return stripped.toLowerCase();
     }
 
