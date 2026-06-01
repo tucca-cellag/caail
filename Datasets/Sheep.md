@@ -2,6 +2,12 @@
 
 Cultivated lamb is an early-stage cell-ag target. Systems-level data for *Ovis aries* is beginning to accumulate — most notably a multi-tissue atlas of genetic regulatory effects within the FarmGTEx family. Dedicated cultivated-lamb cell datasets remain sparse, but a cluster of conventional ovine meat-quality proteomics and metabolomics — catalogued below — offers reference substrate for the sensory- and quality-prediction problems cultivated lamb will share, and the page will grow as the field's data accumulates.
 
+## Featured atlases
+
+### [SheepGTEx-Portal](https://sheepgtex.farmgtex.org/)
+
+Sheep sub-portal of the FarmGTEx consortium, providing multi-tissue regulatory-effects maps across sheep (*Ovis aries*) tissues — extending the FarmGTEx pattern from cattle, pig, and chicken into the small-ruminant lineage and a regulatory-genomics substrate for cultivated-lamb cell-line characterisation. Companion to [Papers.md ref #138](../Papers.md#138) (Gong et al. 2025, bioRxiv). Full entry in [Databases.md / Livestock Multi-Tissue Atlases](../Databases.md#livestock-multi-tissue-atlases--functional-genomics).
+
 ## Postmortem proteome & meat-quality omics
 
 Ahead of dedicated cultivated-lamb cell datasets, a cluster of conventional ovine meat-quality omics studies — surfaced by walking the *Encyclopedia of Meat Sciences* omics reviews — provides reference substrate for the sensory- and quality-prediction problems cultivated lamb will share. A redox proteome of Tan mutton under low-temperature storage (Tao et al. 2021, *LWT*) catalogues 1,089 proteins carrying differentially changed oxidation sites; a roasting proteome of lamb longissimus thoracis et lumborum (Yu et al. 2016, *Meat Science*) tracks protein-profile and amino-acid-residue modifications with cooking; and a HILIC-MS metabolome of colour-stable versus colour-labile ovine longissimus (Subbaraj et al. 2016, *Meat Science*) maps the small-molecule basis of meat-colour stability. None deposited to a repository — each study's full data table lives in its supplementary materials.
@@ -20,8 +26,7 @@ A curated snapshot. Each entry's data lives in the linked paper's supplementary 
 
 ## Further reading
 
-- Multi-tissue regulatory atlas: [Papers.md ref #138](../Papers.md#138) (Gong et al. 2025, *A multi-tissue atlas of genetic regulatory effects in sheep*, bioRxiv).
-- Atlases & functional genomics: [FarmGTEx](../Databases.md#farmgtex) and [FAANG](../Databases.md#faang-functional-annotation-of-animal-genomes) in `Databases.md` — the FarmGTEx consortium explicitly spans sheep.
+- Atlases & functional genomics: [SheepGTEx-Portal](../Databases.md#livestock-multi-tissue-atlases--functional-genomics) (featured above), [FarmGTEx](../Databases.md#farmgtex), and [FAANG](../Databases.md#faang-functional-annotation-of-animal-genomes) in `Databases.md`. Foundational reference: [Papers.md ref #138](../Papers.md#138) (Gong et al. 2025, *A multi-tissue atlas of genetic regulatory effects in sheep*, bioRxiv).
 - Sequence & expression repositories: [GEO](../Databases.md#nih-gene-expression-omnibus-geo), [SRA](../Databases.md#nih-sequence-read-archive-sra), [Ensembl](../Databases.md#ensembl) (*Ovis aries* genome assembly).
 - Cross-species modeling tooling: [TranscriptFormer](../Software.md#transcriptformer) and [UCE](../Software.md#uce) in `Software.md` — especially useful where labelled species data is sparse.
 - Adjacent research areas: [Cellular Engineering](../ResearchAreas/CellEngineering.md), [Media Optimization](../ResearchAreas/MediaOptimization.md), [Bioprocess Control](../ResearchAreas/Bioprocess.md), [Sensory Prediction](../ResearchAreas/SensoryPrediction.md).
