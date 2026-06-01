@@ -77,9 +77,13 @@ export default defineConfig({
       sidebar: [
         { label: 'Home', link: '/' },
         { label: 'Papers', items: [{ label: 'Explorer', link: '/papers/explorer/' }] },
+        { label: 'Software', link: '/software/' },
+        { label: 'Databases', link: '/databases/' },
         { label: 'Datasets (by species)', items: groupItems('datasets') },
         { label: 'Research Areas', items: groupItems('research-areas') },
+        { label: 'Talks & Videos', link: '/talks/' },
         { label: 'Contributing', link: '/contributing/' },
+        { label: 'About', link: '/about/' },
       ],
       customCss: [
         './src/styles/fonts.css',
