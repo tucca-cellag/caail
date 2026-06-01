@@ -2,6 +2,7 @@
 import './catalog-browser.css';
 import { useMemo, useState } from 'preact/hooks';
 import catalog from '../content/data/catalog.json';
+import { groupSlug } from '../lib/catalog-groups';
 
 type Entry = { slug: string; name: string; url: string; group: string; summary: string };
 type Kind = 'software' | 'databases';
@@ -81,7 +82,7 @@ export default function CatalogBrowser({ kind }: Props) {
           .filter(({ items }) => items.length > 0)
           .map(({ g, items }) => (
             <section class="cb-grp">
-              <h2 class="cb-grp-h caail-display">{g}</h2>
+              <h2 class="cb-grp-h caail-display" id={groupSlug(g)}>{g}</h2>
               <div class="cb-grid">
                 {items.map((e) => (
                   <a

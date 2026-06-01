@@ -12,7 +12,7 @@
 .cb-empty { font-size: .85rem; color: var(--caail-muted); }
 
 .cb-grp { margin: 0 0 1.6rem; }
-.cb-grp-h { font-size: .82rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--caail-accent); margin: 0 0 .6rem; padding-bottom: .3rem; border-bottom: 1px solid var(--caail-border); }
+.cb-grp-h { font-size: .82rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--caail-accent); margin: 0 0 .6rem; padding-bottom: .3rem; border-bottom: 1px solid var(--caail-border); scroll-margin-top: 5rem; }
 
 .cb-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr)); gap: .85rem; }
 
