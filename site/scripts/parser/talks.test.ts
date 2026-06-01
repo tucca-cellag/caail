@@ -84,7 +84,7 @@ describe('buildTalksModel — real corpus', () => {
 
   it('has the three moved sections', () => {
     expect(model.sections.map((s) => s.heading)).toEqual([
-      'YouTube Videos',
+      'Applied AI/ML for Cellular Agriculture',
       'AI Agents & Foundation Models for Biology',
       'AI Fundamentals',
     ]);

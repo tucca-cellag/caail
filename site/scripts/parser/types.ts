@@ -97,7 +97,7 @@ export const TalkItemSchema = z.object({
 });
 
 export const TalkSectionSchema = z.object({
-  /** H2 section heading, e.g. "YouTube Videos" */
+  /** H2 section heading, e.g. "Applied AI/ML for Cellular Agriculture" */
   heading: z.string(),
   /** Section intro paragraph; '' if none */
   intro: z.string(),

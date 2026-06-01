@@ -7,7 +7,7 @@ import AxeBuilder from '@axe-core/playwright';
 
 test('talks renders the three sections with embeds and playlist cards', async ({ page }) => {
   await page.goto('./talks/');
-  for (const h of ['YouTube Videos', 'AI Agents & Foundation Models for Biology', 'AI Fundamentals']) {
+  for (const h of ['Applied AI/ML for Cellular Agriculture', 'AI Agents & Foundation Models for Biology', 'AI Fundamentals']) {
     await expect(page.getByRole('heading', { name: h })).toBeVisible();
   }
   expect(await page.locator('lite-youtube').count()).toBeGreaterThan(1); // video facades
@@ -30,7 +30,7 @@ test('other-resources renders sections, a native TOC, and rewritten links', asyn
   // a representative section from deep in the file
   await expect(page.getByRole('heading', { name: 'Books' })).toBeVisible();
   // the moved video/talk sections are no longer headings here
-  await expect(page.getByRole('heading', { name: 'YouTube Videos' })).toHaveCount(0);
+  await expect(page.getByRole('heading', { name: 'Applied AI/ML for Cellular Agriculture' })).toHaveCount(0);
   await expect(page.getByRole('heading', { name: 'AI Agents & Foundation Models for Biology' })).toHaveCount(0);
   // its own native heading TOC (real markdown headings)
   await expect(page.locator('starlight-toc a').filter({ hasText: 'Editorials & Opinion' })).toHaveCount(1);
