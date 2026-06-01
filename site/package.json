@@ -22,6 +22,7 @@
     "@iconify-json/ph": "^1.2.2",
     "astro": "^6.3.1",
     "astro-icon": "^1.1.5",
+    "cytoscape": "^3.33.4",
     "lite-youtube-embed": "^0.3.4",
     "preact": "^10.29.2",
     "sharp": "^0.34.5"
@@ -30,6 +31,7 @@
     "@axe-core/playwright": "^4.11.3",
     "@lhci/cli": "^0.15.1",
     "@playwright/test": "^1.60.0",
+    "@types/cytoscape": "^3.31.0",
     "@types/mdast": "^4.0.4",
     "mdast-util-to-string": "^4.0.0",
     "remark-gfm": "^4.0.1",

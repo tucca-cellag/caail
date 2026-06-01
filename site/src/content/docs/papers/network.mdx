@@ -1,0 +1,14 @@
+---
+title: Citation Network
+description: A co-authorship network of CAAIL's papers — references linked when they share an author.
+tableOfContents: false
+---
+
+import NetworkGraph from '../../../components/NetworkGraph.tsx';
+
+Each node is a paper from the [Papers Explorer](/caail/papers/explorer/); an edge joins two
+papers that **share an author**, surfacing research lineages and collaborator clusters the matrix
+doesn't show. Node size reflects how many co-authorship links a paper has; color marks its primary
+research area. Filter by area, toggle unconnected papers, and click a node for its details.
+
+<NetworkGraph client:idle />
