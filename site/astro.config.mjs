@@ -25,7 +25,9 @@ function caailProseRemark() {
     const sourcePath = abs.slice(REPO_ROOT.length); // e.g. "Datasets/Cow.md"
     // Guard: only act on canonical prose directories / CONTRIBUTING.md.
     const isProse =
-      /^(ResearchAreas|Datasets)\//.test(sourcePath) || sourcePath === 'CONTRIBUTING.md';
+      /^(ResearchAreas|Datasets)\//.test(sourcePath) ||
+      sourcePath === 'CONTRIBUTING.md' ||
+      sourcePath === 'OtherResources.md';
     if (!isProse) return;
     rewriteCaailLinks({ base: BASE, sourcePath })(tree);
     stripLeadingH1()(tree);
@@ -85,6 +87,7 @@ export default defineConfig({
         { label: 'Datasets (by species)', items: groupItems('datasets') },
         { label: 'Research Areas', items: groupItems('research-areas') },
         { label: 'Talks & Videos', link: '/talks/' },
+        { label: 'Other Resources', link: '/other-resources/' },
         { label: 'By the Numbers', link: '/by-the-numbers/' },
         { label: 'Contributing', link: '/contributing/' },
         { label: 'About', link: '/about/' },
@@ -102,6 +105,11 @@ export default defineConfig({
         // without injecting Starlight's own hero UI above our custom Hero.
         Hero: './src/components/StarlightHeroOverride.astro',
         Footer: './src/components/Footer.astro',
+        // Inject the catalog's application-area sections into the right-rail
+        // TOC on /software and /databases (their headings live in the island,
+        // not the Markdown, so Starlight can't collect them natively). Every
+        // other route renders Starlight's default TableOfContents unchanged.
+        TableOfContents: './src/components/TableOfContents.astro',
       },
     }),
     preact(),
