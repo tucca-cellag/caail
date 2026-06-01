@@ -291,7 +291,7 @@ Summary: Seqera Cloud's AI assistant for bioinformatics workflows, providing an 
 
 ### [Dotmatics Luma](https://go.dotmatics.com/luma-lab-orchestration)
 
-A commercial lab-orchestration platform from Dotmatics that connects laboratory instruments, data systems, and AI assistance into a unified "connected digital lab" workflow — covering instrument integration, automated data flow, electronic-lab-notebook integration, and agent-assisted experimental planning. Marketed primarily to biopharma and biotech R&D groups; representative of the commercial-tooling layer that cell-ag startups increasingly evaluate as they scale beyond bench-scale workflows. See also the [Dotmatics Luma webinar](./OtherResources.md#ai-agents--foundation-models-for-biology) in OtherResources.md for an overview of the platform.
+A commercial lab-orchestration platform from Dotmatics that connects laboratory instruments, data systems, and AI assistance into a unified "connected digital lab" workflow — covering instrument integration, automated data flow, electronic-lab-notebook integration, and agent-assisted experimental planning. Marketed primarily to biopharma and biotech R&D groups; representative of the commercial-tooling layer that cell-ag startups increasingly evaluate as they scale beyond bench-scale workflows. See also the [Dotmatics Luma webinar](./Talks.md#ai-agents--foundation-models-for-biology) in Talks.md for an overview of the platform.
 
 ### [TranscriptFormer](https://virtualcellmodels.cziscience.com/model/transcriptformer)
 

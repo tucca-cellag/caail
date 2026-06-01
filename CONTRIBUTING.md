@@ -127,15 +127,25 @@ Summary: One to three sentences describing what it is and, importantly, *how it 
 
 All entries cross-link via the established `Companion to [Papers.md ref #N]` convention.
 
-### `OtherResources.md`
+### `Talks.md` and `OtherResources.md`
 
-A flat bulleted list under category headings (currently `## YouTube Videos`):
+Both are flat bulleted lists under category headings:
 
 ```markdown
 * [<Title>](<URL>)
 ```
 
-If you're adding a different kind of resource (podcast, course, blog post), create a new `##` section rather than mixing it into an existing list.
+**Pick the file by medium:**
+
+- **Lectures, talks, webinars, and educational video playlists → `Talks.md`** (e.g. conference
+  talks, the Broad Institute MIA series, YouTube playlists). The site renders `Talks.md` as inline
+  players on `/talks/`, so prefer canonical YouTube watch / playlist URLs.
+- **Everything else educational or contextual → `OtherResources.md`** — field overviews, courses,
+  books, journal editorials and opinion, ecosystem initiatives and programs, and curated
+  bibliographies / "awesome lists".
+
+If you're adding a kind of resource that doesn't fit an existing `##` section in the chosen file,
+create a new `##` section rather than mixing it into an existing list.
 
 ## Adding a new research area
 
