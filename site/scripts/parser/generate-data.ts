@@ -19,7 +19,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { buildPapersModel } from './papers.js';
 import { computeCounts } from './counts.js';
 import { buildCatalogModel } from './catalog.js';
-import { buildTalksModel } from './talks.js';
+import { buildTalksModel, talkItemCount } from './talks.js';
 import { buildGraphModel } from './graph.js';
 import { buildMetricsModel } from './metrics.js';
 import {
@@ -101,7 +101,7 @@ export function generateData(
   // ship a stat that disagrees with the page it links to.
   assertCountsMatch('software', catalog.software.length, counts.software);
   assertCountsMatch('databases', catalog.databases.length, counts.databases);
-  assertCountsMatch('talks', talks.talks.length, counts.talks);
+  assertCountsMatch('talks', talkItemCount(talks), counts.talks);
   assertCountsMatch('graph nodes', graph.nodes.length, counts.papers);
   assertCountsMatch('metrics.library.papers', metrics.library.papers, counts.papers);
 
@@ -154,7 +154,7 @@ export function generateData(
     counts,
     papersRefs: model.references.length,
     catalogEntries: catalog.software.length + catalog.databases.length,
-    talks: talks.talks.length,
+    talks: talkItemCount(talks),
     graphNodes: graph.nodes.length,
     graphEdges: graph.edges.length,
   };

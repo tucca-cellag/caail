@@ -115,6 +115,7 @@ describe('generateData()', () => {
     expect(existsSync(path)).toBe(true);
     const parsed = JSON.parse(readFileSync(path, 'utf-8'));
     expect(TalksSchema.safeParse(parsed).success).toBe(true);
-    expect(parsed.talks.length).toBe(result.counts.talks);
+    const items = parsed.sections.flatMap((s: { items: unknown[] }) => s.items);
+    expect(items.length).toBe(result.counts.talks);
   });
 });

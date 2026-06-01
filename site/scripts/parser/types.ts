@@ -83,13 +83,25 @@ export const CatalogEntrySchema = z.object({
   summary: z.string(),
 });
 
-export const TalkSchema = z.object({
+export const TalkItemSchema = z.object({
   /** List-item link text, e.g. "Multus Biotechnology: AI-driven media optimization" */
   title: z.string(),
-  /** Full YouTube watch/short URL */
+  /** Destination URL (YouTube watch/playlist, or other) */
   url: z.string().url(),
-  /** 11-character YouTube video id extracted from the URL */
-  videoId: z.string(),
+  /** 'video' = embeddable single video; 'playlist' = YouTube playlist; 'link' = other */
+  kind: z.enum(['video', 'playlist', 'link']),
+  /** 11-character YouTube video id for kind === 'video'; null otherwise */
+  videoId: z.string().nullable(),
+  /** Trailing descriptive text after the link (venue/year/blurb); '' if none */
+  note: z.string(),
+});
+
+export const TalkSectionSchema = z.object({
+  /** H2 section heading, e.g. "YouTube Videos" */
+  heading: z.string(),
+  /** Section intro paragraph; '' if none */
+  intro: z.string(),
+  items: z.array(TalkItemSchema),
 });
 
 // ---------------------------------------------------------------------------
@@ -116,10 +128,10 @@ export const CatalogSchema = z.object({
 });
 
 /**
- * Schema for talks.json — curated YouTube videos from OtherResources.md.
+ * Schema for talks.json — Talks.md sections of curated videos/playlists, grouped.
  */
 export const TalksSchema = z.object({
-  talks: z.array(TalkSchema),
+  sections: z.array(TalkSectionSchema),
 });
 
 /**
@@ -243,7 +255,8 @@ export type PapersData = z.infer<typeof PapersDataSchema>;
 export type Counts = z.infer<typeof CountsSchema>;
 export type CatalogEntry = z.infer<typeof CatalogEntrySchema>;
 export type Catalog = z.infer<typeof CatalogSchema>;
-export type Talk = z.infer<typeof TalkSchema>;
+export type TalkItem = z.infer<typeof TalkItemSchema>;
+export type TalkSection = z.infer<typeof TalkSectionSchema>;
 export type Talks = z.infer<typeof TalksSchema>;
 export type GraphNode = z.infer<typeof GraphNodeSchema>;
 export type GraphEdge = z.infer<typeof GraphEdgeSchema>;

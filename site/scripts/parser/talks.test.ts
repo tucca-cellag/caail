@@ -1,25 +1,20 @@
 /**
- * talks.test.ts — tests for the OtherResources.md YouTube-talks parser.
+ * talks.test.ts — tests for the Talks.md parser (structured, grouped model).
  *
  * Suites:
  *   A. youtubeVideoId — id extraction across URL shapes.
- *   B. Unit (fixture): only ## YouTube Videos items become talks; titles/urls/ids.
- *   C. Integration (real corpus): verified count + all ids are 11 chars.
+ *   B. Unit (fixture): section grouping, intro capture, item kind/videoId/note.
+ *   C. Integration (real corpus): verified section + item tallies.
  */
 
 import { describe, it, expect, beforeAll } from 'vitest';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { buildTalksModel, youtubeVideoId } from './talks.js';
+import { buildTalksModel, talkItemCount, youtubeVideoId } from './talks.js';
 import { TalksSchema } from './types.js';
 
-const FIXTURE = join(
-  fileURLToPath(import.meta.url),
-  '..',
-  'fixtures',
-  'counts-other-resources.fixture.md',
-);
+const FIXTURE = join(fileURLToPath(import.meta.url), '..', 'fixtures', 'talks.fixture.md');
 
 // ---------------------------------------------------------------------------
 // A. youtubeVideoId
@@ -32,32 +27,48 @@ describe('youtubeVideoId', () => {
   it('extracts the id from a youtu.be short URL', () => {
     expect(youtubeVideoId('https://youtu.be/CcbDBXmAiuQ')).toBe('CcbDBXmAiuQ');
   });
-  it('returns null when no id is present', () => {
+  it('returns null for a playlist or non-video URL', () => {
+    expect(youtubeVideoId('https://www.youtube.com/playlist?list=PLxyz')).toBeNull();
     expect(youtubeVideoId('https://example.com/video')).toBeNull();
   });
 });
 
 // ---------------------------------------------------------------------------
-// B. Unit — fixture scoping
+// B. Unit — fixture
 // ---------------------------------------------------------------------------
 
-describe('buildTalksModel — scoping (fixture)', () => {
+describe('buildTalksModel — structure (fixture)', () => {
   let model: ReturnType<typeof buildTalksModel>;
   beforeAll(() => {
     model = buildTalksModel(FIXTURE);
   });
 
-  it('includes only ## YouTube Videos list items, not other sections', () => {
-    expect(model.talks).toHaveLength(3);
-    expect(model.talks.map((t) => t.title)).toEqual(['Talk One', 'Talk Two', 'Talk Three']);
+  it('groups items under their `##` section headings (top prose ignored)', () => {
+    expect(model.sections.map((s) => s.heading)).toEqual(['YouTube Videos', 'AI Fundamentals']);
   });
 
-  it('captures url and extracted videoId for each talk', () => {
-    expect(model.talks[0]).toEqual({
+  it('captures a section intro when present, else empty string', () => {
+    expect(model.sections[0].intro).toBe('');
+    expect(model.sections[1].intro).toBe('Educational playlists for the curious.');
+  });
+
+  it('classifies items by kind with video ids and trailing notes', () => {
+    const [yt, fund] = model.sections;
+    expect(yt.items[0]).toEqual({
       title: 'Talk One',
       url: 'https://www.youtube.com/watch?v=aaaaaaaaaaa',
+      kind: 'video',
       videoId: 'aaaaaaaaaaa',
+      note: '',
     });
+    expect(yt.items[1]).toMatchObject({ kind: 'video', videoId: 'bbbbbbbbbbb', note: 'a short note about talk two' });
+    expect(fund.items[0]).toMatchObject({ kind: 'playlist', videoId: null, note: 'intro playlist' });
+    expect(fund.items[1]).toMatchObject({ kind: 'link', videoId: null, note: 'not a video' });
+  });
+
+  it('counts all items across sections and validates', () => {
+    expect(talkItemCount(model)).toBe(4);
+    expect(TalksSchema.safeParse(model).success).toBe(true);
   });
 });
 
@@ -71,14 +82,24 @@ describe('buildTalksModel — real corpus', () => {
     model = buildTalksModel();
   });
 
-  it('emits the verified ground-truth talk count', () => {
-    // 5 = current ## YouTube Videos item count; bump when talks are added.
-    // MUST equal counts.talks (asserted in generate-data).
-    expect(model.talks).toHaveLength(5);
+  it('has the three moved sections', () => {
+    expect(model.sections.map((s) => s.heading)).toEqual([
+      'YouTube Videos',
+      'AI Agents & Foundation Models for Biology',
+      'AI Fundamentals',
+    ]);
   });
 
-  it('every talk has an 11-char videoId and passes TalksSchema', () => {
-    expect(model.talks.every((t) => t.videoId.length === 11)).toBe(true);
+  it('emits the verified item tallies (bump when talks are added)', () => {
+    expect(talkItemCount(model)).toBe(19);
+    const items = model.sections.flatMap((s) => s.items);
+    expect(items.filter((i) => i.kind === 'video')).toHaveLength(14);
+    expect(items.filter((i) => i.kind === 'playlist')).toHaveLength(5);
+  });
+
+  it('every video item has an 11-char id; passes TalksSchema', () => {
+    const videos = model.sections.flatMap((s) => s.items).filter((i) => i.kind === 'video');
+    expect(videos.every((v) => (v.videoId ?? '').length === 11)).toBe(true);
     expect(TalksSchema.safeParse(model).success).toBe(true);
   });
 });

@@ -7,7 +7,7 @@
  *   - databases     H3 headings in Databases.md
  *   - species       *.md files in Datasets/ (excluding README.md, CLAUDE.md)
  *   - researchAreas *.md files in ResearchAreas/ (excluding CLAUDE.md)
- *   - talks         list-item links under `## YouTube Videos` in OtherResources.md
+ *   - talks         video/playlist items across all sections of Talks.md
  *
  * The result is validated with CountsSchema.parse() before returning so a
  * shape regression throws here rather than downstream at build time.
@@ -19,7 +19,7 @@ import { fileURLToPath } from 'node:url';
 import type { Root, Heading } from 'mdast';
 
 import { parseMarkdown } from './markdown.js';
-import { extractYouTubeVideos } from './talks.js';
+import { buildTalksModel, talkItemCount } from './talks.js';
 import { CountsSchema, type Counts, type PapersData } from './types.js';
 
 // ---------------------------------------------------------------------------
@@ -102,14 +102,10 @@ export function computeCounts(
     'CLAUDE.md',
   ]);
 
-  // --- talks: list-item links under ## YouTube Videos in OtherResources.md ---
-  // Shares extractYouTubeVideos with talks.ts so this count and talks.json
-  // are derived from one definition and cannot drift.
-  const otherResourcesSrc = readFileSync(
-    join(repoRoot, 'OtherResources.md'),
-    'utf-8',
-  );
-  const talks = extractYouTubeVideos(parseMarkdown(otherResourcesSrc)).length;
+  // --- talks: video/playlist items across all sections of Talks.md ---
+  // Built from the same talks.ts model that produces talks.json, so this count
+  // and the rendered Talks page can never drift.
+  const talks = talkItemCount(buildTalksModel(join(repoRoot, 'Talks.md')));
 
   const result: Counts = {
     papers,

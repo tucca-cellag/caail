@@ -2,9 +2,8 @@
  * counts.test.ts — tests for the corpus counts computation.
  *
  * Two suites:
- *   A. Unit: talks scoping (fixture OtherResources-like file) — verifies that
- *      only links under `## YouTube Videos` are counted, not links in any other
- *      `##` section.
+ *   A. Unit: talks counting (fixture Talks.md) — verifies that all video/playlist
+ *      items across every section of Talks.md are counted.
  *   B. Integration: real repo-root corpus files with the real papers model,
  *      asserting the verified ground-truth values for all six fields.
  */
@@ -23,7 +22,7 @@ const FIXTURE_DIR = join(fileURLToPath(import.meta.url), '..', 'fixtures');
 // A. Unit — talks scoping (fixture)
 // ---------------------------------------------------------------------------
 
-describe('computeCounts — talks scoping (fixture)', () => {
+describe('computeCounts — talks counting (fixture)', () => {
   // Build a minimal stub PapersData — we only care about talks/species/researchAreas here.
   const stubModel: PapersData = {
     areas: [],
@@ -51,15 +50,15 @@ describe('computeCounts — talks scoping (fixture)', () => {
   };
 
   // Point computeCounts at our fixture directory as the "repo root".
-  // The fixture base dir holds Software.md, Databases.md, OtherResources.md,
+  // The fixture base dir holds Software.md, Databases.md, Talks.md,
   // Datasets/, and ResearchAreas/ — all minimal stubs.
   const fixtureRepoRoot = join(FIXTURE_DIR, 'counts-repo-root-fixture');
 
-  it('counts only list-item links under ## YouTube Videos, not links in other sections', () => {
+  it('counts video/playlist items across all Talks.md sections', () => {
     const result = computeCounts(stubModel, fixtureRepoRoot);
 
-    // The fixture YouTube Videos section has 3 links; a second ## section has
-    // 2 more links that must NOT be counted.
+    // The fixture Talks.md has 2 videos under ## YouTube Videos + 1 playlist
+    // under ## AI Fundamentals = 3 items.
     expect(result.talks).toBe(3);
     // Schema validates
     expect(CountsSchema.safeParse(result).success).toBe(true);
@@ -97,7 +96,7 @@ describe('computeCounts — real corpus (ground-truth contract)', () => {
       databases: 71,
       species: 14,
       researchAreas: 8,
-      talks: 5,
+      talks: 19,
     });
   });
 
