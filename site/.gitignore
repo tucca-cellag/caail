@@ -33,3 +33,5 @@ src/content/data/papers.json
 src/content/data/counts.json
 src/content/data/catalog.json
 src/content/data/talks.json
+src/content/data/graph.json
+src/content/data/metrics.json

@@ -135,6 +135,104 @@ export const CountsSchema = z.object({
 });
 
 // ---------------------------------------------------------------------------
+// graph.json — shared-author co-authorship network (M5)
+// ---------------------------------------------------------------------------
+
+export const GraphNodeSchema = z.object({
+  /** reference.id */
+  id: z.number().int().positive(),
+  /** reference.slug — human-readable node label, e.g. "cosenza-2022" */
+  label: z.string(),
+  title: z.string().nullable(),
+  /** raw author run, for the node tooltip/panel */
+  authorsText: z.string(),
+  year: z.number().int().nullable(),
+  isPrimary: z.boolean(),
+  methods: z.array(z.string()),
+  areas: z.array(z.string()),
+  doi: z.string().nullable(),
+  journal: z.string().nullable(),
+  hasCode: z.boolean(),
+  hasData: z.boolean(),
+  /** number of shared-author edges incident to this node (0 = isolated) */
+  degree: z.number().int().nonnegative(),
+});
+
+export const GraphEdgeSchema = z.object({
+  /** lower reference.id of the pair */
+  source: z.number().int().positive(),
+  /** higher reference.id of the pair */
+  target: z.number().int().positive(),
+  /** display names of the author(s) shared by source & target */
+  sharedAuthors: z.array(z.string()).min(1),
+});
+
+export const GraphMetadataSchema = z.object({
+  nodes: z.number().int().nonnegative(),
+  edges: z.number().int().nonnegative(),
+  connectedNodes: z.number().int().nonnegative(),
+  isolatedNodes: z.number().int().nonnegative(),
+  largestComponent: z.number().int().nonnegative(),
+});
+
+/** Schema for graph.json — the shared-author network of Papers.md references. */
+export const GraphSchema = z.object({
+  metadata: GraphMetadataSchema,
+  nodes: z.array(GraphNodeSchema),
+  edges: z.array(GraphEdgeSchema),
+});
+
+// ---------------------------------------------------------------------------
+// metrics.json — "By the Numbers" dashboard (M6)
+// ---------------------------------------------------------------------------
+
+export const MetricsAreaSchema = z.object({
+  key: z.string(),
+  label: z.string(),
+  papers: z.number().int().nonnegative(),
+});
+
+export const MetricsMethodSchema = z.object({
+  method: z.string(),
+  papers: z.number().int().nonnegative(),
+});
+
+export const MetricsSpeciesSchema = z.object({
+  species: z.string(),
+  /** rows in the page's `## Complete data inventory` table; 0 for stubs */
+  inventoryRows: z.number().int().nonnegative(),
+  /** true when a placeholder note stands in for the inventory table */
+  isStub: z.boolean(),
+});
+
+/** Build-time git snapshot; null when git history is unavailable (shallow clone). */
+export const MetricsMomentumSchema = z
+  .object({
+    papersLastModified: z.string().nullable(),
+    datasetsLastModified: z.string().nullable(),
+    papersCommits30d: z.number().int().nonnegative(),
+    datasetsCommits30d: z.number().int().nonnegative(),
+  })
+  .nullable();
+
+/** Schema for metrics.json — breadth, matrix coverage, per-species gaps, momentum. */
+export const MetricsSchema = z.object({
+  /** library-wide counts (identical to counts.json) */
+  library: CountsSchema,
+  matrix: z.object({
+    totalCells: z.number().int().nonnegative(),
+    filledCells: z.number().int().nonnegative(),
+    coveragePct: z.number(),
+    perArea: z.array(MetricsAreaSchema),
+    perMethod: z.array(MetricsMethodSchema),
+  }),
+  species: z.array(MetricsSpeciesSchema),
+  momentum: MetricsMomentumSchema,
+  /** ISO build timestamp */
+  generatedAt: z.string(),
+});
+
+// ---------------------------------------------------------------------------
 // Inferred TypeScript types
 // ---------------------------------------------------------------------------
 
@@ -147,3 +245,8 @@ export type CatalogEntry = z.infer<typeof CatalogEntrySchema>;
 export type Catalog = z.infer<typeof CatalogSchema>;
 export type Talk = z.infer<typeof TalkSchema>;
 export type Talks = z.infer<typeof TalksSchema>;
+export type GraphNode = z.infer<typeof GraphNodeSchema>;
+export type GraphEdge = z.infer<typeof GraphEdgeSchema>;
+export type Graph = z.infer<typeof GraphSchema>;
+export type MetricsSpecies = z.infer<typeof MetricsSpeciesSchema>;
+export type Metrics = z.infer<typeof MetricsSchema>;

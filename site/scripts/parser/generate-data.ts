@@ -20,11 +20,15 @@ import { buildPapersModel } from './papers.js';
 import { computeCounts } from './counts.js';
 import { buildCatalogModel } from './catalog.js';
 import { buildTalksModel } from './talks.js';
+import { buildGraphModel } from './graph.js';
+import { buildMetricsModel } from './metrics.js';
 import {
   PapersDataSchema,
   CountsSchema,
   CatalogSchema,
   TalksSchema,
+  GraphSchema,
+  MetricsSchema,
   type Counts,
 } from './types.js';
 
@@ -61,7 +65,14 @@ export const DEFAULT_OUT_DIR: string = fileURLToPath(
  */
 export function generateData(
   outDir: string = DEFAULT_OUT_DIR,
-): { counts: Counts; papersRefs: number; catalogEntries: number; talks: number } {
+): {
+  counts: Counts;
+  papersRefs: number;
+  catalogEntries: number;
+  talks: number;
+  graphNodes: number;
+  graphEdges: number;
+} {
   // Build and validate the papers model.
   const model = buildPapersModel();
 
@@ -72,19 +83,27 @@ export function generateData(
   const catalog = buildCatalogModel();
   const talks = buildTalksModel();
 
+  // Build and validate the citation graph (M5) and metrics (M6).
+  const graph = buildGraphModel(model);
+  const metrics = buildMetricsModel(model);
+
   // Belt-and-suspenders: re-validate all before writing.
   PapersDataSchema.parse(model);
   CountsSchema.parse(counts);
   CatalogSchema.parse(catalog);
   TalksSchema.parse(talks);
+  GraphSchema.parse(graph);
+  MetricsSchema.parse(metrics);
 
-  // No-drift guard: the homepage counts and the catalog/talks artifacts derive
-  // from the same canonical files, so their tallies must agree exactly. A
-  // mismatch means a parser bug — fail the build loudly rather than ship a
-  // stat that disagrees with the page it links to.
+  // No-drift guard: the homepage counts and the catalog/talks/graph/metrics
+  // artifacts derive from the same canonical files, so their tallies must agree
+  // exactly. A mismatch means a parser bug — fail the build loudly rather than
+  // ship a stat that disagrees with the page it links to.
   assertCountsMatch('software', catalog.software.length, counts.software);
   assertCountsMatch('databases', catalog.databases.length, counts.databases);
   assertCountsMatch('talks', talks.talks.length, counts.talks);
+  assertCountsMatch('graph nodes', graph.nodes.length, counts.papers);
+  assertCountsMatch('metrics.library.papers', metrics.library.papers, counts.papers);
 
   // Ensure the output directory exists.
   mkdirSync(outDir, { recursive: true });
@@ -117,11 +136,27 @@ export function generateData(
     'utf-8',
   );
 
+  // Write graph.json.
+  writeFileSync(
+    join(outDir, 'graph.json'),
+    JSON.stringify(graph, null, 2) + '\n',
+    'utf-8',
+  );
+
+  // Write metrics.json.
+  writeFileSync(
+    join(outDir, 'metrics.json'),
+    JSON.stringify(metrics, null, 2) + '\n',
+    'utf-8',
+  );
+
   return {
     counts,
     papersRefs: model.references.length,
     catalogEntries: catalog.software.length + catalog.databases.length,
     talks: talks.talks.length,
+    graphNodes: graph.nodes.length,
+    graphEdges: graph.edges.length,
   };
 }
 
@@ -144,11 +179,13 @@ const isMain =
 
 if (isMain) {
   try {
-    const { counts, papersRefs, catalogEntries, talks } = generateData();
+    const { counts, papersRefs, catalogEntries, talks, graphNodes, graphEdges } =
+      generateData();
     // eslint-disable-next-line no-console
     console.log(
       `parse: wrote papers.json (${papersRefs} references), counts.json, ` +
-        `catalog.json (${catalogEntries} entries), and talks.json (${talks} talks)`,
+        `catalog.json (${catalogEntries} entries), talks.json (${talks} talks), ` +
+        `graph.json (${graphNodes} nodes / ${graphEdges} edges), and metrics.json`,
     );
     // eslint-disable-next-line no-console
     console.log('counts:', counts);
