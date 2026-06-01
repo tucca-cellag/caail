@@ -76,12 +76,16 @@ export default defineConfig({
       ],
       sidebar: [
         { label: 'Home', link: '/' },
-        { label: 'Papers', items: [{ label: 'Explorer', link: '/papers/explorer/' }] },
+        { label: 'Papers', items: [
+          { label: 'Explorer', link: '/papers/explorer/' },
+          { label: 'Citation Network', link: '/papers/network/' },
+        ] },
         { label: 'Software', link: '/software/' },
         { label: 'Databases', link: '/databases/' },
         { label: 'Datasets (by species)', items: groupItems('datasets') },
         { label: 'Research Areas', items: groupItems('research-areas') },
         { label: 'Talks & Videos', link: '/talks/' },
+        { label: 'By the Numbers', link: '/by-the-numbers/' },
         { label: 'Contributing', link: '/contributing/' },
         { label: 'About', link: '/about/' },
       ],
