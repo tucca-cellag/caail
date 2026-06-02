@@ -4,7 +4,14 @@ import { useMemo, useState } from 'preact/hooks';
 import catalog from '../content/data/catalog.json';
 import { groupSlug } from '../lib/catalog-groups';
 
-type Entry = { slug: string; name: string; url: string; group: string; summary: string };
+type Entry = {
+  slug: string;
+  name: string;
+  url: string;
+  group: string;
+  summary: string;
+  summaryHtml: string;
+};
 type Kind = 'software' | 'databases';
 
 interface Props {
@@ -85,18 +92,30 @@ export default function CatalogBrowser({ kind }: Props) {
               <h2 class="cb-grp-h caail-display" id={groupSlug(g)}>{g}</h2>
               <div class="cb-grid">
                 {items.map((e) => (
-                  <a
-                    class="cb-card"
-                    href={e.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
+                  // Container, NOT a wrapping anchor: the summary now carries
+                  // its own hyperlinks (nesting <a> in <a> is invalid). The
+                  // title is the link to the canonical home; `id` lets the
+                  // canonical markdown's intra-page "see X below" anchors land.
+                  <article class="cb-card" id={e.slug}>
                     <h3 class="cb-name">
-                      {e.name}
-                      <span class="cb-ext" aria-hidden="true">↗</span>
+                      <a
+                        class="cb-name-link"
+                        href={e.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {e.name}
+                        <span class="cb-ext" aria-hidden="true">↗</span>
+                      </a>
                     </h3>
-                    <p class="cb-sum">{e.summary}</p>
-                  </a>
+                    <div
+                      class="cb-sum"
+                      // First-party content from our own canonical Markdown,
+                      // rendered to HTML at build time (mdast→hast→html escapes
+                      // any raw HTML), so this is not a user-input injection sink.
+                      dangerouslySetInnerHTML={{ __html: e.summaryHtml }}
+                    />
+                  </article>
                 ))}
               </div>
             </section>

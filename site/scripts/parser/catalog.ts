@@ -13,10 +13,13 @@
 
 import { fileURLToPath } from 'node:url';
 import { toString as mdastToString } from 'mdast-util-to-string';
+import { toHast } from 'mdast-util-to-hast';
+import { toHtml } from 'hast-util-to-html';
 import { visit } from 'unist-util-visit';
-import type { Root, Heading, Link } from 'mdast';
+import type { Root, RootContent, Heading, Link, Paragraph } from 'mdast';
 
 import { parseFile } from './markdown.js';
+import { rewriteCaailLinks } from '../remark/rewrite-caail-links.js';
 import { CatalogSchema, type Catalog, type CatalogEntry } from './types.js';
 
 // ---------------------------------------------------------------------------
@@ -31,6 +34,13 @@ const DATABASES_PATH: string = fileURLToPath(
 );
 
 const SUMMARY_PREFIX_RE = /^Summary:\s*/i;
+
+/**
+ * Site base path, mirroring `BASE` in astro.config.mjs. Used by
+ * rewriteCaailLinks so a repo-relative `.md` link inside an entry body resolves
+ * to the same site route the prose pages use (e.g. `/caail/datasets/cow/`).
+ */
+const CATALOG_BASE = '/caail';
 
 // ---------------------------------------------------------------------------
 // Slug helpers (self-contained — mirrors papers.ts, kept local so this module
@@ -82,11 +92,73 @@ function headingLink(heading: Heading): Link | null {
 }
 
 /**
- * Parse one catalog file into entries. Walks top-level nodes, tracking the
- * current H2 as `group`; each H3 becomes an entry whose `summary` is the first
- * paragraph before the next heading.
+ * Strip a leading `Summary:` label from the first text node of the first
+ * paragraph in `nodes`, in place. Software.md prefixes each entry body with
+ * `Summary: `; mutating the node (rather than the flattened string) ensures the
+ * label is dropped from BOTH the plain-text and the rendered-HTML outputs.
  */
-export function parseCatalogFile(path: string): CatalogEntry[] {
+function stripSummaryLabel(nodes: RootContent[]): void {
+  const para = nodes.find((n): n is Paragraph => n.type === 'paragraph');
+  if (!para) return;
+  const first = para.children[0];
+  if (first && first.type === 'text') {
+    first.value = first.value.replace(SUMMARY_PREFIX_RE, '');
+  }
+}
+
+/**
+ * Render an entry's body nodes to a `{ summary, summaryHtml }` pair.
+ *
+ * Both derive from the SAME nodes so they can't disagree: `summary` is the
+ * flattened plain text (top-level nodes joined by spaces, for the search index
+ * and the JS-disabled fallback); `summaryHtml` is the rendered HTML with every
+ * hyperlink preserved and repo-relative `.md` links rewritten to site routes
+ * (via rewriteCaailLinks). Returns empty strings when there is no body.
+ *
+ * @param bodyNodes  Sibling nodes between an H3 and the next heading.
+ * @param sourcePath Repo-relative path of the source file (e.g. "Software.md"),
+ *   used by rewriteCaailLinks to resolve the relative links.
+ */
+function renderBody(
+  bodyNodes: RootContent[],
+  sourcePath: string,
+): { summary: string; summaryHtml: string } {
+  if (bodyNodes.length === 0) return { summary: '', summaryHtml: '' };
+
+  stripSummaryLabel(bodyNodes);
+
+  // Plain text: mdast's toString concatenates block text with no separator, so
+  // flatten each top-level node and join with spaces to keep paragraph
+  // boundaries as word breaks (matters for search).
+  const summary = bodyNodes
+    .map((n) => mdastToString(n).trim())
+    .filter((s) => s.length > 0)
+    .join(' ')
+    .replace(SUMMARY_PREFIX_RE, '');
+
+  // HTML: rewrite internal `.md` links on a synthetic root, then mdast → hast →
+  // HTML. Raw HTML in markdown is escaped (toHtml default) — the safe choice;
+  // catalog bodies contain none.
+  const bodyRoot: Root = { type: 'root', children: bodyNodes };
+  rewriteCaailLinks({ base: CATALOG_BASE, sourcePath })(bodyRoot);
+  const summaryHtml = toHtml(toHast(bodyRoot));
+
+  return { summary, summaryHtml };
+}
+
+/**
+ * Parse one catalog file into entries. Walks top-level nodes, tracking the
+ * current H2 as `group`; each H3 becomes an entry whose `summary`/`summaryHtml`
+ * are the full body (every node up to the next heading).
+ *
+ * @param path       Absolute path to read from disk.
+ * @param sourcePath Repo-relative path used for link rewriting (e.g.
+ *   "Software.md"). Defaults to the basename of `path`.
+ */
+export function parseCatalogFile(
+  path: string,
+  sourcePath: string = path.split('/').pop() ?? path,
+): CatalogEntry[] {
   const root: Root = parseFile(path);
   const kids = root.children;
   const partial: Array<Omit<CatalogEntry, 'slug'>> = [];
@@ -110,22 +182,21 @@ export function parseCatalogFile(path: string): CatalogEntry[] {
       );
     }
 
-    // First paragraph after this H3, before the next heading, is the summary.
-    let summary = '';
+    // Body = every node after this H3 up to the next heading (any depth).
+    const bodyNodes: RootContent[] = [];
     for (let j = i + 1; j < kids.length; j++) {
       const n = kids[j];
       if (n.type === 'heading') break;
-      if (n.type === 'paragraph') {
-        summary = mdastToString(n).trim().replace(SUMMARY_PREFIX_RE, '');
-        break;
-      }
+      bodyNodes.push(n);
     }
+    const { summary, summaryHtml } = renderBody(bodyNodes, sourcePath);
 
     partial.push({
       name: mdastToString(link).trim(),
       url: link.url,
       group,
       summary,
+      summaryHtml,
     });
   }
 
@@ -147,8 +218,8 @@ export function buildCatalogModel(
   databasesPath: string = DATABASES_PATH,
 ): Catalog {
   const model: Catalog = {
-    software: parseCatalogFile(softwarePath),
-    databases: parseCatalogFile(databasesPath),
+    software: parseCatalogFile(softwarePath, 'Software.md'),
+    databases: parseCatalogFile(databasesPath, 'Databases.md'),
   };
   return CatalogSchema.parse(model);
 }

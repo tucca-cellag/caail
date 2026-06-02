@@ -27,7 +27,10 @@ export function rewriteCaailLinks(options: { base: string; sourcePath: string })
       const url: string = node.url;
       // External (scheme:), intra-page (#…), or protocol-relative (//…) → leave.
       if (/^[a-z]+:/i.test(url) || url.startsWith('#') || url.startsWith('//')) return;
-      const [path, anchor] = url.split('#');
+      const [rawPath, anchor] = url.split('#');
+      // A link to a directory (trailing slash, e.g. `./Datasets/`) resolves to
+      // that directory's README index, mirroring how GitHub serves the folder.
+      const path = rawPath.endsWith('/') ? rawPath + 'README.md' : rawPath;
       if (!/\.md$/i.test(path)) return;
       const repoRel = posix.normalize(posix.join(srcDir, path)).replace(/^\.\//, '');
       const idBase = repoRel.replace(/\.md$/i, '');

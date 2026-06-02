@@ -77,10 +77,17 @@ export const CatalogEntrySchema = z.object({
   url: z.string().url(),
   /** The H2 section label the entry lives under (application area / category) */
   group: z.string(),
-  /** One-line description — the first paragraph after the H3 (Software.md's
-   *  leading `Summary:` label is stripped; Databases.md's first paragraph is
-   *  used verbatim). May be empty if no paragraph follows the heading. */
+  /** Plain-text description — the FULL entry body (every paragraph after the H3
+   *  up to the next heading), flattened to text. Software.md's leading `Summary:`
+   *  label is stripped. Used for the search index and the JS-disabled fallback.
+   *  May be empty if no body follows the heading. */
   summary: z.string(),
+  /** The same full entry body rendered to HTML, with all hyperlinks preserved
+   *  and repo-relative `.md` links rewritten to site routes (via
+   *  rewriteCaailLinks — `./Papers.md#N` → GitHub blob, `./Datasets/Cow.md` →
+   *  `/caail/datasets/cow/`). Rendered into the card so every reference in the
+   *  canonical Markdown is surfaced and clickable. Empty when summary is empty. */
+  summaryHtml: z.string(),
 });
 
 export const TalkItemSchema = z.object({

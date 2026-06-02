@@ -60,7 +60,7 @@ test('other-resources has no serious/critical a11y violations', async ({ page })
 });
 
 // ---------------------------------------------------------------------------
-// Software/Databases right-rail "On This Page" lists the application areas
+// Software/Databases catalog cards (right-rail TOC + surfaced hyperlinks)
 // ---------------------------------------------------------------------------
 
 for (const kind of ['software', 'databases'] as const) {
@@ -78,5 +78,21 @@ for (const kind of ['software', 'databases'] as const) {
         .filter((h) => !document.getElementById(h.slice(1)));
     });
     expect(unresolved).toEqual([]);
+  });
+
+  test(`${kind} cards surface inline hyperlinks with no a11y violations`, async ({ page }) => {
+    await page.goto(`./${kind}/`);
+    // Each card is a container (not a wrapping anchor) with a title link…
+    expect(await page.locator('article.cb-card > h3 .cb-name-link').count()).toBeGreaterThan(10);
+    // …and a summary that carries the canonical markdown's own clickable links.
+    expect(await page.locator('.cb-sum a').count()).toBeGreaterThan(5);
+    // No repo-relative .md link leaks through (all rewritten to routes/GitHub).
+    await expect(page.locator('.cb-sum a[href$=".md"]:not([href*="github.com"])')).toHaveCount(0);
+    // No nested anchors — invalid HTML and an a11y hazard the old card risked.
+    expect(await page.locator('a a').count()).toBe(0);
+
+    const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
+    const serious = results.violations.filter((v) => ['serious', 'critical'].includes(v.impact ?? ''));
+    expect(serious, JSON.stringify(serious, null, 2)).toEqual([]);
   });
 }
