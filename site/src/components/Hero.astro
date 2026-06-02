@@ -1,6 +1,7 @@
 ---
 import { Icon } from 'astro-icon/components';
 import HeroGraphic from './HeroGraphic.astro';
+import TuccaLockup from './TuccaLockup.astro';
 import c from '../content/data/counts.json';
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
@@ -46,6 +47,11 @@ const stats = [
         </div>
       ))}
     </div>
+
+    <p class="hero-attrib">
+      <span>A project of</span>
+      <TuccaLockup width={172} />
+    </p>
   </div>
 
   <div class="hero-art">
@@ -127,6 +133,10 @@ const stats = [
   .stat { display: flex; flex-direction: column; gap: .15rem; margin-top: 0; }
   .stat-n { font-size: 1.9rem; font-weight: 700; color: var(--caail-primary); line-height: 1; }
   .stat-l { font-size: .68rem; letter-spacing: .05em; text-transform: uppercase; color: var(--caail-muted); }
+
+  /* TUCCA attribution — sits under the stat row, left-aligned with the hero. */
+  .hero-attrib { display: flex; align-items: center; gap: .65rem; flex-wrap: wrap; margin: 1.4rem 0 0; }
+  .hero-attrib > span { font-size: .72rem; letter-spacing: .04em; text-transform: uppercase; color: var(--caail-muted); font-weight: 600; }
 
   /* Graphic only in the wide 2-col layout — below 60rem the hero is text-only
    * (avoids the oversized graphic stacking below the text at mid widths). */
