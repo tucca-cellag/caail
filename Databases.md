@@ -292,7 +292,7 @@ The University of Arkansas Libraries' research guide for food science, listing r
 
 ## Ecosystem & Industry Directories
 
-GFI's curated public directories cataloguing the people, companies, supply chain, opportunities, and regulatory status of the alternative-protein and cellular-agriculture field. These are the "domain neighbours" of CAAIL — they catalogue *who is doing the work and where it is being sold*, complementary to CAAIL's catalogue of papers, software, datasets, and educational material. New Harvest's initiatives covering the same space (AICAI, the Cellular Agriculture Science Engine, CMSI) are not databases or directories and live in [OtherResources.md / Cell-Ag Ecosystem Initiatives](./OtherResources.md#cell-ag-ecosystem-initiatives) instead.
+GFI's curated public directories cataloguing the people, companies, supply chain, opportunities, and regulatory status of the alternative-protein and cellular-agriculture field. These are the "domain neighbours" of CAAIL — they catalogue *who is doing the work and where it is being sold*, complementary to CAAIL's catalogue of papers, software, datasets, and educational material. New Harvest's initiatives covering the same space (AICAI, the Cellular Agriculture Science Engine, CMSI) are not databases or directories and live in [OtherResources.md / Cell-Ag Ecosystem Initiatives](./OtherResources.md#cell-ag-ecosystem-initiatives) instead. The Food Systems Dashboard (last entry) is a non-GFI addition — a macro food-systems data resource that situates cultivated-meat and alt-protein work in its broader dietary and policy context.
 
 ### [GFI Alternative Protein Researcher Directory](https://gfi.org/resource/alternative-protein-researcher-directory/)
 
@@ -313,6 +313,10 @@ GFI's catalogue of startup ideas, commercial opportunities, research projects, a
 ### [GFI Where Cultivated Meat Can Be Sold](https://gfi.org/resource/where-cultivated-meat-can-be-sold/)
 
 GFI's live tracker of countries where cultivated meat has regulatory approval for sale, with associated companies and product formats — the kind of dynamic regulatory data CAAIL links to rather than duplicates.
+
+### [Food Systems Dashboard](https://www.foodsystemsdashboard.org/)
+
+A web-based tool from the Global Alliance for Improved Nutrition (GAIN), Johns Hopkins University, Cornell University, and the FAO that compiles and visualizes national- and subnational-level food-systems data to inform food policy (introduced by Fanzo et al. 2020, *Nature Food*, [10.1038/s43016-020-0077-y](https://doi.org/10.1038/s43016-020-0077-y)). Organized around three pillars — *Describe, Diagnose, Decide* — it brings together over 300 indicators from 50+ public and private sources (UN agencies, the World Bank, CGIAR, Euromonitor) spanning agricultural production, food availability and affordability, diets and nutrition, livelihoods, climate, environment, resilience, and governance, plus the external drivers shaping them; the Diagnose view scores 39 indicators per country and the Decide view offers 87 evidence-based policies and actions. For cellular agriculture, it supplies macro food-systems context (dietary, sustainability, and policy framing) that situates cultivated-meat and alternative-protein interventions, complementary to CAAIL's molecular, dataset, and tooling resources.
 
 ## Benchmark Leaderboards & Results Trackers
 
