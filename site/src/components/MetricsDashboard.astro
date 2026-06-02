@@ -9,13 +9,13 @@
 import metrics from '../content/data/metrics.json';
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-const { library, matrix, species, momentum } = metrics;
+const { library, matrix, species, datasets, momentum } = metrics;
 
 const stats = [
   { n: library.papers, label: 'Papers' },
   { n: library.software, label: 'Tools' },
   { n: library.databases, label: 'Databases' },
-  { n: library.species, label: 'Dataset pages' },
+  { n: library.datasets, label: 'Datasets' },
   { n: library.talks, label: 'Talks' },
 ];
 
@@ -74,9 +74,12 @@ const datasetsDays = daysAgo(momentum?.datasetsLastModified ?? null);
   <section class="md-sec">
     <h2 class="md-h caail-display">Datasets by species — where help is wanted</h2>
     <p class="md-sub">
-      Catalogued data deposits per species. {stubCount} species {stubCount === 1 ? 'page is' : 'pages are'} still
-      a stub (0 deposits) — these are the clearest place to contribute. See
-      <a href={`${base}/contributing/`}>Contributing</a> to add one.
+      <strong>{datasets.total} catalogued datasets</strong> across {library.species} pages
+      — {datasets.speciesRows} per-species inventory rows, {datasets.referenceEntries} on the
+      reference pages, {datasets.benchmarkEntries} benchmark datasets. The per-species deposit
+      counts below show where the field (and this library) is still thin: {stubCount} species
+      {stubCount === 1 ? 'page is' : 'pages are'} still a stub (0 deposits) — the clearest place
+      to contribute. See <a href={`${base}/contributing/`}>Contributing</a> to add one.
     </p>
     <div class="md-bars">
       {speciesSorted.map((s) => (

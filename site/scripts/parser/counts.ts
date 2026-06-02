@@ -1,11 +1,12 @@
 /**
- * counts.ts — computes the six homepage aggregate counts for counts.json.
+ * counts.ts — computes the homepage aggregate counts for counts.json.
  *
  * Takes an already-built PapersData model (so `papers` = model.references.length)
- * and reads the repo-root corpus files to compute the remaining five:
+ * and reads the repo-root corpus files to compute the rest:
  *   - software      H3 headings in Software.md
  *   - databases     H3 headings in Databases.md
  *   - species       *.md files in Datasets/ (excluding README.md, CLAUDE.md)
+ *   - datasets      every catalogued dataset across Datasets/ (via datasets.ts)
  *   - researchAreas *.md files in ResearchAreas/ (excluding CLAUDE.md)
  *   - talks         video/playlist items across all sections of Talks.md
  *
@@ -20,6 +21,7 @@ import type { Root, Heading } from 'mdast';
 
 import { parseMarkdown } from './markdown.js';
 import { buildTalksModel, talkItemCount } from './talks.js';
+import { computeDatasetBreakdown } from './datasets.js';
 import { CountsSchema, type Counts, type PapersData } from './types.js';
 
 // ---------------------------------------------------------------------------
@@ -97,6 +99,11 @@ export function computeCounts(
     'CLAUDE.md',
   ]);
 
+  // --- datasets: every catalogued dataset across all Datasets/ pages ---
+  // Built from the same datasets.ts breakdown that feeds metrics.json, so this
+  // headline count and the dashboard breakdown can never drift.
+  const datasets = computeDatasetBreakdown(repoRoot).total;
+
   // --- researchAreas: *.md files in ResearchAreas/ excluding CLAUDE.md ---
   const researchAreas = countMdFiles(join(repoRoot, 'ResearchAreas'), [
     'CLAUDE.md',
@@ -112,6 +119,7 @@ export function computeCounts(
     software,
     databases,
     species,
+    datasets,
     researchAreas,
     talks,
   };

@@ -44,6 +44,7 @@ const validCounts = {
   software: 70,
   databases: 71,
   species: 10,
+  datasets: 120,
   researchAreas: 8,
   talks: 25,
 };
@@ -271,7 +272,7 @@ describe('CountsSchema — valid payloads', () => {
   });
 
   it('accepts zero for all counts', () => {
-    const zero = { papers: 0, software: 0, databases: 0, species: 0, researchAreas: 0, talks: 0 };
+    const zero = { papers: 0, software: 0, databases: 0, species: 0, datasets: 0, researchAreas: 0, talks: 0 };
     expect(CountsSchema.safeParse(zero).success).toBe(true);
   });
 });

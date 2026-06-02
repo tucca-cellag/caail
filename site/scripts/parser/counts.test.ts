@@ -74,6 +74,10 @@ describe('computeCounts — talks counting (fixture)', () => {
     // ResearchAreas/ contains: Bioprocess.md, MediaOptimization.md (real pages),
     // CLAUDE.md (excluded) → researchAreas = 2.
     expect(result.researchAreas).toBe(2);
+
+    // Cow.md/Pig.md are empty stubs and there are no reference/benchmark pages
+    // in this fixture → no catalogued datasets.
+    expect(result.datasets).toBe(0);
   });
 });
 
@@ -95,6 +99,7 @@ describe('computeCounts — real corpus (ground-truth contract)', () => {
       software: 70,
       databases: 72,
       species: 14,
+      datasets: 129,
       researchAreas: 8,
       talks: 14,
     });
