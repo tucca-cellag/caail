@@ -7,8 +7,10 @@
 .ng-meta { font-size: .72rem; color: var(--caail-muted); margin-left: auto; }
 
 /* Segmented pill toggle: shared-author vs citation edges. */
-.ng-seg { display: inline-flex; padding: 2px; border: 1px solid var(--caail-border); border-radius: 999px; background: var(--caail-bg); }
-.ng-seg-btn { appearance: none; border: 0; background: none; cursor: pointer; font: inherit; font-size: .78rem; font-weight: 600; color: var(--caail-muted); padding: .34rem .85rem; border-radius: 999px; line-height: 1.2; transition: background-color .12s ease, color .12s ease; }
+.ng-seg { display: inline-flex; align-items: center; padding: 2px; border: 1px solid var(--caail-border); border-radius: 999px; background: var(--caail-bg); }
+/* margin: 0 overrides Starlight's prose `* + *` flow margin, which otherwise
+   adds a 16px top margin to the second button and breaks the pill alignment. */
+.ng-seg-btn { appearance: none; border: 0; margin: 0; background: none; cursor: pointer; font: inherit; font-size: .78rem; font-weight: 600; white-space: nowrap; flex: 0 0 auto; display: inline-flex; align-items: center; color: var(--caail-muted); padding: .34rem .85rem; border-radius: 999px; line-height: 1.2; transition: background-color .12s ease, color .12s ease; }
 .ng-seg-btn:hover { color: var(--caail-ink); }
 .ng-seg-btn[aria-pressed='true'] { background: var(--caail-primary); color: #fff; }
 .ng-seg-btn:focus-visible { outline: 2px solid var(--caail-link); outline-offset: 2px; }
