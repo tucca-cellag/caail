@@ -22,6 +22,7 @@ import { buildCatalogModel } from './catalog.js';
 import { buildTalksModel, talkItemCount } from './talks.js';
 import { buildGraphModel } from './graph.js';
 import { buildMetricsModel } from './metrics.js';
+import { writeLlmsFull } from './llms-full.js';
 import {
   PapersDataSchema,
   CountsSchema,
@@ -181,11 +182,17 @@ if (isMain) {
   try {
     const { counts, papersRefs, catalogEntries, talks, graphNodes, graphEdges } =
       generateData();
+    // Full-text agent index (public/llms-full.txt) — generated alongside the
+    // JSON, but written to public/ rather than the data dir, so it lives in the
+    // CLI block rather than the side-effect-free generateData() core.
+    const llmsBytes = writeLlmsFull();
+    if (llmsBytes <= 0) throw new Error('parse: llms-full.txt is empty');
     // eslint-disable-next-line no-console
     console.log(
       `parse: wrote papers.json (${papersRefs} references), counts.json, ` +
         `catalog.json (${catalogEntries} entries), talks.json (${talks} talks), ` +
-        `graph.json (${graphNodes} nodes / ${graphEdges} edges), and metrics.json`,
+        `graph.json (${graphNodes} nodes / ${graphEdges} edges), metrics.json, ` +
+        `and llms-full.txt (${llmsBytes} bytes)`,
     );
     // eslint-disable-next-line no-console
     console.log('counts:', counts);

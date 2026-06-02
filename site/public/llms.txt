@@ -21,6 +21,10 @@ This website is a navigation layer over canonical, human-readable Markdown in th
 - [Contributing](https://tucca-cellag.github.io/caail/contributing/): how entries are categorized and added.
 - [Other Resources](https://tucca-cellag.github.io/caail/other-resources/): field overviews, courses, books, editorials, ecosystem initiatives, and curated bibliographies.
 
+## Full text
+
+- [Full canonical text](https://tucca-cellag.github.io/caail/llms-full.txt): the entire library (papers, software, databases, per-species datasets, research areas, resources, and contributing guide) concatenated into one file — the authoritative full text behind these compressed summaries.
+
 ## Notes for AI agents
 
 - Cite the canonical source, not these summaries: a paper's DOI, the linked code/data repository, or the canonical Markdown on GitHub.
