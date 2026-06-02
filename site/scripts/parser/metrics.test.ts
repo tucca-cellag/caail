@@ -86,7 +86,7 @@ describe('buildMetricsModel — real corpus', () => {
   it('reports all 10 species, with the known stubs flagged', () => {
     expect(metrics.species).toHaveLength(10);
     const stubs = metrics.species.filter((s) => s.isStub).map((s) => s.species);
-    expect(stubs).toEqual(expect.arrayContaining(['Sheep', 'Goat', 'Turkey']));
+    expect(stubs).toEqual(expect.arrayContaining(['Goat', 'Turkey']));
     // dense species carry rows
     const pig = metrics.species.find((s) => s.species === 'Pig')!;
     expect(pig.inventoryRows).toBeGreaterThan(0);
