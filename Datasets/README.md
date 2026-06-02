@@ -35,4 +35,4 @@ The directory is organized **by species**: each cell-ag-relevant species has its
 | ---- | ----- |
 | [Benchmarks](./Benchmarks.md) | AI/ML benchmark & evaluation datasets (released to benchmark models rather than train them; not species-specific) |
 
-Many per-species datasets surveyed here were initially curated from the supplemental Table 1 of Todhunter et al. 2024 ([Papers.md ref #132](../Papers.md#132)); each populated page names its curation source in a closing note.
+Many per-species datasets surveyed here were initially curated from the supplemental Table 1 of Todhunter et al. 2024 ([Papers.md ref #132](../Papers.md#132)); pages drawn from a named source close with a curation-source note.

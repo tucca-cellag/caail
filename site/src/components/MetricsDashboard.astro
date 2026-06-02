@@ -1,0 +1,138 @@
+---
+/**
+ * MetricsDashboard — server-rendered "By the Numbers" surface from metrics.json.
+ *
+ * Static CSS bar charts, no island/hydration (like TalksList) — fully usable
+ * with JavaScript disabled and zero JS cost. Leans into the per-species gaps as
+ * a contributor-recruitment signal (the #9 mandate).
+ */
+import metrics from '../content/data/metrics.json';
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const { library, matrix, species, momentum } = metrics;
+
+const stats = [
+  { n: library.papers, label: 'Papers' },
+  { n: library.software, label: 'Tools' },
+  { n: library.databases, label: 'Databases' },
+  { n: library.species, label: 'Dataset pages' },
+  { n: library.talks, label: 'Talks' },
+];
+
+const areaMax = Math.max(1, ...matrix.perArea.map((a) => a.papers));
+const topMethods = [...matrix.perMethod].sort((a, b) => b.papers - a.papers).slice(0, 10);
+const methodMax = Math.max(1, ...topMethods.map((m) => m.papers));
+const speciesSorted = [...species].sort((a, b) => b.inventoryRows - a.inventoryRows);
+const speciesMax = Math.max(1, ...speciesSorted.map((s) => s.inventoryRows));
+const stubCount = species.filter((s) => s.isStub).length;
+
+const pct = (v: number, max: number) => Math.round((v / max) * 100);
+const daysAgo = (iso: string | null) =>
+  iso ? Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 86_400_000)) : null;
+const papersDays = daysAgo(momentum?.papersLastModified ?? null);
+const datasetsDays = daysAgo(momentum?.datasetsLastModified ?? null);
+---
+
+<div class="md">
+  <div class="md-stats">
+    {stats.map((s) => (
+      <div class="md-stat"><span class="md-stat-n caail-display">{s.n}</span><span class="md-stat-l">{s.label}</span></div>
+    ))}
+  </div>
+
+  <section class="md-sec">
+    <h2 class="md-h caail-display">Research coverage</h2>
+    <p class="md-sub">
+      The matrix maps {matrix.perMethod.length} AI methods against {matrix.perArea.length} research
+      areas — <strong>{matrix.filledCells} of {matrix.totalCells} cells</strong> ({matrix.coveragePct}%)
+      carry at least one paper. Where the bars are short, the field (and this library) is still thin.
+    </p>
+    <div class="md-bars">
+      {matrix.perArea.map((a) => (
+        <div class="md-row">
+          <span class="md-label">{a.label}</span>
+          <span class="md-track"><span class="md-fill" style={`width:${pct(a.papers, areaMax)}%;background:var(--caail-area-${a.key})`} /></span>
+          <span class="md-val">{a.papers}</span>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <section class="md-sec">
+    <h2 class="md-h caail-display">Most-used methods</h2>
+    <div class="md-bars">
+      {topMethods.map((m) => (
+        <div class="md-row">
+          <span class="md-label">{m.method}</span>
+          <span class="md-track"><span class="md-fill navy" style={`width:${pct(m.papers, methodMax)}%`} /></span>
+          <span class="md-val">{m.papers}</span>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <section class="md-sec">
+    <h2 class="md-h caail-display">Datasets by species — where help is wanted</h2>
+    <p class="md-sub">
+      Catalogued data deposits per species. {stubCount} species {stubCount === 1 ? 'page is' : 'pages are'} still
+      a stub (0 deposits) — these are the clearest place to contribute. See
+      <a href={`${base}/contributing/`}>Contributing</a> to add one.
+    </p>
+    <div class="md-bars">
+      {speciesSorted.map((s) => (
+        <div class={`md-row${s.isStub ? ' stub' : ''}`}>
+          <span class="md-label">{s.species}</span>
+          <span class="md-track"><span class="md-fill species" style={`width:${s.isStub ? 100 : pct(s.inventoryRows, speciesMax)}%`} /></span>
+          <span class="md-val">{s.isStub ? 'help wanted' : s.inventoryRows}</span>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  {momentum && (
+    <section class="md-sec">
+      <h2 class="md-h caail-display">Momentum</h2>
+      <div class="md-cards">
+        {papersDays !== null && (
+          <div class="md-card"><span class="md-card-n caail-display">{papersDays}d</span><span class="md-card-l">since Papers.md last updated</span></div>
+        )}
+        <div class="md-card"><span class="md-card-n caail-display">{momentum.papersCommits30d}</span><span class="md-card-l">Papers.md commits · 30 days</span></div>
+        {datasetsDays !== null && (
+          <div class="md-card"><span class="md-card-n caail-display">{datasetsDays}d</span><span class="md-card-l">since Datasets last updated</span></div>
+        )}
+        <div class="md-card"><span class="md-card-n caail-display">{momentum.datasetsCommits30d}</span><span class="md-card-l">Datasets commits · 30 days</span></div>
+      </div>
+    </section>
+  )}
+</div>
+
+<style>
+  .sl-container:has(.md) { max-width: none; }
+
+  .md-stats { display: grid; grid-template-columns: repeat(5, max-content); gap: .5rem 2.5rem; padding-bottom: 1.25rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--caail-border); }
+  @media (max-width: 40rem) { .md-stats { grid-template-columns: repeat(3, max-content); } }
+  .md-stat { display: flex; flex-direction: column; }
+  .md-stat-n { font-size: 2.1rem; font-weight: 700; color: var(--caail-primary); line-height: 1; }
+  .md-stat-l { font-size: .68rem; letter-spacing: .05em; text-transform: uppercase; color: var(--caail-muted); margin-top: .15rem; }
+
+  .md-sec { margin: 0 0 2rem; }
+  .md-h { font-size: 1.05rem; color: var(--caail-primary); margin: 0 0 .3rem; }
+  .md-sub { font-size: .8rem; color: var(--caail-muted); line-height: 1.5; margin: 0 0 .9rem; max-width: 60ch; }
+
+  .md-bars { display: flex; flex-direction: column; gap: .4rem; }
+  .md-row { display: grid; grid-template-columns: 13rem 1fr 4rem; align-items: center; gap: .75rem; }
+  @media (max-width: 38rem) { .md-row { grid-template-columns: 8rem 1fr 3.5rem; } }
+  .md-label { font-size: .76rem; color: var(--caail-ink); text-align: right; line-height: 1.2; }
+  .md-track { height: 1.4rem; background: var(--caail-surface); border-radius: 6px; overflow: hidden; }
+  .md-fill { display: block; height: 100%; border-radius: 6px; min-width: 2px; }
+  .md-fill.navy { background: var(--caail-density-3); }
+  .md-fill.species { background: var(--caail-primary); }
+  .md-row.stub .md-fill.species { background: repeating-linear-gradient(45deg, color-mix(in oklab, var(--caail-accent) 35%, transparent), color-mix(in oklab, var(--caail-accent) 35%, transparent) 6px, transparent 6px, transparent 12px); }
+  .md-val { font-size: .72rem; font-weight: 700; color: var(--caail-muted); font-family: var(--caail-font-mono); }
+  .md-row.stub .md-val { color: var(--caail-accent); font-family: var(--caail-font-ui); font-weight: 700; font-size: .64rem; text-transform: uppercase; letter-spacing: .04em; }
+
+  .md-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr)); gap: .85rem; }
+  .md-card { border: 1px solid var(--caail-border); border-radius: 10px; padding: 1rem; }
+  .md-card-n { display: block; font-size: 1.8rem; font-weight: 700; color: var(--caail-primary); line-height: 1; }
+  .md-card-l { font-size: .72rem; color: var(--caail-muted); }
+</style>

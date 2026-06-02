@@ -1,0 +1,33 @@
+/* Break out of Starlight's prose width cap so the graph fills the panel. */
+.sl-container:has(.ng) { max-width: none; }
+
+.ng-controls { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem 1rem; margin-bottom: .6rem; }
+.ng-select { padding: .5rem .7rem; border: 1px solid var(--caail-border); border-radius: 8px; font: inherit; background: var(--caail-bg); color: var(--caail-ink); }
+.ng-check { display: inline-flex; align-items: center; gap: .4rem; font-size: .8rem; color: var(--caail-ink); }
+.ng-meta { font-size: .72rem; color: var(--caail-muted); margin-left: auto; }
+
+.ng-stage { position: relative; border: 1px solid var(--caail-border); border-radius: 12px; overflow: hidden; background: var(--caail-surface); }
+.ng-canvas { width: 100%; height: min(72vh, 640px); }
+.ng-fallback { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; text-align: center; padding: 2rem; margin: 0; font-size: .85rem; color: var(--caail-muted); }
+
+.ng-panel { position: absolute; top: .75rem; right: .75rem; width: min(20rem, 80%); background: var(--caail-bg); border: 1px solid var(--caail-border); border-radius: 10px; padding: .9rem 1rem; box-shadow: 0 10px 30px -18px color-mix(in oklab, var(--caail-primary) 60%, transparent); }
+.ng-close { position: absolute; top: .4rem; right: .55rem; background: none; border: 0; font-size: 1.1rem; line-height: 1; color: var(--caail-muted); cursor: pointer; }
+.ng-close:hover { color: var(--caail-ink); }
+.ng-slug { font-family: var(--caail-font-mono); font-size: .68rem; color: var(--caail-link); margin: 0 0 .25rem; }
+.ng-au { font-size: .78rem; font-weight: 700; color: var(--caail-ink); margin: 0; line-height: 1.3; }
+.ng-ti { font-size: .74rem; color: var(--caail-muted); line-height: 1.4; margin: .25rem 0 .4rem; }
+.ng-jo { font-style: italic; }
+.ng-badges { display: flex; gap: .35rem; flex-wrap: wrap; }
+.ng-bdg { font-size: .62rem; font-weight: 700; padding: .1rem .4rem; border-radius: 5px; text-decoration: none; }
+.ng-bdg.doi { background: color-mix(in oklab, var(--caail-link) 15%, transparent); color: var(--caail-link); font-family: var(--caail-font-mono); font-weight: 500; }
+.ng-bdg.code { background: color-mix(in oklab, #009E73 18%, transparent); color: #0c6b4f; }
+.ng-bdg.data { background: color-mix(in oklab, #E69F00 22%, transparent); color: #8a6410; }
+.ng-degree { font-size: .68rem; color: var(--caail-muted); margin: .5rem 0 0; }
+
+.ng-legend { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .7rem; }
+.ng-lchip { display: inline-flex; align-items: center; gap: .35rem; font-size: .66rem; font-weight: 600; color: var(--caail-ink); border: 1px solid var(--caail-border); border-radius: 999px; padding: .15rem .5rem; }
+.ng-sw { width: .62rem; height: .62rem; border-radius: 50%; display: inline-block; }
+.ng-sw.dashed { background: transparent; border: 1.5px dashed var(--caail-muted); }
+
+:root[data-theme='dark'] .ng-bdg.code { background: color-mix(in oklab, #009E73 30%, transparent); color: #74e3b4; }
+:root[data-theme='dark'] .ng-bdg.data { background: color-mix(in oklab, #E69F00 32%, transparent); color: #f3c969; }

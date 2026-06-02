@@ -1,0 +1,141 @@
+---
+/**
+ * HeroGraphic — a reactive, on-brand SVG for the homepage hero.
+ *   variant="bioreactor": stirred-tank vessel with rising sparged bubbles,
+ *                         a spinning impeller, and suspended cells.
+ *   variant="cells":      a soft drifting field of culture cells.
+ * Ambient animation loops in CSS; a tiny inline script adds subtle pointer
+ * parallax via the --hgx/--hgy custom props. Both fully disabled under
+ * prefers-reduced-motion. SSR-rendered inline SVG — no canvas, no deps.
+ *
+ * Pass `both` to render both variants in one element (used by the live hero
+ * demo); the visible one is chosen by the ancestor `[data-graphic]` attribute.
+ */
+interface Props { variant?: 'bioreactor' | 'cells'; both?: boolean }
+const { variant = 'bioreactor', both = false } = Astro.props;
+const show = (v: string) => both || variant === v;
+---
+
+<div class="hg" data-graphic-default={variant}>
+  {show('bioreactor') && (
+    <svg class="hg-svg hg-bioreactor" data-variant="bioreactor" viewBox="0 0 300 340" role="img"
+      aria-label="A stirred-tank bioreactor with rising bubbles and suspended cells" fill="none">
+      <!-- vessel -->
+      <rect x="62" y="74" width="176" height="214" rx="30" class="hg-vessel" />
+      <path d="M62 110 q88 -54 176 0" class="hg-dome" />
+      <rect x="118" y="40" width="64" height="26" rx="6" class="hg-lid" />
+      <line x1="150" y1="30" x2="150" y2="250" class="hg-shaft" />
+      <!-- liquid -->
+      <rect x="62" y="150" width="176" height="138" rx="26" class="hg-liquid" />
+      <!-- impeller (oscillates to read as spinning from the side) -->
+      <g class="hg-impeller">
+        <ellipse cx="150" cy="225" rx="34" ry="7" class="hg-blade b-a" />
+        <ellipse cx="150" cy="225" rx="34" ry="7" class="hg-blade b-b" />
+        <circle cx="150" cy="225" r="5" class="hg-hub" />
+      </g>
+      <!-- suspended cells -->
+      <circle cx="100" cy="190" r="7" class="hg-cell hg-drift1" />
+      <circle cx="205" cy="225" r="9" class="hg-cell hg-drift2" />
+      <circle cx="120" cy="255" r="6" class="hg-cell hg-drift3" />
+      <!-- sparged bubbles -->
+      <g class="hg-bubbles">
+        <circle cx="110" cy="280" r="4" class="hg-bub b1" />
+        <circle cx="150" cy="280" r="5" class="hg-bub b2" />
+        <circle cx="188" cy="280" r="3.5" class="hg-bub b3" />
+        <circle cx="132" cy="280" r="3" class="hg-bub b4" />
+        <circle cx="170" cy="280" r="4.5" class="hg-bub b5" />
+      </g>
+    </svg>
+  )}
+
+  {show('cells') && (
+    <svg class="hg-svg hg-cells" data-variant="cells" viewBox="0 0 300 340" role="img"
+      aria-label="A drifting field of cultured cells" fill="none">
+      {[
+        [70, 90, 26, 'media'], [180, 70, 18, 'cell'], [225, 150, 30, 'bioprocess'],
+        [120, 160, 22, 'sensory'], [60, 220, 20, 'tooling'], [200, 250, 26, 'cell'],
+        [140, 280, 16, 'media'], [255, 285, 14, 'scaffolding'], [95, 300, 12, 'eval'],
+      ].map(([cx, cy, r, area], i) => (
+        <g class={`hg-orb hg-o${i % 5}`}>
+          <circle cx={cx} cy={cy} r={r} class="hg-membrane" style={`color: var(--caail-area-${area})`} />
+          <circle cx={cx} cy={cy} r={Number(r) * 0.32} class="hg-nucleus" style={`color: var(--caail-area-${area})`} />
+        </g>
+      ))}
+    </svg>
+  )}
+</div>
+
+<style>
+  .hg { width: 100%; max-width: 30rem; margin-inline: auto; --hgx: 0; --hgy: 0; --hg-cell: oklch(56% 0.19 25); }
+  .hg-svg { width: 100%; height: auto; display: block; transform: translate3d(calc(var(--hgx) * 14px), calc(var(--hgy) * 14px), 0); transition: transform 0.25s ease-out; }
+
+  /* shared strokes/fills via currentColor + tokens */
+  .hg-vessel { stroke: var(--caail-primary); stroke-width: 2.5; fill: color-mix(in oklab, var(--caail-primary) 4%, transparent); }
+  .hg-dome { stroke: var(--caail-primary); stroke-width: 2.5; }
+  .hg-lid { fill: var(--caail-primary); }
+  .hg-shaft { stroke: var(--caail-primary); stroke-width: 3; stroke-linecap: round; }
+  .hg-liquid { fill: color-mix(in oklab, var(--caail-link) 14%, transparent); }
+  .hg-blade { fill: color-mix(in oklab, var(--caail-primary) 55%, transparent); }
+  .hg-hub { fill: var(--caail-primary); }
+  .hg-cell { fill: color-mix(in oklab, var(--hg-cell) 60%, transparent); stroke: var(--hg-cell); stroke-width: 1.5; }
+  .hg-bub { fill: color-mix(in oklab, var(--caail-link) 45%, transparent); }
+
+  .hg-membrane { fill: color-mix(in oklab, currentColor 22%, transparent); stroke: currentColor; stroke-width: 1.5; }
+  .hg-nucleus { fill: color-mix(in oklab, currentColor 60%, transparent); }
+
+  /* ambient motion */
+  @keyframes hg-rise { 0% { transform: translateY(0); opacity: 0; } 12% { opacity: 1; } 85% { opacity: 0.9; } 100% { transform: translateY(-120px); opacity: 0; } }
+  /* Flat-blade spin: scaleX foreshortens to edge-on (≈0) and back, every
+   * face-on at the identical full size (|1|) — equivalent to a side-on rotateY
+   * but robust on SVG. Two blades 90° out of phase keep the impeller visible. */
+  @keyframes hg-spin {
+    0% { transform: scaleX(1); }
+    25% { transform: scaleX(0.04); }
+    50% { transform: scaleX(-1); }
+    75% { transform: scaleX(0.04); }
+    100% { transform: scaleX(1); }
+  }
+  @keyframes hg-drift { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(6px, -8px); } }
+  @keyframes hg-float { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(-5px, 6px) scale(1.05); } }
+
+  .hg-bub { animation: hg-rise 3.4s ease-in infinite; transform-box: fill-box; }
+  .b1 { animation-delay: 0s; } .b2 { animation-delay: 0.8s; } .b3 { animation-delay: 1.5s; }
+  .b4 { animation-delay: 2.1s; } .b5 { animation-delay: 1.1s; }
+  .hg-blade { transform-box: fill-box; transform-origin: center; }
+  .hg-impeller .hg-blade { animation: hg-spin 6s linear infinite; }
+  .hg-impeller .b-b { animation-delay: -1.5s; }
+  .hg-drift1 { animation: hg-drift 6s ease-in-out infinite; transform-box: fill-box; }
+  .hg-drift2 { animation: hg-drift 7.5s ease-in-out infinite 0.5s; transform-box: fill-box; }
+  .hg-drift3 { animation: hg-drift 6.8s ease-in-out infinite 1s; transform-box: fill-box; }
+  .hg-orb { transform-box: fill-box; transform-origin: center; }
+  .hg-o0 { animation: hg-float 7s ease-in-out infinite; }
+  .hg-o1 { animation: hg-float 8.5s ease-in-out infinite 0.6s; }
+  .hg-o2 { animation: hg-float 6.5s ease-in-out infinite 1.2s; }
+  .hg-o3 { animation: hg-float 9s ease-in-out infinite 0.3s; }
+  .hg-o4 { animation: hg-float 7.8s ease-in-out infinite 1.6s; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hg-svg { transform: none; transition: none; }
+    .hg-bub, .hg-blade, .hg-drift1, .hg-drift2, .hg-drift3, .hg-orb { animation: none; }
+    .hg-blade { transform: scaleX(1); }
+    .hg-bub { opacity: 0.7; }
+  }
+</style>
+
+<script>
+  // Subtle pointer parallax: map cursor position within the hero to --hgx/--hgy.
+  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    document.querySelectorAll<HTMLElement>('.hg').forEach((hg) => {
+      const zone = hg.closest('.hero') ?? hg;
+      zone.addEventListener('pointermove', (e) => {
+        const r = zone.getBoundingClientRect();
+        hg.style.setProperty('--hgx', String(((e as PointerEvent).clientX - r.left) / r.width - 0.5));
+        hg.style.setProperty('--hgy', String(((e as PointerEvent).clientY - r.top) / r.height - 0.5));
+      });
+      zone.addEventListener('pointerleave', () => {
+        hg.style.setProperty('--hgx', '0');
+        hg.style.setProperty('--hgy', '0');
+      });
+    });
+  }
+</script>

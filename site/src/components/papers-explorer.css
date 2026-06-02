@@ -1,0 +1,39 @@
+/* Break the explorer out of Starlight's prose width cap (--sl-content-width,
+ * ~45rem) so the matrix fills the content panel on wide screens instead of
+ * being squished into a centred 720px column. Scoped via :has(.px) so only the
+ * page carrying the matrix is widened — every prose page keeps its readable
+ * width. Unlayered, so it beats Starlight's layered .sl-container rule. */
+.sl-container:has(.px) { max-width: none; }
+
+.px-controls { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: .6rem; }
+.px-search { flex: 1; min-width: 220px; padding: .5rem .7rem; border: 1px solid var(--caail-border); border-radius: 8px; font: inherit; }
+.px-select { padding: .5rem .7rem; border: 1px solid var(--caail-border); border-radius: 8px; font: inherit; }
+.px-legend { display: flex; gap: .4rem; flex-wrap: wrap; margin-bottom: .8rem; }
+.px-lchip { display: inline-flex; align-items: center; gap: .35rem; font-size: .68rem; font-weight: 600; border: 1px solid var(--caail-border); border-radius: 999px; padding: .2rem .5rem; }
+.px-sw { width: .62rem; height: .62rem; border-radius: 3px; display: inline-block; }
+.px-work { display: grid; grid-template-columns: 1fr 300px; gap: 0; border-top: 1px solid var(--caail-border); }
+@media (max-width: 60rem) { .px-work { grid-template-columns: 1fr; } }
+.px-mxpane { overflow: auto; padding: .8rem .2rem; }
+.px-mx { display: grid; gap: 3px; min-width: 640px; }
+.px-corner { font-size: .55rem; color: var(--caail-muted); display: flex; align-items: flex-end; }
+.px-hd { font-size: .58rem; font-weight: 700; color: var(--caail-ink); line-height: 1.1; padding: .35rem .25rem; text-align: center; border-top: 3px solid; border-radius: 3px 3px 0 0; min-height: 2.6rem; display: flex; align-items: center; justify-content: center; }
+.px-rl { font-size: .62rem; color: var(--caail-ink); display: flex; align-items: center; padding-right: .35rem; line-height: 1.15; }
+.px-c { height: 1.5rem; border: 0; border-radius: 4px; font: inherit; font-size: .62rem; font-weight: 700; cursor: pointer; }
+.px-c[disabled] { cursor: default; }
+.px-c.sel { outline: 2.5px solid var(--caail-link); outline-offset: 1px; }
+.px-panel { border-left: 1px solid var(--caail-border); padding: 1rem; }
+.px-empty { font-size: .8rem; color: var(--caail-muted); }
+.px-ptag { font-size: .6rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--caail-muted); margin: 0; }
+.px-ph { font-family: var(--caail-font-display); font-size: 1rem; color: var(--caail-primary); margin: .2rem 0; }
+.px-pmeta { display: flex; align-items: center; gap: .4rem; font-size: .7rem; color: var(--caail-muted); }
+.px-ref { border-top: 1px solid var(--caail-border); padding: .6rem 0; }
+.px-au { font-size: .76rem; font-weight: 700; color: var(--caail-ink); }
+.px-ti { font-size: .72rem; color: var(--caail-muted); line-height: 1.4; margin: .1rem 0 .3rem; }
+.px-jo { font-style: italic; }
+.px-badges { display: flex; gap: .35rem; flex-wrap: wrap; }
+.px-bdg { font-size: .62rem; font-weight: 700; padding: .1rem .4rem; border-radius: 5px; text-decoration: none; }
+.px-bdg.doi { background: color-mix(in oklab, var(--caail-link) 15%, transparent); color: var(--caail-link); font-family: var(--caail-font-mono); font-weight: 500; }
+.px-bdg.code { background: color-mix(in oklab, #009E73 18%, transparent); color: #0c6b4f; }
+.px-bdg.data { background: color-mix(in oklab, #E69F00 22%, transparent); color: #8a6410; }
+:root[data-theme='dark'] .px-bdg.code { background: color-mix(in oklab, #009E73 30%, transparent); color: #74e3b4; }
+:root[data-theme='dark'] .px-bdg.data { background: color-mix(in oklab, #E69F00 32%, transparent); color: #f3c969; }

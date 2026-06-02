@@ -1,0 +1,4 @@
+/* Self-hosted fonts (no runtime CDN). Bricolage Grotesque = display, Inter = UI/body, JetBrains Mono = data. */
+@import '@fontsource-variable/bricolage-grotesque';
+@import '@fontsource-variable/inter';
+@import '@fontsource-variable/jetbrains-mono';

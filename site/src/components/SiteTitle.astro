@@ -1,0 +1,57 @@
+---
+/**
+ * SiteTitle override — renders Starlight's default wordmark, then a horizontal
+ * primary-nav (trimgalore-style) next to it in the header. Search / theme /
+ * GitHub stay right (Starlight defaults). The left sidebar + right TOC are
+ * unchanged; this is additive top-level navigation.
+ *
+ * Links point at real, existing routes (liveness-checked). The site has no
+ * Research Areas / Datasets *index* pages yet, so those entries land on the
+ * section's index/entry page; the left sidebar then exposes the siblings.
+ */
+import Default from '@astrojs/starlight/components/SiteTitle.astro';
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const links = [
+  { label: 'Explorer', href: `${base}/papers/explorer/`, match: `${base}/papers/` },
+  { label: 'Software', href: `${base}/software/`, match: `${base}/software/` },
+  { label: 'Databases', href: `${base}/databases/`, match: `${base}/databases/` },
+  { label: 'Datasets', href: `${base}/datasets/readme/`, match: `${base}/datasets/` },
+  { label: 'Research Areas', href: `${base}/research-areas/mediaoptimization/`, match: `${base}/research-areas/` },
+  { label: 'Contributing', href: `${base}/contributing/`, match: `${base}/contributing/` },
+];
+const here = Astro.url.pathname;
+const isActive = (match: string) => here.startsWith(match);
+---
+
+<Default {...Astro.props}><slot /></Default>
+
+<nav class="caail-topnav" aria-label="Primary">
+  {links.map((l) => (
+    <a href={l.href} aria-current={isActive(l.match) ? 'page' : undefined}>{l.label}</a>
+  ))}
+</nav>
+
+<style>
+  .caail-topnav {
+    display: flex;
+    align-items: center;
+    gap: 0.15rem;
+    margin-inline-start: 1.25rem;
+  }
+  .caail-topnav a {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--caail-muted);
+    text-decoration: none;
+    padding: 0.35rem 0.6rem;
+    border-radius: 7px;
+    white-space: nowrap;
+    transition: color 0.15s, background 0.15s;
+  }
+  .caail-topnav a:hover { color: var(--caail-ink); background: var(--caail-surface); }
+  .caail-topnav a[aria-current='page'] { color: var(--caail-primary); font-weight: 600; }
+
+  /* Below the sidebar breakpoint, the hamburger + drawer take over. */
+  @media (max-width: 50rem) { .caail-topnav { display: none; } }
+</style>

@@ -1,0 +1,25 @@
+/* Break the catalog out of Starlight's prose width cap so the card grid fills
+ * the content panel (same :has() trick as the Papers Explorer). Unlayered, so
+ * it beats Starlight's layered .sl-container rule. */
+.sl-container:has(.cb) { max-width: none; }
+
+.cb-controls { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: .6rem; }
+.cb-search { flex: 1; min-width: 220px; padding: .5rem .7rem; border: 1px solid var(--caail-border); border-radius: 8px; font: inherit; background: var(--caail-bg); color: var(--caail-ink); }
+.cb-select { padding: .5rem .7rem; border: 1px solid var(--caail-border); border-radius: 8px; font: inherit; background: var(--caail-bg); color: var(--caail-ink); max-width: 100%; }
+.cb-search:focus-visible, .cb-select:focus-visible { outline: 2px solid var(--caail-link); outline-offset: 1px; }
+
+.cb-count { font-size: .72rem; color: var(--caail-muted); margin: 0 0 1rem; }
+.cb-empty { font-size: .85rem; color: var(--caail-muted); }
+
+.cb-grp { margin: 0 0 1.6rem; }
+.cb-grp-h { font-size: .82rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--caail-accent); margin: 0 0 .6rem; padding-bottom: .3rem; border-bottom: 1px solid var(--caail-border); scroll-margin-top: 5rem; }
+
+.cb-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr)); gap: .85rem; }
+
+.cb-card { display: flex; flex-direction: column; gap: .3rem; padding: 1rem; border: 1px solid var(--caail-border); border-radius: 10px; text-decoration: none; color: var(--caail-ink); transition: border-color .15s, box-shadow .15s; }
+.cb-card:hover, .cb-card:focus-visible { border-color: var(--caail-link); box-shadow: 0 6px 18px -14px color-mix(in oklab, var(--caail-primary) 40%, transparent); outline: none; }
+
+.cb-name { display: flex; align-items: baseline; gap: .35rem; font-size: .92rem; font-weight: 600; margin: 0; color: var(--caail-primary); line-height: 1.25; }
+.cb-ext { font-size: .72rem; color: var(--caail-muted); }
+.cb-card:hover .cb-ext, .cb-card:focus-visible .cb-ext { color: var(--caail-link); }
+.cb-sum { font-size: .76rem; color: var(--caail-muted); margin: 0; line-height: 1.5; }

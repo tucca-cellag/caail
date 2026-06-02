@@ -30,8 +30,6 @@ A small tabular dataset linking proximate composition (% protein, fat, carbohydr
 | NMR metabolomics of plant and yeast-based hydrolysates (Combe et al.) | 2024 | NMR metabolite profiles | Comprehensive assessment of plant- and yeast-based hydrolysates intended as serum-free media components for cultivated meat; see paper's data availability statement for accession | [10.1016/j.crfs.2024.100855](https://doi.org/10.1016/j.crfs.2024.100855) | CC-BY (per *Current Research in Food Science* open-access default) |
 | Plant-based meat textural-properties training table (Kircali Ata et al.) | 2023 | Tabular (Supplementary) | Proximate composition (% protein/fat/carbohydrate/fibre/ash/moisture) + targeted moisture content → textural properties for plant-based meat analogs; training data for the Ridge / XGBoost / etc. regressors of [Papers.md #171](../Papers.md#171); no public repository accession | [10.3390/foods12020344](https://doi.org/10.3390/foods12020344) | CC-BY (per *Foods* MDPI open-access default) |
 
-> **Curation source:** Surfaced via the [caail Zotero group library](https://www.zotero.org/groups/6549203/caail/library) during the project's Zotero-to-CAAIL sync (May 2026 pass).
-
 ## Further reading
 
 - [`HumanReference.md`](./HumanReference.md) and [`CHOReference.md`](./CHOReference.md) for cross-species reference biology — single-cell pretraining corpora, human GEMs, and the CHO biopharma substrate that pair with the cross-species engineering substrate catalogued here.

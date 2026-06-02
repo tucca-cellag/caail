@@ -1,0 +1,75 @@
+---
+/**
+ * TalksList — renders Talks.md (via the structured talks.json) as inline,
+ * section-grouped media. Each section is a heading (+ optional intro) followed
+ * by a grid of items:
+ *   - video:    a lite-youtube-embed facade (poster-only until clicked — fast,
+ *               no eager iframes), with a plain-link no-JS fallback inside.
+ *   - playlist: a link card (YouTube playlists aren't single videos to embed).
+ *   - link:     a plain link card.
+ */
+import talks from '../content/data/talks.json';
+import { Icon } from 'astro-icon/components';
+import { slug } from '../lib/talk-sections';
+import 'lite-youtube-embed/src/lite-yt-embed.css';
+---
+
+{talks.sections.map((section) => (
+  <section class="talk-section">
+    <h2 class="talk-h caail-display" id={slug(section.heading)}>{section.heading}</h2>
+    {section.intro && <p class="talk-intro">{section.intro}</p>}
+    <ul class="talks" role="list">
+      {section.items.map((t) => (
+        <li class="talk">
+          {t.kind === 'video' ? (
+            <>
+              <lite-youtube videoid={t.videoId} playlabel={`Play: ${t.title}`}>
+                <a class="talk-fallback" href={t.url} target="_blank" rel="noopener noreferrer">
+                  Watch “{t.title}” on YouTube
+                </a>
+              </lite-youtube>
+              <p class="talk-title">{t.title}</p>
+              {t.note && <p class="talk-note">{t.note}</p>}
+            </>
+          ) : (
+            <a class="talk-card" href={t.url} target="_blank" rel="noopener noreferrer">
+              <span class="talk-kind">
+                <Icon name={t.kind === 'playlist' ? 'ph:list-bullets' : 'ph:link-simple'} />
+                {t.kind === 'playlist' ? 'Playlist' : 'Link'}
+              </span>
+              <span class="talk-card-title">{t.title}</span>
+              {t.note && <span class="talk-note">{t.note}</span>}
+            </a>
+          )}
+        </li>
+      ))}
+    </ul>
+  </section>
+))}
+
+<script>
+  // Registers the <lite-youtube> custom element (client-side only).
+  import 'lite-youtube-embed';
+</script>
+
+<style>
+  .talk-section { margin: 0 0 2rem; }
+  .talk-h { font-size: 1.05rem; color: var(--caail-primary); margin: 0 0 .3rem; padding-bottom: .3rem; border-bottom: 1px solid var(--caail-border); scroll-margin-top: 5rem; }
+  .talk-intro { font-size: .82rem; color: var(--caail-muted); line-height: 1.5; margin: .5rem 0 0; max-width: 65ch; }
+
+  .talks { list-style: none; padding: 0; margin: 1rem 0 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr)); gap: 1.25rem; }
+  .talk { margin: 0; }
+  .talk lite-youtube { border-radius: 10px; overflow: hidden; box-shadow: 0 6px 18px -14px color-mix(in oklab, var(--caail-primary) 50%, transparent); }
+  .talk-title { font-size: .82rem; font-weight: 600; color: var(--caail-ink); line-height: 1.35; margin: .55rem 0 0; }
+  /* No-JS / pre-upgrade fallback link, centered over the facade area. */
+  .talk-fallback { display: flex; align-items: center; justify-content: center; min-height: 8rem; padding: 1rem; text-align: center; font-size: .8rem; color: var(--caail-link); text-decoration: none; }
+  .talk-fallback:hover { text-decoration: underline; }
+
+  /* playlist / link cards */
+  .talk-card { display: flex; flex-direction: column; gap: .3rem; min-height: 8rem; padding: 1rem; border: 1px solid var(--caail-border); border-radius: 10px; text-decoration: none; color: var(--caail-ink); background: var(--caail-surface); transition: border-color .15s, box-shadow .15s; }
+  .talk-card:hover, .talk-card:focus-visible { border-color: var(--caail-link); box-shadow: 0 6px 18px -14px color-mix(in oklab, var(--caail-primary) 40%, transparent); outline: none; }
+  .talk-kind { display: inline-flex; align-items: center; gap: .3rem; font-size: .62rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--caail-link); }
+  .talk-kind [data-icon] { width: .85rem; height: .85rem; }
+  .talk-card-title { font-size: .9rem; font-weight: 600; color: var(--caail-primary); line-height: 1.3; }
+  .talk-note { font-size: .74rem; color: var(--caail-muted); line-height: 1.45; }
+</style>

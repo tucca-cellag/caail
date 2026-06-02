@@ -14,8 +14,6 @@ A curated snapshot. The preprint's own data availability statement is the canoni
 |---|---|---|---|---|---|
 | [Multi-omics Characterization of Duck Embryonic Stem Cells for Cultivated Meat](https://doi.org/10.64898/2026.04.27.720974) | RNA-seq + WGS + nutritional analysis | ESCs (whole biomass) | First multi-omics characterization of duck ESCs for cultivated meat (Kusters et al. 2026, bioRxiv); 63 Illumina libraries (6.9 B paired-end reads); RNA-seq aligned to [`GCF_015476345.1`](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_015476345.1/) (ZJU1.0) and WGS aligned to T2T [`GCF_047663525.1`](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_047663525.1/) (IASCAAS Pekin Duck T2T); nutritional profile by AOAC (950.46/981.10/960.39/920.153) + ISO 13903:2005; reuses four public muscle/liver BioProjects (`PRJNA726590`, `PRJNA878639`, `PRJNA349262`, `PRJNA437527`) as conventional-duck reference; no new public deposit named in the preprint | — | Cultivated-meat ESC characterization |
 
-> **Curation source:** Surfaced via the [caail Zotero group library](https://www.zotero.org/groups/6549203/caail/library) Zotero-to-CAAIL sync (May 2026 pass #2). Subsequent additions come from CAAIL contributors.
-
 ## Further reading
 
 - Atlases & functional genomics: [FAANG](../Databases.md#faang-functional-annotation-of-animal-genomes) in `Databases.md` — the broader functional-annotation network for farmed-animal genomes, including avian species.

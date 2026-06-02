@@ -1,0 +1,155 @@
+---
+import { Icon } from 'astro-icon/components';
+import HeroGraphic from './HeroGraphic.astro';
+import c from '../content/data/counts.json';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+
+const stats = [
+  { n: c.papers, label: 'Papers' },
+  { n: c.software, label: 'Tools' },
+  { n: c.databases, label: 'Databases' },
+  { n: c.species, label: 'Species' },
+  { n: c.researchAreas, label: 'Research areas' },
+];
+---
+<section class="hero">
+  <div class="hero-stripe" aria-hidden="true"></div>
+  <div class="hero-text">
+    <p class="eyebrow">Cellular Agriculture × Artificial Intelligence</p>
+    <h1 class="h-title caail-display">
+      <span class="l1">Cell&nbsp;Ag</span>
+      <span class="l2"><span class="x">×</span> AI</span>
+    </h1>
+
+    <p class="lede">
+      The curated library at the intersection of cellular agriculture and AI — peer-reviewed
+      papers, open-source software, databases, and the per-species datasets the field trains on,
+      all cross-linked back to canonical Markdown on GitHub.
+    </p>
+
+    <div class="cta-row">
+      <a class="btn btn-primary" href={`${base}/papers/explorer/`}>
+        <Icon name="ph:squares-four" />
+        Open the Papers Explorer
+      </a>
+      <a class="btn btn-ghost" href="https://github.com/tucca-cellag/caail">
+        <Icon name="ph:github-logo" />
+        Browse on GitHub
+      </a>
+    </div>
+
+    <div class="stats">
+      {stats.map((s) => (
+        <div class="stat">
+          <span class="stat-n caail-display">{s.n}</span>
+          <span class="stat-l">{s.label}</span>
+        </div>
+      ))}
+    </div>
+  </div>
+
+  <div class="hero-art">
+    <HeroGraphic variant="bioreactor" />
+  </div>
+</section>
+
+<style>
+  .hero { position: relative; display: grid; grid-template-columns: 1fr; gap: 1.75rem; padding: 2.5rem 0 1.75rem; text-align: left; }
+  @media (min-width: 60rem) {
+    .hero { grid-template-columns: minmax(0, 1.1fr) minmax(0, 25rem); align-items: center; gap: 2.5rem; }
+  }
+  /* hero content sits above the diagonal stripe */
+  .hero-text, .hero-art { position: relative; z-index: 1; }
+
+  /* Full-bleed diagonal CAAIL-blue band behind the hero (trimgalore-style).
+   * The wrapper breaks out to the full viewport width and self-clips, so the
+   * rotated band reaches both screen edges without causing horizontal scroll.
+   * (Splash homepage has no left sidebar, so the hero is viewport-centered.) */
+  .hero-stripe {
+    position: absolute;
+    top: 0; bottom: 0;
+    left: 50%;
+    width: 100vw;
+    transform: translateX(-50%);
+    overflow: clip;
+    z-index: 0;
+    pointer-events: none;
+  }
+  .hero-stripe::before {
+    content: "";
+    position: absolute;
+    /* --stripe-cy is set by the inline script to the title's vertical centre
+     * (relative to this wrapper) so the band always crosses behind the title,
+     * consistently, at every width. Falls back to the hero's centre. */
+    top: var(--stripe-cy, 50%); left: -5%;
+    width: 110%;
+    height: clamp(72px, 9vw, 150px);
+    transform: translateY(-50%) rotate(-11deg);
+    background: linear-gradient(90deg,
+      color-mix(in oklab, var(--caail-link) 24%, transparent),
+      color-mix(in oklab, var(--caail-primary) 16%, transparent));
+    border-radius: 4px;
+  }
+
+  .eyebrow { font-size: .72rem; letter-spacing: .14em; text-transform: uppercase; color: var(--caail-accent); font-weight: 700; margin: 0; }
+  .h-title {
+    font-size: clamp(3.2rem, 8.5vw, 6rem);
+    line-height: 0.92;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin: .4rem 0 .7rem;
+    background: linear-gradient(118deg, var(--caail-primary) 12%, var(--caail-link) 90%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: var(--caail-primary);
+  }
+  .h-title .l1, .h-title .l2 { display: block; }
+  @supports (-webkit-background-clip: text) or (background-clip: text) {
+    .h-title { -webkit-text-fill-color: transparent; }
+  }
+  .h-title .x { color: var(--caail-accent); -webkit-text-fill-color: var(--caail-accent); font-weight: 600; }
+
+  .lede { font-size: 1rem; line-height: 1.6; color: var(--caail-muted); max-width: 52ch; margin: 0 0 1.5rem; }
+
+  .cta-row { display: flex; gap: .7rem; flex-wrap: wrap; margin-bottom: 1.9rem; }
+  .btn { display: inline-flex; align-items: center; gap: .5rem; border-radius: 999px; padding: .8rem 1.5rem; font-size: .92rem; font-weight: 600; text-decoration: none; border: 1.5px solid transparent; transition: background .15s, border-color .15s, color .15s, box-shadow .15s; }
+  .btn [data-icon] { width: 1.15rem; height: 1.15rem; }
+  .btn-primary { background: var(--caail-primary); color: #fff; box-shadow: 0 10px 26px -16px color-mix(in oklab, var(--caail-primary) 70%, transparent); }
+  .btn-primary:hover { background: var(--caail-primary-hover); }
+  .btn-ghost { background: var(--caail-bg); color: var(--caail-ink); border-color: var(--caail-border); }
+  .btn-ghost:hover { border-color: var(--caail-link); color: var(--caail-link); }
+
+  /* stat row — grid aligns tops by row; margin-top:0 cancels Starlight's prose
+   * `* + *` rhythm that otherwise pushes the later stats down 16px. */
+  .stats { display: grid; grid-template-columns: repeat(5, max-content); gap: .5rem 2rem; margin: 0; padding-top: 1.25rem; border-top: 1px solid var(--caail-border); }
+  @media (max-width: 48rem) { .stats { grid-template-columns: repeat(3, max-content); } }
+  @media (max-width: 26rem) { .stats { grid-template-columns: repeat(2, max-content); } }
+  .stat { display: flex; flex-direction: column; gap: .15rem; margin-top: 0; }
+  .stat-n { font-size: 1.9rem; font-weight: 700; color: var(--caail-primary); line-height: 1; }
+  .stat-l { font-size: .68rem; letter-spacing: .05em; text-transform: uppercase; color: var(--caail-muted); }
+
+  /* Graphic only in the wide 2-col layout — below 60rem the hero is text-only
+   * (avoids the oversized graphic stacking below the text at mid widths). */
+  .hero-art { display: none; }
+  @media (min-width: 60rem) { .hero-art { display: flex; justify-content: center; } }
+</style>
+
+<script>
+  // Pin the diagonal stripe's vertical centre to the title's centre so it
+  // always crosses behind "Cell Ag × AI" at every width (the band stays
+  // full-bleed horizontally via the .hero-stripe wrapper). Positioning only —
+  // not animation — so reduced-motion is irrelevant.
+  function positionHeroStripe() {
+    const stripe = document.querySelector<HTMLElement>('.hero-stripe');
+    const title = document.querySelector<HTMLElement>('.h-title');
+    if (!stripe || !title) return;
+    const s = stripe.getBoundingClientRect();
+    const t = title.getBoundingClientRect();
+    stripe.style.setProperty('--stripe-cy', `${t.top - s.top + t.height / 2}px`);
+  }
+  positionHeroStripe();
+  const hero = document.querySelector('.hero');
+  if (hero && 'ResizeObserver' in window) new ResizeObserver(positionHeroStripe).observe(hero);
+  window.addEventListener('resize', positionHeroStripe);
+  if (document.fonts?.ready) document.fonts.ready.then(positionHeroStripe);
+</script>

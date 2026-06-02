@@ -1,0 +1,113 @@
+---
+/**
+ * DataTableViews — progressive enhancement that gives wide data tables a
+ * Table ⇄ Cards view. For each qualifying content table it wraps the table,
+ * derives a cards grid from the rows (title = first column; the rest become
+ * key/value fields), and adds a Table|Cards toggle. Desktop honors the toggle
+ * (table default, persisted in localStorage); mobile always shows cards. The
+ * presentation CSS lives in starlight-overrides.css. Canonical Markdown is
+ * never modified — cards are built client-side by cloning the rendered cells
+ * (DOM nodes, not innerHTML), so links/code carry over verbatim.
+ */
+---
+
+<script>
+  const KEY = 'caail-tableview';
+  const getPref = () => {
+    try { return localStorage.getItem(KEY) === 'cards' ? 'cards' : 'table'; } catch { return 'table'; }
+  };
+  const setPref = (v: string) => { try { localStorage.setItem(KEY, v); } catch { /* ignore */ } };
+
+  const cloneInto = (parent: HTMLElement, source: Element | undefined) => {
+    if (!source) return;
+    source.childNodes.forEach((n) => parent.appendChild(n.cloneNode(true)));
+  };
+
+  function buildToggle(view: string) {
+    const bar = document.createElement('div');
+    bar.className = 'caail-tv-bar';
+    const group = document.createElement('div');
+    group.className = 'caail-tv-toggle';
+    group.setAttribute('role', 'group');
+    group.setAttribute('aria-label', 'Inventory view');
+    for (const v of ['table', 'cards']) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.dataset.tv = v;
+      b.setAttribute('aria-pressed', String(view === v));
+      b.textContent = v === 'table' ? 'Table' : 'Cards';
+      group.appendChild(b);
+    }
+    bar.appendChild(group);
+    return bar;
+  }
+
+  function buildCards(heads: string[], bodyRows: HTMLTableRowElement[]) {
+    const cards = document.createElement('div');
+    cards.className = 'caail-cards';
+    for (const tr of bodyRows) {
+      const cells = [...tr.children];
+      const card = document.createElement('article');
+      card.className = 'caail-card';
+      const title = document.createElement('h4');
+      title.className = 'caail-card-title';
+      cloneInto(title, cells[0]);
+      card.appendChild(title);
+      cells.slice(1).forEach((td, i) => {
+        const text = td.textContent?.trim();
+        if (!text || text === '—') return;
+        const field = document.createElement('div');
+        field.className = 'caail-card-field';
+        const k = document.createElement('span');
+        k.className = 'caail-card-k';
+        k.textContent = heads[i + 1] ?? '';
+        const val = document.createElement('span');
+        val.className = 'caail-card-v';
+        cloneInto(val, td);
+        field.append(k, val);
+        card.appendChild(field);
+      });
+      cards.appendChild(card);
+    }
+    return cards;
+  }
+
+  function enhance() {
+    const tables = document.querySelectorAll<HTMLTableElement>('.sl-markdown-content table');
+    tables.forEach((table) => {
+      if (table.closest('.caail-tableview')) return; // already enhanced
+      const headCells = [...table.querySelectorAll('thead th')];
+      const bodyRows = [...table.querySelectorAll<HTMLTableRowElement>('tbody tr')];
+      if (headCells.length < 3 || bodyRows.length < 2) return; // only real data tables
+      const heads = headCells.map((th) => th.textContent?.trim() ?? '');
+      const view = getPref();
+
+      const wrap = document.createElement('div');
+      wrap.className = 'caail-tableview';
+      wrap.setAttribute('data-view', view);
+      table.parentNode?.insertBefore(wrap, table);
+      wrap.appendChild(buildToggle(view));
+      wrap.appendChild(table); // move the table inside the wrapper
+      wrap.appendChild(buildCards(heads, bodyRows));
+      wrap.setAttribute('data-ready', '');
+    });
+  }
+
+  function applyView(v: string) {
+    document.querySelectorAll('.caail-tableview').forEach((w) => w.setAttribute('data-view', v));
+    document.querySelectorAll('.caail-tv-toggle [data-tv]').forEach((b) =>
+      b.setAttribute('aria-pressed', String((b as HTMLElement).dataset.tv === v)),
+    );
+  }
+
+  // Delegated toggle handling (one listener for all tables).
+  document.addEventListener('click', (e) => {
+    const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('.caail-tv-toggle [data-tv]');
+    if (!btn) return;
+    const v = btn.dataset.tv ?? 'table';
+    setPref(v);
+    applyView(v);
+  });
+
+  enhance();
+</script>

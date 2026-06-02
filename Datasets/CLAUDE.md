@@ -14,7 +14,7 @@ Each populated species page is a curated, species-scoped collection with these s
 4. **Single-cell & perturbation corpora** — pretraining corpora (only on `HumanReference.md`).
 5. **Thematic clusters** — H2 groupings of individual data deposits, each cluster framed with an editorial paragraph and entries written CAAIL-style around cell-ag relevance.
 6. **Complete data inventory** — a markdown table of every catalogued deposit. Single-species pages omit the redundant Species column; multi-species pages (`Fish.md`, `Crustacean.md`, `Mollusk.md`) include it.
-7. **Curation source note** — a closing blockquote naming where the entries were curated from.
+7. **Curation source note** *(optional — only when there's a meaningful external source to name)* — a closing blockquote naming the **external** source the entries were curated from: a paper's supplemental (e.g. "the supplemental Table 1 of Todhunter et al. 2024") or a prior CAAIL file (e.g. "migrated from the prior flat `Datasets.md`"). **Omit it entirely** when the only thing to say is that contributors added the entries — a contentless "curated by CAAIL contributors" note adds nothing and should be left out. It must **never** reference the repo's own version control or the curation *process* — no sync-pass numbers, commit IDs, "added in pass #N", or dates of addition. Git history is the record of *when and how* an entry landed; the note names *what it was curated from*.
 8. **Further reading** — cross-links into `ResearchAreas/`, `Databases.md`, the reference pages, and `Benchmarks.md`.
 
 Sparse stub pages (species with little dedicated data yet) carry only the intro, a placeholder note in place of the inventory table, and a Further reading footer.

@@ -1,0 +1,257 @@
+/* Map CAAIL tokens onto Starlight's CSS variables.
+ * Loaded first in Page.astro (before @layer declarations) so all unlayered
+ * rules here beat every starlight.* cascade layer without !important.
+ * Ref: Starlight "CSS & Styling" guide; verified against 0.39.2 source.
+ */
+
+/* ── Body & mono fonts ─────────────────────────────────────────────────────
+ * Starlight resolves body font via --__sl-font which is computed as:
+ *   var(--sl-font, var(--sl-font-system)), var(--sl-font-system)
+ * Setting --sl-font here feeds into that computed var at use-time.
+ * Same pattern applies to --sl-font-mono → --__sl-font-mono.
+ */
+:root {
+  --sl-font: var(--caail-font-ui);
+  --sl-font-mono: var(--caail-font-mono);
+}
+
+/* ── Accent palette (dark mode base — matches Starlight :root dark default)
+ * --sl-color-accent-low  = subtle tint for backgrounds/badges
+ * --sl-color-accent      = interactive blue (links, active nav)
+ * --sl-color-accent-high = high-contrast accent text on dark bg
+ * --sl-color-text-accent = accent-colored inline text
+ * --sl-color-white       = Starlight's "high-contrast text" var (headings,
+ *                          asides) — NOT literal white. Dark mode: near-white;
+ *                          light mode: near-black. Mapping to --caail-ink
+ *                          mirrors this flip via tokens.css dark-mode block.
+ */
+:root {
+  --sl-color-accent-low:  oklch(22% 0.08 256);   /* dark-mode: deep navy tint */
+  --sl-color-accent:      var(--caail-link);       /* Tufts Digital Blue */
+  --sl-color-accent-high: var(--caail-primary);    /* Tufts Dark Blue */
+
+  --sl-color-text-accent: var(--caail-link);
+  --sl-color-white:       var(--caail-ink);        /* heading/high-contrast text; flips in dark */
+}
+
+/* ── Light-mode accent overrides ──────────────────────────────────────────
+ * props.css overrides accent vars under [data-theme='light']; we must do
+ * the same so --sl-color-accent-low becomes a pale tint (not the dark navy).
+ */
+:root[data-theme='light'] {
+  --sl-color-accent-low:  oklch(90% 0.04 256);   /* pale Digital-Blue tint on white */
+  --sl-color-accent-high: var(--caail-primary);   /* dark navy for high-contrast on light */
+}
+
+/* ── Display font for headings ────────────────────────────────────────────
+ * Targets Starlight markdown headings (inside .sl-markdown-content) and
+ * the page-title h1 (.page-title). Also hits any bare heading in content.
+ * Uses unlayered specificity to beat starlight.content layer rules.
+ */
+.sl-markdown-content :is(h1, h2, h3, h4, h5, h6),
+.page-title,
+:root h1,
+:root h2,
+:root h3 {
+  font-family: var(--caail-font-display);
+}
+
+/* ── Wordmark / site title ────────────────────────────────────────────────
+ * SiteTitle.astro renders: <a href="…" class="site-title sl-flex">…</a>
+ * Inside @layer starlight.core (weight = layered). Our unlayered rule wins.
+ * Starlight sets font-weight: 600 and color: var(--sl-color-text-accent);
+ * we push to 800 and pin to --caail-primary (navy) for both themes.
+ */
+.site-title,
+a.site-title {
+  font-weight: 800;
+  color: var(--caail-primary);
+  letter-spacing: 0.2px;
+}
+
+/* Reactive wordmark: a navy→link gradient that sweeps across on hover/focus
+ * (the trimgalore-logo equivalent). Falls back to the solid navy above where
+ * background-clip:text is unsupported; reduced-motion neutralises the sweep
+ * via the global transition-killing block. */
+@supports (-webkit-background-clip: text) or (background-clip: text) {
+  a.site-title {
+    background: linear-gradient(90deg, var(--caail-primary) 0%, var(--caail-primary) 35%, var(--caail-link) 50%, var(--caail-primary) 65%, var(--caail-primary) 100%);
+    background-size: 220% 100%;
+    background-position: 100% 0;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    transition: background-position 0.55s ease;
+  }
+  a.site-title:hover,
+  a.site-title:focus-visible { background-position: 0% 0; }
+}
+
+/* ── Header: compact, right-aligned search ────────────────────────────────
+ * Starlight's header is a 3-col grid (title | search | right-group) where the
+ * search column is 1fr — wide and left-of-centre. Make the title column grow
+ * instead so search + theme + GitHub sit together on the right, and cap the
+ * search to a compact width (trimgalore-style). Desktop only; below 50rem the
+ * topnav hides and Starlight's mobile search/menu takes over. */
+@media (min-width: 50rem) {
+  .header { grid-template-columns: 1fr auto auto; }
+  .header > :nth-child(2) { max-width: 13rem; justify-self: end; }
+}
+
+/* ── Helper class for explicit display-font usage in components ───────────*/
+.caail-display {
+  font-family: var(--caail-font-display);
+}
+
+/* Homepage two-column (Start here / Recently added) — collapses on narrow screens */
+.caail-two-col { display: grid; grid-template-columns: 1fr 1.15fr; gap: 1.6rem; margin-top: .5rem; }
+@media (max-width: 50rem) { .caail-two-col { grid-template-columns: 1fr; } }
+
+/* ── Wide data tables (Datasets/* inventories, etc.) ──────────────────────
+ * Canonical Markdown tables (e.g. the per-species "Complete data inventory")
+ * are far wider than Starlight's ~45rem prose cap, so by default they scroll
+ * left/right inside the column. Let any page carrying a content table widen
+ * to fill the content panel and render the whole table, while keeping the
+ * narrative prose at a readable measure. Scoped via :has() so only table
+ * pages are affected; the canonical Markdown is never modified.
+ * `width: max-content` keeps narrow tables compact; `overflow-x: auto`
+ * (Starlight default) remains as the fallback for any table still too wide. */
+.sl-container:has(.sl-markdown-content table) { max-width: none; }
+/* Center the narrative prose at a readable measure while tables use the
+ * reclaimed width (margin-inline:auto keeps text centered, not left-hugging). */
+.sl-container:has(.sl-markdown-content table) .sl-markdown-content > :not(table):not(.caail-tableview) { max-width: 45rem; margin-inline: auto; }
+
+/* Branded data tables — styled in the site layer; canonical Markdown untouched. */
+.sl-markdown-content table {
+  width: max-content;
+  max-width: 100%;
+  margin-inline: auto;
+  font-size: 0.8rem;
+  border: 1px solid var(--caail-border);
+  border-radius: 10px;
+  border-collapse: separate;
+  border-spacing: 0;
+  overflow: auto; /* fallback scroll for any still-too-wide table; clips the rounded corners */
+}
+.sl-markdown-content :is(th, td) {
+  padding: 0.45rem 0.7rem;
+  border: 0;
+  border-bottom: 1px solid var(--caail-border);
+  text-align: left;
+  vertical-align: top;
+}
+.sl-markdown-content thead th {
+  position: sticky;
+  top: 0;
+  background: var(--caail-primary);
+  color: #fff;
+  font-weight: 600;
+  white-space: nowrap;
+  border-bottom: 0;
+}
+:root[data-theme='dark'] .sl-markdown-content thead th {
+  background: color-mix(in oklab, var(--caail-primary) 45%, var(--caail-surface));
+  color: var(--caail-ink);
+}
+.sl-markdown-content tbody tr:nth-child(even) td { background: color-mix(in oklab, var(--caail-ink) 4%, transparent); }
+.sl-markdown-content tbody tr:hover td { background: color-mix(in oklab, var(--caail-link) 12%, transparent); }
+.sl-markdown-content tbody tr:last-child td { border-bottom: 0; }
+.sl-markdown-content td code { font-size: 0.92em; }
+
+/* ── Table ⇄ Cards view (DataTableViews.astro) ────────────────────────────
+ * Data tables are wrapped in .caail-tableview with a derived .caail-cards
+ * sibling and a Table|Cards toggle. Desktop: toggle chooses the view (table
+ * default, persisted). Mobile: always cards (wide tables don't fit a phone).
+ * Before JS marks the wrapper [data-ready], the table shows and cards are
+ * hidden, so there is no card flash and a no-JS fallback still renders the
+ * (scrollable) table. */
+.caail-tableview { width: 100%; }
+.caail-tableview > table { margin-inline: auto; }
+.caail-tableview:not([data-ready]) > .caail-cards { display: none; }
+
+.caail-tv-bar { display: flex; justify-content: flex-end; margin-bottom: 0.5rem; }
+.caail-tv-toggle { display: none; border: 1px solid var(--caail-border); border-radius: 8px; overflow: hidden; }
+.caail-tv-toggle button { font: inherit; font-size: 0.72rem; font-weight: 600; padding: 0.3rem 0.75rem; background: var(--caail-bg); color: var(--caail-muted); border: 0; cursor: pointer; }
+.caail-tv-toggle button + button { border-inline-start: 1px solid var(--caail-border); }
+.caail-tv-toggle button[aria-pressed='true'] { background: var(--caail-primary); color: #fff; }
+
+.caail-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 0.8rem; }
+.caail-card { border: 1px solid var(--caail-border); border-radius: 10px; padding: 0.85rem 1rem; background: var(--caail-bg); transition: border-color 0.15s, box-shadow 0.15s; }
+.caail-card:hover { border-color: var(--caail-link); box-shadow: 0 6px 18px -14px color-mix(in oklab, var(--caail-primary) 40%, transparent); }
+.caail-card-title { font-family: var(--caail-font-display); font-size: 0.9rem; font-weight: 600; color: var(--caail-primary); margin: 0 0 0.5rem; line-height: 1.3; }
+.caail-card-field { display: grid; grid-template-columns: 6.5rem 1fr; gap: 0.5rem; font-size: 0.75rem; padding: 0.25rem 0; border-top: 1px solid var(--caail-border); }
+.caail-card-k { color: var(--caail-muted); text-transform: uppercase; font-size: 0.6rem; letter-spacing: 0.04em; padding-top: 0.15rem; }
+.caail-card-v { color: var(--caail-ink); line-height: 1.4; }
+
+@media (min-width: 50rem) {
+  .caail-tv-toggle { display: inline-flex; }
+  .caail-tableview[data-view='table'] > .caail-cards { display: none; }
+  .caail-tableview[data-view='cards'] > table { display: none; }
+}
+@media (max-width: 49.99rem) {
+  .caail-tv-bar { display: none; }
+  .caail-tableview[data-ready] > table { display: none; }
+  .caail-tableview[data-ready] > .caail-cards { display: grid; }
+}
+
+/* ── Collapsible nav sidebars (desktop) ───────────────────────────────────
+ * Toggle tabs (NavCollapse.astro) flip data-sidebar-collapsed / data-toc-
+ * collapsed on <html>; these rules hide the region and reclaim its width.
+ * The left-nav toggle appears from ≥50rem (where the left nav is a column);
+ * the right-TOC toggle from ≥72rem (where the TOC is a real column). Below
+ * 72rem the TOC is Starlight's native collapsible "On this page" (styled tidy
+ * below). A toggle shows only when the page has that region
+ * (html[data-has-sidebar] / [data-has-toc]). */
+.caail-navtoggle {
+  display: none;
+  position: fixed;
+  z-index: 30;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1.5rem;
+  height: 2.75rem;
+  place-items: center;
+  padding: 0;
+  cursor: pointer;
+  background: var(--sl-color-bg);
+  border: 1px solid var(--caail-border);
+  color: var(--caail-muted);
+  transition: color 0.15s, border-color 0.15s, left 0.15s;
+}
+.caail-navtoggle:hover { color: var(--caail-link); border-color: var(--caail-link); }
+.caail-navtoggle:focus-visible { outline: 2px solid var(--caail-link); outline-offset: 2px; }
+.caail-navtoggle--left { left: var(--sl-content-inline-start); border-inline-start: 0; border-radius: 0 6px 6px 0; }
+.caail-navtoggle--right { right: 0; border-inline-end: 0; border-radius: 6px 0 0 6px; }
+html[data-sidebar-collapsed] .caail-navtoggle--left { left: 0; }
+.caail-navtoggle__icon::before { content: '‹'; font-size: 1rem; line-height: 1; }
+.caail-navtoggle--right .caail-navtoggle__icon::before { content: '›'; }
+html[data-sidebar-collapsed] .caail-navtoggle--left .caail-navtoggle__icon::before { content: '›'; }
+html[data-toc-collapsed] .caail-navtoggle--right .caail-navtoggle__icon::before { content: '‹'; }
+
+@media (min-width: 50rem) {
+  html[data-has-sidebar] .caail-navtoggle--left { display: grid; }
+  html[data-sidebar-collapsed] .sidebar { display: none; }
+  html[data-sidebar-collapsed] .main-frame { padding-inline-start: 0; }
+  html[data-sidebar-collapsed] .main-pane,
+  html[data-toc-collapsed] .main-pane { flex-grow: 1; }
+}
+@media (min-width: 72rem) {
+  /* The right TOC is a real column only at ≥72rem (Starlight stacks the layout
+   * below that). There it gets our collapse toggle. */
+  html[data-has-toc] .caail-navtoggle--right { display: grid; }
+  html[data-toc-collapsed] .right-sidebar-container { display: none; }
+}
+
+/* Tablet/phone (<72rem): Starlight renders the TOC as a native collapsible
+ * "On this page" (mobile-starlight-toc, a <details>). Tidy it into a clean
+ * full-width bar instead of the default floating look so it reads as an
+ * intentional, collapsible block rather than clutter. */
+mobile-starlight-toc { margin: 0 0 1rem; }
+mobile-starlight-toc details { border: 1px solid var(--caail-border); border-radius: 8px; background: var(--caail-surface); }
+mobile-starlight-toc summary { padding: 0.5rem 0.8rem; font-size: 0.8rem; font-weight: 600; color: var(--caail-ink); }
+mobile-starlight-toc .dropdown { border-top: 1px solid var(--caail-border); }
+
+/* Honor reduced-motion (DESIGN.md §7) */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
+}

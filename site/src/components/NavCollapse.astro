@@ -1,0 +1,67 @@
+---
+/**
+ * NavCollapse — desktop-only collapse toggles for Starlight's left navigation
+ * sidebar and right "On this page" table of contents.
+ *
+ * Renders two fixed-position tab buttons that toggle `data-sidebar-collapsed` /
+ * `data-toc-collapsed` on <html>; the reactive layout CSS lives in
+ * styles/starlight-overrides.css, and a no-flash bootstrap script (which sets
+ * the attributes before first paint) is injected via the Starlight `head`
+ * option in astro.config.mjs. State persists in localStorage.
+ *
+ * Mounted once per page (from Footer.astro). The buttons are position:fixed, so
+ * their DOM location does not matter. They only appear at the breakpoints where
+ * each region is actually a column (left ≥ 50rem, TOC ≥ 72rem) and only when the
+ * page has that region (html[data-has-sidebar] / [data-has-toc]).
+ */
+---
+
+<button
+  class="caail-navtoggle caail-navtoggle--left"
+  type="button"
+  data-caail-toggle="sidebar"
+  aria-label="Toggle navigation sidebar"
+  aria-pressed="false"
+><span class="caail-navtoggle__icon" aria-hidden="true"></span></button>
+
+<button
+  class="caail-navtoggle caail-navtoggle--right"
+  type="button"
+  data-caail-toggle="toc"
+  aria-label="Toggle the “On this page” outline"
+  aria-pressed="false"
+><span class="caail-navtoggle__icon" aria-hidden="true"></span></button>
+
+<script>
+  // Keys shared with the no-flash bootstrap in astro.config.mjs `head`.
+  const KEYS = { sidebar: 'caail-nav-collapsed', toc: 'caail-toc-collapsed' };
+  const ATTR = { sidebar: 'data-sidebar-collapsed', toc: 'data-toc-collapsed' };
+  const root = document.documentElement;
+
+  function syncPressed(kind: 'sidebar' | 'toc') {
+    const collapsed = root.hasAttribute(ATTR[kind]);
+    document
+      .querySelectorAll(`[data-caail-toggle="${kind}"]`)
+      .forEach((b) => b.setAttribute('aria-pressed', String(collapsed)));
+  }
+
+  function toggle(kind: 'sidebar' | 'toc') {
+    const collapsed = !root.hasAttribute(ATTR[kind]);
+    root.toggleAttribute(ATTR[kind], collapsed);
+    try {
+      localStorage.setItem(KEYS[kind], collapsed ? '1' : '0');
+    } catch {
+      /* storage unavailable — collapse still works for the session */
+    }
+    syncPressed(kind);
+  }
+
+  document.querySelectorAll('[data-caail-toggle]').forEach((b) => {
+    const kind = b.getAttribute('data-caail-toggle') as 'sidebar' | 'toc';
+    b.addEventListener('click', () => toggle(kind));
+  });
+
+  // Reflect any state applied pre-paint by the bootstrap script.
+  syncPressed('sidebar');
+  syncPressed('toc');
+</script>
