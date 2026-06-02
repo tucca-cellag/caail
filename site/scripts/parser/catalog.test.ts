@@ -2,10 +2,12 @@
  * catalog.test.ts — tests for the Software.md / Databases.md catalog parser.
  *
  * Two suites:
- *   A. Unit (fixtures): group tracking, link extraction, Summary:-strip vs
- *      first-paragraph, multi-paragraph entries, and slug disambiguation.
+ *   A. Unit (fixtures): group tracking, link extraction, Summary:-strip, full
+ *      multi-paragraph body capture, summaryHtml hyperlink preservation +
+ *      repo-relative link rewriting, and slug disambiguation.
  *   B. Integration (real corpus): the verified ground-truth entry counts and
- *      structural invariants (every entry has a URL + non-empty group).
+ *      structural invariants (every entry has a URL + non-empty group; no
+ *      un-rewritten relative links survive in summaryHtml).
  */
 
 import { describe, it, expect, beforeAll } from 'vitest';
@@ -46,8 +48,34 @@ describe('parseCatalogFile — Software.md shape (fixture)', () => {
     expect(entries[2].url).toBe('https://gitlab.com/y/biometa');
   });
 
-  it('strips a leading "Summary:" and ignores later paragraphs (e.g. Docs:)', () => {
-    expect(entries[0].summary).toBe('A tool for media optimization.');
+  it('strips the leading "Summary:" label from the plain-text summary', () => {
+    expect(entries[0].summary.startsWith('A tool for media optimization')).toBe(true);
+    expect(entries[0].summary).not.toMatch(/^Summary:/i);
+  });
+
+  it('captures the FULL body (later paragraphs like Docs:) in summary', () => {
+    // Regression guard: the old parser kept only the first paragraph, dropping
+    // every secondary link. The full body — including the Docs: line — is kept.
+    expect(entries[0].summary).toContain('Docs: https://biometa.example/docs');
+  });
+
+  it('preserves inline hyperlinks as <a> in summaryHtml', () => {
+    expect(entries[0].summaryHtml).toContain(
+      '<a href="https://doi.org/10.1000/x">Smith et al. 2020</a>',
+    );
+    // The autolinked Docs URL (from the second paragraph) is a real link too.
+    expect(entries[0].summaryHtml).toContain('href="https://biometa.example/docs"');
+    // Multi-paragraph body renders as multiple <p> blocks.
+    expect((entries[0].summaryHtml.match(/<p>/g) ?? []).length).toBe(2);
+  });
+
+  it('rewrites repo-relative .md links the way the prose pages do', () => {
+    // Papers.md is not a rendered page → GitHub blob (anchor preserved).
+    expect(entries[0].summaryHtml).toContain(
+      'href="https://github.com/tucca-cellag/caail/blob/main/Papers.md#5"',
+    );
+    // Datasets/Cow.md IS a rendered page → site route (cross-file anchor dropped).
+    expect(entries[0].summaryHtml).toContain('href="/caail/datasets/cow/"');
   });
 
   it('disambiguates a repeated name with -b while keeping the first bare', () => {
@@ -63,14 +91,21 @@ describe('parseCatalogFile — Databases.md shape (fixture)', () => {
     entries = parseCatalogFile(DATABASES_FIXTURE);
   });
 
-  it('uses the first paragraph (no "Summary:" label) as the summary', () => {
-    expect(entries[0].summary).toBe(
+  it('uses the body verbatim (no "Summary:" label to strip in Databases.md)', () => {
+    expect(entries[0].summary).toContain(
       'GeneBank is a public sequence repository. It hosts many deposits.',
     );
   });
 
-  it('takes only the first paragraph for multi-paragraph entries', () => {
-    expect(entries[0].summary).not.toContain('Pipeline');
+  it('captures every paragraph of a multi-paragraph entry', () => {
+    // Regression guard: the second paragraph (and its links) must survive.
+    expect(entries[0].summary).toContain('Pipeline at genebank/pipeline');
+  });
+
+  it('preserves and rewrites the second paragraph links in summaryHtml', () => {
+    expect(entries[0].summaryHtml).toContain('href="https://github.com/genebank/pipeline"');
+    // Datasets/Pig.md is a rendered page → site route.
+    expect(entries[0].summaryHtml).toContain('href="/caail/datasets/pig/"');
   });
 
   it('parses every entry name/url/group', () => {
@@ -107,5 +142,21 @@ describe('buildCatalogModel — real corpus', () => {
       const slugs = list.map((e) => e.slug);
       expect(new Set(slugs).size).toBe(slugs.length);
     }
+  });
+
+  it('leaves no un-rewritten repo-relative links in summaryHtml', () => {
+    // Every internal link must have been resolved to a site route or a GitHub
+    // blob URL — a surviving href="./…" / "../…" would 404 on the site.
+    for (const list of [model.software, model.databases]) {
+      for (const e of list) {
+        expect(e.summaryHtml).not.toMatch(/href="\.\.?\//);
+      }
+    }
+  });
+
+  it('surfaces hyperlinks that the old plain-text parser dropped', () => {
+    // COBRApy's summary cites a DOI inline; that link must now reach the card.
+    const cobrapy = model.software.find((e) => e.name === 'COBRApy');
+    expect(cobrapy?.summaryHtml).toContain('<a href="https://doi.org/');
   });
 });

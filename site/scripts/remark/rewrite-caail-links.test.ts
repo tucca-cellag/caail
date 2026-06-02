@@ -52,6 +52,11 @@ describe('rewriteCaailLinks', () => {
     expect(urls('[Index](./README.md)', 'Datasets/Cow.md'))
       .toEqual(['/caail/datasets/readme/']);
   });
+  it('rewrites a directory link (trailing slash) to its README index page', () => {
+    // `./Datasets/` from a repo-root file → the Datasets index, not a 404.
+    expect(urls('[Datasets](./Datasets/)', 'Software.md'))
+      .toEqual(['/caail/datasets/readme/']);
+  });
   it('drops a cross-file anchor when the target is a rendered page', () => {
     expect(urls('[Pig atlases](./Pig.md#featured-atlases)', 'Datasets/Cow.md'))
       .toEqual(['/caail/datasets/pig/']);

@@ -6,7 +6,7 @@ Intro prose that must be ignored (it is before any `##`).
 
 ### [BioMeta](https://github.com/x/biometa)
 
-Summary: A tool for media optimization.
+Summary: A tool for media optimization, see [Smith et al. 2020](https://doi.org/10.1000/x). Companion to [Papers.md ref #5](./Papers.md#5); atlas in [Datasets/Cow.md](./Datasets/Cow.md).
 
 Docs: https://biometa.example/docs
 

@@ -6,7 +6,7 @@
 
 GeneBank is a public sequence repository. It hosts many deposits.
 
-Pipeline: extra paragraph that must NOT become the summary.
+Pipeline at [genebank/pipeline](https://github.com/genebank/pipeline); see also [Datasets/Pig.md](./Datasets/Pig.md).
 
 ### [ProtDB](https://protdb.example/)
 

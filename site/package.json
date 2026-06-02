@@ -35,6 +35,8 @@
     "@resvg/resvg-js": "^2.6.2",
     "@types/cytoscape": "^3.31.0",
     "@types/mdast": "^4.0.4",
+    "hast-util-to-html": "^9.0.5",
+    "mdast-util-to-hast": "^13.2.1",
     "mdast-util-to-string": "^4.0.0",
     "png-to-ico": "^3.0.1",
     "remark-gfm": "^4.0.1",
