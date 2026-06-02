@@ -22,9 +22,8 @@ const show = (v: string) => both || variant === v;
       aria-label="A stirred-tank bioreactor with rising bubbles and suspended cells" fill="none">
       <!-- vessel -->
       <rect x="62" y="74" width="176" height="214" rx="30" class="hg-vessel" />
-      <path d="M62 110 q88 -54 176 0" class="hg-dome" />
       <rect x="118" y="40" width="64" height="26" rx="6" class="hg-lid" />
-      <line x1="150" y1="30" x2="150" y2="250" class="hg-shaft" />
+      <line x1="150" y1="66" x2="150" y2="225" class="hg-shaft" />
       <!-- liquid -->
       <rect x="62" y="150" width="176" height="138" rx="26" class="hg-liquid" />
       <!-- impeller (oscillates to read as spinning from the side) -->
@@ -71,7 +70,6 @@ const show = (v: string) => both || variant === v;
 
   /* shared strokes/fills via currentColor + tokens */
   .hg-vessel { stroke: var(--caail-primary); stroke-width: 2.5; fill: color-mix(in oklab, var(--caail-primary) 4%, transparent); }
-  .hg-dome { stroke: var(--caail-primary); stroke-width: 2.5; }
   .hg-lid { fill: var(--caail-primary); }
   .hg-shaft { stroke: var(--caail-primary); stroke-width: 3; stroke-linecap: round; }
   .hg-liquid { fill: color-mix(in oklab, var(--caail-link) 14%, transparent); }

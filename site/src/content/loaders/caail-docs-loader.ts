@@ -131,7 +131,11 @@ export function caailDocsLoader(): Loader {
         // Inject the curated title so docsSchema() validation passes.
         const data = await context.parseData({
           id,
-          data: { title: meta.title, sidebar: { label: meta.sidebarLabel, order: meta.order } },
+          data: {
+            title: meta.title,
+            description: meta.description,
+            sidebar: { label: meta.sidebarLabel, order: meta.order },
+          },
         });
 
         const rendered = await context.renderMarkdown(raw, { fileURL });

@@ -147,14 +147,14 @@ describe('buildPapersModel — real Papers.md', () => {
   });
 
   it('has 197 references', () => {
+    // current Papers.md reference count; bump when refs are added.
     expect(model.references.length).toBe(197);
   });
 
-  // Verified ground truth: 70 DISTINCT refs carry a code URL (via `> **Code**`
-  // blockquotes), and 9 refs carry a non-null absolute data URL.
-  //   - The data count is 9, not 10: ref 132's `> **Data**` blockquote links
-  //     only the relative `./Datasets/` path, which the schema's
-  //     `z.string().url()` rejects, so its dataUrl is stored null.
+  // Ground truth (bump when refs change): 70 DISTINCT refs with a code URL and
+  // 9 with a non-null absolute data URL. (More `> **Data**` lines exist, but
+  // ref 132's only link is the relative `./Datasets/` — rejected by the schema's
+  // `z.string().url()`, stored as null — so the data count is 9, not 10.)
   it('has 70 refs with a code URL, consistent with hasCode', () => {
     const withCodeUrl = model.references.filter((r) => r.codeUrl !== null).length;
     const withHasCode = model.references.filter((r) => r.hasCode).length;

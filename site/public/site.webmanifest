@@ -1,0 +1,24 @@
+{
+  "name": "CAAIL — Cellular Agriculture AI Library",
+  "short_name": "CAAIL",
+  "description": "The curated library at the intersection of cellular agriculture and AI.",
+  "icons": [
+    {
+      "src": "/caail/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/caail/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "theme_color": "#002E6D",
+  "background_color": "#002E6D",
+  "display": "minimal-ui",
+  "start_url": "/caail/",
+  "scope": "/caail/"
+}

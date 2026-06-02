@@ -1,0 +1,31 @@
+# CAAIL — Cellular Agriculture AI Library
+
+> A curated, openly-licensed library at the intersection of cellular agriculture and artificial intelligence: peer-reviewed papers (an AI-method × research-area matrix), open-source software, databases, per-species datasets, talks, and field resources. A project of the Tufts University Center for Cellular Agriculture (TUCCA); content is MIT-licensed.
+
+This website is a navigation layer over canonical, human-readable Markdown in the GitHub repository (https://github.com/tucca-cellag/caail), which is the authoritative source for citation and full detail. The curated summaries on these pages are deliberately compressed — for substantive use, fetch the canonical source (a paper's DOI, a tool's linked repository, or the GitHub Markdown).
+
+## Explore
+
+- [Papers Explorer](https://tucca-cellag.github.io/caail/papers/explorer/): interactive matrix of AI/ML methods × research areas, with per-reference DOI, code, and data links.
+- [Citation Network](https://tucca-cellag.github.io/caail/papers/network/): a shared-author co-authorship graph of the papers.
+- [Software](https://tucca-cellag.github.io/caail/software/): open-source tools grouped by application area.
+- [Databases](https://tucca-cellag.github.io/caail/databases/): query/lookup resources — repositories, atlases, ontologies, spectral libraries.
+- [Datasets](https://tucca-cellag.github.io/caail/datasets/readme/): train-on data artifacts organized by species, plus cross-species reference data and AI/ML benchmarks.
+- [Talks & Videos](https://tucca-cellag.github.io/caail/talks/): curated lectures, talks, and educational playlists.
+- [By the Numbers](https://tucca-cellag.github.io/caail/by-the-numbers/): library metrics, matrix coverage, and per-species dataset gaps.
+- [Research Areas](https://tucca-cellag.github.io/caail/research-areas/mediaoptimization/): deep-dive pages per research area (media optimization, cellular engineering, bioprocess, scaffolding, sensory prediction, AI tooling, AI evaluation).
+
+## About & contributing
+
+- [About](https://tucca-cellag.github.io/caail/about/): what CAAIL is and how it is organized.
+- [Contributing](https://tucca-cellag.github.io/caail/contributing/): how entries are categorized and added.
+- [Other Resources](https://tucca-cellag.github.io/caail/other-resources/): field overviews, courses, books, editorials, ecosystem initiatives, and curated bibliographies.
+
+## Full text
+
+- [Full canonical text](https://tucca-cellag.github.io/caail/llms-full.txt): the entire library (papers, software, databases, per-species datasets, research areas, resources, and contributing guide) concatenated into one file — the authoritative full text behind these compressed summaries.
+
+## Notes for AI agents
+
+- Cite the canonical source, not these summaries: a paper's DOI, the linked code/data repository, or the canonical Markdown on GitHub.
+- Core TUCCA members can access full paper text via the companion `caail` Zotero group library (members-only working library); external contributors suggest resources through the GitHub workflow in CONTRIBUTING.md.
