@@ -106,6 +106,13 @@ export default defineConfig({
             ],
           }),
         },
+        // Raster favicon fallbacks + PWA manifest (Starlight already emits the
+        // adaptive SVG icon link). Generated from the bioreactor mark by
+        // scripts/favicons.mjs. Hrefs are base-prefixed (head entries are raw).
+        { tag: 'link', attrs: { rel: 'icon', href: '/caail/favicon.ico', sizes: '32x32' } },
+        { tag: 'link', attrs: { rel: 'apple-touch-icon', href: '/caail/apple-touch-icon.png' } },
+        { tag: 'link', attrs: { rel: 'manifest', href: '/caail/site.webmanifest' } },
+        { tag: 'meta', attrs: { name: 'theme-color', content: '#002E6D' } },
       ],
       social: [
         { icon: 'github', label: 'GitHub', href: 'https://github.com/tucca-cellag/caail' },
