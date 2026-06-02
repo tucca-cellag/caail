@@ -1,20 +1,34 @@
 ---
-const steps = [
-  { n: 1, title: 'New to the field?', desc: 'Read the cell-ag + AI overview and the research-area primers.' },
-  { n: 2, title: 'Looking for a method?', desc: 'Open the Papers Explorer and filter the matrix by AI method or area.' },
-  { n: 3, title: 'Need training data?', desc: 'Browse datasets by species, or benchmarks for model evaluation.' },
+/**
+ * StartHere — the homepage "Start here" router: four audience-oriented entry
+ * cards, each a real link. Two onboarding primers (cell-ag for AI people, AI
+ * for cell-ag people) plus the two task entry points (find a method, find data).
+ * `base` is prepended so the links resolve under the configured site base.
+ */
+import { Icon } from 'astro-icon/components';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const cards = [
+  { icon: 'ph:plant-duotone', title: 'New to cell ag?', desc: 'Watch the field foundations and pick up the reference reading.', href: `${base}/primers/cell-ag/` },
+  { icon: 'ph:brain-duotone', title: 'New to AI?', desc: 'Start with ML learning playlists built for bench scientists.', href: `${base}/primers/ai/` },
+  { icon: 'ph:squares-four-duotone', title: 'Looking for a method?', desc: 'Filter the Papers matrix by AI method or research area.', href: `${base}/papers/explorer/` },
+  { icon: 'ph:dna-duotone', title: 'Need training data?', desc: 'Browse datasets by species, or benchmarks for model evaluation.', href: `${base}/datasets/readme/` },
 ];
 ---
 <section class="start">
   <h2 class="caail-display">Start here</h2>
-  {steps.map((s) => (
-    <div class="card"><span class="n caail-display">{s.n}</span><div><h3>{s.title}</h3><p>{s.desc}</p></div></div>
+  {cards.map((c) => (
+    <a class="card" href={c.href}>
+      <span class="ic"><Icon name={c.icon} /></span>
+      <div><h3>{c.title}</h3><p>{c.desc}</p></div>
+    </a>
   ))}
 </section>
 <style>
   .start h2 { font-size: 1.05rem; color: var(--caail-primary); margin: 0 0 .8rem; }
-  .card { display: flex; gap: .7rem; align-items: flex-start; border: 1px solid var(--caail-border); border-radius: 9px; padding: .8rem .9rem; margin-bottom: .55rem; }
-  .n { font-size: 1rem; font-weight: 700; color: var(--caail-link); line-height: 1.2; }
+  .card { display: flex; gap: .7rem; align-items: flex-start; border: 1px solid var(--caail-border); border-radius: 9px; padding: .8rem .9rem; margin-bottom: .55rem; text-decoration: none; color: inherit; transition: border-color .15s, box-shadow .15s; }
+  .card:hover, .card:focus-visible { border-color: var(--caail-link); box-shadow: 0 6px 18px -14px color-mix(in oklab, var(--caail-primary) 40%, transparent); outline: none; }
+  .ic { flex: none; color: var(--caail-link); line-height: 1; }
+  .ic [data-icon] { width: 1.4rem; height: 1.4rem; }
   .card h3 { font-size: .85rem; margin: 0 0 .1rem; color: var(--caail-ink); }
   .card p { font-size: .76rem; color: var(--caail-muted); margin: 0; line-height: 1.4; }
 </style>

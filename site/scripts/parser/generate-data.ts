@@ -20,6 +20,7 @@ import { buildPapersModel } from './papers.js';
 import { computeCounts } from './counts.js';
 import { buildCatalogModel } from './catalog.js';
 import { buildTalksModel, talkItemCount } from './talks.js';
+import { buildPrimersModel } from './primers.js';
 import { buildGraphModel } from './graph.js';
 import { CitationCacheSchema, type CitationCache } from './citations.js';
 import { buildMetricsModel } from './metrics.js';
@@ -29,6 +30,7 @@ import {
   CountsSchema,
   CatalogSchema,
   TalksSchema,
+  PrimersSchema,
   GraphSchema,
   MetricsSchema,
   type Counts,
@@ -91,6 +93,7 @@ export function generateData(
   papersRefs: number;
   catalogEntries: number;
   talks: number;
+  primers: number;
   graphNodes: number;
   graphEdges: number;
 } {
@@ -103,6 +106,7 @@ export function generateData(
   // Build and validate the catalog (Software + Databases) and talks models.
   const catalog = buildCatalogModel();
   const talks = buildTalksModel();
+  const primers = buildPrimersModel();
 
   // Build and validate the paper network (shared-author + citation edges) and
   // metrics. The citation cache is an optional committed input; absent ⇒ no
@@ -115,6 +119,7 @@ export function generateData(
   CountsSchema.parse(counts);
   CatalogSchema.parse(catalog);
   TalksSchema.parse(talks);
+  PrimersSchema.parse(primers);
   GraphSchema.parse(graph);
   MetricsSchema.parse(metrics);
 
@@ -159,6 +164,13 @@ export function generateData(
     'utf-8',
   );
 
+  // Write primers.json.
+  writeFileSync(
+    join(outDir, 'primers.json'),
+    JSON.stringify(primers, null, 2) + '\n',
+    'utf-8',
+  );
+
   // Write graph.json.
   writeFileSync(
     join(outDir, 'graph.json'),
@@ -178,6 +190,7 @@ export function generateData(
     papersRefs: model.references.length,
     catalogEntries: catalog.software.length + catalog.databases.length,
     talks: talkItemCount(talks),
+    primers: primers.primers.length,
     graphNodes: graph.nodes.length,
     graphEdges: graph.edges.length,
   };
@@ -202,7 +215,7 @@ const isMain =
 
 if (isMain) {
   try {
-    const { counts, papersRefs, catalogEntries, talks, graphNodes, graphEdges } =
+    const { counts, papersRefs, catalogEntries, talks, primers, graphNodes, graphEdges } =
       generateData();
     // Full-text agent index (public/llms-full.txt) — generated alongside the
     // JSON, but written to public/ rather than the data dir, so it lives in the
@@ -213,6 +226,7 @@ if (isMain) {
     console.log(
       `parse: wrote papers.json (${papersRefs} references), counts.json, ` +
         `catalog.json (${catalogEntries} entries), talks.json (${talks} talks), ` +
+        `primers.json (${primers} primers), ` +
         `graph.json (${graphNodes} nodes / ${graphEdges} edges), metrics.json, ` +
         `and llms-full.txt (${llmsBytes} bytes)`,
     );

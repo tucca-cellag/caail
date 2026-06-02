@@ -11,58 +11,18 @@
  */
 
 import { fileURLToPath } from 'node:url';
-import { toString as mdastToString } from 'mdast-util-to-string';
 import { visit } from 'unist-util-visit';
-import type { Root, ListItem, Link, Paragraph, RootContent } from 'mdast';
+import type { Root, ListItem } from 'mdast';
 
 import { parseFile, sectionsAfter } from './markdown.js';
+import { itemFromListItem, sectionIntro } from './media.js';
 import { TalksSchema, type TalkItem, type Talks } from './types.js';
 
 /** Canonical Talks.md path: three levels up (parser → scripts → site → repo). */
 const TALKS_PATH: string = fileURLToPath(new URL('../../../Talks.md', import.meta.url));
 
-/** Capture the 11-char video id from a `watch?v=…`, `youtu.be/…`, or `/embed/…` URL. */
-const YOUTUBE_ID_RE = /(?:[?&]v=|youtu\.be\/|\/embed\/)([A-Za-z0-9_-]{11})/;
-const YOUTUBE_PLAYLIST_RE = /youtube\.com\/playlist\?/i;
-
-/** Extract the YouTube video id from a URL, or null if none is present. */
-export function youtubeVideoId(url: string): string | null {
-  return YOUTUBE_ID_RE.exec(url)?.[1] ?? null;
-}
-
-/** Classify a URL into a talk-item kind, with the video id when applicable. */
-function classify(url: string): { kind: TalkItem['kind']; videoId: string | null } {
-  const videoId = youtubeVideoId(url);
-  if (videoId) return { kind: 'video', videoId };
-  if (YOUTUBE_PLAYLIST_RE.test(url)) return { kind: 'playlist', videoId: null };
-  return { kind: 'link', videoId: null };
-}
-
-/** First paragraph text in a section's body, or '' if none precedes the list. */
-function sectionIntro(nodes: RootContent[]): string {
-  for (const node of nodes) {
-    if (node.type === 'list') break;
-    if (node.type === 'paragraph') return mdastToString(node as Paragraph).trim();
-  }
-  return '';
-}
-
-/** Build one typed item from a list item whose first link supplies title + url. */
-function itemFromListItem(item: ListItem): TalkItem | null {
-  let firstLink: Link | null = null;
-  visit(item, 'link', (link: Link) => {
-    if (firstLink === null) firstLink = link;
-  });
-  if (firstLink === null) return null;
-  const link: Link = firstLink;
-
-  const title = mdastToString(link).trim();
-  const full = mdastToString(item).trim();
-  // `note` = the item text after the link title (venue/year/blurb).
-  const note = full.startsWith(title) ? full.slice(title.length).replace(/^[\s—–-]+/, '').trim() : '';
-
-  return { title, url: link.url, note, ...classify(link.url) };
-}
+// Re-exported so existing importers (e.g. talks.test.ts) keep a stable surface.
+export { youtubeVideoId } from './media.js';
 
 /**
  * Build the talks.json model from Talks.md: one group per `##` section, in
