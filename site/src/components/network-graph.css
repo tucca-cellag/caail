@@ -1,10 +1,21 @@
 /* Break out of Starlight's prose width cap so the graph fills the panel. */
 .sl-container:has(.ng) { max-width: none; }
 
-.ng-controls { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem 1rem; margin-bottom: .6rem; }
+.ng-controls { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .9rem; margin-bottom: .6rem; }
+/* Neutralize Starlight's prose `* + *` flow margins on the controls so flex gap
+   is the single source of spacing (these otherwise add stray 16px top margins). */
+.ng-controls > * { margin: 0; }
 .ng-select { padding: .5rem .7rem; border: 1px solid var(--caail-border); border-radius: 8px; font: inherit; background: var(--caail-bg); color: var(--caail-ink); }
 .ng-check { display: inline-flex; align-items: center; gap: .4rem; font-size: .8rem; color: var(--caail-ink); }
-.ng-meta { font-size: .72rem; color: var(--caail-muted); margin-left: auto; }
+/* Stats sit on their own caption line below the interactive controls at all widths. */
+.ng-meta { flex-basis: 100%; font-size: .72rem; color: var(--caail-muted); }
+
+/* Mobile: stack each control on its own row; the filter fills the width. */
+@media (max-width: 640px) {
+  .ng-controls { flex-direction: column; flex-wrap: nowrap; align-items: flex-start; gap: .5rem; }
+  .ng-select { width: 100%; }
+  .ng-meta { flex-basis: auto; }
+}
 
 /* Segmented pill toggle: shared-author vs citation edges. */
 .ng-seg { display: inline-flex; align-items: center; padding: 2px; border: 1px solid var(--caail-border); border-radius: 999px; background: var(--caail-bg); }
