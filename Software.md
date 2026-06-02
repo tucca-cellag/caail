@@ -43,13 +43,13 @@ This section catalogs the open-source tooling for constraint-based and kinetic m
 
 ### [COBRApy](https://github.com/opencobra/cobrapy)
 
-Summary: The de-facto Python package for constraint-based modeling of metabolic networks, hosted by the openCOBRA consortium. Provides FBA, FVA, gene and reaction knockouts, flux sampling (OptGP, ACHR), gap-filling, production envelopes, dynamic FBA, and SBML I/O on a unified `Model` object that integrates cleanly with NumPy / pandas / SymPy. The reference implementation for FBA in the bioinformatics community.
+Summary: The de-facto Python package for constraint-based modeling of metabolic networks, hosted by the openCOBRA consortium. Provides FBA, FVA, gene and reaction knockouts, flux sampling (OptGP, ACHR), gap-filling, production envelopes, dynamic FBA, and SBML I/O on a unified `Model` object that integrates cleanly with NumPy / pandas / SymPy. The reference implementation for FBA in the bioinformatics community ([Ebrahim et al. 2013](https://doi.org/10.1186/1752-0509-7-74), *BMC Systems Biology*).
 
 Docs: <http://opencobra.github.io/cobrapy/>.
 
 ### [COBRA Toolbox](https://github.com/opencobra/cobratoolbox)
 
-Summary: The MATLAB counterpart to COBRApy, also under the openCOBRA umbrella. Older but more feature-rich for advanced methods (thermodynamics-aware FBA via multiTFA, ME-models via COBRAme, elementary flux modes), and still the production tool of choice in many academic labs. For new cell-ag work, COBRApy is usually the better starting point unless a specific COBRA Toolbox feature is required.
+Summary: The MATLAB counterpart to COBRApy, also under the openCOBRA umbrella. Older but more feature-rich for advanced methods (thermodynamics-aware FBA via multiTFA, ME-models via COBRAme, elementary flux modes), and still the production tool of choice in many academic labs. For new cell-ag work, COBRApy is usually the better starting point unless a specific COBRA Toolbox feature is required. The current protocol is [Heirendt et al. 2019](https://doi.org/10.1038/s41596-018-0098-2) (*Nature Protocols*).
 
 Docs: <https://opencobra.github.io/cobratoolbox>.
 
@@ -61,7 +61,7 @@ Docs: <https://memote.readthedocs.io/>.
 
 ### [Escher](https://github.com/zakandrewking/escher)
 
-Summary: A web-based tool for building, sharing, and embedding visualizations of metabolic pathway maps, with bi-directional integration to COBRApy via JSON. Supports interactive overlay of flux distributions, reaction knockouts, and metabolite concentrations on hand-drawn or auto-generated pathway maps.
+Summary: A web-based tool for building, sharing, and embedding visualizations of metabolic pathway maps, with bi-directional integration to COBRApy via JSON. Supports interactive overlay of flux distributions, reaction knockouts, and metabolite concentrations on hand-drawn or auto-generated pathway maps ([King et al. 2015](https://doi.org/10.1371/journal.pcbi.1004321), *PLOS Computational Biology*).
 
 Project page: <https://escher.github.io>.
 
@@ -115,13 +115,13 @@ Project page: <https://openms.de/>. pyOpenMS docs: <https://pyopenms.readthedocs
 
 ### [MZmine 3](https://mzmine.github.io/)
 
-A modular, open-source platform for LC-MS / GC-MS / IMS-MS data processing, maintained by the Pluskal lab (University of Münster) and the international MZmine consortium. Schmid et al. 2023 (*Nat Biotech*) describes the v3 release with multimodal MS support (LC-MS, IMS-MS, MS-imaging). Provides feature detection, alignment, gap-filling, MS/MS networking integrations (GNPS / FBMN, SIRIUS), and a CLI for batch processing. Standard preprocessor for flavor and natural-products metabolomics workflows.
+A modular, open-source platform for LC-MS / GC-MS / IMS-MS data processing, maintained by the Pluskal lab (University of Münster) and the international MZmine consortium. [Schmid et al. 2023](https://doi.org/10.1038/s41587-023-01690-2) (*Nat Biotech*) describes the v3 release with multimodal MS support (LC-MS, IMS-MS, MS-imaging). Provides feature detection, alignment, gap-filling, MS/MS networking integrations (GNPS / FBMN, SIRIUS), and a CLI for batch processing. Standard preprocessor for flavor and natural-products metabolomics workflows.
 
 Source: <https://github.com/mzmine/mzmine>. News and releases from [mzio](https://mzio.io/), the team behind MZmine: <https://mzio.io/mzmine-news/>.
 
 ### [MS-DIAL](http://prime.psc.riken.jp/compms/msdial/main.html)
 
-A standalone Windows tool for DIA / DDA MS/MS spectral deconvolution and metabolite / lipid annotation, developed by Tsugawa et al. at RIKEN (Tsugawa et al. 2015, *Nat Methods*; the 2020 *Nat Biotech* lipidomics atlas paper extended MS-DIAL 4 to lipid identification). The de-facto standard for GC-MS deconvolution in flavor and food chemistry labs; ships with extensive built-in spectral libraries.
+A standalone Windows tool for DIA / DDA MS/MS spectral deconvolution and metabolite / lipid annotation, developed by Tsugawa et al. at RIKEN ([Tsugawa et al. 2015](https://doi.org/10.1038/nmeth.3393), *Nat Methods*; the [2020 *Nat Biotech* lipidomics atlas paper](https://doi.org/10.1038/s41587-020-0531-2) extended MS-DIAL 4 to lipid identification). The de-facto standard for GC-MS deconvolution in flavor and food chemistry labs; ships with extensive built-in spectral libraries.
 
 Source: <https://github.com/systemsomicslab/MsdialWorkbench>.
 
@@ -133,31 +133,31 @@ Distributed via Zenodo: <https://zenodo.org/records/11219831/latest>.
 
 ### [XCMS](https://github.com/sneumann/xcms)
 
-The most-cited R / Bioconductor package for LC-MS / GC-MS metabolomics preprocessing, originally Smith et al. 2006 (*Anal Chem*) and continuously maintained since. Provides nonlinear retention-time alignment, peak picking, grouping, and gap-filling — the analytical workhorse of many academic metabolomics pipelines including the Galaxy-based Workflow4Metabolomics platform.
+The most-cited R / Bioconductor package for LC-MS / GC-MS metabolomics preprocessing, originally [Smith et al. 2006](https://doi.org/10.1021/ac051437y) (*Anal Chem*) and continuously maintained since. Provides nonlinear retention-time alignment, peak picking, grouping, and gap-filling — the analytical workhorse of many academic metabolomics pipelines including the Galaxy-based Workflow4Metabolomics platform.
 
 Bioconductor: <https://bioconductor.org/packages/xcms/>.
 
 ### [ProteoWizard / msconvert](https://proteowizard.sourceforge.io/)
 
-A cross-platform C++ library and command-line toolkit for mass-spectrometry data conversion and analysis, maintained by the Mallick lab at Stanford and an international community (Chambers et al. 2012, *Nat Biotech*). The `msconvert` utility is the universal first step in essentially every open MS pipeline — converting vendor-locked binary formats (.RAW, .D, .lcd, .wiff) to open standards (mzML, mzXML, MGF) so downstream tools can ingest the data.
+A cross-platform C++ library and command-line toolkit for mass-spectrometry data conversion and analysis, maintained by the Mallick lab at Stanford and an international community ([Chambers et al. 2012](https://doi.org/10.1038/nbt.2377), *Nat Biotech*). The `msconvert` utility is the universal first step in essentially every open MS pipeline — converting vendor-locked binary formats (.RAW, .D, .lcd, .wiff) to open standards (mzML, mzXML, MGF) so downstream tools can ingest the data.
 
 Source: <https://github.com/ProteoWizard/pwiz>.
 
 ### [SIRIUS + CSI:FingerID](https://bio.informatik.uni-jena.de/software/sirius/)
 
-Java application for in-silico molecular formula determination and structure annotation from MS/MS spectra, maintained by the Böcker lab (University of Jena). SIRIUS 4 (Dührkop et al. 2019, *Nat Methods*) integrates fragmentation-tree-based formula prediction, CSI:FingerID for structure database search, CANOPUS for compound-class prediction, and COSMIC for confidence scoring. Standard tool for de-novo annotation in untargeted metabolomics and natural-products work.
+Java application for in-silico molecular formula determination and structure annotation from MS/MS spectra, maintained by the Böcker lab (University of Jena). SIRIUS 4 ([Dührkop et al. 2019](https://doi.org/10.1038/s41592-019-0344-8), *Nat Methods*) integrates fragmentation-tree-based formula prediction, CSI:FingerID for structure database search, CANOPUS for compound-class prediction, and COSMIC for confidence scoring. Standard tool for de-novo annotation in untargeted metabolomics and natural-products work.
 
 Source: <https://github.com/boecker-lab/sirius>.
 
 ### [MetFrag](https://ipb-halle.github.io/MetFrag/)
 
-In-silico fragmenter for MS/MS-based compound identification, originally Wolf et al. 2010 (*BMC Bioinformatics*) and substantially revised in MetFrag Relaunched (Ruttkies et al. 2016, *J Cheminform*). Scores candidate structures from compound databases (PubChem, ChemSpider, KEGG) against measured fragmentation spectra. Integrated into many metabolomics workflows including nf-core/metaboigniter and Workflow4Metabolomics.
+In-silico fragmenter for MS/MS-based compound identification, originally Wolf et al. 2010 (*BMC Bioinformatics*) and substantially revised in MetFrag Relaunched ([Ruttkies et al. 2016](https://doi.org/10.1186/s13321-016-0115-9), *J Cheminform*). Scores candidate structures from compound databases (PubChem, ChemSpider, KEGG) against measured fragmentation spectra. Integrated into many metabolomics workflows including nf-core/metaboigniter and Workflow4Metabolomics.
 
 Source: <https://github.com/c-ruttkies/MetFragRelaunched>.
 
 ### [MS2Query](https://github.com/iomega/ms2query)
 
-A machine-learning-based mass-spectral analogue search tool from the iomega consortium (de Jonge et al. 2023, *Nat Comms*). Uses Spec2Vec and MS2DeepScore embeddings to find spectral analogues in reference libraries, including for compounds without exact matches — directly addressing the long-tail "unknown unknowns" problem in flavor and natural-products metabolomics.
+A machine-learning-based mass-spectral analogue search tool from the iomega consortium ([de Jonge et al. 2023](https://doi.org/10.1038/s41467-023-37446-4), *Nat Comms*). Uses Spec2Vec and MS2DeepScore embeddings to find spectral analogues in reference libraries, including for compounds without exact matches — directly addressing the long-tail "unknown unknowns" problem in flavor and natural-products metabolomics.
 
 ### [MS-FINDER](https://systemsomicslab.github.io/compms/msfinder/main.html)
 
@@ -195,7 +195,7 @@ A community-curated Nextflow pipeline for untargeted LC-MS metabolomics preproce
 
 ### [Workflow4Metabolomics (W4M)](https://workflow4metabolomics.usegalaxy.fr/)
 
-A Galaxy-based collaborative research infrastructure for metabolomics, providing a large library of workflow modules for LC-MS, GC-MS, FIA-MS, and NMR preprocessing, identification, and statistical analysis (Giacomoni et al. 2015, *Bioinformatics*). Integrates XCMS, ropls, MetFrag, CAMERA, and many other established tools into a single web-based interface backed by French institutional compute (IFB), accessible without local installation. The closest "one-stop" reproducible food / flavor metabolomics platform; widely used in academic flavor metabolomics work.
+A Galaxy-based collaborative research infrastructure for metabolomics, providing a large library of workflow modules for LC-MS, GC-MS, FIA-MS, and NMR preprocessing, identification, and statistical analysis ([Giacomoni et al. 2015](https://doi.org/10.1093/bioinformatics/btu813), *Bioinformatics*). Integrates XCMS, ropls, MetFrag, CAMERA, and many other established tools into a single web-based interface backed by French institutional compute (IFB), accessible without local installation. The closest "one-stop" reproducible food / flavor metabolomics platform; widely used in academic flavor metabolomics work.
 
 ### [UmetaFlow](https://github.com/biosustain/snakemake_UmetaFlow)
 

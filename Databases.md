@@ -162,7 +162,7 @@ BioCyc is an SRI International–maintained collection of >20,000 organism-speci
 
 ### [BiGG Models](http://bigg.ucsd.edu/)
 
-Summary: A repository of >75 manually curated, BiGG-standardized genome-scale metabolic models covering bacteria, archaea, fungi, and several eukaryotes, hosted at UCSD (Palsson lab). Each model is provided in SBML, MATLAB `.mat`, and JSON formats, with standardized reaction / metabolite IDs (BiGG nomenclature) that cross-link to MetaNetX, KEGG, and ChEBI. The canonical starting point for any constraint-based modeling work.
+Summary: A repository of >75 manually curated, BiGG-standardized genome-scale metabolic models covering bacteria, archaea, fungi, and several eukaryotes, hosted at UCSD (Palsson lab). Each model is provided in SBML, MATLAB `.mat`, and JSON formats, with standardized reaction / metabolite IDs (BiGG nomenclature) that cross-link to MetaNetX, KEGG, and ChEBI. The canonical starting point for any constraint-based modeling work ([King et al. 2016](https://doi.org/10.1093/nar/gkv1049), *Nucleic Acids Research*).
 
 ### [BioModels](https://www.ebi.ac.uk/biomodels/)
 
@@ -222,7 +222,7 @@ Curated databases of flavor molecules, taste-active compounds, and odor descript
 
 ### [FlavorDB / FlavorDB2](https://cosylab.iiitd.edu.in/flavordb/)
 
-FlavorDB is a comprehensive database of flavor molecules developed by the Complex Systems Lab at IIIT-Delhi (Bagler group). The original release (Garg et al. 2018, *Nucleic Acids Research*) catalogued 25,595 flavor molecules across 936 ingredients, integrating data from FooDB, BitterDB, SuperSweet, and Flavornet. FlavorDB2 (Goel et al. 2024, *Journal of Food Science*) extends coverage with regulatory status, consumption statistics, taste/aroma threshold values, reported food uses, and synthesis pathways. For cellular agriculture, FlavorDB2 is a key reference for connecting volatile compounds detected in cultivated tissues (e.g., GC-MS of cultivated pork fat or salmonid muscle) to known flavor characteristics, organoleptic thresholds, and food applications.
+FlavorDB is a comprehensive database of flavor molecules developed by the Complex Systems Lab at IIIT-Delhi (Bagler group). The original release ([Garg et al. 2018](https://doi.org/10.1093/nar/gkx957), *Nucleic Acids Research*) catalogued 25,595 flavor molecules across 936 ingredients, integrating data from FooDB, BitterDB, SuperSweet, and Flavornet. FlavorDB2 ([Goel et al. 2024](https://doi.org/10.1111/1750-3841.17298), *Journal of Food Science*) extends coverage with regulatory status, consumption statistics, taste/aroma threshold values, reported food uses, and synthesis pathways. For cellular agriculture, FlavorDB2 is a key reference for connecting volatile compounds detected in cultivated tissues (e.g., GC-MS of cultivated pork fat or salmonid muscle) to known flavor characteristics, organoleptic thresholds, and food applications.
 
 ### [BitterDB](https://bitterdb.agri.huji.ac.il/)
 
