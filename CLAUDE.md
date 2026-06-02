@@ -52,6 +52,27 @@ in `.claude/agents/` — **`caail-citation-reviewer`** (Papers.md bibliographic 
 **`caail-claim-reviewer`** (prose-entry factual claims) — which an entry must pass before it
 lands. The agent that wrote an entry never reviews it.
 
+### The field-gap analysis workflow
+
+The Zotero-sync lifecycle above reconciles the repo against *our Zotero library*. A complementary
+**field-gap** axis reconciles it against *the published field* — sweeping recent literature, datasets,
+software, and databases for resources CAAIL is missing — via the **`caail-gap-analysis`** skill
+(in `.claude/skills/`). It runs a saved multi-agent workflow (`.claude/workflows/caail-gap-analysis.js`,
+invoked with `Workflow({ name: 'caail-gap-analysis' })`): ~16 finder agents each read the live canonical
+files to build their own exclusion set, then research the field; a second agent adversarially verifies
+each candidate (exists / absent from repo / in-scope / correctly routed); a bounded completeness sweep
+chases missed angles; and per-category synthesizers assemble a GitHub-issue draft of vetted candidate
+additions (worked example: issue #32). Because finders read the repo at run time, the workflow
+auto-adapts as the repo grows — there is no baseline to maintain.
+
+The workflow *proposes* matrix cells but never sees the live matrix, so the skill owns the judgment:
+the operator confirms every "new row/column/empty cell" claim against the real `Papers.md` header (most
+are false alarms), resolves genuine paper-vs-perspective / method-row questions by reading the source,
+recomputes the summary tallies from the rendered checkboxes, spot-checks a DOI sample, and only then
+files the issue. The output is a *shortlist for maintainers*; actual integration still follows the
+`zotero-to-caail-sync` rules (matrix anchor + reference entry in the same commit; IDs assigned at landing).
+Run it on a periodic cadence (a monthly reminder); the Zotero skills run whenever the group library drifts.
+
 ## Repository layout
 
 ```text
