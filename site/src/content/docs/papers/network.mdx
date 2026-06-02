@@ -1,14 +1,21 @@
 ---
 title: Citation Network
-description: A co-authorship network of CAAIL's papers — references linked when they share an author.
+description: A network of CAAIL's papers — toggle between shared-author and citation edges.
 tableOfContents: false
 ---
 
 import NetworkGraph from '../../../components/NetworkGraph.tsx';
 
-Each node is a paper from the [Papers Explorer](/caail/papers/explorer/); an edge joins two
-papers that **share an author**, surfacing research lineages and collaborator clusters the matrix
-doesn't show. Node size reflects how many co-authorship links a paper has; color marks its primary
-research area. Filter by area, toggle unconnected papers, and click a node for its details.
+Each node is a paper from the [Papers Explorer](/caail/papers/explorer/). Use the toggle to switch
+how edges are drawn:
+
+- **Shared author** — an undirected edge joins two papers that share an author, surfacing research
+  lineages and collaborator clusters the matrix doesn't show.
+- **Citation** — a directed edge runs from a paper to one it cites (the arrow points at the cited
+  paper), surfacing the field's intellectual structure. Citation links are derived from
+  [OpenAlex](https://openalex.org/) and shown only between papers both held in CAAIL.
+
+Node size reflects how connected a paper is in the active mode; color marks its primary research
+area. Filter by area, toggle unconnected papers, and click a node for its details.
 
 <NetworkGraph client:idle />

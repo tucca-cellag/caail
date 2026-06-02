@@ -6,6 +6,13 @@
 .ng-check { display: inline-flex; align-items: center; gap: .4rem; font-size: .8rem; color: var(--caail-ink); }
 .ng-meta { font-size: .72rem; color: var(--caail-muted); margin-left: auto; }
 
+/* Segmented pill toggle: shared-author vs citation edges. */
+.ng-seg { display: inline-flex; padding: 2px; border: 1px solid var(--caail-border); border-radius: 999px; background: var(--caail-bg); }
+.ng-seg-btn { appearance: none; border: 0; background: none; cursor: pointer; font: inherit; font-size: .78rem; font-weight: 600; color: var(--caail-muted); padding: .34rem .85rem; border-radius: 999px; line-height: 1.2; transition: background-color .12s ease, color .12s ease; }
+.ng-seg-btn:hover { color: var(--caail-ink); }
+.ng-seg-btn[aria-pressed='true'] { background: var(--caail-primary); color: #fff; }
+.ng-seg-btn:focus-visible { outline: 2px solid var(--caail-link); outline-offset: 2px; }
+
 .ng-stage { position: relative; border: 1px solid var(--caail-border); border-radius: 12px; overflow: hidden; background: var(--caail-surface); }
 .ng-canvas { width: 100%; height: min(72vh, 640px); }
 .ng-fallback { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; text-align: center; padding: 2rem; margin: 0; font-size: .85rem; color: var(--caail-muted); }
@@ -28,6 +35,8 @@
 .ng-lchip { display: inline-flex; align-items: center; gap: .35rem; font-size: .66rem; font-weight: 600; color: var(--caail-ink); border: 1px solid var(--caail-border); border-radius: 999px; padding: .15rem .5rem; }
 .ng-sw { width: .62rem; height: .62rem; border-radius: 50%; display: inline-block; }
 .ng-sw.dashed { background: transparent; border: 1.5px dashed var(--caail-muted); }
+.ng-arrow { width: .9rem; height: 0; border-top: 1.5px solid var(--caail-link); position: relative; display: inline-block; }
+.ng-arrow::after { content: ''; position: absolute; right: -1px; top: -3px; border-left: 5px solid var(--caail-link); border-top: 3px solid transparent; border-bottom: 3px solid transparent; }
 
 :root[data-theme='dark'] .ng-bdg.code { background: color-mix(in oklab, #009E73 30%, transparent); color: #74e3b4; }
 :root[data-theme='dark'] .ng-bdg.data { background: color-mix(in oklab, #E69F00 32%, transparent); color: #f3c969; }

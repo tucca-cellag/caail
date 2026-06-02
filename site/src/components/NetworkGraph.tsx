@@ -6,15 +6,18 @@ import graph from '../content/data/graph.json';
 type GNode = {
   id: number; label: string; title: string | null; authorsText: string;
   year: number | null; isPrimary: boolean; methods: string[]; areas: string[];
-  doi: string | null; journal: string | null; hasCode: boolean; hasData: boolean; degree: number;
+  doi: string | null; journal: string | null; hasCode: boolean; hasData: boolean;
+  degree: number; citesCount: number; citedByCount: number;
 };
 type GEdge = { source: number; target: number; sharedAuthors: string[] };
+type CEdge = { source: number; target: number };
+type ModeStats = { edges: number; connectedNodes: number; isolatedNodes: number; largestComponent: number };
+type EdgeMode = 'author' | 'citation';
 
 const nodes = graph.nodes as GNode[];
 const edges = graph.edges as GEdge[];
-const meta = graph.metadata as {
-  nodes: number; edges: number; connectedNodes: number; isolatedNodes: number; largestComponent: number;
-};
+const citationEdges = graph.citationEdges as CEdge[];
+const meta = graph.metadata as { nodes: number; sharedAuthor: ModeStats; citation: ModeStats };
 const base = (import.meta.env.BASE_URL ?? '/').replace(/\/$/, '');
 
 const AREA_KEYS = ['media', 'cell', 'bioprocess', 'scaffolding', 'sensory', 'tooling', 'eval'] as const;
@@ -23,6 +26,11 @@ const AREA_LABELS: Record<string, string> = {
   scaffolding: 'Scaffolding', sensory: 'Sensory Prediction', tooling: 'AI Tooling / Methodology',
   eval: 'AI Evaluation & Benchmarking',
 };
+
+/** Connectivity in the active edge mode (drives sizing + isolation). */
+function nodeDegree(n: GNode, mode: EdgeMode): number {
+  return mode === 'citation' ? n.citesCount + n.citedByCount : n.degree;
+}
 
 /**
  * Resolve a CSS value (incl. `var(--token)`) to a concrete sRGB `rgb(r,g,b)`
@@ -61,11 +69,19 @@ export default function NetworkGraph() {
   const containerRef = useRef<HTMLDivElement>(null);
   const cyRef = useRef<any>(null);
   const [ready, setReady] = useState(false);
+  const [edgeMode, setEdgeMode] = useState<EdgeMode>('author');
   const [areaFilter, setAreaFilter] = useState('');
   const [hideIsolated, setHideIsolated] = useState(true);
   const [sel, setSel] = useState<GNode | null>(null);
 
-  const maxDegree = useMemo(() => nodes.reduce((m, n) => Math.max(m, n.degree), 1), []);
+  const maxDegree = useMemo(
+    () => nodes.reduce((m, n) => Math.max(m, nodeDegree(n, edgeMode)), 1),
+    [edgeMode],
+  );
+
+  // Active-mode stats + wording, used by the controls, canvas label, and panel.
+  const stats = edgeMode === 'citation' ? meta.citation : meta.sharedAuthor;
+  const linkWord = edgeMode === 'citation' ? 'citation' : 'shared-author';
 
   useEffect(() => {
     let cancelled = false;
@@ -77,22 +93,42 @@ export default function NetworkGraph() {
 
       const colors = areaColors();
       const ink = resolveColor('var(--caail-ink)');
+      const citeColor = resolveColor('var(--caail-link)');
       const nodeArea = (n: GNode) => (n.areas[0] && AREA_KEYS.includes(n.areas[0] as any) ? n.areas[0] : 'none');
 
       const visible = nodes.filter((n) => {
-        if (hideIsolated && n.degree === 0) return false;
+        if (hideIsolated && nodeDegree(n, edgeMode) === 0) return false;
         if (areaFilter && !n.areas.includes(areaFilter)) return false;
         return true;
       });
       const visibleIds = new Set(visible.map((n) => n.id));
+
+      const modeEdges =
+        edgeMode === 'citation'
+          ? citationEdges
+              .filter((e) => visibleIds.has(e.source) && visibleIds.has(e.target))
+              .map((e) => ({ data: { id: `c${e.source}-${e.target}`, source: String(e.source), target: String(e.target) } }))
+          : edges
+              .filter((e) => visibleIds.has(e.source) && visibleIds.has(e.target))
+              .map((e) => ({ data: { id: `e${e.source}-${e.target}`, source: String(e.source), target: String(e.target) } }));
+
       const els = [
         ...visible.map((n) => ({
-          data: { id: String(n.id), label: n.label, color: colors[nodeArea(n)], deg: n.degree, primary: n.isPrimary ? 1 : 0 },
+          data: { id: String(n.id), label: n.label, color: colors[nodeArea(n)], deg: nodeDegree(n, edgeMode), primary: n.isPrimary ? 1 : 0 },
         })),
-        ...edges
-          .filter((e) => visibleIds.has(e.source) && visibleIds.has(e.target))
-          .map((e) => ({ data: { id: `e${e.source}-${e.target}`, source: String(e.source), target: String(e.target) } })),
+        ...modeEdges,
       ];
+
+      // Citation edges are directed (arrowhead at the cited paper); shared-author
+      // edges are undirected and use the cheaper haystack curve.
+      const edgeStyle =
+        edgeMode === 'citation'
+          ? {
+              'width': 0.9, 'line-color': citeColor, 'opacity': 0.45,
+              'curve-style': 'bezier', 'target-arrow-shape': 'triangle',
+              'target-arrow-color': citeColor, 'arrow-scale': 0.6,
+            }
+          : { 'width': 0.8, 'line-color': '#9fb2cc', 'opacity': 0.5, 'curve-style': 'haystack' };
 
       cyRef.current?.destroy();
       const cy = cytoscape({
@@ -109,9 +145,7 @@ export default function NetworkGraph() {
           } },
           { selector: 'node[primary = 0]', style: { 'background-opacity': 0.25, 'border-style': 'dashed' } },
           { selector: 'node:selected', style: { 'border-width': 3, 'border-color': '#002E6D' } },
-          { selector: 'edge', style: {
-            'width': 0.8, 'line-color': '#9fb2cc', 'opacity': 0.5, 'curve-style': 'haystack',
-          } },
+          { selector: 'edge', style: edgeStyle as any },
         ],
         layout: { name: 'cose', animate: reduced ? false : 'end', randomize: false, padding: 20 } as any,
         minZoom: 0.2,
@@ -127,11 +161,17 @@ export default function NetworkGraph() {
     })();
 
     return () => { cancelled = true; cyRef.current?.destroy(); cyRef.current = null; };
-  }, [areaFilter, hideIsolated, maxDegree]);
+  }, [edgeMode, areaFilter, hideIsolated, maxDegree]);
 
   return (
     <div class="ng">
       <div class="ng-controls">
+        <div class="ng-seg" role="group" aria-label="Edge type">
+          <button type="button" class="ng-seg-btn" aria-pressed={edgeMode === 'author'}
+            onClick={() => setEdgeMode('author')}>Shared author</button>
+          <button type="button" class="ng-seg-btn" aria-pressed={edgeMode === 'citation'}
+            onClick={() => setEdgeMode('citation')}>Citation</button>
+        </div>
         <select class="ng-select" aria-label="Filter by research area"
           value={areaFilter} onChange={(e) => setAreaFilter((e.target as HTMLSelectElement).value)}>
           <option value="">All research areas</option>
@@ -140,17 +180,17 @@ export default function NetworkGraph() {
         <label class="ng-check">
           <input type="checkbox" checked={hideIsolated}
             onChange={(e) => setHideIsolated((e.target as HTMLInputElement).checked)} />
-          Hide unconnected ({meta.isolatedNodes})
+          Hide unconnected ({stats.isolatedNodes})
         </label>
-        <span class="ng-meta">{meta.nodes} papers · {meta.edges} shared-author links · largest cluster {meta.largestComponent}</span>
+        <span class="ng-meta">{meta.nodes} papers · {stats.edges} {linkWord} links · largest cluster {stats.largestComponent}</span>
       </div>
 
       <div class="ng-stage">
         <div ref={containerRef} class="ng-canvas" role="img"
-          aria-label={`Co-authorship network of ${meta.nodes} papers connected by ${meta.edges} shared-author links`} />
+          aria-label={`${edgeMode === 'citation' ? 'Citation' : 'Co-authorship'} network of ${meta.nodes} papers connected by ${stats.edges} ${linkWord} links`} />
         {!ready && (
           <p class="ng-fallback">
-            Interactive co-authorship network — requires JavaScript. Browse the full reference
+            Interactive paper network — requires JavaScript. Browse the full reference
             list in the <a href={`${base}/papers/explorer/`}>Papers Explorer</a>.
           </p>
         )}
@@ -165,7 +205,12 @@ export default function NetworkGraph() {
               {sel.hasCode && <a class="ng-bdg code" href={`${base}/papers/explorer/`}>Code</a>}
               {sel.hasData && <span class="ng-bdg data">Data</span>}
             </div>
-            <p class="ng-degree">{sel.degree} shared-author link{sel.degree === 1 ? '' : 's'}{sel.areas.length ? ` · ${sel.areas.map((a) => AREA_LABELS[a] ?? a).join(', ')}` : ''}</p>
+            <p class="ng-degree">
+              {edgeMode === 'citation'
+                ? `cites ${sel.citesCount} · cited by ${sel.citedByCount}`
+                : `${sel.degree} shared-author link${sel.degree === 1 ? '' : 's'}`}
+              {sel.areas.length ? ` · ${sel.areas.map((a) => AREA_LABELS[a] ?? a).join(', ')}` : ''}
+            </p>
           </aside>
         )}
       </div>
@@ -175,6 +220,9 @@ export default function NetworkGraph() {
           <span class="ng-lchip"><span class="ng-sw" style={{ background: `var(--caail-area-${k})` }} />{AREA_LABELS[k]}</span>
         ))}
         <span class="ng-lchip"><span class="ng-sw dashed" />Review / perspective</span>
+        {edgeMode === 'citation' && (
+          <span class="ng-lchip"><span class="ng-arrow" />arrow points to the cited paper</span>
+        )}
       </div>
     </div>
   );
