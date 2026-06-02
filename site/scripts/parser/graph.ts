@@ -1,15 +1,20 @@
 /**
- * graph.ts — builds graph.json, a shared-author co-authorship network over the
- * Papers.md references.
+ * graph.ts — builds graph.json, the paper network rendered by /papers/network/.
  *
- * Nodes are references; an edge joins two references that share ≥1 author.
- * Authors are normalized to `surname|first-initial` (lowercased) so initial-only
- * variants ("Li, X." vs "Li, X. M.") still match without merging distinct people
- * by surname alone. References with `authors === null` form no edges (isolated).
+ * Nodes are references. The graph carries two edge sets the page toggles between:
+ *   - shared-author (undirected): joins two references that share ≥1 author.
+ *     Authors are normalized to `surname|first-initial` (lowercased) so
+ *     initial-only variants ("Li, X." vs "Li, X. M.") still match without merging
+ *     distinct people by surname alone. References with `authors === null` form
+ *     no edges (isolated).
+ *   - citation (directed): N→M when N cites M, derived from the OpenAlex cache by
+ *     citations.ts. Empty when no cache is present.
  *
- * Pure transform over an already-built PapersData model — no I/O.
+ * Pure transform over an already-built PapersData model (+ optional cache) — no I/O.
  */
 
+import { buildCitationData, type CitationCache } from './citations.js';
+import { largestComponentSize } from './connectivity.js';
 import {
   GraphSchema,
   type Graph,
@@ -39,43 +44,12 @@ function pairKey(a: number, b: number): string {
   return a < b ? `${a}-${b}` : `${b}-${a}`;
 }
 
-/** Largest connected component size over an undirected edge list. */
-function largestComponentSize(nodeIds: number[], edges: GraphEdge[]): number {
-  const parent = new Map<number, number>(nodeIds.map((id) => [id, id]));
-  const find = (x: number): number => {
-    let root = x;
-    while (parent.get(root) !== root) root = parent.get(root)!;
-    // path-compress
-    let cur = x;
-    while (parent.get(cur) !== root) {
-      const next = parent.get(cur)!;
-      parent.set(cur, root);
-      cur = next;
-    }
-    return root;
-  };
-  const union = (a: number, b: number) => {
-    const ra = find(a);
-    const rb = find(b);
-    if (ra !== rb) parent.set(ra, rb);
-  };
-  for (const e of edges) union(e.source, e.target);
-
-  const sizes = new Map<number, number>();
-  let max = 0;
-  for (const id of nodeIds) {
-    const root = find(id);
-    const n = (sizes.get(root) ?? 0) + 1;
-    sizes.set(root, n);
-    if (n > max) max = n;
-  }
-  return max;
-}
-
 /**
- * Build the shared-author graph model from a PapersData model.
+ * Build the paper-network graph model from a PapersData model, plus an optional
+ * OpenAlex citation cache. Shared-author edges come from the in-repo author
+ * strings; directed citation edges come from the cache (empty without one).
  */
-export function buildGraphModel(model: PapersData): Graph {
+export function buildGraphModel(model: PapersData, cache?: CitationCache | null): Graph {
   const refs = model.references;
 
   // author key → set of ref ids, and a display name per key (first seen).
@@ -123,12 +97,15 @@ export function buildGraphModel(model: PapersData): Graph {
     sharedAuthors: [...e.authors].sort(),
   }));
 
-  // Degree per node.
+  // Shared-author degree per node.
   const degree = new Map<number, number>(refs.map((r) => [r.id, 0]));
   for (const e of edges) {
     degree.set(e.source, (degree.get(e.source) ?? 0) + 1);
     degree.set(e.target, (degree.get(e.target) ?? 0) + 1);
   }
+
+  // Directed citation edges + per-node cites/cited-by counts (empty w/o cache).
+  const citation = buildCitationData(model, cache);
 
   const nodes: GraphNode[] = refs.map((ref: Reference) => ({
     id: ref.id,
@@ -144,19 +121,22 @@ export function buildGraphModel(model: PapersData): Graph {
     hasCode: ref.hasCode,
     hasData: ref.hasData,
     degree: degree.get(ref.id) ?? 0,
+    citesCount: citation.citesCount.get(ref.id) ?? 0,
+    citedByCount: citation.citedByCount.get(ref.id) ?? 0,
   }));
 
-  const isolatedNodes = nodes.filter((n) => n.degree === 0).length;
+  const nodeIds = nodes.map((n) => n.id);
+  const sharedAuthorIsolated = nodes.filter((n) => n.degree === 0).length;
   const metadata = {
     nodes: nodes.length,
-    edges: edges.length,
-    connectedNodes: nodes.length - isolatedNodes,
-    isolatedNodes,
-    largestComponent: largestComponentSize(
-      nodes.map((n) => n.id),
-      edges,
-    ),
+    sharedAuthor: {
+      edges: edges.length,
+      connectedNodes: nodes.length - sharedAuthorIsolated,
+      isolatedNodes: sharedAuthorIsolated,
+      largestComponent: largestComponentSize(nodeIds, edges),
+    },
+    citation: citation.stats,
   };
 
-  return GraphSchema.parse({ metadata, nodes, edges });
+  return GraphSchema.parse({ metadata, nodes, edges, citationEdges: citation.edges });
 }

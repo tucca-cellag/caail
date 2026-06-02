@@ -12,7 +12,7 @@
  * importing this module in tests is side-effect-free.
  */
 
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
@@ -21,6 +21,7 @@ import { computeCounts } from './counts.js';
 import { buildCatalogModel } from './catalog.js';
 import { buildTalksModel, talkItemCount } from './talks.js';
 import { buildGraphModel } from './graph.js';
+import { CitationCacheSchema, type CitationCache } from './citations.js';
 import { buildMetricsModel } from './metrics.js';
 import { writeLlmsFull } from './llms-full.js';
 import {
@@ -45,6 +46,25 @@ import {
 export const DEFAULT_OUT_DIR: string = fileURLToPath(
   new URL('../../src/content/data/', import.meta.url),
 );
+
+/**
+ * Absolute path to the committed OpenAlex citation cache (parser input, not a
+ * generated artifact). Refreshed by hand via `pnpm fetch:citations`.
+ */
+export const CITATION_CACHE_PATH: string = fileURLToPath(
+  new URL('./citation-cache.json', import.meta.url),
+);
+
+/**
+ * Read + validate the citation cache if it exists, else return null so the
+ * graph is built with no citation edges. Keeps the parse step network-free.
+ */
+export function loadCitationCache(
+  path: string = CITATION_CACHE_PATH,
+): CitationCache | null {
+  if (!existsSync(path)) return null;
+  return CitationCacheSchema.parse(JSON.parse(readFileSync(path, 'utf-8')));
+}
 
 // ---------------------------------------------------------------------------
 // Testable core
@@ -84,8 +104,10 @@ export function generateData(
   const catalog = buildCatalogModel();
   const talks = buildTalksModel();
 
-  // Build and validate the citation graph (M5) and metrics (M6).
-  const graph = buildGraphModel(model);
+  // Build and validate the paper network (shared-author + citation edges) and
+  // metrics. The citation cache is an optional committed input; absent ⇒ no
+  // citation edges.
+  const graph = buildGraphModel(model, loadCitationCache());
   const metrics = buildMetricsModel(model);
 
   // Belt-and-suspenders: re-validate all before writing.

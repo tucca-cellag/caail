@@ -147,7 +147,9 @@ export const CountsSchema = z.object({
 });
 
 // ---------------------------------------------------------------------------
-// graph.json — shared-author co-authorship network (M5)
+// graph.json — paper network with two toggleable edge modes (M5 / M7)
+//   - shared-author co-authorship edges (undirected)
+//   - citation edges (directed, derived from OpenAlex referenced_works)
 // ---------------------------------------------------------------------------
 
 export const GraphNodeSchema = z.object({
@@ -168,6 +170,10 @@ export const GraphNodeSchema = z.object({
   hasData: z.boolean(),
   /** number of shared-author edges incident to this node (0 = isolated) */
   degree: z.number().int().nonnegative(),
+  /** out-degree in the citation graph: in-corpus papers this node cites */
+  citesCount: z.number().int().nonnegative(),
+  /** in-degree in the citation graph: in-corpus papers that cite this node */
+  citedByCount: z.number().int().nonnegative(),
 });
 
 export const GraphEdgeSchema = z.object({
@@ -179,19 +185,41 @@ export const GraphEdgeSchema = z.object({
   sharedAuthors: z.array(z.string()).min(1),
 });
 
-export const GraphMetadataSchema = z.object({
-  nodes: z.number().int().nonnegative(),
+/** Directed citation edge: `source` cites `target` (both in-corpus reference ids). */
+export const CitationEdgeSchema = z.object({
+  source: z.number().int().positive(),
+  target: z.number().int().positive(),
+});
+
+/** Connectivity stats for one edge mode (shared-author or citation). */
+export const GraphModeStatsSchema = z.object({
+  /** edge count in this mode */
   edges: z.number().int().nonnegative(),
+  /** nodes with ≥1 incident edge in this mode */
   connectedNodes: z.number().int().nonnegative(),
+  /** nodes with 0 incident edges in this mode */
   isolatedNodes: z.number().int().nonnegative(),
+  /** size of the largest connected component (undirected projection) */
   largestComponent: z.number().int().nonnegative(),
 });
 
-/** Schema for graph.json — the shared-author network of Papers.md references. */
+export const GraphMetadataSchema = z.object({
+  /** total node count (shared by both modes) */
+  nodes: z.number().int().nonnegative(),
+  /** shared-author (co-authorship) connectivity */
+  sharedAuthor: GraphModeStatsSchema,
+  /** citation connectivity (zeroed when no citation cache is present) */
+  citation: GraphModeStatsSchema,
+});
+
+/** Schema for graph.json — the paper network with both edge modes. */
 export const GraphSchema = z.object({
   metadata: GraphMetadataSchema,
   nodes: z.array(GraphNodeSchema),
+  /** shared-author edges (undirected) */
   edges: z.array(GraphEdgeSchema),
+  /** citation edges (directed: source cites target) */
+  citationEdges: z.array(CitationEdgeSchema),
 });
 
 // ---------------------------------------------------------------------------
@@ -260,6 +288,8 @@ export type TalkSection = z.infer<typeof TalkSectionSchema>;
 export type Talks = z.infer<typeof TalksSchema>;
 export type GraphNode = z.infer<typeof GraphNodeSchema>;
 export type GraphEdge = z.infer<typeof GraphEdgeSchema>;
+export type CitationEdge = z.infer<typeof CitationEdgeSchema>;
+export type GraphModeStats = z.infer<typeof GraphModeStatsSchema>;
 export type Graph = z.infer<typeof GraphSchema>;
 export type MetricsSpecies = z.infer<typeof MetricsSpeciesSchema>;
 export type Metrics = z.infer<typeof MetricsSchema>;

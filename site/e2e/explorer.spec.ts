@@ -4,7 +4,7 @@ import AxeBuilder from '@axe-core/playwright';
 test('homepage shows the sections grid with counts', async ({ page }) => {
   await page.goto('./');
   await expect(page.getByRole('heading', { name: 'Explore the library' })).toBeVisible();
-  await expect(page.getByRole('link', { name: /193 Papers/ }).first()).toBeVisible();
+  await expect(page.getByRole('link', { name: /197 Papers/ }).first()).toBeVisible();
 });
 
 test('explorer cell click opens the reference side panel', async ({ page }) => {

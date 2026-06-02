@@ -12,6 +12,7 @@ import { describe, it, expect, beforeAll } from 'vitest';
 
 import { authorKey, buildGraphModel } from './graph.js';
 import { buildPapersModel } from './papers.js';
+import { loadCitationCache } from './generate-data.js';
 import { GraphSchema, type PapersData, type Reference } from './types.js';
 
 /** Build a full Reference with sensible defaults, overriding id + authors. */
@@ -96,10 +97,17 @@ describe('buildGraphModel — controlled model', () => {
     expect(byId.get(2)!.degree).toBe(1);
     expect(byId.get(4)!.degree).toBe(0);
     expect(byId.get(5)!.degree).toBe(0);
-    expect(graph.metadata.isolatedNodes).toBe(2); // #4, #5
-    expect(graph.metadata.connectedNodes).toBe(3);
-    expect(graph.metadata.largestComponent).toBe(3); // {1,2,3}
-    expect(graph.metadata.edges).toBe(2);
+    expect(graph.metadata.sharedAuthor.isolatedNodes).toBe(2); // #4, #5
+    expect(graph.metadata.sharedAuthor.connectedNodes).toBe(3);
+    expect(graph.metadata.sharedAuthor.largestComponent).toBe(3); // {1,2,3}
+    expect(graph.metadata.sharedAuthor.edges).toBe(2);
+  });
+
+  it('has an empty citation graph when no cache is supplied', () => {
+    expect(graph.citationEdges).toEqual([]);
+    expect(graph.metadata.citation.edges).toBe(0);
+    expect(graph.metadata.citation.isolatedNodes).toBe(graph.nodes.length);
+    expect(graph.nodes.every((n) => n.citesCount === 0 && n.citedByCount === 0)).toBe(true);
   });
 
   it('does not join same-surname different-initial authors (Block D vs Block B)', () => {
@@ -120,7 +128,8 @@ describe('buildGraphModel — controlled model', () => {
 describe('buildGraphModel — real corpus', () => {
   let graph: ReturnType<typeof buildGraphModel>;
   beforeAll(() => {
-    graph = buildGraphModel(buildPapersModel());
+    // Build WITH the committed OpenAlex cache so both edge modes are exercised.
+    graph = buildGraphModel(buildPapersModel(), loadCitationCache());
   });
 
   it('emits one node per reference (matches the model)', () => {
@@ -133,7 +142,7 @@ describe('buildGraphModel — real corpus', () => {
     expect(graph.edges.length).toBeGreaterThan(100);
   });
 
-  it('every edge resolves to existing nodes and is ordered source<target', () => {
+  it('every shared-author edge resolves to existing nodes and is ordered source<target', () => {
     const ids = new Set(graph.nodes.map((n) => n.id));
     for (const e of graph.edges) {
       expect(ids.has(e.source)).toBe(true);
@@ -141,6 +150,32 @@ describe('buildGraphModel — real corpus', () => {
       expect(e.source).toBeLessThan(e.target);
       expect(e.sharedAuthors.length).toBeGreaterThan(0);
     }
+  });
+
+  it('derives citation edges from the committed cache', () => {
+    // The cache is committed, so the corpus has a non-trivial citation graph.
+    expect(graph.citationEdges.length).toBeGreaterThan(0);
+    expect(graph.metadata.citation.edges).toBe(graph.citationEdges.length);
+  });
+
+  it('every citation edge is directed between distinct existing nodes', () => {
+    const ids = new Set(graph.nodes.map((n) => n.id));
+    const seen = new Set<string>();
+    for (const e of graph.citationEdges) {
+      expect(ids.has(e.source)).toBe(true);
+      expect(ids.has(e.target)).toBe(true);
+      expect(e.source).not.toBe(e.target); // no self-citations
+      const key = `${e.source}->${e.target}`;
+      expect(seen.has(key)).toBe(false); // deduped
+      seen.add(key);
+    }
+  });
+
+  it('citation in/out degrees are consistent with the edge list', () => {
+    const sumCites = graph.nodes.reduce((s, n) => s + n.citesCount, 0);
+    const sumCitedBy = graph.nodes.reduce((s, n) => s + n.citedByCount, 0);
+    expect(sumCites).toBe(graph.citationEdges.length);
+    expect(sumCitedBy).toBe(graph.citationEdges.length);
   });
 
   it('passes GraphSchema', () => {

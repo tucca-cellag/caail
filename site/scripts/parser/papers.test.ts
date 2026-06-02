@@ -140,7 +140,10 @@ describe('buildPapersModel — real Papers.md', () => {
   const model = buildPapersModel();
 
   it('resolves PAPERS_MD_PATH to the repo-root Papers.md', () => {
-    expect(PAPERS_MD_PATH.endsWith('/caail/Papers.md')).toBe(true);
+    // Repo-root basename — robust across normal checkouts and linked worktrees
+    // (whose root dir isn't named "caail"); must have ascended out of site/.
+    expect(PAPERS_MD_PATH.endsWith('/Papers.md')).toBe(true);
+    expect(PAPERS_MD_PATH.includes('/site/')).toBe(false);
   });
 
   it('has 197 references', () => {
