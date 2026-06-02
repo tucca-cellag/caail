@@ -8,8 +8,18 @@
  * Links point at real, existing routes (liveness-checked). The site has no
  * Research Areas / Datasets *index* pages yet, so those entries land on the
  * section's index/entry page; the left sidebar then exposes the siblings.
+ *
+ * Mobile nav: the horizontal topnav hides below 50rem, where doc pages hand
+ * navigation to Starlight's hamburger + sidebar drawer. Splash pages
+ * (hasSidebar === false — currently just the homepage) have NO hamburger, so
+ * below 50rem they'd otherwise lose all top-level navigation. For those pages
+ * only, we render a disclosure "Menu" button that opens a dropdown of the same
+ * links. Both navs map the single `links` array, so destinations never drift.
  */
 import Default from '@astrojs/starlight/components/SiteTitle.astro';
+import { Icon } from 'astro-icon/components';
+
+const { hasSidebar } = Astro.locals.starlightRoute;
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const links = [
@@ -31,6 +41,29 @@ const isActive = (match: string) => here.startsWith(match);
     <a href={l.href} aria-current={isActive(l.match) ? 'page' : undefined}>{l.label}</a>
   ))}
 </nav>
+
+{
+  /* Splash pages have no Starlight hamburger — give them a mobile menu. */
+  !hasSidebar && (
+    <caail-mobilenav class="caail-mobilenav">
+      <button
+        type="button"
+        class="caail-mobilenav__toggle"
+        aria-expanded="false"
+        aria-controls="caail-mobilenav-panel"
+        aria-label="Open navigation menu"
+      >
+        <Icon name="ph:list-bold" class="caail-mobilenav__icon" aria-hidden="true" />
+        <span>Menu</span>
+      </button>
+      <nav id="caail-mobilenav-panel" class="caail-mobilenav__panel" aria-label="Primary">
+        {links.map((l) => (
+          <a href={l.href} aria-current={isActive(l.match) ? 'page' : undefined}>{l.label}</a>
+        ))}
+      </nav>
+    </caail-mobilenav>
+  )
+}
 
 <style>
   .caail-topnav {
@@ -54,4 +87,106 @@ const isActive = (match: string) => here.startsWith(match);
 
   /* Below the sidebar breakpoint, the hamburger + drawer take over. */
   @media (max-width: 50rem) { .caail-topnav { display: none; } }
+
+  /* ── Mobile disclosure nav (splash pages only) ──────────────────────────
+   * Rendered in-flow next to the wordmark (inside Starlight's .title-wrapper,
+   * which has overflow:clip) so it never overlaps the search box — unlike a
+   * fixed top-right button, which on splash pages has no reserved header
+   * padding. The dropdown PANEL is position:fixed so it escapes that clip. */
+  .caail-mobilenav { display: none; }
+  @media (max-width: 50rem) { .caail-mobilenav { display: inline-flex; align-items: center; } }
+
+  .caail-mobilenav__toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    margin-inline-start: 0.6rem;
+    padding: 0.3rem 0.55rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--caail-ink);
+    background: var(--caail-surface);
+    border: 1px solid var(--caail-border);
+    border-radius: 7px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: color 0.15s, background 0.15s, border-color 0.15s;
+  }
+  .caail-mobilenav__toggle:hover { border-color: var(--caail-link); color: var(--caail-primary); }
+  .caail-mobilenav__icon { width: 1rem; height: 1rem; }
+
+  .caail-mobilenav__panel {
+    display: none;
+    position: fixed;
+    inset-block-start: var(--sl-nav-height);
+    inset-inline-start: var(--sl-nav-pad-x);
+    z-index: var(--sl-z-index-menu, 11);
+    width: min(18rem, calc(100vw - 2 * var(--sl-nav-pad-x)));
+    margin-block-start: 0.35rem;
+    padding: 0.4rem;
+    background: var(--caail-bg);
+    border: 1px solid var(--caail-border);
+    border-radius: 10px;
+    box-shadow: 0 12px 30px -16px color-mix(in oklab, var(--caail-primary) 55%, transparent);
+  }
+  .caail-mobilenav[data-open] .caail-mobilenav__panel { display: block; }
+
+  .caail-mobilenav__panel a {
+    display: block;
+    padding: 0.55rem 0.6rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--caail-ink);
+    text-decoration: none;
+    border-radius: 7px;
+    transition: color 0.15s, background 0.15s;
+  }
+  .caail-mobilenav__panel a:hover { color: var(--caail-primary); background: var(--caail-surface); }
+  .caail-mobilenav__panel a[aria-current='page'] { color: var(--caail-primary); font-weight: 600; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .caail-mobilenav__toggle { transition: none; }
+    .caail-mobilenav__panel a { transition: none; }
+  }
 </style>
+
+<script>
+  /**
+   * Disclosure behaviour for the splash-page mobile nav. Mirrors Starlight's
+   * own <starlight-menu-button>: toggle aria-expanded; close on Escape (return
+   * focus to the button), on outside click, and on link activation.
+   */
+  class CaailMobileNav extends HTMLElement {
+    btn = this.querySelector<HTMLButtonElement>('.caail-mobilenav__toggle')!;
+
+    connectedCallback() {
+      this.btn.addEventListener('click', () => this.setOpen(!this.hasAttribute('data-open')));
+
+      this.addEventListener('keyup', (e) => {
+        if (e.key === 'Escape') {
+          this.setOpen(false);
+          this.btn.focus();
+        }
+      });
+
+      // Close when a panel link is activated (covers same-page anchors).
+      this.querySelector('.caail-mobilenav__panel')?.addEventListener('click', (e) => {
+        if ((e.target as HTMLElement).closest('a')) this.setOpen(false);
+      });
+
+      // Close on a click/tap outside the component.
+      document.addEventListener('pointerdown', (e) => {
+        if (this.hasAttribute('data-open') && !this.contains(e.target as Node)) {
+          this.setOpen(false);
+        }
+      });
+    }
+
+    setOpen(open: boolean) {
+      this.toggleAttribute('data-open', open);
+      this.btn.setAttribute('aria-expanded', String(open));
+    }
+  }
+
+  customElements.define('caail-mobilenav', CaailMobileNav);
+</script>
