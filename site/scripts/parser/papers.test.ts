@@ -140,28 +140,26 @@ describe('buildPapersModel — real Papers.md', () => {
   const model = buildPapersModel();
 
   it('resolves PAPERS_MD_PATH to the repo-root Papers.md', () => {
-    expect(PAPERS_MD_PATH.endsWith('/caail/Papers.md')).toBe(true);
+    // Repo-root basename — robust across normal checkouts and linked worktrees
+    // (whose root dir isn't named "caail"); must have ascended out of site/.
+    expect(PAPERS_MD_PATH.endsWith('/Papers.md')).toBe(true);
+    expect(PAPERS_MD_PATH.includes('/site/')).toBe(false);
   });
 
-  it('has 193 references', () => {
-    expect(model.references.length).toBe(193);
+  it('has 197 references', () => {
+    expect(model.references.length).toBe(197);
   });
 
-  // NOTE: The task spec claimed 70 code / 10 data. Verified ground truth (both
-  // via AST scan and a line-based grep mapping every `> **Code**`/`> **Data**`
-  // line to its nearest preceding `<a id>` anchor) is 69 DISTINCT refs with a
-  // code URL and 10 refs carrying a `> **Data**` blockquote.
-  //   - 71 `**Code**` lines exist, but ref 133 has TWO separate Code
-  //     blockquotes, so distinct refs with code = 69, not 70.
-  //   - 10 `**Data**` lines exist, but ref 132's is a prose blockquote whose
-  //     only link is the relative `./Datasets/` (not an absolute deposit URL).
-  //     The schema's `z.string().url()` rejects relative URLs, so we store
-  //     null there → 9 refs with a non-null absolute dataUrl.
-  it('has 69 refs with a code URL, consistent with hasCode', () => {
+  // Verified ground truth: 70 DISTINCT refs carry a code URL (via `> **Code**`
+  // blockquotes), and 9 refs carry a non-null absolute data URL.
+  //   - The data count is 9, not 10: ref 132's `> **Data**` blockquote links
+  //     only the relative `./Datasets/` path, which the schema's
+  //     `z.string().url()` rejects, so its dataUrl is stored null.
+  it('has 70 refs with a code URL, consistent with hasCode', () => {
     const withCodeUrl = model.references.filter((r) => r.codeUrl !== null).length;
     const withHasCode = model.references.filter((r) => r.hasCode).length;
-    expect(withCodeUrl).toBe(69);
-    expect(withHasCode).toBe(69);
+    expect(withCodeUrl).toBe(70);
+    expect(withHasCode).toBe(70);
   });
 
   it('has 9 refs with an absolute data URL', () => {
