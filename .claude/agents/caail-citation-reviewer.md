@@ -35,8 +35,11 @@ blockquote — plus the DOI of each, and the matrix row each was placed in.
      post-ellipsis author really is last; do not assume the senior/known name is.
    - **Year**, **venue / journal**, **volume / issue / pages** — match the record.
    - **DOI** — resolves to exactly this work.
-   - **`> **Code**:` repo** — if present, confirm via `gh repo view` that it is
-     this paper's actual project repository.
+   - **Any URL in the entry** (`> **Code**:` repo, `> **Data**:` deposit, an
+     accession link) — must **resolve**, not merely look plausible: `gh repo
+     view` for a GitHub repo, `curl -sI` (HTTP 200) otherwise. A link that 404s
+     is a CONTRADICTED field. For a `> **Code**:` repo, also confirm it is this
+     paper's actual project repository, not a cited dependency or baseline.
 3. **Matrix placement** — given what the paper actually is, is the assigned
    method row defensible? Flag it if not.
 

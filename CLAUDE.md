@@ -30,7 +30,27 @@ If you're an AI agent running on a TUCCA member's machine and you need to classi
 
 If the paper isn't in the Zotero library, fall back to Crossref / arXiv / scite for metadata and flag the classification confidence as lower.
 
-For the recurring task of reconciling the whole repo against the Zotero library — finding everything in Zotero not yet catalogued and adding it in schema-correct form — use the project skill **`zotero-to-caail-sync`** (`.claude/skills/zotero-to-caail-sync/`). It paginates and de-duplicates the full library, classifies each gap to its target file, and routes every drafted entry through two read-only adversarial reviewer subagents (`caail-citation-reviewer` and `caail-claim-reviewer`, in `.claude/agents/`) that verify it against the version of record before commit.
+### The Zotero ⇄ CAAIL sync workflow
+
+Reconciling the repo against the Zotero libraries is a recurring task covered by three
+project skills (in `.claude/skills/`) that form a lifecycle:
+
+1. **`zotero-collection-scope`** (Phase 1 — scope): given a Zotero collection (or set of
+   collections), recursively enumerates every item, pulls per-item evidence (DOI, title,
+   creators, abstract, data-availability snippet), and cross-references against the repo to
+   produce a categorized actionable-vs-already-in-repo report.
+2. **`zotero-to-caail-sync`** (Phase 2 — integrate): classifies each gap to its target file,
+   drafts the entry in schema-correct form, and routes it through the reviewer subagents
+   before commit. The authoritative *workflow* skill — it restates none of this file's schema
+   rules; it owns the judgment steps.
+3. **`papers-dataset-audit`** (Phase 3 — reverse-audit): for every `Papers.md` ref, checks
+   whether its deposit accessions / code repos are actually cited somewhere in the repo, and
+   reports ORPHANs (cited paper, missing dataset) for review.
+
+Every drafted entry is verified before commit by two read-only adversarial reviewer subagents
+in `.claude/agents/` — **`caail-citation-reviewer`** (Papers.md bibliographic fidelity) and
+**`caail-claim-reviewer`** (prose-entry factual claims) — which an entry must pass before it
+lands. The agent that wrote an entry never reviews it.
 
 ## Repository layout
 

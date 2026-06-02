@@ -73,7 +73,7 @@ A paper whose subject is a non-AI tool already catalogued in `Software.md`/
 `Databases.md` (e.g. the MS-DIAL or COBRApy method paper) is **not** a
 `Papers.md` gap — the tool is already represented. Leave it.
 
-## Citations — extract, never recall
+## Identifiers & citations — extract, never recall
 
 Build every APA citation from the Zotero item's `creators` array, copied
 **verbatim**. Do not reconstruct author initials from memory — that fabricates
@@ -81,13 +81,23 @@ citations (a real, observed failure). APA 21+-author rule: list the first 19
 authors, then `…`, then the final author. Journal italic with `*…*`; DOI as a
 full `https://doi.org/…` URL.
 
+The same rule binds every **identifier** — DOIs, arXiv IDs, deposit accessions,
+repo URLs: extract them from the source (the Zotero record, `Papers.md`, the
+PDF), never type them from memory or hand-build a scan-input list of them. Any
+URL written into the repo is **liveness-checked before commit** (`curl -sI` for
+HTTP 200, or `gh repo view` for a GitHub repo).
+
 ## Verify every entry before committing
 
 No new or changed entry is committed until a dedicated, **read-only** reviewer
-subagent has audited it. The reviewers cannot edit — they only return
-`SUPPORTED` / `UNSUPPORTED` / `CONTRADICTED` verdicts — and the agent that wrote
-an entry must never review it. There are two tracks, and a benchmark goes
-through both (its `Papers.md` ref and its `Datasets/Benchmarks.md` / `Databases.md` entries).
+subagent has audited it. This holds for **every** new or changed entry without
+exception — including a one-line metadata addition, a `> **Code**:` blockquote,
+or a single deposit-URL cross-reference. Inline verification (e.g. a Crossref
+check in the same turn) does **not** substitute for dispatching the subagent.
+The reviewers cannot edit — they only return `SUPPORTED` / `UNSUPPORTED` /
+`CONTRADICTED` verdicts — and the agent that wrote an entry must never review
+it. There are two tracks, and a benchmark goes through both (its `Papers.md`
+ref and its `Datasets/Benchmarks.md` / `Databases.md` entries).
 
 **Track 1 — `Papers.md` reference entries → `caail-citation-reviewer`.**
 A bibliographic-fidelity check against the version of record (Crossref +
@@ -133,6 +143,8 @@ work **once**, citing the peer-reviewed version; suppress the preprint.
 | Mistake | Reality |
 |---|---|
 | Querying `items/top?limit=100` once | The library is >400 items. Paginate, or the script does it for you. |
+| Looking up an item with `q=<DOI>` | The local API's `q=` search does not reliably match DOIs — it returns spurious hits. Build a client-side DOI index by paginating the library (as `scope.py` / `audit.py` do) and match against that. |
+| Hand-typing an identifier or committing an unchecked URL | Extract every DOI / arXiv ID / accession / repo URL from the source; liveness-check any URL (`curl -sI`, `gh repo view`) before commit. |
 | Trusting the script's MISSING list as-is | It flags identifier mismatches as missing. Verify each by name. |
 | Skipping the `Datasets/Benchmarks.md`/`Databases.md` side of a benchmark | The triangle is mandatory; "general-CS benchmark" is not an exemption. |
 | Filing a Nature `d41586-` editorial in `Papers.md` Reviews | Editorials/news → `OtherResources.md` `## Editorials & Opinion`. |
