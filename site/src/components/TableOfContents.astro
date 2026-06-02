@@ -2,18 +2,19 @@
 /**
  * TableOfContents override.
  *
- * The Software and Databases catalogs are interactive islands, so their
- * application-area headings aren't Markdown headings and Starlight can't collect
- * them into the native "On This Page". Here we inject those areas into the
- * route's `toc.items` (keeping the leading "Overview" item) and then render
- * Starlight's own TableOfContents — so the right-rail list, styling, and
- * scroll-spy all come for free. The anchors target the group-heading ids the
- * CatalogBrowser island renders (shared `groupSlug`).
+ * Several pages render their section headings from a server component / island
+ * (the Software & Databases catalogs, and the Talks page) rather than as
+ * Markdown headings, so Starlight can't collect them into the native "On This
+ * Page". Here we inject those sections into the route's `toc.items` (keeping the
+ * leading "Overview" item) and then render Starlight's own TableOfContents — so
+ * the right-rail list, styling, and scroll-spy all come for free. The anchors
+ * target the section-heading ids those components render (shared slug helpers).
  *
  * Every other route renders Starlight's default TOC unchanged.
  */
 import Default from '@astrojs/starlight/components/TableOfContents.astro';
 import { catalogGroups, type CatalogKind } from '../lib/catalog-groups';
+import { talkSections } from '../lib/talk-sections';
 
 const route = Astro.locals.starlightRoute;
 const path = Astro.url.pathname.replace(/\/$/, '');
@@ -23,17 +24,19 @@ const kind: CatalogKind | null = path.endsWith('/software')
     ? 'databases'
     : null;
 
-if (kind && route.toc && route.toc.items.length > 0) {
+if (route.toc && route.toc.items.length > 0) {
   const overview = route.toc.items[0]; // PAGE_TITLE_ID / "Overview"
-  route.toc.items = [
-    overview,
-    ...catalogGroups(kind).map((g) => ({
-      depth: 2,
-      slug: g.slug,
-      text: g.label,
-      children: [],
-    })),
-  ];
+  if (kind) {
+    route.toc.items = [
+      overview,
+      ...catalogGroups(kind).map((g) => ({ depth: 2, slug: g.slug, text: g.label, children: [] })),
+    ];
+  } else if (path.endsWith('/talks')) {
+    route.toc.items = [
+      overview,
+      ...talkSections().map((s) => ({ depth: 2, slug: s.slug, text: s.heading, children: [] })),
+    ];
+  }
 }
 ---
 

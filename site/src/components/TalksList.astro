@@ -10,10 +10,8 @@
  */
 import talks from '../content/data/talks.json';
 import { Icon } from 'astro-icon/components';
+import { slug } from '../lib/talk-sections';
 import 'lite-youtube-embed/src/lite-yt-embed.css';
-
-/** Anchor id for a section heading (so it can be linked/scrolled to). */
-const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 ---
 
 {talks.sections.map((section) => (

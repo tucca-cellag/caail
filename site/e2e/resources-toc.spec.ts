@@ -12,6 +12,16 @@ test('talks renders the three sections with embeds and playlist cards', async ({
   }
   expect(await page.locator('lite-youtube').count()).toBeGreaterThan(1); // video facades
   expect(await page.locator('a.talk-card').count()).toBeGreaterThan(0); // playlist cards
+
+  // right-rail "On This Page" lists the sections, and every anchor resolves
+  expect(await page.locator('starlight-toc a').count()).toBeGreaterThan(1); // Overview + sections
+  const unresolved = await page.evaluate(() =>
+    [...document.querySelectorAll('starlight-toc a')]
+      .map((a) => a.getAttribute('href') || '')
+      .filter((h) => h.startsWith('#') && h.length > 1)
+      .filter((h) => !document.getElementById(h.slice(1))),
+  );
+  expect(unresolved).toEqual([]);
 });
 
 test('talks has no serious/critical a11y violations', async ({ page }) => {
