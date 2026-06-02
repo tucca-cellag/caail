@@ -1,0 +1,26 @@
+---
+/**
+ * Head override.
+ *
+ * Renders Starlight's default <head> (which already emits title, description,
+ * canonical, og:title/description, and our astro.config head entries — the OG
+ * card, favicons, theme-color, and the site-wide Organization+WebSite JSON-LD),
+ * then appends one per-route `application/ld+json` block: a CollectionPage that
+ * enumerates the catalog (software / databases / papers / talks) plus a
+ * BreadcrumbList on nested pages. Build-time only; data comes from the parser's
+ * JSON via src/lib/structured-data.ts. Pattern mirrors TableOfContents.astro.
+ */
+import Default from '@astrojs/starlight/components/Head.astro';
+import { pageJsonLd } from '../lib/structured-data';
+
+const route = Astro.locals.starlightRoute;
+const title = route?.entry?.data?.title ?? 'CAAIL';
+const jsonLd = pageJsonLd(Astro.url.pathname, title);
+
+// Escape `<` so a description containing "</script>" can't break out of the
+// inline JSON-LD block (< is valid inside a JSON string).
+const json = jsonLd ? JSON.stringify(jsonLd).replace(/</g, '\\u003c') : null;
+---
+
+<Default />
+{json && <script type="application/ld+json" is:inline set:html={json} />}

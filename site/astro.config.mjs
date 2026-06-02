@@ -139,6 +139,10 @@ export default defineConfig({
         './src/styles/starlight-overrides.css',
       ],
       components: {
+        // Append per-route schema.org JSON-LD (CollectionPage + ItemList +
+        // BreadcrumbList) after Starlight's default <head>. Builders in
+        // src/lib/structured-data.ts; site-wide Organization+WebSite stays above.
+        Head: './src/components/Head.astro',
         // Horizontal primary nav next to the wordmark (trimgalore-style).
         SiteTitle: './src/components/SiteTitle.astro',
         // Override Starlight's built-in Hero with an empty component so that
