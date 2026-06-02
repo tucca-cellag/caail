@@ -22,20 +22,19 @@ const dots = AREA.map((c, i) => `<circle cx="${104 + i * 52}" cy="556" r="15" fi
 // white vessel/shaft, light-blue liquid + sparged bubbles, meat-red suspended cells.
 const BIOREACTOR = `
   <rect x="62" y="74" width="176" height="214" rx="30" fill="rgba(255,255,255,0.04)" stroke="#ffffff" stroke-width="3"/>
-  <path d="M62 110 q88 -54 176 0" fill="none" stroke="#ffffff" stroke-width="3"/>
   <rect x="118" y="40" width="64" height="26" rx="6" fill="#ffffff"/>
-  <line x1="150" y1="30" x2="150" y2="250" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round"/>
+  <line x1="150" y1="66" x2="150" y2="225" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round"/>
   <rect x="62" y="150" width="176" height="138" rx="26" fill="rgba(157,182,221,0.18)"/>
   <ellipse cx="150" cy="225" rx="34" ry="7" fill="rgba(255,255,255,0.55)"/>
   <circle cx="150" cy="225" r="5" fill="#ffffff"/>
   <circle cx="100" cy="190" r="7" fill="#E0563B"/>
   <circle cx="205" cy="225" r="9" fill="#E0563B"/>
   <circle cx="120" cy="255" r="6" fill="#E0563B"/>
-  <circle cx="110" cy="280" r="4" fill="rgba(157,182,221,0.6)"/>
-  <circle cx="150" cy="280" r="5" fill="rgba(157,182,221,0.6)"/>
-  <circle cx="188" cy="280" r="3.5" fill="rgba(157,182,221,0.6)"/>
-  <circle cx="132" cy="280" r="3" fill="rgba(157,182,221,0.6)"/>
-  <circle cx="170" cy="280" r="4.5" fill="rgba(157,182,221,0.6)"/>`;
+  <circle cx="140" cy="272" r="4" fill="rgba(157,182,221,0.6)"/>
+  <circle cx="170" cy="252" r="5" fill="rgba(157,182,221,0.6)"/>
+  <circle cx="132" cy="198" r="3.5" fill="rgba(157,182,221,0.6)"/>
+  <circle cx="182" cy="238" r="3" fill="rgba(157,182,221,0.6)"/>
+  <circle cx="115" cy="235" r="3.5" fill="rgba(157,182,221,0.6)"/>`;
 
 const FONT = 'Helvetica Neue, Helvetica, Arial, sans-serif';
 
