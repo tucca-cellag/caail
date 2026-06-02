@@ -32,7 +32,7 @@ If the paper isn't in the Zotero library, fall back to Crossref / arXiv / scite 
 
 ### The Zotero ⇄ CAAIL sync workflow
 
-Reconciling the repo against the Zotero libraries is a recurring task covered by three
+Reconciling the repo against the Zotero libraries is a recurring task covered by four
 project skills (in `.claude/skills/`) that form a lifecycle:
 
 1. **`zotero-collection-scope`** (Phase 1 — scope): given a Zotero collection (or set of
@@ -46,11 +46,19 @@ project skills (in `.claude/skills/`) that form a lifecycle:
 3. **`papers-dataset-audit`** (Phase 3 — reverse-audit): for every `Papers.md` ref, checks
    whether its deposit accessions / code repos are actually cited somewhere in the repo, and
    reports ORPHANs (cited paper, missing dataset) for review.
+4. **`matrix-classification-audit`** (Phase 4 — reclassify): re-audits the `Papers.md` matrix
+   itself. For each matrix-participating paper it grounds the placement in the paper's methods
+   section (pulled from the Zotero PDF full-text cache by `extract_matrix_corpus.py`) and asks
+   two questions — is each current `(method × area)` cell defensible, and does the paper also
+   belong in additional cells (multi-category)? It edits matrix cells only; it never touches
+   `## References` citation text or renumbers IDs.
 
-Every drafted entry is verified before commit by two read-only adversarial reviewer subagents
-in `.claude/agents/` — **`caail-citation-reviewer`** (Papers.md bibliographic fidelity) and
-**`caail-claim-reviewer`** (prose-entry factual claims) — which an entry must pass before it
-lands. The agent that wrote an entry never reviews it.
+Every drafted or re-audited entry is verified before commit by read-only adversarial reviewer
+subagents in `.claude/agents/` — **`caail-citation-reviewer`** (Papers.md bibliographic
+fidelity), **`caail-claim-reviewer`** (prose-entry factual claims), and
+**`caail-classification-reviewer`** (matrix `method × area` placement, grounded in the paper's
+methods section) — which an entry must pass before it lands. The agent that wrote or proposed an
+entry never reviews it.
 
 ## Repository layout
 
