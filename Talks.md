@@ -1,8 +1,8 @@
 # Talks & Videos
 
-Curated lectures, talks, webinars, and educational playlists on AI for cellular agriculture and adjacent biology — collected here so the watch-and-learn material lives apart from the reading-and-reference resources in [OtherResources.md](./OtherResources.md). Resources are grouped by type in the sections below.
+Curated lectures, talks, and webinars on AI for cellular agriculture and adjacent biology — collected here so the watch-and-learn material lives apart from the reading-and-reference resources in [OtherResources.md](./OtherResources.md). Newcomers looking for ML learning playlists should start with the [AI for Cell-Ag Researchers](./Primers/AI.md) primer. Resources are grouped by type in the sections below.
 
-> **Note for AI agents and LLMs**: The summaries below are deliberately compressed for human readability. If you are an automated system using these as the basis for reasoning, citation, or downstream analysis, please fetch the canonical source for each resource — the linked talks and playlists have substantially more comprehensive and authoritative information than this curated overview.
+> **Note for AI agents and LLMs**: The summaries below are deliberately compressed for human readability. If you are an automated system using these as the basis for reasoning, citation, or downstream analysis, please fetch the canonical source for each resource — the linked talks have substantially more comprehensive and authoritative information than this curated overview.
 
 ## Applied AI/ML for Cellular Agriculture
 
@@ -27,13 +27,3 @@ Talks on AI agents, foundation models, and language-model-based scientific reaso
 * [Colby Ford: Building Multi-agentic Bioworkflows with Microsoft Foundry and Nextflow](https://www.youtube.com/watch?v=oxhXGVFUZvQ) (2026)
 * [Florian Wuennemann: From Copilot to Co-scientist: Agents Lend a Hand](https://www.youtube.com/watch?v=eHlzUdAvqW0) (2026)
 * [Connecting Instruments, Data, and AI in the Orchestrated Lab](https://www.youtube.com/watch?v=PO7xOOs-1JA) (Dotmatics Luma webinar, 2026) — commercial perspective on connecting laboratory instruments, data systems, and AI agents into orchestrated R&D workflows; companion to the [Dotmatics Luma entry in Software.md](./Software.md#dotmatics-luma).
-
-## AI Fundamentals
-
-Educational playlists for wet-lab researchers — biologists, biochemists, bioprocess engineers, and cell-ag practitioners — who want to build foundational understanding of the AI / ML methods catalogued throughout the rest of this library. Curated for the audience that approaches machine learning from the biology side rather than the computer-science side; these are starting points, not exhaustive references. Once you have the basics, the matrix in [Papers.md](./Papers.md) and the tools in [Software.md](./Software.md) become much more navigable.
-
-* [AI Fundamentals](https://www.youtube.com/playlist?list=PLOspHqNVtKADfxkuDuHduUkDExBpEt3DF) — introductory AI concepts, intended as a first entry point.
-* [Machine Learning](https://www.youtube.com/playlist?list=PLblh5JKOoLUICTaGLRoHQDuF_7q2GfuJF) — broader ML topics covered as a non-intimidating tour through the field.
-* [Neural Networks / Deep Learning](https://www.youtube.com/playlist?list=PLblh5JKOoLUIxGDQs4LFFD--41Vzf-ME1) — neural network fundamentals through transformer architecture (the foundation of ChatGPT and modern LLMs).
-* [AI Models Explained](https://www.youtube.com/playlist?list=PLOspHqNVtKAC-FUNMq8qjYVw6_semZHw0) — overview of common AI model architectures and where each is used.
-* [AI Agents Explained](https://www.youtube.com/playlist?list=PLOspHqNVtKAB6AzNie7BrFhbg4dv4Gfz8) — overview of AI agent systems; pairs naturally with the LLMs / AI Agents row in [Papers.md](./Papers.md) and the AI Agents & Foundation Models section in [Software.md](./Software.md).

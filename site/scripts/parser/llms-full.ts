@@ -38,6 +38,7 @@ export function llmsFullSources(repoRoot: string = REPO_ROOT): string[] {
     'Databases.md',
     ...dirMarkdown(repoRoot, 'Datasets'),
     ...dirMarkdown(repoRoot, 'ResearchAreas'),
+    ...dirMarkdown(repoRoot, 'Primers'),
     'OtherResources.md',
     'Talks.md',
     'CONTRIBUTING.md',

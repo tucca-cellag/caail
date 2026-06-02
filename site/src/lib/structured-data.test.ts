@@ -51,6 +51,8 @@ describe('pageJsonLd — routing', () => {
       ['/caail/papers/explorer/', 'Papers'],
       ['/caail/papers/network/', 'Citation Network'],
       ['/caail/talks/', 'Talks & Videos'],
+      ['/caail/primers/cell-ag/', 'Cellular Agriculture for AI Researchers'],
+      ['/caail/primers/ai/', 'AI for Cell-Ag Researchers'],
       ['/caail/datasets/cow/', 'Cow / Bos taurus'],
       ['/caail/research-areas/bioprocess/', 'Bioprocess control'],
       ['/caail/about/', 'About'],
@@ -153,5 +155,13 @@ describe('breadcrumbList', () => {
     const bc = breadcrumbList('/caail/research-areas/bioprocess/', 'Bioprocess control') as any;
     expect(bc.itemListElement[1].name).toBe('Research Areas');
     expect(bc.itemListElement[1].item).toBeUndefined();
+  });
+
+  it('primer route → Home › Primers › Page (no section landing URL)', () => {
+    const bc = breadcrumbList('/caail/primers/cell-ag/', 'Cellular Agriculture for AI Researchers') as any;
+    expect(bc.itemListElement).toHaveLength(3);
+    expect(bc.itemListElement[1].name).toBe('Primers');
+    expect(bc.itemListElement[1].item).toBeUndefined();
+    expect(bc.itemListElement[2].name).toBe('Cellular Agriculture for AI Researchers');
   });
 });

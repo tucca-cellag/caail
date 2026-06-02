@@ -119,6 +119,10 @@ export default defineConfig({
       ],
       sidebar: [
         { label: 'Home', link: '/' },
+        { label: 'Primers', items: [
+          { label: 'Cellular Agriculture for AI', link: '/primers/cell-ag/' },
+          { label: 'AI for Cell-Ag', link: '/primers/ai/' },
+        ] },
         { label: 'Papers', items: [
           { label: 'Explorer', link: '/papers/explorer/' },
           { label: 'Citation Network', link: '/papers/network/' },

@@ -82,19 +82,18 @@ describe('buildTalksModel — real corpus', () => {
     model = buildTalksModel();
   });
 
-  it('has the three moved sections', () => {
+  it('has the talk sections (AI Fundamentals playlists now live in the AI primer)', () => {
     expect(model.sections.map((s) => s.heading)).toEqual([
       'Applied AI/ML for Cellular Agriculture',
       'AI Agents & Foundation Models for Biology',
-      'AI Fundamentals',
     ]);
   });
 
   it('emits the verified item tallies (bump when talks are added)', () => {
-    expect(talkItemCount(model)).toBe(19);
+    expect(talkItemCount(model)).toBe(14);
     const items = model.sections.flatMap((s) => s.items);
     expect(items.filter((i) => i.kind === 'video')).toHaveLength(14);
-    expect(items.filter((i) => i.kind === 'playlist')).toHaveLength(5);
+    expect(items.filter((i) => i.kind === 'playlist')).toHaveLength(0);
   });
 
   it('every video item has an 11-char id; passes TalksSchema', () => {

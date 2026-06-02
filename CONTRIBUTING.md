@@ -127,22 +127,28 @@ Summary: One to three sentences describing what it is and, importantly, *how it 
 
 All entries cross-link via the established `Companion to [Papers.md ref #N]` convention.
 
-### `Talks.md` and `OtherResources.md`
+### `Talks.md`, `Primers/`, and `OtherResources.md`
 
-Both are flat bulleted lists under category headings:
+All three are bulleted lists under category headings:
 
 ```markdown
 * [<Title>](<URL>)
 ```
 
-**Pick the file by medium:**
+**Pick the file by medium and intent:**
 
-- **Lectures, talks, webinars, and educational video playlists → `Talks.md`** (e.g. conference
-  talks, the Broad Institute MIA series, YouTube playlists). The site renders `Talks.md` as inline
-  players on `/talks/`, so prefer canonical YouTube watch / playlist URLs.
-- **Everything else educational or contextual → `OtherResources.md`** — field overviews, courses,
-  books, journal editorials and opinion, ecosystem initiatives and programs, and curated
-  bibliographies / "awesome lists".
+- **Lectures, talks, and webinars → `Talks.md`** (e.g. conference talks, the Broad Institute MIA
+  series). The site renders `Talks.md` as inline players on `/talks/`, so prefer canonical YouTube
+  watch URLs.
+- **Newcomer onboarding material → the `Primers/` directory** — field-overview videos, intro
+  primers, and learning playlists aimed at someone *new to the field*. Cell-ag orientation goes in
+  `Primers/CellAg.md`; AI/ML learning material goes in `Primers/AI.md`. These render at
+  `/primers/cell-ag/` and `/primers/ai/` with videos and playlists embedded inline, so prefer
+  canonical YouTube watch / playlist URLs; internal cross-links to the rest of the library use
+  repo-relative paths (e.g. `../Papers.md`, `../OtherResources.md#courses`).
+- **Everything else educational or contextual → `OtherResources.md`** — courses, books, journal
+  editorials and opinion, ecosystem initiatives and programs, and curated bibliographies /
+  "awesome lists".
 
 If you're adding a kind of resource that doesn't fit an existing `##` section in the chosen file,
 create a new `##` section rather than mixing it into an existing list.

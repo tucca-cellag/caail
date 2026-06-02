@@ -5,13 +5,14 @@ import AxeBuilder from '@axe-core/playwright';
 // Talks.md → grouped inline embeds on /talks
 // ---------------------------------------------------------------------------
 
-test('talks renders the three sections with embeds and playlist cards', async ({ page }) => {
+test('talks renders its talk sections with embeds (playlists now live in the AI primer)', async ({ page }) => {
   await page.goto('./talks/');
-  for (const h of ['Applied AI/ML for Cellular Agriculture', 'AI Agents & Foundation Models for Biology', 'AI Fundamentals']) {
+  for (const h of ['Applied AI/ML for Cellular Agriculture', 'AI Agents & Foundation Models for Biology']) {
     await expect(page.getByRole('heading', { name: h })).toBeVisible();
   }
+  // The AI Fundamentals playlists moved to /primers/ai/.
+  await expect(page.getByRole('heading', { name: 'AI Fundamentals' })).toHaveCount(0);
   expect(await page.locator('lite-youtube').count()).toBeGreaterThan(1); // video facades
-  expect(await page.locator('a.talk-card').count()).toBeGreaterThan(0); // playlist cards
 
   // right-rail "On This Page" lists the sections, and every anchor resolves
   expect(await page.locator('starlight-toc a').count()).toBeGreaterThan(1); // Overview + sections

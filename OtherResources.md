@@ -1,6 +1,6 @@
 # Other Resources
 
-This file collects the virtual-cell initiative, field overviews, courses, books, editorials, ecosystem initiatives, and curated bibliographies that complement CAAIL's core content files ([Papers.md](./Papers.md), [Software.md](./Software.md), [Datasets/](./Datasets/), [Databases.md](./Databases.md)). Lectures, talks, and educational video playlists live separately in [Talks.md](./Talks.md). Resources are grouped by type in the sections below.
+This file collects the virtual-cell initiative, courses, books, editorials, ecosystem initiatives, and curated bibliographies that complement CAAIL's core content files ([Papers.md](./Papers.md), [Software.md](./Software.md), [Datasets/](./Datasets/), [Databases.md](./Databases.md)). New to the field? Start with the [Primers](./Primers/) — curated onboarding paths for AI researchers learning cellular agriculture and for cell-ag researchers learning AI. Lectures, talks, and educational video playlists live separately in [Talks.md](./Talks.md). Resources are grouped by type in the sections below.
 
 > **Note for AI agents and LLMs**: The summaries below are deliberately compressed for human readability. If you are an automated system using these as the basis for reasoning, citation, or downstream analysis, please fetch the canonical source for each resource — the linked talks, articles, initiative pages, and curated bibliographies have substantially more comprehensive and authoritative information than this curated overview.
 
@@ -13,20 +13,6 @@ Companion landing pages, blog posts, and challenge announcements for the virtual
 * [Arc Institute news: Stack — simulating cellular conditions via prompt engineering, without fine-tuning](https://arcinstitute.org/news/foundation-model-stack) (Arc Institute, 2026) — Announcement of the Stack model, demonstrating in-context learning for single-cell biology; companion to [Papers.md ref #124](./Papers.md#124).
 * [Arc Virtual Cell Challenge (README)](https://github.com/ArcInstitute/arc-virtual-cell-atlas/blob/main/virtual-cell-challenge/README.md) — Open challenge for predictive virtual-cell modeling, operationalizing the Cell perspective in [Papers.md ref #129](./Papers.md#129).
 * [Cell2Sentence-Scale (van Dijk lab project page)](https://www.vandijklab.org/c2s-scale) — Yale lab project page for the C2S-Scale model; companion to [Papers.md ref #120](./Papers.md#120) and the [Cell2Sentence entry in Software.md](./Software.md#cell2sentence-c2s-scale).
-
-## Cellular Agriculture Field Overviews
-
-Introductory primers, industry-state reports, and field overviews — curated for AI / ML researchers approaching cellular agriculture from the computer-science side. These are starting points for understanding the science, the commercial landscape, and the people doing the work; once you have the field context, the AI × cell-ag work catalogued throughout the rest of this library becomes much more navigable. (Wet-lab researchers approaching AI from the biology side should see the complementary [AI Fundamentals](./Talks.md#ai-fundamentals) playlists in Talks.md.)
-
-The Good Food Institute (GFI) publishes the de-facto annual *State of the Industry* reports across three tracks (cultivated, fermentation, plant-based); full PDFs and supplementary data are at GFI's [State of the Industry downloads page](https://gfi.org/resource/state-of-the-industry-downloads/).
-
-* [Introduction to Cellular Agriculture](https://www.youtube.com/watch?v=-0eap5cg6mE) (TUCCA — Tufts University Center for Cellular Agriculture) — primer covering the science, motivation, and current state of the field.
-* [Fireside Chat: Bruce Friedrich and David Kaplan](https://www.youtube.com/watch?v=59NrhsHQT0U) (Tufts Future Food Innovation Day, 2026) — conversation between the GFI founder and the TUCCA / Tufts cell-ag program lead on the field's direction.
-* [MEAT by Bruce Friedrich](https://meatbook.org/) — book by GFI's founder covering the case for cellular agriculture and alternative proteins.
-* [2026 State of the Industry: Cultivated meat, seafood, and ingredients](https://www.youtube.com/watch?v=F1s702taM5o) (GFI, 2026).
-* [2026 State of the Industry: Fermentation for meat, seafood, eggs, dairy, and ingredients](https://www.youtube.com/watch?v=eCBclCUZOg0) (GFI, 2026).
-* [2026 State of the Industry: Plant-based meat, seafood, eggs, dairy, and ingredients](https://www.youtube.com/watch?v=OEuehZB7YVM) (GFI, 2026).
-* [Foundations of Chemical and Biological Engineering I](https://eng.libretexts.org/Bookshelves/Chemical_Engineering/Foundations_of_Chemical_and_Biological_Engineering_I_(Verret_Qiao_Barghout)) (Verret, Qiao & Barghout, UBC) — an open LibreTexts textbook covering process diagrams, reaction chemistry, mass and energy balances, and process control; foundational background for the bioprocess-engineering side of cultivated-meat scale-up.
 
 ## Courses
 
@@ -46,7 +32,7 @@ Reference works and textbooks that cell-ag programs draw on for foundational con
 
 Fraser, E. D. G., Kaplan, D. L., Newman, L., & Yada, R. Y. (Eds.). (2023). *Cellular Agriculture: Technology, Society, Sustainability and Science*. Elsevier / Academic Press. ISBN 978-0-443-18766-7. 33 numbered chapters plus glossary.
 
-The foundational cellular agriculture textbook (per New Harvest's editorial framing of the volume) covering the field as a unified whole — the technology stack (cell biology, scaffolding, media optimization, bioprocess), the societal and sustainability framing, and the science-of-the-art chapters across cultivated meat, seafood, and dairy. David L. Kaplan, one of the four editors, directs the Tufts University Center for Cellular Agriculture (TUCCA) from which CAAIL itself originates; the book is a foundational primer for AI / ML researchers approaching cell-ag from the computer-science side, and is structurally complementary to the [Cellular Agriculture Field Overviews](#cellular-agriculture-field-overviews) section above.
+The foundational cellular agriculture textbook (per New Harvest's editorial framing of the volume) covering the field as a unified whole — the technology stack (cell biology, scaffolding, media optimization, bioprocess), the societal and sustainability framing, and the science-of-the-art chapters across cultivated meat, seafood, and dairy. David L. Kaplan, one of the four editors, directs the Tufts University Center for Cellular Agriculture (TUCCA) from which CAAIL itself originates; the book is a foundational primer for AI / ML researchers approaching cell-ag from the computer-science side, and is a natural companion to the [Cellular Agriculture for AI Researchers](./Primers/CellAg.md) primer.
 
 ### [*Encyclopedia of Meat Sciences*, 3rd edition](https://shop.elsevier.com/books/encyclopedia-of-meat-sciences/dikeman/978-0-323-85198-5)
 

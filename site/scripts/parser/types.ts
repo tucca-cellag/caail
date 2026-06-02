@@ -141,6 +141,52 @@ export const TalksSchema = z.object({
   sections: z.array(TalkSectionSchema),
 });
 
+// ---------------------------------------------------------------------------
+// primers.json — the Primers/*.md curated onboarding hubs (cell-ag ⇄ AI)
+// ---------------------------------------------------------------------------
+
+/**
+ * One primer item — a TalkItem plus an `internal` flag. Internal items are
+ * cross-links into the rest of the site (e.g. /caail/papers/explorer/) whose
+ * repo-relative `.md` URL has been rewritten to a site route by primers.ts;
+ * they render as same-tab nav cards rather than new-tab external links.
+ */
+export const PrimerItemSchema = TalkItemSchema.extend({
+  /** Destination URL — an absolute external URL, OR a site-relative route
+   *  (e.g. "/caail/papers/explorer/") for rewritten internal cross-links, so
+   *  this relaxes TalkItem's absolute-URL constraint. */
+  url: z.string(),
+  /** true when `url` is a rewritten same-site route (CAAIL navigation target) */
+  internal: z.boolean(),
+});
+
+export const PrimerSectionSchema = z.object({
+  /** H2 section heading, e.g. "Watch first — cellular agriculture foundations" */
+  heading: z.string(),
+  /** Section intro paragraph; '' if none */
+  intro: z.string(),
+  items: z.array(PrimerItemSchema),
+});
+
+export const PrimerSchema = z.object({
+  /** Route slug, e.g. "cell-ag" → /caail/primers/cell-ag/ */
+  slug: z.string(),
+  /** H1 title of the primer file */
+  title: z.string(),
+  /** Lede paragraph (plain text) shown above the sections; '' if none */
+  lead: z.string(),
+  sections: z.array(PrimerSectionSchema),
+});
+
+/**
+ * Schema for primers.json — the canonical Primers/*.md onboarding hubs, parsed
+ * the same way as Talks.md but with internal cross-links rewritten to site
+ * routes and YouTube links classified for inline embedding.
+ */
+export const PrimersSchema = z.object({
+  primers: z.array(PrimerSchema),
+});
+
 /**
  * Schema for counts.json — aggregate stats across all canonical content files.
  */
@@ -293,6 +339,10 @@ export type Catalog = z.infer<typeof CatalogSchema>;
 export type TalkItem = z.infer<typeof TalkItemSchema>;
 export type TalkSection = z.infer<typeof TalkSectionSchema>;
 export type Talks = z.infer<typeof TalksSchema>;
+export type PrimerItem = z.infer<typeof PrimerItemSchema>;
+export type PrimerSection = z.infer<typeof PrimerSectionSchema>;
+export type Primer = z.infer<typeof PrimerSchema>;
+export type Primers = z.infer<typeof PrimersSchema>;
 export type GraphNode = z.infer<typeof GraphNodeSchema>;
 export type GraphEdge = z.infer<typeof GraphEdgeSchema>;
 export type CitationEdge = z.infer<typeof CitationEdgeSchema>;

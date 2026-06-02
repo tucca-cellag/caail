@@ -54,6 +54,7 @@ export function routeSegments(pathname: string): string[] {
 /** First-segment → human label for the breadcrumb's section crumb. */
 const SECTION_LABELS: Record<string, string> = {
   papers: 'Papers',
+  primers: 'Primers',
   software: 'Software',
   databases: 'Databases',
   datasets: 'Datasets',
