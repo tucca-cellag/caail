@@ -92,6 +92,15 @@ describe('buildMetricsModel — real corpus', () => {
     expect(pig.inventoryRows).toBeGreaterThan(0);
   });
 
+  it('datasets breakdown parts sum to total and match library.datasets', () => {
+    const { total, speciesRows, referenceEntries, benchmarkEntries } = metrics.datasets;
+    expect(speciesRows + referenceEntries + benchmarkEntries).toBe(total);
+    expect(total).toBe(metrics.library.datasets);
+    expect(speciesRows).toBeGreaterThan(0);
+    expect(referenceEntries).toBeGreaterThan(0);
+    expect(benchmarkEntries).toBeGreaterThan(0);
+  });
+
   it('captures a build-time momentum snapshot from git', () => {
     expect(metrics.momentum).not.toBeNull();
     expect(metrics.momentum!.papersLastModified).toBeTruthy();

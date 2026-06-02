@@ -194,7 +194,10 @@ export const CountsSchema = z.object({
   papers: z.number().int().nonnegative(),
   software: z.number().int().nonnegative(),
   databases: z.number().int().nonnegative(),
+  /** number of dataset *pages* in Datasets/ (per-species + reference + topical) */
   species: z.number().int().nonnegative(),
+  /** number of catalogued *datasets* across all Datasets/ pages */
+  datasets: z.number().int().nonnegative(),
   researchAreas: z.number().int().nonnegative(),
   talks: z.number().int().nonnegative(),
 });
@@ -298,6 +301,18 @@ export const MetricsSpeciesSchema = z.object({
   isStub: z.boolean(),
 });
 
+/** Breakdown of the catalogued-dataset total by source-page shape. */
+export const MetricsDatasetsSchema = z.object({
+  /** == counts.datasets; the sum of the three parts below */
+  total: z.number().int().nonnegative(),
+  /** `## Complete data inventory` rows over the species + CrossSpecies pages */
+  speciesRows: z.number().int().nonnegative(),
+  /** `###` dataset entries over the reference pages */
+  referenceEntries: z.number().int().nonnegative(),
+  /** `##` dataset entries on the benchmarks page */
+  benchmarkEntries: z.number().int().nonnegative(),
+});
+
 /** Build-time git snapshot; null when git history is unavailable (shallow clone). */
 export const MetricsMomentumSchema = z
   .object({
@@ -320,6 +335,8 @@ export const MetricsSchema = z.object({
     perMethod: z.array(MetricsMethodSchema),
   }),
   species: z.array(MetricsSpeciesSchema),
+  /** catalogued-dataset total + breakdown by source-page shape */
+  datasets: MetricsDatasetsSchema,
   momentum: MetricsMomentumSchema,
   /** ISO build timestamp */
   generatedAt: z.string(),
@@ -349,4 +366,5 @@ export type CitationEdge = z.infer<typeof CitationEdgeSchema>;
 export type GraphModeStats = z.infer<typeof GraphModeStatsSchema>;
 export type Graph = z.infer<typeof GraphSchema>;
 export type MetricsSpecies = z.infer<typeof MetricsSpeciesSchema>;
+export type MetricsDatasets = z.infer<typeof MetricsDatasetsSchema>;
 export type Metrics = z.infer<typeof MetricsSchema>;

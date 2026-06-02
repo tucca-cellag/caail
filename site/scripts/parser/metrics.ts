@@ -1,11 +1,13 @@
 /**
  * metrics.ts — builds metrics.json for the "By the Numbers" dashboard (M6).
  *
- * Three signals, all derived at build time (no committed history, no workflow):
+ * Signals, all derived at build time (no committed history, no workflow):
  *   - library:  the counts.json values (single source of truth via computeCounts)
  *   - matrix:   Papers.md matrix coverage + per-area / per-method paper counts
  *   - species:  per-species `## Complete data inventory` row counts (the
  *               "where help is wanted" recruitment signal; stubs → 0 rows)
+ *   - datasets: the catalogued-dataset total + breakdown by source-page shape
+ *               (via datasets.ts; total === counts.datasets)
  *   - momentum: a git snapshot (last-modified + 30-day commit counts), guarded
  *               so a shallow clone degrades to null rather than failing the build.
  *
@@ -13,13 +15,15 @@
  */
 
 import { execFileSync } from 'node:child_process';
-import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import type { Table } from 'mdast';
 
-import { parseFile, sectionsAfter } from './markdown.js';
 import { AREAS } from './areas.js';
 import { computeCounts } from './counts.js';
+import {
+  SPECIES_PAGES,
+  inventoryRowCount,
+  computeDatasetBreakdown,
+} from './datasets.js';
 import {
   MetricsSchema,
   type Metrics,
@@ -29,14 +33,6 @@ import {
 
 /** parser/ → scripts/ → site/ → repo root. */
 const DEFAULT_REPO_ROOT: string = fileURLToPath(new URL('../../../', import.meta.url));
-
-/** Cell-ag species pages (the recruitment chart); reference/topical pages excluded. */
-const SPECIES_PAGES: readonly string[] = [
-  'Chicken', 'Cow', 'Crustacean', 'Duck', 'Fish',
-  'Goat', 'Mollusk', 'Pig', 'Sheep', 'Turkey',
-];
-
-const INVENTORY_HEADING = 'Complete data inventory';
 
 // ---------------------------------------------------------------------------
 // Matrix coverage
@@ -75,26 +71,13 @@ function buildMatrix(model: PapersData) {
 // ---------------------------------------------------------------------------
 
 /**
- * Count the rows of a species page's `## Complete data inventory` table.
- * Returns `{ inventoryRows, isStub }` — a stub page (placeholder note, no table)
- * yields `{ 0, true }`. A missing page is treated as a stub.
+ * Per-species inventory signal for the recruitment chart. Delegates the row
+ * count to `datasets.inventoryRowCount` (the shared inventory-table counter);
+ * a stub page (placeholder note, no table) or a missing page yields
+ * `{ 0, true }`.
  */
 export function speciesInventory(repoRoot: string, species: string): MetricsSpecies {
-  const path = join(repoRoot, 'Datasets', `${species}.md`);
-  let table: Table | null = null;
-  try {
-    const root = parseFile(path);
-    const section = sectionsAfter(root, 2).find(
-      (s) => s.heading.trim() === INVENTORY_HEADING,
-    );
-    if (section) {
-      table = (section.nodes.find((n) => n.type === 'table') as Table | undefined) ?? null;
-    }
-  } catch {
-    table = null;
-  }
-  // mdast GFM table: first row is the header → data rows = children - 1.
-  const inventoryRows = table ? Math.max(0, table.children.length - 1) : 0;
+  const inventoryRows = inventoryRowCount(repoRoot, species);
   return { species, inventoryRows, isStub: inventoryRows === 0 };
 }
 
@@ -142,10 +125,14 @@ export function buildMetricsModel(
   repoRoot: string = DEFAULT_REPO_ROOT,
   now: string = new Date().toISOString(),
 ): Metrics {
+  const { total, speciesRows, referenceEntries, benchmarkEntries } =
+    computeDatasetBreakdown(repoRoot);
+
   const metrics: Metrics = {
     library: computeCounts(model, repoRoot),
     matrix: buildMatrix(model),
     species: SPECIES_PAGES.map((s) => speciesInventory(repoRoot, s)),
+    datasets: { total, speciesRows, referenceEntries, benchmarkEntries },
     momentum: computeMomentum(repoRoot),
     generatedAt: now,
   };

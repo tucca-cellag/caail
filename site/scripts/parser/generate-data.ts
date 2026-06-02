@@ -132,6 +132,15 @@ export function generateData(
   assertCountsMatch('talks', talkItemCount(talks), counts.talks);
   assertCountsMatch('graph nodes', graph.nodes.length, counts.papers);
   assertCountsMatch('metrics.library.papers', metrics.library.papers, counts.papers);
+  assertCountsMatch('metrics.library.datasets', metrics.library.datasets, counts.datasets);
+  assertCountsMatch('metrics.datasets.total', metrics.datasets.total, counts.datasets);
+  assertCountsMatch(
+    'datasets breakdown sum',
+    metrics.datasets.speciesRows +
+      metrics.datasets.referenceEntries +
+      metrics.datasets.benchmarkEntries,
+    metrics.datasets.total,
+  );
 
   // Ensure the output directory exists.
   mkdirSync(outDir, { recursive: true });
