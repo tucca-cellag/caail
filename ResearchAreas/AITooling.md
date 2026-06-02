@@ -22,6 +22,9 @@ Agents focused on the scientific research process itself — retrieving and synt
 - [#45 The AI Scientist](../Papers.md#45) (Lu et al. 2024, Sakana AI) — first end-to-end framework for fully automated open-ended discovery: idea generation, experiment design, paper drafting.
 - [#47 The AI Scientist-v2](../Papers.md#47) (Yamada et al. 2025, Sakana AI) — workshop-level extension using agentic tree search.
 - [#53 ARIEL](../Papers.md#53) (Liu et al. 2026) — biomedical AI research assistant with expert-involved learning.
+- [#153 AI Co-Scientist](../Papers.md#153) (Gottweis et al. 2026, *Nature*) — a Gemini-based multi-agent system whose six specialized agents (Generation, Reflection, Ranking, Evolution, Proximity, Meta-review) generate and tournament-refine novel hypotheses under scientist-in-the-loop supervision; validated on drug repurposing, target discovery, and antimicrobial resistance.
+- [#154 Robin](../Papers.md#154) (Ghareeb et al. 2026, *Nature*) — a "lab-in-the-loop" multi-agent system automating both hypothesis generation and data analysis for experimental biology, coordinating PaperQA2-based literature agents (Crow, Falcon) with a data-analysis agent (Finch); it proposed and experimentally confirmed a repurposed drug candidate for dry age-related macular degeneration.
+- [#166 ERA](../Papers.md#166) (Aygün et al. 2026, *Nature*) — an LLM-plus-tree-search system that writes expert-level empirical analysis software to maximize a measurable quality metric, drawing ideas from the literature; in bioinformatics it discovered single-cell batch-integration methods that outperformed the top human methods on a public benchmark.
 
 ## General-Purpose Biomedical Agents
 
@@ -40,6 +43,8 @@ Foundational LLM-agent patterns from chemistry. Both papers share a common templ
 
 - [#70 Coscientist](../Papers.md#70) (Boiko et al. 2023, *Nature*) — GPT-4 autonomous chemistry research system; the foundational pattern for tool-augmented LLMs in the natural sciences.
 - [#71 ChemCrow](../Papers.md#71) (Bran et al. 2024, *Nat Machine Intelligence*) — GPT-4 + 18 chemistry tools for synthesis planning, drug discovery, and materials design.
+- [#161 ether0](../Papers.md#161) (Narayanan et al. 2025, FutureHouse) — a 24-billion-parameter chemistry reasoning model post-trained with reinforcement learning on verifiable chemistry problems; it reasons in natural language and emits molecular structures as SMILES, with direct relevance to media-component, scaffold-chemistry, and flavor-molecule design.
+- [#163 MoleCode](../Papers.md#163) (Yan et al. 2026) — an LLM-native, training-free, graph-explicit molecular language that makes molecular topology directly readable and editable inside the model context, with lossless conversion to and from SMILES and MOL files; most useful where implicit-structure reconstruction is the bottleneck.
 
 ## Domain-Specific Biomedical Agents
 
@@ -53,6 +58,7 @@ Agents specialized for a single biomedical task or sub-domain. Narrower scope th
 - [#66 Lila](../Papers.md#66) (Singh et al. 2023, Carbonell group) — automated scientist for microbial strain design.
 - [#68 Li LLMs ME](../Papers.md#68) (Li et al. 2024) — RAG-augmented LLMs for metabolic-engineering design.
 - [#69 KinModGPT](../Papers.md#69) (Maeda & Kurata 2023) — GPT-driven generation of SBML kinetic models from natural-language texts.
+- [#167 Talk2Biomodels / Talk2KnowledgeGraphs](../Papers.md#167) (Singh et al. 2025) — the workshop paper introducing the LangGraph-based agents that give natural-language access to SBML systems-biology models (the BioModels database) and biomedical knowledge graphs; the published core of the AIAgents4Pharma Talk2X family alongside the later [#50 Talk2Biomodels](../Papers.md#50).
 
 Sibling refs in this row's `× Cellular Engineering` cell — cell-engineering-specific agentic work — include [#90 GenCellAgent](../Papers.md#90) (Yu et al. 2026, training-free cellular image segmentation), [#93 CellForge](../Papers.md#93) (Tang et al. 2026, agentic design of virtual cell models), and [#97 PerTurboAgent](../Papers.md#97) (Hao et al. 2025, self-planning agent for sequential Perturb-seq).
 
@@ -60,6 +66,7 @@ Sibling refs in this row's `× Cellular Engineering` cell — cell-engineering-s
 
 Closed-loop autonomous research systems integrating LLM agents with wet-lab execution. The cluster spans 25+ years of "Robot Scientist" work from the King group (Adam → Eve → Genesis) extended by recent LLM-era multi-agent systems.
 
+- [#182 The Robot Scientist](../Papers.md#182) (King et al. 2004, *Nature*) — the original autonomous "Robot Scientist": it abductively generates functional-genomics hypotheses and uses active learning to select cost-optimal yeast deletion-mutant experiments, matching human experiment-selection performance — the founding reference for this cluster's Adam → Eve → Genesis lineage.
 - [#64 Genesis](../Papers.md#64) (Tiukova et al. 2024, King group) — third-generation robot scientist for systems biology.
 - [#65 AutonoMS](../Papers.md#65) (Brunnsåker et al. 2025) — agentic AI integrated with scientific knowledge for laboratory validation in systems biology.
 
@@ -72,13 +79,18 @@ Substrate platforms — agent frameworks, biomedical knowledge-graph backends, a
 - [#41 ToolUniverse](../Papers.md#41) (Gao et al. 2025) — ecosystem for democratizing AI scientists from any open- or closed-weight model; companion to [TxAgent](#general-purpose-biomedical-agents) (#40) and the rest of the Zitnik-lab agent stack.
 - [#48 BioCypher](../Papers.md#48) (Lobentanzer et al. 2025, *Nat Biotech*) — knowledge-graph platform purpose-built for biomedical applications of LLMs.
 - [#67 MCP Servers for biology](../Papers.md#67) (Ruscone et al. 2025, Saez-Rodriguez lab) — Model Context Protocol server implementations as AI-biology interfaces (NeKo, MaBoSS, PhysiCell).
+- [#133 BioContextAI](../Papers.md#133) (Kuehl et al. 2025, *Nat Biotech*) — an open, community registry and reference servers for the Model Context Protocol in biomedicine, standardizing how agentic assistants discover and compose tool servers; its Knowledgebase MCP exposes more than 15 biomedical resources.
+- [#160 Aviary](../Papers.md#160) (Narayanan et al. 2024, FutureHouse) — an extensible "gymnasium" for training language agents on language decision processes, with scientific environments for molecular cloning, literature QA, and protein stability; trained small open-source models matched experts and frontier LLMs at far lower inference cost.
+- [#162 SciAtlas](../Papers.md#162) (Qiao et al. 2026) — a large multidisciplinary academic knowledge graph (43M+ papers, 157M entities, 3B triplets) with a neuro-symbolic "tri-path" retrieval algorithm, pitched as a topological substrate for automated-research agents.
 
 ## Other AI methodology in the AI Tooling column
 
-Two papers in the AI Tooling column live outside the LLM/agent taxonomy above and don't fit any of the eight clusters:
+A handful of AI Tooling-column papers live outside the LLM/agent taxonomy above:
 
 - [#52 BioMedReasoner](../Papers.md#52) (Mulyadi et al. 2025, NeurIPS 2025 AI4Science Workshop) — multi-hop reasoning via path-based relational learning on biomedical knowledge graphs (lives in the [GNN](https://en.wikipedia.org/wiki/Graph_neural_network) row).
 - [#63 Pandi et al.](../Papers.md#63) (2022, *Nat Comms*) — versatile active-learning workflow for optimization of genetic and metabolic networks (lives in the [Active Learning](https://en.wikipedia.org/wiki/Active_learning_(machine_learning)) row).
+- [#197 Epicure](../Papers.md#197) (Radzikowski & Chen 2026) — skip-gram (Metapath2Vec) food-ingredient embeddings trained on 4.14M recipes across seven languages plus a FlavorDB ingredient–compound graph, supporting ingredient pairing and sensory/cuisine navigation; a representation-learning method (in the [Deep Learning](https://en.wikipedia.org/wiki/Deep_learning) row) most relevant to flavor design (see also [Sensory Prediction](./SensoryPrediction.md)).
+- [#151](../Papers.md#151) and [#152](../Papers.md#152) (Gu et al. 2024, *CHI*) — paired human-computer-interaction studies of how data analysts verify and act on AI-generated analyses; not agents themselves, but evidence on the human-in-the-loop verification that any agentic cell-ag workflow ultimately depends on (also cross-referenced from [AI Evaluation & Benchmarking](./AIEvaluation.md)).
 
 ## Related Software (Not in Matrix)
 
@@ -96,4 +108,4 @@ A growing number of AI-agent tools are released as open-source platforms or comm
 
 - Software: [AI Agents & Foundation Models](../Software.md#ai-agents--foundation-models) section in `Software.md`.
 - Adjacent research areas: [AI Evaluation & Benchmarking](./AIEvaluation.md), [Media Optimization](./MediaOptimization.md), [Cellular Engineering](./CellEngineering.md), [Bioprocess Control](./Bioprocess.md), [Sensory Prediction](./SensoryPrediction.md), [Metabolic Modeling](./MetabolicModeling.md).
-- Talks: [AI Agents & Foundation Models for Biology](../OtherResources.md#ai-agents--foundation-models-for-biology) section in `OtherResources.md`.
+- Talks: [AI Agents & Foundation Models for Biology](../Talks.md#ai-agents--foundation-models-for-biology) section in `Talks.md`.
