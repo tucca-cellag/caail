@@ -171,7 +171,7 @@ a.site-title {
 
 .caail-tv-bar { display: flex; justify-content: flex-end; margin-bottom: 0.5rem; }
 .caail-tv-toggle { display: none; border: 1px solid var(--caail-border); border-radius: 8px; overflow: hidden; }
-.caail-tv-toggle button { font: inherit; font-size: 0.72rem; font-weight: 600; padding: 0.3rem 0.75rem; background: var(--caail-bg); color: var(--caail-muted); border: 0; cursor: pointer; }
+.caail-tv-toggle button { font: inherit; font-size: 0.72rem; font-weight: 600; margin: 0; padding: 0.3rem 0.75rem; background: var(--caail-bg); color: var(--caail-muted); border: 0; cursor: pointer; text-align: center; }
 .caail-tv-toggle button + button { border-inline-start: 1px solid var(--caail-border); }
 .caail-tv-toggle button[aria-pressed='true'] { background: var(--caail-primary); color: #fff; }
 
@@ -184,7 +184,7 @@ a.site-title {
 .caail-card-v { color: var(--caail-ink); line-height: 1.4; }
 
 @media (min-width: 50rem) {
-  .caail-tv-toggle { display: inline-flex; }
+  .caail-tv-toggle { display: inline-grid; grid-template-columns: 1fr 1fr; }
   .caail-tableview[data-view='table'] > .caail-cards { display: none; }
   .caail-tableview[data-view='cards'] > table { display: none; }
 }
