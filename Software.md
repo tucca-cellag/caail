@@ -268,6 +268,7 @@ K-Dense-AI is an AI co-scientist ecosystem combining a commercial agent platform
 - **[mimeo](https://github.com/K-Dense-AI/mimeo)** — A tool for "mimeographing" an expert's knowledge into a `SKILL.md` / `AGENTS.md` file consumable by Claude Code or similar agents.
 - **[mimeographs](https://github.com/K-Dense-AI/mimeographs)** — A collection of persona-based agent skills (founders, philosophers, scientists) generated with mimeo.
 - **[claude-scientific-writer](https://github.com/K-Dense-AI/claude-scientific-writer)** — A Claude-Code-compatible general-purpose scientific writing agent.
+- **[science-superpowers](https://github.com/K-Dense-AI/science-superpowers)** — A composable computational-science methodology for research agents: 15 auto-triggering skills — 13 covering the research lifecycle (framing falsifiable questions, surveying prior work, designing and **pre-registering** the analysis, reproducible execution, anomaly root-causing, results verification, red-team review, and reporting/archiving) plus two meta skills for authoring and onboarding new skills. A science-domain reimplementation of [obra/superpowers](#superpowers) whose central discipline is pre-registration rather than test-driven development; runs with only the agent harness and a POSIX shell (zero third-party dependencies). MIT-licensed.
 
 Not an MCP server but a documentation-and-prompt-context layer that pairs well with code-execution agents like Biomni, Cursor, and Claude Code.
 
@@ -275,7 +276,7 @@ Project page: <https://k-dense.ai>.
 
 ### [Superpowers](https://github.com/obra/superpowers)
 
-Summary: An agentic skills framework and software-development methodology authored by Jesse "obra" Vincent (`obra/superpowers`) — one of the most-starred Claude Code skill collections. Provides domain-agnostic skills for planning, debugging, code review, and execution that compose cleanly with cell-ag-specific skill packs (e.g. [K-Dense-AI's scientific-agent-skills](#k-dense-ai)) when assembling an agent stack for a cell-ag lab. Shell-based, MIT-licensed.
+Summary: An agentic skills framework and software-development methodology authored by Jesse "obra" Vincent (`obra/superpowers`) — one of the most-starred Claude Code skill collections. Provides domain-agnostic skills for planning, debugging, code review, and execution that compose cleanly with cell-ag-specific skill packs (e.g. [K-Dense-AI's scientific-agent-skills](#k-dense-ai)) when assembling an agent stack for a cell-ag lab. Shell-based, MIT-licensed. K-Dense-AI's [science-superpowers](#k-dense-ai) is a science-domain reimplementation of this methodology for data analysis, swapping test-driven development for pre-registration.
 
 ### [Skill Seekers](https://github.com/yusufkaraaslan/Skill_Seekers)
 
