@@ -72,6 +72,40 @@ export default defineConfig({
           content:
             "(()=>{try{var d=document.documentElement,s=localStorage;if(s.getItem('caail-nav-collapsed')==='1')d.setAttribute('data-sidebar-collapsed','');if(s.getItem('caail-toc-collapsed')==='1')d.setAttribute('data-toc-collapsed','');}catch(e){}})();",
         },
+        // Site-wide social card (Starlight emits twitter:card=summary_large_image
+        // but no image by default). One branded 1200×630 card for every page.
+        { tag: 'meta', attrs: { property: 'og:image', content: 'https://tucca-cellag.github.io/caail/og.png' } },
+        { tag: 'meta', attrs: { property: 'og:image:width', content: '1200' } },
+        { tag: 'meta', attrs: { property: 'og:image:height', content: '630' } },
+        { tag: 'meta', attrs: { name: 'twitter:image', content: 'https://tucca-cellag.github.io/caail/og.png' } },
+        // Structured data: Organization (TUCCA) + WebSite, for search engines
+        // and AI answer-engines.
+        {
+          tag: 'script',
+          attrs: { type: 'application/ld+json' },
+          content: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@graph': [
+              {
+                '@type': 'Organization',
+                '@id': 'https://tucca-cellag.github.io/caail/#org',
+                name: 'Tufts University Center for Cellular Agriculture (TUCCA)',
+                url: 'https://cellularagriculture.tufts.edu/',
+                sameAs: ['https://github.com/tucca-cellag'],
+              },
+              {
+                '@type': 'WebSite',
+                '@id': 'https://tucca-cellag.github.io/caail/#website',
+                name: 'CAAIL — Cellular Agriculture AI Library',
+                url: 'https://tucca-cellag.github.io/caail/',
+                description:
+                  'A curated, openly-licensed library at the intersection of cellular agriculture and artificial intelligence — peer-reviewed papers, open-source software, databases, and per-species datasets.',
+                inLanguage: 'en',
+                publisher: { '@id': 'https://tucca-cellag.github.io/caail/#org' },
+              },
+            ],
+          }),
+        },
       ],
       social: [
         { icon: 'github', label: 'GitHub', href: 'https://github.com/tucca-cellag/caail' },

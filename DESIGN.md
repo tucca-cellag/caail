@@ -105,7 +105,7 @@ Icons use **Phosphor** (MIT) via `astro-icon`, with a disciplined weight system:
 | Active / selected / emphasis states | **bold** |
 | GitHub mark | `ph:github-logo` (Starlight `social`) |
 
-No emoji anywhere; large display-font numerals carry much of the visual weight in the hero stats and sections grid. Imagery: a simple favicon (monogram on Tufts navy) and a 1200×630 Open Graph image showing the wordmark + tagline on a Tufts-navy field — no Tufts logo or seal in either.
+No emoji anywhere; large display-font numerals carry much of the visual weight in the hero stats and sections grid. Imagery: a simple favicon (sparkle monogram on Tufts navy) and a 1200×630 Open Graph card (`site/public/og.png`) showing the sparkle mark, the CAAIL wordmark + tagline, and a row of the Okabe–Ito area dots on a Tufts-navy field — no Tufts logo or seal in either. The OG card is generated from an on-brand SVG by `site/scripts/og-image.mjs` (run once via `node scripts/og-image.mjs`; the PNG is committed, so the build never depends on it) and wired site-wide as `og:image`/`twitter:image` in `astro.config.mjs`.
 
 ## 9. Voice & tone
 
