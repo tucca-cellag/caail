@@ -135,6 +135,7 @@ export default defineConfig({
         { label: 'Other Resources', link: '/other-resources/' },
         { label: 'By the Numbers', link: '/by-the-numbers/' },
         { label: 'Contributing', link: '/contributing/' },
+        { label: 'How to Cite', link: '/cite/' },
         { label: 'About', link: '/about/' },
       ],
       customCss: [

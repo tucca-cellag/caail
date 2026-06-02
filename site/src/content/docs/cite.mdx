@@ -1,0 +1,38 @@
+---
+title: How to Cite
+description: How to cite CAAIL — the Cellular Agriculture AI Library — in APA or BibTeX, with its Zenodo DOI.
+---
+
+import CitationBlock from '../../components/CitationBlock.astro';
+import { CAAIL_BIBTEX } from '../../lib/citation.ts';
+
+If you reference CAAIL or build on its curated content, please cite the repository. CAAIL is
+archived on Zenodo with a concept DOI that always resolves to the latest version:
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20295590.svg)](https://doi.org/10.5281/zenodo.20295590)
+
+On GitHub, the **“Cite this repository”** button in the sidebar generates these same citations from
+the [`CITATION.cff`](https://github.com/tucca-cellag/caail/blob/main/CITATION.cff) at the repository
+root.
+
+## Recommended citation
+
+<CitationBlock label="APA">
+Plotts, J., Bromberg, B., Kaplan, D. L., [the Tufts University Center for Cellular Agriculture (TUCCA)](https://cellularagriculture.tufts.edu/), and the [CAAIL Contributors](https://github.com/tucca-cellag/caail/graphs/contributors). (2026). *CAAIL: Cellular Agriculture AI Library* (Version 1.0.0). Zenodo. https://doi.org/10.5281/zenodo.20295590
+</CitationBlock>
+
+## BibTeX
+
+<CitationBlock label="BibTeX" code>{CAAIL_BIBTEX}</CitationBlock>
+
+## Citing a specific resource
+
+When you cite a specific catalogued resource — a paper, a software tool, a dataset — cite the
+**original source** directly rather than CAAIL. The DOIs and canonical URLs in the
+[Papers Explorer](/caail/papers/explorer/), [Software](/caail/software/),
+[Databases](/caail/databases/), and the per-species [Datasets](/caail/datasets/readme/) pages are
+authoritative. Cite CAAIL when you are referring to the library itself — its organization, its
+matrix, or the curated collection as a whole.
+
+CAAIL is released under the [MIT License](https://github.com/tucca-cellag/caail/blob/main/LICENSE);
+linked third-party resources remain under their own licenses.

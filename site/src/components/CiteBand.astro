@@ -1,0 +1,108 @@
+---
+/**
+ * CiteBand — a slim homepage strip that surfaces how to cite CAAIL and points
+ * to the full How to Cite page. Rendered on the splash homepage below the
+ * two-column section.
+ *
+ * Uses a styled text DOI chip rather than the external Zenodo badge <img>: the
+ * landing page carries a Lighthouse Performance ≥ 0.90 CI gate, so it avoids an
+ * off-domain image request on the LCP-critical page. The Zenodo badge itself
+ * lives on the /cite/ page, which has no perf gate.
+ */
+import { Icon } from 'astro-icon/components';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<aside class="caail-citeband" aria-label="How to cite CAAIL">
+  <div class="lead">
+    <Icon name="ph:quotes-fill" aria-hidden="true" />
+    <div>
+      <h2 class="caail-display">Citing CAAIL?</h2>
+      <p>Archived on Zenodo with a citable DOI — grab the APA or BibTeX form.</p>
+    </div>
+  </div>
+  <div class="actions">
+    <a class="doi" href="https://doi.org/10.5281/zenodo.20295590">
+      <span class="doi__tag">DOI</span>10.5281/zenodo.20295590
+    </a>
+    <a class="cta" href={`${base}/cite/`}>How to cite →</a>
+  </div>
+</aside>
+
+<style>
+  .caail-citeband {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin: 1.5rem 0;
+    padding: 1rem 1.15rem;
+    border: 1px solid var(--caail-border);
+    border-radius: 10px;
+    background: var(--caail-surface);
+  }
+  .lead {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+  }
+  .lead [data-icon] {
+    width: 1.7rem;
+    height: 1.7rem;
+    color: var(--caail-primary);
+    flex: none;
+  }
+  .lead h2 {
+    font-size: 1rem;
+    color: var(--caail-primary);
+    margin: 0;
+  }
+  .lead p {
+    font-size: 0.78rem;
+    color: var(--caail-muted);
+    margin: 0.1rem 0 0;
+  }
+  .actions {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+  }
+  .doi {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-family: var(--caail-font-mono);
+    font-size: 0.72rem;
+    color: var(--caail-ink);
+    background: var(--caail-bg);
+    border: 1px solid var(--caail-border);
+    border-radius: 7px;
+    padding: 0.3rem 0.55rem;
+    text-decoration: none;
+  }
+  .doi:hover {
+    border-color: var(--caail-link);
+  }
+  .doi__tag {
+    font-family: var(--caail-font-ui);
+    font-weight: 700;
+    font-size: 0.62rem;
+    letter-spacing: 0.05em;
+    color: var(--caail-bg);
+    background: var(--caail-primary);
+    border-radius: 4px;
+    padding: 0.1rem 0.3rem;
+  }
+  .cta {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--caail-link);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .cta:hover {
+    text-decoration: underline;
+  }
+</style>

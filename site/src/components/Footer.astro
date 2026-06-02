@@ -2,15 +2,18 @@
 import Default from '@astrojs/starlight/components/Footer.astro';
 import NavCollapse from './NavCollapse.astro';
 import DataTableViews from './DataTableViews.astro';
+import TuccaLockup from './TuccaLockup.astro';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 ---
 <div class="caail-footer">
-  <span>A project of the Tufts University Center for Cellular Agriculture (TUCCA).</span>
-  <span>Content licensed MIT · <a href="https://github.com/tucca-cellag/caail">canonical source on GitHub</a></span>
+  <span class="caail-foot-brand"><TuccaLockup width={150} /></span>
+  <span><a href={`${base}/cite/`}>Cite</a> · Content licensed MIT · <a href="https://github.com/tucca-cellag/caail">canonical source on GitHub</a></span>
 </div>
 <Default><slot /></Default>
 <NavCollapse />
 <DataTableViews />
 <style>
-  .caail-footer { display: flex; justify-content: space-between; flex-wrap: wrap; gap: .5rem; font-size: .72rem; color: var(--caail-muted); border-top: 1px solid var(--caail-border); padding-top: .8rem; margin-top: 1rem; }
+  .caail-footer { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .5rem; font-size: .72rem; color: var(--caail-muted); border-top: 1px solid var(--caail-border); padding-top: .8rem; margin-top: 1rem; }
+  .caail-foot-brand { display: inline-flex; align-items: center; }
   .caail-footer a { color: var(--caail-link); }
 </style>

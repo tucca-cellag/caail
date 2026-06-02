@@ -1,0 +1,64 @@
+---
+/**
+ * TuccaLockup — the official Tufts · Center for Cellular Agriculture horizontal
+ * lockup, linking to the TUCCA site. Used in the hero and footer to attribute
+ * CAAIL as a project of TUCCA.
+ *
+ * Theme-aware: a single PNG can't be recoloured by CSS (the Tufts blue + black
+ * aren't a clean invert), so we ship BOTH official assets and swap on Starlight's
+ * `html[data-theme='dark']` — black+blue in light, the white lockup in dark.
+ *
+ * Implemented as ONE element with a swapped `background-image` (rather than two
+ * stacked <img>): a single fixed-size box is pixel-identical in both themes (no
+ * cross-axis shift between the two assets), reserves its space so there's no
+ * layout shift, and the browser only downloads the active theme's image. The
+ * link carries the accessible name; the mark is decorative.
+ *
+ * Props:
+ *   width — display width in px (height derived from the 1093×169 lockup ratio).
+ *   class — extra class(es) for the link.
+ */
+import blkbl from '../assets/tucca/cca-horiz-blkbl.png';
+import white from '../assets/tucca/cca-horiz-white.png';
+
+interface Props {
+  width?: number;
+  class?: string;
+}
+
+const { width = 168, class: className } = Astro.props;
+const height = Math.round((width * blkbl.height) / blkbl.width);
+const style = `--tl-w:${width}px;--tl-h:${height}px;--tl-light:url("${blkbl.src}");--tl-dark:url("${white.src}")`;
+---
+
+<a
+  class:list={['tl', className]}
+  href="https://cellularagriculture.tufts.edu/"
+  aria-label="Tufts University Center for Cellular Agriculture"
+  style={style}
+>
+  <span class="tl-mark" aria-hidden="true"></span>
+</a>
+
+<style>
+  .tl {
+    display: inline-block;
+    line-height: 0;
+    border-radius: 4px;
+  }
+  .tl-mark {
+    display: block;
+    width: var(--tl-w);
+    height: var(--tl-h);
+    background: var(--tl-light) no-repeat center / contain;
+  }
+  /* Swap to the white lockup under Starlight's dark theme. Only the matched
+     rule's image is fetched, so each theme loads just one asset. */
+  :global([data-theme='dark']) .tl-mark {
+    background-image: var(--tl-dark);
+  }
+  .tl:focus-visible {
+    outline: 2px solid var(--caail-link);
+    outline-offset: 3px;
+  }
+</style>

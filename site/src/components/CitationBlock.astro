@@ -1,0 +1,189 @@
+---
+/**
+ * CitationBlock — a labelled citation snippet with a copy-to-clipboard button.
+ *
+ * Used on the How to Cite page (and reusable elsewhere) to surface the APA and
+ * BibTeX forms of the CAAIL citation. The button copies the rendered body's
+ * textContent, so the visible content is the single source of truth — an APA
+ * line can italicise the title with <em> while the copied text stays clean
+ * plain text (no markdown asterisks), and a BibTeX block in <pre> copies
+ * verbatim including newlines.
+ *
+ * Props:
+ *   label — short heading shown top-left (e.g. "APA", "BibTeX").
+ *   code  — render the body as a monospace <pre> block (for BibTeX). Defaults
+ *           to prose styling for APA-style running text.
+ *
+ * The copy behaviour is plain DOM JS (no Preact island), mirroring the
+ * inline-script pattern in NavCollapse.astro. Falls back gracefully where the
+ * async Clipboard API is unavailable.
+ */
+import { Icon } from 'astro-icon/components';
+
+interface Props {
+  label: string;
+  code?: boolean;
+}
+
+const { label, code = false } = Astro.props;
+---
+
+<figure class="caail-cite" data-caail-cite>
+  <figcaption class="caail-cite__head">
+    <span class="caail-cite__label caail-display">{label}</span>
+    <button
+      type="button"
+      class="caail-cite__copy"
+      data-caail-cite-copy
+      aria-label={`Copy ${label} citation to clipboard`}
+    >
+      <Icon name="ph:clipboard-text" aria-hidden="true" />
+      <span class="caail-cite__copy-text" data-copy-idle="Copy" data-copy-done="Copied!"
+        >Copy</span
+      >
+    </button>
+  </figcaption>
+
+  {
+    /* tabindex on the code block: it has overflow-x:auto, so it is a scrollable
+       region that must be keyboard-focusable (WCAG 2.1.1 — axe
+       scrollable-region-focusable). aria-label names it for screen readers. */
+    code ? (
+      <pre
+        class="caail-cite__body caail-cite__body--code"
+        tabindex="0"
+        role="group"
+        aria-label={`${label} citation`}
+      ><slot /></pre>
+    ) : (
+      <div class="caail-cite__body"><slot /></div>
+    )
+  }
+</figure>
+
+<style>
+  .caail-cite {
+    margin: 0 0 1rem;
+    border: 1px solid var(--caail-border);
+    border-radius: 10px;
+    overflow: hidden;
+    background: var(--caail-bg);
+  }
+  .caail-cite__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.4rem 0.5rem 0.4rem 0.85rem;
+    border-bottom: 1px solid var(--caail-border);
+    background: var(--caail-surface);
+  }
+  .caail-cite__label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--caail-primary);
+  }
+  .caail-cite__copy {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font: inherit;
+    font-size: 0.74rem;
+    font-weight: 600;
+    color: var(--caail-link);
+    background: var(--caail-bg);
+    border: 1px solid var(--caail-border);
+    border-radius: 7px;
+    padding: 0.25rem 0.55rem;
+    cursor: pointer;
+    transition:
+      color 0.15s,
+      border-color 0.15s,
+      background 0.15s;
+  }
+  .caail-cite__copy:hover {
+    border-color: var(--caail-link);
+    background: var(--caail-surface);
+  }
+  .caail-cite__copy:focus-visible {
+    outline: 2px solid var(--caail-link);
+    outline-offset: 2px;
+  }
+  .caail-cite__copy[data-copied] {
+    color: var(--caail-area-cell);
+    border-color: var(--caail-area-cell);
+  }
+  .caail-cite__copy [data-icon] {
+    width: 1rem;
+    height: 1rem;
+  }
+  .caail-cite__body {
+    margin: 0;
+    padding: 0.85rem;
+    color: var(--caail-ink);
+    font-size: 0.82rem;
+    line-height: 1.6;
+  }
+  .caail-cite__body--code {
+    font-family: var(--caail-font-mono);
+    font-size: 0.76rem;
+    line-height: 1.5;
+    white-space: pre;
+    overflow-x: auto;
+    background: var(--caail-surface);
+  }
+  .caail-cite__body--code:focus-visible {
+    outline: 2px solid var(--caail-link);
+    outline-offset: -2px;
+  }
+  /* MDX wraps slotted prose in its own <p>; collapse its default margins so the
+     body padding is the only spacing. Slotted content isn't scoped → :global. */
+  .caail-cite__body :global(p) {
+    margin: 0;
+  }
+</style>
+
+<script>
+  // Copy the rendered body text of each citation block. The visible content is
+  // the source of truth; <em> in an APA line is stripped by textContent, so the
+  // copied string is clean plain text.
+  const SUPPORTS_CLIPBOARD =
+    typeof navigator !== 'undefined' && !!navigator.clipboard?.writeText;
+
+  function flash(textEl: HTMLElement, btn: HTMLElement) {
+    const done = textEl.dataset.copyDone ?? 'Copied!';
+    const idle = textEl.dataset.copyIdle ?? 'Copy';
+    textEl.textContent = done;
+    btn.setAttribute('data-copied', '');
+    window.setTimeout(() => {
+      textEl.textContent = idle;
+      btn.removeAttribute('data-copied');
+    }, 1600);
+  }
+
+  document.querySelectorAll<HTMLElement>('[data-caail-cite]').forEach((block) => {
+    const btn = block.querySelector<HTMLElement>('[data-caail-cite-copy]');
+    const body = block.querySelector<HTMLElement>('.caail-cite__body');
+    const textEl = block.querySelector<HTMLElement>('.caail-cite__copy-text');
+    if (!btn || !body || !textEl) return;
+
+    if (!SUPPORTS_CLIPBOARD) {
+      // No async clipboard (insecure context / old browser): hide the affordance
+      // rather than offer a button that silently does nothing.
+      btn.hidden = true;
+      return;
+    }
+
+    btn.addEventListener('click', async () => {
+      const text = (body.textContent ?? '').trim();
+      try {
+        await navigator.clipboard.writeText(text);
+        flash(textEl, btn);
+      } catch {
+        /* user denied clipboard permission — leave the button state unchanged */
+      }
+    });
+  });
+</script>
