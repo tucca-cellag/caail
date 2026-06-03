@@ -11,6 +11,7 @@ Educational playlists for the audience approaching machine learning from the bio
 * [Neural Networks / Deep Learning](https://www.youtube.com/playlist?list=PLblh5JKOoLUIxGDQs4LFFD--41Vzf-ME1) — neural-network fundamentals through transformer architecture (the foundation of ChatGPT and modern LLMs).
 * [AI Models Explained](https://www.youtube.com/playlist?list=PLOspHqNVtKAC-FUNMq8qjYVw6_semZHw0) — overview of common AI model architectures and where each is used.
 * [AI Agents Explained](https://www.youtube.com/playlist?list=PLOspHqNVtKAB6AzNie7BrFhbg4dv4Gfz8) — overview of AI agent systems; pairs naturally with the LLMs / AI Agents row in the Papers matrix.
+* [Stanford CS230: Deep Learning (Autumn 2018)](https://www.youtube.com/playlist?list=PLoROMvodv4rOABXSygHTsbvUz4G_YQhOb) — Andrew Ng's Stanford deep-learning lecture course; a deeper, structured treatment of neural-network fundamentals.
 
 ## Go deeper
 
@@ -19,6 +20,7 @@ Once you have the basics, these are the higher-level talks and references.
 * [AI Agents & Foundation Models for Biology talks](../Talks.md#ai-agents-foundation-models-for-biology) — agentic AI, foundation models, and language-model-based scientific reasoning, many from the Broad Institute's MIA series.
 * [Virtual Cell Initiative & single-cell foundation models](../OtherResources.md#virtual-cell-initiative--single-cell-foundation-models) — Arc Institute's State / Stack program, the open Virtual Cell Challenge, and Cell2Sentence.
 * [Curated bibliographies & awesome lists](../OtherResources.md#curated-bibliographies--awesome-lists) — community-maintained indexes for the AI / single-cell / bioinformatics literature.
+* [Stanford CS224N: NLP with Deep Learning (Spring 2024)](https://www.youtube.com/playlist?list=PLoROMvodv4rOaMFbaqxPDoLWjDaRAdP9D) — Stanford's NLP course covering self-attention, Transformers, and modern LLM architectures.
 
 ## Where AI shows up in CAAIL
 
