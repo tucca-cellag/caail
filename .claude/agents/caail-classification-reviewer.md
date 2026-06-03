@@ -68,7 +68,12 @@ proposing or confirming any `scope`-based REMOVE / area-MISPLACED / NOT-PRIMARY:
 1. **Honor `cited_in_research_areas`.** If the paper is already cited in the
    target area's page (or any area page), treat that as near-dispositive for
    KEEP — the curators deliberately reference it. Overturn only with a concrete,
-   stated reason, never on a generic "no cell-ag application" basis.
+   stated reason, never on a generic "no cell-ag application" basis. **A
+   curator-cited paper is never a removal — not even on `method-accuracy`
+   grounds.** If its method row is genuinely wrong, that is a `MISPLACED` re-row
+   (it stays in the matrix); reserve `UNSUPPORTED` / `NOT-PRIMARY` for papers with
+   no curator citation. Removing a cited paper would also sever a live
+   `ResearchAreas` cross-reference — the matrix-vs-references-drift error.
 2. **Read `ResearchAreas/<Area>.md`** for the area in question. It defines what
    the column actually covers (e.g. *Bioprocess control* covers mixing, mass
    transfer, and CFD of agitated vessels — the engineering of bioreactors — not

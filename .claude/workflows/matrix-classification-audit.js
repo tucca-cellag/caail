@@ -64,9 +64,10 @@ const refFile = (id) => `${dir}/ref-${id}.json`
 const cell = { type: 'object', additionalProperties: false, required: ['method', 'area'], properties: { method: { type: 'string' }, area: { type: 'string' } } }
 const PROPOSAL_SCHEMA = {
   type: 'object', additionalProperties: false,
-  required: ['id', 'keep', 'unsupported', 'misplaced', 'missing', 'not_primary'],
+  required: ['id', 'cited_by_curators', 'keep', 'unsupported', 'misplaced', 'missing', 'not_primary'],
   properties: {
     id: { type: 'number' },
+    cited_by_curators: { type: 'boolean' },
     keep: { type: 'array', items: cell },
     unsupported: { type: 'array', items: { type: 'object', additionalProperties: false,
       required: ['method', 'area', 'nature', 'reason'],
@@ -113,7 +114,9 @@ ${methodList}
 Valid area labels (exact):
 ${areaList}
 
-Return the structured proposal (id=${id}): keep[], unsupported[] (each with nature+reason), misplaced[] (nature+correct cell+span), missing[] (additive cross-listings, span+confidence), not_primary{flag,reason,suggested_home}. Tag nature on every unsupported/misplaced. Be conservative on scope; when in doubt, KEEP.`
+Set \`cited_by_curators\` = true iff the record's \`cited_in_research_areas\` is non-empty. If it is true, a paper is NEVER a removal: a wrong method row is a MISPLACED **re-row** (keep it in the matrix), not an UNSUPPORTED/NOT-PRIMARY deletion — the curators reference it on purpose.
+
+Return the structured proposal (id=${id}): cited_by_curators (bool), keep[], unsupported[] (each with nature+reason), misplaced[] (nature+correct cell+span), missing[] (additive cross-listings, span+confidence), not_primary{flag,reason,suggested_home}. Tag nature on every unsupported/misplaced. Be conservative on scope; when in doubt, KEEP.`
 }
 
 function describe(c) {
@@ -163,7 +166,7 @@ Score relevance 1–5 (1 = unrelated to cell-ag; 5 = core to cell-ag ${area}). R
 }
 
 // ── Per-change adjudication ───────────────────────────────────────────────
-async function adjudicate(id, c) {
+async function adjudicate(id, c, citedByCurators) {
   const votes = (await parallel(Array.from({ length: SKEPTICS }, (_, i) => () =>
     agent(skepticPrompt(id, c), { label: `verify:#${id}:${c.kind}:${i + 1}`, phase: 'Verify', schema: VERDICT_SCHEMA, model: 'sonnet' })))).filter(Boolean)
   const refutes = votes.filter((v) => v.refuted).length
@@ -171,11 +174,15 @@ async function adjudicate(id, c) {
   if (votes.length === 0 || refutes > Math.floor(SKEPTICS / 2)) {
     return { change: c, applied: false, disposition: 'dropped-by-skeptics', refutes, skeptic_reasons }
   }
-  // Additive + method-accuracy: skeptics are sufficient.
-  if (c.kind === 'missing' || c.nature === 'method-accuracy') {
+  // A *removal* of a curator-cited paper must beat the defender even on
+  // method-accuracy grounds (a wrong method row is a re-row, not a deletion).
+  const isRemoval = c.kind === 'unsupported' || c.kind === 'not_primary'
+  const needsDefender = c.nature === 'scope' || (isRemoval && citedByCurators)
+  // Additive + (method-accuracy on a non-cited paper / a re-row move): skeptics suffice.
+  if (c.kind === 'missing' || !needsDefender) {
     return { change: c, applied: true, disposition: 'apply', decidedBy: 'skeptics', refutes, skeptic_reasons }
   }
-  // Scope removal/not-primary/area-move: must also defeat the steelman defender.
+  // Scope removal, or a removal of a curator-cited paper: must defeat the steelman defender.
   const def = await agent(defenderPrompt(id, c), { label: `defend:#${id}:${c.kind}`, phase: 'Defend', schema: DEFENDER_SCHEMA, model: 'sonnet' })
   if (def && def.can_keep) {
     return { change: c, applied: false, disposition: def.defensible_cell ? 'keep-or-move' : 'keep', decidedBy: 'defender', refutes, skeptic_reasons, defender: def }
@@ -207,7 +214,8 @@ const results = await pipeline(
     if (proposal.not_primary && proposal.not_primary.flag) {
       changes.push({ kind: 'not_primary', nature: 'scope', ...proposal.not_primary })
     }
-    const adjudicated = await parallel(changes.map((c) => () => adjudicate(id, c)))
+    const citedByCurators = proposal.cited_by_curators === true
+    const adjudicated = await parallel(changes.map((c) => () => adjudicate(id, c, citedByCurators)))
     const valid = adjudicated.filter(Boolean)
     return {
       id,
