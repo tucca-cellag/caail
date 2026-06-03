@@ -4,6 +4,10 @@ Curated *eval* datasets — released to benchmark AI models rather than to train
 
 For fixed train-on data artifacts organized by species, see the per-species pages indexed in [`README.md`](./README.md).
 
+## [BioML-bench](https://github.com/science-machine/biomlbench)
+
+The official BioML-bench release at `science-machine/biomlbench` on GitHub — a benchmark suite that evaluates LLM agents on end-to-end biomedical machine-learning tasks spanning protein engineering, drug discovery, single-cell omics, medical imaging, and clinical biomarkers. Built on top of [MLE-bench](https://github.com/openai/mle-bench), it bundles the task datasets, the preparation pipeline, and the scoring/grading harness in one repository; agents read each task description, analyse the biomedical data, and implement a complete ML solution scored against built-in human baselines. Companion to [Papers.md ref #223](../Papers.md#223) (Miller et al. 2025). The closest existing eval substrate for whether an autonomous agent can carry the kind of end-to-end biomedical-ML work — single-cell omics, protein engineering — that cell-ag pipelines increasingly delegate.
+
 ## BioMysteryBench
 
 [Anthropic/BioMysteryBench-full](https://huggingface.co/datasets/Anthropic/BioMysteryBench-full) is Anthropic's open-source benchmark dataset for evaluating LLM capabilities on bioinformatics research tasks — released as the substrate for the [Evaluating Claude's bioinformatics research capabilities](https://www.anthropic.com/research/Evaluating-Claude-For-Bioinformatics-With-BioMysteryBench) study. Provides a vendor-released, cell-ag-adjacent eval dataset for any team comparing frontier LLMs on the kind of multi-step bioinformatics tasks (data exploration, hypothesis generation, code-based analysis) increasingly delegated to agents in cell-ag bioinformatics workflows. No separate companion paper at time of curation; see the [AI Evaluation & Benchmarking](../ResearchAreas/AIEvaluation.md) deep-dive for context.
