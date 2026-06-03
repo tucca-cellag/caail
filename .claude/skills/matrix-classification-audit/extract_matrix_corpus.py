@@ -231,6 +231,64 @@ def build_indexes(api, groups):
 
 
 # ---------------------------------------------------------------------------
+# Curatorial-context signal — is a paper already cited in a ResearchAreas page?
+# A non-empty hit is a strong "intentional placement → KEEP" prior for the
+# classification reviewer when it weighs a scope-based removal.
+# ---------------------------------------------------------------------------
+
+AREA_FILE = {
+    "Media Optimization": "MediaOptimization.md",
+    "Cellular Engineering": "CellEngineering.md",
+    "Bioprocess control": "Bioprocess.md",
+    "Scaffolding": "Scaffolding.md",
+    "Sensory Prediction": "SensoryPrediction.md",
+    "AI Tooling / Methodology": "AITooling.md",
+    "AI Evaluation & Benchmarking": "AIEvaluation.md",
+}
+
+
+def load_research_areas(repo_root):
+    """Return {area_label: page_text} for each ResearchAreas/*.md that exists."""
+    out = {}
+    for label, fname in AREA_FILE.items():
+        p = Path(repo_root) / "ResearchAreas" / fname
+        if p.is_file():
+            out[label] = p.read_text(encoding="utf-8")
+    return out
+
+
+def _first_author_year(citation):
+    """Best-effort (first-author-surname, year) from an APA citation line."""
+    yr = re.search(r"\((\d{4})[a-z]?\)", citation or "")
+    year = yr.group(1) if yr else ""
+    m = re.match(r"\s*([^,]+),", citation or "")
+    surname = m.group(1).strip() if m else ""
+    return surname, year
+
+
+def cited_in_areas(ref, area_texts):
+    """Area labels whose ResearchAreas page cites this paper.
+
+    Matches on the DOI (substring) or on first-author surname within 40 chars of
+    the year (catches the "(Surname et al., YEAR)" in-text citation style the
+    pages use). Conservative co-occurrence keeps a bare surname from matching a
+    different paper/year on the page.
+    """
+    doi = (ref.get("doi") or "").lower()
+    surname, year = _first_author_year(ref.get("citation", ""))
+    pat = (re.compile(re.escape(surname) + r".{0,40}?" + re.escape(year),
+                      re.IGNORECASE | re.DOTALL)
+           if surname and year else None)
+    hits = []
+    for label, text in area_texts.items():
+        if doi and doi in text.lower():
+            hits.append(label)
+        elif pat and pat.search(text):
+            hits.append(label)
+    return hits
+
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 
@@ -252,6 +310,7 @@ def main():
     md = Path(args.papers).read_text(encoding="utf-8")
     area_labels, cell_map = parse_matrix(md)
     refs = parse_references(md)
+    area_texts = load_research_areas(Path(args.papers).resolve().parent)
 
     # Matrix-participating refs = those cited in ≥1 cell.
     matrix_ids = sorted(cell_map)
@@ -278,6 +337,7 @@ def main():
             "citation": ref.get("citation", ""),
             "section": ref.get("section", ""),
             "current_cells": current_cells,
+            "cited_in_research_areas": cited_in_areas(ref, area_texts),
             "abstract": "",
             "methods_text": "",
             "fulltext_chars": 0,
@@ -319,6 +379,8 @@ def main():
     print(f"  per-ref files → {per_ref_dir}/ref-<id>.json", file=sys.stderr)
     print(f"  full text: {n_ft}   PDF-but-no-ftcache: {n_noft}   "
           f"not-in-Zotero: {n_nozot}", file=sys.stderr)
+    n_area = sum(1 for r in corpus if r["cited_in_research_areas"])
+    print(f"  already cited in a ResearchAreas page: {n_area}", file=sys.stderr)
 
 
 if __name__ == "__main__":
