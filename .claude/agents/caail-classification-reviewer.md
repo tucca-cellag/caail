@@ -146,6 +146,34 @@ Plus, for the reference as a whole:
 - `MISSING-CELL: (method, area)` — additional warranted placement + span.
 - `NOT-PRIMARY` — only for no-plausible-cell-ag-connection papers; say where it
   should go + why, and confirm `cited_in_research_areas` was empty / overridden.
+- `TAXONOMY-GAP` — the paper *is* legitimate cell-ag research applying a real
+  AI/ML method, but its genuine **method** (and/or **research area**) has no
+  matching row/column in the matrix. This verdict is **non-destructive**: the
+  paper KEEPS its current cell(s) — never propose a removal that would orphan it.
+  Give `axis` (`method`|`area`), a `proposed_label`, the `closest_existing`
+  row/area + why it is genuinely insufficient (not just imperfect), the methods
+  `span`, and for a method row a suggested `wikipedia_url`.
+
+### Precedence when an assigned method/area looks wrong
+
+Apply in order — a `TAXONOMY-GAP` is the last resort, and only one of these fires:
+
+1. The paper has **another valid cell** already → `UNSUPPORTED` the wrong cell
+   (it survives via the other cell).
+2. A **different existing** row/area genuinely fits → `MISPLACED` re-row (e.g.
+   SVM→Genetic Algorithms). Always prefer re-rowing into an existing label —
+   **but "fits" means the same mechanism, not a family resemblance.** A re-row
+   into a row whose *technique* differs from the paper's is a wrong move the
+   skeptics will refute, leaving the real gap undetected. If the only candidate
+   row shares a surface label but not the mechanism (see the precision note in
+   "Watch for"), do **not** force the re-row — go to step 3.
+3. It is the paper's **only cell and no existing row/area fits** its real
+   method/area → **`TAXONOMY-GAP`**. Do **not** emit `UNSUPPORTED`/`NOT-PRIMARY`
+   here — that would orphan a legitimate paper. Keep the cell as an approximation
+   and surface the proposed new row/column for a human.
+
+A `TAXONOMY-GAP` is warranted only when no existing row/area is a defensible home;
+a merely-narrower-than-ideal existing row is still a re-row or a keep, not a gap.
 
 ## Watch for
 
@@ -156,6 +184,17 @@ Plus, for the reference as a whole:
   general or the area page already cites it. Prefer KEEP or MOVE-to-AI-Tooling.
 - **Over-eager multi-listing** — recommend a `MISSING-CELL` only when a method is
   genuinely load-bearing, with a span.
+- **Method-family precision (gap vs. re-row).** A row names a *specific mechanism*,
+  not a family. Two recurring traps where the paper's real method has no row, yet a
+  superficially-similar row tempts a (doomed) re-row instead of a `TAXONOMY-GAP`:
+  - **Bayesian *Optimization* ≠ Bayesian *inference*.** BO is sequential black-box
+    optimization (surrogate model + acquisition function + exploration loop).
+    Bayesian flux estimation / probabilistic uncertainty quantification with no
+    acquisition loop is *inference*, a gap — not a BO re-row.
+  - **GNN ≠ classical graph / network-propagation methods.** "GNN" requires *learned
+    neural message passing*. A directed interactome with signed/typed edges, rule-based
+    causal propagation, or other non-neural graph inference is **not** a GNN (nor
+    "Deep Learning") — it is a gap, not a GNN/DL re-row.
 - **Abstract-only confidence** — if all you have is the abstract, say so; mark
   affected placements `UNSUPPORTED` rather than guessing. Lowered confidence is a
   finding, not a pass — but it is **not** a reason to remove on scope grounds.

@@ -8,6 +8,7 @@ export const meta = {
     { title: 'Verify', detail: '3 independent skeptics try to refute each proposed change' },
     { title: 'Defend', detail: 'scope removals only: an independent steelman argues to KEEP (reads the ResearchAreas page + cited_in_research_areas prior)' },
     { title: 'Ground', detail: 'unresolved scope calls only: a web-research agent scores real-world relevance to the area 1–5' },
+    { title: 'Taxonomy', detail: 'pool non-destructive taxonomy gaps; a synthesis agent clusters them; ≥2-member clusters are adversarially verified into proposed new rows/columns' },
   ],
 }
 
@@ -64,7 +65,7 @@ const refFile = (id) => `${dir}/ref-${id}.json`
 const cell = { type: 'object', additionalProperties: false, required: ['method', 'area'], properties: { method: { type: 'string' }, area: { type: 'string' } } }
 const PROPOSAL_SCHEMA = {
   type: 'object', additionalProperties: false,
-  required: ['id', 'cited_by_curators', 'keep', 'unsupported', 'misplaced', 'missing', 'not_primary'],
+  required: ['id', 'cited_by_curators', 'keep', 'unsupported', 'misplaced', 'missing', 'not_primary', 'taxonomy_gaps'],
   properties: {
     id: { type: 'number' },
     cited_by_curators: { type: 'boolean' },
@@ -84,6 +85,11 @@ const PROPOSAL_SCHEMA = {
         confidence: { type: 'string', enum: ['high', 'medium', 'low'] }, span: { type: 'string' } } } },
     not_primary: { type: 'object', additionalProperties: false, required: ['flag'],
       properties: { flag: { type: 'boolean' }, reason: { type: 'string' }, suggested_home: { type: 'string' } } },
+    taxonomy_gaps: { type: 'array', items: { type: 'object', additionalProperties: false,
+      required: ['axis', 'proposed_label', 'closest_existing', 'why_insufficient', 'span'],
+      properties: { axis: { type: 'string', enum: ['method', 'area'] }, proposed_label: { type: 'string' },
+        closest_existing: { type: 'string' }, why_insufficient: { type: 'string' }, span: { type: 'string' },
+        wikipedia_url: { type: 'string' } } } },
   },
 }
 const VERDICT_SCHEMA = { type: 'object', additionalProperties: false, required: ['refuted', 'reason'], properties: { refuted: { type: 'boolean' }, reason: { type: 'string' } } }
@@ -99,6 +105,15 @@ const DEFENDER_SCHEMA = {
   },
 }
 const DOMAIN_SCHEMA = { type: 'object', additionalProperties: false, required: ['relevance', 'reason'], properties: { relevance: { type: 'integer', minimum: 1, maximum: 5 }, reason: { type: 'string' } } }
+const CLUSTER_SCHEMA = {
+  type: 'object', additionalProperties: false, required: ['clusters'],
+  properties: { clusters: { type: 'array', items: { type: 'object', additionalProperties: false,
+    required: ['axis', 'label', 'member_ids', 'rationale'],
+    properties: { axis: { type: 'string', enum: ['method', 'area'] }, label: { type: 'string' },
+      member_ids: { type: 'array', items: { type: 'integer' } },
+      closest_existing: { type: 'string' }, wikipedia_url: { type: 'string' }, rationale: { type: 'string' } } } } },
+}
+const VERIFY_SCHEMA = { type: 'object', additionalProperties: false, required: ['warranted', 'reason'], properties: { warranted: { type: 'boolean' }, reason: { type: 'string' } } }
 
 // ── Prompts ─────────────────────────────────────────────────────────────────
 function proposerPrompt(id) {
@@ -116,7 +131,9 @@ ${areaList}
 
 Set \`cited_by_curators\` = true iff the record's \`cited_in_research_areas\` is non-empty. If it is true, a paper is NEVER a removal: a wrong method row is a MISPLACED **re-row** (keep it in the matrix), not an UNSUPPORTED/NOT-PRIMARY deletion — the curators reference it on purpose.
 
-Return the structured proposal (id=${id}): cited_by_curators (bool), keep[], unsupported[] (each with nature+reason), misplaced[] (nature+correct cell+span), missing[] (additive cross-listings, span+confidence), not_primary{flag,reason,suggested_home}. Tag nature on every unsupported/misplaced. Be conservative on scope; when in doubt, KEEP.`
+Return the structured proposal (id=${id}): cited_by_curators (bool), keep[], unsupported[] (each with nature+reason), misplaced[] (nature+correct cell+span), missing[] (additive cross-listings, span+confidence), not_primary{flag,reason,suggested_home}, taxonomy_gaps[] (axis method|area, proposed_label, closest_existing, why_insufficient, span, wikipedia_url for method rows). Tag nature on every unsupported/misplaced.
+
+PRECEDENCE for a wrong-looking cell (taxonomy_gap is the LAST resort): (1) another valid cell exists -> UNSUPPORTED the wrong one; (2) a DIFFERENT existing row/area from the lists fits -> MISPLACED re-row; (3) it is the only cell AND no listed row/area fits the paper's real method/area -> record a taxonomy_gaps entry and do NOT also emit unsupported/not_primary for it (never orphan a legitimate paper — keep the current cell as an approximation). Be conservative on scope; when in doubt, KEEP.`
 }
 
 function describe(c) {
@@ -220,6 +237,7 @@ const results = await pipeline(
     return {
       id,
       keep: proposal.keep || [],
+      taxonomy_gaps: (proposal.taxonomy_gaps || []).map((g) => ({ id, ...g })),
       applied: valid.filter((a) => a.applied).map((a) => ({ ...a.change, decidedBy: a.decidedBy })),
       kept_by_review: valid.filter((a) => !a.applied && a.disposition !== 'dropped-by-skeptics')
         .map((a) => ({ kind: a.change.kind, method: a.change.method, area: a.change.area, disposition: a.disposition, decidedBy: a.decidedBy, defender: a.defender, domain: a.domain })),
@@ -234,7 +252,39 @@ const applied = clean.flatMap((r) => (r.applied || []).map((c) => ({ id: r.id, .
 const keptByReview = clean.flatMap((r) => (r.kept_by_review || []).map((c) => ({ id: r.id, ...c })))
 const scopeApplied = applied.filter((c) => c.nature === 'scope' || c.kind === 'not_primary')
 
-log(`Done. ${applied.length} changes survived review (${scopeApplied.length} scope removals/moves). ${keptByReview.length} scope proposals overturned by the defender/domain steelman.`)
+// ── Taxonomy phase: cluster the (non-destructive) taxonomy gaps → row/column proposals ──
+const gaps = clean.flatMap((r) => r.taxonomy_gaps || [])
+let taxonomy = { proposed_new_rows: [], proposed_new_columns: [], singletons: [] }
+if (gaps.length) {
+  phase('Taxonomy')
+  log(`${gaps.length} taxonomy gap(s) flagged across ${clean.length} papers — clustering into row/column proposals.`)
+  const gapList = gaps.map((g) => `#${g.id} [${g.axis}] proposed="${g.proposed_label}" closest="${g.closest_existing}" — ${g.why_insufficient}`).join('\n')
+  const clusterPrompt = `These are per-paper "no existing matrix row/column fits" signals from a CAAIL matrix audit. Group them into candidate NEW taxonomy entries.
+
+Existing method rows:\n${methodList}\nExisting area columns:\n${areaList}
+
+Gaps:\n${gapList}
+
+Cluster gaps that propose essentially the SAME new method-row (axis=method) or research-area column (axis=area) — normalize wording (e.g. "Bayesian inference" ≈ "probabilistic modeling"). Each cluster: axis, a clean canonical label, member_ids (the #ids), closest_existing row/area, a suggested wikipedia_url for a method row, and a one-line rationale. Do NOT merge genuinely different techniques. Return {clusters}.`
+  const clustered = await agent(clusterPrompt, { label: 'taxonomy:cluster', phase: 'Taxonomy', schema: CLUSTER_SCHEMA, model: 'sonnet' })
+  const clusters = (clustered && clustered.clusters) || []
+  const verified = await parallel(clusters.map((cl) => async () => {
+    if ((cl.member_ids || []).length < 2) return { ...cl, warranted: false, verify_reason: 'singleton — below the ≥2 threshold; parked for revisit' }
+    const v = await agent(
+      `A CAAIL matrix audit proposes a NEW ${cl.axis} ${cl.axis === 'method' ? 'row' : 'column'}: "${cl.label}" (closest existing: ${cl.closest_existing}), supported by refs ${cl.member_ids.join(', ')}. Rationale: ${cl.rationale}.\n\nExisting ${cl.axis === 'method' ? 'method rows' : 'area columns'}:\n${cl.axis === 'method' ? methodList : areaList}\n\nAdversarially check: does an EXISTING ${cl.axis} label already fit these papers (then it is not warranted)? Is the proposed category a real, distinct, recurring technique/area (not a one-off)? Default warranted=false if an existing label is a reasonable home. Return {warranted, reason}.`,
+      { label: `taxonomy:verify:${cl.label}`.slice(0, 60), phase: 'Taxonomy', schema: VERIFY_SCHEMA, model: 'sonnet' })
+    return { ...cl, warranted: !!(v && v.warranted), verify_reason: v ? v.reason : 'verification failed' }
+  }))
+  const ok = verified.filter(Boolean)
+  taxonomy = {
+    proposed_new_rows: ok.filter((c) => c.axis === 'method' && c.warranted),
+    proposed_new_columns: ok.filter((c) => c.axis === 'area' && c.warranted),
+    singletons: ok.filter((c) => !c.warranted),
+  }
+  log(`Taxonomy: ${taxonomy.proposed_new_rows.length} proposed row(s), ${taxonomy.proposed_new_columns.length} proposed column(s), ${taxonomy.singletons.length} parked.`)
+}
+
+log(`Done. ${applied.length} changes survived review (${scopeApplied.length} scope removals/moves). ${keptByReview.length} scope proposals overturned by the defender/domain steelman. ${gaps.length} taxonomy gap(s).`)
 
 return {
   summary: {
@@ -244,8 +294,12 @@ return {
     applied_additive: applied.filter((c) => c.kind === 'missing').length,
     applied_scope: scopeApplied.length,
     overturned_scope: keptByReview.length,
+    taxonomy_gaps: gaps.length,
+    proposed_new_rows: taxonomy.proposed_new_rows.length,
+    proposed_new_columns: taxonomy.proposed_new_columns.length,
   },
   applied,
   kept_by_review: keptByReview,
+  taxonomy,
   per_ref: clean,
 }

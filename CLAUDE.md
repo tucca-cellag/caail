@@ -55,7 +55,11 @@ project skills (in `.claude/skills/`) that form a lifecycle:
    cell-ag-relevant) carries an asymmetric burden: it must survive a steelman *defender* that
    reads the column's `ResearchAreas/<Area>.md` page and honors a `cited_in_research_areas`
    prior — so a general-purpose method becomes a MOVE to *AI Tooling / Methodology*, not a
-   deletion. (Run via the named workflow `.claude/workflows/matrix-classification-audit.js`.)
+   deletion. When a paper's genuine method or area has **no matching row/column**, the audit
+   emits a non-destructive **taxonomy gap** — it keeps the paper's cell and surfaces a *proposed*
+   new row/column (clustered across ≥2 papers, adversarially verified) for **curator decision**;
+   new rows (Wikipedia-linked label) and columns (a new `ResearchAreas/<Area>.md` page) are never
+   auto-added. (Run via the named workflow `.claude/workflows/matrix-classification-audit.js`.)
 
 Every drafted or re-audited entry is verified before commit by read-only adversarial reviewer
 subagents in `.claude/agents/` — **`caail-citation-reviewer`** (Papers.md bibliographic

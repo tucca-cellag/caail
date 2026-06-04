@@ -41,6 +41,35 @@ the curators' intent. The hardening that enforces this:
   `AI Tooling / Methodology`, not a removal**. Removal/NOT-PRIMARY is reserved for
   papers with **no plausible cell-ag connection at all**.
 
+**Taxonomy gaps (the missing-row/column case).** Sometimes a paper *is*
+legitimate cell-ag research applying a real AI/ML method, but its genuine method
+or area has **no matching row/column** — e.g. a Bayesian-*inference* paper when
+the matrix only has Bayesian *Optimization*, or a classical network-propagation
+paper when the only graph row is the neural **GNN**. Forcing a binary (keep a
+wrong row, or remove → orphan) is the wrong move. The reviewer instead emits a
+**non-destructive `taxonomy_gap`** verdict, which is the **last resort in the
+precedence ladder** — only after (1) drop-the-wrong-cell-keep-via-another and
+(2) re-row into an *existing* label both fail:
+
+- A `taxonomy_gap` **keeps the paper's current cell** as an approximation and
+  records the unrepresented `axis` (method|area), `proposed_label`,
+  `closest_existing` + why it is genuinely insufficient, the methods `span`, and
+  (for a method row) a suggested `wikipedia_url`. It **never** routes to a removal
+  — guaranteed by construction, since gaps never enter the adjudicated change set.
+- A final **Taxonomy phase** pools all gaps, a synthesis agent clusters them by
+  normalized label, and each cluster of **≥2 papers** is adversarially verified
+  ("does an existing row/area already fit? is this a real, recurring category?")
+  before it becomes a `proposed_new_rows` / `proposed_new_columns` entry.
+  Single-paper gaps are **parked** as `singletons` (keep as-is, revisit when more
+  appear). Clustering is only meaningful corpus-wide, so a **taxonomy review must
+  run over the full corpus** (omit `_audit_ids.json`); a subset run still flags
+  per-paper gaps but clusters only within the subset.
+- New rows/columns are **never auto-applied** — they are curator-level structural
+  changes. A new **row** needs a Wikipedia-linked method label; a new **column**
+  needs a new `ResearchAreas/<Area>.md` page + a matrix header link (per
+  `CLAUDE.md`). Surface `proposed_new_rows` / `proposed_new_columns` for human
+  decision alongside `kept_by_review`.
+
 ## Procedure
 
 1. **Preconditions.** Zotero desktop running, Preferences → Advanced → "Allow
@@ -79,12 +108,17 @@ the curators' intent. The hardening that enforces this:
      survives only if it `can_keep:false`.
    - **Ground** *(gated)* — only when the defender can't decide and the call hinges
      on real-world relevance: a web-research agent scores relevance 1–5 (≥3 → keep).
+   - **Taxonomy** *(non-destructive)* — pools the `taxonomy_gap`s, clusters them
+     (synthesis agent), and adversarially verifies each ≥2-paper cluster into a
+     proposed new row/column. Bypasses skeptics/defender entirely — gaps keep the
+     paper, never remove it.
 
-   The workflow returns `{summary, applied, kept_by_review, per_ref}`: `applied` =
-   changes that survived (additive adds, method-accuracy fixes, and any scope
-   removal that beat the defender+domain); `kept_by_review` = scope proposals the
-   steelman overturned (with the deciding layer). Be conservative: scope removals
-   are the exception, not the default.
+   The workflow returns `{summary, applied, kept_by_review, taxonomy, per_ref}`:
+   `applied` = changes that survived (additive adds, method-accuracy fixes, and any
+   scope removal that beat the defender+domain); `kept_by_review` = scope proposals
+   the steelman overturned (with the deciding layer); `taxonomy` =
+   `{proposed_new_rows, proposed_new_columns, singletons}` for curator decision.
+   Be conservative: scope removals are the exception, not the default.
 
 4. **Apply** the `applied` changes to `Papers.md` — matrix cells only:
    - **Adds**: insert the `[label](#N)` anchor into the new cell. The reference
@@ -93,6 +127,13 @@ the curators' intent. The hardening that enforces this:
    - **`NOT-PRIMARY` / scope removals**: heavier judgment — surface for explicit
      human confirmation, do not auto-apply. Present `kept_by_review` alongside so
      the human sees what the steelman saved.
+   - **`taxonomy.proposed_new_rows` / `proposed_new_columns`**: **never** auto-apply
+     — these are curator-level structural changes. A new row needs a
+     Wikipedia-linked method label added to the matrix header; a new column needs a
+     new `ResearchAreas/<Area>.md` page plus the header link (per `CLAUDE.md`).
+     Surface them (with supporting refs + the verification verdict) for a human; the
+     papers already keep their approximate cells, so nothing is orphaned in the
+     meantime. `singletons` are informational (parked until a second paper appears).
    - No process/changelog language in content (no "reclassified", no dates).
 
 5. **Integrity gate** (all must pass before commit):
@@ -120,4 +161,6 @@ the curators' intent. The hardening that enforces this:
 | Letting the proposer pass its own placement | The agent that proposes a cell never reviews it. |
 | Removing a paper because "its example isn't literally cell-ag" | Over-strict scope = the #33 failure. Check `cited_in_research_areas` + the `ResearchAreas/<Area>.md` scope first; a general method is a MOVE to AI Tooling, not a removal. |
 | Treating a scope removal like a method-accuracy fix | Scope removals must beat the steelman defender (+ gated domain check); method-accuracy needs only skeptics. |
+| Removing a paper whose real method/area has no row/column | That orphans a legitimate paper. Emit a `taxonomy_gap` instead — keep the cell, propose the new row/column. Only after re-row into an existing label fails. |
+| Auto-adding a proposed new row/column | Curator-level change. A row needs a Wikipedia link; a column needs a `ResearchAreas/*.md` page. Surface for a human; require a ≥2-paper verified cluster. |
 | Committing without `lint:papers` | The lint is the only thing that reliably catches a dangling anchor or an orphaned primary ref. |
