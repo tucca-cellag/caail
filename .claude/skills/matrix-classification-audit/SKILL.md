@@ -61,16 +61,116 @@ precedence ladder** — only after (1) drop-the-wrong-cell-keep-via-another and
   ("does an existing row/area already fit? is this a real, recurring category?")
   before it becomes a `proposed_new_rows` / `proposed_new_columns` entry.
   Single-paper gaps are **parked** as `singletons` (keep as-is, revisit when more
-  appear). Clustering is only meaningful corpus-wide, so a **taxonomy review must
-  run over the full corpus** (omit `_audit_ids.json`); a subset run still flags
-  per-paper gaps but clusters only within the subset.
+  appear). Clustering is only meaningful corpus-wide. In the **cost-efficient run
+  path** (below) the *skim* is the corpus-wide pass: it flags every `taxonomy_gap`
+  suspect across all 136 refs (liberally), so a **single, un-chunked** gate
+  invocation over the flagged subset still sees both members of any real pair and
+  clusters them. Chunking the gate by id-range would split a pair across
+  invocations and silently lose the cluster — so **don't chunk**. If you doubt the
+  skim's gap recall, fall back to the full-corpus gate (omit `_audit_ids.json`),
+  which clusters over every ref directly.
 - New rows/columns are **never auto-applied** — they are curator-level structural
   changes. A new **row** needs a Wikipedia-linked method label; a new **column**
   needs a new `ResearchAreas/<Area>.md` page + a matrix header link (per
   `CLAUDE.md`). Surface `proposed_new_rows` / `proposed_new_columns` for human
   decision alongside `kept_by_review`.
 
+## Cost-efficient run path (default): batched skim over all → verified gate on flags
+
+Running the full adversarial Workflow over every matrix ref is the **expensive
+path of last resort** — it spawns one proposer agent per paper (×136, each
+carrying the full reviewer contract) plus skeptics, and burns millions of tokens
+re-confirming obviously-correct placements (it exhausted usage mid-run once). The
+default is a **cost cascade**: a cheap batched **triage skim** reads every paper
+and selects only the ambiguous ones; the verified gate (the Procedure below) then
+judges that small flagged subset.
+
+The dominant cost of the full run is the *proposer pass* (136 agents); skeptics /
+defender / taxonomy fire only on real proposed changes. The skim replaces the
+136-proposer pass with ~12 batched calls, so a false flag costs only **one** gate
+proposer. The skim **only selects** which papers reach the gate — it never decides
+a change, and its output never enters a gate prompt (the gate proposer re-derives
+every verdict independently). It needs only **recall**: a false flag is cheap, a
+missed flag is an unaudited wrong placement. So it errs toward flagging.
+
+### Run path
+
+1. **Extract the corpus** (Procedure step 2) so every `matrix-corpus/ref-<id>.json` exists.
+2. **No-fulltext pre-pass.** Read each `has_fulltext:false` ref in the main loop
+   and decide keep-vs-flag from the abstract: flag `needs_fulltext` **only** when
+   the abstract cannot substantiate the current cell's method. A flagged
+   no-fulltext paper routes to the gate (which may fetch full text — rate-limited,
+   lower-confidence); don't blanket-flag all of them.
+3. **Batched skim.** ~12 `Agent` calls (Sonnet), each given ~10–12 contiguous ids,
+   reading those ref files and emitting the **pinned schema** below. Write each
+   batch to `matrix-corpus/_skim/batch-NN.json`. Keep batches ~10 so per-paper
+   attention stays real.
+4. **Glue → bootstrap file.** Run the committed glue (stdlib, zero tokens) — it
+   validates the batches, dedupes flagged ids (flag is sticky), **verifies every
+   ref was skimmed** (an un-skimmed ref is a loud MISSING, not a silent keep), and
+   writes `matrix-corpus/_audit_ids.json` as `{"ids":[…]}` (**ids only**; reasons +
+   `suggested_dest` go to `_skim_report.json` for the human, never the gate):
+   ```bash
+   python3 .claude/skills/matrix-classification-audit/skim_to_audit_ids.py
+   ```
+   It prints the flag count + a floor agent estimate and warns when the flag set
+   exceeds the abort ceiling (default 60). **If it exceeds the ceiling, stop and
+   tighten the rubric — do not launch the gate** (over-flagging means the skim
+   failed; escalating it to a near-full-corpus gate is the cost-failure mode).
+5. **Gate on flags, ONE invocation.** Run the Procedure Workflow over the flagged
+   subset (it bootstraps from `_audit_ids.json`, workflow line 40). **Never chunk
+   by id-range** (see the taxonomy note above — chunking loses gap clusters).
+
+### Skim rubric (recall-biased; tighten *here* when a recall test fails)
+
+Read each `ref-<id>.json` (`citation`, `current_cells`, `abstract`,
+`methods_text`, `cited_in_research_areas`, `has_fulltext`). Apply in order:
+
+1. **Known method-family traps (highest priority — these have a lexical tell).**
+   Flag `taxonomy_gap` + `wrong_method` when a paper sits in:
+   - **Bayesian Optimization** but the methods read as Bayesian *inference*
+     (posterior estimation, MCMC, Bayesian networks) — not sequential
+     acquisition-function optimization;
+   - **GNN** but the methods read as classical graph / network-propagation /
+     random-walk methods on a non-learned graph — not a trained graph neural net;
+   - **Deep Learning** but the methods read as non-neural (interactome / network
+     models, classical ML, statistics).
+2. **Curatorial-cell guard.** If any current cell is in a curatorial/grouping row
+   — Benchmarks & Evaluation Frameworks, Domain-Specific / General-Purpose
+   Biomedical Agents, Agent Infrastructure, Scientific Literature & Discovery
+   Agents, Robot Scientists & Lab Automation, Chemistry / Synthesis Agents, or any
+   Foundation Models row — and the paper reads as a *general framework/methodology*
+   with no concrete cell-ag application, flag (`wrong_area_scope` / `taxonomy_gap`).
+   Bias toward flagging: a single pass is least certain on these rows.
+3. **Method-name mismatch.** If the methods/abstract name a technique matching no
+   current method row for this paper, flag `wrong_method` (or `taxonomy_gap` if no
+   existing row is a clean home).
+4. **Missing cell.** If the paper substantively applies a second method or spans a
+   second area not currently represented, flag `missing_cell`.
+5. **Not primary.** If the paper is a review/perspective placed as primary
+   research, flag `not_primary`.
+6. **Otherwise `keep`** — every current cell's method is the paper's substantive
+   technique and every area is defensible.
+
+### Pinned skim output schema (one object per paper; the glue parses exactly this)
+
+```json
+{"id": 60, "verdict": "flag",
+ "issue_types": ["taxonomy_gap", "wrong_method"],
+ "reason": "interactome / network-propagation model, not a neural net",
+ "suggested_dest": "(optional) Network Propagation × Cellular Engineering"}
+```
+
+- `verdict`: `"keep"` | `"flag"`; `issue_types ⊆ {wrong_method, wrong_area_scope,
+  missing_cell, taxonomy_gap, not_primary, needs_fulltext}`, non-empty iff `flag`.
+- `suggested_dest` is optional and for the human report **only** — the glue strips
+  it from `_audit_ids.json`, so it never reaches the gate proposer (preserving
+  proposer independence).
+
 ## Procedure
+
+The verified gate both run paths share. (In the cost-efficient path, step 2 is
+already done and step 3 runs over the `_audit_ids.json` flag subset.)
 
 1. **Preconditions.** Zotero desktop running, Preferences → Advanced → "Allow
    other applications…" enabled, caail group (`6549203`) synced locally. Papers'
@@ -163,4 +263,7 @@ precedence ladder** — only after (1) drop-the-wrong-cell-keep-via-another and
 | Treating a scope removal like a method-accuracy fix | Scope removals must beat the steelman defender (+ gated domain check); method-accuracy needs only skeptics. |
 | Removing a paper whose real method/area has no row/column | That orphans a legitimate paper. Emit a `taxonomy_gap` instead — keep the cell, propose the new row/column. Only after re-row into an existing label fails. |
 | Auto-adding a proposed new row/column | Curator-level change. A row needs a Wikipedia link; a column needs a `ResearchAreas/*.md` page. Surface for a human; require a ≥2-paper verified cluster. |
+| Chunking the gate by id-range to save cost | The Taxonomy clustering runs inside one invocation — chunking splits a gap pair across runs and silently loses it. Run one invocation over the flag set; if it's too big, the skim over-flagged — tighten it. |
+| Trusting a skim `keep` without measuring recall | The skim is the audit's recall floor. A false `keep` ships an unaudited wrong placement. Gate the full sweep on a hand-labelled control batch and spot-check keeps *per row family* (curatorial rows too), not globally. |
+| Feeding the skim's `suggested_dest` into the gate | Breaks proposer independence. `_audit_ids.json` is ids-only by construction; suggestions live in `_skim_report.json` for the human. |
 | Committing without `lint:papers` | The lint is the only thing that reliably catches a dangling anchor or an orphaned primary ref. |
