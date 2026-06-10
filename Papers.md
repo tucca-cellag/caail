@@ -4,28 +4,29 @@ This document presents the core research papers at the intersection of Cellular 
 | | [Media Optimization](./Taxonomy.md#media-optimization) | [Cellular Engineering](./Taxonomy.md#cellular-engineering) | [Bioprocess & Scale-Up](./Taxonomy.md#bioprocess--scale-up) | [Scaffolding](./Taxonomy.md#scaffolding)  | [Sensory Prediction](./Taxonomy.md#sensory-prediction) | [AI Tooling / Methodology](./Taxonomy.md#ai-tooling--methodology) | [AI Evaluation & Benchmarking](./Taxonomy.md#ai-evaluation--benchmarking) |
 |---|---|---|---|---|---|---|---|
 | [Bayesian Optimization](./Taxonomy.md#bayesian-optimization) | [Cosenza et al. 2022](#3)<br>[Kanda et al. 2022](#16)<br>[Cosenza 2022](#18)<br>[Cosenza et al. 2023](#2)<br>[Yoshida et al. 2023](#15)<br>[Narayanan et al. 2025](#58) | [Kanda et al. 2022](#16) | [Antonakoudis & Richelle 2026](#59) | | | | |
-| [Deep Learning](./Taxonomy.md#deep-learning) | [Cosenza & Block 2021](#17)<br>[Cosenza 2022](#18)<br>[Nikkhah et al. 2023](#1)<br>[Yoshida et al. 2023](#15) | [Chen et al. 2016](#4)<br>[Li et al. 2020](#5)<br>[Ji et al. 2021](#6)<br>[Magnusson et al. 2024](#122)<br>[Adduri et al. 2025](#57)<br>[Mathieu et al. 2025](#60)<br>[Xiao et al. 2026](#145) | [Tamburini et al. 2014](#7)<br>[Roell et al. 2022](#32) | [Andrews et al. 2023](#35)<br>[Rafieyan et al. 2024](#20) | [Colantonio et al. 2022](#72) | [Radzikowski & Chen 2026](#197) | |
+| [Deep Learning](./Taxonomy.md#deep-learning) | [Cosenza 2022](#18)<br>[Yoshida et al. 2023](#15) | [Li et al. 2020](#5)<br>[Magnusson et al. 2024](#122)<br>[Adduri et al. 2025](#57)<br>[Xiao et al. 2026](#145)<br>[Rosen et al. 2024](#118)<br>[Littman et al. 2025](#123) | [Del Rio‐Chanona et al. 2019](#29)<br>[Peng et al. 2013](#30) | [Rafieyan et al. 2024](#20) | | [Radzikowski & Chen 2026](#197)<br>[Chen et al. 2016](#4) | |
 | [GNN](./Taxonomy.md#gnn) | | [Wang et al. 2021](#13)<br>[Ciortan & Defrance 2022](#8)<br>[Shan et al. 2023](#12)<br>[Roohani et al. 2024](#121)<br>[Li et al. 2024](#68) | | | [Lee et al. 2023](#14)<br>[Qian et al. 2023](#36) | [Mulyadi et al. 2025](#52) | |
-| [CNN](./Taxonomy.md#cnn) | | | [Del Rio‐Chanona et al. 2019](#29)<br>[Rojek et al. 2021](#33) | [Bermejillo Barrera et al. 2021](#19) | [Sun et al. 2023](#26)<br>[Shen et al. 2024](#11)<br>[Ulucan et al. 2019](#195) | | |
-| [GAN / VAE](./Taxonomy.md#gan--vae) | | [Lin et al. 2020](#9)<br>[Zrimec et al. 2022](#10) | | | [Shen et al. 2024](#11) | | |
-| [Genetic Algorithms](./Taxonomy.md#genetic-algorithms) | [Cosenza & Block 2021](#17)<br>[Nikkhah et al. 2023](#1)<br>[Hashizume & Ying 2025](#169) | | [Peng et al. 2013](#30)<br>[Zhang et al. 2020](#31) | | | | |
-| [SVM](./Taxonomy.md#svm) | [Xu et al. 2014](#21) | [Lao et al. 2022](#22) | [Zhang et al. 2020](#31)<br>[Roell et al. 2022](#32) | [Andrews et al. 2025](#34) | [Sun et al. 2023](#26)<br>[Sun et al. 2026](#28)<br>[Colantonio et al. 2022](#72) | | |
-| [Ensemble Learning](./Taxonomy.md#ensemble-learning) | [Gangwar et al. 2024](#170)<br>[Hashizume & Ying 2025](#169) | | [Roell et al. 2022](#32) | [Rafieyan et al. 2024](#20) | [Keller et al. 2017](#80)<br>[Dagan-Wiener et al. 2017](#102)<br>[Margulis et al. 2021](#103)<br>[Colantonio et al. 2022](#72)<br>[Margulis et al. 2022](#104)<br>[Kircali Ata et al. 2023](#171)<br>[Ziaikin et al. 2024](#105)<br>[Du et al. 2025](#27)<br>[Shen et al. 2024](#11)<br>[Sun et al. 2026](#28) | | |
+| [CNN](./Taxonomy.md#cnn) | | | [Rojek et al. 2021](#33) | [Bermejillo Barrera et al. 2021](#19) | [Sun et al. 2023](#26)<br>[Shen et al. 2024](#11)<br>[Ulucan et al. 2019](#195)<br>[Gyening et al. 2025](#196) | | |
+| [GAN / VAE](./Taxonomy.md#gan--vae) | | [Lin et al. 2020](#9)<br>[Zrimec et al. 2022](#10) | | [Andrews et al. 2023](#35) | [Shen et al. 2024](#11) | | |
+| [Genetic Algorithms](./Taxonomy.md#genetic-algorithms) | [Cosenza & Block 2021](#17)<br>[Nikkhah et al. 2023](#1)<br>[Hashizume & Ying 2025](#169) | | [Peng et al. 2013](#30)<br>[Zhang et al. 2020](#31) | [Andrews et al. 2025](#34) | | | |
+| [SVM](./Taxonomy.md#svm) | [Xu et al. 2014](#21) | | [Zhang et al. 2020](#31)<br>[Roell et al. 2022](#32) | | [Sun et al. 2023](#26)<br>[Sun et al. 2026](#28)<br>[Colantonio et al. 2022](#72)<br>[Shen et al. 2024](#11) | | |
+| [Ensemble Learning](./Taxonomy.md#ensemble-learning) | [Gangwar et al. 2024](#170)<br>[Hashizume & Ying 2025](#169) | | [Roell et al. 2022](#32)<br>[Du et al. 2025](#27) | [Rafieyan et al. 2024](#20) | [Keller et al. 2017](#80)<br>[Dagan-Wiener et al. 2017](#102)<br>[Margulis et al. 2021](#103)<br>[Colantonio et al. 2022](#72)<br>[Margulis et al. 2022](#104)<br>[Kircali Ata et al. 2023](#171)<br>[Ziaikin et al. 2024](#105)<br>[Du et al. 2025](#27)<br>[Shen et al. 2024](#11)<br>[Sun et al. 2026](#28) | | |
 | [K-Nearest Neighbors](./Taxonomy.md#k-nearest-neighbors) | | | [Roell et al. 2022](#32) | | [Sun et al. 2026](#28) | | |
-| [Active Learning](./Taxonomy.md#active-learning) | [Hashizume et al. 2022](#24)<br>[Zhang et al. 2023](#23)<br>[Ozawa et al. 2025](#25)<br>[Narayanan et al. 2025](#58)<br>[Hashizume & Ying 2025](#169) | | | | | [Pandi et al. 2022](#63)<br>[King et al. 2004](#182) | |
+| [Chemometrics](./Taxonomy.md#chemometrics) | | | [Tamburini et al. 2014](#7) | | | [Thévenot et al. 2015](#198)<br>[Rohart et al. 2017](#199) | |
+| [Active Learning](./Taxonomy.md#active-learning) | [Hashizume et al. 2022](#24)<br>[Zhang et al. 2023](#23)<br>[Ozawa et al. 2025](#25)<br>[Narayanan et al. 2025](#58)<br>[Hashizume & Ying 2025](#169) | [Pandi et al. 2022](#63)<br>[Hao et al. 2025](#97) | | | | [Pandi et al. 2022](#63)<br>[King et al. 2004](#182) | |
 | [Reinforcement Learning](./Taxonomy.md#reinforcement-learning) | | [Wu et al. 2026](#165)<br>[Rizvi et al. 2026](#120) | | | | [Narayanan et al. 2025](#161) | |
-| [Foundation Models: Next-Token Prediction](./Taxonomy.md#foundation-models-next-token-prediction) | | [Shen et al. 2023](#115)<br>[Pearce et al. 2026](#92)<br>[Rizvi et al. 2026](#120) | | | | | |
-| [Foundation Models: Masked Language Modeling](./Taxonomy.md#foundation-models-masked-language-modeling) | | [Yang et al. 2022](#112)<br>[Theodoris et al. 2023](#111)<br>[Hao et al. 2024](#116)<br>[Cui et al. 2024](#117)<br>[Rosen et al. 2026](#119) | | | | | |
-| [Foundation Models: LM + Biological Priors](./Taxonomy.md#foundation-models-lm--biological-priors) | | [Rosen et al. 2024](#118)<br>[Littman et al. 2025](#123)<br>[Rosen et al. 2026](#119) | | | | | |
-| [Foundation Models: Cell-State & Perturbation Prediction](./Taxonomy.md#foundation-models-cell-state--perturbation-prediction) | | [Roohani et al. 2024](#121)<br>[Magnusson et al. 2024](#122)<br>[Adduri et al. 2025](#57)<br>[Dong et al. 2026](#124)<br>[Cui et al. 2024](#117)<br>[Rizvi et al. 2026](#120) | | | | | |
-| [Foundation Models (other modalities)](./Taxonomy.md#foundation-models-other-modalities) | | | | | | [Sypetkowski et al. 2026](#42)<br>[Su et al. 2026](#88)<br>[Ding et al. 2026](#91) | |
-| [Scientific Literature & Discovery Agents](./Taxonomy.md#scientific-literature--discovery-agents) | | | | | | [Lála et al. 2023](#44)<br>[Lu et al. 2024](#45)<br>[Skarlinski et al. 2024](#46)<br>[Yamada et al. 2025](#47)<br>[Liu et al. 2026](#53)<br>[Gottweis et al. 2026](#153)<br>[Ghareeb et al. 2026](#154)<br>[Aygün et al. 2026](#166) | |
-| [General-Purpose Biomedical Agents](./Taxonomy.md#general-purpose-biomedical-agents) | | | | | | [Dong et al. 2024](#98)<br>[Gao et al. 2025a](#40)<br>[Huang et al. 2025](#49)<br>[Pickard et al. 2025](#94)<br>[Riffle et al. 2025](#95)<br>[Jin et al. 2025](#96) | |
-| [Chemistry / Synthesis Agents](./Taxonomy.md#chemistry--synthesis-agents) | | | | | | [Boiko et al. 2023](#70)<br>[Bran et al. 2024](#71)<br>[Narayanan et al. 2025](#161) | |
-| [Domain-Specific Biomedical Agents](./Taxonomy.md#domain-specific-biomedical-agents) | | [Hao et al. 2025](#97)<br>[Roohani et al. 2025a](#125)<br>[Youngblut et al. 2025](#126)<br>[Yu et al. 2026](#90)<br>[Tang et al. 2026](#93) | | | | [Singh et al. 2023](#66)<br>[Maeda & Kurata 2023](#69)<br>[Li et al. 2024](#68)<br>[Lee et al. 2025](#43)<br>[Wehling et al. 2025](#50)<br>[Singh et al. 2025](#167)<br>[Ying et al. 2025](#54)<br>[Wang et al. 2025a](#56)<br>[Sui et al. 2026](#51)<br>[Gu et al. 2024a](#151)<br>[Gu et al. 2024b](#152) | |
-| [Robot Scientists & Lab Automation](./Taxonomy.md#robot-scientists--lab-automation) | | | [Wang et al. 2025b](#61)<br>[Qiu et al. 2025](#62) | | | [King et al. 2004](#182)<br>[Tiukova et al. 2024](#64)<br>[Brunnsåker et al. 2025](#65) | |
-| [Benchmarks & Evaluation Frameworks](./Taxonomy.md#benchmarks--evaluation-frameworks) | | | | | | | [Sadhuka et al. 2025](#55)<br>[Brouwer et al. 2026](#89)<br>[Mitchener et al. 2025](#108)<br>[Bushuiev et al. 2024](#109)<br>[Sze & Hassoun 2024](#110)<br>[Boiarsky et al. 2024](#113)<br>[Yang et al. 2024](#114)<br>[Chevalley et al. 2025](#127)<br>[Laurent et al. 2024](#146)<br>[Gu et al. 2025](#147)<br>[Notin et al. 2023](#148)<br>[Duan et al. 2025](#149)<br>[Nair et al. 2026](#150)<br>[Jimenez et al. 2024](#155)<br>[Rein et al. 2023](#156)<br>[Wang et al. 2024](#157)<br>[Phan et al. 2026](#158)<br>[Wang et al. 2026](#159)<br>[Huang et al. 2026](#164)<br>[Gyening et al. 2025](#196) |
-| [Agent Infrastructure (Frameworks, KGs, Protocols)](./Taxonomy.md#agent-infrastructure-frameworks-kgs-protocols) | | | | | | [Gao et al. 2025b](#41)<br>[Lobentanzer et al. 2025](#48)<br>[Ruscone et al. 2025](#67)<br>[Kuehl et al. 2025](#133)<br>[Narayanan et al. 2024](#160)<br>[Qiao et al. 2026](#162)<br>[Yan et al. 2026](#163)<br>[Wang et al. 2025b](#61)<br>[Tang et al. 2026](#93) | |
+| [Foundation Models: Next-Token Prediction](./Taxonomy.md#foundation-models-next-token-prediction) | | [Shen et al. 2023](#115)<br>[Pearce et al. 2026](#92)<br>[Rizvi et al. 2026](#120)<br>[Cui et al. 2024](#117) | | | | [Su et al. 2026](#88) | |
+| [Foundation Models: Masked Language Modeling](./Taxonomy.md#foundation-models-masked-language-modeling) | | [Yang et al. 2022](#112)<br>[Theodoris et al. 2023](#111)<br>[Hao et al. 2024](#116)<br>[Cui et al. 2024](#117)<br>[Ji et al. 2021](#6) | | | | | |
+| [Foundation Models: LM + Biological Priors](./Taxonomy.md#foundation-models-lm--biological-priors) | | [Rosen et al. 2026](#119) | | | | | |
+| [Foundation Models: Cell-State & Perturbation Prediction](./Taxonomy.md#foundation-models-cell-state--perturbation-prediction) | | [Adduri et al. 2025](#57)<br>[Dong et al. 2026](#124)<br>[Cui et al. 2024](#117)<br>[Rizvi et al. 2026](#120) | | | | | |
+| [Foundation Models (other modalities)](./Taxonomy.md#foundation-models-other-modalities) | | | | | | [Sypetkowski et al. 2026](#42)<br>[Ding et al. 2026](#91) | |
+| [Scientific Literature & Discovery Agents](./Taxonomy.md#scientific-literature--discovery-agents) | | | | | | [Lála et al. 2023](#44)<br>[Lu et al. 2024](#45)<br>[Skarlinski et al. 2024](#46)<br>[Yamada et al. 2025](#47)<br>[Gottweis et al. 2026](#153)<br>[Ghareeb et al. 2026](#154)<br>[Aygün et al. 2026](#166) | |
+| [General-Purpose Biomedical Agents](./Taxonomy.md#general-purpose-biomedical-agents) | | | | | | [Dong et al. 2024](#98)<br>[Huang et al. 2025](#49)<br>[Pickard et al. 2025](#94)<br>[Riffle et al. 2025](#95)<br>[Jin et al. 2025](#96) | |
+| [Chemistry / Synthesis Agents](./Taxonomy.md#chemistry--synthesis-agents) | | | | | | [Boiko et al. 2023](#70)<br>[Bran et al. 2024](#71) | |
+| [Domain-Specific Biomedical Agents](./Taxonomy.md#domain-specific-biomedical-agents) | | [Hao et al. 2025](#97)<br>[Roohani et al. 2025a](#125)<br>[Tang et al. 2026](#93) | | | | [Maeda & Kurata 2023](#69)<br>[Li et al. 2024](#68)<br>[Lee et al. 2025](#43)<br>[Wehling et al. 2025](#50)<br>[Singh et al. 2025](#167)<br>[Ying et al. 2025](#54)<br>[Wang et al. 2025a](#56)<br>[Sui et al. 2026](#51)<br>[Gao et al. 2025a](#40)<br>[Yu et al. 2026](#90)<br>[Youngblut et al. 2025](#126) | |
+| [Robot Scientists & Lab Automation](./Taxonomy.md#robot-scientists--lab-automation) | | [Singh et al. 2023](#66)<br>[Kanda et al. 2022](#16) | [Wang et al. 2025b](#61) | | | [King et al. 2004](#182)<br>[Tiukova et al. 2024](#64)<br>[Brunnsåker et al. 2025](#65)<br>[Qiu et al. 2025](#62)<br>[Ghareeb et al. 2026](#154) | |
+| [Benchmarks & Evaluation Frameworks](./Taxonomy.md#benchmarks--evaluation-frameworks) | | | | | | | [Sadhuka et al. 2025](#55)<br>[Brouwer et al. 2026](#89)<br>[Mitchener et al. 2025](#108)<br>[Bushuiev et al. 2024](#109)<br>[Sze & Hassoun 2024](#110)<br>[Chevalley et al. 2025](#127)<br>[Laurent et al. 2024](#146)<br>[Gu et al. 2025](#147)<br>[Notin et al. 2023](#148)<br>[Duan et al. 2025](#149)<br>[Nair et al. 2026](#150)<br>[Jimenez et al. 2024](#155)<br>[Rein et al. 2023](#156)<br>[Wang et al. 2024](#157)<br>[Phan et al. 2026](#158)<br>[Wang et al. 2026](#159)<br>[Huang et al. 2026](#164)<br>[Liu et al. 2026](#53)<br>[Adduri et al. 2025](#57) |
+| [Agent Infrastructure (Frameworks, KGs, Protocols)](./Taxonomy.md#agent-infrastructure-frameworks-kgs-protocols) | | | | | | [Gao et al. 2025b](#41)<br>[Lobentanzer et al. 2025](#48)<br>[Ruscone et al. 2025](#67)<br>[Kuehl et al. 2025](#133)<br>[Narayanan et al. 2024](#160)<br>[Qiao et al. 2026](#162)<br>[Wang et al. 2025b](#61)<br>[Tang et al. 2026](#93) | |
 
 ## Category definitions
 
@@ -54,6 +55,7 @@ in its methods, not what it could be applied to. Short form:
 - **[SVM](./Taxonomy.md#svm)** — Support Vector Machines / regression.
 - **[Ensemble Learning](./Taxonomy.md#ensemble-learning)** — tree ensembles and model averaging (random forests, gradient boosting).
 - **[K-Nearest Neighbors](./Taxonomy.md#k-nearest-neighbors)** — instance-based prediction by similarity.
+- **[Chemometrics](./Taxonomy.md#chemometrics)** — multivariate spectral statistics (PLS / PLS-DA / PCA / OPLS).
 - **[Active Learning](./Taxonomy.md#active-learning)** — model-guided iterative design-of-experiments.
 - **[Reinforcement Learning](./Taxonomy.md#reinforcement-learning)** — reward-driven policy learning and LLM post-training.
 - **[Foundation Models: Next-Token Prediction](./Taxonomy.md#foundation-models-next-token-prediction)** — pretrained autoregressive (GPT-style) models for biology.
@@ -142,8 +144,6 @@ in its methods, not what it could be applied to. Short form:
 > **Code**: https://github.com/saeedrafieyan/MLATE
 
 <a id="21">21</a> Xu, J., Yan, F., Li, Z., Wang, D., Sheng, H., & Liu, Y. (2014). Serum-Free Medium Optimization Based on Trial Design and Support Vector Regression. *BioMed Research International, 2014,* 1–7. https://doi.org/10.1155/2014/269305
-
-<a id="22">22</a> Lao, Z., Matsui, Y., Ijichi, S., & Ying, B.-W. (2022). Global coordination of the mutation and growth rates across the genetic and nutritional variety in Escherichia coli. *Frontiers in Microbiology, 13,* 990969. https://doi.org/10.3389/fmicb.2022.990969
 
 <a id="23">23</a> Zhang, S., Aida, H., & Ying, B.-W. (2023). Employing Active Learning in Medium Optimization for Selective Bacterial Growth. *Applied Microbiology, 3*(4), 1355–1369. https://doi.org/10.3390/applmicrobiol3040091
 
@@ -249,8 +249,6 @@ in its methods, not what it could be applied to. Short form:
 
 <a id="59">59</a> Antonakoudis, A., & Richelle, A. (2026). Systematic data-driven genome-scale metabolic model reduction for bioprocess modeling: CHO culture case study. *npj Systems Biology and Applications.* https://doi.org/10.1038/s41540-026-00704-4
 
-<a id="60">60</a> Mathieu, T., Légaré, S., Nzekoue, A., Jauré, N., Lester, H., Dias, T., & Kusters, R. (2025). Integrative multi-omics modeling for cultivated meat production, quality, and safety. *Trends in Food Science & Technology, 166,* 105364. https://doi.org/10.1016/j.tifs.2025.105364
-
 <a id="61">61</a> Wang, W., Swain, S., Lee, J., Lin, Z., Canales, B., Aljović, A., Liu, Y., Li, Q., Marin-Llobet, A., Liu, M., Gao, Z., Liu, R., Alvarez-Dominguez, J., & Liu, J. (2025). *Agentic Lab: An Agentic-physical AI system for cell and organoid experimentation and manufacturing.* bioRxiv. https://doi.org/10.1101/2025.11.11.686354
 
 <a id="62">62</a> Qiu, Y., Huang, Z., Wang, Z., Liu, H., Qiao, Y., Hu, Y., Sun, S., Peng, H., Xu, R. X., & Sun, M. (2025). *BioMARS: A Multi-Agent Robotic System for Autonomous Biological Experiments.* arXiv. https://doi.org/10.48550/arXiv.2507.01485
@@ -348,10 +346,6 @@ in its methods, not what it could be applied to. Short form:
 
 > **Code**: https://github.com/TencentAILabHealthcare/scBERT
 
-<a id="113">113</a> Boiarsky, R., Singh, N. M., Buendia, A., Amini, A. P., Getz, G., & Sontag, D. (2024). Deeper evaluation of a single-cell foundation model. *Nature Machine Intelligence, 6*(12), 1443–1446. https://doi.org/10.1038/s42256-024-00949-w
-
-<a id="114">114</a> Yang, F., Wang, F., Huang, L., Liu, L., Huang, J., & Yao, J. (2024). Reply to: Deeper evaluation of a single-cell foundation model. *Nature Machine Intelligence, 6*(12), 1447–1450. https://doi.org/10.1038/s42256-024-00948-x
-
 <a id="115">115</a> Shen, H., Liu, J., Hu, J., Shen, X., Zhang, C., Wu, D., Feng, M., Yang, M., Li, Y., Yang, Y., Wang, W., Zhang, Q., Yang, J., Chen, K., & Li, X. (2023). Generative pretraining from large-scale transcriptomes for single-cell deciphering. *iScience, 26*(5), 106536. https://doi.org/10.1016/j.isci.2023.106536
 
 > **Code**: https://github.com/deeplearningplus/tGPT
@@ -427,10 +421,6 @@ in its methods, not what it could be applied to. Short form:
 > **Code**: https://github.com/Genentech/compbiobench-runner
 > **Data**: https://doi.org/10.5281/zenodo.19443185
 
-<a id="151">151</a> Gu, K., Shang, R., Althoff, T., Wang, C., & Drucker, S. M. (2024). How Do Analysts Understand and Verify AI-Assisted Data Analyses? *Proceedings of the 2024 CHI Conference on Human Factors in Computing Systems,* 1–22. https://doi.org/10.1145/3613904.3642497
-
-<a id="152">152</a> Gu, K., Grunde-McLaughlin, M., McNutt, A., Heer, J., & Althoff, T. (2024). How Do Data Analysts Respond to AI Assistance? A Wizard-of-Oz Study. *Proceedings of the 2024 CHI Conference on Human Factors in Computing Systems,* 1–22. https://doi.org/10.1145/3613904.3641891
-
 <a id="153">153</a> Gottweis, J., Weng, W.-H., Daryin, A., Tu, T., Sirkovic, P., Myaskovsky, A., Glowaty, G., Weissenberger, F., Orlandi, A., Popovici, D., Palepu, A., Rong, K., Tanno, R., Saab, K., Zhang, F., Blum, J., Carroll, A., Kulkarni, K., Tomašev, N., ... Natarajan, V. (2026). Accelerating scientific discovery with Co-Scientist. *Nature.* https://doi.org/10.1038/s41586-026-10644-y
 
 <a id="154">154</a> Ghareeb, A. E., Chang, B., Mitchener, L., Yiu, A., Szostkiewicz, C. J., Shved, D., Gyimesi, G. J., Laurent, J. M., Wright, S. M., Razzak, M. T., White, A. D., Finnemann, S. C., Hinks, M. M., & Rodriques, S. G. (2026). A multi-agent system for automating scientific discovery [Robin]. *Nature.* https://doi.org/10.1038/s41586-026-10652-y
@@ -470,8 +460,6 @@ in its methods, not what it could be applied to. Short form:
 <a id="162">162</a> Qiao, S., Wei, Y., Fan, J., Wu, B., Zhang, B., Wang, M., Zhu, Y., Zhang, N., Ding, K., Zhang, Q., & Chen, H. (2026). *SciAtlas: A Large-Scale Knowledge Graph for Automated Scientific Research.* arXiv. https://doi.org/10.48550/arXiv.2605.22878
 
 > **Code**: https://github.com/zjunlp/SciAtlas
-
-<a id="163">163</a> Yan, Z., Liu, C., Zhao, B., Lin, K., Zhao, J., Wang, Y., Lv, L., Li, H., Zhang, S., Yuan, L., & Mo, F. (2026). *MoleCode unlocks structural intelligence in large language models.* arXiv. https://doi.org/10.48550/arXiv.2605.16480
 
 <a id="164">164</a> Huang, X., Xiao, M., Qin, C., Long, Q., Chen, J., Zhou, Y., & Zhu, H. (2026). *SciHorizon-GENE: Benchmarking LLM for Life Sciences Inference from Gene Knowledge to Functional Understanding.* arXiv. https://doi.org/10.48550/arXiv.2601.12805
 
@@ -602,6 +590,12 @@ This section catalogs foundational primary research describing the Farm Animal G
 
 <a id="192">192</a> Liu, S., Gao, Y., Canela-Xandri, O., Wang, S., Yu, Y., Cai, W., Li, B., Xiang, R., Chamberlain, A. J., Pairo-Castineira, E., D’Mellow, K., Rawlik, K., Xia, C., Yao, Y., Navarro, P., Rocha, D., Li, X., Yan, Z., Li, C., … Fang, L. (2022). A multi-tissue atlas of regulatory variants in cattle. *Nature Genetics, 54*(9), 1438–1447. https://doi.org/10.1038/s41588-022-01153-5
 
+<a id="198">198</a> Thévenot, E. A., Roux, A., Xu, Y., Ezan, E., & Junot, C. (2015). Analysis of the human adult urinary metabolome variations with age, body mass index, and gender by implementing a comprehensive workflow for univariate and OPLS statistical analyses. *Journal of Proteome Research, 14*(8), 3322–3335. https://doi.org/10.1021/acs.jproteome.5b00354
+> **Code**: https://bioconductor.org/packages/ropls/
+
+<a id="199">199</a> Rohart, F., Gautier, B., Singh, A., & Lê Cao, K.-A. (2017). mixOmics: An R package for ‘omics feature selection and multiple data integration. *PLoS Computational Biology, 13*(11), e1005752. https://doi.org/10.1371/journal.pcbi.1005752
+> **Code**: https://github.com/mixOmicsTeam/mixOmics
+
 ## Reviews & Perspectives
 
 This section lists review articles, position papers, and commentaries that survey the field or opine on it, rather than applying a specific AI method to a specific cell-ag problem. Entries here share the same reference-ID counter as the primary references above but do not participate in the matrix.
@@ -647,3 +641,9 @@ This section lists review articles, position papers, and commentaries that surve
 <a id="183">183</a> Sparkes, A., Aubrey, W., Byrne, E., Clare, A., Khan, M. N., Liakata, M., Markham, M., Rowland, J., Soldatova, L. N., Whelan, K. E., Young, M., & King, R. D. (2010). Towards Robot Scientists for autonomous scientific discovery. *Automated Experimentation, 2*(1), 1. https://doi.org/10.1186/1759-4499-2-1
 
 <a id="194">194</a> Smith, C. S., Krusinski, L., Cohen, C. A., Kawecki, N. S., Moccio, L., Xie, Q., Cheng, E., Yee, Z., Adler, S., Simpson, D., Marcotte, G., Damoiseaux, R., Park, J. O., Crosbie, R. H., Mayhew, E. J., Garmyn, A. J., Fenton, J. I., & Rowat, A. C. (2026). Design principles of cells for eatability and scalability of cultivated meat. *Trends in Food Science & Technology, 172*, 105731. https://doi.org/10.1016/j.tifs.2026.105731
+
+<a id="60">60</a> Mathieu, T., Légaré, S., Nzekoue, A., Jauré, N., Lester, H., Dias, T., & Kusters, R. (2025). Integrative multi-omics modeling for cultivated meat production, quality, and safety. *Trends in Food Science & Technology, 166,* 105364. https://doi.org/10.1016/j.tifs.2025.105364
+
+<a id="113">113</a> Boiarsky, R., Singh, N. M., Buendia, A., Amini, A. P., Getz, G., & Sontag, D. (2024). Deeper evaluation of a single-cell foundation model. *Nature Machine Intelligence, 6*(12), 1443–1446. https://doi.org/10.1038/s42256-024-00949-w
+
+<a id="114">114</a> Yang, F., Wang, F., Huang, L., Liu, L., Huang, J., & Yao, J. (2024). Reply to: Deeper evaluation of a single-cell foundation model. *Nature Machine Intelligence, 6*(12), 1447–1450. https://doi.org/10.1038/s42256-024-00948-x

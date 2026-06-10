@@ -115,6 +115,15 @@ and process problems.
 Instance-based prediction from nearest-neighbor similarity, for small-data classification and
 regression. Usually appears alongside other classical models in comparative studies.
 
+### Chemometrics
+Multivariate statistics for extracting quantitative information from chemical measurements —
+overwhelmingly **spectra**. The workhorses are **Partial Least Squares (PLS)** regression, PLS-DA
+(discriminant analysis), PCA, and OPLS. In cell-ag this is the backbone of spectroscopy-based
+**Process Analytical Technology** — NIR/Raman monitoring of glucose, lactate, and biomass in a
+bioreactor, and hyperspectral quality/freshness prediction. Distinct from the kernel (SVM),
+tree-ensemble, and neural-net rows: it is latent-variable linear projection, not learning by
+kernels, trees, or backpropagation.
+
 ### Active Learning
 Iterative design-of-experiments in which the model **selects which experiments to run next** to label,
 typically wrapped around a surrogate model, closing a predict→experiment→retrain loop. In cell-ag:
