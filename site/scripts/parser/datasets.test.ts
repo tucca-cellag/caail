@@ -120,6 +120,6 @@ describe('computeDatasetBreakdown — real corpus', () => {
     // GROUND TRUTH — pinned after the first green run of `pnpm parse`.
     // Bump in lockstep when Datasets/ inventory tables / reference / benchmark
     // entries change.
-    expect(b.total).toBe(130);
+    expect(b.total).toBe(146);
   });
 });
