@@ -58,8 +58,8 @@ project skills (in `.claude/skills/`) that form a lifecycle:
    becomes a MOVE to *AI Tooling / Methodology*, not a deletion. When a paper's genuine method or area has **no matching row/column**, the audit
    emits a non-destructive **taxonomy gap** — it keeps the paper's cell and surfaces a *proposed*
    new row/column (clustered across ≥2 papers, adversarially verified) for **curator decision**;
-   new rows (Wikipedia-linked label) and columns (a new `ResearchAreas/<Area>.md` page) are never
-   auto-added. (Run via the named workflow `.claude/workflows/matrix-classification-audit.js`.)
+   new rows and columns (each defined in `Taxonomy.md`, with the matrix-header link pointing there)
+   are never auto-added. (Run via the named workflow `.claude/workflows/matrix-classification-audit.js`.)
 
 Every drafted or re-audited entry is verified before commit by read-only adversarial reviewer
 subagents in `.claude/agents/` — **`caail-citation-reviewer`** (Papers.md bibliographic
@@ -104,8 +104,8 @@ LICENSE                MIT License
 `Papers.md` has **three coordinated parts**:
 
 1. **A 2D matrix table** at the top, for **primary research** applying a specific AI method to a specific cell-ag problem:
-   - **Rows** = AI/ML method. Current rows: Bayesian Optimization, Deep Learning, GNN, CNN, GAN/VAE, Genetic Algorithms, SVM, Ensemble Learning, K-Nearest Neighbors, Active Learning, **LLMs / AI Agents**. Each row label links to its Wikipedia article (or to a representative reference for emerging categories without a dedicated Wikipedia page).
-   - **Columns** = research area, each linked to the matching `ResearchAreas/*.md` page. Current columns: Media Optimization, Cellular Engineering, Bioprocess Control, Scaffolding, Sensory Prediction, **AI Tooling / Methodology**.
+   - **Rows** = AI/ML method. Current rows: Bayesian Optimization, Deep Learning, GNN, CNN, GAN/VAE, Genetic Algorithms, SVM, Ensemble Learning, K-Nearest Neighbors, Active Learning, **LLMs / AI Agents**. Each row label links to its definition in `Taxonomy.md` (the canonical, CAAIL-specific definition of every row and column).
+   - **Columns** = research area, each linked to its definition in `Taxonomy.md`. Current columns: Media Optimization, Cellular Engineering, Bioprocess & Scale-Up, Scaffolding, Sensory Prediction, **AI Tooling / Methodology**, **AI Evaluation & Benchmarking**.
    - **Cells** = comma-separated anchor links to numbered references, e.g. `[2](#2),[3](#3),[15](#15)`.
 
 2. **A `## References` list** below the matrix — *primary research only*:
@@ -192,7 +192,7 @@ Two curated, audience-oriented onboarding hubs — `CellAg.md` ("Cellular Agricu
 
 ### `ResearchAreas/<Area>.md`
 
-Per-area deep-dive page. Linked from the column header of the `Papers.md` matrix. When you add a new column to the matrix, you must also create the corresponding file under `ResearchAreas/` and link to it from the column header.
+Per-area deep-dive page (optional, supplementary). The matrix column header links to the area's definition in `Taxonomy.md`, not here. These pages are AI-assisted and not a trusted definition source; when you add a new column, define it in `Taxonomy.md` and point the column header there.
 
 ## Curated summaries are compressed — fetch canonical sources for substantive work
 
@@ -236,7 +236,7 @@ The canonical root content remains build-free, GitHub-rendered Markdown — that
 - **Matrix-vs-references drift.** The single most common mistake is adding a reference without updating the matrix (so it's unreachable) or adding a matrix anchor that doesn't resolve. Always do both edits in the same commit.
 - **Renumbering tempts you to "clean up" gaps.** Don't — if a reference is removed, leave the ID retired rather than shifting subsequent IDs. (If absolutely necessary to renumber, do it as a dedicated PR that updates every matrix link in lockstep.)
 - **GitHub-flavored markdown anchor quirks.** GitHub auto-generates heading anchors from header text. The `<a id="N">N</a>` anchors in `Papers.md` are explicit HTML anchors, which work but bypass GitHub's auto-anchor system. Don't rely on header-derived anchors for references; keep using the explicit `<a id>` form.
-- **Wikipedia method links.** Row labels in the matrix link to Wikipedia for each AI method. When adding a new row, prefer Wikipedia over a paper or vendor page so the link stays stable.
+- **Matrix axis links.** Every matrix row and column label links to its definition in `Taxonomy.md` (the canonical, CAAIL-specific scope of each method/area — preferred over Wikipedia, which is too generic). When adding a new row or column, add its `Taxonomy.md` definition and point the matrix header there. The `ResearchAreas/*.md` pages are AI-assisted and not a trusted definition source.
 - **No version-control or process self-references in content.** Curated entries name *what they were curated from* (a paper, a prior file, a named effort) — never the repo's own history or the curation process. Don't write "surfaced via the May 2026 sync pass #2", "added in pass #N", "introduced in commit X", or dates-of-addition into the rendered content (e.g. a `Datasets/` curation-source note). Git history is the record of *when and how* something landed; the file should read as a clean description of *what* is there, not a changelog. (Same principle as the no-"moved"/"removed" placeholder rule below.)
 - **No "moved" / "removed" / "deprecated" placeholders.** When structurally relocating a section — e.g., moving the Benchmarks cluster out of `AITooling.md` into a new `AIEvaluation.md` — delete the original heading cleanly. Don't leave behind a stub like `## X → moved`, `## X (now lives in Y)`, or `<!-- removed: X -->`. The git history is the record of what moved; the file itself should read as if it had always been organized this way. Surface the cross-reference once in the intro paragraph or the "Adjacent research areas" footer instead. The same rule applies to refactors of `Papers.md` reference IDs and `Software.md` / `Datasets/` entries: deletions should be silent in the file (apart from a single cross-link if the new home isn't obvious), not commented out or annotated as "moved."
 

@@ -152,7 +152,8 @@ Plus, for the reference as a whole:
   paper KEEPS its current cell(s) — never propose a removal that would orphan it.
   Give `axis` (`method`|`area`), a `proposed_label`, the `closest_existing`
   row/area + why it is genuinely insufficient (not just imperfect), the methods
-  `span`, and for a method row a suggested `wikipedia_url`.
+  `span`, and a one-line `proposed_definition` (a `Taxonomy.md`-style definition
+  of the proposed new row/area: what it is + what is in/out of scope).
 
 ### Precedence when an assigned method/area looks wrong
 

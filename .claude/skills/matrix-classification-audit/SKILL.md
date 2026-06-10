@@ -54,7 +54,8 @@ precedence ladder** — only after (1) drop-the-wrong-cell-keep-via-another and
 - A `taxonomy_gap` **keeps the paper's current cell** as an approximation and
   records the unrepresented `axis` (method|area), `proposed_label`,
   `closest_existing` + why it is genuinely insufficient, the methods `span`, and
-  (for a method row) a suggested `wikipedia_url`. It **never** routes to a removal
+  a `proposed_definition` (a `Taxonomy.md`-style definition of the new row/area).
+  It **never** routes to a removal
   — guaranteed by construction, since gaps never enter the adjudicated change set.
 - A final **Taxonomy phase** pools all gaps, a synthesis agent clusters them by
   normalized label, and each cluster of **≥2 papers** is adversarially verified
@@ -70,8 +71,8 @@ precedence ladder** — only after (1) drop-the-wrong-cell-keep-via-another and
   skim's gap recall, fall back to the full-corpus gate (omit `_audit_ids.json`),
   which clusters over every ref directly.
 - New rows/columns are **never auto-applied** — they are curator-level structural
-  changes. A new **row** needs a Wikipedia-linked method label; a new **column**
-  needs a new `ResearchAreas/<Area>.md` page + a matrix header link (per
+  changes. A new **row** and a new **column** each need a `Taxonomy.md` definition
+  + a matrix header link to it (per
   `CLAUDE.md`). Surface `proposed_new_rows` / `proposed_new_columns` for human
   decision alongside `kept_by_review`.
 
@@ -246,9 +247,8 @@ already done and step 3 runs over the `_audit_ids.json` flag subset.)
      human confirmation, do not auto-apply. Present `kept_by_review` alongside so
      the human sees what the steelman saved.
    - **`taxonomy.proposed_new_rows` / `proposed_new_columns`**: **never** auto-apply
-     — these are curator-level structural changes. A new row needs a
-     Wikipedia-linked method label added to the matrix header; a new column needs a
-     new `ResearchAreas/<Area>.md` page plus the header link (per `CLAUDE.md`).
+     — these are curator-level structural changes. A new row or column needs a
+     `Taxonomy.md` definition plus the matrix-header link to it (per `CLAUDE.md`).
      Surface them (with supporting refs + the verification verdict) for a human; the
      papers already keep their approximate cells, so nothing is orphaned in the
      meantime. `singletons` are informational (parked until a second paper appears).
@@ -280,7 +280,7 @@ already done and step 3 runs over the `_audit_ids.json` flag subset.)
 | Removing a paper because "its example isn't literally cell-ag" | Over-strict scope. Check the area's `Taxonomy.md` definition against the paper's own methods first; a general method is a MOVE to AI Tooling, not a removal. |
 | Treating a scope removal like a method-accuracy fix | Scope removals must beat the steelman defender (+ gated domain check); method-accuracy needs only skeptics. |
 | Removing a paper whose real method/area has no row/column | That orphans a legitimate paper. Emit a `taxonomy_gap` instead — keep the cell, propose the new row/column. Only after re-row into an existing label fails. |
-| Auto-adding a proposed new row/column | Curator-level change. A row needs a Wikipedia link; a column needs a `ResearchAreas/*.md` page. Surface for a human; require a ≥2-paper verified cluster. |
+| Auto-adding a proposed new row/column | Curator-level change. Each needs a `Taxonomy.md` definition + the matrix-header link. Surface for a human; require a ≥2-paper verified cluster. |
 | Chunking the gate by id-range to save cost | The Taxonomy clustering runs inside one invocation — chunking splits a gap pair across runs and silently loses it. Run one invocation over the flag set; if it's too big, the skim over-flagged — tighten it. |
 | Trusting a skim `keep` without measuring recall | The skim is the audit's recall floor. A false `keep` ships an unaudited wrong placement. Gate the full sweep on a hand-labelled control batch and spot-check keeps *per row family* (curatorial rows too), not globally. |
 | Feeding the skim's `suggested_dest` into the gate | Breaks proposer independence. `_audit_ids.json` is ids-only by construction; suggestions live in `_skim_report.json` for the human. |

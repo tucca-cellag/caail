@@ -82,7 +82,7 @@ const PROPOSAL_SCHEMA = {
       required: ['axis', 'proposed_label', 'closest_existing', 'why_insufficient', 'span'],
       properties: { axis: { type: 'string', enum: ['method', 'area'] }, proposed_label: { type: 'string' },
         closest_existing: { type: 'string' }, why_insufficient: { type: 'string' }, span: { type: 'string' },
-        wikipedia_url: { type: 'string' } } } },
+        proposed_definition: { type: 'string' } } } },
   },
 }
 const VERDICT_SCHEMA = { type: 'object', additionalProperties: false, required: ['refuted', 'reason'], properties: { refuted: { type: 'boolean' }, reason: { type: 'string' } } }
@@ -103,7 +103,7 @@ const CLUSTER_SCHEMA = {
     required: ['axis', 'label', 'member_ids', 'rationale'],
     properties: { axis: { type: 'string', enum: ['method', 'area'] }, label: { type: 'string' },
       member_ids: { type: 'array', items: { type: 'integer' } },
-      closest_existing: { type: 'string' }, wikipedia_url: { type: 'string' }, rationale: { type: 'string' } } } } },
+      closest_existing: { type: 'string' }, proposed_definition: { type: 'string' }, rationale: { type: 'string' } } } } },
 }
 const VERIFY_SCHEMA = { type: 'object', additionalProperties: false, required: ['warranted', 'reason'], properties: { warranted: { type: 'boolean' }, reason: { type: 'string' } } }
 
@@ -125,7 +125,7 @@ ${areaList}
 
 Anti-over-removal (anchored on the paper's text): if the paper's methods show a plausible cell-ag application, or a general method that could apply to cell-ag, a wrong cell is a MISPLACED **re-row** or a MOVE to "AI Tooling / Methodology" — NOT an UNSUPPORTED/NOT-PRIMARY deletion. Removal is the last resort; ties go to KEEP.
 
-Return the structured proposal (id=${id}): keep[], unsupported[] (each with nature+reason), misplaced[] (nature+correct cell+span), missing[] (additive cross-listings, span+confidence), not_primary{flag,reason,suggested_home}, taxonomy_gaps[] (axis method|area, proposed_label, closest_existing, why_insufficient, span, wikipedia_url for method rows). Tag nature on every unsupported/misplaced.
+Return the structured proposal (id=${id}): keep[], unsupported[] (each with nature+reason), misplaced[] (nature+correct cell+span), missing[] (additive cross-listings, span+confidence), not_primary{flag,reason,suggested_home}, taxonomy_gaps[] (axis method|area, proposed_label, closest_existing, why_insufficient, span, proposed_definition — a one-line Taxonomy.md-style definition of the proposed new row/area). Tag nature on every unsupported/misplaced.
 
 PRECEDENCE for a wrong-looking cell (taxonomy_gap is the LAST resort): (1) another valid cell exists -> UNSUPPORTED the wrong one; (2) a DIFFERENT existing row/area from the lists fits -> MISPLACED re-row; (3) it is the only cell AND no listed row/area fits the paper's real method/area -> record a taxonomy_gaps entry and do NOT also emit unsupported/not_primary for it (never orphan a legitimate paper — keep the current cell as an approximation). Be conservative on scope; when in doubt, KEEP.`
 }
@@ -257,7 +257,7 @@ Existing method rows:\n${methodList}\nExisting area columns:\n${areaList}
 
 Gaps:\n${gapList}
 
-Cluster gaps that propose essentially the SAME new method-row (axis=method) or research-area column (axis=area) — normalize wording (e.g. "Bayesian inference" ≈ "probabilistic modeling"). Each cluster: axis, a clean canonical label, member_ids (the #ids), closest_existing row/area, a suggested wikipedia_url for a method row, and a one-line rationale. Do NOT merge genuinely different techniques. Return {clusters}.`
+Cluster gaps that propose essentially the SAME new method-row (axis=method) or research-area column (axis=area) — normalize wording (e.g. "Bayesian inference" ≈ "probabilistic modeling"). Each cluster: axis, a clean canonical label, member_ids (the #ids), closest_existing row/area, a one-line proposed_definition (Taxonomy.md-style: what it is + in/out of scope), and a one-line rationale. Do NOT merge genuinely different techniques. Return {clusters}.`
   const clustered = await agent(clusterPrompt, { label: 'taxonomy:cluster', phase: 'Taxonomy', schema: CLUSTER_SCHEMA, model: 'sonnet' })
   const clusters = (clustered && clustered.clusters) || []
   const verified = await parallel(clusters.map((cl) => async () => {
