@@ -54,31 +54,30 @@ The dispatcher gives you, for one reference, a record (`ref-<id>.json`) with:
   library). If absent or thin, fetch the full text yourself (Zotero local API /
   `get_fulltext`; fall back to publisher / arXiv / OpenAlex). An abstract alone
   is **not sufficient** to confirm a method.
-- `cited_in_research_areas` — area pages (`ResearchAreas/<Area>.md`) that already
-  cite this paper. **A non-empty value is a strong "the curators placed this
-  intentionally → KEEP" signal**, especially when it includes the area you are
-  about to challenge. Sometimes optionally, **proposed** changes to verify.
+- The canonical scope of every method row and area column is **`Taxonomy.md`** —
+  what each explicitly puts in and out of scope. Judge a placement against the
+  paper's own methods measured against those definitions. **Never** rely on a
+  "this paper is cited in area X" signal: the `ResearchAreas/*.md` pages are
+  AI-assisted and stale, so the audit does not trust them as evidence.
 
-## Before any `scope` removal — consult CAAIL's own curation context
+## Before any `scope` removal — judge the paper against the taxonomy
 
 A paper does **not** have to literally contain cells-in-a-dish to belong in a
 cell-ag area. The matrix catalogues general and foundational methods too. Before
 proposing or confirming any `scope`-based REMOVE / area-MISPLACED / NOT-PRIMARY:
 
-1. **Honor `cited_in_research_areas`.** If the paper is already cited in the
-   target area's page (or any area page), treat that as near-dispositive for
-   KEEP — the curators deliberately reference it. Overturn only with a concrete,
-   stated reason, never on a generic "no cell-ag application" basis. **A
-   curator-cited paper is never a removal — not even on `method-accuracy`
-   grounds.** If its method row is genuinely wrong, that is a `MISPLACED` re-row
-   (it stays in the matrix); reserve `UNSUPPORTED` / `NOT-PRIMARY` for papers with
-   no curator citation. Removing a cited paper would also sever a live
-   `ResearchAreas` cross-reference — the matrix-vs-references-drift error.
-2. **Read `ResearchAreas/<Area>.md`** for the area in question. It defines what
-   the column actually covers (e.g. *Bioprocess & Scale-Up* covers mixing, mass
-   transfer, and CFD of agitated vessels — the engineering of bioreactors — not
-   only experiments with cells already in the tank). Judge against that scope,
-   not a literal reading.
+1. **Anchor on the paper's own text.** Decide from what the paper's methods
+   actually do — never from whether an area page cites it (untrusted). If the
+   paper's text shows a plausible cell-ag application, or a general method that
+   could apply to cell-ag, the verdict is KEEP or at most a MOVE, not a removal.
+   A wrong method row, when the paper still belongs in the matrix, is a
+   `MISPLACED` re-row (it stays in the matrix) — reserve `UNSUPPORTED` /
+   `NOT-PRIMARY` removals for the cases in step 3.
+2. **Read the `Taxonomy.md` column definition** for the area in question. It
+   states what the column covers (e.g. *Bioprocess & Scale-Up* covers mixing,
+   mass transfer, and CFD of agitated vessels — the engineering of bioreactors —
+   not only experiments with cells already in the tank). Judge against that
+   stated scope, not a literal reading.
 3. **Apply the matrix philosophy** (`CLAUDE.md`, "Papers.md" section): a
    general-purpose method with no specific cell-ag application belongs in
    **`AI Tooling / Methodology`** — so a scope concern about a general method is
@@ -88,8 +87,8 @@ proposing or confirming any `scope`-based REMOVE / area-MISPLACED / NOT-PRIMARY:
    domain) — not for foundational methods whose demonstrated domain *is* the
    equipment, data, or process of cell-ag.
 
-If, after 1–3, the methods support the placement or the page already cites the
-paper, the verdict is `DEFENSIBLE` (or at most a MOVE), not a removal.
+If, after 1–3, the paper's methods support the placement, the verdict is
+`DEFENSIBLE` (or at most a MOVE), not a removal.
 
 ## What to verify
 
@@ -128,8 +127,8 @@ Then, independently:
 
 Per cell / proposal (tag each non-DEFENSIBLE one with `nature`):
 
-- `DEFENSIBLE` — quote the exact methods span (or cite the ResearchAreas page /
-  `cited_in_research_areas` hit) that grounds this `(method, area)`.
+- `DEFENSIBLE` — quote the exact methods span (measured against the `Taxonomy.md`
+  row/column definition) that grounds this `(method, area)`.
 - `MISPLACED` — paper does method/area X, not the assigned one; give the correct
   `(method, area)`, a span, and `nature`. For a general method with no cell-ag
   application, the correct destination is usually `… × AI Tooling / Methodology`.
@@ -145,7 +144,8 @@ Plus, for the reference as a whole:
 
 - `MISSING-CELL: (method, area)` — additional warranted placement + span.
 - `NOT-PRIMARY` — only for no-plausible-cell-ag-connection papers; say where it
-  should go + why, and confirm `cited_in_research_areas` was empty / overridden.
+  should go + why, grounded in the paper's own text (the matrix placement existing
+  is not evidence it belongs).
 - `TAXONOMY-GAP` — the paper *is* legitimate cell-ag research applying a real
   AI/ML method, but its genuine **method** (and/or **research area**) has no
   matching row/column in the matrix. This verdict is **non-destructive**: the

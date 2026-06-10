@@ -23,19 +23,19 @@ distinct from `caail-citation-reviewer`, which only checks bibliography).
 only. It does **not** touch `## References` citation text (author/title/DOI fixes
 are `caail-citation-reviewer`'s job) and it never renumbers IDs.
 
-**Asymmetric burden (the #33 lesson).** Removing a *correct* entry is worse than
-leaving a debatable one. A **scope**-based removal / area-move / NOT-PRIMARY must
-therefore clear a higher bar than an additive placement, because it works against
-the curators' intent. The hardening that enforces this:
+**Asymmetric burden.** Removing a *correct* entry is worse than leaving a
+debatable one. A **scope**-based removal / area-move / NOT-PRIMARY must therefore
+clear a higher bar than an additive placement. The hardening that enforces this:
 
-- The corpus carries `cited_in_research_areas` per ref — area pages that already
-  cite the paper. A non-empty value is a strong *intentional-placement → KEEP*
-  prior (this alone catches #33, which `ResearchAreas/Bioprocess.md` cites).
+- Every decision is grounded in the **paper's own text** measured against the
+  `Taxonomy.md` row/column definitions — **never** an "is this paper cited in the
+  area page?" signal. The `ResearchAreas/*.md` pages are AI-assisted and stale, so
+  that signal is untrusted; the corpus no longer carries it.
 - Every reviewer verdict is tagged `nature: method-accuracy | scope`.
   **method-accuracy** ("the paper doesn't use this technique") is factual and
   needs only skeptics. **scope** ("not cell-ag enough") additionally must defeat
-  an independent **steelman defender** (which reads the `ResearchAreas/<Area>.md`
-  page + the philosophy), and, only if still unresolved, a **gated
+  an independent **steelman defender** (which reads the paper + the `Taxonomy.md`
+  column definition + the philosophy), and, only if still unresolved, a **gated
   domain-relevance** web check. Ties go to KEEP.
 - A general-purpose method with no specific cell-ag application is a **MOVE to
   `AI Tooling / Methodology`, not a removal**. Removal/NOT-PRIMARY is reserved for
@@ -96,6 +96,15 @@ missed flag is an unaudited wrong placement. So it errs toward flagging.
 ### Run path
 
 1. **Extract the corpus** (Procedure step 2) so every `matrix-corpus/ref-<id>.json` exists.
+1b. **Deterministic pre-filter (free, optional but recommended).** Run
+   `prefilter_corpus.py` — a stdlib, zero-token layer that auto-clears the
+   lexically-obvious placements (classical-ML and benchmark cells whose method
+   alias appears in the paper text, with no trap and a text-corroborated area) and
+   emits the **residual** (everything else, incl. all Deep-Learning / agent /
+   foundation-model rows, which it never auto-clears). LLM-skim only that residual,
+   cutting skim cost. It fails toward the LLM on any uncertainty, and
+   `--validate` proves zero correction-leak against a prior skim. Grounded solely
+   in the paper's own text — it reads no area-page signal.
 2. **No-fulltext pre-pass.** Read each `has_fulltext:false` ref in the main loop
    and decide keep-vs-flag from the abstract: flag `needs_fulltext` **only** when
    the abstract cannot substantiate the current cell's method. A flagged
@@ -124,7 +133,11 @@ missed flag is an unaudited wrong placement. So it errs toward flagging.
 ### Skim rubric (recall-biased; tighten *here* when a recall test fails)
 
 Read each `ref-<id>.json` (`citation`, `current_cells`, `abstract`,
-`methods_text`, `cited_in_research_areas`, `has_fulltext`). Apply in order:
+`methods_text`, `has_fulltext`) and judge against the `Taxonomy.md` definitions —
+never an area-page citation signal. **You are not the
+judge** — the downstream gate decides; when a placement is *genuinely debatable*,
+**flag it** (route to the gate) rather than reasoning your way to `keep`. Apply in
+order:
 
 1. **Known method-family traps (highest priority — these have a lexical tell).**
    Flag `taxonomy_gap` + `wrong_method` when a paper sits in:
@@ -134,7 +147,12 @@ Read each `ref-<id>.json` (`citation`, `current_cells`, `abstract`,
    - **GNN** but the methods read as classical graph / network-propagation /
      random-walk methods on a non-learned graph — not a trained graph neural net;
    - **Deep Learning** but the methods read as non-neural (interactome / network
-     models, classical ML, statistics).
+     models, classical ML, statistics);
+   - any **Foundation Models** row but the paper is a *task-specific / supervised*
+     model that merely performs that row's task (e.g. perturbation prediction)
+     rather than a large-scale **pretrained, transferable** foundation model — the
+     FM rows require the paper to *be* a foundation model, not just share its task
+     (e.g. GEARS is a supervised GNN, not an FM).
 2. **Curatorial-cell guard.** If any current cell is in a curatorial/grouping row
    — Benchmarks & Evaluation Frameworks, Domain-Specific / General-Purpose
    Biomedical Agents, Agent Infrastructure, Scientific Literature & Discovery
@@ -183,8 +201,8 @@ already done and step 3 runs over the `_audit_ids.json` flag subset.)
    ```
    Writes `matrix-corpus.json` + per-ref `matrix-corpus/ref-<id>.json` (gitignored):
    per matrix-participating ref, its `id`, `doi`, `title`, `citation`,
-   `current_cells`, `abstract`, `methods_text`, `has_fulltext`, and
-   `cited_in_research_areas` (the Layer-1 KEEP prior). Refs with no indexed PDF
+   `current_cells`, `abstract`, `methods_text`, and `has_fulltext` — grounded
+   solely in the paper's own text (no signal from the ResearchAreas pages). Refs with no indexed PDF
    come through `has_fulltext: false` — reviewed from abstract + literature APIs at
    lower confidence (never a basis for a scope removal), not skipped.
 
@@ -259,7 +277,7 @@ already done and step 3 runs over the `_audit_ids.json` flag subset.)
 | Editing the `## References` citation text in this pass | Out of scope — that is `caail-citation-reviewer`'s job. Classification only. |
 | Trusting the abstract to confirm a method | Abstracts omit/overstate technique. Ground placements in the methods section. |
 | Letting the proposer pass its own placement | The agent that proposes a cell never reviews it. |
-| Removing a paper because "its example isn't literally cell-ag" | Over-strict scope = the #33 failure. Check `cited_in_research_areas` + the `ResearchAreas/<Area>.md` scope first; a general method is a MOVE to AI Tooling, not a removal. |
+| Removing a paper because "its example isn't literally cell-ag" | Over-strict scope. Check the area's `Taxonomy.md` definition against the paper's own methods first; a general method is a MOVE to AI Tooling, not a removal. |
 | Treating a scope removal like a method-accuracy fix | Scope removals must beat the steelman defender (+ gated domain check); method-accuracy needs only skeptics. |
 | Removing a paper whose real method/area has no row/column | That orphans a legitimate paper. Emit a `taxonomy_gap` instead — keep the cell, propose the new row/column. Only after re-row into an existing label fails. |
 | Auto-adding a proposed new row/column | Curator-level change. A row needs a Wikipedia link; a column needs a `ResearchAreas/*.md` page. Surface for a human; require a ≥2-paper verified cluster. |

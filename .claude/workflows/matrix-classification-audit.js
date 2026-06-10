@@ -6,7 +6,7 @@ export const meta = {
     { title: 'Bootstrap', detail: 'resolve run inputs (corpus dir, ids, labels) by reading matrix-corpus.json when args are not supplied' },
     { title: 'Propose', detail: 'classification-reviewer reads each paper + CAAIL curation context; proposes keep/add/remove/move/not-primary, each tagged method-accuracy vs scope' },
     { title: 'Verify', detail: '3 independent skeptics try to refute each proposed change' },
-    { title: 'Defend', detail: 'scope removals only: an independent steelman argues to KEEP (reads the ResearchAreas page + cited_in_research_areas prior)' },
+    { title: 'Defend', detail: 'removals: an independent steelman argues to KEEP from the paper\'s own text + the Taxonomy.md column definition; ties go to KEEP' },
     { title: 'Ground', detail: 'unresolved scope calls only: a web-research agent scores real-world relevance to the area 1–5' },
     { title: 'Taxonomy', detail: 'pool non-destructive taxonomy gaps; a synthesis agent clusters them; ≥2-member clusters are adversarially verified into proposed new rows/columns' },
   ],
@@ -18,12 +18,6 @@ export const meta = {
 //   ids     matrix-participating reference ids to audit
 //   methods exact method-row labels; areas exact area-column labels
 const SKEPTICS = 3
-const AREA_FILE = {
-  'Media Optimization': 'MediaOptimization.md', 'Cellular Engineering': 'CellEngineering.md',
-  'Bioprocess & Scale-Up': 'Bioprocess.md', 'Scaffolding': 'Scaffolding.md',
-  'Sensory Prediction': 'SensoryPrediction.md', 'AI Tooling / Methodology': 'AITooling.md',
-  'AI Evaluation & Benchmarking': 'AIEvaluation.md',
-}
 const BOOTSTRAP_SCHEMA = {
   type: 'object', additionalProperties: false, required: ['dir', 'ids', 'methods', 'areas'],
   properties: {
@@ -65,10 +59,9 @@ const refFile = (id) => `${dir}/ref-${id}.json`
 const cell = { type: 'object', additionalProperties: false, required: ['method', 'area'], properties: { method: { type: 'string' }, area: { type: 'string' } } }
 const PROPOSAL_SCHEMA = {
   type: 'object', additionalProperties: false,
-  required: ['id', 'cited_by_curators', 'keep', 'unsupported', 'misplaced', 'missing', 'not_primary', 'taxonomy_gaps'],
+  required: ['id', 'keep', 'unsupported', 'misplaced', 'missing', 'not_primary', 'taxonomy_gaps'],
   properties: {
     id: { type: 'number' },
-    cited_by_curators: { type: 'boolean' },
     keep: { type: 'array', items: cell },
     unsupported: { type: 'array', items: { type: 'object', additionalProperties: false,
       required: ['method', 'area', 'nature', 'reason'],
@@ -95,11 +88,10 @@ const PROPOSAL_SCHEMA = {
 const VERDICT_SCHEMA = { type: 'object', additionalProperties: false, required: ['refuted', 'reason'], properties: { refuted: { type: 'boolean' }, reason: { type: 'string' } } }
 const DEFENDER_SCHEMA = {
   type: 'object', additionalProperties: false,
-  required: ['can_keep', 'cited_by_curators', 'needs_domain_check', 'argument'],
+  required: ['can_keep', 'needs_domain_check', 'argument'],
   properties: {
     can_keep: { type: 'boolean' },
     defensible_cell: { type: 'object', additionalProperties: false, required: ['method', 'area'], properties: { method: { type: 'string' }, area: { type: 'string' } } },
-    cited_by_curators: { type: 'boolean' },
     needs_domain_check: { type: 'boolean' },
     argument: { type: 'string' },
   },
@@ -120,18 +112,20 @@ function proposerPrompt(id) {
   return `You are auditing CAAIL Papers.md matrix reference #${id}.
 
 FIRST read the review contract and follow it exactly: ${reviewerSpec}
-THEN read this paper's record: ${refFile(id)} (citation, abstract, methods_text, current_cells, doi/url, has_fulltext, and \`cited_in_research_areas\` — area pages that already cite this paper).
+THEN read this paper's record: ${refFile(id)} (citation, abstract, methods_text, current_cells, doi/url, has_fulltext). Judge from the paper's OWN text — never from any external "this paper is cited in area X" signal.
 
-Per the contract: judge from the methods (fetch full text via DOI/OpenAlex only if methods_text is absent/thin and has_fulltext is false). Separate every non-DEFENSIBLE verdict into nature="method-accuracy" (does the paper use this technique?) vs nature="scope" (does it belong in this cell-ag area / the matrix?). For any scope concern you MUST honor \`cited_in_research_areas\`, read the relevant ResearchAreas/<Area>.md, and apply the matrix philosophy — a general method with no cell-ag application is a MOVE to "AI Tooling / Methodology", not a removal; not_primary is only for papers with NO plausible cell-ag connection.
+The canonical meaning of every row and area is ${repo}/Taxonomy.md: read the definition of each cell's method row and area column there, including what each explicitly puts in and out of scope.
+
+Per the contract: judge from the methods (fetch full text via DOI/OpenAlex only if methods_text is absent/thin and has_fulltext is false). Separate every non-DEFENSIBLE verdict into nature="method-accuracy" (does the paper use this technique, per the Taxonomy row definition?) vs nature="scope" (does it belong in this area / the matrix, per the Taxonomy column definition?). Apply the matrix philosophy — a general method with no specific cell-ag application is a MOVE to "AI Tooling / Methodology", not a removal; not_primary is only for papers with NO plausible cell-ag connection.
 
 Valid method labels (exact):
 ${methodList}
 Valid area labels (exact):
 ${areaList}
 
-Set \`cited_by_curators\` = true iff the record's \`cited_in_research_areas\` is non-empty. If it is true, a paper is NEVER a removal: a wrong method row is a MISPLACED **re-row** (keep it in the matrix), not an UNSUPPORTED/NOT-PRIMARY deletion — the curators reference it on purpose.
+Anti-over-removal (anchored on the paper's text): if the paper's methods show a plausible cell-ag application, or a general method that could apply to cell-ag, a wrong cell is a MISPLACED **re-row** or a MOVE to "AI Tooling / Methodology" — NOT an UNSUPPORTED/NOT-PRIMARY deletion. Removal is the last resort; ties go to KEEP.
 
-Return the structured proposal (id=${id}): cited_by_curators (bool), keep[], unsupported[] (each with nature+reason), misplaced[] (nature+correct cell+span), missing[] (additive cross-listings, span+confidence), not_primary{flag,reason,suggested_home}, taxonomy_gaps[] (axis method|area, proposed_label, closest_existing, why_insufficient, span, wikipedia_url for method rows). Tag nature on every unsupported/misplaced.
+Return the structured proposal (id=${id}): keep[], unsupported[] (each with nature+reason), misplaced[] (nature+correct cell+span), missing[] (additive cross-listings, span+confidence), not_primary{flag,reason,suggested_home}, taxonomy_gaps[] (axis method|area, proposed_label, closest_existing, why_insufficient, span, wikipedia_url for method rows). Tag nature on every unsupported/misplaced.
 
 PRECEDENCE for a wrong-looking cell (taxonomy_gap is the LAST resort): (1) another valid cell exists -> UNSUPPORTED the wrong one; (2) a DIFFERENT existing row/area from the lists fits -> MISPLACED re-row; (3) it is the only cell AND no listed row/area fits the paper's real method/area -> record a taxonomy_gaps entry and do NOT also emit unsupported/not_primary for it (never orphan a legitimate paper — keep the current cell as an approximation). Be conservative on scope; when in doubt, KEEP.`
 }
@@ -140,37 +134,35 @@ function describe(c) {
   if (c.kind === 'missing') return `ADD #${c.id} to (method="${c.method}", area="${c.area}"). WRONG if the paper does not SUBSTANTIVELY apply that method to that area.`
   if (c.kind === 'unsupported') return `REMOVE #${c.id} from (method="${c.method}", area="${c.area}") [nature=${c.nature}]. WRONG if the paper DOES support that cell (method actually used / area defensible under the column's documented scope).`
   if (c.kind === 'misplaced') return `MOVE #${c.id} from (method="${c.method}", area="${c.area}") to (method="${c.correct_method}", area="${c.correct_area}") [nature=${c.nature}]. WRONG if the original cell is actually correct.`
-  return `Declare #${c.id} NOT-PRIMARY and remove it from the matrix (suggested home: ${c.suggested_home || 'n/a'}). WRONG if the paper applies an AI method to a plausibly cell-ag problem, or a ResearchAreas page already cites it.`
+  return `Declare #${c.id} NOT-PRIMARY and remove it from the matrix (suggested home: ${c.suggested_home || 'n/a'}). WRONG if the paper applies an AI method to a plausibly cell-ag problem.`
 }
 
 function skepticPrompt(id, c) {
   return `You are an adversarial skeptic verifying a proposed change to CAAIL's Papers.md matrix. REFUTE it if the evidence does not clearly support it.
 
-Read the paper's record: ${refFile(id)} (citation, abstract, methods_text, current_cells, cited_in_research_areas). If methods are needed and absent, fetch via DOI/OpenAlex.
+Read the paper's record: ${refFile(id)} (citation, abstract, methods_text, current_cells). If methods are needed and absent, fetch via DOI/OpenAlex. The row/area definitions are in ${repo}/Taxonomy.md.
 
 PROPOSED CHANGE: ${describe({ ...c, id })}
 Proposer's evidence: ${c.span || c.reason || '(none)'}
 
-Default to refuted=true when evidence is weak/abstract-only/ambiguous. For a scope-based removal, also count it refuted if \`cited_in_research_areas\` already includes the area or the method is general (belongs in AI Tooling, i.e. a move not a removal). Return {refuted, reason}.`
+Default to refuted=true when evidence is weak/abstract-only/ambiguous. For a scope-based removal, also count it refuted if the paper's own text shows a plausible cell-ag application, or the method is general (belongs in AI Tooling — a move, not a removal). Return {refuted, reason}.`
 }
 
 function defenderPrompt(id, c) {
-  const areaForRead = c.kind === 'misplaced' ? c.area : c.area
-  const fname = AREA_FILE[areaForRead] || '(find the matching ResearchAreas page)'
-  return `You are the DEFENDER. An audit proposes a SCOPE-based removal of CAAIL Papers.md reference #${id}. Build the STRONGEST honest case to KEEP it in the matrix. Ties go to KEEP.
+  const areaForRead = c.area
+  return `You are the DEFENDER. An audit proposes to REMOVE CAAIL Papers.md reference #${id} from the matrix. Build the STRONGEST honest case to KEEP it, grounded in the paper's own methods. Ties go to KEEP.
 
 Read, in order:
-1. ${refFile(id)} — note \`cited_in_research_areas\` and current_cells.
-2. ${repo}/ResearchAreas/${fname} — the documented scope of the "${areaForRead}" column (does it cover this paper's method/topic? does it already cite the paper?).
+1. ${refFile(id)} — the paper's citation, abstract, methods_text, current_cells (judge from what the paper actually does).
+2. ${repo}/Taxonomy.md — the definition of the "${areaForRead}" column (does the paper's method/topic fall within its stated scope?) and of "AI Tooling / Methodology".
 3. ${repo}/CLAUDE.md (the "Papers.md" schema section) — the matrix philosophy: general/foundational methods are in-scope; the "AI Tooling / Methodology" column exists for general methods without a specific cell-ag application; removal is only for papers with NO plausible cell-ag connection.
 
 PROPOSED REMOVAL: ${describe({ ...c, id })}
 
 Decide:
-- can_keep = true if there is a defensible matrix placement (the current cell OR a MOVE — e.g. to "AI Tooling / Methodology" for a general method, or another area). Provide defensible_cell.
-- cited_by_curators = true if a ResearchAreas page already cites this paper.
-- needs_domain_check = true ONLY if you cannot decide from the page/citations/philosophy and the call genuinely hinges on whether the paper's topic is relevant to cell-ag in the real world.
-Return {can_keep, defensible_cell?, cited_by_curators, needs_domain_check, argument}.`
+- can_keep = true if the paper's text supports a defensible matrix placement (the current cell OR a MOVE — e.g. to "AI Tooling / Methodology" for a general method, or another area). Provide defensible_cell.
+- needs_domain_check = true ONLY if you cannot decide from the paper + Taxonomy + philosophy and the call genuinely hinges on whether the paper's topic is relevant to cell-ag in the real world.
+Return {can_keep, defensible_cell?, needs_domain_check, argument}.`
 }
 
 function domainPrompt(id, c) {
@@ -183,7 +175,7 @@ Score relevance 1–5 (1 = unrelated to cell-ag; 5 = core to cell-ag ${area}). R
 }
 
 // ── Per-change adjudication ───────────────────────────────────────────────
-async function adjudicate(id, c, citedByCurators) {
+async function adjudicate(id, c) {
   const votes = (await parallel(Array.from({ length: SKEPTICS }, (_, i) => () =>
     agent(skepticPrompt(id, c), { label: `verify:#${id}:${c.kind}:${i + 1}`, phase: 'Verify', schema: VERDICT_SCHEMA, model: 'sonnet' })))).filter(Boolean)
   const refutes = votes.filter((v) => v.refuted).length
@@ -191,15 +183,16 @@ async function adjudicate(id, c, citedByCurators) {
   if (votes.length === 0 || refutes > Math.floor(SKEPTICS / 2)) {
     return { change: c, applied: false, disposition: 'dropped-by-skeptics', refutes, skeptic_reasons }
   }
-  // A *removal* of a curator-cited paper must beat the defender even on
-  // method-accuracy grounds (a wrong method row is a re-row, not a deletion).
-  const isRemoval = c.kind === 'unsupported' || c.kind === 'not_primary'
-  const needsDefender = c.nature === 'scope' || (isRemoval && citedByCurators)
-  // Additive + (method-accuracy on a non-cited paper / a re-row move): skeptics suffice.
+  // Scope removals (incl. not_primary, tagged scope) must beat the steelman
+  // defender, which argues KEEP from the paper's own text + Taxonomy.md. A
+  // method-accuracy UNSUPPORTED is firm (skeptics decide it) and never orphans —
+  // the proposer only raises it when another valid cell exists (precedence step 1).
+  const needsDefender = c.nature === 'scope'
+  // Additive cross-listings + method-accuracy re-row MOVES / drops: skeptics suffice.
   if (c.kind === 'missing' || !needsDefender) {
     return { change: c, applied: true, disposition: 'apply', decidedBy: 'skeptics', refutes, skeptic_reasons }
   }
-  // Scope removal, or a removal of a curator-cited paper: must defeat the steelman defender.
+  // A removal (or any scope change): must defeat the steelman defender.
   const def = await agent(defenderPrompt(id, c), { label: `defend:#${id}:${c.kind}`, phase: 'Defend', schema: DEFENDER_SCHEMA, model: 'sonnet' })
   if (def && def.can_keep) {
     return { change: c, applied: false, disposition: def.defensible_cell ? 'keep-or-move' : 'keep', decidedBy: 'defender', refutes, skeptic_reasons, defender: def }
@@ -231,8 +224,7 @@ const results = await pipeline(
     if (proposal.not_primary && proposal.not_primary.flag) {
       changes.push({ kind: 'not_primary', nature: 'scope', ...proposal.not_primary })
     }
-    const citedByCurators = proposal.cited_by_curators === true
-    const adjudicated = await parallel(changes.map((c) => () => adjudicate(id, c, citedByCurators)))
+    const adjudicated = await parallel(changes.map((c) => () => adjudicate(id, c)))
     const valid = adjudicated.filter(Boolean)
     return {
       id,

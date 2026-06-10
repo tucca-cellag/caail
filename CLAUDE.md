@@ -53,9 +53,9 @@ project skills (in `.claude/skills/`) that form a lifecycle:
    belong in additional cells (multi-category)? It edits matrix cells only; it never touches
    `## References` citation text or renumbers IDs. A **scope** removal (a paper judged not
    cell-ag-relevant) carries an asymmetric burden: it must survive a steelman *defender* that
-   reads the column's `ResearchAreas/<Area>.md` page and honors a `cited_in_research_areas`
-   prior — so a general-purpose method becomes a MOVE to *AI Tooling / Methodology*, not a
-   deletion. When a paper's genuine method or area has **no matching row/column**, the audit
+   reads the paper's own methods against the column's `Taxonomy.md` definition (the trusted scope
+   source; the ResearchAreas pages are AI-assisted and untrusted) — so a general-purpose method
+   becomes a MOVE to *AI Tooling / Methodology*, not a deletion. When a paper's genuine method or area has **no matching row/column**, the audit
    emits a non-destructive **taxonomy gap** — it keeps the paper's cell and surfaces a *proposed*
    new row/column (clustered across ≥2 papers, adversarially verified) for **curator decision**;
    new rows (Wikipedia-linked label) and columns (a new `ResearchAreas/<Area>.md` page) are never
