@@ -15,10 +15,17 @@
 /* Stacked layout: the panel sits below the matrix, so don't stick it — just let
  * it scroll within a generous height rather than stretching the page. */
 @media (max-width: 60rem) { .px-work { grid-template-columns: 1fr; } .px-panel { position: static; max-height: 70vh; } }
-.px-mxpane { overflow: auto; padding: .8rem .2rem; }
+/* Bound the matrix to the viewport so it scrolls within its own pane (keeping
+ * the existing overflow:auto for the min-width:640px horizontal scroll). This
+ * makes the pane the vertical scroll container, which is what lets the column
+ * headers below stick to its top. */
+.px-mxpane { overflow: auto; padding: 0 .2rem .8rem; max-height: calc(100vh - var(--sl-nav-height, 4rem) - 2rem); }
 .px-mx { display: grid; gap: 3px; min-width: 640px; }
-.px-corner { font-size: .55rem; color: var(--caail-muted); display: flex; align-items: flex-end; }
-.px-hd { font-size: .58rem; font-weight: 700; color: var(--caail-ink); line-height: 1.1; padding: .35rem .25rem; text-align: center; border-top: 3px solid; border-radius: 3px 3px 0 0; min-height: 2.6rem; display: flex; align-items: center; justify-content: center; }
+/* The header row (corner + area tabs) freezes at the top of the scrolling pane.
+ * A solid background masks the data cells passing underneath; the 3px grid gaps
+ * read as thin separator lines, not bleeding content. */
+.px-corner { font-size: .55rem; color: var(--caail-muted); display: flex; align-items: flex-end; position: sticky; top: 0; z-index: 2; background: var(--caail-bg); }
+.px-hd { font-size: .58rem; font-weight: 700; color: var(--caail-ink); line-height: 1.1; padding: .35rem .25rem; text-align: center; border-top: 3px solid; border-radius: 3px 3px 0 0; min-height: 2.6rem; height: 100%; display: flex; align-items: center; justify-content: center; position: sticky; top: 0; z-index: 2; background: var(--caail-bg); }
 .px-rl { font-size: .62rem; color: var(--caail-ink); display: flex; align-items: center; padding-right: .35rem; line-height: 1.15; }
 /* Axis labels are buttons that open a definition popup (with a link out to the
  * full Taxonomy.md entry inside it); reset to read as the label, not a button.
