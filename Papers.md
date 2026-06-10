@@ -486,7 +486,7 @@ in its methods, not what it could be applied to. Short form:
 <a id="195">195</a> Ulucan, O., Karakaya, D., & Turkan, M. (2019). Meat Quality Assessment based on Deep Learning. *2019 Innovations in Intelligent Systems and Applications Conference (ASYU)*, 1–5. https://doi.org/10.1109/ASYU48272.2019.8946388
 
 <a id="196">196</a> Gyening, R.-M. O. M., Akoto, M. A., Owusu-Agyemang, K., Amoako-Banning, L., Takyi, K., & Appiahene, P. (2025). MeatScan: An image dataset for machine learning-based classification of fresh and spoiled cow meat. *Data in Brief, 62*, 112045. https://doi.org/10.1016/j.dib.2025.112045
-> **Code**: https://doi.org/10.5281/zenodo.16764338
+> **Data**: https://doi.org/10.5281/zenodo.16764338
 
 <a id="197">197</a> Radzikowski, J., & Chen, J. (2026). Epicure: Navigating the Emergent Geometry of Food Ingredient Embeddings. *arXiv*. https://doi.org/10.48550/arXiv.2605.22391
 
