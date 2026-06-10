@@ -16,7 +16,7 @@ import type { Area } from './types';
 export const AREAS: ReadonlyArray<Area> = [
   { key: 'media',       label: 'Media Optimization' },
   { key: 'cell',        label: 'Cellular Engineering' },
-  { key: 'bioprocess',  label: 'Bioprocess control' },
+  { key: 'bioprocess',  label: 'Bioprocess & Scale-Up' },
   { key: 'scaffolding', label: 'Scaffolding' },
   { key: 'sensory',     label: 'Sensory Prediction' },
   { key: 'tooling',     label: 'AI Tooling / Methodology' },
