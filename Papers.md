@@ -1,7 +1,7 @@
 # Paper matrix
 This document presents the core research papers at the intersection of Cellular Agriculture and AI. The papers are organized by problem and AI type, to indicate which approaches have been successful in a given research area.
 
-| | [Media Optimization](./ResearchAreas/MediaOptimization.md) | [Cellular Engineering](./ResearchAreas/CellEngineering.md) | [Bioprocess control](./ResearchAreas/Bioprocess.md) | [Scaffolding](./ResearchAreas/Scaffolding.md)  | [Sensory Prediction](./ResearchAreas/SensoryPrediction.md) | [AI Tooling / Methodology](./ResearchAreas/AITooling.md) | [AI Evaluation & Benchmarking](./ResearchAreas/AIEvaluation.md) |
+| | [Media Optimization](./ResearchAreas/MediaOptimization.md) | [Cellular Engineering](./ResearchAreas/CellEngineering.md) | [Bioprocess & Scale-Up](./Taxonomy.md#bioprocess--scale-up) | [Scaffolding](./ResearchAreas/Scaffolding.md)  | [Sensory Prediction](./ResearchAreas/SensoryPrediction.md) | [AI Tooling / Methodology](./ResearchAreas/AITooling.md) | [AI Evaluation & Benchmarking](./ResearchAreas/AIEvaluation.md) |
 |---|---|---|---|---|---|---|---|
 | [Bayesian Optimization](https://en.wikipedia.org/wiki/Bayesian_optimization) | [Cosenza et al. 2022](#3)<br>[Kanda et al. 2022](#16)<br>[Cosenza 2022](#18)<br>[Cosenza et al. 2023](#2)<br>[Yoshida et al. 2023](#15)<br>[Narayanan et al. 2025](#58) | [Kanda et al. 2022](#16) | [Antonakoudis & Richelle 2026](#59) | | | | |
 | [Deep Learning](https://en.wikipedia.org/wiki/Deep_learning) | [Cosenza & Block 2021](#17)<br>[Cosenza 2022](#18)<br>[Nikkhah et al. 2023](#1)<br>[Yoshida et al. 2023](#15) | [Chen et al. 2016](#4)<br>[Li et al. 2020](#5)<br>[Ji et al. 2021](#6)<br>[Magnusson et al. 2024](#122)<br>[Adduri et al. 2025](#57)<br>[Mathieu et al. 2025](#60)<br>[Xiao et al. 2026](#145) | [Tamburini et al. 2014](#7)<br>[Roell et al. 2022](#32) | [Andrews et al. 2023](#35)<br>[Rafieyan et al. 2024](#20) | [Colantonio et al. 2022](#72) | [Radzikowski & Chen 2026](#197) | |
@@ -26,6 +26,48 @@ This document presents the core research papers at the intersection of Cellular 
 | [Robot Scientists & Lab Automation](https://en.wikipedia.org/wiki/Robot_scientist) | | | [Wang et al. 2025b](#61)<br>[Qiu et al. 2025](#62) | | | [King et al. 2004](#182)<br>[Tiukova et al. 2024](#64)<br>[Brunnsåker et al. 2025](#65) | |
 | [Benchmarks & Evaluation Frameworks](./ResearchAreas/AIEvaluation.md#benchmarks--evaluation-frameworks) | | | | | | | [Sadhuka et al. 2025](#55)<br>[Brouwer et al. 2026](#89)<br>[Mitchener et al. 2025](#108)<br>[Bushuiev et al. 2024](#109)<br>[Sze & Hassoun 2024](#110)<br>[Boiarsky et al. 2024](#113)<br>[Yang et al. 2024](#114)<br>[Chevalley et al. 2025](#127)<br>[Laurent et al. 2024](#146)<br>[Gu et al. 2025](#147)<br>[Notin et al. 2023](#148)<br>[Duan et al. 2025](#149)<br>[Nair et al. 2026](#150)<br>[Jimenez et al. 2024](#155)<br>[Rein et al. 2023](#156)<br>[Wang et al. 2024](#157)<br>[Phan et al. 2026](#158)<br>[Wang et al. 2026](#159)<br>[Huang et al. 2026](#164)<br>[Gyening et al. 2025](#196) |
 | [Agent Infrastructure (Frameworks, KGs, Protocols)](./ResearchAreas/AITooling.md#agent-infrastructure-frameworks-kgs-protocols) | | | | | | [Gao et al. 2025b](#41)<br>[Lobentanzer et al. 2025](#48)<br>[Ruscone et al. 2025](#67)<br>[Kuehl et al. 2025](#133)<br>[Narayanan et al. 2024](#160)<br>[Qiao et al. 2026](#162)<br>[Yan et al. 2026](#163)<br>[Wang et al. 2025b](#61)<br>[Tang et al. 2026](#93) | |
+
+## Category definitions
+
+Each matrix axis is defined in **[`Taxonomy.md`](./Taxonomy.md)** — what it covers, what is out of
+scope, and how to tell confusable categories apart. A placement records what a paper *actually does*
+in its methods, not what it could be applied to. Short form:
+
+**Research areas (columns)**
+
+- **[Media Optimization](./Taxonomy.md#media-optimization)** — designing/optimizing the culture medium (formulations, serum-free, supplements).
+- **[Cellular Engineering](./Taxonomy.md#cellular-engineering)** — engineering/characterizing the cells (gene expression, cell-state, perturbation, single-cell analysis).
+- **[Bioprocess & Scale-Up](./Taxonomy.md#bioprocess--scale-up)** — running and scaling the bioprocess (reactor design, CFD/mixing, mass transfer, monitoring, control).
+- **[Scaffolding](./Taxonomy.md#scaffolding)** — scaffolds and structural biomaterials for tissue form and texture.
+- **[Sensory Prediction](./Taxonomy.md#sensory-prediction)** — flavor, odor, taste, texture, color, and freshness/quality.
+- **[AI Tooling / Methodology](./Taxonomy.md#ai-tooling--methodology)** — general AI methods/agents/tools not yet tied to a specific cell-ag application.
+- **[AI Evaluation & Benchmarking](./Taxonomy.md#ai-evaluation--benchmarking)** — benchmarks and evaluation/verification frameworks for AI performance.
+
+**AI/ML methods (rows)**
+
+- **[Bayesian Optimization](./Taxonomy.md#bayesian-optimization)** — surrogate + acquisition-function sequential experiment selection (≠ Bayesian inference).
+- **[Deep Learning](./Taxonomy.md#deep-learning)** — multi-layer neural nets not better described by a more specific row (catch-all).
+- **[GNN](./Taxonomy.md#gnn)** — trained message-passing graph networks (≠ classical network propagation).
+- **[CNN](./Taxonomy.md#cnn)** — convolutional networks for image/grid data.
+- **[GAN / VAE](./Taxonomy.md#gan--vae)** — deep generative models for synthesis and embedding.
+- **[Genetic Algorithms](./Taxonomy.md#genetic-algorithms)** — population-based evolutionary search.
+- **[SVM](./Taxonomy.md#svm)** — support vector machines / regression.
+- **[Ensemble Learning](./Taxonomy.md#ensemble-learning)** — tree ensembles and model averaging (random forests, gradient boosting).
+- **[K-Nearest Neighbors](./Taxonomy.md#k-nearest-neighbors)** — instance-based prediction by similarity.
+- **[Active Learning](./Taxonomy.md#active-learning)** — model-guided iterative design-of-experiments.
+- **[Reinforcement Learning](./Taxonomy.md#reinforcement-learning)** — reward-driven policy learning and LLM post-training.
+- **[Foundation Models: Next-Token Prediction](./Taxonomy.md#foundation-models-next-token-prediction)** — pretrained autoregressive (GPT-style) models for biology.
+- **[Foundation Models: Masked Language Modeling](./Taxonomy.md#foundation-models-masked-language-modeling)** — pretrained masked (BERT-style) single-cell models.
+- **[Foundation Models: LM + Biological Priors](./Taxonomy.md#foundation-models-lm--biological-priors)** — foundation models fusing an LM backbone with explicit biological priors.
+- **[Foundation Models: Cell-State & Perturbation Prediction](./Taxonomy.md#foundation-models-cell-state--perturbation-prediction)** — pretrained, transferable cell-state/perturbation models (≠ task-specific predictors).
+- **[Foundation Models (other modalities)](./Taxonomy.md#foundation-models-other-modalities)** — pretrained models for modalities beyond single-cell transcriptomics.
+- **[Scientific Literature & Discovery Agents](./Taxonomy.md#scientific-literature--discovery-agents)** — LLM agents for literature synthesis and autonomous discovery.
+- **[General-Purpose Biomedical Agents](./Taxonomy.md#general-purpose-biomedical-agents)** — broadly-applicable biomedical agents.
+- **[Chemistry / Synthesis Agents](./Taxonomy.md#chemistry--synthesis-agents)** — chemistry-specialized agents (synthesis, molecular tasks).
+- **[Domain-Specific Biomedical Agents](./Taxonomy.md#domain-specific-biomedical-agents)** — agents purpose-built for one biomedical task/domain.
+- **[Robot Scientists & Lab Automation](./Taxonomy.md#robot-scientists--lab-automation)** — AI coupled to physical lab automation for autonomous experimentation.
+- **[Benchmarks & Evaluation Frameworks](./Taxonomy.md#benchmarks--evaluation-frameworks)** — papers whose contribution is a benchmark/evaluation framework.
+- **[Agent Infrastructure (Frameworks, KGs, Protocols)](./Taxonomy.md#agent-infrastructure-frameworks-kgs-protocols)** — the substrate agents run on (frameworks, KGs, protocols).
 
 > **Note for AI agents and LLMs**: The reference entries below are APA-style citations identifying papers via title, authors, year, and DOI — they are not a substitute for reading the actual papers. When an automated system needs substantive information about a paper's methods, results, or conclusions (e.g. to verify a matrix-cell assignment or assemble a literature review), fetch the full text via the DOI, the companion [caail Zotero group library](https://www.zotero.org/groups/6549203/caail/library), or a literature API such as OpenAlex or Semantic Scholar. The matrix cells encode method × research-area pairings, not paper content.
 

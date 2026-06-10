@@ -239,7 +239,7 @@ def build_indexes(api, groups):
 AREA_FILE = {
     "Media Optimization": "MediaOptimization.md",
     "Cellular Engineering": "CellEngineering.md",
-    "Bioprocess control": "Bioprocess.md",
+    "Bioprocess & Scale-Up": "Bioprocess.md",
     "Scaffolding": "Scaffolding.md",
     "Sensory Prediction": "SensoryPrediction.md",
     "AI Tooling / Methodology": "AITooling.md",

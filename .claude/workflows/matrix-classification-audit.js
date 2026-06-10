@@ -20,7 +20,7 @@ export const meta = {
 const SKEPTICS = 3
 const AREA_FILE = {
   'Media Optimization': 'MediaOptimization.md', 'Cellular Engineering': 'CellEngineering.md',
-  'Bioprocess control': 'Bioprocess.md', 'Scaffolding': 'Scaffolding.md',
+  'Bioprocess & Scale-Up': 'Bioprocess.md', 'Scaffolding': 'Scaffolding.md',
   'Sensory Prediction': 'SensoryPrediction.md', 'AI Tooling / Methodology': 'AITooling.md',
   'AI Evaluation & Benchmarking': 'AIEvaluation.md',
 }

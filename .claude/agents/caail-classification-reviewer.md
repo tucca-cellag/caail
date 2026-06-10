@@ -75,7 +75,7 @@ proposing or confirming any `scope`-based REMOVE / area-MISPLACED / NOT-PRIMARY:
    no curator citation. Removing a cited paper would also sever a live
    `ResearchAreas` cross-reference — the matrix-vs-references-drift error.
 2. **Read `ResearchAreas/<Area>.md`** for the area in question. It defines what
-   the column actually covers (e.g. *Bioprocess control* covers mixing, mass
+   the column actually covers (e.g. *Bioprocess & Scale-Up* covers mixing, mass
    transfer, and CFD of agitated vessels — the engineering of bioreactors — not
    only experiments with cells already in the tank). Judge against that scope,
    not a literal reading.
