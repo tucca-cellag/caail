@@ -146,25 +146,24 @@ describe('buildPapersModel — real Papers.md', () => {
     expect(PAPERS_MD_PATH.includes('/site/')).toBe(false);
   });
 
-  it('has 197 references', () => {
+  it('has 195 references', () => {
     // current Papers.md reference count; bump when refs are added.
-    expect(model.references.length).toBe(197);
+    expect(model.references.length).toBe(195);
   });
 
-  // Ground truth (bump when refs change): 70 DISTINCT refs with a code URL and
-  // 9 with a non-null absolute data URL. (More `> **Data**` lines exist, but
-  // ref 132's only link is the relative `./Datasets/` — rejected by the schema's
-  // `z.string().url()`, stored as null — so the data count is 9, not 10.)
-  it('has 70 refs with a code URL, consistent with hasCode', () => {
+  // Ground truth (bump when refs change): 71 DISTINCT refs with a code URL and
+  // 10 with a non-null absolute data URL. (Ref 132's only data link is the relative
+  // `./Datasets/` — rejected by the schema's `z.string().url()`, stored as null.)
+  it('has 71 refs with a code URL, consistent with hasCode', () => {
     const withCodeUrl = model.references.filter((r) => r.codeUrl !== null).length;
     const withHasCode = model.references.filter((r) => r.hasCode).length;
-    expect(withCodeUrl).toBe(70);
-    expect(withHasCode).toBe(70);
+    expect(withCodeUrl).toBe(71);
+    expect(withHasCode).toBe(71);
   });
 
-  it('has 9 refs with an absolute data URL', () => {
+  it('has 10 refs with an absolute data URL', () => {
     const withDataUrl = model.references.filter((r) => r.dataUrl !== null).length;
-    expect(withDataUrl).toBe(9);
+    expect(withDataUrl).toBe(10);
   });
 
   it('has 6 distinct sections including References and Reviews & Perspectives', () => {
@@ -174,8 +173,8 @@ describe('buildPapersModel — real Papers.md', () => {
     expect(sections.has('Reviews & Perspectives')).toBe(true);
   });
 
-  it('has 23 method rows', () => {
-    expect(model.methods.length).toBe(23);
+  it('has 24 method rows', () => {
+    expect(model.methods.length).toBe(24);
   });
 
   it('has 7 areas with the exact keys in column order', () => {
@@ -204,8 +203,8 @@ describe('buildPapersModel — real Papers.md', () => {
       (c) => c.method === 'Deep Learning' && c.area === 'cell',
     )!;
     expect(cell).toBeDefined();
-    expect(cell.refIds).toEqual([4, 5, 6, 122, 57, 60, 145]);
-    expect(cell.refIds.length).toBe(7);
+    expect(cell.refIds).toEqual([5, 122, 57, 145, 118, 123]);
+    expect(cell.refIds.length).toBe(6);
   });
 
   it('spot-checks reference id 6', () => {

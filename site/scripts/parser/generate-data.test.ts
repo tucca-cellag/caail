@@ -38,20 +38,20 @@ describe('generateData()', () => {
     expect(result).toHaveProperty('counts');
   });
 
-  it('papersRefs === 197', () => {
-    // 197 = current Papers.md reference count; bump when refs are added.
-    expect(result.papersRefs).toBe(197);
+  it('papersRefs === 195', () => {
+    // 195 = current Papers.md reference count; bump when refs are added.
+    expect(result.papersRefs).toBe(195);
   });
 
-  it('counts.papers === 197', () => {
-    // 197 = current Papers.md reference count; bump when refs are added.
-    expect(result.counts.papers).toBe(197);
+  it('counts.papers === 195', () => {
+    // 195 = current Papers.md reference count; bump when refs are added.
+    expect(result.counts.papers).toBe(195);
   });
 
-  it('counts.datasets === 129 (every catalogued dataset)', () => {
-    // 129 = current catalogued-dataset total across Datasets/; bump when
+  it('counts.datasets === 130 (every catalogued dataset)', () => {
+    // 130 = current catalogued-dataset total across Datasets/; bump when
     // inventory tables / reference / benchmark entries change.
-    expect(result.counts.datasets).toBe(129);
+    expect(result.counts.datasets).toBe(130);
   });
 
   it('writes papers.json to the output directory', () => {
@@ -76,18 +76,18 @@ describe('generateData()', () => {
     expect(result.success).toBe(true);
   });
 
-  it('parsed papers.json has references.length === 197', () => {
+  it('parsed papers.json has references.length === 195', () => {
     const raw = readFileSync(join(tmpDir, 'papers.json'), 'utf-8');
     const parsed = JSON.parse(raw);
-    // 197 = current Papers.md reference count; bump when refs are added.
-    expect(parsed.references.length).toBe(197);
+    // 195 = current Papers.md reference count; bump when refs are added.
+    expect(parsed.references.length).toBe(195);
   });
 
-  it('parsed counts.json has papers === 197', () => {
+  it('parsed counts.json has papers === 195', () => {
     const raw = readFileSync(join(tmpDir, 'counts.json'), 'utf-8');
     const parsed = JSON.parse(raw);
-    // 197 = current Papers.md reference count; bump when refs are added.
-    expect(parsed.papers).toBe(197);
+    // 195 = current Papers.md reference count; bump when refs are added.
+    expect(parsed.papers).toBe(195);
   });
 
   it('papers.json is pretty-printed (contains newlines)', () => {

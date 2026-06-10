@@ -16,6 +16,11 @@ steps are not — and the judgment is where it goes wrong.**
 `ResearchAreas/CLAUDE.md` for the per-directory schemas). This skill is the
 *workflow*; it does not restate schema rules — read `CLAUDE.md` for them.
 
+This skill places a paper in the matrix *when it is added*. To re-audit matrix
+placements already in `Papers.md` — and to add multi-category cross-listings
+grounded in a paper's methods section — use the `matrix-classification-audit`
+skill (Phase 4) and its `caail-classification-reviewer` subagent instead.
+
 ## Procedure
 
 1. **Preconditions.** Zotero desktop running, Preferences → Advanced → "Allow

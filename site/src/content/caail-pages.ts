@@ -231,6 +231,14 @@ const PAGES: Record<string, PageMeta> = {
     description:
       'Field overviews, courses, books, editorials, ecosystem initiatives, and curated bibliographies for cellular agriculture and AI.',
   },
+  taxonomy: {
+    title: 'Matrix Taxonomy',
+    sidebarLabel: 'Matrix Taxonomy',
+    group: 'top',
+    order: 3,
+    description:
+      'Definitions of every AI/ML method row and cellular-agriculture research-area column in the Papers matrix — what each covers, what is out of scope, and how to tell confusable categories apart.',
+  },
 };
 
 // ---------------------------------------------------------------------------

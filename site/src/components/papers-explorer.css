@@ -12,16 +12,47 @@
 .px-lchip { display: inline-flex; align-items: center; gap: .35rem; font-size: .68rem; font-weight: 600; border: 1px solid var(--caail-border); border-radius: 999px; padding: .2rem .5rem; }
 .px-sw { width: .62rem; height: .62rem; border-radius: 3px; display: inline-block; }
 .px-work { display: grid; grid-template-columns: 1fr 300px; gap: 0; border-top: 1px solid var(--caail-border); }
-@media (max-width: 60rem) { .px-work { grid-template-columns: 1fr; } }
-.px-mxpane { overflow: auto; padding: .8rem .2rem; }
+/* Stacked layout: the panel sits below the matrix, so don't stick it — just let
+ * it scroll within a generous height rather than stretching the page. */
+@media (max-width: 60rem) { .px-work { grid-template-columns: 1fr; } .px-panel { position: static; max-height: 70vh; } }
+/* Bound the matrix to the viewport so it scrolls within its own pane (keeping
+ * the existing overflow:auto for the min-width:640px horizontal scroll). This
+ * makes the pane the vertical scroll container, which is what lets the column
+ * headers below stick to its top. */
+.px-mxpane { overflow: auto; padding: 0 .2rem .8rem; max-height: calc(100vh - var(--sl-nav-height, 4rem) - 2rem); }
 .px-mx { display: grid; gap: 3px; min-width: 640px; }
-.px-corner { font-size: .55rem; color: var(--caail-muted); display: flex; align-items: flex-end; }
-.px-hd { font-size: .58rem; font-weight: 700; color: var(--caail-ink); line-height: 1.1; padding: .35rem .25rem; text-align: center; border-top: 3px solid; border-radius: 3px 3px 0 0; min-height: 2.6rem; display: flex; align-items: center; justify-content: center; }
+/* The header row (corner + area tabs) freezes at the top of the scrolling pane.
+ * A solid background masks the data cells passing underneath; the 3px grid gaps
+ * read as thin separator lines, not bleeding content. */
+.px-corner { font-size: .55rem; color: var(--caail-muted); display: flex; align-items: flex-end; position: sticky; top: 0; z-index: 2; background: var(--caail-bg); }
+.px-hd { font-size: .58rem; font-weight: 700; color: var(--caail-ink); line-height: 1.1; padding: .35rem .25rem; text-align: center; border-top: 3px solid; border-radius: 3px 3px 0 0; min-height: 2.6rem; height: 100%; display: flex; align-items: center; justify-content: center; position: sticky; top: 0; z-index: 2; background: var(--caail-bg); }
 .px-rl { font-size: .62rem; color: var(--caail-ink); display: flex; align-items: center; padding-right: .35rem; line-height: 1.15; }
+/* Axis labels are buttons that open a definition popup (with a link out to the
+ * full Taxonomy.md entry inside it); reset to read as the label, not a button.
+ * text-align:inherit picks up the parent (centred header / left-aligned row);
+ * width:100% lets the label wrap and stay aligned. */
+.px-axl { appearance: none; background: none; border: 0; margin: 0; padding: 0; width: 100%; font: inherit; line-height: inherit; color: inherit; text-align: inherit; text-decoration: none; cursor: pointer; }
+.px-axl:hover, .px-axl:focus-visible { text-decoration: underline; text-underline-offset: 2px; }
+
+/* Definition popup — fixed-position (set inline from the trigger's rect) so it
+ * escapes the matrix pane's overflow:auto clipping. Surface tokens mirror the
+ * network-graph side panel. */
+.px-pop { position: fixed; z-index: 60; max-width: 320px; background: var(--caail-bg); border: 1px solid var(--caail-border); border-radius: 10px; box-shadow: 0 10px 30px -18px color-mix(in oklab, var(--caail-primary) 60%, transparent); padding: .7rem .8rem; }
+.px-pop-h { font-family: var(--caail-font-display); font-size: .82rem; font-weight: 700; color: var(--caail-primary); margin: 0 0 .3rem; }
+.px-pop-b { font-size: .72rem; line-height: 1.45; color: var(--caail-ink); margin: 0 0 .5rem; }
+.px-pop-link { font-size: .68rem; font-weight: 700; color: var(--caail-link); text-decoration: none; }
+.px-pop-link:hover, .px-pop-link:focus-visible { text-decoration: underline; }
 .px-c { height: 1.5rem; border: 0; border-radius: 4px; font: inherit; font-size: .62rem; font-weight: 700; cursor: pointer; }
 .px-c[disabled] { cursor: default; }
 .px-c.sel { outline: 2.5px solid var(--caail-link); outline-offset: 1px; }
-.px-panel { border-left: 1px solid var(--caail-border); padding: 1rem; }
+/* Cap the selected-cell panel to the viewport and scroll its reference list
+ * internally, so a dense cell (e.g. 19 papers) can't stretch the grid row and
+ * grow the whole page. align-self:start stops the grid item from stretching to
+ * the matrix column's height (which would defeat the cap); sticky keeps the
+ * panel in view below Starlight's top nav as a side dialogue (a progressive
+ * enhancement — the max-height/overflow cap holds even if an overflow ancestor
+ * neutralises sticky). */
+.px-panel { border-left: 1px solid var(--caail-border); padding: 1rem; align-self: start; position: sticky; top: calc(var(--sl-nav-height, 4rem) + 1rem); max-height: calc(100vh - var(--sl-nav-height, 4rem) - 2rem); overflow-y: auto; }
 .px-empty { font-size: .8rem; color: var(--caail-muted); }
 .px-ptag { font-size: .6rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--caail-muted); margin: 0; }
 .px-ph { font-family: var(--caail-font-display); font-size: 1rem; color: var(--caail-primary); margin: .2rem 0; }
