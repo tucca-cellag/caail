@@ -18,6 +18,9 @@
 .px-corner { font-size: .55rem; color: var(--caail-muted); display: flex; align-items: flex-end; }
 .px-hd { font-size: .58rem; font-weight: 700; color: var(--caail-ink); line-height: 1.1; padding: .35rem .25rem; text-align: center; border-top: 3px solid; border-radius: 3px 3px 0 0; min-height: 2.6rem; display: flex; align-items: center; justify-content: center; }
 .px-rl { font-size: .62rem; color: var(--caail-ink); display: flex; align-items: center; padding-right: .35rem; line-height: 1.15; }
+/* Axis labels link to their Taxonomy.md definition; styled to read as the label, not a generic link. */
+.px-axl { color: inherit; text-decoration: none; cursor: pointer; }
+.px-axl:hover, .px-axl:focus-visible { text-decoration: underline; text-underline-offset: 2px; }
 .px-c { height: 1.5rem; border: 0; border-radius: 4px; font: inherit; font-size: .62rem; font-weight: 700; cursor: pointer; }
 .px-c[disabled] { cursor: default; }
 .px-c.sel { outline: 2.5px solid var(--caail-link); outline-offset: 1px; }

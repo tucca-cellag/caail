@@ -24,6 +24,21 @@ const densityVar = (n: number) =>
   n === 0 ? 'var(--caail-density-0)' : n <= 2 ? 'var(--caail-density-1)' : n <= 4 ? 'var(--caail-density-2)' : n <= 7 ? 'var(--caail-density-3)' : 'var(--caail-density-4)';
 const textColor = (n: number) => (n >= 5 ? '#fff' : n === 0 ? 'transparent' : 'var(--caail-ink)');
 
+// Link an axis label to its canonical definition in Taxonomy.md (rendered at
+// /taxonomy/). The heading anchor is the GitHub slug of the label, matching the
+// matrix-header links in Papers.md (e.g. "AI Tooling / Methodology" -> #ai-tooling--methodology).
+const TAXONOMY = `${import.meta.env.BASE_URL}taxonomy/`;
+const ghSlug = (s: string) => s.toLowerCase().replace(/[^\w\s-]/g, '').replace(/ /g, '-');
+const taxHref = (label: string) => `${TAXONOMY}#${ghSlug(label)}`;
+// Spell out the acronym method rows for readers who don't know them (others are already full names).
+const FULL_NAME: Record<string, string> = {
+  SVM: 'Support Vector Machine',
+  CNN: 'Convolutional Neural Network',
+  GNN: 'Graph Neural Network',
+  'GAN / VAE': 'Generative Adversarial Network / Variational Autoencoder',
+};
+const fullName = (m: string) => FULL_NAME[m] ?? m;
+
 export default function PapersExplorer() {
   const [sel, setSel] = useState<{ method: string; area: Area } | null>(null);
   const [q, setQ] = useState('');
@@ -60,9 +75,9 @@ export default function PapersExplorer() {
         <div class="px-mxpane">
           <div class="px-mx" style={{ gridTemplateColumns: `190px repeat(${shownAreas.length}, minmax(56px,1fr))` }}>
             <div class="px-corner">method ↓ / area →</div>
-            {shownAreas.map((a) => <div class="px-hd" style={{ borderTopColor: `var(--caail-area-${a.key})` }}>{a.label}</div>)}
+            {shownAreas.map((a) => <div class="px-hd" style={{ borderTopColor: `var(--caail-area-${a.key})` }}><a class="px-axl" href={taxHref(a.label)} title={`${a.label} — view definition`}>{a.label}</a></div>)}
             {methods.map((m) => [
-              <div class="px-rl">{m}</div>,
+              <div class="px-rl"><a class="px-axl" href={taxHref(m)} title={`${fullName(m)} — view definition`}>{m}</a></div>,
               ...shownAreas.map((a) => {
                 const cell = cellMap.get(`${m}__${a.key}`);
                 const n = cell ? cell.refIds.length : 0;
