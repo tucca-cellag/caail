@@ -17,6 +17,7 @@ import { join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import { buildPapersModel } from './papers.js';
+import { buildTaxonomyModel } from './taxonomy.js';
 import { computeCounts } from './counts.js';
 import { buildCatalogModel } from './catalog.js';
 import { buildTalksModel, talkItemCount } from './talks.js';
@@ -33,6 +34,7 @@ import {
   PrimersSchema,
   GraphSchema,
   MetricsSchema,
+  TaxonomyDataSchema,
   type Counts,
 } from './types.js';
 
@@ -96,6 +98,7 @@ export function generateData(
   primers: number;
   graphNodes: number;
   graphEdges: number;
+  taxonomyDefs: number;
 } {
   // Build and validate the papers model.
   const model = buildPapersModel();
@@ -114,6 +117,9 @@ export function generateData(
   const graph = buildGraphModel(model, loadCitationCache());
   const metrics = buildMetricsModel(model);
 
+  // Taxonomy.md row/column definitions for the explorer's hover/click popups.
+  const taxonomy = buildTaxonomyModel();
+
   // Belt-and-suspenders: re-validate all before writing.
   PapersDataSchema.parse(model);
   CountsSchema.parse(counts);
@@ -122,6 +128,7 @@ export function generateData(
   PrimersSchema.parse(primers);
   GraphSchema.parse(graph);
   MetricsSchema.parse(metrics);
+  TaxonomyDataSchema.parse(taxonomy);
 
   // No-drift guard: the homepage counts and the catalog/talks/graph/metrics
   // artifacts derive from the same canonical files, so their tallies must agree
@@ -141,6 +148,22 @@ export function generateData(
       metrics.datasets.benchmarkEntries,
     metrics.datasets.total,
   );
+
+  // Coverage guard: every matrix row (method) and column (area) must have a
+  // non-empty Taxonomy.md definition, or the explorer popup would show a blank.
+  // A miss means a row/column label drifted from its `### Heading` — fail the
+  // build rather than ship an empty definition.
+  const missingDefs = [
+    ...model.methods,
+    ...model.areas.map((a) => a.label),
+  ].filter((label) => !taxonomy.definitions[label]?.trim());
+  if (missingDefs.length > 0) {
+    throw new Error(
+      `generate-data: ${missingDefs.length} matrix label(s) have no Taxonomy.md ` +
+        `definition: ${missingDefs.join(', ')}. Add a "### <label>" heading to ` +
+        `Taxonomy.md (the heading text must match the matrix label exactly).`,
+    );
+  }
 
   // Ensure the output directory exists.
   mkdirSync(outDir, { recursive: true });
@@ -194,6 +217,13 @@ export function generateData(
     'utf-8',
   );
 
+  // Write taxonomy.json.
+  writeFileSync(
+    join(outDir, 'taxonomy.json'),
+    JSON.stringify(taxonomy, null, 2) + '\n',
+    'utf-8',
+  );
+
   return {
     counts,
     papersRefs: model.references.length,
@@ -202,6 +232,7 @@ export function generateData(
     primers: primers.primers.length,
     graphNodes: graph.nodes.length,
     graphEdges: graph.edges.length,
+    taxonomyDefs: Object.keys(taxonomy.definitions).length,
   };
 }
 
@@ -224,8 +255,16 @@ const isMain =
 
 if (isMain) {
   try {
-    const { counts, papersRefs, catalogEntries, talks, primers, graphNodes, graphEdges } =
-      generateData();
+    const {
+      counts,
+      papersRefs,
+      catalogEntries,
+      talks,
+      primers,
+      graphNodes,
+      graphEdges,
+      taxonomyDefs,
+    } = generateData();
     // Full-text agent index (public/llms-full.txt) — generated alongside the
     // JSON, but written to public/ rather than the data dir, so it lives in the
     // CLI block rather than the side-effect-free generateData() core.
@@ -237,6 +276,7 @@ if (isMain) {
         `catalog.json (${catalogEntries} entries), talks.json (${talks} talks), ` +
         `primers.json (${primers} primers), ` +
         `graph.json (${graphNodes} nodes / ${graphEdges} edges), metrics.json, ` +
+        `taxonomy.json (${taxonomyDefs} definitions), ` +
         `and llms-full.txt (${llmsBytes} bytes)`,
     );
     // eslint-disable-next-line no-console
