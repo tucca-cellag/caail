@@ -340,7 +340,7 @@ The University of Arkansas Libraries' research guide for food science, listing r
 
 ## Ecosystem & Industry Directories
 
-GFI's curated public directories cataloguing the people, companies, supply chain, opportunities, and regulatory status of the alternative-protein and cellular-agriculture field. These are the "domain neighbours" of CAAIL — they catalogue *who is doing the work and where it is being sold*, complementary to CAAIL's catalogue of papers, software, datasets, and educational material. New Harvest's initiatives covering the same space (AICAI, the Cellular Agriculture Science Engine, CMSI) are not databases or directories and live in [OtherResources.md / Cell-Ag Ecosystem Initiatives](./OtherResources.md#cell-ag-ecosystem-initiatives) instead. The Food Systems Dashboard (last entry) is a non-GFI addition — a macro food-systems data resource that situates cultivated-meat and alt-protein work in its broader dietary and policy context.
+GFI's curated public directories cataloguing the people, companies, supply chain, opportunities, and regulatory status of the alternative-protein and cellular-agriculture field. These are the "domain neighbours" of CAAIL — they catalogue *who is doing the work and where it is being sold*, complementary to CAAIL's catalogue of papers, software, datasets, and educational material. New Harvest's initiatives covering the same space (AICAI, the Cellular Agriculture Science Engine, CMSI) are not databases or directories and live in [OtherResources.md / Cell-Ag Ecosystem Initiatives](./OtherResources.md#cell-ag-ecosystem-initiatives) instead. Two non-GFI additions sit alongside the GFI directories: Pando, a commercial *in vitro* plant knowledge base from Foray Bioscience (plant-side cell-ag), and the Food Systems Dashboard (last entry), a macro food-systems data resource that situates cultivated-meat and alt-protein work in its broader dietary and policy context.
 
 ### [GFI Alternative Protein Researcher Directory](https://gfi.org/resource/alternative-protein-researcher-directory/)
 
@@ -361,6 +361,10 @@ GFI's catalogue of startup ideas, commercial opportunities, research projects, a
 ### [GFI Where Cultivated Meat Can Be Sold](https://gfi.org/resource/where-cultivated-meat-can-be-sold/)
 
 GFI's live tracker of countries where cultivated meat has regulatory approval for sale, with associated companies and product formats — the kind of dynamic regulatory data CAAIL links to rather than duplicates.
+
+### [Pando (Foray Bioscience)](https://pando.foraybio.com/)
+
+An AI research workspace and searchable *in vitro* plant knowledge base from Foray Bioscience, a company growing plant products and "seeds" from cells. Pando lets plant scientists search and reason over what Foray describes as the largest *in vitro* plant (tissue-culture and micropropagation) knowledge base, supporting plant-side cell-culture R&D — the plant counterpart to the animal-cell-culture resources that dominate CAAIL. Commercial (freemium, with a free tier alongside paid plans) and recently launched (2026); it is a proprietary platform rather than an open public scientific repository, so it is catalogued here as an industry knowledge resource.
 
 ### [Food Systems Dashboard](https://www.foodsystemsdashboard.org/)
 
