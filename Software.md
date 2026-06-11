@@ -416,6 +416,10 @@ Summary: A community hub for agentic biomedical systems — a registry of biomed
 
 Summary: A one-binary MCP server from GenomOncology unifying many biomedical knowledge sources — PubTator3, Europe PMC, ClinicalTrials.gov, MyVariant.info, cBioPortal, Reactome, Open Targets, MyDisease.info, MONDO, Monarch, DisGeNET — behind a single Model Context Protocol surface for LLM agents. MIT-licensed; the leanest existing MCP-native bridge between general biomedical literature, clinical-trial, and variant data and an agent stack. Sister project to [BioContextAI](#biocontextai), which catalogues biomedical MCP servers including BioMCP.
 
+### [Context7](https://github.com/upstash/context7)
+
+Summary: An open-source MCP server (and hosted service) from Upstash that injects up-to-date, version-specific library documentation and code examples into LLM prompts, so AI coding agents work from current API docs instead of stale training data. Unlike the biomedical MCP servers above, Context7 is general developer infrastructure — not cell-ag-specific — but it is directly relevant to CAAIL's AI-agent audience: the coding agents that build and maintain cell-ag pipelines, parsers, and analysis tooling depend on accurate, current documentation for the bioinformatics and ML libraries they call. MIT-licensed; hosted at <https://context7.com>.
+
 ## Data Standards & Interchange Formats
 
 Open standards and schema languages for representing biological models, data, and processes in machine-readable form. None are AI methods themselves, but each is the substrate that AI-powered extraction, reasoning, and modeling tools depend on — standardized inputs are what make automated cross-study analysis and agentic workflows tractable for cellular agriculture.
