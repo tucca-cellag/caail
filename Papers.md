@@ -4,7 +4,7 @@ This document presents the core research papers at the intersection of Cellular 
 | | [Media Optimization](./Taxonomy.md#media-optimization) | [Cellular Engineering](./Taxonomy.md#cellular-engineering) | [Bioprocess & Scale-Up](./Taxonomy.md#bioprocess--scale-up) | [Scaffolding](./Taxonomy.md#scaffolding)  | [Sensory Prediction](./Taxonomy.md#sensory-prediction) | [AI Tooling / Methodology](./Taxonomy.md#ai-tooling--methodology) | [AI Evaluation & Benchmarking](./Taxonomy.md#ai-evaluation--benchmarking) |
 |---|---|---|---|---|---|---|---|
 | [Bayesian Optimization](./Taxonomy.md#bayesian-optimization) | [Cosenza et al. 2022](#3)<br>[Kanda et al. 2022](#16)<br>[Cosenza 2022](#18)<br>[Cosenza et al. 2023](#2)<br>[Yoshida et al. 2023](#15)<br>[Narayanan et al. 2025](#58)<br>[Cosenza et al. 2021](#211)<br>[Tu et al. 2022](#212) | [Kanda et al. 2022](#16) | [Antonakoudis & Richelle 2026](#59) | | | | |
-| [Deep Learning](./Taxonomy.md#deep-learning) | [Cosenza 2022](#18)<br>[Yoshida et al. 2023](#15)<br>[Tu et al. 2022](#212) | [Li et al. 2020](#5)<br>[Magnusson et al. 2024](#122)<br>[Adduri et al. 2025](#57)<br>[Xiao et al. 2026](#145)<br>[Rosen et al. 2024](#118)<br>[Littman et al. 2025](#123) | [Del Rio‐Chanona et al. 2019](#29)<br>[Peng et al. 2013](#30)<br>[Chiu & Du 2025](#204)<br>[Yang et al. 2024](#205) | [Rafieyan et al. 2024](#20)<br>[Shin et al. 2025](#215)<br>[Golbabaei et al. 2024](#216) | | [Radzikowski & Chen 2026](#197)<br>[Chen et al. 2016](#4) | |
+| [Deep Learning](./Taxonomy.md#deep-learning) | [Cosenza 2022](#18)<br>[Yoshida et al. 2023](#15)<br>[Tu et al. 2022](#212) | [Li et al. 2020](#5)<br>[Magnusson et al. 2024](#122)<br>[Adduri et al. 2025](#57)<br>[Xiao et al. 2026](#145)<br>[Rosen et al. 2024](#118)<br>[Littman et al. 2025](#123) | [Del Rio‐Chanona et al. 2019](#29)<br>[Peng et al. 2013](#30)<br>[Chiu & Du 2025](#204)<br>[Yang et al. 2024](#205) | [Rafieyan et al. 2024](#20)<br>[Shin et al. 2025](#215)<br>[Golbabaei et al. 2024](#216) | [Tac et al. 2026](#236) | [Radzikowski & Chen 2026](#197)<br>[Chen et al. 2016](#4) | |
 | [GNN](./Taxonomy.md#gnn) | | [Wang et al. 2021](#13)<br>[Ciortan & Defrance 2022](#8)<br>[Shan et al. 2023](#12)<br>[Roohani et al. 2024](#121)<br>[Li et al. 2024](#68) | | | [Lee et al. 2023](#14)<br>[Qian et al. 2023](#36) | [Mulyadi et al. 2025](#52) | |
 | [CNN](./Taxonomy.md#cnn) | | [Yang et al. 2025](#218) | [Rojek et al. 2021](#33)<br>[Hevaganinge et al. 2023](#206) | [Bermejillo Barrera et al. 2021](#19) | [Sun et al. 2023](#26)<br>[Shen et al. 2024](#11)<br>[Ulucan et al. 2019](#195)<br>[Gyening et al. 2025](#196) | | |
 | [GAN / VAE](./Taxonomy.md#gan--vae) | | [Lin et al. 2020](#9)<br>[Zrimec et al. 2022](#10) | | [Andrews et al. 2023](#35) | [Shen et al. 2024](#11) | | |
@@ -551,6 +551,8 @@ in its methods, not what it could be applied to. Short form:
 > **Code**: https://github.com/science-machine/biomlbench
 
 <a id="235">235</a> Zeng, Y., Xie, J., Shangguan, N., Wei, Z., Li, W., Su, Y., Yang, S., Zhang, C., Zhang, J., Fang, N., Zhang, H., Lu, Y., Zhao, H., Fan, J., Yu, W., & Yang, Y. (2025). CellFM: a large-scale foundation model pre-trained on transcriptomics of 100 million human cells. *Nature Communications, 16*(1), 4679. https://doi.org/10.1038/s41467-025-59926-5
+
+<a id="236">236</a> Tac, V., Gardner, C., & Kuhl, E. (2026). *Generative Artificial Intelligence creates delicious, sustainable, and nutritious burgers.* arXiv. https://doi.org/10.48550/arXiv.2602.03092
 
 ## Sensory & Flavor Reference Work
 
