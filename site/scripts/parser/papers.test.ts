@@ -146,9 +146,9 @@ describe('buildPapersModel — real Papers.md', () => {
     expect(PAPERS_MD_PATH.includes('/site/')).toBe(false);
   });
 
-  it('has 231 references', () => {
+  it('has 232 references', () => {
     // current Papers.md reference count; bump when refs are added.
-    expect(model.references.length).toBe(231);
+    expect(model.references.length).toBe(232);
   });
 
   // Ground truth (bump when refs change): 71 DISTINCT refs with a code URL and
