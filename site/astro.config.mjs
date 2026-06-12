@@ -27,7 +27,8 @@ function caailProseRemark() {
     const isProse =
       /^(ResearchAreas|Datasets)\//.test(sourcePath) ||
       sourcePath === 'CONTRIBUTING.md' ||
-      sourcePath === 'OtherResources.md';
+      sourcePath === 'OtherResources.md' ||
+      sourcePath === 'AIAgentsFoundationModels.md';
     if (!isProse) return;
     rewriteCaailLinks({ base: BASE, sourcePath })(tree);
     stripLeadingH1()(tree);
@@ -129,6 +130,7 @@ export default defineConfig({
         ] },
         { label: 'Software', link: '/software/' },
         { label: 'Databases', link: '/databases/' },
+        { label: 'AI Agents & Foundation Models', link: '/ai-agents-foundation-models/' },
         { label: 'Datasets (by species)', items: groupItems('datasets') },
         { label: 'Research Areas', items: groupItems('research-areas') },
         { label: 'Talks & Videos', link: '/talks/' },

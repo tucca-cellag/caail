@@ -239,6 +239,14 @@ const PAGES: Record<string, PageMeta> = {
     description:
       'Definitions of every AI/ML method row and cellular-agriculture research-area column in the Papers matrix — what each covers, what is out of scope, and how to tell confusable categories apart.',
   },
+  'ai-agents-foundation-models': {
+    title: 'AI Agents & Foundation Models',
+    sidebarLabel: 'AI Agents & Foundation Models',
+    group: 'top',
+    order: 4,
+    description:
+      'The connective hub for AI agents and biological foundation models in cellular agriculture — agent frameworks, single-cell foundation models, the virtual-cell initiative, and where each is catalogued across CAAIL.',
+  },
 };
 
 // ---------------------------------------------------------------------------
@@ -273,6 +281,7 @@ export const CAAIL_PAGES = {
       // Top-level file (e.g. CONTRIBUTING). Multi-word names get an explicit
       // hyphenated route id (the default lowercasing would merge the words).
       if (stripped === 'OtherResources') return 'other-resources';
+      if (stripped === 'AIAgentsFoundationModels') return 'ai-agents-foundation-models';
       return stripped.toLowerCase();
     }
 

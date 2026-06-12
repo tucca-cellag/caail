@@ -13,15 +13,18 @@ describe('CAAIL_PAGES', () => {
     // multi-word top-level file gets an explicit hyphenated id (not "otherresources")
     expect(CAAIL_PAGES.idForSourcePath('OtherResources')).toBe('other-resources');
     expect(CAAIL_PAGES.idForSourcePath('OtherResources.md')).toBe('other-resources');
+    expect(CAAIL_PAGES.idForSourcePath('AIAgentsFoundationModels')).toBe('ai-agents-foundation-models');
+    expect(CAAIL_PAGES.idForSourcePath('AIAgentsFoundationModels.md')).toBe('ai-agents-foundation-models');
   });
   it('returns title + sidebar metadata by id', () => {
     expect(CAAIL_PAGES.byId('research-areas/bioprocess')?.title).toBe('Bioprocess control');
     expect(CAAIL_PAGES.byId('datasets/cow')?.title).toContain('Cow');
     expect(CAAIL_PAGES.byId('other-resources')).toMatchObject({ group: 'top', title: 'Other Resources' });
+    expect(CAAIL_PAGES.byId('ai-agents-foundation-models')).toMatchObject({ group: 'top', title: 'AI Agents & Foundation Models' });
   });
   it('all() returns {id,...meta} objects', () => {
     const all = CAAIL_PAGES.all();
-    expect(all.length).toBe(26);
+    expect(all.length).toBe(27);
     const cow = all.find((p) => p.id === 'datasets/cow');
     expect(cow).toMatchObject({ id: 'datasets/cow', group: 'datasets' });
     expect(typeof cow?.sidebarLabel).toBe('string');

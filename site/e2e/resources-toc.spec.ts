@@ -61,6 +61,36 @@ test('other-resources has no serious/critical a11y violations', async ({ page })
 });
 
 // ---------------------------------------------------------------------------
+// AIAgentsFoundationModels.md — the thematic hub (now owns Virtual Cell)
+// ---------------------------------------------------------------------------
+
+test('ai-agents-foundation-models renders its sections and rewritten links', async ({ page }) => {
+  await page.goto('./ai-agents-foundation-models/');
+  // the Virtual Cell section now lives here, not on /other-resources/
+  await expect(page.getByRole('heading', { name: 'Virtual Cell Initiative & Single-Cell Foundation Models' })).toBeVisible();
+  // a rendered-page cross-link resolves to a site route (Datasets/Benchmarks.md → route)
+  await expect(page.locator('main a[href="/caail/datasets/benchmarks/"]').first()).toBeVisible();
+  // a deferred-file cross-link falls back to a GitHub blob URL (Software.md)
+  await expect(
+    page.locator('main a[href^="https://github.com/tucca-cellag/caail/blob/main/Software.md"]').first(),
+  ).toBeVisible();
+  // no raw repo-relative .md link leaks through
+  await expect(page.locator('main a[href$=".md"]:not([href*="github.com"])')).toHaveCount(0);
+});
+
+test('other-resources no longer renders the Virtual Cell heading', async ({ page }) => {
+  await page.goto('./other-resources/');
+  await expect(page.getByRole('heading', { name: 'Virtual Cell Initiative & Single-Cell Foundation Models' })).toHaveCount(0);
+});
+
+test('ai-agents-foundation-models has no serious/critical a11y violations', async ({ page }) => {
+  await page.goto('./ai-agents-foundation-models/');
+  const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
+  const serious = results.violations.filter((v) => ['serious', 'critical'].includes(v.impact ?? ''));
+  expect(serious, JSON.stringify(serious, null, 2)).toEqual([]);
+});
+
+// ---------------------------------------------------------------------------
 // Software/Databases catalog cards (right-rail TOC + surfaced hyperlinks)
 // ---------------------------------------------------------------------------
 
