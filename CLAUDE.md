@@ -32,7 +32,7 @@ If the paper isn't in the Zotero library, fall back to Crossref / arXiv / scite 
 
 ### The Zotero ⇄ CAAIL sync workflow
 
-Reconciling the repo against the Zotero libraries is a recurring task covered by three
+Reconciling the repo against the Zotero libraries is a recurring task covered by four
 project skills (in `.claude/skills/`) that form a lifecycle:
 
 1. **`zotero-collection-scope`** (Phase 1 — scope): given a Zotero collection (or set of
@@ -46,11 +46,48 @@ project skills (in `.claude/skills/`) that form a lifecycle:
 3. **`papers-dataset-audit`** (Phase 3 — reverse-audit): for every `Papers.md` ref, checks
    whether its deposit accessions / code repos are actually cited somewhere in the repo, and
    reports ORPHANs (cited paper, missing dataset) for review.
+4. **`matrix-classification-audit`** (Phase 4 — reclassify): re-audits the `Papers.md` matrix
+   itself. For each matrix-participating paper it grounds the placement in the paper's methods
+   section (pulled from the Zotero PDF full-text cache by `extract_matrix_corpus.py`) and asks
+   two questions — is each current `(method × area)` cell defensible, and does the paper also
+   belong in additional cells (multi-category)? It edits matrix cells only; it never touches
+   `## References` citation text or renumbers IDs. A **scope** removal (a paper judged not
+   cell-ag-relevant) carries an asymmetric burden: it must survive a steelman *defender* that
+   reads the paper's own methods against the column's `Taxonomy.md` definition (the trusted scope
+   source; the ResearchAreas pages are AI-assisted and untrusted) — so a general-purpose method
+   becomes a MOVE to *AI Tooling / Methodology*, not a deletion. When a paper's genuine method or area has **no matching row/column**, the audit
+   emits a non-destructive **taxonomy gap** — it keeps the paper's cell and surfaces a *proposed*
+   new row/column (clustered across ≥2 papers, adversarially verified) for **curator decision**;
+   new rows and columns (each defined in `Taxonomy.md`, with the matrix-header link pointing there)
+   are never auto-added. (Run via the named workflow `.claude/workflows/matrix-classification-audit.js`.)
 
-Every drafted entry is verified before commit by two read-only adversarial reviewer subagents
-in `.claude/agents/` — **`caail-citation-reviewer`** (Papers.md bibliographic fidelity) and
-**`caail-claim-reviewer`** (prose-entry factual claims) — which an entry must pass before it
-lands. The agent that wrote an entry never reviews it.
+Every drafted or re-audited entry is verified before commit by read-only adversarial reviewer
+subagents in `.claude/agents/` — **`caail-citation-reviewer`** (Papers.md bibliographic
+fidelity), **`caail-claim-reviewer`** (prose-entry factual claims), and
+**`caail-classification-reviewer`** (matrix `method × area` placement, grounded in the paper's
+methods section) — which an entry must pass before it lands. The agent that wrote or proposed an
+entry never reviews it.
+
+### The field-gap analysis workflow
+
+The Zotero-sync lifecycle above reconciles the repo against *our Zotero library*. A complementary
+**field-gap** axis reconciles it against *the published field* — sweeping recent literature, datasets,
+software, and databases for resources CAAIL is missing — via the **`caail-gap-analysis`** skill
+(in `.claude/skills/`). It runs a saved multi-agent workflow (`.claude/workflows/caail-gap-analysis.js`,
+invoked with `Workflow({ name: 'caail-gap-analysis' })`): ~16 finder agents each read the live canonical
+files to build their own exclusion set, then research the field; a second agent adversarially verifies
+each candidate (exists / absent from repo / in-scope / correctly routed); a bounded completeness sweep
+chases missed angles; and per-category synthesizers assemble a GitHub-issue draft of vetted candidate
+additions (worked example: issue #32). Because finders read the repo at run time, the workflow
+auto-adapts as the repo grows — there is no baseline to maintain.
+
+The workflow *proposes* matrix cells but never sees the live matrix, so the skill owns the judgment:
+the operator confirms every "new row/column/empty cell" claim against the real `Papers.md` header (most
+are false alarms), resolves genuine paper-vs-perspective / method-row questions by reading the source,
+recomputes the summary tallies from the rendered checkboxes, spot-checks a DOI sample, and only then
+files the issue. The output is a *shortlist for maintainers*; actual integration still follows the
+`zotero-to-caail-sync` rules (matrix anchor + reference entry in the same commit; IDs assigned at landing).
+Run it on a periodic cadence (a monthly reminder); the Zotero skills run whenever the group library drifts.
 
 ## Repository layout
 
@@ -88,8 +125,8 @@ LICENSE                MIT License
 `Papers.md` has **three coordinated parts**:
 
 1. **A 2D matrix table** at the top, for **primary research** applying a specific AI method to a specific cell-ag problem:
-   - **Rows** = AI/ML method. Current rows: Bayesian Optimization, Deep Learning, GNN, CNN, GAN/VAE, Genetic Algorithms, SVM, Ensemble Learning, K-Nearest Neighbors, Active Learning, **LLMs / AI Agents**. Each row label links to its Wikipedia article (or to a representative reference for emerging categories without a dedicated Wikipedia page).
-   - **Columns** = research area, each linked to the matching `ResearchAreas/*.md` page. Current columns: Media Optimization, Cellular Engineering, Bioprocess Control, Scaffolding, Sensory Prediction, **AI Tooling / Methodology**.
+   - **Rows** = AI/ML method. Current rows: Bayesian Optimization, Deep Learning, GNN, CNN, GAN/VAE, Genetic Algorithms, SVM, Ensemble Learning, K-Nearest Neighbors, Active Learning, **LLMs / AI Agents**. Each row label links to its definition in `Taxonomy.md` (the canonical, CAAIL-specific definition of every row and column).
+   - **Columns** = research area, each linked to its definition in `Taxonomy.md`. Current columns: Media Optimization, Cellular Engineering, Bioprocess & Scale-Up, Scaffolding, Sensory Prediction, **AI Tooling / Methodology**, **AI Evaluation & Benchmarking**.
    - **Cells** = comma-separated anchor links to numbered references, e.g. `[2](#2),[3](#3),[15](#15)`.
 
 2. **A `## References` list** below the matrix — *primary research only*:
@@ -176,7 +213,7 @@ Two curated, audience-oriented onboarding hubs — `CellAg.md` ("Cellular Agricu
 
 ### `ResearchAreas/<Area>.md`
 
-Per-area deep-dive page. Linked from the column header of the `Papers.md` matrix. When you add a new column to the matrix, you must also create the corresponding file under `ResearchAreas/` and link to it from the column header.
+Per-area deep-dive page (optional, supplementary). The matrix column header links to the area's definition in `Taxonomy.md`, not here. These pages are AI-assisted and not a trusted definition source; when you add a new column, define it in `Taxonomy.md` and point the column header there.
 
 ## Curated summaries are compressed — fetch canonical sources for substantive work
 
@@ -208,7 +245,7 @@ The canonical root content remains build-free, GitHub-rendered Markdown — that
 - **Commands:** `pnpm --dir site dev` (local preview at `/caail/`), `pnpm --dir site build` (runs the parser first), `pnpm --dir site test` (vitest parser suite), `pnpm --dir site test:e2e` (Playwright + axe a11y), `pnpm --dir site parse` (regenerate data only).
 - **CI:** `.github/workflows/docs.yml` builds, runs Lighthouse CI (`lighthouserc.json` — blocking Accessibility ≥0.90 on landing + explorer and Performance ≥0.90 on landing), and deploys to GitHub Pages **on push to `main`** (so the deploy/gate only runs post-merge; use `workflow_dispatch` to trigger manually). `lint-papers.yml` lints the matrix ↔ references on changes to `Papers.md`/`Datasets/`. The vitest/Playwright suites are currently run locally, not in CI.
   - **lhci gotcha:** lhci serves the build via `pnpm preview --port 4321`. If a stale `astro dev`/preview already holds :4321, lhci silently measures *that* server and reports a bogus ~0.5 perf score — free the port first.
-- **Data:** a build-time parser (`site/scripts/parser/`, run via `pnpm parse`, and automatically by `build`) reads the canonical Markdown and emits zod-validated JSON to `site/src/content/data/`: `papers.json` (Papers.md matrix + references), `counts.json` (homepage stats), `catalog.json` (Software.md + Databases.md entries, grouped), `talks.json` (Talks.md lectures/talks/playlists, grouped by section with per-item kind), `primers.json` (the `Primers/*.md` onboarding hubs — parsed like talks, but with internal `.md` cross-links rewritten to site routes), `graph.json` (the paper network — shared-author **and** citation edges, with per-mode metadata), and `metrics.json` (matrix coverage + per-species dataset gaps + a build-time git momentum snapshot). The parser **reads** the canonical files and never mutates them; `generate-data.ts` asserts the catalog/talks/graph/metrics tallies match `counts.json` so a stat can't drift from the page it links to. (`graph.json` is gitignored — a build artifact regenerated by `pnpm parse`.)
+- **Data:** a build-time parser (`site/scripts/parser/`, run via `pnpm parse`, and automatically by `build`) reads the canonical Markdown and emits zod-validated JSON to `site/src/content/data/`: `papers.json` (Papers.md matrix + references), `counts.json` (homepage stats), `catalog.json` (Software.md + Databases.md entries, grouped), `talks.json` (Talks.md lectures/talks/playlists, grouped by section with per-item kind), `primers.json` (the `Primers/*.md` onboarding hubs — parsed like talks, but with internal `.md` cross-links rewritten to site routes), `graph.json` (the paper network — shared-author **and** citation edges, with per-mode metadata), `metrics.json` (matrix coverage + per-species dataset gaps + a build-time git momentum snapshot), and `taxonomy.json` (the `Taxonomy.md` per-row/column definition text, keyed by matrix label, for the Papers Explorer's definition popups). The parser **reads** the canonical files and never mutates them; `generate-data.ts` asserts the catalog/talks/graph/metrics tallies match `counts.json` so a stat can't drift from the page it links to, and asserts every matrix method/area label has a non-empty `taxonomy.json` definition so a row/column can't lose its popup text. (`graph.json` is gitignored — a build artifact regenerated by `pnpm parse`.)
 - **Citation edges (M7):** the network page's "Citation" mode draws directed `A cites B` edges, derived from OpenAlex `referenced_works` intersected against the corpus' DOIs. The network call is quarantined to one **manual** script — `pnpm --dir site fetch:citations` (`scripts/parser/fetch-citations.ts`) — which writes the committed input `site/scripts/parser/citation-cache.json` (DOI → OpenAlex id + referenced-works). `pnpm parse` reads that cache offline via `citations.ts` and folds edges into `graph.json`, so `parse`/`build` stay deterministic and network-free. Re-run `fetch:citations` only when papers are added; set `OPENALEX_MAILTO=<contact>` for OpenAlex's polite pool. With no cache the citation graph is simply empty.
 - **SEO / AEO:** `site/public/` holds the static SEO assets — `og.png` (the 1200×630 social card, generated by `scripts/og-image.mjs`, see `DESIGN.md` §8), `robots.txt` (→ sitemap), `llms.txt` (an agent-facing index leaning into CAAIL's AI-agent audience), and the favicon package (`favicon.svg` + raster fallbacks `favicon.ico`/`apple-touch-icon.png`/`icon-192.png`/`icon-512.png` + `site.webmanifest`, generated by `scripts/favicons.mjs` from the same bioreactor mark). `astro.config.mjs`'s Starlight `head` wires the site-wide `og:image`/`twitter:image`, the favicon/apple-touch/manifest links + `theme-color`, and an Organization+WebSite JSON-LD block. Per-page meta descriptions for the loader-rendered prose pages live in `CAAIL_PAGES` (`src/content/caail-pages.ts`) so each has a unique one rather than the generic site default. (Project-page caveat: `robots.txt`/`llms.txt` at the `/caail/` subpath aren't the domain-root files crawlers/agents check first; the in-`<head>` sitemap link is what's honored, and real submission is via Search Console.)
 - **Gotcha — empty Hero override:** Starlight's `Hero` component is overridden by an intentionally empty `site/src/components/StarlightHeroOverride.astro` so the splash homepage renders no auto page-title `<h1>`. This is registered site-wide but only affects pages that set `hero` frontmatter (currently just the homepage). Any future page that wants a real Starlight hero must revisit this.
@@ -220,7 +257,7 @@ The canonical root content remains build-free, GitHub-rendered Markdown — that
 - **Matrix-vs-references drift.** The single most common mistake is adding a reference without updating the matrix (so it's unreachable) or adding a matrix anchor that doesn't resolve. Always do both edits in the same commit.
 - **Renumbering tempts you to "clean up" gaps.** Don't — if a reference is removed, leave the ID retired rather than shifting subsequent IDs. (If absolutely necessary to renumber, do it as a dedicated PR that updates every matrix link in lockstep.)
 - **GitHub-flavored markdown anchor quirks.** GitHub auto-generates heading anchors from header text. The `<a id="N">N</a>` anchors in `Papers.md` are explicit HTML anchors, which work but bypass GitHub's auto-anchor system. Don't rely on header-derived anchors for references; keep using the explicit `<a id>` form.
-- **Wikipedia method links.** Row labels in the matrix link to Wikipedia for each AI method. When adding a new row, prefer Wikipedia over a paper or vendor page so the link stays stable.
+- **Matrix axis links.** Every matrix row and column label links to its definition in `Taxonomy.md` (the canonical, CAAIL-specific scope of each method/area — preferred over Wikipedia, which is too generic). When adding a new row or column, add its `Taxonomy.md` definition and point the matrix header there. The `ResearchAreas/*.md` pages are AI-assisted and not a trusted definition source.
 - **No version-control or process self-references in content.** Curated entries name *what they were curated from* (a paper, a prior file, a named effort) — never the repo's own history or the curation process. Don't write "surfaced via the May 2026 sync pass #2", "added in pass #N", "introduced in commit X", or dates-of-addition into the rendered content (e.g. a `Datasets/` curation-source note). Git history is the record of *when and how* something landed; the file should read as a clean description of *what* is there, not a changelog. (Same principle as the no-"moved"/"removed" placeholder rule below.)
 - **No "moved" / "removed" / "deprecated" placeholders.** When structurally relocating a section — e.g., moving the Benchmarks cluster out of `AITooling.md` into a new `AIEvaluation.md` — delete the original heading cleanly. Don't leave behind a stub like `## X → moved`, `## X (now lives in Y)`, or `<!-- removed: X -->`. The git history is the record of what moved; the file itself should read as if it had always been organized this way. Surface the cross-reference once in the intro paragraph or the "Adjacent research areas" footer instead. The same rule applies to refactors of `Papers.md` reference IDs and `Software.md` / `Datasets/` entries: deletions should be silent in the file (apart from a single cross-link if the new home isn't obvious), not commented out or annotated as "moved."
 

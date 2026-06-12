@@ -23,6 +23,8 @@ University courses on cellular agriculture — structured entry points into the 
   * [Cellular Agriculture and Cultured Meat Lab (BME 174)](https://sites.tufts.edu/cellagcourse/cell-ag-and-cultured-meat-lab-bme-174/) — a hands-on lab course in which students isolate livestock cells, differentiate them into fat and muscle tissue, generate cultured meat, and analyze the resulting meat constructs.
   * [Sustainable Materials (BME 0193)](https://sites.tufts.edu/cellagcourse/sustainable-materials-course-bme-0193/) — a course on the use of cellular agriculture in the materials industry.
 * [TUCCA Education — Courses](https://cellularagriculture.tufts.edu/education/courses) — the Tufts University Center for Cellular Agriculture's official course listing on the center's main site.
+* [Cellular Agriculture – Precision Fermentation and Cultured Meat (Advanced Course)](https://biotechdelft.com/courses/cellular-agriculture/) — a postgraduate advanced course on cellular-agriculture bioprocessing and product development (Biotech Delft / TU Delft).
+* [University of Minnesota — Cellular Bioprocess Technology Summer Course](https://cbt.cems.umn.edu/) — an intensive short course on cellular bioprocess technology, with an optional half-day add-on workshop on machine learning in bioprocessing.
 
 ## Books
 
@@ -86,15 +88,23 @@ Journal editorials, news features, and opinion pieces that survey or comment on 
 
 CAAIL's "adjacent universe" — complementary research programs and initiatives in cellular agriculture. CAAIL itself catalogues *outputs* (papers, software, datasets, educational material); these initiatives produce primary outputs (datasets, working papers) that become cataloguable in CAAIL's core files as they are published. The corresponding *directories and databases* maintained by these organizations live in [Databases.md / Ecosystem & Industry Directories](./Databases.md#ecosystem--industry-directories) and related sections.
 
+### University centers & consortia
+
+* [Integrative Center for Alternative Meat and Protein (iCAMP)](https://icamp.ucdavis.edu/) — a UC Davis–led multi-institutional center for cultivated-meat and alternative-protein research and scale-up.
+* [National Institute for Cellular Agriculture (NICA)](https://sites.tufts.edu/usdacellag/about/) — a USDA-funded national research consortium housed at Tufts University (TUCCA), coordinating cultivated-protein research and workforce training across partner institutions.
+* [Bezos Centre for Sustainable Protein (Imperial College London)](https://www.imperial.ac.uk/news/articles/2026/science-leaders-celebrate-lab-opening-for-bezos-centre-for-sustainable-protein/) — a Bezos Earth Fund–backed sustainable-protein research hub at Imperial College London, spanning AI/ML, fermentation, and cell-based approaches.
+
 ### New Harvest initiatives
 
 * [AI in Cellular Agriculture Initiative (AICAI)](https://www.new-harvest.org/artificial-intelligence-in-cellular-agriculture-initiative) — New Harvest's programmatic effort connecting AI / ML researchers with cellular agriculture: funding research (including an ML-for-media-optimization residency) and building open datasets. The closest mission-level analogue to CAAIL, though a research *program* rather than a catalogue.
 * [Cellular Agriculture Science Engine](https://www.new-harvest.org/cellular-agriculture-science-engine) — A crowdfunded research-portfolio mechanism (New Harvest with FootPrint Coalition and Experiment.com) that funds cell-ag projects; a source of future cataloguable research outputs.
 * [Cultured Meat Safety Initiative (CMSI)](https://www.new-harvest.org/cultured-meat-safety-initiative-cmsi) — A joint New Harvest / Vireo Advisors initiative convening stakeholders on the safety and regulatory science of cultivated products; outputs (datasets, guidance documents) are cataloguable as they are released.
+* [Cellular Agriculture Prairies Ecosystem (CAPE)](https://www.new-harvest.org/cellular-agriculture-prairies-ecosystem) — A New Harvest–led, multi-partner initiative (funded by PrairiesCan, Alberta Innovates, Mitacs, and philanthropic donors) building cellular-agriculture research and biomanufacturing capacity on the Canadian Prairies.
 
 ### GFI initiatives
 
 * [GFI: Expanding Access to Cultivated Meat Cell Lines](https://gfi.org/resource/expanding-access-to-cell-lines/) — GFI's initiative addressing limited cell-line access — a core bottleneck for cultivated-meat research — and supporting the development of new lines.
+* [GFI Research Grant Program](https://gfi.org/researchgrants/) — the Good Food Institute's competitive open-access research-funding program across plant-based, fermentation-derived, and cultivated-meat science — a source of future cataloguable research outputs.
 
 ## Curated Bibliographies & Awesome Lists
 
@@ -122,7 +132,15 @@ Community-maintained "awesome lists" and curated bibliographies — living GitHu
 * [crazyhottommy/ChIP-seq-analysis](https://github.com/crazyhottommy/ChIP-seq-analysis) — ChIP-seq analysis notes and resources.
 * [crazyhottommy/bioinformatics-one-liners](https://github.com/crazyhottommy/bioinformatics-one-liners) — practical command-line one-liners for bioinformatics.
 * [crazyhottommy/getting-started-with-genomics-tools-and-resources](https://github.com/crazyhottommy/getting-started-with-genomics-tools-and-resources) — entry-point genomics tooling guide.
+* [davidliwei/awesome-CRISPR](https://github.com/davidliwei/awesome-CRISPR) — curated list of CRISPR / genome-engineering software, websites, and databases (guide design, off-target analysis, screening).
+* [pansapiens/awesome-protein-design-software](https://github.com/pansapiens/awesome-protein-design-software) — curated collection of protein structure-prediction and design software, with a focus on new deep-learning and transformer-based tools — companion to the protein-engineering tools in [Software.md](./Software.md#media-optimization--cell-line-engineering).
+* [lifs-tools/awesome-lipidomics](https://github.com/lifs-tools/awesome-lipidomics) — curated collection of lipidomics tools, databases, and resources for lipid identification and visualization.
 
 **Biomedical NLP & information extraction**
 
 * [caufieldjh/awesome-bioie](https://github.com/caufieldjh/awesome-bioie) — curated resources for biomedical information extraction — relevant to the literature-mining and agentic-AI layer of cell-ag.
+
+**Scientific & biomolecule language models**
+
+* [QizhiPei/Awesome-Biomolecule-Language-Cross-Modeling](https://github.com/QizhiPei/Awesome-Biomolecule-Language-Cross-Modeling) — curated resources on multi-modal learning that bridges biomolecules (proteins, molecules) and natural language — the companion list to a survey on biomolecule–language cross-modeling.
+* [yuzhimanhua/Awesome-Scientific-Language-Models](https://github.com/yuzhimanhua/Awesome-Scientific-Language-Models) — comprehensive survey and curated list of scientific large language models across disciplines (mathematics, physics, chemistry, materials, biology, medicine) and modalities.

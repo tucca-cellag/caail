@@ -16,7 +16,7 @@ describe('AREAS registry', () => {
     expect(AREAS).toEqual([
       { key: 'media',       label: 'Media Optimization' },
       { key: 'cell',        label: 'Cellular Engineering' },
-      { key: 'bioprocess',  label: 'Bioprocess control' },
+      { key: 'bioprocess',  label: 'Bioprocess & Scale-Up' },
       { key: 'scaffolding', label: 'Scaffolding' },
       { key: 'sensory',     label: 'Sensory Prediction' },
       { key: 'tooling',     label: 'AI Tooling / Methodology' },
@@ -34,7 +34,7 @@ describe('areaKeyForLabel', () => {
   it('resolves each verbatim label to its key', () => {
     expect(areaKeyForLabel('Media Optimization')).toBe('media');
     expect(areaKeyForLabel('Cellular Engineering')).toBe('cell');
-    expect(areaKeyForLabel('Bioprocess control')).toBe('bioprocess');
+    expect(areaKeyForLabel('Bioprocess & Scale-Up')).toBe('bioprocess');
     expect(areaKeyForLabel('Scaffolding')).toBe('scaffolding');
     expect(areaKeyForLabel('Sensory Prediction')).toBe('sensory');
     expect(areaKeyForLabel('AI Tooling / Methodology')).toBe('tooling');
@@ -46,8 +46,8 @@ describe('areaKeyForLabel', () => {
   });
 
   it('returns null for wrong case (no case-folding)', () => {
-    // 'Bioprocess control' is correct; 'Bioprocess Control' is not
-    expect(areaKeyForLabel('Bioprocess Control')).toBeNull();
+    // 'Bioprocess & Scale-Up' is correct; 'Bioprocess & Scale-up' is not
+    expect(areaKeyForLabel('Bioprocess & Scale-up')).toBeNull();
   });
 
   it('returns null for completely unknown labels', () => {

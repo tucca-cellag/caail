@@ -343,6 +343,21 @@ export const MetricsSchema = z.object({
 });
 
 // ---------------------------------------------------------------------------
+// taxonomy.json — Taxonomy.md row/column definitions, keyed by matrix label
+// ---------------------------------------------------------------------------
+
+/**
+ * Schema for taxonomy.json — the plain-text definition of every matrix
+ * row/column, extracted from each `### Heading` in Taxonomy.md. Keyed by the
+ * exact heading text (which matches the matrix labels in Papers.md), so the
+ * explorer can look a label up directly. Values are the flattened definition
+ * prose (markdown emphasis dropped).
+ */
+export const TaxonomyDataSchema = z.object({
+  definitions: z.record(z.string(), z.string()),
+});
+
+// ---------------------------------------------------------------------------
 // Inferred TypeScript types
 // ---------------------------------------------------------------------------
 
@@ -368,3 +383,4 @@ export type Graph = z.infer<typeof GraphSchema>;
 export type MetricsSpecies = z.infer<typeof MetricsSpeciesSchema>;
 export type MetricsDatasets = z.infer<typeof MetricsDatasetsSchema>;
 export type Metrics = z.infer<typeof MetricsSchema>;
+export type TaxonomyData = z.infer<typeof TaxonomyDataSchema>;

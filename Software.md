@@ -22,6 +22,46 @@ Summary: Search large protein databases using monomers and multimers. Can be use
 
 Summary: Open-source applied AI research code from the Alberta Machine Intelligence Institute (Amii) targeting cellular agriculture, hosted under the `Amii-Applied-AI` GitHub organization. The repository collects two Python subprojects: `protein-thermostability-data-tools` (code used in the development of a public protein thermostability dataset) and `active-learning-for-cell-media` (active-learning analysis applied to cell media optimization). MIT-licensed.
 
+### [ESMFold](https://github.com/facebookresearch/esm)
+
+Summary: An end-to-end single-sequence protein structure predictor built on the ESM-2 protein language model — it predicts structure directly from one sequence with no multiple-sequence alignment, avoiding the alignment search that MSA-dependent predictors require. For cellular agriculture, useful for quickly validating the fold of engineered growth-factor analogs and other recombinant media proteins. (The `facebookresearch/esm` repository also hosts the ESM-2 / ESM-1b protein language models.)
+
+### [ColabFold](https://github.com/sokrypton/ColabFold)
+
+Summary: A fast, accessible implementation of AlphaFold2 (and related models) with GPU-accelerated MSA generation via MMseqs2, runnable in Google Colab or locally. Lowers the compute barrier for cell-ag teams designing growth factors, binders, and other recombinant media components without a local AlphaFold deployment ([Mirdita et al. 2022](https://doi.org/10.1038/s41592-022-01488-1), *Nature Methods*).
+
+### [OmegaFold](https://github.com/HeliXonProtein/OmegaFold)
+
+Summary: A high-resolution de-novo structure predictor that folds proteins directly from primary sequence using a protein language model, without multiple-sequence alignments — aimed at proteins that lack deep evolutionary alignments. Practical for high-throughput structure validation of engineered cell-ag proteins.
+
+### [RFdiffusion](https://github.com/RosettaCommons/RFdiffusion)
+
+Summary: A diffusion-model framework for de novo protein design — unconditional generation, motif scaffolding, symmetric oligomers, and binder design — from the Baker lab. Applicable to engineering novel growth-factor / receptor-binding domains and protein scaffolds for cultivated-meat work ([Watson et al. 2023](https://doi.org/10.1038/s41586-023-06415-8), *Nature*).
+
+### [ProteinMPNN](https://github.com/dauparas/ProteinMPNN)
+
+Summary: A deep-learning inverse-folding model that designs amino-acid sequences for a given protein backbone — the standard sequence-design step in generative pipelines, typically paired with RFdiffusion and a structure predictor. Useful for optimizing the sequence of recombinant media components (growth factors, binders) for expressibility and stability ([Dauparas et al. 2022](https://doi.org/10.1126/science.add2187), *Science*).
+
+### [EvoDiff](https://github.com/microsoft/evodiff)
+
+Summary: A sequence-space diffusion framework (Microsoft Research) that generates novel, diverse proteins directly from evolutionary-scale sequence data, without requiring structure — complementing structure-based design with sequence-first generation of functional proteins such as growth factors.
+
+### [Boltz](https://github.com/jwohlwend/boltz)
+
+Summary: An open, commercially-usable (MIT-licensed) family of diffusion-based biomolecular structure prediction models — Boltz-1 was the first fully open-source model to approach AlphaFold3 accuracy, with later versions (Boltz-2) extending the family — predicting structures of proteins and complexes. Useful for assessing the fold and binding interfaces of engineered growth-factor domains.
+
+### [Chai-1](https://github.com/chaidiscovery/chai-lab)
+
+Summary: A multimodal foundation model for biomolecular structure prediction (Chai Discovery) that folds proteins, nucleic acids, and complexes and can optionally incorporate experimental restraints. Valuable for cell-ag protein engineering where binding geometry and complex structure matter as much as the monomer fold.
+
+### [IgFold](https://github.com/Graylab/IgFold)
+
+Summary: A fast, antibody-specific structure predictor (Gray lab, Johns Hopkins) that models antibody Fv structures and CDR loops directly from sequence. Useful for engineering recombinant antibody fragments used as affinity reagents or bio-scaffolds. Note: distributed under a JHU non-commercial license — check terms before commercial cell-ag use ([Ruffolo et al. 2023](https://doi.org/10.1038/s41467-023-38063-x), *Nature Communications*).
+
+### [AbLang](https://github.com/oxpig/AbLang)
+
+Summary: An antibody-specific language model (Oxford Protein Informatics Group) for antibody sequence representation, restoration of missing residues, and design. Enables rapid engineering of antibody-based scaffolds and binding domains for cell-ag affinity-reagent work.
+
 ## Bioprocess Modeling & Scaling
 This category includes simulation and modeling tools for optimizing the  bioreactor environment.
 
@@ -93,6 +133,14 @@ Summary: An integrated visual environment for metabolic modeling that wraps COBR
 
 Docs: <https://cnapy-org.github.io/CNApy-guide/>.
 
+### [moped](https://gitlab.com/qtb-hhu/moped)
+
+Summary: A Python package (QTB lab, HHU Düsseldorf) serving as an integrative hub for reproducible, scriptable construction, modification, curation, and analysis of metabolic models — importing existing SBML models, supporting metabolic network expansion, and converting directly to COBRApy objects for constraint-based analysis ([Saadat et al. 2022](https://doi.org/10.3390/metabo12040275), *Metabolites*). A lighter-weight on-ramp for building and editing cell-ag GEMs alongside the openCOBRA stack above.
+
+### [mergem](https://lobolab.umbc.edu/mergem/)
+
+Summary: A Python package and command-line tool (Lobo lab, UMBC) for merging, comparing, and translating genome-scale metabolic models via a universal metabolite / reaction identifier mapping, producing curated consensus models; paired with the Fluxer web application for flux visualization. Useful when reconciling draft cell-ag GEMs from different reconstruction pipelines into a single curated model (*NAR Genomics and Bioinformatics*, [`10.1093/nargab/lqae010`](https://doi.org/10.1093/nargab/lqae010)).
+
 **Agent integration.** Code-execution agents (Cursor, Claude Code, Biomni) can invoke any of these tools as Python; for COBRApy specifically, the [`cobrapy` skill from K-Dense-AI's scientific-agent-skills](https://github.com/K-Dense-AI/scientific-agent-skills/tree/main/scientific-skills/cobrapy) (see the [K-Dense-AI entry below](#k-dense-ai)) provides curated recipes that make this reliable in agent loops.
 
 ## Quantitative Genetics & Multi-Omics Analysis
@@ -102,6 +150,22 @@ Open-source toolkits for population-genetics analysis of multi-omics data — mo
 ### [OmiGA](https://omiga.bio/)
 
 Summary: An ultra-efficient toolkit for molecular quantitative trait loci (molQTL) mapping across multi-omics data, from the Zhang group at China Agricultural University. The performance backbone of the FarmGTEx project family — eQTL, sQTL, mQTL, and other molQTL discovery at livestock-atlas scale, optimized for the throughput needed to handle the FarmGTEx tissue / sample matrices. Companion to [Papers.md ref #143](./Papers.md#143) (Teng et al. 2026, *Nature Communications*). **Reproducibility deposits**: ENA BioProject [`PRJEB58031`](https://www.ebi.ac.uk/ena/browser/view/PRJEB58031), Zenodo [`10.5281/zenodo.10072081`](https://doi.org/10.5281/zenodo.10072081) and [`10.5281/zenodo.18280923`](https://doi.org/10.5281/zenodo.18280923).
+
+### [OmicVerse](https://github.com/omicverse/omicverse)
+
+Summary: A Python framework integrating bulk, single-cell, and spatial RNA-seq analysis — including trajectory and bulk-to-single-cell interpolation (BulkTrajBlend) and multi-omics integration — in one toolkit. Useful for analysing cultivated cell-line transcriptomic data across bulk and single-cell modalities ([Zeng et al. 2024](https://doi.org/10.1038/s41467-024-50194-3), *Nature Communications*).
+
+### [CellRank](https://github.com/scverse/cellrank)
+
+Summary: A Python framework (scverse / Theis lab) for single-cell fate mapping that combines trajectory inference with signals such as RNA velocity to model cell-state transitions and terminal states. Informs understanding of cultivated-cell differentiation dynamics under perturbation or media change.
+
+### [CellChat](https://github.com/jinworks/CellChat)
+
+Summary: An R toolkit for inferring and analysing intercellular communication networks from single-cell and spatial transcriptomics, using a curated ligand–receptor interaction database. Applicable to cell-culture and scaffold / co-culture analysis where cell–cell signalling shapes differentiation ([Jin et al. 2021](https://doi.org/10.1038/s41467-021-21246-9), *Nature Communications*).
+
+### [Giotto Suite](https://github.com/giotto-suite/Giotto)
+
+Summary: An R package suite (Dries lab) for end-to-end spatial-transcriptomics and spatial multi-omics analysis at multiple scales and resolutions, including 2D/3D spatial analysis and cell–cell interaction analysis. Supports analysis of cultivated-tissue structure and microarchitecture.
 
 ## Mass Spectrometry & Chemometrics
 
@@ -351,6 +415,10 @@ Summary: A community hub for agentic biomedical systems — a registry of biomed
 ### [BioMCP](https://github.com/genomoncology/biomcp)
 
 Summary: A one-binary MCP server from GenomOncology unifying many biomedical knowledge sources — PubTator3, Europe PMC, ClinicalTrials.gov, MyVariant.info, cBioPortal, Reactome, Open Targets, MyDisease.info, MONDO, Monarch, DisGeNET — behind a single Model Context Protocol surface for LLM agents. MIT-licensed; the leanest existing MCP-native bridge between general biomedical literature, clinical-trial, and variant data and an agent stack. Sister project to [BioContextAI](#biocontextai), which catalogues biomedical MCP servers including BioMCP.
+
+### [Context7](https://github.com/upstash/context7)
+
+Summary: An open-source MCP server (and hosted service) from Upstash that injects up-to-date, version-specific library documentation and code examples into LLM prompts, so AI coding agents work from current API docs instead of stale training data. Unlike the biomedical MCP servers above, Context7 is general developer infrastructure — not cell-ag-specific — but it is directly relevant to CAAIL's AI-agent audience: the coding agents that build and maintain cell-ag pipelines, parsers, and analysis tooling depend on accurate, current documentation for the bioinformatics and ML libraries they call. MIT-licensed; hosted at <https://context7.com>.
 
 ## Data Standards & Interchange Formats
 

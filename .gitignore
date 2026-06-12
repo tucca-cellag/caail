@@ -7,6 +7,12 @@ docs/research/
 # Local Claude Code worktrees — not part of the library
 .claude/worktrees/
 
+# Matrix-classification-audit corpus — a build artifact regenerated from
+# Papers.md + the Zotero libraries by extract_matrix_corpus.py. Not published.
+matrix-corpus.json
+matrix-corpus/
+AUDIT_REPORT.md
+
 # Python bytecode
 __pycache__/
 *.pyc
