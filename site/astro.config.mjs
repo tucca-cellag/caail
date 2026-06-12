@@ -114,6 +114,27 @@ export default defineConfig({
         { tag: 'link', attrs: { rel: 'apple-touch-icon', href: '/caail/apple-touch-icon.png' } },
         { tag: 'link', attrs: { rel: 'manifest', href: '/caail/site.webmanifest' } },
         { tag: 'meta', attrs: { name: 'theme-color', content: '#002E6D' } },
+        // Google Search Console ownership verification (URL-prefix property for
+        // the /caail/ site). Public token — ships in the page <head>.
+        {
+          tag: 'meta',
+          attrs: {
+            name: 'google-site-verification',
+            content: 'gekisCZD13qF4N9-VeRYE2n0kQT-DF3HX63qxV9pm0M',
+          },
+        },
+        // Cloudflare Web Analytics — cookieless, privacy-light usage stats.
+        // `defer` so the beacon loads after paint and doesn't dent the
+        // Lighthouse performance budget (docs.yml gates Performance ≥0.90).
+        // The beacon only reports for the site configured under this token.
+        {
+          tag: 'script',
+          attrs: {
+            defer: true,
+            src: 'https://static.cloudflareinsights.com/beacon.min.js',
+            'data-cf-beacon': '{"token": "a815722483f84116b51e8120158aaea3"}',
+          },
+        },
       ],
       social: [
         { icon: 'github', label: 'GitHub', href: 'https://github.com/tucca-cellag/caail' },
