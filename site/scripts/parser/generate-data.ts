@@ -25,6 +25,7 @@ import { buildPrimersModel } from './primers.js';
 import { buildGraphModel } from './graph.js';
 import { CitationCacheSchema, type CitationCache } from './citations.js';
 import { buildMetricsModel } from './metrics.js';
+import { buildRecentModel } from './recent.js';
 import { writeLlmsFull } from './llms-full.js';
 import {
   PapersDataSchema,
@@ -34,6 +35,7 @@ import {
   PrimersSchema,
   GraphSchema,
   MetricsSchema,
+  RecentSchema,
   TaxonomyDataSchema,
   type Counts,
 } from './types.js';
@@ -98,6 +100,7 @@ export function generateData(
   primers: number;
   graphNodes: number;
   graphEdges: number;
+  recentEntries: number;
   taxonomyDefs: number;
 } {
   // Build and validate the papers model.
@@ -117,6 +120,10 @@ export function generateData(
   const graph = buildGraphModel(model, loadCitationCache());
   const metrics = buildMetricsModel(model);
 
+  // Home page "Recently added" list, derived from git history. Empty (not an
+  // error) when history is unavailable — see buildRecentModel.
+  const recent = buildRecentModel();
+
   // Taxonomy.md row/column definitions for the explorer's hover/click popups.
   const taxonomy = buildTaxonomyModel();
 
@@ -128,6 +135,7 @@ export function generateData(
   PrimersSchema.parse(primers);
   GraphSchema.parse(graph);
   MetricsSchema.parse(metrics);
+  RecentSchema.parse(recent);
   TaxonomyDataSchema.parse(taxonomy);
 
   // No-drift guard: the homepage counts and the catalog/talks/graph/metrics
@@ -217,6 +225,13 @@ export function generateData(
     'utf-8',
   );
 
+  // Write recent.json.
+  writeFileSync(
+    join(outDir, 'recent.json'),
+    JSON.stringify(recent, null, 2) + '\n',
+    'utf-8',
+  );
+
   // Write taxonomy.json.
   writeFileSync(
     join(outDir, 'taxonomy.json'),
@@ -232,6 +247,7 @@ export function generateData(
     primers: primers.primers.length,
     graphNodes: graph.nodes.length,
     graphEdges: graph.edges.length,
+    recentEntries: recent.length,
     taxonomyDefs: Object.keys(taxonomy.definitions).length,
   };
 }
@@ -263,6 +279,7 @@ if (isMain) {
       primers,
       graphNodes,
       graphEdges,
+      recentEntries,
       taxonomyDefs,
     } = generateData();
     // Full-text agent index (public/llms-full.txt) — generated alongside the
@@ -276,6 +293,7 @@ if (isMain) {
         `catalog.json (${catalogEntries} entries), talks.json (${talks} talks), ` +
         `primers.json (${primers} primers), ` +
         `graph.json (${graphNodes} nodes / ${graphEdges} edges), metrics.json, ` +
+        `recent.json (${recentEntries} entries), ` +
         `taxonomy.json (${taxonomyDefs} definitions), ` +
         `and llms-full.txt (${llmsBytes} bytes)`,
     );

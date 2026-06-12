@@ -343,6 +343,33 @@ export const MetricsSchema = z.object({
 });
 
 // ---------------------------------------------------------------------------
+// recent.json — home page "Recently added" list, derived from git history
+// ---------------------------------------------------------------------------
+
+/** One entry in the home page "Recently added" panel (RecentlyAdded.astro). */
+export const RecentEntrySchema = z.object({
+  /** commit date, YYYY-MM-DD */
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  /** entry type, rendered as an uppercase label */
+  kind: z.enum(['Paper', 'Software', 'Dataset', 'Database', 'Resource']),
+  /** short title: the commit subject with prefix, lead verb, and issue ref stripped */
+  title: z.string().min(1),
+  /** research-area key driving the dot colour (RecentlyAdded.astro areaColor) */
+  area: z.enum([
+    'media',
+    'cell',
+    'bioprocess',
+    'scaffolding',
+    'sensory',
+    'tooling',
+    'eval',
+  ]),
+});
+
+/** recent.json is a flat array of entries, newest first. */
+export const RecentSchema = z.array(RecentEntrySchema);
+
+// ---------------------------------------------------------------------------
 // taxonomy.json — Taxonomy.md row/column definitions, keyed by matrix label
 // ---------------------------------------------------------------------------
 
@@ -383,4 +410,6 @@ export type Graph = z.infer<typeof GraphSchema>;
 export type MetricsSpecies = z.infer<typeof MetricsSpeciesSchema>;
 export type MetricsDatasets = z.infer<typeof MetricsDatasetsSchema>;
 export type Metrics = z.infer<typeof MetricsSchema>;
+export type RecentEntry = z.infer<typeof RecentEntrySchema>;
+export type Recent = z.infer<typeof RecentSchema>;
 export type TaxonomyData = z.infer<typeof TaxonomyDataSchema>;
