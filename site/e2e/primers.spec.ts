@@ -39,8 +39,8 @@ test('cell-ag primer embeds the field-foundation videos and resolves its nav lin
 test('ai primer surfaces learning playlists and go-deeper nav links', async ({ page }) => {
   await page.goto('./primers/ai/');
   await expect(page.getByRole('heading', { name: 'Learn the fundamentals' })).toBeVisible();
-  // Five external learning playlists (new-tab cards).
-  expect(await page.locator('a.talk-card[target="_blank"]').count()).toBe(5);
+  // External learning playlists (new-tab cards).
+  expect(await page.locator('a.talk-card[target="_blank"]').count()).toBe(7);
   // Deep-link into the Talks page section that stayed in Talks.md.
   await expect(
     page.locator('a.primer-nav[href="/caail/talks/#ai-agents-foundation-models-for-biology"]'),
