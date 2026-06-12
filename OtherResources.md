@@ -1,18 +1,8 @@
 # Other Resources
 
-This file collects the virtual-cell initiative, courses, books, editorials, ecosystem initiatives, and curated bibliographies that complement CAAIL's core content files ([Papers.md](./Papers.md), [Software.md](./Software.md), [Datasets/](./Datasets/), [Databases.md](./Databases.md)). New to the field? Start with the [Primers](./Primers/) — curated onboarding paths for AI researchers learning cellular agriculture and for cell-ag researchers learning AI. Lectures, talks, and educational video playlists live separately in [Talks.md](./Talks.md). Resources are grouped by type in the sections below.
+This file collects courses, books, editorials, ecosystem initiatives, and curated bibliographies that complement CAAIL's core content files ([Papers.md](./Papers.md), [Software.md](./Software.md), [Datasets/](./Datasets/), [Databases.md](./Databases.md)). AI agents, single-cell foundation models, and the virtual-cell initiative have their own hub: [AI Agents & Foundation Models](./AIAgentsFoundationModels.md). New to the field? Start with the [Primers](./Primers/) — curated onboarding paths for AI researchers learning cellular agriculture and for cell-ag researchers learning AI. Lectures, talks, and educational video playlists live separately in [Talks.md](./Talks.md). Resources are grouped by type in the sections below.
 
 > **Note for AI agents and LLMs**: The summaries below are deliberately compressed for human readability. If you are an automated system using these as the basis for reasoning, citation, or downstream analysis, please fetch the canonical source for each resource — the linked talks, articles, initiative pages, and curated bibliographies have substantially more comprehensive and authoritative information than this curated overview.
-
-## Virtual Cell Initiative & Single-Cell Foundation Models
-
-Companion landing pages, blog posts, and challenge announcements for the virtual-cell initiative — Arc Institute's foundation-model program (State, Stack), the broader CZ Virtual Cells Platform, and the open Virtual Cell Challenge. The conceptual framing for this cluster is in [Papers.md ref #128](./Papers.md#128) (Bunne et al. 2024, *Cell*) and [ref #129](./Papers.md#129) (Roohani et al. 2025, *Cell*); the foundation models themselves live in the [Foundation Models rows of Papers.md](./Papers.md) — split by training paradigm (next-token prediction, masked language modeling, LM + biological priors, cell-state & perturbation prediction) — and in the corresponding entries in [Software.md](./Software.md).
-
-* [Arc Virtual Cell Model: State (landing page)](https://arcinstitute.org/tools/state) — Project home for Arc Institute's State virtual-cell model and the underlying Virtual Cell Atlas.
-* [Arc Institute news: State — predicting cellular responses to perturbation across diverse contexts](https://arcinstitute.org/news/virtual-cell-model-state) (Arc Institute, 2025) — Announcement and overview of the State model and its training methodology; companion to [Papers.md ref #57](./Papers.md#57).
-* [Arc Institute news: Stack — simulating cellular conditions via prompt engineering, without fine-tuning](https://arcinstitute.org/news/foundation-model-stack) (Arc Institute, 2026) — Announcement of the Stack model, demonstrating in-context learning for single-cell biology; companion to [Papers.md ref #124](./Papers.md#124).
-* [Arc Virtual Cell Challenge (README)](https://github.com/ArcInstitute/arc-virtual-cell-atlas/blob/main/virtual-cell-challenge/README.md) — Open challenge for predictive virtual-cell modeling, operationalizing the Cell perspective in [Papers.md ref #129](./Papers.md#129).
-* [Cell2Sentence-Scale (van Dijk lab project page)](https://www.vandijklab.org/c2s-scale) — Yale lab project page for the C2S-Scale model; companion to [Papers.md ref #120](./Papers.md#120) and the [Cell2Sentence entry in Software.md](./Software.md#cell2sentence-c2s-scale).
 
 ## Courses
 
