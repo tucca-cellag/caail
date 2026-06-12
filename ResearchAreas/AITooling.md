@@ -12,6 +12,7 @@ Pretrained transformer models — distinct from agents in that they predict or g
 - [#88 SpectraLLM](../Papers.md#88) (Su et al. 2026) — an LLM pretrained and fine-tuned to reason over multi-spectral data (IR, Raman, UV-Vis, NMR, MS) in a shared language space for end-to-end molecular structure prediction; the spectral analogue of OmicsLM for sensomics workflows (see also [SensoryPrediction.md](./SensoryPrediction.md)).
 - [#91 NP Foundation Model](../Papers.md#91) (Ding et al. 2026, *Nat Machine Intelligence*) — a pretrained foundation model for small-molecule natural products; substrate for downstream tasks ranging from media-component prediction to flavor-precursor discovery.
 - [#92 TranscriptFormer](../Papers.md#92) (Pearce et al. 2026, *Science*) — a generative cell atlas trained across 1.5 billion years of evolution and 12 species; the closest existing cross-species transcriptomic foundation model, with direct cell-ag utility for translating biological knowledge between bovine, porcine, chicken, salmonid, and other livestock cells where annotated reference data is sparse (the per-species pages in [`Datasets/`](../Datasets/) collect that cell-ag data substrate). Catalogued at `Foundation Models × Cellular Engineering` rather than `× AI Tooling` because its primary cell-ag relevance is direct: cross-species transcriptomic reasoning is the cellular-engineering substrate. See also the [TranscriptFormer software entry](../Software.md#transcriptformer).
+- [#224 ProCyon](../Papers.md#224) (Queen et al. 2025, Zitnik lab) — a multimodal foundation model unifying protein sequence, structure, natural-language phenotype text, and small-molecule structure in one latent space (bridged by natural language), trained on PROCYON-INSTRUCT, a dataset of 33M+ protein–phenotype instruction examples; it retrieves proteins by mechanism-of-action or disease context and generates open-ended phenotype descriptions, a candidate substrate for annotating cell-ag-relevant proteins (growth factors, ECM components, differentiation regulators) from sequence and structure.
 
 ## Scientific Literature & Discovery Agents
 
@@ -22,6 +23,11 @@ Agents focused on the scientific research process itself — retrieving and synt
 - [#45 The AI Scientist](../Papers.md#45) (Lu et al. 2024, Sakana AI) — first end-to-end framework for fully automated open-ended discovery: idea generation, experiment design, paper drafting.
 - [#47 The AI Scientist-v2](../Papers.md#47) (Yamada et al. 2025, Sakana AI) — workshop-level extension using agentic tree search.
 - [#53 ARIEL](../Papers.md#53) (Liu et al. 2026) — biomedical AI research assistant with expert-involved learning.
+- [#153 AI Co-Scientist](../Papers.md#153) (Gottweis et al. 2026, *Nature*) — a Gemini-based multi-agent system whose six specialized agents (Generation, Reflection, Ranking, Evolution, Proximity, Meta-review) generate and tournament-refine novel hypotheses under scientist-in-the-loop supervision; validated on drug repurposing, target discovery, and antimicrobial resistance.
+- [#154 Robin](../Papers.md#154) (Ghareeb et al. 2026, *Nature*) — a "lab-in-the-loop" multi-agent system automating both hypothesis generation and data analysis for experimental biology, coordinating PaperQA2-based literature agents (Crow, Falcon) with a data-analysis agent (Finch); it proposed and experimentally confirmed a repurposed drug candidate for dry age-related macular degeneration.
+- [#166 ERA](../Papers.md#166) (Aygün et al. 2026, *Nature*) — an LLM-plus-tree-search system that writes expert-level empirical analysis software to maximize a measurable quality metric, drawing ideas from the literature; in bioinformatics it discovered single-cell batch-integration methods that outperformed the top human methods on a public benchmark.
+- [#221 IP-RAR](../Papers.md#221) (Feng et al. 2025, *GigaScience*) — a retrieval-augmented "deep-thinking" pipeline that builds a stratified biomedical knowledge graph (BioStrataKG) and applies integrated-then-progressive reasoning with a self-reflection step; on its own BioCDQA cross-document benchmark it improves document-retrieval F1 by ~20% and answer accuracy by ~25% over prior methods — a literature-mining pattern for surfacing cross-document associations (e.g. media-component → phenotype) in cell-ag literature.
+- [#222 cmbagent-VLM](../Papers.md#222) (Gandhi et al. 2025) — extends a multi-agent autonomous-discovery system with vision-language-model steering: a VLM-as-judge scores agent-generated plots against dynamically generated rubrics and iteratively debugs them, alongside a scientific-anomaly-detection loop. Demonstrated in cosmology and astrochemistry (pass@1 of 0.7–0.8 versus 0.2–0.3 for code-only baselines), but the "VLM judges figures to self-correct exploratory analysis" pattern transfers to any data-driven cell-ag analysis loop.
 
 ## General-Purpose Biomedical Agents
 
@@ -33,6 +39,7 @@ Broad biomedical-reasoning agents designed to handle multiple sub-domains within
 - [#95 OLAF](../Papers.md#95) (Riffle et al. 2025) — Open Life Science Analysis Framework for conversational bioinformatics; agent-pipe-router architecture.
 - [#96 STELLA](../Papers.md#96) (Jin et al. 2025) — self-evolving LLM agent for biomedical research.
 - [#98 BioMANIA](../Papers.md#98) (Dong et al. 2024) — conversational chatbot-per-Python-tool framework for simplifying bioinformatics data analysis.
+- [#223 BioScientist Agent](../Papers.md#223) (Zhang et al. 2025) — an end-to-end, KG-augmented multi-agent framework for drug repurposing and mechanism-of-action elucidation: a variational graph auto-encoder predicts drug–disease links, an adversarial actor–critic reinforcement-learning module traverses a 6.3M-node biomedical knowledge graph to recover mechanistic paths, and an LLM layer generates causal reports; the VGAE-plus-RL-path-plus-LLM-report architecture is retargetable to cell-ag hypothesis generation (gene → pathway → phenotype).
 
 ## Chemistry / Synthesis Agents
 
@@ -40,6 +47,7 @@ Foundational LLM-agent patterns from chemistry. Both papers share a common templ
 
 - [#70 Coscientist](../Papers.md#70) (Boiko et al. 2023, *Nature*) — GPT-4 autonomous chemistry research system; the foundational pattern for tool-augmented LLMs in the natural sciences.
 - [#71 ChemCrow](../Papers.md#71) (Bran et al. 2024, *Nat Machine Intelligence*) — GPT-4 + 18 chemistry tools for synthesis planning, drug discovery, and materials design.
+- [#161 ether0](../Papers.md#161) (Narayanan et al. 2025, FutureHouse) — a 24-billion-parameter chemistry reasoning model post-trained with reinforcement learning on verifiable chemistry problems; it reasons in natural language and emits molecular structures as SMILES, with direct relevance to media-component, scaffold-chemistry, and flavor-molecule design.
 
 ## Domain-Specific Biomedical Agents
 
@@ -51,19 +59,24 @@ Agents specialized for a single biomedical task or sub-domain. Narrower scope th
 - [#54 ClockBase Agent](../Papers.md#54) (Ying et al. 2025) — autonomous agent mining methylation/RNA-seq data for aging interventions.
 - [#56 SpatialAgent](../Papers.md#56) (Wang et al. 2025) — autonomous agent for spatial biology research.
 - [#66 Lila](../Papers.md#66) (Singh et al. 2023, Carbonell group) — automated scientist for microbial strain design.
-- [#68 Li LLMs ME](../Papers.md#68) (Li et al. 2024) — RAG-augmented LLMs for metabolic-engineering design.
+- [#68 D2Cell](../Papers.md#68) (Li et al. 2024) — an LLM pipeline that mines metabolic-engineering literature into a knowledge base and feeds a hybrid deep-learning / genome-scale-model target predictor, with a retrieval-augmented chatbot over the resulting database.
 - [#69 KinModGPT](../Papers.md#69) (Maeda & Kurata 2023) — GPT-driven generation of SBML kinetic models from natural-language texts.
+- [#167 Talk2Biomodels / Talk2KnowledgeGraphs](../Papers.md#167) (Singh et al. 2025) — the workshop paper introducing the LangGraph-based agents that give natural-language access to SBML systems-biology models (the BioModels database) and biomedical knowledge graphs; the published core of the AIAgents4Pharma Talk2X family alongside the later [#50 Talk2Biomodels](../Papers.md#50).
+- [#90 GenCellAgent](../Papers.md#90) (Yu et al. 2026) — a training-free multi-agent framework that routes cellular images to the best segmentation tool and supports text-guided segmentation of structures existing models miss; an imaging and phenotyping agent for reading out engineered cells (discussed for its cell-characterization use under [Cellular Engineering](./CellEngineering.md)).
+- [#126 scBaseCount](../Papers.md#126) (Youngblut et al. 2025, Arc Institute) — an AI agent that discovers and uniformly reprocesses public scRNA-seq data into a self-updating repository of more than 500 million cells across 27 organisms; data-curation infrastructure that lowers the entry barrier for any single-cell modeling, including for livestock species.
 
-Sibling refs in this row's `× Cellular Engineering` cell — cell-engineering-specific agentic work — include [#90 GenCellAgent](../Papers.md#90) (Yu et al. 2026, training-free cellular image segmentation), [#93 CellForge](../Papers.md#93) (Tang et al. 2026, agentic design of virtual cell models), and [#97 PerTurboAgent](../Papers.md#97) (Hao et al. 2025, self-planning agent for sequential Perturb-seq).
+Sibling refs in this row's `× Cellular Engineering` cell — cell-engineering-specific agentic work — include [#93 CellForge](../Papers.md#93) (Tang et al. 2026, agentic design of virtual cell models) and [#97 PerTurboAgent](../Papers.md#97) (Hao et al. 2025, self-planning agent for sequential Perturb-seq).
 
 ## Robot Scientists & Lab Automation
 
 Closed-loop autonomous research systems integrating LLM agents with wet-lab execution. The cluster spans 25+ years of "Robot Scientist" work from the King group (Adam → Eve → Genesis) extended by recent LLM-era multi-agent systems.
 
+- [#182 The Robot Scientist](../Papers.md#182) (King et al. 2004, *Nature*) — the original autonomous "Robot Scientist": it abductively generates functional-genomics hypotheses and uses active learning to select cost-optimal yeast deletion-mutant experiments, matching human experiment-selection performance — the founding reference for this cluster's Adam → Eve → Genesis lineage.
 - [#64 Genesis](../Papers.md#64) (Tiukova et al. 2024, King group) — third-generation robot scientist for systems biology.
 - [#65 AutonoMS](../Papers.md#65) (Brunnsåker et al. 2025) — agentic AI integrated with scientific knowledge for laboratory validation in systems biology.
+- [#62 BioMARS](../Papers.md#62) (Qiu et al. 2025) — a fully-robotic multi-agent system (Biologist, Technician, and Inspector agents built on LLMs and vision-language models, driving dual-arm robotics) that autonomously performs cell passaging and culture, matching or exceeding manual performance and outperforming conventional strategies when optimizing retinal-pigment-epithelial differentiation (discussed for its bioprocess use under [Bioprocess & Scale-Up](./Bioprocess.md)).
 
-Sibling refs in this row's `× Bioprocess Control` cell — applied multi-agent lab automation for cell and organoid manufacturing — include [#61 Agentic Lab](../Papers.md#61) (Wang et al. 2025) and [#62 BioMARS](../Papers.md#62) (Qiu et al. 2025). See also [MetabolicModeling.md](./MetabolicModeling.md) for the broader closed-loop FBA / strain-design context.
+Sibling refs in this row's `× Bioprocess & Scale-Up` cell — applied multi-agent lab automation for cell and organoid manufacturing — include [#61 Agentic Lab](../Papers.md#61) (Wang et al. 2025). See also [MetabolicModeling.md](./MetabolicModeling.md) for the broader closed-loop FBA / strain-design context.
 
 ## Agent Infrastructure (Frameworks, KGs, Protocols)
 
@@ -72,13 +85,21 @@ Substrate platforms — agent frameworks, biomedical knowledge-graph backends, a
 - [#41 ToolUniverse](../Papers.md#41) (Gao et al. 2025) — ecosystem for democratizing AI scientists from any open- or closed-weight model; companion to [TxAgent](#general-purpose-biomedical-agents) (#40) and the rest of the Zitnik-lab agent stack.
 - [#48 BioCypher](../Papers.md#48) (Lobentanzer et al. 2025, *Nat Biotech*) — knowledge-graph platform purpose-built for biomedical applications of LLMs.
 - [#67 MCP Servers for biology](../Papers.md#67) (Ruscone et al. 2025, Saez-Rodriguez lab) — Model Context Protocol server implementations as AI-biology interfaces (NeKo, MaBoSS, PhysiCell).
+- [#133 BioContextAI](../Papers.md#133) (Kuehl et al. 2025, *Nat Biotech*) — an open, community registry and reference servers for the Model Context Protocol in biomedicine, standardizing how agentic assistants discover and compose tool servers; its Knowledgebase MCP exposes more than 15 biomedical resources.
+- [#160 Aviary](../Papers.md#160) (Narayanan et al. 2024, FutureHouse) — an extensible "gymnasium" for training language agents on language decision processes, with scientific environments for molecular cloning, literature QA, and protein stability; trained small open-source models matched experts and frontier LLMs at far lower inference cost.
+- [#162 SciAtlas](../Papers.md#162) (Qiao et al. 2026) — a large multidisciplinary academic knowledge graph (43M+ papers, 157M entities, 3B triplets) with a neuro-symbolic "tri-path" retrieval algorithm, pitched as a topological substrate for automated-research agents.
+- [#219 ESCARGOT](../Papers.md#219) (Matsumoto et al. 2025, *Bioinformatics*) — an LLM agent combining a dynamic, Python-executable Graph of Thoughts with biomedical knowledge graphs queried by Cypher (with a vector-database fallback); on the AlzKB Alzheimer's knowledge graph it reached ~88% on open-ended one-hop questions versus ~4% for a vanilla LLM, running deterministic operations as real Python rather than hallucinating them — a hallucination-resistant KG-reasoning pattern a cell-ag knowledge graph could adopt.
+- [#220 PloverDB](../Papers.md#220) (Glen et al. 2025, *Bioinformatics*) — a fully in-memory, pure-Python platform that serves Biolink-compliant knowledge graphs as TRAPI-standard web APIs, roughly 3× faster than a Neo4j-backed equivalent; infrastructure for standing up a cell-ag biomedical knowledge graph as a queryable, standards-compliant API that agents like ESCARGOT can call.
 
 ## Other AI methodology in the AI Tooling column
 
-Two papers in the AI Tooling column live outside the LLM/agent taxonomy above and don't fit any of the eight clusters:
+A handful of AI Tooling-column papers live outside the LLM/agent taxonomy above:
 
 - [#52 BioMedReasoner](../Papers.md#52) (Mulyadi et al. 2025, NeurIPS 2025 AI4Science Workshop) — multi-hop reasoning via path-based relational learning on biomedical knowledge graphs (lives in the [GNN](https://en.wikipedia.org/wiki/Graph_neural_network) row).
 - [#63 Pandi et al.](../Papers.md#63) (2022, *Nat Comms*) — versatile active-learning workflow for optimization of genetic and metabolic networks (lives in the [Active Learning](https://en.wikipedia.org/wiki/Active_learning_(machine_learning)) row).
+- [#197 Epicure](../Papers.md#197) (Radzikowski & Chen 2026) — skip-gram (Metapath2Vec) food-ingredient embeddings trained on 4.14M recipes across seven languages plus a FlavorDB ingredient–compound graph, supporting ingredient pairing and sensory/cuisine navigation; a representation-learning method (in the [Deep Learning](https://en.wikipedia.org/wiki/Deep_learning) row) most relevant to flavor design (see also [Sensory Prediction](./SensoryPrediction.md)).
+- [#4 D-GEX](../Papers.md#4) (Chen et al. 2016, *Bioinformatics*) — a multi-task neural network that infers the expression of ~9,500 target genes from ~1,000 landmark genes, a cost-reduction strategy for profiling cell lines (in the [Deep Learning](https://en.wikipedia.org/wiki/Deep_learning) row); also discussed under [Cellular Engineering](./CellEngineering.md) for single-cell characterization.
+- [#198 ropls](../Papers.md#198) (Thévenot et al. 2015, *J. Proteome Research*) and [#199 mixOmics](../Papers.md#199) (Rohart et al. 2017, *PLoS Computational Biology*) — the canonical R/Bioconductor packages for multivariate chemometrics (PCA / PLS / OPLS-DA) and sparse multi-omics feature selection and integration, respectively (the [Chemometrics](../Taxonomy.md#chemometrics) row); general-purpose statistical workhorses for any LC-MS/NMR metabolomics or multi-omics analysis in cell-ag — spent-media profiling, off-flavor discrimination, condition–phenotype association — and the multivariate engines behind several sensory and bioprocess workflows.
 
 ## Related Software (Not in Matrix)
 
@@ -95,5 +116,5 @@ A growing number of AI-agent tools are released as open-source platforms or comm
 ## Further reading
 
 - Software: [AI Agents & Foundation Models](../Software.md#ai-agents--foundation-models) section in `Software.md`.
-- Adjacent research areas: [AI Evaluation & Benchmarking](./AIEvaluation.md), [Media Optimization](./MediaOptimization.md), [Cellular Engineering](./CellEngineering.md), [Bioprocess Control](./Bioprocess.md), [Sensory Prediction](./SensoryPrediction.md), [Metabolic Modeling](./MetabolicModeling.md).
-- Talks: [AI Agents & Foundation Models for Biology](../OtherResources.md#ai-agents--foundation-models-for-biology) section in `OtherResources.md`.
+- Adjacent research areas: [AI Evaluation & Benchmarking](./AIEvaluation.md), [Media Optimization](./MediaOptimization.md), [Cellular Engineering](./CellEngineering.md), [Bioprocess & Scale-Up](./Bioprocess.md), [Sensory Prediction](./SensoryPrediction.md), [Metabolic Modeling](./MetabolicModeling.md).
+- Talks: [AI Agents & Foundation Models for Biology](../Talks.md#ai-agents--foundation-models-for-biology) section in `Talks.md`.

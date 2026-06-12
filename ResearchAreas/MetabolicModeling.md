@@ -1,6 +1,6 @@
 # Metabolic Modeling
 
-Metabolic modeling sits at the intersection of biochemistry, systems biology, and computational science — and at the intersection of essentially every research area in this library. The cost-driving questions in cellular agriculture — *what minimal medium supports growth?*, *what flux distribution maximizes biomass while suppressing lactate?*, *what gene knockouts increase yield in suspension culture?* — are all metabolic-modeling questions in disguise. This page is a cross-cutting methodology overview rather than a matrix-column research area; the relevant papers and tools are catalogued in the matrix under [Media Optimization](./MediaOptimization.md), [Cellular Engineering](./CellEngineering.md), [Bioprocess Control](./Bioprocess.md), and [AI Tooling / Methodology](./AITooling.md).
+Metabolic modeling sits at the intersection of biochemistry, systems biology, and computational science — and at the intersection of essentially every research area in this library. The cost-driving questions in cellular agriculture — *what minimal medium supports growth?*, *what flux distribution maximizes biomass while suppressing lactate?*, *what gene knockouts increase yield in suspension culture?* — are all metabolic-modeling questions in disguise. This page is a cross-cutting methodology overview rather than a matrix-column research area; the relevant papers and tools are catalogued in the matrix under [Media Optimization](./MediaOptimization.md), [Cellular Engineering](./CellEngineering.md), [Bioprocess & Scale-Up](./Bioprocess.md), and [AI Tooling / Methodology](./AITooling.md).
 
 ## Constraint-based modeling (FBA family)
 
@@ -28,4 +28,4 @@ Despite the activity above, several gaps remain conspicuous for cellular agricul
 
 - Software: [Metabolic Modeling & Strain Design](../Software.md#metabolic-modeling--strain-design) section in `Software.md`.
 - Data: per-species genome-scale metabolic models in the [`Datasets/`](../Datasets/) directory and [Pathways, Metabolism & Metabolic Models](../Databases.md#pathways-metabolism--metabolic-models) in `Databases.md`.
-- Adjacent research areas: [Media Optimization](./MediaOptimization.md), [Cellular Engineering](./CellEngineering.md), [Bioprocess Control](./Bioprocess.md), [AI Tooling / Methodology](./AITooling.md).
+- Adjacent research areas: [Media Optimization](./MediaOptimization.md), [Cellular Engineering](./CellEngineering.md), [Bioprocess & Scale-Up](./Bioprocess.md), [AI Tooling / Methodology](./AITooling.md).
