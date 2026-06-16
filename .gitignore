@@ -16,3 +16,10 @@ AUDIT_REPORT.md
 # Python bytecode
 __pycache__/
 *.pyc
+
+# Local editor settings — per-developer VS Code workspace config
+.vscode/
+
+# Playwright MCP scratch output — console/page dumps from browser automation,
+# regenerated each run and not part of the library
+.playwright-mcp/
