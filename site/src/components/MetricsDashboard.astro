@@ -112,9 +112,10 @@ const datasetsDays = daysAgo(momentum?.datasetsLastModified ?? null);
 <style>
   .sl-container:has(.md) { max-width: none; }
 
-  .md-stats { display: grid; grid-template-columns: repeat(5, max-content); gap: .5rem 2.5rem; padding-bottom: 1.25rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--caail-border); }
-  @media (max-width: 40rem) { .md-stats { grid-template-columns: repeat(3, max-content); } }
-  .md-stat { display: flex; flex-direction: column; }
+  .md-stats { display: flex; flex-wrap: wrap; gap: .5rem 2.5rem; padding-bottom: 1.25rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--caail-border); }
+  /* margin-top:0 cancels Starlight's prose `* + *` rhythm, which otherwise
+   * pushes every stat after the first down 1rem and misaligns the row. */
+  .md-stat { display: flex; flex-direction: column; min-width: 4rem; margin-top: 0; }
   .md-stat-n { font-size: 2.1rem; font-weight: 700; color: var(--caail-primary); line-height: 1; }
   .md-stat-l { font-size: .68rem; letter-spacing: .05em; text-transform: uppercase; color: var(--caail-muted); margin-top: .15rem; }
 
@@ -134,8 +135,10 @@ const datasetsDays = daysAgo(momentum?.datasetsLastModified ?? null);
   .md-val { font-size: .72rem; font-weight: 700; color: var(--caail-muted); font-family: var(--caail-font-mono); }
   .md-row.stub .md-val { color: var(--caail-accent); font-family: var(--caail-font-ui); font-weight: 700; font-size: .64rem; text-transform: uppercase; letter-spacing: .04em; }
 
-  .md-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr)); gap: .85rem; }
-  .md-card { border: 1px solid var(--caail-border); border-radius: 10px; padding: 1rem; }
+  .md-cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .85rem; }
+  @media (max-width: 50rem) { .md-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 26rem) { .md-cards { grid-template-columns: 1fr; } }
+  .md-card { border: 1px solid var(--caail-border); border-radius: 10px; padding: 1rem; margin-top: 0; }
   .md-card-n { display: block; font-size: 1.8rem; font-weight: 700; color: var(--caail-primary); line-height: 1; }
   .md-card-l { font-size: .72rem; color: var(--caail-muted); }
 </style>
