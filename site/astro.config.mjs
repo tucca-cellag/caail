@@ -13,9 +13,11 @@ const REPO_ROOT = fileURLToPath(new URL('../', import.meta.url));
 const BASE = '/caail';
 
 /**
- * Per-file remark wrapper that applies link-rewrite and H1-strip to canonical
- * prose pages only (ResearchAreas/*, Datasets/*, CONTRIBUTING.md).
- * In-repo Starlight MDX (index.mdx, papers/explorer.mdx) are skipped.
+ * Per-file remark wrapper that applies link-rewrite and H1-strip to the
+ * canonical prose pages the site renders. A file qualifies iff it has a
+ * `CAAIL_PAGES` entry — the same map the loader uses to decide what to render —
+ * so the guard can't drift from the rendered set. In-repo Starlight MDX
+ * (site/src/content/docs/**) maps to a non-page id and is skipped.
  */
 function caailProseRemark() {
   return (tree, file) => {
@@ -23,15 +25,11 @@ function caailProseRemark() {
     const abs = file?.history?.[0] ?? file?.path ?? '';
     if (!abs || !abs.startsWith(REPO_ROOT)) return;
     const sourcePath = abs.slice(REPO_ROOT.length); // e.g. "Datasets/Cow.md"
-    // Guard: only act on canonical prose directories / CONTRIBUTING.md.
-    const isProse =
-      /^(ResearchAreas|Datasets)\//.test(sourcePath) ||
-      sourcePath === 'CONTRIBUTING.md' ||
-      sourcePath === 'OtherResources.md' ||
-      sourcePath === 'AIAgentsFoundationModels.md' ||
-      sourcePath === 'ReferenceWorks.md' ||
-      sourcePath === 'Funding.md';
-    if (!isProse) return;
+    // A canonical prose page iff the loader renders it (has a CAAIL_PAGES
+    // entry). Deriving the guard from that map instead of a hardcoded allowlist
+    // keeps the two in lockstep, so a newly added prose page can't silently miss
+    // link-rewrite / H1-strip (the bug that left /taxonomy/ untransformed).
+    if (!CAAIL_PAGES.byId(CAAIL_PAGES.idForSourcePath(sourcePath))) return;
     rewriteCaailLinks({ base: BASE, sourcePath })(tree);
     stripLeadingH1()(tree);
   };
