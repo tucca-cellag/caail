@@ -51,6 +51,7 @@ const SPECIAL_ROUTES: Record<string, string> = {
   'Software.md': '/software/',
   'Databases.md': '/databases/',
   'Talks.md': '/talks/',
+  'AwesomeLists.md': '/awesome-lists/',
   'Primers/CellAg.md': '/primers/cell-ag/',
   'Primers/AI.md': '/primers/ai/',
 };

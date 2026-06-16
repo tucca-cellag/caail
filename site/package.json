@@ -5,6 +5,7 @@
   "scripts": {
     "parse": "tsx scripts/parser/generate-data.ts",
     "fetch:citations": "tsx scripts/parser/fetch-citations.ts",
+    "fetch:awesome-lists": "tsx scripts/parser/fetch-awesome-metrics.ts",
     "lint:papers": "tsx scripts/parser/lint-papers.ts",
     "test": "vitest run",
     "dev": "pnpm parse && astro dev",

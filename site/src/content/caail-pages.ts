@@ -229,7 +229,7 @@ const PAGES: Record<string, PageMeta> = {
     group: 'top',
     order: 2,
     description:
-      'Field overviews, courses, books, editorials, ecosystem initiatives, and curated bibliographies for cellular agriculture and AI.',
+      'Journal editorials and opinion on AI in science, and cellular-agriculture ecosystem initiatives — research centers, consortia, and convening efforts.',
   },
   taxonomy: {
     title: 'Matrix Taxonomy',
@@ -246,6 +246,22 @@ const PAGES: Record<string, PageMeta> = {
     order: 4,
     description:
       'The connective hub for AI agents and biological foundation models in cellular agriculture — agent frameworks, single-cell foundation models, the virtual-cell initiative, and where each is catalogued across CAAIL.',
+  },
+  'reference-works': {
+    title: 'Reference Works',
+    sidebarLabel: 'Reference Works',
+    group: 'top',
+    order: 5,
+    description:
+      'Reference textbooks and multi-volume works for cellular agriculture — the foundational cell-ag textbook and the Encyclopedia of Meat Sciences, with a DOI-resolvable chapter index of the cell-ag-relevant subset.',
+  },
+  funding: {
+    title: 'Funding',
+    sidebarLabel: 'Funding',
+    group: 'top',
+    order: 6,
+    description:
+      'Funding bodies and funding opportunities for cellular-agriculture research — the organizations that fund the field and the grant programs and research-portfolio mechanisms to follow.',
   },
 };
 
@@ -282,6 +298,7 @@ export const CAAIL_PAGES = {
       // hyphenated route id (the default lowercasing would merge the words).
       if (stripped === 'OtherResources') return 'other-resources';
       if (stripped === 'AIAgentsFoundationModels') return 'ai-agents-foundation-models';
+      if (stripped === 'ReferenceWorks') return 'reference-works';
       return stripped.toLowerCase();
     }
 

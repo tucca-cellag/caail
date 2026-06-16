@@ -18,7 +18,10 @@ We organize and host links to public resources across key areas of research:
 * [Software & Code](./Software.md): Links to open-source tools, code repositories, and specialized algorithms used for media optimization, bioreactor modeling, and image analysis.
 * [Datasets](./Datasets/): Fixed data artifacts — corpora, atlases, sequencing deposits, and model files you would train or benchmark a model *on*, organized into per-species pages (cow, pig, chicken, fish, and more) plus cross-species reference and AI/ML benchmark pages.
 * [Databases](./Databases.md): Living, queryable resources — repositories, ontologies, spectral libraries, and structure / compound / pathway databases — that you query for reference, annotation, or lookup. Also catalogues GFI's alternative-protein ecosystem directories.
-* [Other Educational Materials](./OtherResources.md): Videos and other resources relevant to the use of AI in cellular agriculture.
+* [Reference Works](./ReferenceWorks.md): Reference textbooks and multi-volume works — the foundational cell-ag textbook and the *Encyclopedia of Meat Sciences*, with a DOI-resolvable chapter index.
+* [Awesome Lists](./AwesomeLists.md): Community-maintained "awesome lists" and curated bibliographies for the AI, single-cell, and bioinformatics literature cell-ag work draws on (rendered with GitHub metrics on the site).
+* [Funding](./Funding.md): Funding bodies and funding opportunities — the organizations that fund the field and the grant programs and research-portfolio mechanisms to follow.
+* [Other Resources](./OtherResources.md): Journal editorials and opinion on AI in science, and cellular-agriculture ecosystem initiatives (research centers, consortia, and convening efforts).
 
 # Companion Zotero Library
 CAAIL has a companion [Zotero group library](https://www.zotero.org/groups/6549203/caail/library) maintained by core TUCCA members, holding the full-text PDFs of papers under consideration. Its purpose is to give AI coding agents running on TUCCA members' machines direct access to paper full text — so that resources are classified from the actual methods rather than abstracts alone. It is a members-only working library, not a contribution channel: to suggest a resource, use the GitHub workflow in [CONTRIBUTING.md](./CONTRIBUTING.md).

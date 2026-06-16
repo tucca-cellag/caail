@@ -115,8 +115,9 @@ Summary: One to three sentences describing what it is and, importantly, *how it 
 1. **Train-on artifacts → the `Datasets/` directory.** ML pretraining corpora, perturbation atlases, downloadable benchmark datasets, individual GEM model artifacts, per-species sequencing deposits.
 2. **Query / lookup resources → `Databases.md`.** Repositories, ontologies, spectral libraries, structure / compound / pathway databases.
 3. **"Database" in the name, or any directory / registry / tracker → `Databases.md`** — even when the content is people, companies, or regulation rather than scientific data.
-4. **Initiatives and programs → `OtherResources.md`.** Research programs, funding mechanisms, and similar non-database, non-tool resources.
-5. **Borderline cases → dual-listed.** Resources that are genuinely both software and database (e.g. GNPS) get a full entry in their primary-home file and a short cross-referenced entry in the other.
+4. **Funding → `Funding.md`.** Funding bodies (organizations that fund the field) and funding opportunities (grant programs, research-portfolio mechanisms).
+5. **Non-funding ecosystem initiatives → `OtherResources.md`.** Research centers, consortia, and convening initiatives that conduct or coordinate (rather than fund) cell-ag work.
+6. **Borderline cases → dual-listed.** Resources that are genuinely both software and database (e.g. GNPS) get a full entry in their primary-home file and a short cross-referenced entry in the other.
 
 **Benchmark placement (Paper + Dataset + Database triangle).** AI/ML benchmarks have a distinct artifact shape — a paper, a downloadable eval dataset, and (sometimes) a live leaderboard. Place each aspect in its appropriate file:
 
@@ -127,9 +128,9 @@ Summary: One to three sentences describing what it is and, importantly, *how it 
 
 All entries cross-link via the established `Companion to [Papers.md ref #N]` convention.
 
-### `Talks.md`, `Primers/`, and `OtherResources.md`
+### Educational & contextual material — `Talks.md`, `Primers/`, `ReferenceWorks.md`, `AwesomeLists.md`, `Funding.md`, and `OtherResources.md`
 
-All three are bulleted lists under category headings:
+Each is a bulleted list under category headings:
 
 ```markdown
 * [<Title>](<URL>)
@@ -141,14 +142,19 @@ All three are bulleted lists under category headings:
   series). The site renders `Talks.md` as inline players on `/talks/`, so prefer canonical YouTube
   watch URLs.
 - **Newcomer onboarding material → the `Primers/` directory** — field-overview videos, intro
-  primers, and learning playlists aimed at someone *new to the field*. Cell-ag orientation goes in
-  `Primers/CellAg.md`; AI/ML learning material goes in `Primers/AI.md`. These render at
-  `/primers/cell-ag/` and `/primers/ai/` with videos and playlists embedded inline, so prefer
-  canonical YouTube watch / playlist URLs; internal cross-links to the rest of the library use
-  repo-relative paths (e.g. `../Papers.md`, `../OtherResources.md#courses`).
-- **Everything else educational or contextual → `OtherResources.md`** — courses, books, journal
-  editorials and opinion, ecosystem initiatives and programs, and curated bibliographies /
-  "awesome lists".
+  primers, learning playlists, and **cellular-agriculture courses** (newcomer entry points). Cell-ag
+  orientation goes in `Primers/CellAg.md`; AI/ML learning material goes in `Primers/AI.md`. These
+  render at `/primers/cell-ag/` and `/primers/ai/` with videos and playlists embedded inline, so
+  prefer canonical YouTube watch / playlist URLs; internal cross-links to the rest of the library use
+  repo-relative paths (e.g. `../Papers.md`, `../ReferenceWorks.md`).
+- **Reference textbooks and multi-volume reference works → `ReferenceWorks.md`** — the foundational
+  cell-ag textbook and the *Encyclopedia of Meat Sciences*, with DOI-resolvable chapter indexes.
+- **Curated bibliographies and "awesome lists" (community GitHub indexes) → `AwesomeLists.md`** —
+  rendered as searchable cards with GitHub star / last-updated metrics on `/awesome-lists/`.
+- **Funding bodies and funding opportunities → `Funding.md`** (see rules 4–5 above).
+- **Journal editorials, opinion, and non-funding ecosystem initiatives → `OtherResources.md`** —
+  field commentary and the research centers, consortia, and convening efforts of the adjacent
+  cell-ag universe.
 
 If you're adding a kind of resource that doesn't fit an existing `##` section in the chosen file,
 create a new `##` section rather than mixing it into an existing list.

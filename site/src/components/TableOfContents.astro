@@ -14,6 +14,7 @@
  */
 import Default from '@astrojs/starlight/components/TableOfContents.astro';
 import { catalogGroups, type CatalogKind } from '../lib/catalog-groups';
+import { awesomeGroups } from '../lib/awesome-groups';
 import { talkSections } from '../lib/talk-sections';
 
 const route = Astro.locals.starlightRoute;
@@ -35,6 +36,11 @@ if (route.toc && route.toc.items.length > 0) {
     route.toc.items = [
       overview,
       ...talkSections().map((s) => ({ depth: 2, slug: s.slug, text: s.heading, children: [] })),
+    ];
+  } else if (path.endsWith('/awesome-lists')) {
+    route.toc.items = [
+      overview,
+      ...awesomeGroups().map((g) => ({ depth: 2, slug: g.slug, text: g.label, children: [] })),
     ];
   }
 }

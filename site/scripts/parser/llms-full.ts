@@ -40,6 +40,9 @@ export function llmsFullSources(repoRoot: string = REPO_ROOT): string[] {
     ...dirMarkdown(repoRoot, 'ResearchAreas'),
     ...dirMarkdown(repoRoot, 'Primers'),
     'OtherResources.md',
+    'Funding.md',
+    'ReferenceWorks.md',
+    'AwesomeLists.md',
     'Talks.md',
     'CONTRIBUTING.md',
   ];

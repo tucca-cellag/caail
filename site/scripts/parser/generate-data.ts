@@ -22,6 +22,7 @@ import { computeCounts } from './counts.js';
 import { buildCatalogModel } from './catalog.js';
 import { buildTalksModel, talkItemCount } from './talks.js';
 import { buildPrimersModel } from './primers.js';
+import { buildAwesomeListsModel } from './awesome-lists.js';
 import { buildGraphModel } from './graph.js';
 import { CitationCacheSchema, type CitationCache } from './citations.js';
 import { buildMetricsModel } from './metrics.js';
@@ -33,6 +34,7 @@ import {
   CatalogSchema,
   TalksSchema,
   PrimersSchema,
+  AwesomeListsSchema,
   GraphSchema,
   MetricsSchema,
   RecentSchema,
@@ -102,6 +104,7 @@ export function generateData(
   graphEdges: number;
   recentEntries: number;
   taxonomyDefs: number;
+  awesomeLists: number;
 } {
   // Build and validate the papers model.
   const model = buildPapersModel();
@@ -113,6 +116,10 @@ export function generateData(
   const catalog = buildCatalogModel();
   const talks = buildTalksModel();
   const primers = buildPrimersModel();
+
+  // Build the Awesome Lists model (AwesomeLists.md + the committed GitHub-metrics
+  // cache, folded in offline; absent cache ⇒ no metrics).
+  const awesome = buildAwesomeListsModel();
 
   // Build and validate the paper network (shared-author + citation edges) and
   // metrics. The citation cache is an optional committed input; absent ⇒ no
@@ -133,6 +140,7 @@ export function generateData(
   CatalogSchema.parse(catalog);
   TalksSchema.parse(talks);
   PrimersSchema.parse(primers);
+  AwesomeListsSchema.parse(awesome);
   GraphSchema.parse(graph);
   MetricsSchema.parse(metrics);
   RecentSchema.parse(recent);
@@ -211,6 +219,13 @@ export function generateData(
     'utf-8',
   );
 
+  // Write awesome-lists.json.
+  writeFileSync(
+    join(outDir, 'awesome-lists.json'),
+    JSON.stringify(awesome, null, 2) + '\n',
+    'utf-8',
+  );
+
   // Write graph.json.
   writeFileSync(
     join(outDir, 'graph.json'),
@@ -249,6 +264,7 @@ export function generateData(
     graphEdges: graph.edges.length,
     recentEntries: recent.length,
     taxonomyDefs: Object.keys(taxonomy.definitions).length,
+    awesomeLists: awesome.groups.reduce((n, g) => n + g.items.length, 0),
   };
 }
 
@@ -281,6 +297,7 @@ if (isMain) {
       graphEdges,
       recentEntries,
       taxonomyDefs,
+      awesomeLists,
     } = generateData();
     // Full-text agent index (public/llms-full.txt) — generated alongside the
     // JSON, but written to public/ rather than the data dir, so it lives in the
@@ -292,6 +309,7 @@ if (isMain) {
       `parse: wrote papers.json (${papersRefs} references), counts.json, ` +
         `catalog.json (${catalogEntries} entries), talks.json (${talks} talks), ` +
         `primers.json (${primers} primers), ` +
+        `awesome-lists.json (${awesomeLists} lists), ` +
         `graph.json (${graphNodes} nodes / ${graphEdges} edges), metrics.json, ` +
         `recent.json (${recentEntries} entries), ` +
         `taxonomy.json (${taxonomyDefs} definitions), ` +
