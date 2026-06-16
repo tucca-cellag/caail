@@ -120,7 +120,7 @@ export default defineConfig({
           tag: 'meta',
           attrs: {
             name: 'google-site-verification',
-            content: 'gekisCZD13qF4N9-VeRYE2n0kQT-DF3HX63qxV9pm0M',
+            content: 'p-AzN61G83Y9JI-9Y_7EmzsfcXDpNbnQto3Wmc3w0NQ',
           },
         },
         // Cloudflare Web Analytics — cookieless, privacy-light usage stats.
