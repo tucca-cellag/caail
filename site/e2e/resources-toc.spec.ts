@@ -94,6 +94,32 @@ test('ai-agents-foundation-models has no serious/critical a11y violations', asyn
 });
 
 // ---------------------------------------------------------------------------
+// Taxonomy.md — the prose remark guard must transform it like every other page
+// (regression guard for the CAAIL_PAGES-derived caailProseRemark guard)
+// ---------------------------------------------------------------------------
+
+test('taxonomy renders a single h1 and rewrites its internal links', async ({ page }) => {
+  await page.goto('./taxonomy/');
+  // stripLeadingH1 ran: only Starlight's page-title h1 remains (not also the
+  // body's "# Matrix taxonomy …" — that duplicate was the guard-gap symptom).
+  await expect(page.locator('h1')).toHaveCount(1);
+  // rewriteCaailLinks ran: the lone internal ./Papers.md link became a GitHub
+  // blob URL (Papers isn't a rendered page) instead of a dead ./Papers.md.
+  await expect(
+    page.locator('main a[href^="https://github.com/tucca-cellag/caail/blob/main/Papers.md"]').first(),
+  ).toBeVisible();
+  // no raw repo-relative .md link leaks through
+  await expect(page.locator('main a[href$=".md"]:not([href*="github.com"])')).toHaveCount(0);
+});
+
+test('taxonomy has no serious/critical a11y violations', async ({ page }) => {
+  await page.goto('./taxonomy/');
+  const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
+  const serious = results.violations.filter((v) => ['serious', 'critical'].includes(v.impact ?? ''));
+  expect(serious, JSON.stringify(serious, null, 2)).toEqual([]);
+});
+
+// ---------------------------------------------------------------------------
 // Software/Databases catalog cards (right-rail TOC + surfaced hyperlinks)
 // ---------------------------------------------------------------------------
 
