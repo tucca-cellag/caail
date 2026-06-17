@@ -133,7 +133,7 @@ test('awesome-lists has no serious/critical a11y violations', async ({ page }) =
 
 test('funding renders its bodies + opportunities and rewritten links', async ({ page }) => {
   await page.goto('./funding/');
-  await expect(page.getByRole('heading', { name: 'Funding Bodies' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Funding Organizations' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Funding Opportunities & Programs' })).toBeVisible();
   // a rendered-prose cross-link resolves to a site route (./OtherResources.md → route)
   await expect(page.locator('main a[href="/caail/other-resources/"]').first()).toBeVisible();

@@ -256,12 +256,12 @@ const PAGES: Record<string, PageMeta> = {
       'Reference textbooks and multi-volume works for cellular agriculture — the foundational cell-ag textbook and the Encyclopedia of Meat Sciences, with a DOI-resolvable chapter index of the cell-ag-relevant subset.',
   },
   funding: {
-    title: 'Funding',
-    sidebarLabel: 'Funding',
+    title: 'Funding & Grants',
+    sidebarLabel: 'Funding & Grants',
     group: 'top',
     order: 6,
     description:
-      'Funding bodies and funding opportunities for cellular-agriculture research — the organizations that fund the field and the grant programs and research-portfolio mechanisms to follow.',
+      'Funding organizations and funding opportunities for cellular-agriculture research — the organizations that fund the field and the grant programs and research-portfolio mechanisms to follow.',
   },
 };
 

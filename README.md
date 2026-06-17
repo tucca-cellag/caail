@@ -20,7 +20,7 @@ We organize and host links to public resources across key areas of research:
 * [Databases](./Databases.md): Living, queryable resources — repositories, ontologies, spectral libraries, and structure / compound / pathway databases — that you query for reference, annotation, or lookup. Also catalogues GFI's alternative-protein ecosystem directories.
 * [Reference Works](./ReferenceWorks.md): Reference textbooks and multi-volume works — the foundational cell-ag textbook and the *Encyclopedia of Meat Sciences*, with a DOI-resolvable chapter index.
 * [Awesome Lists](./AwesomeLists.md): Community-maintained "awesome lists" and curated bibliographies for the AI, single-cell, and bioinformatics literature cell-ag work draws on (rendered with GitHub metrics on the site).
-* [Funding](./Funding.md): Funding bodies and funding opportunities — the organizations that fund the field and the grant programs and research-portfolio mechanisms to follow.
+* [Funding & Grants](./Funding.md): Funding organizations and funding opportunities — the organizations that fund the field and the grant programs and research-portfolio mechanisms to follow.
 * [Other Resources](./OtherResources.md): Journal editorials and opinion on AI in science, and cellular-agriculture ecosystem initiatives (research centers, consortia, and convening efforts).
 
 # Companion Zotero Library

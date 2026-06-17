@@ -160,7 +160,7 @@ export default defineConfig({
         { label: 'Talks & Videos', link: '/talks/' },
         { label: 'Other Resources', link: '/other-resources/' },
         { label: 'Reference Works', link: '/reference-works/' },
-        { label: 'Funding', link: '/funding/' },
+        { label: 'Funding & Grants', link: '/funding/' },
         { label: 'By the Numbers', link: '/by-the-numbers/' },
         { label: 'Contributing', link: '/contributing/' },
         { label: 'How to Cite', link: '/cite/' },

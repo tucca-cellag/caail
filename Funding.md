@@ -1,8 +1,8 @@
-# Funding
+# Funding & Grants
 
-Funding bodies and funding opportunities for cellular-agriculture research — the organizations that fund the field, and the grant programs and research-portfolio mechanisms researchers can apply to or follow. CAAIL itself catalogues *outputs* (papers, software, datasets); the programs below produce primary outputs that become cataloguable in CAAIL's core files as they are published. Research *centers and consortia* (which conduct rather than fund research) live in [Other Resources / Cell-Ag Ecosystem Initiatives](./OtherResources.md#cell-ag-ecosystem-initiatives); the *directories and databases* these organizations maintain live in [Databases.md](./Databases.md#ecosystem--industry-directories).
+Funding organizations and funding opportunities for cellular-agriculture research — the organizations that fund the field, and the grant programs and research-portfolio mechanisms researchers can apply to or follow. CAAIL itself catalogues *outputs* (papers, software, datasets); the programs below produce primary outputs that become cataloguable in CAAIL's core files as they are published. Research *centers and consortia* (which conduct rather than fund research) live in [Other Resources / Cell-Ag Ecosystem Initiatives](./OtherResources.md#cell-ag-ecosystem-initiatives); the *directories and databases* these organizations maintain live in [Databases.md](./Databases.md#ecosystem--industry-directories).
 
-## Funding Bodies
+## Funding Organizations
 
 Organizations that fund cellular-agriculture and alternative-protein research.
 

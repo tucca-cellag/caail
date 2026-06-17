@@ -115,7 +115,7 @@ Summary: One to three sentences describing what it is and, importantly, *how it 
 1. **Train-on artifacts → the `Datasets/` directory.** ML pretraining corpora, perturbation atlases, downloadable benchmark datasets, individual GEM model artifacts, per-species sequencing deposits.
 2. **Query / lookup resources → `Databases.md`.** Repositories, ontologies, spectral libraries, structure / compound / pathway databases.
 3. **"Database" in the name, or any directory / registry / tracker → `Databases.md`** — even when the content is people, companies, or regulation rather than scientific data.
-4. **Funding → `Funding.md`.** Funding bodies (organizations that fund the field) and funding opportunities (grant programs, research-portfolio mechanisms).
+4. **Funding → `Funding.md`.** Funding organizations (that fund the field) and funding opportunities (grant programs, research-portfolio mechanisms).
 5. **Non-funding ecosystem initiatives → `OtherResources.md`.** Research centers, consortia, and convening initiatives that conduct or coordinate (rather than fund) cell-ag work.
 6. **Borderline cases → dual-listed.** Resources that are genuinely both software and database (e.g. GNPS) get a full entry in their primary-home file and a short cross-referenced entry in the other.
 
@@ -151,7 +151,7 @@ Each is a bulleted list under category headings:
   cell-ag textbook and the *Encyclopedia of Meat Sciences*, with DOI-resolvable chapter indexes.
 - **Curated bibliographies and "awesome lists" (community GitHub indexes) → `AwesomeLists.md`** —
   rendered as searchable cards with GitHub star / last-updated metrics on `/awesome-lists/`.
-- **Funding bodies and funding opportunities → `Funding.md`** (see rules 4–5 above).
+- **Funding organizations and funding opportunities → `Funding.md`** (see rules 4–5 above).
 - **Journal editorials, opinion, and non-funding ecosystem initiatives → `OtherResources.md`** —
   field commentary and the research centers, consortia, and convening efforts of the adjacent
   cell-ag universe.

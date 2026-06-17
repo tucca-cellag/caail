@@ -27,7 +27,7 @@ describe('CAAIL_PAGES', () => {
     expect(CAAIL_PAGES.byId('other-resources')).toMatchObject({ group: 'top', title: 'Other Resources' });
     expect(CAAIL_PAGES.byId('ai-agents-foundation-models')).toMatchObject({ group: 'top', title: 'AI Agents & Foundation Models' });
     expect(CAAIL_PAGES.byId('reference-works')).toMatchObject({ group: 'top', title: 'Reference Works' });
-    expect(CAAIL_PAGES.byId('funding')).toMatchObject({ group: 'top', title: 'Funding' });
+    expect(CAAIL_PAGES.byId('funding')).toMatchObject({ group: 'top', title: 'Funding & Grants' });
   });
   it('all() returns {id,...meta} objects', () => {
     const all = CAAIL_PAGES.all();
