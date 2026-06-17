@@ -1,0 +1,30 @@
+/* Metrics row for the Awesome Lists cards — layered on top of the shared
+ * catalog-browser.css card styles. The star/updated stats sit between the repo
+ * title and its description. */
+.al-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .55rem;
+  margin: 0;
+  font-size: .68rem;
+  color: var(--caail-muted);
+}
+.al-stat {
+  display: inline-flex;
+  align-items: center;
+  gap: .2rem;
+  white-space: nowrap;
+}
+/* The star glyph picks up the accent so the count reads as a metric, not prose. */
+.al-stat [aria-hidden] { color: var(--caail-accent); }
+.al-archived {
+  font-size: .6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  padding: .05rem .35rem;
+  border-radius: 4px;
+  color: var(--caail-muted);
+  background: color-mix(in oklab, var(--caail-border) 50%, transparent);
+}

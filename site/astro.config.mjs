@@ -28,7 +28,9 @@ function caailProseRemark() {
       /^(ResearchAreas|Datasets)\//.test(sourcePath) ||
       sourcePath === 'CONTRIBUTING.md' ||
       sourcePath === 'OtherResources.md' ||
-      sourcePath === 'AIAgentsFoundationModels.md';
+      sourcePath === 'AIAgentsFoundationModels.md' ||
+      sourcePath === 'ReferenceWorks.md' ||
+      sourcePath === 'Funding.md';
     if (!isProse) return;
     rewriteCaailLinks({ base: BASE, sourcePath })(tree);
     stripLeadingH1()(tree);
@@ -151,11 +153,14 @@ export default defineConfig({
         ] },
         { label: 'Software', link: '/software/' },
         { label: 'Databases', link: '/databases/' },
+        { label: 'Awesome Lists', link: '/awesome-lists/' },
         { label: 'AI Agents & Foundation Models', link: '/ai-agents-foundation-models/' },
         { label: 'Datasets (by species)', items: groupItems('datasets') },
         { label: 'Research Areas', items: groupItems('research-areas') },
         { label: 'Talks & Videos', link: '/talks/' },
         { label: 'Other Resources', link: '/other-resources/' },
+        { label: 'Reference Works', link: '/reference-works/' },
+        { label: 'Funding & Grants', link: '/funding/' },
         { label: 'By the Numbers', link: '/by-the-numbers/' },
         { label: 'Contributing', link: '/contributing/' },
         { label: 'How to Cite', link: '/cite/' },

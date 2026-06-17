@@ -19,8 +19,14 @@ Reference reading and structured courses for the science and the bioprocess-engi
 
 * [MEAT by Bruce Friedrich](https://meatbook.org/) — book by GFI's founder making the case for cellular agriculture and alternative proteins.
 * [Foundations of Chemical and Biological Engineering I](https://eng.libretexts.org/Bookshelves/Chemical_Engineering/Foundations_of_Chemical_and_Biological_Engineering_I_(Verret_Qiao_Barghout)) (Verret, Qiao & Barghout, UBC) — an open LibreTexts textbook covering process diagrams, reaction chemistry, mass and energy balances, and process control; foundational background for the bioprocess-engineering side of cultivated-meat scale-up.
-* [Cellular agriculture courses](../OtherResources.md#courses) — university courses on cellular agriculture, including the TUCCA BME 173/174 lecture-and-lab sequence.
-* [Books and reference works](../OtherResources.md#books) — the foundational cell-ag textbook and the *Encyclopedia of Meat Sciences* reference shelf.
+* [Books and reference works](../ReferenceWorks.md) — the foundational cell-ag textbook and the *Encyclopedia of Meat Sciences* reference shelf, with a DOI-resolvable chapter index.
+* [Cellular Agriculture Courses (TUCCA)](https://sites.tufts.edu/cellagcourse/) — the Tufts University Center for Cellular Agriculture's open course-materials site, focused on the bioengineering behind cultivated meat, with materials shared for educators and students.
+* [Cellular Agriculture and Biofabricated Foods (BME 173)](https://sites.tufts.edu/cellagcourse/cellular-agriculture-and-biofabricated-foods-bme-173/) — the TUCCA lecture course introducing the fundamentals of cellular agriculture and biofabricated foods.
+* [Cellular Agriculture and Cultured Meat Lab (BME 174)](https://sites.tufts.edu/cellagcourse/cell-ag-and-cultured-meat-lab-bme-174/) — the hands-on TUCCA lab course: students isolate livestock cells, differentiate them into fat and muscle tissue, generate cultured meat, and analyze the constructs.
+* [Sustainable Materials (BME 0193)](https://sites.tufts.edu/cellagcourse/sustainable-materials-course-bme-0193/) — a TUCCA course on the use of cellular agriculture in the materials industry.
+* [TUCCA Education — Courses](https://cellularagriculture.tufts.edu/education/courses) — the center's official course listing on its main site.
+* [Cellular Agriculture – Precision Fermentation and Cultured Meat (Advanced Course)](https://biotechdelft.com/courses/cellular-agriculture/) — a postgraduate advanced course on cellular-agriculture bioprocessing and product development (Biotech Delft / TU Delft).
+* [University of Minnesota — Cellular Bioprocess Technology Summer Course](https://cbt.cems.umn.edu/) — an intensive short course on cellular bioprocess technology, with an optional half-day add-on workshop on machine learning in bioprocessing.
 
 ## See AI applied to cell-ag
 

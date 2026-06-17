@@ -15,16 +15,23 @@ describe('CAAIL_PAGES', () => {
     expect(CAAIL_PAGES.idForSourcePath('OtherResources.md')).toBe('other-resources');
     expect(CAAIL_PAGES.idForSourcePath('AIAgentsFoundationModels')).toBe('ai-agents-foundation-models');
     expect(CAAIL_PAGES.idForSourcePath('AIAgentsFoundationModels.md')).toBe('ai-agents-foundation-models');
+    // ReferenceWorks needs an explicit hyphenated id (default lowercasing → "referenceworks")
+    expect(CAAIL_PAGES.idForSourcePath('ReferenceWorks')).toBe('reference-works');
+    expect(CAAIL_PAGES.idForSourcePath('ReferenceWorks.md')).toBe('reference-works');
+    // single-word top-level files lowercase cleanly
+    expect(CAAIL_PAGES.idForSourcePath('Funding')).toBe('funding');
   });
   it('returns title + sidebar metadata by id', () => {
     expect(CAAIL_PAGES.byId('research-areas/bioprocess')?.title).toBe('Bioprocess control');
     expect(CAAIL_PAGES.byId('datasets/cow')?.title).toContain('Cow');
     expect(CAAIL_PAGES.byId('other-resources')).toMatchObject({ group: 'top', title: 'Other Resources' });
     expect(CAAIL_PAGES.byId('ai-agents-foundation-models')).toMatchObject({ group: 'top', title: 'AI Agents & Foundation Models' });
+    expect(CAAIL_PAGES.byId('reference-works')).toMatchObject({ group: 'top', title: 'Reference Works' });
+    expect(CAAIL_PAGES.byId('funding')).toMatchObject({ group: 'top', title: 'Funding & Grants' });
   });
   it('all() returns {id,...meta} objects', () => {
     const all = CAAIL_PAGES.all();
-    expect(all.length).toBe(27);
+    expect(all.length).toBe(29);
     const cow = all.find((p) => p.id === 'datasets/cow');
     expect(cow).toMatchObject({ id: 'datasets/cow', group: 'datasets' });
     expect(typeof cow?.sidebarLabel).toBe('string');

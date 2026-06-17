@@ -28,7 +28,7 @@ test('cell-ag primer embeds the field-foundation videos and resolves its nav lin
   expect(await page.locator('lite-youtube').count()).toBe(5); // the five field-foundation videos
   // Internal CAAIL nav cards: same-tab links to real site routes (with anchors kept).
   await expect(page.locator('a.primer-nav[href="/caail/papers/explorer/"]')).toHaveCount(1);
-  await expect(page.locator('a.primer-nav[href="/caail/other-resources/#courses"]')).toHaveCount(1);
+  await expect(page.locator('a.primer-nav[href="/caail/reference-works/"]')).toHaveCount(1);
   await expect(page.locator('a.primer-nav[href="/caail/primers/ai/"]')).toHaveCount(1);
   // No repo-relative .md link leaks through (all rewritten to routes/GitHub).
   await expect(page.locator('main a[href$=".md"]:not([href*="github.com"])')).toHaveCount(0);

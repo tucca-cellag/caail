@@ -187,6 +187,59 @@ export const PrimersSchema = z.object({
   primers: z.array(PrimerSchema),
 });
 
+// ---------------------------------------------------------------------------
+// awesome-lists.json — the AwesomeLists.md curated-bibliography card page
+// ---------------------------------------------------------------------------
+
+/**
+ * One curated "awesome list" — a GitHub repo plus its (optional) live metrics.
+ * `stars` / `pushedAt` / `archived` come from the committed GitHub cache folded
+ * in at parse time; all three are null when the cache lacks the repo (or there
+ * is no cache), so the card renders without metrics. `repo` is the `owner/repo`
+ * key used to look the metrics up; null for a non-GitHub URL.
+ */
+export const AwesomeListItemSchema = z.object({
+  /** Display name — the bullet's link text, e.g. "seandavi/awesome-single-cell" */
+  name: z.string(),
+  /** Canonical home URL (the bullet's link target) */
+  url: z.string().url(),
+  /** GitHub `owner/repo` slug parsed from the URL; null for non-GitHub links */
+  repo: z.string().nullable(),
+  /** Plain-text description (after the link), for the search index */
+  summary: z.string(),
+  /** The same description rendered to HTML, with repo-relative `.md` links
+   *  rewritten to site routes (via rewriteCaailLinks) */
+  summaryHtml: z.string(),
+  /** GitHub stargazer count from the cache; null when unknown */
+  stars: z.number().int().nonnegative().nullable(),
+  /** ISO timestamp of the repo's last push from the cache; null when unknown */
+  pushedAt: z.string().nullable(),
+  /** Whether GitHub marks the repo archived; null when unknown */
+  archived: z.boolean().nullable(),
+});
+
+export const AwesomeListGroupSchema = z.object({
+  /** H2 group label, e.g. "General bioinformatics". The anchor slug is derived
+   *  at render time from this label via awesome-groups.groupSlug (single source
+   *  of truth, mirroring how the catalog derives group slugs). */
+  label: z.string(),
+  items: z.array(AwesomeListItemSchema),
+});
+
+/**
+ * Schema for awesome-lists.json — the AwesomeLists.md curated-bibliography page,
+ * grouped by H2 section, with optional GitHub metrics folded in from the cache.
+ */
+export const AwesomeListsSchema = z.object({
+  /** H1 title of AwesomeLists.md */
+  title: z.string(),
+  /** Lede paragraph (plain text) above the groups; '' if none */
+  lead: z.string(),
+  groups: z.array(AwesomeListGroupSchema),
+  /** ISO timestamp of the metrics cache fold-in; null when no cache was present */
+  generatedAt: z.string().nullable(),
+});
+
 /**
  * Schema for counts.json — aggregate stats across all canonical content files.
  */
@@ -402,6 +455,9 @@ export type PrimerItem = z.infer<typeof PrimerItemSchema>;
 export type PrimerSection = z.infer<typeof PrimerSectionSchema>;
 export type Primer = z.infer<typeof PrimerSchema>;
 export type Primers = z.infer<typeof PrimersSchema>;
+export type AwesomeListItem = z.infer<typeof AwesomeListItemSchema>;
+export type AwesomeListGroup = z.infer<typeof AwesomeListGroupSchema>;
+export type AwesomeLists = z.infer<typeof AwesomeListsSchema>;
 export type GraphNode = z.infer<typeof GraphNodeSchema>;
 export type GraphEdge = z.infer<typeof GraphEdgeSchema>;
 export type CitationEdge = z.infer<typeof CitationEdgeSchema>;

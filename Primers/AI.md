@@ -19,7 +19,7 @@ Once you have the basics, these are the higher-level talks and references.
 
 * [AI Agents & Foundation Models for Biology talks](../Talks.md#ai-agents-foundation-models-for-biology) — agentic AI, foundation models, and language-model-based scientific reasoning, many from the Broad Institute's MIA series.
 * [AI Agents & Foundation Models hub](../AIAgentsFoundationModels.md) — the connective page for agent frameworks, single-cell foundation models, and the virtual-cell initiative (Arc's State / Stack program, the open Virtual Cell Challenge, and Cell2Sentence).
-* [Curated bibliographies & awesome lists](../OtherResources.md#curated-bibliographies--awesome-lists) — community-maintained indexes for the AI / single-cell / bioinformatics literature.
+* [Curated bibliographies & awesome lists](../AwesomeLists.md) — community-maintained indexes for the AI / single-cell / bioinformatics literature, with GitHub star and last-updated metrics.
 * [Stanford CS224N: NLP with Deep Learning (Spring 2024)](https://www.youtube.com/playlist?list=PLoROMvodv4rOaMFbaqxPDoLWjDaRAdP9D) — Stanford's NLP course covering self-attention, Transformers, and modern LLM architectures.
 
 ## Where AI shows up in CAAIL

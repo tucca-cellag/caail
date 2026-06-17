@@ -28,16 +28,18 @@ describe('rewritePrimerUrl', () => {
       internal: true,
     });
     expect(rewritePrimerUrl('../Software.md', 'Primers').url).toBe('/caail/software/');
+    expect(rewritePrimerUrl('../AwesomeLists.md', 'Primers').url).toBe('/caail/awesome-lists/');
     expect(rewritePrimerUrl('../Talks.md#applied-ai-ml-for-cellular-agriculture', 'Primers').url).toBe(
       '/caail/talks/#applied-ai-ml-for-cellular-agriculture',
     );
   });
 
   it('maps canonical-prose pages and keeps the section anchor', () => {
-    expect(rewritePrimerUrl('../OtherResources.md#courses', 'Primers')).toEqual({
-      url: '/caail/other-resources/#courses',
+    expect(rewritePrimerUrl('../OtherResources.md#cell-ag-ecosystem-initiatives', 'Primers')).toEqual({
+      url: '/caail/other-resources/#cell-ag-ecosystem-initiatives',
       internal: true,
     });
+    expect(rewritePrimerUrl('../ReferenceWorks.md', 'Primers').url).toBe('/caail/reference-works/');
     expect(rewritePrimerUrl('../ResearchAreas/MediaOptimization.md', 'Primers').url).toBe(
       '/caail/research-areas/mediaoptimization/',
     );
