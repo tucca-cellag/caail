@@ -240,6 +240,7 @@ The per-entry summaries in the `Datasets/` pages, `Databases.md`, `Software.md`,
   - `docs(readme): clarify scope of the library`
   - `fix(papers): correct DOI on reference 17`
 - **PRs.** Describe what you added and why it fits — for papers, mention the AI method(s) and research area(s) it spans (i.e. which matrix cells get updated).
+- **Shipping a branch.** When a feature branch is done, reviewed, and locally green, the **`caail-pr-wrapup`** skill (in `.claude/skills/`) is the Ship stage: it pushes, opens the PR, watches CI, merges (after confirming — the merge triggers the public Pages deploy), watches the `docs.yml` deploy to green (build + Lighthouse + deploy), verifies the live site, and cleans up the worktree/branch. It owns the CAAIL-specific gotchas (the `gh pr merge` "main already checked out" benign failure, the Lighthouse gate, which CI runs on which paths) so they don't have to be re-derived each time.
 
 ## Documentation site (`site/`)
 
