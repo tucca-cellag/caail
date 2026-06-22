@@ -1,69 +1,152 @@
 ---
 /**
- * SiteTitle override — renders Starlight's default wordmark, then a horizontal
- * primary-nav (trimgalore-style) next to it in the header. Search / theme /
- * GitHub stay right (Starlight defaults). The left sidebar + right TOC are
- * unchanged; this is additive top-level navigation.
+ * SiteTitle override — Starlight's default wordmark plus a horizontal primary
+ * nav of dropdown menus that mirror the site's sections. Every top-level entry
+ * is a dropdown (Primers · Papers · Catalog · Datasets · Research Areas · More ·
+ * TUCCA), so the whole site is reachable from the header while the row stays
+ * compact. Search / theme / GitHub stay where Starlight puts them.
  *
- * Links point at real, existing routes (liveness-checked). The site has no
- * Research Areas / Datasets *index* pages yet, so those entries land on the
- * section's index/entry page; the left sidebar then exposes the siblings.
+ * Each dropdown is a `<caail-navdd>`: a click-toggle disclosure (button +
+ * aria-expanded + a plain list of links — not an ARIA menu, which keeps the
+ * grouped sub-headings axe-clean). Panels are position:fixed and JS-positioned
+ * (left-aligned to the button, clamped on-screen) so they escape Starlight's
+ * `.title-wrapper { overflow: clip }` WITHOUT letting the nav row spill over the
+ * search box. Opening one closes the others.
  *
- * Mobile nav: the horizontal topnav hides below 50rem, where doc pages hand
- * navigation to Starlight's hamburger + sidebar drawer. Splash pages
- * (hasSidebar === false — currently just the homepage) have NO hamburger, so
- * below 50rem they'd otherwise lose all top-level navigation. For those pages
- * only, we render a disclosure "Menu" button that opens a dropdown of the same
- * links. Both navs map the single `links` array, so destinations never drift.
+ * Datasets / Research Areas items are derived from the same `CAAIL_PAGES` map
+ * the sidebar uses, so new pages appear automatically.
+ *
+ * Mobile: the dropdown row hides below the fit breakpoint. Doc pages hand off to
+ * Starlight's hamburger + sidebar (which lists every section); splash pages
+ * (no hamburger) get a single "Menu" disclosure listing all groups.
  */
 import Default from '@astrojs/starlight/components/SiteTitle.astro';
 import { Icon } from 'astro-icon/components';
+import { CAAIL_PAGES } from '../content/caail-pages';
 
 const { hasSidebar } = Astro.locals.starlightRoute;
-
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-const links = [
-  { label: 'Explorer', href: `${base}/papers/explorer/`, match: `${base}/papers/` },
-  { label: 'Software', href: `${base}/software/`, match: `${base}/software/` },
-  { label: 'Databases', href: `${base}/databases/`, match: `${base}/databases/` },
-  { label: 'Datasets', href: `${base}/datasets/readme/`, match: `${base}/datasets/` },
-  { label: 'Research Areas', href: `${base}/research-areas/mediaoptimization/`, match: `${base}/research-areas/` },
-  { label: 'Contributing', href: `${base}/contributing/`, match: `${base}/contributing/` },
-  { label: 'About', href: `${base}/about/`, match: `${base}/about/` },
+
+const linkFor = (id: string) => `${base}/${id}/`;
+const byGroup = (group: 'datasets' | 'research-areas') =>
+  CAAIL_PAGES.all()
+    .filter((p) => p.group === group)
+    .sort((a, b) => a.order - b.order);
+
+// Datasets, grouped (Species / Reference / Benchmarks) + an "All datasets →".
+const ds = byGroup('datasets');
+const REF_IDS = ['datasets/crossspecies', 'datasets/humanreference', 'datasets/choreference'];
+const dsItem = (p: { sidebarLabel: string; id: string }) => ({ label: p.sidebarLabel, href: linkFor(p.id) });
+const datasetsItems = [
+  { heading: 'Species' },
+  ...ds.filter((p) => p.id !== 'datasets/readme' && p.id !== 'datasets/benchmarks' && !REF_IDS.includes(p.id)).map(dsItem),
+  { heading: 'Reference' },
+  ...ds.filter((p) => REF_IDS.includes(p.id)).map(dsItem),
+  { heading: 'Benchmarks' },
+  ...ds.filter((p) => p.id === 'datasets/benchmarks').map(dsItem),
+  { label: 'All datasets →', href: linkFor('datasets/readme') },
 ];
-// The sibling TUCCA hub (the org-root site). All external — absolute URLs to
-// the domain root, distinct from CAAIL's own `/caail/`-based routes.
-const tuccaLinks = [
-  { label: 'Hub', href: 'https://tucca-cellag.github.io/' },
-  { label: 'Projects', href: 'https://tucca-cellag.github.io/#our-projects' },
-  { label: 'Publications', href: 'https://tucca-cellag.github.io/publications/' },
-  { label: 'Team', href: 'https://tucca-cellag.github.io/our-team/' },
+
+const researchAreasItems = byGroup('research-areas').map(dsItem);
+
+// Each dropdown: label, the path prefixes that light its active state, items
+// (a link {label, href, external?} or a {heading}), and an external flag.
+const dropdowns = [
+  {
+    label: 'Primers',
+    matches: [`${base}/primers/`],
+    items: [
+      { label: 'Cellular Agriculture for AI', href: `${base}/primers/cell-ag/` },
+      { label: 'AI for Cell-Ag', href: `${base}/primers/ai/` },
+    ],
+  },
+  {
+    label: 'Papers',
+    matches: [`${base}/papers/`, `${base}/taxonomy/`],
+    items: [
+      { label: 'Explorer', href: `${base}/papers/explorer/` },
+      { label: 'Citation Network', href: `${base}/papers/network/` },
+      { label: 'Matrix Taxonomy', href: `${base}/taxonomy/` },
+    ],
+  },
+  {
+    label: 'Catalog',
+    matches: [`${base}/software/`, `${base}/databases/`, `${base}/awesome-lists/`, `${base}/ai-agents-foundation-models/`],
+    items: [
+      { label: 'Software', href: `${base}/software/` },
+      { label: 'Databases', href: `${base}/databases/` },
+      { label: 'Awesome Lists', href: `${base}/awesome-lists/` },
+      { label: 'AI Agents & Foundation Models', href: `${base}/ai-agents-foundation-models/` },
+    ],
+  },
+  { label: 'Datasets', matches: [`${base}/datasets/`], items: datasetsItems },
+  { label: 'Research Areas', matches: [`${base}/research-areas/`], items: researchAreasItems },
+  {
+    label: 'More',
+    matches: [
+      `${base}/talks/`, `${base}/other-resources/`, `${base}/reference-works/`,
+      `${base}/funding/`, `${base}/by-the-numbers/`, `${base}/contributing/`,
+      `${base}/cite/`, `${base}/about/`,
+    ],
+    items: [
+      { label: 'Talks & Videos', href: `${base}/talks/` },
+      { label: 'Other Resources', href: `${base}/other-resources/` },
+      { label: 'Reference Works', href: `${base}/reference-works/` },
+      { label: 'Funding & Grants', href: `${base}/funding/` },
+      { label: 'By the Numbers', href: `${base}/by-the-numbers/` },
+      { label: 'Contributing', href: `${base}/contributing/` },
+      { label: 'How to Cite', href: `${base}/cite/` },
+      { label: 'About', href: `${base}/about/` },
+    ],
+  },
+  {
+    label: 'TUCCA',
+    external: true,
+    matches: [],
+    items: [
+      { label: 'Hub', href: 'https://tucca-cellag.github.io/', external: true },
+      { label: 'Projects', href: 'https://tucca-cellag.github.io/#our-projects', external: true },
+      { label: 'Publications', href: 'https://tucca-cellag.github.io/publications/', external: true },
+      { label: 'Team', href: 'https://tucca-cellag.github.io/our-team/', external: true },
+    ],
+  },
 ];
+
 const here = Astro.url.pathname;
-const isActive = (match: string) => here.startsWith(match);
+const isActive = (matches: string[]) => matches.some((m) => here.startsWith(m));
+const isLink = (it: any): it is { label: string; href: string; external?: boolean } => 'href' in it;
 ---
 
 <Default {...Astro.props}><slot /></Default>
 
 <nav class="caail-topnav" aria-label="Primary">
-  {links.map((l) => (
-    <a href={l.href} aria-current={isActive(l.match) ? 'page' : undefined}>{l.label}</a>
+  {dropdowns.map((d, i) => (
+    <caail-navdd class="caail-dd">
+      <button
+        type="button"
+        class="caail-dd__btn"
+        aria-expanded="false"
+        aria-controls={`caail-dd-${i}`}
+        aria-current={isActive(d.matches) ? 'page' : undefined}
+      >
+        {d.label}
+        <Icon name="ph:caret-down" class="caail-dd__caret" aria-hidden="true" />
+      </button>
+      <ul id={`caail-dd-${i}`} class="caail-dd__panel">
+        {d.items.map((it) => (
+          isLink(it) ? (
+            <li><a href={it.href} {...(it.external ? { rel: 'noopener' } : {})}>{it.label}{it.external ? ' ↗' : ''}</a></li>
+          ) : (
+            <li class="caail-dd__head">{it.heading}</li>
+          )
+        ))}
+      </ul>
+    </caail-navdd>
   ))}
-  <caail-navdd class="caail-dd">
-    <button type="button" class="caail-dd__btn" aria-haspopup="true" aria-expanded="false">
-      TUCCA
-      <Icon name="ph:caret-down" class="caail-dd__caret" aria-hidden="true" />
-    </button>
-    <ul class="caail-dd__panel" role="menu">
-      {tuccaLinks.map((it) => (
-        <li role="none"><a role="menuitem" href={it.href} rel="noopener">{it.label} ↗</a></li>
-      ))}
-    </ul>
-  </caail-navdd>
 </nav>
 
 {
-  /* Splash pages have no Starlight hamburger — give them a mobile menu. */
+  /* Splash pages have no Starlight hamburger — give them a full mobile menu. */
   !hasSidebar && (
     <caail-mobilenav class="caail-mobilenav">
       <button
@@ -77,12 +160,13 @@ const isActive = (match: string) => here.startsWith(match);
         <span>Menu</span>
       </button>
       <nav id="caail-mobilenav-panel" class="caail-mobilenav__panel" aria-label="Primary">
-        {links.map((l) => (
-          <a href={l.href} aria-current={isActive(l.match) ? 'page' : undefined}>{l.label}</a>
-        ))}
-        <span class="caail-mobilenav__sep">TUCCA hub</span>
-        {tuccaLinks.map((l) => (
-          <a href={l.href} rel="noopener">{l.label} ↗</a>
+        {dropdowns.map((d) => (
+          <>
+            <span class="caail-mobilenav__sep">{d.label}</span>
+            {d.items.filter(isLink).map((it) => (
+              <a href={it.href} {...(it.external ? { rel: 'noopener' } : {})}>{it.label}{it.external ? ' ↗' : ''}</a>
+            ))}
+          </>
         ))}
       </nav>
     </caail-mobilenav>
@@ -93,53 +177,45 @@ const isActive = (match: string) => here.startsWith(match);
   .caail-topnav {
     display: flex;
     align-items: center;
-    gap: 0.15rem;
-    margin-inline-start: 1.25rem;
+    gap: 0.05rem;
+    margin-inline-start: 1rem;
   }
-  .caail-topnav a {
-    font-size: 0.85rem;
-    font-weight: 500;
-    color: var(--caail-muted);
-    text-decoration: none;
-    padding: 0.35rem 0.6rem;
-    border-radius: 7px;
-    white-space: nowrap;
-    transition: color 0.15s, background 0.15s;
-  }
-  .caail-topnav a:hover { color: var(--caail-ink); background: var(--caail-surface); }
-  .caail-topnav a[aria-current='page'] { color: var(--caail-primary); font-weight: 600; }
 
-  /* ── "TUCCA ▾" dropdown (links to the sibling org-root hub) ───────────────
-   * Click-toggle disclosure. The PANEL is position:fixed (JS positions it under
-   * the button on open) so it escapes Starlight's `.title-wrapper{overflow:clip}`
-   * WITHOUT making the whole nav row spill over the search box at tight widths —
-   * the same approach CAAIL's splash mobile menu already uses. The header is
-   * itself position:fixed, so the button's viewport position is stable. */
+  /* ── Dropdown triggers + panels ───────────────────────────────────────────
+   * Click-toggle disclosures. Panels are position:fixed and JS-positioned
+   * (left-aligned to the button, clamped on-screen) so they escape Starlight's
+   * `.title-wrapper { overflow: clip }` without making the nav row spill over
+   * the search box. The header is itself position:fixed, so the button's
+   * viewport coords are stable while a panel is open. */
   .caail-dd { position: relative; }
   .caail-dd__btn {
     display: inline-flex;
     align-items: center;
-    gap: 0.2rem;
+    gap: 0.15rem;
     font: inherit;
-    font-size: 0.85rem;
+    font-size: 0.82rem;
     font-weight: 500;
     color: var(--caail-muted);
     background: none;
     border: 0;
-    padding: 0.35rem 0.6rem;
+    padding: 0.35rem 0.45rem;
     border-radius: 7px;
     white-space: nowrap;
     cursor: pointer;
     transition: color 0.15s, background 0.15s;
   }
   .caail-dd__btn:hover { color: var(--caail-ink); background: var(--caail-surface); }
-  .caail-dd__caret { width: 0.8rem; height: 0.8rem; transition: transform 0.15s; }
+  .caail-dd__btn[aria-current='page'] { color: var(--caail-primary); font-weight: 600; }
+  .caail-dd__caret { width: 0.75rem; height: 0.75rem; transition: transform 0.15s; }
   .caail-dd[data-open] .caail-dd__caret { transform: rotate(180deg); }
+
   .caail-dd__panel {
     display: none;
-    position: fixed; /* JS sets top/right on open (escapes the title-wrapper clip) */
+    position: fixed; /* JS sets top/left on open (escapes the title-wrapper clip) */
     z-index: var(--sl-z-index-navbar, 20);
     min-width: 12rem;
+    max-height: min(70vh, 30rem);
+    overflow-y: auto;
     margin: 0;
     padding: 0.35rem;
     list-style: none;
@@ -151,7 +227,7 @@ const isActive = (match: string) => here.startsWith(match);
   .caail-dd[data-open] .caail-dd__panel { display: block; }
   .caail-dd__panel a {
     display: block;
-    padding: 0.5rem 0.6rem;
+    padding: 0.45rem 0.6rem;
     font-size: 0.85rem;
     font-weight: 500;
     color: var(--caail-ink);
@@ -160,17 +236,28 @@ const isActive = (match: string) => here.startsWith(match);
     white-space: nowrap;
   }
   .caail-dd__panel a:hover { color: var(--caail-primary); background: var(--caail-surface); }
+  .caail-dd__head {
+    padding: 0.5rem 0.6rem 0.2rem;
+    font-size: 0.6rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--caail-muted);
+  }
+  .caail-dd__head:not(:first-child) {
+    margin-block-start: 0.2rem;
+    border-top: 1px solid var(--caail-border);
+  }
 
-  /* Below the sidebar breakpoint, the hamburger + drawer take over. */
-  @media (max-width: 50rem) { .caail-topnav { display: none; } }
+  /* Below the fit breakpoint, the hamburger + drawer (doc) or the splash mobile
+   * menu take over. 64rem is set so the full 7-dropdown row only shows when it
+   * fits beside the search box (measured natural width ~696px clears search at
+   * ≥~1013px / 63.3rem; 64rem gives ~11px margin) — never clipped. */
+  @media (max-width: 64rem) { .caail-topnav { display: none; } }
 
-  /* ── Mobile disclosure nav (splash pages only) ──────────────────────────
-   * Rendered in-flow next to the wordmark (inside Starlight's .title-wrapper,
-   * which has overflow:clip) so it never overlaps the search box — unlike a
-   * fixed top-right button, which on splash pages has no reserved header
-   * padding. The dropdown PANEL is position:fixed so it escapes that clip. */
+  /* ── Splash-page mobile menu ───────────────────────────────────────────── */
   .caail-mobilenav { display: none; }
-  @media (max-width: 50rem) { .caail-mobilenav { display: inline-flex; align-items: center; } }
+  @media (max-width: 64rem) { .caail-mobilenav { display: inline-flex; align-items: center; } }
 
   .caail-mobilenav__toggle {
     display: inline-flex;
@@ -197,7 +284,9 @@ const isActive = (match: string) => here.startsWith(match);
     inset-block-start: var(--sl-nav-height);
     inset-inline-start: var(--sl-nav-pad-x);
     z-index: var(--sl-z-index-menu, 11);
-    width: min(18rem, calc(100vw - 2 * var(--sl-nav-pad-x)));
+    width: min(20rem, calc(100vw - 2 * var(--sl-nav-pad-x)));
+    max-height: calc(100vh - var(--sl-nav-height) - 1rem);
+    overflow-y: auto;
     margin-block-start: 0.35rem;
     padding: 0.4rem;
     background: var(--caail-bg);
@@ -209,8 +298,8 @@ const isActive = (match: string) => here.startsWith(match);
 
   .caail-mobilenav__panel a {
     display: block;
-    padding: 0.55rem 0.6rem;
-    font-size: 0.9rem;
+    padding: 0.5rem 0.6rem;
+    font-size: 0.88rem;
     font-weight: 500;
     color: var(--caail-ink);
     text-decoration: none;
@@ -218,7 +307,6 @@ const isActive = (match: string) => here.startsWith(match);
     transition: color 0.15s, background 0.15s;
   }
   .caail-mobilenav__panel a:hover { color: var(--caail-primary); background: var(--caail-surface); }
-  .caail-mobilenav__panel a[aria-current='page'] { color: var(--caail-primary); font-weight: 600; }
   .caail-mobilenav__sep {
     display: block;
     margin-block-start: 0.3rem;
@@ -230,8 +318,10 @@ const isActive = (match: string) => here.startsWith(match);
     letter-spacing: 0.05em;
     color: var(--caail-muted);
   }
+  .caail-mobilenav__panel > :first-child { margin-block-start: 0; border-top: 0; }
 
   @media (prefers-reduced-motion: reduce) {
+    .caail-dd__btn, .caail-dd__caret { transition: none; }
     .caail-mobilenav__toggle { transition: none; }
     .caail-mobilenav__panel a { transition: none; }
   }
@@ -239,47 +329,10 @@ const isActive = (match: string) => here.startsWith(match);
 
 <script>
   /**
-   * Disclosure behaviour for the splash-page mobile nav. Mirrors Starlight's
-   * own <starlight-menu-button>: toggle aria-expanded; close on Escape (return
-   * focus to the button), on outside click, and on link activation.
-   */
-  class CaailMobileNav extends HTMLElement {
-    btn = this.querySelector<HTMLButtonElement>('.caail-mobilenav__toggle')!;
-
-    connectedCallback() {
-      this.btn.addEventListener('click', () => this.setOpen(!this.hasAttribute('data-open')));
-
-      this.addEventListener('keyup', (e) => {
-        if (e.key === 'Escape') {
-          this.setOpen(false);
-          this.btn.focus();
-        }
-      });
-
-      // Close when a panel link is activated (covers same-page anchors).
-      this.querySelector('.caail-mobilenav__panel')?.addEventListener('click', (e) => {
-        if ((e.target as HTMLElement).closest('a')) this.setOpen(false);
-      });
-
-      // Close on a click/tap outside the component.
-      document.addEventListener('pointerdown', (e) => {
-        if (this.hasAttribute('data-open') && !this.contains(e.target as Node)) {
-          this.setOpen(false);
-        }
-      });
-    }
-
-    setOpen(open: boolean) {
-      this.toggleAttribute('data-open', open);
-      this.btn.setAttribute('aria-expanded', String(open));
-    }
-  }
-
-  customElements.define('caail-mobilenav', CaailMobileNav);
-
-  /**
-   * "TUCCA ▾" desktop dropdown disclosure. Click toggles; closes on Escape
-   * (focus returns to the button), outside click, and link activation.
+   * Desktop dropdown disclosure. Click toggles; opening one closes the others;
+   * closes on Escape (focus returns to the button), outside click, and link
+   * activation. The fixed panel is positioned under the button and clamped to
+   * stay on-screen regardless of which trigger it belongs to.
    */
   class CaailNavDd extends HTMLElement {
     btn = this.querySelector<HTMLButtonElement>('.caail-dd__btn')!;
@@ -310,17 +363,68 @@ const isActive = (match: string) => here.startsWith(match);
     }
 
     setOpen(open: boolean) {
+      if (open) {
+        // One open at a time — close every other dropdown first.
+        document.querySelectorAll('caail-navdd').forEach((el) => {
+          if (el !== this) {
+            el.removeAttribute('data-open');
+            el.querySelector('.caail-dd__btn')?.setAttribute('aria-expanded', 'false');
+          }
+        });
+      }
       this.toggleAttribute('data-open', open);
       this.btn.setAttribute('aria-expanded', String(open));
-      // Position the fixed panel under the button, right-aligned to it. The
-      // header is position:fixed so the button's viewport coords are stable.
-      if (open) {
-        const r = this.btn.getBoundingClientRect();
-        this.panel.style.top = `${Math.round(r.bottom + 6)}px`;
-        this.panel.style.right = `${Math.round(window.innerWidth - r.right)}px`;
-      }
+      if (open) this.position();
+    }
+
+    position() {
+      const r = this.btn.getBoundingClientRect();
+      this.panel.style.top = `${Math.round(r.bottom + 6)}px`;
+      // Left-align to the button, then clamp so the panel stays on-screen.
+      this.panel.style.left = '0px';
+      this.panel.style.right = 'auto';
+      const pw = this.panel.offsetWidth;
+      const left = Math.max(8, Math.min(r.left, window.innerWidth - 8 - pw));
+      this.panel.style.left = `${Math.round(left)}px`;
     }
   }
 
   customElements.define('caail-navdd', CaailNavDd);
+
+  /**
+   * Splash-page mobile menu disclosure. Mirrors Starlight's own
+   * <starlight-menu-button>: toggle aria-expanded; close on Escape (return focus
+   * to the button), on outside click, and on link activation.
+   */
+  class CaailMobileNav extends HTMLElement {
+    btn = this.querySelector<HTMLButtonElement>('.caail-mobilenav__toggle')!;
+
+    connectedCallback() {
+      this.btn.addEventListener('click', () => this.setOpen(!this.hasAttribute('data-open')));
+
+      this.addEventListener('keyup', (e) => {
+        if (e.key === 'Escape') {
+          this.setOpen(false);
+          this.btn.focus();
+        }
+      });
+
+      this.querySelector('.caail-mobilenav__panel')?.addEventListener('click', (e) => {
+        if ((e.target as HTMLElement).closest('a')) this.setOpen(false);
+      });
+
+      document.addEventListener('pointerdown', (e) => {
+        if (this.hasAttribute('data-open') && !this.contains(e.target as Node)) {
+          this.setOpen(false);
+        }
+      });
+    }
+
+    setOpen(open: boolean) {
+      this.toggleAttribute('data-open', open);
+      this.btn.setAttribute('aria-expanded', String(open));
+    }
+  }
+
+  customElements.define('caail-mobilenav', CaailMobileNav);
 </script>
