@@ -33,6 +33,12 @@ export interface TocItem {
  * leading "Overview" item, return the section-augmented TOC items for an
  * island-rendered page, or `null` if this route renders Starlight's TOC
  * unchanged.
+ *
+ * The matched pages return `[overview, ...sections]` — i.e. the items array is
+ * replaced wholesale. These routes intentionally carry no Markdown headings of
+ * their own (only an intro paragraph + the island component); if one ever mixes
+ * real Markdown `##` headings with the island, build the section list from both
+ * here rather than discarding Starlight's collected headings.
  */
 export function islandTocItems(path: string, overview: TocItem): TocItem[] | null {
   const section = (slug: string, text: string): TocItem => ({ depth: 2, slug, text, children: [] });
