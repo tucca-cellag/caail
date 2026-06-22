@@ -78,10 +78,14 @@ test('internal prose link to a rendered page resolves to a site route; deferred 
 test('pagefind indexes prose content', async ({ page }) => {
   await page.goto('./');
   // Open Starlight search. Prefer the visible search button; fall back to the "/" shortcut.
-  const searchButton = page.getByRole('button', { name: /search/i });
+  // Anchor the name so it targets the "Search" button and not the "Research Areas"
+  // nav dropdown (whose accessible name contains the substring "search").
+  const searchButton = page.getByRole('button', { name: /^search/i });
   if (await searchButton.count()) { await searchButton.first().click(); } else { await page.keyboard.press('/'); }
   const input = page.getByPlaceholder(/search/i);
   await input.fill('bioprocess');
-  // Pagefind renders result links; expect a result pointing at the bioprocess page.
-  await expect(page.locator('a[href*="/research-areas/bioprocess"]').first()).toBeVisible({ timeout: 10000 });
+  // Pagefind renders result links inside the search dialog; expect a result
+  // pointing at the bioprocess page. Scope to the dialog so this targets a
+  // search result, not the (hidden) nav-dropdown link to the same page.
+  await expect(page.locator('dialog a[href*="/research-areas/bioprocess"]').first()).toBeVisible({ timeout: 10000 });
 });

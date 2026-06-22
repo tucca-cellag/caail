@@ -7,8 +7,12 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 ---
 <div class="caail-footer">
   <span class="caail-foot-brand"><TuccaLockup width={150} /></span>
-  <span><a href={`${base}/cite/`}>Cite</a> · Content licensed MIT · <a href="https://github.com/tucca-cellag/caail">canonical source on GitHub</a></span>
+  <span><a href={`${base}/cite/`}>Cite</a> · Content licensed MIT · <a href="https://github.com/tucca-cellag/caail">canonical source on GitHub</a> · <a href="https://github.com/tucca-cellag/caail/issues" rel="noopener">Get help</a></span>
 </div>
+<p class="caail-foot-disclaimer">
+  Linked external resources are independent of TUCCA and Tufts University and
+  remain under their own licenses.
+</p>
 <Default><slot /></Default>
 <NavCollapse />
 <DataTableViews />
@@ -16,4 +20,5 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   .caail-footer { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .5rem; font-size: .72rem; color: var(--caail-muted); border-top: 1px solid var(--caail-border); padding-top: .8rem; margin-top: 1rem; }
   .caail-foot-brand { display: inline-flex; align-items: center; }
   .caail-footer a { color: var(--caail-link); }
+  .caail-foot-disclaimer { margin: .5rem 0 0; font-size: .68rem; line-height: 1.4; color: var(--caail-muted); }
 </style>
