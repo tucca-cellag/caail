@@ -31,6 +31,14 @@ const links = [
   { label: 'Contributing', href: `${base}/contributing/`, match: `${base}/contributing/` },
   { label: 'About', href: `${base}/about/`, match: `${base}/about/` },
 ];
+// The sibling TUCCA hub (the org-root site). All external — absolute URLs to
+// the domain root, distinct from CAAIL's own `/caail/`-based routes.
+const tuccaLinks = [
+  { label: 'Hub', href: 'https://tucca-cellag.github.io/' },
+  { label: 'Projects', href: 'https://tucca-cellag.github.io/#our-projects' },
+  { label: 'Publications', href: 'https://tucca-cellag.github.io/publications/' },
+  { label: 'Team', href: 'https://tucca-cellag.github.io/our-team/' },
+];
 const here = Astro.url.pathname;
 const isActive = (match: string) => here.startsWith(match);
 ---
@@ -41,6 +49,17 @@ const isActive = (match: string) => here.startsWith(match);
   {links.map((l) => (
     <a href={l.href} aria-current={isActive(l.match) ? 'page' : undefined}>{l.label}</a>
   ))}
+  <caail-navdd class="caail-dd">
+    <button type="button" class="caail-dd__btn" aria-haspopup="true" aria-expanded="false">
+      TUCCA
+      <Icon name="ph:caret-down" class="caail-dd__caret" aria-hidden="true" />
+    </button>
+    <ul class="caail-dd__panel" role="menu">
+      {tuccaLinks.map((it) => (
+        <li role="none"><a role="menuitem" href={it.href} rel="noopener">{it.label} ↗</a></li>
+      ))}
+    </ul>
+  </caail-navdd>
 </nav>
 
 {
@@ -60,6 +79,10 @@ const isActive = (match: string) => here.startsWith(match);
       <nav id="caail-mobilenav-panel" class="caail-mobilenav__panel" aria-label="Primary">
         {links.map((l) => (
           <a href={l.href} aria-current={isActive(l.match) ? 'page' : undefined}>{l.label}</a>
+        ))}
+        <span class="caail-mobilenav__sep">TUCCA hub</span>
+        {tuccaLinks.map((l) => (
+          <a href={l.href} rel="noopener">{l.label} ↗</a>
         ))}
       </nav>
     </caail-mobilenav>
@@ -85,6 +108,58 @@ const isActive = (match: string) => here.startsWith(match);
   }
   .caail-topnav a:hover { color: var(--caail-ink); background: var(--caail-surface); }
   .caail-topnav a[aria-current='page'] { color: var(--caail-primary); font-weight: 600; }
+
+  /* ── "TUCCA ▾" dropdown (links to the sibling org-root hub) ───────────────
+   * Click-toggle disclosure. The PANEL is position:fixed (JS positions it under
+   * the button on open) so it escapes Starlight's `.title-wrapper{overflow:clip}`
+   * WITHOUT making the whole nav row spill over the search box at tight widths —
+   * the same approach CAAIL's splash mobile menu already uses. The header is
+   * itself position:fixed, so the button's viewport position is stable. */
+  .caail-dd { position: relative; }
+  .caail-dd__btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    font: inherit;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--caail-muted);
+    background: none;
+    border: 0;
+    padding: 0.35rem 0.6rem;
+    border-radius: 7px;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: color 0.15s, background 0.15s;
+  }
+  .caail-dd__btn:hover { color: var(--caail-ink); background: var(--caail-surface); }
+  .caail-dd__caret { width: 0.8rem; height: 0.8rem; transition: transform 0.15s; }
+  .caail-dd[data-open] .caail-dd__caret { transform: rotate(180deg); }
+  .caail-dd__panel {
+    display: none;
+    position: fixed; /* JS sets top/right on open (escapes the title-wrapper clip) */
+    z-index: var(--sl-z-index-navbar, 20);
+    min-width: 12rem;
+    margin: 0;
+    padding: 0.35rem;
+    list-style: none;
+    background: var(--caail-bg);
+    border: 1px solid var(--caail-border);
+    border-radius: 10px;
+    box-shadow: 0 14px 34px -18px color-mix(in oklab, var(--caail-primary) 55%, transparent);
+  }
+  .caail-dd[data-open] .caail-dd__panel { display: block; }
+  .caail-dd__panel a {
+    display: block;
+    padding: 0.5rem 0.6rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--caail-ink);
+    text-decoration: none;
+    border-radius: 6px;
+    white-space: nowrap;
+  }
+  .caail-dd__panel a:hover { color: var(--caail-primary); background: var(--caail-surface); }
 
   /* Below the sidebar breakpoint, the hamburger + drawer take over. */
   @media (max-width: 50rem) { .caail-topnav { display: none; } }
@@ -144,6 +219,17 @@ const isActive = (match: string) => here.startsWith(match);
   }
   .caail-mobilenav__panel a:hover { color: var(--caail-primary); background: var(--caail-surface); }
   .caail-mobilenav__panel a[aria-current='page'] { color: var(--caail-primary); font-weight: 600; }
+  .caail-mobilenav__sep {
+    display: block;
+    margin-block-start: 0.3rem;
+    padding: 0.5rem 0.6rem 0.2rem;
+    border-top: 1px solid var(--caail-border);
+    font-size: 0.62rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--caail-muted);
+  }
 
   @media (prefers-reduced-motion: reduce) {
     .caail-mobilenav__toggle { transition: none; }
@@ -190,4 +276,51 @@ const isActive = (match: string) => here.startsWith(match);
   }
 
   customElements.define('caail-mobilenav', CaailMobileNav);
+
+  /**
+   * "TUCCA ▾" desktop dropdown disclosure. Click toggles; closes on Escape
+   * (focus returns to the button), outside click, and link activation.
+   */
+  class CaailNavDd extends HTMLElement {
+    btn = this.querySelector<HTMLButtonElement>('.caail-dd__btn')!;
+    panel = this.querySelector<HTMLElement>('.caail-dd__panel')!;
+
+    connectedCallback() {
+      this.btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.setOpen(!this.hasAttribute('data-open'));
+      });
+
+      this.addEventListener('keyup', (e) => {
+        if (e.key === 'Escape') {
+          this.setOpen(false);
+          this.btn.focus();
+        }
+      });
+
+      this.panel.querySelectorAll('a').forEach((a) =>
+        a.addEventListener('click', () => this.setOpen(false))
+      );
+
+      document.addEventListener('pointerdown', (e) => {
+        if (this.hasAttribute('data-open') && !this.contains(e.target as Node)) {
+          this.setOpen(false);
+        }
+      });
+    }
+
+    setOpen(open: boolean) {
+      this.toggleAttribute('data-open', open);
+      this.btn.setAttribute('aria-expanded', String(open));
+      // Position the fixed panel under the button, right-aligned to it. The
+      // header is position:fixed so the button's viewport coords are stable.
+      if (open) {
+        const r = this.btn.getBoundingClientRect();
+        this.panel.style.top = `${Math.round(r.bottom + 6)}px`;
+        this.panel.style.right = `${Math.round(window.innerWidth - r.right)}px`;
+      }
+    }
+  }
+
+  customElements.define('caail-navdd', CaailNavDd);
 </script>
