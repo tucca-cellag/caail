@@ -330,13 +330,21 @@ const isLink = (it: any): it is { label: string; href: string; external?: boolea
 <script>
   /**
    * Desktop dropdown disclosure. Click toggles; opening one closes the others;
-   * closes on Escape (focus returns to the button), outside click, and link
-   * activation. The fixed panel is positioned under the button and clamped to
-   * stay on-screen regardless of which trigger it belongs to.
+   * closes on Escape (focus returns to the button), outside click, link
+   * activation, and when keyboard focus leaves the component (e.g. Tab past the
+   * last link). The fixed panel is positioned under the button, clamped to stay
+   * on-screen, and repositioned on resize. Document/window listeners are removed
+   * in disconnectedCallback.
    */
   class CaailNavDd extends HTMLElement {
     btn = this.querySelector<HTMLButtonElement>('.caail-dd__btn')!;
     panel = this.querySelector<HTMLElement>('.caail-dd__panel')!;
+    onDocPointerDown = (e: PointerEvent) => {
+      if (this.hasAttribute('data-open') && !this.contains(e.target as Node)) this.setOpen(false);
+    };
+    onWinResize = () => {
+      if (this.hasAttribute('data-open')) this.position();
+    };
 
     connectedCallback() {
       this.btn.addEventListener('click', (e) => {
@@ -351,25 +359,30 @@ const isLink = (it: any): it is { label: string; href: string; external?: boolea
         }
       });
 
+      // Close when keyboard focus leaves the component (relatedTarget is the
+      // element gaining focus; null when focus leaves the document/page).
+      this.addEventListener('focusout', (e) => {
+        if (this.hasAttribute('data-open') && !this.contains(e.relatedTarget as Node)) this.setOpen(false);
+      });
+
       this.panel.querySelectorAll('a').forEach((a) =>
         a.addEventListener('click', () => this.setOpen(false))
       );
 
-      document.addEventListener('pointerdown', (e) => {
-        if (this.hasAttribute('data-open') && !this.contains(e.target as Node)) {
-          this.setOpen(false);
-        }
-      });
+      document.addEventListener('pointerdown', this.onDocPointerDown);
+      window.addEventListener('resize', this.onWinResize, { passive: true });
+    }
+
+    disconnectedCallback() {
+      document.removeEventListener('pointerdown', this.onDocPointerDown);
+      window.removeEventListener('resize', this.onWinResize);
     }
 
     setOpen(open: boolean) {
       if (open) {
-        // One open at a time — close every other dropdown first.
-        document.querySelectorAll('caail-navdd').forEach((el) => {
-          if (el !== this) {
-            el.removeAttribute('data-open');
-            el.querySelector('.caail-dd__btn')?.setAttribute('aria-expanded', 'false');
-          }
+        // One open at a time — close every other dropdown via its own method.
+        document.querySelectorAll<CaailNavDd>('caail-navdd').forEach((el) => {
+          if (el !== this) el.setOpen(false);
         });
       }
       this.toggleAttribute('data-open', open);
@@ -398,6 +411,9 @@ const isLink = (it: any): it is { label: string; href: string; external?: boolea
    */
   class CaailMobileNav extends HTMLElement {
     btn = this.querySelector<HTMLButtonElement>('.caail-mobilenav__toggle')!;
+    onDocPointerDown = (e: PointerEvent) => {
+      if (this.hasAttribute('data-open') && !this.contains(e.target as Node)) this.setOpen(false);
+    };
 
     connectedCallback() {
       this.btn.addEventListener('click', () => this.setOpen(!this.hasAttribute('data-open')));
@@ -413,11 +429,11 @@ const isLink = (it: any): it is { label: string; href: string; external?: boolea
         if ((e.target as HTMLElement).closest('a')) this.setOpen(false);
       });
 
-      document.addEventListener('pointerdown', (e) => {
-        if (this.hasAttribute('data-open') && !this.contains(e.target as Node)) {
-          this.setOpen(false);
-        }
-      });
+      document.addEventListener('pointerdown', this.onDocPointerDown);
+    }
+
+    disconnectedCallback() {
+      document.removeEventListener('pointerdown', this.onDocPointerDown);
     }
 
     setOpen(open: boolean) {
