@@ -184,6 +184,8 @@ export default defineConfig({
         // without injecting Starlight's own hero UI above our custom Hero.
         Hero: './src/components/StarlightHeroOverride.astro',
         Footer: './src/components/Footer.astro',
+        // Suppress the Previous/Next pagination links site-wide.
+        Pagination: './src/components/EmptyPagination.astro',
         // Inject the catalog's application-area sections into the right-rail
         // TOC on /software and /databases (their headings live in the island,
         // not the Markdown, so Starlight can't collect them natively). Every
