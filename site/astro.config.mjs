@@ -186,11 +186,15 @@ export default defineConfig({
         Footer: './src/components/Footer.astro',
         // Suppress the Previous/Next pagination links site-wide.
         Pagination: './src/components/EmptyPagination.astro',
-        // Inject the catalog's application-area sections into the right-rail
-        // TOC on /software and /databases (their headings live in the island,
-        // not the Markdown, so Starlight can't collect them natively). Every
-        // other route renders Starlight's default TableOfContents unchanged.
+        // Inject island/component-rendered section headings into the "On This
+        // Page" TOC for /software, /databases, /talks, /awesome-lists, and the
+        // /primers/* hubs (their headings live in the island, not the Markdown,
+        // so Starlight can't collect them natively). Both the right-rail and the
+        // mobile widget are overridden because Starlight renders the mobile one
+        // first; the shared injection in toc-inject.ts is idempotent. Every
+        // other route renders Starlight's default TOC unchanged.
         TableOfContents: './src/components/TableOfContents.astro',
+        MobileTableOfContents: './src/components/MobileTableOfContents.astro',
       },
     }),
     preact(),

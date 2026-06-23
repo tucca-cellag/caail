@@ -1,0 +1,25 @@
+---
+/**
+ * MobileTableOfContents override (the collapsible "On this page" widget shown
+ * below the header on narrow viewports).
+ *
+ * Companion to TableOfContents.astro. Starlight renders this component *before*
+ * the right-rail TableOfContents, so the desktop-only override left this mobile
+ * widget stuck on just "Overview" for island-rendered pages (Software,
+ * Databases, Talks, Awesome Lists, Primers). We run the same idempotent
+ * injection here so the mobile "On this page" lists the real sections too, then
+ * render Starlight's default component for all its toggle/scroll-spy behavior.
+ */
+import Default from '@astrojs/starlight/components/MobileTableOfContents.astro';
+import { islandTocItems } from '../lib/toc-inject';
+
+const route = Astro.locals.starlightRoute;
+const path = Astro.url.pathname.replace(/\/$/, '');
+
+if (route.toc && route.toc.items.length > 0) {
+  const injected = islandTocItems(path, route.toc.items[0]);
+  if (injected) route.toc.items = injected;
+}
+---
+
+<Default />
