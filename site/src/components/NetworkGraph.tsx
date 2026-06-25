@@ -85,6 +85,7 @@ export default function NetworkGraph() {
 
   useEffect(() => {
     let cancelled = false;
+    let ro: ResizeObserver | null = null;
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     (async () => {
@@ -137,8 +138,8 @@ export default function NetworkGraph() {
         style: [
           { selector: 'node', style: {
             'background-color': 'data(color)',
-            'width': `mapData(deg, 0, ${maxDegree}, 14, 54)`,
-            'height': `mapData(deg, 0, ${maxDegree}, 14, 54)`,
+            'width': `mapData(deg, 0, ${maxDegree}, 24, 54)`,
+            'height': `mapData(deg, 0, ${maxDegree}, 24, 54)`,
             'label': 'data(label)', 'font-size': 6, 'color': ink,
             'text-valign': 'bottom', 'text-margin-y': 2, 'min-zoomed-font-size': 7,
             'border-width': 1.5, 'border-color': 'data(color)',
@@ -148,7 +149,7 @@ export default function NetworkGraph() {
           { selector: 'edge', style: edgeStyle as any },
         ],
         layout: { name: 'cose', animate: reduced ? false : 'end', randomize: false, padding: 20 } as any,
-        minZoom: 0.2,
+        minZoom: 0.45,
         maxZoom: 3,
       });
       cy.on('tap', 'node', (evt: any) => {
@@ -158,9 +159,29 @@ export default function NetworkGraph() {
       cy.on('tap', (evt: any) => { if (evt.target === cy) setSel(null); });
       cyRef.current = cy;
       setReady(true);
+
+      // Cytoscape measures the container once at init and builds its screen↔model
+      // transform from that. It only auto-corrects on `window` resize, not on
+      // CSS/layout-driven container changes (here: late `client:idle` hydration, the
+      // `.sl-container:has(.ng)` width override, font reflow). A stale measurement
+      // produces offset taps where clicks don't land on the rendered nodes — so we
+      // remeasure once the container has settled, and keep it in sync thereafter.
+      // (The cose layout fits the viewport itself on `layoutstop`, so we don't fit
+      // here — doing so would fit pre-animation positions and double-fit on load.)
+      requestAnimationFrame(() => {
+        if (cancelled) return;
+        cy.resize();
+      });
+      ro = new ResizeObserver(() => cyRef.current?.resize());
+      ro.observe(containerRef.current);
     })();
 
-    return () => { cancelled = true; cyRef.current?.destroy(); cyRef.current = null; };
+    return () => {
+      cancelled = true;
+      ro?.disconnect();
+      cyRef.current?.destroy();
+      cyRef.current = null;
+    };
   }, [edgeMode, areaFilter, hideIsolated, maxDegree]);
 
   return (
