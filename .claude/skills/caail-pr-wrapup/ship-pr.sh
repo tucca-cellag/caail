@@ -124,15 +124,17 @@ cmd_open_pr() {
 }
 
 cmd_watch_checks() {
-  local pr="$1"
-  # `gh pr checks` exits non-zero when there are no checks at all — that's fine
-  # for site-config / .claude PRs (lint-papers only runs on content/parser paths).
-  if ! gh pr checks "$pr" >/dev/null 2>&1; then
-    if gh pr checks "$pr" 2>&1 | grep -qi 'no checks reported'; then
-      note "no checks reported on this PR — proceeding."
-      gh pr view "$pr" --json mergeStateStatus -q '"  mergeStateStatus: " + .mergeStateStatus'
-      return 0
-    fi
+  local pr="$1" out
+  # `gh pr checks` exits non-zero when there are no checks at all — common for
+  # site-config / .claude PRs (lint-papers only runs on content/parser paths).
+  # Capture its output to a variable first (NOT `gh ... | grep`): under
+  # `set -o pipefail` gh's non-zero exit would mask a grep match and wrongly
+  # fall through to the blocking --watch below.
+  out="$(gh pr checks "$pr" 2>&1 || true)"
+  if printf '%s\n' "$out" | grep -qi 'no checks reported'; then
+    note "no checks reported on this PR — proceeding."
+    gh pr view "$pr" --json mergeStateStatus -q '"  mergeStateStatus: " + .mergeStateStatus'
+    return 0
   fi
   # Checks exist → block on them; non-zero propagates a failure to the caller.
   gh pr checks "$pr" --watch --interval 10
