@@ -13,6 +13,9 @@ matrix-corpus.json
 matrix-corpus/
 AUDIT_REPORT.md
 
+# macOS Finder metadata
+.DS_Store
+
 # Python bytecode
 __pycache__/
 *.pyc
