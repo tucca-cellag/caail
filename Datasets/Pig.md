@@ -18,13 +18,19 @@ Trait-data biobank coordinated with PigGTEx, integrating phenotypic, genotypic, 
 
 ## Genome-scale metabolic models
 
-GEMs are SBML-formatted reconstructions of an organism's metabolic network — every reaction, every metabolite, every gene-protein-reaction mapping — and are the input data structure for the constraint-based modeling tools listed in [Software.md / Metabolic Modeling & Strain Design](../Software.md#metabolic-modeling--strain-design). The porcine reconstruction below inherits network structure from the human reference GEMs catalogued in [HumanReference.md](./HumanReference.md).
+GEMs are SBML-formatted reconstructions of an organism's metabolic network — every reaction, every metabolite, every gene-protein-reaction mapping — and are the input data structure for the constraint-based modeling tools listed in [Software.md / Metabolic Modeling & Strain Design](../Software.md#metabolic-modeling--strain-design). The porcine reconstructions below inherit network structure from the human reference GEMs catalogued in [HumanReference.md](./HumanReference.md).
 
 ### pcPigMNet2025 — *Sus scrofa* (porcine)
 
 `pcPigMNet2025` is the first proteome-constrained metabolic model for the core metabolism of *Sus scrofa* muscle stem cells, published 2026 in *Metabolic Engineering* by Qiu et al. — a University of Oxford collaboration with Ivy Farm Technologies, funded by the UK Biotechnology and Biological Sciences Research Council (UKRI). It constrains a base reconstruction (`PigMNet2025`) with enzyme-activity data to simulate how accumulated lactate and ammonium inhibit muscle-stem-cell growth and metabolism during the proliferation step of cultivated-pork production — a model-aided process-engineering tool for controlling and optimising culture conditions. SBML files are released alongside the paper.
 
 Reference: [Papers.md #83](../Papers.md#83) (Qiu et al. 2026, *Metabolic Engineering*).
+
+### iSsus3744 — *Sus scrofa* (porcine)
+
+`iSsus3744` is a genome-scale metabolic reconstruction for *Sus scrofa*, presented in a 2026 bioRxiv preprint by Gomez Romero et al. (Colorado School of Mines / Cultivated Meat Modeling Consortium). It was reconstructed from the HumanGEM and Recon3D human reference models by orthology mapping (using the RAVEN and COBRA toolboxes) and applied to rational media design for cultivated pork, using constraint-based metabolic flux analysis to reason about the medium components that govern porcine cell metabolism. Where `pcPigMNet2025` above is a proteome-constrained model of core muscle-stem-cell metabolism, `iSsus3744` is a whole genome-scale reconstruction oriented toward media-formulation design. The reconstruction is distributed with the preprint as supplemental files (the model as Supplemental File 1, its reactions and metabolites in Supplemental Files 2–3) rather than through a model repository — there is no BioModels or GitHub deposit and no formal data-availability statement.
+
+Reference: [Papers.md #240](../Papers.md#240) (Gomez Romero et al. 2026, bioRxiv).
 
 ## Embryonic & developmental myogenesis
 
