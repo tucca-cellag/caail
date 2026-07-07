@@ -12,7 +12,6 @@ Journal editorials, news features, and opinion pieces that survey or comment on 
 * [Teams of AI agents boost speed of research](https://www.nature.com/articles/d41586-026-01596-4) (*Nature* news feature, 2026) — overview of multi-agent AI systems that generate hypotheses, interpret data, and suggest ways to develop medicines.
 * [Long-running Claude for scientific computing](https://www.anthropic.com/research/long-running-Claude) (Anthropic) — research post on running Claude as a long-horizon autonomous agent on scientific-computing workloads.
 * [Vibe physics: The AI grad student](https://www.anthropic.com/research/vibe-physics) (Anthropic) — research post on using Claude as an AI research collaborator — an "AI grad student" — for physics problems.
-* [AI and cultivated meat: Near-term impacts of AI on the commercial viability of cultivated meat](https://rethinkpriorities.org/research-area/ai-and-cultivated-meat/) (Rethink Priorities report by H. Moulange & W. McAuliffe, 2026) — assesses where current and near-term AI tools can and cannot move the commercial viability of cultivated meat across the sector's technical, economic, regulatory, political, and consumer-facing bottlenecks, and argues that open-access data, not model capability, is the binding constraint on AI's potential uplift.
 
 ## Cell-Ag Ecosystem Initiatives
 
