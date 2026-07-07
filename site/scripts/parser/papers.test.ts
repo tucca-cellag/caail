@@ -146,19 +146,19 @@ describe('buildPapersModel — real Papers.md', () => {
     expect(PAPERS_MD_PATH.includes('/site/')).toBe(false);
   });
 
-  it('has 236 references', () => {
+  it('has 238 references', () => {
     // current Papers.md reference count; bump when refs are added.
-    expect(model.references.length).toBe(236);
+    expect(model.references.length).toBe(238);
   });
 
-  // Ground truth (bump when refs change): 77 DISTINCT refs with a code URL and
+  // Ground truth (bump when refs change): 78 DISTINCT refs with a code URL and
   // 10 with a non-null absolute data URL. (Ref 132's only data link is the relative
   // `./Datasets/` — rejected by the schema's `z.string().url()`, stored as null.)
-  it('has 77 refs with a code URL, consistent with hasCode', () => {
+  it('has 78 refs with a code URL, consistent with hasCode', () => {
     const withCodeUrl = model.references.filter((r) => r.codeUrl !== null).length;
     const withHasCode = model.references.filter((r) => r.hasCode).length;
-    expect(withCodeUrl).toBe(77);
-    expect(withHasCode).toBe(77);
+    expect(withCodeUrl).toBe(78);
+    expect(withHasCode).toBe(78);
   });
 
   it('has 10 refs with an absolute data URL', () => {

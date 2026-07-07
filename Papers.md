@@ -25,7 +25,7 @@ This document presents the core research papers at the intersection of Cellular 
 | [Chemistry / Synthesis Agents](./Taxonomy.md#chemistry--synthesis-agents) | | | | | | [Boiko et al. 2023](#70)<br>[Bran et al. 2024](#71) | |
 | [Domain-Specific Biomedical Agents](./Taxonomy.md#domain-specific-biomedical-agents) | | [Hao et al. 2025](#97)<br>[Roohani et al. 2025a](#125)<br>[Tang et al. 2026](#93) | | | | [Maeda & Kurata 2023](#69)<br>[Li et al. 2024](#68)<br>[Lee et al. 2025](#43)<br>[Wehling et al. 2025](#50)<br>[Singh et al. 2025](#167)<br>[Ying et al. 2025](#54)<br>[Wang et al. 2025a](#56)<br>[Sui et al. 2026](#51)<br>[Gao et al. 2025a](#40)<br>[Yu et al. 2026](#90)<br>[Youngblut et al. 2025](#126) | |
 | [Robot Scientists & Lab Automation](./Taxonomy.md#robot-scientists--lab-automation) | | [Singh et al. 2023](#66)<br>[Kanda et al. 2022](#16) | [Wang et al. 2025b](#61) | | | [King et al. 2004](#182)<br>[Tiukova et al. 2024](#64)<br>[Brunnsåker et al. 2025](#65)<br>[Qiu et al. 2025](#62)<br>[Ghareeb et al. 2026](#154) | |
-| [Benchmarks & Evaluation Frameworks](./Taxonomy.md#benchmarks--evaluation-frameworks) | | | | | | | [Sadhuka et al. 2025](#55)<br>[Brouwer et al. 2026](#89)<br>[Mitchener et al. 2025](#108)<br>[Bushuiev et al. 2024](#109)<br>[Sze & Hassoun 2024](#110)<br>[Chevalley et al. 2025](#127)<br>[Laurent et al. 2024](#146)<br>[Gu et al. 2025](#147)<br>[Notin et al. 2023](#148)<br>[Duan et al. 2025](#149)<br>[Nair et al. 2026](#150)<br>[Jimenez et al. 2024](#155)<br>[Rein et al. 2023](#156)<br>[Wang et al. 2024](#157)<br>[Phan et al. 2026](#158)<br>[Wang et al. 2026](#159)<br>[Huang et al. 2026](#164)<br>[Liu et al. 2026](#53)<br>[Adduri et al. 2025](#57)<br>[Miller et al. 2025](#225)<br>[Ahmed et al. 2026](#239) |
+| [Benchmarks & Evaluation Frameworks](./Taxonomy.md#benchmarks--evaluation-frameworks) | | | | | | | [Sadhuka et al. 2025](#55)<br>[Brouwer et al. 2026](#89)<br>[Mitchener et al. 2025](#108)<br>[Bushuiev et al. 2024](#109)<br>[Sze & Hassoun 2024](#110)<br>[Chevalley et al. 2025](#127)<br>[Laurent et al. 2024](#146)<br>[Gu et al. 2025](#147)<br>[Notin et al. 2023](#148)<br>[Duan et al. 2025](#149)<br>[Nair et al. 2026](#150)<br>[Jimenez et al. 2024](#155)<br>[Rein et al. 2023](#156)<br>[Wang et al. 2024](#157)<br>[Phan et al. 2026](#158)<br>[Wang et al. 2026](#159)<br>[Huang et al. 2026](#164)<br>[Liu et al. 2026](#53)<br>[Adduri et al. 2025](#57)<br>[Miller et al. 2025](#225)<br>[Ahmed et al. 2026](#239)<br>[Li & Ho 2026](#241) |
 | [Agent Infrastructure (Frameworks, KGs, Protocols)](./Taxonomy.md#agent-infrastructure-frameworks-kgs-protocols) | | | | | | [Gao et al. 2025b](#41)<br>[Lobentanzer et al. 2025](#48)<br>[Ruscone et al. 2025](#67)<br>[Kuehl et al. 2025](#133)<br>[Narayanan et al. 2024](#160)<br>[Qiao et al. 2026](#162)<br>[Wang et al. 2025b](#61)<br>[Tang et al. 2026](#93)<br>[Matsumoto et al. 2025](#219)<br>[Glen et al. 2025](#220) | |
 
 ## Category definitions
@@ -564,6 +564,10 @@ in its methods, not what it could be applied to. Short form:
 
 <a id="239">239</a> Ahmed, M. O., Amale, S. A., Bhavsar, R. D., Chopra, P., Jaimes, A., Kachhwah, A., Kalotra, C. D., Li, P., Li, X., Liao, Y., Roy, R., Senthilselvan, N., Shao, Y., Sharma, A. D., Shrivatsan, A., Xue, R., You, Y., Badkul, A., Xie, L., … Sinitskiy, A. (2026). *Real science is harder than benchmarks: Evaluating advanced AI frameworks on published studies. I. Uncertainty quantification, ML on Therapeutic Data Commons, and agent-based modeling.* bioRxiv. https://doi.org/10.64898/2026.06.24.734302
 
+<a id="241">241</a> Li, J., & Ho, A. (2026). *GeneBench-Pro: Evaluating multistage statistical reasoning in genomics, quantitative biology, and translational biomedicine.* bioRxiv. https://doi.org/10.64898/2026.06.29.735386
+
+> **Code**: https://huggingface.co/datasets/ajh-oai/genebench-pro-public-package
+
 ## Sensory & Flavor Reference Work
 
 This section catalogs foundational primary research and methodology papers in sensory science, flavor chemistry, and analytical sensomics relevant to cellular agriculture, cultivated meat, and alt-protein products. Entries here do not apply a specific AI / ML method to a specific cell-ag problem (otherwise they would live in the matrix), but they are essential reference work — empirical studies, methodology frameworks, and applied chemometric analyses — that any AI/ML application in this space should build on. The same numeric ID counter is shared with the primary references above; no matrix participation.
@@ -680,7 +684,7 @@ This section lists review articles, position papers, and commentaries that surve
 
 <a id="38">38</a> McNulty, M. J., Stout, A. J., & Kaplan, D. L. (2025). Meating the moment. *EMBO Reports, 26*(13), 3229–3235. https://doi.org/10.1038/s44319-025-00492-8
 
-<a id="39">39</a> Datta, B., Buehler, M. J., Chow, Y., Gligoric, K., Jurafsky, D., Kaplan, D. L., Ledesma-Amaro, R., Del Missier, G., Neidhardt, L., Pichara, K., Sanchez-Lengeling, B., Schlangen, M., St. Pierre, S. R., Tagkopoulos, I., Thomas, A., Watson, N. J., & Kuhl, E. (2026). Artificial Intelligence for Food Innovation. *arXiv.* https://doi.org/10.48550/arXiv.2509.21556
+<a id="39">39</a> Datta, B., Buehler, M. J., Chow, Y., Gligorić, K., Jurafsky, D., Kaplan, D. L., Ledesma-Amaro, R., Del Missier, G., Neidhardt, L., Pichara, K., Sanchez-Lengeling, B., Schlangen, M., St. Pierre, S. R., Tagkopoulos, I., Thomas, A., Watson, N. J., & Kuhl, E. (2026). Artificial intelligence for food innovation. *Nature Food.* https://doi.org/10.1038/s43016-026-01380-7
 
 <a id="76">76</a> Wang, Y., Tuccillo, F., Lampi, A.-M., Knaapila, A., Pulkkinen, M., Kariluoto, S., Coda, R., Edelmann, M., Jouppila, K., Sandell, M., Piironen, V., & Katina, K. (2022). Flavor challenges in extruded plant-based meat alternatives: A review. *Comprehensive Reviews in Food Science and Food Safety, 21*(3), 2898–2929. https://doi.org/10.1111/1541-4337.12964
 
@@ -741,3 +745,5 @@ This section lists review articles, position papers, and commentaries that surve
 <a id="233">233</a> Yu, J., Yao, D., Wang, L., & Xu, M. (2025). Machine learning in predicting and optimizing polymer printability for 3D bioprinting. *Polymers, 17*(13), 1873. https://doi.org/10.3390/polym17131873
 
 <a id="234">234</a> Ning, H., Zhou, T., & Joo, S. W. (2023). Machine learning boosts three-dimensional bioprinting. *International Journal of Bioprinting, 9*(4), 739. https://doi.org/10.18063/ijb.739
+
+<a id="242">242</a> Kew, B., Sridharan, S., & Sarkar, A. (2026). Mouthfeel assessment of alternative proteins: What we know so far? *Current Opinion in Food Science,* 101435. https://doi.org/10.1016/j.cofs.2026.101435

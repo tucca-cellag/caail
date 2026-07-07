@@ -126,9 +126,9 @@ describe('buildCatalogModel — real corpus', () => {
   });
 
   it('emits the verified ground-truth entry counts', () => {
-    // 87 / 84 = current Software.md / Databases.md H3 counts; bump when entries
+    // 88 / 84 = current Software.md / Databases.md H3 counts; bump when entries
     // are added. These MUST equal counts.json (asserted in generate-data).
-    expect(model.software).toHaveLength(87);
+    expect(model.software).toHaveLength(88);
     expect(model.databases).toHaveLength(84);
   });
 
