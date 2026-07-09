@@ -30,17 +30,23 @@ cells (→ *Media Optimization*) and the reactor they grow in (→ *Bioprocess &
 Running and **scaling the bioprocess** — bioreactor design, process monitoring and control, fermentation
 strategy, and the transport phenomena (mixing, mass transfer, fluid dynamics) that govern scale-up.
 In scope: reactor and impeller design, CFD/mixing simulation, fed-batch and feeding-strategy control,
-real-time process monitoring, and the chemical/biological-engineering know-how cultivated-meat
-manufacturing depends on at volume — including methods demonstrated on non-biological reactor physics
-that transfer directly to bioreactor scale-up. Out of scope: the medium recipe itself
+real-time process monitoring, precision-fermentation process design (microbial-host production of
+media proteins and growth factors, an in-scope cellular-agriculture route), and the
+chemical/biological-engineering know-how cultivated-meat manufacturing depends on at volume —
+including methods demonstrated on non-biological reactor physics that transfer directly to bioreactor
+scale-up. Out of scope: the medium recipe itself
 (→ *Media Optimization*) and intracellular biology (→ *Cellular Engineering*).
 *(Renamed from "Bioprocess control" to make the reactor/scale-up engineering scope explicit.)*
 
 ### Scaffolding
-Designing and predicting **scaffolds and structural biomaterials** that give cultured tissue its
-three-dimensional form and texture. In scope: scaffold geometry and architecture, mechanical-property
-prediction, tissue moulds, and biomaterial selection. Out of scope: the soluble medium
-(→ *Media Optimization*) and sensory outcomes of the finished product (→ *Sensory Prediction*).
+Designing and predicting **edible, food-grade scaffolds and structural biomaterials** that give
+cultured tissue its three-dimensional form and texture. In scope: scaffold geometry and architecture,
+mechanical-property prediction, tissue moulds, and food-grade biomaterial selection. Out of scope: the
+soluble medium (→ *Media Optimization*), sensory outcomes of the finished product
+(→ *Sensory Prediction*), and **non-edible biomedical scaffolds** (e.g. orthopedic or bone
+tissue-engineering constructs) whose methodology may transfer but whose application is not cellular
+agriculture; a general method demonstrated only on such a scaffold belongs in
+*AI Tooling / Methodology*, not here.
 
 ### Sensory Prediction
 Predicting **sensory, organoleptic, and quality attributes** of the product — flavor, odor, taste,
