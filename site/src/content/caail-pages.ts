@@ -205,11 +205,19 @@ const PAGES: Record<string, PageMeta> = {
     description:
       'CHO (Chinese Hamster Ovary) reference data — the biopharma cell-line GEM family and reference substrate for cell-ag metabolic modeling.',
   },
+  'datasets/microbialhostreference': {
+    title: 'Microbial Host Reference',
+    sidebarLabel: 'Microbial Hosts',
+    group: 'datasets',
+    order: 14,
+    description:
+      'Microbial-host reference data for precision-fermentation cellular agriculture — genome-scale metabolic models of yeast and Pichia production hosts.',
+  },
   'datasets/benchmarks': {
     title: 'Benchmark & Evaluation Datasets',
     sidebarLabel: 'Benchmarks',
     group: 'datasets',
-    order: 14,
+    order: 15,
     description:
       'AI/ML benchmark and evaluation datasets relevant to cellular agriculture — bundled eval suites for bioinformatics and protein models.',
   },

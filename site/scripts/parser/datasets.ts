@@ -39,7 +39,9 @@ export const SPECIES_PAGES: readonly string[] = [
 export const INVENTORY_PAGES: readonly string[] = [...SPECIES_PAGES, 'CrossSpecies'];
 
 /** Pages whose datasets are counted as `###` (H3) entries (no inventory table). */
-export const REFERENCE_PAGES: readonly string[] = ['HumanReference', 'CHOReference'];
+export const REFERENCE_PAGES: readonly string[] = [
+  'HumanReference', 'CHOReference', 'MicrobialHostReference',
+];
 
 /** The benchmarks page, whose datasets are counted as `##` (H2) entries. */
 export const BENCHMARKS_PAGE = 'Benchmarks';
