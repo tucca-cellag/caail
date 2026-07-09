@@ -4,6 +4,11 @@
 docs/superpowers/
 docs/research/
 
+# In-progress manuscript describing CAAIL (Scientific Data Data Descriptor draft
+# and its exports). Working artifact, not part of the published library, and not
+# to be committed/published prematurely.
+manuscript/
+
 # Local Claude Code worktrees — not part of the library
 .claude/worktrees/
 
