@@ -77,6 +77,30 @@ Summary: A modeling environment for simulating cell-cell and cell-environment in
 
 Summary: A physics-based framework specialized for multi-cell simulations. Can be used to model complex cell behaviors, including differentiation and nutrient limitations in tissue cultures.
 
+### [Morpheus](https://morpheus.gitlab.io/)
+
+Summary: A modeling and simulation environment for multicellular systems that couples cell behavior (motility, division, differentiation) with reaction-diffusion PDEs for the surrounding chemical fields, configured through a GUI rather than hand-written code. Applicable to modeling nutrient and signaling gradients across cultivated tissue and cell-scaffold constructs ([Starruß et al. 2014](https://doi.org/10.1093/bioinformatics/btt772), *Bioinformatics*).
+
+Project page: <https://morpheus.gitlab.io/>.
+
+### [pyFOOMB](https://github.com/MicroPhen/pyFOOMB)
+
+Summary: A Python framework for object-oriented modeling of bioprocesses aimed at users with limited programming experience, wrapping ODE model definition, event handling, and parameter estimation with uncertainty quantification for fed-batch and other bioreactor models. Useful for building and calibrating growth/substrate/product kinetic models of cultivated-cell bioprocesses ([Hemmerich et al. 2021](https://doi.org/10.1002/elsc.202000088), *Engineering in Life Sciences*).
+
+Docs: <https://github.com/MicroPhen/pyFOOMB/tree/main/examples>.
+
+### [MxlPy](https://github.com/Computational-Biology-Aachen/mxlpy)
+
+Summary: A Python package for mechanistic learning that combines mechanistic kinetic/metabolic modeling (ODE construction, simulation, parameter fitting, metabolic control analysis) with machine-learning surrogates, aimed at interpretable, data-informed models. Applicable to cell-ag bioprocess and metabolic modeling where mechanistic and data-driven components are combined ([van Aalst et al. 2025](https://doi.org/10.1101/2025.05.06.652335), *bioRxiv*). From the Computational Biology group at RWTH Aachen.
+
+Docs: <https://computational-biology-aachen.github.io/MxlPy/>.
+
+### [PC-Gym](https://github.com/MaximilianB2/pc-gym)
+
+Summary: A library of Gymnasium-style reinforcement-learning environments for process control, providing simulated reactor and separation systems (CSTR, multistage extraction column, and others) with configurable setpoints, disturbances, and constraints for benchmarking RL controllers. Gives cell-ag process-control work a standardized testbed for training and comparing RL policies for bioreactor regulation ([Bloor et al. 2024](https://doi.org/10.48550/arXiv.2410.22093), *arXiv*).
+
+Docs: <https://maximilianb2.github.io/pc-gym/>.
+
 ## Metabolic Modeling & Strain Design
 
 This section catalogs the open-source tooling for constraint-based and kinetic metabolic modeling — the computational stack used to build genome-scale metabolic models (GEMs), simulate flux distributions, design strain knockouts, and reason about cell physiology. These tools are the foundation for media-formulation optimization, bioprocess scale-up, and cell-line metabolic engineering in cellular agriculture. For cell-ag-specific GEMs (BtaSBML2986, iES1300, etc.), see the per-species pages in the [`Datasets/`](./Datasets/) directory. For canonical model repositories (BiGG Models, BioModels) and pathway / metabolome databases, see [Databases.md / Pathways, Metabolism & Metabolic Models](./Databases.md#pathways-metabolism--metabolic-models).
@@ -143,6 +167,48 @@ Summary: A Python package and command-line tool (Lobo lab, UMBC) for merging, co
 
 **Agent integration.** Code-execution agents (Cursor, Claude Code, Biomni) can invoke any of these tools as Python; for COBRApy specifically, the [`cobrapy` skill from K-Dense-AI's scientific-agent-skills](https://github.com/K-Dense-AI/scientific-agent-skills/tree/main/scientific-skills/cobrapy) (see the [K-Dense-AI entry below](#k-dense-ai)) provides curated recipes that make this reliable in agent loops.
 
+### [CarveMe](https://github.com/cdanielmachado/carveme)
+
+Summary: A command-line tool for automated, top-down reconstruction of genome-scale metabolic models directly from genome or protein sequences, using a manually curated universal model as the template. Builds draft models for single species or microbial communities in seconds, giving cell-ag teams a fast starting GEM for a feedstock organism or bioreactor consortium before manual curation ([Machado et al. 2018](https://doi.org/10.1093/nar/gky537), *Nucleic Acids Research*).
+
+Docs: <https://carveme.readthedocs.io/>.
+
+### [gapseq](https://github.com/jotech/gapseq)
+
+Summary: A tool that predicts metabolic pathways and transporters from genome sequences and reconstructs gap-filled genome-scale models informed by that pathway evidence. The pathway-prediction step is useful for building well-annotated GEMs of the microbial and feedstock organisms surrounding cultivated-meat and fermentation workflows ([Zimmermann et al. 2021](https://doi.org/10.1186/s13059-021-02295-1), *Genome Biology*).
+
+Docs: <https://gapseq.readthedocs.io/>.
+
+### [cameo](https://github.com/biosustain/cameo)
+
+Summary: A high-level Python library for computer-aided metabolic engineering built on COBRApy, providing strain-design algorithms (OptKnock, OptGene, differential flux variability, heuristic search) and simulation methods for predicting knockouts and interventions that increase a target product. Applies to redirecting flux in cultivated-cell or feedstock GEMs toward biomass or a desired metabolite. From the Biosustain group at DTU.
+
+Docs: <https://cameo.readthedocs.io/>.
+
+### [GECKO](https://github.com/SysBioChalmers/GECKO)
+
+Summary: A toolbox that enhances genome-scale models with enzyme constraints (GEM with Enzymatic Constraints using Kinetic and Omics data), adding enzyme-usage bounds derived from kcat values and proteomics so a model captures the proteome cost of flux. Enzyme-constrained models predict overflow metabolism and growth limits more accurately, which matters for cultivated-cell media and bioprocess modeling ([Domenzain et al. 2022](https://doi.org/10.1038/s41467-022-31421-1), *Nature Communications*).
+
+Docs: <https://github.com/SysBioChalmers/GECKO/wiki>.
+
+### [MEWpy](https://github.com/BioSystemsUM/mewpy)
+
+Summary: An integrated metabolic-engineering workbench for strain-design optimization that runs on top of constraint-based models, supporting multiple simulation methods (FBA, pFBA, MOMA, ROOM), evolutionary-computation search over gene/reaction/enzyme modifications, and regulatory and enzyme-constrained formulations. A flexible option for in-silico engineering of cultivated-cell or microbial GEMs when the design space extends beyond simple knockouts.
+
+Docs: <https://mewpy.readthedocs.io/>.
+
+### [pyTFA](https://github.com/EPFL-LCSB/pytfa)
+
+Summary: A Python implementation of thermodynamics-based flux analysis, adding Gibbs-free-energy and metabolite-concentration constraints to constraint-based models so predicted flux distributions are thermodynamically feasible. Tightens the realism of flux predictions for cultivated-cell and feedstock GEMs used in media and bioprocess design ([Salvy et al. 2019](https://doi.org/10.1093/bioinformatics/bty499), *Bioinformatics*). From the Hatzimanikatis lab at EPFL.
+
+Docs: <https://pytfa.readthedocs.io/>.
+
+### [MASSpy](https://github.com/SBRG/MASSpy)
+
+Summary: A Python package for building, simulating, and visualizing dynamic mass-action kinetic models of metabolism, extending constraint-based network structures with kinetic rate laws and ODE integration. Bridges steady-state GEM analysis and time-resolved kinetic simulation, useful for modeling the dynamics of cultivated-cell metabolism and spent-media turnover ([Haiman et al. 2021](https://doi.org/10.1371/journal.pcbi.1008208), *PLOS Computational Biology*). From the Systems Biology Research Group (SBRG) at UC San Diego.
+
+Docs: <https://masspy.readthedocs.io/>.
+
 ## Quantitative Genetics & Multi-Omics Analysis
 
 Open-source toolkits for population-genetics analysis of multi-omics data — molecular QTL mapping, gene-expression genetics, and the computational stack underneath FarmGTEx-style multi-tissue functional-genomics atlases. For livestock-species applications, see the corresponding atlases in [Databases.md / Livestock Multi-Tissue Atlases & Functional Genomics](./Databases.md#livestock-multi-tissue-atlases--functional-genomics) and the foundational papers in [Papers.md / Livestock Functional Genomics Reference Work](./Papers.md#livestock-functional-genomics-reference-work).
@@ -166,6 +232,24 @@ Summary: An R toolkit for inferring and analysing intercellular communication ne
 ### [Giotto Suite](https://github.com/giotto-suite/Giotto)
 
 Summary: An R package suite (Dries lab) for end-to-end spatial-transcriptomics and spatial multi-omics analysis at multiple scales and resolutions, including 2D/3D spatial analysis and cell–cell interaction analysis. Supports analysis of cultivated-tissue structure and microarchitecture.
+
+### [Open Problems](https://github.com/openproblems-bio/openproblems)
+
+Summary: A community benchmarking framework for single-cell analysis that pairs formalized tasks (batch integration, label projection, denoising, and more) with bundled datasets, standardized metrics, and baseline methods, so new methods are evaluated on common ground ([Luecken et al. 2025](https://doi.org/10.1038/s41587-025-02694-w), *Nature Biotechnology*). Because it ships its own data and evaluation harness, cell-ag teams can benchmark single-cell methods on cultivated-cell transcriptomics against a maintained, reproducible standard.
+
+Project page: <https://openproblems.bio/>.
+
+### [PanCanStem / mRNAsi](https://github.com/ArtemSokolov/PanCanStem)
+
+Summary: The code and one-class logistic regression (OCLR) signature behind the mRNA stemness index (mRNAsi), a transcriptomic score of undifferentiated / stem-like cell state derived across cancer types ([Malta et al. 2018](https://doi.org/10.1016/j.cell.2018.03.034), *Cell*). For cell-ag it offers a transferable, quantitative readout of stemness versus differentiation that can track how far cultivated cells have progressed toward mature muscle or fat identity.
+
+Docs: <https://github.com/ArtemSokolov/PanCanStem#readme>.
+
+### [Matrisome AnalyzeR](https://github.com/Matrisome/MatrisomeAnalyzeR)
+
+Summary: An R package that annotates and quantifies extracellular-matrix (matrisome) molecules in large omics datasets across organisms, classifying proteins and transcripts into matrisome categories for downstream analysis ([Petrov et al. 2023](https://doi.org/10.1242/jcs.261255), *Journal of Cell Science*). Directly applicable to cultivated-meat scaffolding and tissue-maturation work, where ECM composition is a key structural and sensory determinant.
+
+Project page: <https://matrisome.org/>.
 
 ## Mass Spectrometry & Chemometrics
 
@@ -248,6 +332,98 @@ An R / Bioconductor package for the integration and exploration of single- and m
 ### [SensoMineR](https://cran.r-project.org/web/packages/SensoMineR/index.html)
 
 A food-specific R package for the analysis of sensory data, maintained by the Le and Husson group at Agrocampus Ouest (Lê & Husson 2008, *J Sensory Studies*). Implements QDA, napping, sorted napping, projective mapping, preference mapping, and panel performance diagnostics; built on top of FactoMineR. The de-facto open-source tool for descriptive-analysis sensory panel data in academic food science, including alt-protein flavor benchmarking.
+
+### [matchms](https://github.com/matchms/matchms)
+
+Summary: A Python package for importing, cleaning, and comparing tandem mass spectrometry (MS/MS) data, with metadata harmonization, peak filtering, and a library of spectral similarity scores (cosine, modified cosine, and embedding-based measures). A building block for flavor and spent-media metabolomics pipelines that match measured spectra against reference libraries ([Huber et al. 2020](https://doi.org/10.21105/joss.02411), *Journal of Open Source Software*).
+
+Docs: <https://matchms.readthedocs.io/>.
+
+### [Skyline](https://skyline.ms/)
+
+Summary: A widely used open-source Windows application for building and analyzing targeted mass-spectrometry methods (SRM/MRM, PRM, DIA) across proteomics and metabolomics, from the MacCoss lab at the University of Washington. Standard tool for targeted quantification of specific proteins or metabolites, applicable to tracking defined growth factors, amino acids, or off-flavor compounds in cultivated-meat media and tissue.
+
+Docs: <https://skyline.ms/project/home/software/Skyline/begin.view>.
+
+### [asari](https://github.com/shuzhao-li-lab/asari)
+
+Summary: A Python tool for trackable, reproducible feature extraction from LC-MS metabolomics data, using a mass-grid and elution-track model to build a consistent feature table with explicit provenance for each peak. Its reproducibility focus suits cultivated-meat spent-media and flavor metabolomics studies where features must be tracked across large sample batches ([Li et al. 2023](https://doi.org/10.1038/s41467-023-39889-1), *Nature Communications*).
+
+Docs: <https://asari.readthedocs.io/>.
+
+### [chemotools](https://github.com/paucablop/chemotools)
+
+Summary: A Python library that brings chemometric spectral preprocessing (baseline correction, scatter correction, smoothing, derivatives, scaling, calibration transfer) into the scikit-learn API, so spectral pipelines compose with standard machine-learning estimators and cross-validation. Directly useful for building models over Raman, NIR, or IR spectra collected as bioreactor process-analytical measurements ([Cabaneros Lopez 2024](https://doi.org/10.21105/joss.06802), *Journal of Open Source Software*).
+
+Docs: <https://chemotools.org/>.
+
+### [RamanSPy](https://github.com/barahona-research-group/RamanSPy)
+
+Summary: An open-source Python package for integrative Raman spectroscopy analysis, providing standardized data loading from commercial instruments, preprocessing (cosmic-ray removal, denoising, baseline correction), analysis methods, and machine-learning integration. Relevant to cultivated-meat bioprocessing, where Raman is a common process-analytical-technology (PAT) probe for real-time monitoring of nutrients and metabolites in bioreactors ([Georgiev et al. 2024](https://doi.org/10.1021/acs.analchem.4c00383), *Analytical Chemistry*).
+
+Docs: <https://ramanspy.readthedocs.io/>.
+
+### [LipidSig 2.0](https://lipidsig.bioinfomics.org/)
+
+Summary: A web server for automated lipidomics data analysis that maps features onto LIPID MAPS lipid characteristics and provides differential-expression, machine-learning-based classification and feature selection, network, and correlation analyses. Applicable to characterizing the lipid composition of cultivated-meat cells and tissue, a determinant of nutritional profile and flavor ([Liu et al. 2024](https://doi.org/10.1093/nar/gkae335), *Nucleic Acids Research*).
+
+Project page: <https://lipidsig.bioinfomics.org/>.
+
+## Imaging & Segmentation
+
+Label-free imaging and cell / organelle segmentation are core to cultivated-cell QC, proliferation assays, and lipid / adipocyte quantification. The tools below turn microscopy images into quantitative, model-ready measurements.
+
+### [Cellpose](https://github.com/MouseLand/cellpose)
+
+Summary: A generalist deep-learning model for cell and nucleus segmentation that works across microscopy modalities without per-dataset retraining, from the Stringer and Pachitariu groups ([Stringer et al. 2021](https://doi.org/10.1038/s41592-020-01018-x), *Nature Methods*). For cell-ag it gives a ready segmentation backbone for proliferation counts, confluency tracking, and morphology readouts on cultivated muscle and fat cells.
+
+Docs: <https://cellpose.readthedocs.io/>.
+
+### [CellProfiler](https://github.com/CellProfiler/CellProfiler)
+
+Summary: A modular, no-code image-analysis platform for building high-content screening pipelines that measure cell count, shape, intensity, and texture across large image sets ([Stirling et al. 2021](https://doi.org/10.1186/s12859-021-04344-9), *BMC Bioinformatics*). Useful for cultivated-cell assay development where the same measurement pipeline is applied reproducibly across plates and conditions.
+
+Project page: <https://cellprofiler.org/>.
+
+### [StarDist](https://github.com/stardist/stardist)
+
+Summary: A deep-learning model that segments nuclei and cells as star-convex polygons, giving accurate instance boundaries in crowded fields where region-growing methods merge neighbors ([Schmidt et al. 2018](https://doi.org/10.1007/978-3-030-00934-2_30), *MICCAI 2018*). Applicable to dense cultivated-cell and organoid imaging where separating touching cells matters for accurate counts.
+
+Docs: <https://github.com/stardist/stardist#readme>.
+
+### [AdipoQ](https://github.com/hansenjn/AdipoQ)
+
+Summary: A pair of open-source ImageJ / Fiji plugins that quantify adipocyte morphology and lipid-droplet content in tissue sections and in vitro cultures ([Sieckmann et al. 2022](https://doi.org/10.1091/mbc.E21-11-0592), *Molecular Biology of the Cell*). Directly relevant to cultivated-fat characterization, where lipid accumulation and droplet size are primary readouts of adipogenic differentiation.
+
+Docs: <https://github.com/hansenjn/AdipoQ#readme>.
+
+## Olfaction & Sensory
+
+Predicting odor, taste, and flavor from molecular structure supports sensory design of cultivated and alternative-protein products, letting teams screen candidate flavor and off-flavor molecules computationally before instrumental or panel work.
+
+### [OpenPOM](https://github.com/BioMachineLearning/openpom)
+
+Summary: An open-source (MIT) implementation of the Principal Odor Map, an ensemble message-passing graph neural network that predicts odor descriptors directly from a molecule's structure (SMILES), built on DeepChem. It reproduces the modeling approach of [Lee et al. 2023](https://doi.org/10.1126/science.ade4401) (*Science*), which mapped structure to human olfactory perception. For cell-ag it offers a structure-to-odor predictor for reasoning about aroma-active compounds in cultivated-product flavor work.
+
+Docs: <https://github.com/BioMachineLearning/openpom#readme>.
+
+### [Pyrfume](https://github.com/pyrfume/pyrfume)
+
+Summary: A Python package that packages curated olfaction datasets (molecules paired with odor-perception data) in a standardized, analysis-ready form, so odor-prediction models can be trained and benchmarked on consistent inputs. Provides the data layer beneath structure-to-odor modeling for flavor and aroma work in cultivated and alt-protein products.
+
+Project page: <https://pyrfume.org/>.
+
+### [BitterSweet](https://github.com/cosylabiiit/bittersweet)
+
+Summary: Machine-learning models that predict the bitter or sweet taste of small molecules from freely available molecular descriptors, from the Bagler group (Center for Computational Biology, IIIT-Delhi) ([Tuwani et al. 2019](https://doi.org/10.1038/s41598-019-43664-y), *Scientific Reports*). Applicable to taste screening of media components, metabolites, and flavor molecules relevant to cultivated-product sensory design.
+
+Project page: <https://cosylab.iiitd.edu.in/bittersweet/>.
+
+### [TastepepAI](https://github.com/leleshidawang/TastepepAI)
+
+Summary: An AI framework for customized taste-peptide de novo design and safety assessment, predicting and generating peptides across multiple taste modalities ([Yue et al. 2025](https://doi.org/10.1371/journal.pcbi.1013602), *PLOS Computational Biology*). Relevant to cell-ag flavor engineering, where taste-active peptides shape the sensory profile of cultivated and fermentation-derived products. See also the related TastePeptides-Meta platform at <http://www.tastepeptides-meta.com/>.
+
+Docs: <https://github.com/leleshidawang/TastepepAI#readme>.
 
 ## Workflow-Manager Pipelines
 
@@ -423,6 +599,18 @@ Summary: A one-binary MCP server from GenomOncology unifying many biomedical kno
 ### [Context7](https://github.com/upstash/context7)
 
 Summary: An open-source MCP server (and hosted service) from Upstash that injects up-to-date, version-specific library documentation and code examples into LLM prompts, so AI coding agents work from current API docs instead of stale training data. Unlike the biomedical MCP servers above, Context7 is general developer infrastructure — not cell-ag-specific — but it is directly relevant to CAAIL's AI-agent audience: the coding agents that build and maintain cell-ag pipelines, parsers, and analysis tooling depend on accurate, current documentation for the bioinformatics and ML libraries they call. MIT-licensed; hosted at <https://context7.com>.
+
+### [Virtual Lab](https://github.com/zou-group/virtual-lab)
+
+Summary: An LLM multi-agent framework that runs a simulated "research lab" (a principal-investigator agent coordinating specialist agents plus a critic) to tackle open-ended scientific problems, from the Zou group at Stanford ([Swanson et al. 2025](https://doi.org/10.1038/s41586-025-09442-9), *Nature*), where it designed SARS-CoV-2 nanobodies with experimental validation. For cell-ag it is a reusable pattern for multi-agent experiment design and hypothesis generation across media, cell-engineering, and bioprocess problems.
+
+Docs: <https://github.com/zou-group/virtual-lab#readme>.
+
+### [Coscientist](https://github.com/gomesgroup/coscientist)
+
+Summary: An autonomous LLM-driven agent that plans, codes, and executes chemistry experiments end to end, combining web search, documentation retrieval, and control of automated lab hardware ([Boiko et al. 2023](https://doi.org/10.1038/s41586-023-06792-0), *Nature*). A reference architecture for closed-loop autonomous experimentation that maps onto cell-ag tasks such as automated media-formulation or assay optimization. Companion to [Papers.md ref #70](./Papers.md#70).
+
+Docs: <https://github.com/gomesgroup/coscientist#readme>.
 
 ## Data Standards & Interchange Formats
 
