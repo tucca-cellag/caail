@@ -32,6 +32,18 @@ ArrayExpress, now part of the broader BioStudies platform at EMBL-EBI, is a publ
 
 RNAcentral is an EMBL-EBI-coordinated comprehensive database of non-coding RNA sequences that aggregates and cross-references ncRNA data from many expert databases (Rfam, miRBase, Ensembl, GtRNAdb, and others) into a single search-and-retrieval resource with stable RNAcentral identifiers, spanning tens of millions of ncRNA sequences across all domains of life. For cellular agriculture, RNAcentral is a reference for the regulatory RNAs — microRNAs, lncRNAs — that shape myogenic and adipogenic differentiation in cultivated-cell lineages, and a substrate for ML on RNA-based regulation of cell state. Programmatic access via the RNAcentral REST API and bulk downloads.
 
+### [European Nucleotide Archive (ENA)](https://www.ebi.ac.uk/ena/browser/)
+
+The European Nucleotide Archive is EMBL-EBI's public repository for nucleotide sequence data and one of the three INSDC partners that synchronize records daily with NCBI (GenBank / SRA) and DDBJ, so a sequence deposited at any one partner is retrievable from all three. ENA spans raw sequencing reads, assembled and annotated sequences, and study/sample metadata across essentially every organism, including the major cell-ag livestock. For cellular agriculture, ENA is the European entry point for the same underlying INSDC data as SRA and GenBank, useful when a livestock cell-biology study is deposited primarily in ENA or when EMBL-EBI's browser, discovery, and bulk-download tooling fits the pipeline better. Programmatic access is via the ENA Browser REST API and the `enaBrowserTools` clients.
+
+### [NGDC Genome Sequence Archive (GSA)](https://ngdc.cncb.ac.cn/gsa/)
+
+The Genome Sequence Archive is the raw-sequence-data repository of the National Genomics Data Center (NGDC) at the China National Center for Bioinformation (CNCB), a Global Core Biodata Resource that stores, manages, and shares omics raw data and now integrates INSDC SRA metadata for unified search. For cellular agriculture, GSA matters because a large share of recent livestock atlas and functional-genomics work (including the FarmGTEx per-species deposits under PRJCA project accessions) is submitted here rather than to NCBI, making it the primary source for re-analyzing those raw reads. Programmatic access is via the NGDC/GSA REST API and bulk download.
+
+### [EMBL-EBI Expression Atlas](https://www.ebi.ac.uk/gxa/home)
+
+Expression Atlas is EMBL-EBI's curated resource for gene expression across species and biological conditions, covering both bulk and single-cell data (the latter through the linked Single Cell Expression Atlas) and processing all RNA-seq through a consistent pipeline so studies are comparable. It spans dozens of species and thousands of studies, queryable by gene, tissue, treatment, and disease state. For cellular agriculture, it is a practical way to ask where a growth factor, receptor, or myogenic regulator is expressed across tissues and species without assembling raw data by hand, and to pull curated expression baselines for livestock and reference organisms. Programmatic access is via the Expression Atlas REST API and the `ExpressionAtlas` R package.
+
 ## Livestock Multi-Tissue Atlases & Functional Genomics
 
 Per-species multi-tissue expression, regulatory-effects, and functional-genomics atlases for cell-ag-relevant livestock species. The Farm Animal Genotype–Tissue Expression (FarmGTEx) project family is the canonical effort here — modeled after human GTEx, scaled across cattle, pig, chicken, and sheep — paired with the broader FAANG (Functional Annotation of Animal Genomes) network and species-specific biobank portals. For the foundational papers, see [Papers.md / Livestock Functional Genomics Reference Work](./Papers.md#livestock-functional-genomics-reference-work); for the analysis tooling, see [Software.md / Quantitative Genetics & Multi-Omics Analysis](./Software.md#quantitative-genetics--multi-omics-analysis).
@@ -79,6 +91,34 @@ The FAANG consortium's cattle functional-annotation project, generating maps of 
 ### [GENE-SWitCH](https://www.gene-switch.eu/)
 
 The FAANG consortium's pig + chicken project — *the regulatory GENomE of SWine and CHicken: functional annotation during development*. The [data hub](https://data.faang.org/projects/GENE-SWitCH) hosts the open releases (19 datasets at time of curation, covering pig and chicken functional genomes during development). Substrate for cultivated-pork and cultivated-chicken developmental-biology and lineage-engineering work; complementary to [PigGTEx-Portal](#piggtex-portal) and [ChickenGTEx-Portal](#chickengtex-portal). Cross-referenced from [Datasets/Pig.md](./Datasets/Pig.md) and [Datasets/Chicken.md](./Datasets/Chicken.md).
+
+### [Animal QTLdb](https://www.animalgenome.org/cgi-bin/QTLdb/index)
+
+The Animal QTLdb, hosted at Iowa State University's animalgenome.org, collects publicly reported trait-mapping data mapped to livestock genomes, spanning cattle, pig, chicken, sheep, goat, horse, and rainbow trout. It catalogs over 300,000 QTL and trait-association records, alongside GWAS results, candidate genes, and copy-number variations, all keyed to measured traits and genome assemblies. For cellular agriculture, it is the canonical trait-to-locus reference for the muscle-growth, fat-deposition, and meat-quality traits that inform cell-line selection and engineering targets in cultivated meat. Data is browsable per species and downloadable in GFF and tab-delimited formats for programmatic use.
+
+### [Bgee](https://www.bgee.org/)
+
+Bgee is a curated database of gene-expression patterns across multiple animal species, built exclusively from healthy wild-type samples so that expression calls reflect normal physiology rather than disease or perturbation states. It integrates RNA-seq, single-cell RNA-seq, and older expression assays under a consistent annotation and quality pipeline, and is maintained by the SIB Swiss Institute of Bioinformatics and the University of Lausanne. For cellular agriculture, Bgee supports cross-species expression comparison, letting a gene characterized in human or mouse be checked against its expression in bovine, porcine, chicken, or fish tissues so that media components and engineered constructs can be reasoned about across cell-ag species. Programmatic access is available through the Bgee R packages (BgeeDB) and a SPARQL endpoint.
+
+## Cell-Culture Media & Growth-Factor Databases
+
+Media formulation is a central cost and optimization lever in cultivated meat, where serum replacement and growth-factor sourcing dominate production economics. These resources catalogue defined media, serum-free formulations, and the component-level chemistry and interaction data that ML models of media optimization train on.
+
+### [MediaAssist](https://mediaassist.ncl.res.in/)
+
+MediaAssist is a database supporting the design and optimization of cell-culture medium, developed by the Gadgil group at CSIR-National Chemical Laboratory (Pune). It catalogues 39 medium components across sugars, amino acids, vitamins, and trace metals, and for each provides formulation parameters (reported concentrations), chemical properties (solubility, stability), biological parameters (specific uptake rates, nutrient transporters), and 292 curated component co-dependencies affecting growth, viability, stability, product expression, and nutrient transport. For cellular agriculture, MediaAssist is a structured starting point for rational serum-free media design and for building priors into media-optimization ML, filling a gap other databases do not cover ([Gadgil et al. 2025](https://doi.org/10.1093/nar/gkaf982), *Nucleic Acids Research*).
+
+### [FCS-Free Database](https://fcs-free.sites.uu.nl/)
+
+The FCS-Free Database, maintained by the 3Rs Centre Utrecht at Utrecht University, is a searchable overview of commercially available serum-free media and cell-culture supplements plus alternative medium compositions reported in the literature, indexed to the cell types they support. It exists to help researchers phase out Fetal Calf Serum (also called Fetal Bovine Serum), which is harvested from bovine fetuses during slaughter of pregnant cattle. Replacing FBS is one of the central goals of cultivated-meat media development, and this database is the primary lookup for identifying candidate serum-free formulations for a given cell line (RRID: SCR_018769).
+
+### [MediaDive](https://mediadive.dsmz.de/)
+
+MediaDive is DSMZ's cultivation-media database, described as the largest collection of its kind, holding 3,338 culture-media formulations, 5,905 solutions, 1,244 ingredients, and growth data for over 48,000 microbial strains, developed with partners including JCM, CCAP, and NBRC. It provides a medium builder, solution finder, and medium-comparison tools. For cellular agriculture, MediaDive is the reference for microbial and host-organism growth media relevant to precision-fermentation routes to recombinant growth factors and media proteins.
+
+### [MediaDB](https://mediadb.systemsbiology.net/)
+
+MediaDB is a database of chemically-defined growth media maintained by the Price Lab at the Institute for Systems Biology, compiling media formulations from primary literature for fully sequenced organisms, with emphasis on species that have genome-scale metabolic models. It exposes searchable records for compounds, media formulations, organisms, biomass compositions, and growth data. For cellular agriculture, MediaDB is useful for parameterising and reconstructing genome-scale metabolic models of production organisms and for connecting defined-media compositions to organism phenotypes, complementing the GEM resources in the [Datasets/](./Datasets/) directory.
 
 ## Protein & Structure Databases
 
@@ -160,6 +200,110 @@ CZ CELLxGENE is the Chan Zuckerberg Initiative's platform for exploring and anal
 
 scBaseCount is Arc Institute's AI-agent-curated, uniformly processed, and continuously updated single-cell RNA-seq repository — an agentic pipeline continuously mines public scRNA-seq studies and reprocesses them into a single harmonised count-matrix reference spanning many organisms. For cellular agriculture it is a large, harmonised cross-study source for assembling reference and training sets across species, complementary to CZ CELLxGENE. It is also catalogued as a train-on corpus in [Datasets/HumanReference.md](./Datasets/HumanReference.md#scbasecount); companion to [Papers.md ref #126](./Papers.md#126) (Youngblut et al. 2025).
 
+## Muscle & Functional Gene Sets
+
+These curated muscle gene sets and co-expression resources are the functional-genomics reference layer for cultivated-muscle work: enrichment analysis of satellite-cell and myotube transcriptomes, and lookup of which genes move together during myogenesis.
+
+### [Muscle Gene Sets (sys-myo)](https://www.sys-myo.com/muscle_gene_sets/)
+
+Muscle Gene Sets is a curated collection of roughly 1,517 muscle-related gene sets in GMT format, assembled by the sys-myo group for enrichment analysis in the neuromuscular field ([Malatras et al. 2019](https://doi.org/10.1186/s13395-019-0196-z), *Skeletal Muscle*). For cellular agriculture it is a ready-made reference for testing whether the transcriptome of cultivated bovine or porcine satellite cells, myoblasts, or differentiating myotubes is enriched for myogenic, sarcomeric, or metabolic muscle programs, feeding directly into GSEA / over-representation pipelines that characterize cell-line identity and differentiation state.
+
+### [MyoMiner](https://www.sys-myo.com/myominer/)
+
+MyoMiner is the sys-myo group's muscle gene co-expression explorer, a sibling resource to Muscle Gene Sets that reports pairwise co-expression across large collections of normal and pathological muscle samples ([Malatras et al. 2020](https://doi.org/10.1186/s12920-020-0712-3), *BMC Medical Genomics*). For cultivated-muscle work it helps surface genes co-regulated with known myogenic regulators (MYOD1, PAX7, MYF5), suggesting candidate markers and network partners for characterizing or engineering satellite-cell proliferation and differentiation.
+
+## Cellular Aging & Senescence
+
+Replicative limits, senescence entry, and the senescence-associated secretory phenotype (SASP) are central concerns for cultivated-meat cell lines that must proliferate for many population doublings without transformation. These resources catalogue the genes, transcriptomic panels, secreted factors, and telomerase machinery that define aging and immortalization.
+
+### [Human Ageing Genomic Resources (HAGR)](https://genomics.senescence.info/)
+
+HAGR is a suite of aging and longevity databases (GenAge for ageing-related genes, AnAge for cross-species longevity records, and others) maintained by the de Magalhães group ([Tacutu et al. 2018](https://doi.org/10.1093/nar/gkx1042), *Nucleic Acids Research*). For cellular agriculture, HAGR is a substrate for reasoning about replicative and longevity limits when selecting or engineering cell lines: AnAge's species-level lifespan and cell-turnover records and GenAge's gene sets inform which pathways bound proliferative capacity in bovine, porcine, avian, and fish cells.
+
+### [CellAge](https://genomics.senescence.info/cells/)
+
+CellAge is a curated database of genes associated with cellular senescence, part of the HAGR family, linking each gene to the experimental evidence that it drives or suppresses senescence ([Avelar et al. 2020](https://doi.org/10.1186/s13059-020-01990-9), *Genome Biology*). For cultivated-cell lines it provides a vetted list of senescence-regulating genes to monitor or target when extending proliferative lifespan without resorting to full transformation.
+
+### [SenMayo](https://doi.org/10.1038/s41467-022-32552-1)
+
+SenMayo is a 125-gene transcriptomic panel of senescence and SASP markers, curated to detect senescent cells across tissues and usable across species, distributed as supplementary gene lists and through enrichment libraries ([Saul et al. 2022](https://doi.org/10.1038/s41467-022-32552-1), *Nature Communications*). For cellular agriculture it is a practical scoring signature for flagging senescence burden in cultivated muscle and fat cultures from bulk or single-cell RNA-seq, a readout for comparing media formulations, passage number, or immortalization strategies.
+
+### [CSGene](https://bioinfo-minzhao.org/csgene/)
+
+CSGene is a literature-curated database of roughly 500 cell-senescence genes with their associated pathways and disease links ([Zhao et al. 2016](https://doi.org/10.1038/cddis.2015.414), *Cell Death & Disease*). It is a broader complement to CellAge for cultivated-meat cell-line work, widening the candidate set of senescence regulators to screen when troubleshooting proliferative arrest in long-term cultures.
+
+### [SASP Atlas](https://www.saspatlas.com/)
+
+The SASP Atlas is a proteomic atlas of senescence-associated secretory phenotype factors, cataloguing the proteins that senescent cells release under different senescence inducers ([Basisty et al. 2020](https://doi.org/10.1371/journal.pbio.3000599), *PLOS Biology*; raw data at MassIVE MSV000083468). For cellular agriculture it is a spent-media and secretome reference: the SASP protein catalogue helps interpret conditioned-medium proteomics from aging cultures and distinguish healthy paracrine signaling from senescence-driven secretion that can degrade tissue quality.
+
+### [The Telomerase Database](https://telomerase.us/)
+
+The Telomerase Database compiles telomerase RNA and TERT protein sequences, structures, and mutations across more than 100 eukaryotic species ([Podlevsky et al. 2008](https://doi.org/10.1093/nar/gkm700), *Nucleic Acids Research*). For cultivated-meat cell lines, where controlled telomerase (TERT) reactivation is a common immortalization route, it is the reference for TERT and telomerase-RNA sequence and structure across bovine, porcine, avian, and fish species when designing species-matched immortalization constructs.
+
+## Stemness Signatures
+
+Cultivated meat depends on maintaining and directing stem and progenitor cells (satellite cells, adipogenic progenitors, pluripotent lines). These resources let you test whether a transcriptome carries a stemness signature and compare it against curated stem-cell reference expression.
+
+### [StemChecker](http://stemchecker.sysbiolab.eu/)
+
+StemChecker is a web tool and database for discovering and exploring stemness signatures in gene sets, testing an input list against curated stem-cell gene signatures and transcription-factor targets ([Pinto et al. 2015](https://doi.org/10.1093/nar/gkv529), *Nucleic Acids Research*). For cellular agriculture it offers a quick assessment of whether cultivated satellite cells or induced lines retain a stem/progenitor expression program, useful for tracking loss of stemness across passages or media conditions.
+
+### [StemMapper](http://stemmapper.sysbiolab.eu/)
+
+StemMapper is a curated gene-expression database for stem-cell lineage analysis from the same lab as StemChecker, providing manually curated, quality-controlled transcriptomes across many stem and progenitor cell types ([Pinto et al. 2018](https://doi.org/10.1093/nar/gkx921), *Nucleic Acids Research*). For cultivated-cell work it is a reference panel for benchmarking the expression state of candidate cell lines against established stem and differentiated profiles.
+
+## ECM & Matrisome
+
+Scaffolding and tissue structure in cultivated meat depend on the extracellular matrix (ECM) that cells secrete and remodel. These resources define the matrisome (the full ECM protein complement) and its interaction networks for enrichment analysis and scaffold-biology reasoning.
+
+### [Matrisome gene sets (NABA, MSigDB C2)](https://www.gsea-msigdb.org/gsea/msigdb/)
+
+The NABA matrisome gene sets, hosted in the MSigDB C2 collection, partition the ECM into a core matrisome (collagens, ECM glycoproteins, proteoglycans) and matrisome-associated categories (ECM regulators, secreted factors, ECM-affiliated proteins), following the in-silico matrisome definition of [Naba et al. 2012](https://doi.org/10.1074/mcp.M111.014647) (*Molecular & Cellular Proteomics*). They are the ECM analog of the muscle gene sets above: for cultivated meat they let you run enrichment analysis on scaffolding and ECM-deposition transcriptomes or proteomes to quantify how much matrix a cell line produces and of which type.
+
+### [MatrisomeDB 2.0](https://matrisomedb.org/)
+
+MatrisomeDB is an ECM-protein proteomics knowledge base that aggregates mass-spectrometry evidence for matrisome proteins across many studies, tissues, and disease contexts, with peptide-to-domain mapping and 3D sequence-coverage visualization ([Shao et al. 2023](https://doi.org/10.1093/nar/gkac1009), *Nucleic Acids Research*). Coverage spans human, mouse, and xenograft samples across categories from collagens to secreted factors. For cellular agriculture it is a reference for which ECM proteins are experimentally observed in muscle, fat, cartilage, and other tissues, informing scaffold-composition targets and the interpretation of cultivated-tissue ECM proteomics.
+
+### [MatrixDB](https://matrixdb.univ-lyon1.fr/)
+
+MatrixDB is a database of extracellular-matrix interactions, cataloguing experimentally supported interactions among ECM proteins, proteoglycans, glycosaminoglycans, and their partners, with a Network Explorer for browsing ECM interaction networks ([Samarasinghe et al. 2024](https://doi.org/10.1093/nar/gkae1088), *Nucleic Acids Research*). For cultivated meat it supports graph-based reasoning about ECM assembly and cell-matrix adhesion, relevant to designing scaffolds and predicting how secreted matrix components will self-organize in engineered tissue.
+
+## Codon Usage & Sequence-Design Databases
+
+Codon optimization shapes how well a transgene, recombinant growth factor, or reporter expresses in a chosen host, so per-organism codon-usage statistics and tRNA-gene inventories are direct reference data for construct design in cultivated-cell engineering and precision fermentation.
+
+### [Kazusa Codon Usage Database](https://www.kazusa.or.jp/codon/)
+
+The Kazusa Codon Usage Database, maintained at the Kazusa DNA Research Institute, provides per-organism codon-usage tables computed from GenBank protein-coding sequences, covering more than 35,000 organisms. Its companion Countcodon program computes a usage table from a user-supplied sequence. For cellular agriculture, it is a quick reference for the codon preferences of expression hosts and of the livestock species whose genes are being cloned, informing codon-optimized designs of recombinant media proteins and engineered constructs. Note that the tables derive from an older GenBank flat-file release, so pair it with a continuously updated resource such as CoCoPUTs when current statistics matter.
+
+### [CoCoPUTs (Codon and Codon Pair Usage Tables)](https://dnahive.fda.gov/dna.cgi?cmd=cuts_main)
+
+CoCoPUTs, part of the HIVE-CUTs family hosted by HIVE at the US FDA (from the Kimchi-Sarfaty group), reports the relative usage of both individual codons and codon pairs for every species with sequence data in GenBank and RefSeq, preferring RefSeq assemblies where available, and is regularly updated. Beyond raw tables it provides codon-usage-bias metrics (ENC, ENCP), codon-pair heatmaps, and downloadable data files. For cellular agriculture, it is the current, broad-coverage reference for codon and codon-pair optimization of transgenes and recombinant growth factors in cultivated-cell and fermentation hosts, and a more up-to-date alternative to the Kazusa tables.
+
+### [GtRNAdb (Genomic tRNA Database)](https://gtrnadb.ucsc.edu/)
+
+GtRNAdb, maintained by the Lowe Lab at UC Santa Cruz, catalogs genomic tRNA-gene predictions from tRNAscan-SE across thousands of sequenced genomes spanning bacteria, archaea, and eukaryotes, with searchable, alignable, and downloadable tRNA-gene sets. For cellular agriculture, the tRNA-gene complement of a host genome complements codon-usage tables when reasoning about translational supply for codon-optimized constructs, and helps flag rare-codon liabilities in recombinant-protein designs for cultivated-cell and fermentation systems.
+
+## Plasmid & Reagent Repositories
+
+Shared, quality-controlled plasmid and reagent repositories are the practical supply chain behind cell-line engineering, giving cultivated-meat labs access to the expression vectors, CRISPR tools, and reporters that immortalization and differentiation work depends on.
+
+### [Addgene](https://www.addgene.org/)
+
+Addgene is a nonprofit plasmid repository that distributes research plasmids on behalf of thousands of depositing labs, alongside ready-to-use viral vectors (AAV and lentivirus preparations) and recombinant antibodies, with standardized quality control and full sequence records for each item. For cellular agriculture, Addgene is the canonical source for the CRISPR/Cas systems, expression and reporter vectors, and lineage-reprogramming constructs used to immortalize and engineer livestock cell lines, and its per-plasmid maps and sequences double as a reference for construct design. Materials are requested through the Addgene website with associated depositor and publication metadata.
+
+## Biological & Food Ontologies
+
+Shared ontologies give cell-ag data a consistent, machine-readable vocabulary, so that cell types, food products, and source organisms are annotated with stable identifiers that AI systems and cross-study integrations can rely on rather than free-text labels.
+
+### [FoodOn](https://foodon.org/)
+
+FoodOn is a farm-to-fork food ontology and open member of the OBO Foundry, providing a controlled vocabulary of over 9,600 food-product categories along with source organisms (the animal, plant, and fungal parts that bear a food role), harvest and processing states, and production methods. For cellular agriculture, FoodOn supplies standard terms for describing cultivated products, feedstocks, and ingredient source organisms, supporting FAIR annotation of datasets and interoperability with food-science and regulatory data. It is developed openly on GitHub and exportable in standard ontology formats.
+
+### [Cell Ontology (CL)](https://obophenotype.github.io/cell-ontology/)
+
+The Cell Ontology is an OBO Foundry ontology covering canonical, natural biological cell types, giving each type a stable identifier and structured relationships to related types. For cellular agriculture, CL is the standard vocabulary for annotating the cell types in single-cell datasets of cultivated-relevant lineages (satellite cells, fibroblasts, adipocytes, endothelial cells), so that cross-study and cross-species single-cell references align on cell identity rather than ad hoc labels. It is browsable via the EBI Ontology Lookup Service and downloadable from its GitHub releases.
+
 ## Pathways, Metabolism & Metabolic Models
 
 Resources for cell-ag work on media formulation, metabolic engineering, and bioprocess optimization — where understanding metabolic networks, enzyme kinetics, and metabolite concentrations is central.
@@ -216,6 +360,18 @@ MetaNetX is a repository and reconciliation layer for genome-scale metabolic mod
 
 Summary: A free, open-source repository of mathematical models of biological and biomedical systems, hosted by EMBL-EBI, containing thousands of curated SBML models spanning metabolism, signaling, cell-cycle, immunology, and pharmacokinetics. Models are versioned, peer-reviewed via the Curation Service, and accessible programmatically via a REST API. Endorsed companion to the Talk2Biomodels agent ([Papers.md ref #50](./Papers.md#50)).
 
+### [Rhea](https://www.rhea-db.org/)
+
+Rhea is an expert-curated database of biochemical reactions maintained at the SIB, describing reactions with chemically balanced participants defined against the ChEBI ontology and cross-linked to UniProt enzymes. It is a reference reaction set used in genome-scale metabolic-model reconstruction and enzyme annotation. For cellular agriculture, Rhea supplies the curated reaction definitions needed to build and check GEMs of cultivated-cell metabolism and to connect media metabolites to the enzymes that transform them. Programmatic access via REST and SPARQL endpoints and bulk downloads.
+
+### [Virtual Metabolic Human (VMH)](https://www.vmh.life/)
+
+VMH integrates human metabolism, gut-microbial metabolism, nutrition, and disease into a single queryable resource, hosting the Recon human metabolic reconstructions, the AGORA microbiome models, and a database of food-derived metabolites. For cellular agriculture, VMH is useful for reasoning about human-relevant metabolic capacities and for sourcing food-metabolite and nutrition data when designing or benchmarking media formulations. Programmatic access via a REST API and bulk downloads.
+
+### [Metabolomics Workbench](https://www.metabolomicsworkbench.org/)
+
+The Metabolomics Workbench is the NIH Common Fund's metabolomics data repository and analysis platform, hosting thousands of deposited studies with raw and processed MS / NMR data plus the integrated Metabolite Database and RefMet reference nomenclature. For cellular agriculture, it is both a source of training and comparison data for spent-media and tissue metabolomics and a standardized-naming reference (RefMet) for harmonizing metabolite identifiers across studies. Programmatic access via the REST API.
+
 ## Mass Spectrometry Spectral Databases
 
 Reference spectral data resources for compound identification in mass-spectrometry workflows — essential analytical infrastructure for flavor metabolomics, off-flavor characterization, and spent-media analysis in cultivated meat. Pair these databases with the MS preprocessing / annotation tools in [Software.md / Mass Spectrometry & Chemometrics](./Software.md#mass-spectrometry--chemometrics).
@@ -235,6 +391,30 @@ MetaboLights is a public open-access repository for metabolomics experiments hos
 ### [GNPS](https://gnps.ucsd.edu/) (cross-listed)
 
 The Global Natural Products Social Molecular Networking platform from the Dorrestein lab at UCSD provides community-curated MS/MS reference spectral libraries — the database aspect listed here — alongside Feature-Based Molecular Networking, Ion Identity Molecular Networking, and analog-search tooling, which together make it primarily an analysis platform. Full entry and platform-level capabilities are in [Software.md / Mass Spectrometry & Chemometrics](./Software.md#gnps); this dual-listing surfaces it as a spectral database for readers browsing Databases.md.
+
+### [MoNA (MassBank of North America)](https://mona.fiehnlab.ucdavis.edu/)
+
+MoNA is an open, metadata-rich repository of mass spectra hosted by the Fiehn Lab at UC Davis, aggregating experimental and in-silico EI, LC-MS/MS, and GC-MS spectra (millions of records) with structures and searchable metadata. It complements the federated [MassBank](#massbank) project as a large, freely downloadable North American contribution hub. For cellular agriculture, MoNA is reference data for annotating volatiles and metabolites in cultivated tissues and spent media, pairing well with MS-DIAL and other Fiehn-Lab tooling. Programmatic access via REST API and bulk downloads.
+
+### [METLIN](https://metlin.scripps.edu/)
+
+METLIN is a large metabolite and small-molecule MS/MS reference library developed at Scripps Research (Siuzdak lab), providing experimental fragmentation spectra across multiple collision energies and adducts for a large set of molecular standards. For cellular agriculture, METLIN supports confident identification of metabolites and flavor-relevant small molecules in untargeted metabolomics of cultivated cells and media. Access requires free registration.
+
+### [SDBS (Spectral Database for Organic Compounds)](https://sdbs.db.aist.go.jp/)
+
+SDBS is a free spectral database of organic compounds maintained by Japan's National Institute of Advanced Industrial Science and Technology (AIST), providing EI mass spectra, 1H / 13C NMR, IR, Raman, and ESR spectra for tens of thousands of compounds. For cellular agriculture, SDBS is a cross-technique reference for confirming the identity of media components, flavor compounds, and metabolites when matching experimental spectra. Free interactive web access.
+
+### [SpectraBase](https://spectrabase.com/)
+
+SpectraBase is a free spectral repository from Wiley that aggregates hundreds of thousands of IR, NMR, mass, UV-Vis, and Raman spectra with structure and text search. For cellular agriculture, SpectraBase is a convenient fallback reference for spectral identification of flavor precursors, media additives, and metabolites not covered by the domain-specific libraries above. Free web access.
+
+### [Raman Open Database](https://solsa.crystallography.net/rod/)
+
+The Raman Open Database is an open-access collection of Raman spectra built on the Crystallography Open Database infrastructure, distributing raw spectra with structural and provenance metadata under open licenses. For cellular agriculture, it is a reference for Raman-based process analytics, where inline Raman spectroscopy is used to monitor nutrients, metabolites, and cell state in bioreactors. Bulk and programmatic access via the COD-style download interfaces.
+
+### [Golm Metabolome Database (GMD)](http://gmd.mpimp-golm.mpg.de/)
+
+GMD, maintained at the Max Planck Institute of Molecular Plant Physiology, is a reference resource for GC-MS-based metabolite profiling, providing EI mass spectra and retention-index information for metabolites and their trimethylsilyl derivatives. It complements the LC-MS-weighted libraries above with the GC-MS reference data central to volatile and derivatized-metabolite workflows. For cellular agriculture, GMD supports identification of primary metabolites and flavor-relevant volatiles in GC-MS analyses of cultivated tissues and spent media ([Kopka et al. 2005](https://doi.org/10.1093/bioinformatics/bti236), *Bioinformatics*).
 
 ## Chemistry & Compound Databases
 
@@ -263,6 +443,10 @@ ChEBI (Chemical Entities of Biological Interest) is EMBL-EBI's curated ontology 
 ### [T3DB (Toxin and Toxin-Target Database)](https://www.t3db.ca/)
 
 T3DB is the Wishart lab's curated database of toxic-exposome compounds, cataloging ~3,500 environmental contaminants, pollutants, industrial chemicals, and endogenous toxic metabolites along with their molecular targets and biological effects. Each entry provides chemical / physical properties, biological mechanism of action, toxicity references, and analytical methods of detection. For cellular agriculture, T3DB is useful for identifying potential off-flavor or off-odor compounds in cultivated tissues (some volatile toxins overlap with food chemistry — aldehydes, aromatic compounds, sulfides), for media-safety screening, and for understanding adulterant detection in regulatory contexts.
+
+### [COCONUT (COlleCtion of Open Natural prodUcTs)](https://coconut.naturalproducts.net/)
+
+COCONUT is one of the largest open, aggregated collections of natural-product structures, unifying entries from dozens of source databases into a single de-replicated, freely downloadable resource with structures, predicted properties, and source provenance. For cellular agriculture, COCONUT is a reference for plant- and microbial-derived flavor, aroma, and bioactive compounds that appear as media components or flavor precursors. Free web access, REST API, and bulk downloads.
 
 ## Flavor & Taste Compound Databases
 
@@ -293,6 +477,34 @@ A long-established industry reference platform for the flavor, fragrance, food, 
 ### [FooDB](https://foodb.ca/)
 
 FooDB is a large open database of food constituents, chemistry, and biology — covering both macronutrients and the thousands of micro-constituents (flavor and aroma compounds among them) found in foods, with chemical, taxonomic, and concentration data. It is one of the upstream sources integrated into [FlavorDB](#flavordb--flavordb2). For cellular agriculture, FooDB is a reference for the compound composition of conventional foods — a comparison baseline when characterizing the metabolite and flavor profile of cultivated tissues and alt-protein products.
+
+### [ChemTastesDB](https://doi.org/10.5281/zenodo.5747393)
+
+ChemTastesDB is a curated, machine-learning-ready database of 2,944 organic and inorganic tastants labeled across nine taste classes (the five basic tastes plus non-sweet, tasteless, multitaste, and miscellaneous), distributed openly on Zenodo with molecular structures and chemical identifiers ([Rojas et al. 2022](https://doi.org/10.1016/j.fochms.2022.100090), *Food Chemistry: Molecular Sciences*). For cellular agriculture, it is a labeled training set for taste-classification models that flag sweet, bitter, or umami character in compounds detected in cultivated tissues and alt-protein formulations.
+
+### [VCF (Volatile Compounds in Food)](https://www.vcf-online.nl/)
+
+VCF is a specialized database of volatile compounds identified in foods, cataloging roughly 10,000 volatiles across hundreds of food products including meat, poultry, and seafood, with occurrence data drawn from the analytical literature. For cellular agriculture, VCF is a targeted reference for mapping volatiles detected in cultivated meat and seafood to their known occurrence in conventional counterparts. Full access is licensed (subscription/paid); the public site documents coverage and access terms.
+
+### [OlfactionBase](https://olfactionbase.com/)
+
+OlfactionBase is a curated repository of odors, odorants and odorless compounds, olfactory receptors, and odorant-receptor interactions across human and mouse, integrating physicochemical and ADMET properties with receptor and odorant-binding-protein data ([Sharma et al. 2022](https://doi.org/10.1093/nar/gkab763), *Nucleic Acids Research*). For cellular agriculture, it links aroma-active compounds detected in cultivated tissues to the receptors and perceptual descriptors that govern how they are smelled, complementing GC-olfactometry references like Flavornet.
+
+## Lipidomics Databases
+
+Intramuscular fat and lipid profile shape cultivated-meat flavor and texture, so lipid identity and nomenclature need a consistent reference layer. These resources standardize lipid structures and the classification/shorthand naming that lipidomics workflows depend on.
+
+### [LIPID MAPS](https://www.lipidmaps.org/)
+
+LIPID MAPS is the reference lipidomics resource maintained by an international consortium, pairing the LIPID MAPS Structure Database (LMSD) of curated lipid structures with the community lipid classification and shorthand-nomenclature standard that most lipidomics software follows. For cellular agriculture, LIPID MAPS is the canonical reference for identifying and naming the fatty acids, triacylglycerols, and phospholipids that define intramuscular-fat composition, mouthfeel, and lipid-derived flavor precursors in cultivated meat. Programmatic access via the LIPID MAPS REST API and bulk structure downloads.
+
+### [SwissLipids](https://www.swisslipids.org/)
+
+SwissLipids is an SIB-maintained knowledge resource of curated lipid structures organized in a hierarchical classification, each cross-linked to biological context through Rhea reactions, UniProt enzymes, and literature evidence. For cellular agriculture, SwissLipids connects the lipid species in a cultivated-cell or tissue profile to the enzymes and reactions that produce them, supporting metabolic reasoning about fat deposition and lipid-pathway engineering. Programmatic access via a REST API and bulk downloads.
+
+### [LipidBank](https://lipidbank.jp/)
+
+LipidBank is the Japanese Conference on the Biochemistry of Lipids' open database of natural lipids, cataloging thousands of entries across fatty acids, glycerolipids, sphingolipids, steroids, and related classes with structures, spectral data, and literature references. For cellular agriculture, LipidBank is a complementary lookup for lipid identity and properties alongside LIPID MAPS and SwissLipids. It is a long-standing resource that remains reachable but is updated infrequently.
 
 ## Seafood Species Reference Databases
 
@@ -337,6 +549,30 @@ A community-maintained list of websites and databases of chemical information. C
 ### [UArk Food Science Research Guide](https://libguides.uark.edu/FoodScience/Databases)
 
 The University of Arkansas Libraries' research guide for food science, listing relevant databases, journals, and statistical resources — a curated entry point into food-science literature and data infrastructure.
+
+## Regulatory & Food-Safety Databases
+
+Cultivated-meat and cell-ag products move through novel-food, GRAS, and premarket-consultation review before reaching market. These are the primary regulatory-status lookups for tracking which products, ingredients, and substances have cleared review in the US and EU.
+
+### [FDA GRAS Notice Inventory](https://www.hfpappexternal.fda.gov/scripts/fdcc/index.cfm?set=GRASNotices)
+
+The FDA's Generally Recognized As Safe (GRAS) Notice Inventory lists substances for which a notifier has submitted a GRAS conclusion to the FDA, along with the agency's response letter for each. For cellular agriculture, it is the lookup for confirming the regulatory standing of media components, enzymes, and other ingredients used in cultivated-meat production, and for finding precedent GRAS notices when preparing a submission.
+
+### [FDA Inventory of Completed Pre-market Consultations for Human Food Made with Cultured Animal Cells](https://www.hfpappexternal.fda.gov/scripts/fdcc/index.cfm?set=animalcellculturefoods)
+
+This FDA inventory lists every cultured-animal-cell food that has completed a pre-market consultation with the agency, giving each a Cell Culture Consultation (CCC) file number and publishing the product description, the sponsor's safety submission, the FDA's response letter, and the agency's scientific memo. It is the authoritative US record of which cultivated-meat products have cleared FDA pre-market review, directly relevant to anyone tracking the regulatory pathway or benchmarking a product's approval status.
+
+### [EU Novel Food](https://food.ec.europa.eu/food-safety/novel-food_en)
+
+The European Commission's Novel Food pages host the regulatory framework and the searchable Union list of authorised novel foods, plus the Novel Food Catalogue indicating the status of foods and ingredients under Regulation (EU) 2015/2283. Cultivated meat and many cell-ag-derived ingredients fall under the novel-food regime in the EU, so this is the primary reference for whether a given product or ingredient is authorised, pending, or requires an application in the European market.
+
+### [FDA Substances Added to Food](https://www.hfpappexternal.fda.gov/scripts/fdcc/index.cfm?set=FoodSubstances)
+
+The FDA's Substances Added to Food inventory (formerly EAFUS) is a searchable list of substances added to food in the United States, recording each substance's regulatory basis (food additive, GRAS, prior-sanctioned, and related categories) and used-for information. For cellular agriculture, it is a fast lookup for the US regulatory status and permitted uses of media ingredients, processing aids, and additives that may appear in a cultivated-meat product or its production process.
+
+### [EFSA OpenFoodTox](https://www.efsa.europa.eu/en/data-report/chemical-hazards-database-openfoodtox)
+
+OpenFoodTox is EFSA's open chemical-hazards database, providing structured summaries of hazard-assessment data for individual substances drawn from EFSA's risk assessments, covering food additives and flavourings, pesticides, contaminants, food-contact materials, feed additives, and nutrients. For cellular agriculture, OpenFoodTox is a reference for the toxicological reference points (health-based guidance values, points of departure) of media components and potential process-derived substances, useful when assembling the safety dossier for an EU novel-food or feed submission.
 
 ## Ecosystem & Industry Directories
 
