@@ -31,7 +31,7 @@ describe('CAAIL_PAGES', () => {
   });
   it('all() returns {id,...meta} objects', () => {
     const all = CAAIL_PAGES.all();
-    expect(all.length).toBe(29);
+    expect(all.length).toBe(30);
     const cow = all.find((p) => p.id === 'datasets/cow');
     expect(cow).toMatchObject({ id: 'datasets/cow', group: 'datasets' });
     expect(typeof cow?.sidebarLabel).toBe('string');
