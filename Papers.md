@@ -747,3 +747,15 @@ This section lists review articles, position papers, and commentaries that surve
 <a id="234">234</a> Ning, H., Zhou, T., & Joo, S. W. (2023). Machine learning boosts three-dimensional bioprinting. *International Journal of Bioprinting, 9*(4), 739. https://doi.org/10.18063/ijb.739
 
 <a id="242">242</a> Kew, B., Sridharan, S., & Sarkar, A. (2026). Mouthfeel assessment of alternative proteins: What we know so far? *Current Opinion in Food Science,* 101435. https://doi.org/10.1016/j.cofs.2026.101435
+
+<a id="243">243</a> Sugii, S., Wong, C. Y. Q., Lwin, A. K. O., & Chew, L. J. M. (2023). Alternative fat: Redefining adipocytes for biomanufacturing cultivated meat. *Trends in Biotechnology, 41*(5), 686–700. https://doi.org/10.1016/j.tibtech.2022.08.005
+
+<a id="244">244</a> Lee, Y.-S., Lee, H. J., & Jo, C. (2025). Integrative adipogenic engineering of cultured fat for cell based meat. *Comprehensive Reviews in Food Science and Food Safety, 25*(1), e70338. https://doi.org/10.1111/1541-4337.70338
+
+<a id="245">245</a> Soice, E., & Johnston, J. (2021). Immortalizing cells for human consumption. *International Journal of Molecular Sciences, 22*(21), 11660. https://doi.org/10.3390/ijms222111660
+
+<a id="246">246</a> Jara, T. C., Park, K., Vahmani, P., Van Eenennaam, A. L., Smith, L. R., & Denicol, A. C. (2023). Stem cell-based strategies and challenges for production of cultivated meat. *Nature Food, 4*(10), 841–853. https://doi.org/10.1038/s43016-023-00857-z
+
+<a id="247">247</a> Riquelme-Guzmán, C., Stout, A. J., Kaplan, D. L., & Flack, J. E. (2024). Unlocking the potential of cultivated meat through cell line engineering. *iScience, 27*(10), 110877. https://doi.org/10.1016/j.isci.2024.110877
+
+<a id="248">248</a> Suman, S. P., & Joseph, P. (2013). Myoglobin chemistry and meat color. *Annual Review of Food Science and Technology, 4*(1), 79–99. https://doi.org/10.1146/annurev-food-030212-182623
