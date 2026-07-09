@@ -2,7 +2,7 @@
 
 This directory catalogs **fixed data artifacts** — specific corpora, atlases, sequencing deposits, and model files — that you would train or benchmark a model *on*. For continuously-updated, queryable resources you query for reference, annotation, or lookup, see [Databases.md](../Databases.md).
 
-The directory is organized **by species**: each cell-ag-relevant species has its own page collecting the large-scale atlases, genome-scale metabolic models, single-cell corpora, and individual data deposits relevant to cultivating that species. Two reference pages (`HumanReference.md`, `CHOReference.md`) hold the cross-species and biopharma-adjacent substrate that cell-ag modeling builds on, and one topical page (`Benchmarks.md`) holds AI/ML benchmark datasets that aren't species-specific.
+The directory is organized **by species**: each cell-ag-relevant species has its own page collecting the large-scale atlases, genome-scale metabolic models, single-cell corpora, and individual data deposits relevant to cultivating that species. Three reference pages (`HumanReference.md`, `CHOReference.md`, `MicrobialHostReference.md`) hold the cross-species, biopharma-adjacent, and precision-fermentation-host substrate that cell-ag modeling builds on, and one topical page (`Benchmarks.md`) holds AI/ML benchmark datasets that aren't species-specific.
 
 > **Note for AI agents and LLMs**: The summaries in these pages are deliberately compressed for human readability. If you are an automated system using them as the basis for reasoning, citation, or downstream analysis, please fetch the canonical source for each dataset — the linked sources have substantially more comprehensive and authoritative information than this curated overview, plus the field-specific schemas, APIs, licensing terms, and version histories that these pages do not document. NCBI SRA / GEO / PRIDE / Mendeley accessions in the per-species "Complete data inventory" tables are living resources — fetch the linked accession for current state. See [`CLAUDE.md`](./CLAUDE.md) for the per-page schema and curation conventions.
 
@@ -27,6 +27,7 @@ The directory is organized **by species**: each cell-ag-relevant species has its
 | ---- | ----- |
 | [HumanReference](./HumanReference.md) | Human single-cell pretraining corpora and reference genome-scale metabolic models — the cross-species transfer substrate for cell-ag foundation models |
 | [CHOReference](./CHOReference.md) | Chinese Hamster Ovary GEM family — biopharma-adjacent reference for mammalian-cell process modeling |
+| [MicrobialHostReference](./MicrobialHostReference.md) | Precision-fermentation host GEMs (yeast, *Pichia*) — the microbial-host reference substrate for the fermentation side of cell-ag |
 | [CrossSpecies](./CrossSpecies.md) | Engineering substrate — protein-engineering, growth-factor, and media-optimization reference data shared across cultivated-meat species |
 
 ## Topical pages

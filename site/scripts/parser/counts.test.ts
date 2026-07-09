@@ -98,8 +98,8 @@ describe('computeCounts — real corpus (ground-truth contract)', () => {
       papers: 238,
       software: 118,
       databases: 133,
-      species: 14,
-      datasets: 148,
+      species: 15,
+      datasets: 201,
       researchAreas: 8,
       talks: 15,
     });

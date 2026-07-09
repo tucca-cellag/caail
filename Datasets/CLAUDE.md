@@ -1,6 +1,6 @@
 # Datasets/ — context for Claude Code and AI agents
 
-This directory holds CAAIL's catalog of **fixed data artifacts** — corpora, atlases, sequencing deposits, and model files you would train or benchmark a model *on*. It is organized **by species**: one page per cell-ag-relevant species, plus reference pages (`HumanReference.md`, `CHOReference.md`) for cross-species substrate and one topical page (`Benchmarks.md`) for AI/ML benchmark datasets. For living, queryable resources, see [`../Databases.md`](../Databases.md).
+This directory holds CAAIL's catalog of **fixed data artifacts** — corpora, atlases, sequencing deposits, and model files you would train or benchmark a model *on*. It is organized **by species**: one page per cell-ag-relevant species, plus reference pages (`HumanReference.md`, `CHOReference.md`, `MicrobialHostReference.md`) for cross-species and host-organism substrate and one topical page (`Benchmarks.md`) for AI/ML benchmark datasets. For living, queryable resources, see [`../Databases.md`](../Databases.md).
 
 [`README.md`](./README.md) is the directory landing page and species index.
 
