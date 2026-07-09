@@ -38,3 +38,13 @@ Community-maintained "awesome lists" and curated bibliographies — living GitHu
 
 * [QizhiPei/Awesome-Biomolecule-Language-Cross-Modeling](https://github.com/QizhiPei/Awesome-Biomolecule-Language-Cross-Modeling) — curated resources on multi-modal learning that bridges biomolecules (proteins, molecules) and natural language — the companion list to a survey on biomolecule–language cross-modeling.
 * [yuzhimanhua/Awesome-Scientific-Language-Models](https://github.com/yuzhimanhua/Awesome-Scientific-Language-Models) — comprehensive survey and curated list of scientific large language models across disciplines (mathematics, physics, chemistry, materials, biology, medicine) and modalities.
+
+## AI agents for science
+
+* [AgenticScience/Awesome-Agent-Scientists](https://github.com/AgenticScience/Awesome-Agent-Scientists) — curated paper list on AI agents for scientific discovery; the delegation home for the general science-agent literature that [Papers.md](./Papers.md) keeps out of the matrix unless a paper applies an agent to a specific cell-ag problem.
+* [InternScience/Awesome-Scientific-Datasets-and-LLMs](https://github.com/InternScience/Awesome-Scientific-Datasets-and-LLMs) — curated collection of papers, datasets, and resources on scientific datasets and large language models, spanning benchmarks and domain LLMs across disciplines.
+
+## Biological & protein foundation models
+
+* [apeterswu/Awesome-Bio-Foundation-Models](https://github.com/apeterswu/Awesome-Bio-Foundation-Models) — collection of biological foundation models across protein, RNA, DNA, gene, and single-cell modalities; a wider-scope companion to the single-cell foundation-model list above.
+* [MachineLearningLifeScience/awesome-protein-foundation-models](https://github.com/MachineLearningLifeScience/awesome-protein-foundation-models) — curated list of protein foundation models, protein language models (pLMs), and generative models for sequence, structure, and multimodal protein modeling; a focused, if newer, index of the protein-model space that cell-ag protein engineering draws on.
