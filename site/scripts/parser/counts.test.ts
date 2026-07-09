@@ -96,12 +96,12 @@ describe('computeCounts — real corpus (ground-truth contract)', () => {
   it('computeCounts returns the verified ground-truth counts', () => {
     expect(result).toEqual({
       papers: 238,
-      software: 88,
-      databases: 84,
+      software: 118,
+      databases: 133,
       species: 14,
       datasets: 148,
       researchAreas: 8,
-      talks: 14,
+      talks: 15,
     });
   });
 
