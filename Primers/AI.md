@@ -12,6 +12,8 @@ Educational playlists for the audience approaching machine learning from the bio
 * [AI Models Explained](https://www.youtube.com/playlist?list=PLOspHqNVtKAC-FUNMq8qjYVw6_semZHw0) — overview of common AI model architectures and where each is used.
 * [AI Agents Explained](https://www.youtube.com/playlist?list=PLOspHqNVtKAB6AzNie7BrFhbg4dv4Gfz8) — overview of AI agent systems; pairs naturally with the LLMs / AI Agents row in the Papers matrix.
 * [Stanford CS230: Deep Learning (Autumn 2018)](https://www.youtube.com/playlist?list=PLoROMvodv4rOABXSygHTsbvUz4G_YQhOb) — Andrew Ng's Stanford deep-learning lecture course; a deeper, structured treatment of neural-network fundamentals.
+* [Neural Networks: Zero to Hero (Andrej Karpathy)](https://www.youtube.com/playlist?list=PLAqhIrjkxbuWI23v9cThsA9GvCAUhRvKZ) — Karpathy's hands-on course building neural networks and a small GPT from scratch in code, from backpropagation up to a working language model.
+* [MIT 6.S191: Introduction to Deep Learning](https://introtodeeplearning.com/) — MIT's fast-paced introductory deep-learning course (lectures plus code labs), refreshed each year.
 
 ## Go deeper
 

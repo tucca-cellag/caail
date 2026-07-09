@@ -90,9 +90,9 @@ describe('buildTalksModel — real corpus', () => {
   });
 
   it('emits the verified item tallies (bump when talks are added)', () => {
-    expect(talkItemCount(model)).toBe(14);
+    expect(talkItemCount(model)).toBe(15);
     const items = model.sections.flatMap((s) => s.items);
-    expect(items.filter((i) => i.kind === 'video')).toHaveLength(14);
+    expect(items.filter((i) => i.kind === 'video')).toHaveLength(15);
     expect(items.filter((i) => i.kind === 'playlist')).toHaveLength(0);
   });
 
