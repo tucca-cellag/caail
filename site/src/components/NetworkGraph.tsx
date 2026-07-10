@@ -214,6 +214,9 @@ export default function NetworkGraph() {
       ro?.disconnect();
       cyRef.current?.destroy();
       cyRef.current = null;
+      // `destroy()` only flags the instance; it stays reachable. Drop the handle
+      // so nothing can read a destroyed graph while the effect re-runs.
+      if (containerRef.current) delete (containerRef.current as any).__cy;
     };
   }, [edgeMode, areaFilter, hideIsolated, maxDegree]);
 

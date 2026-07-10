@@ -107,6 +107,8 @@ async function pickNode(page: import('@playwright/test').Page) {
       }
       if (!best || nearest > best.nearest) best = { ...c, nearest };
     }
+    // Fail with a clear message rather than a TypeError if a filter ever empties the set.
+    if (!best) throw new Error('pickNode: no connected, on-screen node to click');
     return { label: best.el.data('label') as string, x: best.p.x as number, y: best.p.y as number };
   });
 }
