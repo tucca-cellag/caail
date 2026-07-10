@@ -176,6 +176,14 @@ a.site-title {
 .caail-tv-toggle button[aria-pressed='true'] { background: var(--caail-primary); color: #fff; }
 
 .caail-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 0.8rem; }
+/* The cards are built inside `.sl-markdown-content`, where Starlight's prose flow
+   rule gives every non-first sibling a `var(--sl-content-gap-y)` top margin. That
+   sinks each card after the first inside its grid row track and inflates the space
+   between fields; `gap` is meant to be the only spacing here. These rules are
+   unlayered, so they beat the rule in `@layer starlight.content` without
+   `!important`. */
+.caail-cards > .caail-card { margin-top: 0; }
+.caail-card > * { margin-top: 0; }
 .caail-card { border: 1px solid var(--caail-border); border-radius: 10px; padding: 0.85rem 1rem; background: var(--caail-bg); transition: border-color 0.15s, box-shadow 0.15s; }
 .caail-card:hover { border-color: var(--caail-link); box-shadow: 0 6px 18px -14px color-mix(in oklab, var(--caail-primary) 40%, transparent); }
 .caail-card-title { font-family: var(--caail-font-display); font-size: 0.9rem; font-weight: 600; color: var(--caail-primary); margin: 0 0 0.5rem; line-height: 1.3; }
