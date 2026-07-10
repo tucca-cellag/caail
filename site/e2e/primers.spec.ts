@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { externalCardCount } from './data';
 
 // ---------------------------------------------------------------------------
 // Homepage "Start here" — the four audience cards must be real, resolving links
@@ -39,8 +40,8 @@ test('cell-ag primer embeds the field-foundation videos and resolves its nav lin
 test('ai primer surfaces learning playlists and go-deeper nav links', async ({ page }) => {
   await page.goto('./primers/ai/');
   await expect(page.getByRole('heading', { name: 'Learn the fundamentals' })).toBeVisible();
-  // External learning playlists (new-tab cards).
-  expect(await page.locator('a.talk-card[target="_blank"]').count()).toBe(7);
+  // External learning playlists + links (new-tab cards); internal ones are .primer-nav.
+  expect(await page.locator('a.talk-card[target="_blank"]').count()).toBe(externalCardCount('ai'));
   // Deep-link into the Talks page section that stayed in Talks.md.
   await expect(
     page.locator('a.primer-nav[href="/caail/talks/#ai-agents-foundation-models-for-biology"]'),

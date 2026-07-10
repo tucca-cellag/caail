@@ -1,0 +1,78 @@
+name: Test site
+
+# The parser suite (vitest) and the browser suite (Playwright + axe) were
+# local-only, so a green pipeline said the site built and scored well on
+# Lighthouse — not that it worked. Run both on every PR that touches the site or
+# the canonical content the parser reads.
+on:
+  pull_request:
+    paths:
+      - site/**
+      - '*.md'
+      - ResearchAreas/**
+      - Datasets/**
+      - Primers/**
+      - .github/workflows/test.yml
+  push:
+    branches: [main]
+    paths:
+      - site/**
+      - '*.md'
+      - ResearchAreas/**
+      - Datasets/**
+      - Primers/**
+      - .github/workflows/test.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: test-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          # metrics.json folds in a git momentum snapshot at build time.
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 9
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: site/pnpm-lock.yaml
+      - name: Install
+        run: pnpm --dir site install --frozen-lockfile
+
+      # Build first, and not only for the e2e server. `pnpm build` runs the
+      # parser, and the generated JSON under src/content/data/ is gitignored, so
+      # on a clean checkout it does not exist yet. Both suites need it:
+      # src/lib/structured-data.test.ts imports catalog.json/papers.json/
+      # talks.json directly, and the e2e ground truths read the same files (see
+      # site/e2e/data.ts). Locally these pass without a build only because an
+      # earlier build left the artifacts behind.
+      - name: Build
+        run: pnpm --dir site build
+
+      - name: Unit + parser tests
+        run: pnpm --dir site test
+
+      - name: Install Playwright browser
+        run: pnpm --dir site exec playwright install --with-deps chromium
+
+      - name: End-to-end + accessibility tests
+        run: pnpm --dir site test:e2e
+
+      - name: Upload Playwright report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: site/playwright-report/
+          retention-days: 7
