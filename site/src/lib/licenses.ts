@@ -64,9 +64,10 @@ export function licenseTier(license: string | null | undefined): LicenseTier {
   const s = license.trim().toUpperCase();
   if (!s) return 'unknown';
 
-  // Restricted: non-commercial, academic-only, proprietary, all-rights-reserved.
+  // Restricted: non-commercial, academic-only, proprietary, all-rights-reserved,
+  // or a "Commons Clause" rider (forbids selling — overrides the base license).
   if (
-    /NON[\s-]?COMMERCIAL|(^|[\s-])NC([\s-]|$)|PROPRIETARY|ACADEMIC|ALL[\s-]RIGHTS[\s-]RESERVED|\bCUSTOM\b/.test(
+    /NON[\s-]?COMMERCIAL|(^|[\s-])NC([\s-]|$)|PROPRIETARY|ACADEMIC|ALL[\s-]RIGHTS[\s-]RESERVED|COMMONS[\s-]CLAUSE|\bCUSTOM\b/.test(
       s,
     )
   )

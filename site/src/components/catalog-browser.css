@@ -27,7 +27,11 @@
 .cb-card { display: flex; flex-direction: column; gap: .3rem; margin: 0; padding: 1rem; border: 1px solid var(--caail-border); border-radius: 10px; color: var(--caail-ink); transition: border-color .15s, box-shadow .15s; scroll-margin-top: 5rem; }
 .cb-card:hover, .cb-card:focus-within { border-color: var(--caail-link); box-shadow: 0 6px 18px -14px color-mix(in oklab, var(--caail-primary) 40%, transparent); }
 
-.cb-name { display: flex; margin: 0; font-size: .92rem; line-height: 1.25; }
+/* Title row: name on the left, license badge pinned top-right. align-items
+ * flex-start keeps the pill level with the first line of a wrapping title;
+ * min-width:0 lets a long title shrink/wrap instead of shoving the badge off. */
+.cb-head { display: flex; align-items: flex-start; justify-content: space-between; gap: .5rem; }
+.cb-name { display: flex; flex: 1; min-width: 0; margin: 0; font-size: .92rem; line-height: 1.25; }
 .cb-name-link { display: inline-flex; align-items: baseline; gap: .35rem; font-weight: 600; color: var(--caail-primary); text-decoration: none; }
 .cb-name-link:hover, .cb-name-link:focus-visible { text-decoration: underline; }
 .cb-name-link:focus-visible { outline: 2px solid var(--caail-link); outline-offset: 2px; border-radius: 3px; }
@@ -39,11 +43,12 @@
  * By-the-Numbers panel never disagree). align-self keeps the pill hugging its
  * content (the card is a flex column); margin:0 resets Starlight flow spacing. */
 .cb-lic {
-  align-self: flex-start;
+  flex: none;
   display: inline-flex;
   align-items: center;
-  margin: 0;
+  margin: .05rem 0 0;
   padding: .1rem .45rem;
+  white-space: nowrap;
   border-radius: 999px;
   font-family: var(--caail-font-mono);
   font-size: .6rem;
@@ -58,6 +63,14 @@
 .cb-lic--copyleft   { --lic: var(--caail-lic-copyleft); }
 .cb-lic--restricted { --lic: var(--caail-lic-restricted); }
 .cb-lic--unknown    { --lic: var(--caail-lic-unknown); }
+/* Curated (manual) tags aren't auto-maintained → dashed border marks them as
+ * provisional; auto-detected GitHub tags keep the solid border. */
+.cb-lic--curated { border-style: dashed; }
+
+/* Disclaimer under the controls: license tags are triage-only. The inline
+ * examples reuse the badge styles at a smaller scale. */
+.cb-lic-note { font-size: .72rem; color: var(--caail-muted); line-height: 1.6; margin: 0 0 1rem; max-width: 70ch; }
+.cb-lic-note-eg { font-size: .58rem; padding: 0 .3rem; vertical-align: middle; }
 
 /* margin:0 — same Starlight reset; the flex `gap` already spaces title↔summary. */
 .cb-sum { font-size: .76rem; color: var(--caail-muted); line-height: 1.5; margin: 0; }

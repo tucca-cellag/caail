@@ -217,8 +217,13 @@ export function parseCatalogFile(
     }
     // License precedence: a manual `License:` line (removed from the body so it
     // never renders) wins; else the GitHub-detected SPDX id from the cache.
+    // licenseSource records which won so the site can flag curated (non-auto-
+    // maintained) tags distinctly from auto-detected ones.
     const url = link.url;
     const manualLicense = extractLicenseLine(bodyNodes);
+    const autoLicense = licenseForUrl(url, cache);
+    const license = manualLicense ?? autoLicense;
+    const licenseSource = manualLicense ? 'manual' : autoLicense ? 'auto' : null;
     const { summary, summaryHtml } = renderBody(bodyNodes, sourcePath);
 
     partial.push({
@@ -227,7 +232,8 @@ export function parseCatalogFile(
       group,
       summary,
       summaryHtml,
-      license: manualLicense ?? licenseForUrl(url, cache),
+      license,
+      licenseSource,
     });
   }
 

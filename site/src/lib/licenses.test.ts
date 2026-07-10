@@ -24,7 +24,7 @@ describe('licenseTier', () => {
   });
 
   it('bins restricted (non-commercial / proprietary / academic)', () => {
-    for (const l of ['Non-commercial', 'non commercial', 'Proprietary', 'Academic use only', 'All rights reserved']) {
+    for (const l of ['Non-commercial', 'non commercial', 'Proprietary', 'Academic use only', 'All rights reserved', 'Apache-2.0 + Commons Clause']) {
       expect(licenseTier(l)).toBe('restricted');
     }
   });

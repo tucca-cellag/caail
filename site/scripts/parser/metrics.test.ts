@@ -140,6 +140,7 @@ describe('buildLicenseBreakdown', () => {
     summary: '',
     summaryHtml: '',
     license,
+    licenseSource: license ? 'manual' : null,
   });
 
   it('bins each entry by tier and by application-area group', () => {

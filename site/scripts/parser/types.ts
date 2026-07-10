@@ -95,6 +95,11 @@ export const CatalogEntrySchema = z.object({
    *  "Non-commercial"). null when undeterminable. Classified into a tier for the
    *  badge/stats via src/lib/licenses.licenseTier. */
   license: z.string().nullable(),
+  /** Provenance of `license`: `auto` = SPDX id detected from the GitHub repo
+   *  (refreshed by `fetch:licenses`); `manual` = a curator's `License:` line
+   *  (static, hand- or AI-sourced, NOT auto-maintained — flagged on the site so
+   *  commercial users validate it). null when there is no license. */
+  licenseSource: z.enum(['auto', 'manual']).nullable(),
 });
 
 export const TalkItemSchema = z.object({

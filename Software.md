@@ -38,6 +38,8 @@ Summary: A high-resolution de-novo structure predictor that folds proteins direc
 
 Summary: A diffusion-model framework for de novo protein design — unconditional generation, motif scaffolding, symmetric oligomers, and binder design — from the Baker lab. Applicable to engineering novel growth-factor / receptor-binding domains and protein scaffolds for cultivated-meat work ([Watson et al. 2023](https://doi.org/10.1038/s41586-023-06415-8), *Nature*).
 
+License: BSD-3-Clause
+
 ### [ProteinMPNN](https://github.com/dauparas/ProteinMPNN)
 
 Summary: A deep-learning inverse-folding model that designs amino-acid sequences for a given protein backbone — the standard sequence-design step in generative pipelines, typically paired with RFdiffusion and a structure predictor. Useful for optimizing the sequence of recombinant media components (growth factors, binders) for expressibility and stability ([Dauparas et al. 2022](https://doi.org/10.1126/science.add2187), *Science*).
@@ -119,6 +121,8 @@ Summary: The MATLAB counterpart to COBRApy, also under the openCOBRA umbrella. O
 
 Docs: <https://opencobra.github.io/cobratoolbox>.
 
+License: GPL-3.0
+
 ### [Memote](https://github.com/opencobra/memote)
 
 Summary: The genome-scale metabolic model test suite, providing automated QC and benchmarking for SBML GEMs. Computes >100 metrics covering annotation completeness, stoichiometric consistency, biomass formulation, growth simulation, and reproducibility, producing a versioned HTML report. Used by BiGG Models and the openCOBRA community as the de-facto curation standard; any cell-ag-specific GEM should be benchmarked with Memote before downstream use.
@@ -130,6 +134,8 @@ Docs: <https://memote.readthedocs.io/>.
 Summary: A web-based tool for building, sharing, and embedding visualizations of metabolic pathway maps, with bi-directional integration to COBRApy via JSON. Supports interactive overlay of flux distributions, reaction knockouts, and metabolite concentrations on hand-drawn or auto-generated pathway maps ([King et al. 2015](https://doi.org/10.1371/journal.pcbi.1004321), *PLOS Computational Biology*).
 
 Project page: <https://escher.github.io>.
+
+License: MIT
 
 ### [COPASI](https://github.com/copasi/COPASI)
 
@@ -148,6 +154,8 @@ Project page: <http://tellurium.analogmachine.org/>.
 Summary: A MATLAB toolbox for genome-scale metabolic model reconstruction, curation, and analysis, maintained by the Nielsen lab at Chalmers. Provides automated reconstruction from KEGG, MetaCyc, or template models, gap-filling, model curation tools, and integration with COBRA Toolbox; widely used to build species-specific GEMs in food, fermentation, and biopharma settings.
 
 Docs: <http://sysbiochalmers.github.io/RAVEN/>.
+
+License: GPL-3.0
 
 ### [StrainDesign](https://github.com/klamt-lab/straindesign)
 
@@ -174,6 +182,8 @@ Summary: A Python package and command-line tool (Lobo lab, UMBC) for merging, co
 Summary: A command-line tool for automated, top-down reconstruction of genome-scale metabolic models directly from genome or protein sequences, using a manually curated universal model as the template. Builds draft models for single species or microbial communities in seconds, giving cell-ag teams a fast starting GEM for a feedstock organism or bioreactor consortium before manual curation ([Machado et al. 2018](https://doi.org/10.1093/nar/gky537), *Nucleic Acids Research*).
 
 Docs: <https://carveme.readthedocs.io/>.
+
+License: Apache-2.0
 
 ### [gapseq](https://github.com/jotech/gapseq)
 
@@ -235,6 +245,8 @@ Summary: An R toolkit for inferring and analysing intercellular communication ne
 
 Summary: An R package suite (Dries lab) for end-to-end spatial-transcriptomics and spatial multi-omics analysis at multiple scales and resolutions, including 2D/3D spatial analysis and cell–cell interaction analysis. Supports analysis of cultivated-tissue structure and microarchitecture.
 
+License: MIT
+
 ### [Open Problems](https://github.com/openproblems-bio/openproblems)
 
 Summary: A community benchmarking framework for single-cell analysis that pairs formalized tasks (batch integration, label projection, denoising, and more) with bundled datasets, standardized metrics, and baseline methods, so new methods are evaluated on common ground ([Luecken et al. 2025](https://doi.org/10.1038/s41587-025-02694-w), *Nature Biotechnology*). Because it ships its own data and evaluation harness, cell-ag teams can benchmark single-cell methods on cultivated-cell transcriptomics against a maintained, reproducible standard.
@@ -287,6 +299,8 @@ The most-cited R / Bioconductor package for LC-MS / GC-MS metabolomics preproces
 
 Bioconductor: <https://bioconductor.org/packages/xcms/>.
 
+License: GPL-2.0
+
 ### [ProteoWizard / msconvert](https://proteowizard.sourceforge.io/)
 
 A cross-platform C++ library and command-line toolkit for mass-spectrometry data conversion and analysis, maintained by the Mallick lab at Stanford and an international community ([Chambers et al. 2012](https://doi.org/10.1038/nbt.2377), *Nat Biotech*). The `msconvert` utility is the universal first step in essentially every open MS pipeline — converting vendor-locked binary formats (.RAW, .D, .lcd, .wiff) to open standards (mzML, mzXML, MGF) so downstream tools can ingest the data.
@@ -299,11 +313,15 @@ Java application for in-silico molecular formula determination and structure ann
 
 Source: <https://github.com/boecker-lab/sirius>.
 
+License: Academic (non-commercial)
+
 ### [MetFrag](https://ipb-halle.github.io/MetFrag/)
 
 In-silico fragmenter for MS/MS-based compound identification, originally Wolf et al. 2010 (*BMC Bioinformatics*) and substantially revised in MetFrag Relaunched ([Ruttkies et al. 2016](https://doi.org/10.1186/s13321-016-0115-9), *J Cheminform*). Scores candidate structures from compound databases (PubChem, ChemSpider, KEGG) against measured fragmentation spectra. Integrated into many metabolomics workflows including nf-core/metaboigniter and Workflow4Metabolomics.
 
 Source: <https://github.com/c-ruttkies/MetFragRelaunched>.
+
+License: LGPL-2.1
 
 ### [MS2Query](https://github.com/iomega/ms2query)
 
@@ -386,6 +404,8 @@ Docs: <https://cellpose.readthedocs.io/>.
 Summary: A modular, no-code image-analysis platform for building high-content screening pipelines that measure cell count, shape, intensity, and texture across large image sets ([Stirling et al. 2021](https://doi.org/10.1186/s12859-021-04344-9), *BMC Bioinformatics*). Useful for cultivated-cell assay development where the same measurement pipeline is applied reproducibly across plates and conditions.
 
 Project page: <https://cellprofiler.org/>.
+
+License: BSD-3-Clause
 
 ### [StarDist](https://github.com/stardist/stardist)
 
@@ -481,6 +501,8 @@ Summary: A bioinformatics-focused LLM agent (Bioinformatics Retrieval Augmented 
 
 Summary: An agentic system for the design of virtual cell models from the [Gerstein lab](http://www.gersteinlab.org/) at Yale. Coordinates multiple LLM agents to plan, configure, and execute cell-modeling workflows — directly relevant to cell-ag for cell-type-specific virtual-cell pipelines that media-optimization, perturbation-response prediction, and bioprocess workflows can build on. Companion to [Papers.md ref #93](./Papers.md#93) (Tang et al. 2026).
 
+License: MIT
+
 ### [AI Scientist](https://github.com/SakanaAI/AI-Scientist)
 
 Summary: Sakana AI's framework for fully automated open-ended scientific discovery via large language models, performing end-to-end idea generation, experimentation, and paper drafting. Version 2 ([SakanaAI/AI-Scientist-v2](https://github.com/SakanaAI/AI-Scientist-v2)) extends the system to workshop-level automated discovery via agentic tree search; the [AI-Scientist-ICLR2025-Workshop-Experiment](https://github.com/SakanaAI/AI-Scientist-ICLR2025-Workshop-Experiment) repository archives the run whose AI-generated paper passed peer review at an ICLR 2025 workshop. Companion to Lu et al. 2024 ([Papers.md ref #45](./Papers.md#45)) and Yamada et al. 2025 ([Papers.md ref #47](./Papers.md#47)).
@@ -546,6 +568,8 @@ A family of generative foundation models for single-cell transcriptomics from th
 
 Quickstart docs: <https://virtualcellmodels.cziscience.com/quickstart/transcriptformer-quickstart>. Announcement: <https://chanzuckerberg.com/blog/transcriptformer-model-overview/>.
 
+License: MIT
+
 ### [Geneformer](https://huggingface.co/ctheodoris/Geneformer)
 
 A transformer-based foundation model for transfer learning in network biology from the Theodoris lab (Broad Institute / Gladstone), pretrained on ~30 million human single-cell transcriptomes via rank-encoded masked language modeling. Distributed exclusively through Hugging Face with tokenizer, pretrained weights, and example fine-tuning recipes for cell-type classification, gene-network inference, and *in silico* perturbation prediction; widely used as a single-cell-FM baseline. Companion to [Papers.md ref #111](./Papers.md#111) (Theodoris et al. 2023, *Nature*); pretraining corpus: [Genecorpus-30M in Datasets/HumanReference.md](./Datasets/HumanReference.md#genecorpus-30m).
@@ -582,6 +606,8 @@ Graph-Enhanced gene-Activation Response Simulator — a graph neural network for
 
 Arc Institute's first-generation virtual cell model and companion evaluation framework, designed to predict stem-cell, cancer-cell, and immune-cell responses to drugs, cytokines, and genetic perturbations. Trained on ~170M observational and ~100M perturbational single-cell measurements across 70+ cell lines; uses a bidirectional transformer architecture with self-attention over cell sets and reportedly is the first model to consistently beat simple linear baselines on perturbation-response prediction. Released alongside [`cell-eval`](https://github.com/ArcInstitute/cell-eval), the standardized evaluation framework for virtual-cell models. Companion to [Papers.md ref #57](./Papers.md#57) (Adduri et al. 2025, bioRxiv); see also the [Arc Institute news article on State](./AIAgentsFoundationModels.md) on the AI Agents & Foundation Models page. The follow-on **Stack** model — companion to [Papers.md ref #124](./Papers.md#124) (Dong et al. 2026) — extends State with in-context learning, simulating cellular conditions via prompt engineering without further fine-tuning.
 
+License: CC-BY-NC-SA-4.0
+
 ### [BioDiscoveryAgent](https://github.com/snap-stanford/BioDiscoveryAgent)
 
 An LLM-based AI agent from Stanford's SNAP lab for designing genetic-perturbation experiments — including CRISPR-Cas9 single-gene and combinatorial knockouts — by reasoning over gene-function literature, prior screens, and experimental constraints. Demonstrates that an LLM agent with tool use can match or exceed specialized active-learning methods on hit-rate-driven experimental-design tasks. Companion to [Papers.md ref #125](./Papers.md#125) (Roohani et al. 2025, arXiv). Directly applicable to cell-ag as an off-the-shelf experimental-design layer for cell-line-engineering campaigns (selecting which TFs to overexpress for myogenic vs. adipogenic differentiation, or which media-pathway genes to knock down to test rate-limiting steps).
@@ -613,6 +639,8 @@ Docs: <https://github.com/zou-group/virtual-lab#readme>.
 Summary: An autonomous LLM-driven agent that plans, codes, and executes chemistry experiments end to end, combining web search, documentation retrieval, and control of automated lab hardware ([Boiko et al. 2023](https://doi.org/10.1038/s41586-023-06792-0), *Nature*). A reference architecture for closed-loop autonomous experimentation that maps onto cell-ag tasks such as automated media-formulation or assay optimization. Companion to [Papers.md ref #70](./Papers.md#70).
 
 Docs: <https://github.com/gomesgroup/coscientist#readme>.
+
+License: Apache-2.0 + Commons Clause
 
 ## Data Standards & Interchange Formats
 

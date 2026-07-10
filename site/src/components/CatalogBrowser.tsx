@@ -14,6 +14,8 @@ type Entry = {
   summaryHtml: string;
   /** Coarse license tag (SPDX id or curated note); null when undeterminable. */
   license: string | null;
+  /** 'auto' = GitHub-detected; 'manual' = curated (not auto-maintained). */
+  licenseSource: 'auto' | 'manual' | null;
 };
 type Kind = 'software' | 'databases';
 
@@ -86,6 +88,16 @@ export default function CatalogBrowser({ kind }: Props) {
         {q || group ? ` of ${entries.length}` : ` across ${groups.length} areas`}
       </p>
 
+      <p class="cb-lic-note">
+        License tags are a coarse triage signal, not verified terms.{' '}
+        <span class="cb-lic cb-lic--permissive cb-lic-note-eg">MIT</span> solid = auto-detected
+        from the GitHub repo;{' '}
+        <span class="cb-lic cb-lic--restricted cb-lic--curated cb-lic-note-eg">Non-commercial</span>{' '}
+        dashed = curated (hand- or AI-sourced, not auto-maintained, and may be out of date or
+        incorrect). Always confirm the license at the source before relying on it — especially for
+        commercial use.
+      </p>
+
       {filtered.length === 0 ? (
         <p class="cb-empty">No {noun}s match your search.</p>
       ) : (
@@ -105,25 +117,31 @@ export default function CatalogBrowser({ kind }: Props) {
                     // title is the link to the canonical home; `id` lets the
                     // canonical markdown's intra-page "see X below" anchors land.
                     <article class="cb-card" id={e.slug}>
-                      <h3 class="cb-name">
-                        <a
-                          class="cb-name-link"
-                          href={e.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          {e.name}
-                          <span class="cb-ext" aria-hidden="true">↗</span>
-                        </a>
-                      </h3>
-                      {e.license && tier && (
-                        <span
-                          class={`cb-lic cb-lic--${tier}`}
-                          title={`${TIER_META[tier].label} license — ${TIER_META[tier].blurb}`}
-                        >
-                          {e.license}
-                        </span>
-                      )}
+                      <div class="cb-head">
+                        <h3 class="cb-name">
+                          <a
+                            class="cb-name-link"
+                            href={e.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            {e.name}
+                            <span class="cb-ext" aria-hidden="true">↗</span>
+                          </a>
+                        </h3>
+                        {e.license && tier && (
+                          <span
+                            class={`cb-lic cb-lic--${tier}${e.licenseSource === 'manual' ? ' cb-lic--curated' : ''}`}
+                            title={
+                              e.licenseSource === 'manual'
+                                ? `${TIER_META[tier].label} license (curated — not auto-maintained; verify before commercial use). ${TIER_META[tier].blurb}`
+                                : `${TIER_META[tier].label} license (auto-detected from GitHub). ${TIER_META[tier].blurb}`
+                            }
+                          >
+                            {e.license}
+                          </span>
+                        )}
+                      </div>
                       <div
                         class="cb-sum"
                         // First-party content from our own canonical Markdown,

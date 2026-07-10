@@ -117,6 +117,11 @@ const datasetsDays = daysAgo(momentum?.datasetsLastModified ?? null);
       yet tagged. These are coarse triage tags — see each entry for exact terms. Bars are split by
       license tier within each application area.
     </p>
+    <p class="md-sub md-lic-disclaimer">
+      Tags are auto-detected from GitHub where possible and otherwise curated by hand or with AI
+      assistance. Curated tags are not automatically maintained and may be out of date or incorrect,
+      so validate the license at the source before relying on it for commercial use.
+    </p>
     <div class="md-legend">
       {LICENSE_TIERS.map((t) => (
         <span class="md-leg">
@@ -209,6 +214,7 @@ const datasetsDays = daysAgo(momentum?.datasetsLastModified ?? null);
 
   /* Licensing — stacked tier bars (segments coloured by the shared license
    * tokens, matching the catalog card badges). */
+  .md-lic-disclaimer { font-style: italic; margin-top: -.4rem; }
   .md-legend { display: flex; flex-wrap: wrap; gap: .3rem 1.1rem; margin: 0 0 1rem; }
   .md-leg { display: inline-flex; align-items: center; gap: .35rem; font-size: .72rem; color: var(--caail-muted); }
   .md-swatch { width: .7rem; height: .7rem; border-radius: 3px; }

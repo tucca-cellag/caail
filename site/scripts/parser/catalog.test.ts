@@ -209,6 +209,13 @@ describe('parseCatalogFile — license extraction & cache fold', () => {
     expect(entries.find((e) => e.name === 'PlainTool')?.license).toBeNull();
   });
 
+  it('records provenance: manual line → manual, cache hit → auto, none → null', () => {
+    const entries = parseCatalogFile(LICENSE_FIXTURE, 'Software.md', cache);
+    expect(entries.find((e) => e.name === 'ManualTool')?.licenseSource).toBe('manual');
+    expect(entries.find((e) => e.name === 'CacheTool')?.licenseSource).toBe('auto');
+    expect(entries.find((e) => e.name === 'PlainTool')?.licenseSource).toBeNull();
+  });
+
   it('still applies the manual line when no cache is present', () => {
     const entries = parseCatalogFile(LICENSE_FIXTURE, 'Software.md', null);
     expect(entries.find((e) => e.name === 'ManualTool')?.license).toBe('Non-commercial');
