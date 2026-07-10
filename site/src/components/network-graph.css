@@ -28,6 +28,15 @@
 
 .ng-stage { position: relative; border: 1px solid var(--caail-border); border-radius: 12px; overflow: hidden; background: var(--caail-surface); }
 .ng-canvas { width: 100%; height: min(72vh, 640px); }
+/* Cytoscape renders into three sibling <canvas> layers nested in its own wrapper
+   div inside .ng-canvas. Those canvases sit under .sl-markdown-content, so the
+   2nd and 3rd pick up Starlight's prose `* + *` rule (margin-top: 1rem) — which,
+   on an absolutely positioned canvas with top:0, shifts the drawn scene (the node
+   layer) down ~16px. Hit-testing still uses the container origin, so every tap
+   lands ~16px above the visual node and only the top of a node is clickable. Zero
+   the flow margin so the drawn scene and the hit geometry share an origin. (Same
+   Starlight trap already neutralised on .ng-controls / .ng-seg-btn above.) */
+.ng-canvas canvas { margin-top: 0; }
 .ng-fallback { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; text-align: center; padding: 2rem; margin: 0; font-size: .85rem; color: var(--caail-muted); }
 
 .ng-panel { position: absolute; top: .75rem; right: .75rem; width: min(20rem, 80%); background: var(--caail-bg); border: 1px solid var(--caail-border); border-radius: 10px; padding: .9rem 1rem; box-shadow: 0 10px 30px -18px color-mix(in oklab, var(--caail-primary) 60%, transparent); }

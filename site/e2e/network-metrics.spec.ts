@@ -242,6 +242,25 @@ test('a small node selects when clicked at its centre', async ({ page }) => {
   await expect(page.locator('.ng-panel .ng-slug')).toHaveText(t.label);
 });
 
+test('the graph render layers share the container origin (no stray flow margin)', async ({ page }) => {
+  await page.goto('./papers/network/');
+  await page.waitForSelector('.ng-canvas canvas', { timeout: 20000 });
+
+  // Cytoscape renders into sibling <canvas> layers. Under Starlight's prose
+  // `* + *` rule the 2nd/3rd would gain a 1rem top margin, drawing the node layer
+  // ~16px below where hit-testing (container origin) looks — so clicks would land
+  // above the visual nodes. Every layer must share the container's top. A
+  // coordinate-space assertion is the reliable guard (a pixel/click check would
+  // need heavy screenshot analysis, or would clip the disc).
+  const deltas = await page.evaluate(() => {
+    const cont = document.querySelector('.ng-canvas') as HTMLElement;
+    const top = cont.getBoundingClientRect().top;
+    return [...cont.querySelectorAll('canvas')].map((cv) => Math.round(cv.getBoundingClientRect().top - top));
+  });
+  expect(deltas.length).toBeGreaterThanOrEqual(3); // cytoscape stacks 3 render layers
+  expect(deltas).toEqual(deltas.map(() => 0));
+});
+
 // ---------------------------------------------------------------------------
 // Tap-offset regression guard.
 //
