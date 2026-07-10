@@ -7,6 +7,7 @@
     "fetch:citations": "tsx scripts/parser/fetch-citations.ts",
     "fetch:awesome-lists": "tsx scripts/parser/fetch-awesome-metrics.ts",
     "fetch:licenses": "tsx scripts/parser/fetch-licenses.ts",
+    "scan:licenses": "tsx scripts/parser/scan-licenses.ts",
     "lint:papers": "tsx scripts/parser/lint-papers.ts",
     "test": "vitest run",
     "dev": "pnpm parse && astro dev",

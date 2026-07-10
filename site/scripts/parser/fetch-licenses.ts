@@ -29,7 +29,8 @@ import { pathToFileURL } from 'node:url';
 import { buildCatalogModel } from './catalog.js';
 import { repoFromUrl, LICENSE_CACHE_PATH, type LicenseCache } from './licenses.js';
 
-/** GitHub REST repo endpoint base. */
+/** GitHub REST repo endpoint base (the `/license` sub-resource returns the
+ *  detected SPDX id AND the LICENSE file content for a deep-read fallback). */
 const GITHUB_REPOS = 'https://api.github.com/repos';
 /** Polite delay between requests (ms). */
 const REQUEST_DELAY_MS = 200;
@@ -48,7 +49,7 @@ function authHeaders(): Record<string, string> {
 const sleep = (ms: number): Promise<void> =>
   new Promise((resolve) => setTimeout(resolve, ms));
 
-type GitHubRepo = {
+type GitHubLicense = {
   license?: { spdx_id?: string | null; name?: string | null } | null;
 };
 
@@ -57,9 +58,16 @@ const UNDETECTED = new Set(['NOASSERTION', 'NONE', '']);
 
 /**
  * Query the GitHub API for each `owner/repo` and assemble a LicenseCache. Repos
- * are de-duplicated; a 404 is skipped (logged), and a repo with no detectable
- * SPDX license is omitted (logged) so a manual `License:` line can cover it.
- * Throws on a 403 (rate limit) or other non-OK, non-404 response.
+ * are de-duplicated; a 404 (no LICENSE file) is skipped, and a repo whose
+ * license GitHub cannot classify (NOASSERTION) is omitted.
+ *
+ * The auto cache records ONLY GitHub's own authoritative SPDX match (its
+ * `licensee` matcher). A NOASSERTION result means the LICENSE is non-standard —
+ * exactly the case where a naive text deep-read is UNRELIABLE (it mislabels
+ * BSD-header non-commercial licenses as BSD, CC-BY-NC as CC0, etc.), so those
+ * are deliberately left for the curated scan (`scan:licenses`) + human review,
+ * which renders them as dashed "verify before commercial use" tags rather than
+ * trusted auto tags. Throws on a 403 (rate limit) or other non-OK response.
  *
  * @param repos  `owner/repo` keys (as produced by repoFromUrl)
  * @param log    optional progress sink (defaults to no-op)
@@ -92,10 +100,10 @@ export async function fetchLicenseCache(
       );
     }
 
-    const json = (await res.json()) as GitHubRepo;
+    const json = (await res.json()) as GitHubLicense;
     const spdx = json.license?.spdx_id?.trim() ?? '';
     if (UNDETECTED.has(spdx.toUpperCase())) {
-      log(`${repo}: no SPDX license detected (skipped — add a manual License: line)`);
+      log(`${repo}: no standard SPDX (left for curated scan)`);
     } else {
       out[repo] = { spdx, name: json.license?.name?.trim() || spdx };
       log(`${repo}: ${spdx} (${i + 1}/${unique.length})`);

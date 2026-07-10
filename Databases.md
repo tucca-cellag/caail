@@ -46,6 +46,8 @@ The Genome Sequence Archive is the raw-sequence-data repository of the National 
 
 Expression Atlas is EMBL-EBI's curated resource for gene expression across species and biological conditions, covering both bulk and single-cell data (the latter through the linked Single Cell Expression Atlas) and processing all RNA-seq through a consistent pipeline so studies are comparable. It spans dozens of species and thousands of studies, queryable by gene, tissue, treatment, and disease state. For cellular agriculture, it is a practical way to ask where a growth factor, receptor, or myogenic regulator is expressed across tissues and species without assembling raw data by hand, and to pull curated expression baselines for livestock and reference organisms. Programmatic access is via the Expression Atlas REST API and the `ExpressionAtlas` R package.
 
+License: CC-BY-4.0
+
 ## Livestock Multi-Tissue Atlases & Functional Genomics
 
 Per-species multi-tissue expression, regulatory-effects, and functional-genomics atlases for cell-ag-relevant livestock species. The Farm Animal Genotype–Tissue Expression (FarmGTEx) project family is the canonical effort here — modeled after human GTEx, scaled across cattle, pig, chicken, and sheep — paired with the broader FAANG (Functional Annotation of Animal Genomes) network and species-specific biobank portals. For the foundational papers, see [Papers.md / Livestock Functional Genomics Reference Work](./Papers.md#livestock-functional-genomics-reference-work); for the analysis tooling, see [Software.md / Quantitative Genetics & Multi-Omics Analysis](./Software.md#quantitative-genetics--multi-omics-analysis).
@@ -182,6 +184,8 @@ GlyTouCan is the international glycan structure repository — the registry that
 
 GlyConnect is the SIB / ExPASy glycoprotein database, linking proteins to their experimentally observed glycosylation sites and the glycan structures attached at each site, integrated with UniProt and GlyTouCan identifiers. For cellular agriculture, GlyConnect is useful for looking up the site-specific glycosylation of growth factors and other media-relevant glycoproteins, informing the design of recombinant variants with controlled glycoforms. Programmatic access via the GlyConnect API.
 
+License: CC-BY-4.0
+
 ## Cell Line & Single-Cell Reference Atlases
 
 Resources cataloging cell-line identities, properties, and single-cell expression patterns — central to cell-ag work on cell-line characterization, immortalization, and differentiation.
@@ -230,9 +234,13 @@ Replicative limits, senescence entry, and the senescence-associated secretory ph
 
 HAGR is a suite of aging and longevity databases (GenAge for ageing-related genes, AnAge for cross-species longevity records, and others) maintained by the de Magalhães group ([Tacutu et al. 2018](https://doi.org/10.1093/nar/gkx1042), *Nucleic Acids Research*). For cellular agriculture, HAGR is a substrate for reasoning about replicative and longevity limits when selecting or engineering cell lines: AnAge's species-level lifespan and cell-turnover records and GenAge's gene sets inform which pathways bound proliferative capacity in bovine, porcine, avian, and fish cells.
 
+License: CC-BY-3.0
+
 ### [CellAge](https://genomics.senescence.info/cells/)
 
 CellAge is a curated database of genes associated with cellular senescence, part of the HAGR family, linking each gene to the experimental evidence that it drives or suppresses senescence ([Avelar et al. 2020](https://doi.org/10.1186/s13059-020-01990-9), *Genome Biology*). For cultivated-cell lines it provides a vetted list of senescence-regulating genes to monitor or target when extending proliferative lifespan without resorting to full transformation.
+
+License: CC-BY-3.0
 
 ### [SenMayo](https://doi.org/10.1038/s41467-022-32552-1)
 
@@ -304,6 +312,8 @@ Shared, quality-controlled plasmid and reagent repositories are the practical su
 
 Addgene is a nonprofit plasmid repository that distributes research plasmids on behalf of thousands of depositing labs, alongside ready-to-use viral vectors (AAV and lentivirus preparations) and recombinant antibodies, with standardized quality control and full sequence records for each item. For cellular agriculture, Addgene is the canonical source for the CRISPR/Cas systems, expression and reporter vectors, and lineage-reprogramming constructs used to immortalize and engineer livestock cell lines, and its per-plasmid maps and sequences double as a reference for construct design. Materials are requested through the Addgene website with associated depositor and publication metadata.
 
+License: Academic (non-commercial)
+
 ## Biological & Food Ontologies
 
 Shared ontologies give cell-ag data a consistent, machine-readable vocabulary, so that cell types, food products, and source organisms are annotated with stable identifiers that AI systems and cross-study integrations can rely on rather than free-text labels.
@@ -330,6 +340,8 @@ License: Non-commercial
 
 Reactome is a free, open-source, curated database of human (and increasingly other species) biological pathways, jointly developed by the Ontario Institute for Cancer Research, EMBL-EBI, and other partners. It models pathways as hierarchically organized reactions with explicit participants, modifiers, and regulatory relationships, supporting pathway enrichment analysis and integration with expression data. For cellular agriculture, Reactome's strengths are its detailed signaling-pathway annotations (myogenic regulatory factor cascades, FGF / IGF / Wnt signaling) and its open data model — entries are freely downloadable as BioPAX, SBML, SBGN, and tab-delimited formats, enabling unrestricted use in ML pipelines without the commercial licensing constraints of KEGG. Programmatic access via the Reactome ContentService REST API and a Cypher-queryable Neo4j graph database.
 
+License: CC0-1.0
+
 ### [WikiPathways](https://www.wikipathways.org/)
 
 WikiPathways is a community-curated database of biological pathways under an open data model (CC0 license), hosted by Maastricht University and the Gladstone Institutes, providing >3,000 curated pathways across human, mouse, and a range of other species. Pathways are stored in GPML (a custom XML format) but exported in BioPAX, SBML, and other standards; the open editorial model means coverage is broader and more uneven than KEGG / Reactome but includes useful cell-ag-adjacent pathways (myogenesis, adipogenesis, livestock-specific metabolism). Programmatic access via a Web Service API, the `rWikiPathways` R package, and a Cytoscape app for direct pathway import.
@@ -352,6 +364,8 @@ BMDB is a comprehensive resource of metabolites found in beef cattle (*Bos tauru
 
 BRENDA (BRaunschweig ENzyme DAtabase) is the most comprehensive collection of enzyme information available, maintained at the Technische Universität Braunschweig, covering >90,000 enzyme entries with detailed kinetic parameters, substrate specificities, inhibitors, optimal reaction conditions, and reaction mechanisms aggregated from primary literature. Each entry provides Km, Vmax, Kcat, Ki, optimal pH and temperature, organism-specific variations, and links to associated metabolic pathways. For cellular agriculture, BRENDA is the canonical source of enzyme kinetic data needed for kinetic models of cell metabolism, flux-balance analysis of metabolic engineering interventions, and ML models predicting media component effects on metabolic flux. Programmatic access via the BRENDA SOAP API and downloadable text files for academic use.
 
+License: CC-BY-4.0
+
 ### [SABIO-RK](https://sabio.h-its.org/)
 
 SABIO-RK (System for the Analysis of Biochemical Pathways – Reaction Kinetics) is a curated database of biochemical reactions and their kinetic data, maintained at HITS (Heidelberg), providing reaction-level rate laws, kinetic parameters (Km, kcat, Vmax, Ki), and the experimental conditions under which they were measured, with each entry traceable to its primary publication. It complements [BRENDA](#brenda)'s enzyme-centric kinetics with a reaction- and rate-law-centric view suited to building kinetic models. For cellular agriculture, SABIO-RK supplies the rate laws and parameters needed to parameterise kinetic / dynamic metabolic models of cultivated-cell metabolism and bioprocess behaviour. Programmatic access via the SABIO-RK REST API.
@@ -363,6 +377,8 @@ SMPDB is the Wishart lab's curated database of small-molecule pathways, with ove
 ### [BioCyc / MetaCyc](https://biocyc.org/)
 
 BioCyc is an SRI International–maintained collection of >20,000 organism-specific Pathway / Genome Databases (PGDBs), built on the MetaCyc reference pathway database. MetaCyc itself catalogs >3,000 experimentally elucidated metabolic pathways across all domains of life, with >18,000 reactions and >19,000 metabolites; BioCyc PGDBs extend this to specific organisms with computationally predicted pathways. For cellular agriculture, BioCyc is the canonical reference for non-mammalian metabolism — particularly the yeast and bacterial PGDBs used in precision-fermentation alt-protein work, and emerging livestock-species PGDBs that complement species-specific GEMs. MetaCyc is freely accessible at <https://metacyc.org/>; BioCyc has tiered access with substantial free use plus subscription-based bulk download.
+
+License: Proprietary
 
 ### [BiGG Models](http://bigg.ucsd.edu/)
 
@@ -381,6 +397,8 @@ Summary: A free, open-source repository of mathematical models of biological and
 ### [Rhea](https://www.rhea-db.org/)
 
 Rhea is an expert-curated database of biochemical reactions maintained at the SIB, describing reactions with chemically balanced participants defined against the ChEBI ontology and cross-linked to UniProt enzymes. It is a reference reaction set used in genome-scale metabolic-model reconstruction and enzyme annotation. For cellular agriculture, Rhea supplies the curated reaction definitions needed to build and check GEMs of cultivated-cell metabolism and to connect media metabolites to the enzymes that transform them. Programmatic access via REST and SPARQL endpoints and bulk downloads.
+
+License: CC-BY-4.0
 
 ### [Virtual Metabolic Human (VMH)](https://www.vmh.life/)
 
@@ -464,6 +482,8 @@ ChemSpider is the Royal Society of Chemistry's free chemical structure search pl
 
 ChEBI (Chemical Entities of Biological Interest) is EMBL-EBI's curated ontology of biologically relevant chemical entities, with ~200,000 annotated compounds spanning metabolites, drugs, nutrients, and toxins. Each entry includes structures, ontological classifications (biological role, chemical class), cross-references to other databases, and contributor-curated literature. For cellular agriculture, ChEBI is the structured chemical ontology underlying many pathway databases (KEGG, Reactome, BioCyc), making it useful as a controlled vocabulary for annotating compound roles in cell-ag-relevant metabolic networks and for cross-database identifier mapping. Programmatic access via REST API and SOAP web services.
 
+License: CC-BY-4.0
+
 ### [T3DB (Toxin and Toxin-Target Database)](https://www.t3db.ca/)
 
 T3DB is the Wishart lab's curated database of toxic-exposome compounds, cataloging ~3,500 environmental contaminants, pollutants, industrial chemicals, and endogenous toxic metabolites along with their molecular targets and biological effects. Each entry provides chemical / physical properties, biological mechanism of action, toxicity references, and analytical methods of detection. For cellular agriculture, T3DB is useful for identifying potential off-flavor or off-odor compounds in cultivated tissues (some volatile toxins overlap with food chemistry — aldehydes, aromatic compounds, sulfides), for media-safety screening, and for understanding adulterant detection in regulatory contexts.
@@ -471,6 +491,8 @@ T3DB is the Wishart lab's curated database of toxic-exposome compounds, catalogi
 ### [COCONUT (COlleCtion of Open Natural prodUcTs)](https://coconut.naturalproducts.net/)
 
 COCONUT is one of the largest open, aggregated collections of natural-product structures, unifying entries from dozens of source databases into a single de-replicated, freely downloadable resource with structures, predicted properties, and source provenance. For cellular agriculture, COCONUT is a reference for plant- and microbial-derived flavor, aroma, and bioactive compounds that appear as media components or flavor precursors. Free web access, REST API, and bulk downloads.
+
+License: CC0-1.0
 
 ## Flavor & Taste Compound Databases
 
@@ -580,9 +602,13 @@ Meta-resources — catalogues of databases and curated library guides — that i
 
 A community-maintained index of biological databases, grouped by type — meta-databases, model-organism, nucleic-acid, protein, pathway, taxonomic, and more. A broad navigation layer for biological data resources beyond those catalogued here.
 
+License: CC-BY-SA-4.0
+
 ### [Wikipedia: List of chemical databases](https://en.wikipedia.org/wiki/List_of_chemical_databases)
 
 A community-maintained list of websites and databases of chemical information. Complements the [Chemistry & Compound Databases](#chemistry--compound-databases) section above as a broader navigation layer for chemistry data resources.
+
+License: CC-BY-SA-4.0
 
 ### [UArk Food Science Research Guide](https://libguides.uark.edu/FoodScience/Databases)
 
@@ -651,6 +677,8 @@ Live, continuously-updated leaderboards and results trackers for AI/ML benchmark
 ### [CASP — Prediction Center](https://predictioncenter.org/)
 
 The Prediction Center hosts CASP (Critical Assessment of Structure Prediction) — the long-running community experiment and results tracker for protein-structure-prediction methods, run biennially since 1994, providing an independent assessment of prediction methods against experimental structures. AlphaFold2's breakthrough accuracy was independently assessed here at CASP14 (2020). For cellular agriculture, CASP is the canonical reference point for judging structure-prediction tools applied to growth factors, recombinant ECM and scaffold proteins, and other engineered proteins in cultivated-meat workflows.
+
+License: CC-BY-4.0
 
 ### [CompBioBench v1 Leaderboard](https://huggingface.co/spaces/Genentech/compbiobench-leaderboard-v1)
 

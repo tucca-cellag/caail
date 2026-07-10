@@ -73,6 +73,8 @@ This category includes simulation and modeling tools for optimizing the  bioreac
 
 Summary: An open-source suite for Computational Fluid Dynamics (CFD) Used to model and a variety of environmental factors within bioreactors, to ensure viable conditions at scale.
 
+License: GPL-3.0
+
 ### [CompuCell3D](https://github.com/CompuCell3D/CompuCell3D)
 
 Summary: A modeling environment for simulating cell-cell and cell-environment interactions. Enables the modeling of complex phenomena like cell proliferation, nutrient gradients within thick tissues, and the mechanics of cells interacting with scaffolds.
@@ -86,6 +88,8 @@ Summary: A physics-based framework specialized for multi-cell simulations. Can b
 Summary: A modeling and simulation environment for multicellular systems that couples cell behavior (motility, division, differentiation) with reaction-diffusion PDEs for the surrounding chemical fields, configured through a GUI rather than hand-written code. Applicable to modeling nutrient and signaling gradients across cultivated tissue and cell-scaffold constructs ([Starruß et al. 2014](https://doi.org/10.1093/bioinformatics/btt772), *Bioinformatics*).
 
 Project page: <https://morpheus.gitlab.io/>.
+
+License: CC-BY-4.0
 
 ### [pyFOOMB](https://github.com/MicroPhen/pyFOOMB)
 
@@ -171,11 +175,15 @@ Docs: <https://cnapy-org.github.io/CNApy-guide/>.
 
 Summary: A Python package (QTB lab, HHU Düsseldorf) serving as an integrative hub for reproducible, scriptable construction, modification, curation, and analysis of metabolic models — importing existing SBML models, supporting metabolic network expansion, and converting directly to COBRApy objects for constraint-based analysis ([Saadat et al. 2022](https://doi.org/10.3390/metabo12040275), *Metabolites*). A lighter-weight on-ramp for building and editing cell-ag GEMs alongside the openCOBRA stack above.
 
+License: GPL-3.0
+
 ### [mergem](https://lobolab.umbc.edu/mergem/)
 
 Summary: A Python package and command-line tool (Lobo lab, UMBC) for merging, comparing, and translating genome-scale metabolic models via a universal metabolite / reaction identifier mapping, producing curated consensus models; paired with the Fluxer web application for flux visualization. Useful when reconciling draft cell-ag GEMs from different reconstruction pipelines into a single curated model (*NAR Genomics and Bioinformatics*, [`10.1093/nargab/lqae010`](https://doi.org/10.1093/nargab/lqae010)).
 
 **Agent integration.** Code-execution agents (Cursor, Claude Code, Biomni) can invoke any of these tools as Python; for COBRApy specifically, the [`cobrapy` skill from K-Dense-AI's scientific-agent-skills](https://github.com/K-Dense-AI/scientific-agent-skills/tree/main/scientific-skills/cobrapy) (see the [K-Dense-AI entry below](#k-dense-ai)) provides curated recipes that make this reliable in agent loops.
+
+License: AGPL-3.0
 
 ### [CarveMe](https://github.com/cdanielmachado/carveme)
 
@@ -275,6 +283,8 @@ An open-source C++ framework with Python bindings (pyOpenMS) for mass-spectromet
 
 Project page: <https://openms.de/>. pyOpenMS docs: <https://pyopenms.readthedocs.io/>.
 
+License: BSD-3-Clause
+
 ### [MZmine 3](https://mzmine.github.io/)
 
 A modular, open-source platform for LC-MS / GC-MS / IMS-MS data processing, maintained by the Pluskal lab (University of Münster) and the international MZmine consortium. [Schmid et al. 2023](https://doi.org/10.1038/s41587-023-01690-2) (*Nat Biotech*) describes the v3 release with multimodal MS support (LC-MS, IMS-MS, MS-imaging). Provides feature detection, alignment, gap-filling, MS/MS networking integrations (GNPS / FBMN, SIRIUS), and a CLI for batch processing. Standard preprocessor for flavor and natural-products metabolomics workflows.
@@ -287,11 +297,15 @@ A standalone Windows tool for DIA / DDA MS/MS spectral deconvolution and metabol
 
 Source: <https://github.com/systemsomicslab/MsdialWorkbench>.
 
+License: CC-BY-NC-4.0
+
 ### [MRMPROBS](https://systemsomicslab.github.io/compms/mrmprobs/main.html)
 
 A C# tool for widely targeted metabolomics that processes multiple reaction monitoring (MRM) / selected reaction monitoring (SRM) data — plus SCAN and DIA MS/MS — developed by Tsugawa et al. (2013, *Analytical Chemistry*), same first author as the MS-DIAL entry above. Evaluates metabolite peaks by posterior probability and provides large-scale visualisation, data curation, and statistical analysis of widely-targeted metabolomics datasets — the targeted-quantitation complement to MS-DIAL's discovery-focused deconvolution.
 
 Distributed via Zenodo: <https://zenodo.org/records/11219831/latest>.
+
+License: CC-BY-4.0
 
 ### [XCMS](https://github.com/sneumann/xcms)
 
@@ -331,6 +345,8 @@ A machine-learning-based mass-spectral analogue search tool from the iomega cons
 
 A standalone tool for in-silico compound identification from MS/MS spectra, developed by Tsugawa et al. at RIKEN as a companion to MS-DIAL. Combines isotope pattern matching, formula prediction, in-silico fragmentation, and database search against curated reference libraries (HMDB, FooDB, ChEBI, PubChem, KEGG) to score candidate structures. Widely used in untargeted flavor metabolomics for annotating unknown compounds from GC-MS / LC-MS spectra.
 
+License: CC-BY-4.0
+
 ### [GNPS](https://gnps.ucsd.edu/)
 
 The Global Natural Products Social Molecular Networking platform — a web-based MS/MS analysis platform from the Dorrestein lab at UCSD (Wang et al. 2016, *Nat Biotech*). Provides community-curated reference spectral libraries, Feature-Based Molecular Networking (FBMN), Ion Identity Molecular Networking (IIMN), and analog search via spectral similarity. Standard tool for compound annotation, dereplication, and pattern discovery in flavor and natural-products metabolomics workflows.
@@ -345,6 +361,8 @@ An R package on Bioconductor implementing PCA, PLS, OPLS, and OPLS-DA for chemom
 
 A comprehensive web-based and R-based platform for statistical, functional, and visual analysis of metabolomics data, maintained by the Xia lab at McGill in collaboration with the Wishart lab (current v6, Pang et al. 2024, *Nucleic Acids Research*). Provides modules for univariate / multivariate statistics, pathway enrichment, network analysis, biomarker discovery, time-series and dose-response analysis, plus a companion R package `MetaboAnalystR` for scripted workflows. The most-cited tool in food metabolomics applications; widely used for sensory-instrumental data analysis in flavor and off-flavor work.
 
+License: GPL-2.0
+
 ### [mixOmics](https://mixomics.org/)
 
 An R / Bioconductor package for the integration and exploration of single- and multi-omics datasets, maintained by the Le Cao group (University of Melbourne) (Rohart et al. 2017, *PLOS Computational Biology*). Implements PCA, PLS, sparse PLS-DA, and the **DIABLO** method for multi-block supervised classification across heterogeneous data blocks. The methodological standard for fusing sensory panel scores, instrumental volatilome / non-volatilome data, and microbiome / -omics layers — directly applicable to multi-omics flavor and cell-ag quality-prediction work.
@@ -352,6 +370,8 @@ An R / Bioconductor package for the integration and exploration of single- and m
 ### [SensoMineR](https://cran.r-project.org/web/packages/SensoMineR/index.html)
 
 A food-specific R package for the analysis of sensory data, maintained by the Le and Husson group at Agrocampus Ouest (Lê & Husson 2008, *J Sensory Studies*). Implements QDA, napping, sorted napping, projective mapping, preference mapping, and panel performance diagnostics; built on top of FactoMineR. The de-facto open-source tool for descriptive-analysis sensory panel data in academic food science, including alt-protein flavor benchmarking.
+
+License: GPL-2.0
 
 ### [matchms](https://github.com/matchms/matchms)
 
@@ -553,6 +573,8 @@ Summary: An open-source library of AI research and engineering skills covering v
 ### [Seqera AI / Co-Scientist](https://docs.seqera.io/platform-cloud/seqera-ai/)
 
 Summary: Seqera Cloud's AI assistant for bioinformatics workflows, providing an interactive co-scientist that helps users author and debug Nextflow pipelines, query workflow run data, and interpret results. Accessible through the Seqera CLI and Seqera Platform; no companion paper at time of curation.
+
+License: Proprietary
 
 ### [Dotmatics Luma](https://go.dotmatics.com/luma-lab-orchestration)
 

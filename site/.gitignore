@@ -42,3 +42,6 @@ src/content/data/graph.json
 src/content/data/metrics.json
 src/content/data/recent.json
 src/content/data/taxonomy.json
+
+# scan:licenses candidate output (maintenance artifact, hand-reviewed, not committed)
+scripts/parser/license-scan.json
