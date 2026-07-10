@@ -141,7 +141,14 @@ cmd_watch_checks() {
 }
 
 cmd_merge() {
-  local pr="$1" br; br="$(current_branch)"
+  local pr="$1" br
+  # Delete the branch THIS PR merged, not whatever is checked out locally. When
+  # several PRs are open at once you may well be standing on a different branch;
+  # using current_branch() here deletes that other PR's head ref, which GitHub
+  # treats as abandoning it and auto-CLOSES the PR.
+  br="$(gh pr view "$pr" --json headRefName -q .headRefName)"
+  [ -n "$br" ] || die "could not resolve head branch for PR #$pr."
+
   # The merge itself: gh's POST-merge LOCAL step (`git branch -d`/switch) fails
   # with "fatal: '<default>' is already checked out" when run from a linked
   # worktree while the primary checkout holds the default branch. That is
@@ -155,11 +162,13 @@ cmd_merge() {
   sha="$(gh pr view "$pr" --json mergeCommit -q .mergeCommit.oid)"
 
   # --delete-branch may not have completed (same local-step failure). Ensure the
-  # remote branch is gone via the API.
-  if git ls-remote --heads origin "$br" | grep -q "$br"; then
+  # remote branch is gone via the API. Match the ref exactly: a substring grep
+  # would see `fix/foo` inside `fix/foo-bar`.
+  remote_has_branch() { git ls-remote --heads origin "$br" | grep -qx "[0-9a-f]*	refs/heads/${br}"; }
+  if remote_has_branch; then
     gh api -X DELETE "repos/${REPO}/git/refs/heads/${br}" >/dev/null 2>&1 || true
   fi
-  if git ls-remote --heads origin "$br" | grep -q "$br"; then
+  if remote_has_branch; then
     note "warning: remote branch '$br' still present — delete it manually."
   else
     note "remote branch '$br' deleted ✓"
