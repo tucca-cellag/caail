@@ -3,6 +3,7 @@ import './catalog-browser.css';
 import { useMemo, useState } from 'preact/hooks';
 import catalog from '../content/data/catalog.json';
 import { groupSlug } from '../lib/catalog-groups';
+import { licenseTier, TIER_META } from '../lib/licenses';
 
 type Entry = {
   slug: string;
@@ -11,6 +12,8 @@ type Entry = {
   group: string;
   summary: string;
   summaryHtml: string;
+  /** Coarse license tag (SPDX id or curated note); null when undeterminable. */
+  license: string | null;
 };
 type Kind = 'software' | 'databases';
 
@@ -45,7 +48,9 @@ export default function CatalogBrowser({ kind }: Props) {
     return entries.filter((e) => {
       if (group && e.group !== group) return false;
       if (!ql) return true;
-      return `${e.name} ${e.summary} ${e.group}`.toLowerCase().includes(ql);
+      return `${e.name} ${e.summary} ${e.group} ${e.license ?? ''}`
+        .toLowerCase()
+        .includes(ql);
     });
   }, [q, group, entries]);
 
@@ -91,32 +96,44 @@ export default function CatalogBrowser({ kind }: Props) {
             <section class="cb-grp">
               <h2 class="cb-grp-h caail-display" id={groupSlug(g)}>{g}</h2>
               <div class="cb-grid">
-                {items.map((e) => (
-                  // Container, NOT a wrapping anchor: the summary now carries
-                  // its own hyperlinks (nesting <a> in <a> is invalid). The
-                  // title is the link to the canonical home; `id` lets the
-                  // canonical markdown's intra-page "see X below" anchors land.
-                  <article class="cb-card" id={e.slug}>
-                    <h3 class="cb-name">
-                      <a
-                        class="cb-name-link"
-                        href={e.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        {e.name}
-                        <span class="cb-ext" aria-hidden="true">↗</span>
-                      </a>
-                    </h3>
-                    <div
-                      class="cb-sum"
-                      // First-party content from our own canonical Markdown,
-                      // rendered to HTML at build time (mdast→hast→html escapes
-                      // any raw HTML), so this is not a user-input injection sink.
-                      dangerouslySetInnerHTML={{ __html: e.summaryHtml }}
-                    />
-                  </article>
-                ))}
+                {items.map((e) => {
+                  // Coarse license triage tag → tier drives the badge colour.
+                  const tier = e.license ? licenseTier(e.license) : null;
+                  return (
+                    // Container, NOT a wrapping anchor: the summary now carries
+                    // its own hyperlinks (nesting <a> in <a> is invalid). The
+                    // title is the link to the canonical home; `id` lets the
+                    // canonical markdown's intra-page "see X below" anchors land.
+                    <article class="cb-card" id={e.slug}>
+                      <h3 class="cb-name">
+                        <a
+                          class="cb-name-link"
+                          href={e.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {e.name}
+                          <span class="cb-ext" aria-hidden="true">↗</span>
+                        </a>
+                      </h3>
+                      {e.license && tier && (
+                        <span
+                          class={`cb-lic cb-lic--${tier}`}
+                          title={`${TIER_META[tier].label} license — ${TIER_META[tier].blurb}`}
+                        >
+                          {e.license}
+                        </span>
+                      )}
+                      <div
+                        class="cb-sum"
+                        // First-party content from our own canonical Markdown,
+                        // rendered to HTML at build time (mdast→hast→html escapes
+                        // any raw HTML), so this is not a user-input injection sink.
+                        dangerouslySetInnerHTML={{ __html: e.summaryHtml }}
+                      />
+                    </article>
+                  );
+                })}
               </div>
             </section>
           ))

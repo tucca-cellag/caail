@@ -96,11 +96,14 @@ Short framing paragraph (optional if the section already exists).
 ### [<Tool or database name>](<canonical URL>)
 
 Summary: One to three sentences describing what it is and, importantly, *how it applies to cellular agriculture* — not just what it does in general.
+
+License: <SPDX id or short note>
 ```
 
 - For software, link to the project's GitHub repo (or canonical home if not on GitHub).
 - For databases, link to the database's primary canonical home (UniProt, KEGG, ChEMBL, etc.).
 - Group new entries under an existing section if one fits. If none does, add a new `##` section.
+- The `License:` line is **optional and rarely needed for GitHub-hosted software**: the site auto-detects the SPDX license for GitHub repos, so add a line only when there's no license to detect — a non-GitHub resource (most databases) or a repo GitHub can't classify (e.g. a custom non-commercial license). Keep the value short and coarse: an SPDX id (`MIT`, `Apache-2.0`, `GPL-3.0`, `CC0-1.0`) or a plain note (`Non-commercial`, `Proprietary`). It's a *triage tag*, not the full terms — the site renders it as a colored badge (permissive / copyleft / restricted) and never as a substitute for reading the actual license.
 
 ### The `Datasets/` directory
 

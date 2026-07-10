@@ -34,6 +34,31 @@
 .cb-ext { font-size: .72rem; color: var(--caail-muted); }
 .cb-card:hover .cb-ext, .cb-card:focus-within .cb-ext { color: var(--caail-link); }
 
+/* License triage badge — a coarse tier tag (permissive / copyleft / restricted /
+ * unknown), colour-driven by --lic per tier (shared tokens, so the badge and the
+ * By-the-Numbers panel never disagree). align-self keeps the pill hugging its
+ * content (the card is a flex column); margin:0 resets Starlight flow spacing. */
+.cb-lic {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  margin: 0;
+  padding: .1rem .45rem;
+  border-radius: 999px;
+  font-family: var(--caail-font-mono);
+  font-size: .6rem;
+  font-weight: 600;
+  letter-spacing: .02em;
+  line-height: 1.5;
+  color: var(--lic);
+  background: color-mix(in oklab, var(--lic) 12%, transparent);
+  border: 1px solid color-mix(in oklab, var(--lic) 40%, transparent);
+}
+.cb-lic--permissive { --lic: var(--caail-lic-permissive); }
+.cb-lic--copyleft   { --lic: var(--caail-lic-copyleft); }
+.cb-lic--restricted { --lic: var(--caail-lic-restricted); }
+.cb-lic--unknown    { --lic: var(--caail-lic-unknown); }
+
 /* margin:0 — same Starlight reset; the flex `gap` already spaces title↔summary. */
 .cb-sum { font-size: .76rem; color: var(--caail-muted); line-height: 1.5; margin: 0; }
 .cb-sum p { margin: 0; }

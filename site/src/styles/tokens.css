@@ -28,6 +28,14 @@
   --caail-area-tooling: #CC79A7;
   --caail-area-eval: #917800;       /* Okabe–Ito yellow darkened to amber for AA on white */
 
+  /* License triage tiers (catalog badge + dashboard). Darkened for AA text
+   * contrast on the light tinted pill; --caail-lic-unknown tracks --caail-muted
+   * in both themes. */
+  --caail-lic-permissive: oklch(46% 0.13 152);
+  --caail-lic-copyleft: oklch(46% 0.11 78);
+  --caail-lic-restricted: oklch(49% 0.19 27);
+  --caail-lic-unknown: var(--caail-muted);
+
   /* Fonts */
   --caail-font-display: 'Bricolage Grotesque Variable', 'Inter Variable', system-ui, sans-serif;
   --caail-font-ui: 'Inter Variable', system-ui, sans-serif;
@@ -51,4 +59,8 @@
   --caail-density-3: oklch(62% 0.11 258);
   --caail-density-4: oklch(78% 0.10 256);
   /* Categorical area colors keep hue; lighten ~8% for AA on dark (kept inline in components) */
+  /* License tiers lightened for legibility on dark; unknown tracks dark muted. */
+  --caail-lic-permissive: oklch(80% 0.15 152);
+  --caail-lic-copyleft: oklch(82% 0.13 85);
+  --caail-lic-restricted: oklch(76% 0.16 27);
 }

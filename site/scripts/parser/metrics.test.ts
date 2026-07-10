@@ -11,11 +11,12 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { buildMetricsModel, speciesInventory } from './metrics.js';
+import { buildMetricsModel, speciesInventory, buildLicenseBreakdown } from './metrics.js';
 import { buildPapersModel } from './papers.js';
+import { buildCatalogModel } from './catalog.js';
 import { computeCounts } from './counts.js';
 import { AREAS } from './areas.js';
-import { MetricsSchema } from './types.js';
+import { MetricsSchema, type CatalogEntry } from './types.js';
 
 const FIXTURE_ROOT = join(
   fileURLToPath(import.meta.url),
@@ -108,5 +109,56 @@ describe('buildMetricsModel — real corpus', () => {
 
   it('passes MetricsSchema', () => {
     expect(MetricsSchema.safeParse(metrics).success).toBe(true);
+  });
+
+  it('license totals equal the catalog lengths, and tiers sum to the totals', () => {
+    const catalog = buildCatalogModel();
+    for (const [key, list] of [
+      ['software', catalog.software],
+      ['databases', catalog.databases],
+    ] as const) {
+      const b = metrics.licenses[key];
+      expect(b.total).toBe(list.length);
+      const tierSum = b.byTier.permissive + b.byTier.copyleft + b.byTier.restricted + b.byTier.unknown;
+      expect(tierSum).toBe(b.total);
+      const areaSum = b.perArea.reduce((n, a) => n + a.total, 0);
+      expect(areaSum).toBe(b.total);
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// C. buildLicenseBreakdown (unit)
+// ---------------------------------------------------------------------------
+
+describe('buildLicenseBreakdown', () => {
+  const entry = (name: string, group: string, license: string | null): CatalogEntry => ({
+    slug: name.toLowerCase(),
+    name,
+    url: `https://example.com/${name}`,
+    group,
+    summary: '',
+    summaryHtml: '',
+    license,
+  });
+
+  it('bins each entry by tier and by application-area group', () => {
+    const b = buildLicenseBreakdown([
+      entry('A', 'Media', 'MIT'),
+      entry('B', 'Media', 'GPL-3.0'),
+      entry('C', 'Bioprocess', 'Non-commercial'),
+      entry('D', 'Bioprocess', null),
+    ]);
+    expect(b.total).toBe(4);
+    expect(b.byTier).toEqual({ permissive: 1, copyleft: 1, restricted: 1, unknown: 1 });
+    // groups appear in first-appearance order
+    expect(b.perArea.map((a) => a.group)).toEqual(['Media', 'Bioprocess']);
+    expect(b.perArea[0].byTier).toEqual({ permissive: 1, copyleft: 1, restricted: 0, unknown: 0 });
+    expect(b.perArea[1].byTier).toEqual({ permissive: 0, copyleft: 0, restricted: 1, unknown: 1 });
+  });
+
+  it('handles an empty catalog', () => {
+    const b = buildLicenseBreakdown([]);
+    expect(b).toEqual({ total: 0, byTier: { permissive: 0, copyleft: 0, restricted: 0, unknown: 0 }, perArea: [] });
   });
 });

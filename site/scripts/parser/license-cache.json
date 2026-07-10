@@ -1,0 +1,265 @@
+{
+  "generatedAt": "2026-07-10T19:05:27.025Z",
+  "repos": {
+    "google-deepmind/alphafold": {
+      "spdx": "Apache-2.0",
+      "name": "Apache License 2.0"
+    },
+    "steineggerlab/foldseek": {
+      "spdx": "GPL-3.0",
+      "name": "GNU General Public License v3.0"
+    },
+    "amii-applied-ai/amii-cell-ag-tools": {
+      "spdx": "MIT",
+      "name": "MIT License"
+    },
+    "facebookresearch/esm": {
+      "spdx": "MIT",
+      "name": "MIT License"
+    },
+    "sokrypton/colabfold": {
+      "spdx": "MIT",
+      "name": "MIT License"
+    },
+    "helixonprotein/omegafold": {
+      "spdx": "Apache-2.0",
+      "name": "Apache License 2.0"
+    },
+    "dauparas/proteinmpnn": {
+      "spdx": "MIT",
+      "name": "MIT License"
+    },
+    "microsoft/evodiff": {
+      "spdx": "MIT",
+      "name": "MIT License"
+    },
+    "jwohlwend/boltz": {
+      "spdx": "MIT",
+      "name": "MIT License"
+    },
+    "chaidiscovery/chai-lab": {
+      "spdx": "Apache-2.0",
+      "name": "Apache License 2.0"
+    },
+    "oxpig/ablang": {
+      "spdx": "BSD-3-Clause",
+      "name": "BSD 3-Clause \"New\" or \"Revised\" License"
+    },
+    "microphen/pyfoomb": {
+      "spdx": "MIT",
+      "name": "MIT License"
+    },
+    "computational-biology-aachen/mxlpy": {
+      "spdx": "MIT",
+      "name": "MIT License"
+    },
+    "maximilianb2/pc-gym": {
+      "spdx": "MIT",
+      "name": "MIT License"
+    },
+    "opencobra/cobrapy": {
+      "spdx": "GPL-2.0",
+      "name": "GNU General Public License v2.0"
+    },
+    "opencobra/memote": {
+      "spdx": "Apache-2.0",
+      "name": "Apache License 2.0"
+    },
+    "copasi/copasi": {
+      "spdx": "Artistic-2.0",
+      "name": "Artistic License 2.0"
+    },
+    "sys-bio/tellurium": {
+      "spdx": "Apache-2.0",
+      "name": "Apache License 2.0"
+    },
+    "klamt-lab/straindesign": {
+      "spdx": "Apache-2.0",
+      "name": "Apache License 2.0"
+    },
+    "cnapy-org/cnapy": {
+      "spdx": "Apache-2.0",
+      "name": "Apache License 2.0"
+    },
+    "jotech/gapseq": {
+      "spdx": "GPL-3.0",
+      "name": "GNU General Public License v3.0"
+    },
+    "biosustain/cameo": {
+      "spdx": "Apache-2.0",
+      "name": "Apache License 2.0"
+    },
+    "sysbiochalmers/gecko": {
+      "spdx": "MIT",
+      "name": "MIT License"
+    },
+    "biosystemsum/mewpy": {
+      "spdx": "GPL-3.0",
+      "name": "GNU General Public License v3.0"
+    },
+    "epfl-lcsb/pytfa": {
+      "spdx": "Apache-2.0",
+      "name": "Apache License 2.0"
+    },
+    "sbrg/masspy": {
+      "spdx": "MIT",
+      "name": "MIT License"
+    },
+    "omicverse/omicverse": {
+      "spdx": "GPL-3.0",
+      "name": "GNU General Public License v3.0"
+    },
+    "scverse/cellrank": {
+      "spdx": "BSD-3-Clause",
+      "name": "BSD 3-Clause \"New\" or \"Revised\" License"
+    },
+    "jinworks/cellchat": {
+      "spdx": "GPL-3.0",
+      "name": "GNU General Public License v3.0"
+    },
+    "openproblems-bio/openproblems": {
+      "spdx": "MIT",
+      "name": "MIT License"
+    },
+    "artemsokolov/pancanstem": {
+      "spdx": "MIT",
+      "name": "MIT License"
+    },
+    "iomega/ms2query": {
+      "spdx": "Apache-2.0",
+      "name": "Apache License 2.0"
+    },
+    "matchms/matchms": {
+      "spdx": "Apache-2.0",
+      "name": "Apache License 2.0"
+    },
+    "paucablop/chemotools": {
+      "spdx": "MIT",
+      "name": "MIT License"
+    },
+    "barahona-research-group/ramanspy": {
+      "spdx": "BSD-3-Clause",
+      "name": "BSD 3-Clause \"New\" or \"Revised\" License"
+    },
+    "mouseland/cellpose": {
+      "spdx": "BSD-3-Clause",
+      "name": "BSD 3-Clause \"New\" or \"Revised\" License"
+    },
+    "stardist/stardist": {
+      "spdx": "BSD-3-Clause",
+      "name": "BSD 3-Clause \"New\" or \"Revised\" License"
+    },
+    "hansenjn/adipoq": {
+      "spdx": "GPL-3.0",
+      "name": "GNU General Public License v3.0"
+    },
+    "biomachinelearning/openpom": {
+      "spdx": "MIT",
+      "name": "MIT License"
+    },
+    "pyrfume/pyrfume": {
+      "spdx": "MIT",
+      "name": "MIT License"
+    },
+    "cosylabiiit/bittersweet": {
+      "spdx": "AGPL-3.0",
+      "name": "GNU Affero General Public License v3.0"
+    },
+    "biosustain/snakemake_umetaflow": {
+      "spdx": "Apache-2.0",
+      "name": "Apache License 2.0"
+    },
+    "mims-harvard/tooluniverse": {
+      "spdx": "Apache-2.0",
+      "name": "Apache License 2.0"
+    },
+    "snap-stanford/biomni": {
+      "spdx": "Apache-2.0",
+      "name": "Apache License 2.0"
+    },
+    "virtualpatientengine/aiagents4pharma": {
+      "spdx": "MIT",
+      "name": "MIT License"
+    },
+    "jpickard1/brad": {
+      "spdx": "MIT",
+      "name": "MIT License"
+    },
+    "future-house/paper-qa": {
+      "spdx": "Apache-2.0",
+      "name": "Apache License 2.0"
+    },
+    "future-house/aviary": {
+      "spdx": "Apache-2.0",
+      "name": "Apache License 2.0"
+    },
+    "future-house/finch": {
+      "spdx": "Apache-2.0",
+      "name": "Apache License 2.0"
+    },
+    "obra/superpowers": {
+      "spdx": "MIT",
+      "name": "MIT License"
+    },
+    "yusufkaraaslan/skill_seekers": {
+      "spdx": "MIT",
+      "name": "MIT License"
+    },
+    "orchestra-research/ai-research-skills": {
+      "spdx": "MIT",
+      "name": "MIT License"
+    },
+    "scdataset/scdataset": {
+      "spdx": "MIT",
+      "name": "MIT License"
+    },
+    "bowang-lab/scgpt": {
+      "spdx": "MIT",
+      "name": "MIT License"
+    },
+    "tencentailabhealthcare/scbert": {
+      "spdx": "GPL-3.0",
+      "name": "GNU General Public License v3.0"
+    },
+    "biomap-research/scfoundation": {
+      "spdx": "Apache-2.0",
+      "name": "Apache License 2.0"
+    },
+    "snap-stanford/uce": {
+      "spdx": "MIT",
+      "name": "MIT License"
+    },
+    "deeplearningplus/tgpt": {
+      "spdx": "GPL-3.0",
+      "name": "GNU General Public License v3.0"
+    },
+    "vandijklab/cell2sentence": {
+      "spdx": "Apache-2.0",
+      "name": "Apache License 2.0"
+    },
+    "snap-stanford/gears": {
+      "spdx": "MIT",
+      "name": "MIT License"
+    },
+    "snap-stanford/biodiscoveryagent": {
+      "spdx": "MIT",
+      "name": "MIT License"
+    },
+    "causalbench/causalbench": {
+      "spdx": "Apache-2.0",
+      "name": "Apache License 2.0"
+    },
+    "genomoncology/biomcp": {
+      "spdx": "MIT",
+      "name": "MIT License"
+    },
+    "upstash/context7": {
+      "spdx": "MIT",
+      "name": "MIT License"
+    },
+    "zou-group/virtual-lab": {
+      "spdx": "MIT",
+      "name": "MIT License"
+    }
+  }
+}

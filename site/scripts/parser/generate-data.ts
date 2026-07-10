@@ -125,7 +125,9 @@ export function generateData(
   // metrics. The citation cache is an optional committed input; absent ⇒ no
   // citation edges.
   const graph = buildGraphModel(model, loadCitationCache());
-  const metrics = buildMetricsModel(model);
+  // Reuse the already-built catalog for the license distribution rather than
+  // re-parsing Software.md / Databases.md inside buildMetricsModel.
+  const metrics = buildMetricsModel(model, undefined, undefined, catalog);
 
   // Home page "Recently added" list, derived from git history. Empty (not an
   // error) when history is unavailable — see buildRecentModel.
@@ -157,6 +159,10 @@ export function generateData(
   assertCountsMatch('metrics.library.papers', metrics.library.papers, counts.papers);
   assertCountsMatch('metrics.library.datasets', metrics.library.datasets, counts.datasets);
   assertCountsMatch('metrics.datasets.total', metrics.datasets.total, counts.datasets);
+  // The license distribution is folded from the same catalog, so its per-catalog
+  // totals must equal the catalog lengths — else a tier bin dropped an entry.
+  assertCountsMatch('metrics.licenses.software', metrics.licenses.software.total, catalog.software.length);
+  assertCountsMatch('metrics.licenses.databases', metrics.licenses.databases.total, catalog.databases.length);
   assertCountsMatch(
     'datasets breakdown sum',
     metrics.datasets.speciesRows +

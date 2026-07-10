@@ -21,6 +21,11 @@ import type { Root, RootContent, Heading, Link, Paragraph } from 'mdast';
 import { parseFile } from './markdown.js';
 import { rewriteCaailLinks } from '../remark/rewrite-caail-links.js';
 import { CatalogSchema, type Catalog, type CatalogEntry } from './types.js';
+import {
+  loadLicenseCache,
+  licenseForUrl,
+  type LicenseCache,
+} from './licenses.js';
 
 // ---------------------------------------------------------------------------
 // Canonical paths (three levels up: parser → scripts → site → repo root)
@@ -34,6 +39,7 @@ const DATABASES_PATH: string = fileURLToPath(
 );
 
 const SUMMARY_PREFIX_RE = /^Summary:\s*/i;
+const LICENSE_LINE_RE = /^License:\s*([\s\S]+)$/i;
 
 /**
  * Site base path, mirroring `BASE` in astro.config.mjs. Used by
@@ -107,6 +113,25 @@ function stripSummaryLabel(nodes: RootContent[]): void {
 }
 
 /**
+ * Extract an optional `License:` line from an entry body, in place. Scans for
+ * the first paragraph whose text is `License: <value>` (a curator's manual
+ * override), removes that node from `nodes` so it never renders in the summary,
+ * and returns the trimmed value — or null when there is no such line. Mirrors
+ * how stripSummaryLabel treats the `Summary:` prefix, but the whole paragraph is
+ * dropped (it's metadata, not description).
+ */
+function extractLicenseLine(nodes: RootContent[]): string | null {
+  const idx = nodes.findIndex(
+    (n): n is Paragraph =>
+      n.type === 'paragraph' && LICENSE_LINE_RE.test(mdastToString(n).trim()),
+  );
+  if (idx === -1) return null;
+  const m = LICENSE_LINE_RE.exec(mdastToString(nodes[idx]).trim());
+  nodes.splice(idx, 1);
+  return m ? m[1].trim() : null;
+}
+
+/**
  * Render an entry's body nodes to a `{ summary, summaryHtml }` pair.
  *
  * Both derive from the SAME nodes so they can't disagree: `summary` is the
@@ -158,6 +183,7 @@ function renderBody(
 export function parseCatalogFile(
   path: string,
   sourcePath: string = path.split('/').pop() ?? path,
+  cache: LicenseCache | null = null,
 ): CatalogEntry[] {
   const root: Root = parseFile(path);
   const kids = root.children;
@@ -189,14 +215,19 @@ export function parseCatalogFile(
       if (n.type === 'heading') break;
       bodyNodes.push(n);
     }
+    // License precedence: a manual `License:` line (removed from the body so it
+    // never renders) wins; else the GitHub-detected SPDX id from the cache.
+    const url = link.url;
+    const manualLicense = extractLicenseLine(bodyNodes);
     const { summary, summaryHtml } = renderBody(bodyNodes, sourcePath);
 
     partial.push({
       name: mdastToString(link).trim(),
-      url: link.url,
+      url,
       group,
       summary,
       summaryHtml,
+      license: manualLicense ?? licenseForUrl(url, cache),
     });
   }
 
@@ -216,10 +247,11 @@ export function parseCatalogFile(
 export function buildCatalogModel(
   softwarePath: string = SOFTWARE_PATH,
   databasesPath: string = DATABASES_PATH,
+  cache: LicenseCache | null = loadLicenseCache(),
 ): Catalog {
   const model: Catalog = {
-    software: parseCatalogFile(softwarePath, 'Software.md'),
-    databases: parseCatalogFile(databasesPath, 'Databases.md'),
+    software: parseCatalogFile(softwarePath, 'Software.md', cache),
+    databases: parseCatalogFile(databasesPath, 'Databases.md', cache),
   };
   return CatalogSchema.parse(model);
 }

@@ -19,6 +19,7 @@ import { fileURLToPath } from 'node:url';
 
 import { AREAS } from './areas.js';
 import { computeCounts } from './counts.js';
+import { buildCatalogModel } from './catalog.js';
 import {
   SPECIES_PAGES,
   inventoryRowCount,
@@ -28,8 +29,17 @@ import {
   MetricsSchema,
   type Metrics,
   type MetricsSpecies,
+  type MetricsLicenses,
+  type MetricsLicenseBreakdown,
+  type LicenseTierCounts,
+  type Catalog,
+  type CatalogEntry,
   type PapersData,
 } from './types.js';
+// Parser imports the shared tier classifier from src/ (same cross-boundary
+// pattern as primers.ts importing src/content/caail-pages.ts) so the dashboard,
+// the card badge, and these stats can never disagree on how a license is binned.
+import { licenseTier } from '../../src/lib/licenses.ts';
 
 /** parser/ → scripts/ → site/ → repo root. */
 const DEFAULT_REPO_ROOT: string = fileURLToPath(new URL('../../../', import.meta.url));
@@ -82,6 +92,54 @@ export function speciesInventory(repoRoot: string, species: string): MetricsSpec
 }
 
 // ---------------------------------------------------------------------------
+// License distribution (folded from the catalog)
+// ---------------------------------------------------------------------------
+
+function emptyTierCounts(): LicenseTierCounts {
+  return { permissive: 0, copyleft: 0, restricted: 0, unknown: 0 };
+}
+
+/**
+ * License breakdown for one catalog: overall counts by tier, plus a per
+ * application-area (H2 group) breakdown in first-appearance (document) order.
+ * Every entry is binned via the shared licenseTier classifier (no license →
+ * `unknown`), so the four tier counts always sum to the entry total.
+ */
+export function buildLicenseBreakdown(
+  entries: CatalogEntry[],
+): MetricsLicenseBreakdown {
+  const byTier = emptyTierCounts();
+  const areaOrder: string[] = [];
+  const areaCounts = new Map<string, LicenseTierCounts>();
+
+  for (const e of entries) {
+    const tier = licenseTier(e.license);
+    byTier[tier] += 1;
+    if (!areaCounts.has(e.group)) {
+      areaOrder.push(e.group);
+      areaCounts.set(e.group, emptyTierCounts());
+    }
+    areaCounts.get(e.group)![tier] += 1;
+  }
+
+  const perArea = areaOrder.map((group) => {
+    const counts = areaCounts.get(group)!;
+    const total =
+      counts.permissive + counts.copyleft + counts.restricted + counts.unknown;
+    return { group, total, byTier: counts };
+  });
+
+  return { total: entries.length, byTier, perArea };
+}
+
+function buildLicenses(catalog: Catalog): MetricsLicenses {
+  return {
+    software: buildLicenseBreakdown(catalog.software),
+    databases: buildLicenseBreakdown(catalog.databases),
+  };
+}
+
+// ---------------------------------------------------------------------------
 // Momentum (git snapshot, guarded)
 // ---------------------------------------------------------------------------
 
@@ -119,11 +177,15 @@ function computeMomentum(repoRoot: string): Metrics['momentum'] {
  * @param repoRoot  Repository root (defaults to the canonical root). Override
  *                  in tests to point at a fixture directory.
  * @param now       ISO build timestamp (injectable for deterministic tests).
+ * @param catalog   Validated Catalog (from buildCatalogModel) for the license
+ *                  distribution. Defaults to a fresh build; generate-data passes
+ *                  its already-built catalog to avoid parsing the files twice.
  */
 export function buildMetricsModel(
   model: PapersData,
   repoRoot: string = DEFAULT_REPO_ROOT,
   now: string = new Date().toISOString(),
+  catalog: Catalog = buildCatalogModel(),
 ): Metrics {
   const { total, speciesRows, referenceEntries, benchmarkEntries } =
     computeDatasetBreakdown(repoRoot);
@@ -133,6 +195,7 @@ export function buildMetricsModel(
     matrix: buildMatrix(model),
     species: SPECIES_PAGES.map((s) => speciesInventory(repoRoot, s)),
     datasets: { total, speciesRows, referenceEntries, benchmarkEntries },
+    licenses: buildLicenses(catalog),
     momentum: computeMomentum(repoRoot),
     generatedAt: now,
   };

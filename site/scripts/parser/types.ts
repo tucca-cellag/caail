@@ -88,6 +88,13 @@ export const CatalogEntrySchema = z.object({
    *  `/caail/datasets/cow/`). Rendered into the card so every reference in the
    *  canonical Markdown is surfaced and clickable. Empty when summary is empty. */
   summaryHtml: z.string(),
+  /** Coarse SPDX-ish license tag — a TRIAGE signal, not full terms. Either a
+   *  GitHub-detected `spdx_id` (MIT, Apache-2.0, GPL-3.0, …) folded in from the
+   *  committed license cache, or a curator's manual `License:` line (which wins,
+   *  and covers non-GitHub entries / cases GitHub can't classify, e.g.
+   *  "Non-commercial"). null when undeterminable. Classified into a tier for the
+   *  badge/stats via src/lib/licenses.licenseTier. */
+  license: z.string().nullable(),
 });
 
 export const TalkItemSchema = z.object({
@@ -366,6 +373,40 @@ export const MetricsDatasetsSchema = z.object({
   benchmarkEntries: z.number().int().nonnegative(),
 });
 
+// --- License distribution (Software.md / Databases.md, folded from catalog) ---
+
+/** Entry counts by license tier (mirrors src/lib/licenses.LicenseTier). */
+export const LicenseTierCountsSchema = z.object({
+  permissive: z.number().int().nonnegative(),
+  copyleft: z.number().int().nonnegative(),
+  restricted: z.number().int().nonnegative(),
+  unknown: z.number().int().nonnegative(),
+});
+
+/** One application-area (H2 group) row of the license breakdown. */
+export const MetricsLicenseAreaSchema = z.object({
+  /** H2 group label, e.g. "Media Optimization & Cell Line Engineering" */
+  group: z.string(),
+  /** entries in this group (== sum of byTier) */
+  total: z.number().int().nonnegative(),
+  byTier: LicenseTierCountsSchema,
+});
+
+/** License breakdown for one catalog (software or databases). */
+export const MetricsLicenseBreakdownSchema = z.object({
+  /** total entries in the catalog (== sum of byTier == sum of perArea totals) */
+  total: z.number().int().nonnegative(),
+  byTier: LicenseTierCountsSchema,
+  /** per application-area breakdown, in document (first-appearance) order */
+  perArea: z.array(MetricsLicenseAreaSchema),
+});
+
+/** License distribution across both catalogs, for the dashboard panel. */
+export const MetricsLicensesSchema = z.object({
+  software: MetricsLicenseBreakdownSchema,
+  databases: MetricsLicenseBreakdownSchema,
+});
+
 /** Build-time git snapshot; null when git history is unavailable (shallow clone). */
 export const MetricsMomentumSchema = z
   .object({
@@ -390,6 +431,8 @@ export const MetricsSchema = z.object({
   species: z.array(MetricsSpeciesSchema),
   /** catalogued-dataset total + breakdown by source-page shape */
   datasets: MetricsDatasetsSchema,
+  /** license distribution over Software.md + Databases.md (folded from catalog) */
+  licenses: MetricsLicensesSchema,
   momentum: MetricsMomentumSchema,
   /** ISO build timestamp */
   generatedAt: z.string(),
@@ -465,6 +508,10 @@ export type GraphModeStats = z.infer<typeof GraphModeStatsSchema>;
 export type Graph = z.infer<typeof GraphSchema>;
 export type MetricsSpecies = z.infer<typeof MetricsSpeciesSchema>;
 export type MetricsDatasets = z.infer<typeof MetricsDatasetsSchema>;
+export type LicenseTierCounts = z.infer<typeof LicenseTierCountsSchema>;
+export type MetricsLicenseArea = z.infer<typeof MetricsLicenseAreaSchema>;
+export type MetricsLicenseBreakdown = z.infer<typeof MetricsLicenseBreakdownSchema>;
+export type MetricsLicenses = z.infer<typeof MetricsLicensesSchema>;
 export type Metrics = z.infer<typeof MetricsSchema>;
 export type RecentEntry = z.infer<typeof RecentEntrySchema>;
 export type Recent = z.infer<typeof RecentSchema>;

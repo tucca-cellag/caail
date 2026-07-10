@@ -16,10 +16,12 @@ import { fileURLToPath } from 'node:url';
 
 import { parseCatalogFile, buildCatalogModel } from './catalog.js';
 import { CatalogSchema, type CatalogEntry } from './types.js';
+import type { LicenseCache } from './licenses.js';
 
 const FIXTURE_DIR = join(fileURLToPath(import.meta.url), '..', 'fixtures');
 const SOFTWARE_FIXTURE = join(FIXTURE_DIR, 'software.fixture.md');
 const DATABASES_FIXTURE = join(FIXTURE_DIR, 'databases.fixture.md');
+const LICENSE_FIXTURE = join(FIXTURE_DIR, 'catalog-license.fixture.md');
 
 // ---------------------------------------------------------------------------
 // A. Unit — fixtures
@@ -158,5 +160,59 @@ describe('buildCatalogModel — real corpus', () => {
     // COBRApy's summary cites a DOI inline; that link must now reach the card.
     const cobrapy = model.software.find((e) => e.name === 'COBRApy');
     expect(cobrapy?.summaryHtml).toContain('<a href="https://doi.org/');
+  });
+
+  it('carries a license field on every entry (null when undeterminable)', () => {
+    for (const list of [model.software, model.databases]) {
+      for (const e of list) {
+        expect(e.license === null || typeof e.license === 'string').toBe(true);
+      }
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// C. License field — manual `License:` line + GitHub cache precedence
+// ---------------------------------------------------------------------------
+
+describe('parseCatalogFile — license extraction & cache fold', () => {
+  const cache: LicenseCache = {
+    generatedAt: '2026-01-01T00:00:00.000Z',
+    repos: {
+      'x/manualtool': { spdx: 'MIT', name: 'MIT License' },
+      'x/cachetool': { spdx: 'Apache-2.0', name: 'Apache License 2.0' },
+    },
+  };
+
+  it('lets a manual License: line win over the cache', () => {
+    const [manual] = parseCatalogFile(LICENSE_FIXTURE, 'Software.md', cache);
+    expect(manual.name).toBe('ManualTool');
+    expect(manual.license).toBe('Non-commercial');
+  });
+
+  it('removes the License: line from summary and summaryHtml', () => {
+    const [manual] = parseCatalogFile(LICENSE_FIXTURE, 'Software.md', cache);
+    expect(manual.summary).not.toMatch(/License:/i);
+    expect(manual.summary).not.toMatch(/Non-commercial/);
+    expect(manual.summaryHtml).not.toMatch(/License:/i);
+    // The real description survives.
+    expect(manual.summary).toContain('set by a manual line');
+  });
+
+  it('falls back to the GitHub-cache SPDX when there is no manual line', () => {
+    const entries = parseCatalogFile(LICENSE_FIXTURE, 'Software.md', cache);
+    expect(entries.find((e) => e.name === 'CacheTool')?.license).toBe('Apache-2.0');
+  });
+
+  it('yields null for a non-GitHub URL with no manual line', () => {
+    const entries = parseCatalogFile(LICENSE_FIXTURE, 'Software.md', cache);
+    expect(entries.find((e) => e.name === 'PlainTool')?.license).toBeNull();
+  });
+
+  it('still applies the manual line when no cache is present', () => {
+    const entries = parseCatalogFile(LICENSE_FIXTURE, 'Software.md', null);
+    expect(entries.find((e) => e.name === 'ManualTool')?.license).toBe('Non-commercial');
+    // …but a cache-only license is null without the cache.
+    expect(entries.find((e) => e.name === 'CacheTool')?.license).toBeNull();
   });
 });

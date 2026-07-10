@@ -7,9 +7,24 @@
  * a contributor-recruitment signal (the #9 mandate).
  */
 import metrics from '../content/data/metrics.json';
+import { LICENSE_TIERS, TIER_META } from '../lib/licenses';
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-const { library, matrix, species, datasets, momentum } = metrics;
+const { library, matrix, species, datasets, licenses, momentum } = metrics;
+
+// Shared tier colours (tokens.css) — identical to the catalog card badges.
+const TIER_COLOR: Record<string, string> = {
+  permissive: 'var(--caail-lic-permissive)',
+  copyleft: 'var(--caail-lic-copyleft)',
+  restricted: 'var(--caail-lic-restricted)',
+  unknown: 'var(--caail-lic-unknown)',
+};
+const licPct = (n: number, total: number) => (total ? (n / total) * 100 : 0);
+const licCats = [
+  { key: 'software' as const, label: 'Software' },
+  { key: 'databases' as const, label: 'Databases' },
+];
+const sw = licenses.software;
 
 const stats = [
   { n: library.papers, label: 'Papers' },
@@ -92,6 +107,63 @@ const datasetsDays = daysAgo(momentum?.datasetsLastModified ?? null);
     </div>
   </section>
 
+  <section class="md-sec">
+    <h2 class="md-h caail-display">Licensing</h2>
+    <p class="md-sub">
+      <strong>{sw.byTier.permissive} of {sw.total} software tools</strong> carry a permissive
+      (MIT / Apache / BSD-style) license and {sw.byTier.copyleft} are copyleft;
+      {sw.byTier.restricted} {sw.byTier.restricted === 1 ? 'is' : 'are'} restricted
+      (non-commercial or proprietary) and {sw.byTier.unknown} {sw.byTier.unknown === 1 ? 'is' : 'are'} not
+      yet tagged. These are coarse triage tags — see each entry for exact terms. Bars are split by
+      license tier within each application area.
+    </p>
+    <div class="md-legend">
+      {LICENSE_TIERS.map((t) => (
+        <span class="md-leg">
+          <span class="md-swatch" style={`background:${TIER_COLOR[t]}`}></span>{TIER_META[t].label}
+        </span>
+      ))}
+    </div>
+    {licCats.map((cat) => {
+      const b = licenses[cat.key];
+      return (
+        <div class="md-lic-cat">
+          <h3 class="md-lic-h">{cat.label} — {b.total}</h3>
+          <div class="md-bars">
+            <div class="md-row md-lic-all">
+              <span class="md-label">All {cat.label.toLowerCase()}</span>
+              <span class="md-stack">
+                {LICENSE_TIERS.filter((t) => b.byTier[t] > 0).map((t) => (
+                  <span
+                    class="md-seg"
+                    style={`width:${licPct(b.byTier[t], b.total)}%;background:${TIER_COLOR[t]}`}
+                    title={`${TIER_META[t].label}: ${b.byTier[t]}`}
+                  ></span>
+                ))}
+              </span>
+              <span class="md-val">{b.total}</span>
+            </div>
+            {b.perArea.map((a) => (
+              <div class="md-row">
+                <span class="md-label">{a.group}</span>
+                <span class="md-stack">
+                  {LICENSE_TIERS.filter((t) => a.byTier[t] > 0).map((t) => (
+                    <span
+                      class="md-seg"
+                      style={`width:${licPct(a.byTier[t], a.total)}%;background:${TIER_COLOR[t]}`}
+                      title={`${TIER_META[t].label}: ${a.byTier[t]}`}
+                    ></span>
+                  ))}
+                </span>
+                <span class="md-val">{a.total}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    })}
+  </section>
+
   {momentum && (
     <section class="md-sec">
       <h2 class="md-h caail-display">Momentum</h2>
@@ -134,6 +206,17 @@ const datasetsDays = daysAgo(momentum?.datasetsLastModified ?? null);
   .md-row.stub .md-fill.species { background: repeating-linear-gradient(45deg, color-mix(in oklab, var(--caail-accent) 35%, transparent), color-mix(in oklab, var(--caail-accent) 35%, transparent) 6px, transparent 6px, transparent 12px); }
   .md-val { font-size: .72rem; font-weight: 700; color: var(--caail-muted); font-family: var(--caail-font-mono); }
   .md-row.stub .md-val { color: var(--caail-accent); font-family: var(--caail-font-ui); font-weight: 700; font-size: .64rem; text-transform: uppercase; letter-spacing: .04em; }
+
+  /* Licensing — stacked tier bars (segments coloured by the shared license
+   * tokens, matching the catalog card badges). */
+  .md-legend { display: flex; flex-wrap: wrap; gap: .3rem 1.1rem; margin: 0 0 1rem; }
+  .md-leg { display: inline-flex; align-items: center; gap: .35rem; font-size: .72rem; color: var(--caail-muted); }
+  .md-swatch { width: .7rem; height: .7rem; border-radius: 3px; }
+  .md-lic-cat { margin: 0 0 1.1rem; }
+  .md-lic-h { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--caail-accent); margin: 0 0 .5rem; }
+  .md-stack { display: flex; height: 1.4rem; background: var(--caail-surface); border-radius: 6px; overflow: hidden; }
+  .md-seg { height: 100%; min-width: 2px; }
+  .md-lic-all .md-label { font-weight: 700; color: var(--caail-ink); }
 
   .md-cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .85rem; }
   @media (max-width: 50rem) { .md-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

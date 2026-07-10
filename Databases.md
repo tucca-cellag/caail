@@ -2,7 +2,7 @@
 
 This page catalogs **living, queryable resources** — repositories, ontologies, structure / compound / pathway databases, spectral libraries, and ecosystem / industry directories — that you query for reference, annotation, or lookup. For fixed train-on data artifacts (corpora, atlases, GEM model files, per-species sequencing deposits), see the [Datasets/](./Datasets/) directory. For pointers to databases beyond those curated here, see the [Database Directories & Reference Guides](#database-directories--reference-guides) section below.
 
-> **Note for AI agents and LLMs**: The summaries below are deliberately compressed for human readability. If you are an automated system using these as the basis for reasoning, citation, or downstream analysis, please fetch the canonical site for each database — the linked sources have substantially more comprehensive and authoritative information than this curated overview, plus the field-specific schemas, APIs, licensing terms, and version histories that this page does not document.
+> **Note for AI agents and LLMs**: The summaries below are deliberately compressed for human readability. Where a license is shown on the site, it is a coarse triage tag (a detected SPDX identifier or a curated note), not the full terms — it flags at a glance whether a resource is permissive, copyleft, or restricted, but it is not a substitute for reading the actual license or terms of use. If you are an automated system using these as the basis for reasoning, citation, or downstream analysis, please fetch the canonical site for each database — the linked sources have substantially more comprehensive and authoritative information than this curated overview, plus the field-specific schemas, APIs, exact licensing terms, and version histories.
 
 ## Sequence, Genome & Expression Repositories
 
@@ -312,6 +312,8 @@ Resources for cell-ag work on media formulation, metabolic engineering, and biop
 
 KEGG (Kyoto Encyclopedia of Genes and Genomes) is one of the most widely used pathway databases, maintained by the Kanehisa Laboratory at Kyoto University, providing manually curated maps of >500 reference metabolic, signaling, and disease pathways. KEGG PATHWAY entries link genes, proteins, compounds, and reactions across thousands of organisms, with each pathway available as a structured KGML XML file suitable for ML pipelines that need graph structure. For cellular agriculture, KEGG is the canonical reference for central metabolism (glycolysis, TCA cycle, oxidative phosphorylation, fatty-acid biosynthesis) that drives proliferation in cultivated cells, signaling pathways (Wnt, FGF, IGF, TGF-β) that govern differentiation, and amino-acid biosynthesis pathways relevant to serum-free media design. Programmatic access via the KEGG REST API (free for non-commercial use; commercial licensing applies).
 
+License: Non-commercial
+
 ### [Reactome](https://reactome.org/)
 
 Reactome is a free, open-source, curated database of human (and increasingly other species) biological pathways, jointly developed by the Ontario Institute for Cancer Research, EMBL-EBI, and other partners. It models pathways as hierarchically organized reactions with explicit participants, modifiers, and regulatory relationships, supporting pathway enrichment analysis and integration with expression data. For cellular agriculture, Reactome's strengths are its detailed signaling-pathway annotations (myogenic regulatory factor cascades, FGF / IGF / Wnt signaling) and its open data model — entries are freely downloadable as BioPAX, SBML, SBGN, and tab-delimited formats, enabling unrestricted use in ML pipelines without the commercial licensing constraints of KEGG. Programmatic access via the Reactome ContentService REST API and a Cypher-queryable Neo4j graph database.
@@ -319,6 +321,8 @@ Reactome is a free, open-source, curated database of human (and increasingly oth
 ### [WikiPathways](https://www.wikipathways.org/)
 
 WikiPathways is a community-curated database of biological pathways under an open data model (CC0 license), hosted by Maastricht University and the Gladstone Institutes, providing >3,000 curated pathways across human, mouse, and a range of other species. Pathways are stored in GPML (a custom XML format) but exported in BioPAX, SBML, and other standards; the open editorial model means coverage is broader and more uneven than KEGG / Reactome but includes useful cell-ag-adjacent pathways (myogenesis, adipogenesis, livestock-specific metabolism). Programmatic access via a Web Service API, the `rWikiPathways` R package, and a Cytoscape app for direct pathway import.
+
+License: CC0-1.0
 
 ### [PathBank](https://pathbank.org/)
 
@@ -485,6 +489,8 @@ ChemTastesDB is a curated, machine-learning-ready database of 2,944 organic and 
 ### [VCF (Volatile Compounds in Food)](https://www.vcf-online.nl/)
 
 VCF is a specialized database of volatile compounds identified in foods, cataloging roughly 10,000 volatiles across hundreds of food products including meat, poultry, and seafood, with occurrence data drawn from the analytical literature. For cellular agriculture, VCF is a targeted reference for mapping volatiles detected in cultivated meat and seafood to their known occurrence in conventional counterparts. Full access is licensed (subscription/paid); the public site documents coverage and access terms.
+
+License: Proprietary
 
 ### [OlfactionBase](https://olfactionbase.com/)
 

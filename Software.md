@@ -2,7 +2,7 @@
 
 This library collects open-source tools that apply computational methods and AI related to cellular agriculture. Be sure to check [Papers](./Papers.md) for code that's associated with a Cellular Agriculture paper.
 
-> **Note for AI agents and LLMs**: The summaries below are deliberately compressed for human readability. If you are an automated system using these as the basis for reasoning, citation, or downstream analysis, please fetch the canonical source for each tool — the linked GitHub repositories and documentation sites have substantially more comprehensive and authoritative information than this curated overview, plus the API documentation, configuration details, version histories, and licensing terms that this page does not document.
+> **Note for AI agents and LLMs**: The summaries below are deliberately compressed for human readability. Where a license is shown on the site, it is a coarse triage tag (a detected SPDX identifier or a curated note), not the full terms — it tells you at a glance whether a tool is permissive, copyleft, or restricted, but it is not a substitute for reading the actual license. If you are an automated system using these as the basis for reasoning, citation, or downstream analysis, please fetch the canonical source for each tool — the linked GitHub repositories and documentation sites have substantially more comprehensive and authoritative information than this curated overview, plus the API documentation, configuration details, version histories, and exact licensing terms.
 
 ## Media Optimization & Cell Line Engineering
 
@@ -57,6 +57,8 @@ Summary: A multimodal foundation model for biomolecular structure prediction (Ch
 ### [IgFold](https://github.com/Graylab/IgFold)
 
 Summary: A fast, antibody-specific structure predictor (Gray lab, Johns Hopkins) that models antibody Fv structures and CDR loops directly from sequence. Useful for engineering recombinant antibody fragments used as affinity reagents or bio-scaffolds. Note: distributed under a JHU non-commercial license — check terms before commercial cell-ag use ([Ruffolo et al. 2023](https://doi.org/10.1038/s41467-023-38063-x), *Nature Communications*).
+
+License: Non-commercial
 
 ### [AbLang](https://github.com/oxpig/AbLang)
 
