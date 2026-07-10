@@ -148,7 +148,7 @@ describe('buildPapersModel — real Papers.md', () => {
 
   it('has 244 references', () => {
     // current Papers.md reference count; bump when refs are added.
-    expect(model.references.length).toBe(244);
+    expect(model.references.length).toBe(280);
   });
 
   // Ground truth (bump when refs change): 78 DISTINCT refs with a code URL and
@@ -157,13 +157,13 @@ describe('buildPapersModel — real Papers.md', () => {
   it('has 78 refs with a code URL, consistent with hasCode', () => {
     const withCodeUrl = model.references.filter((r) => r.codeUrl !== null).length;
     const withHasCode = model.references.filter((r) => r.hasCode).length;
-    expect(withCodeUrl).toBe(78);
-    expect(withHasCode).toBe(78);
+    expect(withCodeUrl).toBe(86);
+    expect(withHasCode).toBe(86);
   });
 
   it('has 10 refs with an absolute data URL', () => {
     const withDataUrl = model.references.filter((r) => r.dataUrl !== null).length;
-    expect(withDataUrl).toBe(10);
+    expect(withDataUrl).toBe(11);
   });
 
   it('has 6 distinct sections including References and Reviews & Perspectives', () => {
@@ -174,7 +174,7 @@ describe('buildPapersModel — real Papers.md', () => {
   });
 
   it('has 24 method rows', () => {
-    expect(model.methods.length).toBe(24);
+    expect(model.methods.length).toBe(25);
   });
 
   it('has 7 areas with the exact keys in column order', () => {
@@ -203,8 +203,8 @@ describe('buildPapersModel — real Papers.md', () => {
       (c) => c.method === 'Deep Learning' && c.area === 'cell',
     )!;
     expect(cell).toBeDefined();
-    expect(cell.refIds).toEqual([5, 122, 57, 145, 118, 123]);
-    expect(cell.refIds.length).toBe(6);
+    expect(cell.refIds).toEqual([5, 122, 57, 145, 118, 123, 263]);
+    expect(cell.refIds.length).toBe(7);
   });
 
   it('spot-checks reference id 6', () => {
