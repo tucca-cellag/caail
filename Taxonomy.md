@@ -121,6 +121,16 @@ and process problems.
 Instance-based prediction from nearest-neighbor similarity, for small-data classification and
 regression. Usually appears alongside other classical models in comparative studies.
 
+### Linear & Regularized Models
+Classical linear predictors and their regularized variants — ordinary and penalized linear/logistic
+regression (**LASSO**, ridge, elastic net) and linear additive scoring models (e.g. propensity-score
+scoring cards). Valued for interpretability and small-data stability: the fitted coefficients name which
+features drive the prediction, and L1 penalties perform explicit feature selection. In cell-ag:
+morphology- and sequence-feature regression for cell-quality and taste prediction where the feature set
+is modest and interpretability matters. Distinct from the *SVM* row (no kernel or margin), *Ensemble
+Learning* (no trees, bagging, or boosting), and *Chemometrics* (not restricted to spectral
+latent-variable projection).
+
 ### Chemometrics
 Multivariate statistics for extracting quantitative information from chemical measurements —
 overwhelmingly **spectra**. The workhorses are **Partial Least Squares (PLS)** regression, PLS-DA
