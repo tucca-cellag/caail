@@ -490,6 +490,10 @@ VCF is a specialized database of volatile compounds identified in foods, catalog
 
 OlfactionBase is a curated repository of odors, odorants and odorless compounds, olfactory receptors, and odorant-receptor interactions across human and mouse, integrating physicochemical and ADMET properties with receptor and odorant-binding-protein data ([Sharma et al. 2022](https://doi.org/10.1093/nar/gkab763), *Nucleic Acids Research*). For cellular agriculture, it links aroma-active compounds detected in cultivated tissues to the receptors and perceptual descriptors that govern how they are smelled, complementing GC-olfactometry references like Flavornet.
 
+### [UmamiMeta](https://hwwlab.com/Webserver/umamimeta)
+
+UmamiMeta is a web server that predicts whether a peptide is umami directly from its amino-acid sequence, using a protein-language-model classifier trained on a large curated set of umami and non-umami peptides, and reports predicted binding to umami taste receptors. For cellular agriculture it offers a fast sequence-to-taste screen for candidate flavor peptides, such as those released by proteolysis of cultured-muscle or scaffold proteins, when designing the savory profile of cultivated-meat products. Companion to [Papers.md ref #267](Papers.md#267) (He et al. 2025).
+
 ## Lipidomics Databases
 
 Intramuscular fat and lipid profile shape cultivated-meat flavor and texture, so lipid identity and nomenclature need a consistent reference layer. These resources standardize lipid structures and the classification/shorthand naming that lipidomics workflows depend on.
