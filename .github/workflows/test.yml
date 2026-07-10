@@ -50,14 +50,18 @@ jobs:
       - name: Install
         run: pnpm --dir site install --frozen-lockfile
 
-      - name: Unit + parser tests
-        run: pnpm --dir site test
-
-      # `pnpm build` runs the parser, which emits the generated JSON the e2e
-      # ground truths read (see site/e2e/data.ts), and produces the dist/ that
-      # Playwright's webServer previews.
+      # Build first, and not only for the e2e server. `pnpm build` runs the
+      # parser, and the generated JSON under src/content/data/ is gitignored, so
+      # on a clean checkout it does not exist yet. Both suites need it:
+      # src/lib/structured-data.test.ts imports catalog.json/papers.json/
+      # talks.json directly, and the e2e ground truths read the same files (see
+      # site/e2e/data.ts). Locally these pass without a build only because an
+      # earlier build left the artifacts behind.
       - name: Build
         run: pnpm --dir site build
+
+      - name: Unit + parser tests
+        run: pnpm --dir site test
 
       - name: Install Playwright browser
         run: pnpm --dir site exec playwright install --with-deps chromium
