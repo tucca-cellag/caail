@@ -148,10 +148,21 @@ export default function NetworkGraph() {
           { selector: 'node[primary = 0]', style: { 'background-opacity': 0.25, 'border-style': 'dashed' } },
           { selector: 'node:selected', style: { 'border-width': 3, 'border-color': '#002E6D' } },
           { selector: 'edge', style: edgeStyle as any },
+          // Edges are illustration only — the panel shows node info, never edge
+          // info. Take them out of hit-testing entirely (`events: no`): a thin
+          // edge otherwise carries a wide invisible tap band (`width/2 + 8px/zoom`)
+          // that both makes it selectable and swallows clicks aimed just off a
+          // small node, so the node reads as unselectable. With this, an off-node
+          // tap falls through to the background and clears the panel instead.
+          { selector: 'edge', style: { 'events': 'no' } as any },
         ],
         layout: { name: 'cose', animate: reduced ? false : 'end', randomize: false, padding: 20 } as any,
         minZoom: 0.45,
         maxZoom: 3,
+        // This is a read-only explorer; selection is driven entirely by node taps.
+        // Box-select would rubber-band-select elements (edges included, bypassing
+        // the edges' `events: no`) on any click that registers a micro-drag.
+        boxSelectionEnabled: false,
       });
       cy.on('tap', 'node', (evt: any) => {
         const id = Number(evt.target.id());

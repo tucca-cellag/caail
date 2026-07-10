@@ -133,6 +133,47 @@ async function clickNode(page: import('@playwright/test').Page) {
   await expect(page.locator('.ng-panel .ng-slug')).toHaveText(t.label);
 }
 
+/**
+ * The smallest connected node whose centre no other node covers. Small nodes are
+ * the ones the fix is about, and cytoscape hands a tap to the topmost element, so
+ * excluding covered ones keeps "the panel names the node I clicked" unambiguous.
+ */
+async function pickSmallNode(page: import('@playwright/test').Page) {
+  return page.evaluate(() => {
+    const canvas = document.querySelector('.ng-canvas') as HTMLElement;
+    const cy = (canvas as any).__cy;
+    const { width, height } = canvas.getBoundingClientRect();
+    const all = cy.nodes().map((el: any) => ({ el, p: el.renderedPosition(), r: el.renderedWidth() / 2 }));
+    const cand = all
+      .filter((c: any) => c.el.degree() > 0 && c.p.x > c.r && c.p.y > c.r && c.p.x < width - c.r && c.p.y < height - c.r)
+      .filter((c: any) => !all.some((o: any) => o.el.id() !== c.el.id() && Math.hypot(o.p.x - c.p.x, o.p.y - c.p.y) < o.r))
+      .sort((a: any, b: any) => a.r - b.r);
+    if (!cand.length) throw new Error('pickSmallNode: no uncovered small node');
+    const c = cand[0];
+    return { label: c.el.data('label') as string, x: c.p.x as number, y: c.p.y as number, r: c.r as number };
+  });
+}
+
+/**
+ * A rendered edge midpoint that lies clear of every node body — a spot that sat
+ * inside the edge's invisible hit band before the `events: no` fix.
+ */
+async function pickEdgeMidpoint(page: import('@playwright/test').Page) {
+  return page.evaluate(() => {
+    const canvas = document.querySelector('.ng-canvas') as HTMLElement;
+    const cy = (canvas as any).__cy;
+    const { width, height } = canvas.getBoundingClientRect();
+    const nodes = cy.nodes().map((n: any) => ({ p: n.renderedPosition(), r: n.renderedWidth() / 2 + 4 }));
+    for (const e of cy.edges()) {
+      const m = e.renderedMidpoint();
+      if (!m || m.x < 5 || m.y < 5 || m.x > width - 5 || m.y > height - 5) continue;
+      if (nodes.some((n: any) => Math.hypot(n.p.x - m.x, n.p.y - m.y) <= n.r)) continue;
+      return { x: m.x as number, y: m.y as number };
+    }
+    throw new Error('pickEdgeMidpoint: no edge midpoint clear of nodes');
+  });
+}
+
 test('edge-mode toggle switches shared-author ↔ citation', async ({ page }) => {
   await page.goto('./papers/network/');
   await page.waitForSelector('.ng-canvas canvas', { timeout: 20000 });
@@ -162,6 +203,43 @@ test('citation-mode node panel shows cites / cited-by counts', async ({ page }) 
 
   await clickNode(page);
   await expect(page.locator('.ng-panel .ng-degree')).toContainText(/cites \d+ · cited by \d+/);
+});
+
+// ---------------------------------------------------------------------------
+// Edges are illustration only. They carry `events: no` so they leave cytoscape's
+// hit-testing: a thin edge otherwise has a wide invisible tap band that both
+// makes it selectable and swallows clicks aimed just off a small node (the node
+// reads as unselectable). These guard both halves of that fix.
+// ---------------------------------------------------------------------------
+
+test('edges are inert — clicking a connection selects nothing and clears the panel', async ({ page }) => {
+  await page.goto('./papers/network/');
+  await page.waitForSelector('.ng-canvas canvas', { timeout: 20000 });
+
+  // Open a panel first, so the edge click has something to (not) leave behind.
+  await clickNode(page);
+  await expect(page.locator('.ng-panel')).toBeVisible();
+
+  const e = await pickEdgeMidpoint(page);
+  await page.locator('.ng-canvas').click({ position: { x: e.x, y: e.y } });
+
+  // The tap falls through to the background: no edge selected, panel cleared.
+  const selectedEdges = await page.evaluate(
+    () => (document.querySelector('.ng-canvas') as any).__cy.$(':selected').edges().length,
+  );
+  expect(selectedEdges).toBe(0);
+  await expect(page.locator('.ng-panel')).toHaveCount(0);
+});
+
+test('a small node selects when clicked at its centre', async ({ page }) => {
+  await page.goto('./papers/network/');
+  await page.waitForSelector('.ng-canvas canvas', { timeout: 20000 });
+  await waitForGraphSettled(page);
+
+  const t = await pickSmallNode(page);
+  await page.locator('.ng-canvas').click({ position: { x: t.x, y: t.y } });
+  await expect(page.locator('.ng-panel')).toBeVisible();
+  await expect(page.locator('.ng-panel .ng-slug')).toHaveText(t.label);
 });
 
 // ---------------------------------------------------------------------------
