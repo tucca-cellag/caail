@@ -86,6 +86,7 @@ export default function NetworkGraph() {
   useEffect(() => {
     let cancelled = false;
     let ro: ResizeObserver | null = null;
+    let syncRect: (() => void) | null = null;
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     (async () => {
@@ -158,26 +159,58 @@ export default function NetworkGraph() {
       });
       cy.on('tap', (evt: any) => { if (evt.target === cy) setSel(null); });
       cyRef.current = cy;
+      // Exposed so e2e can click a node at its exact rendered position. Sweeping
+      // the canvas until something is hit passes even when taps are offset.
+      (containerRef.current as any).__cy = cy;
       setReady(true);
 
-      // Cytoscape measures the container once at init and builds its screen↔model
-      // transform from that. It only auto-corrects on `window` resize, not on
-      // CSS/layout-driven container changes (here: late `client:idle` hydration, the
-      // `.sl-container:has(.ng)` width override, font reflow). A stale measurement
-      // produces offset taps where clicks don't land on the rendered nodes — so we
-      // remeasure once the container has settled, and keep it in sync thereafter.
-      // (The cose layout fits the viewport itself on `layoutstop`, so we don't fit
-      // here — doing so would fit pre-animation positions and double-fit on load.)
+      // Cytoscape maps a click to model coords by subtracting the container's
+      // viewport position, which it caches (`containerBB`) on first read with no
+      // expiry. The cache is cleared only by cy.resize(), a pixel-ratio change, or
+      // scroll/transitionend/animationend on the container or an ancestor. So a
+      // *pure positional* shift — the container moves while its width and height
+      // stay the same — leaves the cache stale and offsets every tap by that delta.
+      // Here that shift comes from the async webfont swap reflowing the prose above
+      // the graph, after `client:idle` has already mounted cytoscape.
+      //
+      // No observer catches it: a ResizeObserver only sees the container's own box
+      // (unchanged), and cytoscape already installs one of those itself. Instead,
+      // re-read the rect on pointerdown — capture phase on `window`, so it runs
+      // before cytoscape's own mousedown/touchstart handlers project the event —
+      // and resize only when the container has actually moved. That costs one
+      // getBoundingClientRect per press and fixes the whole class of layout shift
+      // rather than the one instance we can name.
+      const container = containerRef.current!; // guarded at the top of this IIFE
+      let rect = container.getBoundingClientRect();
+      syncRect = () => {
+        const next = container.getBoundingClientRect();
+        if (Math.abs(next.left - rect.left) > 0.5 || Math.abs(next.top - rect.top) > 0.5) {
+          rect = next;
+          cyRef.current?.resize(); // clears cytoscape's stale containerBB
+        }
+      };
+      window.addEventListener('pointerdown', syncRect, true);
+
+      // Remeasure once the container has settled after mount. (The cose layout fits
+      // the viewport itself on `layoutstop`, so we don't fit here — doing so would
+      // fit pre-animation positions and double-fit on load.)
       requestAnimationFrame(() => {
         if (cancelled) return;
         cy.resize();
+        rect = container.getBoundingClientRect();
       });
-      ro = new ResizeObserver(() => cyRef.current?.resize());
-      ro.observe(containerRef.current);
+      // Size changes still want an immediate resize — cytoscape's own observer is
+      // debounced by 100ms, which lags the nav/TOC collapse animation.
+      ro = new ResizeObserver(() => {
+        cyRef.current?.resize();
+        rect = container.getBoundingClientRect();
+      });
+      ro.observe(container);
     })();
 
     return () => {
       cancelled = true;
+      if (syncRect) window.removeEventListener('pointerdown', syncRect, true);
       ro?.disconnect();
       cyRef.current?.destroy();
       cyRef.current = null;
