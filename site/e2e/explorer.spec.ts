@@ -1,15 +1,21 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { cellRefCount, counts } from './data';
 
 test('homepage shows the sections grid with counts', async ({ page }) => {
   await page.goto('./');
   await expect(page.getByRole('heading', { name: 'Explore the library' })).toBeVisible();
-  await expect(page.getByRole('link', { name: /232 Papers/ }).first()).toBeVisible();
+  await expect(
+    page.getByRole('link', { name: new RegExp(`${counts.papers} Papers`) }).first(),
+  ).toBeVisible();
 });
 
 test('explorer cell click opens the reference side panel', async ({ page }) => {
   await page.goto('./papers/explorer/');
-  await page.getByRole('button', { name: 'Deep Learning × Cellular Engineering: 6 papers' }).click();
+  const n = cellRefCount('Deep Learning', 'cell');
+  await page
+    .getByRole('button', { name: `Deep Learning × Cellular Engineering: ${n} papers` })
+    .click();
   await expect(page.getByRole('heading', { name: 'Deep Learning × Cellular Engineering' })).toBeVisible();
   await expect(page.getByText(/Li, X\..*Li, M\. \(2020\)/)).toBeVisible();
   await expect(page.getByRole('link', { name: '10.1038/s41467-020-15851-3' })).toBeVisible();

@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { metrics, stubSpeciesCount } from './data';
 
 const seriousOnly = (results: { violations: { impact?: string | null }[] }) =>
   results.violations.filter((v) => ['serious', 'critical'].includes(v.impact ?? ''));
@@ -12,10 +13,20 @@ test('by-the-numbers renders coverage, species bars, and momentum (no JS needed)
   await page.goto('./by-the-numbers/');
   await expect(page.getByRole('heading', { name: 'Research coverage' })).toBeVisible();
   await expect(page.getByRole('heading', { name: /where help is wanted/i })).toBeVisible();
-  // a dense species bar and the recruitment signal both render (scope to the
-  // dashboard's bar labels — "Fish" also appears in the sidebar nav)
+  // a dense species bar renders (scope to the dashboard's bar labels — "Fish"
+  // also appears in the sidebar nav)
   await expect(page.locator('.md-label').filter({ hasText: 'Fish' })).toBeVisible();
-  await expect(page.locator('.md-row.stub .md-val').first()).toBeVisible();
+
+  // One bar per species, and the stub marking matches metrics.json. Asserting a
+  // stub row *exists* would be wrong: every species page now has deposits, so
+  // there are legitimately zero stubs and the recruitment signal lists nothing.
+  // `.md-row` is shared with the coverage sections, so scope to the species one.
+  const speciesBars = page
+    .locator('.md-sec')
+    .filter({ has: page.getByRole('heading', { name: /Datasets by species/i }) })
+    .locator('.md-bars');
+  await expect(speciesBars.locator('.md-row')).toHaveCount(metrics.species.length);
+  await expect(speciesBars.locator('.md-row.stub')).toHaveCount(stubSpeciesCount);
 });
 
 test('by-the-numbers has no serious/critical a11y violations', async ({ page }) => {
