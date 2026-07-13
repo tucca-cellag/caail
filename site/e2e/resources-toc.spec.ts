@@ -218,7 +218,9 @@ for (const kind of ['software', 'databases'] as const) {
   test(`${kind} cards surface inline hyperlinks with no a11y violations`, async ({ page }) => {
     await page.goto(`./${kind}/`);
     // Each card is a container (not a wrapping anchor) with a title link…
-    expect(await page.locator('article.cb-card > h3 .cb-name-link').count()).toBeGreaterThan(10);
+    // (the h3 sits in a `.cb-head` row alongside the license badge, so this is a
+    // descendant match, not a direct child).
+    expect(await page.locator('article.cb-card h3 .cb-name-link').count()).toBeGreaterThan(10);
     // …and a summary that carries the canonical markdown's own clickable links.
     expect(await page.locator('.cb-sum a').count()).toBeGreaterThan(5);
     // No repo-relative .md link leaks through (all rewritten to routes/GitHub).
