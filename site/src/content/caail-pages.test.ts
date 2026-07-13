@@ -22,7 +22,7 @@ describe('CAAIL_PAGES', () => {
     expect(CAAIL_PAGES.idForSourcePath('Funding')).toBe('funding');
   });
   it('returns title + sidebar metadata by id', () => {
-    expect(CAAIL_PAGES.byId('research-areas/bioprocess')?.title).toBe('Bioprocess control');
+    expect(CAAIL_PAGES.byId('research-areas/bioprocess')?.title).toBe('Bioprocess & Scale-Up');
     expect(CAAIL_PAGES.byId('datasets/cow')?.title).toContain('Cow');
     expect(CAAIL_PAGES.byId('other-resources')).toMatchObject({ group: 'top', title: 'Other Resources' });
     expect(CAAIL_PAGES.byId('ai-agents-foundation-models')).toMatchObject({ group: 'top', title: 'AI Agents & Foundation Models' });

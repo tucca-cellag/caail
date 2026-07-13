@@ -41,8 +41,8 @@ const PAGES: Record<string, PageMeta> = {
       'Computational and AI approaches to cellular engineering for cultivated meat — cell-line development, differentiation, and genome-scale modeling.',
   },
   'research-areas/bioprocess': {
-    title: 'Bioprocess control',
-    sidebarLabel: 'Bioprocess control',
+    title: 'Bioprocess & Scale-Up',
+    sidebarLabel: 'Bioprocess & Scale-Up',
     group: 'research-areas',
     order: 3,
     description:
