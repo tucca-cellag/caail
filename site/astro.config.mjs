@@ -158,6 +158,7 @@ export default defineConfig({
         { label: 'Papers', items: [
           { label: 'Explorer', link: '/papers/explorer/' },
           { label: 'Citation Network', link: '/papers/network/' },
+          { label: 'Reviews & Reference Works', link: '/papers/reviews/' },
         ] },
         { label: 'Software', link: '/software/' },
         { label: 'Databases', link: '/databases/' },
