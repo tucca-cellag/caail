@@ -570,6 +570,88 @@ in its methods, not what it could be applied to. Short form:
 
 > **Code**: https://huggingface.co/datasets/ajh-oai/genebench-pro-public-package
 
+<a id="198">198</a> Thévenot, E. A., Roux, A., Xu, Y., Ezan, E., & Junot, C. (2015). Analysis of the human adult urinary metabolome variations with age, body mass index, and gender by implementing a comprehensive workflow for univariate and OPLS statistical analyses. *Journal of Proteome Research, 14*(8), 3322–3335. https://doi.org/10.1021/acs.jproteome.5b00354
+> **Code**: https://bioconductor.org/packages/ropls/
+
+<a id="199">199</a> Rohart, F., Gautier, B., Singh, A., & Lê Cao, K.-A. (2017). mixOmics: An R package for ‘omics feature selection and multiple data integration. *PLoS Computational Biology, 13*(11), e1005752. https://doi.org/10.1371/journal.pcbi.1005752
+> **Code**: https://github.com/mixOmicsTeam/mixOmics
+
+<a id="249">249</a> Ndahiro, N., Ma, E., Bertalan, T., Donohue, M., Kevrekidis, Y., & Betenbaugh, M. (2025). Integration of Bayesian optimization and solution thermodynamics to optimize media design for mammalian biomanufacturing. *iScience, 28*(8), 112944. https://doi.org/10.1016/j.isci.2025.112944
+
+<a id="250">250</a> Hashizume, T., Baba, K., Matsuo, N., & Ying, B.-W. (2026). Sequential active learning for medium optimization in mAb production. *Journal of Bioscience and Bioengineering, 141*(3), 210–220. https://doi.org/10.1016/j.jbiosc.2025.12.002
+
+<a id="251">251</a> Emerson, D., Gaby-Biegel, N., Joshi, P., Rabin, Y., Sandlin, R. D., & Kara, L. B. (2026). *Accelerated discovery of cryoprotectant cocktails via multi-objective Bayesian optimization.* arXiv. https://doi.org/10.48550/arXiv.2602.13398
+
+<a id="252">252</a> Pi, C.-H., Dosa, P. I., & Hubel, A. (2020). Differential evolution for the optimization of DMSO-free cryoprotectants: Influence of control parameters. *Journal of Biomechanical Engineering, 142*(7), 071006. https://doi.org/10.1115/1.4045815
+
+<a id="253">253</a> Park, S.-Y., Kim, S.-J., Park, C.-H., Kim, J., & Lee, D.-Y. (2023). Data-driven prediction models for forecasting multistep ahead profiles of mammalian cell culture toward bioprocess digital twins. *Biotechnology and Bioengineering, 120*(9), 2494–2508. https://doi.org/10.1002/bit.28405
+
+<a id="254">254</a> Lu, Y.-A., Fukae, Y., Hu, W.-S., & Zhang, Q. (2025). Recurrent neural networks for forecasting time-varying process behavior in mammalian cell culture. *Industrial & Engineering Chemistry Research, 64*(18), 9048–9058. https://doi.org/10.1021/acs.iecr.4c03986
+
+<a id="255">255</a> Narayanan, H., Behle, L., Luna, M. F., Sokolov, M., Guillén-Gosálbez, G., Morbidelli, M., & Butté, A. (2020). Hybrid-EKF: Hybrid model coupled with extended Kalman filter for real-time monitoring and control of mammalian cell culture. *Biotechnology and Bioengineering, 117*(9), 2703–2714. https://doi.org/10.1002/bit.27437
+
+<a id="256">256</a> Choi, H., Roh, K., & Lee, J. H. (2025). CFD-based determination of optimal design and operating conditions of a fermentation reactor using Bayesian optimization. *Biotechnology and Bioengineering, 122*(4), 870–883. https://doi.org/10.1002/bit.28912
+
+<a id="257">257</a> Wang, T., You, J., Gong, X., Yang, S., Wang, L., & Chang, Z. (2023). Probabilistic Bayesian deep learning approach for online forecasting of fed-batch fermentation. *ACS Omega, 8*(28), 25272–25278. https://doi.org/10.1021/acsomega.3c02387
+
+<a id="258">258</a> Brinc, M., & Belič, A. (2019). Optimization of process conditions for mammalian fed-batch cell culture in automated micro-bioreactor system using genetic algorithm. *Journal of Biotechnology, 300*, 40–47. https://doi.org/10.1016/j.jbiotec.2019.05.001
+
+<a id="259">259</a> Pandi Chelvam, S., Ng, A. J. Y., Huang, J., Lee, E., Baranski, M., Yong, D., Williams, R. B. H., Springs, S. L., & Ram, R. J. (2025). Machine learning aided UV absorbance spectroscopy for microbial contamination in cell therapy products. *Scientific Reports, 15*(1), 7631. https://doi.org/10.1038/s41598-024-83114-y
+
+<a id="260">260</a> Iseoka, H., Sasai, M., Miyagawa, S., Takekita, K., Date, S., Ayame, H., Nishida, A., Sanami, S., Hayakawa, T., & Sawa, Y. (2022). Rapid and sensitive mycoplasma detection system using image-based deep learning. *Journal of Artificial Organs, 25*(1), 50–58. https://doi.org/10.1007/s10047-021-01282-4
+
+<a id="261">261</a> Maruthamuthu, M. K., Raffiee, A. H., De Oliveira, D. M., Ardekani, A. M., & Verma, M. S. (2020). Raman spectra-based deep learning: A tool to identify microbial contamination. *MicrobiologyOpen, 9*(11), e1122. https://doi.org/10.1002/mbo3.1122
+
+<a id="262">262</a> Nguyen, X. D. J., Liu, Y. A., McDowell, C. C., & Dooley, L. (2025). Methodology for contamination detection and reduction in fermentation processes using machine learning. *Bioprocess and Biosystems Engineering, 48*(9), 1547–1563. https://doi.org/10.1007/s00449-025-03194-6
+
+<a id="263">263</a> Vaishnav, E. D., de Boer, C. G., Molinet, J., Yassour, M., Fan, L., Adiconis, X., Thompson, D. A., Levin, J. Z., Cubillos, F. A., & Regev, A. (2022). The evolution, evolvability and engineering of gene regulatory DNA. *Nature, 603*(7901), 455–463. https://doi.org/10.1038/s41586-022-04506-6
+
+> **Data**: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE163045
+
+<a id="264">264</a> Sinha, S., Wasit, A., Kim, W. S., Kim, J., & Yi, J. (2025). Fluorescent marker prediction for non-invasive optical imaging in bovine satellite cells using deep learning. *Frontiers in Artificial Intelligence, 8*, 1577027. https://doi.org/10.3389/frai.2025.1577027
+
+> **Code**: https://github.com/food-ai-engineering-lab/bsc-fluorescence-prediction
+
+<a id="265">265</a> Nabiullina, R., Golovin, S., Kirichenko, E., Petrushan, M., Logvinov, A., Kaplya, M., Sedova, D., & Rodkin, S. (2025). 3D bioprinting of cultivated meat followed by the development of a fine-tuned YOLO model for the detection and counting of lipoblasts, fibroblasts, and myogenic cells. *Frontiers in Bioscience-Landmark, 30*(3), 36266. https://doi.org/10.31083/fbl36266
+
+<a id="266">266</a> Wang, J., Ding, S., Da, C., Chen, C., Wu, Z., Li, C., Zhou, G., & Tang, C. (2023). Morphology-based prediction of proliferation and differentiation potencies of porcine muscle stem cells for cultured meat production. *Journal of Agricultural and Food Chemistry, 71*(47), 18613–18621. https://doi.org/10.1021/acs.jafc.3c06919
+
+<a id="267">267</a> He, Y., Tian, Z., Zheng, J., Wang, H., Han, L., & Han, W. (2025). Prediction of umami peptides based on a large language model of proteins. *Journal of Chemical Information and Modeling, 65*(8), 3955–3962. https://doi.org/10.1021/acs.jcim.4c02394
+
+<a id="268">268</a> Tuwani, R., Wadhwa, S., & Bagler, G. (2019). BitterSweet: Building machine learning models for predicting the bitter and sweet taste of small molecules. *Scientific Reports, 9*(1), 7155. https://doi.org/10.1038/s41598-019-43664-y
+
+> **Code**: https://github.com/cosylabiiit/bittersweet
+
+<a id="269">269</a> Charoenkwan, P., Yana, J., Nantasenamat, C., Hasan, M. M., & Shoombuatong, W. (2020). iUmami-SCM: A novel sequence-based predictor for prediction and analysis of umami peptides using a scoring card method with propensity scores of dipeptides. *Journal of Chemical Information and Modeling, 60*(12), 6666–6678. https://doi.org/10.1021/acs.jcim.0c00707
+
+<a id="270">270</a> Charoenkwan, P., Nantasenamat, C., Hasan, M. M., Manavalan, B., & Shoombuatong, W. (2021). BERT4Bitter: A bidirectional encoder representations from transformers (BERT)-based model for improving the prediction of bitter peptides. *Bioinformatics, 37*(17), 2556–2562. https://doi.org/10.1093/bioinformatics/btab133
+
+<a id="271">271</a> Pallante, L., Korfiati, A., Androutsos, L., Stojceski, F., Bompotas, A., Giannikos, I., Raftopoulos, C., Malavolta, M., Grasso, G., Mavroudi, S., Kalogeras, A., Martos, V., Amoroso, D., Piga, D., Theofilatos, K., & Deriu, M. A. (2022). Toward a general and interpretable umami taste predictor using a multi-objective machine learning approach. *Scientific Reports, 12*(1), 21735. https://doi.org/10.1038/s41598-022-25935-3
+
+> **Code**: https://github.com/lorenzopallante/VirtuousUmami
+
+<a id="272">272</a> Swanson, K., Wu, W., Bulaong, N. L., Pak, J. E., & Zou, J. (2025). The Virtual Lab of AI agents designs new SARS-CoV-2 nanobodies. *Nature, 646*(8085), 716–723. https://doi.org/10.1038/s41586-025-09442-9
+
+> **Code**: https://github.com/zou-group/virtual-lab
+
+<a id="273">273</a> Ghafarollahi, A., & Buehler, M. J. (2025). SciAgents: Automating scientific discovery through bioinspired multi-agent intelligent graph reasoning. *Advanced Materials, 37*(22), 2413523. https://doi.org/10.1002/adma.202413523
+
+> **Code**: https://github.com/lamm-mit/SciAgentsDiscovery
+
+<a id="274">274</a> Darvish, K., Skreta, M., Zhao, Y., Yoshikawa, N., Som, S., Bogdanovic, M., Cao, Y., Hao, H., Xu, H., Aspuru-Guzik, A., Garg, A., & Shkurti, F. (2025). ORGANA: A robotic assistant for automated chemistry experimentation and characterization. *Matter, 8*(2), 101897. https://doi.org/10.1016/j.matt.2024.10.015
+
+> **Code**: https://github.com/ac-rad/organa
+
+<a id="275">275</a> Ghafarollahi, A., & Buehler, M. J. (2024). ProtAgents: Protein discovery via large language model multi-agent collaborations combining physics and machine learning. *Digital Discovery, 3*(7), 1389–1409. https://doi.org/10.1039/d4dd00013g
+
+> **Code**: https://github.com/lamm-mit/ProtAgents
+
+<a id="276">276</a> Qu, Y., Huang, K., Yin, M., Zhan, K., Liu, D., Yin, D., Cousins, H. C., Johnson, W. A., Wang, X., Shah, M., Altman, R. B., Zhou, D., Wang, M., & Cong, L. (2025). CRISPR-GPT for agentic automation of gene-editing experiments. *Nature Biomedical Engineering, 10*(2), 245–258. https://doi.org/10.1038/s41551-025-01463-z
+
+<a id="277">277</a> Zhou, J., Zhang, B., Li, G., Chen, X., Li, H., Xu, X., Chen, S., He, W., Xu, C., Liu, L., & Gao, X. (2024). An AI agent for fully automated multi-omic analyses. *Advanced Science, 11*(44), 2407094. https://doi.org/10.1002/advs.202407094
+
+> **Code**: https://github.com/JoshuaChou2018/AutoBA
+
 ## Sensory & Flavor Reference Work
 
 This section catalogs foundational primary research and methodology papers in sensory science, flavor chemistry, and analytical sensomics relevant to cellular agriculture, cultivated meat, and alt-protein products. Entries here do not apply a specific AI / ML method to a specific cell-ag problem (otherwise they would live in the matrix), but they are essential reference work — empirical studies, methodology frameworks, and applied chemometric analyses — that any AI/ML application in this space should build on. The same numeric ID counter is shared with the primary references above; no matrix participation.
@@ -671,88 +753,6 @@ This section catalogs foundational primary research describing the Farm Animal G
 <a id="144">144</a> Clark, E. L., Archibald, A. L., Daetwyler, H. D., Groenen, M. A. M., Harrison, P. W., Houston, R. D., Kühn, C., Lien, S., Macqueen, D. J., Reecy, J. M., Robledo, D., Watson, M., Tuggle, C. K., & Giuffra, E. (2020). From FAANG to fork: application of highly annotated genomes to improve farmed animal production and welfare. *Genome Biology, 21*(1), 285. https://doi.org/10.1186/s13059-020-02197-8
 
 <a id="192">192</a> Liu, S., Gao, Y., Canela-Xandri, O., Wang, S., Yu, Y., Cai, W., Li, B., Xiang, R., Chamberlain, A. J., Pairo-Castineira, E., D’Mellow, K., Rawlik, K., Xia, C., Yao, Y., Navarro, P., Rocha, D., Li, X., Yan, Z., Li, C., … Fang, L. (2022). A multi-tissue atlas of regulatory variants in cattle. *Nature Genetics, 54*(9), 1438–1447. https://doi.org/10.1038/s41588-022-01153-5
-
-<a id="198">198</a> Thévenot, E. A., Roux, A., Xu, Y., Ezan, E., & Junot, C. (2015). Analysis of the human adult urinary metabolome variations with age, body mass index, and gender by implementing a comprehensive workflow for univariate and OPLS statistical analyses. *Journal of Proteome Research, 14*(8), 3322–3335. https://doi.org/10.1021/acs.jproteome.5b00354
-> **Code**: https://bioconductor.org/packages/ropls/
-
-<a id="199">199</a> Rohart, F., Gautier, B., Singh, A., & Lê Cao, K.-A. (2017). mixOmics: An R package for ‘omics feature selection and multiple data integration. *PLoS Computational Biology, 13*(11), e1005752. https://doi.org/10.1371/journal.pcbi.1005752
-> **Code**: https://github.com/mixOmicsTeam/mixOmics
-
-<a id="249">249</a> Ndahiro, N., Ma, E., Bertalan, T., Donohue, M., Kevrekidis, Y., & Betenbaugh, M. (2025). Integration of Bayesian optimization and solution thermodynamics to optimize media design for mammalian biomanufacturing. *iScience, 28*(8), 112944. https://doi.org/10.1016/j.isci.2025.112944
-
-<a id="250">250</a> Hashizume, T., Baba, K., Matsuo, N., & Ying, B.-W. (2026). Sequential active learning for medium optimization in mAb production. *Journal of Bioscience and Bioengineering, 141*(3), 210–220. https://doi.org/10.1016/j.jbiosc.2025.12.002
-
-<a id="251">251</a> Emerson, D., Gaby-Biegel, N., Joshi, P., Rabin, Y., Sandlin, R. D., & Kara, L. B. (2026). *Accelerated discovery of cryoprotectant cocktails via multi-objective Bayesian optimization.* arXiv. https://doi.org/10.48550/arXiv.2602.13398
-
-<a id="252">252</a> Pi, C.-H., Dosa, P. I., & Hubel, A. (2020). Differential evolution for the optimization of DMSO-free cryoprotectants: Influence of control parameters. *Journal of Biomechanical Engineering, 142*(7), 071006. https://doi.org/10.1115/1.4045815
-
-<a id="253">253</a> Park, S.-Y., Kim, S.-J., Park, C.-H., Kim, J., & Lee, D.-Y. (2023). Data-driven prediction models for forecasting multistep ahead profiles of mammalian cell culture toward bioprocess digital twins. *Biotechnology and Bioengineering, 120*(9), 2494–2508. https://doi.org/10.1002/bit.28405
-
-<a id="254">254</a> Lu, Y.-A., Fukae, Y., Hu, W.-S., & Zhang, Q. (2025). Recurrent neural networks for forecasting time-varying process behavior in mammalian cell culture. *Industrial & Engineering Chemistry Research, 64*(18), 9048–9058. https://doi.org/10.1021/acs.iecr.4c03986
-
-<a id="255">255</a> Narayanan, H., Behle, L., Luna, M. F., Sokolov, M., Guillén-Gosálbez, G., Morbidelli, M., & Butté, A. (2020). Hybrid-EKF: Hybrid model coupled with extended Kalman filter for real-time monitoring and control of mammalian cell culture. *Biotechnology and Bioengineering, 117*(9), 2703–2714. https://doi.org/10.1002/bit.27437
-
-<a id="256">256</a> Choi, H., Roh, K., & Lee, J. H. (2025). CFD-based determination of optimal design and operating conditions of a fermentation reactor using Bayesian optimization. *Biotechnology and Bioengineering, 122*(4), 870–883. https://doi.org/10.1002/bit.28912
-
-<a id="257">257</a> Wang, T., You, J., Gong, X., Yang, S., Wang, L., & Chang, Z. (2023). Probabilistic Bayesian deep learning approach for online forecasting of fed-batch fermentation. *ACS Omega, 8*(28), 25272–25278. https://doi.org/10.1021/acsomega.3c02387
-
-<a id="258">258</a> Brinc, M., & Belič, A. (2019). Optimization of process conditions for mammalian fed-batch cell culture in automated micro-bioreactor system using genetic algorithm. *Journal of Biotechnology, 300*, 40–47. https://doi.org/10.1016/j.jbiotec.2019.05.001
-
-<a id="259">259</a> Pandi Chelvam, S., Ng, A. J. Y., Huang, J., Lee, E., Baranski, M., Yong, D., Williams, R. B. H., Springs, S. L., & Ram, R. J. (2025). Machine learning aided UV absorbance spectroscopy for microbial contamination in cell therapy products. *Scientific Reports, 15*(1), 7631. https://doi.org/10.1038/s41598-024-83114-y
-
-<a id="260">260</a> Iseoka, H., Sasai, M., Miyagawa, S., Takekita, K., Date, S., Ayame, H., Nishida, A., Sanami, S., Hayakawa, T., & Sawa, Y. (2022). Rapid and sensitive mycoplasma detection system using image-based deep learning. *Journal of Artificial Organs, 25*(1), 50–58. https://doi.org/10.1007/s10047-021-01282-4
-
-<a id="261">261</a> Maruthamuthu, M. K., Raffiee, A. H., De Oliveira, D. M., Ardekani, A. M., & Verma, M. S. (2020). Raman spectra-based deep learning: A tool to identify microbial contamination. *MicrobiologyOpen, 9*(11), e1122. https://doi.org/10.1002/mbo3.1122
-
-<a id="262">262</a> Nguyen, X. D. J., Liu, Y. A., McDowell, C. C., & Dooley, L. (2025). Methodology for contamination detection and reduction in fermentation processes using machine learning. *Bioprocess and Biosystems Engineering, 48*(9), 1547–1563. https://doi.org/10.1007/s00449-025-03194-6
-
-<a id="263">263</a> Vaishnav, E. D., de Boer, C. G., Molinet, J., Yassour, M., Fan, L., Adiconis, X., Thompson, D. A., Levin, J. Z., Cubillos, F. A., & Regev, A. (2022). The evolution, evolvability and engineering of gene regulatory DNA. *Nature, 603*(7901), 455–463. https://doi.org/10.1038/s41586-022-04506-6
-
-> **Data**: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE163045
-
-<a id="264">264</a> Sinha, S., Wasit, A., Kim, W. S., Kim, J., & Yi, J. (2025). Fluorescent marker prediction for non-invasive optical imaging in bovine satellite cells using deep learning. *Frontiers in Artificial Intelligence, 8*, 1577027. https://doi.org/10.3389/frai.2025.1577027
-
-> **Code**: https://github.com/food-ai-engineering-lab/bsc-fluorescence-prediction
-
-<a id="265">265</a> Nabiullina, R., Golovin, S., Kirichenko, E., Petrushan, M., Logvinov, A., Kaplya, M., Sedova, D., & Rodkin, S. (2025). 3D bioprinting of cultivated meat followed by the development of a fine-tuned YOLO model for the detection and counting of lipoblasts, fibroblasts, and myogenic cells. *Frontiers in Bioscience-Landmark, 30*(3), 36266. https://doi.org/10.31083/fbl36266
-
-<a id="266">266</a> Wang, J., Ding, S., Da, C., Chen, C., Wu, Z., Li, C., Zhou, G., & Tang, C. (2023). Morphology-based prediction of proliferation and differentiation potencies of porcine muscle stem cells for cultured meat production. *Journal of Agricultural and Food Chemistry, 71*(47), 18613–18621. https://doi.org/10.1021/acs.jafc.3c06919
-
-<a id="267">267</a> He, Y., Tian, Z., Zheng, J., Wang, H., Han, L., & Han, W. (2025). Prediction of umami peptides based on a large language model of proteins. *Journal of Chemical Information and Modeling, 65*(8), 3955–3962. https://doi.org/10.1021/acs.jcim.4c02394
-
-<a id="268">268</a> Tuwani, R., Wadhwa, S., & Bagler, G. (2019). BitterSweet: Building machine learning models for predicting the bitter and sweet taste of small molecules. *Scientific Reports, 9*(1), 7155. https://doi.org/10.1038/s41598-019-43664-y
-
-> **Code**: https://github.com/cosylabiiit/bittersweet
-
-<a id="269">269</a> Charoenkwan, P., Yana, J., Nantasenamat, C., Hasan, M. M., & Shoombuatong, W. (2020). iUmami-SCM: A novel sequence-based predictor for prediction and analysis of umami peptides using a scoring card method with propensity scores of dipeptides. *Journal of Chemical Information and Modeling, 60*(12), 6666–6678. https://doi.org/10.1021/acs.jcim.0c00707
-
-<a id="270">270</a> Charoenkwan, P., Nantasenamat, C., Hasan, M. M., Manavalan, B., & Shoombuatong, W. (2021). BERT4Bitter: A bidirectional encoder representations from transformers (BERT)-based model for improving the prediction of bitter peptides. *Bioinformatics, 37*(17), 2556–2562. https://doi.org/10.1093/bioinformatics/btab133
-
-<a id="271">271</a> Pallante, L., Korfiati, A., Androutsos, L., Stojceski, F., Bompotas, A., Giannikos, I., Raftopoulos, C., Malavolta, M., Grasso, G., Mavroudi, S., Kalogeras, A., Martos, V., Amoroso, D., Piga, D., Theofilatos, K., & Deriu, M. A. (2022). Toward a general and interpretable umami taste predictor using a multi-objective machine learning approach. *Scientific Reports, 12*(1), 21735. https://doi.org/10.1038/s41598-022-25935-3
-
-> **Code**: https://github.com/lorenzopallante/VirtuousUmami
-
-<a id="272">272</a> Swanson, K., Wu, W., Bulaong, N. L., Pak, J. E., & Zou, J. (2025). The Virtual Lab of AI agents designs new SARS-CoV-2 nanobodies. *Nature, 646*(8085), 716–723. https://doi.org/10.1038/s41586-025-09442-9
-
-> **Code**: https://github.com/zou-group/virtual-lab
-
-<a id="273">273</a> Ghafarollahi, A., & Buehler, M. J. (2025). SciAgents: Automating scientific discovery through bioinspired multi-agent intelligent graph reasoning. *Advanced Materials, 37*(22), 2413523. https://doi.org/10.1002/adma.202413523
-
-> **Code**: https://github.com/lamm-mit/SciAgentsDiscovery
-
-<a id="274">274</a> Darvish, K., Skreta, M., Zhao, Y., Yoshikawa, N., Som, S., Bogdanovic, M., Cao, Y., Hao, H., Xu, H., Aspuru-Guzik, A., Garg, A., & Shkurti, F. (2025). ORGANA: A robotic assistant for automated chemistry experimentation and characterization. *Matter, 8*(2), 101897. https://doi.org/10.1016/j.matt.2024.10.015
-
-> **Code**: https://github.com/ac-rad/organa
-
-<a id="275">275</a> Ghafarollahi, A., & Buehler, M. J. (2024). ProtAgents: Protein discovery via large language model multi-agent collaborations combining physics and machine learning. *Digital Discovery, 3*(7), 1389–1409. https://doi.org/10.1039/d4dd00013g
-
-> **Code**: https://github.com/lamm-mit/ProtAgents
-
-<a id="276">276</a> Qu, Y., Huang, K., Yin, M., Zhan, K., Liu, D., Yin, D., Cousins, H. C., Johnson, W. A., Wang, X., Shah, M., Altman, R. B., Zhou, D., Wang, M., & Cong, L. (2025). CRISPR-GPT for agentic automation of gene-editing experiments. *Nature Biomedical Engineering, 10*(2), 245–258. https://doi.org/10.1038/s41551-025-01463-z
-
-<a id="277">277</a> Zhou, J., Zhang, B., Li, G., Chen, X., Li, H., Xu, X., Chen, S., He, W., Xu, C., Liu, L., & Gao, X. (2024). An AI agent for fully automated multi-omic analyses. *Advanced Science, 11*(44), 2407094. https://doi.org/10.1002/advs.202407094
-
-> **Code**: https://github.com/JoshuaChou2018/AutoBA
 
 ## Reviews & Perspectives
 
