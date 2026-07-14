@@ -1,0 +1,63 @@
+/* topic-hub.css — the /topics/ cross-content hub: a theme index and per-topic views. */
+
+.th-theme-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+  gap: 0.9rem;
+  list-style: none;
+  margin: 1rem 0 0;
+  padding: 0;
+}
+
+.th-theme-card {
+  --chip: var(--caail-muted);
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--caail-border);
+  border-top: 3px solid var(--chip);
+  border-radius: 0.6rem;
+  background: var(--caail-surface);
+}
+.th-theme-card[data-theme='media-growth-factors']    { --chip: var(--caail-area-media); }
+.th-theme-card[data-theme='cell-lines-engineering']  { --chip: var(--caail-area-cell); }
+.th-theme-card[data-theme='bioprocess-scale-up']     { --chip: var(--caail-area-bioprocess); }
+.th-theme-card[data-theme='scaffolding-biomaterials'] { --chip: var(--caail-area-scaffolding); }
+.th-theme-card[data-theme='sensory-flavor']          { --chip: var(--caail-area-sensory); }
+.th-theme-card[data-theme='ai-methods-tooling']      { --chip: var(--caail-area-tooling); }
+.th-theme-card[data-theme='metabolism-modeling']     { --chip: var(--caail-area-eval); }
+
+.th-theme-link { font-weight: 600; font-size: 1.05rem; text-decoration: none; color: var(--caail-primary); }
+.th-total { color: var(--caail-muted); font-size: 0.85rem; margin: 0.15rem 0 0.4rem; }
+
+.th-pills { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+.th-pill {
+  font-size: 0.72rem;
+  padding: 0.05rem 0.45rem;
+  border: 1px solid var(--caail-border);
+  border-radius: 999px;
+  color: var(--caail-muted);
+  white-space: nowrap;
+}
+
+.th-crumbs { font-size: 0.85rem; margin: 0.5rem 0 0.75rem; }
+.th-title { margin: 0.2rem 0 0.4rem; }
+
+.th-subtags { display: flex; flex-wrap: wrap; gap: 0.4rem; list-style: none; padding: 0; margin: 0.8rem 0; }
+.th-subtag {
+  font-size: 0.8rem;
+  padding: 0.15rem 0.6rem;
+  border: 1px solid var(--caail-border);
+  border-radius: 999px;
+  text-decoration: none;
+  color: var(--caail-ink);
+  background: var(--caail-surface);
+}
+.th-subcount { color: var(--caail-muted); }
+
+.th-group { margin-top: 1.4rem; }
+.th-group-h { font-size: 1rem; margin: 0 0 0.4rem; }
+.th-group-n { color: var(--caail-muted); font-weight: 400; }
+.th-items { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.3rem; }
+.th-item { text-decoration: none; color: var(--caail-link); }
+.th-item:hover { text-decoration: underline; }
+
+.th-datasets { margin-top: 1.4rem; color: var(--caail-muted); font-size: 0.9rem; }
