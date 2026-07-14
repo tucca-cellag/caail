@@ -1,11 +1,12 @@
 ---
 title: Papers Explorer
-description: Interactive matrix of CAAIL's papers across AI methods and 7 research areas.
+description: Interactive matrix of CAAIL's papers across AI methods and research areas.
 tableOfContents: false
 ---
 
 import PapersExplorer from '../../../components/PapersExplorer.tsx';
+import papers from '../../data/papers.json';
 
-The matrix below maps AI methods against the 7 research areas. Cell shade = paper count; click a cell to read its references.
+The matrix below maps AI methods against the {papers.areas.length} research areas. Cell shade = paper count; click a cell to read its references.
 
 <PapersExplorer client:load />

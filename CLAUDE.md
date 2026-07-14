@@ -128,7 +128,7 @@ LICENSE                MIT License
 `Papers.md` has **three coordinated parts**:
 
 1. **A 2D matrix table** at the top, for **primary research** applying a specific AI method to a specific cell-ag problem:
-   - **Rows** = AI/ML method. Current rows: Bayesian Optimization, Deep Learning, GNN, CNN, GAN/VAE, Genetic Algorithms, SVM, Ensemble Learning, K-Nearest Neighbors, Active Learning, **LLMs / AI Agents**. Each row label links to its definition in `Taxonomy.md` (the canonical, CAAIL-specific definition of every row and column).
+   - **Rows** = AI/ML method, spanning classical ML (Bayesian Optimization, Deep Learning, GNN, …) through the foundation-model and agentic families. The live set is whatever `Papers.md` contains — don't re-enumerate it here, it drifts (see #81). Each row label links to its definition in `Taxonomy.md` (the canonical, CAAIL-specific definition of every row and column).
    - **Columns** = research area, each linked to its definition in `Taxonomy.md`. Current columns: Media Optimization, Cellular Engineering, Bioprocess & Scale-Up, Scaffolding, Sensory Prediction, **AI Tooling / Methodology**, **AI Evaluation & Benchmarking**.
    - **Cells** = comma-separated anchor links to numbered references, e.g. `[2](#2),[3](#3),[15](#15)`.
 

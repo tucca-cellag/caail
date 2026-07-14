@@ -8,7 +8,11 @@ on:
       - Databases.md
       - OtherResources.md
       - Datasets/**
+      - CONTRIBUTING.md
+      - CLAUDE.md
       - site/scripts/parser/**
+      - site/scripts/db/**
+      - site/db/**
   push:
     branches:
       - main
@@ -18,7 +22,11 @@ on:
       - Databases.md
       - OtherResources.md
       - Datasets/**
+      - CONTRIBUTING.md
+      - CLAUDE.md
       - site/scripts/parser/**
+      - site/scripts/db/**
+      - site/db/**
   workflow_dispatch:
 
 concurrency:
@@ -50,3 +58,14 @@ jobs:
 
       - name: Run Papers.md lint
         run: pnpm --dir site lint:papers
+
+      - name: DB integrity + round-trip verify
+        run: |
+          pnpm --dir site db:check
+          pnpm --dir site db:verify
+
+      - name: DB ↔ Markdown sync guard
+        run: |
+          pnpm --dir site db:emit
+          git diff --exit-code -- Papers.md Software.md Databases.md 'Datasets/*.md' \
+            || { echo "::error::Committed Markdown is out of sync with the DB. Run 'pnpm --dir site db:emit' and commit the result."; exit 1; }
