@@ -81,12 +81,18 @@ CREATE TABLE dataset_rows (
   ordinal    INTEGER NOT NULL
 );
 
--- Topic vocabulary (flat subject tags; optional link to a matrix area) --------
+-- Topic vocabulary — two-tier: a fixed backbone of `theme`s + earned fine `tag`s.
+-- `slug` is UNIQUE across BOTH tiers (one namespace), so a theme and a tag can never
+-- share a slug. A theme: tier='theme', theme_slug NULL, optional area_key. A fine tag:
+-- tier='tag', theme_slug = its parent theme. The compound CHECK enforces that invariant.
 CREATE TABLE topics (
-  item_id   TEXT PRIMARY KEY REFERENCES items(id),   -- 'topic:metabolic-modeling'
-  slug      TEXT NOT NULL UNIQUE,
-  label     TEXT NOT NULL,
-  area_key  TEXT REFERENCES areas(key)               -- NULL = cross-cutting / no matrix column
+  item_id    TEXT PRIMARY KEY REFERENCES items(id),   -- 'topic:metabolism-modeling'
+  slug       TEXT NOT NULL UNIQUE,
+  label      TEXT NOT NULL,
+  tier       TEXT NOT NULL CHECK (tier IN ('theme','tag')),
+  theme_slug TEXT REFERENCES topics(slug),            -- set iff tier='tag'
+  area_key   TEXT REFERENCES areas(key),              -- set only on themes aligned to a matrix column
+  CHECK ((tier='theme' AND theme_slug IS NULL) OR (tier='tag' AND theme_slug IS NOT NULL))
 );
 
 -- Many-to-many tagging (the multi-tag join #78 exists to enable) --------------

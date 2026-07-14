@@ -1,35 +1,35 @@
-{"alias":"AI Agents & Foundation Models","topic_id":"topic:ai-agents-foundation-models"}
-{"alias":"Benchmark Leaderboards & Results Trackers","topic_id":"topic:benchmark-leaderboards-results-trackers"}
-{"alias":"Biological & Food Ontologies","topic_id":"topic:biological-food-ontologies"}
-{"alias":"Biomedical Ontology & Identifier Infrastructure","topic_id":"topic:biomedical-ontology-identifier-infrastructure"}
-{"alias":"Bioprocess Modeling & Scaling","topic_id":"topic:bioprocess"}
-{"alias":"Cell Line & Single-Cell Reference Atlases","topic_id":"topic:cellular-engineering"}
-{"alias":"Cell-Culture Media & Growth-Factor Databases","topic_id":"topic:media-optimization"}
-{"alias":"Cellular Aging & Senescence","topic_id":"topic:cellular-aging-senescence"}
-{"alias":"Chemistry & Compound Databases","topic_id":"topic:chemistry-compound-databases"}
-{"alias":"Codon Usage & Sequence-Design Databases","topic_id":"topic:codon-usage-sequence-design-databases"}
-{"alias":"Data Standards & Interchange Formats","topic_id":"topic:data-standards-interchange-formats"}
-{"alias":"Database Directories & Reference Guides","topic_id":"topic:database-directories-reference-guides"}
-{"alias":"ECM & Matrisome","topic_id":"topic:ecm-matrisome"}
-{"alias":"Ecosystem & Industry Directories","topic_id":"topic:ecosystem-industry-directories"}
+{"alias":"AI Agents & Foundation Models","topic_id":"topic:ai-methods-tooling"}
+{"alias":"Benchmark Leaderboards & Results Trackers","topic_id":"topic:ai-methods-tooling"}
+{"alias":"Biological & Food Ontologies","topic_id":"topic:ai-methods-tooling"}
+{"alias":"Biomedical Ontology & Identifier Infrastructure","topic_id":"topic:ai-methods-tooling"}
+{"alias":"Bioprocess Modeling & Scaling","topic_id":"topic:bioprocess-scale-up"}
+{"alias":"Cell Line & Single-Cell Reference Atlases","topic_id":"topic:cell-lines-engineering"}
+{"alias":"Cell-Culture Media & Growth-Factor Databases","topic_id":"topic:media-growth-factors"}
+{"alias":"Cellular Aging & Senescence","topic_id":"topic:cell-lines-engineering"}
+{"alias":"Chemistry & Compound Databases","topic_id":"topic:ai-methods-tooling"}
+{"alias":"Codon Usage & Sequence-Design Databases","topic_id":"topic:ai-methods-tooling"}
+{"alias":"Data Standards & Interchange Formats","topic_id":"topic:ai-methods-tooling"}
+{"alias":"Database Directories & Reference Guides","topic_id":"topic:ai-methods-tooling"}
+{"alias":"ECM & Matrisome","topic_id":"topic:ai-methods-tooling"}
+{"alias":"Ecosystem & Industry Directories","topic_id":"topic:cell-lines-engineering"}
 {"alias":"Flavor & Taste Compound Databases","topic_id":"topic:sensory-flavor"}
-{"alias":"Glycomics & Glycoprotein Databases","topic_id":"topic:glycomics-glycoprotein-databases"}
-{"alias":"Imaging & Segmentation","topic_id":"topic:imaging-segmentation"}
-{"alias":"Lipidomics Databases","topic_id":"topic:lipidomics-databases"}
-{"alias":"Literature & Bibliographic Databases","topic_id":"topic:literature-bibliographic-databases"}
-{"alias":"Livestock Multi-Tissue Atlases & Functional Genomics","topic_id":"topic:livestock-multi-tissue-atlases-functional-genomics"}
-{"alias":"Mass Spectrometry & Chemometrics","topic_id":"topic:mass-spectrometry-chemometrics"}
-{"alias":"Mass Spectrometry Spectral Databases","topic_id":"topic:mass-spectrometry-spectral-databases"}
-{"alias":"Media Optimization & Cell Line Engineering","topic_id":"topic:media-optimization"}
-{"alias":"Metabolic Modeling & Strain Design","topic_id":"topic:metabolic-modeling"}
-{"alias":"Muscle & Functional Gene Sets","topic_id":"topic:muscle-functional-gene-sets"}
+{"alias":"Glycomics & Glycoprotein Databases","topic_id":"topic:ai-methods-tooling"}
+{"alias":"Imaging & Segmentation","topic_id":"topic:ai-methods-tooling"}
+{"alias":"Lipidomics Databases","topic_id":"topic:ai-methods-tooling"}
+{"alias":"Literature & Bibliographic Databases","topic_id":"topic:ai-methods-tooling"}
+{"alias":"Livestock Multi-Tissue Atlases & Functional Genomics","topic_id":"topic:cell-lines-engineering"}
+{"alias":"Mass Spectrometry & Chemometrics","topic_id":"topic:sensory-flavor"}
+{"alias":"Mass Spectrometry Spectral Databases","topic_id":"topic:sensory-flavor"}
+{"alias":"Media Optimization & Cell Line Engineering","topic_id":"topic:media-growth-factors"}
+{"alias":"Metabolic Modeling & Strain Design","topic_id":"topic:metabolism-modeling"}
+{"alias":"Muscle & Functional Gene Sets","topic_id":"topic:cell-lines-engineering"}
 {"alias":"Olfaction & Sensory","topic_id":"topic:sensory-flavor"}
-{"alias":"Pathways, Metabolism & Metabolic Models","topic_id":"topic:metabolic-modeling"}
-{"alias":"Plasmid & Reagent Repositories","topic_id":"topic:plasmid-reagent-repositories"}
-{"alias":"Protein & Structure Databases","topic_id":"topic:protein-structure-databases"}
-{"alias":"Quantitative Genetics & Multi-Omics Analysis","topic_id":"topic:quantitative-genetics-multi-omics-analysis"}
-{"alias":"Regulatory & Food-Safety Databases","topic_id":"topic:regulatory-food-safety-databases"}
-{"alias":"Seafood Species Reference Databases","topic_id":"topic:seafood-species-reference-databases"}
-{"alias":"Sequence, Genome & Expression Repositories","topic_id":"topic:sequence-genome-expression-repositories"}
-{"alias":"Stemness Signatures","topic_id":"topic:stemness-signatures"}
-{"alias":"Workflow-Manager Pipelines","topic_id":"topic:workflow-manager-pipelines"}
+{"alias":"Pathways, Metabolism & Metabolic Models","topic_id":"topic:metabolism-modeling"}
+{"alias":"Plasmid & Reagent Repositories","topic_id":"topic:ai-methods-tooling"}
+{"alias":"Protein & Structure Databases","topic_id":"topic:ai-methods-tooling"}
+{"alias":"Quantitative Genetics & Multi-Omics Analysis","topic_id":"topic:ai-methods-tooling"}
+{"alias":"Regulatory & Food-Safety Databases","topic_id":"topic:ai-methods-tooling"}
+{"alias":"Seafood Species Reference Databases","topic_id":"topic:ai-methods-tooling"}
+{"alias":"Sequence, Genome & Expression Repositories","topic_id":"topic:ai-methods-tooling"}
+{"alias":"Stemness Signatures","topic_id":"topic:cell-lines-engineering"}
+{"alias":"Workflow-Manager Pipelines","topic_id":"topic:ai-methods-tooling"}

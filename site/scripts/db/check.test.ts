@@ -12,7 +12,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { openDb, importNdjson, type Db } from './lib.js';
-import { checkIntegrity, checkReachability, checkColumnDrift, runChecks } from './check.js';
+import { checkIntegrity, checkReachability, checkColumnDrift, checkTopicTiers, runChecks } from './check.js';
 
 const failing = (results: { label: string; ok: boolean }[], match: RegExp) =>
   results.some((r) => match.test(r.label) && !r.ok);
@@ -87,6 +87,28 @@ describe('checkColumnDrift', () => {
   it('flags a missing column (in DB, not in prose)', () => {
     const res = checkColumnDrift(db, fixtureRoot('Media Optimization'));
     expect(res.some((r) => /CONTRIBUTING/.test(r.label) && !r.ok)).toBe(true);
+  });
+});
+
+describe('checkTopicTiers', () => {
+  it('passes on the real two-tier DB', () => {
+    expect(checkTopicTiers(importNdjson()).every((r) => r.ok)).toBe(true);
+  });
+  it('flags a fine tag whose theme_slug is not a theme', () => {
+    const db = importNdjson(); db.exec('PRAGMA foreign_keys=OFF');
+    db.prepare("INSERT INTO items(id,type,slug) VALUES('topic:bad','topic','bad')").run();
+    db.prepare("INSERT INTO topics(item_id,slug,label,tier,theme_slug,area_key) VALUES('topic:bad','bad','Bad','tag','no-theme',NULL)").run();
+    expect(checkTopicTiers(db).some((r) => !r.ok && /parent theme/.test(r.label))).toBe(true);
+  });
+  it('schema CHECK rejects a theme that carries a theme_slug (even with FK off)', () => {
+    const db = importNdjson(); db.exec('PRAGMA foreign_keys=OFF');
+    db.prepare("INSERT INTO items(id,type,slug) VALUES('topic:y','topic','y')").run();
+    expect(() => db.prepare("INSERT INTO topics(item_id,slug,label,tier,theme_slug,area_key) VALUES('topic:y','y','Y','theme','sensory-flavor',NULL)").run()).toThrow();
+  });
+  it('schema CHECK rejects a fine tag with a NULL theme_slug', () => {
+    const db = importNdjson(); db.exec('PRAGMA foreign_keys=OFF');
+    db.prepare("INSERT INTO items(id,type,slug) VALUES('topic:z','topic','z')").run();
+    expect(() => db.prepare("INSERT INTO topics(item_id,slug,label,tier,theme_slug,area_key) VALUES('topic:z','z','Z','tag',NULL,NULL)").run()).toThrow();
   });
 });
 

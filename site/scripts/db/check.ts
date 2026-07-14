@@ -19,6 +19,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { importNdjson, REPO_ROOT, type Db } from './lib.js';
+import { THEME_SLUGS } from './seed.js';
 
 export interface CheckResult { label: string; ok: boolean; detail: string; }
 const ok = (label: string, cond: boolean, detail = ''): CheckResult => ({ label, ok: cond, detail });
@@ -91,9 +92,24 @@ export function checkColumnDrift(db: Db, repoRoot: string = REPO_ROOT): CheckRes
   return out;
 }
 
+export function checkTopicTiers(db: Db): CheckResult[] {
+  const out: CheckResult[] = [];
+  const themes = (db.prepare("SELECT slug FROM topics WHERE tier='theme'").all() as { slug: string }[]).map((r) => r.slug).sort();
+  out.push(ok('topics: exactly the 7 expected themes', JSON.stringify(themes) === JSON.stringify(THEME_SLUGS), `got: ${themes.join(', ')}`));
+  const badTag = db.prepare(
+    "SELECT slug FROM topics WHERE tier='tag' AND (theme_slug IS NULL OR theme_slug NOT IN (SELECT slug FROM topics WHERE tier='theme'))",
+  ).all() as { slug: string }[];
+  out.push(ok('topics: every fine tag has a valid parent theme', badTag.length === 0, badTag.map((t) => t.slug).join(', ')));
+  const badTheme = db.prepare("SELECT slug FROM topics WHERE tier='theme' AND theme_slug IS NOT NULL").all() as { slug: string }[];
+  out.push(ok('topics: no theme carries a theme_slug', badTheme.length === 0, badTheme.map((t) => t.slug).join(', ')));
+  const badArea = db.prepare('SELECT slug FROM topics WHERE area_key IS NOT NULL AND area_key NOT IN (SELECT key FROM areas)').all() as unknown[];
+  out.push(ok('topics: every area_key resolves', badArea.length === 0, `${badArea.length} unresolved`));
+  return out;
+}
+
 /** Run every guard against a DB. Returns all results (ok + failing). */
 export function runChecks(db: Db, repoRoot: string = REPO_ROOT): CheckResult[] {
-  return [...checkIntegrity(db), ...checkReachability(db), ...checkColumnDrift(db, repoRoot)];
+  return [...checkIntegrity(db), ...checkReachability(db), ...checkColumnDrift(db, repoRoot), ...checkTopicTiers(db)];
 }
 
 function main(): void {

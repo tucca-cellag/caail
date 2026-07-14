@@ -34,18 +34,28 @@ describe('seedTopics', () => {
     expect(summary.tags).toBeGreaterThan(0);
   });
 
-  it('the metabolic-modeling topic spans >=3 content types (the cross-content hub)', () => {
+  it('seeds exactly 7 themes and every fine tag has a valid theme (disjoint slugs)', () => {
+    const themes = (db.prepare("SELECT slug FROM topics WHERE tier='theme'").all() as {slug:string}[]).map(r=>r.slug).sort();
+    expect(themes).toEqual([
+      'ai-methods-tooling','bioprocess-scale-up','cell-lines-engineering',
+      'media-growth-factors','metabolism-modeling','scaffolding-biomaterials','sensory-flavor',
+    ]);
+    expect(count("SELECT COUNT(*) n FROM topics WHERE tier='tag' AND theme_slug NOT IN (SELECT slug FROM topics WHERE tier='theme')")).toBe(0);
+    expect(count("SELECT COUNT(*) n FROM topics t1 JOIN topics t2 ON t1.slug=t2.slug WHERE t1.tier<>t2.tier")).toBe(0);
+  });
+
+  it('the metabolic-modeling fine tag spans >=3 content types (the cross-content hub)', () => {
     const types = count(
       "SELECT COUNT(DISTINCT i.type) n FROM item_topics it JOIN items i ON i.id=it.item_id WHERE it.topic_id='topic:metabolic-modeling'",
     );
     expect(types).toBeGreaterThanOrEqual(3);
   });
 
-  it('an area topic links to its matrix area and tags papers in that area', () => {
-    const area = db.prepare("SELECT area_key FROM topics WHERE item_id='topic:media-optimization'").get() as { area_key: string | null };
+  it('a theme links to its matrix area and tags papers in that area', () => {
+    const area = db.prepare("SELECT area_key FROM topics WHERE item_id='topic:media-growth-factors'").get() as { area_key: string | null };
     expect(area?.area_key).toBeTruthy();
     const papers = count(
-      "SELECT COUNT(*) n FROM item_topics it JOIN items i ON i.id=it.item_id WHERE it.topic_id='topic:media-optimization' AND i.type='paper'",
+      "SELECT COUNT(*) n FROM item_topics it JOIN items i ON i.id=it.item_id WHERE it.topic_id='topic:media-growth-factors' AND i.type='paper'",
     );
     expect(papers).toBeGreaterThan(0);
   });
