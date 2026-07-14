@@ -1,5 +1,12 @@
 /* topic-hub.css — the /topics/ cross-content hub: a theme index and per-topic views. */
 
+/* margin:0 resets Starlight's `.sl-markdown-content :not(:first-child)` flow spacing
+ * (#67 trap) on every list item in the island — gap/grid handles spacing instead. */
+.th-theme-grid li,
+.th-pills > *,
+.th-subtags li,
+.th-items li { margin: 0; }
+
 .th-theme-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
@@ -56,8 +63,31 @@
 .th-group { margin-top: 1.4rem; }
 .th-group-h { font-size: 1rem; margin: 0 0 0.4rem; }
 .th-group-n { color: var(--caail-muted); font-weight: 400; }
-.th-items { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.3rem; }
-.th-item { text-decoration: none; color: var(--caail-link); }
-.th-item:hover { text-decoration: underline; }
+
+/* Each item is a distinct row: a top divider + padding + a hover highlight, so a
+   long list of items (esp. wrapping paper titles) reads as separate entries rather
+   than a wall of blue links. */
+.th-items { list-style: none; padding: 0; margin: 0; }
+.th-items > li { margin: 0; border-top: 1px solid var(--caail-border); }
+.th-items > li:first-child { border-top: none; }
+.th-item {
+  display: block;
+  padding: 0.45rem 0.4rem;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  color: var(--caail-ink);
+  text-decoration: none;
+  border-radius: 5px;
+}
+.th-item::before {
+  content: '›';
+  color: var(--caail-muted);
+  margin-right: 0.45em;
+}
+.th-item:hover,
+.th-item:focus-visible {
+  background: var(--caail-surface);
+  color: var(--caail-primary);
+}
 
 .th-datasets { margin-top: 1.4rem; color: var(--caail-muted); font-size: 0.9rem; }
