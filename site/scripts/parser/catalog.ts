@@ -21,6 +21,7 @@ import type { Root, RootContent, Heading, Link, Paragraph } from 'mdast';
 import { parseFile } from './markdown.js';
 import { rewriteCaailLinks } from '../remark/rewrite-caail-links.js';
 import { catalogTopicLookup } from './topics.js';
+import { catalogLicenseLookup } from './licenses.js';
 import { CatalogSchema, type Catalog, type CatalogEntry } from './types.js';
 
 // ---------------------------------------------------------------------------
@@ -219,10 +220,12 @@ export function buildCatalogModel(
   databasesPath: string = DATABASES_PATH,
 ): Catalog {
   const lookup = catalogTopicLookup();
+  const licenseLookup = catalogLicenseLookup();
   // Order-independent content join on (type, url, name) — url alone isn't unique (two
   // same-type entries can share one), and position drifts under db:add/db:remove.
+  // License is url-keyed in seedLicenses (same url = same license), so it needs no name.
   const attach = (entries: CatalogEntry[], type: 'software' | 'database') =>
-    entries.map((e) => ({ ...e, topics: lookup(type, e.url, e.name) }));
+    entries.map((e) => ({ ...e, topics: lookup(type, e.url, e.name), ...licenseLookup(type, e.url) }));
   const model: Catalog = {
     software: attach(parseCatalogFile(softwarePath, 'Software.md'), 'software'),
     databases: attach(parseCatalogFile(databasesPath, 'Databases.md'), 'database'),
