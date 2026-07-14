@@ -142,8 +142,8 @@ describe('add-a-paper regression', () => {
     const ord = (fresh.prepare('SELECT MAX(ordinal) m FROM papers').get() as any).m + 1;
     const raw = `<a id="${newId}">${newId}</a> Tester, T. (2099). A synthetic round-trip paper. *Journal of Tests, 1*(1), 1-2. https://doi.org/10.9999/test`;
     fresh.prepare('INSERT INTO items(id,type,slug) VALUES(?,?,?)').run(`paper:${newId}`, 'paper', String(newId));
-    fresh.prepare('INSERT INTO papers(item_id,ref_id,section,raw,code_url,data_url,ordinal) VALUES(?,?,?,?,?,?,?)')
-      .run(`paper:${newId}`, newId, 'References', raw, null, null, ord);
+    fresh.prepare('INSERT INTO papers(item_id,ref_id,section,raw,blockquotes_md,ordinal) VALUES(?,?,?,?,?,?)')
+      .run(`paper:${newId}`, newId, 'References', raw, null, ord);
     const cell = fresh.prepare('SELECT method,area_key,ordinal FROM matrix_cells ORDER BY ordinal LIMIT 1').get() as any;
     fresh.prepare('INSERT INTO matrix_cells(method,area_key,ref_id,label,ordinal) VALUES(?,?,?,?,?)')
       .run(cell.method, cell.area_key, newId, 'Tester 2099', 999999);
@@ -156,5 +156,20 @@ describe('add-a-paper regression', () => {
     expect(model.references.some((r) => r.id === newId)).toBe(true);
     expect(model.cells.some((c) => c.refIds.includes(newId))).toBe(true); // reachable
     expect(lint(model).errors).toEqual([]);
+
+    // C2-1: the `> **Models**:` blockquote on #277 stays attached to #277, not floated
+    // onto the newly-added last-ordinal paper (the emit reads it from blockquotes_md).
+    const emitted = readFileSync(path, 'utf-8');
+    const modelsIdx = emitted.indexOf('Stack-CellxGene45M'); // a Models-blockquote URL
+    const newPaperIdx = emitted.indexOf('A synthetic round-trip paper');
+    expect(modelsIdx).toBeGreaterThan(0);
+    expect(modelsIdx).toBeLessThan(newPaperIdx);
+  });
+
+  it('captures a reference’s full trailing blockquote run (Code + Models) on the right paper', () => {
+    const db = importNdjson();
+    const bq = (db.prepare('SELECT blockquotes_md FROM papers WHERE ref_id=277').get() as any).blockquotes_md as string;
+    expect(bq).toContain('> **Code**:');
+    expect(bq).toContain('> **Models**:'); // the label the old typed columns dropped
   });
 });

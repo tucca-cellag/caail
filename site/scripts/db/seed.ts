@@ -16,14 +16,14 @@ import { existsSync } from 'node:fs';
 import type { PapersData } from '../parser/types.js';
 import { INVENTORY_PAGES } from '../parser/datasets.js';
 import { REPO_ROOT, assignId, frozenSlug, type Db } from './lib.js';
-import { extractCatalogEntries, extractInventory, extractMatrixHeaders, type CatalogRaw } from './extract.js';
+import { extractCatalogEntries, extractInventory, extractMatrixHeaders, extractPaperBlockquotes, type CatalogRaw } from './extract.js';
 
 // --- papers ----------------------------------------------------------------
 
 export function seedPapers(db: Db, model: PapersData, papersPath: string): void {
   const insItem = db.prepare('INSERT OR IGNORE INTO items(id,type,slug) VALUES(?,?,?)');
   const insPaper = db.prepare(
-    'INSERT INTO papers(item_id,ref_id,section,raw,code_url,data_url,ordinal) VALUES(?,?,?,?,?,?,?)',
+    'INSERT INTO papers(item_id,ref_id,section,raw,blockquotes_md,ordinal) VALUES(?,?,?,?,?,?)',
   );
   const insArea = db.prepare('INSERT INTO areas(key,label,header_md,ordinal) VALUES(?,?,?,?)');
   const insMethod = db.prepare('INSERT INTO methods(label,header_md,ordinal) VALUES(?,?,?)');
@@ -37,10 +37,13 @@ export function seedPapers(db: Db, model: PapersData, papersPath: string): void 
   }
   model.areas.forEach((a, i) => insArea.run(a.key, a.label, headers.areas[i], i));
   model.methods.forEach((m, i) => insMethod.run(m, headers.methods[i], i));
+  // Verbatim trailing blockquote run per reference (Code/Data/Models/any label), so the
+  // emit reproduces them attached to their own citation — not just the typed two.
+  const bqByRef = extractPaperBlockquotes(papersPath);
   model.references.forEach((r, i) => {
     const id = `paper:${r.id}`;
     insItem.run(id, 'paper', String(r.id));
-    insPaper.run(id, r.id, r.section, r.raw, r.codeUrl ?? null, r.dataUrl ?? null, i);
+    insPaper.run(id, r.id, r.section, r.raw, bqByRef.get(r.id) ?? null, i);
   });
 
   let ord = 0;

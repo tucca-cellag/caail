@@ -8,12 +8,31 @@
  */
 
 import { join } from 'node:path';
+import { readFileSync, existsSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { buildPapersModel } from '../parser/papers.js';
-import { openDb, exportNdjson, REPO_ROOT, NDJSON_DIR } from './lib.js';
+import { openDb, exportNdjson, REPO_ROOT, NDJSON_DIR, type Db } from './lib.js';
 import { extractCatalogEntries } from './extract.js';
 import { seedPapers, seedCatalog, seedDatasets, seedTopics } from './seed.js';
 
-function main(): void {
+/**
+ * Preserve retired paper-id tombstones across a re-bootstrap. They aren't in the
+ * canonical Markdown (a removed paper leaves no trace there), so re-deriving from the
+ * files alone would silently drop them and let a removed anchor be reused — regressing
+ * the retired-id guarantee. Fold the committed tombstone NDJSON back in.
+ */
+export function preserveRetiredPaperIds(db: Db, dir: string = NDJSON_DIR): number {
+  const path = join(dir, 'retired_paper_ids.ndjson');
+  if (!existsSync(path)) return 0;
+  const text = readFileSync(path, 'utf-8').trim();
+  if (!text) return 0;
+  const ins = db.prepare('INSERT OR IGNORE INTO retired_paper_ids(ref_id) VALUES(?)');
+  let n = 0;
+  for (const line of text.split('\n')) { ins.run((JSON.parse(line) as { ref_id: number }).ref_id); n += 1; }
+  return n;
+}
+
+export function main(): void {
   const db = openDb(); // :memory:
 
   const papersPath = join(REPO_ROOT, 'Papers.md');
@@ -27,6 +46,7 @@ function main(): void {
 
   const dsCounts = seedDatasets(db);
   const topicSummary = seedTopics(db);
+  const retired = preserveRetiredPaperIds(db);
 
   const counts = exportNdjson(db, NDJSON_DIR);
 
@@ -36,7 +56,8 @@ function main(): void {
   console.log(`  databases     ${dbs.length} entries`);
   console.log(`  datasets      ${counts.dataset_rows} inventory rows across ${Object.keys(dsCounts).length} pages`);
   console.log(`  topics        ${topicSummary.topics} topics, ${topicSummary.tags} item-topic tags`);
+  console.log(`  retired ids   ${retired} paper tombstone(s) preserved`);
   console.log(`  -> NDJSON written to ${NDJSON_DIR}`);
 }
 
-main();
+if (process.argv[1] === fileURLToPath(import.meta.url)) main();

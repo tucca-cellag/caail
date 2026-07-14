@@ -9,6 +9,35 @@ import { readFileSync } from 'node:fs';
 import { parseMarkdown, sectionsAfter } from '../parser/markdown.js';
 import type { Table, TableRow, TableCell } from 'mdast';
 
+/**
+ * Per-reference trailing blockquote run: the verbatim `> …` blockquote block(s)
+ * immediately following each `<a id="N">` citation paragraph — Code, Data, Models, or
+ * any label — keyed by ref id. Stored whole on the paper so the emitter reproduces them
+ * in place; the DB's old typed code_url/data_url modelled only two labels, so an
+ * unmodelled `> **Models**:` survived emit only by adjacency and floated onto the wrong
+ * paper when a reference was added. The anchor match mirrors the parser's
+ * whitespace-tolerant ANCHOR_OPEN_RE.
+ */
+export function extractPaperBlockquotes(path: string): Map<number, string> {
+  const src = readFileSync(path, 'utf-8');
+  const kids = parseMarkdown(src).children as any[];
+  const out = new Map<number, string>();
+  for (let i = 0; i < kids.length; i++) {
+    const n = kids[i];
+    if (n.type !== 'paragraph') continue;
+    const head = src.slice(n.position.start.offset, n.position.start.offset + 48);
+    const m = /^<a\s+id="(\d+)">/.exec(head);
+    if (!m) continue;
+    const parts: string[] = [];
+    for (let j = i + 1; j < kids.length; j++) {
+      if (kids[j].type !== 'blockquote') break;
+      parts.push(src.slice(kids[j].position.start.offset, kids[j].position.end.offset));
+    }
+    if (parts.length) out.set(Number(m[1]), parts.join('\n\n'));
+  }
+  return out;
+}
+
 /** Minimal mdast text flatten (avoids importing mdast-util-to-string at runtime). */
 export function flat(node: any): string {
   if (node == null) return '';
@@ -64,7 +93,9 @@ export function extractCatalogEntries(path: string): CatalogRaw[] {
     if (!link) continue;
     let s: number | null = null, e = 0;
     for (let j = i + 1; j < kids.length; j++) {
-      if (kids[j].type === 'heading') break;
+      // An entry ends at the next H2/H3 (group or sibling entry); a deeper H4+ is body
+      // content, so don't truncate the body there.
+      if (kids[j].type === 'heading' && (kids[j] as any).depth <= 3) break;
       if (s === null) s = kids[j].position.start.offset;
       e = kids[j].position.end.offset;
     }

@@ -86,9 +86,14 @@ export function addItem(db: Db, spec: ItemAdd): string {
     const id = `paper:${refId}`;
     const raw = /^<a id=/.test(spec.raw) ? spec.raw : `<a id="${refId}">${refId}</a> ${spec.raw}`;
     const ord = nextInt(db, 'SELECT MAX(ordinal) m FROM papers');
+    // Build the verbatim trailing-blockquote run from the typed Code/Data inputs.
+    const blockquotes = [
+      spec.codeUrl ? `> **Code**: ${spec.codeUrl}` : null,
+      spec.dataUrl ? `> **Data**: ${spec.dataUrl}` : null,
+    ].filter(Boolean).join('\n\n') || null;
     insItem.run(id, 'paper', String(refId));
-    db.prepare('INSERT INTO papers(item_id,ref_id,section,raw,code_url,data_url,ordinal) VALUES(?,?,?,?,?,?,?)')
-      .run(id, refId, spec.section ?? 'References', raw, spec.codeUrl ?? null, spec.dataUrl ?? null, ord);
+    db.prepare('INSERT INTO papers(item_id,ref_id,section,raw,blockquotes_md,ordinal) VALUES(?,?,?,?,?,?)')
+      .run(id, refId, spec.section ?? 'References', raw, blockquotes, ord);
     const insCell = db.prepare('INSERT INTO matrix_cells(method,area_key,ref_id,label,ordinal) VALUES(?,?,?,?,?)');
     for (const c of spec.cells ?? []) {
       const method = db.prepare('SELECT label FROM methods WHERE label=?').get(c.method) as { label: string } | undefined;

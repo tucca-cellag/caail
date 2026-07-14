@@ -29,13 +29,17 @@ CREATE TABLE items (
 -- fields (authors/year/title/journal/doi) and the slug are DERIVED at parse time,
 -- so they are not stored (single source of truth = raw).
 CREATE TABLE papers (
-  item_id   TEXT PRIMARY KEY REFERENCES items(id),
-  ref_id    INTEGER NOT NULL UNIQUE,   -- numeric public anchor id (never renumbered)
-  section   TEXT NOT NULL,             -- '## <section>' the ref lives under
-  raw       TEXT NOT NULL,
-  code_url  TEXT,
-  data_url  TEXT,
-  ordinal   INTEGER NOT NULL           -- document order (stable emit)
+  item_id         TEXT PRIMARY KEY REFERENCES items(id),
+  ref_id          INTEGER NOT NULL UNIQUE,   -- numeric public anchor id (never renumbered)
+  section         TEXT NOT NULL,             -- '## <section>' the ref lives under
+  raw             TEXT NOT NULL,
+  -- Verbatim run of the `> …` blockquote block(s) trailing this citation (Code / Data /
+  -- Models / any label), stored whole so the emitter reproduces them in place. (Typed
+  -- code_url/data_url only modelled two labels, so an unmodelled `> **Models**:` used to
+  -- float onto the wrong paper on re-emit.) The site parser still derives codeUrl/dataUrl
+  -- from the emitted Markdown, so this is content, not a duplicated derived field.
+  blockquotes_md  TEXT,
+  ordinal         INTEGER NOT NULL           -- document order (stable emit)
 );
 
 -- Retired paper ref_ids: a tombstone so a removed paper's numeric anchor is NEVER

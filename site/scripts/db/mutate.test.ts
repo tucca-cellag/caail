@@ -137,6 +137,25 @@ describe('removeItem', () => {
     expect(() => removeItem(importNdjson(), 'sw:does-not-exist')).toThrow(/no item/);
   });
 
+  it('bootstrap preserves the retired tombstone across a re-derive (C2-2)', async () => {
+    const { openDb, exportNdjson } = await import('./lib.js');
+    const { preserveRetiredPaperIds } = await import('./bootstrap.js');
+    // Remove a paper in one DB and export the tombstone to a scratch dir.
+    const a = importNdjson();
+    const cells = [{ method: anyMethod(a), area: anyArea(a) }];
+    const id = addItem(a, { type: 'paper', raw: 'Bye, B. (2099). C. *J*. https://doi.org/10.9/c', label: 'Bye 2099', cells });
+    const ref = (a.prepare('SELECT ref_id FROM papers WHERE item_id=?').get(id) as any).ref_id;
+    removeItem(a, id);
+    const scratch = mkdtempSync(join(tmpdir(), 'caail-retired-'));
+    exportNdjson(a, scratch);
+    // A FRESH DB (as a re-bootstrap would build) has no tombstone until we fold it back.
+    const fresh = openDb();
+    expect((fresh.prepare('SELECT COUNT(*) n FROM retired_paper_ids').get() as any).n).toBe(0);
+    const n = preserveRetiredPaperIds(fresh, scratch);
+    expect(n).toBeGreaterThan(0);
+    expect(fresh.prepare('SELECT 1 FROM retired_paper_ids WHERE ref_id=?').get(ref)).toBeTruthy();
+  });
+
   it('retires a paper ref_id so a later add NEVER reuses it', () => {
     const db = importNdjson();
     const cells = [{ method: anyMethod(db), area: anyArea(db) }];

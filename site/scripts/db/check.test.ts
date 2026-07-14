@@ -26,8 +26,8 @@ function miniDb(): Db {
   db.prepare('INSERT INTO methods(label,header_md,ordinal) VALUES(?,?,?)')
     .run('Deep Learning', '[Deep Learning](./Taxonomy.md#deep-learning)', 0);
   db.prepare('INSERT INTO items(id,type,slug) VALUES(?,?,?)').run('paper:1', 'paper', '1');
-  db.prepare('INSERT INTO papers(item_id,ref_id,section,raw,code_url,data_url,ordinal) VALUES(?,?,?,?,?,?,?)')
-    .run('paper:1', 1, 'References', '<a id="1">1</a> x', null, null, 0);
+  db.prepare('INSERT INTO papers(item_id,ref_id,section,raw,blockquotes_md,ordinal) VALUES(?,?,?,?,?,?)')
+    .run('paper:1', 1, 'References', '<a id="1">1</a> x', null, 0);
   db.prepare('INSERT INTO matrix_cells(method,area_key,ref_id,label,ordinal) VALUES(?,?,?,?,?)')
     .run('Deep Learning', 'media', 1, 'X', 0);
   return db;
@@ -58,8 +58,8 @@ describe('checkReachability', () => {
   it('flags a primary reference cited by no matrix cell', () => {
     const db = miniDb();
     db.prepare('INSERT INTO items(id,type,slug) VALUES(?,?,?)').run('paper:2', 'paper', '2');
-    db.prepare('INSERT INTO papers(item_id,ref_id,section,raw,code_url,data_url,ordinal) VALUES(?,?,?,?,?,?,?)')
-      .run('paper:2', 2, 'References', '<a id="2">2</a> y', null, null, 1); // never cited
+    db.prepare('INSERT INTO papers(item_id,ref_id,section,raw,blockquotes_md,ordinal) VALUES(?,?,?,?,?,?)')
+      .run('paper:2', 2, 'References', '<a id="2">2</a> y', null, 1); // never cited
     expect(failing(checkReachability(db), /cited/)).toBe(true);
   });
 });

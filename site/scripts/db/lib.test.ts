@@ -64,7 +64,7 @@ describe('importNdjson', () => {
     for (const table of Object.keys(TABLES_PK)) writeFileSync(join(dir, `${table}.ndjson`), '');
     // a papers row whose item_id has no matching items row -> FK violation
     writeFileSync(join(dir, 'papers.ndjson'),
-      JSON.stringify({ item_id: 'paper:1', ref_id: 1, section: 'References', raw: 'x', code_url: null, data_url: null, ordinal: 0 }) + '\n');
+      JSON.stringify({ item_id: 'paper:1', ref_id: 1, section: 'References', raw: 'x', blockquotes_md: null, ordinal: 0 }) + '\n');
     expect(() => importNdjson(dir)).toThrow(/foreign-key/i);
   });
 
