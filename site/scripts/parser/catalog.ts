@@ -219,8 +219,10 @@ export function buildCatalogModel(
   databasesPath: string = DATABASES_PATH,
 ): Catalog {
   const lookup = catalogTopicLookup();
+  // Positional join: the i-th parsed entry ↔ the i-th committed catalog row of this type
+  // (both document-ordered). Url is not a unique key (two same-type entries may share one).
   const attach = (entries: CatalogEntry[], type: 'software' | 'database') =>
-    entries.map((e) => ({ ...e, topics: lookup(type, e.url) }));
+    entries.map((e, i) => ({ ...e, topics: lookup(type, i) }));
   const model: Catalog = {
     software: attach(parseCatalogFile(softwarePath, 'Software.md'), 'software'),
     databases: attach(parseCatalogFile(databasesPath, 'Databases.md'), 'database'),

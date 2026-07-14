@@ -81,6 +81,15 @@ export function addItem(db: Db, spec: ItemAdd): string {
   const insItem = db.prepare('INSERT INTO items(id,type,slug) VALUES(?,?,?)');
 
   if (spec.type === 'paper') {
+    // The emitter can only place a citation under a section that already has an anchor in
+    // Papers.md (a brand-new section would be silently dropped on emit), so reject an
+    // unknown section here. The two canonical sections are always valid.
+    const section = spec.section ?? 'References';
+    const known = new Set(['References', 'Reviews & Perspectives',
+      ...(db.prepare('SELECT DISTINCT section FROM papers').all() as { section: string }[]).map((r) => r.section)]);
+    if (!known.has(section)) {
+      throw new Error(`addItem: unknown paper section '${section}'. Add its '## ${section}' heading to Papers.md first, or use an existing section.`);
+    }
     // Max over live papers AND retired ids, so a removed ref_id is never handed out again.
     const refId = nextInt(db, 'SELECT MAX(m) m FROM (SELECT MAX(ref_id) m FROM papers UNION ALL SELECT MAX(ref_id) m FROM retired_paper_ids)');
     const id = `paper:${refId}`;
@@ -93,7 +102,7 @@ export function addItem(db: Db, spec: ItemAdd): string {
     ].filter(Boolean).join('\n\n') || null;
     insItem.run(id, 'paper', String(refId));
     db.prepare('INSERT INTO papers(item_id,ref_id,section,raw,blockquotes_md,ordinal) VALUES(?,?,?,?,?,?)')
-      .run(id, refId, spec.section ?? 'References', raw, blockquotes, ord);
+      .run(id, refId, section, raw, blockquotes, ord);
     const insCell = db.prepare('INSERT INTO matrix_cells(method,area_key,ref_id,label,ordinal) VALUES(?,?,?,?,?)');
     for (const c of spec.cells ?? []) {
       const method = db.prepare('SELECT label FROM methods WHERE label=?').get(c.method) as { label: string } | undefined;
@@ -130,28 +139,48 @@ export function addItem(db: Db, spec: ItemAdd): string {
 export function removeItem(db: Db, id: string): void {
   const item = db.prepare('SELECT type FROM items WHERE id=?').get(id) as { type: string } | undefined;
   if (!item) throw new Error(`removeItem: no item '${id}'`);
-  db.prepare('DELETE FROM item_topics WHERE item_id=?').run(id);
-  switch (item.type) {
-    case 'paper': {
-      const ref = db.prepare('SELECT ref_id FROM papers WHERE item_id=?').get(id) as { ref_id: number };
-      db.prepare('DELETE FROM matrix_cells WHERE ref_id=?').run(ref.ref_id);
-      db.prepare('DELETE FROM papers WHERE item_id=?').run(id);
-      // Tombstone the numeric anchor so it is never reassigned to a different paper.
-      db.prepare('INSERT OR IGNORE INTO retired_paper_ids(ref_id) VALUES(?)').run(ref.ref_id);
-      break;
+  // A theme with child fine-tags can't be deleted without orphaning them (topics.theme_slug
+  // FK has no cascade) — refuse with a clear message rather than a raw FK error / partial state.
+  if (item.type === 'topic') {
+    const slug = (db.prepare('SELECT slug FROM topics WHERE item_id=?').get(id) as { slug: string } | undefined)?.slug;
+    const children = slug ? (db.prepare('SELECT slug FROM topics WHERE theme_slug=?').all(slug) as { slug: string }[]) : [];
+    if (children.length) {
+      throw new Error(`removeItem: theme '${id}' has ${children.length} child fine-tag(s) (${children.map((c) => c.slug).join(', ')}); remove or reassign them first.`);
     }
-    case 'software':
-    case 'database':
-      db.prepare('DELETE FROM catalog WHERE item_id=?').run(id);
-      break;
-    case 'dataset':
-      db.prepare('DELETE FROM dataset_rows WHERE item_id=?').run(id);
-      break;
-    case 'topic':
-      db.prepare('DELETE FROM item_topics WHERE topic_id=?').run(id);
-      db.prepare('DELETE FROM aliases WHERE topic_id=?').run(id);
-      db.prepare('DELETE FROM topics WHERE item_id=?').run(id);
-      break;
   }
-  db.prepare('DELETE FROM items WHERE id=?').run(id);
+  // All deletes for one item are atomic — a mid-sequence failure rolls back rather than
+  // leaving partial state (e.g. its topic tags gone but the item row surviving). SAVEPOINT
+  // (not BEGIN) nests safely if a caller already opened a transaction.
+  db.exec('SAVEPOINT rm_item');
+  try {
+    db.prepare('DELETE FROM item_topics WHERE item_id=?').run(id);
+    switch (item.type) {
+      case 'paper': {
+        const ref = db.prepare('SELECT ref_id FROM papers WHERE item_id=?').get(id) as { ref_id: number };
+        db.prepare('DELETE FROM matrix_cells WHERE ref_id=?').run(ref.ref_id);
+        db.prepare('DELETE FROM papers WHERE item_id=?').run(id);
+        // Tombstone the numeric anchor so it is never reassigned to a different paper.
+        db.prepare('INSERT OR IGNORE INTO retired_paper_ids(ref_id) VALUES(?)').run(ref.ref_id);
+        break;
+      }
+      case 'software':
+      case 'database':
+        db.prepare('DELETE FROM catalog WHERE item_id=?').run(id);
+        break;
+      case 'dataset':
+        db.prepare('DELETE FROM dataset_rows WHERE item_id=?').run(id);
+        break;
+      case 'topic':
+        db.prepare('DELETE FROM item_topics WHERE topic_id=?').run(id);
+        db.prepare('DELETE FROM aliases WHERE topic_id=?').run(id);
+        db.prepare('DELETE FROM topics WHERE item_id=?').run(id);
+        break;
+    }
+    db.prepare('DELETE FROM items WHERE id=?').run(id);
+    db.exec('RELEASE rm_item');
+  } catch (err) {
+    db.exec('ROLLBACK TO rm_item');
+    db.exec('RELEASE rm_item');
+    throw err;
+  }
 }

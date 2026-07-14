@@ -20,8 +20,25 @@ import { INVENTORY_PAGES } from '../parser/datasets.js';
 import { importNdjson, REPO_ROOT, type Db } from './lib.js';
 import { extractInventory } from './extract.js';
 import { emitPapersFile, emitCatalogFile, emitDatasetPage, emitMatrixTable } from './emit.js';
+import { removeItem } from './mutate.js';
 
 const TMP = mkdtempSync(join(tmpdir(), 'caail-emit-test-'));
+
+describe('emit robustness (cycle 3)', () => {
+  it('keeps an emptied catalog group’s heading + prose when its last entry is removed (C3-1)', () => {
+    const db = importNdjson();
+    removeItem(db, 'db:addgene'); // the sole entry of "## Plasmid & Reagent Repositories"
+    const out = emitCatalogFile(db, join(REPO_ROOT, 'Databases.md'), 'database');
+    expect(out).toContain('Plasmid & Reagent Repositories'); // heading survives the removal
+  });
+  it('throws rather than silently dropping a paper whose section has no source anchor (C3-2)', () => {
+    const db = importNdjson();
+    db.prepare("INSERT INTO items(id,type,slug) VALUES('paper:99999','paper','99999')").run();
+    db.prepare('INSERT INTO papers(item_id,ref_id,section,raw,blockquotes_md,ordinal) VALUES(?,?,?,?,?,?)')
+      .run('paper:99999', 99999, 'Ghost Section', '<a id="99999">99999</a> x', null, 99999);
+    expect(() => emitPapersFile(db, join(REPO_ROOT, 'Papers.md'))).toThrow(/Ghost Section/);
+  });
+});
 let db: Db;
 beforeAll(() => { db = importNdjson(); });
 

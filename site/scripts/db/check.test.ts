@@ -52,6 +52,11 @@ describe('checkIntegrity', () => {
     db.prepare('INSERT INTO items(id,type,slug) VALUES(?,?,?)').run('not-namespaced', 'paper', '5');
     expect(failing(checkIntegrity(db), /namespaced/)).toBe(true);
   });
+  it('flags a catalog item whose registry type is not software/database (C3-5)', () => {
+    const db = miniDb(); // has paper:1 (type paper)
+    db.prepare("INSERT INTO catalog(item_id,name,url,grp,heading_md,body_md,ordinal) VALUES('paper:1','X','https://x','G','[X](https://x)','',0)").run();
+    expect(failing(checkIntegrity(db), /catalog item is type/)).toBe(true);
+  });
 });
 
 describe('checkReachability', () => {

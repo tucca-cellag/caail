@@ -95,6 +95,17 @@ export function emitPapersFile(db: Db, srcPath: string): string {
     }
     out.push(sliceOf(b)); i++;
   }
+  // A section-emit only fires on an existing `<a id>` paragraph in the SOURCE, so a paper
+  // assigned to a section with no citation in the file today would be silently dropped.
+  // Fail loudly instead (db:add validates the section upstream; this is the backstop).
+  const dbSections = db.prepare('SELECT DISTINCT section FROM papers').all() as { section: string }[];
+  const missing = dbSections.map((s) => s.section).filter((s) => !emitted.has(s));
+  if (missing.length) {
+    throw new Error(
+      `emitPapersFile: ${missing.length} paper section(s) have no anchor in ${srcPath} and ` +
+        `would be dropped: ${missing.join(', ')}. Add the section heading + a reference to Papers.md first.`,
+    );
+  }
   return out.join('\n\n') + '\n';
 }
 
@@ -135,11 +146,16 @@ export function emitCatalogFile(db: Db, srcPath: string, type: 'software' | 'dat
   }
 
   const out = [...preamble];
-  for (const grp of order) {
+  const emitGroup = (grp: string) => {
     const meta = groupMeta.get(grp) ?? { heading: `## ${grp}`, intro: [] };
     out.push(meta.heading, ...meta.intro);
-    for (const e of byGroup.get(grp)!) out.push(`### ${e.heading_md}` + (e.body_md ? `\n\n${e.body_md}` : ''));
-  }
+    for (const e of byGroup.get(grp) ?? []) out.push(`### ${e.heading_md}` + (e.body_md ? `\n\n${e.body_md}` : ''));
+  };
+  // Source groups first, in document order — so a group emptied by a removal keeps its
+  // H2 heading + intro prose (dropping them would be silent data loss). Then any groups
+  // that exist only in the DB (newly added), in first-appearance order.
+  for (const grp of groupMeta.keys()) emitGroup(grp);
+  for (const grp of order) if (!groupMeta.has(grp)) emitGroup(grp);
   return out.join('\n\n') + '\n';
 }
 

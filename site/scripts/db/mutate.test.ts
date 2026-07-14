@@ -111,6 +111,11 @@ describe('addItem — validation', () => {
     expect(() => addItem(db, { type: 'software', name: 'T', url: 'u', group: 'g', body: 'b', topics: ['no-such-topic'] }))
       .toThrow(/unknown topic/);
   });
+  it('rejects a paper in an unknown section (C3-2: would be dropped on emit)', () => {
+    const db = importNdjson();
+    expect(() => addItem(db, { type: 'paper', raw: 'X. (2099). Y. *J*.', label: 'X 2099', section: 'Totally New Section', cells: [{ method: anyMethod(db), area: anyArea(db) }] }))
+      .toThrow(/unknown paper section/);
+  });
 });
 
 describe('removeItem', () => {
@@ -135,6 +140,15 @@ describe('removeItem', () => {
 
   it('throws on an unknown id', () => {
     expect(() => removeItem(importNdjson(), 'sw:does-not-exist')).toThrow(/no item/);
+  });
+
+  it('refuses to remove a topic theme with child fine-tags, leaving no partial state (C3-4)', () => {
+    const db = importNdjson();
+    const taggings = (db.prepare("SELECT COUNT(*) n FROM item_topics WHERE topic_id='topic:ai-methods-tooling'").get() as any).n;
+    expect(() => removeItem(db, 'topic:ai-methods-tooling')).toThrow(/child fine-tag/);
+    // the guard fires before any delete — theme + its taggings are intact
+    expect(db.prepare("SELECT 1 FROM topics WHERE item_id='topic:ai-methods-tooling'").get()).toBeTruthy();
+    expect((db.prepare("SELECT COUNT(*) n FROM item_topics WHERE topic_id='topic:ai-methods-tooling'").get() as any).n).toBe(taggings);
   });
 
   it('bootstrap preserves the retired tombstone across a re-derive (C2-2)', async () => {

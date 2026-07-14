@@ -46,18 +46,20 @@ export function topicsByItemId(): Map<string, TopicRef[]> {
 }
 
 /**
- * A catalog topic lookup keyed on `(type, url)` — NOT url alone. Dual-listed entries
- * (e.g. GNPS: sw:gnps + db:gnps share a URL but tag different topics) would otherwise
- * cross-contaminate under a bare url map.
+ * A catalog topic lookup keyed POSITIONALLY: the Nth parsed entry of a type maps to the
+ * Nth committed catalog row of that type (both are in document order — the parser walks
+ * the file top-to-bottom, and the NDJSON is ordinal-sorted). A url key is not unique (two
+ * same-type entries can legitimately share a URL — e.g. two GFI seafood databases — and
+ * would collapse onto one topic set); position can't collide. Cross-type dual-listing
+ * (sw:gnps / db:gnps) stays disambiguated because each type has its own ordered list.
  */
-export function catalogTopicLookup(): (type: 'software' | 'database', url: string) => TopicRef[] {
+export function catalogTopicLookup(): (type: 'software' | 'database', index: number) => TopicRef[] {
   const byId = topicsByItemId();
-  const urlToId = new Map<string, string>();
-  for (const r of readNdjson<{ item_id: string; url: string }>('catalog')) {
-    const type = r.item_id.startsWith('sw:') ? 'software' : r.item_id.startsWith('db:') ? 'database' : null;
-    if (type) urlToId.set(`${type}\x00${r.url}`, r.item_id);
-  }
-  return (type, url) => byId.get(urlToId.get(`${type}\x00${url}`) ?? '') ?? [];
+  const rows = readNdjson<{ item_id: string; ordinal: number }>('catalog');
+  const orderFor = (prefix: string) =>
+    rows.filter((r) => r.item_id.startsWith(prefix)).sort((a, b) => a.ordinal - b.ordinal).map((r) => r.item_id);
+  const ordered = { software: orderFor('sw:'), database: orderFor('db:') };
+  return (type, index) => byId.get(ordered[type][index] ?? '') ?? [];
 }
 
 /**

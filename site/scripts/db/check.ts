@@ -51,6 +51,15 @@ export function checkIntegrity(db: Db): CheckResult[] {
       out.push(ok(`every ${table} item is type '${type}'`, wrong.length === 0, `${wrong.length} mistyped`));
     }
   }
+
+  // catalog holds two types (software + database), so the single-type check above skips
+  // it — assert its items are one of those two (a mistyped id, e.g. a paper: id in a
+  // catalog row, would otherwise pass the orphan check and go unflagged).
+  const wrongCat = db.prepare(
+    "SELECT c.item_id FROM catalog c JOIN items i ON i.id=c.item_id WHERE i.type NOT IN ('software','database')",
+  ).all() as { item_id: string }[];
+  out.push(ok("every catalog item is type 'software' or 'database'", wrongCat.length === 0,
+    wrongCat.slice(0, 3).map((r) => r.item_id).join(', ')));
   return out;
 }
 
