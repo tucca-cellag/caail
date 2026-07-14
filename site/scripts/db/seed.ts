@@ -16,23 +16,27 @@ import { existsSync } from 'node:fs';
 import type { PapersData } from '../parser/types.js';
 import { INVENTORY_PAGES } from '../parser/datasets.js';
 import { REPO_ROOT, assignId, frozenSlug, slugify, type Db } from './lib.js';
-import { extractCatalogEntries, extractInventory, type CatalogRaw } from './extract.js';
+import { extractCatalogEntries, extractInventory, extractMatrixHeaders, type CatalogRaw } from './extract.js';
 
 // --- papers ----------------------------------------------------------------
 
-export function seedPapers(db: Db, model: PapersData): void {
+export function seedPapers(db: Db, model: PapersData, papersPath: string): void {
   const insItem = db.prepare('INSERT OR IGNORE INTO items(id,type,slug) VALUES(?,?,?)');
   const insPaper = db.prepare(
     'INSERT INTO papers(item_id,ref_id,section,raw,code_url,data_url,ordinal) VALUES(?,?,?,?,?,?,?)',
   );
-  const insArea = db.prepare('INSERT INTO areas(key,label,ordinal) VALUES(?,?,?)');
-  const insMethod = db.prepare('INSERT INTO methods(label,ordinal) VALUES(?,?)');
+  const insArea = db.prepare('INSERT INTO areas(key,label,header_md,ordinal) VALUES(?,?,?,?)');
+  const insMethod = db.prepare('INSERT INTO methods(label,header_md,ordinal) VALUES(?,?,?)');
   const insCell = db.prepare(
     'INSERT INTO matrix_cells(method,area_key,ref_id,label,ordinal) VALUES(?,?,?,?,?)',
   );
 
-  model.areas.forEach((a, i) => insArea.run(a.key, a.label, i));
-  model.methods.forEach((m, i) => insMethod.run(m, i));
+  const headers = extractMatrixHeaders(papersPath);
+  if (headers.areas.length !== model.areas.length || headers.methods.length !== model.methods.length) {
+    throw new Error('seedPapers: matrix header/model axis count mismatch');
+  }
+  model.areas.forEach((a, i) => insArea.run(a.key, a.label, headers.areas[i], i));
+  model.methods.forEach((m, i) => insMethod.run(m, headers.methods[i], i));
   model.references.forEach((r, i) => {
     const id = `paper:${r.id}`;
     insItem.run(id, 'paper', String(r.id));

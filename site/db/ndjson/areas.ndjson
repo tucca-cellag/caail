@@ -1,7 +1,7 @@
-{"key":"media","label":"Media Optimization","ordinal":0}
-{"key":"cell","label":"Cellular Engineering","ordinal":1}
-{"key":"bioprocess","label":"Bioprocess & Scale-Up","ordinal":2}
-{"key":"scaffolding","label":"Scaffolding","ordinal":3}
-{"key":"sensory","label":"Sensory Prediction","ordinal":4}
-{"key":"tooling","label":"AI Tooling / Methodology","ordinal":5}
-{"key":"eval","label":"AI Evaluation & Benchmarking","ordinal":6}
+{"key":"media","label":"Media Optimization","header_md":"[Media Optimization](./Taxonomy.md#media-optimization)","ordinal":0}
+{"key":"cell","label":"Cellular Engineering","header_md":"[Cellular Engineering](./Taxonomy.md#cellular-engineering)","ordinal":1}
+{"key":"bioprocess","label":"Bioprocess & Scale-Up","header_md":"[Bioprocess & Scale-Up](./Taxonomy.md#bioprocess--scale-up)","ordinal":2}
+{"key":"scaffolding","label":"Scaffolding","header_md":"[Scaffolding](./Taxonomy.md#scaffolding)","ordinal":3}
+{"key":"sensory","label":"Sensory Prediction","header_md":"[Sensory Prediction](./Taxonomy.md#sensory-prediction)","ordinal":4}
+{"key":"tooling","label":"AI Tooling / Methodology","header_md":"[AI Tooling / Methodology](./Taxonomy.md#ai-tooling--methodology)","ordinal":5}
+{"key":"eval","label":"AI Evaluation & Benchmarking","header_md":"[AI Evaluation & Benchmarking](./Taxonomy.md#ai-evaluation--benchmarking)","ordinal":6}

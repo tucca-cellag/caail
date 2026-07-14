@@ -77,6 +77,23 @@ export function extractCatalogEntries(path: string): CatalogRaw[] {
   return out;
 }
 
+/**
+ * The matrix table's raw header markdown per axis: column headers (areas, skipping
+ * the empty corner cell) and row labels (methods, first cell of each body row),
+ * each as linked markdown. Keyed by the flattened label so seed can match them to
+ * the parser model's plain labels.
+ */
+export function extractMatrixHeaders(path: string): { areas: string[]; methods: string[] } {
+  const src = readFileSync(path, 'utf-8');
+  const table = (parseMarkdown(src).children as any[]).find((n) => n.type === 'table') as Table | undefined;
+  if (!table) throw new Error(`extractMatrixHeaders: no matrix table in ${path}`);
+  const rows = table.children as TableRow[];
+  const cellMd = (c: TableCell) => (c.children as any[]).map(inlineMd).join('').trim();
+  const areas = (rows[0].children as TableCell[]).slice(1).map(cellMd); // drop empty corner
+  const methods = rows.slice(1).map((r) => cellMd((r.children as TableCell[])[0]));
+  return { areas, methods };
+}
+
 export interface Inventory { header: string[]; rows: string[][]; }
 
 /** A page's `## Complete data inventory` GFM table as markdown cell rows. */

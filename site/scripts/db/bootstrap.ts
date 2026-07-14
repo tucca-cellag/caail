@@ -16,8 +16,9 @@ import { seedPapers, seedCatalog, seedDatasets, seedTopics } from './seed.js';
 function main(): void {
   const db = openDb(); // :memory:
 
-  const papers = buildPapersModel(join(REPO_ROOT, 'Papers.md'));
-  seedPapers(db, papers);
+  const papersPath = join(REPO_ROOT, 'Papers.md');
+  const papers = buildPapersModel(papersPath);
+  seedPapers(db, papers, papersPath);
 
   const sw = extractCatalogEntries(join(REPO_ROOT, 'Software.md'));
   const dbs = extractCatalogEntries(join(REPO_ROOT, 'Databases.md'));

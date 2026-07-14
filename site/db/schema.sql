@@ -39,8 +39,13 @@ CREATE TABLE papers (
 );
 
 -- Matrix axes -----------------------------------------------------------------
-CREATE TABLE areas   (key   TEXT PRIMARY KEY, label TEXT NOT NULL, ordinal INTEGER NOT NULL);
-CREATE TABLE methods (label TEXT PRIMARY KEY, ordinal INTEGER NOT NULL);
+-- `header_md` is the raw linked markdown of the axis header/row-label, e.g.
+-- '[Media Optimization](./Taxonomy.md#media-optimization)'. It is stored verbatim
+-- because the parser's short `key` ('media') is not the Taxonomy.md anchor
+-- ('media-optimization'), and method labels carry no key at all — so the emitter
+-- cannot reconstruct the header links and must preserve them from source.
+CREATE TABLE areas   (key   TEXT PRIMARY KEY, label TEXT NOT NULL, header_md TEXT NOT NULL, ordinal INTEGER NOT NULL);
+CREATE TABLE methods (label TEXT PRIMARY KEY, header_md TEXT NOT NULL, ordinal INTEGER NOT NULL);
 
 -- Matrix cell membership: one row per (method × area) citation, ordered within
 -- the cell. A cell exists only when it cites >=1 ref.
