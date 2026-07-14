@@ -9,8 +9,11 @@ const ATLAS: DatasetCardEntry = {
   kind: 'atlas',
   anchor: 'ds-chickengtex-portal',
   topics: [{ slug: 'single-cell-atlases', label: 'Single-cell atlases', theme: 'cell-lines-engineering' }],
+  license: 'CC-BY-4.0',
+  licenseSource: 'manual',
+  tier: 'permissive',
 };
-const GEM: DatasetCardEntry = { name: 'iES1300', kind: 'gem', anchor: 'ds-ies1300', topics: [] };
+const GEM: DatasetCardEntry = { name: 'iES1300', kind: 'gem', anchor: 'ds-ies1300', topics: [], license: null, licenseSource: null, tier: 'unknown' };
 
 const MD = `## Featured atlases
 
@@ -60,7 +63,8 @@ describe('datasetCards', () => {
     const headingIdx = kids.findIndex((n) => n.type === 'heading' && n.depth === 3);
     const closeIdx = kids.findIndex((n) => n.type === 'html' && n.value === '</article>');
     expect(openIdx).toBeGreaterThanOrEqual(0);
-    expect(headingIdx).toBe(openIdx + 1);
+    // heading sits after the card open (and its corner badge) and before the close.
+    expect(headingIdx).toBeGreaterThan(openIdx);
     expect(closeIdx).toBeGreaterThan(headingIdx);
   });
 
@@ -102,8 +106,8 @@ scBaseCount body.
 
 Parse body.
 `;
-    const ARC: DatasetCardEntry = { name: 'Arc Virtual Cell Atlas', kind: 'atlas', anchor: 'ds-arc-virtual-cell-atlas', topics: [] };
-    const PARSE: DatasetCardEntry = { name: 'Parse Biosciences 10M', kind: 'atlas', anchor: 'ds-parse-biosciences-10m', topics: [] };
+    const ARC: DatasetCardEntry = { name: 'Arc Virtual Cell Atlas', kind: 'atlas', anchor: 'ds-arc-virtual-cell-atlas', topics: [], license: null, licenseSource: null, tier: 'unknown' };
+    const PARSE: DatasetCardEntry = { name: 'Parse Biosciences 10M', kind: 'atlas', anchor: 'ds-parse-biosciences-10m', topics: [], license: null, licenseSource: null, tier: 'unknown' };
     const kids = run(md, 'Datasets/HumanReference.md', [ARC, PARSE], 'HumanReference');
     const openIdx = kids.findIndex((n) => n.type === 'html' && n.value.includes('id="ds-arc-virtual-cell-atlas"'));
     const closeIdx = kids.findIndex((n, i) => i > openIdx && n.type === 'html' && n.value === '</article>');
@@ -114,6 +118,21 @@ Parse body.
     expect(h4Idxs.every((i) => i > openIdx && i < closeIdx)).toBe(true);
     // Exactly two cards (Arc + Parse) — the H4s did not open their own cards.
     expect(html(kids).filter((v) => v.startsWith('<article')).length).toBe(2);
+  });
+
+  it('emits a corner license badge (linked to the hub) when the entry has a license', () => {
+    const h = html(run(MD, 'Datasets/Chicken.md', [ATLAS, GEM]));
+    const badge = h.find((v) => v.includes('lic-badge'));
+    expect(badge).toBeDefined();
+    expect(badge).toContain('lic-badge--permissive');
+    expect(badge).toContain('lic-badge--manual'); // dashed = curated
+    expect(badge).toContain('href="/caail/licenses/?tier=permissive"');
+    expect(badge).toContain('>CC-BY-4.0<');
+  });
+
+  it('emits no badge for an entry with no license (GEM = unknown)', () => {
+    const kids = run('## Genome-scale metabolic models\n\n### iES1300 — *Gallus gallus*\n\nA GEM.\n', 'Datasets/Chicken.md', [GEM]);
+    expect(html(kids).some((v) => v.includes('lic-badge'))).toBe(false);
   });
 
   it('is a no-op for a non-Datasets page', () => {

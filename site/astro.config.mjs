@@ -184,6 +184,9 @@ export default defineConfig({
         // correctly. topic-chips.css otherwise only ships with the TopicChips island.
         './src/styles/topic-chips.css',
         './src/styles/dataset-cards.css',
+        // Global so the raw-HTML dataset license badges (dataset-cards remark) and the
+        // CatalogBrowser LicenseBadge component share one stylesheet.
+        './src/styles/license-badge.css',
       ],
       components: {
         // Append per-route schema.org JSON-LD (CollectionPage + ItemList +

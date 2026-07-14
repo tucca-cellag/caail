@@ -4,7 +4,9 @@ import { useMemo, useState } from 'preact/hooks';
 import catalog from '../content/data/catalog.json';
 import { groupSlug } from '../lib/catalog-groups';
 import TopicChips from './TopicChips';
+import LicenseBadge from './LicenseBadge';
 import type { TopicRef } from '../lib/topic-chips';
+import type { LicenseTier } from '../lib/licenses';
 
 type Entry = {
   slug: string;
@@ -14,6 +16,9 @@ type Entry = {
   summary: string;
   summaryHtml: string;
   topics: TopicRef[];
+  license: string | null;
+  licenseSource: 'auto' | 'manual' | null;
+  tier: LicenseTier;
 };
 type Kind = 'software' | 'databases';
 
@@ -48,7 +53,7 @@ export default function CatalogBrowser({ kind }: Props) {
     return entries.filter((e) => {
       if (group && e.group !== group) return false;
       if (!ql) return true;
-      return `${e.name} ${e.summary} ${e.group}`.toLowerCase().includes(ql);
+      return `${e.name} ${e.summary} ${e.group} ${e.license ?? ''}`.toLowerCase().includes(ql);
     });
   }, [q, group, entries]);
 
@@ -100,6 +105,7 @@ export default function CatalogBrowser({ kind }: Props) {
                   // title is the link to the canonical home; `id` lets the
                   // canonical markdown's intra-page "see X below" anchors land.
                   <article class="cb-card" id={e.slug}>
+                    <LicenseBadge license={e.license} licenseSource={e.licenseSource} tier={e.tier} />
                     <h3 class="cb-name">
                       <a
                         class="cb-name-link"

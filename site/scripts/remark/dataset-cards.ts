@@ -19,12 +19,16 @@ import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import type { Root } from 'mdast';
 import { toString as mdastToString } from 'mdast-util-to-string';
+import { TIER_META, type LicenseTier } from '../../src/lib/licenses.ts';
 
 export interface DatasetCardEntry {
   name: string;
   kind: 'atlas' | 'gem' | 'other';
   anchor: string; // 'ds-…' — the card element id
   topics: Array<{ slug: string; label: string; theme: string }>;
+  license: string | null;
+  licenseSource: 'auto' | 'manual' | null;
+  tier: LicenseTier;
 }
 
 const DATA_PATH = fileURLToPath(new URL('../../src/content/data/datasets.json', import.meta.url));
@@ -48,6 +52,19 @@ function chipsHtml(entry: DatasetCardEntry): string {
   return `<ul class="topic-chips not-content" aria-label="Topics">${lis}</ul>`;
 }
 
+/** Corner license badge markup mirroring LicenseBadge.tsx; '' when no license. */
+function licenseBadgeHtml(entry: DatasetCardEntry): string {
+  if (!entry.license) return '';
+  const manual = entry.licenseSource === 'manual';
+  const title = manual
+    ? `${TIER_META[entry.tier].label} license (curated — not auto-maintained; verify before commercial use). ${TIER_META[entry.tier].blurb}`
+    : `${TIER_META[entry.tier].label} license (auto-detected from GitHub). ${TIER_META[entry.tier].blurb}`;
+  return (
+    `<a class="lic-badge lic-badge--${entry.tier}${manual ? ' lic-badge--manual' : ''}" data-tier="${entry.tier}" ` +
+    `href="${BASE}/licenses/?tier=${entry.tier}" title="${esc(title)}">${esc(entry.license)}</a>`
+  );
+}
+
 /**
  * Load datasets.json grouped by page (document order preserved), for the config
  * wrapper. Returns an empty map when the build artifact is absent (e.g. a dev run
@@ -61,7 +78,7 @@ export function loadDatasetEntriesByPage(): Map<string, DatasetCardEntry[]> {
   };
   for (const e of entries) {
     const list = out.get(e.page) ?? out.set(e.page, []).get(e.page)!;
-    list.push({ name: e.name, kind: e.kind, anchor: e.anchor, topics: e.topics });
+    list.push({ name: e.name, kind: e.kind, anchor: e.anchor, topics: e.topics, license: e.license, licenseSource: e.licenseSource, tier: e.tier });
   }
   return out;
 }
@@ -104,6 +121,8 @@ export function datasetCards(options: {
         const entry = list[idx++];
         if (!entry) { out.push(n); i++; continue; } // more H3s than entries: leave as-is
         out.push({ type: 'html', value: `<article class="ds-card ds-card--${entry.kind}" id="${entry.anchor}">` });
+        const badge = licenseBadgeHtml(entry);
+        if (badge) out.push({ type: 'html', value: badge });
         out.push(n); i++;
         // Pull body blocks up to the next H2/H3 into the card. Nested H4+ sub-sections (e.g.
         // the Arc atlas umbrella's Tahoe-100M / scBaseCount) belong INSIDE the parent card;
