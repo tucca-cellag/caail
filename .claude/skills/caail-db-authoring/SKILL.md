@@ -38,7 +38,13 @@ Markdown-era workflow did.
 | Software tool | `software` | `sw:<slug>` | `catalog` | `Software.md` |
 | Database / lookup resource | `database` | `db:<slug>` | `catalog` | `Databases.md` |
 | Dataset inventory row | `dataset` | `ds:<slug>` | `dataset_rows` | `Datasets/<page>.md` |
-| Topic (subject tag) | `topic` | `topic:<slug>` | `topics`, `item_topics`, `aliases` | — (cross-content only) |
+| Topic (subject tag) | `topic` | `topic:<slug>` | `topics`, `item_topics`, `aliases` | — (surfaced as card chips + the `/topics/` hub) |
+
+Topics are **two-tier**: a fixed 7-**theme** backbone + earned **fine tags** (each `tier='tag'` under
+one `theme_slug`; theme and tag slugs share one namespace, so they must be disjoint). When tagging an
+item, prefer an existing fine tag; mint a new fine tag only when ≥3 items cluster under it (curator
+sign-off), and add new themes rarely and deliberately (they're defined in `Taxonomy.md`). `db:check`
+guards the tiers.
 
 IDs are **frozen**: assigned once, stored, and never changed on rename (a rename keeps the
 id; that's the point). Paper ids reuse the numeric public anchor and are **never renumbered**
