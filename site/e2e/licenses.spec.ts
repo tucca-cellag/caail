@@ -31,3 +31,31 @@ test('the license badges introduce no axe violations on /software/', async ({ pa
   const results = await new AxeBuilder({ page }).analyze();
   expect(results.violations).toEqual([]);
 });
+
+test('the /licenses/ hub lists the 4 tiers', async ({ page }) => {
+  await page.goto('./licenses/');
+  await expect(page.locator('.lh-tier-card')).toHaveCount(4);
+});
+
+test('a tier view shows a cross-content list (?tier=restricted)', async ({ page }) => {
+  await page.goto('./licenses/?tier=restricted');
+  await expect(page.locator('.lh-title')).toHaveText(/Restricted/);
+  // restricted spans at least software + databases
+  await expect(page.getByRole('heading', { name: /Software/ })).toBeVisible();
+  await expect(page.locator('.lh-item').first()).toBeVisible();
+});
+
+test('a card badge navigates to the hub filtered to its tier', async ({ page }) => {
+  await page.goto('./software/');
+  const badge = page.locator('.lic-badge--permissive').first();
+  await badge.click();
+  await expect(page).toHaveURL(/\/licenses\/\?tier=permissive/);
+  await expect(page.locator('.lh-title')).toHaveText(/Permissive/);
+});
+
+test('the /licenses/ hub has no axe violations', async ({ page }) => {
+  await page.goto('./licenses/');
+  await expect(page.locator('.lh-tier-card').first()).toBeVisible();
+  const results = await new AxeBuilder({ page }).analyze();
+  expect(results.violations).toEqual([]);
+});

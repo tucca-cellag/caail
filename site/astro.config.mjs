@@ -162,6 +162,7 @@ export default defineConfig({
         { label: 'Software', link: '/software/' },
         { label: 'Databases', link: '/databases/' },
         { label: 'Topics', link: '/topics/' },
+        { label: 'Licenses', link: '/licenses/' },
         { label: 'Awesome Lists', link: '/awesome-lists/' },
         { label: 'AI Agents & Foundation Models', link: '/ai-agents-foundation-models/' },
         { label: 'Datasets (by species)', items: groupItems('datasets') },

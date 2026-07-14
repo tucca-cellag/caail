@@ -1,0 +1,70 @@
+/* license-hub.css — the /licenses/ cross-content hub: a 4-tier index and per-tier
+   views. Mirrors topic-hub.css; tier accent colours match the card badges. */
+
+.lh-tier-grid li,
+.lh-items li { margin: 0; }
+
+.lh-disclaimer {
+  font-size: 0.85rem;
+  color: var(--caail-muted);
+  border-left: 3px solid var(--caail-border);
+  padding-left: 0.7rem;
+  margin: 0.5rem 0 1rem;
+}
+
+.lh-tier-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+  gap: 0.9rem;
+  list-style: none;
+  margin: 1rem 0 0;
+  padding: 0;
+}
+
+.lh-tier-card {
+  --tint: var(--caail-muted);
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--caail-border);
+  border-top: 3px solid var(--tint);
+  border-radius: 0.6rem;
+  background: var(--caail-surface);
+}
+.lh-tier-card[data-tier='permissive'],
+.lh-view[data-tier='permissive'] { --tint: var(--caail-area-bioprocess); }
+.lh-tier-card[data-tier='copyleft'],
+.lh-view[data-tier='copyleft'] { --tint: var(--caail-area-media); }
+.lh-tier-card[data-tier='restricted'],
+.lh-view[data-tier='restricted'] { --tint: var(--caail-area-sensory); }
+.lh-tier-card[data-tier='unknown'],
+.lh-view[data-tier='unknown'] { --tint: var(--caail-muted); }
+
+.lh-tier-link { font-weight: 600; font-size: 1.05rem; text-decoration: none; color: var(--caail-primary); }
+.lh-total { color: var(--caail-muted); font-size: 0.85rem; margin: 0.15rem 0 0.4rem; }
+.lh-blurb { font-size: 0.85rem; color: var(--caail-ink); margin: 0.2rem 0 0; }
+
+.lh-crumbs { font-size: 0.85rem; margin: 0.5rem 0 0.4rem; }
+.lh-title { margin: 0.2rem 0 0.3rem; border-bottom: 3px solid var(--tint); display: inline-block; padding-bottom: 0.15rem; }
+
+.lh-group { margin-top: 1.4rem; }
+.lh-group-h { font-size: 1rem; margin: 0 0 0.4rem; }
+.lh-group-n { color: var(--caail-muted); font-weight: 400; }
+
+.lh-items { list-style: none; padding: 0; margin: 0; }
+.lh-items > li { margin: 0; border-top: 1px solid var(--caail-border); }
+.lh-items > li:first-child { border-top: none; }
+.lh-item {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  padding: 0.45rem 0.4rem;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  color: var(--caail-ink);
+  text-decoration: none;
+  border-radius: 5px;
+}
+.lh-item:hover,
+.lh-item:focus-visible { background: var(--caail-surface); color: var(--caail-primary); }
+.lh-lic { margin-left: auto; font-size: 0.72rem; color: var(--caail-muted); white-space: nowrap; }
+
+.lh-empty { color: var(--caail-muted); margin-top: 1rem; }
