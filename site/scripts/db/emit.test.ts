@@ -9,7 +9,7 @@
  */
 
 import { describe, it, expect, beforeAll } from 'vitest';
-import { writeFileSync, mkdtempSync } from 'node:fs';
+import { writeFileSync, readFileSync, mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -58,6 +58,21 @@ describe.each([
     writeFileSync(path, emitCatalogFile(db, src, type));
     const regen = parseCatalogFile(path, file).map(pick);
     expect(regen).toEqual(original);
+  });
+});
+
+describe.each([
+  ['Software.md', 'software'] as const,
+  ['Databases.md', 'database'] as const,
+])('%s heading fidelity', (file, type) => {
+  // Guards the GNPS "(cross-listed)" class of bug: the parser ignores trailing
+  // heading text, so JSON-identity alone would miss a dropped annotation.
+  it('emits every ### heading line verbatim, including trailing annotations', () => {
+    const src = readFileSync(join(REPO_ROOT, file), 'utf-8');
+    const out = emitCatalogFile(db, join(REPO_ROOT, file), type);
+    for (const heading of src.split('\n').filter((l) => l.startsWith('### '))) {
+      expect(out, `${file} lost heading: ${heading}`).toContain(heading);
+    }
   });
 });
 

@@ -1,0 +1,130 @@
+/**
+ * mutate.test.ts — the ergonomic add/remove layer, exercised end-to-end for every
+ * content type: addItem assigns a frozen id and inserts correctly, the result
+ * round-trips through emit + the real parser and stays lint-green, removeItem
+ * deletes cleanly (paper ids retired), and bad input is rejected.
+ */
+
+import { describe, it, expect } from 'vitest';
+import { writeFileSync, mkdtempSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
+import { buildPapersModel } from '../parser/papers.js';
+import { lint } from '../parser/lint.js';
+import { parseCatalogFile } from '../parser/catalog.js';
+import { importNdjson, REPO_ROOT, type Db } from './lib.js';
+import { extractInventory } from './extract.js';
+import { emitPapersFile, emitCatalogFile, emitDatasetPage } from './emit.js';
+import { addItem, removeItem } from './mutate.js';
+
+const TMP = mkdtempSync(join(tmpdir(), 'caail-mutate-test-'));
+const anyMethod = (db: Db) => (db.prepare('SELECT label FROM methods ORDER BY ordinal LIMIT 1').get() as any).label;
+const anyArea = (db: Db) => (db.prepare('SELECT label FROM areas ORDER BY ordinal LIMIT 1').get() as any).label;
+const emitPapers = (db: Db, name: string) => {
+  const p = join(TMP, name);
+  writeFileSync(p, emitPapersFile(db, join(REPO_ROOT, 'Papers.md')));
+  return buildPapersModel(p);
+};
+
+describe('addItem — paper', () => {
+  it('assigns the next ref id, wires a matrix cell, round-trips reachable + lint-green', () => {
+    const db = importNdjson();
+    const expected = (db.prepare('SELECT MAX(ref_id) m FROM papers').get() as any).m + 1;
+    const id = addItem(db, {
+      type: 'paper',
+      raw: 'Tester, T. (2099). A synthetic add. *Journal of Tests, 1*(1), 1-2. https://doi.org/10.9999/add',
+      label: 'Tester 2099',
+      cells: [{ method: anyMethod(db), area: anyArea(db) }],
+    });
+    expect(id).toBe(`paper:${expected}`);
+    const model = emitPapers(db, 'paper-add.md');
+    expect(model.references.some((r) => r.id === expected)).toBe(true);
+    expect(model.cells.some((c) => c.refIds.includes(expected))).toBe(true);
+    expect(lint(model).errors).toEqual([]);
+  });
+
+  it('adds the <a id> anchor when the raw citation omits it', () => {
+    const db = importNdjson();
+    const id = addItem(db, { type: 'paper', raw: 'No, Anchor. (2099). X. *J*. https://doi.org/10.9/x', label: 'No 2099', cells: [{ method: anyMethod(db), area: anyArea(db) }] });
+    const raw = (db.prepare('SELECT raw FROM papers WHERE item_id=?').get(id) as any).raw;
+    expect(raw).toMatch(/^<a id="\d+">\d+<\/a> No, Anchor\./);
+  });
+});
+
+describe.each([
+  ['software', 'sw', 'Software.md'] as const,
+  ['database', 'db', 'Databases.md'] as const,
+])('addItem — %s', (type, prefix, file) => {
+  it('assigns a frozen slug and round-trips as a parsed entry', () => {
+    const db = importNdjson();
+    const group = (db.prepare('SELECT grp FROM catalog WHERE item_id IN (SELECT id FROM items WHERE type=?) LIMIT 1').get(type) as any).grp;
+    const id = addItem(db, { type, name: 'ZzTestTool', url: 'https://example.org/zztest', group, body: 'Summary: A synthetic catalog entry for testing.' });
+    expect(id).toBe(`${prefix}:zztesttool`);
+    const path = join(TMP, `${type}.md`);
+    writeFileSync(path, emitCatalogFile(db, join(REPO_ROOT, file), type));
+    const entry = parseCatalogFile(path, file).find((e) => e.url === 'https://example.org/zztest');
+    expect(entry?.name).toBe('ZzTestTool');
+    expect(entry?.group).toBe(group);
+  });
+
+  it('disambiguates a colliding slug with -2', () => {
+    const db = importNdjson();
+    const group = (db.prepare('SELECT grp FROM catalog WHERE item_id IN (SELECT id FROM items WHERE type=?) LIMIT 1').get(type) as any).grp;
+    addItem(db, { type, name: 'DupName', url: 'https://example.org/a', group, body: 'Summary: a.' });
+    const second = addItem(db, { type, name: 'DupName', url: 'https://example.org/b', group, body: 'Summary: b.' });
+    expect(second).toBe(`${prefix}:dupname-2`);
+  });
+});
+
+describe('addItem — dataset', () => {
+  it('promotes a row with a stable ds: id and round-trips into the inventory', () => {
+    const db = importNdjson();
+    const page = (db.prepare('SELECT page FROM dataset_rows LIMIT 1').get() as any).page;
+    const header = extractInventory(join(REPO_ROOT, 'Datasets', `${page}.md`))!.header;
+    const cells = header.map((_, i) => (i === 0 ? 'Synthetic test study GSE999999' : `c${i}`));
+    const id = addItem(db, { type: 'dataset', page, cells });
+    expect(id).toBe('ds:gse999999');
+    const path = join(TMP, `${page}.md`);
+    writeFileSync(path, emitDatasetPage(db, join(REPO_ROOT, 'Datasets', `${page}.md`), page));
+    expect(extractInventory(path)!.rows.some((r) => r.join(' ').includes('GSE999999'))).toBe(true);
+  });
+});
+
+describe('addItem — validation', () => {
+  it('rejects an unknown matrix method', () => {
+    const db = importNdjson();
+    expect(() => addItem(db, { type: 'paper', raw: 'X. (2099). Y. *J*.', label: 'X 2099', cells: [{ method: 'Nonexistent Method', area: anyArea(db) }] }))
+      .toThrow(/no matrix method/);
+  });
+  it('rejects an unknown topic', () => {
+    const db = importNdjson();
+    expect(() => addItem(db, { type: 'software', name: 'T', url: 'u', group: 'g', body: 'b', topics: ['no-such-topic'] }))
+      .toThrow(/unknown topic/);
+  });
+});
+
+describe('removeItem', () => {
+  it('removes a software entry cleanly and stays lint-green', () => {
+    const db = importNdjson();
+    const id = addItem(db, { type: 'software', name: 'RemoveMe', url: 'https://example.org/rm', group: (db.prepare("SELECT grp FROM catalog LIMIT 1").get() as any).grp, body: 'Summary: x.' });
+    removeItem(db, id);
+    expect(db.prepare('SELECT 1 FROM items WHERE id=?').get(id)).toBeUndefined();
+    expect(db.prepare('SELECT 1 FROM catalog WHERE item_id=?').get(id)).toBeUndefined();
+  });
+
+  it('retires a paper id: item, detail, and matrix cells all removed', () => {
+    const db = importNdjson();
+    const id = addItem(db, { type: 'paper', raw: 'Gone, G. (2099). Z. *J*. https://doi.org/10.9/z', label: 'Gone 2099', cells: [{ method: anyMethod(db), area: anyArea(db) }] });
+    const refId = (db.prepare('SELECT ref_id FROM papers WHERE item_id=?').get(id) as any).ref_id;
+    removeItem(db, id);
+    expect(db.prepare('SELECT 1 FROM items WHERE id=?').get(id)).toBeUndefined();
+    expect(db.prepare('SELECT 1 FROM papers WHERE ref_id=?').get(refId)).toBeUndefined();
+    expect(db.prepare('SELECT COUNT(*) n FROM matrix_cells WHERE ref_id=?').get(refId) as any).toMatchObject({ n: 0 });
+    expect(lint(emitPapers(db, 'paper-remove.md')).errors).toEqual([]);
+  });
+
+  it('throws on an unknown id', () => {
+    expect(() => removeItem(importNdjson(), 'sw:does-not-exist')).toThrow(/no item/);
+  });
+});
