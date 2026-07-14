@@ -246,10 +246,11 @@ The per-entry summaries in the `Datasets/` pages, `Databases.md`, `Software.md`,
 
 CAAIL's **structured catalog** is authored in an in-repo SQLite DB and generated back to
 Markdown (issue #78). This covers `Papers.md` (matrix + references), `Software.md` /
-`Databases.md` (entries), and the `Datasets/*.md` `## Complete data inventory` tables.
-Everything else — editorial prose in those files, and all the non-catalog canonical files
-(`OtherResources.md`, `ReferenceWorks.md`, `AwesomeLists.md`, `Funding.md`, `ResearchAreas/`,
-`Talks.md`, `Primers/`) — stays hand-authored Markdown.
+`Databases.md` (entries), and the `Datasets/*.md` `## Complete data inventory` tables
+**plus the curated `### …` entries** (featured atlases, GEMs, reference entries — every H3
+outside the inventory section). Everything else — editorial prose in those files, and all the
+non-catalog canonical files (`OtherResources.md`, `ReferenceWorks.md`, `AwesomeLists.md`,
+`Funding.md`, `ResearchAreas/`, `Talks.md`, `Primers/`) — stays hand-authored Markdown.
 
 - **Source of truth = `site/db/ndjson/`** (per-table PK-sorted NDJSON, committed). `site/db/schema.sql`
   is the DDL; `site/caail.db` is a gitignored artifact rebuilt from the NDJSON. Every item has a
@@ -272,6 +273,14 @@ Everything else — editorial prose in those files, and all the non-catalog cano
   offline (`site/scripts/parser/topics.ts` → `catalog.json`/`papers.json` topic refs + `topics.json`),
   surfaced as **topic chips on cards** (`TopicChips`) and a **cross-content hub** at `/topics/`
   (`/topics/?t=<slug>`). Fine tags are minted only when ≥3 items cluster (curator sign-off).
+- **Curated dataset entries** live in `dataset_entries` (catalog-shaped; nullable `url` for unlinked
+  GEM headings; `section` + `kind` ∈ {atlas,gem,other}). They share the `ds:` id namespace with the
+  inventory rows (a `dataset` item is in `dataset_rows` XOR `dataset_entries`, guarded by `db:check`);
+  `db:emit` owns their `### …` sections (splices narrative verbatim); `db:verify` round-trips them.
+  The build folds them into `datasets.json` (`site/scripts/parser/datasets-entries.ts`), and a remark
+  transform (`site/scripts/remark/dataset-cards.ts`, wired via `caailProseRemark`) renders each entry as a
+  tagged `.ds-card` with topic chips on `/datasets/<page>/`; the entries are also linkable items in the
+  `/topics/` hub (inventory rows stay count-only). Inventory rows and narrative are never carded.
 
 ## Documentation site (`site/`)
 
