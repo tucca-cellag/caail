@@ -96,6 +96,7 @@ export function importNdjson(dir: string = NDJSON_DIR, dbPath = ':memory:'): Db 
   if (broken.length) {
     throw new Error(`importNdjson: ${broken.length} foreign-key violation(s) in NDJSON source`);
   }
+  db.exec('PRAGMA foreign_keys = ON'); // enforce for subsequent edits to the built db
   return db;
 }
 

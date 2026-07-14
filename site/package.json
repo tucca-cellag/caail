@@ -13,7 +13,7 @@
     "db:emit": "NODE_OPTIONS='--experimental-sqlite --no-warnings' tsx scripts/db/emit-files.ts",
     "db:verify": "NODE_OPTIONS='--experimental-sqlite --no-warnings' tsx scripts/db/verify.ts",
     "db:check": "NODE_OPTIONS='--experimental-sqlite --no-warnings' tsx scripts/db/check.ts",
-    "test": "vitest run",
+    "test": "NODE_OPTIONS='--experimental-sqlite --no-warnings' vitest run",
     "dev": "pnpm parse && astro dev",
     "start": "astro dev",
     "build": "pnpm parse && astro build",
