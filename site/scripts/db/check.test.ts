@@ -12,7 +12,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { openDb, importNdjson, type Db } from './lib.js';
-import { checkIntegrity, checkReachability, checkColumnDrift, checkTopicTiers, checkCatalogHeadings, runChecks } from './check.js';
+import { checkIntegrity, checkReachability, checkColumnDrift, checkTopicTiers, checkCatalogHeadings, checkLicenses, checkManualLicenseKeys, runChecks } from './check.js';
 
 const failing = (results: { label: string; ok: boolean }[], match: RegExp) =>
   results.some((r) => match.test(r.label) && !r.ok);
@@ -115,6 +115,72 @@ describe('checkColumnDrift', () => {
     const res = checkColumnDrift(db, emptyDir); // no CONTRIBUTING.md / CLAUDE.md present
     expect(res.every((r) => !r.ok)).toBe(true);
     expect(res.some((r) => /not found/.test(r.detail))).toBe(true);
+  });
+});
+
+describe('checkLicenses', () => {
+  it('passes on a DB with no license provenance set', () => {
+    expect(checkLicenses(miniDb()).every((r) => r.ok)).toBe(true);
+  });
+  it('flags a catalog license_source with no license value', () => {
+    const db = miniDb();
+    db.prepare("INSERT INTO items(id,type,slug) VALUES('sw:ghost','software','ghost')").run();
+    db.prepare(
+      "INSERT INTO catalog(item_id,name,url,grp,heading_md,body_md,license,license_source,ordinal) " +
+      "VALUES('sw:ghost','Ghost','https://x','G','[Ghost](https://x)','',NULL,'auto',0)",
+    ).run();
+    expect(failing(checkLicenses(db), /both set or both null/)).toBe(true);
+  });
+  it('flags a catalog license value with no source (would mislabel as auto)', () => {
+    const db = miniDb();
+    db.prepare("INSERT INTO items(id,type,slug) VALUES('sw:orphan','software','orphan')").run();
+    db.prepare(
+      "INSERT INTO catalog(item_id,name,url,grp,heading_md,body_md,license,license_source,ordinal) " +
+      "VALUES('sw:orphan','Orphan','https://o','G','[Orphan](https://o)','','MIT',NULL,0)",
+    ).run();
+    expect(failing(checkLicenses(db), /both set or both null/)).toBe(true);
+  });
+  it('passes when license + source are both set', () => {
+    const db = miniDb();
+    db.prepare("INSERT INTO items(id,type,slug) VALUES('sw:ok','software','ok')").run();
+    db.prepare(
+      "INSERT INTO catalog(item_id,name,url,grp,heading_md,body_md,license,license_source,ordinal) " +
+      "VALUES('sw:ok','Ok','https://y','G','[Ok](https://y)','','MIT','auto',0)",
+    ).run();
+    expect(checkLicenses(db).every((r) => r.ok)).toBe(true);
+  });
+});
+
+describe('checkManualLicenseKeys', () => {
+  const withCatalog = () => {
+    const db = miniDb();
+    db.prepare("INSERT INTO items(id,type,slug) VALUES('sw:tool','software','tool')").run();
+    db.prepare(
+      "INSERT INTO catalog(item_id,name,url,grp,heading_md,body_md,ordinal) " +
+      "VALUES('sw:tool','Tool','https://tool.dev','G','[Tool](https://tool.dev)','',0)",
+    ).run();
+    return db;
+  };
+  const writeManual = (obj: unknown) => {
+    const p = join(mkdtempSync(join(tmpdir(), 'caail-manlic-')), 'licenses-manual.json');
+    writeFileSync(p, JSON.stringify(obj));
+    return p;
+  };
+
+  it('is a no-op when the manual file is absent', () => {
+    expect(checkManualLicenseKeys(miniDb(), join(tmpdir(), 'does-not-exist-manlic.json')).every((r) => r.ok)).toBe(true);
+  });
+  it('passes when every override url resolves to a catalog entry', () => {
+    const path = writeManual({ catalog: { 'https://tool.dev': 'MIT' }, datasets: {} });
+    expect(checkManualLicenseKeys(withCatalog(), path).every((r) => r.ok)).toBe(true);
+  });
+  it('flags a catalog override url that matches no entry (e.g. trailing-slash drift)', () => {
+    const path = writeManual({ catalog: { 'https://tool.dev/': 'MIT' }, datasets: {} });
+    expect(failing(checkManualLicenseKeys(withCatalog(), path), /catalog override url matches/)).toBe(true);
+  });
+  it('flags a datasets override id that matches no dataset entry', () => {
+    const path = writeManual({ catalog: {}, datasets: { 'ds:ghost': 'CC-BY-4.0' } });
+    expect(failing(checkManualLicenseKeys(withCatalog(), path), /datasets override id matches/)).toBe(true);
   });
 });
 

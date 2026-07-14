@@ -18,8 +18,10 @@
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { importNdjson, REPO_ROOT, type Db } from './lib.js';
+import { importNdjson, REPO_ROOT, SITE_ROOT, type Db } from './lib.js';
 import { THEME_SLUGS } from './seed.js';
+
+const MANUAL_LICENSES_PATH = join(SITE_ROOT, 'scripts', 'db', 'licenses-manual.json');
 
 export interface CheckResult { label: string; ok: boolean; detail: string; }
 const ok = (label: string, cond: boolean, detail = ''): CheckResult => ({ label, ok: cond, detail });
@@ -164,10 +166,54 @@ export function checkCatalogHeadings(db: Db): CheckResult[] {
     `mismatched: ${bad.slice(0, 5).join(', ')}`)];
 }
 
+/**
+ * License provenance guard: `license_source` (auto|manual) is enforced by the schema
+ * CHECK, so this guards the app-level invariant the CHECK can't — `license` and
+ * `license_source` must be BOTH set or BOTH null. A source without a value is meaningless
+ * ("GitHub said X" with no X); a value without a source is worse — the UI treats any
+ * non-'manual' provenance as auto-detected, so a hand-edited NDJSON with a license and no
+ * source would silently mislabel a curated value as GitHub-auto. Runs on catalog and
+ * dataset_entries. Uses `(license IS NULL) <> (license_source IS NULL)` to catch both.
+ */
+export function checkLicenses(db: Db): CheckResult[] {
+  const out: CheckResult[] = [];
+  for (const table of ['catalog', 'dataset_entries']) {
+    const bad = db.prepare(
+      `SELECT item_id FROM ${table} WHERE (license IS NULL) <> (license_source IS NULL)`,
+    ).all() as { item_id: string }[];
+    out.push(ok(`${table}: license and license_source are both set or both null`, bad.length === 0,
+      bad.slice(0, 3).map((r) => r.item_id).join(', ')));
+  }
+  return out;
+}
+
+/**
+ * Manual-override resolution guard: `seedLicenses` applies `licenses-manual.json` by EXACT
+ * url (catalog) / `ds:` id (datasets). An override whose key doesn't match a real entry
+ * (a trailing-slash drift, a typo, a removed entry) is silently dropped — the entry falls
+ * back to the auto cache or shows "unknown" with no error. Assert every committed override
+ * key resolves so curator drift fails db:check instead of vanishing. Absent file = no-op.
+ */
+export function checkManualLicenseKeys(db: Db, manualPath: string = MANUAL_LICENSES_PATH): CheckResult[] {
+  if (!existsSync(manualPath)) return [ok('licenses-manual.json: overrides resolve', true, 'file absent')];
+  const manual = JSON.parse(readFileSync(manualPath, 'utf-8')) as
+    { catalog?: Record<string, string>; datasets?: Record<string, string> };
+  const catUrls = new Set((db.prepare('SELECT url FROM catalog').all() as { url: string }[]).map((r) => r.url));
+  const dsIds = new Set((db.prepare('SELECT item_id FROM dataset_entries').all() as { item_id: string }[]).map((r) => r.item_id));
+  const badCat = Object.keys(manual.catalog ?? {}).filter((u) => !catUrls.has(u));
+  const badDs = Object.keys(manual.datasets ?? {}).filter((id) => !dsIds.has(id));
+  return [
+    ok('licenses-manual.json: every catalog override url matches a catalog entry',
+      badCat.length === 0, `unmatched: ${badCat.slice(0, 3).join(', ')}`),
+    ok('licenses-manual.json: every datasets override id matches a dataset entry',
+      badDs.length === 0, `unmatched: ${badDs.slice(0, 3).join(', ')}`),
+  ];
+}
+
 /** Run every guard against a DB. Returns all results (ok + failing). */
 export function runChecks(db: Db, repoRoot: string = REPO_ROOT): CheckResult[] {
   return [...checkIntegrity(db), ...checkReachability(db), ...checkColumnDrift(db, repoRoot),
-    ...checkTopicTiers(db), ...checkCatalogHeadings(db)];
+    ...checkTopicTiers(db), ...checkCatalogHeadings(db), ...checkLicenses(db), ...checkManualLicenseKeys(db)];
 }
 
 function main(): void {

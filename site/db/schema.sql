@@ -75,14 +75,21 @@ CREATE TABLE matrix_cells (
 -- emitted verbatim so trailing curator annotations survive; `name`/`url` are the parsed
 -- link used for the frozen id + tally. `body_md` is the raw entry body; summary/summaryHtml
 -- are DERIVED.
+-- `license` is an SPDX-ish token or a curator's manual string; `license_source`
+-- records provenance ('auto' = GitHub SPDX via db:fetch-licenses, 'manual' =
+-- hand-verified). Both nullable (unknown = not detected). The coarse tier is DERIVED
+-- at parse time (licenseTier), never stored. License is DB-only (like topics) — not
+-- written into canonical Markdown — so it's surfaced only on the site.
 CREATE TABLE catalog (
-  item_id    TEXT PRIMARY KEY REFERENCES items(id),
-  name       TEXT NOT NULL,            -- inline markdown of the H3 link text (id/tally)
-  url        TEXT NOT NULL,
-  grp        TEXT NOT NULL,            -- H2 group label (seeds a topic via aliases)
-  heading_md TEXT NOT NULL,            -- full H3 heading source after '### '
-  body_md    TEXT NOT NULL,
-  ordinal    INTEGER NOT NULL
+  item_id        TEXT PRIMARY KEY REFERENCES items(id),
+  name           TEXT NOT NULL,            -- inline markdown of the H3 link text (id/tally)
+  url            TEXT NOT NULL,
+  grp            TEXT NOT NULL,            -- H2 group label (seeds a topic via aliases)
+  heading_md     TEXT NOT NULL,            -- full H3 heading source after '### '
+  body_md        TEXT NOT NULL,
+  license        TEXT,                     -- SPDX-ish token or manual string; NULL = unknown
+  license_source TEXT CHECK (license_source IN ('auto','manual')),
+  ordinal        INTEGER NOT NULL
 );
 
 -- Dataset inventory rows promoted to first-class records ----------------------
@@ -110,6 +117,8 @@ CREATE TABLE dataset_entries (
   kind       TEXT NOT NULL CHECK (kind IN ('atlas','gem','other')),
   heading_md TEXT NOT NULL,            -- full H3 heading source after '### '
   body_md    TEXT NOT NULL,
+  license        TEXT,                 -- data-use token / manual string; NULL = unknown
+  license_source TEXT CHECK (license_source IN ('auto','manual')),
   ordinal    INTEGER NOT NULL          -- document order across all dataset pages
 );
 
