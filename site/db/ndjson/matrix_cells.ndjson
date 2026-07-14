@@ -1,0 +1,229 @@
+{"method":"Bayesian Optimization","area_key":"media","ref_id":3,"label":"Cosenza et al. 2022","ordinal":0}
+{"method":"Bayesian Optimization","area_key":"media","ref_id":16,"label":"Kanda et al. 2022","ordinal":1}
+{"method":"Bayesian Optimization","area_key":"media","ref_id":18,"label":"Cosenza 2022","ordinal":2}
+{"method":"Bayesian Optimization","area_key":"media","ref_id":2,"label":"Cosenza et al. 2023","ordinal":3}
+{"method":"Bayesian Optimization","area_key":"media","ref_id":15,"label":"Yoshida et al. 2023","ordinal":4}
+{"method":"Bayesian Optimization","area_key":"media","ref_id":58,"label":"Narayanan et al. 2025","ordinal":5}
+{"method":"Bayesian Optimization","area_key":"media","ref_id":211,"label":"Cosenza et al. 2021","ordinal":6}
+{"method":"Bayesian Optimization","area_key":"media","ref_id":212,"label":"Tu et al. 2022","ordinal":7}
+{"method":"Bayesian Optimization","area_key":"media","ref_id":249,"label":"Ndahiro et al. 2025","ordinal":8}
+{"method":"Bayesian Optimization","area_key":"media","ref_id":251,"label":"Emerson et al. 2026","ordinal":9}
+{"method":"Bayesian Optimization","area_key":"cell","ref_id":16,"label":"Kanda et al. 2022","ordinal":10}
+{"method":"Bayesian Optimization","area_key":"bioprocess","ref_id":59,"label":"Antonakoudis & Richelle 2026","ordinal":11}
+{"method":"Bayesian Optimization","area_key":"bioprocess","ref_id":256,"label":"Choi et al. 2025","ordinal":12}
+{"method":"Deep Learning","area_key":"media","ref_id":18,"label":"Cosenza 2022","ordinal":13}
+{"method":"Deep Learning","area_key":"media","ref_id":15,"label":"Yoshida et al. 2023","ordinal":14}
+{"method":"Deep Learning","area_key":"media","ref_id":212,"label":"Tu et al. 2022","ordinal":15}
+{"method":"Deep Learning","area_key":"cell","ref_id":5,"label":"Li et al. 2020","ordinal":16}
+{"method":"Deep Learning","area_key":"cell","ref_id":122,"label":"Magnusson et al. 2024","ordinal":17}
+{"method":"Deep Learning","area_key":"cell","ref_id":57,"label":"Adduri et al. 2025","ordinal":18}
+{"method":"Deep Learning","area_key":"cell","ref_id":145,"label":"Xiao et al. 2026","ordinal":19}
+{"method":"Deep Learning","area_key":"cell","ref_id":118,"label":"Rosen et al. 2024","ordinal":20}
+{"method":"Deep Learning","area_key":"cell","ref_id":123,"label":"Littman et al. 2025","ordinal":21}
+{"method":"Deep Learning","area_key":"cell","ref_id":263,"label":"Vaishnav et al. 2022","ordinal":22}
+{"method":"Deep Learning","area_key":"bioprocess","ref_id":29,"label":"Del Rio‐Chanona et al. 2019","ordinal":23}
+{"method":"Deep Learning","area_key":"bioprocess","ref_id":30,"label":"Peng et al. 2013","ordinal":24}
+{"method":"Deep Learning","area_key":"bioprocess","ref_id":204,"label":"Chiu & Du 2025","ordinal":25}
+{"method":"Deep Learning","area_key":"bioprocess","ref_id":205,"label":"Yang et al. 2024","ordinal":26}
+{"method":"Deep Learning","area_key":"bioprocess","ref_id":253,"label":"Park et al. 2023","ordinal":27}
+{"method":"Deep Learning","area_key":"bioprocess","ref_id":254,"label":"Lu et al. 2025","ordinal":28}
+{"method":"Deep Learning","area_key":"bioprocess","ref_id":255,"label":"Narayanan et al. 2020","ordinal":29}
+{"method":"Deep Learning","area_key":"bioprocess","ref_id":257,"label":"Wang et al. 2023a","ordinal":30}
+{"method":"Deep Learning","area_key":"scaffolding","ref_id":20,"label":"Rafieyan et al. 2024","ordinal":31}
+{"method":"Deep Learning","area_key":"scaffolding","ref_id":215,"label":"Shin et al. 2025","ordinal":32}
+{"method":"Deep Learning","area_key":"scaffolding","ref_id":216,"label":"Golbabaei et al. 2024","ordinal":33}
+{"method":"Deep Learning","area_key":"sensory","ref_id":236,"label":"Tac et al. 2026","ordinal":34}
+{"method":"Deep Learning","area_key":"tooling","ref_id":197,"label":"Radzikowski & Chen 2026","ordinal":35}
+{"method":"Deep Learning","area_key":"tooling","ref_id":4,"label":"Chen et al. 2016","ordinal":36}
+{"method":"GNN","area_key":"cell","ref_id":13,"label":"Wang et al. 2021","ordinal":37}
+{"method":"GNN","area_key":"cell","ref_id":8,"label":"Ciortan & Defrance 2022","ordinal":38}
+{"method":"GNN","area_key":"cell","ref_id":12,"label":"Shan et al. 2023","ordinal":39}
+{"method":"GNN","area_key":"cell","ref_id":121,"label":"Roohani et al. 2024","ordinal":40}
+{"method":"GNN","area_key":"cell","ref_id":68,"label":"Li et al. 2024","ordinal":41}
+{"method":"GNN","area_key":"sensory","ref_id":14,"label":"Lee et al. 2023","ordinal":42}
+{"method":"GNN","area_key":"sensory","ref_id":36,"label":"Qian et al. 2023","ordinal":43}
+{"method":"GNN","area_key":"tooling","ref_id":52,"label":"Mulyadi et al. 2025","ordinal":44}
+{"method":"CNN","area_key":"cell","ref_id":218,"label":"Yang et al. 2025","ordinal":45}
+{"method":"CNN","area_key":"cell","ref_id":264,"label":"Sinha et al. 2025","ordinal":46}
+{"method":"CNN","area_key":"cell","ref_id":265,"label":"Nabiullina et al. 2025","ordinal":47}
+{"method":"CNN","area_key":"bioprocess","ref_id":33,"label":"Rojek et al. 2021","ordinal":48}
+{"method":"CNN","area_key":"bioprocess","ref_id":206,"label":"Hevaganinge et al. 2023","ordinal":49}
+{"method":"CNN","area_key":"bioprocess","ref_id":260,"label":"Iseoka et al. 2022","ordinal":50}
+{"method":"CNN","area_key":"bioprocess","ref_id":261,"label":"Maruthamuthu et al. 2020","ordinal":51}
+{"method":"CNN","area_key":"scaffolding","ref_id":19,"label":"Bermejillo Barrera et al. 2021","ordinal":52}
+{"method":"CNN","area_key":"sensory","ref_id":26,"label":"Sun et al. 2023","ordinal":53}
+{"method":"CNN","area_key":"sensory","ref_id":11,"label":"Shen et al. 2024","ordinal":54}
+{"method":"CNN","area_key":"sensory","ref_id":195,"label":"Ulucan et al. 2019","ordinal":55}
+{"method":"CNN","area_key":"sensory","ref_id":196,"label":"Gyening et al. 2025","ordinal":56}
+{"method":"GAN / VAE","area_key":"cell","ref_id":9,"label":"Lin et al. 2020","ordinal":57}
+{"method":"GAN / VAE","area_key":"cell","ref_id":10,"label":"Zrimec et al. 2022","ordinal":58}
+{"method":"GAN / VAE","area_key":"scaffolding","ref_id":35,"label":"Andrews et al. 2023","ordinal":59}
+{"method":"GAN / VAE","area_key":"sensory","ref_id":11,"label":"Shen et al. 2024","ordinal":60}
+{"method":"GAN / VAE","area_key":"tooling","ref_id":238,"label":"Pande et al. 2026","ordinal":61}
+{"method":"Genetic Algorithms","area_key":"media","ref_id":17,"label":"Cosenza & Block 2021","ordinal":62}
+{"method":"Genetic Algorithms","area_key":"media","ref_id":1,"label":"Nikkhah et al. 2023","ordinal":63}
+{"method":"Genetic Algorithms","area_key":"media","ref_id":169,"label":"Hashizume & Ying 2025","ordinal":64}
+{"method":"Genetic Algorithms","area_key":"media","ref_id":210,"label":"Munroe et al. 2019","ordinal":65}
+{"method":"Genetic Algorithms","area_key":"media","ref_id":211,"label":"Cosenza et al. 2021","ordinal":66}
+{"method":"Genetic Algorithms","area_key":"media","ref_id":252,"label":"Pi et al. 2020","ordinal":67}
+{"method":"Genetic Algorithms","area_key":"bioprocess","ref_id":30,"label":"Peng et al. 2013","ordinal":68}
+{"method":"Genetic Algorithms","area_key":"bioprocess","ref_id":31,"label":"Zhang et al. 2020","ordinal":69}
+{"method":"Genetic Algorithms","area_key":"bioprocess","ref_id":209,"label":"Takahashi et al. 2016","ordinal":70}
+{"method":"Genetic Algorithms","area_key":"bioprocess","ref_id":258,"label":"Brinc & Belič 2019","ordinal":71}
+{"method":"Genetic Algorithms","area_key":"scaffolding","ref_id":34,"label":"Andrews et al. 2025","ordinal":72}
+{"method":"SVM","area_key":"media","ref_id":21,"label":"Xu et al. 2014","ordinal":73}
+{"method":"SVM","area_key":"bioprocess","ref_id":31,"label":"Zhang et al. 2020","ordinal":74}
+{"method":"SVM","area_key":"bioprocess","ref_id":32,"label":"Roell et al. 2022","ordinal":75}
+{"method":"SVM","area_key":"bioprocess","ref_id":208,"label":"Xu et al. 2025","ordinal":76}
+{"method":"SVM","area_key":"bioprocess","ref_id":259,"label":"Pandi Chelvam et al. 2025","ordinal":77}
+{"method":"SVM","area_key":"bioprocess","ref_id":262,"label":"Nguyen et al. 2025","ordinal":78}
+{"method":"SVM","area_key":"sensory","ref_id":26,"label":"Sun et al. 2023","ordinal":79}
+{"method":"SVM","area_key":"sensory","ref_id":28,"label":"Sun et al. 2026","ordinal":80}
+{"method":"SVM","area_key":"sensory","ref_id":72,"label":"Colantonio et al. 2022","ordinal":81}
+{"method":"SVM","area_key":"sensory","ref_id":11,"label":"Shen et al. 2024","ordinal":82}
+{"method":"SVM","area_key":"sensory","ref_id":271,"label":"Pallante et al. 2022","ordinal":83}
+{"method":"Ensemble Learning","area_key":"media","ref_id":170,"label":"Gangwar et al. 2024","ordinal":84}
+{"method":"Ensemble Learning","area_key":"media","ref_id":169,"label":"Hashizume & Ying 2025","ordinal":85}
+{"method":"Ensemble Learning","area_key":"media","ref_id":213,"label":"Grzesik & Warth 2021","ordinal":86}
+{"method":"Ensemble Learning","area_key":"bioprocess","ref_id":32,"label":"Roell et al. 2022","ordinal":87}
+{"method":"Ensemble Learning","area_key":"bioprocess","ref_id":27,"label":"Du et al. 2025","ordinal":88}
+{"method":"Ensemble Learning","area_key":"bioprocess","ref_id":207,"label":"Behdani et al. 2024","ordinal":89}
+{"method":"Ensemble Learning","area_key":"bioprocess","ref_id":208,"label":"Xu et al. 2025","ordinal":90}
+{"method":"Ensemble Learning","area_key":"scaffolding","ref_id":20,"label":"Rafieyan et al. 2024","ordinal":91}
+{"method":"Ensemble Learning","area_key":"scaffolding","ref_id":214,"label":"Nair et al. 2021","ordinal":92}
+{"method":"Ensemble Learning","area_key":"scaffolding","ref_id":217,"label":"Serpe et al. 2025","ordinal":93}
+{"method":"Ensemble Learning","area_key":"sensory","ref_id":80,"label":"Keller et al. 2017","ordinal":94}
+{"method":"Ensemble Learning","area_key":"sensory","ref_id":102,"label":"Dagan-Wiener et al. 2017","ordinal":95}
+{"method":"Ensemble Learning","area_key":"sensory","ref_id":103,"label":"Margulis et al. 2021","ordinal":96}
+{"method":"Ensemble Learning","area_key":"sensory","ref_id":72,"label":"Colantonio et al. 2022","ordinal":97}
+{"method":"Ensemble Learning","area_key":"sensory","ref_id":171,"label":"Kircali Ata et al. 2023","ordinal":98}
+{"method":"Ensemble Learning","area_key":"sensory","ref_id":105,"label":"Ziaikin et al. 2024","ordinal":99}
+{"method":"Ensemble Learning","area_key":"sensory","ref_id":27,"label":"Du et al. 2025","ordinal":100}
+{"method":"Ensemble Learning","area_key":"sensory","ref_id":11,"label":"Shen et al. 2024","ordinal":101}
+{"method":"Ensemble Learning","area_key":"sensory","ref_id":28,"label":"Sun et al. 2026","ordinal":102}
+{"method":"Ensemble Learning","area_key":"sensory","ref_id":268,"label":"Tuwani et al. 2019","ordinal":103}
+{"method":"K-Nearest Neighbors","area_key":"bioprocess","ref_id":32,"label":"Roell et al. 2022","ordinal":104}
+{"method":"K-Nearest Neighbors","area_key":"sensory","ref_id":28,"label":"Sun et al. 2026","ordinal":105}
+{"method":"K-Nearest Neighbors","area_key":"sensory","ref_id":104,"label":"Margulis et al. 2022","ordinal":106}
+{"method":"Linear & Regularized Models","area_key":"cell","ref_id":266,"label":"Wang et al. 2023b","ordinal":107}
+{"method":"Linear & Regularized Models","area_key":"sensory","ref_id":269,"label":"Charoenkwan et al. 2020","ordinal":108}
+{"method":"Chemometrics","area_key":"bioprocess","ref_id":7,"label":"Tamburini et al. 2014","ordinal":109}
+{"method":"Chemometrics","area_key":"bioprocess","ref_id":208,"label":"Xu et al. 2025","ordinal":110}
+{"method":"Chemometrics","area_key":"tooling","ref_id":198,"label":"Thévenot et al. 2015","ordinal":111}
+{"method":"Chemometrics","area_key":"tooling","ref_id":199,"label":"Rohart et al. 2017","ordinal":112}
+{"method":"Active Learning","area_key":"media","ref_id":24,"label":"Hashizume et al. 2022","ordinal":113}
+{"method":"Active Learning","area_key":"media","ref_id":23,"label":"Zhang et al. 2023","ordinal":114}
+{"method":"Active Learning","area_key":"media","ref_id":25,"label":"Ozawa et al. 2025","ordinal":115}
+{"method":"Active Learning","area_key":"media","ref_id":58,"label":"Narayanan et al. 2025","ordinal":116}
+{"method":"Active Learning","area_key":"media","ref_id":169,"label":"Hashizume & Ying 2025","ordinal":117}
+{"method":"Active Learning","area_key":"media","ref_id":250,"label":"Hashizume et al. 2026","ordinal":118}
+{"method":"Active Learning","area_key":"cell","ref_id":63,"label":"Pandi et al. 2022","ordinal":119}
+{"method":"Active Learning","area_key":"cell","ref_id":97,"label":"Hao et al. 2025","ordinal":120}
+{"method":"Active Learning","area_key":"tooling","ref_id":63,"label":"Pandi et al. 2022","ordinal":121}
+{"method":"Active Learning","area_key":"tooling","ref_id":182,"label":"King et al. 2004","ordinal":122}
+{"method":"Reinforcement Learning","area_key":"cell","ref_id":165,"label":"Wu et al. 2026","ordinal":123}
+{"method":"Reinforcement Learning","area_key":"cell","ref_id":120,"label":"Rizvi et al. 2026","ordinal":124}
+{"method":"Reinforcement Learning","area_key":"bioprocess","ref_id":200,"label":"Petsagkourakis et al. 2020","ordinal":125}
+{"method":"Reinforcement Learning","area_key":"bioprocess","ref_id":201,"label":"Oh et al. 2022","ordinal":126}
+{"method":"Reinforcement Learning","area_key":"bioprocess","ref_id":202,"label":"Rajasekhar et al. 2024","ordinal":127}
+{"method":"Reinforcement Learning","area_key":"bioprocess","ref_id":203,"label":"Wu & Cui 2025","ordinal":128}
+{"method":"Reinforcement Learning","area_key":"tooling","ref_id":161,"label":"Narayanan et al. 2025","ordinal":129}
+{"method":"Foundation Models: Next-Token Prediction","area_key":"cell","ref_id":115,"label":"Shen et al. 2023","ordinal":130}
+{"method":"Foundation Models: Next-Token Prediction","area_key":"cell","ref_id":92,"label":"Pearce et al. 2026","ordinal":131}
+{"method":"Foundation Models: Next-Token Prediction","area_key":"cell","ref_id":120,"label":"Rizvi et al. 2026","ordinal":132}
+{"method":"Foundation Models: Next-Token Prediction","area_key":"cell","ref_id":117,"label":"Cui et al. 2024","ordinal":133}
+{"method":"Foundation Models: Next-Token Prediction","area_key":"tooling","ref_id":88,"label":"Su et al. 2026","ordinal":134}
+{"method":"Foundation Models: Masked Language Modeling","area_key":"cell","ref_id":112,"label":"Yang et al. 2022","ordinal":135}
+{"method":"Foundation Models: Masked Language Modeling","area_key":"cell","ref_id":111,"label":"Theodoris et al. 2023","ordinal":136}
+{"method":"Foundation Models: Masked Language Modeling","area_key":"cell","ref_id":116,"label":"Hao et al. 2024","ordinal":137}
+{"method":"Foundation Models: Masked Language Modeling","area_key":"cell","ref_id":117,"label":"Cui et al. 2024","ordinal":138}
+{"method":"Foundation Models: Masked Language Modeling","area_key":"cell","ref_id":6,"label":"Ji et al. 2021","ordinal":139}
+{"method":"Foundation Models: Masked Language Modeling","area_key":"cell","ref_id":235,"label":"Zeng et al. 2025","ordinal":140}
+{"method":"Foundation Models: LM + Biological Priors","area_key":"cell","ref_id":119,"label":"Rosen et al. 2026","ordinal":141}
+{"method":"Foundation Models: Cell-State & Perturbation Prediction","area_key":"cell","ref_id":57,"label":"Adduri et al. 2025","ordinal":142}
+{"method":"Foundation Models: Cell-State & Perturbation Prediction","area_key":"cell","ref_id":124,"label":"Dong et al. 2026","ordinal":143}
+{"method":"Foundation Models: Cell-State & Perturbation Prediction","area_key":"cell","ref_id":117,"label":"Cui et al. 2024","ordinal":144}
+{"method":"Foundation Models: Cell-State & Perturbation Prediction","area_key":"cell","ref_id":120,"label":"Rizvi et al. 2026","ordinal":145}
+{"method":"Foundation Models (other modalities)","area_key":"sensory","ref_id":267,"label":"He et al. 2025","ordinal":146}
+{"method":"Foundation Models (other modalities)","area_key":"sensory","ref_id":270,"label":"Charoenkwan et al. 2021","ordinal":147}
+{"method":"Foundation Models (other modalities)","area_key":"tooling","ref_id":42,"label":"Sypetkowski et al. 2026","ordinal":148}
+{"method":"Foundation Models (other modalities)","area_key":"tooling","ref_id":91,"label":"Ding et al. 2026","ordinal":149}
+{"method":"Foundation Models (other modalities)","area_key":"tooling","ref_id":224,"label":"Queen et al. 2025","ordinal":150}
+{"method":"Scientific Literature & Discovery Agents","area_key":"tooling","ref_id":44,"label":"Lála et al. 2023","ordinal":151}
+{"method":"Scientific Literature & Discovery Agents","area_key":"tooling","ref_id":45,"label":"Lu et al. 2024","ordinal":152}
+{"method":"Scientific Literature & Discovery Agents","area_key":"tooling","ref_id":46,"label":"Skarlinski et al. 2024","ordinal":153}
+{"method":"Scientific Literature & Discovery Agents","area_key":"tooling","ref_id":47,"label":"Yamada et al. 2025","ordinal":154}
+{"method":"Scientific Literature & Discovery Agents","area_key":"tooling","ref_id":153,"label":"Gottweis et al. 2026","ordinal":155}
+{"method":"Scientific Literature & Discovery Agents","area_key":"tooling","ref_id":154,"label":"Ghareeb et al. 2026","ordinal":156}
+{"method":"Scientific Literature & Discovery Agents","area_key":"tooling","ref_id":166,"label":"Aygün et al. 2026","ordinal":157}
+{"method":"Scientific Literature & Discovery Agents","area_key":"tooling","ref_id":221,"label":"Feng et al. 2025","ordinal":158}
+{"method":"Scientific Literature & Discovery Agents","area_key":"tooling","ref_id":222,"label":"Gandhi et al. 2025","ordinal":159}
+{"method":"Scientific Literature & Discovery Agents","area_key":"tooling","ref_id":273,"label":"Ghafarollahi & Buehler 2025","ordinal":160}
+{"method":"General-Purpose Biomedical Agents","area_key":"tooling","ref_id":98,"label":"Dong et al. 2024","ordinal":161}
+{"method":"General-Purpose Biomedical Agents","area_key":"tooling","ref_id":49,"label":"Huang et al. 2025","ordinal":162}
+{"method":"General-Purpose Biomedical Agents","area_key":"tooling","ref_id":94,"label":"Pickard et al. 2025","ordinal":163}
+{"method":"General-Purpose Biomedical Agents","area_key":"tooling","ref_id":95,"label":"Riffle et al. 2025","ordinal":164}
+{"method":"General-Purpose Biomedical Agents","area_key":"tooling","ref_id":96,"label":"Jin et al. 2025","ordinal":165}
+{"method":"General-Purpose Biomedical Agents","area_key":"tooling","ref_id":223,"label":"Zhang et al. 2025","ordinal":166}
+{"method":"General-Purpose Biomedical Agents","area_key":"tooling","ref_id":237,"label":"Xiao et al. 2026","ordinal":167}
+{"method":"General-Purpose Biomedical Agents","area_key":"tooling","ref_id":272,"label":"Swanson et al. 2025","ordinal":168}
+{"method":"Chemistry / Synthesis Agents","area_key":"tooling","ref_id":70,"label":"Boiko et al. 2023","ordinal":169}
+{"method":"Chemistry / Synthesis Agents","area_key":"tooling","ref_id":71,"label":"Bran et al. 2024","ordinal":170}
+{"method":"Domain-Specific Biomedical Agents","area_key":"cell","ref_id":97,"label":"Hao et al. 2025","ordinal":171}
+{"method":"Domain-Specific Biomedical Agents","area_key":"cell","ref_id":125,"label":"Roohani et al. 2025a","ordinal":172}
+{"method":"Domain-Specific Biomedical Agents","area_key":"cell","ref_id":93,"label":"Tang et al. 2026","ordinal":173}
+{"method":"Domain-Specific Biomedical Agents","area_key":"tooling","ref_id":69,"label":"Maeda & Kurata 2023","ordinal":174}
+{"method":"Domain-Specific Biomedical Agents","area_key":"tooling","ref_id":68,"label":"Li et al. 2024","ordinal":175}
+{"method":"Domain-Specific Biomedical Agents","area_key":"tooling","ref_id":43,"label":"Lee et al. 2025","ordinal":176}
+{"method":"Domain-Specific Biomedical Agents","area_key":"tooling","ref_id":50,"label":"Wehling et al. 2025","ordinal":177}
+{"method":"Domain-Specific Biomedical Agents","area_key":"tooling","ref_id":167,"label":"Singh et al. 2025","ordinal":178}
+{"method":"Domain-Specific Biomedical Agents","area_key":"tooling","ref_id":54,"label":"Ying et al. 2025","ordinal":179}
+{"method":"Domain-Specific Biomedical Agents","area_key":"tooling","ref_id":56,"label":"Wang et al. 2025a","ordinal":180}
+{"method":"Domain-Specific Biomedical Agents","area_key":"tooling","ref_id":51,"label":"Sui et al. 2026","ordinal":181}
+{"method":"Domain-Specific Biomedical Agents","area_key":"tooling","ref_id":40,"label":"Gao et al. 2025a","ordinal":182}
+{"method":"Domain-Specific Biomedical Agents","area_key":"tooling","ref_id":90,"label":"Yu et al. 2026","ordinal":183}
+{"method":"Domain-Specific Biomedical Agents","area_key":"tooling","ref_id":126,"label":"Youngblut et al. 2025","ordinal":184}
+{"method":"Domain-Specific Biomedical Agents","area_key":"tooling","ref_id":275,"label":"Ghafarollahi & Buehler 2024","ordinal":185}
+{"method":"Domain-Specific Biomedical Agents","area_key":"tooling","ref_id":276,"label":"Qu et al. 2025","ordinal":186}
+{"method":"Domain-Specific Biomedical Agents","area_key":"tooling","ref_id":277,"label":"Zhou et al. 2024","ordinal":187}
+{"method":"Robot Scientists & Lab Automation","area_key":"cell","ref_id":66,"label":"Singh et al. 2023","ordinal":188}
+{"method":"Robot Scientists & Lab Automation","area_key":"cell","ref_id":16,"label":"Kanda et al. 2022","ordinal":189}
+{"method":"Robot Scientists & Lab Automation","area_key":"bioprocess","ref_id":61,"label":"Wang et al. 2025b","ordinal":190}
+{"method":"Robot Scientists & Lab Automation","area_key":"tooling","ref_id":182,"label":"King et al. 2004","ordinal":191}
+{"method":"Robot Scientists & Lab Automation","area_key":"tooling","ref_id":64,"label":"Tiukova et al. 2024","ordinal":192}
+{"method":"Robot Scientists & Lab Automation","area_key":"tooling","ref_id":65,"label":"Brunnsåker et al. 2025","ordinal":193}
+{"method":"Robot Scientists & Lab Automation","area_key":"tooling","ref_id":62,"label":"Qiu et al. 2025","ordinal":194}
+{"method":"Robot Scientists & Lab Automation","area_key":"tooling","ref_id":154,"label":"Ghareeb et al. 2026","ordinal":195}
+{"method":"Robot Scientists & Lab Automation","area_key":"tooling","ref_id":274,"label":"Darvish et al. 2025","ordinal":196}
+{"method":"Benchmarks & Evaluation Frameworks","area_key":"eval","ref_id":55,"label":"Sadhuka et al. 2025","ordinal":197}
+{"method":"Benchmarks & Evaluation Frameworks","area_key":"eval","ref_id":89,"label":"Brouwer et al. 2026","ordinal":198}
+{"method":"Benchmarks & Evaluation Frameworks","area_key":"eval","ref_id":108,"label":"Mitchener et al. 2025","ordinal":199}
+{"method":"Benchmarks & Evaluation Frameworks","area_key":"eval","ref_id":109,"label":"Bushuiev et al. 2024","ordinal":200}
+{"method":"Benchmarks & Evaluation Frameworks","area_key":"eval","ref_id":110,"label":"Sze & Hassoun 2024","ordinal":201}
+{"method":"Benchmarks & Evaluation Frameworks","area_key":"eval","ref_id":127,"label":"Chevalley et al. 2025","ordinal":202}
+{"method":"Benchmarks & Evaluation Frameworks","area_key":"eval","ref_id":146,"label":"Laurent et al. 2024","ordinal":203}
+{"method":"Benchmarks & Evaluation Frameworks","area_key":"eval","ref_id":147,"label":"Gu et al. 2025","ordinal":204}
+{"method":"Benchmarks & Evaluation Frameworks","area_key":"eval","ref_id":148,"label":"Notin et al. 2023","ordinal":205}
+{"method":"Benchmarks & Evaluation Frameworks","area_key":"eval","ref_id":149,"label":"Duan et al. 2025","ordinal":206}
+{"method":"Benchmarks & Evaluation Frameworks","area_key":"eval","ref_id":150,"label":"Nair et al. 2026","ordinal":207}
+{"method":"Benchmarks & Evaluation Frameworks","area_key":"eval","ref_id":155,"label":"Jimenez et al. 2024","ordinal":208}
+{"method":"Benchmarks & Evaluation Frameworks","area_key":"eval","ref_id":156,"label":"Rein et al. 2023","ordinal":209}
+{"method":"Benchmarks & Evaluation Frameworks","area_key":"eval","ref_id":157,"label":"Wang et al. 2024","ordinal":210}
+{"method":"Benchmarks & Evaluation Frameworks","area_key":"eval","ref_id":158,"label":"Phan et al. 2026","ordinal":211}
+{"method":"Benchmarks & Evaluation Frameworks","area_key":"eval","ref_id":159,"label":"Wang et al. 2026","ordinal":212}
+{"method":"Benchmarks & Evaluation Frameworks","area_key":"eval","ref_id":164,"label":"Huang et al. 2026","ordinal":213}
+{"method":"Benchmarks & Evaluation Frameworks","area_key":"eval","ref_id":53,"label":"Liu et al. 2026","ordinal":214}
+{"method":"Benchmarks & Evaluation Frameworks","area_key":"eval","ref_id":57,"label":"Adduri et al. 2025","ordinal":215}
+{"method":"Benchmarks & Evaluation Frameworks","area_key":"eval","ref_id":225,"label":"Miller et al. 2025","ordinal":216}
+{"method":"Benchmarks & Evaluation Frameworks","area_key":"eval","ref_id":239,"label":"Ahmed et al. 2026","ordinal":217}
+{"method":"Benchmarks & Evaluation Frameworks","area_key":"eval","ref_id":241,"label":"Li & Ho 2026","ordinal":218}
+{"method":"Agent Infrastructure (Frameworks, KGs, Protocols)","area_key":"tooling","ref_id":41,"label":"Gao et al. 2025b","ordinal":219}
+{"method":"Agent Infrastructure (Frameworks, KGs, Protocols)","area_key":"tooling","ref_id":48,"label":"Lobentanzer et al. 2025","ordinal":220}
+{"method":"Agent Infrastructure (Frameworks, KGs, Protocols)","area_key":"tooling","ref_id":67,"label":"Ruscone et al. 2025","ordinal":221}
+{"method":"Agent Infrastructure (Frameworks, KGs, Protocols)","area_key":"tooling","ref_id":133,"label":"Kuehl et al. 2025","ordinal":222}
+{"method":"Agent Infrastructure (Frameworks, KGs, Protocols)","area_key":"tooling","ref_id":160,"label":"Narayanan et al. 2024","ordinal":223}
+{"method":"Agent Infrastructure (Frameworks, KGs, Protocols)","area_key":"tooling","ref_id":162,"label":"Qiao et al. 2026","ordinal":224}
+{"method":"Agent Infrastructure (Frameworks, KGs, Protocols)","area_key":"tooling","ref_id":61,"label":"Wang et al. 2025b","ordinal":225}
+{"method":"Agent Infrastructure (Frameworks, KGs, Protocols)","area_key":"tooling","ref_id":93,"label":"Tang et al. 2026","ordinal":226}
+{"method":"Agent Infrastructure (Frameworks, KGs, Protocols)","area_key":"tooling","ref_id":219,"label":"Matsumoto et al. 2025","ordinal":227}
+{"method":"Agent Infrastructure (Frameworks, KGs, Protocols)","area_key":"tooling","ref_id":220,"label":"Glen et al. 2025","ordinal":228}

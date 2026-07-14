@@ -1,0 +1,92 @@
+/**
+ * extract.ts — pull the DB-owned structured content out of the canonical
+ * Markdown, reusing the real parser's mdast helpers. Used by both the bootstrap
+ * ETL (canonical MD -> DB) and the emitter's fidelity checks. Promoted from the
+ * spike's extractGroupEntries / extractInventory / inlineMd.
+ */
+
+import { readFileSync } from 'node:fs';
+import { parseMarkdown, sectionsAfter } from '../parser/markdown.js';
+import type { Table, TableRow, TableCell } from 'mdast';
+
+/** Minimal mdast text flatten (avoids importing mdast-util-to-string at runtime). */
+export function flat(node: any): string {
+  if (node == null) return '';
+  if (typeof node.value === 'string') return node.value;
+  if (Array.isArray(node.children)) return node.children.map(flat).join('');
+  return '';
+}
+
+/**
+ * Serialize an inline mdast node back to markdown (text/link/code/emphasis/…).
+ * Table cell byte-offsets include the `|` delimiters, so offset-slicing is wrong;
+ * child-serialization is a clean fixed point (re-parse -> re-serialize is stable).
+ */
+export function inlineMd(node: any): string {
+  switch (node.type) {
+    case 'text': return node.value;
+    case 'inlineCode': return '`' + node.value + '`';
+    case 'link': return `[${(node.children ?? []).map(inlineMd).join('')}](${node.url})`;
+    case 'image': return `![${node.alt ?? ''}](${node.url})`;
+    case 'emphasis': return `*${(node.children ?? []).map(inlineMd).join('')}*`;
+    case 'strong': return `**${(node.children ?? []).map(inlineMd).join('')}**`;
+    case 'delete': return `~~${(node.children ?? []).map(inlineMd).join('')}~~`;
+    case 'break': return ' ';
+    case 'html': return node.value;
+    default: return node.children ? node.children.map(inlineMd).join('') : (node.value ?? '');
+  }
+}
+
+export interface CatalogRaw {
+  name: string;   // inline markdown of the H3 link text
+  url: string;
+  group: string;  // enclosing H2 label
+  bodyMd: string; // raw body markdown after the H3, up to the next heading
+}
+
+/**
+ * Every H3 catalog entry in a Software.md / Databases.md file, in document order,
+ * WITH its raw body markdown (offset-sliced). Generalizes the spike's
+ * extractGroupEntries across all H2 groups.
+ */
+export function extractCatalogEntries(path: string): CatalogRaw[] {
+  const src = readFileSync(path, 'utf-8');
+  const kids = parseMarkdown(src).children as any[];
+  const out: CatalogRaw[] = [];
+  let group = '';
+  for (let i = 0; i < kids.length; i++) {
+    const n = kids[i];
+    if (n.type !== 'heading') continue;
+    if (n.depth === 2) { group = inlineMd(n).trim(); continue; }
+    if (n.depth !== 3) continue;
+    const link = (n.children as any[]).find((c) => c.type === 'link');
+    if (!link) continue;
+    let s: number | null = null, e = 0;
+    for (let j = i + 1; j < kids.length; j++) {
+      if (kids[j].type === 'heading') break;
+      if (s === null) s = kids[j].position.start.offset;
+      e = kids[j].position.end.offset;
+    }
+    out.push({
+      name: (link.children ?? []).map(inlineMd).join('').trim(),
+      url: link.url,
+      group,
+      bodyMd: s === null ? '' : src.slice(s, e),
+    });
+  }
+  return out;
+}
+
+export interface Inventory { header: string[]; rows: string[][]; }
+
+/** A page's `## Complete data inventory` GFM table as markdown cell rows. */
+export function extractInventory(path: string): Inventory | null {
+  const src = readFileSync(path, 'utf-8');
+  const root = parseMarkdown(src);
+  const sec = sectionsAfter(root, 2).find((s) => s.heading.trim() === 'Complete data inventory');
+  const table = sec?.nodes.find((n: any) => n.type === 'table') as Table | undefined;
+  if (!table) return null;
+  const cellMd = (c: TableCell) => (c.children as any[]).map(inlineMd).join('').trim();
+  const all = (table.children as TableRow[]).map((r) => (r.children as TableCell[]).map(cellMd));
+  return { header: all[0], rows: all.slice(1) };
+}

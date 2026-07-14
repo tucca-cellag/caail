@@ -1,0 +1,33 @@
+{"item_id":"topic:ai-agents-foundation-models","slug":"ai-agents-foundation-models","label":"AI Agents & Foundation Models","area_key":null}
+{"item_id":"topic:benchmark-leaderboards-results-trackers","slug":"benchmark-leaderboards-results-trackers","label":"Benchmark Leaderboards & Results Trackers","area_key":null}
+{"item_id":"topic:biological-food-ontologies","slug":"biological-food-ontologies","label":"Biological & Food Ontologies","area_key":null}
+{"item_id":"topic:biomedical-ontology-identifier-infrastructure","slug":"biomedical-ontology-identifier-infrastructure","label":"Biomedical Ontology & Identifier Infrastructure","area_key":null}
+{"item_id":"topic:bioprocess","slug":"bioprocess","label":"Bioprocess & scale-up","area_key":"bioprocess"}
+{"item_id":"topic:cellular-aging-senescence","slug":"cellular-aging-senescence","label":"Cellular Aging & Senescence","area_key":null}
+{"item_id":"topic:cellular-engineering","slug":"cellular-engineering","label":"Cellular engineering","area_key":"cell"}
+{"item_id":"topic:chemistry-compound-databases","slug":"chemistry-compound-databases","label":"Chemistry & Compound Databases","area_key":null}
+{"item_id":"topic:codon-usage-sequence-design-databases","slug":"codon-usage-sequence-design-databases","label":"Codon Usage & Sequence-Design Databases","area_key":null}
+{"item_id":"topic:data-standards-interchange-formats","slug":"data-standards-interchange-formats","label":"Data Standards & Interchange Formats","area_key":null}
+{"item_id":"topic:database-directories-reference-guides","slug":"database-directories-reference-guides","label":"Database Directories & Reference Guides","area_key":null}
+{"item_id":"topic:ecm-matrisome","slug":"ecm-matrisome","label":"ECM & Matrisome","area_key":null}
+{"item_id":"topic:ecosystem-industry-directories","slug":"ecosystem-industry-directories","label":"Ecosystem & Industry Directories","area_key":null}
+{"item_id":"topic:glycomics-glycoprotein-databases","slug":"glycomics-glycoprotein-databases","label":"Glycomics & Glycoprotein Databases","area_key":null}
+{"item_id":"topic:imaging-segmentation","slug":"imaging-segmentation","label":"Imaging & Segmentation","area_key":null}
+{"item_id":"topic:lipidomics-databases","slug":"lipidomics-databases","label":"Lipidomics Databases","area_key":null}
+{"item_id":"topic:literature-bibliographic-databases","slug":"literature-bibliographic-databases","label":"Literature & Bibliographic Databases","area_key":null}
+{"item_id":"topic:livestock-multi-tissue-atlases-functional-genomics","slug":"livestock-multi-tissue-atlases-functional-genomics","label":"Livestock Multi-Tissue Atlases & Functional Genomics","area_key":null}
+{"item_id":"topic:mass-spectrometry-chemometrics","slug":"mass-spectrometry-chemometrics","label":"Mass Spectrometry & Chemometrics","area_key":null}
+{"item_id":"topic:mass-spectrometry-spectral-databases","slug":"mass-spectrometry-spectral-databases","label":"Mass Spectrometry Spectral Databases","area_key":null}
+{"item_id":"topic:media-optimization","slug":"media-optimization","label":"Media optimization","area_key":"media"}
+{"item_id":"topic:metabolic-modeling","slug":"metabolic-modeling","label":"Metabolic modeling","area_key":null}
+{"item_id":"topic:muscle-functional-gene-sets","slug":"muscle-functional-gene-sets","label":"Muscle & Functional Gene Sets","area_key":null}
+{"item_id":"topic:plasmid-reagent-repositories","slug":"plasmid-reagent-repositories","label":"Plasmid & Reagent Repositories","area_key":null}
+{"item_id":"topic:protein-structure-databases","slug":"protein-structure-databases","label":"Protein & Structure Databases","area_key":null}
+{"item_id":"topic:quantitative-genetics-multi-omics-analysis","slug":"quantitative-genetics-multi-omics-analysis","label":"Quantitative Genetics & Multi-Omics Analysis","area_key":null}
+{"item_id":"topic:regulatory-food-safety-databases","slug":"regulatory-food-safety-databases","label":"Regulatory & Food-Safety Databases","area_key":null}
+{"item_id":"topic:scaffolding","slug":"scaffolding","label":"Scaffolding & biomaterials","area_key":"scaffolding"}
+{"item_id":"topic:seafood-species-reference-databases","slug":"seafood-species-reference-databases","label":"Seafood Species Reference Databases","area_key":null}
+{"item_id":"topic:sensory-flavor","slug":"sensory-flavor","label":"Sensory & flavor","area_key":"sensory"}
+{"item_id":"topic:sequence-genome-expression-repositories","slug":"sequence-genome-expression-repositories","label":"Sequence, Genome & Expression Repositories","area_key":null}
+{"item_id":"topic:stemness-signatures","slug":"stemness-signatures","label":"Stemness Signatures","area_key":null}
+{"item_id":"topic:workflow-manager-pipelines","slug":"workflow-manager-pipelines","label":"Workflow-Manager Pipelines","area_key":null}

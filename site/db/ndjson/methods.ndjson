@@ -1,0 +1,25 @@
+{"label":"Bayesian Optimization","ordinal":0}
+{"label":"Deep Learning","ordinal":1}
+{"label":"GNN","ordinal":2}
+{"label":"CNN","ordinal":3}
+{"label":"GAN / VAE","ordinal":4}
+{"label":"Genetic Algorithms","ordinal":5}
+{"label":"SVM","ordinal":6}
+{"label":"Ensemble Learning","ordinal":7}
+{"label":"K-Nearest Neighbors","ordinal":8}
+{"label":"Linear & Regularized Models","ordinal":9}
+{"label":"Chemometrics","ordinal":10}
+{"label":"Active Learning","ordinal":11}
+{"label":"Reinforcement Learning","ordinal":12}
+{"label":"Foundation Models: Next-Token Prediction","ordinal":13}
+{"label":"Foundation Models: Masked Language Modeling","ordinal":14}
+{"label":"Foundation Models: LM + Biological Priors","ordinal":15}
+{"label":"Foundation Models: Cell-State & Perturbation Prediction","ordinal":16}
+{"label":"Foundation Models (other modalities)","ordinal":17}
+{"label":"Scientific Literature & Discovery Agents","ordinal":18}
+{"label":"General-Purpose Biomedical Agents","ordinal":19}
+{"label":"Chemistry / Synthesis Agents","ordinal":20}
+{"label":"Domain-Specific Biomedical Agents","ordinal":21}
+{"label":"Robot Scientists & Lab Automation","ordinal":22}
+{"label":"Benchmarks & Evaluation Frameworks","ordinal":23}
+{"label":"Agent Infrastructure (Frameworks, KGs, Protocols)","ordinal":24}

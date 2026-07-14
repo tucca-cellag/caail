@@ -1,0 +1,7 @@
+{"key":"media","label":"Media Optimization","ordinal":0}
+{"key":"cell","label":"Cellular Engineering","ordinal":1}
+{"key":"bioprocess","label":"Bioprocess & Scale-Up","ordinal":2}
+{"key":"scaffolding","label":"Scaffolding","ordinal":3}
+{"key":"sensory","label":"Sensory Prediction","ordinal":4}
+{"key":"tooling","label":"AI Tooling / Methodology","ordinal":5}
+{"key":"eval","label":"AI Evaluation & Benchmarking","ordinal":6}
