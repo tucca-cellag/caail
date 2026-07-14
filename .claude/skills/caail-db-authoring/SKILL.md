@@ -44,7 +44,31 @@ IDs are **frozen**: assigned once, stored, and never changed on rename (a rename
 id; that's the point). Paper ids reuse the numeric public anchor and are **never renumbered**
 (the matrix and external bookmarks point at them). New paper = `max(ref_id) + 1`.
 
-## Procedure
+## Quick path — adding or removing one item
+
+For a straight **add** or **remove**, use the one-command helpers (they assign the frozen
+id, insert/delete correctly, run the guards, and regenerate NDJSON + Markdown):
+
+```
+pnpm --dir site db:add <descriptor.json>   # add a paper / tool / database / dataset row
+pnpm --dir site db:remove <id>             # e.g. sw:oldtool, paper:123 (paper ids retired)
+```
+
+Descriptor examples (see `ItemAdd` in `site/scripts/db/mutate.ts`):
+
+```json
+{ "type": "database", "name": "RefMet", "url": "https://…", "group": "Pathways, Metabolism & Metabolic Models",
+  "body": "Summary: …", "topics": ["metabolic-modeling"] }
+{ "type": "paper", "raw": "Author, A. (2026). Title. *Journal*. https://doi.org/…", "label": "Author 2026",
+  "cells": [{ "method": "Deep Learning", "area": "Media Optimization" }], "topics": ["media-optimization"] }
+```
+
+Then **review the diff and commit Markdown + NDJSON together**. The method/area/topic must
+already exist (adding a new matrix row/column is a deliberate act — define it in `Taxonomy.md`
++ `Papers.md` first). For anything beyond a plain add/remove (editing an existing entry,
+re-tagging, corrections), use the full procedure below.
+
+## Procedure (full — for edits, corrections, bulk changes)
 
 1. **Materialize the DB from the committed source** (the `.db` is gitignored):
    ```
@@ -97,6 +121,8 @@ id; that's the point). Paper ids reuse the numeric public anchor and are **never
 ## CLI reference
 
 ```
+pnpm --dir site db:add <file>  # add one item from a JSON descriptor (mutate -> check -> emit)
+pnpm --dir site db:remove <id> # remove one item by frozen id (paper ids retired)
 pnpm --dir site db:bootstrap   # one-time / re-import: canonical Markdown -> DB -> NDJSON
 pnpm --dir site db:build       # NDJSON -> caail.db (materialize for editing/querying)
 pnpm --dir site db:export      # caail.db -> NDJSON (after editing the DB)

@@ -255,9 +255,11 @@ Everything else — editorial prose in those files, and all the non-catalog cano
   is the DDL; `site/caail.db` is a gitignored artifact rebuilt from the NDJSON. Every item has a
   frozen namespaced id (`paper:N`, `sw:…`, `db:…`, `ds:…`, `topic:…`) assigned once and never changed.
 - **Authoring-time only.** The DB is not in the deploy build: `pnpm build` still parses the committed
-  Markdown into `data/*.json`. The DB flow is `db:build` → edit → `db:export` → `db:emit` → `db:check`
-  / `db:verify`, then commit **Markdown + NDJSON together**. The **`caail-db-authoring`** skill owns
-  this workflow; use it whenever adding/editing a paper, tool, database, or dataset row.
+  Markdown into `data/*.json`. A plain add/remove is one command — `db:add <descriptor.json>` /
+  `db:remove <id>` (auto frozen-id, guards, regenerate); the full edit flow is `db:build` → edit →
+  `db:export` → `db:emit` → `db:check` / `db:verify`. Either way, commit **Markdown + NDJSON together**.
+  The **`caail-db-authoring`** skill owns this workflow; use it whenever adding/editing a paper, tool,
+  database, or dataset row.
 - **Guards.** A PreToolUse hook (`.claude/hooks/block-generated-edits.py`) blocks direct edits to the
   generated structured content (prose edits still allowed). `db:check` enforces id/referential integrity,
   matrix↔reference reachability, and the #81 column-list drift check; `db:verify` proves the emitted
