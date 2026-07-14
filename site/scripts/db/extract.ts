@@ -38,10 +38,11 @@ export function inlineMd(node: any): string {
 }
 
 export interface CatalogRaw {
-  name: string;   // inline markdown of the H3 link text
+  name: string;      // inline markdown of the H3 link text
   url: string;
-  group: string;  // enclosing H2 label
-  bodyMd: string; // raw body markdown after the H3, up to the next heading
+  group: string;     // enclosing H2 label
+  headingMd: string; // full H3 heading source after '### ' (preserves trailing annotations)
+  bodyMd: string;    // raw body markdown after the H3, up to the next heading
 }
 
 /**
@@ -71,6 +72,7 @@ export function extractCatalogEntries(path: string): CatalogRaw[] {
       name: (link.children ?? []).map(inlineMd).join('').trim(),
       url: link.url,
       group,
+      headingMd: (n.children as any[]).map(inlineMd).join('').trim(),
       bodyMd: s === null ? '' : src.slice(s, e),
     });
   }

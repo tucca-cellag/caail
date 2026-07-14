@@ -59,14 +59,18 @@ CREATE TABLE matrix_cells (
 );
 
 -- Catalog detail (Software.md + Databases.md share one table; type on items) --
--- `body_md` is the raw entry-body markdown; summary/summaryHtml are DERIVED.
+-- `heading_md` is the FULL raw H3 heading after '### ' (e.g. '[GNPS](url) (cross-listed)'),
+-- emitted verbatim so trailing curator annotations survive; `name`/`url` are the parsed
+-- link used for the frozen id + tally. `body_md` is the raw entry body; summary/summaryHtml
+-- are DERIVED.
 CREATE TABLE catalog (
-  item_id  TEXT PRIMARY KEY REFERENCES items(id),
-  name     TEXT NOT NULL,              -- inline markdown of the H3 link text
-  url      TEXT NOT NULL,
-  grp      TEXT NOT NULL,              -- H2 group label (seeds a topic via aliases)
-  body_md  TEXT NOT NULL,
-  ordinal  INTEGER NOT NULL
+  item_id    TEXT PRIMARY KEY REFERENCES items(id),
+  name       TEXT NOT NULL,            -- inline markdown of the H3 link text (id/tally)
+  url        TEXT NOT NULL,
+  grp        TEXT NOT NULL,            -- H2 group label (seeds a topic via aliases)
+  heading_md TEXT NOT NULL,            -- full H3 heading source after '### '
+  body_md    TEXT NOT NULL,
+  ordinal    INTEGER NOT NULL
 );
 
 -- Dataset inventory rows promoted to first-class records ----------------------

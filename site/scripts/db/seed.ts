@@ -56,14 +56,14 @@ export function seedPapers(db: Db, model: PapersData, papersPath: string): void 
 export function seedCatalog(db: Db, entries: CatalogRaw[], type: 'software' | 'database'): void {
   const insItem = db.prepare('INSERT OR IGNORE INTO items(id,type,slug) VALUES(?,?,?)');
   const insCat = db.prepare(
-    'INSERT INTO catalog(item_id,name,url,grp,body_md,ordinal) VALUES(?,?,?,?,?,?)',
+    'INSERT INTO catalog(item_id,name,url,grp,heading_md,body_md,ordinal) VALUES(?,?,?,?,?,?,?)',
   );
   const prefix = type === 'software' ? 'sw' : 'db';
   const seen = new Map<string, number>();
   entries.forEach((e, i) => {
     const id = assignId(seen, frozenSlug(e.name, prefix));
     insItem.run(id, type, id.slice(prefix.length + 1));
-    insCat.run(id, e.name, e.url, e.group, e.bodyMd, i);
+    insCat.run(id, e.name, e.url, e.group, e.headingMd, e.bodyMd, i);
   });
 }
 

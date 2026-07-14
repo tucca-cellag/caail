@@ -11,6 +11,8 @@
     "db:build": "NODE_OPTIONS='--experimental-sqlite --no-warnings' tsx scripts/db/build-db.ts",
     "db:export": "NODE_OPTIONS='--experimental-sqlite --no-warnings' tsx scripts/db/export-ndjson.ts",
     "db:emit": "NODE_OPTIONS='--experimental-sqlite --no-warnings' tsx scripts/db/emit-files.ts",
+    "db:add": "NODE_OPTIONS='--experimental-sqlite --no-warnings' tsx scripts/db/add-item.ts",
+    "db:remove": "NODE_OPTIONS='--experimental-sqlite --no-warnings' tsx scripts/db/remove-item.ts",
     "db:verify": "NODE_OPTIONS='--experimental-sqlite --no-warnings' tsx scripts/db/verify.ts",
     "db:check": "NODE_OPTIONS='--experimental-sqlite --no-warnings' tsx scripts/db/check.ts",
     "test": "NODE_OPTIONS='--experimental-sqlite --no-warnings' vitest run",
