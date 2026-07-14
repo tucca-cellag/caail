@@ -15,7 +15,7 @@ export default function TopicChips({
   const chips = chipProps(base, topics);
   if (chips.length === 0) return null;
   return (
-    <ul class="topic-chips" aria-label="Topics">
+    <ul class="topic-chips not-content" aria-label="Topics">
       {chips.map((c) => (
         <li key={c.slug}>
           <a class="topic-chip" data-theme={c.theme} href={c.href}>

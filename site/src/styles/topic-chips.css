@@ -11,6 +11,11 @@
   padding: 0;
 }
 
+/* The `not-content` class on the <ul> opts its descendants out of Starlight's prose
+ * flow spacing (the rule excludes `:where(.not-content *)`), so chips after the first
+ * don't inherit a top margin and drop within the row (#67 trap). Belt-and-suspenders. */
+.topic-chips li { margin: 0; }
+
 .topic-chip {
   --chip: var(--caail-muted);
   display: inline-flex;

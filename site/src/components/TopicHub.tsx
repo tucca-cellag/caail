@@ -46,7 +46,7 @@ function CountPills({ c }: { c: Counts }) {
 
 function ThemeIndex() {
   return (
-    <div class="th-index">
+    <div class="th-index not-content">
       <ul class="th-theme-grid">
         {themes.map((t) => (
           <li class="th-theme-card" data-theme-card data-theme={t.slug}>
@@ -69,7 +69,7 @@ function TopicView({ node }: { node: Node }) {
   const parentTheme = node.tier === 'tag' && node.theme ? bySlug.get(node.theme) : null;
 
   return (
-    <div class="th-view" data-theme={node.tier === 'theme' ? node.slug : node.theme ?? undefined}>
+    <div class="th-view not-content" data-theme={node.tier === 'theme' ? node.slug : node.theme ?? undefined}>
       <nav class="th-crumbs">
         <a href={`${BASE.replace(/\/$/, '')}/topics/`}>All themes</a>
         {parentTheme && <>{' / '}<a href={topicHref(BASE, parentTheme.slug)}>{parentTheme.label}</a></>}
