@@ -58,3 +58,22 @@
 /* Keep the card title clear of the corner badge. */
 .cb-card > .cb-name { padding-right: 4.5rem; }
 .ds-card > h3 { padding-right: 5rem; }
+
+/* License-tier filter facet on the catalog pages: the tier badges double as toggles. */
+.cb-facet {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0.4rem 0 0.2rem;
+}
+.cb-facet-label { font-size: 0.8rem; color: var(--caail-muted); }
+.cb-tier {
+  cursor: pointer;
+  font-size: 0.72rem;
+  font-family: inherit;
+  padding: 0.1rem 0.5rem;
+}
+/* Active toggle: tint the background with the tier colour (border already tier-colored). */
+.cb-tier--on { background: color-mix(in oklch, var(--lic) 20%, var(--caail-surface)); }
+.cb-tier--on::before { box-shadow: 0 0 0 2px color-mix(in oklch, var(--lic) 35%, transparent); }

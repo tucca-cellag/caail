@@ -6,7 +6,7 @@ import { groupSlug } from '../lib/catalog-groups';
 import TopicChips from './TopicChips';
 import LicenseBadge from './LicenseBadge';
 import type { TopicRef } from '../lib/topic-chips';
-import type { LicenseTier } from '../lib/licenses';
+import { LICENSE_TIERS, TIER_META, type LicenseTier } from '../lib/licenses';
 
 type Entry = {
   slug: string;
@@ -47,15 +47,24 @@ export default function CatalogBrowser({ kind }: Props) {
 
   const [q, setQ] = useState('');
   const [group, setGroup] = useState('');
+  // License-tier facet: empty set = all tiers (no filter).
+  const [tiers, setTiers] = useState<Set<LicenseTier>>(new Set());
+  const toggleTier = (t: LicenseTier) =>
+    setTiers((prev) => {
+      const next = new Set(prev);
+      next.has(t) ? next.delete(t) : next.add(t);
+      return next;
+    });
 
   const filtered = useMemo(() => {
     const ql = q.trim().toLowerCase();
     return entries.filter((e) => {
       if (group && e.group !== group) return false;
+      if (tiers.size && !tiers.has(e.tier)) return false;
       if (!ql) return true;
       return `${e.name} ${e.summary} ${e.group} ${e.license ?? ''}`.toLowerCase().includes(ql);
     });
-  }, [q, group, entries]);
+  }, [q, group, tiers, entries]);
 
   const noun = kind === 'software' ? 'tool' : 'database';
 
@@ -81,6 +90,21 @@ export default function CatalogBrowser({ kind }: Props) {
             <option value={g}>{g}</option>
           ))}
         </select>
+      </div>
+
+      <div class="cb-facet" role="group" aria-label="Filter by license tier">
+        <span class="cb-facet-label">License:</span>
+        {LICENSE_TIERS.map((t) => (
+          <button
+            type="button"
+            class={`cb-tier lic-badge lic-badge--${t}${tiers.has(t) ? ' cb-tier--on' : ''}`}
+            aria-pressed={tiers.has(t)}
+            title={TIER_META[t].blurb}
+            onClick={() => toggleTier(t)}
+          >
+            {TIER_META[t].label}
+          </button>
+        ))}
       </div>
 
       <p class="cb-count" role="status">
