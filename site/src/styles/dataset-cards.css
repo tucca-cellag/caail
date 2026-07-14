@@ -1,0 +1,24 @@
+/* dataset-cards.css — the curated dataset entries on /datasets/<page>/ pages,
+   rendered as cards by the dataset-cards remark transform so featured atlases / GEMs /
+   reference entries read as distinct, tagged items rather than a run of H3 + prose.
+   A left accent stripe encodes the entry kind; the topic chips reuse topic-chips.css. */
+
+.ds-card {
+  --accent: var(--caail-muted);
+  margin: 1.15rem 0;
+  padding: 0.9rem 1.1rem 1rem;
+  border: 1px solid var(--caail-border);
+  border-left: 3px solid var(--accent);
+  border-radius: 0.6rem;
+  background: var(--caail-surface);
+}
+
+.ds-card--atlas { --accent: var(--caail-area-cell); }
+.ds-card--gem   { --accent: var(--caail-area-eval); }
+.ds-card--other { --accent: var(--caail-muted); }
+
+/* The H3 heading sits flush at the card top; the body and chips flush at the bottom
+   (Starlight's prose flow adds heading/paragraph margins we don't want inside a card). */
+.ds-card > :first-child { margin-top: 0; }
+.ds-card > :last-child { margin-bottom: 0; }
+.ds-card > h3 { margin-top: 0; font-size: 1.1rem; }

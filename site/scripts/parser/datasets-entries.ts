@@ -35,6 +35,8 @@ function slugifyToken(token: string): string {
 /**
  * Build the datasets.json model. Anchors are unique PER PAGE (the card element id +
  * the hub #link scroll target): a base slug collision within a page gets `-2`, `-3`, …
+ * The `ds-` prefix keeps the card's id distinct from the H3's own auto-slug id (which
+ * rehype-slug derives from the same heading text), so the page has no duplicate ids.
  */
 export function buildDatasetsModel(): DatasetsData {
   const path = join(NDJSON_DIR, 'dataset_entries.ndjson');
@@ -48,7 +50,7 @@ export function buildDatasetsModel(): DatasetsData {
     const base = slugifyToken(r.name) || 'entry';
     const n = seen.get(base) ?? 0;
     seen.set(base, n + 1);
-    const anchor = n === 0 ? base : `${base}-${n + 1}`;
+    const anchor = `ds-${n === 0 ? base : `${base}-${n + 1}`}`;
     return {
       id: r.item_id,
       name: r.name,
