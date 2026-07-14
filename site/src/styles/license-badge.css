@@ -67,6 +67,10 @@
   gap: 0.4rem;
   margin: 0.4rem 0 0.2rem;
 }
+/* Reset Starlight's `.sl-markdown-content :not()+:not(){margin-top}` flow spacing
+ * (#67 trap) on the facet toggles — otherwise the 2nd+ button drops below the row.
+ * Paired with the `.not-content` class on the container. */
+.cb-facet > * { margin-top: 0; }
 .cb-facet-label { font-size: 0.8rem; color: var(--caail-muted); }
 .cb-tier {
   cursor: pointer;

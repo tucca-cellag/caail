@@ -60,6 +60,15 @@ test('the /licenses/ hub has no axe violations', async ({ page }) => {
   expect(results.violations).toEqual([]);
 });
 
+test('the license facet toggles are not offset by Starlight prose-flow margins (#67 trap)', async ({ page }) => {
+  await page.goto('./software/');
+  await expect(page.locator('.cb-tier').first()).toBeVisible();
+  // every tier toggle must have margin-top 0, or the 2nd+ button drops below the row
+  const margins = await page.locator('.cb-tier').evaluateAll((els) => els.map((e) => getComputedStyle(e).marginTop));
+  expect(margins.length).toBe(4);
+  expect(margins.every((m) => m === '0px')).toBe(true);
+});
+
 test('the catalog license facet narrows the grid to a tier', async ({ page }) => {
   await page.goto('./software/');
   const total = await page.locator('.cb-card').count();

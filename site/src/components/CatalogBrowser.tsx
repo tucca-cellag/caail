@@ -92,7 +92,7 @@ export default function CatalogBrowser({ kind }: Props) {
         </select>
       </div>
 
-      <div class="cb-facet" role="group" aria-label="Filter by license tier">
+      <div class="cb-facet not-content" role="group" aria-label="Filter by license tier">
         <span class="cb-facet-label">License:</span>
         {LICENSE_TIERS.map((t) => (
           <button
