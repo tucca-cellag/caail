@@ -28,6 +28,7 @@ import { CitationCacheSchema, type CitationCache } from './citations.js';
 import { buildMetricsModel } from './metrics.js';
 import { buildRecentModel } from './recent.js';
 import { buildTopicsModel, unresolvedTopicItems, catalogJoinKey } from './topics.js';
+import { buildDatasetsModel } from './datasets-entries.js';
 import { writeLlmsFull } from './llms-full.js';
 import {
   PapersDataSchema,
@@ -41,6 +42,7 @@ import {
   RecentSchema,
   TaxonomyDataSchema,
   TopicsDataSchema,
+  DatasetsDataSchema,
   type Counts,
 } from './types.js';
 
@@ -140,6 +142,11 @@ export function generateData(
   // card chips, and filters. (Catalog/paper entries already carry their topic refs.)
   const topics = buildTopicsModel();
 
+  // Curated dataset entries (featured atlases / GEMs / reference entries) folded from
+  // the committed dataset_entries NDJSON — drives the dataset cards + chips and their
+  // appearance as linkable items in the /topics/ hub.
+  const datasets = buildDatasetsModel();
+
   // Belt-and-suspenders: re-validate all before writing.
   PapersDataSchema.parse(model);
   CountsSchema.parse(counts);
@@ -152,6 +159,7 @@ export function generateData(
   RecentSchema.parse(recent);
   TaxonomyDataSchema.parse(taxonomy);
   TopicsDataSchema.parse(topics);
+  DatasetsDataSchema.parse(datasets);
 
   // No-drift guard: the homepage counts and the catalog/talks/graph/metrics
   // artifacts derive from the same canonical files, so their tallies must agree
@@ -188,11 +196,11 @@ export function generateData(
     );
   }
 
-  // Topic-join guard: every catalog/paper item tagged in item_topics must resolve to a
-  // parsed site entry (datasets exempt — no site JSON). Catalog resolution uses the FULL
-  // join key (type, url, normalized-name) — the same key catalogTopicLookup uses — so a
-  // name that diverges between the parser and the NDJSON fails the build here instead of
-  // silently losing that entry's topics.
+  // Topic-join guard: every catalog/paper/dataset-entry item tagged in item_topics must
+  // resolve to a parsed site entry (dataset INVENTORY rows exempt — no site JSON). Catalog
+  // resolution uses the FULL join key (type, url, normalized-name) — the same key
+  // catalogTopicLookup uses — so a name that diverges between the parser and the NDJSON
+  // fails the build here instead of silently losing that entry's topics.
   const paperIds = new Set(model.references.map((r) => `paper:${r.id}`));
   const catalogKeyList = [
     ...catalog.software.map((e) => catalogJoinKey('software', e.url, e.name)),
@@ -208,7 +216,8 @@ export function generateData(
         `(type, url, name) topic-join key — two entries normalize identically. Disambiguate their names.`,
     );
   }
-  const orphanTopics = unresolvedTopicItems(paperIds, catalogKeys);
+  const datasetEntryIds = new Set(datasets.entries.map((e) => e.id));
+  const orphanTopics = unresolvedTopicItems(paperIds, catalogKeys, datasetEntryIds);
   if (orphanTopics.length > 0) {
     throw new Error(
       `generate-data: ${orphanTopics.length} topic tag(s) point at items absent from the site ` +
@@ -293,6 +302,13 @@ export function generateData(
   writeFileSync(
     join(outDir, 'topics.json'),
     JSON.stringify(topics, null, 2) + '\n',
+    'utf-8',
+  );
+
+  // Write datasets.json (curated dataset entries + topic refs).
+  writeFileSync(
+    join(outDir, 'datasets.json'),
+    JSON.stringify(datasets, null, 2) + '\n',
     'utf-8',
   );
 

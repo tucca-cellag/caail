@@ -4,6 +4,7 @@ import { useEffect, useState } from 'preact/hooks';
 import topicsData from '../content/data/topics.json';
 import catalog from '../content/data/catalog.json';
 import papers from '../content/data/papers.json';
+import datasets from '../content/data/datasets.json';
 import { topicHref } from '../lib/topic-chips';
 
 type TopicRef = { slug: string; label: string; theme: string };
@@ -18,8 +19,10 @@ const tags = topicsData.tags as Node[];
 const bySlug = new Map<string, Node>([...themes, ...tags].map((n) => [n.slug, n]));
 const BASE = import.meta.env.BASE_URL;
 
-// Unified, clickable content items (datasets have no site JSON → count only).
-type Item = { kind: 'paper' | 'software' | 'database'; label: string; url: string; topics: TopicRef[] };
+// Unified, clickable content items. Curated dataset ENTRIES (atlases/GEMs/reference)
+// are linkable — an external home if it has one, else its in-page card anchor on the
+// species page. Dataset INVENTORY rows have no site JSON and stay count-only (below).
+type Item = { kind: 'paper' | 'software' | 'database' | 'dataset'; label: string; url: string; topics: TopicRef[] };
 const items: Item[] = [
   ...(papers.references as any[]).filter((r) => r.topics?.length).map((r) => ({
     kind: 'paper' as const,
@@ -29,9 +32,15 @@ const items: Item[] = [
   })),
   ...(catalog.software as any[]).map((e) => ({ kind: 'software' as const, label: e.name, url: e.url, topics: e.topics as TopicRef[] })),
   ...(catalog.databases as any[]).map((e) => ({ kind: 'database' as const, label: e.name, url: e.url, topics: e.topics as TopicRef[] })),
+  ...(datasets.entries as any[]).map((e) => ({
+    kind: 'dataset' as const,
+    label: e.name,
+    url: e.url ?? `${BASE}datasets/${String(e.page).toLowerCase()}/#${e.anchor}`,
+    topics: e.topics as TopicRef[],
+  })),
 ];
 
-const KIND_LABEL: Record<Item['kind'], string> = { paper: 'Papers', software: 'Software', database: 'Databases' };
+const KIND_LABEL: Record<Item['kind'], string> = { paper: 'Papers', software: 'Software', database: 'Databases', dataset: 'Datasets' };
 
 function CountPills({ c }: { c: Counts }) {
   return (
@@ -65,8 +74,10 @@ function TopicView({ node }: { node: Node }) {
   const inScope = (it: Item) =>
     node.tier === 'theme' ? it.topics.some((r) => r.theme === node.slug) : it.topics.some((r) => r.slug === node.slug);
   const scoped = items.filter(inScope);
-  const kinds: Item['kind'][] = ['paper', 'software', 'database'];
+  const kinds: Item['kind'][] = ['paper', 'software', 'database', 'dataset'];
   const parentTheme = node.tier === 'tag' && node.theme ? bySlug.get(node.theme) : null;
+  // Inventory rows = the tagged datasets NOT shown as linkable curated entries.
+  const inventoryRows = node.counts.dataset - scoped.filter((it) => it.kind === 'dataset').length;
 
   return (
     <div class="th-view not-content" data-theme={node.tier === 'theme' ? node.slug : node.theme ?? undefined}>
@@ -101,9 +112,9 @@ function TopicView({ node }: { node: Node }) {
         );
       })}
 
-      {node.counts.dataset > 0 && (
+      {inventoryRows > 0 && (
         <p class="th-datasets">
-          {node.counts.dataset} tagged dataset row{node.counts.dataset === 1 ? '' : 's'} — browse them under{' '}
+          {inventoryRows} more tagged dataset row{inventoryRows === 1 ? '' : 's'} in the species inventories — browse them under{' '}
           <a href={`${BASE.replace(/\/$/, '')}/datasets/`}>Datasets</a>.
         </p>
       )}

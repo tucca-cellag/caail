@@ -102,6 +102,37 @@ export const CatalogEntrySchema = z.object({
   topics: z.array(TopicRefSchema).default([]),
 });
 
+/**
+ * One curated dataset entry (a featured atlas / GEM / reference entry — the `### …`
+ * headings on the Datasets/ pages), surfaced as a tagged, linkable item. Built from
+ * the committed dataset_entries NDJSON offline (like topics), joined to its topic refs.
+ */
+export const DatasetEntrySchema = z.object({
+  /** frozen ds: id, e.g. "ds:chickengtex-portal" */
+  id: z.string(),
+  /** display name — the H3 link text, or the heading text when unlinked */
+  name: z.string(),
+  /** external home URL (the H3 link target); null for unlinked GEM/reference headings */
+  url: z.string().nullable(),
+  /** dataset page basename, e.g. "Chicken" — lowercased to the route slug by consumers */
+  page: z.string(),
+  /** enclosing H2 section label, e.g. "Featured atlases" */
+  section: z.string(),
+  /** soft classification driving the card badge */
+  kind: z.enum(['atlas', 'gem', 'other']),
+  /** in-page anchor slug for the card element id + the hub's #link (unique per page) */
+  anchor: z.string(),
+  /** two-tier subject tags, folded in from the committed topic NDJSON */
+  topics: z.array(TopicRefSchema).default([]),
+});
+
+/** Schema for datasets.json — the curated dataset entries across the Datasets/ pages. */
+export const DatasetsDataSchema = z.object({
+  entries: z.array(DatasetEntrySchema),
+});
+export type DatasetEntry = z.infer<typeof DatasetEntrySchema>;
+export type DatasetsData = z.infer<typeof DatasetsDataSchema>;
+
 export const TalkItemSchema = z.object({
   /** List-item link text, e.g. "Multus Biotechnology: AI-driven media optimization" */
   title: z.string(),
