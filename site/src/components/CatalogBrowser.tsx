@@ -3,6 +3,8 @@ import './catalog-browser.css';
 import { useMemo, useState } from 'preact/hooks';
 import catalog from '../content/data/catalog.json';
 import { groupSlug } from '../lib/catalog-groups';
+import TopicChips from './TopicChips';
+import type { TopicRef } from '../lib/topic-chips';
 
 type Entry = {
   slug: string;
@@ -11,6 +13,7 @@ type Entry = {
   group: string;
   summary: string;
   summaryHtml: string;
+  topics: TopicRef[];
 };
 type Kind = 'software' | 'databases';
 
@@ -115,6 +118,7 @@ export default function CatalogBrowser({ kind }: Props) {
                       // any raw HTML), so this is not a user-input injection sink.
                       dangerouslySetInnerHTML={{ __html: e.summaryHtml }}
                     />
+                    <TopicChips topics={e.topics} />
                   </article>
                 ))}
               </div>

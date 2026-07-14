@@ -1,0 +1,53 @@
+/* topic-chips.css — subject-tag pills on cards, colored by theme via the existing
+   Okabe–Ito (CVD-safe) area palette. The theme color is used as an accent border +
+   dot; text stays --caail-ink on --caail-surface for AA contrast in both themes. */
+
+.topic-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  list-style: none;
+  margin: 0.6rem 0 0;
+  padding: 0;
+}
+
+.topic-chip {
+  --chip: var(--caail-muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  padding: 0.12rem 0.5rem;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: var(--caail-ink);
+  background: var(--caail-surface);
+  border: 1px solid var(--caail-border);
+  border-left: 3px solid var(--chip);
+  border-radius: 999px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.topic-chip::before {
+  content: '';
+  width: 0.5em;
+  height: 0.5em;
+  border-radius: 50%;
+  background: var(--chip);
+  flex: none;
+}
+
+.topic-chip:hover,
+.topic-chip:focus-visible {
+  border-color: var(--chip);
+  background: var(--caail-bg);
+}
+
+/* Theme → Okabe–Ito color (mirrors the matrix area palette; metabolism reuses eval). */
+.topic-chip[data-theme='media-growth-factors']    { --chip: var(--caail-area-media); }
+.topic-chip[data-theme='cell-lines-engineering']  { --chip: var(--caail-area-cell); }
+.topic-chip[data-theme='bioprocess-scale-up']     { --chip: var(--caail-area-bioprocess); }
+.topic-chip[data-theme='scaffolding-biomaterials'] { --chip: var(--caail-area-scaffolding); }
+.topic-chip[data-theme='sensory-flavor']          { --chip: var(--caail-area-sensory); }
+.topic-chip[data-theme='ai-methods-tooling']      { --chip: var(--caail-area-tooling); }
+.topic-chip[data-theme='metabolism-modeling']     { --chip: var(--caail-area-eval); }
