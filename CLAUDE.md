@@ -233,7 +233,7 @@ The per-entry summaries in the `Datasets/` pages, `Databases.md`, `Software.md`,
 
 ## Workflow
 
-- **No build, no tests for the canonical content.** Editing the root `*.md` files is just text — preview in any Markdown viewer, or push to a branch and let GitHub render it. (The generated website under `site/` does have a build — see "Documentation site (`site/`)" below.)
+- **The structured catalog is authored in a SQLite DB, not by hand** — see "The SQLite authoring backend" below. The matrix + references in `Papers.md`, the entries in `Software.md` / `Databases.md`, and the inventory tables in `Datasets/*.md` are **generated** from `site/db/ndjson/`; don't hand-edit those regions (a hook blocks it; CI fails on drift). Prose in those files, and every other canonical file, is still just hand-authored Markdown — preview in any Markdown viewer or let GitHub render it. (The generated website under `site/` has its own build — see "Documentation site (`site/`)" below.)
 - **Branching.** Work on `<type>/<slug>` branches off `main`; open PRs against `main`. Never commit directly to `main`.
 - **Commits.** Conventional Commits, Angular flavor. Common scopes for this repo: `papers`, `software`, `data`, `resources`, `research-areas`, `docs`.
   - `feat(papers): add Cosenza 2024 multi-fidelity BO paper`
@@ -241,6 +241,31 @@ The per-entry summaries in the `Datasets/` pages, `Databases.md`, `Software.md`,
   - `fix(papers): correct DOI on reference 17`
 - **PRs.** Describe what you added and why it fits — for papers, mention the AI method(s) and research area(s) it spans (i.e. which matrix cells get updated).
 - **Shipping a branch.** When a feature branch is done, reviewed, and locally green, the **`caail-pr-wrapup`** skill (in `.claude/skills/`) is the Ship stage: it pushes, opens the PR, watches CI, merges (after confirming — the merge triggers the public Pages deploy), watches the `docs.yml` deploy to green (build + Lighthouse + deploy), verifies the live site, and cleans up the worktree/branch. It owns the CAAIL-specific gotchas (the `gh pr merge` "main already checked out" benign failure, the Lighthouse gate, which CI runs on which paths) so they don't have to be re-derived each time.
+
+## The SQLite authoring backend (structured catalog)
+
+CAAIL's **structured catalog** is authored in an in-repo SQLite DB and generated back to
+Markdown (issue #78). This covers `Papers.md` (matrix + references), `Software.md` /
+`Databases.md` (entries), and the `Datasets/*.md` `## Complete data inventory` tables.
+Everything else — editorial prose in those files, and all the non-catalog canonical files
+(`OtherResources.md`, `ReferenceWorks.md`, `AwesomeLists.md`, `Funding.md`, `ResearchAreas/`,
+`Talks.md`, `Primers/`) — stays hand-authored Markdown.
+
+- **Source of truth = `site/db/ndjson/`** (per-table PK-sorted NDJSON, committed). `site/db/schema.sql`
+  is the DDL; `site/caail.db` is a gitignored artifact rebuilt from the NDJSON. Every item has a
+  frozen namespaced id (`paper:N`, `sw:…`, `db:…`, `ds:…`, `topic:…`) assigned once and never changed.
+- **Authoring-time only.** The DB is not in the deploy build: `pnpm build` still parses the committed
+  Markdown into `data/*.json`. The DB flow is `db:build` → edit → `db:export` → `db:emit` → `db:check`
+  / `db:verify`, then commit **Markdown + NDJSON together**. The **`caail-db-authoring`** skill owns
+  this workflow; use it whenever adding/editing a paper, tool, database, or dataset row.
+- **Guards.** A PreToolUse hook (`.claude/hooks/block-generated-edits.py`) blocks direct edits to the
+  generated structured content (prose edits still allowed). `db:check` enforces id/referential integrity,
+  matrix↔reference reachability, and the #81 column-list drift check; `db:verify` proves the emitted
+  Markdown re-parses to identical parser models. In CI, `lint-papers.yml` runs `db:check` + `db:verify`
+  and a **sync guard** (`db:emit` then `git diff --exit-code`) so committed Markdown can't drift from the DB.
+- **Topics** (`topics` / `item_topics` / `aliases`) are the shared cross-content subject axis (multi-tag),
+  seeded from the existing group strings; full per-item tagging is a later curation pass. The 7 matrix
+  areas remain their own axis (a topic may link to one via `area_key`).
 
 ## Documentation site (`site/`)
 

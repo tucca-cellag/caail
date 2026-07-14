@@ -22,6 +22,14 @@ Faster to merge, and you get authorship credit in the Git history. Branch from `
 
 ## Adding a paper to `Papers.md`
 
+> **How the structured catalog is maintained.** The matrix + references in `Papers.md`, the
+> entries in `Software.md` / `Databases.md`, and the `Datasets/*.md` inventory tables are
+> **generated** from an in-repo SQLite database (issue #78); the committed Markdown is the
+> rendered output. You can still contribute exactly as described below — open an issue, or
+> open a PR editing the Markdown — and a maintainer lands it through the DB so the ids and
+> cross-references stay consistent. (Editorial prose in those files is hand-authored as
+> normal.) Maintainers: see the `caail-db-authoring` skill for the DB workflow.
+
 First decide which **kind** of paper you're adding — the file has two homes for entries:
 
 - **Primary research** (a paper applying a specific AI method to a specific cell-ag problem) → goes in the matrix + `## References` section. *Most papers go here.*
