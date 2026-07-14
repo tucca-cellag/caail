@@ -12,7 +12,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { openDb, importNdjson, type Db } from './lib.js';
-import { checkIntegrity, checkReachability, checkColumnDrift, checkTopicTiers, runChecks } from './check.js';
+import { checkIntegrity, checkReachability, checkColumnDrift, checkTopicTiers, checkCatalogHeadings, runChecks } from './check.js';
 
 const failing = (results: { label: string; ok: boolean }[], match: RegExp) =>
   results.some((r) => match.test(r.label) && !r.ok);
@@ -109,6 +109,26 @@ describe('checkTopicTiers', () => {
     const db = importNdjson(); db.exec('PRAGMA foreign_keys=OFF');
     db.prepare("INSERT INTO items(id,type,slug) VALUES('topic:z','topic','z')").run();
     expect(() => db.prepare("INSERT INTO topics(item_id,slug,label,tier,theme_slug,area_key) VALUES('topic:z','z','Z','tag',NULL,NULL)").run()).toThrow();
+  });
+});
+
+describe('checkCatalogHeadings', () => {
+  const withCatalog = () => {
+    const db = miniDb();
+    db.prepare("INSERT INTO items(id,type,slug) VALUES('sw:tool','software','tool')").run();
+    db.prepare("INSERT INTO catalog(item_id,name,url,grp,heading_md,body_md,ordinal) VALUES('sw:tool','Tool','https://x','G','[Tool](https://x)','',0)").run();
+    return db;
+  };
+  it('passes when name/url match the heading_md link (incl. a trailing annotation)', () => {
+    const db = withCatalog();
+    db.prepare("INSERT INTO items(id,type,slug) VALUES('db:gnps','database','gnps')").run();
+    db.prepare("INSERT INTO catalog(item_id,name,url,grp,heading_md,body_md,ordinal) VALUES('db:gnps','GNPS','https://gnps','G','[GNPS](https://gnps) (cross-listed)','',1)").run();
+    expect(checkCatalogHeadings(db).every((r) => r.ok)).toBe(true);
+  });
+  it('flags a url drifted from the heading_md link', () => {
+    const db = withCatalog();
+    db.prepare("UPDATE catalog SET url='https://DRIFTED' WHERE item_id='sw:tool'").run();
+    expect(failing(checkCatalogHeadings(db), /name\/url match/)).toBe(true);
   });
 });
 

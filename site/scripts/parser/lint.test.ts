@@ -217,6 +217,28 @@ describe('lint — duplicate reference id', () => {
   });
 });
 
+describe('lint — duplicate citation within a matrix cell', () => {
+  it('reports an error when a ref is cited twice in the same cell', () => {
+    const model: PapersData = {
+      ...cleanModel(),
+      cells: [makeCell('Bayesian Optimization', 'media', [1, 1])],
+      references: [makeRef({ id: 1 })],
+    };
+    const err = lint(model).errors.find((e) => /Duplicate citation.*#1/.test(e));
+    expect(err).toBeDefined();
+    expect(err).toMatch(/Bayesian Optimization × media/);
+  });
+
+  it('does NOT report when each cell cites a ref at most once', () => {
+    const model: PapersData = {
+      ...cleanModel(),
+      cells: [makeCell('Bayesian Optimization', 'media', [1, 2])],
+      references: [makeRef({ id: 1 }), makeRef({ id: 2, slug: 'ref-2' })],
+    };
+    expect(lint(model).errors.filter((e) => e.includes('Duplicate citation'))).toHaveLength(0);
+  });
+});
+
 // ---------------------------------------------------------------------------
 // Suite 5 — retired-ID gaps (Warning 4)
 // ---------------------------------------------------------------------------

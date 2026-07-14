@@ -107,9 +107,29 @@ export function checkTopicTiers(db: Db): CheckResult[] {
   return out;
 }
 
+/**
+ * Catalog consistency guard: `heading_md` is what `db:emit` writes, but the topic/license
+ * folds join on the separate `url` column (and the tally uses `name`). If a hand-edited
+ * NDJSON drifts `name`/`url` from `heading_md`'s link, emit stays correct while the folds
+ * silently mismatch and the sync guard passes clean. Assert the first link in `heading_md`
+ * equals `(name, url)` so the two can't diverge unnoticed.
+ */
+export function checkCatalogHeadings(db: Db): CheckResult[] {
+  const rows = db.prepare('SELECT item_id, name, url, heading_md FROM catalog').all() as
+    { item_id: string; name: string; url: string; heading_md: string }[];
+  const bad: string[] = [];
+  for (const r of rows) {
+    const m = /\[([^\]]*)\]\(([^)]+)\)/.exec(r.heading_md); // first markdown link in the heading
+    if (!m || m[1].trim() !== r.name || m[2].trim() !== r.url) bad.push(r.item_id);
+  }
+  return [ok('catalog: name/url match the heading_md link', bad.length === 0,
+    `mismatched: ${bad.slice(0, 5).join(', ')}`)];
+}
+
 /** Run every guard against a DB. Returns all results (ok + failing). */
 export function runChecks(db: Db, repoRoot: string = REPO_ROOT): CheckResult[] {
-  return [...checkIntegrity(db), ...checkReachability(db), ...checkColumnDrift(db, repoRoot), ...checkTopicTiers(db)];
+  return [...checkIntegrity(db), ...checkReachability(db), ...checkColumnDrift(db, repoRoot),
+    ...checkTopicTiers(db), ...checkCatalogHeadings(db)];
 }
 
 function main(): void {

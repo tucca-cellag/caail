@@ -75,6 +75,15 @@ describe.each([
     const second = addItem(db, { type, name: 'DupName', url: 'https://example.org/b', group, body: 'Summary: b.' });
     expect(second).toBe(`${prefix}:dupname-2`);
   });
+
+  it('disambiguates a THIRD collision with -3 (no UNIQUE crash on an existing -2)', () => {
+    const db = importNdjson();
+    const group = (db.prepare('SELECT grp FROM catalog WHERE item_id IN (SELECT id FROM items WHERE type=?) LIMIT 1').get(type) as any).grp;
+    addItem(db, { type, name: 'TripName', url: 'https://example.org/1', group, body: 'Summary: 1.' });
+    addItem(db, { type, name: 'TripName', url: 'https://example.org/2', group, body: 'Summary: 2.' });
+    const third = addItem(db, { type, name: 'TripName', url: 'https://example.org/3', group, body: 'Summary: 3.' });
+    expect(third).toBe(`${prefix}:tripname-3`);
+  });
 });
 
 describe('addItem — dataset', () => {
@@ -126,5 +135,20 @@ describe('removeItem', () => {
 
   it('throws on an unknown id', () => {
     expect(() => removeItem(importNdjson(), 'sw:does-not-exist')).toThrow(/no item/);
+  });
+
+  it('retires a paper ref_id so a later add NEVER reuses it', () => {
+    const db = importNdjson();
+    const cells = [{ method: anyMethod(db), area: anyArea(db) }];
+    // Add a paper (takes the current max+1), then remove it.
+    const first = addItem(db, { type: 'paper', raw: 'One, O. (2099). A. *J*. https://doi.org/10.9/1', label: 'One 2099', cells });
+    const firstRef = (db.prepare('SELECT ref_id FROM papers WHERE item_id=?').get(first) as any).ref_id;
+    removeItem(db, first);
+    expect(db.prepare('SELECT 1 FROM retired_paper_ids WHERE ref_id=?').get(firstRef)).toBeTruthy();
+    // The next add must skip the freed number, not reuse it.
+    const second = addItem(db, { type: 'paper', raw: 'Two, T. (2099). B. *J*. https://doi.org/10.9/2', label: 'Two 2099', cells });
+    const secondRef = (db.prepare('SELECT ref_id FROM papers WHERE item_id=?').get(second) as any).ref_id;
+    expect(secondRef).toBeGreaterThan(firstRef);
+    expect(second).not.toBe(first);
   });
 });

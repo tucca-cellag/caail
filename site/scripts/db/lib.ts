@@ -50,6 +50,7 @@ export function openExisting(dbPath: string): Db {
 export const TABLES_PK: Record<string, string> = {
   items: 'id',
   papers: 'ref_id',
+  retired_paper_ids: 'ref_id',
   areas: 'ordinal',
   methods: 'ordinal',
   matrix_cells: 'ordinal',
@@ -82,11 +83,23 @@ export function importNdjson(dir: string = NDJSON_DIR, dbPath = ':memory:'): Db 
   const db = openDb(dbPath);
   db.exec('PRAGMA foreign_keys = OFF');
   for (const table of Object.keys(TABLES_PK)) {
-    const text = readFileSync(join(dir, `${table}.ndjson`), 'utf-8').trim();
+    const path = join(dir, `${table}.ndjson`);
+    if (!existsSync(path)) continue; // a missing per-table file = empty table
+    const text = readFileSync(path, 'utf-8').trim();
     if (!text) continue;
+    // Column identifiers can't be parameter-bound, so a stray/mistyped NDJSON key would
+    // splice into the SQL text. Allowlist against the real schema (table names come from
+    // TABLES_PK, not the file) so a bad key fails with a clear message, not raw SQL.
+    const validCols = new Set(
+      (db.prepare(`PRAGMA table_info(${table})`).all() as { name: string }[]).map((c) => c.name),
+    );
     for (const line of text.split('\n')) {
       const row = JSON.parse(line) as Record<string, unknown>;
       const cols = Object.keys(row);
+      const bad = cols.filter((c) => !validCols.has(c));
+      if (bad.length) {
+        throw new Error(`importNdjson: ${table}.ndjson has column(s) not in the schema: ${bad.join(', ')}`);
+      }
       db.prepare(
         `INSERT INTO ${table}(${cols.join(',')}) VALUES(${cols.map(() => '?').join(',')})`,
       ).run(...cols.map((c) => row[c] as never));

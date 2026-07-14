@@ -45,7 +45,17 @@ export function seedPapers(db: Db, model: PapersData, papersPath: string): void 
 
   let ord = 0;
   for (const cell of model.cells) {
+    const seenRefs = new Set<number>();
     cell.refIds.forEach((refId, k) => {
+      // matrix_cells PK is (method, area_key, ref_id); a ref cited twice in one cell would
+      // hit a UNIQUE constraint mid-insert. Fail with a clear, actionable message instead.
+      if (seenRefs.has(refId)) {
+        throw new Error(
+          `seedPapers: reference #${refId} is cited twice in the ${cell.method} × ${cell.area} ` +
+            `matrix cell — remove the duplicate citation in Papers.md.`,
+        );
+      }
+      seenRefs.add(refId);
       insCell.run(cell.method, cell.area, refId, cell.labels[k], ord++);
     });
   }

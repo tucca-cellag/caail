@@ -38,6 +38,14 @@ CREATE TABLE papers (
   ordinal   INTEGER NOT NULL           -- document order (stable emit)
 );
 
+-- Retired paper ref_ids: a tombstone so a removed paper's numeric anchor is NEVER
+-- reused (matrix links + external bookmarks point at ref_ids by number). `removeItem`
+-- records the id here; the next `addItem` takes MAX over papers AND this table, so a
+-- freed number can't be handed to a different paper. Reachability/emit ignore it.
+CREATE TABLE retired_paper_ids (
+  ref_id INTEGER PRIMARY KEY
+);
+
 -- Matrix axes -----------------------------------------------------------------
 -- `header_md` is the raw linked markdown of the axis header/row-label, e.g.
 -- '[Media Optimization](./Taxonomy.md#media-optimization)'. It is stored verbatim

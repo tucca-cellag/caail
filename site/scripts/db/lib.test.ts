@@ -67,6 +67,14 @@ describe('importNdjson', () => {
       JSON.stringify({ item_id: 'paper:1', ref_id: 1, section: 'References', raw: 'x', code_url: null, data_url: null, ordinal: 0 }) + '\n');
     expect(() => importNdjson(dir)).toThrow(/foreign-key/i);
   });
+
+  it('rejects an NDJSON row with a column not in the schema (allowlist)', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'caail-badcol-'));
+    for (const table of Object.keys(TABLES_PK)) writeFileSync(join(dir, `${table}.ndjson`), '');
+    // a stray/mistyped key ('typ' instead of 'type') must fail clearly, not splice into SQL
+    writeFileSync(join(dir, 'items.ndjson'), JSON.stringify({ id: 'sw:x', typ: 'software', slug: 'x' }) + '\n');
+    expect(() => importNdjson(dir)).toThrow(/not in the schema.*typ/i);
+  });
 });
 
 // ---------------------------------------------------------------------------

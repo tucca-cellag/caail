@@ -9,9 +9,23 @@
  * the db:add / db:remove CLIs wrap these with export + emit + check.
  */
 
-import { assignId, frozenSlug, type Db } from './lib.js';
+import { frozenSlug, type Db } from './lib.js';
 
 const ACCESSION = /GSE\d+|PRJ[A-Z]+\d+|PXD\d+|CRA\d+|E-MTAB-\d+|SRP\d+|GSM\d+/;
+
+/**
+ * The next free namespaced id for a base slug: `base`, else `base-2`, `base-3`, …,
+ * skipping any id already in `items`. Checks existence directly (rather than
+ * reconstructing a collision counter), so it is correct even when a prior suffixed
+ * id (`sw:tool-2`) already exists and robust to slugs that themselves end in `-N`.
+ */
+function nextFreeId(db: Db, base: string): string {
+  const existing = new Set((db.prepare('SELECT id FROM items').all() as { id: string }[]).map((r) => r.id));
+  let id = base;
+  let i = 1;
+  while (existing.has(id)) { i += 1; id = `${base}-${i}`; }
+  return id;
+}
 
 export interface PaperAdd {
   type: 'paper';
@@ -67,7 +81,8 @@ export function addItem(db: Db, spec: ItemAdd): string {
   const insItem = db.prepare('INSERT INTO items(id,type,slug) VALUES(?,?,?)');
 
   if (spec.type === 'paper') {
-    const refId = nextInt(db, 'SELECT MAX(ref_id) m FROM papers');
+    // Max over live papers AND retired ids, so a removed ref_id is never handed out again.
+    const refId = nextInt(db, 'SELECT MAX(m) m FROM (SELECT MAX(ref_id) m FROM papers UNION ALL SELECT MAX(ref_id) m FROM retired_paper_ids)');
     const id = `paper:${refId}`;
     const raw = /^<a id=/.test(spec.raw) ? spec.raw : `<a id="${refId}">${refId}</a> ${spec.raw}`;
     const ord = nextInt(db, 'SELECT MAX(ordinal) m FROM papers');
@@ -86,11 +101,7 @@ export function addItem(db: Db, spec: ItemAdd): string {
 
   if (spec.type === 'software' || spec.type === 'database') {
     const prefix = spec.type === 'software' ? 'sw' : 'db';
-    const seen = new Map<string, number>();
-    for (const r of db.prepare('SELECT slug FROM items WHERE type=?').all(spec.type) as { slug: string }[]) {
-      seen.set(`${prefix}:${r.slug}`, (seen.get(`${prefix}:${r.slug}`) ?? 0) + 1);
-    }
-    const id = assignId(seen, frozenSlug(spec.name, prefix));
+    const id = nextFreeId(db, frozenSlug(spec.name, prefix));
     insItem.run(id, spec.type, id.slice(prefix.length + 1));
     db.prepare('INSERT INTO catalog(item_id,name,url,grp,heading_md,body_md,ordinal) VALUES(?,?,?,?,?,?,?)')
       .run(id, spec.name, spec.url, spec.group, `[${spec.name}](${spec.url})`, spec.body, nextInt(db, 'SELECT MAX(ordinal) m FROM catalog'));
@@ -102,11 +113,7 @@ export function addItem(db: Db, spec: ItemAdd): string {
   const joined = spec.cells.join(' ');
   const acc = joined.match(ACCESSION)?.[0];
   const seedText = acc ?? spec.cells[0].replace(/[[\]`*]/g, '').split(/\s+/).slice(0, 3).join('-');
-  const seen = new Map<string, number>();
-  for (const r of db.prepare("SELECT slug FROM items WHERE type='dataset'").all() as { slug: string }[]) {
-    seen.set(`ds:${r.slug}`, (seen.get(`ds:${r.slug}`) ?? 0) + 1);
-  }
-  const id = assignId(seen, frozenSlug(seedText, 'ds'));
+  const id = nextFreeId(db, frozenSlug(seedText, 'ds'));
   insItem.run(id, 'dataset', id.slice(3));
   db.prepare('INSERT INTO dataset_rows(item_id,page,cells_json,ordinal) VALUES(?,?,?,?)')
     .run(id, spec.page, JSON.stringify(spec.cells), nextInt(db, 'SELECT MAX(ordinal) m FROM dataset_rows'));
@@ -124,6 +131,8 @@ export function removeItem(db: Db, id: string): void {
       const ref = db.prepare('SELECT ref_id FROM papers WHERE item_id=?').get(id) as { ref_id: number };
       db.prepare('DELETE FROM matrix_cells WHERE ref_id=?').run(ref.ref_id);
       db.prepare('DELETE FROM papers WHERE item_id=?').run(id);
+      // Tombstone the numeric anchor so it is never reassigned to a different paper.
+      db.prepare('INSERT OR IGNORE INTO retired_paper_ids(ref_id) VALUES(?)').run(ref.ref_id);
       break;
     }
     case 'software':
