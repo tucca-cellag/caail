@@ -93,6 +93,26 @@ CREATE TABLE dataset_rows (
   ordinal    INTEGER NOT NULL
 );
 
+-- Curated dataset entries (the `### …` featured atlases / GEMs / reference
+-- entries under a NON-inventory section) promoted to first-class, tagged records.
+-- Catalog-shaped, but `url` is nullable (a GEM heading like '### iES1300 — …'
+-- carries no link) and it adds `section` (enclosing H2) + `kind`. `heading_md` is
+-- the full raw H3 source after '### ' (emitted verbatim, same GNPS fidelity lesson
+-- as catalog); `name`/`url` are the parsed link (or heading text) for the id + join.
+-- A `dataset` item lives in EITHER dataset_rows OR dataset_entries (never both) —
+-- enforced app-side in check.ts (checkIntegrity), sharing the ds: id namespace.
+CREATE TABLE dataset_entries (
+  item_id    TEXT PRIMARY KEY REFERENCES items(id),
+  name       TEXT NOT NULL,            -- inline markdown of the H3 link text, or the heading text when unlinked
+  url        TEXT,                     -- H3 link target; NULL for unlinked GEM/reference headings
+  page       TEXT NOT NULL,            -- dataset page basename ('Chicken', 'HumanReference')
+  section    TEXT NOT NULL,            -- enclosing H2 label ('Featured atlases')
+  kind       TEXT NOT NULL CHECK (kind IN ('atlas','gem','other')),
+  heading_md TEXT NOT NULL,            -- full H3 heading source after '### '
+  body_md    TEXT NOT NULL,
+  ordinal    INTEGER NOT NULL          -- document order across all dataset pages
+);
+
 -- Topic vocabulary — two-tier: a fixed backbone of `theme`s + earned fine `tag`s.
 -- `slug` is UNIQUE across BOTH tiers (one namespace), so a theme and a tag can never
 -- share a slug. A theme: tier='theme', theme_slug NULL, optional area_key. A fine tag:

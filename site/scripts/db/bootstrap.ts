@@ -54,7 +54,8 @@ export function main(): void {
   console.log(`  papers        ${papers.references.length} refs, ${papers.cells.length} cells, ${counts.matrix_cells} citations`);
   console.log(`  software      ${sw.length} entries`);
   console.log(`  databases     ${dbs.length} entries`);
-  console.log(`  datasets      ${counts.dataset_rows} inventory rows across ${Object.keys(dsCounts).length} pages`);
+  console.log(`  datasets      ${counts.dataset_rows} inventory rows across ${Object.keys(dsCounts.rows).length} pages`);
+  console.log(`  dataset entr. ${counts.dataset_entries} curated entries (atlases / GEMs / reference)`);
   console.log(`  topics        ${topicSummary.topics} topics, ${topicSummary.tags} item-topic tags`);
   console.log(`  retired ids   ${retired} paper tombstone(s) preserved`);
   console.log(`  -> NDJSON written to ${NDJSON_DIR}`);

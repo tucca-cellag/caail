@@ -14,9 +14,12 @@
 import { join } from 'node:path';
 import { existsSync } from 'node:fs';
 import type { PapersData } from '../parser/types.js';
-import { INVENTORY_PAGES } from '../parser/datasets.js';
+import { INVENTORY_PAGES, REFERENCE_PAGES, BENCHMARKS_PAGE } from '../parser/datasets.js';
 import { REPO_ROOT, assignId, frozenSlug, type Db } from './lib.js';
-import { extractCatalogEntries, extractInventory, extractMatrixHeaders, extractPaperBlockquotes, type CatalogRaw } from './extract.js';
+import {
+  extractCatalogEntries, extractInventory, extractMatrixHeaders, extractPaperBlockquotes,
+  extractDatasetEntries, type CatalogRaw,
+} from './extract.js';
 
 // --- papers ----------------------------------------------------------------
 
@@ -105,15 +108,47 @@ export function seedDatasetPage(db: Db, page: string, seen: Set<string>): number
   return inv.rows.length;
 }
 
-/** Seed inventory rows across every inventory-bearing dataset page. */
-export function seedDatasets(db: Db): Record<string, number> {
+/** Dataset pages that may carry curated `### …` entries (species + reference + benchmarks). */
+const ENTRY_PAGES: readonly string[] = [...INVENTORY_PAGES, ...REFERENCE_PAGES, BENCHMARKS_PAGE];
+
+/**
+ * Seed the curated `### …` dataset entries (featured atlases, GEMs, reference
+ * entries) as first-class ds: records. Shares the `seen` id set with the inventory
+ * rows so an entry and an inventory row can never collide in the ds: namespace.
+ * Returns the entry count.
+ */
+export function seedDatasetEntries(db: Db, seen: Set<string>): number {
+  const insItem = db.prepare('INSERT OR IGNORE INTO items(id,type,slug) VALUES(?,?,?)');
+  const insEntry = db.prepare(
+    'INSERT INTO dataset_entries(item_id,name,url,page,section,kind,heading_md,body_md,ordinal) VALUES(?,?,?,?,?,?,?,?,?)',
+  );
+  let ordinal = 0;
+  for (const page of ENTRY_PAGES) {
+    const path = join(REPO_ROOT, 'Datasets', `${page}.md`);
+    if (!existsSync(path)) continue;
+    for (const e of extractDatasetEntries(path)) {
+      const id = assignId(seen, frozenSlug(e.name, 'ds'));
+      insItem.run(id, 'dataset', id.slice(3));
+      insEntry.run(id, e.name, e.url, page, e.section, e.kind, e.headingMd, e.bodyMd, ordinal++);
+    }
+  }
+  return ordinal;
+}
+
+/**
+ * Seed every DB-owned dataset record: inventory rows first (frozen-id stable), then
+ * the curated `### …` entries, sharing one `seen` set so the ds: namespace stays
+ * collision-free across both tables.
+ */
+export function seedDatasets(db: Db): { rows: Record<string, number>; entries: number } {
   const seen = new Set<string>();
-  const counts: Record<string, number> = {};
+  const rows: Record<string, number> = {};
   for (const page of INVENTORY_PAGES) {
     const n = seedDatasetPage(db, page, seen);
-    if (n) counts[page] = n;
+    if (n) rows[page] = n;
   }
-  return counts;
+  const entries = seedDatasetEntries(db, seen);
+  return { rows, entries };
 }
 
 // --- topics (deterministic two-tier auto-tag seed) -------------------------
@@ -197,9 +232,16 @@ export function seedTopics(db: Db): { topics: number; tags: number } {
     for (const f of FINE_TAGS) if (f.kw.test(text)) tag.run(c.item_id, topicId(f.slug));
   }
 
-  // 5. Datasets: cell text -> theme + fine tags.
+  // 5. Dataset inventory rows: cell text -> theme + fine tags.
   for (const d of db.prepare('SELECT item_id, cells_json FROM dataset_rows').all() as any[]) {
     const text = (JSON.parse(d.cells_json) as string[]).join(' ');
+    for (const t of THEMES) if (t.kw.test(text)) tag.run(d.item_id, topicId(t.slug));
+    for (const f of FINE_TAGS) if (f.kw.test(text)) tag.run(d.item_id, topicId(f.slug));
+  }
+
+  // 6. Curated dataset entries: name + section + body -> theme + fine tags.
+  for (const d of db.prepare('SELECT item_id, name, section, body_md FROM dataset_entries').all() as any[]) {
+    const text = `${d.name} ${d.section} ${d.body_md}`;
     for (const t of THEMES) if (t.kw.test(text)) tag.run(d.item_id, topicId(t.slug));
     for (const f of FINE_TAGS) if (f.kw.test(text)) tag.run(d.item_id, topicId(f.slug));
   }
