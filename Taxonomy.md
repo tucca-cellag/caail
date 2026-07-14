@@ -210,3 +210,44 @@ Perspectives*).
 The **substrate that agents run on** — agent frameworks, knowledge graphs, tool/communication
 protocols (e.g. MCP), and orchestration ecosystems. The discriminator is that the contribution is
 plumbing/infrastructure, not an agent that itself solves a downstream task.
+
+## Subject themes (topic tags)
+
+A separate axis from the matrix: **subject-matter themes** that group *any* content type (papers,
+software, databases, datasets) for cross-content discovery. Unlike research areas — which are
+problems an AI method is applied *to* — themes are what the material is *about*, so they fit
+databases and datasets that never enter the matrix (per the Databases-vs-ResearchAreas distinction).
+Themes are a fixed backbone; finer tags live under them and are minted only when several items
+cluster. A theme may link to a matrix research area where the two align.
+
+### Media & Growth Factors
+Culture-medium composition and optimization: serum-free/serum-reduced formulations, growth factors
+and cytokines, recombinant medium proteins, and design-of-experiments for medium screening. Links to
+the *Media Optimization* research area.
+
+### Cell Lines & Engineering
+The cells themselves and their manipulation: cell-line establishment and characterization, genetic
+engineering (CRISPR, perturbation), differentiation and myogenesis, stemness/senescence, and
+single-cell atlases. Links to *Cellular Engineering*.
+
+### Bioprocess & Scale-Up
+Growing cells at scale: bioreactor design and CFD, perfusion and fed-batch, soft sensors and process
+control, and scale-up engineering. Links to *Bioprocess & Scale-Up*.
+
+### Scaffolding & Biomaterials
+The structural substrate for tissue: scaffolds, biomaterials and hydrogels, 3D bioprinting, and the
+texture/architecture of cultured tissue. Links to *Scaffolding*.
+
+### Sensory & Flavor
+The eating quality of the product and the analytics behind it: flavor and taste prediction, aroma,
+and the mass-spectrometry / chemometrics / metabolomics infrastructure used to measure them. Links to
+*Sensory Prediction*.
+
+### Metabolism & Modeling
+Metabolic knowledge and models: genome-scale metabolic models (GEMs), flux analysis, pathway and
+strain design, and metabolic-network resources. A cross-cutting subject with no single matrix column.
+
+### AI Methods & Tooling
+General-purpose AI capability and infrastructure applied across cell-ag: agents and foundation
+models, benchmarks and evaluation, frameworks, ontologies, and lookup databases/tooling. Links to
+*AI Tooling / Methodology*.
