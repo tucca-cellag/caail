@@ -16,9 +16,10 @@ import { join } from 'node:path';
 import { buildPapersModel } from '../parser/papers.js';
 import { lint } from '../parser/lint.js';
 import { parseCatalogFile } from '../parser/catalog.js';
-import { INVENTORY_PAGES } from '../parser/datasets.js';
+import { INVENTORY_PAGES, REFERENCE_PAGES } from '../parser/datasets.js';
+import { existsSync } from 'node:fs';
 import { importNdjson, REPO_ROOT, type Db } from './lib.js';
-import { extractInventory } from './extract.js';
+import { extractInventory, extractDatasetEntries } from './extract.js';
 import { emitPapersFile, emitCatalogFile, emitDatasetPage, emitMatrixTable } from './emit.js';
 import { emitAll } from './emit-files.js';
 import { removeItem } from './mutate.js';
@@ -121,6 +122,30 @@ describe('Datasets inventory round-trip', () => {
       writeFileSync(path, emitDatasetPage(db, src, page));
       expect(extractInventory(path)).toEqual(original);
     }
+  });
+});
+
+describe('Datasets curated-entry round-trip', () => {
+  it('every dataset page re-parses to an identical curated `### …` entry-set', () => {
+    let total = 0;
+    for (const page of [...INVENTORY_PAGES, ...REFERENCE_PAGES]) {
+      const src = join(REPO_ROOT, 'Datasets', `${page}.md`);
+      if (!existsSync(src)) continue;
+      const original = extractDatasetEntries(src);
+      total += original.length;
+      const path = join(TMP, `entries-${page}.md`);
+      writeFileSync(path, emitDatasetPage(db, src, page));
+      expect(extractDatasetEntries(path), `${page}.md entries drifted`).toEqual(original);
+    }
+    expect(total).toBeGreaterThan(0); // sanity: we actually exercised entries
+  });
+
+  it('emits every non-inventory ### heading line verbatim (GNPS fidelity lesson)', () => {
+    const src = join(REPO_ROOT, 'Datasets', 'Chicken.md');
+    const out = emitDatasetPage(db, src, 'Chicken');
+    // '### iES1300 — *Gallus gallus* (chicken)' — emphasis + em dash must survive.
+    expect(out).toContain('### iES1300 — *Gallus gallus* (chicken)');
+    expect(out).toContain('### [ChickenGTEx-Portal](https://chicken.farmgtex.org/)');
   });
 });
 

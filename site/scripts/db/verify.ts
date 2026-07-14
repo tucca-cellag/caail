@@ -16,9 +16,10 @@ import { join } from 'node:path';
 import { buildPapersModel } from '../parser/papers.js';
 import { lint } from '../parser/lint.js';
 import { parseCatalogFile } from '../parser/catalog.js';
-import { INVENTORY_PAGES } from '../parser/datasets.js';
+import { INVENTORY_PAGES, REFERENCE_PAGES } from '../parser/datasets.js';
+import { existsSync } from 'node:fs';
 import { importNdjson, REPO_ROOT, type Db } from './lib.js';
-import { extractInventory } from './extract.js';
+import { extractInventory, extractDatasetEntries } from './extract.js';
 import { emitPapersFile, emitCatalogFile, emitDatasetPage } from './emit.js';
 
 let failures = 0;
@@ -60,21 +61,27 @@ function verifyCatalog(db: Db, type: 'software' | 'database', file: string): voi
 }
 
 function verifyDatasets(db: Db): void {
-  console.log('\n── Dataset inventory round-trip (row-set identical) ──');
-  let pages = 0, ok = 0;
-  for (const page of INVENTORY_PAGES) {
+  console.log('\n── Dataset round-trip (inventory rows + curated entries identical) ──');
+  const pages = [...INVENTORY_PAGES, ...REFERENCE_PAGES];
+  let seen = 0, invOk = 0, entOk = 0, entryTotal = 0;
+  for (const page of pages) {
     const src = join(REPO_ROOT, 'Datasets', `${page}.md`);
-    const original = extractInventory(src);
-    if (!original) continue;
-    pages++;
+    if (!existsSync(src)) continue;
+    seen++;
+    const origInv = extractInventory(src);
+    const origEntries = extractDatasetEntries(src);
+    entryTotal += origEntries.length;
     const regenPath = join(TMP, `${page}.md`);
     writeFileSync(regenPath, emitDatasetPage(db, src, page));
-    const regen = extractInventory(regenPath);
-    const same = JSON.stringify(original) === JSON.stringify(regen);
-    if (same) ok++;
-    else check(`${page}.md inventory identical`, false, firstDiff(JSON.stringify(original), JSON.stringify(regen ?? {})));
+    const regInv = extractInventory(regenPath);
+    const regEntries = extractDatasetEntries(regenPath);
+    if (JSON.stringify(origInv) === JSON.stringify(regInv)) invOk++;
+    else check(`${page}.md inventory identical`, false, firstDiff(JSON.stringify(origInv), JSON.stringify(regInv ?? {})));
+    if (JSON.stringify(origEntries) === JSON.stringify(regEntries)) entOk++;
+    else check(`${page}.md entries identical`, false, firstDiff(JSON.stringify(origEntries), JSON.stringify(regEntries)));
   }
-  check(`all ${pages} inventory pages round-trip identically`, ok === pages, `${ok}/${pages} ok`);
+  check(`all ${seen} dataset pages: inventory round-trips identically`, invOk === seen, `${invOk}/${seen} ok`);
+  check(`all ${seen} dataset pages: ${entryTotal} curated entries round-trip identically`, entOk === seen, `${entOk}/${seen} ok`);
 }
 
 function main(): void {

@@ -9,13 +9,13 @@
  *   NODE_OPTIONS='--experimental-sqlite --no-warnings' pnpm --dir site db:emit
  */
 
-import { writeFileSync } from 'node:fs';
+import { writeFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { INVENTORY_PAGES } from '../parser/datasets.js';
+import { INVENTORY_PAGES, REFERENCE_PAGES } from '../parser/datasets.js';
 import { importNdjson, REPO_ROOT, type Db } from './lib.js';
 import { emitPapersFile, emitCatalogFile, emitDatasetPage } from './emit.js';
-import { extractInventory } from './extract.js';
+import { extractInventory, extractDatasetEntries } from './extract.js';
 
 /**
  * Write every DB-owned canonical file from `db`. Returns the repo-relative paths.
@@ -34,9 +34,13 @@ export function emitAll(db: Db, root: string = REPO_ROOT): string[] {
     { rel: 'Software.md', text: emitCatalogFile(db, join(root, 'Software.md'), 'software') },
     { rel: 'Databases.md', text: emitCatalogFile(db, join(root, 'Databases.md'), 'database') },
   ];
-  for (const page of INVENTORY_PAGES) {
+  // A dataset page is DB-owned if it has an inventory table OR curated `### …` entries —
+  // so reference pages (no inventory, entries only) are emitted too.
+  for (const page of [...INVENTORY_PAGES, ...REFERENCE_PAGES]) {
     const src = join(root, 'Datasets', `${page}.md`);
-    if (extractInventory(src)) files.push({ rel: `Datasets/${page}.md`, text: emitDatasetPage(db, src, page) });
+    if (existsSync(src) && (extractInventory(src) || extractDatasetEntries(src).length > 0)) {
+      files.push({ rel: `Datasets/${page}.md`, text: emitDatasetPage(db, src, page) });
+    }
   }
   for (const f of files) writeFileSync(join(root, f.rel), f.text);
   return files.map((f) => f.rel);
