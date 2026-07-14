@@ -27,6 +27,7 @@ import type { Root, TableRow } from 'mdast';
 import { parseMarkdown, firstTable, sectionsAfter, anchorParagraphs, labeledLinksAfter } from './markdown.js';
 import { parseApa } from './apa.js';
 import { areaKeyForLabel } from './areas.js';
+import { topicsByItemId } from './topics.js';
 import {
   PapersDataSchema,
   type PapersData,
@@ -340,7 +341,10 @@ export function buildPapersModel(papersPath: string = PAPERS_MD_PATH): PapersDat
   const { areas, methods, cells } = parseMatrix(root);
   const partials = parseReferences(root, src);
   const withCellFields = deriveCellFields(partials, cells);
-  const references = assignSlugs(withCellFields);
+  const slugged = assignSlugs(withCellFields);
+
+  const topicsById = topicsByItemId();
+  const references = slugged.map((r) => ({ ...r, topics: topicsById.get(`paper:${r.id}`) ?? [] }));
 
   const model: PapersData = { areas, methods, cells, references };
 

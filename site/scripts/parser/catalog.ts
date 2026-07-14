@@ -20,6 +20,7 @@ import type { Root, RootContent, Heading, Link, Paragraph } from 'mdast';
 
 import { parseFile } from './markdown.js';
 import { rewriteCaailLinks } from '../remark/rewrite-caail-links.js';
+import { catalogTopicLookup } from './topics.js';
 import { CatalogSchema, type Catalog, type CatalogEntry } from './types.js';
 
 // ---------------------------------------------------------------------------
@@ -217,9 +218,12 @@ export function buildCatalogModel(
   softwarePath: string = SOFTWARE_PATH,
   databasesPath: string = DATABASES_PATH,
 ): Catalog {
+  const lookup = catalogTopicLookup();
+  const attach = (entries: CatalogEntry[], type: 'software' | 'database') =>
+    entries.map((e) => ({ ...e, topics: lookup(type, e.url) }));
   const model: Catalog = {
-    software: parseCatalogFile(softwarePath, 'Software.md'),
-    databases: parseCatalogFile(databasesPath, 'Databases.md'),
+    software: attach(parseCatalogFile(softwarePath, 'Software.md'), 'software'),
+    databases: attach(parseCatalogFile(databasesPath, 'Databases.md'), 'database'),
   };
   return CatalogSchema.parse(model);
 }

@@ -31,6 +31,14 @@ export const CellSchema = z.object({
   labels: z.array(z.string()),
 });
 
+/** A topic tag attached to an item: the fine tag (or theme) + its parent theme slug. */
+export const TopicRefSchema = z.object({
+  slug: z.string(),
+  label: z.string(),
+  theme: z.string(), // parent theme slug (a theme-level tag points at itself)
+});
+export type TopicRef = z.infer<typeof TopicRefSchema>;
+
 export const ReferenceSchema = z.object({
   /** Stable numeric ID — never renumbered after assignment */
   id: z.number().int().positive(),
@@ -66,6 +74,8 @@ export const ReferenceSchema = z.object({
   hasData: z.boolean(),
   /** First-author-surname + year, with a/b disambiguation, e.g. "cosenza-2022" */
   slug: z.string(),
+  /** Two-tier subject tags (#78 topic axis), folded in from the committed topic NDJSON */
+  topics: z.array(TopicRefSchema).default([]),
 });
 
 export const CatalogEntrySchema = z.object({
@@ -88,6 +98,8 @@ export const CatalogEntrySchema = z.object({
    *  `/caail/datasets/cow/`). Rendered into the card so every reference in the
    *  canonical Markdown is surfaced and clickable. Empty when summary is empty. */
   summaryHtml: z.string(),
+  /** Two-tier subject tags (#78 topic axis), folded in from the committed topic NDJSON */
+  topics: z.array(TopicRefSchema).default([]),
 });
 
 export const TalkItemSchema = z.object({
@@ -436,6 +448,25 @@ export const RecentSchema = z.array(RecentEntrySchema);
 export const TaxonomyDataSchema = z.object({
   definitions: z.record(z.string(), z.string()),
 });
+
+/** One node in the topic tree (a theme or a fine tag) with cross-content counts. */
+export const TopicNodeSchema = z.object({
+  slug: z.string(),
+  label: z.string(),
+  tier: z.enum(['theme', 'tag']),
+  theme: z.string().nullable(), // parent theme slug (null on themes)
+  areaKey: z.string().nullable(), // matrix-area link (themes only)
+  counts: z.object({
+    paper: z.number(), software: z.number(), database: z.number(), dataset: z.number(), total: z.number(),
+  }),
+  tags: z.array(z.string()), // child fine-tag slugs (themes only; [] for tags)
+});
+export const TopicsDataSchema = z.object({
+  themes: z.array(TopicNodeSchema),
+  tags: z.array(TopicNodeSchema),
+});
+export type TopicNode = z.infer<typeof TopicNodeSchema>;
+export type TopicsData = z.infer<typeof TopicsDataSchema>;
 
 // ---------------------------------------------------------------------------
 // Inferred TypeScript types

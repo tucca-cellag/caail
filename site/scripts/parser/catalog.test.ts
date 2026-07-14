@@ -132,6 +132,18 @@ describe('buildCatalogModel — real corpus', () => {
     expect(model.databases).toHaveLength(134);
   });
 
+  it('folds topics onto entries via the (type,url) join, keyed per listing', () => {
+    // every entry carries a topics array; each ref names a real theme slug
+    for (const e of [...model.software, ...model.databases]) {
+      for (const t of e.topics) expect(typeof t.theme).toBe('string');
+    }
+    // dual-listed GNPS resolves on BOTH sides (the (type,url) key, not bare url)
+    const sw = model.software.find((e) => e.url === 'https://gnps.ucsd.edu/');
+    const db = model.databases.find((e) => e.url === 'https://gnps.ucsd.edu/');
+    expect(sw?.topics.length).toBeGreaterThan(0);
+    expect(db?.topics.length).toBeGreaterThan(0);
+  });
+
   it('passes CatalogSchema (every url valid, fields present)', () => {
     expect(CatalogSchema.safeParse(model).success).toBe(true);
   });
