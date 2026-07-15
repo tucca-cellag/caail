@@ -1,6 +1,6 @@
 ---
 name: caail-db-authoring
-description: Use when adding, editing, or removing a paper, software tool, database, or dataset row in CAAIL — the structured catalog is authored in an in-repo SQLite DB (issue #78) and the canonical Markdown (Papers.md, Software.md, Databases.md, and the Datasets/*.md inventory tables) is generated from it. Covers the edit-DB → export → emit → check → commit workflow. The DB-era successor to hand-editing the matrix and catalog files.
+description: Use when adding, editing, or removing a paper, software tool, database, dataset inventory row, or curated dataset entry (atlas/GEM/reference) in CAAIL — the structured catalog is authored in an in-repo SQLite DB (issue #78) and the canonical Markdown (Papers.md, Software.md, Databases.md, and the Datasets/*.md inventory tables + curated ### entries) is generated from it. Covers the edit-DB → export → emit → check → commit workflow. The DB-era successor to hand-editing the matrix and catalog files.
 ---
 
 # Authoring CAAIL's structured catalog via the SQLite DB
@@ -8,10 +8,10 @@ description: Use when adding, editing, or removing a paper, software tool, datab
 ## Overview
 
 CAAIL's **structured catalog** — the `Papers.md` matrix + references, the `Software.md`
-and `Databases.md` entries, and the `Datasets/*.md` inventory tables — is authored in an
-in-repo SQLite database and **generated** back to Markdown. The DB is the source of truth;
-those Markdown regions are derived and must not be hand-edited (a PreToolUse hook blocks
-structured edits; the CI sync guard fails on drift).
+and `Databases.md` entries, and the `Datasets/*.md` inventory tables + curated `### …` entries
+(featured atlases, GEMs, reference entries) — is authored in an in-repo SQLite database and
+**generated** back to Markdown. The DB is the source of truth; those Markdown regions are derived
+and must not be hand-edited (a PreToolUse hook blocks structured edits; the CI sync guard fails on drift).
 
 The DB is **authoring-time only** — it never runs in the deploy build. `pnpm build` still
 parses the committed Markdown into `data/*.json`. This skill is the *workflow* for changing
@@ -38,7 +38,15 @@ Markdown-era workflow did.
 | Software tool | `software` | `sw:<slug>` | `catalog` | `Software.md` |
 | Database / lookup resource | `database` | `db:<slug>` | `catalog` | `Databases.md` |
 | Dataset inventory row | `dataset` | `ds:<slug>` | `dataset_rows` | `Datasets/<page>.md` |
+| Dataset curated entry (atlas / GEM / reference) | `dataset` | `ds:<slug>` | `dataset_entries` | `Datasets/<page>.md` |
 | Topic (subject tag) | `topic` | `topic:<slug>` | `topics`, `item_topics`, `aliases` | — (surfaced as card chips + the `/topics/` hub) |
+
+A `dataset` item is an inventory row **or** a curated entry, never both (they share the `ds:` id
+namespace; `db:check` enforces exactly-one). A curated entry is any `### …` heading outside
+`## Complete data inventory` — the featured atlases + GEMs (species pages) and every reference-page
+entry. It carries `section` + `kind` (atlas/gem/other); its `url` is nullable (unlinked GEM headings).
+Entries are topic-tagged, rendered as `.ds-card`s with chips on `/datasets/<page>/`, and appear as
+linkable items in the `/topics/` hub; inventory rows stay count-only.
 
 Topics are **two-tier**: a fixed 7-**theme** backbone + earned **fine tags** (each `tier='tag'` under
 one `theme_slug`; theme and tag slugs share one namespace, so they must be disjoint). When tagging an
@@ -89,6 +97,10 @@ re-tagging, corrections), use the full procedure below.
      appear in ≥1 cell; a Review/Perspective goes in a non-`References` section and gets no cell.
    - **Add a tool/database:** insert `items` + `catalog(name,url,grp,body_md,ordinal)`; `name`
      is the inline markdown of the H3 link text, `body_md` the entry body.
+   - **Add a curated dataset entry:** insert `items('ds:<slug>','dataset',…)` + `dataset_entries`
+     with `page` (basename, e.g. `Chicken`), `section` (its H2), `kind` (atlas/gem/other),
+     `heading_md` (raw H3 after `### `), `body_md`, and nullable `url`. Its `ds:` slug must not
+     collide with any inventory row (`db:check` enforces a `dataset` item is in exactly one table).
    - **Tag topics:** insert `item_topics(item_id, topic_id)` (multi-tag is allowed and
      encouraged); add a new `topics` row + `aliases` if the subject is new.
 3. **Export the DB back to NDJSON** (the tracked source):

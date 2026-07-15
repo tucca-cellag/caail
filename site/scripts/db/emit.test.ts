@@ -16,9 +16,10 @@ import { join } from 'node:path';
 import { buildPapersModel } from '../parser/papers.js';
 import { lint } from '../parser/lint.js';
 import { parseCatalogFile } from '../parser/catalog.js';
-import { INVENTORY_PAGES } from '../parser/datasets.js';
+import { INVENTORY_PAGES, REFERENCE_PAGES } from '../parser/datasets.js';
+import { existsSync } from 'node:fs';
 import { importNdjson, REPO_ROOT, type Db } from './lib.js';
-import { extractInventory } from './extract.js';
+import { extractInventory, extractDatasetEntries } from './extract.js';
 import { emitPapersFile, emitCatalogFile, emitDatasetPage, emitMatrixTable } from './emit.js';
 import { emitAll } from './emit-files.js';
 import { removeItem } from './mutate.js';
@@ -55,6 +56,21 @@ describe('emit robustness (cycle 3)', () => {
     db.prepare('INSERT INTO papers(item_id,ref_id,section,raw,blockquotes_md,ordinal) VALUES(?,?,?,?,?,?)')
       .run('paper:99999', 99999, 'Ghost Section', '<a id="99999">99999</a> x', null, 99999);
     expect(() => emitPapersFile(db, join(REPO_ROOT, 'Papers.md'))).toThrow(/Ghost Section/);
+  });
+  it('throws a clear, actionable error when the source H3 count and DB entry count disagree', () => {
+    // Regression: the positional entry splice requires source non-inventory H3 count ==
+    // DB entry count. A mismatch (here 2 source H3s vs 1 DB entry — e.g. an interior entry
+    // removed from the DB but not the Markdown) must fail LOUD with counts + a fix hint,
+    // not crash on `undefined.heading_md` (old) nor silently mis-slice the wrong entry
+    // under a heading (the earlier per-item verbatim guard).
+    const src = join(TMP, 'ExtraH3.md');
+    writeFileSync(src, '## Featured atlases\n\n### [Known Atlas](https://example.com/known)\n\nKnown body.\n\n### [Unknown Extra Atlas](https://example.com/extra)\n\nExtra body.\n');
+    const fresh = importNdjson();
+    fresh.exec('PRAGMA foreign_keys=OFF');
+    fresh.prepare("INSERT INTO items(id,type,slug) VALUES('ds:known-atlas-xyz','dataset','known-atlas-xyz')").run();
+    fresh.prepare("INSERT INTO dataset_entries(item_id,name,url,page,section,kind,heading_md,body_md,ordinal) VALUES('ds:known-atlas-xyz','Known Atlas','https://example.com/known','ExtraTestPage','Featured atlases','atlas','[Known Atlas](https://example.com/known)','Known body.',0)").run();
+    expect(() => emitDatasetPage(fresh, src, 'ExtraTestPage'))
+      .toThrow(/source has 2 curated H3 entr\(ies\) but the DB has 1/);
   });
 });
 let db: Db;
@@ -121,6 +137,30 @@ describe('Datasets inventory round-trip', () => {
       writeFileSync(path, emitDatasetPage(db, src, page));
       expect(extractInventory(path)).toEqual(original);
     }
+  });
+});
+
+describe('Datasets curated-entry round-trip', () => {
+  it('every dataset page re-parses to an identical curated `### …` entry-set', () => {
+    let total = 0;
+    for (const page of [...INVENTORY_PAGES, ...REFERENCE_PAGES]) {
+      const src = join(REPO_ROOT, 'Datasets', `${page}.md`);
+      if (!existsSync(src)) continue;
+      const original = extractDatasetEntries(src);
+      total += original.length;
+      const path = join(TMP, `entries-${page}.md`);
+      writeFileSync(path, emitDatasetPage(db, src, page));
+      expect(extractDatasetEntries(path), `${page}.md entries drifted`).toEqual(original);
+    }
+    expect(total).toBeGreaterThan(0); // sanity: we actually exercised entries
+  });
+
+  it('emits every non-inventory ### heading line verbatim (GNPS fidelity lesson)', () => {
+    const src = join(REPO_ROOT, 'Datasets', 'Chicken.md');
+    const out = emitDatasetPage(db, src, 'Chicken');
+    // '### iES1300 — *Gallus gallus* (chicken)' — emphasis + em dash must survive.
+    expect(out).toContain('### iES1300 — *Gallus gallus* (chicken)');
+    expect(out).toContain('### [ChickenGTEx-Portal](https://chicken.farmgtex.org/)');
   });
 });
 

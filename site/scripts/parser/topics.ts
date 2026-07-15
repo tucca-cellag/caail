@@ -86,23 +86,31 @@ export function catalogJoinKey(type: 'software' | 'database', url: string, name:
 }
 
 /**
- * Every tagged paper/catalog item id that does NOT resolve to a parsed site entry
- * (orphan). Papers resolve by `paper:id`; a catalog item resolves iff its full join key
- * `(type, url, normalized-name)` — the SAME key `catalogTopicLookup` uses — appears in the
- * parsed catalog. (Checking the full key, not just the url, means a name that diverges
- * between the parser and the NDJSON fails the build loudly instead of silently losing its
- * topics.) Datasets are exempt — they have no site JSON. Drives the build guard.
+ * Every tagged item id that does NOT resolve to a parsed site entry (orphan). Papers
+ * resolve by `paper:id`; a catalog item resolves iff its full join key `(type, url,
+ * normalized-name)` — the SAME key `catalogTopicLookup` uses — appears in the parsed
+ * catalog. (Checking the full key, not just the url, means a name that diverges between
+ * the parser and the NDJSON fails the build loudly instead of silently losing its topics.)
+ * A curated dataset entry (`ds:`) resolves by appearing in datasets.json; dataset
+ * INVENTORY rows are exempt — they have no site JSON. Drives the build guard.
  */
-export function unresolvedTopicItems(paperIds: Set<string>, catalogKeys: Set<string>): string[] {
+export function unresolvedTopicItems(
+  paperIds: Set<string>,
+  catalogKeys: Set<string>,
+  datasetEntryIds: Set<string>,
+): string[] {
   const idToKey = new Map<string, string>();
   for (const r of readNdjson<{ item_id: string; url: string; name: string }>('catalog')) {
     const type = r.item_id.startsWith('sw:') ? 'software' : r.item_id.startsWith('db:') ? 'database' : null;
     if (type) idToKey.set(r.item_id, catalogJoinKey(type, r.url, r.name));
   }
+  const inventoryIds = new Set(readNdjson<{ item_id: string }>('dataset_rows').map((r) => r.item_id));
   const bad: string[] = [];
   for (const id of new Set(readNdjson<ItemTopicRow>('item_topics').map((r) => r.item_id))) {
     if (id.startsWith('paper:')) { if (!paperIds.has(id)) bad.push(id); }
     else if (id.startsWith('sw:') || id.startsWith('db:')) { const k = idToKey.get(id); if (!k || !catalogKeys.has(k)) bad.push(id); }
+    // A ds: tag resolves iff it is an inventory row (exempt) OR a datasets.json entry.
+    else if (id.startsWith('ds:')) { if (!inventoryIds.has(id) && !datasetEntryIds.has(id)) bad.push(id); }
   }
   return bad;
 }

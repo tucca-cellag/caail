@@ -6,11 +6,16 @@ import icon from 'astro-icon';
 import { fileURLToPath } from 'node:url';
 import { stripLeadingH1 } from './scripts/remark/strip-leading-h1.ts';
 import { rewriteCaailLinks } from './scripts/remark/rewrite-caail-links.ts';
+import { datasetCards, loadDatasetEntriesByPage } from './scripts/remark/dataset-cards.ts';
 import { CAAIL_PAGES } from './src/content/caail-pages.ts';
 
 // astro.config.mjs lives in site/ — one level up is the repo root (trailing slash)
 const REPO_ROOT = fileURLToPath(new URL('../', import.meta.url));
 const BASE = '/caail';
+
+// Curated dataset entries (datasets.json), grouped by page, loaded once for the
+// dataset-card transform. Empty when parse hasn't run yet (transform is then a no-op).
+const DATASET_ENTRIES_BY_PAGE = loadDatasetEntriesByPage();
 
 /**
  * Per-file remark wrapper that applies link-rewrite and H1-strip to the
@@ -32,6 +37,8 @@ function caailProseRemark() {
     if (!CAAIL_PAGES.byId(CAAIL_PAGES.idForSourcePath(sourcePath))) return;
     rewriteCaailLinks({ base: BASE, sourcePath })(tree);
     stripLeadingH1()(tree);
+    // Datasets/ pages: wrap the curated `### …` entries into tagged cards.
+    datasetCards({ sourcePath, entriesByPage: DATASET_ENTRIES_BY_PAGE })(tree);
   };
 }
 
@@ -172,6 +179,11 @@ export default defineConfig({
         './src/styles/fonts.css',
         './src/styles/tokens.css',
         './src/styles/starlight-overrides.css',
+        // Global so the raw-HTML dataset cards + their topic chips (injected by the
+        // dataset-cards remark transform on /datasets/ pages, not a component) style
+        // correctly. topic-chips.css otherwise only ships with the TopicChips island.
+        './src/styles/topic-chips.css',
+        './src/styles/dataset-cards.css',
       ],
       components: {
         // Append per-route schema.org JSON-LD (CollectionPage + ItemList +

@@ -127,6 +127,61 @@ export function extractMatrixHeaders(path: string): { areas: string[]; methods: 
   return { areas, methods };
 }
 
+export interface DatasetEntryRaw {
+  name: string;              // inline text of the H3 link, or the heading text when unlinked
+  url: string | null;        // H3 link target; null for unlinked GEM/reference headings
+  section: string;           // enclosing H2 label
+  kind: 'atlas' | 'gem' | 'other';
+  headingMd: string;         // full H3 heading source after '### '
+  bodyMd: string;            // raw body markdown after the H3, up to the next heading
+}
+
+/** kind heuristic from the enclosing H2 section label (soft; refined per curator). */
+function entryKind(section: string): 'atlas' | 'gem' | 'other' {
+  if (/metabolic|genome[- ]?scale|\bgem\b/i.test(section)) return 'gem';
+  if (/atlas|corpora|single[- ]?cell|perturbation/i.test(section)) return 'atlas';
+  return 'other';
+}
+
+/**
+ * Every curated `### …` dataset entry on a `Datasets/<page>.md` page — the featured
+ * atlases + GEMs (species pages) and the reference-page entries — i.e. every H3 NOT
+ * under the `## Complete data inventory` section. Unlike catalog entries, the H3 link
+ * is OPTIONAL: a bare `### iES1300 — *Gallus gallus*` GEM heading yields `url: null`.
+ */
+export function extractDatasetEntries(path: string): DatasetEntryRaw[] {
+  const src = readFileSync(path, 'utf-8');
+  const kids = parseMarkdown(src).children as any[];
+  const out: DatasetEntryRaw[] = [];
+  let section = '';
+  for (let i = 0; i < kids.length; i++) {
+    const n = kids[i];
+    if (n.type === 'heading' && n.depth === 2) { section = inlineMd(n).trim(); continue; }
+    if (n.type !== 'heading' || n.depth !== 3) continue;
+    if (section === 'Complete data inventory') continue;
+    const link = (n.children as any[]).find((c) => c.type === 'link');
+    let s: number | null = null, e = 0;
+    // Break only at the next H2/H3 — nested H4+ sub-sections (e.g. the Arc Virtual Cell
+    // Atlas umbrella's `#### Tahoe-100M` / `#### scBaseCount`) belong to THIS entry's body,
+    // not a separate entry (which the depth-3 filter above already excludes) and not the
+    // next one. Mirrors extractCatalogEntries' `depth <= 3` body boundary.
+    for (let j = i + 1; j < kids.length; j++) {
+      if (kids[j].type === 'heading' && kids[j].depth <= 3) break;
+      if (s === null) s = kids[j].position.start.offset;
+      e = kids[j].position.end.offset;
+    }
+    out.push({
+      name: (link ? (link.children ?? []).map(inlineMd).join('') : inlineMd(n)).trim(),
+      url: link ? link.url : null,
+      section,
+      kind: entryKind(section),
+      headingMd: (n.children as any[]).map(inlineMd).join('').trim(),
+      bodyMd: s === null ? '' : src.slice(s, e),
+    });
+  }
+  return out;
+}
+
 export interface Inventory { header: string[]; rows: string[][]; }
 
 /** A page's `## Complete data inventory` GFM table as markdown cell rows. */

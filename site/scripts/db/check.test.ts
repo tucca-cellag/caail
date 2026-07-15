@@ -62,6 +62,18 @@ describe('checkIntegrity', () => {
     db.prepare('INSERT INTO retired_paper_ids(ref_id) VALUES(1)').run(); // #1 tombstoned AND live
     expect(failing(checkIntegrity(db), /no retired ref_id is also live/)).toBe(true);
   });
+  it('flags a dataset item present in NEITHER detail table', () => {
+    const db = miniDb();
+    db.prepare("INSERT INTO items(id,type,slug) VALUES('ds:ghost','dataset','ghost')").run();
+    expect(failing(checkIntegrity(db), /in dataset_rows or dataset_entries/)).toBe(true);
+  });
+  it('flags a dataset item present in BOTH detail tables', () => {
+    const db = miniDb();
+    db.prepare("INSERT INTO items(id,type,slug) VALUES('ds:dup','dataset','dup')").run();
+    db.prepare("INSERT INTO dataset_rows(item_id,page,cells_json,ordinal) VALUES('ds:dup','Cow','[]',0)").run();
+    db.prepare("INSERT INTO dataset_entries(item_id,name,url,page,section,kind,heading_md,body_md,ordinal) VALUES('ds:dup','Dup',NULL,'Cow','Featured atlases','atlas','Dup','',0)").run();
+    expect(failing(checkIntegrity(db), /in both dataset_rows and dataset_entries/)).toBe(true);
+  });
 });
 
 describe('checkReachability', () => {

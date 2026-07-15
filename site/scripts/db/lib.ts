@@ -54,11 +54,12 @@ export const TABLES_PK: Record<string, string> = {
   areas: 'ordinal',
   methods: 'ordinal',
   matrix_cells: 'ordinal',
-  // ordinal restarts per file (software vs database) / per page, so it is not unique
-  // across the whole table — add item_id as a tiebreak so the NDJSON export order is a
-  // documented total order, not SQLite's incidental scan order.
+  // ordinal restarts per file (software vs database) / per page / per section, so it is
+  // not unique across the whole table — add item_id as a tiebreak so the NDJSON export
+  // order is a documented total order, not SQLite's incidental scan order.
   catalog: 'ordinal,item_id',
   dataset_rows: 'ordinal,item_id',
+  dataset_entries: 'ordinal,item_id',
   topics: 'slug',
   item_topics: 'item_id,topic_id',
   aliases: 'alias',

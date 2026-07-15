@@ -37,7 +37,8 @@ export function checkIntegrity(db: Db): CheckResult[] {
     badFormat.slice(0, 3).map((i) => i.id).join(', ')));
 
   const detailType: Array<[string, string | null]> = [
-    ['papers', 'paper'], ['catalog', null], ['dataset_rows', 'dataset'], ['topics', 'topic'],
+    ['papers', 'paper'], ['catalog', null],
+    ['dataset_rows', 'dataset'], ['dataset_entries', 'dataset'], ['topics', 'topic'],
   ];
   for (const [table, type] of detailType) {
     const orphan = db.prepare(
@@ -69,6 +70,21 @@ export function checkIntegrity(db: Db): CheckResult[] {
   ).all() as { ref_id: number }[];
   out.push(ok('no retired ref_id is also live in papers', resurrected.length === 0,
     `resurrected: ${resurrected.slice(0, 5).map((r) => '#' + r.ref_id).join(', ')}`));
+
+  // A `dataset` item lives in EXACTLY one of dataset_rows / dataset_entries — an
+  // inventory row XOR a curated entry. Both would double-count; neither is an orphan
+  // registry item. (The shared ds: seed set prevents the "both" case at seed time;
+  // this guards the committed NDJSON against hand-edits.)
+  const both = db.prepare(
+    'SELECT item_id FROM dataset_rows WHERE item_id IN (SELECT item_id FROM dataset_entries)',
+  ).all() as unknown[];
+  out.push(ok('no dataset item is in both dataset_rows and dataset_entries', both.length === 0, `${both.length} in both`));
+  const neither = db.prepare(
+    `SELECT id FROM items WHERE type='dataset'
+       AND id NOT IN (SELECT item_id FROM dataset_rows)
+       AND id NOT IN (SELECT item_id FROM dataset_entries)`,
+  ).all() as unknown[];
+  out.push(ok('every dataset item is in dataset_rows or dataset_entries', neither.length === 0, `${neither.length} in neither`));
   return out;
 }
 

@@ -161,7 +161,13 @@ export function emitCatalogFile(db: Db, srcPath: string, type: 'software' | 'dat
 
 // --- Datasets/<page>.md ----------------------------------------------------
 
-/** Regenerate only the `## Complete data inventory` table; keep narrative verbatim. */
+/**
+ * Regenerate the DB-owned structured regions of a `Datasets/<page>.md` page — the
+ * `## Complete data inventory` table AND the curated `### …` entries (featured
+ * atlases / GEMs / reference entries) — from the DB, splicing every narrative block
+ * through verbatim. Entries use stored `heading_md` (raw H3, GNPS fidelity lesson)
+ * + `body_md`, consumed in document order (== seed ordinal order).
+ */
 export function emitDatasetPage(db: Db, srcPath: string, page: string): string {
   const src = readFileSync(srcPath, 'utf-8');
   const blocks = parseMarkdown(src).children as any[];
@@ -169,22 +175,57 @@ export function emitDatasetPage(db: Db, srcPath: string, page: string): string {
   const inv = extractInventory(srcPath);
   const rows = db.prepare('SELECT cells_json FROM dataset_rows WHERE page=? ORDER BY ordinal').all(page) as
     { cells_json: string }[];
+  const entries = db.prepare('SELECT heading_md,body_md FROM dataset_entries WHERE page=? ORDER BY ordinal').all(page) as
+    { heading_md: string; body_md: string }[];
+
+  // The entry splice is POSITIONAL: the Nth non-inventory H3 in the source ↔ the Nth DB
+  // entry for this page (both document-ordered). If those counts disagree — a stale source
+  // vs an edited DB (e.g. an entry removed from the DB but not the Markdown) — a positional
+  // zip would silently emit the wrong entry under a heading. Assert up front and fail loud
+  // with an actionable message (fail-fast, like emitPapersFile's ghost-section throw) rather
+  // than mis-slice or crash on an undefined index; the curator reconciles via db:bootstrap.
+  let sec = '';
+  let srcEntryH3s = 0;
+  for (const b of blocks) {
+    if (b.type === 'heading' && b.depth === 2) { sec = inlineMd(b).trim(); continue; }
+    if (b.type === 'heading' && b.depth === 3 && sec !== 'Complete data inventory') srcEntryH3s += 1;
+  }
+  if (srcEntryH3s !== entries.length) {
+    throw new Error(
+      `emitDatasetPage(${page}): source has ${srcEntryH3s} curated H3 entr(ies) but the DB has ` +
+        `${entries.length}. Re-seed (db:bootstrap) or reconcile the DB and Markdown.`,
+    );
+  }
 
   const out: string[] = [];
   let section = '';
   let invEmitted = false; // only the FIRST table in the inventory section is DB-owned
-  for (let i = 0; i < blocks.length; i++) {
+  let entryIdx = 0;
+  for (let i = 0; i < blocks.length; ) {
     const b = blocks[i];
-    if (b.type === 'heading' && b.depth === 2) { section = inlineMd(b).trim(); out.push(sliceOf(b)); continue; }
+    if (b.type === 'heading' && b.depth === 2) { section = inlineMd(b).trim(); out.push(sliceOf(b)); i++; continue; }
+    // A curated dataset entry (any H3 outside the inventory section) — DB-owned. The count
+    // assertion above guarantees `entries[entryIdx]` is defined here.
+    if (b.type === 'heading' && b.depth === 3 && section !== 'Complete data inventory') {
+      const e = entries[entryIdx++];
+      out.push(`### ${e.heading_md}` + (e.body_md ? `\n\n${e.body_md}` : ''));
+      i++;
+      // Skip the DB-owned body blocks up to the next H2/H3. Nested H4+ sub-sections are part
+      // of THIS entry's body_md (extract captures them), so they must be skipped here too —
+      // stopping at any heading would re-emit the H4 slice on the next loop turn (double-emit).
+      while (i < blocks.length && !(blocks[i].type === 'heading' && blocks[i].depth <= 3)) i++;
+      continue;
+    }
     if (b.type === 'table' && section === 'Complete data inventory' && inv && !invEmitted) {
       invEmitted = true;
       const header = inv.header;
       const lines = [`| ${header.join(' | ')} |`, `|${'---|'.repeat(header.length)}`];
       for (const r of rows) lines.push(`| ${(JSON.parse(r.cells_json) as string[]).join(' | ')} |`);
       out.push(lines.join('\n'));
+      i++;
       continue;
     }
-    out.push(sliceOf(b));
+    out.push(sliceOf(b)); i++;
   }
   return out.join('\n\n') + '\n';
 }
