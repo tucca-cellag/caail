@@ -2,7 +2,7 @@
   "catalog": {
     "https://github.com/google-deepmind/alphafold": "10.1038/s41586-021-03819-2",
     "https://github.com/RosettaCommons/RFdiffusion": "10.1038/s41586-023-06415-8",
-    "https://github.com/CellProfiler/CellProfiler": "10.1186/gb-2006-7-10-r100",
+    "https://github.com/CellProfiler/CellProfiler": "10.1186/s12859-021-04344-9",
     "https://github.com/opencobra/cobrapy": "10.1186/1752-0509-7-74",
     "https://github.com/zakandrewking/escher": "10.1371/journal.pcbi.1004321",
     "https://github.com/cdanielmachado/carveme": "10.1093/nar/gky537"

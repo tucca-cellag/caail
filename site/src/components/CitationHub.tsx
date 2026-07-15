@@ -55,7 +55,7 @@ const items: Item[] = [
     .map((e) => ({
       kind: 'dataset' as const,
       label: e.name,
-      url: e.doi ? openalex(e.doi) : e.url ?? `${BASE}datasets/${String(e.page).toLowerCase()}/#${e.anchor}`,
+      url: e.doi ? openalex(e.doi) : e.url ?? `${BASE.replace(/\/$/, '')}/datasets/${String(e.page).toLowerCase()}/#${e.anchor}`,
       count: e.citationCount as number,
     })),
 ];
