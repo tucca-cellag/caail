@@ -13,7 +13,7 @@ import { fileURLToPath } from 'node:url';
 import { buildPapersModel } from '../parser/papers.js';
 import { openDb, exportNdjson, REPO_ROOT, NDJSON_DIR, type Db } from './lib.js';
 import { extractCatalogEntries } from './extract.js';
-import { seedPapers, seedCatalog, seedDatasets, seedTopics, seedLicenses } from './seed.js';
+import { seedPapers, seedCatalog, seedDatasets, seedTopics, seedLicenses, seedDois } from './seed.js';
 
 /**
  * Preserve retired paper-id tombstones across a re-bootstrap. They aren't in the
@@ -48,6 +48,7 @@ export function main(): void {
   const topicSummary = seedTopics(db);
   const retired = preserveRetiredPaperIds(db);
   const licenseSummary = seedLicenses(db);
+  const doiSummary = seedDois(db);
 
   const counts = exportNdjson(db, NDJSON_DIR);
 
@@ -60,6 +61,7 @@ export function main(): void {
   console.log(`  topics        ${topicSummary.topics} topics, ${topicSummary.tags} item-topic tags`);
   console.log(`  retired ids   ${retired} paper tombstone(s) preserved`);
   console.log(`  licenses      ${licenseSummary.manual} manual, ${licenseSummary.auto} auto (GitHub SPDX)`);
+  console.log(`  dois          ${doiSummary.manual} manual (associated-publication DOIs)`);
   console.log(`  -> NDJSON written to ${NDJSON_DIR}`);
 }
 
