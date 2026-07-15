@@ -260,6 +260,10 @@
     "zou-group/virtual-lab": {
       "spdx": "MIT",
       "name": "MIT License"
+    },
+    "dipizio-lab/bitter-peptide-design": {
+      "spdx": "MIT",
+      "name": "MIT License"
     }
   }
 }

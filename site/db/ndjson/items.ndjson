@@ -539,6 +539,8 @@
 {"id":"paper:282","type":"paper","slug":"282"}
 {"id":"paper:283","type":"paper","slug":"283"}
 {"id":"paper:284","type":"paper","slug":"284"}
+{"id":"paper:285","type":"paper","slug":"285"}
+{"id":"paper:286","type":"paper","slug":"286"}
 {"id":"paper:29","type":"paper","slug":"29"}
 {"id":"paper:3","type":"paper","slug":"3"}
 {"id":"paper:30","type":"paper","slug":"30"}
@@ -631,6 +633,7 @@
 {"id":"sw:biomcp","type":"software","slug":"biomcp"}
 {"id":"sw:biomni","type":"software","slug":"biomni"}
 {"id":"sw:biopragmatics-stack","type":"software","slug":"biopragmatics-stack"}
+{"id":"sw:bitter-peptide-design","type":"software","slug":"bitter-peptide-design"}
 {"id":"sw:bittersweet","type":"software","slug":"bittersweet"}
 {"id":"sw:boltz","type":"software","slug":"boltz"}
 {"id":"sw:brad","type":"software","slug":"brad"}
