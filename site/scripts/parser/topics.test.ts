@@ -3,7 +3,23 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { buildTopicsModel, topicsByItemId } from './topics.js';
+import { buildTopicsModel, topicsByItemId, catalogNameKey } from './topics.js';
+
+describe('catalogNameKey (parser mdastToString ↔ NDJSON inlineMd name normalization)', () => {
+  it('strips the inline-markdown markers inlineMd emits so both sides agree', () => {
+    // NDJSON side (inlineMd, markdown-preserving) vs parser side (mdastToString, plain)
+    expect(catalogNameKey('`FooDB`')).toBe(catalogNameKey('FooDB')); // inline code
+    expect(catalogNameKey('*Foo*')).toBe(catalogNameKey('Foo'));     // emphasis
+    expect(catalogNameKey('**Foo**')).toBe(catalogNameKey('Foo'));   // strong
+    expect(catalogNameKey('~~Foo~~')).toBe(catalogNameKey('Foo'));   // strikethrough
+  });
+  it('leaves a literal underscore intact (inlineMd never emits _emphasis_)', () => {
+    expect(catalogNameKey('cell_2_sentence')).toBe('cell_2_sentence');
+  });
+  it('is a no-op for a plain name', () => {
+    expect(catalogNameKey('AlphaFold')).toBe('AlphaFold');
+  });
+});
 
 describe('buildTopicsModel', () => {
   const m = buildTopicsModel();

@@ -46,37 +46,61 @@ export function topicsByItemId(): Map<string, TopicRef[]> {
 }
 
 /**
- * A catalog topic lookup keyed on the ORDER-INDEPENDENT content triple `(type, url, name)`.
- * `(type, url)` alone is not unique — two same-type entries can share a URL (the GFI
- * seafood databases) and would collapse onto one topic set — but adding the (plain-text)
- * `name` makes the key unique across the whole catalog (verified: 0 collisions, and no
- * entry name carries markdown, so the parser's `name` equals the NDJSON `name` exactly).
- * Being content-based, it can't drift with row order, so it is immune to every db:add /
- * db:remove / empty-then-refilled-group sequence that broke the earlier positional joins.
- * Cross-type dual-listing (sw:gnps / db:gnps) is separated by the `type` component.
+ * Normalize a catalog entry name for the topic join key, stripping the inline-markdown
+ * markers `inlineMd` emits (`` ` ``, `*`, `~` for code/emphasis/strong/strikethrough) so
+ * the NDJSON name (markdown-preserving `inlineMd`) matches the parser's name (plain-text
+ * `mdastToString`, which drops them). Underscore is NOT stripped — `inlineMd` writes
+ * emphasis as `*…*`, never `_…_`, so any `_` in a name is a literal part of the text
+ * (e.g. `cell_2_sentence`). Without this, an entry with formatted link text (e.g.
+ * `` [`FooDB`](url) ``) would key differently on the two sides and silently get no topics.
+ */
+export function catalogNameKey(name: string): string {
+  return name.replace(/[`*~]/g, '');
+}
+
+/**
+ * A catalog topic lookup keyed on the ORDER-INDEPENDENT content triple `(type, url, name)`
+ * (name normalized via `catalogNameKey`). `(type, url)` alone is not unique — two same-type
+ * entries can share a URL (the GFI seafood databases) and would collapse onto one topic set
+ * — but the name disambiguates (verified unique across all catalog rows). Being content-
+ * based, it can't drift with row order, so it is immune to every db:add / db:remove /
+ * empty-then-refilled-group sequence that broke the earlier positional joins. Cross-type
+ * dual-listing (sw:gnps / db:gnps) is separated by the `type` component.
  */
 export function catalogTopicLookup(): (type: 'software' | 'database', url: string, name: string) => TopicRef[] {
   const byId = topicsByItemId();
   const keyToId = new Map<string, string>();
+  const key = (type: string, url: string, name: string) => `${type}\x00${url}\x00${catalogNameKey(name)}`;
   for (const r of readNdjson<{ item_id: string; url: string; name: string }>('catalog')) {
     const type = r.item_id.startsWith('sw:') ? 'software' : r.item_id.startsWith('db:') ? 'database' : null;
-    if (type) keyToId.set(`${type}\x00${r.url}\x00${r.name}`, r.item_id);
+    if (type) keyToId.set(key(type, r.url, r.name), r.item_id);
   }
-  return (type, url, name) => byId.get(keyToId.get(`${type}\x00${url}\x00${name}`) ?? '') ?? [];
+  return (type, url, name) => byId.get(keyToId.get(key(type, url, name)) ?? '') ?? [];
+}
+
+/** The join key `catalogTopicLookup` uses, for building the guard's parsed-key set. */
+export function catalogJoinKey(type: 'software' | 'database', url: string, name: string): string {
+  return `${type}\x00${url}\x00${catalogNameKey(name)}`;
 }
 
 /**
  * Every tagged paper/catalog item id that does NOT resolve to a parsed site entry
- * (orphan). Papers resolve by `paper:id`; catalog by its NDJSON url appearing in the
- * parsed catalog. Datasets are exempt — they have no site JSON. Drives the build guard.
+ * (orphan). Papers resolve by `paper:id`; a catalog item resolves iff its full join key
+ * `(type, url, normalized-name)` — the SAME key `catalogTopicLookup` uses — appears in the
+ * parsed catalog. (Checking the full key, not just the url, means a name that diverges
+ * between the parser and the NDJSON fails the build loudly instead of silently losing its
+ * topics.) Datasets are exempt — they have no site JSON. Drives the build guard.
  */
-export function unresolvedTopicItems(paperIds: Set<string>, catalogUrls: Set<string>): string[] {
-  const idToUrl = new Map<string, string>();
-  for (const r of readNdjson<{ item_id: string; url: string }>('catalog')) idToUrl.set(r.item_id, r.url);
+export function unresolvedTopicItems(paperIds: Set<string>, catalogKeys: Set<string>): string[] {
+  const idToKey = new Map<string, string>();
+  for (const r of readNdjson<{ item_id: string; url: string; name: string }>('catalog')) {
+    const type = r.item_id.startsWith('sw:') ? 'software' : r.item_id.startsWith('db:') ? 'database' : null;
+    if (type) idToKey.set(r.item_id, catalogJoinKey(type, r.url, r.name));
+  }
   const bad: string[] = [];
   for (const id of new Set(readNdjson<ItemTopicRow>('item_topics').map((r) => r.item_id))) {
     if (id.startsWith('paper:')) { if (!paperIds.has(id)) bad.push(id); }
-    else if (id.startsWith('sw:') || id.startsWith('db:')) { const u = idToUrl.get(id); if (!u || !catalogUrls.has(u)) bad.push(id); }
+    else if (id.startsWith('sw:') || id.startsWith('db:')) { const k = idToKey.get(id); if (!k || !catalogKeys.has(k)) bad.push(id); }
   }
   return bad;
 }

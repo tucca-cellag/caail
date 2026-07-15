@@ -27,7 +27,7 @@ import { buildGraphModel } from './graph.js';
 import { CitationCacheSchema, type CitationCache } from './citations.js';
 import { buildMetricsModel } from './metrics.js';
 import { buildRecentModel } from './recent.js';
-import { buildTopicsModel, unresolvedTopicItems } from './topics.js';
+import { buildTopicsModel, unresolvedTopicItems, catalogJoinKey } from './topics.js';
 import { writeLlmsFull } from './llms-full.js';
 import {
   PapersDataSchema,
@@ -188,12 +188,17 @@ export function generateData(
     );
   }
 
-  // Topic-join guard: every catalog/paper item tagged in item_topics must resolve to
-  // a parsed site entry (datasets exempt — no site JSON). A miss means a topic tag
-  // points at content the site doesn't have, so its chip data would vanish.
+  // Topic-join guard: every catalog/paper item tagged in item_topics must resolve to a
+  // parsed site entry (datasets exempt — no site JSON). Catalog resolution uses the FULL
+  // join key (type, url, normalized-name) — the same key catalogTopicLookup uses — so a
+  // name that diverges between the parser and the NDJSON fails the build here instead of
+  // silently losing that entry's topics.
   const paperIds = new Set(model.references.map((r) => `paper:${r.id}`));
-  const catalogUrls = new Set([...catalog.software, ...catalog.databases].map((e) => e.url));
-  const orphanTopics = unresolvedTopicItems(paperIds, catalogUrls);
+  const catalogKeys = new Set([
+    ...catalog.software.map((e) => catalogJoinKey('software', e.url, e.name)),
+    ...catalog.databases.map((e) => catalogJoinKey('database', e.url, e.name)),
+  ]);
+  const orphanTopics = unresolvedTopicItems(paperIds, catalogKeys);
   if (orphanTopics.length > 0) {
     throw new Error(
       `generate-data: ${orphanTopics.length} topic tag(s) point at items absent from the site ` +
