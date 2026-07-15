@@ -6,12 +6,11 @@ Curated lectures, talks, and webinars on AI for cellular agriculture and adjacen
 
 ## Applied AI/ML for Cellular Agriculture
 
-Single conference and webinar talks on AI/ML applied to concrete cell-ag problems — media optimization, multi-omics integration, graph neural networks, and bioprocess scaling.
+Single conference and webinar talks on AI/ML applied to concrete cell-ag problems — media optimization, multi-omics integration, and bioprocess scaling.
 
 * [Multus Biotechnology: AI-driven media optimization](https://www.youtube.com/watch?v=CcbDBXmAiuQ)
 * [Multivariate integration of multi-omics data with mixOmics](https://www.youtube.com/watch?v=5XpmQ5X89lA)
 * [Optimizing Plant Tissue Culture Media Formulation: Modern Problems Require Modern Solutions](https://www.youtube.com/watch?v=rfn6l1huGT4)
-* [scGNN: a novel graph neural network framework](https://www.youtube.com/watch?v=peF0fTQZ3gA)
 * [Webinar 5: Scaling cellular agriculture: Bioprocessing solutions driving research and innovation](https://www.youtube.com/watch?v=1PCaCFeWVug)
 * [Upper Bound 2023: Cellular Agriculture and AI](https://www.youtube.com/watch?v=0VkeOePabZk) — New Harvest and Amii present a commissioned survey of AI and ML applications across cellular agriculture (Amii Upper Bound, 2023).
 
