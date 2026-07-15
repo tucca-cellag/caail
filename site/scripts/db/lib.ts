@@ -133,10 +133,15 @@ export function frozenSlug(name: string, prefix: string): string {
 
 /**
  * Assign a collision-free frozen id: first use of a base keeps it, later
- * collisions get `-2`, `-3`, … Mutates the `seen` counter map.
+ * collisions get `-2`, `-3`, … Mutates the `assigned` id set.
  */
-export function assignId(seen: Map<string, number>, base: string): string {
-  const n = seen.get(base) ?? 0;
-  seen.set(base, n + 1);
-  return n === 0 ? base : `${base}-${n + 1}`;
+export function assignId(assigned: Set<string>, base: string): string {
+  let id = base;
+  let i = 1;
+  // Check the derived id against every id already assigned this run — not just a per-base
+  // counter — so a suffixed candidate can't collide with a coincidentally-named distinct
+  // entry (e.g. base `gnps-2` clashing with a separate `GNPS 2` → `gnps-2`).
+  while (assigned.has(id)) { i += 1; id = `${base}-${i}`; }
+  assigned.add(id);
+  return id;
 }

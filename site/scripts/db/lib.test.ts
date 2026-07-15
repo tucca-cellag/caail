@@ -42,11 +42,19 @@ describe('frozenSlug', () => {
 
 describe('assignId', () => {
   it('keeps the base on first use and suffixes -2, -3 on collisions', () => {
-    const seen = new Map<string, number>();
+    const seen = new Set<string>();
     expect(assignId(seen, 'sw:x')).toBe('sw:x');
     expect(assignId(seen, 'sw:x')).toBe('sw:x-2');
     expect(assignId(seen, 'sw:x')).toBe('sw:x-3');
     expect(assignId(seen, 'sw:y')).toBe('sw:y');
+  });
+  it('checks the derived id against the whole assigned set, not a per-base counter', () => {
+    // db:gnps, then a distinct "GNPS 2" → db:gnps-2, then GNPS's 2nd listing must NOT
+    // re-derive db:gnps-2 (which already exists) — it skips to db:gnps-3.
+    const seen = new Set<string>();
+    expect(assignId(seen, 'db:gnps')).toBe('db:gnps');       // GNPS (1st)
+    expect(assignId(seen, 'db:gnps-2')).toBe('db:gnps-2');   // distinct "GNPS 2"
+    expect(assignId(seen, 'db:gnps')).toBe('db:gnps-3');     // GNPS (2nd) — no collision
   });
 });
 

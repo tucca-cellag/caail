@@ -25,16 +25,21 @@ import { extractInventory } from './extract.js';
  * db:remove CLIs call emitAll BEFORE exportNdjson (a throw can't desync NDJSON vs Markdown).
  */
 export function emitAll(db: Db, root: string = REPO_ROOT): string[] {
-  const written: string[] = [];
-  const write = (rel: string, text: string) => { writeFileSync(join(root, rel), text); written.push(rel); };
-  write('Papers.md', emitPapersFile(db, join(root, 'Papers.md')));
-  write('Software.md', emitCatalogFile(db, join(root, 'Software.md'), 'software'));
-  write('Databases.md', emitCatalogFile(db, join(root, 'Databases.md'), 'database'));
+  // Compute EVERY file's content first — any emitter that throws (a bad state) aborts here,
+  // before a single write — then write them all. So a failure genuinely leaves nothing on
+  // disk (not just when the failing emitter happens to run first), which is why the db:add /
+  // db:remove CLIs run emitAll before exportNdjson: a throw can't desync NDJSON vs Markdown.
+  const files: Array<{ rel: string; text: string }> = [
+    { rel: 'Papers.md', text: emitPapersFile(db, join(root, 'Papers.md')) },
+    { rel: 'Software.md', text: emitCatalogFile(db, join(root, 'Software.md'), 'software') },
+    { rel: 'Databases.md', text: emitCatalogFile(db, join(root, 'Databases.md'), 'database') },
+  ];
   for (const page of INVENTORY_PAGES) {
     const src = join(root, 'Datasets', `${page}.md`);
-    if (extractInventory(src)) write(`Datasets/${page}.md`, emitDatasetPage(db, src, page));
+    if (extractInventory(src)) files.push({ rel: `Datasets/${page}.md`, text: emitDatasetPage(db, src, page) });
   }
-  return written;
+  for (const f of files) writeFileSync(join(root, f.rel), f.text);
+  return files.map((f) => f.rel);
 }
 
 function main(): void {

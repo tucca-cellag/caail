@@ -72,7 +72,7 @@ export function seedCatalog(db: Db, entries: CatalogRaw[], type: 'software' | 'd
     'INSERT INTO catalog(item_id,name,url,grp,heading_md,body_md,ordinal) VALUES(?,?,?,?,?,?,?)',
   );
   const prefix = type === 'software' ? 'sw' : 'db';
-  const seen = new Map<string, number>();
+  const seen = new Set<string>();
   entries.forEach((e, i) => {
     const id = assignId(seen, frozenSlug(e.name, prefix));
     insItem.run(id, type, id.slice(prefix.length + 1));
@@ -85,7 +85,7 @@ export function seedCatalog(db: Db, entries: CatalogRaw[], type: 'software' | 'd
 const ACCESSION = /GSE\d+|PRJ[A-Z]+\d+|PXD\d+|CRA\d+|E-MTAB-\d+|SRP\d+|GSM\d+/;
 
 /** Seed one page's `## Complete data inventory` rows as first-class ds: records. */
-export function seedDatasetPage(db: Db, page: string, seen: Map<string, number>): number {
+export function seedDatasetPage(db: Db, page: string, seen: Set<string>): number {
   const path = join(REPO_ROOT, 'Datasets', `${page}.md`);
   if (!existsSync(path)) return 0;
   const inv = extractInventory(path);
@@ -107,7 +107,7 @@ export function seedDatasetPage(db: Db, page: string, seen: Map<string, number>)
 
 /** Seed inventory rows across every inventory-bearing dataset page. */
 export function seedDatasets(db: Db): Record<string, number> {
-  const seen = new Map<string, number>();
+  const seen = new Set<string>();
   const counts: Record<string, number> = {};
   for (const page of INVENTORY_PAGES) {
     const n = seedDatasetPage(db, page, seen);

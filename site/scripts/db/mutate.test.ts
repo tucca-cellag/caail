@@ -50,11 +50,15 @@ describe('addItem — paper', () => {
     const raw = (db.prepare('SELECT raw FROM papers WHERE item_id=?').get(id) as any).raw;
     expect(raw).toMatch(/^<a id="\d+">\d+<\/a> No, Anchor\./);
   });
-  it('does not add a SECOND anchor to a raw already anchored with odd whitespace (C4)', () => {
+  it('re-anchors a pre-anchored raw with the AUTHORITATIVE assigned id, not the caller’s (C12)', () => {
     const db = importNdjson();
-    const id = addItem(db, { type: 'paper', raw: '<a  id="999">999</a> Weird, W. (2099). X. *J*.', label: 'Weird 2099', cells: [{ method: anyMethod(db), area: anyArea(db) }] });
+    const refId = (db.prepare('SELECT MAX(ref_id) m FROM papers').get() as any).m + 1;
+    // caller pasted a stale `id="7"` — it must be replaced with the assigned refId, not kept
+    const id = addItem(db, { type: 'paper', raw: '<a  id="7">7</a> Weird, W. (2099). X. *J*.', label: 'Weird 2099', cells: [{ method: anyMethod(db), area: anyArea(db) }] });
     const raw = (db.prepare('SELECT raw FROM papers WHERE item_id=?').get(id) as any).raw;
-    expect((raw.match(/<a\s+id=/g) ?? []).length).toBe(1); // exactly one anchor, not two
+    expect((raw.match(/<a\s+id=/g) ?? []).length).toBe(1);   // exactly one anchor
+    expect(raw).toMatch(new RegExp(`^<a id="${refId}">${refId}</a> Weird, W\\.`)); // == refId
+    expect(raw).not.toContain('id="7"');                     // stale id stripped
   });
   it('accepts extra blockquote labels beyond Code/Data (e.g. Models) (C4)', () => {
     const db = importNdjson();
@@ -127,6 +131,16 @@ describe('addItem — validation', () => {
     const db = importNdjson();
     expect(() => addItem(db, { type: 'software', name: 'T', url: 'u', group: 'g', body: 'b', topics: ['no-such-topic'] }))
       .toThrow(/unknown topic/);
+  });
+  it('rolls back the whole insert when a paper cell/topic throws mid-sequence (C12 SAVEPOINT)', () => {
+    const db = importNdjson();
+    const items = (db.prepare('SELECT COUNT(*) n FROM items').get() as any).n;
+    const papers = (db.prepare('SELECT COUNT(*) n FROM papers').get() as any).n;
+    // tagTopics throws AFTER items/papers/matrix_cells are inserted — the SAVEPOINT must undo them.
+    expect(() => addItem(db, { type: 'paper', raw: 'Roll, R. (2099). X. *J*.', label: 'Roll 2099', cells: [{ method: anyMethod(db), area: anyArea(db) }], topics: ['no-such-topic'] }))
+      .toThrow(/unknown topic/);
+    expect((db.prepare('SELECT COUNT(*) n FROM items').get() as any).n).toBe(items);   // no orphan item row
+    expect((db.prepare('SELECT COUNT(*) n FROM papers').get() as any).n).toBe(papers);  // no orphan papers row
   });
   it('rejects a paper in a section with no citation in Papers.md (would drop on emit)', () => {
     const db = importNdjson();

@@ -78,8 +78,27 @@ function areaKey(db: Db, area: string): string {
   throw new Error(`addItem: no matrix area '${area}'. Existing columns are authored in Taxonomy.md + Papers.md.`);
 }
 
-/** Insert an item and its detail rows. Returns the frozen id assigned. */
+/**
+ * Insert an item and its detail rows atomically. Wraps the multi-statement insert in a
+ * SAVEPOINT (mirroring removeItem), so a mid-sequence throw — an unknown method/area/topic
+ * after items/papers rows are already inserted — rolls back instead of leaving partial
+ * state (matters for any caller that reuses one Db handle across several addItem calls).
+ */
 export function addItem(db: Db, spec: ItemAdd): string {
+  db.exec('SAVEPOINT add_item');
+  try {
+    const id = addItemImpl(db, spec);
+    db.exec('RELEASE add_item');
+    return id;
+  } catch (err) {
+    db.exec('ROLLBACK TO add_item');
+    db.exec('RELEASE add_item');
+    throw err;
+  }
+}
+
+/** Returns the frozen id assigned. */
+function addItemImpl(db: Db, spec: ItemAdd): string {
   const insItem = db.prepare('INSERT INTO items(id,type,slug) VALUES(?,?,?)');
 
   if (spec.type === 'paper') {
@@ -96,9 +115,12 @@ export function addItem(db: Db, spec: ItemAdd): string {
     // Max over live papers AND retired ids, so a removed ref_id is never handed out again.
     const refId = nextInt(db, 'SELECT MAX(m) m FROM (SELECT MAX(ref_id) m FROM papers UNION ALL SELECT MAX(ref_id) m FROM retired_paper_ids)');
     const id = `paper:${refId}`;
-    // Match the parser's whitespace-tolerant anchor test, so a pre-anchored `raw` with
-    // non-canonical whitespace (`<a  id="…">`) isn't given a second, duplicate anchor.
-    const raw = /^<a\s+id="\d+">/.test(spec.raw) ? spec.raw : `<a id="${refId}">${refId}</a> ${spec.raw}`;
+    // Always anchor with the AUTHORITATIVE assigned refId: strip any leading `<a id="N">`
+    // the caller supplied (a copy-pasted template may carry a stale id) and re-prefix.
+    // Trusting a caller's id would desync the matrix (which links by refId) from the
+    // literal anchor and could duplicate an existing id — invisible to the DB-column guards.
+    const body = spec.raw.replace(/^<a\s+id="\d+">\s*\d*\s*<\/a>\s*/, '');
+    const raw = `<a id="${refId}">${refId}</a> ${body}`;
     const ord = nextInt(db, 'SELECT MAX(ordinal) m FROM papers');
     // Build the verbatim trailing-blockquote run: the typed Code/Data inputs, then any
     // extra `> **Label**: …` lines (e.g. `> **Models**:`) so db:add isn't limited to two labels.
