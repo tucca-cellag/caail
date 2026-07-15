@@ -15,13 +15,15 @@ import { fileURLToPath } from 'node:url';
 import { DatasetsDataSchema, type DatasetsData, type DatasetEntry } from './types.js';
 import { topicsByItemId } from './topics.js';
 import { licenseInfo } from './licenses.js';
+import { citationInfo, loadCitedByCounts } from './citation-counts.js';
 
 const NDJSON_DIR = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'db', 'ndjson');
 
 interface EntryRow {
   item_id: string; name: string; url: string | null; page: string;
   section: string; kind: 'atlas' | 'gem' | 'other'; heading_md: string; body_md: string;
-  license: string | null; license_source: 'auto' | 'manual' | null; ordinal: number;
+  license: string | null; license_source: 'auto' | 'manual' | null;
+  doi: string | null; doi_source: 'auto' | 'manual' | null; ordinal: number;
 }
 
 /** lowercase, spaces→`-`, strip all but [a-z0-9-], collapse repeats (mirrors catalog). */
@@ -58,6 +60,7 @@ export function buildDatasetsModel(): DatasetsData {
   const text = existsSync(path) ? readFileSync(path, 'utf-8').trim() : '';
   const rows = text ? text.split('\n').map((l) => JSON.parse(l) as EntryRow) : [];
   const byId = topicsByItemId();
+  const counts = loadCitedByCounts();
 
   const usedPerPage = new Map<string, Set<string>>();
   const entries: DatasetEntry[] = rows.map((r) => {
@@ -73,6 +76,7 @@ export function buildDatasetsModel(): DatasetsData {
       anchor,
       topics: byId.get(r.item_id) ?? [],
       ...licenseInfo(r.license, r.license_source),
+      ...citationInfo(r.doi, r.doi_source, counts),
     };
   });
 

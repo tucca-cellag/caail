@@ -2,11 +2,14 @@
  * fetch-citations.ts — refreshes citation-cache.json from OpenAlex.
  *
  * MANUAL / opt-in (`pnpm fetch:citations`). This is the ONLY parser script that
- * touches the network: it looks up each Papers.md DOI in OpenAlex and records
- * the work's OpenAlex id + its `referenced_works` list. graph.ts then intersects
- * those lists against the corpus at parse time (offline) to derive in-corpus
- * citation edges — so `pnpm parse` / `pnpm build` stay deterministic and
- * network-free, and you only re-run this when papers are added.
+ * touches the network: it looks up each DOI (Papers.md references plus the
+ * associated-publication DOIs on catalog + dataset entries) in OpenAlex and records
+ * the work's OpenAlex id, its `referenced_works` list, and its global
+ * `cited_by_count`. graph.ts intersects the reference lists against the corpus at
+ * parse time (offline) to derive in-corpus citation edges, and the parser folds the
+ * `cited_by_count` onto every content type for the "cited by N" badge — so
+ * `pnpm parse` / `pnpm build` stay deterministic and network-free, and you only
+ * re-run this when papers/DOIs are added.
  *
  * Politeness: queries are batched ~50 DOIs per request (≈4 requests for the
  * whole corpus). Set OPENALEX_MAILTO=<contact> to use OpenAlex's faster "polite
@@ -16,11 +19,27 @@
  * the file write + DOI gathering happen only under the isMain CLI guard.
  */
 
-import { writeFileSync } from 'node:fs';
+import { writeFileSync, readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import { buildPapersModel } from './papers.js';
 import { doiKey, type CitationCache } from './citations.js';
+
+/**
+ * Read the `doi` column from a committed NDJSON table (catalog / dataset_entries), so
+ * the fetch resolves counts for tool/dataset DOIs too, not just papers. Read as plain
+ * files (no node:sqlite import) since this script runs without --experimental-sqlite.
+ */
+function ndjsonDois(file: string): string[] {
+  const path = fileURLToPath(new URL(`../../db/ndjson/${file}`, import.meta.url));
+  if (!existsSync(path)) return [];
+  const text = readFileSync(path, 'utf-8').trim();
+  if (!text) return [];
+  return text
+    .split('\n')
+    .map((l) => (JSON.parse(l) as { doi?: string | null }).doi)
+    .filter((d): d is string => !!d);
+}
 
 /** OpenAlex works endpoint. */
 const OPENALEX_WORKS = 'https://api.openalex.org/works';
@@ -52,6 +71,7 @@ type OpenAlexWork = {
   id: string;
   doi: string | null;
   referenced_works?: string[];
+  cited_by_count?: number;
 };
 
 /**
@@ -79,7 +99,7 @@ export async function fetchCitationCache(
     const filter = encodeURIComponent(`doi:${batch.join('|')}`);
     const url =
       `${OPENALEX_WORKS}?filter=${filter}` +
-      `&select=id,doi,referenced_works&per-page=${BATCH_SIZE}${mailtoParam()}`;
+      `&select=id,doi,referenced_works,cited_by_count&per-page=${BATCH_SIZE}${mailtoParam()}`;
 
     const res = await fetch(url, { headers: { 'User-Agent': userAgent() } });
     if (!res.ok) {
@@ -94,6 +114,7 @@ export async function fetchCitationCache(
       works[key] = {
         openalexId: w.id,
         referencedWorks: w.referenced_works ?? [],
+        citedByCount: w.cited_by_count ?? null,
       };
     }
     log(
@@ -116,11 +137,15 @@ if (isMain) {
   (async () => {
     try {
       const model = buildPapersModel();
-      const dois = model.references.map((r) => r.doi);
-      const withDoi = dois.filter((d) => d !== null).length;
+      const dois = [
+        ...model.references.map((r) => r.doi),
+        ...ndjsonDois('catalog.ndjson'),
+        ...ndjsonDois('dataset_entries.ndjson'),
+      ];
+      const withDoi = dois.filter((d) => d != null).length;
       // eslint-disable-next-line no-console
       console.log(
-        `fetch:citations — querying OpenAlex for ${withDoi} DOIs ` +
+        `fetch:citations — querying OpenAlex for ${withDoi} DOIs (papers + catalog + dataset entries) ` +
           `(${process.env.OPENALEX_MAILTO ? 'polite pool' : 'common pool; set OPENALEX_MAILTO for the polite pool'})`,
       );
       const cache = await fetchCitationCache(dois, (m) =>
