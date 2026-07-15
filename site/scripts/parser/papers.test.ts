@@ -148,7 +148,7 @@ describe('buildPapersModel — real Papers.md', () => {
 
   it('has 244 references', () => {
     // current Papers.md reference count; bump when refs are added.
-    expect(model.references.length).toBe(280);
+    expect(model.references.length).toBe(281);
   });
 
   // Ground truth (bump when refs change): 78 DISTINCT refs with a code URL and
@@ -157,8 +157,8 @@ describe('buildPapersModel — real Papers.md', () => {
   it('has 78 refs with a code URL, consistent with hasCode', () => {
     const withCodeUrl = model.references.filter((r) => r.codeUrl !== null).length;
     const withHasCode = model.references.filter((r) => r.hasCode).length;
-    expect(withCodeUrl).toBe(86);
-    expect(withHasCode).toBe(86);
+    expect(withCodeUrl).toBe(87);
+    expect(withHasCode).toBe(87);
   });
 
   it('has 10 refs with an absolute data URL', () => {

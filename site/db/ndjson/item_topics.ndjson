@@ -1061,6 +1061,8 @@
 {"item_id":"paper:280","topic_id":"topic:media-optimization"}
 {"item_id":"paper:281","topic_id":"topic:bioreactor-scale-up"}
 {"item_id":"paper:283","topic_id":"topic:scaffolds-biomaterials"}
+{"item_id":"paper:285","topic_id":"topic:flavor-sensory"}
+{"item_id":"paper:285","topic_id":"topic:sensory-flavor"}
 {"item_id":"paper:29","topic_id":"topic:bioprocess-scale-up"}
 {"item_id":"paper:29","topic_id":"topic:bioreactor-scale-up"}
 {"item_id":"paper:3","topic_id":"topic:media-growth-factors"}
@@ -1210,6 +1212,8 @@
 {"item_id":"sw:biomni","topic_id":"topic:ai-agents"}
 {"item_id":"sw:biomni","topic_id":"topic:ai-methods-tooling"}
 {"item_id":"sw:biopragmatics-stack","topic_id":"topic:ai-methods-tooling"}
+{"item_id":"sw:bitter-peptide-design","topic_id":"topic:flavor-sensory"}
+{"item_id":"sw:bitter-peptide-design","topic_id":"topic:sensory-flavor"}
 {"item_id":"sw:bittersweet","topic_id":"topic:flavor-sensory"}
 {"item_id":"sw:bittersweet","topic_id":"topic:sensory-flavor"}
 {"item_id":"sw:boltz","topic_id":"topic:cell-line-engineering"}
