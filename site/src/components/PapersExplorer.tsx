@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import data from '../content/data/papers.json';
 import taxonomy from '../content/data/taxonomy.json';
 import TopicChips from './TopicChips';
+import CitationBadge from './CitationBadge';
 import type { TopicRef } from '../lib/topic-chips';
 
 type Area = { key: string; label: string };
@@ -15,6 +16,7 @@ type Ref = {
   doi: string | null; codeUrl: string | null; dataUrl: string | null;
   isPrimary: boolean; hasCode: boolean; hasData: boolean;
   slug: string; methods: string[]; areas: string[]; topics: TopicRef[];
+  citedByOpenAlex: number | null;
 };
 
 const areas = data.areas as Area[];
@@ -196,6 +198,7 @@ export default function PapersExplorer() {
         {r.doi && <a class="px-bdg doi" href={`https://doi.org/${r.doi}`}>{r.doi}</a>}
         {r.codeUrl && <a class="px-bdg code" href={r.codeUrl}>⟨⟩ Code</a>}
         {r.dataUrl && <a class="px-bdg data" href={r.dataUrl}>▤ Data</a>}
+        <CitationBadge doi={r.doi} citationCount={r.citedByOpenAlex} />
       </div>
       <TopicChips topics={r.topics} />
     </div>

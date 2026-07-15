@@ -5,6 +5,7 @@ import catalog from '../content/data/catalog.json';
 import { groupSlug } from '../lib/catalog-groups';
 import TopicChips from './TopicChips';
 import LicenseBadge from './LicenseBadge';
+import CitationBadge from './CitationBadge';
 import type { TopicRef } from '../lib/topic-chips';
 import { LICENSE_TIERS, TIER_META, type LicenseTier } from '../lib/licenses';
 
@@ -19,6 +20,9 @@ type Entry = {
   license: string | null;
   licenseSource: 'auto' | 'manual' | null;
   tier: LicenseTier;
+  doi: string | null;
+  doiSource: 'auto' | 'manual' | null;
+  citationCount: number | null;
 };
 type Kind = 'software' | 'databases';
 
@@ -55,16 +59,23 @@ export default function CatalogBrowser({ kind }: Props) {
       next.has(t) ? next.delete(t) : next.add(t);
       return next;
     });
+  // "Most cited" facet: filter to entries with an OpenAlex count, ordered by count desc
+  // (within each group, since the display stays grouped by area).
+  const [citedOnly, setCitedOnly] = useState(false);
+  const anyCited = useMemo(() => entries.some((e) => e.citationCount != null), [entries]);
 
   const filtered = useMemo(() => {
     const ql = q.trim().toLowerCase();
-    return entries.filter((e) => {
+    const list = entries.filter((e) => {
       if (group && e.group !== group) return false;
       if (tiers.size && !tiers.has(e.tier)) return false;
+      if (citedOnly && e.citationCount == null) return false;
       if (!ql) return true;
       return `${e.name} ${e.summary} ${e.group} ${e.license ?? ''}`.toLowerCase().includes(ql);
     });
-  }, [q, group, tiers, entries]);
+    if (citedOnly) list.sort((a, b) => (b.citationCount ?? 0) - (a.citationCount ?? 0));
+    return list;
+  }, [q, group, tiers, citedOnly, entries]);
 
   const noun = kind === 'software' ? 'tool' : 'database';
 
@@ -105,6 +116,17 @@ export default function CatalogBrowser({ kind }: Props) {
             {TIER_META[t].label}
           </button>
         ))}
+        {anyCited && (
+          <button
+            type="button"
+            class={`cb-cited${citedOnly ? ' cb-cited--on' : ''}`}
+            aria-pressed={citedOnly}
+            title="Show only resources with an associated publication, most-cited first (OpenAlex)"
+            onClick={() => setCitedOnly((v) => !v)}
+          >
+            Most cited
+          </button>
+        )}
       </div>
 
       <p class="cb-count" role="status">
@@ -149,6 +171,11 @@ export default function CatalogBrowser({ kind }: Props) {
                       dangerouslySetInnerHTML={{ __html: e.summaryHtml }}
                     />
                     <TopicChips topics={e.topics} />
+                    {e.citationCount != null && (
+                      <p class="cb-meta">
+                        <CitationBadge doi={e.doi} citationCount={e.citationCount} />
+                      </p>
+                    )}
                   </article>
                 ))}
               </div>

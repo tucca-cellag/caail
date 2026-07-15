@@ -35,6 +35,8 @@
 .cb-card:hover .cb-ext, .cb-card:focus-within .cb-ext { color: var(--caail-link); }
 
 /* margin:0 — same Starlight reset; the flex `gap` already spaces title↔summary. */
+/* Card footer metric row (the "cited by N" badge). Sits below the topic chips. */
+.cb-meta { margin: .35rem 0 0; }
 .cb-sum { font-size: .76rem; color: var(--caail-muted); line-height: 1.5; margin: 0; }
 .cb-sum p { margin: 0; }
 .cb-sum p + p { margin-top: .5rem; }

@@ -22,3 +22,6 @@
 .ds-card > :first-child { margin-top: 0; }
 .ds-card > :last-child { margin-bottom: 0; }
 .ds-card > h3 { margin-top: 0; font-size: 1.1rem; }
+
+/* Card footer metric row (the "cited by N" badge), below the topic chips. */
+.ds-card > .ds-meta { margin: .5rem 0 0; }
