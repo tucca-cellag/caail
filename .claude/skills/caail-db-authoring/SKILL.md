@@ -57,6 +57,18 @@ add a curator override to `site/scripts/db/licenses-manual.json` (catalog by url
 license** — GitHub NOASSERTION and unverified data-use terms stay `unknown`. Surfaced as a corner
 badge, the `/licenses/` hub, and the catalog tier facet.
 
+**DOIs & citation counts** are a second DB-owned axis, structured exactly like licenses. `catalog` +
+`dataset_entries` carry `doi` + `doi_source` (`manual` = curator-verified; `auto` reserved). DB-only
+(not in Markdown). To attach a DOI: add the tool/dataset's **associated-publication** DOI to
+`site/scripts/db/dois-manual.json` (catalog by url, datasets by `ds:` id), then re-bootstrap; papers
+need no entry (their DOI comes from the citation `raw`). **Verify every DOI against its source** before
+adding it (Crossref title/author/year) — never guess; an entry with no genuine associated publication
+stays blank. The OpenAlex `cited_by_count` is refreshed by the opt-in `pnpm --dir site fetch:citations`
+(the same script now gathers catalog/dataset DOIs and selects `cited_by_count`) and folded at parse by
+`citation-counts.ts`; the count is derived, never stored. `db:check` guards `doi_source` and manual-key
+resolution. Surfaced as a "cited by N" badge on every card, the `/citations/` hub, and the catalog
+"Most cited" facet. A coarse popularity signal, not a quality measure.
+
 Topics are **two-tier**: a fixed 7-**theme** backbone + earned **fine tags** (each `tier='tag'` under
 one `theme_slug`; theme and tag slugs share one namespace, so they must be disjoint). When tagging an
 item, prefer an existing fine tag; mint a new fine tag only when ≥3 items cluster under it (curator
