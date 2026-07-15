@@ -155,6 +155,11 @@ describe('addItem — validation', () => {
     expect(() => addItem(db, { type: 'dataset', page: 'HumanReference', cells: ['Synthetic GSE222222', 'y'] }))
       .toThrow(/not an inventory dataset page/);
   });
+  it('rejects a dataset row with an empty cells array (clean error, not a TypeError) (C14)', () => {
+    const db = importNdjson();
+    const page = (db.prepare('SELECT page FROM dataset_rows LIMIT 1').get() as any).page;
+    expect(() => addItem(db, { type: 'dataset', page, cells: [] })).toThrow(/at least one cell/);
+  });
 });
 
 describe('removeItem', () => {

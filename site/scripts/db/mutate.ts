@@ -159,6 +159,9 @@ function addItemImpl(db: Db, spec: ItemAdd): string {
   if (!INVENTORY_PAGES.includes(spec.page)) {
     throw new Error(`addItem: '${spec.page}' is not an inventory dataset page. Valid pages: ${INVENTORY_PAGES.join(', ')}.`);
   }
+  if (!spec.cells?.length) {
+    throw new Error('addItem: a dataset row needs at least one cell (the inventory-table row values).');
+  }
   const joined = spec.cells.join(' ');
   const acc = joined.match(ACCESSION)?.[0];
   const seedText = acc ?? spec.cells[0].replace(/[[\]`*]/g, '').split(/\s+/).slice(0, 3).join('-');

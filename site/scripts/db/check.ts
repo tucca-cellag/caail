@@ -60,6 +60,15 @@ export function checkIntegrity(db: Db): CheckResult[] {
   ).all() as { item_id: string }[];
   out.push(ok("every catalog item is type 'software' or 'database'", wrongCat.length === 0,
     wrongCat.slice(0, 3).map((r) => r.item_id).join(', ')));
+
+  // A retired ref_id must NOT also be live in `papers` — that would mean a removed numeric
+  // anchor was resurrected (e.g. a curator hand-pasting an old `<a id="N">` block back into
+  // Papers.md then re-bootstrapping), violating the never-reuse guarantee.
+  const resurrected = db.prepare(
+    'SELECT ref_id FROM retired_paper_ids WHERE ref_id IN (SELECT ref_id FROM papers) ORDER BY ref_id',
+  ).all() as { ref_id: number }[];
+  out.push(ok('no retired ref_id is also live in papers', resurrected.length === 0,
+    `resurrected: ${resurrected.slice(0, 5).map((r) => '#' + r.ref_id).join(', ')}`));
   return out;
 }
 

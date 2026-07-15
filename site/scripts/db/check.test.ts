@@ -57,6 +57,11 @@ describe('checkIntegrity', () => {
     db.prepare("INSERT INTO catalog(item_id,name,url,grp,heading_md,body_md,ordinal) VALUES('paper:1','X','https://x','G','[X](https://x)','',0)").run();
     expect(failing(checkIntegrity(db), /catalog item is type/)).toBe(true);
   });
+  it('flags a retired ref_id that is also live in papers (resurrection) (C14)', () => {
+    const db = miniDb(); // paper:1 has ref_id 1
+    db.prepare('INSERT INTO retired_paper_ids(ref_id) VALUES(1)').run(); // #1 tombstoned AND live
+    expect(failing(checkIntegrity(db), /no retired ref_id is also live/)).toBe(true);
+  });
 });
 
 describe('checkReachability', () => {
