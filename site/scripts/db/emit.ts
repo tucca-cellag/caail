@@ -178,6 +178,25 @@ export function emitDatasetPage(db: Db, srcPath: string, page: string): string {
   const entries = db.prepare('SELECT heading_md,body_md FROM dataset_entries WHERE page=? ORDER BY ordinal').all(page) as
     { heading_md: string; body_md: string }[];
 
+  // The entry splice is POSITIONAL: the Nth non-inventory H3 in the source ↔ the Nth DB
+  // entry for this page (both document-ordered). If those counts disagree — a stale source
+  // vs an edited DB (e.g. an entry removed from the DB but not the Markdown) — a positional
+  // zip would silently emit the wrong entry under a heading. Assert up front and fail loud
+  // with an actionable message (fail-fast, like emitPapersFile's ghost-section throw) rather
+  // than mis-slice or crash on an undefined index; the curator reconciles via db:bootstrap.
+  let sec = '';
+  let srcEntryH3s = 0;
+  for (const b of blocks) {
+    if (b.type === 'heading' && b.depth === 2) { sec = inlineMd(b).trim(); continue; }
+    if (b.type === 'heading' && b.depth === 3 && sec !== 'Complete data inventory') srcEntryH3s += 1;
+  }
+  if (srcEntryH3s !== entries.length) {
+    throw new Error(
+      `emitDatasetPage(${page}): source has ${srcEntryH3s} curated H3 entr(ies) but the DB has ` +
+        `${entries.length}. Re-seed (db:bootstrap) or reconcile the DB and Markdown.`,
+    );
+  }
+
   const out: string[] = [];
   let section = '';
   let invEmitted = false; // only the FIRST table in the inventory section is DB-owned
@@ -185,10 +204,10 @@ export function emitDatasetPage(db: Db, srcPath: string, page: string): string {
   for (let i = 0; i < blocks.length; ) {
     const b = blocks[i];
     if (b.type === 'heading' && b.depth === 2) { section = inlineMd(b).trim(); out.push(sliceOf(b)); i++; continue; }
-    // A curated dataset entry (any H3 outside the inventory section) — DB-owned.
+    // A curated dataset entry (any H3 outside the inventory section) — DB-owned. The count
+    // assertion above guarantees `entries[entryIdx]` is defined here.
     if (b.type === 'heading' && b.depth === 3 && section !== 'Complete data inventory') {
       const e = entries[entryIdx++];
-      if (!e) { out.push(sliceOf(b)); i++; continue; } // more H3s than DB entries: leave verbatim
       out.push(`### ${e.heading_md}` + (e.body_md ? `\n\n${e.body_md}` : ''));
       i++;
       // Skip the DB-owned body blocks up to the next H2/H3. Nested H4+ sub-sections are part

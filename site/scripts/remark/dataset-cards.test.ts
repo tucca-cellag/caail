@@ -125,4 +125,12 @@ Parse body.
     const kids = run(MD, 'Datasets/Cow.md', [ATLAS, GEM], 'Chicken'); // entries keyed on Chicken, page=Cow
     expect(html(kids).length).toBe(0);
   });
+
+  it('skips the whole page (no cards) when source H3 count ≠ entry-list length', () => {
+    // Regression: a positional join must not wrap content under the wrong card on a count
+    // mismatch (e.g. a stale datasets.json). MD has two non-inventory H3s; pass only one
+    // entry → the transform must be a no-op for the page, not miscorrelate.
+    const kids = run(MD, 'Datasets/Chicken.md', [ATLAS]); // 2 H3s, 1 entry
+    expect(html(kids).length).toBe(0);
+  });
 });

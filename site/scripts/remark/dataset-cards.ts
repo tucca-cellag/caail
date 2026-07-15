@@ -82,6 +82,18 @@ export function datasetCards(options: {
     if (!list || list.length === 0) return;
 
     const kids = tree.children as any[];
+    // Positional join (Nth non-inventory H3 ↔ Nth datasets.json entry). If the source H3
+    // count and this page's entry-list length disagree (e.g. a stale datasets.json build
+    // artifact), skip the whole page rather than wrap content under the wrong card / assign
+    // the wrong anchor. db:verify guards the committed DB↔Markdown; this protects the render.
+    let precheckSection = '';
+    let h3Count = 0;
+    for (const n of kids) {
+      if (n.type === 'heading' && n.depth === 2) { precheckSection = mdastToString(n).trim(); continue; }
+      if (n.type === 'heading' && n.depth === 3 && precheckSection !== INVENTORY) h3Count += 1;
+    }
+    if (h3Count !== list.length) return;
+
     const out: any[] = [];
     let section = '';
     let idx = 0;
