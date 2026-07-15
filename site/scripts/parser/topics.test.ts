@@ -6,14 +6,15 @@ import { describe, it, expect } from 'vitest';
 import { buildTopicsModel, topicsByItemId, catalogNameKey } from './topics.js';
 
 describe('catalogNameKey (parser mdastToString ↔ NDJSON inlineMd name normalization)', () => {
-  it('strips the inline-markdown markers inlineMd emits so both sides agree', () => {
+  it('collapses every inline-markdown construct inlineMd emits to the same plain text', () => {
     // NDJSON side (inlineMd, markdown-preserving) vs parser side (mdastToString, plain)
-    expect(catalogNameKey('`FooDB`')).toBe(catalogNameKey('FooDB')); // inline code
-    expect(catalogNameKey('*Foo*')).toBe(catalogNameKey('Foo'));     // emphasis
-    expect(catalogNameKey('**Foo**')).toBe(catalogNameKey('Foo'));   // strong
-    expect(catalogNameKey('~~Foo~~')).toBe(catalogNameKey('Foo'));   // strikethrough
+    expect(catalogNameKey('`FooDB`')).toBe(catalogNameKey('FooDB'));     // inline code
+    expect(catalogNameKey('*Foo*')).toBe(catalogNameKey('Foo'));         // emphasis
+    expect(catalogNameKey('**Foo**')).toBe(catalogNameKey('Foo'));       // strong
+    expect(catalogNameKey('~~Foo~~')).toBe(catalogNameKey('Foo'));       // strikethrough
+    expect(catalogNameKey('![Build](badge.svg)')).toBe(catalogNameKey('Build')); // image-as-text → alt
   });
-  it('leaves a literal underscore intact (inlineMd never emits _emphasis_)', () => {
+  it('leaves a literal (intraword) underscore intact', () => {
     expect(catalogNameKey('cell_2_sentence')).toBe('cell_2_sentence');
   });
   it('is a no-op for a plain name', () => {

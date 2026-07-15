@@ -13,6 +13,8 @@
 import { readFileSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { toString as mdastToString } from 'mdast-util-to-string';
+import { parseMarkdown } from './markdown.js';
 import { TopicsDataSchema, type TopicRef, type TopicNode, type TopicsData } from './types.js';
 
 const NDJSON_DIR = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'db', 'ndjson');
@@ -46,16 +48,16 @@ export function topicsByItemId(): Map<string, TopicRef[]> {
 }
 
 /**
- * Normalize a catalog entry name for the topic join key, stripping the inline-markdown
- * markers `inlineMd` emits (`` ` ``, `*`, `~` for code/emphasis/strong/strikethrough) so
- * the NDJSON name (markdown-preserving `inlineMd`) matches the parser's name (plain-text
- * `mdastToString`, which drops them). Underscore is NOT stripped — `inlineMd` writes
- * emphasis as `*…*`, never `_…_`, so any `_` in a name is a literal part of the text
- * (e.g. `cell_2_sentence`). Without this, an entry with formatted link text (e.g.
- * `` [`FooDB`](url) ``) would key differently on the two sides and silently get no topics.
+ * Normalize a catalog entry name to the SAME plain text on both sides of the topic join.
+ * The NDJSON `name` is `inlineMd` output (markdown-preserving: `` `code` ``, `*em*`,
+ * `**strong**`, `~~del~~`, `![alt](src)`, …); the parser `name` is `mdastToString(link)`
+ * (plain text). Re-parsing the name as markdown and flattening with `mdastToString` yields
+ * the plain text either way — for EVERY inline construct `inlineMd` can emit (not just a
+ * hand-picked marker set), so a formatted or badge-decorated link text can't key
+ * differently and silently lose its topics. Intraword `_` stays literal (CommonMark).
  */
 export function catalogNameKey(name: string): string {
-  return name.replace(/[`*~]/g, '');
+  return mdastToString(parseMarkdown(name)).trim();
 }
 
 /**
