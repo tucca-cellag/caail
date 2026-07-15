@@ -426,6 +426,10 @@ Summary: An AI framework for customized taste-peptide de novo design and safety 
 
 Docs: <https://github.com/leleshidawang/TastepepAI#readme>.
 
+### [bitter-peptide-design](https://github.com/DiPizio-Lab/bitter-peptide-design)
+
+Summary: A de novo bitter-peptide design workflow from the [Di Pizio lab](https://github.com/DiPizio-Lab) that pairs [ZymCTRL](https://huggingface.co/AI4PD/ZymCTRL), a conditional protein language model, for peptide generation with [BitterPep-GCN](https://github.com/srivastavaprashant/BitterGNN), a graph convolutional network, for bitterness prediction, and a KNIME workflow for sequence preparation and physicochemical analysis. For cellular agriculture it supports rational screening and mitigation of bitter off-tastes in protein hydrolysates and next-generation food products by generating and classifying candidate peptides in silico. Companion to [Papers.md ref #285](./Papers.md#285) (Steuer et al. 2026).
+
 ## Workflow-Manager Pipelines
 
 Reproducible, container-based workflow-manager pipelines for omics and microbiome analysis — Nextflow / Snakemake / CWL / Galaxy. None of these are sensomics-specific, but each is a directly applicable preprocessing or microbiome layer for cultivated-meat spent-media, fermentation, or flavor-volatilome work. For containerized, reproducible cell-ag analytical pipelines, these are the upstream substrate that any sensomics-aware workflow would be built on.
