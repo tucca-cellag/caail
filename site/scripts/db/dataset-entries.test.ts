@@ -42,6 +42,23 @@ describe('extractDatasetEntries', () => {
     // an unlinked reference GEM heading
     expect(entries.some((e) => e.name.startsWith('Recon3D') && e.url === null)).toBe(true);
   });
+
+  it('folds nested H4 sub-sections into the parent H3 body, not separate/lost entries', () => {
+    // Regression: `### Arc Virtual Cell Atlas` is an umbrella H3 with two nested
+    // `#### Tahoe-100M` / `#### scBaseCount` sub-sections. The body-capture loop must break
+    // only at the next H2/H3 — else the H4s are neither their own entries nor part of Arc's
+    // body, silently vanishing from the DB (and the /topics/ hub) while emit's byte-offset
+    // fallback masks the loss at the Markdown level.
+    const entries = extractDatasetEntries(HUMAN);
+    const arc = entries.find((e) => e.name === 'Arc Virtual Cell Atlas');
+    expect(arc).toBeDefined();
+    // The H4 sub-sections are NOT their own entries (only H3s are curated entries).
+    expect(entries.some((e) => e.name === 'Tahoe-100M')).toBe(false);
+    expect(entries.some((e) => e.name === 'scBaseCount')).toBe(false);
+    // …and their content lives in the parent entry's body (was truncated at the first H4).
+    expect(arc!.bodyMd).toContain('Tahoe-100M');
+    expect(arc!.bodyMd).toContain('scBaseCount');
+  });
 });
 
 describe('seedDatasets (rows + entries share the ds: namespace)', () => {

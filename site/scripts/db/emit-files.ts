@@ -12,7 +12,7 @@
 import { writeFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { INVENTORY_PAGES, REFERENCE_PAGES } from '../parser/datasets.js';
+import { INVENTORY_PAGES, REFERENCE_PAGES, BENCHMARKS_PAGE } from '../parser/datasets.js';
 import { importNdjson, REPO_ROOT, type Db } from './lib.js';
 import { emitPapersFile, emitCatalogFile, emitDatasetPage } from './emit.js';
 import { extractInventory, extractDatasetEntries } from './extract.js';
@@ -35,8 +35,10 @@ export function emitAll(db: Db, root: string = REPO_ROOT): string[] {
     { rel: 'Databases.md', text: emitCatalogFile(db, join(root, 'Databases.md'), 'database') },
   ];
   // A dataset page is DB-owned if it has an inventory table OR curated `### …` entries —
-  // so reference pages (no inventory, entries only) are emitted too.
-  for (const page of [...INVENTORY_PAGES, ...REFERENCE_PAGES]) {
+  // so reference pages (no inventory, entries only) are emitted too. Mirror seed.ts's
+  // ENTRY_PAGES exactly (incl. BENCHMARKS_PAGE) so a page that ever gains H3 entries can't
+  // be seeded-but-never-emitted (which would pass the sync guard for the wrong reason).
+  for (const page of [...INVENTORY_PAGES, ...REFERENCE_PAGES, BENCHMARKS_PAGE]) {
     const src = join(root, 'Datasets', `${page}.md`);
     if (existsSync(src) && (extractInventory(src) || extractDatasetEntries(src).length > 0)) {
       files.push({ rel: `Datasets/${page}.md`, text: emitDatasetPage(db, src, page) });

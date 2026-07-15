@@ -57,6 +57,22 @@ describe('emit robustness (cycle 3)', () => {
       .run('paper:99999', 99999, 'Ghost Section', '<a id="99999">99999</a> x', null, 99999);
     expect(() => emitPapersFile(db, join(REPO_ROOT, 'Papers.md'))).toThrow(/Ghost Section/);
   });
+  it('leaves an extra source H3 verbatim instead of crashing when the DB has fewer entries', () => {
+    // Regression: `entries[entryIdx++]` was unguarded — a source page with one MORE
+    // non-inventory H3 than the DB has entries for it threw an unguarded
+    // `undefined.heading_md`. The guard leaves the surplus H3 (and its body) verbatim.
+    const src = join(TMP, 'ExtraH3.md');
+    writeFileSync(src, '## Featured atlases\n\n### [Known Atlas](https://example.com/known)\n\nKnown body.\n\n### [Unknown Extra Atlas](https://example.com/extra)\n\nExtra body.\n');
+    const fresh = importNdjson();
+    fresh.exec('PRAGMA foreign_keys=OFF');
+    fresh.prepare("INSERT INTO items(id,type,slug) VALUES('ds:known-atlas-xyz','dataset','known-atlas-xyz')").run();
+    fresh.prepare("INSERT INTO dataset_entries(item_id,name,url,page,section,kind,heading_md,body_md,ordinal) VALUES('ds:known-atlas-xyz','Known Atlas','https://example.com/known','ExtraTestPage','Featured atlases','atlas','[Known Atlas](https://example.com/known)','Known body.',0)").run();
+    let out = '';
+    expect(() => { out = emitDatasetPage(fresh, src, 'ExtraTestPage'); }).not.toThrow();
+    expect(out).toContain('Known Atlas');
+    expect(out).toContain('Unknown Extra Atlas'); // surplus H3 preserved verbatim
+    expect(out).toContain('Extra body.');
+  });
 });
 let db: Db;
 beforeAll(() => { db = importNdjson(); });

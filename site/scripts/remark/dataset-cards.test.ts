@@ -80,6 +80,42 @@ describe('datasetCards', () => {
     expect(kids.slice(invIdx).some((n) => n.type === 'html' && n.value.startsWith('<article'))).toBe(false);
   });
 
+  it('pulls nested H4 sub-sections INTO the parent card (not stranded after </article>)', () => {
+    // Regression: an umbrella H3 (Arc Virtual Cell Atlas) with two `#### …` sub-sections
+    // before the next H3. The body loop must stop only at H2/H3, so the H4s render inside
+    // the parent card — stopping at any heading left them after the closing </article>.
+    const md = `## Single-cell corpora
+
+### Arc Virtual Cell Atlas
+
+Umbrella prose.
+
+#### [Tahoe-100M](https://example.com/tahoe)
+
+Tahoe body.
+
+#### [scBaseCount](https://example.com/scbase)
+
+scBaseCount body.
+
+### [Parse Biosciences 10M](https://example.com/parse)
+
+Parse body.
+`;
+    const ARC: DatasetCardEntry = { name: 'Arc Virtual Cell Atlas', kind: 'atlas', anchor: 'ds-arc-virtual-cell-atlas', topics: [] };
+    const PARSE: DatasetCardEntry = { name: 'Parse Biosciences 10M', kind: 'atlas', anchor: 'ds-parse-biosciences-10m', topics: [] };
+    const kids = run(md, 'Datasets/HumanReference.md', [ARC, PARSE], 'HumanReference');
+    const openIdx = kids.findIndex((n) => n.type === 'html' && n.value.includes('id="ds-arc-virtual-cell-atlas"'));
+    const closeIdx = kids.findIndex((n, i) => i > openIdx && n.type === 'html' && n.value === '</article>');
+    expect(openIdx).toBeGreaterThanOrEqual(0);
+    // Both H4 sub-sections sit BETWEEN the Arc card's open and close.
+    const h4Idxs = kids.map((n, i) => ({ n, i })).filter(({ n }) => n.type === 'heading' && n.depth === 4).map(({ i }) => i);
+    expect(h4Idxs.length).toBe(2);
+    expect(h4Idxs.every((i) => i > openIdx && i < closeIdx)).toBe(true);
+    // Exactly two cards (Arc + Parse) — the H4s did not open their own cards.
+    expect(html(kids).filter((v) => v.startsWith('<article')).length).toBe(2);
+  });
+
   it('is a no-op for a non-Datasets page', () => {
     const kids = run(MD, 'Software.md', [ATLAS, GEM]);
     expect(html(kids).length).toBe(0);

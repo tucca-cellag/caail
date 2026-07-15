@@ -5,7 +5,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { buildDatasetsModel } from './datasets-entries.js';
+import { buildDatasetsModel, datasetEntryAnchor } from './datasets-entries.js';
 
 const model = buildDatasetsModel();
 
@@ -45,5 +45,24 @@ describe('buildDatasetsModel', () => {
     for (const [page, anchors] of byPage) {
       expect(new Set(anchors).size, `duplicate anchor on ${page}`).toBe(anchors.length);
     }
+  });
+});
+
+describe('datasetEntryAnchor (collision-safe per-page anchors)', () => {
+  it('suffixes repeated names with -2, -3, …', () => {
+    const used = new Set<string>();
+    expect(datasetEntryAnchor('Entry', used)).toBe('ds-entry');
+    expect(datasetEntryAnchor('Entry', used)).toBe('ds-entry-2');
+    expect(datasetEntryAnchor('Entry', used)).toBe('ds-entry-3');
+  });
+
+  it('does not collide when a literal name slugifies to an already-suffixed form', () => {
+    // Regression: a per-base counter would give "Entry 2" the anchor `ds-entry-2`, colliding
+    // with the second "Entry". Checking the final anchor bumps it to `ds-entry-2-2`.
+    const used = new Set<string>();
+    expect(datasetEntryAnchor('Entry', used)).toBe('ds-entry');
+    expect(datasetEntryAnchor('Entry', used)).toBe('ds-entry-2');
+    expect(datasetEntryAnchor('Entry 2', used)).toBe('ds-entry-2-2');
+    expect(used.size).toBe(3); // three distinct anchors, no duplicate DOM id
   });
 });

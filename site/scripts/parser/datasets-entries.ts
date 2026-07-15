@@ -33,10 +33,23 @@ function slugifyToken(token: string): string {
 }
 
 /**
- * Build the datasets.json model. Anchors are unique PER PAGE (the card element id +
- * the hub #link scroll target): a base slug collision within a page gets `-2`, `-3`, …
- * The `ds-` prefix keeps the card's id distinct from the H3's own auto-slug id (which
- * rehype-slug derives from the same heading text), so the page has no duplicate ids.
+ * The unique per-page card anchor for an entry name (the card element id + the hub #link
+ * scroll target), given the anchors already used on that page (which this MUTATES). The
+ * `ds-` prefix keeps the card's id distinct from the H3's own rehype-slug id. Collision-
+ * safe: it checks the FINAL anchor against every one already used — not a per-base counter
+ * — so a literal name that slugifies to an already-suffixed form (e.g. "Entry-2" after two
+ * "Entry"s) can't produce a duplicate `ds-entry-2` DOM id. Mirrors lib.ts's `assignId`.
+ */
+export function datasetEntryAnchor(name: string, usedOnPage: Set<string>): string {
+  const base = `ds-${slugifyToken(name) || 'entry'}`;
+  let anchor = base;
+  for (let n = 2; usedOnPage.has(anchor); n += 1) anchor = `${base}-${n}`;
+  usedOnPage.add(anchor);
+  return anchor;
+}
+
+/**
+ * Build the datasets.json model. Anchors are unique PER PAGE via `datasetEntryAnchor`.
  */
 export function buildDatasetsModel(): DatasetsData {
   const path = join(NDJSON_DIR, 'dataset_entries.ndjson');
@@ -44,13 +57,10 @@ export function buildDatasetsModel(): DatasetsData {
   const rows = text ? text.split('\n').map((l) => JSON.parse(l) as EntryRow) : [];
   const byId = topicsByItemId();
 
-  const seenPerPage = new Map<string, Map<string, number>>();
+  const usedPerPage = new Map<string, Set<string>>();
   const entries: DatasetEntry[] = rows.map((r) => {
-    const seen = seenPerPage.get(r.page) ?? seenPerPage.set(r.page, new Map()).get(r.page)!;
-    const base = slugifyToken(r.name) || 'entry';
-    const n = seen.get(base) ?? 0;
-    seen.set(base, n + 1);
-    const anchor = `ds-${n === 0 ? base : `${base}-${n + 1}`}`;
+    const used = usedPerPage.get(r.page) ?? usedPerPage.set(r.page, new Set()).get(r.page)!;
+    const anchor = datasetEntryAnchor(r.name, used);
     return {
       id: r.item_id,
       name: r.name,

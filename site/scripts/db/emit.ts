@@ -188,9 +188,13 @@ export function emitDatasetPage(db: Db, srcPath: string, page: string): string {
     // A curated dataset entry (any H3 outside the inventory section) — DB-owned.
     if (b.type === 'heading' && b.depth === 3 && section !== 'Complete data inventory') {
       const e = entries[entryIdx++];
+      if (!e) { out.push(sliceOf(b)); i++; continue; } // more H3s than DB entries: leave verbatim
       out.push(`### ${e.heading_md}` + (e.body_md ? `\n\n${e.body_md}` : ''));
       i++;
-      while (i < blocks.length && blocks[i].type !== 'heading') i++; // skip DB-owned body blocks
+      // Skip the DB-owned body blocks up to the next H2/H3. Nested H4+ sub-sections are part
+      // of THIS entry's body_md (extract captures them), so they must be skipped here too —
+      // stopping at any heading would re-emit the H4 slice on the next loop turn (double-emit).
+      while (i < blocks.length && !(blocks[i].type === 'heading' && blocks[i].depth <= 3)) i++;
       continue;
     }
     if (b.type === 'table' && section === 'Complete data inventory' && inv && !invEmitted) {

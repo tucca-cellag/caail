@@ -161,8 +161,12 @@ export function extractDatasetEntries(path: string): DatasetEntryRaw[] {
     if (section === 'Complete data inventory') continue;
     const link = (n.children as any[]).find((c) => c.type === 'link');
     let s: number | null = null, e = 0;
+    // Break only at the next H2/H3 — nested H4+ sub-sections (e.g. the Arc Virtual Cell
+    // Atlas umbrella's `#### Tahoe-100M` / `#### scBaseCount`) belong to THIS entry's body,
+    // not a separate entry (which the depth-3 filter above already excludes) and not the
+    // next one. Mirrors extractCatalogEntries' `depth <= 3` body boundary.
     for (let j = i + 1; j < kids.length; j++) {
-      if (kids[j].type === 'heading') break;
+      if (kids[j].type === 'heading' && kids[j].depth <= 3) break;
       if (s === null) s = kids[j].position.start.offset;
       e = kids[j].position.end.offset;
     }

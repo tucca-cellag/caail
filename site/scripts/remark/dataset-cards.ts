@@ -93,7 +93,10 @@ export function datasetCards(options: {
         if (!entry) { out.push(n); i++; continue; } // more H3s than entries: leave as-is
         out.push({ type: 'html', value: `<article class="ds-card ds-card--${entry.kind}" id="${entry.anchor}">` });
         out.push(n); i++;
-        while (i < kids.length && kids[i].type !== 'heading') { out.push(kids[i]); i++; }
+        // Pull body blocks up to the next H2/H3 into the card. Nested H4+ sub-sections (e.g.
+        // the Arc atlas umbrella's Tahoe-100M / scBaseCount) belong INSIDE the parent card;
+        // stopping at any heading would leave them stranded after the closing </article>.
+        while (i < kids.length && !(kids[i].type === 'heading' && kids[i].depth <= 3)) { out.push(kids[i]); i++; }
         const chips = chipsHtml(entry);
         if (chips) out.push({ type: 'html', value: chips });
         out.push({ type: 'html', value: '</article>' });
