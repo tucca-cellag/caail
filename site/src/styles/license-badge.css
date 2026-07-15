@@ -1,0 +1,83 @@
+/* license-badge.css — the coarse license/access triage badge shown on a card corner
+   (Software, Databases, and curated Dataset cards). Tier drives the colour via the
+   Okabe–Ito-adjacent area palette; solid = GitHub-auto, dashed = manual (verify before
+   commercial use). Global so both the LicenseBadge component and the raw-HTML dataset
+   badges (dataset-cards remark) render identically. Links to the /licenses/ hub. */
+
+/* Dark ink text on the card surface (AA-safe, like the topic chips); the tier is
+   conveyed by the border colour + a leading dot, NOT the text colour (a vivid mid-tone
+   as text fails WCAG contrast). Rectangular, to read as a badge distinct from the pills. */
+.lic-badge {
+  --lic: var(--caail-muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  flex: none;
+  padding: 0.05rem 0.4rem;
+  font-size: 0.66rem;
+  font-weight: 600;
+  line-height: 1.5;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  color: var(--caail-ink);
+  background: var(--caail-surface);
+  border: 1.5px solid var(--lic);
+  border-radius: 0.35rem;
+  text-decoration: none;
+}
+.lic-badge::before {
+  content: '';
+  width: 0.5em;
+  height: 0.5em;
+  border-radius: 50%;
+  background: var(--lic);
+  flex: none;
+}
+.lic-badge:hover,
+.lic-badge:focus-visible { background: var(--caail-bg); border-color: var(--lic); }
+
+/* Manual (curated) provenance: dashed outline signals "not auto-maintained". */
+.lic-badge--manual { border-style: dashed; }
+
+/* Tier → colour (permissive green, copyleft amber, restricted red, unknown grey). */
+.lic-badge--permissive { --lic: var(--caail-area-bioprocess); }
+.lic-badge--copyleft   { --lic: var(--caail-area-media); }
+.lic-badge--restricted { --lic: var(--caail-area-sensory); }
+.lic-badge--unknown    { --lic: var(--caail-muted); }
+
+/* The badge floats to the card's top-right corner on both catalog and dataset cards. */
+.ds-card,
+.cb-card { position: relative; }
+.ds-card > .lic-badge,
+.cb-card > .lic-badge {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.7rem;
+  z-index: 1;
+}
+/* Keep the card title clear of the corner badge. */
+.cb-card > .cb-name { padding-right: 4.5rem; }
+.ds-card > h3 { padding-right: 5rem; }
+
+/* License-tier filter facet on the catalog pages: the tier badges double as toggles. */
+.cb-facet {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0.4rem 0 0.2rem;
+}
+/* Reset Starlight's `.sl-markdown-content :not()+:not(){margin-top}` flow spacing
+ * (#67 trap) on the facet toggles — otherwise the 2nd+ button drops below the row.
+ * Paired with the `.not-content` class on the container. */
+.cb-facet > * { margin-top: 0; }
+.cb-facet-label { font-size: 0.8rem; color: var(--caail-muted); }
+.cb-tier {
+  cursor: pointer;
+  font-size: 0.72rem;
+  font-family: inherit;
+  padding: 0.1rem 0.5rem;
+}
+/* Active toggle: tint the background with the tier colour (border already tier-colored). */
+.cb-tier--on { background: color-mix(in oklch, var(--lic) 20%, var(--caail-surface)); }
+.cb-tier--on::before { box-shadow: 0 0 0 2px color-mix(in oklch, var(--lic) 35%, transparent); }

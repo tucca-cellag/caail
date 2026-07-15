@@ -12,10 +12,10 @@
  */
 
 import { join } from 'node:path';
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import type { PapersData } from '../parser/types.js';
 import { INVENTORY_PAGES, REFERENCE_PAGES, BENCHMARKS_PAGE } from '../parser/datasets.js';
-import { REPO_ROOT, assignId, frozenSlug, type Db } from './lib.js';
+import { REPO_ROOT, SITE_ROOT, assignId, frozenSlug, type Db } from './lib.js';
 import {
   extractCatalogEntries, extractInventory, extractMatrixHeaders, extractPaperBlockquotes,
   extractDatasetEntries, type CatalogRaw,
@@ -249,4 +249,51 @@ export function seedTopics(db: Db): { topics: number; tags: number } {
   const topics = (db.prepare('SELECT COUNT(*) c FROM topics').get() as any).c;
   const tags = (db.prepare('SELECT COUNT(*) c FROM item_topics').get() as any).c;
   return { topics, tags };
+}
+
+// --- licenses (folded from two committed inputs; the DB is the site's source) --
+
+/** GitHub `owner/repo` (lowercased) from a URL, else null (for the auto cache key). */
+export function repoFromUrl(url: string): string | null {
+  const m = /github\.com\/([^/#?]+)\/([^/#?]+)/i.exec(url);
+  if (!m) return null;
+  return `${m[1]}/${m[2].replace(/\.git$/, '')}`.toLowerCase();
+}
+
+interface LicenseCache { repos: Record<string, { spdx?: string | null }>; }
+interface ManualLicenses { catalog: Record<string, string>; datasets: Record<string, string>; }
+
+const readJson = <T>(path: string, fallback: T): T =>
+  existsSync(path) ? (JSON.parse(readFileSync(path, 'utf-8')) as T) : fallback;
+
+/**
+ * Seed license + license_source onto catalog + dataset_entries from two committed,
+ * offline inputs (bootstrap stays network-free and reproducible):
+ *   - `scripts/parser/license-cache.json` — GitHub SPDX by repo slug (auto), refreshed
+ *     by `db:fetch-licenses`;
+ *   - `scripts/db/licenses-manual.json` — curator overrides (catalog by url, datasets by
+ *     ds: id, all `manual`).
+ * Precedence: a manual value wins over the auto cache. The resolved value lands in the
+ * DB/NDJSON and is folded into the site JSON like topics; the coarse tier is derived at
+ * parse (not stored). Returns per-source counts.
+ */
+export function seedLicenses(db: Db): { auto: number; manual: number } {
+  const cache = readJson<LicenseCache>(join(SITE_ROOT, 'scripts', 'parser', 'license-cache.json'), { repos: {} });
+  const manual = readJson<ManualLicenses>(join(SITE_ROOT, 'scripts', 'db', 'licenses-manual.json'), { catalog: {}, datasets: {} });
+  const setCat = db.prepare('UPDATE catalog SET license=?, license_source=? WHERE item_id=?');
+  const setDs = db.prepare('UPDATE dataset_entries SET license=?, license_source=? WHERE item_id=?');
+  let auto = 0, manualN = 0;
+
+  for (const c of db.prepare('SELECT item_id, url FROM catalog').all() as { item_id: string; url: string }[]) {
+    const man = manual.catalog[c.url];
+    const repo = repoFromUrl(c.url);
+    const aut = repo ? cache.repos[repo]?.spdx ?? null : null;
+    if (man) { setCat.run(man, 'manual', c.item_id); manualN++; }
+    else if (aut) { setCat.run(aut, 'auto', c.item_id); auto++; }
+  }
+  for (const [id, val] of Object.entries(manual.datasets)) {
+    const res = setDs.run(val, 'manual', id);
+    if (res.changes) manualN++;
+  }
+  return { auto, manual: manualN };
 }

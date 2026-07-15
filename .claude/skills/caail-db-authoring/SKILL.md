@@ -48,6 +48,15 @@ entry. It carries `section` + `kind` (atlas/gem/other); its `url` is nullable (u
 Entries are topic-tagged, rendered as `.ds-card`s with chips on `/datasets/<page>/`, and appear as
 linkable items in the `/topics/` hub; inventory rows stay count-only.
 
+**Licenses** are a coarse DB-owned tier axis (permissive/copyleft/restricted/unknown), NOT a table:
+`catalog` + `dataset_entries` carry `license` + `license_source` (`auto`|`manual`). Like topics they
+are DB-only (not in Markdown) and fold into the site JSON; the tier is derived at parse. To set one:
+add a curator override to `site/scripts/db/licenses-manual.json` (catalog by url, datasets by ds: id;
+`manual` wins over the GitHub-SPDX `license-cache.json`) then re-bootstrap, OR run the opt-in
+`db:fetch-licenses` (GITHUB_TOKEN) to refresh the auto SPDX cache then bootstrap. **Never guess a
+license** — GitHub NOASSERTION and unverified data-use terms stay `unknown`. Surfaced as a corner
+badge, the `/licenses/` hub, and the catalog tier facet.
+
 Topics are **two-tier**: a fixed 7-**theme** backbone + earned **fine tags** (each `tier='tag'` under
 one `theme_slug`; theme and tag slugs share one namespace, so they must be disjoint). When tagging an
 item, prefer an existing fine tag; mint a new fine tag only when ≥3 items cluster under it (curator
@@ -145,8 +154,9 @@ pnpm --dir site db:bootstrap   # one-time / re-import: canonical Markdown -> DB 
 pnpm --dir site db:build       # NDJSON -> caail.db (materialize for editing/querying)
 pnpm --dir site db:export      # caail.db -> NDJSON (after editing the DB)
 pnpm --dir site db:emit        # NDJSON -> canonical Markdown (regenerate)
-pnpm --dir site db:check       # integrity + drift guards
+pnpm --dir site db:check       # integrity + drift guards (incl. license provenance)
 pnpm --dir site db:verify      # round-trip fidelity oracle (re-parse == identical model)
+pnpm --dir site db:fetch-licenses  # OPT-IN, networked: refresh the GitHub-SPDX license cache
 ```
 
 All are Node-22-only and set `--experimental-sqlite` internally. Run `source ~/.nvm/nvm.sh &&

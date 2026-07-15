@@ -39,6 +39,19 @@ export const TopicRefSchema = z.object({
 });
 export type TopicRef = z.infer<typeof TopicRefSchema>;
 
+/** Coarse license/access tier — the unified 4-tier axis (see src/lib/licenses.ts). */
+export const LicenseTierSchema = z.enum(['permissive', 'copyleft', 'restricted', 'unknown']);
+/** The license fields folded onto every card: raw token, provenance, derived tier. */
+export const LicenseFieldsSchema = z.object({
+  /** SPDX-ish token or manual string; null = unknown/not detected */
+  license: z.string().nullable().default(null),
+  /** provenance: 'auto' = GitHub SPDX, 'manual' = hand-verified; null = none */
+  licenseSource: z.enum(['auto', 'manual']).nullable().default(null),
+  /** coarse tier derived from `license` via licenseTier() */
+  tier: LicenseTierSchema.default('unknown'),
+});
+export type LicenseTier = z.infer<typeof LicenseTierSchema>;
+
 export const ReferenceSchema = z.object({
   /** Stable numeric ID — never renumbered after assignment */
   id: z.number().int().positive(),
@@ -100,6 +113,10 @@ export const CatalogEntrySchema = z.object({
   summaryHtml: z.string(),
   /** Two-tier subject tags (#78 topic axis), folded in from the committed topic NDJSON */
   topics: z.array(TopicRefSchema).default([]),
+  /** DB-owned license/access fields, folded in from the committed catalog NDJSON */
+  license: z.string().nullable().default(null),
+  licenseSource: z.enum(['auto', 'manual']).nullable().default(null),
+  tier: LicenseTierSchema.default('unknown'),
 });
 
 /**
@@ -124,6 +141,10 @@ export const DatasetEntrySchema = z.object({
   anchor: z.string(),
   /** two-tier subject tags, folded in from the committed topic NDJSON */
   topics: z.array(TopicRefSchema).default([]),
+  /** DB-owned license/access fields (data-use terms), folded in from dataset_entries NDJSON */
+  license: z.string().nullable().default(null),
+  licenseSource: z.enum(['auto', 'manual']).nullable().default(null),
+  tier: LicenseTierSchema.default('unknown'),
 });
 
 /** Schema for datasets.json — the curated dataset entries across the Datasets/ pages. */
