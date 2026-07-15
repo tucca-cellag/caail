@@ -229,3 +229,4 @@
 {"method":"Agent Infrastructure (Frameworks, KGs, Protocols)","area_key":"tooling","ref_id":220,"label":"Glen et al. 2025","ordinal":228}
 {"method":"GNN","area_key":"sensory","ref_id":285,"label":"Steuer et al. 2026","ordinal":229}
 {"method":"Foundation Models: Next-Token Prediction","area_key":"sensory","ref_id":285,"label":"Steuer et al. 2026","ordinal":230}
+{"method":"GNN","area_key":"sensory","ref_id":286,"label":"Srivastava et al. 2024","ordinal":231}
