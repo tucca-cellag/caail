@@ -31,8 +31,11 @@ function main(): void {
     for (const r of bad) console.error(`  ✗ ${r.label}: ${r.detail}`);
     process.exit(1);
   }
-  exportNdjson(db);
+  // Emit FIRST — it re-parses/validates and throws on a bad state (e.g. a section with no
+  // source anchor) BEFORE any file is written, so a failure can't leave the committed
+  // NDJSON out of sync with the untouched Markdown. Only export once emit has succeeded.
   const written = emitAll(db);
+  exportNdjson(db);
   console.log(`Added ${id}. Regenerated ${written.length} canonical files + NDJSON.`);
   console.log('Review the diff, then commit Markdown + NDJSON together.');
 }

@@ -15,7 +15,7 @@
  *    only the stable column axis is guarded).
  */
 
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { importNdjson, REPO_ROOT, type Db } from './lib.js';
@@ -91,7 +91,9 @@ export function checkColumnDrift(db: Db, repoRoot: string = REPO_ROOT): CheckRes
   const out: CheckResult[] = [];
   const areas = new Set((db.prepare('SELECT label FROM areas').all() as { label: string }[]).map((r) => r.label));
   for (const [file, re] of COLUMN_SOURCES) {
-    const list = parseList(readFileSync(join(repoRoot, file), 'utf-8'), re);
+    const path = join(repoRoot, file);
+    if (!existsSync(path)) { out.push(ok(`${file} enumerates the matrix columns`, false, `${file} not found at ${repoRoot}`)); continue; }
+    const list = parseList(readFileSync(path, 'utf-8'), re);
     if (!list) { out.push(ok(`${file} enumerates the matrix columns`, false, 'no "Current … columns" line found')); continue; }
     const missing = [...areas].filter((a) => !list.includes(a));
     const phantom = list.filter((c) => !areas.has(c));
@@ -128,8 +130,10 @@ export function checkCatalogHeadings(db: Db): CheckResult[] {
     { item_id: string; name: string; url: string; heading_md: string }[];
   const bad: string[] = [];
   for (const r of rows) {
-    const m = /\[([^\]]*)\]\(([^)]+)\)/.exec(r.heading_md); // first markdown link in the heading
-    if (!m || m[1].trim() !== r.name || m[2].trim() !== r.url) bad.push(r.item_id);
+    // heading_md is emitted as `[name](url)` (+ any trailing curator annotation), so the
+    // link is exactly that prefix. Reconstruct and prefix-match rather than regex-parse —
+    // a URL or name containing `)` / `]` would break a negated-class capture (false drift).
+    if (!r.heading_md.startsWith(`[${r.name}](${r.url})`)) bad.push(r.item_id);
   }
   return [ok('catalog: name/url match the heading_md link', bad.length === 0,
     `mismatched: ${bad.slice(0, 5).join(', ')}`)];

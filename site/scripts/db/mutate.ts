@@ -10,6 +10,7 @@
  */
 
 import { frozenSlug, type Db } from './lib.js';
+import { INVENTORY_PAGES } from '../parser/datasets.js';
 
 const ACCESSION = /GSE\d+|PRJ[A-Z]+\d+|PXD\d+|CRA\d+|E-MTAB-\d+|SRP\d+|GSM\d+/;
 
@@ -83,13 +84,14 @@ export function addItem(db: Db, spec: ItemAdd): string {
 
   if (spec.type === 'paper') {
     // The emitter can only place a citation under a section that already has an anchor in
-    // Papers.md (a brand-new section would be silently dropped on emit), so reject an
-    // unknown section here. The two canonical sections are always valid.
+    // Papers.md (emitPapersFile hooks onto an existing `<a id>` paragraph); a section with
+    // zero current papers has no anchor, so a paper added there would fail/drop on emit.
+    // Validate against sections that ACTUALLY have papers now — not a hardcoded allowlist
+    // (which would wrongly accept a canonical section that a db:remove had just emptied).
     const section = spec.section ?? 'References';
-    const known = new Set(['References', 'Reviews & Perspectives',
-      ...(db.prepare('SELECT DISTINCT section FROM papers').all() as { section: string }[]).map((r) => r.section)]);
+    const known = new Set((db.prepare('SELECT DISTINCT section FROM papers').all() as { section: string }[]).map((r) => r.section));
     if (!known.has(section)) {
-      throw new Error(`addItem: unknown paper section '${section}'. Add its '## ${section}' heading to Papers.md first, or use an existing section.`);
+      throw new Error(`addItem: section '${section}' has no citation in Papers.md to attach to. Add its '## ${section}' heading + a first reference to Papers.md and re-bootstrap, or use a populated section.`);
     }
     // Max over live papers AND retired ids, so a removed ref_id is never handed out again.
     const refId = nextInt(db, 'SELECT MAX(m) m FROM (SELECT MAX(ref_id) m FROM papers UNION ALL SELECT MAX(ref_id) m FROM retired_paper_ids)');
@@ -128,7 +130,13 @@ export function addItem(db: Db, spec: ItemAdd): string {
     return id;
   }
 
-  // dataset
+  // dataset (inventory row)
+  // Only INVENTORY_PAGES have a `## Complete data inventory` table for emitAll to write
+  // into; a typo'd or reference/benchmark page would be persisted to NDJSON and then
+  // silently never emitted to any Markdown file, so reject it up front.
+  if (!INVENTORY_PAGES.includes(spec.page)) {
+    throw new Error(`addItem: '${spec.page}' is not an inventory dataset page. Valid pages: ${INVENTORY_PAGES.join(', ')}.`);
+  }
   const joined = spec.cells.join(' ');
   const acc = joined.match(ACCESSION)?.[0];
   const seedText = acc ?? spec.cells[0].replace(/[[\]`*]/g, '').split(/\s+/).slice(0, 3).join('-');

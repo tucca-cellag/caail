@@ -128,10 +128,18 @@ describe('addItem — validation', () => {
     expect(() => addItem(db, { type: 'software', name: 'T', url: 'u', group: 'g', body: 'b', topics: ['no-such-topic'] }))
       .toThrow(/unknown topic/);
   });
-  it('rejects a paper in an unknown section (C3-2: would be dropped on emit)', () => {
+  it('rejects a paper in a section with no citation in Papers.md (would drop on emit)', () => {
     const db = importNdjson();
     expect(() => addItem(db, { type: 'paper', raw: 'X. (2099). Y. *J*.', label: 'X 2099', section: 'Totally New Section', cells: [{ method: anyMethod(db), area: anyArea(db) }] }))
-      .toThrow(/unknown paper section/);
+      .toThrow(/no citation in Papers.md/);
+  });
+  it('rejects a dataset row on a non-inventory page (would be silently unemitted)', () => {
+    const db = importNdjson();
+    expect(() => addItem(db, { type: 'dataset', page: 'Typooo', cells: ['Synthetic GSE111111', 'x'] }))
+      .toThrow(/not an inventory dataset page/);
+    // a reference page (H3 schema, no inventory table) is also rejected
+    expect(() => addItem(db, { type: 'dataset', page: 'HumanReference', cells: ['Synthetic GSE222222', 'y'] }))
+      .toThrow(/not an inventory dataset page/);
   });
 });
 

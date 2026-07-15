@@ -93,6 +93,12 @@ describe('checkColumnDrift', () => {
     const res = checkColumnDrift(db, fixtureRoot('Media Optimization'));
     expect(res.some((r) => /CONTRIBUTING/.test(r.label) && !r.ok)).toBe(true);
   });
+  it('returns a failing check (not an ENOENT crash) when a source file is missing', () => {
+    const emptyDir = mkdtempSync(join(tmpdir(), 'caail-nocols-'));
+    const res = checkColumnDrift(db, emptyDir); // no CONTRIBUTING.md / CLAUDE.md present
+    expect(res.every((r) => !r.ok)).toBe(true);
+    expect(res.some((r) => /not found/.test(r.detail))).toBe(true);
+  });
 });
 
 describe('checkTopicTiers', () => {
@@ -134,6 +140,12 @@ describe('checkCatalogHeadings', () => {
     const db = withCatalog();
     db.prepare("UPDATE catalog SET url='https://DRIFTED' WHERE item_id='sw:tool'").run();
     expect(failing(checkCatalogHeadings(db), /name\/url match/)).toBe(true);
+  });
+  it('does not false-positive on a URL containing parentheses', () => {
+    const db = miniDb();
+    db.prepare("INSERT INTO items(id,type,slug) VALUES('db:wiki','database','wiki')").run();
+    db.prepare("INSERT INTO catalog(item_id,name,url,grp,heading_md,body_md,ordinal) VALUES('db:wiki','Wiki','https://en.wikipedia.org/wiki/File_(system)','G','[Wiki](https://en.wikipedia.org/wiki/File_(system))','',0)").run();
+    expect(checkCatalogHeadings(db).every((r) => r.ok)).toBe(true);
   });
 });
 

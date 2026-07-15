@@ -194,10 +194,20 @@ export function generateData(
   // name that diverges between the parser and the NDJSON fails the build here instead of
   // silently losing that entry's topics.
   const paperIds = new Set(model.references.map((r) => `paper:${r.id}`));
-  const catalogKeys = new Set([
+  const catalogKeyList = [
     ...catalog.software.map((e) => catalogJoinKey('software', e.url, e.name)),
     ...catalog.databases.map((e) => catalogJoinKey('database', e.url, e.name)),
-  ]);
+  ];
+  const catalogKeys = new Set(catalogKeyList);
+  // The topic join is by (type, url, normalized-name); if two entries collapse to the same
+  // key (e.g. names differing only in a leading block-marker the name-normalizer strips),
+  // one would silently steal the other's topics. Fail loud on any collision.
+  if (catalogKeys.size !== catalogKeyList.length) {
+    throw new Error(
+      `generate-data: ${catalogKeyList.length - catalogKeys.size} catalog entr(ies) share a ` +
+        `(type, url, name) topic-join key — two entries normalize identically. Disambiguate their names.`,
+    );
+  }
   const orphanTopics = unresolvedTopicItems(paperIds, catalogKeys);
   if (orphanTopics.length > 0) {
     throw new Error(
