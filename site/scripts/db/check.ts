@@ -22,6 +22,7 @@ import { importNdjson, REPO_ROOT, SITE_ROOT, type Db } from './lib.js';
 import { THEME_SLUGS } from './seed.js';
 
 const MANUAL_LICENSES_PATH = join(SITE_ROOT, 'scripts', 'db', 'licenses-manual.json');
+const MANUAL_DOIS_PATH = join(SITE_ROOT, 'scripts', 'db', 'dois-manual.json');
 
 export interface CheckResult { label: string; ok: boolean; detail: string; }
 const ok = (label: string, cond: boolean, detail = ''): CheckResult => ({ label, ok: cond, detail });
@@ -210,10 +211,51 @@ export function checkManualLicenseKeys(db: Db, manualPath: string = MANUAL_LICEN
   ];
 }
 
+/**
+ * DOI provenance guard — the DOI analog of checkLicenses. `doi_source` (auto|manual) is
+ * enforced by the schema CHECK; this guards the app-level invariant it can't: `doi` and
+ * `doi_source` must be BOTH set or BOTH null (a source without a value is meaningless; a
+ * value without a source would mislabel its provenance). Runs on catalog + dataset_entries.
+ */
+export function checkDois(db: Db): CheckResult[] {
+  const out: CheckResult[] = [];
+  for (const table of ['catalog', 'dataset_entries']) {
+    const bad = db.prepare(
+      `SELECT item_id FROM ${table} WHERE (doi IS NULL) <> (doi_source IS NULL)`,
+    ).all() as { item_id: string }[];
+    out.push(ok(`${table}: doi and doi_source are both set or both null`, bad.length === 0,
+      bad.slice(0, 3).map((r) => r.item_id).join(', ')));
+  }
+  return out;
+}
+
+/**
+ * Manual-DOI resolution guard — the DOI analog of checkManualLicenseKeys. `seedDois` applies
+ * `dois-manual.json` by EXACT url (catalog) / `ds:` id (datasets); an override whose key
+ * doesn't match a real entry is silently dropped. Assert every committed override key
+ * resolves so curator drift fails db:check instead of vanishing. Absent file = no-op.
+ */
+export function checkManualDoiKeys(db: Db, manualPath: string = MANUAL_DOIS_PATH): CheckResult[] {
+  if (!existsSync(manualPath)) return [ok('dois-manual.json: overrides resolve', true, 'file absent')];
+  const manual = JSON.parse(readFileSync(manualPath, 'utf-8')) as
+    { catalog?: Record<string, string>; datasets?: Record<string, string> };
+  const catUrls = new Set((db.prepare('SELECT url FROM catalog').all() as { url: string }[]).map((r) => r.url));
+  const dsIds = new Set((db.prepare('SELECT item_id FROM dataset_entries').all() as { item_id: string }[]).map((r) => r.item_id));
+  const badCat = Object.keys(manual.catalog ?? {}).filter((u) => !catUrls.has(u));
+  const badDs = Object.keys(manual.datasets ?? {}).filter((id) => !dsIds.has(id));
+  return [
+    ok('dois-manual.json: every catalog override url matches a catalog entry',
+      badCat.length === 0, `unmatched: ${badCat.slice(0, 3).join(', ')}`),
+    ok('dois-manual.json: every datasets override id matches a dataset entry',
+      badDs.length === 0, `unmatched: ${badDs.slice(0, 3).join(', ')}`),
+  ];
+}
+
 /** Run every guard against a DB. Returns all results (ok + failing). */
 export function runChecks(db: Db, repoRoot: string = REPO_ROOT): CheckResult[] {
   return [...checkIntegrity(db), ...checkReachability(db), ...checkColumnDrift(db, repoRoot),
-    ...checkTopicTiers(db), ...checkCatalogHeadings(db), ...checkLicenses(db), ...checkManualLicenseKeys(db)];
+    ...checkTopicTiers(db), ...checkCatalogHeadings(db), ...checkLicenses(db), ...checkManualLicenseKeys(db),
+    ...checkDois(db), ...checkManualDoiKeys(db)];
 }
 
 function main(): void {

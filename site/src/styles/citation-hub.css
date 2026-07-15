@@ -1,0 +1,81 @@
+/* citation-hub.css — the /citations/ cross-content hub: a citation-band index and
+   per-band views. Mirrors license-hub.css; band accent runs cool→warm with popularity. */
+
+.ch-band-grid li,
+.ch-items li { margin: 0; }
+
+.ch-disclaimer {
+  font-size: 0.85rem;
+  color: var(--caail-muted);
+  border-left: 3px solid var(--caail-border);
+  padding-left: 0.7rem;
+  margin: 0.5rem 0 1rem;
+}
+.ch-disclaimer code { font-size: 0.92em; padding: 0.05em 0.3em; border-radius: 4px; background: color-mix(in oklab, var(--caail-border) 45%, transparent); }
+
+.ch-band-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+  gap: 0.9rem;
+  list-style: none;
+  margin: 1rem 0 0;
+  padding: 0;
+}
+
+.ch-band-card {
+  --tint: var(--caail-muted);
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--caail-border);
+  border-top: 3px solid var(--tint);
+  border-radius: 0.6rem;
+  background: var(--caail-surface);
+}
+.ch-band-card[data-band='1000plus'],
+.ch-view[data-band='1000plus'] { --tint: var(--caail-area-sensory); }
+.ch-band-card[data-band='100to999'],
+.ch-view[data-band='100to999'] { --tint: var(--caail-area-media); }
+.ch-band-card[data-band='10to99'],
+.ch-view[data-band='10to99'] { --tint: var(--caail-area-bioprocess); }
+.ch-band-card[data-band='under10'],
+.ch-view[data-band='under10'] { --tint: var(--caail-muted); }
+
+.ch-band-link { font-weight: 600; font-size: 1.05rem; text-decoration: none; color: var(--caail-primary); }
+.ch-total { color: var(--caail-muted); font-size: 0.85rem; margin: 0.15rem 0 0.4rem; }
+.ch-blurb { font-size: 0.85rem; color: var(--caail-ink); margin: 0.2rem 0 0; }
+
+.ch-crumbs { font-size: 0.85rem; margin: 0.5rem 0 0.4rem; }
+.ch-title { margin: 0.2rem 0 0.3rem; border-bottom: 3px solid var(--tint); display: inline-block; padding-bottom: 0.15rem; }
+
+.ch-group { margin-top: 1.4rem; }
+.ch-group-h { font-size: 1rem; margin: 0 0 0.4rem; }
+.ch-group-n { color: var(--caail-muted); font-weight: 400; }
+
+.ch-items { list-style: none; padding: 0; margin: 0; }
+.ch-items > li { margin: 0; border-top: 1px solid var(--caail-border); }
+.ch-items > li:first-child { border-top: none; }
+.ch-item {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  padding: 0.45rem 0.4rem;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  color: var(--caail-ink);
+  text-decoration: none;
+  border-radius: 5px;
+}
+.ch-item:hover,
+.ch-item:focus-visible { background: var(--caail-surface); color: var(--caail-primary); }
+.ch-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.ch-count {
+  margin-left: auto;
+  font-size: 0.78rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--caail-muted);
+  white-space: nowrap;
+}
+.ch-item:hover .ch-count,
+.ch-item:focus-visible .ch-count { color: var(--caail-primary); }
+
+.ch-empty { color: var(--caail-muted); margin-top: 1rem; }

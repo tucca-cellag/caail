@@ -163,6 +163,7 @@ export default defineConfig({
         { label: 'Databases', link: '/databases/' },
         { label: 'Topics', link: '/topics/' },
         { label: 'Licenses', link: '/licenses/' },
+        { label: 'Citations', link: '/citations/' },
         { label: 'Awesome Lists', link: '/awesome-lists/' },
         { label: 'AI Agents & Foundation Models', link: '/ai-agents-foundation-models/' },
         { label: 'Datasets (by species)', items: groupItems('datasets') },
@@ -188,6 +189,9 @@ export default defineConfig({
         // Global so the raw-HTML dataset license badges (dataset-cards remark) and the
         // CatalogBrowser LicenseBadge component share one stylesheet.
         './src/styles/license-badge.css',
+        // Same rationale for the "cited by N" OpenAlex badge (CitationBadge component +
+        // the raw-HTML dataset citation badges from the dataset-cards remark).
+        './src/styles/citation-badge.css',
       ],
       components: {
         // Append per-route schema.org JSON-LD (CollectionPage + ItemList +

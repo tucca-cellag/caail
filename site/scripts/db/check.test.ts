@@ -12,7 +12,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { openDb, importNdjson, type Db } from './lib.js';
-import { checkIntegrity, checkReachability, checkColumnDrift, checkTopicTiers, checkCatalogHeadings, checkLicenses, checkManualLicenseKeys, runChecks } from './check.js';
+import { checkIntegrity, checkReachability, checkColumnDrift, checkTopicTiers, checkCatalogHeadings, checkLicenses, checkManualLicenseKeys, checkDois, checkManualDoiKeys, runChecks } from './check.js';
 
 const failing = (results: { label: string; ok: boolean }[], match: RegExp) =>
   results.some((r) => match.test(r.label) && !r.ok);
@@ -181,6 +181,72 @@ describe('checkManualLicenseKeys', () => {
   it('flags a datasets override id that matches no dataset entry', () => {
     const path = writeManual({ catalog: {}, datasets: { 'ds:ghost': 'CC-BY-4.0' } });
     expect(failing(checkManualLicenseKeys(withCatalog(), path), /datasets override id matches/)).toBe(true);
+  });
+});
+
+describe('checkDois', () => {
+  it('passes on a DB with no doi provenance set', () => {
+    expect(checkDois(miniDb()).every((r) => r.ok)).toBe(true);
+  });
+  it('flags a catalog doi_source with no doi value', () => {
+    const db = miniDb();
+    db.prepare("INSERT INTO items(id,type,slug) VALUES('sw:ghost','software','ghost')").run();
+    db.prepare(
+      "INSERT INTO catalog(item_id,name,url,grp,heading_md,body_md,doi,doi_source,ordinal) " +
+      "VALUES('sw:ghost','Ghost','https://x','G','[Ghost](https://x)','',NULL,'manual',0)",
+    ).run();
+    expect(failing(checkDois(db), /both set or both null/)).toBe(true);
+  });
+  it('flags a catalog doi value with no source', () => {
+    const db = miniDb();
+    db.prepare("INSERT INTO items(id,type,slug) VALUES('sw:orphan','software','orphan')").run();
+    db.prepare(
+      "INSERT INTO catalog(item_id,name,url,grp,heading_md,body_md,doi,doi_source,ordinal) " +
+      "VALUES('sw:orphan','Orphan','https://o','G','[Orphan](https://o)','','10.1/x',NULL,0)",
+    ).run();
+    expect(failing(checkDois(db), /both set or both null/)).toBe(true);
+  });
+  it('passes when doi + source are both set', () => {
+    const db = miniDb();
+    db.prepare("INSERT INTO items(id,type,slug) VALUES('sw:ok','software','ok')").run();
+    db.prepare(
+      "INSERT INTO catalog(item_id,name,url,grp,heading_md,body_md,doi,doi_source,ordinal) " +
+      "VALUES('sw:ok','Ok','https://y','G','[Ok](https://y)','','10.1/y','manual',0)",
+    ).run();
+    expect(checkDois(db).every((r) => r.ok)).toBe(true);
+  });
+});
+
+describe('checkManualDoiKeys', () => {
+  const withCatalog = () => {
+    const db = miniDb();
+    db.prepare("INSERT INTO items(id,type,slug) VALUES('sw:tool','software','tool')").run();
+    db.prepare(
+      "INSERT INTO catalog(item_id,name,url,grp,heading_md,body_md,ordinal) " +
+      "VALUES('sw:tool','Tool','https://tool.dev','G','[Tool](https://tool.dev)','',0)",
+    ).run();
+    return db;
+  };
+  const writeManual = (obj: unknown) => {
+    const p = join(mkdtempSync(join(tmpdir(), 'caail-mandoi-')), 'dois-manual.json');
+    writeFileSync(p, JSON.stringify(obj));
+    return p;
+  };
+
+  it('is a no-op when the manual file is absent', () => {
+    expect(checkManualDoiKeys(miniDb(), join(tmpdir(), 'does-not-exist-mandoi.json')).every((r) => r.ok)).toBe(true);
+  });
+  it('passes when every override url resolves to a catalog entry', () => {
+    const path = writeManual({ catalog: { 'https://tool.dev': '10.1/x' }, datasets: {} });
+    expect(checkManualDoiKeys(withCatalog(), path).every((r) => r.ok)).toBe(true);
+  });
+  it('flags a catalog override url that matches no entry (e.g. trailing-slash drift)', () => {
+    const path = writeManual({ catalog: { 'https://tool.dev/': '10.1/x' }, datasets: {} });
+    expect(failing(checkManualDoiKeys(withCatalog(), path), /catalog override url matches/)).toBe(true);
+  });
+  it('flags a datasets override id that matches no dataset entry', () => {
+    const path = writeManual({ catalog: {}, datasets: { 'ds:ghost': '10.1/y' } });
+    expect(failing(checkManualDoiKeys(withCatalog(), path), /datasets override id matches/)).toBe(true);
   });
 });
 

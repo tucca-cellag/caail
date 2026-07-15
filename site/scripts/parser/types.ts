@@ -89,6 +89,9 @@ export const ReferenceSchema = z.object({
   slug: z.string(),
   /** Two-tier subject tags (#78 topic axis), folded in from the committed topic NDJSON */
   topics: z.array(TopicRefSchema).default([]),
+  /** OpenAlex global cited_by_count for this DOI, folded from the citation cache; null when
+   *  the DOI is absent from the cache (not yet re-fetched) or the paper has no DOI */
+  citedByOpenAlex: z.number().int().nonnegative().nullable().default(null),
 });
 
 export const CatalogEntrySchema = z.object({
@@ -117,6 +120,11 @@ export const CatalogEntrySchema = z.object({
   license: z.string().nullable().default(null),
   licenseSource: z.enum(['auto', 'manual']).nullable().default(null),
   tier: LicenseTierSchema.default('unknown'),
+  /** DB-owned associated-publication DOI + provenance, folded from the catalog NDJSON */
+  doi: z.string().nullable().default(null),
+  doiSource: z.enum(['auto', 'manual']).nullable().default(null),
+  /** OpenAlex cited_by_count for `doi`, folded from the citation cache; null when unknown */
+  citationCount: z.number().int().nonnegative().nullable().default(null),
 });
 
 /**
@@ -145,6 +153,11 @@ export const DatasetEntrySchema = z.object({
   license: z.string().nullable().default(null),
   licenseSource: z.enum(['auto', 'manual']).nullable().default(null),
   tier: LicenseTierSchema.default('unknown'),
+  /** DB-owned associated-publication DOI + provenance, folded from dataset_entries NDJSON */
+  doi: z.string().nullable().default(null),
+  doiSource: z.enum(['auto', 'manual']).nullable().default(null),
+  /** OpenAlex cited_by_count for `doi`, folded from the citation cache; null when unknown */
+  citationCount: z.number().int().nonnegative().nullable().default(null),
 });
 
 /** Schema for datasets.json — the curated dataset entries across the Datasets/ pages. */

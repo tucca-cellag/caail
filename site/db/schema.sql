@@ -80,6 +80,12 @@ CREATE TABLE matrix_cells (
 -- hand-verified). Both nullable (unknown = not detected). The coarse tier is DERIVED
 -- at parse time (licenseTier), never stored. License is DB-only (like topics) — not
 -- written into canonical Markdown — so it's surfaced only on the site.
+-- `doi` is the DOI of the tool/resource's associated publication (curator-supplied);
+-- `doi_source` records provenance ('manual' = hand-verified; 'auto' reserved for a
+-- future resolver). Both nullable (unknown = no associated publication recorded). Like
+-- license it is DB-only — never written to canonical Markdown — and is folded into the
+-- site JSON at parse, where an OpenAlex `cited_by_count` is joined onto it for the
+-- "cited by N" badge. The count itself is NOT stored (derived from the citation cache).
 CREATE TABLE catalog (
   item_id        TEXT PRIMARY KEY REFERENCES items(id),
   name           TEXT NOT NULL,            -- inline markdown of the H3 link text (id/tally)
@@ -89,6 +95,8 @@ CREATE TABLE catalog (
   body_md        TEXT NOT NULL,
   license        TEXT,                     -- SPDX-ish token or manual string; NULL = unknown
   license_source TEXT CHECK (license_source IN ('auto','manual')),
+  doi            TEXT,                     -- associated-publication DOI (bare); NULL = none recorded
+  doi_source     TEXT CHECK (doi_source IN ('auto','manual')),
   ordinal        INTEGER NOT NULL
 );
 
@@ -119,6 +127,8 @@ CREATE TABLE dataset_entries (
   body_md    TEXT NOT NULL,
   license        TEXT,                 -- data-use token / manual string; NULL = unknown
   license_source TEXT CHECK (license_source IN ('auto','manual')),
+  doi            TEXT,                 -- associated-publication DOI (bare); NULL = none recorded
+  doi_source     TEXT CHECK (doi_source IN ('auto','manual')),
   ordinal    INTEGER NOT NULL          -- document order across all dataset pages
 );
 

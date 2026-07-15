@@ -297,3 +297,43 @@ export function seedLicenses(db: Db): { auto: number; manual: number } {
   }
   return { auto, manual: manualN };
 }
+
+interface ManualDois { catalog: Record<string, string>; datasets: Record<string, string>; }
+
+/** Normalize a DOI to a bare lowercase key (strip scheme/host + `doi:`); '' -> null. */
+export function bareDoi(doi: string): string | null {
+  const d = doi.trim().toLowerCase()
+    .replace(/^https?:\/\/(dx\.)?doi\.org\//, '')
+    .replace(/^doi:/, '');
+  return d || null;
+}
+
+/**
+ * Seed doi + doi_source onto catalog + dataset_entries from the committed, offline
+ * `scripts/db/dois-manual.json` (curator-supplied associated-publication DOIs; catalog
+ * by url, datasets by ds: id; all `manual`). Mirrors seedLicenses — DOI is DB-only and
+ * folds into the site JSON at parse, where the OpenAlex citation count is joined onto it.
+ * Unlike licenses there is no auto cache yet (no reliable url->DOI resolver), so every
+ * value is `manual`. DOIs are stored bare + lowercase (same key space as the citation
+ * cache). Returns the number seeded.
+ */
+export function seedDois(db: Db): { manual: number } {
+  const manual = readJson<ManualDois>(join(SITE_ROOT, 'scripts', 'db', 'dois-manual.json'), { catalog: {}, datasets: {} });
+  const setCat = db.prepare('UPDATE catalog SET doi=?, doi_source=? WHERE url=?');
+  const setDs = db.prepare('UPDATE dataset_entries SET doi=?, doi_source=? WHERE item_id=?');
+  let manualN = 0;
+
+  for (const [url, raw] of Object.entries(manual.catalog)) {
+    const doi = bareDoi(raw);
+    if (!doi) continue;
+    const res = setCat.run(doi, 'manual', url);
+    if (res.changes) manualN++;
+  }
+  for (const [id, raw] of Object.entries(manual.datasets)) {
+    const doi = bareDoi(raw);
+    if (!doi) continue;
+    const res = setDs.run(doi, 'manual', id);
+    if (res.changes) manualN++;
+  }
+  return { manual: manualN };
+}

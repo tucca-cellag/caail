@@ -5,6 +5,7 @@ import catalog from '../content/data/catalog.json';
 import { groupSlug } from '../lib/catalog-groups';
 import TopicChips from './TopicChips';
 import LicenseBadge from './LicenseBadge';
+import CitationBadge from './CitationBadge';
 import type { TopicRef } from '../lib/topic-chips';
 import { LICENSE_TIERS, TIER_META, type LicenseTier } from '../lib/licenses';
 
@@ -19,6 +20,9 @@ type Entry = {
   license: string | null;
   licenseSource: 'auto' | 'manual' | null;
   tier: LicenseTier;
+  doi: string | null;
+  doiSource: 'auto' | 'manual' | null;
+  citationCount: number | null;
 };
 type Kind = 'software' | 'databases';
 
@@ -55,18 +59,53 @@ export default function CatalogBrowser({ kind }: Props) {
       next.has(t) ? next.delete(t) : next.add(t);
       return next;
     });
+  // "Most cited" facet: filter to entries with an OpenAlex count, ordered by count desc
+  // (within each group, since the display stays grouped by area).
+  const [citedOnly, setCitedOnly] = useState(false);
+  const anyCited = useMemo(() => entries.some((e) => e.citationCount != null), [entries]);
 
   const filtered = useMemo(() => {
     const ql = q.trim().toLowerCase();
-    return entries.filter((e) => {
+    const list = entries.filter((e) => {
       if (group && e.group !== group) return false;
       if (tiers.size && !tiers.has(e.tier)) return false;
+      if (citedOnly && e.citationCount == null) return false;
       if (!ql) return true;
       return `${e.name} ${e.summary} ${e.group} ${e.license ?? ''}`.toLowerCase().includes(ql);
     });
-  }, [q, group, tiers, entries]);
+    if (citedOnly) list.sort((a, b) => (b.citationCount ?? 0) - (a.citationCount ?? 0));
+    return list;
+  }, [q, group, tiers, citedOnly, entries]);
 
   const noun = kind === 'software' ? 'tool' : 'database';
+
+  // One card. Shared by the grouped-by-area view and the flat "Most cited" ranking.
+  const renderCard = (e: Entry) => (
+    // Container, NOT a wrapping anchor: the summary carries its own hyperlinks
+    // (nesting <a> in <a> is invalid). The title links to the canonical home;
+    // `id` lets the canonical markdown's intra-page "see X below" anchors land.
+    <article class="cb-card" id={e.slug}>
+      <LicenseBadge license={e.license} licenseSource={e.licenseSource} tier={e.tier} />
+      <h3 class="cb-name">
+        <a class="cb-name-link" href={e.url} target="_blank" rel="noopener noreferrer">
+          {e.name}
+          <span class="cb-ext" aria-hidden="true">↗</span>
+        </a>
+      </h3>
+      <div
+        class="cb-sum"
+        // First-party content from our own canonical Markdown, rendered to HTML at
+        // build time (mdast→hast→html escapes any raw HTML), not a user-input sink.
+        dangerouslySetInnerHTML={{ __html: e.summaryHtml }}
+      />
+      <TopicChips topics={e.topics} />
+      {e.citationCount != null && (
+        <p class="cb-meta">
+          <CitationBadge doi={e.doi} citationCount={e.citationCount} />
+        </p>
+      )}
+    </article>
+  );
 
   return (
     <div class="cb">
@@ -105,6 +144,17 @@ export default function CatalogBrowser({ kind }: Props) {
             {TIER_META[t].label}
           </button>
         ))}
+        {anyCited && (
+          <button
+            type="button"
+            class={`cb-cited${citedOnly ? ' cb-cited--on' : ''}`}
+            aria-pressed={citedOnly}
+            title="Show only resources with an associated publication, most-cited first (OpenAlex)"
+            onClick={() => setCitedOnly((v) => !v)}
+          >
+            Most cited
+          </button>
+        )}
       </div>
 
       <p class="cb-count" role="status">
@@ -115,6 +165,13 @@ export default function CatalogBrowser({ kind }: Props) {
 
       {filtered.length === 0 ? (
         <p class="cb-empty">No {noun}s match your search.</p>
+      ) : citedOnly ? (
+        // "Most cited": one global ranking (filtered is pre-sorted by count desc), so a
+        // 5,500-citation tool can't sit below a 439 one just because its area sorts later.
+        <section class="cb-grp">
+          <h2 class="cb-grp-h caail-display">Most cited</h2>
+          <div class="cb-grid">{filtered.map(renderCard)}</div>
+        </section>
       ) : (
         groups
           .map((g) => ({ g, items: filtered.filter((e) => e.group === g) }))
@@ -122,36 +179,7 @@ export default function CatalogBrowser({ kind }: Props) {
           .map(({ g, items }) => (
             <section class="cb-grp">
               <h2 class="cb-grp-h caail-display" id={groupSlug(g)}>{g}</h2>
-              <div class="cb-grid">
-                {items.map((e) => (
-                  // Container, NOT a wrapping anchor: the summary now carries
-                  // its own hyperlinks (nesting <a> in <a> is invalid). The
-                  // title is the link to the canonical home; `id` lets the
-                  // canonical markdown's intra-page "see X below" anchors land.
-                  <article class="cb-card" id={e.slug}>
-                    <LicenseBadge license={e.license} licenseSource={e.licenseSource} tier={e.tier} />
-                    <h3 class="cb-name">
-                      <a
-                        class="cb-name-link"
-                        href={e.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        {e.name}
-                        <span class="cb-ext" aria-hidden="true">↗</span>
-                      </a>
-                    </h3>
-                    <div
-                      class="cb-sum"
-                      // First-party content from our own canonical Markdown,
-                      // rendered to HTML at build time (mdast→hast→html escapes
-                      // any raw HTML), so this is not a user-input injection sink.
-                      dangerouslySetInnerHTML={{ __html: e.summaryHtml }}
-                    />
-                    <TopicChips topics={e.topics} />
-                  </article>
-                ))}
-              </div>
+              <div class="cb-grid">{items.map(renderCard)}</div>
             </section>
           ))
       )}

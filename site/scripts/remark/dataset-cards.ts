@@ -29,6 +29,8 @@ export interface DatasetCardEntry {
   license: string | null;
   licenseSource: 'auto' | 'manual' | null;
   tier: LicenseTier;
+  doi: string | null;
+  citationCount: number | null;
 }
 
 const DATA_PATH = fileURLToPath(new URL('../../src/content/data/datasets.json', import.meta.url));
@@ -65,6 +67,30 @@ function licenseBadgeHtml(entry: DatasetCardEntry): string {
   );
 }
 
+/** Compact count for the badge label (4626 -> "4.6k"); mirrors CitationBadge.compactCount. */
+function compactCount(n: number): string {
+  return n < 1000
+    ? String(n)
+    : new Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1 }).format(n);
+}
+
+/** "cited by N" OpenAlex badge markup mirroring CitationBadge.tsx; '' when no count. */
+function citationBadgeHtml(entry: DatasetCardEntry): string {
+  if (entry.citationCount == null) return '';
+  const href = entry.doi
+    ? `https://openalex.org/works?filter=doi:${encodeURIComponent(entry.doi)}`
+    : `${BASE}/citations/`;
+  const external = entry.doi != null;
+  const title =
+    `Cited by ${entry.citationCount.toLocaleString()} (OpenAlex cited_by_count). ` +
+    'A coarse popularity signal, not a quality measure — confirm at the source.';
+  return (
+    `<a class="cite-badge" href="${href}"${external ? ' target="_blank" rel="noopener noreferrer"' : ''} ` +
+    `title="${esc(title)}"><span class="cite-badge__label">cited by</span>` +
+    `<span class="cite-badge__n">${esc(compactCount(entry.citationCount))}</span></a>`
+  );
+}
+
 /**
  * Load datasets.json grouped by page (document order preserved), for the config
  * wrapper. Returns an empty map when the build artifact is absent (e.g. a dev run
@@ -78,7 +104,7 @@ export function loadDatasetEntriesByPage(): Map<string, DatasetCardEntry[]> {
   };
   for (const e of entries) {
     const list = out.get(e.page) ?? out.set(e.page, []).get(e.page)!;
-    list.push({ name: e.name, kind: e.kind, anchor: e.anchor, topics: e.topics, license: e.license, licenseSource: e.licenseSource, tier: e.tier });
+    list.push({ name: e.name, kind: e.kind, anchor: e.anchor, topics: e.topics, license: e.license, licenseSource: e.licenseSource, tier: e.tier, doi: e.doi, citationCount: e.citationCount });
   }
   return out;
 }
@@ -130,6 +156,8 @@ export function datasetCards(options: {
         while (i < kids.length && !(kids[i].type === 'heading' && kids[i].depth <= 3)) { out.push(kids[i]); i++; }
         const chips = chipsHtml(entry);
         if (chips) out.push({ type: 'html', value: chips });
+        const cite = citationBadgeHtml(entry);
+        if (cite) out.push({ type: 'html', value: `<p class="ds-meta not-content">${cite}</p>` });
         out.push({ type: 'html', value: '</article>' });
         continue;
       }

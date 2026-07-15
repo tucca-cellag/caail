@@ -30,6 +30,8 @@ export const CitationCacheWorkSchema = z.object({
   openalexId: z.string().min(1),
   /** OpenAlex `referenced_works` — ids of works this paper cites */
   referencedWorks: z.array(z.string()),
+  /** OpenAlex global `cited_by_count` for the "cited by N" badge; null pre-refetch */
+  citedByCount: z.number().int().nonnegative().nullable().default(null),
 });
 
 export const CitationCacheSchema = z.object({
@@ -59,6 +61,21 @@ export function doiKey(doi: string | null | undefined): string | null {
   d = d.replace(/^https?:\/\/(dx\.)?doi\.org\//, '');
   d = d.replace(/^doi:/, '');
   return d || null;
+}
+
+/**
+ * Map bare-lowercase DOI -> OpenAlex global `cited_by_count`, for folding the
+ * "cited by N" badge onto every content type (papers, catalog, dataset entries) at
+ * parse. Entries with a null count (not yet re-fetched) are omitted. With no cache the
+ * map is empty and no badge renders.
+ */
+export function citedByCountByDoi(cache?: CitationCache | null): Map<string, number> {
+  const out = new Map<string, number>();
+  if (!cache) return out;
+  for (const [doi, work] of Object.entries(cache.works)) {
+    if (work.citedByCount != null) out.set(doi, work.citedByCount);
+  }
+  return out;
 }
 
 /**

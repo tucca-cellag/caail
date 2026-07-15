@@ -10,7 +10,7 @@
 
 import { describe, it, expect } from 'vitest';
 
-import { buildCitationData, doiKey, type CitationCache } from './citations.js';
+import { buildCitationData, citedByCountByDoi, doiKey, type CitationCache } from './citations.js';
 import { buildPapersModel } from './papers.js';
 import { loadCitationCache } from './generate-data.js';
 import type { PapersData, Reference } from './types.js';
@@ -163,5 +163,21 @@ describe('buildCitationData — committed cache', () => {
     expect(sumCites).toBe(data.edges.length);
     expect(sumCitedBy).toBe(data.edges.length);
     expect(data.stats.connectedNodes + data.stats.isolatedNodes).toBe(model.references.length);
+  });
+});
+
+describe('citedByCountByDoi', () => {
+  it('maps bare DOI -> count, omitting null counts and a null cache', () => {
+    const cache: CitationCache = {
+      generatedAt: 'x',
+      works: {
+        '10.1/a': { openalexId: 'W1', referencedWorks: [], citedByCount: 42 },
+        '10.1/b': { openalexId: 'W2', referencedWorks: [], citedByCount: null },
+      },
+    };
+    const m = citedByCountByDoi(cache);
+    expect(m.get('10.1/a')).toBe(42);
+    expect(m.has('10.1/b')).toBe(false);
+    expect(citedByCountByDoi(null).size).toBe(0);
   });
 });

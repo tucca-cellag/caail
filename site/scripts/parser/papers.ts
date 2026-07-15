@@ -28,6 +28,8 @@ import { parseMarkdown, firstTable, sectionsAfter, anchorParagraphs, labeledLink
 import { parseApa } from './apa.js';
 import { areaKeyForLabel } from './areas.js';
 import { topicsByItemId } from './topics.js';
+import { doiKey } from './citations.js';
+import { loadCitedByCounts } from './citation-counts.js';
 import {
   PapersDataSchema,
   type PapersData,
@@ -344,7 +346,15 @@ export function buildPapersModel(papersPath: string = PAPERS_MD_PATH): PapersDat
   const slugged = assignSlugs(withCellFields);
 
   const topicsById = topicsByItemId();
-  const references = slugged.map((r) => ({ ...r, topics: topicsById.get(`paper:${r.id}`) ?? [] }));
+  const counts = loadCitedByCounts();
+  const references = slugged.map((r) => {
+    const key = doiKey(r.doi);
+    return {
+      ...r,
+      topics: topicsById.get(`paper:${r.id}`) ?? [],
+      citedByOpenAlex: key ? counts.get(key) ?? null : null,
+    };
+  });
 
   const model: PapersData = { areas, methods, cells, references };
 

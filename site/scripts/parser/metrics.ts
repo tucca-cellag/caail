@@ -19,6 +19,7 @@ import { fileURLToPath } from 'node:url';
 
 import { AREAS } from './areas.js';
 import { computeCounts } from './counts.js';
+import { lastAdditionDate } from './recent.js';
 import {
   SPECIES_PAGES,
   inventoryRowCount,
@@ -91,15 +92,16 @@ function git(repoRoot: string, args: string[]): string {
 
 function computeMomentum(repoRoot: string): Metrics['momentum'] {
   try {
-    const lastMod = (path: string): string | null =>
-      git(repoRoot, ['log', '-1', '--format=%aI', '--', path]) || null;
+    // "Last updated" is the newest *addition* of that kind — the same selection the
+    // home page "Recently added" list uses (lastAdditionDate), so the two panels
+    // tell one story instead of diverging on a fix/refactor/merge commit.
     const commits30d = (path: string): number => {
-      const out = git(repoRoot, ['log', '--since=30.days', '--format=%H', '--', path]);
+      const out = git(repoRoot, ['log', '--no-merges', '--since=30.days', '--format=%H', '--', path]);
       return out ? out.split('\n').filter(Boolean).length : 0;
     };
     return {
-      papersLastModified: lastMod('Papers.md'),
-      datasetsLastModified: lastMod('Datasets'),
+      papersLastModified: lastAdditionDate('Paper', repoRoot),
+      datasetsLastModified: lastAdditionDate('Dataset', repoRoot),
       papersCommits30d: commits30d('Papers.md'),
       datasetsCommits30d: commits30d('Datasets'),
     };

@@ -293,6 +293,22 @@ non-catalog canonical files (`OtherResources.md`, `ReferenceWorks.md`, `AwesomeL
   dashed=manual; `LicenseBadge` + the dataset-cards remark), a **cross-content hub** at `/licenses/`
   (`/licenses/?tier=<tier>`), and a **tier filter facet** on the Software/Databases pages. `db:check`
   guards `license_source`. A coarse triage signal, not verified terms — confirm at the source.
+- **DOIs & citation counts** are a second DB-owned axis mirroring licenses. `catalog` +
+  `dataset_entries` carry nullable `doi` + `doi_source` (`manual` = curator-verified; `auto` reserved).
+  Like licenses the DOI is **DB-only** (not in canonical Markdown): `seedDois` (bootstrap) folds the
+  committed `site/scripts/db/dois-manual.json` (catalog by url, datasets by `ds:` id) into the DB;
+  `db:check` guards `doi_source` (both-set-or-both-null) and that every override key resolves. Papers
+  need no column — their DOI is derived from the citation `raw`. The **OpenAlex `cited_by_count`** for
+  each DOI is fetched by the same opt-in `fetch:citations` (which now selects `cited_by_count` and
+  gathers catalog/dataset DOIs alongside paper DOIs, storing the count in `citation-cache.json`), and
+  the parser (`site/scripts/parser/citation-counts.ts`) folds it into `papers.json`
+  (`citedByOpenAlex`), `catalog.json`, and `datasets.json` (`citationCount`) — derived, never stored.
+  Surfaced as a **"cited by N" badge** on paper/software/database/dataset cards (`CitationBadge` + the
+  dataset-cards remark, linking to the work on OpenAlex), a **cross-content hub** at `/citations/`
+  (`/citations/?band=<band>`, banded 1,000+ / 100–999 / 10–99 / under 10), and a **"Most cited" facet**
+  on the Software/Databases pages. A coarse popularity signal, not a quality measure — confirm at the
+  source. Full DOI backfill of the catalog/dataset entries is an ongoing curation task
+  (`dois-manual.json`); the plumbing renders nothing where no DOI is recorded.
 
 ## Documentation site (`site/`)
 

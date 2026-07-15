@@ -81,3 +81,19 @@
 /* Active toggle: tint the background with the tier colour (border already tier-colored). */
 .cb-tier--on { background: color-mix(in oklch, var(--lic) 20%, var(--caail-surface)); }
 .cb-tier--on::before { box-shadow: 0 0 0 2px color-mix(in oklch, var(--lic) 35%, transparent); }
+
+/* "Most cited" facet toggle — sits in the same row as the license-tier toggles but is a
+   neutral sort control (no tier colour), so it reads as a different kind of filter. */
+.cb-cited {
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.1rem 0.55rem;
+  color: var(--caail-ink);
+  background: var(--caail-surface);
+  border: 1px solid var(--caail-border);
+  border-radius: 0.35rem;
+}
+.cb-cited:hover { border-color: var(--caail-link); color: var(--caail-link); }
+.cb-cited--on { background: color-mix(in oklch, var(--caail-primary) 16%, var(--caail-surface)); border-color: var(--caail-primary); }
