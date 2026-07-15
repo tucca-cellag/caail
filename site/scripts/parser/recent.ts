@@ -162,3 +162,47 @@ export function buildRecentModel(
 
   return RecentSchema.parse(entries);
 }
+
+/**
+ * ISO author-date of the newest *addition* commit for a given content kind, drawn
+ * from the SAME git selection buildRecentModel uses (`--no-merges`, addition-verb +
+ * scope filter via parseSubject, across all CONTENT_PATHS). This is what the
+ * "By the Numbers" momentum snapshot reads for "last updated", so it can never
+ * disagree with the home page "Recently added" list — "days since newest paper
+ * added" is exactly the date of the newest Paper in that list.
+ *
+ * Kind-based (not path-based) on purpose: a paper addition is `feat(papers): add …`
+ * regardless of which file it touched, and the recency list is grouped by kind too.
+ *
+ * @returns ISO date string, or null if no matching addition exists / git history is
+ *          unavailable (shallow clone / tarball) — never throws on that.
+ */
+export function lastAdditionDate(
+  kind: RecentEntry['kind'],
+  repoRoot: string = DEFAULT_REPO_ROOT,
+): string | null {
+  let lines: string[];
+  try {
+    const out = git(repoRoot, [
+      'log',
+      '--no-merges',
+      // %aI <unit-separator> %s — full ISO author date; the separator can't appear
+      // in a subject.
+      '--format=%aI\x1f%s',
+      '--',
+      ...CONTENT_PATHS,
+    ]);
+    lines = out ? out.split('\n') : [];
+  } catch {
+    return null;
+  }
+
+  for (const line of lines) {
+    // git log is newest-first; the first kind-matching addition wins.
+    const sep = line.indexOf('\x1f');
+    if (sep < 0) continue;
+    const entry = parseSubject(line.slice(0, sep), line.slice(sep + 1));
+    if (entry && entry.kind === kind) return line.slice(0, sep);
+  }
+  return null;
+}

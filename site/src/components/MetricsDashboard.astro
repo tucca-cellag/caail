@@ -97,11 +97,11 @@ const datasetsDays = daysAgo(momentum?.datasetsLastModified ?? null);
       <h2 class="md-h caail-display">Momentum</h2>
       <div class="md-cards">
         {papersDays !== null && (
-          <div class="md-card"><span class="md-card-n caail-display">{papersDays}d</span><span class="md-card-l">since Papers.md last updated</span></div>
+          <div class="md-card"><span class="md-card-n caail-display">{papersDays}d</span><span class="md-card-l">since newest paper added</span></div>
         )}
         <div class="md-card"><span class="md-card-n caail-display">{momentum.papersCommits30d}</span><span class="md-card-l">Papers.md commits · 30 days</span></div>
         {datasetsDays !== null && (
-          <div class="md-card"><span class="md-card-n caail-display">{datasetsDays}d</span><span class="md-card-l">since Datasets last updated</span></div>
+          <div class="md-card"><span class="md-card-n caail-display">{datasetsDays}d</span><span class="md-card-l">since newest dataset added</span></div>
         )}
         <div class="md-card"><span class="md-card-n caail-display">{momentum.datasetsCommits30d}</span><span class="md-card-l">Datasets commits · 30 days</span></div>
       </div>

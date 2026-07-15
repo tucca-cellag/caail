@@ -7,7 +7,7 @@
 
 import { describe, it, expect, beforeAll } from 'vitest';
 
-import { buildRecentModel } from './recent.js';
+import { buildRecentModel, lastAdditionDate } from './recent.js';
 import { RecentSchema, type Recent } from './types.js';
 
 describe('buildRecentModel — real repo', () => {
@@ -59,5 +59,31 @@ describe('buildRecentModel — real repo', () => {
 
   it('passes RecentSchema', () => {
     expect(RecentSchema.safeParse(recent).success).toBe(true);
+  });
+});
+
+describe('lastAdditionDate — real repo', () => {
+  it('returns an ISO timestamp for a kind present in history', () => {
+    const d = lastAdditionDate('Paper');
+    expect(d).toBeTruthy();
+    expect(d!).toMatch(/^\d{4}-\d{2}-\d{2}T/);
+  });
+
+  it('is consistent with the Recently-added list (newest of its kind)', () => {
+    // lastAdditionDate finds the newest addition of that kind across all history,
+    // so its date must be >= every same-kind entry that surfaces in the list. This
+    // is the invariant that keeps the momentum "last updated" from disagreeing with
+    // the home page "Recently added" panel.
+    const recentAll = buildRecentModel(undefined, 50);
+    const newestPaper = lastAdditionDate('Paper');
+    if (newestPaper) {
+      for (const e of recentAll.filter((r) => r.kind === 'Paper')) {
+        expect(newestPaper.slice(0, 10) >= e.date).toBe(true);
+      }
+    }
+  });
+
+  it('returns null when git history is unavailable', () => {
+    expect(lastAdditionDate('Paper', '/nonexistent-not-a-git-repo')).toBeNull();
   });
 });
