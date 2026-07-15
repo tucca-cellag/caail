@@ -3,7 +3,21 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { buildTopicsModel, topicsByItemId, catalogNameKey } from './topics.js';
+import { buildTopicsModel, topicsByItemId, catalogNameKey, catalogJoinKey } from './topics.js';
+
+describe('catalogJoinKey collision (what the generate-data uniqueness guard catches)', () => {
+  it('two names differing only in a leading block-marker collapse to the SAME key', () => {
+    // catalogNameKey re-parses the name as markdown, so `1. Foo` parses as a list item and
+    // flattens to `Foo` — colliding with a plain `Foo` at the same (type,url). The build
+    // guard asserts join-key uniqueness so this fails loudly instead of stealing topics.
+    const a = catalogJoinKey('software', 'https://x', '1. Foo');
+    const b = catalogJoinKey('software', 'https://x', 'Foo');
+    expect(a).toBe(b); // collision — the guard rejects a catalog where both exist
+  });
+  it('distinct plain names at the same url do NOT collide', () => {
+    expect(catalogJoinKey('database', 'https://x', 'PISCES')).not.toBe(catalogJoinKey('database', 'https://x', 'ATLAS'));
+  });
+});
 
 describe('catalogNameKey (parser mdastToString ↔ NDJSON inlineMd name normalization)', () => {
   it('collapses every inline-markdown construct inlineMd emits to the same plain text', () => {

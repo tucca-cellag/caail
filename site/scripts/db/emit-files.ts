@@ -17,15 +17,21 @@ import { importNdjson, REPO_ROOT, type Db } from './lib.js';
 import { emitPapersFile, emitCatalogFile, emitDatasetPage } from './emit.js';
 import { extractInventory } from './extract.js';
 
-/** Write every DB-owned canonical file from `db`. Returns the repo-relative paths. */
-export function emitAll(db: Db): string[] {
+/**
+ * Write every DB-owned canonical file from `db`. Returns the repo-relative paths.
+ * `root` defaults to the repo root; it's injectable so tests can run against a fixture
+ * dir. Each emit computes its string (and throws on a bad state) BEFORE its `writeFileSync`,
+ * and Papers.md is emitted first — so a failure writes nothing, which is why the db:add /
+ * db:remove CLIs call emitAll BEFORE exportNdjson (a throw can't desync NDJSON vs Markdown).
+ */
+export function emitAll(db: Db, root: string = REPO_ROOT): string[] {
   const written: string[] = [];
-  const write = (rel: string, text: string) => { writeFileSync(join(REPO_ROOT, rel), text); written.push(rel); };
-  write('Papers.md', emitPapersFile(db, join(REPO_ROOT, 'Papers.md')));
-  write('Software.md', emitCatalogFile(db, join(REPO_ROOT, 'Software.md'), 'software'));
-  write('Databases.md', emitCatalogFile(db, join(REPO_ROOT, 'Databases.md'), 'database'));
+  const write = (rel: string, text: string) => { writeFileSync(join(root, rel), text); written.push(rel); };
+  write('Papers.md', emitPapersFile(db, join(root, 'Papers.md')));
+  write('Software.md', emitCatalogFile(db, join(root, 'Software.md'), 'software'));
+  write('Databases.md', emitCatalogFile(db, join(root, 'Databases.md'), 'database'));
   for (const page of INVENTORY_PAGES) {
-    const src = join(REPO_ROOT, 'Datasets', `${page}.md`);
+    const src = join(root, 'Datasets', `${page}.md`);
     if (extractInventory(src)) write(`Datasets/${page}.md`, emitDatasetPage(db, src, page));
   }
   return written;

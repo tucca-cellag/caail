@@ -20,7 +20,25 @@ import { INVENTORY_PAGES } from '../parser/datasets.js';
 import { importNdjson, REPO_ROOT, type Db } from './lib.js';
 import { extractInventory } from './extract.js';
 import { emitPapersFile, emitCatalogFile, emitDatasetPage, emitMatrixTable } from './emit.js';
+import { emitAll } from './emit-files.js';
 import { removeItem } from './mutate.js';
+
+describe('emitAll is fail-safe (writes nothing on a bad state — db:add/db:remove order it before export)', () => {
+  it('throws and writes NO file when a paper section cannot be emitted', () => {
+    const db = importNdjson();
+    // A paper in a section with no anchor in Papers.md — emitPapersFile (first, before any
+    // write) throws. Point emitAll at a temp root seeded with the real Papers.md.
+    db.prepare("INSERT INTO items(id,type,slug) VALUES('paper:88888','paper','88888')").run();
+    db.prepare('INSERT INTO papers(item_id,ref_id,section,raw,blockquotes_md,ordinal) VALUES(?,?,?,?,?,?)')
+      .run('paper:88888', 88888, 'Ghost Section', '<a id="88888">88888</a> x', null, 88888);
+    const root = mkdtempSync(join(tmpdir(), 'caail-emitall-'));
+    const before = readFileSync(join(REPO_ROOT, 'Papers.md'), 'utf-8');
+    writeFileSync(join(root, 'Papers.md'), before);
+    expect(() => emitAll(db, root)).toThrow(/Ghost Section/);
+    // Papers.md in the temp root is untouched — the emit computed-and-threw before writing.
+    expect(readFileSync(join(root, 'Papers.md'), 'utf-8')).toBe(before);
+  });
+});
 
 const TMP = mkdtempSync(join(tmpdir(), 'caail-emit-test-'));
 
