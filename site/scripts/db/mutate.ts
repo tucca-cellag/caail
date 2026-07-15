@@ -34,6 +34,7 @@ export interface PaperAdd {
   section?: string;                              // default 'References'
   codeUrl?: string | null;
   dataUrl?: string | null;
+  blockquotes?: string[];                        // extra verbatim `> **Label**: …` lines (e.g. Models), appended after Code/Data
   cells?: Array<{ method: string; area: string }>; // area may be key or label
   topics?: string[];
 }
@@ -93,12 +94,16 @@ export function addItem(db: Db, spec: ItemAdd): string {
     // Max over live papers AND retired ids, so a removed ref_id is never handed out again.
     const refId = nextInt(db, 'SELECT MAX(m) m FROM (SELECT MAX(ref_id) m FROM papers UNION ALL SELECT MAX(ref_id) m FROM retired_paper_ids)');
     const id = `paper:${refId}`;
-    const raw = /^<a id=/.test(spec.raw) ? spec.raw : `<a id="${refId}">${refId}</a> ${spec.raw}`;
+    // Match the parser's whitespace-tolerant anchor test, so a pre-anchored `raw` with
+    // non-canonical whitespace (`<a  id="…">`) isn't given a second, duplicate anchor.
+    const raw = /^<a\s+id="\d+">/.test(spec.raw) ? spec.raw : `<a id="${refId}">${refId}</a> ${spec.raw}`;
     const ord = nextInt(db, 'SELECT MAX(ordinal) m FROM papers');
-    // Build the verbatim trailing-blockquote run from the typed Code/Data inputs.
+    // Build the verbatim trailing-blockquote run: the typed Code/Data inputs, then any
+    // extra `> **Label**: …` lines (e.g. `> **Models**:`) so db:add isn't limited to two labels.
     const blockquotes = [
       spec.codeUrl ? `> **Code**: ${spec.codeUrl}` : null,
       spec.dataUrl ? `> **Data**: ${spec.dataUrl}` : null,
+      ...(spec.blockquotes ?? []),
     ].filter(Boolean).join('\n\n') || null;
     insItem.run(id, 'paper', String(refId));
     db.prepare('INSERT INTO papers(item_id,ref_id,section,raw,blockquotes_md,ordinal) VALUES(?,?,?,?,?,?)')

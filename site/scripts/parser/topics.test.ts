@@ -3,7 +3,30 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { buildTopicsModel, topicsByItemId } from './topics.js';
+import { buildTopicsModel, topicsByItemId, orderCatalogRows } from './topics.js';
+
+describe('orderCatalogRows (positional topic-join order = emitted document order)', () => {
+  it('places a db:add entry (global-max ordinal) into its group, not at the end (C4)', () => {
+    // sw:new was added to the FIRST group via db:add, so it got a global-max ordinal (99)
+    // but is re-emitted inside G1. Document order must be a,b,new,c,d — NOT a,b,c,d,new.
+    const rows = [
+      { item_id: 'sw:a', grp: 'G1', ordinal: 0 },
+      { item_id: 'sw:b', grp: 'G1', ordinal: 1 },
+      { item_id: 'sw:c', grp: 'G2', ordinal: 2 },
+      { item_id: 'sw:d', grp: 'G2', ordinal: 3 },
+      { item_id: 'sw:new', grp: 'G1', ordinal: 99 },
+    ];
+    expect(orderCatalogRows(rows).map((r) => r.item_id)).toEqual(['sw:a', 'sw:b', 'sw:new', 'sw:c', 'sw:d']);
+  });
+  it('leaves already-grouped document order unchanged', () => {
+    const rows = [
+      { item_id: 'x', grp: 'A', ordinal: 0 },
+      { item_id: 'y', grp: 'A', ordinal: 1 },
+      { item_id: 'z', grp: 'B', ordinal: 2 },
+    ];
+    expect(orderCatalogRows(rows).map((r) => r.item_id)).toEqual(['x', 'y', 'z']);
+  });
+});
 
 describe('buildTopicsModel', () => {
   const m = buildTopicsModel();

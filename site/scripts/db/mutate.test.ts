@@ -50,6 +50,23 @@ describe('addItem — paper', () => {
     const raw = (db.prepare('SELECT raw FROM papers WHERE item_id=?').get(id) as any).raw;
     expect(raw).toMatch(/^<a id="\d+">\d+<\/a> No, Anchor\./);
   });
+  it('does not add a SECOND anchor to a raw already anchored with odd whitespace (C4)', () => {
+    const db = importNdjson();
+    const id = addItem(db, { type: 'paper', raw: '<a  id="999">999</a> Weird, W. (2099). X. *J*.', label: 'Weird 2099', cells: [{ method: anyMethod(db), area: anyArea(db) }] });
+    const raw = (db.prepare('SELECT raw FROM papers WHERE item_id=?').get(id) as any).raw;
+    expect((raw.match(/<a\s+id=/g) ?? []).length).toBe(1); // exactly one anchor, not two
+  });
+  it('accepts extra blockquote labels beyond Code/Data (e.g. Models) (C4)', () => {
+    const db = importNdjson();
+    const id = addItem(db, {
+      type: 'paper', raw: 'Mod, M. (2099). X. *J*.', label: 'Mod 2099',
+      codeUrl: 'https://github.com/x/y', blockquotes: ['> **Models**: https://hf.co/x/model'],
+      cells: [{ method: anyMethod(db), area: anyArea(db) }],
+    });
+    const bq = (db.prepare('SELECT blockquotes_md FROM papers WHERE item_id=?').get(id) as any).blockquotes_md as string;
+    expect(bq).toContain('> **Code**: https://github.com/x/y');
+    expect(bq).toContain('> **Models**: https://hf.co/x/model');
+  });
 });
 
 describe.each([

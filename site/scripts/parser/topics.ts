@@ -47,17 +47,35 @@ export function topicsByItemId(): Map<string, TopicRef[]> {
 
 /**
  * A catalog topic lookup keyed POSITIONALLY: the Nth parsed entry of a type maps to the
- * Nth committed catalog row of that type (both are in document order — the parser walks
- * the file top-to-bottom, and the NDJSON is ordinal-sorted). A url key is not unique (two
- * same-type entries can legitimately share a URL — e.g. two GFI seafood databases — and
- * would collapse onto one topic set); position can't collide. Cross-type dual-listing
- * (sw:gnps / db:gnps) stays disambiguated because each type has its own ordered list.
+ * Nth committed catalog row of that type, ordered to reconstruct the EMITTED document
+ * order the parser reads. That order is `emitCatalogFile`'s: source groups first (each
+ * group's earliest ordinal = its document position), then entries within a group by
+ * ordinal — NOT a flat global-ordinal sort. (db:add assigns a new entry a global-max
+ * ordinal but re-emits it inside its own group, so a plain ordinal sort would diverge
+ * from the parser and shift every downstream entry's topics — cycle-4 fix.)
+ *
+ * Position can't collide, so two same-type entries sharing a URL keep distinct topics
+ * (the GFI seafood databases); cross-type dual-listing (sw:gnps / db:gnps) is naturally
+ * separated because each type has its own ordered list.
  */
+/**
+ * Order catalog rows into the EMITTED document order (what the parser reads back):
+ * source groups first — each group placed at its earliest ordinal — then entries within
+ * a group by ordinal. This matches `emitCatalogFile`, so a `db:add` entry (which gets a
+ * global-max ordinal but is re-emitted inside its own group) sorts into that group, not
+ * at the end. A flat global-ordinal sort would diverge and shift downstream topics.
+ */
+export function orderCatalogRows<T extends { grp: string; ordinal: number }>(rows: T[]): T[] {
+  const grpMin = new Map<string, number>();
+  for (const r of rows) grpMin.set(r.grp, Math.min(grpMin.get(r.grp) ?? Infinity, r.ordinal));
+  return [...rows].sort((a, b) => (grpMin.get(a.grp)! - grpMin.get(b.grp)!) || (a.ordinal - b.ordinal));
+}
+
 export function catalogTopicLookup(): (type: 'software' | 'database', index: number) => TopicRef[] {
   const byId = topicsByItemId();
-  const rows = readNdjson<{ item_id: string; ordinal: number }>('catalog');
+  const rows = readNdjson<{ item_id: string; grp: string; ordinal: number }>('catalog');
   const orderFor = (prefix: string) =>
-    rows.filter((r) => r.item_id.startsWith(prefix)).sort((a, b) => a.ordinal - b.ordinal).map((r) => r.item_id);
+    orderCatalogRows(rows.filter((r) => r.item_id.startsWith(prefix))).map((r) => r.item_id);
   const ordered = { software: orderFor('sw:'), database: orderFor('db:') };
   return (type, index) => byId.get(ordered[type][index] ?? '') ?? [];
 }
