@@ -1,0 +1,25 @@
+{"label":"Bayesian Optimization","header_md":"[Bayesian Optimization](./Taxonomy.md#bayesian-optimization)","ordinal":0}
+{"label":"Deep Learning","header_md":"[Deep Learning](./Taxonomy.md#deep-learning)","ordinal":1}
+{"label":"GNN","header_md":"[GNN](./Taxonomy.md#gnn)","ordinal":2}
+{"label":"CNN","header_md":"[CNN](./Taxonomy.md#cnn)","ordinal":3}
+{"label":"GAN / VAE","header_md":"[GAN / VAE](./Taxonomy.md#gan--vae)","ordinal":4}
+{"label":"Genetic Algorithms","header_md":"[Genetic Algorithms](./Taxonomy.md#genetic-algorithms)","ordinal":5}
+{"label":"SVM","header_md":"[SVM](./Taxonomy.md#svm)","ordinal":6}
+{"label":"Ensemble Learning","header_md":"[Ensemble Learning](./Taxonomy.md#ensemble-learning)","ordinal":7}
+{"label":"K-Nearest Neighbors","header_md":"[K-Nearest Neighbors](./Taxonomy.md#k-nearest-neighbors)","ordinal":8}
+{"label":"Linear & Regularized Models","header_md":"[Linear & Regularized Models](./Taxonomy.md#linear--regularized-models)","ordinal":9}
+{"label":"Chemometrics","header_md":"[Chemometrics](./Taxonomy.md#chemometrics)","ordinal":10}
+{"label":"Active Learning","header_md":"[Active Learning](./Taxonomy.md#active-learning)","ordinal":11}
+{"label":"Reinforcement Learning","header_md":"[Reinforcement Learning](./Taxonomy.md#reinforcement-learning)","ordinal":12}
+{"label":"Foundation Models: Next-Token Prediction","header_md":"[Foundation Models: Next-Token Prediction](./Taxonomy.md#foundation-models-next-token-prediction)","ordinal":13}
+{"label":"Foundation Models: Masked Language Modeling","header_md":"[Foundation Models: Masked Language Modeling](./Taxonomy.md#foundation-models-masked-language-modeling)","ordinal":14}
+{"label":"Foundation Models: LM + Biological Priors","header_md":"[Foundation Models: LM + Biological Priors](./Taxonomy.md#foundation-models-lm--biological-priors)","ordinal":15}
+{"label":"Foundation Models: Cell-State & Perturbation Prediction","header_md":"[Foundation Models: Cell-State & Perturbation Prediction](./Taxonomy.md#foundation-models-cell-state--perturbation-prediction)","ordinal":16}
+{"label":"Foundation Models (other modalities)","header_md":"[Foundation Models (other modalities)](./Taxonomy.md#foundation-models-other-modalities)","ordinal":17}
+{"label":"Scientific Literature & Discovery Agents","header_md":"[Scientific Literature & Discovery Agents](./Taxonomy.md#scientific-literature--discovery-agents)","ordinal":18}
+{"label":"General-Purpose Biomedical Agents","header_md":"[General-Purpose Biomedical Agents](./Taxonomy.md#general-purpose-biomedical-agents)","ordinal":19}
+{"label":"Chemistry / Synthesis Agents","header_md":"[Chemistry / Synthesis Agents](./Taxonomy.md#chemistry--synthesis-agents)","ordinal":20}
+{"label":"Domain-Specific Biomedical Agents","header_md":"[Domain-Specific Biomedical Agents](./Taxonomy.md#domain-specific-biomedical-agents)","ordinal":21}
+{"label":"Robot Scientists & Lab Automation","header_md":"[Robot Scientists & Lab Automation](./Taxonomy.md#robot-scientists--lab-automation)","ordinal":22}
+{"label":"Benchmarks & Evaluation Frameworks","header_md":"[Benchmarks & Evaluation Frameworks](./Taxonomy.md#benchmarks--evaluation-frameworks)","ordinal":23}
+{"label":"Agent Infrastructure (Frameworks, KGs, Protocols)","header_md":"[Agent Infrastructure (Frameworks, KGs, Protocols)](./Taxonomy.md#agent-infrastructure-frameworks-kgs-protocols)","ordinal":24}

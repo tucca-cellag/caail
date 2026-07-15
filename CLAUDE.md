@@ -128,7 +128,7 @@ LICENSE                MIT License
 `Papers.md` has **three coordinated parts**:
 
 1. **A 2D matrix table** at the top, for **primary research** applying a specific AI method to a specific cell-ag problem:
-   - **Rows** = AI/ML method. Current rows: Bayesian Optimization, Deep Learning, GNN, CNN, GAN/VAE, Genetic Algorithms, SVM, Ensemble Learning, K-Nearest Neighbors, Active Learning, **LLMs / AI Agents**. Each row label links to its definition in `Taxonomy.md` (the canonical, CAAIL-specific definition of every row and column).
+   - **Rows** = AI/ML method, spanning classical ML (Bayesian Optimization, Deep Learning, GNN, …) through the foundation-model and agentic families. The live set is whatever `Papers.md` contains — don't re-enumerate it here, it drifts (see #81). Each row label links to its definition in `Taxonomy.md` (the canonical, CAAIL-specific definition of every row and column).
    - **Columns** = research area, each linked to its definition in `Taxonomy.md`. Current columns: Media Optimization, Cellular Engineering, Bioprocess & Scale-Up, Scaffolding, Sensory Prediction, **AI Tooling / Methodology**, **AI Evaluation & Benchmarking**.
    - **Cells** = comma-separated anchor links to numbered references, e.g. `[2](#2),[3](#3),[15](#15)`.
 
@@ -233,7 +233,7 @@ The per-entry summaries in the `Datasets/` pages, `Databases.md`, `Software.md`,
 
 ## Workflow
 
-- **No build, no tests for the canonical content.** Editing the root `*.md` files is just text — preview in any Markdown viewer, or push to a branch and let GitHub render it. (The generated website under `site/` does have a build — see "Documentation site (`site/`)" below.)
+- **The structured catalog is authored in a SQLite DB, not by hand** — see "The SQLite authoring backend" below. The matrix + references in `Papers.md`, the entries in `Software.md` / `Databases.md`, and the inventory tables in `Datasets/*.md` are **generated** from `site/db/ndjson/`; don't hand-edit those regions (a hook blocks it; CI fails on drift). Prose in those files, and every other canonical file, is still just hand-authored Markdown — preview in any Markdown viewer or let GitHub render it. (The generated website under `site/` has its own build — see "Documentation site (`site/`)" below.)
 - **Branching.** Work on `<type>/<slug>` branches off `main`; open PRs against `main`. Never commit directly to `main`.
 - **Commits.** Conventional Commits, Angular flavor. Common scopes for this repo: `papers`, `software`, `data`, `resources`, `research-areas`, `docs`.
   - `feat(papers): add Cosenza 2024 multi-fidelity BO paper`
@@ -241,6 +241,37 @@ The per-entry summaries in the `Datasets/` pages, `Databases.md`, `Software.md`,
   - `fix(papers): correct DOI on reference 17`
 - **PRs.** Describe what you added and why it fits — for papers, mention the AI method(s) and research area(s) it spans (i.e. which matrix cells get updated).
 - **Shipping a branch.** When a feature branch is done, reviewed, and locally green, the **`caail-pr-wrapup`** skill (in `.claude/skills/`) is the Ship stage: it pushes, opens the PR, watches CI, merges (after confirming — the merge triggers the public Pages deploy), watches the `docs.yml` deploy to green (build + Lighthouse + deploy), verifies the live site, and cleans up the worktree/branch. It owns the CAAIL-specific gotchas (the `gh pr merge` "main already checked out" benign failure, the Lighthouse gate, which CI runs on which paths) so they don't have to be re-derived each time.
+
+## The SQLite authoring backend (structured catalog)
+
+CAAIL's **structured catalog** is authored in an in-repo SQLite DB and generated back to
+Markdown (issue #78). This covers `Papers.md` (matrix + references), `Software.md` /
+`Databases.md` (entries), and the `Datasets/*.md` `## Complete data inventory` tables.
+Everything else — editorial prose in those files, and all the non-catalog canonical files
+(`OtherResources.md`, `ReferenceWorks.md`, `AwesomeLists.md`, `Funding.md`, `ResearchAreas/`,
+`Talks.md`, `Primers/`) — stays hand-authored Markdown.
+
+- **Source of truth = `site/db/ndjson/`** (per-table PK-sorted NDJSON, committed). `site/db/schema.sql`
+  is the DDL; `site/caail.db` is a gitignored artifact rebuilt from the NDJSON. Every item has a
+  frozen namespaced id (`paper:N`, `sw:…`, `db:…`, `ds:…`, `topic:…`) assigned once and never changed.
+- **Authoring-time only.** The DB is not in the deploy build: `pnpm build` still parses the committed
+  Markdown into `data/*.json`. A plain add/remove is one command — `db:add <descriptor.json>` /
+  `db:remove <id>` (auto frozen-id, guards, regenerate); the full edit flow is `db:build` → edit →
+  `db:export` → `db:emit` → `db:check` / `db:verify`. Either way, commit **Markdown + NDJSON together**.
+  The **`caail-db-authoring`** skill owns this workflow; use it whenever adding/editing a paper, tool,
+  database, or dataset row.
+- **Guards.** A PreToolUse hook (`.claude/hooks/block-generated-edits.py`) blocks direct edits to the
+  generated structured content (prose edits still allowed). `db:check` enforces id/referential integrity,
+  matrix↔reference reachability, and the #81 column-list drift check; `db:verify` proves the emitted
+  Markdown re-parses to identical parser models. In CI, `lint-papers.yml` runs `db:check` + `db:verify`
+  and a **sync guard** (`db:emit` then `git diff --exit-code`) so committed Markdown can't drift from the DB.
+- **Topics** are the shared cross-content subject axis (multi-tag), two-tier: a fixed backbone of **7
+  themes** + earned **fine tags** (each tag under one theme; `topics.tier`/`theme_slug`, guarded by
+  `db:check`). Distinct from the matrix research areas (a theme may link to one via `area_key`); defined
+  in `Taxonomy.md` under "Subject themes". The build folds the committed topic NDJSON into the site JSON
+  offline (`site/scripts/parser/topics.ts` → `catalog.json`/`papers.json` topic refs + `topics.json`),
+  surfaced as **topic chips on cards** (`TopicChips`) and a **cross-content hub** at `/topics/`
+  (`/topics/?t=<slug>`). Fine tags are minted only when ≥3 items cluster (curator sign-off).
 
 ## Documentation site (`site/`)
 
@@ -255,7 +286,7 @@ The canonical root content remains build-free, GitHub-rendered Markdown — that
 - **Citation edges (M7):** the network page's "Citation" mode draws directed `A cites B` edges, derived from OpenAlex `referenced_works` intersected against the corpus' DOIs. The network call is quarantined to one **manual** script — `pnpm --dir site fetch:citations` (`scripts/parser/fetch-citations.ts`) — which writes the committed input `site/scripts/parser/citation-cache.json` (DOI → OpenAlex id + referenced-works). `pnpm parse` reads that cache offline via `citations.ts` and folds edges into `graph.json`, so `parse`/`build` stay deterministic and network-free. Re-run `fetch:citations` only when papers are added; set `OPENALEX_MAILTO=<contact>` for OpenAlex's polite pool. With no cache the citation graph is simply empty.
 - **SEO / AEO:** `site/public/` holds the static SEO assets — `og.png` (the 1200×630 social card, generated by `scripts/og-image.mjs`, see `DESIGN.md` §8), `robots.txt` (→ sitemap), `llms.txt` (an agent-facing index leaning into CAAIL's AI-agent audience), and the favicon package (`favicon.svg` + raster fallbacks `favicon.ico`/`apple-touch-icon.png`/`icon-192.png`/`icon-512.png` + `site.webmanifest`, generated by `scripts/favicons.mjs` from the same bioreactor mark). `astro.config.mjs`'s Starlight `head` wires the site-wide `og:image`/`twitter:image`, the favicon/apple-touch/manifest links + `theme-color`, and an Organization+WebSite JSON-LD block. Per-page meta descriptions for the loader-rendered prose pages live in `CAAIL_PAGES` (`src/content/caail-pages.ts`) so each has a unique one rather than the generic site default. (Project-page caveat: `robots.txt`/`llms.txt` at the `/caail/` subpath aren't the domain-root files crawlers/agents check first; the in-`<head>` sitemap link is what's honored, and real submission is via Search Console.)
 - **Gotcha — empty Hero override:** Starlight's `Hero` component is overridden by an intentionally empty `site/src/components/StarlightHeroOverride.astro` so the splash homepage renders no auto page-title `<h1>`. This is registered site-wide but only affects pages that set `hero` frontmatter (currently just the homepage). Any future page that wants a real Starlight hero must revisit this.
-- **Scope/branching:** the site is built one milestone at a time in a worktree off `main`, PR'd back. Issue #13 tracks the full plan (milestones M0–M7): M0 prototype, M1 parser+lint, M2 core site + deploy, M3 catalog browsers (Software/Databases) + Talks, M5 Citation Network (#8), and M6 By the Numbers dashboard (#9) are all in place; the M7 OpenAlex citation edges are now shipped too (the network page toggles between shared-author and citation edges — see "Citation edges" below), leaving only the optional cross-species datasets explorer. Routes: Home, Primers (cell-ag / AI), Papers Explorer, Citation Network, Software, Databases, Awesome Lists, Datasets (by species), Research Areas, Talks, Other Resources, Reference Works, Funding & Grants, By the Numbers, Contributing, About. `OtherResources.md`, `ReferenceWorks.md`, and `Funding.md` are surfaced as prose via the same canonical-prose loader as Datasets/ResearchAreas/Contributing (registered in `caail-pages.ts` + `caail-docs-loader.ts` + the `caailProseRemark` guard; `ReferenceWorks` needs an explicit `idForSourcePath` hyphenation case → `reference-works`); `AwesomeLists.md` instead drives an island card page (like Software/Databases); and the `Primers/*.md` files go through their own parser + `PrimerHub` component (see "The `Primers/` directory" above) so their videos embed and cross-links rewrite. The homepage "Start here" cards route to the two primers plus the Papers Explorer and Datasets.
+- **Scope/branching:** the site is built one milestone at a time in a worktree off `main`, PR'd back. Issue #13 tracks the full plan (milestones M0–M7): M0 prototype, M1 parser+lint, M2 core site + deploy, M3 catalog browsers (Software/Databases) + Talks, M5 Citation Network (#8), and M6 By the Numbers dashboard (#9) are all in place; the M7 OpenAlex citation edges are now shipped too (the network page toggles between shared-author and citation edges — see "Citation edges" below), leaving only the optional cross-species datasets explorer. Routes: Home, Primers (cell-ag / AI), Papers Explorer, Citation Network, Software, Databases, Topics (`/topics/` cross-content hub), Awesome Lists, Datasets (by species), Research Areas, Talks, Other Resources, Reference Works, Funding & Grants, By the Numbers, Contributing, About. `OtherResources.md`, `ReferenceWorks.md`, and `Funding.md` are surfaced as prose via the same canonical-prose loader as Datasets/ResearchAreas/Contributing (registered in `caail-pages.ts` + `caail-docs-loader.ts` + the `caailProseRemark` guard; `ReferenceWorks` needs an explicit `idForSourcePath` hyphenation case → `reference-works`); `AwesomeLists.md` instead drives an island card page (like Software/Databases); and the `Primers/*.md` files go through their own parser + `PrimerHub` component (see "The `Primers/` directory" above) so their videos embed and cross-links rewrite. The homepage "Start here" cards route to the two primers plus the Papers Explorer and Datasets.
 - **TOC gotcha:** Starlight's "On This Page" is built only from a page's *Markdown* headings, so island-rendered sections (the Software/Databases catalog) aren't captured natively. A `TableOfContents` component override (`site/src/components/TableOfContents.astro`) injects the catalog's application-area groups into `starlightRoute.toc.items` for `/software` + `/databases` (anchors shared with the island via `src/lib/catalog-groups.ts`); every other route renders Starlight's default TOC.
 
 ## Gotchas

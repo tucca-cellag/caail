@@ -27,6 +27,7 @@ import { buildGraphModel } from './graph.js';
 import { CitationCacheSchema, type CitationCache } from './citations.js';
 import { buildMetricsModel } from './metrics.js';
 import { buildRecentModel } from './recent.js';
+import { buildTopicsModel, unresolvedTopicItems, catalogJoinKey } from './topics.js';
 import { writeLlmsFull } from './llms-full.js';
 import {
   PapersDataSchema,
@@ -39,6 +40,7 @@ import {
   MetricsSchema,
   RecentSchema,
   TaxonomyDataSchema,
+  TopicsDataSchema,
   type Counts,
 } from './types.js';
 
@@ -134,6 +136,10 @@ export function generateData(
   // Taxonomy.md row/column definitions for the explorer's hover/click popups.
   const taxonomy = buildTaxonomyModel();
 
+  // Topic tree (theme→tag) folded from the committed topic NDJSON — drives the hub,
+  // card chips, and filters. (Catalog/paper entries already carry their topic refs.)
+  const topics = buildTopicsModel();
+
   // Belt-and-suspenders: re-validate all before writing.
   PapersDataSchema.parse(model);
   CountsSchema.parse(counts);
@@ -145,6 +151,7 @@ export function generateData(
   MetricsSchema.parse(metrics);
   RecentSchema.parse(recent);
   TaxonomyDataSchema.parse(taxonomy);
+  TopicsDataSchema.parse(topics);
 
   // No-drift guard: the homepage counts and the catalog/talks/graph/metrics
   // artifacts derive from the same canonical files, so their tallies must agree
@@ -178,6 +185,34 @@ export function generateData(
       `generate-data: ${missingDefs.length} matrix label(s) have no Taxonomy.md ` +
         `definition: ${missingDefs.join(', ')}. Add a "### <label>" heading to ` +
         `Taxonomy.md (the heading text must match the matrix label exactly).`,
+    );
+  }
+
+  // Topic-join guard: every catalog/paper item tagged in item_topics must resolve to a
+  // parsed site entry (datasets exempt — no site JSON). Catalog resolution uses the FULL
+  // join key (type, url, normalized-name) — the same key catalogTopicLookup uses — so a
+  // name that diverges between the parser and the NDJSON fails the build here instead of
+  // silently losing that entry's topics.
+  const paperIds = new Set(model.references.map((r) => `paper:${r.id}`));
+  const catalogKeyList = [
+    ...catalog.software.map((e) => catalogJoinKey('software', e.url, e.name)),
+    ...catalog.databases.map((e) => catalogJoinKey('database', e.url, e.name)),
+  ];
+  const catalogKeys = new Set(catalogKeyList);
+  // The topic join is by (type, url, normalized-name); if two entries collapse to the same
+  // key (e.g. names differing only in a leading block-marker the name-normalizer strips),
+  // one would silently steal the other's topics. Fail loud on any collision.
+  if (catalogKeys.size !== catalogKeyList.length) {
+    throw new Error(
+      `generate-data: ${catalogKeyList.length - catalogKeys.size} catalog entr(ies) share a ` +
+        `(type, url, name) topic-join key — two entries normalize identically. Disambiguate their names.`,
+    );
+  }
+  const orphanTopics = unresolvedTopicItems(paperIds, catalogKeys);
+  if (orphanTopics.length > 0) {
+    throw new Error(
+      `generate-data: ${orphanTopics.length} topic tag(s) point at items absent from the site ` +
+        `JSON: ${orphanTopics.slice(0, 8).join(', ')}. Re-run \`pnpm db:bootstrap\` or fix the tag.`,
     );
   }
 
@@ -251,6 +286,13 @@ export function generateData(
   writeFileSync(
     join(outDir, 'taxonomy.json'),
     JSON.stringify(taxonomy, null, 2) + '\n',
+    'utf-8',
+  );
+
+  // Write topics.json (theme→tag tree + counts).
+  writeFileSync(
+    join(outDir, 'topics.json'),
+    JSON.stringify(topics, null, 2) + '\n',
     'utf-8',
   );
 

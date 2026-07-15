@@ -54,7 +54,7 @@ describe('pageJsonLd — routing', () => {
       ['/caail/primers/cell-ag/', 'Cellular Agriculture for AI Researchers'],
       ['/caail/primers/ai/', 'AI for Cell-Ag Researchers'],
       ['/caail/datasets/cow/', 'Cow / Bos taurus'],
-      ['/caail/research-areas/bioprocess/', 'Bioprocess control'],
+      ['/caail/research-areas/bioprocess/', 'Bioprocess & Scale-Up'],
       ['/caail/about/', 'About'],
     ] as const) {
       const g = pageJsonLd(path, title);
@@ -152,7 +152,7 @@ describe('breadcrumbList', () => {
   });
 
   it('two-level route without a landing section omits the section URL', () => {
-    const bc = breadcrumbList('/caail/research-areas/bioprocess/', 'Bioprocess control') as any;
+    const bc = breadcrumbList('/caail/research-areas/bioprocess/', 'Bioprocess & Scale-Up') as any;
     expect(bc.itemListElement[1].name).toBe('Research Areas');
     expect(bc.itemListElement[1].item).toBeUndefined();
   });

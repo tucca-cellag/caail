@@ -3,6 +3,8 @@ import './papers-explorer.css';
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import data from '../content/data/papers.json';
 import taxonomy from '../content/data/taxonomy.json';
+import TopicChips from './TopicChips';
+import type { TopicRef } from '../lib/topic-chips';
 
 type Area = { key: string; label: string };
 type Cell = { method: string; area: string; refIds: number[]; labels: string[] };
@@ -12,7 +14,7 @@ type Ref = {
   year: number | null; title: string | null; journal: string | null;
   doi: string | null; codeUrl: string | null; dataUrl: string | null;
   isPrimary: boolean; hasCode: boolean; hasData: boolean;
-  slug: string; methods: string[]; areas: string[];
+  slug: string; methods: string[]; areas: string[]; topics: TopicRef[];
 };
 
 const areas = data.areas as Area[];
@@ -195,6 +197,7 @@ export default function PapersExplorer() {
         {r.codeUrl && <a class="px-bdg code" href={r.codeUrl}>⟨⟩ Code</a>}
         {r.dataUrl && <a class="px-bdg data" href={r.dataUrl}>▤ Data</a>}
       </div>
+      <TopicChips topics={r.topics} />
     </div>
   );
 

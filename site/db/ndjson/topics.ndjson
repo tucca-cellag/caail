@@ -1,0 +1,19 @@
+{"item_id":"topic:ai-agents","slug":"ai-agents","label":"AI agents & foundation models","tier":"tag","theme_slug":"ai-methods-tooling","area_key":null}
+{"item_id":"topic:ai-methods-tooling","slug":"ai-methods-tooling","label":"AI Methods & Tooling","tier":"theme","theme_slug":null,"area_key":"tooling"}
+{"item_id":"topic:benchmarks-evaluation","slug":"benchmarks-evaluation","label":"Benchmarks & evaluation","tier":"tag","theme_slug":"ai-methods-tooling","area_key":null}
+{"item_id":"topic:bioprocess-scale-up","slug":"bioprocess-scale-up","label":"Bioprocess & Scale-Up","tier":"theme","theme_slug":null,"area_key":"bioprocess"}
+{"item_id":"topic:bioreactor-scale-up","slug":"bioreactor-scale-up","label":"Bioreactor & scale-up","tier":"tag","theme_slug":"bioprocess-scale-up","area_key":null}
+{"item_id":"topic:cell-line-engineering","slug":"cell-line-engineering","label":"Cell-line engineering","tier":"tag","theme_slug":"cell-lines-engineering","area_key":null}
+{"item_id":"topic:cell-lines-engineering","slug":"cell-lines-engineering","label":"Cell Lines & Engineering","tier":"theme","theme_slug":null,"area_key":"cell"}
+{"item_id":"topic:flavor-sensory","slug":"flavor-sensory","label":"Flavor & sensory prediction","tier":"tag","theme_slug":"sensory-flavor","area_key":null}
+{"item_id":"topic:growth-factors","slug":"growth-factors","label":"Growth factors","tier":"tag","theme_slug":"media-growth-factors","area_key":null}
+{"item_id":"topic:mass-spectrometry","slug":"mass-spectrometry","label":"Mass spectrometry & metabolomics","tier":"tag","theme_slug":"sensory-flavor","area_key":null}
+{"item_id":"topic:media-growth-factors","slug":"media-growth-factors","label":"Media & Growth Factors","tier":"theme","theme_slug":null,"area_key":"media"}
+{"item_id":"topic:media-optimization","slug":"media-optimization","label":"Media optimization","tier":"tag","theme_slug":"media-growth-factors","area_key":null}
+{"item_id":"topic:metabolic-modeling","slug":"metabolic-modeling","label":"Metabolic modeling","tier":"tag","theme_slug":"metabolism-modeling","area_key":null}
+{"item_id":"topic:metabolism-modeling","slug":"metabolism-modeling","label":"Metabolism & Modeling","tier":"theme","theme_slug":null,"area_key":null}
+{"item_id":"topic:scaffolding-biomaterials","slug":"scaffolding-biomaterials","label":"Scaffolding & Biomaterials","tier":"theme","theme_slug":null,"area_key":"scaffolding"}
+{"item_id":"topic:scaffolds-biomaterials","slug":"scaffolds-biomaterials","label":"Scaffolds & biomaterials","tier":"tag","theme_slug":"scaffolding-biomaterials","area_key":null}
+{"item_id":"topic:sensory-flavor","slug":"sensory-flavor","label":"Sensory & Flavor","tier":"theme","theme_slug":null,"area_key":"sensory"}
+{"item_id":"topic:serum-free-media","slug":"serum-free-media","label":"Serum-free media","tier":"tag","theme_slug":"media-growth-factors","area_key":null}
+{"item_id":"topic:single-cell-atlases","slug":"single-cell-atlases","label":"Single-cell atlases","tier":"tag","theme_slug":"cell-lines-engineering","area_key":null}

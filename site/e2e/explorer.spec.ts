@@ -67,7 +67,7 @@ test('homepage has no serious/critical a11y violations', async ({ page }) => {
 
 test('research area prose page renders with its mapped title', async ({ page }) => {
   await page.goto('./research-areas/bioprocess/');
-  await expect(page.getByRole('heading', { level: 1, name: 'Bioprocess control' })).toBeVisible();
+  await expect(page.getByRole('heading', { level: 1, name: 'Bioprocess & Scale-Up' })).toBeVisible();
 });
 
 test('internal prose link to a rendered page resolves to a site route; deferred falls back to GitHub', async ({ page }) => {

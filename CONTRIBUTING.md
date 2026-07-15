@@ -22,6 +22,14 @@ Faster to merge, and you get authorship credit in the Git history. Branch from `
 
 ## Adding a paper to `Papers.md`
 
+> **How the structured catalog is maintained.** The matrix + references in `Papers.md`, the
+> entries in `Software.md` / `Databases.md`, and the `Datasets/*.md` inventory tables are
+> **generated** from an in-repo SQLite database (issue #78); the committed Markdown is the
+> rendered output. You can still contribute exactly as described below — open an issue, or
+> open a PR editing the Markdown — and a maintainer lands it through the DB so the ids and
+> cross-references stay consistent. (Editorial prose in those files is hand-authored as
+> normal.) Maintainers: see the `caail-db-authoring` skill for the DB workflow.
+
 First decide which **kind** of paper you're adding — the file has two homes for entries:
 
 - **Primary research** (a paper applying a specific AI method to a specific cell-ag problem) → goes in the matrix + `## References` section. *Most papers go here.*
@@ -52,9 +60,9 @@ The matrix and the `## References` list must be kept in sync:
    | [Bayesian Optimization](...) | [2](#2),[3](#3),[42](#42) | ... |
    ```
 
-   Current matrix rows: Bayesian Optimization, Deep Learning, GNN, CNN, GAN/VAE, Genetic Algorithms, SVM, Ensemble Learning, K-Nearest Neighbors, Active Learning, LLMs / AI Agents.
+   The matrix rows are the AI/ML methods currently in [Papers.md](./Papers.md) — from classical ML (Bayesian Optimization, Deep Learning, GNN, …) through the foundation-model and agentic families. Each row label links to its definition in [Taxonomy.md](./Taxonomy.md); the live set is whatever `Papers.md` contains. Pick the row(s) that match; if none fit, add one (step 5).
 
-   Current matrix columns: Media Optimization, Cellular Engineering, Bioprocess Control, Scaffolding, Sensory Prediction, AI Tooling / Methodology, AI Evaluation & Benchmarking.
+   Current matrix columns (research areas): Media Optimization, Cellular Engineering, Bioprocess & Scale-Up, Scaffolding, Sensory Prediction, AI Tooling / Methodology, AI Evaluation & Benchmarking.
 
 5. **If the paper uses an AI method that isn't yet a row**, add a new row. The row label should link to the Wikipedia article for that method (so the link stays stable):
 

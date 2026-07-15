@@ -125,11 +125,31 @@ describe('buildCatalogModel — real corpus', () => {
     model = buildCatalogModel();
   });
 
+  it('gives two same-type entries sharing a URL their OWN topics (C3-3 positional join)', () => {
+    const url = 'https://gfi.org/resource/aggregating-data-for-alternative-seafood/';
+    const shared = model.databases.filter((e) => e.url === url);
+    expect(shared).toHaveLength(2); // two GFI seafood databases share one canonical URL
+    const sets = shared.map((e) => e.topics.map((t) => t.slug).sort().join(','));
+    expect(sets[0]).not.toBe(sets[1]); // distinct topic sets, not collapsed onto one
+  });
+
   it('emits the verified ground-truth entry counts', () => {
     // 118 / 133 = current Software.md / Databases.md H3 counts; bump when entries
     // are added. These MUST equal counts.json (asserted in generate-data).
     expect(model.software).toHaveLength(118);
     expect(model.databases).toHaveLength(134);
+  });
+
+  it('folds topics onto entries via the (type,url) join, keyed per listing', () => {
+    // every entry carries a topics array; each ref names a real theme slug
+    for (const e of [...model.software, ...model.databases]) {
+      for (const t of e.topics) expect(typeof t.theme).toBe('string');
+    }
+    // dual-listed GNPS resolves on BOTH sides (the (type,url) key, not bare url)
+    const sw = model.software.find((e) => e.url === 'https://gnps.ucsd.edu/');
+    const db = model.databases.find((e) => e.url === 'https://gnps.ucsd.edu/');
+    expect(sw?.topics.length).toBeGreaterThan(0);
+    expect(db?.topics.length).toBeGreaterThan(0);
   });
 
   it('passes CatalogSchema (every url valid, fields present)', () => {

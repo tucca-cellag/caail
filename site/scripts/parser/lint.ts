@@ -44,6 +44,7 @@ export function lint(model: PapersData): LintResult {
   checkDanglingCitations(model, errors);
   checkUnreachablePrimaries(model, errors);
   checkDuplicateIds(model, errors);
+  checkDuplicateCitations(model, errors);
   checkRetiredIdGaps(model, warnings);
   checkUnparsedApaFields(model, warnings);
 
@@ -157,6 +158,32 @@ function checkDuplicateIds(model: PapersData, errors: string[]): void {
     errors.push(
       `Duplicate reference id: #${id} appears ${count} times — reference ids must be unique`,
     );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Rule 3b — Duplicate citation within a single matrix cell
+// ---------------------------------------------------------------------------
+
+/**
+ * Flag any reference cited more than once in the SAME matrix cell (same method ×
+ * area). Harmless in the rendered Markdown, but the DB's matrix_cells PK is
+ * (method, area_key, ref_id), so a repeat crashes `db:bootstrap` with a UNIQUE
+ * violation — catch it here at lint time with a clear, actionable message instead.
+ */
+function checkDuplicateCitations(model: PapersData, errors: string[]): void {
+  for (const cell of model.cells) {
+    const seen = new Set<number>();
+    const dupes = new Set<number>();
+    for (const refId of cell.refIds) {
+      if (seen.has(refId)) dupes.add(refId);
+      seen.add(refId);
+    }
+    for (const refId of [...dupes].sort((a, b) => a - b)) {
+      errors.push(
+        `Duplicate citation: #${refId} appears more than once in the ${cell.method} × ${cell.area} cell`,
+      );
+    }
   }
 }
 
