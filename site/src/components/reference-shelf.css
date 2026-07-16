@@ -1,0 +1,23 @@
+.rs { max-width: 62rem; }
+.rs-controls { margin: 0 0 1.25rem; }
+.rs-search { width: 100%; max-width: 26rem; padding: .5rem .7rem; font-size: .85rem; border: 1px solid var(--caail-border); border-radius: 8px; background: var(--caail-bg); color: var(--caail-ink); }
+
+.rs-group { margin: 0 0 2rem; }
+.rs-ghead { display: flex; align-items: baseline; gap: .6rem; border-bottom: 2px solid var(--caail-border); padding-bottom: .35rem; margin-bottom: .5rem; }
+.rs-gtitle { font-family: var(--caail-font-display); font-size: 1.15rem; color: var(--caail-primary); margin: 0; }
+.rs-gcount { font-size: .7rem; font-weight: 700; color: var(--caail-muted); font-family: var(--caail-font-mono); }
+.rs-gblurb { font-size: .76rem; color: var(--caail-muted); line-height: 1.5; margin: 0 0 .6rem; max-width: 52rem; }
+
+/* two-column card grid on wide screens; the .px-ref cards come from papers-explorer.css */
+.rs-list { display: grid; grid-template-columns: 1fr 1fr; gap: 0 1.5rem; }
+@media (max-width: 48rem) { .rs-list { grid-template-columns: 1fr; } }
+
+/* Neutralize Starlight's prose `* + *` flow margin (.sl-markdown-content :not()
+   + :not() adds 16px top). Inside the card grid it offsets the second card in
+   each row so a row's cards don't share a top edge, and pushes the badges down
+   inside every card. This file is unlayered, so a plain reset beats the layered
+   Starlight rule without !important. */
+.rs-list > .px-ref { margin-top: 0; }
+.rs .px-badges { margin-top: 0; }
+
+.rs-empty { font-size: .8rem; color: var(--caail-muted); }
