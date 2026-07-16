@@ -248,7 +248,9 @@ in its methods, not what it could be applied to. Short form:
 
 <a id="58">58</a> Narayanan, H., Hinckley, J., Barry, R., Dang, B., Wolffe, L., Atari, A., Tseng, Y., & Love, J. (2025). Accelerating cell culture media development using Bayesian optimization-based iterative experimental design. *Nature Communications, 16.* https://doi.org/10.1038/s41467-025-61113-5
 
-> **Data**: https://doi.org/10.5281/zenodo.15466161
+> **Code**: https://github.com/NHarini-1995/CellCultureBayesianOptimization
+
+> **Data**: https://doi.org/10.6084/m9.figshare.27715134
 
 <a id="59">59</a> Antonakoudis, A., & Richelle, A. (2026). Systematic data-driven genome-scale metabolic model reduction for bioprocess modeling: CHO culture case study. *npj Systems Biology and Applications.* https://doi.org/10.1038/s41540-026-00704-4
 
