@@ -25,6 +25,10 @@ const methodMax = Math.max(1, ...topMethods.map((m) => m.papers));
 const speciesSorted = [...species].sort((a, b) => b.inventoryRows - a.inventoryRows);
 const speciesMax = Math.max(1, ...speciesSorted.map((s) => s.inventoryRows));
 const stubCount = species.filter((s) => s.isStub).length;
+// When there are no stubs, recruitment points at the thinnest pages instead of a
+// non-existent "0 pages are still a stub". speciesSorted is descending, so the tail is thinnest.
+const thinnest = speciesSorted.slice(-3).reverse();
+const thinnestLabel = thinnest.map((s) => s.species).join(', ');
 
 const pct = (v: number, max: number) => Math.round((v / max) * 100);
 const daysAgo = (iso: string | null) =>
@@ -76,10 +80,18 @@ const datasetsDays = daysAgo(momentum?.datasetsLastModified ?? null);
     <p class="md-sub">
       <strong>{datasets.total} catalogued datasets</strong> across {library.species} pages
       — {datasets.speciesRows} per-species inventory rows, {datasets.referenceEntries} on the
-      reference pages, {datasets.benchmarkEntries} benchmark datasets. The per-species deposit
-      counts below show where the field (and this library) is still thin: {stubCount} species
-      {stubCount === 1 ? 'page is' : 'pages are'} still a stub (0 deposits) — the clearest place
-      to contribute. See <a href={`${base}/contributing/`}>Contributing</a> to add one.
+      reference pages, {datasets.benchmarkEntries} benchmark datasets.{' '}
+      {stubCount > 0 ? (
+        <Fragment>The per-species deposit counts below show where the field (and this library)
+        is still thin: {stubCount} species {stubCount === 1 ? 'page is' : 'pages are'} still a
+        stub (0 deposits), the clearest place to contribute. See{' '}
+        <a href={`${base}/contributing/`}>Contributing</a> to add one.</Fragment>
+      ) : (
+        <Fragment>Every species page now has at least one catalogued deposit. The counts below
+        show where coverage is thinnest ({thinnestLabel} carry the fewest), the best place to
+        deepen the library. See <a href={`${base}/contributing/`}>Contributing</a> to add a
+        deposit.</Fragment>
+      )}
     </p>
     <div class="md-bars">
       {speciesSorted.map((s) => (
