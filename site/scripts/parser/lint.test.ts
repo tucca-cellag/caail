@@ -425,6 +425,63 @@ describe('lint — unparsed APA fields', () => {
     expect(journalWarn).toBeDefined();
   });
 
+  // Preprint detection is DOI-based: a published article that merely MENTIONS a
+  // preprint server in its text must not have its null-journal warning suppressed.
+  it('DOES flag a null journal for a non-preprint DOI even when raw mentions arXiv', () => {
+    const model: PapersData = {
+      areas: [{ key: 'media', label: 'Media Optimization' }],
+      methods: ['Bayesian Optimization'],
+      cells: [makeCell('Bayesian Optimization', 'media', [1])],
+      references: [
+        makeRef({
+          id: 1,
+          journal: null,
+          doi: '10.1038/s41586-025-09962-4',
+          raw: 'Smith, J. (2020). The impact of arXiv on publishing. https://doi.org/10.1038/s41586-025-09962-4',
+        }),
+      ],
+    };
+    const result = lint(model);
+    expect(result.warnings.find((w) => w.includes('#1') && w.includes('journal'))).toBeDefined();
+  });
+
+  it('does NOT flag a null journal for the newer bioRxiv prefix (10.64898/…)', () => {
+    const model: PapersData = {
+      areas: [{ key: 'media', label: 'Media Optimization' }],
+      methods: ['Bayesian Optimization'],
+      cells: [makeCell('Bayesian Optimization', 'media', [1])],
+      references: [
+        makeRef({
+          id: 1,
+          journal: null,
+          doi: '10.64898/2026.04.06.716850',
+          raw: 'Author, A. (2026). *A preprint.* https://doi.org/10.64898/2026.04.06.716850',
+        }),
+      ],
+    };
+    const result = lint(model);
+    expect(result.warnings.filter((w) => w.includes('#1'))).toHaveLength(0);
+  });
+
+  // Permalink suppression is a host allowlist: a mistyped landing-page URL for a
+  // resource that DOES have a DOI (e.g. a zenodo.org page) must still warn.
+  it('DOES flag a null doi for a non-permalink-host URL (mistyped landing page)', () => {
+    const model: PapersData = {
+      areas: [{ key: 'media', label: 'Media Optimization' }],
+      methods: ['Bayesian Optimization'],
+      cells: [makeCell('Bayesian Optimization', 'media', [1])],
+      references: [
+        makeRef({
+          id: 1,
+          doi: null,
+          raw: 'Author, A. (2024). A dataset. https://zenodo.org/records/1234567',
+        }),
+      ],
+    };
+    const result = lint(model);
+    expect(result.warnings.find((w) => w.includes('#1') && w.includes('doi'))).toBeDefined();
+  });
+
   it('puts APA warnings in warnings, not errors', () => {
     const model: PapersData = {
       areas: [{ key: 'media', label: 'Media Optimization' }],

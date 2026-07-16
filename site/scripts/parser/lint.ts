@@ -243,34 +243,40 @@ function formatGapSegment(start: number, end: number): string {
 // Rule 5 — Unparsed APA fields (warning)
 // ---------------------------------------------------------------------------
 
-/** A non-doi.org permalink in the citation text (eScholarship, OpenReview, …). */
-const NON_DOI_PERMALINK_RE = /https?:\/\/(?!(?:dx\.)?doi\.org\/)\S/i;
-/** Preprint-server DOI prefixes: bioRxiv/medRxiv (10.1101) and arXiv (10.48550). */
-const PREPRINT_DOI_RE = /^10\.(?:1101|48550)\//;
+/**
+ * Known permalink hosts that stand in for a DOI on theses and workshop/poster
+ * papers (eScholarship, OpenReview). Deliberately a host allowlist, not "any
+ * non-doi.org URL": a mistyped landing-page URL for a resource that *does* have
+ * a DOI (e.g. a `zenodo.org` page instead of its `https://doi.org/…` form)
+ * should still warn. Extend this list as new legitimate permalink hosts appear.
+ */
+const PERMALINK_HOST_RE = /https?:\/\/(?:www\.)?(?:escholarship\.org|openreview\.net)\//i;
+
+/**
+ * Preprint-server DOI prefixes for venues that have no journal: bioRxiv/medRxiv
+ * (`10.1101`, and the newer Cold Spring Harbor prefix `10.64898`) and arXiv
+ * (`10.48550`). Preprint detection is DOI-based on purpose — matching the word
+ * "arXiv"/"bioRxiv" anywhere in the raw text would wrongly suppress a genuine
+ * parse miss on a published article that merely mentions a preprint.
+ */
+const PREPRINT_DOI_RE = /^10\.(?:1101|64898|48550)\//;
 
 /**
  * Is a null field legitimately absent for this reference kind, rather than a
  * parse failure a human could fix by editing the citation text? (Issue #72.)
  *
- *   - doi:     theses and workshop/poster papers carry a non-DOI permalink
- *              (eScholarship, OpenReview, …) instead of a DOI. When the doi is
- *              null but a non-doi.org URL is present, the missing DOI is
- *              expected. (A present doi.org URL would have parsed into `doi`,
- *              so any URL here is by definition a permalink.)
- *   - journal: preprints (bioRxiv/medRxiv 10.1101/…, arXiv 10.48550/…) have no
+ *   - doi:     theses and workshop/poster papers carry a known permalink
+ *              (eScholarship, OpenReview) instead of a DOI. A null doi is
+ *              expected only when one of those hosts is present.
+ *   - journal: preprints (identified by a preprint-server DOI prefix) have no
  *              journal — a null there is correct, not a parse miss.
  *
  * Every other null field (authors, year, title, or a doi/journal null without
  * one of these signals) is still flagged.
  */
 function isExpectedNull(ref: Reference, field: string): boolean {
-  if (field === 'doi') return NON_DOI_PERMALINK_RE.test(ref.raw);
-  if (field === 'journal') {
-    return (
-      (ref.doi !== null && PREPRINT_DOI_RE.test(ref.doi)) ||
-      /\b(?:bioR|medR|ar)xiv\b/i.test(ref.raw)
-    );
-  }
+  if (field === 'doi') return PERMALINK_HOST_RE.test(ref.raw);
+  if (field === 'journal') return ref.doi !== null && PREPRINT_DOI_RE.test(ref.doi);
   return false;
 }
 

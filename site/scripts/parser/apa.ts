@@ -130,9 +130,12 @@ function isGivenNames(piece: string): boolean {
  * initials/given-names piece is a personal author (paired); a multi-word piece
  * with no initials following is a standalone organisation author.
  *
- * Returns null only when the run can't yield any author (e.g. a bare single
- * word with no initials anywhere) — preserving the "flag genuinely malformed
- * citations" contract that the lint's unparsed-fields warning relies on.
+ * A bare single word with no following initials aborts the whole run (returns
+ * null), preserving the "flag genuinely malformed citations" contract the
+ * lint's unparsed-fields warning relies on. Known limitation: that abort also
+ * discards any authors already parsed, so an internal-comma organisation name
+ * ("University of California, Davis") or a mononym would null the list rather
+ * than just that entry — none occur in the corpus today (tracked as follow-up).
  */
 function parseAuthors(authorsText: string): string[] | null {
   if (!authorsText.trim()) return null;
