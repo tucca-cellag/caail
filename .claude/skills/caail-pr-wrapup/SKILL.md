@@ -47,8 +47,8 @@ Run the helper from the repo (worktree) root: `bash .claude/skills/caail-pr-wrap
 bash .claude/skills/caail-pr-wrapup/ship-pr.sh preflight
 ```
 This confirms the branch/tree/auth, lists the changed paths, and — from the real CI path filters —
-predicts **whether `lint-papers` will run on the PR** and **whether `docs.yml` will deploy on merge**,
-plus the routes worth verifying live. Read its output: it tells you what to expect in steps 4 and 6.
+predicts **whether `lint-papers` and `test` will run on the PR** and **whether `docs.yml` will deploy
+on merge**, plus the routes worth verifying live. It tells you what to expect in steps 4 and 6.
 Then re-run the local gate (above) if you haven't this session.
 
 ### 1. Push
@@ -150,12 +150,14 @@ for you in preflight, but the source of truth is here):
 
 | Workflow | Trigger | Paths |
 | --- | --- | --- |
-| `lint-papers.yml` | **pull_request** + push to main | `Papers.md`, `Software.md`, `Databases.md`, `OtherResources.md`, `Datasets/**`, `site/scripts/parser/**` |
+| `lint-papers.yml` (matrix ↔ ref lint + `db:check`/`db:verify` + sync guard) | **pull_request** + push to main | `Papers.md`, `Software.md`, `Databases.md`, `OtherResources.md`, `Datasets/**`, `CONTRIBUTING.md`, `CLAUDE.md`, `site/scripts/parser/**`, `site/scripts/db/**`, `site/db/**` |
+| `test.yml` (vitest parser suite + Playwright + axe e2e) | **pull_request** + push to main | `site/**`, root `*.md`, `ResearchAreas/**`, `Datasets/**`, `Primers/**`, `.github/workflows/test.yml` |
 | `docs.yml` (build + Lighthouse + deploy) | **push to `main` only** | `site/**`, root `*.md`, `ResearchAreas/**`, `Datasets/**` |
 
-Consequences: a PR that touches only `site/` config (e.g. `astro.config.mjs`) or only `.claude/` has
-**no PR checks**. The deploy's `*.md` glob is **root-only**, so a `Primers/**`-only change neither lints
-nor deploys — preflight will say "no deploy expected", which is correct, not a bug.
+Consequences: `test.yml` runs on almost any `site/**` or root-`*.md` PR, so most PRs have at least the
+`test` check; a `.claude/`-only change (like this skill's own files) legitimately has **no PR checks**.
+The deploy's `*.md` glob is **root-only**, so a `Primers/**`-only change lints/tests but does **not**
+deploy — preflight will say "no deploy expected", which is correct, not a bug.
 
 ## Gotchas
 

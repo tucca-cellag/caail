@@ -41,11 +41,21 @@ changed_paths() {
 }
 
 # A path matches one of the CI globs? (POSIX case globbing, not regex.)
-# lint-papers.yml PR/push paths:
+# lint-papers.yml PR/push paths (matrix/reference lint + db:check/db:verify + sync guard):
 matches_lint() {
   case "$1" in
     Papers.md|Software.md|Databases.md|OtherResources.md) return 0 ;;
-    Datasets/*|site/scripts/parser/*) return 0 ;;
+    CONTRIBUTING.md|CLAUDE.md) return 0 ;;
+    Datasets/*|site/scripts/parser/*|site/scripts/db/*|site/db/*) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+# test.yml PR/push paths (vitest parser suite + Playwright + axe e2e):
+matches_test() {
+  case "$1" in
+    site/*|ResearchAreas/*|Datasets/*|Primers/*) return 0 ;;
+    .github/workflows/test.yml) return 0 ;;
+    *.md) [ "$1" = "${1##*/}" ] && return 0 || return 1 ;;  # root-level *.md only
     *) return 1 ;;
   esac
 }
@@ -92,19 +102,21 @@ cmd_preflight() {
   note "working tree clean ✓"
   if gh auth status >/dev/null 2>&1; then note "gh authenticated ✓"; else die "gh not authenticated (run: gh auth login)."; fi
 
-  local paths lint=no deploy=no; local routes=()
+  local paths lint=no tests=no deploy=no; local routes=()
   paths="$(changed_paths)"
   [ -n "$paths" ] || die "no changes vs origin/$DEFAULT_BRANCH — nothing to ship."
   printf '\nChanged paths (%s):\n' "$(echo "$paths" | wc -l | tr -d ' ')"
   while IFS= read -r p; do
     note "$p"
     matches_lint "$p" && lint=yes
+    matches_test "$p" && tests=yes
     matches_deploy "$p" && deploy=yes
     if r="$(route_for "$p" 2>/dev/null)"; then routes+=("$r"); fi
   done <<< "$paths"
 
   printf '\nCI prediction:\n'
   note "lint-papers will run on the PR:   $lint"
+  note "test (vitest + e2e) on the PR:    $tests"
   note "docs.yml will deploy on merge:    $deploy   (if no, there is no deploy to watch)"
   # de-dup route hints (array → unique, blanks dropped)
   local uniq=""
@@ -125,8 +137,9 @@ cmd_open_pr() {
 
 cmd_watch_checks() {
   local pr="$1" out
-  # `gh pr checks` exits non-zero when there are no checks at all — common for
-  # site-config / .claude PRs (lint-papers only runs on content/parser paths).
+  # `gh pr checks` exits non-zero when there are no checks at all — happens only
+  # for PRs that touch none of the lint-papers or test.yml paths (e.g. a
+  # .claude/-only or workflow-unrelated change).
   # Capture its output to a variable first (NOT `gh ... | grep`): under
   # `set -o pipefail` gh's non-zero exit would mask a grep match and wrongly
   # fall through to the blocking --watch below.
