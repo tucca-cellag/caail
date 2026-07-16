@@ -55,8 +55,8 @@ export interface DatasetAdd {
 }
 export type ItemAdd = PaperAdd | CatalogAdd | DatasetAdd;
 
-function nextInt(db: Db, sql: string): number {
-  return ((db.prepare(sql).get() as { m: number | null }).m ?? -1) + 1;
+function nextInt(db: Db, sql: string, params: unknown[] = []): number {
+  return ((db.prepare(sql).get(...params) as { m: number | null }).m ?? -1) + 1;
 }
 
 function tagTopics(db: Db, itemId: string, topics: string[] = []): void {
@@ -147,7 +147,11 @@ function addItemImpl(db: Db, spec: ItemAdd): string {
     const id = nextFreeId(db, frozenSlug(spec.name, prefix));
     insItem.run(id, spec.type, id.slice(prefix.length + 1));
     db.prepare('INSERT INTO catalog(item_id,name,url,grp,heading_md,body_md,ordinal) VALUES(?,?,?,?,?,?,?)')
-      .run(id, spec.name, spec.url, spec.group, `[${spec.name}](${spec.url})`, spec.body, nextInt(db, 'SELECT MAX(ordinal) m FROM catalog'));
+      .run(id, spec.name, spec.url, spec.group, `[${spec.name}](${spec.url})`, spec.body,
+        // ordinal restarts per file (software vs database), matching emitCatalogFile's
+        // `WHERE item_id IN (SELECT id FROM items WHERE type=?)` partition; a global MAX would
+        // seed a software entry from the database sequence (and vice versa).
+        nextInt(db, 'SELECT MAX(ordinal) m FROM catalog WHERE item_id IN (SELECT id FROM items WHERE type=?)', [spec.type]));
     tagTopics(db, id, spec.topics);
     return id;
   }

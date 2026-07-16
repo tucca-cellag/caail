@@ -107,6 +107,33 @@ describe.each([
   });
 });
 
+describe('addItem — catalog ordinal is scoped per type (#89)', () => {
+  const maxOrdinal = (db: Db, type: 'software' | 'database') =>
+    (db.prepare('SELECT MAX(ordinal) m FROM catalog WHERE item_id IN (SELECT id FROM items WHERE type=?)').get(type) as any).m as number;
+  const anyGroup = (db: Db, type: 'software' | 'database') =>
+    (db.prepare('SELECT grp FROM catalog WHERE item_id IN (SELECT id FROM items WHERE type=?) LIMIT 1').get(type) as any).grp;
+
+  it('seeds a new software entry from the software sequence, not the global (database) max', () => {
+    const db = importNdjson();
+    const swMax = maxOrdinal(db, 'software');
+    const globalMax = (db.prepare('SELECT MAX(ordinal) m FROM catalog').get() as any).m as number;
+    // Fixture guard: software must NOT hold the global max, else the pre-fix bug is invisible.
+    expect(globalMax).toBeGreaterThan(swMax);
+    const id = addItem(db, { type: 'software', name: 'OrdinalProbe', url: 'https://example.org/ordinal-probe', group: anyGroup(db, 'software'), body: 'Summary: ordinal scoping probe.' });
+    const ord = (db.prepare('SELECT ordinal FROM catalog WHERE item_id=?').get(id) as any).ordinal as number;
+    expect(ord).toBe(swMax + 1);       // per-type sequence
+    expect(ord).not.toBe(globalMax + 1); // the pre-#89 global-MAX behavior
+  });
+
+  it('seeds a new database entry from the database sequence', () => {
+    const db = importNdjson();
+    const dbMax = maxOrdinal(db, 'database');
+    const id = addItem(db, { type: 'database', name: 'OrdinalProbeDb', url: 'https://example.org/ordinal-probe-db', group: anyGroup(db, 'database'), body: 'Summary: ordinal scoping probe.' });
+    const ord = (db.prepare('SELECT ordinal FROM catalog WHERE item_id=?').get(id) as any).ordinal as number;
+    expect(ord).toBe(dbMax + 1);
+  });
+});
+
 describe('addItem — dataset', () => {
   it('promotes a row with a stable ds: id and round-trips into the inventory', () => {
     const db = importNdjson();
