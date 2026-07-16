@@ -19,7 +19,8 @@ const read = <T>(name: string): T => JSON.parse(readFileSync(`${dataDir}${name}`
 
 type Counts = { papers: number; software: number; databases: number; species: number; datasets: number };
 type Cell = { method: string; area: string; refIds: number[] };
-type Papers = { cells: Cell[] };
+type Ref = { id: number; section: string };
+type Papers = { cells: Cell[]; references: Ref[] };
 type Metrics = { species: { species: string; inventoryRows: number; isStub: boolean }[] };
 type PrimerItem = { kind: string; internal: boolean };
 type Primers = { primers: { slug: string; sections: { items: PrimerItem[] }[] }[] };
@@ -34,6 +35,24 @@ export function cellRefCount(method: string, area: string): number {
   const cell = papers.cells.find((c) => c.method === method && c.area === area);
   if (!cell) throw new Error(`no matrix cell for ${method} × ${area}`);
   return cell.refIds.length;
+}
+
+/**
+ * References cited by no matrix cell — the corpus the /papers/reviews/ page
+ * surfaces (reviews, perspectives, and the reference-work shelves). Derived the
+ * same way the ReferenceShelf island derives it, so the test tracks the render.
+ */
+export function matrixUnreachedRefs(): Ref[] {
+  const cited = new Set<number>();
+  for (const c of papers.cells) for (const id of c.refIds) cited.add(id);
+  return papers.references.filter((r) => !cited.has(r.id));
+}
+
+/** Section → unreached-ref count, i.e. the reviews page's group headings. */
+export function unreachedSectionCounts(): Map<string, number> {
+  const m = new Map<string, number>();
+  for (const r of matrixUnreachedRefs()) m.set(r.section, (m.get(r.section) ?? 0) + 1);
+  return m;
 }
 
 /** Species pages with zero catalogued deposits — the "where help is wanted" signal. */
