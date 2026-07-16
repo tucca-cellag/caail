@@ -295,6 +295,7 @@
 {"item_id":"ds:comparative-proteomic-profiling","topic_id":"topic:cell-lines-engineering"}
 {"item_id":"ds:comparative-transcriptome-analysis","topic_id":"topic:cell-lines-engineering"}
 {"item_id":"ds:comparative-transcriptomic-characterization","topic_id":"topic:cell-lines-engineering"}
+{"item_id":"ds:continuous-fish-muscle","topic_id":"topic:cell-line-engineering"}
 {"item_id":"ds:cost-effective-production-of","topic_id":"topic:ai-methods-tooling"}
 {"item_id":"ds:cost-effective-production-of","topic_id":"topic:bioprocess-scale-up"}
 {"item_id":"ds:cost-effective-production-of","topic_id":"topic:cell-line-engineering"}
@@ -1203,6 +1204,7 @@
 {"item_id":"sw:asari","topic_id":"topic:sensory-flavor"}
 {"item_id":"sw:aviary","topic_id":"topic:ai-agents"}
 {"item_id":"sw:aviary","topic_id":"topic:ai-methods-tooling"}
+{"item_id":"sw:ax","topic_id":"topic:media-optimization"}
 {"item_id":"sw:biocontextai","topic_id":"topic:ai-agents"}
 {"item_id":"sw:biocontextai","topic_id":"topic:ai-methods-tooling"}
 {"item_id":"sw:biodiscoveryagent","topic_id":"topic:ai-agents"}
@@ -1219,8 +1221,10 @@
 {"item_id":"sw:boltz","topic_id":"topic:cell-line-engineering"}
 {"item_id":"sw:boltz","topic_id":"topic:media-growth-factors"}
 {"item_id":"sw:boltz","topic_id":"topic:media-optimization"}
+{"item_id":"sw:botorch","topic_id":"topic:media-optimization"}
 {"item_id":"sw:brad","topic_id":"topic:ai-agents"}
 {"item_id":"sw:brad","topic_id":"topic:ai-methods-tooling"}
+{"item_id":"sw:bridgedb","topic_id":"topic:metabolic-modeling"}
 {"item_id":"sw:cameo","topic_id":"topic:metabolic-modeling"}
 {"item_id":"sw:cameo","topic_id":"topic:metabolism-modeling"}
 {"item_id":"sw:carveme","topic_id":"topic:metabolic-modeling"}
@@ -1231,6 +1235,7 @@
 {"item_id":"sw:cell2sentence-c2s-scale","topic_id":"topic:ai-methods-tooling"}
 {"item_id":"sw:cell2sentence-c2s-scale","topic_id":"topic:bioreactor-scale-up"}
 {"item_id":"sw:cellchat","topic_id":"topic:ai-methods-tooling"}
+{"item_id":"sw:cellculturebayesianoptimization","topic_id":"topic:media-optimization"}
 {"item_id":"sw:cellforge","topic_id":"topic:ai-agents"}
 {"item_id":"sw:cellforge","topic_id":"topic:ai-methods-tooling"}
 {"item_id":"sw:cellpose","topic_id":"topic:ai-methods-tooling"}
@@ -1369,6 +1374,7 @@
 {"item_id":"sw:rfdiffusion","topic_id":"topic:cell-line-engineering"}
 {"item_id":"sw:rfdiffusion","topic_id":"topic:media-growth-factors"}
 {"item_id":"sw:rfdiffusion","topic_id":"topic:media-optimization"}
+{"item_id":"sw:riptide","topic_id":"topic:metabolic-modeling"}
 {"item_id":"sw:ropls","topic_id":"topic:mass-spectrometry"}
 {"item_id":"sw:ropls","topic_id":"topic:sensory-flavor"}
 {"item_id":"sw:sbml-systems-biology-markup-language","topic_id":"topic:ai-methods-tooling"}

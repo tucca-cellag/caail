@@ -62,6 +62,18 @@ Summary: A fast, antibody-specific structure predictor (Gray lab, Johns Hopkins)
 
 Summary: An antibody-specific language model (Oxford Protein Informatics Group) for antibody sequence representation, restoration of missing residues, and design. Enables rapid engineering of antibody-based scaffolds and binding domains for cell-ag affinity-reagent work.
 
+### [BoTorch](https://github.com/meta-pytorch/botorch)
+
+Summary: A PyTorch library for Bayesian optimization, providing Gaussian-process surrogates, Monte-Carlo acquisition functions, and constrained and multi-objective optimization. In cellular agriculture it is the engine under iterative media-formulation and bioprocess design-of-experiment loops, where each wet-lab round is costly and the optimizer picks the next formulation to test — the pattern in the media-optimization campaigns catalogued in [Papers.md](./Papers.md). MIT; docs at <https://botorch.org/>.
+
+### [Ax](https://github.com/facebook/Ax)
+
+Summary: An adaptive-experimentation platform that wraps BoTorch with managed experiment orchestration, sequential design, and multi-objective optimization behind a higher-level API. For cell-ag it runs closed-loop media and process optimization campaigns — proposing formulations, ingesting assay results, and adapting the search — without hand-coding the underlying Bayesian optimization. MIT; docs at <https://ax.dev/>.
+
+### [CellCultureBayesianOptimization](https://github.com/NHarini-1995/CellCultureBayesianOptimization)
+
+Summary: The reference implementation of the Bayesian-optimization iterative media-development workflow of Narayanan et al. 2025 — the code that proposes successive media formulations and folds in measured outcomes to accelerate serum-free and recombinant-protein media design. Companion to [Papers.md ref #58](./Papers.md#58) (Narayanan et al. 2025). MIT.
+
 ## Bioprocess Modeling & Scaling
 
 This category includes simulation and modeling tools for optimizing the  bioreactor environment.
@@ -209,6 +221,10 @@ Docs: <https://pytfa.readthedocs.io/>.
 Summary: A Python package for building, simulating, and visualizing dynamic mass-action kinetic models of metabolism, extending constraint-based network structures with kinetic rate laws and ODE integration. Bridges steady-state GEM analysis and time-resolved kinetic simulation, useful for modeling the dynamics of cultivated-cell metabolism and spent-media turnover ([Haiman et al. 2021](https://doi.org/10.1371/journal.pcbi.1008208), *PLOS Computational Biology*). From the Systems Biology Research Group (SBRG) at UC San Diego.
 
 Docs: <https://masspy.readthedocs.io/>.
+
+### [RIPTiDe](https://github.com/mjenior/riptide)
+
+Summary: A Python tool that tailors a genome-scale metabolic model to transcriptomic (or proteomic) data by parsimonious flux analysis, yielding a context-specific model that predicts metabolism better in complex environments (Jenior et al. 2020, *PLOS Computational Biology*). It is the transcriptome-to-context-specific-model step that the classic extraction methods GIMME, iMAT, and tINIT pioneered — those live in the already-listed COBRA Toolbox / cobrapy (GIMME, iMAT) and RAVEN Toolbox (tINIT). For cell-ag it conditions a species GEM on the actual expression state of a proliferating or differentiating muscle or fat cell for media and process design. MIT.
 
 ## Quantitative Genetics & Multi-Omics Analysis
 
@@ -656,3 +672,7 @@ GitHub org: <https://github.com/biopragmatics>. Core components:
 - **[Biomappings](https://github.com/biopragmatics/biomappings)** — Community-curated and predicted equivalences and related mappings between named biological entities not available from primary sources.
 - **[SemRA](https://github.com/biopragmatics/semra)** — Semantic Mapping Reasoning Assembler, for assembly and reasoning over semantic mappings at scale ([Hoyt et al. 2025, *Bioinformatics*](https://doi.org/10.1093/bioinformatics/btaf542)).
 - **[bioversions](https://github.com/biopragmatics/bioversions)** — Tracks the latest version of each biomedical database — useful as a freshness check across the resources curated in [Databases.md](./Databases.md).
+
+### [BridgeDb](https://github.com/bridgedb/BridgeDb)
+
+Summary: A framework plus companion mapping databases that translate identifiers across gene, protein, and metabolite databases through one unified API (a Java library, the R/Bioconductor `BridgeDbR` client, a JavaScript client, a web service, and a Cytoscape app). For cellular agriculture it resolves the identifier-scheme mismatches — Ensembl vs UniProt vs KEGG/HMDB/ChEBI — that otherwise break multi-omics integration and genome-scale metabolic-model curation for the non-model livestock and microbial-host species the field works with (van Iersel et al. 2010, *BMC Bioinformatics*). Apache-2.0.

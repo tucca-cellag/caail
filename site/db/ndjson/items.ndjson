@@ -155,6 +155,7 @@
 {"id":"ds:comparative-proteomic-profiling","type":"dataset","slug":"comparative-proteomic-profiling"}
 {"id":"ds:comparative-transcriptome-analysis","type":"dataset","slug":"comparative-transcriptome-analysis"}
 {"id":"ds:comparative-transcriptomic-characterization","type":"dataset","slug":"comparative-transcriptomic-characterization"}
+{"id":"ds:continuous-fish-muscle","type":"dataset","slug":"continuous-fish-muscle"}
 {"id":"ds:cost-effective-production-of","type":"dataset","slug":"cost-effective-production-of"}
 {"id":"ds:cra003275","type":"dataset","slug":"cra003275"}
 {"id":"ds:cra006598","type":"dataset","slug":"cra006598"}
@@ -628,6 +629,7 @@
 {"id":"sw:amii-cell-ag-tools","type":"software","slug":"amii-cell-ag-tools"}
 {"id":"sw:asari","type":"software","slug":"asari"}
 {"id":"sw:aviary","type":"software","slug":"aviary"}
+{"id":"sw:ax","type":"software","slug":"ax"}
 {"id":"sw:biocontextai","type":"software","slug":"biocontextai"}
 {"id":"sw:biodiscoveryagent","type":"software","slug":"biodiscoveryagent"}
 {"id":"sw:biomcp","type":"software","slug":"biomcp"}
@@ -636,12 +638,15 @@
 {"id":"sw:bitter-peptide-design","type":"software","slug":"bitter-peptide-design"}
 {"id":"sw:bittersweet","type":"software","slug":"bittersweet"}
 {"id":"sw:boltz","type":"software","slug":"boltz"}
+{"id":"sw:botorch","type":"software","slug":"botorch"}
 {"id":"sw:brad","type":"software","slug":"brad"}
+{"id":"sw:bridgedb","type":"software","slug":"bridgedb"}
 {"id":"sw:cameo","type":"software","slug":"cameo"}
 {"id":"sw:carveme","type":"software","slug":"carveme"}
 {"id":"sw:causalbench","type":"software","slug":"causalbench"}
 {"id":"sw:cell2sentence-c2s-scale","type":"software","slug":"cell2sentence-c2s-scale"}
 {"id":"sw:cellchat","type":"software","slug":"cellchat"}
+{"id":"sw:cellculturebayesianoptimization","type":"software","slug":"cellculturebayesianoptimization"}
 {"id":"sw:cellforge","type":"software","slug":"cellforge"}
 {"id":"sw:cellpose","type":"software","slug":"cellpose"}
 {"id":"sw:cellprofiler","type":"software","slug":"cellprofiler"}
@@ -713,6 +718,7 @@
 {"id":"sw:ramanspy","type":"software","slug":"ramanspy"}
 {"id":"sw:raven-toolbox","type":"software","slug":"raven-toolbox"}
 {"id":"sw:rfdiffusion","type":"software","slug":"rfdiffusion"}
+{"id":"sw:riptide","type":"software","slug":"riptide"}
 {"id":"sw:ropls","type":"software","slug":"ropls"}
 {"id":"sw:sbml-systems-biology-markup-language","type":"software","slug":"sbml-systems-biology-markup-language"}
 {"id":"sw:scbert","type":"software","slug":"scbert"}
