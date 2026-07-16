@@ -42,11 +42,21 @@ const DOI_RE = /https?:\/\/(?:dx\.)?doi\.org\/(\S+)/i;
 const YEAR_RE = /\((\d{4})[a-z]?\)/;
 
 /**
- * Validate that a piece looks like APA initials:
- * one or more segments of the form `X.`, optionally separated by `-` or space.
- * Examples that must match: `A.`, `F. A.`, `R.-R.`, `P. G. K.`, `R. V.`
+ * A single initial token: an uppercase letter followed by a dot, optionally
+ * hyphen-compounded (`R.-R.`). The letter class is Unicode uppercase (`\p{Lu}`,
+ * hence the `u` flag) so non-ASCII initials count — e.g. `Ł.` (ref 42), `Ø.`
+ * (ref 180). Examples that must match a run of these: `A.`, `F. A.`, `R.-R.`.
  */
-const INITIALS_RE = /^(?:[A-Z]\.[-\s]?)+$/;
+const INITIAL_TOKEN_RE = /^\p{Lu}\.(?:-\p{Lu}\.)*$/u;
+
+/**
+ * Surname particles that can trail (or interleave) the initials in an APA
+ * author entry — e.g. `Magalhães, C. G. De` (ref 54), `Teba, P. R. de C.`
+ * (ref 122). Matched case-insensitively; kept to genuine name particles so an
+ * organisation word like "for" (in "Center for AI Safety") is NOT swallowed.
+ */
+const PARTICLE_RE =
+  /^(?:de|del|della|der|den|da|das|dos|van|von|di|du|la|le|el|bin|ibn|ten|ter|af|av|zu)$/i;
 
 /** Match the first `*…*` italic run; capture group 1 is the content. */
 const ITALIC_RE = /\*([^*]+)\*/;
@@ -80,48 +90,81 @@ function stripVolume(raw: string): string {
 }
 
 /**
- * Parse the author run string into individual "Surname, Initials" entries.
+ * Is `piece` an APA "given names" run — one or more initials, possibly
+ * interleaved with surname particles?
  *
- * APA author lists look like:
+ * Accepts: `Y.`, `R. V.`, `R.-R.`, `Ł.`, `B. Ø.`, `C. G. De`, `P. R. de C.`
+ * Rejects: `Stolovitzky` (plain word), `Consortium` (no initial), `` (empty).
+ *
+ * Requires ≥1 real initial so a bare particle or a plain surname word isn't
+ * mistaken for initials. Used both to validate a paired initials piece and, on
+ * look-ahead, to decide whether a token is a surname (paired with the next
+ * piece) or a standalone consortium/organisation author (no initials follow).
+ */
+function isGivenNames(piece: string): boolean {
+  const tokens = piece.trim().split(/\s+/).filter(Boolean);
+  if (tokens.length === 0) return false;
+  let sawInitial = false;
+  for (const t of tokens) {
+    if (INITIAL_TOKEN_RE.test(t)) sawInitial = true;
+    else if (!PARTICLE_RE.test(t)) return false;
+  }
+  return sawInitial;
+}
+
+/**
+ * Parse the author run string into individual author entries.
+ *
+ * APA author lists mostly alternate "Surname, Initials" pairs:
  *   "Ji, Y., Zhou, Z., Liu, H., & Davuluri, R. V."
  *   "Kuhl, E."
- *   "Datta, B., ... & Kuhl, E."  (truncated — treated gracefully)
+ * but real citations also contain:
+ *   - surname particles trailing the initials — "Magalhães, C. G. De" (ref 54)
+ *   - non-ASCII initials — "Smoliński, Ł." (ref 42), "Palsson, B. Ø." (ref 180)
+ *   - non-personal (consortium/org) authors with no initials —
+ *     "DREAM Olfaction Prediction Consortium" (ref 80), "Scale AI" (ref 158)
+ *   - an APA "…" ellipsis marking omitted authors — "… Scaramuzza, D." (ref 158)
  *
- * Algorithm:
- * 1. Normalize "& " → "" (remove the ampersand prefix from the last author).
- * 2. Split on ", " to get alternating [Surname, Initials, Surname, Initials, …].
- * 3. Pair them up and validate.
+ * So rather than assuming strict even pairs, we walk the comma-separated pieces
+ * and decide each one's role by looking ahead: a piece followed by an
+ * initials/given-names piece is a personal author (paired); a multi-word piece
+ * with no initials following is a standalone organisation author.
  *
- * Returns null if the run can't be cleanly parsed into at least one valid pair.
+ * Returns null only when the run can't yield any author (e.g. a bare single
+ * word with no initials anywhere) — preserving the "flag genuinely malformed
+ * citations" contract that the lint's unparsed-fields warning relies on.
  */
 function parseAuthors(authorsText: string): string[] | null {
   if (!authorsText.trim()) return null;
 
-  // Normalize: remove the ampersand only (not surrounding whitespace) so that
-  // ", & Davuluri, R. V." → ", Davuluri, R. V." and the ", " split still works.
+  // Remove the ampersand prefix from the final author ("& Jones" → "Jones")
+  // without disturbing the ", " separators the split relies on.
   const normalized = authorsText.replace(/&\s*/g, '');
-
-  // Split on ", " to get pieces
   const pieces = normalized.split(', ');
 
-  // We need an even number of pieces to pair them (Surname, Initials, ...)
-  if (pieces.length === 0 || pieces.length % 2 !== 0) {
-    return null;
-  }
-
   const authors: string[] = [];
-  for (let i = 0; i < pieces.length; i += 2) {
-    const surname = pieces[i].trim();
-    const initials = pieces[i + 1].trim();
+  let i = 0;
+  while (i < pieces.length) {
+    // Strip a leading APA ellipsis ("… Scaramuzza" → "Scaramuzza"; the ellipsis
+    // may be the literal "..." or the "…" character) before reading the surname.
+    const surname = pieces[i].replace(/^[.…\s]+/, '').trim();
+    i += 1;
+    if (!surname) continue; // a lone ellipsis piece — skip it
 
-    if (!surname) return null;
-
-    // Validate initials
-    if (!INITIALS_RE.test(initials)) {
+    const next = i < pieces.length ? pieces[i].trim() : null;
+    if (next && isGivenNames(next)) {
+      // Personal author: "Surname, Initials" (initials may carry a particle).
+      authors.push(`${surname}, ${next}`);
+      i += 1;
+    } else if (/\s/.test(surname)) {
+      // No initials follow and the piece is multi-word → a standalone
+      // consortium/organisation author (kept verbatim).
+      authors.push(surname);
+    } else {
+      // A bare single word with no initials — genuinely malformed; bail so the
+      // whole reference is flagged rather than silently mis-parsed.
       return null;
     }
-
-    authors.push(`${surname}, ${initials}`);
   }
 
   return authors.length > 0 ? authors : null;
