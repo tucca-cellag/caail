@@ -353,6 +353,78 @@ describe('lint — unparsed APA fields', () => {
     expect(result.errors).toHaveLength(0);
   });
 
+  // #72: a null field that is legitimately absent for the reference kind is not
+  // flagged (a non-DOI permalink for a thesis/workshop; no journal for a preprint).
+  it('does NOT flag a null doi when a non-DOI permalink is present (thesis/workshop)', () => {
+    const model: PapersData = {
+      areas: [{ key: 'media', label: 'Media Optimization' }],
+      methods: ['Bayesian Optimization'],
+      cells: [makeCell('Bayesian Optimization', 'media', [1])],
+      references: [
+        makeRef({
+          id: 1,
+          doi: null,
+          raw: 'Cosenza, Z. A. (2022). *Sequential Learning Methods.* [UC Davis]. https://escholarship.org/uc/item/119489fc',
+        }),
+      ],
+    };
+    const result = lint(model);
+    expect(result.errors).toHaveLength(0);
+    expect(result.warnings.filter((w) => w.includes('#1'))).toHaveLength(0);
+  });
+
+  it('DOES flag a null doi when there is no permalink at all', () => {
+    const model: PapersData = {
+      areas: [{ key: 'media', label: 'Media Optimization' }],
+      methods: ['Bayesian Optimization'],
+      cells: [makeCell('Bayesian Optimization', 'media', [1])],
+      references: [
+        makeRef({ id: 1, doi: null, raw: 'Smith, J. (2020). A title. *Nature, 500*. No DOI here.' }),
+      ],
+    };
+    const result = lint(model);
+    const doiWarn = result.warnings.find((w) => w.includes('#1') && w.includes('doi'));
+    expect(doiWarn).toBeDefined();
+  });
+
+  it('does NOT flag a null journal for a preprint DOI (bioRxiv 10.1101/…)', () => {
+    const model: PapersData = {
+      areas: [{ key: 'media', label: 'Media Optimization' }],
+      methods: ['Bayesian Optimization'],
+      cells: [makeCell('Bayesian Optimization', 'media', [1])],
+      references: [
+        makeRef({
+          id: 1,
+          journal: null,
+          doi: '10.1101/2022.12.24.521878',
+          raw: 'Hashizume, T. (2022). *Employing active learning.* https://doi.org/10.1101/2022.12.24.521878',
+        }),
+      ],
+    };
+    const result = lint(model);
+    expect(result.errors).toHaveLength(0);
+    expect(result.warnings.filter((w) => w.includes('#1'))).toHaveLength(0);
+  });
+
+  it('DOES flag a null journal for a non-preprint DOI', () => {
+    const model: PapersData = {
+      areas: [{ key: 'media', label: 'Media Optimization' }],
+      methods: ['Bayesian Optimization'],
+      cells: [makeCell('Bayesian Optimization', 'media', [1])],
+      references: [
+        makeRef({
+          id: 1,
+          journal: null,
+          doi: '10.1038/s41586-025-09962-4',
+          raw: 'Author, A. (2020). A title. https://doi.org/10.1038/s41586-025-09962-4',
+        }),
+      ],
+    };
+    const result = lint(model);
+    const journalWarn = result.warnings.find((w) => w.includes('#1') && w.includes('journal'));
+    expect(journalWarn).toBeDefined();
+  });
+
   it('puts APA warnings in warnings, not errors', () => {
     const model: PapersData = {
       areas: [{ key: 'media', label: 'Media Optimization' }],

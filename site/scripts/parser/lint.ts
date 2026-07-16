@@ -20,7 +20,7 @@
  * (every message includes the affected `#N` id).
  */
 
-import type { PapersData } from './types.js';
+import type { PapersData, Reference } from './types.js';
 
 // ---------------------------------------------------------------------------
 // Public API
@@ -243,10 +243,42 @@ function formatGapSegment(start: number, end: number): string {
 // Rule 5 — Unparsed APA fields (warning)
 // ---------------------------------------------------------------------------
 
+/** A non-doi.org permalink in the citation text (eScholarship, OpenReview, …). */
+const NON_DOI_PERMALINK_RE = /https?:\/\/(?!(?:dx\.)?doi\.org\/)\S/i;
+/** Preprint-server DOI prefixes: bioRxiv/medRxiv (10.1101) and arXiv (10.48550). */
+const PREPRINT_DOI_RE = /^10\.(?:1101|48550)\//;
+
+/**
+ * Is a null field legitimately absent for this reference kind, rather than a
+ * parse failure a human could fix by editing the citation text? (Issue #72.)
+ *
+ *   - doi:     theses and workshop/poster papers carry a non-DOI permalink
+ *              (eScholarship, OpenReview, …) instead of a DOI. When the doi is
+ *              null but a non-doi.org URL is present, the missing DOI is
+ *              expected. (A present doi.org URL would have parsed into `doi`,
+ *              so any URL here is by definition a permalink.)
+ *   - journal: preprints (bioRxiv/medRxiv 10.1101/…, arXiv 10.48550/…) have no
+ *              journal — a null there is correct, not a parse miss.
+ *
+ * Every other null field (authors, year, title, or a doi/journal null without
+ * one of these signals) is still flagged.
+ */
+function isExpectedNull(ref: Reference, field: string): boolean {
+  if (field === 'doi') return NON_DOI_PERMALINK_RE.test(ref.raw);
+  if (field === 'journal') {
+    return (
+      (ref.doi !== null && PREPRINT_DOI_RE.test(ref.doi)) ||
+      /\b(?:bioR|medR|ar)xiv\b/i.test(ref.raw)
+    );
+  }
+  return false;
+}
+
 /**
  * Emit one warning per reference that has one or more null APA fields
  * (authors, year, title, journal, doi). Names which fields are null so
- * a human can hand-fix the citation.
+ * a human can hand-fix the citation. Fields that are legitimately absent for
+ * the reference kind (see isExpectedNull) are not flagged.
  *
  * Output is sorted by ascending id.
  */
@@ -256,7 +288,9 @@ function checkUnparsedApaFields(model: PapersData, warnings: string[]): void {
   const affected: Array<{ id: number; nullFields: string[] }> = [];
 
   for (const ref of model.references) {
-    const nullFields = apaFields.filter((f) => ref[f] === null);
+    const nullFields = apaFields.filter(
+      (f) => ref[f] === null && !isExpectedNull(ref, f),
+    );
     if (nullFields.length > 0) {
       affected.push({ id: ref.id, nullFields });
     }
