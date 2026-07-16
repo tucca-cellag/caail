@@ -20,7 +20,7 @@
  * (every message includes the affected `#N` id).
  */
 
-import type { PapersData } from './types.js';
+import type { PapersData, Reference } from './types.js';
 
 // ---------------------------------------------------------------------------
 // Public API
@@ -244,9 +244,47 @@ function formatGapSegment(start: number, end: number): string {
 // ---------------------------------------------------------------------------
 
 /**
+ * Known permalink hosts that stand in for a DOI on theses and workshop/poster
+ * papers (eScholarship, OpenReview). Deliberately a host allowlist, not "any
+ * non-doi.org URL": a mistyped landing-page URL for a resource that *does* have
+ * a DOI (e.g. a `zenodo.org` page instead of its `https://doi.org/…` form)
+ * should still warn. Extend this list as new legitimate permalink hosts appear.
+ */
+const PERMALINK_HOST_RE = /https?:\/\/(?:www\.)?(?:escholarship\.org|openreview\.net)\//i;
+
+/**
+ * Preprint-server DOI prefixes for venues that have no journal: bioRxiv/medRxiv
+ * (`10.1101`, and the newer Cold Spring Harbor prefix `10.64898`) and arXiv
+ * (`10.48550`). Preprint detection is DOI-based on purpose — matching the word
+ * "arXiv"/"bioRxiv" anywhere in the raw text would wrongly suppress a genuine
+ * parse miss on a published article that merely mentions a preprint.
+ */
+const PREPRINT_DOI_RE = /^10\.(?:1101|64898|48550)\//;
+
+/**
+ * Is a null field legitimately absent for this reference kind, rather than a
+ * parse failure a human could fix by editing the citation text? (Issue #72.)
+ *
+ *   - doi:     theses and workshop/poster papers carry a known permalink
+ *              (eScholarship, OpenReview) instead of a DOI. A null doi is
+ *              expected only when one of those hosts is present.
+ *   - journal: preprints (identified by a preprint-server DOI prefix) have no
+ *              journal — a null there is correct, not a parse miss.
+ *
+ * Every other null field (authors, year, title, or a doi/journal null without
+ * one of these signals) is still flagged.
+ */
+function isExpectedNull(ref: Reference, field: string): boolean {
+  if (field === 'doi') return PERMALINK_HOST_RE.test(ref.raw);
+  if (field === 'journal') return ref.doi !== null && PREPRINT_DOI_RE.test(ref.doi);
+  return false;
+}
+
+/**
  * Emit one warning per reference that has one or more null APA fields
  * (authors, year, title, journal, doi). Names which fields are null so
- * a human can hand-fix the citation.
+ * a human can hand-fix the citation. Fields that are legitimately absent for
+ * the reference kind (see isExpectedNull) are not flagged.
  *
  * Output is sorted by ascending id.
  */
@@ -256,7 +294,9 @@ function checkUnparsedApaFields(model: PapersData, warnings: string[]): void {
   const affected: Array<{ id: number; nullFields: string[] }> = [];
 
   for (const ref of model.references) {
-    const nullFields = apaFields.filter((f) => ref[f] === null);
+    const nullFields = apaFields.filter(
+      (f) => ref[f] === null && !isExpectedNull(ref, f),
+    );
     if (nullFields.length > 0) {
       affected.push({ id: ref.id, nullFields });
     }

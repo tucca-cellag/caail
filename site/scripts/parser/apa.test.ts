@@ -117,6 +117,80 @@ describe('parseApa — real corpus references', () => {
 });
 
 // ---------------------------------------------------------------------------
+// 1b. Particles, consortium authors, non-ASCII initials, and ellipses (#72)
+// ---------------------------------------------------------------------------
+
+describe('parseApa — particles, consortia, non-ASCII initials, ellipses (#72)', () => {
+  it('ref 54: surname particles trailing the initials ("De", "de L.")', () => {
+    const input =
+      '<a id="54">54</a> Ying, K., Magalhães, C. G. De, Camillo, L. P. de L., Van Raamsdonk, J. M., & Gladyshev, V. N. (2025). *Autonomous AI Agents Discover Aging Interventions from Millions of Molecular Profiles.* bioRxiv. https://doi.org/10.1101/2023.02.28.530532';
+
+    const result = parseApa(input);
+
+    expect(result.authors).not.toBeNull();
+    expect(result.authors).toContain('Magalhães, C. G. De');
+    expect(result.authors).toContain('Camillo, L. P. de L.');
+    expect(result.authors).toContain('Van Raamsdonk, J. M.');
+    expect(result.authors![0]).toBe('Ying, K.');
+    expect(result.authors![result.authors!.length - 1]).toBe('Gladyshev, V. N.');
+  });
+
+  it('ref 42/180: non-ASCII initials (Ł., Ø.)', () => {
+    const ref42 = parseApa(
+      '<a id="42">42</a> Sypetkowski, M., Smoliński, Ł., & Powalski, R. (2026). *OmicsLM.* arXiv. https://doi.org/10.48550/arXiv.2605.06728',
+    );
+    expect(ref42.authors).toEqual(['Sypetkowski, M.', 'Smoliński, Ł.', 'Powalski, R.']);
+
+    const ref180 = parseApa(
+      '<a id="180">180</a> Orth, J. D., Thiele, I., & Palsson, B. Ø. (2010). What is flux balance analysis? *Nature Biotechnology, 28*(3), 245–248. https://doi.org/10.1038/nbt.1614',
+    );
+    expect(ref180.authors).toEqual(['Orth, J. D.', 'Thiele, I.', 'Palsson, B. Ø.']);
+  });
+
+  it('ref 80: a consortium author mid-list is kept, neighbours still pair', () => {
+    const input =
+      '<a id="80">80</a> Schietgat, L., De Grave, K., Norel, R., DREAM Olfaction Prediction Consortium, Stolovitzky, G., & Meyer, P. (2017). Predicting human olfactory perception from chemical features of odor molecules. *Science, 355*(6327), 820–826. https://doi.org/10.1126/science.aal2014';
+
+    const result = parseApa(input);
+
+    expect(result.authors).toContain('DREAM Olfaction Prediction Consortium');
+    // A particle-prefixed surname still pairs with its initials.
+    expect(result.authors).toContain('De Grave, K.');
+    expect(result.authors).toContain('Stolovitzky, G.');
+    expect(result.authors).toContain('Meyer, P.');
+  });
+
+  it('ref 158: leading org author, mid-list org, and an APA ellipsis', () => {
+    const input =
+      '<a id="158">158</a> Center for AI Safety, Phan, L., Hendrycks, D., Scale AI, Han, Z., Shi, S., ... Scaramuzza, D. (2026). A benchmark of expert-level academic questions to assess AI capabilities [Humanity\'s Last Exam]. *Nature, 649*(8099), 1139–1146. https://doi.org/10.1038/s41586-025-09962-4';
+
+    const result = parseApa(input);
+
+    expect(result.authors).toContain('Center for AI Safety');
+    expect(result.authors).toContain('Scale AI');
+    expect(result.authors).toContain('Phan, L.');
+    // The "..." ellipsis is stripped from the following surname.
+    expect(result.authors).toContain('Scaramuzza, D.');
+    expect(result.authors).not.toContain('... Scaramuzza, D.');
+  });
+
+  it('ref 119: consortium at an even position with trailing paired authors', () => {
+    const input =
+      '<a id="119">119</a> Rosen, Y., Samotorčan, L., Tabula Sapiens Consortium, Quake, S. R., & Leskovec, J. (2026). *Universal Cell Embeddings: A Foundation Model for Cell Biology.* bioRxiv. https://doi.org/10.1101/2023.11.28.568918';
+
+    const result = parseApa(input);
+
+    expect(result.authors).toEqual([
+      'Rosen, Y.',
+      'Samotorčan, L.',
+      'Tabula Sapiens Consortium',
+      'Quake, S. R.',
+      'Leskovec, J.',
+    ]);
+  });
+});
+
+// ---------------------------------------------------------------------------
 // 2. Graceful / edge-case tests
 // ---------------------------------------------------------------------------
 
