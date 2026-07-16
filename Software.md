@@ -72,7 +72,7 @@ Summary: An adaptive-experimentation platform that wraps BoTorch with managed ex
 
 ### [CellCultureBayesianOptimization](https://github.com/NHarini-1995/CellCultureBayesianOptimization)
 
-Summary: The reference implementation of the Bayesian-optimization iterative media-development workflow of Narayanan et al. 2025 — the code that proposes successive media formulations and folds in measured outcomes to accelerate serum-free and recombinant-protein media design. Companion to [Papers.md ref #58](./Papers.md#58) (Narayanan et al. 2025). MIT.
+Summary: The reference implementation of the Bayesian-optimization iterative media-development workflow of Narayanan et al. 2025 — the code that proposes successive media formulations and folds in measured outcomes to accelerate serum-free and recombinant-protein media design. Companion to [Papers.md ref #58](./Papers.md#58) (Narayanan et al. 2025). The repository carries no explicit license (all rights reserved by default); the paper's figshare data deposit is MIT.
 
 ## Bioprocess Modeling & Scaling
 
