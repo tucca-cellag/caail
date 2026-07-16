@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-10T21:14:13.966Z",
+  "generatedAt": "2026-07-16T18:28:55.484Z",
   "repos": {
     "google-deepmind/alphafold": {
       "spdx": "Apache-2.0",
@@ -44,6 +44,14 @@
     "oxpig/ablang": {
       "spdx": "BSD-3-Clause",
       "name": "BSD 3-Clause \"New\" or \"Revised\" License"
+    },
+    "meta-pytorch/botorch": {
+      "spdx": "MIT",
+      "name": "MIT License"
+    },
+    "facebook/ax": {
+      "spdx": "MIT",
+      "name": "MIT License"
     },
     "microphen/pyfoomb": {
       "spdx": "MIT",
@@ -102,6 +110,10 @@
       "name": "Apache License 2.0"
     },
     "sbrg/masspy": {
+      "spdx": "MIT",
+      "name": "MIT License"
+    },
+    "mjenior/riptide": {
       "spdx": "MIT",
       "name": "MIT License"
     },
@@ -164,6 +176,10 @@
     "cosylabiiit/bittersweet": {
       "spdx": "AGPL-3.0",
       "name": "GNU Affero General Public License v3.0"
+    },
+    "dipizio-lab/bitter-peptide-design": {
+      "spdx": "MIT",
+      "name": "MIT License"
     },
     "biosustain/snakemake_umetaflow": {
       "spdx": "Apache-2.0",
@@ -261,9 +277,9 @@
       "spdx": "MIT",
       "name": "MIT License"
     },
-    "dipizio-lab/bitter-peptide-design": {
-      "spdx": "MIT",
-      "name": "MIT License"
+    "bridgedb/bridgedb": {
+      "spdx": "Apache-2.0",
+      "name": "Apache License 2.0"
     }
   }
 }
