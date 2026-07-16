@@ -108,6 +108,7 @@ export default function ReferenceShelf() {
         <input
           class="rs-search"
           placeholder="Search authors, titles, DOIs…"
+          aria-label="Search reviews and reference works"
           value={q}
           onInput={(e) => setQ((e.target as HTMLInputElement).value)}
         />

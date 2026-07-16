@@ -29,11 +29,14 @@ test('reviews cards carry citation badges and topic chips, matching the Explorer
 test('the search box filters the shelves and restores them when cleared', async ({ page }) => {
   await page.goto('./papers/reviews/');
   const all = matrixUnreachedRefs().length;
+  // getByLabel resolves via the input's aria-label, so this also pins the
+  // accessible name (the search box is not just a bare placeholder).
+  const search = page.getByLabel('Search reviews and reference works');
   await expect(page.locator('.px-ref')).toHaveCount(all);
-  await page.getByPlaceholder(/Search authors/).fill('zzzznomatch');
+  await search.fill('zzzznomatch');
   await expect(page.locator('.rs-empty')).toBeVisible();
   await expect(page.locator('.px-ref')).toHaveCount(0);
-  await page.getByPlaceholder(/Search authors/).fill('');
+  await search.fill('');
   await expect(page.locator('.px-ref')).toHaveCount(all);
 });
 
