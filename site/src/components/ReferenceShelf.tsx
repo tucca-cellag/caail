@@ -3,6 +3,9 @@ import './papers-explorer.css';
 import './reference-shelf.css';
 import { useMemo, useState } from 'preact/hooks';
 import data from '../content/data/papers.json';
+import TopicChips from './TopicChips';
+import CitationBadge from './CitationBadge';
+import type { TopicRef } from '../lib/topic-chips';
 
 type Cell = { method: string; area: string; refIds: number[]; labels: string[] };
 type Ref = {
@@ -11,7 +14,8 @@ type Ref = {
   year: number | null; title: string | null; journal: string | null;
   doi: string | null; codeUrl: string | null; dataUrl: string | null;
   isPrimary: boolean; hasCode: boolean; hasData: boolean;
-  slug: string; methods: string[]; areas: string[];
+  slug: string; methods: string[]; areas: string[]; topics: TopicRef[];
+  citedByOpenAlex: number | null;
 };
 
 const cells = data.cells as Cell[];
@@ -79,7 +83,9 @@ const renderRef = (r: Ref) => (
       {r.doi && <a class="px-bdg doi" href={`https://doi.org/${r.doi}`}>{r.doi}</a>}
       {r.codeUrl && <a class="px-bdg code" href={r.codeUrl}>⟨⟩ Code</a>}
       {r.dataUrl && <a class="px-bdg data" href={r.dataUrl}>▤ Data</a>}
+      <CitationBadge doi={r.doi} citationCount={r.citedByOpenAlex} />
     </div>
+    <TopicChips topics={r.topics} />
   </div>
 );
 
