@@ -46,6 +46,13 @@ describe('citationInfo', () => {
     expect(info.citationCount).toBe(7);
     expect(info.citationSources).toBe(1);
   });
+  it('aggregates related DOIs even when the primary DOI is null', () => {
+    const counts = new Map([['10.1/y', 3], ['10.1/z', 5]]);
+    const info = citationInfo(null, null, counts, ['10.1/y', '10.1/z']);
+    expect(info.citationCount).toBe(8);
+    expect(info.citationSources).toBe(2);
+    expect(info.doi).toBeNull();
+  });
 });
 
 describe('parseRelatedDois', () => {

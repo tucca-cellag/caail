@@ -274,20 +274,33 @@ export function checkRelatedDois(db: Db, relatedPath: string = RELATED_DOIS_PATH
   }
   const bareRe = /^10\.\d{4,9}\/\S+$/;
   const problems: string[] = [];
+  // Track each related DOI -> the distinct RESOURCE keys carrying it, to catch a sibling
+  // DOI listed under two different resources (a cross-resource double-count). The key is
+  // the catalog url (so a dual-listed sw:/db: pair sharing a url isn't a false positive)
+  // or the ds: item_id for dataset entries.
+  const doiToKeys = new Map<string, Set<string>>();
   for (const table of ['catalog', 'dataset_entries']) {
-    const rows = db.prepare(`SELECT item_id, doi, related_dois FROM ${table} WHERE related_dois IS NOT NULL`)
-      .all() as { item_id: string; doi: string | null; related_dois: string }[];
+    const rows = db.prepare(`SELECT item_id, url, doi, related_dois FROM ${table} WHERE related_dois IS NOT NULL`)
+      .all() as { item_id: string; url: string | null; doi: string | null; related_dois: string }[];
     for (const r of rows) {
+      const key = table === 'catalog' ? (r.url ?? r.item_id) : r.item_id;
       let arr: unknown;
       try { arr = JSON.parse(r.related_dois); } catch { problems.push(`${r.item_id}: related_dois not JSON`); continue; }
       if (!Array.isArray(arr)) { problems.push(`${r.item_id}: related_dois not an array`); continue; }
+      const seen = new Set<string>();
       for (const d of arr) {
-        if (typeof d !== 'string' || d !== d.toLowerCase() || !bareRe.test(d)) problems.push(`${r.item_id}: bad DOI '${String(d)}'`);
-        else if (d === r.doi) problems.push(`${r.item_id}: related_dois repeats the primary doi`);
+        if (typeof d !== 'string' || d !== d.toLowerCase() || !bareRe.test(d)) { problems.push(`${r.item_id}: bad DOI '${String(d)}'`); continue; }
+        if (d === r.doi) problems.push(`${r.item_id}: related_dois repeats the primary doi`);
+        if (seen.has(d)) problems.push(`${r.item_id}: related_dois has duplicate ${d}`);
+        seen.add(d);
+        (doiToKeys.get(d) ?? doiToKeys.set(d, new Set()).get(d)!).add(key);
       }
     }
   }
-  out.push(ok('related_dois: valid bare-lowercase arrays, no primary-doi overlap',
+  for (const [d, keys] of doiToKeys) {
+    if (keys.size > 1) problems.push(`related DOI ${d} is listed under ${keys.size} different resources (double-count)`);
+  }
+  out.push(ok('related_dois: valid bare arrays, no primary overlap, no cross-resource or in-array dup',
     problems.length === 0, problems.slice(0, 3).join('; ')));
   return out;
 }

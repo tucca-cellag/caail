@@ -227,7 +227,7 @@ describe('checkRelatedDois', () => {
     ).run(id, 'N', url, 'G', `[N](${url})`, '', doi, doi ? 'manual' : null, related);
   };
   // The one stored-column result (the file-key checks are skipped with NOFILE).
-  const relResult = (db: Db) => checkRelatedDois(db, NOFILE).find((r) => /valid bare-lowercase/.test(r.label))!;
+  const relResult = (db: Db) => checkRelatedDois(db, NOFILE).find((r) => /valid bare arrays/.test(r.label))!;
   it('passes on a valid bare-lowercase related array', () => {
     const db = miniDb(); insCat(db, 'sw:a', 'https://a', '10.1234/x', '["10.1234/y","10.1234/z"]');
     expect(relResult(db).ok).toBe(true);
@@ -247,6 +247,22 @@ describe('checkRelatedDois', () => {
   it('flags related_dois that is not a JSON array', () => {
     const db = miniDb(); insCat(db, 'sw:d', 'https://d', '10.1234/x', '{"a":1}');
     const r = relResult(db); expect(r.ok).toBe(false); expect(r.detail).toMatch(/not an array/);
+  });
+  it('flags a duplicate DOI within one array', () => {
+    const db = miniDb(); insCat(db, 'sw:f', 'https://f', '10.1234/x', '["10.1234/y","10.1234/y"]');
+    const r = relResult(db); expect(r.ok).toBe(false); expect(r.detail).toMatch(/duplicate/);
+  });
+  it('flags the same sibling DOI listed under two different resources (cross-resource double-count)', () => {
+    const db = miniDb();
+    insCat(db, 'db:g', 'https://g', '10.1234/g', '["10.1234/shared"]');
+    insCat(db, 'db:h', 'https://h', '10.1234/h', '["10.1234/shared"]');
+    const r = relResult(db); expect(r.ok).toBe(false); expect(r.detail).toMatch(/under 2 different resources/);
+  });
+  it('allows a dual-listed resource (same url) to share a related set', () => {
+    const db = miniDb();
+    insCat(db, 'sw:dual', 'https://dual', '10.1234/d', '["10.1234/sib"]');
+    insCat(db, 'db:dual', 'https://dual', '10.1234/d', '["10.1234/sib"]'); // same url -> not a cross-resource dup
+    expect(relResult(db).ok).toBe(true);
   });
 });
 
