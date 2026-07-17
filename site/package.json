@@ -10,6 +10,7 @@
     "db:bootstrap": "NODE_OPTIONS='--experimental-sqlite --no-warnings' tsx scripts/db/bootstrap.ts",
     "db:build": "NODE_OPTIONS='--experimental-sqlite --no-warnings' tsx scripts/db/build-db.ts",
     "db:export": "NODE_OPTIONS='--experimental-sqlite --no-warnings' tsx scripts/db/export-ndjson.ts",
+    "db:reseed-axes": "NODE_OPTIONS='--experimental-sqlite --no-warnings' tsx scripts/db/reseed-axes.ts",
     "db:emit": "NODE_OPTIONS='--experimental-sqlite --no-warnings' tsx scripts/db/emit-files.ts",
     "db:add": "NODE_OPTIONS='--experimental-sqlite --no-warnings' tsx scripts/db/add-item.ts",
     "db:remove": "NODE_OPTIONS='--experimental-sqlite --no-warnings' tsx scripts/db/remove-item.ts",
