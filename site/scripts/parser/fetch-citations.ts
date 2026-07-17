@@ -41,6 +41,28 @@ function ndjsonDois(file: string): string[] {
     .filter((d): d is string => !!d);
 }
 
+/**
+ * Flatten the `related_dois` JSON arrays from a committed NDJSON table (#102), so the
+ * sibling version DOIs summed into a resource's badge also get their cited_by_count
+ * fetched. A malformed/absent value contributes nothing.
+ */
+function ndjsonRelatedDois(file: string): string[] {
+  const path = fileURLToPath(new URL(`../../db/ndjson/${file}`, import.meta.url));
+  if (!existsSync(path)) return [];
+  const text = readFileSync(path, 'utf-8').trim();
+  if (!text) return [];
+  return text.split('\n').flatMap((l) => {
+    const raw = (JSON.parse(l) as { related_dois?: string | null }).related_dois;
+    if (!raw) return [];
+    try {
+      const arr = JSON.parse(raw) as unknown;
+      return Array.isArray(arr) ? arr.filter((d): d is string => typeof d === 'string') : [];
+    } catch {
+      return [];
+    }
+  });
+}
+
 /** OpenAlex works endpoint. */
 const OPENALEX_WORKS = 'https://api.openalex.org/works';
 /** DOIs per OR-filter request (OpenAlex accepts up to 50 values per OR). */
@@ -141,11 +163,13 @@ if (isMain) {
         ...model.references.map((r) => r.doi),
         ...ndjsonDois('catalog.ndjson'),
         ...ndjsonDois('dataset_entries.ndjson'),
+        ...ndjsonRelatedDois('catalog.ndjson'),
+        ...ndjsonRelatedDois('dataset_entries.ndjson'),
       ];
       const withDoi = dois.filter((d) => d != null).length;
       // eslint-disable-next-line no-console
       console.log(
-        `fetch:citations — querying OpenAlex for ${withDoi} DOIs (papers + catalog + dataset entries) ` +
+        `fetch:citations — querying OpenAlex for ${withDoi} DOIs (papers + catalog + dataset entries + related versions) ` +
           `(${process.env.OPENALEX_MAILTO ? 'polite pool' : 'common pool; set OPENALEX_MAILTO for the polite pool'})`,
       );
       const cache = await fetchCitationCache(dois, (m) =>

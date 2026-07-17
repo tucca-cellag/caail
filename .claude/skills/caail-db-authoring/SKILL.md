@@ -71,6 +71,14 @@ stays blank. The OpenAlex `cited_by_count` is refreshed by the opt-in `pnpm --di
 resolution. Surfaced as a "cited by N" badge on every card, the `/citations/` hub, and the catalog
 "Most cited" facet. A coarse popularity signal, not a quality measure.
 
+For a **versioned resource** that publishes a paper per release (STRING, UniProt, KEGG, …), list its
+**sibling version DOIs** in `site/scripts/db/dois-related.json` (catalog by url, datasets by `ds:` id →
+array of bare DOIs, excluding the primary) so the badge SUMS `cited_by_count` across all of them (#102).
+Folded into a `related_dois` column by `db:reseed-axes`; the badge then shows a `∑` marker + a
+"summed across N papers" tooltip, still linking to the current (primary) paper. **Only include papers
+describing the SAME resource** (verify each names it); `db:check` guards format, key resolution, and
+no-overlap-with-primary. Re-run `fetch:citations` after adding related DOIs so their counts are cached.
+
 Topics are **two-tier**: a fixed 7-**theme** backbone + earned **fine tags** (each `tier='tag'` under
 one `theme_slug`; theme and tag slugs share one namespace, so they must be disjoint). When tagging an
 item, prefer an existing fine tag; mint a new fine tag only when ≥3 items cluster under it (curator

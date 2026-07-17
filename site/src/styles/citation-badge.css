@@ -35,3 +35,13 @@
 }
 .cite-badge:hover .cite-badge__n,
 .cite-badge:focus-visible .cite-badge__n { color: var(--caail-link); }
+
+/* Aggregated badge (#102): a "∑" marker when the count sums a versioned resource's
+   release papers, so a viewer knows it's a cumulative footprint, not one paper. */
+.cite-badge__agg {
+  font-weight: 700;
+  font-size: 0.9em;
+  line-height: 1;
+  color: var(--caail-link);
+  margin-left: -0.1em;
+}

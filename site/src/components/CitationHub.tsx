@@ -30,10 +30,16 @@ const BAND_META: Record<Band, { label: string; blurb: string; test: (n: number) 
 };
 
 type Kind = 'paper' | 'software' | 'database' | 'dataset';
-type Item = { kind: Kind; label: string; url: string; count: number };
+type Item = { kind: Kind; label: string; url: string; count: number; sources: number };
 
 const KIND_LABEL: Record<Kind, string> = { paper: 'Papers', software: 'Software', database: 'Databases', dataset: 'Datasets' };
-const openalex = (doi: string) => `https://openalex.org/works?filter=doi:${encodeURIComponent(doi)}`;
+const openalex = (dois: string[]) => `https://openalex.org/works?filter=doi:${dois.map(encodeURIComponent).join('|')}`;
+/** Link to all the DOIs whose counts were summed (falls back to the primary), so an
+ *  aggregated resource opens all its release papers, not just the current one (#102). */
+const worksUrl = (e: any, fallback: string) => {
+  const dois: string[] = e.citationDois?.length ? e.citationDois : e.doi ? [e.doi] : [];
+  return dois.length ? openalex(dois) : fallback;
+};
 
 const items: Item[] = [
   ...(papers.references as any[])
@@ -43,20 +49,22 @@ const items: Item[] = [
       label: (r.title as string | null) ?? (r.authorsText as string),
       url: r.doi ? `https://doi.org/${r.doi}` : `${BASE.replace(/\/$/, '')}/papers/explorer/`,
       count: r.citedByOpenAlex as number,
+      sources: 1,
     })),
   ...(catalog.software as any[])
     .filter((e) => e.citationCount != null)
-    .map((e) => ({ kind: 'software' as const, label: e.name, url: e.doi ? openalex(e.doi) : e.url, count: e.citationCount as number })),
+    .map((e) => ({ kind: 'software' as const, label: e.name, url: worksUrl(e, e.url), count: e.citationCount as number, sources: (e.citationSources as number) ?? 1 })),
   ...(catalog.databases as any[])
     .filter((e) => e.citationCount != null)
-    .map((e) => ({ kind: 'database' as const, label: e.name, url: e.doi ? openalex(e.doi) : e.url, count: e.citationCount as number })),
+    .map((e) => ({ kind: 'database' as const, label: e.name, url: worksUrl(e, e.url), count: e.citationCount as number, sources: (e.citationSources as number) ?? 1 })),
   ...(datasets.entries as any[])
     .filter((e) => e.citationCount != null)
     .map((e) => ({
       kind: 'dataset' as const,
       label: e.name,
-      url: e.doi ? openalex(e.doi) : e.url ?? `${BASE.replace(/\/$/, '')}/datasets/${String(e.page).toLowerCase()}/#${e.anchor}`,
+      url: worksUrl(e, e.url ?? `${BASE.replace(/\/$/, '')}/datasets/${String(e.page).toLowerCase()}/#${e.anchor}`),
       count: e.citationCount as number,
+      sources: (e.citationSources as number) ?? 1,
     })),
 ];
 
@@ -70,6 +78,11 @@ function BandIndex() {
       <p class="ch-disclaimer">
         Citation counts are OpenAlex <code>cited_by_count</code> values — a coarse <strong>popularity</strong>
         {' '}signal, <strong>not</strong> a measure of quality or significance. Counts move over time; confirm at the source.
+      </p>
+      <p class="ch-disclaimer">
+        A <span class="ch-agg" aria-hidden="true">∑</span> marks a versioned resource whose count is
+        {' '}<strong>summed across all its release papers</strong> (e.g. STRING's 2003–2023 papers), rather than a
+        {' '}single publication; its link opens the whole set on OpenAlex.
       </p>
       <ul class="ch-band-grid">
         {BANDS.map((b) => (
@@ -106,7 +119,15 @@ function BandView({ band }: { band: Band }) {
                   <li>
                     <a class="ch-item" href={it.url} target={it.url.startsWith('http') ? '_blank' : undefined} rel={it.url.startsWith('http') ? 'noopener noreferrer' : undefined}>
                       <span class="ch-label">{it.label}</span>
-                      <span class="ch-count" title={`${it.count.toLocaleString()} citations (OpenAlex)`}>{it.count.toLocaleString()}</span>
+                      <span
+                        class="ch-count"
+                        title={it.sources > 1
+                          ? `${it.count.toLocaleString()} citations summed across ${it.sources} release papers (OpenAlex)`
+                          : `${it.count.toLocaleString()} citations (OpenAlex)`}
+                      >
+                        {it.count.toLocaleString()}
+                        {it.sources > 1 ? <span class="ch-agg" aria-hidden="true"> ∑</span> : null}
+                      </span>
                     </a>
                   </li>
                 ))}

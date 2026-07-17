@@ -79,3 +79,9 @@
 .ch-item:focus-visible .ch-count { color: var(--caail-primary); }
 
 .ch-empty { color: var(--caail-muted); margin-top: 1rem; }
+
+/* Aggregation marker (#102): the ∑ next to a versioned resource's summed count. */
+.ch-agg {
+  color: var(--caail-link);
+  font-weight: 700;
+}

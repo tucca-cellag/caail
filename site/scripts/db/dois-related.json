@@ -1,0 +1,176 @@
+{
+  "catalog": {
+    "https://gtrnadb.ucsc.edu/": [
+      "10.1093/nar/gkn787"
+    ],
+    "https://omabrowser.org/": [
+      "10.1093/bioinformatics/btm295",
+      "10.1093/nar/gkaa1007",
+      "10.1093/nar/gkq1238",
+      "10.1093/nar/gku1158",
+      "10.1093/nar/gkx1019"
+    ],
+    "https://reactome.org/": [
+      "10.1093/nar/gkab1028",
+      "10.1093/nar/gki072",
+      "10.1093/nar/gkn863",
+      "10.1093/nar/gkq1018",
+      "10.1093/nar/gkt1102",
+      "10.1093/nar/gkv1351",
+      "10.1093/nar/gkx1132",
+      "10.1093/nar/gkz1031",
+      "10.1186/gb-2007-8-3-r39"
+    ],
+    "https://rnacentral.org/": [
+      "10.1093/nar/gkaf1329",
+      "10.1093/nar/gku991",
+      "10.1093/nar/gkw1008",
+      "10.1093/nar/gky1034",
+      "10.1261/rna.2750811"
+    ],
+    "https://string-db.org/": [
+      "10.1093/nar/gkaa1074",
+      "10.1093/nar/gkae1113",
+      "10.1093/nar/gkg034",
+      "10.1093/nar/gki005",
+      "10.1093/nar/gkl825",
+      "10.1093/nar/gkn760",
+      "10.1093/nar/gkq973",
+      "10.1093/nar/gks1094",
+      "10.1093/nar/gku1003",
+      "10.1093/nar/gkw937",
+      "10.1093/nar/gky1131"
+    ],
+    "https://www.brenda-enzymes.org/": [
+      "10.1016/j.jbiotec.2017.04.020",
+      "10.1016/s0968-0004(01)02027-8",
+      "10.1093/nar/30.1.47",
+      "10.1093/nar/gkh081",
+      "10.1093/nar/gkl972",
+      "10.1093/nar/gkn820",
+      "10.1093/nar/gkq1089",
+      "10.1093/nar/gks1049",
+      "10.1093/nar/gku1068",
+      "10.1093/nar/gkw952",
+      "10.1093/nar/gky1048"
+    ],
+    "https://www.ebi.ac.uk/chembl/": [
+      "10.1093/nar/gkr777",
+      "10.1093/nar/gkt1031",
+      "10.1093/nar/gkw1074",
+      "10.1093/nar/gky1075"
+    ],
+    "https://www.ebi.ac.uk/interpro/": [
+      "10.1093/bioinformatics/16.12.1145",
+      "10.1093/nar/29.1.37",
+      "10.1093/nar/gkaa977",
+      "10.1093/nar/gkac993",
+      "10.1093/nar/gkg046",
+      "10.1093/nar/gki106",
+      "10.1093/nar/gkl841",
+      "10.1093/nar/gkn785",
+      "10.1093/nar/gkr948",
+      "10.1093/nar/gku1243",
+      "10.1093/nar/gkw1107",
+      "10.1093/nar/gky1100"
+    ],
+    "https://www.ebi.ac.uk/metabolights/": [
+      "10.1093/nar/gkad1045",
+      "10.1093/nar/gks1004"
+    ],
+    "https://www.ebi.ac.uk/pride/": [
+      "10.1002/pmic.200401303",
+      "10.1093/nar/gkab1038",
+      "10.1093/nar/gkj138",
+      "10.1093/nar/gkp964",
+      "10.1093/nar/gks1262",
+      "10.1093/nar/gkv1145",
+      "10.1093/nar/gky1106"
+    ],
+    "https://www.ensembl.org/": [
+      "10.1093/nar/30.1.38",
+      "10.1093/nar/gkaa942",
+      "10.1093/nar/gkab1049",
+      "10.1093/nar/gkac958",
+      "10.1093/nar/gkae1071",
+      "10.1093/nar/gkl996",
+      "10.1093/nar/gkn828",
+      "10.1093/nar/gkq1064",
+      "10.1093/nar/gkr991",
+      "10.1093/nar/gks1236",
+      "10.1093/nar/gkt1196",
+      "10.1093/nar/gku1010",
+      "10.1093/nar/gkv1157",
+      "10.1093/nar/gkw1104",
+      "10.1093/nar/gkx1098",
+      "10.1093/nar/gky1113",
+      "10.1093/nar/gkz966",
+      "10.1101/gr.1860604"
+    ],
+    "https://www.kegg.jp/kegg/pathway.html": [
+      "10.1093/nar/27.1.29",
+      "10.1093/nar/28.1.27",
+      "10.1093/nar/30.1.42",
+      "10.1093/nar/gkaa970",
+      "10.1093/nar/gkae909",
+      "10.1093/nar/gkh063",
+      "10.1093/nar/gkj102",
+      "10.1093/nar/gkm882",
+      "10.1093/nar/gkp896",
+      "10.1093/nar/gkr988",
+      "10.1093/nar/gkt1076",
+      "10.1093/nar/gkv1070",
+      "10.1093/nar/gkw1092",
+      "10.1093/nar/gky962"
+    ],
+    "https://www.ncbi.nlm.nih.gov/geo/": [
+      "10.1093/nar/30.1.207",
+      "10.1093/nar/gkad965",
+      "10.1093/nar/gki022",
+      "10.1093/nar/gkl887",
+      "10.1093/nar/gkn764",
+      "10.1093/nar/gkq1184"
+    ],
+    "https://www.proteinatlas.org/": [
+      "10.1002/path.2440",
+      "10.1002/pro.3307",
+      "10.1002/pro.3987",
+      "10.1038/nbt1210-1248",
+      "10.1074/mcp.m500279-mcp200",
+      "10.1074/mcp.r800013-mcp200",
+      "10.1111/j.1365-2796.2011.02427.x"
+    ],
+    "https://www.rhea-db.org/": [
+      "10.1093/nar/gkr1126",
+      "10.1093/nar/gku961",
+      "10.1093/nar/gkw990",
+      "10.1093/nar/gky876"
+    ],
+    "https://www.uniprot.org/": [
+      "10.1093/database/bar009",
+      "10.1093/nar/gkaa1100",
+      "10.1093/nar/gkac1052",
+      "10.1093/nar/gkh131",
+      "10.1093/nar/gki070",
+      "10.1093/nar/gkj161",
+      "10.1093/nar/gkl929",
+      "10.1093/nar/gkm895",
+      "10.1093/nar/gkn664",
+      "10.1093/nar/gkp846",
+      "10.1093/nar/gkr981",
+      "10.1093/nar/gks1068",
+      "10.1093/nar/gkt1140",
+      "10.1093/nar/gku989",
+      "10.1093/nar/gkw1099",
+      "10.1093/nar/gky1049"
+    ],
+    "https://www.wikipathways.org/": [
+      "10.1093/nar/gkaa1024",
+      "10.1093/nar/gkr1074",
+      "10.1093/nar/gkv1024",
+      "10.1093/nar/gkx1064",
+      "10.1371/journal.pbio.0060184"
+    ]
+  },
+  "datasets": {}
+}

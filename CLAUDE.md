@@ -310,6 +310,16 @@ non-catalog canonical files (`OtherResources.md`, `ReferenceWorks.md`, `AwesomeL
   on the Software/Databases pages. A coarse popularity signal, not a quality measure — confirm at the
   source. Full DOI backfill of the catalog/dataset entries is an ongoing curation task
   (`dois-manual.json`); the plumbing renders nothing where no DOI is recorded.
+  - **Citation aggregation for versioned resources (#102).** A database that publishes a new paper each
+    release (STRING, UniProt, KEGG, Ensembl, …) would badly undercount if the badge showed only one
+    paper. A third DB-only input, `site/scripts/db/dois-related.json` (catalog by url, datasets by `ds:`
+    id → JSON array of **sibling version DOIs**), is folded by `seedRelatedDois` into a `related_dois`
+    column; `fetch:citations` gathers those DOIs too, and `citation-counts.ts` **sums** `cited_by_count`
+    over the primary DOI ∪ its siblings. The card shows the aggregate with a `∑` marker (`citationSources`
+    > 1) and a tooltip saying how many papers it spans, while the badge link still opens the current
+    (primary) paper. `db:check` guards that every `dois-related.json` key resolves and that stored
+    `related_dois` are bare-lowercase with no primary overlap (no double-count). Like the other axes it's
+    DB-only, folded by `db:reseed-axes`; the sibling-DOI curation is ongoing.
 
 ## Documentation site (`site/`)
 

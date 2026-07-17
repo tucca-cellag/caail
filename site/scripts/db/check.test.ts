@@ -12,7 +12,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { openDb, importNdjson, type Db } from './lib.js';
-import { checkIntegrity, checkReachability, checkColumnDrift, checkTopicTiers, checkCatalogHeadings, checkLicenses, checkManualLicenseKeys, checkDois, checkManualDoiKeys, runChecks } from './check.js';
+import { checkIntegrity, checkReachability, checkColumnDrift, checkTopicTiers, checkCatalogHeadings, checkLicenses, checkManualLicenseKeys, checkDois, checkManualDoiKeys, checkRelatedDois, runChecks } from './check.js';
 
 const failing = (results: { label: string; ok: boolean }[], match: RegExp) =>
   results.some((r) => match.test(r.label) && !r.ok);
@@ -214,6 +214,55 @@ describe('checkDois', () => {
       "VALUES('sw:ok','Ok','https://y','G','[Ok](https://y)','','10.1/y','manual',0)",
     ).run();
     expect(checkDois(db).every((r) => r.ok)).toBe(true);
+  });
+});
+
+describe('checkRelatedDois', () => {
+  const NOFILE = join(tmpdir(), 'no-such-dois-related.json'); // skip the file-key check; test the stored column
+  const insCat = (db: Db, id: string, url: string, doi: string | null, related: string | null): void => {
+    db.prepare("INSERT INTO items(id,type,slug) VALUES(?,'software',?)").run(id, id.slice(3));
+    db.prepare(
+      'INSERT INTO catalog(item_id,name,url,grp,heading_md,body_md,doi,doi_source,related_dois,ordinal) ' +
+      'VALUES(?,?,?,?,?,?,?,?,?,0)',
+    ).run(id, 'N', url, 'G', `[N](${url})`, '', doi, doi ? 'manual' : null, related);
+  };
+  // The one stored-column result (the file-key checks are skipped with NOFILE).
+  const relResult = (db: Db) => checkRelatedDois(db, NOFILE).find((r) => /valid bare arrays/.test(r.label))!;
+  it('passes on a valid bare-lowercase related array', () => {
+    const db = miniDb(); insCat(db, 'sw:a', 'https://a', '10.1234/x', '["10.1234/y","10.1234/z"]');
+    expect(relResult(db).ok).toBe(true);
+  });
+  it('flags a related DOI that repeats the primary (double-count)', () => {
+    const db = miniDb(); insCat(db, 'sw:b', 'https://b', '10.1234/x', '["10.1234/x"]');
+    const r = relResult(db); expect(r.ok).toBe(false); expect(r.detail).toMatch(/repeats the primary/);
+  });
+  it('flags a malformed related DOI', () => {
+    const db = miniDb(); insCat(db, 'sw:c', 'https://c', '10.1234/x', '["not-a-doi"]');
+    const r = relResult(db); expect(r.ok).toBe(false); expect(r.detail).toMatch(/bad DOI/);
+  });
+  it('flags an uppercase related DOI', () => {
+    const db = miniDb(); insCat(db, 'sw:e', 'https://e', '10.1234/x', '["10.1234/UPPER"]');
+    const r = relResult(db); expect(r.ok).toBe(false); expect(r.detail).toMatch(/bad DOI/);
+  });
+  it('flags related_dois that is not a JSON array', () => {
+    const db = miniDb(); insCat(db, 'sw:d', 'https://d', '10.1234/x', '{"a":1}');
+    const r = relResult(db); expect(r.ok).toBe(false); expect(r.detail).toMatch(/not an array/);
+  });
+  it('flags a duplicate DOI within one array', () => {
+    const db = miniDb(); insCat(db, 'sw:f', 'https://f', '10.1234/x', '["10.1234/y","10.1234/y"]');
+    const r = relResult(db); expect(r.ok).toBe(false); expect(r.detail).toMatch(/duplicate/);
+  });
+  it('flags the same sibling DOI listed under two different resources (cross-resource double-count)', () => {
+    const db = miniDb();
+    insCat(db, 'db:g', 'https://g', '10.1234/g', '["10.1234/shared"]');
+    insCat(db, 'db:h', 'https://h', '10.1234/h', '["10.1234/shared"]');
+    const r = relResult(db); expect(r.ok).toBe(false); expect(r.detail).toMatch(/under 2 different resources/);
+  });
+  it('allows a dual-listed resource (same url) to share a related set', () => {
+    const db = miniDb();
+    insCat(db, 'sw:dual', 'https://dual', '10.1234/d', '["10.1234/sib"]');
+    insCat(db, 'db:dual', 'https://dual', '10.1234/d', '["10.1234/sib"]'); // same url -> not a cross-resource dup
+    expect(relResult(db).ok).toBe(true);
   });
 });
 
