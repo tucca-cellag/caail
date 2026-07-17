@@ -1,7 +1,72 @@
 {
   "catalog": {
+    "http://bigg.ucsd.edu/": [
+      "10.1093/nar/gkz1054",
+      "10.1186/1471-2105-11-213"
+    ],
+    "https://alphafold.ebi.ac.uk/": [
+      "10.1016/j.jmb.2025.168967",
+      "10.1093/nar/gkad1011",
+      "10.1093/nar/gkaf1226"
+    ],
+    "https://biocyc.org/": [
+      "10.1093/bib/bbx085",
+      "10.1093/nar/28.1.56",
+      "10.1093/nar/30.1.59",
+      "10.1093/nar/gkh100",
+      "10.1093/nar/gki892",
+      "10.1093/nar/gkj128",
+      "10.1093/nar/gkm900",
+      "10.1093/nar/gkp875",
+      "10.1093/nar/gkr1014",
+      "10.1093/nar/gkt1103",
+      "10.1093/nar/gkv1164",
+      "10.1093/nar/gkx935"
+    ],
+    "https://bitterdb.agri.huji.ac.il/": [
+      "10.1093/nar/gkae1044",
+      "10.1093/nar/gky974"
+    ],
+    "https://cellxgene.cziscience.com/": [
+      "10.1101/2021.04.05.438318"
+    ],
+    "https://cosylab.iiitd.edu.in/flavordb/": [
+      "10.1111/1750-3841.17298"
+    ],
+    "https://genomics.senescence.info/": [
+      "10.1093/nar/gkad927",
+      "10.1093/nar/gki017",
+      "10.1093/nar/gks1155",
+      "10.1111/j.1474-9726.2008.00442.x"
+    ],
+    "https://glytoucan.org/": [
+      "10.1093/glycob/cwx066",
+      "10.1093/nar/gkaa947"
+    ],
+    "https://go.drugbank.com/": [
+      "10.1093/nar/gkj067",
+      "10.1093/nar/gkm958",
+      "10.1093/nar/gkq1126",
+      "10.1093/nar/gkt1068",
+      "10.1093/nar/gkx1037"
+    ],
     "https://gtrnadb.ucsc.edu/": [
       "10.1093/nar/gkn787"
+    ],
+    "https://hmdb.ca/": [
+      "10.1093/nar/gkl923",
+      "10.1093/nar/gkn810",
+      "10.1093/nar/gks1065",
+      "10.1093/nar/gkx1089"
+    ],
+    "https://matrisomedb.org/": [
+      "10.1093/nar/gkz849"
+    ],
+    "https://matrixdb.univ-lyon1.fr/": [
+      "10.1093/bioinformatics/btp025",
+      "10.1093/nar/gkq830",
+      "10.1093/nar/gku1091",
+      "10.1093/nar/gky1035"
     ],
     "https://omabrowser.org/": [
       "10.1093/bioinformatics/btm295",
@@ -9,6 +74,17 @@
       "10.1093/nar/gkq1238",
       "10.1093/nar/gku1158",
       "10.1093/nar/gkx1019"
+    ],
+    "https://pathbank.org/": [
+      "10.1093/nar/gkad1041"
+    ],
+    "https://pubchem.ncbi.nlm.nih.gov/": [
+      "10.1016/s1574-1400(08)00012-1",
+      "10.1093/nar/gkaa971",
+      "10.1093/nar/gkae1059",
+      "10.1093/nar/gkp456",
+      "10.1093/nar/gkv951",
+      "10.1093/nar/gky1033"
     ],
     "https://reactome.org/": [
       "10.1093/nar/gkab1028",
@@ -28,6 +104,15 @@
       "10.1093/nar/gky1034",
       "10.1261/rna.2750811"
     ],
+    "https://sabio.h-its.org/": [
+      "10.1007/11799511_9",
+      "10.1093/nar/gkr1046",
+      "10.1186/1752-0509-1-s1-s6",
+      "10.1515/jib-2007-49"
+    ],
+    "https://smpdb.ca/": [
+      "10.1093/nar/gkp1002"
+    ],
     "https://string-db.org/": [
       "10.1093/nar/gkaa1074",
       "10.1093/nar/gkae1113",
@@ -40,6 +125,17 @@
       "10.1093/nar/gku1003",
       "10.1093/nar/gkw937",
       "10.1093/nar/gky1131"
+    ],
+    "https://www.animalgenome.org/cgi-bin/QTLdb/index": [
+      "10.1007/s00335-006-0105-8",
+      "10.1093/nar/gkl946",
+      "10.1093/nar/gks1150",
+      "10.1093/nar/gkv1233",
+      "10.1093/nar/gky1084"
+    ],
+    "https://www.bgee.org/": [
+      "10.1007/978-3-540-69828-9_12",
+      "10.1093/nar/gkae1118"
     ],
     "https://www.brenda-enzymes.org/": [
       "10.1016/j.jbiotec.2017.04.020",
@@ -54,11 +150,62 @@
       "10.1093/nar/gkw952",
       "10.1093/nar/gky1048"
     ],
+    "https://www.ebi.ac.uk/biomodels/": [
+      "10.1093/nar/gkj092",
+      "10.1093/nar/gku1181",
+      "10.1093/nar/gkx1023",
+      "10.1186/1752-0509-4-92"
+    ],
+    "https://www.ebi.ac.uk/biostudies/arrayexpress": [
+      "10.1016/j.crvi.2003.09.026",
+      "10.1093/bioinformatics/bti157",
+      "10.1093/nar/gkaa1062",
+      "10.1093/nar/gkg091",
+      "10.1093/nar/gki056",
+      "10.1093/nar/gkl995",
+      "10.1093/nar/gkn889",
+      "10.1093/nar/gkq1040",
+      "10.1093/nar/gks1174",
+      "10.1093/nar/gku1057",
+      "10.1093/nar/gky964",
+      "10.15252/msb.20156658"
+    ],
+    "https://www.ebi.ac.uk/chebi/": [
+      "10.1093/nar/gkm791",
+      "10.1093/nar/gkp886",
+      "10.1093/nar/gks1146"
+    ],
     "https://www.ebi.ac.uk/chembl/": [
       "10.1093/nar/gkr777",
       "10.1093/nar/gkt1031",
       "10.1093/nar/gkw1074",
       "10.1093/nar/gky1075"
+    ],
+    "https://www.ebi.ac.uk/ena/browser/": [
+      "10.1093/nar/gkaa1028",
+      "10.1093/nar/gkab1051",
+      "10.1093/nar/gkad1067",
+      "10.1093/nar/gkae975",
+      "10.1093/nar/gkaf1295",
+      "10.1093/nar/gkn765",
+      "10.1093/nar/gkp998",
+      "10.1093/nar/gkq967",
+      "10.1093/nar/gkr946",
+      "10.1093/nar/gks1175",
+      "10.1093/nar/gkt1082",
+      "10.1093/nar/gku1129",
+      "10.1093/nar/gkv1311",
+      "10.1093/nar/gkw1106",
+      "10.1093/nar/gkx1125",
+      "10.1093/nar/gky1078",
+      "10.1093/nar/gkz1063"
+    ],
+    "https://www.ebi.ac.uk/gxa/home": [
+      "10.1093/nar/gkp936",
+      "10.1093/nar/gkt1270",
+      "10.1093/nar/gkv1045",
+      "10.1093/nar/gkx1158",
+      "10.1093/nar/gkz947"
     ],
     "https://www.ebi.ac.uk/interpro/": [
       "10.1093/bioinformatics/16.12.1145",
@@ -107,6 +254,9 @@
       "10.1093/nar/gkz966",
       "10.1101/gr.1860604"
     ],
+    "https://www.kazusa.or.jp/codon/": [
+      "10.1093/nar/26.1.334"
+    ],
     "https://www.kegg.jp/kegg/pathway.html": [
       "10.1093/nar/27.1.29",
       "10.1093/nar/28.1.27",
@@ -123,6 +273,42 @@
       "10.1093/nar/gkw1092",
       "10.1093/nar/gky962"
     ],
+    "https://www.lipidmaps.org/": [
+      "10.1093/nar/gkad896",
+      "10.1093/nar/gkj122",
+      "10.1093/nar/gkm324",
+      "10.1126/scisignal.aaw2964"
+    ],
+    "https://www.metanetx.org/": [
+      "10.1093/nar/gkaf1286",
+      "10.1093/nar/gkv1117"
+    ],
+    "https://www.ncbi.nlm.nih.gov/genbank/": [
+      "10.1093/nar/14.1.1",
+      "10.1093/nar/26.1.1",
+      "10.1093/nar/27.1.12",
+      "10.1093/nar/28.1.15",
+      "10.1093/nar/30.1.17",
+      "10.1093/nar/gkaa1023",
+      "10.1093/nar/gkg057",
+      "10.1093/nar/gkh045",
+      "10.1093/nar/gki063",
+      "10.1093/nar/gkj157",
+      "10.1093/nar/gkl986",
+      "10.1093/nar/gkm929",
+      "10.1093/nar/gkn723",
+      "10.1093/nar/gkp1024",
+      "10.1093/nar/gkq1079",
+      "10.1093/nar/gkr1202",
+      "10.1093/nar/gks1195",
+      "10.1093/nar/gkt1030",
+      "10.1093/nar/gku1216",
+      "10.1093/nar/gkv1276",
+      "10.1093/nar/gkw1070",
+      "10.1093/nar/gkx1094",
+      "10.1093/nar/gky989",
+      "10.1093/nar/gkz956"
+    ],
     "https://www.ncbi.nlm.nih.gov/geo/": [
       "10.1093/nar/30.1.207",
       "10.1093/nar/gkad965",
@@ -130,6 +316,10 @@
       "10.1093/nar/gkl887",
       "10.1093/nar/gkn764",
       "10.1093/nar/gkq1184"
+    ],
+    "https://www.ncbi.nlm.nih.gov/sra": [
+      "10.1093/nar/gkq1019",
+      "10.1093/nar/gkr854"
     ],
     "https://www.proteinatlas.org/": [
       "10.1002/path.2440",
@@ -140,11 +330,26 @@
       "10.1074/mcp.r800013-mcp200",
       "10.1111/j.1365-2796.2011.02427.x"
     ],
+    "https://www.rcsb.org/": [
+      "10.1016/s0022-2836(77)80200-3",
+      "10.1093/nar/30.1.245",
+      "10.1093/nar/gkaa1038",
+      "10.1093/nar/gkac1077",
+      "10.1093/nar/gkq1021",
+      "10.1093/nar/gks1200",
+      "10.1093/nar/gku1214",
+      "10.1093/nar/gky1004",
+      "10.1107/s0907444902003451",
+      "10.1107/s0907444998009378"
+    ],
     "https://www.rhea-db.org/": [
       "10.1093/nar/gkr1126",
       "10.1093/nar/gku961",
       "10.1093/nar/gkw990",
       "10.1093/nar/gky876"
+    ],
+    "https://www.t3db.ca/": [
+      "10.1093/nar/gkp934"
     ],
     "https://www.uniprot.org/": [
       "10.1093/database/bar009",
