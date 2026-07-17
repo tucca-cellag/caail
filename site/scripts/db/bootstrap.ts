@@ -42,9 +42,14 @@ export function preserveRetiredPaperIds(db: Db, dir: string = NDJSON_DIR): numbe
  * on a genuine first import (no committed file) keep the classifier output as the seed. The
  * topic *vocabulary* (themes + fine tags) is always freshly created by seedTopics either way.
  *
- * Every committed tag is validated against the freshly seeded vocabulary + items; a tag that
- * references an unknown topic/item (vocabulary drift since it was written) fails loudly rather
- * than silently dropping. Returns the number of tags restored (0 = first import, kept classifier).
+ * Replacement is scoped PER COMMITTED ITEM (not a whole-table wipe): the committed tags win
+ * for items the curator has tagged, while an item ABSENT from the snapshot — e.g. a new
+ * `db:add` entry without explicit topics — keeps its classifier-derived seed instead of being
+ * silently zeroed. Every committed tag is validated against the freshly seeded vocabulary +
+ * items BEFORE any mutation (a tag referencing an unknown topic/item — vocabulary drift since
+ * it was written — fails loudly, leaving the DB untouched), and the replace runs inside a
+ * savepoint. An empty/absent file is a genuine first import and keeps the classifier seed
+ * (never wipe on an empty or corrupt snapshot). Returns the number of tags restored.
  */
 export function preserveCuratedItemTopics(db: Db, dir: string = NDJSON_DIR): number {
   const path = join(dir, 'item_topics.ndjson');
@@ -53,15 +58,15 @@ export function preserveCuratedItemTopics(db: Db, dir: string = NDJSON_DIR): num
   if (!text) return 0;
   const topicIds = new Set((db.prepare("SELECT id FROM items WHERE type='topic'").all() as { id: string }[]).map((r) => r.id));
   const itemIds = new Set((db.prepare('SELECT id FROM items').all() as { id: string }[]).map((r) => r.id));
-  db.exec('DELETE FROM item_topics');
-  const ins = db.prepare('INSERT INTO item_topics(item_id,topic_id) VALUES(?,?)');
+
+  // Parse + validate the whole snapshot BEFORE touching the table (no half-applied state).
+  const byItem = new Map<string, string[]>();
   const bad: string[] = [];
-  let n = 0;
   for (const line of text.split('\n')) {
+    if (!line.trim()) continue; // tolerate a stray blank line (e.g. a hand-resolved merge)
     const r = JSON.parse(line) as { item_id: string; topic_id: string };
     if (!itemIds.has(r.item_id) || !topicIds.has(r.topic_id)) { bad.push(`${r.item_id} -> ${r.topic_id}`); continue; }
-    ins.run(r.item_id, r.topic_id);
-    n += 1;
+    (byItem.get(r.item_id) ?? byItem.set(r.item_id, []).get(r.item_id)!).push(r.topic_id);
   }
   if (bad.length) {
     throw new Error(
@@ -69,7 +74,23 @@ export function preserveCuratedItemTopics(db: Db, dir: string = NDJSON_DIR): num
         `(vocabulary drift?): ${bad.slice(0, 5).join('; ')}`,
     );
   }
-  return n;
+
+  db.exec('SAVEPOINT preserve_item_topics');
+  try {
+    const del = db.prepare('DELETE FROM item_topics WHERE item_id=?');
+    const ins = db.prepare('INSERT INTO item_topics(item_id,topic_id) VALUES(?,?)');
+    let n = 0;
+    for (const [itemId, topics] of byItem) {
+      del.run(itemId); // replace only THIS item's tags — items absent from the snapshot are untouched
+      for (const t of topics) { ins.run(itemId, t); n += 1; }
+    }
+    db.exec('RELEASE preserve_item_topics');
+    return n;
+  } catch (e) {
+    db.exec('ROLLBACK TO preserve_item_topics');
+    db.exec('RELEASE preserve_item_topics');
+    throw e;
+  }
 }
 
 export function main(): void {
