@@ -9,32 +9,18 @@
  * styling is in ../styles/citation-badge.css (global, so the raw-HTML dataset-card badges
  * emitted by the dataset-cards remark share it).
  */
+import { compactCount, citationTitle, openAlexWorksUrl } from '../lib/citation-format';
+
+export { compactCount, citationTitle } from '../lib/citation-format';
+
 const BASE = import.meta.env.BASE_URL;
 
-/** Compact count for the badge label (4626 -> "4.6k"); the exact value goes in the tooltip. */
-export function compactCount(n: number): string {
-  return n < 1000
-    ? String(n)
-    : new Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1 }).format(n);
-}
-
 /**
- * OpenAlex works URL for the DOI(s) whose counts the badge shows. For a single paper this
- * opens that work; for an aggregated resource it opens ALL the summed release papers (an
- * OR-DOI filter, `doi:A|B|C`), so the destination matches the badge number rather than
- * showing only the current paper. The /citations/ hub is the no-DOI fallback.
+ * OpenAlex works URL for the DOI(s), with the /citations/ hub as the no-DOI fallback (the
+ * fallback needs the site BASE, so it wraps the pure `openAlexWorksUrl` here).
  */
 export function citationHref(dois: string[]): string {
-  return dois.length
-    ? `https://openalex.org/works?filter=doi:${dois.map(encodeURIComponent).join('|')}`
-    : `${BASE.replace(/\/$/, '')}/citations/`;
-}
-
-/** Tooltip text, aggregated across N release papers when a versioned resource (#102). */
-export function citationTitle(citationCount: number, citationSources: number): string {
-  return citationSources > 1
-    ? `Cited by ${citationCount.toLocaleString()} — summed across ${citationSources} release papers of this resource (OpenAlex cited_by_count). A coarse popularity signal, not a quality measure; the link opens the current paper.`
-    : `Cited by ${citationCount.toLocaleString()} (OpenAlex cited_by_count). A coarse popularity signal, not a quality measure — confirm at the source.`;
+  return openAlexWorksUrl(dois) || `${BASE.replace(/\/$/, '')}/citations/`;
 }
 
 export default function CitationBadge({

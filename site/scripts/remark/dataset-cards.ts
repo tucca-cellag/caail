@@ -20,6 +20,7 @@ import { fileURLToPath } from 'node:url';
 import type { Root } from 'mdast';
 import { toString as mdastToString } from 'mdast-util-to-string';
 import { TIER_META, type LicenseTier } from '../../src/lib/licenses.ts';
+import { compactCount, citationTitle, openAlexWorksUrl } from '../../src/lib/citation-format.ts';
 
 export interface DatasetCardEntry {
   name: string;
@@ -69,25 +70,15 @@ function licenseBadgeHtml(entry: DatasetCardEntry): string {
   );
 }
 
-/** Compact count for the badge label (4626 -> "4.6k"); mirrors CitationBadge.compactCount. */
-function compactCount(n: number): string {
-  return n < 1000
-    ? String(n)
-    : new Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1 }).format(n);
-}
-
-/** "cited by N" OpenAlex badge markup mirroring CitationBadge.tsx; '' when no count. */
+/** "cited by N" OpenAlex badge markup mirroring CitationBadge.tsx; '' when no count.
+ *  Uses the shared citation-format helpers so the label/tooltip/link can't drift. */
 function citationBadgeHtml(entry: DatasetCardEntry): string {
   if (entry.citationCount == null) return '';
   const dois = entry.citationDois?.length ? entry.citationDois : entry.doi ? [entry.doi] : [];
-  const href = dois.length
-    ? `https://openalex.org/works?filter=doi:${dois.map(encodeURIComponent).join('|')}`
-    : `${BASE}/citations/`;
+  const href = openAlexWorksUrl(dois) || `${BASE}/citations/`;
   const external = dois.length > 0;
   const aggregated = entry.citationSources > 1;
-  const title = aggregated
-    ? `Cited by ${entry.citationCount.toLocaleString()} — summed across ${entry.citationSources} release papers of this resource (OpenAlex cited_by_count). A coarse popularity signal, not a quality measure; the link opens the current paper.`
-    : `Cited by ${entry.citationCount.toLocaleString()} (OpenAlex cited_by_count). A coarse popularity signal, not a quality measure — confirm at the source.`;
+  const title = citationTitle(entry.citationCount, entry.citationSources);
   return (
     `<a class="cite-badge${aggregated ? ' cite-badge--aggregated' : ''}" href="${href}"${external ? ' target="_blank" rel="noopener noreferrer"' : ''} ` +
     `title="${esc(title)}"><span class="cite-badge__label">cited by</span>` +

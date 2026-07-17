@@ -12,6 +12,7 @@
  */
 import '../styles/citation-hub.css';
 import { useEffect, useState } from 'preact/hooks';
+import { openAlexWorksUrl } from '../lib/citation-format';
 import papers from '../content/data/papers.json';
 import catalog from '../content/data/catalog.json';
 import datasets from '../content/data/datasets.json';
@@ -33,12 +34,11 @@ type Kind = 'paper' | 'software' | 'database' | 'dataset';
 type Item = { kind: Kind; label: string; url: string; count: number; sources: number };
 
 const KIND_LABEL: Record<Kind, string> = { paper: 'Papers', software: 'Software', database: 'Databases', dataset: 'Datasets' };
-const openalex = (dois: string[]) => `https://openalex.org/works?filter=doi:${dois.map(encodeURIComponent).join('|')}`;
 /** Link to all the DOIs whose counts were summed (falls back to the primary), so an
  *  aggregated resource opens all its release papers, not just the current one (#102). */
 const worksUrl = (e: any, fallback: string) => {
   const dois: string[] = e.citationDois?.length ? e.citationDois : e.doi ? [e.doi] : [];
-  return dois.length ? openalex(dois) : fallback;
+  return openAlexWorksUrl(dois) || fallback;
 };
 
 const items: Item[] = [
