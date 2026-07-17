@@ -286,7 +286,8 @@ non-catalog canonical files (`OtherResources.md`, `ReferenceWorks.md`, `AwesomeL
   `license_source` (`auto` = GitHub SPDX, `manual` = curated); the coarse **tier is derived** at parse
   via the shared `src/lib/licenses.ts` classifier (one unified 4-tier axis over code + data — CC
   licenses + controlled-access map in). Like topics, license is **DB-only** (not in canonical
-  Markdown): `seedLicenses` (bootstrap) folds two committed offline inputs — `license-cache.json`
+  Markdown): `seedLicenses` (run via `db:reseed-axes` — a license/DOI-only fold that, unlike
+  `db:bootstrap`, leaves curated topics + ordinals intact, see #100) folds two committed offline inputs — `license-cache.json`
   (auto, refreshed by the opt-in `db:fetch-licenses`) and `licenses-manual.json` (curator overrides,
   manual winning) — into the DB, and the parser (`site/scripts/parser/licenses.ts`) folds the resolved
   value into `catalog.json`/`datasets.json`. Surfaced as a **corner badge** on every card (solid=auto,
@@ -295,7 +296,7 @@ non-catalog canonical files (`OtherResources.md`, `ReferenceWorks.md`, `AwesomeL
   guards `license_source`. A coarse triage signal, not verified terms — confirm at the source.
 - **DOIs & citation counts** are a second DB-owned axis mirroring licenses. `catalog` +
   `dataset_entries` carry nullable `doi` + `doi_source` (`manual` = curator-verified; `auto` reserved).
-  Like licenses the DOI is **DB-only** (not in canonical Markdown): `seedDois` (bootstrap) folds the
+  Like licenses the DOI is **DB-only** (not in canonical Markdown): `seedDois` (run via `db:reseed-axes`) folds the
   committed `site/scripts/db/dois-manual.json` (catalog by url, datasets by `ds:` id) into the DB;
   `db:check` guards `doi_source` (both-set-or-both-null) and that every override key resolves. Papers
   need no column — their DOI is derived from the citation `raw`. The **OpenAlex `cited_by_count`** for

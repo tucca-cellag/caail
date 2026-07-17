@@ -52,16 +52,16 @@ linkable items in the `/topics/` hub; inventory rows stay count-only.
 `catalog` + `dataset_entries` carry `license` + `license_source` (`auto`|`manual`). Like topics they
 are DB-only (not in Markdown) and fold into the site JSON; the tier is derived at parse. To set one:
 add a curator override to `site/scripts/db/licenses-manual.json` (catalog by url, datasets by ds: id;
-`manual` wins over the GitHub-SPDX `license-cache.json`) then re-bootstrap, OR run the opt-in
-`db:fetch-licenses` (GITHUB_TOKEN) to refresh the auto SPDX cache then bootstrap. **Never guess a
-license** — GitHub NOASSERTION and unverified data-use terms stay `unknown`. Surfaced as a corner
-badge, the `/licenses/` hub, and the catalog tier facet.
+`manual` wins over the GitHub-SPDX `license-cache.json`) then fold with **`db:reseed-axes`**, OR run
+the opt-in `db:fetch-licenses` (GITHUB_TOKEN) to refresh the auto SPDX cache then `db:reseed-axes`.
+**Never guess a license** — GitHub NOASSERTION and unverified data-use terms stay `unknown`. Surfaced
+as a corner badge, the `/licenses/` hub, and the catalog tier facet.
 
 **DOIs & citation counts** are a second DB-owned axis, structured exactly like licenses. `catalog` +
 `dataset_entries` carry `doi` + `doi_source` (`manual` = curator-verified; `auto` reserved). DB-only
 (not in Markdown). To attach a DOI: add the tool/dataset's **associated-publication** DOI to
-`site/scripts/db/dois-manual.json` (catalog by url, datasets by `ds:` id), then re-bootstrap; papers
-need no entry (their DOI comes from the citation `raw`). **Verify every DOI against its source** before
+`site/scripts/db/dois-manual.json` (catalog by url, datasets by `ds:` id), then fold with
+**`db:reseed-axes`**; papers need no entry (their DOI comes from the citation `raw`). **Verify every DOI against its source** before
 adding it (Crossref title/author/year) — never guess; an entry with no genuine associated publication
 stays blank. The OpenAlex `cited_by_count` is refreshed by the opt-in `pnpm --dir site fetch:citations`
 (the same script now gathers catalog/dataset DOIs and selects `cited_by_count`) and folded at parse by
@@ -156,6 +156,7 @@ re-tagging, corrections), use the full procedure below.
 | Renumbering / reusing a `paper:N` id | Frozen and permanent (matrix links + external bookmarks). New paper = `max(ref_id)+1`; a removed paper's id is retired, not reused. |
 | Adding a reference without a matrix cell (or a cell without the reference) | Same-commit rule; `db:check` reachability + `lint:papers` catch it. |
 | Re-listing the matrix method rows in prose | They drift (see #81). The live set is `Papers.md`; only the 7 columns are enumerated + guarded. |
+| Running `db:bootstrap` to fold a new license/DOI | Bootstrap re-derives topics from classifiers (reverting `db:add` curation) and renumbers ordinals (#100). Use `db:reseed-axes` for the license/DOI fold; reserve `db:bootstrap` for a full canonical-Markdown re-import. |
 
 ## CLI reference
 
@@ -165,6 +166,7 @@ pnpm --dir site db:remove <id> # remove one item by frozen id (paper ids retired
 pnpm --dir site db:bootstrap   # one-time / re-import: canonical Markdown -> DB -> NDJSON
 pnpm --dir site db:build       # NDJSON -> caail.db (materialize for editing/querying)
 pnpm --dir site db:export      # caail.db -> NDJSON (after editing the DB)
+pnpm --dir site db:reseed-axes # fold license/DOI from *-manual.json into NDJSON (safe; topics/ordinals intact)
 pnpm --dir site db:emit        # NDJSON -> canonical Markdown (regenerate)
 pnpm --dir site db:check       # integrity + drift guards (incl. license provenance)
 pnpm --dir site db:verify      # round-trip fidelity oracle (re-parse == identical model)
