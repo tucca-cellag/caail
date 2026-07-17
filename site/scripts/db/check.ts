@@ -23,6 +23,7 @@ import { THEME_SLUGS } from './seed.js';
 
 const MANUAL_LICENSES_PATH = join(SITE_ROOT, 'scripts', 'db', 'licenses-manual.json');
 const MANUAL_DOIS_PATH = join(SITE_ROOT, 'scripts', 'db', 'dois-manual.json');
+const RELATED_DOIS_PATH = join(SITE_ROOT, 'scripts', 'db', 'dois-related.json');
 
 export interface CheckResult { label: string; ok: boolean; detail: string; }
 const ok = (label: string, cond: boolean, detail = ''): CheckResult => ({ label, ok: cond, detail });
@@ -251,11 +252,51 @@ export function checkManualDoiKeys(db: Db, manualPath: string = MANUAL_DOIS_PATH
   ];
 }
 
+/**
+ * Related-version DOIs (#102): every `dois-related.json` override key must resolve (like
+ * checkManualDoiKeys), and each row's stored `related_dois` must be a JSON array of bare
+ * lowercase DOIs that does NOT repeat the row's own primary `doi` (which would double-count
+ * in the aggregate badge). Absent file = no key check, but stored columns are still validated.
+ */
+export function checkRelatedDois(db: Db, relatedPath: string = RELATED_DOIS_PATH): CheckResult[] {
+  const out: CheckResult[] = [];
+  if (existsSync(relatedPath)) {
+    const rel = JSON.parse(readFileSync(relatedPath, 'utf-8')) as
+      { catalog?: Record<string, string[]>; datasets?: Record<string, string[]> };
+    const catUrls = new Set((db.prepare('SELECT url FROM catalog').all() as { url: string }[]).map((r) => r.url));
+    const dsIds = new Set((db.prepare('SELECT item_id FROM dataset_entries').all() as { item_id: string }[]).map((r) => r.item_id));
+    const badCat = Object.keys(rel.catalog ?? {}).filter((u) => !catUrls.has(u));
+    const badDs = Object.keys(rel.datasets ?? {}).filter((id) => !dsIds.has(id));
+    out.push(ok('dois-related.json: every catalog override url matches a catalog entry',
+      badCat.length === 0, `unmatched: ${badCat.slice(0, 3).join(', ')}`));
+    out.push(ok('dois-related.json: every datasets override id matches a dataset entry',
+      badDs.length === 0, `unmatched: ${badDs.slice(0, 3).join(', ')}`));
+  }
+  const bareRe = /^10\.\d{4,9}\/\S+$/;
+  const problems: string[] = [];
+  for (const table of ['catalog', 'dataset_entries']) {
+    const rows = db.prepare(`SELECT item_id, doi, related_dois FROM ${table} WHERE related_dois IS NOT NULL`)
+      .all() as { item_id: string; doi: string | null; related_dois: string }[];
+    for (const r of rows) {
+      let arr: unknown;
+      try { arr = JSON.parse(r.related_dois); } catch { problems.push(`${r.item_id}: related_dois not JSON`); continue; }
+      if (!Array.isArray(arr)) { problems.push(`${r.item_id}: related_dois not an array`); continue; }
+      for (const d of arr) {
+        if (typeof d !== 'string' || d !== d.toLowerCase() || !bareRe.test(d)) problems.push(`${r.item_id}: bad DOI '${String(d)}'`);
+        else if (d === r.doi) problems.push(`${r.item_id}: related_dois repeats the primary doi`);
+      }
+    }
+  }
+  out.push(ok('related_dois: valid bare-lowercase arrays, no primary-doi overlap',
+    problems.length === 0, problems.slice(0, 3).join('; ')));
+  return out;
+}
+
 /** Run every guard against a DB. Returns all results (ok + failing). */
 export function runChecks(db: Db, repoRoot: string = REPO_ROOT): CheckResult[] {
   return [...checkIntegrity(db), ...checkReachability(db), ...checkColumnDrift(db, repoRoot),
     ...checkTopicTiers(db), ...checkCatalogHeadings(db), ...checkLicenses(db), ...checkManualLicenseKeys(db),
-    ...checkDois(db), ...checkManualDoiKeys(db)];
+    ...checkDois(db), ...checkManualDoiKeys(db), ...checkRelatedDois(db)];
 }
 
 function main(): void {

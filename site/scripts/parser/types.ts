@@ -123,8 +123,10 @@ export const CatalogEntrySchema = z.object({
   /** DB-owned associated-publication DOI + provenance, folded from the catalog NDJSON */
   doi: z.string().nullable().default(null),
   doiSource: z.enum(['auto', 'manual']).nullable().default(null),
-  /** OpenAlex cited_by_count for `doi`, folded from the citation cache; null when unknown */
+  /** OpenAlex cited_by_count summed over `doi` + its sibling version DOIs; null when unknown */
   citationCount: z.number().int().nonnegative().nullable().default(null),
+  /** number of papers the count aggregates (1 = single paper; >1 = versioned resource, #102) */
+  citationSources: z.number().int().nonnegative().default(0),
 });
 
 /**
@@ -156,8 +158,10 @@ export const DatasetEntrySchema = z.object({
   /** DB-owned associated-publication DOI + provenance, folded from dataset_entries NDJSON */
   doi: z.string().nullable().default(null),
   doiSource: z.enum(['auto', 'manual']).nullable().default(null),
-  /** OpenAlex cited_by_count for `doi`, folded from the citation cache; null when unknown */
+  /** OpenAlex cited_by_count summed over `doi` + its sibling version DOIs; null when unknown */
   citationCount: z.number().int().nonnegative().nullable().default(null),
+  /** number of papers the count aggregates (1 = single paper; >1 = versioned resource, #102) */
+  citationSources: z.number().int().nonnegative().default(0),
 });
 
 /** Schema for datasets.json — the curated dataset entries across the Datasets/ pages. */

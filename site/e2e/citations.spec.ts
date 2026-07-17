@@ -9,6 +9,16 @@ test('Software cards with a DOI show a "cited by N" badge linking to OpenAlex', 
   await expect(badge).toHaveAttribute('href', /openalex\.org\/works\?filter=doi:/);
 });
 
+test('a versioned database aggregates its release papers into one badge (#102)', async ({ page }) => {
+  await page.goto('./databases/');
+  // Aggregated badges (versioned resources like STRING/UniProt) carry the ∑ marker.
+  const aggregated = page.locator('.cb-card .cite-badge--aggregated').first();
+  await expect(aggregated).toBeVisible();
+  await expect(aggregated.locator('.cite-badge__agg')).toHaveText('∑');
+  // The tooltip explains the sum rather than claiming a single paper's count.
+  await expect(aggregated).toHaveAttribute('title', /summed across \d+ release papers/);
+});
+
 test('the "Most cited" facet narrows Software to cited entries, most-cited first', async ({ page }) => {
   await page.goto('./software/');
   const total = await page.locator('.cb-card').count();

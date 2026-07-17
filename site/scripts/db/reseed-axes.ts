@@ -21,11 +21,12 @@
 
 import { fileURLToPath } from 'node:url';
 import { importNdjson, exportNdjson, NDJSON_DIR, type Db } from './lib.js';
-import { seedLicenses, seedDois } from './seed.js';
+import { seedLicenses, seedDois, seedRelatedDois } from './seed.js';
 
 export interface ReseedSummary {
   licenses: { auto: number; manual: number };
   dois: { manual: number };
+  relatedDois: { rows: number };
 }
 
 /**
@@ -42,23 +43,24 @@ export interface ReseedSummary {
  */
 export function reseedAxes(db: Db): ReseedSummary {
   db.exec(
-    'UPDATE catalog SET license=NULL, license_source=NULL, doi=NULL, doi_source=NULL;' +
-      'UPDATE dataset_entries SET license=NULL, license_source=NULL, doi=NULL, doi_source=NULL;',
+    'UPDATE catalog SET license=NULL, license_source=NULL, doi=NULL, doi_source=NULL, related_dois=NULL;' +
+      'UPDATE dataset_entries SET license=NULL, license_source=NULL, doi=NULL, doi_source=NULL, related_dois=NULL;',
   );
   const licenses = seedLicenses(db);
   const dois = seedDois(db);
-  return { licenses, dois };
+  const relatedDois = seedRelatedDois(db);
+  return { licenses, dois, relatedDois };
 }
 
 function main(): void {
   const db = importNdjson(NDJSON_DIR);
-  const { licenses, dois } = reseedAxes(db);
+  const { licenses, dois, relatedDois } = reseedAxes(db);
   exportNdjson(db, NDJSON_DIR);
   db.close();
   console.log(
     `db:reseed-axes — folded side axes into NDJSON: ` +
       `licenses ${licenses.manual} manual + ${licenses.auto} auto (GitHub SPDX); ` +
-      `dois ${dois.manual} manual.`,
+      `dois ${dois.manual} manual; related-doi sets ${relatedDois.rows}.`,
   );
   console.log(
     `  Only license/doi columns change; topics + ordinals are left intact. ` +

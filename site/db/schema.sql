@@ -97,6 +97,7 @@ CREATE TABLE catalog (
   license_source TEXT CHECK (license_source IN ('auto','manual')),
   doi            TEXT,                     -- associated-publication DOI (bare); NULL = none recorded
   doi_source     TEXT CHECK (doi_source IN ('auto','manual')),
+  related_dois   TEXT,                     -- JSON array of sibling version DOIs (bare) summed into the badge; NULL = none (#102)
   ordinal        INTEGER NOT NULL
 );
 
@@ -129,6 +130,7 @@ CREATE TABLE dataset_entries (
   license_source TEXT CHECK (license_source IN ('auto','manual')),
   doi            TEXT,                 -- associated-publication DOI (bare); NULL = none recorded
   doi_source     TEXT CHECK (doi_source IN ('auto','manual')),
+  related_dois   TEXT,                 -- JSON array of sibling version DOIs (bare) summed into the badge; NULL = none (#102)
   ordinal    INTEGER NOT NULL          -- document order across all dataset pages
 );
 

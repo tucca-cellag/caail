@@ -343,3 +343,36 @@ export function seedDois(db: Db): { manual: number } {
   }
   return { manual: manualN };
 }
+
+interface ManualRelatedDois { catalog: Record<string, string[]>; datasets: Record<string, string[]>; }
+
+/**
+ * Seed `related_dois` onto catalog + dataset_entries from the committed
+ * `scripts/db/dois-related.json` — the SIBLING VERSION DOIs of a multi-release resource
+ * (e.g. "STRING in 2017/2021/2023") whose OpenAlex `cited_by_count` is summed into the
+ * resource's "cited by N" badge (#102). Catalog by url, datasets by `ds:` id. Each value
+ * is a JSON array of bare lowercase DOIs; the primary `doi` is NOT repeated here (parse
+ * unions the two). Stored as a JSON string in `related_dois`; empty/absent -> left NULL.
+ * DB-only, like the DOI axis. Folded by `db:reseed-axes`; validated by `db:check`.
+ */
+export function seedRelatedDois(db: Db): { rows: number } {
+  const manual = readJson<ManualRelatedDois>(join(SITE_ROOT, 'scripts', 'db', 'dois-related.json'), { catalog: {}, datasets: {} });
+  const manCatalog = manual.catalog ?? {};
+  const manDatasets = manual.datasets ?? {};
+  const setCat = db.prepare('UPDATE catalog SET related_dois=? WHERE url=?');
+  const setDs = db.prepare('UPDATE dataset_entries SET related_dois=? WHERE item_id=?');
+  const norm = (list: string[]): string | null => {
+    const bare = [...new Set((list ?? []).map(bareDoi).filter((d): d is string => !!d))];
+    return bare.length ? JSON.stringify(bare) : null;
+  };
+  let rows = 0;
+  for (const [url, list] of Object.entries(manCatalog)) {
+    const json = norm(list);
+    if (json && setCat.run(json, url).changes) rows++;
+  }
+  for (const [id, list] of Object.entries(manDatasets)) {
+    const json = norm(list);
+    if (json && setDs.run(json, id).changes) rows++;
+  }
+  return { rows };
+}
