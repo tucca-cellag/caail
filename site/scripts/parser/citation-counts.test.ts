@@ -15,6 +15,7 @@ describe('citationInfo', () => {
       doiSource: 'manual',
       citationCount: 7,
       citationSources: 1,
+      citationDois: ['10.1/x'],
     });
   });
   it('is the null info when there is no DOI', () => {
@@ -33,6 +34,12 @@ describe('citationInfo', () => {
     expect(info.citationCount).toBe(15);
     expect(info.citationSources).toBe(3);
     expect(info.doi).toBe('10.1/x'); // primary preserved for the badge link
+    expect(info.citationDois).toEqual(['10.1/x', '10.1/y', '10.1/z']); // all summed works, for the link
+  });
+  it('citationDois lists only the DOIs that contributed a count', () => {
+    const counts = new Map([['10.1/x', 7]]); // one related has no count
+    const info = citationInfo('10.1/x', 'manual', counts, ['10.1/missing']);
+    expect(info.citationDois).toEqual(['10.1/x']);
   });
   it('counts only the DOIs actually present in the map', () => {
     const counts = new Map([['10.1/x', 7]]); // related absent

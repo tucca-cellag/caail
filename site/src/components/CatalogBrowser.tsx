@@ -101,7 +101,7 @@ export default function CatalogBrowser({ kind }: Props) {
       <TopicChips topics={e.topics} />
       {e.citationCount != null && (
         <p class="cb-meta">
-          <CitationBadge doi={e.doi} citationCount={e.citationCount} citationSources={e.citationSources} />
+          <CitationBadge doi={e.doi} citationCount={e.citationCount} citationSources={e.citationSources} citationDois={e.citationDois} />
         </p>
       )}
     </article>

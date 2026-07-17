@@ -17,6 +17,13 @@ test('a versioned database aggregates its release papers into one badge (#102)',
   await expect(aggregated.locator('.cite-badge__agg')).toHaveText('∑');
   // The tooltip explains the sum rather than claiming a single paper's count.
   await expect(aggregated).toHaveAttribute('title', /summed across \d+ release papers/);
+  // The link opens ALL the summed works (an OR-DOI OpenAlex query), not just the primary.
+  await expect(aggregated).toHaveAttribute('href', /openalex\.org\/works\?filter=doi:[^"]*(%7C|\|)/);
+});
+
+test('the /citations/ hub explains the ∑ aggregation marker', async ({ page }) => {
+  await page.goto('./citations/');
+  await expect(page.locator('.ch-disclaimer', { hasText: /summed across all its release papers/ })).toBeVisible();
 });
 
 test('the "Most cited" facet narrows Software to cited entries, most-cited first', async ({ page }) => {

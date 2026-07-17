@@ -127,6 +127,8 @@ export const CatalogEntrySchema = z.object({
   citationCount: z.number().int().nonnegative().nullable().default(null),
   /** number of papers the count aggregates (1 = single paper; >1 = versioned resource, #102) */
   citationSources: z.number().int().nonnegative().default(0),
+  /** the DOIs whose counts were summed — the works the badge/hub link opens (#102) */
+  citationDois: z.array(z.string()).default([]),
 });
 
 /**
@@ -162,6 +164,8 @@ export const DatasetEntrySchema = z.object({
   citationCount: z.number().int().nonnegative().nullable().default(null),
   /** number of papers the count aggregates (1 = single paper; >1 = versioned resource, #102) */
   citationSources: z.number().int().nonnegative().default(0),
+  /** the DOIs whose counts were summed — the works the badge/hub link opens (#102) */
+  citationDois: z.array(z.string()).default([]),
 });
 
 /** Schema for datasets.json — the curated dataset entries across the Datasets/ pages. */

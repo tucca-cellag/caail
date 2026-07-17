@@ -35,10 +35,12 @@ export interface CitationInfo {
   doiSource: 'auto' | 'manual' | null;
   citationCount: number | null;
   citationSources: number;
+  /** the bare DOIs whose counts were summed — the works the badge/hub link opens (#102) */
+  citationDois: string[];
 }
 
 /** The "no associated publication" info. */
-export const NO_CITATION: CitationInfo = { doi: null, doiSource: null, citationCount: null, citationSources: 0 };
+export const NO_CITATION: CitationInfo = { doi: null, doiSource: null, citationCount: null, citationSources: 0, citationDois: [] };
 
 /** Parse the `related_dois` JSON-array column (a committed string) into a DOI list. */
 export function parseRelatedDois(raw: string | null | undefined): string[] {
@@ -65,16 +67,17 @@ export function citationInfo(
 ): CitationInfo {
   const keys = [...new Set([doiKey(doi), ...related.map(doiKey)].filter((k): k is string => !!k))];
   let total = 0;
-  let citationSources = 0;
+  const citationDois: string[] = []; // the DOIs that actually contributed a count (primary first)
   for (const k of keys) {
     const c = counts.get(k);
-    if (c != null) { total += c; citationSources += 1; }
+    if (c != null) { total += c; citationDois.push(k); }
   }
   return {
     doi: doi ?? null,
     doiSource: source ?? null,
-    citationCount: citationSources > 0 ? total : null,
-    citationSources,
+    citationCount: citationDois.length > 0 ? total : null,
+    citationSources: citationDois.length,
+    citationDois,
   };
 }
 

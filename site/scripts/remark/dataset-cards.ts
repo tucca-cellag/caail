@@ -32,6 +32,7 @@ export interface DatasetCardEntry {
   doi: string | null;
   citationCount: number | null;
   citationSources: number;
+  citationDois: string[];
 }
 
 const DATA_PATH = fileURLToPath(new URL('../../src/content/data/datasets.json', import.meta.url));
@@ -78,10 +79,11 @@ function compactCount(n: number): string {
 /** "cited by N" OpenAlex badge markup mirroring CitationBadge.tsx; '' when no count. */
 function citationBadgeHtml(entry: DatasetCardEntry): string {
   if (entry.citationCount == null) return '';
-  const href = entry.doi
-    ? `https://openalex.org/works?filter=doi:${encodeURIComponent(entry.doi)}`
+  const dois = entry.citationDois?.length ? entry.citationDois : entry.doi ? [entry.doi] : [];
+  const href = dois.length
+    ? `https://openalex.org/works?filter=doi:${dois.map(encodeURIComponent).join('|')}`
     : `${BASE}/citations/`;
-  const external = entry.doi != null;
+  const external = dois.length > 0;
   const aggregated = entry.citationSources > 1;
   const title = aggregated
     ? `Cited by ${entry.citationCount.toLocaleString()} — summed across ${entry.citationSources} release papers of this resource (OpenAlex cited_by_count). A coarse popularity signal, not a quality measure; the link opens the current paper.`
@@ -107,7 +109,7 @@ export function loadDatasetEntriesByPage(): Map<string, DatasetCardEntry[]> {
   };
   for (const e of entries) {
     const list = out.get(e.page) ?? out.set(e.page, []).get(e.page)!;
-    list.push({ name: e.name, kind: e.kind, anchor: e.anchor, topics: e.topics, license: e.license, licenseSource: e.licenseSource, tier: e.tier, doi: e.doi, citationCount: e.citationCount, citationSources: e.citationSources });
+    list.push({ name: e.name, kind: e.kind, anchor: e.anchor, topics: e.topics, license: e.license, licenseSource: e.licenseSource, tier: e.tier, doi: e.doi, citationCount: e.citationCount, citationSources: e.citationSources, citationDois: e.citationDois });
   }
   return out;
 }
