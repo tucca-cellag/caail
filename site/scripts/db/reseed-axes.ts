@@ -28,8 +28,23 @@ export interface ReseedSummary {
   dois: { manual: number };
 }
 
-/** Re-seed the license + DOI axes onto an already-imported DB. In-place, returns counts. */
+/**
+ * Re-seed the license + DOI axes onto an already-imported DB. In-place, returns counts.
+ *
+ * Clears the four side-axis columns first, THEN re-seeds. This makes a reseed a pure
+ * function of the current committed inputs (`licenses-manual.json` + `license-cache.json`
+ * + `dois-manual.json`), so removing a manual override reconciles — the underlying
+ * `seedLicenses`/`seedDois` only UPDATE keys still present, so without the clear a
+ * retracted value would persist stale (the DB here is already populated, unlike the
+ * fresh rows `db:bootstrap` seeds onto). Every license/DOI is reproducible from those
+ * inputs (DOIs are all `manual`; licenses are `manual` or the auto SPDX cache), so the
+ * clear loses nothing and stays a no-op on a clean tree.
+ */
 export function reseedAxes(db: Db): ReseedSummary {
+  db.exec(
+    'UPDATE catalog SET license=NULL, license_source=NULL, doi=NULL, doi_source=NULL;' +
+      'UPDATE dataset_entries SET license=NULL, license_source=NULL, doi=NULL, doi_source=NULL;',
+  );
   const licenses = seedLicenses(db);
   const dois = seedDois(db);
   return { licenses, dois };

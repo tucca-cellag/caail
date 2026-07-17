@@ -54,8 +54,10 @@ are DB-only (not in Markdown) and fold into the site JSON; the tier is derived a
 add a curator override to `site/scripts/db/licenses-manual.json` (catalog by url, datasets by ds: id;
 `manual` wins over the GitHub-SPDX `license-cache.json`) then fold with **`db:reseed-axes`**, OR run
 the opt-in `db:fetch-licenses` (GITHUB_TOKEN) to refresh the auto SPDX cache then `db:reseed-axes`.
-**Never guess a license** — GitHub NOASSERTION and unverified data-use terms stay `unknown`. Surfaced
-as a corner badge, the `/licenses/` hub, and the catalog tier facet.
+**Never guess a license** — GitHub NOASSERTION and unverified data-use terms stay `unknown`. A reseed
+reconciles adds, edits, and removals; `db:check` flags a manual override url that resolves to no entry
+(a typo'd key is otherwise a silent no-op). Surfaced as a corner badge, the `/licenses/` hub, and the
+catalog tier facet.
 
 **DOIs & citation counts** are a second DB-owned axis, structured exactly like licenses. `catalog` +
 `dataset_entries` carry `doi` + `doi_source` (`manual` = curator-verified; `auto` reserved). DB-only

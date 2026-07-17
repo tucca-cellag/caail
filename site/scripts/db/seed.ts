@@ -280,18 +280,21 @@ const readJson = <T>(path: string, fallback: T): T =>
 export function seedLicenses(db: Db): { auto: number; manual: number } {
   const cache = readJson<LicenseCache>(join(SITE_ROOT, 'scripts', 'parser', 'license-cache.json'), { repos: {} });
   const manual = readJson<ManualLicenses>(join(SITE_ROOT, 'scripts', 'db', 'licenses-manual.json'), { catalog: {}, datasets: {} });
+  // Tolerate a partial/`{}` file (a curator emptying the overrides): missing keys -> {}.
+  const manCatalog = manual.catalog ?? {};
+  const manDatasets = manual.datasets ?? {};
   const setCat = db.prepare('UPDATE catalog SET license=?, license_source=? WHERE item_id=?');
   const setDs = db.prepare('UPDATE dataset_entries SET license=?, license_source=? WHERE item_id=?');
   let auto = 0, manualN = 0;
 
   for (const c of db.prepare('SELECT item_id, url FROM catalog').all() as { item_id: string; url: string }[]) {
-    const man = manual.catalog[c.url];
+    const man = manCatalog[c.url];
     const repo = repoFromUrl(c.url);
     const aut = repo ? cache.repos[repo]?.spdx ?? null : null;
     if (man) { setCat.run(man, 'manual', c.item_id); manualN++; }
     else if (aut) { setCat.run(aut, 'auto', c.item_id); auto++; }
   }
-  for (const [id, val] of Object.entries(manual.datasets)) {
+  for (const [id, val] of Object.entries(manDatasets)) {
     const res = setDs.run(val, 'manual', id);
     if (res.changes) manualN++;
   }
@@ -319,17 +322,20 @@ export function bareDoi(doi: string): string | null {
  */
 export function seedDois(db: Db): { manual: number } {
   const manual = readJson<ManualDois>(join(SITE_ROOT, 'scripts', 'db', 'dois-manual.json'), { catalog: {}, datasets: {} });
+  // Tolerate a partial/`{}` file (a curator emptying the overrides): missing keys -> {}.
+  const manCatalog = manual.catalog ?? {};
+  const manDatasets = manual.datasets ?? {};
   const setCat = db.prepare('UPDATE catalog SET doi=?, doi_source=? WHERE url=?');
   const setDs = db.prepare('UPDATE dataset_entries SET doi=?, doi_source=? WHERE item_id=?');
   let manualN = 0;
 
-  for (const [url, raw] of Object.entries(manual.catalog)) {
+  for (const [url, raw] of Object.entries(manCatalog)) {
     const doi = bareDoi(raw);
     if (!doi) continue;
     const res = setCat.run(doi, 'manual', url);
     if (res.changes) manualN++;
   }
-  for (const [id, raw] of Object.entries(manual.datasets)) {
+  for (const [id, raw] of Object.entries(manDatasets)) {
     const doi = bareDoi(raw);
     if (!doi) continue;
     const res = setDs.run(doi, 'manual', id);
