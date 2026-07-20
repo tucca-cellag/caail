@@ -198,14 +198,16 @@ describe('parseApa — bare no-initials token keeps its neighbours (#96)', () =>
   it('internal-comma org suffix ("…, Davis") does not discard the following paired author', () => {
     // "University of California, Davis" splits into two pieces on ", "; the
     // orphaned bare "Davis" used to null the entire list, taking the valid
-    // "Smith, J." with it. Now: the org is kept, the bare suffix is dropped,
-    // and the trailing personal author survives.
+    // "Smith, J." with it. Now: the org is kept, the bare suffix is dropped
+    // (and counted), and the trailing personal author survives.
     const input =
       '<a id="300">300</a> University of California, Davis, Smith, J. (2024). A title. *Nature, 600*. https://doi.org/10.1234/uc';
 
     const result = parseApa(input);
 
     expect(result.authors).toEqual(['University of California', 'Smith, J.']);
+    // "Davis" was dropped → flagged as information loss, not silent.
+    expect(result.authorsDropped).toBe(1);
   });
 
   it('a mononym mid-list is skipped but its neighbours are preserved', () => {
@@ -216,6 +218,22 @@ describe('parseApa — bare no-initials token keeps its neighbours (#96)', () =>
     const result = parseApa(input);
 
     expect(result.authors).toEqual(['Smith, J.']);
+    expect(result.authorsDropped).toBe(1);
+  });
+
+  it('a mid-list malformed personal author (missing-period typo) is dropped AND counted', () => {
+    // The regression the cross-model review caught: "Davis, M" (a missing period
+    // on the middle author's initial) is a realistic single-typo bibliography
+    // error. Both "Davis" and the broken "M" are unpairable → dropped; the valid
+    // neighbours survive, and authorsDropped > 0 lets the lint flag the loss that
+    // the old whole-list-null behaviour surfaced.
+    const input =
+      '<a id="304">304</a> Smith, J., Davis, M, Jones, K. (2024). A title. *Nature, 600*. https://doi.org/10.1234/typo';
+
+    const result = parseApa(input);
+
+    expect(result.authors).toEqual(['Smith, J.', 'Jones, K.']);
+    expect(result.authorsDropped).toBe(2);
   });
 
   it('a run that is ONLY bare words still nulls (malformed-flag contract preserved)', () => {
@@ -228,6 +246,17 @@ describe('parseApa — bare no-initials token keeps its neighbours (#96)', () =>
 
     expect(result.authors).toBeNull();
     expect(result.authorsText).toBe('Plato, Aristotle');
+    expect(result.authorsDropped).toBe(2);
+  });
+
+  it('a cleanly-paired run reports zero dropped tokens', () => {
+    const input =
+      '<a id="305">305</a> Smith, J., & Jones, K. (2024). A title. *Nature, 600*. https://doi.org/10.1234/clean';
+
+    const result = parseApa(input);
+
+    expect(result.authors).toEqual(['Smith, J.', 'Jones, K.']);
+    expect(result.authorsDropped).toBe(0);
   });
 
   it('KNOWN LIMITATION (#96 §2): an org name + spaced acronym is read as a person', () => {
@@ -236,13 +265,15 @@ describe('parseApa — bare no-initials token keeps its neighbours (#96)', () =>
     // personal "Surname, Initials" pair. We deliberately do NOT add a heuristic
     // to catch this, because keying on "multi-word surname" would misparse
     // genuine multi-word surnames ("Lloyd Webber, A. J."). Pinned so the
-    // accepted behaviour is intentional, not an accident.
+    // accepted behaviour is intentional, not an accident. Nothing is dropped —
+    // the token is (mis)paired, not skipped.
     const input =
       '<a id="303">303</a> World Health Organization, U. N. (2024). A title. *Nature, 600*. https://doi.org/10.1234/who';
 
     const result = parseApa(input);
 
     expect(result.authors).toEqual(['World Health Organization, U. N.']);
+    expect(result.authorsDropped).toBe(0);
   });
 });
 
