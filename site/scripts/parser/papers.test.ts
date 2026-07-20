@@ -148,7 +148,7 @@ describe('buildPapersModel — real Papers.md', () => {
 
   it('has 244 references', () => {
     // current Papers.md reference count; bump when refs are added.
-    expect(model.references.length).toBe(282);
+    expect(model.references.length).toBe(283);
   });
 
   // Ground truth (bump when refs change): 78 DISTINCT refs with a code URL and
