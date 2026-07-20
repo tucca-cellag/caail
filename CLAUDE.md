@@ -46,20 +46,25 @@ project skills (in `.claude/skills/`) that form a lifecycle:
 3. **`papers-dataset-audit`** (Phase 3 — reverse-audit): for every `Papers.md` ref, checks
    whether its deposit accessions / code repos are actually cited somewhere in the repo, and
    reports ORPHANs (cited paper, missing dataset) for review.
-4. **`matrix-classification-audit`** (Phase 4 — reclassify): re-audits the `Papers.md` matrix
-   itself. For each matrix-participating paper it grounds the placement in the paper's methods
-   section (pulled from the Zotero PDF full-text cache by `extract_matrix_corpus.py`) and asks
-   two questions — is each current `(method × area)` cell defensible, and does the paper also
-   belong in additional cells (multi-category)? It edits matrix cells only; it never touches
-   `## References` citation text or renumbers IDs. A **scope** removal (a paper judged not
-   cell-ag-relevant) carries an asymmetric burden: it must survive a steelman *defender* that
-   reads the paper's own methods against the column's `Taxonomy.md` definition (the trusted scope
-   source; the ResearchAreas pages are AI-assisted and untrusted) — so a general-purpose method
-   becomes a MOVE to *AI Tooling / Methodology*, not a deletion. When a paper's genuine method or area has **no matching row/column**, the audit
-   emits a non-destructive **taxonomy gap** — it keeps the paper's cell and surfaces a *proposed*
-   new row/column (clustered across ≥2 papers, adversarially verified) for **curator decision**;
-   new rows and columns (each defined in `Taxonomy.md`, with the matrix-header link pointing there)
-   are never auto-added. (Run via the named workflow `.claude/workflows/matrix-classification-audit.js`.)
+Matrix re-classification (formerly Phase 4) is now a manual curation task. Re-audit a
+placement by reading the paper's methods section against the column's `Taxonomy.md`
+definition (the trusted scope source; the ResearchAreas pages are AI-assisted and
+untrusted), then edit the cell through the DB per `caail-db-authoring`. Two rules carry
+over and still hold:
+
+- **Scope removals carry an asymmetric burden.** A general-purpose method is a MOVE to
+  *AI Tooling / Methodology*, not a deletion. Removal is only for papers with no
+  plausible cell-ag connection.
+- **Taxonomy gaps are non-destructive.** When a paper's genuine method or area has no
+  matching row/column, keep its current cell and surface a *proposed* new row/column for
+  curator decision. New rows and columns (each defined in `Taxonomy.md`, with the
+  matrix-header link pointing there) are never auto-added.
+
+`.claude/skills/matrix-classification-audit/` retains the zero-token
+`extract_matrix_corpus.py`, which pulls each matrix ref's methods text from the Zotero
+PDF full-text cache and reports per-ref `has_fulltext` — the mechanical half of an audit,
+and the fastest way to see which placements are grounded in a paper anyone has read. See
+that directory's `README.md`.
 
 Every drafted or re-audited entry is verified before commit by read-only adversarial reviewer
 subagents in `.claude/agents/` — **`caail-citation-reviewer`** (Papers.md bibliographic
@@ -68,26 +73,32 @@ fidelity), **`caail-claim-reviewer`** (prose-entry factual claims), and
 methods section) — which an entry must pass before it lands. The agent that wrote or proposed an
 entry never reviews it.
 
-### The field-gap analysis workflow
+### Field-gap analysis (retired as an automated workflow)
 
 The Zotero-sync lifecycle above reconciles the repo against *our Zotero library*. A complementary
 **field-gap** axis reconciles it against *the published field* — sweeping recent literature, datasets,
-software, and databases for resources CAAIL is missing — via the **`caail-gap-analysis`** skill
-(in `.claude/skills/`). It runs a saved multi-agent workflow (`.claude/workflows/caail-gap-analysis.js`,
-invoked with `Workflow({ name: 'caail-gap-analysis' })`): ~16 finder agents each read the live canonical
-files to build their own exclusion set, then research the field; a second agent adversarially verifies
-each candidate (exists / absent from repo / in-scope / correctly routed); a bounded completeness sweep
-chases missed angles; and per-category synthesizers assemble a GitHub-issue draft of vetted candidate
-additions (worked example: issue #32). Because finders read the repo at run time, the workflow
-auto-adapts as the repo grows — there is no baseline to maintain.
+software, and databases for resources CAAIL is missing. This ran as a multi-agent workflow
+(`caail-gap-analysis`); it has been retired. Its outputs are still live: issues #32, #58, #59, and #61
+hold vetted candidate additions, and the ledgers under `manuscript/` record the triage.
 
-The workflow *proposes* matrix cells but never sees the live matrix, so the skill owns the judgment:
-the operator confirms every "new row/column/empty cell" claim against the real `Papers.md` header (most
-are false alarms), resolves genuine paper-vs-perspective / method-row questions by reading the source,
-recomputes the summary tallies from the rendered checkboxes, spot-checks a DOI sample, and only then
-files the issue. The output is a *shortlist for maintainers*; actual integration still follows the
-`zotero-to-caail-sync` rules (matrix anchor + reference entry in the same commit; IDs assigned at landing).
-Run it on a periodic cadence (a monthly reminder); the Zotero skills run whenever the group library drifts.
+**Why it was retired.** Two reasons, both decisive. It fanned ~16 finder agents plus verifiers with no
+model override, so every agent ran Opus (~$155/run). And it reasoned about `Papers.md` as the source of
+truth, which stopped being true when the SQLite backend landed (#78 / PR #85) — direct edits to the
+generated Markdown are now hook-blocked and CI fails on drift, so its integration path no longer exists.
+
+**What replaces it.** Gap-finding is a manual or lightly-assisted curation task; integration follows
+`caail-db-authoring`. Two lessons from the retired pipeline are worth keeping, because both produced
+real errors:
+
+- **It proposed matrix cells without ever seeing the live matrix.** Confirm every "new row / new column /
+  empty cell" claim against the real matrix before acting — most were false alarms and the row usually
+  already existed.
+- **Bulk tranches landed under-verified.** The Wave 3b tranche (refs 249–277, PR #66) was classified from
+  abstracts; none of those 29 papers had full text in Zotero. Get the PDF into the group library and read
+  the methods section before assigning a matrix cell.
+
+Integration rules are unchanged: matrix anchor + reference entry in the same commit, IDs assigned at
+landing, every entry through the reviewer subagents.
 
 ## Repository layout
 
