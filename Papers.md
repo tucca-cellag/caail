@@ -14,7 +14,7 @@ This document presents the core research papers at the intersection of Cellular 
 | [Ensemble Learning](./Taxonomy.md#ensemble-learning) | [Gangwar et al. 2024](#170)<br>[Hashizume & Ying 2025](#169)<br>[Grzesik & Warth 2021](#213) |  | [Roell et al. 2022](#32)<br>[Du et al. 2025](#27)<br>[Behdani et al. 2024](#207)<br>[Xu et al. 2025](#208) | [Rafieyan et al. 2024](#20)<br>[Nair et al. 2021](#214)<br>[Serpe et al. 2025](#217) | [Keller et al. 2017](#80)<br>[Dagan-Wiener et al. 2017](#102)<br>[Margulis et al. 2021](#103)<br>[Colantonio et al. 2022](#72)<br>[Kircali Ata et al. 2023](#171)<br>[Ziaikin et al. 2024](#105)<br>[Du et al. 2025](#27)<br>[Shen et al. 2024](#11)<br>[Sun et al. 2026](#28)<br>[Tuwani et al. 2019](#268) |  |  |
 | [K-Nearest Neighbors](./Taxonomy.md#k-nearest-neighbors) |  |  | [Roell et al. 2022](#32) |  | [Sun et al. 2026](#28)<br>[Margulis et al. 2022](#104) |  |  |
 | [Linear & Regularized Models](./Taxonomy.md#linear--regularized-models) |  | [Wang et al. 2023b](#266) |  |  | [Charoenkwan et al. 2020](#269) |  |  |
-| [Chemometrics](./Taxonomy.md#chemometrics) |  |  | [Tamburini et al. 2014](#7)<br>[Xu et al. 2025](#208) |  |  | [Thévenot et al. 2015](#198)<br>[Rohart et al. 2017](#199) |  |
+| [Chemometrics](./Taxonomy.md#chemometrics) | [Wang et al. 2026](#287) |  | [Tamburini et al. 2014](#7)<br>[Xu et al. 2025](#208) |  |  | [Thévenot et al. 2015](#198)<br>[Rohart et al. 2017](#199) |  |
 | [Active Learning](./Taxonomy.md#active-learning) | [Hashizume et al. 2022](#24)<br>[Zhang et al. 2023](#23)<br>[Ozawa et al. 2025](#25)<br>[Narayanan et al. 2025](#58)<br>[Hashizume & Ying 2025](#169)<br>[Hashizume et al. 2026](#250) | [Pandi et al. 2022](#63)<br>[Hao et al. 2025](#97) |  |  |  | [Pandi et al. 2022](#63)<br>[King et al. 2004](#182) |  |
 | [Reinforcement Learning](./Taxonomy.md#reinforcement-learning) |  | [Wu et al. 2026](#165)<br>[Rizvi et al. 2026](#120) | [Petsagkourakis et al. 2020](#200)<br>[Oh et al. 2022](#201)<br>[Rajasekhar et al. 2024](#202)<br>[Wu & Cui 2025](#203) |  |  | [Narayanan et al. 2025](#161) |  |
 | [Foundation Models: Next-Token Prediction](./Taxonomy.md#foundation-models-next-token-prediction) |  | [Shen et al. 2023](#115)<br>[Pearce et al. 2026](#92)<br>[Rizvi et al. 2026](#120)<br>[Cui et al. 2024](#117) |  |  | [Steuer et al. 2026](#285) | [Su et al. 2026](#88) |  |
@@ -665,6 +665,8 @@ in its methods, not what it could be applied to. Short form:
 <a id="286">286</a> Srivastava, P., Steuer, A., Ferri, F., Nicoli, A., Schultz, K., Bej, S., Di Pizio, A., & Wolkenhauer, O. (2024). Bitter peptide prediction using graph neural networks. *Journal of Cheminformatics, 16*(1), 111. https://doi.org/10.1186/s13321-024-00909-x
 
 > **Code**: https://github.com/srivastavaprashant/BitterGNN
+
+<a id="287">287</a> Wang, Z., Wu, Z., Zhang, M., Tao, T., Han, R., Xie, Y., Wang, J., Ding, S., Zhou, G., & Wang, C. (2026). Dynamic nutrient consumption of cultured meat in bioreactors: Metabolomics-guided optimization for enhanced cell proliferation and stemness. *Journal of Agricultural and Food Chemistry*. https://doi.org/10.1021/acs.jafc.5c15770
 
 ## Sensory & Flavor Reference Work
 
