@@ -47,6 +47,7 @@ export function lint(model: PapersData): LintResult {
   checkDuplicateCitations(model, errors);
   checkRetiredIdGaps(model, warnings);
   checkUnparsedApaFields(model, warnings);
+  checkDroppedAuthorTokens(model, warnings);
 
   return { errors, warnings };
 }
@@ -307,6 +308,31 @@ function checkUnparsedApaFields(model: PapersData, warnings: string[]): void {
   for (const { id, nullFields } of affected) {
     warnings.push(
       `Unparsed APA fields on #${id}: ${nullFields.join(', ')} ${nullFields.length === 1 ? 'is' : 'are'} null — hand-fix the citation text`,
+    );
+  }
+}
+
+/**
+ * Emit one warning per reference whose author run had one or more unpairable
+ * tokens silently dropped from `authors` (an internal-comma org suffix, a
+ * mononym, or a malformed personal author such as a missing-period initial).
+ *
+ * `authors` can be non-null while tokens were dropped — valid neighbours are
+ * recovered and the bad token skipped (#96) — so a partial-parse would slip
+ * past checkUnparsedApaFields (which only fires on a literal `null`). This makes
+ * that silent loss visible so a curator can hand-fix the citation text.
+ *
+ * Output is sorted by ascending id.
+ */
+function checkDroppedAuthorTokens(model: PapersData, warnings: string[]): void {
+  const affected = model.references
+    .filter((ref) => ref.authorsDropped > 0)
+    .sort((a, b) => a.id - b.id);
+
+  for (const ref of affected) {
+    const n = ref.authorsDropped;
+    warnings.push(
+      `Dropped ${n} unparseable author ${n === 1 ? 'token' : 'tokens'} on #${ref.id} — the parsed author list is incomplete; hand-fix the citation text`,
     );
   }
 }

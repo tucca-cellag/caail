@@ -10,6 +10,7 @@ const validReference = {
   section: 'References',
   raw: 'Smith, J. (2022). A great paper. *Nature*, 1(1), 1-10. https://doi.org/10.1234/abc',
   authors: ['Smith, J.'],
+  authorsDropped: 0,
   authorsText: 'Smith, J.',
   year: 2022,
   title: 'A great paper',

@@ -23,6 +23,7 @@ function makeRef(overrides: Partial<Reference> & { id: number }): Reference {
     section: 'References',
     raw: `Author, A. (2020). Title. *Journal*, 1(1), 1-10. https://doi.org/10.1234/test`,
     authors: ['Author, A.'],
+    authorsDropped: 0,
     authorsText: 'Author, A.',
     year: 2020,
     title: 'Title',
@@ -351,6 +352,31 @@ describe('lint — unparsed APA fields', () => {
     const result = lint(cleanModel());
     expect(result.warnings).toHaveLength(0);
     expect(result.errors).toHaveLength(0);
+  });
+
+  // #96: a partial-parse (valid authors recovered, some tokens dropped) leaves
+  // `authors` non-null, so it slips past the null-field check above. The
+  // dropped-token check surfaces that silent loss.
+  it('warns when author tokens were dropped even though authors is non-null', () => {
+    const model: PapersData = {
+      areas: [{ key: 'media', label: 'Media Optimization' }],
+      methods: ['Bayesian Optimization'],
+      cells: [makeCell('Bayesian Optimization', 'media', [1])],
+      references: [makeRef({ id: 1, authors: ['Smith, J.'], authorsDropped: 2 })],
+    };
+    const result = lint(model);
+    expect(result.errors).toHaveLength(0);
+    const dropWarn = result.warnings.find(
+      (w) => w.includes('#1') && w.toLowerCase().includes('dropped'),
+    );
+    expect(dropWarn).toBeDefined();
+    // singular/plural agreement
+    expect(dropWarn).toContain('2 unparseable author tokens');
+  });
+
+  it('does not warn about dropped tokens when authorsDropped is 0', () => {
+    const result = lint(cleanModel());
+    expect(result.warnings.find((w) => w.toLowerCase().includes('dropped'))).toBeUndefined();
   });
 
   // #72: a null field that is legitimately absent for the reference kind is not

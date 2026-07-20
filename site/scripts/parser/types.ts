@@ -61,6 +61,13 @@ export const ReferenceSchema = z.object({
   raw: z.string(),
   /** Parsed author list; null if APA parse failed */
   authors: z.array(z.string()).nullable(),
+  /**
+   * Count of unpairable author-run tokens dropped from `authors` (an
+   * internal-comma org suffix, a mononym, or a malformed personal author).
+   * 0 when clean; > 0 flags silent information loss even when `authors` is
+   * non-null. Surfaced by the lint's unparsed-fields warning.
+   */
+  authorsDropped: z.number().int().nonnegative(),
   /** Raw author run text — ALWAYS present (never null) */
   authorsText: z.string(),
   /** Publication year; null if not parsed */

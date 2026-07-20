@@ -16,6 +16,15 @@
 export interface ApaFields {
   /** Parsed "Surname, Initials" entries; null if parsing failed. */
   authors: string[] | null;
+  /**
+   * Count of author-run tokens that could not be parsed and were dropped from
+   * `authors` (an unpairable bare word — an internal-comma org suffix, a
+   * mononym, or a malformed personal author such as a missing-period initial).
+   * 0 when the run parsed cleanly. `authors` can be non-null while this is > 0
+   * (valid neighbours recovered, some tokens skipped); consumers use this to
+   * flag silent information loss the way they flag a fully-null `authors`.
+   */
+  authorsDropped: number;
   /** ALWAYS present: the author-run text, or the whole input if no year found. */
   authorsText: string;
   /** Publication year (4-digit integer); null if not found. */
@@ -130,15 +139,28 @@ function isGivenNames(piece: string): boolean {
  * initials/given-names piece is a personal author (paired); a multi-word piece
  * with no initials following is a standalone organisation author.
  *
- * A bare single word with no following initials aborts the whole run (returns
- * null), preserving the "flag genuinely malformed citations" contract the
- * lint's unparsed-fields warning relies on. Known limitation: that abort also
- * discards any authors already parsed, so an internal-comma organisation name
- * ("University of California, Davis") or a mononym would null the list rather
- * than just that entry — none occur in the corpus today (tracked as follow-up).
+ * A bare single word with no following initials is skipped rather than aborting
+ * the whole run (#96), so an internal-comma organisation suffix ("University of
+ * California, Davis" → the orphaned "Davis") or a stray mononym no longer
+ * discards the valid authors around it. Each skipped token is *counted* and
+ * returned as `dropped`: recovery is not free — a dropped token is silent
+ * information loss (a truncated org name, a lost mononym, or a malformed
+ * personal author such as a missing-period initial in "…, Davis, M, …"), so the
+ * caller surfaces `dropped > 0` exactly as it surfaces a fully-null `authors`.
+ * A run where NOTHING parses (a lone "Smith") still returns `authors: null`.
+ *
+ * Accepted limitation (#96 §2): an organisation name followed by a spaced
+ * multi-letter acronym ("World Health Organization, U. N.") is glued into a
+ * fake "Surname, Initials" pair, because "U. N." is byte-identical to real
+ * initials — the surname/org distinction here is semantic, not structural, and
+ * any "multi-word surname" heuristic would misparse genuine multi-word surnames
+ * ("Lloyd Webber, A. J."). Does not occur in the corpus.
+ *
+ * @returns `authors` (null only when nothing parsed) and `dropped`, the count
+ *          of unpairable tokens skipped.
  */
-function parseAuthors(authorsText: string): string[] | null {
-  if (!authorsText.trim()) return null;
+function parseAuthors(authorsText: string): { authors: string[] | null; dropped: number } {
+  if (!authorsText.trim()) return { authors: null, dropped: 0 };
 
   // Remove the ampersand prefix from the final author ("& Jones" → "Jones")
   // without disturbing the ", " separators the split relies on.
@@ -146,13 +168,14 @@ function parseAuthors(authorsText: string): string[] | null {
   const pieces = normalized.split(', ');
 
   const authors: string[] = [];
+  let dropped = 0;
   let i = 0;
   while (i < pieces.length) {
     // Strip a leading APA ellipsis ("… Scaramuzza" → "Scaramuzza"; the ellipsis
     // may be the literal "..." or the "…" character) before reading the surname.
     const surname = pieces[i].replace(/^[.…\s]+/, '').trim();
     i += 1;
-    if (!surname) continue; // a lone ellipsis piece — skip it
+    if (!surname) continue; // a lone ellipsis piece — not a dropped author, skip it
 
     const next = i < pieces.length ? pieces[i].trim() : null;
     if (next && isGivenNames(next)) {
@@ -164,13 +187,21 @@ function parseAuthors(authorsText: string): string[] | null {
       // consortium/organisation author (kept verbatim).
       authors.push(surname);
     } else {
-      // A bare single word with no initials — genuinely malformed; bail so the
-      // whole reference is flagged rather than silently mis-parsed.
-      return null;
+      // A bare single word with no following initials. Skip just this token and
+      // keep walking rather than nulling the ENTIRE run (#96) — the old abort
+      // also discarded any authors already parsed and any that follow. Skipping
+      // recovers the valid neighbours around an internal-comma organisation
+      // suffix ("University of California, Davis" → the orphaned "Davis") or a
+      // stray mononym. Count it so the caller can flag the silent loss.
+      dropped += 1;
+      continue;
     }
   }
 
-  return authors.length > 0 ? authors : null;
+  // Null only when NOTHING parsed: a fully-unparseable run (a lone "Smith", or
+  // "Plato, Aristotle") returns null. A run with at least one good author
+  // survives with its bad tokens skipped — those are reported via `dropped`.
+  return { authors: authors.length > 0 ? authors : null, dropped };
 }
 
 // ---------------------------------------------------------------------------
@@ -208,9 +239,11 @@ export function parseApa(raw: string): ApaFields {
   const yearMatch = YEAR_RE.exec(yearSearchTarget);
 
   if (!yearMatch) {
-    // No year found: degrade everything except doi
+    // No year found: degrade everything except doi. No author run was parsed,
+    // so nothing was dropped.
     return {
       authors: null,
+      authorsDropped: 0,
       authorsText: stripped,
       year: null,
       title: null,
@@ -233,7 +266,7 @@ export function parseApa(raw: string): ApaFields {
   // ------------------------------------------------------------------
   // Step 4: Parse authors from authorsText.
   // ------------------------------------------------------------------
-  const authors = parseAuthors(authorsText);
+  const { authors, dropped: authorsDropped } = parseAuthors(authorsText);
 
   // ------------------------------------------------------------------
   // Step 5: Parse title and journal from tail.
@@ -247,6 +280,7 @@ export function parseApa(raw: string): ApaFields {
     // No italic run — set title/journal to null (graceful)
     return {
       authors,
+      authorsDropped,
       authorsText,
       year,
       title: null,
@@ -298,6 +332,7 @@ export function parseApa(raw: string): ApaFields {
 
   return {
     authors,
+    authorsDropped,
     authorsText,
     year,
     title,

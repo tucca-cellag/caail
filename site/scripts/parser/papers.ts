@@ -185,6 +185,7 @@ function parseReferences(root: Root, src: string): PartialReference[] {
         section: heading,
         raw,
         authors: fields.authors,
+        authorsDropped: fields.authorsDropped,
         authorsText: fields.authorsText,
         year: fields.year,
         title: fields.title,
