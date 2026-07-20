@@ -213,7 +213,7 @@
 {"method":"Benchmarks & Evaluation Frameworks","area_key":"eval","ref_id":156,"label":"Rein et al. 2023","ordinal":212}
 {"method":"Benchmarks & Evaluation Frameworks","area_key":"eval","ref_id":157,"label":"Wang et al. 2024","ordinal":213}
 {"method":"Benchmarks & Evaluation Frameworks","area_key":"eval","ref_id":158,"label":"Phan et al. 2026","ordinal":214}
-{"method":"Benchmarks & Evaluation Frameworks","area_key":"eval","ref_id":159,"label":"Wang et al. 2026","ordinal":215}
+{"method":"Benchmarks & Evaluation Frameworks","area_key":"eval","ref_id":159,"label":"Wang et al. 2026a","ordinal":215}
 {"method":"Benchmarks & Evaluation Frameworks","area_key":"eval","ref_id":164,"label":"Huang et al. 2026","ordinal":216}
 {"method":"Benchmarks & Evaluation Frameworks","area_key":"eval","ref_id":53,"label":"Liu et al. 2026","ordinal":217}
 {"method":"Benchmarks & Evaluation Frameworks","area_key":"eval","ref_id":57,"label":"Adduri et al. 2025","ordinal":218}
@@ -230,4 +230,4 @@
 {"method":"Agent Infrastructure (Frameworks, KGs, Protocols)","area_key":"tooling","ref_id":93,"label":"Tang et al. 2026","ordinal":229}
 {"method":"Agent Infrastructure (Frameworks, KGs, Protocols)","area_key":"tooling","ref_id":219,"label":"Matsumoto et al. 2025","ordinal":230}
 {"method":"Agent Infrastructure (Frameworks, KGs, Protocols)","area_key":"tooling","ref_id":220,"label":"Glen et al. 2025","ordinal":231}
-{"method":"Chemometrics","area_key":"media","ref_id":287,"label":"Wang et al. 2026","ordinal":232}
+{"method":"Chemometrics","area_key":"media","ref_id":287,"label":"Wang et al. 2026b","ordinal":232}
