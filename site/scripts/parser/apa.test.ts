@@ -191,6 +191,62 @@ describe('parseApa — particles, consortia, non-ASCII initials, ellipses (#72)'
 });
 
 // ---------------------------------------------------------------------------
+// 1c. Bare-token recovery: a no-initials piece no longer nulls the whole run (#96)
+// ---------------------------------------------------------------------------
+
+describe('parseApa — bare no-initials token keeps its neighbours (#96)', () => {
+  it('internal-comma org suffix ("…, Davis") does not discard the following paired author', () => {
+    // "University of California, Davis" splits into two pieces on ", "; the
+    // orphaned bare "Davis" used to null the entire list, taking the valid
+    // "Smith, J." with it. Now: the org is kept, the bare suffix is dropped,
+    // and the trailing personal author survives.
+    const input =
+      '<a id="300">300</a> University of California, Davis, Smith, J. (2024). A title. *Nature, 600*. https://doi.org/10.1234/uc';
+
+    const result = parseApa(input);
+
+    expect(result.authors).toEqual(['University of California', 'Smith, J.']);
+  });
+
+  it('a mononym mid-list is skipped but its neighbours are preserved', () => {
+    // "Plato" alone has no initials; skipping it must not discard "Smith, J.".
+    const input =
+      '<a id="301">301</a> Plato, Smith, J. (2024). A title. *Nature, 600*. https://doi.org/10.1234/mono';
+
+    const result = parseApa(input);
+
+    expect(result.authors).toEqual(['Smith, J.']);
+  });
+
+  it('a run that is ONLY bare words still nulls (malformed-flag contract preserved)', () => {
+    // No token parses → authors null, so the lint's unparsed-fields warning
+    // still fires for a genuinely malformed run (cf. the lone-"Smith" case).
+    const input =
+      '<a id="302">302</a> Plato, Aristotle (2024). A title. *Nature, 600*. https://doi.org/10.1234/none';
+
+    const result = parseApa(input);
+
+    expect(result.authors).toBeNull();
+    expect(result.authorsText).toBe('Plato, Aristotle');
+  });
+
+  it('KNOWN LIMITATION (#96 §2): an org name + spaced acronym is read as a person', () => {
+    // "World Health Organization, U. N." — "U. N." is byte-identical to real
+    // initials ("A. B."), so it is structurally indistinguishable from a
+    // personal "Surname, Initials" pair. We deliberately do NOT add a heuristic
+    // to catch this, because keying on "multi-word surname" would misparse
+    // genuine multi-word surnames ("Lloyd Webber, A. J."). Pinned so the
+    // accepted behaviour is intentional, not an accident.
+    const input =
+      '<a id="303">303</a> World Health Organization, U. N. (2024). A title. *Nature, 600*. https://doi.org/10.1234/who';
+
+    const result = parseApa(input);
+
+    expect(result.authors).toEqual(['World Health Organization, U. N.']);
+  });
+});
+
+// ---------------------------------------------------------------------------
 // 2. Graceful / edge-case tests
 // ---------------------------------------------------------------------------
 
