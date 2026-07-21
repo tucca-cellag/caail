@@ -133,19 +133,19 @@
 {"method":"Foundation Models: Next-Token Prediction","area_key":"cell","ref_id":115,"label":"Shen et al. 2023","ordinal":132}
 {"method":"Foundation Models: Next-Token Prediction","area_key":"cell","ref_id":92,"label":"Pearce et al. 2026","ordinal":133}
 {"method":"Foundation Models: Next-Token Prediction","area_key":"cell","ref_id":120,"label":"Rizvi et al. 2026","ordinal":134}
-{"method":"Foundation Models: Next-Token Prediction","area_key":"cell","ref_id":117,"label":"Cui et al. 2024","ordinal":135}
+{"method":"Foundation Models: Next-Token Prediction","area_key":"tooling","ref_id":117,"label":"Cui et al. 2024","ordinal":135}
 {"method":"Foundation Models: Next-Token Prediction","area_key":"sensory","ref_id":285,"label":"Steuer et al. 2026","ordinal":136}
 {"method":"Foundation Models: Next-Token Prediction","area_key":"tooling","ref_id":88,"label":"Su et al. 2026","ordinal":137}
 {"method":"Foundation Models: Masked Language Modeling","area_key":"cell","ref_id":112,"label":"Yang et al. 2022","ordinal":138}
-{"method":"Foundation Models: Masked Language Modeling","area_key":"cell","ref_id":111,"label":"Theodoris et al. 2023","ordinal":139}
+{"method":"Foundation Models: Masked Language Modeling","area_key":"tooling","ref_id":111,"label":"Theodoris et al. 2023","ordinal":139}
 {"method":"Foundation Models: Masked Language Modeling","area_key":"cell","ref_id":116,"label":"Hao et al. 2024","ordinal":140}
-{"method":"Foundation Models: Masked Language Modeling","area_key":"cell","ref_id":117,"label":"Cui et al. 2024","ordinal":141}
-{"method":"Foundation Models: Masked Language Modeling","area_key":"cell","ref_id":6,"label":"Ji et al. 2021","ordinal":142}
+{"method":"Foundation Models: Masked Language Modeling","area_key":"tooling","ref_id":117,"label":"Cui et al. 2024","ordinal":141}
+{"method":"Foundation Models: Masked Language Modeling","area_key":"tooling","ref_id":6,"label":"Ji et al. 2021","ordinal":142}
 {"method":"Foundation Models: Masked Language Modeling","area_key":"cell","ref_id":235,"label":"Zeng et al. 2025","ordinal":143}
 {"method":"Foundation Models: LM + Biological Priors","area_key":"cell","ref_id":119,"label":"Rosen et al. 2026","ordinal":144}
 {"method":"Foundation Models: Cell-State & Perturbation Prediction","area_key":"cell","ref_id":57,"label":"Adduri et al. 2025","ordinal":145}
 {"method":"Foundation Models: Cell-State & Perturbation Prediction","area_key":"cell","ref_id":124,"label":"Dong et al. 2026","ordinal":146}
-{"method":"Foundation Models: Cell-State & Perturbation Prediction","area_key":"cell","ref_id":117,"label":"Cui et al. 2024","ordinal":147}
+{"method":"Foundation Models: Cell-State & Perturbation Prediction","area_key":"tooling","ref_id":117,"label":"Cui et al. 2024","ordinal":147}
 {"method":"Foundation Models: Cell-State & Perturbation Prediction","area_key":"cell","ref_id":120,"label":"Rizvi et al. 2026","ordinal":148}
 {"method":"Foundation Models (other modalities)","area_key":"sensory","ref_id":267,"label":"He et al. 2025","ordinal":149}
 {"method":"Foundation Models (other modalities)","area_key":"sensory","ref_id":270,"label":"Charoenkwan et al. 2021","ordinal":150}
