@@ -1,9 +1,9 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
-test('topic hub index lists the 7 themes', async ({ page }) => {
+test('topic hub index lists the 8 themes', async ({ page }) => {
   await page.goto('./topics/');
-  await expect(page.locator('[data-theme-card]')).toHaveCount(7);
+  await expect(page.locator('[data-theme-card]')).toHaveCount(8);
 });
 
 test('a theme view shows grouped items and sub-tag nav', async ({ page }) => {
