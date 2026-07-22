@@ -1,5 +1,6 @@
 {
   "catalog": {
+    "http://allerdet.frangam.com": "MIT",
     "http://bigg.ucsd.edu/": "Non-commercial",
     "http://prime.psc.riken.jp/compms/msdial/main.html": "CC-BY-NC-4.0",
     "https://alphafold.ebi.ac.uk/": "CC-BY-4.0",
@@ -44,7 +45,9 @@
     "https://systemsomicslab.github.io/compms/mrmprobs/main.html": "CC-BY-4.0",
     "https://systemsomicslab.github.io/compms/msfinder/main.html": "CC-BY-4.0",
     "https://virtualcellmodels.cziscience.com/model/transcriptformer": "MIT",
+    "https://webs.iiitd.edu.in/raghava/algpred2/": "GPL-3.0",
     "https://www.addgene.org/": "Academic (non-commercial)",
+    "https://www.allergome.org/": "CC-BY-NC-SA-2.5",
     "https://www.brenda-enzymes.org/": "CC-BY-4.0",
     "https://www.ebi.ac.uk/chebi/": "CC-BY-4.0",
     "https://www.ebi.ac.uk/chembl/": "CC-BY-SA-3.0",

@@ -135,7 +135,7 @@ export function checkColumnDrift(db: Db, repoRoot: string = REPO_ROOT): CheckRes
 export function checkTopicTiers(db: Db): CheckResult[] {
   const out: CheckResult[] = [];
   const themes = (db.prepare("SELECT slug FROM topics WHERE tier='theme'").all() as { slug: string }[]).map((r) => r.slug).sort();
-  out.push(ok('topics: exactly the 7 expected themes', JSON.stringify(themes) === JSON.stringify(THEME_SLUGS), `got: ${themes.join(', ')}`));
+  out.push(ok('topics: exactly the 8 expected themes', JSON.stringify(themes) === JSON.stringify(THEME_SLUGS), `got: ${themes.join(', ')}`));
   const badTag = db.prepare(
     "SELECT slug FROM topics WHERE tier='tag' AND (theme_slug IS NULL OR theme_slug NOT IN (SELECT slug FROM topics WHERE tier='theme'))",
   ).all() as { slug: string }[];

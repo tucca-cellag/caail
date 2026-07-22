@@ -125,13 +125,13 @@ describe('generateData()', () => {
     expect(items.length).toBe(result.counts.talks);
   });
 
-  it('writes topics.json with 7 themes (reaching here == topic-join guard passed)', () => {
+  it('writes topics.json with 8 themes (reaching here == topic-join guard passed)', () => {
     // generateData() throws if any catalog/paper topic tag is unresolved, so the
     // `result` above existing means the orphan guard passed.
     const path = join(tmpDir, 'topics.json');
     expect(existsSync(path)).toBe(true);
     const parsed = JSON.parse(readFileSync(path, 'utf-8'));
-    expect(parsed.themes).toHaveLength(7);
+    expect(parsed.themes).toHaveLength(8);
     expect(parsed.tags.length).toBeGreaterThan(0);
   });
 });

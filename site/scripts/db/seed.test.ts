@@ -34,10 +34,10 @@ describe('seedTopics', () => {
     expect(summary.tags).toBeGreaterThan(0);
   });
 
-  it('seeds exactly 7 themes and every fine tag has a valid theme (disjoint slugs)', () => {
+  it('seeds exactly 8 themes and every fine tag has a valid theme (disjoint slugs)', () => {
     const themes = (db.prepare("SELECT slug FROM topics WHERE tier='theme'").all() as {slug:string}[]).map(r=>r.slug).sort();
     expect(themes).toEqual([
-      'ai-methods-tooling','bioprocess-scale-up','cell-lines-engineering',
+      'ai-methods-tooling','bioprocess-scale-up','cell-lines-engineering','food-safety',
       'media-growth-factors','metabolism-modeling','scaffolding-biomaterials','sensory-flavor',
     ]);
     expect(count("SELECT COUNT(*) n FROM topics WHERE tier='tag' AND theme_slug NOT IN (SELECT slug FROM topics WHERE tier='theme')")).toBe(0);

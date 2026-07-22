@@ -766,12 +766,14 @@
 {"id":"sw:xcms","type":"software","slug":"xcms"}
 {"id":"topic:ai-agents","type":"topic","slug":"ai-agents"}
 {"id":"topic:ai-methods-tooling","type":"topic","slug":"ai-methods-tooling"}
+{"id":"topic:allergenicity","type":"topic","slug":"allergenicity"}
 {"id":"topic:benchmarks-evaluation","type":"topic","slug":"benchmarks-evaluation"}
 {"id":"topic:bioprocess-scale-up","type":"topic","slug":"bioprocess-scale-up"}
 {"id":"topic:bioreactor-scale-up","type":"topic","slug":"bioreactor-scale-up"}
 {"id":"topic:cell-line-engineering","type":"topic","slug":"cell-line-engineering"}
 {"id":"topic:cell-lines-engineering","type":"topic","slug":"cell-lines-engineering"}
 {"id":"topic:flavor-sensory","type":"topic","slug":"flavor-sensory"}
+{"id":"topic:food-safety","type":"topic","slug":"food-safety"}
 {"id":"topic:growth-factors","type":"topic","slug":"growth-factors"}
 {"id":"topic:mass-spectrometry","type":"topic","slug":"mass-spectrometry"}
 {"id":"topic:media-growth-factors","type":"topic","slug":"media-growth-factors"}
