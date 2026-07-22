@@ -865,3 +865,5 @@ This section lists review articles, position papers, and commentaries that surve
 <a id="283">283</a> Saraswat, S., Bhargava, T., Landge, J., & Tibrewal, K. (2025). Towards intelligent cultivated/cultured meat factories: The synergy of AI, 3D bioprinting and automation in next-gen food manufacturing. *Bioprinting, 51*, e00441. https://doi.org/10.1016/j.bprint.2025.e00441
 
 <a id="284">284</a> Peng, J., Khuat, T. T., Musial, K., & Gabrys, B. (2025). *Machine Learning Methods for Small Data and Upstream Bioprocessing Applications: A Comprehensive Review.* arXiv. https://doi.org/10.48550/arXiv.2506.12322
+
+<a id="288">288</a> Qin, Y., He, R., Kong, Z., Chen, Y., Kong, Y., Huang, D., Sun, Q., Xiao, Y., & Peng, Y. (2026). Sustainable cultivated meat scaffolds from waste bioresources: pioneering the future of cellular agriculture. *Food Chemistry, 500*, 147506. https://doi.org/10.1016/j.foodchem.2025.147506
