@@ -676,3 +676,33 @@ GitHub org: <https://github.com/biopragmatics>. Core components:
 ### [BridgeDb](https://github.com/bridgedb/BridgeDb)
 
 Summary: A framework plus companion mapping databases that translate identifiers across gene, protein, and metabolite databases through one unified API (a Java library, the R/Bioconductor `BridgeDbR` client, a JavaScript client, a web service, and a Cytoscape app). For cellular agriculture it resolves the identifier-scheme mismatches — Ensembl vs UniProt vs KEGG/HMDB/ChEBI — that otherwise break multi-omics integration and genome-scale metabolic-model curation for the non-model livestock and microbial-host species the field works with (van Iersel et al. 2010, *BMC Bioinformatics*). Apache-2.0.
+
+## Food Safety & Allergenicity
+
+### [AllerCatPro 2.0](https://allercatpro.bii.a-star.edu.sg/)
+
+Summary: Screens a query protein for allergenic potential by combining sequence homology with predicted three-dimensional structure similarity against a reference set of roughly 4,979 known allergens drawn from the COMPARE, AllergenOnline/FARRP, and WHO/IUIS databases. The method is similarity- and rule-based rather than machine-learned. For cellular agriculture it is a practical first-pass in-silico screen for the recombinant growth factors, media proteins, and scaffold or matrix proteins introduced into cultured products before wet-lab IgE testing.
+
+### [AllerTOP v2](https://www.ddg-pharmfac.net/AllerTOP/)
+
+Summary: Alignment-free allergenicity classifier that transforms a protein's amino-acid physicochemical descriptors by auto-cross-covariance and predicts allergen versus non-allergen with k-nearest-neighbours. Because it needs no alignment it can flag potential allergenicity for engineered or non-natural sequences that have no close homolog, which suits the de-novo-designed proteins used in cell-ag media and products.
+
+### [AllergenFP](https://ddg-pharmfac.net/AllergenFP/)
+
+Summary: Encodes each protein as a binary fingerprint of physicochemical properties and scores allergenicity by Tanimoto similarity to known allergens. A companion alignment-free method to AllerTOP, useful as an independent second-opinion screen on candidate cellular-agriculture proteins.
+
+### [AlgPred 2.0](https://webs.iiitd.edu.in/raghava/algpred2/)
+
+Summary: Machine-learning allergenicity predictor that classifies a protein as allergen or non-allergen using a random-forest ensemble over compositional, BLAST, and motif features, and additionally maps IgE-binding epitopes so the specific allergenic regions of an engineered protein can be localized rather than only flagged. The method paper is [Papers.md ref #290](./Papers.md#290) and its labeled training corpus is catalogued in [Datasets/FoodSafety.md](./Datasets/FoodSafety.md).
+
+### [Allermatch](https://www.allermatch.org/)
+
+Summary: Implements the exact FAO/WHO Codex Alimentarius allergenicity criteria, a sliding 80-mer window at or above 35% identity plus an exact 6-mer match, against curated allergen databases. It is the regulatory-standard homology screen that any novel protein entering the food chain, including cultivated-meat media and product proteins, is expected to pass.
+
+### [ALLERDET](http://allerdet.frangam.com)
+
+Summary: Deep-learning allergenicity web application that learns sequence features with a restricted Boltzmann machine and classifies with a decision tree, trained on curated allergen and non-allergen sequences. A recent alternative classifier for screening candidate cell-ag proteins.
+
+### [AllergenAI](https://compbio.uth.edu/AllergenAI/)
+
+Summary: Deep-learning model that quantifies a protein's allergenic potential from sequence alone using a convolutional network, trained on allergen sets from SDAP 2.0, COMPARE, and AlgPred 2.0. Unlike homology- or physicochemical-feature tools it learns sequence features directly, and has been applied to flag candidate novel allergens in the plant cupin and vicilin protein families relevant to alternative-protein feedstocks.

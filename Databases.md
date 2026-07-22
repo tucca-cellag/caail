@@ -637,3 +637,29 @@ The live leaderboard hosted at `proteingym.org` for the ProteinGym variant-effec
 ### [SWE-bench Leaderboard](https://www.swebench.com/)
 
 The official leaderboard at `swebench.com` tracking agent and model performance across the SWE-bench leaderboards — the Full set plus the Verified, Lite, Multilingual, and Multimodal variants — by the percentage of real GitHub issues resolved with a test-passing patch. The companion benchmark *data* is catalogued at [`Datasets/Benchmarks.md / SWE-bench`](./Datasets/Benchmarks.md#swe-bench); paired with [Papers.md ref #155](./Papers.md#155) (Jimenez et al. 2024). The standard tracker for whether a coding agent can be trusted with the bioinformatics-pipeline and analysis-code maintenance cell-ag teams increasingly delegate.
+
+## Food Safety & Allergen Databases
+
+### [WHO/IUIS Allergen Nomenclature Database](http://www.allergen.org/)
+
+The official registry of the WHO/IUIS Allergen Nomenclature Sub-Committee, the recognized authority for naming IgE-mediated allergens; inclusion requires demonstrated IgE binding, so it is a high-confidence reference set. It is the canonical list that an allergenicity assessment cross-checks candidate homologs against when evaluating recombinant growth factors, media proteins, or other novel proteins introduced into cultured products.
+
+### [AllergenOnline (FARRP)](http://www.allergenonline.org/)
+
+Peer-reviewed, sequence-searchable allergen database maintained by the Food Allergy Research and Resource Program at the University of Nebraska and updated annually. It is the standard reference set for the Codex sequence-homology search and backs the Allermatch and AllerCatPro screening pipelines, making it a primary resource for assessing the allergenic risk of cell-ag novel proteins.
+
+### [COMPARE Database](http://www.comparedatabase.org)
+
+The Comprehensive Protein Allergen Resource, a HESI-curated, blind-peer-reviewed database of over 2,000 allergen sequences built expressly for novel-protein safety evaluation, with a companion COMPASS tool that runs the bioinformatic comparison. It is directly aimed at the kind of safety assessment required for proteins introduced by cultivated-meat and precision-fermentation processes.
+
+### [SDAP 2.0 (Structural Database of Allergenic Proteins)](https://fermi.utmb.edu/SDAP/)
+
+Structural Database of Allergenic Proteins holding 1,657 allergen sequences with 334 experimental structures and 1,565 AlphaFold2 models, together with cross-reactivity and IgE-epitope analysis tools. Its structural coverage pairs naturally with CAAIL's protein-structure prediction tooling for structure-aware allergenicity assessment of engineered cell-ag proteins.
+
+### [Allergome](https://www.allergome.org/)
+
+The largest aggregated catalog of allergenic molecules and their sources, integrating clinical and IgE-reactivity data across thousands of allergens. It serves as a broad reference substrate for cross-referencing candidate allergens beyond the regulatory core sets.
+
+### [AllFam (Database of Allergen Families)](https://www.meduniwien.ac.at/allfam/)
+
+Classifies known allergens into Pfam-based protein families, so a candidate protein can be checked for membership in a known allergenic structural family rather than only for per-sequence homology. This family-level view is a complementary axis for screening engineered cell-ag proteins whose sequences may diverge from any single known allergen.
