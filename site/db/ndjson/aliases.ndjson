@@ -13,6 +13,8 @@
 {"alias":"ECM & Matrisome","topic_id":"topic:ai-methods-tooling"}
 {"alias":"Ecosystem & Industry Directories","topic_id":"topic:cell-lines-engineering"}
 {"alias":"Flavor & Taste Compound Databases","topic_id":"topic:sensory-flavor"}
+{"alias":"Food Safety & Allergen Databases","topic_id":"topic:food-safety"}
+{"alias":"Food Safety & Allergenicity","topic_id":"topic:food-safety"}
 {"alias":"Glycomics & Glycoprotein Databases","topic_id":"topic:ai-methods-tooling"}
 {"alias":"Imaging & Segmentation","topic_id":"topic:ai-methods-tooling"}
 {"alias":"Lipidomics Databases","topic_id":"topic:ai-methods-tooling"}

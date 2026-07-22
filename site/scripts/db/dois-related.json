@@ -4,6 +4,13 @@
       "10.1093/nar/gkz1054",
       "10.1186/1471-2105-11-213"
     ],
+    "http://www.allergen.org/": [
+      "10.1016/j.molimm.2018.03.003",
+      "10.1111/all.12348"
+    ],
+    "https://allercatpro.bii.a-star.edu.sg/": [
+      "10.1093/bioinformatics/btz029"
+    ],
     "https://alphafold.ebi.ac.uk/": [
       "10.1016/j.jmb.2025.168967",
       "10.1093/nar/gkad1011",
@@ -32,6 +39,9 @@
     ],
     "https://cosylab.iiitd.edu.in/flavordb/": [
       "10.1111/1750-3841.17298"
+    ],
+    "https://fermi.utmb.edu/SDAP/": [
+      "10.1093/nar/gkg010"
     ],
     "https://genomics.senescence.info/": [
       "10.1093/nar/gkad927",
@@ -126,6 +136,9 @@
       "10.1093/nar/gkw937",
       "10.1093/nar/gky1131"
     ],
+    "https://webs.iiitd.edu.in/raghava/algpred2/": [
+      "10.1093/nar/gkl343"
+    ],
     "https://www.animalgenome.org/cgi-bin/QTLdb/index": [
       "10.1007/s00335-006-0105-8",
       "10.1093/nar/gkl946",
@@ -149,6 +162,9 @@
       "10.1093/nar/gku1068",
       "10.1093/nar/gkw952",
       "10.1093/nar/gky1048"
+    ],
+    "https://www.ddg-pharmfac.net/AllerTOP/": [
+      "10.1186/1471-2105-14-s6-s4"
     ],
     "https://www.ebi.ac.uk/biomodels/": [
       "10.1093/nar/gkj092",

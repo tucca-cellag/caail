@@ -164,6 +164,7 @@ const THEMES: Theme[] = [
   { slug: 'scaffolding-biomaterials', label: 'Scaffolding & Biomaterials', area: 'Scaffolding', kw: /scaffold|biomaterial|bioprint|3d[- ]?print|hydrogel|texture/i },
   { slug: 'sensory-flavor', label: 'Sensory & Flavor', area: 'Sensory Prediction', kw: /sensor|flavou?r|taste|aroma|mass[- ]?spec|chemometr|spectr|metabolomic/i },
   { slug: 'metabolism-modeling', label: 'Metabolism & Modeling', kw: /metabol|flux|genome[- ]?scale|pathway|\bgem\b|sbml|strain/i },
+  { slug: 'food-safety', label: 'Food Safety', kw: /allergen|allergenic|immunogenic|food safety/i },
   { slug: 'ai-methods-tooling', label: 'AI Methods & Tooling', area: 'AI Tooling / Methodology', kw: /agent|foundation[- ]?model|\bllm\b|benchmark|framework|ontolog|database|repositor|\btool/i },
 ];
 
@@ -181,6 +182,7 @@ const FINE_TAGS: FineTag[] = [
   { slug: 'metabolic-modeling', label: 'Metabolic modeling', theme: 'metabolism-modeling', kw: /metabol|flux|genome[- ]?scale|\bgem\b|sbml|strain[- ]?design/i, sections: /Metabolic Reference Work/ },
   { slug: 'ai-agents', label: 'AI agents & foundation models', theme: 'ai-methods-tooling', kw: /agent|foundation[- ]?model|\bllm\b/i },
   { slug: 'benchmarks-evaluation', label: 'Benchmarks & evaluation', theme: 'ai-methods-tooling', kw: /benchmark|evaluation/i },
+  { slug: 'allergenicity', label: 'Allergenicity', theme: 'food-safety', kw: /allergen|allergenic|\bige\b|epitope/i },
 ];
 
 export const THEME_SLUGS = THEMES.map((t) => t.slug).sort();

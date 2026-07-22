@@ -39,8 +39,8 @@ describe('catalogNameKey (parser mdastToString ↔ NDJSON inlineMd name normaliz
 describe('buildTopicsModel', () => {
   const m = buildTopicsModel();
 
-  it('builds 7 themes with counts and child tags', () => {
-    expect(m.themes).toHaveLength(7);
+  it('builds 8 themes with counts and child tags', () => {
+    expect(m.themes).toHaveLength(8);
     const meta = m.themes.find((t) => t.slug === 'metabolism-modeling')!;
     expect(meta.counts.total).toBeGreaterThan(0);
     expect(meta.tags.length).toBeGreaterThan(0);

@@ -247,6 +247,12 @@ and the mass-spectrometry / chemometrics / metabolomics infrastructure used to m
 Metabolic knowledge and models: genome-scale metabolic models (GEMs), flux analysis, pathway and
 strain design, and metabolic-network resources. A cross-cutting subject with no single matrix column.
 
+### Food Safety
+The safety assessment of the proteins a cultured product introduces: allergenicity and immunogenicity
+prediction, IgE-epitope mapping, and the allergen reference databases that screening pipelines compare
+against. A cross-cutting subject with no single matrix column; the *allergenicity* fine tag groups the
+in-silico screening tools, allergen databases, and their methods papers.
+
 ### AI Methods & Tooling
 General-purpose AI capability and infrastructure applied across cell-ag: agents and foundation
 models, benchmarks and evaluation, frameworks, ontologies, and lookup databases/tooling. Links to
