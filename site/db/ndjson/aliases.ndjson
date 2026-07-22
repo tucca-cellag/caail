@@ -17,6 +17,7 @@
 {"alias":"Food Safety & Allergenicity","topic_id":"topic:food-safety"}
 {"alias":"Glycomics & Glycoprotein Databases","topic_id":"topic:ai-methods-tooling"}
 {"alias":"Imaging & Segmentation","topic_id":"topic:ai-methods-tooling"}
+{"alias":"Life-Cycle Inventory & Sustainability Databases","topic_id":"topic:bioprocess-scale-up"}
 {"alias":"Lipidomics Databases","topic_id":"topic:ai-methods-tooling"}
 {"alias":"Literature & Bibliographic Databases","topic_id":"topic:ai-methods-tooling"}
 {"alias":"Livestock Multi-Tissue Atlases & Functional Genomics","topic_id":"topic:cell-lines-engineering"}
@@ -34,4 +35,5 @@
 {"alias":"Seafood Species Reference Databases","topic_id":"topic:ai-methods-tooling"}
 {"alias":"Sequence, Genome & Expression Repositories","topic_id":"topic:ai-methods-tooling"}
 {"alias":"Stemness Signatures","topic_id":"topic:cell-lines-engineering"}
+{"alias":"Techno-Economic & Life-Cycle Assessment","topic_id":"topic:bioprocess-scale-up"}
 {"alias":"Workflow-Manager Pipelines","topic_id":"topic:ai-methods-tooling"}

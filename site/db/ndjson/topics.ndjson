@@ -19,3 +19,4 @@
 {"item_id":"topic:sensory-flavor","slug":"sensory-flavor","label":"Sensory & Flavor","tier":"theme","theme_slug":null,"area_key":"sensory"}
 {"item_id":"topic:serum-free-media","slug":"serum-free-media","label":"Serum-free media","tier":"tag","theme_slug":"media-growth-factors","area_key":null}
 {"item_id":"topic:single-cell-atlases","slug":"single-cell-atlases","label":"Single-cell atlases","tier":"tag","theme_slug":"cell-lines-engineering","area_key":null}
+{"item_id":"topic:techno-economic-lca","slug":"techno-economic-lca","label":"Techno-Economic & LCA","tier":"tag","theme_slug":"bioprocess-scale-up","area_key":null}

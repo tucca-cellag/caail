@@ -13,7 +13,7 @@ import { licenseTier, LICENSE_TIERS, TIER_META } from './licenses';
 
 describe('licenseTier', () => {
   it('bins permissive families', () => {
-    for (const l of ['MIT', 'Apache-2.0', 'BSD-3-Clause', 'BSD-2-Clause', 'ISC', 'CC0-1.0', 'The Unlicense', 'MIT-0', 'Artistic-2.0']) {
+    for (const l of ['MIT', 'Apache-2.0', 'BSD-3-Clause', 'BSD-2-Clause', 'ISC', 'CC0-1.0', 'The Unlicense', 'MIT-0', 'Artistic-2.0', 'NCSA']) {
       expect(licenseTier(l)).toBe('permissive');
     }
   });

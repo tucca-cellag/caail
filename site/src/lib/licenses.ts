@@ -85,7 +85,7 @@ export function licenseTier(license: string | null | undefined): LicenseTier {
   // Permissive: MIT/Apache/BSD family, ISC, CC0/public-domain, CC-BY (no NC/SA/ND),
   // plus common lax OSI licenses (Artistic-2.0, MS-PL).
   if (
-    /\bMIT\b|MIT-0|APACHE|BSD|ISC|CC0|UNLICENSE|WTFPL|ZLIB|0BSD|BOOST|\bBSL\b|POSTGRESQL|PYTHON|ARTISTIC|MS-PL|CC-BY/.test(
+    /\bMIT\b|MIT-0|APACHE|BSD|ISC|CC0|UNLICENSE|WTFPL|ZLIB|0BSD|BOOST|\bBSL\b|POSTGRESQL|PYTHON|ARTISTIC|MS-PL|NCSA|CC-BY/.test(
       s,
     )
   )

@@ -229,6 +229,14 @@ const PAGES: Record<string, PageMeta> = {
     description:
       'Food-safety datasets for cellular agriculture — labeled allergen sequence and IgE-epitope corpora for training and benchmarking allergenicity predictors.',
   },
+  'datasets/sustainability': {
+    title: 'Sustainability & Techno-Economics',
+    sidebarLabel: 'Sustainability',
+    group: 'datasets',
+    order: 17,
+    description:
+      'Sustainability datasets for cellular agriculture — downloadable cultivated-meat life-cycle inventories behind the field’s techno-economic and environmental models.',
+  },
 
   // ── Top-level prose pages ──────────────────────────────────────────────────
   contributing: {

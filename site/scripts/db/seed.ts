@@ -183,6 +183,7 @@ const FINE_TAGS: FineTag[] = [
   { slug: 'ai-agents', label: 'AI agents & foundation models', theme: 'ai-methods-tooling', kw: /agent|foundation[- ]?model|\bllm\b/i },
   { slug: 'benchmarks-evaluation', label: 'Benchmarks & evaluation', theme: 'ai-methods-tooling', kw: /benchmark|evaluation/i },
   { slug: 'allergenicity', label: 'Allergenicity', theme: 'food-safety', kw: /allergen|allergenic|\bige\b|epitope/i },
+  { slug: 'techno-economic-lca', label: 'Techno-Economic & LCA', theme: 'bioprocess-scale-up', kw: /techno[- ]?economic|life[- ]?cycle|\blca\b/i },
 ];
 
 export const THEME_SLUGS = THEMES.map((t) => t.slug).sort();

@@ -162,12 +162,23 @@ async function pickEdgeMidpoint(page: import('@playwright/test').Page) {
   return page.evaluate(() => {
     const canvas = document.querySelector('.ng-canvas') as HTMLElement;
     const cy = (canvas as any).__cy;
-    const { width, height } = canvas.getBoundingClientRect();
+    const canvasRect = canvas.getBoundingClientRect();
+    const { width, height } = canvasRect;
+    // When a node panel is open it overlays the canvas; a midpoint under it can't receive
+    // the click (the panel intercepts it), so skip that region. Panel rect in canvas-local
+    // coords; null when no panel is open (other callers).
+    const pr = (() => {
+      const panel = document.querySelector('.ng-panel');
+      if (!panel) return null;
+      const r = panel.getBoundingClientRect();
+      return { x0: r.left - canvasRect.left, y0: r.top - canvasRect.top, x1: r.right - canvasRect.left, y1: r.bottom - canvasRect.top };
+    })();
     const nodes = cy.nodes().map((n: any) => ({ p: n.renderedPosition(), r: n.renderedWidth() / 2 + 4 }));
     for (const e of cy.edges()) {
       const m = e.renderedMidpoint();
       if (!m || m.x < 5 || m.y < 5 || m.x > width - 5 || m.y > height - 5) continue;
       if (nodes.some((n: any) => Math.hypot(n.p.x - m.x, n.p.y - m.y) <= n.r)) continue;
+      if (pr && m.x >= pr.x0 && m.x <= pr.x1 && m.y >= pr.y0 && m.y <= pr.y1) continue;
       return { x: m.x as number, y: m.y as number };
     }
     throw new Error('pickEdgeMidpoint: no edge midpoint clear of nodes');

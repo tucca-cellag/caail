@@ -706,3 +706,39 @@ Summary: Deep-learning allergenicity web application that learns sequence featur
 ### [AllergenAI](https://compbio.uth.edu/AllergenAI/)
 
 Summary: Deep-learning model that quantifies a protein's allergenic potential from sequence alone using a convolutional network, trained on allergen sets from SDAP 2.0, COMPARE, and AlgPred 2.0. Unlike homology- or physicochemical-feature tools it learns sequence features directly, and has been applied to flag candidate novel allergens in the plant cupin and vicilin protein families relevant to alternative-protein feedstocks.
+
+## Techno-Economic & Life-Cycle Assessment
+
+Techno-economic analysis (TEA) and life-cycle assessment (LCA) turn a bioprocess design into cost-per-kilogram and environmental-footprint estimates, the numbers that decide whether cultivated meat can compete at scale. These tools sit downstream of the physical-bioreactor simulators in Bioprocess Modeling & Scaling: they take a flowsheet and return economics and emissions rather than hydrodynamics. The open-source engines below are what the published cultivated-meat cost and LCA models are built on, and the background inventory databases they draw on are catalogued in [Databases.md / Life-Cycle Inventory & Sustainability Databases](./Databases.md#life-cycle-inventory--sustainability-databases).
+
+### [BioSTEAM](https://github.com/BioSTEAMDevelopmentGroup/biosteam)
+
+Summary: Python platform for the design, simulation, techno-economic analysis, and life-cycle assessment of biorefinery and fermentation processes under uncertainty, with economics validated against SuperPro and Aspen. It is the open-source engine most cultivated-meat cost models build on for fermentation-bioproduct economics.
+
+### [QSDsan](https://github.com/QSD-Group/QSDsan)
+
+Summary: Open-source Python platform built on BioSTEAM that integrates process modeling, simulation, techno-economic analysis, and life-cycle assessment in one toolkit. It is the tightest single-package TEA-plus-LCA combination for evaluating bioprocess cost and sustainability trade-offs.
+
+### [Brightway](https://github.com/brightway-lca)
+
+Summary: The leading Python-native open-source LCA framework, spanning life-cycle data, Monte Carlo uncertainty, input-output analysis, and the Activity Browser GUI. It is the scriptable, reproducible environmental-footprint engine used for cradle-to-gate cultivated-meat LCA (documentation at https://docs.brightway.dev/).
+
+### [openLCA](https://github.com/GreenDelta/olca-app)
+
+Summary: The most widely used free and open professional LCA desktop application, from GreenDelta, with a large database ecosystem (Nexus) and a Python IPC API. It is the GUI complement to Brightway and is heavily used in food and agricultural LCA, including cultivated-meat studies (home at https://www.openlca.org/).
+
+### [DWSIM](https://github.com/DanWBR/dwsim)
+
+Summary: Open-source steady-state and dynamic chemical-process simulator with thermodynamic rigor approaching commercial tools. It provides the free flowsheet layer that feeds techno-economic analysis, an open counterpart to Aspen and SuperPro for modeling cultivated-meat bioprocess unit operations (home at https://dwsim.org/).
+
+### [SuperPro Designer](https://www.intelligen.com/products/superpro-overview/)
+
+Summary: Commercial bioprocess flowsheet and techno-economic analysis tool, and the one actually used in the cultivated-meat TEA literature (the Humbird and Negulescu et al. cost models; BioSTEAM benchmarks against it). It is the de facto standard for cultivated-meat cost-of-goods modeling.
+
+### [SimaPro](https://simapro.com/)
+
+Summary: Leading commercial LCA software, from PRé Sustainability, used in cultivated-meat and alternative-protein cradle-to-gate studies. It is the commercial counterpart to openLCA and Brightway for environmental-footprint accounting.
+
+### [GREET](https://greet.anl.gov/)
+
+Summary: Argonne National Laboratory's free, annually updated life-cycle model for greenhouse-gas, energy, and water flows, bundling background life-cycle inventory data. Because energy inputs dominate cultivated-meat LCA results, GREET is the US reference for the electricity and bioenergy flows those assessments depend on.
