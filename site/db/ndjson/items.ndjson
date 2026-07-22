@@ -1,5 +1,8 @@
 {"id":"db:addgene","type":"database","slug":"addgene"}
 {"id":"db:agris-fao","type":"database","slug":"agris-fao"}
+{"id":"db:allergenonline-farrp","type":"database","slug":"allergenonline-farrp"}
+{"id":"db:allergome","type":"database","slug":"allergome"}
+{"id":"db:allfam-database-of-allergen-families","type":"database","slug":"allfam-database-of-allergen-families"}
 {"id":"db:alphafold-database","type":"database","slug":"alphafold-database"}
 {"id":"db:animal-qtldb","type":"database","slug":"animal-qtldb"}
 {"id":"db:aqua-faang","type":"database","slug":"aqua-faang"}
@@ -25,6 +28,7 @@
 {"id":"db:chickengtex-portal","type":"database","slug":"chickengtex-portal"}
 {"id":"db:coconut-collection-of-open-natural-products","type":"database","slug":"coconut-collection-of-open-natural-products"}
 {"id":"db:cocoputs-codon-and-codon-pair-usage-tables","type":"database","slug":"cocoputs-codon-and-codon-pair-usage-tables"}
+{"id":"db:compare-database","type":"database","slug":"compare-database"}
 {"id":"db:compbiobench-v1-leaderboard","type":"database","slug":"compbiobench-v1-leaderboard"}
 {"id":"db:csgene","type":"database","slug":"csgene"}
 {"id":"db:cz-cellxgene","type":"database","slug":"cz-cellxgene"}
@@ -109,6 +113,7 @@
 {"id":"db:sabio-rk","type":"database","slug":"sabio-rk"}
 {"id":"db:sasp-atlas","type":"database","slug":"sasp-atlas"}
 {"id":"db:scbasecount","type":"database","slug":"scbasecount"}
+{"id":"db:sdap-20-structural-database-of-allergenic-proteins","type":"database","slug":"sdap-20-structural-database-of-allergenic-proteins"}
 {"id":"db:sdbs-spectral-database-for-organic-compounds","type":"database","slug":"sdbs-spectral-database-for-organic-compounds"}
 {"id":"db:senmayo","type":"database","slug":"senmayo"}
 {"id":"db:sheepgtex-portal","type":"database","slug":"sheepgtex-portal"}
@@ -129,11 +134,13 @@
 {"id":"db:usda-national-agricultural-library-search","type":"database","slug":"usda-national-agricultural-library-search"}
 {"id":"db:vcf-volatile-compounds-in-food","type":"database","slug":"vcf-volatile-compounds-in-food"}
 {"id":"db:virtual-metabolic-human-vmh","type":"database","slug":"virtual-metabolic-human-vmh"}
+{"id":"db:whoiuis-allergen-nomenclature-database","type":"database","slug":"whoiuis-allergen-nomenclature-database"}
 {"id":"db:wikipathways","type":"database","slug":"wikipathways"}
 {"id":"db:wikipedia-list-of-biological-databases","type":"database","slug":"wikipedia-list-of-biological-databases"}
 {"id":"db:wikipedia-list-of-chemical-databases","type":"database","slug":"wikipedia-list-of-chemical-databases"}
 {"id":"ds:a-hydrophilic-interaction","type":"dataset","slug":"a-hydrophilic-interaction"}
 {"id":"ds:actin-genes-and","type":"dataset","slug":"actin-genes-and"}
+{"id":"ds:algpred-2-0-allergen-dataset","type":"dataset","slug":"algpred-2-0-allergen-dataset"}
 {"id":"ds:application-of-proteomics","type":"dataset","slug":"application-of-proteomics"}
 {"id":"ds:aqua-faang","type":"dataset","slug":"aqua-faang"}
 {"id":"ds:arc-virtual-cell-atlas","type":"dataset","slug":"arc-virtual-cell-atlas"}
@@ -544,7 +551,11 @@
 {"id":"paper:286","type":"paper","slug":"286"}
 {"id":"paper:287","type":"paper","slug":"287"}
 {"id":"paper:288","type":"paper","slug":"288"}
+{"id":"paper:289","type":"paper","slug":"289"}
 {"id":"paper:29","type":"paper","slug":"29"}
+{"id":"paper:290","type":"paper","slug":"290"}
+{"id":"paper:291","type":"paper","slug":"291"}
+{"id":"paper:292","type":"paper","slug":"292"}
 {"id":"paper:3","type":"paper","slug":"3"}
 {"id":"paper:30","type":"paper","slug":"30"}
 {"id":"paper:31","type":"paper","slug":"31"}
@@ -627,6 +638,13 @@
 {"id":"sw:ai-research-skills-library","type":"software","slug":"ai-research-skills-library"}
 {"id":"sw:ai-scientist","type":"software","slug":"ai-scientist"}
 {"id":"sw:aiagents4pharma","type":"software","slug":"aiagents4pharma"}
+{"id":"sw:algpred-20","type":"software","slug":"algpred-20"}
+{"id":"sw:allercatpro-20","type":"software","slug":"allercatpro-20"}
+{"id":"sw:allerdet","type":"software","slug":"allerdet"}
+{"id":"sw:allergenai","type":"software","slug":"allergenai"}
+{"id":"sw:allergenfp","type":"software","slug":"allergenfp"}
+{"id":"sw:allermatch","type":"software","slug":"allermatch"}
+{"id":"sw:allertop-v2","type":"software","slug":"allertop-v2"}
 {"id":"sw:alphafold","type":"software","slug":"alphafold"}
 {"id":"sw:amii-cell-ag-tools","type":"software","slug":"amii-cell-ag-tools"}
 {"id":"sw:asari","type":"software","slug":"asari"}

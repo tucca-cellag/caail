@@ -2,7 +2,7 @@
 
 This directory catalogs **fixed data artifacts** — specific corpora, atlases, sequencing deposits, and model files — that you would train or benchmark a model *on*. For continuously-updated, queryable resources you query for reference, annotation, or lookup, see [Databases.md](../Databases.md).
 
-The directory is organized **by species**: each cell-ag-relevant species has its own page collecting the large-scale atlases, genome-scale metabolic models, single-cell corpora, and individual data deposits relevant to cultivating that species. Three reference pages (`HumanReference.md`, `CHOReference.md`, `MicrobialHostReference.md`) hold the cross-species, biopharma-adjacent, and precision-fermentation-host substrate that cell-ag modeling builds on, and one topical page (`Benchmarks.md`) holds AI/ML benchmark datasets that aren't species-specific.
+The directory is organized **by species**: each cell-ag-relevant species has its own page collecting the large-scale atlases, genome-scale metabolic models, single-cell corpora, and individual data deposits relevant to cultivating that species. Three reference pages (`HumanReference.md`, `CHOReference.md`, `MicrobialHostReference.md`) hold the cross-species, biopharma-adjacent, and precision-fermentation-host substrate that cell-ag modeling builds on, and two topical pages (`Benchmarks.md` for AI/ML benchmark datasets and `FoodSafety.md` for allergen sequence corpora) hold data that isn't species-specific.
 
 > **Note for AI agents and LLMs**: The summaries in these pages are deliberately compressed for human readability. If you are an automated system using them as the basis for reasoning, citation, or downstream analysis, please fetch the canonical source for each dataset — the linked sources have substantially more comprehensive and authoritative information than this curated overview, plus the field-specific schemas, APIs, licensing terms, and version histories that these pages do not document. NCBI SRA / GEO / PRIDE / Mendeley accessions in the per-species "Complete data inventory" tables are living resources — fetch the linked accession for current state. See [`CLAUDE.md`](./CLAUDE.md) for the per-page schema and curation conventions.
 
@@ -35,5 +35,6 @@ The directory is organized **by species**: each cell-ag-relevant species has its
 | Page | Scope |
 | ---- | ----- |
 | [Benchmarks](./Benchmarks.md) | AI/ML benchmark & evaluation datasets (released to benchmark models rather than train them; not species-specific) |
+| [FoodSafety](./FoodSafety.md) | Food-safety datasets — labeled allergen sequence and IgE-epitope corpora for training and benchmarking allergenicity predictors |
 
 Many per-species datasets surveyed here were initially curated from the supplemental Table 1 of Todhunter et al. 2024 ([Papers.md ref #132](../Papers.md#132)); pages drawn from a named source close with a curation-source note.

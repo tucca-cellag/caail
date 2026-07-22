@@ -231,3 +231,5 @@
 {"method":"Agent Infrastructure (Frameworks, KGs, Protocols)","area_key":"tooling","ref_id":219,"label":"Matsumoto et al. 2025","ordinal":230}
 {"method":"Agent Infrastructure (Frameworks, KGs, Protocols)","area_key":"tooling","ref_id":220,"label":"Glen et al. 2025","ordinal":231}
 {"method":"Chemometrics","area_key":"media","ref_id":287,"label":"Wang et al. 2026b","ordinal":232}
+{"method":"Deep Learning","area_key":"tooling","ref_id":289,"label":"Sarlakifar et al. 2025","ordinal":233}
+{"method":"Ensemble Learning","area_key":"tooling","ref_id":290,"label":"Sharma et al. 2021","ordinal":234}

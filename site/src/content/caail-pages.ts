@@ -221,6 +221,14 @@ const PAGES: Record<string, PageMeta> = {
     description:
       'AI/ML benchmark and evaluation datasets relevant to cellular agriculture — bundled eval suites for bioinformatics and protein models.',
   },
+  'datasets/foodsafety': {
+    title: 'Food Safety & Allergenicity',
+    sidebarLabel: 'Food Safety',
+    group: 'datasets',
+    order: 16,
+    description:
+      'Food-safety datasets for cellular agriculture — labeled allergen sequence and IgE-epitope corpora for training and benchmarking allergenicity predictors.',
+  },
 
   // ── Top-level prose pages ──────────────────────────────────────────────────
   contributing: {
