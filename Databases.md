@@ -663,3 +663,35 @@ The largest aggregated catalog of allergenic molecules and their sources, integr
 ### [AllFam (Database of Allergen Families)](https://www.meduniwien.ac.at/allfam/)
 
 Classifies known allergens into Pfam-based protein families, so a candidate protein can be checked for membership in a known allergenic structural family rather than only for per-sequence homology. This family-level view is a complementary axis for screening engineered cell-ag proteins whose sequences may diverge from any single known allergen.
+
+## Life-Cycle Inventory & Sustainability Databases
+
+Life-cycle inventory (LCI) databases hold the background material and energy flows that every cultivated-meat LCA is built on: producing a growth-medium component, generating a kilowatt-hour, or growing a feedstock crop each carries an inventory of upstream impacts that these databases supply. The published cultivated-meat LCAs (Sinke et al. 2023, Risner et al.) draw their media-component and energy flows from the databases below. The tools that consume them are in [Software.md / Techno-Economic & Life-Cycle Assessment](./Software.md#techno-economic--life-cycle-assessment).
+
+### [ecoinvent](https://ecoinvent.org/)
+
+The background life-cycle inventory database underpinning the canonical cultivated-meat LCAs (Sinke et al. 2023 used ecoinvent 3.7.1; Risner et al. used v3.8) for media-component and energy flows. The current release carries more than 26,000 datasets; access is commercial, with educational and LMIC licensing programs.
+
+### [AGRIBALYSE](https://doc.agribalyse.fr/documentation-en)
+
+ADEME and INRAE's open agri-food life-cycle inventory, with more than 2,500 products across 14 indicators. It supplies the conventional-meat and crop baselines that cultivated-meat LCAs and media-feedstock analyses compare against.
+
+### [USDA Federal LCA Commons](https://www.lcacommons.gov/)
+
+US agricultural life-cycle inventory of roughly 19,000 unit-process datasets in the openLCA schema. It provides the conventional-protein baselines and the feedstock and media-ingredient inventories for US-context cultivated-meat modeling.
+
+### [World Food LCA Database (WFLDB)](https://quantis.com/services-solutions/consortium-building-and-management/wfldb/)
+
+Quantis's agri-food life-cycle inventory, with carbon, water, and land emission factors. It supplies food-product footprint baselines for benchmarking cultivated versus conventional meat and for sourcing media ingredients; access is commercial.
+
+### [EU Environmental Footprint (EPLCA / JRC)](https://eplca.jrc.ec.europa.eu/EnvironmentalFootprint.html)
+
+The EU's standardized life-cycle impact-assessment methods plus reference inventory (EF 3.1, in ILCD format) for food environmental labelling and the Product Environmental Footprint. It is the methodological substrate for any EU-market cultivated-meat environmental claim, downloadable as ILCD packages.
+
+### [ESU-services LCA data](https://esu-services.ch/data/)
+
+Swiss life-cycle inventory provider with a dedicated World Food Database, usable as an independent cross-check on agri-food and media-feedstock impacts. It is a smaller commercial provider than ecoinvent, with a weaker direct cultivated-meat tie.
+
+### [Agri-Footprint](https://blonksustainability.nl/tools-and-databases/agri-footprint)
+
+Blonk's agri-food life-cycle inventory database, used (v5.0) alongside ecoinvent in Sinke et al. 2023, giving it a direct tie to the canonical cultivated-meat LCA. Access is commercial.

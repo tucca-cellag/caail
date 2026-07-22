@@ -40,18 +40,18 @@ describe('generateData()', () => {
 
   it('papersRefs === 244', () => {
     // 244 = current Papers.md reference count; bump when refs are added.
-    expect(result.papersRefs).toBe(288);
+    expect(result.papersRefs).toBe(303);
   });
 
   it('counts.papers === 244', () => {
     // 244 = current Papers.md reference count; bump when refs are added.
-    expect(result.counts.papers).toBe(288);
+    expect(result.counts.papers).toBe(303);
   });
 
   it('counts.datasets === 202 (every catalogued dataset)', () => {
     // 202 = current catalogued-dataset total across Datasets/; bump when
     // inventory tables / reference / benchmark entries change.
-    expect(result.counts.datasets).toBe(203);
+    expect(result.counts.datasets).toBe(205);
   });
 
   it('writes papers.json to the output directory', () => {
@@ -80,14 +80,14 @@ describe('generateData()', () => {
     const raw = readFileSync(join(tmpDir, 'papers.json'), 'utf-8');
     const parsed = JSON.parse(raw);
     // 244 = current Papers.md reference count; bump when refs are added.
-    expect(parsed.references.length).toBe(288);
+    expect(parsed.references.length).toBe(303);
   });
 
   it('parsed counts.json has papers === 244', () => {
     const raw = readFileSync(join(tmpDir, 'counts.json'), 'utf-8');
     const parsed = JSON.parse(raw);
     // 244 = current Papers.md reference count; bump when refs are added.
-    expect(parsed.papers).toBe(288);
+    expect(parsed.papers).toBe(303);
   });
 
   it('papers.json is pretty-printed (contains newlines)', () => {

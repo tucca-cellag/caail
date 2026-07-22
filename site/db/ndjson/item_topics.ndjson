@@ -1,5 +1,7 @@
 {"item_id":"db:addgene","topic_id":"topic:ai-agents"}
 {"item_id":"db:addgene","topic_id":"topic:ai-methods-tooling"}
+{"item_id":"db:agri-footprint","topic_id":"topic:techno-economic-lca"}
+{"item_id":"db:agribalyse","topic_id":"topic:techno-economic-lca"}
 {"item_id":"db:agris-fao","topic_id":"topic:ai-methods-tooling"}
 {"item_id":"db:allergenonline-farrp","topic_id":"topic:allergenicity"}
 {"item_id":"db:allergome","topic_id":"topic:allergenicity"}
@@ -54,10 +56,13 @@
 {"item_id":"db:cz-cellxgene","topic_id":"topic:cell-lines-engineering"}
 {"item_id":"db:cz-cellxgene","topic_id":"topic:single-cell-atlases"}
 {"item_id":"db:drugbank","topic_id":"topic:ai-methods-tooling"}
+{"item_id":"db:ecoinvent","topic_id":"topic:techno-economic-lca"}
 {"item_id":"db:efsa-openfoodtox","topic_id":"topic:ai-methods-tooling"}
 {"item_id":"db:embl-ebi-expression-atlas","topic_id":"topic:ai-methods-tooling"}
 {"item_id":"db:embl-ebi-expression-atlas","topic_id":"topic:single-cell-atlases"}
 {"item_id":"db:ensembl","topic_id":"topic:ai-methods-tooling"}
+{"item_id":"db:esu-services-lca-data","topic_id":"topic:techno-economic-lca"}
+{"item_id":"db:eu-environmental-footprint-eplca-jrc","topic_id":"topic:techno-economic-lca"}
 {"item_id":"db:eu-novel-food","topic_id":"topic:ai-methods-tooling"}
 {"item_id":"db:european-nucleotide-archive-ena","topic_id":"topic:ai-methods-tooling"}
 {"item_id":"db:faang-functional-annotation-of-animal-genomes","topic_id":"topic:cell-lines-engineering"}
@@ -205,6 +210,7 @@
 {"item_id":"db:umamimeta","topic_id":"topic:flavor-sensory"}
 {"item_id":"db:umamimeta","topic_id":"topic:sensory-flavor"}
 {"item_id":"db:uniprot","topic_id":"topic:ai-methods-tooling"}
+{"item_id":"db:usda-federal-lca-commons","topic_id":"topic:techno-economic-lca"}
 {"item_id":"db:usda-national-agricultural-library-search","topic_id":"topic:ai-methods-tooling"}
 {"item_id":"db:vcf-volatile-compounds-in-food","topic_id":"topic:flavor-sensory"}
 {"item_id":"db:vcf-volatile-compounds-in-food","topic_id":"topic:sensory-flavor"}
@@ -215,6 +221,7 @@
 {"item_id":"db:wikipathways","topic_id":"topic:metabolism-modeling"}
 {"item_id":"db:wikipedia-list-of-biological-databases","topic_id":"topic:ai-methods-tooling"}
 {"item_id":"db:wikipedia-list-of-chemical-databases","topic_id":"topic:ai-methods-tooling"}
+{"item_id":"db:world-food-lca-database-wfldb","topic_id":"topic:techno-economic-lca"}
 {"item_id":"ds:a-hydrophilic-interaction","topic_id":"topic:ai-methods-tooling"}
 {"item_id":"ds:a-hydrophilic-interaction","topic_id":"topic:cell-lines-engineering"}
 {"item_id":"ds:a-hydrophilic-interaction","topic_id":"topic:mass-spectrometry"}
@@ -713,6 +720,7 @@
 {"item_id":"ds:recon3d-human1-hmr-homo-sapiens-template-upstream-reference","topic_id":"topic:cell-lines-engineering"}
 {"item_id":"ds:recon3d-human1-hmr-homo-sapiens-template-upstream-reference","topic_id":"topic:metabolic-modeling"}
 {"item_id":"ds:recon3d-human1-hmr-homo-sapiens-template-upstream-reference","topic_id":"topic:metabolism-modeling"}
+{"item_id":"ds:risner-et-al-cradle-to-gate-cultivated-meat-lca","topic_id":"topic:techno-economic-lca"}
 {"item_id":"ds:rna-seq-analysis-of","topic_id":"topic:cell-lines-engineering"}
 {"item_id":"ds:salarecon-salmo-salar-atlantic-salmon","topic_id":"topic:ai-methods-tooling"}
 {"item_id":"ds:salarecon-salmo-salar-atlantic-salmon","topic_id":"topic:bioprocess-scale-up"}
@@ -748,6 +756,7 @@
 {"item_id":"ds:single-cell-transcriptomic-atlas","topic_id":"topic:cell-lines-engineering"}
 {"item_id":"ds:single-cell-transcriptomic-atlas","topic_id":"topic:metabolism-modeling"}
 {"item_id":"ds:single-cell-transcriptomic-atlas","topic_id":"topic:single-cell-atlases"}
+{"item_id":"ds:sinke-et-al-2023-cultivated-meat-ex-ante-lci","topic_id":"topic:techno-economic-lca"}
 {"item_id":"ds:snrna-seq-and-spatial","topic_id":"topic:benchmarks-evaluation"}
 {"item_id":"ds:snrna-seq-and-spatial","topic_id":"topic:cell-lines-engineering"}
 {"item_id":"ds:snrna-seq-and-spatial","topic_id":"topic:media-growth-factors"}
@@ -1083,9 +1092,24 @@
 {"item_id":"paper:290","topic_id":"topic:allergenicity"}
 {"item_id":"paper:291","topic_id":"topic:allergenicity"}
 {"item_id":"paper:292","topic_id":"topic:allergenicity"}
+{"item_id":"paper:293","topic_id":"topic:techno-economic-lca"}
+{"item_id":"paper:294","topic_id":"topic:techno-economic-lca"}
+{"item_id":"paper:295","topic_id":"topic:techno-economic-lca"}
+{"item_id":"paper:296","topic_id":"topic:techno-economic-lca"}
+{"item_id":"paper:297","topic_id":"topic:techno-economic-lca"}
+{"item_id":"paper:298","topic_id":"topic:techno-economic-lca"}
+{"item_id":"paper:299","topic_id":"topic:techno-economic-lca"}
 {"item_id":"paper:3","topic_id":"topic:media-growth-factors"}
 {"item_id":"paper:30","topic_id":"topic:bioprocess-scale-up"}
 {"item_id":"paper:30","topic_id":"topic:bioreactor-scale-up"}
+{"item_id":"paper:300","topic_id":"topic:techno-economic-lca"}
+{"item_id":"paper:301","topic_id":"topic:techno-economic-lca"}
+{"item_id":"paper:302","topic_id":"topic:techno-economic-lca"}
+{"item_id":"paper:303","topic_id":"topic:techno-economic-lca"}
+{"item_id":"paper:304","topic_id":"topic:techno-economic-lca"}
+{"item_id":"paper:305","topic_id":"topic:techno-economic-lca"}
+{"item_id":"paper:306","topic_id":"topic:techno-economic-lca"}
+{"item_id":"paper:307","topic_id":"topic:techno-economic-lca"}
 {"item_id":"paper:31","topic_id":"topic:bioprocess-scale-up"}
 {"item_id":"paper:31","topic_id":"topic:bioreactor-scale-up"}
 {"item_id":"paper:32","topic_id":"topic:benchmarks-evaluation"}
@@ -1238,6 +1262,7 @@
 {"item_id":"sw:biomni","topic_id":"topic:ai-agents"}
 {"item_id":"sw:biomni","topic_id":"topic:ai-methods-tooling"}
 {"item_id":"sw:biopragmatics-stack","topic_id":"topic:ai-methods-tooling"}
+{"item_id":"sw:biosteam","topic_id":"topic:techno-economic-lca"}
 {"item_id":"sw:bitter-peptide-design","topic_id":"topic:flavor-sensory"}
 {"item_id":"sw:bitter-peptide-design","topic_id":"topic:sensory-flavor"}
 {"item_id":"sw:bittersweet","topic_id":"topic:flavor-sensory"}
@@ -1249,6 +1274,7 @@
 {"item_id":"sw:brad","topic_id":"topic:ai-agents"}
 {"item_id":"sw:brad","topic_id":"topic:ai-methods-tooling"}
 {"item_id":"sw:bridgedb","topic_id":"topic:metabolic-modeling"}
+{"item_id":"sw:brightway","topic_id":"topic:techno-economic-lca"}
 {"item_id":"sw:cameo","topic_id":"topic:metabolic-modeling"}
 {"item_id":"sw:cameo","topic_id":"topic:metabolism-modeling"}
 {"item_id":"sw:carveme","topic_id":"topic:metabolic-modeling"}
@@ -1289,6 +1315,7 @@
 {"item_id":"sw:coscientist","topic_id":"topic:ai-methods-tooling"}
 {"item_id":"sw:dotmatics-luma","topic_id":"topic:ai-agents"}
 {"item_id":"sw:dotmatics-luma","topic_id":"topic:ai-methods-tooling"}
+{"item_id":"sw:dwsim","topic_id":"topic:techno-economic-lca"}
 {"item_id":"sw:escher","topic_id":"topic:metabolic-modeling"}
 {"item_id":"sw:escher","topic_id":"topic:metabolism-modeling"}
 {"item_id":"sw:esmfold","topic_id":"topic:cell-line-engineering"}
@@ -1313,6 +1340,7 @@
 {"item_id":"sw:giotto-suite","topic_id":"topic:ai-methods-tooling"}
 {"item_id":"sw:gnps","topic_id":"topic:mass-spectrometry"}
 {"item_id":"sw:gnps","topic_id":"topic:sensory-flavor"}
+{"item_id":"sw:greet","topic_id":"topic:techno-economic-lca"}
 {"item_id":"sw:igfold","topic_id":"topic:cell-line-engineering"}
 {"item_id":"sw:igfold","topic_id":"topic:media-growth-factors"}
 {"item_id":"sw:igfold","topic_id":"topic:media-optimization"}
@@ -1365,6 +1393,7 @@
 {"item_id":"sw:open-problems","topic_id":"topic:ai-methods-tooling"}
 {"item_id":"sw:openfoam","topic_id":"topic:bioprocess-scale-up"}
 {"item_id":"sw:openfoam","topic_id":"topic:bioreactor-scale-up"}
+{"item_id":"sw:openlca","topic_id":"topic:techno-economic-lca"}
 {"item_id":"sw:openms-pyopenms","topic_id":"topic:mass-spectrometry"}
 {"item_id":"sw:openms-pyopenms","topic_id":"topic:sensory-flavor"}
 {"item_id":"sw:openpom","topic_id":"topic:flavor-sensory"}
@@ -1391,6 +1420,7 @@
 {"item_id":"sw:pyrfume","topic_id":"topic:sensory-flavor"}
 {"item_id":"sw:pytfa","topic_id":"topic:metabolic-modeling"}
 {"item_id":"sw:pytfa","topic_id":"topic:metabolism-modeling"}
+{"item_id":"sw:qsdsan","topic_id":"topic:techno-economic-lca"}
 {"item_id":"sw:ramanspy","topic_id":"topic:mass-spectrometry"}
 {"item_id":"sw:ramanspy","topic_id":"topic:sensory-flavor"}
 {"item_id":"sw:raven-toolbox","topic_id":"topic:metabolic-modeling"}
@@ -1415,6 +1445,7 @@
 {"item_id":"sw:sensominer","topic_id":"topic:sensory-flavor"}
 {"item_id":"sw:seqera-ai-co-scientist","topic_id":"topic:ai-agents"}
 {"item_id":"sw:seqera-ai-co-scientist","topic_id":"topic:ai-methods-tooling"}
+{"item_id":"sw:simapro","topic_id":"topic:techno-economic-lca"}
 {"item_id":"sw:sirius-csifingerid","topic_id":"topic:mass-spectrometry"}
 {"item_id":"sw:sirius-csifingerid","topic_id":"topic:sensory-flavor"}
 {"item_id":"sw:skill-seekers","topic_id":"topic:ai-agents"}
@@ -1428,6 +1459,7 @@
 {"item_id":"sw:straindesign","topic_id":"topic:metabolism-modeling"}
 {"item_id":"sw:superpowers","topic_id":"topic:ai-agents"}
 {"item_id":"sw:superpowers","topic_id":"topic:ai-methods-tooling"}
+{"item_id":"sw:superpro-designer","topic_id":"topic:techno-economic-lca"}
 {"item_id":"sw:tastepepai","topic_id":"topic:flavor-sensory"}
 {"item_id":"sw:tastepepai","topic_id":"topic:sensory-flavor"}
 {"item_id":"sw:tellurium","topic_id":"topic:metabolic-modeling"}

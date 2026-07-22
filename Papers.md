@@ -877,3 +877,33 @@ This section lists review articles, position papers, and commentaries that surve
 <a id="291">291</a> Li, Y., Jin, F., Qian, Y., Wang, S., Ding, S., Li, Y., Hu, L., He, R., Yan, Y., Tao, T., & Bo, M. (2026). Allergens and allergenicity in cell-cultured meat: Current status and reflections. *Trends in Food Science & Technology, 173*, 105779. https://doi.org/10.1016/j.tifs.2026.105779
 
 <a id="292">292</a> Ham, J.-H., Lee, Y.-J., Lee, I., & Kim, H.-Y. (2025). Allergenicity in cultured meat: Assessment and strategic management. *Critical Reviews in Food Science and Nutrition, 65*(32), 8246–8258. https://doi.org/10.1080/10408398.2025.2497919
+
+<a id="293">293</a> Humbird, D. (2021). Scale-up economics for cultured meat. *Biotechnology and Bioengineering, 118*(8), 3239–3250. https://doi.org/10.1002/bit.27848
+
+<a id="294">294</a> Risner, D., Li, F., Fell, J. S., Pace, S. A., Siegel, J. B., Tagkopoulos, I., & Spang, E. S. (2021). Preliminary techno-economic assessment of animal cell-based meat. *Foods, 10*(1), 3. https://doi.org/10.3390/foods10010003
+
+<a id="295">295</a> Negulescu, P. G., Risner, D., Spang, E. S., Sumner, D., Block, D., Nandi, S., & McDonald, K. A. (2023). Techno-economic modeling and assessment of cultivated meat: Impact of production bioreactor scale. *Biotechnology and Bioengineering, 120*(4), 1055–1067. https://doi.org/10.1002/bit.28324
+
+<a id="296">296</a> Pasitka, L., Wissotsky, G., Ayyash, M., Yarza, N., Rosoff, G., Kaminker, R., & Nahmias, Y. (2024). Empirical economic analysis shows cost-effective continuous manufacturing of cultivated chicken using animal-free medium. *Nature Food, 5*(8), 693–702. https://doi.org/10.1038/s43016-024-01022-w
+
+<a id="297">297</a> Tuomisto, H. L., & Teixeira de Mattos, M. J. (2011). Environmental impacts of cultured meat production. *Environmental Science & Technology, 45*(14), 6117–6123. https://doi.org/10.1021/es200130u
+
+<a id="298">298</a> Mattick, C. S., Landis, A. E., Allenby, B. R., & Genovese, N. J. (2015). Anticipatory life cycle analysis of in vitro biomass cultivation for cultured meat production in the United States. *Environmental Science & Technology, 49*(19), 11941–11949. https://doi.org/10.1021/acs.est.5b01614
+
+<a id="299">299</a> Sinke, P., Swartz, E., Sanctorum, H., van der Giesen, C., & Odegard, I. (2023). Ex-ante life cycle assessment of commercial-scale cultivated meat production in 2030. *The International Journal of Life Cycle Assessment, 28*(3), 234–254. https://doi.org/10.1007/s11367-022-02128-8
+
+<a id="300">300</a> Tuomisto, H. L., Allan, S. J., & Ellis, M. J. (2022). Prospective life cycle assessment of a bioprocess design for cultured meat production in hollow fiber bioreactors. *Science of the Total Environment, 851*, 158051. https://doi.org/10.1016/j.scitotenv.2022.158051
+
+<a id="301">301</a> Risner, D., Negulescu, P., Kim, Y., Nguyen, C., Siegel, J. B., & Spang, E. S. (2025). Environmental impacts of cultured meat: A cradle-to-gate life cycle assessment. *ACS Food Science & Technology, 5*(1), 61–74. https://doi.org/10.1021/acsfoodscitech.4c00281
+
+<a id="302">302</a> El Wali, M., Karinen, H., Rønning, S. B., Skrivergaard, S., Dorca-Preda, T., Rasmussen, M. K., Young, J. F., Therkildsen, M., Mogensen, L., Ryynänen, T., & Tuomisto, H. L. (2024). Life cycle assessment of culture media with alternative compositions for cultured meat production. *The International Journal of Life Cycle Assessment, 29*(11), 2077–2093. https://doi.org/10.1007/s11367-024-02350-6
+
+<a id="303">303</a> Stieberová, B., Žilka, M., Bubeníček, P., & Kubeš, T. (2026). Life cycle assessment of industrial-scale cultivated meat production: Case study of real market entry via pet food application. *The International Journal of Life Cycle Assessment, 31*(4), Article 62. https://doi.org/10.1007/s11367-026-02629-w
+
+<a id="304">304</a> Goodwin, C. M., Aimutis, W. R., & Shirwaiker, R. A. (2024). A scoping review of cultivated meat techno-economic analyses to inform future research directions for scaled-up manufacturing. *Nature Food, 5*(11), 901–910. https://doi.org/10.1038/s43016-024-01061-3
+
+<a id="305">305</a> Orsini, F., Pierini, L., Ardoino, I., & Franchi, C. (2026). Environmental impact of cultured meat: A systematic review. *ACS Food Science & Technology, 6*(2), 227–239. https://doi.org/10.1021/acsfoodscitech.5c00908
+
+<a id="306">306</a> Blackstone, N. T., Pavlova, A., Trinidad, K. R., Nikkhah, A., Sinke, P., Heller, M., Duncan-Duggal, J., Ridoutt, B., Smetana, S., Makov, T., Shabtai, S., Green, A., Barnes, W., Bhattarai, I., Goyal, S., Imholz, N., Meshulam, T., Nadar, C. G., Norris, G. A., Quandt, J., Ronco, N., & Tuomisto, H. L. (2025). Guidelines for environmental life cycle assessment of cultivated meat. *The International Journal of Life Cycle Assessment, 30*(12), 2943–2963. https://doi.org/10.1007/s11367-025-02562-4
+
+<a id="307">307</a> Tavan, M., Smith, N. W., McNabb, W. C., & Wood, P. (2025). Reassessing the sustainability promise of cultured meat: A critical review with new data perspectives. *Critical Reviews in Food Science and Nutrition, 65*(30), 7201–7209. https://doi.org/10.1080/10408398.2025.2461262

@@ -1,4 +1,6 @@
 {"id":"db:addgene","type":"database","slug":"addgene"}
+{"id":"db:agri-footprint","type":"database","slug":"agri-footprint"}
+{"id":"db:agribalyse","type":"database","slug":"agribalyse"}
 {"id":"db:agris-fao","type":"database","slug":"agris-fao"}
 {"id":"db:allergenonline-farrp","type":"database","slug":"allergenonline-farrp"}
 {"id":"db:allergome","type":"database","slug":"allergome"}
@@ -33,9 +35,12 @@
 {"id":"db:csgene","type":"database","slug":"csgene"}
 {"id":"db:cz-cellxgene","type":"database","slug":"cz-cellxgene"}
 {"id":"db:drugbank","type":"database","slug":"drugbank"}
+{"id":"db:ecoinvent","type":"database","slug":"ecoinvent"}
 {"id":"db:efsa-openfoodtox","type":"database","slug":"efsa-openfoodtox"}
 {"id":"db:embl-ebi-expression-atlas","type":"database","slug":"embl-ebi-expression-atlas"}
 {"id":"db:ensembl","type":"database","slug":"ensembl"}
+{"id":"db:esu-services-lca-data","type":"database","slug":"esu-services-lca-data"}
+{"id":"db:eu-environmental-footprint-eplca-jrc","type":"database","slug":"eu-environmental-footprint-eplca-jrc"}
 {"id":"db:eu-novel-food","type":"database","slug":"eu-novel-food"}
 {"id":"db:european-nucleotide-archive-ena","type":"database","slug":"european-nucleotide-archive-ena"}
 {"id":"db:faang-functional-annotation-of-animal-genomes","type":"database","slug":"faang-functional-annotation-of-animal-genomes"}
@@ -131,6 +136,7 @@
 {"id":"db:uark-food-science-research-guide","type":"database","slug":"uark-food-science-research-guide"}
 {"id":"db:umamimeta","type":"database","slug":"umamimeta"}
 {"id":"db:uniprot","type":"database","slug":"uniprot"}
+{"id":"db:usda-federal-lca-commons","type":"database","slug":"usda-federal-lca-commons"}
 {"id":"db:usda-national-agricultural-library-search","type":"database","slug":"usda-national-agricultural-library-search"}
 {"id":"db:vcf-volatile-compounds-in-food","type":"database","slug":"vcf-volatile-compounds-in-food"}
 {"id":"db:virtual-metabolic-human-vmh","type":"database","slug":"virtual-metabolic-human-vmh"}
@@ -138,6 +144,7 @@
 {"id":"db:wikipathways","type":"database","slug":"wikipathways"}
 {"id":"db:wikipedia-list-of-biological-databases","type":"database","slug":"wikipedia-list-of-biological-databases"}
 {"id":"db:wikipedia-list-of-chemical-databases","type":"database","slug":"wikipedia-list-of-chemical-databases"}
+{"id":"db:world-food-lca-database-wfldb","type":"database","slug":"world-food-lca-database-wfldb"}
 {"id":"ds:a-hydrophilic-interaction","type":"dataset","slug":"a-hydrophilic-interaction"}
 {"id":"ds:actin-genes-and","type":"dataset","slug":"actin-genes-and"}
 {"id":"ds:algpred-2-0-allergen-dataset","type":"dataset","slug":"algpred-2-0-allergen-dataset"}
@@ -318,6 +325,7 @@
 {"id":"ds:raman-soft-sensor-cell-culture-dataset-tanemura-et-al-2023","type":"dataset","slug":"raman-soft-sensor-cell-culture-dataset-tanemura-et-al-2023"}
 {"id":"ds:rapid-lc-msms-method","type":"dataset","slug":"rapid-lc-msms-method"}
 {"id":"ds:recon3d-human1-hmr-homo-sapiens-template-upstream-reference","type":"dataset","slug":"recon3d-human1-hmr-homo-sapiens-template-upstream-reference"}
+{"id":"ds:risner-et-al-cradle-to-gate-cultivated-meat-lca","type":"dataset","slug":"risner-et-al-cradle-to-gate-cultivated-meat-lca"}
 {"id":"ds:rna-seq-analysis-of","type":"dataset","slug":"rna-seq-analysis-of"}
 {"id":"ds:salarecon-salmo-salar-atlantic-salmon","type":"dataset","slug":"salarecon-salmo-salar-atlantic-salmon"}
 {"id":"ds:scperturb","type":"dataset","slug":"scperturb"}
@@ -326,6 +334,7 @@
 {"id":"ds:shotgun-proteomics-for","type":"dataset","slug":"shotgun-proteomics-for"}
 {"id":"ds:simple-and-effective","type":"dataset","slug":"simple-and-effective"}
 {"id":"ds:single-cell-transcriptomic-atlas","type":"dataset","slug":"single-cell-transcriptomic-atlas"}
+{"id":"ds:sinke-et-al-2023-cultivated-meat-ex-ante-lci","type":"dataset","slug":"sinke-et-al-2023-cultivated-meat-ex-ante-lci"}
 {"id":"ds:snrna-seq-and-spatial","type":"dataset","slug":"snrna-seq-and-spatial"}
 {"id":"ds:srp009061","type":"dataset","slug":"srp009061"}
 {"id":"ds:srp033481","type":"dataset","slug":"srp033481"}
@@ -556,8 +565,23 @@
 {"id":"paper:290","type":"paper","slug":"290"}
 {"id":"paper:291","type":"paper","slug":"291"}
 {"id":"paper:292","type":"paper","slug":"292"}
+{"id":"paper:293","type":"paper","slug":"293"}
+{"id":"paper:294","type":"paper","slug":"294"}
+{"id":"paper:295","type":"paper","slug":"295"}
+{"id":"paper:296","type":"paper","slug":"296"}
+{"id":"paper:297","type":"paper","slug":"297"}
+{"id":"paper:298","type":"paper","slug":"298"}
+{"id":"paper:299","type":"paper","slug":"299"}
 {"id":"paper:3","type":"paper","slug":"3"}
 {"id":"paper:30","type":"paper","slug":"30"}
+{"id":"paper:300","type":"paper","slug":"300"}
+{"id":"paper:301","type":"paper","slug":"301"}
+{"id":"paper:302","type":"paper","slug":"302"}
+{"id":"paper:303","type":"paper","slug":"303"}
+{"id":"paper:304","type":"paper","slug":"304"}
+{"id":"paper:305","type":"paper","slug":"305"}
+{"id":"paper:306","type":"paper","slug":"306"}
+{"id":"paper:307","type":"paper","slug":"307"}
 {"id":"paper:31","type":"paper","slug":"31"}
 {"id":"paper:32","type":"paper","slug":"32"}
 {"id":"paper:33","type":"paper","slug":"33"}
@@ -655,12 +679,14 @@
 {"id":"sw:biomcp","type":"software","slug":"biomcp"}
 {"id":"sw:biomni","type":"software","slug":"biomni"}
 {"id":"sw:biopragmatics-stack","type":"software","slug":"biopragmatics-stack"}
+{"id":"sw:biosteam","type":"software","slug":"biosteam"}
 {"id":"sw:bitter-peptide-design","type":"software","slug":"bitter-peptide-design"}
 {"id":"sw:bittersweet","type":"software","slug":"bittersweet"}
 {"id":"sw:boltz","type":"software","slug":"boltz"}
 {"id":"sw:botorch","type":"software","slug":"botorch"}
 {"id":"sw:brad","type":"software","slug":"brad"}
 {"id":"sw:bridgedb","type":"software","slug":"bridgedb"}
+{"id":"sw:brightway","type":"software","slug":"brightway"}
 {"id":"sw:cameo","type":"software","slug":"cameo"}
 {"id":"sw:carveme","type":"software","slug":"carveme"}
 {"id":"sw:causalbench","type":"software","slug":"causalbench"}
@@ -682,6 +708,7 @@
 {"id":"sw:copasi","type":"software","slug":"copasi"}
 {"id":"sw:coscientist","type":"software","slug":"coscientist"}
 {"id":"sw:dotmatics-luma","type":"software","slug":"dotmatics-luma"}
+{"id":"sw:dwsim","type":"software","slug":"dwsim"}
 {"id":"sw:escher","type":"software","slug":"escher"}
 {"id":"sw:esmfold","type":"software","slug":"esmfold"}
 {"id":"sw:evodiff","type":"software","slug":"evodiff"}
@@ -693,6 +720,7 @@
 {"id":"sw:geneformer","type":"software","slug":"geneformer"}
 {"id":"sw:giotto-suite","type":"software","slug":"giotto-suite"}
 {"id":"sw:gnps","type":"software","slug":"gnps"}
+{"id":"sw:greet","type":"software","slug":"greet"}
 {"id":"sw:igfold","type":"software","slug":"igfold"}
 {"id":"sw:k-dense-ai","type":"software","slug":"k-dense-ai"}
 {"id":"sw:linkml-linked-data-modeling-language","type":"software","slug":"linkml-linked-data-modeling-language"}
@@ -722,6 +750,7 @@
 {"id":"sw:omiga","type":"software","slug":"omiga"}
 {"id":"sw:open-problems","type":"software","slug":"open-problems"}
 {"id":"sw:openfoam","type":"software","slug":"openfoam"}
+{"id":"sw:openlca","type":"software","slug":"openlca"}
 {"id":"sw:openms-pyopenms","type":"software","slug":"openms-pyopenms"}
 {"id":"sw:openpom","type":"software","slug":"openpom"}
 {"id":"sw:pancanstem-mrnasi","type":"software","slug":"pancanstem-mrnasi"}
@@ -735,6 +764,7 @@
 {"id":"sw:pyfoomb","type":"software","slug":"pyfoomb"}
 {"id":"sw:pyrfume","type":"software","slug":"pyrfume"}
 {"id":"sw:pytfa","type":"software","slug":"pytfa"}
+{"id":"sw:qsdsan","type":"software","slug":"qsdsan"}
 {"id":"sw:ramanspy","type":"software","slug":"ramanspy"}
 {"id":"sw:raven-toolbox","type":"software","slug":"raven-toolbox"}
 {"id":"sw:rfdiffusion","type":"software","slug":"rfdiffusion"}
@@ -747,6 +777,7 @@
 {"id":"sw:scgpt","type":"software","slug":"scgpt"}
 {"id":"sw:sensominer","type":"software","slug":"sensominer"}
 {"id":"sw:seqera-ai-co-scientist","type":"software","slug":"seqera-ai-co-scientist"}
+{"id":"sw:simapro","type":"software","slug":"simapro"}
 {"id":"sw:sirius-csifingerid","type":"software","slug":"sirius-csifingerid"}
 {"id":"sw:skill-seekers","type":"software","slug":"skill-seekers"}
 {"id":"sw:skyline","type":"software","slug":"skyline"}
@@ -754,6 +785,7 @@
 {"id":"sw:state-cell-eval","type":"software","slug":"state-cell-eval"}
 {"id":"sw:straindesign","type":"software","slug":"straindesign"}
 {"id":"sw:superpowers","type":"software","slug":"superpowers"}
+{"id":"sw:superpro-designer","type":"software","slug":"superpro-designer"}
 {"id":"sw:tastepepai","type":"software","slug":"tastepepai"}
 {"id":"sw:tellurium","type":"software","slug":"tellurium"}
 {"id":"sw:tgpt","type":"software","slug":"tgpt"}
@@ -785,3 +817,4 @@
 {"id":"topic:sensory-flavor","type":"topic","slug":"sensory-flavor"}
 {"id":"topic:serum-free-media","type":"topic","slug":"serum-free-media"}
 {"id":"topic:single-cell-atlases","type":"topic","slug":"single-cell-atlases"}
+{"id":"topic:techno-economic-lca","type":"topic","slug":"techno-economic-lca"}
