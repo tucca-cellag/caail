@@ -484,6 +484,8 @@ in its methods, not what it could be applied to. Short form:
 
 <a id="171">171</a> Kircali Ata, S., Shi, J. K., Yao, X., Hua, X. Y., Haldar, S., Chiang, J. H., & Wu, M. (2023). Predicting the Textural Properties of Plant-Based Meat Analogs with Machine Learning. *Foods, 12*(2), 344. https://doi.org/10.3390/foods12020344
 
+> **Code**: https://github.com/sezinata/FoodML
+
 <a id="182">182</a> King, R. D., Whelan, K. E., Jones, F. M., Reiser, P. G. K., Bryant, C. H., Muggleton, S. H., Kell, D. B., & Oliver, S. G. (2004). Functional genomic hypothesis generation and experimentation by a robot scientist. *Nature, 427*(6971), 247–252. https://doi.org/10.1038/nature02236
 
 <a id="195">195</a> Ulucan, O., Karakaya, D., & Turkan, M. (2019). Meat Quality Assessment based on Deep Learning. *2019 Innovations in Intelligent Systems and Applications Conference (ASYU)*, 1–5. https://doi.org/10.1109/ASYU48272.2019.8946388
@@ -907,3 +909,5 @@ This section lists review articles, position papers, and commentaries that surve
 <a id="306">306</a> Blackstone, N. T., Pavlova, A., Trinidad, K. R., Nikkhah, A., Sinke, P., Heller, M., Duncan-Duggal, J., Ridoutt, B., Smetana, S., Makov, T., Shabtai, S., Green, A., Barnes, W., Bhattarai, I., Goyal, S., Imholz, N., Meshulam, T., Nadar, C. G., Norris, G. A., Quandt, J., Ronco, N., & Tuomisto, H. L. (2025). Guidelines for environmental life cycle assessment of cultivated meat. *The International Journal of Life Cycle Assessment, 30*(12), 2943–2963. https://doi.org/10.1007/s11367-025-02562-4
 
 <a id="307">307</a> Tavan, M., Smith, N. W., McNabb, W. C., & Wood, P. (2025). Reassessing the sustainability promise of cultured meat: A critical review with new data perspectives. *Critical Reviews in Food Science and Nutrition, 65*(30), 7201–7209. https://doi.org/10.1080/10408398.2025.2461262
+
+<a id="308">308</a> Gunning, M., & Tagkopoulos, I. (2025). A systematic review of data and models for predicting food flavor and texture. *Current Research in Food Science, 11*, 101127. https://doi.org/10.1016/j.crfs.2025.101127
