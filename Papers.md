@@ -915,3 +915,21 @@ This section lists review articles, position papers, and commentaries that surve
 <a id="307">307</a> Tavan, M., Smith, N. W., McNabb, W. C., & Wood, P. (2025). Reassessing the sustainability promise of cultured meat: A critical review with new data perspectives. *Critical Reviews in Food Science and Nutrition, 65*(30), 7201–7209. https://doi.org/10.1080/10408398.2025.2461262
 
 <a id="308">308</a> Gunning, M., & Tagkopoulos, I. (2025). A systematic review of data and models for predicting food flavor and texture. *Current Research in Food Science, 11*, 101127. https://doi.org/10.1016/j.crfs.2025.101127
+
+<a id="311">311</a> Malavolta, M., Pallante, L., Mavkov, B., Stojceski, F., Grasso, G., Korfiati, A., Mavroudi, S., Kalogeras, A., Alexakos, C., Martos, V., Amoroso, D., Di Benedetto, G., Piga, D., Theofilatos, K., & Deriu, M. A. (2022). A survey on computational taste predictors. *European Food Research and Technology, 248*(9), 2215–2235. https://doi.org/10.1007/s00217-022-04044-5
+
+<a id="312">312</a> Ji, H., Pu, D., Yan, W., Zhang, Q., Zuo, M., & Zhang, Y. (2023). Recent advances and application of machine learning in food flavor prediction and regulation. *Trends in Food Science & Technology, 138*, 738–751. https://doi.org/10.1016/j.tifs.2023.07.012
+
+<a id="313">313</a> Chen, X., Li, X., Wu, Y., Zhang, F., & Zheng, J. (2026). Machine learning and deep learning for flavor prediction and modeling in fermented vegetables: From multi-omics integration to digital twins. *Trends in Food Science & Technology, 174*, 105805. https://doi.org/10.1016/j.tifs.2026.105805
+
+<a id="314">314</a> Wang, J., Wang, S., Li, D., Fan, W., Jiang, Z., Zhang, J., Shi, Q., Zhang, Q., & Chai, G. (2026). From machine learning to neuroimaging: A comprehensive review of flavor prediction and recognition techniques. *Food Research International, 223*, 117933. https://doi.org/10.1016/j.foodres.2025.117933
+
+<a id="315">315</a> Konrad, T., Ha, M., Ronquest-Ross, L., Smyth, H. E., & Moura Nadolny, J. (2024). Plant-based mince texture: A review of the sensory literature with view to informing new product development. *Journal of Food Science, 89*(12), 8197–8214. https://doi.org/10.1111/1750-3841.17517
+
+<a id="316">316</a> Jia, W., van Ruth, S., Scollan, N., & Koidis, A. (2022). Hyperspectral Imaging (HSI) for meat quality evaluation across the supply chain: Current and future trends. *Current Research in Food Science, 5*, 1017–1027. https://doi.org/10.1016/j.crfs.2022.05.016
+
+<a id="317">317</a> Wong, K., Arruda, T. R., Butler, K. T., Guldin, S., & Schrettl, S. (2025). Machine learning for food colloids: Novel tools to advance fundamental understanding, stability, texture, and processability. *Current Opinion in Colloid & Interface Science, 78*, 101937. https://doi.org/10.1016/j.cocis.2025.101937
+
+<a id="318">318</a> Jung, H. Y., Kim, M., & Jo, C. (2026). Next-generation strategies for designing cultured fat with enhanced flavor and functionality. *Trends in Food Science & Technology, 168*, 105525. https://doi.org/10.1016/j.tifs.2025.105525
+
+<a id="319">319</a> Bahia, M. S., Nissim, I., & Niv, M. Y. (2018). Bitterness prediction in-silico: A step towards better drugs. *International Journal of Pharmaceutics, 536*(2), 526–529. https://doi.org/10.1016/j.ijpharm.2017.03.076
