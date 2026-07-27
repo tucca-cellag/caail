@@ -52,10 +52,16 @@ test('explorer ranks method rows by frequency when an area is selected', async (
   await page.goto('./papers/explorer/');
   await page.locator('.px-select').selectOption({ label: 'Media Optimization' });
   // One column of cells, top-to-bottom; counts must be non-increasing (blanks = 0).
-  const nums = (await page.locator('.px-c').allTextContents()).map((t) => parseInt(t, 10) || 0);
-  expect(nums.length).toBeGreaterThan(1);
-  const sorted = [...nums].sort((a, b) => b - a);
-  expect(nums).toEqual(sorted);
+  //
+  // Retry the whole read: selectOption resolves as soon as the <select> value changes,
+  // but the island re-ranks the rows on a later tick, so a one-shot read races it and
+  // sees the previous (unfiltered, matrix-order) counts. The race widens as the corpus
+  // grows, which is what makes a plain read flaky rather than reliably wrong.
+  await expect(async () => {
+    const nums = (await page.locator('.px-c').allTextContents()).map((t) => parseInt(t, 10) || 0);
+    expect(nums.length).toBeGreaterThan(1);
+    expect(nums).toEqual([...nums].sort((a, b) => b - a));
+  }).toPass({ timeout: 15_000 });
 });
 
 test('homepage has no serious/critical a11y violations', async ({ page }) => {
