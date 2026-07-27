@@ -270,3 +270,6 @@
 {"method":"Chemometrics","area_key":"sensory","ref_id":348,"label":"Ma et al. 2017","ordinal":269}
 {"method":"CNN","area_key":"scaffolding","ref_id":349,"label":"Yang 2026","ordinal":270}
 {"method":"Benchmarks & Evaluation Frameworks","area_key":"eval","ref_id":349,"label":"Yang 2026","ordinal":271}
+{"method":"Linear & Regularized Models","area_key":"scaffolding","ref_id":171,"label":"Kircali Ata et al. 2023","ordinal":272}
+{"method":"Linear & Regularized Models","area_key":"sensory","ref_id":171,"label":"Kircali Ata et al. 2023","ordinal":273}
+{"method":"SVM","area_key":"sensory","ref_id":334,"label":"Cao et al. 2023","ordinal":274}
