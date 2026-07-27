@@ -236,3 +236,37 @@
 {"method":"Ensemble Learning","area_key":"scaffolding","ref_id":171,"label":"Kircali Ata et al. 2023","ordinal":235}
 {"method":"Ensemble Learning","area_key":"scaffolding","ref_id":309,"label":"Dahl et al. 2025","ordinal":236}
 {"method":"CNN","area_key":"scaffolding","ref_id":310,"label":"Kim et al. 2026","ordinal":237}
+{"method":"GNN","area_key":"sensory","ref_id":320,"label":"He et al. 2024","ordinal":238}
+{"method":"CNN","area_key":"sensory","ref_id":321,"label":"Ameta et al. 2024","ordinal":239}
+{"method":"Foundation Models: Masked Language Modeling","area_key":"sensory","ref_id":322,"label":"Zhang et al. 2023","ordinal":240}
+{"method":"Ensemble Learning","area_key":"sensory","ref_id":323,"label":"Tyagi et al. 2024","ordinal":241}
+{"method":"GNN","area_key":"sensory","ref_id":324,"label":"Song et al. 2023","ordinal":242}
+{"method":"Deep Learning","area_key":"sensory","ref_id":325,"label":"Qi et al. 2023","ordinal":243}
+{"method":"Deep Learning","area_key":"sensory","ref_id":326,"label":"Bo et al. 2022","ordinal":244}
+{"method":"SVM","area_key":"sensory","ref_id":327,"label":"Charoenkwan et al. 2021","ordinal":245}
+{"method":"Ensemble Learning","area_key":"sensory","ref_id":328,"label":"Charoenkwan et al. 2021","ordinal":246}
+{"method":"Ensemble Learning","area_key":"sensory","ref_id":329,"label":"Wang et al. 2021","ordinal":247}
+{"method":"Deep Learning","area_key":"sensory","ref_id":330,"label":"Sharma et al. 2021","ordinal":248}
+{"method":"Ensemble Learning","area_key":"sensory","ref_id":331,"label":"Banerjee & Preissner 2018","ordinal":249}
+{"method":"Ensemble Learning","area_key":"sensory","ref_id":332,"label":"Zheng et al. 2018","ordinal":250}
+{"method":"Deep Learning","area_key":"sensory","ref_id":333,"label":"Nozaki & Nakamoto 2016","ordinal":251}
+{"method":"Chemometrics","area_key":"sensory","ref_id":334,"label":"Cao et al. 2023","ordinal":252}
+{"method":"Chemometrics","area_key":"sensory","ref_id":335,"label":"Liu et al. 2003","ordinal":253}
+{"method":"Ensemble Learning","area_key":"sensory","ref_id":336,"label":"Goel et al. 2023","ordinal":254}
+{"method":"Ensemble Learning","area_key":"sensory","ref_id":337,"label":"Zheng et al. 2019","ordinal":255}
+{"method":"Deep Learning","area_key":"sensory","ref_id":338,"label":"Nozaki & Nakamoto 2018","ordinal":256}
+{"method":"Linear & Regularized Models","area_key":"sensory","ref_id":339,"label":"Gutiérrez et al. 2018","ordinal":257}
+{"method":"K-Nearest Neighbors","area_key":"sensory","ref_id":340,"label":"Rojas et al. 2017","ordinal":258}
+{"method":"Chemometrics","area_key":"sensory","ref_id":340,"label":"Rojas et al. 2017","ordinal":259}
+{"method":"Ensemble Learning","area_key":"sensory","ref_id":341,"label":"Oppen et al. 2023","ordinal":260}
+{"method":"Ensemble Learning","area_key":"sensory","ref_id":342,"label":"Androutsos et al. 2024","ordinal":261}
+{"method":"Genetic Algorithms","area_key":"sensory","ref_id":342,"label":"Androutsos et al. 2024","ordinal":262}
+{"method":"Ensemble Learning","area_key":"sensory","ref_id":343,"label":"Maroni et al. 2022","ordinal":263}
+{"method":"Ensemble Learning","area_key":"sensory","ref_id":344,"label":"Yang et al. 2022","ordinal":264}
+{"method":"Ensemble Learning","area_key":"sensory","ref_id":345,"label":"Bouysset et al. 2020","ordinal":265}
+{"method":"Ensemble Learning","area_key":"sensory","ref_id":346,"label":"Chéron et al. 2017","ordinal":266}
+{"method":"SVM","area_key":"sensory","ref_id":346,"label":"Chéron et al. 2017","ordinal":267}
+{"method":"Chemometrics","area_key":"sensory","ref_id":347,"label":"Chen et al. 2020","ordinal":268}
+{"method":"Chemometrics","area_key":"sensory","ref_id":348,"label":"Ma et al. 2017","ordinal":269}
+{"method":"CNN","area_key":"scaffolding","ref_id":349,"label":"Yang 2026","ordinal":270}
+{"method":"Benchmarks & Evaluation Frameworks","area_key":"eval","ref_id":349,"label":"Yang 2026","ordinal":271}
