@@ -137,7 +137,7 @@ describe('buildCatalogModel — real corpus', () => {
     // current Software.md / Databases.md H3 counts; bump when entries
     // are added. These MUST equal counts.json (asserted in generate-data).
     expect(model.software).toHaveLength(139);
-    expect(model.databases).toHaveLength(147);
+    expect(model.databases).toHaveLength(150);
   });
 
   it('folds topics onto entries via the (type,url) join, keyed per listing', () => {

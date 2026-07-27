@@ -8,12 +8,14 @@
 {"id":"db:alphafold-database","type":"database","slug":"alphafold-database"}
 {"id":"db:animal-qtldb","type":"database","slug":"animal-qtldb"}
 {"id":"db:aqua-faang","type":"database","slug":"aqua-faang"}
+{"id":"db:aromadb","type":"database","slug":"aromadb"}
 {"id":"db:arrayexpress-biostudies","type":"database","slug":"arrayexpress-biostudies"}
 {"id":"db:atlas-archetype-library-for-alternative-seafood","type":"database","slug":"atlas-archetype-library-for-alternative-seafood"}
 {"id":"db:bgee","type":"database","slug":"bgee"}
 {"id":"db:bigg-models","type":"database","slug":"bigg-models"}
 {"id":"db:biocyc-metacyc","type":"database","slug":"biocyc-metacyc"}
 {"id":"db:biomodels","type":"database","slug":"biomodels"}
+{"id":"db:biopep-uwm","type":"database","slug":"biopep-uwm"}
 {"id":"db:bitterdb","type":"database","slug":"bitterdb"}
 {"id":"db:bovine-metabolome-database-bmdb","type":"database","slug":"bovine-metabolome-database-bmdb"}
 {"id":"db:bovreg","type":"database","slug":"bovreg"}
@@ -106,6 +108,7 @@
 {"id":"db:pigbiobank","type":"database","slug":"pigbiobank"}
 {"id":"db:piggtex-portal","type":"database","slug":"piggtex-portal"}
 {"id":"db:pisces-phylogenetic-index-of-seafood-characteristics","type":"database","slug":"pisces-phylogenetic-index-of-seafood-characteristics"}
+{"id":"db:plantmoleculartastedb","type":"database","slug":"plantmoleculartastedb"}
 {"id":"db:pride","type":"database","slug":"pride"}
 {"id":"db:protein-data-bank-pdb","type":"database","slug":"protein-data-bank-pdb"}
 {"id":"db:proteingym-leaderboard","type":"database","slug":"proteingym-leaderboard"}

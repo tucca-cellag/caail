@@ -11,6 +11,8 @@
 {"item_id":"db:animal-qtldb","topic_id":"topic:single-cell-atlases"}
 {"item_id":"db:aqua-faang","topic_id":"topic:cell-lines-engineering"}
 {"item_id":"db:aqua-faang","topic_id":"topic:single-cell-atlases"}
+{"item_id":"db:aromadb","topic_id":"topic:flavor-sensory"}
+{"item_id":"db:aromadb","topic_id":"topic:sensory-flavor"}
 {"item_id":"db:arrayexpress-biostudies","topic_id":"topic:ai-methods-tooling"}
 {"item_id":"db:atlas-archetype-library-for-alternative-seafood","topic_id":"topic:ai-methods-tooling"}
 {"item_id":"db:atlas-archetype-library-for-alternative-seafood","topic_id":"topic:single-cell-atlases"}
@@ -22,6 +24,10 @@
 {"item_id":"db:biocyc-metacyc","topic_id":"topic:metabolism-modeling"}
 {"item_id":"db:biomodels","topic_id":"topic:metabolic-modeling"}
 {"item_id":"db:biomodels","topic_id":"topic:metabolism-modeling"}
+{"item_id":"db:biopep-uwm","topic_id":"topic:allergenicity"}
+{"item_id":"db:biopep-uwm","topic_id":"topic:flavor-sensory"}
+{"item_id":"db:biopep-uwm","topic_id":"topic:food-safety"}
+{"item_id":"db:biopep-uwm","topic_id":"topic:sensory-flavor"}
 {"item_id":"db:bitterdb","topic_id":"topic:flavor-sensory"}
 {"item_id":"db:bitterdb","topic_id":"topic:sensory-flavor"}
 {"item_id":"db:bovine-metabolome-database-bmdb","topic_id":"topic:metabolic-modeling"}
@@ -163,6 +169,8 @@
 {"item_id":"db:piggtex-portal","topic_id":"topic:cell-lines-engineering"}
 {"item_id":"db:piggtex-portal","topic_id":"topic:single-cell-atlases"}
 {"item_id":"db:pisces-phylogenetic-index-of-seafood-characteristics","topic_id":"topic:ai-methods-tooling"}
+{"item_id":"db:plantmoleculartastedb","topic_id":"topic:flavor-sensory"}
+{"item_id":"db:plantmoleculartastedb","topic_id":"topic:sensory-flavor"}
 {"item_id":"db:pride","topic_id":"topic:ai-methods-tooling"}
 {"item_id":"db:protein-data-bank-pdb","topic_id":"topic:ai-methods-tooling"}
 {"item_id":"db:proteingym-leaderboard","topic_id":"topic:ai-methods-tooling"}
