@@ -694,7 +694,7 @@ in its methods, not what it could be applied to. Short form:
 
 <a id="326">326</a> Bo, W., Qin, D., Zheng, X., Wang, Y., Ding, B., Li, Y., & Liang, G. (2022). Prediction of bitterant and sweetener using structure-taste relationship models based on an artificial neural network. *Food Research International, 153*, 110974. https://doi.org/10.1016/j.foodres.2022.110974
 
-<a id="327">327</a> Charoenkwan, P., Nantasenamat, C., Hasan, M. M., Moni, M. A., Lio’, P., & Shoombuatong, W. (2021). iBitter-Fuse: A Novel Sequence-Based Bitter Peptide Predictor by Fusing Multi-View Features. *International Journal of Molecular Sciences, 22*(16), 8958. https://doi.org/10.3390/ijms22168958
+<a id="327">327</a> Charoenkwan, P., Nantasenamat, C., Hasan, M. M., Moni, M. A., Liò, P., & Shoombuatong, W. (2021). iBitter-Fuse: A Novel Sequence-Based Bitter Peptide Predictor by Fusing Multi-View Features. *International Journal of Molecular Sciences, 22*(16), 8958. https://doi.org/10.3390/ijms22168958
 
 <a id="328">328</a> Charoenkwan, P., Nantasenamat, C., Hasan, M. M., Moni, M. A., Manavalan, B., & Shoombuatong, W. (2021). UMPred-FRL: A New Approach for Accurate Prediction of Umami Peptides Using Feature Representation Learning. *International Journal of Molecular Sciences, 22*(23), 13124. https://doi.org/10.3390/ijms222313124
 
