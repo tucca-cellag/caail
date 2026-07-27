@@ -5,20 +5,20 @@ This document presents the core research papers at the intersection of Cellular 
 | | [Media Optimization](./Taxonomy.md#media-optimization) | [Cellular Engineering](./Taxonomy.md#cellular-engineering) | [Bioprocess & Scale-Up](./Taxonomy.md#bioprocess--scale-up) | [Scaffolding](./Taxonomy.md#scaffolding) | [Sensory Prediction](./Taxonomy.md#sensory-prediction) | [AI Tooling / Methodology](./Taxonomy.md#ai-tooling--methodology) | [AI Evaluation & Benchmarking](./Taxonomy.md#ai-evaluation--benchmarking) |
 |---|---|---|---|---|---|---|---|
 | [Bayesian Optimization](./Taxonomy.md#bayesian-optimization) | [Cosenza et al. 2022](#3)<br>[Kanda et al. 2022](#16)<br>[Cosenza 2022](#18)<br>[Cosenza et al. 2023](#2)<br>[Yoshida et al. 2023](#15)<br>[Narayanan et al. 2025](#58)<br>[Cosenza et al. 2021](#211)<br>[Tu et al. 2022](#212)<br>[Ndahiro et al. 2025](#249)<br>[Emerson et al. 2026](#251) | [Kanda et al. 2022](#16) | [Antonakoudis & Richelle 2026](#59)<br>[Choi et al. 2025](#256) |  |  |  |  |
-| [Deep Learning](./Taxonomy.md#deep-learning) | [Cosenza 2022](#18)<br>[Yoshida et al. 2023](#15)<br>[Tu et al. 2022](#212) | [Li et al. 2020](#5)<br>[Magnusson et al. 2024](#122)<br>[Adduri et al. 2025](#57)<br>[Xiao et al. 2026](#145)<br>[Rosen et al. 2024](#118)<br>[Littman et al. 2025](#123)<br>[Vaishnav et al. 2022](#263) | [Del Rio‐Chanona et al. 2019](#29)<br>[Peng et al. 2013](#30)<br>[Chiu & Du 2025](#204)<br>[Yang et al. 2024](#205)<br>[Park et al. 2023](#253)<br>[Lu et al. 2025](#254)<br>[Narayanan et al. 2020](#255)<br>[Wang et al. 2023a](#257) | [Rafieyan et al. 2024](#20)<br>[Shin et al. 2025](#215)<br>[Golbabaei et al. 2024](#216) | [Tac et al. 2026](#236) | [Radzikowski & Chen 2026](#197)<br>[Chen et al. 2016](#4)<br>[Sarlakifar et al. 2025](#289) |  |
-| [GNN](./Taxonomy.md#gnn) |  | [Wang et al. 2021](#13)<br>[Ciortan & Defrance 2022](#8)<br>[Shan et al. 2023](#12)<br>[Roohani et al. 2024](#121)<br>[Li et al. 2024](#68) |  |  | [Lee et al. 2023](#14)<br>[Qian et al. 2023](#36)<br>[Steuer et al. 2026](#285)<br>[Srivastava et al. 2024](#286) | [Mulyadi et al. 2025](#52) |  |
-| [CNN](./Taxonomy.md#cnn) |  | [Yang et al. 2025](#218)<br>[Sinha et al. 2025](#264)<br>[Nabiullina et al. 2025](#265) | [Rojek et al. 2021](#33)<br>[Hevaganinge et al. 2023](#206)<br>[Iseoka et al. 2022](#260)<br>[Maruthamuthu et al. 2020](#261) | [Bermejillo Barrera et al. 2021](#19) | [Sun et al. 2023](#26)<br>[Shen et al. 2024](#11)<br>[Ulucan et al. 2019](#195)<br>[Gyening et al. 2025](#196) |  |  |
+| [Deep Learning](./Taxonomy.md#deep-learning) | [Cosenza 2022](#18)<br>[Yoshida et al. 2023](#15)<br>[Tu et al. 2022](#212) | [Li et al. 2020](#5)<br>[Magnusson et al. 2024](#122)<br>[Adduri et al. 2025](#57)<br>[Xiao et al. 2026](#145)<br>[Rosen et al. 2024](#118)<br>[Littman et al. 2025](#123)<br>[Vaishnav et al. 2022](#263) | [Del Rio‐Chanona et al. 2019](#29)<br>[Peng et al. 2013](#30)<br>[Chiu & Du 2025](#204)<br>[Yang et al. 2024](#205)<br>[Park et al. 2023](#253)<br>[Lu et al. 2025](#254)<br>[Narayanan et al. 2020](#255)<br>[Wang et al. 2023a](#257) | [Rafieyan et al. 2024](#20)<br>[Shin et al. 2025](#215)<br>[Golbabaei et al. 2024](#216) | [Tac et al. 2026](#236)<br>[Qi et al. 2023](#325)<br>[Bo et al. 2022](#326)<br>[Sharma et al. 2021](#330)<br>[Nozaki & Nakamoto 2016](#333)<br>[Nozaki & Nakamoto 2018](#338) | [Radzikowski & Chen 2026](#197)<br>[Chen et al. 2016](#4)<br>[Sarlakifar et al. 2025](#289) |  |
+| [GNN](./Taxonomy.md#gnn) |  | [Wang et al. 2021](#13)<br>[Ciortan & Defrance 2022](#8)<br>[Shan et al. 2023](#12)<br>[Roohani et al. 2024](#121)<br>[Li et al. 2024](#68) |  |  | [Lee et al. 2023](#14)<br>[Qian et al. 2023](#36)<br>[Steuer et al. 2026](#285)<br>[Srivastava et al. 2024](#286)<br>[He et al. 2024](#320)<br>[Song et al. 2023](#324) | [Mulyadi et al. 2025](#52) |  |
+| [CNN](./Taxonomy.md#cnn) |  | [Yang et al. 2025](#218)<br>[Sinha et al. 2025](#264)<br>[Nabiullina et al. 2025](#265) | [Rojek et al. 2021](#33)<br>[Hevaganinge et al. 2023](#206)<br>[Iseoka et al. 2022](#260)<br>[Maruthamuthu et al. 2020](#261) | [Bermejillo Barrera et al. 2021](#19)<br>[Kim et al. 2026](#310)<br>[Yang 2026](#349) | [Sun et al. 2023](#26)<br>[Shen et al. 2024](#11)<br>[Ulucan et al. 2019](#195)<br>[Gyening et al. 2025](#196)<br>[Ameta et al. 2024](#321) |  |  |
 | [GAN / VAE](./Taxonomy.md#gan--vae) |  | [Lin et al. 2020](#9)<br>[Zrimec et al. 2022](#10) |  | [Andrews et al. 2023](#35) | [Shen et al. 2024](#11) | [Pande et al. 2026](#238) |  |
-| [Genetic Algorithms](./Taxonomy.md#genetic-algorithms) | [Cosenza & Block 2021](#17)<br>[Nikkhah et al. 2023](#1)<br>[Hashizume & Ying 2025](#169)<br>[Munroe et al. 2019](#210)<br>[Cosenza et al. 2021](#211)<br>[Pi et al. 2020](#252) |  | [Peng et al. 2013](#30)<br>[Zhang et al. 2020](#31)<br>[Takahashi et al. 2016](#209)<br>[Brinc & Belič 2019](#258) | [Andrews et al. 2025](#34) |  |  |  |
-| [SVM](./Taxonomy.md#svm) | [Xu et al. 2014](#21) |  | [Zhang et al. 2020](#31)<br>[Roell et al. 2022](#32)<br>[Xu et al. 2025](#208)<br>[Pandi Chelvam et al. 2025](#259)<br>[Nguyen et al. 2025](#262) |  | [Sun et al. 2023](#26)<br>[Sun et al. 2026](#28)<br>[Colantonio et al. 2022](#72)<br>[Shen et al. 2024](#11)<br>[Pallante et al. 2022](#271) |  |  |
-| [Ensemble Learning](./Taxonomy.md#ensemble-learning) | [Gangwar et al. 2024](#170)<br>[Hashizume & Ying 2025](#169)<br>[Grzesik & Warth 2021](#213) |  | [Roell et al. 2022](#32)<br>[Du et al. 2025](#27)<br>[Behdani et al. 2024](#207)<br>[Xu et al. 2025](#208) | [Rafieyan et al. 2024](#20)<br>[Nair et al. 2021](#214)<br>[Serpe et al. 2025](#217) | [Keller et al. 2017](#80)<br>[Dagan-Wiener et al. 2017](#102)<br>[Margulis et al. 2021](#103)<br>[Colantonio et al. 2022](#72)<br>[Kircali Ata et al. 2023](#171)<br>[Ziaikin et al. 2024](#105)<br>[Du et al. 2025](#27)<br>[Shen et al. 2024](#11)<br>[Sun et al. 2026](#28)<br>[Tuwani et al. 2019](#268) | [Sharma et al. 2021](#290) |  |
-| [K-Nearest Neighbors](./Taxonomy.md#k-nearest-neighbors) |  |  | [Roell et al. 2022](#32) |  | [Sun et al. 2026](#28)<br>[Margulis et al. 2022](#104) |  |  |
-| [Linear & Regularized Models](./Taxonomy.md#linear--regularized-models) |  | [Wang et al. 2023b](#266) |  |  | [Charoenkwan et al. 2020](#269) |  |  |
-| [Chemometrics](./Taxonomy.md#chemometrics) | [Wang et al. 2026b](#287) |  | [Tamburini et al. 2014](#7)<br>[Xu et al. 2025](#208) |  |  | [Thévenot et al. 2015](#198)<br>[Rohart et al. 2017](#199) |  |
+| [Genetic Algorithms](./Taxonomy.md#genetic-algorithms) | [Cosenza & Block 2021](#17)<br>[Nikkhah et al. 2023](#1)<br>[Hashizume & Ying 2025](#169)<br>[Munroe et al. 2019](#210)<br>[Cosenza et al. 2021](#211)<br>[Pi et al. 2020](#252) |  | [Peng et al. 2013](#30)<br>[Zhang et al. 2020](#31)<br>[Takahashi et al. 2016](#209)<br>[Brinc & Belič 2019](#258) | [Andrews et al. 2025](#34) | [Androutsos et al. 2024](#342) |  |  |
+| [SVM](./Taxonomy.md#svm) | [Xu et al. 2014](#21) |  | [Zhang et al. 2020](#31)<br>[Roell et al. 2022](#32)<br>[Xu et al. 2025](#208)<br>[Pandi Chelvam et al. 2025](#259)<br>[Nguyen et al. 2025](#262) |  | [Sun et al. 2023](#26)<br>[Sun et al. 2026](#28)<br>[Colantonio et al. 2022](#72)<br>[Shen et al. 2024](#11)<br>[Pallante et al. 2022](#271)<br>[Charoenkwan et al. 2021](#327)<br>[Chéron et al. 2017](#346)<br>[Cao et al. 2023](#334) |  |  |
+| [Ensemble Learning](./Taxonomy.md#ensemble-learning) | [Gangwar et al. 2024](#170)<br>[Hashizume & Ying 2025](#169)<br>[Grzesik & Warth 2021](#213) |  | [Roell et al. 2022](#32)<br>[Du et al. 2025](#27)<br>[Behdani et al. 2024](#207)<br>[Xu et al. 2025](#208) | [Rafieyan et al. 2024](#20)<br>[Nair et al. 2021](#214)<br>[Serpe et al. 2025](#217)<br>[Kircali Ata et al. 2023](#171)<br>[Dahl et al. 2025](#309) | [Keller et al. 2017](#80)<br>[Dagan-Wiener et al. 2017](#102)<br>[Margulis et al. 2021](#103)<br>[Colantonio et al. 2022](#72)<br>[Kircali Ata et al. 2023](#171)<br>[Ziaikin et al. 2024](#105)<br>[Du et al. 2025](#27)<br>[Shen et al. 2024](#11)<br>[Sun et al. 2026](#28)<br>[Tuwani et al. 2019](#268)<br>[Tyagi et al. 2024](#323)<br>[Charoenkwan et al. 2021](#328)<br>[Wang et al. 2021](#329)<br>[Banerjee & Preissner 2018](#331)<br>[Zheng et al. 2018](#332)<br>[Goel et al. 2023](#336)<br>[Zheng et al. 2019](#337)<br>[Oppen et al. 2023](#341)<br>[Androutsos et al. 2024](#342)<br>[Maroni et al. 2022](#343)<br>[Yang et al. 2022](#344)<br>[Bouysset et al. 2020](#345)<br>[Chéron et al. 2017](#346) | [Sharma et al. 2021](#290) |  |
+| [K-Nearest Neighbors](./Taxonomy.md#k-nearest-neighbors) |  |  | [Roell et al. 2022](#32) |  | [Sun et al. 2026](#28)<br>[Margulis et al. 2022](#104)<br>[Rojas et al. 2017](#340) |  |  |
+| [Linear & Regularized Models](./Taxonomy.md#linear--regularized-models) |  | [Wang et al. 2023b](#266) |  | [Kircali Ata et al. 2023](#171) | [Charoenkwan et al. 2020](#269)<br>[Gutiérrez et al. 2018](#339)<br>[Kircali Ata et al. 2023](#171) |  |  |
+| [Chemometrics](./Taxonomy.md#chemometrics) | [Wang et al. 2026b](#287) |  | [Tamburini et al. 2014](#7)<br>[Xu et al. 2025](#208) |  | [Cao et al. 2023](#334)<br>[Liu et al. 2003](#335)<br>[Rojas et al. 2017](#340)<br>[Chen et al. 2020](#347)<br>[Ma et al. 2017](#348) | [Thévenot et al. 2015](#198)<br>[Rohart et al. 2017](#199) |  |
 | [Active Learning](./Taxonomy.md#active-learning) | [Hashizume et al. 2022](#24)<br>[Zhang et al. 2023](#23)<br>[Ozawa et al. 2025](#25)<br>[Narayanan et al. 2025](#58)<br>[Hashizume & Ying 2025](#169)<br>[Hashizume et al. 2026](#250) | [Pandi et al. 2022](#63)<br>[Hao et al. 2025](#97) |  |  |  | [Pandi et al. 2022](#63)<br>[King et al. 2004](#182) |  |
 | [Reinforcement Learning](./Taxonomy.md#reinforcement-learning) |  | [Wu et al. 2026](#165)<br>[Rizvi et al. 2026](#120) | [Petsagkourakis et al. 2020](#200)<br>[Oh et al. 2022](#201)<br>[Rajasekhar et al. 2024](#202)<br>[Wu & Cui 2025](#203) |  |  | [Narayanan et al. 2025](#161) |  |
 | [Foundation Models: Next-Token Prediction](./Taxonomy.md#foundation-models-next-token-prediction) |  | [Shen et al. 2023](#115)<br>[Pearce et al. 2026](#92)<br>[Rizvi et al. 2026](#120) |  |  | [Steuer et al. 2026](#285) | [Cui et al. 2024](#117)<br>[Su et al. 2026](#88) |  |
-| [Foundation Models: Masked Language Modeling](./Taxonomy.md#foundation-models-masked-language-modeling) |  | [Yang et al. 2022](#112)<br>[Hao et al. 2024](#116)<br>[Zeng et al. 2025](#235) |  |  |  | [Theodoris et al. 2023](#111)<br>[Cui et al. 2024](#117)<br>[Ji et al. 2021](#6) |  |
+| [Foundation Models: Masked Language Modeling](./Taxonomy.md#foundation-models-masked-language-modeling) |  | [Yang et al. 2022](#112)<br>[Hao et al. 2024](#116)<br>[Zeng et al. 2025](#235) |  |  | [Zhang et al. 2023](#322) | [Theodoris et al. 2023](#111)<br>[Cui et al. 2024](#117)<br>[Ji et al. 2021](#6) |  |
 | [Foundation Models: LM + Biological Priors](./Taxonomy.md#foundation-models-lm--biological-priors) |  | [Rosen et al. 2026](#119) |  |  |  |  |  |
 | [Foundation Models: Cell-State & Perturbation Prediction](./Taxonomy.md#foundation-models-cell-state--perturbation-prediction) |  | [Adduri et al. 2025](#57)<br>[Dong et al. 2026](#124)<br>[Rizvi et al. 2026](#120) |  |  |  | [Cui et al. 2024](#117) |  |
 | [Foundation Models (other modalities)](./Taxonomy.md#foundation-models-other-modalities) |  |  |  |  | [He et al. 2025](#267)<br>[Charoenkwan et al. 2021](#270) | [Sypetkowski et al. 2026](#42)<br>[Ding et al. 2026](#91)<br>[Queen et al. 2025](#224) |  |
@@ -27,7 +27,7 @@ This document presents the core research papers at the intersection of Cellular 
 | [Chemistry / Synthesis Agents](./Taxonomy.md#chemistry--synthesis-agents) |  |  |  |  |  | [Boiko et al. 2023](#70)<br>[Bran et al. 2024](#71) |  |
 | [Domain-Specific Biomedical Agents](./Taxonomy.md#domain-specific-biomedical-agents) |  | [Hao et al. 2025](#97)<br>[Roohani et al. 2025a](#125)<br>[Tang et al. 2026](#93) |  |  |  | [Maeda & Kurata 2023](#69)<br>[Li et al. 2024](#68)<br>[Lee et al. 2025](#43)<br>[Wehling et al. 2025](#50)<br>[Singh et al. 2025](#167)<br>[Ying et al. 2025](#54)<br>[Wang et al. 2025a](#56)<br>[Sui et al. 2026](#51)<br>[Gao et al. 2025a](#40)<br>[Yu et al. 2026](#90)<br>[Youngblut et al. 2025](#126)<br>[Ghafarollahi & Buehler 2024](#275)<br>[Qu et al. 2025](#276)<br>[Zhou et al. 2024](#277) |  |
 | [Robot Scientists & Lab Automation](./Taxonomy.md#robot-scientists--lab-automation) |  | [Singh et al. 2023](#66)<br>[Kanda et al. 2022](#16) | [Wang et al. 2025b](#61) |  |  | [King et al. 2004](#182)<br>[Tiukova et al. 2024](#64)<br>[Brunnsåker et al. 2025](#65)<br>[Qiu et al. 2025](#62)<br>[Ghareeb et al. 2026](#154)<br>[Darvish et al. 2025](#274) |  |
-| [Benchmarks & Evaluation Frameworks](./Taxonomy.md#benchmarks--evaluation-frameworks) |  |  |  |  |  |  | [Sadhuka et al. 2025](#55)<br>[Brouwer et al. 2026](#89)<br>[Mitchener et al. 2025](#108)<br>[Bushuiev et al. 2024](#109)<br>[Sze & Hassoun 2024](#110)<br>[Chevalley et al. 2025](#127)<br>[Laurent et al. 2024](#146)<br>[Gu et al. 2025](#147)<br>[Notin et al. 2023](#148)<br>[Duan et al. 2025](#149)<br>[Nair et al. 2026](#150)<br>[Jimenez et al. 2024](#155)<br>[Rein et al. 2023](#156)<br>[Wang et al. 2024](#157)<br>[Phan et al. 2026](#158)<br>[Wang et al. 2026a](#159)<br>[Huang et al. 2026](#164)<br>[Liu et al. 2026](#53)<br>[Adduri et al. 2025](#57)<br>[Miller et al. 2025](#225)<br>[Ahmed et al. 2026](#239)<br>[Li & Ho 2026](#241) |
+| [Benchmarks & Evaluation Frameworks](./Taxonomy.md#benchmarks--evaluation-frameworks) |  |  |  |  |  |  | [Sadhuka et al. 2025](#55)<br>[Brouwer et al. 2026](#89)<br>[Mitchener et al. 2025](#108)<br>[Bushuiev et al. 2024](#109)<br>[Sze & Hassoun 2024](#110)<br>[Chevalley et al. 2025](#127)<br>[Laurent et al. 2024](#146)<br>[Gu et al. 2025](#147)<br>[Notin et al. 2023](#148)<br>[Duan et al. 2025](#149)<br>[Nair et al. 2026](#150)<br>[Jimenez et al. 2024](#155)<br>[Rein et al. 2023](#156)<br>[Wang et al. 2024](#157)<br>[Phan et al. 2026](#158)<br>[Wang et al. 2026a](#159)<br>[Huang et al. 2026](#164)<br>[Liu et al. 2026](#53)<br>[Adduri et al. 2025](#57)<br>[Miller et al. 2025](#225)<br>[Ahmed et al. 2026](#239)<br>[Li & Ho 2026](#241)<br>[Yang 2026](#349) |
 | [Agent Infrastructure (Frameworks, KGs, Protocols)](./Taxonomy.md#agent-infrastructure-frameworks-kgs-protocols) |  |  |  |  |  | [Gao et al. 2025b](#41)<br>[Lobentanzer et al. 2025](#48)<br>[Ruscone et al. 2025](#67)<br>[Kuehl et al. 2025](#133)<br>[Narayanan et al. 2024](#160)<br>[Qiao et al. 2026](#162)<br>[Wang et al. 2025b](#61)<br>[Tang et al. 2026](#93)<br>[Matsumoto et al. 2025](#219)<br>[Glen et al. 2025](#220) |  |
 
 ## Category definitions
@@ -484,6 +484,8 @@ in its methods, not what it could be applied to. Short form:
 
 <a id="171">171</a> Kircali Ata, S., Shi, J. K., Yao, X., Hua, X. Y., Haldar, S., Chiang, J. H., & Wu, M. (2023). Predicting the Textural Properties of Plant-Based Meat Analogs with Machine Learning. *Foods, 12*(2), 344. https://doi.org/10.3390/foods12020344
 
+> **Code**: https://github.com/sezinata/FoodML
+
 <a id="182">182</a> King, R. D., Whelan, K. E., Jones, F. M., Reiser, P. G. K., Bryant, C. H., Muggleton, S. H., Kell, D. B., & Oliver, S. G. (2004). Functional genomic hypothesis generation and experimentation by a robot scientist. *Nature, 427*(6971), 247–252. https://doi.org/10.1038/nature02236
 
 <a id="195">195</a> Ulucan, O., Karakaya, D., & Turkan, M. (2019). Meat Quality Assessment based on Deep Learning. *2019 Innovations in Intelligent Systems and Applications Conference (ASYU)*, 1–5. https://doi.org/10.1109/ASYU48272.2019.8946388
@@ -673,6 +675,72 @@ in its methods, not what it could be applied to. Short form:
 > **Code**: https://github.com/faezesarlakifar/AllerTrans
 
 <a id="290">290</a> Sharma, N., Patiyal, S., Dhall, A., Pande, A., Arora, C., & Raghava, G. P. S. (2021). AlgPred 2.0: An improved method for predicting allergenic proteins and mapping of IgE epitopes. *Briefings in Bioinformatics, 22*(4), bbaa294. https://doi.org/10.1093/bib/bbaa294
+
+<a id="309">309</a> Dahl, J. F., Schlangen, M., van der Goot, A. J., & Corredig, M. (2025). Predicting rheological parameters of food biopolymer mixtures using machine learning. *Food Hydrocolloids, 160*, 110786. https://doi.org/10.1016/j.foodhyd.2024.110786
+
+<a id="310">310</a> Kim, S., Kim, J.-H., Seol, J., Pak, J., Son, H. I., & Kim, S.-J. (2026). Multi-attribute prediction of protein composition and hardness using semantic segmentation for 3D-Printed plant-based meat analogues. *Current Research in Food Science, 12*, 101458. https://doi.org/10.1016/j.crfs.2026.101458
+
+<a id="320">320</a> He, Y., Liu, K., Liu, Y., & Han, W. (2024). Prediction of bitterness based on modular designed graph neural network. *Bioinformatics Advances, 4*(1), vbae041. https://doi.org/10.1093/bioadv/vbae041
+
+<a id="321">321</a> Ameta, D., Behera, L., Chakraborty, A., & Sandhan, T. (2024). Predicting odor from vibrational spectra: a data-driven approach. *Scientific Reports, 14*(1), 20321. https://doi.org/10.1038/s41598-024-70696-w
+
+<a id="322">322</a> Zhang, J., Yan, W., Zhang, Q., Li, Z., Liang, L., Zuo, M., & Zhang, Y. (2023). Umami-BERT: An interpretable BERT-based model for umami peptides prediction. *Food Research International, 172*, 113142. https://doi.org/10.1016/j.foodres.2023.113142
+
+<a id="323">323</a> Tyagi, P., Sharma, A., Semwal, R., Tiwary, U. S., & Varadwaj, P. K. (2024). XGBoost odor prediction model: finding the structure-odor relationship of odorant molecules using the extreme gradient boosting algorithm. *Journal of Biomolecular Structure and Dynamics, 42*(20), 10727–10738. https://doi.org/10.1080/07391102.2023.2258415
+
+<a id="324">324</a> Song, Y., Chang, S., Tian, J., Pan, W., Feng, L., & Ji, H. (2023). A Comprehensive Comparative Analysis of Deep Learning Based Feature Representations for Molecular Taste Prediction. *Foods, 12*(18), 3386. https://doi.org/10.3390/foods12183386
+
+<a id="325">325</a> Qi, L., Du, J., Sun, Y., Xiong, Y., Zhao, X., Pan, D., Zhi, Y., Dang, Y., & Gao, X. (2023). Umami-MRNN: Deep learning-based prediction of umami peptide using RNN and MLP. *Food Chemistry, 405*, 134935. https://doi.org/10.1016/j.foodchem.2022.134935
+
+<a id="326">326</a> Bo, W., Qin, D., Zheng, X., Wang, Y., Ding, B., Li, Y., & Liang, G. (2022). Prediction of bitterant and sweetener using structure-taste relationship models based on an artificial neural network. *Food Research International, 153*, 110974. https://doi.org/10.1016/j.foodres.2022.110974
+
+<a id="327">327</a> Charoenkwan, P., Nantasenamat, C., Hasan, M. M., Moni, M. A., Liò, P., & Shoombuatong, W. (2021). iBitter-Fuse: A Novel Sequence-Based Bitter Peptide Predictor by Fusing Multi-View Features. *International Journal of Molecular Sciences, 22*(16), 8958. https://doi.org/10.3390/ijms22168958
+
+<a id="328">328</a> Charoenkwan, P., Nantasenamat, C., Hasan, M. M., Moni, M. A., Manavalan, B., & Shoombuatong, W. (2021). UMPred-FRL: A New Approach for Accurate Prediction of Umami Peptides Using Feature Representation Learning. *International Journal of Molecular Sciences, 22*(23), 13124. https://doi.org/10.3390/ijms222313124
+
+<a id="329">329</a> Wang, Y.-T., Yang, Z.-X., Piao, Z.-H., Xu, X.-J., Yu, J.-H., & Zhang, Y.-H. (2021). Prediction of flavor and retention index for compounds in beer depending on molecular structure using a machine learning method. *RSC Advances, 11*(58), 36942–36950. https://doi.org/10.1039/d1ra06551c
+
+<a id="330">330</a> Sharma, A., Kumar, R., Ranjta, S., & Varadwaj, P. K. (2021). SMILES to Smell: Decoding the Structure–Odor Relationship of Chemical Compounds Using the Deep Neural Network Approach. *Journal of Chemical Information and Modeling, 61*(2), 676–688. https://doi.org/10.1021/acs.jcim.0c01288
+
+<a id="331">331</a> Banerjee, P., & Preissner, R. (2018). BitterSweetForest: A Random Forest Based Binary Classifier to Predict Bitterness and Sweetness of Chemical Compounds. *Frontiers in Chemistry, 6*, 93. https://doi.org/10.3389/fchem.2018.00093
+
+<a id="332">332</a> Zheng, S., Jiang, M., Zhao, C., Zhu, R., Hu, Z., Xu, Y., & Lin, F. (2018). e-Bitter: Bitterant Prediction by the Consensus Voting From the Machine-Learning Methods. *Frontiers in Chemistry, 6*, 82. https://doi.org/10.3389/fchem.2018.00082
+
+<a id="333">333</a> Nozaki, Y., & Nakamoto, T. (2016). Odor Impression Prediction from Mass Spectra. *PLOS ONE, 11*(6), e0157030. https://doi.org/10.1371/journal.pone.0157030
+
+<a id="334">334</a> Cao, Y.-M., Zhang, Y., Yu, S.-T., Wang, K.-K., Chen, Y.-J., Xu, Z.-M., Ma, Z.-Y., Chen, H.-L., Wang, Q., Zhao, R., Sun, X.-Q., & Li, J.-T. (2023). Rapid and Non-Invasive Assessment of Texture Profile Analysis of Common Carp (Cyprinus carpio L.) Using Hyperspectral Imaging and Machine Learning. *Foods, 12*(17), 3154. https://doi.org/10.3390/foods12173154
+
+<a id="335">335</a> Liu, Y., Lyon, B. G., Windham, W. R., Realini, C. E., Pringle, T. D. D., & Duckett, S. (2003). Prediction of color, texture, and sensory characteristics of beef steaks by visible and near infrared reflectance spectroscopy. A feasibility study. *Meat Science, 65*(3), 1107–1115. https://doi.org/10.1016/s0309-1740(02)00328-5
+
+<a id="336">336</a> Goel, M., Sharma, A., Chilwal, A. S., Kumari, S., Kumar, A., & Bagler, G. (2023). Machine learning models to predict sweetness of molecules. *Computers in Biology and Medicine, 152*, 106441. https://doi.org/10.1016/j.compbiomed.2022.106441
+
+<a id="337">337</a> Zheng, S., Chang, W., Xu, W., Xu, Y., & Lin, F. (2019). e-Sweet: A Machine-Learning Based Platform for the Prediction of Sweetener and Its Relative Sweetness. *Frontiers in Chemistry, 7*, 35. https://doi.org/10.3389/fchem.2019.00035
+
+<a id="338">338</a> Nozaki, Y., & Nakamoto, T. (2018). Predictive modeling for odor character of a chemical using machine learning combined with natural language processing. *PLOS ONE, 13*(6), e0198475. https://doi.org/10.1371/journal.pone.0198475
+
+<a id="339">339</a> Gutiérrez, E. D., Dhurandhar, A., Keller, A., Meyer, P., & Cecchi, G. A. (2018). Predicting natural language descriptions of mono-molecular odorants. *Nature Communications, 9*(1), 4979. https://doi.org/10.1038/s41467-018-07439-9
+
+<a id="340">340</a> Rojas, C., Todeschini, R., Ballabio, D., Mauri, A., Consonni, V., Tripaldi, P., & Grisoni, F. (2017). A QSTR-Based Expert System to Predict Sweetness of Molecules. *Frontiers in Chemistry, 5*, 53. https://doi.org/10.3389/fchem.2017.00053
+
+<a id="341">341</a> Oppen, D., Attig, T., Weiss, J., & Krupitzer, C. (2023). Anticipating food structure of meat products from mastication physics applying machine learning. *Food Research International, 174*, 113576. https://doi.org/10.1016/j.foodres.2023.113576
+
+<a id="342">342</a> Androutsos, L., Pallante, L., Bompotas, A., Stojceski, F., Grasso, G., Piga, D., Di Benedetto, G., Alexakos, C., Kalogeras, A., Theofilatos, K., Deriu, M. A., & Mavroudi, S. (2024). Predicting multiple taste sensations with a multiobjective machine learning method. *npj Science of Food, 8*(1), 47. https://doi.org/10.1038/s41538-024-00287-6
+
+<a id="343">343</a> Maroni, G., Pallante, L., Di Benedetto, G., Deriu, M. A., Piga, D., & Grasso, G. (2022). Informed classification of sweeteners/bitterants compounds via explainable machine learning. *Current Research in Food Science, 5*, 2270–2280. https://doi.org/10.1016/j.crfs.2022.11.014
+
+<a id="344">344</a> Yang, Z.-F., Xiao, R., Xiong, G.-L., Lin, Q.-L., Liang, Y., Zeng, W.-B., Dong, J., & Cao, D.-S. (2022). A novel multi-layer prediction approach for sweetness evaluation based on systematic machine learning modeling. *Food Chemistry, 372*, 131249. https://doi.org/10.1016/j.foodchem.2021.131249
+
+<a id="345">345</a> Bouysset, C., Belloir, C., Antonczak, S., Briand, L., & Fiorucci, S. (2020). Novel scaffold of natural compound eliciting sweet taste revealed by machine learning. *Food Chemistry, 324*, 126864. https://doi.org/10.1016/j.foodchem.2020.126864
+
+<a id="346">346</a> Chéron, J.-B., Casciuc, I., Golebiowski, J., Antonczak, S., & Fiorucci, S. (2017). Sweetness prediction of natural compounds. *Food Chemistry, 221*, 1421–1425. https://doi.org/10.1016/j.foodchem.2016.10.145
+
+<a id="347">347</a> Chen, Q., Zhang, Y., Guo, Y., Cheng, Y., Qian, H., Yao, W., Xie, Y., & Ozaki, Y. (2020). Non-destructive prediction of texture of frozen/thaw raw beef by Raman spectroscopy. *Journal of Food Engineering, 266*, 109693. https://doi.org/10.1016/j.jfoodeng.2019.109693
+
+<a id="348">348</a> Ma, J., Sun, D.-W., Qu, J.-H., & Pu, H. (2017). Prediction of textural changes in grass carp fillets as affected by vacuum freeze drying using hyperspectral imaging based on integrated group wavelengths. *LWT - Food Science and Technology, 82*, 377–385. https://doi.org/10.1016/j.lwt.2017.04.040
+
+<a id="349">349</a> Yang, Z. (2026). From pixels to physics: A benchmark study of deep learning models for quantitative confocal microstructure segmentation of protein gels. *Colloids and Surfaces A: Physicochemical and Engineering Aspects, 747*, 140881. https://doi.org/10.1016/j.colsurfa.2026.140881
+
+> **Code**: https://github.com/yangzhi1987-sketch/benchmark-food-gel-segmentation
 
 ## Sensory & Flavor Reference Work
 
@@ -907,3 +975,23 @@ This section lists review articles, position papers, and commentaries that surve
 <a id="306">306</a> Blackstone, N. T., Pavlova, A., Trinidad, K. R., Nikkhah, A., Sinke, P., Heller, M., Duncan-Duggal, J., Ridoutt, B., Smetana, S., Makov, T., Shabtai, S., Green, A., Barnes, W., Bhattarai, I., Goyal, S., Imholz, N., Meshulam, T., Nadar, C. G., Norris, G. A., Quandt, J., Ronco, N., & Tuomisto, H. L. (2025). Guidelines for environmental life cycle assessment of cultivated meat. *The International Journal of Life Cycle Assessment, 30*(12), 2943–2963. https://doi.org/10.1007/s11367-025-02562-4
 
 <a id="307">307</a> Tavan, M., Smith, N. W., McNabb, W. C., & Wood, P. (2025). Reassessing the sustainability promise of cultured meat: A critical review with new data perspectives. *Critical Reviews in Food Science and Nutrition, 65*(30), 7201–7209. https://doi.org/10.1080/10408398.2025.2461262
+
+<a id="308">308</a> Gunning, M., & Tagkopoulos, I. (2025). A systematic review of data and models for predicting food flavor and texture. *Current Research in Food Science, 11*, 101127. https://doi.org/10.1016/j.crfs.2025.101127
+
+<a id="311">311</a> Malavolta, M., Pallante, L., Mavkov, B., Stojceski, F., Grasso, G., Korfiati, A., Mavroudi, S., Kalogeras, A., Alexakos, C., Martos, V., Amoroso, D., Di Benedetto, G., Piga, D., Theofilatos, K., & Deriu, M. A. (2022). A survey on computational taste predictors. *European Food Research and Technology, 248*(9), 2215–2235. https://doi.org/10.1007/s00217-022-04044-5
+
+<a id="312">312</a> Ji, H., Pu, D., Yan, W., Zhang, Q., Zuo, M., & Zhang, Y. (2023). Recent advances and application of machine learning in food flavor prediction and regulation. *Trends in Food Science & Technology, 138*, 738–751. https://doi.org/10.1016/j.tifs.2023.07.012
+
+<a id="313">313</a> Chen, X., Li, X., Wu, Y., Zhang, F., & Zheng, J. (2026). Machine learning and deep learning for flavor prediction and modeling in fermented vegetables: From multi-omics integration to digital twins. *Trends in Food Science & Technology, 174*, 105805. https://doi.org/10.1016/j.tifs.2026.105805
+
+<a id="314">314</a> Wang, J., Wang, S., Li, D., Fan, W., Jiang, Z., Zhang, J., Shi, Q., Zhang, Q., & Chai, G. (2026). From machine learning to neuroimaging: A comprehensive review of flavor prediction and recognition techniques. *Food Research International, 223*, 117933. https://doi.org/10.1016/j.foodres.2025.117933
+
+<a id="315">315</a> Konrad, T., Ha, M., Ronquest-Ross, L., Smyth, H. E., & Moura Nadolny, J. (2024). Plant-based mince texture: A review of the sensory literature with view to informing new product development. *Journal of Food Science, 89*(12), 8197–8214. https://doi.org/10.1111/1750-3841.17517
+
+<a id="316">316</a> Jia, W., van Ruth, S., Scollan, N., & Koidis, A. (2022). Hyperspectral Imaging (HSI) for meat quality evaluation across the supply chain: Current and future trends. *Current Research in Food Science, 5*, 1017–1027. https://doi.org/10.1016/j.crfs.2022.05.016
+
+<a id="317">317</a> Wong, K., Arruda, T. R., Butler, K. T., Guldin, S., & Schrettl, S. (2025). Machine learning for food colloids: Novel tools to advance fundamental understanding, stability, texture, and processability. *Current Opinion in Colloid & Interface Science, 78*, 101937. https://doi.org/10.1016/j.cocis.2025.101937
+
+<a id="318">318</a> Jung, H. Y., Kim, M., & Jo, C. (2026). Next-generation strategies for designing cultured fat with enhanced flavor and functionality. *Trends in Food Science & Technology, 168*, 105525. https://doi.org/10.1016/j.tifs.2025.105525
+
+<a id="319">319</a> Bahia, M. S., Nissim, I., & Niv, M. Y. (2018). Bitterness prediction in-silico: A step towards better drugs. *International Journal of Pharmaceutics, 536*(2), 526–529. https://doi.org/10.1016/j.ijpharm.2017.03.076

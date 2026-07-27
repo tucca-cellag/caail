@@ -39,20 +39,28 @@ scale-up. Out of scope: the medium recipe itself
 *(Renamed from "Bioprocess control" to make the reactor/scale-up engineering scope explicit.)*
 
 ### Scaffolding
-Designing and predicting **edible, food-grade scaffolds and structural biomaterials** that give
-cultured tissue its three-dimensional form and texture. In scope: scaffold geometry and architecture,
-mechanical-property prediction, tissue moulds, and food-grade biomaterial selection. Out of scope: the
-soluble medium (→ *Media Optimization*), sensory outcomes of the finished product
-(→ *Sensory Prediction*), and **non-edible biomedical scaffolds** (e.g. orthopedic or bone
+Designing and predicting **edible, food-grade scaffolds and structural biomaterials** (including the
+plant-derived structural matrices that cellular agriculture deliberately favors for a fully animal-free
+product: textured or extruded plant protein, biopolymer gels, decellularized plant scaffolds, mycelium)
+that give cultured tissue and hybrid products their three-dimensional form, mechanical properties, and
+structural texture. In scope: scaffold geometry and architecture; mechanical, rheological, and
+structural-texture prediction and optimization of the food-grade matrix; tissue moulds; and biomaterial
+selection. A paper that predicts or designs the **structural matrix** as a material sits here; where
+that same structural texture is also framed as a *perceived* eating-quality outcome, it is
+**dual-classified** with *Sensory Prediction*. Out of scope: the soluble medium (→ *Media
+Optimization*); flavor, taste, aroma, and quality assessment of intact finished food
+(→ *Sensory Prediction*); and **non-edible biomedical scaffolds** (e.g. orthopedic or bone
 tissue-engineering constructs) whose methodology may transfer but whose application is not cellular
-agriculture; a general method demonstrated only on such a scaffold belongs in
-*AI Tooling / Methodology*, not here.
+agriculture, and which belong in *AI Tooling / Methodology*.
 
 ### Sensory Prediction
-Predicting **sensory, organoleptic, and quality attributes** of the product — flavor, odor, taste,
-aroma, texture, color, and freshness/spoilage. In scope: odor/taste/flavor prediction from chemical
-structure or spectra, and meat-quality/freshness classification. Out of scope: purely nutritional
-composition with no sensory target.
+Predicting **sensory, organoleptic, and quality attributes** as *perceived outcomes* of the product:
+flavor, odor, taste, aroma, perceived texture and mouthfeel, color, and freshness/spoilage. In scope:
+odor/taste/flavor prediction from chemical structure or spectra; perceived-texture and eating-quality
+prediction; and meat-quality/freshness classification. Where a perceived-texture result is driven by
+the design of the underlying structural biomaterial, it is **dual-classified** with *Scaffolding*. Out
+of scope: designing the structural biomaterial itself as a material (→ *Scaffolding*), and purely
+nutritional composition with no sensory target.
 
 ### AI Tooling / Methodology
 **General-purpose AI methods, agents, tools, and frameworks** that are applicable to cellular
