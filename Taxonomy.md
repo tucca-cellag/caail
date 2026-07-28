@@ -45,20 +45,24 @@ product: textured or extruded plant protein, biopolymer gels, decellularized pla
 that give cultured tissue and hybrid products their three-dimensional form, mechanical properties, and
 structural texture. In scope: scaffold geometry and architecture; mechanical, rheological, and
 structural-texture prediction and optimization of the food-grade matrix; tissue moulds; and biomaterial
-selection. A paper that predicts or designs the **structural matrix** as a material sits here; where
-that same structural texture is also framed as a *perceived* eating-quality outcome, it is
-**dual-classified** with *Sensory Prediction*. Out of scope: the soluble medium (→ *Media
-Optimization*); flavor, taste, aroma, and quality assessment of intact finished food
-(→ *Sensory Prediction*); and **non-edible biomedical scaffolds** (e.g. orthopedic or bone
-tissue-engineering constructs) whose methodology may transfer but whose application is not cellular
-agriculture, and which belong in *AI Tooling / Methodology*.
+selection. A paper that predicts or designs the **structural matrix** as a material sits here. It is
+additionally **dual-classified** with *Sensory Prediction* when both of the following hold: (a) the
+quantity it predicts or optimizes is an eating-quality attribute, meaning either a human sensory
+rating or a validated instrumental proxy for one (TPA hardness, chewiness, springiness, cohesiveness;
+shear force; instrumental color); and (b) the paper motivates that quantity as a property of the
+finished product as eaten, rather than as a process-control or material-characterization endpoint.
+Out of scope: the soluble medium (→ *Media Optimization*); flavor, taste, aroma, and quality
+assessment of intact finished food (→ *Sensory Prediction*); and **non-edible biomedical scaffolds**
+(e.g. orthopedic or bone tissue-engineering constructs) whose methodology may transfer but whose
+application is not cellular agriculture, and which belong in *AI Tooling / Methodology*.
 
 ### Sensory Prediction
 Predicting **sensory, organoleptic, and quality attributes** as *perceived outcomes* of the product:
 flavor, odor, taste, aroma, perceived texture and mouthfeel, color, and freshness/spoilage. In scope:
 odor/taste/flavor prediction from chemical structure or spectra; perceived-texture and eating-quality
-prediction; and meat-quality/freshness classification. Where a perceived-texture result is driven by
-the design of the underlying structural biomaterial, it is **dual-classified** with *Scaffolding*. Out
+prediction; and meat-quality/freshness classification. A perceived-texture result is
+**dual-classified** with *Scaffolding* when the paper also designs or predicts the underlying
+structural matrix as a material, judged by the same two-part test given under *Scaffolding*. Out
 of scope: designing the structural biomaterial itself as a material (→ *Scaffolding*), and purely
 nutritional composition with no sensory target.
 

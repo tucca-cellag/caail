@@ -273,3 +273,4 @@
 {"method":"Linear & Regularized Models","area_key":"scaffolding","ref_id":171,"label":"Kircali Ata et al. 2023","ordinal":272}
 {"method":"Linear & Regularized Models","area_key":"sensory","ref_id":171,"label":"Kircali Ata et al. 2023","ordinal":273}
 {"method":"SVM","area_key":"sensory","ref_id":334,"label":"Cao et al. 2023","ordinal":274}
+{"method":"CNN","area_key":"sensory","ref_id":330,"label":"Sharma et al. 2021","ordinal":275}
