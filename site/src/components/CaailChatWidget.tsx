@@ -36,6 +36,14 @@ export default function CaailChatWidget() {
   const overLimit = count > WORD_LIMIT;
   const canSubmit = status !== 'loading' && count > 0 && !overLimit && !!CHAT_API;
 
+  function closeAndReset() {
+    setOpen(false);
+    setQuery('');
+    setStatus('idle');
+    setAnswer(null);
+    setErrorMessage(null);
+  }
+
   async function handleSubmit(event: Event) {
     event.preventDefault();
     if (!canSubmit || !CHAT_API) return;
@@ -75,7 +83,7 @@ export default function CaailChatWidget() {
               type="button"
               class="chat-panel-close"
               aria-label="Close chat"
-              onClick={() => setOpen(false)}
+              onClick={closeAndReset}
             >
               ×
             </button>
@@ -116,7 +124,7 @@ export default function CaailChatWidget() {
         aria-label={open ? 'Close chat' : 'Ask CAAIL a question'}
         aria-expanded={open}
         aria-controls={panelId}
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => (open ? closeAndReset() : setOpen(true))}
       >
         <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
           <path
