@@ -1,0 +1,133 @@
+---
+title: Privacy Policy
+description: What CAAIL collects, why there is no cookie banner, and how to reach Tufts with a data question.
+---
+
+CAAIL is a curated resource library published by the [Tufts University Center for Cellular
+Agriculture](https://cellularagriculture.tufts.edu/) (TUCCA). It has no accounts, no sign-up,
+no newsletter, no forms, and no payments. You can read every page without telling us anything
+about yourself, and there is nothing here to log into.
+
+This page describes the little that is collected anyway, and why.
+
+**Last updated:** July 2026
+
+## Where this site is hosted
+
+CAAIL is served as static files by GitHub Pages at `tucca-cellag.github.io/caail/`. Because that
+is not a `tufts.edu` address, the site sits outside the scope of the
+[Tufts University web privacy statement](https://www.tufts.edu/about/privacy), which covers
+`tufts.edu` properties. This page fills that gap. If CAAIL later moves to a `tufts.edu` domain,
+the Tufts statement will govern and this page will point there instead.
+
+GitHub, as the host, receives your IP address and browser user agent in the ordinary course of
+serving the page, as any web host does. That processing is covered by
+[GitHub's privacy statement](https://docs.github.com/en/site-policy/privacy-policies/github-privacy-statement).
+
+## What we measure
+
+### Page views
+
+We use **Cloudflare Web Analytics** to count page views and measure page load speed. It is
+cookieless: it sets no cookie, writes nothing to your browser's storage, and does not fingerprint
+your device. It has no persistent identifier for you, so it cannot recognise you across visits or
+follow you to any other site.
+
+What it records per page view is the page address, the referring page, your browser and operating
+system name, page timing measurements, and the country your IP address resolves to. Cloudflare
+states that it does not store any part of the IP address itself. It deliberately does not record
+query strings, so anything after a `?` in a URL is discarded.
+
+### Two events about what is useful
+
+CAAIL exists to point at things, so the measurements worth having are about whether the pointing
+works:
+
+- **Outbound clicks.** When you follow a link to a paper, a code repository, or a database, we
+  record the destination address and a coarse label for what kind of resource it is. This is how
+  we learn which entries are worth their place in the library.
+- **Site searches.** When you search CAAIL we record what you typed and how many results came
+  back. Searches that return little or nothing are the most direct signal we get that something is
+  missing from the collection, and they feed into what gets curated next.
+
+The search box is the only place you can type free text into CAAIL, so it gets the most careful
+handling in the code. We discard any query that contains an `@`, that is longer than 80
+characters, or that is mostly digits, so a pasted email address, a block of pasted text, or an
+identifier is never recorded. A query is recorded once, after you stop typing, rather than
+keystroke by keystroke. The rules are in
+[`analytics.ts`](https://github.com/tucca-cellag/caail/blob/main/site/src/lib/analytics.ts) if you
+would rather read the code than take our word for it.
+
+Neither event is tied to an identifier, and neither can be traced back to a person.
+
+**Current status:** both events are built into the site but are not being sent anywhere yet, as no
+analytics service is installed to receive them. They start recording only if CAAIL is added to
+Tufts University's analytics, and this page will say so plainly when that happens. Everything else
+described here is live today.
+
+## What is stored in your browser
+
+CAAIL saves three display preferences in your browser's local storage so the site looks the way
+you left it:
+
+| Key | What it remembers |
+| --- | --- |
+| `caail-nav-collapsed` | Whether you collapsed the left sidebar |
+| `caail-toc-collapsed` | Whether you collapsed the "On this page" panel |
+| `caail-tableview` | Whether you prefer data tables as tables or as cards |
+
+These never leave your browser. Nothing reads them but the page you are on, and clearing your
+browser storage resets them with no other effect.
+
+## Why there is no cookie banner
+
+The consent banners you see across the web come from the ePrivacy Directive, which requires
+consent before a site stores information on your device or reads information already stored there.
+Cookies are the usual way that happens, which is why the rule is often called "the cookie law."
+
+CAAIL sets no cookies and no tracking storage of any kind. The three preferences above are stored
+only because you asked for them by collapsing a panel or switching a view, which is the case the
+rule exempts. So there is nothing here for you to consent to, and a banner would ask you a question
+with no content.
+
+We would rather not put a dialog in front of a reference library, and CAAIL is built to be readable
+by AI research agents as well as people. A consent wall would block that audience for no privacy
+benefit.
+
+## Links to other sites
+
+Nearly all of CAAIL is links out: to journal articles, DOIs, code repositories, sequence archives,
+and databases run by other organisations. **Those sites are not ours and their tracking is not
+ours.** Some of them, publisher platforms in particular, track considerably more than CAAIL does.
+Following a link from here means leaving this policy behind and entering theirs.
+
+Linked resources are independent of TUCCA and Tufts University and remain under their own licenses
+and their own privacy terms. Listing something in CAAIL is not an endorsement of how its publisher
+handles your data.
+
+## Your choices
+
+- **Block the analytics.** Any content blocker or privacy-focused browser will stop the Cloudflare
+  beacon. Nothing on the site depends on it, and everything keeps working.
+- **Send Do Not Track or Global Privacy Control.** Modern browsers can signal this automatically.
+- **Clear the stored preferences** through your browser's site data settings.
+
+If you are in the European Economic Area or the United Kingdom, you have rights of access,
+correction, erasure, restriction, objection, and portability over personal data about you. Given
+that CAAIL holds no identifiers, we are very unlikely to hold anything that could be linked to
+you, but you are welcome to ask.
+
+## Questions
+
+Privacy questions and data rights requests go to Tufts University's data privacy office at
+**[dataprivacy@tufts.edu](mailto:dataprivacy@tufts.edu)**, the same address given in the
+[Tufts web privacy statement](https://www.tufts.edu/about/privacy).
+
+For anything about the library's content rather than your data, open an issue on
+[the CAAIL repository](https://github.com/tucca-cellag/caail/issues).
+
+## Changes
+
+CAAIL is a small static site and this policy should change rarely. If we ever add analytics that
+sets cookies or builds a persistent identifier, we will update this page and reassess whether
+consent is required before making the change, not after.

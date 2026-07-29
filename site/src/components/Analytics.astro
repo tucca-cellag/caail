@@ -1,0 +1,91 @@
+---
+/**
+ * Analytics — records the two things a curated library most needs to know and
+ * that page-view counters cannot answer: which external resources visitors
+ * actually open, and what they searched for and did not find.
+ *
+ * Behavior-only, like DataTableViews: it renders no markup, so it adds nothing
+ * for axe to audit (several e2e specs assert zero violations of any severity).
+ * The click handler never calls preventDefault/stopPropagation, so every
+ * existing interaction keeps working unchanged.
+ *
+ * Events go wherever `resolveSink` finds a tag — GA4's gtag or a GTM
+ * dataLayer — and nowhere at all when neither is installed, which is the state
+ * today. That is deliberate: the instrumentation lands now and begins emitting
+ * the moment CAAIL is added to Tufts' container, with no code change. The
+ * classification and redaction logic lives in src/lib/analytics.ts, where it is
+ * unit-tested; this file is only the wiring. What the events disclose is
+ * written up for readers at /privacy/.
+ */
+---
+
+<script>
+  import { resolveSink, outboundEvent, normalizeQuery } from '../lib/analytics';
+
+  /** Quiet period after the last search mutation before we judge a result set final. */
+  const SEARCH_SETTLE_MS = 1200;
+
+  const sink = () => resolveSink(window as Parameters<typeof resolveSink>[0]);
+
+  // --- Outbound resource clicks -------------------------------------------
+  // Delegated, capture-phase-free, and synchronous: Starlight's search modal
+  // closes itself on any click carrying an href, so deferring the send (a
+  // setTimeout) would race the teardown. gtag transports over sendBeacon
+  // internally, so a same-tab navigation still delivers.
+  document.addEventListener('click', (e) => {
+    const link = (e.target as HTMLElement)?.closest?.('a');
+    if (!link) return;
+    const href = link.getAttribute('href');
+    if (!href) return;
+    const ev = outboundEvent(href, location.href);
+    if (!ev) return;
+    sink()?.('outbound_click', { link_url: ev.url, link_domain: ev.domain, resource_kind: ev.kind });
+  });
+
+  // --- Site searches -------------------------------------------------------
+  // Starlight's search is Pagefind, which runs wholly client-side, so no
+  // analytics product can otherwise see a query — yet what people search for is
+  // the most direct signal we get about gaps in the library. Pagefind exposes no
+  // result callback (Starlight hardcodes processResult), so we observe its DOM.
+  //
+  // We record the term *and* its result count rather than filtering to
+  // zero-result searches, because Pagefind has no zero-result state to filter
+  // on: it degrades to fuzzy matches, so even `kkkkkkkkkk` returns four hits
+  // against this corpus. A low count is the usable "found nothing good" proxy,
+  // and it has to be computed from the data afterwards rather than here.
+  //
+  // `search` + `search_term` is GA4's own recommended shape, so these populate
+  // its built-in Site Search report with no extra configuration.
+  function watchSearch() {
+    const root = document.querySelector('#starlight__search');
+    if (!root) return; // no search on this page, or dev (Pagefind never mounts)
+
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let last = '';
+
+    const settle = () => {
+      const input = root.querySelector<HTMLInputElement>('.pagefind-ui__search-input');
+      const results = root.querySelector('.pagefind-ui__results');
+      // Still fetching, or the UI has not mounted — not a verdict yet.
+      if (!input || !results || root.querySelector('.pagefind-ui__loading')) return;
+
+      const q = normalizeQuery(input.value);
+      if (!q || q === last) return; // unrecordable, or already sent this query
+      last = q;
+      sink()?.('search', {
+        search_term: q,
+        result_count: results.querySelectorAll('.pagefind-ui__result').length,
+      });
+    };
+
+    new MutationObserver(() => {
+      clearTimeout(timer);
+      timer = setTimeout(settle, SEARCH_SETTLE_MS);
+    }).observe(root, { childList: true, subtree: true });
+  }
+
+  // Defer setup entirely: docs.yml gates Lighthouse Performance >= 0.90, and
+  // none of this is needed before paint.
+  const onIdle = window.requestIdleCallback ?? ((cb: () => void) => setTimeout(cb, 1));
+  onIdle(() => watchSearch());
+</script>
