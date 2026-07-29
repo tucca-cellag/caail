@@ -41,6 +41,8 @@ jobs:
         run: pnpm --dir site install --frozen-lockfile
       - name: Build
         run: pnpm --dir site build
+        env:
+          PUBLIC_CAAIL_CHAT_API: ${{ vars.PUBLIC_CAAIL_CHAT_API }}
       - name: Lighthouse (a11y both; perf landing-only)
         run: pnpm --dir site exec lhci autorun --config=lighthouserc.json
       - name: Upload Pages artifact

@@ -35,9 +35,14 @@
     "astro": "^6.3.1",
     "astro-icon": "^1.1.5",
     "cytoscape": "^3.33.4",
+    "hast-util-to-html": "^9.0.5",
     "lite-youtube-embed": "^0.3.4",
+    "mdast-util-to-hast": "^13.2.1",
     "preact": "^10.29.2",
-    "sharp": "^0.34.5"
+    "remark-gfm": "^4.0.1",
+    "remark-parse": "^11.0.0",
+    "sharp": "^0.34.5",
+    "unified": "^11.0.5"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.11.3",
@@ -46,15 +51,10 @@
     "@resvg/resvg-js": "^2.6.2",
     "@types/cytoscape": "^3.31.0",
     "@types/mdast": "^4.0.4",
-    "hast-util-to-html": "^9.0.5",
-    "mdast-util-to-hast": "^13.2.1",
     "mdast-util-to-string": "^4.0.0",
     "png-to-ico": "^3.0.1",
-    "remark-gfm": "^4.0.1",
-    "remark-parse": "^11.0.0",
     "remark-stringify": "^11.0.0",
     "tsx": "^4.22.3",
-    "unified": "^11.0.5",
     "unist-util-visit": "^5.1.0",
     "vitest": "^4.1.7",
     "zod": "^4.4.3"

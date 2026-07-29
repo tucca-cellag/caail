@@ -35,15 +35,30 @@ importers:
       cytoscape:
         specifier: ^3.33.4
         version: 3.33.4
+      hast-util-to-html:
+        specifier: ^9.0.5
+        version: 9.0.5
       lite-youtube-embed:
         specifier: ^0.3.4
         version: 0.3.4
+      mdast-util-to-hast:
+        specifier: ^13.2.1
+        version: 13.2.1
       preact:
         specifier: ^10.29.2
         version: 10.29.2
+      remark-gfm:
+        specifier: ^4.0.1
+        version: 4.0.1
+      remark-parse:
+        specifier: ^11.0.0
+        version: 11.0.0
       sharp:
         specifier: ^0.34.5
         version: 0.34.5
+      unified:
+        specifier: ^11.0.5
+        version: 11.0.5
     devDependencies:
       '@axe-core/playwright':
         specifier: ^4.11.3
@@ -63,33 +78,18 @@ importers:
       '@types/mdast':
         specifier: ^4.0.4
         version: 4.0.4
-      hast-util-to-html:
-        specifier: ^9.0.5
-        version: 9.0.5
-      mdast-util-to-hast:
-        specifier: ^13.2.1
-        version: 13.2.1
       mdast-util-to-string:
         specifier: ^4.0.0
         version: 4.0.0
       png-to-ico:
         specifier: ^3.0.1
         version: 3.0.1
-      remark-gfm:
-        specifier: ^4.0.1
-        version: 4.0.1
-      remark-parse:
-        specifier: ^11.0.0
-        version: 11.0.0
       remark-stringify:
         specifier: ^11.0.0
         version: 11.0.0
       tsx:
         specifier: ^4.22.3
         version: 4.22.3
-      unified:
-        specifier: ^11.0.5
-        version: 11.0.5
       unist-util-visit:
         specifier: ^5.1.0
         version: 5.1.0

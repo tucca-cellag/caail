@@ -3,6 +3,7 @@ import Default from '@astrojs/starlight/components/Footer.astro';
 import NavCollapse from './NavCollapse.astro';
 import DataTableViews from './DataTableViews.astro';
 import TuccaLockup from './TuccaLockup.astro';
+import CaailChatWidget from './CaailChatWidget';
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 ---
 <div class="caail-footer">
@@ -16,6 +17,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 <Default><slot /></Default>
 <NavCollapse />
 <DataTableViews />
+<CaailChatWidget client:idle />
 <style>
   .caail-footer { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .5rem; font-size: .72rem; color: var(--caail-muted); border-top: 1px solid var(--caail-border); padding-top: .8rem; margin-top: 1rem; }
   .caail-foot-brand { display: inline-flex; align-items: center; }
