@@ -1,0 +1,124 @@
+/* chat-widget.css — the floating "Ask CAAIL" button + panel (bottom-right, every
+   page, mounted from Footer.astro). Small and unobtrusive: a compact round button
+   that expands into a lightweight panel, styled with the shared design tokens so it
+   matches light/dark theme automatically. */
+
+.chat-widget {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 50;
+}
+
+.chat-fab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  color: var(--caail-bg);
+  background: var(--caail-primary);
+  border: none;
+  border-radius: 50%;
+  box-shadow: 0 4px 14px -6px color-mix(in oklab, var(--caail-primary) 70%, transparent);
+  cursor: pointer;
+}
+.chat-fab:hover,
+.chat-fab:focus-visible { background: var(--caail-primary-hover); }
+
+.chat-panel {
+  position: absolute;
+  right: 0;
+  bottom: calc(2.5rem + 0.6rem);
+  width: min(26rem, calc(100vw - 2rem));
+  max-height: min(28rem, calc(100vh - 6rem));
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: var(--caail-bg);
+  border: 1px solid var(--caail-border);
+  border-radius: 0.6rem;
+  box-shadow: 0 10px 30px -12px color-mix(in oklab, var(--caail-primary) 40%, transparent);
+  font-size: 0.82rem;
+}
+
+.chat-panel-header { display: flex; align-items: center; justify-content: space-between; }
+.chat-panel-title { font-family: var(--caail-font-display); font-weight: 700; color: var(--caail-ink); }
+.chat-panel-close {
+  padding: 0 0.3rem;
+  font-size: 1.1rem;
+  line-height: 1;
+  color: var(--caail-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+.chat-panel-close:hover,
+.chat-panel-close:focus-visible { color: var(--caail-ink); }
+
+.chat-panel-blurb { margin: 0; color: var(--caail-muted); font-size: 0.76rem; }
+
+.chat-panel-form { display: flex; flex-direction: column; gap: 0.4rem; }
+.chat-panel-input {
+  resize: vertical;
+  min-height: 3.5rem;
+  padding: 0.4rem 0.5rem;
+  color: var(--caail-ink);
+  background: var(--caail-surface);
+  border: 1px solid var(--caail-border);
+  border-radius: 0.4rem;
+  font: inherit;
+}
+.chat-panel-input:focus-visible { outline: 2px solid var(--caail-link); outline-offset: 1px; }
+
+.chat-panel-footer { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+.chat-word-count { font-size: 0.68rem; color: var(--caail-muted); }
+.chat-word-count--over { color: var(--caail-area-sensory); font-weight: 600; }
+
+.chat-panel-submit {
+  padding: 0.3rem 0.75rem;
+  color: var(--caail-bg);
+  background: var(--caail-primary);
+  border: none;
+  border-radius: 0.4rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.chat-panel-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+.chat-panel-submit:not(:disabled):hover,
+.chat-panel-submit:not(:disabled):focus-visible { background: var(--caail-primary-hover); }
+
+.chat-panel-status { margin: 0; font-size: 0.76rem; color: var(--caail-muted); }
+.chat-panel-status--error { color: var(--caail-area-sensory); }
+.chat-panel-answer {
+  padding: 0.5rem 0.6rem;
+  color: var(--caail-ink);
+  background: var(--caail-surface);
+  border-radius: 0.4rem;
+}
+.chat-panel-answer > :first-child { margin-top: 0; }
+.chat-panel-answer > :last-child { margin-bottom: 0; }
+.chat-panel-answer p { margin: 0.4rem 0; }
+.chat-panel-answer ul,
+.chat-panel-answer ol { margin: 0.4rem 0; padding-inline-start: 1.2rem; }
+.chat-panel-answer li { margin: 0.15rem 0; }
+.chat-panel-answer a { color: var(--caail-link); }
+.chat-panel-answer code {
+  padding: 0.05rem 0.3rem;
+  font-family: var(--caail-font-mono);
+  font-size: 0.85em;
+  background: var(--caail-bg);
+  border-radius: 0.25rem;
+}
+.chat-panel-answer pre {
+  margin: 0.4rem 0;
+  padding: 0.5rem 0.6rem;
+  overflow-x: auto;
+  background: var(--caail-bg);
+  border-radius: 0.4rem;
+}
+.chat-panel-answer pre code { padding: 0; background: none; }
