@@ -35,6 +35,15 @@ Run the helper from the repo (worktree) root: `bash .claude/skills/caail-pr-wrap
   `pnpm --dir site build` and `pnpm --dir site test:e2e` for the affected specs. A red gate means the
   branch isn't ready; fix it before shipping.
 - **`gh` is authenticated** (`gh auth status`).
+- **The PR body is publishable.** `caail` is a **public** repo, so the body, every commit message,
+  and the branch name become world-readable, and unlike issues a **PR cannot be deleted**. Before
+  composing the body, confirm every quoted path, code block and architectural detail originates in
+  *this* repo — anything read from a private repo or a third party's source is not publishable, and
+  paraphrase discloses as much as a quote. Nothing may describe an unpatched weakness in a live
+  service; that goes to its owner privately. Full rule: **`.claude/rules/publishing.md`** (in this
+  repo), enforced at the Bash layer by **`.claude/hooks/check-public-publish.sh`** (registered in
+  the committed `.claude/settings.json`, so it protects anyone who clones this repo, not just the
+  machine it was written on).
 - *(optional)* For the Step 3 cross-model review, the `gemini` CLI must be installed and OAuth-authed.
   If it isn't, surface that at Step 3 and let the operator decide whether to ship without the cross-model
   pass — it's an optional reviewer, not a blocker, but the call is theirs (consistent with Step 3 and the
@@ -70,8 +79,10 @@ bash .claude/skills/caail-pr-wrapup/ship-pr.sh open-pr "<title>" /tmp/pr-body.md
 
 ### 3. Cross-model adversarial review (Gemini)
 Get an independent second opinion on the diff before merging — a different model catches failure classes
-a Claude self-review tends to miss. Dispatch the **Gemini Adversarial Reviewer** agent
-(`~/.claude/agents/gemini-adversarial-reviewer.md`) on this PR's diff, e.g.:
+a Claude self-review tends to miss. Dispatch a cross-model adversarial reviewer agent on this PR's
+diff — on this maintainer's machine that is a **user-global** agent, so it may simply not exist in a
+fresh clone. If no such agent is configured, say so and move on; this step is optional by design and
+must never block a ship. Example dispatch:
 
 > Adversarially review the diff for PR #`<pr>` in this repo (run `gh pr diff <pr>`, or
 > `git diff origin/main...HEAD` from the worktree root). Return confirmed issues with file:line and a net

@@ -122,6 +122,19 @@ cmd_preflight() {
   local uniq=""
   [ "${#routes[@]}" -gt 0 ] && uniq="$(printf '%s\n' "${routes[@]}" | awk 'NF' | sort -u | tr '\n' ' ')"
   printf '\nSuggested routes to verify live: %s\n' "${uniq:-(none derived — spot-check the homepage)}"
+
+  # Destination visibility — the PR body and every commit message on this branch
+  # are about to become as public as the repo is. Stated before the body is
+  # composed, not after it is posted.
+  local vis; vis="$(gh repo view "$REPO" --json visibility --jq .visibility 2>/dev/null || echo UNKNOWN)"
+  printf '\nDestination: %s is %s\n' "$REPO" "$vis"
+  if [ "$vis" = "PUBLIC" ]; then
+    note "the PR body, commit messages and branch name will all be world-readable"
+    note "PRs cannot be deleted (issues can) — assume anything posted is permanent"
+    note "before composing the body, confirm every quoted path, code block and"
+    note "architectural detail originates in THIS repo, and that nothing describes"
+    note "an unpatched weakness in a live service (.claude/rules/publishing.md)"
+  fi
 }
 
 cmd_push() {
