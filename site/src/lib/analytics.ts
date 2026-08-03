@@ -31,6 +31,9 @@ export interface AnalyticsGlobals {
 /** Longest search query we will record. Long strings are pasted text, not queries. */
 const MAX_QUERY_LEN = 80;
 
+/** Digits in a letterless query before we treat it as an identifier and drop it. */
+const MIN_BARE_ID_DIGITS = 7;
+
 /** Outbound links we classify, so "DOI resolutions" can be counted apart from repo visits. */
 const DOMAIN_KINDS: Record<string, OutboundKind> = {
   'doi.org': 'doi',
@@ -112,7 +115,31 @@ export function normalizeQuery(raw: string): string | null {
   if (q.length < 2) return null;
   if (q.length > MAX_QUERY_LEN) return null;
   if (q.includes('@')) return null;
-  const digits = (q.match(/\d/g) ?? []).length;
-  if (digits > q.length / 2) return null;
+  // Reject identifier-shaped input: digits with no letters anywhere, long
+  // enough to be a phone number or an SSN. An earlier "mostly digits" rule
+  // dropped `gse123456` and `10.1038/s41586` too, which are precisely the
+  // queries this corpus most needs to hear about. Accessions and DOIs carry
+  // letters; phone numbers do not.
+  const alnum = q.replace(/[^a-z0-9]/g, '');
+  if (!/[a-z]/.test(alnum) && (alnum.match(/\d/g) ?? []).length >= MIN_BARE_ID_DIGITS) return null;
   return q;
+}
+
+/**
+ * The true number of matches for a search, given Pagefind's summary line and
+ * the number of results currently in the DOM.
+ *
+ * Pagefind's default UI paginates at `pageSize ?? 5` and this repo sets no
+ * override, so counting rendered `.pagefind-ui__result` nodes tops out at five:
+ * "cell" renders 5 but genuinely matches 47. That would make every broad search
+ * indistinguishable from a narrow one and defeat the point of recording a count
+ * at all. The summary line ("47 results for cell") carries the real total, so we
+ * read the leading integer from it and fall back to the DOM count when it is
+ * absent or unparseable.
+ */
+export function parseResultCount(messageText: string | null | undefined, renderedCount: number): number {
+  const match = messageText?.match(/\d[\d,]*/);
+  if (!match) return renderedCount;
+  const total = Number.parseInt(match[0].replace(/,/g, ''), 10);
+  return Number.isFinite(total) ? total : renderedCount;
 }

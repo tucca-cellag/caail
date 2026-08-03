@@ -98,7 +98,15 @@ test('a search records its term and result count, once per term', async ({ page 
   const [[command, name, props]] = (await readEvents(page)) as [[string, string, Record<string, unknown>]];
   expect([command, name]).toEqual(['event', 'search']);
   expect(props.search_term).toBe('bioprocess');
-  expect(props.result_count as number).toBeGreaterThan(0);
+
+  // The recorded count must be the true total from Pagefind's summary line, not
+  // the rendered node count — the default UI paginates at 5, so "bioprocess"
+  // renders 5 while genuinely matching ~36. Asserting only `> 0` let that
+  // through once already.
+  const summary = await page.locator('.pagefind-ui__message').textContent();
+  const trueTotal = Number.parseInt(summary?.match(/\d+/)?.[0] ?? '0', 10);
+  expect(trueTotal).toBeGreaterThan(5);
+  expect(props.result_count).toBe(trueTotal);
 
   // Re-settling on the same term must not double-count.
   await page.waitForTimeout(1600);

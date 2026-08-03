@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { resolveSink, outboundEvent, normalizeQuery } from './analytics';
+import { resolveSink, outboundEvent, normalizeQuery, parseResultCount } from './analytics';
 
 const ORIGIN = 'https://tucca-cellag.github.io/caail/';
 
@@ -87,12 +87,44 @@ describe('normalizeQuery', () => {
     expect(normalizeQuery('x'.repeat(80))).toBe('x'.repeat(80));
   });
 
-  it('rejects mostly-numeric strings that look like an id or phone number', () => {
+  it('rejects letterless digit strings that look like a phone number or SSN', () => {
     expect(normalizeQuery('6176270000')).toBeNull();
-    expect(normalizeQuery('10.1038')).toBeNull();
+    expect(normalizeQuery('123-45-6789')).toBeNull();
   });
 
-  it('keeps a legitimate query that merely contains digits', () => {
+  it('keeps accessions and DOIs, which are exactly what this corpus is searched for', () => {
+    expect(normalizeQuery('GSE123456')).toBe('gse123456');
+    expect(normalizeQuery('10.1038/s41586-024-1')).toBe('10.1038/s41586-024-1');
     expect(normalizeQuery('CHO cell line K1')).toBe('cho cell line k1');
+  });
+
+  it('keeps a short letterless number, which carries no identifying value', () => {
+    expect(normalizeQuery('10.1038')).toBe('10.1038');
+  });
+});
+
+describe('parseResultCount', () => {
+  it('reads the true total from the summary line, not the paginated DOM', () => {
+    // Pagefind renders 5 but matches 47; recording 5 would make every broad
+    // search look identical to a narrow one.
+    expect(parseResultCount('47 results for cell', 5)).toBe(47);
+  });
+
+  it('handles the singular form', () => {
+    expect(parseResultCount('1 result for xyzzy', 1)).toBe(1);
+  });
+
+  it('handles a thousands separator', () => {
+    expect(parseResultCount('1,204 results for a', 5)).toBe(1204);
+  });
+
+  it('is not fooled by a numeric search term', () => {
+    expect(parseResultCount('3 results for 2024', 3)).toBe(3);
+  });
+
+  it('falls back to the rendered count when the summary is absent or unparseable', () => {
+    expect(parseResultCount(null, 4)).toBe(4);
+    expect(parseResultCount(undefined, 4)).toBe(4);
+    expect(parseResultCount('no results', 0)).toBe(0);
   });
 });

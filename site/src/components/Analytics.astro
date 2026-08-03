@@ -20,7 +20,7 @@
 ---
 
 <script>
-  import { resolveSink, outboundEvent, normalizeQuery } from '../lib/analytics';
+  import { resolveSink, outboundEvent, normalizeQuery, parseResultCount } from '../lib/analytics';
 
   /** Quiet period after the last search mutation before we judge a result set final. */
   const SEARCH_SETTLE_MS = 1200;
@@ -74,7 +74,11 @@
       last = q;
       sink()?.('search', {
         search_term: q,
-        result_count: results.querySelectorAll('.pagefind-ui__result').length,
+        // The summary line, not the rendered nodes — Pagefind paginates at 5.
+        result_count: parseResultCount(
+          root.querySelector('.pagefind-ui__message')?.textContent,
+          results.querySelectorAll('.pagefind-ui__result').length,
+        ),
       });
     };
 
