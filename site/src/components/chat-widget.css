@@ -79,6 +79,7 @@
 .chat-word-count--over { color: var(--caail-area-sensory); font-weight: 600; }
 
 .chat-panel-submit {
+  width: 90px;
   padding: 0.3rem 0.75rem;
   color: var(--caail-bg);
   background: var(--caail-primary);
@@ -91,6 +92,23 @@
 .chat-panel-submit:disabled { opacity: 0.5; cursor: not-allowed; }
 .chat-panel-submit:not(:disabled):hover,
 .chat-panel-submit:not(:disabled):focus-visible { background: var(--caail-primary-hover); }
+
+.chat-dots-label { display: inline-flex; align-items: center; }
+.chat-dots { display: inline-flex; margin-left: 0.05em; }
+.chat-dots span {
+  animation: chat-dots-blink 1.4s infinite both;
+  opacity: 0;
+}
+.chat-dots span:nth-child(1) { animation-delay: 0s; }
+.chat-dots span:nth-child(2) { animation-delay: 0.2s; }
+.chat-dots span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes chat-dots-blink {
+  0%, 80%, 100% { opacity: 0; }
+  40% { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .chat-dots span { animation: none; opacity: 1; }
+}
 
 .chat-panel-status { margin: 0; font-size: 0.76rem; color: var(--caail-muted); }
 .chat-panel-status--error { color: var(--caail-area-sensory); }

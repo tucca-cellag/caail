@@ -88,7 +88,9 @@ export default function CaailChatWidget() {
               ×
             </button>
           </div>
-          <p class="chat-panel-blurb">Ask a question about CAAIL's curated papers, datasets, and tools.</p>
+          <p class="chat-panel-blurb">
+            Ask a question — answered by AI using CAAIL's curated papers, datasets, and tools.
+          </p>
           <form class="chat-panel-form" onSubmit={handleSubmit}>
             <textarea
               class="chat-panel-input"
@@ -107,11 +109,21 @@ export default function CaailChatWidget() {
             <div class="chat-panel-footer">
               <span></span>
               <button type="submit" class="chat-panel-submit" disabled={!canSubmit}>
-                {status === 'loading' ? 'Asking…' : 'Ask'}
+                {status === 'loading' ? (
+                  <span class="chat-dots-label">
+                    Asking
+                    <span class="chat-dots" aria-hidden="true">
+                      <span>.</span>
+                      <span>.</span>
+                      <span>.</span>
+                    </span>
+                  </span>
+                ) : (
+                  'Ask'
+                )}
               </button>
             </div>
           </form>
-          {status === 'loading' && <p class="chat-panel-status">Thinking…</p>}
           {errorMessage && <p class="chat-panel-status chat-panel-status--error">{errorMessage}</p>}
           {answer && (
             <div class="chat-panel-answer" dangerouslySetInnerHTML={{ __html: renderMarkdown(answer) }} />

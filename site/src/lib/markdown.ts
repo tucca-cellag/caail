@@ -10,9 +10,10 @@ import remarkParse from 'remark-parse';
 import remarkGfm from 'remark-gfm';
 import { toHast } from 'mdast-util-to-hast';
 import { toHtml } from 'hast-util-to-html';
+import { sanitize, defaultSchema } from 'hast-util-sanitize';
 
 const processor = unified().use(remarkParse).use(remarkGfm);
 
 export function renderMarkdown(markdown: string): string {
-  return toHtml(toHast(processor.parse(markdown)));
+  return toHtml(sanitize(toHast(processor.parse(markdown)), defaultSchema));
 }
