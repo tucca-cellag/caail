@@ -5,11 +5,23 @@
  * server-side at PUBLIC_CAAIL_CHAT_API, POST { query } -> { answer }. No API key, no
  * embeddings, no llms-full.txt handling here.
  *
- * Mounted once per page (from Footer.astro), like NavCollapse/DataTableViews — it's
- * position:fixed, so its DOM location doesn't matter.
+ * Mounted once per page from Footer.astro, but rendered through a PORTAL into
+ * document.body rather than in place. Its DOM location very much does matter:
+ * Starlight's `.main-pane` sets `isolation: isolate`, which creates a stacking
+ * context, and the footer lives inside it. Rendered in place, the widget's
+ * `z-index: 50` is scoped to that context, while `.right-sidebar` — a fixed,
+ * viewport-height element in a *later sibling* branch — paints above it and
+ * swallows the clicks. The button stayed visible but became unclickable on every
+ * page with an "On this page" sidebar. No z-index value escapes a stacking
+ * context, so the element has to leave it.
+ *
+ * The portal also removes a race: rendered in place the button was server-rendered
+ * and therefore present but inert until `client:idle` hydration attached its
+ * handler. Portalled, it exists only once hydrated, so it is never a dead control.
  */
 import './chat-widget.css';
-import { useId, useState } from 'preact/hooks';
+import { useEffect, useId, useState } from 'preact/hooks';
+import { createPortal } from 'preact/compat';
 import { renderMarkdown } from '../lib/markdown';
 
 const CHAT_API = import.meta.env.PUBLIC_CAAIL_CHAT_API as string | undefined;
@@ -26,6 +38,11 @@ type Status = 'idle' | 'loading' | 'error';
 
 export default function CaailChatWidget() {
   const panelId = useId();
+  // The portal needs document.body, which does not exist during SSR. Rendering
+  // null on the server means the island emits no markup and the widget appears
+  // on hydration — which is also when it first becomes usable.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [status, setStatus] = useState<Status>('idle');
@@ -73,7 +90,9 @@ export default function CaailChatWidget() {
     }
   }
 
-  return (
+  if (!mounted) return null;
+
+  return createPortal(
     <div class="chat-widget">
       {open && (
         <div class="chat-panel" id={panelId} role="dialog" aria-label="Ask CAAIL">
@@ -145,6 +164,7 @@ export default function CaailChatWidget() {
           />
         </svg>
       </button>
-    </div>
+    </div>,
+    document.body,
   );
 }
