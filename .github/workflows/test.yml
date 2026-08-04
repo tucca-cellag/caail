@@ -59,6 +59,18 @@ jobs:
       # earlier build left the artifacts behind.
       - name: Build
         run: pnpm --dir site build
+        env:
+          # The chat widget reads PUBLIC_CAAIL_CHAT_API at BUILD time (Astro
+          # inlines it), and `canSubmit` ends in `&& !!CHAT_API`. Without a value
+          # the submit path is unreachable, so e2e/chat-widget.spec.ts could only
+          # ever test the closed button. A placeholder makes it reachable.
+          #
+          # `.invalid` is reserved by RFC 2606 and never resolves, and every
+          # request is stubbed with page.route(), so no service is contacted — and
+          # if a stub is ever missed the test fails loudly instead of escaping to
+          # a real endpoint. The production URL is injected separately in
+          # docs.yml from a repository variable.
+          PUBLIC_CAAIL_CHAT_API: https://chat.invalid/caail/ask
 
       - name: Unit + parser tests
         run: pnpm --dir site test
