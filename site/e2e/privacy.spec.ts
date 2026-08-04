@@ -19,9 +19,15 @@ test('privacy page states what is measured and who to contact', async ({ page })
   ).toBeVisible();
   await expect(page.locator('main a[href="mailto:dataprivacy@tufts.edu"]')).toBeVisible();
 
-  // The three localStorage keys are named, so the table can't silently drift
-  // from NavCollapse.astro / DataTableViews.astro.
-  for (const key of ['caail-nav-collapsed', 'caail-toc-collapsed', 'caail-tableview']) {
+  // Every browser-storage key is named, so the table can't silently drift from
+  // NavCollapse.astro / DataTableViews.astro / CaailChatWidget.tsx. This table
+  // is the reader-facing inventory and nothing else keeps it honest.
+  for (const key of [
+    'caail-nav-collapsed',
+    'caail-toc-collapsed',
+    'caail-tableview',
+    'caail-chat-dismissed',
+  ]) {
     await expect(page.getByRole('cell', { name: key })).toBeVisible();
   }
 });

@@ -94,23 +94,29 @@ it can usefully answer. Treat it as you would a message to an outside company, b
 what it is.
 
 **What it does not do.** It keeps no conversation history: each question is sent on its own, with
-no memory of previous ones, and asking a second question discards the first answer. It stores
-nothing in your browser, and closing the box clears the question and answer from the page. It
-requires no account and asks for no identifying information.
+no memory of previous ones, and asking a second question discards the first answer. Neither your
+question nor the answer is saved in your browser, and closing the box clears both from the page.
+It requires no account and asks for no identifying information.
 
-If you would rather not use it, simply do not open it. Everything else on CAAIL works without it,
-and blocking scripts will disable it along with the analytics.
+If you would rather not use it, simply do not open it, or use the small × on the button to hide it
+for the rest of your visit. Hiding it records one flag in your browser (see the table below);
+nothing else about the box is remembered. Everything on CAAIL works without it, and blocking
+scripts will disable it along with the analytics.
 
 ## What is stored in your browser
 
-CAAIL saves three display preferences in your browser's local storage so the site looks the way
-you left it:
+CAAIL saves a few display preferences in your browser so the site looks the way you left it:
 
-| Key | What it remembers |
-| --- | --- |
-| `caail-nav-collapsed` | Whether you collapsed the left sidebar |
-| `caail-toc-collapsed` | Whether you collapsed the "On this page" panel |
-| `caail-tableview` | Whether you prefer data tables as tables or as cards |
+| Key | What it remembers | Kept until |
+| --- | --- | --- |
+| `caail-nav-collapsed` | Whether you collapsed the left sidebar | You clear it |
+| `caail-toc-collapsed` | Whether you collapsed the "On this page" panel | You clear it |
+| `caail-tableview` | Whether you prefer data tables as tables or as cards | You clear it |
+| `caail-chat-dismissed` | Whether you hid the Ask CAAIL button | You close the tab |
+
+The first three are local storage and persist between visits. The last is session storage, so
+hiding the button lasts the visit and no longer: it is a response to the button being in your way
+on a particular screen, not a setting we think you want to keep forever.
 
 These never leave your browser. Nothing reads them but the page you are on, and clearing your
 browser storage resets them with no other effect.
