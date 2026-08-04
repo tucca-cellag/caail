@@ -20,6 +20,15 @@ tool = data.get("tool_name", "")
 ti = data.get("tool_input", {}) or {}
 fp = ti.get("file_path", "") or ""
 
+# Git worktrees live at <repo>/.claude/worktrees/<name>/, so EVERY path inside
+# one contains "/.claude/" and fell through the exclusion below — silently
+# disabling this guard in exactly the workspace CLAUDE.md tells you to work in
+# ("the site is built one milestone at a time in a worktree off main"). Re-root
+# the path on the worktree before classifying it, so a worktree checkout is
+# judged the same as the primary one. Paths genuinely under a worktree's own
+# .claude/ or site/ still land in the exclusion after re-rooting.
+fp = re.sub(r"^.*/\.claude/worktrees/[^/]+/", "/", fp)
+
 # Only the repo-root generated catalog files (not site/*, docs/*, .claude/*).
 if "/site/" in fp or "/docs/" in fp or "/.claude/" in fp:
     sys.exit(0)

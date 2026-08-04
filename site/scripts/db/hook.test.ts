@@ -46,3 +46,36 @@ describe('block-generated-edits hook', () => {
     expect(decide({ tool_name: 'MultiEdit', tool_input: { file_path: P('Papers.md'), edits: [{ old_string: 'prose', new_string: 'p2' }, { old_string: '<a id="9">9</a>', new_string: 'z' }] } })).toBe('deny');
   });
 });
+
+/**
+ * Worktrees live at <repo>/.claude/worktrees/<name>/, so every path inside one
+ * contains "/.claude/" and used to hit the hook's exclusion for config files —
+ * silently disabling the guard in the workspace CLAUDE.md tells you to use.
+ * These pin literal worktree paths so the case is covered wherever the suite
+ * runs, not only when it happens to run inside a worktree itself.
+ */
+describe('block-generated-edits hook — inside a git worktree', () => {
+  const WT = (rel: string) => join(REPO_ROOT, '.claude', 'worktrees', 'some-feature', rel);
+
+  it('DENIES a structured edit to Papers.md through a worktree path', () => {
+    expect(decide({ tool_name: 'Edit', tool_input: { file_path: WT('Papers.md'), old_string: '<a id="1">1</a> X', new_string: 'y' } })).toBe('deny');
+  });
+  it('DENIES a whole-file Write to Software.md through a worktree path', () => {
+    expect(decide({ tool_name: 'Write', tool_input: { file_path: WT('Software.md'), content: '# x' } })).toBe('deny');
+  });
+  it('DENIES a catalog H3 edit in Databases.md through a worktree path', () => {
+    expect(decide({ tool_name: 'Edit', tool_input: { file_path: WT('Databases.md'), old_string: '### [GEO](u)', new_string: '### [GEO2](u)' } })).toBe('deny');
+  });
+
+  // Re-rooting must not over-match: a worktree's own config and site files are
+  // still excluded, exactly as in the primary checkout.
+  it('ALLOWS a worktree .claude config file', () => {
+    expect(decide({ tool_name: 'Write', tool_input: { file_path: WT('.claude/settings.json'), content: '{}' } })).toBeNull();
+  });
+  it('ALLOWS a worktree site file', () => {
+    expect(decide({ tool_name: 'Write', tool_input: { file_path: WT('site/scripts/db/emit.ts'), content: 'x' } })).toBeNull();
+  });
+  it('ALLOWS a prose-only edit in a worktree Papers.md', () => {
+    expect(decide({ tool_name: 'Edit', tool_input: { file_path: WT('Papers.md'), old_string: 'This document presents', new_string: 'This document collects' } })).toBeNull();
+  });
+});
