@@ -244,3 +244,105 @@ test('the open panel with an answer rendered has no serious/critical a11y violat
   const serious = results.violations.filter((v) => ['serious', 'critical'].includes(v.impact ?? ''));
   expect(serious, JSON.stringify(serious, null, 2)).toEqual([]);
 });
+
+// ---------------------------------------------------------------------------
+// Viewports
+//
+// The widget is position:fixed bottom-right, so it is the class of UI most
+// likely to behave differently by screen size — and every other spec runs only
+// at Playwright's 1280x720 default. 390x844 is an iPhone 12/13/14-class device;
+// 320x568 is the narrowest viewport still worth supporting.
+// ---------------------------------------------------------------------------
+
+const VIEWPORTS = [
+  { name: 'desktop', width: 1280, height: 800 },
+  { name: 'mobile', width: 390, height: 844 },
+  { name: 'narrow mobile', width: 320, height: 568 },
+] as const;
+
+for (const vp of VIEWPORTS) {
+  test.describe(`at ${vp.name} (${vp.width}x${vp.height})`, () => {
+    test.use({ viewport: { width: vp.width, height: vp.height } });
+
+    test('the panel opens and fits inside the viewport', async ({ page }) => {
+      await page.goto('./');
+      await openPanel(page);
+      const box = (await page.locator('.chat-panel').boundingBox())!;
+      expect(box.x, 'panel is cut off on the left').toBeGreaterThanOrEqual(0);
+      expect(box.x + box.width, 'panel overflows the right edge').toBeLessThanOrEqual(vp.width);
+      expect(box.y, 'panel is cut off at the top').toBeGreaterThanOrEqual(0);
+      expect(box.y + box.height, 'panel overflows the bottom edge').toBeLessThanOrEqual(vp.height);
+    });
+
+    test('a long answer scrolls the panel instead of overflowing it', async ({ page }) => {
+      await page.goto('./');
+      await openPanel(page);
+      test.skip(!(await isConfigured(page)), 'no endpoint compiled in — see the header comment');
+
+      await stub(page, 200, {
+        answer:
+          '## Heading\n\n' +
+          Array.from({ length: 12 }, (_, i) => `- item ${i}, long enough to wrap on a narrow screen`).join('\n') +
+          '\n\nAnd an unbroken token: ' + 'A'.repeat(60),
+      });
+      await page.locator('.chat-panel-submit').click();
+      await expect(page.locator('.chat-panel-answer')).toBeVisible();
+
+      const m = await page.locator('.chat-panel').evaluate((el) => ({
+        scrollW: el.scrollWidth,
+        clientW: el.clientWidth,
+        scrollH: el.scrollHeight,
+        clientH: el.clientHeight,
+      }));
+      // An unbroken token must not force sideways scrolling, and the overflow
+      // has to go vertical so the whole answer stays reachable.
+      expect(m.scrollW, 'answer forces horizontal scrolling').toBeLessThanOrEqual(m.clientW + 1);
+      expect(m.scrollH, 'panel did not become scrollable for a long answer').toBeGreaterThan(m.clientH);
+
+      const box = (await page.locator('.chat-panel').boundingBox())!;
+      expect(box.x + box.width).toBeLessThanOrEqual(vp.width);
+    });
+
+    test('the open panel is axe-clean', async ({ page }) => {
+      await page.goto('./');
+      await openPanel(page);
+      const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
+      const serious = results.violations.filter((v) => ['serious', 'critical'].includes(v.impact ?? ''));
+      expect(serious, JSON.stringify(serious, null, 2)).toEqual([]);
+    });
+
+    // #128 — on narrow viewports the resting button lands on top of things
+    // people need to tap: the catalog search input and a group link at 320, the
+    // homepage CTA and cards, and the explorer's matrix cells at 390. Desktop is
+    // clean, which is why this passes there and is pinned as fixme below.
+    const overlapTest = vp.name === 'desktop' ? test : test.fixme;
+    overlapTest('the button does not cover any interactive element (#128)', async ({ page }) => {
+      for (const route of ['./', './software/', './papers/explorer/']) {
+        await page.goto(route, { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(300);
+        const hits = await page.evaluate(() => {
+          const fab = document.querySelector('.chat-fab');
+          if (!fab) return [];
+          const f = fab.getBoundingClientRect();
+          const out: string[] = [];
+          document
+            .querySelectorAll<HTMLElement>('a,button,input,textarea,select,[role="button"]')
+            .forEach((el) => {
+              if (el.closest('.chat-widget')) return;
+              const r = el.getBoundingClientRect();
+              if (!r.width || !r.height) return;
+              const cs = getComputedStyle(el);
+              if (cs.visibility === 'hidden' || cs.display === 'none' || cs.opacity === '0') return;
+              const ox = Math.min(f.right, r.right) - Math.max(f.left, r.left);
+              const oy = Math.min(f.bottom, r.bottom) - Math.max(f.top, r.top);
+              if (ox > 0 && oy > 0) {
+                out.push(`${el.tagName.toLowerCase()}.${(el.className || '').toString().split(' ')[0]} "${(el.textContent || '').trim().slice(0, 30)}" (${Math.round(ox * oy)}px²)`);
+              }
+            });
+          return out;
+        });
+        expect(hits, `covered on ${route}`).toEqual([]);
+      }
+    });
+  });
+}
