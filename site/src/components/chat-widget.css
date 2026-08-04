@@ -79,6 +79,7 @@
 .chat-word-count--over { color: var(--caail-area-sensory); font-weight: 600; }
 
 .chat-panel-submit {
+  width: 90px;
   padding: 0.3rem 0.75rem;
   color: var(--caail-bg);
   background: var(--caail-primary);
