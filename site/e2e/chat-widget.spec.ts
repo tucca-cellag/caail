@@ -28,17 +28,17 @@ const ENDPOINT = '**/caail/ask*';
 /**
  * Open the panel from the floating button.
  *
- * The widget is mounted `client:idle`, so it hydrates during browser idle time
- * and the button is inert until then — a click that lands first is silently a
- * no-op. The retry absorbs that race instead of racing it with a fixed wait.
- * Re-clicking is safe: the assertion only fails when the panel did not open, so
- * a click never lands on an already-open panel and toggles it shut.
+ * The button is portalled into document.body on hydration and does not exist
+ * before that, so waiting for it to appear is sufficient — there is no window in
+ * which it is present but inert. This previously needed a click-retry loop,
+ * because the button was server-rendered and therefore clickable-looking while
+ * still dead; the portal removed that race along with the stacking bug.
  */
 async function openPanel(page: Page) {
-  await expect(async () => {
-    await page.locator('.chat-fab').click();
-    await expect(page.getByRole('dialog', { name: 'Ask CAAIL' })).toBeVisible({ timeout: 1000 });
-  }).toPass({ timeout: 15_000 });
+  const fab = page.locator('.chat-fab');
+  await expect(fab).toBeVisible({ timeout: 15_000 });
+  await fab.click();
+  await expect(page.getByRole('dialog', { name: 'Ask CAAIL' })).toBeVisible();
 }
 
 /** Whether this build has an endpoint compiled in (canSubmit ends in `&& !!CHAT_API`). */
@@ -61,13 +61,13 @@ async function stub(page: Page, status: number, body: unknown) {
 // One test per route rather than a loop inside one test: the button is on every
 // page, but sharing a single 30s budget across three navigations meant a slow
 // cold start on the heaviest route (the explorer mounts cytoscape) failed the
-// whole case. `domcontentloaded` because the button is server-rendered, so the
-// load event adds latency without adding coverage.
+// whole case. `domcontentloaded` keeps navigation off the load event; the button
+// arrives on hydration afterwards, which the visibility wait covers.
 for (const route of ['./', './software/', './papers/explorer/']) {
   test(`the floating button is present and collapsed on ${route}`, async ({ page }) => {
     await page.goto(route, { waitUntil: 'domcontentloaded' });
     const fab = page.locator('.chat-fab');
-    await expect(fab).toBeVisible();
+    await expect(fab).toBeVisible({ timeout: 15_000 });
     await expect(fab).toHaveAttribute('aria-expanded', 'false');
     await expect(fab).toHaveAccessibleName('Ask CAAIL a question');
     await expect(page.getByRole('dialog', { name: 'Ask CAAIL' })).toHaveCount(0);
@@ -240,6 +240,83 @@ test('the open panel with an answer rendered has no serious/critical a11y violat
   await page.locator('.chat-panel-submit').click();
   await expect(page.locator('.chat-panel-answer')).toBeVisible();
 
+  const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
+  const serious = results.violations.filter((v) => ['serious', 'critical'].includes(v.impact ?? ''));
+  expect(serious, JSON.stringify(serious, null, 2)).toEqual([]);
+});
+
+// ---------------------------------------------------------------------------
+// Dismissal (#128)
+//
+// The button rests bottom-right and can land on top of page content at narrow
+// widths. The × badge takes it off the page for the rest of the session. It is
+// deliberately sticky and has no in-page restore: someone who hid it wanted it
+// gone, and a restore affordance would be one more thing occupying that corner.
+// ---------------------------------------------------------------------------
+
+test('the dismiss badge removes the widget', async ({ page }) => {
+  await page.goto('./');
+  await expect(page.locator('.chat-fab')).toBeVisible({ timeout: 15_000 });
+  await page.locator('.chat-dismiss').click();
+  await expect(page.locator('.chat-fab')).toHaveCount(0);
+  await expect(page.locator('.chat-panel')).toHaveCount(0);
+});
+
+test('dismissing from an open panel closes it too', async ({ page }) => {
+  await page.goto('./');
+  await openPanel(page);
+  await page.locator('.chat-panel-input').fill('a question');
+  await page.locator('.chat-dismiss').click();
+  await expect(page.getByRole('dialog', { name: 'Ask CAAIL' })).toHaveCount(0);
+  await expect(page.locator('.chat-fab')).toHaveCount(0);
+});
+
+test('dismissal persists across navigation', async ({ page }) => {
+  await page.goto('./software/');
+  await expect(page.locator('.chat-fab')).toBeVisible({ timeout: 15_000 });
+  await page.locator('.chat-dismiss').click();
+  await expect(page.locator('.chat-fab')).toHaveCount(0);
+
+  // The whole point: it must not come back on the next page.
+  for (const route of ['./', './databases/']) {
+    await page.goto(route);
+    await expect(page.locator('.chat-fab')).toHaveCount(0);
+  }
+});
+
+test('dismissal does not outlive the browsing session', async ({ page, context }) => {
+  await page.goto('./');
+  await expect(page.locator('.chat-fab')).toBeVisible({ timeout: 15_000 });
+  await page.locator('.chat-dismiss').click();
+  await expect(page.locator('.chat-fab')).toHaveCount(0);
+
+  // sessionStorage is per-tab, so a new tab is a new session and starts fresh.
+  // This is what makes the key session- rather than local-storage: hiding the
+  // widget is not a permanent preference.
+  const fresh = await context.newPage();
+  await fresh.goto('http://localhost:4321/caail/');
+  await expect(fresh.locator('.chat-fab')).toBeVisible({ timeout: 15_000 });
+  await fresh.close();
+});
+
+test('the dismiss badge meets the minimum touch target size', async ({ page }) => {
+  await page.goto('./');
+  await expect(page.locator('.chat-dismiss')).toBeVisible({ timeout: 15_000 });
+  // WCAG 2.2 AA (2.5.8) asks for 24x24 CSS px. The badge is drawn smaller so it
+  // does not swamp the button it sits on, and pads its hit area out via ::before.
+  const box = (await page.locator('.chat-dismiss').boundingBox())!;
+  const hit = await page.locator('.chat-dismiss').evaluate((el) => {
+    const s = getComputedStyle(el, '::before');
+    return { w: parseFloat(s.width), h: parseFloat(s.height) };
+  });
+  expect(box.width).toBeLessThan(24); // drawn small on purpose
+  expect(hit.w).toBeGreaterThanOrEqual(24);
+  expect(hit.h).toBeGreaterThanOrEqual(24);
+});
+
+test('the widget with its dismiss badge is axe-clean', async ({ page }) => {
+  await page.goto('./');
+  await expect(page.locator('.chat-dismiss')).toBeVisible({ timeout: 15_000 });
   const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
   const serious = results.violations.filter((v) => ['serious', 'critical'].includes(v.impact ?? ''));
   expect(serious, JSON.stringify(serious, null, 2)).toEqual([]);

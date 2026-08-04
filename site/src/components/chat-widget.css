@@ -10,6 +10,10 @@
   z-index: 50;
 }
 
+/* The button and its dismiss badge share a stacking context so the badge can sit
+   on the button's corner without escaping the fixed widget. */
+.chat-fab-wrap { position: relative; display: inline-flex; }
+
 .chat-fab {
   display: flex;
   align-items: center;
@@ -26,6 +30,39 @@
 }
 .chat-fab:hover,
 .chat-fab:focus-visible { background: var(--caail-primary-hover); }
+
+/* Dismiss (#128) — a small badge on the button's top-left. Visually 1.15rem so
+   it does not swamp the button it sits on, but the tap target is padded out to
+   the 24px WCAG 2.2 AA minimum via the ::before below. Always visible rather
+   than hover-revealed: touch devices have no hover, and they are exactly where
+   the collision happens. */
+.chat-dismiss {
+  position: absolute;
+  top: -0.15rem;
+  left: -0.15rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.15rem;
+  height: 1.15rem;
+  padding: 0;
+  color: var(--caail-bg);
+  background: var(--caail-muted);
+  border: 2px solid var(--caail-bg);
+  border-radius: 50%;
+  cursor: pointer;
+}
+/* Invisible 24x24 hit area, centred on the badge. */
+.chat-dismiss::before {
+  content: '';
+  position: absolute;
+  inset: 50% auto auto 50%;
+  width: 24px;
+  height: 24px;
+  transform: translate(-50%, -50%);
+}
+.chat-dismiss:hover,
+.chat-dismiss:focus-visible { background: var(--caail-ink); }
 
 .chat-panel {
   position: absolute;
