@@ -26,6 +26,8 @@ import { renderMarkdown } from '../lib/markdown';
 
 const CHAT_API = import.meta.env.PUBLIC_CAAIL_CHAT_API as string | undefined;
 const WORD_LIMIT = 200;
+/** Dismissal lasts the browsing session, not forever — sessionStorage, not local. */
+const DISMISS_KEY = 'caail-chat-dismissed';
 const QUOTA_MESSAGE = "'Ask CAAIL' quota is exceeded — try again later.";
 const GENERIC_ERROR_MESSAGE = 'Something went wrong, please try again.';
 
@@ -48,6 +50,16 @@ export default function CaailChatWidget() {
   const [status, setStatus] = useState<Status>('idle');
   const [answer, setAnswer] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  // Lazy initialiser rather than an effect, so a dismissed widget is never
+  // rendered even for a frame. Guarded because sessionStorage does not exist
+  // during SSR, and throws outright in some privacy modes.
+  const [dismissed, setDismissed] = useState(() => {
+    try {
+      return typeof sessionStorage !== 'undefined' && sessionStorage.getItem(DISMISS_KEY) === '1';
+    } catch {
+      return false;
+    }
+  });
 
   const count = wordCount(query);
   const overLimit = count > WORD_LIMIT;
@@ -59,6 +71,17 @@ export default function CaailChatWidget() {
     setStatus('idle');
     setAnswer(null);
     setErrorMessage(null);
+  }
+
+  /** Take the widget off the page for the rest of the session (#128). */
+  function dismiss() {
+    closeAndReset();
+    setDismissed(true);
+    try {
+      sessionStorage.setItem(DISMISS_KEY, '1');
+    } catch {
+      /* private mode or storage disabled — dismissal just won't outlive the page */
+    }
   }
 
   async function handleSubmit(event: Event) {
@@ -90,7 +113,10 @@ export default function CaailChatWidget() {
     }
   }
 
-  if (!mounted) return null;
+  // Nothing is server-rendered here (the portal needs document.body), so a plain
+  // `return null` genuinely removes the widget — there is no adopted SSR markup
+  // for a null vdom to leave stranded.
+  if (!mounted || dismissed) return null;
 
   return createPortal(
     <div class="chat-widget">
@@ -149,21 +175,43 @@ export default function CaailChatWidget() {
           )}
         </div>
       )}
-      <button
-        type="button"
-        class="chat-fab"
-        aria-label={open ? 'Close chat' : 'Ask CAAIL a question'}
-        aria-expanded={open}
-        aria-controls={panelId}
-        onClick={() => (open ? closeAndReset() : setOpen(true))}
-      >
-        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
-          <path
-            fill="currentColor"
-            d="M4 4h16a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H9l-4.29 3.71A1 1 0 0 1 3 20V5a1 1 0 0 1 1-1z"
-          />
-        </svg>
-      </button>
+      <div class="chat-fab-wrap">
+        <button
+          type="button"
+          class="chat-fab"
+          aria-label={open ? 'Close chat' : 'Ask CAAIL a question'}
+          aria-expanded={open}
+          aria-controls={panelId}
+          onClick={() => (open ? closeAndReset() : setOpen(true))}
+        >
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+            <path
+              fill="currentColor"
+              d="M4 4h16a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H9l-4.29 3.71A1 1 0 0 1 3 20V5a1 1 0 0 1 1-1z"
+            />
+          </svg>
+        </button>
+        {/* Escape hatch for when the button sits on top of something the reader
+            needs (#128). Its own control rather than a menu item, because the
+            moment you want it is the moment the thing is in your way. */}
+        <button
+          type="button"
+          class="chat-dismiss"
+          aria-label="Hide Ask CAAIL for this visit"
+          title="Hide Ask CAAIL for this visit"
+          onClick={dismiss}
+        >
+          <svg viewBox="0 0 24 24" width="10" height="10" aria-hidden="true">
+            <path
+              fill="none"
+              stroke="currentColor"
+              stroke-width="4"
+              stroke-linecap="round"
+              d="M5 5l14 14M19 5L5 19"
+            />
+          </svg>
+        </button>
+      </div>
     </div>,
     document.body,
   );
