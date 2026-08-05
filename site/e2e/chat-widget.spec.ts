@@ -388,38 +388,51 @@ for (const vp of VIEWPORTS) {
       expect(serious, JSON.stringify(serious, null, 2)).toEqual([]);
     });
 
-    // #128 — on narrow viewports the resting button lands on top of things
-    // people need to tap: the catalog search input and a group link at 320, the
-    // homepage CTA and cards, and the explorer's matrix cells at 390. Desktop is
-    // clean, which is why this passes there and is pinned as fixme below.
-    const overlapTest = vp.name === 'desktop' ? test : test.fixme;
-    overlapTest('the button does not cover any interactive element (#128)', async ({ page }) => {
-      for (const route of ['./', './software/', './papers/explorer/']) {
-        await page.goto(route, { waitUntil: 'domcontentloaded' });
-        await page.waitForTimeout(300);
-        const hits = await page.evaluate(() => {
-          const fab = document.querySelector('.chat-fab');
-          if (!fab) return [];
-          const f = fab.getBoundingClientRect();
-          const out: string[] = [];
-          document
-            .querySelectorAll<HTMLElement>('a,button,input,textarea,select,[role="button"]')
-            .forEach((el) => {
-              if (el.closest('.chat-widget')) return;
-              const r = el.getBoundingClientRect();
-              if (!r.width || !r.height) return;
-              const cs = getComputedStyle(el);
-              if (cs.visibility === 'hidden' || cs.display === 'none' || cs.opacity === '0') return;
-              const ox = Math.min(f.right, r.right) - Math.max(f.left, r.left);
-              const oy = Math.min(f.bottom, r.bottom) - Math.max(f.top, r.top);
-              if (ox > 0 && oy > 0) {
-                out.push(`${el.tagName.toLowerCase()}.${(el.className || '').toString().split(' ')[0]} "${(el.textContent || '').trim().slice(0, 30)}" (${Math.round(ox * oy)}px²)`);
-              }
-            });
-          return out;
-        });
-        expect(hits, `covered on ${route}`).toEqual([]);
-      }
-    });
+    // The button rests bottom-right and overlaps page content at narrow widths.
+    // That is measured, accepted, and mitigated by the dismiss control rather
+    // than by moving the button — every candidate position was swept and none
+    // reached zero (best was 51 blocked to 38); only hiding it below 1024px did,
+    // at the cost of the feature on touch devices. See #128.
+    //
+    // So there is no "zero overlap" assertion to make at mobile widths. What is
+    // still worth guarding is the *severity* line: on desktop the button may
+    // clip a link's edge, but it must never cover a link's centre, because that
+    // is what makes one unclickable. That distinction is the whole finding, and
+    // an earlier version of this test missed it by checking only three routes —
+    // `/databases/`, the one route that collides on desktop, was not among them.
+    if (vp.name === 'desktop') {
+      test('the button never covers an interactive element’s centre (#128)', async ({ page }) => {
+        const blocked: string[] = [];
+        for (const route of ['./', './software/', './databases/', './papers/explorer/', './datasets/cow/', './contributing/']) {
+          await page.goto(route, { waitUntil: 'domcontentloaded' });
+          await expect(page.locator('.chat-fab')).toBeVisible({ timeout: 15_000 });
+          const hits = await page.evaluate(() => {
+            const fab = document.querySelector('.chat-fab');
+            if (!fab) return [];
+            const f = fab.getBoundingClientRect();
+            const out: string[] = [];
+            document
+              .querySelectorAll<HTMLElement>('a,button,input,textarea,select,[role="button"]')
+              .forEach((el) => {
+                if (el.closest('.chat-widget')) return;
+                const r = el.getBoundingClientRect();
+                if (!r.width || !r.height) return;
+                const cs = getComputedStyle(el);
+                if (cs.visibility === 'hidden' || cs.display === 'none' || cs.opacity === '0') return;
+                const ox = Math.min(f.right, r.right) - Math.max(f.left, r.left);
+                const oy = Math.min(f.bottom, r.bottom) - Math.max(f.top, r.top);
+                if (ox <= 0 || oy <= 0) return;
+                // Clipping is tolerated; covering the centre is not.
+                const top = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2);
+                if (!top || el === top || el.contains(top)) return;
+                out.push(`${el.tagName.toLowerCase()} "${(el.textContent || '').trim().slice(0, 30)}" (${Math.round(ox * oy)}px²)`);
+              });
+            return out;
+          });
+          blocked.push(...hits.map((h) => `${route} — ${h}`));
+        }
+        expect(blocked, 'the button made these unclickable on desktop').toEqual([]);
+      });
+    }
   });
 }
