@@ -13,6 +13,15 @@
 import '../styles/citation-hub.css';
 import { useEffect, useState } from 'preact/hooks';
 import { openAlexWorksUrl } from '../lib/citation-format';
+import { CITATION_BANDS as BANDS, BAND_META, citationBand, type CitationBand } from '../lib/citation-bands';
+import HubFilterBar from './HubFilterBar';
+import {
+  readSecondary,
+  matchesTopic,
+  matchesTier,
+  type Secondary,
+  type TopicRef,
+} from '../lib/hub-filters';
 import papers from '../content/data/papers.json';
 import catalog from '../content/data/catalog.json';
 import datasets from '../content/data/datasets.json';
@@ -20,18 +29,21 @@ import datasets from '../content/data/datasets.json';
 const BASE = import.meta.env.BASE_URL;
 const hub = (band: Band) => `${BASE.replace(/\/$/, '')}/citations/?band=${band}`;
 
-const BANDS = ['1000plus', '100to999', '10to99', 'under10'] as const;
-type Band = (typeof BANDS)[number];
-
-const BAND_META: Record<Band, { label: string; blurb: string; test: (n: number) => boolean }> = {
-  '1000plus': { label: '1,000+ citations', blurb: "The field's most-cited works.", test: (n) => n >= 1000 },
-  '100to999': { label: '100–999 citations', blurb: 'Widely cited across the literature.', test: (n) => n >= 100 && n < 1000 },
-  '10to99': { label: '10–99 citations', blurb: 'Established, regularly cited work.', test: (n) => n >= 10 && n < 100 },
-  under10: { label: 'Under 10 citations', blurb: 'Emerging, recent, or niche work.', test: (n) => n >= 0 && n < 10 },
-};
+/** Band definitions live in ../lib/citation-bands so the dashboard panel counts
+ *  (metrics.ts) and this hub can't drift apart. */
+type Band = CitationBand;
 
 type Kind = 'paper' | 'software' | 'database' | 'dataset';
-type Item = { kind: Kind; label: string; url: string; count: number; sources: number };
+type Item = {
+  kind: Kind;
+  label: string;
+  url: string;
+  count: number;
+  sources: number;
+  topics: TopicRef[];
+  /** null for papers, which carry no license by design */
+  tier: string | null;
+};
 
 const KIND_LABEL: Record<Kind, string> = { paper: 'Papers', software: 'Software', database: 'Databases', dataset: 'Datasets' };
 /** Link to all the DOIs whose counts were summed (falls back to the primary), so an
@@ -50,13 +62,15 @@ const items: Item[] = [
       url: r.doi ? `https://doi.org/${r.doi}` : `${BASE.replace(/\/$/, '')}/papers/explorer/`,
       count: r.citedByOpenAlex as number,
       sources: 1,
+      topics: (r.topics ?? []) as TopicRef[],
+      tier: null,
     })),
   ...(catalog.software as any[])
     .filter((e) => e.citationCount != null)
-    .map((e) => ({ kind: 'software' as const, label: e.name, url: worksUrl(e, e.url), count: e.citationCount as number, sources: (e.citationSources as number) ?? 1 })),
+    .map((e) => ({ kind: 'software' as const, label: e.name, url: worksUrl(e, e.url), count: e.citationCount as number, sources: (e.citationSources as number) ?? 1, topics: (e.topics ?? []) as TopicRef[], tier: (e.tier as string) ?? null })),
   ...(catalog.databases as any[])
     .filter((e) => e.citationCount != null)
-    .map((e) => ({ kind: 'database' as const, label: e.name, url: worksUrl(e, e.url), count: e.citationCount as number, sources: (e.citationSources as number) ?? 1 })),
+    .map((e) => ({ kind: 'database' as const, label: e.name, url: worksUrl(e, e.url), count: e.citationCount as number, sources: (e.citationSources as number) ?? 1, topics: (e.topics ?? []) as TopicRef[], tier: (e.tier as string) ?? null })),
   ...(datasets.entries as any[])
     .filter((e) => e.citationCount != null)
     .map((e) => ({
@@ -65,10 +79,12 @@ const items: Item[] = [
       url: worksUrl(e, e.url ?? `${BASE.replace(/\/$/, '')}/datasets/${String(e.page).toLowerCase()}/#${e.anchor}`),
       count: e.citationCount as number,
       sources: (e.citationSources as number) ?? 1,
+      topics: (e.topics ?? []) as TopicRef[],
+      tier: (e.tier as string) ?? null,
     })),
 ];
 
-const bandOf = (n: number): Band => BANDS.find((b) => BAND_META[b].test(n))!;
+const bandOf = citationBand;
 const countAt = (band: Band) => items.filter((it) => bandOf(it.count) === band).length;
 
 function BandIndex() {
@@ -97,14 +113,26 @@ function BandIndex() {
   );
 }
 
-function BandView({ band }: { band: Band }) {
-  const scoped = items.filter((it) => bandOf(it.count) === band).sort((a, b) => b.count - a.count);
+function BandView({ band, sec }: { band: Band; sec: Secondary }) {
+  const scoped = items
+    .filter(
+      (it) =>
+        bandOf(it.count) === band && matchesTopic(it.topics, sec.t) && matchesTier(it.tier, sec.tier),
+    )
+    .sort((a, b) => b.count - a.count);
   const kinds: Kind[] = ['paper', 'software', 'database', 'dataset'];
   return (
     <div class="ch-view not-content" data-band={band}>
       <nav class="ch-crumbs"><a href={`${BASE.replace(/\/$/, '')}/citations/`}>All bands</a></nav>
       <h2 class="ch-title caail-display">{BAND_META[band].label}</h2>
       <p class="ch-blurb">{BAND_META[band].blurb}</p>
+      <HubFilterBar
+        base={BASE}
+        path="citations"
+        active={{ t: sec.t, tier: sec.tier }}
+        count={scoped.length}
+        noun="resources in this band"
+      />
       {scoped.length === 0 ? (
         <p class="ch-empty">No resources in this band yet.</p>
       ) : (
@@ -142,9 +170,11 @@ function BandView({ band }: { band: Band }) {
 
 export default function CitationHub() {
   const [sel, setSel] = useState<Band | null>(null);
+  const [sec, setSec] = useState<Secondary>({ t: null, tier: null, band: null });
   useEffect(() => {
-    const b = new URLSearchParams(location.search).get('band');
-    if (b && (BANDS as readonly string[]).includes(b)) setSel(b as Band);
+    const parsed = readSecondary(location.search);
+    if (parsed.band) setSel(parsed.band);
+    setSec(parsed);
   }, []);
-  return sel ? <BandView band={sel} /> : <BandIndex />;
+  return sel ? <BandView band={sel} sec={sec} /> : <BandIndex />;
 }

@@ -1,0 +1,62 @@
+/* hub-filters.css — the active secondary-filter bar shared by the three cross-content
+   hubs (HubFilterBar.tsx). Sits directly under a drill-down title; deliberately quiet,
+   since it reports state rather than competing with the item list. */
+
+.hf-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0.5rem 0 0.9rem;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid var(--caail-border);
+  border-radius: 8px;
+  background: var(--caail-surface);
+  font-size: 0.8rem;
+}
+
+.hf-lead {
+  color: var(--caail-muted);
+}
+
+.hf-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.1rem 0.3rem 0.1rem 0.5rem;
+  border: 1px solid var(--caail-border);
+  border-radius: 999px;
+  background: var(--caail-bg, transparent);
+  color: var(--caail-ink);
+  font-weight: 600;
+}
+
+.hf-clear {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 50%;
+  color: var(--caail-muted);
+  text-decoration: none;
+  font-size: 0.95rem;
+  line-height: 1;
+}
+
+.hf-clear:hover,
+.hf-clear:focus-visible {
+  background: var(--caail-border);
+  color: var(--caail-primary);
+}
+
+.hf-clear-all {
+  color: var(--caail-muted);
+  font-size: 0.75rem;
+  text-decoration: underline;
+}
+
+.hf-clear-all:hover,
+.hf-clear-all:focus-visible {
+  color: var(--caail-primary);
+}
