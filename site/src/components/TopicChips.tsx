@@ -3,6 +3,7 @@
  * to the topic hub. Presentational; all logic is in ../lib/topic-chips.ts.
  */
 import { chipProps, type TopicRef } from '../lib/topic-chips';
+import { chipStyle } from '../lib/theme-colors';
 import '../styles/topic-chips.css';
 
 export default function TopicChips({
@@ -18,7 +19,7 @@ export default function TopicChips({
     <ul class="topic-chips not-content" aria-label="Topics">
       {chips.map((c) => (
         <li key={c.slug}>
-          <a class="topic-chip" data-theme={c.theme} href={c.href}>
+          <a class="topic-chip" data-theme={c.theme} style={chipStyle(c.theme)} href={c.href}>
             {c.label}
           </a>
         </li>

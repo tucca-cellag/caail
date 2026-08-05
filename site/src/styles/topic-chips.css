@@ -48,11 +48,6 @@
   background: var(--caail-bg);
 }
 
-/* Theme → Okabe–Ito color (mirrors the matrix area palette; metabolism reuses eval). */
-.topic-chip[data-theme='media-growth-factors']    { --chip: var(--caail-area-media); }
-.topic-chip[data-theme='cell-lines-engineering']  { --chip: var(--caail-area-cell); }
-.topic-chip[data-theme='bioprocess-scale-up']     { --chip: var(--caail-area-bioprocess); }
-.topic-chip[data-theme='scaffolding-biomaterials'] { --chip: var(--caail-area-scaffolding); }
-.topic-chip[data-theme='sensory-flavor']          { --chip: var(--caail-area-sensory); }
-.topic-chip[data-theme='ai-methods-tooling']      { --chip: var(--caail-area-tooling); }
-.topic-chip[data-theme='metabolism-modeling']     { --chip: var(--caail-area-eval); }
+/* Theme colour is set inline as `--chip` from lib/theme-colors.ts, which derives it
+   from each theme's matrix area_key. Do not reintroduce a per-slug map here: it drifted
+   from the data last time (metabolism borrowed the eval colour, food-safety had none). */

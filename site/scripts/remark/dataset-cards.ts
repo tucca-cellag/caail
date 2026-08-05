@@ -20,6 +20,7 @@ import { fileURLToPath } from 'node:url';
 import type { Root } from 'mdast';
 import { toString as mdastToString } from 'mdast-util-to-string';
 import { TIER_META, type LicenseTier } from '../../src/lib/licenses.ts';
+import { chipStyle } from '../../src/lib/theme-colors.ts';
 import { compactCount, citationTitle, openAlexWorksUrl } from '../../src/lib/citation-format.ts';
 
 export interface DatasetCardEntry {
@@ -51,7 +52,7 @@ function chipsHtml(entry: DatasetCardEntry): string {
   const lis = entry.topics
     .map(
       (t) =>
-        `<li><a class="topic-chip" data-theme="${esc(t.theme)}" href="${BASE}/topics/?t=${esc(t.slug)}">${esc(t.label)}</a></li>`,
+        `<li><a class="topic-chip" data-theme="${esc(t.theme)}" style="${esc(chipStyle(t.theme))}" href="${BASE}/topics/?t=${esc(t.slug)}">${esc(t.label)}</a></li>`,
     )
     .join('');
   return `<ul class="topic-chips not-content" aria-label="Topics">${lis}</ul>`;

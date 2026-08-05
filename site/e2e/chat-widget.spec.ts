@@ -294,7 +294,10 @@ test('dismissal does not outlive the browsing session', async ({ page, context }
   // This is what makes the key session- rather than local-storage: hiding the
   // widget is not a permanent preference.
   const fresh = await context.newPage();
-  await fresh.goto('http://localhost:4321/caail/');
+  // Relative, so it follows `use.baseURL` like every other goto here. A hardcoded
+  // localhost:4321 silently tested whatever else was on that port once the preview
+  // port became configurable (CAAIL_E2E_PORT).
+  await fresh.goto('./');
   await expect(fresh.locator('.chat-fab')).toBeVisible({ timeout: 15_000 });
   await fresh.close();
 });

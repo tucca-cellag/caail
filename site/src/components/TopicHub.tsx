@@ -6,6 +6,7 @@ import catalog from '../content/data/catalog.json';
 import papers from '../content/data/papers.json';
 import datasets from '../content/data/datasets.json';
 import { topicHref } from '../lib/topic-chips';
+import { chipStyle } from '../lib/theme-colors';
 
 type TopicRef = { slug: string; label: string; theme: string };
 type Counts = { paper: number; software: number; database: number; dataset: number; total: number };
@@ -58,7 +59,7 @@ function ThemeIndex() {
     <div class="th-index not-content">
       <ul class="th-theme-grid">
         {themes.map((t) => (
-          <li class="th-theme-card" data-theme-card data-theme={t.slug}>
+          <li class="th-theme-card" data-theme-card data-theme={t.slug} style={chipStyle(t.slug)}>
             <a class="th-theme-link" href={topicHref(BASE, t.slug)}>{t.label}</a>
             <div class="th-total">{t.counts.total} items</div>
             <CountPills c={t.counts} />
@@ -80,7 +81,7 @@ function TopicView({ node }: { node: Node }) {
   const inventoryRows = node.counts.dataset - scoped.filter((it) => it.kind === 'dataset').length;
 
   return (
-    <div class="th-view not-content" data-theme={node.tier === 'theme' ? node.slug : node.theme ?? undefined}>
+    <div class="th-view not-content" data-theme={node.tier === 'theme' ? node.slug : node.theme ?? undefined} style={chipStyle(node.slug)}>
       <nav class="th-crumbs">
         <a href={`${BASE.replace(/\/$/, '')}/topics/`}>All themes</a>
         {parentTheme && <>{' / '}<a href={topicHref(BASE, parentTheme.slug)}>{parentTheme.label}</a></>}
