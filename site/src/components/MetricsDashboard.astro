@@ -7,16 +7,27 @@
  * a contributor-recruitment signal (the #9 mandate).
  */
 import metrics from '../content/data/metrics.json';
+import { TIER_META } from '../lib/licenses';
+import {
+  taxonomyHref,
+  researchAreaHref,
+  speciesHref,
+  topicHref,
+  licenseTierHref,
+  citationBandHref,
+} from '../lib/axis-links';
+import { chipStyle } from '../lib/theme-colors';
+import MetricsSubjectGrid from './MetricsSubjectGrid.astro';
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-const { library, matrix, species, datasets, momentum } = metrics;
+const { library, matrix, species, datasets, topics, licenses, citations, momentum } = metrics;
 
 const stats = [
-  { n: library.papers, label: 'Papers' },
-  { n: library.software, label: 'Software tools' },
-  { n: library.databases, label: 'Databases' },
-  { n: library.datasets, label: 'Datasets' },
-  { n: library.talks, label: 'Talks' },
+  { n: library.papers, label: 'Papers', href: `${base}/papers/explorer/` },
+  { n: library.software, label: 'Software tools', href: `${base}/software/` },
+  { n: library.databases, label: 'Databases', href: `${base}/databases/` },
+  { n: library.datasets, label: 'Datasets', href: `${base}/datasets/readme/` },
+  { n: library.talks, label: 'Talks', href: `${base}/talks/` },
 ];
 
 const areaMax = Math.max(1, ...matrix.perArea.map((a) => a.papers));
@@ -30,6 +41,34 @@ const stubCount = species.filter((s) => s.isStub).length;
 const thinnest = speciesSorted.slice(-3).reverse();
 const thinnestLabel = thinnest.map((s) => s.species).join(', ');
 
+const themesSorted = [...topics.perTheme].sort((a, b) => b.items - a.items);
+const themeMax = Math.max(1, ...themesSorted.map((t) => t.items));
+const taggedPct = Math.round((topics.taggedItems / Math.max(1, topics.taggableItems)) * 100);
+const unknownTier = licenses.tiers.find((t) => t.tier === 'unknown');
+const knownLicenses = licenses.total - (unknownTier?.count ?? 0);
+
+// Themes and matrix areas are related but not identical axes, and the page shows both.
+// Derive the exceptions rather than hardcoding them, so the copy stays true if curation
+// closes the gap (an added theme or area_key silently corrects this sentence).
+const themedAreas = topics.perTheme.filter((t) => t.areaKey).length;
+const areaLessThemes = topics.perTheme.filter((t) => !t.areaKey).map((t) => t.label);
+const themedAreaKeys = new Set(topics.perTheme.map((t) => t.areaKey).filter(Boolean));
+const unthemedAreas = matrix.perArea.filter((a) => !themedAreaKeys.has(a.key)).map((a) => a.label);
+
+// Sub-topics get bars like every other panel, not chips: the point of this page is
+// comparing magnitudes, and a row of pills makes 112 and 13 look the same weight.
+const subTopics = topics.perTheme
+  .flatMap((t) => t.tagList)
+  .sort((a, b) => b.items - a.items);
+const subTopicMax = Math.max(1, ...subTopics.map((g) => g.items));
+
+// Column axes for the two subject grids, in each scale's canonical display order.
+const tierColumns = licenses.tiers.map((t) => ({ key: t.tier, label: TIER_META[t.tier].label }));
+const bandColumns = citations.bands.map((b) => ({
+  key: b.band,
+  label: b.label.replace(' citations', ''),
+}));
+
 const pct = (v: number, max: number) => Math.round((v / max) * 100);
 const daysAgo = (iso: string | null) =>
   iso ? Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 86_400_000)) : null;
@@ -40,7 +79,7 @@ const datasetsDays = daysAgo(momentum?.datasetsLastModified ?? null);
 <div class="md">
   <div class="md-stats">
     {stats.map((s) => (
-      <div class="md-stat"><span class="md-stat-n caail-display">{s.n}</span><span class="md-stat-l">{s.label}</span></div>
+      <a class="md-stat" href={s.href}><span class="md-stat-n caail-display">{s.n}</span><span class="md-stat-l">{s.label}</span></a>
     ))}
   </div>
 
@@ -54,9 +93,57 @@ const datasetsDays = daysAgo(momentum?.datasetsLastModified ?? null);
     <div class="md-bars">
       {matrix.perArea.map((a) => (
         <div class="md-row">
-          <span class="md-label">{a.label}</span>
+          <a class="md-label" href={researchAreaHref(a.key, a.label)}>{a.label}</a>
           <span class="md-track"><span class="md-fill" style={`width:${pct(a.papers, areaMax)}%;background:var(--caail-area-${a.key})`} /></span>
           <span class="md-val">{a.papers}</span>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <section class="md-sec">
+    <h2 class="md-h caail-display">Subject coverage</h2>
+    <p class="md-sub">
+      Every paper, tool, database and dataset is tagged on one shared subject axis of{' '}
+      <strong>{topics.themes} themes</strong> and {topics.tags} finer tags. That comes to{' '}
+      {topics.assignments.toLocaleString()} tags across {topics.taggedItems} of {topics.taggableItems}{' '}
+      items ({taggedPct}%). A theme counts an item once, however many of its tags apply, so these
+      bars overlap rather than partition. Browse any of them on <a href={`${base}/topics/`}>Topics</a>.
+    </p>
+    <p class="md-note">
+      Themes are a <strong>different axis</strong> from the {matrix.perArea.length} research areas
+      above, not a renaming of them. {themedAreas} themes map onto a matrix area and share its
+      colour; {areaLessThemes.join(' and ')} {areaLessThemes.length === 1 ? 'is a theme' : 'are themes'}{' '}
+      with no matrix column, and{' '}
+      {unthemedAreas.length > 0 && (
+        <Fragment>{unthemedAreas.join(' and ')}{' '}
+        {unthemedAreas.length === 1 ? 'is a column' : 'are columns'} with no theme.{' '}</Fragment>
+      )}
+      The matrix classifies <em>what a paper did</em>; themes tag <em>what a resource is about</em>,
+      across papers, software, databases and datasets alike.
+    </p>
+    <div class="md-bars">
+      {themesSorted.map((t) => (
+        <div class="md-row">
+          <a class="md-label" href={topicHref(t.slug)}>{t.label}</a>
+          <span class="md-track"><span class="md-fill theme" data-theme={t.slug} style={`width:${pct(t.items, themeMax)}%;${chipStyle(t.slug)}`} /></span>
+          <span class="md-val">{t.items}</span>
+        </div>
+      ))}
+    </div>
+
+    <h3 class="md-h3">Sub-topics</h3>
+    <p class="md-sub">
+      The {topics.tags} finer tags under those themes. A tag is minted only once at least three
+      items cluster under it, so this list tracks what the library actually holds. Counts overlap
+      with their theme and with each other.
+    </p>
+    <div class="md-bars">
+      {subTopics.map((g) => (
+        <div class="md-row">
+          <a class="md-label" href={topicHref(g.slug)}>{g.label}</a>
+          <span class="md-track"><span class="md-fill theme" style={`width:${pct(g.items, subTopicMax)}%;${chipStyle(g.slug)}`} /></span>
+          <span class="md-val">{g.items}</span>
         </div>
       ))}
     </div>
@@ -67,7 +154,7 @@ const datasetsDays = daysAgo(momentum?.datasetsLastModified ?? null);
     <div class="md-bars">
       {topMethods.map((m) => (
         <div class="md-row">
-          <span class="md-label">{m.method}</span>
+          <a class="md-label" href={taxonomyHref(m.method)}>{m.method}</a>
           <span class="md-track"><span class="md-fill navy" style={`width:${pct(m.papers, methodMax)}%`} /></span>
           <span class="md-val">{m.papers}</span>
         </div>
@@ -96,12 +183,87 @@ const datasetsDays = daysAgo(momentum?.datasetsLastModified ?? null);
     <div class="md-bars">
       {speciesSorted.map((s) => (
         <div class={`md-row${s.isStub ? ' stub' : ''}`}>
-          <span class="md-label">{s.species}</span>
+          <a class="md-label" href={speciesHref(s.species)}>{s.species}</a>
           <span class="md-track"><span class="md-fill species" style={`width:${s.isStub ? 100 : pct(s.inventoryRows, speciesMax)}%`} /></span>
           <span class="md-val">{s.isStub ? 'help wanted' : s.inventoryRows}</span>
         </div>
       ))}
     </div>
+  </section>
+
+  <section class="md-sec">
+    <h2 class="md-h caail-display">Licensing: what you can build on</h2>
+    <p class="md-sub">
+      Every tool, database and curated dataset entry carries a coarse license tier
+      ({licenses.total} in total; papers are excluded, they carry no license).{' '}
+      <strong>{knownLicenses} are classified</strong> and {unknownTier?.count} are not, so the
+      largest bar below is the work still to do: an unknown tier means nobody has recorded the
+      terms yet, not that the terms are restrictive. Recording one is a small, self-contained
+      contribution; see <a href={`${base}/contributing/`}>Contributing</a>, or browse by tier on{' '}
+      <a href={`${base}/licenses/`}>Licenses</a>. A triage signal only; always confirm at the source.
+    </p>
+    <div class="md-bars share">
+      {licenses.tiers.map((t) => (
+        <div class="md-row">
+          <a class="md-label" href={licenseTierHref(t.tier)} title={TIER_META[t.tier].blurb}>{TIER_META[t.tier].label}</a>
+          <span class="md-track"><span class="md-fill tier" data-tier={t.tier} style={`width:${t.pct}%`} /></span>
+          <span class="md-val">{t.count}</span>
+          <span class="md-pct">{t.pct}%</span>
+        </div>
+      ))}
+    </div>
+
+    <h3 class="md-h3">Licensing by subject</h3>
+    <p class="md-sub">
+      The same {licenses.total} entries split by subject and sub-topic, papers excluded. Read the
+      unknown column first: it is the largest in most rows, so the rest of any row is a floor on
+      what is reusable there, not a full picture. Rows overlap, since an item tagged with several
+      subjects appears under each. Any cell opens the resources behind it.
+    </p>
+    <MetricsSubjectGrid
+      rows={licenses.bySubject}
+      columns={tierColumns}
+      hrefFor={(tier, slug) => `${licenseTierHref(tier)}&t=${slug}`}
+      subjectHref={topicHref}
+      cellNoun="resources at this tier"
+    />
+  </section>
+
+  <section class="md-sec">
+    <h2 class="md-h caail-display">Citation weight</h2>
+    <p class="md-sub">
+      <strong>{citations.withCount} entries</strong> carry an OpenAlex citation count
+      ({citations.papersWithCount} of {citations.papersTotal} papers,{' '}
+      {citations.catalogWithCount} of {citations.catalogTotal} tools, databases and dataset
+      entries); {citations.aggregated} of them sum several release papers into one figure. Bars are
+      shares of the {citations.withCount} counted, not of the library. An entry with no count is
+      simply not indexed, which is not the same as being uncited. Browse by band on{' '}
+      <a href={`${base}/citations/`}>Citations</a>. A popularity signal, not a measure of quality.
+    </p>
+    <div class="md-bars share">
+      {citations.bands.map((b) => (
+        <div class="md-row">
+          <a class="md-label" href={citationBandHref(b.band)}>{b.label}</a>
+          <span class="md-track"><span class="md-fill band" data-band={b.band} style={`width:${b.pct}%`} /></span>
+          <span class="md-val">{b.count}</span>
+          <span class="md-pct">{b.pct}%</span>
+        </div>
+      ))}
+    </div>
+
+    <h3 class="md-h3">Citation weight by subject</h3>
+    <p class="md-sub">
+      The same {citations.withCount} counted entries, papers included, split by subject. An item
+      tagged with several themes appears under each of them, so rows overlap and add up to more
+      than {citations.withCount}. Any cell opens the resources behind it.
+    </p>
+    <MetricsSubjectGrid
+      rows={citations.bySubject}
+      columns={bandColumns}
+      hrefFor={(band, slug) => `${citationBandHref(band)}&t=${slug}`}
+      subjectHref={topicHref}
+      cellNoun="resources in this band"
+    />
   </section>
 
   {momentum && (
@@ -127,7 +289,9 @@ const datasetsDays = daysAgo(momentum?.datasetsLastModified ?? null);
   .md-stats { display: flex; flex-wrap: wrap; gap: .5rem 2.5rem; padding-bottom: 1.25rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--caail-border); }
   /* margin-top:0 cancels Starlight's prose `* + *` rhythm, which otherwise
    * pushes every stat after the first down 1rem and misaligns the row. */
-  .md-stat { display: flex; flex-direction: column; min-width: 4rem; margin-top: 0; }
+  .md-stat { display: flex; flex-direction: column; min-width: 4rem; margin-top: 0; text-decoration: none; }
+  a.md-stat:hover .md-stat-l,
+  a.md-stat:focus-visible .md-stat-l { color: var(--caail-primary); text-decoration: underline; }
   .md-stat-n { font-size: 2.1rem; font-weight: 700; color: var(--caail-primary); line-height: 1; }
   .md-stat-l { font-size: .68rem; letter-spacing: .05em; text-transform: uppercase; color: var(--caail-muted); margin-top: .15rem; }
 
@@ -138,15 +302,54 @@ const datasetsDays = daysAgo(momentum?.datasetsLastModified ?? null);
   .md-bars { display: flex; flex-direction: column; gap: .4rem; }
   .md-row { display: grid; grid-template-columns: 13rem 1fr 4rem; align-items: center; gap: .75rem; }
   @media (max-width: 38rem) { .md-row { grid-template-columns: 8rem 1fr 3.5rem; } }
+  /* Labels are links, but styled as labels: a row of underlined blue text would
+   * fight the bars for attention. The affordance appears on hover/focus, and
+   * focus-visible keeps them reachable by keyboard. */
   .md-label { font-size: .76rem; color: var(--caail-ink); text-align: right; line-height: 1.2; }
+  a.md-label { text-decoration: none; }
+  a.md-label:hover,
+  a.md-label:focus-visible { color: var(--caail-primary); text-decoration: underline; }
   .md-track { height: 1.4rem; background: var(--caail-surface); border-radius: 6px; overflow: hidden; }
   .md-fill { display: block; height: 100%; border-radius: 6px; min-width: 2px; }
   .md-fill.navy { background: var(--caail-density-3); }
   .md-fill.species { background: var(--caail-primary); }
+
+  /* Theme / tier / band fills reuse the SAME tints as topic-hub.css, license-hub.css
+   * and citation-hub.css, so a bar here and the card it links to read as one colour.
+   * Change a tint there and it must change here too. */
+  /* Theme fills take `--chip`, set inline from lib/theme-colors.ts (derived from each
+   * theme's area_key) so a theme bar here matches its chip and its research area. */
+  .md-fill.theme { background: var(--chip, var(--caail-muted)); }
+
+  /* Tiers and bands use their OWN scales, not area hues: an area colour must mean a
+   * research area and nothing else. See tokens.css for the rationale. */
+  .md-fill.tier[data-tier='permissive'] { background: var(--caail-tier-permissive); }
+  .md-fill.tier[data-tier='copyleft']   { background: var(--caail-tier-copyleft); }
+  .md-fill.tier[data-tier='restricted'] { background: var(--caail-tier-restricted); }
+  .md-fill.tier[data-tier='unknown']    { background: var(--caail-tier-unknown); }
+
+  .md-fill.band[data-band='1000plus'] { background: var(--caail-band-1000plus); }
+  .md-fill.band[data-band='100to999'] { background: var(--caail-band-100to999); }
+  .md-fill.band[data-band='10to99']   { background: var(--caail-band-10to99); }
+  .md-fill.band[data-band='under10']  { background: var(--caail-band-under10); }
+
+  /* Share bars: width IS the percentage, so the row reads as a composition of the
+   * whole rather than being scaled to its own largest value. Needs a 4th column. */
+  .md-bars.share .md-row { grid-template-columns: 13rem 1fr 3.2rem 3rem; }
+  @media (max-width: 38rem) { .md-bars.share .md-row { grid-template-columns: 8rem 1fr 2.6rem 2.6rem; } }
+  .md-pct { font-size: .72rem; color: var(--caail-muted); font-family: var(--caail-font-mono); }
   .md-row.stub .md-fill.species { background: repeating-linear-gradient(45deg, color-mix(in oklab, var(--caail-accent) 35%, transparent), color-mix(in oklab, var(--caail-accent) 35%, transparent) 6px, transparent 6px, transparent 12px); }
   .md-val { font-size: .72rem; font-weight: 700; color: var(--caail-muted); font-family: var(--caail-font-mono); }
   .md-row.stub .md-val { color: var(--caail-accent); font-family: var(--caail-font-ui); font-weight: 700; font-size: .64rem; text-transform: uppercase; letter-spacing: .04em; }
 
+  .md-h3 { font-size: .84rem; color: var(--caail-ink); margin: 1.4rem 0 .3rem; font-weight: 700; }
+  /* Axis-distinction note: quieter than .md-sub, set off with a rule so it reads as an
+   * aside about how to interpret the two panels rather than more prose about one. */
+  .md-note { font-size: .76rem; color: var(--caail-muted); line-height: 1.5; margin: 0 0 .9rem; max-width: 60ch; border-left: 2px solid var(--caail-border); padding-left: .6rem; }
+
+
+  /* Citation x theme grid. A real <table> (not a div grid) so the row/column headers
+   * are announced with each cell by a screen reader. */
   .md-cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .85rem; }
   @media (max-width: 50rem) { .md-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
   @media (max-width: 26rem) { .md-cards { grid-template-columns: 1fr; } }

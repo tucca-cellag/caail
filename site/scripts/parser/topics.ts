@@ -23,8 +23,8 @@ interface TopicRow { item_id: string; slug: string; label: string; tier: 'theme'
 interface ItemTopicRow { item_id: string; topic_id: string; }
 interface ItemRow { id: string; type: string; slug: string; }
 
-function readNdjson<T>(name: string): T[] {
-  const p = join(NDJSON_DIR, `${name}.ndjson`);
+function readNdjson<T>(name: string, dir: string = NDJSON_DIR): T[] {
+  const p = join(dir, `${name}.ndjson`);
   if (!existsSync(p)) return [];
   const text = readFileSync(p, 'utf-8').trim();
   return text ? text.split('\n').map((l) => JSON.parse(l) as T) : [];
@@ -113,6 +113,33 @@ export function unresolvedTopicItems(
     else if (id.startsWith('ds:')) { if (!inventoryIds.has(id) && !datasetEntryIds.has(id)) bad.push(id); }
   }
   return bad;
+}
+
+/**
+ * Library-wide topic-assignment stats for the dashboard panel.
+ *
+ * Three deliberately distinct numbers — conflating them overstates coverage:
+ *   - `assignments`   raw `item_topics` rows (an item tagged with 3 topics counts 3×)
+ *   - `taggedItems`   DISTINCT content items carrying at least one topic
+ *   - `taggableItems` all content items, i.e. everything that *could* be tagged
+ *
+ * `topic:` rows in items.ndjson are the topics themselves, not content, so they are
+ * excluded from the denominator.
+ */
+export function topicAssignmentStats(ndjsonDir: string = NDJSON_DIR): {
+  assignments: number;
+  taggedItems: number;
+  taggableItems: number;
+} {
+  const rows = readNdjson<ItemTopicRow>('item_topics', ndjsonDir);
+  const items = readNdjson<ItemRow>('items', ndjsonDir).filter((i) => i.type !== 'topic');
+  const contentIds = new Set(items.map((i) => i.id));
+  const tagged = new Set(rows.map((r) => r.item_id).filter((id) => contentIds.has(id)));
+  return {
+    assignments: rows.length,
+    taggedItems: tagged.size,
+    taggableItems: contentIds.size,
+  };
 }
 
 /** Build the theme→tag tree with per-content-type counts. */

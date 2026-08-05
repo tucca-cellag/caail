@@ -468,6 +468,118 @@ export const MetricsMomentumSchema = z
   })
   .nullable();
 
+/**
+ * Subject-axis coverage (the /topics/ hub, rolled up).
+ *
+ * `assignments` counts item↔topic rows, `taggedItems` counts DISTINCT items, and
+ * `taggableItems` is the denominator — they are three different numbers and the
+ * dashboard must not present one as another.
+ */
+export const MetricsTopicsSchema = z.object({
+  themes: z.number().int().nonnegative(),
+  tags: z.number().int().nonnegative(),
+  assignments: z.number().int().nonnegative(),
+  taggedItems: z.number().int().nonnegative(),
+  taggableItems: z.number().int().nonnegative(),
+  perTheme: z.array(
+    z.object({
+      slug: z.string(),
+      label: z.string(),
+      /** matrix area this theme maps onto, when it maps onto one */
+      areaKey: z.string().nullable(),
+      tags: z.number().int().nonnegative(),
+      items: z.number().int().nonnegative(),
+      /**
+       * The theme's fine tags with their own item counts. These do NOT sum to `items`:
+       * a theme also holds items tagged at theme level only, and an item carrying two
+       * of its tags is counted once by the theme but once per tag here.
+       */
+      tagList: z.array(
+        z.object({
+          slug: z.string(),
+          label: z.string(),
+          items: z.number().int().nonnegative(),
+        }),
+      ),
+    }),
+  ),
+});
+
+/**
+ * A subject grid: theme rows each followed by their fine-tag rows, split across some
+ * categorical axis (license tiers or citation bands). Shared by both axes so the two
+ * grids can't drift in shape.
+ *
+ * Rows OVERLAP by construction: an item tagged with several themes is counted under
+ * each, and a theme row also holds items tagged only at theme level, so its tag rows
+ * never sum to it. Never present a column of these as a partition.
+ */
+export const MetricsSubjectGridSchema = z.array(
+  z.object({
+    slug: z.string(),
+    label: z.string(),
+    kind: z.enum(['theme', 'tag']),
+    /** parent theme slug for a tag row; null for a theme row */
+    theme: z.string().nullable(),
+    total: z.number().int().nonnegative(),
+    cells: z.array(
+      z.object({ key: z.string(), count: z.number().int().nonnegative() }),
+    ),
+  }),
+);
+
+/**
+ * License-tier triage over the catalog + curated dataset entries.
+ *
+ * NOTE the universe: software + databases + dataset entries. Papers carry no license
+ * by design, so they are NOT in `total` — do not cross-assert this against a
+ * paper-inclusive tally.
+ */
+export const MetricsLicensesSchema = z.object({
+  total: z.number().int().nonnegative(),
+  tiers: z.array(
+    z.object({
+      tier: LicenseTierSchema,
+      count: z.number().int().nonnegative(),
+      /** share of `total`, one decimal */
+      pct: z.number(),
+    }),
+  ),
+  /** tier × subject, over the same paper-free population as `total` */
+  bySubject: MetricsSubjectGridSchema,
+});
+
+/**
+ * OpenAlex citation-count bands.
+ *
+ * NOTE the universe differs from licenses: papers ARE included here. Items with no
+ * count are excluded entirely (unbanded ≠ zero citations), so `withCount` is the
+ * denominator for `pct`, not the library total.
+ */
+export const MetricsCitationsSchema = z.object({
+  withCount: z.number().int().nonnegative(),
+  papersWithCount: z.number().int().nonnegative(),
+  papersTotal: z.number().int().nonnegative(),
+  catalogWithCount: z.number().int().nonnegative(),
+  catalogTotal: z.number().int().nonnegative(),
+  /** entries whose count sums sibling-version DOIs (the `∑` marker, #102) */
+  aggregated: z.number().int().nonnegative(),
+  bands: z.array(
+    z.object({
+      band: z.string(),
+      label: z.string(),
+      count: z.number().int().nonnegative(),
+      /** share of `withCount`, one decimal */
+      pct: z.number(),
+    }),
+  ),
+  /**
+   * Band × subject, over every counted item INCLUDING papers — the same population
+   * `/citations/?band=&t=` lists, since each grid cell links there.
+   */
+  bySubject: MetricsSubjectGridSchema,
+});
+
 /** Schema for metrics.json — breadth, matrix coverage, per-species gaps, momentum. */
 export const MetricsSchema = z.object({
   /** library-wide counts (identical to counts.json) */
@@ -482,6 +594,12 @@ export const MetricsSchema = z.object({
   species: z.array(MetricsSpeciesSchema),
   /** catalogued-dataset total + breakdown by source-page shape */
   datasets: MetricsDatasetsSchema,
+  /** subject-axis coverage — the /topics/ hub rolled up */
+  topics: MetricsTopicsSchema,
+  /** license-tier triage over catalog + dataset entries (no papers) */
+  licenses: MetricsLicensesSchema,
+  /** OpenAlex citation bands over papers + catalog + dataset entries */
+  citations: MetricsCitationsSchema,
   momentum: MetricsMomentumSchema,
   /** ISO build timestamp */
   generatedAt: z.string(),

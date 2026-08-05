@@ -125,11 +125,9 @@ export function generateData(
   // cache, folded in offline; absent cache ⇒ no metrics).
   const awesome = buildAwesomeListsModel();
 
-  // Build and validate the paper network (shared-author + citation edges) and
-  // metrics. The citation cache is an optional committed input; absent ⇒ no
-  // citation edges.
+  // Build and validate the paper network (shared-author + citation edges). The
+  // citation cache is an optional committed input; absent ⇒ no citation edges.
   const graph = buildGraphModel(model, loadCitationCache());
-  const metrics = buildMetricsModel(model);
 
   // Home page "Recently added" list, derived from git history. Empty (not an
   // error) when history is unavailable — see buildRecentModel.
@@ -146,6 +144,11 @@ export function generateData(
   // the committed dataset_entries NDJSON — drives the dataset cards + chips and their
   // appearance as linkable items in the /topics/ hub.
   const datasets = buildDatasetsModel();
+
+  // Metrics runs LAST of the model builders: its topic / license / citation panels are
+  // rolled up from the catalog, topic and dataset-entry models above, so that a
+  // dashboard figure and the hub it links to are literally the same object.
+  const metrics = buildMetricsModel({ papers: model, catalog, topics, datasets });
 
   // Belt-and-suspenders: re-validate all before writing.
   PapersDataSchema.parse(model);
@@ -178,6 +181,39 @@ export function generateData(
       metrics.datasets.referenceEntries +
       metrics.datasets.benchmarkEntries,
     metrics.datasets.total,
+  );
+
+  // The three cross-cutting axes must agree with the hubs they summarize. Each is
+  // checked WITHIN its own universe — licenses cover catalog + dataset entries and
+  // exclude papers; citations include papers; and counts.datasets (inventory rows
+  // included) is NOT datasets.entries.length (curated entries only). Cross-asserting
+  // any of those would be wrong, not stricter.
+  assertCountsMatch('metrics.topics.themes', metrics.topics.themes, topics.themes.length);
+  assertCountsMatch('metrics.topics.tags', metrics.topics.tags, topics.tags.length);
+  assertCountsMatch(
+    'metrics.topics.perTheme',
+    metrics.topics.perTheme.length,
+    topics.themes.length,
+  );
+  assertCountsMatch(
+    'metrics.licenses.total',
+    metrics.licenses.total,
+    catalog.software.length + catalog.databases.length + datasets.entries.length,
+  );
+  assertCountsMatch(
+    'license tier sum',
+    metrics.licenses.tiers.reduce((n, t) => n + t.count, 0),
+    metrics.licenses.total,
+  );
+  assertCountsMatch(
+    'citation band sum',
+    metrics.citations.bands.reduce((n, b) => n + b.count, 0),
+    metrics.citations.withCount,
+  );
+  assertCountsMatch(
+    'citation withCount split',
+    metrics.citations.papersWithCount + metrics.citations.catalogWithCount,
+    metrics.citations.withCount,
   );
 
   // Coverage guard: every matrix row (method) and column (area) must have a
