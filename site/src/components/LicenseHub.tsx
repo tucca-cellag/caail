@@ -13,21 +13,39 @@ import { useEffect, useState } from 'preact/hooks';
 import catalog from '../content/data/catalog.json';
 import datasets from '../content/data/datasets.json';
 import { LICENSE_TIERS, TIER_META, type LicenseTier } from '../lib/licenses';
+import HubFilterBar from './HubFilterBar';
+import {
+  readSecondary,
+  matchesTopic,
+  matchesBand,
+  type Secondary,
+  type TopicRef,
+} from '../lib/hub-filters';
 
 const BASE = import.meta.env.BASE_URL;
 const hub = (tier: LicenseTier) => `${BASE.replace(/\/$/, '')}/licenses/?tier=${tier}`;
 
-type Item = { kind: 'software' | 'database' | 'dataset'; label: string; url: string; tier: LicenseTier; license: string | null };
+type Item = {
+  kind: 'software' | 'database' | 'dataset';
+  label: string;
+  url: string;
+  tier: LicenseTier;
+  license: string | null;
+  topics: TopicRef[];
+  citationCount: number | null;
+};
 
 const items: Item[] = [
-  ...(catalog.software as any[]).map((e) => ({ kind: 'software' as const, label: e.name, url: e.url, tier: e.tier as LicenseTier, license: e.license })),
-  ...(catalog.databases as any[]).map((e) => ({ kind: 'database' as const, label: e.name, url: e.url, tier: e.tier as LicenseTier, license: e.license })),
+  ...(catalog.software as any[]).map((e) => ({ kind: 'software' as const, label: e.name, url: e.url, tier: e.tier as LicenseTier, license: e.license, topics: (e.topics ?? []) as TopicRef[], citationCount: e.citationCount ?? null })),
+  ...(catalog.databases as any[]).map((e) => ({ kind: 'database' as const, label: e.name, url: e.url, tier: e.tier as LicenseTier, license: e.license, topics: (e.topics ?? []) as TopicRef[], citationCount: e.citationCount ?? null })),
   ...(datasets.entries as any[]).map((e) => ({
     kind: 'dataset' as const,
     label: e.name,
     url: e.url ?? `${BASE}datasets/${String(e.page).toLowerCase()}/#${e.anchor}`,
     tier: e.tier as LicenseTier,
     license: e.license,
+    topics: (e.topics ?? []) as TopicRef[],
+    citationCount: e.citationCount ?? null,
   })),
 ];
 
@@ -54,14 +72,24 @@ function TierIndex() {
   );
 }
 
-function TierView({ tier }: { tier: LicenseTier }) {
-  const scoped = items.filter((it) => it.tier === tier);
+function TierView({ tier, sec }: { tier: LicenseTier; sec: Secondary }) {
+  const scoped = items.filter(
+    (it) =>
+      it.tier === tier && matchesTopic(it.topics, sec.t) && matchesBand(it.citationCount, sec.band),
+  );
   const kinds: Item['kind'][] = ['software', 'database', 'dataset'];
   return (
     <div class="lh-view not-content" data-tier={tier}>
       <nav class="lh-crumbs"><a href={`${BASE.replace(/\/$/, '')}/licenses/`}>All tiers</a></nav>
       <h2 class="lh-title caail-display">{TIER_META[tier].label}</h2>
       <p class="lh-blurb">{TIER_META[tier].blurb}</p>
+      <HubFilterBar
+        base={BASE}
+        path="licenses"
+        active={{ t: sec.t, band: sec.band }}
+        count={scoped.length}
+        noun="resources at this tier"
+      />
       {scoped.length === 0 ? (
         <p class="lh-empty">No resources at this tier.</p>
       ) : (
@@ -91,9 +119,11 @@ function TierView({ tier }: { tier: LicenseTier }) {
 
 export default function LicenseHub() {
   const [sel, setSel] = useState<LicenseTier | null>(null);
+  const [sec, setSec] = useState<Secondary>({ t: null, tier: null, band: null });
   useEffect(() => {
-    const t = new URLSearchParams(location.search).get('tier');
-    if (t && (LICENSE_TIERS as readonly string[]).includes(t)) setSel(t as LicenseTier);
+    const parsed = readSecondary(location.search);
+    if (parsed.tier) setSel(parsed.tier);
+    setSec(parsed);
   }, []);
-  return sel ? <TierView tier={sel} /> : <TierIndex />;
+  return sel ? <TierView tier={sel} sec={sec} /> : <TierIndex />;
 }

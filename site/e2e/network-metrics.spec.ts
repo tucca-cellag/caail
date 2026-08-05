@@ -29,6 +29,158 @@ test('by-the-numbers renders coverage, species bars, and momentum (no JS needed)
   await expect(speciesBars.locator('.md-row.stub')).toHaveCount(stubSpeciesCount);
 });
 
+/**
+ * The three cross-cutting axes. Each panel must render one bar per group in
+ * metrics.json AND show the same figure the corresponding hub does — that
+ * dashboard-vs-hub agreement is the whole reason the tallies moved into the parser.
+ * Counts are derived from the generated JSON, never pinned (see data.ts).
+ */
+test('by-the-numbers renders the topic, license and citation panels', async ({ page }) => {
+  await page.goto('./by-the-numbers/');
+
+  const sectionFor = (name: RegExp) =>
+    page.locator('.md-sec').filter({ has: page.getByRole('heading', { name }) });
+
+  // Subject coverage holds two bar groups: themes, then sub-topics (fine tags).
+  const subjects = sectionFor(/Subject coverage/i);
+  const themeBars = subjects.locator('.md-bars').nth(0);
+  const tagBars = subjects.locator('.md-bars').nth(1);
+  await expect(themeBars.locator('.md-row')).toHaveCount(metrics.topics.perTheme.length);
+  await expect(tagBars.locator('.md-row')).toHaveCount(metrics.topics.tags);
+
+  // the largest theme is listed first and shows its item count
+  const biggest = [...metrics.topics.perTheme].sort((a, b) => b.items - a.items)[0];
+  await expect(themeBars.locator('.md-row').first().locator('.md-label')).toHaveText(biggest.label);
+  await expect(themeBars.locator('.md-row').first().locator('.md-val')).toHaveText(String(biggest.items));
+
+  const lic = sectionFor(/Licensing/i);
+  await expect(lic.locator('.md-bars .md-row')).toHaveCount(metrics.licenses.tiers.length);
+  for (const t of metrics.licenses.tiers) {
+    await expect(lic.locator(`.md-fill.tier[data-tier="${t.tier}"]`)).toHaveCount(1);
+  }
+
+  const cit = sectionFor(/Citation weight/i);
+  await expect(cit.locator('.md-bars .md-row')).toHaveCount(metrics.citations.bands.length);
+  for (const b of metrics.citations.bands) {
+    await expect(cit.locator(`.md-fill.band[data-band="${b.band}"]`)).toHaveCount(1);
+  }
+});
+
+test('dashboard license and citation figures match their hubs', async ({ page }) => {
+  // The dashboard reads metrics.json (server-rendered); the hubs tally client-side
+  // from catalog/datasets/papers. They must agree, or one of them is lying.
+  await page.goto('./licenses/');
+  for (const t of metrics.licenses.tiers) {
+    await expect(
+      page.locator(`.lh-tier-card[data-tier="${t.tier}"]`).getByText(`${t.count} resources`),
+    ).toBeVisible();
+  }
+
+  await page.goto('./citations/');
+  for (const b of metrics.citations.bands) {
+    await expect(
+      page
+        .locator(`.ch-band-card[data-band="${b.band}"]`)
+        .getByText(new RegExp(`\\b${b.count} of ${metrics.citations.withCount}\\b`)),
+    ).toBeVisible();
+  }
+});
+
+/**
+ * Every bar label is a link, and the hrefs are built from slugs (`ai-tooling--methodology`,
+ * `mediaoptimization`, `?t=sensory-flavor`). A wrong slug 404s silently, so walk the whole
+ * dashboard and prove each destination resolves — including that an `#anchor` target really
+ * exists on the page it points at.
+ */
+test('every dashboard label link resolves', async ({ page, baseURL }) => {
+  await page.goto('./by-the-numbers/');
+
+  const hrefs = await page.locator('.md a.md-label, .md a.md-stat').evaluateAll((els) =>
+    [...new Set(els.map((e) => (e as HTMLAnchorElement).getAttribute('href') ?? ''))],
+  );
+  expect(hrefs.length).toBeGreaterThan(25); // areas + themes + methods + species + tiers + bands + stats
+
+  const anchorsByPath = new Map<string, string[]>();
+  for (const href of hrefs) {
+    const url = new URL(href, baseURL);
+    const path = url.pathname;
+    const res = await page.request.get(url.toString());
+    expect(res.status(), `${href} did not resolve`).toBe(200);
+
+    if (url.hash) {
+      if (!anchorsByPath.has(path)) {
+        const html = await res.text();
+        anchorsByPath.set(path, [...html.matchAll(/id="([^"]+)"/g)].map((m) => m[1]));
+      }
+      expect(anchorsByPath.get(path), `${href} has no matching heading id`).toContain(
+        url.hash.slice(1),
+      );
+    }
+  }
+});
+
+/**
+ * The citation x theme grid, and the combined-filter drill-down its cells point at.
+ * The cell number and the filtered hub must agree, since the grid is only useful if
+ * clicking a 36 actually shows 36 things.
+ */
+test('citation x theme grid cells open a matching filtered view', async ({ page }) => {
+  await page.goto('./by-the-numbers/');
+  // Two subject grids now render (licensing, citations); the citations one is second.
+  const grids = page.locator('.md-grid');
+  await expect(grids).toHaveCount(2);
+  const grid = grids.nth(1);
+  await expect(grid.locator('tbody tr')).toHaveCount(metrics.citations.bySubject.length);
+
+  // Densest non-zero cell: the one most worth being right.
+  const rows = [...metrics.citations.bySubject];
+  let best = { slug: '', band: '', count: 0 };
+  for (const t of rows) {
+    for (const b of t.cells) {
+      if (b.count > best.count) best = { slug: t.slug, band: b.key, count: b.count };
+    }
+  }
+  expect(best.count).toBeGreaterThan(0);
+
+  // Scope to the table: DataTableViews clones qualifying tables into a mobile card
+  // view, so an unscoped selector matches the cell twice.
+  const cell = grid.locator(`a.md-cell[href*="band=${best.band}"][href*="t=${best.slug}"]`);
+  await expect(cell).toHaveText(String(best.count));
+  await cell.click();
+
+  // The filtered hub reports the same number and shows the filter chip. Waiting on the
+  // bar first also waits out the island's hydrate-then-filter gap.
+  await expect(page.locator('.hf-bar')).toBeVisible();
+  await expect(page.locator('.hf-bar')).toContainText(String(best.count));
+  const listed = await page.locator('.ch-items > li').count();
+  expect(listed).toBe(best.count);
+});
+
+test('a secondary filter can be cleared, restoring the wider view', async ({ page }) => {
+  // Assert the fixtures exist rather than `!`-asserting them: a miss should fail with a
+  // readable message, not a TypeError on undefined.
+  const t = metrics.citations.bySubject.find((x) => x.total > 0);
+  expect(t, 'no subject row with any counted items').toBeDefined();
+  const b = t!.cells.find((x) => x.count > 0);
+  expect(b, `no non-empty band in ${t!.slug}`).toBeDefined();
+  await page.goto(`./citations/?band=${b!.key}&t=${t!.slug}`);
+  // The hub is a client:load island whose filter state is applied in an effect, so the
+  // list is briefly unfiltered after paint. Wait for the filter bar, which only renders
+  // once a secondary filter is active, before counting anything.
+  await expect(page.locator('.hf-bar')).toBeVisible();
+  await expect(page.locator('.ch-items > li')).toHaveCount(b!.count);
+
+  await page.locator('.hf-clear').first().click();
+
+  // Clearing restores exactly the band's full population. Asserting that number (rather
+  // than "the bar is gone", which is also true of a page that simply hasn't hydrated yet)
+  // both auto-retries through hydration and proves the filter was the only thing removed.
+  const bandTotal = metrics.citations.bands.find((x) => x.band === b!.key)!.count;
+  expect(bandTotal).toBeGreaterThan(b!.count);
+  await expect(page.locator('.ch-items > li')).toHaveCount(bandTotal);
+  await expect(page.locator('.hf-bar')).toHaveCount(0);
+});
+
 test('by-the-numbers has no serious/critical a11y violations', async ({ page }) => {
   await page.goto('./by-the-numbers/');
   const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();

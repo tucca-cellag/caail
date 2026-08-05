@@ -21,7 +21,20 @@ type Counts = { papers: number; software: number; databases: number; species: nu
 type Cell = { method: string; area: string; refIds: number[] };
 type Ref = { id: number; section: string };
 type Papers = { cells: Cell[]; references: Ref[] };
-type Metrics = { species: { species: string; inventoryRows: number; isStub: boolean }[] };
+type SubjectRow = {
+  slug: string; label: string; kind: 'theme' | 'tag'; theme: string | null;
+  total: number; cells: { key: string; count: number }[];
+};
+type Metrics = {
+  species: { species: string; inventoryRows: number; isStub: boolean }[];
+  topics: { themes: number; tags: number; perTheme: { slug: string; label: string; items: number }[] };
+  licenses: { total: number; tiers: { tier: string; count: number; pct: number }[]; bySubject: SubjectRow[] };
+  citations: {
+    withCount: number;
+    bands: { band: string; label: string; count: number; pct: number }[];
+    bySubject: SubjectRow[];
+  };
+};
 type PrimerItem = { kind: string; internal: boolean };
 type Primers = { primers: { slug: string; sections: { items: PrimerItem[] }[] }[] };
 

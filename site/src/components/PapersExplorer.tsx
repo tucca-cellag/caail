@@ -5,6 +5,7 @@ import data from '../content/data/papers.json';
 import taxonomy from '../content/data/taxonomy.json';
 import TopicChips from './TopicChips';
 import CitationBadge from './CitationBadge';
+import { taxonomyHref as taxHref } from '../lib/axis-links';
 import type { TopicRef } from '../lib/topic-chips';
 
 type Area = { key: string; label: string };
@@ -39,15 +40,10 @@ const matchesQuery = (r: Ref, ql: string): boolean =>
     .includes(ql);
 
 // Link an axis label to its canonical definition in Taxonomy.md (rendered at
-// /taxonomy/). The heading anchor is the GitHub slug of the label, matching the
-// matrix-header links in Papers.md (e.g. "AI Tooling / Methodology" -> #ai-tooling--methodology).
-// BASE_URL is "/caail" (no trailing slash) in islands, so normalise like the
-// other components (NetworkGraph.tsx) before joining — a bare template join
-// would yield "/caailtaxonomy/".
-const BASE = (import.meta.env.BASE_URL ?? '/').replace(/\/$/, '');
-const TAXONOMY = `${BASE}/taxonomy/`;
-const ghSlug = (s: string) => s.toLowerCase().replace(/[^\w\s-]/g, '').replace(/ /g, '-');
-const taxHref = (label: string) => `${TAXONOMY}#${ghSlug(label)}`;
+// /taxonomy/). The anchor is the GitHub slug of the label, matching the matrix-header
+// links in Papers.md (e.g. "AI Tooling / Methodology" -> #ai-tooling--methodology).
+// Shared with the By the Numbers dashboard via ../lib/axis-links, which also owns the
+// BASE_URL normalisation (a bare join would yield "/caailtaxonomy/").
 // Spell out the acronym method rows for readers who don't know them (others are already full names).
 const FULL_NAME: Record<string, string> = {
   SVM: 'Support Vector Machine',

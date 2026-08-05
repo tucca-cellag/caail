@@ -39,11 +39,13 @@
 /* Manual (curated) provenance: dashed outline signals "not auto-maintained". */
 .lic-badge--manual { border-style: dashed; }
 
-/* Tier → colour (permissive green, copyleft amber, restricted red, unknown grey). */
-.lic-badge--permissive { --lic: var(--caail-area-bioprocess); }
-.lic-badge--copyleft   { --lic: var(--caail-area-media); }
-.lic-badge--restricted { --lic: var(--caail-area-sensory); }
-.lic-badge--unknown    { --lic: var(--caail-muted); }
+/* Tier → colour. The violet openness ramp from tokens.css (darker = more restrictive),
+   unknown neutral grey. Must stay in step with license-hub.css: the same tier has to be
+   the same colour on a card badge and on the /licenses/ hub. */
+.lic-badge--permissive { --lic: var(--caail-tier-permissive); }
+.lic-badge--copyleft   { --lic: var(--caail-tier-copyleft); }
+.lic-badge--restricted { --lic: var(--caail-tier-restricted); }
+.lic-badge--unknown    { --lic: var(--caail-tier-unknown); }
 
 /* The badge floats to the card's top-right corner on both catalog and dataset cards. */
 .ds-card,

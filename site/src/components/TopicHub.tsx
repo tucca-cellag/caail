@@ -6,6 +6,9 @@ import catalog from '../content/data/catalog.json';
 import papers from '../content/data/papers.json';
 import datasets from '../content/data/datasets.json';
 import { topicHref } from '../lib/topic-chips';
+import HubFilterBar from './HubFilterBar';
+import { readSecondary, matchesTier, matchesBand, type Secondary } from '../lib/hub-filters';
+import { chipStyle } from '../lib/theme-colors';
 
 type TopicRef = { slug: string; label: string; theme: string };
 type Counts = { paper: number; software: number; database: number; dataset: number; total: number };
@@ -22,21 +25,33 @@ const BASE = import.meta.env.BASE_URL;
 // Unified, clickable content items. Curated dataset ENTRIES (atlases/GEMs/reference)
 // are linkable — an external home if it has one, else its in-page card anchor on the
 // species page. Dataset INVENTORY rows have no site JSON and stay count-only (below).
-type Item = { kind: 'paper' | 'software' | 'database' | 'dataset'; label: string; url: string; topics: TopicRef[] };
+type Item = {
+  kind: 'paper' | 'software' | 'database' | 'dataset';
+  label: string;
+  url: string;
+  topics: TopicRef[];
+  /** null for papers, which carry no license by design */
+  tier: string | null;
+  citationCount: number | null;
+};
 const items: Item[] = [
   ...(papers.references as any[]).filter((r) => r.topics?.length).map((r) => ({
     kind: 'paper' as const,
     label: `${r.authorsText}${r.year != null ? ` (${r.year})` : ''}${r.title ? ` — ${r.title}` : ''}`,
     url: r.doi ? `https://doi.org/${r.doi}` : `${BASE}papers/explorer/`,
     topics: r.topics as TopicRef[],
+    tier: null,
+    citationCount: (r.citedByOpenAlex as number | null) ?? null,
   })),
-  ...(catalog.software as any[]).map((e) => ({ kind: 'software' as const, label: e.name, url: e.url, topics: e.topics as TopicRef[] })),
-  ...(catalog.databases as any[]).map((e) => ({ kind: 'database' as const, label: e.name, url: e.url, topics: e.topics as TopicRef[] })),
+  ...(catalog.software as any[]).map((e) => ({ kind: 'software' as const, label: e.name, url: e.url, topics: e.topics as TopicRef[], tier: (e.tier as string) ?? null, citationCount: e.citationCount ?? null })),
+  ...(catalog.databases as any[]).map((e) => ({ kind: 'database' as const, label: e.name, url: e.url, topics: e.topics as TopicRef[], tier: (e.tier as string) ?? null, citationCount: e.citationCount ?? null })),
   ...(datasets.entries as any[]).map((e) => ({
     kind: 'dataset' as const,
     label: e.name,
     url: e.url ?? `${BASE}datasets/${String(e.page).toLowerCase()}/#${e.anchor}`,
     topics: e.topics as TopicRef[],
+    tier: (e.tier as string) ?? null,
+    citationCount: e.citationCount ?? null,
   })),
 ];
 
@@ -58,7 +73,7 @@ function ThemeIndex() {
     <div class="th-index not-content">
       <ul class="th-theme-grid">
         {themes.map((t) => (
-          <li class="th-theme-card" data-theme-card data-theme={t.slug}>
+          <li class="th-theme-card" data-theme-card data-theme={t.slug} style={chipStyle(t.slug)}>
             <a class="th-theme-link" href={topicHref(BASE, t.slug)}>{t.label}</a>
             <div class="th-total">{t.counts.total} items</div>
             <CountPills c={t.counts} />
@@ -69,24 +84,40 @@ function ThemeIndex() {
   );
 }
 
-function TopicView({ node }: { node: Node }) {
+function TopicView({ node, sec }: { node: Node; sec: Secondary }) {
   // Membership: a theme collects items whose ref.theme === slug; a tag, ref.slug === slug.
   const inScope = (it: Item) =>
     node.tier === 'theme' ? it.topics.some((r) => r.theme === node.slug) : it.topics.some((r) => r.slug === node.slug);
-  const scoped = items.filter(inScope);
+  const narrowed = sec.tier !== null || sec.band !== null;
+  const scoped = items.filter(
+    (it) => inScope(it) && matchesTier(it.tier, sec.tier) && matchesBand(it.citationCount, sec.band),
+  );
   const kinds: Item['kind'][] = ['paper', 'software', 'database', 'dataset'];
   const parentTheme = node.tier === 'tag' && node.theme ? bySlug.get(node.theme) : null;
-  // Inventory rows = the tagged datasets NOT shown as linkable curated entries.
-  const inventoryRows = node.counts.dataset - scoped.filter((it) => it.kind === 'dataset').length;
+  // Inventory rows = the tagged datasets NOT shown as linkable curated entries. This
+  // subtraction is only valid against the UNFILTERED scope: with a secondary filter on,
+  // `scoped` is smaller for reasons unrelated to linkability, which would overstate the
+  // remainder. Inventory rows carry no tier or citation count of their own, so there is
+  // no honest filtered figure — suppress the line instead of showing a wrong one.
+  const inventoryRows = narrowed
+    ? 0
+    : node.counts.dataset - scoped.filter((it) => it.kind === 'dataset').length;
 
   return (
-    <div class="th-view not-content" data-theme={node.tier === 'theme' ? node.slug : node.theme ?? undefined}>
+    <div class="th-view not-content" data-theme={node.tier === 'theme' ? node.slug : node.theme ?? undefined} style={chipStyle(node.slug)}>
       <nav class="th-crumbs">
         <a href={`${BASE.replace(/\/$/, '')}/topics/`}>All themes</a>
         {parentTheme && <>{' / '}<a href={topicHref(BASE, parentTheme.slug)}>{parentTheme.label}</a></>}
       </nav>
       <h2 class="th-title caail-display">{node.label}</h2>
-      <CountPills c={node.counts} />
+      {!narrowed && <CountPills c={node.counts} />}
+      <HubFilterBar
+        base={BASE}
+        path="topics"
+        active={{ tier: sec.tier, band: sec.band }}
+        count={scoped.length}
+        noun="items in this topic"
+      />
 
       {node.tier === 'theme' && node.tags.length > 0 && (
         <ul class="th-subtags">
@@ -124,10 +155,12 @@ function TopicView({ node }: { node: Node }) {
 
 export default function TopicHub() {
   const [sel, setSel] = useState<string | null>(null);
+  const [sec, setSec] = useState<Secondary>({ t: null, tier: null, band: null });
   useEffect(() => {
-    const t = new URLSearchParams(location.search).get('t');
-    if (t) setSel(t);
+    const parsed = readSecondary(location.search);
+    if (parsed.t) setSel(parsed.t);
+    setSec(parsed);
   }, []);
   const node = sel ? bySlug.get(sel) ?? null : null;
-  return node ? <TopicView node={node} /> : <ThemeIndex />;
+  return node ? <TopicView node={node} sec={sec} /> : <ThemeIndex />;
 }

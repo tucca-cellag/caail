@@ -24,13 +24,7 @@
   border-radius: 0.6rem;
   background: var(--caail-surface);
 }
-.th-theme-card[data-theme='media-growth-factors']    { --chip: var(--caail-area-media); }
-.th-theme-card[data-theme='cell-lines-engineering']  { --chip: var(--caail-area-cell); }
-.th-theme-card[data-theme='bioprocess-scale-up']     { --chip: var(--caail-area-bioprocess); }
-.th-theme-card[data-theme='scaffolding-biomaterials'] { --chip: var(--caail-area-scaffolding); }
-.th-theme-card[data-theme='sensory-flavor']          { --chip: var(--caail-area-sensory); }
-.th-theme-card[data-theme='ai-methods-tooling']      { --chip: var(--caail-area-tooling); }
-.th-theme-card[data-theme='metabolism-modeling']     { --chip: var(--caail-area-eval); }
+/* Theme colour set inline as `--chip` from lib/theme-colors.ts (derived from area_key). */
 
 .th-theme-link { font-weight: 600; font-size: 1.05rem; text-decoration: none; color: var(--caail-primary); }
 .th-total { color: var(--caail-muted); font-size: 0.85rem; margin: 0.15rem 0 0.4rem; }

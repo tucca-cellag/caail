@@ -13,8 +13,12 @@
   background: var(--caail-surface);
 }
 
-.ds-card--atlas { --accent: var(--caail-area-cell); }
-.ds-card--gem   { --accent: var(--caail-area-eval); }
+/* Entry kind uses brand tokens, NOT area hues. A dataset card also carries topic chips
+   coloured by research area, so borrowing an area colour for "atlas" put two different
+   meanings on one hue inside a single card. Kind is a minor distinction anyway, so the
+   quieter brand neutrals are the right weight for it. */
+.ds-card--atlas { --accent: var(--caail-primary); }
+.ds-card--gem   { --accent: var(--caail-accent); }
 .ds-card--other { --accent: var(--caail-muted); }
 
 /* The H3 heading sits flush at the card top; the body and chips flush at the bottom

@@ -31,13 +31,13 @@
   background: var(--caail-surface);
 }
 .ch-band-card[data-band='1000plus'],
-.ch-view[data-band='1000plus'] { --tint: var(--caail-area-sensory); }
+.ch-view[data-band='1000plus'] { --tint: var(--caail-band-1000plus); }
 .ch-band-card[data-band='100to999'],
-.ch-view[data-band='100to999'] { --tint: var(--caail-area-media); }
+.ch-view[data-band='100to999'] { --tint: var(--caail-band-100to999); }
 .ch-band-card[data-band='10to99'],
-.ch-view[data-band='10to99'] { --tint: var(--caail-area-bioprocess); }
+.ch-view[data-band='10to99'] { --tint: var(--caail-band-10to99); }
 .ch-band-card[data-band='under10'],
-.ch-view[data-band='under10'] { --tint: var(--caail-muted); }
+.ch-view[data-band='under10'] { --tint: var(--caail-band-under10); }
 
 .ch-band-link { font-weight: 600; font-size: 1.05rem; text-decoration: none; color: var(--caail-primary); }
 .ch-total { color: var(--caail-muted); font-size: 0.85rem; margin: 0.15rem 0 0.4rem; }

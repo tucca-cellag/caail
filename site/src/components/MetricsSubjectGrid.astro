@@ -1,0 +1,127 @@
+---
+/**
+ * MetricsSubjectGrid — a subject grid for the By the Numbers dashboard: theme rows, each
+ * followed by its indented fine-tag rows, split across a categorical axis (license tiers
+ * or citation bands).
+ *
+ * Rendered twice (licensing, citations) from the same `metrics.*.bySubject` shape, so the
+ * two grids stay identical in behaviour. Server-rendered, no hydration, like the rest of
+ * the dashboard.
+ *
+ * A real <table> so row and column headers are announced with each cell. `not-content`
+ * opts out of Starlight's prose table styling except the thead treatment it shares with
+ * the site's other data tables.
+ */
+import { chipStyle } from '../lib/theme-colors';
+
+export interface SubjectRow {
+  slug: string;
+  label: string;
+  kind: 'theme' | 'tag';
+  theme: string | null;
+  total: number;
+  cells: { key: string; count: number }[];
+}
+
+interface Props {
+  rows: SubjectRow[];
+  /** Column axis, in display order. */
+  columns: { key: string; label: string }[];
+  /** Builds the drill-down URL for one cell. */
+  hrefFor: (columnKey: string, subjectSlug: string) => string;
+  /** Link for the row label itself (the subject hub). */
+  subjectHref: (slug: string) => string;
+  /** Accessible name fragment, e.g. "resources in this band". */
+  cellNoun: string;
+}
+
+const { rows, columns, hrefFor, subjectHref, cellNoun } = Astro.props as Props;
+
+// Shade against the largest cell in THIS grid, so each grid uses its full ramp rather
+// than one grid washing out because the other happens to hold bigger numbers.
+const gridMax = Math.max(1, ...rows.flatMap((r) => r.cells.map((c) => c.count)));
+const level = (n: number) => {
+  const r = n / gridMax;
+  return r > 0.66 ? 4 : r > 0.4 ? 3 : r > 0.2 ? 2 : 1;
+};
+---
+
+<table class="md-grid not-content">
+  <thead>
+    <tr>
+      <th scope="col">Subject</th>
+      {columns.map((c) => <th scope="col">{c.label}</th>)}
+      <th scope="col">All</th>
+    </tr>
+  </thead>
+  <tbody>
+    {rows.map((r) => (
+      <tr class={r.kind === 'tag' ? 'md-grid-tag' : 'md-grid-theme'}>
+        <th scope="row" style={chipStyle(r.slug)}>
+          <a href={subjectHref(r.slug)}>{r.label}</a>
+        </th>
+        {r.cells.map((c) => (
+          <td>
+            {c.count === 0 ? (
+              <span class="md-cell zero" aria-label={`no ${r.label} ${cellNoun}`}>0</span>
+            ) : (
+              <a
+                class="md-cell"
+                data-level={level(c.count)}
+                href={hrefFor(c.key, r.slug)}
+                aria-label={`${c.count} ${r.label} ${cellNoun}`}
+              >{c.count}</a>
+            )}
+          </td>
+        ))}
+        <td><span class="md-cell total">{r.total}</span></td>
+      </tr>
+    ))}
+  </tbody>
+</table>
+
+<style>
+  /* The global `.sl-markdown-content thead th` rule (sticky navy fill, white text) has
+   * higher specificity than an Astro-scoped rule, which compiles to `:where(...)` and
+   * carries none. Rather than fight it, the grid inherits the site's standard data-table
+   * header so it matches the dataset inventory tables — and so the fill/text pairing
+   * stays the one that was contrast-checked. Only geometry is overridden here. */
+  .md-grid { border-collapse: collapse; font-size: .74rem; margin: 0; width: auto; }
+  .md-grid th, .md-grid td { padding: .18rem .3rem; margin: 0; border: 0; }
+  .md-grid thead th { font-size: .66rem; letter-spacing: .04em; text-align: center; }
+  .md-grid thead th:first-child { text-align: right; }
+  .md-grid tbody th { font-weight: 400; text-align: right; color: var(--caail-ink); white-space: nowrap; }
+  .md-grid tbody th a { color: inherit; text-decoration: none; }
+  .md-grid tbody th a:hover, .md-grid tbody th a:focus-visible { color: var(--caail-primary); text-decoration: underline; }
+  .md-cell { display: block; min-width: 3.1rem; padding: .3rem .2rem; border-radius: 5px; text-align: center; font-family: var(--caail-font-mono); font-weight: 700; color: var(--caail-ink); text-decoration: none; }
+  .md-cell[data-level='1'] { background: var(--caail-density-1); }
+  .md-cell[data-level='2'] { background: var(--caail-density-2); }
+  /* Dark fills flip to white text, matching PapersExplorer's matrix rule. */
+  .md-cell[data-level='3'] { background: var(--caail-density-3); color: #fff; }
+  .md-cell[data-level='4'] { background: var(--caail-density-4); color: #fff; }
+  a.md-cell:hover, a.md-cell:focus-visible { outline: 2px solid var(--caail-primary); outline-offset: 1px; }
+  .md-cell.zero { color: var(--caail-muted); font-weight: 400; background: var(--caail-density-0); }
+  @media (max-width: 34rem) { .md-grid { font-size: .68rem; } .md-cell { min-width: 2.4rem; } }
+
+  /* Tag rows read as children of the theme above. The labels are right-aligned, so a
+   * left indent rule would sit detached at the far edge; a leading dot in the parent
+   * theme's colour travels with the text instead, and matches the marker `.topic-chip`
+   * already uses for the same job. */
+  .md-grid-theme > th { font-weight: 700; }
+  .md-grid-tag > th { font-weight: 400; font-size: 0.92em; color: var(--caail-muted); }
+  .md-grid-tag > th a::before {
+    content: '';
+    display: inline-block;
+    width: 0.45em;
+    height: 0.45em;
+    margin-right: 0.45em;
+    border-radius: 50%;
+    background: var(--chip, var(--caail-muted));
+    vertical-align: middle;
+  }
+  .md-cell.total {
+    background: transparent;
+    color: var(--caail-muted);
+    font-weight: 400;
+  }
+</style>

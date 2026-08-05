@@ -28,6 +28,40 @@
   --caail-area-tooling: #CC79A7;
   --caail-area-eval: #917800;       /* Okabe–Ito yellow darkened to amber for AA on white */
 
+  /* Subject themes without a matrix area (topics.ndjson `area_key` is null). Themes that
+     DO map to an area take that area's colour, resolved from data in lib/theme-colors.ts
+     — never hardcoded per-slug in CSS.
+
+     These two need their own values, and honestly: 7 areas + 2 area-less themes is past
+     the ~7-category limit where colours stay reliably distinguishable, especially under
+     CVD. So they are separated by LIGHTNESS as well as hue (both much darker than the
+     nearest area) rather than by hue alone, and neither reuses an area token — the
+     By the Numbers page shows areas and themes together, so one colour meaning two
+     different things there would be exactly the confusion this palette exists to avoid.
+     Metabolism previously borrowed --caail-area-eval, which collided on that page. */
+  --caail-theme-metabolism: oklch(42% 0.10 220);   /* deep teal-blue; area sky is far lighter */
+  --caail-theme-food-safety: oklch(52% 0.12 200);
+
+  /* Data — license tiers.
+     The 7 area hues exhaust the Okabe–Ito CVD-safe categorical set, so tiers must not
+     borrow one: an area colour has to mean a research area and nothing else. Tiers use a
+     single unused hue family (violet ~300) as a ramp instead, so violet on any page means
+     "license". Darker = more restrictive, i.e. more caution before reuse. Unknown is
+     neutral grey because it encodes missing information, not a level of openness. */
+  --caail-tier-permissive: oklch(72% 0.10 300);
+  --caail-tier-copyleft: oklch(58% 0.13 300);
+  --caail-tier-restricted: oklch(45% 0.16 300);
+  --caail-tier-unknown: oklch(70% 0.02 255);
+
+  /* Data — citation bands.
+     Bands are ordered magnitude, not categories, so they reuse the sequential navy ramp
+     rather than categorical hues. Site-wide grammar: darker navy = more of something
+     (matrix paper density, grid cell counts, citation weight). */
+  --caail-band-1000plus: var(--caail-density-4);
+  --caail-band-100to999: var(--caail-density-3);
+  --caail-band-10to99: var(--caail-density-2);
+  --caail-band-under10: var(--caail-density-1);
+
   /* Fonts */
   --caail-font-display: 'Bricolage Grotesque Variable', 'Inter Variable', system-ui, sans-serif;
   --caail-font-ui: 'Inter Variable', system-ui, sans-serif;
@@ -51,4 +85,13 @@
   --caail-density-3: oklch(62% 0.11 258);
   --caail-density-4: oklch(78% 0.10 256);
   /* Categorical area colors keep hue; lighten ~8% for AA on dark (kept inline in components) */
+
+  /* Theme / tier scales keep hue, lightness inverted for AA on dark. The band tokens
+     need no override: they alias the density ramp, which is already inverted above. */
+  --caail-theme-metabolism: oklch(72% 0.09 220);
+  --caail-theme-food-safety: oklch(70% 0.11 200);
+  --caail-tier-permissive: oklch(80% 0.09 300);
+  --caail-tier-copyleft: oklch(70% 0.12 300);
+  --caail-tier-restricted: oklch(60% 0.15 300);
+  --caail-tier-unknown: oklch(60% 0.02 255);
 }

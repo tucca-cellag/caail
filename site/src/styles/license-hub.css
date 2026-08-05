@@ -30,13 +30,13 @@
   background: var(--caail-surface);
 }
 .lh-tier-card[data-tier='permissive'],
-.lh-view[data-tier='permissive'] { --tint: var(--caail-area-bioprocess); }
+.lh-view[data-tier='permissive'] { --tint: var(--caail-tier-permissive); }
 .lh-tier-card[data-tier='copyleft'],
-.lh-view[data-tier='copyleft'] { --tint: var(--caail-area-media); }
+.lh-view[data-tier='copyleft'] { --tint: var(--caail-tier-copyleft); }
 .lh-tier-card[data-tier='restricted'],
-.lh-view[data-tier='restricted'] { --tint: var(--caail-area-sensory); }
+.lh-view[data-tier='restricted'] { --tint: var(--caail-tier-restricted); }
 .lh-tier-card[data-tier='unknown'],
-.lh-view[data-tier='unknown'] { --tint: var(--caail-muted); }
+.lh-view[data-tier='unknown'] { --tint: var(--caail-tier-unknown); }
 
 .lh-tier-link { font-weight: 600; font-size: 1.05rem; text-decoration: none; color: var(--caail-primary); }
 .lh-total { color: var(--caail-muted); font-size: 0.85rem; margin: 0.15rem 0 0.4rem; }
