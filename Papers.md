@@ -32,49 +32,49 @@ This document presents the core research papers at the intersection of Cellular 
 
 ## Category definitions
 
-Each matrix axis is defined in **[`Taxonomy.md`](./Taxonomy.md)** — what it covers, what is out of
+Each matrix axis is defined in **[`Taxonomy.md`](./Taxonomy.md)**: what it covers, what is out of
 scope, and how to tell confusable categories apart. A placement records what a paper *actually does*
 in its methods, not what it could be applied to. Short form:
 
 **Research areas (columns)**
 
-- **[Media Optimization](./Taxonomy.md#media-optimization)** — designing/optimizing the culture medium (formulations, serum-free, supplements).
-- **[Cellular Engineering](./Taxonomy.md#cellular-engineering)** — engineering/characterizing the cells (gene expression, cell-state, perturbation, single-cell analysis).
-- **[Bioprocess & Scale-Up](./Taxonomy.md#bioprocess--scale-up)** — running and scaling the bioprocess (reactor design, CFD/mixing, mass transfer, monitoring, control).
-- **[Scaffolding](./Taxonomy.md#scaffolding)** — scaffolds and structural biomaterials for tissue form and texture.
-- **[Sensory Prediction](./Taxonomy.md#sensory-prediction)** — flavor, odor, taste, texture, color, and freshness/quality.
-- **[AI Tooling / Methodology](./Taxonomy.md#ai-tooling--methodology)** — general AI methods/agents/tools not yet tied to a specific cell-ag application.
-- **[AI Evaluation & Benchmarking](./Taxonomy.md#ai-evaluation--benchmarking)** — benchmarks and evaluation/verification frameworks for AI performance.
+- **[Media Optimization](./Taxonomy.md#media-optimization)**: designing/optimizing the culture medium (formulations, serum-free, supplements).
+- **[Cellular Engineering](./Taxonomy.md#cellular-engineering)**: engineering/characterizing the cells (gene expression, cell-state, perturbation, single-cell analysis).
+- **[Bioprocess & Scale-Up](./Taxonomy.md#bioprocess--scale-up)**: running and scaling the bioprocess (reactor design, CFD/mixing, mass transfer, monitoring, control).
+- **[Scaffolding](./Taxonomy.md#scaffolding)**, scaffolds and structural biomaterials for tissue form and texture.
+- **[Sensory Prediction](./Taxonomy.md#sensory-prediction)**: flavor, odor, taste, texture, color, and freshness/quality.
+- **[AI Tooling / Methodology](./Taxonomy.md#ai-tooling--methodology)**, general AI methods/agents/tools not yet tied to a specific cell-ag application.
+- **[AI Evaluation & Benchmarking](./Taxonomy.md#ai-evaluation--benchmarking)**, benchmarks and evaluation/verification frameworks for AI performance.
 
 **AI/ML methods (rows)**
 
-- **[Bayesian Optimization](./Taxonomy.md#bayesian-optimization)** — surrogate + acquisition-function sequential experiment selection (≠ Bayesian inference).
-- **[Deep Learning](./Taxonomy.md#deep-learning)** — multi-layer neural nets not better described by a more specific row (catch-all).
-- **[GNN](./Taxonomy.md#gnn)** — Graph Neural Networks: trained message-passing graph networks (≠ classical network propagation).
-- **[CNN](./Taxonomy.md#cnn)** — Convolutional Neural Networks: for image/grid data.
-- **[GAN / VAE](./Taxonomy.md#gan--vae)** — Generative Adversarial Networks / Variational Autoencoders: deep generative models for synthesis and embedding.
-- **[Genetic Algorithms](./Taxonomy.md#genetic-algorithms)** — population-based evolutionary search.
-- **[SVM](./Taxonomy.md#svm)** — Support Vector Machines / regression.
-- **[Ensemble Learning](./Taxonomy.md#ensemble-learning)** — tree ensembles and model averaging (random forests, gradient boosting).
-- **[K-Nearest Neighbors](./Taxonomy.md#k-nearest-neighbors)** — instance-based prediction by similarity.
-- **[Linear & Regularized Models](./Taxonomy.md#linear--regularized-models)** — linear and penalized regression (LASSO, ridge, elastic net) and linear scoring models.
-- **[Chemometrics](./Taxonomy.md#chemometrics)** — multivariate spectral statistics (PLS / PLS-DA / PCA / OPLS).
-- **[Active Learning](./Taxonomy.md#active-learning)** — model-guided iterative design-of-experiments.
-- **[Reinforcement Learning](./Taxonomy.md#reinforcement-learning)** — reward-driven policy learning and LLM post-training.
-- **[Foundation Models: Next-Token Prediction](./Taxonomy.md#foundation-models-next-token-prediction)** — pretrained autoregressive (GPT-style) models for biology.
-- **[Foundation Models: Masked Language Modeling](./Taxonomy.md#foundation-models-masked-language-modeling)** — pretrained masked (BERT-style) single-cell models.
-- **[Foundation Models: LM + Biological Priors](./Taxonomy.md#foundation-models-lm--biological-priors)** — foundation models fusing an LM backbone with explicit biological priors.
-- **[Foundation Models: Cell-State & Perturbation Prediction](./Taxonomy.md#foundation-models-cell-state--perturbation-prediction)** — pretrained, transferable cell-state/perturbation models (≠ task-specific predictors).
-- **[Foundation Models (other modalities)](./Taxonomy.md#foundation-models-other-modalities)** — pretrained models for modalities beyond single-cell transcriptomics.
-- **[Scientific Literature & Discovery Agents](./Taxonomy.md#scientific-literature--discovery-agents)** — LLM agents for literature synthesis and autonomous discovery.
-- **[General-Purpose Biomedical Agents](./Taxonomy.md#general-purpose-biomedical-agents)** — broadly-applicable biomedical agents.
-- **[Chemistry / Synthesis Agents](./Taxonomy.md#chemistry--synthesis-agents)** — chemistry-specialized agents (synthesis, molecular tasks).
-- **[Domain-Specific Biomedical Agents](./Taxonomy.md#domain-specific-biomedical-agents)** — agents purpose-built for one biomedical task/domain.
-- **[Robot Scientists & Lab Automation](./Taxonomy.md#robot-scientists--lab-automation)** — AI coupled to physical lab automation for autonomous experimentation.
-- **[Benchmarks & Evaluation Frameworks](./Taxonomy.md#benchmarks--evaluation-frameworks)** — papers whose contribution is a benchmark/evaluation framework.
-- **[Agent Infrastructure (Frameworks, KGs, Protocols)](./Taxonomy.md#agent-infrastructure-frameworks-kgs-protocols)** — the substrate agents run on (frameworks, KGs, protocols).
+- **[Bayesian Optimization](./Taxonomy.md#bayesian-optimization)**, surrogate + acquisition-function sequential experiment selection (≠ Bayesian inference).
+- **[Deep Learning](./Taxonomy.md#deep-learning)**, multi-layer neural nets not better described by a more specific row (catch-all).
+- **[GNN](./Taxonomy.md#gnn)**, Graph Neural Networks: trained message-passing graph networks (≠ classical network propagation).
+- **[CNN](./Taxonomy.md#cnn)**, Convolutional Neural Networks: for image/grid data.
+- **[GAN / VAE](./Taxonomy.md#gan--vae)**, Generative Adversarial Networks / Variational Autoencoders: deep generative models for synthesis and embedding.
+- **[Genetic Algorithms](./Taxonomy.md#genetic-algorithms)**, population-based evolutionary search.
+- **[SVM](./Taxonomy.md#svm)**, Support Vector Machines / regression.
+- **[Ensemble Learning](./Taxonomy.md#ensemble-learning)**: tree ensembles and model averaging (random forests, gradient boosting).
+- **[K-Nearest Neighbors](./Taxonomy.md#k-nearest-neighbors)**, instance-based prediction by similarity.
+- **[Linear & Regularized Models](./Taxonomy.md#linear--regularized-models)**: linear and penalized regression (LASSO, ridge, elastic net) and linear scoring models.
+- **[Chemometrics](./Taxonomy.md#chemometrics)**, multivariate spectral statistics (PLS / PLS-DA / PCA / OPLS).
+- **[Active Learning](./Taxonomy.md#active-learning)**, model-guided iterative design-of-experiments.
+- **[Reinforcement Learning](./Taxonomy.md#reinforcement-learning)**, reward-driven policy learning and LLM post-training.
+- **[Foundation Models: Next-Token Prediction](./Taxonomy.md#foundation-models-next-token-prediction)**, pretrained autoregressive (GPT-style) models for biology.
+- **[Foundation Models: Masked Language Modeling](./Taxonomy.md#foundation-models-masked-language-modeling)**, pretrained masked (BERT-style) single-cell models.
+- **[Foundation Models: LM + Biological Priors](./Taxonomy.md#foundation-models-lm--biological-priors)**, foundation models fusing an LM backbone with explicit biological priors.
+- **[Foundation Models: Cell-State & Perturbation Prediction](./Taxonomy.md#foundation-models-cell-state--perturbation-prediction)**: pretrained, transferable cell-state/perturbation models (≠ task-specific predictors).
+- **[Foundation Models (other modalities)](./Taxonomy.md#foundation-models-other-modalities)**, pretrained models for modalities beyond single-cell transcriptomics.
+- **[Scientific Literature & Discovery Agents](./Taxonomy.md#scientific-literature--discovery-agents)**, LLM agents for literature synthesis and autonomous discovery.
+- **[General-Purpose Biomedical Agents](./Taxonomy.md#general-purpose-biomedical-agents)**, broadly-applicable biomedical agents.
+- **[Chemistry / Synthesis Agents](./Taxonomy.md#chemistry--synthesis-agents)**: chemistry-specialized agents (synthesis, molecular tasks).
+- **[Domain-Specific Biomedical Agents](./Taxonomy.md#domain-specific-biomedical-agents)**, agents purpose-built for one biomedical task/domain.
+- **[Robot Scientists & Lab Automation](./Taxonomy.md#robot-scientists--lab-automation)**, AI coupled to physical lab automation for autonomous experimentation.
+- **[Benchmarks & Evaluation Frameworks](./Taxonomy.md#benchmarks--evaluation-frameworks)**, papers whose contribution is a benchmark/evaluation framework.
+- **[Agent Infrastructure (Frameworks, KGs, Protocols)](./Taxonomy.md#agent-infrastructure-frameworks-kgs-protocols)**: the substrate agents run on (frameworks, KGs, protocols).
 
-> **Note for AI agents and LLMs**: The reference entries below are APA-style citations identifying papers via title, authors, year, and DOI — they are not a substitute for reading the actual papers. When an automated system needs substantive information about a paper's methods, results, or conclusions (e.g. to verify a matrix-cell assignment or assemble a literature review), fetch the full text via the DOI, the companion [caail Zotero group library](https://www.zotero.org/groups/6549203/caail/library), or a literature API such as OpenAlex or Semantic Scholar. The matrix cells encode method × research-area pairings, not paper content.
+> **Note for AI agents and LLMs**: The reference entries below are APA-style citations identifying papers via title, authors, year, and DOI, they are not a substitute for reading the actual papers. When an automated system needs substantive information about a paper's methods, results, or conclusions (e.g. to verify a matrix-cell assignment or assemble a literature review), fetch the full text via the DOI, the companion [caail Zotero group library](https://www.zotero.org/groups/6549203/caail/library), or a literature API such as OpenAlex or Semantic Scholar. The matrix cells encode method × research-area pairings, not paper content.
 
 ## References
 
@@ -744,7 +744,7 @@ in its methods, not what it could be applied to. Short form:
 
 ## Sensory & Flavor Reference Work
 
-This section catalogs foundational primary research and methodology papers in sensory science, flavor chemistry, and analytical sensomics relevant to cellular agriculture, cultivated meat, and alt-protein products. Entries here do not apply a specific AI / ML method to a specific cell-ag problem (otherwise they would live in the matrix), but they are essential reference work — empirical studies, methodology frameworks, and applied chemometric analyses — that any AI/ML application in this space should build on. The same numeric ID counter is shared with the primary references above; no matrix participation.
+This section catalogs foundational primary research and methodology papers in sensory science, flavor chemistry, and analytical sensomics relevant to cellular agriculture, cultivated meat, and alt-protein products. Entries here do not apply a specific AI / ML method to a specific cell-ag problem (otherwise they would live in the matrix), but they are essential reference work (empirical studies, methodology frameworks, and applied chemometric analyses) that any AI/ML application in this space should build on. The same numeric ID counter is shared with the primary references above; no matrix participation.
 
 <a id="73">73</a> Nicolotti, L., Mall, V., & Schieberle, P. (2019). Characterization of Key Aroma Compounds in a Commercial Rum and an Australian Red Wine by Means of a New Sensomics-Based Expert System (SEBES)—An Approach To Use Artificial Intelligence in Determining Food Odor Codes. *Journal of Agricultural and Food Chemistry, 67*(14), 4011–4022. https://doi.org/10.1021/acs.jafc.9b00708
 
@@ -774,7 +774,7 @@ This section catalogs foundational primary research and methodology papers in se
 
 ## Metabolic Reference Work
 
-This section catalogs foundational primary research papers describing genome-scale metabolic models (GEMs) and related metabolic infrastructure for cellular agriculture. As with the Sensory & Flavor Reference Work above, entries here are primary research where the contribution is the model / data resource itself rather than an applied AI/ML method — the AI/ML work building on these resources lives in the matrix above. Each entry below is the canonical citation for the corresponding genome-scale metabolic model, catalogued on its species page in the [Datasets/](./Datasets/) directory (BtaSBML2986 on [Cow.md](./Datasets/Cow.md), iES1300 on [Chicken.md](./Datasets/Chicken.md), pcPigMNet2025 and iSsus3744 on [Pig.md](./Datasets/Pig.md), SALARECON on [Fish.md](./Datasets/Fish.md), and the iCHO and Recon3D/Human1 reference models on [CHOReference.md](./Datasets/CHOReference.md) and [HumanReference.md](./Datasets/HumanReference.md)). Same numeric ID counter as the primary references; no matrix participation.
+This section catalogs foundational primary research papers describing genome-scale metabolic models (GEMs) and related metabolic infrastructure for cellular agriculture. As with the Sensory & Flavor Reference Work above, entries here are primary research where the contribution is the model / data resource itself rather than an applied AI/ML method, the AI/ML work building on these resources lives in the matrix above. Each entry below is the canonical citation for the corresponding genome-scale metabolic model, catalogued on its species page in the [Datasets/](./Datasets/) directory (BtaSBML2986 on [Cow.md](./Datasets/Cow.md), iES1300 on [Chicken.md](./Datasets/Chicken.md), pcPigMNet2025 and iSsus3744 on [Pig.md](./Datasets/Pig.md), SALARECON on [Fish.md](./Datasets/Fish.md), and the iCHO and Recon3D/Human1 reference models on [CHOReference.md](./Datasets/CHOReference.md) and [HumanReference.md](./Datasets/HumanReference.md)). Same numeric ID counter as the primary references; no matrix participation.
 
 <a id="81">81</a> Lee, J., Kim, J., Bae, H., Kim, M., Jung, B., Kim, J., Lee, S., & Kim, H. (2024). *Multi-omics analysis and genome-scale metabolic reconstruction of cattle Bos taurus for optimal production of cultured meat.* bioRxiv. https://doi.org/10.1101/2024.12.09.627468
 
@@ -794,7 +794,7 @@ This section catalogs foundational primary research papers describing genome-sca
 
 ## Foundational Methods Reference Work
 
-This section catalogs the foundational methods and theory papers — from machine learning and from cell biology — that the AI × cell-ag work in the matrix builds upon, but which do not themselves apply a specific AI/ML method to a specific cell-ag problem (otherwise they would live in the matrix). The transformer architecture underlies every entry in the Foundation Models rows; the Waddington-landscape formalism is the conceptual substrate for the Cell-State & Perturbation Prediction row. Same numeric ID counter as the primary references; no matrix participation.
+This section catalogs the foundational methods and theory papers (from machine learning and from cell biology) that the AI × cell-ag work in the matrix builds upon, but which do not themselves apply a specific AI/ML method to a specific cell-ag problem (otherwise they would live in the matrix). The transformer architecture underlies every entry in the Foundation Models rows; the Waddington-landscape formalism is the conceptual substrate for the Cell-State & Perturbation Prediction row. Same numeric ID counter as the primary references; no matrix participation.
 
 <a id="130">130</a> Vaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A. N., Kaiser, L., & Polosukhin, I. (2023). *Attention Is All You Need.* arXiv. https://doi.org/10.48550/arXiv.1706.03762
 
@@ -816,7 +816,7 @@ This section catalogs the foundational methods and theory papers — from machin
 
 ## Livestock Functional Genomics Reference Work
 
-This section catalogs foundational primary research describing the Farm Animal Genotype–Tissue Expression (FarmGTEx) project and adjacent multi-tissue functional-genomics resources for cell-ag-relevant species (cattle, pig, chicken, sheep). As with the Sensory & Flavor and Metabolic Reference Work sections above, entries here are primary research where the contribution is a large-scale multi-tissue atlas, regulatory-effects map, or annotation resource — substrate that any AI/ML application in livestock cell biology should build on, rather than an applied AI/ML method per se. Same numeric ID counter as the primary references; no matrix participation. Each entry below is the canonical citation for the corresponding data resource in [Databases.md / Livestock Multi-Tissue Atlases & Functional Genomics](./Databases.md#livestock-multi-tissue-atlases--functional-genomics).
+This section catalogs foundational primary research describing the Farm Animal Genotype–Tissue Expression (FarmGTEx) project and adjacent multi-tissue functional-genomics resources for cell-ag-relevant species (cattle, pig, chicken, sheep). As with the Sensory & Flavor and Metabolic Reference Work sections above, entries here are primary research where the contribution is a large-scale multi-tissue atlas, regulatory-effects map, or annotation resource: substrate that any AI/ML application in livestock cell biology should build on, rather than an applied AI/ML method per se. Same numeric ID counter as the primary references; no matrix participation. Each entry below is the canonical citation for the corresponding data resource in [Databases.md / Livestock Multi-Tissue Atlases & Functional Genomics](./Databases.md#livestock-multi-tissue-atlases--functional-genomics).
 
 <a id="134">134</a> Fang, L., Teng, J., Lin, Q., Bai, Z., Liu, S., Guan, D., Li, B., Gao, Y., Hou, Y., Gong, M., Pan, Z., Yu, Y., Clark, E. L., Smith, J., Rawlik, K., Xiang, R., Chamberlain, A. J., Goddard, M. E., Littlejohn, M., ... Liu, G. E. (2025). The Farm Animal Genotype–Tissue Expression (FarmGTEx) Project. *Nature Genetics, 57*(4), 786–796. https://doi.org/10.1038/s41588-025-02121-5
 

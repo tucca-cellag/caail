@@ -6,7 +6,7 @@ Cultivated seafood — salmon, trout, and other teleosts — is an active cell-a
 
 ### [AQUA-FAANG](https://www.aqua-faang.eu/)
 
-The FAANG consortium's aquaculture programme — *Advancing European Aquaculture by Genome Functional Annotation* — generating genome-wide functional annotation maps for six aquaculture species important to European aquaculture (Atlantic salmon, rainbow trout, European sea bass, gilthead sea bream, common carp, turbot); the [data hub](https://data.faang.org/projects/AQUA-FAANG) hosts its open releases. A FAANG functional-annotation substrate for cell-ag-relevant aquaculture-cell-line work. Full entry in [Databases.md / Livestock Multi-Tissue Atlases](../Databases.md#livestock-multi-tissue-atlases--functional-genomics).
+The FAANG consortium's aquaculture programme (*Advancing European Aquaculture by Genome Functional Annotation*) generating genome-wide functional annotation maps for six aquaculture species important to European aquaculture (Atlantic salmon, rainbow trout, European sea bass, gilthead sea bream, common carp, turbot); the [data hub](https://data.faang.org/projects/AQUA-FAANG) hosts its open releases. A FAANG functional-annotation substrate for cell-ag-relevant aquaculture-cell-line work. Full entry in [Databases.md / Livestock Multi-Tissue Atlases](../Databases.md#livestock-multi-tissue-atlases--functional-genomics).
 
 ## Genome-scale metabolic models
 
@@ -14,7 +14,7 @@ GEMs are SBML-formatted reconstructions of an organism's metabolic network — e
 
 ### SALARECON — *Salmo salar* (Atlantic salmon)
 
-Whole-genome metabolic reconstruction of Atlantic salmon, published 2022 in *PLOS Computational Biology*, built to connect genome content to growth and feed-efficiency phenotypes for aquaculture. It is the most directly applicable existing GEM for cultivated salmonid modelling — though not purpose-built for cultivated meat — and relevant to the cultivated seafood category (salmon, trout) attracting investment from companies such as Umami Bioworks, BlueNalu, and Wildtype. SBML files distributed via the paper's supplementary materials and the SALARECON repository at [`gitlab.com/digisal/salarecon`](https://gitlab.com/digisal/salarecon).
+Whole-genome metabolic reconstruction of Atlantic salmon, published 2022 in *PLOS Computational Biology*, built to connect genome content to growth and feed-efficiency phenotypes for aquaculture. It is the most directly applicable existing GEM for cultivated salmonid modelling (though not purpose-built for cultivated meat) and relevant to the cultivated seafood category (salmon, trout) attracting investment from companies such as Umami Bioworks, BlueNalu, and Wildtype. SBML files distributed via the paper's supplementary materials and the SALARECON repository at [`gitlab.com/digisal/salarecon`](https://gitlab.com/digisal/salarecon).
 
 Reference: [Papers.md #84](../Papers.md#84) (Zakhartsev et al. 2022, *PLOS Computational Biology*).
 

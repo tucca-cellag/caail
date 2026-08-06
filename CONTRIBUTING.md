@@ -6,17 +6,17 @@ Thanks for your interest in adding to the Cellular Agriculture AI Library. This 
 
 You don't need to know Git to suggest a resource.
 
-### Option 1 — Open an issue (no Git required)
+### Option 1, Open an issue (no Git required)
 
 Pick the template that fits and fill it out:
 
-- [**Suggest a paper**](https://github.com/tucca-cellag/caail/issues/new?template=paper.yml) — for peer-reviewed papers and preprints. Asks for DOI, AI methods, and research areas.
-- [**Suggest software, a dataset, or other resource**](https://github.com/tucca-cellag/caail/issues/new?template=resource.yml) — for entries that would go in `Software.md`, the `Datasets/` directory, `Databases.md`, or `OtherResources.md`.
-- [**Propose a new research area**](https://github.com/tucca-cellag/caail/issues/new?template=research-area.yml) — for a new column in the Papers.md matrix.
+- [**Suggest a paper**](https://github.com/tucca-cellag/caail/issues/new?template=paper.yml): for peer-reviewed papers and preprints. Asks for DOI, AI methods, and research areas.
+- [**Suggest software, a dataset, or other resource**](https://github.com/tucca-cellag/caail/issues/new?template=resource.yml): for entries that would go in `Software.md`, the `Datasets/` directory, `Databases.md`, or `OtherResources.md`.
+- [**Propose a new research area**](https://github.com/tucca-cellag/caail/issues/new?template=research-area.yml): for a new column in the Papers.md matrix.
 
 A maintainer will incorporate accepted suggestions. This is the right path if you're not comfortable with pull requests or just want to flag something quickly.
 
-### Option 2 — Open a pull request
+### Option 2, Open a pull request
 
 Faster to merge, and you get authorship credit in the Git history. Branch from `main` (e.g. `feat/papers-cosenza-2024`, `docs/add-bioprocess-section`), apply the change directly, and open the PR back against `main`. The format guides below tell you exactly what to edit.
 
@@ -25,12 +25,12 @@ Faster to merge, and you get authorship credit in the Git history. Branch from `
 > **How the structured catalog is maintained.** The matrix + references in `Papers.md`, the
 > entries in `Software.md` / `Databases.md`, and the `Datasets/*.md` inventory tables are
 > **generated** from an in-repo SQLite database (issue #78); the committed Markdown is the
-> rendered output. You can still contribute exactly as described below — open an issue, or
-> open a PR editing the Markdown — and a maintainer lands it through the DB so the ids and
+> rendered output. You can still contribute exactly as described below: open an issue, or
+> open a PR editing the Markdown, and a maintainer lands it through the DB so the ids and
 > cross-references stay consistent. (Editorial prose in those files is hand-authored as
 > normal.) Maintainers: see the `caail-db-authoring` skill for the DB workflow.
 
-First decide which **kind** of paper you're adding — the file has two homes for entries:
+First decide which **kind** of paper you're adding, the file has two homes for entries:
 
 - **Primary research** (a paper applying a specific AI method to a specific cell-ag problem) → goes in the matrix + `## References` section. *Most papers go here.*
 - **Review, perspective, position paper, or commentary** (a paper surveying the field or opining on it rather than applying one method) → goes in the `## Reviews & Perspectives` section only, with no matrix cell. See "Adding a review or perspective paper" below.
@@ -39,7 +39,7 @@ First decide which **kind** of paper you're adding — the file has two homes fo
 
 The matrix and the `## References` list must be kept in sync:
 
-1. **Pick the next ID.** Scan both the `## References` list and the `## Reviews & Perspectives` section for the highest existing `<a id="N">` number and use `N+1` (the two sections share one numeric counter). Reference IDs are permanent — please don't renumber existing entries, since the matrix cells (and any external links) point at them by ID.
+1. **Pick the next ID.** Scan both the `## References` list and the `## Reviews & Perspectives` section for the highest existing `<a id="N">` number and use `N+1` (the two sections share one numeric counter). Reference IDs are permanent: please don't renumber existing entries, since the matrix cells (and any external links) point at them by ID.
 2. **Append the reference** at the end of the `## References` section in APA style:
 
    ```markdown
@@ -47,20 +47,20 @@ The matrix and the `## References` list must be kept in sync:
    ```
 
    - Use APA style, with the journal name italicized (`*…*`) and the DOI as a full `https://doi.org/...` link.
-   - List all authors — don't abbreviate to "et al." in the reference list.
+   - List all authors, don't abbreviate to "et al." in the reference list.
 3. **If the paper has associated code**, add a blockquote on the next line:
 
    ```markdown
    > **Code**: https://github.com/<owner>/<repo>
    ```
 
-4. **Add the paper to every applicable matrix cell.** For each AI method (row) and research area (column) the paper covers, add `[42](#42)` to the corresponding cell — comma-separated with any existing entries:
+4. **Add the paper to every applicable matrix cell.** For each AI method (row) and research area (column) the paper covers, add `[42](#42)` to the corresponding cell, comma-separated with any existing entries:
 
    ```markdown
    | [Bayesian Optimization](...) | [2](#2),[3](#3),[42](#42) | ... |
    ```
 
-   The matrix rows are the AI/ML methods currently in [Papers.md](./Papers.md) — from classical ML (Bayesian Optimization, Deep Learning, GNN, …) through the foundation-model and agentic families. Each row label links to its definition in [Taxonomy.md](./Taxonomy.md); the live set is whatever `Papers.md` contains. Pick the row(s) that match; if none fit, add one (step 5).
+   The matrix rows are the AI/ML methods currently in [Papers.md](./Papers.md): from classical ML (Bayesian Optimization, Deep Learning, GNN, …) through the foundation-model and agentic families. Each row label links to its definition in [Taxonomy.md](./Taxonomy.md); the live set is whatever `Papers.md` contains. Pick the row(s) that match; if none fit, add one (step 5).
 
    Current matrix columns (research areas): Media Optimization, Cellular Engineering, Bioprocess & Scale-Up, Scaffolding, Sensory Prediction, AI Tooling / Methodology, AI Evaluation & Benchmarking.
 
@@ -80,14 +80,14 @@ Before opening the PR, double-check that every matrix `[N](#N)` you added resolv
 
 Reviews, position papers, and commentaries don't participate in the matrix. Add them to the `## Reviews & Perspectives` section instead:
 
-1. **Pick the next ID** (same counter as primary references — see step 1 above).
+1. **Pick the next ID** (same counter as primary references, see step 1 above).
 2. **Append the reference** at the end of the `## Reviews & Perspectives` section, in the same APA format as primary references:
 
    ```markdown
    <a id="43">43</a> Author, A. B. (2024). Title of the review. *Journal, vol*(issue), pp. https://doi.org/...
    ```
 
-3. **Do not add a matrix cell** — reviews stay out of the matrix.
+3. **Do not add a matrix cell**: reviews stay out of the matrix.
 
 If you're unsure whether a paper is "primary research" or "review/perspective," err on the side of the matrix when the paper has a clear single contribution (new method, new application) and on the side of Reviews & Perspectives when it surveys multiple methods or zooms out to the field as a whole.
 
@@ -103,7 +103,7 @@ Short framing paragraph (optional if the section already exists).
 
 ### [<Tool or database name>](<canonical URL>)
 
-Summary: One to three sentences describing what it is and, importantly, *how it applies to cellular agriculture* — not just what it does in general.
+Summary: One to three sentences describing what it is and, importantly, *how it applies to cellular agriculture*, not just what it does in general.
 ```
 
 - For software, link to the project's GitHub repo (or canonical home if not on GitHub).
@@ -112,31 +112,31 @@ Summary: One to three sentences describing what it is and, importantly, *how it 
 
 ### The `Datasets/` directory
 
-`Datasets/` is a directory of per-species pages, not a flat file — see [`Datasets/CLAUDE.md`](./Datasets/CLAUDE.md) for the full per-page schema. To add a data resource:
+`Datasets/` is a directory of per-species pages, not a flat file, see [`Datasets/CLAUDE.md`](./Datasets/CLAUDE.md) for the full per-page schema. To add a data resource:
 
 - **Pick the page.** A species-specific data deposit (e.g. a bovine RNA-seq study) goes on its species page (`Datasets/Cow.md`, `Datasets/Pig.md`, …). Cross-species human pretraining corpora and reference GEMs go on `Datasets/HumanReference.md`; the CHO GEM family on `Datasets/CHOReference.md`; AI/ML benchmark datasets on `Datasets/Benchmarks.md`. If no species page exists for your species, propose a new one (mirror an existing sparse stub like `Datasets/Goat.md`) and add it to the index table in `Datasets/README.md`.
-- **Add a row to the page's "Complete data inventory" table** — `Study` (linked title), data type, tissue, a short description, dataset size, and area of research. If the deposit fits an existing thematic cluster on that page, mention it in the cluster prose too. A sparse stub page (e.g. `Datasets/Goat.md`) has no table yet — its "Complete data inventory" section is a placeholder note; when you add the first deposit, replace that note with a table by copying the column headers from a populated page such as `Datasets/Cow.md`.
-- **Link the canonical accession** — the NCBI SRA/GEO/PRIDE, Mendeley Data, or Hugging Face landing page. If the source has no usable accession (data on request, supplementary-table-only), keep the entry with an explicit note rather than dropping it.
+- **Add a row to the page's "Complete data inventory" table** (`Study` (linked title), data type, tissue, a short description, dataset size, and area of research. If the deposit fits an existing thematic cluster on that page, mention it in the cluster prose too. A sparse stub page (e.g. `Datasets/Goat.md`) has no table yet) its "Complete data inventory" section is a placeholder note; when you add the first deposit, replace that note with a table by copying the column headers from a populated page such as `Datasets/Cow.md`.
+- **Link the canonical accession**: the NCBI SRA/GEO/PRIDE, Mendeley Data, or Hugging Face landing page. If the source has no usable accession (data on request, supplementary-table-only), keep the entry with an explicit note rather than dropping it.
 
 **Picking between `Datasets/`, `Databases.md`, and `OtherResources.md`.** CAAIL distinguishes between fixed train-on artifacts and living query/lookup resources:
 
 1. **Train-on artifacts → the `Datasets/` directory.** ML pretraining corpora, perturbation atlases, downloadable benchmark datasets, individual GEM model artifacts, per-species sequencing deposits.
 2. **Query / lookup resources → `Databases.md`.** Repositories, ontologies, spectral libraries, structure / compound / pathway databases.
-3. **"Database" in the name, or any directory / registry / tracker → `Databases.md`** — even when the content is people, companies, or regulation rather than scientific data.
+3. **"Database" in the name, or any directory / registry / tracker → `Databases.md`**: even when the content is people, companies, or regulation rather than scientific data.
 4. **Funding → `Funding.md`.** Funding organizations (that fund the field) and funding opportunities (grant programs, research-portfolio mechanisms).
 5. **Non-funding ecosystem initiatives → `OtherResources.md`.** Research centers, consortia, and convening initiatives that conduct or coordinate (rather than fund) cell-ag work.
 6. **Borderline cases → dual-listed.** Resources that are genuinely both software and database (e.g. GNPS) get a full entry in their primary-home file and a short cross-referenced entry in the other.
 
-**Benchmark placement (Paper + Dataset + Database triangle).** AI/ML benchmarks have a distinct artifact shape — a paper, a downloadable eval dataset, and (sometimes) a live leaderboard. Place each aspect in its appropriate file:
+**Benchmark placement (Paper + Dataset + Database triangle).** AI/ML benchmarks have a distinct artifact shape: a paper, a downloadable eval dataset, and (sometimes) a live leaderboard. Place each aspect in its appropriate file:
 
 - **Paper** describing the benchmark → `Papers.md` with a `> **Code**:` blockquote anchoring the project's canonical home.
-- **The data** (questions / scenarios / spectra / sequences) + any **bundled scoring code shipped with the data** → `Datasets/Benchmarks.md`. The bundled scoring code is *not* a separate `Software.md` entry — it's part of the dataset distribution.
+- **The data** (questions / scenarios / spectra / sequences) + any **bundled scoring code shipped with the data** → `Datasets/Benchmarks.md`. The bundled scoring code is *not* a separate `Software.md` entry, it's part of the dataset distribution.
 - **Live leaderboard or continuously-updated results tracker** → `Databases.md` under "Benchmark Leaderboards & Results Trackers" (per rule 3, trackers belong in `Databases.md`).
-- **Separately-installable evaluation framework that brings its own data** (e.g. a framework that scores models against externally-hosted data the framework does not itself distribute) → `Software.md`. CausalBench is the existing example — it's a benchmarking framework, not a bundled-data benchmark, so it lives in `Software.md` and has no `Datasets/` entry.
+- **Separately-installable evaluation framework that brings its own data** (e.g. a framework that scores models against externally-hosted data the framework does not itself distribute) → `Software.md`. CausalBench is the existing example: it's a benchmarking framework, not a bundled-data benchmark, so it lives in `Software.md` and has no `Datasets/` entry.
 
 All entries cross-link via the established `Companion to [Papers.md ref #N]` convention.
 
-### Educational & contextual material — `Talks.md`, `Primers/`, `ReferenceWorks.md`, `AwesomeLists.md`, `Funding.md`, and `OtherResources.md`
+### Educational & contextual material: `Talks.md`, `Primers/`, `ReferenceWorks.md`, `AwesomeLists.md`, `Funding.md`, and `OtherResources.md`
 
 Each is a bulleted list under category headings:
 
@@ -149,18 +149,18 @@ Each is a bulleted list under category headings:
 - **Lectures, talks, and webinars → `Talks.md`** (e.g. conference talks, the Broad Institute MIA
   series). The site renders `Talks.md` as inline players on `/talks/`, so prefer canonical YouTube
   watch URLs.
-- **Newcomer onboarding material → the `Primers/` directory** — field-overview videos, intro
+- **Newcomer onboarding material → the `Primers/` directory**: field-overview videos, intro
   primers, learning playlists, and **cellular-agriculture courses** (newcomer entry points). Cell-ag
   orientation goes in `Primers/CellAg.md`; AI/ML learning material goes in `Primers/AI.md`. These
   render at `/primers/cell-ag/` and `/primers/ai/` with videos and playlists embedded inline, so
   prefer canonical YouTube watch / playlist URLs; internal cross-links to the rest of the library use
   repo-relative paths (e.g. `../Papers.md`, `../ReferenceWorks.md`).
-- **Reference textbooks and multi-volume reference works → `ReferenceWorks.md`** — the foundational
+- **Reference textbooks and multi-volume reference works → `ReferenceWorks.md`**: the foundational
   cell-ag textbook and the *Encyclopedia of Meat Sciences*, with DOI-resolvable chapter indexes.
-- **Curated bibliographies and "awesome lists" (community GitHub indexes) → `AwesomeLists.md`** —
+- **Curated bibliographies and "awesome lists" (community GitHub indexes) → `AwesomeLists.md`**, 
   rendered as searchable cards with GitHub star / last-updated metrics on `/awesome-lists/`.
 - **Funding organizations and funding opportunities → `Funding.md`** (see rules 4–5 above).
-- **Journal editorials, opinion, and non-funding ecosystem initiatives → `OtherResources.md`** —
+- **Journal editorials, opinion, and non-funding ecosystem initiatives → `OtherResources.md`**, 
   field commentary and the research centers, consortia, and convening efforts of the adjacent
   cell-ag universe.
 
@@ -171,14 +171,14 @@ create a new `##` section rather than mixing it into an existing list.
 
 A research area is a column in the `Papers.md` matrix, backed by a deep-dive page under `ResearchAreas/`. To add one:
 
-1. **Create `ResearchAreas/<AreaName>.md`** (PascalCase, no spaces — e.g. `ProteinDesign.md`). The file should give a short overview of why the area matters to cellular agriculture and what computational/AI techniques are being applied to it. Existing files like `MediaOptimization.md` are good models.
+1. **Create `ResearchAreas/<AreaName>.md`** (PascalCase, no spaces, e.g. `ProteinDesign.md`). The file should give a short overview of why the area matters to cellular agriculture and what computational/AI techniques are being applied to it. Existing files like `MediaOptimization.md` are good models.
 2. **Add a column** to the `Papers.md` matrix, with the column header linked to your new file:
 
    ```markdown
    | | ... | [Protein Design](./ResearchAreas/ProteinDesign.md) | ... |
    ```
 
-3. **Link your new area from the README's "What's Inside" section** if it stands as a primary entry point. (Not every research area needs to — small/exploratory areas can live only inside `Papers.md`.)
+3. **Link your new area from the README's "What's Inside" section** if it stands as a primary entry point. (Not every research area needs to, small/exploratory areas can live only inside `Papers.md`.)
 4. **Backfill matrix cells** for any existing references that also apply to your new area.
 
 ## Citation style
@@ -206,7 +206,7 @@ Before opening a PR, please confirm:
 
 ## Licensing of contributions
 
-This repository is licensed under the [MIT License](./LICENSE). By submitting a contribution (pull request, issue, or other form), you agree that your contribution is offered under the same license, and you confirm that you have the right to do so. We don't host copyrighted abstracts or full text — please link to the canonical source instead, since third-party content stays under its original license regardless of CAAIL's.
+This repository is licensed under the [MIT License](./LICENSE). By submitting a contribution (pull request, issue, or other form), you agree that your contribution is offered under the same license, and you confirm that you have the right to do so. We don't host copyrighted abstracts or full text: please link to the canonical source instead, since third-party content stays under its original license regardless of CAAIL's.
 
 ## Questions
 

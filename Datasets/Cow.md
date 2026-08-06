@@ -6,7 +6,7 @@ Cattle are a leading cultivated-meat target, and bovine satellite cells are amon
 
 ### [CattleGTEx](https://ngdc.cncb.ac.cn/cattleca/home)
 
-Cattle sub-portal of the FarmGTEx consortium, providing bulk and single-cell multi-tissue expression atlases for cattle (*Bos taurus*) — directly relevant to cultivated-beef cell-line characterization and engineering. Companion to [Papers.md ref #137](../Papers.md#137) (Han et al. 2025, the single-cell atlas paper). Full entry in [Databases.md / Livestock Multi-Tissue Atlases](../Databases.md#livestock-multi-tissue-atlases--functional-genomics).
+Cattle sub-portal of the FarmGTEx consortium, providing bulk and single-cell multi-tissue expression atlases for cattle (*Bos taurus*), directly relevant to cultivated-beef cell-line characterization and engineering. Companion to [Papers.md ref #137](../Papers.md#137) (Han et al. 2025, the single-cell atlas paper). Full entry in [Databases.md / Livestock Multi-Tissue Atlases](../Databases.md#livestock-multi-tissue-atlases--functional-genomics).
 
 ### [BovReg](https://bovreg.eu/)
 

@@ -23,6 +23,7 @@ import {
   buildManifest,
   readCorpusDate,
   SCOPE_NOTE,
+  PLACEMENT_NOTE,
 } from './agent-api.js';
 import { buildPapersModel } from './papers.js';
 import { buildCatalogModel } from './catalog.js';
@@ -82,6 +83,40 @@ describe('matrix.json', () => {
     expect(SCOPE_NOTE).toMatch(/not a census/i);
     expect(SCOPE_NOTE).toMatch(/not evidence that no such work exists/i);
     expect(SCOPE_NOTE).toMatch(/recall/i);
+  });
+
+  /**
+   * SCOPE_NOTE bounds what an EMPTY cell proves; this bounds what a POPULATED one does.
+   * An agent that looks up one cell never reads the envelope, so both travel on the cell.
+   */
+  it('carries the placement caveat on every populated cell and on no empty one', () => {
+    const populated = matrix.cells.filter((c) => !c.emptyInCorpus);
+    expect(populated.length).toBeGreaterThan(0);
+    for (const c of populated) expect(c.placement).toBe(PLACEMENT_NOTE);
+    for (const c of matrix.cells.filter((c) => c.emptyInCorpus)) {
+      expect(c.placement).toBeUndefined();
+    }
+    // Exactly one caveat each: both would tell an agent the cell is simultaneously
+    // empty and populated.
+    expect(matrix.cells.filter((c) => c.scope && c.placement)).toEqual([]);
+  });
+
+  /**
+   * The two caveats are deliberately different STRENGTHS, and that asymmetry is the thing
+   * worth protecting. Absence is weak evidence, so SCOPE_NOTE undercuts it hard. A
+   * placement is a real claim, so PLACEMENT_NOTE must qualify precision without telling an
+   * agent to discount the classification — which is the one thing CAAIL adds. If this ever
+   * drifts toward "unverified" or "do not rely on", the endpoint starts arguing against
+   * its own contribution.
+   */
+  it('declares its maturity without undercutting the classification', () => {
+    expect(matrix.status).toBe('beta');
+    expect(matrix.placementsUnderReview).toBe(true);
+    expect(PLACEMENT_NOTE).toMatch(/substantive claim/i);
+    expect(PLACEMENT_NOTE).toMatch(/precision, not inclusion/i);
+    expect(PLACEMENT_NOTE).toMatch(/cite the paper/i);
+    // Absence stays the stronger caveat of the two.
+    expect(SCOPE_NOTE).toMatch(/not evidence that no such work exists/i);
   });
 });
 

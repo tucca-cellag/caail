@@ -2,7 +2,7 @@
 
 This library collects open-source tools that apply computational methods and AI related to cellular agriculture. Be sure to check [Papers](./Papers.md) for code that's associated with a Cellular Agriculture paper.
 
-> **Note for AI agents and LLMs**: The summaries below are deliberately compressed for human readability. If you are an automated system using these as the basis for reasoning, citation, or downstream analysis, please fetch the canonical source for each tool — the linked GitHub repositories and documentation sites have substantially more comprehensive and authoritative information than this curated overview, plus the API documentation, configuration details, version histories, and licensing terms that this page does not document.
+> **Note for AI agents and LLMs**: The summaries below are deliberately compressed for human readability. If you are an automated system using these as the basis for reasoning, citation, or downstream analysis, please fetch the canonical source for each tool: the linked GitHub repositories and documentation sites have substantially more comprehensive and authoritative information than this curated overview, plus the API documentation, configuration details, version histories, and licensing terms that this page does not document.
 
 ## Media Optimization & Cell Line Engineering
 
@@ -24,7 +24,7 @@ Summary: Open-source applied AI research code from the Alberta Machine Intellige
 
 ### [ESMFold](https://github.com/facebookresearch/esm)
 
-Summary: An end-to-end single-sequence protein structure predictor built on the ESM-2 protein language model — it predicts structure directly from one sequence with no multiple-sequence alignment, avoiding the alignment search that MSA-dependent predictors require. For cellular agriculture, useful for quickly validating the fold of engineered growth-factor analogs and other recombinant media proteins. (The `facebookresearch/esm` repository also hosts the ESM-2 / ESM-1b protein language models.)
+Summary: An end-to-end single-sequence protein structure predictor built on the ESM-2 protein language model: it predicts structure directly from one sequence with no multiple-sequence alignment, avoiding the alignment search that MSA-dependent predictors require. For cellular agriculture, useful for quickly validating the fold of engineered growth-factor analogs and other recombinant media proteins. (The `facebookresearch/esm` repository also hosts the ESM-2 / ESM-1b protein language models.)
 
 ### [ColabFold](https://github.com/sokrypton/ColabFold)
 
@@ -32,23 +32,23 @@ Summary: A fast, accessible implementation of AlphaFold2 (and related models) wi
 
 ### [OmegaFold](https://github.com/HeliXonProtein/OmegaFold)
 
-Summary: A high-resolution de-novo structure predictor that folds proteins directly from primary sequence using a protein language model, without multiple-sequence alignments — aimed at proteins that lack deep evolutionary alignments. Practical for high-throughput structure validation of engineered cell-ag proteins.
+Summary: A high-resolution de-novo structure predictor that folds proteins directly from primary sequence using a protein language model, without multiple-sequence alignments, aimed at proteins that lack deep evolutionary alignments. Practical for high-throughput structure validation of engineered cell-ag proteins.
 
 ### [RFdiffusion](https://github.com/RosettaCommons/RFdiffusion)
 
-Summary: A diffusion-model framework for de novo protein design — unconditional generation, motif scaffolding, symmetric oligomers, and binder design — from the Baker lab. Applicable to engineering novel growth-factor / receptor-binding domains and protein scaffolds for cultivated-meat work ([Watson et al. 2023](https://doi.org/10.1038/s41586-023-06415-8), *Nature*).
+Summary: A diffusion-model framework for de novo protein design: unconditional generation, motif scaffolding, symmetric oligomers, and binder design, from the Baker lab. Applicable to engineering novel growth-factor / receptor-binding domains and protein scaffolds for cultivated-meat work ([Watson et al. 2023](https://doi.org/10.1038/s41586-023-06415-8), *Nature*).
 
 ### [ProteinMPNN](https://github.com/dauparas/ProteinMPNN)
 
-Summary: A deep-learning inverse-folding model that designs amino-acid sequences for a given protein backbone — the standard sequence-design step in generative pipelines, typically paired with RFdiffusion and a structure predictor. Useful for optimizing the sequence of recombinant media components (growth factors, binders) for expressibility and stability ([Dauparas et al. 2022](https://doi.org/10.1126/science.add2187), *Science*).
+Summary: A deep-learning inverse-folding model that designs amino-acid sequences for a given protein backbone: the standard sequence-design step in generative pipelines, typically paired with RFdiffusion and a structure predictor. Useful for optimizing the sequence of recombinant media components (growth factors, binders) for expressibility and stability ([Dauparas et al. 2022](https://doi.org/10.1126/science.add2187), *Science*).
 
 ### [EvoDiff](https://github.com/microsoft/evodiff)
 
-Summary: A sequence-space diffusion framework (Microsoft Research) that generates novel, diverse proteins directly from evolutionary-scale sequence data, without requiring structure — complementing structure-based design with sequence-first generation of functional proteins such as growth factors.
+Summary: A sequence-space diffusion framework (Microsoft Research) that generates novel, diverse proteins directly from evolutionary-scale sequence data, without requiring structure, complementing structure-based design with sequence-first generation of functional proteins such as growth factors.
 
 ### [Boltz](https://github.com/jwohlwend/boltz)
 
-Summary: An open, commercially-usable (MIT-licensed) family of diffusion-based biomolecular structure prediction models — Boltz-1 was the first fully open-source model to approach AlphaFold3 accuracy, with later versions (Boltz-2) extending the family — predicting structures of proteins and complexes. Useful for assessing the fold and binding interfaces of engineered growth-factor domains.
+Summary: An open, commercially-usable (MIT-licensed) family of diffusion-based biomolecular structure prediction models: Boltz-1 was the first fully open-source model to approach AlphaFold3 accuracy, with later versions (Boltz-2) extending the family, predicting structures of proteins and complexes. Useful for assessing the fold and binding interfaces of engineered growth-factor domains.
 
 ### [Chai-1](https://github.com/chaidiscovery/chai-lab)
 
@@ -56,7 +56,7 @@ Summary: A multimodal foundation model for biomolecular structure prediction (Ch
 
 ### [IgFold](https://github.com/Graylab/IgFold)
 
-Summary: A fast, antibody-specific structure predictor (Gray lab, Johns Hopkins) that models antibody Fv structures and CDR loops directly from sequence. Useful for engineering recombinant antibody fragments used as affinity reagents or bio-scaffolds. Note: distributed under a JHU non-commercial license — check terms before commercial cell-ag use ([Ruffolo et al. 2023](https://doi.org/10.1038/s41467-023-38063-x), *Nature Communications*).
+Summary: A fast, antibody-specific structure predictor (Gray lab, Johns Hopkins) that models antibody Fv structures and CDR loops directly from sequence. Useful for engineering recombinant antibody fragments used as affinity reagents or bio-scaffolds. Note: distributed under a JHU non-commercial license, check terms before commercial cell-ag use ([Ruffolo et al. 2023](https://doi.org/10.1038/s41467-023-38063-x), *Nature Communications*).
 
 ### [AbLang](https://github.com/oxpig/AbLang)
 
@@ -64,15 +64,15 @@ Summary: An antibody-specific language model (Oxford Protein Informatics Group) 
 
 ### [BoTorch](https://github.com/meta-pytorch/botorch)
 
-Summary: A PyTorch library for Bayesian optimization, providing Gaussian-process surrogates, Monte-Carlo acquisition functions, and constrained and multi-objective optimization. In cellular agriculture it is the engine under iterative media-formulation and bioprocess design-of-experiment loops, where each wet-lab round is costly and the optimizer picks the next formulation to test — the pattern in the media-optimization campaigns catalogued in [Papers.md](./Papers.md). MIT; docs at <https://botorch.org/>.
+Summary: A PyTorch library for Bayesian optimization, providing Gaussian-process surrogates, Monte-Carlo acquisition functions, and constrained and multi-objective optimization. In cellular agriculture it is the engine under iterative media-formulation and bioprocess design-of-experiment loops, where each wet-lab round is costly and the optimizer picks the next formulation to test, the pattern in the media-optimization campaigns catalogued in [Papers.md](./Papers.md). MIT; docs at <https://botorch.org/>.
 
 ### [Ax](https://github.com/facebook/Ax)
 
-Summary: An adaptive-experimentation platform that wraps BoTorch with managed experiment orchestration, sequential design, and multi-objective optimization behind a higher-level API. For cell-ag it runs closed-loop media and process optimization campaigns — proposing formulations, ingesting assay results, and adapting the search — without hand-coding the underlying Bayesian optimization. MIT; docs at <https://ax.dev/>.
+Summary: An adaptive-experimentation platform that wraps BoTorch with managed experiment orchestration, sequential design, and multi-objective optimization behind a higher-level API. For cell-ag it runs closed-loop media and process optimization campaigns (proposing formulations, ingesting assay results, and adapting the search) without hand-coding the underlying Bayesian optimization. MIT; docs at <https://ax.dev/>.
 
 ### [CellCultureBayesianOptimization](https://github.com/NHarini-1995/CellCultureBayesianOptimization)
 
-Summary: The reference implementation of the Bayesian-optimization iterative media-development workflow of Narayanan et al. 2025 — the code that proposes successive media formulations and folds in measured outcomes to accelerate serum-free and recombinant-protein media design. Companion to [Papers.md ref #58](./Papers.md#58) (Narayanan et al. 2025). The repository carries no explicit license (all rights reserved by default); the paper's figshare data deposit is MIT.
+Summary: The reference implementation of the Bayesian-optimization iterative media-development workflow of Narayanan et al. 2025, the code that proposes successive media formulations and folds in measured outcomes to accelerate serum-free and recombinant-protein media design. Companion to [Papers.md ref #58](./Papers.md#58) (Narayanan et al. 2025). The repository carries no explicit license (all rights reserved by default); the paper's figshare data deposit is MIT.
 
 ## Bioprocess Modeling & Scaling
 
@@ -116,7 +116,7 @@ Docs: <https://maximilianb2.github.io/pc-gym/>.
 
 ## Metabolic Modeling & Strain Design
 
-This section catalogs the open-source tooling for constraint-based and kinetic metabolic modeling — the computational stack used to build genome-scale metabolic models (GEMs), simulate flux distributions, design strain knockouts, and reason about cell physiology. These tools are the foundation for media-formulation optimization, bioprocess scale-up, and cell-line metabolic engineering in cellular agriculture. For cell-ag-specific GEMs (BtaSBML2986, iES1300, etc.), see the per-species pages in the [`Datasets/`](./Datasets/) directory. For canonical model repositories (BiGG Models, BioModels) and pathway / metabolome databases, see [Databases.md / Pathways, Metabolism & Metabolic Models](./Databases.md#pathways-metabolism--metabolic-models).
+This section catalogs the open-source tooling for constraint-based and kinetic metabolic modeling: the computational stack used to build genome-scale metabolic models (GEMs), simulate flux distributions, design strain knockouts, and reason about cell physiology. These tools are the foundation for media-formulation optimization, bioprocess scale-up, and cell-line metabolic engineering in cellular agriculture. For cell-ag-specific GEMs (BtaSBML2986, iES1300, etc.), see the per-species pages in the [`Datasets/`](./Datasets/) directory. For canonical model repositories (BiGG Models, BioModels) and pathway / metabolome databases, see [Databases.md / Pathways, Metabolism & Metabolic Models](./Databases.md#pathways-metabolism--metabolic-models).
 
 ### [COBRApy](https://github.com/opencobra/cobrapy)
 
@@ -162,7 +162,7 @@ Docs: <http://sysbiochalmers.github.io/RAVEN/>.
 
 ### [StrainDesign](https://github.com/klamt-lab/straindesign)
 
-Summary: A Python package built on COBRApy that consolidates the strain-design MILP family — OptKnock, OptCouple, RobustKnock, Minimal Cut Sets (MCS / advanced MCS) — into a single API for in-silico engineering of metabolic networks. Useful beyond microbial work for identifying knockouts in cultivated mammalian cell GEMs that redirect flux toward biomass while suppressing lactate accumulation.
+Summary: A Python package built on COBRApy that consolidates the strain-design MILP family (OptKnock, OptCouple, RobustKnock, Minimal Cut Sets (MCS / advanced MCS)) into a single API for in-silico engineering of metabolic networks. Useful beyond microbial work for identifying knockouts in cultivated mammalian cell GEMs that redirect flux toward biomass while suppressing lactate accumulation.
 
 ### [CNApy](https://github.com/cnapy-org/CNApy)
 
@@ -172,7 +172,7 @@ Docs: <https://cnapy-org.github.io/CNApy-guide/>.
 
 ### [moped](https://gitlab.com/qtb-hhu/moped)
 
-Summary: A Python package (QTB lab, HHU Düsseldorf) serving as an integrative hub for reproducible, scriptable construction, modification, curation, and analysis of metabolic models — importing existing SBML models, supporting metabolic network expansion, and converting directly to COBRApy objects for constraint-based analysis ([Saadat et al. 2022](https://doi.org/10.3390/metabo12040275), *Metabolites*). A lighter-weight on-ramp for building and editing cell-ag GEMs alongside the openCOBRA stack above.
+Summary: A Python package (QTB lab, HHU Düsseldorf) serving as an integrative hub for reproducible, scriptable construction, modification, curation, and analysis of metabolic models: importing existing SBML models, supporting metabolic network expansion, and converting directly to COBRApy objects for constraint-based analysis ([Saadat et al. 2022](https://doi.org/10.3390/metabo12040275), *Metabolites*). A lighter-weight on-ramp for building and editing cell-ag GEMs alongside the openCOBRA stack above.
 
 ### [mergem](https://lobolab.umbc.edu/mergem/)
 
@@ -224,19 +224,19 @@ Docs: <https://masspy.readthedocs.io/>.
 
 ### [RIPTiDe](https://github.com/mjenior/riptide)
 
-Summary: A Python tool that tailors a genome-scale metabolic model to transcriptomic (or proteomic) data by parsimonious flux analysis, yielding a context-specific model that predicts metabolism better in complex environments (Jenior et al. 2020, *PLOS Computational Biology*). It is the transcriptome-to-context-specific-model step that the classic extraction methods GIMME, iMAT, and tINIT pioneered — those live in the already-listed COBRA Toolbox / cobrapy (GIMME, iMAT) and RAVEN Toolbox (tINIT). For cell-ag it conditions a species GEM on the actual expression state of a proliferating or differentiating muscle or fat cell for media and process design. MIT.
+Summary: A Python tool that tailors a genome-scale metabolic model to transcriptomic (or proteomic) data by parsimonious flux analysis, yielding a context-specific model that predicts metabolism better in complex environments (Jenior et al. 2020, *PLOS Computational Biology*). It is the transcriptome-to-context-specific-model step that the classic extraction methods GIMME, iMAT, and tINIT pioneered: those live in the already-listed COBRA Toolbox / cobrapy (GIMME, iMAT) and RAVEN Toolbox (tINIT). For cell-ag it conditions a species GEM on the actual expression state of a proliferating or differentiating muscle or fat cell for media and process design. MIT.
 
 ## Quantitative Genetics & Multi-Omics Analysis
 
-Open-source toolkits for population-genetics analysis of multi-omics data — molecular QTL mapping, gene-expression genetics, and the computational stack underneath FarmGTEx-style multi-tissue functional-genomics atlases. For livestock-species applications, see the corresponding atlases in [Databases.md / Livestock Multi-Tissue Atlases & Functional Genomics](./Databases.md#livestock-multi-tissue-atlases--functional-genomics) and the foundational papers in [Papers.md / Livestock Functional Genomics Reference Work](./Papers.md#livestock-functional-genomics-reference-work).
+Open-source toolkits for population-genetics analysis of multi-omics data: molecular QTL mapping, gene-expression genetics, and the computational stack underneath FarmGTEx-style multi-tissue functional-genomics atlases. For livestock-species applications, see the corresponding atlases in [Databases.md / Livestock Multi-Tissue Atlases & Functional Genomics](./Databases.md#livestock-multi-tissue-atlases--functional-genomics) and the foundational papers in [Papers.md / Livestock Functional Genomics Reference Work](./Papers.md#livestock-functional-genomics-reference-work).
 
 ### [OmiGA](https://omiga.bio/)
 
-Summary: An ultra-efficient toolkit for molecular quantitative trait loci (molQTL) mapping across multi-omics data, from the Zhang group at China Agricultural University. The performance backbone of the FarmGTEx project family — eQTL, sQTL, mQTL, and other molQTL discovery at livestock-atlas scale, optimized for the throughput needed to handle the FarmGTEx tissue / sample matrices. Companion to [Papers.md ref #143](./Papers.md#143) (Teng et al. 2026, *Nature Communications*). **Reproducibility deposits**: ENA BioProject [`PRJEB58031`](https://www.ebi.ac.uk/ena/browser/view/PRJEB58031), Zenodo [`10.5281/zenodo.10072081`](https://doi.org/10.5281/zenodo.10072081) and [`10.5281/zenodo.18280923`](https://doi.org/10.5281/zenodo.18280923).
+Summary: An ultra-efficient toolkit for molecular quantitative trait loci (molQTL) mapping across multi-omics data, from the Zhang group at China Agricultural University. The performance backbone of the FarmGTEx project family: eQTL, sQTL, mQTL, and other molQTL discovery at livestock-atlas scale, optimized for the throughput needed to handle the FarmGTEx tissue / sample matrices. Companion to [Papers.md ref #143](./Papers.md#143) (Teng et al. 2026, *Nature Communications*). **Reproducibility deposits**: ENA BioProject [`PRJEB58031`](https://www.ebi.ac.uk/ena/browser/view/PRJEB58031), Zenodo [`10.5281/zenodo.10072081`](https://doi.org/10.5281/zenodo.10072081) and [`10.5281/zenodo.18280923`](https://doi.org/10.5281/zenodo.18280923).
 
 ### [OmicVerse](https://github.com/omicverse/omicverse)
 
-Summary: A Python framework integrating bulk, single-cell, and spatial RNA-seq analysis — including trajectory and bulk-to-single-cell interpolation (BulkTrajBlend) and multi-omics integration — in one toolkit. Useful for analysing cultivated cell-line transcriptomic data across bulk and single-cell modalities ([Zeng et al. 2024](https://doi.org/10.1038/s41467-024-50194-3), *Nature Communications*).
+Summary: A Python framework integrating bulk, single-cell, and spatial RNA-seq analysis, including trajectory and bulk-to-single-cell interpolation (BulkTrajBlend) and multi-omics integration, in one toolkit. Useful for analysing cultivated cell-line transcriptomic data across bulk and single-cell modalities ([Zeng et al. 2024](https://doi.org/10.1038/s41467-024-50194-3), *Nature Communications*).
 
 ### [CellRank](https://github.com/scverse/cellrank)
 
@@ -292,19 +292,19 @@ Source: <https://github.com/systemsomicslab/MsdialWorkbench>.
 
 ### [MRMPROBS](https://systemsomicslab.github.io/compms/mrmprobs/main.html)
 
-A C# tool for widely targeted metabolomics that processes multiple reaction monitoring (MRM) / selected reaction monitoring (SRM) data — plus SCAN and DIA MS/MS — developed by Tsugawa et al. (2013, *Analytical Chemistry*), same first author as the MS-DIAL entry above. Evaluates metabolite peaks by posterior probability and provides large-scale visualisation, data curation, and statistical analysis of widely-targeted metabolomics datasets — the targeted-quantitation complement to MS-DIAL's discovery-focused deconvolution.
+A C# tool for widely targeted metabolomics that processes multiple reaction monitoring (MRM) / selected reaction monitoring (SRM) data (plus SCAN and DIA MS/MS) developed by Tsugawa et al. (2013, *Analytical Chemistry*), same first author as the MS-DIAL entry above. Evaluates metabolite peaks by posterior probability and provides large-scale visualisation, data curation, and statistical analysis of widely-targeted metabolomics datasets, the targeted-quantitation complement to MS-DIAL's discovery-focused deconvolution.
 
 Distributed via Zenodo: <https://zenodo.org/records/11219831/latest>.
 
 ### [XCMS](https://github.com/sneumann/xcms)
 
-The most-cited R / Bioconductor package for LC-MS / GC-MS metabolomics preprocessing, originally [Smith et al. 2006](https://doi.org/10.1021/ac051437y) (*Anal Chem*) and continuously maintained since. Provides nonlinear retention-time alignment, peak picking, grouping, and gap-filling — the analytical workhorse of many academic metabolomics pipelines including the Galaxy-based Workflow4Metabolomics platform.
+The most-cited R / Bioconductor package for LC-MS / GC-MS metabolomics preprocessing, originally [Smith et al. 2006](https://doi.org/10.1021/ac051437y) (*Anal Chem*) and continuously maintained since. Provides nonlinear retention-time alignment, peak picking, grouping, and gap-filling, the analytical workhorse of many academic metabolomics pipelines including the Galaxy-based Workflow4Metabolomics platform.
 
 Bioconductor: <https://bioconductor.org/packages/xcms/>.
 
 ### [ProteoWizard / msconvert](https://proteowizard.sourceforge.io/)
 
-A cross-platform C++ library and command-line toolkit for mass-spectrometry data conversion and analysis, maintained by the Mallick lab at Stanford and an international community ([Chambers et al. 2012](https://doi.org/10.1038/nbt.2377), *Nat Biotech*). The `msconvert` utility is the universal first step in essentially every open MS pipeline — converting vendor-locked binary formats (.RAW, .D, .lcd, .wiff) to open standards (mzML, mzXML, MGF) so downstream tools can ingest the data.
+A cross-platform C++ library and command-line toolkit for mass-spectrometry data conversion and analysis, maintained by the Mallick lab at Stanford and an international community ([Chambers et al. 2012](https://doi.org/10.1038/nbt.2377), *Nat Biotech*). The `msconvert` utility is the universal first step in essentially every open MS pipeline: converting vendor-locked binary formats (.RAW, .D, .lcd, .wiff) to open standards (mzML, mzXML, MGF) so downstream tools can ingest the data.
 
 Source: <https://github.com/ProteoWizard/pwiz>.
 
@@ -322,7 +322,7 @@ Source: <https://github.com/c-ruttkies/MetFragRelaunched>.
 
 ### [MS2Query](https://github.com/iomega/ms2query)
 
-A machine-learning-based mass-spectral analogue search tool from the iomega consortium ([de Jonge et al. 2023](https://doi.org/10.1038/s41467-023-37446-4), *Nat Comms*). Uses Spec2Vec and MS2DeepScore embeddings to find spectral analogues in reference libraries, including for compounds without exact matches — directly addressing the long-tail "unknown unknowns" problem in flavor and natural-products metabolomics.
+A machine-learning-based mass-spectral analogue search tool from the iomega consortium ([de Jonge et al. 2023](https://doi.org/10.1038/s41467-023-37446-4), *Nat Comms*). Uses Spec2Vec and MS2DeepScore embeddings to find spectral analogues in reference libraries, including for compounds without exact matches, directly addressing the long-tail "unknown unknowns" problem in flavor and natural-products metabolomics.
 
 ### [MS-FINDER](https://systemsomicslab.github.io/compms/msfinder/main.html)
 
@@ -330,9 +330,9 @@ A standalone tool for in-silico compound identification from MS/MS spectra, deve
 
 ### [GNPS](https://gnps.ucsd.edu/)
 
-The Global Natural Products Social Molecular Networking platform — a web-based MS/MS analysis platform from the Dorrestein lab at UCSD (Wang et al. 2016, *Nat Biotech*). Provides community-curated reference spectral libraries, Feature-Based Molecular Networking (FBMN), Ion Identity Molecular Networking (IIMN), and analog search via spectral similarity. Standard tool for compound annotation, dereplication, and pattern discovery in flavor and natural-products metabolomics workflows.
+The Global Natural Products Social Molecular Networking platform, a web-based MS/MS analysis platform from the Dorrestein lab at UCSD (Wang et al. 2016, *Nat Biotech*). Provides community-curated reference spectral libraries, Feature-Based Molecular Networking (FBMN), Ion Identity Molecular Networking (IIMN), and analog search via spectral similarity. Standard tool for compound annotation, dereplication, and pattern discovery in flavor and natural-products metabolomics workflows.
 
-*Also listed as a spectral-library reference in [Databases.md / Mass Spectrometry Spectral Databases](./Databases.md#mass-spectrometry-spectral-databases) — dual-listed because the community-curated reference libraries are themselves a queryable database.*
+*Also listed as a spectral-library reference in [Databases.md / Mass Spectrometry Spectral Databases](./Databases.md#mass-spectrometry-spectral-databases), dual-listed because the community-curated reference libraries are themselves a queryable database.*
 
 ### [ropls](http://bioconductor.org/packages/ropls/)
 
@@ -344,7 +344,7 @@ A comprehensive web-based and R-based platform for statistical, functional, and 
 
 ### [mixOmics](https://mixomics.org/)
 
-An R / Bioconductor package for the integration and exploration of single- and multi-omics datasets, maintained by the Le Cao group (University of Melbourne) (Rohart et al. 2017, *PLOS Computational Biology*). Implements PCA, PLS, sparse PLS-DA, and the **DIABLO** method for multi-block supervised classification across heterogeneous data blocks. The methodological standard for fusing sensory panel scores, instrumental volatilome / non-volatilome data, and microbiome / -omics layers — directly applicable to multi-omics flavor and cell-ag quality-prediction work.
+An R / Bioconductor package for the integration and exploration of single- and multi-omics datasets, maintained by the Le Cao group (University of Melbourne) (Rohart et al. 2017, *PLOS Computational Biology*). Implements PCA, PLS, sparse PLS-DA, and the **DIABLO** method for multi-block supervised classification across heterogeneous data blocks. The methodological standard for fusing sensory panel scores, instrumental volatilome / non-volatilome data, and microbiome / -omics layers, directly applicable to multi-omics flavor and cell-ag quality-prediction work.
 
 ### [SensoMineR](https://cran.r-project.org/web/packages/SensoMineR/index.html)
 
@@ -448,7 +448,7 @@ Summary: A de novo bitter-peptide design workflow from the [Di Pizio lab](https:
 
 ## Workflow-Manager Pipelines
 
-Reproducible, container-based workflow-manager pipelines for omics and microbiome analysis — Nextflow / Snakemake / CWL / Galaxy. None of these are sensomics-specific, but each is a directly applicable preprocessing or microbiome layer for cultivated-meat spent-media, fermentation, or flavor-volatilome work. For containerized, reproducible cell-ag analytical pipelines, these are the upstream substrate that any sensomics-aware workflow would be built on.
+Reproducible, container-based workflow-manager pipelines for omics and microbiome analysis, Nextflow / Snakemake / CWL / Galaxy. None of these are sensomics-specific, but each is a directly applicable preprocessing or microbiome layer for cultivated-meat spent-media, fermentation, or flavor-volatilome work. For containerized, reproducible cell-ag analytical pipelines, these are the upstream substrate that any sensomics-aware workflow would be built on.
 
 ### [nf-core/metaboigniter](https://nf-co.re/metaboigniter)
 
@@ -468,11 +468,11 @@ A community-curated Nextflow pipeline for amplicon sequencing analysis (16S, 18S
 
 ### [nf-core/mag](https://nf-co.re/mag)
 
-A community-curated Nextflow pipeline for shotgun metagenomic assembly and binning (Krakau et al. 2022, *NAR Genomics and Bioinformatics*). Produces metagenome-assembled genomes (MAGs) with quality control, taxonomic classification, and functional annotation — the analytical complement to ampliseq for higher-resolution microbial-community profiling. Relevant to cultivated-meat work involving complex bioreactor microbiomes, scaffold biofilms, or fermentation co-culture analysis.
+A community-curated Nextflow pipeline for shotgun metagenomic assembly and binning (Krakau et al. 2022, *NAR Genomics and Bioinformatics*). Produces metagenome-assembled genomes (MAGs) with quality control, taxonomic classification, and functional annotation, the analytical complement to ampliseq for higher-resolution microbial-community profiling. Relevant to cultivated-meat work involving complex bioreactor microbiomes, scaffold biofilms, or fermentation co-culture analysis.
 
 ## AI Agents & Foundation Models
 
-This section catalogs general-purpose AI infrastructure — agent frameworks, foundation models for biology, and tool ecosystems — that can be applied across cellular agriculture problems. See also the `AI Tooling / Methodology` column in [Papers.md](./Papers.md) for the research papers describing these systems.
+This section catalogs general-purpose AI infrastructure (agent frameworks, foundation models for biology, and tool ecosystems) that can be applied across cellular agriculture problems. See also the `AI Tooling / Methodology` column in [Papers.md](./Papers.md) for the research papers describing these systems.
 
 ### [ToolUniverse](https://github.com/mims-harvard/ToolUniverse)
 
@@ -488,17 +488,17 @@ Project page: <https://biomni.stanford.edu>. AWS tutorial (Biomni + Bedrock Agen
 
 ### [AIAgents4Pharma](https://github.com/VirtualPatientEngine/AIAgents4Pharma)
 
-Summary: An open-source AI-agent platform from VirtualPatientEngine targeting drug discovery and pharmaceutical R&D. Hosts a family of LLM-based agents — Talk2Biomodels (kinetic biological models), Talk2KnowledgeGraphs, Talk2Cells, and Talk2Scholars — that share infrastructure for tool use and reasoning over biomedical resources. Companion to the Wehling et al. 2025 Talk2Biomodels paper ([Papers.md ref #50](./Papers.md#50)).
+Summary: An open-source AI-agent platform from VirtualPatientEngine targeting drug discovery and pharmaceutical R&D. Hosts a family of LLM-based agents: Talk2Biomodels (kinetic biological models), Talk2KnowledgeGraphs, Talk2Cells, and Talk2Scholars, that share infrastructure for tool use and reasoning over biomedical resources. Companion to the Wehling et al. 2025 Talk2Biomodels paper ([Papers.md ref #50](./Papers.md#50)).
 
 Docs: <https://virtualpatientengine.github.io/AIAgents4Pharma/>.
 
 ### [BRAD](https://github.com/Jpickard1/BRAD)
 
-Summary: A bioinformatics-focused LLM agent (Bioinformatics Retrieval Augmented Digital Assistant) combining retrieval-augmented generation with bioinformatics tool orchestration. Targets automatic biomarker discovery, enrichment analysis, and general bioinformatics automation — patterns that map cleanly onto cell-ag tasks like cell-type marker discovery and pathway-enrichment analysis on cultivated-tissue scRNA-seq. Companion to [Papers.md ref #94](./Papers.md#94) (Pickard et al. 2025, *Bioinformatics*).
+Summary: A bioinformatics-focused LLM agent (Bioinformatics Retrieval Augmented Digital Assistant) combining retrieval-augmented generation with bioinformatics tool orchestration. Targets automatic biomarker discovery, enrichment analysis, and general bioinformatics automation, patterns that map cleanly onto cell-ag tasks like cell-type marker discovery and pathway-enrichment analysis on cultivated-tissue scRNA-seq. Companion to [Papers.md ref #94](./Papers.md#94) (Pickard et al. 2025, *Bioinformatics*).
 
 ### [CellForge](https://github.com/gersteinlab/CellForge)
 
-Summary: An agentic system for the design of virtual cell models from the [Gerstein lab](http://www.gersteinlab.org/) at Yale. Coordinates multiple LLM agents to plan, configure, and execute cell-modeling workflows — directly relevant to cell-ag for cell-type-specific virtual-cell pipelines that media-optimization, perturbation-response prediction, and bioprocess workflows can build on. Companion to [Papers.md ref #93](./Papers.md#93) (Tang et al. 2026).
+Summary: An agentic system for the design of virtual cell models from the [Gerstein lab](http://www.gersteinlab.org/) at Yale. Coordinates multiple LLM agents to plan, configure, and execute cell-modeling workflows: directly relevant to cell-ag for cell-type-specific virtual-cell pipelines that media-optimization, perturbation-response prediction, and bioprocess workflows can build on. Companion to [Papers.md ref #93](./Papers.md#93) (Tang et al. 2026).
 
 ### [AI Scientist](https://github.com/SakanaAI/AI-Scientist)
 
@@ -510,26 +510,26 @@ Project home: <https://sakana.ai/>.
 
 Summary: An open-source retrieval-augmented generative agent for answering questions over scientific literature with verified citations, from the [FutureHouse](https://www.futurehouse.org/) research lab. Released as PaperQA in 2023 and substantially extended in PaperQA2 (2024), which achieves superhuman synthesis accuracy on literature questions. Companion to [Papers.md ref #44](./Papers.md#44) (PaperQA, Lála et al. 2023) and [ref #46](./Papers.md#46) (PaperQA2, Skarlinski et al. 2024).
 
-FutureHouse cookbook (docs): <https://futurehouse.gitbook.io/futurehouse-cookbook>. Commercial spinout — Edison Scientific: <https://edisonscientific.com/> ([docs](https://docs.edisonscientific.com)).
+FutureHouse cookbook (docs): <https://futurehouse.gitbook.io/futurehouse-cookbook>. Commercial spinout, Edison Scientific: <https://edisonscientific.com/> ([docs](https://docs.edisonscientific.com)).
 
 ### [Aviary](https://github.com/Future-House/aviary)
 
-Summary: A gymnasium of language-agent environments for challenging scientific tasks, from the [FutureHouse](https://www.futurehouse.org/) lab. Agents are framed as Language Decision Processes (LDP) and trained and evaluated against tasks spanning molecular cloning, scientific-literature QA, and protein stability — providing the reusable training-and-evaluation substrate beneath FutureHouse's task-specific agents. Companion to [Papers.md ref #160](./Papers.md#160) (Narayanan et al. 2024). Apache-2.0; built on the [LDP framework](https://docs.edisonscientific.com/ldp-language-decision-processes), with Aviary docs at <https://docs.edisonscientific.com/aviary>.
+Summary: A gymnasium of language-agent environments for challenging scientific tasks, from the [FutureHouse](https://www.futurehouse.org/) lab. Agents are framed as Language Decision Processes (LDP) and trained and evaluated against tasks spanning molecular cloning, scientific-literature QA, and protein stability, providing the reusable training-and-evaluation substrate beneath FutureHouse's task-specific agents. Companion to [Papers.md ref #160](./Papers.md#160) (Narayanan et al. 2024). Apache-2.0; built on the [LDP framework](https://docs.edisonscientific.com/ldp-language-decision-processes), with Aviary docs at <https://docs.edisonscientific.com/aviary>.
 
 ### [Finch](https://github.com/Future-House/finch)
 
-Summary: An Aviary-based data-science agent that operates inside Jupyter notebooks, also from [FutureHouse](https://www.futurehouse.org/). It plans and executes notebook-based analyses, pairing the [Aviary](#aviary) environment with the kind of exploratory bioinformatics work — single-cell exploration, media-response analysis — that cell-ag teams increasingly delegate to notebook agents. Apache-2.0; no companion paper at time of curation.
+Summary: An Aviary-based data-science agent that operates inside Jupyter notebooks, also from [FutureHouse](https://www.futurehouse.org/). It plans and executes notebook-based analyses, pairing the [Aviary](#aviary) environment with the kind of exploratory bioinformatics work (single-cell exploration, media-response analysis) that cell-ag teams increasingly delegate to notebook agents. Apache-2.0; no companion paper at time of curation.
 
 ### [K-Dense-AI](https://github.com/K-Dense-AI)
 
 K-Dense-AI is an AI co-scientist ecosystem combining a commercial agent platform ([K-Dense Web](https://k-dense.ai), which autonomously executes complex science / engineering / healthcare / finance tasks end-to-end) with a substantial open-source stack of agent infrastructure:
 
-- **[scientific-agent-skills](https://github.com/K-Dense-AI/scientific-agent-skills)** — A multi-domain collection of 120+ "Agent Skills" wrapping scientific Python libraries and platforms in Claude Code / Cursor / Antigravity-compatible format. Each skill provides curated recipes, code examples, and discovery prompts for one library. Cell-ag-relevant skills include `cobrapy` (FBA / metabolic modeling — see [Metabolic Modeling & Strain Design](#metabolic-modeling--strain-design)), `pyopenms` (mass spectrometry), `scanpy` / `scvi-tools` / `anndata` (single-cell analysis), `rdkit` / `datamol` / `medchem` (cheminformatics), `biopython` / `bioservices` / `gget` (bioinformatics utilities), `cellxgene-census`, `pyzotero`, and many others.
-- **[k-dense-byok](https://github.com/K-Dense-AI/k-dense-byok)** — A bring-your-own-key desktop client that runs the Scientific Agent Skills locally with your own LLM API keys.
-- **[mimeo](https://github.com/K-Dense-AI/mimeo)** — A tool for "mimeographing" an expert's knowledge into a `SKILL.md` / `AGENTS.md` file consumable by Claude Code or similar agents.
-- **[mimeographs](https://github.com/K-Dense-AI/mimeographs)** — A collection of persona-based agent skills (founders, philosophers, scientists) generated with mimeo.
-- **[claude-scientific-writer](https://github.com/K-Dense-AI/claude-scientific-writer)** — A Claude-Code-compatible general-purpose scientific writing agent.
-- **[science-superpowers](https://github.com/K-Dense-AI/science-superpowers)** — A composable computational-science methodology for research agents: 15 auto-triggering skills — 13 covering the research lifecycle (framing falsifiable questions, surveying prior work, designing and **pre-registering** the analysis, reproducible execution, anomaly root-causing, results verification, red-team review, and reporting/archiving) plus two meta skills for authoring and onboarding new skills. A science-domain reimplementation of [obra/superpowers](#superpowers) whose central discipline is pre-registration rather than test-driven development; runs with only the agent harness and a POSIX shell (zero third-party dependencies). MIT-licensed.
+- **[scientific-agent-skills](https://github.com/K-Dense-AI/scientific-agent-skills)**, A multi-domain collection of 120+ "Agent Skills" wrapping scientific Python libraries and platforms in Claude Code / Cursor / Antigravity-compatible format. Each skill provides curated recipes, code examples, and discovery prompts for one library. Cell-ag-relevant skills include `cobrapy` (FBA / metabolic modeling: see [Metabolic Modeling & Strain Design](#metabolic-modeling--strain-design)), `pyopenms` (mass spectrometry), `scanpy` / `scvi-tools` / `anndata` (single-cell analysis), `rdkit` / `datamol` / `medchem` (cheminformatics), `biopython` / `bioservices` / `gget` (bioinformatics utilities), `cellxgene-census`, `pyzotero`, and many others.
+- **[k-dense-byok](https://github.com/K-Dense-AI/k-dense-byok)**, A bring-your-own-key desktop client that runs the Scientific Agent Skills locally with your own LLM API keys.
+- **[mimeo](https://github.com/K-Dense-AI/mimeo)**, A tool for "mimeographing" an expert's knowledge into a `SKILL.md` / `AGENTS.md` file consumable by Claude Code or similar agents.
+- **[mimeographs](https://github.com/K-Dense-AI/mimeographs)**: A collection of persona-based agent skills (founders, philosophers, scientists) generated with mimeo.
+- **[claude-scientific-writer](https://github.com/K-Dense-AI/claude-scientific-writer)**, A Claude-Code-compatible general-purpose scientific writing agent.
+- **[science-superpowers](https://github.com/K-Dense-AI/science-superpowers)**: A composable computational-science methodology for research agents: 15 auto-triggering skills: 13 covering the research lifecycle (framing falsifiable questions, surveying prior work, designing and **pre-registering** the analysis, reproducible execution, anomaly root-causing, results verification, red-team review, and reporting/archiving) plus two meta skills for authoring and onboarding new skills. A science-domain reimplementation of [obra/superpowers](#superpowers) whose central discipline is pre-registration rather than test-driven development; runs with only the agent harness and a POSIX shell (zero third-party dependencies). MIT-licensed.
 
 Not an MCP server but a documentation-and-prompt-context layer that pairs well with code-execution agents like Biomni, Cursor, and Claude Code.
 
@@ -537,15 +537,15 @@ Project page: <https://k-dense.ai>.
 
 ### [Superpowers](https://github.com/obra/superpowers)
 
-Summary: An agentic skills framework and software-development methodology authored by Jesse "obra" Vincent (`obra/superpowers`) — one of the most-starred Claude Code skill collections. Provides domain-agnostic skills for planning, debugging, code review, and execution that compose cleanly with cell-ag-specific skill packs (e.g. [K-Dense-AI's scientific-agent-skills](#k-dense-ai)) when assembling an agent stack for a cell-ag lab. Shell-based, MIT-licensed. K-Dense-AI's [science-superpowers](#k-dense-ai) is a science-domain reimplementation of this methodology for data analysis, swapping test-driven development for pre-registration.
+Summary: An agentic skills framework and software-development methodology authored by Jesse "obra" Vincent (`obra/superpowers`), one of the most-starred Claude Code skill collections. Provides domain-agnostic skills for planning, debugging, code review, and execution that compose cleanly with cell-ag-specific skill packs (e.g. [K-Dense-AI's scientific-agent-skills](#k-dense-ai)) when assembling an agent stack for a cell-ag lab. Shell-based, MIT-licensed. K-Dense-AI's [science-superpowers](#k-dense-ai) is a science-domain reimplementation of this methodology for data analysis, swapping test-driven development for pre-registration.
 
 ### [Skill Seekers](https://github.com/yusufkaraaslan/Skill_Seekers)
 
-Summary: A meta-tool that converts documentation websites, GitHub repositories, and PDFs into Claude AI skills with automatic conflict detection. The closest existing automation for the pattern an AI-augmented cell-ag lab needs as it scales: turn a new wet-lab protocol PDF, a new bioinformatics package's docs, or a new GitHub library's README into a Claude Code / Cursor skill that the lab's agents can call directly — without hand-curating each integration. Python, MIT-licensed.
+Summary: A meta-tool that converts documentation websites, GitHub repositories, and PDFs into Claude AI skills with automatic conflict detection. The closest existing automation for the pattern an AI-augmented cell-ag lab needs as it scales: turn a new wet-lab protocol PDF, a new bioinformatics package's docs, or a new GitHub library's README into a Claude Code / Cursor skill that the lab's agents can call directly, without hand-curating each integration. Python, MIT-licensed.
 
 ### [AI Research Skills Library](https://github.com/orchestra-research/AI-research-SKILLs)
 
-Summary: An open-source library of AI research and engineering skills covering vLLM, Megatron, GRPO, HuggingFace, and the broader LLM training and serving stack — maintained by [Orchestra Research](https://github.com/orchestra-research). Designed to package skills into Claude Code, Codex, or Gemini agents so they operate as fully-equipped AI research agents. Cell-ag teams building or fine-tuning their own biology foundation models (cf. [TranscriptFormer](#transcriptformer)) or running large-scale agentic workflows can pull from this library for the ML-training and serving infrastructure layer rather than reinventing it. MIT-licensed.
+Summary: An open-source library of AI research and engineering skills covering vLLM, Megatron, GRPO, HuggingFace, and the broader LLM training and serving stack, maintained by [Orchestra Research](https://github.com/orchestra-research). Designed to package skills into Claude Code, Codex, or Gemini agents so they operate as fully-equipped AI research agents. Cell-ag teams building or fine-tuning their own biology foundation models (cf. [TranscriptFormer](#transcriptformer)) or running large-scale agentic workflows can pull from this library for the ML-training and serving infrastructure layer rather than reinventing it. MIT-licensed.
 
 ### [Seqera AI / Co-Scientist](https://docs.seqera.io/platform-cloud/seqera-ai/)
 
@@ -553,15 +553,15 @@ Summary: Seqera Cloud's AI assistant for bioinformatics workflows, providing an 
 
 ### [Dotmatics Luma](https://go.dotmatics.com/luma-lab-orchestration)
 
-A commercial lab-orchestration platform from Dotmatics that connects laboratory instruments, data systems, and AI assistance into a unified "connected digital lab" workflow — covering instrument integration, automated data flow, electronic-lab-notebook integration, and agent-assisted experimental planning. Marketed primarily to biopharma and biotech R&D groups; representative of the commercial-tooling layer that cell-ag startups increasingly evaluate as they scale beyond bench-scale workflows. See also the [Dotmatics Luma webinar](./Talks.md#ai-agents--foundation-models-for-biology) in Talks.md for an overview of the platform.
+A commercial lab-orchestration platform from Dotmatics that connects laboratory instruments, data systems, and AI assistance into a unified "connected digital lab" workflow: covering instrument integration, automated data flow, electronic-lab-notebook integration, and agent-assisted experimental planning. Marketed primarily to biopharma and biotech R&D groups; representative of the commercial-tooling layer that cell-ag startups increasingly evaluate as they scale beyond bench-scale workflows. See also the [Dotmatics Luma webinar](./Talks.md#ai-agents--foundation-models-for-biology) in Talks.md for an overview of the platform.
 
 ### [scDataset](https://github.com/scDataset/scDataset)
 
-A PyTorch `IterableDataset` for efficient deep-learning training on single-cell omics too large to fit in memory, streaming directly from on-disk AnnData (and other formats) with no prior conversion step. It combines block sampling with batched fetching to approximate random sampling — recovering the minibatch diversity that uniform training needs while avoiding the throughput collapse of true random disk access; on the 100-million-cell Tahoe-100M it reports more than two orders-of-magnitude speedup over true random sampling while matching its downstream accuracy (D'Ascenzo & Cultrera di Montesano 2025, [arXiv:2506.01883](https://doi.org/10.48550/arXiv.2506.01883)). For cell-ag, it is the data-loading layer beneath single-cell foundation-model training (Geneformer, scGPT, scFoundation and the like) on atlas-scale corpora — including [Tahoe-100M](./Datasets/HumanReference.md) — that increasingly inform cellular-engineering and perturbation models.
+A PyTorch `IterableDataset` for efficient deep-learning training on single-cell omics too large to fit in memory, streaming directly from on-disk AnnData (and other formats) with no prior conversion step. It combines block sampling with batched fetching to approximate random sampling: recovering the minibatch diversity that uniform training needs while avoiding the throughput collapse of true random disk access; on the 100-million-cell Tahoe-100M it reports more than two orders-of-magnitude speedup over true random sampling while matching its downstream accuracy (D'Ascenzo & Cultrera di Montesano 2025, [arXiv:2506.01883](https://doi.org/10.48550/arXiv.2506.01883)). For cell-ag, it is the data-loading layer beneath single-cell foundation-model training (Geneformer, scGPT, scFoundation and the like) on atlas-scale corpora (including [Tahoe-100M](./Datasets/HumanReference.md)) that increasingly inform cellular-engineering and perturbation models.
 
 ### [TranscriptFormer](https://virtualcellmodels.cziscience.com/model/transcriptformer)
 
-A family of generative foundation models for single-cell transcriptomics from the Chan Zuckerberg Initiative, trained on up to 112 million cells spanning 1.53 billion years of evolution across 12 species (Pearce et al. 2026, *Science*; see [Papers.md ref #92](./Papers.md#92)). Provides state-of-the-art performance on cell-type classification and supports cross-species reasoning over transcriptomic data — directly relevant to cell-ag for translating biological knowledge between bovine, porcine, chicken, salmonid, and other livestock cells where annotated reference data is sparse (see the per-species pages in [`Datasets/`](./Datasets/) for the cell-ag-relevant data substrate). Distributed via CZI's Virtual Cells Platform with versioned releases.
+A family of generative foundation models for single-cell transcriptomics from the Chan Zuckerberg Initiative, trained on up to 112 million cells spanning 1.53 billion years of evolution across 12 species (Pearce et al. 2026, *Science*; see [Papers.md ref #92](./Papers.md#92)). Provides state-of-the-art performance on cell-type classification and supports cross-species reasoning over transcriptomic data: directly relevant to cell-ag for translating biological knowledge between bovine, porcine, chicken, salmonid, and other livestock cells where annotated reference data is sparse (see the per-species pages in [`Datasets/`](./Datasets/) for the cell-ag-relevant data substrate). Distributed via CZI's Virtual Cells Platform with versioned releases.
 
 Quickstart docs: <https://virtualcellmodels.cziscience.com/quickstart/transcriptformer-quickstart>. Announcement: <https://chanzuckerberg.com/blog/transcriptformer-model-overview/>.
 
@@ -583,43 +583,43 @@ A large-scale foundation model on single-cell transcriptomics from BioMap Resear
 
 ### [UCE](https://github.com/snap-stanford/UCE)
 
-Universal Cell Embeddings from Stanford's [SNAP lab](https://snap.stanford.edu/) (Leskovec group) — a single-cell foundation model that represents each cell as an unordered set of expressed genes and each gene by its protein-language-model embedding, enabling zero-shot generalization to species and tissues never seen at training time. Releases include pretrained weights and zero-shot inference scripts for novel cell-type discovery across species. Companion to [Papers.md ref #119](./Papers.md#119) (Rosen et al. 2026, bioRxiv; *Nature*, in press at time of curation). The same lab's earlier [SATURN](https://github.com/snap-stanford/SATURN) method ([ref #118](./Papers.md#118), Rosen et al. 2024, *Nature Methods*) introduced the protein-LM-gene-embedding pattern that UCE generalizes — directly relevant to cell-ag where annotated livestock-species single-cell data is sparse and cross-species transfer is essential.
+Universal Cell Embeddings from Stanford's [SNAP lab](https://snap.stanford.edu/) (Leskovec group): a single-cell foundation model that represents each cell as an unordered set of expressed genes and each gene by its protein-language-model embedding, enabling zero-shot generalization to species and tissues never seen at training time. Releases include pretrained weights and zero-shot inference scripts for novel cell-type discovery across species. Companion to [Papers.md ref #119](./Papers.md#119) (Rosen et al. 2026, bioRxiv; *Nature*, in press at time of curation). The same lab's earlier [SATURN](https://github.com/snap-stanford/SATURN) method ([ref #118](./Papers.md#118), Rosen et al. 2024, *Nature Methods*) introduced the protein-LM-gene-embedding pattern that UCE generalizes, directly relevant to cell-ag where annotated livestock-species single-cell data is sparse and cross-species transfer is essential.
 
 ### [tGPT](https://github.com/deeplearningplus/tGPT)
 
-A generative pretraining model for single-cell deciphering, applying GPT-style autoregressive next-token prediction over gene-expression vocabularies. Smaller and earlier than scGPT or Geneformer, but methodologically important as one of the first demonstrations that next-token-prediction objectives (vs. masked-language-modeling) work for single-cell biology — the lineage that now includes Arc's [State](#state--cell-eval) and [Cell2Sentence](#cell2sentence-c2s-scale). Companion to [Papers.md ref #115](./Papers.md#115) (Shen et al. 2023, *iScience*).
+A generative pretraining model for single-cell deciphering, applying GPT-style autoregressive next-token prediction over gene-expression vocabularies. Smaller and earlier than scGPT or Geneformer, but methodologically important as one of the first demonstrations that next-token-prediction objectives (vs. masked-language-modeling) work for single-cell biology, the lineage that now includes Arc's [State](#state--cell-eval) and [Cell2Sentence](#cell2sentence-c2s-scale). Companion to [Papers.md ref #115](./Papers.md#115) (Shen et al. 2023, *iScience*).
 
 ### [Cell2Sentence (C2S-Scale)](https://github.com/vandijklab/cell2sentence)
 
-A framework for treating single-cell expression profiles as natural-language sentences — ordered lists of expressed gene symbols ranked by expression — enabling direct reuse of pretrained LLM architectures (and, in C2S-Scale, billion-parameter scaling) for single-cell biology. From the [van Dijk lab](https://www.vandijklab.org/) at Yale. Companion to [Papers.md ref #120](./Papers.md#120) (Rizvi et al. 2026, bioRxiv). C2S-Scale project page: <https://www.vandijklab.org/c2s-scale>.
+A framework for treating single-cell expression profiles as natural-language sentences (ordered lists of expressed gene symbols ranked by expression) enabling direct reuse of pretrained LLM architectures (and, in C2S-Scale, billion-parameter scaling) for single-cell biology. From the [van Dijk lab](https://www.vandijklab.org/) at Yale. Companion to [Papers.md ref #120](./Papers.md#120) (Rizvi et al. 2026, bioRxiv). C2S-Scale project page: <https://www.vandijklab.org/c2s-scale>.
 
 ### [GEARS](https://github.com/snap-stanford/GEARS)
 
-Graph-Enhanced gene-Activation Response Simulator — a graph neural network for predicting transcriptional outcomes of novel multi-gene CRISPR perturbations, including combinations never observed during training. From Stanford's SNAP lab (Leskovec group). Generalizes single-gene perturbation training data to combinatorial perturbation prediction via co-essentiality and gene-ontology graph priors. Companion to [Papers.md ref #121](./Papers.md#121) (Roohani et al. 2024, *Nature Biotechnology*).
+Graph-Enhanced gene-Activation Response Simulator: a graph neural network for predicting transcriptional outcomes of novel multi-gene CRISPR perturbations, including combinations never observed during training. From Stanford's SNAP lab (Leskovec group). Generalizes single-gene perturbation training data to combinatorial perturbation prediction via co-essentiality and gene-ontology graph priors. Companion to [Papers.md ref #121](./Papers.md#121) (Roohani et al. 2024, *Nature Biotechnology*).
 
 ### [State + Cell-Eval](https://github.com/ArcInstitute/state)
 
-Arc Institute's first-generation virtual cell model and companion evaluation framework, designed to predict stem-cell, cancer-cell, and immune-cell responses to drugs, cytokines, and genetic perturbations. Trained on ~170M observational and ~100M perturbational single-cell measurements across 70+ cell lines; uses a bidirectional transformer architecture with self-attention over cell sets and reportedly is the first model to consistently beat simple linear baselines on perturbation-response prediction. Released alongside [`cell-eval`](https://github.com/ArcInstitute/cell-eval), the standardized evaluation framework for virtual-cell models. Companion to [Papers.md ref #57](./Papers.md#57) (Adduri et al. 2025, bioRxiv); see also the [Arc Institute news article on State](./AIAgentsFoundationModels.md) on the AI Agents & Foundation Models page. The follow-on **Stack** model — companion to [Papers.md ref #124](./Papers.md#124) (Dong et al. 2026) — extends State with in-context learning, simulating cellular conditions via prompt engineering without further fine-tuning.
+Arc Institute's first-generation virtual cell model and companion evaluation framework, designed to predict stem-cell, cancer-cell, and immune-cell responses to drugs, cytokines, and genetic perturbations. Trained on ~170M observational and ~100M perturbational single-cell measurements across 70+ cell lines; uses a bidirectional transformer architecture with self-attention over cell sets and reportedly is the first model to consistently beat simple linear baselines on perturbation-response prediction. Released alongside [`cell-eval`](https://github.com/ArcInstitute/cell-eval), the standardized evaluation framework for virtual-cell models. Companion to [Papers.md ref #57](./Papers.md#57) (Adduri et al. 2025, bioRxiv); see also the [Arc Institute news article on State](./AIAgentsFoundationModels.md) on the AI Agents & Foundation Models page. The follow-on **Stack** model, companion to [Papers.md ref #124](./Papers.md#124) (Dong et al. 2026): extends State with in-context learning, simulating cellular conditions via prompt engineering without further fine-tuning.
 
 ### [BioDiscoveryAgent](https://github.com/snap-stanford/BioDiscoveryAgent)
 
-An LLM-based AI agent from Stanford's SNAP lab for designing genetic-perturbation experiments — including CRISPR-Cas9 single-gene and combinatorial knockouts — by reasoning over gene-function literature, prior screens, and experimental constraints. Demonstrates that an LLM agent with tool use can match or exceed specialized active-learning methods on hit-rate-driven experimental-design tasks. Companion to [Papers.md ref #125](./Papers.md#125) (Roohani et al. 2025, arXiv). Directly applicable to cell-ag as an off-the-shelf experimental-design layer for cell-line-engineering campaigns (selecting which TFs to overexpress for myogenic vs. adipogenic differentiation, or which media-pathway genes to knock down to test rate-limiting steps).
+An LLM-based AI agent from Stanford's SNAP lab for designing genetic-perturbation experiments (including CRISPR-Cas9 single-gene and combinatorial knockouts) by reasoning over gene-function literature, prior screens, and experimental constraints. Demonstrates that an LLM agent with tool use can match or exceed specialized active-learning methods on hit-rate-driven experimental-design tasks. Companion to [Papers.md ref #125](./Papers.md#125) (Roohani et al. 2025, arXiv). Directly applicable to cell-ag as an off-the-shelf experimental-design layer for cell-line-engineering campaigns (selecting which TFs to overexpress for myogenic vs. adipogenic differentiation, or which media-pathway genes to knock down to test rate-limiting steps).
 
 ### [CausalBench](https://github.com/causalbench/causalbench)
 
-A large-scale benchmark for evaluating network-inference methods from single-cell perturbation data — including Perturb-seq, CROP-seq, and ECCITE-seq. Built around interventional ground truth from genome-scale CRISPR screens, providing standardized metrics, baselines, and dataset splits for ML methods that infer gene-regulatory networks. Companion to [Papers.md ref #127](./Papers.md#127) (Chevalley et al. 2025, *Communications Biology*).
+A large-scale benchmark for evaluating network-inference methods from single-cell perturbation data: including Perturb-seq, CROP-seq, and ECCITE-seq. Built around interventional ground truth from genome-scale CRISPR screens, providing standardized metrics, baselines, and dataset splits for ML methods that infer gene-regulatory networks. Companion to [Papers.md ref #127](./Papers.md#127) (Chevalley et al. 2025, *Communications Biology*).
 
 ### [BioContextAI](https://biocontext.ai)
 
-Summary: A community hub for agentic biomedical systems — a registry of biomedical Model Context Protocol (MCP) servers plus a knowledgebase MCP server that exposes curated biomedical resources to LLM agents. Lets cell-ag teams plug standardized biomedical tools and data sources into agent stacks (Claude Code, Cursor, Biomni) without bespoke per-resource integration. Companion to [Papers.md ref #133](./Papers.md#133) (Kuehl et al. 2025, *Nature Biotechnology*). GitHub org: <https://github.com/biocontext-ai>.
+Summary: A community hub for agentic biomedical systems, a registry of biomedical Model Context Protocol (MCP) servers plus a knowledgebase MCP server that exposes curated biomedical resources to LLM agents. Lets cell-ag teams plug standardized biomedical tools and data sources into agent stacks (Claude Code, Cursor, Biomni) without bespoke per-resource integration. Companion to [Papers.md ref #133](./Papers.md#133) (Kuehl et al. 2025, *Nature Biotechnology*). GitHub org: <https://github.com/biocontext-ai>.
 
 ### [BioMCP](https://github.com/genomoncology/biomcp)
 
-Summary: A one-binary MCP server from GenomOncology unifying many biomedical knowledge sources — PubTator3, Europe PMC, ClinicalTrials.gov, MyVariant.info, cBioPortal, Reactome, Open Targets, MyDisease.info, MONDO, Monarch, DisGeNET — behind a single Model Context Protocol surface for LLM agents. MIT-licensed; the leanest existing MCP-native bridge between general biomedical literature, clinical-trial, and variant data and an agent stack. Sister project to [BioContextAI](#biocontextai), which catalogues biomedical MCP servers including BioMCP.
+Summary: A one-binary MCP server from GenomOncology unifying many biomedical knowledge sources: PubTator3, Europe PMC, ClinicalTrials.gov, MyVariant.info, cBioPortal, Reactome, Open Targets, MyDisease.info, MONDO, Monarch, DisGeNET, behind a single Model Context Protocol surface for LLM agents. MIT-licensed; the leanest existing MCP-native bridge between general biomedical literature, clinical-trial, and variant data and an agent stack. Sister project to [BioContextAI](#biocontextai), which catalogues biomedical MCP servers including BioMCP.
 
 ### [Context7](https://github.com/upstash/context7)
 
-Summary: An open-source MCP server (and hosted service) from Upstash that injects up-to-date, version-specific library documentation and code examples into LLM prompts, so AI coding agents work from current API docs instead of stale training data. Unlike the biomedical MCP servers above, Context7 is general developer infrastructure — not cell-ag-specific — but it is directly relevant to CAAIL's AI-agent audience: the coding agents that build and maintain cell-ag pipelines, parsers, and analysis tooling depend on accurate, current documentation for the bioinformatics and ML libraries they call. MIT-licensed; hosted at <https://context7.com>.
+Summary: An open-source MCP server (and hosted service) from Upstash that injects up-to-date, version-specific library documentation and code examples into LLM prompts, so AI coding agents work from current API docs instead of stale training data. Unlike the biomedical MCP servers above, Context7 is general developer infrastructure (not cell-ag-specific) but it is directly relevant to CAAIL's AI-agent audience: the coding agents that build and maintain cell-ag pipelines, parsers, and analysis tooling depend on accurate, current documentation for the bioinformatics and ML libraries they call. MIT-licensed; hosted at <https://context7.com>.
 
 ### [Virtual Lab](https://github.com/zou-group/virtual-lab)
 
@@ -635,27 +635,27 @@ Docs: <https://github.com/gomesgroup/coscientist#readme>.
 
 ## Data Standards & Interchange Formats
 
-Open standards and schema languages for representing biological models, data, and processes in machine-readable form. None are AI methods themselves, but each is the substrate that AI-powered extraction, reasoning, and modeling tools depend on — standardized inputs are what make automated cross-study analysis and agentic workflows tractable for cellular agriculture.
+Open standards and schema languages for representing biological models, data, and processes in machine-readable form. None are AI methods themselves, but each is the substrate that AI-powered extraction, reasoning, and modeling tools depend on, standardized inputs are what make automated cross-study analysis and agentic workflows tractable for cellular agriculture.
 
 ### [SBML (Systems Biology Markup Language)](https://sbml.org/)
 
-Summary: The de-facto XML-based standard for representing computational models of biological processes — metabolic networks, signaling pathways, gene-regulatory networks, and kinetic models. SBML is the interchange format for every genome-scale metabolic model catalogued in the per-species pages of the [`Datasets/`](./Datasets/) directory and the lingua franca of the constraint-based and kinetic modeling tools in [Metabolic Modeling & Strain Design](#metabolic-modeling--strain-design). Maintained by the SBML community with libSBML bindings across all major languages.
+Summary: The de-facto XML-based standard for representing computational models of biological processes: metabolic networks, signaling pathways, gene-regulatory networks, and kinetic models. SBML is the interchange format for every genome-scale metabolic model catalogued in the per-species pages of the [`Datasets/`](./Datasets/) directory and the lingua franca of the constraint-based and kinetic modeling tools in [Metabolic Modeling & Strain Design](#metabolic-modeling--strain-design). Maintained by the SBML community with libSBML bindings across all major languages.
 
 ### [LinkML (Linked data Modeling Language)](https://linkml.io/)
 
-Summary: A schema language for authoring, validating, and transforming structured data models, with first-class support for ontology terms, code generation across languages, and export to JSON-Schema / SHACL / OWL. Increasingly used to define machine-readable metadata schemas for biological datasets and knowledge graphs — the structured backbone that agentic AI systems need in order to reason reliably over cell-ag data resources.
+Summary: A schema language for authoring, validating, and transforming structured data models, with first-class support for ontology terms, code generation across languages, and export to JSON-Schema / SHACL / OWL. Increasingly used to define machine-readable metadata schemas for biological datasets and knowledge graphs, the structured backbone that agentic AI systems need in order to reason reliably over cell-ag data resources.
 
 ### [Project PISCES (Standard Flowsheet Format)](https://projectpisces.org/)
 
-Summary: Project PISCES (Process Integration & Synthesis using Chemical Engineering Standards) standardizes process flowsheet data into a machine-readable Standard Flowsheet Format (SFF) for AI-powered knowledge extraction and analysis. For cellular agriculture, a standardized flowsheet format is the missing substrate for AI-assisted bioprocess design, scale-up modeling, and techno-economic analysis — letting agents reason over cultivated-meat process designs the way they reason over SBML metabolic models. SFF documentation: <https://projectpisces.org/?page=sff-docs>.
+Summary: Project PISCES (Process Integration & Synthesis using Chemical Engineering Standards) standardizes process flowsheet data into a machine-readable Standard Flowsheet Format (SFF) for AI-powered knowledge extraction and analysis. For cellular agriculture, a standardized flowsheet format is the missing substrate for AI-assisted bioprocess design, scale-up modeling, and techno-economic analysis, letting agents reason over cultivated-meat process designs the way they reason over SBML metabolic models. SFF documentation: <https://projectpisces.org/?page=sff-docs>.
 
-Process-flowsheet background (what SFF standardizes) — for readers approaching this from the AI / biology side, the [LibreTexts *Foundations of Chemical and Biological Engineering* chapter on chemical processes and process diagrams](https://eng.libretexts.org/Bookshelves/Chemical_Engineering/Foundations_of_Chemical_and_Biological_Engineering_I_(Verret_Qiao_Barghout)/01%3A_Introduction_to_Chemical_Processes_and_Process_Diagrams) and the [ScienceDirect "Flowsheet" topic overview](https://www.sciencedirect.com/topics/chemical-engineering/flowsheet) introduce the flowsheet concept and its notation.
+Process-flowsheet background (what SFF standardizes): for readers approaching this from the AI / biology side, the [LibreTexts *Foundations of Chemical and Biological Engineering* chapter on chemical processes and process diagrams](https://eng.libretexts.org/Bookshelves/Chemical_Engineering/Foundations_of_Chemical_and_Biological_Engineering_I_(Verret_Qiao_Barghout)/01%3A_Introduction_to_Chemical_Processes_and_Process_Diagrams) and the [ScienceDirect "Flowsheet" topic overview](https://www.sciencedirect.com/topics/chemical-engineering/flowsheet) introduce the flowsheet concept and its notation.
 
-Cell-ag application context — [The Unjournal](https://www.unjournal.org/)'s cultivated-meat cost-modeling work, namely the [`unjournal/cm_pq_modeling` repository](https://github.com/unjournal/cm_pq_modeling) and its [techno-economic comparison of cultured-chicken cost models](https://unjournal.github.io/cm_pq_modeling/compare.html), is exactly the kind of bioprocess techno-economic analysis that a standardized flowsheet format like SFF is designed to make reproducible and machine-comparable.
+Cell-ag application context: [The Unjournal](https://www.unjournal.org/)'s cultivated-meat cost-modeling work, namely the [`unjournal/cm_pq_modeling` repository](https://github.com/unjournal/cm_pq_modeling) and its [techno-economic comparison of cultured-chicken cost models](https://unjournal.github.io/cm_pq_modeling/compare.html), is exactly the kind of bioprocess techno-economic analysis that a standardized flowsheet format like SFF is designed to make reproducible and machine-comparable.
 
 ## Biomedical Ontology & Identifier Infrastructure
 
-Tooling for managing biomedical identifiers, ontologies, synonyms, and cross-references — the substrate that AI agents need to reason reliably across the disconnected biomedical resources catalogued throughout CAAIL. The cluster below is the **Biopragmatics Stack**, a unified ecosystem of tools by Charles Tapley Hoyt and collaborators.
+Tooling for managing biomedical identifiers, ontologies, synonyms, and cross-references, the substrate that AI agents need to reason reliably across the disconnected biomedical resources catalogued throughout CAAIL. The cluster below is the **Biopragmatics Stack**, a unified ecosystem of tools by Charles Tapley Hoyt and collaborators.
 
 ### [Biopragmatics Stack](https://biopragmatics.github.io/)
 
@@ -663,19 +663,19 @@ Summary: An interlocking stack of MIT-licensed Python tools and registries suppo
 
 GitHub org: <https://github.com/biopragmatics>. Core components:
 
-- **[Bioregistry](https://bioregistry.io/)** — A registry of biomedical identifier registries, with prefix normalization, identifier resolution, and a REST API. The meta-resource the rest of the stack builds on.
-- **[pyobo](https://github.com/biopragmatics/pyobo)** — Python library for using ontologies, terminologies, and biomedical nomenclatures.
-- **[bioontologies](https://github.com/biopragmatics/bioontologies)** — Unified access across biomedical ontologies.
-- **[biolookup](https://github.com/biopragmatics/biolookup)** — Service for retrieving metadata and ontological information for biomedical entities.
-- **[Biolexica](https://github.com/biopragmatics/biolexica)** — Generates and applies coherent biomedical lexical indices for named-entity recognition (NER) and normalization (NEN).
-- **[Biosynonyms](https://github.com/biopragmatics/biosynonyms)** — Decentralized database of synonyms for biomedical concepts.
-- **[Biomappings](https://github.com/biopragmatics/biomappings)** — Community-curated and predicted equivalences and related mappings between named biological entities not available from primary sources.
-- **[SemRA](https://github.com/biopragmatics/semra)** — Semantic Mapping Reasoning Assembler, for assembly and reasoning over semantic mappings at scale ([Hoyt et al. 2025, *Bioinformatics*](https://doi.org/10.1093/bioinformatics/btaf542)).
-- **[bioversions](https://github.com/biopragmatics/bioversions)** — Tracks the latest version of each biomedical database — useful as a freshness check across the resources curated in [Databases.md](./Databases.md).
+- **[Bioregistry](https://bioregistry.io/)**: A registry of biomedical identifier registries, with prefix normalization, identifier resolution, and a REST API. The meta-resource the rest of the stack builds on.
+- **[pyobo](https://github.com/biopragmatics/pyobo)**: Python library for using ontologies, terminologies, and biomedical nomenclatures.
+- **[bioontologies](https://github.com/biopragmatics/bioontologies)**, Unified access across biomedical ontologies.
+- **[biolookup](https://github.com/biopragmatics/biolookup)**, Service for retrieving metadata and ontological information for biomedical entities.
+- **[Biolexica](https://github.com/biopragmatics/biolexica)**, Generates and applies coherent biomedical lexical indices for named-entity recognition (NER) and normalization (NEN).
+- **[Biosynonyms](https://github.com/biopragmatics/biosynonyms)**, Decentralized database of synonyms for biomedical concepts.
+- **[Biomappings](https://github.com/biopragmatics/biomappings)**, Community-curated and predicted equivalences and related mappings between named biological entities not available from primary sources.
+- **[SemRA](https://github.com/biopragmatics/semra)**: Semantic Mapping Reasoning Assembler, for assembly and reasoning over semantic mappings at scale ([Hoyt et al. 2025, *Bioinformatics*](https://doi.org/10.1093/bioinformatics/btaf542)).
+- **[bioversions](https://github.com/biopragmatics/bioversions)** (Tracks the latest version of each biomedical database) useful as a freshness check across the resources curated in [Databases.md](./Databases.md).
 
 ### [BridgeDb](https://github.com/bridgedb/BridgeDb)
 
-Summary: A framework plus companion mapping databases that translate identifiers across gene, protein, and metabolite databases through one unified API (a Java library, the R/Bioconductor `BridgeDbR` client, a JavaScript client, a web service, and a Cytoscape app). For cellular agriculture it resolves the identifier-scheme mismatches — Ensembl vs UniProt vs KEGG/HMDB/ChEBI — that otherwise break multi-omics integration and genome-scale metabolic-model curation for the non-model livestock and microbial-host species the field works with (van Iersel et al. 2010, *BMC Bioinformatics*). Apache-2.0.
+Summary: A framework plus companion mapping databases that translate identifiers across gene, protein, and metabolite databases through one unified API (a Java library, the R/Bioconductor `BridgeDbR` client, a JavaScript client, a web service, and a Cytoscape app). For cellular agriculture it resolves the identifier-scheme mismatches (Ensembl vs UniProt vs KEGG/HMDB/ChEBI) that otherwise break multi-omics integration and genome-scale metabolic-model curation for the non-model livestock and microbial-host species the field works with (van Iersel et al. 2010, *BMC Bioinformatics*). Apache-2.0.
 
 ## Food Safety & Allergenicity
 

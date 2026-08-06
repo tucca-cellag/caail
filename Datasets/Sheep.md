@@ -6,7 +6,7 @@ Cultivated lamb is an early-stage cell-ag target. Systems-level data for *Ovis a
 
 ### [SheepGTEx-Portal](https://sheepgtex.farmgtex.org/)
 
-Sheep sub-portal of the FarmGTEx consortium, providing multi-tissue regulatory-effects maps across sheep (*Ovis aries*) tissues — extending the FarmGTEx pattern from cattle, pig, and chicken into the small-ruminant lineage and a regulatory-genomics substrate for cultivated-lamb cell-line characterisation. Companion to [Papers.md ref #138](../Papers.md#138) (Gong et al. 2025, bioRxiv). Full entry in [Databases.md / Livestock Multi-Tissue Atlases](../Databases.md#livestock-multi-tissue-atlases--functional-genomics).
+Sheep sub-portal of the FarmGTEx consortium, providing multi-tissue regulatory-effects maps across sheep (*Ovis aries*) tissues: extending the FarmGTEx pattern from cattle, pig, and chicken into the small-ruminant lineage and a regulatory-genomics substrate for cultivated-lamb cell-line characterisation. Companion to [Papers.md ref #138](../Papers.md#138) (Gong et al. 2025, bioRxiv). Full entry in [Databases.md / Livestock Multi-Tissue Atlases](../Databases.md#livestock-multi-tissue-atlases--functional-genomics).
 
 ## Postmortem proteome & meat-quality omics
 
