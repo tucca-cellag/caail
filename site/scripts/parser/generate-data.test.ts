@@ -4,7 +4,8 @@
  * Imports the pure core export; never triggers CLI side effects (the isMain
  * guard in generate-data.ts ensures the isMain branch never runs during import).
  *
- * Uses a fresh OS temp dir — never writes to the real src/content/data/.
+ * Uses a fresh OS temp dir — never writes to the real src/content/data/, and passes a
+ * temp apiDir too so the emitted agent API doesn't land in the real site/public/.
  */
 
 import { describe, it, expect, afterAll } from 'vitest';
@@ -31,7 +32,9 @@ afterAll(() => {
 
 describe('generateData()', () => {
   // Run generateData once; subsequent assertions reuse the result.
-  const result = generateData(tmpDir);
+  // Second arg is the agent-API dir. Omitting it would default to the real
+  // site/public/api/ and rewrite it (plus setup.md) on every test run.
+  const result = generateData(tmpDir, join(tmpDir, 'api'));
 
   it('returns an object with papersRefs and counts', () => {
     expect(result).toHaveProperty('papersRefs');
