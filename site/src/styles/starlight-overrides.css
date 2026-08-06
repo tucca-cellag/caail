@@ -156,6 +156,23 @@ a.site-title {
   margin-top: 0;
 }
 
+/* The hero must sit flush against the content panel's padding, with no prose margin.
+ *
+ * SIXTH instance of the trap above, and the only one that fires at the top level of
+ * `.sl-markdown-content` rather than inside a component. The hero used to be the first
+ * child, and a first child gets no adjacent-sibling margin, so this cost nothing and no
+ * rule was needed. Mounting RevealScript and HomeRail above it changed that: their
+ * `<script>` tags and `<nav>` are zero-height and invisible, but they are still SIBLINGS,
+ * so the hero became "an element after another element" and picked up 16px.
+ *
+ * The visible symptom is nowhere near the cause. The diagonal stripe is pinned with
+ * `top: -1.5rem`, calibrated to the panel padding, so moving the hero down 16px left the
+ * band starting 16px below the header and reopened the white wedge in the top-right
+ * corner that `Hero.astro`'s own comment describes fixing. Nothing in Hero.astro changed.
+ *
+ * Adding an invisible element to the top of a page is enough to trigger this. */
+.sl-markdown-content > .hero { margin-top: 0; }
+
 /* Homepage two-column (Start here / Recently added) — collapses on narrow screens.
    margin-top carries the biggest conceptual seam on the page, where the agent story
    hands off to the browsing aids. It was .5rem (8px), the tightest gap anywhere. */

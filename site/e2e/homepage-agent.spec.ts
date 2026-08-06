@@ -172,6 +172,42 @@ test.describe('scroll reveal', () => {
   });
 });
 
+/**
+ * The diagonal stripe must reach the header with no white wedge above it.
+ *
+ * This has now regressed twice, both times from a change nowhere near Hero.astro. The
+ * stripe rises to the right and is clipped by its own wrapper, so any gap between the
+ * wrapper's top and the header's bottom shows as a white triangle in the top-right corner.
+ * The wrapper is pinned with a negative `top` calibrated to the content panel's padding,
+ * which means ANY extra space above the hero reopens it.
+ *
+ * The second regression was caused by mounting two invisible components (a script and a
+ * nav) above the hero: they added no height, but they made the hero a non-first sibling,
+ * which handed it Starlight's 16px prose margin. Nothing in the hero's own code changed.
+ *
+ * So this asserts the geometric property directly rather than any CSS value, because the
+ * value that breaks it is never in the file you would think to look at.
+ */
+test('the hero stripe meets the header with no gap', async ({ page }) => {
+  await page.goto('./');
+  await page.waitForTimeout(500);
+
+  const gap = await page.evaluate(() => {
+    const header = document.querySelector('header.header')?.getBoundingClientRect();
+    const stripe = document.querySelector('.hero-stripe')?.getBoundingClientRect();
+    if (!header || !stripe) return null;
+    return { headerBottom: +header.bottom.toFixed(1), stripeTop: +stripe.top.toFixed(1) };
+  });
+
+  expect(gap, '.hero-stripe or header.header not found — selectors have drifted').not.toBeNull();
+  // <= 0 means the stripe starts at or above the header's lower edge, so the band is
+  // already at full width by the time it becomes visible.
+  expect(
+    gap!.stripeTop - gap!.headerBottom,
+    `white wedge above the stripe: header ends at ${gap!.headerBottom}, stripe starts at ${gap!.stripeTop}`,
+  ).toBeLessThanOrEqual(0);
+});
+
 test.describe('Connect your agent', () => {
   test('the first panel is readable before any interaction', async ({ page }) => {
     await page.goto('./');
