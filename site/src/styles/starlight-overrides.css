@@ -133,9 +133,20 @@ a.site-title {
    and the inherited 16px pushed every card down inside that cell, inflating the row to
    615px for 599px of content. It presents as an unexplained void along the bottom edge
    of the card, which looks like a padding or min-height bug in the component and is
-   neither. Any single-cell grid stack added later will do the same. */
+   neither. Any single-cell grid stack added later will do the same.
+
+   `.setup .copy` is the FIFTH, and the first that no static inspection could catch,
+   because the offending element has no box until you interact with it. The copy button
+   holds two icons and swaps them by display. The second, the check mark, inherits the
+   16px — but while it is `display: none` that margin collapses to nothing, so the button
+   measures correctly, screenshots correctly, and passes every assertion. Click it and the
+   check mark gains a box, the margin applies, and the button grows exactly 16px taller,
+   shoving the command row down. Note the depth: `.setup .cmd` above already zeroes the
+   margin on `.copy` itself, but the icons are one level further in, so the container has
+   to be listed by ITS own class too. Anything that swaps children by display belongs
+   here — the bug is invisible until the swap happens. */
 .sl-markdown-content :is(
-  .setup .tabs, .setup .panels, .setup .panel, .setup .cmd, .setup .clients,
+  .setup .tabs, .setup .panels, .setup .panel, .setup .cmd, .setup .clients, .setup .copy,
   .why .split, .why .half, .why .chat, .why .turn, .why .pts li,
   .ask .pills, .ask .stack, .ask .csrc, .ask .rows li, .ask .ctrls, .ask .dots,
   .hero-router, .hero-setup, .hero .tick,

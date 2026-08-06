@@ -180,6 +180,40 @@ test.describe('Connect your agent', () => {
     await expect(first.locator('code').first()).toContainText('raw.githubusercontent.com');
   });
 
+  /**
+   * Clicking copy must not resize the button.
+   *
+   * The button holds two icons and swaps them by `display`. The check mark inherited
+   * Starlight's 16px prose-flow margin, which is inert while the icon is `display: none` —
+   * so the button measured right, screenshotted right, and passed everything, right up
+   * until a human clicked it and the box jumped 16px taller, shoving the command row down.
+   *
+   * This is why the assertion is a MEASUREMENT taken across a real click rather than a
+   * check that the class toggled: the class toggle was always correct. Only the geometry
+   * was wrong, and only after interaction.
+   */
+  test('the copy button does not change size when clicked', async ({ page, context }) => {
+    await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+    await page.goto('./');
+    const btn = page.locator('.gs .copy').first();
+    await btn.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(300);
+
+    const box = async () => {
+      const r = await btn.boundingBox();
+      const row = await page.locator('.gs .cmd').first().boundingBox();
+      return { w: Math.round(r!.width), h: Math.round(r!.height), rowH: Math.round(row!.height) };
+    };
+
+    const before = await box();
+    await btn.click();
+    await expect(btn).toHaveClass(/is-done/); // the swap really happened
+    await page.waitForTimeout(120);
+    const after = await box();
+
+    expect(after, `copy button resized on click: ${JSON.stringify(before)} -> ${JSON.stringify(after)}`).toEqual(before);
+  });
+
   test('tabs switch panels and keep exactly one in the tab order', async ({ page }) => {
     await page.goto('./');
     const tabs = page.locator('.gs [role="tab"]');
