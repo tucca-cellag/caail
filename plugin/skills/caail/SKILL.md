@@ -10,27 +10,38 @@ University Center for Cellular Agriculture.
 
 Everything is static JSON. Fetch what you need; there is nothing to install or authenticate.
 
-**Base:** `https://tucca-cellag.github.io/caail/api/`
-
 ## Start here
 
-Fetch `index.json` first. It carries the corpus date, the endpoint list, and counts labelled with the
+Fetch this first. It carries the corpus date, the endpoint list, and counts labelled with the
 population they counted.
+
+- https://tucca-cellag.github.io/caail/api/index.json
 
 ## Which endpoint answers what
 
-| Question | Endpoint |
-|---|---|
-| "What should I use for <cell-ag task>?" | `topics.json` — the inverted index maps a subject to papers, software, databases **and** datasets at once |
-| "What AI methods have been applied to <area>?" | `matrix.json` |
-| "Has anyone applied <method> to <area>?" | `matrix.json`, then read the caveat below |
-| "Find me papers on X" | `papers.json` |
-| "What software / databases exist for X?" | `catalog.json` |
-| "What data exists for <species>?" | `datasets.json` |
-| "What does CAAIL mean by <method or area>?" | `taxonomy.json` — read this before trusting or disputing a placement |
+Each URL below is complete and fetchable as written.
 
-`papers.json` entries carry DOI, code URL, data URL, topics, license and citation count, so you can
-usually answer without fetching anything else.
+| Question | Fetch |
+|---|---|
+| "What should I use for <cell-ag task>?" | https://tucca-cellag.github.io/caail/api/topics.json — the inverted index maps a subject to papers, software, databases **and** datasets at once |
+| "What AI methods have been applied to <area>?" | https://tucca-cellag.github.io/caail/api/matrix.json |
+| "Has anyone applied <method> to <area>?" | https://tucca-cellag.github.io/caail/api/matrix.json — then read the caveat below |
+| "Find me papers on X" | https://tucca-cellag.github.io/caail/api/papers.json |
+| "What software / databases exist for X?" | https://tucca-cellag.github.io/caail/api/catalog.json |
+| "What data exists for <species>?" | https://tucca-cellag.github.io/caail/api/datasets.json |
+| "What does CAAIL mean by <method or area>?" | https://tucca-cellag.github.io/caail/api/taxonomy.json — read before trusting or disputing a placement |
+
+The papers endpoint carries DOI, code URL, data URL, topics, license and citation count per entry, so
+you can usually answer without fetching anything else.
+
+## Method names are abbreviated
+
+The matrix rows use short labels: `GNN`, `CNN`, `SVM`, `GAN / VAE`, `Chemometrics`, and several
+`Foundation Models: …` variants. A question phrased in full ("graph neural networks") will not match a
+row by string equality. Read the `methods` array in the matrix endpoint, or the definitions in the
+taxonomy endpoint, and map the question onto a label before concluding anything is absent. Reporting
+"not found" because the label differs is a false negative, and it is worse than the absence problem
+below because the caveat never fires.
 
 ## The one thing to get right
 
@@ -68,6 +79,13 @@ Gaps and misclassifications are welcome: <https://github.com/tucca-cellag/caail/
 
 ## Fallback
 
-If the site is unreachable, the canonical source is the repository. Per-table NDJSON lives at
-`https://raw.githubusercontent.com/tucca-cellag/caail/main/site/db/ndjson/` and the human-readable
-Markdown is at the repo root.
+If the endpoints above are unreachable, the canonical source is the repository, and its Markdown is
+readable directly:
+
+- https://github.com/tucca-cellag/caail
+- https://raw.githubusercontent.com/tucca-cellag/caail/main/Papers.md
+- https://raw.githubusercontent.com/tucca-cellag/caail/main/Software.md
+- https://raw.githubusercontent.com/tucca-cellag/caail/main/Databases.md
+
+The Markdown route cannot enumerate empty matrix cells, so the absence caveat below applies with
+even more force: say what you could not check, rather than implying you checked it.
