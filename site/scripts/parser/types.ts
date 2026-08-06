@@ -99,6 +99,19 @@ export const ReferenceSchema = z.object({
   /** OpenAlex global cited_by_count for this DOI, folded from the citation cache; null when
    *  the DOI is absent from the cache (not yet re-fetched) or the paper has no DOI */
   citedByOpenAlex: z.number().int().nonnegative().nullable().default(null),
+  /**
+   * OpenAlex best-OA-location license string ("cc-by", "cc-by-nc-nd", …), folded from the
+   * citation cache; null when the paper is closed, when the OA location states no license
+   * (all bronze and much green), or when the DOI predates the license re-fetch. Raw here,
+   * like catalog's `license` — the coarse tier is derived by src/lib/licenses.ts so there
+   * is one definition of a tier across every content type.
+   */
+  license: z.string().nullable().default(null),
+  /**
+   * Provenance of `license`, mirroring catalog's `licenseSource`. Always 'auto' for papers
+   * today (derived from OpenAlex); 'manual' is reserved for curator overrides.
+   */
+  licenseSource: z.enum(['auto', 'manual']).nullable().default(null),
 });
 
 export const CatalogEntrySchema = z.object({

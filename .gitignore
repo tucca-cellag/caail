@@ -1,19 +1,13 @@
-# Superpowers and research working artifacts — local design specs, plans, and
-# research notes. Useful while developing a change, but not part of the
-# published CAAIL library, so they are kept out of version control.
+# Local working artifacts, not part of the published library.
 docs/superpowers/
 docs/research/
-
-# In-progress manuscript describing CAAIL (Scientific Data Data Descriptor draft
-# and its exports). Working artifact, not part of the published library, and not
-# to be committed/published prematurely.
 manuscript/
+tools/
 
-# Local Claude Code worktrees — not part of the library
+# Local Claude Code worktrees
 .claude/worktrees/
 
-# Matrix-classification-audit corpus — a build artifact regenerated from
-# Papers.md + the Zotero libraries by extract_matrix_corpus.py. Not published.
+# Build artifacts, regenerated locally by extract_matrix_corpus.py
 matrix-corpus.json
 matrix-corpus/
 AUDIT_REPORT.md
@@ -25,9 +19,8 @@ AUDIT_REPORT.md
 __pycache__/
 *.pyc
 
-# Local editor settings — per-developer VS Code workspace config
+# Local editor settings: per-developer VS Code workspace config
 .vscode/
 
-# Playwright MCP scratch output — console/page dumps from browser automation,
-# regenerated each run and not part of the library
+# Playwright MCP scratch output, regenerated each run
 .playwright-mcp/

@@ -5,6 +5,8 @@ import data from '../content/data/papers.json';
 import taxonomy from '../content/data/taxonomy.json';
 import TopicChips from './TopicChips';
 import CitationBadge from './CitationBadge';
+import LicenseBadge from './LicenseBadge';
+import { licenseTier } from '../lib/licenses';
 import { taxonomyHref as taxHref } from '../lib/axis-links';
 import type { TopicRef } from '../lib/topic-chips';
 
@@ -195,6 +197,12 @@ export default function PapersExplorer() {
         {r.codeUrl && <a class="px-bdg code" href={r.codeUrl}>⟨⟩ Code</a>}
         {r.dataUrl && <a class="px-bdg data" href={r.dataUrl}>▤ Data</a>}
         <CitationBadge doi={r.doi} citationCount={r.citedByOpenAlex} />
+        <LicenseBadge
+          license={r.license ?? null}
+          licenseSource={r.licenseSource ?? null}
+          tier={licenseTier(r.license)}
+          autoSource="OpenAlex"
+        />
       </div>
       <TopicChips topics={r.topics} />
     </div>

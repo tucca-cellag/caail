@@ -32,6 +32,21 @@ export const CitationCacheWorkSchema = z.object({
   referencedWorks: z.array(z.string()),
   /** OpenAlex global `cited_by_count` for the "cited by N" badge; null pre-refetch */
   citedByCount: z.number().int().nonnegative().nullable().default(null),
+  /**
+   * OpenAlex `open_access.is_oa` — whether the work is free to READ. Deliberately
+   * separate from `license`, because the two answer different questions: 16 bronze
+   * works in this corpus are `is_oa: true` with no license at all (free on the
+   * publisher's site under default copyright). Selecting text to index on `is_oa`
+   * rather than on license is the specific mistake this field exists to prevent.
+   */
+  isOa: z.boolean().nullable().default(null),
+  /**
+   * OpenAlex `best_oa_location.license` — the raw SPDX-ish string ("cc-by",
+   * "cc-by-nc-nd", …) or null when the location states none. Stored raw; the coarse
+   * tier is DERIVED at parse by the shared src/lib/licenses.ts classifier, exactly as
+   * catalog and dataset licenses are, so there is one definition of a tier.
+   */
+  license: z.string().nullable().default(null),
 });
 
 export const CitationCacheSchema = z.object({
@@ -74,6 +89,25 @@ export function citedByCountByDoi(cache?: CitationCache | null): Map<string, num
   if (!cache) return out;
   for (const [doi, work] of Object.entries(cache.works)) {
     if (work.citedByCount != null) out.set(doi, work.citedByCount);
+  }
+  return out;
+}
+
+/**
+ * Map bare-lowercase DOI -> the OpenAlex best-OA-location license string, for folding
+ * the license axis onto papers at parse (catalog and dataset entries carry a DB-owned
+ * license column instead; papers derive theirs, like their DOI and citation count).
+ *
+ * Works whose license is null are OMITTED, so a paper that is free to read but carries
+ * no license grant lands in the `unknown` tier rather than looking permissive. Entries
+ * predating the license re-fetch are likewise absent. With no cache the map is empty and
+ * no paper renders a license badge.
+ */
+export function licenseByDoi(cache?: CitationCache | null): Map<string, string> {
+  const out = new Map<string, string>();
+  if (!cache) return out;
+  for (const [doi, work] of Object.entries(cache.works)) {
+    if (work.license != null && work.license.trim() !== '') out.set(doi, work.license);
   }
   return out;
 }
