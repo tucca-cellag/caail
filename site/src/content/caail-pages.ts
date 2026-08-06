@@ -287,6 +287,14 @@ const PAGES: Record<string, PageMeta> = {
     description:
       'Funding organizations and funding opportunities for cellular-agriculture research — the organizations that fund the field and the grant programs and research-portfolio mechanisms to follow.',
   },
+  community: {
+    title: 'Community',
+    sidebarLabel: 'Community',
+    group: 'top',
+    order: 7,
+    description:
+      'The CAAIL community — the Slack workspace, the GitHub issue and pull-request workflow, and the Zotero group library: where to ask questions, where to propose additions, and the norms that apply across all of them.',
+  },
 };
 
 // ---------------------------------------------------------------------------

@@ -1,0 +1,118 @@
+---
+/**
+ * CommunityBand — a slim homepage strip inviting readers into the CAAIL
+ * community, sibling to CiteBand and sharing its shape (icon + heading + one
+ * line on the left, action on the right).
+ *
+ * Two actions, deliberately: the pill joins Slack in one click, and the text
+ * link beside it goes to /community/ for readers who want the channel map and
+ * the norms first. The invite URL is imported from src/lib/community.ts rather
+ * than written out here, so the raw link still lives in exactly two places
+ * (that module and canonical Community.md), as community.test.ts enforces.
+ *
+ * The Slack mark is Phosphor's, inlined at build by astro-icon, so the
+ * Lighthouse-gated landing page takes no off-domain image request (the same
+ * constraint that keeps the Zenodo badge off CiteBand).
+ *
+ * <h2> is deliberate: Hero supplies the page <h1> and every other homepage
+ * section is an <h2>, so an <h3> here would be a heading-order violation on the
+ * one page carrying a blocking Accessibility >= 0.90 gate.
+ */
+import { Icon } from 'astro-icon/components';
+import { COMMUNITY_PATH, SLACK_INVITE_URL } from '../lib/community';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<aside class="caail-communityband" aria-label="Join the CAAIL community">
+  <div class="lead">
+    <Icon name="ph:slack-logo-fill" aria-hidden="true" />
+    <div>
+      <h2 class="caail-display">The CAAIL community</h2>
+      <p>A Slack workspace for researchers working across cellular agriculture and AI: questions, work in progress, and proposed additions to the library.</p>
+    </div>
+  </div>
+  <div class="actions">
+    <a class="secondary" href={`${base}${COMMUNITY_PATH}`}>Where to go for what</a>
+    <a class="cta" href={SLACK_INVITE_URL} target="_blank" rel="noopener noreferrer">Join the Slack →</a>
+  </div>
+</aside>
+
+<style>
+  .caail-communityband {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin: 1.5rem 0;
+    padding: 1rem 1.15rem;
+    border: 1px solid var(--caail-border);
+    border-radius: 10px;
+    background: var(--caail-surface);
+  }
+  .lead {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+  }
+  .lead [data-icon] {
+    width: 1.7rem;
+    height: 1.7rem;
+    color: var(--caail-primary);
+    flex: none;
+  }
+  .lead h2 {
+    font-size: 1rem;
+    color: var(--caail-primary);
+    margin: 0;
+  }
+  .lead p {
+    font-size: 0.78rem;
+    color: var(--caail-muted);
+    margin: 0.1rem 0 0;
+    max-width: 62ch;
+  }
+  .actions {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    flex-wrap: wrap;
+  }
+  /* Secondary route to the community page, for readers who want the channel
+   * map and the norms before committing to a signup. Matches CiteBand's .cta
+   * text-link treatment; the pill beside it is the primary action. */
+  .secondary {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--caail-link);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .secondary:hover {
+    text-decoration: underline;
+  }
+  /* Solid pill. The label is `var(--caail-bg)`, NOT `#fff`: --caail-primary is
+   * dark navy in light mode but a LIGHT blue in dark mode, where white-on-primary
+   * falls to roughly 2:1. Axe and Lighthouse both run light-mode only, so that
+   * failure would ship unseen. CiteBand's .doi__tag uses the same var. */
+  .cta {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--caail-bg);
+    background: var(--caail-primary);
+    border: 1px solid transparent;
+    border-radius: 999px;
+    padding: 0.45rem 0.95rem;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background 0.15s;
+  }
+  .cta:hover {
+    background: var(--caail-primary-hover);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .cta { transition: none; }
+  }
+</style>

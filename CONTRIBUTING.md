@@ -211,3 +211,5 @@ This repository is licensed under the [MIT License](./LICENSE). By submitting a 
 ## Questions
 
 If you're not sure whether a resource fits, how to categorize it, or how to format an entry, open an issue using one of the templates above and a maintainer will help. We'd rather guide you than have you not contribute.
+
+Suggestions are also accepted in Slack, without opening an issue. Resource suggestions go in `#feature-requests` and questions in the relevant question channel; a maintainer will move an item to GitHub once it is ready to become a change. [Community.md](./Community.md) lists the channels and the join link. Slack, the issue tracker, and code review are all governed by our [Code of Conduct](./CODE_OF_CONDUCT.md).

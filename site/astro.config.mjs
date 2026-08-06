@@ -148,6 +148,13 @@ export default defineConfig({
       ],
       social: [
         { icon: 'github', label: 'GitHub', href: 'https://github.com/tucca-cellag/caail' },
+        // Points at the community page, not the Slack invite itself. Starlight
+        // renders social links with a hardcoded `rel="me"` (an identity claim,
+        // which a signup endpoint isn't), and the page carries the norms and
+        // the code of conduct that a bare join link would skip past. Starlight
+        // does NOT base-prefix social hrefs — it emits `href` verbatim — so the
+        // `${BASE}` here is required, not redundant.
+        { icon: 'slack', label: 'Community on Slack', href: `${BASE}/community/` },
       ],
       sidebar: [
         { label: 'Home', link: '/' },
@@ -175,6 +182,7 @@ export default defineConfig({
         { label: 'Funding & Grants', link: '/funding/' },
         { label: 'By the Numbers', link: '/by-the-numbers/' },
         { label: 'Contributing', link: '/contributing/' },
+        { label: 'Community', link: '/community/' },
         { label: 'How to Cite', link: '/cite/' },
         { label: 'About', link: '/about/' },
       ],

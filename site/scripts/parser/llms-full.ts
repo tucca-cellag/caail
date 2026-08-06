@@ -45,6 +45,7 @@ export function llmsFullSources(repoRoot: string = REPO_ROOT): string[] {
     'AwesomeLists.md',
     'Talks.md',
     'CONTRIBUTING.md',
+    'Community.md',
   ];
 }
 

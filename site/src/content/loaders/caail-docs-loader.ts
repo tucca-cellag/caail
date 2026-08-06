@@ -80,6 +80,7 @@ const CANONICAL_SOURCES = {
     'AIAgentsFoundationModels.md',
     'ReferenceWorks.md',
     'Funding.md',
+    'Community.md',
   ],
 } as const;
 
