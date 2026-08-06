@@ -10,6 +10,9 @@ describe('CAAIL_PAGES', () => {
     expect(CAAIL_PAGES.idForSourcePath('ResearchAreas/Bioprocess')).toBe('research-areas/bioprocess');
     expect(CAAIL_PAGES.idForSourcePath('Datasets/Cow')).toBe('datasets/cow');
     expect(CAAIL_PAGES.idForSourcePath('CONTRIBUTING')).toBe('contributing');
+    // Single-word top-level file: falls through to plain lowercasing, no
+    // hyphenation special case needed (unlike OtherResources / ReferenceWorks).
+    expect(CAAIL_PAGES.idForSourcePath('Community.md')).toBe('community');
     // multi-word top-level file gets an explicit hyphenated id (not "otherresources")
     expect(CAAIL_PAGES.idForSourcePath('OtherResources')).toBe('other-resources');
     expect(CAAIL_PAGES.idForSourcePath('OtherResources.md')).toBe('other-resources');
@@ -28,10 +31,11 @@ describe('CAAIL_PAGES', () => {
     expect(CAAIL_PAGES.byId('ai-agents-foundation-models')).toMatchObject({ group: 'top', title: 'AI Agents & Foundation Models' });
     expect(CAAIL_PAGES.byId('reference-works')).toMatchObject({ group: 'top', title: 'Reference Works' });
     expect(CAAIL_PAGES.byId('funding')).toMatchObject({ group: 'top', title: 'Funding & Grants' });
+    expect(CAAIL_PAGES.byId('community')).toMatchObject({ group: 'top', title: 'Community' });
   });
   it('all() returns {id,...meta} objects', () => {
     const all = CAAIL_PAGES.all();
-    expect(all.length).toBe(32);
+    expect(all.length).toBe(33);
     const cow = all.find((p) => p.id === 'datasets/cow');
     expect(cow).toMatchObject({ id: 'datasets/cow', group: 'datasets' });
     expect(typeof cow?.sidebarLabel).toBe('string');

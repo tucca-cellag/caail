@@ -1,6 +1,6 @@
 # CAAIL: Cellular Agriculture AI Library
 
-[![Website](https://img.shields.io/badge/Website-tucca--cellag.github.io%2Fcaail-002E6D?logo=github&logoColor=white)](https://tucca-cellag.github.io/caail/) [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20295590.svg)](https://doi.org/10.5281/zenodo.20295590) [![Zotero group library](https://img.shields.io/badge/Zotero-caail_group_library-CC2936?logo=zotero&logoColor=white)](https://www.zotero.org/groups/6549203/caail/library)
+[![Website](https://img.shields.io/badge/Website-tucca--cellag.github.io%2Fcaail-002E6D?logo=github&logoColor=white)](https://tucca-cellag.github.io/caail/) [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20295590.svg)](https://doi.org/10.5281/zenodo.20295590) [![Zotero group library](https://img.shields.io/badge/Zotero-caail_group_library-CC2936?logo=zotero&logoColor=white)](https://www.zotero.org/groups/6549203/caail/library) [![Slack](https://img.shields.io/badge/Slack-join_the_community-4A154B?logo=slack&logoColor=white)](./Community.md)
 
 🌐 **Explore the library on the web: [tucca-cellag.github.io/caail](https://tucca-cellag.github.io/caail/)** — an interactive, searchable layer over the Markdown in this repository (papers explorer, citation network, datasets by species, and more).
 
@@ -28,6 +28,9 @@ CAAIL has a companion [Zotero group library](https://www.zotero.org/groups/65492
 
 # Contributing
 Suggestions of papers, software, datasets, and other resources are welcome. See [CONTRIBUTING.md](./CONTRIBUTING.md) for how to propose additions via pull request or GitHub issue.
+
+# Community
+CAAIL has a public Slack workspace for questions, work in progress, and discussion that does not fit an issue. Resource suggestions are accepted there as well, without opening an issue or holding a GitHub account. [Community.md](./Community.md) lists the channels, the join link, and the community norms. The Slack workspace and the issue tracker are both governed by our [Code of Conduct](./CODE_OF_CONDUCT.md).
 
 # Citing CAAIL
 If you reference CAAIL or build on its curated content, please cite this repository. GitHub renders a "Cite this repository" button in the sidebar from the [`CITATION.cff`](./CITATION.cff) at the repo root.
