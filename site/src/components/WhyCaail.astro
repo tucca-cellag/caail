@@ -2,122 +2,115 @@
 /**
  * WhyCaail — the before/after band.
  *
- * Anchored on one real question against one real cell rather than on adjectives.
- * Every number here is read from the generated API at build time, so the section
- * cannot drift from the corpus it describes: if the GNN × Scaffolding cell ever
- * gains a paper, the build fails rather than the homepage quietly lying.
+ * Anchored on one real question against one real cell rather than on adjectives. The
+ * numbers are read from the generated API at build time, and the build fails if
+ * GNN × Scaffolding ever stops being empty, because a worked example about an empty
+ * cell must not outlive that cell being filled.
  *
- * The claim is deliberately the weaker, true one. CAAIL cannot show that nobody
- * has done a piece of work; it can show that a dated, curated corpus with stated
- * inclusion criteria contains none, which is a different and defensible thing.
+ * The claim is deliberately the weaker, true one: not that nobody has done the work,
+ * but that a dated corpus with stated inclusion criteria contains none of it.
+ *
+ * Two columns is the one place on this page where boxes are the right shape — the
+ * section IS a comparison, and the border is what carries the contrast.
  */
 import { Icon } from 'astro-icon/components';
 import matrix from '../../public/api/matrix.json';
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
-// The worked example. Assert rather than assume: a homepage that describes an
-// empty cell must not survive that cell being filled.
 const METHOD = 'GNN';
 const AREA = 'scaffolding';
 const cell = matrix.cells.find((c) => c.method === METHOD && c.area === AREA);
 if (!cell) throw new Error(`WhyCaail: ${METHOD} × ${AREA} is not in matrix.json`);
 if (!cell.emptyInCorpus) {
   throw new Error(
-    `WhyCaail: ${METHOD} × ${AREA} now has ${cell.refIds.length} paper(s). The worked ` +
-      `example on the homepage claims it is empty — pick another empty cell or rewrite it.`,
+    `WhyCaail: ${METHOD} × ${AREA} now has ${cell.refIds.length} paper(s). The worked example ` +
+      `on the homepage claims it is empty — pick another empty cell or rewrite it.`,
   );
 }
 
-const without = [
-  ['Plausible papers that do not exist', 'Titles and DOIs that look right and resolve to nothing.'],
-  ['No way to tell absence from ignorance', '"I could not find any" and "there are none" read identically.'],
-  ['Reference numbers drift', 'Citations reconstructed from memory rather than looked up.'],
-];
-const with_ = [
-  ['Frozen reference ids and DOIs', 'Every citation resolves, because it is returned rather than recalled.'],
-  ['Absence is a stated result', `All ${matrix.totalCells} method × area cells are enumerated, ${matrix.emptyCells} of them empty.`],
-  ['The caveat travels with the answer', 'Each empty cell carries the limit of what it proves.'],
-];
+const Q = 'Has anyone applied graph neural networks to scaffolding in cultivated meat?';
 ---
 
 <section class="why">
-  <p class="eyebrow">Why CAAIL</p>
   <h2 class="caail-display">Asking a model, and asking the map</h2>
   <p class="lede">
     The same question, put to a general model and to a curated corpus of
     {matrix.methods.length} AI methods across {matrix.areas.length} research areas.
   </p>
 
+  <p class="q">{Q}</p>
+
   <div class="cols">
-    <div class="col col--without">
-      <p class="hdr"><Icon name="ph:x-circle-duotone" /> Without CAAIL</p>
-      <p class="q">"Has anyone applied graph neural networks to scaffolding in cultivated meat?"</p>
-      <p class="a a--bad">
-        Graph neural networks have been used for scaffold architecture optimisation…
-        <span class="flag">[papers that may not exist]</span>
+    <div class="col">
+      <p class="hdr"><Icon name="ph:x-circle-duotone" /> A model on its own</p>
+      <p class="a a--bad">Graph neural networks have been used for scaffold architecture optimisation…</p>
+      <p class="verdict">
+        Plausible papers that may not exist, and no way to tell
+        <strong>"I found none"</strong> from <strong>"there are none"</strong>.
       </p>
-      <ul>
-        {without.map(([t, d]) => (
-          <li><strong>{t}</strong><span>{d}</span></li>
-        ))}
-      </ul>
     </div>
 
     <div class="col col--with">
-      <p class="hdr"><Icon name="ph:check-circle-duotone" /> With CAAIL</p>
-      <p class="q">"Has anyone applied graph neural networks to scaffolding in cultivated meat?"</p>
-      <p class="tool">matrix.json → {METHOD} × Scaffolding</p>
-      <p class="a">
-        No indexed paper occupies this cell as of {matrix.corpusDate}.
-        <span class="ok">[a gap in this corpus, not established absence]</span>
+      <p class="hdr"><Icon name="ph:check-circle-duotone" /> The same question, with CAAIL</p>
+      <p class="a">No indexed paper occupies this cell as of {matrix.corpusDate}.</p>
+      <p class="verdict">
+        All {matrix.totalCells} method × area cells are enumerated, {matrix.emptyCells} of them empty,
+        and each empty one carries <strong>the limit of what it proves</strong>.
       </p>
-      <ul>
-        {with_.map(([t, d]) => (
-          <li><strong>{t}</strong><span>{d}</span></li>
-        ))}
-      </ul>
     </div>
   </div>
 
   <p class="foot">
-    CAAIL indexes a curated subset, not a census, and has not measured its own recall.
-    That limit ships with every empty result rather than being left to the reader.
+    CAAIL indexes a curated subset, not a census, and has not measured its own recall. That
+    limit ships with every empty result rather than being left to the reader.
     <a href={`${base}/papers/explorer/`}>Browse the matrix →</a>
   </p>
 </section>
 
 <style>
-  .why { margin: 2.6rem 0 0; }
-  .eyebrow { font-size: .7rem; letter-spacing: .09em; text-transform: uppercase; color: var(--caail-muted); margin: 0 0 .3rem; }
-  .why h2 { font-size: 1.5rem; margin: 0 0 .35rem; }
-  .lede { font-size: .87rem; color: var(--caail-muted); margin: 0 0 1.2rem; max-width: 46rem; }
+  .why { margin: 2.4rem 0 0; }
+  .why h2 { font-size: 1.15rem; color: var(--caail-primary); margin: 0 0 .2rem; }
+  .lede { font-size: .84rem; color: var(--caail-muted); margin: 0 0 .9rem; max-width: 60ch; text-wrap: pretty; }
 
-  .cols { display: grid; gap: 1rem; grid-template-columns: 1fr; }
-  @media (min-width: 52rem) { .cols { grid-template-columns: 1fr 1fr; } }
+  /* Ask once, above both columns, instead of repeating the question in each. */
+  .q { font-size: .92rem; font-weight: 600; color: var(--caail-ink); margin: 0 0 .7rem; line-height: 1.45; text-wrap: balance; max-width: 54ch; }
+  .q::before { content: '“'; }
+  .q::after { content: '”'; }
 
-  .col { border: 1px solid var(--caail-border); border-radius: 10px; padding: 1rem 1.05rem; }
-  .col--with { background: color-mix(in oklab, var(--caail-link) 4%, transparent); }
+  .cols { display: grid; gap: .8rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr)); }
+  .col { border: 1px solid var(--caail-border); border-radius: 10px; padding: .85rem .95rem; }
+  .col--with { background: color-mix(in oklab, var(--caail-link) 4%, transparent); border-color: color-mix(in oklab, var(--caail-link) 26%, var(--caail-border)); }
 
-  .hdr { display: flex; align-items: center; gap: .4rem; font-size: .72rem; letter-spacing: .07em; text-transform: uppercase; color: var(--caail-muted); margin: 0 0 .7rem; }
-  .hdr [data-icon] { width: 1.05rem; height: 1.05rem; }
+  .hdr { display: flex; align-items: center; gap: .4rem; font-size: .78rem; font-weight: 600; color: var(--caail-muted); margin: 0 0 .5rem; }
+  .hdr [data-icon] { width: 1.05rem; height: 1.05rem; flex: none; }
   .col--with .hdr { color: var(--caail-link); }
 
-  .q { font-size: .84rem; font-weight: 600; color: var(--caail-ink); margin: 0 0 .5rem; line-height: 1.45; }
-  .tool { font-family: var(--caail-font-mono, ui-monospace, monospace); font-size: .74rem; color: var(--caail-link); margin: 0 0 .4rem; }
-  .a { font-size: .8rem; color: var(--caail-ink); margin: 0 0 .85rem; line-height: 1.5; }
+  .a { font-size: .82rem; color: var(--caail-ink); margin: 0 0 .5rem; line-height: 1.5; }
   .a--bad { color: var(--caail-muted); font-style: italic; }
-  /* Emphasis by weight rather than hue: the research-area vermillion managed only
-     3.86:1 on white at this size, and colour alone should not be the thing carrying
-     "this answer is unreliable" in the first place. The bracketed words do that. */
-  .flag { color: var(--caail-ink); font-style: normal; font-weight: 600; }
-  .ok { color: var(--caail-link); font-weight: 600; }
 
-  .col ul { list-style: none; padding: 0; margin: 0; display: grid; gap: .5rem; }
-  .col li { display: grid; gap: .1rem; }
-  .col li strong { font-size: .79rem; color: var(--caail-ink); font-weight: 600; }
-  .col li span { font-size: .75rem; color: var(--caail-muted); line-height: 1.45; }
+  .verdict { font-size: .77rem; color: var(--caail-muted); margin: 0; line-height: 1.5; }
+  /* Emphasis by weight, not hue: the area vermillion managed only 3.86:1 on white at this
+     size, and colour alone should not be what carries "this answer is unreliable". */
+  .verdict strong { color: var(--caail-ink); font-weight: 600; }
 
-  .foot { font-size: .78rem; color: var(--caail-muted); margin: 1rem 0 0; max-width: 48rem; line-height: 1.55; }
+  .foot { font-size: .78rem; color: var(--caail-muted); margin: .9rem 0 0; max-width: 72ch; line-height: 1.55; text-wrap: pretty; }
   .foot a { white-space: nowrap; }
+
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .col {
+        animation: col-rise linear both;
+        animation-timeline: view();
+        animation-range: entry 12% cover 28%;
+      }
+      .col--with { animation-range: entry 18% cover 34%; }
+      /* Transform only: see AskExamples. Fading from opacity 0 under fill-mode both
+         leaves the column blank anywhere the view() timeline never advances. */
+      @keyframes col-rise {
+        from { transform: translateY(12px); }
+        to   { transform: none; }
+      }
+    }
+  }
 </style>
