@@ -16,10 +16,14 @@ import AxeBuilder from '@axe-core/playwright';
 /**
  * Effective opacity of every `.sr` element, after transitions have had time to settle.
  *
- * The reveal is transform-only by design (see reveal.css: a fade made axe report
- * `color-contrast` 1.23:1 on unrevealed text and put the Lighthouse deploy gate at
- * risk). So these still assert on OPACITY — because opacity is what must never drop,
- * and a future change that reintroduces a fade is exactly what this should catch.
+ * The reveal fades as well as lifts, so opacity legitimately reaches 0 mid-flight. What
+ * these assert is the property that must hold once things SETTLE: an element that is on
+ * screen, or that the reveal system was never armed for, is never left transparent.
+ *
+ * That is the bug worth guarding. A fade is only safe while every escape route restores
+ * opacity — the no-JS path, `prefers-reduced-motion`, print, and the load-time pass for
+ * content already in the first viewport. Break any one of them and content ships blank
+ * with a flawless DOM, which is precisely how this shipped the first time.
  *
  * VISIBLE_ENOUGH is loose on purpose: the failure being guarded is an element stuck at
  * 0, and a tight threshold would test the sampling clock rather than the property.
@@ -57,6 +61,62 @@ test.describe('scroll reveal', () => {
 
     const stranded = (await revealOpacities(page)).filter((i) => i.opacity < VISIBLE_ENOUGH);
     expect(stranded, `sections never revealed: ${JSON.stringify(stranded)}`).toEqual([]);
+  });
+
+  /**
+   * Nothing visible on the landing screen may be transparent, without scrolling.
+   *
+   * The trigger line sits at 75% of the viewport, so an element in the bottom quarter of
+   * the first screen is on screen but has not met the observer's condition. While the
+   * reveal only lifted, that was invisible as a defect. Now that it fades, it would be a
+   * blank strip on the page everybody sees first, so RevealScript reveals whatever is
+   * already on screen at load. This is the test for that guarantee.
+   */
+  test('nothing already on screen at load is left transparent', async ({ page }) => {
+    await page.goto('./');
+    await page.waitForTimeout(1400); // no scrolling at all — that is the point
+
+    const onScreenHidden = await page.locator('.sr').evaluateAll((els) =>
+      els
+        .map((e) => ({
+          cls: e.className,
+          opacity: parseFloat(getComputedStyle(e).opacity),
+          top: Math.round(e.getBoundingClientRect().top),
+        }))
+        .filter((i) => i.top < window.innerHeight && i.opacity < 0.5),
+    );
+    expect(
+      onScreenHidden,
+      `visible on the landing screen but transparent: ${JSON.stringify(onScreenHidden)}`,
+    ).toEqual([]);
+  });
+
+  /**
+   * An accessibility preference must never cost someone the content.
+   *
+   * reveal.css resets BOTH transform and opacity under reduced motion. Resetting only the
+   * transform — the shape the rule had while the reveal was transform-only — would now
+   * leave every unrevealed element at opacity 0 for exactly the users least able to
+   * tolerate it.
+   */
+  test('reduced motion leaves all content fully visible without scrolling', async ({ page }) => {
+    // `page.emulateMedia`, NOT `test.use({ reducedMotion })`. The fixture form silently
+    // did not apply here — `matchMedia('(prefers-reduced-motion: reduce)')` still reported
+    // false inside the test — so the assertion ran against a normal-motion page and failed
+    // for a reason that had nothing to do with the CSS it was written to guard. A media
+    // emulation that quietly does not emulate is worse than no test, because it fails
+    // loudly in the wrong place and invites "fixing" working code.
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.goto('./');
+    await page.waitForTimeout(900);
+
+    expect(
+      await page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches),
+      'reduced-motion emulation is not in effect, so this test proves nothing',
+    ).toBe(true);
+
+    const hidden = (await revealOpacities(page)).filter((i) => i.opacity < VISIBLE_ENOUGH);
+    expect(hidden, `reduced motion hid content: ${JSON.stringify(hidden)}`).toEqual([]);
   });
 
   /**

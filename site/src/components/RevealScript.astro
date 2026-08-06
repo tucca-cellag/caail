@@ -14,12 +14,17 @@
  * Setting the class first and feature-detecting afterwards would leave a browser
  * without the observer stuck on a permanently offset page.
  *
- * There is no eager-reveal window and no no-scroll timeout any more. Both existed to
- * stop captures rendering blank, and both became unnecessary — and actively harmful —
- * once the reveal went transform-only: an unrevealed element is now fully visible and
- * merely 20px low, so nothing needs rescuing, while the timeout was silently revealing
- * the whole page for anyone who paused on the hero for 2.5s before scrolling, which is
- * most readers. They then scrolled through a page where nothing animated.
+ * There is a load-time reveal for what is already on screen, but still no no-scroll
+ * timeout. The distinction matters and the two are not variations of one idea.
+ *
+ * The timeout revealed the WHOLE page after a fixed delay, so anyone who paused on the
+ * hero for 2.5s before scrolling — most readers — then scrolled through a page where
+ * nothing animated. It is not coming back.
+ *
+ * The load-time pass only touches elements already within the first viewport, and it is
+ * required rather than optional: the reveal fades as well as lifts, and the trigger line
+ * sits at 75% of the viewport, so without it the bottom quarter of the landing view would
+ * render blank until the reader scrolled.
  *
  * The second is an ordinary bundled module that does the observing. If it never runs,
  * `sr-ready` is set but nothing is hidden yet either, because CSS only hides elements
@@ -63,12 +68,39 @@
       // intersecting region, so the only transition that exists is below → intersecting.
       // An element can be scrolled past arbitrarily fast and still lands inside it.
       //
-      // The -12% bottom is unchanged and still does the real work: fire just before the
-      // top edge clears the viewport bottom, so the lift finishes about when the reader's
-      // eye arrives rather than starting there.
-      { rootMargin: '1000000px 0px -12% 0px', threshold: 0 },
+      // The bottom margin decides WHERE on screen the reveal plays, which turned out to
+      // matter as much as whether it fires at all. At -12% the trigger line sat at 88% of
+      // viewport height: measured over a full scroll, 25 of 27 reveals began in the bottom
+      // 20% of the screen and were finished before the reader's eye reached them. The
+      // animation was running correctly and being seen by nobody.
+      //
+      // -25% moves the line to 75%, so the fade and lift play in the lower-middle of the
+      // screen, in front of the reader rather than off the bottom edge.
+      { rootMargin: '1000000px 0px -25% 0px', threshold: 0 },
     );
     for (const t of targets) io.observe(t);
+
+    // Anything already ON SCREEN at load is revealed immediately, without waiting for a
+    // scroll. This is mandatory now that the reveal fades rather than only lifting.
+    //
+    // The trigger line sits at 75% of the viewport, so an element occupying the bottom
+    // quarter of the first screen is visible to the reader but has NOT met the observer's
+    // condition. While the reveal was transform-only that was harmless — the element was
+    // merely 34px low. With opacity in play it would render the bottom quarter of the
+    // landing view blank until the reader happened to scroll, which is a worse bug than
+    // the one this whole system exists to animate away.
+    //
+    // Deliberately `rect.top < innerHeight` rather than the trigger line: the guarantee
+    // worth having is the strong one, that nothing on screen at load is ever invisible.
+    // Elements above the line would be revealed by the observer's initial callback in the
+    // same tick anyway, so this only ever acts earlier, never differently.
+    const vh = window.innerHeight;
+    for (const t of targets) {
+      if (t.getBoundingClientRect().top < vh) {
+        t.classList.add('in');
+        io.unobserve(t);
+      }
+    }
 
     // Print is the one case worth forcing: a print job never scrolls, and a 20px offset
     // repeated down a page reads as sloppy typesetting rather than as motion.
