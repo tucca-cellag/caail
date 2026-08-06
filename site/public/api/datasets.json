@@ -1,0 +1,1980 @@
+{
+  "entries": [
+    {
+      "id": "ds:algpred-2-0-allergen-dataset",
+      "name": "AlgPred 2.0 allergen dataset",
+      "url": "https://webs.iiitd.edu.in/raghava/algpred2/",
+      "page": "FoodSafety",
+      "section": "Allergen sequence & epitope datasets",
+      "kind": "other",
+      "anchor": "ds-algpred-20-allergen-dataset",
+      "topics": [
+        {
+          "slug": "allergenicity",
+          "label": "Allergenicity",
+          "theme": "food-safety"
+        }
+      ],
+      "license": null,
+      "licenseSource": null,
+      "tier": "unknown",
+      "doi": "10.1093/bib/bbaa294",
+      "doiSource": "manual",
+      "citationCount": 366,
+      "citationSources": 1,
+      "citationDois": [
+        "10.1093/bib/bbaa294"
+      ]
+    },
+    {
+      "id": "ds:chickengtex-portal",
+      "name": "ChickenGTEx-Portal",
+      "url": "https://chicken.farmgtex.org/",
+      "page": "Chicken",
+      "section": "Featured atlases",
+      "kind": "atlas",
+      "anchor": "ds-chickengtex-portal",
+      "topics": [
+        {
+          "slug": "ai-methods-tooling",
+          "label": "AI Methods & Tooling",
+          "theme": "ai-methods-tooling"
+        },
+        {
+          "slug": "cell-line-engineering",
+          "label": "Cell-line engineering",
+          "theme": "cell-lines-engineering"
+        },
+        {
+          "slug": "cell-lines-engineering",
+          "label": "Cell Lines & Engineering",
+          "theme": "cell-lines-engineering"
+        },
+        {
+          "slug": "single-cell-atlases",
+          "label": "Single-cell atlases",
+          "theme": "cell-lines-engineering"
+        }
+      ],
+      "license": null,
+      "licenseSource": null,
+      "tier": "unknown",
+      "doi": "10.1038/s41588-025-02155-9",
+      "doiSource": "manual",
+      "citationCount": 65,
+      "citationSources": 1,
+      "citationDois": [
+        "10.1038/s41588-025-02155-9"
+      ]
+    },
+    {
+      "id": "ds:sinke-et-al-2023-cultivated-meat-ex-ante-lci",
+      "name": "Sinke et al. 2023 cultivated-meat ex-ante LCI",
+      "url": "https://doi.org/10.1007/s11367-022-02128-8",
+      "page": "Sustainability",
+      "section": "Cultivated-meat life-cycle inventories",
+      "kind": "other",
+      "anchor": "ds-sinke-et-al-2023-cultivated-meat-ex-ante-lci",
+      "topics": [
+        {
+          "slug": "techno-economic-lca",
+          "label": "Techno-Economic & LCA",
+          "theme": "bioprocess-scale-up"
+        }
+      ],
+      "license": null,
+      "licenseSource": null,
+      "tier": "unknown",
+      "doi": "10.1007/s11367-022-02128-8",
+      "doiSource": "manual",
+      "citationCount": 233,
+      "citationSources": 1,
+      "citationDois": [
+        "10.1007/s11367-022-02128-8"
+      ]
+    },
+    {
+      "id": "ds:gene-switch",
+      "name": "GENE-SWitCH",
+      "url": "https://www.gene-switch.eu/",
+      "page": "Chicken",
+      "section": "Featured atlases",
+      "kind": "atlas",
+      "anchor": "ds-gene-switch",
+      "topics": [
+        {
+          "slug": "ai-methods-tooling",
+          "label": "AI Methods & Tooling",
+          "theme": "ai-methods-tooling"
+        },
+        {
+          "slug": "cell-lines-engineering",
+          "label": "Cell Lines & Engineering",
+          "theme": "cell-lines-engineering"
+        },
+        {
+          "slug": "single-cell-atlases",
+          "label": "Single-cell atlases",
+          "theme": "cell-lines-engineering"
+        }
+      ],
+      "license": null,
+      "licenseSource": null,
+      "tier": "unknown",
+      "doi": null,
+      "doiSource": null,
+      "citationCount": null,
+      "citationSources": 0,
+      "citationDois": []
+    },
+    {
+      "id": "ds:risner-et-al-cradle-to-gate-cultivated-meat-lca",
+      "name": "Risner et al. cradle-to-gate cultivated-meat LCA",
+      "url": "https://doi.org/10.1021/acsfoodscitech.4c00281",
+      "page": "Sustainability",
+      "section": "Cultivated-meat life-cycle inventories",
+      "kind": "other",
+      "anchor": "ds-risner-et-al-cradle-to-gate-cultivated-meat-lca",
+      "topics": [
+        {
+          "slug": "techno-economic-lca",
+          "label": "Techno-Economic & LCA",
+          "theme": "bioprocess-scale-up"
+        }
+      ],
+      "license": null,
+      "licenseSource": null,
+      "tier": "unknown",
+      "doi": "10.1021/acsfoodscitech.4c00281",
+      "doiSource": "manual",
+      "citationCount": 44,
+      "citationSources": 1,
+      "citationDois": [
+        "10.1021/acsfoodscitech.4c00281"
+      ]
+    },
+    {
+      "id": "ds:ies1300-gallus-gallus-chicken",
+      "name": "iES1300 — *Gallus gallus* (chicken)",
+      "url": null,
+      "page": "Chicken",
+      "section": "Genome-scale metabolic models",
+      "kind": "gem",
+      "anchor": "ds-ies1300-gallus-gallus-chicken",
+      "topics": [
+        {
+          "slug": "bioprocess-scale-up",
+          "label": "Bioprocess & Scale-Up",
+          "theme": "bioprocess-scale-up"
+        },
+        {
+          "slug": "bioreactor-scale-up",
+          "label": "Bioreactor & scale-up",
+          "theme": "bioprocess-scale-up"
+        },
+        {
+          "slug": "cell-line-engineering",
+          "label": "Cell-line engineering",
+          "theme": "cell-lines-engineering"
+        },
+        {
+          "slug": "cell-lines-engineering",
+          "label": "Cell Lines & Engineering",
+          "theme": "cell-lines-engineering"
+        },
+        {
+          "slug": "media-growth-factors",
+          "label": "Media & Growth Factors",
+          "theme": "media-growth-factors"
+        },
+        {
+          "slug": "metabolic-modeling",
+          "label": "Metabolic modeling",
+          "theme": "metabolism-modeling"
+        },
+        {
+          "slug": "metabolism-modeling",
+          "label": "Metabolism & Modeling",
+          "theme": "metabolism-modeling"
+        }
+      ],
+      "license": null,
+      "licenseSource": null,
+      "tier": "unknown",
+      "doi": "10.1371/journal.pone.0254270",
+      "doiSource": "manual",
+      "citationCount": 7,
+      "citationSources": 1,
+      "citationDois": [
+        "10.1371/journal.pone.0254270"
+      ]
+    },
+    {
+      "id": "ds:cattlegtex",
+      "name": "CattleGTEx",
+      "url": "https://ngdc.cncb.ac.cn/cattleca/home",
+      "page": "Cow",
+      "section": "Featured atlases",
+      "kind": "atlas",
+      "anchor": "ds-cattlegtex",
+      "topics": [
+        {
+          "slug": "ai-methods-tooling",
+          "label": "AI Methods & Tooling",
+          "theme": "ai-methods-tooling"
+        },
+        {
+          "slug": "cell-line-engineering",
+          "label": "Cell-line engineering",
+          "theme": "cell-lines-engineering"
+        },
+        {
+          "slug": "cell-lines-engineering",
+          "label": "Cell Lines & Engineering",
+          "theme": "cell-lines-engineering"
+        },
+        {
+          "slug": "single-cell-atlases",
+          "label": "Single-cell atlases",
+          "theme": "cell-lines-engineering"
+        }
+      ],
+      "license": null,
+      "licenseSource": null,
+      "tier": "unknown",
+      "doi": "10.1038/s41588-025-02329-5",
+      "doiSource": "manual",
+      "citationCount": 20,
+      "citationSources": 1,
+      "citationDois": [
+        "10.1038/s41588-025-02329-5"
+      ]
+    },
+    {
+      "id": "ds:bovreg",
+      "name": "BovReg",
+      "url": "https://bovreg.eu/",
+      "page": "Cow",
+      "section": "Featured atlases",
+      "kind": "atlas",
+      "anchor": "ds-bovreg",
+      "topics": [
+        {
+          "slug": "ai-methods-tooling",
+          "label": "AI Methods & Tooling",
+          "theme": "ai-methods-tooling"
+        },
+        {
+          "slug": "cell-line-engineering",
+          "label": "Cell-line engineering",
+          "theme": "cell-lines-engineering"
+        },
+        {
+          "slug": "cell-lines-engineering",
+          "label": "Cell Lines & Engineering",
+          "theme": "cell-lines-engineering"
+        },
+        {
+          "slug": "single-cell-atlases",
+          "label": "Single-cell atlases",
+          "theme": "cell-lines-engineering"
+        }
+      ],
+      "license": null,
+      "licenseSource": null,
+      "tier": "unknown",
+      "doi": null,
+      "doiSource": null,
+      "citationCount": null,
+      "citationSources": 0,
+      "citationDois": []
+    },
+    {
+      "id": "ds:btasbml2986-bos-taurus-bovine",
+      "name": "BtaSBML2986 — *Bos taurus* (bovine)",
+      "url": null,
+      "page": "Cow",
+      "section": "Genome-scale metabolic models",
+      "kind": "gem",
+      "anchor": "ds-btasbml2986-bos-taurus-bovine",
+      "topics": [
+        {
+          "slug": "bioprocess-scale-up",
+          "label": "Bioprocess & Scale-Up",
+          "theme": "bioprocess-scale-up"
+        },
+        {
+          "slug": "bioreactor-scale-up",
+          "label": "Bioreactor & scale-up",
+          "theme": "bioprocess-scale-up"
+        },
+        {
+          "slug": "media-growth-factors",
+          "label": "Media & Growth Factors",
+          "theme": "media-growth-factors"
+        },
+        {
+          "slug": "metabolic-modeling",
+          "label": "Metabolic modeling",
+          "theme": "metabolism-modeling"
+        },
+        {
+          "slug": "metabolism-modeling",
+          "label": "Metabolism & Modeling",
+          "theme": "metabolism-modeling"
+        }
+      ],
+      "license": null,
+      "licenseSource": null,
+      "tier": "unknown",
+      "doi": "10.1101/2024.12.09.627468",
+      "doiSource": "manual",
+      "citationCount": 5,
+      "citationSources": 1,
+      "citationDois": [
+        "10.1101/2024.12.09.627468"
+      ]
+    },
+    {
+      "id": "ds:aqua-faang",
+      "name": "AQUA-FAANG",
+      "url": "https://www.aqua-faang.eu/",
+      "page": "Fish",
+      "section": "Featured atlases",
+      "kind": "atlas",
+      "anchor": "ds-aqua-faang",
+      "topics": [
+        {
+          "slug": "ai-methods-tooling",
+          "label": "AI Methods & Tooling",
+          "theme": "ai-methods-tooling"
+        },
+        {
+          "slug": "cell-line-engineering",
+          "label": "Cell-line engineering",
+          "theme": "cell-lines-engineering"
+        },
+        {
+          "slug": "cell-lines-engineering",
+          "label": "Cell Lines & Engineering",
+          "theme": "cell-lines-engineering"
+        },
+        {
+          "slug": "single-cell-atlases",
+          "label": "Single-cell atlases",
+          "theme": "cell-lines-engineering"
+        }
+      ],
+      "license": null,
+      "licenseSource": null,
+      "tier": "unknown",
+      "doi": null,
+      "doiSource": null,
+      "citationCount": null,
+      "citationSources": 0,
+      "citationDois": []
+    },
+    {
+      "id": "ds:salarecon-salmo-salar-atlantic-salmon",
+      "name": "SALARECON — *Salmo salar* (Atlantic salmon)",
+      "url": null,
+      "page": "Fish",
+      "section": "Genome-scale metabolic models",
+      "kind": "gem",
+      "anchor": "ds-salarecon-salmo-salar-atlantic-salmon",
+      "topics": [
+        {
+          "slug": "ai-methods-tooling",
+          "label": "AI Methods & Tooling",
+          "theme": "ai-methods-tooling"
+        },
+        {
+          "slug": "bioprocess-scale-up",
+          "label": "Bioprocess & Scale-Up",
+          "theme": "bioprocess-scale-up"
+        },
+        {
+          "slug": "bioreactor-scale-up",
+          "label": "Bioreactor & scale-up",
+          "theme": "bioprocess-scale-up"
+        },
+        {
+          "slug": "metabolic-modeling",
+          "label": "Metabolic modeling",
+          "theme": "metabolism-modeling"
+        },
+        {
+          "slug": "metabolism-modeling",
+          "label": "Metabolism & Modeling",
+          "theme": "metabolism-modeling"
+        }
+      ],
+      "license": null,
+      "licenseSource": null,
+      "tier": "unknown",
+      "doi": "10.1371/journal.pcbi.1010194",
+      "doiSource": "manual",
+      "citationCount": 11,
+      "citationSources": 1,
+      "citationDois": [
+        "10.1371/journal.pcbi.1010194"
+      ]
+    },
+    {
+      "id": "ds:piggtex-portal",
+      "name": "PigGTEx-Portal",
+      "url": "https://piggtex.farmgtex.org/",
+      "page": "Pig",
+      "section": "Featured atlases",
+      "kind": "atlas",
+      "anchor": "ds-piggtex-portal",
+      "topics": [
+        {
+          "slug": "ai-methods-tooling",
+          "label": "AI Methods & Tooling",
+          "theme": "ai-methods-tooling"
+        },
+        {
+          "slug": "cell-lines-engineering",
+          "label": "Cell Lines & Engineering",
+          "theme": "cell-lines-engineering"
+        },
+        {
+          "slug": "single-cell-atlases",
+          "label": "Single-cell atlases",
+          "theme": "cell-lines-engineering"
+        }
+      ],
+      "license": null,
+      "licenseSource": null,
+      "tier": "unknown",
+      "doi": "10.1038/s41588-023-01585-7",
+      "doiSource": "manual",
+      "citationCount": 270,
+      "citationSources": 1,
+      "citationDois": [
+        "10.1038/s41588-023-01585-7"
+      ]
+    },
+    {
+      "id": "ds:gene-switch-2",
+      "name": "GENE-SWitCH",
+      "url": "https://www.gene-switch.eu/",
+      "page": "Pig",
+      "section": "Featured atlases",
+      "kind": "atlas",
+      "anchor": "ds-gene-switch",
+      "topics": [
+        {
+          "slug": "ai-methods-tooling",
+          "label": "AI Methods & Tooling",
+          "theme": "ai-methods-tooling"
+        },
+        {
+          "slug": "cell-lines-engineering",
+          "label": "Cell Lines & Engineering",
+          "theme": "cell-lines-engineering"
+        },
+        {
+          "slug": "single-cell-atlases",
+          "label": "Single-cell atlases",
+          "theme": "cell-lines-engineering"
+        }
+      ],
+      "license": null,
+      "licenseSource": null,
+      "tier": "unknown",
+      "doi": null,
+      "doiSource": null,
+      "citationCount": null,
+      "citationSources": 0,
+      "citationDois": []
+    },
+    {
+      "id": "ds:pigbiobank",
+      "name": "PigBiobank",
+      "url": "https://pigbiobank.farmgtex.org/",
+      "page": "Pig",
+      "section": "Featured atlases",
+      "kind": "atlas",
+      "anchor": "ds-pigbiobank",
+      "topics": [
+        {
+          "slug": "ai-methods-tooling",
+          "label": "AI Methods & Tooling",
+          "theme": "ai-methods-tooling"
+        },
+        {
+          "slug": "cell-lines-engineering",
+          "label": "Cell Lines & Engineering",
+          "theme": "cell-lines-engineering"
+        },
+        {
+          "slug": "single-cell-atlases",
+          "label": "Single-cell atlases",
+          "theme": "cell-lines-engineering"
+        }
+      ],
+      "license": null,
+      "licenseSource": null,
+      "tier": "unknown",
+      "doi": "10.1093/nar/gkad1080",
+      "doiSource": "manual",
+      "citationCount": 76,
+      "citationSources": 1,
+      "citationDois": [
+        "10.1093/nar/gkad1080"
+      ]
+    },
+    {
+      "id": "ds:pcpigmnet2025-sus-scrofa-porcine",
+      "name": "pcPigMNet2025 — *Sus scrofa* (porcine)",
+      "url": null,
+      "page": "Pig",
+      "section": "Genome-scale metabolic models",
+      "kind": "gem",
+      "anchor": "ds-pcpigmnet2025-sus-scrofa-porcine",
+      "topics": [
+        {
+          "slug": "ai-methods-tooling",
+          "label": "AI Methods & Tooling",
+          "theme": "ai-methods-tooling"
+        },
+        {
+          "slug": "bioprocess-scale-up",
+          "label": "Bioprocess & Scale-Up",
+          "theme": "bioprocess-scale-up"
+        },
+        {
+          "slug": "bioreactor-scale-up",
+          "label": "Bioreactor & scale-up",
+          "theme": "bioprocess-scale-up"
+        },
+        {
+          "slug": "cell-lines-engineering",
+          "label": "Cell Lines & Engineering",
+          "theme": "cell-lines-engineering"
+        },
+        {
+          "slug": "metabolic-modeling",
+          "label": "Metabolic modeling",
+          "theme": "metabolism-modeling"
+        },
+        {
+          "slug": "metabolism-modeling",
+          "label": "Metabolism & Modeling",
+          "theme": "metabolism-modeling"
+        }
+      ],
+      "license": null,
+      "licenseSource": null,
+      "tier": "unknown",
+      "doi": "10.1016/j.ymben.2026.01.001",
+      "doiSource": "manual",
+      "citationCount": 0,
+      "citationSources": 1,
+      "citationDois": [
+        "10.1016/j.ymben.2026.01.001"
+      ]
+    },
+    {
+      "id": "ds:issus3744-sus-scrofa-porcine",
+      "name": "iSsus3744 — *Sus scrofa* (porcine)",
+      "url": null,
+      "page": "Pig",
+      "section": "Genome-scale metabolic models",
+      "kind": "gem",
+      "anchor": "ds-issus3744-sus-scrofa-porcine",
+      "topics": [
+        {
+          "slug": "ai-methods-tooling",
+          "label": "AI Methods & Tooling",
+          "theme": "ai-methods-tooling"
+        },
+        {
+          "slug": "bioprocess-scale-up",
+          "label": "Bioprocess & Scale-Up",
+          "theme": "bioprocess-scale-up"
+        },
+        {
+          "slug": "bioreactor-scale-up",
+          "label": "Bioreactor & scale-up",
+          "theme": "bioprocess-scale-up"
+        },
+        {
+          "slug": "cell-lines-engineering",
+          "label": "Cell Lines & Engineering",
+          "theme": "cell-lines-engineering"
+        },
+        {
+          "slug": "media-growth-factors",
+          "label": "Media & Growth Factors",
+          "theme": "media-growth-factors"
+        },
+        {
+          "slug": "media-optimization",
+          "label": "Media optimization",
+          "theme": "media-growth-factors"
+        },
+        {
+          "slug": "metabolic-modeling",
+          "label": "Metabolic modeling",
+          "theme": "metabolism-modeling"
+        },
+        {
+          "slug": "metabolism-modeling",
+          "label": "Metabolism & Modeling",
+          "theme": "metabolism-modeling"
+        }
+      ],
+      "license": null,
+      "licenseSource": null,
+      "tier": "unknown",
+      "doi": "10.64898/2026.05.28.728221",
+      "doiSource": "manual",
+      "citationCount": 0,
+      "citationSources": 1,
+      "citationDois": [
+        "10.64898/2026.05.28.728221"
+      ]
+    },
+    {
+      "id": "ds:sheepgtex-portal",
+      "name": "SheepGTEx-Portal",
+      "url": "https://sheepgtex.farmgtex.org/",
+      "page": "Sheep",
+      "section": "Featured atlases",
+      "kind": "atlas",
+      "anchor": "ds-sheepgtex-portal",
+      "topics": [
+        {
+          "slug": "ai-methods-tooling",
+          "label": "AI Methods & Tooling",
+          "theme": "ai-methods-tooling"
+        },
+        {
+          "slug": "cell-line-engineering",
+          "label": "Cell-line engineering",
+          "theme": "cell-lines-engineering"
+        },
+        {
+          "slug": "cell-lines-engineering",
+          "label": "Cell Lines & Engineering",
+          "theme": "cell-lines-engineering"
+        },
+        {
+          "slug": "single-cell-atlases",
+          "label": "Single-cell atlases",
+          "theme": "cell-lines-engineering"
+        }
+      ],
+      "license": null,
+      "licenseSource": null,
+      "tier": "unknown",
+      "doi": "10.1101/2025.11.03.686346",
+      "doiSource": "manual",
+      "citationCount": 4,
+      "citationSources": 1,
+      "citationDois": [
+        "10.1101/2025.11.03.686346"
+      ]
+    },
+    {
+      "id": "ds:growth-factor-thermostability-dataset",
+      "name": "Growth factor thermostability dataset",
+      "url": "https://zenodo.org/records/19339684",
+      "page": "CrossSpecies",
+      "section": "Protein engineering & growth factor reference",
+      "kind": "other",
+      "anchor": "ds-growth-factor-thermostability-dataset",
+      "topics": [
+        {
+          "slug": "ai-agents",
+          "label": "AI agents & foundation models",
+          "theme": "ai-methods-tooling"
+        },
+        {
+          "slug": "ai-methods-tooling",
+          "label": "AI Methods & Tooling",
+          "theme": "ai-methods-tooling"
+        },
+        {
+          "slug": "cell-lines-engineering",
+          "label": "Cell Lines & Engineering",
+          "theme": "cell-lines-engineering"
+        },
+        {
+          "slug": "growth-factors",
+          "label": "Growth factors",
+          "theme": "media-growth-factors"
+        },
+        {
+          "slug": "media-growth-factors",
+          "label": "Media & Growth Factors",
+          "theme": "media-growth-factors"
+        }
+      ],
+      "license": null,
+      "licenseSource": null,
+      "tier": "unknown",
+      "doi": "10.5281/zenodo.19339684",
+      "doiSource": "manual",
+      "citationCount": null,
+      "citationSources": 0,
+      "citationDois": []
+    },
+    {
+      "id": "ds:nmr-metabolomics-of-plant-and-yeast-based-hydrolysates",
+      "name": "NMR metabolomics of plant and yeast-based hydrolysates",
+      "url": "https://doi.org/10.1016/j.crfs.2024.100855",
+      "page": "CrossSpecies",
+      "section": "Cell culture media component characterization",
+      "kind": "other",
+      "anchor": "ds-nmr-metabolomics-of-plant-and-yeast-based-hydrolysates",
+      "topics": [
+        {
+          "slug": "mass-spectrometry",
+          "label": "Mass spectrometry & metabolomics",
+          "theme": "sensory-flavor"
+        },
+        {
+          "slug": "media-growth-factors",
+          "label": "Media & Growth Factors",
+          "theme": "media-growth-factors"
+        },
+        {
+          "slug": "metabolic-modeling",
+          "label": "Metabolic modeling",
+          "theme": "metabolism-modeling"
+        },
+        {
+          "slug": "metabolism-modeling",
+          "label": "Metabolism & Modeling",
+          "theme": "metabolism-modeling"
+        },
+        {
+          "slug": "sensory-flavor",
+          "label": "Sensory & Flavor",
+          "theme": "sensory-flavor"
+        },
+        {
+          "slug": "serum-free-media",
+          "label": "Serum-free media",
+          "theme": "media-growth-factors"
+        }
+      ],
+      "license": null,
+      "licenseSource": null,
+      "tier": "unknown",
+      "doi": "10.1016/j.crfs.2024.100855",
+      "doiSource": "manual",
+      "citationCount": 8,
+      "citationSources": 1,
+      "citationDois": [
+        "10.1016/j.crfs.2024.100855"
+      ]
+    },
+    {
+      "id": "ds:plant-based-meat-textural-properties-training-table-kircali-ata-et-al-2023",
+      "name": "Plant-based meat textural-properties training table (Kircali Ata et al. 2023)",
+      "url": "https://doi.org/10.3390/foods12020344",
+      "page": "CrossSpecies",
+      "section": "Plant-based meat compositional & textural reference",
+      "kind": "other",
+      "anchor": "ds-plant-based-meat-textural-properties-training-table-kircali-ata-et-al-2023",
+      "topics": [
+        {
+          "slug": "ai-methods-tooling",
+          "label": "AI Methods & Tooling",
+          "theme": "ai-methods-tooling"
+        },
+        {
+          "slug": "flavor-sensory",
+          "label": "Flavor & sensory prediction",
+          "theme": "sensory-flavor"
+        },
+        {
+          "slug": "media-growth-factors",
+          "label": "Media & Growth Factors",
+          "theme": "media-growth-factors"
+        },
+        {
+          "slug": "media-optimization",
+          "label": "Media optimization",
+          "theme": "media-growth-factors"
+        },
+        {
+          "slug": "scaffolding-biomaterials",
+          "label": "Scaffolding & Biomaterials",
+          "theme": "scaffolding-biomaterials"
+        },
+        {
+          "slug": "sensory-flavor",
+          "label": "Sensory & Flavor",
+          "theme": "sensory-flavor"
+        }
+      ],
+      "license": null,
+      "licenseSource": null,
+      "tier": "unknown",
+      "doi": "10.3390/foods12020344",
+      "doiSource": "manual",
+      "citationCount": 31,
+      "citationSources": 1,
+      "citationDois": [
+        "10.3390/foods12020344"
+      ]
+    },
+    {
+      "id": "ds:fr-agencode-multi-species-farm-animal-regulatory-atlas",
+      "name": "FR-AgENCODE multi-species farm-animal regulatory atlas",
+      "url": "https://doi.org/10.1186/s12915-019-0726-5",
+      "page": "CrossSpecies",
+      "section": "Cross-species regulatory & functional-genomics reference",
+      "kind": "other",
+      "anchor": "ds-fr-agencode-multi-species-farm-animal-regulatory-atlas",
+      "topics": [
+        {
+          "slug": "cell-lines-engineering",
+          "label": "Cell Lines & Engineering",
+          "theme": "cell-lines-engineering"
+        },
+        {
+          "slug": "single-cell-atlases",
+          "label": "Single-cell atlases",
+          "theme": "cell-lines-engineering"
+        }
+      ],
+      "license": null,
+      "licenseSource": null,
+      "tier": "unknown",
+      "doi": "10.1186/s12915-019-0726-5",
+      "doiSource": "manual",
+      "citationCount": 195,
+      "citationSources": 1,
+      "citationDois": [
+        "10.1186/s12915-019-0726-5"
+      ]
+    },
+    {
+      "id": "ds:comparative-chromatin-accessibility-in-cattle-pig-and-mouse",
+      "name": "Comparative chromatin accessibility in cattle, pig, and mouse",
+      "url": "https://doi.org/10.1186/s12864-020-07078-9",
+      "page": "CrossSpecies",
+      "section": "Cross-species regulatory & functional-genomics reference",
+      "kind": "other",
+      "anchor": "ds-comparative-chromatin-accessibility-in-cattle-pig-and-mouse",
+      "topics": [],
+      "license": null,
+      "licenseSource": null,
+      "tier": "unknown",
+      "doi": "10.1186/s12864-020-07078-9",
+      "doiSource": "manual",
+      "citationCount": 84,
+      "citationSources": 1,
+      "citationDois": [
+        "10.1186/s12864-020-07078-9"
+      ]
+    },
+    {
+      "id": "ds:mycelium-mechanics-taste-of-fungi-steak",
+      "name": "Mycelium mechanics & taste of fungi steak",
+      "url": "https://doi.org/10.1016/j.actbio.2025.07.002",
+      "page": "CrossSpecies",
+      "section": "Fungal (mycelium) meat texture reference",
+      "kind": "other",
+      "anchor": "ds-mycelium-mechanics-taste-of-fungi-steak",
+      "topics": [
+        {
+          "slug": "flavor-sensory",
+          "label": "Flavor & sensory prediction",
+          "theme": "sensory-flavor"
+        },
+        {
+          "slug": "scaffolding-biomaterials",
+          "label": "Scaffolding & Biomaterials",
+          "theme": "scaffolding-biomaterials"
+        },
+        {
+          "slug": "scaffolds-biomaterials",
+          "label": "Scaffolds & biomaterials",
+          "theme": "scaffolding-biomaterials"
+        },
+        {
+          "slug": "sensory-flavor",
+          "label": "Sensory & Flavor",
+          "theme": "sensory-flavor"
+        }
+      ],
+      "license": null,
+      "licenseSource": null,
+      "tier": "unknown",
+      "doi": "10.1016/j.actbio.2025.07.002",
+      "doiSource": "manual",
+      "citationCount": 11,
+      "citationSources": 1,
+      "citationDois": [
+        "10.1016/j.actbio.2025.07.002"
+      ]
+    },
+    {
+      "id": "ds:lions-mane-mushroom-steak-characterization",
+      "name": "Lion's mane mushroom-steak characterization",
+      "url": "https://doi.org/10.64898/2026.01.19.700477",
+      "page": "CrossSpecies",
+      "section": "Fungal (mycelium) meat texture reference",
+      "kind": "other",
+      "anchor": "ds-lions-mane-mushroom-steak-characterization",
+      "topics": [
+        {
+          "slug": "flavor-sensory",
+          "label": "Flavor & sensory prediction",
+          "theme": "sensory-flavor"
+        },
+        {
+          "slug": "scaffolding-biomaterials",
+          "label": "Scaffolding & Biomaterials",
+          "theme": "scaffolding-biomaterials"
+        },
+        {
+          "slug": "scaffolds-biomaterials",
+          "label": "Scaffolds & biomaterials",
+          "theme": "scaffolding-biomaterials"
+        },
+        {
+          "slug": "sensory-flavor",
+          "label": "Sensory & Flavor",
+          "theme": "sensory-flavor"
+        }
+      ],
+      "license": null,
+      "licenseSource": null,
+      "tier": "unknown",
+      "doi": "10.64898/2026.01.19.700477",
+      "doiSource": "manual",
+      "citationCount": null,
+      "citationSources": 0,
+      "citationDois": []
+    },
+    {
+      "id": "ds:genecorpus-30m",
+      "name": "Genecorpus-30M",
+      "url": "https://huggingface.co/datasets/ctheodoris/Genecorpus-30M",
+      "page": "HumanReference",
+      "section": "Single-cell & perturbation corpora",
+      "kind": "atlas",
+      "anchor": "ds-genecorpus-30m",
+      "topics": [
+        {
+          "slug": "ai-agents",
+          "label": "AI agents & foundation models",
+          "theme": "ai-methods-tooling"
+        },
+        {
+          "slug": "ai-methods-tooling",
+          "label": "AI Methods & Tooling",
+          "theme": "ai-methods-tooling"
+        },
+        {
+          "slug": "cell-line-engineering",
+          "label": "Cell-line engineering",
+          "theme": "cell-lines-engineering"
+        },
+        {
+          "slug": "cell-lines-engineering",
+          "label": "Cell Lines & Engineering",
+          "theme": "cell-lines-engineering"
+        },
+        {
+          "slug": "single-cell-atlases",
+          "label": "Single-cell atlases",
+          "theme": "cell-lines-engineering"
+        }
+      ],
+      "license": null,
+      "licenseSource": null,
+      "tier": "unknown",
+      "doi": "10.1038/s41586-023-06139-9",
+      "doiSource": "manual",
+      "citationCount": 1106,
+      "citationSources": 1,
+      "citationDois": [
+        "10.1038/s41586-023-06139-9"
+      ]
+    },
+    {
+      "id": "ds:genecorpus-104m",
+      "name": "Genecorpus-104M",
+      "url": "https://huggingface.co/datasets/theodoris-lab/Genecorpus-104M",
+      "page": "HumanReference",
+      "section": "Single-cell & perturbation corpora",
+      "kind": "atlas",
+      "anchor": "ds-genecorpus-104m",
+      "topics": [
+        {
+          "slug": "cell-line-engineering",
+          "label": "Cell-line engineering",
+          "theme": "cell-lines-engineering"
+        },
+        {
+          "slug": "cell-lines-engineering",
+          "label": "Cell Lines & Engineering",
+          "theme": "cell-lines-engineering"
+        },
+        {
+          "slug": "single-cell-atlases",
+          "label": "Single-cell atlases",
+          "theme": "cell-lines-engineering"
+        }
+      ],
+      "license": null,
+      "licenseSource": null,
+      "tier": "unknown",
+      "doi": null,
+      "doiSource": null,
+      "citationCount": null,
+      "citationSources": 0,
+      "citationDois": []
+    },
+    {
+      "id": "ds:mouse-genecorpus-20m",
+      "name": "Mouse-Genecorpus-20M",
+      "url": "https://huggingface.co/datasets/MPRG/Mouse-Genecorpus-20M",
+      "page": "HumanReference",
+      "section": "Single-cell & perturbation corpora",
+      "kind": "atlas",
+      "anchor": "ds-mouse-genecorpus-20m",
+      "topics": [
+        {
+          "slug": "cell-line-engineering",
+          "label": "Cell-line engineering",
+          "theme": "cell-lines-engineering"
+        },
+        {
+          "slug": "cell-lines-engineering",
+          "label": "Cell Lines & Engineering",
+          "theme": "cell-lines-engineering"
+        },
+        {
+          "slug": "single-cell-atlases",
+          "label": "Single-cell atlases",
+          "theme": "cell-lines-engineering"
+        }
+      ],
+      "license": null,
+      "licenseSource": null,
+      "tier": "unknown",
+      "doi": "10.1371/journal.pgen.1011420",
+      "doiSource": "manual",
+      "citationCount": 6,
+      "citationSources": 1,
+      "citationDois": [
+        "10.1371/journal.pgen.1011420"
+      ]
+    },
+    {
+      "id": "ds:perturb-sapiens",
+      "name": "Perturb-Sapiens",
+      "url": "https://huggingface.co/datasets/arcinstitute/Perturb-Sapiens",
+      "page": "HumanReference",
+      "section": "Single-cell & perturbation corpora",
+      "kind": "atlas",
+      "anchor": "ds-perturb-sapiens",
+      "topics": [
+        {
+          "slug": "ai-methods-tooling",
+          "label": "AI Methods & Tooling",
+          "theme": "ai-methods-tooling"
+        },
+        {
+          "slug": "benchmarks-evaluation",
+          "label": "Benchmarks & evaluation",
+          "theme": "ai-methods-tooling"
+        },
+        {
+          "slug": "bioprocess-scale-up",
+          "label": "Bioprocess & Scale-Up",
+          "theme": "bioprocess-scale-up"
+        },
+        {
+          "slug": "bioreactor-scale-up",
+          "label": "Bioreactor & scale-up",
+          "theme": "bioprocess-scale-up"
+        },
+        {
+          "slug": "cell-line-engineering",
+          "label": "Cell-line engineering",
+          "theme": "cell-lines-engineering"
+        },
+        {
+          "slug": "cell-lines-engineering",
+          "label": "Cell Lines & Engineering",
+          "theme": "cell-lines-engineering"
+        },
+        {
+          "slug": "single-cell-atlases",
+          "label": "Single-cell atlases",
+          "theme": "cell-lines-engineering"
+        }
+      ],
+      "license": null,
+      "licenseSource": null,
+      "tier": "unknown",
+      "doi": null,
+      "doiSource": null,
+      "citationCount": null,
+      "citationSources": 0,
+      "citationDois": []
+    },
+    {
+      "id": "ds:scperturb",
+      "name": "scPerturb",
+      "url": "https://scperturb.org/",
+      "page": "HumanReference",
+      "section": "Single-cell & perturbation corpora",
+      "kind": "atlas",
+      "anchor": "ds-scperturb",
+      "topics": [
+        {
+          "slug": "ai-methods-tooling",
+          "label": "AI Methods & Tooling",
+          "theme": "ai-methods-tooling"
+        },
+        {
+          "slug": "benchmarks-evaluation",
+          "label": "Benchmarks & evaluation",
+          "theme": "ai-methods-tooling"
+        },
+        {
+          "slug": "bioprocess-scale-up",
+          "label": "Bioprocess & Scale-Up",
+          "theme": "bioprocess-scale-up"
+        },
+        {
+          "slug": "cell-line-engineering",
+          "label": "Cell-line engineering",
+          "theme": "cell-lines-engineering"
+        },
+        {
+          "slug": "cell-lines-engineering",
+          "label": "Cell Lines & Engineering",
+          "theme": "cell-lines-engineering"
+        },
+        {
+          "slug": "single-cell-atlases",
+          "label": "Single-cell atlases",
+          "theme": "cell-lines-engineering"
+        }
+      ],
+      "license": null,
+      "licenseSource": null,
+      "tier": "unknown",
+      "doi": "10.1038/s41592-023-02144-y",
+      "doiSource": "manual",
+      "citationCount": 159,
+      "citationSources": 1,
+      "citationDois": [
+        "10.1038/s41592-023-02144-y"
+      ]
+    },
+    {
+      "id": "ds:arc-virtual-cell-atlas",
+      "name": "Arc Virtual Cell Atlas",
+      "url": null,
+      "page": "HumanReference",
+      "section": "Single-cell & perturbation corpora",
+      "kind": "atlas",
+      "anchor": "ds-arc-virtual-cell-atlas",
+      "topics": [
+        {
+          "slug": "ai-agents",
+          "label": "AI agents & foundation models",
+          "theme": "ai-methods-tooling"
+        },
+        {
+          "slug": "ai-methods-tooling",
+          "label": "AI Methods & Tooling",
+          "theme": "ai-methods-tooling"
+        },
+        {
+          "slug": "bioprocess-scale-up",
+          "label": "Bioprocess & Scale-Up",
+          "theme": "bioprocess-scale-up"
+        },
+        {
+          "slug": "bioreactor-scale-up",
+          "label": "Bioreactor & scale-up",
+          "theme": "bioprocess-scale-up"
+        },
+        {
+          "slug": "cell-line-engineering",
+          "label": "Cell-line engineering",
+          "theme": "cell-lines-engineering"
+        },
+        {
+          "slug": "cell-lines-engineering",
+          "label": "Cell Lines & Engineering",
+          "theme": "cell-lines-engineering"
+        },
+        {
+          "slug": "media-growth-factors",
+          "label": "Media & Growth Factors",
+          "theme": "media-growth-factors"
+        },
+        {
+          "slug": "single-cell-atlases",
+          "label": "Single-cell atlases",
+          "theme": "cell-lines-engineering"
+        }
+      ],
+      "license": null,
+      "licenseSource": null,
+      "tier": "unknown",
+      "doi": null,
+      "doiSource": null,
+      "citationCount": null,
+      "citationSources": 0,
+      "citationDois": []
+    },
+    {
+      "id": "ds:parse-biosciences-10m-pbmc-atlas",
+      "name": "Parse Biosciences 10M PBMC Atlas",
+      "url": "https://www.parsebiosciences.com/datasets/10-million-human-pbmcs-in-a-single-experiment/",
+      "page": "HumanReference",
+      "section": "Single-cell & perturbation corpora",
+      "kind": "atlas",
+      "anchor": "ds-parse-biosciences-10m-pbmc-atlas",
+      "topics": [
+        {
+          "slug": "ai-methods-tooling",
+          "label": "AI Methods & Tooling",
+          "theme": "ai-methods-tooling"
+        },
+        {
+          "slug": "benchmarks-evaluation",
+          "label": "Benchmarks & evaluation",
+          "theme": "ai-methods-tooling"
+        },
+        {
+          "slug": "bioprocess-scale-up",
+          "label": "Bioprocess & Scale-Up",
+          "theme": "bioprocess-scale-up"
+        },
+        {
+          "slug": "bioreactor-scale-up",
+          "label": "Bioreactor & scale-up",
+          "theme": "bioprocess-scale-up"
+        },
+        {
+          "slug": "cell-line-engineering",
+          "label": "Cell-line engineering",
+          "theme": "cell-lines-engineering"
+        },
+        {
+          "slug": "cell-lines-engineering",
+          "label": "Cell Lines & Engineering",
+          "theme": "cell-lines-engineering"
+        },
+        {
+          "slug": "single-cell-atlases",
+          "label": "Single-cell atlases",
+          "theme": "cell-lines-engineering"
+        }
+      ],
+      "license": null,
+      "licenseSource": null,
+      "tier": "unknown",
+      "doi": null,
+      "doiSource": null,
+      "citationCount": null,
+      "citationSources": 0,
+      "citationDois": []
+    },
+    {
+      "id": "ds:human-skeletal-muscle-single-cell-atlas-de-micheli-et-al-2020",
+      "name": "Human Skeletal Muscle Single-Cell Atlas (De Micheli et al. 2020)",
+      "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE143704",
+      "page": "HumanReference",
+      "section": "Single-cell & perturbation corpora",
+      "kind": "atlas",
+      "anchor": "ds-human-skeletal-muscle-single-cell-atlas-de-micheli-et-al-2020",
+      "topics": [
+        {
+          "slug": "cell-line-engineering",
+          "label": "Cell-line engineering",
+          "theme": "cell-lines-engineering"
+        },
+        {
+          "slug": "cell-lines-engineering",
+          "label": "Cell Lines & Engineering",
+          "theme": "cell-lines-engineering"
+        },
+        {
+          "slug": "single-cell-atlases",
+          "label": "Single-cell atlases",
+          "theme": "cell-lines-engineering"
+        }
+      ],
+      "license": null,
+      "licenseSource": null,
+      "tier": "unknown",
+      "doi": "10.1186/s13395-020-00236-3",
+      "doiSource": "manual",
+      "citationCount": 232,
+      "citationSources": 1,
+      "citationDois": [
+        "10.1186/s13395-020-00236-3"
+      ]
+    },
+    {
+      "id": "ds:human-and-mouse-white-adipose-tissue-single-cell-atlas-emont-et-al-2022",
+      "name": "Human and Mouse White Adipose Tissue Single-Cell Atlas (Emont et al. 2022)",
+      "url": "https://singlecell.broadinstitute.org/single_cell/study/SCP1376",
+      "page": "HumanReference",
+      "section": "Single-cell & perturbation corpora",
+      "kind": "atlas",
+      "anchor": "ds-human-and-mouse-white-adipose-tissue-single-cell-atlas-emont-et-al-2022",
+      "topics": [
+        {
+          "slug": "cell-line-engineering",
+          "label": "Cell-line engineering",
+          "theme": "cell-lines-engineering"
+        },
+        {
+          "slug": "cell-lines-engineering",
+          "label": "Cell Lines & Engineering",
+          "theme": "cell-lines-engineering"
+        },
+        {
+          "slug": "single-cell-atlases",
+          "label": "Single-cell atlases",
+          "theme": "cell-lines-engineering"
+        }
+      ],
+      "license": null,
+      "licenseSource": null,
+      "tier": "unknown",
+      "doi": "10.1038/s41586-022-04518-2",
+      "doiSource": "manual",
+      "citationCount": 839,
+      "citationSources": 1,
+      "citationDois": [
+        "10.1038/s41586-022-04518-2"
+      ]
+    },
+    {
+      "id": "ds:recon3d-human1-hmr-homo-sapiens-template-upstream-reference",
+      "name": "Recon3D / Human1 / HMR — *Homo sapiens* (template / upstream reference)",
+      "url": null,
+      "page": "HumanReference",
+      "section": "Genome-scale metabolic models",
+      "kind": "gem",
+      "anchor": "ds-recon3d-human1-hmr-homo-sapiens-template-upstream-reference",
+      "topics": [
+        {
+          "slug": "bioprocess-scale-up",
+          "label": "Bioprocess & Scale-Up",
+          "theme": "bioprocess-scale-up"
+        },
+        {
+          "slug": "bioreactor-scale-up",
+          "label": "Bioreactor & scale-up",
+          "theme": "bioprocess-scale-up"
+        },
+        {
+          "slug": "cell-lines-engineering",
+          "label": "Cell Lines & Engineering",
+          "theme": "cell-lines-engineering"
+        },
+        {
+          "slug": "metabolic-modeling",
+          "label": "Metabolic modeling",
+          "theme": "metabolism-modeling"
+        },
+        {
+          "slug": "metabolism-modeling",
+          "label": "Metabolism & Modeling",
+          "theme": "metabolism-modeling"
+        }
+      ],
+      "license": null,
+      "licenseSource": null,
+      "tier": "unknown",
+      "doi": null,
+      "doiSource": null,
+      "citationCount": null,
+      "citationSources": 0,
+      "citationDois": []
+    },
+    {
+      "id": "ds:icho1766-icho2048-chompact-chinese-hamster-ovary-biopharma-adjacent-reference",
+      "name": "iCHO1766 / iCHO2048 / CHOmpact — Chinese Hamster Ovary (biopharma-adjacent reference)",
+      "url": null,
+      "page": "CHOReference",
+      "section": "Genome-scale metabolic models",
+      "kind": "gem",
+      "anchor": "ds-icho1766-icho2048-chompact-chinese-hamster-ovary-biopharma-adjacent-reference",
+      "topics": [
+        {
+          "slug": "bioprocess-scale-up",
+          "label": "Bioprocess & Scale-Up",
+          "theme": "bioprocess-scale-up"
+        },
+        {
+          "slug": "bioreactor-scale-up",
+          "label": "Bioreactor & scale-up",
+          "theme": "bioprocess-scale-up"
+        },
+        {
+          "slug": "cell-line-engineering",
+          "label": "Cell-line engineering",
+          "theme": "cell-lines-engineering"
+        },
+        {
+          "slug": "cell-lines-engineering",
+          "label": "Cell Lines & Engineering",
+          "theme": "cell-lines-engineering"
+        },
+        {
+          "slug": "metabolic-modeling",
+          "label": "Metabolic modeling",
+          "theme": "metabolism-modeling"
+        },
+        {
+          "slug": "metabolism-modeling",
+          "label": "Metabolism & Modeling",
+          "theme": "metabolism-modeling"
+        }
+      ],
+      "license": null,
+      "licenseSource": null,
+      "tier": "unknown",
+      "doi": null,
+      "doiSource": null,
+      "citationCount": null,
+      "citationSources": 0,
+      "citationDois": []
+    },
+    {
+      "id": "ds:cho-gs-media-component-critical-quality-attributes-gangwar-et-al-2024",
+      "name": "CHO-GS(-/-) media-component → critical quality attributes (Gangwar et al. 2024)",
+      "url": null,
+      "page": "CHOReference",
+      "section": "Cell culture media training datasets",
+      "kind": "other",
+      "anchor": "ds-cho-gs-media-component-critical-quality-attributes-gangwar-et-al-2024",
+      "topics": [
+        {
+          "slug": "ai-methods-tooling",
+          "label": "AI Methods & Tooling",
+          "theme": "ai-methods-tooling"
+        },
+        {
+          "slug": "media-growth-factors",
+          "label": "Media & Growth Factors",
+          "theme": "media-growth-factors"
+        },
+        {
+          "slug": "media-optimization",
+          "label": "Media optimization",
+          "theme": "media-growth-factors"
+        }
+      ],
+      "license": null,
+      "licenseSource": null,
+      "tier": "unknown",
+      "doi": "10.1007/s00253-024-13147-w",
+      "doiSource": "manual",
+      "citationCount": 22,
+      "citationSources": 1,
+      "citationDois": [
+        "10.1007/s00253-024-13147-w"
+      ]
+    },
+    {
+      "id": "ds:cho-multi-omic-culture-ph-profiling-dataset-lee-et-al-2021",
+      "name": "CHO multi-omic culture-pH profiling dataset (Lee et al. 2021)",
+      "url": null,
+      "page": "CHOReference",
+      "section": "Multi-omics & metabolomics datasets",
+      "kind": "other",
+      "anchor": "ds-cho-multi-omic-culture-ph-profiling-dataset-lee-et-al-2021",
+      "topics": [
+        {
+          "slug": "bioprocess-scale-up",
+          "label": "Bioprocess & Scale-Up",
+          "theme": "bioprocess-scale-up"
+        },
+        {
+          "slug": "cell-lines-engineering",
+          "label": "Cell Lines & Engineering",
+          "theme": "cell-lines-engineering"
+        },
+        {
+          "slug": "mass-spectrometry",
+          "label": "Mass spectrometry & metabolomics",
+          "theme": "sensory-flavor"
+        },
+        {
+          "slug": "metabolic-modeling",
+          "label": "Metabolic modeling",
+          "theme": "metabolism-modeling"
+        },
+        {
+          "slug": "metabolism-modeling",
+          "label": "Metabolism & Modeling",
+          "theme": "metabolism-modeling"
+        },
+        {
+          "slug": "sensory-flavor",
+          "label": "Sensory & Flavor",
+          "theme": "sensory-flavor"
+        }
+      ],
+      "license": null,
+      "licenseSource": null,
+      "tier": "unknown",
+      "doi": "10.1002/bit.27899",
+      "doiSource": "manual",
+      "citationCount": 40,
+      "citationSources": 1,
+      "citationDois": [
+        "10.1002/bit.27899"
+      ]
+    },
+    {
+      "id": "ds:cho-antibody-producer-multi-omic-dataset-gopalakrishnan-et-al-2024",
+      "name": "CHO antibody-producer multi-omic dataset (Gopalakrishnan et al. 2024)",
+      "url": null,
+      "page": "CHOReference",
+      "section": "Multi-omics & metabolomics datasets",
+      "kind": "other",
+      "anchor": "ds-cho-antibody-producer-multi-omic-dataset-gopalakrishnan-et-al-2024",
+      "topics": [
+        {
+          "slug": "cell-line-engineering",
+          "label": "Cell-line engineering",
+          "theme": "cell-lines-engineering"
+        },
+        {
+          "slug": "cell-lines-engineering",
+          "label": "Cell Lines & Engineering",
+          "theme": "cell-lines-engineering"
+        },
+        {
+          "slug": "mass-spectrometry",
+          "label": "Mass spectrometry & metabolomics",
+          "theme": "sensory-flavor"
+        },
+        {
+          "slug": "media-growth-factors",
+          "label": "Media & Growth Factors",
+          "theme": "media-growth-factors"
+        },
+        {
+          "slug": "metabolic-modeling",
+          "label": "Metabolic modeling",
+          "theme": "metabolism-modeling"
+        },
+        {
+          "slug": "metabolism-modeling",
+          "label": "Metabolism & Modeling",
+          "theme": "metabolism-modeling"
+        },
+        {
+          "slug": "sensory-flavor",
+          "label": "Sensory & Flavor",
+          "theme": "sensory-flavor"
+        }
+      ],
+      "license": null,
+      "licenseSource": null,
+      "tier": "unknown",
+      "doi": "10.1016/j.ymben.2024.07.009",
+      "doiSource": "manual",
+      "citationCount": 14,
+      "citationSources": 1,
+      "citationDois": [
+        "10.1016/j.ymben.2024.07.009"
+      ]
+    },
+    {
+      "id": "ds:cho-spent-media-metabolomics-dataset-alden-et-al-2020",
+      "name": "CHO spent-media metabolomics dataset (Alden et al. 2020)",
+      "url": null,
+      "page": "CHOReference",
+      "section": "Multi-omics & metabolomics datasets",
+      "kind": "other",
+      "anchor": "ds-cho-spent-media-metabolomics-dataset-alden-et-al-2020",
+      "topics": [
+        {
+          "slug": "bioprocess-scale-up",
+          "label": "Bioprocess & Scale-Up",
+          "theme": "bioprocess-scale-up"
+        },
+        {
+          "slug": "cell-line-engineering",
+          "label": "Cell-line engineering",
+          "theme": "cell-lines-engineering"
+        },
+        {
+          "slug": "cell-lines-engineering",
+          "label": "Cell Lines & Engineering",
+          "theme": "cell-lines-engineering"
+        },
+        {
+          "slug": "mass-spectrometry",
+          "label": "Mass spectrometry & metabolomics",
+          "theme": "sensory-flavor"
+        },
+        {
+          "slug": "media-growth-factors",
+          "label": "Media & Growth Factors",
+          "theme": "media-growth-factors"
+        },
+        {
+          "slug": "media-optimization",
+          "label": "Media optimization",
+          "theme": "media-growth-factors"
+        },
+        {
+          "slug": "metabolic-modeling",
+          "label": "Metabolic modeling",
+          "theme": "metabolism-modeling"
+        },
+        {
+          "slug": "metabolism-modeling",
+          "label": "Metabolism & Modeling",
+          "theme": "metabolism-modeling"
+        },
+        {
+          "slug": "sensory-flavor",
+          "label": "Sensory & Flavor",
+          "theme": "sensory-flavor"
+        }
+      ],
+      "license": null,
+      "licenseSource": null,
+      "tier": "unknown",
+      "doi": "10.3390/metabo10050199",
+      "doiSource": "manual",
+      "citationCount": 32,
+      "citationSources": 1,
+      "citationDois": [
+        "10.3390/metabo10050199"
+      ]
+    },
+    {
+      "id": "ds:cho-clone-selection-metabolomic-dynamics-dataset-barberi-et-al-2025",
+      "name": "CHO clone-selection metabolomic-dynamics dataset (Barberi et al. 2025)",
+      "url": null,
+      "page": "CHOReference",
+      "section": "Multi-omics & metabolomics datasets",
+      "kind": "other",
+      "anchor": "ds-cho-clone-selection-metabolomic-dynamics-dataset-barberi-et-al-2025",
+      "topics": [
+        {
+          "slug": "bioprocess-scale-up",
+          "label": "Bioprocess & Scale-Up",
+          "theme": "bioprocess-scale-up"
+        },
+        {
+          "slug": "cell-line-engineering",
+          "label": "Cell-line engineering",
+          "theme": "cell-lines-engineering"
+        },
+        {
+          "slug": "cell-lines-engineering",
+          "label": "Cell Lines & Engineering",
+          "theme": "cell-lines-engineering"
+        },
+        {
+          "slug": "mass-spectrometry",
+          "label": "Mass spectrometry & metabolomics",
+          "theme": "sensory-flavor"
+        },
+        {
+          "slug": "metabolic-modeling",
+          "label": "Metabolic modeling",
+          "theme": "metabolism-modeling"
+        },
+        {
+          "slug": "metabolism-modeling",
+          "label": "Metabolism & Modeling",
+          "theme": "metabolism-modeling"
+        },
+        {
+          "slug": "sensory-flavor",
+          "label": "Sensory & Flavor",
+          "theme": "sensory-flavor"
+        }
+      ],
+      "license": null,
+      "licenseSource": null,
+      "tier": "unknown",
+      "doi": "10.1002/aic.18602",
+      "doiSource": "manual",
+      "citationCount": 3,
+      "citationSources": 1,
+      "citationDois": [
+        "10.1002/aic.18602"
+      ]
+    },
+    {
+      "id": "ds:pseudo-perfusion-cho-characterization-dataset-malinov-et-al-2026",
+      "name": "Pseudo-perfusion CHO characterization dataset (Malinov et al. 2026)",
+      "url": null,
+      "page": "CHOReference",
+      "section": "Bioprocess characterization datasets",
+      "kind": "other",
+      "anchor": "ds-pseudo-perfusion-cho-characterization-dataset-malinov-et-al-2026",
+      "topics": [
+        {
+          "slug": "bioprocess-scale-up",
+          "label": "Bioprocess & Scale-Up",
+          "theme": "bioprocess-scale-up"
+        },
+        {
+          "slug": "bioreactor-scale-up",
+          "label": "Bioreactor & scale-up",
+          "theme": "bioprocess-scale-up"
+        },
+        {
+          "slug": "cell-lines-engineering",
+          "label": "Cell Lines & Engineering",
+          "theme": "cell-lines-engineering"
+        },
+        {
+          "slug": "metabolic-modeling",
+          "label": "Metabolic modeling",
+          "theme": "metabolism-modeling"
+        },
+        {
+          "slug": "metabolism-modeling",
+          "label": "Metabolism & Modeling",
+          "theme": "metabolism-modeling"
+        }
+      ],
+      "license": null,
+      "licenseSource": null,
+      "tier": "unknown",
+      "doi": "10.1002/bit.70190",
+      "doiSource": "manual",
+      "citationCount": 2,
+      "citationSources": 1,
+      "citationDois": [
+        "10.1002/bit.70190"
+      ]
+    },
+    {
+      "id": "ds:dynamic-metabolic-flux-analysis-dmfa-cho-dataset-venkatarama-reddy-et-al-2026",
+      "name": "Dynamic Metabolic Flux Analysis (DMFA) CHO dataset (Venkatarama Reddy et al. 2026)",
+      "url": null,
+      "page": "CHOReference",
+      "section": "Bioprocess characterization datasets",
+      "kind": "other",
+      "anchor": "ds-dynamic-metabolic-flux-analysis-dmfa-cho-dataset-venkatarama-reddy-et-al-2026",
+      "topics": [
+        {
+          "slug": "bioprocess-scale-up",
+          "label": "Bioprocess & Scale-Up",
+          "theme": "bioprocess-scale-up"
+        },
+        {
+          "slug": "bioreactor-scale-up",
+          "label": "Bioreactor & scale-up",
+          "theme": "bioprocess-scale-up"
+        },
+        {
+          "slug": "media-growth-factors",
+          "label": "Media & Growth Factors",
+          "theme": "media-growth-factors"
+        },
+        {
+          "slug": "metabolic-modeling",
+          "label": "Metabolic modeling",
+          "theme": "metabolism-modeling"
+        },
+        {
+          "slug": "metabolism-modeling",
+          "label": "Metabolism & Modeling",
+          "theme": "metabolism-modeling"
+        }
+      ],
+      "license": null,
+      "licenseSource": null,
+      "tier": "unknown",
+      "doi": "10.64898/2026.01.11.698917",
+      "doiSource": "manual",
+      "citationCount": 1,
+      "citationSources": 1,
+      "citationDois": [
+        "10.64898/2026.01.11.698917"
+      ]
+    },
+    {
+      "id": "ds:raman-soft-sensor-cell-culture-dataset-tanemura-et-al-2023",
+      "name": "Raman soft-sensor cell-culture dataset (Tanemura et al. 2023)",
+      "url": null,
+      "page": "CHOReference",
+      "section": "Bioprocess characterization datasets",
+      "kind": "other",
+      "anchor": "ds-raman-soft-sensor-cell-culture-dataset-tanemura-et-al-2023",
+      "topics": [
+        {
+          "slug": "bioprocess-scale-up",
+          "label": "Bioprocess & Scale-Up",
+          "theme": "bioprocess-scale-up"
+        },
+        {
+          "slug": "bioreactor-scale-up",
+          "label": "Bioreactor & scale-up",
+          "theme": "bioprocess-scale-up"
+        },
+        {
+          "slug": "mass-spectrometry",
+          "label": "Mass spectrometry & metabolomics",
+          "theme": "sensory-flavor"
+        },
+        {
+          "slug": "sensory-flavor",
+          "label": "Sensory & Flavor",
+          "theme": "sensory-flavor"
+        }
+      ],
+      "license": null,
+      "licenseSource": null,
+      "tier": "unknown",
+      "doi": "10.1038/s41598-023-49257-0",
+      "doiSource": "manual",
+      "citationCount": 24,
+      "citationSources": 1,
+      "citationDois": [
+        "10.1038/s41598-023-49257-0"
+      ]
+    },
+    {
+      "id": "ds:yeast9-saccharomyces-cerevisiae-precision-fermentation-host-reference",
+      "name": "Yeast9 — *Saccharomyces cerevisiae* (precision-fermentation host reference)",
+      "url": null,
+      "page": "MicrobialHostReference",
+      "section": "Genome-scale metabolic models",
+      "kind": "gem",
+      "anchor": "ds-yeast9-saccharomyces-cerevisiae-precision-fermentation-host-reference",
+      "topics": [
+        {
+          "slug": "bioprocess-scale-up",
+          "label": "Bioprocess & Scale-Up",
+          "theme": "bioprocess-scale-up"
+        },
+        {
+          "slug": "bioreactor-scale-up",
+          "label": "Bioreactor & scale-up",
+          "theme": "bioprocess-scale-up"
+        },
+        {
+          "slug": "cell-lines-engineering",
+          "label": "Cell Lines & Engineering",
+          "theme": "cell-lines-engineering"
+        },
+        {
+          "slug": "flavor-sensory",
+          "label": "Flavor & sensory prediction",
+          "theme": "sensory-flavor"
+        },
+        {
+          "slug": "growth-factors",
+          "label": "Growth factors",
+          "theme": "media-growth-factors"
+        },
+        {
+          "slug": "media-growth-factors",
+          "label": "Media & Growth Factors",
+          "theme": "media-growth-factors"
+        },
+        {
+          "slug": "metabolic-modeling",
+          "label": "Metabolic modeling",
+          "theme": "metabolism-modeling"
+        },
+        {
+          "slug": "metabolism-modeling",
+          "label": "Metabolism & Modeling",
+          "theme": "metabolism-modeling"
+        },
+        {
+          "slug": "sensory-flavor",
+          "label": "Sensory & Flavor",
+          "theme": "sensory-flavor"
+        }
+      ],
+      "license": null,
+      "licenseSource": null,
+      "tier": "unknown",
+      "doi": "10.1038/s44320-024-00060-7",
+      "doiSource": "manual",
+      "citationCount": 58,
+      "citationSources": 1,
+      "citationDois": [
+        "10.1038/s44320-024-00060-7"
+      ]
+    },
+    {
+      "id": "ds:imt1026-imt1026-v30-komagataella-phaffii-pichia-pastoris",
+      "name": "iMT1026 / iMT1026 v3.0 — *Komagataella phaffii* (*Pichia pastoris*)",
+      "url": null,
+      "page": "MicrobialHostReference",
+      "section": "Genome-scale metabolic models",
+      "kind": "gem",
+      "anchor": "ds-imt1026-imt1026-v30-komagataella-phaffii-pichia-pastoris",
+      "topics": [
+        {
+          "slug": "ai-methods-tooling",
+          "label": "AI Methods & Tooling",
+          "theme": "ai-methods-tooling"
+        },
+        {
+          "slug": "bioprocess-scale-up",
+          "label": "Bioprocess & Scale-Up",
+          "theme": "bioprocess-scale-up"
+        },
+        {
+          "slug": "bioreactor-scale-up",
+          "label": "Bioreactor & scale-up",
+          "theme": "bioprocess-scale-up"
+        },
+        {
+          "slug": "growth-factors",
+          "label": "Growth factors",
+          "theme": "media-growth-factors"
+        },
+        {
+          "slug": "media-growth-factors",
+          "label": "Media & Growth Factors",
+          "theme": "media-growth-factors"
+        },
+        {
+          "slug": "metabolic-modeling",
+          "label": "Metabolic modeling",
+          "theme": "metabolism-modeling"
+        },
+        {
+          "slug": "metabolism-modeling",
+          "label": "Metabolism & Modeling",
+          "theme": "metabolism-modeling"
+        }
+      ],
+      "license": null,
+      "licenseSource": null,
+      "tier": "unknown",
+      "doi": "10.1371/journal.pone.0148031",
+      "doiSource": "manual",
+      "citationCount": 72,
+      "citationSources": 1,
+      "citationDois": [
+        "10.1371/journal.pone.0148031"
+      ]
+    }
+  ],
+  "corpusDate": "2026-07-27"
+}

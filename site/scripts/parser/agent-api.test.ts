@@ -10,7 +10,16 @@
 
 import { describe, it, expect } from 'vitest';
 
-import { buildAgentApi, buildMatrix, buildTopicIndex, buildManifest, SCOPE_NOTE } from './agent-api.js';
+import { fileURLToPath } from 'node:url';
+
+import {
+  buildAgentApi,
+  buildMatrix,
+  buildTopicIndex,
+  buildManifest,
+  readCorpusDate,
+  SCOPE_NOTE,
+} from './agent-api.js';
 import { buildPapersModel } from './papers.js';
 import { buildCatalogModel } from './catalog.js';
 import { buildDatasetsModel } from './datasets-entries.js';
@@ -131,6 +140,34 @@ describe('buildAgentApi', () => {
     for (const f of files) {
       expect((f.body as any).corpusDate, `${f.name} has no corpusDate`).toBe(DATE);
     }
+  });
+
+  it('stamps a real date when none is supplied', () => {
+    // Every other test passes corpusDate explicitly, so none of them exercise the
+    // default. A shorthand `{ corpusDate }` once captured the same-named function
+    // instead of the string, and JSON.stringify silently dropped it: the output was
+    // deterministic and every assertion still passed while the field was undefined.
+    const dflt = buildAgentApi({ papers, catalog, datasets, topics, taxonomy });
+    for (const f of dflt) {
+      const d = (f.body as { corpusDate?: unknown }).corpusDate;
+      expect(typeof d, `${f.name} corpusDate is not a string`).toBe('string');
+      expect(d as string).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    }
+  });
+
+  it('derives the date from the corpus, not the clock, so the CI sync guard is stable', () => {
+    // The emitted files are committed and CI re-runs the parse to diff them. A
+    // build-time `new Date()` would differ on any later day and fail the guard.
+    const a = buildAgentApi({ papers, catalog, datasets, topics, taxonomy });
+    const b = buildAgentApi({ papers, catalog, datasets, topics, taxonomy });
+    expect(JSON.stringify(a)).toBe(JSON.stringify(b));
+
+    // Asserting the date differs from today would be flaky: a commit to the NDJSON
+    // today makes them legitimately equal. The real properties are that it comes from
+    // git and is never in the future.
+    const d = (a[0]!.body as { corpusDate: string }).corpusDate;
+    expect(d).toBe(readCorpusDate(fileURLToPath(new URL('../../../', import.meta.url))));
+    expect(d <= new Date().toISOString().slice(0, 10)).toBe(true);
   });
 
   it('serialises without throwing (no cycles, no undefined-only bodies)', () => {
