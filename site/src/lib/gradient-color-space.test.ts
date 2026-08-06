@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync, readdirSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import { join, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 /**
@@ -71,20 +71,32 @@ function sources(): string[] {
   return out;
 }
 
-/** Extract each gradient's argument text, respecting nested parentheses. */
+/**
+ * Extract each gradient's argument text, respecting nested parentheses.
+ *
+ * `re.lastIndex` is advanced past the whole gradient after each match, so a
+ * nested gradient is counted once as part of its parent rather than twice.
+ */
 function gradientArgs(css: string): string[] {
   const found: string[] = [];
   const re = /(?:repeating-)?(?:linear|radial|conic)-gradient\(/gi;
   for (let m = re.exec(css); m; m = re.exec(css)) {
+    const start = m.index + m[0].length;
     let depth = 1;
-    let i = m.index + m[0].length;
+    let i = start;
     for (; i < css.length && depth > 0; i++) {
       if (css[i] === '(') depth++;
       else if (css[i] === ')') depth--;
     }
-    found.push(css.slice(m.index + m[0].length, i - 1));
+    found.push(css.slice(start, i - 1));
+    re.lastIndex = i;
   }
   return found;
+}
+
+/** Repo-relative, POSIX-separated, so the inventory keys match on any platform. */
+function posixRelative(file: string): string {
+  return relative(SITE_ROOT, file).split(sep).join('/');
 }
 
 describe('gradient colour space (Firefox paint cost)', () => {
@@ -107,7 +119,7 @@ describe('gradient colour space (Firefox paint cost)', () => {
           /\b(color-mix|oklch|oklab)\(/i.test(args) ||
           [...tokens].some((t) => args.includes(`var(${t})`)),
       );
-      if (hits.length > 0) found[relative(SITE_ROOT, file)] = hits.length;
+      if (hits.length > 0) found[posixRelative(file)] = hits.length;
     }
     expect(found).toEqual(KNOWN_OKLAB_GRADIENTS);
   });
@@ -126,8 +138,11 @@ describe('gradient colour space (Firefox paint cost)', () => {
 
   it('builds the hero stripe gradient from those tokens, not inline colours', () => {
     const hero = readFileSync(join(SITE_ROOT, 'src/components/Hero.astro'), 'utf-8');
-    const stripe = hero.slice(hero.indexOf('.hero-stripe::before'));
-    const gradient = gradientArgs(stripe)[0] ?? '';
+    const at = hero.indexOf('.hero-stripe::before');
+    // Asserted separately so a renamed selector fails with "the rule moved"
+    // rather than a confusing empty-gradient mismatch further down.
+    expect(at, 'Hero.astro no longer has a .hero-stripe::before rule').toBeGreaterThan(-1);
+    const gradient = gradientArgs(hero.slice(at))[0] ?? '';
     expect(gradient).toContain('--caail-hero-stripe-from');
     expect(gradient).toContain('--caail-hero-stripe-to');
     expect(gradient).not.toMatch(/\b(color-mix|oklch|oklab)\(/i);
