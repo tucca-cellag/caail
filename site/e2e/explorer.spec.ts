@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { cellRefCount, counts } from './data';
+import { awaitHydrated } from './hydration';
 
 test('homepage shows the sections grid with counts', async ({ page }) => {
   await page.goto('./');
@@ -12,6 +13,7 @@ test('homepage shows the sections grid with counts', async ({ page }) => {
 
 test('explorer cell click opens the reference side panel', async ({ page }) => {
   await page.goto('./papers/explorer/');
+  await awaitHydrated(page, 'PapersExplorer');
   const n = cellRefCount('Deep Learning', 'cell');
   await page
     .getByRole('button', { name: `Deep Learning × Cellular Engineering: ${n} papers` })
@@ -24,6 +26,7 @@ test('explorer cell click opens the reference side panel', async ({ page }) => {
 
 test('explorer axis label opens a definition popup with a link to the full Taxonomy entry', async ({ page }) => {
   await page.goto('./papers/explorer/');
+  await awaitHydrated(page, 'PapersExplorer');
   const label = page.getByRole('button', { name: 'Deep Learning', exact: true });
   await expect(label).toHaveAttribute('aria-expanded', 'false');
   await label.click();
@@ -39,6 +42,7 @@ test('explorer axis label opens a definition popup with a link to the full Taxon
 
 test('explorer search filters the matrix and lists global matches', async ({ page }) => {
   await page.goto('./papers/explorer/');
+  await awaitHydrated(page, 'PapersExplorer');
   await expect(page.getByText('Select a cell to read its references.')).toBeVisible();
   await page.getByPlaceholder(/Search authors/).fill('Cosenza');
   // Side panel switches to a global results summary.
@@ -50,13 +54,14 @@ test('explorer search filters the matrix and lists global matches', async ({ pag
 
 test('explorer ranks method rows by frequency when an area is selected', async ({ page }) => {
   await page.goto('./papers/explorer/');
+  await awaitHydrated(page, 'PapersExplorer');
   await page.locator('.px-select').selectOption({ label: 'Media Optimization' });
   // One column of cells, top-to-bottom; counts must be non-increasing (blanks = 0).
   //
-  // Retry the whole read: selectOption resolves as soon as the <select> value changes,
-  // but the island re-ranks the rows on a later tick, so a one-shot read races it and
-  // sees the previous (unfiltered, matrix-order) counts. The race widens as the corpus
-  // grows, which is what makes a plain read flaky rather than reliably wrong.
+  // The retry covers the re-rank tick after selectOption. It does NOT cover firing
+  // selectOption before hydration — that loses the change event outright, so the state
+  // never updates and re-reading it can never converge. awaitHydrated above is what
+  // prevents that; this block only absorbs the render tick.
   await expect(async () => {
     const nums = (await page.locator('.px-c').allTextContents()).map((t) => parseInt(t, 10) || 0);
     expect(nums.length).toBeGreaterThan(1);

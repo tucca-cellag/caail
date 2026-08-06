@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { awaitHydrated } from './hydration';
 
 test('Software cards with a DOI show a "cited by N" badge linking to OpenAlex', async ({ page }) => {
   await page.goto('./software/');
@@ -67,6 +68,7 @@ test('the /citations/ hub has no axe violations', async ({ page }) => {
 
 test('a paper card in the Papers Explorer shows a citation badge', async ({ page }) => {
   await page.goto('./papers/explorer/');
+  await awaitHydrated(page, 'PapersExplorer');
   // Searching switches the side panel to a global results list of matching refs.
   await page.getByPlaceholder(/Search authors/).fill('DNABERT');
   await expect(page.locator('.px-ref .cite-badge').first()).toBeVisible();
