@@ -1,0 +1,20 @@
+{
+  "name": "caail",
+  "owner": {
+    "name": "Tufts University Center for Cellular Agriculture",
+    "url": "https://tucca-cellag.github.io/caail/"
+  },
+  "metadata": {
+    "description": "CAAIL marketplace — a curated map of the AI and machine-learning work in cellular agriculture: 345 papers by method and research area, plus the software, databases and per-species datasets the field uses.",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "caail",
+      "source": "./plugin",
+      "description": "Query CAAIL when choosing tools, datasets or databases for a cell-ag experiment or pipeline, or when asking what AI work exists in cultivated meat and alternative protein. Static JSON, nothing to install or authenticate.",
+      "category": "science",
+      "strict": false
+    }
+  ]
+}

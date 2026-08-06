@@ -30,6 +30,7 @@ import { buildRecentModel } from './recent.js';
 import { buildTopicsModel, unresolvedTopicItems, catalogJoinKey } from './topics.js';
 import { buildDatasetsModel } from './datasets-entries.js';
 import { writeLlmsFull } from './llms-full.js';
+import { buildAgentApi, writeAgentApi, publishSkillDoc } from './agent-api.js';
 import {
   PapersDataSchema,
   CountsSchema,
@@ -57,6 +58,25 @@ import {
  */
 export const DEFAULT_OUT_DIR: string = fileURLToPath(
   new URL('../../src/content/data/', import.meta.url),
+);
+
+/**
+ * Where the agent-facing static API is emitted. Under `public/`, so Astro copies it
+ * verbatim into the deploy and every endpoint is live at the same moment the site is.
+ * A generated artifact like graph.json, so it is gitignored rather than committed:
+ * committing ~1 MB of derived JSON on every corpus change would be pure churn, and the
+ * canonical NDJSON in `site/db/ndjson/` is already the committed fallback.
+ */
+export const DEFAULT_API_DIR: string = fileURLToPath(
+  new URL('../../public/api/', import.meta.url),
+);
+
+/**
+ * The plugin's SKILL.md, republished at `public/setup.md` so the install prompt has a
+ * short site URL. Single source of truth: the copy in `public/` is generated.
+ */
+export const SKILL_DOC_PATH: string = fileURLToPath(
+  new URL('../../../plugin/skills/caail/SKILL.md', import.meta.url),
 );
 
 /**
@@ -98,6 +118,7 @@ export function loadCitationCache(
  */
 export function generateData(
   outDir: string = DEFAULT_OUT_DIR,
+  apiDir: string = DEFAULT_API_DIR,
 ): {
   counts: Counts;
   papersRefs: number;
@@ -109,6 +130,7 @@ export function generateData(
   recentEntries: number;
   taxonomyDefs: number;
   awesomeLists: number;
+  apiFiles: number;
 } {
   // Build and validate the papers model.
   const model = buildPapersModel();
@@ -348,6 +370,12 @@ export function generateData(
     'utf-8',
   );
 
+  // Emit the agent-facing static API under public/, from the same validated models the
+  // site renders, so the two can't disagree about the corpus.
+  const apiFiles = buildAgentApi({ papers: model, catalog, datasets, topics, taxonomy });
+  writeAgentApi(apiFiles, apiDir);
+  publishSkillDoc(SKILL_DOC_PATH, join(apiDir, '..'));
+
   return {
     counts,
     papersRefs: model.references.length,
@@ -357,6 +385,7 @@ export function generateData(
     graphNodes: graph.nodes.length,
     graphEdges: graph.edges.length,
     recentEntries: recent.length,
+    apiFiles: apiFiles.length,
     taxonomyDefs: Object.keys(taxonomy.definitions).length,
     awesomeLists: awesome.groups.reduce((n, g) => n + g.items.length, 0),
   };
