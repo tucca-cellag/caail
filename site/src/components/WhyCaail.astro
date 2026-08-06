@@ -69,32 +69,32 @@ const Q = 'Has anyone applied graph neural networks to scaffolding in cultivated
 </section>
 
 <style>
-  .why { margin: 2.4rem 0 0; }
-  .why h2 { font-size: 1.15rem; color: var(--caail-primary); margin: 0 0 .2rem; }
-  .lede { font-size: .84rem; color: var(--caail-muted); margin: 0 0 .9rem; max-width: 60ch; text-wrap: pretty; }
+  .why { margin: var(--caail-section-gap) 0 0; }
+  .why h2 { font-size: var(--caail-fs-h2); line-height: 1.1; letter-spacing: -.02em; color: var(--caail-primary); margin: 0 0 var(--caail-space-3); }
+  .lede { font-size: var(--caail-fs-base); color: var(--caail-muted); margin: 0 0 .9rem; max-width: var(--caail-measure); text-wrap: pretty; }
 
   /* Ask once, above both columns, instead of repeating the question in each. */
-  .q { font-size: .92rem; font-weight: 600; color: var(--caail-ink); margin: 0 0 .7rem; line-height: 1.45; text-wrap: balance; max-width: 54ch; }
+  .q { font-size: var(--caail-fs-lg); font-weight: 600; color: var(--caail-ink); margin: 0 0 .7rem; line-height: 1.45; text-wrap: balance; max-width: var(--caail-measure); }
   .q::before { content: '“'; }
   .q::after { content: '”'; }
 
-  .cols { display: grid; gap: .8rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr)); }
-  .col { border: 1px solid var(--caail-border); border-radius: 10px; padding: .85rem .95rem; }
+  .cols { display: grid; gap: var(--caail-space-5); grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr)); }
+  .col { border: 1px solid var(--caail-border); border-radius: 10px; padding: var(--caail-space-5); }
   .col--with { background: color-mix(in oklab, var(--caail-link) 4%, transparent); border-color: color-mix(in oklab, var(--caail-link) 26%, var(--caail-border)); }
 
-  .hdr { display: flex; align-items: center; gap: .4rem; font-size: .78rem; font-weight: 600; color: var(--caail-muted); margin: 0 0 .5rem; }
+  .hdr { display: flex; align-items: center; gap: .4rem; font-size: var(--caail-fs-sm); font-weight: 600; color: var(--caail-muted); margin: 0 0 .5rem; }
   .hdr [data-icon] { width: 1.05rem; height: 1.05rem; flex: none; }
   .col--with .hdr { color: var(--caail-link); }
 
-  .a { font-size: .82rem; color: var(--caail-ink); margin: 0 0 .5rem; line-height: 1.5; }
+  .a { font-size: var(--caail-fs-base); color: var(--caail-ink); margin: 0 0 .5rem; line-height: 1.5; }
   .a--bad { color: var(--caail-muted); font-style: italic; }
 
-  .verdict { font-size: .77rem; color: var(--caail-muted); margin: 0; line-height: 1.5; }
+  .verdict { font-size: var(--caail-fs-sm); color: var(--caail-muted); margin: 0; line-height: 1.5; }
   /* Emphasis by weight, not hue: the area vermillion managed only 3.86:1 on white at this
      size, and colour alone should not be what carries "this answer is unreliable". */
   .verdict strong { color: var(--caail-ink); font-weight: 600; }
 
-  .foot { font-size: .78rem; color: var(--caail-muted); margin: .9rem 0 0; max-width: 72ch; line-height: 1.55; text-wrap: pretty; }
+  .foot { font-size: var(--caail-fs-sm); color: var(--caail-muted); margin: .9rem 0 0; max-width: var(--caail-measure); line-height: 1.55; text-wrap: pretty; }
   .foot a { white-space: nowrap; }
 
   @supports (animation-timeline: view()) {

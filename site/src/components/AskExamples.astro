@@ -81,20 +81,20 @@ const examples = [
 </section>
 
 <style>
-  .ask { margin: 2.4rem 0 0; }
-  .ask h2 { font-size: 1.15rem; color: var(--caail-primary); margin: 0 0 .2rem; }
-  .lede { font-size: .84rem; color: var(--caail-muted); margin: 0 0 1rem; max-width: 60ch; text-wrap: pretty; }
+  .ask { margin: var(--caail-section-gap) 0 0; }
+  .ask h2 { font-size: var(--caail-fs-h2); line-height: 1.1; letter-spacing: -.02em; color: var(--caail-primary); margin: 0 0 var(--caail-space-3); }
+  .lede { font-size: var(--caail-fs-base); color: var(--caail-muted); margin: 0 0 1rem; max-width: var(--caail-measure); text-wrap: pretty; }
 
   /* Rules, not boxes: the page already has two card grids above this one. */
   .qa { margin: 0; display: grid; }
-  .qa-row { padding: .75rem 0; border-top: 1px solid var(--caail-border); }
+  .qa-row { padding: var(--caail-space-5) 0; border-top: 1px solid var(--caail-border); }
   .qa-row:last-child { border-bottom: 1px solid var(--caail-border); }
 
-  .qa dt { font-size: .85rem; font-weight: 600; color: var(--caail-ink); margin: 0 0 .25rem; line-height: 1.45; }
-  .qa dt code { font-size: .68rem; font-weight: 500; color: var(--caail-link); background: color-mix(in oklab, var(--caail-link) 8%, transparent); padding: .08rem .35rem; border-radius: 4px; white-space: nowrap; }
-  .qa dd { font-size: .8rem; color: var(--caail-muted); margin: 0; line-height: 1.55; max-width: 72ch; text-wrap: pretty; }
+  .qa dt { font-size: var(--caail-fs-base); font-weight: 600; color: var(--caail-ink); max-width: var(--caail-measure); margin: 0 0 var(--caail-space-2); line-height: 1.45; }
+  .qa dt code { font-size: var(--caail-fs-xs); font-weight: 500; color: var(--caail-link); background: color-mix(in oklab, var(--caail-link) 8%, transparent); padding: .08rem .35rem; border-radius: 4px; white-space: nowrap; }
+  .qa dd { font-size: var(--caail-fs-sm); color: var(--caail-muted); margin: 0; line-height: 1.55; max-width: var(--caail-measure); text-wrap: pretty; }
 
-  .foot { font-size: .78rem; color: var(--caail-muted); margin: .9rem 0 0; }
+  .foot { font-size: var(--caail-fs-sm); color: var(--caail-muted); margin: .9rem 0 0; }
   .foot a { white-space: nowrap; }
 
   /* Stagger the rows as they arrive. Scroll-linked and progressively enhanced: without

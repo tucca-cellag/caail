@@ -4,6 +4,7 @@ import { awaitHydrated } from './hydration';
 
 test('Software cards with a DOI show a "cited by N" badge linking to OpenAlex', async ({ page }) => {
   await page.goto('./software/');
+  await awaitHydrated(page, 'CatalogBrowser');
   const badge = page.locator('.cb-card .cite-badge').first();
   await expect(badge).toBeVisible();
   await expect(badge).toContainText(/cited by/);
@@ -12,6 +13,7 @@ test('Software cards with a DOI show a "cited by N" badge linking to OpenAlex', 
 
 test('a versioned database aggregates its release papers into one badge (#102)', async ({ page }) => {
   await page.goto('./databases/');
+  await awaitHydrated(page, 'CatalogBrowser');
   // Aggregated badges (versioned resources like STRING/UniProt) carry the ∑ marker.
   const aggregated = page.locator('.cb-card .cite-badge--aggregated').first();
   await expect(aggregated).toBeVisible();
@@ -29,6 +31,7 @@ test('the /citations/ hub explains the ∑ aggregation marker', async ({ page })
 
 test('the "Most cited" facet narrows Software to cited entries, most-cited first', async ({ page }) => {
   await page.goto('./software/');
+  await awaitHydrated(page, 'CatalogBrowser');
   const total = await page.locator('.cb-card').count();
   await page.getByRole('button', { name: 'Most cited' }).click();
   const narrowed = await page.locator('.cb-card').count();

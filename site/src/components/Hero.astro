@@ -108,7 +108,7 @@ const stats = [
     border-radius: 4px;
   }
 
-  .eyebrow { font-size: .72rem; letter-spacing: .14em; text-transform: uppercase; color: var(--caail-accent); font-weight: 700; margin: 0; }
+  .eyebrow { font-size: var(--caail-fs-xs); letter-spacing: .14em; text-transform: uppercase; color: var(--caail-accent); font-weight: 700; margin: 0; }
   .h-title {
     font-size: clamp(3.2rem, 8.5vw, 6rem);
     line-height: 0.92;
@@ -129,7 +129,7 @@ const stats = [
   .lede { font-size: 1rem; line-height: 1.6; color: var(--caail-muted); max-width: 52ch; margin: 0 0 1.5rem; }
 
   .cta-row { display: flex; gap: .7rem; flex-wrap: wrap; margin-bottom: 1.9rem; }
-  .btn { display: inline-flex; align-items: center; gap: .5rem; border-radius: 999px; padding: .8rem 1.5rem; font-size: .92rem; font-weight: 600; text-decoration: none; border: 1.5px solid transparent; transition: background .15s, border-color .15s, color .15s, box-shadow .15s; }
+  .btn { display: inline-flex; align-items: center; gap: .5rem; border-radius: 999px; padding: .8rem 1.5rem; font-size: var(--caail-fs-lg); font-weight: 600; text-decoration: none; border: 1.5px solid transparent; transition: background .15s, border-color .15s, color .15s, box-shadow .15s; }
   .btn [data-icon] { width: 1.15rem; height: 1.15rem; }
   .btn-primary { background: var(--caail-primary); color: #fff; box-shadow: 0 10px 26px -16px color-mix(in oklab, var(--caail-primary) 70%, transparent); }
   .btn-primary:hover { background: var(--caail-primary-hover); }
@@ -143,11 +143,11 @@ const stats = [
   @media (max-width: 26rem) { .stats { grid-template-columns: repeat(2, max-content); } }
   .stat { display: flex; flex-direction: column; gap: .15rem; margin-top: 0; }
   .stat-n { font-size: 1.9rem; font-weight: 700; color: var(--caail-primary); line-height: 1; }
-  .stat-l { font-size: .68rem; letter-spacing: .05em; text-transform: uppercase; color: var(--caail-muted); }
+  .stat-l { font-size: var(--caail-fs-xs); letter-spacing: .05em; text-transform: uppercase; color: var(--caail-muted); }
 
   /* TUCCA attribution — sits under the stat row, left-aligned with the hero. */
   .hero-attrib { display: flex; align-items: center; gap: .65rem; flex-wrap: wrap; margin: 1.4rem 0 0; }
-  .hero-attrib > span { font-size: .72rem; letter-spacing: .04em; text-transform: uppercase; color: var(--caail-muted); font-weight: 600; }
+  .hero-attrib > span { font-size: var(--caail-fs-xs); letter-spacing: .04em; text-transform: uppercase; color: var(--caail-muted); font-weight: 600; }
 
   /* Graphic only in the wide 2-col layout — below 60rem the hero is text-only
    * (avoids the oversized graphic stacking below the text at mid widths). */

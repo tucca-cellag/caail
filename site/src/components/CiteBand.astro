@@ -36,7 +36,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     justify-content: space-between;
     flex-wrap: wrap;
     gap: 1rem;
-    margin: 1.5rem 0;
+    margin: var(--caail-section-gap) 0 0;
     padding: 1rem 1.15rem;
     border: 1px solid var(--caail-border);
     border-radius: 10px;
@@ -74,7 +74,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     align-items: center;
     gap: 0.45rem;
     font-family: var(--caail-font-mono);
-    font-size: 0.72rem;
+    font-size: var(--caail-fs-xs);
     color: var(--caail-ink);
     background: var(--caail-bg);
     border: 1px solid var(--caail-border);
@@ -88,7 +88,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   .doi__tag {
     font-family: var(--caail-font-ui);
     font-weight: 700;
-    font-size: 0.62rem;
+    font-size: var(--caail-fs-xs);
     letter-spacing: 0.05em;
     color: var(--caail-bg);
     background: var(--caail-primary);
@@ -96,7 +96,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     padding: 0.1rem 0.3rem;
   }
   .cta {
-    font-size: 0.8rem;
+    font-size: var(--caail-fs-sm);
     font-weight: 700;
     color: var(--caail-link);
     text-decoration: none;

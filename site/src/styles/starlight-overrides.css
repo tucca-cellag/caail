@@ -103,8 +103,10 @@ a.site-title {
   font-family: var(--caail-font-display);
 }
 
-/* Homepage two-column (Start here / Recently added) — collapses on narrow screens */
-.caail-two-col { display: grid; grid-template-columns: 1fr 1.15fr; gap: 1.6rem; margin-top: .5rem; }
+/* Homepage two-column (Start here / Recently added) — collapses on narrow screens.
+   margin-top carries the biggest conceptual seam on the page, where the agent story
+   hands off to the browsing aids. It was .5rem (8px), the tightest gap anywhere. */
+.caail-two-col { display: grid; grid-template-columns: 1fr 1.15fr; gap: var(--caail-space-6); margin-top: var(--caail-section-gap); }
 @media (max-width: 50rem) { .caail-two-col { grid-template-columns: 1fr; } }
 
 /* ── Wide data tables (Datasets/* inventories, etc.) ──────────────────────

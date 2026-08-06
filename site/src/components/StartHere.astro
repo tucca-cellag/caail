@@ -24,11 +24,11 @@ const cards = [
   ))}
 </section>
 <style>
-  .start h2 { font-size: 1.05rem; color: var(--caail-primary); margin: 0 0 .8rem; }
+  .start h2 { font-size: var(--caail-fs-h3); line-height: 1.15; color: var(--caail-primary); margin: 0 0 var(--caail-space-4); }
   .card { display: flex; gap: .7rem; align-items: flex-start; border: 1px solid var(--caail-border); border-radius: 9px; padding: .8rem .9rem; margin-bottom: .55rem; text-decoration: none; color: inherit; transition: border-color .15s, box-shadow .15s; }
   .card:hover, .card:focus-visible { border-color: var(--caail-link); box-shadow: 0 6px 18px -14px color-mix(in oklab, var(--caail-primary) 40%, transparent); outline: none; }
   .ic { flex: none; color: var(--caail-link); line-height: 1; }
   .ic [data-icon] { width: 1.4rem; height: 1.4rem; }
-  .card h3 { font-size: .85rem; margin: 0 0 .1rem; color: var(--caail-ink); }
-  .card p { font-size: .76rem; color: var(--caail-muted); margin: 0; line-height: 1.4; }
+  .card h3 { font-size: var(--caail-fs-base); margin: 0 0 .1rem; color: var(--caail-ink); }
+  .card p { font-size: var(--caail-fs-sm); color: var(--caail-muted); margin: 0; line-height: 1.4; }
 </style>
