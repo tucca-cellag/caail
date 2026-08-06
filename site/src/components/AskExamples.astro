@@ -78,8 +78,7 @@ if (!scaffold.length || !emptyScaffold.length || !bioproc.length || !media.lengt
   throw new Error('AskExamples: expected populated and empty cells in scaffolding, bioprocess and media');
 }
 
-/** The named method rows that a reader would name in a question, and whether they're empty here. */
-const scaffoldGnn = matrix.cells.find((c) => c.method === 'GNN' && c.area === 'scaffolding')!;
+/** The named method row a reader would name in a question. */
 const mediaBo = matrix.cells.find((c) => c.method === 'Bayesian Optimization' && c.area === 'media')!;
 
 const serumFree = topic('serum-free-media');

@@ -208,7 +208,13 @@ const withCaail = [
         <div class="turn">
           <span class="who who--ai">AI</span>
           <p class="bubble">
-            {cell.refIds.length} papers: {cited.join(', ')} and {cell.refIds.length - 3} more.
+            {/* "and N more" is suppressed at N === 0. The guard above admits a cell with
+                exactly 3 refs, which rendered "3 papers: A, B, C and 0 more." Not reachable
+                with the current cell (23 refs), but repointing METHOD/AREA is the one edit
+                this component invites, so it should not be able to produce that. */}
+            {cell.refIds.length} papers: {cited.join(', ')}{cell.refIds.length > 3
+              ? ` and ${cell.refIds.length - 3} more`
+              : ''}.
             {withCode} link runnable code. <em class="ok">[real ids, dated {matrix.corpusDate}]</em>
           </p>
         </div>
