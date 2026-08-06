@@ -10,6 +10,10 @@
 
 import { describe, it, expect } from 'vitest';
 
+import { execFileSync } from 'node:child_process';
+import { mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import {
@@ -31,6 +35,7 @@ const catalog = buildCatalogModel();
 const datasets = buildDatasetsModel();
 const topics = buildTopicsModel();
 const taxonomy = buildTaxonomyModel();
+const REPO_ROOT = fileURLToPath(new URL('../../../', import.meta.url));
 const DATE = '2026-01-01';
 
 describe('matrix.json', () => {
@@ -166,8 +171,30 @@ describe('buildAgentApi', () => {
     // today makes them legitimately equal. The real properties are that it comes from
     // git and is never in the future.
     const d = (a[0]!.body as { corpusDate: string }).corpusDate;
-    expect(d).toBe(readCorpusDate(fileURLToPath(new URL('../../../', import.meta.url))));
+    expect(d).toBe(readCorpusDate(REPO_ROOT));
     expect(d <= new Date().toISOString().slice(0, 10)).toBe(true);
+  });
+
+  it('refuses to derive a date from a shallow clone rather than inventing one', () => {
+    // A depth-1 clone's grafted root has no parent, so `git log -- <path>` reports any
+    // path present in that tree as touched and returns the TIP commit's date. It is
+    // well-formed, so a format check passes it, and the committed output would then
+    // disagree with CI's. Verified against a real shallow clone rather than a mock.
+    const tmp = mkdtempSync(join(tmpdir(), 'caail-shallow-'));
+    const clone = join(tmp, 'shallow');
+    try {
+      execFileSync('git', ['clone', '-q', '--depth', '1', `file://${REPO_ROOT}`, clone], {
+        stdio: ['ignore', 'ignore', 'ignore'],
+      });
+      expect(
+        execFileSync('git', ['-C', clone, 'rev-parse', '--is-shallow-repository'], {
+          encoding: 'utf-8',
+        }).trim(),
+      ).toBe('true');
+      expect(() => readCorpusDate(clone)).toThrow(/shallow clone/i);
+    } finally {
+      rmSync(tmp, { recursive: true, force: true });
+    }
   });
 
   it('serialises without throwing (no cycles, no undefined-only bodies)', () => {

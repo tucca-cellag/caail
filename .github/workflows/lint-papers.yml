@@ -50,6 +50,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+        with:
+          # Full history: the agent-API sync guard below regenerates corpusDate from
+          # `git log -- site/db/ndjson`, and in a depth-1 clone that returns the TIP
+          # commit's date (the graft root "touches" every path) rather than the real
+          # last-touch date. It is well-formed, so nothing catches it, and the guard
+          # then diffs a wrong date against the committed one. docs.yml and test.yml
+          # already set this for the same reason.
+          fetch-depth: 0
 
       - uses: pnpm/action-setup@v6
         with:

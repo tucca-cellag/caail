@@ -67,15 +67,32 @@ export interface AgentApiInputs {
  * the CI case.
  */
 export function readCorpusDate(repoRoot: string): string {
+  const git = (args: string[]): string =>
+    execFileSync('git', ['-C', repoRoot, ...args], {
+      encoding: 'utf-8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+      env: { ...process.env, TZ: 'UTC' },
+    }).trim();
+
   try {
-    const out = execFileSync(
-      'git',
-      ['-C', repoRoot, 'log', '-1', '--format=%cs', '--', 'site/db/ndjson'],
-      { encoding: 'utf-8', stdio: ['ignore', 'pipe', 'ignore'] },
-    ).trim();
+    // A shallow clone silently produces a WRONG date rather than no date: its grafted
+    // root commit has no parent, so `git log -- <path>` treats any path present in that
+    // tree as touched and returns the tip commit's date. That is well-formed, so no
+    // format check catches it, and the committed output would then disagree with CI.
+    // Refuse rather than emit a plausible lie; workflows set fetch-depth: 0.
+    if (git(['rev-parse', '--is-shallow-repository']) === 'true') {
+      throw new Error(
+        'agent-api: cannot derive corpusDate from a shallow clone — it would silently ' +
+          'return the tip commit date. Check out with fetch-depth: 0.',
+      );
+    }
+    // --date=format-local with TZ=UTC normalises across contributors' timezones; %cs
+    // alone is the committer's local date and can read a day ahead of UTC.
+    const out = git(['log', '-1', '--date=format-local:%Y-%m-%d', '--format=%cd', '--', 'site/db/ndjson']);
     if (/^\d{4}-\d{2}-\d{2}$/.test(out)) return out;
-  } catch {
-    /* fall through */
+  } catch (err) {
+    if (err instanceof Error && err.message.startsWith('agent-api:')) throw err;
+    /* git unavailable (tarball export): fall through to the clock */
   }
   return new Date().toISOString().slice(0, 10);
 }
