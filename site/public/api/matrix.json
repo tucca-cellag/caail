@@ -1,0 +1,1742 @@
+{
+  "corpusDate": "2026-07-28",
+  "methods": [
+    "Bayesian Optimization",
+    "Deep Learning",
+    "GNN",
+    "CNN",
+    "GAN / VAE",
+    "Genetic Algorithms",
+    "SVM",
+    "Ensemble Learning",
+    "K-Nearest Neighbors",
+    "Linear & Regularized Models",
+    "Chemometrics",
+    "Active Learning",
+    "Reinforcement Learning",
+    "Foundation Models: Next-Token Prediction",
+    "Foundation Models: Masked Language Modeling",
+    "Foundation Models: LM + Biological Priors",
+    "Foundation Models: Cell-State & Perturbation Prediction",
+    "Foundation Models (other modalities)",
+    "Scientific Literature & Discovery Agents",
+    "General-Purpose Biomedical Agents",
+    "Chemistry / Synthesis Agents",
+    "Domain-Specific Biomedical Agents",
+    "Robot Scientists & Lab Automation",
+    "Benchmarks & Evaluation Frameworks",
+    "Agent Infrastructure (Frameworks, KGs, Protocols)"
+  ],
+  "areas": [
+    {
+      "key": "media",
+      "label": "Media Optimization"
+    },
+    {
+      "key": "cell",
+      "label": "Cellular Engineering"
+    },
+    {
+      "key": "bioprocess",
+      "label": "Bioprocess & Scale-Up"
+    },
+    {
+      "key": "scaffolding",
+      "label": "Scaffolding"
+    },
+    {
+      "key": "sensory",
+      "label": "Sensory Prediction"
+    },
+    {
+      "key": "tooling",
+      "label": "AI Tooling / Methodology"
+    },
+    {
+      "key": "eval",
+      "label": "AI Evaluation & Benchmarking"
+    }
+  ],
+  "totalCells": 175,
+  "populatedCells": 68,
+  "emptyCells": 107,
+  "scopeNote": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall.",
+  "cells": [
+    {
+      "method": "Bayesian Optimization",
+      "area": "media",
+      "areaLabel": "Media Optimization",
+      "refIds": [
+        3,
+        16,
+        18,
+        2,
+        15,
+        58,
+        211,
+        212,
+        249,
+        251
+      ],
+      "emptyInCorpus": false
+    },
+    {
+      "method": "Bayesian Optimization",
+      "area": "cell",
+      "areaLabel": "Cellular Engineering",
+      "refIds": [
+        16
+      ],
+      "emptyInCorpus": false
+    },
+    {
+      "method": "Bayesian Optimization",
+      "area": "bioprocess",
+      "areaLabel": "Bioprocess & Scale-Up",
+      "refIds": [
+        59,
+        256
+      ],
+      "emptyInCorpus": false
+    },
+    {
+      "method": "Bayesian Optimization",
+      "area": "scaffolding",
+      "areaLabel": "Scaffolding",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Bayesian Optimization",
+      "area": "sensory",
+      "areaLabel": "Sensory Prediction",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Bayesian Optimization",
+      "area": "tooling",
+      "areaLabel": "AI Tooling / Methodology",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Bayesian Optimization",
+      "area": "eval",
+      "areaLabel": "AI Evaluation & Benchmarking",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Deep Learning",
+      "area": "media",
+      "areaLabel": "Media Optimization",
+      "refIds": [
+        18,
+        15,
+        212
+      ],
+      "emptyInCorpus": false
+    },
+    {
+      "method": "Deep Learning",
+      "area": "cell",
+      "areaLabel": "Cellular Engineering",
+      "refIds": [
+        5,
+        122,
+        57,
+        145,
+        118,
+        123,
+        263
+      ],
+      "emptyInCorpus": false
+    },
+    {
+      "method": "Deep Learning",
+      "area": "bioprocess",
+      "areaLabel": "Bioprocess & Scale-Up",
+      "refIds": [
+        29,
+        30,
+        204,
+        205,
+        253,
+        254,
+        255,
+        257
+      ],
+      "emptyInCorpus": false
+    },
+    {
+      "method": "Deep Learning",
+      "area": "scaffolding",
+      "areaLabel": "Scaffolding",
+      "refIds": [
+        20,
+        215,
+        216
+      ],
+      "emptyInCorpus": false
+    },
+    {
+      "method": "Deep Learning",
+      "area": "sensory",
+      "areaLabel": "Sensory Prediction",
+      "refIds": [
+        236,
+        325,
+        326,
+        330,
+        333,
+        338
+      ],
+      "emptyInCorpus": false
+    },
+    {
+      "method": "Deep Learning",
+      "area": "tooling",
+      "areaLabel": "AI Tooling / Methodology",
+      "refIds": [
+        197,
+        4,
+        289
+      ],
+      "emptyInCorpus": false
+    },
+    {
+      "method": "Deep Learning",
+      "area": "eval",
+      "areaLabel": "AI Evaluation & Benchmarking",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "GNN",
+      "area": "media",
+      "areaLabel": "Media Optimization",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "GNN",
+      "area": "cell",
+      "areaLabel": "Cellular Engineering",
+      "refIds": [
+        13,
+        8,
+        12,
+        121,
+        68
+      ],
+      "emptyInCorpus": false
+    },
+    {
+      "method": "GNN",
+      "area": "bioprocess",
+      "areaLabel": "Bioprocess & Scale-Up",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "GNN",
+      "area": "scaffolding",
+      "areaLabel": "Scaffolding",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "GNN",
+      "area": "sensory",
+      "areaLabel": "Sensory Prediction",
+      "refIds": [
+        14,
+        36,
+        285,
+        286,
+        320,
+        324
+      ],
+      "emptyInCorpus": false
+    },
+    {
+      "method": "GNN",
+      "area": "tooling",
+      "areaLabel": "AI Tooling / Methodology",
+      "refIds": [
+        52
+      ],
+      "emptyInCorpus": false
+    },
+    {
+      "method": "GNN",
+      "area": "eval",
+      "areaLabel": "AI Evaluation & Benchmarking",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "CNN",
+      "area": "media",
+      "areaLabel": "Media Optimization",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "CNN",
+      "area": "cell",
+      "areaLabel": "Cellular Engineering",
+      "refIds": [
+        218,
+        264,
+        265
+      ],
+      "emptyInCorpus": false
+    },
+    {
+      "method": "CNN",
+      "area": "bioprocess",
+      "areaLabel": "Bioprocess & Scale-Up",
+      "refIds": [
+        33,
+        206,
+        260,
+        261
+      ],
+      "emptyInCorpus": false
+    },
+    {
+      "method": "CNN",
+      "area": "scaffolding",
+      "areaLabel": "Scaffolding",
+      "refIds": [
+        19,
+        310,
+        349
+      ],
+      "emptyInCorpus": false
+    },
+    {
+      "method": "CNN",
+      "area": "sensory",
+      "areaLabel": "Sensory Prediction",
+      "refIds": [
+        26,
+        11,
+        195,
+        196,
+        321,
+        330
+      ],
+      "emptyInCorpus": false
+    },
+    {
+      "method": "CNN",
+      "area": "tooling",
+      "areaLabel": "AI Tooling / Methodology",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "CNN",
+      "area": "eval",
+      "areaLabel": "AI Evaluation & Benchmarking",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "GAN / VAE",
+      "area": "media",
+      "areaLabel": "Media Optimization",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "GAN / VAE",
+      "area": "cell",
+      "areaLabel": "Cellular Engineering",
+      "refIds": [
+        9,
+        10
+      ],
+      "emptyInCorpus": false
+    },
+    {
+      "method": "GAN / VAE",
+      "area": "bioprocess",
+      "areaLabel": "Bioprocess & Scale-Up",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "GAN / VAE",
+      "area": "scaffolding",
+      "areaLabel": "Scaffolding",
+      "refIds": [
+        35
+      ],
+      "emptyInCorpus": false
+    },
+    {
+      "method": "GAN / VAE",
+      "area": "sensory",
+      "areaLabel": "Sensory Prediction",
+      "refIds": [
+        11
+      ],
+      "emptyInCorpus": false
+    },
+    {
+      "method": "GAN / VAE",
+      "area": "tooling",
+      "areaLabel": "AI Tooling / Methodology",
+      "refIds": [
+        238
+      ],
+      "emptyInCorpus": false
+    },
+    {
+      "method": "GAN / VAE",
+      "area": "eval",
+      "areaLabel": "AI Evaluation & Benchmarking",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Genetic Algorithms",
+      "area": "media",
+      "areaLabel": "Media Optimization",
+      "refIds": [
+        17,
+        1,
+        169,
+        210,
+        211,
+        252
+      ],
+      "emptyInCorpus": false
+    },
+    {
+      "method": "Genetic Algorithms",
+      "area": "cell",
+      "areaLabel": "Cellular Engineering",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Genetic Algorithms",
+      "area": "bioprocess",
+      "areaLabel": "Bioprocess & Scale-Up",
+      "refIds": [
+        30,
+        31,
+        209,
+        258
+      ],
+      "emptyInCorpus": false
+    },
+    {
+      "method": "Genetic Algorithms",
+      "area": "scaffolding",
+      "areaLabel": "Scaffolding",
+      "refIds": [
+        34
+      ],
+      "emptyInCorpus": false
+    },
+    {
+      "method": "Genetic Algorithms",
+      "area": "sensory",
+      "areaLabel": "Sensory Prediction",
+      "refIds": [
+        342
+      ],
+      "emptyInCorpus": false
+    },
+    {
+      "method": "Genetic Algorithms",
+      "area": "tooling",
+      "areaLabel": "AI Tooling / Methodology",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Genetic Algorithms",
+      "area": "eval",
+      "areaLabel": "AI Evaluation & Benchmarking",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "SVM",
+      "area": "media",
+      "areaLabel": "Media Optimization",
+      "refIds": [
+        21
+      ],
+      "emptyInCorpus": false
+    },
+    {
+      "method": "SVM",
+      "area": "cell",
+      "areaLabel": "Cellular Engineering",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "SVM",
+      "area": "bioprocess",
+      "areaLabel": "Bioprocess & Scale-Up",
+      "refIds": [
+        31,
+        32,
+        208,
+        259,
+        262
+      ],
+      "emptyInCorpus": false
+    },
+    {
+      "method": "SVM",
+      "area": "scaffolding",
+      "areaLabel": "Scaffolding",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "SVM",
+      "area": "sensory",
+      "areaLabel": "Sensory Prediction",
+      "refIds": [
+        26,
+        28,
+        72,
+        11,
+        271,
+        327,
+        346,
+        334
+      ],
+      "emptyInCorpus": false
+    },
+    {
+      "method": "SVM",
+      "area": "tooling",
+      "areaLabel": "AI Tooling / Methodology",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "SVM",
+      "area": "eval",
+      "areaLabel": "AI Evaluation & Benchmarking",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Ensemble Learning",
+      "area": "media",
+      "areaLabel": "Media Optimization",
+      "refIds": [
+        170,
+        169,
+        213
+      ],
+      "emptyInCorpus": false
+    },
+    {
+      "method": "Ensemble Learning",
+      "area": "cell",
+      "areaLabel": "Cellular Engineering",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Ensemble Learning",
+      "area": "bioprocess",
+      "areaLabel": "Bioprocess & Scale-Up",
+      "refIds": [
+        32,
+        27,
+        207,
+        208
+      ],
+      "emptyInCorpus": false
+    },
+    {
+      "method": "Ensemble Learning",
+      "area": "scaffolding",
+      "areaLabel": "Scaffolding",
+      "refIds": [
+        20,
+        214,
+        217,
+        171,
+        309
+      ],
+      "emptyInCorpus": false
+    },
+    {
+      "method": "Ensemble Learning",
+      "area": "sensory",
+      "areaLabel": "Sensory Prediction",
+      "refIds": [
+        80,
+        102,
+        103,
+        72,
+        171,
+        105,
+        27,
+        11,
+        28,
+        268,
+        323,
+        328,
+        329,
+        331,
+        332,
+        336,
+        337,
+        341,
+        342,
+        343,
+        344,
+        345,
+        346
+      ],
+      "emptyInCorpus": false
+    },
+    {
+      "method": "Ensemble Learning",
+      "area": "tooling",
+      "areaLabel": "AI Tooling / Methodology",
+      "refIds": [
+        290
+      ],
+      "emptyInCorpus": false
+    },
+    {
+      "method": "Ensemble Learning",
+      "area": "eval",
+      "areaLabel": "AI Evaluation & Benchmarking",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "K-Nearest Neighbors",
+      "area": "media",
+      "areaLabel": "Media Optimization",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "K-Nearest Neighbors",
+      "area": "cell",
+      "areaLabel": "Cellular Engineering",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "K-Nearest Neighbors",
+      "area": "bioprocess",
+      "areaLabel": "Bioprocess & Scale-Up",
+      "refIds": [
+        32
+      ],
+      "emptyInCorpus": false
+    },
+    {
+      "method": "K-Nearest Neighbors",
+      "area": "scaffolding",
+      "areaLabel": "Scaffolding",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "K-Nearest Neighbors",
+      "area": "sensory",
+      "areaLabel": "Sensory Prediction",
+      "refIds": [
+        28,
+        104,
+        340
+      ],
+      "emptyInCorpus": false
+    },
+    {
+      "method": "K-Nearest Neighbors",
+      "area": "tooling",
+      "areaLabel": "AI Tooling / Methodology",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "K-Nearest Neighbors",
+      "area": "eval",
+      "areaLabel": "AI Evaluation & Benchmarking",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Linear & Regularized Models",
+      "area": "media",
+      "areaLabel": "Media Optimization",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Linear & Regularized Models",
+      "area": "cell",
+      "areaLabel": "Cellular Engineering",
+      "refIds": [
+        266
+      ],
+      "emptyInCorpus": false
+    },
+    {
+      "method": "Linear & Regularized Models",
+      "area": "bioprocess",
+      "areaLabel": "Bioprocess & Scale-Up",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Linear & Regularized Models",
+      "area": "scaffolding",
+      "areaLabel": "Scaffolding",
+      "refIds": [
+        171
+      ],
+      "emptyInCorpus": false
+    },
+    {
+      "method": "Linear & Regularized Models",
+      "area": "sensory",
+      "areaLabel": "Sensory Prediction",
+      "refIds": [
+        269,
+        339,
+        171
+      ],
+      "emptyInCorpus": false
+    },
+    {
+      "method": "Linear & Regularized Models",
+      "area": "tooling",
+      "areaLabel": "AI Tooling / Methodology",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Linear & Regularized Models",
+      "area": "eval",
+      "areaLabel": "AI Evaluation & Benchmarking",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Chemometrics",
+      "area": "media",
+      "areaLabel": "Media Optimization",
+      "refIds": [
+        287
+      ],
+      "emptyInCorpus": false
+    },
+    {
+      "method": "Chemometrics",
+      "area": "cell",
+      "areaLabel": "Cellular Engineering",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Chemometrics",
+      "area": "bioprocess",
+      "areaLabel": "Bioprocess & Scale-Up",
+      "refIds": [
+        7,
+        208
+      ],
+      "emptyInCorpus": false
+    },
+    {
+      "method": "Chemometrics",
+      "area": "scaffolding",
+      "areaLabel": "Scaffolding",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Chemometrics",
+      "area": "sensory",
+      "areaLabel": "Sensory Prediction",
+      "refIds": [
+        334,
+        335,
+        340,
+        347,
+        348
+      ],
+      "emptyInCorpus": false
+    },
+    {
+      "method": "Chemometrics",
+      "area": "tooling",
+      "areaLabel": "AI Tooling / Methodology",
+      "refIds": [
+        198,
+        199
+      ],
+      "emptyInCorpus": false
+    },
+    {
+      "method": "Chemometrics",
+      "area": "eval",
+      "areaLabel": "AI Evaluation & Benchmarking",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Active Learning",
+      "area": "media",
+      "areaLabel": "Media Optimization",
+      "refIds": [
+        24,
+        23,
+        25,
+        58,
+        169,
+        250
+      ],
+      "emptyInCorpus": false
+    },
+    {
+      "method": "Active Learning",
+      "area": "cell",
+      "areaLabel": "Cellular Engineering",
+      "refIds": [
+        63,
+        97
+      ],
+      "emptyInCorpus": false
+    },
+    {
+      "method": "Active Learning",
+      "area": "bioprocess",
+      "areaLabel": "Bioprocess & Scale-Up",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Active Learning",
+      "area": "scaffolding",
+      "areaLabel": "Scaffolding",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Active Learning",
+      "area": "sensory",
+      "areaLabel": "Sensory Prediction",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Active Learning",
+      "area": "tooling",
+      "areaLabel": "AI Tooling / Methodology",
+      "refIds": [
+        63,
+        182
+      ],
+      "emptyInCorpus": false
+    },
+    {
+      "method": "Active Learning",
+      "area": "eval",
+      "areaLabel": "AI Evaluation & Benchmarking",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Reinforcement Learning",
+      "area": "media",
+      "areaLabel": "Media Optimization",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Reinforcement Learning",
+      "area": "cell",
+      "areaLabel": "Cellular Engineering",
+      "refIds": [
+        165,
+        120
+      ],
+      "emptyInCorpus": false
+    },
+    {
+      "method": "Reinforcement Learning",
+      "area": "bioprocess",
+      "areaLabel": "Bioprocess & Scale-Up",
+      "refIds": [
+        200,
+        201,
+        202,
+        203
+      ],
+      "emptyInCorpus": false
+    },
+    {
+      "method": "Reinforcement Learning",
+      "area": "scaffolding",
+      "areaLabel": "Scaffolding",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Reinforcement Learning",
+      "area": "sensory",
+      "areaLabel": "Sensory Prediction",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Reinforcement Learning",
+      "area": "tooling",
+      "areaLabel": "AI Tooling / Methodology",
+      "refIds": [
+        161
+      ],
+      "emptyInCorpus": false
+    },
+    {
+      "method": "Reinforcement Learning",
+      "area": "eval",
+      "areaLabel": "AI Evaluation & Benchmarking",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Foundation Models: Next-Token Prediction",
+      "area": "media",
+      "areaLabel": "Media Optimization",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Foundation Models: Next-Token Prediction",
+      "area": "cell",
+      "areaLabel": "Cellular Engineering",
+      "refIds": [
+        115,
+        92,
+        120
+      ],
+      "emptyInCorpus": false
+    },
+    {
+      "method": "Foundation Models: Next-Token Prediction",
+      "area": "bioprocess",
+      "areaLabel": "Bioprocess & Scale-Up",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Foundation Models: Next-Token Prediction",
+      "area": "scaffolding",
+      "areaLabel": "Scaffolding",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Foundation Models: Next-Token Prediction",
+      "area": "sensory",
+      "areaLabel": "Sensory Prediction",
+      "refIds": [
+        285
+      ],
+      "emptyInCorpus": false
+    },
+    {
+      "method": "Foundation Models: Next-Token Prediction",
+      "area": "tooling",
+      "areaLabel": "AI Tooling / Methodology",
+      "refIds": [
+        117,
+        88
+      ],
+      "emptyInCorpus": false
+    },
+    {
+      "method": "Foundation Models: Next-Token Prediction",
+      "area": "eval",
+      "areaLabel": "AI Evaluation & Benchmarking",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Foundation Models: Masked Language Modeling",
+      "area": "media",
+      "areaLabel": "Media Optimization",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Foundation Models: Masked Language Modeling",
+      "area": "cell",
+      "areaLabel": "Cellular Engineering",
+      "refIds": [
+        112,
+        116,
+        235
+      ],
+      "emptyInCorpus": false
+    },
+    {
+      "method": "Foundation Models: Masked Language Modeling",
+      "area": "bioprocess",
+      "areaLabel": "Bioprocess & Scale-Up",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Foundation Models: Masked Language Modeling",
+      "area": "scaffolding",
+      "areaLabel": "Scaffolding",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Foundation Models: Masked Language Modeling",
+      "area": "sensory",
+      "areaLabel": "Sensory Prediction",
+      "refIds": [
+        322
+      ],
+      "emptyInCorpus": false
+    },
+    {
+      "method": "Foundation Models: Masked Language Modeling",
+      "area": "tooling",
+      "areaLabel": "AI Tooling / Methodology",
+      "refIds": [
+        111,
+        117,
+        6
+      ],
+      "emptyInCorpus": false
+    },
+    {
+      "method": "Foundation Models: Masked Language Modeling",
+      "area": "eval",
+      "areaLabel": "AI Evaluation & Benchmarking",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Foundation Models: LM + Biological Priors",
+      "area": "media",
+      "areaLabel": "Media Optimization",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Foundation Models: LM + Biological Priors",
+      "area": "cell",
+      "areaLabel": "Cellular Engineering",
+      "refIds": [
+        119
+      ],
+      "emptyInCorpus": false
+    },
+    {
+      "method": "Foundation Models: LM + Biological Priors",
+      "area": "bioprocess",
+      "areaLabel": "Bioprocess & Scale-Up",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Foundation Models: LM + Biological Priors",
+      "area": "scaffolding",
+      "areaLabel": "Scaffolding",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Foundation Models: LM + Biological Priors",
+      "area": "sensory",
+      "areaLabel": "Sensory Prediction",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Foundation Models: LM + Biological Priors",
+      "area": "tooling",
+      "areaLabel": "AI Tooling / Methodology",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Foundation Models: LM + Biological Priors",
+      "area": "eval",
+      "areaLabel": "AI Evaluation & Benchmarking",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Foundation Models: Cell-State & Perturbation Prediction",
+      "area": "media",
+      "areaLabel": "Media Optimization",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Foundation Models: Cell-State & Perturbation Prediction",
+      "area": "cell",
+      "areaLabel": "Cellular Engineering",
+      "refIds": [
+        57,
+        124,
+        120
+      ],
+      "emptyInCorpus": false
+    },
+    {
+      "method": "Foundation Models: Cell-State & Perturbation Prediction",
+      "area": "bioprocess",
+      "areaLabel": "Bioprocess & Scale-Up",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Foundation Models: Cell-State & Perturbation Prediction",
+      "area": "scaffolding",
+      "areaLabel": "Scaffolding",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Foundation Models: Cell-State & Perturbation Prediction",
+      "area": "sensory",
+      "areaLabel": "Sensory Prediction",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Foundation Models: Cell-State & Perturbation Prediction",
+      "area": "tooling",
+      "areaLabel": "AI Tooling / Methodology",
+      "refIds": [
+        117
+      ],
+      "emptyInCorpus": false
+    },
+    {
+      "method": "Foundation Models: Cell-State & Perturbation Prediction",
+      "area": "eval",
+      "areaLabel": "AI Evaluation & Benchmarking",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Foundation Models (other modalities)",
+      "area": "media",
+      "areaLabel": "Media Optimization",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Foundation Models (other modalities)",
+      "area": "cell",
+      "areaLabel": "Cellular Engineering",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Foundation Models (other modalities)",
+      "area": "bioprocess",
+      "areaLabel": "Bioprocess & Scale-Up",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Foundation Models (other modalities)",
+      "area": "scaffolding",
+      "areaLabel": "Scaffolding",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Foundation Models (other modalities)",
+      "area": "sensory",
+      "areaLabel": "Sensory Prediction",
+      "refIds": [
+        267,
+        270
+      ],
+      "emptyInCorpus": false
+    },
+    {
+      "method": "Foundation Models (other modalities)",
+      "area": "tooling",
+      "areaLabel": "AI Tooling / Methodology",
+      "refIds": [
+        42,
+        91,
+        224
+      ],
+      "emptyInCorpus": false
+    },
+    {
+      "method": "Foundation Models (other modalities)",
+      "area": "eval",
+      "areaLabel": "AI Evaluation & Benchmarking",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Scientific Literature & Discovery Agents",
+      "area": "media",
+      "areaLabel": "Media Optimization",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Scientific Literature & Discovery Agents",
+      "area": "cell",
+      "areaLabel": "Cellular Engineering",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Scientific Literature & Discovery Agents",
+      "area": "bioprocess",
+      "areaLabel": "Bioprocess & Scale-Up",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Scientific Literature & Discovery Agents",
+      "area": "scaffolding",
+      "areaLabel": "Scaffolding",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Scientific Literature & Discovery Agents",
+      "area": "sensory",
+      "areaLabel": "Sensory Prediction",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Scientific Literature & Discovery Agents",
+      "area": "tooling",
+      "areaLabel": "AI Tooling / Methodology",
+      "refIds": [
+        44,
+        45,
+        46,
+        47,
+        153,
+        154,
+        166,
+        221,
+        222,
+        273
+      ],
+      "emptyInCorpus": false
+    },
+    {
+      "method": "Scientific Literature & Discovery Agents",
+      "area": "eval",
+      "areaLabel": "AI Evaluation & Benchmarking",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "General-Purpose Biomedical Agents",
+      "area": "media",
+      "areaLabel": "Media Optimization",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "General-Purpose Biomedical Agents",
+      "area": "cell",
+      "areaLabel": "Cellular Engineering",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "General-Purpose Biomedical Agents",
+      "area": "bioprocess",
+      "areaLabel": "Bioprocess & Scale-Up",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "General-Purpose Biomedical Agents",
+      "area": "scaffolding",
+      "areaLabel": "Scaffolding",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "General-Purpose Biomedical Agents",
+      "area": "sensory",
+      "areaLabel": "Sensory Prediction",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "General-Purpose Biomedical Agents",
+      "area": "tooling",
+      "areaLabel": "AI Tooling / Methodology",
+      "refIds": [
+        98,
+        49,
+        94,
+        95,
+        96,
+        223,
+        237,
+        272
+      ],
+      "emptyInCorpus": false
+    },
+    {
+      "method": "General-Purpose Biomedical Agents",
+      "area": "eval",
+      "areaLabel": "AI Evaluation & Benchmarking",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Chemistry / Synthesis Agents",
+      "area": "media",
+      "areaLabel": "Media Optimization",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Chemistry / Synthesis Agents",
+      "area": "cell",
+      "areaLabel": "Cellular Engineering",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Chemistry / Synthesis Agents",
+      "area": "bioprocess",
+      "areaLabel": "Bioprocess & Scale-Up",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Chemistry / Synthesis Agents",
+      "area": "scaffolding",
+      "areaLabel": "Scaffolding",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Chemistry / Synthesis Agents",
+      "area": "sensory",
+      "areaLabel": "Sensory Prediction",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Chemistry / Synthesis Agents",
+      "area": "tooling",
+      "areaLabel": "AI Tooling / Methodology",
+      "refIds": [
+        70,
+        71
+      ],
+      "emptyInCorpus": false
+    },
+    {
+      "method": "Chemistry / Synthesis Agents",
+      "area": "eval",
+      "areaLabel": "AI Evaluation & Benchmarking",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Domain-Specific Biomedical Agents",
+      "area": "media",
+      "areaLabel": "Media Optimization",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Domain-Specific Biomedical Agents",
+      "area": "cell",
+      "areaLabel": "Cellular Engineering",
+      "refIds": [
+        97,
+        125,
+        93
+      ],
+      "emptyInCorpus": false
+    },
+    {
+      "method": "Domain-Specific Biomedical Agents",
+      "area": "bioprocess",
+      "areaLabel": "Bioprocess & Scale-Up",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Domain-Specific Biomedical Agents",
+      "area": "scaffolding",
+      "areaLabel": "Scaffolding",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Domain-Specific Biomedical Agents",
+      "area": "sensory",
+      "areaLabel": "Sensory Prediction",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Domain-Specific Biomedical Agents",
+      "area": "tooling",
+      "areaLabel": "AI Tooling / Methodology",
+      "refIds": [
+        69,
+        68,
+        43,
+        50,
+        167,
+        54,
+        56,
+        51,
+        40,
+        90,
+        126,
+        275,
+        276,
+        277
+      ],
+      "emptyInCorpus": false
+    },
+    {
+      "method": "Domain-Specific Biomedical Agents",
+      "area": "eval",
+      "areaLabel": "AI Evaluation & Benchmarking",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Robot Scientists & Lab Automation",
+      "area": "media",
+      "areaLabel": "Media Optimization",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Robot Scientists & Lab Automation",
+      "area": "cell",
+      "areaLabel": "Cellular Engineering",
+      "refIds": [
+        66,
+        16
+      ],
+      "emptyInCorpus": false
+    },
+    {
+      "method": "Robot Scientists & Lab Automation",
+      "area": "bioprocess",
+      "areaLabel": "Bioprocess & Scale-Up",
+      "refIds": [
+        61
+      ],
+      "emptyInCorpus": false
+    },
+    {
+      "method": "Robot Scientists & Lab Automation",
+      "area": "scaffolding",
+      "areaLabel": "Scaffolding",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Robot Scientists & Lab Automation",
+      "area": "sensory",
+      "areaLabel": "Sensory Prediction",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Robot Scientists & Lab Automation",
+      "area": "tooling",
+      "areaLabel": "AI Tooling / Methodology",
+      "refIds": [
+        182,
+        64,
+        65,
+        62,
+        154,
+        274
+      ],
+      "emptyInCorpus": false
+    },
+    {
+      "method": "Robot Scientists & Lab Automation",
+      "area": "eval",
+      "areaLabel": "AI Evaluation & Benchmarking",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Benchmarks & Evaluation Frameworks",
+      "area": "media",
+      "areaLabel": "Media Optimization",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Benchmarks & Evaluation Frameworks",
+      "area": "cell",
+      "areaLabel": "Cellular Engineering",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Benchmarks & Evaluation Frameworks",
+      "area": "bioprocess",
+      "areaLabel": "Bioprocess & Scale-Up",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Benchmarks & Evaluation Frameworks",
+      "area": "scaffolding",
+      "areaLabel": "Scaffolding",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Benchmarks & Evaluation Frameworks",
+      "area": "sensory",
+      "areaLabel": "Sensory Prediction",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Benchmarks & Evaluation Frameworks",
+      "area": "tooling",
+      "areaLabel": "AI Tooling / Methodology",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Benchmarks & Evaluation Frameworks",
+      "area": "eval",
+      "areaLabel": "AI Evaluation & Benchmarking",
+      "refIds": [
+        55,
+        89,
+        108,
+        109,
+        110,
+        127,
+        146,
+        147,
+        148,
+        149,
+        150,
+        155,
+        156,
+        157,
+        158,
+        159,
+        164,
+        53,
+        57,
+        225,
+        239,
+        241,
+        349
+      ],
+      "emptyInCorpus": false
+    },
+    {
+      "method": "Agent Infrastructure (Frameworks, KGs, Protocols)",
+      "area": "media",
+      "areaLabel": "Media Optimization",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Agent Infrastructure (Frameworks, KGs, Protocols)",
+      "area": "cell",
+      "areaLabel": "Cellular Engineering",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Agent Infrastructure (Frameworks, KGs, Protocols)",
+      "area": "bioprocess",
+      "areaLabel": "Bioprocess & Scale-Up",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Agent Infrastructure (Frameworks, KGs, Protocols)",
+      "area": "scaffolding",
+      "areaLabel": "Scaffolding",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Agent Infrastructure (Frameworks, KGs, Protocols)",
+      "area": "sensory",
+      "areaLabel": "Sensory Prediction",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Agent Infrastructure (Frameworks, KGs, Protocols)",
+      "area": "tooling",
+      "areaLabel": "AI Tooling / Methodology",
+      "refIds": [
+        41,
+        48,
+        67,
+        133,
+        160,
+        162,
+        61,
+        93,
+        219,
+        220
+      ],
+      "emptyInCorpus": false
+    },
+    {
+      "method": "Agent Infrastructure (Frameworks, KGs, Protocols)",
+      "area": "eval",
+      "areaLabel": "AI Evaluation & Benchmarking",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    }
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "name": "CAAIL — Cellular Agriculture AI Library",
+  "corpusDate": "2026-07-28",
+  "canonical": "https://github.com/tucca-cellag/caail",
+  "site": "https://tucca-cellag.github.io/caail/",
+  "license": "MIT (CAAIL curation). Linked third-party resources keep their own licenses.",
+  "scopeNote": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall.",
+  "counts": {
+    "papersAllSections": 345,
+    "papersBySection": {
+      "References": 229,
+      "Sensory & Flavor Reference Work": 13,
+      "Metabolic Reference Work": 8,
+      "Foundational Methods Reference Work": 9,
+      "Livestock Functional Genomics Reference Work": 12,
+      "Reviews & Perspectives": 74
+    },
+    "papersMatrixEligible": 229,
+    "matrixTotalCells": 175,
+    "matrixPopulatedCells": 68,
+    "matrixEmptyCells": 107
+  },
+  "endpoints": [
+    {
+      "path": "index.json",
+      "use": "This manifest: corpus date, counts by population, endpoint list."
+    },
+    {
+      "path": "matrix.json",
+      "use": "All method×area cells, empties included. Use to ask what has and has not been indexed."
+    },
+    {
+      "path": "papers.json",
+      "use": "Every reference with DOI, code URL, data URL, topics, license and citation count."
+    },
+    {
+      "path": "catalog.json",
+      "use": "Software and databases, with topic, license tier and DOI."
+    },
+    {
+      "path": "datasets.json",
+      "use": "Curated dataset entries and per-species inventory."
+    },
+    {
+      "path": "topics.json",
+      "use": "Subject tree plus an inverted index: topic → items across all content types. Start here for \"what should I use for X\"."
+    },
+    {
+      "path": "taxonomy.json",
+      "use": "What each method and area means in CAAIL, with exclusion criteria. Read before trusting a placement."
+    }
+  ]
+}

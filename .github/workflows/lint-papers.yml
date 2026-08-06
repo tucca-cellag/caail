@@ -13,6 +13,10 @@ on:
       - site/scripts/parser/**
       - site/scripts/db/**
       - site/db/**
+      # generated outputs, so a hand-edit trips the sync guard that catches it
+      - site/public/api/**
+      - site/public/setup.md
+      - plugin/skills/**
   push:
     branches:
       - main
@@ -27,6 +31,10 @@ on:
       - site/scripts/parser/**
       - site/scripts/db/**
       - site/db/**
+      # generated outputs, so a hand-edit trips the sync guard that catches it
+      - site/public/api/**
+      - site/public/setup.md
+      - plugin/skills/**
   workflow_dispatch:
 
 concurrency:
@@ -42,6 +50,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+        with:
+          # Full history: the agent-API sync guard below regenerates corpusDate from
+          # `git log -- site/db/ndjson`, and in a depth-1 clone that returns the TIP
+          # commit's date (the graft root "touches" every path) rather than the real
+          # last-touch date. It is well-formed, so nothing catches it, and the guard
+          # then diffs a wrong date against the committed one. docs.yml and test.yml
+          # already set this for the same reason.
+          fetch-depth: 0
 
       - uses: pnpm/action-setup@v6
         with:
@@ -69,3 +85,9 @@ jobs:
           pnpm --dir site db:emit
           git diff --exit-code -- Papers.md Software.md Databases.md 'Datasets/*.md' \
             || { echo "::error::Committed Markdown is out of sync with the DB. Run 'pnpm --dir site db:emit' and commit the result."; exit 1; }
+
+      - name: Agent API ↔ corpus sync guard
+        run: |
+          pnpm --dir site parse
+          git diff --exit-code -- site/public/api site/public/setup.md \
+            || { echo "::error::Committed agent API is out of sync with the corpus. Run 'pnpm --dir site parse' and commit the result."; exit 1; }

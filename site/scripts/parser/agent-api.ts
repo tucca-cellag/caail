@@ -25,8 +25,10 @@
  * the API cannot drift from what the site itself renders.
  */
 
+import { execFileSync } from 'node:child_process';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import type { PapersData } from './types.js';
 
@@ -35,6 +37,9 @@ export const SCOPE_NOTE =
   'CAAIL indexes a curated subset of the literature, not a census. An empty cell means ' +
   'no INDEXED paper occupies it as of corpus_date. That is not evidence that no such ' +
   'work exists. CAAIL has not measured its own recall.';
+
+/** Repo root, two levels above this module's directory (parser/ -> scripts/ -> site/ -> root). */
+const REPO_ROOT = fileURLToPath(new URL('../../../', import.meta.url));
 
 /** The one section of Papers.md whose references participate in the matrix. */
 const MATRIX_SECTION = 'References';
@@ -45,8 +50,51 @@ export interface AgentApiInputs {
   datasets: unknown;
   topics: unknown;
   taxonomy: unknown;
-  /** ISO date stamped onto every response; the build (and therefore deploy) date. */
+  /** ISO date stamped onto every response. Defaults to `readCorpusDate()`. */
   corpusDate?: string;
+}
+
+/**
+ * The date the CORPUS last changed, read from git, not the date this build ran.
+ *
+ * Using `new Date()` here would be both less true and actively broken: the emitted files
+ * are committed, and CI re-runs the parse to check they are in sync, so a build on any
+ * later day would produce a one-line diff and fail the guard for no reason. Deriving from
+ * the last commit that touched the NDJSON makes the output a pure function of the repo
+ * state, and makes the field mean what an agent reading it would assume it means.
+ *
+ * Falls back to today only when git is unavailable (a tarball export, say), which is not
+ * the CI case.
+ */
+export function readCorpusDate(repoRoot: string): string {
+  const git = (args: string[]): string =>
+    execFileSync('git', ['-C', repoRoot, ...args], {
+      encoding: 'utf-8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+      env: { ...process.env, TZ: 'UTC' },
+    }).trim();
+
+  try {
+    // A shallow clone silently produces a WRONG date rather than no date: its grafted
+    // root commit has no parent, so `git log -- <path>` treats any path present in that
+    // tree as touched and returns the tip commit's date. That is well-formed, so no
+    // format check catches it, and the committed output would then disagree with CI.
+    // Refuse rather than emit a plausible lie; workflows set fetch-depth: 0.
+    if (git(['rev-parse', '--is-shallow-repository']) === 'true') {
+      throw new Error(
+        'agent-api: cannot derive corpusDate from a shallow clone — it would silently ' +
+          'return the tip commit date. Check out with fetch-depth: 0.',
+      );
+    }
+    // --date=format-local with TZ=UTC normalises across contributors' timezones; %cs
+    // alone is the committer's local date and can read a day ahead of UTC.
+    const out = git(['log', '-1', '--date=format-local:%Y-%m-%d', '--format=%cd', '--', 'site/db/ndjson']);
+    if (/^\d{4}-\d{2}-\d{2}$/.test(out)) return out;
+  } catch (err) {
+    if (err instanceof Error && err.message.startsWith('agent-api:')) throw err;
+    /* git unavailable (tarball export): fall through to the clock */
+  }
+  return new Date().toISOString().slice(0, 10);
 }
 
 /** One emitted endpoint: the path under api/ and its already-serialisable body. */
@@ -218,7 +266,7 @@ export function buildManifest(
 
 /** Build every API file. Pure: no I/O, so it is testable without a filesystem. */
 export function buildAgentApi(inputs: AgentApiInputs): ApiFile[] {
-  const corpusDate = inputs.corpusDate ?? new Date().toISOString().slice(0, 10);
+  const corpusDate = inputs.corpusDate ?? readCorpusDate(REPO_ROOT);
   const matrix = buildMatrix(inputs.papers, corpusDate);
 
   return [

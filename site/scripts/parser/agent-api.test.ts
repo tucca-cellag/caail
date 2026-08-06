@@ -10,7 +10,20 @@
 
 import { describe, it, expect } from 'vitest';
 
-import { buildAgentApi, buildMatrix, buildTopicIndex, buildManifest, SCOPE_NOTE } from './agent-api.js';
+import { execFileSync } from 'node:child_process';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+import {
+  buildAgentApi,
+  buildMatrix,
+  buildTopicIndex,
+  buildManifest,
+  readCorpusDate,
+  SCOPE_NOTE,
+} from './agent-api.js';
 import { buildPapersModel } from './papers.js';
 import { buildCatalogModel } from './catalog.js';
 import { buildDatasetsModel } from './datasets-entries.js';
@@ -22,6 +35,7 @@ const catalog = buildCatalogModel();
 const datasets = buildDatasetsModel();
 const topics = buildTopicsModel();
 const taxonomy = buildTaxonomyModel();
+const REPO_ROOT = fileURLToPath(new URL('../../../', import.meta.url));
 const DATE = '2026-01-01';
 
 describe('matrix.json', () => {
@@ -130,6 +144,77 @@ describe('buildAgentApi', () => {
   it('stamps every endpoint with the corpus date, so staleness is always visible', () => {
     for (const f of files) {
       expect((f.body as any).corpusDate, `${f.name} has no corpusDate`).toBe(DATE);
+    }
+  });
+
+  it('stamps a real date when none is supplied', () => {
+    // Every other test passes corpusDate explicitly, so none of them exercise the
+    // default. A shorthand `{ corpusDate }` once captured the same-named function
+    // instead of the string, and JSON.stringify silently dropped it: the output was
+    // deterministic and every assertion still passed while the field was undefined.
+    const dflt = buildAgentApi({ papers, catalog, datasets, topics, taxonomy });
+    for (const f of dflt) {
+      const d = (f.body as { corpusDate?: unknown }).corpusDate;
+      expect(typeof d, `${f.name} corpusDate is not a string`).toBe('string');
+      expect(d as string).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    }
+  });
+
+  it('derives the date from the corpus, not the clock, so the CI sync guard is stable', () => {
+    // The emitted files are committed and CI re-runs the parse to diff them. A
+    // build-time `new Date()` would differ on any later day and fail the guard.
+    const a = buildAgentApi({ papers, catalog, datasets, topics, taxonomy });
+    const b = buildAgentApi({ papers, catalog, datasets, topics, taxonomy });
+    expect(JSON.stringify(a)).toBe(JSON.stringify(b));
+
+    // Asserting the date differs from today would be flaky: a commit to the NDJSON
+    // today makes them legitimately equal. The real properties are that it comes from
+    // git and is never in the future.
+    const d = (a[0]!.body as { corpusDate: string }).corpusDate;
+    expect(d).toBe(readCorpusDate(REPO_ROOT));
+    expect(d <= new Date().toISOString().slice(0, 10)).toBe(true);
+  });
+
+  it('refuses to derive a date from a shallow clone rather than inventing one', () => {
+    // A depth-1 clone's grafted root has no parent, so `git log -- <path>` reports any
+    // path present in that tree as touched and returns the TIP commit's date. It is
+    // well-formed, so a format check passes it, and the committed output would then
+    // disagree with CI's. Verified against a real shallow clone rather than a mock.
+    // A two-commit synthetic repo, NOT a clone of CAAIL. Cloning the real repo tested
+    // nothing extra and pushed CI from 2 minutes to 13, because --depth 1 over file://
+    // forces a full object transfer of the whole history.
+    const tmp = mkdtempSync(join(tmpdir(), 'caail-shallow-'));
+    const origin = join(tmp, 'origin');
+    const clone = join(tmp, 'shallow');
+    const git = (cwd: string, args: string[]) =>
+      execFileSync('git', ['-C', cwd, ...args], { stdio: ['ignore', 'ignore', 'ignore'] });
+    try {
+      mkdirSync(join(origin, 'site', 'db', 'ndjson'), { recursive: true });
+      execFileSync('git', ['init', '-q', origin], { stdio: 'ignore' });
+      git(origin, ['config', 'user.email', 't@t']);
+      git(origin, ['config', 'user.name', 't']);
+      writeFileSync(join(origin, 'site', 'db', 'ndjson', 'x.ndjson'), '{}\n');
+      git(origin, ['add', '-A']);
+      git(origin, ['commit', '-q', '-m', 'touches the watched path']);
+      // a later commit that does NOT touch it: in a shallow clone this becomes the
+      // graft root and git wrongly reports its date as the last touch.
+      writeFileSync(join(origin, 'unrelated.txt'), 'x\n');
+      git(origin, ['add', '-A']);
+      git(origin, ['commit', '-q', '-m', 'unrelated']);
+      execFileSync('git', ['clone', '-q', '--depth', '1', `file://${origin}`, clone], {
+        stdio: ['ignore', 'ignore', 'ignore'],
+      });
+
+      expect(
+        execFileSync('git', ['-C', clone, 'rev-parse', '--is-shallow-repository'], {
+          encoding: 'utf-8',
+        }).trim(),
+      ).toBe('true');
+      expect(() => readCorpusDate(clone)).toThrow(/shallow clone/i);
+      // and the full original resolves fine, so the throw is about shallowness
+      expect(readCorpusDate(origin)).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    } finally {
+      rmSync(tmp, { recursive: true, force: true });
     }
   });
 
