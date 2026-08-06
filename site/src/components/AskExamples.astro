@@ -1,0 +1,107 @@
+---
+/**
+ * AskExamples — "What can you ask?", answered from the real endpoints.
+ *
+ * Every figure below is computed from the generated API at build time. Nothing here
+ * is illustrative: if the corpus changes, these numbers change with it, and if an
+ * assumption stops holding the build throws rather than the page misleading.
+ *
+ * The deliberate omission is a "tools used" row. ToolUniverse can show one because
+ * its answers come from executing tools; CAAIL's come from fetching static JSON, and
+ * inventing a tool-call trace to look the part would be the exact overclaim the rest
+ * of this project spends its effort avoiding.
+ */
+import matrix from '../../public/api/matrix.json';
+import topicsApi from '../../public/api/topics.json';
+import manifest from '../../public/api/index.json';
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+
+/** Methods with at least one paper in a given area, densest first. */
+function methodsIn(areaKey: string): { method: string; n: number }[] {
+  return matrix.cells
+    .filter((c) => c.area === areaKey && !c.emptyInCorpus)
+    .map((c) => ({ method: c.method, n: c.refIds.length }))
+    .sort((a, b) => b.n - a.n);
+}
+
+const media = methodsIn('media');
+if (media.length === 0) throw new Error('AskExamples: media optimization has no populated cells');
+
+/** Cross-content spread for one topic, the "what should I use" case. */
+const TOPIC = 'sensory-flavor';
+const t = (topicsApi.index as Record<string, Record<string, unknown[]>>)[TOPIC];
+if (!t) throw new Error(`AskExamples: topic "${TOPIC}" missing from the index`);
+const spread = [
+  ['papers', t.papers.length],
+  ['databases', t.databases.length],
+  ['software', t.software.length],
+  ['datasets', t.datasets.length],
+] as const;
+
+const examples = [
+  {
+    q: 'What AI methods have been applied to media optimization?',
+    endpoint: 'matrix.json',
+    body: `${media.length} methods, densest first: ` +
+      media.slice(0, 3).map((m) => `${m.method} (${m.n})`).join(', ') +
+      (media.length > 3 ? `, and ${media.length - 3} more.` : '.'),
+  },
+  {
+    q: 'I need to predict flavour from composition. What exists?',
+    endpoint: 'topics.json',
+    body: `Sensory & Flavor spans ${spread.map(([k, n]) => `${n} ${k}`).join(', ')} — ` +
+      'returned together, because a design question does not arrive sorted by content type.',
+  },
+  {
+    q: 'How many papers are in the matrix?',
+    endpoint: 'index.json',
+    body: `${manifest.counts.papersMatrixEligible} of ${manifest.counts.papersAllSections}. ` +
+      'The rest are reviews and reference works, which take no matrix placement. ' +
+      'Every count says which population it counted.',
+  },
+];
+---
+
+<section class="ask">
+  <p class="eyebrow">Live examples</p>
+  <h2 class="caail-display">What can you ask?</h2>
+  <p class="lede">
+    Real questions against the real endpoints. Every figure below is read from the
+    corpus at build time, so this page cannot claim more than the data holds.
+  </p>
+
+  <ul class="rows">
+    {examples.map((e) => (
+      <li class="row">
+        <p class="q">{e.q}</p>
+        <p class="src"><code>{e.endpoint}</code></p>
+        <p class="a">{e.body}</p>
+      </li>
+    ))}
+  </ul>
+
+  <p class="foot">
+    Corpus dated {matrix.corpusDate}. Answers are as good as the curation behind them, and
+    absence in the corpus is never evidence of absence in the literature.
+    <a href={`${base}/topics/`}>Browse by subject →</a>
+  </p>
+</section>
+
+<style>
+  .ask { margin: 2.6rem 0 0; }
+  .eyebrow { font-size: .7rem; letter-spacing: .09em; text-transform: uppercase; color: var(--caail-muted); margin: 0 0 .3rem; }
+  .ask h2 { font-size: 1.5rem; margin: 0 0 .35rem; }
+  .lede { font-size: .87rem; color: var(--caail-muted); margin: 0 0 1.2rem; max-width: 46rem; }
+
+  .rows { list-style: none; padding: 0; margin: 0; display: grid; gap: .7rem; }
+  .row { border: 1px solid var(--caail-border); border-radius: 10px; padding: .85rem 1rem; }
+
+  .q { font-size: .85rem; font-weight: 600; color: var(--caail-ink); margin: 0 0 .35rem; line-height: 1.45; }
+  .src { margin: 0 0 .45rem; }
+  .src code { font-size: .72rem; color: var(--caail-link); background: color-mix(in oklab, var(--caail-link) 8%, transparent); padding: .1rem .4rem; border-radius: 4px; }
+  .a { font-size: .79rem; color: var(--caail-muted); margin: 0; line-height: 1.55; }
+
+  .foot { font-size: .78rem; color: var(--caail-muted); margin: 1rem 0 0; max-width: 48rem; line-height: 1.55; }
+  .foot a { white-space: nowrap; }
+</style>

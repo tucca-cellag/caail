@@ -1,0 +1,112 @@
+---
+/**
+ * GetStarted — the three real install paths, with their real differences stated.
+ *
+ * ToolUniverse's equivalent splits on "AI Agent User / Python Developer" because it
+ * has a package to install. CAAIL has nothing to install, so the honest split is by
+ * how long the install lasts: a pasted prompt is one conversation, a plugin or an
+ * uploaded skill persists. A page that showed only the prompt would leave people
+ * pasting it, getting a good answer, opening a new chat and finding it gone.
+ *
+ * Endpoints are given as GitHub URLs rather than the site's own. Code execution
+ * defaults to network egress for package managers only, which covers GitHub but not
+ * GitHub Pages, and on Team and Enterprise plans only an organisation owner can
+ * widen that. Fetching from GitHub therefore needs nobody to change a setting.
+ */
+import { Icon } from 'astro-icon/components';
+
+const REPO = 'https://github.com/tucca-cellag/caail';
+const RAW = 'https://raw.githubusercontent.com/tucca-cellag/caail/main';
+const PROMPT = `Read ${RAW}/plugin/skills/caail/SKILL.md and use CAAIL to answer questions about cellular agriculture and AI.`;
+
+const paths = [
+  {
+    icon: 'ph:terminal-window-duotone',
+    title: 'Claude Code, Cursor, CLI agents',
+    persists: true,
+    steps: [
+      ['Add the marketplace', `claude plugin marketplace add tucca-cellag/caail`],
+      ['Install', `claude plugin install caail@caail`],
+    ],
+    note: 'Persists across sessions. About 265 tokens of always-on context.',
+  },
+  {
+    icon: 'ph:browser-duotone',
+    title: 'claude.ai',
+    persists: true,
+    steps: [
+      ['Download the skill', `${RAW}/plugin/skills/caail/SKILL.md`],
+      ['Upload it', 'Settings → Customize → Skills → Add → Upload skill'],
+    ],
+    note: 'Persists across conversations. The web app installs skills by file upload, not by URL.',
+  },
+  {
+    icon: 'ph:chat-teardrop-text-duotone',
+    title: 'Any agent, one conversation',
+    persists: false,
+    steps: [['Paste this', PROMPT]],
+    note: 'Loads for the current conversation only. Nothing is installed and it will not carry over.',
+  },
+];
+---
+
+<section class="gs">
+  <p class="eyebrow">Setup</p>
+  <h2 class="caail-display">Get started</h2>
+  <p class="lede">
+    Nothing to install, host or authenticate: CAAIL is static JSON on GitHub. The paths
+    differ only in how long the install lasts.
+  </p>
+
+  <div class="grid">
+    {paths.map((p) => (
+      <div class="path">
+        <p class="hdr"><Icon name={p.icon} /> {p.title}</p>
+        <p class={`life ${p.persists ? 'life--keep' : 'life--once'}`}>
+          {p.persists ? 'Persists' : 'This conversation only'}
+        </p>
+        <ol>
+          {p.steps.map(([label, cmd]) => (
+            <li><span class="lbl">{label}</span><code>{cmd}</code></li>
+          ))}
+        </ol>
+        <p class="note">{p.note}</p>
+      </div>
+    ))}
+  </div>
+
+  <p class="foot">
+    Endpoints are served from GitHub rather than this site, because code execution
+    defaults to reaching package managers only, a list that includes GitHub but not
+    GitHub Pages. <a href={`${REPO}/tree/main/site/public/api`}>Browse the endpoints →</a>
+  </p>
+</section>
+
+<style>
+  .gs { margin: 2.6rem 0 0; }
+  .eyebrow { font-size: .7rem; letter-spacing: .09em; text-transform: uppercase; color: var(--caail-muted); margin: 0 0 .3rem; }
+  .gs h2 { font-size: 1.5rem; margin: 0 0 .35rem; }
+  .lede { font-size: .87rem; color: var(--caail-muted); margin: 0 0 1.2rem; max-width: 46rem; }
+
+  .grid { display: grid; gap: .8rem; grid-template-columns: 1fr; }
+  @media (min-width: 56rem) { .grid { grid-template-columns: repeat(3, 1fr); } }
+
+  .path { border: 1px solid var(--caail-border); border-radius: 10px; padding: .9rem 1rem; display: flex; flex-direction: column; }
+  .hdr { display: flex; align-items: center; gap: .4rem; font-size: .84rem; font-weight: 600; color: var(--caail-ink); margin: 0 0 .3rem; }
+  .hdr [data-icon] { width: 1.15rem; height: 1.15rem; color: var(--caail-link); flex: none; }
+
+  .life { font-size: .68rem; letter-spacing: .05em; text-transform: uppercase; margin: 0 0 .7rem; }
+  .life--keep { color: var(--caail-link); }
+  .life--once { color: var(--caail-muted); }
+
+  .path ol { list-style: none; counter-reset: s; padding: 0; margin: 0 0 .7rem; display: grid; gap: .5rem; }
+  .path li { counter-increment: s; display: grid; gap: .25rem; }
+  .lbl { font-size: .75rem; color: var(--caail-ink); }
+  .lbl::before { content: counter(s) ". "; color: var(--caail-muted); }
+  .path code { font-size: .69rem; line-height: 1.45; color: var(--caail-ink); background: var(--caail-code-bg, color-mix(in oklab, var(--caail-border) 40%, transparent)); border-radius: 5px; padding: .35rem .45rem; display: block; overflow-wrap: anywhere; }
+
+  .note { font-size: .73rem; color: var(--caail-muted); margin: auto 0 0; line-height: 1.45; }
+
+  .foot { font-size: .78rem; color: var(--caail-muted); margin: 1rem 0 0; max-width: 48rem; line-height: 1.55; }
+  .foot a { white-space: nowrap; }
+</style>
