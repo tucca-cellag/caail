@@ -22,5 +22,9 @@ __pycache__/
 # Local editor settings: per-developer VS Code workspace config
 .vscode/
 
+# Generated agent-facing API, emitted by the parser into the deploy
+site/public/api/
+site/public/setup.md
+
 # Playwright MCP scratch output, regenerated each run
 .playwright-mcp/

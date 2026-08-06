@@ -1,15 +1,18 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { matrixUnreachedRefs, unreachedSectionCounts } from './data';
+import { awaitHydrated } from './hydration';
 
 test('the reviews page renders one card per matrix-unreached reference', async ({ page }) => {
   await page.goto('./papers/reviews/');
+  await awaitHydrated(page, 'ReferenceShelf');
   await expect(page.locator('.rs-group').first()).toBeVisible();
   await expect(page.locator('.px-ref')).toHaveCount(matrixUnreachedRefs().length);
 });
 
 test('the reviews page groups by Papers.md section with parser-derived counts', async ({ page }) => {
   await page.goto('./papers/reviews/');
+  await awaitHydrated(page, 'ReferenceShelf');
   const sections = unreachedSectionCounts();
   await expect(page.locator('.rs-group')).toHaveCount(sections.size);
   // Reviews & Perspectives leads the shelves and its count matches the parser.
@@ -20,6 +23,7 @@ test('the reviews page groups by Papers.md section with parser-derived counts', 
 
 test('reviews cards carry citation badges and topic chips, matching the Explorer', async ({ page }) => {
   await page.goto('./papers/reviews/');
+  await awaitHydrated(page, 'ReferenceShelf');
   const badge = page.locator('.px-ref .cite-badge').first();
   await expect(badge).toBeVisible();
   await expect(badge).toContainText(/cited by/);
@@ -28,6 +32,7 @@ test('reviews cards carry citation badges and topic chips, matching the Explorer
 
 test('the search box filters the shelves and restores them when cleared', async ({ page }) => {
   await page.goto('./papers/reviews/');
+  await awaitHydrated(page, 'ReferenceShelf');
   const all = matrixUnreachedRefs().length;
   // getByLabel resolves via the input's aria-label, so this also pins the
   // accessible name (the search box is not just a bare placeholder).
@@ -42,6 +47,7 @@ test('the search box filters the shelves and restores them when cleared', async 
 
 test('the reviews page has no axe violations', async ({ page }) => {
   await page.goto('./papers/reviews/');
+  await awaitHydrated(page, 'ReferenceShelf');
   await expect(page.locator('.rs-group').first()).toBeVisible();
   const results = await new AxeBuilder({ page }).analyze();
   expect(results.violations).toEqual([]);
