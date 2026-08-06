@@ -10,7 +10,15 @@
 
 import { describe, it, expect } from 'vitest';
 
-import { buildCitationData, citedByCountByDoi, doiKey, type CitationCache } from './citations.js';
+import {
+  buildCitationData,
+  citedByCountByDoi,
+  licenseByDoi,
+  doiKey,
+  CitationCacheSchema,
+  type CitationCache,
+} from './citations.js';
+import { licenseTier } from '../../src/lib/licenses.js';
 import { buildPapersModel } from './papers.js';
 import { loadCitationCache } from './generate-data.js';
 import type { PapersData, Reference } from './types.js';
@@ -179,5 +187,71 @@ describe('citedByCountByDoi', () => {
     expect(m.get('10.1/a')).toBe(42);
     expect(m.has('10.1/b')).toBe(false);
     expect(citedByCountByDoi(null).size).toBe(0);
+  });
+});
+
+describe('licenseByDoi', () => {
+  it('maps bare DOI -> license, omitting null/blank licenses and a null cache', () => {
+    const cache: CitationCache = {
+      generatedAt: 'x',
+      works: {
+        '10.1/a': { openalexId: 'W1', referencedWorks: [], citedByCount: 1, isOa: true, license: 'cc-by' },
+        '10.1/b': { openalexId: 'W2', referencedWorks: [], citedByCount: 1, isOa: true, license: null },
+        '10.1/c': { openalexId: 'W3', referencedWorks: [], citedByCount: 1, isOa: true, license: '   ' },
+      },
+    };
+    const m = licenseByDoi(cache);
+    expect(m.get('10.1/a')).toBe('cc-by');
+    expect(m.has('10.1/b')).toBe(false);
+    expect(m.has('10.1/c')).toBe(false);
+    expect(licenseByDoi(null).size).toBe(0);
+  });
+
+  it('does NOT treat a readable-but-unlicensed work as licensed (the bronze trap)', () => {
+    // Bronze OA: free to read on the publisher's site, no license grant at all.
+    // Selecting text to index on is_oa rather than on license would ingest these.
+    const bronze: CitationCache = {
+      generatedAt: 'x',
+      works: {
+        '10.1/bronze': { openalexId: 'W9', referencedWorks: [], citedByCount: 5, isOa: true, license: null },
+      },
+    };
+    expect(licenseByDoi(bronze).has('10.1/bronze')).toBe(false);
+    // and the tier that follows is `unknown`, never `permissive`
+    expect(licenseTier(licenseByDoi(bronze).get('10.1/bronze') ?? null)).toBe('unknown');
+  });
+
+  it('tolerates a pre-license cache, where the field is absent entirely', () => {
+    const old = { generatedAt: 'x', works: { '10.1/a': { openalexId: 'W1', referencedWorks: [], citedByCount: 3 } } };
+    const parsed = CitationCacheSchema.parse(old);
+    expect(licenseByDoi(parsed).size).toBe(0);
+    expect(parsed.works['10.1/a']!.isOa).toBeNull();
+  });
+});
+
+describe('paper license axis (real corpus)', () => {
+  it('every licensed reference has a source, and every unlicensed one has none', () => {
+    const refs = buildPapersModel().references;
+    for (const r of refs) {
+      expect(r.license == null).toBe(r.licenseSource == null);
+      if (r.licenseSource != null) expect(r.licenseSource).toBe('auto');
+    }
+  });
+
+  it('classifies the OpenAlex license strings the corpus actually contains', () => {
+    const refs = buildPapersModel().references;
+    const seen = new Set(refs.map((r) => r.license).filter((l): l is string => !!l));
+    // Without this the loop below passes vacuously on an empty/absent cache.
+    expect(seen.size).toBeGreaterThan(0);
+    expect(seen.has('cc-by')).toBe(true);
+
+    // Guard the mapping that the redistribution rule depends on: anything with NC or ND
+    // must land in `restricted`, never in the permissive/copyleft set the RAG filter uses.
+    for (const l of seen) {
+      const tier = licenseTier(l);
+      if (/-(nc|nd)(-|$)/.test(l)) expect(tier).toBe('restricted');
+      if (l === 'cc-by' || l === 'public-domain') expect(tier).toBe('permissive');
+      if (l === 'cc-by-sa') expect(tier).toBe('copyleft');
+    }
   });
 });

@@ -17,16 +17,23 @@ export default function LicenseBadge({
   license,
   licenseSource,
   tier,
+  autoSource = 'GitHub',
 }: {
   license: string | null;
   licenseSource: 'auto' | 'manual' | null;
   tier: LicenseTier;
+  /**
+   * Where an `auto` license came from, named in the tooltip. Catalog and dataset entries
+   * resolve theirs from GitHub's SPDX field; papers resolve theirs from OpenAlex's
+   * best-OA-location. Saying "GitHub" on a paper badge would be simply untrue.
+   */
+  autoSource?: string;
 }) {
   if (!license) return null;
   const manual = licenseSource === 'manual';
   const title = manual
     ? `${TIER_META[tier].label} license (curated — not auto-maintained; verify before commercial use). ${TIER_META[tier].blurb}`
-    : `${TIER_META[tier].label} license (auto-detected from GitHub). ${TIER_META[tier].blurb}`;
+    : `${TIER_META[tier].label} license (auto-detected from ${autoSource}). ${TIER_META[tier].blurb}`;
   return (
     <a
       class={`lic-badge lic-badge--${tier}${manual ? ' lic-badge--manual' : ''}`}

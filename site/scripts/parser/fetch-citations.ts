@@ -94,6 +94,10 @@ type OpenAlexWork = {
   doi: string | null;
   referenced_works?: string[];
   cited_by_count?: number;
+  /** `is_oa` answers "can it be read", which is NOT "may its text be redistributed" */
+  open_access?: { is_oa?: boolean; oa_status?: string };
+  /** `license` is the redistribution grant, and is null for bronze OA and most green */
+  best_oa_location?: { license?: string | null } | null;
 };
 
 /**
@@ -121,7 +125,8 @@ export async function fetchCitationCache(
     const filter = encodeURIComponent(`doi:${batch.join('|')}`);
     const url =
       `${OPENALEX_WORKS}?filter=${filter}` +
-      `&select=id,doi,referenced_works,cited_by_count&per-page=${BATCH_SIZE}${mailtoParam()}`;
+      `&select=id,doi,referenced_works,cited_by_count,open_access,best_oa_location` +
+      `&per-page=${BATCH_SIZE}${mailtoParam()}`;
 
     const res = await fetch(url, { headers: { 'User-Agent': userAgent() } });
     if (!res.ok) {
@@ -137,6 +142,8 @@ export async function fetchCitationCache(
         openalexId: w.id,
         referencedWorks: w.referenced_works ?? [],
         citedByCount: w.cited_by_count ?? null,
+        isOa: w.open_access?.is_oa ?? null,
+        license: w.best_oa_location?.license ?? null,
       };
     }
     log(
