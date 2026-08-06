@@ -11,6 +11,22 @@
   --caail-link: oklch(52% 0.11 256);           /* #3172AE Tufts Digital Blue (AA) */
   --caail-accent: oklch(40% 0.035 60);         /* #5E4B3C Tufts Brown */
 
+  /* Hero diagonal stripe gradient stops. DELIBERATELY sRGB, not oklch like every
+     other token here — the one place in this file that breaks the OKLch rule.
+
+     A gradient whose stops are oklch/oklab interpolates in oklab (CSS Color 4).
+     Firefox does that interpolation per-pixel on the CPU, so repainting the
+     rotated full-bleed stripe on every scroll frame janked the homepage; Chromium
+     caches the rasterization, so it only ever showed in Firefox. sRGB stops take
+     the GPU path. These were previously composed with color-mix(in oklab, …),
+     which produced oklab stops and the same cost.
+
+     Values are the exact sRGB renderings of --caail-link at 24% alpha and
+     --caail-primary at 16% (converted via Ottosson oklab->sRGB), so the stripe
+     looks the same. If the chrome tokens change, recompute these to match. */
+  --caail-hero-stripe-from: rgba(59, 106, 167, 0.24);
+  --caail-hero-stripe-to: rgba(15, 42, 108, 0.16);
+
   /* Data — sequential density ramp (single-hue navy, CVD-safe) */
   --caail-density-0: oklch(97.2% 0.006 250);   /* #F4F6FA */
   --caail-density-1: oklch(86% 0.04 256);      /* #C9D7EC  1-2 */
@@ -79,6 +95,11 @@
   --caail-primary-hover: oklch(80% 0.10 256);
   --caail-link: oklch(72% 0.10 256);           /* ~#5B8AD1 */
   --caail-accent: oklch(70% 0.05 60);
+  /* Same two stops against the dark ramp, likewise in sRGB (see the light-mode
+     note above). --caail-link and --caail-primary are the same colour on dark,
+     so these differ only in alpha. */
+  --caail-hero-stripe-from: rgba(123, 167, 227, 0.24);
+  --caail-hero-stripe-to: rgba(123, 167, 227, 0.16);
   --caail-density-0: oklch(24% 0.02 264);
   --caail-density-1: oklch(34% 0.05 260);
   --caail-density-2: oklch(48% 0.09 260);

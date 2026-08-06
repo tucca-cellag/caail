@@ -73,7 +73,13 @@ const stats = [
    * (Splash homepage has no left sidebar, so the hero is viewport-centered.) */
   .hero-stripe {
     position: absolute;
-    top: 0; bottom: 0;
+    /* Starts above the hero box, not at it. The band rises to the right, so with
+     * `top: 0` it was clipped at the hero's top edge and left a white wedge in
+     * the top-right corner between the header and the band. -1.5rem is the
+     * splash layout's content padding above the hero. The inline script derives
+     * --stripe-cy from this wrapper's own rect, so the band still crosses the
+     * title at the same place. */
+    top: -1.5rem; bottom: 0;
     left: 50%;
     width: 100vw;
     transform: translateX(-50%);
@@ -91,9 +97,14 @@ const stats = [
     width: 110%;
     height: clamp(72px, 9vw, 150px);
     transform: translateY(-50%) rotate(-11deg);
+    /* Stops come from tokens.css and are sRGB on purpose: an oklch/oklab-stopped
+     * gradient interpolates in oklab, which Firefox does per-pixel on the CPU.
+     * Repainting this rotated full-bleed stripe every scroll frame then janked
+     * the homepage in Firefox only (Chromium caches the rasterization). See the
+     * note on --caail-hero-stripe-from in tokens.css before changing these. */
     background: linear-gradient(90deg,
-      color-mix(in oklab, var(--caail-link) 24%, transparent),
-      color-mix(in oklab, var(--caail-primary) 16%, transparent));
+      var(--caail-hero-stripe-from),
+      var(--caail-hero-stripe-to));
     border-radius: 4px;
   }
 
