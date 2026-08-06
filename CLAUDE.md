@@ -404,8 +404,10 @@ non-catalog canonical files (`OtherResources.md`, `ReferenceWorks.md`, `AwesomeL
   `fetch:citations` selects `open_access` + `best_oa_location`, `loadPaperLicenses` folds it in, and the
   same `licenses.ts` classifier assigns the tier. **`is_oa` is not a redistribution grant** — 48 works
   are free to read with no license at all (every bronze, 30 of the green), and 41 more are `-nd`. So
-  anything that *stores* text must filter on `licenseTier ∈ {permissive, copyleft}` (131 works, 38%),
-  never on `is_oa` (~74%).
+  anything that **publishes** text (a public tool, a shipped dataset) must filter on
+  `licenseTier ∈ {permissive, copyleft}` (131 works, 38%), never on `is_oa` (~74%). The tier governs
+  *redistribution*, not use: an organisation with legitimate access may generally index privately
+  whatever it may lawfully read, so the constraint binds on making it public, not on working with it.
 - **DOIs & citation counts** are a second DB-owned axis mirroring licenses. `catalog` +
   `dataset_entries` carry nullable `doi` + `doi_source` (`manual` = curator-verified; `auto` reserved).
   Like licenses the DOI is **DB-only** (not in canonical Markdown): `seedDois` (run via `db:reseed-axes`) folds the

@@ -103,6 +103,22 @@ a.site-title {
   font-family: var(--caail-font-display);
 }
 
+/* Grid items must not inherit Starlight's prose-flow spacing.
+ *
+ * Starlight separates adjacent siblings inside .sl-markdown-content with a `+` selector
+ * that excludes <a>. Any grid whose items are NOT links therefore picks up a 16px
+ * margin-top on every item after the first: the item is pushed down and, because the row
+ * height is already set, ends up shorter than its neighbour. A row of cards then has
+ * mismatched heights for no reason visible in the component's own CSS.
+ *
+ * SectionsGrid escapes this only because its cards happen to be <a> elements. Anything
+ * built with <div> children hits it. Same family as the #67 offset trap covered in
+ * site/e2e/licenses.spec.ts. */
+.caail-two-col > *,
+.sl-markdown-content :is(.gs .grid, .gs .prompt, .why .cols, .ask .tabs, .ask .panel) > * {
+  margin-top: 0;
+}
+
 /* Homepage two-column (Start here / Recently added) — collapses on narrow screens.
    margin-top carries the biggest conceptual seam on the page, where the agent story
    hands off to the browsing aids. It was .5rem (8px), the tightest gap anywhere. */

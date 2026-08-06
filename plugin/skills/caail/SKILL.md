@@ -79,9 +79,17 @@ Every paper, tool, database and dataset entry carries a coarse tier: `permissive
 `restricted`, `unknown`. It is a triage signal derived from SPDX identifiers and OpenAlex, not
 verified terms — confirm at the source before relying on it.
 
-If you are selecting text to store or index, filter on the license tier, **never** on open-access
-status. Being free to read is not permission to redistribute: 48 works in this corpus are openly
-readable with no license grant at all.
+The tier governs **redistribution**, not use. Two different questions:
+
+- **Publishing** text, or shipping it in a public tool or dataset: filter on the license tier, and
+  **never** on open-access status. Being free to read is not permission to republish — 148 works in
+  this corpus carry no license grant at all, including every bronze one, where the publisher's page
+  is free but default copyright still applies.
+- **Internal use** inside an organisation that already has legitimate access, such as a private RAG
+  index behind its own subscriptions: the license tier is not the constraint. What that organisation
+  may lawfully read, it may generally index for itself. The constraint is on making it public.
+
+So the tier tells you what you can *ship*, not what you can *work with*.
 
 ## Contributing
 

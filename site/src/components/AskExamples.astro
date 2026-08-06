@@ -1,120 +1,202 @@
 ---
 /**
- * AskExamples — "What can you ask?", answered from the real endpoints.
+ * AskExamples — worked questions against the real endpoints.
  *
- * Every figure is computed from the generated API at build time, so the section cannot
- * drift from the corpus, and an assumption that stops holding throws at build rather
- * than misleading on the page.
+ * The questions are anchored to priorities GFI names in its solutions database
+ * (gfi.org/solutions): edible non-animal scaffolding, bioreactor and bioprocessing
+ * scale-up, sensory and flavour characterisation. That grounds them in what the field
+ * says it needs rather than in what happens to demo well, and it lets each answer say
+ * something about a real problem instead of exercising an endpoint.
  *
- * Deliberately NOT a card grid. The homepage already carries two (six collection cards
- * plus four start-here cards); a third would be clutter, and these are question-and-
- * answer prose rather than parallel objects. A ruled list is the honest shape.
+ * Every figure is computed from the generated API at build time. Assumptions that stop
+ * holding throw here rather than misleading on the page.
  *
- * Also deliberately no "tools used" row. ToolUniverse can show one because its answers
- * come from executing tools. CAAIL's come from fetching static JSON, and staging a
- * tool-call trace to look the part would be the overclaim this project avoids.
+ * Deliberately no "tools used" row. ToolUniverse shows one because its answers come from
+ * executing tools; CAAIL's come from fetching static JSON, and staging a tool-call trace
+ * to look the part would be the overclaim this project exists to avoid.
  */
 import matrix from '../../public/api/matrix.json';
 import topicsApi from '../../public/api/topics.json';
-import manifest from '../../public/api/index.json';
+import papers from '../../public/api/papers.json';
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
-function methodsIn(areaKey: string): { method: string; n: number }[] {
-  return matrix.cells
-    .filter((c) => c.area === areaKey && !c.emptyInCorpus)
-    .map((c) => ({ method: c.method, n: c.refIds.length }))
-    .sort((a, b) => b.n - a.n);
+type Cell = (typeof matrix.cells)[number];
+const cellsIn = (area: string): Cell[] =>
+  matrix.cells
+    .filter((c) => c.area === area && !c.emptyInCorpus)
+    .sort((a, b) => b.refIds.length - a.refIds.length);
+
+const topic = (slug: string) => {
+  const t = (topicsApi.index as Record<string, Record<string, unknown[]>>)[slug];
+  if (!t) throw new Error(`AskExamples: topic "${slug}" missing from the index`);
+  return t;
+};
+
+/** First-author surname + year for a reference id, so results read as real citations. */
+const byId = new Map(papers.references.map((r) => [r.id, r]));
+const cite = (id: number): string => {
+  const r = byId.get(id);
+  if (!r) return `#${id}`;
+  const who = (r.authors?.[0] ?? '').split(',')[0] || 'Unknown';
+  return `#${id} ${who}${r.year ? ` ${r.year}` : ''}`;
+};
+const sum = (cs: Cell[]) => cs.reduce((s, c) => s + c.refIds.length, 0);
+const top = (cs: Cell[]) =>
+  cs.slice(0, 3).map((c) => ({ k: `${c.method} (${c.refIds.length})`, v: c.refIds.slice(0, 2).map(cite).join(' · ') }));
+
+const scaffolding = cellsIn('scaffolding');
+const bioprocess = cellsIn('bioprocess');
+const sensory = cellsIn('sensory');
+const emptyScaffold = matrix.cells.filter((c) => c.area === 'scaffolding' && c.emptyInCorpus).length;
+if (scaffolding.length === 0 || emptyScaffold === 0) {
+  throw new Error('AskExamples: the scaffolding example assumes both populated and empty cells exist');
 }
 
-const media = methodsIn('media');
-if (media.length === 0) throw new Error('AskExamples: media optimization has no populated cells');
-
-const TOPIC = 'sensory-flavor';
-const t = (topicsApi.index as Record<string, Record<string, unknown[]>>)[TOPIC];
-if (!t) throw new Error(`AskExamples: topic "${TOPIC}" missing from the index`);
+const sens = topic('sensory-flavor');
+const bio = topic('bioreactor-scale-up');
+const licensed = papers.references.filter((r) => r.license).length;
 
 const examples = [
   {
-    q: 'What has been applied to media optimization?',
+    id: 'scaffolding',
+    tab: 'Scaffolding',
+    gfi: 'GFI names this a priority: naturally adhesive, edible non-animal scaffolding materials',
+    q: 'What AI work exists on scaffolding, and where are the gaps?',
     src: 'matrix.json',
-    a: `${media.length} methods, densest first: ` +
-      media.slice(0, 3).map((m) => `${m.method} (${m.n})`).join(', ') +
-      (media.length > 3 ? `, and ${media.length - 3} more.` : '.'),
+    head: `${sum(scaffolding)} papers across ${scaffolding.length} methods — and ${emptyScaffold} of ${matrix.methods.length} method cells empty`,
+    rows: top(scaffolding),
+    tail: 'A priority the field has named, thinly covered here: no software and no databases carry a scaffolding tag. Absence in this corpus is not absence in the literature.',
   },
   {
-    q: 'I need to predict flavour from composition. What exists?',
+    id: 'bioprocess',
+    tab: 'Bioprocess',
+    gfi: 'GFI names this a priority: scalable, fit-for-purpose bioreactor and bioprocessing technology',
+    q: 'What has been applied to scale-up, and what could I train on?',
+    src: 'matrix.json + topics.json',
+    head: `${sum(bioprocess)} papers across ${bioprocess.length} methods, plus ${bio.datasets.length} datasets and ${bio.software.length} tools on the subject axis`,
+    rows: top(bioprocess),
+    tail: 'The matrix answers what has been tried. The subject index answers what you could act on. One question, both.',
+  },
+  {
+    id: 'sensory',
+    tab: 'Sensory',
+    gfi: 'GFI names these priorities: a catalogue of animal meat flavours, sensory research for alternative seafood',
+    q: 'I need to predict flavour from composition. What should I start from?',
     src: 'topics.json',
-    a: `${t.papers.length} papers, ${t.databases.length} databases, ${t.software.length} tools and ` +
-      `${t.datasets.length} datasets, returned together — a design question does not arrive sorted ` +
-      'by content type.',
+    head: `${sens.papers.length} papers, ${sens.databases.length} databases, ${sens.software.length} tools and ${sens.datasets.length} datasets, returned together`,
+    rows: top(sensory),
+    tail: 'A design question does not arrive sorted by content type, so the subject axis returns all four at once.',
   },
   {
-    q: 'How many papers are in the matrix?',
-    src: 'index.json',
-    a: `${manifest.counts.papersMatrixEligible} of ${manifest.counts.papersAllSections}. The rest are ` +
-      'reviews and reference works, which take no matrix placement. Every count says which population ' +
-      'it counted.',
+    id: 'build',
+    tab: 'Building on it',
+    gfi: 'For teams building their own tooling over this literature',
+    q: 'I want an internal index, or an MCP, over this field. What do I collect?',
+    src: 'papers.json + catalog.json',
+    head: `${papers.references.length} references with DOI, code and data links; ${licensed} carry a machine-readable licence`,
+    rows: [
+      { k: 'Publishing it', v: 'Filter on licence tier. Free to read is not permission to republish' },
+      { k: 'Internal use', v: 'What your organisation may lawfully read, it may generally index for itself' },
+      { k: 'Wiring it up', v: 'Every entry carries its canonical URL, so the catalogue doubles as a source list' },
+    ],
+    tail: 'The licence axis tells you what you can ship, not what you can work with. Those are different questions, and conflating them costs you most of the corpus for no reason.',
   },
 ];
 ---
 
 <section class="ask">
-  <h2 class="caail-display">What can you ask?</h2>
+  <h2 class="caail-display">Questions it answers</h2>
   <p class="lede">
-    Real questions against the real endpoints. Every figure below is read from the corpus
-    when this page is built, so it cannot claim more than the data holds.
+    Worked against the real endpoints, on priorities the field has named. Every figure is
+    read from the corpus when this page is built.
   </p>
 
-  <dl class="qa">
-    {examples.map((e) => (
-      <div class="qa-row">
-        <dt>{e.q} <code>{e.src}</code></dt>
-        <dd>{e.a}</dd>
-      </div>
+  <div class="tabs" role="tablist" aria-label="Example questions">
+    {examples.map((e, i) => (
+      <button
+        type="button" role="tab" id={`ask-t-${e.id}`} class="tab"
+        aria-controls={`ask-p-${e.id}`} aria-selected={i === 0 ? 'true' : 'false'}
+        tabindex={i === 0 ? 0 : -1}
+      >{e.tab}</button>
     ))}
-  </dl>
+  </div>
+
+  {examples.map((e, i) => (
+    <div role="tabpanel" id={`ask-p-${e.id}`} aria-labelledby={`ask-t-${e.id}`} class="panel" hidden={i !== 0}>
+      <p class="gfi">{e.gfi}</p>
+      <p class="q">{e.q}</p>
+      <p class="src"><code>{e.src}</code></p>
+      <p class="head">{e.head}</p>
+      <dl class="rows">
+        {e.rows.map((r) => (<><dt>{r.k}</dt><dd>{r.v}</dd></>))}
+      </dl>
+      <p class="tail">{e.tail}</p>
+    </div>
+  ))}
 
   <p class="foot">
     Corpus dated {matrix.corpusDate}. <a href={`${base}/topics/`}>Browse by subject →</a>
   </p>
 </section>
 
+<script>
+  // Roving tabindex, WAI-ARIA tabs pattern. Panels are ordinary elements toggled with
+  // `hidden`, so without JS the first panel is still fully readable — the content is
+  // never gated on the enhancement.
+  for (const list of document.querySelectorAll<HTMLElement>('.ask .tabs')) {
+    const tabs = [...list.querySelectorAll<HTMLButtonElement>('.tab')];
+    const select = (i: number) => {
+      tabs.forEach((t, j) => {
+        const on = i === j;
+        t.setAttribute('aria-selected', String(on));
+        t.tabIndex = on ? 0 : -1;
+        const panel = document.getElementById(t.getAttribute('aria-controls')!);
+        if (panel) panel.hidden = !on;
+      });
+      tabs[i]!.focus();
+    };
+    tabs.forEach((t, i) => {
+      t.addEventListener('click', () => select(i));
+      t.addEventListener('keydown', (e) => {
+        const k = e.key;
+        if (k !== 'ArrowRight' && k !== 'ArrowLeft' && k !== 'Home' && k !== 'End') return;
+        e.preventDefault();
+        select(
+          k === 'Home' ? 0
+          : k === 'End' ? tabs.length - 1
+          : k === 'ArrowRight' ? (i + 1) % tabs.length
+          : (i - 1 + tabs.length) % tabs.length,
+        );
+      });
+    });
+  }
+</script>
+
 <style>
   .ask { margin: var(--caail-section-gap) 0 0; }
   .ask h2 { font-size: var(--caail-fs-h2); line-height: 1.1; letter-spacing: -.02em; color: var(--caail-primary); margin: 0 0 var(--caail-space-3); }
-  .lede { font-size: var(--caail-fs-base); color: var(--caail-muted); margin: 0 0 1rem; max-width: var(--caail-measure); text-wrap: pretty; }
+  .lede { font-size: var(--caail-fs-base); color: var(--caail-muted); margin: 0 0 var(--caail-space-5); max-width: var(--caail-measure); text-wrap: pretty; }
 
-  /* Rules, not boxes: the page already has two card grids above this one. */
-  .qa { margin: 0; display: grid; }
-  .qa-row { padding: var(--caail-space-5) 0; border-top: 1px solid var(--caail-border); }
-  .qa-row:last-child { border-bottom: 1px solid var(--caail-border); }
+  .tabs { display: flex; flex-wrap: wrap; gap: var(--caail-space-2); margin: 0 0 var(--caail-space-5); }
+  .tab { font: inherit; font-size: var(--caail-fs-sm); font-weight: 600; color: var(--caail-muted); background: none; border: 1px solid var(--caail-border); border-radius: 999px; padding: .35rem .85rem; cursor: pointer; transition: color .15s ease-out, border-color .15s ease-out, background .15s ease-out; }
+  .tab:hover { color: var(--caail-link); border-color: var(--caail-link); }
+  .tab[aria-selected='true'] { color: var(--caail-bg); background: var(--caail-primary); border-color: var(--caail-primary); }
 
-  .qa dt { font-size: var(--caail-fs-base); font-weight: 600; color: var(--caail-ink); max-width: var(--caail-measure); margin: 0 0 var(--caail-space-2); line-height: 1.45; }
-  .qa dt code { font-size: var(--caail-fs-xs); font-weight: 500; color: var(--caail-link); background: color-mix(in oklab, var(--caail-link) 8%, transparent); padding: .08rem .35rem; border-radius: 4px; white-space: nowrap; }
-  .qa dd { font-size: var(--caail-fs-sm); color: var(--caail-muted); margin: 0; line-height: 1.55; max-width: var(--caail-measure); text-wrap: pretty; }
+  .panel { border: 1px solid var(--caail-border); border-radius: 10px; padding: var(--caail-space-5); }
+  .gfi { font-size: var(--caail-fs-xs); color: var(--caail-muted); margin: 0 0 var(--caail-space-2); }
+  .q { font-size: var(--caail-fs-lg); font-weight: 600; color: var(--caail-ink); margin: 0 0 var(--caail-space-2); line-height: 1.35; max-width: var(--caail-measure); text-wrap: balance; }
+  .src { margin: 0 0 var(--caail-space-4); }
+  .src code { font-size: var(--caail-fs-xs); color: var(--caail-link); background: color-mix(in oklab, var(--caail-link) 8%, transparent); padding: .1rem .4rem; border-radius: 4px; }
+  .head { font-size: var(--caail-fs-base); font-weight: 600; color: var(--caail-link); margin: 0 0 var(--caail-space-3); max-width: var(--caail-measure); }
 
-  .foot { font-size: var(--caail-fs-sm); color: var(--caail-muted); margin: .9rem 0 0; }
+  .rows { margin: 0 0 var(--caail-space-4); display: grid; grid-template-columns: auto 1fr; gap: var(--caail-space-2) var(--caail-space-4); align-items: baseline; }
+  .rows dt { font-size: var(--caail-fs-sm); font-weight: 600; color: var(--caail-ink); }
+  .rows dd { font-size: var(--caail-fs-sm); color: var(--caail-muted); margin: 0; }
+
+  .tail { font-size: var(--caail-fs-sm); color: var(--caail-muted); margin: 0; line-height: 1.55; max-width: var(--caail-measure); text-wrap: pretty; }
+  .foot { font-size: var(--caail-fs-sm); color: var(--caail-muted); margin: var(--caail-space-4) 0 0; }
   .foot a { white-space: nowrap; }
 
-  /* Stagger the rows as they arrive. Scroll-linked and progressively enhanced: without
-     support, or with reduced motion, the rows are simply visible. Nothing is gated on a
-     class that a headless renderer might never apply. */
-  @supports (animation-timeline: view()) {
-    @media (prefers-reduced-motion: no-preference) {
-      .qa-row {
-        animation: qa-rise linear both;
-        animation-timeline: view();
-        animation-range: entry 10% cover 26%;
-      }
-      /* Transform only, never opacity. animation-fill-mode holds the `from` state
-         backwards, so fading from 0 leaves the row invisible wherever the timeline
-         never advances — a headless render, a hidden tab, an unsupported edge. The
-         content is readable at every point; motion is the enhancement, not the gate. */
-      @keyframes qa-rise {
-        from { transform: translateY(10px); }
-        to   { transform: none; }
-      }
-    }
-  }
+  @media (prefers-reduced-motion: reduce) { .tab { transition: none; } }
 </style>
