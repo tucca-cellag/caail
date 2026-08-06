@@ -20,16 +20,16 @@ import GetStarted from '../../components/GetStarted.astro';
 <Hero />
 <SectionsGrid />
 
-{/* The agent story leads: what the library is, why a model can use it honestly, what it
-    answers, how to start. The human-browsing aids follow for readers who'd rather click. */}
-<WhyCaail />
-<AskExamples />
-<GetStarted />
-
+{/* Human routing first, while the reader is still near the top: pick an entry point, see
+    what changed. The agent story then follows as the pitch, ending on how to connect one. */}
 <div class="caail-two-col">
   <StartHere />
   <RecentlyAdded />
 </div>
+
+<WhyCaail />
+<AskExamples />
+<GetStarted />
 
 <CommunityBand />
 
