@@ -23,16 +23,16 @@ import { COMMUNITY_PATH, SLACK_INVITE_URL } from '../lib/community';
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 ---
 
-<aside class="caail-communityband" aria-label="Join the CAAIL community">
+<aside class="caail-communityband sr" id="community-band" aria-label="Join the CAAIL community">
   <div class="lead">
-    <Icon name="ph:slack-logo-fill" aria-hidden="true" />
+    <Icon name="lucide:slack" aria-hidden="true" />
     <div>
       <h2 class="caail-display">The CAAIL community</h2>
       <p>A Slack workspace for researchers working across cellular agriculture and AI: questions, work in progress, and proposed additions to the library.</p>
     </div>
   </div>
   <div class="actions">
-    <a class="secondary" href={`${base}${COMMUNITY_PATH}`}>Where to go for what</a>
+    <a class="secondary" href={`${base}${COMMUNITY_PATH}`}>Community guide</a>
     <a class="cta" href={SLACK_INVITE_URL} target="_blank" rel="noopener noreferrer">Join the Slack →</a>
   </div>
 </aside>

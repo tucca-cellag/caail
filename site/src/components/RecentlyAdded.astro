@@ -7,9 +7,9 @@ const areaColor = {
 type AreaKey = keyof typeof areaColor;
 ---
 <section class="recent">
-  <h2 class="caail-display">Recently added</h2>
-  {recent.map((r) => (
-    <div class="row">
+  <h2 class="caail-display sr">Recently added</h2>
+  {recent.map((r, i) => (
+    <div class={`row sr sr-d${Math.min(i + 1, 5)}`}>
       <span class="date">{r.date}</span>
       <span class="kind">{r.kind}</span>
       <span class="ttl">{r.title}</span>

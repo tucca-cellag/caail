@@ -1,202 +1,549 @@
 ---
 /**
- * AskExamples — worked questions against the real endpoints.
+ * AskExamples — worked queries against the real endpoints.
  *
- * The questions are anchored to priorities GFI names in its solutions database
- * (gfi.org/solutions): edible non-animal scaffolding, bioreactor and bioprocessing
- * scale-up, sensory and flavour characterisation. That grounds them in what the field
- * says it needs rather than in what happens to demo well, and it lets each answer say
- * something about a real problem instead of exercising an endpoint.
+ * Layout follows aiscientist.tools' "What can you ask?" band, and it is a CAROUSEL, not a
+ * tab set. That distinction is the whole reason this was rebuilt. The reference renders a
+ * single card, remounts it on every change so its entrance animation replays, advances it
+ * on a timer with a progress bar across the top, and offers pills, chevrons and dots as
+ * three ways into the same index. Implemented as WAI-ARIA tabs with `hidden` panels — as
+ * this was — none of that is reachable: a `display: none` panel cannot animate, and a
+ * reserved stage height sized to the tallest panel leaves the shortest one sitting in a
+ * pool of dead space.
+ *
+ * Three structural consequences worth knowing before editing:
+ *
+ * 1. Cards are stacked in ONE grid cell (`grid-area: 1/1`), so the frame is exactly as
+ *    tall as the tallest card and no magic reserve is needed. The previous `min-height:
+ *    37rem` was a measured guess that still left ~115px of void under the shortest panel.
+ * 2. Inactive cards are hidden with `visibility`, never `hidden`/`display: none` — a
+ *    display-none card contributes nothing to grid sizing, which would collapse the frame
+ *    and reintroduce the jump. `visibility: hidden` still sizes the grid, still leaves the
+ *    a11y tree, and still blocks pointer and focus.
+ * 3. The entrance is TRANSFORM-ONLY. The old tab fade animated opacity and justified it on
+ *    the grounds that an accessibility audit never clicks a tab. Auto-advance destroys that
+ *    argument — an audit can now sample a card mid-fade, and axe computes contrast through
+ *    opacity, with `docs.yml` gating deploys on Lighthouse accessibility ≥ 0.90. Same
+ *    constraint, same resolution as styles/reveal.css.
+ *
+ * Two deliberate departures from the reference.
+ *
+ * No "Tools used" row. Theirs is real — their answers come from executing tools. CAAIL's
+ * come from fetching static JSON, so a tool-call trace would be a staged prop. The source
+ * row names the actual endpoint instead, which is both true and more useful to anyone
+ * about to query it themselves.
+ *
+ * The questions are written at the specificity a PhD would actually type: a named method
+ * against a named problem, with the artifact they need at the end of it. "What AI work
+ * exists on scaffolding" is a browsing prompt, not a research question, and answering it
+ * well tells a computational biologist nothing they could act on.
  *
  * Every figure is computed from the generated API at build time. Assumptions that stop
  * holding throw here rather than misleading on the page.
- *
- * Deliberately no "tools used" row. ToolUniverse shows one because its answers come from
- * executing tools; CAAIL's come from fetching static JSON, and staging a tool-call trace
- * to look the part would be the overclaim this project exists to avoid.
  */
+import { Icon } from 'astro-icon/components';
 import matrix from '../../public/api/matrix.json';
 import topicsApi from '../../public/api/topics.json';
 import papers from '../../public/api/papers.json';
+import { licenseTier } from '../lib/licenses';
+import counts from '../content/data/counts.json';
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
 type Cell = (typeof matrix.cells)[number];
-const cellsIn = (area: string): Cell[] =>
-  matrix.cells
-    .filter((c) => c.area === area && !c.emptyInCorpus)
-    .sort((a, b) => b.refIds.length - a.refIds.length);
+const cells = (area: string) =>
+  matrix.cells.filter((c) => c.area === area && !c.emptyInCorpus).sort((a, b) => b.refIds.length - a.refIds.length);
+const emptyIn = (area: string) => matrix.cells.filter((c) => c.area === area && c.emptyInCorpus);
 
 const topic = (slug: string) => {
   const t = (topicsApi.index as Record<string, Record<string, unknown[]>>)[slug];
-  if (!t) throw new Error(`AskExamples: topic "${slug}" missing from the index`);
+  if (!t) throw new Error(`AskExamples: topic "${slug}" missing from topics.json`);
   return t;
 };
 
-/** First-author surname + year for a reference id, so results read as real citations. */
 const byId = new Map(papers.references.map((r) => [r.id, r]));
 const cite = (id: number): string => {
   const r = byId.get(id);
   if (!r) return `#${id}`;
   const who = (r.authors?.[0] ?? '').split(',')[0] || 'Unknown';
-  return `#${id} ${who}${r.year ? ` ${r.year}` : ''}`;
+  return `${who}${r.year ? ` ${r.year}` : ''} (#${id})`;
 };
 const sum = (cs: Cell[]) => cs.reduce((s, c) => s + c.refIds.length, 0);
-const top = (cs: Cell[]) =>
-  cs.slice(0, 3).map((c) => ({ k: `${c.method} (${c.refIds.length})`, v: c.refIds.slice(0, 2).map(cite).join(' · ') }));
 
-const scaffolding = cellsIn('scaffolding');
-const bioprocess = cellsIn('bioprocess');
-const sensory = cellsIn('sensory');
-const emptyScaffold = matrix.cells.filter((c) => c.area === 'scaffolding' && c.emptyInCorpus).length;
-if (scaffolding.length === 0 || emptyScaffold === 0) {
-  throw new Error('AskExamples: the scaffolding example assumes both populated and empty cells exist');
+const scaffold = cells('scaffolding');
+const bioproc = cells('bioprocess');
+const media = cells('media');
+const emptyScaffold = emptyIn('scaffolding');
+if (!scaffold.length || !emptyScaffold.length || !bioproc.length || !media.length) {
+  throw new Error('AskExamples: expected populated and empty cells in scaffolding, bioprocess and media');
 }
 
-const sens = topic('sensory-flavor');
-const bio = topic('bioreactor-scale-up');
-const licensed = papers.references.filter((r) => r.license).length;
+/** The named method rows that a reader would name in a question, and whether they're empty here. */
+const scaffoldGnn = matrix.cells.find((c) => c.method === 'GNN' && c.area === 'scaffolding')!;
+const mediaBo = matrix.cells.find((c) => c.method === 'Bayesian Optimization' && c.area === 'media')!;
 
+const serumFree = topic('serum-free-media');
+const bioreactor = topic('bioreactor-scale-up');
+/* The tier is DERIVED, not stored — papers.json carries the raw OpenAlex licence string
+   and nothing else. Reading a `licenseTier` field off it silently yielded 0, because the
+   field does not exist. Same classifier the /licenses/ hub uses, so the homepage figure
+   and the hub can never disagree. */
+const redistributable = papers.references.filter((r) => {
+  const tier = licenseTier(r.license);
+  return tier === 'permissive' || tier === 'copyleft';
+}).length;
+const withLicence = papers.references.filter((r) => r.license).length;
+/* Four content types, one catalogue. Labelling each population matters here: 345 is every
+   paper entry across all sections, NOT the matrix-eligible subset, and the examples below
+   quote both. */
+const catalogued = counts.papers + counts.software + counts.databases + counts.datasets;
+
+/* Questions are built on cross-cutting themes found by sweeping all 112 entries in GFI's
+   solutions database (gfi.org/solutions, 12 pages, cross-checked against its public REST
+   endpoint). Each spans more than one axis on purpose: the matrix says what has been
+   tried, the subject index says what exists to work with, and the licence axis says what
+   you may do with it. A question answerable by one lookup is not worth a worked example.
+
+   ATTRIBUTION lives in the section credit and in the ANSWERS, never in the questions.
+   Three of these used to open "GFI names…" / "GFI lists…" / "GFI notes…", which read as
+   GFI's agenda rather than as something a researcher would type, and put three near
+   identical openings in a row in what is now a rotating carousel. The one place the link
+   genuinely pays off — that the paper GFI cites as prior art for media formulation is
+   already ref #3 with code attached — is stated in Q1's answer, where it lands as evidence
+   instead of preamble. The observation that separately-funded priorities share one
+   underlying problem is ours, not GFI's; GFI lists them as unlinked entries.
+
+   VOICE is two audiences on purpose, not by accident. Q1–Q3 are one researcher in the
+   first person; Q4 is a team shipping something, because the redistribution trap only
+   bites when a tool leaves your network, and "Building on it" is the pill that signals
+   the shift. */
 const examples = [
   {
-    id: 'scaffolding',
-    tab: 'Scaffolding',
-    gfi: 'GFI names this a priority: naturally adhesive, edible non-animal scaffolding materials',
-    q: 'What AI work exists on scaffolding, and where are the gaps?',
-    src: 'matrix.json',
-    head: `${sum(scaffolding)} papers across ${scaffolding.length} methods — and ${emptyScaffold} of ${matrix.methods.length} method cells empty`,
-    rows: top(scaffolding),
-    tail: 'A priority the field has named, thinly covered here: no software and no databases carry a scaffolding tag. Absence in this corpus is not absence in the literature.',
+    id: 'media',
+    tab: 'Media & metabolism',
+    icon: 'lucide:flask-conical',
+    label: 'Media optimization × metabolic modeling',
+    q:
+      'Draft genome-scale models exist for salmon, bovine, shrimp and chicken, but every one of them ' +
+      'still needs experimental validation, and most media work still screens one factor at a time. ' +
+      'Which indexed work actually couples a metabolic model to a design loop, and which of it ' +
+      'released code I could re-run on my own cell line?',
+    src: ['matrix.json', 'topics.json', 'papers.json'],
+    head: `${mediaBo.refIds.length} papers in Bayesian Optimization × Media Optimization, including Cosenza 2022 (#3), the paper GFI cites as prior art for media formulation`,
+    rows: [
+      { k: 'The paper GFI cites', v: '#3 Cosenza 2022: already indexed, with a code repository attached' },
+      { k: 'Metabolic modeling', v: `${topic('metabolic-modeling').papers.length} papers, ${topic('metabolic-modeling').software.length} tools and ${topic('metabolic-modeling').datasets.length} dataset entries, GEM files among them` },
+      { k: 'Reproducibility filter', v: `${papers.references.filter((r) => r.hasCode && r.hasData).length} of ${papers.references.length} papers link BOTH code and a data deposit` },
+    ],
+    tail:
+      'The last row is the one a search engine cannot answer. A model-plus-design-loop is only ' +
+      're-runnable if both halves were deposited, and most papers release neither.',
   },
   {
-    id: 'bioprocess',
-    tab: 'Bioprocess',
-    gfi: 'GFI names this a priority: scalable, fit-for-purpose bioreactor and bioprocessing technology',
-    q: 'What has been applied to scale-up, and what could I train on?',
-    src: 'matrix.json + topics.json',
-    head: `${sum(bioprocess)} papers across ${bioprocess.length} methods, plus ${bio.datasets.length} datasets and ${bio.software.length} tools on the subject axis`,
-    rows: top(bioprocess),
-    tail: 'The matrix answers what has been tried. The subject index answers what you could act on. One question, both.',
+    id: 'species',
+    tab: 'Species substrate',
+    icon: 'lucide:dna',
+    label: 'Cell lines × single-cell atlases',
+    q:
+      'Species genomics, aquatic cell lines, cell-line repositories and fish stemness get funded as ' +
+      'separate problems, but they share one precondition: I cannot model an organism nobody has ' +
+      'annotated. Which single-cell atlases exist for food species, which papers used one to call ' +
+      'proliferation or stemness markers, and where does an atlas exist that nobody has modelled?',
+    src: ['topics.json', 'catalog.json'],
+    head: `${topic('single-cell-atlases').papers.length} papers, ${topic('single-cell-atlases').datasets.length} dataset entries and ${topic('single-cell-atlases').databases.length} databases on single-cell atlases`,
+    rows: [
+      { k: 'Species coverage', v: `${counts.species} species pages, each separating atlases, GEMs and raw sequencing deposits` },
+      { k: 'Cell-line work', v: `${topic('cell-line-engineering').papers.length} papers tagged cell-line engineering` },
+      { k: 'The gap to look for', v: 'A deposit with an accession that no paper cites: the reverse audit CAAIL runs against itself' },
+    ],
+    tail:
+      'The aquatic species are the thin ones, and that is the point: this crosses papers, per-species ' +
+      'datasets and databases in one pass, and none of the three answers it alone.',
   },
   {
-    id: 'sensory',
-    tab: 'Sensory',
-    gfi: 'GFI names these priorities: a catalogue of animal meat flavours, sensory research for alternative seafood',
-    q: 'I need to predict flavour from composition. What should I start from?',
-    src: 'topics.json',
-    head: `${sens.papers.length} papers, ${sens.databases.length} databases, ${sens.software.length} tools and ${sens.datasets.length} datasets, returned together`,
-    rows: top(sensory),
-    tail: 'A design question does not arrive sorted by content type, so the subject axis returns all four at once.',
+    id: 'transport',
+    tab: 'Scale-up & transport',
+    icon: 'lucide:gauge',
+    label: 'Bioprocess × perfusion modelling',
+    q:
+      'Oxygen, nutrients and shear inside a dense construct are coupled, spatially heterogeneous, and ' +
+      'change as cells fill the void space. Before I commit to a spatially resolved model rather than ' +
+      'treating the vessel as well-mixed, which indexed methods actually resolve those gradients, and ' +
+      'what could I validate one against?',
+    src: ['matrix.json', 'topics.json'],
+    /* The NULL is the headline here, not a footnote. This is the only card that demonstrates
+       the thing no general model can do — report that something is absent instead of
+       silently returning less. Burying it in a closing caveat, as this did, inverts the
+       section's own argument.
+
+       Note the scope wording. This previously read "no public multi-run process time-series
+       exists", which is a claim about the WORLD that CAAIL has no standing to make — it can
+       only speak for what it indexes. It also committed the exact error the #why band above
+       attacks models for: conflating "I found none" with "there are none". */
+    head: 'Nothing to validate against: no indexed dataset carries multi-run process time-series, and reporting that is not the same as returning an empty result',
+    rows: [
+      ...bioproc.slice(0, 2).map((c) => ({ k: c.method, v: `${c.refIds.length}: ${c.refIds.slice(0, 2).map(cite).join(', ')}` })),
+      { k: 'What is indexed', v: `${sum(bioproc)} papers across ${bioproc.length} method rows, plus ${bioreactor.datasets.length} dataset entries and ${bioreactor.software.length} tools on the bioreactor axis` },
+    ],
+    tail:
+      'Read the scope precisely: none is indexed here, which is not the same as none existing. ' +
+      'Validation data for scale-up is largely industrial and unpublished, so a thin result is a ' +
+      'publication gap before it is a research gap, and telling those two apart is the judgement a ' +
+      'general model cannot make on your behalf.',
   },
   {
     id: 'build',
     tab: 'Building on it',
-    gfi: 'For teams building their own tooling over this literature',
-    q: 'I want an internal index, or an MCP, over this field. What do I collect?',
-    src: 'papers.json + catalog.json',
-    head: `${papers.references.length} references with DOI, code and data links; ${licensed} carry a machine-readable licence`,
+    icon: 'lucide:layers',
+    label: 'Internal tooling × licensing',
+    q:
+      'Much precompetitive work in this field is re-derived privately and never published, so sparse ' +
+      'literature does not mean unstudied. We want an internal assistant over what IS published, and ' +
+      'it may go customer-facing later. What may we redistribute versus only read internally, and what ' +
+      'would need licensing separately the day it leaves our network?',
+    src: ['papers.json', 'catalog.json'],
+    head: `${redistributable} of the ${papers.references.length} papers carry a licence permitting redistribution, not the ~74% that are open access`,
     rows: [
-      { k: 'Publishing it', v: 'Filter on licence tier. Free to read is not permission to republish' },
-      { k: 'Internal use', v: 'What your organisation may lawfully read, it may generally index for itself' },
-      { k: 'Wiring it up', v: 'Every entry carries its canonical URL, so the catalogue doubles as a source list' },
+      { k: 'Internal use', v: 'What your organisation may lawfully read, it may generally index for itself: the tier binds on publishing, not on working' },
+      { k: 'Going public', v: `Filter on licenceTier ∈ {permissive, copyleft}; ${withLicence} works carry a machine-readable licence at all` },
+      { k: 'Safety coverage', v: `${topic('allergenicity').papers.length} papers, ${topic('allergenicity').software.length} tools and ${topic('allergenicity').databases.length} databases tagged allergenicity; food safety is thinner` },
     ],
-    tail: 'The licence axis tells you what you can ship, not what you can work with. Those are different questions, and conflating them costs you most of the corpus for no reason.',
+    tail:
+      'Free to read is not permission to republish. The two get conflated in both directions, either ' +
+      'costing you most of the corpus, or exposing you the day the tool ships.',
   },
-];
----
+];---
 
-<section class="ask">
-  <h2 class="caail-display">Questions it answers</h2>
-  <p class="lede">
-    Worked against the real endpoints, on priorities the field has named. Every figure is
-    read from the corpus when this page is built.
-  </p>
+<section class="ask" id="ask">
+  <div class="hd sr">
+    {/* Doubles as the HomeRail label for this section — keep the two identical, and see
+        the note in HomeRail.astro for why the rail derives from the eyebrow rather than
+        from the h2. Guarded by homepage-agent.spec.ts. */}
+    <p class="eyebrow"><span class="bar" aria-hidden="true"></span>What you can ask</p>
+    <h2 class="caail-display">Ask something specific</h2>
+    <p class="lede">
+      Real questions against the real endpoints, answered from {catalogued} curated resources
+      ({counts.papers} papers, {counts.software} tools, {counts.databases} databases and
+      {counts.datasets} dataset entries), indexed across {matrix.methods.length} AI methods.
+    </p>
+    <p class="sub">
+      These are what the endpoints return, not finished answers; your agent reasons on top of
+      them. Every figure is read from the corpus when this page is built, so nothing here is
+      illustrative. Questions draw on cross-cutting themes across all 112 entries in
+      <a href="https://gfi.org/solutions/">GFI's solutions database</a>.
+    </p>
+  </div>
 
-  <div class="tabs" role="tablist" aria-label="Example questions">
+  <div class="pills sr sr-d1">
     {examples.map((e, i) => (
-      <button
-        type="button" role="tab" id={`ask-t-${e.id}`} class="tab"
-        aria-controls={`ask-p-${e.id}`} aria-selected={i === 0 ? 'true' : 'false'}
-        tabindex={i === 0 ? 0 : -1}
-      >{e.tab}</button>
+      <button type="button" class="pill" data-pill aria-pressed={i === 0 ? 'true' : 'false'}>
+        <Icon name={e.icon} />{e.tab}
+      </button>
     ))}
   </div>
 
-  {examples.map((e, i) => (
-    <div role="tabpanel" id={`ask-p-${e.id}`} aria-labelledby={`ask-t-${e.id}`} class="panel" hidden={i !== 0}>
-      <p class="gfi">{e.gfi}</p>
-      <p class="q">{e.q}</p>
-      <p class="src"><code>{e.src}</code></p>
-      <p class="head">{e.head}</p>
-      <dl class="rows">
-        {e.rows.map((r) => (<><dt>{r.k}</dt><dd>{r.v}</dd></>))}
-      </dl>
-      <p class="tail">{e.tail}</p>
-    </div>
-  ))}
+  {/* Announces the change for screen readers, which see neither the pill state nor the
+      card swap. Deliberately announces the short label, not the four-line question —
+      re-reading a paragraph on every advance is punishing to listen to. */}
+  <p class="vh" aria-live="polite" aria-atomic="true" data-live></p>
 
-  <p class="foot">
-    Corpus dated {matrix.corpusDate}. <a href={`${base}/topics/`}>Browse by subject →</a>
+  <div class="stack sr sr-d2">
+    {/* Full width with no JS, where it simply reads as the card's accent edge. With JS it
+        animates 0 → 1 across the dwell, and its `animationend` is what advances the
+        carousel — one clock instead of two, so pausing the animation pauses the advance
+        with no elapsed-time bookkeeping to drift. */}
+    <div class="prog" data-prog aria-hidden="true"></div>
+
+    {examples.map((e, i) => (
+      <article class="card" data-card data-off={i === 0 ? null : ''}>
+        <div class="chead">
+          <p class="plabel"><Icon name={e.icon} />{e.label}</p>
+          <p class="q">{e.q}</p>
+        </div>
+
+        <div class="csrc">
+          <span>Answered from</span>
+          {e.src.map((s) => <code>{s}</code>)}
+        </div>
+
+        <div class="cbody">
+          <p class="head">{e.head}</p>
+          <ul class="rows">
+            {e.rows.map((r) => (<li><strong>{r.k}</strong><span>{r.v}</span></li>))}
+          </ul>
+          <p class="tail">{e.tail}</p>
+        </div>
+      </article>
+    ))}
+  </div>
+
+  <div class="ctrls sr sr-d3">
+    <button type="button" class="arrow" data-prev aria-label="Previous example">
+      <Icon name="lucide:chevron-left" />
+    </button>
+    <div class="dots">
+      {examples.map((e, i) => (
+        <button type="button" class="dot" data-dot aria-label={`Show example ${i + 1} of ${examples.length}: ${e.tab}`} aria-current={i === 0 ? 'true' : 'false'}></button>
+      ))}
+    </div>
+    <button type="button" class="arrow" data-next aria-label="Next example">
+      <Icon name="lucide:chevron-right" />
+    </button>
+  </div>
+
+  <p class="foot sr sr-d4">
+    <a class="more" href={`${base}/papers/explorer/`}>Open the Papers Explorer →</a>
+    {/* Beta sits next to the corpus date because the two qualify different things and a
+        reader needs both: the date bounds WHEN this was true, the status bounds HOW
+        settled it is. Deliberately quiet, because the risk it flags is small — the counts
+        and metadata are firm and a placement is a real claim about the paper; the
+        re-verification against full texts tightens precision rather than establishing
+        trust. Agents get the same calibration via `status` / `placementNote` in
+        matrix.json. */}
+    <span class="dated"><span class="beta">beta</span>Corpus dated {matrix.corpusDate}</span>
   </p>
 </section>
 
 <script>
-  // Roving tabindex, WAI-ARIA tabs pattern. Panels are ordinary elements toggled with
-  // `hidden`, so without JS the first panel is still fully readable — the content is
-  // never gated on the enhancement.
-  for (const list of document.querySelectorAll<HTMLElement>('.ask .tabs')) {
-    const tabs = [...list.querySelectorAll<HTMLButtonElement>('.tab')];
-    const select = (i: number) => {
-      tabs.forEach((t, j) => {
-        const on = i === j;
-        t.setAttribute('aria-selected', String(on));
-        t.tabIndex = on ? 0 : -1;
-        const panel = document.getElementById(t.getAttribute('aria-controls')!);
-        if (panel) panel.hidden = !on;
+  /**
+   * Carousel controller. Progressive enhancement in the strict sense: without this the
+   * first card is already rendered and readable, the accent bar is a static edge, and the
+   * controls are inert buttons rather than broken ones.
+   */
+  const root = document.querySelector<HTMLElement>('.ask');
+  const pills = [...(root?.querySelectorAll<HTMLButtonElement>('[data-pill]') ?? [])];
+  const cards = [...(root?.querySelectorAll<HTMLElement>('[data-card]') ?? [])];
+  const dots = [...(root?.querySelectorAll<HTMLButtonElement>('[data-dot]') ?? [])];
+
+  if (root && cards.length > 1) {
+    const prog = root.querySelector<HTMLElement>('[data-prog]')!;
+    const live = root.querySelector<HTMLElement>('[data-live]')!;
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    let at = 0;
+    // Auto-advance is off under reduced motion, and switches off permanently the moment
+    // anyone touches a control — once a reader has expressed intent, moving the content
+    // out from under them is hostile. It also pauses on hover and on focus-within, which
+    // together are the pause mechanism WCAG 2.2.2 asks of auto-moving content.
+    let auto = !reduce.matches;
+
+    const show = (n: number, announce: boolean) => {
+      at = (n + cards.length) % cards.length;
+      cards.forEach((c, i) => {
+        if (i === at) c.removeAttribute('data-off');
+        else c.setAttribute('data-off', '');
+        // Never `hidden`: display:none removes the card from grid sizing and the frame
+        // would collapse to the active card's height, jumping on every change.
+        c.classList.toggle('is-enter', i === at && announce);
       });
-      tabs[i]!.focus();
+      pills.forEach((p, i) => p.setAttribute('aria-pressed', String(i === at)));
+      dots.forEach((d, i) => d.setAttribute('aria-current', String(i === at)));
+      if (announce) live.textContent = `${pills[at]?.textContent?.trim() ?? ''}: example ${at + 1} of ${cards.length}`;
+      restart();
     };
-    tabs.forEach((t, i) => {
-      t.addEventListener('click', () => select(i));
-      t.addEventListener('keydown', (e) => {
-        const k = e.key;
-        if (k !== 'ArrowRight' && k !== 'ArrowLeft' && k !== 'Home' && k !== 'End') return;
-        e.preventDefault();
-        select(
-          k === 'Home' ? 0
-          : k === 'End' ? tabs.length - 1
-          : k === 'ArrowRight' ? (i + 1) % tabs.length
-          : (i - 1 + tabs.length) % tabs.length,
-        );
-      });
-    });
+
+    const restart = () => {
+      prog.classList.remove('run');
+      if (!auto) return;
+      // The class change only takes effect once the removal has been flushed; without the
+      // forced reflow the animation is never re-run and the carousel stalls after one card.
+      void prog.offsetWidth;
+      prog.classList.add('run');
+    };
+
+    const stopAuto = () => {
+      auto = false;
+      prog.classList.remove('run');
+      root.setAttribute('data-manual', '');
+    };
+
+    prog.addEventListener('animationend', () => { if (auto) show(at + 1, true); });
+
+    pills.forEach((p, i) => p.addEventListener('click', () => { stopAuto(); show(i, true); }));
+    dots.forEach((d, i) => d.addEventListener('click', () => { stopAuto(); show(i, true); }));
+    root.querySelector('[data-prev]')?.addEventListener('click', () => { stopAuto(); show(at - 1, true); });
+    root.querySelector('[data-next]')?.addEventListener('click', () => { stopAuto(); show(at + 1, true); });
+
+    const pause = () => { prog.style.animationPlayState = 'paused'; };
+    const play = () => { prog.style.animationPlayState = ''; };
+    root.addEventListener('pointerenter', pause);
+    root.addEventListener('pointerleave', play);
+    root.addEventListener('focusin', pause);
+    root.addEventListener('focusout', play);
+
+    reduce.addEventListener('change', () => { if (reduce.matches) stopAuto(); });
+    restart();
   }
 </script>
 
 <style>
   .ask { margin: var(--caail-section-gap) 0 0; }
-  .ask h2 { font-size: var(--caail-fs-h2); line-height: 1.1; letter-spacing: -.02em; color: var(--caail-primary); margin: 0 0 var(--caail-space-3); }
-  .lede { font-size: var(--caail-fs-base); color: var(--caail-muted); margin: 0 0 var(--caail-space-5); max-width: var(--caail-measure); text-wrap: pretty; }
 
-  .tabs { display: flex; flex-wrap: wrap; gap: var(--caail-space-2); margin: 0 0 var(--caail-space-5); }
-  .tab { font: inherit; font-size: var(--caail-fs-sm); font-weight: 600; color: var(--caail-muted); background: none; border: 1px solid var(--caail-border); border-radius: 999px; padding: .35rem .85rem; cursor: pointer; transition: color .15s ease-out, border-color .15s ease-out, background .15s ease-out; }
-  .tab:hover { color: var(--caail-link); border-color: var(--caail-link); }
-  .tab[aria-selected='true'] { color: var(--caail-bg); background: var(--caail-primary); border-color: var(--caail-primary); }
+  /* Centred header, matching the reference band. The measure is constrained so the lede
+     wraps to two lines rather than one very long one. */
+  .hd { text-align: center; max-width: 42rem; margin: 0 auto var(--caail-space-6); }
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: .55rem;
+    font-size: var(--caail-fs-xs); letter-spacing: .18em; text-transform: uppercase;
+    font-weight: 600; color: var(--caail-muted); margin: 0 0 var(--caail-space-3);
+  }
+  .bar { display: block; width: 2px; height: .85rem; background: var(--caail-link); border-radius: 2px; }
+  .ask h2 { font-size: var(--caail-fs-h2); line-height: 1.1; letter-spacing: -.02em; color: var(--caail-primary); margin: 0 0 var(--caail-space-3); text-wrap: balance; }
+  .lede { font-size: var(--caail-fs-lg); color: var(--caail-ink); margin: 0 0 var(--caail-space-2); text-wrap: pretty; }
+  .sub { font-size: var(--caail-fs-sm); color: var(--caail-muted); margin: 0; text-wrap: pretty; }
 
-  .panel { border: 1px solid var(--caail-border); border-radius: 10px; padding: var(--caail-space-5); }
-  .gfi { font-size: var(--caail-fs-xs); color: var(--caail-muted); margin: 0 0 var(--caail-space-2); }
-  .q { font-size: var(--caail-fs-lg); font-weight: 600; color: var(--caail-ink); margin: 0 0 var(--caail-space-2); line-height: 1.35; max-width: var(--caail-measure); text-wrap: balance; }
-  .src { margin: 0 0 var(--caail-space-4); }
-  .src code { font-size: var(--caail-fs-xs); color: var(--caail-link); background: color-mix(in oklab, var(--caail-link) 8%, transparent); padding: .1rem .4rem; border-radius: 4px; }
-  .head { font-size: var(--caail-fs-base); font-weight: 600; color: var(--caail-link); margin: 0 0 var(--caail-space-3); max-width: var(--caail-measure); }
+  /* Visually hidden but present for assistive tech. Not `visibility`/`display`, either of
+     which would take it out of the a11y tree and silence the live region entirely. */
+  .vh {
+    position: absolute; width: 1px; height: 1px; overflow: hidden;
+    clip-path: inset(50%); white-space: nowrap; margin: -1px; padding: 0; border: 0;
+  }
 
-  .rows { margin: 0 0 var(--caail-space-4); display: grid; grid-template-columns: auto 1fr; gap: var(--caail-space-2) var(--caail-space-4); align-items: baseline; }
-  .rows dt { font-size: var(--caail-fs-sm); font-weight: 600; color: var(--caail-ink); }
-  .rows dd { font-size: var(--caail-fs-sm); color: var(--caail-muted); margin: 0; }
+  /* Icon pills, centred. Active is filled rather than outlined so the connection to the
+     card's accent edge below is unmistakable. */
+  .pills { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--caail-space-2); margin: 0 0 var(--caail-space-6); }
+  .pill {
+    display: inline-flex; align-items: center; gap: .4rem;
+    font: inherit; font-size: var(--caail-fs-sm); font-weight: 600;
+    color: var(--caail-muted); background: var(--caail-bg);
+    border: 1px solid var(--caail-border); border-radius: 999px;
+    padding: .45rem 1rem; cursor: pointer;
+    transition: color .15s ease-out, border-color .15s ease-out, background .15s ease-out;
+  }
+  .pill [data-icon] { width: 1.05rem; height: 1.05rem; }
+  .pill:hover { color: var(--caail-link); border-color: var(--caail-link); }
+  .pill[aria-pressed='true'] {
+    color: var(--caail-link);
+    border-color: var(--caail-link);
+    background: color-mix(in oklab, var(--caail-link) 9%, transparent);
+  }
 
-  .tail { font-size: var(--caail-fs-sm); color: var(--caail-muted); margin: 0; line-height: 1.55; max-width: var(--caail-measure); text-wrap: pretty; }
-  .foot { font-size: var(--caail-fs-sm); color: var(--caail-muted); margin: var(--caail-space-4) 0 0; }
-  .foot a { white-space: nowrap; }
+  /* THE STACK. Every card occupies the same grid cell, so the frame is exactly as tall as
+     the tallest card — no reserved height to measure, and none to go stale when the copy
+     is edited. The previous `min-height: 37rem` was measured against four panels of
+     524/531/549/579px and still left ~115px of void under the shortest. */
+  .stack {
+    position: relative; display: grid;
+    border: 1px solid var(--caail-border); border-radius: 12px;
+    overflow: hidden; background: var(--caail-bg);
+  }
+  .card { grid-area: 1 / 1; display: flex; flex-direction: column; min-width: 0; }
+  /* `visibility`, never `hidden`/`display: none`. A display-none card contributes nothing
+     to grid track sizing, so the frame would collapse to the active card and jump on every
+     change — which is the entire thing the stack exists to prevent. visibility:hidden
+     still sizes the grid while leaving the a11y tree and blocking pointer and focus. */
+  .card[data-off] { visibility: hidden; }
 
-  @media (prefers-reduced-motion: reduce) { .tab { transition: none; } }
+  /* Progress bar: inside the radius rather than on the border. A 3px top BORDER met the
+     1px side borders at the corners and left a visible notch on each. */
+  .prog {
+    position: absolute; inset: 0 0 auto 0; z-index: 2; height: 3px;
+    background: var(--caail-link); transform-origin: 0 50%;
+  }
+  .prog.run { animation: prog 16s linear forwards; }
+  @keyframes prog { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+  /* TRANSFORM ONLY — no opacity, and this one is load-bearing. The old tab fade animated
+     opacity and argued it was safe because an audit never clicks a tab. Auto-advance ends
+     that argument: axe computes contrast through opacity, and a card sampled mid-fade
+     reports a bogus violation against the Lighthouse ≥0.90 deploy gate. Staggering the
+     three regions gives the change plenty of legibility without it. */
+  .card.is-enter > * { animation: card-in .5s cubic-bezier(.16, 1, .3, 1) both; }
+  .card.is-enter .csrc { animation-delay: .06s; }
+  .card.is-enter .cbody { animation-delay: .12s; }
+  @keyframes card-in { from { transform: translateY(14px); } to { transform: none; } }
+
+  /* Tinted, rule-separated regions, as the reference does. This is also what stops the
+     slack under a short card reading as a hole: the leftover falls inside a bounded body
+     panel rather than inside one undifferentiated box. */
+  .chead { padding: var(--caail-space-6); background: var(--caail-surface); border-bottom: 1px solid var(--caail-border); }
+  .csrc { display: flex; align-items: center; flex-wrap: wrap; gap: .5rem; padding: var(--caail-space-4) var(--caail-space-6); border-bottom: 1px solid var(--caail-border); font-size: var(--caail-fs-sm); color: var(--caail-muted); }
+  .cbody { display: flex; flex-direction: column; padding: var(--caail-space-6); flex: 1; }
+  /* Absorbs the stack's slack, so the closing line sits at the foot of a short card
+     rather than leaving the void beneath it. */
+  .cbody .tail { margin-top: auto; padding-top: var(--caail-space-5); }
+
+  /* Prev / dots / next. The pills name the examples; these give position and a
+     "there is more" affordance at the bottom of a long card, where the pills are
+     already off screen. */
+  .ctrls { display: flex; align-items: center; justify-content: center; gap: var(--caail-space-4); margin: var(--caail-space-5) 0 0; }
+  .arrow {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 2.25rem; height: 2.25rem; padding: 0; cursor: pointer;
+    color: var(--caail-muted); background: var(--caail-bg);
+    border: 1px solid var(--caail-border); border-radius: 999px;
+    transition: color .15s ease-out, border-color .15s ease-out;
+  }
+  .arrow [data-icon] { width: 1.05rem; height: 1.05rem; }
+  .arrow:hover { color: var(--caail-ink); border-color: var(--caail-link); }
+  .dots { display: flex; align-items: center; gap: .4rem; }
+  .dot {
+    width: .5rem; height: .5rem; padding: 0; cursor: pointer;
+    border: 0; border-radius: 999px; background: var(--caail-border);
+    transition: width .2s ease-out, background .2s ease-out;
+  }
+  .dot:hover { background: var(--caail-muted); }
+  .dot[aria-current='true'] { width: 1.1rem; background: var(--caail-link); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .card.is-enter > * { animation: none; }
+    .prog.run { animation: none; }
+    .dot { transition: none; }
+  }
+
+  .plabel {
+    display: flex; align-items: center; gap: .45rem;
+    font-size: var(--caail-fs-xs); letter-spacing: .12em; text-transform: uppercase;
+    font-weight: 700; color: var(--caail-link); margin: 0 0 var(--caail-space-3);
+  }
+  .plabel [data-icon] { width: 1.1rem; height: 1.1rem; }
+
+  .q { font-size: var(--caail-fs-lg); font-weight: 600; color: var(--caail-ink); margin: 0; line-height: 1.45; text-wrap: pretty; }
+  .q::before { content: '“'; }
+  .q::after { content: '”'; }
+
+  .csrc code {
+    font-size: var(--caail-fs-xs); color: var(--caail-link);
+    background: color-mix(in oklab, var(--caail-link) 8%, transparent);
+    border: 1px solid color-mix(in oklab, var(--caail-link) 22%, transparent);
+    padding: .15rem .5rem; border-radius: 6px;
+  }
+
+  .head { font-size: var(--caail-fs-base); font-weight: 700; color: var(--caail-link); margin: 0 0 var(--caail-space-4); text-wrap: pretty; }
+
+  .rows { list-style: none; margin: 0 0 var(--caail-space-4); padding: 0; display: grid; gap: var(--caail-space-2); }
+  .rows li { display: grid; grid-template-columns: minmax(0, 11rem) 1fr; gap: .35rem var(--caail-space-5); align-items: baseline; margin: 0; }
+  @media (max-width: 42rem) { .rows li { grid-template-columns: 1fr; } }
+  /* A leading dot, drawn rather than a list-marker, so it takes the accent colour and
+     sits on the text baseline at any size. */
+  .rows strong { position: relative; padding-left: 1rem; font-size: var(--caail-fs-sm); font-weight: 600; color: var(--caail-ink); }
+  .rows strong::before {
+    content: ''; position: absolute; left: .15rem; top: .5em;
+    width: 5px; height: 5px; border-radius: 50%; background: var(--caail-link);
+  }
+  .rows span { font-size: var(--caail-fs-sm); color: var(--caail-muted); }
+
+  .tail { font-size: var(--caail-fs-sm); color: var(--caail-muted); margin: 0; line-height: 1.6; max-width: 82ch; text-wrap: pretty; }
+
+  .foot { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: var(--caail-space-2) var(--caail-space-5); margin: var(--caail-space-5) 0 0; }
+  .more {
+    font-size: var(--caail-fs-sm); font-weight: 600; color: var(--caail-ink);
+    border: 1px solid var(--caail-border); border-radius: 999px;
+    padding: .5rem 1.1rem; text-decoration: none;
+    transition: border-color .15s ease-out, color .15s ease-out;
+  }
+  .more:hover { border-color: var(--caail-link); color: var(--caail-link); }
+  .dated { display: inline-flex; align-items: center; gap: .5rem; font-size: var(--caail-fs-xs); color: var(--caail-muted); }
+  /* Deliberately quiet. This is a scope qualifier, not a badge of honour or of shame —
+     loud enough that nobody quotes a cell as settled, soft enough that it does not read
+     as an apology for the whole library. */
+  .beta {
+    font-size: var(--caail-fs-xs); font-weight: 700; letter-spacing: .08em;
+    text-transform: uppercase; color: var(--caail-link);
+    border: 1px solid color-mix(in oklab, var(--caail-link) 35%, transparent);
+    background: color-mix(in oklab, var(--caail-link) 8%, transparent);
+    border-radius: 999px; padding: .1rem .45rem;
+  }
+
+  @media (prefers-reduced-motion: reduce) { .pill, .arrow, .more { transition: none; } }
 </style>

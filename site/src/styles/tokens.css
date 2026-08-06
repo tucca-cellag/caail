@@ -13,6 +13,9 @@
   --caail-space-7: 3rem;
   --caail-space-8: 4rem;
   --caail-section-gap: clamp(4rem, 8vw, 7.5rem);
+  /* Air above AND below each homepage band's hairline rule, so a seam is ~2x this.
+     Matches the reference's `py-20` (80px each side) at the top of the clamp. */
+  --caail-band-pad: clamp(3rem, 6vw, 5rem);
 
   /* Type scale. Seven steps, replacing the 21 distinct sizes the homepage had grown, 15
      of which sat inside a 4.8px band and so carried no hierarchy at all. `fs-h2` is a

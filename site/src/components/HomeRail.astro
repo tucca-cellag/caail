@@ -1,0 +1,210 @@
+---
+/**
+ * HomeRail — a minimal scroll-spy rail in the homepage's left gutter.
+ *
+ * It exists because the homepage gives no indication that anything follows the fold.
+ * A reader who sees a hero and stops has no way to know there are seven more sections,
+ * and the scroll-reveal makes that worse rather than better: below-fold content is
+ * literally invisible until scrolled to, so even a fast scroll past shows nothing.
+ *
+ * Collapsed it is ticks only — no labels, no panel, no chrome. Labels and their
+ * translucent backing appear on hover or keyboard focus, and only then. This is the
+ * narrow case where a blurred translucent surface is the right call rather than
+ * decoration: the panel floats over scrolling content, and being able to see that
+ * content move underneath is what tells you the overlay is transient.
+ *
+ * Hidden below 78rem. The splash layout's left gutter is roughly (viewport - 1080) / 2,
+ * so under that width there is no gutter to sit in and the rail would either overlap
+ * the text column or clip off-screen.
+ *
+ * Progressive enhancement: the markup is a plain list of in-page anchors. Without JS
+ * every link still works, you simply do not get the active-section highlight.
+ */
+/* Labels are duplicated from the section headings on purpose (the headings are inside
+   components, not reachable from here), which means they DRIFT: these still read
+   "Model vs. map" and "Questions it answers" long after both sections were renamed.
+   If a heading changes, change it here too. */
+const items = [
+  { id: 'top', label: 'Top' },
+  { id: 'explore', label: 'Explore the library' },
+  { id: 'start', label: 'Start here' },
+  /* These two are NOT free text: each matches its section's `.eyebrow` verbatim, and
+     `homepage-agent.spec.ts` fails if they drift apart.
+     A rail label and a headline have different jobs. The headline can be expressive
+     because the section around it supplies the context; the rail label is read cold, in
+     two words, by someone deciding whether to keep scrolling. Hand-copying the headline
+     is what produced "Before and after" (before and after WHAT) and "Ask something
+     specific" (an instruction with no destination in it). The eyebrow already IS the
+     compressed categorical tag, so it is the right source. */
+  { id: 'why', label: 'Why CAAIL' },
+  { id: 'ask', label: 'What you can ask' },
+  { id: 'connect', label: 'Connect your agent' },
+  { id: 'community-band', label: 'Community' },
+  { id: 'cite-band', label: 'Cite CAAIL' },
+];
+---
+
+<nav class="rail" aria-label="Sections on this page">
+  <ul>
+    {items.map((it) => (
+      <li>
+        {/* The name lives on the anchor, not in the label span. The span is hidden with
+            `visibility: hidden`, which — unlike `opacity: 0` — removes it from the
+            accessibility tree, so without this every rail link was an unnamed link
+            (axe `link-name`, serious, x8). The span is now purely the visual affordance. */}
+        <a href={`#${it.id}`} data-rail={it.id} aria-label={it.label}>
+          <span class="tick" aria-hidden="true"></span>
+          <span class="lbl" aria-hidden="true">{it.label}</span>
+        </a>
+      </li>
+    ))}
+  </ul>
+</nav>
+
+<script>
+  // Active-section tracking.
+  //
+  // Deliberately NOT IntersectionObserver. Sections here range from ~40px (the cite
+  // band) to well over a viewport, and with IO a tall section and a short one can be
+  // "intersecting" simultaneously, so the highlight flickers between them. Asking
+  // "which section contains the viewport's midpoint" has exactly one answer at any
+  // scroll position, which is the property a position indicator needs.
+  const links = [...document.querySelectorAll<HTMLAnchorElement>('.rail a[data-rail]')];
+  if (links.length) {
+    const targets = links
+      .map((a) => ({ link: a, el: document.getElementById(a.dataset.rail ?? '') }))
+      .filter((t): t is { link: HTMLAnchorElement; el: HTMLElement } => t.el !== null);
+
+    let ticking = false;
+    const sync = () => {
+      ticking = false;
+      const mid = window.scrollY + window.innerHeight / 2;
+      let active = targets[0];
+      for (const t of targets) {
+        if (t.el.offsetTop <= mid) active = t;
+      }
+      // At the very bottom the last section may still not contain the midpoint —
+      // nothing below it can, so the final entry wins outright.
+      if (window.innerHeight + window.scrollY >= document.body.scrollHeight - 2) {
+        active = targets[targets.length - 1]!;
+      }
+      for (const t of targets) {
+        if (t === active) t.link.setAttribute('aria-current', 'true');
+        else t.link.removeAttribute('aria-current');
+      }
+    };
+
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(sync);
+    };
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll, { passive: true });
+    sync();
+  }
+</script>
+
+<style>
+  .rail {
+    position: fixed;
+    left: max(.9rem, calc((100vw - 74rem) / 2 - 3.25rem));
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 20;
+    display: none;
+  }
+  /* Only where there is a gutter to occupy. Below this the rail would sit on the text. */
+  @media (min-width: 78rem) {
+    .rail { display: block; }
+  }
+  /* A fixed overlay in a short window would cover the content it indexes. */
+  @media (max-height: 34rem) {
+    .rail { display: none; }
+  }
+
+  .rail ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .1rem; }
+  .rail li { margin: 0; }
+
+  .rail a {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+    /* Rows must be at least as tall as the label pill they host. A 2px tick plus .3rem
+       padding gave a 12px row, so eight ~26px labels stacked on top of one another the
+       moment the rail expanded. The min-height is the label's height, not a guess. */
+    min-height: 1.85rem;
+    padding: .2rem .5rem;
+    border-radius: 7px;
+    text-decoration: none;
+    color: var(--caail-muted);
+    font-size: var(--caail-fs-xs);
+    line-height: 1.2;
+    white-space: nowrap;
+  }
+
+  /* The tick IS the collapsed state. Inactive ticks are short and faint; the active one
+     is longer and takes the link colour, so position reads at a glance without labels. */
+  .tick {
+    display: block;
+    /* Full width always, scaled down when inactive. Transitioning `width` would give the
+       same picture but relayout the rail on every scroll-driven change; scaleX is a
+       compositor-only transform. transform-origin keeps it growing rightward from the
+       gutter edge rather than from its centre. */
+    width: 26px;
+    height: 2px;
+    border-radius: 2px;
+    flex: none;
+    background: color-mix(in oklab, var(--caail-ink) 28%, transparent);
+    transform: scaleX(0.54);
+    transform-origin: left center;
+    transition: transform .22s cubic-bezier(.16, 1, .3, 1), background .22s ease-out;
+  }
+  .rail a:hover .tick,
+  .rail a:focus-visible .tick { background: var(--caail-link); }
+  .rail a[aria-current='true'] .tick { transform: none; background: var(--caail-primary); }
+
+  /* Labels are absolutely positioned and so contribute NOTHING to the rail's box.
+     Laid out in flow they made the nav 182px wide while the content column started at
+     180 — the labels were invisible but their anchors still covered the hero text and
+     would have swallowed clicks on it. Out of flow, the rail's hit area is the ticks
+     and nothing else.
+     Each label carries its own translucent surface rather than one panel behind the
+     list, which is both more minimal collapsed (no panel at all, just ticks) and the
+     only option once the labels no longer size their container.
+     `visibility: hidden` takes these OUT of the accessibility tree, which is why the
+     anchor carries its own aria-label. */
+  .lbl {
+    position: absolute;
+    left: calc(100% - .2rem);
+    top: 50%;
+    padding: .28rem .6rem;
+    border-radius: 8px;
+    background: color-mix(in oklab, var(--caail-bg) 76%, transparent);
+    border: 1px solid color-mix(in oklab, var(--caail-border) 70%, transparent);
+    box-shadow: 0 8px 24px -14px rgb(0 0 0 / .22);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    opacity: 0;
+    visibility: hidden;
+    transform: translate(-4px, -50%);
+    transition: opacity .2s ease-out, transform .22s cubic-bezier(.16, 1, .3, 1), visibility .2s;
+    pointer-events: none;
+  }
+  .rail:hover .lbl,
+  .rail:focus-within .lbl {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(0, -50%);
+  }
+  .rail a[aria-current='true'] { color: var(--caail-primary); font-weight: 600; }
+  .rail a:hover, .rail a:focus-visible { color: var(--caail-link); }
+
+  .rail ul { padding: .35rem; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .tick, .lbl, .rail ul { transition: none; }
+  }
+</style>

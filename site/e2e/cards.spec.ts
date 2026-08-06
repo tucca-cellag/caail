@@ -44,7 +44,11 @@ test('homepage grid items share a row top and height (Starlight prose-margin tra
   // every item after the first, which offsets it and leaves the row visibly unequal.
   // SectionsGrid escaped only because its cards happen to be links.
   await page.goto('./');
-  for (const sel of ['.gs .grid > *', '.caail-two-col > *', '.why .cols > *']) {
+  // `.gs .grid` is gone: Connect-your-agent is now tabs, which has no row to misalign.
+  // `.why .split` replaced `.why .cols` — one frame with two grid children, so equal
+  // heights are structural rather than coincidental. This still asserts it, because the
+  // margin trap would break the shared top edge even inside a single container.
+  for (const sel of ['.caail-two-col > *', '.why .split > *']) {
     const boxes = await page.locator(sel).evaluateAll((els) =>
       els.map((e) => {
         const r = e.getBoundingClientRect();

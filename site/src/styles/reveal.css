@@ -1,0 +1,78 @@
+/* Scroll reveal — one mechanism for the whole site.
+ *
+ * Modelled on aiscientist.tools' `.sr` / `.sr-d1..5`: a 0.65s ease-out-expo lift of
+ * 20px, with siblings staggered by 100ms so a band resolves in sequence rather than
+ * snapping in all at once.
+ *
+ * ONE DELIBERATE INVERSION, and it is the whole reason this file exists.
+ *
+ * The pattern as published is:
+ *
+ *     .sr:not(.in) { opacity: 0; transform: translateY(20px); }
+ *
+ * which makes the *default* state invisible and relies on JavaScript adding `.in`
+ * to reveal it. If the observer never runs — JS disabled, a script error earlier on
+ * the page, a headless renderer, a prerender pass — the content is not "unanimated",
+ * it is permanently gone. Nothing on the page reports this, because the markup is
+ * present and only the paint is missing.
+ *
+ * That is not hypothetical here: this exact class of bug already shipped once in this
+ * component set, where reveal keyframes fading from `opacity: 0` under
+ * `animation-fill-mode: both` rendered whole homepage sections blank while the entire
+ * e2e suite passed, because every assertion queried the DOM rather than the pixels.
+ *
+ * So the hidden state is gated behind `.sr-ready`, which an inline script in
+ * RevealScript.astro sets on <html> before first paint. No script, no hiding — the
+ * page renders fully visible and simply does not animate. The visual result when JS
+ * *is* present is identical to theirs.
+ *
+ * Reduced motion drops straight to visible: an accessibility preference must never
+ * cost someone the content.
+ */
+
+/* TRANSFORM ONLY — no opacity. This is the second constraint, and it outranks the
+ * aesthetics of a fade.
+ *
+ * axe (and therefore Lighthouse) computes effective contrast through opacity. An
+ * unrevealed `.sub` measured 1.23:1 — muted text at 0 opacity resolves to #e6e7e9 on
+ * white — and was reported as a serious `color-contrast` violation on every `.sr`
+ * element the audit reached before the reveal fired. `docs.yml` gates deploys on
+ * Lighthouse accessibility ≥ 0.90, so a fade-in reveal was a standing risk of blocking
+ * the deploy for a colour problem that does not exist.
+ *
+ * Moving 20px is still a reveal. It costs nothing in contrast, nothing in captures
+ * (an unrevealed element is present and merely offset), and nothing in Lighthouse.
+ */
+.sr {
+  transition: transform 0.72s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Offset only once JS has proven it can un-offset. */
+/* 34px, not 20. Transform-only motion has no fade to announce it, so the distance IS
+   the signal — at 20px on a full-width band the movement was real but easy to miss
+   entirely, which is indistinguishable from "the animation is broken". */
+.sr-ready .sr:not(.in) {
+  transform: translateY(34px);
+}
+
+.sr-d1 { transition-delay: 0.1s; }
+.sr-d2 { transition-delay: 0.2s; }
+.sr-d3 { transition-delay: 0.3s; }
+.sr-d4 { transition-delay: 0.4s; }
+.sr-d5 { transition-delay: 0.5s; }
+
+/* Print is a capture, not a reading session: nothing scrolls, so nothing would reveal.
+   The script also handles `beforeprint`, but this covers a print path that never runs it. */
+@media print {
+  .sr-ready .sr:not(.in) { transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sr {
+    transition: none;
+  }
+  .sr-ready .sr:not(.in) { transform: none; }
+  .sr-d1, .sr-d2, .sr-d3, .sr-d4, .sr-d5 {
+    transition-delay: 0s;
+  }
+}

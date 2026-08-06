@@ -8,16 +8,16 @@
 import { Icon } from 'astro-icon/components';
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const cards = [
-  { icon: 'ph:plant-duotone', title: 'New to cell ag?', desc: 'Watch the field foundations and pick up the reference reading.', href: `${base}/primers/cell-ag/` },
-  { icon: 'ph:brain-duotone', title: 'New to AI?', desc: 'Start with ML learning playlists built for bench scientists.', href: `${base}/primers/ai/` },
-  { icon: 'ph:squares-four-duotone', title: 'Looking for a method?', desc: 'Filter the Papers matrix by AI method or research area.', href: `${base}/papers/explorer/` },
-  { icon: 'ph:dna-duotone', title: 'Need training data?', desc: 'Browse datasets by species, or benchmarks for model evaluation.', href: `${base}/datasets/readme/` },
+  { icon: 'lucide:sprout', title: 'New to cell ag?', desc: 'Watch the field foundations and pick up the reference reading.', href: `${base}/primers/cell-ag/` },
+  { icon: 'lucide:brain', title: 'New to AI?', desc: 'Start with ML learning playlists built for bench scientists.', href: `${base}/primers/ai/` },
+  { icon: 'lucide:layout-grid', title: 'Looking for a method?', desc: 'Filter the Papers matrix by AI method or research area.', href: `${base}/papers/explorer/` },
+  { icon: 'lucide:dna', title: 'Need training data?', desc: 'Browse datasets by species, or benchmarks for model evaluation.', href: `${base}/datasets/readme/` },
 ];
 ---
 <section class="start">
-  <h2 class="caail-display">Start here</h2>
-  {cards.map((c) => (
-    <a class="card" href={c.href}>
+  <h2 class="caail-display sr">Start here</h2>
+  {cards.map((c, i) => (
+    <a class={`card sr sr-d${Math.min(i + 1, 5)}`} href={c.href}>
       <span class="ic"><Icon name={c.icon} /></span>
       <div><h3>{c.title}</h3><p>{c.desc}</p></div>
     </a>

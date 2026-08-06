@@ -1,0 +1,230 @@
+---
+/**
+ * SetupTabs — the three install paths, extracted so the hero and the standalone
+ * "Connect your agent" band can both render them.
+ *
+ * `compact` trims the chrome for hero use: no per-step numbering column, tighter
+ * spacing, smaller reserve. The content and the tab contract are identical either way,
+ * so there is one definition of what the install paths ARE.
+ *
+ * Endpoints are GitHub URLs, not this site's. Code execution defaults to network egress
+ * for package managers only, which covers GitHub but not GitHub Pages, and on Team and
+ * Enterprise plans only an organisation owner can widen it. Fetching from GitHub needs
+ * nobody to change a setting.
+ */
+import { Icon } from 'astro-icon/components';
+
+interface Props {
+  compact?: boolean;
+  /** Distinguishes the two instances' element ids when both are on one page. */
+  idPrefix?: string;
+}
+const { compact = false, idPrefix = 'gs' } = Astro.props;
+
+const RAW = 'https://raw.githubusercontent.com/tucca-cellag/caail/main';
+const PROMPT = `Read ${RAW}/plugin/skills/caail/SKILL.md and use CAAIL to answer questions about cellular agriculture and AI.`;
+
+const paths = [
+  {
+    id: 'any',
+    tab: 'Any agent',
+    icon: 'lucide:message-square',
+    lead: 'To use CAAIL, copy this prompt and send it to your AI agent:',
+    steps: [PROMPT],
+    clients: [
+      { n: 'Claude', i: 'simple-icons:anthropic' },
+      { n: 'ChatGPT', i: 'simple-icons:openai' },
+      { n: 'Gemini', i: 'simple-icons:googlegemini' },
+      { n: 'Cursor', i: 'simple-icons:cursor' },
+      { n: 'Copilot', i: 'simple-icons:githubcopilot' },
+    ],
+    note: 'Loads for this conversation only; nothing is installed.',
+    link: null,
+  },
+  {
+    id: 'cli',
+    tab: 'Claude Code, Cursor, CLI',
+    icon: 'lucide:terminal',
+    /* A prompt, not the two `claude plugin` commands.
+       Those commands are correct — but ONLY in Claude Code. This tab names Cursor and
+       "CLI" too, and neither implements Claude Code's plugin marketplace, so the panel
+       was promising three clients and serving one. The prompt points at an install skill
+       that detects the client and takes the right path for each, which is the actual
+       difference; for Claude Code specifically it still ends up running those two
+       commands, and the note names them for anyone who would rather run them directly. */
+    lead: 'Already in a coding agent? Paste this prompt. It reads the guide and installs itself:',
+    steps: [`Read ${RAW}/plugin/skills/caail-install/SKILL.md and install CAAIL for me.`],
+    clients: [
+      { n: 'Claude Code', i: 'simple-icons:claude' },
+      { n: 'Cursor', i: 'simple-icons:cursor' },
+      { n: 'Windsurf', i: 'lucide:wind' },
+      { n: 'Cline', i: 'lucide:terminal' },
+    ],
+    note: 'In Claude Code this runs claude plugin marketplace add tucca-cellag/caail then claude plugin install caail@caail. Persists across sessions; about 265 tokens of always-on context.',
+    link: { href: 'https://github.com/tucca-cellag/caail/tree/main/plugin', text: 'Read the plugin source →' },
+  },
+  {
+    id: 'web',
+    tab: 'claude.ai',
+    icon: 'lucide:app-window',
+    lead: 'The web app installs skills by file upload rather than by URL, so download it first:',
+    steps: [`${RAW}/plugin/skills/caail/SKILL.md`, 'Settings → Customize → Skills → Add → Upload skill'],
+    clients: [
+      { n: 'claude.ai', i: 'simple-icons:anthropic' },
+      { n: 'Claude desktop', i: 'simple-icons:claude' },
+    ],
+    note: 'Persists across chats. Nothing to host or authenticate.',
+    link: null,
+  },
+];---
+
+<div class:list={['setup', compact && 'setup--compact']}>
+  <div class="tabs" role="tablist" aria-label="Setup paths">
+    {paths.map((p, i) => (
+      <button
+        type="button" role="tab" id={`${idPrefix}-t-${p.id}`} class="tab"
+        aria-controls={`${idPrefix}-p-${p.id}`} aria-selected={i === 0 ? 'true' : 'false'}
+        tabindex={i === 0 ? 0 : -1}
+      ><Icon name={p.icon} />{p.tab}</button>
+    ))}
+  </div>
+
+  <div class="panels">
+    {paths.map((p, i) => (
+      <div role="tabpanel" id={`${idPrefix}-p-${p.id}`} aria-labelledby={`${idPrefix}-t-${p.id}`} class="panel" hidden={i !== 0}>
+        <p class="lead">{p.lead}</p>
+
+        {p.steps.map((s, n) => (
+          <div class="cmd">
+            {p.steps.length > 1 && <span class="n">{n + 1}</span>}
+            <code>{s}</code>
+            <button type="button" class="copy" data-copy={s} aria-label={`Copy: ${s}`}>
+              <Icon name="lucide:copy" class="i-copy" />
+              <Icon name="lucide:check" class="i-done" />
+            </button>
+          </div>
+        ))}
+
+        <p class="note">
+          <span class="clients">
+            {p.clients.map((c) => (
+              <span class="client"><Icon name={c.i} />{c.n}</span>
+            ))}
+          </span>
+          {p.note}
+          {p.link && <a href={p.link.href}>{p.link.text}</a>}
+        </p>
+      </div>
+    ))}
+  </div>
+
+  {/* Says plainly what is built and what is not. The paste-prompt genuinely works in all
+      three today — what does not exist yet is a first-class integration (a Claude Science
+      connector, a ChatGPT app, a Gemini extension), and letting a reader assume otherwise
+      is the kind of overclaim this project exists to avoid. */}
+  <p class="soon">
+    <Icon name="lucide:clock" />
+    <span>Dedicated <strong>Claude Science</strong>, <strong>ChatGPT</strong> and <strong>Gemini</strong> integrations are in progress. Until then the prompt above works in all three; it just does not persist.</span>
+  </p>
+
+  <output class="visually-hidden" aria-live="polite"></output>
+</div>
+
+<script>
+  // Astro hoists and dedupes this, so it runs once no matter how many instances of
+  // the component are on the page; the selectors cover every instance.
+  import { initTabs, initCopyButtons } from '../lib/tabs';
+  initTabs('.setup .tabs');
+  initCopyButtons('.setup');
+</script>
+
+<style>
+  /* Underline rail: the tabs sit ON the rule, so the active one reads as a continuation
+     of the panel below rather than a detached chip. -1px pulls each tab's own 2px border
+     over the 1px rule so they occupy the same line. */
+  .tabs { display: flex; flex-wrap: wrap; gap: var(--caail-space-5); border-bottom: 1px solid var(--caail-border); margin: 0 0 var(--caail-space-5); }
+  .setup--compact .tabs { gap: var(--caail-space-4); margin-bottom: var(--caail-space-4); }
+  .tab {
+    display: inline-flex; align-items: center; gap: .4rem;
+    font: inherit; font-size: var(--caail-fs-sm); font-weight: 600;
+    color: var(--caail-muted); background: none; border: 0;
+    border-bottom: 2px solid transparent; margin-bottom: -1px;
+    padding: 0 0 var(--caail-space-3); cursor: pointer;
+    transition: color .15s ease-out, border-color .15s ease-out;
+  }
+  .tab [data-icon] { width: 1rem; height: 1rem; }
+  .tab:hover { color: var(--caail-ink); }
+  .tab[aria-selected='true'] { color: var(--caail-primary); border-bottom-color: var(--caail-primary); }
+
+  /* Reserve the tallest panel's height so switching tabs does not shift the page under
+     the pointer. Re-measured after the client-list line was added: the section height
+     varied 455 / 471 / 471 across the three tabs, so the previous 10rem reserve was 16px
+     short of the two-command panels. Below ~34rem the panels wrap to unpredictable
+     heights and a fixed reserve would strand a large gap, so it lifts. */
+  .panels { min-height: 11.5rem; }
+  .setup--compact .panels { min-height: 9rem; }
+  @media (max-width: 34rem) { .panels { min-height: 0; } }
+
+  /* A plain sentence, matching the reference. The icon moved onto the tab, where it
+     labels the path itself rather than decorating the instruction. */
+  .lead { font-size: var(--caail-fs-sm); color: var(--caail-muted); margin: 0 0 var(--caail-space-3); line-height: 1.5; }
+
+  /* Command row: a tinted well rather than a left rule. A 2px coloured side-stripe is a
+     borrowed shape, and a full container reads as a thing you copy from. */
+  /* Flex, NOT a three-track grid.
+     `grid-template-columns: auto 1fr auto` assumed three children, but the step number
+     is only rendered when a path has more than one step. On the single-step panel the
+     code landed in track 1 (auto, so it took 1033px) and the copy button was squeezed
+     into `1fr` with nothing left — it computed to 10px wide with 0px icons, which read
+     on the page as "the prompt has no copy button at all".
+     Flex has no fixed track count, so a conditional child cannot shift anything. */
+  .cmd {
+    display: flex; align-items: flex-start; gap: .5rem;
+    background: color-mix(in oklab, var(--caail-link) 5%, transparent);
+    border: 1px solid var(--caail-border); border-radius: 8px;
+    padding: .55rem .6rem; margin: 0 0 var(--caail-space-2);
+  }
+  /* Same line-height as the code it numbers, so the digit sits on the code's first
+     baseline rather than a few pixels above it. */
+  .cmd .n { flex: none; font-size: var(--caail-fs-xs); font-weight: 600; color: var(--caail-muted); line-height: 1.6; min-width: .75rem; }
+  .cmd code { flex: 1 1 auto; min-width: 0; font-size: var(--caail-fs-xs); line-height: 1.6; color: var(--caail-ink); background: none; padding: 0; overflow-wrap: anywhere; }
+
+  .copy { display: inline-flex; flex: none; padding: .3rem; border-radius: 8px; border: 0; background: none; color: var(--caail-muted); cursor: pointer; transition: color .15s ease-out, background .15s ease-out; }
+  .copy:hover, .copy:focus-visible { color: var(--caail-primary); background: color-mix(in oklab, var(--caail-link) 12%, transparent); }
+  .copy [data-icon] { width: 1rem; height: 1rem; }
+  /* Swap the glyph on success. The aria-live output carries the same news for anyone
+     who cannot see a glyph change, so this is not the only signal. */
+  .copy .i-done { display: none; }
+  .copy.is-done { color: var(--caail-link); }
+  .copy.is-done .i-copy { display: none; }
+  .copy.is-done .i-done { display: inline-block; }
+
+  .note { font-size: var(--caail-fs-xs); color: var(--caail-muted); margin: var(--caail-space-3) 0 0; line-height: 1.55; max-width: var(--caail-measure); }
+  .note a { margin-left: .35rem; white-space: nowrap; }
+  /* Names the agents the step actually works in, so the reader can check themselves
+     off the list before copying anything. */
+  /* Names AND marks the agents the step works in. Brand logos are used nominatively —
+     to identify a compatible client — which is what a compatibility list is for. */
+  .clients { display: flex; flex-wrap: wrap; align-items: center; gap: .25rem .7rem; margin: 0 0 .3rem; }
+  .client { display: inline-flex; align-items: center; gap: .3rem; color: var(--caail-ink); font-weight: 600; }
+  .client [data-icon] { width: .85rem; height: .85rem; opacity: .75; }
+
+  .soon {
+    display: flex; align-items: flex-start; gap: .45rem;
+    font-size: var(--caail-fs-xs); color: var(--caail-muted);
+    margin: var(--caail-space-4) 0 0; padding-top: var(--caail-space-3);
+    border-top: 1px dashed var(--caail-border);
+    line-height: 1.55;
+  }
+  .soon [data-icon] { width: .95rem; height: .95rem; flex: none; margin-top: .1rem; }
+  .soon strong { color: var(--caail-ink); font-weight: 600; }
+  /* One notice per page, not one per instance: the hero and the standalone band render
+     the same component, and the same "coming soon" line twice reads as a bug. */
+  .setup--compact .soon { display: none; }
+
+  .visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .tab, .copy { transition: none; }
+  }
+</style>

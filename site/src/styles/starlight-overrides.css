@@ -115,7 +115,33 @@ a.site-title {
  * built with <div> children hits it. Same family as the #67 offset trap covered in
  * site/e2e/licenses.spec.ts. */
 .caail-two-col > *,
-.sl-markdown-content :is(.gs .grid, .gs .prompt, .why .cols, .ask .tabs, .ask .panel) > * {
+/* Scope by COMPONENT class, not by the section that happens to host it. `.gs .tabs`
+   silently stopped covering the setup tabs the moment they were extracted into a shared
+   component and rendered in the hero as well: the standalone band was fine and the hero
+   copy picked up a 16px margin on every tab after the first, so tab one sat visibly
+   higher than its neighbours. Anything that can be mounted in more than one place must
+   be listed by its own class. */
+/* This trap has now caused three separate visual bugs: offset setup tabs, and both
+   footer bands appearing vertically off-centre because the TEXT half of an
+   icon-plus-text flex row picked up 16px while the icon did not. The rule below is
+   deliberately broad — any horizontal flex/grid row whose children are not links.
+   If you add such a row, add it here, or it will look subtly wrong in a way its own
+   CSS cannot explain.
+
+   `.ask .stack` is a FOURTH failure mode of the same trap, and the nastiest to read.
+   It is a grid stack — every card sits in cell 1/1 so the frame sizes to the tallest —
+   and the inherited 16px pushed every card down inside that cell, inflating the row to
+   615px for 599px of content. It presents as an unexplained void along the bottom edge
+   of the card, which looks like a padding or min-height bug in the component and is
+   neither. Any single-cell grid stack added later will do the same. */
+.sl-markdown-content :is(
+  .setup .tabs, .setup .panels, .setup .panel, .setup .cmd, .setup .clients,
+  .why .split, .why .half, .why .chat, .why .turn, .why .pts li,
+  .ask .pills, .ask .stack, .ask .csrc, .ask .rows li, .ask .ctrls, .ask .dots,
+  .hero-router, .hero-setup, .hero .tick,
+  .caail-communityband, .caail-communityband .lead, .caail-communityband .actions,
+  .caail-citeband, .caail-citeband .lead, .caail-citeband .actions
+) > * {
   margin-top: 0;
 }
 
@@ -281,3 +307,43 @@ mobile-starlight-toc .dropdown { border-top: 1px solid var(--caail-border); }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
 }
+
+
+/* ── Homepage band rhythm ────────────────────────────────────────────────
+ * Every aiscientist.tools section is `bg-white` with `border-t border-gray-100` and
+ * 80px of vertical padding. Nothing is tinted; what makes their page scan as a
+ * sequence of bands rather than one long column is the hairline plus the air.
+ *
+ * CAAIL's sections already carry `margin-top: var(--caail-section-gap)`, so the rule
+ * goes on top and the existing gap becomes the padding above it.
+ *
+ * Excluded on purpose: `.hero` (its own diagonal stripe is the top edge) and the
+ * community/cite bands, which are already self-contained bordered cards — a rule
+ * above a card reads as a stray line. */
+/* Air on BOTH sides of the rule, like their `py-20`. Putting the whole gap below it left
+   ZERO above: the previous section's last line ended exactly on the next section's
+   hairline (measured 0px), so the rule read as underlining that line rather than
+   separating the bands. */
+.sl-markdown-content :is(.sections, .caail-two-col, .why, .ask, .gs) {
+  border-top: 1px solid var(--caail-border);
+  margin-top: var(--caail-band-pad);
+  padding-top: var(--caail-band-pad);
+}
+
+
+/* Footer band pair (community / cite). Both bands are internally `flex-wrap: wrap`, so
+   in a half-width column their actions drop below the lead on their own — no separate
+   stacked variant needed. */
+.caail-band-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--caail-space-5);
+  margin-top: var(--caail-band-pad);
+}
+@media (max-width: 56rem) {
+  .caail-band-pair { grid-template-columns: 1fr; }
+}
+.caail-band-pair > * { margin-top: 0; margin-bottom: 0; }
+/* The bands carry their own vertical margin for the stacked case; inside the pair the
+   grid gap owns spacing, and leaving both produced an uneven pair. */
+.caail-band-pair :is(.caail-communityband, .caail-citeband) { margin: 0; height: 100%; }
