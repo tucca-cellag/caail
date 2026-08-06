@@ -109,7 +109,17 @@ const items = [
 <style>
   .rail {
     position: fixed;
-    left: max(.9rem, calc((100vw - 74rem) / 2 - 3.25rem));
+    /* Shifted 5.25rem further out than the ticks alone would need, because the LABELS are
+       what has to fit, and they open to the right.
+       Measured: the widest label ("Explore the library") is 133px, and a label's right
+       edge lands 178px from the rail's left. The old offset put the rail a constant 104px
+       left of the content column at EVERY width above the breakpoint — both terms scale
+       with the viewport, so the gap never grew and the labels overlapped the body text by
+       a constant 74px no matter how wide the window got. Widening the browser looked like
+       it should help and never did.
+       Solving `railLeft + 178 <= contentLeft - 8` gives a shift of >= 82px; 5.25rem (84px)
+       takes it with a couple of pixels to spare. */
+    left: max(.9rem, calc((100vw - 74rem) / 2 - 8.5rem));
     top: 50%;
     transform: translateY(-50%);
     z-index: 20;
@@ -193,11 +203,21 @@ const items = [
     transition: opacity .2s ease-out, transform .22s cubic-bezier(.16, 1, .3, 1), visibility .2s;
     pointer-events: none;
   }
-  .rail:hover .lbl,
-  .rail:focus-within .lbl {
-    opacity: 1;
-    visibility: visible;
-    transform: translate(0, -50%);
+  /* Labels open only where the gutter can actually hold them.
+     The shift above is defeated below ~1485px by the `max(.9rem, …)` floor: the rail stops
+     tracking the viewport, sits at the screen edge, and the constant-gap arithmetic no
+     longer holds, so the labels would reach into the text again. Rather than let that
+     happen, the labels simply do not open there. The ticks and the scroll-spy position
+     still work at every width from 78rem up, and each anchor keeps its own `aria-label`,
+     so nothing is lost to a screen reader — only the sighted hover affordance, in the one
+     range where showing it would sit on the prose. */
+  @media (min-width: 93rem) {
+    .rail:hover .lbl,
+    .rail:focus-within .lbl {
+      opacity: 1;
+      visibility: visible;
+      transform: translate(0, -50%);
+    }
   }
   .rail a[aria-current='true'] { color: var(--caail-primary); font-weight: 600; }
   .rail a:hover, .rail a:focus-visible { color: var(--caail-link); }

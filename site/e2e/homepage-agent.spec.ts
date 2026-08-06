@@ -515,6 +515,42 @@ test.describe('homepage section rail', () => {
     expect(collisions, `overlapping rail labels: ${collisions.join(', ')}`).toEqual([]);
   });
 
+  /**
+   * Opened labels must stay in the gutter, clear of the prose.
+   *
+   * The rail's offset and the content column both scale with the viewport, so the space
+   * between them is CONSTANT — it was 104px at every width while the widest label needed
+   * 178px. The labels therefore sat on the body text by the same 74px at 1440px and at
+   * 2560px alike, and widening the window looked like it ought to help and never did.
+   *
+   * Checked at several widths precisely because the bug was width-independent: a single
+   * viewport would have proved almost nothing, and the two widest are the ones a reader
+   * would assume are safe.
+   */
+  for (const width of [1488, 1600, 1920, 2560]) {
+    test(`expanded labels stay clear of the content column at ${width}px`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto('./');
+      await page.locator('.rail').hover();
+      await page.waitForTimeout(350);
+
+      const worst = await page.evaluate(() => {
+        const content = document.querySelector('.content-panel .sl-markdown-content')!.getBoundingClientRect();
+        const shown = [...document.querySelectorAll('.rail .lbl')].filter(
+          (el) => getComputedStyle(el).visibility === 'visible',
+        );
+        // Ticks-only is a legitimate state below the label breakpoint; nothing to check.
+        if (!shown.length) return null;
+        return shown
+          .map((el) => ({ text: el.textContent ?? '', over: +(el.getBoundingClientRect().right - content.left).toFixed(1) }))
+          .sort((a, b) => b.over - a.over)[0]!;
+      });
+
+      if (worst === null) return; // labels deliberately closed at this width
+      expect(worst.over, `label "${worst.text}" reaches ${worst.over}px into the content column`).toBeLessThanOrEqual(0);
+    });
+  }
+
   test('the active entry follows the scroll position', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('./');
