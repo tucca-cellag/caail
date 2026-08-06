@@ -283,7 +283,7 @@ export function buildManifest(
   for (const r of papers.references) bySection[r.section] = (bySection[r.section] ?? 0) + 1;
 
   return {
-    name: 'CAAIL — Cellular Agriculture AI Library',
+    name: 'CAAIL: Cellular Agriculture AI Library',
     corpusDate,
     // First thing an agent reads, so the maturity belongs here rather than three
     // fetches deep. The inventory counts are firm; it is the classification over them

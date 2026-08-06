@@ -56,7 +56,7 @@ function TierIndex() {
   return (
     <div class="lh-index not-content">
       <p class="lh-disclaimer">
-        A coarse triage signal (auto-detected or curator-supplied), <strong>not</strong> verified terms — always
+        A coarse triage signal (auto-detected or curator-supplied), <strong>not</strong> verified terms. Always
         confirm the license at the source before relying on it, especially for commercial use.
       </p>
       <ul class="lh-tier-grid">

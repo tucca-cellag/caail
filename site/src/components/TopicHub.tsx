@@ -37,7 +37,7 @@ type Item = {
 const items: Item[] = [
   ...(papers.references as any[]).filter((r) => r.topics?.length).map((r) => ({
     kind: 'paper' as const,
-    label: `${r.authorsText}${r.year != null ? ` (${r.year})` : ''}${r.title ? ` — ${r.title}` : ''}`,
+    label: `${r.authorsText}${r.year != null ? ` (${r.year})` : ''}${r.title ? `. ${r.title}` : ''}`,
     url: r.doi ? `https://doi.org/${r.doi}` : `${BASE}papers/explorer/`,
     topics: r.topics as TopicRef[],
     tier: null,
@@ -145,7 +145,7 @@ function TopicView({ node, sec }: { node: Node; sec: Secondary }) {
 
       {inventoryRows > 0 && (
         <p class="th-datasets">
-          {inventoryRows} more tagged dataset row{inventoryRows === 1 ? '' : 's'} in the species inventories — browse them under{' '}
+          {inventoryRows} more tagged dataset row{inventoryRows === 1 ? '' : 's'} in the species inventories. Browse them under{' '}
           <a href={`${BASE.replace(/\/$/, '')}/datasets/`}>Datasets</a>.
         </p>
       )}

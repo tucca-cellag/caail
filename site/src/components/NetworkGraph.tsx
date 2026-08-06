@@ -258,7 +258,7 @@ export default function NetworkGraph() {
           aria-label={`${edgeMode === 'citation' ? 'Citation' : 'Co-authorship'} network of ${meta.nodes} papers connected by ${stats.edges} ${linkWord} links`} />
         {!ready && (
           <p class="ng-fallback">
-            Interactive paper network — requires JavaScript. Browse the full reference
+            The interactive paper network requires JavaScript. Browse the full reference
             list in the <a href={`${base}/papers/explorer/`}>Papers Explorer</a>.
           </p>
         )}
@@ -267,7 +267,7 @@ export default function NetworkGraph() {
             <button class="ng-close" aria-label="Close" onClick={() => setSel(null)}>×</button>
             <p class="ng-slug">{sel.label}</p>
             <p class="ng-au">{sel.authorsText}{sel.year ? ` (${sel.year})` : ''}</p>
-            {sel.title && <p class="ng-ti">{sel.title}{sel.journal ? <> — <span class="ng-jo">{sel.journal}</span></> : null}</p>}
+            {sel.title && <p class="ng-ti">{sel.title}{sel.journal ? <>, <span class="ng-jo">{sel.journal}</span></> : null}</p>}
             <div class="ng-badges">
               {sel.doi && <a class="ng-bdg doi" href={`https://doi.org/${sel.doi}`} target="_blank" rel="noopener noreferrer">DOI</a>}
               {sel.hasCode && <a class="ng-bdg code" href={`${base}/papers/explorer/`}>Code</a>}

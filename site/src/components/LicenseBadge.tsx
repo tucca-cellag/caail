@@ -32,7 +32,7 @@ export default function LicenseBadge({
   if (!license) return null;
   const manual = licenseSource === 'manual';
   const title = manual
-    ? `${TIER_META[tier].label} license (curated — not auto-maintained; verify before commercial use). ${TIER_META[tier].blurb}`
+    ? `${TIER_META[tier].label} license (curated, not auto-maintained; verify before commercial use). ${TIER_META[tier].blurb}`
     : `${TIER_META[tier].label} license (auto-detected from ${autoSource}). ${TIER_META[tier].blurb}`;
   return (
     <a
