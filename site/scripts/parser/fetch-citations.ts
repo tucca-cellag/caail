@@ -143,7 +143,10 @@ export async function fetchCitationCache(
         referencedWorks: w.referenced_works ?? [],
         citedByCount: w.cited_by_count ?? null,
         isOa: w.open_access?.is_oa ?? null,
-        license: w.best_oa_location?.license ?? null,
+        // Normalize a blank license to null at write time, so the committed cache never
+        // carries `""`. licenseByDoi also rejects blanks at read time; this keeps the
+        // artifact clean rather than relying on the reader to compensate.
+        license: w.best_oa_location?.license?.trim() || null,
       };
     }
     log(

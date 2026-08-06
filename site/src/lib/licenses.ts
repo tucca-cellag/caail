@@ -72,7 +72,7 @@ export function licenseTier(license: string | null | undefined): LicenseTier {
   // "Commons Clause" rider (forbids selling — overrides the base license), OR a data
   // access barrier (controlled / managed / registered access, dbGaP, EGA, DUA-gated).
   if (
-    /NON[\s-]?COMMERCIAL|(^|[\s-])NC([\s-]|$)|(^|[\s-])ND([\s-]|$)|PROPRIETARY|ACADEMIC|ALL[\s-]RIGHTS[\s-]RESERVED|COMMONS[\s-]CLAUSE|\bCUSTOM\b|CONTROLLED[\s-]?ACCESS|MANAGED[\s-]?ACCESS|REGISTERED[\s-]?ACCESS|ACCESS[\s-]?RESTRICTED|\bDBGAP\b|\bEGA\b|\bDUA\b/.test(
+    /NON[\s-]?COMMERCIAL|\b(NON|NOT)[\s-]?PUBLIC|(^|[\s-])NC([\s-]|$)|(^|[\s-])ND([\s-]|$)|PROPRIETARY|ACADEMIC|ALL[\s-]RIGHTS[\s-]RESERVED|COMMONS[\s-]CLAUSE|\bCUSTOM\b|CONTROLLED[\s-]?ACCESS|MANAGED[\s-]?ACCESS|REGISTERED[\s-]?ACCESS|ACCESS[\s-]?RESTRICTED|\bDBGAP\b|\bEGA\b|\bDUA\b/.test(
       s,
     )
   )

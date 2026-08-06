@@ -64,4 +64,17 @@ describe('licenseTier', () => {
       expect(TIER_META[t].blurb).toBeTruthy();
     }
   });
+
+  it('treats public domain as permissive, but not its negations', () => {
+    // OpenAlex emits `public-domain` for works with no rights reserved.
+    expect(licenseTier('public-domain')).toBe('permissive');
+    expect(licenseTier('Public Domain')).toBe('permissive');
+    // A negated form must NOT reach the permissive branch. Note that anchoring the
+    // permissive alternative would not achieve this: `-` is a non-word character, so
+    // both /\bPUBLIC/ and /(^|[\s-])PUBLIC/ still match inside "NON-PUBLIC". The
+    // negation is caught in the restricted pattern instead, which is tested first.
+    expect(licenseTier('non-public domain')).toBe('restricted');
+    expect(licenseTier('NON-PUBLIC DOMAIN')).toBe('restricted');
+    expect(licenseTier('not public domain')).toBe('restricted');
+  });
 });
