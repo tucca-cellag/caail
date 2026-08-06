@@ -41,7 +41,15 @@ describe('the community Slack invite is confined to two places', () => {
       .filter((f) => /\.(ts|tsx|js|mjs|astro|md|mdx|json|css)$/.test(f))
       .filter((f) => !f.endsWith(join('src', 'lib', 'community.ts')))
       .filter((f) => !f.endsWith(join('src', 'lib', 'community.test.ts')))
-      .filter((f) => readFileSync(f, 'utf-8').includes('join.slack.com'))
+      .filter((f) => {
+        // A broken symlink or an unreadable file with a text extension would
+        // otherwise crash the suite rather than fail an assertion.
+        try {
+          return readFileSync(f, 'utf-8').includes('join.slack.com');
+        } catch {
+          return false;
+        }
+      })
       .map((f) => f.slice(SITE_ROOT.length + 1));
 
     expect(offenders).toEqual([]);
