@@ -720,6 +720,116 @@ export type TopicNode = z.infer<typeof TopicNodeSchema>;
 export type TopicsData = z.infer<typeof TopicsDataSchema>;
 
 // ---------------------------------------------------------------------------
+// The agent API's response bodies (site/public/api/*.json)
+// ---------------------------------------------------------------------------
+
+/**
+ * These describe what `agent-api.ts` WRITES, as opposed to the models above, which
+ * describe what the parser builds. Mostly the two coincide — a response is its model
+ * plus `corpusDate` — but `index.json` and `matrix.json` are derived and had no schema
+ * at all, which is how the API came to be both emitted unvalidated and consumed by
+ * guesswork.
+ *
+ * They are `strictObject` at the top level on purpose. `z.toJSONSchema` emits
+ * `additionalProperties: false`, but zod's ordinary `.parse` silently STRIPS unknown
+ * keys, so a lax schema would validate a payload carrying a field its own published
+ * schema declares invalid. Strict makes the check mean what the document claims.
+ *
+ * Everything here is GET of a static file: no request bodies, no parameters, no auth.
+ */
+
+/** Stamped onto every response so staleness is visible without a HEAD request. */
+const CorpusDateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
+
+/** One method×area cell, including the empty ones papers.json cannot express. */
+export const ApiMatrixCellSchema = z.object({
+  method: z.string(),
+  area: z.string(),
+  areaLabel: z.string(),
+  refIds: z.array(z.number().int().positive()),
+  /** true when no INDEXED paper occupies this cell (not: no such work exists) */
+  emptyInCorpus: z.boolean(),
+  /** present only on empty cells, so the recall caveat travels with the result */
+  scope: z.string().optional(),
+});
+
+export const ApiMatrixSchema = z.strictObject({
+  corpusDate: CorpusDateSchema,
+  methods: z.array(z.string()),
+  areas: z.array(AreaSchema),
+  totalCells: z.number().int().nonnegative(),
+  populatedCells: z.number().int().nonnegative(),
+  emptyCells: z.number().int().nonnegative(),
+  scopeNote: z.string(),
+  cells: z.array(ApiMatrixCellSchema),
+});
+
+export const ApiManifestSchema = z.strictObject({
+  name: z.string(),
+  corpusDate: CorpusDateSchema,
+  canonical: z.string(),
+  site: z.string(),
+  license: z.string(),
+  scopeNote: z.string(),
+  /** relative path to the OpenAPI description of every endpoint below */
+  openapi: z.string(),
+  /** Each key names the POPULATION it counted — see buildManifest. */
+  counts: z.strictObject({
+    papersAllSections: z.number().int().nonnegative(),
+    papersBySection: z.record(z.string(), z.number().int().nonnegative()),
+    papersMatrixEligible: z.number().int().nonnegative(),
+    matrixTotalCells: z.number().int().nonnegative(),
+    matrixPopulatedCells: z.number().int().nonnegative(),
+    matrixEmptyCells: z.number().int().nonnegative(),
+    datasetsCurated: z.number().int().nonnegative(),
+    datasetsInventoryRows: z.number().int().nonnegative(),
+  }),
+  endpoints: z.array(z.strictObject({ path: z.string(), use: z.string() })),
+});
+
+export const ApiPapersSchema = PapersDataSchema.extend({
+  scopeNote: z.string(),
+  corpusDate: CorpusDateSchema,
+}).strict();
+
+export const ApiCatalogSchema = CatalogSchema.extend({
+  corpusDate: CorpusDateSchema,
+}).strict();
+
+export const ApiDatasetsSchema = DatasetsDataSchema.extend({
+  inventory: z.array(DatasetInventoryRowSchema),
+  corpusDate: CorpusDateSchema,
+}).strict();
+
+/** topic slug → the ids of every item carrying it, per content type. */
+export const ApiTopicIndexEntrySchema = z.strictObject({
+  /** reference ids */
+  papers: z.array(z.number().int().positive()),
+  /** catalog slugs */
+  software: z.array(z.string()),
+  databases: z.array(z.string()),
+  /** frozen ds: ids */
+  datasets: z.array(z.string()),
+});
+
+/**
+ * The endpoint whose shape was guessed wrong: the theme→tag tree is under `tree`, and
+ * the inverted index under `index`. There is no top-level `themes` or `tags`.
+ */
+export const ApiTopicsSchema = z.strictObject({
+  tree: TopicsDataSchema,
+  index: z.record(z.string(), ApiTopicIndexEntrySchema),
+  corpusDate: CorpusDateSchema,
+});
+
+export const ApiTaxonomySchema = TaxonomyDataSchema.extend({
+  corpusDate: CorpusDateSchema,
+}).strict();
+
+export type ApiManifest = z.infer<typeof ApiManifestSchema>;
+export type ApiMatrix = z.infer<typeof ApiMatrixSchema>;
+
+// ---------------------------------------------------------------------------
 // Inferred TypeScript types
 // ---------------------------------------------------------------------------
 

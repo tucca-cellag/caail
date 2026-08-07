@@ -145,9 +145,15 @@ describe('buildAgentApi', () => {
   });
 
   it('stamps every endpoint with the corpus date, so staleness is always visible', () => {
-    for (const f of files) {
+    // openapi.json is the DESCRIPTION, not a described response: a bare `corpusDate` key
+    // at its root would make it invalid against the OpenAPI 3.1 meta-schema, so it states
+    // the same fact as info.version plus an x- extension. Assert that, don't exempt it.
+    for (const f of files.filter((f) => f.name !== 'openapi.json')) {
       expect((f.body as any).corpusDate, `${f.name} has no corpusDate`).toBe(DATE);
     }
+    const doc = files.find((f) => f.name === 'openapi.json')!.body as any;
+    expect(doc.info.version).toBe(DATE);
+    expect(doc['x-corpus-date']).toBe(DATE);
   });
 
   it('stamps a real date when none is supplied', () => {
@@ -157,7 +163,10 @@ describe('buildAgentApi', () => {
     // deterministic and every assertion still passed while the field was undefined.
     const dflt = buildAgentApi({ papers, catalog, datasets, inventory, topics, taxonomy });
     for (const f of dflt) {
-      const d = (f.body as { corpusDate?: unknown }).corpusDate;
+      const d =
+        f.name === 'openapi.json'
+          ? (f.body as { 'x-corpus-date'?: unknown })['x-corpus-date']
+          : (f.body as { corpusDate?: unknown }).corpusDate;
       expect(typeof d, `${f.name} corpusDate is not a string`).toBe('string');
       expect(d as string).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     }

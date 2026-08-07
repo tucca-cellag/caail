@@ -25,6 +25,15 @@ This website is a navigation layer over canonical, human-readable Markdown in th
 
 - [Full canonical text](https://tucca-cellag.github.io/caail/llms-full.txt): the entire library (papers, software, databases, per-species datasets, research areas, resources, and contributing guide) concatenated into one file — the authoritative full text behind these compressed summaries.
 
+## Agent API
+
+Static JSON, served by GET, with nothing to install or authenticate.
+
+- [OpenAPI description](https://tucca-cellag.github.io/caail/api/openapi.json): the shape of every endpoint below, generated from the schemas that validate them. Read this before guessing a key; the topic tree is under `tree` and the inverted index under `index`, not under top-level `themes` or `tags`.
+- [Manifest](https://tucca-cellag.github.io/caail/api/index.json): corpus date, endpoint list, and counts labelled with the population each one counted. Fetch first.
+- Endpoints: `matrix.json` (all method by area cells, empties included), `papers.json`, `catalog.json` (software and databases), `datasets.json` (curated `entries` plus the per-study `inventory` deposits), `topics.json`, `taxonomy.json`, all under https://tucca-cellag.github.io/caail/api/
+- The same files are at https://raw.githubusercontent.com/tucca-cellag/caail/main/site/public/api/, which some clients can reach when GitHub Pages is not allow-listed.
+
 ## Notes for AI agents
 
 - Cite the canonical source, not these summaries: a paper's DOI, the linked code/data repository, or the canonical Markdown on GitHub.

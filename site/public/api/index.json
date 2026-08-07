@@ -5,6 +5,7 @@
   "site": "https://tucca-cellag.github.io/caail/",
   "license": "MIT (CAAIL curation). Linked third-party resources keep their own licenses.",
   "scopeNote": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall.",
+  "openapi": "openapi.json",
   "counts": {
     "papersAllSections": 345,
     "papersBySection": {
@@ -50,6 +51,10 @@
     {
       "path": "taxonomy.json",
       "use": "What each method and area means in CAAIL, with exclusion criteria. Read before trusting a placement."
+    },
+    {
+      "path": "openapi.json",
+      "use": "OpenAPI 3.1 description of every endpoint above, generated from the schemas that validate them. Read this instead of guessing a key."
     }
   ]
 }

@@ -30,6 +30,7 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { assertValid, buildOpenApiDocument, OPENAPI_FILE } from './openapi.js';
 import type { DatasetInventory, PapersData } from './types.js';
 
 /** Where an agent-visible caveat is stated once and reused everywhere. */
@@ -247,6 +248,9 @@ export function buildManifest(
     site: 'https://tucca-cellag.github.io/caail/',
     license: 'MIT (CAAIL curation). Linked third-party resources keep their own licenses.',
     scopeNote: SCOPE_NOTE,
+    // The machine-readable shape of every endpoint below. Named up here rather than only
+    // in the endpoint list because the point is to be found BEFORE anyone guesses a key.
+    openapi: OPENAPI_FILE,
     counts: {
       papersAllSections: papers.references.length,
       papersBySection: bySection,
@@ -276,6 +280,7 @@ export function buildManifest(
       },
       { path: 'topics.json', use: 'Subject tree plus an inverted index: topic → items across all content types. Start here for "what should I use for X".' },
       { path: 'taxonomy.json', use: 'What each method and area means in CAAIL, with exclusion criteria. Read before trusting a placement.' },
+      { path: OPENAPI_FILE, use: 'OpenAPI 3.1 description of every endpoint above, generated from the schemas that validate them. Read this instead of guessing a key.' },
     ],
   };
 }
@@ -293,7 +298,7 @@ export function buildAgentApi(inputs: AgentApiInputs): ApiFile[] {
     inventory: (inputs.inventory?.inventory ?? []).length,
   };
 
-  return [
+  const files: ApiFile[] = [
     { name: 'index.json', body: buildManifest(inputs.papers, matrix, corpusDate, datasetCounts) },
     { name: 'matrix.json', body: matrix },
     { name: 'papers.json', body: { ...inputs.papers, scopeNote: SCOPE_NOTE, corpusDate } },
@@ -315,6 +320,19 @@ export function buildAgentApi(inputs: AgentApiInputs): ApiFile[] {
     },
     { name: 'taxonomy.json', body: { ...(inputs.taxonomy as object), corpusDate } },
   ];
+
+  // Every body is checked against its published schema BEFORE anything is written, so a
+  // model that changed shape fails the build rather than shipping a payload the document
+  // says is impossible. This is what makes the OpenAPI file a property of the output and
+  // not a claim about it.
+  for (const f of files) assertValid(f.name, f.body);
+
+  // Emitted last, and in the same pass, so it cannot describe a set of files that was
+  // never written. It is the description rather than a described response, so it carries
+  // its corpus date as info.version + x-corpus-date rather than a bare corpusDate key,
+  // which would make the document invalid against the OpenAPI 3.1 meta-schema.
+  files.push({ name: OPENAPI_FILE, body: buildOpenApiDocument(corpusDate) });
+  return files;
 }
 
 /** Write the built files into `apiDir`, creating it if needed. */
