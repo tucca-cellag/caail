@@ -253,7 +253,7 @@ const PAGES: Record<string, PageMeta> = {
     group: 'top',
     order: 2,
     description:
-      'Journal editorials and opinion on AI in science, field reports on the state of the sector, and cellular-agriculture ecosystem initiatives — research centers, consortia, and convening efforts.',
+      'Journal editorials and opinion on AI in science and in animal agriculture, field reports on the state of the sector, and cellular-agriculture ecosystem initiatives — research centers, consortia, and convening efforts.',
   },
   taxonomy: {
     title: 'Matrix Taxonomy',
