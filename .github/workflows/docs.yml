@@ -43,6 +43,9 @@ jobs:
         run: pnpm --dir site build
         env:
           PUBLIC_CAAIL_CHAT_API: ${{ vars.PUBLIC_CAAIL_CHAT_API }}
+          # Repository variable, not a secret: this URL is compiled into the
+          # client bundle by design. Unset, the two usage events no-op.
+          PUBLIC_CAAIL_EVENTS_API: ${{ vars.PUBLIC_CAAIL_EVENTS_API }}
       - name: Lighthouse (a11y both; perf landing-only)
         run: pnpm --dir site exec lhci autorun --config=lighthouserc.json
       - name: Upload Pages artifact
