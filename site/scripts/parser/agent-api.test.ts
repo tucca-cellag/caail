@@ -309,8 +309,13 @@ describe('datasets.json inventory', () => {
     const named = benchmarks.find((e: any) => /MassSpecGym/i.test(e.name));
     expect(named, 'MassSpecGym should be reachable from the datasets endpoint').toBeDefined();
     expect(named.url).toMatch(/^https?:\/\//);
-    // Most carry a link; the unlinked one (BioMysteryBench) is a real shape, not a failure.
-    expect(benchmarks.filter((e: any) => e.url).length).toBeGreaterThan(10);
+    // Every benchmark should be fetchable: an eval dataset an agent cannot reach is a name,
+    // not a resource. `url` is nullable in the schema (unlinked GEM headings on the species
+    // pages use it, and emit.test.ts covers that shape) — but on this page it should never
+    // be exercised, because a benchmark always has a canonical home to link.
+    for (const e of benchmarks) {
+      expect(e.url, `${e.name} has no URL — link its heading`).toMatch(/^https?:\/\//);
+    }
   });
 
   it('names its columns, since they differ per page', () => {
