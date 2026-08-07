@@ -150,7 +150,7 @@
 {"id":"db:world-food-lca-database-wfldb","type":"database","slug":"world-food-lca-database-wfldb"}
 {"id":"ds:a-hydrophilic-interaction","type":"dataset","slug":"a-hydrophilic-interaction"}
 {"id":"ds:actin-genes-and","type":"dataset","slug":"actin-genes-and"}
-{"id":"ds:algpred-2-0-allergen-dataset","type":"dataset","slug":"algpred-2-0-allergen-dataset"}
+{"id":"ds:algpred-20-allergen-dataset","type":"dataset","slug":"algpred-20-allergen-dataset"}
 {"id":"ds:application-of-proteomics","type":"dataset","slug":"application-of-proteomics"}
 {"id":"ds:aqua-faang","type":"dataset","slug":"aqua-faang"}
 {"id":"ds:arc-virtual-cell-atlas","type":"dataset","slug":"arc-virtual-cell-atlas"}

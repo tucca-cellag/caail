@@ -1687,7 +1687,7 @@
         "allfam-database-of-allergen-families"
       ],
       "datasets": [
-        "ds:algpred-2-0-allergen-dataset"
+        "ds:algpred-20-allergen-dataset"
       ]
     },
     "techno-economic-lca": {

@@ -238,7 +238,7 @@
 {"item_id":"ds:a-hydrophilic-interaction","topic_id":"topic:sensory-flavor"}
 {"item_id":"ds:actin-genes-and","topic_id":"topic:ai-methods-tooling"}
 {"item_id":"ds:actin-genes-and","topic_id":"topic:cell-lines-engineering"}
-{"item_id":"ds:algpred-2-0-allergen-dataset","topic_id":"topic:allergenicity"}
+{"item_id":"ds:algpred-20-allergen-dataset","topic_id":"topic:allergenicity"}
 {"item_id":"ds:application-of-proteomics","topic_id":"topic:ai-methods-tooling"}
 {"item_id":"ds:application-of-proteomics","topic_id":"topic:cell-lines-engineering"}
 {"item_id":"ds:aqua-faang","topic_id":"topic:ai-methods-tooling"}
