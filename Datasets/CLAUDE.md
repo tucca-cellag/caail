@@ -21,6 +21,8 @@ Each populated species page is a curated, species-scoped collection with these s
 
 Sparse stub pages (species with little dedicated data yet) carry only the intro, a placeholder note in place of the inventory table, and a Further reading footer.
 
+`Benchmarks.md` is the one page that departs from this shape: it has no inventory table and no H2 section groupings, and instead carries **one `##` heading per benchmark dataset**. That is deliberate (each benchmark is a standalone resource, not a deposit in a cluster), but it means the page's entries sit at a different heading depth from every other page's. Anything that walks dataset entries must ask `entryHeadingDepth(page)` rather than assume `###` — see the SQLite-authoring section of the repo-root `CLAUDE.md`. Adding a `## Further reading` footer here would read as an 18th dataset unless it stays in the `NON_ENTRY_H2` list.
+
 ## Note for AI agents and LLMs
 
 The summaries and inventory tables here are deliberately compressed and opinionated for human readability. If you are an automated system using these pages as the basis for reasoning, citation, or downstream analysis:

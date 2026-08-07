@@ -22,6 +22,7 @@ import { toString as mdastToString } from 'mdast-util-to-string';
 import { TIER_META, type LicenseTier } from '../../src/lib/licenses.ts';
 import { chipStyle } from '../../src/lib/theme-colors.ts';
 import { compactCount, citationTitle, openAlexWorksUrl } from '../../src/lib/citation-format.ts';
+import { entryHeadingDepth, isEntryHeading } from '../parser/datasets.ts';
 
 export interface DatasetCardEntry {
   name: string;
@@ -39,7 +40,6 @@ export interface DatasetCardEntry {
 
 const DATA_PATH = fileURLToPath(new URL('../../src/content/data/datasets.json', import.meta.url));
 const BASE = '/caail';
-const INVENTORY = 'Complete data inventory';
 
 /** HTML-escape a string for safe interpolation into a raw-HTML node. */
 function esc(s: string): string {
@@ -126,31 +126,36 @@ export function datasetCards(options: {
     // count and this page's entry-list length disagree (e.g. a stale datasets.json build
     // artifact), skip the whole page rather than wrap content under the wrong card / assign
     // the wrong anchor. db:verify guards the committed DB↔Markdown; this protects the render.
+    const depth = entryHeadingDepth(page);
     let precheckSection = '';
-    let h3Count = 0;
+    let entryCount = 0;
     for (const n of kids) {
-      if (n.type === 'heading' && n.depth === 2) { precheckSection = mdastToString(n).trim(); continue; }
-      if (n.type === 'heading' && n.depth === 3 && precheckSection !== INVENTORY) h3Count += 1;
+      if (depth === 3 && n.type === 'heading' && n.depth === 2) { precheckSection = mdastToString(n).trim(); continue; }
+      if (n.type === 'heading' && n.depth === depth && isEntryHeading(page, mdastToString(n).trim(), precheckSection)) {
+        entryCount += 1;
+      }
     }
-    if (h3Count !== list.length) return;
+    if (entryCount !== list.length) return;
 
     const out: any[] = [];
     let section = '';
     let idx = 0;
     for (let i = 0; i < kids.length; ) {
       const n = kids[i];
-      if (n.type === 'heading' && n.depth === 2) { section = mdastToString(n).trim(); out.push(n); i++; continue; }
-      if (n.type === 'heading' && n.depth === 3 && section !== INVENTORY) {
+      // Entry test first: on an H2-entry page (Benchmarks) both branches would match, and
+      // the section branch would emit every entry as plain narrative with no card.
+      if (n.type === 'heading' && n.depth === depth && isEntryHeading(page, mdastToString(n).trim(), section)) {
         const entry = list[idx++];
-        if (!entry) { out.push(n); i++; continue; } // more H3s than entries: leave as-is
+        if (!entry) { out.push(n); i++; continue; } // more headings than entries: leave as-is
         out.push({ type: 'html', value: `<article class="ds-card ds-card--${entry.kind}" id="${entry.anchor}">` });
         const badge = licenseBadgeHtml(entry);
         if (badge) out.push({ type: 'html', value: badge });
         out.push(n); i++;
-        // Pull body blocks up to the next H2/H3 into the card. Nested H4+ sub-sections (e.g.
-        // the Arc atlas umbrella's Tahoe-100M / scBaseCount) belong INSIDE the parent card;
-        // stopping at any heading would leave them stranded after the closing </article>.
-        while (i < kids.length && !(kids[i].type === 'heading' && kids[i].depth <= 3)) { out.push(kids[i]); i++; }
+        // Pull body blocks up to the next heading at or above the entry depth into the card.
+        // Nested sub-sections (e.g. the Arc atlas umbrella's Tahoe-100M / scBaseCount) belong
+        // INSIDE the parent card; stopping at any heading would leave them stranded after the
+        // closing </article>.
+        while (i < kids.length && !(kids[i].type === 'heading' && kids[i].depth <= depth)) { out.push(kids[i]); i++; }
         const chips = chipsHtml(entry);
         if (chips) out.push({ type: 'html', value: chips });
         const cite = citationBadgeHtml(entry);
@@ -158,6 +163,7 @@ export function datasetCards(options: {
         out.push({ type: 'html', value: '</article>' });
         continue;
       }
+      if (n.type === 'heading' && n.depth === 2) { section = mdastToString(n).trim(); out.push(n); i++; continue; }
       out.push(n); i++;
     }
     tree.children = out;

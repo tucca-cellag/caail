@@ -1974,6 +1974,654 @@
       "citationDois": [
         "10.1371/journal.pone.0148031"
       ]
+    },
+    {
+      "id": "ds:bioml-bench",
+      "name": "BioML-bench",
+      "url": "https://github.com/science-machine/biomlbench",
+      "page": "Benchmarks",
+      "section": "",
+      "kind": "other",
+      "anchor": "ds-bioml-bench",
+      "topics": [
+        {
+          "slug": "ai-agents",
+          "label": "AI agents & foundation models",
+          "theme": "ai-methods-tooling"
+        },
+        {
+          "slug": "ai-methods-tooling",
+          "label": "AI Methods & Tooling",
+          "theme": "ai-methods-tooling"
+        },
+        {
+          "slug": "benchmarks-evaluation",
+          "label": "Benchmarks & evaluation",
+          "theme": "ai-methods-tooling"
+        },
+        {
+          "slug": "cell-lines-engineering",
+          "label": "Cell Lines & Engineering",
+          "theme": "cell-lines-engineering"
+        },
+        {
+          "slug": "single-cell-atlases",
+          "label": "Single-cell atlases",
+          "theme": "cell-lines-engineering"
+        }
+      ],
+      "license": null,
+      "licenseSource": null,
+      "tier": "unknown",
+      "doi": null,
+      "doiSource": null,
+      "citationCount": null,
+      "citationSources": 0,
+      "citationDois": []
+    },
+    {
+      "id": "ds:biomysterybench",
+      "name": "BioMysteryBench",
+      "url": null,
+      "page": "Benchmarks",
+      "section": "",
+      "kind": "other",
+      "anchor": "ds-biomysterybench",
+      "topics": [
+        {
+          "slug": "ai-agents",
+          "label": "AI agents & foundation models",
+          "theme": "ai-methods-tooling"
+        },
+        {
+          "slug": "ai-methods-tooling",
+          "label": "AI Methods & Tooling",
+          "theme": "ai-methods-tooling"
+        },
+        {
+          "slug": "benchmarks-evaluation",
+          "label": "Benchmarks & evaluation",
+          "theme": "ai-methods-tooling"
+        }
+      ],
+      "license": null,
+      "licenseSource": null,
+      "tier": "unknown",
+      "doi": null,
+      "doiSource": null,
+      "citationCount": null,
+      "citationSources": 0,
+      "citationDois": []
+    },
+    {
+      "id": "ds:bixbench",
+      "name": "BixBench",
+      "url": "https://huggingface.co/datasets/futurehouse/BixBench",
+      "page": "Benchmarks",
+      "section": "",
+      "kind": "other",
+      "anchor": "ds-bixbench",
+      "topics": [
+        {
+          "slug": "ai-agents",
+          "label": "AI agents & foundation models",
+          "theme": "ai-methods-tooling"
+        },
+        {
+          "slug": "ai-methods-tooling",
+          "label": "AI Methods & Tooling",
+          "theme": "ai-methods-tooling"
+        },
+        {
+          "slug": "benchmarks-evaluation",
+          "label": "Benchmarks & evaluation",
+          "theme": "ai-methods-tooling"
+        }
+      ],
+      "license": null,
+      "licenseSource": null,
+      "tier": "unknown",
+      "doi": null,
+      "doiSource": null,
+      "citationCount": null,
+      "citationSources": 0,
+      "citationDois": []
+    },
+    {
+      "id": "ds:blade",
+      "name": "BLADE",
+      "url": "https://github.com/behavioral-data/BLADE",
+      "page": "Benchmarks",
+      "section": "",
+      "kind": "other",
+      "anchor": "ds-blade",
+      "topics": [
+        {
+          "slug": "ai-agents",
+          "label": "AI agents & foundation models",
+          "theme": "ai-methods-tooling"
+        },
+        {
+          "slug": "ai-methods-tooling",
+          "label": "AI Methods & Tooling",
+          "theme": "ai-methods-tooling"
+        },
+        {
+          "slug": "benchmarks-evaluation",
+          "label": "Benchmarks & evaluation",
+          "theme": "ai-methods-tooling"
+        }
+      ],
+      "license": null,
+      "licenseSource": null,
+      "tier": "unknown",
+      "doi": null,
+      "doiSource": null,
+      "citationCount": null,
+      "citationSources": 0,
+      "citationDois": []
+    },
+    {
+      "id": "ds:compbiobench-v1",
+      "name": "CompBioBench v1",
+      "url": "https://huggingface.co/datasets/Genentech/compbiobench-data-v1",
+      "page": "Benchmarks",
+      "section": "",
+      "kind": "other",
+      "anchor": "ds-compbiobench-v1",
+      "topics": [
+        {
+          "slug": "ai-agents",
+          "label": "AI agents & foundation models",
+          "theme": "ai-methods-tooling"
+        },
+        {
+          "slug": "ai-methods-tooling",
+          "label": "AI Methods & Tooling",
+          "theme": "ai-methods-tooling"
+        },
+        {
+          "slug": "benchmarks-evaluation",
+          "label": "Benchmarks & evaluation",
+          "theme": "ai-methods-tooling"
+        },
+        {
+          "slug": "cell-lines-engineering",
+          "label": "Cell Lines & Engineering",
+          "theme": "cell-lines-engineering"
+        },
+        {
+          "slug": "media-growth-factors",
+          "label": "Media & Growth Factors",
+          "theme": "media-growth-factors"
+        },
+        {
+          "slug": "single-cell-atlases",
+          "label": "Single-cell atlases",
+          "theme": "cell-lines-engineering"
+        }
+      ],
+      "license": null,
+      "licenseSource": null,
+      "tier": "unknown",
+      "doi": null,
+      "doiSource": null,
+      "citationCount": null,
+      "citationSources": 0,
+      "citationDois": []
+    },
+    {
+      "id": "ds:flip-fitness-landscape-inference-for-proteins",
+      "name": "FLIP (Fitness Landscape Inference for Proteins)",
+      "url": "https://github.com/J-SNACKKB/FLIP",
+      "page": "Benchmarks",
+      "section": "",
+      "kind": "other",
+      "anchor": "ds-flip-fitness-landscape-inference-for-proteins",
+      "topics": [
+        {
+          "slug": "ai-methods-tooling",
+          "label": "AI Methods & Tooling",
+          "theme": "ai-methods-tooling"
+        },
+        {
+          "slug": "benchmarks-evaluation",
+          "label": "Benchmarks & evaluation",
+          "theme": "ai-methods-tooling"
+        },
+        {
+          "slug": "cell-lines-engineering",
+          "label": "Cell Lines & Engineering",
+          "theme": "cell-lines-engineering"
+        },
+        {
+          "slug": "growth-factors",
+          "label": "Growth factors",
+          "theme": "media-growth-factors"
+        },
+        {
+          "slug": "media-growth-factors",
+          "label": "Media & Growth Factors",
+          "theme": "media-growth-factors"
+        },
+        {
+          "slug": "scaffolding-biomaterials",
+          "label": "Scaffolding & Biomaterials",
+          "theme": "scaffolding-biomaterials"
+        },
+        {
+          "slug": "scaffolds-biomaterials",
+          "label": "Scaffolds & biomaterials",
+          "theme": "scaffolding-biomaterials"
+        }
+      ],
+      "license": null,
+      "licenseSource": null,
+      "tier": "unknown",
+      "doi": null,
+      "doiSource": null,
+      "citationCount": null,
+      "citationSources": 0,
+      "citationDois": []
+    },
+    {
+      "id": "ds:frontierscience",
+      "name": "FrontierScience",
+      "url": "https://huggingface.co/datasets/openai/frontierscience",
+      "page": "Benchmarks",
+      "section": "",
+      "kind": "other",
+      "anchor": "ds-frontierscience",
+      "topics": [
+        {
+          "slug": "ai-methods-tooling",
+          "label": "AI Methods & Tooling",
+          "theme": "ai-methods-tooling"
+        },
+        {
+          "slug": "benchmarks-evaluation",
+          "label": "Benchmarks & evaluation",
+          "theme": "ai-methods-tooling"
+        }
+      ],
+      "license": null,
+      "licenseSource": null,
+      "tier": "unknown",
+      "doi": null,
+      "doiSource": null,
+      "citationCount": null,
+      "citationSources": 0,
+      "citationDois": []
+    },
+    {
+      "id": "ds:genebench-pro",
+      "name": "GeneBench-Pro",
+      "url": "https://huggingface.co/datasets/ajh-oai/genebench-pro-public-package",
+      "page": "Benchmarks",
+      "section": "",
+      "kind": "other",
+      "anchor": "ds-genebench-pro",
+      "topics": [
+        {
+          "slug": "ai-agents",
+          "label": "AI agents & foundation models",
+          "theme": "ai-methods-tooling"
+        },
+        {
+          "slug": "ai-methods-tooling",
+          "label": "AI Methods & Tooling",
+          "theme": "ai-methods-tooling"
+        },
+        {
+          "slug": "benchmarks-evaluation",
+          "label": "Benchmarks & evaluation",
+          "theme": "ai-methods-tooling"
+        },
+        {
+          "slug": "media-growth-factors",
+          "label": "Media & Growth Factors",
+          "theme": "media-growth-factors"
+        }
+      ],
+      "license": null,
+      "licenseSource": null,
+      "tier": "unknown",
+      "doi": null,
+      "doiSource": null,
+      "citationCount": null,
+      "citationSources": 0,
+      "citationDois": []
+    },
+    {
+      "id": "ds:gpqa",
+      "name": "GPQA",
+      "url": "https://huggingface.co/datasets/Idavidrein/gpqa",
+      "page": "Benchmarks",
+      "section": "",
+      "kind": "other",
+      "anchor": "ds-gpqa",
+      "topics": [
+        {
+          "slug": "ai-agents",
+          "label": "AI agents & foundation models",
+          "theme": "ai-methods-tooling"
+        },
+        {
+          "slug": "ai-methods-tooling",
+          "label": "AI Methods & Tooling",
+          "theme": "ai-methods-tooling"
+        },
+        {
+          "slug": "benchmarks-evaluation",
+          "label": "Benchmarks & evaluation",
+          "theme": "ai-methods-tooling"
+        }
+      ],
+      "license": null,
+      "licenseSource": null,
+      "tier": "unknown",
+      "doi": null,
+      "doiSource": null,
+      "citationCount": null,
+      "citationSources": 0,
+      "citationDois": []
+    },
+    {
+      "id": "ds:humanitys-last-exam",
+      "name": "Humanity's Last Exam",
+      "url": "https://huggingface.co/datasets/cais/hle",
+      "page": "Benchmarks",
+      "section": "",
+      "kind": "other",
+      "anchor": "ds-humanitys-last-exam",
+      "topics": [
+        {
+          "slug": "ai-methods-tooling",
+          "label": "AI Methods & Tooling",
+          "theme": "ai-methods-tooling"
+        },
+        {
+          "slug": "benchmarks-evaluation",
+          "label": "Benchmarks & evaluation",
+          "theme": "ai-methods-tooling"
+        }
+      ],
+      "license": null,
+      "licenseSource": null,
+      "tier": "unknown",
+      "doi": null,
+      "doiSource": null,
+      "citationCount": null,
+      "citationSources": 0,
+      "citationDois": []
+    },
+    {
+      "id": "ds:iumami-scm",
+      "name": "iUmami-SCM",
+      "url": "https://github.com/Shoombuatong/Dataset-Code/tree/master/iUmami",
+      "page": "Benchmarks",
+      "section": "",
+      "kind": "other",
+      "anchor": "ds-iumami-scm",
+      "topics": [
+        {
+          "slug": "ai-methods-tooling",
+          "label": "AI Methods & Tooling",
+          "theme": "ai-methods-tooling"
+        },
+        {
+          "slug": "benchmarks-evaluation",
+          "label": "Benchmarks & evaluation",
+          "theme": "ai-methods-tooling"
+        },
+        {
+          "slug": "flavor-sensory",
+          "label": "Flavor & sensory prediction",
+          "theme": "sensory-flavor"
+        },
+        {
+          "slug": "sensory-flavor",
+          "label": "Sensory & Flavor",
+          "theme": "sensory-flavor"
+        }
+      ],
+      "license": null,
+      "licenseSource": null,
+      "tier": "unknown",
+      "doi": null,
+      "doiSource": null,
+      "citationCount": null,
+      "citationSources": 0,
+      "citationDois": []
+    },
+    {
+      "id": "ds:lab-bench",
+      "name": "LAB-Bench",
+      "url": "https://huggingface.co/datasets/futurehouse/lab-bench",
+      "page": "Benchmarks",
+      "section": "",
+      "kind": "other",
+      "anchor": "ds-lab-bench",
+      "topics": [
+        {
+          "slug": "ai-agents",
+          "label": "AI agents & foundation models",
+          "theme": "ai-methods-tooling"
+        },
+        {
+          "slug": "ai-methods-tooling",
+          "label": "AI Methods & Tooling",
+          "theme": "ai-methods-tooling"
+        },
+        {
+          "slug": "benchmarks-evaluation",
+          "label": "Benchmarks & evaluation",
+          "theme": "ai-methods-tooling"
+        }
+      ],
+      "license": null,
+      "licenseSource": null,
+      "tier": "unknown",
+      "doi": null,
+      "doiSource": null,
+      "citationCount": null,
+      "citationSources": 0,
+      "citationDois": []
+    },
+    {
+      "id": "ds:massspecgym",
+      "name": "MassSpecGym",
+      "url": "https://huggingface.co/datasets/roman-bushuiev/MassSpecGym",
+      "page": "Benchmarks",
+      "section": "",
+      "kind": "other",
+      "anchor": "ds-massspecgym",
+      "topics": [
+        {
+          "slug": "ai-methods-tooling",
+          "label": "AI Methods & Tooling",
+          "theme": "ai-methods-tooling"
+        },
+        {
+          "slug": "benchmarks-evaluation",
+          "label": "Benchmarks & evaluation",
+          "theme": "ai-methods-tooling"
+        },
+        {
+          "slug": "flavor-sensory",
+          "label": "Flavor & sensory prediction",
+          "theme": "sensory-flavor"
+        },
+        {
+          "slug": "mass-spectrometry",
+          "label": "Mass spectrometry & metabolomics",
+          "theme": "sensory-flavor"
+        },
+        {
+          "slug": "sensory-flavor",
+          "label": "Sensory & Flavor",
+          "theme": "sensory-flavor"
+        }
+      ],
+      "license": null,
+      "licenseSource": null,
+      "tier": "unknown",
+      "doi": null,
+      "doiSource": null,
+      "citationCount": null,
+      "citationSources": 0,
+      "citationDois": []
+    },
+    {
+      "id": "ds:mmlu-pro",
+      "name": "MMLU-Pro",
+      "url": "https://huggingface.co/datasets/TIGER-Lab/MMLU-Pro",
+      "page": "Benchmarks",
+      "section": "",
+      "kind": "other",
+      "anchor": "ds-mmlu-pro",
+      "topics": [
+        {
+          "slug": "ai-methods-tooling",
+          "label": "AI Methods & Tooling",
+          "theme": "ai-methods-tooling"
+        },
+        {
+          "slug": "benchmarks-evaluation",
+          "label": "Benchmarks & evaluation",
+          "theme": "ai-methods-tooling"
+        }
+      ],
+      "license": null,
+      "licenseSource": null,
+      "tier": "unknown",
+      "doi": null,
+      "doiSource": null,
+      "citationCount": null,
+      "citationSources": 0,
+      "citationDois": []
+    },
+    {
+      "id": "ds:proteingym",
+      "name": "ProteinGym",
+      "url": "https://proteingym.org/",
+      "page": "Benchmarks",
+      "section": "",
+      "kind": "other",
+      "anchor": "ds-proteingym",
+      "topics": [
+        {
+          "slug": "ai-methods-tooling",
+          "label": "AI Methods & Tooling",
+          "theme": "ai-methods-tooling"
+        },
+        {
+          "slug": "benchmarks-evaluation",
+          "label": "Benchmarks & evaluation",
+          "theme": "ai-methods-tooling"
+        },
+        {
+          "slug": "cell-lines-engineering",
+          "label": "Cell Lines & Engineering",
+          "theme": "cell-lines-engineering"
+        },
+        {
+          "slug": "growth-factors",
+          "label": "Growth factors",
+          "theme": "media-growth-factors"
+        },
+        {
+          "slug": "media-growth-factors",
+          "label": "Media & Growth Factors",
+          "theme": "media-growth-factors"
+        },
+        {
+          "slug": "scaffolding-biomaterials",
+          "label": "Scaffolding & Biomaterials",
+          "theme": "scaffolding-biomaterials"
+        },
+        {
+          "slug": "scaffolds-biomaterials",
+          "label": "Scaffolds & biomaterials",
+          "theme": "scaffolding-biomaterials"
+        }
+      ],
+      "license": null,
+      "licenseSource": null,
+      "tier": "unknown",
+      "doi": null,
+      "doiSource": null,
+      "citationCount": null,
+      "citationSources": 0,
+      "citationDois": []
+    },
+    {
+      "id": "ds:scihorizon-gene",
+      "name": "SciHorizon-GENE",
+      "url": "https://huggingface.co/datasets/HankHuang/SciHorizon-Gene",
+      "page": "Benchmarks",
+      "section": "",
+      "kind": "other",
+      "anchor": "ds-scihorizon-gene",
+      "topics": [
+        {
+          "slug": "ai-agents",
+          "label": "AI agents & foundation models",
+          "theme": "ai-methods-tooling"
+        },
+        {
+          "slug": "ai-methods-tooling",
+          "label": "AI Methods & Tooling",
+          "theme": "ai-methods-tooling"
+        },
+        {
+          "slug": "benchmarks-evaluation",
+          "label": "Benchmarks & evaluation",
+          "theme": "ai-methods-tooling"
+        }
+      ],
+      "license": null,
+      "licenseSource": null,
+      "tier": "unknown",
+      "doi": null,
+      "doiSource": null,
+      "citationCount": null,
+      "citationSources": 0,
+      "citationDois": []
+    },
+    {
+      "id": "ds:swe-bench",
+      "name": "SWE-bench",
+      "url": "https://huggingface.co/datasets/princeton-nlp/SWE-bench",
+      "page": "Benchmarks",
+      "section": "",
+      "kind": "other",
+      "anchor": "ds-swe-bench",
+      "topics": [
+        {
+          "slug": "ai-agents",
+          "label": "AI agents & foundation models",
+          "theme": "ai-methods-tooling"
+        },
+        {
+          "slug": "ai-methods-tooling",
+          "label": "AI Methods & Tooling",
+          "theme": "ai-methods-tooling"
+        },
+        {
+          "slug": "benchmarks-evaluation",
+          "label": "Benchmarks & evaluation",
+          "theme": "ai-methods-tooling"
+        }
+      ],
+      "license": null,
+      "licenseSource": null,
+      "tier": "unknown",
+      "doi": null,
+      "doiSource": null,
+      "citationCount": null,
+      "citationSources": 0,
+      "citationDois": []
     }
   ],
   "inventory": [

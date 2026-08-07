@@ -290,11 +290,26 @@ non-catalog canonical files (`OtherResources.md`, `ReferenceWorks.md`, `AwesomeL
 - **Curated dataset entries** live in `dataset_entries` (catalog-shaped; nullable `url` for unlinked
   GEM headings; `section` + `kind` ∈ {atlas,gem,other}). They share the `ds:` id namespace with the
   inventory rows (a `dataset` item is in `dataset_rows` XOR `dataset_entries`, guarded by `db:check`);
-  `db:emit` owns their `### …` sections (splices narrative verbatim); `db:verify` round-trips them.
+  `db:emit` owns their heading sections (splices narrative verbatim); `db:verify` round-trips them.
   The build folds them into `datasets.json` (`site/scripts/parser/datasets-entries.ts`), and a remark
   transform (`site/scripts/remark/dataset-cards.ts`, wired via `caailProseRemark`) renders each entry as a
   tagged `.ds-card` with topic chips on `/datasets/<page>/`; the entries are also linkable items in the
   `/topics/` hub (inventory rows stay count-only). Inventory rows and narrative are never carded.
+  - **Entry heading depth is per-page, not a constant.** Every page marks an entry with `###` under an
+    `##` section — except `Datasets/Benchmarks.md`, which uses one `##` per dataset and has no enclosing
+    section (its entries carry `section: ''`). Extraction, emit and card rendering all ask
+    `entryHeadingDepth(page)` (`site/scripts/parser/datasets.ts`) rather than hardcoding `3`. That single
+    constant is what #156 fixed: three call sites keyed on depth 3 while the *counter* knew the benchmarks
+    were H2s, so all 17 fell through the gap between two conventions and reached the DB — and therefore
+    the datasets endpoint — in neither. If you add a page with a new heading shape, teach that one
+    function and add the page to `db:verify`'s list; a page absent from that list has no round-trip oracle.
+- **The dataset total and the datasets endpoint count one population.** `counts.datasets` (the headline)
+  == `dataset_entries` + `dataset_rows` == what `api/datasets.json` serves. `computeDatasetBreakdown`
+  splits it four ways — inventory rows, curated entries *on* the inventory pages, reference-page entries,
+  benchmarks — and `generate-data.ts` asserts both the parts-sum and served-==-counted. Before #156 the
+  headline omitted the species pages' featured atlases/GEMs while the endpoint omitted the benchmarks, so
+  the two figures disagreed in both directions and `index.json` shipped a `datasetsNote` warning consumers
+  not to add them. Don't reintroduce a divergence and paper over it with prose.
 - **Licenses** are a coarse, DB-owned triage axis (permissive / copyleft / restricted / unknown),
   supersedes #80's cache-only design. `catalog` + `dataset_entries` carry nullable `license` +
   `license_source` (`auto` = GitHub SPDX, `manual` = curated); the coarse **tier is derived** at parse

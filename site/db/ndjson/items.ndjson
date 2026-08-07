@@ -156,6 +156,10 @@
 {"id":"ds:arc-virtual-cell-atlas","type":"dataset","slug":"arc-virtual-cell-atlas"}
 {"id":"ds:association-analysis-of","type":"dataset","slug":"association-analysis-of"}
 {"id":"ds:authentication-of-nine","type":"dataset","slug":"authentication-of-nine"}
+{"id":"ds:bioml-bench","type":"dataset","slug":"bioml-bench"}
+{"id":"ds:biomysterybench","type":"dataset","slug":"biomysterybench"}
+{"id":"ds:bixbench","type":"dataset","slug":"bixbench"}
+{"id":"ds:blade","type":"dataset","slug":"blade"}
 {"id":"ds:bovreg","type":"dataset","slug":"bovreg"}
 {"id":"ds:btasbml2986-bos-taurus-bovine","type":"dataset","slug":"btasbml2986-bos-taurus-bovine"}
 {"id":"ds:cattlegtex","type":"dataset","slug":"cattlegtex"}
@@ -172,6 +176,7 @@
 {"id":"ds:comparative-proteomic-profiling","type":"dataset","slug":"comparative-proteomic-profiling"}
 {"id":"ds:comparative-transcriptome-analysis","type":"dataset","slug":"comparative-transcriptome-analysis"}
 {"id":"ds:comparative-transcriptomic-characterization","type":"dataset","slug":"comparative-transcriptomic-characterization"}
+{"id":"ds:compbiobench-v1","type":"dataset","slug":"compbiobench-v1"}
 {"id":"ds:continuous-fish-muscle","type":"dataset","slug":"continuous-fish-muscle"}
 {"id":"ds:cost-effective-production-of","type":"dataset","slug":"cost-effective-production-of"}
 {"id":"ds:cra003275","type":"dataset","slug":"cra003275"}
@@ -193,13 +198,17 @@
 {"id":"ds:electronic-nose-homogeneous","type":"dataset","slug":"electronic-nose-homogeneous"}
 {"id":"ds:establishment-and-characterization","type":"dataset","slug":"establishment-and-characterization"}
 {"id":"ds:establishment-of-spontaneously","type":"dataset","slug":"establishment-of-spontaneously"}
+{"id":"ds:flip-fitness-landscape-inference-for-proteins","type":"dataset","slug":"flip-fitness-landscape-inference-for-proteins"}
 {"id":"ds:fr-agencode-multi-species-farm-animal-regulatory-atlas","type":"dataset","slug":"fr-agencode-multi-species-farm-animal-regulatory-atlas"}
+{"id":"ds:frontierscience","type":"dataset","slug":"frontierscience"}
 {"id":"ds:gene-expression-of","type":"dataset","slug":"gene-expression-of"}
 {"id":"ds:gene-switch","type":"dataset","slug":"gene-switch"}
 {"id":"ds:gene-switch-2","type":"dataset","slug":"gene-switch-2"}
+{"id":"ds:genebench-pro","type":"dataset","slug":"genebench-pro"}
 {"id":"ds:genecorpus-104m","type":"dataset","slug":"genecorpus-104m"}
 {"id":"ds:genecorpus-30m","type":"dataset","slug":"genecorpus-30m"}
 {"id":"ds:genome-scale-metabolic-network","type":"dataset","slug":"genome-scale-metabolic-network"}
+{"id":"ds:gpqa","type":"dataset","slug":"gpqa"}
 {"id":"ds:growth-factor-thermostability","type":"dataset","slug":"growth-factor-thermostability"}
 {"id":"ds:growth-factor-thermostability-dataset","type":"dataset","slug":"growth-factor-thermostability-dataset"}
 {"id":"ds:gse114452","type":"dataset","slug":"gse114452"}
@@ -234,6 +243,7 @@
 {"id":"ds:gse97173","type":"dataset","slug":"gse97173"}
 {"id":"ds:human-and-mouse-white-adipose-tissue-single-cell-atlas-emont-et-al-2022","type":"dataset","slug":"human-and-mouse-white-adipose-tissue-single-cell-atlas-emont-et-al-2022"}
 {"id":"ds:human-skeletal-muscle-single-cell-atlas-de-micheli-et-al-2020","type":"dataset","slug":"human-skeletal-muscle-single-cell-atlas-de-micheli-et-al-2020"}
+{"id":"ds:humanitys-last-exam","type":"dataset","slug":"humanitys-last-exam"}
 {"id":"ds:icho1766-icho2048-chompact-chinese-hamster-ovary-biopharma-adjacent-reference","type":"dataset","slug":"icho1766-icho2048-chompact-chinese-hamster-ovary-biopharma-adjacent-reference"}
 {"id":"ds:identification-of-eriocheir","type":"dataset","slug":"identification-of-eriocheir"}
 {"id":"ds:identification-of-myogenic","type":"dataset","slug":"identification-of-myogenic"}
@@ -242,14 +252,18 @@
 {"id":"ds:integrated-lipidomics-and","type":"dataset","slug":"integrated-lipidomics-and"}
 {"id":"ds:integrated-multi-omics-reveals","type":"dataset","slug":"integrated-multi-omics-reveals"}
 {"id":"ds:issus3744-sus-scrofa-porcine","type":"dataset","slug":"issus3744-sus-scrofa-porcine"}
+{"id":"ds:iumami-scm","type":"dataset","slug":"iumami-scm"}
+{"id":"ds:lab-bench","type":"dataset","slug":"lab-bench"}
 {"id":"ds:lions-mane-mushroom-steak","type":"dataset","slug":"lions-mane-mushroom-steak"}
 {"id":"ds:lions-mane-mushroom-steak-characterization","type":"dataset","slug":"lions-mane-mushroom-steak-characterization"}
 {"id":"ds:lipidomic-and-transcriptomic","type":"dataset","slug":"lipidomic-and-transcriptomic"}
+{"id":"ds:massspecgym","type":"dataset","slug":"massspecgym"}
 {"id":"ds:meatscan-an-image","type":"dataset","slug":"meatscan-an-image"}
 {"id":"ds:metabolic-profile-of","type":"dataset","slug":"metabolic-profile-of"}
 {"id":"ds:metabolomics-of-meat","type":"dataset","slug":"metabolomics-of-meat"}
 {"id":"ds:metabolomics-profiling-to","type":"dataset","slug":"metabolomics-profiling-to"}
 {"id":"ds:mir-10167-3p-targets-tcf7l1","type":"dataset","slug":"mir-10167-3p-targets-tcf7l1"}
+{"id":"ds:mmlu-pro","type":"dataset","slug":"mmlu-pro"}
 {"id":"ds:mouse-genecorpus-20m","type":"dataset","slug":"mouse-genecorpus-20m"}
 {"id":"ds:mycelium-mechanics","type":"dataset","slug":"mycelium-mechanics"}
 {"id":"ds:mycelium-mechanics-taste-of-fungi-steak","type":"dataset","slug":"mycelium-mechanics-taste-of-fungi-steak"}
@@ -316,6 +330,7 @@
 {"id":"ds:prjna970983","type":"dataset","slug":"prjna970983"}
 {"id":"ds:prjna983861","type":"dataset","slug":"prjna983861"}
 {"id":"ds:prjna987844","type":"dataset","slug":"prjna987844"}
+{"id":"ds:proteingym","type":"dataset","slug":"proteingym"}
 {"id":"ds:proteomic-and-metabolomic","type":"dataset","slug":"proteomic-and-metabolomic"}
 {"id":"ds:proteomic-characterization-of","type":"dataset","slug":"proteomic-characterization-of"}
 {"id":"ds:proteomic-insights-into","type":"dataset","slug":"proteomic-insights-into"}
@@ -331,6 +346,7 @@
 {"id":"ds:risner-et-al-cradle-to-gate-cultivated-meat-lca","type":"dataset","slug":"risner-et-al-cradle-to-gate-cultivated-meat-lca"}
 {"id":"ds:rna-seq-analysis-of","type":"dataset","slug":"rna-seq-analysis-of"}
 {"id":"ds:salarecon-salmo-salar-atlantic-salmon","type":"dataset","slug":"salarecon-salmo-salar-atlantic-salmon"}
+{"id":"ds:scihorizon-gene","type":"dataset","slug":"scihorizon-gene"}
 {"id":"ds:scperturb","type":"dataset","slug":"scperturb"}
 {"id":"ds:serum-and-muscle","type":"dataset","slug":"serum-and-muscle"}
 {"id":"ds:sheepgtex-portal","type":"dataset","slug":"sheepgtex-portal"}
@@ -352,6 +368,7 @@
 {"id":"ds:srp374834","type":"dataset","slug":"srp374834"}
 {"id":"ds:srp531789","type":"dataset","slug":"srp531789"}
 {"id":"ds:substantial-downregulation-of","type":"dataset","slug":"substantial-downregulation-of"}
+{"id":"ds:swe-bench","type":"dataset","slug":"swe-bench"}
 {"id":"ds:synergetic-hallmark-knockouts","type":"dataset","slug":"synergetic-hallmark-knockouts"}
 {"id":"ds:tecator-nir-meat","type":"dataset","slug":"tecator-nir-meat"}
 {"id":"ds:tmt-based-quantitative-proteomic","type":"dataset","slug":"tmt-based-quantitative-proteomic"}

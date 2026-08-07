@@ -188,6 +188,32 @@ const FINE_TAGS: FineTag[] = [
 
 export const THEME_SLUGS = THEMES.map((t) => t.slug).sort();
 
+/**
+ * Tag curated dataset entries from their own text (name + section + body) with the matching
+ * themes and fine tags — the rule `seedTopics` applies in a full pass, factored out so a
+ * TARGETED re-seed can tag newly added entries by exactly the same rule. Passing `itemIds`
+ * scopes it to those entries; omitting it tags every entry (the full-pass behaviour).
+ * Insert is `OR IGNORE`, so re-running is idempotent and never disturbs existing tags.
+ * Returns the number of entries considered.
+ */
+export function tagDatasetEntries(db: Db, itemIds?: readonly string[]): number {
+  const tag = db.prepare('INSERT OR IGNORE INTO item_topics(item_id,topic_id) VALUES(?,?)');
+  const rows = (
+    itemIds
+      ? itemIds.map((id) =>
+          db.prepare('SELECT item_id, name, section, body_md FROM dataset_entries WHERE item_id=?').get(id),
+        )
+      : db.prepare('SELECT item_id, name, section, body_md FROM dataset_entries').all()
+  ).filter(Boolean) as { item_id: string; name: string; section: string; body_md: string }[];
+
+  for (const d of rows) {
+    const text = `${d.name} ${d.section} ${d.body_md}`;
+    for (const t of THEMES) if (t.kw.test(text)) tag.run(d.item_id, `topic:${t.slug}`);
+    for (const f of FINE_TAGS) if (f.kw.test(text)) tag.run(d.item_id, `topic:${f.slug}`);
+  }
+  return rows.length;
+}
+
 export function seedTopics(db: Db): { topics: number; tags: number } {
   // Guard the shared slug namespace at seed time (schema UNIQUE would otherwise throw).
   const themeSet = new Set(THEMES.map((t) => t.slug));
@@ -243,11 +269,7 @@ export function seedTopics(db: Db): { topics: number; tags: number } {
   }
 
   // 6. Curated dataset entries: name + section + body -> theme + fine tags.
-  for (const d of db.prepare('SELECT item_id, name, section, body_md FROM dataset_entries').all() as any[]) {
-    const text = `${d.name} ${d.section} ${d.body_md}`;
-    for (const t of THEMES) if (t.kw.test(text)) tag.run(d.item_id, topicId(t.slug));
-    for (const f of FINE_TAGS) if (f.kw.test(text)) tag.run(d.item_id, topicId(f.slug));
-  }
+  tagDatasetEntries(db);
 
   const topics = (db.prepare('SELECT COUNT(*) c FROM topics').get() as any).c;
   const tags = (db.prepare('SELECT COUNT(*) c FROM item_topics').get() as any).c;

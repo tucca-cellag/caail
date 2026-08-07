@@ -501,10 +501,12 @@ export const MetricsSpeciesSchema = z.object({
 
 /** Breakdown of the catalogued-dataset total by source-page shape. */
 export const MetricsDatasetsSchema = z.object({
-  /** == counts.datasets; the sum of the three parts below */
+  /** == counts.datasets; the sum of the four parts below */
   total: z.number().int().nonnegative(),
   /** `## Complete data inventory` rows over the species + CrossSpecies pages */
   speciesRows: z.number().int().nonnegative(),
+  /** curated `###` entries (featured atlases, GEMs) ON the species + CrossSpecies pages */
+  curatedEntries: z.number().int().nonnegative(),
   /** `###` dataset entries over the reference pages */
   referenceEntries: z.number().int().nonnegative(),
   /** `##` dataset entries on the benchmarks page */
@@ -786,9 +788,9 @@ export const ApiManifestSchema = z.strictObject({
     matrixEmptyCells: z.number().int().nonnegative(),
     datasetsCurated: z.number().int().nonnegative(),
     datasetsInventoryRows: z.number().int().nonnegative(),
+    /** the two above, which are disjoint and exhaustive — == the library total */
+    datasetsTotal: z.number().int().nonnegative(),
   }),
-  /** why the two dataset counts must not be added together — see buildManifest */
-  datasetsNote: z.string(),
   endpoints: z.array(z.strictObject({ path: z.string(), use: z.string() })),
 });
 

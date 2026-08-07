@@ -222,6 +222,11 @@
                 "type": "integer",
                 "minimum": 0,
                 "maximum": 9007199254740991
+              },
+              "datasetsTotal": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
               }
             },
             "required": [
@@ -232,12 +237,10 @@
               "matrixPopulatedCells",
               "matrixEmptyCells",
               "datasetsCurated",
-              "datasetsInventoryRows"
+              "datasetsInventoryRows",
+              "datasetsTotal"
             ],
             "additionalProperties": false
-          },
-          "datasetsNote": {
-            "type": "string"
           },
           "endpoints": {
             "type": "array",
@@ -268,7 +271,6 @@
           "scopeNote",
           "openapi",
           "counts",
-          "datasetsNote",
           "endpoints"
         ],
         "additionalProperties": false

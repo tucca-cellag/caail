@@ -7,6 +7,7 @@
 
 import { readFileSync } from 'node:fs';
 import { parseMarkdown, sectionsAfter } from '../parser/markdown.js';
+import { entryHeadingDepth, isEntryHeading, pageFromPath } from '../parser/datasets.js';
 import type { Table, TableRow, TableCell } from 'mdast';
 
 /**
@@ -144,29 +145,38 @@ function entryKind(section: string): 'atlas' | 'gem' | 'other' {
 }
 
 /**
- * Every curated `### …` dataset entry on a `Datasets/<page>.md` page — the featured
- * atlases + GEMs (species pages) and the reference-page entries — i.e. every H3 NOT
- * under the `## Complete data inventory` section. Unlike catalog entries, the H3 link
- * is OPTIONAL: a bare `### iES1300 — *Gallus gallus*` GEM heading yields `url: null`.
+ * Every curated dataset entry on a `Datasets/<page>.md` page — the featured atlases +
+ * GEMs (species pages), the reference-page entries, and the benchmark datasets. Unlike
+ * catalog entries the heading link is OPTIONAL: a bare `### iES1300 — *Gallus gallus*`
+ * GEM heading, or `## BioMysteryBench`, yields `url: null`.
+ *
+ * The entry depth is per-page (`entryHeadingDepth`), not a constant: every page marks an
+ * entry with `###` under an `##` section, except Benchmarks, which uses one `##` per
+ * dataset and has no enclosing section (its entries therefore carry `section: ''`).
+ * Hardcoding depth 3 here is what left the 17 benchmarks out of the DB entirely (#156).
  */
 export function extractDatasetEntries(path: string): DatasetEntryRaw[] {
   const src = readFileSync(path, 'utf-8');
   const kids = parseMarkdown(src).children as any[];
+  const page = pageFromPath(path);
+  const depth = entryHeadingDepth(page);
   const out: DatasetEntryRaw[] = [];
   let section = '';
   for (let i = 0; i < kids.length; i++) {
     const n = kids[i];
-    if (n.type === 'heading' && n.depth === 2) { section = inlineMd(n).trim(); continue; }
-    if (n.type !== 'heading' || n.depth !== 3) continue;
-    if (section === 'Complete data inventory') continue;
+    // Only an H3-entry page has enclosing H2 sections to track; on an H2-entry page the
+    // H2 *is* the entry, so consuming it as a section label here would swallow every one.
+    if (depth === 3 && n.type === 'heading' && n.depth === 2) { section = inlineMd(n).trim(); continue; }
+    if (n.type !== 'heading' || n.depth !== depth) continue;
+    if (!isEntryHeading(page, inlineMd(n).trim(), section)) continue;
     const link = (n.children as any[]).find((c) => c.type === 'link');
     let s: number | null = null, e = 0;
-    // Break only at the next H2/H3 — nested H4+ sub-sections (e.g. the Arc Virtual Cell
-    // Atlas umbrella's `#### Tahoe-100M` / `#### scBaseCount`) belong to THIS entry's body,
-    // not a separate entry (which the depth-3 filter above already excludes) and not the
-    // next one. Mirrors extractCatalogEntries' `depth <= 3` body boundary.
+    // Break only at a heading at or above the entry depth — nested sub-sections (e.g. the
+    // Arc Virtual Cell Atlas umbrella's `#### Tahoe-100M` / `#### scBaseCount`) belong to
+    // THIS entry's body, not a separate entry (the depth filter above already excludes
+    // them) and not the next one. Mirrors extractCatalogEntries' body boundary.
     for (let j = i + 1; j < kids.length; j++) {
-      if (kids[j].type === 'heading' && kids[j].depth <= 3) break;
+      if (kids[j].type === 'heading' && kids[j].depth <= depth) break;
       if (s === null) s = kids[j].position.start.offset;
       e = kids[j].position.end.offset;
     }

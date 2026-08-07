@@ -107,11 +107,14 @@ describe('computeDatasetBreakdown — real corpus', () => {
   });
 
   it('parts sum to total (no-drift invariant)', () => {
-    expect(b.total).toBe(b.speciesRows + b.referenceEntries + b.benchmarkEntries);
+    expect(b.total).toBe(
+      b.speciesRows + b.curatedEntries + b.referenceEntries + b.benchmarkEntries,
+    );
   });
 
   it('every part is positive on the real corpus', () => {
     expect(b.speciesRows).toBeGreaterThan(0);
+    expect(b.curatedEntries).toBeGreaterThan(0);
     expect(b.referenceEntries).toBeGreaterThan(0);
     expect(b.benchmarkEntries).toBeGreaterThan(0);
   });
@@ -119,7 +122,16 @@ describe('computeDatasetBreakdown — real corpus', () => {
   it('returns the verified ground-truth dataset total', () => {
     // GROUND TRUTH — pinned after the first green run of `pnpm parse`.
     // Bump in lockstep when Datasets/ inventory tables / reference / benchmark
-    // entries change.
-    expect(b.total).toBe(205);
+    // entries change. 226 = 164 inventory rows + 21 curated species-page entries
+    // + 24 reference entries + 17 benchmarks. It was 205 until #156, which folded
+    // in the two populations the total had silently omitted.
+    expect(b.total).toBe(226);
+  });
+
+  it('counts the same population the datasets endpoint serves', () => {
+    // The reason the total moved. Before #156 these were different populations in both
+    // directions, so a consumer comparing them got a number about nothing.
+    expect(b.speciesRows).toBe(164);
+    expect(b.curatedEntries + b.referenceEntries + b.benchmarkEntries).toBe(62);
   });
 });

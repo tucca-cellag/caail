@@ -16,7 +16,7 @@ import { join } from 'node:path';
 import { buildPapersModel } from '../parser/papers.js';
 import { lint } from '../parser/lint.js';
 import { parseCatalogFile } from '../parser/catalog.js';
-import { INVENTORY_PAGES, REFERENCE_PAGES } from '../parser/datasets.js';
+import { INVENTORY_PAGES, REFERENCE_PAGES, BENCHMARKS_PAGE } from '../parser/datasets.js';
 import { existsSync } from 'node:fs';
 import { importNdjson, REPO_ROOT, type Db } from './lib.js';
 import { extractInventory, extractDatasetEntries } from './extract.js';
@@ -62,7 +62,10 @@ function verifyCatalog(db: Db, type: 'software' | 'database', file: string): voi
 
 function verifyDatasets(db: Db): void {
   console.log('\n── Dataset round-trip (inventory rows + curated entries identical) ──');
-  const pages = [...INVENTORY_PAGES, ...REFERENCE_PAGES];
+  // Benchmarks belongs here as much as any other page: it is the ONLY H2-entry page, so
+  // leaving it out meant the emit path with a non-default entry depth had no round-trip
+  // oracle at all — which is how its 17 datasets stayed missing from the DB unnoticed (#156).
+  const pages = [...INVENTORY_PAGES, ...REFERENCE_PAGES, BENCHMARKS_PAGE];
   let seen = 0, invOk = 0, entOk = 0, entryTotal = 0;
   for (const page of pages) {
     const src = join(REPO_ROOT, 'Datasets', `${page}.md`);
