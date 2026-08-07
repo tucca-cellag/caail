@@ -23,6 +23,7 @@ import Ajv2020 from 'ajv/dist/2020.js';
 import addFormats from 'ajv-formats';
 
 import { buildAgentApi } from './agent-api.js';
+import { PATH_PREFIX } from './openapi.js';
 import { buildPapersModel } from './papers.js';
 import { buildCatalogModel } from './catalog.js';
 import { buildDatasetsModel } from './datasets-entries.js';
@@ -84,6 +85,28 @@ describe('openapi.json', () => {
     expect(topicsSchema.additionalProperties).toBe(false);
     // and it says where they actually are, which is the half that makes it actionable
     expect(Object.keys(topicsSchema.properties.tree.properties).sort()).toEqual(['tags', 'themes']);
+  });
+
+  it('keeps its path prefix in step with Astro base, which owns that segment', () => {
+    // PATH_PREFIX duplicates `/caail` rather than importing astro.config (which would drag
+    // the plugin graph into the parser for one string). This is the guard that makes the
+    // duplication safe: change `base` and the suite fails instead of the spec silently
+    // describing paths that 404 on the deployed site.
+    const cfg = readFileSync(join(REPO_ROOT, 'site', 'astro.config.mjs'), 'utf-8');
+    const base = /^\s*base:\s*['"]([^'"]+)['"]/m.exec(cfg)?.[1];
+    expect(base, 'could not read `base` from astro.config.mjs').toBeTruthy();
+    expect(PATH_PREFIX).toBe(`${base}/api/`);
+    for (const p of Object.keys(doc.paths)) expect(p.startsWith(PATH_PREFIX)).toBe(true);
+  });
+
+  it('does not invite a consumer to join these paths onto the raw mirror', () => {
+    // The mirror is the DEFAULT route for the primary consumer (SKILL.md sends agents at
+    // the raw URLs), and with no `servers` block these paths only resolve on the Pages
+    // origin. Advertising the mirror without saying so produced a 404 by construction.
+    const d = doc.info.description as string;
+    expect(d).toMatch(/raw\.githubusercontent\.com/);
+    expect(d).toMatch(/by filename/i);
+    expect(d).toMatch(/tucca-cellag\.github\.io/);
   });
 
   it('is discoverable from the manifest without opening a file to guess', () => {

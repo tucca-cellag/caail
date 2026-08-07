@@ -787,6 +787,8 @@ export const ApiManifestSchema = z.strictObject({
     datasetsCurated: z.number().int().nonnegative(),
     datasetsInventoryRows: z.number().int().nonnegative(),
   }),
+  /** why the two dataset counts must not be added together — see buildManifest */
+  datasetsNote: z.string(),
   endpoints: z.array(z.strictObject({ path: z.string(), use: z.string() })),
 });
 

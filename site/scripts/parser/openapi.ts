@@ -49,9 +49,16 @@ export const OPENAPI_FILE = 'openapi.json';
 /**
  * Where the files sit on the deployed site. With no `servers` block the OpenAPI default
  * base is `/`, so these resolve against whatever origin the document was fetched from —
- * which is exactly right for https://tucca-cellag.github.io/caail/api/.
+ * which is exactly right for https://tucca-cellag.github.io/caail/api/ and wrong for the
+ * raw.githubusercontent mirror, whose prefix differs. `info.description` says so rather
+ * than leaving a consumer to discover it by 404.
+ *
+ * The `/caail/` segment is Astro's `base` (astro.config.mjs). It is duplicated rather
+ * than imported because importing the Astro config into the parser drags the whole plugin
+ * graph in for one string; `openapi.test.ts` asserts the two agree instead, so changing
+ * `base` fails the suite rather than silently staling the spec.
  */
-const PATH_PREFIX = '/caail/api/';
+export const PATH_PREFIX = '/caail/api/';
 
 /** The dialect OpenAPI 3.1 uses, and the one `z.toJSONSchema` emits. */
 export const JSON_SCHEMA_DIALECT = 'https://json-schema.org/draft/2020-12/schema';
@@ -150,7 +157,8 @@ export const API_ENDPOINTS: readonly ApiEndpointSpec[] = [
  * cascade: with a root-only strict check, an unknown key nested inside an array item
  * (`catalog.software[0].sneaky`) validated cleanly and was written to disk, into a file
  * whose own published schema says `additionalProperties: false`. A cross-model review
- * caught it; the test above now covers it.
+ * caught it; `openapi.test.ts` now covers it, injecting inside an array item rather
+ * than at the payload root.
  *
  * `z.toJSONSchema` already emits `additionalProperties: false` at EVERY level — for plain
  * `z.object` as much as for `z.strictObject` — so checking the generated document closes
@@ -310,9 +318,17 @@ export function buildOpenApiDocument(corpusDate: string): unknown {
       description:
         'Seven static JSON files, served by GET, with nothing to install or authenticate. ' +
         'Generated from the same schemas that validate the payloads, in the same build step ' +
-        'that writes them. The same files are also fetchable from ' +
+        'that writes them. ' +
+        // Spelled out because the mirror is the DEFAULT path for the primary consumer, not
+        // a fallback: SKILL.md routes agents at the raw URLs. With no `servers` block the
+        // OpenAPI base is the document's own origin, so these paths resolve on Pages and
+        // NOT against the mirror, whose prefix is different. Saying "the same files are
+        // also at <mirror>" without this invites joining the two into a 404.
+        'The paths below are absolute on the GitHub Pages origin, ' +
+        'https://tucca-cellag.github.io. The same files are mirrored per-filename at ' +
         'https://raw.githubusercontent.com/tucca-cellag/caail/main/site/public/api/, which ' +
-        'some clients can reach when GitHub Pages is not allow-listed.',
+        'some clients can reach when Pages is not allow-listed. Resolve that mirror by ' +
+        'filename; do not join the paths below onto it.',
       license: {
         name: 'MIT (CAAIL curation). Linked third-party resources keep their own licenses.',
         identifier: 'MIT',

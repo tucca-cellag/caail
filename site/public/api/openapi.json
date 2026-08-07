@@ -5,7 +5,7 @@
     "title": "CAAIL agent API",
     "version": "2026-07-28",
     "summary": "Static JSON endpoints describing the Cellular Agriculture AI Library.",
-    "description": "Seven static JSON files, served by GET, with nothing to install or authenticate. Generated from the same schemas that validate the payloads, in the same build step that writes them. The same files are also fetchable from https://raw.githubusercontent.com/tucca-cellag/caail/main/site/public/api/, which some clients can reach when GitHub Pages is not allow-listed.",
+    "description": "Seven static JSON files, served by GET, with nothing to install or authenticate. Generated from the same schemas that validate the payloads, in the same build step that writes them. The paths below are absolute on the GitHub Pages origin, https://tucca-cellag.github.io. The same files are mirrored per-filename at https://raw.githubusercontent.com/tucca-cellag/caail/main/site/public/api/, which some clients can reach when Pages is not allow-listed. Resolve that mirror by filename; do not join the paths below onto it.",
     "license": {
       "name": "MIT (CAAIL curation). Linked third-party resources keep their own licenses.",
       "identifier": "MIT"
@@ -236,6 +236,9 @@
             ],
             "additionalProperties": false
           },
+          "datasetsNote": {
+            "type": "string"
+          },
           "endpoints": {
             "type": "array",
             "items": {
@@ -265,6 +268,7 @@
           "scopeNote",
           "openapi",
           "counts",
+          "datasetsNote",
           "endpoints"
         ],
         "additionalProperties": false

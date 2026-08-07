@@ -23,6 +23,7 @@
     "datasetsCurated": 45,
     "datasetsInventoryRows": 164
   },
+  "datasetsNote": "datasetsCurated + datasetsInventoryRows counts what this endpoint serves. It is NOT the library dataset total: the benchmark datasets are in that total but not in `entries`, and the species pages' curated atlases/GEMs are in `entries` but not in that total. Quote either figure with its population; do not add them into a headline.",
   "endpoints": [
     {
       "path": "index.json",

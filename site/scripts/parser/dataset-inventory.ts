@@ -52,7 +52,7 @@ interface RowNdjson {
  * Every URL in a row, deduped, in document order.
  *
  * The cells are `inlineMd` output, so a link is `[text](target)` and a bare URL is plain
- * text; one pattern catches both. `)`, `]`, `>` and whitespace terminate a match so a
+ * text; one pattern catches both. `)`, `]`, `<`, `>` and whitespace terminate a match so a
  * markdown link's closing paren is never swallowed, and trailing sentence punctuation is
  * trimmed because a cell often ends `…/dataset.`
  */
@@ -107,12 +107,19 @@ export function buildDatasetInventory(
 
   const inventory: DatasetInventoryRow[] = [];
   for (const page of pages) {
-    const table = extractInventory(join(repoRoot, 'Datasets', `${page}.md`));
+    const path = join(repoRoot, 'Datasets', `${page}.md`);
+    // Check existence separately: extractInventory readFileSync's the path, so a page
+    // recorded in the NDJSON whose Markdown is missing would surface as a bare ENOENT and
+    // the actionable guidance below would never reach the operator. Same fault, two causes.
+    const table = existsSync(path) ? extractInventory(path) : null;
     if (!table) {
       throw new Error(
         `dataset-inventory: ${byPage.get(page)!.length} row(s) are recorded for page ` +
-          `"${page}" but Datasets/${page}.md has no "## Complete data inventory" table. ` +
-          `Re-run \`pnpm db:bootstrap\` or restore the table.`,
+          `"${page}" but Datasets/${page}.md ` +
+          (existsSync(path)
+            ? 'has no "## Complete data inventory" table.'
+            : 'does not exist.') +
+          ` Re-run \`pnpm db:bootstrap\` or restore the page.`,
       );
     }
     const header = table.header.map((h) => h.trim());

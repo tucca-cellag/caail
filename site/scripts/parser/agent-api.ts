@@ -191,7 +191,7 @@ export function buildTopicIndex(
   catalog: unknown,
   datasets: unknown,
   topics: unknown,
-): { corpusDate?: string; tree: unknown; index: Record<string, Record<string, (string | number)[]>> } {
+): { tree: unknown; index: Record<string, Record<string, (string | number)[]>> } {
   const index: Record<string, Record<string, (string | number)[]>> = {};
   const add = (slug: string, kind: string, id: string | number) => {
     index[slug] ??= { papers: [], software: [], databases: [], datasets: [] };
@@ -260,10 +260,23 @@ export function buildManifest(
       matrixEmptyCells: matrix.emptyCells,
       // Two populations, like the paper sections above: the curated `### …` entries
       // (portals, atlases, GEMs) and the per-study deposit rows. Quoting either as
-      // "datasets in CAAIL" is true of one and false of the other.
+      // "datasets in CAAIL" is true of one and false of the other — and adding them is
+      // true of neither, hence datasetsNote.
       datasetsCurated: datasets.curated,
       datasetsInventoryRows: datasets.inventory,
     },
+    // These two counts describe THIS ENDPOINT, not the library, and the difference is not
+    // rounding. The site's own dataset total counts the Benchmarks page, which `entries`
+    // does not carry at all; `entries` counts the species pages' curated atlases and GEMs,
+    // which the site total does not. So the two figures overlap in both directions and
+    // their sum is a number about nothing. Stated rather than reconciled because making
+    // the populations agree means changing what the endpoint carries, which is its own
+    // change; an agent quoting a total needs the caveat today.
+    datasetsNote:
+      'datasetsCurated + datasetsInventoryRows counts what this endpoint serves. It is ' +
+      'NOT the library dataset total: the benchmark datasets are in that total but not in ' +
+      '`entries`, and the species pages\' curated atlases/GEMs are in `entries` but not in ' +
+      'that total. Quote either figure with its population; do not add them into a headline.',
     endpoints: [
       { path: 'index.json', use: 'This manifest: corpus date, counts by population, endpoint list.' },
       { path: 'matrix.json', use: 'All method×area cells, empties included. Use to ask what has and has not been indexed.' },
