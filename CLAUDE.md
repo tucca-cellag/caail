@@ -269,6 +269,20 @@ non-catalog canonical files (`OtherResources.md`, `ReferenceWorks.md`, `AwesomeL
 - **Source of truth = `site/db/ndjson/`** (per-table PK-sorted NDJSON, committed). `site/db/schema.sql`
   is the DDL; `site/caail.db` is a gitignored artifact rebuilt from the NDJSON. Every item has a
   frozen namespaced id (`paper:N`, `sw:…`, `db:…`, `ds:…`, `topic:…`) assigned once and never changed.
+  - **The one sanctioned exception: an id the canonical pipeline cannot reproduce.** If a fresh
+    `db:bootstrap` from the canonical Markdown mints a *different* id than the one committed, that id
+    is already broken — bootstrap either aborts (as it did for ~2.5 weeks on
+    `ds:algpred-2-0-allergen-dataset`, minted by a slug rule `lib.slugify` no longer implements) or
+    silently renames it. Reconciling it to the rule's output is then repair, not a rename of a working
+    id. Conditions, all required: the id is **provably unreproducible** (show the seed's output beside
+    the committed id); **every** reference moves with it (`item_topics`, `dois-manual.json`,
+    `licenses-manual.json`, `dois-related.json` — note the last two key by *url*, not id) and
+    `db:check` passes; and the commit says which id changed and why. **Never** do this to a `paper:N`
+    id — those are public anchors people bookmark, they are retired rather than reused, and the fix
+    for a bad one is a tombstone. Prefer changing the outlier over changing the slug rule: a rule
+    change silently re-mints every id derived from it.
+    Note this *is* visible outwardly — `ds:` ids are served in `api/datasets.json` and
+    `api/topics.json` — so it is a curator decision, not a refactor to make in passing.
 - **Authoring-time only.** The DB is not in the deploy build: `pnpm build` still parses the committed
   Markdown into `data/*.json`. A plain add/remove is one command — `db:add <descriptor.json>` /
   `db:remove <id>` (auto frozen-id, guards, regenerate); the full edit flow is `db:build` → edit →

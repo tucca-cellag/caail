@@ -224,7 +224,15 @@ export function emitDatasetPage(db: Db, srcPath: string, page: string): string {
       while (i < blocks.length && !(blocks[i].type === 'heading' && blocks[i].depth <= depth)) i++;
       continue;
     }
-    if (b.type === 'heading' && b.depth === 2) { section = flat(b).trim(); out.push(sliceOf(b)); i++; continue; }
+    if (b.type === 'heading' && b.depth === 2) {
+      // Guarded exactly like the count loop above. Only an H3-entry page has enclosing
+      // sections; the H2s that reach here on an H2-entry page are narrative (a `## Further
+      // reading` footer), and letting one set `section` would leave the two loops walking
+      // the page with different state — harmless only for as long as isEntryHeading happens
+      // to ignore `section` at depth 2. The heading itself is still emitted either way.
+      if (depth === 3) section = flat(b).trim();
+      out.push(sliceOf(b)); i++; continue;
+    }
     if (b.type === 'table' && section === 'Complete data inventory' && inv && !invEmitted) {
       invEmitted = true;
       const header = inv.header;

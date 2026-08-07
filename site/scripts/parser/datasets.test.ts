@@ -66,6 +66,13 @@ describe('entry-heading identity (the per-page depth rule)', () => {
     expect(isEntryHeading('Cow', 'CattleGTEx', 'Featured atlases')).toBe(true);
     expect(isEntryHeading('Cow', 'Some row', 'Complete data inventory')).toBe(false);
   });
+
+  it('matches the exclusions case-insensitively, so one capital letter is not a dataset', () => {
+    for (const v of ['Further Reading', 'FURTHER READING', 'further reading']) {
+      expect(isEntryHeading('Benchmarks', v, ''), `${v} should be narrative`).toBe(false);
+    }
+    expect(isEntryHeading('Cow', 'Some row', 'COMPLETE DATA INVENTORY')).toBe(false);
+  });
 });
 
 // ---------------------------------------------------------------------------

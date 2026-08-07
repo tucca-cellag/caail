@@ -56,7 +56,7 @@ const INVENTORY_HEADING = 'Complete data inventory';
  * anything. Without this, adding a `## Further reading` footer to Benchmarks — which
  * every other page already has — would silently count as an 18th benchmark dataset.
  */
-const NON_ENTRY_H2 = new Set(['Further reading', INVENTORY_HEADING]);
+const NON_ENTRY_H2 = new Set(['further reading', INVENTORY_HEADING.toLowerCase()]);
 
 /**
  * The heading depth marking one curated dataset entry on a page.
@@ -81,17 +81,24 @@ export function pageFromPath(path: string): string {
  * Whether a heading at the page's entry depth introduces a dataset entry, given the
  * enclosing H2 section (`''` on an H2-entry page, which has none).
  *
- * `label` and `section` must be the heading's PLAIN TEXT, not its markdown source — both
- * comparisons here are exact-string, so `## [Further reading](…)` must arrive as
- * `Further reading`, never `[Further reading](…)`. Callers that hold an mdast node should
- * flatten with `mdastToString`/`flat`; passing `inlineMd` output would exclude a heading on
- * the paths that flatten and include it on the paths that don't — a page counted 17 and
- * emitted 18.
+ * `label` and `section` must be the heading's PLAIN TEXT, not its markdown source — the
+ * comparisons here are by string, so `## [Further reading](…)` must arrive as
+ * `Further reading`, never `[Further reading](…)`. Callers holding an mdast node should
+ * flatten with `mdastToString` (parser side) or `flat` (db side); passing `inlineMd` output
+ * would exclude a heading on the paths that flatten and include it on the paths that don't —
+ * a page counted 17 and emitted 18.
+ *
+ * Those two flatteners are NOT identical: `flat` returns '' for an image node where
+ * `mdastToString` returns its alt text. No heading in the corpus contains an image, so they
+ * agree in practice; if that ever stops being true, converge them rather than assuming.
+ *
+ * Matching is case-insensitive: a curator writing `## Further Reading` means the footer, and
+ * silently promoting it to a dataset because of one capital letter is not a useful reading.
  */
 export function isEntryHeading(page: string, label: string, section: string): boolean {
   return entryHeadingDepth(page) === 2
-    ? !NON_ENTRY_H2.has(label.trim())
-    : section.trim() !== INVENTORY_HEADING;
+    ? !NON_ENTRY_H2.has(label.trim().toLowerCase())
+    : section.trim().toLowerCase() !== INVENTORY_HEADING.toLowerCase();
 }
 
 // ---------------------------------------------------------------------------

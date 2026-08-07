@@ -163,7 +163,12 @@ export function datasetCards(options: {
         out.push({ type: 'html', value: '</article>' });
         continue;
       }
-      if (n.type === 'heading' && n.depth === 2) { section = mdastToString(n).trim(); out.push(n); i++; continue; }
+      // Guarded like the precheck loop above: on an H2-entry page the H2s reaching here are
+      // narrative, and letting one set `section` would leave the two passes disagreeing.
+      if (n.type === 'heading' && n.depth === 2) {
+        if (depth === 3) section = mdastToString(n).trim();
+        out.push(n); i++; continue;
+      }
       out.push(n); i++;
     }
     tree.children = out;
