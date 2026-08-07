@@ -24,3 +24,9 @@ __pycache__/
 
 # Playwright MCP scratch output, regenerated each run
 .playwright-mcp/
+
+# Local env files. The repo is public: a pushed secret stays fetchable by SHA
+# and GHArchive captures the event, so rotate rather than delete if one lands.
+.env
+.env.*
+!.env.example
