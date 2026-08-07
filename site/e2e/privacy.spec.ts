@@ -8,9 +8,18 @@ import AxeBuilder from '@axe-core/playwright';
 test('privacy page states what is measured and who to contact', async ({ page }) => {
   await page.goto('./privacy/');
 
-  await expect(page.getByRole('heading', { name: 'What we measure' })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Why there is no cookie banner' })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Links to other sites' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Personal Data We Collect' })).toBeVisible();
+  await expect(
+    page.getByRole('heading', { name: 'Our Use of Cookies and Tracking Technologies' }),
+  ).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Links to Third-Party Sites' })).toBeVisible();
+
+  // Every named recipient of Personal Data appears in the sharing table. A vendor
+  // added to the stack without a row here is an undisclosed processor, which is
+  // the one defect on this page that is a compliance problem rather than a typo.
+  for (const recipient of ['GitHub, Inc.', 'Cloudflare, Inc.', 'Sevalla', 'Google LLC']) {
+    await expect(page.getByRole('cell', { name: recipient, exact: true })).toBeVisible();
+  }
 
   // The Tufts institutional statement and privacy mailbox are the escalation
   // path; a broken link here is the one that actually matters.
@@ -136,7 +145,7 @@ test('same-origin links emit nothing', async ({ page }) => {
   // An in-page TOC anchor: same origin, and it does not navigate away, so the
   // capture buffer survives to be read. Starlight renders the TOC twice (mobile
   // widget + right rail); :visible picks whichever one this viewport shows.
-  await page.locator('a[href="#what-we-measure"]:visible').first().click();
-  await expect(page).toHaveURL(/#what-we-measure$/);
+  await page.locator('a[href="#personal-data-we-collect"]:visible').first().click();
+  await expect(page).toHaveURL(/#personal-data-we-collect$/);
   expect(await readEvents(page)).toEqual([]);
 });

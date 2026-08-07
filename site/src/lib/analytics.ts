@@ -26,6 +26,10 @@ export interface AnalyticsGlobals {
   gtag?: (command: string, name: string, props: EventProps) => void;
   /** GTM's queue. Present whenever a container is installed, gtag.js or not. */
   dataLayer?: { push: (payload: Record<string, unknown>) => void };
+  /** For the first-party beacon. Queued by the browser, survives navigation. */
+  navigator?: { sendBeacon?: (url: string, data?: string) => boolean };
+  /** Fallback transport where `sendBeacon` is absent or refuses the payload. */
+  fetch?: (input: string, init?: Record<string, unknown>) => unknown;
 }
 
 /** Longest search query we will record. Long strings are pasted text, not queries. */
@@ -57,12 +61,55 @@ export interface OutboundEvent {
 }
 
 /**
+ * Post events to an endpoint we run ourselves.
+ *
+ * `sendBeacon` is the right transport: the browser owns the request once it is
+ * queued, so it survives the page being navigated away or closed, which is
+ * exactly when an outbound click fires. It is also fire-and-forget, so a slow or
+ * dead endpoint cannot delay a navigation.
+ *
+ * The payload goes as a plain string rather than a JSON blob, and the fetch
+ * fallback declares `text/plain`, because `application/json` is not a
+ * CORS-safelisted content type and would trigger a preflight OPTIONS on every
+ * event. The receiver parses the body itself.
+ *
+ * Every failure mode is swallowed. Measurement must never be able to break the
+ * page it is measuring.
+ */
+function beaconSink(scope: AnalyticsGlobals, url: string): Sink {
+  return (name, props) => {
+    const body = JSON.stringify({ name, props, ts: Date.now() });
+    try {
+      const send = scope.navigator?.sendBeacon;
+      // sendBeacon returns false when the payload exceeds the browser's queue
+      // budget, and is absent entirely in older Safari. Either way, fall through
+      // rather than dropping the event.
+      if (typeof send === 'function' && send.call(scope.navigator, url, body)) return;
+      scope.fetch?.(url, {
+        method: 'POST',
+        body,
+        keepalive: true,
+        headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+      });
+    } catch {
+      /* offline, blocked by an extension, or CSP-refused: nothing to do */
+    }
+  };
+}
+
+/**
  * The first available analytics sink on `scope`, or null when none is
  * installed. Prefers `gtag` over raw `dataLayer` pushes because gtag applies
  * GA4's own parameter validation; falls back to `dataLayer` so a GTM-only
- * container (no gtag.js) still receives events.
+ * container (no gtag.js) still receives events; falls back again to a
+ * first-party beacon when `beaconUrl` is configured.
+ *
+ * The beacon is last because a vendor tag, if one is ever installed, is the more
+ * capable destination. It exists because the two vendor tags we would otherwise
+ * reach for both set cookies, which under ePrivacy requires consent, and a
+ * consent banner is a high price for two counters on a reference library.
  */
-export function resolveSink(scope: AnalyticsGlobals): Sink | null {
+export function resolveSink(scope: AnalyticsGlobals, beaconUrl?: string): Sink | null {
   if (typeof scope.gtag === 'function') {
     const gtag = scope.gtag;
     return (name, props) => gtag('event', name, props);
@@ -71,6 +118,7 @@ export function resolveSink(scope: AnalyticsGlobals): Sink | null {
   if (layer && typeof layer.push === 'function') {
     return (name, props) => layer.push({ event: name, ...props });
   }
+  if (beaconUrl) return beaconSink(scope, beaconUrl);
   return null;
 }
 

@@ -25,7 +25,12 @@
   /** Quiet period after the last search mutation before we judge a result set final. */
   const SEARCH_SETTLE_MS = 1200;
 
-  const sink = () => resolveSink(window as Parameters<typeof resolveSink>[0]);
+  // A first-party endpoint we run. Configured, the events collect with no cookie
+  // and therefore no consent banner; unset, this stays the same no-op as before.
+  // PUBLIC_ is correct here: a URL compiled into the bundle, not a secret.
+  const EVENTS_API = import.meta.env.PUBLIC_CAAIL_EVENTS_API as string | undefined;
+
+  const sink = () => resolveSink(window as Parameters<typeof resolveSink>[0], EVENTS_API);
 
   // --- Outbound resource clicks -------------------------------------------
   // Delegated, capture-phase-free, and synchronous: Starlight's search modal

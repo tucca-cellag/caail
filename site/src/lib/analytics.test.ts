@@ -23,6 +23,68 @@ describe('resolveSink', () => {
   it('ignores a non-callable gtag rather than throwing', () => {
     expect(resolveSink({ gtag: undefined })).toBeNull();
   });
+
+  // --- the first-party beacon ----------------------------------------------
+  // A vendor tag is not the only possible destination, and the two we would
+  // otherwise reach for (GA4, GTM) both set cookies, which would force a consent
+  // banner. This branch posts to an endpoint we run, so the events can collect
+  // without one.
+
+  it('posts to the beacon endpoint when no tag is installed', () => {
+    const sendBeacon = vi.fn().mockReturnValue(true);
+    resolveSink({ navigator: { sendBeacon } }, 'https://ev.example/e')!('search', {
+      search_term: 'bioprocess',
+      result_count: 36,
+    });
+    expect(sendBeacon).toHaveBeenCalledTimes(1);
+    const [url, payload] = sendBeacon.mock.calls[0];
+    expect(url).toBe('https://ev.example/e');
+    expect(JSON.parse(payload as string)).toMatchObject({
+      name: 'search',
+      props: { search_term: 'bioprocess', result_count: 36 },
+    });
+  });
+
+  it('still prefers a real tag over the beacon when both are available', () => {
+    const gtag = vi.fn();
+    const sendBeacon = vi.fn();
+    resolveSink({ gtag, navigator: { sendBeacon } }, 'https://ev.example/e')!('search', {});
+    expect(gtag).toHaveBeenCalledTimes(1);
+    expect(sendBeacon).not.toHaveBeenCalled();
+  });
+
+  it('returns null when the beacon endpoint is unconfigured', () => {
+    expect(resolveSink({ navigator: { sendBeacon: vi.fn() } })).toBeNull();
+    expect(resolveSink({ navigator: { sendBeacon: vi.fn() } }, '')).toBeNull();
+  });
+
+  // sendBeacon is absent in older Safari and returns false when the payload
+  // exceeds the browser's queue budget. Dropping the event in either case would
+  // silently under-count exactly the heavy sessions worth hearing about.
+  it('falls back to keepalive fetch when sendBeacon is missing or refuses', () => {
+    const fetchFn = vi.fn();
+    resolveSink({ fetch: fetchFn }, 'https://ev.example/e')!('search', { a: 1 });
+    expect(fetchFn).toHaveBeenCalledTimes(1);
+    expect(fetchFn.mock.calls[0][1]).toMatchObject({ method: 'POST', keepalive: true });
+
+    const refusing = vi.fn().mockReturnValue(false);
+    const fetch2 = vi.fn();
+    resolveSink({ navigator: { sendBeacon: refusing }, fetch: fetch2 }, 'https://ev.example/e')!(
+      'search',
+      { a: 1 },
+    );
+    expect(refusing).toHaveBeenCalledTimes(1);
+    expect(fetch2).toHaveBeenCalledTimes(1);
+  });
+
+  it('never throws when the endpoint is unreachable', () => {
+    const boom = vi.fn(() => {
+      throw new Error('offline');
+    });
+    expect(() =>
+      resolveSink({ navigator: { sendBeacon: boom } }, 'https://ev.example/e')!('search', {}),
+    ).not.toThrow();
+  });
 });
 
 describe('outboundEvent', () => {
