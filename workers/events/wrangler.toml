@@ -1,0 +1,14 @@
+name = "caail-events"
+main = "src/index.ts"
+compatibility_date = "2026-08-01"
+
+# Workers Analytics Engine. Free tier, no database to provision, and queryable
+# through the same GraphQL Analytics API already used for Web Analytics figures.
+[[analytics_engine_datasets]]
+binding = "EVENTS"
+dataset = "caail_events"
+
+[vars]
+# The only origin allowed to post. Change this if the site moves to a
+# tufts.edu domain.
+ALLOWED_ORIGIN = "https://tucca-cellag.github.io"
