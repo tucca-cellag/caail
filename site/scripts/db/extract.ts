@@ -166,9 +166,12 @@ export function extractDatasetEntries(path: string): DatasetEntryRaw[] {
     const n = kids[i];
     // Only an H3-entry page has enclosing H2 sections to track; on an H2-entry page the
     // H2 *is* the entry, so consuming it as a section label here would swallow every one.
-    if (depth === 3 && n.type === 'heading' && n.depth === 2) { section = inlineMd(n).trim(); continue; }
+    // `flat`, not `inlineMd`: isEntryHeading compares exact strings, so it must see the
+    // heading's plain text. (No section in the corpus carries markdown, so this also leaves
+    // the stored `section` byte-identical.)
+    if (depth === 3 && n.type === 'heading' && n.depth === 2) { section = flat(n).trim(); continue; }
     if (n.type !== 'heading' || n.depth !== depth) continue;
-    if (!isEntryHeading(page, inlineMd(n).trim(), section)) continue;
+    if (!isEntryHeading(page, flat(n).trim(), section)) continue;
     const link = (n.children as any[]).find((c) => c.type === 'link');
     let s: number | null = null, e = 0;
     // Break only at a heading at or above the entry depth — nested sub-sections (e.g. the

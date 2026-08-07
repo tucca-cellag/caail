@@ -80,6 +80,13 @@ export function pageFromPath(path: string): string {
 /**
  * Whether a heading at the page's entry depth introduces a dataset entry, given the
  * enclosing H2 section (`''` on an H2-entry page, which has none).
+ *
+ * `label` and `section` must be the heading's PLAIN TEXT, not its markdown source — both
+ * comparisons here are exact-string, so `## [Further reading](…)` must arrive as
+ * `Further reading`, never `[Further reading](…)`. Callers that hold an mdast node should
+ * flatten with `mdastToString`/`flat`; passing `inlineMd` output would exclude a heading on
+ * the paths that flatten and include it on the paths that don't — a page counted 17 and
+ * emitted 18.
  */
 export function isEntryHeading(page: string, label: string, section: string): boolean {
   return entryHeadingDepth(page) === 2

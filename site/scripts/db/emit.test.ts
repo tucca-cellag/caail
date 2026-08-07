@@ -16,7 +16,7 @@ import { join } from 'node:path';
 import { buildPapersModel } from '../parser/papers.js';
 import { lint } from '../parser/lint.js';
 import { parseCatalogFile } from '../parser/catalog.js';
-import { INVENTORY_PAGES, REFERENCE_PAGES } from '../parser/datasets.js';
+import { INVENTORY_PAGES, REFERENCE_PAGES, BENCHMARKS_PAGE } from '../parser/datasets.js';
 import { existsSync } from 'node:fs';
 import { importNdjson, REPO_ROOT, type Db } from './lib.js';
 import { extractInventory, extractDatasetEntries } from './extract.js';
@@ -171,12 +171,17 @@ describe('Datasets inventory round-trip', () => {
 describe('Datasets curated-entry round-trip', () => {
   it('every dataset page re-parses to an identical curated `### …` entry-set', () => {
     let total = 0;
-    for (const page of [...INVENTORY_PAGES, ...REFERENCE_PAGES]) {
+    // Benchmarks included: it is the only H2-entry page, and omitting it here while
+    // db:verify covers it left the two oracles disagreeing about what is checked.
+    for (const page of [...INVENTORY_PAGES, ...REFERENCE_PAGES, BENCHMARKS_PAGE]) {
       const src = join(REPO_ROOT, 'Datasets', `${page}.md`);
       if (!existsSync(src)) continue;
       const original = extractDatasetEntries(src);
       total += original.length;
-      const path = join(TMP, `entries-${page}.md`);
+      // The temp file must keep the PAGE's basename: extractDatasetEntries derives the
+      // entry depth from the filename, so an `entries-Benchmarks.md` would be read at
+      // depth 3, find nothing, and "round-trip" against an empty set.
+      const path = join(TMP, `${page}.md`);
       writeFileSync(path, emitDatasetPage(db, src, page));
       expect(extractDatasetEntries(path), `${page}.md entries drifted`).toEqual(original);
     }

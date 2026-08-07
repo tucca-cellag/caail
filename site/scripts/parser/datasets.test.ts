@@ -18,6 +18,9 @@ import {
   inventoryRowCount,
   headingCount,
   computeDatasetBreakdown,
+  entryHeadingDepth,
+  isEntryHeading,
+  pageFromPath,
 } from './datasets.js';
 
 const FIXTURE_ROOT = join(
@@ -26,6 +29,44 @@ const FIXTURE_ROOT = join(
   'fixtures',
   'datasets-metrics',
 );
+
+describe('entry-heading identity (the per-page depth rule)', () => {
+  it('marks Benchmarks entries at H2 and every other page at H3', () => {
+    expect(entryHeadingDepth('Benchmarks')).toBe(2);
+    for (const p of ['Cow', 'HumanReference', 'CrossSpecies', 'FoodSafety']) {
+      expect(entryHeadingDepth(p)).toBe(3);
+    }
+  });
+
+  it('derives the page from a path, which is how extraction picks the depth', () => {
+    expect(pageFromPath('Datasets/Benchmarks.md')).toBe('Benchmarks');
+    expect(pageFromPath('/abs/path/Datasets/Cow.md')).toBe('Cow');
+    // The trap this guards: a temp file named after anything but the page reads at the
+    // default depth and silently finds no entries.
+    expect(pageFromPath('/tmp/entries-Benchmarks.md')).not.toBe('Benchmarks');
+  });
+
+  it('excludes a narrative H2 on the H2-entry page, so a footer is not an 18th dataset', () => {
+    expect(isEntryHeading('Benchmarks', 'MassSpecGym', '')).toBe(true);
+    expect(isEntryHeading('Benchmarks', 'Further reading', '')).toBe(false);
+    expect(isEntryHeading('Benchmarks', 'Complete data inventory', '')).toBe(false);
+  });
+
+  it('compares PLAIN TEXT, which every caller must flatten to before asking', () => {
+    // The asymmetry this pins: extract/emit hold mdast and once passed `inlineMd` (markdown
+    // source) while the counter and the card renderer passed flattened text. `## [Further
+    // reading](…)` then counted as narrative on one pair of paths and as a dataset on the
+    // other — a page counted 17 and emitted 18, tripping the served-==-counted assertion.
+    // A caller handing this function markdown source is the bug; the exclusion set is exact.
+    expect(isEntryHeading('Benchmarks', 'Further reading', '')).toBe(false);
+    expect(isEntryHeading('Benchmarks', '[Further reading](../README.md)', '')).toBe(true);
+  });
+
+  it('keeps using the enclosing section on H3 pages, where the H2 is not an entry', () => {
+    expect(isEntryHeading('Cow', 'CattleGTEx', 'Featured atlases')).toBe(true);
+    expect(isEntryHeading('Cow', 'Some row', 'Complete data inventory')).toBe(false);
+  });
+});
 
 // ---------------------------------------------------------------------------
 // A. Per-page unit counters (fixtures)

@@ -1,6 +1,6 @@
 {
   "name": "CAAIL — Cellular Agriculture AI Library",
-  "corpusDate": "2026-07-28",
+  "corpusDate": "2026-08-07",
   "canonical": "https://github.com/tucca-cellag/caail",
   "site": "https://tucca-cellag.github.io/caail/",
   "license": "MIT (CAAIL curation). Linked third-party resources keep their own licenses.",
@@ -43,7 +43,7 @@
     },
     {
       "path": "datasets.json",
-      "use": "Two arrays. `entries` = curated dataset entries (portals, atlases, GEMs; kind atlas/gem/other). `inventory` = the per-species inventory rows (kind \"inventory\") — the per-study deposits with accession, tissue, assay type and size, keyed by the source page's own column labels. Filter either by `page` (e.g. \"Cow\"). Use the inventory rows for \"what could I combine my own run with\"."
+      "use": "Two arrays, together the whole dataset corpus. `entries` = curated dataset entries (portals, atlases, GEMs, reference corpora, and the AI/ML benchmark and evaluation datasets on page \"Benchmarks\"; kind atlas/gem/other). `inventory` = the per-species inventory rows (kind \"inventory\") — the per-study deposits with accession, tissue, assay type and size, keyed by the source page's own column labels. Filter either by `page` (e.g. \"Cow\", \"Benchmarks\"). Use the inventory rows for \"what could I combine my own run with\", and page \"Benchmarks\" for \"what could I evaluate a model against\"."
     },
     {
       "path": "topics.json",

@@ -276,11 +276,13 @@ export function buildManifest(
       {
         path: 'datasets.json',
         use:
-          'Two arrays. `entries` = curated dataset entries (portals, atlases, GEMs; kind ' +
-          'atlas/gem/other). `inventory` = the per-species inventory rows (kind "inventory") ' +
-          '— the per-study deposits with accession, tissue, assay type and size, keyed by the ' +
-          'source page\'s own column labels. Filter either by `page` (e.g. "Cow"). Use the ' +
-          'inventory rows for "what could I combine my own run with".',
+          'Two arrays, together the whole dataset corpus. `entries` = curated dataset entries ' +
+          '(portals, atlases, GEMs, reference corpora, and the AI/ML benchmark and evaluation ' +
+          'datasets on page "Benchmarks"; kind atlas/gem/other). `inventory` = the per-species ' +
+          'inventory rows (kind "inventory") — the per-study deposits with accession, tissue, ' +
+          'assay type and size, keyed by the source page\'s own column labels. Filter either by ' +
+          '`page` (e.g. "Cow", "Benchmarks"). Use the inventory rows for "what could I combine ' +
+          'my own run with", and page "Benchmarks" for "what could I evaluate a model against".',
       },
       { path: 'topics.json', use: 'Subject tree plus an inverted index: topic → items across all content types. Start here for "what should I use for X".' },
       { path: 'taxonomy.json', use: 'What each method and area means in CAAIL, with exclusion criteria. Read before trusting a placement.' },

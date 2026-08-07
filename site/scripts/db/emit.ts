@@ -16,7 +16,7 @@
 import { readFileSync } from 'node:fs';
 import { parseMarkdown } from '../parser/markdown.js';
 import { entryHeadingDepth, isEntryHeading } from '../parser/datasets.js';
-import { inlineMd, extractInventory } from './extract.js';
+import { inlineMd, flat, extractInventory } from './extract.js';
 import type { Db } from './lib.js';
 
 // A NUL delimiter for the matrix cell-map key, so a method label ending in a space can
@@ -190,8 +190,9 @@ export function emitDatasetPage(db: Db, srcPath: string, page: string): string {
   let sec = '';
   let srcEntries = 0;
   for (const b of blocks) {
-    if (depth === 3 && b.type === 'heading' && b.depth === 2) { sec = inlineMd(b).trim(); continue; }
-    if (b.type === 'heading' && b.depth === depth && isEntryHeading(page, inlineMd(b).trim(), sec)) {
+    // `flat`, not `inlineMd` — isEntryHeading compares exact strings and must see plain text.
+    if (depth === 3 && b.type === 'heading' && b.depth === 2) { sec = flat(b).trim(); continue; }
+    if (b.type === 'heading' && b.depth === depth && isEntryHeading(page, flat(b).trim(), sec)) {
       srcEntries += 1;
     }
   }
@@ -212,7 +213,7 @@ export function emitDatasetPage(db: Db, srcPath: string, page: string): string {
     // dataset) — DB-owned. The count assertion above guarantees `entries[entryIdx]` is
     // defined here. Tested BEFORE the section branch: on an H2-entry page the two would
     // otherwise both match, and the section branch would pass every entry through verbatim.
-    if (b.type === 'heading' && b.depth === depth && isEntryHeading(page, inlineMd(b).trim(), section)) {
+    if (b.type === 'heading' && b.depth === depth && isEntryHeading(page, flat(b).trim(), section)) {
       const e = entries[entryIdx++];
       out.push(`${marker} ${e.heading_md}` + (e.body_md ? `\n\n${e.body_md}` : ''));
       i++;
@@ -223,7 +224,7 @@ export function emitDatasetPage(db: Db, srcPath: string, page: string): string {
       while (i < blocks.length && !(blocks[i].type === 'heading' && blocks[i].depth <= depth)) i++;
       continue;
     }
-    if (b.type === 'heading' && b.depth === 2) { section = inlineMd(b).trim(); out.push(sliceOf(b)); i++; continue; }
+    if (b.type === 'heading' && b.depth === 2) { section = flat(b).trim(); out.push(sliceOf(b)); i++; continue; }
     if (b.type === 'table' && section === 'Complete data inventory' && inv && !invEmitted) {
       invEmitted = true;
       const header = inv.header;

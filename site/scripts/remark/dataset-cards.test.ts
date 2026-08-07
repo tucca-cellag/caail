@@ -41,6 +41,50 @@ function run(md: string, sourcePath: string, entries: DatasetCardEntry[], page =
 }
 const html = (kids: any[]) => kids.filter((n) => n.type === 'html').map((n) => n.value);
 
+// #156: Benchmarks marks one dataset per `##`, not `###`. The renderer keyed on depth 3, so
+// every benchmark fell into the narrative-passthrough branch and no card was emitted. These
+// are the only tests exercising a non-default entry depth; the rest use H3 pages, where the
+// branch reordering this change made is a no-op.
+const BENCH_A: DatasetCardEntry = { name: 'Alpha Bench', kind: 'other', anchor: 'ds-alpha-bench', topics: [], license: null, licenseSource: null, tier: 'unknown' };
+const BENCH_B: DatasetCardEntry = { name: 'Beta Bench', kind: 'other', anchor: 'ds-beta-bench', topics: [], license: null, licenseSource: null, tier: 'unknown' };
+
+const BENCH_MD = `# Benchmark & Evaluation Datasets
+
+Lede paragraph — narrative, must not be carded.
+
+## [Alpha Bench](https://example.com/alpha)
+
+Alpha body.
+
+## Beta Bench
+
+Beta body.
+`;
+
+describe('datasetCards on an H2-entry page (Benchmarks)', () => {
+  it('cards each `##` dataset instead of passing it through as prose', () => {
+    const h = html(run(BENCH_MD, 'Datasets/Benchmarks.md', [BENCH_A, BENCH_B], 'Benchmarks'));
+    expect(h).toContain('<article class="ds-card ds-card--other" id="ds-alpha-bench">');
+    expect(h).toContain('<article class="ds-card ds-card--other" id="ds-beta-bench">');
+    expect(h.filter((v) => v === '</article>')).toHaveLength(2);
+  });
+
+  it('keeps each entry body inside its own card, and the lede outside', () => {
+    const kids = run(BENCH_MD, 'Datasets/Benchmarks.md', [BENCH_A, BENCH_B], 'Benchmarks');
+    const seq = kids.map((n: any) => (n.type === 'html' ? n.value : n.type));
+    const open = seq.indexOf('<article class="ds-card ds-card--other" id="ds-alpha-bench">');
+    // The H1 and the lede paragraph precede the first card — narrative is never wrapped.
+    expect(seq.slice(0, open)).toEqual(['heading', 'paragraph']);
+    // Alpha's heading + body sit between its open and the next close.
+    expect(seq.slice(open + 1, seq.indexOf('</article>'))).toEqual(['heading', 'paragraph']);
+  });
+
+  it('leaves the page alone when the entry count disagrees (no mis-anchored cards)', () => {
+    const h = html(run(BENCH_MD, 'Datasets/Benchmarks.md', [BENCH_A], 'Benchmarks'));
+    expect(h).toHaveLength(0);
+  });
+});
+
 describe('datasetCards', () => {
   it('wraps a featured atlas H3 in a kind-tagged card with the ds- anchor id', () => {
     const h = html(run(MD, 'Datasets/Chicken.md', [ATLAS, GEM]));

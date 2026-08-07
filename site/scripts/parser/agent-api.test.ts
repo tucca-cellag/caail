@@ -31,7 +31,7 @@ import { buildDatasetInventory } from './dataset-inventory.js';
 import { buildTopicsModel } from './topics.js';
 import { buildTaxonomyModel } from './taxonomy.js';
 import { extractInventory } from '../db/extract.js';
-import { headingCount } from './datasets.js';
+import { curatedEntryCount } from './datasets.js';
 
 const papers = buildPapersModel();
 const catalog = buildCatalogModel();
@@ -292,9 +292,13 @@ describe('datasets.json inventory', () => {
   it('reaches the benchmark datasets, which live under H2 rather than H3 headings', () => {
     // #156. Every other dataset page puts one curated entry per `###`; Datasets/Benchmarks.md
     // puts one per `##`. The extractor keyed on depth 3, so the benchmarks fell through the gap
-    // between two heading conventions and reached the endpoint in neither partition. Ground
-    // truth is the Markdown's own H2 count, not the model under test.
-    const onPage = headingCount(REPO_ROOT, 'Benchmarks', 2);
+    // between two heading conventions and reached the endpoint in neither partition.
+    //
+    // Ground truth is read from the Markdown — a different path from the endpoint, which is
+    // built from the committed NDJSON. It must be `curatedEntryCount`, not a raw H2 count: the
+    // page is explicitly allowed to grow a `## Further reading` footer, and a raw count would
+    // then demand an 18th dataset and fail against correct code.
+    const onPage = curatedEntryCount(REPO_ROOT, 'Benchmarks');
     expect(onPage).toBeGreaterThan(10); // sanity: the ground truth is not empty
     expect(itemsForPage(body, 'Benchmarks').length).toBe(onPage);
   });
@@ -341,6 +345,6 @@ describe('site/public/api/datasets.json (the shipped file)', () => {
     const shippedBenchmarks = [...(shipped.entries ?? []), ...(shipped.inventory ?? [])].filter(
       (e: any) => e.page === 'Benchmarks',
     );
-    expect(shippedBenchmarks.length).toBe(headingCount(REPO_ROOT, 'Benchmarks', 2));
+    expect(shippedBenchmarks.length).toBe(curatedEntryCount(REPO_ROOT, 'Benchmarks'));
   });
 });

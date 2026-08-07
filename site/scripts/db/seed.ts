@@ -190,21 +190,17 @@ export const THEME_SLUGS = THEMES.map((t) => t.slug).sort();
 
 /**
  * Tag curated dataset entries from their own text (name + section + body) with the matching
- * themes and fine tags — the rule `seedTopics` applies in a full pass, factored out so a
- * TARGETED re-seed can tag newly added entries by exactly the same rule. Passing `itemIds`
- * scopes it to those entries; omitting it tags every entry (the full-pass behaviour).
- * Insert is `OR IGNORE`, so re-running is idempotent and never disturbs existing tags.
- * Returns the number of entries considered.
+ * themes and fine tags. This is a keyword SEED, not an oracle — it matches substrings, so it
+ * mislabels text that merely contains a keyword ("Scale AI" → bioprocess, "software
+ * engineering" → cell lines). Curator corrections live in the committed `item_topics` NDJSON
+ * and win over this on re-import, via bootstrap's `preserveCuratedItemTopics`.
+ * Insert is `OR IGNORE`, so re-running is idempotent. Returns the number of entries tagged.
  */
-export function tagDatasetEntries(db: Db, itemIds?: readonly string[]): number {
+export function tagDatasetEntries(db: Db): number {
   const tag = db.prepare('INSERT OR IGNORE INTO item_topics(item_id,topic_id) VALUES(?,?)');
-  const rows = (
-    itemIds
-      ? itemIds.map((id) =>
-          db.prepare('SELECT item_id, name, section, body_md FROM dataset_entries WHERE item_id=?').get(id),
-        )
-      : db.prepare('SELECT item_id, name, section, body_md FROM dataset_entries').all()
-  ).filter(Boolean) as { item_id: string; name: string; section: string; body_md: string }[];
+  const rows = db
+    .prepare('SELECT item_id, name, section, body_md FROM dataset_entries')
+    .all() as { item_id: string; name: string; section: string; body_md: string }[];
 
   for (const d of rows) {
     const text = `${d.name} ${d.section} ${d.body_md}`;
