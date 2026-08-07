@@ -43,7 +43,12 @@ CAAIL's "adjacent universe" — complementary research centers, consortia, and c
 ### New Harvest initiatives
 
 * [Cultured Meat Safety Initiative (CMSI)](https://www.new-harvest.org/cultured-meat-safety-initiative-cmsi) — A joint New Harvest / Vireo Advisors initiative convening stakeholders on the safety and regulatory science of cultivated products; outputs (datasets, guidance documents) are cataloguable as they are released.
+* [AI4CM Hub (Cell Meat AI: Lab Grown Protein)](https://www.bezosearthfund.org/grants/cell-meat-ai-lab-grown-protein-accelerator): an open-source platform New Harvest will launch, seeded by a Phase I grant under the Bezos Earth Fund's [AI for Climate and Nature Grand Challenge](./Funding.md#funding-opportunities--programs) in May 2025, to aggregate datasets, host benchmarks, and adapt proven AI tools for media and process optimization in cultured meat. Announced rather than launched, and separate from New Harvest's longer-running AICAI program; its datasets and benchmarks become cataloguable as they are released.
 
 ### GFI initiatives
 
 * [GFI: Expanding Access to Cultivated Meat Cell Lines](https://gfi.org/resource/expanding-access-to-cell-lines/) — GFI's initiative addressing limited cell-line access — a core bottleneck for cultivated-meat research — and supporting the development of new lines.
+
+### Food System Innovations initiatives
+
+* [Food Intelligence Lab](https://www.fsi.org/food-intel-lab): Food System Innovations' program building shared datasets, public benchmarks, open-source algorithms, and deployment pathways for sustainable-protein design, on tasks such as sensory prediction and formulation design. Its flagship project, supported by the Bezos Earth Fund, builds on the sensory data from FSI's NECTAR program. It has launched TasteBench, a Kaggle competition posing sensory prediction as a machine-learning task at both food and molecular level, and publishes its work openly. Aimed squarely at the public-benchmark gap named in the [Sensory Prediction](./ResearchAreas/SensoryPrediction.md) research area.
