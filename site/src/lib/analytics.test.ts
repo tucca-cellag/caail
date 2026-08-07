@@ -85,6 +85,33 @@ describe('resolveSink', () => {
       resolveSink({ navigator: { sendBeacon: boom } }, 'https://ev.example/e')!('search', {}),
     ).not.toThrow();
   });
+
+  // A synchronous throw is caught by the surrounding try; a rejected fetch
+  // promise is not, and would surface as an unhandled rejection. Console noise
+  // rather than a broken page, but it contradicts the guarantee the function
+  // documents, and the point is that measurement stays invisible.
+  //
+  // This asserts the rejection is attached to, not that it never leaks: vitest
+  // installs its own unhandledRejection handler, so an in-suite test passes
+  // either way and cannot discriminate. The leak was confirmed separately under
+  // plain node, and `.catch()` in beaconSink is what closes it.
+  it('attaches a handler to the fetch fallback promise', async () => {
+    let attached = false;
+    const rejecting = vi.fn(() => {
+      const p = Promise.reject(new Error('network'));
+      const realCatch = p.catch.bind(p);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (p as any).catch = (...args: unknown[]) => {
+        attached = true;
+        return realCatch(...(args as Parameters<typeof realCatch>));
+      };
+      return p;
+    });
+    resolveSink({ fetch: rejecting }, 'https://ev.example/e')!('search', {});
+    expect(rejecting).toHaveBeenCalledTimes(1);
+    expect(attached, 'the fetch fallback promise must have a rejection handler').toBe(true);
+    await new Promise((r) => setTimeout(r, 0));
+  });
 });
 
 describe('outboundEvent', () => {

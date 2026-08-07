@@ -85,12 +85,18 @@ function beaconSink(scope: AnalyticsGlobals, url: string): Sink {
       // budget, and is absent entirely in older Safari. Either way, fall through
       // rather than dropping the event.
       if (typeof send === 'function' && send.call(scope.navigator, url, body)) return;
-      scope.fetch?.(url, {
+      // `.catch` matters: a rejected fetch escapes the surrounding try, which
+      // only catches synchronous throws, and would surface as an unhandled
+      // rejection in the console of every visitor whose network hiccups.
+      const sent = scope.fetch?.(url, {
         method: 'POST',
         body,
         keepalive: true,
         headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
       });
+      if (sent && typeof (sent as Promise<unknown>).catch === 'function') {
+        (sent as Promise<unknown>).catch(() => {});
+      }
     } catch {
       /* offline, blocked by an extension, or CSP-refused: nothing to do */
     }

@@ -77,7 +77,14 @@ export default {
 
     let body: { name?: unknown; props?: unknown };
     try {
-      body = JSON.parse(await request.text());
+      const parsed: unknown = JSON.parse(await request.text());
+      // `JSON.parse` accepts bare literals, so a body of `null` parses fine and
+      // then throws on the first property access — outside this catch. Reject
+      // anything that is not an object here rather than downstream.
+      if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
+        return new Response('bad request', { status: 400, headers: cors });
+      }
+      body = parsed as { name?: unknown; props?: unknown };
     } catch {
       return new Response('bad request', { status: 400, headers: cors });
     }
@@ -101,7 +108,11 @@ export default {
         doubles: [Number.isFinite(count) ? count : -1],
       });
     } else {
-      const kind = typeof props.resource_kind === 'string' ? props.resource_kind : 'external';
+      // Constrained to the enum for the same reason the search term is
+      // re-redacted here: anyone can post directly, and an unbounded string
+      // would let a caller write arbitrary values into the dataset.
+      const raw = props.resource_kind;
+      const kind = raw === 'doi' || raw === 'repo' ? raw : 'external';
       const domain = typeof props.link_domain === 'string' ? props.link_domain.slice(0, 253) : '';
       const url = typeof props.link_url === 'string' ? props.link_url.slice(0, 2048) : '';
       env.EVENTS.writeDataPoint({
