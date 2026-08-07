@@ -1,7 +1,6 @@
 {
   "name": "caail",
   "description": "A curated map of AI/ML work in cellular agriculture: 345 papers across 25 methods and 7 research areas, plus 139 software tools, 150 databases and 205 datasets across 17 species. Answers which tools, datasets and prior work to use for a cell-ag experiment, pipeline or analysis. Served as static JSON, so there is nothing to install, host or authenticate.",
-  "version": "0.1.0",
   "author": {
     "name": "Tufts University Center for Cellular Agriculture"
   },
