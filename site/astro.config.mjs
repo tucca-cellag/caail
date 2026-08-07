@@ -110,7 +110,7 @@ export default defineConfig({
                 name: 'CAAIL — Cellular Agriculture AI Library',
                 url: 'https://tucca-cellag.github.io/caail/',
                 description:
-                  'A curated, openly-licensed library at the intersection of cellular agriculture and artificial intelligence — peer-reviewed papers, open-source software, databases, and per-species datasets.',
+                  'A curated, openly-licensed library at the intersection of cellular agriculture and artificial intelligence — papers and preprints, open-source software, databases, and per-species datasets.',
                 inLanguage: 'en',
                 publisher: { '@id': 'https://tucca-cellag.github.io/caail/#org' },
               },
