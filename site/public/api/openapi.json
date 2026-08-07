@@ -1,0 +1,1261 @@
+{
+  "openapi": "3.1.0",
+  "jsonSchemaDialect": "https://json-schema.org/draft/2020-12/schema",
+  "info": {
+    "title": "CAAIL agent API",
+    "version": "2026-07-28",
+    "summary": "Static JSON endpoints describing the Cellular Agriculture AI Library.",
+    "description": "Seven static JSON files, served by GET, with nothing to install or authenticate. Generated from the same schemas that validate the payloads, in the same build step that writes them. The paths below are absolute on the GitHub Pages origin, https://tucca-cellag.github.io. The same files are mirrored per-filename at https://raw.githubusercontent.com/tucca-cellag/caail/main/site/public/api/, which some clients can reach when Pages is not allow-listed. Resolve that mirror by filename; do not join the paths below onto it.",
+    "license": {
+      "name": "MIT (CAAIL curation). Linked third-party resources keep their own licenses.",
+      "identifier": "MIT"
+    }
+  },
+  "x-corpus-date": "2026-07-28",
+  "paths": {
+    "/caail/api/index.json": {
+      "get": {
+        "operationId": "getManifest",
+        "summary": "Corpus manifest",
+        "description": "Read first. Corpus date, the endpoint list, a pointer to this document, and counts labelled with the population each one counted.",
+        "responses": {
+          "200": {
+            "description": "Corpus manifest",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Manifest"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/caail/api/matrix.json": {
+      "get": {
+        "operationId": "getMatrix",
+        "summary": "The complete AI-method × research-area grid",
+        "description": "All method×area cells, INCLUDING those with no indexed paper. papers.json carries only the populated ones, so this is the only endpoint that distinguishes \"no paper here\" from \"I did not find one\". Every empty cell carries its own scope caveat: absence in this corpus is not absence in the literature.",
+        "responses": {
+          "200": {
+            "description": "The complete AI-method × research-area grid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Matrix"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/caail/api/papers.json": {
+      "get": {
+        "operationId": "getPapers",
+        "summary": "Every reference",
+        "description": "DOI, code URL, data URL, topics, license and citation count per reference. Spans six sections; only References is matrix-eligible, so say which population you counted.",
+        "responses": {
+          "200": {
+            "description": "Every reference",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Papers"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/caail/api/catalog.json": {
+      "get": {
+        "operationId": "getCatalog",
+        "summary": "Software and databases",
+        "description": "Open-source tools and query/lookup resources, with topic, license tier and DOI.",
+        "responses": {
+          "200": {
+            "description": "Software and databases",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Catalog"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/caail/api/datasets.json": {
+      "get": {
+        "operationId": "getDatasets",
+        "summary": "Curated dataset entries and per-species inventory",
+        "description": "Two arrays. `entries` are the curated portals, atlases and GEMs. `inventory` are the per-study deposits — accession, assay type, tissue, size — keyed by the source page's own column labels, since the tables differ per page. Filter either by `page`. Use `inventory` for \"what could I combine my own run with\".",
+        "responses": {
+          "200": {
+            "description": "Curated dataset entries and per-species inventory",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Datasets"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/caail/api/topics.json": {
+      "get": {
+        "operationId": "getTopics",
+        "summary": "Subject tree and inverted index",
+        "description": "The theme→tag tree is under `tree`; the inverted index (topic slug → item ids across papers, software, databases and datasets) is under `index`. There is no top-level `themes` or `tags`. Start here for \"what should I use for X\".",
+        "responses": {
+          "200": {
+            "description": "Subject tree and inverted index",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Topics"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/caail/api/taxonomy.json": {
+      "get": {
+        "operationId": "getTaxonomy",
+        "summary": "What each method and area means in CAAIL",
+        "description": "CAAIL's own definition of every matrix row and column, with exclusion criteria. Read before trusting or disputing a placement.",
+        "responses": {
+          "200": {
+            "description": "What each method and area means in CAAIL",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Taxonomy"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Manifest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "corpusDate": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "canonical": {
+            "type": "string"
+          },
+          "site": {
+            "type": "string"
+          },
+          "license": {
+            "type": "string"
+          },
+          "scopeNote": {
+            "type": "string"
+          },
+          "openapi": {
+            "type": "string"
+          },
+          "counts": {
+            "type": "object",
+            "properties": {
+              "papersAllSections": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "papersBySection": {
+                "type": "object",
+                "propertyNames": {
+                  "type": "string"
+                },
+                "additionalProperties": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                }
+              },
+              "papersMatrixEligible": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "matrixTotalCells": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "matrixPopulatedCells": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "matrixEmptyCells": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "datasetsCurated": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "datasetsInventoryRows": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "papersAllSections",
+              "papersBySection",
+              "papersMatrixEligible",
+              "matrixTotalCells",
+              "matrixPopulatedCells",
+              "matrixEmptyCells",
+              "datasetsCurated",
+              "datasetsInventoryRows"
+            ],
+            "additionalProperties": false
+          },
+          "datasetsNote": {
+            "type": "string"
+          },
+          "endpoints": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "use": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "path",
+                "use"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "name",
+          "corpusDate",
+          "canonical",
+          "site",
+          "license",
+          "scopeNote",
+          "openapi",
+          "counts",
+          "datasetsNote",
+          "endpoints"
+        ],
+        "additionalProperties": false
+      },
+      "Matrix": {
+        "type": "object",
+        "properties": {
+          "corpusDate": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "methods": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "areas": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Area"
+            }
+          },
+          "totalCells": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "populatedCells": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "emptyCells": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "scopeNote": {
+            "type": "string"
+          },
+          "cells": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MatrixCell"
+            }
+          }
+        },
+        "required": [
+          "corpusDate",
+          "methods",
+          "areas",
+          "totalCells",
+          "populatedCells",
+          "emptyCells",
+          "scopeNote",
+          "cells"
+        ],
+        "additionalProperties": false
+      },
+      "Papers": {
+        "type": "object",
+        "properties": {
+          "areas": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Area"
+            }
+          },
+          "methods": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "cells": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Cell"
+            }
+          },
+          "references": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Reference"
+            }
+          },
+          "scopeNote": {
+            "type": "string"
+          },
+          "corpusDate": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          }
+        },
+        "required": [
+          "areas",
+          "methods",
+          "cells",
+          "references",
+          "scopeNote",
+          "corpusDate"
+        ],
+        "additionalProperties": false
+      },
+      "Catalog": {
+        "type": "object",
+        "properties": {
+          "software": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CatalogEntry"
+            }
+          },
+          "databases": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CatalogEntry"
+            }
+          },
+          "corpusDate": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          }
+        },
+        "required": [
+          "software",
+          "databases",
+          "corpusDate"
+        ],
+        "additionalProperties": false
+      },
+      "Datasets": {
+        "type": "object",
+        "properties": {
+          "entries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DatasetEntry"
+            }
+          },
+          "inventory": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DatasetInventoryRow"
+            }
+          },
+          "corpusDate": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          }
+        },
+        "required": [
+          "entries",
+          "inventory",
+          "corpusDate"
+        ],
+        "additionalProperties": false
+      },
+      "Topics": {
+        "type": "object",
+        "properties": {
+          "tree": {
+            "type": "object",
+            "properties": {
+              "themes": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/TopicNode"
+                }
+              },
+              "tags": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/TopicNode"
+                }
+              }
+            },
+            "required": [
+              "themes",
+              "tags"
+            ],
+            "additionalProperties": false
+          },
+          "index": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {
+              "$ref": "#/components/schemas/TopicIndexEntry"
+            }
+          },
+          "corpusDate": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          }
+        },
+        "required": [
+          "tree",
+          "index",
+          "corpusDate"
+        ],
+        "additionalProperties": false
+      },
+      "Taxonomy": {
+        "type": "object",
+        "properties": {
+          "definitions": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "corpusDate": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          }
+        },
+        "required": [
+          "definitions",
+          "corpusDate"
+        ],
+        "additionalProperties": false
+      },
+      "TopicRef": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "theme": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "slug",
+          "label",
+          "theme"
+        ],
+        "additionalProperties": false
+      },
+      "TopicNode": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "tier": {
+            "type": "string",
+            "enum": [
+              "theme",
+              "tag"
+            ]
+          },
+          "theme": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "areaKey": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "counts": {
+            "type": "object",
+            "properties": {
+              "paper": {
+                "type": "number"
+              },
+              "software": {
+                "type": "number"
+              },
+              "database": {
+                "type": "number"
+              },
+              "dataset": {
+                "type": "number"
+              },
+              "total": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "paper",
+              "software",
+              "database",
+              "dataset",
+              "total"
+            ],
+            "additionalProperties": false
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "slug",
+          "label",
+          "tier",
+          "theme",
+          "areaKey",
+          "counts",
+          "tags"
+        ],
+        "additionalProperties": false
+      },
+      "TopicIndexEntry": {
+        "type": "object",
+        "properties": {
+          "papers": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            }
+          },
+          "software": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "databases": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "datasets": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "papers",
+          "software",
+          "databases",
+          "datasets"
+        ],
+        "additionalProperties": false
+      },
+      "Area": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "label"
+        ],
+        "additionalProperties": false
+      },
+      "MatrixCell": {
+        "type": "object",
+        "properties": {
+          "method": {
+            "type": "string"
+          },
+          "area": {
+            "type": "string"
+          },
+          "areaLabel": {
+            "type": "string"
+          },
+          "refIds": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            }
+          },
+          "emptyInCorpus": {
+            "type": "boolean"
+          },
+          "scope": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "method",
+          "area",
+          "areaLabel",
+          "refIds",
+          "emptyInCorpus"
+        ],
+        "additionalProperties": false
+      },
+      "Cell": {
+        "type": "object",
+        "properties": {
+          "method": {
+            "type": "string"
+          },
+          "area": {
+            "type": "string"
+          },
+          "refIds": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            }
+          },
+          "labels": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "method",
+          "area",
+          "refIds",
+          "labels"
+        ],
+        "additionalProperties": false
+      },
+      "Reference": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          },
+          "section": {
+            "type": "string"
+          },
+          "raw": {
+            "type": "string"
+          },
+          "authors": {
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "authorsDropped": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "authorsText": {
+            "type": "string"
+          },
+          "year": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "journal": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "doi": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "codeUrl": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uri"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "dataUrl": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uri"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "isPrimary": {
+            "type": "boolean"
+          },
+          "methods": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "areas": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "hasCode": {
+            "type": "boolean"
+          },
+          "hasData": {
+            "type": "boolean"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "topics": {
+            "default": [],
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TopicRef"
+            }
+          },
+          "citedByOpenAlex": {
+            "default": null,
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "license": {
+            "default": null,
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "licenseSource": {
+            "default": null,
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "auto",
+                  "manual"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "section",
+          "raw",
+          "authors",
+          "authorsDropped",
+          "authorsText",
+          "year",
+          "title",
+          "journal",
+          "doi",
+          "codeUrl",
+          "dataUrl",
+          "isPrimary",
+          "methods",
+          "areas",
+          "hasCode",
+          "hasData",
+          "slug",
+          "topics",
+          "citedByOpenAlex",
+          "license",
+          "licenseSource"
+        ],
+        "additionalProperties": false
+      },
+      "CatalogEntry": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "group": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string"
+          },
+          "summaryHtml": {
+            "type": "string"
+          },
+          "topics": {
+            "default": [],
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TopicRef"
+            }
+          },
+          "license": {
+            "default": null,
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "licenseSource": {
+            "default": null,
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "auto",
+                  "manual"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "tier": {
+            "default": "unknown",
+            "type": "string",
+            "enum": [
+              "permissive",
+              "copyleft",
+              "restricted",
+              "unknown"
+            ]
+          },
+          "doi": {
+            "default": null,
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "doiSource": {
+            "default": null,
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "auto",
+                  "manual"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "citationCount": {
+            "default": null,
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "citationSources": {
+            "default": 0,
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "citationDois": {
+            "default": [],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "slug",
+          "name",
+          "url",
+          "group",
+          "summary",
+          "summaryHtml",
+          "topics",
+          "license",
+          "licenseSource",
+          "tier",
+          "doi",
+          "doiSource",
+          "citationCount",
+          "citationSources",
+          "citationDois"
+        ],
+        "additionalProperties": false
+      },
+      "DatasetEntry": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "page": {
+            "type": "string"
+          },
+          "section": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "atlas",
+              "gem",
+              "other"
+            ]
+          },
+          "anchor": {
+            "type": "string"
+          },
+          "topics": {
+            "default": [],
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TopicRef"
+            }
+          },
+          "license": {
+            "default": null,
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "licenseSource": {
+            "default": null,
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "auto",
+                  "manual"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "tier": {
+            "default": "unknown",
+            "type": "string",
+            "enum": [
+              "permissive",
+              "copyleft",
+              "restricted",
+              "unknown"
+            ]
+          },
+          "doi": {
+            "default": null,
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "doiSource": {
+            "default": null,
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "auto",
+                  "manual"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "citationCount": {
+            "default": null,
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "citationSources": {
+            "default": 0,
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "citationDois": {
+            "default": [],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "url",
+          "page",
+          "section",
+          "kind",
+          "anchor",
+          "topics",
+          "license",
+          "licenseSource",
+          "tier",
+          "doi",
+          "doiSource",
+          "citationCount",
+          "citationSources",
+          "citationDois"
+        ],
+        "additionalProperties": false
+      },
+      "DatasetInventoryRow": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "const": "inventory"
+          },
+          "page": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "columns": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "links": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "topics": {
+            "default": [],
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TopicRef"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "page",
+          "name",
+          "columns",
+          "links",
+          "topics"
+        ],
+        "additionalProperties": false
+      }
+    }
+  }
+}

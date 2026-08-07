@@ -29,6 +29,7 @@ import { buildMetricsModel } from './metrics.js';
 import { buildRecentModel } from './recent.js';
 import { buildTopicsModel, unresolvedTopicItems, catalogJoinKey } from './topics.js';
 import { buildDatasetsModel } from './datasets-entries.js';
+import { buildDatasetInventory } from './dataset-inventory.js';
 import { writeLlmsFull } from './llms-full.js';
 import { buildAgentApi, writeAgentApi, publishSkillDoc } from './agent-api.js';
 import {
@@ -167,6 +168,11 @@ export function generateData(
   // appearance as linkable items in the /topics/ hub.
   const datasets = buildDatasetsModel();
 
+  // The `## Complete data inventory` rows — the per-study deposits. Built for the agent
+  // API only, NOT folded into `datasets` above: three Preact islands import the site's
+  // datasets.json, so these would be shipped to the browser for nothing.
+  const inventory = buildDatasetInventory();
+
   // Metrics runs LAST of the model builders: its topic / license / citation panels are
   // rolled up from the catalog, topic and dataset-entry models above, so that a
   // dashboard figure and the hub it links to are literally the same object.
@@ -203,6 +209,15 @@ export function generateData(
       metrics.datasets.referenceEntries +
       metrics.datasets.benchmarkEntries,
     metrics.datasets.total,
+  );
+  // The inventory rows the API serves are read from the DB NDJSON; `speciesRows` counts
+  // the same rows straight out of the Markdown tables. They must agree exactly — a
+  // mismatch means the DB and the canonical pages diverged, and shipping the endpoint
+  // anyway would repeat #151 in the other direction (an agent under-reading the corpus).
+  assertCountsMatch(
+    'dataset inventory rows',
+    inventory.inventory.length,
+    metrics.datasets.speciesRows,
   );
 
   // The three cross-cutting axes must agree with the hubs they summarize. Each is
@@ -372,7 +387,14 @@ export function generateData(
 
   // Emit the agent-facing static API under public/, from the same validated models the
   // site renders, so the two can't disagree about the corpus.
-  const apiFiles = buildAgentApi({ papers: model, catalog, datasets, topics, taxonomy });
+  const apiFiles = buildAgentApi({
+    papers: model,
+    catalog,
+    datasets,
+    inventory,
+    topics,
+    taxonomy,
+  });
   writeAgentApi(apiFiles, apiDir);
   publishSkillDoc(SKILL_DOC_PATH, join(apiDir, '..'));
 

@@ -11,7 +11,7 @@
 import { describe, it, expect } from 'vitest';
 
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -27,12 +27,15 @@ import {
 import { buildPapersModel } from './papers.js';
 import { buildCatalogModel } from './catalog.js';
 import { buildDatasetsModel } from './datasets-entries.js';
+import { buildDatasetInventory } from './dataset-inventory.js';
 import { buildTopicsModel } from './topics.js';
 import { buildTaxonomyModel } from './taxonomy.js';
+import { extractInventory } from '../db/extract.js';
 
 const papers = buildPapersModel();
 const catalog = buildCatalogModel();
 const datasets = buildDatasetsModel();
+const inventory = buildDatasetInventory();
 const topics = buildTopicsModel();
 const taxonomy = buildTaxonomyModel();
 const REPO_ROOT = fileURLToPath(new URL('../../../', import.meta.url));
@@ -133,7 +136,7 @@ describe('topics.json inverted index', () => {
 });
 
 describe('buildAgentApi', () => {
-  const files = buildAgentApi({ papers, catalog, datasets, topics, taxonomy, corpusDate: DATE });
+  const files = buildAgentApi({ papers, catalog, datasets, inventory, topics, taxonomy, corpusDate: DATE });
 
   it('emits every endpoint the manifest advertises', () => {
     const names = files.map((f) => f.name);
@@ -142,9 +145,15 @@ describe('buildAgentApi', () => {
   });
 
   it('stamps every endpoint with the corpus date, so staleness is always visible', () => {
-    for (const f of files) {
+    // openapi.json is the DESCRIPTION, not a described response: a bare `corpusDate` key
+    // at its root would make it invalid against the OpenAPI 3.1 meta-schema, so it states
+    // the same fact as info.version plus an x- extension. Assert that, don't exempt it.
+    for (const f of files.filter((f) => f.name !== 'openapi.json')) {
       expect((f.body as any).corpusDate, `${f.name} has no corpusDate`).toBe(DATE);
     }
+    const doc = files.find((f) => f.name === 'openapi.json')!.body as any;
+    expect(doc.info.version).toBe(DATE);
+    expect(doc['x-corpus-date']).toBe(DATE);
   });
 
   it('stamps a real date when none is supplied', () => {
@@ -152,9 +161,12 @@ describe('buildAgentApi', () => {
     // default. A shorthand `{ corpusDate }` once captured the same-named function
     // instead of the string, and JSON.stringify silently dropped it: the output was
     // deterministic and every assertion still passed while the field was undefined.
-    const dflt = buildAgentApi({ papers, catalog, datasets, topics, taxonomy });
+    const dflt = buildAgentApi({ papers, catalog, datasets, inventory, topics, taxonomy });
     for (const f of dflt) {
-      const d = (f.body as { corpusDate?: unknown }).corpusDate;
+      const d =
+        f.name === 'openapi.json'
+          ? (f.body as { 'x-corpus-date'?: unknown })['x-corpus-date']
+          : (f.body as { corpusDate?: unknown }).corpusDate;
       expect(typeof d, `${f.name} corpusDate is not a string`).toBe('string');
       expect(d as string).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     }
@@ -163,8 +175,8 @@ describe('buildAgentApi', () => {
   it('derives the date from the corpus, not the clock, so the CI sync guard is stable', () => {
     // The emitted files are committed and CI re-runs the parse to diff them. A
     // build-time `new Date()` would differ on any later day and fail the guard.
-    const a = buildAgentApi({ papers, catalog, datasets, topics, taxonomy });
-    const b = buildAgentApi({ papers, catalog, datasets, topics, taxonomy });
+    const a = buildAgentApi({ papers, catalog, datasets, inventory, topics, taxonomy });
+    const b = buildAgentApi({ papers, catalog, datasets, inventory, topics, taxonomy });
     expect(JSON.stringify(a)).toBe(JSON.stringify(b));
 
     // Asserting the date differs from today would be flaky: a commit to the NDJSON
@@ -223,5 +235,84 @@ describe('buildAgentApi', () => {
       const json = JSON.stringify(f.body);
       expect(json.length, `${f.name} serialised empty`).toBeGreaterThan(100);
     }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// datasets.json — the endpoint must carry what its own manifest advertises
+// ---------------------------------------------------------------------------
+
+/**
+ * The manifest calls this endpoint "Curated dataset entries AND per-species inventory",
+ * and the inventory rows are the per-study deposits — accession, tissue, assay, size —
+ * i.e. the only things in the corpus a researcher could actually combine their own run
+ * with. Shipping the 45 curated entries alone left an agent seeing 3 bovine datasets
+ * where a reader of Datasets/Cow.md sees 34, and the count-only treatment of inventory
+ * rows in the /topics/ hub is no precedent: that is a browsing-UI choice about
+ * unlinkable rows, this is an endpoint naming them in its own manifest.
+ *
+ * Ground truth is the canonical Markdown, never a literal, so these can't drift as the
+ * corpus grows.
+ */
+describe('datasets.json inventory', () => {
+  const cowTable = extractInventory(join(REPO_ROOT, 'Datasets', 'Cow.md'))!;
+  const files = buildAgentApi({ papers, catalog, datasets, inventory, topics, taxonomy, corpusDate: DATE });
+  const body = files.find((f) => f.name === 'datasets.json')!.body as any;
+  const manifest = files.find((f) => f.name === 'index.json')!.body as any;
+
+  /** Everything the endpoint offers for one dataset page, however it is partitioned. */
+  const itemsForPage = (b: any, page: string): any[] =>
+    [...(b.entries ?? []), ...(b.inventory ?? [])].filter((e: any) => e.page === page);
+
+  it('delivers the inventory its manifest promises', () => {
+    // If this ever fails, the fix is to carry the rows — NOT to soften the manifest.
+    const promise = manifest.endpoints.find((e: any) => e.path === 'datasets.json').use;
+    expect(promise).toMatch(/inventory/i);
+    expect(itemsForPage(body, 'Cow').length).toBeGreaterThanOrEqual(cowTable.rows.length);
+  });
+
+  it('reaches the deposits an agent would integrate against, not just the curated three', () => {
+    // The behavioural check from the issue: "which bovine datasets could I combine my own
+    // run with". Answering it needs accessions/repository links, which only the inventory
+    // rows carry — every curated Cow entry is a portal or a model file.
+    const deposits = cowTable.rows.filter((r) => /\]\(https?:\/\//.test(r.join(' ')));
+    expect(deposits.length).toBeGreaterThan(10); // sanity: the ground truth is not empty
+
+    const reachable = itemsForPage(body, 'Cow').flatMap((e: any) => e.links ?? []);
+    expect(new Set(reachable).size).toBeGreaterThanOrEqual(deposits.length);
+  });
+
+  it('labels a row so a consumer can tell it from a curated entry', () => {
+    for (const row of body.inventory ?? []) expect(row.kind).toBe('inventory');
+    for (const e of body.entries ?? []) expect(e.kind).not.toBe('inventory');
+    expect((body.inventory ?? []).length).toBeGreaterThan(0);
+  });
+
+  it('names its columns, since they differ per page', () => {
+    // Cow/Chicken tables are 8 columns, Fish/Crustacean/Mollusk 9 (an extra Species),
+    // CrossSpecies a different 6 — positional cells would be unreadable without headers.
+    const cow = (body.inventory ?? []).filter((r: any) => r.page === 'Cow');
+    expect(cow.length).toBe(cowTable.rows.length);
+    for (const r of cow) expect(Object.keys(r.columns)).toEqual(cowTable.header);
+  });
+});
+
+/**
+ * The same properties, asserted against the COMMITTED ARTIFACT rather than the freshly
+ * built model. The two can disagree — that is exactly what the CI sync guard (`parse`
+ * then `git diff --exit-code -- site/public/api`) exists to catch — and a model-only
+ * assertion would pass while the file an agent actually fetches is still wrong.
+ */
+describe('site/public/api/datasets.json (the shipped file)', () => {
+  const shipped = JSON.parse(
+    readFileSync(join(REPO_ROOT, 'site', 'public', 'api', 'datasets.json'), 'utf-8'),
+  );
+  const cowTable = extractInventory(join(REPO_ROOT, 'Datasets', 'Cow.md'))!;
+
+  it('shows an agent as many bovine datasets as a reader of Datasets/Cow.md sees', () => {
+    const cow = [...(shipped.entries ?? []), ...(shipped.inventory ?? [])].filter(
+      (e: any) => e.page === 'Cow',
+    );
+    expect(cow.length).toBeGreaterThanOrEqual(cowTable.rows.length);
   });
 });

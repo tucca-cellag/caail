@@ -5,6 +5,7 @@
   "site": "https://tucca-cellag.github.io/caail/",
   "license": "MIT (CAAIL curation). Linked third-party resources keep their own licenses.",
   "scopeNote": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall.",
+  "openapi": "openapi.json",
   "counts": {
     "papersAllSections": 345,
     "papersBySection": {
@@ -18,8 +19,11 @@
     "papersMatrixEligible": 229,
     "matrixTotalCells": 175,
     "matrixPopulatedCells": 68,
-    "matrixEmptyCells": 107
+    "matrixEmptyCells": 107,
+    "datasetsCurated": 45,
+    "datasetsInventoryRows": 164
   },
+  "datasetsNote": "datasetsCurated + datasetsInventoryRows counts what this endpoint serves. It is NOT the library dataset total: the benchmark datasets are in that total but not in `entries`, and the species pages' curated atlases/GEMs are in `entries` but not in that total. Quote either figure with its population; do not add them into a headline.",
   "endpoints": [
     {
       "path": "index.json",
@@ -39,7 +43,7 @@
     },
     {
       "path": "datasets.json",
-      "use": "Curated dataset entries and per-species inventory."
+      "use": "Two arrays. `entries` = curated dataset entries (portals, atlases, GEMs; kind atlas/gem/other). `inventory` = the per-species inventory rows (kind \"inventory\") — the per-study deposits with accession, tissue, assay type and size, keyed by the source page's own column labels. Filter either by `page` (e.g. \"Cow\"). Use the inventory rows for \"what could I combine my own run with\"."
     },
     {
       "path": "topics.json",
@@ -48,6 +52,10 @@
     {
       "path": "taxonomy.json",
       "use": "What each method and area means in CAAIL, with exclusion criteria. Read before trusting a placement."
+    },
+    {
+      "path": "openapi.json",
+      "use": "OpenAPI 3.1 description of every endpoint above, generated from the schemas that validate them. Read this instead of guessing a key."
     }
   ]
 }

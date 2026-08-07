@@ -195,6 +195,46 @@ export const DatasetsDataSchema = z.object({
 export type DatasetEntry = z.infer<typeof DatasetEntrySchema>;
 export type DatasetsData = z.infer<typeof DatasetsDataSchema>;
 
+/**
+ * One `## Complete data inventory` row — a per-study deposit (accession, tissue, assay,
+ * size), as opposed to the curated `### …` entries above.
+ *
+ * Kept OUT of `DatasetsDataSchema` on purpose: three Preact islands import the site's
+ * datasets.json (CitationHub, LicenseHub, TopicHub), so folding 164 rows in there would
+ * ship them to the browser for no gain. They belong to the agent API, which is fetched
+ * deliberately and whose manifest already advertises them.
+ *
+ * `columns` is keyed by the page's own header labels because the tables genuinely differ
+ * — the species pages use Study/Paper/Data/Type/Tissue/…, Fish and the invertebrates add
+ * a Species column, and CrossSpecies is a different table entirely. A positional array
+ * would be unreadable without fetching the Markdown, which is the cost this removes.
+ * Values are the RAW markdown cell, so nothing is lost; `links` is the convenience
+ * extraction of the URLs inside them.
+ */
+export const DatasetInventoryRowSchema = z.object({
+  /** frozen ds: id, shared with the curated entries' namespace */
+  id: z.string(),
+  /** discriminator against DatasetEntrySchema's atlas/gem/other */
+  kind: z.literal('inventory'),
+  /** dataset page basename, e.g. "Cow" */
+  page: z.string(),
+  /** plain text of the first column — the study/resource name */
+  name: z.string(),
+  /** the page's header labels → that row's raw markdown cell, in table order */
+  columns: z.record(z.string(), z.string()),
+  /** every URL appearing in the row, in document order, deduped */
+  links: z.array(z.string()),
+  /** two-tier subject tags, folded in from the committed topic NDJSON */
+  topics: z.array(TopicRefSchema).default([]),
+});
+
+/** Schema for the inventory model — the rows across every inventory page. */
+export const DatasetInventorySchema = z.object({
+  inventory: z.array(DatasetInventoryRowSchema),
+});
+export type DatasetInventoryRow = z.infer<typeof DatasetInventoryRowSchema>;
+export type DatasetInventory = z.infer<typeof DatasetInventorySchema>;
+
 export const TalkItemSchema = z.object({
   /** List-item link text, e.g. "Multus Biotechnology: AI-driven media optimization" */
   title: z.string(),
@@ -678,6 +718,121 @@ export const TopicsDataSchema = z.object({
 });
 export type TopicNode = z.infer<typeof TopicNodeSchema>;
 export type TopicsData = z.infer<typeof TopicsDataSchema>;
+
+// ---------------------------------------------------------------------------
+// The agent API's response bodies (site/public/api/*.json)
+// ---------------------------------------------------------------------------
+
+/**
+ * These describe what `agent-api.ts` WRITES, as opposed to the models above, which
+ * describe what the parser builds. Mostly the two coincide — a response is its model
+ * plus `corpusDate` — but `index.json` and `matrix.json` are derived and had no schema
+ * at all, which is how the API came to be both emitted unvalidated and consumed by
+ * guesswork.
+ *
+ * They are `strictObject` at the top level so zod's own `.parse` rejects a stray key
+ * rather than silently stripping it. Note what this does NOT do: `.strict()` does not
+ * cascade into nested schemas, so it never protected an unknown key inside an array item.
+ * Nor does it change the emitted JSON Schema — `z.toJSONSchema` writes
+ * `additionalProperties: false` for a plain `z.object` just the same. Enforcement at
+ * depth comes from validating against the emitted document with ajv; see `assertValid`
+ * in openapi.ts, which explains why that is the check that counts.
+ *
+ * Everything here is GET of a static file: no request bodies, no parameters, no auth.
+ */
+
+/** Stamped onto every response so staleness is visible without a HEAD request. */
+const CorpusDateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
+
+/** One method×area cell, including the empty ones papers.json cannot express. */
+export const ApiMatrixCellSchema = z.object({
+  method: z.string(),
+  area: z.string(),
+  areaLabel: z.string(),
+  refIds: z.array(z.number().int().positive()),
+  /** true when no INDEXED paper occupies this cell (not: no such work exists) */
+  emptyInCorpus: z.boolean(),
+  /** present only on empty cells, so the recall caveat travels with the result */
+  scope: z.string().optional(),
+});
+
+export const ApiMatrixSchema = z.strictObject({
+  corpusDate: CorpusDateSchema,
+  methods: z.array(z.string()),
+  areas: z.array(AreaSchema),
+  totalCells: z.number().int().nonnegative(),
+  populatedCells: z.number().int().nonnegative(),
+  emptyCells: z.number().int().nonnegative(),
+  scopeNote: z.string(),
+  cells: z.array(ApiMatrixCellSchema),
+});
+
+export const ApiManifestSchema = z.strictObject({
+  name: z.string(),
+  corpusDate: CorpusDateSchema,
+  canonical: z.string(),
+  site: z.string(),
+  license: z.string(),
+  scopeNote: z.string(),
+  /** relative path to the OpenAPI description of every endpoint below */
+  openapi: z.string(),
+  /** Each key names the POPULATION it counted — see buildManifest. */
+  counts: z.strictObject({
+    papersAllSections: z.number().int().nonnegative(),
+    papersBySection: z.record(z.string(), z.number().int().nonnegative()),
+    papersMatrixEligible: z.number().int().nonnegative(),
+    matrixTotalCells: z.number().int().nonnegative(),
+    matrixPopulatedCells: z.number().int().nonnegative(),
+    matrixEmptyCells: z.number().int().nonnegative(),
+    datasetsCurated: z.number().int().nonnegative(),
+    datasetsInventoryRows: z.number().int().nonnegative(),
+  }),
+  /** why the two dataset counts must not be added together — see buildManifest */
+  datasetsNote: z.string(),
+  endpoints: z.array(z.strictObject({ path: z.string(), use: z.string() })),
+});
+
+export const ApiPapersSchema = PapersDataSchema.extend({
+  scopeNote: z.string(),
+  corpusDate: CorpusDateSchema,
+}).strict();
+
+export const ApiCatalogSchema = CatalogSchema.extend({
+  corpusDate: CorpusDateSchema,
+}).strict();
+
+export const ApiDatasetsSchema = DatasetsDataSchema.extend({
+  inventory: z.array(DatasetInventoryRowSchema),
+  corpusDate: CorpusDateSchema,
+}).strict();
+
+/** topic slug → the ids of every item carrying it, per content type. */
+export const ApiTopicIndexEntrySchema = z.strictObject({
+  /** reference ids */
+  papers: z.array(z.number().int().positive()),
+  /** catalog slugs */
+  software: z.array(z.string()),
+  databases: z.array(z.string()),
+  /** frozen ds: ids */
+  datasets: z.array(z.string()),
+});
+
+/**
+ * The endpoint whose shape was guessed wrong: the theme→tag tree is under `tree`, and
+ * the inverted index under `index`. There is no top-level `themes` or `tags`.
+ */
+export const ApiTopicsSchema = z.strictObject({
+  tree: TopicsDataSchema,
+  index: z.record(z.string(), ApiTopicIndexEntrySchema),
+  corpusDate: CorpusDateSchema,
+});
+
+export const ApiTaxonomySchema = TaxonomyDataSchema.extend({
+  corpusDate: CorpusDateSchema,
+}).strict();
+
+export type ApiManifest = z.infer<typeof ApiManifestSchema>;
+export type ApiMatrix = z.infer<typeof ApiMatrixSchema>;
 
 // ---------------------------------------------------------------------------
 // Inferred TypeScript types

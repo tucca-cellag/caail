@@ -30,7 +30,8 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import type { PapersData } from './types.js';
+import { assertValid, buildOpenApiDocument, OPENAPI_FILE } from './openapi.js';
+import type { DatasetInventory, PapersData } from './types.js';
 
 /** Where an agent-visible caveat is stated once and reused everywhere. */
 export const SCOPE_NOTE =
@@ -48,6 +49,12 @@ export interface AgentApiInputs {
   papers: PapersData;
   catalog: unknown;
   datasets: unknown;
+  /**
+   * The `## Complete data inventory` rows. Optional so the emitter degrades to the
+   * curated entries alone rather than throwing, but generate-data always supplies them:
+   * without these the endpoint contradicts its own manifest, which is what #151 was.
+   */
+  inventory?: DatasetInventory;
   topics: unknown;
   taxonomy: unknown;
   /** ISO date stamped onto every response. Defaults to `readCorpusDate()`. */
@@ -184,7 +191,7 @@ export function buildTopicIndex(
   catalog: unknown,
   datasets: unknown,
   topics: unknown,
-): { corpusDate?: string; tree: unknown; index: Record<string, Record<string, (string | number)[]>> } {
+): { tree: unknown; index: Record<string, Record<string, (string | number)[]>> } {
   const index: Record<string, Record<string, (string | number)[]>> = {};
   const add = (slug: string, kind: string, id: string | number) => {
     index[slug] ??= { papers: [], software: [], databases: [], datasets: [] };
@@ -229,6 +236,7 @@ export function buildManifest(
   papers: PapersData,
   matrix: ReturnType<typeof buildMatrix>,
   corpusDate: string,
+  datasets: { curated: number; inventory: number } = { curated: 0, inventory: 0 },
 ): unknown {
   const bySection: Record<string, number> = {};
   for (const r of papers.references) bySection[r.section] = (bySection[r.section] ?? 0) + 1;
@@ -240,6 +248,9 @@ export function buildManifest(
     site: 'https://tucca-cellag.github.io/caail/',
     license: 'MIT (CAAIL curation). Linked third-party resources keep their own licenses.',
     scopeNote: SCOPE_NOTE,
+    // The machine-readable shape of every endpoint below. Named up here rather than only
+    // in the endpoint list because the point is to be found BEFORE anyone guesses a key.
+    openapi: OPENAPI_FILE,
     counts: {
       papersAllSections: papers.references.length,
       papersBySection: bySection,
@@ -247,15 +258,42 @@ export function buildManifest(
       matrixTotalCells: matrix.totalCells,
       matrixPopulatedCells: matrix.populatedCells,
       matrixEmptyCells: matrix.emptyCells,
+      // Two populations, like the paper sections above: the curated `### …` entries
+      // (portals, atlases, GEMs) and the per-study deposit rows. Quoting either as
+      // "datasets in CAAIL" is true of one and false of the other — and adding them is
+      // true of neither, hence datasetsNote.
+      datasetsCurated: datasets.curated,
+      datasetsInventoryRows: datasets.inventory,
     },
+    // These two counts describe THIS ENDPOINT, not the library, and the difference is not
+    // rounding. The site's own dataset total counts the Benchmarks page, which `entries`
+    // does not carry at all; `entries` counts the species pages' curated atlases and GEMs,
+    // which the site total does not. So the two figures overlap in both directions and
+    // their sum is a number about nothing. Stated rather than reconciled because making
+    // the populations agree means changing what the endpoint carries, which is its own
+    // change; an agent quoting a total needs the caveat today.
+    datasetsNote:
+      'datasetsCurated + datasetsInventoryRows counts what this endpoint serves. It is ' +
+      'NOT the library dataset total: the benchmark datasets are in that total but not in ' +
+      '`entries`, and the species pages\' curated atlases/GEMs are in `entries` but not in ' +
+      'that total. Quote either figure with its population; do not add them into a headline.',
     endpoints: [
       { path: 'index.json', use: 'This manifest: corpus date, counts by population, endpoint list.' },
       { path: 'matrix.json', use: 'All method×area cells, empties included. Use to ask what has and has not been indexed.' },
       { path: 'papers.json', use: 'Every reference with DOI, code URL, data URL, topics, license and citation count.' },
       { path: 'catalog.json', use: 'Software and databases, with topic, license tier and DOI.' },
-      { path: 'datasets.json', use: 'Curated dataset entries and per-species inventory.' },
+      {
+        path: 'datasets.json',
+        use:
+          'Two arrays. `entries` = curated dataset entries (portals, atlases, GEMs; kind ' +
+          'atlas/gem/other). `inventory` = the per-species inventory rows (kind "inventory") ' +
+          '— the per-study deposits with accession, tissue, assay type and size, keyed by the ' +
+          'source page\'s own column labels. Filter either by `page` (e.g. "Cow"). Use the ' +
+          'inventory rows for "what could I combine my own run with".',
+      },
       { path: 'topics.json', use: 'Subject tree plus an inverted index: topic → items across all content types. Start here for "what should I use for X".' },
       { path: 'taxonomy.json', use: 'What each method and area means in CAAIL, with exclusion criteria. Read before trusting a placement.' },
+      { path: OPENAPI_FILE, use: 'OpenAPI 3.1 description of every endpoint above, generated from the schemas that validate them. Read this instead of guessing a key.' },
     ],
   };
 }
@@ -268,13 +306,24 @@ export function buildManifest(
 export function buildAgentApi(inputs: AgentApiInputs): ApiFile[] {
   const corpusDate = inputs.corpusDate ?? readCorpusDate(REPO_ROOT);
   const matrix = buildMatrix(inputs.papers, corpusDate);
+  const datasetCounts = {
+    curated: ((inputs.datasets as { entries?: unknown[] } | null)?.entries ?? []).length,
+    inventory: (inputs.inventory?.inventory ?? []).length,
+  };
 
-  return [
-    { name: 'index.json', body: buildManifest(inputs.papers, matrix, corpusDate) },
+  const files: ApiFile[] = [
+    { name: 'index.json', body: buildManifest(inputs.papers, matrix, corpusDate, datasetCounts) },
     { name: 'matrix.json', body: matrix },
     { name: 'papers.json', body: { ...inputs.papers, scopeNote: SCOPE_NOTE, corpusDate } },
     { name: 'catalog.json', body: { ...(inputs.catalog as object), corpusDate } },
-    { name: 'datasets.json', body: { ...(inputs.datasets as object), corpusDate } },
+    {
+      name: 'datasets.json',
+      body: {
+        ...(inputs.datasets as object),
+        inventory: inputs.inventory?.inventory ?? [],
+        corpusDate,
+      },
+    },
     {
       name: 'topics.json',
       body: {
@@ -284,6 +333,19 @@ export function buildAgentApi(inputs: AgentApiInputs): ApiFile[] {
     },
     { name: 'taxonomy.json', body: { ...(inputs.taxonomy as object), corpusDate } },
   ];
+
+  // Every body is checked against its published schema BEFORE anything is written, so a
+  // model that changed shape fails the build rather than shipping a payload the document
+  // says is impossible. This is what makes the OpenAPI file a property of the output and
+  // not a claim about it.
+  for (const f of files) assertValid(f.name, f.body);
+
+  // Emitted last, and in the same pass, so it cannot describe a set of files that was
+  // never written. It is the description rather than a described response, so it carries
+  // its corpus date as info.version + x-corpus-date rather than a bare corpusDate key,
+  // which would make the document invalid against the OpenAPI 3.1 meta-schema.
+  files.push({ name: OPENAPI_FILE, body: buildOpenApiDocument(corpusDate) });
+  return files;
 }
 
 /** Write the built files into `apiDir`, creating it if needed. */
