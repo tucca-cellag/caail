@@ -30,7 +30,7 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import type { PapersData } from './types.js';
+import type { DatasetInventory, PapersData } from './types.js';
 
 /** Where an agent-visible caveat is stated once and reused everywhere. */
 export const SCOPE_NOTE =
@@ -48,6 +48,12 @@ export interface AgentApiInputs {
   papers: PapersData;
   catalog: unknown;
   datasets: unknown;
+  /**
+   * The `## Complete data inventory` rows. Optional so the emitter degrades to the
+   * curated entries alone rather than throwing, but generate-data always supplies them:
+   * without these the endpoint contradicts its own manifest, which is what #151 was.
+   */
+  inventory?: DatasetInventory;
   topics: unknown;
   taxonomy: unknown;
   /** ISO date stamped onto every response. Defaults to `readCorpusDate()`. */
@@ -229,6 +235,7 @@ export function buildManifest(
   papers: PapersData,
   matrix: ReturnType<typeof buildMatrix>,
   corpusDate: string,
+  datasets: { curated: number; inventory: number } = { curated: 0, inventory: 0 },
 ): unknown {
   const bySection: Record<string, number> = {};
   for (const r of papers.references) bySection[r.section] = (bySection[r.section] ?? 0) + 1;
@@ -247,13 +254,26 @@ export function buildManifest(
       matrixTotalCells: matrix.totalCells,
       matrixPopulatedCells: matrix.populatedCells,
       matrixEmptyCells: matrix.emptyCells,
+      // Two populations, like the paper sections above: the curated `### …` entries
+      // (portals, atlases, GEMs) and the per-study deposit rows. Quoting either as
+      // "datasets in CAAIL" is true of one and false of the other.
+      datasetsCurated: datasets.curated,
+      datasetsInventoryRows: datasets.inventory,
     },
     endpoints: [
       { path: 'index.json', use: 'This manifest: corpus date, counts by population, endpoint list.' },
       { path: 'matrix.json', use: 'All method×area cells, empties included. Use to ask what has and has not been indexed.' },
       { path: 'papers.json', use: 'Every reference with DOI, code URL, data URL, topics, license and citation count.' },
       { path: 'catalog.json', use: 'Software and databases, with topic, license tier and DOI.' },
-      { path: 'datasets.json', use: 'Curated dataset entries and per-species inventory.' },
+      {
+        path: 'datasets.json',
+        use:
+          'Two arrays. `entries` = curated dataset entries (portals, atlases, GEMs; kind ' +
+          'atlas/gem/other). `inventory` = the per-species inventory rows (kind "inventory") ' +
+          '— the per-study deposits with accession, tissue, assay type and size, keyed by the ' +
+          'source page\'s own column labels. Filter either by `page` (e.g. "Cow"). Use the ' +
+          'inventory rows for "what could I combine my own run with".',
+      },
       { path: 'topics.json', use: 'Subject tree plus an inverted index: topic → items across all content types. Start here for "what should I use for X".' },
       { path: 'taxonomy.json', use: 'What each method and area means in CAAIL, with exclusion criteria. Read before trusting a placement.' },
     ],
@@ -268,13 +288,24 @@ export function buildManifest(
 export function buildAgentApi(inputs: AgentApiInputs): ApiFile[] {
   const corpusDate = inputs.corpusDate ?? readCorpusDate(REPO_ROOT);
   const matrix = buildMatrix(inputs.papers, corpusDate);
+  const datasetCounts = {
+    curated: ((inputs.datasets as { entries?: unknown[] } | null)?.entries ?? []).length,
+    inventory: (inputs.inventory?.inventory ?? []).length,
+  };
 
   return [
-    { name: 'index.json', body: buildManifest(inputs.papers, matrix, corpusDate) },
+    { name: 'index.json', body: buildManifest(inputs.papers, matrix, corpusDate, datasetCounts) },
     { name: 'matrix.json', body: matrix },
     { name: 'papers.json', body: { ...inputs.papers, scopeNote: SCOPE_NOTE, corpusDate } },
     { name: 'catalog.json', body: { ...(inputs.catalog as object), corpusDate } },
-    { name: 'datasets.json', body: { ...(inputs.datasets as object), corpusDate } },
+    {
+      name: 'datasets.json',
+      body: {
+        ...(inputs.datasets as object),
+        inventory: inputs.inventory?.inventory ?? [],
+        corpusDate,
+      },
+    },
     {
       name: 'topics.json',
       body: {

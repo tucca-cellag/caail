@@ -195,6 +195,46 @@ export const DatasetsDataSchema = z.object({
 export type DatasetEntry = z.infer<typeof DatasetEntrySchema>;
 export type DatasetsData = z.infer<typeof DatasetsDataSchema>;
 
+/**
+ * One `## Complete data inventory` row — a per-study deposit (accession, tissue, assay,
+ * size), as opposed to the curated `### …` entries above.
+ *
+ * Kept OUT of `DatasetsDataSchema` on purpose: three Preact islands import the site's
+ * datasets.json (CitationHub, LicenseHub, TopicHub), so folding 164 rows in there would
+ * ship them to the browser for no gain. They belong to the agent API, which is fetched
+ * deliberately and whose manifest already advertises them.
+ *
+ * `columns` is keyed by the page's own header labels because the tables genuinely differ
+ * — the species pages use Study/Paper/Data/Type/Tissue/…, Fish and the invertebrates add
+ * a Species column, and CrossSpecies is a different table entirely. A positional array
+ * would be unreadable without fetching the Markdown, which is the cost this removes.
+ * Values are the RAW markdown cell, so nothing is lost; `links` is the convenience
+ * extraction of the URLs inside them.
+ */
+export const DatasetInventoryRowSchema = z.object({
+  /** frozen ds: id, shared with the curated entries' namespace */
+  id: z.string(),
+  /** discriminator against DatasetEntrySchema's atlas/gem/other */
+  kind: z.literal('inventory'),
+  /** dataset page basename, e.g. "Cow" */
+  page: z.string(),
+  /** plain text of the first column — the study/resource name */
+  name: z.string(),
+  /** the page's header labels → that row's raw markdown cell, in table order */
+  columns: z.record(z.string(), z.string()),
+  /** every URL appearing in the row, in document order, deduped */
+  links: z.array(z.string()),
+  /** two-tier subject tags, folded in from the committed topic NDJSON */
+  topics: z.array(TopicRefSchema).default([]),
+});
+
+/** Schema for the inventory model — the rows across every inventory page. */
+export const DatasetInventorySchema = z.object({
+  inventory: z.array(DatasetInventoryRowSchema),
+});
+export type DatasetInventoryRow = z.infer<typeof DatasetInventoryRowSchema>;
+export type DatasetInventory = z.infer<typeof DatasetInventorySchema>;
+
 export const TalkItemSchema = z.object({
   /** List-item link text, e.g. "Multus Biotechnology: AI-driven media optimization" */
   title: z.string(),

@@ -18,7 +18,9 @@
     "papersMatrixEligible": 229,
     "matrixTotalCells": 175,
     "matrixPopulatedCells": 68,
-    "matrixEmptyCells": 107
+    "matrixEmptyCells": 107,
+    "datasetsCurated": 45,
+    "datasetsInventoryRows": 164
   },
   "endpoints": [
     {
@@ -39,7 +41,7 @@
     },
     {
       "path": "datasets.json",
-      "use": "Curated dataset entries and per-species inventory."
+      "use": "Two arrays. `entries` = curated dataset entries (portals, atlases, GEMs; kind atlas/gem/other). `inventory` = the per-species inventory rows (kind \"inventory\") — the per-study deposits with accession, tissue, assay type and size, keyed by the source page's own column labels. Filter either by `page` (e.g. \"Cow\"). Use the inventory rows for \"what could I combine my own run with\"."
     },
     {
       "path": "topics.json",

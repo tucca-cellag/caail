@@ -34,11 +34,15 @@ https://tucca-cellag.github.io/caail/api/ if you want to read one in a browser.
 | "Has anyone applied <method> to <area>?" | https://raw.githubusercontent.com/tucca-cellag/caail/main/site/public/api/matrix.json — then read the caveat below |
 | "Find me papers on X" | https://raw.githubusercontent.com/tucca-cellag/caail/main/site/public/api/papers.json |
 | "What software / databases exist for X?" | https://raw.githubusercontent.com/tucca-cellag/caail/main/site/public/api/catalog.json |
-| "What data exists for <species>?" | https://raw.githubusercontent.com/tucca-cellag/caail/main/site/public/api/datasets.json |
+| "What data exists for <species>?" | https://raw.githubusercontent.com/tucca-cellag/caail/main/site/public/api/datasets.json — two arrays: `entries` are curated portals and atlases, `inventory` are the per-study deposits. Filter either by `page` |
 | "What does CAAIL mean by <method or area>?" | https://raw.githubusercontent.com/tucca-cellag/caail/main/site/public/api/taxonomy.json — read before trusting or disputing a placement |
 
 The papers endpoint carries DOI, code URL, data URL, topics, license and citation count per entry, so
 you can usually answer without fetching anything else.
+
+For "what could I combine my own run with", read `inventory`, not `entries`. The curated entries are
+portals, atlases and model files; the inventory rows are the individual deposits, each carrying its
+accession, assay type, tissue and size under the source page's own column labels.
 
 ## Method names are abbreviated
 
