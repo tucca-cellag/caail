@@ -330,14 +330,14 @@ export function buildMetricsModel(
   now: string = new Date().toISOString(),
 ): Metrics {
   const { papers, catalog, topics, datasets } = inputs;
-  const { total, speciesRows, referenceEntries, benchmarkEntries } =
+  const { total, speciesRows, curatedEntries, referenceEntries, benchmarkEntries } =
     computeDatasetBreakdown(repoRoot);
 
   const metrics: Metrics = {
     library: computeCounts(papers, repoRoot),
     matrix: buildMatrix(papers),
     species: SPECIES_PAGES.map((s) => speciesInventory(repoRoot, s)),
-    datasets: { total, speciesRows, referenceEntries, benchmarkEntries },
+    datasets: { total, speciesRows, curatedEntries, referenceEntries, benchmarkEntries },
     topics: buildTopics(topics),
     licenses: buildLicenses(catalog, datasets, topics),
     citations: buildCitations(papers, catalog, datasets, topics),

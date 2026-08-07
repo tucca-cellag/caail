@@ -110,10 +110,12 @@ describe('buildMetricsModel — real corpus', () => {
   });
 
   it('datasets breakdown parts sum to total and match library.datasets', () => {
-    const { total, speciesRows, referenceEntries, benchmarkEntries } = metrics.datasets;
-    expect(speciesRows + referenceEntries + benchmarkEntries).toBe(total);
+    const { total, speciesRows, curatedEntries, referenceEntries, benchmarkEntries } =
+      metrics.datasets;
+    expect(speciesRows + curatedEntries + referenceEntries + benchmarkEntries).toBe(total);
     expect(total).toBe(metrics.library.datasets);
     expect(speciesRows).toBeGreaterThan(0);
+    expect(curatedEntries).toBeGreaterThan(0);
     expect(referenceEntries).toBeGreaterThan(0);
     expect(benchmarkEntries).toBeGreaterThan(0);
   });

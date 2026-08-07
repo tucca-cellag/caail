@@ -188,6 +188,28 @@ const FINE_TAGS: FineTag[] = [
 
 export const THEME_SLUGS = THEMES.map((t) => t.slug).sort();
 
+/**
+ * Tag curated dataset entries from their own text (name + section + body) with the matching
+ * themes and fine tags. This is a keyword SEED, not an oracle — it matches substrings, so it
+ * mislabels text that merely contains a keyword ("Scale AI" → bioprocess, "software
+ * engineering" → cell lines). Curator corrections live in the committed `item_topics` NDJSON
+ * and win over this on re-import, via bootstrap's `preserveCuratedItemTopics`.
+ * Insert is `OR IGNORE`, so re-running is idempotent. Returns the number of entries tagged.
+ */
+export function tagDatasetEntries(db: Db): number {
+  const tag = db.prepare('INSERT OR IGNORE INTO item_topics(item_id,topic_id) VALUES(?,?)');
+  const rows = db
+    .prepare('SELECT item_id, name, section, body_md FROM dataset_entries')
+    .all() as { item_id: string; name: string; section: string; body_md: string }[];
+
+  for (const d of rows) {
+    const text = `${d.name} ${d.section} ${d.body_md}`;
+    for (const t of THEMES) if (t.kw.test(text)) tag.run(d.item_id, `topic:${t.slug}`);
+    for (const f of FINE_TAGS) if (f.kw.test(text)) tag.run(d.item_id, `topic:${f.slug}`);
+  }
+  return rows.length;
+}
+
 export function seedTopics(db: Db): { topics: number; tags: number } {
   // Guard the shared slug namespace at seed time (schema UNIQUE would otherwise throw).
   const themeSet = new Set(THEMES.map((t) => t.slug));
@@ -243,11 +265,7 @@ export function seedTopics(db: Db): { topics: number; tags: number } {
   }
 
   // 6. Curated dataset entries: name + section + body -> theme + fine tags.
-  for (const d of db.prepare('SELECT item_id, name, section, body_md FROM dataset_entries').all() as any[]) {
-    const text = `${d.name} ${d.section} ${d.body_md}`;
-    for (const t of THEMES) if (t.kw.test(text)) tag.run(d.item_id, topicId(t.slug));
-    for (const f of FINE_TAGS) if (f.kw.test(text)) tag.run(d.item_id, topicId(f.slug));
-  }
+  tagDatasetEntries(db);
 
   const topics = (db.prepare('SELECT COUNT(*) c FROM topics').get() as any).c;
   const tags = (db.prepare('SELECT COUNT(*) c FROM item_topics').get() as any).c;

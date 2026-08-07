@@ -24,6 +24,8 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { Table, Heading } from 'mdast';
 
+import { toString as mdastToString } from 'mdast-util-to-string';
+
 import { parseFile, sectionsAfter } from './markdown.js';
 
 /** parser/ → scripts/ → site/ → repo root. */
@@ -47,6 +49,57 @@ export const REFERENCE_PAGES: readonly string[] = [
 export const BENCHMARKS_PAGE = 'Benchmarks';
 
 const INVENTORY_HEADING = 'Complete data inventory';
+
+/**
+ * H2 labels that introduce narrative rather than a dataset. Only consulted on a page
+ * whose entries ARE H2s (Benchmarks): elsewhere an H2 is a section label and can be
+ * anything. Without this, adding a `## Further reading` footer to Benchmarks — which
+ * every other page already has — would silently count as an 18th benchmark dataset.
+ */
+const NON_ENTRY_H2 = new Set(['further reading', INVENTORY_HEADING.toLowerCase()]);
+
+/**
+ * The heading depth marking one curated dataset entry on a page.
+ *
+ * Every page uses `###` entries under an `##` section — except Benchmarks, which uses
+ * one `##` per dataset and has no enclosing section at all. Extraction (`db/extract.ts`),
+ * emit (`db/emit.ts`) and card rendering (`remark/dataset-cards.ts`) all key on this, so
+ * it lives in one place rather than as three page-name conditionals that can drift apart.
+ * That drift is exactly how the benchmarks came to be absent from the DB (#156): the
+ * counter here knew they were H2s while the extractor only ever looked at H3s.
+ */
+export function entryHeadingDepth(page: string): 2 | 3 {
+  return page === BENCHMARKS_PAGE ? 2 : 3;
+}
+
+/** `Datasets/Benchmarks.md` → `Benchmarks`. Accepts any path ending in the page file. */
+export function pageFromPath(path: string): string {
+  return path.replace(/\\/g, '/').split('/').pop()!.replace(/\.md$/i, '');
+}
+
+/**
+ * Whether a heading at the page's entry depth introduces a dataset entry, given the
+ * enclosing H2 section (`''` on an H2-entry page, which has none).
+ *
+ * `label` and `section` must be the heading's PLAIN TEXT, not its markdown source — the
+ * comparisons here are by string, so `## [Further reading](…)` must arrive as
+ * `Further reading`, never `[Further reading](…)`. Callers holding an mdast node should
+ * flatten with `mdastToString` (parser side) or `flat` (db side); passing `inlineMd` output
+ * would exclude a heading on the paths that flatten and include it on the paths that don't —
+ * a page counted 17 and emitted 18.
+ *
+ * Those two flatteners are NOT identical: `flat` returns '' for an image node where
+ * `mdastToString` returns its alt text. No heading in the corpus contains an image, so they
+ * agree in practice; if that ever stops being true, converge them rather than assuming.
+ *
+ * Matching is case-insensitive: a curator writing `## Further Reading` means the footer, and
+ * silently promoting it to a dataset because of one capital letter is not a useful reading.
+ */
+export function isEntryHeading(page: string, label: string, section: string): boolean {
+  return entryHeadingDepth(page) === 2
+    ? !NON_ENTRY_H2.has(label.trim().toLowerCase())
+    : section.trim().toLowerCase() !== INVENTORY_HEADING.toLowerCase();
+}
 
 // ---------------------------------------------------------------------------
 // Per-page counters
@@ -95,17 +148,48 @@ export function headingCount(repoRoot: string, page: string, depth: number): num
   return count;
 }
 
+/**
+ * Count the curated dataset entries on a page — the headings at the page's entry depth
+ * that actually introduce a dataset. Replaces a raw `headingCount` for every page whose
+ * datasets are headings, so the reference pages, the benchmarks page and the species
+ * pages' featured atlases/GEMs are all counted by one rule. A missing page yields 0.
+ */
+export function curatedEntryCount(repoRoot: string, page: string): number {
+  const path = join(repoRoot, 'Datasets', `${page}.md`);
+  let root;
+  try {
+    root = parseFile(path);
+  } catch {
+    return 0;
+  }
+  const depth = entryHeadingDepth(page);
+  let section = '';
+  let count = 0;
+  for (const node of root.children) {
+    if (node.type !== 'heading') continue;
+    const h = node as Heading;
+    const label = mdastToString(h).trim();
+    // Only an H3-entry page has enclosing sections to track.
+    if (depth === 3 && h.depth === 2) { section = label; continue; }
+    if (h.depth !== depth) continue;
+    if (isEntryHeading(page, label, section)) count++;
+  }
+  return count;
+}
+
 // ---------------------------------------------------------------------------
 // Breakdown
 // ---------------------------------------------------------------------------
 
-export type DatasetSourceKind = 'inventory' | 'reference' | 'benchmark';
+export type DatasetSourceKind = 'inventory' | 'curated' | 'reference' | 'benchmark';
 
 export interface DatasetBreakdown {
   /** total catalogued datasets across the whole Datasets/ directory */
   total: number;
   /** inventory-table rows over INVENTORY_PAGES (species + CrossSpecies) */
   speciesRows: number;
+  /** curated H3 entries (featured atlases, GEMs) ON the inventory pages */
+  curatedEntries: number;
   /** H3 dataset entries over REFERENCE_PAGES */
   referenceEntries: number;
   /** H2 dataset entries on the benchmarks page */
@@ -127,26 +211,33 @@ export function computeDatasetBreakdown(
 
   for (const page of INVENTORY_PAGES) {
     perPage.push({ page, kind: 'inventory', count: inventoryRowCount(repoRoot, page) });
+    // The featured atlases and GEMs above each inventory table are catalogued datasets in
+    // their own right — distinct resources, not summaries of the rows below them (Cow's
+    // rows are per-study deposits; its entries are CattleGTEx, BovReg, BtaSBML2986). They
+    // were counted by neither the library total nor the endpoint's own tally until #156.
+    perPage.push({ page, kind: 'curated', count: curatedEntryCount(repoRoot, page) });
   }
   for (const page of REFERENCE_PAGES) {
-    perPage.push({ page, kind: 'reference', count: headingCount(repoRoot, page, 3) });
+    perPage.push({ page, kind: 'reference', count: curatedEntryCount(repoRoot, page) });
   }
   perPage.push({
     page: BENCHMARKS_PAGE,
     kind: 'benchmark',
-    count: headingCount(repoRoot, BENCHMARKS_PAGE, 2),
+    count: curatedEntryCount(repoRoot, BENCHMARKS_PAGE),
   });
 
   const sumKind = (kind: DatasetSourceKind): number =>
     perPage.filter((p) => p.kind === kind).reduce((acc, p) => acc + p.count, 0);
 
   const speciesRows = sumKind('inventory');
+  const curatedEntries = sumKind('curated');
   const referenceEntries = sumKind('reference');
   const benchmarkEntries = sumKind('benchmark');
 
   return {
-    total: speciesRows + referenceEntries + benchmarkEntries,
+    total: speciesRows + curatedEntries + referenceEntries + benchmarkEntries,
     speciesRows,
+    curatedEntries,
     referenceEntries,
     benchmarkEntries,
     perPage,

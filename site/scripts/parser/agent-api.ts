@@ -258,25 +258,16 @@ export function buildManifest(
       matrixTotalCells: matrix.totalCells,
       matrixPopulatedCells: matrix.populatedCells,
       matrixEmptyCells: matrix.emptyCells,
-      // Two populations, like the paper sections above: the curated `### …` entries
-      // (portals, atlases, GEMs) and the per-study deposit rows. Quoting either as
-      // "datasets in CAAIL" is true of one and false of the other — and adding them is
-      // true of neither, hence datasetsNote.
+      // Two populations, like the paper sections above: the curated entries (portals,
+      // atlases, GEMs, benchmarks) and the per-study deposit rows. Quoting either alone as
+      // "datasets in CAAIL" is true of one and false of the other — but unlike the paper
+      // sections these two are disjoint and exhaustive, so their SUM is the library total.
+      // That was not true until #156 folded the benchmark datasets in; a `datasetsNote`
+      // used to sit here warning a consumer not to add them.
       datasetsCurated: datasets.curated,
       datasetsInventoryRows: datasets.inventory,
+      datasetsTotal: datasets.curated + datasets.inventory,
     },
-    // These two counts describe THIS ENDPOINT, not the library, and the difference is not
-    // rounding. The site's own dataset total counts the Benchmarks page, which `entries`
-    // does not carry at all; `entries` counts the species pages' curated atlases and GEMs,
-    // which the site total does not. So the two figures overlap in both directions and
-    // their sum is a number about nothing. Stated rather than reconciled because making
-    // the populations agree means changing what the endpoint carries, which is its own
-    // change; an agent quoting a total needs the caveat today.
-    datasetsNote:
-      'datasetsCurated + datasetsInventoryRows counts what this endpoint serves. It is ' +
-      'NOT the library dataset total: the benchmark datasets are in that total but not in ' +
-      '`entries`, and the species pages\' curated atlases/GEMs are in `entries` but not in ' +
-      'that total. Quote either figure with its population; do not add them into a headline.',
     endpoints: [
       { path: 'index.json', use: 'This manifest: corpus date, counts by population, endpoint list.' },
       { path: 'matrix.json', use: 'All method×area cells, empties included. Use to ask what has and has not been indexed.' },
@@ -285,11 +276,13 @@ export function buildManifest(
       {
         path: 'datasets.json',
         use:
-          'Two arrays. `entries` = curated dataset entries (portals, atlases, GEMs; kind ' +
-          'atlas/gem/other). `inventory` = the per-species inventory rows (kind "inventory") ' +
-          '— the per-study deposits with accession, tissue, assay type and size, keyed by the ' +
-          'source page\'s own column labels. Filter either by `page` (e.g. "Cow"). Use the ' +
-          'inventory rows for "what could I combine my own run with".',
+          'Two arrays, together the whole dataset corpus. `entries` = curated dataset entries ' +
+          '(portals, atlases, GEMs, reference corpora, and the AI/ML benchmark and evaluation ' +
+          'datasets on page "Benchmarks"; kind atlas/gem/other). `inventory` = the per-species ' +
+          'inventory rows (kind "inventory") — the per-study deposits with accession, tissue, ' +
+          'assay type and size, keyed by the source page\'s own column labels. Filter either by ' +
+          '`page` (e.g. "Cow", "Benchmarks"). Use the inventory rows for "what could I combine ' +
+          'my own run with", and page "Benchmarks" for "what could I evaluate a model against".',
       },
       { path: 'topics.json', use: 'Subject tree plus an inverted index: topic → items across all content types. Start here for "what should I use for X".' },
       { path: 'taxonomy.json', use: 'What each method and area means in CAAIL, with exclusion criteria. Read before trusting a placement.' },

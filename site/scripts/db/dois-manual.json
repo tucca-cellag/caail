@@ -221,7 +221,7 @@
     "https://www.wikipathways.org/": "10.1093/nar/gkad960"
   },
   "datasets": {
-    "ds:algpred-2-0-allergen-dataset": "10.1093/bib/bbaa294",
+    "ds:algpred-20-allergen-dataset": "10.1093/bib/bbaa294",
     "ds:btasbml2986-bos-taurus-bovine": "10.1101/2024.12.09.627468",
     "ds:cattlegtex": "10.1038/s41588-025-02329-5",
     "ds:chickengtex-portal": "10.1038/s41588-025-02155-9",

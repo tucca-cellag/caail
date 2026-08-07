@@ -18,6 +18,9 @@ import {
   inventoryRowCount,
   headingCount,
   computeDatasetBreakdown,
+  entryHeadingDepth,
+  isEntryHeading,
+  pageFromPath,
 } from './datasets.js';
 
 const FIXTURE_ROOT = join(
@@ -26,6 +29,51 @@ const FIXTURE_ROOT = join(
   'fixtures',
   'datasets-metrics',
 );
+
+describe('entry-heading identity (the per-page depth rule)', () => {
+  it('marks Benchmarks entries at H2 and every other page at H3', () => {
+    expect(entryHeadingDepth('Benchmarks')).toBe(2);
+    for (const p of ['Cow', 'HumanReference', 'CrossSpecies', 'FoodSafety']) {
+      expect(entryHeadingDepth(p)).toBe(3);
+    }
+  });
+
+  it('derives the page from a path, which is how extraction picks the depth', () => {
+    expect(pageFromPath('Datasets/Benchmarks.md')).toBe('Benchmarks');
+    expect(pageFromPath('/abs/path/Datasets/Cow.md')).toBe('Cow');
+    // The trap this guards: a temp file named after anything but the page reads at the
+    // default depth and silently finds no entries.
+    expect(pageFromPath('/tmp/entries-Benchmarks.md')).not.toBe('Benchmarks');
+  });
+
+  it('excludes a narrative H2 on the H2-entry page, so a footer is not an 18th dataset', () => {
+    expect(isEntryHeading('Benchmarks', 'MassSpecGym', '')).toBe(true);
+    expect(isEntryHeading('Benchmarks', 'Further reading', '')).toBe(false);
+    expect(isEntryHeading('Benchmarks', 'Complete data inventory', '')).toBe(false);
+  });
+
+  it('compares PLAIN TEXT, which every caller must flatten to before asking', () => {
+    // The asymmetry this pins: extract/emit hold mdast and once passed `inlineMd` (markdown
+    // source) while the counter and the card renderer passed flattened text. `## [Further
+    // reading](…)` then counted as narrative on one pair of paths and as a dataset on the
+    // other — a page counted 17 and emitted 18, tripping the served-==-counted assertion.
+    // A caller handing this function markdown source is the bug; the exclusion set is exact.
+    expect(isEntryHeading('Benchmarks', 'Further reading', '')).toBe(false);
+    expect(isEntryHeading('Benchmarks', '[Further reading](../README.md)', '')).toBe(true);
+  });
+
+  it('keeps using the enclosing section on H3 pages, where the H2 is not an entry', () => {
+    expect(isEntryHeading('Cow', 'CattleGTEx', 'Featured atlases')).toBe(true);
+    expect(isEntryHeading('Cow', 'Some row', 'Complete data inventory')).toBe(false);
+  });
+
+  it('matches the exclusions case-insensitively, so one capital letter is not a dataset', () => {
+    for (const v of ['Further Reading', 'FURTHER READING', 'further reading']) {
+      expect(isEntryHeading('Benchmarks', v, ''), `${v} should be narrative`).toBe(false);
+    }
+    expect(isEntryHeading('Cow', 'Some row', 'COMPLETE DATA INVENTORY')).toBe(false);
+  });
+});
 
 // ---------------------------------------------------------------------------
 // A. Per-page unit counters (fixtures)
@@ -107,11 +155,14 @@ describe('computeDatasetBreakdown — real corpus', () => {
   });
 
   it('parts sum to total (no-drift invariant)', () => {
-    expect(b.total).toBe(b.speciesRows + b.referenceEntries + b.benchmarkEntries);
+    expect(b.total).toBe(
+      b.speciesRows + b.curatedEntries + b.referenceEntries + b.benchmarkEntries,
+    );
   });
 
   it('every part is positive on the real corpus', () => {
     expect(b.speciesRows).toBeGreaterThan(0);
+    expect(b.curatedEntries).toBeGreaterThan(0);
     expect(b.referenceEntries).toBeGreaterThan(0);
     expect(b.benchmarkEntries).toBeGreaterThan(0);
   });
@@ -119,7 +170,16 @@ describe('computeDatasetBreakdown — real corpus', () => {
   it('returns the verified ground-truth dataset total', () => {
     // GROUND TRUTH — pinned after the first green run of `pnpm parse`.
     // Bump in lockstep when Datasets/ inventory tables / reference / benchmark
-    // entries change.
-    expect(b.total).toBe(205);
+    // entries change. 226 = 164 inventory rows + 21 curated species-page entries
+    // + 24 reference entries + 17 benchmarks. It was 205 until #156, which folded
+    // in the two populations the total had silently omitted.
+    expect(b.total).toBe(226);
+  });
+
+  it('counts the same population the datasets endpoint serves', () => {
+    // The reason the total moved. Before #156 these were different populations in both
+    // directions, so a consumer comparing them got a number about nothing.
+    expect(b.speciesRows).toBe(164);
+    expect(b.curatedEntries + b.referenceEntries + b.benchmarkEntries).toBe(62);
   });
 });

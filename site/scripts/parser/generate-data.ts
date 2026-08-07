@@ -206,9 +206,18 @@ export function generateData(
   assertCountsMatch(
     'datasets breakdown sum',
     metrics.datasets.speciesRows +
+      metrics.datasets.curatedEntries +
       metrics.datasets.referenceEntries +
       metrics.datasets.benchmarkEntries,
     metrics.datasets.total,
+  );
+  // The library total and what the agent API serves must now be the SAME population, so
+  // the manifest no longer has to warn a consumer that adding its two numbers yields a
+  // figure about nothing (#156). Curated entries + inventory rows == the headline count.
+  assertCountsMatch(
+    'datasets served == datasets counted',
+    datasets.entries.length + inventory.inventory.length,
+    counts.datasets,
   );
   // The inventory rows the API serves are read from the DB NDJSON; `speciesRows` counts
   // the same rows straight out of the Markdown tables. They must agree exactly — a

@@ -269,6 +269,20 @@ non-catalog canonical files (`OtherResources.md`, `ReferenceWorks.md`, `AwesomeL
 - **Source of truth = `site/db/ndjson/`** (per-table PK-sorted NDJSON, committed). `site/db/schema.sql`
   is the DDL; `site/caail.db` is a gitignored artifact rebuilt from the NDJSON. Every item has a
   frozen namespaced id (`paper:N`, `sw:…`, `db:…`, `ds:…`, `topic:…`) assigned once and never changed.
+  - **The one sanctioned exception: an id the canonical pipeline cannot reproduce.** If a fresh
+    `db:bootstrap` from the canonical Markdown mints a *different* id than the one committed, that id
+    is already broken — bootstrap either aborts (as it did for ~2.5 weeks on
+    `ds:algpred-2-0-allergen-dataset`, minted by a slug rule `lib.slugify` no longer implements) or
+    silently renames it. Reconciling it to the rule's output is then repair, not a rename of a working
+    id. Conditions, all required: the id is **provably unreproducible** (show the seed's output beside
+    the committed id); **every** reference moves with it (`item_topics`, `dois-manual.json`,
+    `licenses-manual.json`, `dois-related.json` — note the last two key by *url*, not id) and
+    `db:check` passes; and the commit says which id changed and why. **Never** do this to a `paper:N`
+    id — those are public anchors people bookmark, they are retired rather than reused, and the fix
+    for a bad one is a tombstone. Prefer changing the outlier over changing the slug rule: a rule
+    change silently re-mints every id derived from it.
+    Note this *is* visible outwardly — `ds:` ids are served in `api/datasets.json` and
+    `api/topics.json` — so it is a curator decision, not a refactor to make in passing.
 - **Authoring-time only.** The DB is not in the deploy build: `pnpm build` still parses the committed
   Markdown into `data/*.json`. A plain add/remove is one command — `db:add <descriptor.json>` /
   `db:remove <id>` (auto frozen-id, guards, regenerate); the full edit flow is `db:build` → edit →
@@ -290,11 +304,26 @@ non-catalog canonical files (`OtherResources.md`, `ReferenceWorks.md`, `AwesomeL
 - **Curated dataset entries** live in `dataset_entries` (catalog-shaped; nullable `url` for unlinked
   GEM headings; `section` + `kind` ∈ {atlas,gem,other}). They share the `ds:` id namespace with the
   inventory rows (a `dataset` item is in `dataset_rows` XOR `dataset_entries`, guarded by `db:check`);
-  `db:emit` owns their `### …` sections (splices narrative verbatim); `db:verify` round-trips them.
+  `db:emit` owns their heading sections (splices narrative verbatim); `db:verify` round-trips them.
   The build folds them into `datasets.json` (`site/scripts/parser/datasets-entries.ts`), and a remark
   transform (`site/scripts/remark/dataset-cards.ts`, wired via `caailProseRemark`) renders each entry as a
   tagged `.ds-card` with topic chips on `/datasets/<page>/`; the entries are also linkable items in the
   `/topics/` hub (inventory rows stay count-only). Inventory rows and narrative are never carded.
+  - **Entry heading depth is per-page, not a constant.** Every page marks an entry with `###` under an
+    `##` section — except `Datasets/Benchmarks.md`, which uses one `##` per dataset and has no enclosing
+    section (its entries carry `section: ''`). Extraction, emit and card rendering all ask
+    `entryHeadingDepth(page)` (`site/scripts/parser/datasets.ts`) rather than hardcoding `3`. That single
+    constant is what #156 fixed: three call sites keyed on depth 3 while the *counter* knew the benchmarks
+    were H2s, so all 17 fell through the gap between two conventions and reached the DB — and therefore
+    the datasets endpoint — in neither. If you add a page with a new heading shape, teach that one
+    function and add the page to `db:verify`'s list; a page absent from that list has no round-trip oracle.
+- **The dataset total and the datasets endpoint count one population.** `counts.datasets` (the headline)
+  == `dataset_entries` + `dataset_rows` == what `api/datasets.json` serves. `computeDatasetBreakdown`
+  splits it four ways — inventory rows, curated entries *on* the inventory pages, reference-page entries,
+  benchmarks — and `generate-data.ts` asserts both the parts-sum and served-==-counted. Before #156 the
+  headline omitted the species pages' featured atlases/GEMs while the endpoint omitted the benchmarks, so
+  the two figures disagreed in both directions and `index.json` shipped a `datasetsNote` warning consumers
+  not to add them. Don't reintroduce a divergence and paper over it with prose.
 - **Licenses** are a coarse, DB-owned triage axis (permissive / copyleft / restricted / unknown),
   supersedes #80's cache-only design. `catalog` + `dataset_entries` carry nullable `license` +
   `license_source` (`auto` = GitHub SPDX, `manual` = curated); the coarse **tier is derived** at parse

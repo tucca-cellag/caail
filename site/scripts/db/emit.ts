@@ -15,7 +15,8 @@
 
 import { readFileSync } from 'node:fs';
 import { parseMarkdown } from '../parser/markdown.js';
-import { inlineMd, extractInventory } from './extract.js';
+import { entryHeadingDepth, isEntryHeading } from '../parser/datasets.js';
+import { inlineMd, flat, extractInventory } from './extract.js';
 import type { Db } from './lib.js';
 
 // A NUL delimiter for the matrix cell-map key, so a method label ending in a space can
@@ -184,15 +185,20 @@ export function emitDatasetPage(db: Db, srcPath: string, page: string): string {
   // zip would silently emit the wrong entry under a heading. Assert up front and fail loud
   // with an actionable message (fail-fast, like emitPapersFile's ghost-section throw) rather
   // than mis-slice or crash on an undefined index; the curator reconciles via db:bootstrap.
+  const depth = entryHeadingDepth(page);
+  const marker = '#'.repeat(depth);
   let sec = '';
-  let srcEntryH3s = 0;
+  let srcEntries = 0;
   for (const b of blocks) {
-    if (b.type === 'heading' && b.depth === 2) { sec = inlineMd(b).trim(); continue; }
-    if (b.type === 'heading' && b.depth === 3 && sec !== 'Complete data inventory') srcEntryH3s += 1;
+    // `flat`, not `inlineMd` — isEntryHeading compares exact strings and must see plain text.
+    if (depth === 3 && b.type === 'heading' && b.depth === 2) { sec = flat(b).trim(); continue; }
+    if (b.type === 'heading' && b.depth === depth && isEntryHeading(page, flat(b).trim(), sec)) {
+      srcEntries += 1;
+    }
   }
-  if (srcEntryH3s !== entries.length) {
+  if (srcEntries !== entries.length) {
     throw new Error(
-      `emitDatasetPage(${page}): source has ${srcEntryH3s} curated H3 entr(ies) but the DB has ` +
+      `emitDatasetPage(${page}): source has ${srcEntries} curated ${marker} entr(ies) but the DB has ` +
         `${entries.length}. Re-seed (db:bootstrap) or reconcile the DB and Markdown.`,
     );
   }
@@ -203,18 +209,29 @@ export function emitDatasetPage(db: Db, srcPath: string, page: string): string {
   let entryIdx = 0;
   for (let i = 0; i < blocks.length; ) {
     const b = blocks[i];
-    if (b.type === 'heading' && b.depth === 2) { section = inlineMd(b).trim(); out.push(sliceOf(b)); i++; continue; }
-    // A curated dataset entry (any H3 outside the inventory section) — DB-owned. The count
-    // assertion above guarantees `entries[entryIdx]` is defined here.
-    if (b.type === 'heading' && b.depth === 3 && section !== 'Complete data inventory') {
+    // A curated dataset entry (a heading at the page's entry depth that introduces a
+    // dataset) — DB-owned. The count assertion above guarantees `entries[entryIdx]` is
+    // defined here. Tested BEFORE the section branch: on an H2-entry page the two would
+    // otherwise both match, and the section branch would pass every entry through verbatim.
+    if (b.type === 'heading' && b.depth === depth && isEntryHeading(page, flat(b).trim(), section)) {
       const e = entries[entryIdx++];
-      out.push(`### ${e.heading_md}` + (e.body_md ? `\n\n${e.body_md}` : ''));
+      out.push(`${marker} ${e.heading_md}` + (e.body_md ? `\n\n${e.body_md}` : ''));
       i++;
-      // Skip the DB-owned body blocks up to the next H2/H3. Nested H4+ sub-sections are part
-      // of THIS entry's body_md (extract captures them), so they must be skipped here too —
-      // stopping at any heading would re-emit the H4 slice on the next loop turn (double-emit).
-      while (i < blocks.length && !(blocks[i].type === 'heading' && blocks[i].depth <= 3)) i++;
+      // Skip the DB-owned body blocks up to the next heading at or above the entry depth.
+      // Nested sub-sections are part of THIS entry's body_md (extract captures them), so
+      // they must be skipped here too — stopping at any heading would re-emit that slice
+      // on the next loop turn (double-emit).
+      while (i < blocks.length && !(blocks[i].type === 'heading' && blocks[i].depth <= depth)) i++;
       continue;
+    }
+    if (b.type === 'heading' && b.depth === 2) {
+      // Guarded exactly like the count loop above. Only an H3-entry page has enclosing
+      // sections; the H2s that reach here on an H2-entry page are narrative (a `## Further
+      // reading` footer), and letting one set `section` would leave the two loops walking
+      // the page with different state — harmless only for as long as isEntryHeading happens
+      // to ignore `section` at depth 2. The heading itself is still emitted either way.
+      if (depth === 3) section = flat(b).trim();
+      out.push(sliceOf(b)); i++; continue;
     }
     if (b.type === 'table' && section === 'Complete data inventory' && inv && !invEmitted) {
       invEmitted = true;

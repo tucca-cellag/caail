@@ -16,7 +16,7 @@ import { join } from 'node:path';
 import { buildPapersModel } from '../parser/papers.js';
 import { lint } from '../parser/lint.js';
 import { parseCatalogFile } from '../parser/catalog.js';
-import { INVENTORY_PAGES, REFERENCE_PAGES } from '../parser/datasets.js';
+import { INVENTORY_PAGES, REFERENCE_PAGES, BENCHMARKS_PAGE } from '../parser/datasets.js';
 import { existsSync } from 'node:fs';
 import { importNdjson, REPO_ROOT, type Db } from './lib.js';
 import { extractInventory, extractDatasetEntries } from './extract.js';
@@ -70,7 +70,35 @@ describe('emit robustness (cycle 3)', () => {
     fresh.prepare("INSERT INTO items(id,type,slug) VALUES('ds:known-atlas-xyz','dataset','known-atlas-xyz')").run();
     fresh.prepare("INSERT INTO dataset_entries(item_id,name,url,page,section,kind,heading_md,body_md,ordinal) VALUES('ds:known-atlas-xyz','Known Atlas','https://example.com/known','ExtraTestPage','Featured atlases','atlas','[Known Atlas](https://example.com/known)','Known body.',0)").run();
     expect(() => emitDatasetPage(fresh, src, 'ExtraTestPage'))
-      .toThrow(/source has 2 curated H3 entr\(ies\) but the DB has 1/);
+      .toThrow(/source has 2 curated ### entr\(ies\) but the DB has 1/);
+  });
+
+  it('round-trips an H2-entry page (Benchmarks) rather than passing it through as prose', () => {
+    // #156. Benchmarks is the only page whose entries are `##`, not `###`. The emitter used
+    // to key on depth 3, so every benchmark fell into the narrative-passthrough branch and
+    // the DB owned none of them. Emitting at the wrong depth is the failure this catches:
+    // a page-shaped fixture named Benchmarks must come back byte-identical.
+    const src = join(TMP, 'Benchmarks.md');
+    const text =
+      '# Benchmark & Evaluation Datasets\n\nLede paragraph, narrative, spliced verbatim.\n\n' +
+      '## [Alpha Bench](https://example.com/alpha)\n\nAlpha body.\n\n' +
+      '## Beta Bench\n\nBeta body, unlinked heading.\n';
+    writeFileSync(src, text);
+    const fresh = importNdjson();
+    fresh.exec('PRAGMA foreign_keys=OFF');
+    // The real corpus' 17 benchmarks are in this DB; swap in the fixture's two so the
+    // positional splice is asserted against the fixture, not the live page.
+    fresh.prepare("DELETE FROM dataset_entries WHERE page='Benchmarks'").run();
+    const ins = fresh.prepare(
+      'INSERT INTO dataset_entries(item_id,name,url,page,section,kind,heading_md,body_md,ordinal) VALUES(?,?,?,?,?,?,?,?,?)',
+    );
+    const insItem = fresh.prepare('INSERT INTO items(id,type,slug) VALUES(?,?,?)');
+    insItem.run('ds:alpha-bench-xyz', 'dataset', 'alpha-bench-xyz');
+    ins.run('ds:alpha-bench-xyz', 'Alpha Bench', 'https://example.com/alpha', 'Benchmarks', '', 'other', '[Alpha Bench](https://example.com/alpha)', 'Alpha body.', 0);
+    insItem.run('ds:beta-bench-xyz', 'dataset', 'beta-bench-xyz');
+    ins.run('ds:beta-bench-xyz', 'Beta Bench', null, 'Benchmarks', '', 'other', 'Beta Bench', 'Beta body, unlinked heading.', 1);
+
+    expect(emitDatasetPage(fresh, src, 'Benchmarks')).toBe(text);
   });
 });
 let db: Db;
@@ -143,12 +171,17 @@ describe('Datasets inventory round-trip', () => {
 describe('Datasets curated-entry round-trip', () => {
   it('every dataset page re-parses to an identical curated `### …` entry-set', () => {
     let total = 0;
-    for (const page of [...INVENTORY_PAGES, ...REFERENCE_PAGES]) {
+    // Benchmarks included: it is the only H2-entry page, and omitting it here while
+    // db:verify covers it left the two oracles disagreeing about what is checked.
+    for (const page of [...INVENTORY_PAGES, ...REFERENCE_PAGES, BENCHMARKS_PAGE]) {
       const src = join(REPO_ROOT, 'Datasets', `${page}.md`);
       if (!existsSync(src)) continue;
       const original = extractDatasetEntries(src);
       total += original.length;
-      const path = join(TMP, `entries-${page}.md`);
+      // The temp file must keep the PAGE's basename: extractDatasetEntries derives the
+      // entry depth from the filename, so an `entries-Benchmarks.md` would be read at
+      // depth 3, find nothing, and "round-trip" against an empty set.
+      const path = join(TMP, `${page}.md`);
       writeFileSync(path, emitDatasetPage(db, src, page));
       expect(extractDatasetEntries(path), `${page}.md entries drifted`).toEqual(original);
     }

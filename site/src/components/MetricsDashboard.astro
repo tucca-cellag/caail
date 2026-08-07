@@ -166,8 +166,10 @@ const datasetsDays = daysAgo(momentum?.datasetsLastModified ?? null);
     <h2 class="md-h caail-display">Datasets by species — where help is wanted</h2>
     <p class="md-sub">
       <strong>{datasets.total} catalogued datasets</strong> across {library.species} pages
-      — {datasets.speciesRows} per-species inventory rows, {datasets.referenceEntries} on the
-      reference pages, {datasets.benchmarkEntries} benchmark datasets.{' '}
+      — {datasets.speciesRows} per-species inventory rows, {datasets.curatedEntries} curated
+      entries on those same species and cross-species pages (atlases, metabolic models and
+      reference sets), {datasets.referenceEntries} on the reference pages,
+      {' '}{datasets.benchmarkEntries} benchmark datasets.{' '}
       {stubCount > 0 ? (
         <Fragment>The per-species deposit counts below show where the field (and this library)
         is still thin: {stubCount} species {stubCount === 1 ? 'page is' : 'pages are'} still a

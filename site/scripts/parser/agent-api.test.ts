@@ -31,6 +31,7 @@ import { buildDatasetInventory } from './dataset-inventory.js';
 import { buildTopicsModel } from './topics.js';
 import { buildTaxonomyModel } from './taxonomy.js';
 import { extractInventory } from '../db/extract.js';
+import { curatedEntryCount } from './datasets.js';
 
 const papers = buildPapersModel();
 const catalog = buildCatalogModel();
@@ -288,6 +289,35 @@ describe('datasets.json inventory', () => {
     expect((body.inventory ?? []).length).toBeGreaterThan(0);
   });
 
+  it('reaches the benchmark datasets, which live under H2 rather than H3 headings', () => {
+    // #156. Every other dataset page puts one curated entry per `###`; Datasets/Benchmarks.md
+    // puts one per `##`. The extractor keyed on depth 3, so the benchmarks fell through the gap
+    // between two heading conventions and reached the endpoint in neither partition.
+    //
+    // Ground truth is read from the Markdown — a different path from the endpoint, which is
+    // built from the committed NDJSON. It must be `curatedEntryCount`, not a raw H2 count: the
+    // page is explicitly allowed to grow a `## Further reading` footer, and a raw count would
+    // then demand an 18th dataset and fail against correct code.
+    const onPage = curatedEntryCount(REPO_ROOT, 'Benchmarks');
+    expect(onPage).toBeGreaterThan(10); // sanity: the ground truth is not empty
+    expect(itemsForPage(body, 'Benchmarks').length).toBe(onPage);
+  });
+
+  it('answers "what evaluation data does CAAIL index" with resources, not just names', () => {
+    // The behavioural check: an agent choosing a benchmark needs somewhere to fetch it.
+    const benchmarks = itemsForPage(body, 'Benchmarks');
+    const named = benchmarks.find((e: any) => /MassSpecGym/i.test(e.name));
+    expect(named, 'MassSpecGym should be reachable from the datasets endpoint').toBeDefined();
+    expect(named.url).toMatch(/^https?:\/\//);
+    // Every benchmark should be fetchable: an eval dataset an agent cannot reach is a name,
+    // not a resource. `url` is nullable in the schema (unlinked GEM headings on the species
+    // pages use it, and emit.test.ts covers that shape) — but on this page it should never
+    // be exercised, because a benchmark always has a canonical home to link.
+    for (const e of benchmarks) {
+      expect(e.url, `${e.name} has no URL — link its heading`).toMatch(/^https?:\/\//);
+    }
+  });
+
   it('names its columns, since they differ per page', () => {
     // Cow/Chicken tables are 8 columns, Fish/Crustacean/Mollusk 9 (an extra Species),
     // CrossSpecies a different 6 — positional cells would be unreadable without headers.
@@ -314,5 +344,12 @@ describe('site/public/api/datasets.json (the shipped file)', () => {
       (e: any) => e.page === 'Cow',
     );
     expect(cow.length).toBeGreaterThanOrEqual(cowTable.rows.length);
+  });
+
+  it('shows an agent every benchmark a reader of Datasets/Benchmarks.md sees', () => {
+    const shippedBenchmarks = [...(shipped.entries ?? []), ...(shipped.inventory ?? [])].filter(
+      (e: any) => e.page === 'Benchmarks',
+    );
+    expect(shippedBenchmarks.length).toBe(curatedEntryCount(REPO_ROOT, 'Benchmarks'));
   });
 });
