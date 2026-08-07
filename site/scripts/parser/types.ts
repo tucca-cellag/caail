@@ -730,10 +730,13 @@ export type TopicsData = z.infer<typeof TopicsDataSchema>;
  * at all, which is how the API came to be both emitted unvalidated and consumed by
  * guesswork.
  *
- * They are `strictObject` at the top level on purpose. `z.toJSONSchema` emits
- * `additionalProperties: false`, but zod's ordinary `.parse` silently STRIPS unknown
- * keys, so a lax schema would validate a payload carrying a field its own published
- * schema declares invalid. Strict makes the check mean what the document claims.
+ * They are `strictObject` at the top level so zod's own `.parse` rejects a stray key
+ * rather than silently stripping it. Note what this does NOT do: `.strict()` does not
+ * cascade into nested schemas, so it never protected an unknown key inside an array item.
+ * Nor does it change the emitted JSON Schema — `z.toJSONSchema` writes
+ * `additionalProperties: false` for a plain `z.object` just the same. Enforcement at
+ * depth comes from validating against the emitted document with ajv; see `assertValid`
+ * in openapi.ts, which explains why that is the check that counts.
  *
  * Everything here is GET of a static file: no request bodies, no parameters, no auth.
  */

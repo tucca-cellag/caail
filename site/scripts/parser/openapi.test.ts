@@ -110,6 +110,33 @@ describe('emitted payloads are validated against their own schema', () => {
       buildAgentApi({ ...inputs, taxonomy: { ...taxonomy, surprise: 1 } }),
     ).toThrow(/taxonomy\.json/i);
   });
+
+  it('rejects an extra key NESTED INSIDE AN ARRAY ITEM, not just at the payload root', () => {
+    // Found by a cross-model review, and the reason the check is ajv-against-the-emitted-
+    // schema rather than zod: `.strict()` does NOT cascade into nested schemas, so with a
+    // root-only check `catalog.software[0].sneaky` validated cleanly and was written to
+    // disk — into a file whose own published schema says additionalProperties: false.
+    //
+    // The previous version of the test above injected only at the root, which is exactly
+    // the case that already worked. A test that exercises the passing case and calls it
+    // coverage is worse than no test, because it reads as a guarantee.
+    const poisoned = {
+      ...catalog,
+      software: catalog.software.map((e, i) => (i === 0 ? { ...e, sneaky: true } : e)),
+    };
+    expect(() => buildAgentApi({ ...inputs, catalog: poisoned })).toThrow(/catalog\.json/i);
+    // and it names the offending property, so the failure is actionable
+    expect(() => buildAgentApi({ ...inputs, catalog: poisoned })).toThrow(/sneaky/);
+  });
+
+  it('rejects a bad value deep inside a nested array item', () => {
+    // Same class, different shape: a wrong TYPE rather than an extra key, two levels down.
+    const poisoned = {
+      ...datasets,
+      entries: datasets.entries.map((e, i) => (i === 0 ? { ...e, topics: 'not-an-array' } : e)),
+    };
+    expect(() => buildAgentApi({ ...inputs, datasets: poisoned })).toThrow(/datasets\.json/i);
+  });
 });
 
 describe('the shipped openapi.json', () => {

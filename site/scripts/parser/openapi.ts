@@ -18,6 +18,9 @@
  * resolve correctly against the Pages origin without one.
  */
 
+import Ajv2020 from 'ajv/dist/2020.js';
+import addFormats from 'ajv-formats';
+import type { ValidateFunction } from 'ajv';
 import { z } from 'zod';
 
 import {
@@ -140,11 +143,49 @@ export const API_ENDPOINTS: readonly ApiEndpointSpec[] = [
 ];
 
 /**
+ * Compiled validators for the PUBLISHED schemas, one per endpoint, built once.
+ *
+ * Validating with ajv against the emitted JSON Schema rather than with `schema.parse()`
+ * is the whole point, and it was not the original design. Zod's `.strict()` does NOT
+ * cascade: with a root-only strict check, an unknown key nested inside an array item
+ * (`catalog.software[0].sneaky`) validated cleanly and was written to disk, into a file
+ * whose own published schema says `additionalProperties: false`. A cross-model review
+ * caught it; the test above now covers it.
+ *
+ * `z.toJSONSchema` already emits `additionalProperties: false` at EVERY level — for plain
+ * `z.object` as much as for `z.strictObject` — so checking the generated document closes
+ * the gap by construction, at any nesting depth, and cannot rot when someone adds a new
+ * nested type. It is also the more faithful check: this is the schema a consumer holds.
+ */
+let compiled: Map<string, ValidateFunction> | null = null;
+
+function apiValidators(): Map<string, ValidateFunction> {
+  if (compiled) return compiled;
+  const ajv = new Ajv2020({ strict: false, allErrors: true });
+  addFormats(ajv);
+  // Register the components block under an id so `caail#/components/schemas/X` resolves
+  // by JSON pointer exactly the way an OpenAPI consumer resolves it.
+  ajv.addSchema({ $id: 'caail', components: { schemas: componentSchemas() } });
+  compiled = new Map(
+    API_ENDPOINTS.map((e) => [
+      e.file,
+      ajv.compile({ $ref: `caail#/components/schemas/${e.id}` }),
+    ]),
+  );
+  return compiled;
+}
+
+/**
  * Validate one emitted body against its endpoint's schema.
  *
  * Called before the files are written, so a model that changed shape fails the build
- * instead of shipping. The error names the file, because a bare zod path is not enough
- * to find which of seven payloads went wrong.
+ * instead of shipping. The error names the file, because a bare instance path is not
+ * enough to find which of seven payloads went wrong.
+ *
+ * BOTH checks run, and they catch different things. Zod is the source schema and can
+ * express constraints JSON Schema cannot round-trip, so it runs first for its clearer
+ * message; ajv then checks the payload against the document consumers actually receive,
+ * which is what closes the nested-object gap above. Neither subsumes the other.
  *
  * `openapi.json` itself is exempt: it is the description, not a described response, and
  * schema-ing it would just be re-implementing the OpenAPI meta-schema.
@@ -152,19 +193,36 @@ export const API_ENDPOINTS: readonly ApiEndpointSpec[] = [
 export function assertValid(file: string, body: unknown): void {
   const spec = API_ENDPOINTS.find((e) => e.file === file);
   if (!spec) return;
-  const result = spec.schema.safeParse(body);
-  if (result.success) return;
-  const issues = result.error.issues
-    .slice(0, 5)
-    .map((i) => `  ${i.path.join('.') || '<root>'}: ${i.message}`)
-    .join('\n');
-  throw new Error(
-    `agent-api: ${file} does not match its published schema ` +
-      `(components.schemas.${spec.id}), so it was not written:\n${issues}` +
-      (result.error.issues.length > 5
-        ? `\n  …and ${result.error.issues.length - 5} more`
-        : ''),
-  );
+
+  const fail = (issues: string[], total: number): never => {
+    throw new Error(
+      `agent-api: ${file} does not match its published schema ` +
+        `(components.schemas.${spec.id}), so it was not written:\n` +
+        issues.slice(0, 5).join('\n') +
+        (total > 5 ? `\n  …and ${total - 5} more` : ''),
+    );
+  };
+
+  const zod = spec.schema.safeParse(body);
+  if (!zod.success) {
+    fail(
+      zod.error.issues.map((i) => `  ${i.path.join('.') || '<root>'}: ${i.message}`),
+      zod.error.issues.length,
+    );
+  }
+
+  const validate = apiValidators().get(file)!;
+  if (!validate(body)) {
+    const errs = validate.errors ?? [];
+    fail(
+      errs.map((e) => {
+        const extra = (e.params as { additionalProperty?: string } | undefined)
+          ?.additionalProperty;
+        return `  ${e.instancePath || '<root>'}: ${e.message}${extra ? ` — "${extra}"` : ''}`;
+      }),
+      errs.length,
+    );
+  }
 }
 
 /**
