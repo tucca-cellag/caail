@@ -32,18 +32,24 @@ python3 .claude/skills/matrix-classification-audit/extract_matrix_corpus.py
 `zotero-collection-scope/scope.py` via a relative path, which is why it stays under
 `.claude/skills/`. Don't relocate it without patching that import.
 
-## Known state (2026-07-20)
+## Known state (2026-08-08)
 
-Last run: 195 matrix-participating refs, **155 with full text (79%)**. Coverage is
-strongly banded by ingest date, not age:
+Last run: **229 matrix-participating refs, 222 with full text (97%)**. Seven lack usable
+text: 2 have a PDF with no full-text cache, 5 are not in Zotero at all. They are refs
+**52, 167, 195, 289, 290, 309, 310** — four in AI Tooling, two in Scaffolding, one in
+Sensory Prediction.
 
-| Band | Full text |
-|---|---|
-| Legacy 1–152 | 105/108 (97%) |
-| 153–248 | 50/55 (91%) |
-| Wave 3b 249–277 | 0/29 (0%) |
-| 278+ | 0/3 (0%) |
+**Wave 3b (249–277) is 29/29.** Those PDFs were acquired on 2026-07-21.
 
-The Wave 3b tranche (PR #66) was landed from gap-analysis output and classified from
-abstracts; those 29 papers are not in the Zotero libraries with attached PDFs. Ten of
-them sit in Bioprocess & Scale-Up. Re-run the extract after the PDFs are added.
+> **This block is a snapshot and goes stale the moment anyone adds a PDF. Trust the
+> script's output over this table.** The previous version of this section claimed
+> `Wave 3b 0/29 (0%)` and was still saying so on 2026-08-08, three weeks after
+> `matrix-corpus.json` was regenerated showing 29/29. That stale number was read as a
+> live one and turned a solved problem back into a feared one. If you are deciding
+> whether work is needed, run the script; it prints the real figures in about a minute.
+
+**`has_fulltext` measures availability, not verification.** A ref can have its PDF
+attached and still carry a placement nobody checked against the methods section. The
+Wave 3b tranche is exactly that case: classified from abstracts, PDFs added afterwards,
+never re-audited. This script is the mechanical half of an audit and cannot tell you
+which placements were actually read.
