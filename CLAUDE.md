@@ -245,6 +245,7 @@ The per-entry summaries in the `Datasets/` pages, `Databases.md`, `Software.md`,
 
 ## Workflow
 
+- **Jira first, always.** Every piece of work gets an issue in the private **CAAIL** Jira project *before* the work starts, not after. A public GitHub issue is an additional venue when the content is genuinely world-safe, never a substitute. The failure this prevents: a session's reasoning is the expensive part and it evaporates on compaction, so anything that lives only in a todo list or a chat transcript is already lost. See "Jira conventions" below for the schema. (The site and cloud id are deliberately not recorded in this world-readable file — resolve them at runtime via `getAccessibleAtlassianResources` and `getVisibleJiraProjects`.)
 - **The structured catalog is authored in a SQLite DB, not by hand** — see "The SQLite authoring backend" below. The matrix + references in `Papers.md`, the entries in `Software.md` / `Databases.md`, and the inventory tables in `Datasets/*.md` are **generated** from `site/db/ndjson/`; don't hand-edit those regions (a hook blocks it; CI fails on drift). Prose in those files, and every other canonical file, is still just hand-authored Markdown — preview in any Markdown viewer or let GitHub render it. (The generated website under `site/` has its own build — see "Documentation site (`site/`)" below.)
 - **Branching.** Work on `<type>/<slug>` branches off `main`; open PRs against `main`. Never commit directly to `main`.
 - **Superpowers specs stay local.** `.gitignore` excludes `docs/superpowers/`, so write the design doc there but don't commit it — the skill's default to commit doesn't apply here, and the existing specs are all untracked.
@@ -255,6 +256,39 @@ The per-entry summaries in the `Datasets/` pages, `Databases.md`, `Software.md`,
 - **PRs.** Describe what you added and why it fits — for papers, mention the AI method(s) and research area(s) it spans (i.e. which matrix cells get updated).
 - **Publishing is irreversible.** `tucca-cellag/caail` is **public**: issue bodies, PR bodies, commit messages, branch names **and `.gitignore` comments** are all world-readable, GitHub issues can be deleted but **pull requests cannot**, and GHArchive permanently captures every public event. Before filing or commenting, confirm every quoted path, code block and architectural detail originates in *this* repo — anything read from a private repo or a third party's source is not publishable, and paraphrase discloses as much as a quote. Findings about a weakness in someone else's live service go to its owner privately, never a tracker. Rule: `.claude/rules/publishing.md`; enforced at the Bash layer by `.claude/hooks/check-public-publish.sh` (wired in the committed `.claude/settings.json`, tests in `check-public-publish.test.py`).
 - **Shipping a branch.** When a feature branch is done, reviewed, and locally green, the **`caail-pr-wrapup`** skill (in `.claude/skills/`) is the Ship stage: it pushes, opens the PR, watches CI, merges (after confirming — the merge triggers the public Pages deploy), watches the `docs.yml` deploy to green (build + Lighthouse + deploy), verifies the live site, and cleans up the worktree/branch. It owns the CAAIL-specific gotchas (the `gh pr merge` "main already checked out" benign failure, the Lighthouse gate, which CI runs on which paths) so they don't have to be re-derived each time.
+
+## Jira conventions
+
+Jira is the durable record. Claude's todo list is session-scoped and dies with the session; a chat transcript gets compacted. **Whatever is only in those two places is already lost.** So the reasoning goes to Jira as it is produced, not once the work is finished.
+
+**Hierarchy.** `Workstream` (hierarchy 1) → `Task` (0) → `Sub-task` (-1). A Workstream is a body of related work with a shared thesis; Tasks hang off it via `parent`. Retroactive Workstreams recording completed work are an established and useful pattern, not clutter.
+
+**Status.** `To Do` (transition id `21`) → `In Progress` (`31`) → `Done` (`41`). All are global and always available. **Transition to In Progress when work actually starts**, not at the end. A board where everything jumps To Do → Done records no reasoning and answers no question about where time went.
+
+**Descriptions carry reasoning, not just instructions.** State the thesis, what superseded what and why, the central vulnerability of the argument, and which options were rejected. When the full record lives in a gitignored working file, name that path. A description that only says what to do is a description that will be re-derived from scratch in three weeks.
+
+**Fields available on Task** (the project exposes no others worth using; `Category` has no configured options):
+
+| Field | Key | Use |
+| --- | --- | --- |
+| Priority | `priority` | Highest / High / Medium / Low / Lowest |
+| Start date | `customfield_10015` | When work is expected to begin |
+| Due date | `duedate` | Loose plan, not a commitment |
+| Original estimate | `timetracking` | Rough hours |
+| Labels | `labels` | The taxonomy below |
+
+**Priority is argued, never inherited.** Do not take a CVSS score, a linter severity, or a source rubric's framing as the priority. Score against this project's actual exposure and say why in the description. A build-time-only advisory rated critical upstream is not critical here.
+
+**Label taxonomy.** Flat lowercase-hyphen strings, combined freely:
+
+- Kind: `finding` · `workflow`
+- Domain: `security` · `supply-chain` · `ci-cd` · `testing` · `observability` · `a11y` · `perf` · `tooling` · `content` · `docs`
+- Disclosure: `disclosure-private` · `disclosure-public-ok`
+- Workstream-scoped prefixes (`phase-*`, `lane-*`, `rubric-*`) are minted per workstream and documented in its description.
+
+**`disclosure-private` is a hard gate, not a hint.** It marks content that must not reach the public repo in any form: unmitigated weaknesses in a live service, unpublished analysis, named individuals, and anything derived from paid or third-party material. Paraphrase discloses as much as a quote. Once a weakness is fixed the label can be dropped and the finding discussed freely.
+
+**Jira vs public GitHub.** Jira is the default and is never skipped. A public GitHub issue is an *additional* venue, appropriate when the content is world-safe and outside contributors benefit from seeing it: reproducible bugs in shipped behaviour, feature proposals, content suggestions. Where both exist, cross-reference each from the other. Anything `disclosure-private` gets no GitHub issue at all.
 
 ## The SQLite authoring backend (structured catalog)
 
