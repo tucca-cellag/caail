@@ -1,6 +1,6 @@
 # CAAIL — Cellular Agriculture AI Library
 
-> A curated, openly-licensed library at the intersection of cellular agriculture and artificial intelligence: peer-reviewed papers (an AI-method × research-area matrix), open-source software, databases, per-species datasets, talks, and field resources. A project of the Tufts University Center for Cellular Agriculture (TUCCA); content is MIT-licensed.
+> A curated, openly-licensed library at the intersection of cellular agriculture and artificial intelligence: papers and preprints (an AI-method × research-area matrix), open-source software, databases, per-species datasets, talks, and field resources. A project of the Tufts University Center for Cellular Agriculture (TUCCA); content is MIT-licensed.
 
 This website is a navigation layer over canonical, human-readable Markdown in the GitHub repository (https://github.com/tucca-cellag/caail), which is the authoritative source for citation and full detail. The curated summaries on these pages are deliberately compressed — for substantive use, fetch the canonical source (a paper's DOI, a tool's linked repository, or the GitHub Markdown).
 
