@@ -282,11 +282,25 @@ Jira is the durable record. Claude's todo list is session-scoped and dies with t
 **Label taxonomy.** Flat lowercase-hyphen strings, combined freely:
 
 - Kind: `finding` · `workflow`
-- Domain: `security` · `supply-chain` · `ci-cd` · `testing` · `observability` · `a11y` · `perf` · `tooling` · `content` · `docs`
+- Domain: `security` · `supply-chain` · `ci-cd` · `testing` · `observability` · `a11y` · `perf` · `tooling` · `content` · `docs` · `verification` · `licensing`
 - Disclosure: `disclosure-private` · `disclosure-public-ok`
 - Workstream-scoped prefixes (`phase-*`, `lane-*`, `rubric-*`) are minted per workstream and documented in its description.
 
 **`disclosure-private` is a hard gate, not a hint.** It marks content that must not reach the public repo in any form: unmitigated weaknesses in a live service, unpublished analysis, named individuals, and anything derived from paid or third-party material. Paraphrase discloses as much as a quote. Once a weakness is fixed the label can be dropped and the finding discussed freely.
+
+**Search the whole open board before filing anything. This is not optional.** The board runs to ~90 open issues and no one holds it in their head, so "I don't remember one like this" is not evidence. Filing a duplicate is worse than filing nothing: it splits the reasoning across two tickets, and whichever one you are not reading looks like the complete picture.
+
+**Do not rely on a JQL text search to find it.** Jira's text index tokenizes, so `summary ~ "full text"` and `description ~ "CAAIL-166"` both miss matches you need — hyphenated keys in particular. The only sound method is to pull every open issue and scan locally:
+
+```
+# via the Rovo MCP: project = CAAIL AND statusCategory != Done ORDER BY key ASC
+# fields: key, summary, parent, priority, labels   (descriptions too if the topic is subtle)
+jq -r '.issues.nodes[] | [.key, .fields.summary] | @tsv' <saved-result> | grep -i '<concept>'
+```
+
+Search for the **concept**, not your phrasing of it. A ticket about "refs whose classification rests on something short of full text" is the same work as one about "abstract-only placements", and no keyword search finds the second from the first. Read the summaries of anything adjacent before concluding it is new.
+
+**When you find an overlap, prefer editing the existing ticket to filing a new one.** If both genuinely need to exist, say in each what the boundary is (this one owns X, that one owns Y) and link them. An unlinked pair of overlapping tickets is how the same work gets done twice or not at all.
 
 **Jira vs public GitHub.** Jira is the default and is never skipped. A public GitHub issue is an *additional* venue, appropriate when the content is world-safe and outside contributors benefit from seeing it: reproducible bugs in shipped behaviour, feature proposals, content suggestions. Where both exist, cross-reference each from the other. Anything `disclosure-private` gets no GitHub issue at all.
 
