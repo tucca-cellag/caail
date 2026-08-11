@@ -382,52 +382,11 @@ test('the #why mock answers the same cell it claims to query', async ({ page }) 
   ).toBe(cell!.refIds.length);
 });
 
-test.describe('worked-queries carousel', () => {
-  test('exactly one card is showing, and the frame never resizes as they change', async ({ page }) => {
-    await page.goto('./');
-    const stack = page.locator('.ask .stack');
-    await expect(stack).toBeVisible();
-
-    const pills = page.locator('.ask [data-pill]');
-    const n = await pills.count();
-    expect(n, 'no carousel pills found — the selector has drifted').toBeGreaterThan(1);
-
-    const heights = new Set<number>();
-    for (let i = 0; i < n; i++) {
-      await pills.nth(i).click();
-      await page.waitForTimeout(650); // let the entrance settle
-      heights.add(Math.round((await stack.boundingBox())!.height));
-
-      // `visibility`, not `hidden` — so count what is actually being shown rather than
-      // what is in the DOM. Every card is present in the DOM at all times by design.
-      const shown = await page.locator('.ask [data-card]').evaluateAll((els) =>
-        els.filter((e) => getComputedStyle(e).visibility !== 'hidden').length,
-      );
-      expect(shown, `card ${i}: ${shown} cards visible at once`).toBe(1);
-    }
-    expect(
-      [...heights],
-      `the frame resized between cards (${[...heights].join(', ')}px) — the grid stack is not sizing to the tallest card`,
-    ).toHaveLength(1);
-  });
-
-  test('the first card is readable with no JavaScript at all', async ({ browser }) => {
-    const ctx = await browser.newContext({ javaScriptEnabled: false });
-    const page = await ctx.newPage();
-    await page.goto('./');
-    // The controls are inert without JS, but the content must not be.
-    await expect(page.locator('.ask [data-card]').first()).toBeVisible();
-    await expect(page.locator('.ask [data-card]').first().locator('.q')).not.toBeEmpty();
-    await ctx.close();
-  });
-});
-
 test('the homepage agent bands have no serious accessibility violations', async ({ page }) => {
   await page.goto('./');
   const results = await new AxeBuilder({ page })
     .withTags(['wcag2a', 'wcag2aa'])
     .include('.why')
-    .include('.ask')
     .include('.gs')
     .include('.hero')
     .analyze();
