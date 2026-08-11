@@ -10,9 +10,10 @@
  * height by accident; side by side they read as three ragged boxes. Stacked into one
  * frame, each path gets the full width and there is nothing left to misalign.
  *
- * The rail is underlined rather than pilled because AskExamples already uses pills
- * further up the page. Two identical widgets doing different jobs would read as one
- * widget repeated.
+ * The rail is underlined rather than pilled to stay distinct from the pill control in
+ * AskExamples: two identical widgets doing different jobs read as one widget repeated.
+ * That band is currently unmounted, so the clash is latent rather than visible, and the
+ * underline stays precisely so remounting it does not reintroduce the collision.
  */
 import SetupTabs from './SetupTabs.astro';
 ---

@@ -32,7 +32,7 @@ strategy, and the transport phenomena (mixing, mass transfer, fluid dynamics) th
 In scope: reactor and impeller design, CFD/mixing simulation, fed-batch and feeding-strategy control,
 real-time process monitoring, precision-fermentation process design (microbial-host production of
 media proteins and growth factors, an in-scope cellular-agriculture route), and the
-chemical/biological-engineering know-how cultivated-meat manufacturing depends on at volume, 
+chemical/biological-engineering know-how cultivated-meat manufacturing depends on at volume,
 including methods demonstrated on non-biological reactor physics that transfer directly to bioreactor
 scale-up. Out of scope: the medium recipe itself
 (→ *Media Optimization*) and intracellular biology (→ *Cellular Engineering*).
@@ -88,7 +88,7 @@ Sequential, surrogate-model-based optimization: a probabilistic model (usually a
 plus an **acquisition function** chooses the next experiment to run, sample-efficiently. In cell-ag,
 the workhorse for media and process optimization under a tight experimental budget. **Distinct from**
 Bayesian *inference* (posterior or flux estimation that quantifies uncertainty without
-acquisition-driven experiment selection), that is not this row.
+acquisition-driven experiment selection); that is not this row.
 
 ### Deep Learning
 Multi-layer neural networks not better described by a more specific row: deep MLPs, generic
@@ -144,7 +144,7 @@ Learning* (no trees, bagging, or boosting), and *Chemometrics* (not restricted t
 latent-variable projection).
 
 ### Chemometrics
-Multivariate statistics for extracting quantitative information from chemical measurements, 
+Multivariate statistics for extracting quantitative information from chemical measurements,
 overwhelmingly **spectra**. The workhorses are **Partial Least Squares (PLS)** regression, PLS-DA
 (discriminant analysis), PCA, and OPLS. In cell-ag this is the backbone of spectroscopy-based
 **Process Analytical Technology**: NIR/Raman monitoring of glucose, lactate, and biomass in a

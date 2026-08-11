@@ -593,6 +593,38 @@ test.describe('homepage section rail', () => {
     expect(await page.locator('.rail a[aria-current="true"]').count()).toBe(1);
   });
 
+  /**
+   * No tick may be decorative.
+   *
+   * `.caail-band-pair` lays Community and Cite side by side above 56rem, and the rail only
+   * renders above 78rem, so within the rail's whole live range those two sections start at
+   * the SAME offsetTop. While the scan picked a single winner on that tie, the loser could
+   * never be active at any scroll position: a permanently dark tick, with which of the two
+   * died decided by list order alone.
+   *
+   * The sibling test above cannot catch this — it asserts only that the indicator advances
+   * more than three times, which stays true with a dead entry. This walks the page and
+   * asserts every entry lights up somewhere, which is the property that was actually false.
+   */
+  test('every rail entry lights up at some scroll position', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('./');
+    const { ids, seen } = await page.evaluate(async () => {
+      const links = [...document.querySelectorAll<HTMLAnchorElement>('.rail a[data-rail]')];
+      const found = new Set<string>();
+      for (let y = 0; y <= document.body.scrollHeight; y += 200) {
+        window.scrollTo(0, y);
+        await new Promise((r) => setTimeout(r, 40));
+        for (const a of links) {
+          if (a.getAttribute('data-active') === 'true') found.add(a.dataset.rail!);
+        }
+      }
+      return { ids: links.map((a) => a.dataset.rail!), seen: [...found] };
+    });
+    const dead = ids.filter((id) => !seen.includes(id));
+    expect(dead, `rail entries that never light up at any scroll position: ${dead.join(', ')}`).toEqual([]);
+  });
+
   test('the rail is hidden where there is no gutter for it', async ({ page }) => {
     await page.setViewportSize({ width: 1100, height: 900 });
     await page.goto('./');

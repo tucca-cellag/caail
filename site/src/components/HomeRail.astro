@@ -28,14 +28,18 @@ const items = [
   { id: 'top', label: 'Top' },
   { id: 'explore', label: 'Explore the library' },
   { id: 'start', label: 'Start here' },
-  /* These two are NOT free text: each matches its section's `.eyebrow` verbatim, and
-     `homepage-agent.spec.ts` fails if they drift apart.
+  /* `why` is NOT free text: it matches its section's `.eyebrow` verbatim, and
+     `homepage-agent.spec.ts` fails if the two drift apart.
      A rail label and a headline have different jobs. The headline can be expressive
      because the section around it supplies the context; the rail label is read cold, in
      two words, by someone deciding whether to keep scrolling. Hand-copying the headline
      is what produced "Before and after" (before and after WHAT) and "Ask something
      specific" (an instruction with no destination in it). The eyebrow already IS the
-     compressed categorical tag, so it is the right source. */
+     compressed categorical tag, so it is the right source.
+     Be precise about the blast radius: that guard exempts any section with no
+     `.eyebrow`, and `why` is currently the ONLY section that renders one. Every other
+     label below is hand-written and unguarded, so renaming one of those sections drifts
+     the rail silently. Give a section an eyebrow and it joins the guard automatically. */
   { id: 'why', label: 'Why CAAIL' },
   { id: 'connect', label: 'Connect your agent' },
   { id: 'community-band', label: 'Community' },
@@ -87,8 +91,22 @@ const items = [
       if (window.innerHeight + window.scrollY >= document.body.scrollHeight - 2) {
         active = targets[targets.length - 1]!;
       }
+
+      // Sections laid out SIDE BY SIDE start at the same offsetTop, so "which section
+      // is the reader in" genuinely has more than one true answer. The Community and
+      // Cite bands are exactly that pair. Picking one winner meant the other tick could
+      // never light at any scroll position — a dead indicator, and which one died was
+      // decided by nothing more than list order.
+      //
+      // So light every tied tick. `aria-current` is NOT duplicated with them: it marks
+      // the current item within a set, and only one element in a set should carry it
+      // (MDN, aria-current). The visual state therefore rides on `data-active`, which
+      // has no such constraint, and `aria-current` stays on one link for assistive tech.
+      const tied = targets.filter((t) => t.el.offsetTop === active.el.offsetTop);
       for (const t of targets) {
-        if (t === active) t.link.setAttribute('aria-current', 'true');
+        if (tied.includes(t)) t.link.setAttribute('data-active', 'true');
+        else t.link.removeAttribute('data-active');
+        if (t === tied[0]) t.link.setAttribute('aria-current', 'true');
         else t.link.removeAttribute('aria-current');
       }
     };
@@ -173,7 +191,7 @@ const items = [
   }
   .rail a:hover .tick,
   .rail a:focus-visible .tick { background: var(--caail-link); }
-  .rail a[aria-current='true'] .tick { transform: none; background: var(--caail-primary); }
+  .rail a[data-active='true'] .tick { transform: none; background: var(--caail-primary); }
 
   /* Labels are absolutely positioned and so contribute NOTHING to the rail's box.
      Laid out in flow they made the nav 182px wide while the content column started at
@@ -218,7 +236,7 @@ const items = [
       transform: translate(0, -50%);
     }
   }
-  .rail a[aria-current='true'] { color: var(--caail-primary); font-weight: 600; }
+  .rail a[data-active='true'] { color: var(--caail-primary); font-weight: 600; }
   .rail a:hover, .rail a:focus-visible { color: var(--caail-link); }
 
   .rail ul { padding: .35rem; }

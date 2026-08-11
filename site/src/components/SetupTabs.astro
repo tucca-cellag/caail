@@ -24,6 +24,16 @@ const { compact = false, idPrefix = 'gs' } = Astro.props;
 const RAW = 'https://raw.githubusercontent.com/tucca-cellag/caail/main';
 const PROMPT = `Read ${RAW}/plugin/skills/caail/SKILL.md and use CAAIL to answer questions about cellular agriculture and AI.`;
 
+/* The install guide, named by its short site URL with the raw GitHub path as a fallback.
+   Two URLs rather than one because they fail in opposite situations: some agents cannot
+   reach GitHub Pages, and some restrict network access to package managers, a list that
+   includes github.com but not github.io. Naming both means the prompt works either way
+   without the reader having to diagnose which restriction they are behind.
+   `setup.md` is generated from `skills/caail-install/SKILL.md`, so the two are the same
+   document and cannot drift. */
+const INSTALL_DOC = 'https://tucca-cellag.github.io/caail/setup.md';
+const INSTALL_RAW = `${RAW}/skills/caail-install/SKILL.md`;
+
 const paths = [
   {
     id: 'any',
@@ -53,14 +63,17 @@ const paths = [
        difference; for Claude Code specifically it still ends up running those two
        commands, and the note names them for anyone who would rather run them directly. */
     lead: 'Already in a coding agent? Paste this prompt. It reads the guide and installs itself:',
-    steps: [`Read ${RAW}/plugin/skills/caail-install/SKILL.md and install CAAIL for me.`],
+    steps: [`Read ${INSTALL_DOC} (if 403, use ${INSTALL_RAW}) and install CAAIL for me.`],
     clients: [
       { n: 'Claude Code', i: 'simple-icons:claude' },
       { n: 'Cursor', i: 'simple-icons:cursor' },
       { n: 'Windsurf', i: 'lucide:wind' },
       { n: 'Cline', i: 'lucide:terminal' },
     ],
-    note: 'In Claude Code this runs claude plugin marketplace add tucca-cellag/caail then claude plugin install caail@caail. Persists across sessions; about 265 tokens of always-on context.',
+    /* No token count here on purpose. The figure it used to quote was hand-written beside
+       a file that changes, so it was wrong the moment the skill was edited and nothing
+       would have said so. Describe the cost instead of measuring it in prose. */
+    note: 'In Claude Code this runs claude plugin marketplace add tucca-cellag/caail then claude plugin install caail@caail. Persists across sessions, and adds one short skill to the context of every session.',
     link: { href: 'https://github.com/tucca-cellag/caail/tree/main/plugin', text: 'Read the plugin source →' },
   },
   {

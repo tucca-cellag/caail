@@ -329,7 +329,18 @@ const statSentence = `Indexing ${stats.map((s) => `${s.n} ${s.label}`).join(', '
 
       const start = () => {
         window.clearTimeout(timer);
-        timer = window.setTimeout(step, HOLD);
+        const [n, label] = entries[entry]!;
+        const full = n.length + 1 + label.length;
+        // Resume at the cadence of whatever phase we are actually in.
+        //
+        // A fully-typed entry takes its hold from `step`, which flips to `erasing` and
+        // waits HOLD before the first delete. Waiting HOLD here too made that entry sit
+        // for two holds. That is always the FIRST entry, because it starts fully typed
+        // (server-rendered), so the very statistic everyone sees held ~4s while every
+        // later one held ~2s. It also made a return from a hidden tab wait a full 2s
+        // even when it was interrupted mid-erase.
+        const delay = !erasing && chars >= full ? 0 : erasing ? ERASE : TYPE;
+        timer = window.setTimeout(step, delay);
       };
       // Typing into a tab nobody is looking at is pure waste, and the loop would
       // otherwise keep queueing timeouts that browsers throttle but do not stop.

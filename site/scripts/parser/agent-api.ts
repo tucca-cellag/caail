@@ -397,13 +397,18 @@ export function writeAgentApi(files: ApiFile[], apiDir: string): void {
 }
 
 /**
- * Republish the plugin's SKILL.md at `public/setup.md`, so the install prompt can use a
- * short site URL while the repository copy stays the single source of truth.
+ * Republish the INSTALL skill at `public/setup.md`, so the install prompt can use a short
+ * site URL while the repository copy stays the single source of truth.
  *
  * Copying rather than maintaining two files is deliberate: the install prompt carries a
  * raw.githubusercontent fallback for when the site 403s or is unreachable, and two
  * hand-edited copies of the same instructions would eventually disagree about which
  * endpoint answers what.
+ *
+ * The caller decides which skill this is, and it must be the installer rather than the
+ * `caail` query skill. Pointing it at the query skill made the fallback above impossible
+ * to honour: the prompt fetched a raw GitHub path directly and the short URL this
+ * function exists to publish went unused.
  */
 export function publishSkillDoc(skillPath: string, publicDir: string): void {
   mkdirSync(publicDir, { recursive: true });

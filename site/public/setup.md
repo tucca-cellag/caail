@@ -1,109 +1,95 @@
 ---
-name: caail
-description: Query CAAIL, a curated library of the AI and machine-learning work in cellular agriculture — 345 papers mapped by AI method against research area, plus the software, databases and per-species datasets the field uses. Use when the user is choosing tools, datasets or databases for a cell-ag experiment, pipeline or analysis; asking what AI methods have been applied to media optimization, cell-line engineering, bioprocess scale-up, scaffolding or sensory prediction; looking for cultivated-meat or alternative-protein data for a species; asking whether something has been studied; or asking what CAAIL contains. Also triggers on cultivated meat, cell-ag, cellular agriculture, alternative protein, and on questions about which dataset or tool to use for a cell-ag problem.
+name: caail-install
+description: Install the CAAIL plugin or skill into whichever coding agent is running — Claude Code (plugin marketplace), Cursor, Windsurf, or any other assistant that can fetch a URL. Use when the user asks to install CAAIL, set up CAAIL, add the CAAIL plugin, or says "install CAAIL for me".
 ---
 
-# CAAIL
+# Install CAAIL
 
-A curated map of AI/ML work in cellular agriculture. Free, MIT-licensed, maintained by the Tufts
-University Center for Cellular Agriculture.
+Install the Cellular Agriculture AI Library so it stays available across sessions.
 
-Everything is static JSON. Fetch what you need; there is nothing to install or authenticate.
+CAAIL is a curated map of AI/ML work in cellular agriculture, served as static JSON from
+GitHub. There is nothing to host, authenticate or run — installing only means putting the
+skill somewhere your agent will load it again next time.
 
-## Start here
+## Step 1: work out which client you are in
 
-Fetch this first. It carries the corpus date, the endpoint list, and counts labelled with the
-population they counted.
+Do not ask the user to tell you. Determine it, then confirm what you are about to do.
 
-- https://raw.githubusercontent.com/tucca-cellag/caail/main/site/public/api/index.json
+| Signal | Client | Path |
+| --- | --- | --- |
+| `claude` CLI is on PATH, or you are Claude Code | **Claude Code** | Path A |
+| Cursor, Windsurf, Cline, Zed or similar IDE agent | **IDE agent** | Path B |
+| Browser assistant with no shell | **No shell** | Path C |
 
-## Which endpoint answers what
+If a shell is available, `claude --version` settles Path A. If it fails or the command
+does not exist, you are not in Claude Code — go to Path B.
 
-Each URL below is complete and fetchable as written.
+## Path A — Claude Code (plugin marketplace)
 
-These are served from GitHub deliberately. Some clients restrict network access to package
-managers by default, a list that includes GitHub but not GitHub Pages, and on Team or Enterprise
-plans only an organisation owner can widen it. Fetching from GitHub therefore works everywhere
-without anyone changing a setting. The same files are also browsable at
-https://tucca-cellag.github.io/caail/api/ if you want to read one in a browser.
+Two commands. Run them, then report what each printed:
 
-| Question | Fetch |
-|---|---|
-| "What should I use for <cell-ag task>?" | https://raw.githubusercontent.com/tucca-cellag/caail/main/site/public/api/topics.json — the inverted index maps a subject to papers, software, databases **and** datasets at once |
-| "What AI methods have been applied to <area>?" | https://raw.githubusercontent.com/tucca-cellag/caail/main/site/public/api/matrix.json |
-| "Has anyone applied <method> to <area>?" | https://raw.githubusercontent.com/tucca-cellag/caail/main/site/public/api/matrix.json — then read the caveat below |
-| "Find me papers on X" | https://raw.githubusercontent.com/tucca-cellag/caail/main/site/public/api/papers.json |
-| "What software / databases exist for X?" | https://raw.githubusercontent.com/tucca-cellag/caail/main/site/public/api/catalog.json |
-| "What data exists for <species>?" | https://raw.githubusercontent.com/tucca-cellag/caail/main/site/public/api/datasets.json — two arrays: `entries` are curated portals and atlases, `inventory` are the per-study deposits. Filter either by `page` |
-| "What does CAAIL mean by <method or area>?" | https://raw.githubusercontent.com/tucca-cellag/caail/main/site/public/api/taxonomy.json — read before trusting or disputing a placement |
+```bash
+claude plugin marketplace add tucca-cellag/caail
+claude plugin install caail@caail
+```
 
-The papers endpoint carries DOI, code URL, data URL, topics, license and citation count per entry, so
-you can usually answer without fetching anything else.
+`marketplace add` may report that the marketplace is already present. That is not an
+error; continue to `install`.
 
-For "what could I combine my own run with", read `inventory`, not `entries`. The curated entries are
-portals, atlases and model files; the inventory rows are the individual deposits, each carrying its
-accession, assay type, tissue and size under the source page's own column labels.
+Verify with `claude plugin list` and confirm `caail` appears. The plugin adds one short
+skill to the context of every session.
 
-## Method names are abbreviated
+## Path B — IDE agents (Cursor, Windsurf, Cline, …)
 
-The matrix rows use short labels: `GNN`, `CNN`, `SVM`, `GAN / VAE`, `Chemometrics`, and several
-`Foundation Models: …` variants. A question phrased in full ("graph neural networks") will not match a
-row by string equality. Read the `methods` array in the matrix endpoint, or the definitions in the
-taxonomy endpoint, and map the question onto a label before concluding anything is absent. Reporting
-"not found" because the label differs is a false negative, and it is worse than the absence problem
-below because the caveat never fires.
+These do not implement Claude Code's plugin marketplace, so the two commands above will
+fail. Install the skill file instead.
 
-## The one thing to get right
+1. Fetch <https://raw.githubusercontent.com/tucca-cellag/caail/main/plugin/skills/caail/SKILL.md>
+2. Work out where the client loads project rules from: `.cursor/rules/caail.md` for
+   Cursor, `.windsurfrules` for Windsurf, `AGENTS.md` or `CLAUDE.md` for agents that read
+   those. If you are unsure which the client uses, ask rather than guess: writing to the
+   wrong file leaves the user believing CAAIL is installed when it is not.
+3. **Name the file you intend to write and get the user's agreement before writing it.**
+   Every one of these paths lives in the user's own repository, and `AGENTS.md` and
+   `CLAUDE.md` in particular are usually tracked, shared with collaborators, and already
+   full of instructions they wrote themselves. Appending to one is a change to their
+   project, not a step in your install. Ask first rather than writing and reporting after.
+4. Append; never overwrite. Then say exactly what you added and to which file.
 
-`matrix.json` enumerates **all 175 method×area cells**, including the 107 with no indexed paper. An
-empty cell means **CAAIL contains no paper classified there**. It does **not** mean no such work
-exists. CAAIL is a curated subset, not a census, and it has not measured its own recall.
+## Path C — no shell (browser assistants)
 
-Every empty cell carries a `scope` field saying exactly this. Pass that caveat on to the user rather
-than reporting a gap in CAAIL as a gap in the field.
+Nothing can be installed from inside the conversation. Tell the user plainly:
 
-Correct: *"CAAIL indexes no paper applying graph neural networks to scaffolding as of 2026-08-06.
-That is a gap in this curated corpus, not established absence in the literature."*
+- **claude.ai** — download the skill file and upload it under
+  Settings → Customize → Skills → Add → Upload skill. The web app installs skills by
+  file upload, not by URL.
+- **Anything else** — CAAIL can still be used for the current conversation by fetching
+  the skill directly. It will not carry over to a new chat.
 
-Wrong: *"Nobody has applied graph neural networks to scaffolding."*
+## Step 2: confirm it works
 
-## Counting
+Ask CAAIL something that requires the corpus rather than general knowledge:
 
-`papers.json` spans six sections and only `References` (229) is matrix-eligible; the rest are Reviews
-& Perspectives (74) and four Reference Work sections (42). "345 papers" and "papers in the matrix" are
-different numbers. Say which population you counted.
+> Which AI methods has CAAIL indexed for scaffolding, and which method cells are empty?
 
-## Licenses
+A correct answer names specific method rows and reports the empty ones with the scope
+caveat attached. An answer that lists plausible-sounding papers without citing reference
+ids means the skill did not load.
 
-Every paper, tool, database and dataset entry carries a coarse tier: `permissive`, `copyleft`,
-`restricted`, `unknown`. It is a triage signal derived from SPDX identifiers and OpenAlex, not
-verified terms — confirm at the source before relying on it.
+## Rules
 
-The tier governs **redistribution**, not use. Two different questions:
-
-- **Publishing** text, or shipping it in a public tool or dataset: filter on the license tier, and
-  **never** on open-access status. Being free to read is not permission to republish — 148 works in
-  this corpus carry no license grant at all, including every bronze one, where the publisher's page
-  is free but default copyright still applies.
-- **Internal use** inside an organisation that already has legitimate access, such as a private RAG
-  index behind its own subscriptions: the license tier is not the constraint. What that organisation
-  may lawfully read, it may generally index for itself. The constraint is on making it public.
-
-So the tier tells you what you can *ship*, not what you can *work with*.
-
-## Contributing
-
-Gaps and misclassifications are welcome: <https://github.com/tucca-cellag/caail/issues>
-
-## Fallback
-
-If the endpoints above are unreachable, the canonical source is the repository, and its Markdown is
-readable directly:
-
-- https://github.com/tucca-cellag/caail
-- https://raw.githubusercontent.com/tucca-cellag/caail/main/Papers.md
-- https://raw.githubusercontent.com/tucca-cellag/caail/main/Software.md
-- https://raw.githubusercontent.com/tucca-cellag/caail/main/Databases.md
-
-The Markdown route cannot enumerate empty matrix cells, so the absence caveat below applies with
-even more force: say what you could not check, rather than implying you checked it.
+- **CAAIL is beta; placements are being re-verified.** The inventory, topic tags and
+  per-item metadata are solid, and a method × area placement is a substantive claim about
+  the paper — report it as one. Re-verification against full texts tightens precision, so
+  allow that an occasional item sits in a closely related cell rather than the ideal one;
+  that is very different from it not belonging. Cite the paper itself. `matrix.json`
+  carries this as `status` and `placementNote`. Empty cells instead carry `scope`, and
+  that caveat is much stronger: absence in CAAIL is weak evidence about the literature.
+- **Never claim an install succeeded without verifying it.** Run the check in Step 2, or
+  say explicitly that you could not verify.
+- **Do not modify a config file you did not read first, and do not write to a tracked one
+  without asking.** Several of these paths are shared with the user's own rules and are
+  committed to their repository, so an unprompted edit lands in their next diff.
+- Endpoints are on `raw.githubusercontent.com`, not GitHub Pages. Code execution
+  commonly defaults to allowing package managers only, which covers GitHub but not
+  Pages, and on Team and Enterprise plans only an organisation owner can widen that.

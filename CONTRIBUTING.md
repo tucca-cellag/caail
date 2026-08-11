@@ -157,10 +157,10 @@ Each is a bulleted list under category headings:
   repo-relative paths (e.g. `../Papers.md`, `../ReferenceWorks.md`).
 - **Reference textbooks and multi-volume reference works → `ReferenceWorks.md`**: the foundational
   cell-ag textbook and the *Encyclopedia of Meat Sciences*, with DOI-resolvable chapter indexes.
-- **Curated bibliographies and "awesome lists" (community GitHub indexes) → `AwesomeLists.md`**, 
+- **Curated bibliographies and "awesome lists" (community GitHub indexes) → `AwesomeLists.md`**:
   rendered as searchable cards with GitHub star / last-updated metrics on `/awesome-lists/`.
 - **Funding organizations and funding opportunities → `Funding.md`** (see rules 4–5 above).
-- **Journal editorials, opinion, and non-funding ecosystem initiatives → `OtherResources.md`**, 
+- **Journal editorials, opinion, and non-funding ecosystem initiatives → `OtherResources.md`**:
   field commentary and the research centers, consortia, and convening efforts of the adjacent
   cell-ag universe.
 

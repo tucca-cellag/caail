@@ -36,8 +36,8 @@ claude plugin install caail@caail
 `marketplace add` may report that the marketplace is already present. That is not an
 error; continue to `install`.
 
-Verify with `claude plugin list` and confirm `caail` appears. The plugin adds roughly
-265 tokens of always-on context.
+Verify with `claude plugin list` and confirm `caail` appears. The plugin adds one short
+skill to the context of every session.
 
 ## Path B — IDE agents (Cursor, Windsurf, Cline, …)
 
@@ -45,11 +45,16 @@ These do not implement Claude Code's plugin marketplace, so the two commands abo
 fail. Install the skill file instead.
 
 1. Fetch <https://raw.githubusercontent.com/tucca-cellag/caail/main/plugin/skills/caail/SKILL.md>
-2. Write it where the client loads project rules from — `.cursor/rules/caail.md` for
+2. Work out where the client loads project rules from: `.cursor/rules/caail.md` for
    Cursor, `.windsurfrules` for Windsurf, `AGENTS.md` or `CLAUDE.md` for agents that read
    those. If you are unsure which the client uses, ask rather than guess: writing to the
    wrong file leaves the user believing CAAIL is installed when it is not.
-3. Tell the user which file you wrote and that it is checked into their repo.
+3. **Name the file you intend to write and get the user's agreement before writing it.**
+   Every one of these paths lives in the user's own repository, and `AGENTS.md` and
+   `CLAUDE.md` in particular are usually tracked, shared with collaborators, and already
+   full of instructions they wrote themselves. Appending to one is a change to their
+   project, not a step in your install. Ask first rather than writing and reporting after.
+4. Append; never overwrite. Then say exactly what you added and to which file.
 
 ## Path C — no shell (browser assistants)
 
@@ -82,8 +87,9 @@ ids means the skill did not load.
   that caveat is much stronger: absence in CAAIL is weak evidence about the literature.
 - **Never claim an install succeeded without verifying it.** Run the check in Step 2, or
   say explicitly that you could not verify.
-- **Do not modify a config file you did not read first.** Several of these paths are
-  shared with the user's own rules.
+- **Do not modify a config file you did not read first, and do not write to a tracked one
+  without asking.** Several of these paths are shared with the user's own rules and are
+  committed to their repository, so an unprompted edit lands in their next diff.
 - Endpoints are on `raw.githubusercontent.com`, not GitHub Pages. Code execution
   commonly defaults to allowing package managers only, which covers GitHub but not
   Pages, and on Team and Enterprise plans only an organisation owner can widen that.
