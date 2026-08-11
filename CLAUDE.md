@@ -304,6 +304,20 @@ Search for the **concept**, not your phrasing of it. A ticket about "refs whose 
 
 **Jira vs public GitHub.** Jira is the default and is never skipped. A public GitHub issue is an *additional* venue, appropriate when the content is world-safe and outside contributors benefit from seeing it: reproducible bugs in shipped behaviour, feature proposals, content suggestions. Where both exist, cross-reference each from the other. Anything `disclosure-private` gets no GitHub issue at all.
 
+## Agent skills
+
+### Issue tracker
+
+Split. Jira project `CAAIL` is the durable record and is never skipped (`/to-spec`, `/to-tickets`, `/wayfinder`); public GitHub `tucca-cellag/caail` takes discrete world-safe requests and anything a PR closes, and is what `/triage` reads. Enumerate **both** before creating anything. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Two independent axes: the five canonical triage **states** (`wontfix` already exists on the repo and should be applied rather than duplicated; the other four are created on first genuine use) and the `wayfinder:<type>` **type** labels, which apply to every ticket regardless of how it was created. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: `CONTEXT.md` + `docs/adr/` at the repo root, both created lazily by `/domain-modeling` rather than seeded. Neither exists yet, which is the expected starting state; `Taxonomy.md` already carries the curation vocabulary a glossary would restate. See `docs/agents/domain.md`.
+
 ## The SQLite authoring backend (structured catalog)
 
 CAAIL's **structured catalog** is authored in an in-repo SQLite DB and generated back to
