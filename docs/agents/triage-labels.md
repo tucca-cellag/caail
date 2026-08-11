@@ -36,10 +36,22 @@ to keep a generic word like "stale" from colliding with some future meaning.
 | `state:needs-decision`| an open choice nobody has made | surface it, do not choose |
 | `state:stale`         | well written, but its factual basis has moved | re-measure before working it |
 
-**The same spelling applies in the sibling Jira project `CLAUDE`.** Both projects
-are classified by the same skill and link to each other, so a cross-project query
-should not need to know two vocabularies. (`CLAUDE` briefly used bare
-`human-only` / `stale`; those were migrated.)
+**The same spelling applies site-wide, across every Jira project** — `CAAIL`,
+`CLAUDE` (ClaudeDotFiles) and `PVE`. They are classified by the same skill and
+link to each other, so a cross-project query should not need to know two
+vocabularies. `CLAUDE` and `PVE` briefly used bare `human-only` / `stale` /
+`agent-ready` / `needs-decision`; those were migrated.
+
+The check is one query, and it should return nothing:
+
+```
+labels IN ("human-only","stale","agent-ready","needs-decision","needs-brief","possibly-done")
+```
+
+That query is site-wide rather than project-scoped, which matters: `PVE` was
+found only because the sweep was not restricted to the two projects known to be
+involved. When enumerating siblings, enumerate **every** project on the site, not
+the one you expect to be adjacent.
 
 `state:possibly-done` exists in the skill's vocabulary but is unused here —
 reconciliation catches that case as a stale-open finding and proposes closure
