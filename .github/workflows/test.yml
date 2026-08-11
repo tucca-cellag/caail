@@ -8,6 +8,10 @@ on:
   pull_request:
     paths:
       - site/**
+      # The events collector Worker has no npm project of its own; its suite
+      # runs inside site's vitest (see site/vitest.config.ts), so a change
+      # confined to workers/ has to trigger this workflow or it goes untested.
+      - workers/**
       - '*.md'
       - ResearchAreas/**
       - Datasets/**
@@ -17,6 +21,7 @@ on:
     branches: [main]
     paths:
       - site/**
+      - workers/**
       - '*.md'
       - ResearchAreas/**
       - Datasets/**
@@ -32,6 +37,34 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # The events collector Worker's behaviour is covered by the vitest suite in the
+  # `test` job, but vitest neither typechecks nor reads wrangler.toml. That
+  # matters more than usual here: the rate limit lives in the config, not the
+  # code, so a typo in the [[ratelimits]] block would disable it while every test
+  # still passed. `wrangler deploy --dry-run` bundles the Worker and resolves its
+  # bindings without contacting Cloudflare. Its own job so it does not queue
+  # behind the browser suite.
+  worker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 9
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: workers/events/pnpm-lock.yaml
+      - name: Install
+        run: pnpm --dir workers/events install --frozen-lockfile
+      - name: Validate bindings and bundle
+        run: pnpm --dir workers/events check
+        env:
+          # A dry run needs no Cloudflare credentials. This only stops wrangler
+          # phoning home from CI.
+          WRANGLER_SEND_METRICS: 'false'
+
   test:
     runs-on: ubuntu-latest
     steps:

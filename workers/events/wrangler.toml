@@ -8,6 +8,72 @@ compatibility_date = "2026-08-01"
 binding = "EVENTS"
 dataset = "caail_events"
 
+# Per-caller volume cap. src/index.ts keys it by IPv4 address, or by IPv6 /64
+# (a /64 is delegated to one customer, so the whole v6 address is free to vary).
+#
+# `period` accepts only 10 or 60. A 10s window is the shorter of the two on
+# purpose: the shape being defended against is a burst, and a 60s window lets one
+# finish before the counter has caught up.
+#
+# The cap is a per-machine approximation, not a per-caller quota. Cloudflare
+# caches the counter on the machine running the Worker and reconciles it
+# asynchronously, so requests from one caller land on many machines and each sees
+# only a fraction. Two consequences, and they pull in opposite directions:
+#
+#   * It bites later and leakier than the number reads, and it still leaks after
+#     it bites. Snapshot, 2026-08-11, `./scripts/burst.sh 150 20` against the
+#     deployed Worker: 134 of 150 admitted, so the cap refused about one request
+#     in nine of that burst. The same burst under a 100/60s setting was admitted
+#     whole, which is what the shorter window buys. Quoted as a ratio on purpose:
+#     the script runs concurrently, so where in the burst the first refusal fell
+#     is not measured precisely enough to cite. Dated figures from one machine on
+#     one day; re-run the script rather than trusting the line.
+#   * It can afford to be tighter than a true per-caller cap could. A reader's
+#     events are sparse by construction (a search is recorded once after typing
+#     settles, not per keystroke; an outbound click normally navigates away) and
+#     spreading them across machines makes any one machine's view sparser still.
+#     20 per 10s leaves 120/min per machine, which a campus NAT or privacy proxy
+#     should not reach even with many readers behind one address.
+#
+# That second point matters as much as the first. Dropping a busy building's
+# events biases the aggregate downward invisibly, which is the same failure the
+# cap exists to prevent, in a quieter form.
+#
+# What this does not buy, stated plainly because the comment is worth less than
+# nothing if it overclaims:
+#
+#   * Keying by /64 shrinks an attacker's supply of buckets, it does not remove
+#     it. A residential connection is often delegated a /56 or a /48, which is
+#     256 or 65,536 distinct /64s to spend the cap in.
+#   * Counters are per machine within a data centre, not per data centre and not
+#     global, so a caller is spread thin across machines and colos both.
+#   * The limiter is best-effort by Cloudflare's own description, and the
+#     asynchronous reconciliation above is what that means in practice.
+#   * Refusal is a silent drop. Anyone sharing an egress with real readers can
+#     burn the bucket and delete their events, which biases the aggregate
+#     downward and leaves no trace in the data itself. The 429s recorded by the
+#     [observability] block below are the only record that it happened.
+#
+# So this raises the cost of forging the aggregate. It does not make forging
+# impossible, and it is not the control to rely on if the numbers ever have to
+# withstand a motivated adversary; that needs exact counting (a Durable Object
+# per key) rather than a tighter number here.
+[[ratelimits]]
+name = "RATE_LIMITER"
+namespace_id = "7001" # Account-scoped. Bindings sharing an id share counters.
+
+  [ratelimits.simple]
+  limit = 20
+  period = 10
+# Rate limiting bindings are not surfaced in the Cloudflare dashboard, and Worker
+# invocation status is not HTTP status, so without this a 429 is invisible: a
+# flood being refused and an innocent reader being suppressed both look exactly
+# like quiet. Logs are queryable for the 429s. The alternative Cloudflare
+# suggests, writing an Analytics Engine point per refusal, would put the flood
+# back into the dataset the cap exists to protect.
+[observability]
+enabled = true
+
 [vars]
 # The only origin allowed to post. Change this if the site moves to a
 # tufts.edu domain.
