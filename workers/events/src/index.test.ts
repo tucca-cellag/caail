@@ -323,10 +323,21 @@ describe('normalizeQuery parity with the client', () => {
  *
  * Every binding below is read off `env` at runtime but declared in
  * wrangler.toml, and nothing else connects the two names. `Env` is a hand-written
- * structural type, so a rename in the config still typechecks; `wrangler deploy
- * --dry-run` bundles and validates the config but never compares it to the code.
- * Renaming a binding on one side therefore deploys clean and then throws on the
- * first request, which for RATE_LIMITER takes the whole collector offline.
+ * structural type, so a rename still typechecks, and `wrangler deploy --dry-run`
+ * validates the config without ever comparing it to the code. A rename therefore
+ * deploys clean and then throws on the first request, which for RATE_LIMITER
+ * takes the whole collector offline.
+ *
+ * **The two directions are caught by two different mechanisms, and only one of
+ * them is here.** A reviewer read this block in isolation and concluded a
+ * code-side rename slips through, so it is worth stating plainly:
+ *
+ *   - config-side (wrangler.toml renamed, code untouched): caught *here*. The
+ *     assertions below stop matching.
+ *   - code-side (`Env` and its use renamed, config untouched): caught by every
+ *     behavioural test above, because `recorder()` supplies the *wrangler.toml*
+ *     names. The handler then reads an absent property and 31 tests fail with
+ *     "Cannot read properties of undefined". Verified by doing it.
  *
  * These are presence assertions on literal lines, not a TOML parse. Reformatting
  * the file will fail them; that is the safe direction for a guard, since the

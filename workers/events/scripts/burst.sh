@@ -43,9 +43,20 @@ echo
 echo "elapsed: ${elapsed}s"
 sort "$codes" | uniq -c
 
-first=$(grep -n -m1 429 "$codes" | cut -d: -f1 || true)
-if [ -n "$first" ]; then
-  echo "first 429 at request $first of $COUNT"
+refused=$(grep -c 429 "$codes" || true)
+if [ "$refused" -gt 0 ]; then
+  first=$(grep -n -m1 429 "$codes" | cut -d: -f1)
+  echo "refused: $refused of $COUNT"
+  # Deliberately "response", not "request". xargs -P writes each line when its
+  # curl finishes, so this file is in completion order, not dispatch order. At
+  # concurrency > 1 the two differ by up to about one window, and reading this
+  # as "the Nth request sent was the first refused" claims a precision the
+  # measurement does not have. The ratio above is the trustworthy number.
+  if [ "$CONCURRENCY" -gt 1 ]; then
+    echo "first refusal: response $first of $COUNT (completion order, +/- ~$CONCURRENCY in dispatch order)"
+  else
+    echo "first refusal: request $first of $COUNT"
+  fi
 else
   echo "no 429: the cap did not engage at this volume or rate"
 fi

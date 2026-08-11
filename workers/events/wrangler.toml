@@ -22,10 +22,12 @@ dataset = "caail_events"
 #
 #   * It bites later and leakier than the number reads, and it still leaks after
 #     it bites. Snapshot, 2026-08-11, `./scripts/burst.sh 150 20` against the
-#     deployed Worker: 134 of 150 admitted, first refusal at request 91. The same
-#     burst under a 100/60s setting was admitted whole, which is what the shorter
-#     window buys. These are dated figures from one machine on one day; re-run
-#     the script rather than trusting the line.
+#     deployed Worker: 134 of 150 admitted, so the cap refused about one request
+#     in nine of that burst. The same burst under a 100/60s setting was admitted
+#     whole, which is what the shorter window buys. Quoted as a ratio on purpose:
+#     the script runs concurrently, so where in the burst the first refusal fell
+#     is not measured precisely enough to cite. Dated figures from one machine on
+#     one day; re-run the script rather than trusting the line.
 #   * It can afford to be tighter than a true per-caller cap could. A reader's
 #     events are sparse by construction (a search is recorded once after typing
 #     settles, not per keystroke; an outbound click normally navigates away) and
