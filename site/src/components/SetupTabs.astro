@@ -157,12 +157,25 @@ const paths = [
   .tab[aria-selected='true'] { color: var(--caail-primary); border-bottom-color: var(--caail-primary); }
 
   /* Reserve the tallest panel's height so switching tabs does not shift the page under
-     the pointer. Re-measured after the client-list line was added: the section height
-     varied 455 / 471 / 471 across the three tabs, so the previous 10rem reserve was 16px
-     short of the two-command panels. Below ~34rem the panels wrap to unpredictable
-     heights and a fixed reserve would strand a large gap, so it lifts. */
+     the pointer. The reserve has to clear the TALLEST panel, not a typical one: anything
+     shorter merely floors the shortest panel and lets the rest overflow it, which is a
+     jump wearing the costume of a reserve.
+
+     Measured across every width where the reserve applies: 139 / 166 / 182px at >= 48rem,
+     rising to 159 / 217 / 214px between 34rem and 48rem as the command lines wrap. Hence
+     two bands. Below 34rem the panels wrap to unpredictable heights and a fixed reserve
+     would strand a large gap, so it lifts entirely.
+
+     Compact and full share one reserve because they measure the same: the variant changes
+     the chrome around the panels, not the panels. The old `.setup--compact` override was a
+     second number for identical content, and at 9rem (144px) it cleared only the first
+     panel, so every hero tab click resized the hero by up to 37px and re-ran the stripe
+     ResizeObserver that Hero.astro is written not to provoke.
+
+     `homepage-agent.spec.ts` asserts constant section height across tabs for BOTH instances
+     at both bands, so a panel that outgrows this fails the suite instead of shipping. */
   .panels { min-height: 11.5rem; }
-  .setup--compact .panels { min-height: 9rem; }
+  @media (max-width: 48rem) { .panels { min-height: 13.75rem; } }
   @media (max-width: 34rem) { .panels { min-height: 0; } }
 
   /* A plain sentence, matching the reference. The icon moved onto the tab, where it

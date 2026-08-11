@@ -250,6 +250,49 @@ test.describe('Connect your agent', () => {
     expect(after, `copy button resized on click: ${JSON.stringify(before)} -> ${JSON.stringify(after)}`).toEqual(before);
   });
 
+  /**
+   * Two copies in quick succession must not cut each other short.
+   *
+   * Each `.setup` holds several copy buttons but a single <output>. With a timer armed per
+   * button, copying one command and then another a second later left the first button's 2s
+   * timer running against that shared live region, so it wiped the second copy's
+   * announcement one second in. Only a screen-reader user ever perceives it, which is
+   * precisely why it needs an assertion rather than a look.
+   */
+  test('a second copy does not have its announcement wiped by the first', async ({ page, context }) => {
+    await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+    await page.goto('./');
+
+    // Only a panel with two commands can exercise the race; single-command panels cannot.
+    const tabs = page.locator('.gs [role="tab"]');
+    const count = await tabs.count();
+    const copies = page.locator('.gs .panel:not([hidden]) .copy');
+    for (let i = 0; i < count; i++) {
+      await tabs.nth(i).click();
+      if ((await copies.count()) > 1) break;
+    }
+    expect(
+      await copies.count(),
+      'no panel exposes two copy buttons at once — the race cannot be exercised',
+    ).toBeGreaterThan(1);
+
+    const live = page.locator('.gs output');
+    await copies.nth(0).click();
+    await page.waitForTimeout(1100);
+    await copies.nth(1).click();
+    // Now past the FIRST button's 2s deadline, but well inside the second's.
+    await page.waitForTimeout(1100);
+
+    await expect(
+      live,
+      "the first copy's timer wiped the second copy's announcement",
+    ).toHaveText('Copied to clipboard');
+    expect(
+      await page.locator('.gs .copy.is-done').count(),
+      'more than one copy button left showing the done glyph',
+    ).toBe(1);
+  });
+
   test('tabs switch panels and keep exactly one in the tab order', async ({ page }) => {
     await page.goto('./');
     const tabs = page.locator('.gs [role="tab"]');
@@ -281,28 +324,49 @@ test.describe('Connect your agent', () => {
     await expect(tabs.first()).toHaveAttribute('aria-selected', 'true');
   });
 
-  test('switching tabs does not change the section height (no page jump)', async ({ page }) => {
-    await page.goto('./');
-    // The section's own height is what everything below it sits on, so holding that
-    // constant is the invariant. Measuring a sibling is indirect and, on the splash
-    // layout, the next sibling is not always a laid-out box.
-    const section = page.locator('.gs');
-    const tabs = page.locator('.gs [role="tab"]');
-    const count = await tabs.count();
+  /**
+   * Both instances, because the reserve is set per instance and only one was guarded.
+   *
+   * SetupTabs reserves panel height with a min-height, and `.setup--compact` (the hero)
+   * reserved 9rem against panels that measure roughly 200-240px. So every hero tab click
+   * resized the hero and shoved the router strip and everything below it out from under
+   * the pointer, and re-ran the stripe ResizeObserver that Hero.astro is written not to
+   * provoke. The `.gs` instance was guarded and correct the whole time.
+   *
+   * That is the argument for parameterising rather than copying: one covered instance and
+   * one uncovered one is how a property that reads as tested goes untested.
+   */
+  for (const root of ['.gs', '.hero'])
+  for (const width of [1280, 600]) {
+    test(`switching tabs does not change the section height, no page jump (${root} @ ${width}px)`, async ({ page }) => {
+      // Two widths because the reserve has two bands. 1280px exercises the >= 48rem band;
+      // 600px sits in the 34-48rem band, where the command lines wrap and the panels grow
+      // by ~35px. Testing one width is how the `.gs` reserve stayed 33px short between
+      // 544 and 768px while reading as covered.
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto('./');
+      // The section's own height is what everything below it sits on, so holding that
+      // constant is the invariant. Measuring a sibling is indirect and, on the splash
+      // layout, the next sibling is not always a laid-out box.
+      const section = page.locator(root);
+      const tabs = page.locator(`${root} [role="tab"]`);
+      const count = await tabs.count();
+      expect(count, `no tabs found under ${root} — the selector has drifted`).toBeGreaterThan(1);
 
-    const heights: number[] = [];
-    for (let i = 0; i < count; i++) {
-      await tabs.nth(i).click();
-      await page.waitForTimeout(120);
-      const box = await section.boundingBox();
-      expect(box).not.toBeNull();
-      heights.push(Math.round(box!.height));
-    }
-    expect(
-      new Set(heights).size,
-      `the panel reserve is too small — section height varied across tabs: ${heights.join(', ')}`,
-    ).toBe(1);
-  });
+      const heights: number[] = [];
+      for (let i = 0; i < count; i++) {
+        await tabs.nth(i).click();
+        await page.waitForTimeout(120);
+        const box = await section.boundingBox();
+        expect(box).not.toBeNull();
+        heights.push(Math.round(box!.height));
+      }
+      expect(
+        new Set(heights).size,
+        `${root}: the panel reserve is too small — section height varied across tabs: ${heights.join(', ')}`,
+      ).toBe(1);
+    });
+  }
 });
 
 test('the hero counter renders a real statistic before the typewriter runs', async ({ page }) => {

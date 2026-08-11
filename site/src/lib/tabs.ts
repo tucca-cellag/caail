@@ -23,22 +23,6 @@ export function initTabs(listSelector: string): void {
         const panel = document.getElementById(t.getAttribute('aria-controls') ?? '');
         if (!panel) return;
         panel.hidden = !on;
-        if (!on) return;
-
-        // Replay the enter animation on the panel being shown.
-        //
-        // The reference implementation is React remounting the panel on a key change,
-        // which restarts its CSS animation for free. Without a remount the animation has
-        // already run to completion, so removing and re-adding the class does nothing
-        // until the style change is flushed — hence the forced reflow between them.
-        //
-        // Deliberately NOT applied on initial render: this fades from opacity 0, and axe
-        // (therefore Lighthouse, therefore the deploy gate) computes contrast through
-        // opacity. An audit never clicks a tab, so a click-only animation cannot be
-        // sampled mid-fade. See reveal.css for the same constraint bitten the hard way.
-        panel.classList.remove('is-enter');
-        void panel.offsetWidth;
-        panel.classList.add('is-enter');
       });
       // Only pull focus for keyboard-driven moves. Doing it on click too would be
       // harmless here but steals focus from a click that landed on the panel.
@@ -71,6 +55,19 @@ export function initTabs(listSelector: string): void {
  * is left alone rather than claiming a copy that did not happen.
  */
 export function initCopyButtons(rootSelector: string): void {
+  // One timer per ROOT, not per button, because the thing being reset is shared.
+  //
+  // Each root holds several copy buttons but a single <output>. With a timer per button,
+  // copying the prompt and then a command a second later left two timers running against
+  // that one element: the first fired at its own 2s mark and wiped the second button's
+  // announcement one second into its life. Re-clicking a single button cut short its own
+  // `is-done` glyph the same way.
+  //
+  // Tracking the pending timer and the button currently showing `is-done` per root makes
+  // the most recent copy own both, which is what a reader expects it to mean.
+  const timers = new WeakMap<Element, number>();
+  const marked = new WeakMap<Element, HTMLButtonElement>();
+
   for (const btn of document.querySelectorAll<HTMLButtonElement>(`${rootSelector} [data-copy]`)) {
     btn.addEventListener('click', async () => {
       try {
@@ -78,14 +75,28 @@ export function initCopyButtons(rootSelector: string): void {
       } catch {
         return;
       }
+      const root = btn.closest(rootSelector);
+      if (!root) return;
+
+      const pending = timers.get(root);
+      if (pending !== undefined) window.clearTimeout(pending);
+      marked.get(root)?.classList.remove('is-done');
+
       btn.classList.add('is-done');
+      marked.set(root, btn);
       // Announce to screen readers, which do not see a class or glyph change.
-      const live = btn.closest(rootSelector)?.querySelector('output');
+      const live = root.querySelector('output');
       if (live) live.textContent = 'Copied to clipboard';
-      window.setTimeout(() => {
-        btn.classList.remove('is-done');
-        if (live) live.textContent = '';
-      }, 2000);
+
+      timers.set(
+        root,
+        window.setTimeout(() => {
+          btn.classList.remove('is-done');
+          if (live) live.textContent = '';
+          timers.delete(root);
+          marked.delete(root);
+        }, 2000),
+      );
     });
   }
 }
