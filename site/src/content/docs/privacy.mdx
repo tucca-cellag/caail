@@ -54,8 +54,14 @@ most useful things to know people are searching for. A query is recorded once, a
 typing, rather than keystroke by keystroke.
 
 These events are transmitted to an endpoint operated by TUCCA and are stored in aggregate. No
-cookie is set, no identifier is assigned, and your IP address is not recorded, so neither event can
-be attributed to you or linked across visits.
+cookie is set, no identifier is assigned, and no part of your IP address is stored alongside either
+event, so neither event can be attributed to you or linked across visits.
+
+The endpoint does read your IP address when it receives an event, in order to count recent requests
+from the same source and refuse a sender that is flooding the measurements with fabricated events.
+For IPv6 the source counted is your network prefix rather than your full address. That count is
+maintained by Cloudflare for the length of a short counting window, is never written to the event
+records, and is used for no other purpose.
 
 We do not set cookies, employ device fingerprinting, or assign any persistent identifier. We are
 therefore unable to recognise you across visits or across sites, and we do not attempt to.
@@ -79,7 +85,7 @@ behalf:
 | Recipient | Purpose | Data received |
 | --- | --- | --- |
 | GitHub, Inc. | Hosting | IP address, user agent |
-| Cloudflare, Inc. | Analytics, and hosting of the events endpoint operated by TUCCA | Page view data and the two usage events described above |
+| Cloudflare, Inc. | Analytics, and hosting of the events endpoint operated by TUCCA | Page view data, the two usage events described above, and your IP address as the sender of an event |
 | Sevalla | Hosting of the "Ask CAAIL" service (United States region) | The text of your question |
 | Google LLC | Generative Language API (Gemini models), used to compose answers | The text of your question, with relevant passages from CAAIL |
 
