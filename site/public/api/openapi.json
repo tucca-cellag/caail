@@ -3,7 +3,7 @@
   "jsonSchemaDialect": "https://json-schema.org/draft/2020-12/schema",
   "info": {
     "title": "CAAIL agent API",
-    "version": "2026-08-07",
+    "version": "2026-08-11",
     "summary": "Static JSON endpoints describing the Cellular Agriculture AI Library.",
     "description": "Seven static JSON files, served by GET, with nothing to install or authenticate. Generated from the same schemas that validate the payloads, in the same build step that writes them. The paths below are absolute on the GitHub Pages origin, https://tucca-cellag.github.io. The same files are mirrored per-filename at https://raw.githubusercontent.com/tucca-cellag/caail/main/site/public/api/, which some clients can reach when Pages is not allow-listed. Resolve that mirror by filename; do not join the paths below onto it.",
     "license": {
@@ -11,7 +11,7 @@
       "identifier": "MIT"
     }
   },
-  "x-corpus-date": "2026-08-07",
+  "x-corpus-date": "2026-08-11",
   "paths": {
     "/caail/api/index.json": {
       "get": {
@@ -159,6 +159,13 @@
             "type": "string",
             "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
           },
+          "status": {
+            "type": "string",
+            "const": "beta"
+          },
+          "placementsUnderReview": {
+            "type": "boolean"
+          },
           "canonical": {
             "type": "string"
           },
@@ -172,6 +179,9 @@
             "type": "string"
           },
           "openapi": {
+            "type": "string"
+          },
+          "placementNote": {
             "type": "string"
           },
           "counts": {
@@ -265,11 +275,14 @@
         "required": [
           "name",
           "corpusDate",
+          "status",
+          "placementsUnderReview",
           "canonical",
           "site",
           "license",
           "scopeNote",
           "openapi",
+          "placementNote",
           "counts",
           "endpoints"
         ],
@@ -281,6 +294,13 @@
           "corpusDate": {
             "type": "string",
             "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "status": {
+            "type": "string",
+            "const": "beta"
+          },
+          "placementsUnderReview": {
+            "type": "boolean"
           },
           "methods": {
             "type": "array",
@@ -312,6 +332,9 @@
           "scopeNote": {
             "type": "string"
           },
+          "placementNote": {
+            "type": "string"
+          },
           "cells": {
             "type": "array",
             "items": {
@@ -321,12 +344,15 @@
         },
         "required": [
           "corpusDate",
+          "status",
+          "placementsUnderReview",
           "methods",
           "areas",
           "totalCells",
           "populatedCells",
           "emptyCells",
           "scopeNote",
+          "placementNote",
           "cells"
         ],
         "additionalProperties": false
@@ -679,6 +705,9 @@
             "type": "boolean"
           },
           "scope": {
+            "type": "string"
+          },
+          "placement": {
             "type": "string"
           }
         },
