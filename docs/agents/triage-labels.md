@@ -1,15 +1,51 @@
 # Triage Labels
 
-Two independent label axes are in use here. Collapsing them loses information: a
-ticket can be `wayfinder:research` **and** `needs-info`, or `wayfinder:task`
-**and** `ready-for-agent`.
+Two independent label axes are in use. Collapsing them loses information: a
+ticket can be `wayfinder:research` **and** `state:human-only`, or
+`wayfinder:task` **and** `state:stale`.
 
 | Axis | Question it answers | Vocabulary | Written by |
 | --- | --- | --- | --- |
-| **State** | What is blocking this right now? | the five triage roles below | `/triage`, `tracker-backfill` |
-| **Type** | What kind of work resolves this? | `wayfinder:<type>` | `/wayfinder`, `tracker-backfill` |
+| **State** | What is blocking this right now? | `state:<class>` on Jira; the five triage roles on GitHub | `tracker-backfill` (Jira), `/triage` (GitHub) |
+| **Type** | What kind of work resolves this? | `wayfinder:<type>`, both trackers | `/wayfinder`, `tracker-backfill` |
 
-## State — the five triage roles
+**The state axis has two spellings because it has two writers on two trackers**,
+and they are not interchangeable:
+
+- **Jira `CAAIL`** carries `state:<class>` from `tracker-backfill`'s Pass 3
+  classification of the whole open backlog.
+- **GitHub `tucca-cellag/caail`** carries the five triage roles from `/triage`,
+  which acts on issues *someone else filed*.
+
+They overlap in concept (`ready-for-agent` ≈ `state:agent-ready`,
+`ready-for-human` ≈ `state:human-only`) but never on the same item, because no
+item lives on both trackers. Do not "unify" them by relabelling one tracker with
+the other's strings — that would put `/triage`'s vocabulary on tickets `/triage`
+never touches.
+
+## State on Jira — the tracker-backfill classes
+
+One per open ticket, exactly. Namespaced with `state:` to match `wayfinder:` and
+to keep a generic word like "stale" from colliding with some future meaning.
+
+| Label | Meaning | Action |
+| --- | --- | --- |
+| `state:agent-ready`   | `/implement` could start and would know when it is done | nothing |
+| `state:needs-brief`   | implementable, but under-specified | draft a brief |
+| `state:human-only`    | the work itself requires a human: a vendor dashboard, a browser step, contacting someone | route to `/mattpocock-skills:wizard`; **no brief helps** |
+| `state:needs-decision`| an open choice nobody has made | surface it, do not choose |
+| `state:stale`         | well written, but its factual basis has moved | re-measure before working it |
+
+**The same spelling applies in the sibling Jira project `CLAUDE`.** Both projects
+are classified by the same skill and link to each other, so a cross-project query
+should not need to know two vocabularies. (`CLAUDE` briefly used bare
+`human-only` / `stale`; those were migrated.)
+
+`state:possibly-done` exists in the skill's vocabulary but is unused here —
+reconciliation catches that case as a stale-open finding and proposes closure
+directly, which is a better fit than a label nobody sweeps.
+
+## State on GitHub — the five triage roles
 
 The skills speak in terms of five canonical triage roles. This table maps those
 roles to the actual label strings used in this repo's tracker.

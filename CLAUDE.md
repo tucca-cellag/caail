@@ -312,7 +312,7 @@ Split. Jira project `CAAIL` is the durable record and is never skipped (`/to-spe
 
 ### Triage labels
 
-Two independent axes: the five canonical triage **states** (`wontfix` already exists on the repo and should be applied rather than duplicated; the other four are created on first genuine use) and the `wayfinder:<type>` **type** labels, which apply to every ticket regardless of how it was created. See `docs/agents/triage-labels.md`.
+Two independent axes. **State** answers what is blocking a ticket now, and has two spellings because it has two writers: `state:<class>` on Jira (from `tracker-backfill`) and the five canonical triage roles on GitHub (from `/triage`, for issues someone else filed) — `wontfix` already exists on the repo and should be applied rather than duplicated. **Type** answers what kind of work resolves it: `wayfinder:<type>`, on both trackers, applied to every ticket regardless of how it was created. See `docs/agents/triage-labels.md`.
 
 ### Domain docs
 
@@ -356,9 +356,10 @@ non-catalog canonical files (`OtherResources.md`, `ReferenceWorks.md`, `AwesomeL
   matrix↔reference reachability, and the #81 column-list drift check; `db:verify` proves the emitted
   Markdown re-parses to identical parser models. In CI, `lint-papers.yml` runs `db:check` + `db:verify`
   and a **sync guard** (`db:emit` then `git diff --exit-code`) so committed Markdown can't drift from the DB.
-- **Topics** are the shared cross-content subject axis (multi-tag), two-tier: a fixed backbone of **7
+- **Topics** are the shared cross-content subject axis (multi-tag), two-tier: a fixed backbone of **8
   themes** + earned **fine tags** (each tag under one theme; `topics.tier`/`theme_slug`, guarded by
-  `db:check`). Distinct from the matrix research areas (a theme may link to one via `area_key`); defined
+  `db:check`, which asserts the theme list exactly — `check.ts` is the source of truth for the count,
+  not this line). Distinct from the matrix research areas (a theme may link to one via `area_key`); defined
   in `Taxonomy.md` under "Subject themes". The build folds the committed topic NDJSON into the site JSON
   offline (`site/scripts/parser/topics.ts` → `catalog.json`/`papers.json` topic refs + `topics.json`),
   surfaced as **topic chips on cards** (`TopicChips`) and a **cross-content hub** at `/topics/`
