@@ -39,11 +39,11 @@ const SECTION_ORDER = [
 ];
 const SECTION_BLURB: Record<string, string> = {
   'Reviews & Perspectives':
-    'Review articles, position papers, and commentaries that survey or opine on the field rather than applying a specific AI method — so they sit outside the matrix.',
+    'Review articles, position papers, and commentaries that survey or opine on the field rather than applying a specific AI method, so they sit outside the matrix.',
   'Sensory & Flavor Reference Work':
     'Foundational sensory-science, flavor-chemistry, and sensomics papers the AI × cell-ag work builds on.',
   'Metabolic Reference Work':
-    'Genome-scale metabolic models (GEMs) and related metabolic infrastructure — the data resources, not the AI applied to them.',
+    'Genome-scale metabolic models (GEMs) and related metabolic infrastructure: the data resources, not the AI applied to them.',
   'Foundational Methods Reference Work':
     'Method and theory papers, from machine learning and cell biology, that underlie the matrix rows.',
   'Livestock Functional Genomics Reference Work':

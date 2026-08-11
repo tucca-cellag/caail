@@ -6,11 +6,11 @@ Chicken is a leading cultivated-meat target — cultivated chicken was among the
 
 ### [ChickenGTEx-Portal](https://chicken.farmgtex.org/)
 
-Chicken sub-portal of the FarmGTEx consortium — multi-tissue genetic-regulation maps across chicken tissues, the first GTEx-style resource for a non-mammalian amniote livestock species and directly useful for cultivated-chicken cell-line engineering. Companion to [Papers.md ref #136](../Papers.md#136) (Guan et al. 2025, *Nature Genetics*). Full entry in [Databases.md / Livestock Multi-Tissue Atlases](../Databases.md#livestock-multi-tissue-atlases--functional-genomics).
+Chicken sub-portal of the FarmGTEx consortium: multi-tissue genetic-regulation maps across chicken tissues, the first GTEx-style resource for a non-mammalian amniote livestock species and directly useful for cultivated-chicken cell-line engineering. Companion to [Papers.md ref #136](../Papers.md#136) (Guan et al. 2025, *Nature Genetics*). Full entry in [Databases.md / Livestock Multi-Tissue Atlases](../Databases.md#livestock-multi-tissue-atlases--functional-genomics).
 
 ### [GENE-SWitCH](https://www.gene-switch.eu/)
 
-The FAANG consortium's pig + chicken project — *the regulatory GENomE of SWine and CHicken: functional annotation during development*; the [data hub](https://data.faang.org/projects/GENE-SWitCH) hosts its open releases. Substrate for cultivated-chicken developmental-biology and lineage-engineering work. Full entry in [Databases.md / Livestock Multi-Tissue Atlases](../Databases.md#livestock-multi-tissue-atlases--functional-genomics).
+The FAANG consortium's pig + chicken project, *the regulatory GENomE of SWine and CHicken: functional annotation during development*; the [data hub](https://data.faang.org/projects/GENE-SWitCH) hosts its open releases. Substrate for cultivated-chicken developmental-biology and lineage-engineering work. Full entry in [Databases.md / Livestock Multi-Tissue Atlases](../Databases.md#livestock-multi-tissue-atlases--functional-genomics).
 
 ## Genome-scale metabolic models
 

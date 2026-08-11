@@ -1,0 +1,114 @@
+---
+/**
+ * RevealScript — arms the `.sr` scroll-reveal system (see styles/reveal.css).
+ *
+ * Two scripts, and the split is the point.
+ *
+ * The first is `is:inline` so it is not bundled, deferred or module-scoped: it runs
+ * synchronously at the position it appears in the document. Placed above the revealed
+ * sections, it sets `sr-ready` before those elements are parsed, so they are never
+ * painted visible and then yanked hidden. Inlining it also means it cannot be delayed
+ * behind a module graph, which is the window a flash would live in.
+ *
+ * It arms the offset state ONLY if IntersectionObserver exists to later remove it.
+ * Setting the class first and feature-detecting afterwards would leave a browser
+ * without the observer stuck on a permanently offset page.
+ *
+ * There is a load-time reveal for what is already on screen, but still no no-scroll
+ * timeout. The distinction matters and the two are not variations of one idea.
+ *
+ * The timeout revealed the WHOLE page after a fixed delay, so anyone who paused on the
+ * hero for 2.5s before scrolling — most readers — then scrolled through a page where
+ * nothing animated. It is not coming back.
+ *
+ * The load-time pass only touches elements already within the first viewport, and it is
+ * required rather than optional: the reveal fades as well as lifts, and the trigger line
+ * sits at 75% of the viewport, so without it the bottom quarter of the landing view would
+ * render blank until the reader scrolled.
+ *
+ * The second is an ordinary bundled module that does the observing. If it never runs,
+ * `sr-ready` is set but nothing is hidden yet either, because CSS only hides elements
+ * carrying `.sr`, and the worst case is a page that renders exactly as it does today
+ * with motion turned off.
+ */
+---
+
+<script is:inline>
+  if ('IntersectionObserver' in window) {
+    document.documentElement.classList.add('sr-ready');
+  }
+</script>
+
+<script>
+  // Reveal once and stop watching. Re-hiding on scroll-up means a reader who scrolls
+  // back to re-read a paragraph watches it fade out from under them.
+  const targets = document.querySelectorAll<HTMLElement>('.sr');
+  if (targets.length && 'IntersectionObserver' in window) {
+    const io = new IntersectionObserver(
+      (entries, obs) => {
+        for (const e of entries) {
+          if (!e.isIntersecting) continue;
+          e.target.classList.add('in');
+          obs.unobserve(e.target);
+        }
+      },
+      // The top margin is enormous ON PURPOSE, and it is the whole correctness argument.
+      //
+      // IntersectionObserver reports a CHANGE in intersection, not a state. With a plain
+      // `0px 0px -12% 0px` an instant scroll — a TOC click, a scrollbar drag, End, or
+      // landing on a #hash — moves an element from below the viewport to above it between
+      // two samples. Old state: not intersecting. New state: not intersecting. No callback
+      // is ever delivered, the element keeps its offset forever, and because reveal is the
+      // only thing that unobserves, nothing later rescues it. Measured on this page: one
+      // jump to the bottom left 21 of 26 elements permanently 34px low, which reads as
+      // overlapping text and as "the animation doesn't work". Adding the HomeRail made it
+      // routine, since every rail click is exactly that jump.
+      //
+      // Extending the root 10^6px upward makes "above the viewport" a permanently
+      // intersecting region, so the only transition that exists is below → intersecting.
+      // An element can be scrolled past arbitrarily fast and still lands inside it.
+      //
+      // The bottom margin decides WHERE on screen the reveal plays, which turned out to
+      // matter as much as whether it fires at all. At -12% the trigger line sat at 88% of
+      // viewport height: measured over a full scroll, 25 of 27 reveals began in the bottom
+      // 20% of the screen and were finished before the reader's eye reached them. The
+      // animation was running correctly and being seen by nobody.
+      //
+      // -25% moves the line to 75%, so the fade and lift play in the lower-middle of the
+      // screen, in front of the reader rather than off the bottom edge.
+      { rootMargin: '1000000px 0px -25% 0px', threshold: 0 },
+    );
+    for (const t of targets) io.observe(t);
+
+    // Anything already ON SCREEN at load is revealed immediately, without waiting for a
+    // scroll. This is mandatory now that the reveal fades rather than only lifting.
+    //
+    // The trigger line sits at 75% of the viewport, so an element occupying the bottom
+    // quarter of the first screen is visible to the reader but has NOT met the observer's
+    // condition. While the reveal was transform-only that was harmless — the element was
+    // merely 34px low. With opacity in play it would render the bottom quarter of the
+    // landing view blank until the reader happened to scroll, which is a worse bug than
+    // the one this whole system exists to animate away.
+    //
+    // Deliberately `rect.top < innerHeight` rather than the trigger line: the guarantee
+    // worth having is the strong one, that nothing on screen at load is ever invisible.
+    // Elements above the line would be revealed by the observer's initial callback in the
+    // same tick anyway, so this only ever acts earlier, never differently.
+    const vh = window.innerHeight;
+    for (const t of targets) {
+      if (t.getBoundingClientRect().top < vh) {
+        t.classList.add('in');
+        io.unobserve(t);
+      }
+    }
+
+    // Print is the one case worth forcing: a print job never scrolls, and a 20px offset
+    // repeated down a page reads as sloppy typesetting rather than as motion.
+    window.addEventListener('beforeprint', () => {
+      for (const t of targets) {
+        t.classList.add('in');
+        io.unobserve(t);
+      }
+    });
+  }
+</script>

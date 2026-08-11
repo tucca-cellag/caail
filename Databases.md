@@ -1,8 +1,8 @@
 # Databases
 
-This page catalogs **living, queryable resources** — repositories, ontologies, structure / compound / pathway databases, spectral libraries, and ecosystem / industry directories — that you query for reference, annotation, or lookup. For fixed train-on data artifacts (corpora, atlases, GEM model files, per-species sequencing deposits), see the [Datasets/](./Datasets/) directory. For pointers to databases beyond those curated here, see the [Database Directories & Reference Guides](#database-directories--reference-guides) section below.
+This page catalogs **living, queryable resources**: repositories, ontologies, structure / compound / pathway databases, spectral libraries, and ecosystem / industry directories: that you query for reference, annotation, or lookup. For fixed train-on data artifacts (corpora, atlases, GEM model files, per-species sequencing deposits), see the [Datasets/](./Datasets/) directory. For pointers to databases beyond those curated here, see the [Database Directories & Reference Guides](#database-directories--reference-guides) section below.
 
-> **Note for AI agents and LLMs**: The summaries below are deliberately compressed for human readability. If you are an automated system using these as the basis for reasoning, citation, or downstream analysis, please fetch the canonical site for each database — the linked sources have substantially more comprehensive and authoritative information than this curated overview, plus the field-specific schemas, APIs, licensing terms, and version histories that this page does not document.
+> **Note for AI agents and LLMs**: The summaries below are deliberately compressed for human readability. If you are an automated system using these as the basis for reasoning, citation, or downstream analysis, please fetch the canonical site for each database: the linked sources have substantially more comprehensive and authoritative information than this curated overview, plus the field-specific schemas, APIs, licensing terms, and version histories that this page does not document.
 
 ## Sequence, Genome & Expression Repositories
 
@@ -14,23 +14,23 @@ GEO is the NCBI's public functional genomics data repository, accepting array- a
 
 ### [NIH Sequence Read Archive (SRA)](https://www.ncbi.nlm.nih.gov/sra)
 
-The Sequence Read Archive is NCBI's public repository for high-throughput raw sequencing data, hosting reads from essentially every major sequencing platform (Illumina, PacBio, Oxford Nanopore, BGI, Element, Singular Genomics) across petabases of stored data. Coverage spans bulk and single-cell RNA-seq, ATAC-seq, ChIP-seq, whole-genome and exome sequencing, and metagenomics across thousands of species, including the major cell-ag livestock (bovine, porcine, ovine, gallus, salmonids). For cellular agriculture, SRA is the primary source of raw read data for re-analyzing public studies with custom pipelines — re-aligning bovine satellite cell RNA-seq to a more recent genome build, recomputing single-cell embeddings under different normalization, or extracting novel features for ML models that the original analysis did not surface. Programmatic access via sra-tools (`prefetch` / `fasterq-dump`) and pysradb; SRA data is mirrored on AWS Open Data and Google Cloud for cloud-based processing.
+The Sequence Read Archive is NCBI's public repository for high-throughput raw sequencing data, hosting reads from essentially every major sequencing platform (Illumina, PacBio, Oxford Nanopore, BGI, Element, Singular Genomics) across petabases of stored data. Coverage spans bulk and single-cell RNA-seq, ATAC-seq, ChIP-seq, whole-genome and exome sequencing, and metagenomics across thousands of species, including the major cell-ag livestock (bovine, porcine, ovine, gallus, salmonids). For cellular agriculture, SRA is the primary source of raw read data for re-analyzing public studies with custom pipelines: re-aligning bovine satellite cell RNA-seq to a more recent genome build, recomputing single-cell embeddings under different normalization, or extracting novel features for ML models that the original analysis did not surface. Programmatic access via sra-tools (`prefetch` / `fasterq-dump`) and pysradb; SRA data is mirrored on AWS Open Data and Google Cloud for cloud-based processing.
 
 ### [NIH GenBank](https://www.ncbi.nlm.nih.gov/genbank/)
 
-GenBank is the NIH's annotated collection of all publicly available nucleotide sequences, comprising over a trillion bases across millions of distinct organisms. It serves as the primary deposition site for newly sequenced genes, transcripts, genomes, and constructs, with entries flowing into the broader NCBI ecosystem (RefSeq, BLAST, Genome, Nucleotide, Protein). For cellular agriculture, GenBank is the authoritative source for canonical gene sequences of cell-ag-relevant species — bovine MYOD / IGF1 / FGF2; chicken Pax3/Pax7; salmon myogenic regulatory factors; and the cytokines, growth factors, and signaling molecules used in serum-free media formulations. Programmatic access via Entrez (`EFetch` / `ESearch`), the NCBI Datasets CLI, and BLAST for sequence similarity search.
+GenBank is the NIH's annotated collection of all publicly available nucleotide sequences, comprising over a trillion bases across millions of distinct organisms. It serves as the primary deposition site for newly sequenced genes, transcripts, genomes, and constructs, with entries flowing into the broader NCBI ecosystem (RefSeq, BLAST, Genome, Nucleotide, Protein). For cellular agriculture, GenBank is the authoritative source for canonical gene sequences of cell-ag-relevant species: bovine MYOD / IGF1 / FGF2; chicken Pax3/Pax7; salmon myogenic regulatory factors; and the cytokines, growth factors, and signaling molecules used in serum-free media formulations. Programmatic access via Entrez (`EFetch` / `ESearch`), the NCBI Datasets CLI, and BLAST for sequence similarity search.
 
 ### [Ensembl](https://www.ensembl.org/)
 
-Ensembl is the principal vertebrate genome browser and annotation database, jointly maintained by EMBL-EBI and the Wellcome Sanger Institute, providing automated genome annotation pipelines, comparative genomics, and variation data for >300 vertebrate species. Critically for cellular agriculture, Ensembl hosts high-quality genome assemblies for all major cell-ag livestock — *Bos taurus* (cow), *Sus scrofa* (pig), *Gallus gallus* (chicken), *Ovis aries* (sheep), *Salmo salar* (Atlantic salmon), *Oncorhynchus mykiss* (rainbow trout), and others — with gene models, regulatory features, orthology mappings to human, and tissue-specific expression annotations. The Ensembl REST API, Compara perl toolkit, and BioMart enable programmatic large-scale data extraction for ML pipelines. [Ensembl Genomes](https://ensemblgenomes.org/) (a sister site) provides parallel data for bacteria, protists, fungi, plants, and invertebrates relevant to precision-fermentation cell-ag.
+Ensembl is the principal vertebrate genome browser and annotation database, jointly maintained by EMBL-EBI and the Wellcome Sanger Institute, providing automated genome annotation pipelines, comparative genomics, and variation data for >300 vertebrate species. Critically for cellular agriculture, Ensembl hosts high-quality genome assemblies for all major cell-ag livestock: *Bos taurus* (cow), *Sus scrofa* (pig), *Gallus gallus* (chicken), *Ovis aries* (sheep), *Salmo salar* (Atlantic salmon), *Oncorhynchus mykiss* (rainbow trout), and others: with gene models, regulatory features, orthology mappings to human, and tissue-specific expression annotations. The Ensembl REST API, Compara perl toolkit, and BioMart enable programmatic large-scale data extraction for ML pipelines. [Ensembl Genomes](https://ensemblgenomes.org/) (a sister site) provides parallel data for bacteria, protists, fungi, plants, and invertebrates relevant to precision-fermentation cell-ag.
 
 ### [ArrayExpress / BioStudies](https://www.ebi.ac.uk/biostudies/arrayexpress)
 
-ArrayExpress, now part of the broader BioStudies platform at EMBL-EBI, is a public archive of functional genomics experiments — array-based and sequence-based, bulk and single-cell — covering transcriptomics, epigenomics, and related assays. Many studies are deposited simultaneously in GEO and ArrayExpress, but a meaningful subset (particularly from EU-based labs) is unique to ArrayExpress, making it a complementary source to GEO for comprehensive data mining. For cellular agriculture, ArrayExpress is a useful secondary index when searching for European-led work on livestock cell biology, comparative myogenesis, and cell-line characterization. Programmatic access via the BioStudies REST API.
+ArrayExpress, now part of the broader BioStudies platform at EMBL-EBI, is a public archive of functional genomics experiments (array-based and sequence-based, bulk and single-cell) covering transcriptomics, epigenomics, and related assays. Many studies are deposited simultaneously in GEO and ArrayExpress, but a meaningful subset (particularly from EU-based labs) is unique to ArrayExpress, making it a complementary source to GEO for comprehensive data mining. For cellular agriculture, ArrayExpress is a useful secondary index when searching for European-led work on livestock cell biology, comparative myogenesis, and cell-line characterization. Programmatic access via the BioStudies REST API.
 
 ### [RNAcentral](https://rnacentral.org/)
 
-RNAcentral is an EMBL-EBI-coordinated comprehensive database of non-coding RNA sequences that aggregates and cross-references ncRNA data from many expert databases (Rfam, miRBase, Ensembl, GtRNAdb, and others) into a single search-and-retrieval resource with stable RNAcentral identifiers, spanning tens of millions of ncRNA sequences across all domains of life. For cellular agriculture, RNAcentral is a reference for the regulatory RNAs — microRNAs, lncRNAs — that shape myogenic and adipogenic differentiation in cultivated-cell lineages, and a substrate for ML on RNA-based regulation of cell state. Programmatic access via the RNAcentral REST API and bulk downloads.
+RNAcentral is an EMBL-EBI-coordinated comprehensive database of non-coding RNA sequences that aggregates and cross-references ncRNA data from many expert databases (Rfam, miRBase, Ensembl, GtRNAdb, and others) into a single search-and-retrieval resource with stable RNAcentral identifiers, spanning tens of millions of ncRNA sequences across all domains of life. For cellular agriculture, RNAcentral is a reference for the regulatory RNAs (microRNAs, lncRNAs) that shape myogenic and adipogenic differentiation in cultivated-cell lineages, and a substrate for ML on RNA-based regulation of cell state. Programmatic access via the RNAcentral REST API and bulk downloads.
 
 ### [European Nucleotide Archive (ENA)](https://www.ebi.ac.uk/ena/browser/)
 
@@ -46,11 +46,11 @@ Expression Atlas is EMBL-EBI's curated resource for gene expression across speci
 
 ## Livestock Multi-Tissue Atlases & Functional Genomics
 
-Per-species multi-tissue expression, regulatory-effects, and functional-genomics atlases for cell-ag-relevant livestock species. The Farm Animal Genotype–Tissue Expression (FarmGTEx) project family is the canonical effort here — modeled after human GTEx, scaled across cattle, pig, chicken, and sheep — paired with the broader FAANG (Functional Annotation of Animal Genomes) network and species-specific biobank portals. For the foundational papers, see [Papers.md / Livestock Functional Genomics Reference Work](./Papers.md#livestock-functional-genomics-reference-work); for the analysis tooling, see [Software.md / Quantitative Genetics & Multi-Omics Analysis](./Software.md#quantitative-genetics--multi-omics-analysis).
+Per-species multi-tissue expression, regulatory-effects, and functional-genomics atlases for cell-ag-relevant livestock species. The Farm Animal Genotype–Tissue Expression (FarmGTEx) project family is the canonical effort here (modeled after human GTEx, scaled across cattle, pig, chicken, and sheep) paired with the broader FAANG (Functional Annotation of Animal Genomes) network and species-specific biobank portals. For the foundational papers, see [Papers.md / Livestock Functional Genomics Reference Work](./Papers.md#livestock-functional-genomics-reference-work); for the analysis tooling, see [Software.md / Quantitative Genetics & Multi-Omics Analysis](./Software.md#quantitative-genetics--multi-omics-analysis).
 
 ### [FarmGTEx](https://www.farmgtex.org/)
 
-The Farm Animal Genotype–Tissue Expression project — an international consortium developing GTEx-style multi-tissue resources for livestock species. Hosts the umbrella project portal plus links to per-species sub-portals (PigGTEx, ChickenGTEx, CattleGTEx) and shared infrastructure (TWAS-Server, PigBiobank). The canonical entry point for livestock systems-genetics work. Companion to [Papers.md ref #134](./Papers.md#134) (Fang et al. 2025, *Nature Genetics*).
+The Farm Animal Genotype–Tissue Expression project, an international consortium developing GTEx-style multi-tissue resources for livestock species. Hosts the umbrella project portal plus links to per-species sub-portals (PigGTEx, ChickenGTEx, CattleGTEx) and shared infrastructure (TWAS-Server, PigBiobank). The canonical entry point for livestock systems-genetics work. Companion to [Papers.md ref #134](./Papers.md#134) (Fang et al. 2025, *Nature Genetics*).
 
 ### [PigGTEx-Portal](https://piggtex.farmgtex.org/)
 
@@ -58,23 +58,23 @@ Pig sub-portal of the FarmGTEx consortium, providing browse and query access to 
 
 ### [ChickenGTEx-Portal](https://chicken.farmgtex.org/)
 
-Chicken sub-portal of FarmGTEx, providing multi-tissue genetic-regulation maps across chicken tissues — the first GTEx-style resource for a non-mammalian amniote livestock species, directly useful for cultivated-chicken cell-line engineering work. Companion to [Papers.md ref #136](./Papers.md#136) (Guan et al. 2025, *Nature Genetics*). **Processed-data deposit**: Zenodo [`10.5281/zenodo.14902956`](https://doi.org/10.5281/zenodo.14902956). Cross-referenced from [Datasets/Chicken.md](./Datasets/Chicken.md).
+Chicken sub-portal of FarmGTEx, providing multi-tissue genetic-regulation maps across chicken tissues: the first GTEx-style resource for a non-mammalian amniote livestock species, directly useful for cultivated-chicken cell-line engineering work. Companion to [Papers.md ref #136](./Papers.md#136) (Guan et al. 2025, *Nature Genetics*). **Processed-data deposit**: Zenodo [`10.5281/zenodo.14902956`](https://doi.org/10.5281/zenodo.14902956). Cross-referenced from [Datasets/Chicken.md](./Datasets/Chicken.md).
 
 ### [CattleGTEx](https://ngdc.cncb.ac.cn/cattleca/home)
 
-Cattle sub-portal of FarmGTEx, providing bulk and single-cell multi-tissue expression atlases for cattle (*Bos taurus*) — directly relevant to cultivated-beef cell-line characterization and engineering. Companion to [Papers.md ref #137](./Papers.md#137) (Han et al. 2025, *Nature Genetics*, the single-cell atlas paper) and [Papers.md ref #192](./Papers.md#192) (Liu et al. 2022, *Nature Genetics*, the foundational CGTEx multi-tissue regulatory-variants atlas). **Han 2025 deposits**: NCBI BioProject [`PRJNA1119173`](https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA1119173); Zenodo [`10.5281/zenodo.16572998`](https://doi.org/10.5281/zenodo.16572998) and [`10.5281/zenodo.15721498`](https://doi.org/10.5281/zenodo.15721498). **Liu 2022 deposits**: Zenodo [`10.5281/zenodo.6510550`](https://doi.org/10.5281/zenodo.6510550); pipeline at [`shuliliu/cattleGTEx`](https://github.com/shuliliu/cattleGTEx). Cross-referenced from [Datasets/Cow.md](./Datasets/Cow.md).
+Cattle sub-portal of FarmGTEx, providing bulk and single-cell multi-tissue expression atlases for cattle (*Bos taurus*), directly relevant to cultivated-beef cell-line characterization and engineering. Companion to [Papers.md ref #137](./Papers.md#137) (Han et al. 2025, *Nature Genetics*, the single-cell atlas paper) and [Papers.md ref #192](./Papers.md#192) (Liu et al. 2022, *Nature Genetics*, the foundational CGTEx multi-tissue regulatory-variants atlas). **Han 2025 deposits**: NCBI BioProject [`PRJNA1119173`](https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA1119173); Zenodo [`10.5281/zenodo.16572998`](https://doi.org/10.5281/zenodo.16572998) and [`10.5281/zenodo.15721498`](https://doi.org/10.5281/zenodo.15721498). **Liu 2022 deposits**: Zenodo [`10.5281/zenodo.6510550`](https://doi.org/10.5281/zenodo.6510550); pipeline at [`shuliliu/cattleGTEx`](https://github.com/shuliliu/cattleGTEx). Cross-referenced from [Datasets/Cow.md](./Datasets/Cow.md).
 
 ### [SheepGTEx-Portal](https://sheepgtex.farmgtex.org/)
 
-Sheep sub-portal of FarmGTEx, providing multi-tissue regulatory-effects maps across sheep (*Ovis aries*) tissues — extending the FarmGTEx pattern from cattle / pig / chicken into the small-ruminant lineage. Companion to [Papers.md ref #138](./Papers.md#138) (Gong et al. 2025, bioRxiv). **Pipeline**: [`FarmGTEx/SheepGTEx-Pipeline-v0`](https://github.com/FarmGTEx/SheepGTEx-Pipeline-v0). **Raw deposits**: NCBI BioProjects [`PRJNA1198671`](https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA1198671), [`PRJNA1304012`](https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA1304012). Cross-referenced from [Datasets/Sheep.md](./Datasets/Sheep.md).
+Sheep sub-portal of FarmGTEx, providing multi-tissue regulatory-effects maps across sheep (*Ovis aries*) tissues, extending the FarmGTEx pattern from cattle / pig / chicken into the small-ruminant lineage. Companion to [Papers.md ref #138](./Papers.md#138) (Gong et al. 2025, bioRxiv). **Pipeline**: [`FarmGTEx/SheepGTEx-Pipeline-v0`](https://github.com/FarmGTEx/SheepGTEx-Pipeline-v0). **Raw deposits**: NCBI BioProjects [`PRJNA1198671`](https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA1198671), [`PRJNA1304012`](https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA1304012). Cross-referenced from [Datasets/Sheep.md](./Datasets/Sheep.md).
 
 ### [FarmGTEx TWAS-Server](https://twas.farmgtex.org/)
 
-Server providing transcriptome-wide association study (TWAS) analyses across the FarmGTEx tissue / sample matrix — links expression-genetics signals to complex-trait associations across livestock species. Companion infrastructure to the species-specific FarmGTEx sub-portals above.
+Server providing transcriptome-wide association study (TWAS) analyses across the FarmGTEx tissue / sample matrix, links expression-genetics signals to complex-trait associations across livestock species. Companion infrastructure to the species-specific FarmGTEx sub-portals above.
 
 ### [PigBiobank](https://pigbiobank.farmgtex.org/)
 
-Trait-data biobank coordinated with PigGTEx, integrating phenotypic, genotypic, and expression data on diverse pig traits — complementary to PigGTEx-Portal's molecular-QTL focus. Companion to [Papers.md ref #139](./Papers.md#139) (Zeng et al. 2024, *Nucleic Acids Research*). Cross-referenced from [Datasets/Pig.md](./Datasets/Pig.md).
+Trait-data biobank coordinated with PigGTEx, integrating phenotypic, genotypic, and expression data on diverse pig traits, complementary to PigGTEx-Portal's molecular-QTL focus. Companion to [Papers.md ref #139](./Papers.md#139) (Zeng et al. 2024, *Nucleic Acids Research*). Cross-referenced from [Datasets/Pig.md](./Datasets/Pig.md).
 
 ### [FAANG (Functional Annotation of Animal Genomes)](https://www.faang.org/)
 
@@ -82,15 +82,15 @@ A global research consortium and resource network for functional annotation of f
 
 ### [AQUA-FAANG](https://www.aqua-faang.eu/)
 
-The FAANG consortium's aquaculture programme — *Advancing European Aquaculture by Genome Functional Annotation* — generating genome-wide functional annotation maps for six aquaculture species important to European aquaculture (Atlantic salmon, rainbow trout, European sea bass, gilthead sea bream, common carp, turbot). The [data hub](https://data.faang.org/projects/AQUA-FAANG) hosts the project's open releases (55 datasets at time of curation, spanning RNA-seq, ATAC-seq, and ChIP-seq). A FAANG functional-annotation substrate for aquaculture-cell-line work, paralleling FarmGTEx for terrestrial livestock. Cross-referenced from [Datasets/Fish.md](./Datasets/Fish.md).
+The FAANG consortium's aquaculture programme (*Advancing European Aquaculture by Genome Functional Annotation*) generating genome-wide functional annotation maps for six aquaculture species important to European aquaculture (Atlantic salmon, rainbow trout, European sea bass, gilthead sea bream, common carp, turbot). The [data hub](https://data.faang.org/projects/AQUA-FAANG) hosts the project's open releases (55 datasets at time of curation, spanning RNA-seq, ATAC-seq, and ChIP-seq). A FAANG functional-annotation substrate for aquaculture-cell-line work, paralleling FarmGTEx for terrestrial livestock. Cross-referenced from [Datasets/Fish.md](./Datasets/Fish.md).
 
 ### [BovReg](https://bovreg.eu/)
 
-The FAANG consortium's cattle functional-annotation project, generating maps of functionally active genomic features in cattle (*Bos taurus*). The [data hub](https://data.faang.org/projects/BovReg) hosts the open releases (4 datasets at time of curation). Complementary to [CattleGTEx](#cattlegtex) for cell-ag-relevant cattle-cell engineering and atlas work — particularly useful as a regulatory-element substrate for cultivated-beef cell-line characterisation. Cross-referenced from [Datasets/Cow.md](./Datasets/Cow.md).
+The FAANG consortium's cattle functional-annotation project, generating maps of functionally active genomic features in cattle (*Bos taurus*). The [data hub](https://data.faang.org/projects/BovReg) hosts the open releases (4 datasets at time of curation). Complementary to [CattleGTEx](#cattlegtex) for cell-ag-relevant cattle-cell engineering and atlas work, particularly useful as a regulatory-element substrate for cultivated-beef cell-line characterisation. Cross-referenced from [Datasets/Cow.md](./Datasets/Cow.md).
 
 ### [GENE-SWitCH](https://www.gene-switch.eu/)
 
-The FAANG consortium's pig + chicken project — *the regulatory GENomE of SWine and CHicken: functional annotation during development*. The [data hub](https://data.faang.org/projects/GENE-SWitCH) hosts the open releases (19 datasets at time of curation, covering pig and chicken functional genomes during development). Substrate for cultivated-pork and cultivated-chicken developmental-biology and lineage-engineering work; complementary to [PigGTEx-Portal](#piggtex-portal) and [ChickenGTEx-Portal](#chickengtex-portal). Cross-referenced from [Datasets/Pig.md](./Datasets/Pig.md) and [Datasets/Chicken.md](./Datasets/Chicken.md).
+The FAANG consortium's pig + chicken project, *the regulatory GENomE of SWine and CHicken: functional annotation during development*. The [data hub](https://data.faang.org/projects/GENE-SWitCH) hosts the open releases (19 datasets at time of curation, covering pig and chicken functional genomes during development). Substrate for cultivated-pork and cultivated-chicken developmental-biology and lineage-engineering work; complementary to [PigGTEx-Portal](#piggtex-portal) and [ChickenGTEx-Portal](#chickengtex-portal). Cross-referenced from [Datasets/Pig.md](./Datasets/Pig.md) and [Datasets/Chicken.md](./Datasets/Chicken.md).
 
 ### [Animal QTLdb](https://www.animalgenome.org/cgi-bin/QTLdb/index)
 
@@ -126,11 +126,11 @@ These data sources are helpful for computational tasks related to engineering re
 
 ### [UniProt](https://www.uniprot.org/)
 
-UniProt is the central knowledge base for protein sequence and functional information, jointly maintained by the SIB, EMBL-EBI, and PIR. It comprises SwissProt (manually curated, ~570K entries) and TrEMBL (computationally derived, ~250M entries), with each entry providing sequence, functional annotations, GO terms, post-translational modifications, subcellular localization, cross-references to structure databases, and supporting literature. For cellular agriculture, UniProt is the canonical reference for growth factors, signaling proteins, transcription factors, and metabolic enzymes — including the recombinant FGF2, IGF1, TGF-β, and HGF variants and their orthologs across bovine, porcine, chicken, and fish species used in cultivated-meat media. Programmatic access via the UniProt REST API, SPARQL endpoint, and downloadable XML / FASTA / TSV bulk files.
+UniProt is the central knowledge base for protein sequence and functional information, jointly maintained by the SIB, EMBL-EBI, and PIR. It comprises SwissProt (manually curated, ~570K entries) and TrEMBL (computationally derived, ~250M entries), with each entry providing sequence, functional annotations, GO terms, post-translational modifications, subcellular localization, cross-references to structure databases, and supporting literature. For cellular agriculture, UniProt is the canonical reference for growth factors, signaling proteins, transcription factors, and metabolic enzymes: including the recombinant FGF2, IGF1, TGF-β, and HGF variants and their orthologs across bovine, porcine, chicken, and fish species used in cultivated-meat media. Programmatic access via the UniProt REST API, SPARQL endpoint, and downloadable XML / FASTA / TSV bulk files.
 
 ### [OMA (Orthologous Matrix) Browser](https://omabrowser.org/)
 
-The OMA (Orthologous Matrix) Browser is a curated database of orthologous relationships among genes across thousands of genomes, maintained at ETH Zürich and the SIB, providing pairwise orthologs, OMA Groups, and Hierarchical Orthologous Groups plus Gene Ontology inferences — computed from complete proteomes without a user-supplied reference. For cellular agriculture, OMA is directly useful for cross-species transfer: mapping a characterised human or mouse growth factor, transcription factor, or metabolic enzyme to its orthologs in bovine, porcine, chicken, and fish so that media components and engineered constructs can be ported across cell-ag species. Programmatic access via the OMA REST API, a Python client (`omadb`), and bulk downloads.
+The OMA (Orthologous Matrix) Browser is a curated database of orthologous relationships among genes across thousands of genomes, maintained at ETH Zürich and the SIB, providing pairwise orthologs, OMA Groups, and Hierarchical Orthologous Groups plus Gene Ontology inferences, computed from complete proteomes without a user-supplied reference. For cellular agriculture, OMA is directly useful for cross-species transfer: mapping a characterised human or mouse growth factor, transcription factor, or metabolic enzyme to its orthologs in bovine, porcine, chicken, and fish so that media components and engineered constructs can be ported across cell-ag species. Programmatic access via the OMA REST API, a Python client (`omadb`), and bulk downloads.
 
 ### [AlphaFold Database](https://alphafold.ebi.ac.uk/)
 
@@ -138,7 +138,7 @@ The AlphaFold Database is a freely accessible repository of predicted 3D protein
 
 ### [Protein Data Bank (PDB)](https://www.rcsb.org/)
 
-The Protein Data Bank is the worldwide repository of experimentally determined biomolecular structures, jointly maintained by RCSB (US), PDBe (UK), and PDBj (Japan), containing >220,000 entries from X-ray crystallography, NMR, cryo-EM, and other experimental techniques. Each entry provides atomic coordinates, experimental data, validation metrics, and metadata including bound ligands, mutations, and binding partners. For cellular agriculture, PDB serves as the canonical complement to AlphaFold's predicted structures — providing experimentally validated structures of growth factors, cytokines, receptors, and enzymes that can be used as ground truth for protein engineering ML models or as input templates for structural modeling pipelines. Programmatic access via the RCSB REST API, GraphQL endpoint, and mmCIF / PDB file downloads; structure similarity search via the integrated FoldSeek and DALI services.
+The Protein Data Bank is the worldwide repository of experimentally determined biomolecular structures, jointly maintained by RCSB (US), PDBe (UK), and PDBj (Japan), containing >220,000 entries from X-ray crystallography, NMR, cryo-EM, and other experimental techniques. Each entry provides atomic coordinates, experimental data, validation metrics, and metadata including bound ligands, mutations, and binding partners. For cellular agriculture, PDB serves as the canonical complement to AlphaFold's predicted structures: providing experimentally validated structures of growth factors, cytokines, receptors, and enzymes that can be used as ground truth for protein engineering ML models or as input templates for structural modeling pipelines. Programmatic access via the RCSB REST API, GraphQL endpoint, and mmCIF / PDB file downloads; structure similarity search via the integrated FoldSeek and DALI services.
 
 ### [InterPro](https://www.ebi.ac.uk/interpro/)
 
@@ -158,11 +158,11 @@ PRIDE (PRoteomics IDEntifications database) is the world's largest public reposi
 
 ### [ProteomeXchange](https://www.proteomexchange.org/)
 
-ProteomeXchange is the consortium that coordinates standardised submission and dissemination of mass-spectrometry proteomics data across its member repositories — [PRIDE](#pride) (above), MassIVE, PeptideAtlas, jPOST, iProX, and Panorama Public — assigning each dataset a stable `PXD` accession under a common submission and metadata standard. It is the single entry point for discovering public proteomics datasets regardless of which member repository physically hosts the data. For cellular agriculture, ProteomeXchange is the umbrella index for finding cell-line, tissue, and spent-media proteomics deposits — useful for assembling cross-study training sets for protein-expression ML. Programmatic access via the ProteomeXchange REST API.
+ProteomeXchange is the consortium that coordinates standardised submission and dissemination of mass-spectrometry proteomics data across its member repositories: [PRIDE](#pride) (above), MassIVE, PeptideAtlas, jPOST, iProX, and Panorama Public, assigning each dataset a stable `PXD` accession under a common submission and metadata standard. It is the single entry point for discovering public proteomics datasets regardless of which member repository physically hosts the data. For cellular agriculture, ProteomeXchange is the umbrella index for finding cell-line, tissue, and spent-media proteomics deposits, useful for assembling cross-study training sets for protein-expression ML. Programmatic access via the ProteomeXchange REST API.
 
 ## Glycomics & Glycoprotein Databases
 
-Glycosylation governs the activity, stability, and immunogenicity of recombinant growth factors and the cell-surface glycans that mediate cell–cell and cell–scaffold interactions — making glycan-structure and protein-glycosylation databases relevant to media-protein engineering and cultivated-tissue cell biology.
+Glycosylation governs the activity, stability, and immunogenicity of recombinant growth factors and the cell-surface glycans that mediate cell–cell and cell–scaffold interactions, making glycan-structure and protein-glycosylation databases relevant to media-protein engineering and cultivated-tissue cell biology.
 
 ### [GlyGen](https://www.glygen.org/)
 
@@ -170,7 +170,7 @@ GlyGen is an integrated glycoinformatics knowledge base that retrieves, harmonis
 
 ### [GlyTouCan](https://glytoucan.org/)
 
-GlyTouCan is the international glycan structure repository — the registry that assigns globally unique, stable accession numbers to glycan structures regardless of how completely they are characterised, supported by the Japanese glycoinformatics community. It is the canonical identifier authority that downstream glycomics resources (including GlyGen and GlyConnect) reference. For cellular agriculture, GlyTouCan provides the stable glycan identifiers needed to annotate and compare glycoforms of recombinant proteins and cell-surface glycans across datasets. Programmatic access via REST and SPARQL endpoints.
+GlyTouCan is the international glycan structure repository: the registry that assigns globally unique, stable accession numbers to glycan structures regardless of how completely they are characterised, supported by the Japanese glycoinformatics community. It is the canonical identifier authority that downstream glycomics resources (including GlyGen and GlyConnect) reference. For cellular agriculture, GlyTouCan provides the stable glycan identifiers needed to annotate and compare glycoforms of recombinant proteins and cell-surface glycans across datasets. Programmatic access via REST and SPARQL endpoints.
 
 ### [GlyConnect](https://glyconnect.expasy.org/)
 
@@ -178,7 +178,7 @@ GlyConnect is the SIB / ExPASy glycoprotein database, linking proteins to their 
 
 ## Cell Line & Single-Cell Reference Atlases
 
-Resources cataloging cell-line identities, properties, and single-cell expression patterns — central to cell-ag work on cell-line characterization, immortalization, and differentiation.
+Resources cataloging cell-line identities, properties, and single-cell expression patterns: central to cell-ag work on cell-line characterization, immortalization, and differentiation.
 
 ### [Cellosaurus](https://www.cellosaurus.org/)
 
@@ -190,7 +190,7 @@ The Human Cell Atlas is an international consortium effort to construct comprehe
 
 ### [Tabula Sapiens](https://tabula-sapiens-portal.ds.czbiohub.org/)
 
-Tabula Sapiens is a molecular reference atlas of the human body from the Tabula Sapiens Consortium (Chan Zuckerberg Initiative / CZ Biohub) — a multi-organ single-cell transcriptomic map of over 1.1 million cells across 28 organs from 24 donors, processed through one consistent pipeline so cell types are directly comparable across tissues. For cellular agriculture, Tabula Sapiens is a cross-tissue reference for the cell types relevant to cultivated meat (skeletal-muscle satellite cells, adipocytes, fibroblasts, endothelial cells) and a benchmark for single-cell foundation-model evaluation; despite the human focus it transfers to livestock through orthology and cross-species models. Available through the project portal and CZ CELLxGENE.
+Tabula Sapiens is a molecular reference atlas of the human body from the Tabula Sapiens Consortium (Chan Zuckerberg Initiative / CZ Biohub): a multi-organ single-cell transcriptomic map of over 1.1 million cells across 28 organs from 24 donors, processed through one consistent pipeline so cell types are directly comparable across tissues. For cellular agriculture, Tabula Sapiens is a cross-tissue reference for the cell types relevant to cultivated meat (skeletal-muscle satellite cells, adipocytes, fibroblasts, endothelial cells) and a benchmark for single-cell foundation-model evaluation; despite the human focus it transfers to livestock through orthology and cross-species models. Available through the project portal and CZ CELLxGENE.
 
 ### [CZ CELLxGENE](https://cellxgene.cziscience.com/)
 
@@ -198,7 +198,7 @@ CZ CELLxGENE is the Chan Zuckerberg Initiative's platform for exploring and anal
 
 ### [scBaseCount](https://github.com/ArcInstitute/arc-virtual-cell-atlas/blob/main/scBaseCount/README.md)
 
-scBaseCount is Arc Institute's AI-agent-curated, uniformly processed, and continuously updated single-cell RNA-seq repository — an agentic pipeline continuously mines public scRNA-seq studies and reprocesses them into a single harmonised count-matrix reference spanning many organisms. For cellular agriculture it is a large, harmonised cross-study source for assembling reference and training sets across species, complementary to CZ CELLxGENE. It is also catalogued as a train-on corpus in [Datasets/HumanReference.md](./Datasets/HumanReference.md#scbasecount); companion to [Papers.md ref #126](./Papers.md#126) (Youngblut et al. 2025).
+scBaseCount is Arc Institute's AI-agent-curated, uniformly processed, and continuously updated single-cell RNA-seq repository, an agentic pipeline continuously mines public scRNA-seq studies and reprocesses them into a single harmonised count-matrix reference spanning many organisms. For cellular agriculture it is a large, harmonised cross-study source for assembling reference and training sets across species, complementary to CZ CELLxGENE. It is also catalogued as a train-on corpus in [Datasets/HumanReference.md](./Datasets/HumanReference.md#scbasecount); companion to [Papers.md ref #126](./Papers.md#126) (Youngblut et al. 2025).
 
 ## Muscle & Functional Gene Sets
 
@@ -306,7 +306,7 @@ The Cell Ontology is an OBO Foundry ontology covering canonical, natural biologi
 
 ## Pathways, Metabolism & Metabolic Models
 
-Resources for cell-ag work on media formulation, metabolic engineering, and bioprocess optimization — where understanding metabolic networks, enzyme kinetics, and metabolite concentrations is central.
+Resources for cell-ag work on media formulation, metabolic engineering, and bioprocess optimization: where understanding metabolic networks, enzyme kinetics, and metabolite concentrations is central.
 
 ### [KEGG PATHWAY](https://www.kegg.jp/kegg/pathway.html)
 
@@ -314,7 +314,7 @@ KEGG (Kyoto Encyclopedia of Genes and Genomes) is one of the most widely used pa
 
 ### [Reactome](https://reactome.org/)
 
-Reactome is a free, open-source, curated database of human (and increasingly other species) biological pathways, jointly developed by the Ontario Institute for Cancer Research, EMBL-EBI, and other partners. It models pathways as hierarchically organized reactions with explicit participants, modifiers, and regulatory relationships, supporting pathway enrichment analysis and integration with expression data. For cellular agriculture, Reactome's strengths are its detailed signaling-pathway annotations (myogenic regulatory factor cascades, FGF / IGF / Wnt signaling) and its open data model — entries are freely downloadable as BioPAX, SBML, SBGN, and tab-delimited formats, enabling unrestricted use in ML pipelines without the commercial licensing constraints of KEGG. Programmatic access via the Reactome ContentService REST API and a Cypher-queryable Neo4j graph database.
+Reactome is a free, open-source, curated database of human (and increasingly other species) biological pathways, jointly developed by the Ontario Institute for Cancer Research, EMBL-EBI, and other partners. It models pathways as hierarchically organized reactions with explicit participants, modifiers, and regulatory relationships, supporting pathway enrichment analysis and integration with expression data. For cellular agriculture, Reactome's strengths are its detailed signaling-pathway annotations (myogenic regulatory factor cascades, FGF / IGF / Wnt signaling) and its open data model: entries are freely downloadable as BioPAX, SBML, SBGN, and tab-delimited formats, enabling unrestricted use in ML pipelines without the commercial licensing constraints of KEGG. Programmatic access via the Reactome ContentService REST API and a Cypher-queryable Neo4j graph database.
 
 ### [WikiPathways](https://www.wikipathways.org/)
 
@@ -322,7 +322,7 @@ WikiPathways is a community-curated database of biological pathways under an ope
 
 ### [PathBank](https://pathbank.org/)
 
-PathBank is the Wishart lab's comprehensive, visual database of metabolic, signaling, drug, and disease pathways across model organisms, providing more than 600,000 machine-readable pathways — one of the largest pathway collections available — with labeled metabolites, proteins, and reactions, and downloads available in several machine-readable formats. For cellular agriculture, PathBank complements KEGG and Reactome with broad, exportable mammalian pathway coverage for the metabolic and signaling context of media supplements and differentiation, and integrates with the Wishart lab's HMDB / SMPDB / BMDB resources already catalogued here. Free open access.
+PathBank is the Wishart lab's comprehensive, visual database of metabolic, signaling, drug, and disease pathways across model organisms, providing more than 600,000 machine-readable pathways (one of the largest pathway collections available) with labeled metabolites, proteins, and reactions, and downloads available in several machine-readable formats. For cellular agriculture, PathBank complements KEGG and Reactome with broad, exportable mammalian pathway coverage for the metabolic and signaling context of media supplements and differentiation, and integrates with the Wishart lab's HMDB / SMPDB / BMDB resources already catalogued here. Free open access.
 
 ### [Human Metabolome Database (HMDB)](https://hmdb.ca/)
 
@@ -330,7 +330,7 @@ HMDB is a freely available, comprehensive database of human metabolites and thei
 
 ### [Bovine Metabolome Database (BMDB)](https://www.bovinedb.ca/)
 
-BMDB is a comprehensive resource of metabolites found in beef cattle (*Bos taurus*), maintained by the Wishart Lab at the University of Alberta — the same group that hosts HMDB, FooDB, and DrugBank, providing consistent schema and analytical methodology across all four resources. It catalogs tens of thousands of entries describing endogenous metabolites, dietary nutrients, and exogenous compounds detected in bovine biofluids (serum, milk, urine) and tissues (muscle, liver, adipose), with each entry providing chemical / physical properties, biofluid concentrations, biological roles, pathway memberships, and analytical methods of detection. For cultivated beef development, BMDB is the closest available reference for serum metabolite profiles, muscle and adipose tissue metabolomes, and feedstock-derived compound landscapes — directly relevant to serum-free media formulation, growth medium optimization, and flavor-precursor identification in cultivated meat products.
+BMDB is a comprehensive resource of metabolites found in beef cattle (*Bos taurus*), maintained by the Wishart Lab at the University of Alberta: the same group that hosts HMDB, FooDB, and DrugBank, providing consistent schema and analytical methodology across all four resources. It catalogs tens of thousands of entries describing endogenous metabolites, dietary nutrients, and exogenous compounds detected in bovine biofluids (serum, milk, urine) and tissues (muscle, liver, adipose), with each entry providing chemical / physical properties, biofluid concentrations, biological roles, pathway memberships, and analytical methods of detection. For cultivated beef development, BMDB is the closest available reference for serum metabolite profiles, muscle and adipose tissue metabolomes, and feedstock-derived compound landscapes: directly relevant to serum-free media formulation, growth medium optimization, and flavor-precursor identification in cultivated meat products.
 
 ### [BRENDA](https://www.brenda-enzymes.org/)
 
@@ -346,7 +346,7 @@ SMPDB is the Wishart lab's curated database of small-molecule pathways, with ove
 
 ### [BioCyc / MetaCyc](https://biocyc.org/)
 
-BioCyc is an SRI International–maintained collection of >20,000 organism-specific Pathway / Genome Databases (PGDBs), built on the MetaCyc reference pathway database. MetaCyc itself catalogs >3,000 experimentally elucidated metabolic pathways across all domains of life, with >18,000 reactions and >19,000 metabolites; BioCyc PGDBs extend this to specific organisms with computationally predicted pathways. For cellular agriculture, BioCyc is the canonical reference for non-mammalian metabolism — particularly the yeast and bacterial PGDBs used in precision-fermentation alt-protein work, and emerging livestock-species PGDBs that complement species-specific GEMs. MetaCyc is freely accessible at <https://metacyc.org/>; BioCyc has tiered access with substantial free use plus subscription-based bulk download.
+BioCyc is an SRI International–maintained collection of >20,000 organism-specific Pathway / Genome Databases (PGDBs), built on the MetaCyc reference pathway database. MetaCyc itself catalogs >3,000 experimentally elucidated metabolic pathways across all domains of life, with >18,000 reactions and >19,000 metabolites; BioCyc PGDBs extend this to specific organisms with computationally predicted pathways. For cellular agriculture, BioCyc is the canonical reference for non-mammalian metabolism: particularly the yeast and bacterial PGDBs used in precision-fermentation alt-protein work, and emerging livestock-species PGDBs that complement species-specific GEMs. MetaCyc is freely accessible at <https://metacyc.org/>; BioCyc has tiered access with substantial free use plus subscription-based bulk download.
 
 ### [BiGG Models](http://bigg.ucsd.edu/)
 
@@ -374,11 +374,11 @@ The Metabolomics Workbench is the NIH Common Fund's metabolomics data repository
 
 ## Mass Spectrometry Spectral Databases
 
-Reference spectral data resources for compound identification in mass-spectrometry workflows — essential analytical infrastructure for flavor metabolomics, off-flavor characterization, and spent-media analysis in cultivated meat. Pair these databases with the MS preprocessing / annotation tools in [Software.md / Mass Spectrometry & Chemometrics](./Software.md#mass-spectrometry--chemometrics).
+Reference spectral data resources for compound identification in mass-spectrometry workflows: essential analytical infrastructure for flavor metabolomics, off-flavor characterization, and spent-media analysis in cultivated meat. Pair these databases with the MS preprocessing / annotation tools in [Software.md / Mass Spectrometry & Chemometrics](./Software.md#mass-spectrometry--chemometrics).
 
 ### [MassBank](https://massbank.eu/)
 
-MassBank is the world's first open-access mass-spectrometry spectral database, hosted as a federation of European, Japanese, and US instances with >400,000 spectra contributed by >50 institutions. Each entry provides the recorded mass spectrum, instrumental parameters, fragmentation conditions, and the precursor compound identity (InChI, SMILES, structure). For cellular agriculture, MassBank is foundational reference data for identifying volatile and non-volatile metabolites in cultivated tissues, characterizing off-flavors, and analyzing spent media — particularly when paired with MS-DIAL, MZmine 3, or SIRIUS for automated annotation. Programmatic access via REST API; bulk records available via Git.
+MassBank is the world's first open-access mass-spectrometry spectral database, hosted as a federation of European, Japanese, and US instances with >400,000 spectra contributed by >50 institutions. Each entry provides the recorded mass spectrum, instrumental parameters, fragmentation conditions, and the precursor compound identity (InChI, SMILES, structure). For cellular agriculture, MassBank is foundational reference data for identifying volatile and non-volatile metabolites in cultivated tissues, characterizing off-flavors, and analyzing spent media: particularly when paired with MS-DIAL, MZmine 3, or SIRIUS for automated annotation. Programmatic access via REST API; bulk records available via Git.
 
 ### [NIST Chemistry WebBook](https://webbook.nist.gov/chemistry/)
 
@@ -386,11 +386,11 @@ The US National Institute of Standards and Technology's reference compendium of 
 
 ### [MetaboLights](https://www.ebi.ac.uk/metabolights/)
 
-MetaboLights is a public open-access repository for metabolomics experiments hosted at EMBL-EBI — the metabolomics analog of GEO (transcriptomics) or PRIDE (proteomics). Each study deposit includes raw MS / NMR data, processed datasets, sample / treatment metadata in ISA-Tab format, and standardized study-protocol annotations. For cellular agriculture, MetaboLights hosts experiments directly relevant to flavor metabolomics, fermentation chemistry, and cell-culture spent-media analysis — a primary source of training data for sensory-prediction ML and benchmark datasets for analytical pipeline validation. Programmatic access via REST API; bulk download via FTP.
+MetaboLights is a public open-access repository for metabolomics experiments hosted at EMBL-EBI, the metabolomics analog of GEO (transcriptomics) or PRIDE (proteomics). Each study deposit includes raw MS / NMR data, processed datasets, sample / treatment metadata in ISA-Tab format, and standardized study-protocol annotations. For cellular agriculture, MetaboLights hosts experiments directly relevant to flavor metabolomics, fermentation chemistry, and cell-culture spent-media analysis, a primary source of training data for sensory-prediction ML and benchmark datasets for analytical pipeline validation. Programmatic access via REST API; bulk download via FTP.
 
 ### [GNPS](https://gnps.ucsd.edu/) (cross-listed)
 
-The Global Natural Products Social Molecular Networking platform from the Dorrestein lab at UCSD provides community-curated MS/MS reference spectral libraries — the database aspect listed here — alongside Feature-Based Molecular Networking, Ion Identity Molecular Networking, and analog-search tooling, which together make it primarily an analysis platform. Full entry and platform-level capabilities are in [Software.md / Mass Spectrometry & Chemometrics](./Software.md#gnps); this dual-listing surfaces it as a spectral database for readers browsing Databases.md.
+The Global Natural Products Social Molecular Networking platform from the Dorrestein lab at UCSD provides community-curated MS/MS reference spectral libraries (the database aspect listed here) alongside Feature-Based Molecular Networking, Ion Identity Molecular Networking, and analog-search tooling, which together make it primarily an analysis platform. Full entry and platform-level capabilities are in [Software.md / Mass Spectrometry & Chemometrics](./Software.md#gnps); this dual-listing surfaces it as a spectral database for readers browsing Databases.md.
 
 ### [MoNA (MassBank of North America)](https://mona.fiehnlab.ucdavis.edu/)
 
@@ -426,15 +426,15 @@ ChEMBL is a manually curated database of bioactive small molecules with drug-lik
 
 ### [PubChem](https://pubchem.ncbi.nlm.nih.gov/)
 
-PubChem is NIH's open chemistry database, the largest public repository of chemical structures and bioactivity data, hosting >120M compounds, >330M substances, and >1.4M bioassays. Each compound entry provides structure, computed physico-chemical properties, synonyms, classifications, biological activities, patents, literature references, and safety / toxicology information. For cellular agriculture, PubChem is the broadest practical reference for media components, supplements, and small-molecule modulators — including industrial-grade ingredients without the literature-grade coverage of ChEMBL. Programmatic access via the PubChem PUG REST API, PUG-View for richer record summaries, and SQL queries over the PubChem data warehouse.
+PubChem is NIH's open chemistry database, the largest public repository of chemical structures and bioactivity data, hosting >120M compounds, >330M substances, and >1.4M bioassays. Each compound entry provides structure, computed physico-chemical properties, synonyms, classifications, biological activities, patents, literature references, and safety / toxicology information. For cellular agriculture, PubChem is the broadest practical reference for media components, supplements, and small-molecule modulators, including industrial-grade ingredients without the literature-grade coverage of ChEMBL. Programmatic access via the PubChem PUG REST API, PUG-View for richer record summaries, and SQL queries over the PubChem data warehouse.
 
 ### [DrugBank](https://go.drugbank.com/)
 
-DrugBank is a comprehensive bioinformatics / cheminformatics resource maintained by the Wishart lab at the University of Alberta, cataloging >13,000 drug entries — including ~2,200 FDA-approved small molecules, ~340 FDA-approved biologics, ~93 nutraceuticals, and >5,000 experimental drugs — with detailed chemistry, pharmacology, pharmaceutical, and pharmacological-target data. For cellular agriculture, DrugBank is useful for identifying small-molecule alternatives to recombinant growth factors (many drug-like compounds modulate cell-signaling pathways relevant to differentiation and proliferation), for cross-referencing media supplements against known pharmacological activities, and as a sister resource to HMDB / BMDB / SMPDB in the Wishart-lab ecosystem. Programmatic access via REST API; downloads require academic registration.
+DrugBank is a comprehensive bioinformatics / cheminformatics resource maintained by the Wishart lab at the University of Alberta, cataloging >13,000 drug entries: including ~2,200 FDA-approved small molecules, ~340 FDA-approved biologics, ~93 nutraceuticals, and >5,000 experimental drugs: with detailed chemistry, pharmacology, pharmaceutical, and pharmacological-target data. For cellular agriculture, DrugBank is useful for identifying small-molecule alternatives to recombinant growth factors (many drug-like compounds modulate cell-signaling pathways relevant to differentiation and proliferation), for cross-referencing media supplements against known pharmacological activities, and as a sister resource to HMDB / BMDB / SMPDB in the Wishart-lab ecosystem. Programmatic access via REST API; downloads require academic registration.
 
 ### [ChemSpider](https://www.chemspider.com/)
 
-ChemSpider is the Royal Society of Chemistry's free chemical structure search platform, aggregating ~88 million unique chemical structures from over 270 data sources including PubChem, ChEBI, FDA, EPA, vendor catalogs, and primary literature. Each entry provides identifiers (InChI, SMILES, CAS, IUPAC name), structure depiction, computed physicochemical properties, and source provenance. For cellular agriculture, ChemSpider serves as a comprehensive fallback when ChEMBL or PubChem don't cover a particular media component or flavor precursor — particularly useful for obscure natural products or vendor-specific compounds.
+ChemSpider is the Royal Society of Chemistry's free chemical structure search platform, aggregating ~88 million unique chemical structures from over 270 data sources including PubChem, ChEBI, FDA, EPA, vendor catalogs, and primary literature. Each entry provides identifiers (InChI, SMILES, CAS, IUPAC name), structure depiction, computed physicochemical properties, and source provenance. For cellular agriculture, ChemSpider serves as a comprehensive fallback when ChEMBL or PubChem don't cover a particular media component or flavor precursor, particularly useful for obscure natural products or vendor-specific compounds.
 
 ### [ChEBI](https://www.ebi.ac.uk/chebi/)
 
@@ -442,7 +442,7 @@ ChEBI (Chemical Entities of Biological Interest) is EMBL-EBI's curated ontology 
 
 ### [T3DB (Toxin and Toxin-Target Database)](https://www.t3db.ca/)
 
-T3DB is the Wishart lab's curated database of toxic-exposome compounds, cataloging ~3,500 environmental contaminants, pollutants, industrial chemicals, and endogenous toxic metabolites along with their molecular targets and biological effects. Each entry provides chemical / physical properties, biological mechanism of action, toxicity references, and analytical methods of detection. For cellular agriculture, T3DB is useful for identifying potential off-flavor or off-odor compounds in cultivated tissues (some volatile toxins overlap with food chemistry — aldehydes, aromatic compounds, sulfides), for media-safety screening, and for understanding adulterant detection in regulatory contexts.
+T3DB is the Wishart lab's curated database of toxic-exposome compounds, cataloging ~3,500 environmental contaminants, pollutants, industrial chemicals, and endogenous toxic metabolites along with their molecular targets and biological effects. Each entry provides chemical / physical properties, biological mechanism of action, toxicity references, and analytical methods of detection. For cellular agriculture, T3DB is useful for identifying potential off-flavor or off-odor compounds in cultivated tissues (some volatile toxins overlap with food chemistry: aldehydes, aromatic compounds, sulfides), for media-safety screening, and for understanding adulterant detection in regulatory contexts.
 
 ### [COCONUT (COlleCtion of Open Natural prodUcTs)](https://coconut.naturalproducts.net/)
 
@@ -450,7 +450,7 @@ COCONUT is one of the largest open, aggregated collections of natural-product st
 
 ## Flavor & Taste Compound Databases
 
-Curated databases of flavor molecules, taste-active compounds, and odor descriptors — the analytical reference layer for sensomics work on cultivated meat, alt-protein flavor optimization, and any cell-ag effort that needs to map detected volatiles to known organoleptic properties.
+Curated databases of flavor molecules, taste-active compounds, and odor descriptors: the analytical reference layer for sensomics work on cultivated meat, alt-protein flavor optimization, and any cell-ag effort that needs to map detected volatiles to known organoleptic properties.
 
 ### [FlavorDB / FlavorDB2](https://cosylab.iiitd.edu.in/flavordb/)
 
@@ -458,17 +458,17 @@ FlavorDB is a comprehensive database of flavor molecules developed by the Comple
 
 ### [BitterDB](https://bitterdb.agri.huji.ac.il/)
 
-BitterDB is a curated database of bitter compounds and bitter taste receptors (T2Rs), maintained at the Hebrew University of Jerusalem (Niv group). Contains hundreds of compounds with chemical properties, sources, and human T2R-binding data; companion tools (BitterPredict, BitterMatch, BitterMasS) leverage the data for predictive modeling. For cellular agriculture and alt-protein work, BitterDB is essential for identifying and predicting bitter off-flavors — a primary sensory barrier in plant-based protein products and a potential concern in cultivated tissues with elevated metabolite content.
+BitterDB is a curated database of bitter compounds and bitter taste receptors (T2Rs), maintained at the Hebrew University of Jerusalem (Niv group). Contains hundreds of compounds with chemical properties, sources, and human T2R-binding data; companion tools (BitterPredict, BitterMatch, BitterMasS) leverage the data for predictive modeling. For cellular agriculture and alt-protein work, BitterDB is essential for identifying and predicting bitter off-flavors, a primary sensory barrier in plant-based protein products and a potential concern in cultivated tissues with elevated metabolite content.
 
 Canonical references: [Papers.md #99](./Papers.md#99) (Wiener et al. 2012, *NAR*) for the original release; [Papers.md #100](./Papers.md#100) (Dagan-Wiener et al. 2019, *NAR*) for the 2019 update; [Papers.md #101](./Papers.md#101) (Ziaikin et al. 2025, *NAR*) for the 2024 update. Related ML / analytical papers from the same group are in matrix [refs #102](./Papers.md#102), [#103](./Papers.md#103), [#104](./Papers.md#104), [#105](./Papers.md#105) and Sensory & Flavor Reference Work [ref #106](./Papers.md#106).
 
 ### [Pherobase](https://www.pherobase.com/)
 
-A comprehensive database of insect and animal pheromones, semiochemicals, and other behaviorally active compounds, maintained by Ashraf El-Sayed. Contains tens of thousands of compounds with biological activity, taxonomic distribution, and analytical data (GC retention indices, mass spectra). For cellular agriculture, Pherobase has indirect but useful relevance — many flavor-active compounds in meat / dairy / fish are downstream of pheromonal or species-specific biochemistry, and the database serves as a reference for distinguishing odor compounds that evolved for animal-animal signaling versus those that drive food-grade flavor perception.
+A comprehensive database of insect and animal pheromones, semiochemicals, and other behaviorally active compounds, maintained by Ashraf El-Sayed. Contains tens of thousands of compounds with biological activity, taxonomic distribution, and analytical data (GC retention indices, mass spectra). For cellular agriculture, Pherobase has indirect but useful relevance: many flavor-active compounds in meat / dairy / fish are downstream of pheromonal or species-specific biochemistry, and the database serves as a reference for distinguishing odor compounds that evolved for animal-animal signaling versus those that drive food-grade flavor perception.
 
 ### [Flavornet](https://www.flavornet.org/)
 
-Flavornet, maintained at Cornell by Acree and Arn, is a database of GC olfactometry (GC-O) results — compound identities keyed to Kováts retention indices on standard GC columns plus consensus odor descriptors from sensory panels. The original open-access reference for matching sniff-port observations to molecular identities in GC-O work. For cellular agriculture, Flavornet is the canonical lookup table for connecting volatile compounds detected in cultivated tissues, fermented alt-protein products, and spent media to their human-perceived odor profiles.
+Flavornet, maintained at Cornell by Acree and Arn, is a database of GC olfactometry (GC-O) results, compound identities keyed to Kováts retention indices on standard GC columns plus consensus odor descriptors from sensory panels. The original open-access reference for matching sniff-port observations to molecular identities in GC-O work. For cellular agriculture, Flavornet is the canonical lookup table for connecting volatile compounds detected in cultivated tissues, fermented alt-protein products, and spent media to their human-perceived odor profiles.
 
 ### [The Good Scents Company](https://www.thegoodscentscompany.com/)
 
@@ -476,7 +476,7 @@ A long-established industry reference platform for the flavor, fragrance, food, 
 
 ### [FooDB](https://foodb.ca/)
 
-FooDB is a large open database of food constituents, chemistry, and biology — covering both macronutrients and the thousands of micro-constituents (flavor and aroma compounds among them) found in foods, with chemical, taxonomic, and concentration data. It is one of the upstream sources integrated into [FlavorDB](#flavordb--flavordb2). For cellular agriculture, FooDB is a reference for the compound composition of conventional foods — a comparison baseline when characterizing the metabolite and flavor profile of cultivated tissues and alt-protein products.
+FooDB is a large open database of food constituents, chemistry, and biology: covering both macronutrients and the thousands of micro-constituents (flavor and aroma compounds among them) found in foods, with chemical, taxonomic, and concentration data. It is one of the upstream sources integrated into [FlavorDB](#flavordb--flavordb2). For cellular agriculture, FooDB is a reference for the compound composition of conventional foods, a comparison baseline when characterizing the metabolite and flavor profile of cultivated tissues and alt-protein products.
 
 ### [ChemTastesDB](https://doi.org/10.5281/zenodo.5747393)
 
@@ -524,27 +524,27 @@ LipidBank is the Japanese Conference on the Biochemistry of Lipids' open databas
 
 ## Seafood Species Reference Databases
 
-Open-access databases for cataloguing seafood species' biological and culinary characteristics, surfaced by [GFI's alternative-seafood data initiative](https://gfi.org/resource/aggregating-data-for-alternative-seafood/). For cellular agriculture these are direct reference data for the cultivated-seafood sub-domain — complementary to the SALARECON salmon GEM in [Datasets/Fish.md](./Datasets/Fish.md#salarecon--salmo-salar-atlantic-salmon).
+Open-access databases for cataloguing seafood species' biological and culinary characteristics, surfaced by [GFI's alternative-seafood data initiative](https://gfi.org/resource/aggregating-data-for-alternative-seafood/). For cellular agriculture these are direct reference data for the cultivated-seafood sub-domain, complementary to the SALARECON salmon GEM in [Datasets/Fish.md](./Datasets/Fish.md#salarecon--salmo-salar-atlantic-salmon).
 
 ### [PISCES — Phylogenetic Index of Seafood CharactEriStics](https://gfi.org/resource/aggregating-data-for-alternative-seafood/)
 
-PISCES organizes seafood data by phylogenetic relationships, grouping species taxonomically — *Salmo salar* (Atlantic salmon) and *Salmo trutta* (sea trout) sit together under genus *Salmo*. Each species entry compiles cell-line availability, nutritional data, and volatile compounds relevant to cultivated- and plant-based-seafood development. Distributed as an AirTable base linked from the GFI landing page. The canonical taxonomic reference for cultivated-seafood candidate species. Companion to [ATLAS](#atlas--archetype-library-for-alternative-seafood) below, which groups the same species by culinary archetype rather than phylogeny.
+PISCES organizes seafood data by phylogenetic relationships, grouping species taxonomically, *Salmo salar* (Atlantic salmon) and *Salmo trutta* (sea trout) sit together under genus *Salmo*. Each species entry compiles cell-line availability, nutritional data, and volatile compounds relevant to cultivated- and plant-based-seafood development. Distributed as an AirTable base linked from the GFI landing page. The canonical taxonomic reference for cultivated-seafood candidate species. Companion to [ATLAS](#atlas--archetype-library-for-alternative-seafood) below, which groups the same species by culinary archetype rather than phylogeny.
 
 ### [ATLAS — ArcheType Library for Alternative Seafood](https://gfi.org/resource/aggregating-data-for-alternative-seafood/)
 
-ATLAS groups seafood species into culinary archetypes — *Salmo salar* under "salmon" and *Salmo trutta* under "trout" — and ranks archetypes across sustainability, animal-welfare, public-health, and US-market-size metrics to help prioritize candidate species for alternative-seafood development. Accessed via the GFI landing page, with a ranking tool hosted on mybinder.org. The species-prioritization complement to [PISCES](#pisces--phylogenetic-index-of-seafood-characteristics)'s taxonomic indexing.
+ATLAS groups seafood species into culinary archetypes (*Salmo salar* under "salmon" and *Salmo trutta* under "trout") and ranks archetypes across sustainability, animal-welfare, public-health, and US-market-size metrics to help prioritize candidate species for alternative-seafood development. Accessed via the GFI landing page, with a ranking tool hosted on mybinder.org. The species-prioritization complement to [PISCES](#pisces--phylogenetic-index-of-seafood-characteristics)'s taxonomic indexing.
 
 ## Literature & Bibliographic Databases
 
-Free open-access search platforms for agricultural research literature — useful for cellular agriculture as context resources covering animal nutrition, feed-stream economics, livestock genetics, food technology regulation, and broader agricultural science that intersects with cell-ag at the technology / commercial / regulatory boundary.
+Free open-access search platforms for agricultural research literature: useful for cellular agriculture as context resources covering animal nutrition, feed-stream economics, livestock genetics, food technology regulation, and broader agricultural science that intersects with cell-ag at the technology / commercial / regulatory boundary.
 
 ### [AGRIS (FAO)](https://agris.fao.org/)
 
-AGRIS is the United Nations Food and Agriculture Organization's global agricultural research index, providing access to over 12 million bibliographic records covering food, agriculture, environment, and rural development since 1970. Each record includes title, authors, abstract, subject keywords (drawn from the multilingual AGROVOC ontology), and full-text links where available. For cellular agriculture, AGRIS is the most comprehensive free index for international agricultural research — useful for feed formulation, plant-based media components, livestock nutrition, and crop-genomics work that intersects with cell-ag.
+AGRIS is the United Nations Food and Agriculture Organization's global agricultural research index, providing access to over 12 million bibliographic records covering food, agriculture, environment, and rural development since 1970. Each record includes title, authors, abstract, subject keywords (drawn from the multilingual AGROVOC ontology), and full-text links where available. For cellular agriculture, AGRIS is the most comprehensive free index for international agricultural research: useful for feed formulation, plant-based media components, livestock nutrition, and crop-genomics work that intersects with cell-ag.
 
 ### [USDA National Agricultural Library Search](https://search.nal.usda.gov/)
 
-The National Agricultural Library Search is the USDA's federated search platform across its digital collections, including PubAg (agricultural research literature), the NAL Catalog, and other USDA-curated resources. For cellular agriculture, NAL Search is the canonical entry point for USDA-funded research on animal nutrition, feed efficiency, livestock genetics, food technology, and food safety — relevant context for cultivated-meat scaling economics, regulatory engagement, and feed-stream cost analysis. Free open access; AGRICOLA-derived records are included alongside open-access NAL collections.
+The National Agricultural Library Search is the USDA's federated search platform across its digital collections, including PubAg (agricultural research literature), the NAL Catalog, and other USDA-curated resources. For cellular agriculture, NAL Search is the canonical entry point for USDA-funded research on animal nutrition, feed efficiency, livestock genetics, food technology, and food safety: relevant context for cultivated-meat scaling economics, regulatory engagement, and feed-stream cost analysis. Free open access; AGRICOLA-derived records are included alongside open-access NAL collections.
 
 ### [GFI Alternative Protein Literature Library](https://gfi.org/resource/alternative-protein-literature-library/)
 
@@ -552,11 +552,11 @@ GFI's curated collection of alternative-protein research resources spanning plan
 
 ## Database Directories & Reference Guides
 
-Meta-resources — catalogues of databases and curated library guides — that index the broader data landscape. Useful as starting points for locating biological, chemical, and food-science resources beyond those curated here.
+Meta-resources (catalogues of databases and curated library guides) that index the broader data landscape. Useful as starting points for locating biological, chemical, and food-science resources beyond those curated here.
 
 ### [Wikipedia: List of biological databases](https://en.wikipedia.org/wiki/List_of_biological_databases)
 
-A community-maintained index of biological databases, grouped by type — meta-databases, model-organism, nucleic-acid, protein, pathway, taxonomic, and more. A broad navigation layer for biological data resources beyond those catalogued here.
+A community-maintained index of biological databases, grouped by type: meta-databases, model-organism, nucleic-acid, protein, pathway, taxonomic, and more. A broad navigation layer for biological data resources beyond those catalogued here.
 
 ### [Wikipedia: List of chemical databases](https://en.wikipedia.org/wiki/List_of_chemical_databases)
 
@@ -564,7 +564,7 @@ A community-maintained list of websites and databases of chemical information. C
 
 ### [UArk Food Science Research Guide](https://libguides.uark.edu/FoodScience/Databases)
 
-The University of Arkansas Libraries' research guide for food science, listing relevant databases, journals, and statistical resources — a curated entry point into food-science literature and data infrastructure.
+The University of Arkansas Libraries' research guide for food science, listing relevant databases, journals, and statistical resources, a curated entry point into food-science literature and data infrastructure.
 
 ## Regulatory & Food-Safety Databases
 
@@ -592,7 +592,7 @@ OpenFoodTox is EFSA's open chemical-hazards database, providing structured summa
 
 ## Ecosystem & Industry Directories
 
-GFI's curated public directories cataloguing the people, companies, supply chain, opportunities, and regulatory status of the alternative-protein and cellular-agriculture field. These are the "domain neighbours" of CAAIL — they catalogue *who is doing the work and where it is being sold*, complementary to CAAIL's catalogue of papers, software, datasets, and educational material. New Harvest's initiatives covering the same space are not databases or directories: the funding programs (AICAI, the Cellular Agriculture Science Engine) live in [Funding & Grants](./Funding.md), and the convening Cultured Meat Safety Initiative lives in [OtherResources.md / Cell-Ag Ecosystem Initiatives](./OtherResources.md#cell-ag-ecosystem-initiatives) instead. Two non-GFI additions sit alongside the GFI directories: Pando, a commercial *in vitro* plant knowledge base from Foray Bioscience (plant-side cell-ag), and the Food Systems Dashboard (last entry), a macro food-systems data resource that situates cultivated-meat and alt-protein work in its broader dietary and policy context.
+GFI's curated public directories cataloguing the people, companies, supply chain, opportunities, and regulatory status of the alternative-protein and cellular-agriculture field. These are the "domain neighbours" of CAAIL: they catalogue *who is doing the work and where it is being sold*, complementary to CAAIL's catalogue of papers, software, datasets, and educational material. New Harvest's initiatives covering the same space are not databases or directories: the funding programs (AICAI, the Cellular Agriculture Science Engine) live in [Funding & Grants](./Funding.md), and the convening Cultured Meat Safety Initiative lives in [OtherResources.md / Cell-Ag Ecosystem Initiatives](./OtherResources.md#cell-ag-ecosystem-initiatives) instead. Two non-GFI additions sit alongside the GFI directories: Pando, a commercial *in vitro* plant knowledge base from Foray Bioscience (plant-side cell-ag), and the Food Systems Dashboard (last entry), a macro food-systems data resource that situates cultivated-meat and alt-protein work in its broader dietary and policy context.
 
 ### [GFI Alternative Protein Researcher Directory](https://gfi.org/resource/alternative-protein-researcher-directory/)
 
@@ -600,7 +600,7 @@ GFI's global directory of researchers working on plant-based meat, cultivated me
 
 ### [GFI Alternative Protein Company Database](https://gfi.org/resource/alternative-protein-company-database/)
 
-GFI's catalogue of alternative-protein companies, including funding status and impact-investment context — the industry-side map of the field.
+GFI's catalogue of alternative-protein companies, including funding status and impact-investment context, the industry-side map of the field.
 
 ### [GFI APAC Alternative Protein Ecosystem Database](https://gfi-apac.org/industry/alternative-protein-ecosystem-database/)
 
@@ -612,27 +612,27 @@ GFI's catalogue of startup ideas, commercial opportunities, research projects, a
 
 ### [GFI Where Cultivated Meat Can Be Sold](https://gfi.org/resource/where-cultivated-meat-can-be-sold/)
 
-GFI's live tracker of countries where cultivated meat has regulatory approval for sale, with associated companies and product formats — the kind of dynamic regulatory data CAAIL links to rather than duplicates.
+GFI's live tracker of countries where cultivated meat has regulatory approval for sale, with associated companies and product formats, the kind of dynamic regulatory data CAAIL links to rather than duplicates.
 
 ### [Pando (Foray Bioscience)](https://pando.foraybio.com/)
 
-An AI research workspace and searchable *in vitro* plant knowledge base from Foray Bioscience, a company growing plant products and "seeds" from cells. Pando lets plant scientists search and reason over what Foray describes as the largest *in vitro* plant (tissue-culture and micropropagation) knowledge base, supporting plant-side cell-culture R&D — the plant counterpart to the animal-cell-culture resources that dominate CAAIL. Commercial (freemium, with a free tier alongside paid plans) and recently launched (2026); it is a proprietary platform rather than an open public scientific repository, so it is catalogued here as an industry knowledge resource.
+An AI research workspace and searchable *in vitro* plant knowledge base from Foray Bioscience, a company growing plant products and "seeds" from cells. Pando lets plant scientists search and reason over what Foray describes as the largest *in vitro* plant (tissue-culture and micropropagation) knowledge base, supporting plant-side cell-culture R&D, the plant counterpart to the animal-cell-culture resources that dominate CAAIL. Commercial (freemium, with a free tier alongside paid plans) and recently launched (2026); it is a proprietary platform rather than an open public scientific repository, so it is catalogued here as an industry knowledge resource.
 
 ### [Food Systems Dashboard](https://www.foodsystemsdashboard.org/)
 
-A web-based tool from the Global Alliance for Improved Nutrition (GAIN), Johns Hopkins University, Cornell University, and the FAO that compiles and visualizes national- and subnational-level food-systems data to inform food policy (introduced by Fanzo et al. 2020, *Nature Food*, [10.1038/s43016-020-0077-y](https://doi.org/10.1038/s43016-020-0077-y)). Organized around three pillars — *Describe, Diagnose, Decide* — it brings together over 300 indicators from 50+ public and private sources (UN agencies, the World Bank, CGIAR, Euromonitor) spanning agricultural production, food availability and affordability, diets and nutrition, livelihoods, climate, environment, resilience, and governance, plus the external drivers shaping them; the Diagnose view scores 39 indicators per country and the Decide view offers 87 evidence-based policies and actions. For cellular agriculture, it supplies macro food-systems context (dietary, sustainability, and policy framing) that situates cultivated-meat and alternative-protein interventions, complementary to CAAIL's molecular, dataset, and tooling resources.
+A web-based tool from the Global Alliance for Improved Nutrition (GAIN), Johns Hopkins University, Cornell University, and the FAO that compiles and visualizes national- and subnational-level food-systems data to inform food policy (introduced by Fanzo et al. 2020, *Nature Food*, [10.1038/s43016-020-0077-y](https://doi.org/10.1038/s43016-020-0077-y)). Organized around three pillars (*Describe, Diagnose, Decide*) it brings together over 300 indicators from 50+ public and private sources (UN agencies, the World Bank, CGIAR, Euromonitor) spanning agricultural production, food availability and affordability, diets and nutrition, livelihoods, climate, environment, resilience, and governance, plus the external drivers shaping them; the Diagnose view scores 39 indicators per country and the Decide view offers 87 evidence-based policies and actions. For cellular agriculture, it supplies macro food-systems context (dietary, sustainability, and policy framing) that situates cultivated-meat and alternative-protein interventions, complementary to CAAIL's molecular, dataset, and tooling resources.
 
 ## Benchmark Leaderboards & Results Trackers
 
-Live, continuously-updated leaderboards and results trackers for AI/ML benchmarks — the database side of the **Paper + Dataset + Database** triangle catalogued in the [AI Evaluation & Benchmarking](./ResearchAreas/AIEvaluation.md) research area. The benchmark datasets themselves live in [`Datasets/Benchmarks.md`](./Datasets/Benchmarks.md); this section catalogues only the *results-tracking* surfaces.
+Live, continuously-updated leaderboards and results trackers for AI/ML benchmarks, the database side of the **Paper + Dataset + Database** triangle catalogued in the [AI Evaluation & Benchmarking](./ResearchAreas/AIEvaluation.md) research area. The benchmark datasets themselves live in [`Datasets/Benchmarks.md`](./Datasets/Benchmarks.md); this section catalogues only the *results-tracking* surfaces.
 
 ### [CASP — Prediction Center](https://predictioncenter.org/)
 
-The Prediction Center hosts CASP (Critical Assessment of Structure Prediction) — the long-running community experiment and results tracker for protein-structure-prediction methods, run biennially since 1994, providing an independent assessment of prediction methods against experimental structures. AlphaFold2's breakthrough accuracy was independently assessed here at CASP14 (2020). For cellular agriculture, CASP is the canonical reference point for judging structure-prediction tools applied to growth factors, recombinant ECM and scaffold proteins, and other engineered proteins in cultivated-meat workflows.
+The Prediction Center hosts CASP (Critical Assessment of Structure Prediction): the long-running community experiment and results tracker for protein-structure-prediction methods, run biennially since 1994, providing an independent assessment of prediction methods against experimental structures. AlphaFold2's breakthrough accuracy was independently assessed here at CASP14 (2020). For cellular agriculture, CASP is the canonical reference point for judging structure-prediction tools applied to growth factors, recombinant ECM and scaffold proteins, and other engineered proteins in cultivated-meat workflows.
 
 ### [CompBioBench v1 Leaderboard](https://huggingface.co/spaces/Genentech/compbiobench-leaderboard-v1)
 
-Genentech's open leaderboard hosted on Hugging Face Spaces, tracking model performance on the 100-task CompBioBench v1 computational-biology benchmark. Provides a vendor-neutral, continuously-updated comparison point for cell-ag teams evaluating LLMs and agents on bioinformatics tasks before deploying them downstream. The underlying benchmark data — questions plus the BAM/FASTQ/H5AD/MTX/TSV bioinformatics artifacts each task operates over — is catalogued separately at [`Datasets/Benchmarks.md / CompBioBench v1`](./Datasets/Benchmarks.md#compbiobench-v1) (canonical home: the `Genentech/compbiobench-data-v1` Hugging Face Dataset). Companion to [Papers.md ref #150](./Papers.md#150) (Nair et al. 2026), the bioRxiv methods paper describing the benchmark.
+Genentech's open leaderboard hosted on Hugging Face Spaces, tracking model performance on the 100-task CompBioBench v1 computational-biology benchmark. Provides a vendor-neutral, continuously-updated comparison point for cell-ag teams evaluating LLMs and agents on bioinformatics tasks before deploying them downstream. The underlying benchmark data, questions plus the BAM/FASTQ/H5AD/MTX/TSV bioinformatics artifacts each task operates over, is catalogued separately at [`Datasets/Benchmarks.md / CompBioBench v1`](./Datasets/Benchmarks.md#compbiobench-v1) (canonical home: the `Genentech/compbiobench-data-v1` Hugging Face Dataset). Companion to [Papers.md ref #150](./Papers.md#150) (Nair et al. 2026), the bioRxiv methods paper describing the benchmark.
 
 ### [Humanity's Last Exam Leaderboard](https://lastexam.ai/)
 
@@ -644,11 +644,11 @@ The live leaderboard on Hugging Face Spaces for the reasoning-focused MMLU-Pro b
 
 ### [ProteinGym Leaderboard](https://www.proteingym.org/)
 
-The live leaderboard hosted at `proteingym.org` for the ProteinGym variant-effect benchmark — separate substitution and indel boards covering supervised and zero-shot model categories. The companion benchmark *data* is catalogued at [`Datasets/Benchmarks.md / ProteinGym`](./Datasets/Benchmarks.md#proteingym); paired with [Papers.md ref #148](./Papers.md#148) (Notin et al. 2023). The dominant variant-effect leaderboard in protein-engineering ML — directly relevant to any cell-ag protein-engineering work (growth factors, scaffolds, recombinant ECM proteins) selecting a protein language model.
+The live leaderboard hosted at `proteingym.org` for the ProteinGym variant-effect benchmark, separate substitution and indel boards covering supervised and zero-shot model categories. The companion benchmark *data* is catalogued at [`Datasets/Benchmarks.md / ProteinGym`](./Datasets/Benchmarks.md#proteingym); paired with [Papers.md ref #148](./Papers.md#148) (Notin et al. 2023). The dominant variant-effect leaderboard in protein-engineering ML: directly relevant to any cell-ag protein-engineering work (growth factors, scaffolds, recombinant ECM proteins) selecting a protein language model.
 
 ### [SWE-bench Leaderboard](https://www.swebench.com/)
 
-The official leaderboard at `swebench.com` tracking agent and model performance across the SWE-bench leaderboards — the Full set plus the Verified, Lite, Multilingual, and Multimodal variants — by the percentage of real GitHub issues resolved with a test-passing patch. The companion benchmark *data* is catalogued at [`Datasets/Benchmarks.md / SWE-bench`](./Datasets/Benchmarks.md#swe-bench); paired with [Papers.md ref #155](./Papers.md#155) (Jimenez et al. 2024). The standard tracker for whether a coding agent can be trusted with the bioinformatics-pipeline and analysis-code maintenance cell-ag teams increasingly delegate.
+The official leaderboard at `swebench.com` tracking agent and model performance across the SWE-bench leaderboards (the Full set plus the Verified, Lite, Multilingual, and Multimodal variants) by the percentage of real GitHub issues resolved with a test-passing patch. The companion benchmark *data* is catalogued at [`Datasets/Benchmarks.md / SWE-bench`](./Datasets/Benchmarks.md#swe-bench); paired with [Papers.md ref #155](./Papers.md#155) (Jimenez et al. 2024). The standard tracker for whether a coding agent can be trusted with the bioinformatics-pipeline and analysis-code maintenance cell-ag teams increasingly delegate.
 
 ## Food Safety & Allergen Databases
 

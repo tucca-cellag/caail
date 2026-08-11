@@ -404,8 +404,10 @@ non-catalog canonical files (`OtherResources.md`, `ReferenceWorks.md`, `AwesomeL
   `fetch:citations` selects `open_access` + `best_oa_location`, `loadPaperLicenses` folds it in, and the
   same `licenses.ts` classifier assigns the tier. **`is_oa` is not a redistribution grant** — 48 works
   are free to read with no license at all (every bronze, 30 of the green), and 41 more are `-nd`. So
-  anything that *stores* text must filter on `licenseTier ∈ {permissive, copyleft}` (131 works, 38%),
-  never on `is_oa` (~74%).
+  anything that **publishes** text (a public tool, a shipped dataset) must filter on
+  `licenseTier ∈ {permissive, copyleft}` (131 works, 38%), never on `is_oa` (~74%). The tier governs
+  *redistribution*, not use: an organisation with legitimate access may generally index privately
+  whatever it may lawfully read, so the constraint binds on making it public, not on working with it.
 - **DOIs & citation counts** are a second DB-owned axis mirroring licenses. `catalog` +
   `dataset_entries` carry nullable `doi` + `doi_source` (`manual` = curator-verified; `auto` reserved).
   Like licenses the DOI is **DB-only** (not in canonical Markdown): `seedDois` (run via `db:reseed-axes`) folds the
@@ -458,7 +460,11 @@ The canonical root content remains build-free, GitHub-rendered Markdown — that
 
 ## The Claude Code plugin (`plugin/`)
 
-`.claude-plugin/marketplace.json` publishes this repo as a Claude Code plugin marketplace; `plugin/` is the plugin itself, and it ships exactly one thing — `plugin/skills/caail/SKILL.md`, the skill an agent installs. `site/public/setup.md` is a **generated** copy of that file (written by `publishSkillDoc` during `pnpm parse`), so edit `SKILL.md` and re-run the parse; never edit `setup.md`, CI diffs it.
+`.claude-plugin/marketplace.json` publishes this repo as a Claude Code plugin marketplace; `plugin/` is the plugin itself, and it ships exactly one thing — `plugin/skills/caail/SKILL.md`, the skill an agent installs. **Keep it exactly one.** Claude Code auto-discovers every subdirectory of `plugin/skills/`, and the marketplace entry points at `./plugin`, so a second skill there is installed along with the first. That is how the *installer* skill briefly shipped inside the thing it installs: every user who followed the hero's install prompt ended up carrying, as always-on context forever, a skill whose only job was to install what they already had.
+
+The installer therefore lives **outside** the plugin, at `skills/caail-install/SKILL.md`, and it is what `site/public/setup.md` is a **generated** copy of (written by `publishSkillDoc` during `pnpm parse`). So edit `skills/caail-install/SKILL.md` and re-run the parse; never edit `setup.md`, CI diffs it.
+
+The two skills have opposite lifecycles, which is the thing to hold on to when editing either: the **installer** is fetched once by an agent that does not have CAAIL yet and is then discarded, so its length costs nothing; the **`caail` query skill** is loaded into context on every session forever, so anything added to it is paid for repeatedly. Don't merge them. `setup.md` published the query skill until the two were told apart, which is why the short site URL it exists to provide went unused and the hero fetched a raw GitHub path instead.
 
 **`plugin.json` deliberately carries no `version` field. Do not add one.** Claude Code resolves a plugin's version from the first of: `plugin.json`'s `version`, the marketplace entry's `version`, then the source's git commit SHA — and it uses that as the cache key deciding whether an update exists. An explicit `version` therefore *pins* the plugin: users receive updates only when the field is bumped, and `/plugin update` reports "already at the latest version" no matter how many commits have landed. That is precisely what went wrong here — `0.1.0` never moved while `SKILL.md` changed three times, so every installed user sat on the original skill and had no way to know. Omitting the field falls through to the commit SHA, which is the documented model for a plugin under active development, and CAAIL's skill is exactly that: it restates endpoint shapes and corpus counts that move with the data.
 

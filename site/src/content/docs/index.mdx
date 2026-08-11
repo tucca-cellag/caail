@@ -7,21 +7,38 @@ editUrl: false
 hero: {}
 ---
 
+import RevealScript from '../../components/RevealScript.astro';
+import HomeRail from '../../components/HomeRail.astro';
 import Hero from '../../components/Hero.astro';
 import SectionsGrid from '../../components/SectionsGrid.astro';
 import StartHere from '../../components/StartHere.astro';
 import RecentlyAdded from '../../components/RecentlyAdded.astro';
 import CommunityBand from '../../components/CommunityBand.astro';
 import CiteBand from '../../components/CiteBand.astro';
+import WhyCaail from '../../components/WhyCaail.astro';
+import GetStarted from '../../components/GetStarted.astro';
+
+{/* Arms the scroll-reveal system. Must precede every `.sr` element on the page so the
+    hidden state is set before they are parsed, never after they have been painted. */}
+<RevealScript />
+<HomeRail />
 
 <Hero />
 <SectionsGrid />
 
-<div class="caail-two-col">
+{/* Human routing first, while the reader is still near the top: pick an entry point, see
+    what changed. The agent story then follows as the pitch, ending on how to connect one. */}
+<div class="caail-two-col" id="start">
   <StartHere />
   <RecentlyAdded />
 </div>
 
-<CommunityBand />
+<WhyCaail />
+<GetStarted />
 
-<CiteBand />
+{/* Paired. Each band is one short line of copy plus two actions, so at full width both
+    ran to ~1100px with most of it empty. Side by side they read as a footer pair. */}
+<div class="caail-band-pair">
+  <CommunityBand />
+  <CiteBand />
+</div>

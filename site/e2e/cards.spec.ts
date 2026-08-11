@@ -37,3 +37,27 @@ test('cards in the grid are not offset by Starlight prose flow margins', async (
   expect(second!.x).toBeGreaterThan(first!.x); // same row, next column
   expect(Math.abs(second!.y - first!.y)).toBeLessThan(1);
 });
+
+test('homepage grid items share a row top and height (Starlight prose-margin trap)', async ({ page }) => {
+  // Starlight separates adjacent siblings inside .sl-markdown-content with a `+` selector
+  // that excludes <a>. Any grid built from <div> children silently picks up margin-top on
+  // every item after the first, which offsets it and leaves the row visibly unequal.
+  // SectionsGrid escaped only because its cards happen to be links.
+  await page.goto('./');
+  // `.gs .grid` is gone: Connect-your-agent is now tabs, which has no row to misalign.
+  // `.why .split` replaced `.why .cols` — one frame with two grid children, so equal
+  // heights are structural rather than coincidental. This still asserts it, because the
+  // margin trap would break the shared top edge even inside a single container.
+  for (const sel of ['.caail-two-col > *', '.why .split > *']) {
+    const boxes = await page.locator(sel).evaluateAll((els) =>
+      els.map((e) => {
+        const r = e.getBoundingClientRect();
+        return { top: Math.round(r.top), h: Math.round(r.height), mt: getComputedStyle(e).marginTop };
+      }),
+    );
+    expect(boxes.length, `${sel} rendered nothing`).toBeGreaterThan(1);
+    expect(new Set(boxes.map((b) => b.top)).size, `${sel} items are vertically offset`).toBe(1);
+    expect(new Set(boxes.map((b) => b.h)).size, `${sel} items have unequal heights`).toBe(1);
+    expect(new Set(boxes.map((b) => b.mt)), `${sel} carries a prose margin`).toEqual(new Set(['0px']));
+  }
+});

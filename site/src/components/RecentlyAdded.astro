@@ -7,9 +7,9 @@ const areaColor = {
 type AreaKey = keyof typeof areaColor;
 ---
 <section class="recent">
-  <h2 class="caail-display">Recently added</h2>
-  {recent.map((r) => (
-    <div class="row">
+  <h2 class="caail-display sr">Recently added</h2>
+  {recent.map((r, i) => (
+    <div class={`row sr sr-d${Math.min(i + 1, 5)}`}>
       <span class="date">{r.date}</span>
       <span class="kind">{r.kind}</span>
       <span class="ttl">{r.title}</span>
@@ -19,11 +19,11 @@ type AreaKey = keyof typeof areaColor;
   <a class="more" href="https://github.com/tucca-cellag/caail/commits/main">View the full changelog →</a>
 </section>
 <style>
-  .recent h2 { font-size: 1.05rem; color: var(--caail-primary); margin: 0 0 .8rem; }
-  .row { display: flex; align-items: center; gap: .7rem; padding: .5rem 0; border-bottom: 1px solid var(--caail-border); font-size: .8rem; }
-  .date { font-family: var(--caail-font-mono); font-size: .68rem; color: var(--caail-muted); white-space: nowrap; }
-  .kind { font-size: .62rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--caail-accent); width: 4rem; }
+  .recent h2 { font-size: var(--caail-fs-h3); line-height: 1.15; color: var(--caail-primary); margin: 0 0 var(--caail-space-4); }
+  .row { display: flex; align-items: center; gap: .7rem; padding: .5rem 0; border-bottom: 1px solid var(--caail-border); font-size: var(--caail-fs-sm); }
+  .date { font-family: var(--caail-font-mono); font-size: var(--caail-fs-xs); color: var(--caail-muted); white-space: nowrap; }
+  .kind { font-size: var(--caail-fs-xs); font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--caail-accent); width: 4rem; }
   .ttl { flex: 1; color: var(--caail-ink); }
   .dot { width: .6rem; height: .6rem; border-radius: 3px; }
-  .more { display: inline-block; margin-top: .7rem; font-size: .76rem; font-weight: 700; color: var(--caail-link); }
+  .more { display: inline-block; margin-top: .7rem; font-size: var(--caail-fs-sm); font-weight: 700; color: var(--caail-link); }
 </style>

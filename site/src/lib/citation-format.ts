@@ -18,8 +18,8 @@ export function compactCount(n: number): string {
  */
 export function citationTitle(citationCount: number, citationSources: number): string {
   return citationSources > 1
-    ? `Cited by ${citationCount.toLocaleString()} — summed across ${citationSources} release papers of this resource (OpenAlex cited_by_count). A coarse popularity signal, not a quality measure; the link opens the current paper.`
-    : `Cited by ${citationCount.toLocaleString()} (OpenAlex cited_by_count). A coarse popularity signal, not a quality measure — confirm at the source.`;
+    ? `Cited by ${citationCount.toLocaleString()}, summed across ${citationSources} release papers of this resource (OpenAlex cited_by_count). A coarse popularity signal, not a quality measure; the link opens the current paper.`
+    : `Cited by ${citationCount.toLocaleString()} (OpenAlex cited_by_count). A coarse popularity signal, not a quality measure; confirm at the source.`;
 }
 
 /**

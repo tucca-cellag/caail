@@ -1,5 +1,7 @@
 {
-  "corpusDate": "2026-08-07",
+  "corpusDate": "2026-08-11",
+  "status": "beta",
+  "placementsUnderReview": true,
   "methods": [
     "Bayesian Optimization",
     "Deep Learning",
@@ -61,6 +63,7 @@
   "populatedCells": 68,
   "emptyCells": 107,
   "scopeNote": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall.",
+  "placementNote": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself.",
   "cells": [
     {
       "method": "Bayesian Optimization",
@@ -78,7 +81,8 @@
         249,
         251
       ],
-      "emptyInCorpus": false
+      "emptyInCorpus": false,
+      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
       "method": "Bayesian Optimization",
@@ -87,7 +91,8 @@
       "refIds": [
         16
       ],
-      "emptyInCorpus": false
+      "emptyInCorpus": false,
+      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
       "method": "Bayesian Optimization",
@@ -97,7 +102,8 @@
         59,
         256
       ],
-      "emptyInCorpus": false
+      "emptyInCorpus": false,
+      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
       "method": "Bayesian Optimization",
@@ -140,7 +146,8 @@
         15,
         212
       ],
-      "emptyInCorpus": false
+      "emptyInCorpus": false,
+      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
       "method": "Deep Learning",
@@ -155,7 +162,8 @@
         123,
         263
       ],
-      "emptyInCorpus": false
+      "emptyInCorpus": false,
+      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
       "method": "Deep Learning",
@@ -171,7 +179,8 @@
         255,
         257
       ],
-      "emptyInCorpus": false
+      "emptyInCorpus": false,
+      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
       "method": "Deep Learning",
@@ -182,7 +191,8 @@
         215,
         216
       ],
-      "emptyInCorpus": false
+      "emptyInCorpus": false,
+      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
       "method": "Deep Learning",
@@ -196,7 +206,8 @@
         333,
         338
       ],
-      "emptyInCorpus": false
+      "emptyInCorpus": false,
+      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
       "method": "Deep Learning",
@@ -207,7 +218,8 @@
         4,
         289
       ],
-      "emptyInCorpus": false
+      "emptyInCorpus": false,
+      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
       "method": "Deep Learning",
@@ -236,7 +248,8 @@
         121,
         68
       ],
-      "emptyInCorpus": false
+      "emptyInCorpus": false,
+      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
       "method": "GNN",
@@ -266,7 +279,8 @@
         320,
         324
       ],
-      "emptyInCorpus": false
+      "emptyInCorpus": false,
+      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
       "method": "GNN",
@@ -275,7 +289,8 @@
       "refIds": [
         52
       ],
-      "emptyInCorpus": false
+      "emptyInCorpus": false,
+      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
       "method": "GNN",
@@ -302,7 +317,8 @@
         264,
         265
       ],
-      "emptyInCorpus": false
+      "emptyInCorpus": false,
+      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
       "method": "CNN",
@@ -314,7 +330,8 @@
         260,
         261
       ],
-      "emptyInCorpus": false
+      "emptyInCorpus": false,
+      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
       "method": "CNN",
@@ -325,7 +342,8 @@
         310,
         349
       ],
-      "emptyInCorpus": false
+      "emptyInCorpus": false,
+      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
       "method": "CNN",
@@ -339,7 +357,8 @@
         321,
         330
       ],
-      "emptyInCorpus": false
+      "emptyInCorpus": false,
+      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
       "method": "CNN",
@@ -373,7 +392,8 @@
         9,
         10
       ],
-      "emptyInCorpus": false
+      "emptyInCorpus": false,
+      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
       "method": "GAN / VAE",
@@ -390,7 +410,8 @@
       "refIds": [
         35
       ],
-      "emptyInCorpus": false
+      "emptyInCorpus": false,
+      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
       "method": "GAN / VAE",
@@ -399,7 +420,8 @@
       "refIds": [
         11
       ],
-      "emptyInCorpus": false
+      "emptyInCorpus": false,
+      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
       "method": "GAN / VAE",
@@ -408,7 +430,8 @@
       "refIds": [
         238
       ],
-      "emptyInCorpus": false
+      "emptyInCorpus": false,
+      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
       "method": "GAN / VAE",
@@ -430,7 +453,8 @@
         211,
         252
       ],
-      "emptyInCorpus": false
+      "emptyInCorpus": false,
+      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
       "method": "Genetic Algorithms",
@@ -450,7 +474,8 @@
         209,
         258
       ],
-      "emptyInCorpus": false
+      "emptyInCorpus": false,
+      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
       "method": "Genetic Algorithms",
@@ -459,7 +484,8 @@
       "refIds": [
         34
       ],
-      "emptyInCorpus": false
+      "emptyInCorpus": false,
+      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
       "method": "Genetic Algorithms",
@@ -468,7 +494,8 @@
       "refIds": [
         342
       ],
-      "emptyInCorpus": false
+      "emptyInCorpus": false,
+      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
       "method": "Genetic Algorithms",
@@ -493,7 +520,8 @@
       "refIds": [
         21
       ],
-      "emptyInCorpus": false
+      "emptyInCorpus": false,
+      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
       "method": "SVM",
@@ -514,7 +542,8 @@
         259,
         262
       ],
-      "emptyInCorpus": false
+      "emptyInCorpus": false,
+      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
       "method": "SVM",
@@ -538,7 +567,8 @@
         346,
         334
       ],
-      "emptyInCorpus": false
+      "emptyInCorpus": false,
+      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
       "method": "SVM",
@@ -565,7 +595,8 @@
         169,
         213
       ],
-      "emptyInCorpus": false
+      "emptyInCorpus": false,
+      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
       "method": "Ensemble Learning",
@@ -585,7 +616,8 @@
         207,
         208
       ],
-      "emptyInCorpus": false
+      "emptyInCorpus": false,
+      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
       "method": "Ensemble Learning",
@@ -598,7 +630,8 @@
         171,
         309
       ],
-      "emptyInCorpus": false
+      "emptyInCorpus": false,
+      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
       "method": "Ensemble Learning",
@@ -629,7 +662,8 @@
         345,
         346
       ],
-      "emptyInCorpus": false
+      "emptyInCorpus": false,
+      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
       "method": "Ensemble Learning",
@@ -638,7 +672,8 @@
       "refIds": [
         290
       ],
-      "emptyInCorpus": false
+      "emptyInCorpus": false,
+      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
       "method": "Ensemble Learning",
@@ -671,7 +706,8 @@
       "refIds": [
         32
       ],
-      "emptyInCorpus": false
+      "emptyInCorpus": false,
+      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
       "method": "K-Nearest Neighbors",
@@ -690,7 +726,8 @@
         104,
         340
       ],
-      "emptyInCorpus": false
+      "emptyInCorpus": false,
+      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
       "method": "K-Nearest Neighbors",
@@ -723,7 +760,8 @@
       "refIds": [
         266
       ],
-      "emptyInCorpus": false
+      "emptyInCorpus": false,
+      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
       "method": "Linear & Regularized Models",
@@ -740,7 +778,8 @@
       "refIds": [
         171
       ],
-      "emptyInCorpus": false
+      "emptyInCorpus": false,
+      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
       "method": "Linear & Regularized Models",
@@ -751,7 +790,8 @@
         339,
         171
       ],
-      "emptyInCorpus": false
+      "emptyInCorpus": false,
+      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
       "method": "Linear & Regularized Models",
@@ -776,7 +816,8 @@
       "refIds": [
         287
       ],
-      "emptyInCorpus": false
+      "emptyInCorpus": false,
+      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
       "method": "Chemometrics",
@@ -794,7 +835,8 @@
         7,
         208
       ],
-      "emptyInCorpus": false
+      "emptyInCorpus": false,
+      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
       "method": "Chemometrics",
@@ -815,7 +857,8 @@
         347,
         348
       ],
-      "emptyInCorpus": false
+      "emptyInCorpus": false,
+      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
       "method": "Chemometrics",
@@ -825,7 +868,8 @@
         198,
         199
       ],
-      "emptyInCorpus": false
+      "emptyInCorpus": false,
+      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
       "method": "Chemometrics",
@@ -847,7 +891,8 @@
         169,
         250
       ],
-      "emptyInCorpus": false
+      "emptyInCorpus": false,
+      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
       "method": "Active Learning",
@@ -857,7 +902,8 @@
         63,
         97
       ],
-      "emptyInCorpus": false
+      "emptyInCorpus": false,
+      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
       "method": "Active Learning",
@@ -891,7 +937,8 @@
         63,
         182
       ],
-      "emptyInCorpus": false
+      "emptyInCorpus": false,
+      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
       "method": "Active Learning",
@@ -917,7 +964,8 @@
         165,
         120
       ],
-      "emptyInCorpus": false
+      "emptyInCorpus": false,
+      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
       "method": "Reinforcement Learning",
@@ -929,7 +977,8 @@
         202,
         203
       ],
-      "emptyInCorpus": false
+      "emptyInCorpus": false,
+      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
       "method": "Reinforcement Learning",
@@ -954,7 +1003,8 @@
       "refIds": [
         161
       ],
-      "emptyInCorpus": false
+      "emptyInCorpus": false,
+      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
       "method": "Reinforcement Learning",
@@ -981,7 +1031,8 @@
         92,
         120
       ],
-      "emptyInCorpus": false
+      "emptyInCorpus": false,
+      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
       "method": "Foundation Models: Next-Token Prediction",
@@ -1006,7 +1057,8 @@
       "refIds": [
         285
       ],
-      "emptyInCorpus": false
+      "emptyInCorpus": false,
+      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
       "method": "Foundation Models: Next-Token Prediction",
@@ -1016,7 +1068,8 @@
         117,
         88
       ],
-      "emptyInCorpus": false
+      "emptyInCorpus": false,
+      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
       "method": "Foundation Models: Next-Token Prediction",
@@ -1043,7 +1096,8 @@
         116,
         235
       ],
-      "emptyInCorpus": false
+      "emptyInCorpus": false,
+      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
       "method": "Foundation Models: Masked Language Modeling",
@@ -1068,7 +1122,8 @@
       "refIds": [
         322
       ],
-      "emptyInCorpus": false
+      "emptyInCorpus": false,
+      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
       "method": "Foundation Models: Masked Language Modeling",
@@ -1079,7 +1134,8 @@
         117,
         6
       ],
-      "emptyInCorpus": false
+      "emptyInCorpus": false,
+      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
       "method": "Foundation Models: Masked Language Modeling",
@@ -1104,7 +1160,8 @@
       "refIds": [
         119
       ],
-      "emptyInCorpus": false
+      "emptyInCorpus": false,
+      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
       "method": "Foundation Models: LM + Biological Priors",
@@ -1163,7 +1220,8 @@
         124,
         120
       ],
-      "emptyInCorpus": false
+      "emptyInCorpus": false,
+      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
       "method": "Foundation Models: Cell-State & Perturbation Prediction",
@@ -1196,7 +1254,8 @@
       "refIds": [
         117
       ],
-      "emptyInCorpus": false
+      "emptyInCorpus": false,
+      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
       "method": "Foundation Models: Cell-State & Perturbation Prediction",
@@ -1246,7 +1305,8 @@
         267,
         270
       ],
-      "emptyInCorpus": false
+      "emptyInCorpus": false,
+      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
       "method": "Foundation Models (other modalities)",
@@ -1257,7 +1317,8 @@
         91,
         224
       ],
-      "emptyInCorpus": false
+      "emptyInCorpus": false,
+      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
       "method": "Foundation Models (other modalities)",
@@ -1323,7 +1384,8 @@
         222,
         273
       ],
-      "emptyInCorpus": false
+      "emptyInCorpus": false,
+      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
       "method": "Scientific Literature & Discovery Agents",
@@ -1387,7 +1449,8 @@
         237,
         272
       ],
-      "emptyInCorpus": false
+      "emptyInCorpus": false,
+      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
       "method": "General-Purpose Biomedical Agents",
@@ -1445,7 +1508,8 @@
         70,
         71
       ],
-      "emptyInCorpus": false
+      "emptyInCorpus": false,
+      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
       "method": "Chemistry / Synthesis Agents",
@@ -1472,7 +1536,8 @@
         125,
         93
       ],
-      "emptyInCorpus": false
+      "emptyInCorpus": false,
+      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
       "method": "Domain-Specific Biomedical Agents",
@@ -1518,7 +1583,8 @@
         276,
         277
       ],
-      "emptyInCorpus": false
+      "emptyInCorpus": false,
+      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
       "method": "Domain-Specific Biomedical Agents",
@@ -1544,7 +1610,8 @@
         66,
         16
       ],
-      "emptyInCorpus": false
+      "emptyInCorpus": false,
+      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
       "method": "Robot Scientists & Lab Automation",
@@ -1553,7 +1620,8 @@
       "refIds": [
         61
       ],
-      "emptyInCorpus": false
+      "emptyInCorpus": false,
+      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
       "method": "Robot Scientists & Lab Automation",
@@ -1583,7 +1651,8 @@
         154,
         274
       ],
-      "emptyInCorpus": false
+      "emptyInCorpus": false,
+      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
       "method": "Robot Scientists & Lab Automation",
@@ -1670,7 +1739,8 @@
         241,
         349
       ],
-      "emptyInCorpus": false
+      "emptyInCorpus": false,
+      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
       "method": "Agent Infrastructure (Frameworks, KGs, Protocols)",
@@ -1728,7 +1798,8 @@
         219,
         220
       ],
-      "emptyInCorpus": false
+      "emptyInCorpus": false,
+      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
       "method": "Agent Infrastructure (Frameworks, KGs, Protocols)",

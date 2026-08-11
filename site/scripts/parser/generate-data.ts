@@ -73,11 +73,22 @@ export const DEFAULT_API_DIR: string = fileURLToPath(
 );
 
 /**
- * The plugin's SKILL.md, republished at `public/setup.md` so the install prompt has a
- * short site URL. Single source of truth: the copy in `public/` is generated.
+ * The INSTALL skill, republished at `public/setup.md` so the install prompt has a short
+ * site URL. Single source of truth: the copy in `public/` is generated.
+ *
+ * Deliberately the installer and not the `caail` query skill, which is what this pointed
+ * at until the two were told apart. They have opposite lifecycles: the installer is
+ * fetched once by an agent that does not have CAAIL yet and is then thrown away, while
+ * the query skill is loaded into context on every session forever. Publishing the wrong
+ * one meant the short URL named in the hero could not be the URL the hero used, so the
+ * hero fetched a raw GitHub path instead and `setup.md` was generated, CI-guarded, and
+ * referenced by nothing.
+ *
+ * The query skill needs no copy here: Claude Code installs it from the plugin, and other
+ * clients are handed its raw GitHub URL by the installer.
  */
 export const SKILL_DOC_PATH: string = fileURLToPath(
-  new URL('../../../plugin/skills/caail/SKILL.md', import.meta.url),
+  new URL('../../../skills/caail-install/SKILL.md', import.meta.url),
 );
 
 /**

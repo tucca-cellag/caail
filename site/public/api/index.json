@@ -1,11 +1,14 @@
 {
-  "name": "CAAIL — Cellular Agriculture AI Library",
-  "corpusDate": "2026-08-07",
+  "name": "CAAIL: Cellular Agriculture AI Library",
+  "corpusDate": "2026-08-11",
+  "status": "beta",
+  "placementsUnderReview": true,
   "canonical": "https://github.com/tucca-cellag/caail",
   "site": "https://tucca-cellag.github.io/caail/",
   "license": "MIT (CAAIL curation). Linked third-party resources keep their own licenses.",
   "scopeNote": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall.",
   "openapi": "openapi.json",
+  "placementNote": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself.",
   "counts": {
     "papersAllSections": 345,
     "papersBySection": {

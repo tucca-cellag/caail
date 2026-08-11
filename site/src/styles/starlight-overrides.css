@@ -103,8 +103,80 @@ a.site-title {
   font-family: var(--caail-font-display);
 }
 
-/* Homepage two-column (Start here / Recently added) — collapses on narrow screens */
-.caail-two-col { display: grid; grid-template-columns: 1fr 1.15fr; gap: 1.6rem; margin-top: .5rem; }
+/* Grid items must not inherit Starlight's prose-flow spacing.
+ *
+ * Starlight separates adjacent siblings inside .sl-markdown-content with a `+` selector
+ * that excludes <a>. Any grid whose items are NOT links therefore picks up a 16px
+ * margin-top on every item after the first: the item is pushed down and, because the row
+ * height is already set, ends up shorter than its neighbour. A row of cards then has
+ * mismatched heights for no reason visible in the component's own CSS.
+ *
+ * SectionsGrid escapes this only because its cards happen to be <a> elements. Anything
+ * built with <div> children hits it. Same family as the #67 offset trap covered in
+ * site/e2e/licenses.spec.ts. */
+.caail-two-col > *,
+/* Scope by COMPONENT class, not by the section that happens to host it. `.gs .tabs`
+   silently stopped covering the setup tabs the moment they were extracted into a shared
+   component and rendered in the hero as well: the standalone band was fine and the hero
+   copy picked up a 16px margin on every tab after the first, so tab one sat visibly
+   higher than its neighbours. Anything that can be mounted in more than one place must
+   be listed by its own class. */
+/* This trap has now caused three separate visual bugs: offset setup tabs, and both
+   footer bands appearing vertically off-centre because the TEXT half of an
+   icon-plus-text flex row picked up 16px while the icon did not. The rule below is
+   deliberately broad — any horizontal flex/grid row whose children are not links.
+   If you add such a row, add it here, or it will look subtly wrong in a way its own
+   CSS cannot explain.
+
+   `.ask .stack` is a FOURTH failure mode of the same trap, and the nastiest to read.
+   It is a grid stack — every card sits in cell 1/1 so the frame sizes to the tallest —
+   and the inherited 16px pushed every card down inside that cell, inflating the row to
+   615px for 599px of content. It presents as an unexplained void along the bottom edge
+   of the card, which looks like a padding or min-height bug in the component and is
+   neither. Any single-cell grid stack added later will do the same.
+
+   `.setup .copy` is the FIFTH, and the first that no static inspection could catch,
+   because the offending element has no box until you interact with it. The copy button
+   holds two icons and swaps them by display. The second, the check mark, inherits the
+   16px — but while it is `display: none` that margin collapses to nothing, so the button
+   measures correctly, screenshots correctly, and passes every assertion. Click it and the
+   check mark gains a box, the margin applies, and the button grows exactly 16px taller,
+   shoving the command row down. Note the depth: `.setup .cmd` above already zeroes the
+   margin on `.copy` itself, but the icons are one level further in, so the container has
+   to be listed by ITS own class too. Anything that swaps children by display belongs
+   here — the bug is invisible until the swap happens. */
+.sl-markdown-content :is(
+  .setup .tabs, .setup .panels, .setup .panel, .setup .cmd, .setup .clients, .setup .copy,
+  .why .split, .why .half, .why .chat, .why .turn, .why .pts li,
+  .ask .pills, .ask .stack, .ask .csrc, .ask .rows li, .ask .ctrls, .ask .dots,
+  .hero-router, .hero-setup, .hero .tick,
+  .caail-communityband, .caail-communityband .lead, .caail-communityband .actions,
+  .caail-citeband, .caail-citeband .lead, .caail-citeband .actions
+) > * {
+  margin-top: 0;
+}
+
+/* The hero must sit flush against the content panel's padding, with no prose margin.
+ *
+ * SIXTH instance of the trap above, and the only one that fires at the top level of
+ * `.sl-markdown-content` rather than inside a component. The hero used to be the first
+ * child, and a first child gets no adjacent-sibling margin, so this cost nothing and no
+ * rule was needed. Mounting RevealScript and HomeRail above it changed that: their
+ * `<script>` tags and `<nav>` are zero-height and invisible, but they are still SIBLINGS,
+ * so the hero became "an element after another element" and picked up 16px.
+ *
+ * The visible symptom is nowhere near the cause. The diagonal stripe is pinned with
+ * `top: -1.5rem`, calibrated to the panel padding, so moving the hero down 16px left the
+ * band starting 16px below the header and reopened the white wedge in the top-right
+ * corner that `Hero.astro`'s own comment describes fixing. Nothing in Hero.astro changed.
+ *
+ * Adding an invisible element to the top of a page is enough to trigger this. */
+.sl-markdown-content > .hero { margin-top: 0; }
+
+/* Homepage two-column (Start here / Recently added) — collapses on narrow screens.
+   margin-top carries the biggest conceptual seam on the page, where the agent story
+   hands off to the browsing aids. It was .5rem (8px), the tightest gap anywhere. */
+.caail-two-col { display: grid; grid-template-columns: 1fr 1.15fr; gap: var(--caail-space-6); margin-top: var(--caail-section-gap); }
 @media (max-width: 50rem) { .caail-two-col { grid-template-columns: 1fr; } }
 
 /* ── Wide data tables (Datasets/* inventories, etc.) ──────────────────────
@@ -263,3 +335,43 @@ mobile-starlight-toc .dropdown { border-top: 1px solid var(--caail-border); }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
 }
+
+
+/* ── Homepage band rhythm ────────────────────────────────────────────────
+ * Every aiscientist.tools section is `bg-white` with `border-t border-gray-100` and
+ * 80px of vertical padding. Nothing is tinted; what makes their page scan as a
+ * sequence of bands rather than one long column is the hairline plus the air.
+ *
+ * CAAIL's sections already carry `margin-top: var(--caail-section-gap)`, so the rule
+ * goes on top and the existing gap becomes the padding above it.
+ *
+ * Excluded on purpose: `.hero` (its own diagonal stripe is the top edge) and the
+ * community/cite bands, which are already self-contained bordered cards — a rule
+ * above a card reads as a stray line. */
+/* Air on BOTH sides of the rule, like their `py-20`. Putting the whole gap below it left
+   ZERO above: the previous section's last line ended exactly on the next section's
+   hairline (measured 0px), so the rule read as underlining that line rather than
+   separating the bands. */
+.sl-markdown-content :is(.sections, .caail-two-col, .why, .ask, .gs) {
+  border-top: 1px solid var(--caail-border);
+  margin-top: var(--caail-band-pad);
+  padding-top: var(--caail-band-pad);
+}
+
+
+/* Footer band pair (community / cite). Both bands are internally `flex-wrap: wrap`, so
+   in a half-width column their actions drop below the lead on their own — no separate
+   stacked variant needed. */
+.caail-band-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--caail-space-5);
+  margin-top: var(--caail-band-pad);
+}
+@media (max-width: 56rem) {
+  .caail-band-pair { grid-template-columns: 1fr; }
+}
+.caail-band-pair > * { margin-top: 0; margin-bottom: 0; }
+/* The bands carry their own vertical margin for the stacked case; inside the pair the
+   grid gap owns spacing, and leaving both produced an uneven pair. */
+.caail-band-pair :is(.caail-communityband, .caail-citeband) { margin: 0; height: 100%; }

@@ -87,7 +87,7 @@ const datasetsDays = daysAgo(momentum?.datasetsLastModified ?? null);
     <h2 class="md-h caail-display">Research coverage</h2>
     <p class="md-sub">
       The matrix maps {matrix.perMethod.length} AI methods against {matrix.perArea.length} research
-      areas — <strong>{matrix.filledCells} of {matrix.totalCells} cells</strong> ({matrix.coveragePct}%)
+      areas: <strong>{matrix.filledCells} of {matrix.totalCells} cells</strong> ({matrix.coveragePct}%)
       carry at least one paper. Where the bars are short, the field (and this library) is still thin.
     </p>
     <div class="md-bars">
@@ -163,10 +163,10 @@ const datasetsDays = daysAgo(momentum?.datasetsLastModified ?? null);
   </section>
 
   <section class="md-sec">
-    <h2 class="md-h caail-display">Datasets by species — where help is wanted</h2>
+    <h2 class="md-h caail-display">Datasets by species: where help is wanted</h2>
     <p class="md-sub">
-      <strong>{datasets.total} catalogued datasets</strong> across {library.species} pages
-      — {datasets.speciesRows} per-species inventory rows, {datasets.curatedEntries} curated
+      <strong>{datasets.total} catalogued datasets</strong> across {library.species} pages:
+      {' '}{datasets.speciesRows} per-species inventory rows, {datasets.curatedEntries} curated
       entries on those same species and cross-species pages (atlases, metabolic models and
       reference sets), {datasets.referenceEntries} on the reference pages,
       {' '}{datasets.benchmarkEntries} benchmark datasets.{' '}

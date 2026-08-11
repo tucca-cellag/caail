@@ -2,18 +2,36 @@
 import { Icon } from 'astro-icon/components';
 import HeroGraphic from './HeroGraphic.astro';
 import TuccaLockup from './TuccaLockup.astro';
+import SetupTabs from './SetupTabs.astro';
 import c from '../content/data/counts.json';
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
+/**
+ * The hero counter rotates rather than listing all five at once.
+ *
+ * The five-up static row it replaces was the "big number, small label, supporting
+ * stats" hero-metric template, and at five columns it was also the densest thing in a
+ * hero the page had already been criticised for over-packing. One number at a time
+ * says the same thing with a quarter of the ink, and the rotation is what makes the
+ * breadth legible: you watch the library turn out to be four different collections.
+ *
+ * Every entry is rendered into the DOM and stacked in one grid cell, so the box is
+ * sized by the widest entry and never reflows mid-rotation. That is not only a
+ * jitter fix — Hero pins the diagonal stripe to the title's rect via a ResizeObserver
+ * on `.hero`, so a counter that changed width would re-run that measurement on a
+ * three-second loop forever.
+ */
 const stats = [
-  { n: c.papers, label: 'Papers' },
-  { n: c.software, label: 'Software tools' },
-  { n: c.databases, label: 'Databases' },
-  { n: c.datasets, label: 'Datasets' },
-  { n: c.researchAreas, label: 'Research areas' },
+  { n: c.papers, label: 'papers', href: '/papers/explorer/' },
+  { n: c.software, label: 'software tools', href: '/software/' },
+  { n: c.databases, label: 'databases', href: '/databases/' },
+  { n: c.datasets, label: 'datasets', href: '/datasets/' },
 ];
+
+/** Spoken once, in full, instead of announcing each rotation. */
+const statSentence = `Indexing ${stats.map((s) => `${s.n} ${s.label}`).join(', ')}.`;
 ---
-<section class="hero">
+<section class="hero" id="top">
   <div class="hero-stripe" aria-hidden="true"></div>
   <div class="hero-text">
     <p class="eyebrow">Cellular Agriculture × Artificial Intelligence</p>
@@ -23,49 +41,68 @@ const stats = [
     </h1>
 
     <p class="lede">
-      The curated library at the intersection of cellular agriculture and AI — papers and
-      preprints, open-source software, databases, and the per-species datasets the field trains
-      on, all cross-linked back to canonical Markdown on GitHub.
+      The curated library at the intersection of cellular agriculture and AI, with every entry
+      cross-linked back to canonical Markdown on GitHub.
     </p>
 
     <div class="cta-row">
       <a class="btn btn-primary" href={`${base}/papers/explorer/`}>
-        <Icon name="ph:squares-four" />
+        <Icon name="lucide:layout-grid" />
         Open the Papers Explorer
       </a>
       <a class="btn btn-ghost" href="https://github.com/tucca-cellag/caail">
-        <Icon name="ph:github-logo" />
+        <Icon name="lucide:github" />
         Browse on GitHub
       </a>
     </div>
 
-    <div class="stats">
-      {stats.map((s) => (
-        <div class="stat">
-          <span class="stat-n caail-display">{s.n}</span>
-          <span class="stat-l">{s.label}</span>
-        </div>
-      ))}
+    <div class="ticker">
+      {/* Hidden from AT: a value retyped character by character is noise to a screen
+          reader, and the same facts are stated once, in full, in the sentence below.
+          Server-rendered complete, so with no JS this is simply the first statistic. */}
+      <p class="tick" aria-hidden="true" data-stats={JSON.stringify(stats.map((s) => [String(s.n), s.label]))}>
+        <span class="tick-n caail-display">{stats[0].n}</span>
+        <span class="tick-l">{stats[0].label}</span>
+        <span class="tick-caret"></span>
+      </p>
+      <p class="visually-hidden">{statSentence}</p>
+      <p class="tick-foot">
+        indexed, cross-linked, and <a href={`${base}/by-the-numbers/`}>counted in the open</a>
+      </p>
     </div>
 
-    <p class="hero-attrib">
-      <span>A project of</span>
-      <TuccaLockup width={172} />
-    </p>
   </div>
 
   <div class="hero-art">
     <HeroGraphic variant="bioreactor" />
   </div>
+
+  <div class="hero-setup">
+    <p class="hero-setup-hd">Point an AI agent at it</p>
+    <SetupTabs compact idPrefix="hero" />
+  </div>
+
+  <nav class="hero-router" aria-label="Entry points">
+    <a href={`${base}/primers/cell-ag/`}><Icon name="lucide:sprout" /> New to cell ag</a>
+    <a href={`${base}/primers/ai/`}><Icon name="lucide:brain" /> New to AI</a>
+    <a href={`${base}/papers/explorer/`}><Icon name="lucide:layout-grid" /> Browse the matrix</a>
+    <a href={`${base}/community/`}><Icon name="lucide:users" /> Community</a>
+    <a href={`${base}/cite/`}><Icon name="lucide:quote" /> Cite CAAIL</a>
+    <p class="hero-attrib"><span>A project of</span><TuccaLockup width={150} /></p>
+  </nav>
 </section>
 
 <style>
-  .hero { position: relative; display: grid; grid-template-columns: 1fr; gap: 1.75rem; padding: 2.5rem 0 1.75rem; text-align: left; }
+  .hero { position: relative; display: grid; grid-template-columns: 1fr; gap: 1.1rem; padding: 1.5rem 0 .75rem; text-align: left; }
   @media (min-width: 60rem) {
-    .hero { grid-template-columns: minmax(0, 1.1fr) minmax(0, 25rem); align-items: center; gap: 2.5rem; }
+    /* Two columns for the editorial row only. The setup block and the router span both,
+       so the prompt gets full width (it wrapped to four lines in a 27rem column) and the
+       two columns are never asked to match heights they have no reason to match. */
+    .hero { grid-template-columns: minmax(0, 1.1fr) minmax(0, 25rem); align-items: center; gap: 1.5rem 2.5rem; }
+    .hero-setup, .hero-router { grid-column: 1 / -1; }
   }
   /* hero content sits above the diagonal stripe */
-  .hero-text, .hero-art { position: relative; z-index: 1; }
+  .hero-text, .hero-art, .hero-setup, .hero-router { position: relative; z-index: 1; }
 
   /* Full-bleed diagonal CAAIL-blue band behind the hero (trimgalore-style).
    * The wrapper breaks out to the full viewport width and self-clips, so the
@@ -108,9 +145,9 @@ const stats = [
     border-radius: 4px;
   }
 
-  .eyebrow { font-size: .72rem; letter-spacing: .14em; text-transform: uppercase; color: var(--caail-accent); font-weight: 700; margin: 0; }
+  .eyebrow { font-size: var(--caail-fs-xs); letter-spacing: .14em; text-transform: uppercase; color: var(--caail-accent); font-weight: 700; margin: 0; }
   .h-title {
-    font-size: clamp(3.2rem, 8.5vw, 6rem);
+    font-size: clamp(2.9rem, 7vw, 4.6rem);
     line-height: 0.92;
     font-weight: 700;
     letter-spacing: -0.02em;
@@ -126,33 +163,86 @@ const stats = [
   }
   .h-title .x { color: var(--caail-accent); -webkit-text-fill-color: var(--caail-accent); font-weight: 600; }
 
-  .lede { font-size: 1rem; line-height: 1.6; color: var(--caail-muted); max-width: 52ch; margin: 0 0 1.5rem; }
+  .lede { font-size: 1rem; line-height: 1.6; color: var(--caail-muted); max-width: 52ch; margin: 0 0 1.1rem; }
 
-  .cta-row { display: flex; gap: .7rem; flex-wrap: wrap; margin-bottom: 1.9rem; }
-  .btn { display: inline-flex; align-items: center; gap: .5rem; border-radius: 999px; padding: .8rem 1.5rem; font-size: .92rem; font-weight: 600; text-decoration: none; border: 1.5px solid transparent; transition: background .15s, border-color .15s, color .15s, box-shadow .15s; }
+  .cta-row { display: flex; gap: .7rem; flex-wrap: wrap; margin-bottom: 1.2rem; }
+  .btn { display: inline-flex; align-items: center; gap: .5rem; border-radius: 999px; padding: .8rem 1.5rem; font-size: var(--caail-fs-lg); font-weight: 600; text-decoration: none; border: 1.5px solid transparent; transition: background .15s, border-color .15s, color .15s, box-shadow .15s; }
   .btn [data-icon] { width: 1.15rem; height: 1.15rem; }
   .btn-primary { background: var(--caail-primary); color: #fff; box-shadow: 0 10px 26px -16px color-mix(in oklab, var(--caail-primary) 70%, transparent); }
   .btn-primary:hover { background: var(--caail-primary-hover); }
   .btn-ghost { background: var(--caail-bg); color: var(--caail-ink); border-color: var(--caail-border); }
   .btn-ghost:hover { border-color: var(--caail-link); color: var(--caail-link); }
 
-  /* stat row — grid aligns tops by row; margin-top:0 cancels Starlight's prose
-   * `* + *` rhythm that otherwise pushes the later stats down 16px. */
-  .stats { display: grid; grid-template-columns: repeat(5, max-content); gap: .5rem 2rem; margin: 0; padding-top: 1.25rem; border-top: 1px solid var(--caail-border); }
-  @media (max-width: 48rem) { .stats { grid-template-columns: repeat(3, max-content); } }
-  @media (max-width: 26rem) { .stats { grid-template-columns: repeat(2, max-content); } }
-  .stat { display: flex; flex-direction: column; gap: .15rem; margin-top: 0; }
-  .stat-n { font-size: 1.9rem; font-weight: 700; color: var(--caail-primary); line-height: 1; }
-  .stat-l { font-size: .68rem; letter-spacing: .05em; text-transform: uppercase; color: var(--caail-muted); }
+  /* Rotating counter, replacing the five-up stat row.
+   *
+   * Every entry occupies the SAME grid cell (`grid-area: 1/1`), so the paragraph is as
+   * wide and tall as the widest entry and never changes size as entries swap. Without
+   * that the hero would reflow four times a rotation, and the ResizeObserver that pins
+   * the diagonal stripe to the title would re-measure on every one of them. */
+  .ticker { margin: 0; padding-top: 1.25rem; border-top: 1px solid var(--caail-border); }
+  /* The line height is reserved, not derived from its contents. Mid-erase the text is
+     briefly empty, and a line that collapsed to zero would change the hero's height
+     four times a cycle — re-running the ResizeObserver that pins the diagonal stripe,
+     on a loop, forever. Width is free to change: the paragraph is block-level, so the
+     text growing and shrinking inside it never resizes anything above. */
+  /* 2.75rem, not the 2.4rem of the number itself. With `align-items: baseline` the flex
+     line is as tall as the number's ascent plus the label's descent, which measured
+     41px against a 38.4px number — so a reserve equal to the number still let the line
+     collapse 3px whenever the text emptied mid-erase. Three pixels, four times a cycle,
+     forever, each one re-running the stripe ResizeObserver. */
+  .tick { display: flex; align-items: baseline; gap: .5rem; margin: 0; min-height: 2.75rem; }
+  .tick-n { font-size: 2.4rem; font-weight: 700; color: var(--caail-primary); line-height: 1; letter-spacing: -.02em; }
+  .tick-l { font-size: var(--caail-fs-lg); font-weight: 600; color: var(--caail-ink); }
+
+  /* Caret. A drawn block rather than a "|" glyph, so it keeps its weight at any font
+     and sits on the same baseline as the number it trails. */
+  .tick-caret {
+    display: inline-block; width: 2px; height: 1.6rem; margin-left: -.25rem;
+    background: var(--caail-link);
+    animation: tick-blink 1.06s step-end infinite;
+  }
+  @keyframes tick-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+  .tick-foot { font-size: var(--caail-fs-sm); color: var(--caail-muted); margin: .45rem 0 0; }
+
+  .visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+
+  /* Reduced motion: the script never types, so the caret would sit blinking next to a
+   * statistic that is not going to change. Remove it entirely rather than leave a
+   * promise the page does not keep. */
+  @media (prefers-reduced-motion: reduce) {
+    .tick-caret { display: none; animation: none; }
+  }
 
   /* TUCCA attribution — sits under the stat row, left-aligned with the hero. */
-  .hero-attrib { display: flex; align-items: center; gap: .65rem; flex-wrap: wrap; margin: 1.4rem 0 0; }
-  .hero-attrib > span { font-size: .72rem; letter-spacing: .04em; text-transform: uppercase; color: var(--caail-muted); font-weight: 600; }
+  .hero-attrib { display: flex; align-items: center; gap: .55rem; flex-wrap: wrap; margin: 0 0 0 auto; }
+  .hero-attrib > span { font-size: var(--caail-fs-xs); letter-spacing: .04em; text-transform: uppercase; color: var(--caail-muted); font-weight: 600; }
 
   /* Graphic only in the wide 2-col layout — below 60rem the hero is text-only
    * (avoids the oversized graphic stacking below the text at mid widths). */
   .hero-art { display: none; }
-  @media (min-width: 60rem) { .hero-art { display: flex; justify-content: center; } }
+  /* Capped. At its natural 400px width the bioreactor stood 453px tall and became the
+     tallest thing in row 1 — so it, not the text, set the row height and pushed the
+     router strip out of the fold. Scaling it down costs nothing: it is decoration with
+     no detail that needs the extra pixels. */
+  @media (min-width: 60rem) {
+    .hero-art { display: flex; justify-content: center; align-items: center; }
+    .hero-art :global(svg) { max-width: 19rem; height: auto; }
+  }
+
+  /* Setup block. Full width, hairline above — the same rule that separates the counter,
+     so the fold reads as stacked registers rather than unrelated widgets. No card border:
+     a box here would compete with the bioreactor for attention. */
+  .hero-setup { padding-top: 1.1rem; border-top: 1px solid var(--caail-border); }
+  .hero-setup-hd { font-size: var(--caail-fs-sm); font-weight: 600; color: var(--caail-ink); margin: 0 0 .75rem; }
+
+  /* Router strip: the five doors, closing the fold. Hairline above, no boxes — the icons
+     and the rule carry the structure. */
+  .hero-router { display: flex; align-items: center; flex-wrap: wrap; gap: .5rem 1.5rem; padding-top: .85rem; border-top: 1px solid var(--caail-border); }
+  .hero-router a { display: inline-flex; align-items: center; gap: .4rem; font-size: var(--caail-fs-sm); font-weight: 600; color: var(--caail-muted); text-decoration: none; transition: color .15s ease-out; }
+  .hero-router a:hover { color: var(--caail-link); }
+  .hero-router [data-icon] { width: 1.05rem; height: 1.05rem; color: var(--caail-link); }
+  @media (prefers-reduced-motion: reduce) { .hero-router a { transition: none; } }
 </style>
 
 <script>
@@ -173,4 +263,92 @@ const stats = [
   if (hero && 'ResizeObserver' in window) new ResizeObserver(positionHeroStripe).observe(hero);
   window.addEventListener('resize', positionHeroStripe);
   if (document.fonts?.ready) document.fonts.ready.then(positionHeroStripe);
+
+  // Type the hero counter, erasing and retyping between collections.
+  //
+  // The markup already contains the first statistic in full, so with no JS, a script
+  // error, or reduced motion, the hero shows a real number rather than an empty line.
+  // The typing is the enhancement; it is never what makes the content exist.
+  //
+  // Number and label are two elements for typographic reasons, but one string for
+  // typing purposes: a single character budget is spent across the pair, so the effect
+  // reads as one continuous line rather than two fields filling independently.
+  const tick = document.querySelector<HTMLElement>('.hero .tick');
+  const nEl = tick?.querySelector<HTMLElement>('.tick-n');
+  const lEl = tick?.querySelector<HTMLElement>('.tick-l');
+  const still = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  if (tick && nEl && lEl && !still.matches) {
+    let entries: [string, string][] = [];
+    try {
+      entries = JSON.parse(tick.dataset.stats ?? '[]');
+    } catch {
+      entries = [];
+    }
+
+    if (entries.length > 1) {
+      const TYPE = 55; // per character, typing
+      const ERASE = 28; // faster: re-reading text you have already read is dead time
+      const HOLD = 2000; // long enough to actually read the statistic
+      const GAP = 320; // beat after erasing, before the next one starts
+
+      let entry = 0;
+      let chars = entries[0]![0].length + 1 + entries[0]![1].length; // fully typed
+      let erasing = false;
+      let timer = 0;
+
+      /** Spend `chars` characters across the number, the space, then the label. */
+      const paint = () => {
+        const [n, label] = entries[entry]!;
+        nEl.textContent = n.slice(0, Math.min(chars, n.length));
+        const intoLabel = chars - n.length - 1;
+        lEl.textContent = intoLabel > 0 ? label.slice(0, intoLabel) : '';
+      };
+
+      const step = () => {
+        const [n, label] = entries[entry]!;
+        const full = n.length + 1 + label.length;
+
+        if (!erasing && chars >= full) {
+          erasing = true;
+          timer = window.setTimeout(step, HOLD);
+          return;
+        }
+        if (erasing && chars <= 0) {
+          erasing = false;
+          entry = (entry + 1) % entries.length;
+          chars = 0;
+          paint();
+          timer = window.setTimeout(step, GAP);
+          return;
+        }
+        chars += erasing ? -1 : 1;
+        paint();
+        timer = window.setTimeout(step, erasing ? ERASE : TYPE);
+      };
+
+      const start = () => {
+        window.clearTimeout(timer);
+        const [n, label] = entries[entry]!;
+        const full = n.length + 1 + label.length;
+        // Resume at the cadence of whatever phase we are actually in.
+        //
+        // A fully-typed entry takes its hold from `step`, which flips to `erasing` and
+        // waits HOLD before the first delete. Waiting HOLD here too made that entry sit
+        // for two holds. That is always the FIRST entry, because it starts fully typed
+        // (server-rendered), so the very statistic everyone sees held ~4s while every
+        // later one held ~2s. It also made a return from a hidden tab wait a full 2s
+        // even when it was interrupted mid-erase.
+        const delay = !erasing && chars >= full ? 0 : erasing ? ERASE : TYPE;
+        timer = window.setTimeout(step, delay);
+      };
+      // Typing into a tab nobody is looking at is pure waste, and the loop would
+      // otherwise keep queueing timeouts that browsers throttle but do not stop.
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) window.clearTimeout(timer);
+        else start();
+      });
+      start();
+    }
+  }
 </script>

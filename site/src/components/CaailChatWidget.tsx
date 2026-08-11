@@ -28,7 +28,7 @@ const CHAT_API = import.meta.env.PUBLIC_CAAIL_CHAT_API as string | undefined;
 const WORD_LIMIT = 200;
 /** Dismissal lasts the browsing session, not forever — sessionStorage, not local. */
 const DISMISS_KEY = 'caail-chat-dismissed';
-const QUOTA_MESSAGE = "'Ask CAAIL' quota is exceeded — try again later.";
+const QUOTA_MESSAGE = "'Ask CAAIL' quota is exceeded, try again later.";
 const GENERIC_ERROR_MESSAGE = 'Something went wrong, please try again.';
 
 const wordCount = (text: string) => {
@@ -134,7 +134,7 @@ export default function CaailChatWidget() {
             </button>
           </div>
           <p class="chat-panel-blurb">
-            Ask a question — answered by AI using CAAIL's curated papers, datasets, and tools.
+            Ask a question, answered by AI using CAAIL's curated papers, datasets, and tools.
           </p>
           <form class="chat-panel-form" onSubmit={handleSubmit}>
             <textarea

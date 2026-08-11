@@ -1,0 +1,37 @@
+---
+/**
+ * GetStarted — the standalone "Connect your agent" band.
+ *
+ * The install paths themselves live in SetupTabs, shared with the hero. This file owns
+ * only the framing: the heading, the lede, and the section rhythm.
+ *
+ * Tabs rather than a card grid, for a structural reason and not a stylistic one. Three
+ * paths with 1, 2 and 2 steps and notes of different lengths can only ever be the same
+ * height by accident; side by side they read as three ragged boxes. Stacked into one
+ * frame, each path gets the full width and there is nothing left to misalign.
+ *
+ * The rail is underlined rather than pilled to stay distinct from the pill control in
+ * AskExamples: two identical widgets doing different jobs read as one widget repeated.
+ * That band is currently unmounted, so the clash is latent rather than visible, and the
+ * underline stays precisely so remounting it does not reintroduce the collision.
+ */
+import SetupTabs from './SetupTabs.astro';
+---
+
+<section class="gs" id="connect">
+  <h2 class="caail-display sr">Connect your agent</h2>
+  <p class="lede sr sr-d1">
+    Nothing to install, host or authenticate. CAAIL is static JSON on GitHub, so the only
+    real difference between these is how long the setup lasts.
+  </p>
+
+  <div class="sr sr-d2">
+    <SetupTabs idPrefix="gs" />
+  </div>
+</section>
+
+<style>
+  .gs { margin: var(--caail-section-gap) 0 0; }
+  .gs h2 { font-size: var(--caail-fs-h2); line-height: 1.1; letter-spacing: -.02em; color: var(--caail-primary); margin: 0 0 var(--caail-space-3); }
+  .lede { font-size: var(--caail-fs-base); color: var(--caail-muted); margin: 0 0 var(--caail-space-5); max-width: var(--caail-measure); text-wrap: pretty; }
+</style>

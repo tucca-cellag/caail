@@ -1,0 +1,100 @@
+/* Scroll reveal — one mechanism for the whole site.
+ *
+ * Modelled on aiscientist.tools' `.sr` / `.sr-d1..5`: a 0.65s ease-out-expo lift of
+ * 20px, with siblings staggered by 100ms so a band resolves in sequence rather than
+ * snapping in all at once.
+ *
+ * ONE DELIBERATE INVERSION, and it is the whole reason this file exists.
+ *
+ * The pattern as published is:
+ *
+ *     .sr:not(.in) { opacity: 0; transform: translateY(20px); }
+ *
+ * which makes the *default* state invisible and relies on JavaScript adding `.in`
+ * to reveal it. If the observer never runs — JS disabled, a script error earlier on
+ * the page, a headless renderer, a prerender pass — the content is not "unanimated",
+ * it is permanently gone. Nothing on the page reports this, because the markup is
+ * present and only the paint is missing.
+ *
+ * That is not hypothetical here: this exact class of bug already shipped once in this
+ * component set, where reveal keyframes fading from `opacity: 0` under
+ * `animation-fill-mode: both` rendered whole homepage sections blank while the entire
+ * e2e suite passed, because every assertion queried the DOM rather than the pixels.
+ *
+ * So the hidden state is gated behind `.sr-ready`, which an inline script in
+ * RevealScript.astro sets on <html> before first paint. No script, no hiding — the
+ * page renders fully visible and simply does not animate. The visual result when JS
+ * *is* present is identical to theirs.
+ *
+ * Reduced motion drops straight to visible: an accessibility preference must never
+ * cost someone the content.
+ */
+
+/* FADE + LIFT. This reverses an earlier transform-only rule, and the reversal is
+ * evidence-based rather than aesthetic.
+ *
+ * That rule existed because axe (and therefore Lighthouse) computes effective contrast
+ * through opacity: an unrevealed `.sub` was recorded at 1.23:1 and reported as a serious
+ * `color-contrast` violation, and `docs.yml` gates deploys on accessibility >= 0.90. The
+ * conclusion drawn was that any fade risked blocking the deploy.
+ *
+ * Measured directly, that does not reproduce. Pinning every `.sr` at `opacity: 0` and
+ * running axe over the homepage returns ZERO colour-contrast nodes: axe treats fully
+ * transparent text as invisible and skips it. What trips the rule is PARTIAL opacity,
+ * and the original incident came from reveal keyframes under `animation-fill-mode: both`
+ * leaving elements stranded mid-fade. This is a transition plus a class toggle, which has
+ * only two resting states (0 and 1) and never parks in between.
+ *
+ * The reason the fade has to come back: transform alone was not perceptible. Measured on
+ * this page, 25 of 27 reveals began in the bottom 20% of the screen and ease-out-expo put
+ * most of the 34px into the first 120ms, so the whole animation was a small fast movement
+ * at the bottom edge that finished before the reader's eye arrived. Mechanically perfect,
+ * humanly invisible — which is reported as "the animation doesn't work", because from the
+ * reader's side that is exactly what it is.
+ *
+ * The safety property is unchanged and still carries the weight: the hidden state is
+ * gated behind `.sr-ready`, so no JS means nothing is ever hidden.
+ */
+.sr {
+  transition:
+    transform 0.72s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.72s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Offset and faded only once JS has proven it can restore both. */
+.sr-ready .sr:not(.in) {
+  transform: translateY(34px);
+  opacity: 0;
+}
+
+.sr-d1 { transition-delay: 0.1s; }
+.sr-d2 { transition-delay: 0.2s; }
+.sr-d3 { transition-delay: 0.3s; }
+.sr-d4 { transition-delay: 0.4s; }
+.sr-d5 { transition-delay: 0.5s; }
+
+/* Print is a capture, not a reading session: nothing scrolls, so nothing would reveal.
+   The script also handles `beforeprint`, but this covers a print path that never runs it. */
+/* Every escape hatch below MUST restore opacity as well as transform. Resetting only the
+   transform would leave the element at `opacity: 0` — present, laid out, and completely
+   invisible. That is the exact failure this component set already shipped once, and it is
+   worse than the offset it replaces, because an offset element can still be read. */
+@media print {
+  .sr-ready .sr:not(.in) {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sr {
+    transition: none;
+  }
+  .sr-ready .sr:not(.in) {
+    transform: none;
+    opacity: 1;
+  }
+  .sr-d1, .sr-d2, .sr-d3, .sr-d4, .sr-d5 {
+    transition-delay: 0s;
+  }
+}

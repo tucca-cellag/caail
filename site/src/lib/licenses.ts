@@ -38,20 +38,20 @@ export interface TierMeta {
 export const TIER_META: Record<LicenseTier, TierMeta> = {
   permissive: {
     label: 'Permissive',
-    blurb: 'MIT / Apache / BSD / CC-BY / CC0 — broad reuse, including commercial.',
+    blurb: 'MIT / Apache / BSD / CC-BY / CC0: broad reuse, including commercial.',
   },
   copyleft: {
     label: 'Copyleft',
-    blurb: 'GPL / MPL / CC-BY-SA — reuse allowed, but derivatives inherit the license.',
+    blurb: 'GPL / MPL / CC-BY-SA: reuse allowed, but derivatives inherit the license.',
   },
   restricted: {
     label: 'Restricted',
     blurb:
-      'Non-commercial, academic-only, proprietary, or controlled-access — check terms before commercial cell-ag use.',
+      'Non-commercial, academic-only, proprietary, or controlled-access: check terms before commercial cell-ag use.',
   },
   unknown: {
     label: 'Unknown',
-    blurb: 'No license/terms detected — verify at the source before relying on it.',
+    blurb: 'No license/terms detected, verify at the source before relying on it.',
   },
 };
 

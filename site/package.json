@@ -47,6 +47,8 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.11.3",
+    "@iconify-json/lucide": "^1.2.121",
+    "@iconify-json/simple-icons": "^1.2.93",
     "@lhci/cli": "^0.15.1",
     "@playwright/test": "^1.60.0",
     "@resvg/resvg-js": "^2.6.2",

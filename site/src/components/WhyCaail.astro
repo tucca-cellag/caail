@@ -1,0 +1,319 @@
+---
+/**
+ * WhyCaail — the before/after band.
+ *
+ * Layout follows aiscientist.tools' "Research AI — before and after": centred header,
+ * then one seamless two-column panel whose halves each carry a mock exchange at the top
+ * and an icon-bulleted list beneath, with a bold claim and a muted sub-line per bullet.
+ *
+ * ONE panel split down the middle, not two panels with a gap. The section IS a
+ * comparison, so the halves belong inside a single frame and the divider carries the
+ * contrast. It also removes a class of alignment bug: grid children of one container
+ * stretch to a shared height, whereas two separately bordered boxes are only ever the
+ * same height by coincidence.
+ *
+ * The example is anchored on one real empty cell, and the build FAILS if that cell ever
+ * fills — a worked example about an absence must not outlive the absence. The claim is
+ * deliberately the weaker, true one: not that nobody has done the work, but that a dated
+ * corpus with stated inclusion criteria contains none of it.
+ *
+ * The tints are ~4% washes carrying no meaning on their own. The icons and the bold text
+ * do that work, because a hue difference is not something every reader can see.
+ */
+import { Icon } from 'astro-icon/components';
+import matrix from '../../public/api/matrix.json';
+import papers from '../../public/api/papers.json';
+import { licenseTier } from '../lib/licenses';
+import counts from '../content/data/counts.json';
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+
+/* A POPULATED cell, deliberately.
+   The empty-cell demonstration moved to the worked-queries band. Absence is CAAIL's
+   subtlest claim and it makes a poor opener: "we return nothing, but honestly" is a
+   harder sell than "we return citations you can click, with ids". The everyday contrast,
+   invented references versus real ones, is the one every reader has already been
+   burned by.
+
+   And a cell NO OTHER SECTION USES. This was Bayesian Optimization × Media Optimization,
+   which is also what the first worked-query card demonstrates, so two adjacent bands were
+   arguing from the same example and the page looked thinner than the corpus is. Ensemble
+   Learning × Sensory Prediction is the most populated cell in the matrix (23 refs against
+   the 10 here before), and none of the four worked queries touches sensory. It also
+   happens to be the most intuitive claim on the page to a general reader: whether the
+   thing tastes right. */
+const METHOD = 'Ensemble Learning';
+const AREA = 'sensory';
+const cell = matrix.cells.find((c) => c.method === METHOD && c.area === AREA);
+if (!cell) throw new Error(`WhyCaail: ${METHOD} × ${AREA} is not in matrix.json`);
+const AREA_LABEL = cell.areaLabel;
+if (cell.refIds.length < 3) {
+  throw new Error(
+    `WhyCaail: ${METHOD} × ${AREA} has only ${cell.refIds.length} paper(s). The homepage ` +
+      `example quotes real citations from this cell — pick a better populated cell or rewrite it.`,
+  );
+}
+
+const byId = new Map(papers.references.map((r) => [r.id, r]));
+const cited = cell.refIds.slice(0, 3).map((id) => {
+  const r = byId.get(id);
+  const who = (r?.authors?.[0] ?? '').split(',')[0] || 'Unknown';
+  return `${who} ${r?.year ?? ''} (#${id})`;
+});
+const withCode = cell.refIds.filter((id) => byId.get(id)?.hasCode).length;
+
+const redistributable = papers.references.filter((r) => {
+  const t = licenseTier(r.license);
+  return t === 'permissive' || t === 'copyleft';
+}).length;
+
+/* The catalogue is four content types, not just papers. Quoting only the paper count
+   undersold it by more than half and, worse, misdescribed what CAAIL is: the whole point
+   of the subject axis is that one question returns software and datasets too. */
+const catalogued = counts.papers + counts.software + counts.databases + counts.datasets;
+
+/* Short on purpose. This is a chat bubble, not a worked query — the #ask band is where
+   the three-sentence research questions live. What this one has to be is fabricable: a
+   question whose plausible-sounding wrong answer is indistinguishable from a right one,
+   which is the whole contrast the band is built on. */
+const Q = 'Which papers used ensemble models to predict flavour or texture from composition, and which of them released code I can run?';
+
+/* The two columns are NOT rows, and their lengths differ on purpose.
+   Read side by side at equal length they invited a row-by-row reading, and the content
+   does not pair that way: two "with" bullets both answered absence while the most
+   visceral complaint, invented citations, had no bullet opposite it at all. They are two
+   independent lists — failure modes on the left, what the curation layer adds on the
+   right — and the uneven counts are the signal that no row correspondence is implied. */
+const without = [
+  {
+    k: 'Citations you have to verify one at a time',
+    v: 'Nothing distinguishes a real DOI from a generated one',
+  },
+  {
+    k: 'No way to tell "I found none" from "there are none"',
+    v: 'Absence is never reported, only omitted',
+  },
+  /* Replaced "papers, tools and datasets searched separately", which described searching
+     by hand — the wrong counterfactual for a band whose mock is an AI assistant, and the
+     weakest bullet in either column. Discoverability is the failure a curated index
+     actually fixes: a model surfaces what is well-cited and well-titled, and a good tool
+     with an obscure name is invisible to it however hard you ask. */
+  {
+    k: 'Findable beats better',
+    v: 'A well-titled, heavily cited paper crowds out a more relevant one nobody links to',
+  },
+  {
+    k: 'No signal on what you may redistribute',
+    v: 'Free to read gets mistaken for free to republish',
+  },
+  /* Stochasticity, not version drift. This said "the answer drifts as the model changes",
+     which blames the release cycle and is the weaker claim — you could believe it and
+     still think a pinned model gives you a stable answer. It does not: sampling means the
+     same model, on the same day, asked the same question, need not agree with itself. That
+     is the property a curated table does not have, so it is the one worth naming. */
+  {
+    k: 'Ask twice, get two different answers',
+    v: 'Sampling is stochastic, so even a pinned model on the same day need not agree with itself',
+  },
+];
+
+const withCaail = [
+  {
+    k: `All ${matrix.totalCells} method × area cells enumerated`,
+    v: `${matrix.emptyCells} are empty, and each empty one is returned rather than skipped`,
+  },
+  {
+    k: 'Absence is a stated result carrying its own limit',
+    v: 'A curated subset, not a census: CAAIL has not measured its own recall',
+  },
+  /* The core of what CAAIL adds, and it was missing from its own argument. Every other
+     bullet describes a property of the output; this one names the work that produces
+     them. It is also the only answer to the discoverability failure opposite, since
+     nothing about ranking or retrieval fixes a resource that simply is not surfaced. */
+  {
+    k: 'Placed by a person, not ranked by popularity',
+    v: 'An obscure tool sits beside a famous one, because inclusion is a judgement rather than a signal',
+  },
+  {
+    k: `One subject axis over all ${catalogued} resources`,
+    v: 'A design question returns papers, software, databases and datasets together, not one type at a time',
+  },
+  {
+    k: 'A licence tier on every work',
+    v: `Of the ${papers.references.length} papers, ${redistributable} may be redistributed, well below the ~74% that are open access`,
+  },
+  /* The direct answer to stochastic sampling: a lookup is deterministic. The date is
+     what makes that checkable by someone else rather than merely true for you. */
+  {
+    k: 'The same query returns the same rows',
+    v: `A fixed corpus dated ${matrix.corpusDate}, curated and checked by people rather than sampled, so a result can be quoted and re-checked`,
+  },
+];
+---
+
+<section class="why" id="why">
+  <div class="hd sr">
+    <p class="eyebrow"><span class="bar" aria-hidden="true"></span>Why CAAIL</p>
+    <h2 class="caail-display">Literature search: before and after</h2>
+    <p class="lede">
+      CAAIL gives any AI assistant a dated, licence-tagged map of {catalogued} curated resources
+      ({counts.papers} papers, {counts.software} software tools, {counts.databases} databases and
+      {counts.datasets} dataset entries), indexed on a matrix of {matrix.methods.length} AI
+      methods × {matrix.areas.length} research areas.
+    </p>
+  </div>
+
+  <div class="split sr sr-d1">
+    <div class="half half--alone">
+      <p class="hdr">
+        <span class="badge badge--x"><Icon name="lucide:x" /></span> Without CAAIL
+      </p>
+
+      <div class="chat">
+        <div class="turn"><span class="who">You</span><p class="bubble">{Q}</p></div>
+        <div class="turn">
+          <span class="who who--ai">AI</span>
+          <p class="bubble bubble--guess">
+            Random forests and gradient boosting have both been used to predict sensory
+            panels from composition, for example Zhang et al. (2021) in
+            <em>Food Chem.</em>… <em>[may be fabricated]</em>
+          </p>
+        </div>
+      </div>
+
+      <ul class="pts">
+        {without.map((p) => (
+          <li>
+            <span class="mark mark--x"><Icon name="lucide:x" /></span>
+            <span><strong>{p.k}</strong><span class="sub">{p.v}</span></span>
+          </li>
+        ))}
+      </ul>
+    </div>
+
+    <div class="half half--with">
+      <p class="hdr">
+        <span class="badge badge--ok"><Icon name="lucide:zap" /></span> With CAAIL
+      </p>
+
+      <div class="chat">
+        <div class="turn"><span class="who who--dark">You</span><p class="bubble bubble--dark">{Q}</p></div>
+        <div class="turn">
+          <span class="who who--tool">API</span>
+          {/* DERIVED, never spelled out. This read "× Media Optimization" as a literal
+              while METHOD and AREA were constants above, so changing the example cell
+              left the mock advertising one cell and answering another. */}
+          <p class="bubble bubble--tool"><code>matrix.json → {METHOD} × {AREA_LABEL}</code></p>
+        </div>
+        <div class="turn">
+          <span class="who who--ai">AI</span>
+          <p class="bubble">
+            {/* "and N more" is suppressed at N === 0. The guard above admits a cell with
+                exactly 3 refs, which rendered "3 papers: A, B, C and 0 more." Not reachable
+                with the current cell (23 refs), but repointing METHOD/AREA is the one edit
+                this component invites, so it should not be able to produce that. */}
+            {cell.refIds.length} papers: {cited.join(', ')}{cell.refIds.length > 3
+              ? ` and ${cell.refIds.length - 3} more`
+              : ''}.
+            {withCode} link runnable code. <em class="ok">[real ids, dated {matrix.corpusDate}]</em>
+          </p>
+        </div>
+      </div>
+
+      <ul class="pts">
+        {withCaail.map((p) => (
+          <li>
+            <span class="mark mark--ok"><Icon name="lucide:check" /></span>
+            <span><strong>{p.k}</strong><span class="sub">{p.v}</span></span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </div>
+
+  <p class="foot sr sr-d2">
+    Every reference id resolves to a real entry with its DOI, and every empty cell is
+    returned too, carrying the limit of what it proves.
+    <a href={`${base}/papers/explorer/`}>Browse the matrix →</a>
+  </p>
+</section>
+
+<style>
+  .why { margin: var(--caail-section-gap) 0 0; }
+
+  .hd { text-align: center; max-width: 44rem; margin: 0 auto var(--caail-space-6); }
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: .55rem;
+    font-size: var(--caail-fs-xs); letter-spacing: .18em; text-transform: uppercase;
+    font-weight: 600; color: var(--caail-muted); margin: 0 0 var(--caail-space-3);
+  }
+  .bar { display: block; width: 2px; height: .85rem; background: var(--caail-link); border-radius: 2px; }
+  .why h2 { font-size: var(--caail-fs-h2); line-height: 1.1; letter-spacing: -.02em; color: var(--caail-primary); margin: 0 0 var(--caail-space-3); text-wrap: balance; }
+  .lede { font-size: var(--caail-fs-lg); color: var(--caail-muted); margin: 0; text-wrap: pretty; }
+
+  /* One frame, no gap. overflow:hidden lets the tints run into the rounded corners
+     instead of squaring them off. */
+  .split {
+    display: grid; grid-template-columns: 1fr; gap: 0;
+    border: 1px solid var(--caail-border); border-radius: 16px; overflow: hidden;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / .07), 0 2px 4px -2px rgb(0 0 0 / .07);
+  }
+  @media (min-width: 52rem) { .split { grid-template-columns: 1fr 1fr; } }
+
+  .half { padding: var(--caail-space-6); }
+  /* One internal edge that pivots with the layout: a horizontal rule when stacked, a
+     vertical one when side by side. */
+  .half--alone { border-bottom: 1px solid var(--caail-border); background: color-mix(in oklab, var(--caail-area-sensory) 4%, transparent); }
+  @media (min-width: 52rem) {
+    .half--alone { border-bottom: 0; border-right: 1px solid var(--caail-border); }
+  }
+  .half--with { background: color-mix(in oklab, var(--caail-link) 5%, transparent); }
+
+  .hdr {
+    display: flex; align-items: center; gap: .55rem;
+    font-size: var(--caail-fs-xs); letter-spacing: .12em; text-transform: uppercase;
+    font-weight: 700; color: var(--caail-muted); margin: 0 0 var(--caail-space-5);
+  }
+  .badge { display: inline-flex; align-items: center; justify-content: center; width: 1.6rem; height: 1.6rem; border-radius: 50%; flex: none; }
+  .badge [data-icon] { width: .9rem; height: .9rem; }
+  .badge--x { background: color-mix(in oklab, var(--caail-ink) 10%, transparent); color: var(--caail-muted); }
+  .badge--ok { background: var(--caail-primary); color: var(--caail-bg); }
+  .half--with .hdr { color: var(--caail-primary); }
+
+  /* Mock exchange. A transcript shape, not a real one — it illustrates the difference
+     between the two answers rather than claiming to be a captured session. */
+  .chat { background: var(--caail-bg); border: 1px solid var(--caail-border); border-radius: 12px; padding: var(--caail-space-4); margin: 0 0 var(--caail-space-5); display: grid; gap: .55rem; }
+  .turn { display: flex; align-items: flex-start; gap: .5rem; }
+  .who {
+    flex: none; display: inline-flex; align-items: center; justify-content: center;
+    width: 1.5rem; height: 1.5rem; border-radius: 50%;
+    font-size: .58rem; font-weight: 700; letter-spacing: .02em;
+    background: color-mix(in oklab, var(--caail-ink) 12%, transparent); color: var(--caail-muted);
+  }
+  .who--dark { background: var(--caail-primary); color: var(--caail-bg); }
+  .who--ai { background: color-mix(in oklab, var(--caail-ink) 18%, transparent); color: var(--caail-ink); }
+  .who--tool { background: color-mix(in oklab, var(--caail-area-bioprocess) 22%, transparent); color: var(--caail-accent); }
+
+  .bubble { margin: 0; font-size: var(--caail-fs-sm); line-height: 1.5; color: var(--caail-ink); background: var(--caail-surface); border-radius: 10px; padding: .45rem .7rem; }
+  .bubble--dark { background: var(--caail-primary); color: var(--caail-bg); }
+  .bubble--guess { font-style: italic; color: var(--caail-muted); }
+  .bubble--tool { background: color-mix(in oklab, var(--caail-area-bioprocess) 10%, transparent); }
+  .bubble--tool code { font-size: var(--caail-fs-xs); color: var(--caail-accent); background: none; padding: 0; }
+  /* Emphasis by weight and word, not hue alone: the caveat reads as a caveat in
+     monochrome too. */
+  .bubble em { font-style: normal; font-weight: 600; color: var(--caail-ink); }
+  .bubble em.ok { color: var(--caail-primary); }
+
+  .pts { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--caail-space-4); }
+  .pts li { display: grid; grid-template-columns: auto 1fr; gap: .6rem; align-items: start; margin: 0; }
+  .mark { display: inline-flex; align-items: center; justify-content: center; width: 1.25rem; height: 1.25rem; border-radius: 50%; flex: none; margin-top: .1rem; }
+  .mark [data-icon] { width: .7rem; height: .7rem; }
+  .mark--x { background: color-mix(in oklab, var(--caail-area-sensory) 16%, transparent); color: var(--caail-area-sensory); }
+  .mark--ok { background: color-mix(in oklab, var(--caail-area-cell) 18%, transparent); color: var(--caail-primary); }
+
+  .pts strong { display: block; font-size: var(--caail-fs-sm); font-weight: 600; color: var(--caail-ink); line-height: 1.4; }
+  .pts .sub { display: block; font-size: var(--caail-fs-xs); color: var(--caail-muted); line-height: 1.45; margin-top: .15rem; }
+
+  .foot { font-size: var(--caail-fs-sm); color: var(--caail-muted); margin: var(--caail-space-5) auto 0; max-width: var(--caail-measure); line-height: 1.55; text-align: center; text-wrap: pretty; }
+  .foot a { white-space: nowrap; }
+</style>

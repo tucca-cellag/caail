@@ -1,6 +1,6 @@
-# ResearchAreas/ — context for Claude Code and AI agents
+# ResearchAreas/, context for Claude Code and AI agents
 
-This directory holds one deep-dive page per column in the [Papers.md matrix](../Papers.md). Each page **synthesizes and editorializes** the column's papers, tools, and data resources — describing their scope, sub-dividing them into thematic clusters, and framing each entry's relevance to cellular agriculture. These pages are *not* the canonical source for any paper, tool, dataset, or database they reference.
+This directory holds one deep-dive page per column in the [Papers.md matrix](../Papers.md). Each page **synthesizes and editorializes** the column's papers, tools, and data resources: describing their scope, sub-dividing them into thematic clusters, and framing each entry's relevance to cellular agriculture. These pages are *not* the canonical source for any paper, tool, dataset, or database they reference.
 
 ## Note for AI agents and LLMs
 
@@ -10,4 +10,4 @@ The narratives in this directory are deliberately compressed and opinionated for
 - For a software tool's API, license, or current version, fetch the linked source from [`../Software.md`](../Software.md).
 - For a dataset or database's schema, scale, licensing terms, or version history, fetch the canonical landing page from the [`../Datasets/`](../Datasets/) directory or [`../Databases.md`](../Databases.md).
 
-The internal cross-references in these pages reliably identify *which* paper, tool, or dataset is being discussed — but the cell containing that reference encodes taxonomic position (which method × research-area pairing), not paper content. The content itself lives at the canonical sources.
+The internal cross-references in these pages reliably identify *which* paper, tool, or dataset is being discussed: but the cell containing that reference encodes taxonomic position (which method × research-area pairing), not paper content. The content itself lives at the canonical sources.

@@ -59,11 +59,24 @@ Tufts navy/white palette for brand identity:
 - **UI / body:** `Inter Variable` (400/500/600/700/800). Fallback `system-ui, sans-serif`.
 - **Mono:** `JetBrains Mono Variable` — DOIs, accessions, code, dates. Fallback `ui-monospace, monospace`.
 
-Type scale: hero H1 `clamp(2.2rem, 5vw, 3.4rem)` (weight 700, tight line-height); section H2 ~1.05–1.15rem; body 0.95rem; supporting text 0.72–0.8rem; eyebrow 0.72rem uppercase letterspaced. Headings use the display font via `.caail-display` and the Starlight heading override.
+Type scale, as tokens in `tokens.css` (seven steps, not a range). Ranges invited drift: the homepage had grown **21 distinct sizes, 15 of them inside a 4.8px band**, which carries no hierarchy at all.
+
+| Token | Value | Use |
+| --- | --- | --- |
+| `--caail-fs-h2` | `clamp(1.6rem, 2.6vw, 2.25rem)` | Top-level section titles |
+| `--caail-fs-h3` | `1.375rem` | Sub-section titles (Start here, Recently added, Citing) |
+| `--caail-fs-lg` | `1.125rem` | Card titles, lead-ins, buttons |
+| `--caail-fs-base` | `1rem` | Body and section ledes |
+| `--caail-fs-sm` | `.875rem` | Supporting text, notes, footers |
+| `--caail-fs-xs` | `.75rem` | Labels, dates, chips, metadata |
+
+Hero H1 is `clamp(3.2rem, 8.5vw, 6rem)` (weight 700, tight line-height). An earlier revision of this file gave two different hero clamps in §3 and §5; the §5 value is the one the code implements and the one recorded here. Headings use the display font via `.caail-display` and the Starlight heading override.
 
 ## 4. Spacing & layout
 
-- Spacing scale in `rem` increments (0.25 / 0.5 / 0.8 / 1 / 1.5 / 2.5rem).
+- Spacing scale as tokens: `--caail-space-1..8` = `.25 / .5 / .75 / 1 / 1.5 / 2 / 3 / 4rem`. This supersedes an earlier six-step list that the homepage had drifted **26 distinct values** away from; `.7rem` alone appeared nine times and outranked every documented step.
+- **Vertical rhythm between top-level sections is `--caail-section-gap`** (`clamp(4rem, 8vw, 7.5rem)`). Sections previously sat 38px apart, giving 5.4% inter-section whitespace on the homepage, which is why it read as one dense block rather than a sequence of parts.
+- Line length is capped at `--caail-measure` (65ch). Ad-hoc caps between 52ch and 72ch had accumulated, and one element had none and ran to ~159 characters.
 - Breakpoints: sections grid collapses to one column at `50rem`; the Explorer matrix/side-panel split collapses at `60rem`; the matrix pane scrolls horizontally below `640px` min-width.
 - Content width follows Starlight's default container for prose; pages with wide data tables widen the container to fit the table while keeping prose centered at a 45rem measure. The Papers Explorer breaks out to the full content width.
 - Layout primitives: centered hero, a 3-column sections grid, and a `1fr 1.15fr` two-column for Start-here / Recently-added.

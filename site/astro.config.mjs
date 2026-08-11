@@ -107,7 +107,7 @@ export default defineConfig({
               {
                 '@type': 'WebSite',
                 '@id': 'https://tucca-cellag.github.io/caail/#website',
-                name: 'CAAIL — Cellular Agriculture AI Library',
+                name: 'CAAIL: Cellular Agriculture AI Library',
                 url: 'https://tucca-cellag.github.io/caail/',
                 description:
                   'A curated, openly-licensed library at the intersection of cellular agriculture and artificial intelligence — papers and preprints, open-source software, databases, and per-species datasets.',
@@ -190,6 +190,10 @@ export default defineConfig({
         './src/styles/fonts.css',
         './src/styles/tokens.css',
         './src/styles/starlight-overrides.css',
+        // Scroll-reveal primitives (.sr / .sr-d1..5), shared by the homepage bands.
+        // Global rather than per-component so one definition governs the timing
+        // curve and the no-JS guard everywhere.
+        './src/styles/reveal.css',
         // Global so the raw-HTML dataset cards + their topic chips (injected by the
         // dataset-cards remark transform on /datasets/ pages, not a component) style
         // correctly. topic-chips.css otherwise only ships with the TopicChips island.

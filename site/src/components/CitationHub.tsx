@@ -92,7 +92,7 @@ function BandIndex() {
   return (
     <div class="ch-index not-content">
       <p class="ch-disclaimer">
-        Citation counts are OpenAlex <code>cited_by_count</code> values — a coarse <strong>popularity</strong>
+        Citation counts are OpenAlex <code>cited_by_count</code> values, a coarse <strong>popularity</strong>
         {' '}signal, <strong>not</strong> a measure of quality or significance. Counts move over time; confirm at the source.
       </p>
       <p class="ch-disclaimer">

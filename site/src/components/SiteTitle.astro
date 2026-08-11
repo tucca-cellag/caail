@@ -131,7 +131,7 @@ const isLink = (it: any): it is { label: string; href: string; external?: boolea
         aria-current={isActive(d.matches) ? 'page' : undefined}
       >
         {d.label}
-        <Icon name="ph:caret-down" class="caail-dd__caret" aria-hidden="true" />
+        <Icon name="lucide:chevron-down" class="caail-dd__caret" aria-hidden="true" />
       </button>
       <ul id={`caail-dd-${i}`} class="caail-dd__panel">
         {d.items.map((it) => (
@@ -157,7 +157,7 @@ const isLink = (it: any): it is { label: string; href: string; external?: boolea
         aria-controls="caail-mobilenav-panel"
         aria-label="Open navigation menu"
       >
-        <Icon name="ph:list-bold" class="caail-mobilenav__icon" aria-hidden="true" />
+        <Icon name="lucide:list" class="caail-mobilenav__icon" aria-hidden="true" />
         <span>Menu</span>
       </button>
       <nav id="caail-mobilenav-panel" class="caail-mobilenav__panel" aria-label="Primary">

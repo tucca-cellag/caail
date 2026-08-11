@@ -39,6 +39,34 @@ export const SCOPE_NOTE =
   'no INDEXED paper occupies it as of corpus_date. That is not evidence that no such ' +
   'work exists. CAAIL has not measured its own recall.';
 
+/**
+ * Maturity, stated to the consumer rather than assumed.
+ *
+ * SCOPE_NOTE bounds what an EMPTY cell proves. This bounds what a POPULATED one proves,
+ * and the two limits are NOT the same size. Absence is genuinely weak evidence: CAAIL has
+ * not measured its own recall, so an empty cell says almost nothing about the literature.
+ * A placement is strong: it is a curator's substantive claim about the paper's method and
+ * application area, and the re-verification underway tightens precision rather than
+ * establishing trust that was missing.
+ *
+ * Calibrate the caveat to the actual risk. Where a placement is off it is nearly always a
+ * closely related cell — an adjacent method row, a neighbouring area — not a paper that
+ * does not belong in CAAIL at all. Telling an agent to discount the classification would
+ * be both wrong and self-defeating, since the classification is the thing CAAIL adds.
+ *
+ * This reaches agents more than humans. A person browsing treats the matrix as a reading
+ * list; an agent answering "which method has been applied to X" reports the cell and
+ * carries it into a citation chain where provenance is lost. The payload is the only
+ * place that reaches them.
+ */
+export const STATUS = 'beta' as const;
+export const PLACEMENT_NOTE =
+  'Placements are curator-assigned and are being re-verified against paper full texts, ' +
+  'then graded by evaluators. Treat a cell as a substantive claim about the paper method ' +
+  'and application area. The residual uncertainty is precision, not inclusion: where a ' +
+  'placement is off it is typically a closely related cell rather than a paper that does ' +
+  'not belong. Cite the paper itself.';
+
 /** Repo root, two levels above this module's directory (parser/ -> scripts/ -> site/ -> root). */
 const REPO_ROOT = fileURLToPath(new URL('../../../', import.meta.url));
 
@@ -123,6 +151,8 @@ export interface MatrixCell {
   emptyInCorpus: boolean;
   /** present ONLY on empty cells, so the caveat travels with the result */
   scope?: string;
+  /** present ONLY on populated cells: what this placement does and does not assert */
+  placement?: string;
 }
 
 /**
@@ -134,12 +164,15 @@ export interface MatrixCell {
  */
 export function buildMatrix(papers: PapersData, corpusDate: string): {
   corpusDate: string;
+  status: string;
+  placementsUnderReview: boolean;
   methods: string[];
   areas: { key: string; label: string }[];
   totalCells: number;
   populatedCells: number;
   emptyCells: number;
   scopeNote: string;
+  placementNote: string;
   cells: MatrixCell[];
 } {
   const byKey = new Map<string, number[]>();
@@ -156,7 +189,12 @@ export function buildMatrix(papers: PapersData, corpusDate: string): {
         areaLabel: area.label,
         refIds,
         emptyInCorpus,
-        ...(emptyInCorpus ? { scope: SCOPE_NOTE } : {}),
+        // The caveat travels ON the cell, not only at the top level, because an agent
+        // that looks up one cell and reports it will never have read the envelope. Empty
+        // and populated cells need different caveats: one bounds what absence proves,
+        // the other bounds what presence proves. Both are claims an agent carries into a
+        // citation chain, where the provenance is gone.
+        ...(emptyInCorpus ? { scope: SCOPE_NOTE } : { placement: PLACEMENT_NOTE }),
       });
     }
   }
@@ -164,12 +202,15 @@ export function buildMatrix(papers: PapersData, corpusDate: string): {
   const populated = cells.filter((c) => !c.emptyInCorpus).length;
   return {
     corpusDate,
+    status: STATUS,
+    placementsUnderReview: true,
     methods: [...papers.methods],
     areas: papers.areas.map((a) => ({ key: a.key, label: a.label })),
     totalCells: cells.length,
     populatedCells: populated,
     emptyCells: cells.length - populated,
     scopeNote: SCOPE_NOTE,
+    placementNote: PLACEMENT_NOTE,
     cells,
   };
 }
@@ -242,8 +283,13 @@ export function buildManifest(
   for (const r of papers.references) bySection[r.section] = (bySection[r.section] ?? 0) + 1;
 
   return {
-    name: 'CAAIL — Cellular Agriculture AI Library',
+    name: 'CAAIL: Cellular Agriculture AI Library',
     corpusDate,
+    // First thing an agent reads, so the maturity belongs here rather than three
+    // fetches deep. The inventory counts are firm; it is the classification over them
+    // that is still being verified.
+    status: STATUS,
+    placementsUnderReview: true,
     canonical: 'https://github.com/tucca-cellag/caail',
     site: 'https://tucca-cellag.github.io/caail/',
     license: 'MIT (CAAIL curation). Linked third-party resources keep their own licenses.',
@@ -251,6 +297,7 @@ export function buildManifest(
     // The machine-readable shape of every endpoint below. Named up here rather than only
     // in the endpoint list because the point is to be found BEFORE anyone guesses a key.
     openapi: OPENAPI_FILE,
+    placementNote: PLACEMENT_NOTE,
     counts: {
       papersAllSections: papers.references.length,
       papersBySection: bySection,
@@ -350,13 +397,18 @@ export function writeAgentApi(files: ApiFile[], apiDir: string): void {
 }
 
 /**
- * Republish the plugin's SKILL.md at `public/setup.md`, so the install prompt can use a
- * short site URL while the repository copy stays the single source of truth.
+ * Republish the INSTALL skill at `public/setup.md`, so the install prompt can use a short
+ * site URL while the repository copy stays the single source of truth.
  *
  * Copying rather than maintaining two files is deliberate: the install prompt carries a
  * raw.githubusercontent fallback for when the site 403s or is unreachable, and two
  * hand-edited copies of the same instructions would eventually disagree about which
  * endpoint answers what.
+ *
+ * The caller decides which skill this is, and it must be the installer rather than the
+ * `caail` query skill. Pointing it at the query skill made the fallback above impossible
+ * to honour: the prompt fetched a raw GitHub path directly and the short URL this
+ * function exists to publish went unused.
  */
 export function publishSkillDoc(skillPath: string, publicDir: string): void {
   mkdirSync(publicDir, { recursive: true });

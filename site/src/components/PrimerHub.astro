@@ -51,7 +51,7 @@ if (!primer) {
           ) : t.internal ? (
             <a class="talk-card primer-nav" href={t.url}>
               <span class="talk-kind">
-                <Icon name="ph:arrow-right" />
+                <Icon name="lucide:arrow-right" />
                 In CAAIL
               </span>
               <span class="talk-card-title">{t.title}</span>
@@ -60,7 +60,7 @@ if (!primer) {
           ) : (
             <a class="talk-card" href={t.url} target="_blank" rel="noopener noreferrer">
               <span class="talk-kind">
-                <Icon name={t.kind === 'playlist' ? 'ph:list-bullets' : 'ph:link-simple'} />
+                <Icon name={t.kind === 'playlist' ? 'lucide:list' : 'lucide:link'} />
                 {t.kind === 'playlist' ? 'Playlist' : 'Link'}
               </span>
               <span class="talk-card-title">{t.title}</span>

@@ -756,28 +756,46 @@ export const ApiMatrixCellSchema = z.object({
   emptyInCorpus: z.boolean(),
   /** present only on empty cells, so the recall caveat travels with the result */
   scope: z.string().optional(),
+  /** present only on populated cells: what this placement does and does not assert */
+  placement: z.string().optional(),
 });
 
 export const ApiMatrixSchema = z.strictObject({
   corpusDate: CorpusDateSchema,
+  /** see ApiManifestSchema.status: pinned so a drift from agent-api's STATUS fails loudly */
+  status: z.literal('beta'),
+  /** the cell counts are firm; the classification over them is still being verified */
+  placementsUnderReview: z.boolean(),
   methods: z.array(z.string()),
   areas: z.array(AreaSchema),
   totalCells: z.number().int().nonnegative(),
   populatedCells: z.number().int().nonnegative(),
   emptyCells: z.number().int().nonnegative(),
   scopeNote: z.string(),
+  /** what a POPULATED cell asserts, as scopeNote bounds what an empty one asserts */
+  placementNote: z.string(),
   cells: z.array(ApiMatrixCellSchema),
 });
 
 export const ApiManifestSchema = z.strictObject({
   name: z.string(),
   corpusDate: CorpusDateSchema,
+  /**
+   * Maturity, stated to the consumer rather than assumed. Pinned to the literal on
+   * purpose: agent-api's STATUS is the value, and a literal here fails the parse loudly
+   * if the two ever drift, rather than letting a silent change ship.
+   */
+  status: z.literal('beta'),
+  /** the inventory counts are firm; the classification over them is still being verified */
+  placementsUnderReview: z.boolean(),
   canonical: z.string(),
   site: z.string(),
   license: z.string(),
   scopeNote: z.string(),
   /** relative path to the OpenAPI description of every endpoint below */
   openapi: z.string(),
+  /** what a POPULATED cell asserts, as SCOPE_NOTE bounds what an empty one asserts */
+  placementNote: z.string(),
   /** Each key names the POPULATION it counted — see buildManifest. */
   counts: z.strictObject({
     papersAllSections: z.number().int().nonnegative(),

@@ -30,7 +30,7 @@ const PAGES: Record<string, PageMeta> = {
     group: 'research-areas',
     order: 1,
     description:
-      'AI and machine learning for cell-culture media optimization in cellular agriculture — design of experiments, Bayesian optimization, and data-driven formulation.',
+      'AI and machine learning for cell-culture media optimization in cellular agriculture: design of experiments, Bayesian optimization, and data-driven formulation.',
   },
   'research-areas/cellengineering': {
     title: 'Cellular Engineering',
@@ -38,7 +38,7 @@ const PAGES: Record<string, PageMeta> = {
     group: 'research-areas',
     order: 2,
     description:
-      'Computational and AI approaches to cellular engineering for cultivated meat — cell-line development, differentiation, and genome-scale modeling.',
+      'Computational and AI approaches to cellular engineering for cultivated meat: cell-line development, differentiation, and genome-scale modeling.',
   },
   'research-areas/bioprocess': {
     title: 'Bioprocess & Scale-Up',
@@ -46,7 +46,7 @@ const PAGES: Record<string, PageMeta> = {
     group: 'research-areas',
     order: 3,
     description:
-      'AI and modeling for bioprocess control and scale-up in cellular agriculture — bioreactor CFD, soft sensors, and process optimization.',
+      'AI and modeling for bioprocess control and scale-up in cellular agriculture: bioreactor CFD, soft sensors, and process optimization.',
   },
   'research-areas/scaffolding': {
     title: 'Scaffolding',
@@ -54,7 +54,7 @@ const PAGES: Record<string, PageMeta> = {
     group: 'research-areas',
     order: 4,
     description:
-      'Computational methods for scaffolding and biomaterials in cultivated meat — structure design, simulation, and tissue architecture.',
+      'Computational methods for scaffolding and biomaterials in cultivated meat: structure design, simulation, and tissue architecture.',
   },
   'research-areas/sensoryprediction': {
     title: 'Sensory Prediction',
@@ -62,7 +62,7 @@ const PAGES: Record<string, PageMeta> = {
     group: 'research-areas',
     order: 5,
     description:
-      'Predicting flavor, texture, and sensory quality of cultivated meat with AI — sensomics, multi-omics, and machine-learning models.',
+      'Predicting flavor, texture, and sensory quality of cultivated meat with AI: sensomics, multi-omics, and machine-learning models.',
   },
   'research-areas/aitooling': {
     title: 'AI Tooling / Methodology',
@@ -70,7 +70,7 @@ const PAGES: Record<string, PageMeta> = {
     group: 'research-areas',
     order: 6,
     description:
-      'General-purpose AI methods, agents, and tooling applicable to cellular agriculture — foundation models, LLM agents, and ML infrastructure.',
+      'General-purpose AI methods, agents, and tooling applicable to cellular agriculture: foundation models, LLM agents, and ML infrastructure.',
   },
   'research-areas/aievaluation': {
     title: 'AI Evaluation & Benchmarking',
@@ -78,7 +78,7 @@ const PAGES: Record<string, PageMeta> = {
     group: 'research-areas',
     order: 7,
     description:
-      'Benchmarks and evaluation methods for AI in biology and cellular agriculture — eval datasets, leaderboards, and model assessment.',
+      'Benchmarks and evaluation methods for AI in biology and cellular agriculture: eval datasets, leaderboards, and model assessment.',
   },
   'research-areas/metabolicmodeling': {
     title: 'Metabolic Modeling',
@@ -86,7 +86,7 @@ const PAGES: Record<string, PageMeta> = {
     group: 'research-areas',
     order: 8,
     description:
-      'Genome-scale metabolic modeling and strain design for cellular agriculture — constraint-based modeling, flux analysis, and metabolic engineering.',
+      'Genome-scale metabolic modeling and strain design for cellular agriculture: constraint-based modeling, flux analysis, and metabolic engineering.',
   },
 
   // ── Datasets ───────────────────────────────────────────────────────────────
@@ -97,7 +97,7 @@ const PAGES: Record<string, PageMeta> = {
     group: 'datasets',
     order: 0,
     description:
-      'Train-on data artifacts for cellular-agriculture AI, organized by species — sequencing deposits, perturbation atlases, and genome-scale models.',
+      'Train-on data artifacts for cellular-agriculture AI, organized by species: sequencing deposits, perturbation atlases, and genome-scale models.',
   },
   // Species pages — titles match H1 in each file (markdown emphasis stripped)
   'datasets/cow': {
@@ -106,7 +106,7 @@ const PAGES: Record<string, PageMeta> = {
     group: 'datasets',
     order: 1,
     description:
-      'Cultivated-beef datasets — bovine satellite cells, cell-line and tissue atlases, and a Bos taurus genome-scale metabolic model.',
+      'Cultivated-beef datasets: bovine satellite cells, cell-line and tissue atlases, and a Bos taurus genome-scale metabolic model.',
   },
   'datasets/pig': {
     title: 'Pig / Sus scrofa',
@@ -114,7 +114,7 @@ const PAGES: Record<string, PageMeta> = {
     group: 'datasets',
     order: 2,
     description:
-      'Cultivated-pork datasets — porcine myogenesis and adipogenesis deposits, multi-tissue atlases, and a Sus scrofa genome-scale model.',
+      'Cultivated-pork datasets: porcine myogenesis and adipogenesis deposits, multi-tissue atlases, and a Sus scrofa genome-scale model.',
   },
   'datasets/chicken': {
     title: 'Chicken / Gallus gallus',
@@ -122,7 +122,7 @@ const PAGES: Record<string, PageMeta> = {
     group: 'datasets',
     order: 3,
     description:
-      'Cultivated-chicken datasets — gallus fibroblast and myoblast deposits, functional-genomics atlases, and a chicken genome-scale model.',
+      'Cultivated-chicken datasets: gallus fibroblast and myoblast deposits, functional-genomics atlases, and a chicken genome-scale model.',
   },
   'datasets/fish': {
     title: 'Fish',
@@ -130,7 +130,7 @@ const PAGES: Record<string, PageMeta> = {
     group: 'datasets',
     order: 4,
     description:
-      'Cultivated-seafood datasets for fish — salmonid and teleost sequencing deposits and the AQUA-FAANG functional-genomics atlas.',
+      'Cultivated-seafood datasets for fish: salmonid and teleost sequencing deposits and the AQUA-FAANG functional-genomics atlas.',
   },
   'datasets/crustacean': {
     title: 'Crustacean',
@@ -138,7 +138,7 @@ const PAGES: Record<string, PageMeta> = {
     group: 'datasets',
     order: 5,
     description:
-      'Cultivated-seafood datasets for crustaceans — shrimp, crab, and crayfish muscle and growth sequencing deposits.',
+      'Cultivated-seafood datasets for crustaceans: shrimp, crab, and crayfish muscle and growth sequencing deposits.',
   },
   'datasets/mollusk': {
     title: 'Mollusk',
@@ -146,7 +146,7 @@ const PAGES: Record<string, PageMeta> = {
     group: 'datasets',
     order: 6,
     description:
-      'Cultivated-seafood datasets for mollusks — mussel, scallop, and snail muscle and tissue sequencing deposits.',
+      'Cultivated-seafood datasets for mollusks: mussel, scallop, and snail muscle and tissue sequencing deposits.',
   },
   'datasets/sheep': {
     title: 'Sheep / Ovis aries',
@@ -154,7 +154,7 @@ const PAGES: Record<string, PageMeta> = {
     group: 'datasets',
     order: 7,
     description:
-      'Cultivated-lamb datasets — ovine meat-quality proteomics and metabolomics and a multi-tissue regulatory atlas.',
+      'Cultivated-lamb datasets: ovine meat-quality proteomics and metabolomics and a multi-tissue regulatory atlas.',
   },
   'datasets/goat': {
     title: 'Goat / Capra hircus',
@@ -162,7 +162,7 @@ const PAGES: Record<string, PageMeta> = {
     group: 'datasets',
     order: 8,
     description:
-      'Cultivated-goat datasets — an early-stage species page; contributions welcome.',
+      'Cultivated-goat datasets: an early-stage species page; contributions welcome.',
   },
   'datasets/duck': {
     title: 'Duck / Anas platyrhynchos',
@@ -170,7 +170,7 @@ const PAGES: Record<string, PageMeta> = {
     group: 'datasets',
     order: 9,
     description:
-      'Cultivated-duck datasets — multi-omics characterization of duck embryonic stem cells for cultivated meat.',
+      'Cultivated-duck datasets: multi-omics characterization of duck embryonic stem cells for cultivated meat.',
   },
   'datasets/turkey': {
     title: 'Turkey / Meleagris gallopavo',
@@ -178,7 +178,7 @@ const PAGES: Record<string, PageMeta> = {
     group: 'datasets',
     order: 10,
     description:
-      'Cultivated-turkey datasets — an early-stage species page; contributions welcome.',
+      'Cultivated-turkey datasets: an early-stage species page; contributions welcome.',
   },
   // Cross-species & reference pages
   'datasets/crossspecies': {
@@ -187,7 +187,7 @@ const PAGES: Record<string, PageMeta> = {
     group: 'datasets',
     order: 11,
     description:
-      'Cross-species reference substrate for cell-ag AI — multi-species training tables and engineering datasets spanning taxa.',
+      'Cross-species reference substrate for cell-ag AI: multi-species training tables and engineering datasets spanning taxa.',
   },
   'datasets/humanreference': {
     title: 'Human Reference (Homo sapiens)',
@@ -195,7 +195,7 @@ const PAGES: Record<string, PageMeta> = {
     group: 'datasets',
     order: 12,
     description:
-      'Human reference data for cellular-agriculture AI — single-cell pretraining corpora and human genome-scale metabolic models.',
+      'Human reference data for cellular-agriculture AI: single-cell pretraining corpora and human genome-scale metabolic models.',
   },
   'datasets/choreference': {
     title: 'CHO Reference (Chinese Hamster Ovary)',
@@ -203,7 +203,7 @@ const PAGES: Record<string, PageMeta> = {
     group: 'datasets',
     order: 13,
     description:
-      'CHO (Chinese Hamster Ovary) reference data — the biopharma cell-line GEM family and reference substrate for cell-ag metabolic modeling.',
+      'CHO (Chinese Hamster Ovary) reference data: the biopharma cell-line GEM family and reference substrate for cell-ag metabolic modeling.',
   },
   'datasets/microbialhostreference': {
     title: 'Microbial Host Reference',
@@ -211,7 +211,7 @@ const PAGES: Record<string, PageMeta> = {
     group: 'datasets',
     order: 14,
     description:
-      'Microbial-host reference data for precision-fermentation cellular agriculture — genome-scale metabolic models of yeast and Pichia production hosts.',
+      'Microbial-host reference data for precision-fermentation cellular agriculture: genome-scale metabolic models of yeast and Pichia production hosts.',
   },
   'datasets/benchmarks': {
     title: 'Benchmark & Evaluation Datasets',
@@ -219,7 +219,7 @@ const PAGES: Record<string, PageMeta> = {
     group: 'datasets',
     order: 15,
     description:
-      'AI/ML benchmark and evaluation datasets relevant to cellular agriculture — bundled eval suites for bioinformatics and protein models.',
+      'AI/ML benchmark and evaluation datasets relevant to cellular agriculture: bundled eval suites for bioinformatics and protein models.',
   },
   'datasets/foodsafety': {
     title: 'Food Safety & Allergenicity',
@@ -227,7 +227,7 @@ const PAGES: Record<string, PageMeta> = {
     group: 'datasets',
     order: 16,
     description:
-      'Food-safety datasets for cellular agriculture — labeled allergen sequence and IgE-epitope corpora for training and benchmarking allergenicity predictors.',
+      'Food-safety datasets for cellular agriculture: labeled allergen sequence and IgE-epitope corpora for training and benchmarking allergenicity predictors.',
   },
   'datasets/sustainability': {
     title: 'Sustainability & Techno-Economics',
@@ -235,7 +235,7 @@ const PAGES: Record<string, PageMeta> = {
     group: 'datasets',
     order: 17,
     description:
-      'Sustainability datasets for cellular agriculture — downloadable cultivated-meat life-cycle inventories behind the field’s techno-economic and environmental models.',
+      'Sustainability datasets for cellular agriculture: downloadable cultivated-meat life-cycle inventories behind the field’s techno-economic and environmental models.',
   },
 
   // ── Top-level prose pages ──────────────────────────────────────────────────
@@ -245,7 +245,7 @@ const PAGES: Record<string, PageMeta> = {
     group: 'top',
     order: 1,
     description:
-      'How to contribute to CAAIL — where each kind of paper, tool, dataset, or resource belongs, and how to add it.',
+      'How to contribute to CAAIL: where each kind of paper, tool, dataset, or resource belongs, and how to add it.',
   },
   'other-resources': {
     title: 'Other Resources',
@@ -253,7 +253,7 @@ const PAGES: Record<string, PageMeta> = {
     group: 'top',
     order: 2,
     description:
-      'Journal editorials and opinion on AI in science and in animal agriculture, field reports on the state of the sector, and cellular-agriculture ecosystem initiatives — research centers, consortia, and convening efforts.',
+      'Journal editorials and opinion on AI in science and in animal agriculture, field reports on the state of the sector, and cellular-agriculture ecosystem initiatives: research centers, consortia, and convening efforts.',
   },
   taxonomy: {
     title: 'Matrix Taxonomy',
@@ -261,7 +261,7 @@ const PAGES: Record<string, PageMeta> = {
     group: 'top',
     order: 3,
     description:
-      'Definitions of every AI/ML method row and cellular-agriculture research-area column in the Papers matrix — what each covers, what is out of scope, and how to tell confusable categories apart.',
+      'Definitions of every AI/ML method row and cellular-agriculture research-area column in the Papers matrix: what each covers, what is out of scope, and how to tell confusable categories apart.',
   },
   'ai-agents-foundation-models': {
     title: 'AI Agents & Foundation Models',
@@ -269,7 +269,7 @@ const PAGES: Record<string, PageMeta> = {
     group: 'top',
     order: 4,
     description:
-      'The connective hub for AI agents and biological foundation models in cellular agriculture — agent frameworks, single-cell foundation models, the virtual-cell initiative, and where each is catalogued across CAAIL.',
+      'The connective hub for AI agents and biological foundation models in cellular agriculture: agent frameworks, single-cell foundation models, the virtual-cell initiative, and where each is catalogued across CAAIL.',
   },
   'reference-works': {
     title: 'Reference Works',
@@ -277,7 +277,7 @@ const PAGES: Record<string, PageMeta> = {
     group: 'top',
     order: 5,
     description:
-      'Reference textbooks and multi-volume works for cellular agriculture — the foundational cell-ag textbook and the Encyclopedia of Meat Sciences, with a DOI-resolvable chapter index of the cell-ag-relevant subset.',
+      'Reference textbooks and multi-volume works for cellular agriculture: the foundational cell-ag textbook and the Encyclopedia of Meat Sciences, with a DOI-resolvable chapter index of the cell-ag-relevant subset.',
   },
   funding: {
     title: 'Funding & Grants',
@@ -285,7 +285,7 @@ const PAGES: Record<string, PageMeta> = {
     group: 'top',
     order: 6,
     description:
-      'Funding organizations and funding opportunities for cellular-agriculture research — the organizations that fund the field and the grant programs and research-portfolio mechanisms to follow.',
+      'Funding organizations and funding opportunities for cellular-agriculture research: the organizations that fund the field and the grant programs and research-portfolio mechanisms to follow.',
   },
   community: {
     title: 'Community',
@@ -293,7 +293,7 @@ const PAGES: Record<string, PageMeta> = {
     group: 'top',
     order: 7,
     description:
-      'The CAAIL community — the Slack workspace, the GitHub issue and pull-request workflow, and the Zotero group library: where to ask questions, where to propose additions, and the norms that apply across all of them.',
+      'The CAAIL community, its Slack workspace, GitHub issue and pull-request workflow, and Zotero group library: where to ask questions, where to propose additions, and the norms that apply across all of them.',
   },
 };
 

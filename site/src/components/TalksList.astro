@@ -34,7 +34,7 @@ import 'lite-youtube-embed/src/lite-yt-embed.css';
           ) : (
             <a class="talk-card" href={t.url} target="_blank" rel="noopener noreferrer">
               <span class="talk-kind">
-                <Icon name={t.kind === 'playlist' ? 'ph:list-bullets' : 'ph:link-simple'} />
+                <Icon name={t.kind === 'playlist' ? 'lucide:list' : 'lucide:link'} />
                 {t.kind === 'playlist' ? 'Playlist' : 'Link'}
               </span>
               <span class="talk-card-title">{t.title}</span>
