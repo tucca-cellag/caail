@@ -13,7 +13,7 @@ Journal editorials, news features, and opinion pieces that survey or comment on 
 * [Why AI cannot do good science without humans](https://www.nature.com/articles/d41586-026-01551-3) (*Nature* editorial, 2026): argues that human wisdom, empathy, and "sheer messiness" remain as much a part of scientific progress as process and efficiency, even as "AI scientists" arrive.
 * [Teams of AI agents boost speed of research](https://www.nature.com/articles/d41586-026-01596-4) (*Nature* news feature, 2026): overview of multi-agent AI systems that generate hypotheses, interpret data, and suggest ways to develop medicines.
 * [Long-running Claude for scientific computing](https://www.anthropic.com/research/long-running-Claude) (Anthropic), research post on running Claude as a long-horizon autonomous agent on scientific-computing workloads.
-* [Vibe physics: The AI grad student](https://www.anthropic.com/research/vibe-physics) (Anthropic) (research post on using Claude as an AI research collaborator) an "AI grad student", for physics problems.
+* [Vibe physics: The AI grad student](https://www.anthropic.com/research/vibe-physics) (Anthropic): research post on using Claude as an AI research collaborator, an "AI grad student" for physics problems.
 
 ### AI, animals, and alternative proteins
 

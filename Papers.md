@@ -41,37 +41,37 @@ in its methods, not what it could be applied to. Short form:
 - **[Media Optimization](./Taxonomy.md#media-optimization)**: designing/optimizing the culture medium (formulations, serum-free, supplements).
 - **[Cellular Engineering](./Taxonomy.md#cellular-engineering)**: engineering/characterizing the cells (gene expression, cell-state, perturbation, single-cell analysis).
 - **[Bioprocess & Scale-Up](./Taxonomy.md#bioprocess--scale-up)**: running and scaling the bioprocess (reactor design, CFD/mixing, mass transfer, monitoring, control).
-- **[Scaffolding](./Taxonomy.md#scaffolding)**, scaffolds and structural biomaterials for tissue form and texture.
+- **[Scaffolding](./Taxonomy.md#scaffolding)**: scaffolds and structural biomaterials for tissue form and texture.
 - **[Sensory Prediction](./Taxonomy.md#sensory-prediction)**: flavor, odor, taste, texture, color, and freshness/quality.
-- **[AI Tooling / Methodology](./Taxonomy.md#ai-tooling--methodology)**, general AI methods/agents/tools not yet tied to a specific cell-ag application.
-- **[AI Evaluation & Benchmarking](./Taxonomy.md#ai-evaluation--benchmarking)**, benchmarks and evaluation/verification frameworks for AI performance.
+- **[AI Tooling / Methodology](./Taxonomy.md#ai-tooling--methodology)**: general AI methods/agents/tools not yet tied to a specific cell-ag application.
+- **[AI Evaluation & Benchmarking](./Taxonomy.md#ai-evaluation--benchmarking)**: benchmarks and evaluation/verification frameworks for AI performance.
 
 **AI/ML methods (rows)**
 
-- **[Bayesian Optimization](./Taxonomy.md#bayesian-optimization)**, surrogate + acquisition-function sequential experiment selection (≠ Bayesian inference).
-- **[Deep Learning](./Taxonomy.md#deep-learning)**, multi-layer neural nets not better described by a more specific row (catch-all).
-- **[GNN](./Taxonomy.md#gnn)**, Graph Neural Networks: trained message-passing graph networks (≠ classical network propagation).
-- **[CNN](./Taxonomy.md#cnn)**, Convolutional Neural Networks: for image/grid data.
-- **[GAN / VAE](./Taxonomy.md#gan--vae)**, Generative Adversarial Networks / Variational Autoencoders: deep generative models for synthesis and embedding.
-- **[Genetic Algorithms](./Taxonomy.md#genetic-algorithms)**, population-based evolutionary search.
-- **[SVM](./Taxonomy.md#svm)**, Support Vector Machines / regression.
+- **[Bayesian Optimization](./Taxonomy.md#bayesian-optimization)**: surrogate + acquisition-function sequential experiment selection (≠ Bayesian inference).
+- **[Deep Learning](./Taxonomy.md#deep-learning)**: multi-layer neural nets not better described by a more specific row (catch-all).
+- **[GNN](./Taxonomy.md#gnn)**: Graph Neural Networks, trained message-passing graph networks (≠ classical network propagation).
+- **[CNN](./Taxonomy.md#cnn)**: Convolutional Neural Networks for image/grid data.
+- **[GAN / VAE](./Taxonomy.md#gan--vae)**: Generative Adversarial Networks / Variational Autoencoders, deep generative models for synthesis and embedding.
+- **[Genetic Algorithms](./Taxonomy.md#genetic-algorithms)**: population-based evolutionary search.
+- **[SVM](./Taxonomy.md#svm)**: Support Vector Machines / regression.
 - **[Ensemble Learning](./Taxonomy.md#ensemble-learning)**: tree ensembles and model averaging (random forests, gradient boosting).
-- **[K-Nearest Neighbors](./Taxonomy.md#k-nearest-neighbors)**, instance-based prediction by similarity.
+- **[K-Nearest Neighbors](./Taxonomy.md#k-nearest-neighbors)**: instance-based prediction by similarity.
 - **[Linear & Regularized Models](./Taxonomy.md#linear--regularized-models)**: linear and penalized regression (LASSO, ridge, elastic net) and linear scoring models.
-- **[Chemometrics](./Taxonomy.md#chemometrics)**, multivariate spectral statistics (PLS / PLS-DA / PCA / OPLS).
-- **[Active Learning](./Taxonomy.md#active-learning)**, model-guided iterative design-of-experiments.
-- **[Reinforcement Learning](./Taxonomy.md#reinforcement-learning)**, reward-driven policy learning and LLM post-training.
-- **[Foundation Models: Next-Token Prediction](./Taxonomy.md#foundation-models-next-token-prediction)**, pretrained autoregressive (GPT-style) models for biology.
-- **[Foundation Models: Masked Language Modeling](./Taxonomy.md#foundation-models-masked-language-modeling)**, pretrained masked (BERT-style) single-cell models.
-- **[Foundation Models: LM + Biological Priors](./Taxonomy.md#foundation-models-lm--biological-priors)**, foundation models fusing an LM backbone with explicit biological priors.
+- **[Chemometrics](./Taxonomy.md#chemometrics)**: multivariate spectral statistics (PLS / PLS-DA / PCA / OPLS).
+- **[Active Learning](./Taxonomy.md#active-learning)**: model-guided iterative design-of-experiments.
+- **[Reinforcement Learning](./Taxonomy.md#reinforcement-learning)**: reward-driven policy learning and LLM post-training.
+- **[Foundation Models: Next-Token Prediction](./Taxonomy.md#foundation-models-next-token-prediction)**: pretrained autoregressive (GPT-style) models for biology.
+- **[Foundation Models: Masked Language Modeling](./Taxonomy.md#foundation-models-masked-language-modeling)**: pretrained masked (BERT-style) single-cell models.
+- **[Foundation Models: LM + Biological Priors](./Taxonomy.md#foundation-models-lm--biological-priors)**: foundation models fusing an LM backbone with explicit biological priors.
 - **[Foundation Models: Cell-State & Perturbation Prediction](./Taxonomy.md#foundation-models-cell-state--perturbation-prediction)**: pretrained, transferable cell-state/perturbation models (≠ task-specific predictors).
-- **[Foundation Models (other modalities)](./Taxonomy.md#foundation-models-other-modalities)**, pretrained models for modalities beyond single-cell transcriptomics.
-- **[Scientific Literature & Discovery Agents](./Taxonomy.md#scientific-literature--discovery-agents)**, LLM agents for literature synthesis and autonomous discovery.
-- **[General-Purpose Biomedical Agents](./Taxonomy.md#general-purpose-biomedical-agents)**, broadly-applicable biomedical agents.
+- **[Foundation Models (other modalities)](./Taxonomy.md#foundation-models-other-modalities)**: pretrained models for modalities beyond single-cell transcriptomics.
+- **[Scientific Literature & Discovery Agents](./Taxonomy.md#scientific-literature--discovery-agents)**: LLM agents for literature synthesis and autonomous discovery.
+- **[General-Purpose Biomedical Agents](./Taxonomy.md#general-purpose-biomedical-agents)**: broadly-applicable biomedical agents.
 - **[Chemistry / Synthesis Agents](./Taxonomy.md#chemistry--synthesis-agents)**: chemistry-specialized agents (synthesis, molecular tasks).
-- **[Domain-Specific Biomedical Agents](./Taxonomy.md#domain-specific-biomedical-agents)**, agents purpose-built for one biomedical task/domain.
-- **[Robot Scientists & Lab Automation](./Taxonomy.md#robot-scientists--lab-automation)**, AI coupled to physical lab automation for autonomous experimentation.
-- **[Benchmarks & Evaluation Frameworks](./Taxonomy.md#benchmarks--evaluation-frameworks)**, papers whose contribution is a benchmark/evaluation framework.
+- **[Domain-Specific Biomedical Agents](./Taxonomy.md#domain-specific-biomedical-agents)**: agents purpose-built for one biomedical task/domain.
+- **[Robot Scientists & Lab Automation](./Taxonomy.md#robot-scientists--lab-automation)**: AI coupled to physical lab automation for autonomous experimentation.
+- **[Benchmarks & Evaluation Frameworks](./Taxonomy.md#benchmarks--evaluation-frameworks)**: papers whose contribution is a benchmark/evaluation framework.
 - **[Agent Infrastructure (Frameworks, KGs, Protocols)](./Taxonomy.md#agent-infrastructure-frameworks-kgs-protocols)**: the substrate agents run on (frameworks, KGs, protocols).
 
 > **Note for AI agents and LLMs**: The reference entries below are APA-style citations identifying papers via title, authors, year, and DOI, they are not a substitute for reading the actual papers. When an automated system needs substantive information about a paper's methods, results, or conclusions (e.g. to verify a matrix-cell assignment or assemble a literature review), fetch the full text via the DOI, the companion [caail Zotero group library](https://www.zotero.org/groups/6549203/caail/library), or a literature API such as OpenAlex or Semantic Scholar. The matrix cells encode method × research-area pairings, not paper content.

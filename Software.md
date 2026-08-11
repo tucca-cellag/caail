@@ -524,11 +524,11 @@ Summary: An Aviary-based data-science agent that operates inside Jupyter noteboo
 
 K-Dense-AI is an AI co-scientist ecosystem combining a commercial agent platform ([K-Dense Web](https://k-dense.ai), which autonomously executes complex science / engineering / healthcare / finance tasks end-to-end) with a substantial open-source stack of agent infrastructure:
 
-- **[scientific-agent-skills](https://github.com/K-Dense-AI/scientific-agent-skills)**, A multi-domain collection of 120+ "Agent Skills" wrapping scientific Python libraries and platforms in Claude Code / Cursor / Antigravity-compatible format. Each skill provides curated recipes, code examples, and discovery prompts for one library. Cell-ag-relevant skills include `cobrapy` (FBA / metabolic modeling: see [Metabolic Modeling & Strain Design](#metabolic-modeling--strain-design)), `pyopenms` (mass spectrometry), `scanpy` / `scvi-tools` / `anndata` (single-cell analysis), `rdkit` / `datamol` / `medchem` (cheminformatics), `biopython` / `bioservices` / `gget` (bioinformatics utilities), `cellxgene-census`, `pyzotero`, and many others.
-- **[k-dense-byok](https://github.com/K-Dense-AI/k-dense-byok)**, A bring-your-own-key desktop client that runs the Scientific Agent Skills locally with your own LLM API keys.
-- **[mimeo](https://github.com/K-Dense-AI/mimeo)**, A tool for "mimeographing" an expert's knowledge into a `SKILL.md` / `AGENTS.md` file consumable by Claude Code or similar agents.
+- **[scientific-agent-skills](https://github.com/K-Dense-AI/scientific-agent-skills)**: A multi-domain collection of 120+ "Agent Skills" wrapping scientific Python libraries and platforms in Claude Code / Cursor / Antigravity-compatible format. Each skill provides curated recipes, code examples, and discovery prompts for one library. Cell-ag-relevant skills include `cobrapy` (FBA / metabolic modeling: see [Metabolic Modeling & Strain Design](#metabolic-modeling--strain-design)), `pyopenms` (mass spectrometry), `scanpy` / `scvi-tools` / `anndata` (single-cell analysis), `rdkit` / `datamol` / `medchem` (cheminformatics), `biopython` / `bioservices` / `gget` (bioinformatics utilities), `cellxgene-census`, `pyzotero`, and many others.
+- **[k-dense-byok](https://github.com/K-Dense-AI/k-dense-byok)**: A bring-your-own-key desktop client that runs the Scientific Agent Skills locally with your own LLM API keys.
+- **[mimeo](https://github.com/K-Dense-AI/mimeo)**: A tool for "mimeographing" an expert's knowledge into a `SKILL.md` / `AGENTS.md` file consumable by Claude Code or similar agents.
 - **[mimeographs](https://github.com/K-Dense-AI/mimeographs)**: A collection of persona-based agent skills (founders, philosophers, scientists) generated with mimeo.
-- **[claude-scientific-writer](https://github.com/K-Dense-AI/claude-scientific-writer)**, A Claude-Code-compatible general-purpose scientific writing agent.
+- **[claude-scientific-writer](https://github.com/K-Dense-AI/claude-scientific-writer)**: A Claude-Code-compatible general-purpose scientific writing agent.
 - **[science-superpowers](https://github.com/K-Dense-AI/science-superpowers)**: A composable computational-science methodology for research agents: 15 auto-triggering skills: 13 covering the research lifecycle (framing falsifiable questions, surveying prior work, designing and **pre-registering** the analysis, reproducible execution, anomaly root-causing, results verification, red-team review, and reporting/archiving) plus two meta skills for authoring and onboarding new skills. A science-domain reimplementation of [obra/superpowers](#superpowers) whose central discipline is pre-registration rather than test-driven development; runs with only the agent harness and a POSIX shell (zero third-party dependencies). MIT-licensed.
 
 Not an MCP server but a documentation-and-prompt-context layer that pairs well with code-execution agents like Biomni, Cursor, and Claude Code.
@@ -665,13 +665,13 @@ GitHub org: <https://github.com/biopragmatics>. Core components:
 
 - **[Bioregistry](https://bioregistry.io/)**: A registry of biomedical identifier registries, with prefix normalization, identifier resolution, and a REST API. The meta-resource the rest of the stack builds on.
 - **[pyobo](https://github.com/biopragmatics/pyobo)**: Python library for using ontologies, terminologies, and biomedical nomenclatures.
-- **[bioontologies](https://github.com/biopragmatics/bioontologies)**, Unified access across biomedical ontologies.
-- **[biolookup](https://github.com/biopragmatics/biolookup)**, Service for retrieving metadata and ontological information for biomedical entities.
-- **[Biolexica](https://github.com/biopragmatics/biolexica)**, Generates and applies coherent biomedical lexical indices for named-entity recognition (NER) and normalization (NEN).
-- **[Biosynonyms](https://github.com/biopragmatics/biosynonyms)**, Decentralized database of synonyms for biomedical concepts.
-- **[Biomappings](https://github.com/biopragmatics/biomappings)**, Community-curated and predicted equivalences and related mappings between named biological entities not available from primary sources.
+- **[bioontologies](https://github.com/biopragmatics/bioontologies)**: Unified access across biomedical ontologies.
+- **[biolookup](https://github.com/biopragmatics/biolookup)**: Service for retrieving metadata and ontological information for biomedical entities.
+- **[Biolexica](https://github.com/biopragmatics/biolexica)**: Generates and applies coherent biomedical lexical indices for named-entity recognition (NER) and normalization (NEN).
+- **[Biosynonyms](https://github.com/biopragmatics/biosynonyms)**: Decentralized database of synonyms for biomedical concepts.
+- **[Biomappings](https://github.com/biopragmatics/biomappings)**: Community-curated and predicted equivalences and related mappings between named biological entities not available from primary sources.
 - **[SemRA](https://github.com/biopragmatics/semra)**: Semantic Mapping Reasoning Assembler, for assembly and reasoning over semantic mappings at scale ([Hoyt et al. 2025, *Bioinformatics*](https://doi.org/10.1093/bioinformatics/btaf542)).
-- **[bioversions](https://github.com/biopragmatics/bioversions)** (Tracks the latest version of each biomedical database) useful as a freshness check across the resources curated in [Databases.md](./Databases.md).
+- **[bioversions](https://github.com/biopragmatics/bioversions)**: Tracks the latest version of each biomedical database, useful as a freshness check across the resources curated in [Databases.md](./Databases.md).
 
 ### [BridgeDb](https://github.com/bridgedb/BridgeDb)
 
