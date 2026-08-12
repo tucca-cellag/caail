@@ -424,7 +424,7 @@ test('the #why mock answers the same cell it claims to query', async ({ page }) 
   await page.goto('./');
 
   const claimed = (await page.locator('#why .bubble--tool code').innerText()).trim();
-  const answer = (await page.locator('#why .half--with .bubble').last().innerText()).trim();
+  const answer = (await page.locator('#why .half--index .bubble').last().innerText()).trim();
 
   const m = /matrix\.json\s*→\s*(.+?)\s*×\s*(.+)$/.exec(claimed);
   expect(m, `could not parse the API line: "${claimed}"`).not.toBeNull();

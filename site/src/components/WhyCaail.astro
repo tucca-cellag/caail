@@ -1,10 +1,10 @@
 ---
 /**
- * WhyCaail — the before/after band.
+ * WhyCaail — the same question, answered from memory and from an index.
  *
- * Layout follows aiscientist.tools' "Research AI — before and after": centred header,
- * then one seamless two-column panel whose halves each carry a mock exchange at the top
- * and an icon-bulleted list beneath, with a bold claim and a muted sub-line per bullet.
+ * Layout: centred header, then one seamless two-column panel whose halves each carry a
+ * mock exchange at the top and a bulleted list beneath, with a bold claim and a muted
+ * sub-line per bullet.
  *
  * ONE panel split down the middle, not two panels with a gap. The section IS a
  * comparison, so the halves belong inside a single frame and the divider carries the
@@ -12,13 +12,36 @@
  * stretch to a shared height, whereas two separately bordered boxes are only ever the
  * same height by coincidence.
  *
- * The example is anchored on one real empty cell, and the build FAILS if that cell ever
- * fills — a worked example about an absence must not outlive the absence. The claim is
- * deliberately the weaker, true one: not that nobody has done the work, but that a dated
- * corpus with stated inclusion criteria contains none of it.
+ * REGISTER (CAAIL-30). The columns name the two INFORMATION SOURCES, not the presence or
+ * absence of a product. That is not a softening: it is what actually differs. The same
+ * assistant answers both times, and the only variable is whether the answer was
+ * reconstructed from training data or read out of a table. "Without CAAIL" / "With CAAIL"
+ * asserted a benefit before the reader had seen a single line of evidence, which for an
+ * audience of working scientists costs more credibility than it buys attention. Every
+ * bullet here is a mechanism, checkable against the corpus or against how decoding works.
  *
- * The tints are ~4% washes carrying no meaning on their own. The icons and the bold text
- * do that work, because a hue difference is not something every reader can see.
+ * The columns are NOT rows, and their lengths differ on purpose. They are two independent
+ * lists of properties, and the uneven counts are the signal that no row correspondence is
+ * implied.
+ *
+ * EVERY RENDERED FIGURE IS DERIVED at build time. No number the reader sees is typed here,
+ * and none may be: this band is the least forgivable place in the repository for a figure
+ * that no longer matches the corpus. The open-access percentage that used to sit in the
+ * licence bullet was typed by hand and quoted a denominator (works with an OpenAlex record)
+ * different from the one in the same sentence (all references), which is exactly the
+ * failure it now cannot express.
+ *
+ * The lede says "in this section" rather than "on this page" ADVISEDLY. The guards below
+ * cover this component and nothing else, and the claim is currently false page-wide:
+ * `Hero.astro` renders `counts.papers` labelled "papers" when 345 is six sections, only 229
+ * of them primary research. Widening the sentence would be asserting a property of code
+ * this file cannot see.
+ *
+ * The tints are ~4% washes carrying no meaning on their own. The header text does the
+ * semantic work, because a hue difference is not something every reader can see. The
+ * bullet marks are deliberately IDENTICAL on both sides: once the columns stopped being
+ * good-and-bad, a tick against one list and a cross against the other would have put the
+ * verdict back that the copy had just removed.
  */
 import { Icon } from 'astro-icon/components';
 import matrix from '../../public/api/matrix.json';
@@ -38,10 +61,9 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
    And a cell NO OTHER SECTION USES. This was Bayesian Optimization × Media Optimization,
    which is also what the first worked-query card demonstrates, so two adjacent bands were
    arguing from the same example and the page looked thinner than the corpus is. Ensemble
-   Learning × Sensory Prediction is the most populated cell in the matrix (23 refs against
-   the 10 here before), and none of the four worked queries touches sensory. It also
-   happens to be the most intuitive claim on the page to a general reader: whether the
-   thing tastes right. */
+   Learning × Sensory Prediction is the most populated cell in the matrix, and none of the
+   four worked queries touches sensory. It also happens to be the most intuitive claim on
+   the page to a general reader: whether the thing tastes right. */
 const METHOD = 'Ensemble Learning';
 const AREA = 'sensory';
 const cell = matrix.cells.find((c) => c.method === METHOD && c.area === AREA);
@@ -62,91 +84,122 @@ const cited = cell.refIds.slice(0, 3).map((id) => {
 });
 const withCode = cell.refIds.filter((id) => byId.get(id)?.hasCode).length;
 
-const redistributable = papers.references.filter((r) => {
+/* The reference sections, counted separately.
+   `papers.references` is SIX sections, not one: primary research, reviews and
+   perspectives, and four reference works. Quoting its length as "papers" is the
+   population-mislabelling failure CAAIL-12 was filed about, and it overstates the
+   primary corpus by half. The lede names each population instead of summing them. */
+const primary = papers.references.filter((r) => r.section === 'References');
+const reviews = papers.references.filter((r) => r.section === 'Reviews & Perspectives');
+const refWorks = papers.references.filter((r) => r.section.endsWith('Reference Work'));
+
+/* The three counted populations must exhaust the corpus. A seventh section added to
+   Papers.md would otherwise vanish from the lede silently, and the lede would quietly
+   become a smaller number than the file it describes. */
+if (primary.length + reviews.length + refWorks.length !== papers.references.length) {
+  throw new Error(
+    `WhyCaail: the lede counts ${primary.length + reviews.length + refWorks.length} of ` +
+      `${papers.references.length} references. A reference section exists that the lede ` +
+      `does not name; add it there rather than letting the page undercount the corpus.`,
+  );
+}
+
+/* The lede says every primary-research paper is placed in at least one matrix cell.
+   `isPrimary` is exactly that conjunction, so if the two counts ever diverge the sentence
+   has become false and this build should fail instead of publishing it. */
+const placed = papers.references.filter((r) => r.isPrimary).length;
+if (placed !== primary.length) {
+  throw new Error(
+    `WhyCaail: ${primary.length} references sit under "References" but ${placed} are cited ` +
+      `by a matrix cell. The lede claims every primary paper is placed; fix the matrix or ` +
+      `the lede, not this check.`,
+  );
+}
+
+/* Free to read and free to redistribute, over ONE denominator that the copy names.
+   `isOa` is OpenAlex's `open_access.is_oa`; the licence tier is derived from the
+   best-OA-location licence by the shared classifier. Both are folded onto every reference
+   at parse (see scripts/parser/citation-counts.ts), so neither can be typed by hand.
+   Works with no OpenAlex record are excluded from BOTH figures rather than being read as
+   closed, which is why the bullet quotes `recorded.length` and not the corpus size. */
+const recorded = papers.references.filter((r) => r.isOa !== null);
+const readable = recorded.filter((r) => r.isOa === true).length;
+const redistributable = recorded.filter((r) => {
   const t = licenseTier(r.license);
   return t === 'permissive' || t === 'copyleft';
 }).length;
+if (recorded.length === 0) {
+  throw new Error(
+    'WhyCaail: no reference carries an is_oa record, so the licence bullet would read ' +
+      '"0 of 0". Run `pnpm fetch:citations` to refresh the cache.',
+  );
+}
 
-/* The catalogue is four content types, not just papers. Quoting only the paper count
-   undersold it by more than half and, worse, misdescribed what CAAIL is: the whole point
-   of the subject axis is that one question returns software and datasets too. */
-const catalogued = counts.papers + counts.software + counts.databases + counts.datasets;
+/* The bullet names the types instead of counting them, and reads the names from here.
+   It said "all four content types", which was a typed numeral beside a rendered
+   `${recorded.length}` and would have drifted the day a fifth type is catalogued.
+   "Every content type" would be the easy fix and is an OVERCLAIM: talks, primers,
+   reference works and funding are content and carry no topic tag. These four are exactly
+   the catalogue the subject axis spans, so listing them is both derived and precise. */
+const CONTENT_TYPES = ['papers', 'software', 'databases', 'dataset entries'];
+const contentTypeList = `${CONTENT_TYPES.slice(0, -1).join(', ')} and ${CONTENT_TYPES.at(-1)}`;
 
-/* Short on purpose. This is a chat bubble, not a worked query — the #ask band is where
-   the three-sentence research questions live. What this one has to be is fabricable: a
-   question whose plausible-sounding wrong answer is indistinguishable from a right one,
-   which is the whole contrast the band is built on. */
+/* Short on purpose. This is a chat bubble, not a worked query: the #ask band is where the
+   three-sentence research questions live. What this one has to be is fabricable, meaning
+   a question whose plausible wrong answer is indistinguishable from a right one. */
 const Q = 'Which papers used ensemble models to predict flavour or texture from composition, and which of them released code I can run?';
 
-/* The two columns are NOT rows, and their lengths differ on purpose.
-   Read side by side at equal length they invited a row-by-row reading, and the content
-   does not pair that way: two "with" bullets both answered absence while the most
-   visceral complaint, invented citations, had no bullet opposite it at all. They are two
-   independent lists — failure modes on the left, what the curation layer adds on the
-   right — and the uneven counts are the signal that no row correspondence is implied. */
-const without = [
+/* Properties of an answer reconstructed from training data. Each states a mechanism of
+   how decoding works, not a complaint about model quality: a better model has every one
+   of these properties too, which is the point. */
+const fromMemory = [
   {
-    k: 'Citations you have to verify one at a time',
-    v: 'Nothing distinguishes a real DOI from a generated one',
+    k: 'A citation is generated, not retrieved',
+    v: 'The reference is produced token by token, so a well-formed DOI is not evidence that the work exists',
   },
   {
-    k: 'No way to tell "I found none" from "there are none"',
-    v: 'Absence is never reported, only omitted',
-  },
-  /* Replaced "papers, tools and datasets searched separately", which described searching
-     by hand — the wrong counterfactual for a band whose mock is an AI assistant, and the
-     weakest bullet in either column. Discoverability is the failure a curated index
-     actually fixes: a model surfaces what is well-cited and well-titled, and a good tool
-     with an obscure name is invisible to it however hard you ask. */
-  {
-    k: 'Findable beats better',
-    v: 'A well-titled, heavily cited paper crowds out a more relevant one nobody links to',
+    k: 'Ask twice, get two answers',
+    v: 'Decoding samples from a distribution, so a pinned model on the same day need not agree with itself',
   },
   {
-    k: 'No signal on what you may redistribute',
-    v: 'Free to read gets mistaken for free to republish',
+    k: 'There is no result for "found none"',
+    v: 'A gap in the training data and a gap in the field produce the same reply',
   },
-  /* Stochasticity, not version drift. This said "the answer drifts as the model changes",
-     which blames the release cycle and is the weaker claim — you could believe it and
-     still think a pinned model gives you a stable answer. It does not: sampling means the
-     same model, on the same day, asked the same question, need not agree with itself. That
-     is the property a curated table does not have, so it is the one worth naming. */
   {
-    k: 'Ask twice, get two different answers',
-    v: 'Sampling is stochastic, so even a pinned model on the same day need not agree with itself',
+    k: 'Frequency stands in for relevance',
+    v: 'What is heavily cited and plainly titled is what is recalled; a tool with an obscure name is not',
+  },
+  {
+    k: 'Reuse terms do not travel with the answer',
+    v: 'Nothing in the reply separates a work you may read from one you may redistribute',
   },
 ];
 
-const withCaail = [
+/* Properties of an answer read out of the index. Every figure below is derived above. */
+const fromIndex = [
   {
-    k: `All ${matrix.totalCells} method × area cells enumerated`,
-    v: `${matrix.emptyCells} are empty, and each empty one is returned rather than skipped`,
+    k: `All ${matrix.totalCells} method × area cells are enumerated`,
+    v: `${matrix.emptyCells} hold no indexed paper, and each is returned as an empty result rather than skipped`,
   },
   {
-    k: 'Absence is a stated result carrying its own limit',
+    k: 'An empty cell is returned with its own limit attached',
     v: 'A curated subset, not a census: CAAIL has not measured its own recall',
   },
-  /* The core of what CAAIL adds, and it was missing from its own argument. Every other
-     bullet describes a property of the output; this one names the work that produces
-     them. It is also the only answer to the discoverability failure opposite, since
-     nothing about ranking or retrieval fixes a resource that simply is not surfaced. */
   {
-    k: 'Placed by a person, not ranked by popularity',
-    v: 'An obscure tool sits beside a famous one, because inclusion is a judgement rather than a signal',
+    k: 'Entries are placed by a curator, not ranked by a signal',
+    v: 'An obscure tool and a well-known one are listed on the same basis, because inclusion is a recorded judgement',
   },
   {
-    k: `One subject axis over all ${catalogued} resources`,
-    v: 'A design question returns papers, software, databases and datasets together, not one type at a time',
+    k: `One subject axis across ${contentTypeList}`,
+    v: 'A design question returns them together, not one type at a time',
   },
   {
-    k: 'A licence tier on every work',
-    v: `Of the ${papers.references.length} papers, ${redistributable} may be redistributed, well below the ~74% that are open access`,
+    k: 'Read and redistribute are separate fields',
+    v: `Of the ${recorded.length} works with an OpenAlex record, ${readable} are free to read and ${redistributable} carry a licence permitting redistribution`,
   },
-  /* The direct answer to stochastic sampling: a lookup is deterministic. The date is
-     what makes that checkable by someone else rather than merely true for you. */
   {
     k: 'The same query returns the same rows',
-    v: `A fixed corpus dated ${matrix.corpusDate}, curated and checked by people rather than sampled, so a result can be quoted and re-checked`,
+    v: `A fixed corpus dated ${matrix.corpusDate}, so a result can be quoted and re-checked by someone else`,
   },
 ];
 ---
@@ -154,19 +207,21 @@ const withCaail = [
 <section class="why" id="why">
   <div class="hd sr">
     <p class="eyebrow"><span class="bar" aria-hidden="true"></span>Why CAAIL</p>
-    <h2 class="caail-display">Literature search: before and after</h2>
+    <h2 class="caail-display">The same question, answered from memory and from an index</h2>
     <p class="lede">
-      CAAIL gives any AI assistant a dated, licence-tagged map of {catalogued} curated resources
-      ({counts.papers} papers, {counts.software} software tools, {counts.databases} databases and
-      {counts.datasets} dataset entries), indexed on a matrix of {matrix.methods.length} AI
-      methods × {matrix.areas.length} research areas.
+      CAAIL is a static index an AI agent can query directly. It holds {primary.length} primary-research
+      papers, each placed in at least one cell of a {matrix.methods.length} × {matrix.areas.length} matrix
+      of AI method against research area, alongside {reviews.length} reviews and perspectives,
+      {refWorks.length} reference-work entries, {counts.software} software tools, {counts.databases} databases
+      and {counts.datasets} dataset entries. Every figure in this section is read from that corpus when
+      the page is built.
     </p>
   </div>
 
   <div class="split sr sr-d1">
-    <div class="half half--alone">
+    <div class="half half--memory">
       <p class="hdr">
-        <span class="badge badge--x"><Icon name="lucide:x" /></span> Without CAAIL
+        <span class="badge badge--memory"><Icon name="lucide:brain" /></span> Answered from model memory
       </p>
 
       <div class="chat">
@@ -176,24 +231,24 @@ const withCaail = [
           <p class="bubble bubble--guess">
             Random forests and gradient boosting have both been used to predict sensory
             panels from composition, for example Zhang et al. (2021) in
-            <em>Food Chem.</em>… <em>[may be fabricated]</em>
+            <em>Food Chem.</em>… <em>[nothing here tells you whether this exists]</em>
           </p>
         </div>
       </div>
 
       <ul class="pts">
-        {without.map((p) => (
+        {fromMemory.map((p) => (
           <li>
-            <span class="mark mark--x"><Icon name="lucide:x" /></span>
+            <span class="mark mark--memory" aria-hidden="true"></span>
             <span><strong>{p.k}</strong><span class="sub">{p.v}</span></span>
           </li>
         ))}
       </ul>
     </div>
 
-    <div class="half half--with">
+    <div class="half half--index">
       <p class="hdr">
-        <span class="badge badge--ok"><Icon name="lucide:zap" /></span> With CAAIL
+        <span class="badge badge--index"><Icon name="lucide:table-2" /></span> Answered from CAAIL
       </p>
 
       <div class="chat">
@@ -210,20 +265,20 @@ const withCaail = [
           <p class="bubble">
             {/* "and N more" is suppressed at N === 0. The guard above admits a cell with
                 exactly 3 refs, which rendered "3 papers: A, B, C and 0 more." Not reachable
-                with the current cell (23 refs), but repointing METHOD/AREA is the one edit
-                this component invites, so it should not be able to produce that. */}
+                with the current cell, but repointing METHOD/AREA is the one edit this
+                component invites, so it should not be able to produce that. */}
             {cell.refIds.length} papers: {cited.join(', ')}{cell.refIds.length > 3
               ? ` and ${cell.refIds.length - 3} more`
               : ''}.
-            {withCode} link runnable code. <em class="ok">[real ids, dated {matrix.corpusDate}]</em>
+            {withCode} link runnable code. <em class="ok">[ids resolve, corpus dated {matrix.corpusDate}]</em>
           </p>
         </div>
       </div>
 
       <ul class="pts">
-        {withCaail.map((p) => (
+        {fromIndex.map((p) => (
           <li>
-            <span class="mark mark--ok"><Icon name="lucide:check" /></span>
+            <span class="mark mark--index" aria-hidden="true"></span>
             <span><strong>{p.k}</strong><span class="sub">{p.v}</span></span>
           </li>
         ))}
@@ -231,9 +286,17 @@ const withCaail = [
     </div>
   </div>
 
+  {/* The disclosure that used to live only in a code comment. A constructed example is a
+      legitimate device; an unlabelled one asks the reader to take our word for both halves,
+      which is the habit this section exists to argue against. */}
+  <p class="note sr sr-d2">
+    The left exchange is constructed and its citation is invented: it illustrates the failure,
+    it does not report one. The right exchange is generated when this page is built, from the
+    same <code>matrix.json</code> an agent fetches.
+  </p>
+
   <p class="foot sr sr-d2">
-    Every reference id resolves to a real entry with its DOI, and every empty cell is
-    returned too, carrying the limit of what it proves.
+    Every reference id above resolves to an entry with its DOI.
     <a href={`${base}/papers/explorer/`}>Browse the matrix →</a>
   </p>
 </section>
@@ -263,11 +326,11 @@ const withCaail = [
   .half { padding: var(--caail-space-6); }
   /* One internal edge that pivots with the layout: a horizontal rule when stacked, a
      vertical one when side by side. */
-  .half--alone { border-bottom: 1px solid var(--caail-border); background: color-mix(in oklab, var(--caail-area-sensory) 4%, transparent); }
+  .half--memory { border-bottom: 1px solid var(--caail-border); background: color-mix(in oklab, var(--caail-area-sensory) 4%, transparent); }
   @media (min-width: 52rem) {
-    .half--alone { border-bottom: 0; border-right: 1px solid var(--caail-border); }
+    .half--memory { border-bottom: 0; border-right: 1px solid var(--caail-border); }
   }
-  .half--with { background: color-mix(in oklab, var(--caail-link) 5%, transparent); }
+  .half--index { background: color-mix(in oklab, var(--caail-link) 5%, transparent); }
 
   .hdr {
     display: flex; align-items: center; gap: .55rem;
@@ -276,11 +339,11 @@ const withCaail = [
   }
   .badge { display: inline-flex; align-items: center; justify-content: center; width: 1.6rem; height: 1.6rem; border-radius: 50%; flex: none; }
   .badge [data-icon] { width: .9rem; height: .9rem; }
-  .badge--x { background: color-mix(in oklab, var(--caail-ink) 10%, transparent); color: var(--caail-muted); }
-  .badge--ok { background: var(--caail-primary); color: var(--caail-bg); }
-  .half--with .hdr { color: var(--caail-primary); }
+  .badge--memory { background: color-mix(in oklab, var(--caail-ink) 10%, transparent); color: var(--caail-muted); }
+  .badge--index { background: var(--caail-primary); color: var(--caail-bg); }
+  .half--index .hdr { color: var(--caail-primary); }
 
-  /* Mock exchange. A transcript shape, not a real one — it illustrates the difference
+  /* Mock exchange. A transcript shape, not a real one: it illustrates the difference
      between the two answers rather than claiming to be a captured session. */
   .chat { background: var(--caail-bg); border: 1px solid var(--caail-border); border-radius: 12px; padding: var(--caail-space-4); margin: 0 0 var(--caail-space-5); display: grid; gap: .55rem; }
   .turn { display: flex; align-items: flex-start; gap: .5rem; }
@@ -304,16 +367,39 @@ const withCaail = [
   .bubble em { font-style: normal; font-weight: 600; color: var(--caail-ink); }
   .bubble em.ok { color: var(--caail-primary); }
 
-  .pts { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--caail-space-4); }
+  /* The claim line's type metrics, declared ONCE. Both the text and the marker that has to
+     centre on its first line read them from here, so "the dot follows the type scale" is a
+     property of the code rather than of two hand-copied values agreeing. */
+  .pts {
+    list-style: none; margin: 0; padding: 0; display: grid; gap: var(--caail-space-4);
+    --pt-fs: var(--caail-fs-sm); --pt-lh: 1.4;
+  }
   .pts li { display: grid; grid-template-columns: auto 1fr; gap: .6rem; align-items: start; margin: 0; }
-  .mark { display: inline-flex; align-items: center; justify-content: center; width: 1.25rem; height: 1.25rem; border-radius: 50%; flex: none; margin-top: .1rem; }
-  .mark [data-icon] { width: .7rem; height: .7rem; }
-  .mark--x { background: color-mix(in oklab, var(--caail-area-sensory) 16%, transparent); color: var(--caail-area-sensory); }
-  .mark--ok { background: color-mix(in oklab, var(--caail-area-cell) 18%, transparent); color: var(--caail-primary); }
+  /* Same shape both sides. A dot marks where a list item starts and says nothing else,
+     which is the whole intent: the column header carries the meaning, so the marker is
+     not asked to pass a verdict the copy no longer makes.
 
-  .pts strong { display: block; font-size: var(--caail-fs-sm); font-weight: 600; color: var(--caail-ink); line-height: 1.4; }
+     Positioned by a LINE BOX, never by a margin. `starlight-overrides.css` zeroes
+     `margin-top` on every direct child of `.why .pts li` (the prose-flow trap documented
+     there), so a margin here is silently dropped and the dot floats above the text it
+     marks. Instead the span is exactly one line of `strong` tall, in `strong`'s own font
+     metrics, and centres the dot inside, which lands on the first line's centre with no
+     margin involved and stays there if the type scale moves. */
+  .mark {
+    display: flex; align-items: center; justify-content: center;
+    width: .4rem; flex: none;
+    font-size: var(--pt-fs); line-height: var(--pt-lh); height: calc(1em * var(--pt-lh));
+  }
+  .mark::before { content: ''; width: .4rem; height: .4rem; border-radius: 50%; background: currentColor; }
+  .mark--memory { color: var(--caail-area-sensory); }
+  .mark--index { color: var(--caail-primary); }
+
+  .pts strong { display: block; font-size: var(--pt-fs); font-weight: 600; color: var(--caail-ink); line-height: var(--pt-lh); }
   .pts .sub { display: block; font-size: var(--caail-fs-xs); color: var(--caail-muted); line-height: 1.45; margin-top: .15rem; }
 
-  .foot { font-size: var(--caail-fs-sm); color: var(--caail-muted); margin: var(--caail-space-5) auto 0; max-width: var(--caail-measure); line-height: 1.55; text-align: center; text-wrap: pretty; }
+  .note, .foot { font-size: var(--caail-fs-sm); color: var(--caail-muted); margin: var(--caail-space-5) auto 0; max-width: var(--caail-measure); line-height: 1.55; text-align: center; text-wrap: pretty; }
+  .note { font-size: var(--caail-fs-xs); }
+  .note code { font-size: inherit; background: none; padding: 0; color: var(--caail-accent); }
+  .foot { margin-top: var(--caail-space-3); }
   .foot a { white-space: nowrap; }
 </style>
