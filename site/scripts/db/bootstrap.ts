@@ -13,7 +13,7 @@ import { fileURLToPath } from 'node:url';
 import { buildPapersModel } from '../parser/papers.js';
 import { openDb, exportNdjson, REPO_ROOT, NDJSON_DIR, type Db } from './lib.js';
 import { extractCatalogEntries } from './extract.js';
-import { seedPapers, seedCatalog, seedDatasets, seedTopics, seedLicenses, seedDois, seedRelatedDois } from './seed.js';
+import { seedPapers, seedCatalog, seedDatasets, seedTopics, seedLicenses, seedDois, seedRelatedDois, seedSubseries } from './seed.js';
 
 /**
  * Preserve retired paper-id tombstones across a re-bootstrap. They aren't in the
@@ -112,6 +112,7 @@ export function main(): void {
   const licenseSummary = seedLicenses(db);
   const doiSummary = seedDois(db);
   const relatedDoiSummary = seedRelatedDois(db);
+  const subseriesSummary = seedSubseries(db);
 
   const counts = exportNdjson(db, NDJSON_DIR);
 
@@ -130,6 +131,7 @@ export function main(): void {
   console.log(`  licenses      ${licenseSummary.manual} manual, ${licenseSummary.auto} auto (GitHub SPDX)`);
   console.log(`  dois          ${doiSummary.manual} manual (associated-publication DOIs)`);
   console.log(`  related dois  ${relatedDoiSummary.rows} sibling-version sets (#102)`);
+  console.log(`  subseries     ${subseriesSummary.rows} SuperSeries member sets (CAAIL-258)`);
   console.log(`  -> NDJSON written to ${NDJSON_DIR}`);
 }
 

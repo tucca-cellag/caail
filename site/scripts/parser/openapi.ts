@@ -126,7 +126,12 @@ export const API_ENDPOINTS: readonly ApiEndpointSpec[] = [
       'Two arrays. `entries` are the curated portals, atlases and GEMs. `inventory` are the ' +
       'per-study deposits — accession, assay type, tissue, size — keyed by the source page\'s ' +
       'own column labels, since the tables differ per page. Filter either by `page`. Use ' +
-      '`inventory` for "what could I combine my own run with".',
+      '`inventory` for "what could I combine my own run with". ' +
+      'When an inventory row\'s deposit is a SuperSeries, its `subseries` lists the member ' +
+      'accessions: a SuperSeries accession is a container that resolves to no analysable ' +
+      'data, so the parent row alone will not tell you the assay or design of anything you ' +
+      'could actually use. Each member carries the `id` of its own inventory row where one ' +
+      'exists, and null where it is recorded here only.',
   },
   {
     file: 'topics.json',

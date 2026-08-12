@@ -237,6 +237,20 @@ export const DatasetInventoryRowSchema = z.object({
   links: z.array(z.string()),
   /** two-tier subject tags, folded in from the committed topic NDJSON */
   topics: z.array(TopicRefSchema).default([]),
+  /**
+   * Member accessions when this row's deposit is a SuperSeries (CAAIL-258); `[]` otherwise.
+   *
+   * A SuperSeries accession resolves to no analysable data — it is a container — so a row
+   * that names only the parent hides every member from anyone querying this endpoint.
+   * `id` is RESOLVED against the inventory rather than recorded: non-null when the member
+   * is catalogued in its own right, null when it is reachable only from here.
+   */
+  subseries: z.array(z.object({
+    /** bare uppercase member accession, e.g. "GSE173198" */
+    accession: z.string(),
+    /** frozen ds: id of the member's own inventory row, or null if it has none */
+    id: z.string().nullable(),
+  })).default([]),
 });
 
 /** Schema for the inventory model — the rows across every inventory page. */

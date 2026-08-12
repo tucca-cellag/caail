@@ -2665,7 +2665,8 @@
           "label": "Serum-free media",
           "theme": "media-growth-factors"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna1331774",
@@ -2702,7 +2703,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:cra006598",
@@ -2729,7 +2731,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:srp374834",
@@ -2756,7 +2759,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna729271",
@@ -2783,7 +2787,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:gse241619",
@@ -2810,7 +2815,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:gse114452",
@@ -2837,7 +2843,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna563347",
@@ -2869,7 +2876,8 @@
           "label": "Metabolism & Modeling",
           "theme": "metabolism-modeling"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:oxidative-stress-and",
@@ -2926,7 +2934,8 @@
           "label": "Sensory & Flavor",
           "theme": "sensory-flavor"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:authentication-of-nine",
@@ -2968,7 +2977,8 @@
           "label": "Sensory & Flavor",
           "theme": "sensory-flavor"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:serum-and-muscle",
@@ -3029,7 +3039,8 @@
           "label": "Serum-free media",
           "theme": "media-growth-factors"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:dataset-of-the",
@@ -3066,7 +3077,8 @@
           "label": "Sensory & Flavor",
           "theme": "sensory-flavor"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna1017808",
@@ -3103,7 +3115,8 @@
           "label": "Metabolism & Modeling",
           "theme": "metabolism-modeling"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjeb55656",
@@ -3136,7 +3149,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:gse184128",
@@ -3168,7 +3182,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:gse211428",
@@ -3200,7 +3215,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:gse240556",
@@ -3242,7 +3258,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:gse173199",
@@ -3286,6 +3303,16 @@
           "label": "Serum-free media",
           "theme": "media-growth-factors"
         }
+      ],
+      "subseries": [
+        {
+          "accession": "GSE173196",
+          "id": "ds:gse173196"
+        },
+        {
+          "accession": "GSE173198",
+          "id": "ds:gse173198"
+        }
       ]
     },
     {
@@ -3327,7 +3354,8 @@
           "label": "Serum-free media",
           "theme": "media-growth-factors"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:gse330550",
@@ -3364,7 +3392,8 @@
           "label": "Media & Growth Factors",
           "theme": "media-growth-factors"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:cra006626",
@@ -3396,7 +3425,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:gse158430",
@@ -3422,6 +3452,40 @@
           "slug": "cell-lines-engineering",
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
+        }
+      ],
+      "subseries": [
+        {
+          "accession": "GSE158412",
+          "id": null
+        },
+        {
+          "accession": "GSE158414",
+          "id": null
+        },
+        {
+          "accession": "GSE158416",
+          "id": null
+        },
+        {
+          "accession": "GSE158417",
+          "id": null
+        },
+        {
+          "accession": "GSE158418",
+          "id": null
+        },
+        {
+          "accession": "GSE158419",
+          "id": null
+        },
+        {
+          "accession": "GSE158427",
+          "id": null
+        },
+        {
+          "accession": "GSE158429",
+          "id": null
         }
       ]
     },
@@ -3450,7 +3514,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:gse182909",
@@ -3477,7 +3542,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:gse205347",
@@ -3509,7 +3575,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:gse161967",
@@ -3536,7 +3603,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:gene-expression-of",
@@ -3562,7 +3630,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:gse262758",
@@ -3608,6 +3677,20 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
+      ],
+      "subseries": [
+        {
+          "accession": "GSE262675",
+          "id": "ds:gse262675"
+        },
+        {
+          "accession": "GSE262757",
+          "id": "ds:gse262757"
+        },
+        {
+          "accession": "GSE290556",
+          "id": "ds:gse290556"
+        }
       ]
     },
     {
@@ -3635,7 +3718,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:mir-10167-3p-targets-tcf7l1",
@@ -3661,7 +3745,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna1056565",
@@ -3688,7 +3773,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:integrated-multi-omics-reveals",
@@ -3734,7 +3820,8 @@
           "label": "Sensory & Flavor",
           "theme": "sensory-flavor"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:pxd017535",
@@ -3762,7 +3849,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:changes-in-glycolytic",
@@ -3794,7 +3882,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:dark-cutting-beef-mitochondrial",
@@ -3826,7 +3915,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:application-of-proteomics",
@@ -3858,7 +3948,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:shotgun-proteomics-for",
@@ -3899,7 +3990,8 @@
           "label": "Sensory & Flavor",
           "theme": "sensory-flavor"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:preliminary-study-on",
@@ -3950,7 +4042,8 @@
           "label": "Sensory & Flavor",
           "theme": "sensory-flavor"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:metabolomics-of-meat",
@@ -4001,7 +4094,8 @@
           "label": "Sensory & Flavor",
           "theme": "sensory-flavor"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:metabolomics-profiling-to",
@@ -4052,7 +4146,8 @@
           "label": "Sensory & Flavor",
           "theme": "sensory-flavor"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:rapid-lc-msms-method",
@@ -4083,7 +4178,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:meatscan-an-image",
@@ -4110,7 +4206,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:electronic-nose-dataset",
@@ -4142,7 +4239,8 @@
           "label": "Sensory & Flavor",
           "theme": "sensory-flavor"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:electronic-nose-homogeneous",
@@ -4174,7 +4272,8 @@
           "label": "Sensory & Flavor",
           "theme": "sensory-flavor"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:gse179821",
@@ -4201,7 +4300,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:gse253395",
@@ -4228,7 +4328,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjeb41939",
@@ -4259,7 +4360,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:synergetic-hallmark-knockouts",
@@ -4300,7 +4402,8 @@
           "label": "Scaffolds & biomaterials",
           "theme": "scaffolding-biomaterials"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:gse173198",
@@ -4343,7 +4446,8 @@
           "label": "Serum-free media",
           "theme": "media-growth-factors"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:gse173196",
@@ -4386,7 +4490,8 @@
           "label": "Serum-free media",
           "theme": "media-growth-factors"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:gse262675",
@@ -4424,7 +4529,8 @@
           "label": "Media optimization",
           "theme": "media-growth-factors"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:gse262757",
@@ -4467,7 +4573,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:gse290556",
@@ -4500,7 +4607,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna987844",
@@ -4528,7 +4636,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:single-cell-transcriptomic-atlas",
@@ -4565,7 +4674,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:gse306674",
@@ -4608,7 +4718,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna1302321",
@@ -4641,7 +4752,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:cra022393",
@@ -4674,7 +4786,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:comparative-transcriptome-analysis",
@@ -4703,7 +4816,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:srp128934",
@@ -4731,7 +4845,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:comparative-transcriptomic-characterization",
@@ -4760,7 +4875,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:whole-transcriptome-analysis",
@@ -4789,7 +4905,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:actin-genes-and",
@@ -4823,7 +4940,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna664224",
@@ -4845,7 +4963,8 @@
         "https://doi.org/10.1016/j.gene.2021.145642",
         "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA664224"
       ],
-      "topics": []
+      "topics": [],
+      "subseries": []
     },
     {
       "id": "ds:srp304278",
@@ -4873,7 +4992,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna389966",
@@ -4901,7 +5021,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:identification-of-eriocheir",
@@ -4930,7 +5051,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna577772",
@@ -4952,7 +5074,8 @@
         "https://doi.org/10.1007/s00438-019-01621-4",
         "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA577772"
       ],
-      "topics": []
+      "topics": [],
+      "subseries": []
     },
     {
       "id": "ds:srp095377",
@@ -4980,7 +5103,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:srp056408",
@@ -5008,7 +5132,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna737102",
@@ -5039,7 +5164,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna780617",
@@ -5077,7 +5203,8 @@
           "label": "Media & Growth Factors",
           "theme": "media-growth-factors"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:cra030323",
@@ -5110,7 +5237,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna1307069",
@@ -5148,7 +5276,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna726590",
@@ -5180,7 +5309,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna1254901",
@@ -5212,7 +5342,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:cra037446",
@@ -5249,7 +5380,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:gse152947",
@@ -5276,7 +5408,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna564810",
@@ -5309,7 +5442,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:deep-rna-sequencing",
@@ -5337,7 +5471,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:identification-of-myogenic",
@@ -5365,7 +5500,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjeb7712",
@@ -5393,7 +5529,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna970983",
@@ -5426,7 +5563,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:proteomic-characterization-of",
@@ -5453,7 +5591,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:substantial-downregulation-of",
@@ -5482,7 +5621,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna661185",
@@ -5516,7 +5656,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:rna-seq-analysis-of",
@@ -5544,7 +5685,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:gse90058",
@@ -5572,7 +5714,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:gse18389",
@@ -5600,7 +5743,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:srp074282",
@@ -5628,7 +5772,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:gse97173",
@@ -5656,7 +5801,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna848289",
@@ -5684,7 +5830,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna843454",
@@ -5717,7 +5864,8 @@
           "label": "Scaffolding & Biomaterials",
           "theme": "scaffolding-biomaterials"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:metabolic-profile-of",
@@ -5765,7 +5913,8 @@
           "label": "Sensory & Flavor",
           "theme": "sensory-flavor"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:pxd026377",
@@ -5808,7 +5957,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna706530",
@@ -5836,7 +5986,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:srp321375",
@@ -5870,7 +6021,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna1124228",
@@ -5898,7 +6050,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:gse252828",
@@ -5931,7 +6084,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:proteomic-insights-into",
@@ -5963,7 +6117,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:establishment-of-spontaneously",
@@ -5995,7 +6150,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:establishment-and-characterization",
@@ -6027,7 +6183,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:development-of-serum-reduced",
@@ -6074,7 +6231,8 @@
           "label": "Serum-free media",
           "theme": "media-growth-factors"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:genome-scale-metabolic-network",
@@ -6117,7 +6275,8 @@
           "label": "Metabolism & Modeling",
           "theme": "metabolism-modeling"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:gse223922",
@@ -6150,7 +6309,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna940501",
@@ -6188,7 +6348,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna1121101",
@@ -6222,7 +6383,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:distinct-muscle-stem",
@@ -6254,7 +6416,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:characterization-of-myogenesis",
@@ -6281,7 +6444,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:continuous-fish-muscle",
@@ -6309,7 +6473,8 @@
           "label": "Cell-line engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjca049754",
@@ -6341,7 +6506,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:srp531789",
@@ -6368,7 +6534,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:srp033481",
@@ -6396,7 +6563,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna1467315",
@@ -6434,7 +6602,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:cell-type-diversity",
@@ -6466,7 +6635,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna906172",
@@ -6499,7 +6669,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:pxd005166",
@@ -6538,7 +6709,8 @@
           "label": "Sensory & Flavor",
           "theme": "sensory-flavor"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:srp009061",
@@ -6568,7 +6740,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna508885",
@@ -6590,7 +6763,8 @@
         "https://doi.org/10.3390/toxins11020097",
         "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA508885"
       ],
-      "topics": []
+      "topics": [],
+      "subseries": []
     },
     {
       "id": "ds:prjna695322",
@@ -6618,7 +6792,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna822005",
@@ -6646,7 +6821,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna1381342",
@@ -6679,7 +6855,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna1187280",
@@ -6712,7 +6889,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjeb74031",
@@ -6745,7 +6923,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna983861",
@@ -6778,7 +6957,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna1244049",
@@ -6821,7 +7001,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:gse206914",
@@ -6855,6 +7036,16 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
+      ],
+      "subseries": [
+        {
+          "accession": "GSE206911",
+          "id": "ds:gse206911"
+        },
+        {
+          "accession": "GSE206913",
+          "id": "ds:gse206913"
+        }
       ]
     },
     {
@@ -6887,7 +7078,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:gse247753",
@@ -6919,7 +7111,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:cra011788",
@@ -6951,7 +7144,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:cra011059",
@@ -6989,7 +7183,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:gse180840",
@@ -7016,7 +7211,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:srp180031",
@@ -7044,7 +7240,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:cra003275",
@@ -7071,7 +7268,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:srp066398",
@@ -7098,7 +7296,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna527944",
@@ -7125,7 +7324,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna527944-2",
@@ -7157,7 +7357,8 @@
           "label": "Metabolism & Modeling",
           "theme": "metabolism-modeling"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:gse86441",
@@ -7184,7 +7385,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna820138",
@@ -7211,7 +7413,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:lipidomic-and-transcriptomic",
@@ -7242,7 +7445,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:gse158430-2",
@@ -7268,6 +7472,40 @@
           "slug": "cell-lines-engineering",
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
+        }
+      ],
+      "subseries": [
+        {
+          "accession": "GSE158412",
+          "id": null
+        },
+        {
+          "accession": "GSE158414",
+          "id": null
+        },
+        {
+          "accession": "GSE158416",
+          "id": null
+        },
+        {
+          "accession": "GSE158417",
+          "id": null
+        },
+        {
+          "accession": "GSE158418",
+          "id": null
+        },
+        {
+          "accession": "GSE158419",
+          "id": null
+        },
+        {
+          "accession": "GSE158427",
+          "id": null
+        },
+        {
+          "accession": "GSE158429",
+          "id": null
         }
       ]
     },
@@ -7300,7 +7538,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:gse223433",
@@ -7348,7 +7587,8 @@
           "label": "Sensory & Flavor",
           "theme": "sensory-flavor"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:integrated-lipidomics-and",
@@ -7394,7 +7634,8 @@
           "label": "Scaffolds & biomaterials",
           "theme": "scaffolding-biomaterials"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna597497",
@@ -7423,7 +7664,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:gse271977",
@@ -7466,7 +7708,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:cost-effective-production-of",
@@ -7527,7 +7770,8 @@
           "label": "Serum-free media",
           "theme": "media-growth-factors"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:comparative-proteomic-profiling",
@@ -7559,7 +7803,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:tmt-based-quantitative-proteomic",
@@ -7590,7 +7835,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:snrna-seq-and-spatial",
@@ -7641,7 +7887,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:gse158430-3",
@@ -7669,6 +7916,40 @@
           "slug": "cell-lines-engineering",
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
+        }
+      ],
+      "subseries": [
+        {
+          "accession": "GSE158412",
+          "id": null
+        },
+        {
+          "accession": "GSE158414",
+          "id": null
+        },
+        {
+          "accession": "GSE158416",
+          "id": null
+        },
+        {
+          "accession": "GSE158417",
+          "id": null
+        },
+        {
+          "accession": "GSE158418",
+          "id": null
+        },
+        {
+          "accession": "GSE158419",
+          "id": null
+        },
+        {
+          "accession": "GSE158427",
+          "id": null
+        },
+        {
+          "accession": "GSE158429",
+          "id": null
         }
       ]
     },
@@ -7698,7 +7979,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:tecator-nir-meat",
@@ -7744,7 +8026,8 @@
           "label": "Sensory & Flavor",
           "theme": "sensory-flavor"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:gse206911",
@@ -7777,7 +8060,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:gse206913",
@@ -7811,7 +8095,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna1001505",
@@ -7843,7 +8128,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:proteomics-analysis-to",
@@ -7874,7 +8160,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:proteomic-investigation-of",
@@ -7915,7 +8202,8 @@
           "label": "Sensory & Flavor",
           "theme": "sensory-flavor"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:a-hydrophilic-interaction",
@@ -7966,7 +8254,8 @@
           "label": "Sensory & Flavor",
           "theme": "sensory-flavor"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:proteomic-and-metabolomic",
@@ -8018,7 +8307,8 @@
           "label": "Sensory & Flavor",
           "theme": "sensory-flavor"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:cra019589",
@@ -8056,7 +8346,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna1280141",
@@ -8083,7 +8374,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna1196520",
@@ -8120,7 +8412,8 @@
           "label": "Media & Growth Factors",
           "theme": "media-growth-factors"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna842679",
@@ -8147,7 +8440,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:growth-factor-thermostability",
@@ -8176,7 +8470,8 @@
           "label": "Media & Growth Factors",
           "theme": "media-growth-factors"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:nmr-metabolomics-of",
@@ -8225,7 +8520,8 @@
           "label": "Serum-free media",
           "theme": "media-growth-factors"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:plant-based-meat-textural-properties",
@@ -8249,7 +8545,8 @@
           "label": "AI Methods & Tooling",
           "theme": "ai-methods-tooling"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjeb27455",
@@ -8278,7 +8575,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjeb14330",
@@ -8296,7 +8594,8 @@
       "links": [
         "https://doi.org/10.1186/s12864-020-07078-9"
       ],
-      "topics": []
+      "topics": [],
+      "subseries": []
     },
     {
       "id": "ds:mycelium-mechanics",
@@ -8335,7 +8634,8 @@
           "label": "Sensory & Flavor",
           "theme": "sensory-flavor"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:lions-mane-mushroom-steak",
@@ -8374,8 +8674,9 @@
           "label": "Sensory & Flavor",
           "theme": "sensory-flavor"
         }
-      ]
+      ],
+      "subseries": []
     }
   ],
-  "corpusDate": "2026-08-11"
+  "corpusDate": "2026-08-12"
 }

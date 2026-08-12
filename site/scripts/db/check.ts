@@ -29,6 +29,7 @@ import type { TaxonomyData } from '../parser/types.js';
 const MANUAL_LICENSES_PATH = join(SITE_ROOT, 'scripts', 'db', 'licenses-manual.json');
 const MANUAL_DOIS_PATH = join(SITE_ROOT, 'scripts', 'db', 'dois-manual.json');
 const RELATED_DOIS_PATH = join(SITE_ROOT, 'scripts', 'db', 'dois-related.json');
+const SUBSERIES_PATH = join(SITE_ROOT, 'scripts', 'db', 'subseries.json');
 
 export interface CheckResult { label: string; ok: boolean; detail: string; }
 const ok = (label: string, cond: boolean, detail = ''): CheckResult => ({ label, ok: cond, detail });
@@ -311,6 +312,65 @@ export function checkRelatedDois(db: Db, relatedPath: string = RELATED_DOIS_PATH
 }
 
 /**
+ * SuperSeries membership (CAAIL-258): every `subseries.json` key must resolve to a
+ * dataset_rows item, and each stored array must hold bare uppercase accessions with no
+ * duplicate, none of which is the parent row's own accession.
+ *
+ * The last two matter more than they look. Self-membership is the confusion that produced
+ * the defect — a SuperSeries accession reads like a dataset and is not one — and an
+ * accession claimed by two DIFFERENT parents means one of them is wrong, since a GEO
+ * subseries has exactly one parent.
+ *
+ * The parent's own accession is taken from its frozen `ds:` id rather than from its cells,
+ * because a row's Description now legitimately names its members and a cell scan could not
+ * tell a mention from a claim. A `-N` suffix is stripped first: `ds:gse158430-2` is the
+ * SAME GEO accession as `ds:gse158430`, fanned out per species, so those rows share their
+ * member list by design and must not read as a cross-parent conflict.
+ *
+ * Note what this deliberately does NOT do: it never asks whether the member list is
+ * COMPLETE. Only the repository knows that, and a guard over our own index cannot detect
+ * that our index is missing something — which is exactly why this defect shipped green.
+ */
+export function checkSubseries(db: Db, subseriesPath: string = SUBSERIES_PATH): CheckResult[] {
+  const out: CheckResult[] = [];
+  if (existsSync(subseriesPath)) {
+    const file = JSON.parse(readFileSync(subseriesPath, 'utf-8')) as { datasets?: Record<string, string[]> };
+    const rowIds = new Set((db.prepare('SELECT item_id FROM dataset_rows').all() as { item_id: string }[]).map((r) => r.item_id));
+    const bad = Object.keys(file.datasets ?? {}).filter((id) => !rowIds.has(id));
+    out.push(ok('subseries.json: every override id matches a dataset inventory row',
+      bad.length === 0, `unmatched: ${bad.slice(0, 3).join(', ')}`));
+  }
+  const accRe = /^(?:GSE\d+|PRJ[A-Z]+\d+|E-MTAB-\d+|CRA\d+|PXD\d+)$/;
+  const problems: string[] = [];
+  /** member accession -> the distinct PARENT accessions claiming it. */
+  const memberToParents = new Map<string, Set<string>>();
+  const rows = db.prepare('SELECT item_id, subseries FROM dataset_rows WHERE subseries IS NOT NULL')
+    .all() as { item_id: string; subseries: string }[];
+  for (const r of rows) {
+    // ds:gse158430-2 -> GSE158430: the per-species fan-out of one accession.
+    const parentAcc = r.item_id.slice(3).replace(/-\d+$/, '').toUpperCase();
+    let arr: unknown;
+    try { arr = JSON.parse(r.subseries); } catch { problems.push(`${r.item_id}: subseries not JSON`); continue; }
+    if (!Array.isArray(arr)) { problems.push(`${r.item_id}: subseries not an array`); continue; }
+    if (arr.length === 0) { problems.push(`${r.item_id}: subseries is empty (use NULL, not [])`); continue; }
+    const seen = new Set<string>();
+    for (const a of arr) {
+      if (typeof a !== 'string' || a !== a.toUpperCase() || !accRe.test(a)) { problems.push(`${r.item_id}: bad accession '${String(a)}'`); continue; }
+      if (a === parentAcc) problems.push(`${r.item_id}: lists itself (${a}) as its own subseries`);
+      if (seen.has(a)) problems.push(`${r.item_id}: duplicate member ${a}`);
+      seen.add(a);
+      (memberToParents.get(a) ?? memberToParents.set(a, new Set()).get(a)!).add(parentAcc);
+    }
+  }
+  for (const [a, parents] of memberToParents) {
+    if (parents.size > 1) problems.push(`${a} is claimed by ${parents.size} different parents (${[...parents].join(', ')}); a subseries has exactly one`);
+  }
+  out.push(ok('subseries: valid accession arrays, no self-membership, one parent each',
+    problems.length === 0, problems.slice(0, 3).join('; ')));
+  return out;
+}
+
+/**
  * Taxonomy axis guard: every matrix row and column must resolve to a definition
  * under *its own* H2 vocabulary in Taxonomy.md.
  *
@@ -379,7 +439,7 @@ export function runChecks(db: Db, repoRoot: string = REPO_ROOT): CheckResult[] {
   return [...checkIntegrity(db), ...checkReachability(db), ...checkColumnDrift(db, repoRoot),
     ...checkTaxonomyAxes(db, repoRoot),
     ...checkTopicTiers(db), ...checkCatalogHeadings(db), ...checkLicenses(db), ...checkManualLicenseKeys(db),
-    ...checkDois(db), ...checkManualDoiKeys(db), ...checkRelatedDois(db)];
+    ...checkDois(db), ...checkManualDoiKeys(db), ...checkRelatedDois(db), ...checkSubseries(db)];
 }
 
 function main(): void {

@@ -3,7 +3,7 @@
   "jsonSchemaDialect": "https://json-schema.org/draft/2020-12/schema",
   "info": {
     "title": "CAAIL agent API",
-    "version": "2026-08-11",
+    "version": "2026-08-12",
     "summary": "Static JSON endpoints describing the Cellular Agriculture AI Library.",
     "description": "Seven static JSON files, served by GET, with nothing to install or authenticate. Generated from the same schemas that validate the payloads, in the same build step that writes them. The paths below are absolute on the GitHub Pages origin, https://tucca-cellag.github.io. The same files are mirrored per-filename at https://raw.githubusercontent.com/tucca-cellag/caail/main/site/public/api/, which some clients can reach when Pages is not allow-listed. Resolve that mirror by filename; do not join the paths below onto it.",
     "license": {
@@ -11,7 +11,7 @@
       "identifier": "MIT"
     }
   },
-  "x-corpus-date": "2026-08-11",
+  "x-corpus-date": "2026-08-12",
   "paths": {
     "/caail/api/index.json": {
       "get": {
@@ -93,7 +93,7 @@
       "get": {
         "operationId": "getDatasets",
         "summary": "Curated dataset entries and per-species inventory",
-        "description": "Two arrays. `entries` are the curated portals, atlases and GEMs. `inventory` are the per-study deposits — accession, assay type, tissue, size — keyed by the source page's own column labels, since the tables differ per page. Filter either by `page`. Use `inventory` for \"what could I combine my own run with\".",
+        "description": "Two arrays. `entries` are the curated portals, atlases and GEMs. `inventory` are the per-study deposits — accession, assay type, tissue, size — keyed by the source page's own column labels, since the tables differ per page. Filter either by `page`. Use `inventory` for \"what could I combine my own run with\". When an inventory row's deposit is a SuperSeries, its `subseries` lists the member accessions: a SuperSeries accession is a container that resolves to no analysable data, so the parent row alone will not tell you the assay or design of anything you could actually use. Each member carries the `id` of its own inventory row where one exists, and null where it is recorded here only.",
         "responses": {
           "200": {
             "description": "Curated dataset entries and per-species inventory",
@@ -1325,6 +1325,33 @@
             "items": {
               "$ref": "#/components/schemas/TopicRef"
             }
+          },
+          "subseries": {
+            "default": [],
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "accession": {
+                  "type": "string"
+                },
+                "id": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "accession",
+                "id"
+              ],
+              "additionalProperties": false
+            }
           }
         },
         "required": [
@@ -1334,7 +1361,8 @@
           "name",
           "columns",
           "links",
-          "topics"
+          "topics",
+          "subseries"
         ],
         "additionalProperties": false
       }

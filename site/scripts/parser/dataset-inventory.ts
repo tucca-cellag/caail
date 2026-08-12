@@ -45,7 +45,34 @@ interface RowNdjson {
   item_id: string;
   page: string;
   cells_json: string;
+  subseries: string | null;
   ordinal: number;
+}
+
+/**
+ * Parse the `subseries` JSON-array column (a committed string) into member accessions.
+ * Tolerates absent/malformed values by returning `[]` — `db:check` is what fails a bad
+ * one, and a parse that threw here would take the whole build down for a curation typo.
+ */
+export function parseSubseries(raw: string | null | undefined): string[] {
+  if (!raw) return [];
+  try {
+    const arr: unknown = JSON.parse(raw);
+    return Array.isArray(arr) ? arr.filter((a): a is string => typeof a === 'string') : [];
+  } catch { return []; }
+}
+
+/**
+ * The accession a row's deposit is filed under, taken from its frozen `ds:` id with any
+ * per-species fan-out suffix stripped (`ds:gse158430-2` -> `GSE158430`).
+ *
+ * Used to resolve a SuperSeries member to the inventory row that catalogues it. Derived
+ * from the id rather than scanned out of the cells because a row's Description legitimately
+ * names other accessions (its own members, a companion PRIDE deposit), and a scan could not
+ * tell those apart from the accession the row is actually about.
+ */
+export function rowAccession(itemId: string): string {
+  return itemId.slice(3).replace(/-\d+$/, '').toUpperCase();
 }
 
 /**
@@ -94,6 +121,13 @@ export function buildDatasetInventory(
 ): DatasetInventory {
   const byId = topicsByItemId();
   const rows = readRows(ndjsonDir);
+
+  // Accession -> the ds: id of the row catalogueing it, so a SuperSeries member can be
+  // resolved to its own row where one exists. Built over EVERY page, not per page: a
+  // multi-species SuperSeries has members that surface on a different species page than
+  // the parent, and scoping this per page would report them as uncatalogued.
+  const rowByAccession = new Map<string, string>();
+  for (const r of rows) rowByAccession.set(rowAccession(r.item_id), r.item_id);
 
   const byPage = new Map<string, RowNdjson[]>();
   for (const r of rows) (byPage.get(r.page) ?? byPage.set(r.page, []).get(r.page)!).push(r);
@@ -148,6 +182,10 @@ export function buildDatasetInventory(
         columns: Object.fromEntries(header.map((h, i) => [h, cells[i]!])),
         links: rowLinks(cells),
         topics: byId.get(r.item_id) ?? [],
+        subseries: parseSubseries(r.subseries).map((accession) => ({
+          accession,
+          id: rowByAccession.get(accession) ?? null,
+        })),
       });
     }
   }
