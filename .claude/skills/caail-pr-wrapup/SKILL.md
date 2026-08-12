@@ -1,6 +1,6 @@
 ---
 name: caail-pr-wrapup
-description: Use when a finished, reviewed, locally-green CAAIL feature branch is ready to ship — push it, open a PR to main, watch CI, merge (after confirming), watch the GitHub Pages deploy to green, verify the live site, and clean up the worktree/branch. Invoke whenever the user says to ship / wrap up / finish / "open a PR and merge" / "merge and deploy" a branch, asks to watch the deploy, or asks to clean up a worktree after merge — even if they don't name the skill. The CAAIL realization of the "Finish & Ship" stage.
+description: Use when a finished, reviewed, locally-green CAAIL feature branch is ready to ship — push it, open a PR to main, watch CI, merge (after confirming), watch the GitHub Pages deploy to green, verify the live site, clean up the worktree/branch, and close out the GitHub issue + Jira ticket. Invoke whenever the user says to ship / wrap up / finish / "open a PR and merge" / "merge and deploy" a branch, asks to watch the deploy, asks to clean up a worktree after merge, or asks to close the ticket for shipped work — even if they don't name the skill. The CAAIL realization of the "Finish & Ship" stage.
 ---
 
 # CAAIL PR wrap-up
@@ -9,7 +9,7 @@ description: Use when a finished, reviewed, locally-green CAAIL feature branch i
 
 This is the **Ship stage** for CAAIL: it takes a feature branch whose work is done, committed, and
 locally green, and lands it on `main` and the live site — push → PR → cross-model review → checks →
-merge → GitHub Pages deploy → verify → clean up. CAAIL deploys only on push to `main` (via
+merge → GitHub Pages deploy → verify → clean up → close the trackers. CAAIL deploys only on push to `main` (via
 `.github/workflows/docs.yml`, which gates on Lighthouse), so "shipped" means *merged **and** the deploy
 is green*, not just merged. Before merging, the open PR also gets an independent **Gemini adversarial
 review** (Step 3) for decorrelated blind spots.
@@ -18,7 +18,8 @@ The brittle, repeatable machinery lives in **`ship-pr.sh`** (in this skill's dir
 opening the PR, watching checks, merging with the known worktree gotcha handled, finding + watching
 the deploy run, and curling the live routes. This manual keeps the judgment with you: re-running the
 local gate, composing the PR body, **pausing to confirm before the merge** (it triggers a public
-deploy) and before deleting a hand-made worktree, and the worktree cleanup itself.
+deploy) and before deleting a hand-made worktree, the worktree cleanup itself, and closing the
+trackers once the deploy is actually green.
 
 This is a **skill, not an agent**, on purpose: it *acts* (push/merge/deploy), and the cleanup uses
 `ExitWorktree`, which only works in the main session — a subagent can't switch the parent session's
@@ -76,6 +77,13 @@ bash .claude/skills/caail-pr-wrapup/ship-pr.sh open-pr "<title>" /tmp/pr-body.md
 - **Body:** what changed and *why*; the research area(s)/AI method(s) or routes it touches; and the
   verification you already ran (tests/build/e2e, reviewer agents). **No AI attribution** — CAAIL
   commits and PRs never carry "Co-Authored-By: Claude" or "Generated with" lines.
+- **Link the trackers.** If this PR resolves a public GitHub issue, include a `Closes #N` line —
+  GitHub then closes it on merge, so the close is declarative and can't be forgotten or fail after the
+  merge is already irreversible. Name the Jira key (`CAAIL-NNN`) too, so the public record points back
+  at the durable one. **The key only, never the ticket's contents** — the CAAIL project is private,
+  and a `disclosure-private` ticket gets no quotation, paraphrase or summary in a public PR body
+  (`.claude/rules/publishing.md`). If the work has no ticket on either tracker, that is a process
+  miss worth saying out loud rather than inventing a reference.
 
 ### 3. Cross-model adversarial review (Gemini)
 Get an independent second opinion on the diff before merging — a different model catches failure classes
@@ -154,6 +162,32 @@ absence of a stale `./X.md` link — so you confirm the *content* shipped, not j
   with the user first**, then `git worktree remove <path>` and `git branch -D <branch>`.
 - **Stop any background preview server** still holding `:4321`.
 
+### 9. Close the loop on the trackers
+Do this **last, after step 7 verified the live site** — not at merge time. CAAIL only counts as shipped
+once the deploy is green, so a ticket moved to `Done` at merge is a lie whenever Lighthouse fails
+afterwards. Both trackers, in this order:
+
+- **GitHub.** The `Closes #N` line from step 2 already closed the issue on merge; confirm rather than
+  assume, since a typo'd or missing line fails silently:
+  ```bash
+  gh issue view <N> --json number,state,stateReason
+  ```
+  If it's still `OPEN`, close it now with a comment naming the merge SHA — `gh issue close <N> --comment
+  "Shipped in <sha>, live at <url>"`.
+- **Jira.** `CAAIL` is the durable record and nothing else transitions it, so this step is the only
+  thing standing between the board and a permanent backlog of finished work. Resolve the site and cloud
+  id **at runtime** (`getAccessibleAtlassianResources`, then `getVisibleJiraProjects`) — they are
+  deliberately not written down in this world-readable repo — then `transitionJiraIssue` to **`Done`
+  (transition id `41`)** and `addCommentToJiraIssue` with the **merge SHA** and the **live URL**, so the
+  ticket records where the work landed. If the ticket is a `Task` under a `Workstream`, check whether it
+  was the last open child; a Workstream whose children are all `Done` should be transitioned too.
+
+Both calls happen **after** the irreversible part of the ship, so a failure here is bookkeeping, not a
+broken deploy: report exactly which tracker is out of date and let the user fix it, rather than retrying
+in a loop or unwinding anything. If the branch had no ticket on either tracker, say so plainly here —
+that is the "Jira first, always" rule having been missed at the *start* of the work, and it is worth
+naming so the next piece of work doesn't repeat it.
+
 ## CI: what runs when
 
 Derived from `.github/workflows/`. Know this so step 4/6 expectations are right (the helper computes it
@@ -180,6 +214,9 @@ deploy — preflight will say "no deploy expected", which is correct, not a bug.
 | `lhci` reports a bogus ~0.5 perf score | A stale `astro dev`/preview is holding `:4321`; lhci silently measured it. Free the port (`lsof -ti:4321 | xargs kill`). Only relevant if running Lighthouse locally; CI runners are fresh. |
 | Any site command (build/test/lighthouse) | Needs **Node ≥ 22.12**: `source ~/.nvm/nvm.sh && nvm use 22` first; the system default may be older. |
 | PR body / commit | **No AI attribution** anywhere in CAAIL git history. |
+| GitHub issue still `OPEN` after merge | The `Closes #N` line was missing or malformed — GitHub fails silently on both. Close it by hand (step 9) and don't assume next time; `gh issue view` is the check. |
+| Jira ticket left in `In Progress` after a green deploy | Nothing else transitions it — no hook, no workflow, no other skill. Step 9 is the only place it happens, so a skipped step 9 means a permanently stale board. |
+| Step 9 fails (Rovo auth, wrong cloud id, `gh` error) | **Bookkeeping only** — the merge and deploy already succeeded. Report which tracker is stale; never retry in a loop or try to unwind the ship. |
 | Worktree cleanup | Managed (`EnterWorktree`) → `ExitWorktree` remove. Plain branch → `git branch -d/-D`. Hand-made stale worktree → confirm, then `git worktree remove` + `git branch -D`. |
 
 ## `ship-pr.sh` reference
