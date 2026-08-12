@@ -41,24 +41,43 @@ _NUM = r"(?:(?:\d+(?:\.\d+)*|[IVXLC]+|[A-Z])\s*[.)|]?\s+)?"
 # Headings that name a methods section. Ordered vocabulary, not a guess: every
 # alternative past the first three was added because a paper in the corpus used
 # it and the previous regex missed it.
+#
+# Two tiers again, for a different reason. An UNAMBIGUOUS anchor ("Materials and
+# Methods", "STAR METHODS") may carry trailing text, because PDF layout runs the
+# next heading onto the same line often enough to matter: ref 92 prints
+# "Materials and methods summary Data curation and processing" and ref 259
+# prints "Methods Materials". Requiring end-of-string there loses a real section.
+# A bare or generic anchor ("Methods", "Approach") must still match the whole
+# heading, or a results heading like "Methods for X outperformed Y" would win.
+_METHODS_ANCHOR = (
+    r"materials\s+and\s+methods(?:\s+summary)?"
+    r"|methods?\s+(?:and\s+)?materials"
+    r"|(?:online|star|extended|supplementary|detailed)\s*[+★*]?\s*methods?"
+    r"|methods?\s+summary|summary\s+of\s+methods?"
+)
+
 METHODS_HEADING_RE = re.compile(
     _NUM + r"(?:"
-    r"materials\s+and\s+methods"
-    r"|(?:online|star|extended|supplementary|detailed)\s+methods?"
-    r"|methods?\s+summary|summary\s+of\s+methods?"
-    r"|methods?(?:\s+and\s+materials)?"
+    # Unambiguous anchors: trailing text allowed.
+    rf"(?:{_METHODS_ANCHOR})\b.*"
+    # Generic anchors: must match the whole heading.
+    r"|(?:"
+    r"methods?"
     r"|methodology"
     r"|experimental(?:\s+(?:section|procedures?|methods?|setup|design))?"
     r"|experiments?(?:\s+(?:setup|design))?"
     r"|implementation(?:\s+details?)?"
     r"|model(?:\s+architecture|\s+design)?"
-    r"|system\s+(?:overview|design|architecture|description)"
+    # "Coscientist system architecture" (ref 70): Nature articles name the
+    # architecture section after the system, so allow a leading word.
+    r"|(?:\w+\s+)?system\s+(?:overview|design|architecture|description)"
     r"|(?:our|the|proposed)\s+(?:method|approach|model|framework|architecture|system|pipeline)"
     r"|\w+\s+algorithm"
     r"|algorithms?"
     r"|approach"
     r"|data\s+and\s+methods"
-    r")\s*$",
+    r")\s*"
+    r")$",
     re.IGNORECASE)
 
 # Headings that end a methods section, in two tiers. The split is load-bearing.
@@ -72,7 +91,10 @@ STRONG_END_RE = re.compile(
     r"|conclusions?(?:\s+and\s+(?:future\s+work|outlook))?"
     r"|findings"
     r"|acknowledge?ments?"
-    r"|references|bibliography|works\s+cited"
+    # Science prints "REFERENCES AND NOTES" (refs 14, 80, 92); requiring
+    # "references" to end the heading missed every one of them.
+    r"|references(?:\s+and\s+notes)?|bibliography|works\s+cited"
+    r"|literature\s+cited"
     r"|(?:author|competing|conflict)[\s\w]*"
     r"|funding"
     r"|declarations?"
@@ -181,25 +203,44 @@ def find_methods_span(headings):
 
     # --- Strategy 1: an explicit methods heading. -------------------------
     #
-    # Take the first match that is not front matter. Index 0 gets no special
-    # treatment: it is usually the title, but the title is a long sentence that
-    # does not match the vocabulary, and on a PDF whose first section_header IS
-    # the methods heading, skipping index 0 discarded the only evidence there was.
-    # The front-matter guard below is what actually rejects a contents entry.
+    # Index 0 gets no special treatment: it is usually the title, but the title
+    # is a long sentence that does not match the vocabulary, and on a PDF whose
+    # first section_header IS the methods heading, skipping index 0 discarded the
+    # only evidence there was. The front-matter and pre-introduction guards are
+    # what actually reject a contents entry.
+    candidates = []
     for i, t in enumerate(texts):
         if not t or FRONT_MATTER_RE.match(t):
             continue
         if intro is not None and i < intro:
             continue          # listed before the introduction: contents, not section
-        if not METHODS_HEADING_RE.match(t):
-            continue
-        end = end_after(i)
+        if METHODS_HEADING_RE.match(t):
+            candidates.append(i)
+
+    if candidates:
+        def span_size(i):
+            end = end_after(i)
+            return (end if end is not None else len(texts)) - i
+
+        # Prefer the FIRST candidate. Overriding that on span size alone is
+        # wrong for a document with several legitimate methods sections: ref 18
+        # is a dissertation whose every chapter has one, and "the biggest" picks
+        # a chapter arbitrarily. So override only when the first looks like a
+        # pointer rather than a section -- ref 115 prints "STAR + METHODS" on
+        # page 11 as a cross-reference to the real section on page 14 -- which
+        # means a nearly empty first span AND a substantially larger later one.
+        best = candidates[0]
+        if span_size(best) < 3:
+            bigger = [i for i in candidates[1:] if span_size(i) >= 4]
+            if bigger:
+                best = max(bigger, key=span_size)
+        end = end_after(best)
         return {
             "found": True,
             "strategy": "explicit",
-            "start": i,
+            "start": best,
             "end": end,
-            "heading": t,
+            "heading": texts[best],
             "end_heading": texts[end] if end is not None else "",
         }
 

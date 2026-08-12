@@ -186,6 +186,40 @@ SYNTHETIC = [
      h("A Paper Title", "1. Introduction", "2. Results", "3. Discussion",
        "Methods Summary", "Acknowledgments", "References"),
      "Methods Summary", "Acknowledgments"),
+
+    # PDF layout runs the next heading onto the methods heading's line: ref 92
+    # prints "Materials and methods summary Data curation and processing", ref
+    # 259 prints "Methods Materials". An end-anchored pattern loses both.
+    ("a heading with the next one run onto it still matches",
+     h("A Paper Title", "Introduction", "Results",
+       "Materials and methods summary Data curation and processing",
+       "Modeling framework", "REFERENCES AND NOTES"),
+     "Materials and methods summary Data curation and processing",
+     "REFERENCES AND NOTES"),
+
+    # Cell Press prints "STAR + METHODS" twice: once on the summary page as a
+    # cross-reference, once as the real section further on (ref 115). Taking the
+    # first gives a stub, so a nearly empty first span defers to a much larger
+    # later one.
+    ("a pointer defers to the section it points at",
+     h("A Paper Title", "INTRODUCTION", "RESULTS", "DISCUSSION",
+       "STAR + METHODS", "SUPPLEMENTAL INFORMATION", "ACKNOWLEDGMENTS",
+       "REFERENCES",
+       "STAR + METHODS", "KEY RESOURCES TABLE", "RESOURCE AVAILABILITY",
+       "EXPERIMENTAL MODEL AND SUBJECT DETAILS", "METHOD DETAILS",
+       "Input preprocessing"),
+     "STAR + METHODS", ""),
+
+    # ...but a document with SEVERAL legitimate methods sections keeps the
+    # first. Ref 18 is a dissertation whose every chapter has one, and choosing
+    # by span size picks a chapter arbitrarily. This is why the override above
+    # is narrow rather than "prefer the biggest".
+    ("a thesis keeps the first of several methods sections",
+     h("A Thesis Title", "Introduction and Literature Review",
+       "2.1. Introduction", "2.2. Methods", "2.3. Results", "2.4. Discussion",
+       "3.1. Introduction", "3.2. Materials and Methods", "3.3. Results",
+       "3.4. Discussion", "Bibliography"),
+     "2.2. Methods", "2.3. Results"),
 ]
 
 print("\n=== synthetic structures that broke the first implementation ===")

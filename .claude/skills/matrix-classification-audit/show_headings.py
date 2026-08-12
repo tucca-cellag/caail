@@ -65,10 +65,17 @@ def main():
     # what the CURRENT rule would do. The stored one is what the last ingest
     # wrote. They differ exactly when the rule has changed since -- which is the
     # moment to re-span, so say so rather than showing two numbers side by side.
-    if sec.get("strategy") != span["strategy"] or sec.get("heading") != span["heading"]:
+    # Compare the END too, not just the strategy and start. Ref 334 is exactly
+    # why: its stored section has the right strategy and the right start heading
+    # and stops after 24 characters, because the old rule let "2.1. Ethics
+    # Statement" terminate it. Checking only the start reports that as current.
+    if (sec.get("strategy") != span["strategy"]
+            or sec.get("heading") != span["heading"]
+            or sec.get("end_heading") != span["end_heading"]):
         print(f'\nNOTE: stored section says {sec.get("strategy")} '
-              f'{sec.get("heading")!r}, but the current rule says '
-              f'{span["strategy"]} {span["heading"]!r}.\n'
+              f'{sec.get("heading")!r} -> {sec.get("end_heading")!r},\n'
+              f'      but the current rule says {span["strategy"]} '
+              f'{span["heading"]!r} -> {span["end_heading"]!r}.\n'
               f'      Run docling_ingest.py --respan to bring sections/ up to date.')
 
 
