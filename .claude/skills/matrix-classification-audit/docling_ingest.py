@@ -121,6 +121,65 @@ def section_text(doc, span):
             n_tables)
 
 
+def write_section(out, rid, doc):
+    """Locate the methods span in `doc` and write sections/ref-<id>.json."""
+    headings = collect_headings(doc)
+    span = find_methods_span(headings)
+    text, p0, p1, n_tables = section_text(doc, span) if span["found"] else ("", None, None, 0)
+    (out / "sections" / f"ref-{rid}.json").write_text(json.dumps({
+        "id": rid,
+        "n_pages": doc.num_pages(),
+        "headings": headings,
+        "strategy": span["strategy"],
+        "heading": span["heading"],
+        "end_heading": span["end_heading"],
+        "page_start": p0,
+        "page_end": p1,
+        "n_tables": n_tables,
+        "methods_text": text,
+    }, ensure_ascii=False, indent=2))
+    return span, len(text)
+
+
+def respan(out):
+    """Recompute every section from the stored documents. No PDF conversion.
+
+    The section rule is not finished and will not be: every few papers turn up a
+    heading convention nobody anticipated (`Online Methods` in the back matter,
+    `Main` for the introduction, a section named after the algorithm). Improving
+    it must not cost another full conversion pass, because conversion is the
+    expensive half and the DoclingDocument already on disk is all the rule needs.
+
+    So `docs/` is the durable artifact and `sections/` is derived from it.
+    """
+    from docling_core.types.doc import DoclingDocument
+
+    docs = sorted((out / "docs").glob("ref-*.json"),
+                  key=lambda p: int(p.stem.split("-")[1]))
+    if not docs:
+        sys.exit(f"no documents in {out / 'docs'}; run the ingest first")
+
+    strategies, changed = {}, 0
+    for p in docs:
+        rid = int(p.stem.split("-")[1])
+        sec_path = out / "sections" / f"ref-{rid}.json"
+        before = ""
+        if sec_path.exists():
+            try:
+                before = json.loads(sec_path.read_text()).get("strategy", "")
+            except ValueError:
+                before = ""
+        doc = DoclingDocument.model_validate(json.loads(p.read_text()))
+        span, n = write_section(out, rid, doc)
+        strategies[span["strategy"]] = strategies.get(span["strategy"], 0) + 1
+        if before and before != span["strategy"]:
+            changed += 1
+            print(f'[{rid}] {before} -> {span["strategy"]} '
+                  f'{span["heading"]!r} chars={n}', flush=True)
+    print(f"\nrespanned {len(docs)} documents, {changed} changed strategy")
+    print("strategies:", json.dumps(strategies))
+
+
 def resolve_pdfs(api, groups, storage, papers_md):
     """Every Papers.md ref -> its PDF path, matrix-participating refs first.
 
@@ -170,12 +229,20 @@ def main():
                     help="convert only these ref ids (repeatable)")
     ap.add_argument("--matrix-only", action="store_true",
                     help="skip refs that participate in no matrix cell")
+    ap.add_argument("--respan", action="store_true",
+                    help="recompute sections/ from the stored docs/ without "
+                         "reconverting any PDF. Run after changing the section "
+                         "rule in docling_sections.py.")
     args = ap.parse_args()
 
     groups = args.group or ["6549203", "5178481"]
     out = Path(args.out)
     (out / "docs").mkdir(parents=True, exist_ok=True)
     (out / "sections").mkdir(parents=True, exist_ok=True)
+
+    if args.respan:
+        respan(out)
+        return
 
     targets = resolve_pdfs(args.api, groups, args.zotero_storage, args.papers)
     if args.only:
@@ -214,23 +281,9 @@ def main():
             doc = converter.convert(t["pdf"]).document
             (out / "docs" / f"ref-{rid}.json").write_text(
                 json.dumps(doc.export_to_dict(), ensure_ascii=False))
-            headings = collect_headings(doc)
-            span = find_methods_span(headings)
-            text, p0, p1, n_tables = section_text(doc, span) if span["found"] else ("", None, None, 0)
-            sec_path.write_text(json.dumps({
-                "id": rid,
-                "n_pages": doc.num_pages(),
-                "headings": headings,
-                "strategy": span["strategy"],
-                "heading": span["heading"],
-                "end_heading": span["end_heading"],
-                "page_start": p0,
-                "page_end": p1,
-                "n_tables": n_tables,
-                "methods_text": text,
-            }, ensure_ascii=False, indent=2))
+            span, n_chars = write_section(out, rid, doc)
             rec.update(ok=True, error="", strategy=span["strategy"],
-                       chars=len(text), n_pages=doc.num_pages())
+                       chars=n_chars, n_pages=doc.num_pages())
             converted += 1
         except Exception as exc:  # noqa: BLE001 - one bad PDF must not end the batch
             rec["error"] = f"{type(exc).__name__}: {exc}"

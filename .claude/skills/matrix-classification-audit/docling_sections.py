@@ -82,9 +82,13 @@ END_HEADING_RE = re.compile(
     r")\s*$",
     re.IGNORECASE)
 
-# Headings that mark the end of front matter.
+# Headings that mark the end of front matter. `Main` is Nature's house style for
+# the opening section and is why ref 41 (ToolUniverse) resolved to nothing at
+# all: no heading matched the methods vocabulary, and with no introduction to
+# anchor to, the positional strategy had nowhere to start either.
 INTRO_HEADING_RE = re.compile(
-    _NUM + r"(?:introduction|background|overview|motivation)\s*$", re.IGNORECASE)
+    _NUM + r"(?:introduction|background|overview|motivation|main)\s*$",
+    re.IGNORECASE)
 
 # Front-matter headings that must never be mistaken for a section start.
 FRONT_MATTER_RE = re.compile(
