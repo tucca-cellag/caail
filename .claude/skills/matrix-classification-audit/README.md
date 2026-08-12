@@ -8,16 +8,50 @@ authored in `site/db/ndjson/`, direct edits to the generated Markdown are blocke
 integration path no longer exists. See git history for the retired SKILL.md and
 `.claude/workflows/matrix-classification-audit.js`.
 
-These four scripts survive because they are **stdlib-only and zero-token**, and remain
-useful on their own. This directory intentionally has no `SKILL.md`, so it does not
-register as a skill.
+These scripts survive because they are useful on their own. This directory intentionally
+has no `SKILL.md`, so it does not register as a skill. Everything except the Docling
+ingest is **stdlib-only and zero-token**.
 
 | Script | What it does |
 |---|---|
-| `extract_matrix_corpus.py` | Parses matrix-participating refs out of `Papers.md`, matches each to the Zotero group libraries by DOI, and pulls methods-section text from the local PDF full-text cache. Emits `matrix-corpus.json` + per-ref files (both gitignored), each carrying a `has_fulltext` flag. |
+| `extract_matrix_corpus.py` | Parses matrix-participating refs out of `Papers.md`, matches each to the Zotero group libraries by DOI, and pulls methods-section text. Prefers a `docling-corpus/` section when one exists and falls back to the flat full-text cache. Emits `matrix-corpus.json` + per-ref files (both gitignored). |
+| `docling_ingest.py` | **Opt-in batch job.** Converts every corpus PDF to a `DoclingDocument` and locates each paper's methods section against its real heading structure. Writes the gitignored `docling-corpus/`. Needs `docling`; resumable. |
+| `docling_sections.py` | Pure function: ordered heading list → the methods span. No Docling, no PDF, no network, so it is unit-testable. |
+| `docling_sections.test.py` | Runs `docling_sections` against real heading lists from the corpus, and shows the old regex failing the same inputs. `python3 …/docling_sections.test.py` |
+| `measure_extraction_quality.py` | Prints how good the extraction currently is, by calling the code being measured rather than restating its rules. Run this instead of trusting any number written down. |
+| `show_headings.py` | Curator view of one ref: every heading Docling found, with the located section's start and end marked. `show_headings.py 51` |
+| `testdata/make_fixtures.py` | Regenerates the test fixtures from the ingest output. |
 | `prefilter_corpus.py` | Deterministic pass that auto-clears lexically-obvious placements and emits the residual needing human judgment. Never auto-clears deep-learning / agent / foundation-model rows. |
 | `skim_to_audit_ids.py` | Glue that validates skim batches and emits a deduped id list. Only useful with the retired workflow. |
 | `verify_routing.mjs` | Routing checks. |
+
+## The Docling ingest (CAAIL-206)
+
+`extract_matrix_corpus.py` originally read Zotero's flat `.zotero-ft-cache` text and took
+a fixed 12,000-character window from the first methods-like heading. That approach has no
+end boundary and cannot get one, because the flat cache has already discarded the
+structure that says where a section stops.
+
+Run the ingest once, then every later curation pass reads real section boundaries:
+
+```bash
+# Needs docling. Keep it out of the base interpreter.
+uv run --python 3.12 --with docling \
+    python .claude/skills/matrix-classification-audit/docling_ingest.py
+
+# Then, as before -- it now prefers docling-corpus/ automatically.
+python3 .claude/skills/matrix-classification-audit/extract_matrix_corpus.py
+```
+
+Records gain `methods_source` (`docling` / `ftcache`), `methods_strategy`,
+`methods_heading`, `methods_end_heading`, `methods_pages` and `methods_truncated`.
+**Weigh evidence by these**: a `ftcache` section may be cut mid-sentence and may run well
+past the end of the real methods section; a `docling` one does neither.
+
+**Licensing.** `docling-corpus/` holds full text of works CAAIL may read but may not
+redistribute. It is gitignored and stays local — the *local curation tier* of CAAIL-169.
+Anything that publishes text (the agent API, the chat widget, a public index) must filter
+on `licenseTier ∈ {permissive, copyleft}` (131 works), never on `is_oa` (~74%).
 
 ## Usage
 
@@ -53,3 +87,28 @@ attached and still carry a placement nobody checked against the methods section.
 Wave 3b tranche is exactly that case: classified from abstracts, PDFs added afterwards,
 never re-audited. This script is the mechanical half of an audit and cannot tell you
 which placements were actually read.
+
+## Extraction quality, snapshot 2026-08-12
+
+Measured over the 222 matrix refs that have full text. **`measure_extraction_quality.py`
+prints these live — read it, not this block.**
+
+| | ft-cache path |
+|---|---|
+| methods heading found | 201 (91%) |
+| positional fallback | 21 (9%) |
+| **truncated at the 12,000-char window** | **213 (96%)** |
+| characters beyond the window's reach | 8,938,492 |
+
+Two things worth knowing about that 96%, because both have already caused a wrong number
+to be written down:
+
+* **It is not 72%.** Only 159 refs land at *exactly* 12,000 characters, and an earlier
+  measurement counted those. `extract_methods` strips its return value, so a cut landing
+  next to whitespace yields 11,99x and an `== METHODS_WINDOW` test misses it. 54 refs sit
+  in that gap.
+* **Truncation is not the only defect, and not the worst one.** A paper that puts
+  `Online Methods` in the back matter (ref 51: page 22 of 34) gets a window taken from
+  10% into the document that contains *none* of the methods. Start detection fails there,
+  not just the end boundary. Non-standard names (`Implementation`, `Experiment`) and roman
+  numerals (`II. GENETIC ALGORITHM`) are the other two.

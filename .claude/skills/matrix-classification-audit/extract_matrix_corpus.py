@@ -162,6 +162,35 @@ METHODS_HEAD_RE = re.compile(
 METHODS_WINDOW = 12000  # chars of methods-region text to carry inline
 
 
+def read_docling_section(docling_corpus, rid):
+    """Return the Docling-derived methods section for a ref, or None.
+
+    `docling_ingest.py` writes one of these per ref after locating the methods
+    section against the paper's real heading structure. Preferred over the
+    ft-cache path below whenever it exists, because it has both boundaries: the
+    flat-text extractor has only a start and a fixed 12,000-char window, which
+    truncates 96% of the refs that have full text and silently absorbs Results
+    and Discussion on the rest.
+
+    Absent for any ref the ingest has not reached (it is an opt-in batch job and
+    resumable), so callers must handle None -- that is the fallback path, not an
+    error.
+    """
+    if not docling_corpus:
+        return None
+    path = os.path.join(docling_corpus, "sections", f"ref-{rid}.json")
+    if not os.path.isfile(path):
+        return None
+    try:
+        with open(path, "r", encoding="utf-8") as fh:
+            sec = json.load(fh)
+    except (OSError, ValueError):
+        return None
+    if not (sec.get("methods_text") or "").strip():
+        return None
+    return sec
+
+
 def read_ftcache(zotero_storage, pdf_key):
     """Return the full ft-cache text for a PDF attachment key, or ''."""
     if not pdf_key:
@@ -177,13 +206,31 @@ def read_ftcache(zotero_storage, pdf_key):
 
 
 def extract_methods(fulltext):
-    """Pull a methods-region excerpt from raw ft-cache text.
+    """Pull a methods-region excerpt from raw ft-cache text. FALLBACK PATH.
+
+    Used only where `docling-corpus/sections/ref-<id>.json` is absent. Prefer
+    `read_docling_section`: this function is structurally unable to do the job
+    well, and its limits are measured rather than suspected.
 
     Strategy: find the earliest methods-like heading past the first 5% of the
     document (skips a "Methods" word in the abstract/TOC) and take a window from
     there. If none is found, fall back to a slice from ~10% in (past the
     abstract/intro) so the agent still gets substantive body text rather than
     front matter.
+
+    Three defects, each measured over the 222 matrix refs that have full text
+    (`measure_extraction_quality.py` prints these):
+
+    * **No end boundary.** The window is a fixed character count, so a short
+      methods section silently absorbs Results, Discussion and References.
+    * **Truncation.** 213 refs (96%) reach the 12,000-char cap and are cut
+      mid-section. Note the count that matters is 213, not the 159 that sit at
+      exactly 12,000: this function `.strip()`s its return value, so a ref whose
+      cut lands next to whitespace ends up at 11,990-11,999 and an `== 12000`
+      test misses it.
+    * **Start detection fails on back-matter methods.** A paper that puts
+      `Online Methods` after Discussion (ref 51 is on page 22 of 34) gets a
+      window from 10% in that contains none of the methods at all.
     """
     if not fulltext:
         return ""
@@ -254,6 +301,9 @@ def main():
     ap.add_argument("--api", default="http://localhost:23119/api")
     ap.add_argument("--zotero-storage",
                     default=os.path.expanduser("~/Zotero/storage"))
+    ap.add_argument("--docling-corpus", default=str(repo_default / "docling-corpus"),
+                    help="docling_ingest.py output; sections/ are preferred over "
+                         "the ft-cache. Pass '' to force the ft-cache path.")
     args = ap.parse_args()
 
     groups = args.group or ["6549203", "5178481"]
@@ -272,7 +322,7 @@ def main():
     print(f"Zotero index: {len(doi_index)} by DOI / {len(url_index)} by URL "
           f"across groups {groups}", file=sys.stderr)
 
-    corpus, n_ft, n_noft, n_nozot = [], 0, 0, 0
+    corpus, n_ft, n_noft, n_nozot, n_docling = [], 0, 0, 0, 0
     for rid in matrix_ids:
         ref = refs.get(rid, {})
         doi = ref.get("doi", "")
@@ -292,7 +342,30 @@ def main():
             "fulltext_chars": 0,
             "has_fulltext": False,
             "zotero_group": None,
+            # Provenance for methods_text. Consumers that weigh evidence should
+            # read these: a "ftcache" section may be truncated and may run past
+            # the end of the real methods section, a "docling" one does neither.
+            "methods_source": "",       # "docling" | "ftcache" | ""
+            "methods_strategy": "",     # docling: "explicit" | "positional"
+            "methods_heading": "",
+            "methods_end_heading": "",
+            "methods_pages": None,      # [first, last] for docling sections
+            "methods_truncated": False,
         }
+        # A Docling section stands on its own: it comes from the PDF, not the
+        # ft-cache, so it is available even for a ref whose ft-cache is missing.
+        section = read_docling_section(args.docling_corpus, rid)
+        if section:
+            rec["methods_text"] = section["methods_text"]
+            rec["methods_source"] = "docling"
+            rec["methods_strategy"] = section.get("strategy", "")
+            rec["methods_heading"] = section.get("heading", "")
+            rec["methods_end_heading"] = section.get("end_heading", "")
+            if section.get("page_start") is not None:
+                rec["methods_pages"] = [section.get("page_start"),
+                                        section.get("page_end")]
+            n_docling += 1
+
         hit = (doi_index.get(doi.lower()) if doi else None) \
             or (url_index.get(_norm_url(url)) if url else None)
         if not hit:
@@ -306,10 +379,21 @@ def main():
         fulltext = read_ftcache(args.zotero_storage, pdf_key)
         rec["fulltext_chars"] = len(fulltext)
         if fulltext:
-            rec["methods_text"] = extract_methods(fulltext)
             rec["has_fulltext"] = True
             n_ft += 1
-        else:
+            if not section:
+                rec["methods_text"] = extract_methods(fulltext)
+                rec["methods_source"] = "ftcache"
+                # Report truncation against the pre-strip length: extract_methods
+                # strips, so a cut landing next to whitespace lands at 11,99x and
+                # an `== METHODS_WINDOW` test silently misses it.
+                floor = len(fulltext) // 20
+                m = next((x for x in METHODS_HEAD_RE.finditer(fulltext)
+                          if x.start() >= floor), None)
+                start = m.start() if m else len(fulltext) // 10
+                rec["methods_strategy"] = "heading" if m else "positional"
+                rec["methods_truncated"] = (len(fulltext) - start) > METHODS_WINDOW
+        elif not section:
             n_noft += 1
         corpus.append(rec)
 
@@ -328,6 +412,14 @@ def main():
     print(f"  per-ref files → {per_ref_dir}/ref-<id>.json", file=sys.stderr)
     print(f"  full text: {n_ft}   PDF-but-no-ftcache: {n_noft}   "
           f"not-in-Zotero: {n_nozot}", file=sys.stderr)
+    n_trunc = sum(1 for r in corpus if r["methods_truncated"])
+    print(f"  methods from docling: {n_docling}   from ft-cache: "
+          f"{sum(1 for r in corpus if r['methods_source'] == 'ftcache')} "
+          f"(of which truncated: {n_trunc})", file=sys.stderr)
+    if n_docling < len(matrix_ids):
+        print(f"  NOTE: {len(matrix_ids) - n_docling} refs still read the "
+              f"ft-cache path; run docling_ingest.py to cover them.",
+              file=sys.stderr)
 
 
 if __name__ == "__main__":
