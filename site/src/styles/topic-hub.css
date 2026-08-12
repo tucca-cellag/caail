@@ -67,12 +67,24 @@
 .th-lead[data-open] { color: var(--caail-muted); font-style: italic; }
 
 /* Full attribution under a theme's title. Affiliation is separated by a middot rather than
-   put on its own line, so the whole credit reads as one statement. */
+   put on its own line, so the whole credit reads as one statement.
+   The middot is a REAL TEXT NODE in the markup, not a `::before` on the affiliation. CSS
+   generated content is not copied with a selection and is announced inconsistently, so as
+   a `::before` this rendered correctly and copied as "Benjamin BrombergTUCCA, Tufts
+   University" — the same run-together defect as the missing space after the role label,
+   on the surface that exists to be cited. Anything a reader is meant to take away with
+   them belongs in the DOM. */
 .th-lead-full { margin: 0.35rem 0 0.6rem; font-size: 0.82rem; color: var(--caail-ink); }
-.th-lead-full a { color: var(--caail-link); text-decoration: none; }
-.th-lead-full a:hover, .th-lead-full a:focus-visible { text-decoration: underline; }
+/* UNDERLINED, always. This link sits inside a block of body text, so colour alone has to
+   clear 3:1 against the surrounding ink to be distinguishable — and it does not:
+   measured 2.99:1 in light mode and 2.01:1 in dark, an axe `link-in-text-block` failure
+   at serious impact in both schemes. A reader who cannot separate those two blues has no
+   way to tell the lead's name is a link.
+   It shipped because no axe test loaded a theme view; `topics.spec.ts` only visited the
+   theme index, where this component never renders. The spec now covers a held lead too,
+   so the next version of this mistake fails instead of shipping. */
+.th-lead-full a { color: var(--caail-link); text-decoration: underline; }
 .th-lead-affil { color: var(--caail-muted); }
-.th-lead-affil::before { content: ' · '; color: var(--caail-muted); }
 
 .th-recruit {
   margin: 1.1rem 0 0;

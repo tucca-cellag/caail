@@ -24,6 +24,18 @@ const REPO_ROOT = fileURLToPath(new URL('../../../', import.meta.url));
  */
 const CITATION = readFileSync(join(REPO_ROOT, 'CITATION.cff'), 'utf-8');
 
+/**
+ * CITATION.cff split into one text block per named author.
+ *
+ * Matching against the whole file only proves a token appears SOMEWHERE in it, which is
+ * not the property that matters. Pairing is: giving `ai-methods-tooling` Bromberg's name
+ * and Kaplan's ORCID passes a whole-file check, both tokens being present, while the site
+ * credits the wrong person — the precise failure this suite exists to prevent, surviving
+ * the test written to prevent it. Requiring the name and the identifier to appear in the
+ * SAME author block closes that.
+ */
+const AUTHOR_BLOCKS = CITATION.split(/^\s*-\s+family-names:/m).slice(1);
+
 const themeSlugs = (topicsData.themes as { slug: string }[]).map((t) => t.slug);
 const held = themeSlugs
   .map((slug) => ({ slug, curator: curatorFor(slug) }))
@@ -36,20 +48,21 @@ describe('topic curators are consistent with CITATION.cff', () => {
     expect(held.length).toBeGreaterThan(0);
   });
 
-  it.each(held)('$slug: the lead is a named author in CITATION.cff', ({ curator }) => {
-    // Names are recorded as `family-names` / `given-names`, so check the parts rather than
-    // the display form, which CITATION.cff never stores as one string.
-    for (const part of curator.name.split(/\s+/).filter(Boolean)) {
-      expect(CITATION, `"${part}" of "${curator.name}" is not in CITATION.cff`).toContain(part);
-    }
-  });
-
-  it.each(held)('$slug: the ORCID matches the one CITATION.cff records', ({ curator }) => {
-    if (!curator.url?.includes('orcid.org')) return;
+  it.each(held)('$slug: name and ORCID belong to ONE author in CITATION.cff', ({ curator }) => {
+    // Names are recorded as `family-names` / `given-names`, so the parts are checked
+    // rather than a display form CITATION.cff never stores as one string. The block must
+    // satisfy every part AND the identifier together, so a name paired with somebody
+    // else's ORCID has no block that matches and fails here.
+    const parts = curator.name.split(/\s+/).filter(Boolean);
+    const matching = AUTHOR_BLOCKS.filter(
+      (b) => parts.every((p) => b.includes(p)) && (!curator.url || b.includes(curator.url)),
+    );
     expect(
-      CITATION,
-      `${curator.name}'s ORCID is not the one in CITATION.cff — rotate both or neither`,
-    ).toContain(curator.url);
+      matching.length,
+      `no single CITATION.cff author has both "${curator.name}" and ${curator.url ?? '(no identifier)'}. ` +
+        `Either the name and the identifier belong to different people, or CITATION.cff moved and ` +
+        `this file did not. Rotate both or neither.`,
+    ).toBe(1);
   });
 });
 

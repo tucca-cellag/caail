@@ -106,10 +106,16 @@ function CountPills({ c }: { c: Counts }) {
 function LeadFull({ slug }: { slug: string }) {
   const c = curatorFor(slug);
   if (!c) return null;
+  // The explicit {' '} below is load-bearing, not formatting. JSX drops whitespace between
+  // children on separate lines, so without it the text content is "LeadBenjamin Bromberg…":
+  // a screen reader announces one run-together word and copying the credit yields a mangled
+  // string, on the surface this component exists to provide. The visual gap came from
+  // `.th-lead-role`'s margin, which is why it looked correct.
   return (
     <p class="th-lead-full">
-      <span class="th-lead-role">Lead</span>
+      <span class="th-lead-role">Lead</span>{' '}
       {c.url ? <a href={c.url} rel="noopener noreferrer" target="_blank">{c.name}</a> : c.name}
+      {' · '}
       <span class="th-lead-affil">{c.affiliation}</span>
     </p>
   );
@@ -148,12 +154,13 @@ function ThemeIndex() {
       {/* Same ask as the homepage band, same constraint on it: CAAIL-15 has not settled
           what a lead commits to, so the copy says so instead of inventing it, and names
           the one limit that must not be left ambiguous while placements are under
-          re-verification. Wording kept in step with TopicsBand.astro deliberately. */}
-      {/* Copy and route both imported, not restated. This paragraph was a verbatim
-          duplicate of the band's, kept in step by a comment, and only the band's version
-          was pinned by a test — so an edit to the guarantee sentence would pass CI while
-          the two surfaces promised different things. The community route comes from
-          `lib/community.ts`, whose whole job is to keep it in one place. */}
+          re-verification.
+          Copy and route are both IMPORTED, not restated. This paragraph was once a
+          verbatim duplicate of the band's kept in step by a comment saying so, and only
+          the band's version was pinned by a test, so an edit to the guarantee sentence
+          would have passed CI while the two surfaces promised different things. The
+          community route comes from `lib/community.ts`, whose whole job is to hold it in
+          one place. */}
       <aside class="th-recruit" aria-label="Topic leads">
         <p class="th-recruit-lede">{leadCoverageLine()}</p>
         <p class="th-recruit-body">

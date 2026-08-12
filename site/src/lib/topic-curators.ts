@@ -36,9 +36,16 @@ export interface Curator {
  * Theme slug → lead. Sparse on purpose: an absent key is the honest state for a theme
  * nobody holds, and the surfaces render that absence rather than hiding it.
  *
- * Details are taken from `CITATION.cff`, which is the repo's existing record of who these
- * people are, rather than retyped here. If a name or ORCID needs changing, change it there
- * first and mirror it, so the two cannot disagree about the same person.
+ * **Name and ORCID mirror `CITATION.cff`**, the repo's existing record of who these people
+ * are, and `topic-curators.test.ts` enforces that: it requires both to appear against ONE
+ * author there, so a name paired with somebody else's identifier fails rather than
+ * silently crediting the wrong person. Change `CITATION.cff` first, then mirror it here.
+ *
+ * **`affiliation` is NOT mirrored and is not checked.** It is a short display form chosen
+ * to fit a card ("TUCCA, Tufts University" against the citation record's "Tufts University
+ * Center for Cellular Agriculture (TUCCA)"), so no substring check between the two would
+ * be honest. Said explicitly because an earlier version of this comment claimed all three
+ * fields came from `CITATION.cff`, which was true of two of them.
  */
 const CURATORS: Record<string, Curator> = {
   'ai-methods-tooling': {
