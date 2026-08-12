@@ -66,6 +66,25 @@ const statSentence = `Indexing ${stats.map((s) => `${s.n} ${s.label}`).join(', '
           <span class="tick-l">{stats[0].label}</span>
           <span class="tick-caret"></span>
         </p>
+        {/* The width reserve. Every entry, rendered in the same grid cell as the live
+            counter and hidden, so this column is exactly as wide as the widest entry —
+            measured by the browser in whatever font is actually applied, rather than
+            asserted as a number that only holds at one font size.
+
+            That is what lets the routes beside it wrap on content instead of on a
+            breakpoint. A media or container query cannot see a reader's minimum-font-size
+            setting: it grows the label without growing the column, and at 20px the
+            counter ran 82px into the routes at every width. Deriving the reserve removes
+            the question rather than re-measuring the answer. */}
+        <p class="tick-reserve" aria-hidden="true">
+          {stats.map((s) => (
+            <span class="tick-ghost">
+              <span class="tick-n caail-display">{s.n}</span>
+              <span class="tick-l">{s.label}</span>
+              <span class="tick-caret"></span>
+            </span>
+          ))}
+        </p>
         <p class="visually-hidden">{statSentence}</p>
         <a class="tick-cap" href={`${base}/by-the-numbers/`}>Counted at build time <span aria-hidden="true">→</span></a>
       </div>
@@ -136,6 +155,7 @@ const statSentence = `Indexing ${stats.map((s) => `${s.n} ${s.label}`).join(', '
   }
   /* hero content sits above the diagonal stripe */
   .hero-text, .hero-art, .hero-setup, .hero-router { position: relative; z-index: 1; }
+
 
   /* Full-bleed diagonal CAAIL-blue band behind the hero (trimgalore-style).
    * The wrapper breaks out to the full viewport width and self-clips, so the
@@ -223,7 +243,15 @@ const statSentence = `Indexing ${stats.map((s) => `${s.n} ${s.label}`).join(', '
      41px against a 38.4px number — so a reserve equal to the number still let the line
      collapse 3px whenever the text emptied mid-erase. Three pixels, four times a cycle,
      forever, each one re-running the stripe ResizeObserver. */
-  .tick { display: flex; align-items: baseline; gap: .5rem; margin: 0; min-height: 2.75rem; }
+  /* `nowrap` guards the same height from the other direction. The reserve is a FLOOR, not
+     a fixed height: it stops the line collapsing when the text empties mid-erase, but
+     nothing stopped it growing. Once the routes sit beside it the counter's track narrows,
+     and the widest entry ("139 software tools") wrapped to a second line — the same
+     ResizeObserver loop the reserve exists to prevent, arriving from the opposite side.
+     What `nowrap` costs is that an over-wide counter overflows silently instead of
+     reflowing, which is why the routes are gated on a container query rather than a
+     viewport one; see the note on that query below. */
+  .tick { display: flex; align-items: baseline; gap: .5rem; margin: 0; min-height: 2.75rem; white-space: nowrap; }
   .tick-n { font-size: 2.4rem; font-weight: 700; color: var(--caail-primary); line-height: 1; letter-spacing: -.02em; }
   .tick-l { font-size: var(--caail-fs-lg); font-weight: 600; color: var(--caail-ink); }
 
@@ -236,21 +264,15 @@ const statSentence = `Indexing ${stats.map((s) => `${s.n} ${s.label}`).join(', '
   }
   @keyframes tick-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
 
-  /* The counter never wraps.
-     The reserve above is a floor, not a fixed height: it stops the line collapsing when
-     the text empties mid-erase, but nothing stopped it GROWING. Once the routes sit
-     beside it the counter's track narrows, and at the tightest two-column width the
-     widest entry ("139 software tools") wrapped to a second line — changing the hero's
-     height four times a rotation, which is the same ResizeObserver loop the reserve
-     exists to prevent, arriving from the opposite direction. `nowrap` makes the height
-     genuinely constant; the breakpoint below is what keeps it from colliding. */
-  .tick { white-space: nowrap; }
-
   /* Counted at build time, linking to where that can be checked. The claim and the
      evidence are the same element, which is the point: it is not an assertion about
      CAAIL being open, it is the number's provenance plus the page that shows it. */
-  .tick-cap { display: inline-block; font-size: var(--caail-fs-xs); color: var(--caail-muted); text-decoration: none; margin-top: .3rem; }
-  .tick-cap:hover { color: var(--caail-link); }
+  /* `:focus-visible` alongside `:hover` — this replaced a plain <p>, so it is new
+     interactive surface, and the routes beside it already give keyboard users the same
+     colour change the mouse gets. */
+  .tick-cap { display: inline-block; font-size: var(--caail-fs-xs); color: var(--caail-muted); text-decoration: none; margin-top: .3rem; transition: color .15s ease-out; }
+  .tick-cap:hover, .tick-cap:focus-visible { color: var(--caail-link); }
+  @media (prefers-reduced-motion: reduce) { .tick-cap { transition: none; } }
 
   /* The three ways in. Stacked below the counter on one column; beside it above 68rem. */
   .ways { list-style: none; margin: var(--caail-space-4) 0 0; padding: 0; display: grid; gap: .35rem; }
@@ -267,26 +289,36 @@ const statSentence = `Indexing ${stats.map((s) => `${s.n} ${s.label}`).join(', '
   .ways a:hover b, .ways a:focus-visible b { color: inherit; }
   @media (prefers-reduced-motion: reduce) { .ways a { transition: none; } }
 
-  /* 68rem, NOT the hero's own 60rem two-column breakpoint. Measured, not chosen.
-     The hero splits into two columns at 60rem, but the text column is only 488px there —
-     the widest counter ("139 software tools" plus the caret) is 195px and this list is
-     366px, so the pair does not fit and the counter runs into the routes. Because the
-     counter is `nowrap` it overflows its track rather than wrapping, so the collision is
-     silent: at 64rem it overlapped the routes by 9px with no reflow to give it away.
-     The pair needs 197 + 32 + 366 = 595px of column, which the layout reaches at roughly
-     1067px of viewport; 68rem/1088px is the first round step past that, and measures 53px
-     of clearance. Below it the routes stack under the counter, as they do on one column.
+  /* The routes sit beside the counter when they fit and wrap under it when they do not.
+     There is NO breakpoint here, and that is deliberate.
 
-     Re-measure this if the counter's labels or these three lines change: it is a number
-     derived from two pieces of text, and nothing in the build checks that it still holds.
+     Every width-based gate we tried was blind to the thing that actually decides whether
+     the two fit: how large the text renders. `rem` in a media query resolves against the
+     browser's INITIAL font size, so raising the default font size or using Firefox's "zoom
+     text only" left `68rem` meaning 1088px while every word in the row got bigger — 204px
+     of overlap at 125%, 326px at 200%, at every width up to 1440. Moving to a container
+     query in `em` fixed that path, and still missed a reader's minimum-font-size setting,
+     which grows the label without growing the column: 82px of overlap at a 20px minimum.
+     Because the counter is `nowrap` none of this reflows, so two blocks of text simply
+     paint over each other with nothing to signal it.
 
-     The counter's track is `minmax(0, 1fr)`, sized by available space and never by
-     content. `auto` would track the typewriter's per-keystroke width and slide this list
-     back and forth continuously, which is worse than the gap it was added to fill. */
-  @media (min-width: 68rem) {
-    .ticker { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: var(--caail-space-6); }
-    .ways { margin: 0; }
-  }
+     Flex wrapping asks the browser the question instead. `.tick-col` is sized by the
+     hidden reserve above — the widest entry, measured in whatever font is applied — so it
+     is both stable while the counter types AND correct at any text size. When the routes
+     no longer fit beside it they move to their own line, which is what they do on one
+     column anyway. Nothing to re-measure when a label grows or a route line is reworded. */
+  .ticker { display: flex; flex-wrap: wrap; align-items: center; column-gap: var(--caail-space-6); row-gap: var(--caail-space-4); }
+  .tick-col { flex: 0 0 auto; }
+  .ways { flex: 1 1 auto; margin: 0; }
+
+  /* The live counter and the reserve share one grid cell, so the column takes the width
+     and height of the reserve and the counter is painted over it. `.tick-cap` sits on its
+     own row beneath. */
+  .tick-col { display: grid; grid-template-columns: max-content; }
+  .tick, .tick-reserve { grid-area: 1 / 1; }
+  .tick-cap { grid-row: 2; }
+  .tick-reserve { display: grid; margin: 0; visibility: hidden; pointer-events: none; }
+  .tick-ghost { grid-area: 1 / 1; display: flex; align-items: baseline; gap: .5rem; white-space: nowrap; }
 
   .visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
 
