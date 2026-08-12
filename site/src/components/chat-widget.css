@@ -98,6 +98,22 @@
 
 .chat-panel-blurb { margin: 0; color: var(--caail-muted); font-size: 0.76rem; }
 
+/*
+ * Set apart from the blurb by a rule rather than by colour or weight: the
+ * contrast budget here is already spent (muted on surface sits just above the
+ * 4.5:1 floor, and the axe assertions in chat-widget.spec.ts hold it there), so
+ * emphasis has to come from separation instead of from a darker or heavier face.
+ */
+.chat-panel-notice {
+  margin: 0;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--caail-border);
+  color: var(--caail-muted);
+  font-size: 0.72rem;
+  line-height: 1.45;
+}
+.chat-panel-notice a { color: var(--caail-link); text-decoration: underline; }
+
 .chat-panel-form { display: flex; flex-direction: column; gap: 0.4rem; }
 .chat-panel-input {
   resize: vertical;

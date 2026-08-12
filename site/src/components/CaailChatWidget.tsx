@@ -26,6 +26,11 @@ import { renderMarkdown } from '../lib/markdown';
 
 const CHAT_API = import.meta.env.PUBLIC_CAAIL_CHAT_API as string | undefined;
 const WORD_LIMIT = 200;
+/**
+ * BASE_URL is "/caail" inside an island rather than "/caail/", so it is
+ * normalised once here the same way `axis-links.ts` and `NetworkGraph.tsx` do.
+ */
+const BASE = (import.meta.env.BASE_URL ?? '/').replace(/\/$/, '');
 /** Dismissal lasts the browsing session, not forever — sessionStorage, not local. */
 const DISMISS_KEY = 'caail-chat-dismissed';
 const QUOTA_MESSAGE = "'Ask CAAIL' quota is exceeded, try again later.";
@@ -135,6 +140,23 @@ export default function CaailChatWidget() {
           </div>
           <p class="chat-panel-blurb">
             Ask a question, answered by AI using CAAIL's curated papers, datasets, and tools.
+          </p>
+          {/*
+            The question leaves the browser: it is POSTed to a backend outside
+            Tufts, which records it. A reader has no way to know that from the
+            blurb above, and the widget is live on every page of a public,
+            Tufts-branded site — so the disclosure belongs at the point of entry,
+            not only on /privacy/ where nobody reading it will look.
+
+            The "confidential information" clause is the load-bearing half and
+            the half most likely to be cut for brevity, because the cost of
+            dropping it is paid by someone else: a company pasting an unpublished
+            process detail into a box that logs it. `chat-widget.spec.ts` pins
+            both clauses so neither can be trimmed silently.
+          */}
+          <p class="chat-panel-notice">
+            Questions are sent to an external service and stored, so please don't include
+            confidential information. <a href={`${BASE}/privacy/`}>Privacy</a>
           </p>
           <form class="chat-panel-form" onSubmit={handleSubmit}>
             <textarea
