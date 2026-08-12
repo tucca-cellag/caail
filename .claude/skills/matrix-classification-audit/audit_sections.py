@@ -24,7 +24,9 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parents[2]
 sys.path.insert(0, str(HERE))
+sys.path.insert(0, str(HERE.parent / "zotero-collection-scope"))
 
+import extract_matrix_corpus as ex  # noqa: E402
 from docling_sections import find_methods_span  # noqa: E402
 
 # Matches read_docling_section's floor in extract_matrix_corpus: below this a
@@ -46,12 +48,27 @@ def main():
     if not paths:
         sys.exit(f"no sections in {sec_dir}; run docling_ingest.py first")
 
+    # Which refs are expected to HAVE a methods section. A Reviews &
+    # Perspectives entry or a Reference Work chapter has none because of what it
+    # is, so counting it as a miss overstates the gap and points at work that
+    # does not exist. Reporting 24 unresolved rather than 5 is a five-fold
+    # overstatement, and CLAUDE.md's rule is that every count names the
+    # population it counted.
+    md = (REPO / "Papers.md").read_text(encoding="utf-8")
+    _, cell_map = ex.parse_matrix(md)
+    paper_refs = ex.parse_references(md)
+    matrix_ids = set(cell_map)
+
     rows, misses = [], []
     for p in paths:
         d = json.loads(p.read_text())
+        d["in_matrix"] = d["id"] in matrix_ids
+        d["papers_section"] = paper_refs.get(d["id"], {}).get("section", "?")
         span = find_methods_span(d.get("headings", []))
         rows.append({
             "id": d["id"],
+            "in_matrix": d["in_matrix"],
+            "papers_section": d["papers_section"],
             "strategy": span["strategy"] if span["found"] else "none",
             "stored": d.get("strategy", "?"),
             # The END is part of staleness, not just the strategy and start.
@@ -68,8 +85,11 @@ def main():
         if not span["found"]:
             misses.append(d)
 
-    print(f"sections: {len(rows)}")
+    print(f"sections: {len(rows)}  "
+          f"({sum(1 for r in rows if r['in_matrix'])} matrix-participating)")
     print("strategies (current rule):", dict(Counter(r["strategy"] for r in rows)))
+    print("  matrix refs only        :",
+          dict(Counter(r["strategy"] for r in rows if r["in_matrix"])))
 
     stale = [r for r in rows
              if r["strategy"] != r["stored"] or r["end"] != r["stored_end"]]
@@ -95,14 +115,26 @@ def main():
         for r in short:
             print(f'  ref {r["id"]:>4}  {r["chars"]:>6} chars')
 
-    print(f"\nunresolved: {len(misses)}")
-    for d in misses:
+    # The number that matters is the one over refs a methods section is expected
+    # of. The rest are reviews and reference-work chapters.
+    m_miss = [d for d in misses if d["in_matrix"]]
+    o_miss = [d for d in misses if not d["in_matrix"]]
+    n_matrix = sum(1 for r in rows if r["in_matrix"])
+
+    print(f"\nunresolved, matrix-participating: {len(m_miss)} of {n_matrix}")
+    for d in m_miss:
         print(f'  ref {d["id"]:>4}  {len(d.get("headings", [])):>3} headings, '
               f'{d.get("n_pages")} pages')
+    print(f"\nunresolved, not in the matrix: {len(o_miss)}"
+          f"  (reviews and reference works have no methods section)")
+    by_section = Counter(d["papers_section"] for d in o_miss)
+    for sec, k in sorted(by_section.items()):
+        print(f"  {k:>3}  {sec}")
 
     if args.misses:
         for d in misses:
-            print(f'\n=== ref {d["id"]} ===')
+            tag = "MATRIX" if d["in_matrix"] else d["papers_section"]
+            print(f'\n=== ref {d["id"]}  [{tag}] ===')
             for h in d.get("headings", []):
                 page = f'p{h.get("page")}' if h.get("page") else ""
                 print(f'   {page:>5}  {(h.get("text") or "")[:88]}')

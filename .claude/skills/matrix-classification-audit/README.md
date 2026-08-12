@@ -121,12 +121,16 @@ separable.
 Measured over the 222 matrix refs that have full text. **`measure_extraction_quality.py`
 prints these live — read it, not this block.**
 
-| | ft-cache path |
-|---|---|
-| methods heading found | 201 (91%) |
-| positional fallback | 21 (9%) |
-| **truncated at the 12,000-char window** | **213 (96%)** |
-| characters beyond the window's reach | 8,938,492 |
+| | ft-cache path | with the Docling ingest |
+|---|---|---|
+| methods heading found | 201 (91%) | 195 explicit + 22 positional = **217 (98%)** |
+| positional fallback | 21 (9%) | 2 of those 21 remain |
+| **truncated at the 12,000-char window** | **213 (96%)** | **4** |
+| characters beyond the window's reach | 8,938,492 | — |
+| sections larger than the old window | — | 118, i.e. 118 papers were being cut off |
+
+Median located section: 13,039 chars; largest 93,826. Full ingest: 303 documents,
+301 converted in 88 minutes on CPU with no failures, 155 MB.
 
 Two things worth knowing about that 96%, because both have already caused a wrong number
 to be written down:
@@ -140,3 +144,18 @@ to be written down:
   10% into the document that contains *none* of the methods. Start detection fails there,
   not just the end boundary. Non-standard names (`Implementation`, `Experiment`) and roman
   numerals (`II. GENETIC ALGORITHM`) are the other two.
+
+### What "unresolved" counts
+
+`audit_sections.py` reports unresolved refs **split by population**, and the split matters
+more than the total. Over the full corpus 24 refs resolve to no methods section, but 19 of
+those are Reviews & Perspectives entries or Reference Work chapters, which have no methods
+section because of what they are. Counting them overstates the gap five-fold and points at
+work that does not exist.
+
+The number that means something is **5 of 222 matrix refs**, and none of the five is a
+naming problem: their PDFs contain no methods section at all, because the methods are in a
+supplementary document nobody acquired. Refs 14 and 80 are *Science* research articles
+whose only "Materials and Methods" string is the supplement URL; 48 and 133 are Nature
+Correspondence pieces; 224 cites "Methods Sec. 4.5" in a supplement. They are recorded on
+CAAIL-246, and they fall through to the ft-cache path meanwhile.
