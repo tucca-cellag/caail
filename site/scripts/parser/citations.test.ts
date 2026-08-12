@@ -14,6 +14,7 @@ import {
   buildCitationData,
   citedByCountByDoi,
   licenseByDoi,
+  isOaByDoi,
   doiKey,
   CitationCacheSchema,
   type CitationCache,
@@ -226,6 +227,78 @@ describe('licenseByDoi', () => {
     const parsed = CitationCacheSchema.parse(old);
     expect(licenseByDoi(parsed).size).toBe(0);
     expect(parsed.works['10.1/a']!.isOa).toBeNull();
+  });
+});
+
+describe('isOaByDoi', () => {
+  it('maps bare DOI -> is_oa, keeping false and omitting only the unrecorded', () => {
+    const cache: CitationCache = {
+      generatedAt: 'x',
+      works: {
+        '10.1/open': { openalexId: 'W1', referencedWorks: [], citedByCount: 1, isOa: true, license: 'cc-by' },
+        '10.1/closed': { openalexId: 'W2', referencedWorks: [], citedByCount: 1, isOa: false, license: null },
+        '10.1/unknown': { openalexId: 'W3', referencedWorks: [], citedByCount: 1, isOa: null, license: null },
+      },
+    };
+    const m = isOaByDoi(cache);
+    expect(m.get('10.1/open')).toBe(true);
+    // `false` must SURVIVE: a work recorded as closed is a different fact from one with
+    // no record, and any figure quoting a denominator has to tell them apart.
+    expect(m.get('10.1/closed')).toBe(false);
+    expect(m.has('10.1/unknown')).toBe(false);
+    expect(isOaByDoi(null).size).toBe(0);
+  });
+
+  it('is independent of the license axis, so bronze stays readable-but-unlicensed', () => {
+    const bronze: CitationCache = {
+      generatedAt: 'x',
+      works: {
+        '10.1/bronze': { openalexId: 'W9', referencedWorks: [], citedByCount: 5, isOa: true, license: null },
+      },
+    };
+    expect(isOaByDoi(bronze).get('10.1/bronze')).toBe(true);
+    expect(licenseByDoi(bronze).has('10.1/bronze')).toBe(false);
+  });
+
+  it('tolerates a pre-isOa cache, where the field is absent entirely', () => {
+    const old = { generatedAt: 'x', works: { '10.1/a': { openalexId: 'W1', referencedWorks: [], citedByCount: 3 } } };
+    expect(isOaByDoi(CitationCacheSchema.parse(old)).size).toBe(0);
+  });
+});
+
+describe('paper open-access axis (real corpus)', () => {
+  it('records is_oa for most references, and never conflates it with redistribution', () => {
+    const refs = buildPapersModel().references;
+    const recorded = refs.filter((r) => r.isOa !== null);
+    // The homepage quotes both figures over this denominator, so it must be a real
+    // majority of the corpus rather than a handful of matched works.
+    expect(recorded.length).toBeGreaterThan(refs.length * 0.9);
+
+    // The claim the #why band makes: free to read is strictly weaker than free to
+    // redistribute. If this ever inverts, the copy is wrong and should fail here first.
+    const readable = recorded.filter((r) => r.isOa === true).length;
+    const redistributable = recorded.filter((r) => {
+      const t = licenseTier(r.license);
+      return t === 'permissive' || t === 'copyleft';
+    }).length;
+    expect(redistributable).toBeLessThan(readable);
+
+    // The subset relation the homepage copy asserts, TESTED rather than described: no work
+    // may be redistributable without also being free to read. A comment claiming this would
+    // document the risk without mitigating it, which is the repo's own named failure mode.
+    const redistributableButNotReadable = recorded.filter((r) => {
+      const t = licenseTier(r.license);
+      return (t === 'permissive' || t === 'copyleft') && r.isOa !== true;
+    }).length;
+    expect(redistributableButNotReadable).toBe(0);
+
+    // And the gap that makes the distinction worth stating at all: works that are free to
+    // read under no licence grant. If this ever reached zero the bullet would be saying
+    // nothing, because read and redistribute would have collapsed into one field.
+    const readableButUnlicensed = recorded.filter(
+      (r) => r.isOa === true && licenseTier(r.license) === 'unknown',
+    ).length;
+    expect(readableButUnlicensed).toBeGreaterThan(0);
   });
 });
 

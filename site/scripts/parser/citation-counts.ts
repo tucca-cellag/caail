@@ -10,7 +10,13 @@
 import { readFileSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { CitationCacheSchema, citedByCountByDoi, licenseByDoi, doiKey } from './citations.js';
+import {
+  CitationCacheSchema,
+  citedByCountByDoi,
+  licenseByDoi,
+  isOaByDoi,
+  doiKey,
+} from './citations.js';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const CACHE_PATH = join(HERE, 'citation-cache.json');
@@ -37,6 +43,21 @@ export function loadPaperLicenses(): Map<string, string> {
   if (!existsSync(CACHE_PATH)) return new Map();
   const parsed = CitationCacheSchema.safeParse(JSON.parse(readFileSync(CACHE_PATH, 'utf-8')));
   return parsed.success ? licenseByDoi(parsed.data) : new Map();
+}
+
+/**
+ * Load `doiKey -> is_oa` from the committed cache, for the paper free-to-read axis.
+ * Empty if the cache is absent or invalid.
+ *
+ * Separate from `loadPaperLicenses` on purpose. Free to read and free to redistribute are
+ * different questions with different answers, and the homepage states both figures over
+ * one named denominator — which only holds if both are derived here rather than written
+ * down beside each other.
+ */
+export function loadPaperIsOa(): Map<string, boolean> {
+  if (!existsSync(CACHE_PATH)) return new Map();
+  const parsed = CitationCacheSchema.safeParse(JSON.parse(readFileSync(CACHE_PATH, 'utf-8')));
+  return parsed.success ? isOaByDoi(parsed.data) : new Map();
 }
 
 /**

@@ -113,6 +113,29 @@ export function licenseByDoi(cache?: CitationCache | null): Map<string, string> 
 }
 
 /**
+ * Map bare-lowercase DOI -> OpenAlex `open_access.is_oa`, for folding the free-to-READ
+ * axis onto papers at parse.
+ *
+ * Deliberately a SEPARATE map from `licenseByDoi`, and deliberately keyed on presence
+ * rather than truth: a work recorded as `is_oa: false` is a different fact from a work
+ * with no OpenAlex record at all, and the homepage states both figures over a denominator
+ * it names. Works whose `isOa` is null (not yet re-fetched) are omitted, so the absent
+ * ones can be counted rather than silently read as closed.
+ *
+ * The two axes must not be conflated: works that are free to read under no license grant
+ * at all are common here, so `is_oa` is not a redistribution right. That distinction is
+ * the whole reason both maps exist.
+ */
+export function isOaByDoi(cache?: CitationCache | null): Map<string, boolean> {
+  const out = new Map<string, boolean>();
+  if (!cache) return out;
+  for (const [doi, work] of Object.entries(cache.works)) {
+    if (work.isOa != null) out.set(doi, work.isOa);
+  }
+  return out;
+}
+
+/**
  * Normalize an OpenAlex work id to its bare lowercase identifier (last path
  * segment), so `https://openalex.org/W123` and a bare `W123` compare equal.
  */
