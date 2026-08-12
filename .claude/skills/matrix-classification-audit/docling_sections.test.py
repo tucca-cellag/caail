@@ -166,6 +166,26 @@ SYNTHETIC = [
     ("a methods heading at index 0 is not discarded",
      h("Materials and Methods", "Cell culture", "Results", "Discussion"),
      "Materials and Methods", "Results"),
+
+    # Publisher house styles, each found in a real ref that resolved to nothing.
+    # ACS prints a black square before every section heading (ref 105).
+    ("ACS glyph-prefixed headings",
+     h("A Paper Title", "■ INTRODUCTION", "■ MATERIALS AND METHODS",
+       "■ RESULTS", "■ DISCUSSION", "■ REFERENCES"),
+     "MATERIALS AND METHODS", "RESULTS"),
+    # Wiley separates the section number with a pipe (ref 3). Numbering is kept
+    # in the returned text -- only decoration is stripped -- so the expected
+    # heading carries its "2 | ", exactly as ref 43 carries its "2. ".
+    ("Wiley pipe-separated section numbers",
+     h("A Paper Title", "1 | INTRODUCTION", "2 | METHODS",
+       "2.1 | Cells and media components", "3 | RESULTS",
+       "4 | DISCUSSION AND CONCLUSION"),
+     "2 | METHODS", "3 | RESULTS"),
+    # A preprint whose only methods heading is a summary (ref 56).
+    ("Methods Summary is a methods heading",
+     h("A Paper Title", "1. Introduction", "2. Results", "3. Discussion",
+       "Methods Summary", "Acknowledgments", "References"),
+     "Methods Summary", "Acknowledgments"),
 ]
 
 print("\n=== synthetic structures that broke the first implementation ===")

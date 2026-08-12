@@ -36,7 +36,7 @@ import re
 
 # A leading section number: arabic (`2`, `2.1`), roman (`II.`, `iv`), or a
 # lettered subsection (`A.`). Roman numerals are why ref 34 fell through.
-_NUM = r"(?:(?:\d+(?:\.\d+)*|[IVXLC]+|[A-Z])[.)]?\s+)?"
+_NUM = r"(?:(?:\d+(?:\.\d+)*|[IVXLC]+|[A-Z])\s*[.)|]?\s+)?"
 
 # Headings that name a methods section. Ordered vocabulary, not a guess: every
 # alternative past the first three was added because a paper in the corpus used
@@ -45,6 +45,7 @@ METHODS_HEADING_RE = re.compile(
     _NUM + r"(?:"
     r"materials\s+and\s+methods"
     r"|(?:online|star|extended|supplementary|detailed)\s+methods?"
+    r"|methods?\s+summary|summary\s+of\s+methods?"
     r"|methods?(?:\s+and\s+materials)?"
     r"|methodology"
     r"|experimental(?:\s+(?:section|procedures?|methods?|setup|design))?"
@@ -118,9 +119,23 @@ FRONT_MATTER_RE = re.compile(
     r"open\s*access|table\s+of\s+contents|contents)\s*$", re.IGNORECASE)
 
 
+# Decorative glyphs some publishers print before a section heading. ACS sets its
+# headings as "■ MATERIALS AND METHODS", which matched nothing until these were
+# stripped; ref 105 resolved to no section at all because of one square.
+_DECOR_RE = re.compile(r"^[\s■▪●◇◆★☆§*†‡•~_=–—-]+")
+
+
 def _clean(text):
-    """Normalize a heading for matching: collapse whitespace, drop trailing colon."""
-    return re.sub(r"\s+", " ", (text or "")).strip().rstrip(":").strip()
+    """Normalize a heading for matching.
+
+    Collapses whitespace, strips publisher decoration from the front, and drops
+    a trailing colon. Section *numbering* is not stripped here -- `_NUM` handles
+    it inside each pattern, so that a heading which is only a number stays
+    distinguishable from one with no numbering at all.
+    """
+    t = re.sub(r"\s+", " ", (text or "")).strip()
+    t = _DECOR_RE.sub("", t)
+    return t.rstrip(":").strip()
 
 
 def find_methods_span(headings):
