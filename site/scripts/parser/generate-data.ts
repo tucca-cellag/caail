@@ -395,10 +395,18 @@ export function generateData(
     'utf-8',
   );
 
-  // Write taxonomy.json.
+  // Write taxonomy.json — the site copy carries `definitions` ONLY.
+  //
+  // PapersExplorer imports this file and mounts client:load, so every byte here
+  // ships in the explorer's JS bundle. It reads `taxonomy.definitions` and
+  // nothing else, and `definitions` is by construction `axes.area ∪ axes.method`
+  // — so emitting `axes` too would ship a verbatim second copy of all 32 matrix
+  // definitions plus 8 theme blurbs the component never reads, roughly doubling
+  // the file. The axis split is for consumers that must disambiguate an axis;
+  // the only one that does is the agent API, which gets the full model below.
   writeFileSync(
     join(outDir, 'taxonomy.json'),
-    JSON.stringify(taxonomy, null, 2) + '\n',
+    JSON.stringify({ definitions: taxonomy.definitions }, null, 2) + '\n',
     'utf-8',
   );
 

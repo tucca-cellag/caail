@@ -356,10 +356,20 @@ export function checkTaxonomyAxes(db: Db, repoRoot: string = REPO_ROOT): CheckRe
   // checkTopicTiers asserts, so a theme added to Taxonomy.md without a topic
   // record (or the reverse) fails here rather than drifting quietly. Labels are
   // prose and slugs are identifiers, so only the cardinality is comparable.
+  //
+  // The likely cause of a mismatch is not theme drift, so the message says so:
+  // Taxonomy.md's theme section documents the fixed backbone only, and states
+  // that "finer tags live under them and are minted only when several items
+  // cluster". Fine tags are DB records described in that prose, never `###`
+  // headings, so the first one written as a heading would otherwise fail here
+  // with a message blaming the wrong thing.
   const themeCount = Object.keys(taxonomy.axes.theme).length;
-  out.push(ok(`Taxonomy.md defines exactly ${THEME_SLUGS.length} subject themes`,
+  out.push(ok(`Taxonomy.md documents exactly the ${THEME_SLUGS.length} backbone themes`,
     themeCount === THEME_SLUGS.length,
-    `Taxonomy.md has ${themeCount}, the DB backbone has ${THEME_SLUGS.length}`));
+    `"## Subject themes (topic tags)" has ${themeCount} "###" heading(s), the DB backbone has ` +
+    `${THEME_SLUGS.length}. Fine tags are minted in the DB and described in that section's prose, ` +
+    `not written as "###" headings, so a count above the backbone usually means a fine tag was ` +
+    `added as a heading rather than that a theme was added or removed.`));
 
   return out;
 }

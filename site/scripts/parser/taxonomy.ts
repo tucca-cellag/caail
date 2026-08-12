@@ -116,14 +116,22 @@ export function buildTaxonomyModel(
       3,
     );
 
+    // Flatten before deciding whether this section defines anything, so
+    // "carries definitions" means what it says. `flattenDefinition` keeps only
+    // paragraphs, so an H3 whose body is a list or a table contributes nothing
+    // and must not make an unmapped H2 look like a vocabulary.
+    const defined = sections
+      .map(({ heading, nodes }) => ({ heading, text: flattenDefinition(nodes) }))
+      .filter(({ text }) => text.length > 0);
+
     const axis = AXIS_BY_SECTION.get(group.heading);
     if (axis === undefined) {
       // An H2 with no definitions under it is just prose, and fine. One that
       // carries definitions has no axis to file them under, and guessing is
       // how the original collision would come back.
-      if (sections.length === 0) continue;
+      if (defined.length === 0) continue;
       throw new Error(
-        `taxonomy: "## ${group.heading}" carries ${sections.length} "###" ` +
+        `taxonomy: "## ${group.heading}" carries ${defined.length} "###" ` +
           `definition(s) but is not a known axis. Taxonomy.md defines three ` +
           `vocabularies: ${[...AXIS_BY_SECTION.keys()].map((k) => `"${k}"`).join(', ')}. ` +
           `Add the new section to AXIS_BY_SECTION in ${'scripts/parser/taxonomy.ts'} ` +
@@ -132,9 +140,7 @@ export function buildTaxonomyModel(
     }
 
     const bucket = axes[axis];
-    for (const { heading, nodes } of sections) {
-      const text = flattenDefinition(nodes);
-      if (text.length === 0) continue;
+    for (const { heading, text } of defined) {
       if (bucket[heading] !== undefined) {
         throw new Error(
           `taxonomy: "### ${heading}" is defined twice under ` +

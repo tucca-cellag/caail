@@ -12,7 +12,8 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { openDb, importNdjson, type Db } from './lib.js';
-import { checkIntegrity, checkReachability, checkColumnDrift, checkTopicTiers, checkCatalogHeadings, checkLicenses, checkManualLicenseKeys, checkDois, checkManualDoiKeys, checkRelatedDois, runChecks } from './check.js';
+import { checkIntegrity, checkReachability, checkColumnDrift, checkTaxonomyAxes, checkTopicTiers, checkCatalogHeadings, checkLicenses, checkManualLicenseKeys, checkDois, checkManualDoiKeys, checkRelatedDois, runChecks } from './check.js';
+import { THEME_SLUGS } from './seed.js';
 
 const failing = (results: { label: string; ok: boolean }[], match: RegExp) =>
   results.some((r) => match.test(r.label) && !r.ok);
@@ -113,6 +114,91 @@ describe('checkColumnDrift', () => {
   it('returns a failing check (not an ENOENT crash) when a source file is missing', () => {
     const emptyDir = mkdtempSync(join(tmpdir(), 'caail-nocols-'));
     const res = checkColumnDrift(db, emptyDir); // no CONTRIBUTING.md / CLAUDE.md present
+    expect(res.every((r) => !r.ok)).toBe(true);
+    expect(res.some((r) => /not found/.test(r.detail))).toBe(true);
+  });
+});
+
+describe('checkTaxonomyAxes', () => {
+  // The theme count is derived from the same backbone the guard compares against,
+  // so this fixture cannot drift from THEME_SLUGS the way a literal 8 would.
+  const themes = THEME_SLUGS.map((slug, i) => `### Theme ${i + 1} (${slug})\nBlurb ${i + 1}.\n`).join('\n');
+
+  const taxonomyMd = (opts: {
+    areas?: string[];
+    methods?: string[];
+    themeCount?: number;
+    extraAreaDupe?: boolean;
+  } = {}) => {
+    const areas = opts.areas ?? ['Media Optimization'];
+    const methods = opts.methods ?? ['Deep Learning'];
+    const themeBlock = opts.themeCount === undefined
+      ? themes
+      : THEME_SLUGS.slice(0, opts.themeCount).map((s, i) => `### Theme ${i + 1} (${s})\nBlurb ${i + 1}.\n`).join('\n');
+    return [
+      '# Matrix taxonomy fixture',
+      '',
+      '## Research areas (columns)',
+      '',
+      ...areas.map((a) => `### ${a}\nColumn scope for ${a}. Out of scope: everything else.\n`),
+      ...(opts.extraAreaDupe ? [`### ${areas[0]}\nA second definition of the same column.\n`] : []),
+      '## AI/ML methods (rows)',
+      '',
+      ...methods.map((m) => `### ${m}\nMethod definition for ${m}.\n`),
+      '## Subject themes (topic tags)',
+      '',
+      themeBlock,
+    ].join('\n');
+  };
+
+  const fixtureRoot = (body: string) => {
+    const dir = mkdtempSync(join(tmpdir(), 'caail-tax-'));
+    writeFileSync(join(dir, 'Taxonomy.md'), body);
+    return dir;
+  };
+
+  it('passes when every DB axis label is defined under its own H2', () => {
+    const res = checkTaxonomyAxes(miniDb(), fixtureRoot(taxonomyMd()));
+    expect(res.every((r) => r.ok)).toBe(true);
+  });
+
+  it('passes when a column and a theme share a label (the GH #133 case is legal)', () => {
+    // 'Media Optimization' as both an area and a theme must not fail: sharing
+    // across axes is the behaviour the axis keying exists to permit.
+    const body = taxonomyMd().replace(
+      `### Theme 1 (${THEME_SLUGS[0]})`,
+      '### Media Optimization',
+    );
+    const res = checkTaxonomyAxes(miniDb(), fixtureRoot(body));
+    expect(res.every((r) => r.ok)).toBe(true);
+  });
+
+  it('flags an area the DB has but Taxonomy.md does not define', () => {
+    const res = checkTaxonomyAxes(miniDb(), fixtureRoot(taxonomyMd({ areas: ['Scaffolding'] })));
+    expect(failing(res, /DB area/)).toBe(true);
+    expect(res.some((r) => /Media Optimization/.test(r.detail))).toBe(true);
+  });
+
+  it('flags a method the DB has but Taxonomy.md does not define', () => {
+    const res = checkTaxonomyAxes(miniDb(), fixtureRoot(taxonomyMd({ methods: ['GNN'] })));
+    expect(failing(res, /DB method/)).toBe(true);
+    expect(res.some((r) => /Deep Learning/.test(r.detail))).toBe(true);
+  });
+
+  it('flags a theme count that does not match the DB backbone', () => {
+    const res = checkTaxonomyAxes(miniDb(), fixtureRoot(taxonomyMd({ themeCount: THEME_SLUGS.length - 1 })));
+    expect(failing(res, /backbone themes/)).toBe(true);
+  });
+
+  it('reports a within-axis duplicate as a failing check, not a thrown error', () => {
+    const res = checkTaxonomyAxes(miniDb(), fixtureRoot(taxonomyMd({ extraAreaDupe: true })));
+    expect(failing(res, /exactly one axis/)).toBe(true);
+    expect(res.some((r) => /defined twice/.test(r.detail))).toBe(true);
+  });
+
+  it('returns a failing check (not an ENOENT crash) when Taxonomy.md is missing', () => {
+    const emptyDir = mkdtempSync(join(tmpdir(), 'caail-notax-'));
+    const res = checkTaxonomyAxes(miniDb(), emptyDir);
     expect(res.every((r) => !r.ok)).toBe(true);
     expect(res.some((r) => /not found/.test(r.detail))).toBe(true);
   });

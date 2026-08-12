@@ -332,7 +332,7 @@ export function buildManifest(
           'my own run with", and page "Benchmarks" for "what could I evaluate a model against".',
       },
       { path: 'topics.json', use: 'Subject tree plus an inverted index: topic → items across all content types. Start here for "what should I use for X".' },
-      { path: 'taxonomy.json', use: 'What each method and area means in CAAIL, with exclusion criteria. Read before trusting a placement.' },
+      { path: 'taxonomy.json', use: 'What each method, area and subject theme means in CAAIL, with exclusion criteria. Read before trusting a placement. Definitions are split by vocabulary under `axes` (`area`, `method`, `theme`) because a label may appear in more than one — "Bioprocess & Scale-Up" is both a matrix column and a theme, with different text. `definitions` is the flat matrix lookup (areas + methods only); look a theme up under `axes.theme`.' },
       { path: OPENAPI_FILE, use: 'OpenAPI 3.1 description of every endpoint above, generated from the schemas that validate them. Read this instead of guessing a key.' },
     ],
   };
