@@ -2,7 +2,7 @@
 
 Intro paragraph before any heading — must be ignored.
 
-## Group A (an H2, not a definition)
+## Research areas (columns)
 
 ### Alpha
 First paragraph of Alpha
@@ -13,7 +13,20 @@ Beta paragraph one.
 
 Beta paragraph two.
 
-## Group B (another H2)
+## AI/ML methods (rows)
 
 ### Gamma / Delta
 Gamma definition with *emphasis* dropped and a cross-ref (→ *Alpha*).
+
+## Subject themes (topic tags)
+
+### Alpha
+Theme text that deliberately shares its label with the Alpha research area.
+Legal across axes, and it must not overwrite the column definition.
+
+### Epsilon
+A theme with a label of its own.
+
+## Notes (an H2 carrying no definitions)
+
+Prose under an unmapped H2 is fine so long as it defines nothing.

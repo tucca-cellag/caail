@@ -12,7 +12,10 @@
  *    (the matrix<->reference reachability lint, enforced at the source);
  *  - #81 drift: the matrix COLUMN list enumerated in CONTRIBUTING.md / CLAUDE.md
  *    must match the DB areas exactly (the volatile row list is de-enumerated, so
- *    only the stable column axis is guarded).
+ *    only the stable column axis is guarded);
+ *  - #133 axis resolution: Taxonomy.md's three vocabularies may share a label,
+ *    so every DB row/column must resolve to a definition under its OWN H2, and
+ *    no label may be defined twice within one axis.
  */
 
 import { readFileSync, existsSync } from 'node:fs';
@@ -20,6 +23,8 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { importNdjson, REPO_ROOT, SITE_ROOT, type Db } from './lib.js';
 import { THEME_SLUGS } from './seed.js';
+import { buildTaxonomyModel } from '../parser/taxonomy.js';
+import type { TaxonomyData } from '../parser/types.js';
 
 const MANUAL_LICENSES_PATH = join(SITE_ROOT, 'scripts', 'db', 'licenses-manual.json');
 const MANUAL_DOIS_PATH = join(SITE_ROOT, 'scripts', 'db', 'dois-manual.json');
@@ -305,9 +310,64 @@ export function checkRelatedDois(db: Db, relatedPath: string = RELATED_DOIS_PATH
   return out;
 }
 
+/**
+ * Taxonomy axis guard: every matrix row and column must resolve to a definition
+ * under *its own* H2 vocabulary in Taxonomy.md.
+ *
+ * The file defines three vocabularies that may legitimately share a label — the
+ * `Bioprocess & Scale-Up` matrix column and the `Bioprocess & Scale-Up` subject
+ * theme are different things with the same name. A whole-file flatten therefore
+ * loses one of them silently, and the pre-existing guards could not see it:
+ * `generate-data.ts` asserted the label had a *non-empty* definition (it did,
+ * the theme's), and nothing asserted heading uniqueness at all.
+ *
+ * `buildTaxonomyModel` throws on a within-axis duplicate or an unmapped H2, so
+ * this reports that as a failure rather than crashing the run, then checks the
+ * DB's own axis labels against the axis-qualified maps.
+ */
+export function checkTaxonomyAxes(db: Db, repoRoot: string = REPO_ROOT): CheckResult[] {
+  const out: CheckResult[] = [];
+  const taxonomyPath = join(repoRoot, 'Taxonomy.md');
+  if (!existsSync(taxonomyPath)) {
+    return [ok('Taxonomy.md parses with every definition on exactly one axis', false,
+      `Taxonomy.md not found at ${repoRoot}`)];
+  }
+
+  let taxonomy: TaxonomyData;
+  try {
+    taxonomy = buildTaxonomyModel(taxonomyPath);
+  } catch (err) {
+    return [ok('Taxonomy.md parses with every definition on exactly one axis', false,
+      err instanceof Error ? err.message : String(err))];
+  }
+  out.push(ok('Taxonomy.md parses with every definition on exactly one axis', true));
+
+  const areas = (db.prepare('SELECT label FROM areas').all() as { label: string }[]).map((r) => r.label);
+  const missingAreas = areas.filter((label) => !taxonomy.axes.area[label]?.trim());
+  out.push(ok('every DB area is defined under "## Research areas (columns)"', missingAreas.length === 0,
+    `missing: [${missingAreas.join(', ')}]`));
+
+  const methods = (db.prepare('SELECT label FROM methods').all() as { label: string }[]).map((r) => r.label);
+  const missingMethods = methods.filter((label) => !taxonomy.axes.method[label]?.trim());
+  out.push(ok('every DB method is defined under "## AI/ML methods (rows)"', missingMethods.length === 0,
+    `missing: [${missingMethods.join(', ')}]`));
+
+  // The themes axis is guarded by count against the same THEME_SLUGS that
+  // checkTopicTiers asserts, so a theme added to Taxonomy.md without a topic
+  // record (or the reverse) fails here rather than drifting quietly. Labels are
+  // prose and slugs are identifiers, so only the cardinality is comparable.
+  const themeCount = Object.keys(taxonomy.axes.theme).length;
+  out.push(ok(`Taxonomy.md defines exactly ${THEME_SLUGS.length} subject themes`,
+    themeCount === THEME_SLUGS.length,
+    `Taxonomy.md has ${themeCount}, the DB backbone has ${THEME_SLUGS.length}`));
+
+  return out;
+}
+
 /** Run every guard against a DB. Returns all results (ok + failing). */
 export function runChecks(db: Db, repoRoot: string = REPO_ROOT): CheckResult[] {
   return [...checkIntegrity(db), ...checkReachability(db), ...checkColumnDrift(db, repoRoot),
+    ...checkTaxonomyAxes(db, repoRoot),
     ...checkTopicTiers(db), ...checkCatalogHeadings(db), ...checkLicenses(db), ...checkManualLicenseKeys(db),
     ...checkDois(db), ...checkManualDoiKeys(db), ...checkRelatedDois(db)];
 }

@@ -1,18 +1,36 @@
 /**
  * taxonomy.ts — turns the canonical Taxonomy.md into a validated TaxonomyData
- * model: a `label → definition` map for every matrix row and column.
+ * model: per-axis `label → definition` maps, plus a flat matrix lookup.
  *
  * Taxonomy.md is the single source of truth for what each matrix axis means.
- * The Papers Explorer shows these definitions in a hover/click popup, so the
- * text has to be available client-side; extracting it here (rather than
- * hard-coding it in the component) keeps the popup in lock-step with the
- * canonical file — a renamed row can't silently drift from its definition.
+ * The Papers Explorer shows these definitions in a hover/click popup, and the
+ * agent API serves them as `taxonomy.json` ("read before trusting a
+ * placement"), so the text has to be available outside the Markdown. Extracting
+ * it here (rather than hard-coding it in the component) keeps both in lock-step
+ * with the canonical file — a renamed row can't silently drift.
  *
- * Each `### Heading` in Taxonomy.md is a row or column whose heading text
- * matches the matrix label in Papers.md exactly (e.g. "GNN", "GAN / VAE",
- * "Bioprocess & Scale-Up"). We split on those H3 headings via `sectionsAfter`
- * and flatten the following paragraph(s) to plain text — markdown emphasis is
- * dropped, which is fine for a tooltip.
+ * ## Why definitions are keyed by axis and not by heading text alone
+ *
+ * Taxonomy.md defines three *separate* vocabularies under three H2 sections:
+ * research areas (matrix columns), AI/ML methods (matrix rows), and subject
+ * themes (topic tags). They are deliberately allowed to share a label — the
+ * `Bioprocess & Scale-Up` column and the `Bioprocess & Scale-Up` theme are
+ * different things that happen to be named the same, and renaming either to
+ * dodge the clash would be the tail wagging the dog.
+ *
+ * An earlier version flattened every `### Heading` into one map, so the later
+ * heading won. The theme blurb (two lines, no scope boundaries, ending in a
+ * self-reference) silently replaced the column scope (explicit in-scope and
+ * out-of-scope criteria) for a column carrying 29 primary references, and
+ * `taxonomy.json` shipped 39 definitions where the file held 40. Nothing
+ * caught it: the downstream guard asserted the label had a *non-empty*
+ * definition, and it did — just the wrong one.
+ *
+ * So: uniqueness is enforced *within* an axis, sharing is allowed *across*
+ * axes, and every lookup must name the axis it means. `definitions` remains a
+ * flat map for the matrix lookup callers already do, but it now covers areas
+ * and methods only, and building it asserts those two do not collide with each
+ * other (which would make the flat map ambiguous again by a different route).
  *
  * No disk writes — emitting taxonomy.json is generate-data.ts's job. The
  * every-matrix-label-has-a-definition cross-check also lives there, where the
@@ -21,6 +39,7 @@
 
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import type { Root } from 'mdast';
 import { toString as mdToString } from 'mdast-util-to-string';
 
 import { parseMarkdown, sectionsAfter } from './markdown.js';
@@ -35,16 +54,47 @@ export const TAXONOMY_MD_PATH: string = fileURLToPath(
   new URL('../../../Taxonomy.md', import.meta.url),
 );
 
+/** The three vocabularies Taxonomy.md defines. */
+export type TaxonomyAxis = 'area' | 'method' | 'theme';
+
+/**
+ * Taxonomy.md's H2 group headings → the vocabulary each one defines.
+ *
+ * This is the axis assignment, and it is deliberately an exact-match table
+ * rather than a heuristic: a new H2 that carries definitions fails the build
+ * with a message naming this constant, so adding a fourth vocabulary is a
+ * decision someone makes rather than one that happens.
+ */
+const AXIS_BY_SECTION: ReadonlyMap<string, TaxonomyAxis> = new Map([
+  ['Research areas (columns)', 'area'],
+  ['AI/ML methods (rows)', 'method'],
+  ['Subject themes (topic tags)', 'theme'],
+]);
+
+/** Flatten a heading's prose paragraphs to one clean plain-text line. */
+function flattenDefinition(nodes: readonly { type: string }[]): string {
+  return nodes
+    .filter((n) => n.type === 'paragraph')
+    // Collapse the source's hard line-wrapping (and any inner runs) to single
+    // spaces so the stored definition is one clean line per paragraph.
+    .map((n) => mdToString(n).replace(/\s+/g, ' ').trim())
+    .filter((t) => t.length > 0)
+    .join(' ')
+    .trim();
+}
+
 /**
  * Build the validated TaxonomyData model from a Taxonomy.md file.
  *
- * Every `### Heading` becomes one `definitions[heading]` entry whose value is
- * the heading's paragraph prose flattened to plain text. The H2 section
- * headers ("Research areas (columns)", "AI/ML methods (rows)") are depth-2 and
- * so don't start an H3 section — they cleanly separate the two groups.
+ * Each `## Group` is one axis (see AXIS_BY_SECTION) and each `### Heading`
+ * beneath it is one definition in that axis, valued at the heading's prose
+ * flattened to plain text.
  *
  * @param taxonomyPath  Path to Taxonomy.md (defaults to the repo-root file).
  * @returns             A schema-validated TaxonomyData object.
+ * @throws              If a heading is defined twice within one axis, if an
+ *                      area and a method share a label, or if definitions
+ *                      appear under an H2 that AXIS_BY_SECTION does not map.
  */
 export function buildTaxonomyModel(
   taxonomyPath: string = TAXONOMY_MD_PATH,
@@ -52,24 +102,65 @@ export function buildTaxonomyModel(
   const src = readFileSync(taxonomyPath, 'utf-8');
   const root = parseMarkdown(src);
 
-  const definitions: Record<string, string> = {};
+  const axes: Record<TaxonomyAxis, Record<string, string>> = {
+    area: {},
+    method: {},
+    theme: {},
+  };
 
-  for (const { heading, nodes } of sectionsAfter(root, 3)) {
-    // Flatten only the prose paragraphs under the heading; join multi-paragraph
-    // definitions with a single space so the popup reads as one block.
-    const text = nodes
-      .filter((n) => n.type === 'paragraph')
-      // Collapse the source's hard line-wrapping (and any inner runs) to single
-      // spaces so the stored definition is one clean line per paragraph.
-      .map((n) => mdToString(n).replace(/\s+/g, ' ').trim())
-      .filter((t) => t.length > 0)
-      .join(' ')
-      .trim();
+  for (const group of sectionsAfter(root, 2)) {
+    // Re-split this H2's contents on its H3 headings, reusing the same helper
+    // rather than hand-rolling a second walk.
+    const sections = sectionsAfter(
+      { type: 'root', children: group.nodes } as Root,
+      3,
+    );
 
-    if (text.length > 0) {
-      definitions[heading] = text;
+    const axis = AXIS_BY_SECTION.get(group.heading);
+    if (axis === undefined) {
+      // An H2 with no definitions under it is just prose, and fine. One that
+      // carries definitions has no axis to file them under, and guessing is
+      // how the original collision would come back.
+      if (sections.length === 0) continue;
+      throw new Error(
+        `taxonomy: "## ${group.heading}" carries ${sections.length} "###" ` +
+          `definition(s) but is not a known axis. Taxonomy.md defines three ` +
+          `vocabularies: ${[...AXIS_BY_SECTION.keys()].map((k) => `"${k}"`).join(', ')}. ` +
+          `Add the new section to AXIS_BY_SECTION in ${'scripts/parser/taxonomy.ts'} ` +
+          `and decide which vocabulary it defines.`,
+      );
+    }
+
+    const bucket = axes[axis];
+    for (const { heading, nodes } of sections) {
+      const text = flattenDefinition(nodes);
+      if (text.length === 0) continue;
+      if (bucket[heading] !== undefined) {
+        throw new Error(
+          `taxonomy: "### ${heading}" is defined twice under ` +
+            `"## ${group.heading}". Labels may repeat across axes (a column and ` +
+            `a theme can share a name) but must be unique within one, or a ` +
+            `lookup silently resolves to whichever came last.`,
+        );
+      }
+      bucket[heading] = text;
     }
   }
 
-  return TaxonomyDataSchema.parse({ definitions });
+  // The flat matrix lookup: areas + methods, which is what a Papers.md label
+  // can be. Themes are reachable only via `axes.theme`, so a theme can never
+  // again answer a question about a column.
+  const definitions: Record<string, string> = { ...axes.area };
+  for (const [label, text] of Object.entries(axes.method)) {
+    if (definitions[label] !== undefined) {
+      throw new Error(
+        `taxonomy: "${label}" is both a research area and an AI/ML method. ` +
+          `The two share the flat matrix lookup, so a shared label makes it ` +
+          `ambiguous. Rename one, or split the lookup by axis at every caller.`,
+      );
+    }
+    definitions[label] = text;
+  }
+
+  return TaxonomyDataSchema.parse({ definitions, axes });
 }
