@@ -273,19 +273,30 @@ export function generateData(
     metrics.citations.withCount,
   );
 
-  // Coverage guard: every matrix row (method) and column (area) must have a
-  // non-empty Taxonomy.md definition, or the explorer popup would show a blank.
-  // A miss means a row/column label drifted from its `### Heading` — fail the
-  // build rather than ship an empty definition.
-  const missingDefs = [
-    ...model.methods,
-    ...model.areas.map((a) => a.label),
-  ].filter((label) => !taxonomy.definitions[label]?.trim());
+  // Coverage guard: every matrix row (method) and column (area) must resolve to
+  // a non-empty Taxonomy.md definition *under its own axis*. A miss means a
+  // row/column label drifted from its `### Heading` — fail the build rather
+  // than ship an empty definition.
+  //
+  // Checking the axis, not just non-emptiness, is the point. Taxonomy.md's
+  // three H2 groups are separate vocabularies that may share a label, so
+  // "this label has some definition somewhere in the file" was satisfiable by
+  // a subject theme standing in for a matrix column — which is exactly how the
+  // Bioprocess & Scale-Up column lost its in-scope/out-of-scope criteria while
+  // every check stayed green.
+  const missingDefs: Array<[label: string, axis: 'area' | 'method']> = [
+    ...model.methods.map((label) => [label, 'method' as const] as [string, 'method']),
+    ...model.areas.map((a) => [a.label, 'area' as const] as [string, 'area']),
+  ].filter(([label, axis]) => !taxonomy.axes[axis][label]?.trim());
   if (missingDefs.length > 0) {
     throw new Error(
       `generate-data: ${missingDefs.length} matrix label(s) have no Taxonomy.md ` +
-        `definition: ${missingDefs.join(', ')}. Add a "### <label>" heading to ` +
-        `Taxonomy.md (the heading text must match the matrix label exactly).`,
+        `definition under their own axis: ` +
+        `${missingDefs.map(([l, a]) => `"${l}" (${a})`).join(', ')}. Add a ` +
+        `"### <label>" heading under "## Research areas (columns)" for a column, ` +
+        `or "## AI/ML methods (rows)" for a row; the heading text must match the ` +
+        `matrix label exactly. A heading with the same text under a different H2 ` +
+        `does not satisfy this — it belongs to a different vocabulary.`,
     );
   }
 
@@ -384,10 +395,18 @@ export function generateData(
     'utf-8',
   );
 
-  // Write taxonomy.json.
+  // Write taxonomy.json — the site copy carries `definitions` ONLY.
+  //
+  // PapersExplorer imports this file and mounts client:load, so every byte here
+  // ships in the explorer's JS bundle. It reads `taxonomy.definitions` and
+  // nothing else, and `definitions` is by construction `axes.area ∪ axes.method`
+  // — so emitting `axes` too would ship a verbatim second copy of all 32 matrix
+  // definitions plus 8 theme blurbs the component never reads, roughly doubling
+  // the file. The axis split is for consumers that must disambiguate an axis;
+  // the only one that does is the agent API, which gets the full model below.
   writeFileSync(
     join(outDir, 'taxonomy.json'),
-    JSON.stringify(taxonomy, null, 2) + '\n',
+    JSON.stringify({ definitions: taxonomy.definitions }, null, 2) + '\n',
     'utf-8',
   );
 
@@ -428,7 +447,13 @@ export function generateData(
     graphEdges: graph.edges.length,
     recentEntries: recent.length,
     apiFiles: apiFiles.length,
-    taxonomyDefs: Object.keys(taxonomy.definitions).length,
+    // Count across all three axes, so this equals the number of `###` headings
+    // in Taxonomy.md and can be checked against the file by eye. Counting
+    // `definitions` instead would silently omit the themes.
+    taxonomyDefs:
+      Object.keys(taxonomy.axes.area).length +
+      Object.keys(taxonomy.axes.method).length +
+      Object.keys(taxonomy.axes.theme).length,
     awesomeLists: awesome.groups.reduce((n, g) => n + g.items.length, 0),
   };
 }
@@ -477,7 +502,7 @@ if (isMain) {
         `awesome-lists.json (${awesomeLists} lists), ` +
         `graph.json (${graphNodes} nodes / ${graphEdges} edges), metrics.json, ` +
         `recent.json (${recentEntries} entries), ` +
-        `taxonomy.json (${taxonomyDefs} definitions), ` +
+        `taxonomy.json (${taxonomyDefs} definitions across 3 axes), ` +
         `and llms-full.txt (${llmsBytes} bytes)`,
     );
     // eslint-disable-next-line no-console

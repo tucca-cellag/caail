@@ -54,7 +54,7 @@
     },
     {
       "path": "taxonomy.json",
-      "use": "What each method and area means in CAAIL, with exclusion criteria. Read before trusting a placement."
+      "use": "What each method, area and subject theme means in CAAIL, with exclusion criteria. Read before trusting a placement. Definitions are split by vocabulary under `axes` (`area`, `method`, `theme`) because a label may appear in more than one — \"Bioprocess & Scale-Up\" is both a matrix column and a theme, with different text. `definitions` is the flat matrix lookup (areas + methods only); look a theme up under `axes.theme`."
     },
     {
       "path": "openapi.json",

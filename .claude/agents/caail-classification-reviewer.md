@@ -60,6 +60,34 @@ The dispatcher gives you, for one reference, a record (`ref-<id>.json`) with:
   "this paper is cited in area X" signal: the `ResearchAreas/*.md` pages are
   AI-assisted and stale, so the audit does not trust them as evidence.
 
+### Fetching a definition — always name the axis
+
+`Taxonomy.md` defines **three separate vocabularies** under three `##` sections,
+and they are allowed to share a label:
+
+| `##` section | Vocabulary | What a definition there means |
+| --- | --- | --- |
+| `Research areas (columns)` | matrix **column** | full scope, with explicit in-scope / out-of-scope criteria |
+| `AI/ML methods (rows)` | matrix **row** | what the method is, and what it is distinct from |
+| `Subject themes (topic tags)` | topic tag | a one-line subject blurb, **no scope boundaries** |
+
+`Bioprocess & Scale-Up` exists as both a column and a theme. So a bare search
+for `### Bioprocess & Scale-Up` has two hits, and the theme one is two lines
+that end in a self-reference. **Judging a placement against it is judging against
+nothing, and it produces a confident verdict rather than an error.**
+
+Two safe ways to fetch, in order of preference:
+
+1. **`site/public/api/taxonomy.json`**, which is axis-resolved and build-checked:
+   `axes.area["<column>"]`, `axes.method["<row>"]`, `axes.theme["<theme>"]`. The
+   flat `definitions` map holds areas and methods only, never themes, so it is
+   also safe for a matrix label.
+2. **`Taxonomy.md` directly**, but only after locating the enclosing `##`
+   section and confirming the heading you read sits under the right one.
+
+Never quote a `DEFENSIBLE` span measured against a definition whose axis you did
+not check.
+
 ## Before any `scope` removal — judge the paper against the taxonomy
 
 A paper does **not** have to literally contain cells-in-a-dish to belong in a
@@ -73,11 +101,14 @@ proposing or confirming any `scope`-based REMOVE / area-MISPLACED / NOT-PRIMARY:
    A wrong method row, when the paper still belongs in the matrix, is a
    `MISPLACED` re-row (it stays in the matrix) — reserve `UNSUPPORTED` /
    `NOT-PRIMARY` removals for the cases in step 3.
-2. **Read the `Taxonomy.md` column definition** for the area in question. It
-   states what the column covers (e.g. *Bioprocess & Scale-Up* covers mixing,
-   mass transfer, and CFD of agitated vessels — the engineering of bioreactors —
-   not only experiments with cells already in the tank). Judge against that
-   stated scope, not a literal reading.
+2. **Read the `Taxonomy.md` column definition** for the area in question, fetched
+   by axis per "Fetching a definition" above. It states what the column covers
+   (e.g. the *Bioprocess & Scale-Up* **column** covers mixing, mass transfer, and
+   CFD of agitated vessels — the engineering of bioreactors — not only
+   experiments with cells already in the tank). Judge against that stated scope,
+   not a literal reading. Note this is exactly the label with a same-named theme:
+   the theme blurb says none of that, so a definition without in-scope /
+   out-of-scope criteria is a sign you read the wrong axis.
 3. **Apply the matrix philosophy** (`CLAUDE.md`, "Papers.md" section): a
    general-purpose method with no specific cell-ag application belongs in
    **`AI Tooling / Methodology`** — so a scope concern about a general method is

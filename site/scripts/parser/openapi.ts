@@ -142,10 +142,15 @@ export const API_ENDPOINTS: readonly ApiEndpointSpec[] = [
     file: 'taxonomy.json',
     id: 'Taxonomy',
     schema: ApiTaxonomySchema,
-    summary: 'What each method and area means in CAAIL',
+    summary: 'What each method, area and subject theme means in CAAIL',
     description:
-      "CAAIL's own definition of every matrix row and column, with exclusion criteria. Read " +
-      'before trusting or disputing a placement.',
+      "CAAIL's own definition of every matrix row and column, plus every subject theme, with " +
+      'exclusion criteria. Read before trusting or disputing a placement. ' +
+      'Definitions are keyed by vocabulary under `axes` (`area`, `method`, `theme`) because the ' +
+      'three are separate and may share a label: "Bioprocess & Scale-Up" is both a matrix column ' +
+      'and a subject theme, and only the column text carries in-scope/out-of-scope criteria. ' +
+      '`definitions` is the flat matrix lookup and holds areas + methods ONLY — the eight theme ' +
+      'labels it used to carry now live under `axes.theme`, so resolve a theme there.',
   },
 ];
 

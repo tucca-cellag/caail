@@ -699,18 +699,38 @@ export const RecentEntrySchema = z.object({
 export const RecentSchema = z.array(RecentEntrySchema);
 
 // ---------------------------------------------------------------------------
-// taxonomy.json — Taxonomy.md row/column definitions, keyed by matrix label
+// taxonomy.json — Taxonomy.md definitions, per axis plus a flat matrix lookup
 // ---------------------------------------------------------------------------
+
+/** One vocabulary: `heading text → flattened definition prose`. */
+export const TaxonomyAxisMapSchema = z.record(z.string(), z.string());
 
 /**
  * Schema for taxonomy.json — the plain-text definition of every matrix
- * row/column, extracted from each `### Heading` in Taxonomy.md. Keyed by the
- * exact heading text (which matches the matrix labels in Papers.md), so the
- * explorer can look a label up directly. Values are the flattened definition
- * prose (markdown emphasis dropped).
+ * row/column and subject theme, extracted from each `### Heading` in
+ * Taxonomy.md. Values are the flattened definition prose (markdown emphasis
+ * dropped).
+ *
+ * Two views of the same content, and the distinction matters:
+ *
+ * - `axes` is the source of truth, split by the vocabulary each heading
+ *   belongs to. A label may appear in more than one axis — `Bioprocess &
+ *   Scale-Up` is both a matrix column and a subject theme, with different
+ *   text — so only an axis-qualified lookup is unambiguous.
+ * - `definitions` is the flat matrix lookup (areas + methods, never themes),
+ *   keyed by the exact heading text so the explorer can resolve a Papers.md
+ *   label directly.
+ *
+ * Reading a column's scope out of `definitions` is safe. Reading it out of a
+ * whole-file flatten is not, which is what this shape exists to prevent.
  */
 export const TaxonomyDataSchema = z.object({
   definitions: z.record(z.string(), z.string()),
+  axes: z.object({
+    area: TaxonomyAxisMapSchema,
+    method: TaxonomyAxisMapSchema,
+    theme: TaxonomyAxisMapSchema,
+  }),
 });
 
 /** One node in the topic tree (a theme or a fine tag) with cross-content counts. */

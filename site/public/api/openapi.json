@@ -130,11 +130,11 @@
     "/caail/api/taxonomy.json": {
       "get": {
         "operationId": "getTaxonomy",
-        "summary": "What each method and area means in CAAIL",
-        "description": "CAAIL's own definition of every matrix row and column, with exclusion criteria. Read before trusting or disputing a placement.",
+        "summary": "What each method, area and subject theme means in CAAIL",
+        "description": "CAAIL's own definition of every matrix row and column, plus every subject theme, with exclusion criteria. Read before trusting or disputing a placement. Definitions are keyed by vocabulary under `axes` (`area`, `method`, `theme`) because the three are separate and may share a label: \"Bioprocess & Scale-Up\" is both a matrix column and a subject theme, and only the column text carries in-scope/out-of-scope criteria. `definitions` is the flat matrix lookup and holds areas + methods ONLY — the eight theme labels it used to carry now live under `axes.theme`, so resolve a theme there.",
         "responses": {
           "200": {
-            "description": "What each method and area means in CAAIL",
+            "description": "What each method, area and subject theme means in CAAIL",
             "content": {
               "application/json": {
                 "schema": {
@@ -514,6 +514,44 @@
               "type": "string"
             }
           },
+          "axes": {
+            "type": "object",
+            "properties": {
+              "area": {
+                "type": "object",
+                "propertyNames": {
+                  "type": "string"
+                },
+                "additionalProperties": {
+                  "type": "string"
+                }
+              },
+              "method": {
+                "type": "object",
+                "propertyNames": {
+                  "type": "string"
+                },
+                "additionalProperties": {
+                  "type": "string"
+                }
+              },
+              "theme": {
+                "type": "object",
+                "propertyNames": {
+                  "type": "string"
+                },
+                "additionalProperties": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "area",
+              "method",
+              "theme"
+            ],
+            "additionalProperties": false
+          },
           "corpusDate": {
             "type": "string",
             "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
@@ -521,6 +559,7 @@
         },
         "required": [
           "definitions",
+          "axes",
           "corpusDate"
         ],
         "additionalProperties": false

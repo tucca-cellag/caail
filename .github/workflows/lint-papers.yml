@@ -10,6 +10,13 @@ on:
       - Datasets/**
       - CONTRIBUTING.md
       - CLAUDE.md
+      # the matrix axis definitions. db:check's axis guard and the agent-API sync
+      # guard both read this file, so a PR editing ONLY Taxonomy.md (rewording a
+      # column's scope, adding a `### Heading`, introducing a duplicate) would
+      # otherwise skip both: the committed taxonomy.json would go stale while the
+      # plugin skill still points installed agents at it, and the next unrelated
+      # contributor would inherit a red CI on a diff they did not cause.
+      - Taxonomy.md
       - site/scripts/parser/**
       - site/scripts/db/**
       - site/db/**
@@ -33,6 +40,13 @@ on:
       - Datasets/**
       - CONTRIBUTING.md
       - CLAUDE.md
+      # the matrix axis definitions. db:check's axis guard and the agent-API sync
+      # guard both read this file, so a PR editing ONLY Taxonomy.md (rewording a
+      # column's scope, adding a `### Heading`, introducing a duplicate) would
+      # otherwise skip both: the committed taxonomy.json would go stale while the
+      # plugin skill still points installed agents at it, and the next unrelated
+      # contributor would inherit a red CI on a diff they did not cause.
+      - Taxonomy.md
       - site/scripts/parser/**
       - site/scripts/db/**
       - site/db/**
