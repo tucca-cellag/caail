@@ -236,6 +236,20 @@ Per-area deep-dive page (optional, supplementary). The matrix column header link
 
 The per-entry summaries in the `Datasets/` pages, `Databases.md`, `Software.md`, and `OtherResources.md` are deliberately compressed for human readability. When an AI session needs substantive information about a listed resource — data schema, API limits, license terms, specific record counts, recent version changes — fetch the canonical site rather than paraphrasing the local summary. The linked sources are authoritative; this repo's curation is a navigation layer, not a knowledge base. The same principle applies to the citation lines in `Papers.md`: those identify a paper but are not a substitute for reading it.
 
+## CAAIL documents the work; it does not take a position on whether the work succeeds
+
+CAAIL indexes what has been researched. It is **not opinionated about whether AI will solve any given problem in cellular agriculture**, and it must never be written as though it were. A research area is a *classification rule* saying which work belongs in that column, not a thesis that the approach works. Read `Taxonomy.md`'s definitions: they are all scope and exclusion criteria, and none of them claims a result.
+
+So, when writing any curated entry or summary:
+
+- **Report what a source argues. Never position CAAIL for or against it.** A catalogued critique is just a catalogued critique. Cross-reference the area it bears on if that helps navigation, but do not describe it as supporting or undermining CAAIL, and do not attribute a "premise" or "central claim" to a research area. Areas do not have premises.
+- **Prefer "work indexed under X" to "the premise of X".** The first is true by construction; the second invents a position.
+- Skepticism about an approach is *evidence to index*, not an attack to answer. A well-argued case that a whole area is a dead end belongs in the library on the same terms as a paper claiming the opposite.
+
+**The failure this prevents, which happened:** the `OtherResources.md` entry for Weinstock's "AI cannot taste things" once ended "…which cuts against the central premise of the Sensory Prediction research area." That attributed to CAAIL, in public and in CAAIL's own voice, a claim that instrumental prediction of human sensory response works. `Taxonomy.md` makes no such claim, so the entry manufactured a position and then reported it as contested.
+
+This is a distinct virtue from the coverage humility already in `api/index.json`'s `scopeNote` ("a curated subset, not a census… has not measured its own recall"). That one is about what CAAIL has *seen*; this one is about what CAAIL *believes*, which is nothing. Both need stating; only the first currently is on the site, and surfacing this one there is open work.
+
 ## Citation style
 
 - **APA** throughout.
