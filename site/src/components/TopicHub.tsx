@@ -9,6 +9,8 @@ import { topicHref } from '../lib/topic-chips';
 import HubFilterBar from './HubFilterBar';
 import { readSecondary, matchesTier, matchesBand, type Secondary } from '../lib/hub-filters';
 import { chipStyle } from '../lib/theme-colors';
+import { curatorFor, LEAD_GUARANTEE, LEAD_ASK, leadCoverageLine } from '../lib/topic-curators';
+import { COMMUNITY_PATH } from '../lib/community';
 
 type TopicRef = { slug: string; label: string; theme: string };
 type Counts = { paper: number; software: number; database: number; dataset: number; total: number };
@@ -57,14 +59,82 @@ const items: Item[] = [
 
 const KIND_LABEL: Record<Item['kind'], string> = { paper: 'Papers', software: 'Software', database: 'Databases', dataset: 'Datasets' };
 
+/**
+ * Per-type counts, INCLUDING the zeros.
+ *
+ * These used to be gated on `> 0`, which quietly contradicted the homepage band one click
+ * away: the band renders Scaffolding & Biomaterials as "software 0, databases 0" and says
+ * in its own copy that an empty column is a result CAAIL returns rather than a gap it
+ * hides. A reader who clicked that card because of the empty columns landed here and found
+ * they had vanished. Two surfaces, one linking to the other, disagreeing about the claim
+ * the first one leads with.
+ *
+ * A zero is muted rather than dropped, which is the same treatment the band gives it: an
+ * answer, not a score.
+ */
 function CountPills({ c }: { c: Counts }) {
+  const pills: { n: number; label: string }[] = [
+    { n: c.paper, label: 'papers' },
+    { n: c.software, label: 'software' },
+    { n: c.database, label: 'databases' },
+    { n: c.dataset, label: 'datasets' },
+  ];
   return (
     <span class="th-pills">
-      {c.paper > 0 && <span class="th-pill">{c.paper} papers</span>}
-      {c.software > 0 && <span class="th-pill">{c.software} software</span>}
-      {c.database > 0 && <span class="th-pill">{c.database} databases</span>}
-      {c.dataset > 0 && <span class="th-pill">{c.dataset} datasets</span>}
+      {pills.map((p) => (
+        <span class="th-pill" data-empty={p.n === 0 ? 'true' : undefined}>
+          {p.n} {p.label}
+        </span>
+      ))}
     </span>
+  );
+}
+
+/**
+ * Full attribution for a theme's lead: name, affiliation, and the ORCID where there is
+ * one. This is the surface the index card's short form defers to, and it is the only place
+ * a reader can see who holds an area in enough detail to contact or credit them.
+ *
+ * The ORCID is the point rather than decoration. A lead is being offered academic credit
+ * for an area, and a name with no persistent identifier is credit that does not survive
+ * the person changing institution.
+ *
+ * Renders nothing when nobody holds the theme. That is the one place an omission is right:
+ * the index and the recruitment ask already carry the vacancy, and repeating "open" under
+ * the title of the page you just opened adds nothing.
+ */
+function LeadFull({ slug }: { slug: string }) {
+  const c = curatorFor(slug);
+  if (!c) return null;
+  // The explicit {' '} below is load-bearing, not formatting. JSX drops whitespace between
+  // children on separate lines, so without it the text content is "LeadBenjamin Bromberg…":
+  // a screen reader announces one run-together word and copying the credit yields a mangled
+  // string, on the surface this component exists to provide. The visual gap came from
+  // `.th-lead-role`'s margin, which is why it looked correct.
+  return (
+    <p class="th-lead-full">
+      <span class="th-lead-role">Lead</span>{' '}
+      {c.url ? <a href={c.url} rel="noopener noreferrer" target="_blank">{c.name}</a> : c.name}
+      {' · '}
+      <span class="th-lead-affil">{c.affiliation}</span>
+    </p>
+  );
+}
+
+/**
+ * The lead for a theme, or the open state.
+ *
+ * Rendered on every card rather than only where someone holds it: an omitted line would
+ * hide the ask on exactly the themes that need one. Kept to a name here (no affiliation,
+ * no link) because this is a dense index card; the theme's own view carries the full
+ * attribution, via LeadFull above.
+ */
+function LeadLine({ slug }: { slug: string }) {
+  const c = curatorFor(slug);
+  return (
+    <p class="th-lead" data-open={c ? undefined : 'true'}>
+      <span class="th-lead-role">Lead</span> {c ? c.name : 'open'}
+    </p>
   );
 }
 
@@ -77,9 +147,27 @@ function ThemeIndex() {
             <a class="th-theme-link" href={topicHref(BASE, t.slug)}>{t.label}</a>
             <div class="th-total">{t.counts.total} items</div>
             <CountPills c={t.counts} />
+            <LeadLine slug={t.slug} />
           </li>
         ))}
       </ul>
+      {/* Same ask as the homepage band, same constraint on it: CAAIL-15 has not settled
+          what a lead commits to, so the copy says so instead of inventing it, and names
+          the one limit that must not be left ambiguous while placements are under
+          re-verification.
+          Copy and route are both IMPORTED, not restated. This paragraph was once a
+          verbatim duplicate of the band's kept in step by a comment saying so, and only
+          the band's version was pinned by a test, so an edit to the guarantee sentence
+          would have passed CI while the two surfaces promised different things. The
+          community route comes from `lib/community.ts`, whose whole job is to hold it in
+          one place. */}
+      <aside class="th-recruit" aria-label="Topic leads">
+        <p class="th-recruit-lede">{leadCoverageLine()}</p>
+        <p class="th-recruit-body">
+          {LEAD_GUARANTEE} {LEAD_ASK}{' '}
+          <a href={`${BASE.replace(/\/$/, '')}${COMMUNITY_PATH}`}>get in touch</a>.
+        </p>
+      </aside>
     </div>
   );
 }
@@ -110,6 +198,7 @@ function TopicView({ node, sec }: { node: Node; sec: Secondary }) {
         {parentTheme && <>{' / '}<a href={topicHref(BASE, parentTheme.slug)}>{parentTheme.label}</a></>}
       </nav>
       <h2 class="th-title caail-display">{node.label}</h2>
+      {node.tier === 'theme' && <LeadFull slug={node.slug} />}
       {!narrowed && <CountPills c={node.counts} />}
       <HubFilterBar
         base={BASE}

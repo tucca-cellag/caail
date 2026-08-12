@@ -20,16 +20,92 @@
   --chip: var(--caail-muted);
   padding: 0.9rem 1rem;
   border: 1px solid var(--caail-border);
-  border-top: 3px solid var(--chip);
   border-radius: 0.6rem;
   background: var(--caail-surface);
 }
 /* Theme colour set inline as `--chip` from lib/theme-colors.ts (derived from area_key). */
 
+/* The theme's colour is a leading dot, not a top border.
+   Two reasons. A 3px top rule tapers into the 1px side borders at each rounded corner,
+   which is a visibly untidy join. More importantly this card and the homepage TopicsBand
+   card are the same object on two surfaces, and they were marking the theme two different
+   ways: exactly the per-slug drift `theme-colors.ts` was written to end, reappearing in
+   the presentation layer instead of the data layer. The dot is also what `.topic-chip`
+   and the dashboard's subject grid already use for this job, so this is the site's
+   established marker rather than a fourth treatment of one idea. */
+.th-theme-link::before {
+  content: '';
+  display: inline-block;
+  width: 0.5rem;
+  height: 0.5rem;
+  margin-right: 0.45rem;
+  border-radius: 50%;
+  background: var(--chip);
+  vertical-align: baseline;
+}
+
 .th-theme-link { font-weight: 600; font-size: 1.05rem; text-decoration: none; color: var(--caail-primary); }
+
+/* Separated from the counts by a rule: the counts describe the corpus, this describes who
+   to talk to about it. `open` reads as a state rather than a gap, for the same reason the
+   band renders a zero count instead of omitting it. */
+.th-lead {
+  margin: 0.5rem 0 0;
+  padding-top: 0.45rem;
+  border-top: 1px solid var(--caail-border);
+  font-size: 0.75rem;
+  color: var(--caail-ink);
+}
+.th-lead-role {
+  color: var(--caail-muted);
+  margin-right: 0.35rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.92em;
+  font-weight: 600;
+}
+.th-lead[data-open] { color: var(--caail-muted); font-style: italic; }
+
+/* Full attribution under a theme's title. Affiliation is separated by a middot rather than
+   put on its own line, so the whole credit reads as one statement.
+   The middot is a REAL TEXT NODE in the markup, not a `::before` on the affiliation. CSS
+   generated content is not copied with a selection and is announced inconsistently, so as
+   a `::before` this rendered correctly and copied as "Benjamin BrombergTUCCA, Tufts
+   University" — the same run-together defect as the missing space after the role label,
+   on the surface that exists to be cited. Anything a reader is meant to take away with
+   them belongs in the DOM. */
+.th-lead-full { margin: 0.35rem 0 0.6rem; font-size: 0.82rem; color: var(--caail-ink); }
+/* UNDERLINED, always. This link sits inside a block of body text, so colour alone has to
+   clear 3:1 against the surrounding ink to be distinguishable — and it does not:
+   measured 2.99:1 in light mode and 2.01:1 in dark, an axe `link-in-text-block` failure
+   at serious impact in both schemes. A reader who cannot separate those two blues has no
+   way to tell the lead's name is a link.
+   It shipped because no axe test loaded a theme view; `topics.spec.ts` only visited the
+   theme index, where this component never renders. The spec now covers a held lead too,
+   so the next version of this mistake fails instead of shipping. */
+.th-lead-full a { color: var(--caail-link); text-decoration: underline; }
+.th-lead-affil { color: var(--caail-muted); }
+
+.th-recruit {
+  margin: 1.1rem 0 0;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--caail-border);
+  border-radius: 0.6rem;
+  background: var(--caail-surface);
+}
+.th-recruit-lede { margin: 0 0 0.25rem; font-size: 0.85rem; font-weight: 600; color: var(--caail-ink); }
+.th-recruit-body { margin: 0; font-size: 0.78rem; color: var(--caail-muted); line-height: 1.55; }
 .th-total { color: var(--caail-muted); font-size: 0.85rem; margin: 0.15rem 0 0.4rem; }
 
 .th-pills { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+/* A zero column is rendered rather than dropped — see CountPills.
+   Marked by a DASHED BORDER, not by fading the text. Dimming it was the first attempt and
+   it failed the hub's own axe check: `--caail-muted` at `opacity: .75` computes to #828992
+   on the card surface, a contrast ratio of 3.26 against the 4.5 that AA requires at this
+   size. A zero is the one figure here a reader most needs to be able to read, so it must
+   not be the least legible thing on the card. The dash also reuses the solid-versus-dashed
+   vocabulary LicenseBadge already uses to mean "this differs from the default case". */
+.th-pill[data-empty] { border-style: dashed; }
 .th-pill {
   font-size: 0.72rem;
   padding: 0.05rem 0.45rem;
