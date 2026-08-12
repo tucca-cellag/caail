@@ -46,8 +46,14 @@
 import topics from '../content/data/topics.json';
 import { chipStyle } from '../lib/theme-colors';
 import { COMMUNITY_PATH } from '../lib/community';
+import { curatorFor, curatorCoverage } from '../lib/topic-curators';
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+
+/* Both figures derived. The recruitment line quotes how many themes are open, and that
+   number changes the day someone takes one; typed, it would go wrong exactly when the
+   programme starts working. */
+const coverage = curatorCoverage();
 
 const themes = topics.themes;
 const tags = topics.tags;
@@ -138,9 +144,36 @@ if (!themes.some((t) => TYPES.some((ty) => countOf(t, ty.key) === 0))) {
             </div>
           ))}
         </dl>
+        {/* The lead slot renders on every card, held or not. An "open" state is the point:
+            a card that simply omitted the line where nobody holds the theme would hide the
+            ask on seven of eight cards, which is the opposite of what this is for. Same
+            argument as the zero counts above. */}
+        <p class="lead-slot" data-open={curatorFor(t.slug) ? undefined : 'true'}>
+          {curatorFor(t.slug)
+            ? <><span class="lead-role">Lead</span> {curatorFor(t.slug)!.name}</>
+            : <><span class="lead-role">Lead</span> open</>}
+        </p>
       </a>
     ))}
   </div>
+
+  {/* An ask, and an honest one. CAAIL-15 has not settled what a lead commits to, and the
+      site must not imply it has: this says so in the copy rather than inventing a job
+      description, and "point of contact, not a guarantee that every entry is right" is the
+      one thing it does commit to, because placements are still under re-verification and a
+      name must not read as vouching for them.
+      Both figures are derived; see the coverage comment above. */}
+  <aside class="recruit sr sr-d2" aria-label="Topic leads">
+    <p class="recruit-lede">
+      {coverage.open} of the {coverage.total} themes have no lead.
+    </p>
+    <p class="recruit-body">
+      A lead is a point of contact for one area, not a guarantee that every entry in it is
+      right. What the role commits to is still being worked out, and we would rather settle
+      that with the people who might take it than hand them a finished job description. If
+      you work in one of these areas, <a href={`${base}${COMMUNITY_PATH}`}>get in touch</a>.
+    </p>
+  </aside>
 
   <p class="foot sr sr-d2">
     {tags.length} finer tags sit beneath these {themes.length} themes, each minted only
@@ -230,6 +263,38 @@ if (!themes.some((t) => TYPES.some((ty) => countOf(t, ty.key) === 0))) {
      rendered as a figure, because the whole argument of this band is that the empty column
      is information and not something to omit. */
   .cell[data-empty] dd { font-weight: 400; color: var(--caail-muted); }
+
+  /* Separated from the counts by a rule, because it answers a different question: the
+     counts describe the corpus, this describes who to talk to about it. */
+  .lead-slot {
+    margin: .1rem 0 0; padding-top: .5rem;
+    border-top: 1px solid var(--caail-border);
+    font-size: var(--caail-fs-xs); color: var(--caail-ink);
+  }
+  .lead-role {
+    color: var(--caail-muted); margin-right: .35rem;
+    text-transform: uppercase; letter-spacing: .1em; font-size: .92em; font-weight: 600;
+  }
+  /* Open reads as a legible state rather than a gap, for the same reason a zero count is
+     rendered rather than omitted. Muted and italic so it does not compete with a real
+     name on the card beside it. */
+  .lead-slot[data-open] { color: var(--caail-muted); font-style: italic; }
+
+  .recruit {
+    margin: var(--caail-space-5) auto 0; max-width: var(--caail-measure);
+    padding: .85rem 1rem;
+    border: 1px solid var(--caail-border); border-radius: 10px;
+    background: var(--caail-surface);
+    text-align: center;
+  }
+  .recruit-lede {
+    margin: 0 0 .25rem;
+    font-size: var(--caail-fs-sm); font-weight: 600; color: var(--caail-ink);
+  }
+  .recruit-body {
+    margin: 0; font-size: var(--caail-fs-xs); color: var(--caail-muted);
+    line-height: 1.55; text-wrap: pretty;
+  }
 
   .foot {
     font-size: var(--caail-fs-sm); color: var(--caail-muted);

@@ -9,6 +9,7 @@ import { topicHref } from '../lib/topic-chips';
 import HubFilterBar from './HubFilterBar';
 import { readSecondary, matchesTier, matchesBand, type Secondary } from '../lib/hub-filters';
 import { chipStyle } from '../lib/theme-colors';
+import { curatorFor, curatorCoverage } from '../lib/topic-curators';
 
 type TopicRef = { slug: string; label: string; theme: string };
 type Counts = { paper: number; software: number; database: number; dataset: number; total: number };
@@ -68,7 +69,26 @@ function CountPills({ c }: { c: Counts }) {
   );
 }
 
+/**
+ * The lead for a theme, or the open state.
+ *
+ * Rendered on every card rather than only where someone holds it: an omitted line would
+ * hide the ask on exactly the themes that need one. Kept to a name here (no affiliation,
+ * no link) because this is a dense index card; the theme's own view carries the full
+ * attribution.
+ */
+function LeadLine({ slug }: { slug: string }) {
+  const c = curatorFor(slug);
+  return (
+    <p class="th-lead" data-open={c ? undefined : 'true'}>
+      <span class="th-lead-role">Lead</span> {c ? c.name : 'open'}
+    </p>
+  );
+}
+
 function ThemeIndex() {
+  // Derived, never typed: the sentence has to move the moment a theme is taken.
+  const coverage = curatorCoverage();
   return (
     <div class="th-index not-content">
       <ul class="th-theme-grid">
@@ -77,9 +97,26 @@ function ThemeIndex() {
             <a class="th-theme-link" href={topicHref(BASE, t.slug)}>{t.label}</a>
             <div class="th-total">{t.counts.total} items</div>
             <CountPills c={t.counts} />
+            <LeadLine slug={t.slug} />
           </li>
         ))}
       </ul>
+      {/* Same ask as the homepage band, same constraint on it: CAAIL-15 has not settled
+          what a lead commits to, so the copy says so instead of inventing it, and names
+          the one limit that must not be left ambiguous while placements are under
+          re-verification. Wording kept in step with TopicsBand.astro deliberately. */}
+      <aside class="th-recruit" aria-label="Topic leads">
+        <p class="th-recruit-lede">
+          {coverage.open} of the {coverage.total} themes have no lead.
+        </p>
+        <p class="th-recruit-body">
+          A lead is a point of contact for one area, not a guarantee that every entry in it
+          is right. What the role commits to is still being worked out, and we would rather
+          settle that with the people who might take it than hand them a finished job
+          description. If you work in one of these areas,{' '}
+          <a href={`${BASE.replace(/\/$/, '')}/community/`}>get in touch</a>.
+        </p>
+      </aside>
     </div>
   );
 }

@@ -93,6 +93,52 @@ test('no card presents a total, which would read as a completeness claim', async
   }
 });
 
+test('every card carries a lead slot, in exactly one of two states', async ({ page }) => {
+  // Deliberately NOT imported from src/lib/topic-curators: that module imports
+  // topics.json, and Playwright's ESM loader rejects a JSON import without an import
+  // attribute. Asserting the page against itself is the better test anyway — the module
+  // already fails the build on a slug typo, so what is left to catch is the two surfaces
+  // disagreeing, and that is visible here without any source of truth to import.
+  const slots = page.locator('#topics .lead-slot');
+  await expect(slots).toHaveCount(topics.themes.length);
+
+  const states = await slots.evaluateAll((els) =>
+    els.map((e) => ({
+      open: e.getAttribute('data-open') === 'true',
+      text: (e.textContent ?? '').replace(/\s+/g, ' ').trim(),
+    })),
+  );
+
+  for (const s of states) {
+    if (s.open) {
+      expect(s.text, 'an open slot should say so').toBe('Lead open');
+    } else {
+      // A held slot must name somebody. "Lead" alone would be a slot that claims a lead
+      // and shows none, which reads worse than the open state it is trying not to be.
+      expect(s.text.replace(/^Lead\s*/, '').length, 'a held slot names nobody').toBeGreaterThan(0);
+      expect(s.text).not.toBe('Lead open');
+    }
+  }
+});
+
+test('the recruitment banner agrees with the cards about how many themes are open', async ({ page }) => {
+  const total = topics.themes.length;
+  const open = await page.locator('#topics .lead-slot[data-open="true"]').count();
+
+  const banner = page.locator('#topics .recruit');
+  await expect(banner).toBeVisible();
+  // The figure and the cards are rendered from one helper, so a mismatch means the copy
+  // was hand-edited away from the data — the exact drift the derived count exists to stop.
+  await expect(banner.locator('.recruit-lede')).toHaveText(
+    `${open} of the ${total} themes have no lead.`,
+  );
+
+  // The sentence that stops a name reading as an endorsement of every placement inside
+  // its theme, while those placements are still being re-verified. Trim this copy and the
+  // guarantee disappears silently, so it is pinned.
+  await expect(banner).toContainText('not a guarantee that every entry in it is right');
+});
+
 test('the band stays out of the search index', async ({ page }) => {
   // Not a style rule. Indexed, the band puts all eight theme labels on the splash page
   // and Pagefind ranks it above the pages actually about those subjects: searching
