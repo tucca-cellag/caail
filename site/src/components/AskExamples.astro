@@ -313,10 +313,13 @@ const examples = [
       'than standing alone. Which public datasets could mine realistically be combined with, and what ' +
       'do I need to match in the design (timepoints, depth, annotation build) for that to be possible?',
     src: ['datasets.json', 'papers.json'],
-    head: `Across the ${cowTotal} indexed bovine datasets, the best timepoint design and the only poolable assay are in different deposits`,
+    head: `Across the ${cowTotal} indexed bovine datasets, the best timepoint design and the deposit worth pooling with are not the same one`,
     rows: [
       { k: 'The only real timecourse, wrong assay', v: `${col(cowTimecourse, 'Data').replace(/\[`|`\]\(.*/g, '')} harvests at 0/24/48/72/96 h, in serum-free differentiation medium, but it is single-nucleus. Copy its grid and compare at pseudobulk: 5 timepoints × 2 replicates fits your 12 libraries with two spare` },
-      { k: 'The only poolable comparator, no timecourse', v: `${col(cowBulkComparator, 'Data').replace(/\[`|`\]\(.*/g, '')} is bulk, so it is the one you could genuinely pool with, but it is a contrast rather than a series: a 20%→2% FBS starvation arm plus an SFM vs 20% FBS comparison. Pooling means matching that contrast, not the timing` },
+      /* NOT "the only poolable comparator": GSE330550, PRJNA790762 and GSE262758 are bulk-inclusive
+         differentiation deposits too. What is actually unique about this one is that it spans both
+         triggers, which is the claim the tail rests on, so the row now says that instead. */
+      { k: 'The comparator that spans both triggers', v: `${col(cowBulkComparator, 'Data').replace(/\[`|`\]\(.*/g, '')} is bulk and is the only deposit running a 20%→2% FBS starvation arm alongside an SFM vs 20% FBS comparison. It is a contrast rather than a series, so pooling with it means matching that contrast, not the timing` },
       { k: 'Check before you rely on it', v: 'The bovine FAANG epigenome atlas is the obvious annotation reference and its new deposits are embargoed until journal acceptance' },
     ],
     tail:
@@ -340,7 +343,10 @@ const examples = [
     /* topics.json was dropped from this list with the tag-based claim it supported. The row is a
        statement about which endpoints answer the question, so it has to track the answer. */
     src: ['matrix.json', 'papers.json'],
-    head: `The model-plus-loop work is indexed one column over from where you would look: outside media optimization, in bioprocess and tooling`,
+    /* "The model-plus-loop work is indexed one column over" was the first wording, and its definite
+       article claims an exhaustive search this does not perform: the adjacency is a title match over
+       two method rows. Softened to what was actually established. */
+    head: `The closest indexed prior art sits one column over from where you would look, outside media optimization`,
     rows: [
       { k: 'The cell you would search', v: `Bayesian Optimization × Media Optimization: ${mediaBo.refIds.length} papers, including ${cite(3)}, the paper GFI cites as prior art for media formulation` },
       { k: 'Where the coupling actually sits', v: `${modelLoopAdjacent.map((r) => `${cite(r.id)} in ${r.areas.join(' and ')}`).join('; ')}: genome-scale and metabolic-network work driven by a design loop, filed under other areas` },
@@ -372,10 +378,15 @@ const examples = [
        signal precisely because it compares indexed papers against each other. */
     head: `${matrix.populatedCells} of ${matrix.totalCells} cells hold anything at all, and "crowded" turns out to mean two different things`,
     rows: [
-      { k: 'Crowded because it is new', v: `${crowdedRush.slice(0, 2).map((c) => `${c.method} × ${c.area} (${c.refIds.length}, ${recentIn(c)} since 2024)`).join('; ')}: a pile-up you would be joining late` },
-      { k: 'Crowded because it is old', v: `${crowdedMature.map((c) => `${c.method} × ${c.area} (${c.refIds.length}, ${recentIn(c)} since 2024)`).join('; ')}: mature literatures where recent work is the minority` },
-      { k: 'Enough to stand on, still moving', v: `${goldilocks.slice(0, 3).map((c) => `${c.method} × ${c.area} (${c.refIds.length}, ${recentIn(c)} since 2024)`).join('; ')}` },
-      { k: 'Looks identical, is the opposite bet', v: `${stalled.slice(0, 3).map((c) => `${c.method} × ${c.area} (${c.refIds.length})`).join(', ')}: groundwork exists and nothing has landed since 2024` },
+      /* The first two rows are classified on the SHARE of refs since 2024, not the count, while the
+         cells display counts. Left implicit, that read as a contradiction: the mature row shows a
+         cell with 6 recent papers beside a "still moving" row showing cells with 5, 4 and 3. The
+         labels now name size first and state the proportion, so the axis being compared is on the
+         page rather than in the classifier. */
+      { k: 'Crowded, and mostly since 2024', v: `${crowdedRush.slice(0, 2).map((c) => `${c.method} × ${c.area} (${recentIn(c)} of ${c.refIds.length})`).join('; ')}: a pile-up you would be joining late` },
+      { k: 'Crowded, but mostly before it', v: `${crowdedMature.map((c) => `${c.method} × ${c.area} (${recentIn(c)} of ${c.refIds.length})`).join('; ')}: large because they are long-established, not because they are moving` },
+      { k: 'Small enough to enter, still moving', v: `${goldilocks.slice(0, 3).map((c) => `${c.method} × ${c.area} (${recentIn(c)} of ${c.refIds.length})`).join('; ')}` },
+      { k: 'Small, and stopped', v: `${stalled.slice(0, 3).map((c) => `${c.method} × ${c.area} (0 of ${c.refIds.length})`).join(', ')}: groundwork exists and nothing has landed since 2024` },
     ],
     tail:
       'Cell size alone collapses all four rows into one ranking, which is why the count on its own ' +
@@ -394,7 +405,11 @@ const examples = [
       'it may go customer-facing later. What may we redistribute versus only read internally, and what ' +
       'would need licensing separately the day it leaves our network?',
     src: ['papers.json'],
-    head: `${redistributable} of ${papers.references.length} papers may be redistributed, against ${openAccess} that are merely free to read`,
+    /* The two populations are NESTED, not disjoint: every redistributable paper is also open
+       access (verified, zero outside), so "N redistributable against M free to read" invited the
+       reader to treat M as the other group. The third row always had the correct nested framing,
+       so the head was contradicting its own card. */
+    head: `Of the ${openAccess} papers you may freely read, only ${redistributable} may also be redistributed`,
     rows: [
       { k: 'Internally, the answer is most of it', v: 'What your organisation may lawfully read, it may generally index for itself. The tier binds on publishing, not on working, so the internal assistant is the easy half' },
       { k: 'The day it leaves the network', v: `${needsClearing} works need clearing one at a time: ${unrecorded} record no machine-readable licence at all, and ${restricted} are explicitly non-commercial or no-derivatives` },
