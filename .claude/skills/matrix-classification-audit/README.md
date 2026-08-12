@@ -88,6 +88,12 @@ Wave 3b tranche is exactly that case: classified from abstracts, PDFs added afte
 never re-audited. This script is the mechanical half of an audit and cannot tell you
 which placements were actually read.
 
+It means **usable full-text evidence from either source**. It used to mean ft-cache
+availability alone; a Docling section is derived from the PDF, so it exists for a ref
+whose ft-cache is missing, and leaving the flag False there would have hidden a complete
+methods section from every consumer that filters on it. `fulltext_chars` still carries
+the ft-cache length specifically, so the two remain separable.
+
 ## Extraction quality, snapshot 2026-08-12
 
 Measured over the 222 matrix refs that have full text. **`measure_extraction_quality.py`

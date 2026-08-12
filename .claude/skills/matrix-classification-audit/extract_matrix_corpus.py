@@ -322,7 +322,9 @@ def main():
     print(f"Zotero index: {len(doi_index)} by DOI / {len(url_index)} by URL "
           f"across groups {groups}", file=sys.stderr)
 
-    corpus, n_ft, n_noft, n_nozot, n_docling = [], 0, 0, 0, 0
+    # Only the Zotero miss is counted here; everything else in the summary is
+    # derived from the records at the end, so it cannot drift from them.
+    corpus, n_nozot = [], 0
     for rid in matrix_ids:
         ref = refs.get(rid, {})
         doi = ref.get("doi", "")
@@ -339,7 +341,14 @@ def main():
             "current_cells": current_cells,
             "abstract": "",
             "methods_text": "",
+            # ft-cache length specifically, so the two sources stay separable
+            # even though has_fulltext now covers both.
             "fulltext_chars": 0,
+            # "usable full-text evidence exists for this ref", from EITHER source.
+            # It was ft-cache availability alone, but a Docling section comes from
+            # the PDF and so exists for a ref whose ft-cache is missing: leaving
+            # this False there would hide a complete methods section from every
+            # consumer that filters on it, which is all of them.
             "has_fulltext": False,
             "zotero_group": None,
             # Provenance for methods_text. Consumers that weigh evidence should
@@ -358,13 +367,13 @@ def main():
         if section:
             rec["methods_text"] = section["methods_text"]
             rec["methods_source"] = "docling"
+            rec["has_fulltext"] = True
             rec["methods_strategy"] = section.get("strategy", "")
             rec["methods_heading"] = section.get("heading", "")
             rec["methods_end_heading"] = section.get("end_heading", "")
             if section.get("page_start") is not None:
                 rec["methods_pages"] = [section.get("page_start"),
                                         section.get("page_end")]
-            n_docling += 1
 
         hit = (doi_index.get(doi.lower()) if doi else None) \
             or (url_index.get(_norm_url(url)) if url else None)
@@ -380,7 +389,6 @@ def main():
         rec["fulltext_chars"] = len(fulltext)
         if fulltext:
             rec["has_fulltext"] = True
-            n_ft += 1
             if not section:
                 rec["methods_text"] = extract_methods(fulltext)
                 rec["methods_source"] = "ftcache"
@@ -393,8 +401,6 @@ def main():
                 start = m.start() if m else len(fulltext) // 10
                 rec["methods_strategy"] = "heading" if m else "positional"
                 rec["methods_truncated"] = (len(fulltext) - start) > METHODS_WINDOW
-        elif not section:
-            n_noft += 1
         corpus.append(rec)
 
     Path(args.out).write_text(
@@ -410,16 +416,23 @@ def main():
             json.dumps(rec, indent=2, ensure_ascii=False), encoding="utf-8")
     print(f"\nWrote {len(corpus)} records → {args.out}", file=sys.stderr)
     print(f"  per-ref files → {per_ref_dir}/ref-<id>.json", file=sys.stderr)
-    print(f"  full text: {n_ft}   PDF-but-no-ftcache: {n_noft}   "
+    # Derive the summary from the records rather than from parallel counters, so
+    # a printed figure cannot drift from the file it claims to describe.
+    def n(pred):
+        return sum(1 for r in corpus if pred(r))
+
+    n_docling = n(lambda r: r["methods_source"] == "docling")
+    n_ftcache = n(lambda r: r["methods_source"] == "ftcache")
+    print(f"  usable full text: {n(lambda r: r['has_fulltext'])}   "
+          f"ft-cache present: {n(lambda r: r['fulltext_chars'] > 0)}   "
           f"not-in-Zotero: {n_nozot}", file=sys.stderr)
-    n_trunc = sum(1 for r in corpus if r["methods_truncated"])
-    print(f"  methods from docling: {n_docling}   from ft-cache: "
-          f"{sum(1 for r in corpus if r['methods_source'] == 'ftcache')} "
-          f"(of which truncated: {n_trunc})", file=sys.stderr)
-    if n_docling < len(matrix_ids):
-        print(f"  NOTE: {len(matrix_ids) - n_docling} refs still read the "
-              f"ft-cache path; run docling_ingest.py to cover them.",
-              file=sys.stderr)
+    print(f"  methods from docling: {n_docling}   from ft-cache: {n_ftcache} "
+          f"(of which truncated: {n(lambda r: r['methods_truncated'])})   "
+          f"no evidence: {n(lambda r: not r['methods_text'].strip())}",
+          file=sys.stderr)
+    if n_ftcache:
+        print(f"  NOTE: {n_ftcache} refs still read the ft-cache path; "
+              f"run docling_ingest.py to cover them.", file=sys.stderr)
 
 
 if __name__ == "__main__":
