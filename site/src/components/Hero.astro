@@ -57,18 +57,51 @@ const statSentence = `Indexing ${stats.map((s) => `${s.n} ${s.label}`).join(', '
     </div>
 
     <div class="ticker">
-      {/* Hidden from AT: a value retyped character by character is noise to a screen
-          reader, and the same facts are stated once, in full, in the sentence below.
-          Server-rendered complete, so with no JS this is simply the first statistic. */}
-      <p class="tick" aria-hidden="true" data-stats={JSON.stringify(stats.map((s) => [String(s.n), s.label]))}>
-        <span class="tick-n caail-display">{stats[0].n}</span>
-        <span class="tick-l">{stats[0].label}</span>
-        <span class="tick-caret"></span>
-      </p>
-      <p class="visually-hidden">{statSentence}</p>
-      <p class="tick-foot">
-        indexed, cross-linked, and <a href={`${base}/by-the-numbers/`}>counted in the open</a>
-      </p>
+      <div class="tick-col">
+        {/* Hidden from AT: a value retyped character by character is noise to a screen
+            reader, and the same facts are stated once, in full, in the sentence below.
+            Server-rendered complete, so with no JS this is simply the first statistic. */}
+        <p class="tick" aria-hidden="true" data-stats={JSON.stringify(stats.map((s) => [String(s.n), s.label]))}>
+          <span class="tick-n caail-display">{stats[0].n}</span>
+          <span class="tick-l">{stats[0].label}</span>
+          <span class="tick-caret"></span>
+        </p>
+        <p class="visually-hidden">{statSentence}</p>
+        <a class="tick-cap" href={`${base}/by-the-numbers/`}>Counted at build time <span aria-hidden="true">→</span></a>
+      </div>
+
+      {/* The three ways in, in the space the counter leaves empty.
+          Each is a route, not a benefit: what you get and where, phrased so a reader can
+          check it rather than agree with it. The affordances all existed already — the
+          GitHub button above, the setup tabs below — but nowhere said there were three of
+          them, which is the gap this closes. */}
+      {/* The icon is INSIDE the anchor, matching .cta-row and .hero-router above and below.
+          As a sibling it was dead to clicks and sat outside the focus ring, so the row read
+          as one target while only part of it was one.
+
+          The label is wrapped rather than left bare because the anchor is a flex row: bare,
+          the <b> and the text after it would be two flex items and the .5rem gap would open
+          up mid-sentence. Two children — icon, label — keeps the text flowing inside one. */}
+      <ul class="ways">
+        <li>
+          <a href={`${base}/papers/explorer/`}>
+            <Icon name="lucide:app-window" />
+            <span><b>Browse it here</b> — filter by method and area</span>
+          </a>
+        </li>
+        <li>
+          <a href="https://github.com/tucca-cellag/caail">
+            <Icon name="lucide:github" />
+            <span><b>Read it on GitHub</b> — canonical Markdown</span>
+          </a>
+        </li>
+        <li>
+          <a href={`${base}/#connect`}>
+            <Icon name="lucide:terminal" />
+            <span><b>Query it from an agent</b> — one skill, JSON endpoints</span>
+          </a>
+        </li>
+      </ul>
     </div>
 
   </div>
@@ -203,7 +236,57 @@ const statSentence = `Indexing ${stats.map((s) => `${s.n} ${s.label}`).join(', '
   }
   @keyframes tick-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
 
-  .tick-foot { font-size: var(--caail-fs-sm); color: var(--caail-muted); margin: .45rem 0 0; }
+  /* The counter never wraps.
+     The reserve above is a floor, not a fixed height: it stops the line collapsing when
+     the text empties mid-erase, but nothing stopped it GROWING. Once the routes sit
+     beside it the counter's track narrows, and at the tightest two-column width the
+     widest entry ("139 software tools") wrapped to a second line — changing the hero's
+     height four times a rotation, which is the same ResizeObserver loop the reserve
+     exists to prevent, arriving from the opposite direction. `nowrap` makes the height
+     genuinely constant; the breakpoint below is what keeps it from colliding. */
+  .tick { white-space: nowrap; }
+
+  /* Counted at build time, linking to where that can be checked. The claim and the
+     evidence are the same element, which is the point: it is not an assertion about
+     CAAIL being open, it is the number's provenance plus the page that shows it. */
+  .tick-cap { display: inline-block; font-size: var(--caail-fs-xs); color: var(--caail-muted); text-decoration: none; margin-top: .3rem; }
+  .tick-cap:hover { color: var(--caail-link); }
+
+  /* The three ways in. Stacked below the counter on one column; beside it above 68rem. */
+  .ways { list-style: none; margin: var(--caail-space-4) 0 0; padding: 0; display: grid; gap: .35rem; }
+  .ways li { font-size: var(--caail-fs-sm); }
+  /* The flex row is the ANCHOR's, not the li's, so the icon is inside the target and
+     inside the focus ring. Exactly two children: the icon, and the wrapped label. */
+  .ways a { display: flex; align-items: baseline; gap: .5rem; color: var(--caail-muted); text-decoration: none; transition: color .15s ease-out; }
+  .ways [data-icon] { width: .95rem; height: .95rem; flex: none; align-self: center; color: var(--caail-link); }
+  .ways b { color: var(--caail-ink); font-weight: 600; }
+  /* `b` carries its own colour, so it does not inherit the hover — without this the lead-in
+     stays ink while only the trailing clause lights up, and half a link changes state.
+     `.hero-router` recolours its whole label, and these two strips sit six lines apart. */
+  .ways a:hover, .ways a:focus-visible { color: var(--caail-link); }
+  .ways a:hover b, .ways a:focus-visible b { color: inherit; }
+  @media (prefers-reduced-motion: reduce) { .ways a { transition: none; } }
+
+  /* 68rem, NOT the hero's own 60rem two-column breakpoint. Measured, not chosen.
+     The hero splits into two columns at 60rem, but the text column is only 488px there —
+     the widest counter ("139 software tools" plus the caret) is 195px and this list is
+     366px, so the pair does not fit and the counter runs into the routes. Because the
+     counter is `nowrap` it overflows its track rather than wrapping, so the collision is
+     silent: at 64rem it overlapped the routes by 9px with no reflow to give it away.
+     The pair needs 197 + 32 + 366 = 595px of column, which the layout reaches at roughly
+     1067px of viewport; 68rem/1088px is the first round step past that, and measures 53px
+     of clearance. Below it the routes stack under the counter, as they do on one column.
+
+     Re-measure this if the counter's labels or these three lines change: it is a number
+     derived from two pieces of text, and nothing in the build checks that it still holds.
+
+     The counter's track is `minmax(0, 1fr)`, sized by available space and never by
+     content. `auto` would track the typewriter's per-keystroke width and slide this list
+     back and forth continuously, which is worse than the gap it was added to fill. */
+  @media (min-width: 68rem) {
+    .ticker { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: var(--caail-space-6); }
+    .ways { margin: 0; }
+  }
 
   .visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
 
