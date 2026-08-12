@@ -43,7 +43,6 @@
  */
 import { Icon } from 'astro-icon/components';
 import matrix from '../../public/api/matrix.json';
-import topicsApi from '../../public/api/topics.json';
 import papers from '../../public/api/papers.json';
 import datasetsApi from '../../public/api/datasets.json';
 import { licenseTier } from '../lib/licenses';
@@ -52,15 +51,6 @@ import counts from '../content/data/counts.json';
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
 type Cell = (typeof matrix.cells)[number];
-const cells = (area: string) =>
-  matrix.cells.filter((c) => c.area === area && !c.emptyInCorpus).sort((a, b) => b.refIds.length - a.refIds.length);
-const emptyIn = (area: string) => matrix.cells.filter((c) => c.area === area && c.emptyInCorpus);
-
-const topic = (slug: string) => {
-  const t = (topicsApi.index as Record<string, Record<string, unknown[]>>)[slug];
-  if (!t) throw new Error(`AskExamples: topic "${slug}" missing from topics.json`);
-  return t;
-};
 
 const byId = new Map(papers.references.map((r) => [r.id, r]));
 const cite = (id: number): string => {
@@ -69,21 +59,11 @@ const cite = (id: number): string => {
   const who = (r.authors?.[0] ?? '').split(',')[0] || 'Unknown';
   return `${who}${r.year ? ` ${r.year}` : ''} (#${id})`;
 };
-const sum = (cs: Cell[]) => cs.reduce((s, c) => s + c.refIds.length, 0);
-
-const scaffold = cells('scaffolding');
-const bioproc = cells('bioprocess');
-const media = cells('media');
-const emptyScaffold = emptyIn('scaffolding');
-if (!scaffold.length || !emptyScaffold.length || !bioproc.length || !media.length) {
-  throw new Error('AskExamples: expected populated and empty cells in scaffolding, bioprocess and media');
-}
 
 /** The named method row a reader would name in a question. */
 const mediaBo = matrix.cells.find((c) => c.method === 'Bayesian Optimization' && c.area === 'media')!;
+if (!mediaBo) throw new Error('AskExamples: Bayesian Optimization × media cell missing from matrix.json');
 
-const serumFree = topic('serum-free-media');
-const bioreactor = topic('bioreactor-scale-up');
 /* The tier is DERIVED, not stored — papers.json carries the raw OpenAlex licence string
    and nothing else. Reading a `licenseTier` field off it silently yielded 0, because the
    field does not exist. Same classifier the /licenses/ hub uses, so the homepage figure
@@ -92,7 +72,6 @@ const redistributable = papers.references.filter((r) => {
   const tier = licenseTier(r.license);
   return tier === 'permissive' || tier === 'copyleft';
 }).length;
-const withLicence = papers.references.filter((r) => r.license).length;
 /* Populations, each labelled by what it counted.
 
    This used to render one figure: papers + software + databases + datasets, presented as
@@ -132,6 +111,89 @@ if (curatedDatasets + inventoryRows !== counts.datasets) {
   );
 }
 
+/* ---- Card 1: the bovine substrate a planned timecourse would have to join ----------------
+   Every figure below is read from datasets.json rather than named, because the whole point of
+   the card is that the inventory is deeper than a browsing reader would guess. `columns` exists
+   only on inventory rows (curated entries have no table), hence the optional access. */
+type InventoryRow = { page: string; columns?: Record<string, string> };
+const cowInventory = (datasetsApi.inventory as InventoryRow[]).filter((r) => r.page === 'Cow');
+const cowCurated = datasetsApi.entries.filter((e) => e.page === 'Cow');
+const cowTotal = cowInventory.length + cowCurated.length;
+const col = (r: InventoryRow, k: string) => r.columns?.[k] ?? '';
+const cowTranscriptomic = cowInventory.filter((r) => /rna-seq/i.test(col(r, 'Type')));
+/* The single differentiation timecourse, matched on its harvest grid rather than its accession,
+   so a re-deposit under a new accession does not silently drop the card's central claim. */
+const cowTimecourse = cowInventory.find((r) => /0\/24\/48\/72\/96/.test(col(r, 'Description')));
+/* The embargo is the card's checkable catch: the obvious regulatory reference cannot actually be
+   used yet. If the deposit opens up, this throws rather than shipping a stale warning. */
+const cowEmbargoed = cowInventory.find((r) => /embargoed/i.test(col(r, 'Description')));
+if (!cowTimecourse || !cowEmbargoed || cowTranscriptomic.length < 3) {
+  throw new Error(
+    'AskExamples card 1: expected a 0/24/48/72/96 h bovine timecourse, an embargoed reference ' +
+      `deposit, and 3+ transcriptomic Cow rows; got timecourse=${!!cowTimecourse} ` +
+      `embargo=${!!cowEmbargoed} rnaSeq=${cowTranscriptomic.length}`,
+  );
+}
+
+/* ---- Card 3: the coverage map, read on two axes not one ---------------------------------
+   Cell size alone cannot separate "4 papers and live" from "4 papers and untouched since 2024",
+   and for a multi-year commitment those are opposite bets. The recency split is the safer signal
+   because it compares indexed papers against each other rather than against the field, which
+   CAAIL has not measured and says so in its own scopeNote. */
+const yearById = new Map(papers.references.map((r) => [r.id, r.year]));
+const recentIn = (c: Cell) =>
+  c.refIds.filter((id) => (yearById.get(id) ?? 0) >= 2024).length;
+const populated = matrix.cells.filter((c) => !c.emptyInCorpus);
+const crowded = populated
+  .filter((c) => c.refIds.length >= 10)
+  .sort((a, b) => b.refIds.length - a.refIds.length);
+/* Enough groundwork to stand on, not so much that it is crowded, and demonstrably still moving. */
+const goldilocks = populated
+  .filter((c) => c.refIds.length >= 3 && c.refIds.length <= 6 && recentIn(c) >= 3)
+  .sort((a, b) => recentIn(b) - recentIn(a));
+const stalled = populated
+  .filter((c) => c.refIds.length >= 3 && recentIn(c) === 0)
+  .sort((a, b) => b.refIds.length - a.refIds.length);
+/* The finding the card is built on, and it is NOT the one you first reach for. "Crowded cells are
+   all AI-method columns" is false: Ensemble Learning × sensory is the joint-largest cell in the
+   whole matrix and Bayesian Optimization × media also clears 10, both cell-ag applications. This
+   guard exists because that wrong version was written first and the build caught it.
+
+   What actually separates the crowded cells is RECENCY. The tooling and evaluation pile-ups are
+   almost entirely post-2024; the crowded application cells are long-standing literatures where
+   recent work is a minority. So "crowded" means two different things, and they imply opposite
+   moves for someone choosing a multi-year direction. */
+const share = (c: Cell) => recentIn(c) / c.refIds.length;
+const crowdedRush = crowded.filter((c) => share(c) >= 0.6);
+const crowdedMature = crowded.filter((c) => share(c) < 0.6);
+if (!goldilocks.length || !stalled.length || !crowdedRush.length || !crowdedMature.length) {
+  throw new Error(
+    `AskExamples card 3: expected crowded cells of both kinds plus goldilocks and stalled cells; ` +
+      `got rush=${crowdedRush.length} mature=${crowdedMature.length} ` +
+      `goldilocks=${goldilocks.length} stalled=${stalled.length}`,
+  );
+}
+
+/* ---- Card 4: where licence and citation weight disagree ----------------------------------
+   `unknown` means no machine-readable licence was recorded, NOT that permission is denied. The
+   card has to keep those apart: conflating them is the same error in the opposite direction from
+   treating is_oa as a redistribution grant, and both are live traps for anyone shipping a tool. */
+const tierOf = (r: { license: string | null }) => licenseTier(r.license);
+const mostCited = papers.references
+  .filter((r) => (r.citedByOpenAlex ?? 0) >= 1000)
+  .sort((a, b) => (b.citedByOpenAlex ?? 0) - (a.citedByOpenAlex ?? 0));
+const mostCitedRedistributable = mostCited.filter(
+  (r) => tierOf(r) === 'permissive' || tierOf(r) === 'copyleft',
+);
+const openButUnlicensed = papers.references.filter((r) => r.isOa && !r.license).length;
+const openAccess = papers.references.filter((r) => r.isOa).length;
+if (!mostCited.length || mostCitedRedistributable.length >= mostCited.length) {
+  throw new Error(
+    `AskExamples card 4: the licence-vs-value conflict is the card. Got ${mostCited.length} ` +
+      `works cited 1000+, ${mostCitedRedistributable.length} of them redistributable`,
+  );
+}
+
 /* Questions are built on cross-cutting themes found by sweeping all 112 entries in GFI's
    solutions database (gfi.org/solutions, 12 pages, cross-checked against its public REST
    endpoint). Each spans more than one axis on purpose: the matrix says what has been
@@ -153,77 +215,81 @@ if (curatedDatasets + inventoryRows !== counts.datasets) {
    the shift. */
 const examples = [
   {
+    id: 'design',
+    tab: 'Designing to integrate',
+    icon: 'lucide:dna',
+    label: 'Experiment design × existing deposits',
+    q:
+      'I am planning an RNA-seq timecourse on primary bovine satellite cells through differentiation, ' +
+      'budget for about 12 libraries. I would like this to be integrable with existing data rather ' +
+      'than standing alone. Which public datasets could mine realistically be combined with, and what ' +
+      'do I need to match in the design (timepoints, depth, annotation build) for that to be possible?',
+    src: ['datasets.json', 'papers.json'],
+    head: `One of the ${cowTotal} indexed bovine datasets is a differentiation timecourse, and it is the wrong assay to pool with`,
+    rows: [
+      { k: 'What to match', v: `${col(cowTimecourse, 'Data').replace(/\[`|`\]\(.*/g, '')} harvests at 0/24/48/72/96 h but is single-nucleus, so a bulk series matches its grid instead of joining it: 5 timepoints × 2 replicates inside 12 libraries` },
+      { k: 'The real batch factor', v: `${cowTranscriptomic.length} of the ${cowInventory.length} bovine rows are transcriptomic, and among the few that profile differentiation the trigger differs: serum-free medium against 20%→2% FBS starvation. Match one and you can join it; invent a third and you can join neither` },
+      { k: 'Check before you rely on it', v: 'The bovine FAANG epigenome atlas is the obvious annotation reference and its new deposits are embargoed until journal acceptance' },
+    ],
+    tail:
+      'The answer is not a list of datasets, it is a constraint on next week\'s design. Nothing here ' +
+      'is reachable by browsing: it needs the deposits, their assay types, and the data-availability ' +
+      'line that says the best reference cannot be used yet.',
+  },
+  {
     id: 'media',
     tab: 'Media & metabolism',
     icon: 'lucide:flask-conical',
     label: 'Media optimization × metabolic modeling',
     q:
-      'Draft genome-scale models exist for salmon, bovine, shrimp and chicken, but every one of them ' +
-      'still needs experimental validation, and most media work still screens one factor at a time. ' +
-      'Which indexed work actually couples a metabolic model to a design loop, and which of it ' +
-      'released code I could re-run on my own cell line?',
+      'We are trying to cut the cost of our serum-free medium and have reached the point where ' +
+      'one-factor-at-a-time screening has stopped paying. I have a draft genome-scale model for our ' +
+      'species but no experience closing the loop between a model and a screen. What work couples a ' +
+      'metabolic model to an experimental design loop, and what did those groups actually have to ' +
+      'measure to make the model useful?',
     src: ['matrix.json', 'topics.json', 'papers.json'],
-    head: `${mediaBo.refIds.length} papers in Bayesian Optimization × Media Optimization, including Cosenza 2022 (#3), the paper GFI cites as prior art for media formulation`,
+    head: `Nobody in the ${mediaBo.refIds.length} indexed media-optimization papers couples a metabolic model to the loop, and the nearest prior art does it one column over`,
     rows: [
-      { k: 'The paper GFI cites', v: '#3 Cosenza 2022: already indexed, with a code repository attached' },
-      { k: 'Metabolic modeling', v: `${topic('metabolic-modeling').papers.length} papers, ${topic('metabolic-modeling').software.length} tools and ${topic('metabolic-modeling').datasets.length} dataset entries, GEM files among them` },
-      { k: 'Reproducibility filter', v: `${papers.references.filter((r) => r.hasCode && r.hasData).length} of ${papers.references.length} papers link BOTH code and a data deposit` },
+      { k: 'The cell you would search', v: `Bayesian Optimization × Media Optimization: ${mediaBo.refIds.length} papers, including ${cite(3)}, the paper GFI cites as prior art for media formulation` },
+      { k: 'The overlap', v: `None of the ${mediaBo.refIds.length} is also tagged metabolic modeling, and all ${mediaBo.refIds.length} are tagged, so the gap is in their content and not in our coverage` },
+      { k: 'What you could re-run', v: `${papers.references.filter((r) => r.hasCode && r.hasData).length} of ${papers.references.length} papers link BOTH code and a data deposit, which is what "closing the loop yourself" actually requires` },
     ],
     tail:
-      'The last row is the one a search engine cannot answer. A model-plus-design-loop is only ' +
-      're-runnable if both halves were deposited, and most papers release neither.',
+      'The useful part is the absence joined to an adjacency, and neither is reachable by browsing. ' +
+      'It also reframes the plan from catching up to doing something new, which is a better outcome ' +
+      'than a reading list.',
   },
   {
-    id: 'species',
-    tab: 'Species substrate',
-    icon: 'lucide:dna',
-    label: 'Cell lines × single-cell atlases',
+    id: 'coverage',
+    tab: 'Coverage & gaps',
+    icon: 'lucide:grid-3x3',
+    label: 'Method coverage × research area',
     q:
-      'Species genomics, aquatic cell lines, cell-line repositories and fish stemness get funded as ' +
-      'separate problems, but they share one precondition: I cannot model an organism nobody has ' +
-      'annotated. Which single-cell atlases exist for food species, which papers used one to call ' +
-      'proliferation or stemness markers, and where does an atlas exist that nobody has modelled?',
-    src: ['topics.json', 'catalog.json'],
-    head: `${topic('single-cell-atlases').papers.length} papers, ${topic('single-cell-atlases').datasets.length} dataset entries and ${topic('single-cell-atlases').databases.length} databases on single-cell atlases`,
-    rows: [
-      { k: 'Species coverage', v: `${counts.species} species pages, each separating atlases, GEMs and raw sequencing deposits` },
-      { k: 'Cell-line work', v: `${topic('cell-line-engineering').papers.length} papers tagged cell-line engineering` },
-      { k: 'The gap to look for', v: 'A deposit with an accession that no paper cites: the reverse audit CAAIL runs against itself' },
-    ],
-    tail:
-      'The aquatic species are the thin ones, and that is the point: this crosses papers, per-species ' +
-      'datasets and databases in one pass, and none of the three answers it alone.',
-  },
-  {
-    id: 'transport',
-    tab: 'Scale-up & transport',
-    icon: 'lucide:gauge',
-    label: 'Bioprocess × perfusion modelling',
-    q:
-      'Oxygen, nutrients and shear inside a dense construct are coupled, spatially heterogeneous, and ' +
-      'change as cells fill the void space. Before I commit to a spatially resolved model rather than ' +
-      'treating the vessel as well-mixed, which indexed methods actually resolve those gradients, and ' +
-      'what could I validate one against?',
-    src: ['matrix.json', 'topics.json'],
-    /* The NULL is the headline here, not a footnote. This is the only card that demonstrates
-       the thing no general model can do — report that something is absent instead of
-       silently returning less. Burying it in a closing caveat, as this did, inverts the
-       section's own argument.
+      'I am deciding where to put a student for the next two years. Across these methods and research ' +
+      'areas, where is there enough groundwork to build on but not so much that it is crowded, and ' +
+      'what would I read to sanity-check that?',
+    src: ['matrix.json', 'papers.json', 'taxonomy.json'],
+    /* The coverage map is the one thing here no search engine has, and reading it on cell size
+       alone is the trap. A cell with four papers and none since 2024 sorts identically to a cell
+       with four papers and three of them recent, and for a multi-year commitment those are
+       opposite bets. So the card reports density AND recency, and leads with the structural
+       finding rather than a ranking.
 
-       Note the scope wording. This previously read "no public multi-run process time-series
-       exists", which is a claim about the WORLD that CAAIL has no standing to make — it can
-       only speak for what it indexes. It also committed the exact error the #why band above
-       attacks models for: conflating "I found none" with "there are none". */
-    head: 'Nothing to validate against: no indexed dataset carries multi-run process time-series, and reporting that is not the same as returning an empty result',
+       Scope wording matters as much as it does on any null: 107 empty cells describes what CAAIL
+       indexes, not what exists. index.json's own scopeNote says so. The recency split is the safer
+       signal precisely because it compares indexed papers against each other. */
+    head: `${matrix.populatedCells} of ${matrix.totalCells} cells hold anything at all, and "crowded" turns out to mean two different things`,
     rows: [
-      ...bioproc.slice(0, 2).map((c) => ({ k: c.method, v: `${c.refIds.length}: ${c.refIds.slice(0, 2).map(cite).join(', ')}` })),
-      { k: 'What is indexed', v: `${sum(bioproc)} papers across ${bioproc.length} method rows, plus ${bioreactor.datasets.length} dataset entries and ${bioreactor.software.length} tools on the bioreactor axis` },
+      { k: 'Crowded because it is new', v: `${crowdedRush.slice(0, 2).map((c) => `${c.method} × ${c.area} (${c.refIds.length}, ${recentIn(c)} since 2024)`).join('; ')}: a pile-up you would be joining late` },
+      { k: 'Crowded because it is old', v: `${crowdedMature.map((c) => `${c.method} × ${c.area} (${c.refIds.length}, ${recentIn(c)} since 2024)`).join('; ')}: mature literatures where recent work is the minority` },
+      { k: 'Enough to stand on, still moving', v: `${goldilocks.slice(0, 3).map((c) => `${c.method} × ${c.area} (${c.refIds.length}, ${recentIn(c)} since 2024)`).join('; ')}` },
+      { k: 'Looks identical, is the opposite bet', v: `${stalled.slice(0, 3).map((c) => `${c.method} × ${c.area} (${c.refIds.length})`).join(', ')}: groundwork exists and nothing has landed since 2024` },
     ],
     tail:
-      'Read the scope precisely: none is indexed here, which is not the same as none existing. ' +
-      'Validation data for scale-up is largely industrial and unpublished, so a thin result is a ' +
-      'publication gap before it is a research gap, and telling those two apart is the judgement a ' +
-      'general model cannot make on your behalf.',
+      'Cell size alone collapses all four rows into one ranking, which is why the count on its own ' +
+      'would mislead you. The judgement the numbers inform without making is the last row: abandoned ' +
+      'because it did not work, or unfashionable but sound. Read the Taxonomy entry so you know the ' +
+      'cell means what you think, then read the three papers.',
   },
   {
     id: 'build',
@@ -236,15 +302,16 @@ const examples = [
       'it may go customer-facing later. What may we redistribute versus only read internally, and what ' +
       'would need licensing separately the day it leaves our network?',
     src: ['papers.json', 'catalog.json'],
-    head: `${redistributable} of the ${papers.references.length} papers carry a licence permitting redistribution, not the ~74% that are open access`,
+    head: `Of the ${mostCited.length} works cited 1,000+ times, ${mostCitedRedistributable.length} carries a licence permitting redistribution`,
     rows: [
-      { k: 'Internal use', v: 'What your organisation may lawfully read, it may generally index for itself: the tier binds on publishing, not on working' },
-      { k: 'Going public', v: `Filter on licenceTier ∈ {permissive, copyleft}; ${withLicence} works carry a machine-readable licence at all` },
-      { k: 'Safety coverage', v: `${topic('allergenicity').papers.length} papers, ${topic('allergenicity').software.length} tools and ${topic('allergenicity').databases.length} databases tagged allergenicity; food safety is thinner` },
+      { k: 'Value and licence disagree at the top', v: `${cite(mostCitedRedistributable[0].id)} is the one you may republish. The rest are the field's load-bearing papers and none can be cleared from metadata` },
+      { k: 'Unrecorded is not forbidden', v: `${openButUnlicensed} works are free to read with no licence recorded at all: you may read them and cannot clear them automatically, which is a research task and not a refusal` },
+      { k: 'What the filters actually cost', v: `${openAccess} of ${papers.references.length} are open access but only ${redistributable} are redistributable, so filtering on access overstates your rights by ${openAccess - redistributable} works` },
     ],
     tail:
-      'Free to read is not permission to republish. The two get conflated in both directions, either ' +
-      'costing you most of the corpus, or exposing you the day the tool ships.',
+      'The answer is a triage rule, not a filter: cite the famous work, build on the ' +
+      `${redistributable} you may redistribute, and hand-clear the few you actually have to ship. ` +
+      'The tier binds on publishing, not on what your organisation may lawfully read and index for itself.',
   },
 ];---
 
