@@ -107,10 +107,15 @@ reviewer must not hard-block the whole ship.
 ```bash
 bash .claude/skills/caail-pr-wrapup/ship-pr.sh watch-checks <pr>
 ```
-Per the CI table below, `lint-papers` runs only when the diff touches content/parser paths; the deploy
-is **post-merge**, so a `site/`-config-only or `.claude/`-only PR legitimately has **no checks** (the
-helper reports that and proceeds). If a check **fails**, stop — surface it and fix the branch; do not
-merge red.
+Per the CI table below, `lint-papers` runs only when the diff touches content/parser paths, and the
+deploy is **post-merge**, so not every PR has every check. A PR with **no checks at all** is now a
+narrow case: `guards.yml` fires on `.claude/hooks/**`, `.claude/settings.json`, this skill, and **any**
+`.github/workflows/**` edit, so a check-free PR touches only `.claude/` rules, agents, or a skill other
+than `caail-pr-wrapup`. The helper reports "no checks reported" and proceeds when that is genuinely the
+case — but if you expected a guard to run and it did not, treat that as a paths-filter gap, not as
+expected quiet. That is the exact failure this skill's own CI section documents twice over.
+
+If a check **fails**, stop — surface it and fix the branch; do not merge red.
 
 ### 5. Confirm, then merge
 **Pause here.** Merging triggers the public deploy, so confirm with the user before proceeding (unless

@@ -24,9 +24,11 @@ on:
       # that could break it.
       #
       # Scoped to hooks + settings rather than all of `.claude/`: those are the
-      # parts with tests, and both the `hooks` job and the vitest suite in `test`
-      # need to run on them. Skill, rule and agent prose has no test to run, so
-      # matching it here would spend a full site build and e2e pass on a doc edit.
+      # parts with tests: `block-generated-edits.py` is covered by the vitest
+      # suite below, via site/scripts/db/hook.test.ts. (The other hook's test
+      # runs in guards.yml, which filters on these same paths.) Skill, rule and
+      # agent prose has no test to run, so matching it here would spend a full
+      # site build and e2e pass on a doc edit.
       - .claude/hooks/**
       - .claude/settings.json
       - .github/workflows/test.yml
@@ -47,9 +49,11 @@ on:
       # that could break it.
       #
       # Scoped to hooks + settings rather than all of `.claude/`: those are the
-      # parts with tests, and both the `hooks` job and the vitest suite in `test`
-      # need to run on them. Skill, rule and agent prose has no test to run, so
-      # matching it here would spend a full site build and e2e pass on a doc edit.
+      # parts with tests: `block-generated-edits.py` is covered by the vitest
+      # suite below, via site/scripts/db/hook.test.ts. (The other hook's test
+      # runs in guards.yml, which filters on these same paths.) Skill, rule and
+      # agent prose has no test to run, so matching it here would spend a full
+      # site build and e2e pass on a doc edit.
       - .claude/hooks/**
       - .claude/settings.json
       - .github/workflows/test.yml

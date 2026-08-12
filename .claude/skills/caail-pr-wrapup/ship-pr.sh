@@ -42,11 +42,16 @@ changed_paths() {
 
 # --- CI path filters -------------------------------------------------------
 #
-# Each list below is this repo's workflow `paths:` filter, written in GitHub
+# Each list below mirrors one workflow's `paths:` filter, written in GitHub
 # Actions' own notation so the two can be compared MECHANICALLY instead of by
-# eye. `check-ci-paths.py` asserts each list equals its workflow's `paths:`, and
-# runs in test.yml's `hooks` job — so editing a workflow without editing this
-# file now fails CI.
+# eye. `check-ci-paths.py` asserts they match, and runs in `guards.yml`, so
+# editing a workflow without editing this file fails CI.
+#
+# **Each variable is named for its workflow file** (`<stem uppercased, - to _>`
+# plus `_PATHS`, so `lint-papers.yml` -> `LINT_PAPERS_PATHS`). That naming is
+# load-bearing rather than cosmetic: the check DERIVES which variable to expect
+# by globbing `.github/workflows/`, so a new paths-bearing workflow with no
+# matching variable here fails CI instead of leaving preflight blind to it.
 #
 # That check exists because this duplication drifted three times while carrying
 # a comment warning that it drifts. Two of those drifts made preflight predict
@@ -58,10 +63,12 @@ changed_paths() {
 # and deliberately no more: a literal, a `prefix/**` subtree, and a bare `*.md`,
 # which GitHub scopes to the ROOT level only. That last one is not a detail —
 # it is why every nested canonical directory has to be named, and why both
-# `Taxonomy.md` and `Primers/**` were silently missing.
-LINT_PATHS='Papers.md Software.md Databases.md OtherResources.md Taxonomy.md Datasets/** CONTRIBUTING.md CLAUDE.md site/scripts/parser/** site/scripts/db/** site/db/** site/public/api/** site/public/setup.md plugin/skills/** skills/**'
+# `Taxonomy.md` and `Primers/**` were silently missing. The check also refuses
+# any pattern outside those three forms, since `path_matches` would silently
+# match nothing rather than erroring.
+LINT_PAPERS_PATHS='Papers.md Software.md Databases.md OtherResources.md Taxonomy.md Datasets/** CONTRIBUTING.md CLAUDE.md site/scripts/parser/** site/scripts/db/** site/db/** site/public/api/** site/public/setup.md plugin/skills/** skills/**'
 TEST_PATHS='site/** workers/** *.md ResearchAreas/** Datasets/** Primers/** .claude/hooks/** .claude/settings.json .github/workflows/test.yml'
-DEPLOY_PATHS='site/** *.md ResearchAreas/** Datasets/** Primers/**'
+DOCS_PATHS='site/** *.md ResearchAreas/** Datasets/** Primers/**'
 GUARDS_PATHS='.claude/hooks/** .claude/settings.json .claude/skills/caail-pr-wrapup/** .github/workflows/**'
 
 # Does $1 (a repo-relative path) match $2 (one GitHub Actions paths pattern)?
@@ -92,9 +99,9 @@ matches_any() {
   return "$_rc"
 }
 
-matches_lint()   { matches_any "$1" "$LINT_PATHS"; }
+matches_lint()   { matches_any "$1" "$LINT_PAPERS_PATHS"; }
 matches_test()   { matches_any "$1" "$TEST_PATHS"; }
-matches_deploy() { matches_any "$1" "$DEPLOY_PATHS"; }
+matches_deploy() { matches_any "$1" "$DOCS_PATHS"; }
 matches_guards() { matches_any "$1" "$GUARDS_PATHS"; }
 
 # Best-effort: map a changed canonical file to the site route to spot-check.
@@ -181,8 +188,10 @@ cmd_open_pr() {
 cmd_watch_checks() {
   local pr="$1" out
   # `gh pr checks` exits non-zero when there are no checks at all — happens only
-  # for PRs that touch none of the lint-papers or test.yml paths (e.g. a
-  # .claude/-only or workflow-unrelated change).
+  # for PRs that match none of the four workflows' paths. That is now a narrow
+  # set: `.claude/hooks/**`, `.claude/settings.json`, the wrap-up skill and ANY
+  # `.github/workflows/**` edit all trigger guards.yml. A truly check-free PR
+  # touches only `.claude/` rules, agents, or a skill other than this one.
   # Capture its output to a variable first (NOT `gh ... | grep`): under
   # `set -o pipefail` gh's non-zero exit would mask a grep match and wrongly
   # fall through to the blocking --watch below.
