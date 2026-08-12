@@ -124,14 +124,33 @@ const cowTranscriptomic = cowInventory.filter((r) => /rna-seq/i.test(col(r, 'Typ
 /* The single differentiation timecourse, matched on its harvest grid rather than its accession,
    so a re-deposit under a new accession does not silently drop the card's central claim. */
 const cowTimecourse = cowInventory.find((r) => /0\/24\/48\/72\/96/.test(col(r, 'Description')));
+/* The bulk comparator, and the reason this card has a tension rather than a recommendation.
+   An earlier version said "match the trigger and you can join it" one row after saying the
+   timecourse cannot be joined at all, which is a contradiction: the timecourse IS the serum-free
+   deposit. The two things worth matching sit in different deposits, and only one of them is an
+   assay you can pool bulk libraries with. Matched on the trigger wording rather than the
+   accession, for the same reason as above. */
+const cowBulkComparator = cowInventory.find(
+  (r) => /^rna-seq/i.test(col(r, 'Type')) && /serum-starvation|20%→2%/i.test(col(r, 'Description')),
+);
 /* The embargo is the card's checkable catch: the obvious regulatory reference cannot actually be
    used yet. If the deposit opens up, this throws rather than shipping a stale warning. */
 const cowEmbargoed = cowInventory.find((r) => /embargoed/i.test(col(r, 'Description')));
-if (!cowTimecourse || !cowEmbargoed || cowTranscriptomic.length < 3) {
+if (!cowTimecourse || !cowBulkComparator || !cowEmbargoed || cowTranscriptomic.length < 3) {
   throw new Error(
-    'AskExamples card 1: expected a 0/24/48/72/96 h bovine timecourse, an embargoed reference ' +
-      `deposit, and 3+ transcriptomic Cow rows; got timecourse=${!!cowTimecourse} ` +
-      `embargo=${!!cowEmbargoed} rnaSeq=${cowTranscriptomic.length}`,
+    'AskExamples card 1: expected a 0/24/48/72/96 h bovine timecourse, a bulk serum-starvation ' +
+      'comparator, an embargoed reference deposit, and 3+ transcriptomic Cow rows; got ' +
+      `timecourse=${!!cowTimecourse} bulk=${!!cowBulkComparator} embargo=${!!cowEmbargoed} ` +
+      `rnaSeq=${cowTranscriptomic.length}`,
+  );
+}
+/* The tension only exists while the timecourse is an assay you cannot pool with. If a bulk
+   timecourse is ever deposited the card's whole argument collapses into "use that one", so this
+   asserts the premise rather than leaving it to be noticed. */
+if (/^(bulk )?rna-seq$/i.test(col(cowTimecourse, 'Type'))) {
+  throw new Error(
+    'AskExamples card 1: the timecourse is now bulk RNA-seq, so the assay-vs-timing tension the ' +
+      'card is built on no longer holds. Rewrite the card.',
   );
 }
 
@@ -294,16 +313,18 @@ const examples = [
       'than standing alone. Which public datasets could mine realistically be combined with, and what ' +
       'do I need to match in the design (timepoints, depth, annotation build) for that to be possible?',
     src: ['datasets.json', 'papers.json'],
-    head: `One of the ${cowTotal} indexed bovine datasets is a differentiation timecourse, and it is the wrong assay to pool with`,
+    head: `Across the ${cowTotal} indexed bovine datasets, the best timepoint design and the only poolable assay are in different deposits`,
     rows: [
-      { k: 'What to match', v: `${col(cowTimecourse, 'Data').replace(/\[`|`\]\(.*/g, '')} harvests at 0/24/48/72/96 h but is single-nucleus, so a bulk series matches its grid instead of joining it: 5 timepoints × 2 replicates inside 12 libraries` },
-      { k: 'The real batch factor', v: `${cowTranscriptomic.length} of the ${cowInventory.length} bovine rows are transcriptomic, and among the few that profile differentiation the trigger differs: serum-free medium against 20%→2% FBS starvation. Match one and you can join it; invent a third and you can join neither` },
+      { k: 'The only real timecourse, wrong assay', v: `${col(cowTimecourse, 'Data').replace(/\[`|`\]\(.*/g, '')} harvests at 0/24/48/72/96 h, in serum-free differentiation medium, but it is single-nucleus. Copy its grid and compare at pseudobulk: 5 timepoints × 2 replicates fits your 12 libraries with two spare` },
+      { k: 'The only poolable comparator, no timecourse', v: `${col(cowBulkComparator, 'Data').replace(/\[`|`\]\(.*/g, '')} is bulk, so it is the one you could genuinely pool with, but it is a contrast rather than a series: a 20%→2% FBS starvation arm plus an SFM vs 20% FBS comparison. Pooling means matching that contrast, not the timing` },
       { k: 'Check before you rely on it', v: 'The bovine FAANG epigenome atlas is the obvious annotation reference and its new deposits are embargoed until journal acceptance' },
     ],
     tail:
-      'The answer is not a list of datasets, it is a constraint on next week\'s design. Nothing here ' +
-      'is reachable by browsing: it needs the deposits, their assay types, and the data-availability ' +
-      'line that says the best reference cannot be used yet.',
+      'You cannot match both at once, and choosing which comparability you want is the decision this ' +
+      'question actually feeds. The bulk comparator is the bridge, since it is the one deposit that ' +
+      'runs both a serum-free and a serum-starvation arm. None of that is reachable by browsing: it ' +
+      'needs the assay types, the trigger each one used, and the data-availability line that says the ' +
+      'best annotation reference cannot be used yet.',
   },
   {
     id: 'media',
