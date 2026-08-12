@@ -920,6 +920,17 @@
                 "type": "null"
               }
             ]
+          },
+          "isOa": {
+            "default": null,
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": [
@@ -944,7 +955,8 @@
           "topics",
           "citedByOpenAlex",
           "license",
-          "licenseSource"
+          "licenseSource",
+          "isOa"
         ],
         "additionalProperties": false
       },

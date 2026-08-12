@@ -29,7 +29,7 @@ import { parseApa } from './apa.js';
 import { areaKeyForLabel } from './areas.js';
 import { topicsByItemId } from './topics.js';
 import { doiKey } from './citations.js';
-import { loadCitedByCounts, loadPaperLicenses } from './citation-counts.js';
+import { loadCitedByCounts, loadPaperLicenses, loadPaperIsOa } from './citation-counts.js';
 import {
   PapersDataSchema,
   type PapersData,
@@ -349,6 +349,7 @@ export function buildPapersModel(papersPath: string = PAPERS_MD_PATH): PapersDat
   const topicsById = topicsByItemId();
   const counts = loadCitedByCounts();
   const licenses = loadPaperLicenses();
+  const isOaByKey = loadPaperIsOa();
   const references = slugged.map((r) => {
     const key = doiKey(r.doi);
     const license = key ? licenses.get(key) ?? null : null;
@@ -358,6 +359,7 @@ export function buildPapersModel(papersPath: string = PAPERS_MD_PATH): PapersDat
       citedByOpenAlex: key ? counts.get(key) ?? null : null,
       license,
       licenseSource: license ? ('auto' as const) : null,
+      isOa: key ? isOaByKey.get(key) ?? null : null,
     };
   });
 

@@ -112,6 +112,17 @@ export const ReferenceSchema = z.object({
    * today (derived from OpenAlex); 'manual' is reserved for curator overrides.
    */
   licenseSource: z.enum(['auto', 'manual']).nullable().default(null),
+  /**
+   * OpenAlex `open_access.is_oa` — free to READ, folded from the citation cache. Null when
+   * the DOI is absent from the cache or the paper has no DOI, which is why it is nullable
+   * rather than defaulting to false: "no record" and "not open" are different facts, and
+   * anything quoting a denominator over these has to tell them apart.
+   *
+   * NOT a redistribution grant, and not interchangeable with `license` — many works here
+   * are free to read under no license at all. Anything that STORES text must filter on the
+   * derived license tier, never on this field.
+   */
+  isOa: z.boolean().nullable().default(null),
 });
 
 export const CatalogEntrySchema = z.object({
