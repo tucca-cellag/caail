@@ -29,6 +29,9 @@ on:
       # NOT covered by the line above: without this a lone edit to it would skip the
       # agent-API sync guard and ship a stale setup.md with nothing to say so.
       - skills/**
+      # the corpus extraction scripts. docling_sections.test.py runs here because it
+      # needs neither Zotero nor the network -- it reads committed heading fixtures.
+      - .claude/skills/matrix-classification-audit/**
   push:
     branches:
       - main
@@ -59,6 +62,9 @@ on:
       # NOT covered by the line above: without this a lone edit to it would skip the
       # agent-API sync guard and ship a stale setup.md with nothing to say so.
       - skills/**
+      # the corpus extraction scripts. docling_sections.test.py runs here because it
+      # needs neither Zotero nor the network -- it reads committed heading fixtures.
+      - .claude/skills/matrix-classification-audit/**
   workflow_dispatch:
 
 concurrency:
@@ -98,6 +104,13 @@ jobs:
 
       - name: Run Papers.md lint
         run: pnpm --dir site lint:papers
+
+      # The methods-section extractor the matrix re-audit reads its evidence from.
+      # Runs here rather than nowhere: it is stdlib-only and reads committed heading
+      # fixtures, so it needs neither Zotero nor the network. A guard no workflow
+      # invokes is the defect CAAIL-229 was opened to fix; this one is invoked.
+      - name: Methods-section extraction tests
+        run: python3 .claude/skills/matrix-classification-audit/docling_sections.test.py
 
       - name: DB integrity + round-trip verify
         run: |
