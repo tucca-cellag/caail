@@ -9,7 +9,8 @@ import { topicHref } from '../lib/topic-chips';
 import HubFilterBar from './HubFilterBar';
 import { readSecondary, matchesTier, matchesBand, type Secondary } from '../lib/hub-filters';
 import { chipStyle } from '../lib/theme-colors';
-import { curatorFor, curatorCoverage } from '../lib/topic-curators';
+import { curatorFor, LEAD_GUARANTEE, LEAD_ASK, leadCoverageLine } from '../lib/topic-curators';
+import { COMMUNITY_PATH } from '../lib/community';
 
 type TopicRef = { slug: string; label: string; theme: string };
 type Counts = { paper: number; software: number; database: number; dataset: number; total: number };
@@ -58,13 +59,33 @@ const items: Item[] = [
 
 const KIND_LABEL: Record<Item['kind'], string> = { paper: 'Papers', software: 'Software', database: 'Databases', dataset: 'Datasets' };
 
+/**
+ * Per-type counts, INCLUDING the zeros.
+ *
+ * These used to be gated on `> 0`, which quietly contradicted the homepage band one click
+ * away: the band renders Scaffolding & Biomaterials as "software 0, databases 0" and says
+ * in its own copy that an empty column is a result CAAIL returns rather than a gap it
+ * hides. A reader who clicked that card because of the empty columns landed here and found
+ * they had vanished. Two surfaces, one linking to the other, disagreeing about the claim
+ * the first one leads with.
+ *
+ * A zero is muted rather than dropped, which is the same treatment the band gives it: an
+ * answer, not a score.
+ */
 function CountPills({ c }: { c: Counts }) {
+  const pills: { n: number; label: string }[] = [
+    { n: c.paper, label: 'papers' },
+    { n: c.software, label: 'software' },
+    { n: c.database, label: 'databases' },
+    { n: c.dataset, label: 'datasets' },
+  ];
   return (
     <span class="th-pills">
-      {c.paper > 0 && <span class="th-pill">{c.paper} papers</span>}
-      {c.software > 0 && <span class="th-pill">{c.software} software</span>}
-      {c.database > 0 && <span class="th-pill">{c.database} databases</span>}
-      {c.dataset > 0 && <span class="th-pill">{c.dataset} datasets</span>}
+      {pills.map((p) => (
+        <span class="th-pill" data-empty={p.n === 0 ? 'true' : undefined}>
+          {p.n} {p.label}
+        </span>
+      ))}
     </span>
   );
 }
@@ -112,8 +133,6 @@ function LeadLine({ slug }: { slug: string }) {
 }
 
 function ThemeIndex() {
-  // Derived, never typed: the sentence has to move the moment a theme is taken.
-  const coverage = curatorCoverage();
   return (
     <div class="th-index not-content">
       <ul class="th-theme-grid">
@@ -130,16 +149,16 @@ function ThemeIndex() {
           what a lead commits to, so the copy says so instead of inventing it, and names
           the one limit that must not be left ambiguous while placements are under
           re-verification. Wording kept in step with TopicsBand.astro deliberately. */}
+      {/* Copy and route both imported, not restated. This paragraph was a verbatim
+          duplicate of the band's, kept in step by a comment, and only the band's version
+          was pinned by a test — so an edit to the guarantee sentence would pass CI while
+          the two surfaces promised different things. The community route comes from
+          `lib/community.ts`, whose whole job is to keep it in one place. */}
       <aside class="th-recruit" aria-label="Topic leads">
-        <p class="th-recruit-lede">
-          {coverage.open} of the {coverage.total} themes have no lead.
-        </p>
+        <p class="th-recruit-lede">{leadCoverageLine()}</p>
         <p class="th-recruit-body">
-          A lead is a point of contact for one area, not a guarantee that every entry in it
-          is right. What the role commits to is still being worked out, and we would rather
-          settle that with the people who might take it than hand them a finished job
-          description. If you work in one of these areas,{' '}
-          <a href={`${BASE.replace(/\/$/, '')}/community/`}>get in touch</a>.
+          {LEAD_GUARANTEE} {LEAD_ASK}{' '}
+          <a href={`${BASE.replace(/\/$/, '')}${COMMUNITY_PATH}`}>get in touch</a>.
         </p>
       </aside>
     </div>

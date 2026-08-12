@@ -68,6 +68,34 @@ export function curatorFor(slug: string): Curator | null {
 }
 
 /**
+ * The recruitment copy, written once and rendered on both surfaces.
+ *
+ * It was duplicated verbatim between `TopicsBand.astro` and `TopicHub.tsx`, with a comment
+ * saying "kept in step deliberately" as the only mechanism. That is the failure class this
+ * repo names as its costliest, and it had already grown teeth: only the homepage copy is
+ * pinned by a test, so editing the guarantee sentence would pass CI while the two surfaces
+ * stated different commitments about what a lead is.
+ *
+ * LEAD_GUARANTEE is separated because it is the load-bearing sentence rather than framing.
+ * It is what stops a name reading as an endorsement of every placement inside its theme
+ * while those placements are still being re-verified, and it is asserted directly in the
+ * e2e suite, so it must be quotable on its own.
+ */
+export const LEAD_GUARANTEE =
+  'A lead is a point of contact for one area, not a guarantee that every entry in it is right.';
+
+export const LEAD_ASK =
+  'What the role commits to is still being worked out, and we would rather settle that with ' +
+  'the people who might take it than hand them a finished job description. If you work in ' +
+  'one of these areas,';
+
+/** The headline figure, phrased once so both surfaces cannot disagree about it. */
+export function leadCoverageLine(): string {
+  const { open, total } = curatorCoverage();
+  return `${open} of the ${total} themes have no lead.`;
+}
+
+/**
  * How many themes are held and how many are open, derived from the live theme list.
  *
  * The recruitment copy quotes both numbers, and neither may be typed: the moment a lead is

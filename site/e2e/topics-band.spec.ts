@@ -140,12 +140,17 @@ test('the recruitment banner agrees with the cards about how many themes are ope
 });
 
 test('the band stays out of the search index', async ({ page }) => {
-  // Not a style rule. Indexed, the band puts all eight theme labels on the splash page
-  // and Pagefind ranks it above the pages actually about those subjects: searching
-  // "bioprocess" stopped returning /research-areas/bioprocess/ at all, failing
-  // explorer.spec.ts's prose-indexing test and privacy.spec.ts's search-event test on
-  // every run. Those two are the behavioural guard and they do catch it; this assertion
-  // exists so the failure names its own cause instead of looking like a search bug.
+  // Not tidiness. Indexed, the band puts all eight theme labels on the splash page and
+  // Pagefind ranks it above the pages actually about those subjects: searching
+  // "bioprocess" stops returning /research-areas/bioprocess/ at all, failing
+  // explorer.spec.ts's prose-indexing test and privacy.spec.ts's search-event test.
+  // Those two are the behavioural guard; this assertion exists so the failure names its
+  // own cause instead of reading as a search bug.
+  //
+  // Re-testing that claim needs a controlled protocol, because two confounds each produced
+  // a false answer once: a NUL-byte `dist/pagefind/*` from an incremental build, and a
+  // manually started preview server surviving a `rm -rf dist` and being adopted by
+  // `reuseExistingServer`. See the comment on the section in TopicsBand.astro.
   await expect(page.locator('#topics')).toHaveAttribute('data-pagefind-ignore', '');
 });
 

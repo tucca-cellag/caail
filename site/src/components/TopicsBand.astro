@@ -46,7 +46,7 @@
 import topics from '../content/data/topics.json';
 import { chipStyle } from '../lib/theme-colors';
 import { COMMUNITY_PATH } from '../lib/community';
-import { curatorFor, curatorCoverage } from '../lib/topic-curators';
+import { curatorFor, LEAD_GUARANTEE, LEAD_ASK, leadCoverageLine } from '../lib/topic-curators';
 /* The `?t=` deep-link shape is a contract with `hub-filters.readSecondary`, and it is
    already written down once, unit-tested, and used by TopicHub. Building the URL inline
    here would be a third copy: change the hub's param and this band would quietly point at
@@ -54,11 +54,6 @@ import { curatorFor, curatorCoverage } from '../lib/topic-curators';
 import { topicHref } from '../lib/topic-chips';
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-
-/* Both figures derived. The recruitment line quotes how many themes are open, and that
-   number changes the day someone takes one; typed, it would go wrong exactly when the
-   programme starts working. */
-const coverage = curatorCoverage();
 
 const themes = topics.themes;
 const tags = topics.tags;
@@ -106,18 +101,30 @@ if (!themes.some((t) => TYPES.some((ty) => countOf(t, ty.key) === 0))) {
 ---
 
 {/* NOT INDEXED, and this is load-bearing rather than tidiness.
-    Measured: with this band indexed, searching "bioprocess" stopped returning
-    /research-areas/bioprocess/ in the visible results at all. The band puts all eight
-    theme labels on the homepage, so Pagefind ranked the splash page above the page
-    actually about the subject, and `explorer.spec.ts`'s prose-indexing test and
-    `privacy.spec.ts`'s search-event test both failed 6/6 runs. Reverting just the
-    homepage import made both pass again, which is what pinned the cause here.
 
-    Excluding it is the right fix and not a workaround: the band is a NAVIGATION
-    surface whose every label already has a better search target — /topics/ for the
-    theme itself, the research-area pages for the subject. Indexing it only ever adds a
-    duplicate, lower-quality hit that outranks the real one. Search quality on the terms
-    this band exists to serve is exactly what it must not degrade. */}
+    Indexed, this band puts all eight theme labels on the splash page and Pagefind ranks it
+    above the pages actually about those subjects: searching "bioprocess" stops returning
+    /research-areas/bioprocess/ in the visible results at all, failing `explorer.spec.ts`'s
+    prose-indexing test and `privacy.spec.ts`'s search-event test.
+
+    Establishing that took three attempts, because two separate confounds each produced a
+    false answer, and both are worth knowing before re-testing this:
+      1. An incremental `pnpm build` sometimes writes `dist/pagefind/pagefind.js` and
+         `pagefind-entry.json` as entirely NUL bytes. The dialog then never loads and every
+         search spec fails for a reason unrelated to content. Check with
+         `tr -d '\000' < dist/pagefind/pagefind.js | wc -c` before believing a red run.
+      2. A manually started `pnpm preview` left running across a `rm -rf dist` keeps serving
+         the deleted build, and Playwright's `reuseExistingServer` silently adopts it. That
+         is what made an indexed build appear to pass: the server was still answering from
+         a dist that had this attribute.
+    The reliable protocol is `rm -rf dist && pnpm build`, verify the artifacts are non-NUL,
+    ensure nothing already holds the port, and let Playwright own the server. Under that,
+    the result is stable: indexed fails, excluded passes.
+
+    Excluding it is the right fix and not a workaround: the band is a NAVIGATION surface
+    whose every label already has a better search target — /topics/ for the theme itself,
+    the research-area pages for the subject. Indexing it only ever adds a duplicate,
+    lower-quality hit that outranks the real one. */}
 <section class="topics" id="topics" data-pagefind-ignore>
   <div class="hd sr">
     {/* The eyebrow is NOT free text: `homepage-agent.spec.ts` asserts that a rail label
@@ -169,14 +176,9 @@ if (!themes.some((t) => TYPES.some((ty) => countOf(t, ty.key) === 0))) {
       name must not read as vouching for them.
       Both figures are derived; see the coverage comment above. */}
   <aside class="recruit sr sr-d2" aria-label="Topic leads">
-    <p class="recruit-lede">
-      {coverage.open} of the {coverage.total} themes have no lead.
-    </p>
+    <p class="recruit-lede">{leadCoverageLine()}</p>
     <p class="recruit-body">
-      A lead is a point of contact for one area, not a guarantee that every entry in it is
-      right. What the role commits to is still being worked out, and we would rather settle
-      that with the people who might take it than hand them a finished job description. If
-      you work in one of these areas, <a href={`${base}${COMMUNITY_PATH}`}>get in touch</a>.
+      {LEAD_GUARANTEE} {LEAD_ASK} <a href={`${base}${COMMUNITY_PATH}`}>get in touch</a>.
     </p>
   </aside>
 
