@@ -37,11 +37,15 @@ type Metrics = {
 };
 type PrimerItem = { kind: string; internal: boolean };
 type Primers = { primers: { slug: string; sections: { items: PrimerItem[] }[] }[] };
+export type TopicCounts = { paper: number; software: number; database: number; dataset: number; total: number };
+type TopicNode = { slug: string; label: string; counts: TopicCounts };
+type Topics = { themes: TopicNode[]; tags: TopicNode[] };
 
 export const counts = read<Counts>('counts.json');
 export const papers = read<Papers>('papers.json');
 export const metrics = read<Metrics>('metrics.json');
 export const primers = read<Primers>('primers.json');
+export const topics = read<Topics>('topics.json');
 
 /** How many references sit in a given matrix cell. */
 export function cellRefCount(method: string, area: string): number {

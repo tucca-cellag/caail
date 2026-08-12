@@ -13,6 +13,7 @@ import Hero from '../../components/Hero.astro';
 import SectionsGrid from '../../components/SectionsGrid.astro';
 import StartHere from '../../components/StartHere.astro';
 import RecentlyAdded from '../../components/RecentlyAdded.astro';
+import TopicsBand from '../../components/TopicsBand.astro';
 import CommunityBand from '../../components/CommunityBand.astro';
 import CiteBand from '../../components/CiteBand.astro';
 import WhyCaail from '../../components/WhyCaail.astro';
@@ -32,6 +33,12 @@ import GetStarted from '../../components/GetStarted.astro';
   <StartHere />
   <RecentlyAdded />
 </div>
+
+{/* Directly after the router, and before the pitch. "Start here" asks which kind of reader
+    you are; this asks whether your own subject is in the corpus, which is the question a
+    working researcher actually arrives with. Both are wayfinding, so they belong together
+    and above `#why`, which argues why the answer is worth trusting once you have it. */}
+<TopicsBand />
 
 <WhyCaail />
 <GetStarted />

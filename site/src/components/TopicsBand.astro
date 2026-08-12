@@ -1,0 +1,244 @@
+---
+/**
+ * TopicsBand — the subject axis, surfaced where a reader can act on it.
+ *
+ * WHY THIS EXISTS. `/topics/` was reachable from exactly one place in the whole site: a
+ * single Starlight sidebar entry. The homepage led with the matrix, which is the coarse
+ * axis. A cell-ag researcher's first question is not "how many papers do you have", it is
+ * "is my own area covered, and how well". Someone working on serum-free media locates
+ * themselves in `serum-free-media` far more readily than in "Media Optimization". The
+ * coarse axis is right for structuring the corpus and wrong for a reader trying to find
+ * themselves in it.
+ *
+ * THE PER-TYPE COUNTS ARE THE POINT, AND NO TOTAL IS RENDERED.
+ * Scaffolding & Biomaterials is tagged across papers and dataset entries and holds zero
+ * software and zero databases. Rolled into a single total that theme reads as merely
+ * small; split into four columns, the two empty ones are legible on the card face. That is
+ * the same argument the `#why` band makes one section below — a model cannot tell you it
+ * does not know, and CAAIL can, so an empty column is the product working rather than a
+ * gap to paper over. A total would also invite precisely the reading this band must not
+ * offer: a number standing in as evidence of completeness.
+ *
+ * THE COPY ASKS, IT DOES NOT CLAIM. The topic seeder assigns themes by unanchored
+ * substring regex, so "Scale AI" landed under Bioprocess & Scale-Up and "software
+ * engineering" under Cell Lines & Engineering. Four of seventeen benchmark entries were
+ * wrong and were hand-pruned; the same patterns ran over the entire corpus and nothing
+ * else has been audited. A browse surface is where that costs most — a mis-themed entry
+ * is put in front of the one reader who filtered specifically to avoid it. That is not a
+ * reason to keep the surface hidden, but it is a hard constraint on its copy: ask whether
+ * an area looks right, never assert that it is.
+ *
+ * ORDER IS ALPHABETICAL, NOT BY SIZE. Sorting by total would rank the themes and bury the
+ * thin ones last, where they are least likely to be seen. The thin ones are the ones this
+ * band is making an argument about, so the ordering must not quietly editorialise against
+ * them. The data's own order is alphabetical and is used as-is.
+ *
+ * EVERY FIGURE IS DERIVED, and the guards below fail the build rather than let the copy go
+ * quietly false — the same discipline as `WhyCaail.astro`. Colours resolve through
+ * `theme-colors.ts` for a related reason: that mapping was once hardcoded per-slug across
+ * three CSS files and drifted. Hue here is decorative and carries no meaning on its own;
+ * the label does the work, because a hue difference is not something every reader can see.
+ *
+ * <h2> is deliberate. Hero supplies the page <h1> and every homepage section is an <h2>,
+ * so anything else is a heading-order violation on the one page carrying a blocking
+ * Lighthouse Accessibility >= 0.90 gate. The card titles are <h3> beneath it.
+ */
+import topics from '../content/data/topics.json';
+import { chipStyle } from '../lib/theme-colors';
+import { COMMUNITY_PATH } from '../lib/community';
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+
+const themes = topics.themes;
+const tags = topics.tags;
+
+/* The content types the subject axis spans, in card order. Named rather than counted, for
+   the reason WhyCaail names them: "all four content types" is a typed numeral sitting
+   beside a rendered one, and it drifts the day a fifth type is catalogued. */
+const TYPES = [
+  { key: 'paper', label: 'papers' },
+  { key: 'software', label: 'software' },
+  { key: 'database', label: 'databases' },
+  { key: 'dataset', label: 'datasets' },
+] as const;
+
+const countOf = (t: (typeof themes)[number], key: string): number =>
+  (t.counts as unknown as Record<string, number>)[key] ?? 0;
+
+/* A card renders the four types above and deliberately no total, which means an omission
+   is invisible by construction: drop a content type and every card still looks complete.
+   Checking the parts against the total the data already carries is what makes that
+   impossible, and it is the reason the total is computed here even though none is shown. */
+for (const t of themes) {
+  const summed = TYPES.reduce((n, ty) => n + countOf(t, ty.key), 0);
+  if (summed !== t.counts.total) {
+    throw new Error(
+      `TopicsBand: the cards account for ${summed} of ${t.counts.total} items tagged ` +
+        `${t.slug}. A content type exists that TYPES does not name; add it there rather ` +
+        `than letting the band undercount the theme.`,
+    );
+  }
+}
+
+/* The lede claims an empty column is a result CAAIL returns rather than a gap it hides.
+   If every theme were populated in every type, that sentence would describe nothing on the
+   page it appears on — the same failure mode as WhyCaail's `copyleft === 0` guard, where a
+   caveat outlives the thing it was warning about. Better to fail the build than to ship a
+   claim whose evidence has quietly disappeared. */
+if (!themes.some((t) => TYPES.some((ty) => countOf(t, ty.key) === 0))) {
+  throw new Error(
+    'TopicsBand: every theme is now populated in every content type, so the lede\'s claim ' +
+      'that an empty column is a returned result has nothing on this page to point at. ' +
+      'Rewrite the lede rather than shipping a caveat with no referent.',
+  );
+}
+---
+
+{/* NOT INDEXED, and this is load-bearing rather than tidiness.
+    Measured: with this band indexed, searching "bioprocess" stopped returning
+    /research-areas/bioprocess/ in the visible results at all. The band puts all eight
+    theme labels on the homepage, so Pagefind ranked the splash page above the page
+    actually about the subject, and `explorer.spec.ts`'s prose-indexing test and
+    `privacy.spec.ts`'s search-event test both failed 6/6 runs. Reverting just the
+    homepage import made both pass again, which is what pinned the cause here.
+
+    Excluding it is the right fix and not a workaround: the band is a NAVIGATION
+    surface whose every label already has a better search target — /topics/ for the
+    theme itself, the research-area pages for the subject. Indexing it only ever adds a
+    duplicate, lower-quality hit that outranks the real one. Search quality on the terms
+    this band exists to serve is exactly what it must not degrade. */}
+<section class="topics" id="topics" data-pagefind-ignore>
+  <div class="hd sr">
+    {/* The eyebrow is NOT free text: `homepage-agent.spec.ts` asserts that a rail label
+        matches the eyebrow of the section it names, so this string and HomeRail's `topics`
+        label are checked against each other on every e2e run. */}
+    <p class="eyebrow"><span class="bar" aria-hidden="true"></span>Topics</p>
+    <h2 class="caail-display">Is your own area in here, and how thinly?</h2>
+    <p class="lede">
+      {themes.length} subject themes cut across papers, software, databases and dataset
+      entries. The counts are uneven, and none of them is offered as completeness: a column
+      with nothing in it is a result CAAIL returns rather than a gap it hides. Tagging is
+      curator-assigned and has not been audited end to end, so if your own area looks wrong
+      here, that is worth <a href={`${base}${COMMUNITY_PATH}`}>telling us</a>.
+    </p>
+  </div>
+
+  <div class="grid sr sr-d1">
+    {themes.map((t) => (
+      <a class="card" href={`${base}/topics/?t=${t.slug}`} style={chipStyle(t.slug)}>
+        <h3>{t.label}</h3>
+        {/* A description list, because these are name/value pairs and a screen reader
+            should announce them as such. The pairs are wrapped in <div>s, which HTML5
+            permits inside <dl> and which is what lets each pair lay out as one row. */}
+        <dl class="counts">
+          {TYPES.map((ty) => (
+            <div class="cell" data-empty={countOf(t, ty.key) === 0 ? 'true' : undefined}>
+              <dt>{ty.label}</dt>
+              <dd>{countOf(t, ty.key)}</dd>
+            </div>
+          ))}
+        </dl>
+      </a>
+    ))}
+  </div>
+
+  <p class="foot sr sr-d2">
+    {tags.length} finer tags sit beneath these {themes.length} themes, each minted only
+    where enough work clustered to earn one.
+    <a href={`${base}/topics/`}>Open the topic hub →</a>
+  </p>
+</section>
+
+<style>
+  .topics { margin: var(--caail-section-gap) 0 0; }
+
+  /* Centred header, matching the `#why` band it sits above so the two read as a pair. */
+  .hd { text-align: center; max-width: 44rem; margin: 0 auto var(--caail-space-6); }
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: .55rem;
+    font-size: var(--caail-fs-xs); letter-spacing: .18em; text-transform: uppercase;
+    font-weight: 600; color: var(--caail-muted); margin: 0 0 var(--caail-space-3);
+  }
+  .bar { display: block; width: 2px; height: .85rem; background: var(--caail-link); border-radius: 2px; }
+  .topics h2 {
+    font-size: var(--caail-fs-h2); line-height: 1.1; letter-spacing: -.02em;
+    color: var(--caail-primary); margin: 0 0 var(--caail-space-3); text-wrap: balance;
+  }
+  .lede { font-size: var(--caail-fs-lg); color: var(--caail-muted); margin: 0; text-wrap: pretty; }
+
+  /* Eight themes over four columns is two even rows. Two columns is the tablet step; one
+     column below that, where a four-wide count row would wrap mid-pair. */
+  .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--caail-space-4); }
+  @media (max-width: 64rem) { .grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 34rem) { .grid { grid-template-columns: 1fr; } }
+
+  .card {
+    display: flex; flex-direction: column; gap: .55rem;
+    padding: .8rem .9rem;
+    border: 1px solid var(--caail-border);
+    border-radius: 10px;
+    text-decoration: none; color: inherit;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .card:hover, .card:focus-visible {
+    border-color: var(--caail-link);
+    box-shadow: 0 6px 18px -14px color-mix(in oklab, var(--caail-primary) 40%, transparent);
+    outline: none;
+  }
+  .card h3 {
+    display: flex; align-items: baseline; gap: .45rem;
+    font-size: var(--caail-fs-base); line-height: 1.25; margin: 0; color: var(--caail-ink);
+  }
+  /* The theme's colour rides on a leading dot, NOT on a border accent. Two reasons, and
+     the second is the load-bearing one. A thick top rule on a rounded card tapers into the
+     1px side borders at each corner, which is a visibly untidy join. More importantly the
+     dot is what `.topic-chip` and the dashboard's subject grid already use to mark a
+     theme, so this is the site's established marker rather than a third bespoke treatment
+     of the same idea — the exact drift `theme-colors.ts` was written to end.
+     Decorative and aria-hidden by construction (a ::before with empty content is not
+     exposed), because the label beside it already names the theme. */
+  .card h3::before {
+    content: '';
+    flex: none;
+    width: .5rem; height: .5rem;
+    border-radius: 50%;
+    background: var(--chip, var(--caail-muted));
+    /* Nudged off the baseline so the dot centres on the label's x-height rather than
+       sitting on the baseline like a full stop. */
+    transform: translateY(-.05rem);
+  }
+
+  /* Pushed to the bottom rather than spaced by a fixed gap: theme labels run one or two
+     lines, and in a stretched grid row a fixed margin leaves each count block wherever its
+     own title happened to end. `auto` lines them up on one edge across the row. */
+  /* The column gap is wide relative to the row gap, and that asymmetry is doing real
+     work. Each pair is label-left / value-right, so a value sits directly beside the NEXT
+     pair's label: at an even gap "papers 94 software 54" lets 94 bind to software on a
+     first read. Separating the columns more than the rows makes the pair the tighter
+     grouping, which is the one the reader should see first. */
+  .counts {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: .3rem 1.4rem; margin: auto 0 0;
+  }
+  .cell { display: flex; align-items: baseline; justify-content: space-between; gap: .4rem; margin: 0; }
+  .cell dt { font-size: var(--caail-fs-xs); color: var(--caail-muted); margin: 0; }
+  .cell dd {
+    font-size: var(--caail-fs-sm); font-weight: 700; font-family: var(--caail-font-mono);
+    color: var(--caail-ink); margin: 0;
+  }
+  /* A zero is muted and unbolded so it reads as an answer rather than a score. It is still
+     rendered as a figure, because the whole argument of this band is that the empty column
+     is information and not something to omit. */
+  .cell[data-empty] dd { font-weight: 400; color: var(--caail-muted); }
+
+  .foot {
+    font-size: var(--caail-fs-sm); color: var(--caail-muted);
+    margin: var(--caail-space-5) auto 0; max-width: var(--caail-measure);
+    line-height: 1.55; text-align: center; text-wrap: pretty;
+  }
+  .foot a { white-space: nowrap; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .card { transition: none; }
+  }
+</style>

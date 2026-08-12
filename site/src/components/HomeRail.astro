@@ -28,6 +28,10 @@ const items = [
   { id: 'top', label: 'Top' },
   { id: 'explore', label: 'Explore the library' },
   { id: 'start', label: 'Start here' },
+  /* `topics` is guarded for the same reason `why` is, and by the same test: its section
+     renders an `.eyebrow`, so this label and that eyebrow are checked against each other
+     on every e2e run. Giving a section an eyebrow is what opts it into the guard. */
+  { id: 'topics', label: 'Topics' },
   /* `why` is NOT free text: it matches its section's `.eyebrow` verbatim, and
      `homepage-agent.spec.ts` fails if the two drift apart.
      A rail label and a headline have different jobs. The headline can be expressive
