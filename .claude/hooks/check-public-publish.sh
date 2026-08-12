@@ -50,7 +50,7 @@ if [[ -n $proj_dir && -r $proj_hook ]]; then
 fi
 
 # The rule this hook enforces — prefer the project's copy when one exists.
-RULE="~/.claude/rules/publishing.md"
+RULE="$HOME/.claude/docs/rules/publishing.md"
 [[ -r "${proj_dir}/.claude/rules/publishing.md" ]] && RULE=".claude/rules/publishing.md"
 
 input=$(cat)

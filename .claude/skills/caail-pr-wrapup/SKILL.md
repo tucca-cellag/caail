@@ -57,9 +57,9 @@ Run the helper from the repo (worktree) root: `bash .claude/skills/caail-pr-wrap
 bash .claude/skills/caail-pr-wrapup/ship-pr.sh preflight
 ```
 This confirms the branch/tree/auth, lists the changed paths, and — from the real CI path filters —
-predicts **whether `lint-papers` and `test` will run on the PR** and **whether `docs.yml` will deploy
-on merge**, plus the routes worth verifying live. It tells you what to expect in steps 4 and 6.
-Then re-run the local gate (above) if you haven't this session.
+predicts **which of `lint-papers`, `test` and `guards` will run on the PR** and **whether `docs.yml`
+will deploy on merge**, plus the routes worth verifying live. It tells you what to expect in steps 4
+and 6. Then re-run the local gate (above) if you haven't this session.
 
 ### 1. Push
 ```bash
@@ -115,10 +115,19 @@ reviewer must not hard-block the whole ship.
 ```bash
 bash .claude/skills/caail-pr-wrapup/ship-pr.sh watch-checks <pr>
 ```
-Per the CI table below, `lint-papers` runs only when the diff touches content/parser paths; the deploy
-is **post-merge**, so a `site/`-config-only or `.claude/`-only PR legitimately has **no checks** (the
-helper reports that and proceeds). If a check **fails**, stop — surface it and fix the branch; do not
-merge red.
+Per the CI table below, `lint-papers` runs only when the diff touches content/parser paths, and the
+deploy is **post-merge**, so not every PR has every check. A PR with **no checks at all** is now a
+narrow case: `guards.yml` fires on `.claude/hooks/**`, `.claude/settings.json`, this skill, and **any**
+`.github/workflows/**` edit. Genuinely check-free paths include `.claude/` rules and agents, any skill
+other than `caail-pr-wrapup`, `docs/**`, `LICENSE`, `CITATION.cff`, `.zenodo.json`, `.gitignore`,
+`.github/ISSUE_TEMPLATE/**`, and the two plugin manifests (`.claude-plugin/marketplace.json` and
+`plugin/.claude-plugin/plugin.json` — only `plugin/skills/**` is filtered, not `plugin/**`).
+
+The helper reports "no checks reported" and proceeds when that is genuinely the case. **If you expected
+a guard to run and it did not, and the diff is not in that list, treat it as a paths-filter gap rather
+than expected quiet** — that is the exact failure this skill's own CI section documents twice over.
+
+If a check **fails**, stop — surface it and fix the branch; do not merge red.
 
 ### 5. Confirm, then merge
 **Pause here.** Merging triggers the public deploy, so confirm with the user before proceeding (unless
@@ -195,19 +204,47 @@ naming so the next piece of work doesn't repeat it.
 
 ## CI: what runs when
 
-Derived from `.github/workflows/`. Know this so step 4/6 expectations are right (the helper computes it
-for you in preflight, but the source of truth is here):
+**The workflows are the source of truth; the table below is a snapshot** (taken 2026-08-12) kept only
+so step 4/6 expectations are legible without opening four YAML files. `preflight` computes the real
+answer from the `LINT_PAPERS_PATHS` / `TEST_PATHS` / `DOCS_PATHS` / `GUARDS_PATHS` lists in
+`ship-pr.sh`. **Each is named for its workflow file** (`<stem uppercased, - to _>_PATHS`), and so is
+its `matches_<stem>` wrapper — that coupling is what lets the check derive what to look for instead of
+carrying its own list of workflows.
 
-| Workflow | Trigger | Paths |
+**Those lists are asserted against the YAML** by `check-ci-paths.py`, running in `guards.yml`. It also
+checks that every pattern is a form `path_matches` can evaluate, that `pull_request` and `push` filters
+agree **on the three workflows that have both** (`docs.yml` is push-only and exempt), and that canonical
+content reaches both `test.yml` and `docs.yml`. So the predictors can no longer drift unnoticed, which
+they did three times. **This prose table has no such guard** — if it disagrees with the YAML, the YAML
+wins and the table is the bug.
+
+| Workflow | Trigger | Paths (snapshot) |
 | --- | --- | --- |
-| `lint-papers.yml` (matrix ↔ ref lint + `db:check`/`db:verify` + sync guard) | **pull_request** + push to main | `Papers.md`, `Software.md`, `Databases.md`, `OtherResources.md`, `Datasets/**`, `CONTRIBUTING.md`, `CLAUDE.md`, `site/scripts/parser/**`, `site/scripts/db/**`, `site/db/**` |
-| `test.yml` (vitest parser suite + Playwright + axe e2e) | **pull_request** + push to main | `site/**`, root `*.md`, `ResearchAreas/**`, `Datasets/**`, `Primers/**`, `.github/workflows/test.yml` |
-| `docs.yml` (build + Lighthouse + deploy) | **push to `main` only** | `site/**`, root `*.md`, `ResearchAreas/**`, `Datasets/**` |
+| `lint-papers.yml` (matrix ↔ ref lint + `db:check`/`db:verify` + sync guards) | **pull_request** + push to main | `Papers.md`, `Software.md`, `Databases.md`, `OtherResources.md`, `Taxonomy.md`, `Datasets/**`, `CONTRIBUTING.md`, `CLAUDE.md`, `site/scripts/parser/**`, `site/scripts/db/**`, `site/db/**`, `site/public/api/**`, `site/public/setup.md`, `plugin/skills/**`, `skills/**` |
+| `test.yml` (Worker config + vitest + Playwright/axe) | **pull_request** + push to main | `site/**`, `workers/**`, root `*.md`, `ResearchAreas/**`, `Datasets/**`, `Primers/**`, `.claude/hooks/**`, `.claude/settings.json`, `.github/workflows/test.yml` |
+| `guards.yml` (publish-provenance hook + CI-paths consistency) | **pull_request** + push to main | `.claude/hooks/**`, `.claude/settings.json`, `.claude/skills/caail-pr-wrapup/**`, `.github/workflows/**` |
+| `docs.yml` (build + Lighthouse + deploy) | **push to `main` only** | `site/**`, root `*.md`, `ResearchAreas/**`, `Datasets/**`, `Primers/**` |
 
 Consequences: `test.yml` runs on almost any `site/**` or root-`*.md` PR, so most PRs have at least the
-`test` check; a `.claude/`-only change (like this skill's own files) legitimately has **no PR checks**.
-The deploy's `*.md` glob is **root-only**, so a `Primers/**`-only change lints/tests but does **not**
-deploy — preflight will say "no deploy expected", which is correct, not a bug.
+`test` check. A change confined to `.claude/` **rules or agents**, or to a skill other than
+`caail-pr-wrapup`, still has no PR checks — correct, there is nothing to run. `.claude/hooks/**` and
+`.claude/settings.json` trigger **both** `test.yml` and `guards.yml`, because the two hooks are tested
+in different places (`check-public-publish.test.py` in `guards.yml`, `block-generated-edits.py` via
+`site/scripts/db/hook.test.ts` in the vitest suite). Editing this skill or **any** workflow triggers
+`guards.yml` alone — deliberately, so a prose tweak here does not spend an Astro build, a Playwright
+browser install and the axe suite.
+
+**Two paths gaps were fixed on 2026-08-12 and the class is worth remembering**, since `'*.md'` is
+ROOT-ONLY in GitHub Actions and every nested canonical directory has to be named: `Taxonomy.md` was in
+neither `lint-papers.yml` filter, and `Primers/**` was missing from `docs.yml`, so a Primers-only change
+linted, tested, merged and never reached a reader. Both failed silently and in the same direction: the
+guard existed, the trigger did not.
+
+`check-ci-paths.py`'s canonical-content assertion now covers that second class specifically, and it was
+demonstrated catching it (removing `Primers/**` from `docs.yml` reproduces the original bug and fails
+the check). What it does **not** know is when a *new* canonical directory is added: `CONTENT_PATHS` in
+that script is the hand-maintained list of what counts as canonical content, so adding a directory means
+adding it there too, or the guard will happily confirm that an incomplete set is complete.
 
 ## Gotchas
 

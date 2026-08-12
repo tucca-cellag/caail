@@ -73,6 +73,21 @@ const readEvents = (page: import('@playwright/test').Page) =>
   page.evaluate(() => (window as unknown as { __ev: unknown[] }).__ev);
 
 test('an outbound click emits one event and still opens the link', async ({ page, context }) => {
+  // Stub github.com so the popup resolves without leaving the runner. What this
+  // test proves is that the click was not preventDefault'd, which is settled by
+  // the popup opening AT the right URL — reaching GitHub proves nothing extra.
+  //
+  // It used to navigate for real, which made a live request on every CI run and
+  // failed whenever that request did: `popup.url()` reports the URL after
+  // navigation SETTLES, so a blocked or throttled fetch left the assertion
+  // comparing the href against `chrome-error://chromewebdata/`. Observed red on
+  // a runner 2026-08-12 with the other 169 specs passing. Unlike the timing
+  // races in this suite it would not pass on a re-run under lighter load, since
+  // the cause is egress rather than contention.
+  await context.route('https://github.com/**', (route) =>
+    route.fulfill({ status: 200, contentType: 'text/html', body: '<html><body>stub</body></html>' }),
+  );
+
   await page.goto('./software/');
   await captureEvents(page);
 
@@ -82,6 +97,7 @@ test('an outbound click emits one event and still opens the link', async ({ page
   // Catalog links carry target="_blank", so the click opens a new tab and this
   // page survives. Asserting the popup opens proves we never preventDefault'd.
   const [popup] = await Promise.all([context.waitForEvent('page'), link.click()]);
+  await popup.waitForURL(href!);
   expect(popup.url()).toBe(href);
   await popup.close();
 

@@ -40,42 +40,73 @@ changed_paths() {
   git diff --name-only "origin/${DEFAULT_BRANCH}...HEAD"
 }
 
-# A path matches one of the CI globs? (POSIX case globbing, not regex.)
-# lint-papers.yml PR/push paths (matrix/reference lint + db:check/db:verify + sync guard):
-# This list DUPLICATES lint-papers.yml's `paths:` and has now drifted twice. When editing
-# either one, edit both, and diff them rather than trusting this comment: the last drift
-# left the generated outputs and the skills out, so a PR touching only setup.md was
-# predicted to run no lint job when it runs one.
-matches_lint() {
-  case "$1" in
-    Papers.md|Software.md|Databases.md|OtherResources.md) return 0 ;;
-    CONTRIBUTING.md|CLAUDE.md) return 0 ;;
-    Datasets/*|site/scripts/parser/*|site/scripts/db/*|site/db/*) return 0 ;;
-    # generated outputs, guarded by the sync checks
-    site/public/api/*|site/public/setup.md) return 0 ;;
-    # the query skill, and the installer that setup.md is generated from
-    plugin/skills/*|skills/*) return 0 ;;
-    *) return 1 ;;
+# --- CI path filters -------------------------------------------------------
+#
+# Each list below mirrors one workflow's `paths:` filter, written in GitHub
+# Actions' own notation so the two can be compared MECHANICALLY instead of by
+# eye. `check-ci-paths.py` asserts they match, and runs in `guards.yml`, so
+# editing a workflow without editing this file fails CI.
+#
+# **Each variable is named for its workflow file** (`<stem uppercased, - to _>`
+# plus `_PATHS`, so `lint-papers.yml` -> `LINT_PAPERS_PATHS`). That naming is
+# load-bearing rather than cosmetic: the check DERIVES which variable to expect
+# by globbing `.github/workflows/`, so a new paths-bearing workflow with no
+# matching variable here fails CI instead of leaving preflight blind to it.
+#
+# That check exists because this duplication drifted three times while carrying
+# a comment warning that it drifts. Two of those drifts made preflight predict
+# no job where one runs (`site/public/setup.md`, then `Taxonomy.md`), and one
+# hid `workers/**` entirely. A comment saying "keep these in sync" documents a
+# risk; it does not mitigate one.
+#
+# `path_matches` implements exactly the three pattern forms these workflows use,
+# and deliberately no more: a literal, a `prefix/**` subtree, and a bare `*.md`,
+# which GitHub scopes to the ROOT level only. That last one is not a detail —
+# it is why every nested canonical directory has to be named, and why both
+# `Taxonomy.md` and `Primers/**` were silently missing. The check also refuses
+# any pattern outside those three forms, since `path_matches` would silently
+# match nothing rather than erroring.
+LINT_PAPERS_PATHS='Papers.md Software.md Databases.md OtherResources.md Taxonomy.md Datasets/** CONTRIBUTING.md CLAUDE.md site/scripts/parser/** site/scripts/db/** site/db/** site/public/api/** site/public/setup.md plugin/skills/** skills/**'
+TEST_PATHS='site/** workers/** *.md ResearchAreas/** Datasets/** Primers/** .claude/hooks/** .claude/settings.json .github/workflows/test.yml'
+DOCS_PATHS='site/** *.md ResearchAreas/** Datasets/** Primers/**'
+GUARDS_PATHS='.claude/hooks/** .claude/settings.json .claude/skills/caail-pr-wrapup/** .github/workflows/**'
+
+# Does $1 (a repo-relative path) match $2 (one GitHub Actions paths pattern)?
+path_matches() {
+  local path="$1" pat="$2"
+  case "$pat" in
+    '*.md') [ "$path" = "${path##*/}" ] && [ "${path%.md}" != "$path" ] ;;
+    */'**') [ "${path#"${pat%/**}"/}" != "$path" ] ;;
+    *)      [ "$path" = "$pat" ] ;;
   esac
 }
-# test.yml PR/push paths (vitest parser suite + Playwright + axe e2e):
-matches_test() {
-  case "$1" in
-    site/*|ResearchAreas/*|Datasets/*|Primers/*) return 0 ;;
-    .github/workflows/test.yml) return 0 ;;
-    *.md) [ "$1" = "${1##*/}" ] && return 0 || return 1 ;;  # root-level *.md only
-    *) return 1 ;;
-  esac
+
+# Iterating the pattern list needs word splitting but NOT pathname expansion:
+# unquoted, the shell would glob `site/**` against the working directory and the
+# loop would compare paths to real filenames instead of to patterns. Measured
+# before this guard was added: 18 of 43 corpus paths changed answer, and it
+# under-reported (`site/package.json` matched, `site/scripts/parser/x.ts` did
+# not), which is the direction that silently predicts "no job will run".
+matches_any() {
+  local _p="$1" _list="$2" _wasf _rc _pat
+  case "$-" in *f*) _wasf=1 ;; *) _wasf=0 ;; esac
+  set -f
+  _rc=1
+  for _pat in $_list; do
+    if path_matches "$_p" "$_pat"; then _rc=0; break; fi
+  done
+  [ "$_wasf" = 1 ] || set +f
+  return "$_rc"
 }
-# docs.yml deploy paths (note: '*.md' is ROOT-ONLY in GitHub Actions — nested
-# dirs like Primers/ are NOT covered and so do NOT trigger a deploy):
-matches_deploy() {
-  case "$1" in
-    site/*|ResearchAreas/*|Datasets/*) return 0 ;;
-    *.md) [ "$1" = "${1##*/}" ] && return 0 || return 1 ;;  # root-level *.md only
-    *) return 1 ;;
-  esac
-}
+
+# Named for the workflow stem, like the variables above, so `check-ci-paths.py`
+# can assert that each discovered workflow has BOTH a pattern list and a wrapper
+# that preflight actually calls. A variable with no wrapper, or a wrapper with no
+# call site, leaves preflight blind while every set comparison still passes.
+matches_lint_papers() { matches_any "$1" "$LINT_PAPERS_PATHS"; }
+matches_test()        { matches_any "$1" "$TEST_PATHS"; }
+matches_docs()        { matches_any "$1" "$DOCS_PATHS"; }
+matches_guards()      { matches_any "$1" "$GUARDS_PATHS"; }
 
 # Best-effort: map a changed canonical file to the site route to spot-check.
 route_for() {
@@ -110,21 +141,23 @@ cmd_preflight() {
   note "working tree clean ✓"
   if gh auth status >/dev/null 2>&1; then note "gh authenticated ✓"; else die "gh not authenticated (run: gh auth login)."; fi
 
-  local paths lint=no tests=no deploy=no; local routes=()
+  local paths lint=no tests=no deploy=no guards=no; local routes=()
   paths="$(changed_paths)"
   [ -n "$paths" ] || die "no changes vs origin/$DEFAULT_BRANCH — nothing to ship."
   printf '\nChanged paths (%s):\n' "$(echo "$paths" | wc -l | tr -d ' ')"
   while IFS= read -r p; do
     note "$p"
-    matches_lint "$p" && lint=yes
+    matches_lint_papers "$p" && lint=yes
     matches_test "$p" && tests=yes
-    matches_deploy "$p" && deploy=yes
+    matches_docs "$p" && deploy=yes
+    matches_guards "$p" && guards=yes
     if r="$(route_for "$p" 2>/dev/null)"; then routes+=("$r"); fi
   done <<< "$paths"
 
   printf '\nCI prediction:\n'
   note "lint-papers will run on the PR:   $lint"
   note "test (vitest + e2e) on the PR:    $tests"
+  note "guards (hook + CI paths) on PR:   $guards"
   note "docs.yml will deploy on merge:    $deploy   (if no, there is no deploy to watch)"
   # de-dup route hints (array → unique, blanks dropped)
   local uniq=""
@@ -159,8 +192,10 @@ cmd_open_pr() {
 cmd_watch_checks() {
   local pr="$1" out
   # `gh pr checks` exits non-zero when there are no checks at all — happens only
-  # for PRs that touch none of the lint-papers or test.yml paths (e.g. a
-  # .claude/-only or workflow-unrelated change).
+  # for PRs that match none of the four workflows' paths. That is now a narrow
+  # set: `.claude/hooks/**`, `.claude/settings.json`, the wrap-up skill and ANY
+  # `.github/workflows/**` edit all trigger guards.yml. A truly check-free PR
+  # touches only `.claude/` rules, agents, or a skill other than this one.
   # Capture its output to a variable first (NOT `gh ... | grep`): under
   # `set -o pipefail` gh's non-zero exit would mask a grep match and wrongly
   # fall through to the blocking --watch below.

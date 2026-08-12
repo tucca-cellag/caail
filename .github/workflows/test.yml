@@ -16,6 +16,21 @@ on:
       - ResearchAreas/**
       - Datasets/**
       - Primers/**
+      # The agent guards that ship in this repo, and the settings file that wires
+      # them. Until now NOTHING under `.claude/` appeared in any workflow's paths
+      # filter or any run step, so a PR touching only a hook triggered nothing at
+      # all — including `block-generated-edits.py`, which DOES have a test
+      # (site/scripts/db/hook.test.ts) that simply never ran against the change
+      # that could break it.
+      #
+      # Scoped to hooks + settings rather than all of `.claude/`: those are the
+      # parts with tests: `block-generated-edits.py` is covered by the vitest
+      # suite below, via site/scripts/db/hook.test.ts. (The other hook's test
+      # runs in guards.yml, which filters on these same paths.) Skill, rule and
+      # agent prose has no test to run, so matching it here would spend a full
+      # site build and e2e pass on a doc edit.
+      - .claude/hooks/**
+      - .claude/settings.json
       - .github/workflows/test.yml
   push:
     branches: [main]
@@ -26,6 +41,21 @@ on:
       - ResearchAreas/**
       - Datasets/**
       - Primers/**
+      # The agent guards that ship in this repo, and the settings file that wires
+      # them. Until now NOTHING under `.claude/` appeared in any workflow's paths
+      # filter or any run step, so a PR touching only a hook triggered nothing at
+      # all — including `block-generated-edits.py`, which DOES have a test
+      # (site/scripts/db/hook.test.ts) that simply never ran against the change
+      # that could break it.
+      #
+      # Scoped to hooks + settings rather than all of `.claude/`: those are the
+      # parts with tests: `block-generated-edits.py` is covered by the vitest
+      # suite below, via site/scripts/db/hook.test.ts. (The other hook's test
+      # runs in guards.yml, which filters on these same paths.) Skill, rule and
+      # agent prose has no test to run, so matching it here would spend a full
+      # site build and e2e pass on a doc edit.
+      - .claude/hooks/**
+      - .claude/settings.json
       - .github/workflows/test.yml
   workflow_dispatch:
 

@@ -5,9 +5,15 @@ on:
     branches: [main]
     paths:
       - site/**
+      # '*.md' is ROOT-ONLY in GitHub Actions, so nested canonical directories
+      # each need naming. Primers/ was missing: its two files render as live
+      # pages (/primers/cell-ag/, /primers/ai/) via primers.json, so a
+      # Primers-only change used to lint, test, merge, and never reach a reader
+      # until some unrelated push happened to trigger a build.
       - '*.md'
       - ResearchAreas/**
       - Datasets/**
+      - Primers/**
   workflow_dispatch:
 
 permissions:
