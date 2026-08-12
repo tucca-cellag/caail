@@ -43,6 +43,27 @@ uv run --python 3.12 --with docling \
 python3 .claude/skills/matrix-classification-audit/extract_matrix_corpus.py
 ```
 
+The ingest is resumable: a ref whose `sections/` file exists is skipped, so an
+interrupted run is restarted with the same command.
+
+**After changing the section rule, re-span rather than re-ingest.** `docs/` is the durable
+artifact and `sections/` is derived from it, so improving `docling_sections.py` costs
+seconds instead of another full conversion:
+
+```bash
+uv run --python 3.12 --with docling \
+    python .claude/skills/matrix-classification-audit/docling_ingest.py --respan
+```
+
+It prints every ref whose strategy changed, so a rule change is reviewable rather than
+taken on faith. Regenerate the test fixtures afterwards with `testdata/make_fixtures.py`
+and re-run `docling_sections.test.py`.
+
+The rule will keep needing this. Every few papers introduce a convention nobody
+anticipated: `Online Methods` in the back matter, `Main` where Nature means introduction,
+a section named after the algorithm. That is a property of the literature, not a defect to
+be finished off.
+
 Records gain `methods_source` (`docling` / `ftcache`), `methods_strategy`,
 `methods_heading`, `methods_end_heading`, `methods_pages` and `methods_truncated`.
 **Weigh evidence by these**: a `ftcache` section may be cut mid-sentence and may run well
