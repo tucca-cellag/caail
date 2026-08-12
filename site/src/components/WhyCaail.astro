@@ -46,6 +46,7 @@
 import { Icon } from 'astro-icon/components';
 import matrix from '../../public/api/matrix.json';
 import papers from '../../public/api/papers.json';
+import catalog from '../../public/api/catalog.json';
 import { licenseTier } from '../lib/licenses';
 import counts from '../content/data/counts.json';
 
@@ -129,22 +130,37 @@ if (placed !== primary.length) {
   );
 }
 
-/* Free to read and free to redistribute, over ONE denominator that the copy names.
-   `isOa` is OpenAlex's `open_access.is_oa`; the licence tier is derived from the
-   best-OA-location licence by the shared classifier. Both are folded onto every reference
-   at parse (see scripts/parser/citation-counts.ts), so neither can be typed by hand.
-   Works with no OpenAlex record are excluded from BOTH figures rather than being read as
-   closed, which is why the bullet quotes `recorded.length` and not the corpus size. */
-const recorded = papers.references.filter((r) => r.isOa !== null);
-const readable = recorded.filter((r) => r.isOa === true).length;
-const redistributable = recorded.filter((r) => {
-  const t = licenseTier(r.license);
-  return t === 'permissive' || t === 'copyleft';
-}).length;
-if (recorded.length === 0) {
+/* The licence figures are about SOFTWARE, not papers.
+   They used to report how many papers were free to read versus free to redistribute. That
+   is the academic form of the licence question, and it answers the wrong one for much of
+   this audience: cell ag is full of private companies, and what they need to know is
+   whether they may build on a tool and what a derivative inherits if they do. A paper's
+   open-access status says nothing about that. (The paper axis is not lost; `isOa` is still
+   derived onto every reference and served in the agent API.)
+
+   COPYLEFT IS THE POINT. It is the one figure here that changes what a commercial team is
+   allowed to ship, and no paper-level number expresses it.
+
+   Software only, deliberately. Databases record a licence for 36 of 150 and dataset
+   entries for none at all, so folding them in would report the state of our curation
+   rather than the state of the field. Their backfill is tracked separately; until it
+   lands, a number spanning them would mislead in the direction that flatters us. */
+const tools = catalog.software;
+const byTier = (t: string) => tools.filter((s) => licenseTier(s.license) === t).length;
+const permissive = byTier('permissive');
+const copyleft = byTier('copyleft');
+const restricted = byTier('restricted');
+const unrecorded = byTier('unknown');
+if (permissive + copyleft + restricted + unrecorded !== tools.length) {
   throw new Error(
-    'WhyCaail: no reference carries an is_oa record, so the licence bullet would read ' +
-      '"0 of 0". Run `pnpm fetch:citations` to refresh the cache.',
+    `WhyCaail: the four licence tiers account for ${permissive + copyleft + restricted + unrecorded} ` +
+      `of ${tools.length} tools. A tier exists that this bullet does not name.`,
+  );
+}
+if (copyleft === 0) {
+  throw new Error(
+    'WhyCaail: no catalogued tool is copyleft, so the bullet\'s "a derivative inherits the ' +
+      'licence" clause describes nothing. Rewrite it rather than shipping an empty warning.',
   );
 }
 
@@ -184,7 +200,7 @@ const fromMemory = [
   },
   {
     k: 'Reuse terms do not travel with the answer',
-    v: 'Nothing in the reply separates a work you may read from one you may redistribute',
+    v: 'A tool arrives named but unlicensed, so nothing separates one you can ship from one whose terms your product would inherit',
   },
 ];
 
@@ -207,12 +223,11 @@ const fromIndex = [
     v: 'A design question returns them together, not one type at a time',
   },
   {
-    k: 'Read and redistribute are separate fields',
-    /* "works" left the reader to guess the population. The lede names three separate ones
-       a paragraph earlier and the bullet above lists four content types, so a figure
-       spanning the first three and none of the last was ambiguous in both directions.
-       It now says which entries it counted. */
-    v: `Of the ${papers.references.length} papers, reviews and reference-work entries, ${recorded.length} have an OpenAlex record: ${readable} are free to read and ${redistributable} carry a licence permitting redistribution`,
+    /* The headline must not promise a tier on every tool: some record none, and that
+       number is rendered in the same breath. Naming the gap in the claim also matches how
+       the rest of this column treats absence. */
+    k: 'A licence tier per tool, and a stated gap where there is none',
+    v: `Of ${tools.length} software tools, ${permissive} are permissive and ${copyleft} copyleft, so a derivative inherits the terms; ${restricted} are restricted and ${unrecorded} record none`,
   },
   {
     k: 'The same query returns the same rows',
