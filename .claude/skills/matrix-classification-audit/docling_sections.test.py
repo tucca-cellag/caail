@@ -25,9 +25,45 @@ import extract_matrix_corpus as ex  # noqa: E402
 
 FIXTURES = json.load(open(os.path.join(HERE, "testdata", "headings.json")))
 
+# Regression guards over REAL documents. Every span here was read off the paper
+# and confirmed by hand; the synthetic block at the end of this file is the
+# readable spec for each behaviour, and this is what holds the actual parses
+# still. A Docling upgrade that changes how a real PDF is segmented fails here
+# rather than silently changing what the audit reads.
+#
 # (ref, expected start heading, expected end heading, expected strategy)
 # "" as an end heading means the section runs to the end of the document.
 CASES = [
+    # --- publisher conventions, one real paper each ------------------------
+    # Wiley separates the section number with a pipe.
+    ("3",   "2 | METHODS",              "3 | RESULTS",     "explicit"),
+    # ACS prefixes every section heading with a black square.
+    ("105", "MATERIALS AND METHODS",    "RESULTS",         "explicit"),
+    # Cell Press "STAR + METHODS", printed twice: a pointer on the summary page
+    # and the real section further on. The real one runs to the end.
+    ("115", "STAR + METHODS",           "",                "explicit"),
+    # PDF layout runs the following heading onto the methods heading's line.
+    ("92",  "Materials and methods summary Data curation and processing",
+     "REFERENCES AND NOTES", "explicit"),
+    ("259", "Methods Materials",        "References",      "explicit"),
+    # The only methods heading is a summary.
+    ("56",  "Methods Summary",          "Acknowledgments", "explicit"),
+    # Nature names the architecture section after the system it describes.
+    ("70",  "Coscientist system architecture", "Discussion", "explicit"),
+    # A dissertation: every chapter has a methods section, and the first wins.
+    # Choosing by span size instead picks a chapter arbitrarily.
+    ("18",  "2.2. Methods",             "2.3. Results",    "explicit"),
+    # "2.1. Ethics Statement" used to terminate this section after 24 chars.
+    # Its real methods run 2.1 through 2.8, across pages 2-5.
+    ("334", "2. Materials and Methods", "3. Results",      "explicit"),
+    # Back-matter methods whose subsections include Data availability: the
+    # section must run past it to the first strong heading.
+    ("104", "Methods",                  "Acknowledgements", "explicit"),
+    ("24",  "Materials and Methods",    "Acknowledgments", "explicit"),
+    ("98",  "4 Methods",                "Declarations",    "explicit"),
+    ("93",  "4 METHOD",                 "6 CONCLUSION",    "explicit"),
+
+    # --- the original evaluation sample ------------------------------------
     # Straightforward: numbered Methods followed by numbered Results. The one
     # ref in the sample the old extractor did NOT truncate -- and it still
     # over-collected, running past Results to the end of the document.

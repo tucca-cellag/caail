@@ -31,8 +31,26 @@ import extract_matrix_corpus as ex  # noqa: E402
 import scope  # noqa: E402
 
 # The refs the test covers. Each earns its place by exhibiting a distinct
-# failure of the flat-text extractor; see docling_sections.test.py for which.
-REFS = [24, 34, 43, 51, 93, 98, 104, 162, 220, 333]
+# structure; see docling_sections.test.py for which.
+#
+# The first group is the original evaluation sample: papers chosen to span the
+# flat-text extractor's failure modes.
+# The second is one real paper per publisher convention found while closing out
+# the unresolved refs. The synthetic cases in the test file remain the readable
+# spec for each; these guard the actual documents, so a Docling version bump that
+# changes a real parse fails here rather than silently.
+REFS = [
+    24, 34, 43, 51, 93, 98, 104, 162, 220, 333,
+    3,    # Wiley pipe-separated section numbers, "2 | METHODS"
+    56,   # "Methods Summary" as the only methods heading
+    70,   # "Coscientist system architecture"
+    92,   # run-on heading: "Materials and methods summary Data curation..."
+    105,  # ACS glyph prefix, "■ MATERIALS AND METHODS"
+    115,  # Cell Press "STAR + METHODS", printed twice
+    259,  # run-on heading: "Methods Materials"
+    334,  # "2.1. Ethics Statement" truncating the section to 24 chars
+    18,   # a dissertation: every chapter has a methods section
+]
 
 API = "http://localhost:23119/api"
 STORAGE = os.path.expanduser("~/Zotero/storage")
