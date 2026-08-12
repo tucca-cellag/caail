@@ -48,7 +48,8 @@ sys.path.insert(0, str(HERE.parent / "zotero-collection-scope"))
 
 import extract_matrix_corpus as ex  # noqa: E402
 import scope  # noqa: E402
-from docling_sections import find_methods_span  # noqa: E402
+from docling_sections import (AVAILABILITY_HEADING_RE, find_labeled_spans,  # noqa: E402
+                              find_methods_span)
 
 
 def build_converter():
@@ -121,11 +122,52 @@ def section_text(doc, span):
             n_tables)
 
 
+def collect_tables(doc):
+    """Every table in the document as markdown, with its page number.
+
+    The flat full-text cache destroys tables, and a Cell Press KEY RESOURCES
+    TABLE is exactly where a paper lists its deposits (CAAIL-259). Keeping them
+    as markdown means the accession extractor never has to re-open the PDF.
+    """
+    from docling_core.types.doc import DocItemLabel
+
+    out = []
+    for item, _ in doc.iterate_items():
+        if getattr(item, "label", None) != DocItemLabel.TABLE:
+            continue
+        prov = getattr(item, "prov", None) or []
+        try:
+            md = item.export_to_markdown(doc)
+        except (TypeError, AttributeError):
+            try:
+                md = item.export_to_markdown()
+            except Exception:  # noqa: BLE001 - a bad table must not end the batch
+                md = ""
+        if md:
+            out.append({"page": prov[0].page_no if prov else None, "markdown": md})
+    return out
+
+
 def write_section(out, rid, doc):
-    """Locate the methods span in `doc` and write sections/ref-<id>.json."""
+    """Locate the methods and availability spans, and write sections/ref-<id>.json."""
     headings = collect_headings(doc)
     span = find_methods_span(headings)
     text, p0, p1, n_tables = section_text(doc, span) if span["found"] else ("", None, None, 0)
+
+    # Data- and code-availability statements, each kept separately with its own
+    # heading and page, so an accession can be attributed to the statement that
+    # named it rather than to the paper as a whole.
+    availability = []
+    for a in find_labeled_spans(headings, AVAILABILITY_HEADING_RE):
+        a_text, a0, a1, _ = section_text(doc, a)
+        if a_text.strip():
+            availability.append({
+                "heading": a["heading"],
+                "page_start": a0,
+                "page_end": a1,
+                "text": a_text,
+            })
+
     (out / "sections" / f"ref-{rid}.json").write_text(json.dumps({
         "id": rid,
         "n_pages": doc.num_pages(),
@@ -137,6 +179,8 @@ def write_section(out, rid, doc):
         "page_end": p1,
         "n_tables": n_tables,
         "methods_text": text,
+        "availability": availability,
+        "tables": collect_tables(doc),
     }, ensure_ascii=False, indent=2))
     return span, len(text)
 

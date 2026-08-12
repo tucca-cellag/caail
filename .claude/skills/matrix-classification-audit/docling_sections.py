@@ -147,6 +147,49 @@ FRONT_MATTER_RE = re.compile(
 _DECOR_RE = re.compile(r"^[\s■▪●◇◆★☆§*†‡•~_=–—-]+")
 
 
+# Headings that introduce a data- or code-availability statement, which is where
+# a paper names the accessions it deposited. Measured across the 303 ingested
+# documents, 128 carry one, in at least 14 spellings differing by case, by the
+# word "statement", and by whether data and code are announced together.
+AVAILABILITY_HEADING_RE = re.compile(
+    _NUM + r"(?:"
+    r"(?:data|code|software)\s+(?:and\s+(?:code|data|materials?)\s+)?"
+    r"availability(?:\s+statement)?"
+    r"|availability\s+of\s+(?:data|code|materials?)[\s\w]*"
+    r"|data\s+and\s+(?:code|materials?)\s+availability[\s\w]*"
+    r"|accession\s+(?:codes?|numbers?)"
+    r"|data\s+access(?:ibility)?(?:\s+statement)?"
+    r"|resource\s+availability"
+    r"|key\s+resources\s+table"
+    r"|data\s+deposition"
+    r")\s*$",
+    re.IGNORECASE)
+
+
+def find_labeled_spans(headings, pattern):
+    """Every span whose heading matches `pattern`, as (start, end) index pairs.
+
+    Unlike the methods section, an availability statement is short back matter,
+    usually one or two paragraphs, and a paper often prints several in a row
+    ("Data availability" then "Code availability"). So each span runs only to the
+    NEXT heading of any kind rather than to the next strong one: extending
+    further would swallow the acknowledgements and the reference list, and an
+    accession scraped out of a reference list is a citation of someone else's
+    deposit, which is the exact confusion this is meant to remove.
+
+    `end` is None when the span runs to the end of the document.
+    """
+    texts = [_clean(h.get("text")) for h in headings]
+    out = []
+    for i, t in enumerate(texts):
+        if not t or not pattern.match(t):
+            continue
+        end = i + 1 if i + 1 < len(texts) else None
+        out.append({"start": i, "end": end, "heading": t,
+                    "end_heading": texts[end] if end is not None else ""})
+    return out
+
+
 def _clean(text):
     """Normalize a heading for matching.
 
