@@ -42,13 +42,20 @@ changed_paths() {
 
 # A path matches one of the CI globs? (POSIX case globbing, not regex.)
 # lint-papers.yml PR/push paths (matrix/reference lint + db:check/db:verify + sync guard):
-# This list DUPLICATES lint-papers.yml's `paths:` and has now drifted twice. When editing
-# either one, edit both, and diff them rather than trusting this comment: the last drift
-# left the generated outputs and the skills out, so a PR touching only setup.md was
-# predicted to run no lint job when it runs one.
+# This list DUPLICATES lint-papers.yml's `paths:` and has now drifted THREE times. When
+# editing either one, edit both, and diff them rather than trusting this comment: the
+# previous drift left the generated outputs and the skills out (a PR touching only
+# setup.md was predicted to run no lint job when it runs one), and the latest left out
+# Taxonomy.md, added to the workflow on 2026-08-12.
+#
+# Three drifts in one duplicated list is the signal that a comment saying "keep these in
+# sync" documents a risk without mitigating it. The real fix is to derive these matchers
+# from the YAML, or to assert they agree; both are tracked separately rather than bolted
+# on here, because replicating GitHub's glob semantics (root-only '*.md', '**' vs '*') by
+# hand is how a predictor becomes confidently wrong instead of obviously stale.
 matches_lint() {
   case "$1" in
-    Papers.md|Software.md|Databases.md|OtherResources.md) return 0 ;;
+    Papers.md|Software.md|Databases.md|OtherResources.md|Taxonomy.md) return 0 ;;
     CONTRIBUTING.md|CLAUDE.md) return 0 ;;
     Datasets/*|site/scripts/parser/*|site/scripts/db/*|site/db/*) return 0 ;;
     # generated outputs, guarded by the sync checks
@@ -58,20 +65,23 @@ matches_lint() {
     *) return 1 ;;
   esac
 }
-# test.yml PR/push paths (vitest parser suite + Playwright + axe e2e):
+# test.yml PR/push paths (hook guard + Worker config + vitest + Playwright/axe):
 matches_test() {
   case "$1" in
-    site/*|ResearchAreas/*|Datasets/*|Primers/*) return 0 ;;
+    site/*|workers/*|ResearchAreas/*|Datasets/*|Primers/*) return 0 ;;
+    # the two shipped agent guards, and the settings file that registers them
+    .claude/hooks/*|.claude/settings.json) return 0 ;;
     .github/workflows/test.yml) return 0 ;;
     *.md) [ "$1" = "${1##*/}" ] && return 0 || return 1 ;;  # root-level *.md only
     *) return 1 ;;
   esac
 }
-# docs.yml deploy paths (note: '*.md' is ROOT-ONLY in GitHub Actions — nested
-# dirs like Primers/ are NOT covered and so do NOT trigger a deploy):
+# docs.yml deploy paths (note: '*.md' is ROOT-ONLY in GitHub Actions, so every
+# nested canonical dir has to be named explicitly — Primers/ was missing until
+# 2026-08-12, which meant a Primers-only change deployed nothing):
 matches_deploy() {
   case "$1" in
-    site/*|ResearchAreas/*|Datasets/*) return 0 ;;
+    site/*|ResearchAreas/*|Datasets/*|Primers/*) return 0 ;;
     *.md) [ "$1" = "${1##*/}" ] && return 0 || return 1 ;;  # root-level *.md only
     *) return 1 ;;
   esac

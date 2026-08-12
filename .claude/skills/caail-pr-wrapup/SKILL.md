@@ -156,19 +156,29 @@ absence of a stale `./X.md` link — so you confirm the *content* shipped, not j
 
 ## CI: what runs when
 
-Derived from `.github/workflows/`. Know this so step 4/6 expectations are right (the helper computes it
-for you in preflight, but the source of truth is here):
+**The workflows are the source of truth; the table below is a snapshot** (taken 2026-08-12) kept only
+so step 4/6 expectations are legible without opening three YAML files. `preflight` computes the real
+answer from `ship-pr.sh`'s own matchers. When the two disagree, the YAML wins and both this table and
+those matchers are the bug — that has happened twice, so read it as a summary, not an authority.
 
-| Workflow | Trigger | Paths |
+| Workflow | Trigger | Paths (snapshot) |
 | --- | --- | --- |
-| `lint-papers.yml` (matrix ↔ ref lint + `db:check`/`db:verify` + sync guard) | **pull_request** + push to main | `Papers.md`, `Software.md`, `Databases.md`, `OtherResources.md`, `Datasets/**`, `CONTRIBUTING.md`, `CLAUDE.md`, `site/scripts/parser/**`, `site/scripts/db/**`, `site/db/**` |
-| `test.yml` (vitest parser suite + Playwright + axe e2e) | **pull_request** + push to main | `site/**`, root `*.md`, `ResearchAreas/**`, `Datasets/**`, `Primers/**`, `.github/workflows/test.yml` |
-| `docs.yml` (build + Lighthouse + deploy) | **push to `main` only** | `site/**`, root `*.md`, `ResearchAreas/**`, `Datasets/**` |
+| `lint-papers.yml` (matrix ↔ ref lint + `db:check`/`db:verify` + sync guards) | **pull_request** + push to main | `Papers.md`, `Software.md`, `Databases.md`, `OtherResources.md`, `Taxonomy.md`, `Datasets/**`, `CONTRIBUTING.md`, `CLAUDE.md`, `site/scripts/parser/**`, `site/scripts/db/**`, `site/db/**`, `site/public/api/**`, `site/public/setup.md`, `plugin/skills/**`, `skills/**` |
+| `test.yml` (hook guard + Worker config + vitest + Playwright/axe) | **pull_request** + push to main | `site/**`, `workers/**`, root `*.md`, `ResearchAreas/**`, `Datasets/**`, `Primers/**`, `.claude/hooks/**`, `.claude/settings.json`, `.github/workflows/test.yml` |
+| `docs.yml` (build + Lighthouse + deploy) | **push to `main` only** | `site/**`, root `*.md`, `ResearchAreas/**`, `Datasets/**`, `Primers/**` |
 
 Consequences: `test.yml` runs on almost any `site/**` or root-`*.md` PR, so most PRs have at least the
-`test` check; a `.claude/`-only change (like this skill's own files) legitimately has **no PR checks**.
-The deploy's `*.md` glob is **root-only**, so a `Primers/**`-only change lints/tests but does **not**
-deploy — preflight will say "no deploy expected", which is correct, not a bug.
+`test` check. A change confined to `.claude/` **skills, rules or agents** still has no PR checks, which
+is correct — there is nothing to run. A change to `.claude/hooks/**` or `.claude/settings.json` now
+does trigger `test.yml`, because both hooks have tests (`check-public-publish.test.py` in the `hooks`
+job, `block-generated-edits.py` via `site/scripts/db/hook.test.ts` in the vitest suite).
+
+**Two paths gaps were fixed on 2026-08-12 and are worth remembering as a class**, since `'*.md'` is
+ROOT-ONLY in GitHub Actions and every nested canonical directory has to be named: `Taxonomy.md` was in
+neither `lint-papers.yml` filter, and `Primers/**` was missing from `docs.yml` so a Primers-only change
+lints, tests, merges and never reaches a reader. Both failed silently and in the same direction: the
+guard existed, the trigger did not. When adding a canonical file or directory, check all three
+workflows and `ship-pr.sh`'s three matchers, not just the one you are thinking about.
 
 ## Gotchas
 
