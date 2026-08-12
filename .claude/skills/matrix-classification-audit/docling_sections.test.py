@@ -115,5 +115,69 @@ for ref in sorted(OLD_REGEX_FAILURES, key=int):
     print(f'  [{"PASS" if ok else "FAIL"}] ref {ref:>4} '
           f'old=MISS  new={new["strategy"]} {new["heading"]!r}')
 
+
+# ---------------------------------------------------------------------------
+# Synthetic structures. Real papers cover the conventions we have met; these
+# cover the ones that broke the first implementation, each reduced to the
+# smallest heading list that reproduces it.
+# ---------------------------------------------------------------------------
+
+def h(*names):
+    return [{"text": n, "level": 1, "page": i + 1} for i, n in enumerate(names)]
+
+
+# (name, headings, expected start heading, expected end heading)
+SYNTHETIC = [
+    # A methods section routinely contains an "Ethics statement" or a "Data
+    # availability" subsection. When those ended a section unconditionally, the
+    # span collapsed to the methods heading alone -- and because
+    # read_docling_section only rejected an EMPTY section, that ~22-char
+    # fragment beat the ft-cache and was labelled the better evidence.
+    ("ethics subsection does not end methods",
+     h("A Paper Title", "Abstract", "Introduction", "Materials and Methods",
+       "Ethics statement", "Cell culture", "Statistical analysis",
+       "Results", "Discussion", "References"),
+     "Materials and Methods", "Results"),
+    ("data availability subsection does not end methods",
+     h("A Paper Title", "Introduction", "Methods", "Data availability",
+       "Cell lines", "Results", "References"),
+     "Methods", "Results"),
+
+    # ...but the same heading legitimately ends a BACK-MATTER methods section,
+    # where no strong heading follows. Both behaviours come from one rule:
+    # strong wins wherever it appears, weak only when no strong one follows.
+    ("data availability does end a back-matter methods section",
+     h("A Paper Title", "Introduction", "Results", "Discussion",
+       "Online Methods", "Cell lines", "Data availability"),
+     "Online Methods", "Data availability"),
+
+    # A contents block lists section names before the introduction. Taking the
+    # first vocabulary match picked the table-of-contents entry over the real
+    # section further down.
+    ("a contents entry does not beat the real section",
+     h("A Paper Title", "Contents", "Methods", "Results", "Introduction",
+       "Materials and Methods", "Cell culture", "Results", "Discussion"),
+     "Materials and Methods", "Results"),
+
+    # Heading 0 is usually the title, but not always: skipping it by index threw
+    # away the only evidence on a PDF whose first section_header is the methods
+    # heading. Three of the ten committed fixtures start with journal furniture
+    # ("RESEARCH", "OPENACCESS", "Databases and ontologies"), not a title.
+    ("a methods heading at index 0 is not discarded",
+     h("Materials and Methods", "Cell culture", "Results", "Discussion"),
+     "Materials and Methods", "Results"),
+]
+
+print("\n=== synthetic structures that broke the first implementation ===")
+for name, heads, want_start, want_end in SYNTHETIC:
+    got = find_methods_span(heads)
+    ok = got["heading"] == want_start and got["end_heading"] == want_end
+    if not ok:
+        fails += 1
+    print(f'  [{"PASS" if ok else "FAIL"}] {name}')
+    print(f'         {got["heading"]!r} -> {got["end_heading"]!r}')
+    if not ok:
+        print(f'    want {want_start!r} -> {want_end!r}')
+
 print(f'\n{"FAILED" if fails else "OK"}: {fails} failure(s)')
 sys.exit(1 if fails else 0)

@@ -36,7 +36,7 @@ REFS = [24, 34, 43, 51, 93, 98, 104, 162, 220, 333]
 
 API = "http://localhost:23119/api"
 STORAGE = os.path.expanduser("~/Zotero/storage")
-DOCS = REPO / "docling-corpus" / "docs"
+SECTIONS = REPO / "docling-corpus" / "sections"
 
 
 def old_regex_found(rid, doi_index, url_index, refs):
@@ -59,21 +59,19 @@ def main():
     refs = ex.parse_references(md)
     doi_index, url_index = ex.build_indexes(API, ["6549203", "5178481"])
 
-    missing = [r for r in REFS if not (DOCS / f"ref-{r}.json").is_file()]
+    missing = [r for r in REFS if not (SECTIONS / f"ref-{r}.json").is_file()]
     if missing:
         sys.exit(f"ERROR: no ingest output for refs {missing}.\n"
                  f"Run docling_ingest.py (--only {' --only '.join(map(str, missing))}) first.")
 
     fixtures = {}
     for rid in REFS:
-        d = json.loads((DOCS / f"ref-{rid}.json").read_text())
-        heads = []
-        for it in d.get("texts", []):
-            if it.get("label") != "section_header":
-                continue
-            prov = it.get("prov") or []
-            heads.append({"text": it.get("text", ""), "level": it.get("level"),
-                          "page": prov[0].get("page_no") if prov else None})
+        # Take the heading list the ingest recorded, not one re-derived from the
+        # exported document's flat `texts` array. The ingest walks the body tree
+        # in reading order; re-deriving would write a fixture that
+        # find_methods_span is never handed in production, which is precisely
+        # what this file's docstring promises cannot happen.
+        heads = json.loads((SECTIONS / f"ref-{rid}.json").read_text())["headings"]
         fixtures[str(rid)] = {
             "title": (refs.get(rid, {}).get("title") or ""),
             "regex_found_methods": old_regex_found(rid, doi_index, url_index, refs),

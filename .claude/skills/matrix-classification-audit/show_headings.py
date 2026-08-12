@@ -27,19 +27,19 @@ def main():
         sys.exit(__doc__)
     rid = sys.argv[1]
     corpus = REPO / "docling-corpus"
-    doc_path = corpus / "docs" / f"ref-{rid}.json"
-    if not doc_path.is_file():
-        sys.exit(f"no ingest output at {doc_path}\n"
+    sec_path = corpus / "sections" / f"ref-{rid}.json"
+    if not sec_path.is_file():
+        sys.exit(f"no ingest output at {sec_path}\n"
                  f"run: docling_ingest.py --only {rid}")
 
-    d = json.loads(doc_path.read_text())
-    heads = []
-    for it in d.get("texts", []):
-        if it.get("label") != "section_header":
-            continue
-        prov = it.get("prov") or []
-        heads.append({"text": it.get("text", ""), "level": it.get("level"),
-                      "page": prov[0].get("page_no") if prov else None})
+    # Read the heading list the ingest recorded rather than re-deriving one from
+    # the exported document. The ingest walks the body tree in reading order via
+    # iterate_items(); the flat `texts` array is insertion-ordered and includes
+    # items not attached to the body, so re-deriving here would show a span
+    # computed from one ordering above page and character counts computed from
+    # the other, and the two would silently disagree.
+    sec = json.loads(sec_path.read_text())
+    heads = sec.get("headings", [])
 
     span = find_methods_span(heads)
     print(f"--- ref {rid}: {len(heads)} section headings ---")
@@ -56,14 +56,20 @@ def main():
     print(f'start    : {span["heading"]!r}')
     print(f'end      : {span["end_heading"]!r}'
           + ("" if span["end"] is not None else "  (runs to end of document)"))
+    print(f'pages    : {sec.get("page_start")}-{sec.get("page_end")} '
+          f'of {sec.get("n_pages")}')
+    print(f'chars    : {len(sec.get("methods_text", "")):,}'
+          f'   tables in section: {sec.get("n_tables", 0)}')
 
-    sec_path = corpus / "sections" / f"ref-{rid}.json"
-    if sec_path.is_file():
-        sec = json.loads(sec_path.read_text())
-        print(f'pages    : {sec.get("page_start")}-{sec.get("page_end")} '
-              f'of {sec.get("n_pages")}')
-        print(f'chars    : {len(sec.get("methods_text", "")):,}'
-              f'   tables in section: {sec.get("n_tables", 0)}')
+    # The span above is recomputed live from the recorded headings, so it shows
+    # what the CURRENT rule would do. The stored one is what the last ingest
+    # wrote. They differ exactly when the rule has changed since -- which is the
+    # moment to re-span, so say so rather than showing two numbers side by side.
+    if sec.get("strategy") != span["strategy"] or sec.get("heading") != span["heading"]:
+        print(f'\nNOTE: stored section says {sec.get("strategy")} '
+              f'{sec.get("heading")!r}, but the current rule says '
+              f'{span["strategy"]} {span["heading"]!r}.\n'
+              f'      Run docling_ingest.py --respan to bring sections/ up to date.')
 
 
 if __name__ == "__main__":

@@ -186,7 +186,17 @@ def read_docling_section(docling_corpus, rid):
             sec = json.load(fh)
     except (OSError, ValueError):
         return None
-    if not (sec.get("methods_text") or "").strip():
+    text = (sec.get("methods_text") or "").strip()
+    # A section barely longer than its own heading is a boundary bug, not a
+    # methods section, and preferring it would be strictly worse than the
+    # fallback it displaces -- while ALSO labelling it the better evidence.
+    # This happened: a weak end heading ("Ethics statement") sitting inside the
+    # methods section truncated the span to the heading alone. That rule is
+    # fixed in docling_sections, but the check stays, because the failure is
+    # silent and the next unanticipated heading convention costs nothing to
+    # survive. MIN is deliberately low: it rejects fragments, not short papers.
+    MIN_SECTION_CHARS = 400
+    if len(text) < MIN_SECTION_CHARS:
         return None
     return sec
 
@@ -203,6 +213,31 @@ def read_ftcache(zotero_storage, pdf_key):
             return fh.read()
     except OSError:
         return ""
+
+
+def methods_start(fulltext):
+    """Where the ft-cache methods window begins → (start, matched_a_heading).
+
+    The single definition of the fallback path's start rule. It exists because
+    the rule had been copied to three places -- here, the record builder that
+    reports `methods_truncated`, and `measure_extraction_quality.py`, whose
+    docstring promised it restated nothing. All three were byte-identical, so
+    one edit to the floor or the fallback fraction would have left the other two
+    describing a rule nothing used, with nothing failing. That is the defect
+    CLAUDE.md names as this repo's most expensive recurring bug.
+
+    Returns `(None, False)` for empty text.
+    """
+    if not fulltext:
+        return None, False
+    floor = len(fulltext) // 20  # ignore matches in the first 5%
+    match = next((m for m in METHODS_HEAD_RE.finditer(fulltext)
+                  if m.start() >= floor), None)
+    if match:
+        return match.start(), True
+    # No heading: start ~10% in, past the abstract and intro, so the caller gets
+    # substantive body text rather than front matter.
+    return len(fulltext) // 10, False
 
 
 def extract_methods(fulltext):
@@ -232,15 +267,9 @@ def extract_methods(fulltext):
       `Online Methods` after Discussion (ref 51 is on page 22 of 34) gets a
       window from 10% in that contains none of the methods at all.
     """
-    if not fulltext:
+    start, _ = methods_start(fulltext)
+    if start is None:
         return ""
-    floor = len(fulltext) // 20  # ignore matches in the first 5%
-    match = next((m for m in METHODS_HEAD_RE.finditer(fulltext)
-                  if m.start() >= floor), None)
-    if match:
-        start = match.start()
-    else:
-        start = len(fulltext) // 10
     return fulltext[start:start + METHODS_WINDOW].strip()
 
 
@@ -392,14 +421,12 @@ def main():
             if not section:
                 rec["methods_text"] = extract_methods(fulltext)
                 rec["methods_source"] = "ftcache"
-                # Report truncation against the pre-strip length: extract_methods
-                # strips, so a cut landing next to whitespace lands at 11,99x and
-                # an `== METHODS_WINDOW` test silently misses it.
-                floor = len(fulltext) // 20
-                m = next((x for x in METHODS_HEAD_RE.finditer(fulltext)
-                          if x.start() >= floor), None)
-                start = m.start() if m else len(fulltext) // 10
-                rec["methods_strategy"] = "heading" if m else "positional"
+                # Ask the extractor where it started rather than re-deriving it.
+                # Truncation is measured against the pre-strip length, because
+                # extract_methods strips: a cut landing next to whitespace lands
+                # at 11,99x and an `== METHODS_WINDOW` test misses it.
+                start, matched = methods_start(fulltext)
+                rec["methods_strategy"] = "heading" if matched else "positional"
                 rec["methods_truncated"] = (len(fulltext) - start) > METHODS_WINDOW
         corpus.append(rec)
 

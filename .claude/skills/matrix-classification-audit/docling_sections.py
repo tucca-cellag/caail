@@ -60,9 +60,11 @@ METHODS_HEADING_RE = re.compile(
     r")\s*$",
     re.IGNORECASE)
 
-# Headings that end a methods section. A methods section runs until the paper
-# turns to what it found or to back matter.
-END_HEADING_RE = re.compile(
+# Headings that end a methods section, in two tiers. The split is load-bearing.
+#
+# STRONG headings are ones a paper never nests INSIDE its methods section: it has
+# turned to what it found, or to the back matter proper.
+STRONG_END_RE = re.compile(
     _NUM + r"(?:"
     r"results?(?:\s+and\s+discussions?)?"
     r"|discussions?(?:\s+and\s+conclusions?)?"
@@ -70,17 +72,37 @@ END_HEADING_RE = re.compile(
     r"|findings"
     r"|acknowledge?ments?"
     r"|references|bibliography|works\s+cited"
-    r"|supp(?:lementary|orting)\s+(?:information|data|material|figures?|tables?)"
-    r"|data\s+availability"
-    r"|code\s+availability"
     r"|(?:author|competing|conflict)[\s\w]*"
     r"|funding"
     r"|declarations?"
+    r")\s*$",
+    re.IGNORECASE)
+
+# WEAK headings are back matter that ALSO appears as a methods subsection. A
+# paper writes "Ethics statement", "Data availability" or "Code availability"
+# under Materials and Methods routinely. Treating these as unconditional
+# terminators collapsed the section to its own heading: "Materials and Methods"
+# followed by "Ethics statement" yielded 22 characters, and because
+# `read_docling_section` only rejected an EMPTY section, that fragment then beat
+# the ft-cache and was labelled the better evidence. So they end a section only
+# when no strong heading follows -- which is the genuine back-matter case, such
+# as a Nature paper whose Online Methods run to Data availability and stop.
+WEAK_END_RE = re.compile(
+    _NUM + r"(?:"
+    r"supp(?:lementary|orting)\s+(?:information|data|material|figures?|tables?)"
+    r"|data\s+availability"
+    r"|code\s+availability"
     r"|ethics[\s\w]*"
     r"|abbreviations"
     r"|appendix"
+    r"|reporting\s+summary"
     r")\s*$",
     re.IGNORECASE)
+
+
+def is_end_heading(text):
+    """True if `text` terminates a section under either tier."""
+    return bool(STRONG_END_RE.match(text) or WEAK_END_RE.match(text))
 
 # Headings that mark the end of front matter. `Main` is Nature's house style for
 # the opening section and is why ref 41 (ToolUniverse) resolved to nothing at
@@ -124,35 +146,45 @@ def find_methods_span(headings):
     texts = [_clean(h.get("text")) for h in headings]
 
     def end_after(i):
-        """First index > i whose heading ends a section, else None."""
+        """Index of the heading that ends the section starting at `i`, or None.
+
+        A strong heading wins wherever it appears. A weak one is used only when
+        no strong heading follows at all, because a weak heading inside the
+        methods section would otherwise truncate it to nothing.
+        """
         for j in range(i + 1, len(texts)):
-            if END_HEADING_RE.match(texts[j]):
+            if STRONG_END_RE.match(texts[j]):
+                return j
+        for j in range(i + 1, len(texts)):
+            if WEAK_END_RE.match(texts[j]):
                 return j
         return None
 
+    # Where the front matter ends. A methods-looking heading BEFORE this is not
+    # the methods section: it is a contents block listing the sections to come.
+    intro = next((i for i, t in enumerate(texts) if INTRO_HEADING_RE.match(t)), None)
+
     # --- Strategy 1: an explicit methods heading. -------------------------
     #
-    # Skip front matter, and skip any heading at index 0 (the title). Prefer the
-    # FIRST match, except that a match which is immediately terminated (no body
-    # between it and the next section) is not a real section -- some papers list
-    # "Methods" in a contents block before using it for real later.
-    candidates = []
+    # Take the first match that is not front matter. Index 0 gets no special
+    # treatment: it is usually the title, but the title is a long sentence that
+    # does not match the vocabulary, and on a PDF whose first section_header IS
+    # the methods heading, skipping index 0 discarded the only evidence there was.
+    # The front-matter guard below is what actually rejects a contents entry.
     for i, t in enumerate(texts):
-        if i == 0 or not t or FRONT_MATTER_RE.match(t):
+        if not t or FRONT_MATTER_RE.match(t):
             continue
-        if METHODS_HEADING_RE.match(t):
-            candidates.append(i)
-
-    for i in candidates:
+        if intro is not None and i < intro:
+            continue          # listed before the introduction: contents, not section
+        if not METHODS_HEADING_RE.match(t):
+            continue
         end = end_after(i)
-        # A methods heading immediately followed by an end heading contains no
-        # subsections and no body headings; still legitimate, so accept it.
         return {
             "found": True,
             "strategy": "explicit",
             "start": i,
             "end": end,
-            "heading": texts[i],
+            "heading": t,
             "end_heading": texts[end] if end is not None else "",
         }
 
@@ -160,13 +192,12 @@ def find_methods_span(headings):
     #
     # Needs no methods vocabulary at all, which is the point: it catches a paper
     # that names its middle section something nobody anticipated.
-    intro = next((i for i, t in enumerate(texts) if INTRO_HEADING_RE.match(t)), None)
     if intro is not None:
         start = intro + 1
         # Walk past any further front matter.
         while start < len(texts) and (not texts[start] or FRONT_MATTER_RE.match(texts[start])):
             start += 1
-        if start < len(texts) and not END_HEADING_RE.match(texts[start]):
+        if start < len(texts) and not is_end_heading(texts[start]):
             end = end_after(start - 1)
             if end is not None and end > start:
                 return {

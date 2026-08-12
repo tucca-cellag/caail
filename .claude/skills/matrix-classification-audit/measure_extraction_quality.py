@@ -57,14 +57,14 @@ def measure(api, groups, storage, papers_md, docling_corpus):
             ft = ex.read_ftcache(storage, pdf_key)
             if ft:
                 row["has_fulltext"] = True
-                # Reproduce extract_methods' own decision, by calling into the
-                # same regex and the same window constant it uses.
-                floor = len(ft) // 20
-                m = next((x for x in ex.METHODS_HEAD_RE.finditer(ft)
-                          if x.start() >= floor), None)
-                start = m.start() if m else len(ft) // 10
+                # Ask the extractor where it starts. Do not restate the rule:
+                # this script's whole claim is that it reports what the code
+                # does, so a private copy here would produce a measured-looking
+                # wrong number, which is the exact failure the docstring's two
+                # cautionary examples describe.
+                start, matched = ex.methods_start(ft)
                 tail = len(ft) - start
-                row.update(heading_found=m is not None,
+                row.update(heading_found=matched,
                            truncated=tail > ex.METHODS_WINDOW,
                            dropped=max(0, tail - ex.METHODS_WINDOW),
                            emitted=len(ex.extract_methods(ft)))
@@ -99,14 +99,23 @@ def main():
     fallback = [r for r in ft if not r["heading_found"]]
     doc = [r for r in rows if r["docling"]]
 
+    def pct(k):
+        """k as a share of n. n is 0 when nothing resolved -- a mistyped
+        --group, or a Zotero that answered but matched nothing -- and this tool
+        reporting that plainly is worth more than a traceback."""
+        return f"({k / n:.0%})" if n else "(n/a)"
+
     print(f"matrix refs                    : {len(rows)}")
     print(f"  with ft-cache full text      : {n}")
+    if not n:
+        print("\n  No ref resolved to ft-cache text. Check that Zotero is running with")
+        print("  'Allow other applications' enabled, and that --group is right.")
     print()
     print("--- the ft-cache extractor (extract_methods) ---")
     print(f"window                         : {ex.METHODS_WINDOW:,} chars")
-    print(f"heading found                  : {n - len(fallback):>4} ({(n - len(fallback)) / n:.0%})")
-    print(f"positional fallback            : {len(fallback):>4} ({len(fallback) / n:.0%})")
-    print(f"TRUNCATED at the window        : {len(trunc):>4} ({len(trunc) / n:.0%})")
+    print(f"heading found                  : {n - len(fallback):>4} {pct(n - len(fallback))}")
+    print(f"positional fallback            : {len(fallback):>4} {pct(len(fallback))}")
+    print(f"TRUNCATED at the window        : {len(trunc):>4} {pct(len(trunc))}")
     exact = sum(1 for r in ft if r.get("emitted") == ex.METHODS_WINDOW)
     print(f"  ...of which land at exactly {ex.METHODS_WINDOW:,}: {exact}")
     print(f"  the {len(trunc) - exact} refs between the two counts are the ones a")
