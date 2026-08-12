@@ -83,10 +83,25 @@ def var_name(stem: str) -> str:
     return stem.upper().replace("-", "_") + "_PATHS"
 
 
-def load_filters() -> dict[str, dict[str, list[str]]]:
-    """{workflow filename: {trigger: paths}} for every paths-bearing trigger."""
+def workflow_files() -> list[Path]:
+    """Both extensions: GitHub runs `.yaml` workflows identically to `.yml`, and a
+    `.yaml` one slipping past this glob would be invisible to every assertion
+    below — the same 'confirms an incomplete set is complete' failure the
+    CONTENT_PATHS caveat warns about, in the part that claims to be derived."""
+    return sorted(list(WORKFLOWS.glob("*.yml")) + list(WORKFLOWS.glob("*.yaml")))
+
+
+def load_filters() -> tuple[dict[str, dict[str, list[str]]], list[str]]:
+    """({workflow: {trigger: paths}}, [workflows using paths-ignore]).
+
+    `paths-ignore` is reported rather than skipped: ship-pr.sh's matcher model
+    has no way to express negation, so a workflow filtered that way cannot be
+    predicted at all. Silently treating it as filterless is how it would become
+    invisible.
+    """
     out: dict[str, dict[str, list[str]]] = {}
-    for wf in sorted(WORKFLOWS.glob("*.yml")):
+    negated: list[str] = []
+    for wf in workflow_files():
         doc = yaml.safe_load(wf.read_text())
         # PyYAML resolves the bare key `on:` to the boolean True (YAML 1.1 tag).
         trig = doc.get("on", doc.get(True)) if isinstance(doc, dict) else None
@@ -95,17 +110,35 @@ def load_filters() -> dict[str, dict[str, list[str]]]:
         found = {}
         for ev in TRIGGERS:
             block = trig.get(ev)
-            if isinstance(block, dict) and isinstance(block.get("paths"), list):
+            if not isinstance(block, dict):
+                continue
+            if isinstance(block.get("paths-ignore"), list):
+                negated.append(f"{wf.name} [{ev}]")
+            if isinstance(block.get("paths"), list):
                 found[ev] = block["paths"]
         if found:
             out[wf.name] = found
-    return out
+    return out, negated
 
 
 def declared(var: str) -> list[str] | None:
     """Pull `VAR='a b c'` out of ship-pr.sh without sourcing it."""
     m = re.search(rf"^{var}='([^']*)'", SHIP_PR.read_text(), re.MULTILINE)
     return m.group(1).split() if m else None
+
+
+def wrapper_state(stem: str) -> tuple[str, bool, bool]:
+    """(function name, is it defined?, does preflight call it?).
+
+    A pattern list with no wrapper, or a wrapper preflight never calls, leaves
+    the prediction silently absent while every set comparison still passes. The
+    variable existing is not the property that matters; being *read* is.
+    """
+    fn = "matches_" + stem.replace("-", "_")
+    src = SHIP_PR.read_text()
+    defined = re.search(rf"^{fn}\s*\(\)", src, re.MULTILINE) is not None
+    called = re.search(rf"^\s+{fn}\s+\"\$p\"", src, re.MULTILINE) is not None
+    return fn, defined, called
 
 
 def report(label: str, left: list[str], right: list[str],
@@ -135,14 +168,25 @@ def contains(label: str, superset: list[str], required: list[str], detail: str) 
 
 
 def main() -> int:
-    filters = load_filters()
+    filters, negated = load_filters()
     if not filters:
         sys.exit(f"check-ci-paths: no paths-bearing workflows found under {WORKFLOWS}")
     ok = True
 
-    print(f"=== discovered {len(filters)} paths-bearing workflow(s) ===")
+    print(f"=== discovered {len(filters)} paths-bearing workflow(s) "
+          f"of {len(workflow_files())} total ===")
     for wf, evs in filters.items():
         print(f"  {wf}  [{', '.join(evs)}]")
+
+    print("\n=== no workflow filters with paths-ignore ===")
+    if negated:
+        ok = False
+        print("  [FAIL] ship-pr.sh's matchers cannot express negation, so these "
+              "cannot be predicted:")
+        for n in negated:
+            print(f"           {n} uses paths-ignore")
+    else:
+        print("  [PASS] none")
 
     print("\n=== every pattern is a form ship-pr.sh's path_matches understands ===")
     for wf, evs in filters.items():
@@ -160,16 +204,34 @@ def main() -> int:
 
     print("\n=== every paths-bearing workflow has a predictor in ship-pr.sh ===")
     for wf, evs in filters.items():
-        var = var_name(Path(wf).stem)
+        stem = Path(wf).stem
+        var = var_name(stem)
         got = declared(var)
         if got is None:
             ok = False
             print(f"  [FAIL] {wf} -> {var}")
             print(f"           no {var}= in ship-pr.sh, so preflight cannot predict this "
-                  "workflow. Add it (named for the file) and a matches_* wrapper.")
+                  "workflow. Add it (named for the file), a matches_* wrapper, and a "
+                  "call in cmd_preflight.")
             continue
         ev = "pull_request" if "pull_request" in evs else next(iter(evs))
         ok &= report(f"{var} == {wf} [{ev}].paths", evs[ev], got, wf, "ship-pr.sh")
+
+    print("\n=== every predictor is wired into cmd_preflight ===")
+    for wf in filters:
+        stem = Path(wf).stem
+        fn, defined, called = wrapper_state(stem)
+        if defined and called:
+            print(f"  [PASS] {fn} is defined and called")
+            continue
+        ok = False
+        print(f"  [FAIL] {wf} -> {fn}")
+        if not defined:
+            print(f"           no {fn}() in ship-pr.sh. The pattern list alone predicts "
+                  "nothing.")
+        elif not called:
+            print(f"           {fn}() exists but cmd_preflight never calls it, so the "
+                  "prediction is silently absent while every set comparison passes.")
 
     print("\n=== each workflow's pull_request and push filters agree ===")
     for wf, evs in filters.items():

@@ -56,9 +56,9 @@ Run the helper from the repo (worktree) root: `bash .claude/skills/caail-pr-wrap
 bash .claude/skills/caail-pr-wrapup/ship-pr.sh preflight
 ```
 This confirms the branch/tree/auth, lists the changed paths, and — from the real CI path filters —
-predicts **whether `lint-papers` and `test` will run on the PR** and **whether `docs.yml` will deploy
-on merge**, plus the routes worth verifying live. It tells you what to expect in steps 4 and 6.
-Then re-run the local gate (above) if you haven't this session.
+predicts **which of `lint-papers`, `test` and `guards` will run on the PR** and **whether `docs.yml`
+will deploy on merge**, plus the routes worth verifying live. It tells you what to expect in steps 4
+and 6. Then re-run the local gate (above) if you haven't this session.
 
 ### 1. Push
 ```bash
@@ -110,10 +110,14 @@ bash .claude/skills/caail-pr-wrapup/ship-pr.sh watch-checks <pr>
 Per the CI table below, `lint-papers` runs only when the diff touches content/parser paths, and the
 deploy is **post-merge**, so not every PR has every check. A PR with **no checks at all** is now a
 narrow case: `guards.yml` fires on `.claude/hooks/**`, `.claude/settings.json`, this skill, and **any**
-`.github/workflows/**` edit, so a check-free PR touches only `.claude/` rules, agents, or a skill other
-than `caail-pr-wrapup`. The helper reports "no checks reported" and proceeds when that is genuinely the
-case — but if you expected a guard to run and it did not, treat that as a paths-filter gap, not as
-expected quiet. That is the exact failure this skill's own CI section documents twice over.
+`.github/workflows/**` edit. Genuinely check-free paths include `.claude/` rules and agents, any skill
+other than `caail-pr-wrapup`, `docs/**`, `LICENSE`, `CITATION.cff`, `.zenodo.json`, `.gitignore`,
+`.github/ISSUE_TEMPLATE/**`, and the two plugin manifests (`.claude-plugin/marketplace.json` and
+`plugin/.claude-plugin/plugin.json` — only `plugin/skills/**` is filtered, not `plugin/**`).
+
+The helper reports "no checks reported" and proceeds when that is genuinely the case. **If you expected
+a guard to run and it did not, and the diff is not in that list, treat it as a paths-filter gap rather
+than expected quiet** — that is the exact failure this skill's own CI section documents twice over.
 
 If a check **fails**, stop — surface it and fix the branch; do not merge red.
 
@@ -163,7 +167,10 @@ absence of a stale `./X.md` link — so you confirm the *content* shipped, not j
 
 **The workflows are the source of truth; the table below is a snapshot** (taken 2026-08-12) kept only
 so step 4/6 expectations are legible without opening four YAML files. `preflight` computes the real
-answer from the `LINT_PATHS` / `TEST_PATHS` / `DEPLOY_PATHS` / `GUARDS_PATHS` lists in `ship-pr.sh`.
+answer from the `LINT_PAPERS_PATHS` / `TEST_PATHS` / `DOCS_PATHS` / `GUARDS_PATHS` lists in
+`ship-pr.sh`. **Each is named for its workflow file** (`<stem uppercased, - to _>_PATHS`), and so is
+its `matches_<stem>` wrapper — that coupling is what lets the check derive what to look for instead of
+carrying its own list of workflows.
 
 **Those lists are asserted against the YAML** by `check-ci-paths.py`, running in `guards.yml`. It also
 checks that every pattern is a form `path_matches` can evaluate, that `pull_request` and `push` filters

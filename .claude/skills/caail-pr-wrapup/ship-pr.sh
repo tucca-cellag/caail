@@ -73,7 +73,7 @@ GUARDS_PATHS='.claude/hooks/** .claude/settings.json .claude/skills/caail-pr-wra
 
 # Does $1 (a repo-relative path) match $2 (one GitHub Actions paths pattern)?
 path_matches() {
-  path="$1"; pat="$2"
+  local path="$1" pat="$2"
   case "$pat" in
     '*.md') [ "$path" = "${path##*/}" ] && [ "${path%.md}" != "$path" ] ;;
     */'**') [ "${path#"${pat%/**}"/}" != "$path" ] ;;
@@ -88,7 +88,7 @@ path_matches() {
 # under-reported (`site/package.json` matched, `site/scripts/parser/x.ts` did
 # not), which is the direction that silently predicts "no job will run".
 matches_any() {
-  _p="$1"; _list="$2"
+  local _p="$1" _list="$2" _wasf _rc _pat
   case "$-" in *f*) _wasf=1 ;; *) _wasf=0 ;; esac
   set -f
   _rc=1
@@ -99,10 +99,14 @@ matches_any() {
   return "$_rc"
 }
 
-matches_lint()   { matches_any "$1" "$LINT_PAPERS_PATHS"; }
-matches_test()   { matches_any "$1" "$TEST_PATHS"; }
-matches_deploy() { matches_any "$1" "$DOCS_PATHS"; }
-matches_guards() { matches_any "$1" "$GUARDS_PATHS"; }
+# Named for the workflow stem, like the variables above, so `check-ci-paths.py`
+# can assert that each discovered workflow has BOTH a pattern list and a wrapper
+# that preflight actually calls. A variable with no wrapper, or a wrapper with no
+# call site, leaves preflight blind while every set comparison still passes.
+matches_lint_papers() { matches_any "$1" "$LINT_PAPERS_PATHS"; }
+matches_test()        { matches_any "$1" "$TEST_PATHS"; }
+matches_docs()        { matches_any "$1" "$DOCS_PATHS"; }
+matches_guards()      { matches_any "$1" "$GUARDS_PATHS"; }
 
 # Best-effort: map a changed canonical file to the site route to spot-check.
 route_for() {
@@ -143,9 +147,9 @@ cmd_preflight() {
   printf '\nChanged paths (%s):\n' "$(echo "$paths" | wc -l | tr -d ' ')"
   while IFS= read -r p; do
     note "$p"
-    matches_lint "$p" && lint=yes
+    matches_lint_papers "$p" && lint=yes
     matches_test "$p" && tests=yes
-    matches_deploy "$p" && deploy=yes
+    matches_docs "$p" && deploy=yes
     matches_guards "$p" && guards=yes
     if r="$(route_for "$p" 2>/dev/null)"; then routes+=("$r"); fi
   done <<< "$paths"
