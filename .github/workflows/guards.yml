@@ -1,0 +1,65 @@
+name: Repo guards
+
+# The checks that protect the repo's own tooling: the publish-provenance hook,
+# and the consistency of the CI path filters themselves. Both are seconds of
+# work and need no npm install, so they live here rather than in test.yml.
+#
+# Splitting them out is not tidiness. They have to trigger on `.github/workflows/**`
+# and on the ship skill, and putting those paths on test.yml would have run a full
+# Astro build, a Playwright browser install and the axe suite on every SKILL.md
+# prose edit or workflow comment tweak — the exact cost that argument rejected
+# `.claude/**` for one filter earlier.
+on:
+  pull_request:
+    paths:
+      - .claude/hooks/**
+      - .claude/settings.json
+      # The ship skill's path predictors, and the check that pins them to the
+      # workflows. BOTH sides of that check must be able to trigger it, or the
+      # guard repeats the defect it exists to catch — and editing docs.yml or
+      # lint-papers.yml is precisely what desyncs it.
+      - .claude/skills/caail-pr-wrapup/**
+      - .github/workflows/**
+  push:
+    branches: [main]
+    paths:
+      - .claude/hooks/**
+      - .claude/settings.json
+      - .claude/skills/caail-pr-wrapup/**
+      - .github/workflows/**
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: guards-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  guards:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      # check-ci-paths.py needs PyYAML and refuses to skip silently when it is
+      # missing. ubuntu-latest happens to ship it today, but depending on an
+      # undeclared property of a runner image is how a guard turns into a
+      # surprise red build, so declare it.
+      - name: Install PyYAML
+        run: python3 -m pip install --quiet --disable-pip-version-check pyyaml
+
+      # Resolves the destination's visibility with `gh repo view` and fails OPEN
+      # when it cannot: on an unauthenticated runner four of the eight tripwire
+      # cases flip from deny to allow. The token is load-bearing, not decorative.
+      - name: Publish-provenance hook guard
+        run: python3 .claude/hooks/check-public-publish.test.py
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # `if: always()` because the step above talks to the GitHub API. An API
+      # blip there would otherwise skip this one on exactly the PRs that edit a
+      # workflow, which is when drift is most likely.
+      - name: CI path filters match the ship skill's predictors
+        if: always()
+        run: python3 .claude/skills/caail-pr-wrapup/check-ci-paths.py

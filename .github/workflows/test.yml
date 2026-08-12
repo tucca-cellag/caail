@@ -29,12 +29,7 @@ on:
       # matching it here would spend a full site build and e2e pass on a doc edit.
       - .claude/hooks/**
       - .claude/settings.json
-      # The ship skill's path predictors and the check that pins them to these
-      # workflows. Both sides of that check have to be able to trigger it, or the
-      # guard repeats the defect it exists to catch: ALL workflows, not just this
-      # one, since editing docs.yml or lint-papers.yml is exactly what desyncs it.
-      - .claude/skills/caail-pr-wrapup/**
-      - .github/workflows/**
+      - .github/workflows/test.yml
   push:
     branches: [main]
     paths:
@@ -57,12 +52,7 @@ on:
       # matching it here would spend a full site build and e2e pass on a doc edit.
       - .claude/hooks/**
       - .claude/settings.json
-      # The ship skill's path predictors and the check that pins them to these
-      # workflows. Both sides of that check have to be able to trigger it, or the
-      # guard repeats the defect it exists to catch: ALL workflows, not just this
-      # one, since editing docs.yml or lint-papers.yml is exactly what desyncs it.
-      - .claude/skills/caail-pr-wrapup/**
-      - .github/workflows/**
+      - .github/workflows/test.yml
   workflow_dispatch:
 
 permissions:
@@ -73,41 +63,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # The publish-provenance guard ships in this repo (wired through the committed
-  # .claude/settings.json) so it protects anyone who clones, not only the machine
-  # it was written on. Its test shipped with it and **no workflow had ever run
-  # it** — which is the defect this job closes. A guardrail CI never executes is
-  # a claim of coverage rather than coverage, and the rule file citing that test
-  # is what made it look covered.
-  #
-  # GH_TOKEN is required, not decorative. The hook resolves the destination's
-  # visibility with `gh repo view` and deliberately fails OPEN when it cannot
-  # (see its "Resolve the destination repo" block). On an unauthenticated runner
-  # every deny case silently becomes an allow: measured 2026-08-12, four of the
-  # eight tripwire cases flipped. Without a token this job would go red and blame
-  # the hook for an environment problem. The default token can read this repo's
-  # own visibility, which is all the hook asks for.
-  #
-  # The test skips its cross-copy checks when ~/.claude/hooks/ is absent, which
-  # is always true on a runner. So CI gates the hook's tripwire precision and its
-  # fail-open safety; the byte-identity check stays a local diagnostic by nature,
-  # since it compares against a file that only exists on a maintainer's machine.
-  hooks:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-      - name: Publish-provenance hook guard
-        run: python3 .claude/hooks/check-public-publish.test.py
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # ship-pr.sh duplicates every workflow's `paths:` so preflight can predict
-      # which jobs a PR triggers. That duplication drifted three times while
-      # carrying a comment warning that it drifts, twice predicting "no job" where
-      # one runs. Set-compares the two rather than evaluating globs.
-      - name: CI path filters match the ship skill's predictors
-        run: python3 .claude/skills/caail-pr-wrapup/check-ci-paths.py
-
   # The events collector Worker's behaviour is covered by the vitest suite in the
   # `test` job, but vitest neither typechecks nor reads wrangler.toml. That
   # matters more than usual here: the rate limit lives in the config, not the

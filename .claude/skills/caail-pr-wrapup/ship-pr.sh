@@ -60,8 +60,9 @@ changed_paths() {
 # it is why every nested canonical directory has to be named, and why both
 # `Taxonomy.md` and `Primers/**` were silently missing.
 LINT_PATHS='Papers.md Software.md Databases.md OtherResources.md Taxonomy.md Datasets/** CONTRIBUTING.md CLAUDE.md site/scripts/parser/** site/scripts/db/** site/db/** site/public/api/** site/public/setup.md plugin/skills/** skills/**'
-TEST_PATHS='site/** workers/** *.md ResearchAreas/** Datasets/** Primers/** .claude/hooks/** .claude/settings.json .claude/skills/caail-pr-wrapup/** .github/workflows/**'
+TEST_PATHS='site/** workers/** *.md ResearchAreas/** Datasets/** Primers/** .claude/hooks/** .claude/settings.json .github/workflows/test.yml'
 DEPLOY_PATHS='site/** *.md ResearchAreas/** Datasets/** Primers/**'
+GUARDS_PATHS='.claude/hooks/** .claude/settings.json .claude/skills/caail-pr-wrapup/** .github/workflows/**'
 
 # Does $1 (a repo-relative path) match $2 (one GitHub Actions paths pattern)?
 path_matches() {
@@ -94,6 +95,7 @@ matches_any() {
 matches_lint()   { matches_any "$1" "$LINT_PATHS"; }
 matches_test()   { matches_any "$1" "$TEST_PATHS"; }
 matches_deploy() { matches_any "$1" "$DEPLOY_PATHS"; }
+matches_guards() { matches_any "$1" "$GUARDS_PATHS"; }
 
 # Best-effort: map a changed canonical file to the site route to spot-check.
 route_for() {
@@ -128,7 +130,7 @@ cmd_preflight() {
   note "working tree clean ✓"
   if gh auth status >/dev/null 2>&1; then note "gh authenticated ✓"; else die "gh not authenticated (run: gh auth login)."; fi
 
-  local paths lint=no tests=no deploy=no; local routes=()
+  local paths lint=no tests=no deploy=no guards=no; local routes=()
   paths="$(changed_paths)"
   [ -n "$paths" ] || die "no changes vs origin/$DEFAULT_BRANCH — nothing to ship."
   printf '\nChanged paths (%s):\n' "$(echo "$paths" | wc -l | tr -d ' ')"
@@ -137,12 +139,14 @@ cmd_preflight() {
     matches_lint "$p" && lint=yes
     matches_test "$p" && tests=yes
     matches_deploy "$p" && deploy=yes
+    matches_guards "$p" && guards=yes
     if r="$(route_for "$p" 2>/dev/null)"; then routes+=("$r"); fi
   done <<< "$paths"
 
   printf '\nCI prediction:\n'
   note "lint-papers will run on the PR:   $lint"
   note "test (vitest + e2e) on the PR:    $tests"
+  note "guards (hook + CI paths) on PR:   $guards"
   note "docs.yml will deploy on merge:    $deploy   (if no, there is no deploy to watch)"
   # de-dup route hints (array → unique, blanks dropped)
   local uniq=""
