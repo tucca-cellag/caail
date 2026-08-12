@@ -135,6 +135,42 @@ if (!cowTimecourse || !cowEmbargoed || cowTranscriptomic.length < 3) {
   );
 }
 
+/* ---- Card 2: where the model-plus-loop work is actually filed ----------------------------
+   This card previously led on "none of the 10 is ALSO tagged metabolic modeling, and all 10 are
+   tagged, so the gap is in their content and not in our coverage". That verification does not hold
+   and the claim has been removed.
+
+   Two reasons it fails. Topic tags mark a paper's PRIMARY SUBJECT, not the methods it uses: the
+   27 papers tagged metabolic-modeling are GEM reconstructions and flux-balance work, so asking
+   whether a media-optimization paper is "also tagged metabolic modeling" asks whether it is
+   primarily a metabolic-modeling paper, which is close to tautologically no. And tagging is far
+   too sparse to carry an absence claim: 53 papers in the corpus have no tags at all and 131 have
+   exactly one, so "every paper here is tagged" is satisfied by a single obvious label and says
+   nothing about what was considered. Ref #249 couples solution thermodynamics to a BO media loop
+   and would have falsified the old headline on its own.
+
+   Everything below is read from matrix placement and the code/data flags, both structural, and no
+   claim here depends on a topic tag. The adjacency is DERIVED by title and area rather than named,
+   so it cannot silently point at a paper that has moved column. */
+const modelLoopAdjacent = papers.references
+  .filter(
+    (r) =>
+      /genome-scale|metabolic network/i.test(r.title) &&
+      !(r.areas ?? []).includes('media') &&
+      (r.methods ?? []).some((m) => /Bayesian Optimization|Active Learning/i.test(m)),
+  )
+  .sort((a, b) => (b.citedByOpenAlex ?? 0) - (a.citedByOpenAlex ?? 0))
+  .slice(0, 2);
+const mediaBoBoth = papers.references.filter(
+  (r) => mediaBo.refIds.includes(r.id) && r.hasCode && r.hasData,
+);
+if (modelLoopAdjacent.length < 2) {
+  throw new Error(
+    `AskExamples card 2: expected 2+ design-loop papers on genome-scale or metabolic-network work ` +
+      `outside the media column; found ${modelLoopAdjacent.length}`,
+  );
+}
+
 /* ---- Card 3: the coverage map, read on two axes not one ---------------------------------
    Cell size alone cannot separate "4 papers and live" from "4 papers and untouched since 2024",
    and for a multi-year commitment those are opposite bets. The recency split is the safer signal
@@ -174,23 +210,56 @@ if (!goldilocks.length || !stalled.length || !crowdedRush.length || !crowdedMatu
   );
 }
 
-/* ---- Card 4: where licence and citation weight disagree ----------------------------------
-   `unknown` means no machine-readable licence was recorded, NOT that permission is denied. The
-   card has to keep those apart: conflating them is the same error in the opposite direction from
-   treating is_oa as a redistribution grant, and both are live traps for anyone shipping a tool. */
-const tierOf = (r: { license: string | null }) => licenseTier(r.license);
-const mostCited = papers.references
-  .filter((r) => (r.citedByOpenAlex ?? 0) >= 1000)
-  .sort((a, b) => (b.citedByOpenAlex ?? 0) - (a.citedByOpenAlex ?? 0));
-const mostCitedRedistributable = mostCited.filter(
-  (r) => tierOf(r) === 'permissive' || tierOf(r) === 'copyleft',
+/* ---- Card 5: sensory, and what a small-n asker can actually build on ----------------------
+   DRAFTED FOR REVIEW, not settled. It is here so all five can be compared rendered rather than in
+   a working file, and the open question is whether it ships at all. See the note below its entry.
+
+   The sensory column is the corpus's most classical-ML-heavy area, which for a 40-sample asker is
+   the answer rather than a disappointment. Everything here is cell counts and licence tiers, both
+   structural. */
+const sensoryCells = matrix.cells
+  .filter((c) => c.area === 'sensory' && !c.emptyInCorpus)
+  .sort((a, b) => b.refIds.length - a.refIds.length);
+const sensoryTop = sensoryCells[0];
+const sensoryDeep = sensoryCells.filter((c) => /Deep Learning|CNN|GNN/i.test(c.method));
+const sensoryClassical = sensoryCells.filter((c) =>
+  /Ensemble|SVM|Chemometrics|Nearest Neighbors|Linear/i.test(c.method),
 );
-const openButUnlicensed = papers.references.filter((r) => r.isOa && !r.license).length;
-const openAccess = papers.references.filter((r) => r.isOa).length;
-if (!mostCited.length || mostCitedRedistributable.length >= mostCited.length) {
+const nRefs = (cs: Cell[]) => new Set(cs.flatMap((c) => c.refIds)).size;
+const sensoryIds = new Set(sensoryCells.flatMap((c) => c.refIds));
+const sensoryRefs = papers.references.filter((r) => sensoryIds.has(r.id));
+const sensoryBoth = sensoryRefs.filter((r) => r.hasCode && r.hasData).length;
+const corpusBoth = papers.references.filter((r) => r.hasCode && r.hasData).length;
+if (!sensoryTop || nRefs(sensoryClassical) <= nRefs(sensoryDeep)) {
   throw new Error(
-    `AskExamples card 4: the licence-vs-value conflict is the card. Got ${mostCited.length} ` +
-      `works cited 1000+, ${mostCitedRedistributable.length} of them redistributable`,
+    `AskExamples card 5: the card rests on sensory being classical-ML-heavy; got classical=` +
+      `${nRefs(sensoryClassical)} deep=${nRefs(sensoryDeep)}`,
+  );
+}
+
+/* ---- Card 4: what may leave the network ---------------------------------------------------
+   The question asks two things: what may be redistributed versus only read internally, and what
+   needs clearing the day the tool goes customer-facing. It asks nothing about citation weight, so
+   this card reports neither.
+
+   An earlier version led on "of the 8 works cited 1,000+ times, 1 is redistributable". That was
+   cut for two reasons. It answered a question the card does not pose; and the anti-correlation it
+   implied does not survive the corpus. Median citations by tier run permissive 29.5, unknown 20,
+   copyleft 17, restricted 15.5, so redistributable work is if anything the MORE cited. The
+   apparent conflict lived entirely in an n=8 tail behind a threshold picked after seeing the data.
+
+   `unknown` means no machine-readable licence was recorded, NOT that permission is denied. Keeping
+   those apart is the whole point: conflating them is the same error as treating is_oa as a
+   redistribution grant, running the other way. */
+const tierOf = (r: { license: string | null }) => licenseTier(r.license);
+const unrecorded = papers.references.filter((r) => tierOf(r) === 'unknown').length;
+const restricted = papers.references.filter((r) => tierOf(r) === 'restricted').length;
+const needsClearing = unrecorded + restricted;
+const openAccess = papers.references.filter((r) => r.isOa).length;
+if (redistributable + needsClearing !== papers.references.length) {
+  throw new Error(
+    `AskExamples card 4: licence tiers do not partition the corpus: ${redistributable} ` +
+      `redistributable + ${needsClearing} needing clearance ≠ ${papers.references.length}`,
   );
 }
 
@@ -247,17 +316,19 @@ const examples = [
       'species but no experience closing the loop between a model and a screen. What work couples a ' +
       'metabolic model to an experimental design loop, and what did those groups actually have to ' +
       'measure to make the model useful?',
-    src: ['matrix.json', 'topics.json', 'papers.json'],
-    head: `Nobody in the ${mediaBo.refIds.length} indexed media-optimization papers couples a metabolic model to the loop, and the nearest prior art does it one column over`,
+    /* topics.json was dropped from this list with the tag-based claim it supported. The row is a
+       statement about which endpoints answer the question, so it has to track the answer. */
+    src: ['matrix.json', 'papers.json'],
+    head: `The model-plus-loop work is indexed one column over from where you would look: outside media optimization, in bioprocess and tooling`,
     rows: [
       { k: 'The cell you would search', v: `Bayesian Optimization × Media Optimization: ${mediaBo.refIds.length} papers, including ${cite(3)}, the paper GFI cites as prior art for media formulation` },
-      { k: 'The overlap', v: `None of the ${mediaBo.refIds.length} is also tagged metabolic modeling, and all ${mediaBo.refIds.length} are tagged, so the gap is in their content and not in our coverage` },
-      { k: 'What you could re-run', v: `${papers.references.filter((r) => r.hasCode && r.hasData).length} of ${papers.references.length} papers link BOTH code and a data deposit, which is what "closing the loop yourself" actually requires` },
+      { k: 'Where the coupling actually sits', v: `${modelLoopAdjacent.map((r) => `${cite(r.id)} in ${r.areas.join(' and ')}`).join('; ')}: genome-scale and metabolic-network work driven by a design loop, filed under other areas` },
+      { k: 'What you could actually re-run', v: `${mediaBoBoth.length} of the ${mediaBo.refIds.length} links both code and a data deposit${mediaBoBoth.length ? ` (${mediaBoBoth.map((r) => cite(r.id)).join(', ')})` : ''}, which is what closing the loop yourself requires` },
     ],
     tail:
-      'The useful part is the absence joined to an adjacency, and neither is reachable by browsing. ' +
-      'It also reframes the plan from catching up to doing something new, which is a better outcome ' +
-      'than a reading list.',
+      'The measurement burden each group carried is in their methods sections, not in any metadata ' +
+      'field, which is why this ends in three papers to read rather than a filter. Read the scope ' +
+      'precisely: this is where the coupling is indexed, not a claim that nobody has done it in media.',
   },
   {
     id: 'coverage',
@@ -301,17 +372,52 @@ const examples = [
       'literature does not mean unstudied. We want an internal assistant over what IS published, and ' +
       'it may go customer-facing later. What may we redistribute versus only read internally, and what ' +
       'would need licensing separately the day it leaves our network?',
-    src: ['papers.json', 'catalog.json'],
-    head: `Of the ${mostCited.length} works cited 1,000+ times, ${mostCitedRedistributable.length} carries a licence permitting redistribution`,
+    src: ['papers.json'],
+    head: `${redistributable} of ${papers.references.length} papers may be redistributed, against ${openAccess} that are merely free to read`,
     rows: [
-      { k: 'Value and licence disagree at the top', v: `${cite(mostCitedRedistributable[0].id)} is the one you may republish. The rest are the field's load-bearing papers and none can be cleared from metadata` },
-      { k: 'Unrecorded is not forbidden', v: `${openButUnlicensed} works are free to read with no licence recorded at all: you may read them and cannot clear them automatically, which is a research task and not a refusal` },
-      { k: 'What the filters actually cost', v: `${openAccess} of ${papers.references.length} are open access but only ${redistributable} are redistributable, so filtering on access overstates your rights by ${openAccess - redistributable} works` },
+      { k: 'Internally, the answer is most of it', v: 'What your organisation may lawfully read, it may generally index for itself. The tier binds on publishing, not on working, so the internal assistant is the easy half' },
+      { k: 'The day it leaves the network', v: `${needsClearing} works need clearing one at a time: ${unrecorded} record no machine-readable licence at all, and ${restricted} are explicitly non-commercial or no-derivatives` },
+      { k: 'The filter that looks right and is not', v: `Filtering on open access returns ${openAccess}, overstating what you may republish by ${openAccess - redistributable} works. Unrecorded means nobody wrote the terms down, not that permission was refused` },
     ],
     tail:
-      'The answer is a triage rule, not a filter: cite the famous work, build on the ' +
-      `${redistributable} you may redistribute, and hand-clear the few you actually have to ship. ` +
-      'The tier binds on publishing, not on what your organisation may lawfully read and index for itself.',
+      'Free to read is not permission to republish, and the two get conflated in both directions: ' +
+      `treat is_oa as a grant and you ship ${openAccess - redistributable} works you had no licence ` +
+      `for, treat unrecorded as forbidden and you discard ${unrecorded} you could probably clear by asking.`,
+  },
+  /* DRAFTED FOR REVIEW. Whether this ships, and whether it displaces another card, is an open
+     curator decision. Two things to weigh.
+
+     It is the only card covering the sensory column, which the subject-spread rule wanted and
+     which nothing else here touches. But adding it takes the carousel to five, and the dwell is
+     16s per card, so the full cycle becomes 80 seconds.
+
+     Its original second half asked whether a spectral or compound database could be wrapped as a
+     tool, and answered that only 2 of the 23 sensory databases are permissive while the tooling is
+     overwhelmingly open. That row was cut here: it is a strong finding but it lands the same
+     licence punchline as the card above it, and two adjacent cards making one point reads as
+     repetition in a rotating band. The finding is preserved in the working notes. */
+  {
+    id: 'sensory',
+    tab: 'Flavor & sensory',
+    icon: 'lucide:donut',
+    label: 'Sensory prediction × small-n reality',
+    q:
+      'We run a small cultured-pork line and have GC-MS volatile panels plus trained-panel scores ' +
+      'for about 40 samples, nowhere near enough to train on. Before I commit to another year of ' +
+      'panel sessions, which approaches have actually predicted sensory outcomes from instrumental ' +
+      'measurements in meat, and what did those groups need in sample counts and reference ' +
+      'standards to make it work?',
+    src: ['matrix.json', 'papers.json'],
+    head: `40 samples is not the shortfall it looks like: the indexed sensory work runs on classical small-n methods, not deep learning`,
+    rows: [
+      { k: 'What the field actually uses', v: `${nRefs(sensoryClassical)} papers across the ensemble, SVM, chemometrics and nearest-neighbour rows, against ${nRefs(sensoryDeep)} on deep learning, CNN and GNN combined` },
+      { k: 'The largest single cell', v: `${sensoryTop.method} × sensory holds ${sensoryTop.refIds.length} papers, joint-largest in the whole matrix: the methods are settled enough that your question is about sample design, not architecture` },
+      { k: 'Nobody\'s panel data is waiting for you', v: `${sensoryBoth} of the ${sensoryRefs.length} sensory papers link both code and a data deposit. That is the corpus norm rather than a sensory failing (${corpusBoth} of ${papers.references.length} overall), but it means there is no baseline to bootstrap from and your 40 samples are the baseline` },
+    ],
+    tail:
+      'What each group had to measure is in their methods sections, which is the reading this ' +
+      'question ends in. The useful part is that the answer changes the plan from "collect more ' +
+      'before starting" to "start with what the small-n literature already supports".',
   },
 ];---
 
