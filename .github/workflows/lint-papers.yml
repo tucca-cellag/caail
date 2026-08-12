@@ -17,6 +17,11 @@ on:
       - site/public/api/**
       - site/public/setup.md
       - plugin/skills/**
+      # the installer, which setup.md is generated from. It lives outside plugin/ so that
+      # installing the plugin does not also install its own installer, which means it is
+      # NOT covered by the line above: without this a lone edit to it would skip the
+      # agent-API sync guard and ship a stale setup.md with nothing to say so.
+      - skills/**
   push:
     branches:
       - main
@@ -35,6 +40,11 @@ on:
       - site/public/api/**
       - site/public/setup.md
       - plugin/skills/**
+      # the installer, which setup.md is generated from. It lives outside plugin/ so that
+      # installing the plugin does not also install its own installer, which means it is
+      # NOT covered by the line above: without this a lone edit to it would skip the
+      # agent-API sync guard and ship a stale setup.md with nothing to say so.
+      - skills/**
   workflow_dispatch:
 
 concurrency:

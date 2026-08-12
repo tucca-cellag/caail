@@ -1,15 +1,41 @@
 ---
 name: caail-install
-description: Install the CAAIL plugin or skill into whichever coding agent is running — Claude Code (plugin marketplace), Cursor, Windsurf, or any other assistant that can fetch a URL. Use when the user asks to install CAAIL, set up CAAIL, add the CAAIL plugin, or says "install CAAIL for me".
+description: Set up CAAIL for whichever agent is running: query it immediately with nothing installed, or install it into Claude Code (plugin marketplace), Cursor, Windsurf, or any assistant that can fetch a URL so it persists across sessions. Use when the user asks to use, set up or install CAAIL, or says "install CAAIL for me".
 ---
 
-# Install CAAIL
+# Set up CAAIL
 
-Install the Cellular Agriculture AI Library so it stays available across sessions.
+The Cellular Agriculture AI Library: a curated map of the AI and machine-learning work in
+cellular agriculture. Papers classified by AI method against research area, plus the
+software, databases and per-species datasets the field uses.
 
-CAAIL is a curated map of AI/ML work in cellular agriculture, served as static JSON from
-GitHub. There is nothing to host, authenticate or run — installing only means putting the
-skill somewhere your agent will load it again next time.
+Everything is static JSON served over HTTPS from GitHub. **There is no account, no
+authentication, no rate limit and no server to run**, so the fastest way to use CAAIL is to
+fetch it, and installing is only about not having to paste a URL again next time.
+
+Two ways in. Take the first unless the user asked for the second.
+
+## Use it now, with nothing installed
+
+Fetch the manifest and answer from it. Nothing is written anywhere and nothing outlives the
+conversation:
+
+<https://raw.githubusercontent.com/tucca-cellag/caail/main/site/public/api/index.json>
+
+It carries the corpus date, every endpoint, and counts each labelled with the population it
+counted. Every endpoint under it is a plain GET returning JSON.
+
+For which endpoint answers which question, read the query guide:
+
+<https://raw.githubusercontent.com/tucca-cellag/caail/main/plugin/skills/caail/SKILL.md>
+
+That is the whole zero-install path. Stop here unless the reader wants CAAIL available in
+future sessions without pasting a URL.
+
+## Keep it for future sessions
+
+Installing changes nothing about how CAAIL works: it adds no dependency, no service and no
+credential. It only puts the query guide where the agent will load it again next time.
 
 ## Step 1: work out which client you are in
 
