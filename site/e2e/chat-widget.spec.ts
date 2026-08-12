@@ -100,6 +100,48 @@ test('the blurb says answers come from AI', async ({ page }) => {
   await expect(page.locator('.chat-panel-blurb')).toContainText(/\bAI\b/);
 });
 
+/**
+ * The disclosure (CAAIL-167).
+ *
+ * Split into two assertions on purpose. The first — that the question goes
+ * somewhere — is the fact a reader cannot otherwise discover, since the POST is
+ * invisible and the endpoint is a host with no relationship to CAAIL's own
+ * domain. The second is the clause that actually changes behaviour, and it is
+ * the one under standing pressure: it is the longest part of the sentence, it
+ * makes the feature sound riskier, and whoever trims it will be optimising a
+ * cramped panel rather than weighing the disclosure. Its cost falls on a reader
+ * who pastes something unpublished into the box, so it gets its own test rather
+ * than riding along inside a single copy assertion.
+ */
+test('the notice says the question leaves the browser and warns off confidential input', async ({ page }) => {
+  await page.goto('./');
+  await openPanel(page);
+  const notice = page.locator('.chat-panel-notice');
+  await expect(notice).toBeVisible();
+  await expect(notice, 'the reader is not told the question is sent anywhere').toContainText(
+    /sent to an external service/i,
+  );
+  await expect(notice, 'the reader is not told the question is retained').toContainText(/stored/i);
+  await expect(notice, 'the confidential-information warning has been trimmed').toContainText(
+    /don't include\s+confidential information/i,
+  );
+});
+
+test('the notice links to the privacy statement', async ({ page }) => {
+  await page.goto('./');
+  await openPanel(page);
+  const link = page.locator('.chat-panel-notice a');
+  // Ends-with rather than equals: the site is served under a base path, and
+  // hardcoding "/caail/privacy/" would break a fork served from the root.
+  await expect(link).toHaveAttribute('href', /\/privacy\/$/);
+  // The disclosure is worthless if the page it points at 404s, so follow it.
+  await link.click();
+  await expect(page).toHaveURL(/\/privacy\/$/);
+  // level 1: the page also carries an h2 "Changes to This Privacy Statement",
+  // which makes an unqualified name match ambiguous under strict mode.
+  await expect(page.getByRole('heading', { level: 1, name: 'Privacy Statement' })).toBeVisible();
+});
+
 test('closing clears the typed question, via either control', async ({ page }) => {
   // The behaviour added by "Clear the state when the widget closes" (#119):
   // before it, reopening restored the previous question and answer. Both the
