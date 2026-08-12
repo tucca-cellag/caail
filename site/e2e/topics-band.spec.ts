@@ -153,13 +153,29 @@ test('the band is not offset by Starlight prose-flow margins', async ({ page }) 
   // Starlight's `.sl-markdown-content` flow rule gives every non-first sibling a
   // `margin-top`, and its `+` selector excludes <a>. The cards are anchors so they
   // escape it the way SectionsGrid does — but the count cells inside each card are
-  // <div>s, which is exactly the shape the rule does match. Assert the cause (no
-  // computed margin) and the symptom (a row still shares one top edge).
+  // <div>s, and so is `.grid` itself, which is exactly the shape the rule does match.
+  //
+  // `.grid` is asserted FIRST because the original version of this test checked only
+  // `.cell` — which was already explicitly `margin: 0` — so it passed green while `.grid`
+  // carried a real 16px of `--sl-content-gap-y`. A regression test that cannot fail on
+  // the defect it is named for is worse than none, because it certifies the thing it
+  // never looked at. Shown failing before being trusted: run against the build that
+  // predates the `.grid { margin: 0 }` fix, this line reports 16px.
+  await expect(page.locator('#topics .grid')).toHaveCSS('margin-top', '0px');
+
   const cells = page.locator('#topics .card').first().locator('.cell');
   await expect(cells).toHaveCount(TYPES.length);
   for (let i = 0; i < TYPES.length; i++) {
     await expect(cells.nth(i)).toHaveCSS('margin-top', '0px');
   }
+
+  // The two Starlight description-list rules the component resets. Both were measured
+  // live before the reset existed (dt at 700, dd with 16px of leading padding), and both
+  // silently contradicted a comment in the stylesheet, so they are pinned rather than
+  // trusted to stay reset.
+  const firstCell = cells.first();
+  await expect(firstCell.locator('dt')).toHaveCSS('font-weight', '400');
+  await expect(firstCell.locator('dd')).toHaveCSS('padding-inline-start', '0px');
 
   // At 1600px the grid is four columns, so the first four cards share a row.
   const tops = await page

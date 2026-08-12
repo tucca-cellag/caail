@@ -70,12 +70,37 @@ function CountPills({ c }: { c: Counts }) {
 }
 
 /**
+ * Full attribution for a theme's lead: name, affiliation, and the ORCID where there is
+ * one. This is the surface the index card's short form defers to, and it is the only place
+ * a reader can see who holds an area in enough detail to contact or credit them.
+ *
+ * The ORCID is the point rather than decoration. A lead is being offered academic credit
+ * for an area, and a name with no persistent identifier is credit that does not survive
+ * the person changing institution.
+ *
+ * Renders nothing when nobody holds the theme. That is the one place an omission is right:
+ * the index and the recruitment ask already carry the vacancy, and repeating "open" under
+ * the title of the page you just opened adds nothing.
+ */
+function LeadFull({ slug }: { slug: string }) {
+  const c = curatorFor(slug);
+  if (!c) return null;
+  return (
+    <p class="th-lead-full">
+      <span class="th-lead-role">Lead</span>
+      {c.url ? <a href={c.url} rel="noopener noreferrer" target="_blank">{c.name}</a> : c.name}
+      <span class="th-lead-affil">{c.affiliation}</span>
+    </p>
+  );
+}
+
+/**
  * The lead for a theme, or the open state.
  *
  * Rendered on every card rather than only where someone holds it: an omitted line would
  * hide the ask on exactly the themes that need one. Kept to a name here (no affiliation,
  * no link) because this is a dense index card; the theme's own view carries the full
- * attribution.
+ * attribution, via LeadFull above.
  */
 function LeadLine({ slug }: { slug: string }) {
   const c = curatorFor(slug);
@@ -147,6 +172,7 @@ function TopicView({ node, sec }: { node: Node; sec: Secondary }) {
         {parentTheme && <>{' / '}<a href={topicHref(BASE, parentTheme.slug)}>{parentTheme.label}</a></>}
       </nav>
       <h2 class="th-title caail-display">{node.label}</h2>
+      {node.tier === 'theme' && <LeadFull slug={node.slug} />}
       {!narrowed && <CountPills c={node.counts} />}
       <HubFilterBar
         base={BASE}

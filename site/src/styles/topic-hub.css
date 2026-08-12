@@ -66,6 +66,14 @@
 }
 .th-lead[data-open] { color: var(--caail-muted); font-style: italic; }
 
+/* Full attribution under a theme's title. Affiliation is separated by a middot rather than
+   put on its own line, so the whole credit reads as one statement. */
+.th-lead-full { margin: 0.35rem 0 0.6rem; font-size: 0.82rem; color: var(--caail-ink); }
+.th-lead-full a { color: var(--caail-link); text-decoration: none; }
+.th-lead-full a:hover, .th-lead-full a:focus-visible { text-decoration: underline; }
+.th-lead-affil { color: var(--caail-muted); }
+.th-lead-affil::before { content: ' · '; color: var(--caail-muted); }
+
 .th-recruit {
   margin: 1.1rem 0 0;
   padding: 0.85rem 1rem;

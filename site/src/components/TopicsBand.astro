@@ -47,6 +47,11 @@ import topics from '../content/data/topics.json';
 import { chipStyle } from '../lib/theme-colors';
 import { COMMUNITY_PATH } from '../lib/community';
 import { curatorFor, curatorCoverage } from '../lib/topic-curators';
+/* The `?t=` deep-link shape is a contract with `hub-filters.readSecondary`, and it is
+   already written down once, unit-tested, and used by TopicHub. Building the URL inline
+   here would be a third copy: change the hub's param and this band would quietly point at
+   a URL the hub no longer honours, falling back to the theme index with no error. */
+import { topicHref } from '../lib/topic-chips';
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
@@ -131,7 +136,7 @@ if (!themes.some((t) => TYPES.some((ty) => countOf(t, ty.key) === 0))) {
 
   <div class="grid sr sr-d1">
     {themes.map((t) => (
-      <a class="card" href={`${base}/topics/?t=${t.slug}`} style={chipStyle(t.slug)}>
+      <a class="card" href={topicHref(base, t.slug)} style={chipStyle(t.slug)}>
         <h3>{t.label}</h3>
         {/* A description list, because these are name/value pairs and a screen reader
             should announce them as such. The pairs are wrapped in <div>s, which HTML5
@@ -200,8 +205,14 @@ if (!themes.some((t) => TYPES.some((ty) => countOf(t, ty.key) === 0))) {
   .lede { font-size: var(--caail-fs-lg); color: var(--caail-muted); margin: 0; text-wrap: pretty; }
 
   /* Eight themes over four columns is two even rows. Two columns is the tablet step; one
-     column below that, where a four-wide count row would wrap mid-pair. */
-  .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--caail-space-4); }
+     column below that, where a four-wide count row would wrap mid-pair.
+
+     `margin: 0` is load-bearing. This is a <div> following another <div>, which is exactly
+     the shape Starlight's flow rule matches, and measured on the built page it was taking
+     16px of `--sl-content-gap-y` on top of `.hd`'s 32px bottom margin: 48px where the
+     design says 32px. The cards escape that rule by being <a> elements, which is why the
+     symptom was a gap above the grid rather than misaligned cards. */
+  .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--caail-space-4); margin: 0; }
   @media (max-width: 64rem) { .grid { grid-template-columns: repeat(2, 1fr); } }
   @media (max-width: 34rem) { .grid { grid-template-columns: 1fr; } }
 
@@ -254,10 +265,20 @@ if (!themes.some((t) => TYPES.some((ty) => countOf(t, ty.key) === 0))) {
     gap: .3rem 1.4rem; margin: auto 0 0;
   }
   .cell { display: flex; align-items: baseline; justify-content: space-between; gap: .4rem; margin: 0; }
-  .cell dt { font-size: var(--caail-fs-xs); color: var(--caail-muted); margin: 0; }
+  /* font-weight and padding-inline-start are RESET, not merely unset. Starlight styles
+     description lists inside `.sl-markdown-content` (`dt { font-weight: 700 }`,
+     `dd { padding-inline-start: 1rem }`), and those rules sit in a layer, so an unlayered
+     declaration here wins but an ABSENT one does not. Both were measured live on the built
+     page before this reset existed:
+       - every count label rendered at 700, so on a zero cell the muted label was heavier
+         than the value it labels, inverting the emphasis the rule below sets up;
+       - every value carried 16px of leading padding, which made the intra-pair gap
+         .4rem + 1rem = 22.4px, exactly equal to the 1.4rem column gap. The asymmetry the
+         `.counts` comment describes was real in the stylesheet and absent from the page. */
+  .cell dt { font-size: var(--caail-fs-xs); color: var(--caail-muted); margin: 0; font-weight: 400; }
   .cell dd {
     font-size: var(--caail-fs-sm); font-weight: 700; font-family: var(--caail-font-mono);
-    color: var(--caail-ink); margin: 0;
+    color: var(--caail-ink); margin: 0; padding-inline-start: 0;
   }
   /* A zero is muted and unbolded so it reads as an answer rather than a score. It is still
      rendered as a figure, because the whole argument of this band is that the empty column
