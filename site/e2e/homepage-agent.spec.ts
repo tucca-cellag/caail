@@ -371,11 +371,81 @@ test.describe('Connect your agent', () => {
 
 test('the hero counter renders a real statistic before the typewriter runs', async ({ page }) => {
   await page.goto('./');
+  // Scoped to `.tick`, the LIVE counter. `.hero .tick-n` also matches the hidden width
+  // reserve, which renders every entry in the same classes on purpose — it has to measure
+  // identically to be a valid reserve — so the unscoped selector matches five elements.
   // Server-rendered complete, so no JS (or a script error) still leaves a real number.
-  await expect(page.locator('.hero .tick-n')).toHaveText(/^\d+$/);
-  await expect(page.locator('.hero .tick-l')).not.toBeEmpty();
+  await expect(page.locator('.hero .tick .tick-n')).toHaveText(/^\d+$/);
+  await expect(page.locator('.hero .tick .tick-l')).not.toBeEmpty();
   const entries = JSON.parse((await page.locator('.hero .tick').getAttribute('data-stats')) ?? '[]');
   expect(entries.length, 'the typewriter has nothing to cycle through').toBeGreaterThan(1);
+});
+
+/**
+ * The counter's column is sized by a hidden reserve holding every entry, so it is as wide
+ * as the widest one at whatever size the text actually renders — which is what lets the
+ * routes beside it wrap on content rather than on a breakpoint.
+ *
+ * Every width-based gate tried before this was blind to text scaling. `rem` in a media
+ * query resolves against the browser's INITIAL font size, so raising the default font size
+ * left the gate meaning the same pixel width while every word grew: 204px of overlap at
+ * 125%, 326px at 200%. A container query in `em` fixed that and still missed a reader's
+ * minimum-font-size setting, which grows the label without growing the column: 82px of
+ * overlap at a 20px minimum. `nowrap` means none of it reflows, so two blocks of text
+ * simply paint over each other with nothing to signal it.
+ *
+ * This asserts the property that replaced all of that: at any text size, the routes either
+ * clear the counter or have moved to their own line.
+ */
+test('the ways-in list never collides with the counter, at any text size', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+
+  for (const scale of [1, 1.25, 1.5, 2]) {
+    for (const minFontPx of [0, 20, 24]) {
+      await page.goto('./');
+      if (scale !== 1) {
+        await page.addStyleTag({ content: `html { font-size: ${16 * scale}px !important; }` });
+      }
+      if (minFontPx) {
+        await page.addStyleTag({
+          content: `.tick-l, .ways, .ways *, .tick-cap { font-size: ${minFontPx}px !important; }`,
+        });
+      }
+
+      const r = await page.evaluate(() => {
+        const tick = document.querySelector<HTMLElement>('.hero .tick')!;
+        // worst case: the widest entry, fully typed
+        tick.querySelector('.tick-n')!.textContent = '139';
+        tick.querySelector('.tick-l')!.textContent = 'software tools';
+        const ways = document.querySelector('.hero .ways')!.getBoundingClientRect();
+        // The counter's CONTENT edge, not its box. That distinction is the whole test:
+        // `nowrap` makes an over-wide counter overflow its own track, so the boxes stay
+        // neatly side by side while the painted text runs straight through the routes.
+        // Measuring `.tick-col`'s rect reports no collision in exactly the case that
+        // motivated this assertion.
+        const kids = [...tick.children].map((k) => k.getBoundingClientRect());
+        const contentRight = Math.max(...kids.map((k) => k.right));
+        const contentLeft = Math.min(...kids.map((k) => k.left));
+        const contentTop = Math.min(...kids.map((k) => k.top));
+        const contentBottom = Math.max(...kids.map((k) => k.bottom));
+        // Two things collide only when they overlap on BOTH axes. Beside the counter the
+        // routes are clear horizontally; wrapped beneath it they are clear vertically.
+        // Either is fine; overlapping on both is text painted over text.
+        return {
+          overlapsX: ways.left < contentRight - 1 && ways.right > contentLeft + 1,
+          overlapsY: ways.top < contentBottom - 1 && ways.bottom > contentTop + 1,
+          layout: ways.left >= contentRight - 1 ? 'beside' : 'wrapped',
+          intrusionPx: Math.round(contentRight - ways.left),
+        };
+      });
+
+      expect(
+        r.overlapsX && r.overlapsY,
+        `at ${scale * 100}% text${minFontPx ? ` + ${minFontPx}px minimum` : ''}: the counter ` +
+          `runs ${r.intrusionPx}px into the routes (layout read as "${r.layout}")`,
+      ).toBe(false);
+    }
+  }
 });
 
 test('the hero never changes height while the counter types (stripe ResizeObserver)', async ({ page }) => {
