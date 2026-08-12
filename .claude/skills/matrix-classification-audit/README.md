@@ -19,6 +19,8 @@ ingest is **stdlib-only and zero-token**.
 | `docling_sections.py` | Pure function: ordered heading list → the methods span. No Docling, no PDF, no network, so it is unit-testable. |
 | `docling_sections.test.py` | Runs `docling_sections` against real heading lists from the corpus, and shows the old regex failing the same inputs. `python3 …/docling_sections.test.py` |
 | `measure_extraction_quality.py` | Prints how good the extraction currently is, by calling the code being measured rather than restating its rules. Run this instead of trusting any number written down. |
+| `compare_extraction.py` | Ranks matrix refs by how much the evidence a curator reads has changed between the old window and the located section. Input to the CAAIL-203 re-audit: it says where to look, not what is wrong. |
+| `audit_sections.py` | Quality report over the located sections, split by population. Recomputes spans with the current rule, so a vocabulary change is visible before committing to a `--respan`. |
 | `show_headings.py` | Curator view of one ref: every heading Docling found, with the located section's start and end marked. `show_headings.py 51` |
 | `testdata/make_fixtures.py` | Regenerates the test fixtures from the ingest output. |
 | `prefilter_corpus.py` | Deterministic pass that auto-clears lexically-obvious placements and emits the residual needing human judgment. Never auto-clears deep-learning / agent / foundation-model rows. |
