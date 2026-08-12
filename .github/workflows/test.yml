@@ -16,6 +16,19 @@ on:
       - ResearchAreas/**
       - Datasets/**
       - Primers/**
+      # The agent guards that ship in this repo, and the settings file that wires
+      # them. Until now NOTHING under `.claude/` appeared in any workflow's paths
+      # filter or any run step, so a PR touching only a hook triggered nothing at
+      # all — including `block-generated-edits.py`, which DOES have a test
+      # (site/scripts/db/hook.test.ts) that simply never ran against the change
+      # that could break it.
+      #
+      # Scoped to hooks + settings rather than all of `.claude/`: those are the
+      # parts with tests, and both the `hooks` job and the vitest suite in `test`
+      # need to run on them. Skill, rule and agent prose has no test to run, so
+      # matching it here would spend a full site build and e2e pass on a doc edit.
+      - .claude/hooks/**
+      - .claude/settings.json
       - .github/workflows/test.yml
   push:
     branches: [main]
@@ -26,6 +39,19 @@ on:
       - ResearchAreas/**
       - Datasets/**
       - Primers/**
+      # The agent guards that ship in this repo, and the settings file that wires
+      # them. Until now NOTHING under `.claude/` appeared in any workflow's paths
+      # filter or any run step, so a PR touching only a hook triggered nothing at
+      # all — including `block-generated-edits.py`, which DOES have a test
+      # (site/scripts/db/hook.test.ts) that simply never ran against the change
+      # that could break it.
+      #
+      # Scoped to hooks + settings rather than all of `.claude/`: those are the
+      # parts with tests, and both the `hooks` job and the vitest suite in `test`
+      # need to run on them. Skill, rule and agent prose has no test to run, so
+      # matching it here would spend a full site build and e2e pass on a doc edit.
+      - .claude/hooks/**
+      - .claude/settings.json
       - .github/workflows/test.yml
   workflow_dispatch:
 
@@ -37,6 +63,34 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # The publish-provenance guard ships in this repo (wired through the committed
+  # .claude/settings.json) so it protects anyone who clones, not only the machine
+  # it was written on. Its test shipped with it and **no workflow had ever run
+  # it** — which is the defect this job closes. A guardrail CI never executes is
+  # a claim of coverage rather than coverage, and the rule file citing that test
+  # is what made it look covered.
+  #
+  # GH_TOKEN is required, not decorative. The hook resolves the destination's
+  # visibility with `gh repo view` and deliberately fails OPEN when it cannot
+  # (see its "Resolve the destination repo" block). On an unauthenticated runner
+  # every deny case silently becomes an allow: measured 2026-08-12, four of the
+  # eight tripwire cases flipped. Without a token this job would go red and blame
+  # the hook for an environment problem. The default token can read this repo's
+  # own visibility, which is all the hook asks for.
+  #
+  # The test skips its cross-copy checks when ~/.claude/hooks/ is absent, which
+  # is always true on a runner. So CI gates the hook's tripwire precision and its
+  # fail-open safety; the byte-identity check stays a local diagnostic by nature,
+  # since it compares against a file that only exists on a maintainer's machine.
+  hooks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Publish-provenance hook guard
+        run: python3 .claude/hooks/check-public-publish.test.py
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   # The events collector Worker's behaviour is covered by the vitest suite in the
   # `test` job, but vitest neither typechecks nor reads wrangler.toml. That
   # matters more than usual here: the rate limit lives in the config, not the
