@@ -42,11 +42,19 @@ changed_paths() {
 
 # A path matches one of the CI globs? (POSIX case globbing, not regex.)
 # lint-papers.yml PR/push paths (matrix/reference lint + db:check/db:verify + sync guard):
+# This list DUPLICATES lint-papers.yml's `paths:` and has now drifted twice. When editing
+# either one, edit both, and diff them rather than trusting this comment: the last drift
+# left the generated outputs and the skills out, so a PR touching only setup.md was
+# predicted to run no lint job when it runs one.
 matches_lint() {
   case "$1" in
     Papers.md|Software.md|Databases.md|OtherResources.md) return 0 ;;
     CONTRIBUTING.md|CLAUDE.md) return 0 ;;
     Datasets/*|site/scripts/parser/*|site/scripts/db/*|site/db/*) return 0 ;;
+    # generated outputs, guarded by the sync checks
+    site/public/api/*|site/public/setup.md) return 0 ;;
+    # the query skill, and the installer that setup.md is generated from
+    plugin/skills/*|skills/*) return 0 ;;
     *) return 1 ;;
   esac
 }
