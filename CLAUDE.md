@@ -238,7 +238,9 @@ The per-entry summaries in the `Datasets/` pages, `Databases.md`, `Software.md`,
 
 ## CAAIL documents the work; it does not take a position on whether the work succeeds
 
-CAAIL indexes what has been researched. It is **not opinionated about whether AI will solve any given problem in cellular agriculture**, and it must never be written as though it were. A research area is a *classification rule* saying which work belongs in that column, not a thesis that the approach works. Read `Taxonomy.md`'s definitions: they are all scope and exclusion criteria, and none of them claims a result.
+CAAIL indexes what has been researched. It is **not opinionated about whether AI will solve any given problem in cellular agriculture**, and it must never be written as though it were. A research area is a *classification rule* saying which work belongs in that column, not a thesis that the approach works. Read `Taxonomy.md`'s definitions: they are overwhelmingly scope and exclusion criteria rather than claims about what succeeds.
+
+Where one slips, that is a defect in the definition rather than a licence to write more of them. *Bioprocess & Scale-Up* currently admits "methods demonstrated on non-biological reactor physics that transfer directly to bioreactor scale-up" — "transfer directly" asserts a result, where a boundary would say the transfer is the paper's own claim. Fixing it is tracked, not done here.
 
 So, when writing any curated entry or summary:
 
