@@ -150,9 +150,14 @@ what you changed — e.g. `curl -s <url> | grep` for a new heading, the correcte
 absence of a stale `./X.md` link — so you confirm the *content* shipped, not just that the page exists.
 
 ### 8. Clean up
+**Check where you are first — `git branch --show-current`.** If step 5 took gh's succeeding path it
+already moved you to `main` and deleted the branch, so the first two items below are done and
+re-running them reports confusing errors rather than doing anything (see the Gotchas row).
+
 - **Fast-forward local `main`** so the primary checkout matches the deploy:
   `git fetch origin main && git merge --ff-only origin/main` (run it in the primary checkout; you can't
-  fast-forward `main` while a worktree holds another branch).
+  fast-forward `main` while a worktree holds another branch). When `main` isn't checked out anywhere,
+  `git fetch origin main:main` updates the ref without switching to it.
 - **This session's managed worktree** (made by `EnterWorktree`): call `ExitWorktree` with
   `action: "remove"` and `discard_changes: true` — safe because the commits are now on `origin/main`.
   It removes the worktree + branch and returns the session to the primary checkout.
@@ -208,7 +213,7 @@ deploy — preflight will say "no deploy expected", which is correct, not a bug.
 
 | Symptom / situation | What it means / do |
 | --- | --- |
-| `gh pr merge` errors `fatal: 'main' is already checked out at …` | **Benign.** gh's post-merge *local* branch step fails because the primary checkout holds `main`; the **remote merge already succeeded**. The helper verifies `state==MERGED` and API-deletes the remote branch. Trust `MERGED`, not gh's exit code. |
+| `gh pr merge --delete-branch` — **two outcomes, both fine** | Which one you get depends on whether anything holds `main`. **(a) Something does** (the primary checkout, or a worktree): gh's post-merge *local* step fails with `fatal: 'main' is already checked out at …`. Benign — the **remote merge already succeeded**; the helper verifies `state==MERGED` and API-deletes the remote branch. **(b) Nothing does:** gh succeeds, which means it **switches this checkout to `main` and deletes the local feature branch itself**. Then step 8's fast-forward is already done and `git branch -d <branch>` answers `error: branch '<branch>' not found` — also benign, and not a sign the merge went wrong. Either way trust `MERGED`, not gh's exit code, and check `git branch --show-current` before assuming where you are. |
 | Deploy run fails on **Lighthouse** | A11y/perf regression on landing or explorer. **Hard stop** — read the lhci output, fix it, ship again. Never blind-retry. |
 | Gemini Adversarial Reviewer reports an **auth/login prompt** | The Google OAuth token expired and can't refresh headlessly. Run `gemini` once interactively to re-auth, or skip the cross-model pass (Step 3 is optional) — note it and let the operator decide. Never hard-block the ship on an unavailable optional reviewer. |
 | `lhci` reports a bogus ~0.5 perf score | A stale `astro dev`/preview is holding `:4321`; lhci silently measured it. Free the port (`lsof -ti:4321 | xargs kill`). Only relevant if running Lighthouse locally; CI runners are fresh. |
