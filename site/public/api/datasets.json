@@ -4611,6 +4611,156 @@
       "subseries": []
     },
     {
+      "id": "ds:gse189296",
+      "kind": "inventory",
+      "page": "Cow",
+      "name": "Muscle-derived fibro-adipogenic progenitor cells for production of cultured bovine adipose tissue",
+      "columns": {
+        "Study": "Muscle-derived fibro-adipogenic progenitor cells for production of cultured bovine adipose tissue",
+        "Paper": "[DOI](https://doi.org/10.1038/s41538-021-00122-2)",
+        "Data": "[`GSE189296`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE189296)",
+        "Type": "RNA-seq",
+        "Tissue": "Muscle (FAPs and satellite cells)",
+        "Description": "Bulk RNA-seq contrasting bovine muscle-derived fibro-adipogenic progenitors (FAPs) against satellite cells purified from the same muscle sample by a single FACS strategy; FAPs proliferate extensively and mature into fat in edible three-dimensional hydrogels whose lipid profile and taste track traditional beef fat, making them a candidate cell type for cultivated fat (Dohmen, Hubalek, Melke, Messmer, Cantoni, Mei, Hueber, Mitic, Remmers, Moutsatsou, Post, Jackisch & Flack 2022, *npj Science of Food*)",
+        "Size": "—",
+        "Area of research": "Cultivated fat"
+      },
+      "links": [
+        "https://doi.org/10.1038/s41538-021-00122-2",
+        "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE189296"
+      ],
+      "topics": [
+        {
+          "slug": "cell-lines-engineering",
+          "label": "Cell Lines & Engineering",
+          "theme": "cell-lines-engineering"
+        },
+        {
+          "slug": "single-cell-atlases",
+          "label": "Single-cell atlases",
+          "theme": "cell-lines-engineering"
+        }
+      ],
+      "subseries": []
+    },
+    {
+      "id": "ds:gse289644",
+      "kind": "inventory",
+      "page": "Cow",
+      "name": "Paracrine effect of fibroblasts on the proliferation and differentiation of bovine satellite cells in vitro",
+      "columns": {
+        "Study": "Paracrine effect of fibroblasts on the proliferation and differentiation of bovine satellite cells in vitro",
+        "Paper": "[DOI](https://doi.org/10.1016/j.biochi.2025.11.006)",
+        "Data": "[`GSE289644`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE289644)",
+        "Type": "RNA-seq",
+        "Tissue": "Muscle (satellite cells)",
+        "Description": "Bulk RNA-seq of bovine satellite cells co-cultured with fibroblasts across a 0.4 μm transwell against monoculture, sampled at day 5 of proliferation and 24 h and 72 h after differentiation was induced; separating paracrine signalling from direct cell-cell contact, with EGR1, IL6 and SOCS3 up and ITGA7 down (Zygmunt, Żukowski, Piórkowska, Smołucha, Wierzbicka & Witarski 2025, *Biochimie*)",
+        "Size": "—",
+        "Area of research": "Cultured meat (fibroblast co-culture)"
+      },
+      "links": [
+        "https://doi.org/10.1016/j.biochi.2025.11.006",
+        "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE289644"
+      ],
+      "topics": [
+        {
+          "slug": "cell-lines-engineering",
+          "label": "Cell Lines & Engineering",
+          "theme": "cell-lines-engineering"
+        }
+      ],
+      "subseries": []
+    },
+    {
+      "id": "ds:gse305686",
+      "kind": "inventory",
+      "page": "Cow",
+      "name": "Single-cell transcriptomic analysis suggests potential differences in the developmental stage and quantity of adipose progenitor cells between bovine intramuscular and subcutaneous fat",
+      "columns": {
+        "Study": "Single-cell transcriptomic analysis suggests potential differences in the developmental stage and quantity of adipose progenitor cells between bovine intramuscular and subcutaneous fat",
+        "Paper": "[DOI](https://doi.org/10.1186/s12864-025-12312-3)",
+        "Data": "[`GSE305686`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE305686)",
+        "Type": "scRNA-seq",
+        "Tissue": "Intramuscular fat, subcutaneous fat, skeletal muscle",
+        "Description": "10x scRNA-seq of stromal vascular fractions from intramuscular and subcutaneous fat of adult Angus crossbred steers plus mononuclear fractions from newborn calf longissimus dorsi (n=2 per tissue, 14,802 cells): intramuscular fat carries fewer adipose progenitors and they are adipogenically less committed, and no progenitors were detectable in neonatal muscle (Tan, Lyu & Jiang 2025, *BMC Genomics*)",
+        "Size": "—",
+        "Area of research": "Adipogenesis & marbling"
+      },
+      "links": [
+        "https://doi.org/10.1186/s12864-025-12312-3",
+        "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE305686"
+      ],
+      "topics": [
+        {
+          "slug": "cell-lines-engineering",
+          "label": "Cell Lines & Engineering",
+          "theme": "cell-lines-engineering"
+        },
+        {
+          "slug": "single-cell-atlases",
+          "label": "Single-cell atlases",
+          "theme": "cell-lines-engineering"
+        }
+      ],
+      "subseries": []
+    },
+    {
+      "id": "ds:gse173477",
+      "kind": "inventory",
+      "page": "Cow",
+      "name": "Transcriptome-wide N6-methyladenosine methylome profiling reveals m6A regulation of skeletal myoblast differentiation in cattle",
+      "columns": {
+        "Study": "Transcriptome-wide N6-methyladenosine methylome profiling reveals m6A regulation of skeletal myoblast differentiation in cattle",
+        "Paper": "[DOI](https://doi.org/10.3389/fcell.2021.785380)",
+        "Data": "[`GSE173477`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE173477)",
+        "Type": "m6A-seq (MeRIP-seq) + RNA-seq",
+        "Tissue": "Muscle (myoblasts and myotubes)",
+        "Description": "Paired m6A-seq and RNA-seq of bovine proliferating myoblasts (80% confluence, growth medium) against myotubes differentiated for four days, in triplicate; 1,437 differentially methylated genes and 268 changing at both the methylation and expression level, extending the regulatory picture of differentiation from DNA methylation into RNA modification (Yang, Wang, Ma, Du, Mei & Zan 2021, *Frontiers in Cell and Developmental Biology*)",
+        "Size": "—",
+        "Area of research": "Epitranscriptomic regulation of differentiation"
+      },
+      "links": [
+        "https://doi.org/10.3389/fcell.2021.785380",
+        "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE173477"
+      ],
+      "topics": [
+        {
+          "slug": "cell-lines-engineering",
+          "label": "Cell Lines & Engineering",
+          "theme": "cell-lines-engineering"
+        }
+      ],
+      "subseries": []
+    },
+    {
+      "id": "ds:gse186730",
+      "kind": "inventory",
+      "page": "Cow",
+      "name": "Integrated analysis of mRNA and microRNA co-expressed network for the differentiation of bovine skeletal muscle cells after polyphenol resveratrol treatment",
+      "columns": {
+        "Study": "Integrated analysis of mRNA and microRNA co-expressed network for the differentiation of bovine skeletal muscle cells after polyphenol resveratrol treatment",
+        "Paper": "[DOI](https://doi.org/10.3389/fvets.2021.777477)",
+        "Data": "[`GSE186730`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE186730)",
+        "Type": "RNA-seq + small RNA-seq",
+        "Tissue": "Muscle (primary myoblasts)",
+        "Description": "Primary bovine myoblasts treated with 20 μM resveratrol in differentiation medium for four days against a DMSO control, three cultures per arm, with paired mRNA and miRNA sequencing feeding a co-expression network analysis; a small-molecule perturbation of bovine myogenic differentiation rather than a cultivated-meat process study (Hao, Wang, Yang, Thomsen, Holm, Qu, Huang & Chen 2021, *Frontiers in Veterinary Science*)",
+        "Size": "—",
+        "Area of research": "Small-molecule modulation of differentiation"
+      },
+      "links": [
+        "https://doi.org/10.3389/fvets.2021.777477",
+        "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE186730"
+      ],
+      "topics": [
+        {
+          "slug": "cell-lines-engineering",
+          "label": "Cell Lines & Engineering",
+          "theme": "cell-lines-engineering"
+        }
+      ],
+      "subseries": []
+    },
+    {
       "id": "ds:prjna987844",
       "kind": "inventory",
       "page": "Crustacean",

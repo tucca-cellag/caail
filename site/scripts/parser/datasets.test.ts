@@ -170,17 +170,18 @@ describe('computeDatasetBreakdown — real corpus', () => {
   it('returns the verified ground-truth dataset total', () => {
     // GROUND TRUTH — pinned after the first green run of `pnpm parse`.
     // Bump in lockstep when Datasets/ inventory tables / reference / benchmark
-    // entries change. 233 = 171 inventory rows + 21 curated species-page entries
+    // entries change. 238 = 176 inventory rows + 21 curated species-page entries
     // + 24 reference entries + 17 benchmarks. It was 205 until #156, which folded
     // in the two populations the total had silently omitted, then 226 until
-    // CAAIL-258 promoted 7 GEO subseries that a SuperSeries parent row had hidden.
-    expect(b.total).toBe(233);
+    // CAAIL-258 promoted 7 GEO subseries that a SuperSeries parent row had hidden
+    // and added the 5 bovine deposits that audit surfaced as genuinely absent.
+    expect(b.total).toBe(238);
   });
 
   it('counts the same population the datasets endpoint serves', () => {
     // The reason the total moved. Before #156 these were different populations in both
     // directions, so a consumer comparing them got a number about nothing.
-    expect(b.speciesRows).toBe(171);
+    expect(b.speciesRows).toBe(176);
     expect(b.curatedEntries + b.referenceEntries + b.benchmarkEntries).toBe(62);
   });
 });

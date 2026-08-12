@@ -47,8 +47,8 @@
           "paper": 51,
           "software": 14,
           "database": 38,
-          "dataset": 195,
-          "total": 298
+          "dataset": 200,
+          "total": 303
         },
         "tags": [
           "cell-line-engineering",
@@ -335,8 +335,8 @@
           "paper": 26,
           "software": 0,
           "database": 22,
-          "dataset": 70,
-          "total": 118
+          "dataset": 72,
+          "total": 120
         },
         "tags": []
       },
