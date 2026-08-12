@@ -40,52 +40,60 @@ changed_paths() {
   git diff --name-only "origin/${DEFAULT_BRANCH}...HEAD"
 }
 
-# A path matches one of the CI globs? (POSIX case globbing, not regex.)
-# lint-papers.yml PR/push paths (matrix/reference lint + db:check/db:verify + sync guard):
-# This list DUPLICATES lint-papers.yml's `paths:` and has now drifted THREE times. When
-# editing either one, edit both, and diff them rather than trusting this comment: the
-# previous drift left the generated outputs and the skills out (a PR touching only
-# setup.md was predicted to run no lint job when it runs one), and the latest left out
-# Taxonomy.md, added to the workflow on 2026-08-12.
+# --- CI path filters -------------------------------------------------------
 #
-# Three drifts in one duplicated list is the signal that a comment saying "keep these in
-# sync" documents a risk without mitigating it. The real fix is to derive these matchers
-# from the YAML, or to assert they agree; both are tracked separately rather than bolted
-# on here, because replicating GitHub's glob semantics (root-only '*.md', '**' vs '*') by
-# hand is how a predictor becomes confidently wrong instead of obviously stale.
-matches_lint() {
-  case "$1" in
-    Papers.md|Software.md|Databases.md|OtherResources.md|Taxonomy.md) return 0 ;;
-    CONTRIBUTING.md|CLAUDE.md) return 0 ;;
-    Datasets/*|site/scripts/parser/*|site/scripts/db/*|site/db/*) return 0 ;;
-    # generated outputs, guarded by the sync checks
-    site/public/api/*|site/public/setup.md) return 0 ;;
-    # the query skill, and the installer that setup.md is generated from
-    plugin/skills/*|skills/*) return 0 ;;
-    *) return 1 ;;
+# Each list below is this repo's workflow `paths:` filter, written in GitHub
+# Actions' own notation so the two can be compared MECHANICALLY instead of by
+# eye. `check-ci-paths.py` asserts each list equals its workflow's `paths:`, and
+# runs in test.yml's `hooks` job — so editing a workflow without editing this
+# file now fails CI.
+#
+# That check exists because this duplication drifted three times while carrying
+# a comment warning that it drifts. Two of those drifts made preflight predict
+# no job where one runs (`site/public/setup.md`, then `Taxonomy.md`), and one
+# hid `workers/**` entirely. A comment saying "keep these in sync" documents a
+# risk; it does not mitigate one.
+#
+# `path_matches` implements exactly the three pattern forms these workflows use,
+# and deliberately no more: a literal, a `prefix/**` subtree, and a bare `*.md`,
+# which GitHub scopes to the ROOT level only. That last one is not a detail —
+# it is why every nested canonical directory has to be named, and why both
+# `Taxonomy.md` and `Primers/**` were silently missing.
+LINT_PATHS='Papers.md Software.md Databases.md OtherResources.md Taxonomy.md Datasets/** CONTRIBUTING.md CLAUDE.md site/scripts/parser/** site/scripts/db/** site/db/** site/public/api/** site/public/setup.md plugin/skills/** skills/**'
+TEST_PATHS='site/** workers/** *.md ResearchAreas/** Datasets/** Primers/** .claude/hooks/** .claude/settings.json .claude/skills/caail-pr-wrapup/** .github/workflows/**'
+DEPLOY_PATHS='site/** *.md ResearchAreas/** Datasets/** Primers/**'
+
+# Does $1 (a repo-relative path) match $2 (one GitHub Actions paths pattern)?
+path_matches() {
+  path="$1"; pat="$2"
+  case "$pat" in
+    '*.md') [ "$path" = "${path##*/}" ] && [ "${path%.md}" != "$path" ] ;;
+    */'**') [ "${path#"${pat%/**}"/}" != "$path" ] ;;
+    *)      [ "$path" = "$pat" ] ;;
   esac
 }
-# test.yml PR/push paths (hook guard + Worker config + vitest + Playwright/axe):
-matches_test() {
-  case "$1" in
-    site/*|workers/*|ResearchAreas/*|Datasets/*|Primers/*) return 0 ;;
-    # the two shipped agent guards, and the settings file that registers them
-    .claude/hooks/*|.claude/settings.json) return 0 ;;
-    .github/workflows/test.yml) return 0 ;;
-    *.md) [ "$1" = "${1##*/}" ] && return 0 || return 1 ;;  # root-level *.md only
-    *) return 1 ;;
-  esac
+
+# Iterating the pattern list needs word splitting but NOT pathname expansion:
+# unquoted, the shell would glob `site/**` against the working directory and the
+# loop would compare paths to real filenames instead of to patterns. Measured
+# before this guard was added: 18 of 43 corpus paths changed answer, and it
+# under-reported (`site/package.json` matched, `site/scripts/parser/x.ts` did
+# not), which is the direction that silently predicts "no job will run".
+matches_any() {
+  _p="$1"; _list="$2"
+  case "$-" in *f*) _wasf=1 ;; *) _wasf=0 ;; esac
+  set -f
+  _rc=1
+  for _pat in $_list; do
+    if path_matches "$_p" "$_pat"; then _rc=0; break; fi
+  done
+  [ "$_wasf" = 1 ] || set +f
+  return "$_rc"
 }
-# docs.yml deploy paths (note: '*.md' is ROOT-ONLY in GitHub Actions, so every
-# nested canonical dir has to be named explicitly — Primers/ was missing until
-# 2026-08-12, which meant a Primers-only change deployed nothing):
-matches_deploy() {
-  case "$1" in
-    site/*|ResearchAreas/*|Datasets/*|Primers/*) return 0 ;;
-    *.md) [ "$1" = "${1##*/}" ] && return 0 || return 1 ;;  # root-level *.md only
-    *) return 1 ;;
-  esac
-}
+
+matches_lint()   { matches_any "$1" "$LINT_PATHS"; }
+matches_test()   { matches_any "$1" "$TEST_PATHS"; }
+matches_deploy() { matches_any "$1" "$DEPLOY_PATHS"; }
 
 # Best-effort: map a changed canonical file to the site route to spot-check.
 route_for() {

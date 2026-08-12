@@ -158,13 +158,18 @@ absence of a stale `./X.md` link — so you confirm the *content* shipped, not j
 
 **The workflows are the source of truth; the table below is a snapshot** (taken 2026-08-12) kept only
 so step 4/6 expectations are legible without opening three YAML files. `preflight` computes the real
-answer from `ship-pr.sh`'s own matchers. When the two disagree, the YAML wins and both this table and
-those matchers are the bug — that has happened twice, so read it as a summary, not an authority.
+answer from the `LINT_PATHS` / `TEST_PATHS` / `DEPLOY_PATHS` lists in `ship-pr.sh`.
+
+**Those lists are now asserted against the YAML** by `check-ci-paths.py`, which runs in `test.yml`'s
+`hooks` job and set-compares the two. It also asserts each workflow's own `pull_request` and `push`
+filters agree, since a filter that fires on PRs but not on pushes to main is the same silent gap one
+level down. So the predictors can no longer drift unnoticed, which they did three times. This prose
+table has no such guard — if it disagrees with the YAML, the YAML wins.
 
 | Workflow | Trigger | Paths (snapshot) |
 | --- | --- | --- |
 | `lint-papers.yml` (matrix ↔ ref lint + `db:check`/`db:verify` + sync guards) | **pull_request** + push to main | `Papers.md`, `Software.md`, `Databases.md`, `OtherResources.md`, `Taxonomy.md`, `Datasets/**`, `CONTRIBUTING.md`, `CLAUDE.md`, `site/scripts/parser/**`, `site/scripts/db/**`, `site/db/**`, `site/public/api/**`, `site/public/setup.md`, `plugin/skills/**`, `skills/**` |
-| `test.yml` (hook guard + Worker config + vitest + Playwright/axe) | **pull_request** + push to main | `site/**`, `workers/**`, root `*.md`, `ResearchAreas/**`, `Datasets/**`, `Primers/**`, `.claude/hooks/**`, `.claude/settings.json`, `.github/workflows/test.yml` |
+| `test.yml` (hook guard + CI-paths guard + Worker config + vitest + Playwright/axe) | **pull_request** + push to main | `site/**`, `workers/**`, root `*.md`, `ResearchAreas/**`, `Datasets/**`, `Primers/**`, `.claude/hooks/**`, `.claude/settings.json`, `.claude/skills/caail-pr-wrapup/**`, `.github/workflows/**` |
 | `docs.yml` (build + Lighthouse + deploy) | **push to `main` only** | `site/**`, root `*.md`, `ResearchAreas/**`, `Datasets/**`, `Primers/**` |
 
 Consequences: `test.yml` runs on almost any `site/**` or root-`*.md` PR, so most PRs have at least the
