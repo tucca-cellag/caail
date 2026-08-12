@@ -45,6 +45,7 @@ import { Icon } from 'astro-icon/components';
 import matrix from '../../public/api/matrix.json';
 import topicsApi from '../../public/api/topics.json';
 import papers from '../../public/api/papers.json';
+import datasetsApi from '../../public/api/datasets.json';
 import { licenseTier } from '../lib/licenses';
 import counts from '../content/data/counts.json';
 
@@ -92,10 +93,44 @@ const redistributable = papers.references.filter((r) => {
   return tier === 'permissive' || tier === 'copyleft';
 }).length;
 const withLicence = papers.references.filter((r) => r.license).length;
-/* Four content types, one catalogue. Labelling each population matters here: 345 is every
-   paper entry across all sections, NOT the matrix-eligible subset, and the examples below
-   quote both. */
-const catalogued = counts.papers + counts.software + counts.databases + counts.datasets;
+/* Populations, each labelled by what it counted.
+
+   This used to render one figure: papers + software + databases + datasets, presented as
+   "N curated resources". That sum overstates curation in two directions at once. The paper
+   total is every entry across all six sections, not the matrix-eligible subset, and the
+   dataset total is mostly per-study inventory rows rather than curated entries. Summing
+   four populations that were counted by four different rules produces a number about
+   nothing, and it is the largest number on the band, so it is the one a reader carries away.
+
+   CLAUDE.md states the rule directly: "345 papers" and "papers in the matrix" are different
+   numbers, so label every count with the population it counted. The lede names the parts and
+   no longer offers a total.
+
+   Every figure is read from the same endpoints an agent would read, and the two partitions
+   are asserted below. A hand-typed number beside a machine-derived one is this repo's most
+   expensive recurring defect; the mitigation is to derive it or to fail when the two
+   disagree, and this does both. */
+const primaryPapers = papers.references.filter((r) => r.isPrimary).length;
+const reviewPapers = papers.references.filter((r) => r.section === 'Reviews & Perspectives').length;
+const referenceWorkPapers = papers.references.length - primaryPapers - reviewPapers;
+const curatedDatasets = datasetsApi.entries.length;
+const inventoryRows = datasetsApi.inventory.length;
+
+/* Partition guards. These fire at build time, so a section rename in Papers.md or a new
+   dataset page shape breaks the build instead of quietly reallocating readers between two
+   populations the page names separately. */
+if (primaryPapers + reviewPapers + referenceWorkPapers !== counts.papers) {
+  throw new Error(
+    `AskExamples: paper populations do not partition: ${primaryPapers} primary + ` +
+      `${reviewPapers} reviews + ${referenceWorkPapers} reference-work ≠ ${counts.papers} total`,
+  );
+}
+if (curatedDatasets + inventoryRows !== counts.datasets) {
+  throw new Error(
+    `AskExamples: dataset populations do not partition: ${curatedDatasets} curated + ` +
+      `${inventoryRows} inventory ≠ ${counts.datasets} total`,
+  );
+}
 
 /* Questions are built on cross-cutting themes found by sweeping all 112 entries in GFI's
    solutions database (gfi.org/solutions, 12 pages, cross-checked against its public REST
@@ -221,9 +256,11 @@ const examples = [
     <p class="eyebrow"><span class="bar" aria-hidden="true"></span>What you can ask</p>
     <h2 class="caail-display">Ask something specific</h2>
     <p class="lede">
-      Real questions against the real endpoints, answered from {catalogued} curated resources
-      ({counts.papers} papers, {counts.software} tools, {counts.databases} databases and
-      {counts.datasets} dataset entries), indexed across {matrix.methods.length} AI methods.
+      Real questions against the real endpoints. Behind them: {primaryPapers} primary-research
+      papers in the matrix, plus {reviewPapers} reviews and {referenceWorkPapers} reference-work
+      chapters; {counts.software} tools and {counts.databases} databases; and {curatedDatasets}
+      curated dataset entries over {inventoryRows} per-study deposits. Indexed across
+      {matrix.methods.length} AI methods and {matrix.areas.length} research areas.
     </p>
     <p class="sub">
       These are what the endpoints return, not finished answers; your agent reasons on top of
