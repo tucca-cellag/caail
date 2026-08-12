@@ -3255,13 +3255,15 @@
         "Data": "[`GSE173199`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE173199)",
         "Type": "RNA-seq",
         "Tissue": "Muscle",
-        "Description": "Serum-starvation series (20%→2% FBS) and SFM vs 20% FBS comparison",
+        "Description": "GEO SuperSeries pairing a serum-starvation differentiation timecourse (20%→2% FBS, harvested 0/24/48/72/96 h in biological quadruplicates, [`GSE173198`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE173198)) with a serum-free differentiation comparison against 20% FBS at 0 h and 72 h in triplicate ([`GSE173196`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE173196)); the two arms are deposited separately and neither is reachable from this accession alone",
         "Size": "93.25 Gb",
         "Area of research": "Cultured meat"
       },
       "links": [
         "https://doi.org/10.1038/s43016-021-00419-1",
-        "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE173199"
+        "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE173199",
+        "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE173198",
+        "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE173196"
       ],
       "topics": [
         {
@@ -3573,14 +3575,17 @@
         "Data": "[`GSE262758`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE262758)",
         "Type": "RNA-seq + scRNA-seq + LC-MS proteomics",
         "Tissue": "Muscle",
-        "Description": "Bovine myoblast lines from four muscles (MA, MM, PM, MLL) differentiated under iFRhi or iFRC small-molecule cocktails (forskolin + RepSox ± CHIR99021) vs conventional differentiation media, in 2D and tissue-engineered 3D models; proteomics also at PRIDE [`PXD051019`](https://www.ebi.ac.uk/pride/archive/projects/PXD051019); 11k–19k cells per scRNA-seq dataset",
+        "Description": "Bovine myoblast lines from four muscles (MA, MM, PM, MLL) differentiated under iFRhi or iFRC small-molecule cocktails (forskolin + RepSox ± CHIR99021) vs conventional differentiation media, in 2D and tissue-engineered 3D models; proteomics also at PRIDE [`PXD051019`](https://www.ebi.ac.uk/pride/archive/projects/PXD051019); 11k–19k cells per scRNA-seq dataset; GEO SuperSeries of [`GSE262675`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE262675) (bulk RNA-seq), [`GSE262757`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE262757) (in vitro scRNA-seq) and [`GSE290556`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE290556) (in vivo scRNA-seq)",
         "Size": "—",
         "Area of research": "Cultivated-meat media development"
       },
       "links": [
         "https://doi.org/10.1002/advs.202413998",
         "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE262758",
-        "https://www.ebi.ac.uk/pride/archive/projects/PXD051019"
+        "https://www.ebi.ac.uk/pride/archive/projects/PXD051019",
+        "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE262675",
+        "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE262757",
+        "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE290556"
       ],
       "topics": [
         {
@@ -4294,6 +4299,206 @@
           "slug": "scaffolds-biomaterials",
           "label": "Scaffolds & biomaterials",
           "theme": "scaffolding-biomaterials"
+        }
+      ]
+    },
+    {
+      "id": "ds:gse173198",
+      "kind": "inventory",
+      "page": "Cow",
+      "name": "A serum-free media formulation for cultured meat production supports bovine satellite cell differentiation [Timecourse]",
+      "columns": {
+        "Study": "A serum-free media formulation for cultured meat production supports bovine satellite cell differentiation [Timecourse]",
+        "Paper": "[DOI](https://doi.org/10.1038/s43016-021-00419-1)",
+        "Data": "[`GSE173198`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE173198)",
+        "Type": "RNA-seq",
+        "Tissue": "Muscle",
+        "Description": "Bulk RNA-seq differentiation timecourse: satellite cells switched from 20% FBS growth medium to 2% FBS differentiation medium (serum starvation) and harvested at 0/24/48/72/96 h in biological quadruplicates; 20 libraries. Subseries of [`GSE173199`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE173199)",
+        "Size": "—",
+        "Area of research": "Cultured meat"
+      },
+      "links": [
+        "https://doi.org/10.1038/s43016-021-00419-1",
+        "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE173198",
+        "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE173199"
+      ],
+      "topics": [
+        {
+          "slug": "cell-lines-engineering",
+          "label": "Cell Lines & Engineering",
+          "theme": "cell-lines-engineering"
+        },
+        {
+          "slug": "media-growth-factors",
+          "label": "Media & Growth Factors",
+          "theme": "media-growth-factors"
+        },
+        {
+          "slug": "media-optimization",
+          "label": "Media optimization",
+          "theme": "media-growth-factors"
+        },
+        {
+          "slug": "serum-free-media",
+          "label": "Serum-free media",
+          "theme": "media-growth-factors"
+        }
+      ]
+    },
+    {
+      "id": "ds:gse173196",
+      "kind": "inventory",
+      "page": "Cow",
+      "name": "A serum-free media formulation for cultured meat production supports bovine satellite cell differentiation [SF_Diff]",
+      "columns": {
+        "Study": "A serum-free media formulation for cultured meat production supports bovine satellite cell differentiation [SF_Diff]",
+        "Paper": "[DOI](https://doi.org/10.1038/s43016-021-00419-1)",
+        "Data": "[`GSE173196`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE173196)",
+        "Type": "RNA-seq",
+        "Tissue": "Muscle",
+        "Description": "Bulk RNA-seq of the serum-free arm: growth in 20% FBS medium or serum-free growth medium (SFGM), then 72 h differentiation in 2% FBS medium, serum-free base (SFB), serum-free DMEM/F-12 (SFDM) or DMEM; sampled at 0 h and 72 h in biological triplicates; 18 libraries. Subseries of [`GSE173199`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE173199)",
+        "Size": "—",
+        "Area of research": "Cultured meat"
+      },
+      "links": [
+        "https://doi.org/10.1038/s43016-021-00419-1",
+        "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE173196",
+        "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE173199"
+      ],
+      "topics": [
+        {
+          "slug": "cell-lines-engineering",
+          "label": "Cell Lines & Engineering",
+          "theme": "cell-lines-engineering"
+        },
+        {
+          "slug": "media-growth-factors",
+          "label": "Media & Growth Factors",
+          "theme": "media-growth-factors"
+        },
+        {
+          "slug": "media-optimization",
+          "label": "Media optimization",
+          "theme": "media-growth-factors"
+        },
+        {
+          "slug": "serum-free-media",
+          "label": "Serum-free media",
+          "theme": "media-growth-factors"
+        }
+      ]
+    },
+    {
+      "id": "ds:gse262675",
+      "kind": "inventory",
+      "page": "Cow",
+      "name": "Enhanced Media Optimize Bovine Myogenesis in 2D and 3D Models for Cultivated Meat Applications [RNA-Seq]",
+      "columns": {
+        "Study": "Enhanced Media Optimize Bovine Myogenesis in 2D and 3D Models for Cultivated Meat Applications [RNA-Seq]",
+        "Paper": "[DOI](https://doi.org/10.1002/advs.202413998)",
+        "Data": "[`GSE262675`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE262675)",
+        "Type": "RNA-seq",
+        "Tissue": "Muscle",
+        "Description": "Bulk RNA-seq of myoblast and differentiated-myoblast cultures across two base media (myoblast, iMPC) and three differentiation media (conventional, iFR_hi, iFRC), analysed at day 2 or day 15; 15 libraries. Subseries of [`GSE262758`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE262758)",
+        "Size": "—",
+        "Area of research": "Cultivated-meat media development"
+      },
+      "links": [
+        "https://doi.org/10.1002/advs.202413998",
+        "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE262675",
+        "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE262758"
+      ],
+      "topics": [
+        {
+          "slug": "cell-lines-engineering",
+          "label": "Cell Lines & Engineering",
+          "theme": "cell-lines-engineering"
+        },
+        {
+          "slug": "media-growth-factors",
+          "label": "Media & Growth Factors",
+          "theme": "media-growth-factors"
+        },
+        {
+          "slug": "media-optimization",
+          "label": "Media optimization",
+          "theme": "media-growth-factors"
+        }
+      ]
+    },
+    {
+      "id": "ds:gse262757",
+      "kind": "inventory",
+      "page": "Cow",
+      "name": "Enhanced Media Optimize Bovine Myogenesis in 2D and 3D Models for Cultivated Meat Applications [in vitro scRNA-Seq]",
+      "columns": {
+        "Study": "Enhanced Media Optimize Bovine Myogenesis in 2D and 3D Models for Cultivated Meat Applications [in vitro scRNA-Seq]",
+        "Paper": "[DOI](https://doi.org/10.1002/advs.202413998)",
+        "Data": "[`GSE262757`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE262757)",
+        "Type": "scRNA-seq",
+        "Tissue": "Muscle",
+        "Description": "Single-cell RNA-seq of the same culture panel (myoblast and iMPC base media; conventional, iFR_hi and iFRC differentiation media), analysed at day 2 or day 10; 5 libraries. Subseries of [`GSE262758`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE262758)",
+        "Size": "—",
+        "Area of research": "Cultivated-meat media development"
+      },
+      "links": [
+        "https://doi.org/10.1002/advs.202413998",
+        "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE262757",
+        "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE262758"
+      ],
+      "topics": [
+        {
+          "slug": "cell-lines-engineering",
+          "label": "Cell Lines & Engineering",
+          "theme": "cell-lines-engineering"
+        },
+        {
+          "slug": "media-growth-factors",
+          "label": "Media & Growth Factors",
+          "theme": "media-growth-factors"
+        },
+        {
+          "slug": "media-optimization",
+          "label": "Media optimization",
+          "theme": "media-growth-factors"
+        },
+        {
+          "slug": "single-cell-atlases",
+          "label": "Single-cell atlases",
+          "theme": "cell-lines-engineering"
+        }
+      ]
+    },
+    {
+      "id": "ds:gse290556",
+      "kind": "inventory",
+      "page": "Cow",
+      "name": "Enhanced Media Optimize Bovine Myogenesis in 2D and 3D Models for Cultivated Meat Applications [in vivo scRNA-Seq]",
+      "columns": {
+        "Study": "Enhanced Media Optimize Bovine Myogenesis in 2D and 3D Models for Cultivated Meat Applications [in vivo scRNA-Seq]",
+        "Paper": "[DOI](https://doi.org/10.1002/advs.202413998)",
+        "Data": "[`GSE290556`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE290556)",
+        "Type": "scRNA-seq",
+        "Tissue": "Muscle",
+        "Description": "Single-cell RNA-seq of in vivo bovine skeletal muscle from M. abdominis and M. masseter, mechanically minced, enzymatically dissociated and FACS-sorted for viable cells; 2 libraries, the in vivo reference the cultured panel is compared against. Subseries of [`GSE262758`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE262758)",
+        "Size": "—",
+        "Area of research": "Cultivated-meat media development"
+      },
+      "links": [
+        "https://doi.org/10.1002/advs.202413998",
+        "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE290556",
+        "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE262758"
+      ],
+      "topics": [
+        {
+          "slug": "cell-lines-engineering",
+          "label": "Cell Lines & Engineering",
+          "theme": "cell-lines-engineering"
+        },
+        {
+          "slug": "single-cell-atlases",
+          "label": "Single-cell atlases",
+          "theme": "cell-lines-engineering"
         }
       ]
     },
@@ -6629,13 +6834,15 @@
         "Data": "[`GSE206914`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE206914)",
         "Type": "scRNA-seq + ATAC-seq",
         "Tissue": "Muscle",
-        "Description": "Somites and myotomes at E18, E21, E28 from Tibetan and Duroc×Tibetan pigs",
+        "Description": "Somites and myotomes at E18, E21, E28 from Tibetan and Duroc×Tibetan pigs; GEO SuperSeries of [`GSE206911`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE206911) (scRNA-seq) and [`GSE206913`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE206913) (scATAC-seq)",
         "Size": "599.17 Gb",
         "Area of research": "Skeletal muscle ontogeny"
       },
       "links": [
         "https://doi.org/10.1186/s12915-023-01519-z",
-        "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE206914"
+        "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE206914",
+        "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE206911",
+        "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE206913"
       ],
       "topics": [
         {
@@ -7536,6 +7743,73 @@
           "slug": "sensory-flavor",
           "label": "Sensory & Flavor",
           "theme": "sensory-flavor"
+        }
+      ]
+    },
+    {
+      "id": "ds:gse206911",
+      "kind": "inventory",
+      "page": "Pig",
+      "name": "Integrative single-cell RNA-seq and ATAC-seq analysis of myogenic differentiation in pig [scRNA-seq]",
+      "columns": {
+        "Study": "Integrative single-cell RNA-seq and ATAC-seq analysis of myogenic differentiation in pig [scRNA-seq]",
+        "Paper": "[DOI](https://doi.org/10.1186/s12915-023-01519-z)",
+        "Data": "[`GSE206911`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE206911)",
+        "Type": "scRNA-seq",
+        "Tissue": "Muscle",
+        "Description": "Single-cell RNA-seq of somite tissue at E16, E18 and E21 and myotome tissue at E28 from Tibetan (ZZ) and Duroc×Tibetan (DZ) pigs, each library a pool of five embryos from one sow, collagenase-dissociated; 8 libraries. Subseries of [`GSE206914`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE206914)",
+        "Size": "—",
+        "Area of research": "Skeletal muscle ontogeny"
+      },
+      "links": [
+        "https://doi.org/10.1186/s12915-023-01519-z",
+        "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE206911",
+        "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE206914"
+      ],
+      "topics": [
+        {
+          "slug": "cell-lines-engineering",
+          "label": "Cell Lines & Engineering",
+          "theme": "cell-lines-engineering"
+        },
+        {
+          "slug": "single-cell-atlases",
+          "label": "Single-cell atlases",
+          "theme": "cell-lines-engineering"
+        }
+      ]
+    },
+    {
+      "id": "ds:gse206913",
+      "kind": "inventory",
+      "page": "Pig",
+      "name": "Integrative single-cell RNA-seq and ATAC-seq analysis of myogenic differentiation in pig [scATAC-seq]",
+      "columns": {
+        "Study": "Integrative single-cell RNA-seq and ATAC-seq analysis of myogenic differentiation in pig [scATAC-seq]",
+        "Paper": "[DOI](https://doi.org/10.1186/s12915-023-01519-z)",
+        "Data": "[`GSE206913`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE206913)",
+        "Type": "scATAC-seq",
+        "Tissue": "Muscle",
+        "Description": "Single-cell ATAC-seq of somite tissue at E18 and E21 and myotome tissue at E28 from the same Tibetan (ZZ) and Duroc×Tibetan (DZ) pools of five embryos; 6 libraries, the chromatin counterpart to [`GSE206911`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE206911). Subseries of [`GSE206914`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE206914)",
+        "Size": "—",
+        "Area of research": "Skeletal muscle ontogeny"
+      },
+      "links": [
+        "https://doi.org/10.1186/s12915-023-01519-z",
+        "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE206913",
+        "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE206911",
+        "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE206914"
+      ],
+      "topics": [
+        {
+          "slug": "cell-lines-engineering",
+          "label": "Cell Lines & Engineering",
+          "theme": "cell-lines-engineering"
+        },
+        {
+          "slug": "single-cell-atlases",
+          "label": "Single-cell atlases",
+          "theme": "cell-lines-engineering"
         }
       ]
     },
