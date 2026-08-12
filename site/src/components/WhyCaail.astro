@@ -84,6 +84,19 @@ const cited = cell.refIds.slice(0, 3).map((id) => {
 });
 const withCode = cell.refIds.filter((id) => byId.get(id)?.hasCode).length;
 
+/* The closing line promises every reference id above resolves to an entry with its DOI.
+   That is a property of THIS CELL, not of the corpus: three references carry no DOI. The
+   sentence holds today and would go silently false the moment METHOD/AREA is repointed to
+   a cell containing one of them, which is the one edit this component invites. */
+const citedWithoutDoi = cell.refIds.filter((id) => !byId.get(id)?.doi);
+if (citedWithoutDoi.length > 0) {
+  throw new Error(
+    `WhyCaail: reference(s) ${citedWithoutDoi.join(', ')} in ${METHOD} × ${AREA} carry no DOI, ` +
+      `so the closing line "every reference id above resolves to an entry with its DOI" is ` +
+      `false. Pick a different cell, or rewrite that line.`,
+  );
+}
+
 /* The reference sections, counted separately.
    `papers.references` is SIX sections, not one: primary research, reviews and
    perspectives, and four reference works. Quoting its length as "papers" is the
@@ -195,7 +208,11 @@ const fromIndex = [
   },
   {
     k: 'Read and redistribute are separate fields',
-    v: `Of the ${recorded.length} works with an OpenAlex record, ${readable} are free to read and ${redistributable} carry a licence permitting redistribution`,
+    /* "works" left the reader to guess the population. The lede names three separate ones
+       a paragraph earlier and the bullet above lists four content types, so a figure
+       spanning the first three and none of the last was ambiguous in both directions.
+       It now says which entries it counted. */
+    v: `Of the ${papers.references.length} papers, reviews and reference-work entries, ${recorded.length} have an OpenAlex record: ${readable} are free to read and ${redistributable} carry a licence permitting redistribution`,
   },
   {
     k: 'The same query returns the same rows',
