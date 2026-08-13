@@ -1,0 +1,214 @@
+---
+/**
+ * ReportRoutes — the body of /report/, the entry-anchored correction page.
+ *
+ * WHY A PAGE RATHER THAN A LINK STRAIGHT TO GITHUB
+ * ------------------------------------------------
+ * Sending a card's report link directly to a prefilled GitHub issue is one hop shorter,
+ * and for a reader with an account it is strictly better. But a GitHub account is a real
+ * exclusion for this audience — a bench scientist in cell ag is meaningfully less likely
+ * to hold one than a software reader — and that reader meets a sign-in wall with the
+ * entry id stranded behind it. This page is where the id is shown plainly and every route
+ * carries it, so no reader is turned away holding a correction they cannot deliver.
+ *
+ * WHY THE ID IS RESOLVED IN THE BROWSER
+ * -------------------------------------
+ * The site is static files on GitHub Pages, so `?item=` can only be read client-side.
+ * Three consequences the markup below is built around:
+ *
+ *   1. The query string is attacker-controlled. It is validated against `isItemId` and
+ *      then assigned via `textContent` / `href` — never `innerHTML` — so a hostile value
+ *      cannot become markup even if the grammar were later loosened.
+ *   2. With JavaScript off, nothing resolves. So the page renders the UNANCHORED routes
+ *      server-side and the script upgrades them; a no-JS reader gets a working, honest
+ *      page rather than an empty one.
+ *   3. Cloudflare Web Analytics discards query strings, so page views here are countable
+ *      in total but not per entry. The per-entry signal comes from the existing
+ *      outbound-click event, which keeps the destination URL.
+ */
+import { COMMUNITY_PATH } from '../lib/community';
+import { CORRECTION_EMAIL, correctionIssueUrl, correctionMailto } from '../lib/report';
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+// Unanchored fallbacks. The script replaces both when a valid `?item=` is present.
+const issueUrl = correctionIssueUrl(null);
+const mailto = correctionMailto(null);
+---
+
+<div class="rp">
+  {/* Identified-entry banner. Hidden until the script validates an id, so a reader who
+      lands here with no query string, or with a malformed one, never sees an empty slot. */}
+  <p class="rp-id" id="caail-report-id" hidden>
+    <span class="rp-id-label">This report is about entry</span>
+    <code class="rp-id-value" id="caail-report-id-value"></code>
+    <button class="rp-copy" id="caail-report-copy" type="button" hidden>Copy</button>
+    {/* Announces the copy result. Present from first render so the announcement is not
+        the insertion itself, which some screen readers drop. */}
+    <span class="rp-copy-status" id="caail-report-copy-status" role="status" aria-live="polite"></span>
+  </p>
+
+  <p class="rp-none" id="caail-report-none">
+    No entry is identified in this address. Every route below still works, but a correction
+    is far quicker to act on when it names the entry, so it is worth going back to the entry
+    and using its own <span class="rp-nowrap">Report an issue</span> link.
+  </p>
+
+  <h2 id="how-to-report">How to report it</h2>
+
+  <p>
+    Pick whichever route you already have an account for. All three reach the same person,
+    and all three carry the entry id.
+  </p>
+
+  <ul class="rp-routes">
+    <li>
+      <a id="caail-report-github" href={issueUrl}>Open a correction on GitHub</a>
+      <span class="rp-note">
+        Needs a GitHub account. The form is prefilled with the entry id, and the report,
+        the discussion and the eventual fix all end up in one public place with a permanent
+        link.
+      </span>
+    </li>
+    <li>
+      <a id="caail-report-email" href={mailto}>Send an email</a>
+      <span class="rp-note">
+        No account needed. Goes to <code>{CORRECTION_EMAIL}</code>, with the entry id already
+        in the subject line.
+      </span>
+    </li>
+    <li>
+      <a href={`${base}${COMMUNITY_PATH}`}>Say so in Slack</a>
+      <span class="rp-note">
+        No GitHub account needed. Paste the entry id into your message so a curator knows
+        which entry you mean.
+      </span>
+    </li>
+  </ul>
+
+  <h2 id="what-is-useful">What is useful to say</h2>
+
+  <p>
+    What is wrong, what it should say instead, and where you are reading that from. The last
+    of those is the one that saves the most time: a curator has to find the source before
+    changing anything, so a pointer to the paper's methods section, the dataset's own
+    documentation, or the repository's licence file turns a report into a fix.
+  </p>
+
+  <p>
+    You do not need to be sure. Reports are welcome whether or not they hold up, and an entry
+    that survives being challenged is worth as much to us as one that gets corrected.
+  </p>
+
+  <h2 id="what-happens-next">What happens next</h2>
+
+  <p>
+    A curator checks the report against the source and, where it holds up, corrects the entry
+    through the library's authoring backend. We do not promise a turnaround time: the review
+    path runs through one person, and a schedule we cannot keep is worse than none.
+  </p>
+
+  <p>
+    CAAIL's curation is openly in progress. It indexes a curated subset rather than a census
+    and has not measured its own recall, so a reader who knows a subfield well is often the
+    first to notice a specific entry is wrong. That is the signal this page exists to catch.
+  </p>
+</div>
+
+<script>
+  import { isItemId, correctionIssueUrl, correctionMailto } from '../lib/report';
+
+  const raw = new URLSearchParams(window.location.search).get('item');
+  const id = isItemId(raw) ? raw : null;
+
+  const banner = document.getElementById('caail-report-id');
+  const value = document.getElementById('caail-report-id-value');
+  const none = document.getElementById('caail-report-none');
+  const gh = document.getElementById('caail-report-github') as HTMLAnchorElement | null;
+  const mail = document.getElementById('caail-report-email') as HTMLAnchorElement | null;
+  const copy = document.getElementById('caail-report-copy') as HTMLButtonElement | null;
+  const status = document.getElementById('caail-report-copy-status');
+
+  if (id) {
+    // textContent, never innerHTML: `id` has passed the grammar check, and this keeps it
+    // inert regardless of what that grammar is later widened to admit.
+    if (value) value.textContent = id;
+    if (banner) banner.hidden = false;
+    if (none) none.hidden = true;
+    if (gh) gh.href = correctionIssueUrl(id);
+    if (mail) mail.href = correctionMailto(id);
+
+    // The copy button is pure enhancement — the id is selectable text without it — so it
+    // stays hidden where the Clipboard API is unavailable rather than failing on click.
+    if (copy && navigator.clipboard) {
+      copy.hidden = false;
+      copy.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(id);
+          if (status) status.textContent = 'Entry id copied.';
+        } catch {
+          if (status) status.textContent = 'Could not copy. Select the id and copy it manually.';
+        }
+      });
+    }
+  }
+</script>
+
+<style>
+  /* `hidden` is how this page switches between its two states, and a class that sets
+     `display` silently defeats it: a class selector outranks the user-agent's
+     `[hidden] { display: none }`, so `.rp-id`'s flex below would render the banner even
+     while the attribute is set. Restated here at higher specificity than any rule in
+     this file so every hideable element in the page obeys the attribute. */
+  .rp [hidden] {
+    display: none;
+  }
+
+  .rp-id {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 0.8rem;
+    background: var(--caail-surface);
+    border: 1px solid var(--caail-border);
+    border-radius: 0.5rem;
+  }
+  .rp-id-label {
+    color: var(--caail-muted);
+    font-size: 0.9rem;
+  }
+  .rp-id-value {
+    font-weight: 600;
+  }
+  .rp-copy {
+    font: inherit;
+    font-size: 0.8rem;
+    padding: 0.15rem 0.6rem;
+    min-height: 1.5rem;
+    color: var(--caail-muted);
+    background: var(--caail-bg);
+    border: 1px solid var(--caail-border);
+    border-radius: 0.35rem;
+    cursor: pointer;
+  }
+  .rp-copy:hover,
+  .rp-copy:focus-visible {
+    color: var(--caail-link);
+    border-color: var(--caail-link);
+  }
+  .rp-copy-status {
+    font-size: 0.8rem;
+    color: var(--caail-muted);
+  }
+  .rp-nowrap {
+    white-space: nowrap;
+  }
+  .rp-routes > li {
+    margin-block: 0.75rem;
+  }
+  .rp-note {
+    display: block;
+    color: var(--caail-muted);
+    font-size: 0.9rem;
+  }
+</style>

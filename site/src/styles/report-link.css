@@ -1,0 +1,50 @@
+/* report-link.css — the per-card "report an issue with this entry" link on Papers,
+   Software, Databases, and curated Dataset cards. Global so both the ReportLink
+   component and the raw-HTML dataset twin (dataset-cards remark) render identically.
+
+   Deliberately the quietest control on a card, and quieter than the citation badge
+   beside it: it is an escape hatch for the reader who already thinks something is
+   wrong, not a call to action, and it repeats on every card in a long list. It stays
+   muted and underline-free until hover or keyboard focus, at which point it takes the
+   link colour and an underline so it is unmistakably interactive.
+
+   No opacity/visibility trick hides it until hover — a control a keyboard or
+   screen-reader user cannot find is not an accessible control. */
+
+.report-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  flex: none;
+  font-size: 0.66rem;
+  font-weight: 500;
+  line-height: 1.5;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  color: var(--caail-muted);
+  text-decoration: none;
+  /* Keeps the tap target at the 24px AA minimum without inflating the visual box. */
+  padding: 0.25rem 0;
+  min-height: 1.5rem;
+}
+
+/* The flag glyph, decorative: the accessible name already says "Report an issue with X". */
+.report-link::before {
+  content: '⚑';
+  font-size: 0.9em;
+  line-height: 1;
+}
+
+.report-link:hover,
+.report-link:focus-visible {
+  color: var(--caail-link);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+/* Dataset cards get the link on its own trailing row, since the raw-HTML twin has no
+   flex meta row to sit in. `.not-content` keeps Starlight's prose-flow margins off it
+   (the #67 trap), so the margin is set here rather than inherited from the article. */
+.ds-card .report-link {
+  margin-top: 0.4rem;
+}
