@@ -856,6 +856,9 @@ export const ApiManifestSchema = z.strictObject({
     matrixTotalCells: z.number().int().nonnegative(),
     matrixPopulatedCells: z.number().int().nonnegative(),
     matrixEmptyCells: z.number().int().nonnegative(),
+    software: z.number().int().nonnegative(),
+    databases: z.number().int().nonnegative(),
+    catalogTotal: z.number().int().nonnegative(),
     datasetsCurated: z.number().int().nonnegative(),
     datasetsInventoryRows: z.number().int().nonnegative(),
     /** the two above, which are disjoint and exhaustive — == the library total */
@@ -872,6 +875,77 @@ export const ApiPapersSchema = PapersDataSchema.extend({
 export const ApiCatalogSchema = CatalogSchema.extend({
   corpusDate: CorpusDateSchema,
 }).strict();
+
+/* ---------------------------------------------------------------------------
+   The compact indexes.
+
+   `papers.json` is 554 KB served and `catalog.json` 576 KB. Both are correct and
+   complete, and both are past what a fetch tool that converts a page to text and
+   summarises it will carry — which is the common shape of an agent's only HTTP tool.
+   The failure is not an error. Two agents given nothing but the published skill were
+   measured reporting "No matches found" for terms that are in the corpus, "Total
+   database entries: 0" against 150, and a named section as absent when it exists.
+   A confident false negative from a complete endpoint is worse than a 404.
+
+   So each large endpoint gains a small sibling carrying one row per item: enough to
+   answer "what is indexed, how is it filed, and which full record do I now want",
+   and nothing whose absence changes an answer. Measured against the live corpus,
+   84 KB and 49 KB against 554 KB and 576 KB.
+
+   What is deliberately NOT here, because each is what made the parent large:
+   `raw` (102 KB of formatted citations), `authors`/`authorsText` (72 KB — the index
+   carries `firstAuthor`, which is what a citation label needs), `topics` (44 KB, and
+   already inverted in topics.json, which is the endpoint for subject questions), and
+   the catalog's `summary`/`summaryHtml` (329 KB, the same prose twice).
+
+   These are additive. The full endpoints are unchanged, and an agent that can read
+   them should still prefer them. */
+
+/** One reference, reduced to what selects it. */
+export const ApiPaperIndexRowSchema = z.strictObject({
+  id: z.number().int(),
+  title: z.string(),
+  year: z.number().int().nullable(),
+  /** Enough for an author-year label; the full list is in papers.json. */
+  firstAuthor: z.string().nullable(),
+  section: z.string(),
+  /** True only for the matrix-eligible population. See the note on the endpoint. */
+  isPrimary: z.boolean(),
+  methods: z.array(z.string()),
+  areas: z.array(z.string()),
+  doi: z.string().nullable(),
+  hasCode: z.boolean(),
+  hasData: z.boolean(),
+});
+
+export const ApiPapersIndexSchema = z.strictObject({
+  corpusDate: CorpusDateSchema,
+  /** Stated before the rows so it survives a truncation that eats the tail. */
+  count: z.number().int(),
+  scopeNote: z.string(),
+  truncationNote: z.string(),
+  /** States the trap this endpoint exists to make visible. Prose, so it reaches an agent. */
+  matrixNote: z.string(),
+  references: z.array(ApiPaperIndexRowSchema),
+});
+
+/** One catalogue item, reduced to what selects it. */
+export const ApiCatalogIndexRowSchema = z.strictObject({
+  slug: z.string(),
+  name: z.string(),
+  kind: z.enum(['software', 'database']),
+  group: z.string(),
+  url: z.string().nullable(),
+  doi: z.string().nullable(),
+  tier: z.string().nullable(),
+});
+
+export const ApiCatalogIndexSchema = z.strictObject({
+  corpusDate: CorpusDateSchema,
+  count: z.number().int(),
+  truncationNote: z.string(),
+  entries: z.array(ApiCatalogIndexRowSchema),
+});
 
 export const ApiDatasetsSchema = DatasetsDataSchema.extend({
   inventory: z.array(DatasetInventoryRowSchema),

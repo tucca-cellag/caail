@@ -24,11 +24,15 @@ import type { ValidateFunction } from 'ajv';
 import { z } from 'zod';
 
 import {
+  ApiCatalogIndexRowSchema,
+  ApiCatalogIndexSchema,
   ApiCatalogSchema,
   ApiDatasetsSchema,
   ApiManifestSchema,
   ApiMatrixCellSchema,
   ApiMatrixSchema,
+  ApiPaperIndexRowSchema,
+  ApiPapersIndexSchema,
   ApiPapersSchema,
   ApiTaxonomySchema,
   ApiTopicIndexEntrySchema,
@@ -102,20 +106,51 @@ export const API_ENDPOINTS: readonly ApiEndpointSpec[] = [
       'absence in this corpus is not absence in the literature.',
   },
   {
+    file: 'papers-index.json',
+    id: 'PapersIndex',
+    schema: ApiPapersIndexSchema,
+    summary: 'Every reference, one compact row each',
+    description:
+      'Prefer this over papers.json unless you need a full record. One row per reference — ' +
+      'id, title, year, first author, section, methods, areas, DOI, and whether code or data ' +
+      'is linked — at roughly a sixth the size, because a fetch tool that converts a page to ' +
+      'text and summarises it truncates the full endpoint and then answers confidently from ' +
+      'the part it kept. Use this to decide WHICH references you want, then fetch papers.json ' +
+      'for their full records. Carries `matrixNote`: a reference with empty `methods` and ' +
+      '`areas` is indexed but sits in no matrix cell, so the matrix alone will not find it.',
+  },
+  {
     file: 'papers.json',
     id: 'Papers',
     schema: ApiPapersSchema,
-    summary: 'Every reference',
+    summary: 'Every reference, in full',
     description:
       'DOI, code URL, data URL, topics, license and citation count per reference. Spans ' +
-      'six sections; only References is matrix-eligible, so say which population you counted.',
+      'six sections; only References is matrix-eligible, so say which population you counted. ' +
+      'This file is large: if your fetch summarises rather than returning bytes, it may be ' +
+      'silently truncated, and a "not found" from it is not evidence of absence. Use ' +
+      'papers-index.json to enumerate, and come here for the records you selected.',
+  },
+  {
+    file: 'catalog-index.json',
+    id: 'CatalogIndex',
+    schema: ApiCatalogIndexSchema,
+    summary: 'Every tool and database, one compact row each',
+    description:
+      'Prefer this over catalog.json unless you need the summaries. One row per item — slug, ' +
+      'name, kind, application-area group, URL, DOI and license tier — at roughly a tenth the ' +
+      'size, since two thirds of catalog.json is each summary carried twice, as Markdown and ' +
+      'as HTML. Enumerate here, then fetch catalog.json for the few summaries you want.',
   },
   {
     file: 'catalog.json',
     id: 'Catalog',
     schema: ApiCatalogSchema,
-    summary: 'Software and databases',
-    description: 'Open-source tools and query/lookup resources, with topic, license tier and DOI.',
+    summary: 'Software and databases, in full',
+    description:
+      'Open-source tools and query/lookup resources, with topic, license tier and DOI. Large, ' +
+      'for the same reason and with the same caveat as papers.json: enumerate with ' +
+      'catalog-index.json and fetch this for the summaries you actually need.',
   },
   {
     file: 'datasets.json',
@@ -260,7 +295,9 @@ const SHARED_SCHEMAS: ReadonlyArray<readonly [string, z.ZodType]> = [
   ['MatrixCell', ApiMatrixCellSchema],
   ['Cell', CellSchema],
   ['Reference', ReferenceSchema],
+  ['PaperIndexRow', ApiPaperIndexRowSchema],
   ['CatalogEntry', CatalogEntrySchema],
+  ['CatalogIndexRow', ApiCatalogIndexRowSchema],
   ['DatasetEntry', DatasetEntrySchema],
   ['DatasetInventoryRow', DatasetInventoryRowSchema],
 ];
