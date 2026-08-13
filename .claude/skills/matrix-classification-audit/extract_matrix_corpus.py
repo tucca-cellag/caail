@@ -278,9 +278,21 @@ def extract_methods(fulltext):
 # ---------------------------------------------------------------------------
 
 def _norm_url(url):
-    """Normalize a URL for fuzzy join: lowercase, drop scheme + trailing slash."""
+    """Normalize a URL for fuzzy join: lowercase, drop scheme, fragment, trailing slash.
+
+    The fragment goes because it addresses a position *within* a resource rather
+    than a different resource. Zotero records the URL as captured, so saving an
+    OpenReview page from a comment anchor stores `…forum?id=X#discussion` while
+    `Papers.md` cites `…forum?id=X`, and the join then sees two different items.
+
+    That is not hypothetical: it hid ref 52 for as long as anyone had looked. The
+    paper was in the library with a PDF attached and 63,880 characters indexed,
+    and every report said it was missing, because `has_fulltext` answers "can the
+    matcher reach it" and gets read as "does it exist".
+    """
     u = (url or "").strip().lower()
     u = re.sub(r"^https?://", "", u)
+    u = u.split("#", 1)[0]
     return u.rstrip("/")
 
 

@@ -25,6 +25,7 @@ ingest is **stdlib-only and zero-token**.
 | `extract_accessions.py` | Pulls deposit accessions and code repos out of each paper's *bounded* availability statement, and labels each one deposit / reuse / unclear. Being inside an availability statement is not enough to call something a deposit. |
 | `fetch_accession_citations.py` | **The only networked script here.** Asks each registry which paper its record belongs to, so the label above rests on a fact rather than a sentence. Writes a cache the extractor then reads offline. |
 | `extract_accessions.test.py` | Guards the pure half of that chain: accession patterns, sentence cues, title joins, cache schema. Needs no corpus and no network, so CI runs it. |
+| `norm_url.test.py` | Guards `_norm_url`, the join between a `Papers.md` ref and its Zotero item. Fragments are stripped and query strings are not, which is the difference between finding ref 52 and reporting a paper you already hold as missing. No corpus, no network. |
 | `testdata/make_fixtures.py` | Regenerates the test fixtures from the ingest output. |
 | `prefilter_corpus.py` | Deterministic pass that auto-clears lexically-obvious placements and emits the residual needing human judgment. Never auto-clears deep-learning / agent / foundation-model rows. |
 | `skim_to_audit_ids.py` | Glue that validates skim batches and emits a deduped id list. Only useful with the retired workflow. |
