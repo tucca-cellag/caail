@@ -284,6 +284,7 @@ const vocabJson = JSON.stringify(vocabularies).replace(/</g, '\\u003c');
   // different bounding at the point of input is how the two would drift.
   // `normaliseDoi` stays out for the same reason: composeBody normalises.
   import {
+    DOI_MAX_LENGTH,
     NOTE_MAX_LENGTH,
     boundNote,
     collapseNote,
@@ -616,7 +617,12 @@ const vocabJson = JSON.stringify(vocabularies).replace(/</g, '\\u003c');
       // Bounded at the point of entry as well as in the shape check, so a paste of a whole
       // article body cannot sit in the field looking like a pending answer. The value is
       // still re-checked in composeBody: this is the affordance, not the guarantee.
-      input.maxLength = 200;
+      //
+      // The constant, not a literal 200. The note field beside it already imports its cap;
+      // typing this one out put a hand-written number next to the derived one it has to
+      // agree with, which is the defect this branch spent two rounds removing from other
+      // places. Raise the cap in the lib and this follows.
+      input.maxLength = DOI_MAX_LENGTH;
       input.value = answers.doi;
       input.setAttribute('aria-describedby', 'caail-f-doi-help caail-f-doi-err');
 

@@ -339,7 +339,7 @@ const DOI_RE = /^10\.\d{4,9}\/[^\s?#]+$/;
  * mailto and GitHub URL. This module's header states the length rule; it was applied to
  * the note and not here.
  */
-const DOI_MAX_LENGTH = 200;
+export const DOI_MAX_LENGTH = 200;
 
 /**
  * Normalise the ways a reader will paste a DOI into the bare `10.x/…` form.
