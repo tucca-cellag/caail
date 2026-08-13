@@ -64,9 +64,12 @@ export const DEFAULT_OUT_DIR: string = fileURLToPath(
 /**
  * Where the agent-facing static API is emitted. Under `public/`, so Astro copies it
  * verbatim into the deploy and every endpoint is live at the same moment the site is.
- * A generated artifact like graph.json, so it is gitignored rather than committed:
- * committing ~1 MB of derived JSON on every corpus change would be pure churn, and the
- * canonical NDJSON in `site/db/ndjson/` is already the committed fallback.
+ *
+ * Generated, but COMMITTED, unlike graph.json — every file under `site/public/api/` is
+ * tracked, and none is gitignored. So a corpus change has to be parsed and the result
+ * committed with it. `lint-papers.yml`'s "Agent API ↔ corpus sync guard" re-runs `parse`
+ * and fails on any diff, which is what keeps the committed endpoints and their committed
+ * `openapi.json` schema describing the same thing.
  */
 export const DEFAULT_API_DIR: string = fileURLToPath(
   new URL('../../public/api/', import.meta.url),

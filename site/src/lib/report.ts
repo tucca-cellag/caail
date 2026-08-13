@@ -14,8 +14,13 @@
  * -------------------------------------------
  * `/report/` is a static page on GitHub Pages, so it reads `?item=` in the browser:
  * an attacker controls that string. {@link isItemId} is the gate, and it is
- * deliberately narrow — the shape below matches all 882 ids committed to
- * `site/db/ndjson/items.ndjson` and nothing else. Callers that render an id must
+ * deliberately narrow — the shape below matches every non-`topic:` id committed to
+ * `site/db/ndjson/items.ndjson` and nothing else. `topic:` ids are rejected on
+ * purpose: a theme is not a reportable entry. (No count is written here. `report.test.ts`
+ * derives both populations from that file, so a figure in this comment would be one more
+ * hand-typed number beside a derived one, and the way it would fail is someone reading a
+ * total, counting the rejected ids as missing, and widening the grammar to "fix" it.)
+ * Callers that render an id must
  * still assign it through `textContent` / `href` rather than `innerHTML`; validation
  * is the belt, that is the braces.
  */

@@ -26,11 +26,24 @@ test('with no ?item= the page is still usable and says no entry is identified', 
   expect(href).not.toContain('item=');
 });
 
+test('the no-entry copy covers the cases that have no card link to follow', async ({ page }) => {
+  // Inventory rows are 164 of the 226 dataset items and are deliberately never carded, so
+  // most of the dataset corpus reaches this page with no id and no link it could have
+  // followed. Telling that reader to go back and find one is a dead end.
+  await page.goto('./report/');
+  const cases = page.locator('#caail-report-none-cases');
+  await expect(cases).toBeVisible();
+  await expect(cases).toContainText('Complete data inventory');
+  await expect(cases).toContainText('accession');
+});
+
 test('a valid ?item= is shown and threaded into the GitHub and email routes', async ({ page }) => {
   await page.goto('./report/?item=paper:214');
   await expect(page.locator('#caail-report-id')).toBeVisible();
   await expect(page.locator('#caail-report-id-value')).toHaveText('paper:214');
-  await expect(page.locator('#caail-report-none')).toBeHidden();
+  // Every no-id paragraph hides, not just the first — they are selected as a group.
+  await expect(page.locator('.rp-none')).toHaveCount(2);
+  for (const el of await page.locator('.rp-none').all()) await expect(el).toBeHidden();
 
   const gh = new URL((await page.locator(GITHUB_LINK).getAttribute('href'))!);
   expect(gh.host).toBe('github.com');

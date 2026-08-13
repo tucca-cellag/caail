@@ -47,16 +47,25 @@ const mailto = correctionMailto(null);
     <span class="rp-copy-status" id="caail-report-copy-status" role="status" aria-live="polite"></span>
   </p>
 
-  {/* Reached with no id from two quite different places: someone who navigated here
-      directly, and someone following the homepage topics band, whose complaint is about a
-      whole subject theme and has no single entry behind it. So this says what the id buys
-      and where to find one, rather than reading as a step the reader got wrong. */}
+  {/* Reached with no id from three quite different places: someone who navigated here
+      directly; someone following the homepage topics band, whose complaint is about a
+      whole subject theme and has no single entry behind it; and someone reading a dataset
+      page's inventory table, whose rows carry ids but are deliberately never carded, so
+      there is no link for them to have followed. That last group is not a rounding error
+      — inventory rows are most of the dataset corpus — and telling them to go back and
+      find a link they will never find is exactly the dead end this page exists to avoid.
+      So this says what the id buys, where to find one, and what to do when there is none. */}
   <p class="rp-none" id="caail-report-none">
     Every route below works as it is. If your report is about one entry, though, it is much
     quicker to act on when it names that entry: entry cards on the Papers, Software,
     Databases and Datasets pages carry their own
     <span class="rp-nowrap">Report an issue</span> link, which brings the id here with it.
-    Reports about a whole subject theme, or about the library as a whole, need no id.
+  </p>
+  <p class="rp-none" id="caail-report-none-cases">
+    Two things have no such link, and need none. Rows in a dataset page's
+    <em>Complete data inventory</em> table are listed rather than carded, so quote the
+    accession and say which page you saw it on. Reports about a whole subject theme, or
+    about the library as a whole, are not about a single entry at all.
   </p>
 
   <h2 id="how-to-report">How to report it</h2>
@@ -128,7 +137,8 @@ const mailto = correctionMailto(null);
 
   const banner = document.getElementById('caail-report-id');
   const value = document.getElementById('caail-report-id-value');
-  const none = document.getElementById('caail-report-none');
+  // Both no-id paragraphs, so neither is left behind when an entry resolves.
+  const none = document.querySelectorAll('.rp-none');
   const gh = document.getElementById('caail-report-github') as HTMLAnchorElement | null;
   const mail = document.getElementById('caail-report-email') as HTMLAnchorElement | null;
   const copy = document.getElementById('caail-report-copy') as HTMLButtonElement | null;
@@ -139,7 +149,7 @@ const mailto = correctionMailto(null);
     // inert regardless of what that grammar is later widened to admit.
     if (value) value.textContent = id;
     if (banner) banner.hidden = false;
-    if (none) none.hidden = true;
+    none.forEach((el) => { (el as HTMLElement).hidden = true; });
     if (gh) gh.href = correctionIssueUrl(id);
     if (mail) mail.href = correctionMailto(id);
 
