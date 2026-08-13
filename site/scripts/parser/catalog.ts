@@ -20,7 +20,7 @@ import type { Root, RootContent, Heading, Link, Paragraph } from 'mdast';
 
 import { parseFile } from './markdown.js';
 import { rewriteCaailLinks } from '../remark/rewrite-caail-links.js';
-import { catalogTopicLookup } from './topics.js';
+import { catalogTopicLookup, catalogItemIdLookup } from './topics.js';
 import { catalogLicenseLookup } from './licenses.js';
 import { catalogCitationLookup, loadCitedByCounts } from './citation-counts.js';
 import { CatalogSchema, type Catalog, type CatalogEntry } from './types.js';
@@ -221,6 +221,7 @@ export function buildCatalogModel(
   databasesPath: string = DATABASES_PATH,
 ): Catalog {
   const lookup = catalogTopicLookup();
+  const idLookup = catalogItemIdLookup();
   const licenseLookup = catalogLicenseLookup();
   const citeLookup = catalogCitationLookup(loadCitedByCounts());
   // Order-independent content join on (type, url, name) — url alone isn't unique (two
@@ -229,6 +230,7 @@ export function buildCatalogModel(
   const attach = (entries: CatalogEntry[], type: 'software' | 'database') =>
     entries.map((e) => ({
       ...e,
+      itemId: idLookup(type, e.url, e.name),
       topics: lookup(type, e.url, e.name),
       ...licenseLookup(type, e.url),
       ...citeLookup(type, e.url),

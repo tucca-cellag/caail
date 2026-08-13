@@ -2,6 +2,7 @@
   "software": [
     {
       "slug": "alphafold",
+      "itemId": "sw:alphafold",
       "name": "AlphaFold",
       "url": "https://github.com/google-deepmind/alphafold",
       "group": "Media Optimization & Cell Line Engineering",
@@ -37,6 +38,7 @@
     },
     {
       "slug": "protein-language-models",
+      "itemId": "sw:protein-language-models",
       "name": "Protein Language Models",
       "url": "https://github.com/ISYSLAB-HUST/Protein-Language-Models",
       "group": "Media Optimization & Cell Line Engineering",
@@ -70,6 +72,7 @@
     },
     {
       "slug": "foldseek",
+      "itemId": "sw:foldseek",
       "name": "foldseek",
       "url": "https://github.com/steineggerlab/foldseek",
       "group": "Media Optimization & Cell Line Engineering",
@@ -105,6 +108,7 @@
     },
     {
       "slug": "amii-cell-ag-tools",
+      "itemId": "sw:amii-cell-ag-tools",
       "name": "amii-cell-ag-tools",
       "url": "https://github.com/Amii-Applied-AI/amii-cell-ag-tools",
       "group": "Media Optimization & Cell Line Engineering",
@@ -138,6 +142,7 @@
     },
     {
       "slug": "esmfold",
+      "itemId": "sw:esmfold",
       "name": "ESMFold",
       "url": "https://github.com/facebookresearch/esm",
       "group": "Media Optimization & Cell Line Engineering",
@@ -173,6 +178,7 @@
     },
     {
       "slug": "colabfold",
+      "itemId": "sw:colabfold",
       "name": "ColabFold",
       "url": "https://github.com/sokrypton/ColabFold",
       "group": "Media Optimization & Cell Line Engineering",
@@ -208,6 +214,7 @@
     },
     {
       "slug": "omegafold",
+      "itemId": "sw:omegafold",
       "name": "OmegaFold",
       "url": "https://github.com/HeliXonProtein/OmegaFold",
       "group": "Media Optimization & Cell Line Engineering",
@@ -243,6 +250,7 @@
     },
     {
       "slug": "rfdiffusion",
+      "itemId": "sw:rfdiffusion",
       "name": "RFdiffusion",
       "url": "https://github.com/RosettaCommons/RFdiffusion",
       "group": "Media Optimization & Cell Line Engineering",
@@ -278,6 +286,7 @@
     },
     {
       "slug": "proteinmpnn",
+      "itemId": "sw:proteinmpnn",
       "name": "ProteinMPNN",
       "url": "https://github.com/dauparas/ProteinMPNN",
       "group": "Media Optimization & Cell Line Engineering",
@@ -313,6 +322,7 @@
     },
     {
       "slug": "evodiff",
+      "itemId": "sw:evodiff",
       "name": "EvoDiff",
       "url": "https://github.com/microsoft/evodiff",
       "group": "Media Optimization & Cell Line Engineering",
@@ -348,6 +358,7 @@
     },
     {
       "slug": "boltz",
+      "itemId": "sw:boltz",
       "name": "Boltz",
       "url": "https://github.com/jwohlwend/boltz",
       "group": "Media Optimization & Cell Line Engineering",
@@ -383,6 +394,7 @@
     },
     {
       "slug": "chai-1",
+      "itemId": "sw:chai-1",
       "name": "Chai-1",
       "url": "https://github.com/chaidiscovery/chai-lab",
       "group": "Media Optimization & Cell Line Engineering",
@@ -418,6 +430,7 @@
     },
     {
       "slug": "igfold",
+      "itemId": "sw:igfold",
       "name": "IgFold",
       "url": "https://github.com/Graylab/IgFold",
       "group": "Media Optimization & Cell Line Engineering",
@@ -453,6 +466,7 @@
     },
     {
       "slug": "ablang",
+      "itemId": "sw:ablang",
       "name": "AbLang",
       "url": "https://github.com/oxpig/AbLang",
       "group": "Media Optimization & Cell Line Engineering",
@@ -488,6 +502,7 @@
     },
     {
       "slug": "botorch",
+      "itemId": "sw:botorch",
       "name": "BoTorch",
       "url": "https://github.com/meta-pytorch/botorch",
       "group": "Media Optimization & Cell Line Engineering",
@@ -513,6 +528,7 @@
     },
     {
       "slug": "ax",
+      "itemId": "sw:ax",
       "name": "Ax",
       "url": "https://github.com/facebook/Ax",
       "group": "Media Optimization & Cell Line Engineering",
@@ -536,6 +552,7 @@
     },
     {
       "slug": "cellculturebayesianoptimization",
+      "itemId": "sw:cellculturebayesianoptimization",
       "name": "CellCultureBayesianOptimization",
       "url": "https://github.com/NHarini-1995/CellCultureBayesianOptimization",
       "group": "Media Optimization & Cell Line Engineering",
@@ -561,6 +578,7 @@
     },
     {
       "slug": "openfoam",
+      "itemId": "sw:openfoam",
       "name": "OpenFOAM",
       "url": "https://www.openfoam.com/",
       "group": "Bioprocess Modeling & Scaling",
@@ -591,6 +609,7 @@
     },
     {
       "slug": "compucell3d",
+      "itemId": "sw:compucell3d",
       "name": "CompuCell3D",
       "url": "https://github.com/CompuCell3D/CompuCell3D",
       "group": "Bioprocess Modeling & Scaling",
@@ -621,6 +640,7 @@
     },
     {
       "slug": "physicell",
+      "itemId": "sw:physicell",
       "name": "PhysiCell",
       "url": "https://github.com/MathCancer/PhysiCell/",
       "group": "Bioprocess Modeling & Scaling",
@@ -651,6 +671,7 @@
     },
     {
       "slug": "morpheus",
+      "itemId": "sw:morpheus",
       "name": "Morpheus",
       "url": "https://morpheus.gitlab.io/",
       "group": "Bioprocess Modeling & Scaling",
@@ -681,6 +702,7 @@
     },
     {
       "slug": "pyfoomb",
+      "itemId": "sw:pyfoomb",
       "name": "pyFOOMB",
       "url": "https://github.com/MicroPhen/pyFOOMB",
       "group": "Bioprocess Modeling & Scaling",
@@ -711,6 +733,7 @@
     },
     {
       "slug": "mxlpy",
+      "itemId": "sw:mxlpy",
       "name": "MxlPy",
       "url": "https://github.com/Computational-Biology-Aachen/mxlpy",
       "group": "Bioprocess Modeling & Scaling",
@@ -739,6 +762,7 @@
     },
     {
       "slug": "pc-gym",
+      "itemId": "sw:pc-gym",
       "name": "PC-Gym",
       "url": "https://github.com/MaximilianB2/pc-gym",
       "group": "Bioprocess Modeling & Scaling",
@@ -769,6 +793,7 @@
     },
     {
       "slug": "cobrapy",
+      "itemId": "sw:cobrapy",
       "name": "COBRApy",
       "url": "https://github.com/opencobra/cobrapy",
       "group": "Metabolic Modeling & Strain Design",
@@ -799,6 +824,7 @@
     },
     {
       "slug": "cobra-toolbox",
+      "itemId": "sw:cobra-toolbox",
       "name": "COBRA Toolbox",
       "url": "https://github.com/opencobra/cobratoolbox",
       "group": "Metabolic Modeling & Strain Design",
@@ -829,6 +855,7 @@
     },
     {
       "slug": "memote",
+      "itemId": "sw:memote",
       "name": "Memote",
       "url": "https://github.com/opencobra/memote",
       "group": "Metabolic Modeling & Strain Design",
@@ -859,6 +886,7 @@
     },
     {
       "slug": "escher",
+      "itemId": "sw:escher",
       "name": "Escher",
       "url": "https://github.com/zakandrewking/escher",
       "group": "Metabolic Modeling & Strain Design",
@@ -889,6 +917,7 @@
     },
     {
       "slug": "copasi",
+      "itemId": "sw:copasi",
       "name": "COPASI",
       "url": "https://github.com/copasi/COPASI",
       "group": "Metabolic Modeling & Strain Design",
@@ -919,6 +948,7 @@
     },
     {
       "slug": "tellurium",
+      "itemId": "sw:tellurium",
       "name": "Tellurium",
       "url": "https://github.com/sys-bio/tellurium",
       "group": "Metabolic Modeling & Strain Design",
@@ -949,6 +979,7 @@
     },
     {
       "slug": "raven-toolbox",
+      "itemId": "sw:raven-toolbox",
       "name": "RAVEN Toolbox",
       "url": "https://github.com/SysBioChalmers/RAVEN",
       "group": "Metabolic Modeling & Strain Design",
@@ -979,6 +1010,7 @@
     },
     {
       "slug": "straindesign",
+      "itemId": "sw:straindesign",
       "name": "StrainDesign",
       "url": "https://github.com/klamt-lab/straindesign",
       "group": "Metabolic Modeling & Strain Design",
@@ -1009,6 +1041,7 @@
     },
     {
       "slug": "cnapy",
+      "itemId": "sw:cnapy",
       "name": "CNApy",
       "url": "https://github.com/cnapy-org/CNApy",
       "group": "Metabolic Modeling & Strain Design",
@@ -1039,6 +1072,7 @@
     },
     {
       "slug": "moped",
+      "itemId": "sw:moped",
       "name": "moped",
       "url": "https://gitlab.com/qtb-hhu/moped",
       "group": "Metabolic Modeling & Strain Design",
@@ -1069,6 +1103,7 @@
     },
     {
       "slug": "mergem",
+      "itemId": "sw:mergem",
       "name": "mergem",
       "url": "https://lobolab.umbc.edu/mergem/",
       "group": "Metabolic Modeling & Strain Design",
@@ -1099,6 +1134,7 @@
     },
     {
       "slug": "carveme",
+      "itemId": "sw:carveme",
       "name": "CarveMe",
       "url": "https://github.com/cdanielmachado/carveme",
       "group": "Metabolic Modeling & Strain Design",
@@ -1129,6 +1165,7 @@
     },
     {
       "slug": "gapseq",
+      "itemId": "sw:gapseq",
       "name": "gapseq",
       "url": "https://github.com/jotech/gapseq",
       "group": "Metabolic Modeling & Strain Design",
@@ -1159,6 +1196,7 @@
     },
     {
       "slug": "cameo",
+      "itemId": "sw:cameo",
       "name": "cameo",
       "url": "https://github.com/biosustain/cameo",
       "group": "Metabolic Modeling & Strain Design",
@@ -1189,6 +1227,7 @@
     },
     {
       "slug": "gecko",
+      "itemId": "sw:gecko",
       "name": "GECKO",
       "url": "https://github.com/SysBioChalmers/GECKO",
       "group": "Metabolic Modeling & Strain Design",
@@ -1219,6 +1258,7 @@
     },
     {
       "slug": "mewpy",
+      "itemId": "sw:mewpy",
       "name": "MEWpy",
       "url": "https://github.com/BioSystemsUM/mewpy",
       "group": "Metabolic Modeling & Strain Design",
@@ -1249,6 +1289,7 @@
     },
     {
       "slug": "pytfa",
+      "itemId": "sw:pytfa",
       "name": "pyTFA",
       "url": "https://github.com/EPFL-LCSB/pytfa",
       "group": "Metabolic Modeling & Strain Design",
@@ -1279,6 +1320,7 @@
     },
     {
       "slug": "masspy",
+      "itemId": "sw:masspy",
       "name": "MASSpy",
       "url": "https://github.com/SBRG/MASSpy",
       "group": "Metabolic Modeling & Strain Design",
@@ -1309,6 +1351,7 @@
     },
     {
       "slug": "riptide",
+      "itemId": "sw:riptide",
       "name": "RIPTiDe",
       "url": "https://github.com/mjenior/riptide",
       "group": "Metabolic Modeling & Strain Design",
@@ -1334,6 +1377,7 @@
     },
     {
       "slug": "omiga",
+      "itemId": "sw:omiga",
       "name": "OmiGA",
       "url": "https://omiga.bio/",
       "group": "Quantitative Genetics & Multi-Omics Analysis",
@@ -1359,6 +1403,7 @@
     },
     {
       "slug": "omicverse",
+      "itemId": "sw:omicverse",
       "name": "OmicVerse",
       "url": "https://github.com/omicverse/omicverse",
       "group": "Quantitative Genetics & Multi-Omics Analysis",
@@ -1384,6 +1429,7 @@
     },
     {
       "slug": "cellrank",
+      "itemId": "sw:cellrank",
       "name": "CellRank",
       "url": "https://github.com/scverse/cellrank",
       "group": "Quantitative Genetics & Multi-Omics Analysis",
@@ -1409,6 +1455,7 @@
     },
     {
       "slug": "cellchat",
+      "itemId": "sw:cellchat",
       "name": "CellChat",
       "url": "https://github.com/jinworks/CellChat",
       "group": "Quantitative Genetics & Multi-Omics Analysis",
@@ -1434,6 +1481,7 @@
     },
     {
       "slug": "giotto-suite",
+      "itemId": "sw:giotto-suite",
       "name": "Giotto Suite",
       "url": "https://github.com/giotto-suite/Giotto",
       "group": "Quantitative Genetics & Multi-Omics Analysis",
@@ -1459,6 +1507,7 @@
     },
     {
       "slug": "open-problems",
+      "itemId": "sw:open-problems",
       "name": "Open Problems",
       "url": "https://github.com/openproblems-bio/openproblems",
       "group": "Quantitative Genetics & Multi-Omics Analysis",
@@ -1484,6 +1533,7 @@
     },
     {
       "slug": "pancanstem-mrnasi",
+      "itemId": "sw:pancanstem-mrnasi",
       "name": "PanCanStem / mRNAsi",
       "url": "https://github.com/ArtemSokolov/PanCanStem",
       "group": "Quantitative Genetics & Multi-Omics Analysis",
@@ -1509,6 +1559,7 @@
     },
     {
       "slug": "matrisome-analyzer",
+      "itemId": "sw:matrisome-analyzer",
       "name": "Matrisome AnalyzeR",
       "url": "https://github.com/Matrisome/MatrisomeAnalyzeR",
       "group": "Quantitative Genetics & Multi-Omics Analysis",
@@ -1534,6 +1585,7 @@
     },
     {
       "slug": "openms-pyopenms",
+      "itemId": "sw:openms-pyopenms",
       "name": "OpenMS / pyOpenMS",
       "url": "https://github.com/OpenMS/OpenMS",
       "group": "Mass Spectrometry & Chemometrics",
@@ -1564,6 +1616,7 @@
     },
     {
       "slug": "mzmine-3",
+      "itemId": "sw:mzmine-3",
       "name": "MZmine 3",
       "url": "https://mzmine.github.io/",
       "group": "Mass Spectrometry & Chemometrics",
@@ -1594,6 +1647,7 @@
     },
     {
       "slug": "ms-dial",
+      "itemId": "sw:ms-dial",
       "name": "MS-DIAL",
       "url": "http://prime.psc.riken.jp/compms/msdial/main.html",
       "group": "Mass Spectrometry & Chemometrics",
@@ -1624,6 +1678,7 @@
     },
     {
       "slug": "mrmprobs",
+      "itemId": "sw:mrmprobs",
       "name": "MRMPROBS",
       "url": "https://systemsomicslab.github.io/compms/mrmprobs/main.html",
       "group": "Mass Spectrometry & Chemometrics",
@@ -1654,6 +1709,7 @@
     },
     {
       "slug": "xcms",
+      "itemId": "sw:xcms",
       "name": "XCMS",
       "url": "https://github.com/sneumann/xcms",
       "group": "Mass Spectrometry & Chemometrics",
@@ -1684,6 +1740,7 @@
     },
     {
       "slug": "proteowizard-msconvert",
+      "itemId": "sw:proteowizard-msconvert",
       "name": "ProteoWizard / msconvert",
       "url": "https://proteowizard.sourceforge.io/",
       "group": "Mass Spectrometry & Chemometrics",
@@ -1714,6 +1771,7 @@
     },
     {
       "slug": "sirius-csifingerid",
+      "itemId": "sw:sirius-csifingerid",
       "name": "SIRIUS + CSI:FingerID",
       "url": "https://bio.informatik.uni-jena.de/software/sirius/",
       "group": "Mass Spectrometry & Chemometrics",
@@ -1744,6 +1802,7 @@
     },
     {
       "slug": "metfrag",
+      "itemId": "sw:metfrag",
       "name": "MetFrag",
       "url": "https://ipb-halle.github.io/MetFrag/",
       "group": "Mass Spectrometry & Chemometrics",
@@ -1774,6 +1833,7 @@
     },
     {
       "slug": "ms2query",
+      "itemId": "sw:ms2query",
       "name": "MS2Query",
       "url": "https://github.com/iomega/ms2query",
       "group": "Mass Spectrometry & Chemometrics",
@@ -1804,6 +1864,7 @@
     },
     {
       "slug": "ms-finder",
+      "itemId": "sw:ms-finder",
       "name": "MS-FINDER",
       "url": "https://systemsomicslab.github.io/compms/msfinder/main.html",
       "group": "Mass Spectrometry & Chemometrics",
@@ -1834,6 +1895,7 @@
     },
     {
       "slug": "gnps",
+      "itemId": "sw:gnps",
       "name": "GNPS",
       "url": "https://gnps.ucsd.edu/",
       "group": "Mass Spectrometry & Chemometrics",
@@ -1864,6 +1926,7 @@
     },
     {
       "slug": "ropls",
+      "itemId": "sw:ropls",
       "name": "ropls",
       "url": "http://bioconductor.org/packages/ropls/",
       "group": "Mass Spectrometry & Chemometrics",
@@ -1894,6 +1957,7 @@
     },
     {
       "slug": "metaboanalyst",
+      "itemId": "sw:metaboanalyst",
       "name": "MetaboAnalyst",
       "url": "https://www.metaboanalyst.ca/",
       "group": "Mass Spectrometry & Chemometrics",
@@ -1924,6 +1988,7 @@
     },
     {
       "slug": "mixomics",
+      "itemId": "sw:mixomics",
       "name": "mixOmics",
       "url": "https://mixomics.org/",
       "group": "Mass Spectrometry & Chemometrics",
@@ -1954,6 +2019,7 @@
     },
     {
       "slug": "sensominer",
+      "itemId": "sw:sensominer",
       "name": "SensoMineR",
       "url": "https://cran.r-project.org/web/packages/SensoMineR/index.html",
       "group": "Mass Spectrometry & Chemometrics",
@@ -1984,6 +2050,7 @@
     },
     {
       "slug": "matchms",
+      "itemId": "sw:matchms",
       "name": "matchms",
       "url": "https://github.com/matchms/matchms",
       "group": "Mass Spectrometry & Chemometrics",
@@ -2014,6 +2081,7 @@
     },
     {
       "slug": "skyline",
+      "itemId": "sw:skyline",
       "name": "Skyline",
       "url": "https://skyline.ms/",
       "group": "Mass Spectrometry & Chemometrics",
@@ -2044,6 +2112,7 @@
     },
     {
       "slug": "asari",
+      "itemId": "sw:asari",
       "name": "asari",
       "url": "https://github.com/shuzhao-li-lab/asari",
       "group": "Mass Spectrometry & Chemometrics",
@@ -2074,6 +2143,7 @@
     },
     {
       "slug": "chemotools",
+      "itemId": "sw:chemotools",
       "name": "chemotools",
       "url": "https://github.com/paucablop/chemotools",
       "group": "Mass Spectrometry & Chemometrics",
@@ -2104,6 +2174,7 @@
     },
     {
       "slug": "ramanspy",
+      "itemId": "sw:ramanspy",
       "name": "RamanSPy",
       "url": "https://github.com/barahona-research-group/RamanSPy",
       "group": "Mass Spectrometry & Chemometrics",
@@ -2134,6 +2205,7 @@
     },
     {
       "slug": "lipidsig-20",
+      "itemId": "sw:lipidsig-20",
       "name": "LipidSig 2.0",
       "url": "https://lipidsig.bioinfomics.org/",
       "group": "Mass Spectrometry & Chemometrics",
@@ -2164,6 +2236,7 @@
     },
     {
       "slug": "cellpose",
+      "itemId": "sw:cellpose",
       "name": "Cellpose",
       "url": "https://github.com/MouseLand/cellpose",
       "group": "Imaging & Segmentation",
@@ -2189,6 +2262,7 @@
     },
     {
       "slug": "cellprofiler",
+      "itemId": "sw:cellprofiler",
       "name": "CellProfiler",
       "url": "https://github.com/CellProfiler/CellProfiler",
       "group": "Imaging & Segmentation",
@@ -2214,6 +2288,7 @@
     },
     {
       "slug": "stardist",
+      "itemId": "sw:stardist",
       "name": "StarDist",
       "url": "https://github.com/stardist/stardist",
       "group": "Imaging & Segmentation",
@@ -2239,6 +2314,7 @@
     },
     {
       "slug": "adipoq",
+      "itemId": "sw:adipoq",
       "name": "AdipoQ",
       "url": "https://github.com/hansenjn/AdipoQ",
       "group": "Imaging & Segmentation",
@@ -2264,6 +2340,7 @@
     },
     {
       "slug": "openpom",
+      "itemId": "sw:openpom",
       "name": "OpenPOM",
       "url": "https://github.com/BioMachineLearning/openpom",
       "group": "Olfaction & Sensory",
@@ -2292,6 +2369,7 @@
     },
     {
       "slug": "pyrfume",
+      "itemId": "sw:pyrfume",
       "name": "Pyrfume",
       "url": "https://github.com/pyrfume/pyrfume",
       "group": "Olfaction & Sensory",
@@ -2322,6 +2400,7 @@
     },
     {
       "slug": "bittersweet",
+      "itemId": "sw:bittersweet",
       "name": "BitterSweet",
       "url": "https://github.com/cosylabiiit/bittersweet",
       "group": "Olfaction & Sensory",
@@ -2352,6 +2431,7 @@
     },
     {
       "slug": "tastepepai",
+      "itemId": "sw:tastepepai",
       "name": "TastepepAI",
       "url": "https://github.com/leleshidawang/TastepepAI",
       "group": "Olfaction & Sensory",
@@ -2382,6 +2462,7 @@
     },
     {
       "slug": "bitter-peptide-design",
+      "itemId": "sw:bitter-peptide-design",
       "name": "bitter-peptide-design",
       "url": "https://github.com/DiPizio-Lab/bitter-peptide-design",
       "group": "Olfaction & Sensory",
@@ -2412,6 +2493,7 @@
     },
     {
       "slug": "nf-coremetaboigniter",
+      "itemId": "sw:nf-coremetaboigniter",
       "name": "nf-core/metaboigniter",
       "url": "https://nf-co.re/metaboigniter",
       "group": "Workflow-Manager Pipelines",
@@ -2435,6 +2517,7 @@
     },
     {
       "slug": "workflow4metabolomics-w4m",
+      "itemId": "sw:workflow4metabolomics-w4m",
       "name": "Workflow4Metabolomics (W4M)",
       "url": "https://workflow4metabolomics.usegalaxy.fr/",
       "group": "Workflow-Manager Pipelines",
@@ -2470,6 +2553,7 @@
     },
     {
       "slug": "umetaflow",
+      "itemId": "sw:umetaflow",
       "name": "UmetaFlow",
       "url": "https://github.com/biosustain/snakemake_UmetaFlow",
       "group": "Workflow-Manager Pipelines",
@@ -2495,6 +2579,7 @@
     },
     {
       "slug": "nf-coreampliseq",
+      "itemId": "sw:nf-coreampliseq",
       "name": "nf-core/ampliseq",
       "url": "https://nf-co.re/ampliseq",
       "group": "Workflow-Manager Pipelines",
@@ -2520,6 +2605,7 @@
     },
     {
       "slug": "nf-coremag",
+      "itemId": "sw:nf-coremag",
       "name": "nf-core/mag",
       "url": "https://nf-co.re/mag",
       "group": "Workflow-Manager Pipelines",
@@ -2545,6 +2631,7 @@
     },
     {
       "slug": "tooluniverse",
+      "itemId": "sw:tooluniverse",
       "name": "ToolUniverse",
       "url": "https://github.com/mims-harvard/ToolUniverse",
       "group": "AI Agents & Foundation Models",
@@ -2575,6 +2662,7 @@
     },
     {
       "slug": "biomni",
+      "itemId": "sw:biomni",
       "name": "Biomni",
       "url": "https://github.com/snap-stanford/Biomni",
       "group": "AI Agents & Foundation Models",
@@ -2605,6 +2693,7 @@
     },
     {
       "slug": "aiagents4pharma",
+      "itemId": "sw:aiagents4pharma",
       "name": "AIAgents4Pharma",
       "url": "https://github.com/VirtualPatientEngine/AIAgents4Pharma",
       "group": "AI Agents & Foundation Models",
@@ -2633,6 +2722,7 @@
     },
     {
       "slug": "brad",
+      "itemId": "sw:brad",
       "name": "BRAD",
       "url": "https://github.com/Jpickard1/BRAD",
       "group": "AI Agents & Foundation Models",
@@ -2663,6 +2753,7 @@
     },
     {
       "slug": "cellforge",
+      "itemId": "sw:cellforge",
       "name": "CellForge",
       "url": "https://github.com/gersteinlab/CellForge",
       "group": "AI Agents & Foundation Models",
@@ -2693,6 +2784,7 @@
     },
     {
       "slug": "ai-scientist",
+      "itemId": "sw:ai-scientist",
       "name": "AI Scientist",
       "url": "https://github.com/SakanaAI/AI-Scientist",
       "group": "AI Agents & Foundation Models",
@@ -2723,6 +2815,7 @@
     },
     {
       "slug": "paperqa",
+      "itemId": "sw:paperqa",
       "name": "PaperQA",
       "url": "https://github.com/Future-House/paper-qa",
       "group": "AI Agents & Foundation Models",
@@ -2753,6 +2846,7 @@
     },
     {
       "slug": "aviary",
+      "itemId": "sw:aviary",
       "name": "Aviary",
       "url": "https://github.com/Future-House/aviary",
       "group": "AI Agents & Foundation Models",
@@ -2783,6 +2877,7 @@
     },
     {
       "slug": "finch",
+      "itemId": "sw:finch",
       "name": "Finch",
       "url": "https://github.com/Future-House/finch",
       "group": "AI Agents & Foundation Models",
@@ -2811,6 +2906,7 @@
     },
     {
       "slug": "k-dense-ai",
+      "itemId": "sw:k-dense-ai",
       "name": "K-Dense-AI",
       "url": "https://github.com/K-Dense-AI",
       "group": "AI Agents & Foundation Models",
@@ -2839,6 +2935,7 @@
     },
     {
       "slug": "superpowers",
+      "itemId": "sw:superpowers",
       "name": "Superpowers",
       "url": "https://github.com/obra/superpowers",
       "group": "AI Agents & Foundation Models",
@@ -2867,6 +2964,7 @@
     },
     {
       "slug": "skill-seekers",
+      "itemId": "sw:skill-seekers",
       "name": "Skill Seekers",
       "url": "https://github.com/yusufkaraaslan/Skill_Seekers",
       "group": "AI Agents & Foundation Models",
@@ -2895,6 +2993,7 @@
     },
     {
       "slug": "ai-research-skills-library",
+      "itemId": "sw:ai-research-skills-library",
       "name": "AI Research Skills Library",
       "url": "https://github.com/orchestra-research/AI-research-SKILLs",
       "group": "AI Agents & Foundation Models",
@@ -2923,6 +3022,7 @@
     },
     {
       "slug": "seqera-ai-co-scientist",
+      "itemId": "sw:seqera-ai-co-scientist",
       "name": "Seqera AI / Co-Scientist",
       "url": "https://docs.seqera.io/platform-cloud/seqera-ai/",
       "group": "AI Agents & Foundation Models",
@@ -2951,6 +3051,7 @@
     },
     {
       "slug": "dotmatics-luma",
+      "itemId": "sw:dotmatics-luma",
       "name": "Dotmatics Luma",
       "url": "https://go.dotmatics.com/luma-lab-orchestration",
       "group": "AI Agents & Foundation Models",
@@ -2979,6 +3080,7 @@
     },
     {
       "slug": "scdataset",
+      "itemId": "sw:scdataset",
       "name": "scDataset",
       "url": "https://github.com/scDataset/scDataset",
       "group": "AI Agents & Foundation Models",
@@ -3007,6 +3109,7 @@
     },
     {
       "slug": "transcriptformer",
+      "itemId": "sw:transcriptformer",
       "name": "TranscriptFormer",
       "url": "https://virtualcellmodels.cziscience.com/model/transcriptformer",
       "group": "AI Agents & Foundation Models",
@@ -3037,6 +3140,7 @@
     },
     {
       "slug": "geneformer",
+      "itemId": "sw:geneformer",
       "name": "Geneformer",
       "url": "https://huggingface.co/ctheodoris/Geneformer",
       "group": "AI Agents & Foundation Models",
@@ -3067,6 +3171,7 @@
     },
     {
       "slug": "scgpt",
+      "itemId": "sw:scgpt",
       "name": "scGPT",
       "url": "https://github.com/bowang-lab/scGPT",
       "group": "AI Agents & Foundation Models",
@@ -3097,6 +3202,7 @@
     },
     {
       "slug": "scbert",
+      "itemId": "sw:scbert",
       "name": "scBERT",
       "url": "https://github.com/TencentAILabHealthcare/scBERT",
       "group": "AI Agents & Foundation Models",
@@ -3127,6 +3233,7 @@
     },
     {
       "slug": "scfoundation",
+      "itemId": "sw:scfoundation",
       "name": "scFoundation",
       "url": "https://github.com/biomap-research/scFoundation",
       "group": "AI Agents & Foundation Models",
@@ -3157,6 +3264,7 @@
     },
     {
       "slug": "uce",
+      "itemId": "sw:uce",
       "name": "UCE",
       "url": "https://github.com/snap-stanford/UCE",
       "group": "AI Agents & Foundation Models",
@@ -3187,6 +3295,7 @@
     },
     {
       "slug": "tgpt",
+      "itemId": "sw:tgpt",
       "name": "tGPT",
       "url": "https://github.com/deeplearningplus/tGPT",
       "group": "AI Agents & Foundation Models",
@@ -3217,6 +3326,7 @@
     },
     {
       "slug": "cell2sentence-c2s-scale",
+      "itemId": "sw:cell2sentence-c2s-scale",
       "name": "Cell2Sentence (C2S-Scale)",
       "url": "https://github.com/vandijklab/cell2sentence",
       "group": "AI Agents & Foundation Models",
@@ -3252,6 +3362,7 @@
     },
     {
       "slug": "gears",
+      "itemId": "sw:gears",
       "name": "GEARS",
       "url": "https://github.com/snap-stanford/GEARS",
       "group": "AI Agents & Foundation Models",
@@ -3282,6 +3393,7 @@
     },
     {
       "slug": "state-cell-eval",
+      "itemId": "sw:state-cell-eval",
       "name": "State + Cell-Eval",
       "url": "https://github.com/ArcInstitute/state",
       "group": "AI Agents & Foundation Models",
@@ -3312,6 +3424,7 @@
     },
     {
       "slug": "biodiscoveryagent",
+      "itemId": "sw:biodiscoveryagent",
       "name": "BioDiscoveryAgent",
       "url": "https://github.com/snap-stanford/BioDiscoveryAgent",
       "group": "AI Agents & Foundation Models",
@@ -3342,6 +3455,7 @@
     },
     {
       "slug": "causalbench",
+      "itemId": "sw:causalbench",
       "name": "CausalBench",
       "url": "https://github.com/causalbench/causalbench",
       "group": "AI Agents & Foundation Models",
@@ -3372,6 +3486,7 @@
     },
     {
       "slug": "biocontextai",
+      "itemId": "sw:biocontextai",
       "name": "BioContextAI",
       "url": "https://biocontext.ai",
       "group": "AI Agents & Foundation Models",
@@ -3402,6 +3517,7 @@
     },
     {
       "slug": "biomcp",
+      "itemId": "sw:biomcp",
       "name": "BioMCP",
       "url": "https://github.com/genomoncology/biomcp",
       "group": "AI Agents & Foundation Models",
@@ -3430,6 +3546,7 @@
     },
     {
       "slug": "context7",
+      "itemId": "sw:context7",
       "name": "Context7",
       "url": "https://github.com/upstash/context7",
       "group": "AI Agents & Foundation Models",
@@ -3458,6 +3575,7 @@
     },
     {
       "slug": "virtual-lab",
+      "itemId": "sw:virtual-lab",
       "name": "Virtual Lab",
       "url": "https://github.com/zou-group/virtual-lab",
       "group": "AI Agents & Foundation Models",
@@ -3488,6 +3606,7 @@
     },
     {
       "slug": "coscientist",
+      "itemId": "sw:coscientist",
       "name": "Coscientist",
       "url": "https://github.com/gomesgroup/coscientist",
       "group": "AI Agents & Foundation Models",
@@ -3518,6 +3637,7 @@
     },
     {
       "slug": "sbml-systems-biology-markup-language",
+      "itemId": "sw:sbml-systems-biology-markup-language",
       "name": "SBML (Systems Biology Markup Language)",
       "url": "https://sbml.org/",
       "group": "Data Standards & Interchange Formats",
@@ -3548,6 +3668,7 @@
     },
     {
       "slug": "linkml-linked-data-modeling-language",
+      "itemId": "sw:linkml-linked-data-modeling-language",
       "name": "LinkML (Linked data Modeling Language)",
       "url": "https://linkml.io/",
       "group": "Data Standards & Interchange Formats",
@@ -3573,6 +3694,7 @@
     },
     {
       "slug": "project-pisces-standard-flowsheet-format",
+      "itemId": "sw:project-pisces-standard-flowsheet-format",
       "name": "Project PISCES (Standard Flowsheet Format)",
       "url": "https://projectpisces.org/",
       "group": "Data Standards & Interchange Formats",
@@ -3596,6 +3718,7 @@
     },
     {
       "slug": "biopragmatics-stack",
+      "itemId": "sw:biopragmatics-stack",
       "name": "Biopragmatics Stack",
       "url": "https://biopragmatics.github.io/",
       "group": "Biomedical Ontology & Identifier Infrastructure",
@@ -3619,6 +3742,7 @@
     },
     {
       "slug": "bridgedb",
+      "itemId": "sw:bridgedb",
       "name": "BridgeDb",
       "url": "https://github.com/bridgedb/BridgeDb",
       "group": "Biomedical Ontology & Identifier Infrastructure",
@@ -3644,6 +3768,7 @@
     },
     {
       "slug": "allercatpro-20",
+      "itemId": "sw:allercatpro-20",
       "name": "AllerCatPro 2.0",
       "url": "https://allercatpro.bii.a-star.edu.sg/",
       "group": "Food Safety & Allergenicity",
@@ -3670,6 +3795,7 @@
     },
     {
       "slug": "allertop-v2",
+      "itemId": "sw:allertop-v2",
       "name": "AllerTOP v2",
       "url": "https://www.ddg-pharmfac.net/AllerTOP/",
       "group": "Food Safety & Allergenicity",
@@ -3696,6 +3822,7 @@
     },
     {
       "slug": "allergenfp",
+      "itemId": "sw:allergenfp",
       "name": "AllergenFP",
       "url": "https://ddg-pharmfac.net/AllergenFP/",
       "group": "Food Safety & Allergenicity",
@@ -3721,6 +3848,7 @@
     },
     {
       "slug": "algpred-20",
+      "itemId": "sw:algpred-20",
       "name": "AlgPred 2.0",
       "url": "https://webs.iiitd.edu.in/raghava/algpred2/",
       "group": "Food Safety & Allergenicity",
@@ -3747,6 +3875,7 @@
     },
     {
       "slug": "allermatch",
+      "itemId": "sw:allermatch",
       "name": "Allermatch",
       "url": "https://www.allermatch.org/",
       "group": "Food Safety & Allergenicity",
@@ -3772,6 +3901,7 @@
     },
     {
       "slug": "allerdet",
+      "itemId": "sw:allerdet",
       "name": "ALLERDET",
       "url": "http://allerdet.frangam.com",
       "group": "Food Safety & Allergenicity",
@@ -3797,6 +3927,7 @@
     },
     {
       "slug": "allergenai",
+      "itemId": "sw:allergenai",
       "name": "AllergenAI",
       "url": "https://compbio.uth.edu/AllergenAI/",
       "group": "Food Safety & Allergenicity",
@@ -3822,6 +3953,7 @@
     },
     {
       "slug": "biosteam",
+      "itemId": "sw:biosteam",
       "name": "BioSTEAM",
       "url": "https://github.com/BioSTEAMDevelopmentGroup/biosteam",
       "group": "Techno-Economic & Life-Cycle Assessment",
@@ -3847,6 +3979,7 @@
     },
     {
       "slug": "qsdsan",
+      "itemId": "sw:qsdsan",
       "name": "QSDsan",
       "url": "https://github.com/QSD-Group/QSDsan",
       "group": "Techno-Economic & Life-Cycle Assessment",
@@ -3872,6 +4005,7 @@
     },
     {
       "slug": "brightway",
+      "itemId": "sw:brightway",
       "name": "Brightway",
       "url": "https://github.com/brightway-lca",
       "group": "Techno-Economic & Life-Cycle Assessment",
@@ -3897,6 +4031,7 @@
     },
     {
       "slug": "openlca",
+      "itemId": "sw:openlca",
       "name": "openLCA",
       "url": "https://github.com/GreenDelta/olca-app",
       "group": "Techno-Economic & Life-Cycle Assessment",
@@ -3920,6 +4055,7 @@
     },
     {
       "slug": "dwsim",
+      "itemId": "sw:dwsim",
       "name": "DWSIM",
       "url": "https://github.com/DanWBR/dwsim",
       "group": "Techno-Economic & Life-Cycle Assessment",
@@ -3943,6 +4079,7 @@
     },
     {
       "slug": "superpro-designer",
+      "itemId": "sw:superpro-designer",
       "name": "SuperPro Designer",
       "url": "https://www.intelligen.com/products/superpro-overview/",
       "group": "Techno-Economic & Life-Cycle Assessment",
@@ -3966,6 +4103,7 @@
     },
     {
       "slug": "simapro",
+      "itemId": "sw:simapro",
       "name": "SimaPro",
       "url": "https://simapro.com/",
       "group": "Techno-Economic & Life-Cycle Assessment",
@@ -3989,6 +4127,7 @@
     },
     {
       "slug": "greet",
+      "itemId": "sw:greet",
       "name": "GREET",
       "url": "https://greet.anl.gov/",
       "group": "Techno-Economic & Life-Cycle Assessment",
@@ -4014,6 +4153,7 @@
   "databases": [
     {
       "slug": "nih-gene-expression-omnibus-geo",
+      "itemId": "db:nih-gene-expression-omnibus-geo",
       "name": "NIH Gene Expression Omnibus (GEO)",
       "url": "https://www.ncbi.nlm.nih.gov/geo/",
       "group": "Sequence, Genome & Expression Repositories",
@@ -4045,6 +4185,7 @@
     },
     {
       "slug": "nih-sequence-read-archive-sra",
+      "itemId": "db:nih-sequence-read-archive-sra",
       "name": "NIH Sequence Read Archive (SRA)",
       "url": "https://www.ncbi.nlm.nih.gov/sra",
       "group": "Sequence, Genome & Expression Repositories",
@@ -4072,6 +4213,7 @@
     },
     {
       "slug": "nih-genbank",
+      "itemId": "db:nih-genbank",
       "name": "NIH GenBank",
       "url": "https://www.ncbi.nlm.nih.gov/genbank/",
       "group": "Sequence, Genome & Expression Repositories",
@@ -4121,6 +4263,7 @@
     },
     {
       "slug": "ensembl",
+      "itemId": "db:ensembl",
       "name": "Ensembl",
       "url": "https://www.ensembl.org/",
       "group": "Sequence, Genome & Expression Repositories",
@@ -4164,6 +4307,7 @@
     },
     {
       "slug": "arrayexpress-biostudies",
+      "itemId": "db:arrayexpress-biostudies",
       "name": "ArrayExpress / BioStudies",
       "url": "https://www.ebi.ac.uk/biostudies/arrayexpress",
       "group": "Sequence, Genome & Expression Repositories",
@@ -4201,6 +4345,7 @@
     },
     {
       "slug": "rnacentral",
+      "itemId": "db:rnacentral",
       "name": "RNAcentral",
       "url": "https://rnacentral.org/",
       "group": "Sequence, Genome & Expression Repositories",
@@ -4231,6 +4376,7 @@
     },
     {
       "slug": "european-nucleotide-archive-ena",
+      "itemId": "db:european-nucleotide-archive-ena",
       "name": "European Nucleotide Archive (ENA)",
       "url": "https://www.ebi.ac.uk/ena/browser/",
       "group": "Sequence, Genome & Expression Repositories",
@@ -4272,6 +4418,7 @@
     },
     {
       "slug": "ngdc-genome-sequence-archive-gsa",
+      "itemId": "db:ngdc-genome-sequence-archive-gsa",
       "name": "NGDC Genome Sequence Archive (GSA)",
       "url": "https://ngdc.cncb.ac.cn/gsa/",
       "group": "Sequence, Genome & Expression Repositories",
@@ -4297,6 +4444,7 @@
     },
     {
       "slug": "embl-ebi-expression-atlas",
+      "itemId": "db:embl-ebi-expression-atlas",
       "name": "EMBL-EBI Expression Atlas",
       "url": "https://www.ebi.ac.uk/gxa/home",
       "group": "Sequence, Genome & Expression Repositories",
@@ -4332,6 +4480,7 @@
     },
     {
       "slug": "farmgtex",
+      "itemId": "db:farmgtex",
       "name": "FarmGTEx",
       "url": "https://www.farmgtex.org/",
       "group": "Livestock Multi-Tissue Atlases & Functional Genomics",
@@ -4362,6 +4511,7 @@
     },
     {
       "slug": "piggtex-portal",
+      "itemId": "db:piggtex-portal",
       "name": "PigGTEx-Portal",
       "url": "https://piggtex.farmgtex.org/",
       "group": "Livestock Multi-Tissue Atlases & Functional Genomics",
@@ -4392,6 +4542,7 @@
     },
     {
       "slug": "chickengtex-portal",
+      "itemId": "db:chickengtex-portal",
       "name": "ChickenGTEx-Portal",
       "url": "https://chicken.farmgtex.org/",
       "group": "Livestock Multi-Tissue Atlases & Functional Genomics",
@@ -4422,6 +4573,7 @@
     },
     {
       "slug": "cattlegtex",
+      "itemId": "db:cattlegtex",
       "name": "CattleGTEx",
       "url": "https://ngdc.cncb.ac.cn/cattleca/home",
       "group": "Livestock Multi-Tissue Atlases & Functional Genomics",
@@ -4452,6 +4604,7 @@
     },
     {
       "slug": "sheepgtex-portal",
+      "itemId": "db:sheepgtex-portal",
       "name": "SheepGTEx-Portal",
       "url": "https://sheepgtex.farmgtex.org/",
       "group": "Livestock Multi-Tissue Atlases & Functional Genomics",
@@ -4482,6 +4635,7 @@
     },
     {
       "slug": "farmgtex-twas-server",
+      "itemId": "db:farmgtex-twas-server",
       "name": "FarmGTEx TWAS-Server",
       "url": "https://twas.farmgtex.org/",
       "group": "Livestock Multi-Tissue Atlases & Functional Genomics",
@@ -4510,6 +4664,7 @@
     },
     {
       "slug": "pigbiobank",
+      "itemId": "db:pigbiobank",
       "name": "PigBiobank",
       "url": "https://pigbiobank.farmgtex.org/",
       "group": "Livestock Multi-Tissue Atlases & Functional Genomics",
@@ -4540,6 +4695,7 @@
     },
     {
       "slug": "faang-functional-annotation-of-animal-genomes",
+      "itemId": "db:faang-functional-annotation-of-animal-genomes",
       "name": "FAANG (Functional Annotation of Animal Genomes)",
       "url": "https://www.faang.org/",
       "group": "Livestock Multi-Tissue Atlases & Functional Genomics",
@@ -4570,6 +4726,7 @@
     },
     {
       "slug": "aqua-faang",
+      "itemId": "db:aqua-faang",
       "name": "AQUA-FAANG",
       "url": "https://www.aqua-faang.eu/",
       "group": "Livestock Multi-Tissue Atlases & Functional Genomics",
@@ -4598,6 +4755,7 @@
     },
     {
       "slug": "bovreg",
+      "itemId": "db:bovreg",
       "name": "BovReg",
       "url": "https://bovreg.eu/",
       "group": "Livestock Multi-Tissue Atlases & Functional Genomics",
@@ -4626,6 +4784,7 @@
     },
     {
       "slug": "gene-switch",
+      "itemId": "db:gene-switch",
       "name": "GENE-SWitCH",
       "url": "https://www.gene-switch.eu/",
       "group": "Livestock Multi-Tissue Atlases & Functional Genomics",
@@ -4654,6 +4813,7 @@
     },
     {
       "slug": "animal-qtldb",
+      "itemId": "db:animal-qtldb",
       "name": "Animal QTLdb",
       "url": "https://www.animalgenome.org/cgi-bin/QTLdb/index",
       "group": "Livestock Multi-Tissue Atlases & Functional Genomics",
@@ -4689,6 +4849,7 @@
     },
     {
       "slug": "bgee",
+      "itemId": "db:bgee",
       "name": "Bgee",
       "url": "https://www.bgee.org/",
       "group": "Livestock Multi-Tissue Atlases & Functional Genomics",
@@ -4721,6 +4882,7 @@
     },
     {
       "slug": "mediaassist",
+      "itemId": "db:mediaassist",
       "name": "MediaAssist",
       "url": "https://mediaassist.ncl.res.in/",
       "group": "Cell-Culture Media & Growth-Factor Databases",
@@ -4751,6 +4913,7 @@
     },
     {
       "slug": "fcs-free-database",
+      "itemId": "db:fcs-free-database",
       "name": "FCS-Free Database",
       "url": "https://fcs-free.sites.uu.nl/",
       "group": "Cell-Culture Media & Growth-Factor Databases",
@@ -4779,6 +4942,7 @@
     },
     {
       "slug": "mediadive",
+      "itemId": "db:mediadive",
       "name": "MediaDive",
       "url": "https://mediadive.dsmz.de/",
       "group": "Cell-Culture Media & Growth-Factor Databases",
@@ -4809,6 +4973,7 @@
     },
     {
       "slug": "mediadb",
+      "itemId": "db:mediadb",
       "name": "MediaDB",
       "url": "https://mediadb.systemsbiology.net/",
       "group": "Cell-Culture Media & Growth-Factor Databases",
@@ -4839,6 +5004,7 @@
     },
     {
       "slug": "uniprot",
+      "itemId": "db:uniprot",
       "name": "UniProt",
       "url": "https://www.uniprot.org/",
       "group": "Protein & Structure Databases",
@@ -4880,6 +5046,7 @@
     },
     {
       "slug": "oma-orthologous-matrix-browser",
+      "itemId": "db:oma-orthologous-matrix-browser",
       "name": "OMA (Orthologous Matrix) Browser",
       "url": "https://omabrowser.org/",
       "group": "Protein & Structure Databases",
@@ -4910,6 +5077,7 @@
     },
     {
       "slug": "alphafold-database",
+      "itemId": "db:alphafold-database",
       "name": "AlphaFold Database",
       "url": "https://alphafold.ebi.ac.uk/",
       "group": "Protein & Structure Databases",
@@ -4938,6 +5106,7 @@
     },
     {
       "slug": "protein-data-bank-pdb",
+      "itemId": "db:protein-data-bank-pdb",
       "name": "Protein Data Bank (PDB)",
       "url": "https://www.rcsb.org/",
       "group": "Protein & Structure Databases",
@@ -4973,6 +5142,7 @@
     },
     {
       "slug": "interpro",
+      "itemId": "db:interpro",
       "name": "InterPro",
       "url": "https://www.ebi.ac.uk/interpro/",
       "group": "Protein & Structure Databases",
@@ -5010,6 +5180,7 @@
     },
     {
       "slug": "human-protein-atlas",
+      "itemId": "db:human-protein-atlas",
       "name": "Human Protein Atlas",
       "url": "https://www.proteinatlas.org/",
       "group": "Protein & Structure Databases",
@@ -5047,6 +5218,7 @@
     },
     {
       "slug": "string",
+      "itemId": "db:string",
       "name": "STRING",
       "url": "https://string-db.org/",
       "group": "Protein & Structure Databases",
@@ -5083,6 +5255,7 @@
     },
     {
       "slug": "pride",
+      "itemId": "db:pride",
       "name": "PRIDE",
       "url": "https://www.ebi.ac.uk/pride/",
       "group": "Protein & Structure Databases",
@@ -5115,6 +5288,7 @@
     },
     {
       "slug": "proteomexchange",
+      "itemId": "db:proteomexchange",
       "name": "ProteomeXchange",
       "url": "https://www.proteomexchange.org/",
       "group": "Protein & Structure Databases",
@@ -5140,6 +5314,7 @@
     },
     {
       "slug": "glygen",
+      "itemId": "db:glygen",
       "name": "GlyGen",
       "url": "https://www.glygen.org/",
       "group": "Glycomics & Glycoprotein Databases",
@@ -5165,6 +5340,7 @@
     },
     {
       "slug": "glytoucan",
+      "itemId": "db:glytoucan",
       "name": "GlyTouCan",
       "url": "https://glytoucan.org/",
       "group": "Glycomics & Glycoprotein Databases",
@@ -5192,6 +5368,7 @@
     },
     {
       "slug": "glyconnect",
+      "itemId": "db:glyconnect",
       "name": "GlyConnect",
       "url": "https://glyconnect.expasy.org/",
       "group": "Glycomics & Glycoprotein Databases",
@@ -5217,6 +5394,7 @@
     },
     {
       "slug": "cellosaurus",
+      "itemId": "db:cellosaurus",
       "name": "Cellosaurus",
       "url": "https://www.cellosaurus.org/",
       "group": "Cell Line & Single-Cell Reference Atlases",
@@ -5252,6 +5430,7 @@
     },
     {
       "slug": "human-cell-atlas-hca",
+      "itemId": "db:human-cell-atlas-hca",
       "name": "Human Cell Atlas (HCA)",
       "url": "https://www.humancellatlas.org/",
       "group": "Cell Line & Single-Cell Reference Atlases",
@@ -5287,6 +5466,7 @@
     },
     {
       "slug": "tabula-sapiens",
+      "itemId": "db:tabula-sapiens",
       "name": "Tabula Sapiens",
       "url": "https://tabula-sapiens-portal.ds.czbiohub.org/",
       "group": "Cell Line & Single-Cell Reference Atlases",
@@ -5322,6 +5502,7 @@
     },
     {
       "slug": "cz-cellxgene",
+      "itemId": "db:cz-cellxgene",
       "name": "CZ CELLxGENE",
       "url": "https://cellxgene.cziscience.com/",
       "group": "Cell Line & Single-Cell Reference Atlases",
@@ -5358,6 +5539,7 @@
     },
     {
       "slug": "scbasecount",
+      "itemId": "db:scbasecount",
       "name": "scBaseCount",
       "url": "https://github.com/ArcInstitute/arc-virtual-cell-atlas/blob/main/scBaseCount/README.md",
       "group": "Cell Line & Single-Cell Reference Atlases",
@@ -5393,6 +5575,7 @@
     },
     {
       "slug": "muscle-gene-sets-sys-myo",
+      "itemId": "db:muscle-gene-sets-sys-myo",
       "name": "Muscle Gene Sets (sys-myo)",
       "url": "https://www.sys-myo.com/muscle_gene_sets/",
       "group": "Muscle & Functional Gene Sets",
@@ -5418,6 +5601,7 @@
     },
     {
       "slug": "myominer",
+      "itemId": "db:myominer",
       "name": "MyoMiner",
       "url": "https://www.sys-myo.com/myominer/",
       "group": "Muscle & Functional Gene Sets",
@@ -5443,6 +5627,7 @@
     },
     {
       "slug": "human-ageing-genomic-resources-hagr",
+      "itemId": "db:human-ageing-genomic-resources-hagr",
       "name": "Human Ageing Genomic Resources (HAGR)",
       "url": "https://genomics.senescence.info/",
       "group": "Cellular Aging & Senescence",
@@ -5472,6 +5657,7 @@
     },
     {
       "slug": "cellage",
+      "itemId": "db:cellage",
       "name": "CellAge",
       "url": "https://genomics.senescence.info/cells/",
       "group": "Cellular Aging & Senescence",
@@ -5497,6 +5683,7 @@
     },
     {
       "slug": "senmayo",
+      "itemId": "db:senmayo",
       "name": "SenMayo",
       "url": "https://doi.org/10.1038/s41467-022-32552-1",
       "group": "Cellular Aging & Senescence",
@@ -5522,6 +5709,7 @@
     },
     {
       "slug": "csgene",
+      "itemId": "db:csgene",
       "name": "CSGene",
       "url": "https://bioinfo-minzhao.org/csgene/",
       "group": "Cellular Aging & Senescence",
@@ -5547,6 +5735,7 @@
     },
     {
       "slug": "sasp-atlas",
+      "itemId": "db:sasp-atlas",
       "name": "SASP Atlas",
       "url": "https://www.saspatlas.com/",
       "group": "Cellular Aging & Senescence",
@@ -5577,6 +5766,7 @@
     },
     {
       "slug": "the-telomerase-database",
+      "itemId": "db:the-telomerase-database",
       "name": "The Telomerase Database",
       "url": "https://telomerase.us/",
       "group": "Cellular Aging & Senescence",
@@ -5602,6 +5792,7 @@
     },
     {
       "slug": "stemchecker",
+      "itemId": "db:stemchecker",
       "name": "StemChecker",
       "url": "http://stemchecker.sysbiolab.eu/",
       "group": "Stemness Signatures",
@@ -5627,6 +5818,7 @@
     },
     {
       "slug": "stemmapper",
+      "itemId": "db:stemmapper",
       "name": "StemMapper",
       "url": "http://stemmapper.sysbiolab.eu/",
       "group": "Stemness Signatures",
@@ -5652,6 +5844,7 @@
     },
     {
       "slug": "matrisome-gene-sets-naba-msigdb-c2",
+      "itemId": "db:matrisome-gene-sets-naba-msigdb-c2",
       "name": "Matrisome gene sets (NABA, MSigDB C2)",
       "url": "https://www.gsea-msigdb.org/gsea/msigdb/",
       "group": "ECM & Matrisome",
@@ -5677,6 +5870,7 @@
     },
     {
       "slug": "matrisomedb-20",
+      "itemId": "db:matrisomedb-20",
       "name": "MatrisomeDB 2.0",
       "url": "https://matrisomedb.org/",
       "group": "ECM & Matrisome",
@@ -5703,6 +5897,7 @@
     },
     {
       "slug": "matrixdb",
+      "itemId": "db:matrixdb",
       "name": "MatrixDB",
       "url": "https://matrixdb.univ-lyon1.fr/",
       "group": "ECM & Matrisome",
@@ -5732,6 +5927,7 @@
     },
     {
       "slug": "kazusa-codon-usage-database",
+      "itemId": "db:kazusa-codon-usage-database",
       "name": "Kazusa Codon Usage Database",
       "url": "https://www.kazusa.or.jp/codon/",
       "group": "Codon Usage & Sequence-Design Databases",
@@ -5758,6 +5954,7 @@
     },
     {
       "slug": "cocoputs-codon-and-codon-pair-usage-tables",
+      "itemId": "db:cocoputs-codon-and-codon-pair-usage-tables",
       "name": "CoCoPUTs (Codon and Codon Pair Usage Tables)",
       "url": "https://dnahive.fda.gov/dna.cgi?cmd=cuts_main",
       "group": "Codon Usage & Sequence-Design Databases",
@@ -5783,6 +5980,7 @@
     },
     {
       "slug": "gtrnadb-genomic-trna-database",
+      "itemId": "db:gtrnadb-genomic-trna-database",
       "name": "GtRNAdb (Genomic tRNA Database)",
       "url": "https://gtrnadb.ucsc.edu/",
       "group": "Codon Usage & Sequence-Design Databases",
@@ -5809,6 +6007,7 @@
     },
     {
       "slug": "addgene",
+      "itemId": "db:addgene",
       "name": "Addgene",
       "url": "https://www.addgene.org/",
       "group": "Plasmid & Reagent Repositories",
@@ -5839,6 +6038,7 @@
     },
     {
       "slug": "foodon",
+      "itemId": "db:foodon",
       "name": "FoodOn",
       "url": "https://foodon.org/",
       "group": "Biological & Food Ontologies",
@@ -5864,6 +6064,7 @@
     },
     {
       "slug": "cell-ontology-cl",
+      "itemId": "db:cell-ontology-cl",
       "name": "Cell Ontology (CL)",
       "url": "https://obophenotype.github.io/cell-ontology/",
       "group": "Biological & Food Ontologies",
@@ -5889,6 +6090,7 @@
     },
     {
       "slug": "kegg-pathway",
+      "itemId": "db:kegg-pathway",
       "name": "KEGG PATHWAY",
       "url": "https://www.kegg.jp/kegg/pathway.html",
       "group": "Pathways, Metabolism & Metabolic Models",
@@ -5933,6 +6135,7 @@
     },
     {
       "slug": "reactome",
+      "itemId": "db:reactome",
       "name": "Reactome",
       "url": "https://reactome.org/",
       "group": "Pathways, Metabolism & Metabolic Models",
@@ -5972,6 +6175,7 @@
     },
     {
       "slug": "wikipathways",
+      "itemId": "db:wikipathways",
       "name": "WikiPathways",
       "url": "https://www.wikipathways.org/",
       "group": "Pathways, Metabolism & Metabolic Models",
@@ -6007,6 +6211,7 @@
     },
     {
       "slug": "pathbank",
+      "itemId": "db:pathbank",
       "name": "PathBank",
       "url": "https://pathbank.org/",
       "group": "Pathways, Metabolism & Metabolic Models",
@@ -6038,6 +6243,7 @@
     },
     {
       "slug": "human-metabolome-database-hmdb",
+      "itemId": "db:human-metabolome-database-hmdb",
       "name": "Human Metabolome Database (HMDB)",
       "url": "https://hmdb.ca/",
       "group": "Pathways, Metabolism & Metabolic Models",
@@ -6072,6 +6278,7 @@
     },
     {
       "slug": "bovine-metabolome-database-bmdb",
+      "itemId": "db:bovine-metabolome-database-bmdb",
       "name": "Bovine Metabolome Database (BMDB)",
       "url": "https://www.bovinedb.ca/",
       "group": "Pathways, Metabolism & Metabolic Models",
@@ -6102,6 +6309,7 @@
     },
     {
       "slug": "brenda",
+      "itemId": "db:brenda",
       "name": "BRENDA",
       "url": "https://www.brenda-enzymes.org/",
       "group": "Pathways, Metabolism & Metabolic Models",
@@ -6143,6 +6351,7 @@
     },
     {
       "slug": "sabio-rk",
+      "itemId": "db:sabio-rk",
       "name": "SABIO-RK",
       "url": "https://sabio.h-its.org/",
       "group": "Pathways, Metabolism & Metabolic Models",
@@ -6177,6 +6386,7 @@
     },
     {
       "slug": "smpdb-small-molecule-pathway-database",
+      "itemId": "db:smpdb-small-molecule-pathway-database",
       "name": "SMPDB (Small Molecule Pathway Database)",
       "url": "https://smpdb.ca/",
       "group": "Pathways, Metabolism & Metabolic Models",
@@ -6208,6 +6418,7 @@
     },
     {
       "slug": "biocyc-metacyc",
+      "itemId": "db:biocyc-metacyc",
       "name": "BioCyc / MetaCyc",
       "url": "https://biocyc.org/",
       "group": "Pathways, Metabolism & Metabolic Models",
@@ -6250,6 +6461,7 @@
     },
     {
       "slug": "bigg-models",
+      "itemId": "db:bigg-models",
       "name": "BiGG Models",
       "url": "http://bigg.ucsd.edu/",
       "group": "Pathways, Metabolism & Metabolic Models",
@@ -6282,6 +6494,7 @@
     },
     {
       "slug": "metanetx-mnxref",
+      "itemId": "db:metanetx-mnxref",
       "name": "MetaNetX / MNXref",
       "url": "https://www.metanetx.org/",
       "group": "Pathways, Metabolism & Metabolic Models",
@@ -6314,6 +6527,7 @@
     },
     {
       "slug": "biomodels",
+      "itemId": "db:biomodels",
       "name": "BioModels",
       "url": "https://www.ebi.ac.uk/biomodels/",
       "group": "Pathways, Metabolism & Metabolic Models",
@@ -6348,6 +6562,7 @@
     },
     {
       "slug": "rhea",
+      "itemId": "db:rhea",
       "name": "Rhea",
       "url": "https://www.rhea-db.org/",
       "group": "Pathways, Metabolism & Metabolic Models",
@@ -6382,6 +6597,7 @@
     },
     {
       "slug": "virtual-metabolic-human-vmh",
+      "itemId": "db:virtual-metabolic-human-vmh",
       "name": "Virtual Metabolic Human (VMH)",
       "url": "https://www.vmh.life/",
       "group": "Pathways, Metabolism & Metabolic Models",
@@ -6412,6 +6628,7 @@
     },
     {
       "slug": "metabolomics-workbench",
+      "itemId": "db:metabolomics-workbench",
       "name": "Metabolomics Workbench",
       "url": "https://www.metabolomicsworkbench.org/",
       "group": "Pathways, Metabolism & Metabolic Models",
@@ -6447,6 +6664,7 @@
     },
     {
       "slug": "massbank",
+      "itemId": "db:massbank",
       "name": "MassBank",
       "url": "https://massbank.eu/",
       "group": "Mass Spectrometry Spectral Databases",
@@ -6477,6 +6695,7 @@
     },
     {
       "slug": "nist-chemistry-webbook",
+      "itemId": "db:nist-chemistry-webbook",
       "name": "NIST Chemistry WebBook",
       "url": "https://webbook.nist.gov/chemistry/",
       "group": "Mass Spectrometry Spectral Databases",
@@ -6505,6 +6724,7 @@
     },
     {
       "slug": "metabolights",
+      "itemId": "db:metabolights",
       "name": "MetaboLights",
       "url": "https://www.ebi.ac.uk/metabolights/",
       "group": "Mass Spectrometry Spectral Databases",
@@ -6542,6 +6762,7 @@
     },
     {
       "slug": "gnps",
+      "itemId": "db:gnps",
       "name": "GNPS",
       "url": "https://gnps.ucsd.edu/",
       "group": "Mass Spectrometry Spectral Databases",
@@ -6572,6 +6793,7 @@
     },
     {
       "slug": "mona-massbank-of-north-america",
+      "itemId": "db:mona-massbank-of-north-america",
       "name": "MoNA (MassBank of North America)",
       "url": "https://mona.fiehnlab.ucdavis.edu/",
       "group": "Mass Spectrometry Spectral Databases",
@@ -6600,6 +6822,7 @@
     },
     {
       "slug": "metlin",
+      "itemId": "db:metlin",
       "name": "METLIN",
       "url": "https://metlin.scripps.edu/",
       "group": "Mass Spectrometry Spectral Databases",
@@ -6630,6 +6853,7 @@
     },
     {
       "slug": "sdbs-spectral-database-for-organic-compounds",
+      "itemId": "db:sdbs-spectral-database-for-organic-compounds",
       "name": "SDBS (Spectral Database for Organic Compounds)",
       "url": "https://sdbs.db.aist.go.jp/",
       "group": "Mass Spectrometry Spectral Databases",
@@ -6658,6 +6882,7 @@
     },
     {
       "slug": "spectrabase",
+      "itemId": "db:spectrabase",
       "name": "SpectraBase",
       "url": "https://spectrabase.com/",
       "group": "Mass Spectrometry Spectral Databases",
@@ -6686,6 +6911,7 @@
     },
     {
       "slug": "raman-open-database",
+      "itemId": "db:raman-open-database",
       "name": "Raman Open Database",
       "url": "https://solsa.crystallography.net/rod/",
       "group": "Mass Spectrometry Spectral Databases",
@@ -6716,6 +6942,7 @@
     },
     {
       "slug": "golm-metabolome-database-gmd",
+      "itemId": "db:golm-metabolome-database-gmd",
       "name": "Golm Metabolome Database (GMD)",
       "url": "http://gmd.mpimp-golm.mpg.de/",
       "group": "Mass Spectrometry Spectral Databases",
@@ -6751,6 +6978,7 @@
     },
     {
       "slug": "chembl",
+      "itemId": "db:chembl",
       "name": "ChEMBL",
       "url": "https://www.ebi.ac.uk/chembl/",
       "group": "Chemistry & Compound Databases",
@@ -6780,6 +7008,7 @@
     },
     {
       "slug": "pubchem",
+      "itemId": "db:pubchem",
       "name": "PubChem",
       "url": "https://pubchem.ncbi.nlm.nih.gov/",
       "group": "Chemistry & Compound Databases",
@@ -6811,6 +7040,7 @@
     },
     {
       "slug": "drugbank",
+      "itemId": "db:drugbank",
       "name": "DrugBank",
       "url": "https://go.drugbank.com/",
       "group": "Chemistry & Compound Databases",
@@ -6841,6 +7071,7 @@
     },
     {
       "slug": "chemspider",
+      "itemId": "db:chemspider",
       "name": "ChemSpider",
       "url": "https://www.chemspider.com/",
       "group": "Chemistry & Compound Databases",
@@ -6866,6 +7097,7 @@
     },
     {
       "slug": "chebi",
+      "itemId": "db:chebi",
       "name": "ChEBI",
       "url": "https://www.ebi.ac.uk/chebi/",
       "group": "Chemistry & Compound Databases",
@@ -6894,6 +7126,7 @@
     },
     {
       "slug": "t3db-toxin-and-toxin-target-database",
+      "itemId": "db:t3db-toxin-and-toxin-target-database",
       "name": "T3DB (Toxin and Toxin-Target Database)",
       "url": "https://www.t3db.ca/",
       "group": "Chemistry & Compound Databases",
@@ -6920,6 +7153,7 @@
     },
     {
       "slug": "coconut-collection-of-open-natural-products",
+      "itemId": "db:coconut-collection-of-open-natural-products",
       "name": "COCONUT (COlleCtion of Open Natural prodUcTs)",
       "url": "https://coconut.naturalproducts.net/",
       "group": "Chemistry & Compound Databases",
@@ -6945,6 +7179,7 @@
     },
     {
       "slug": "flavordb-flavordb2",
+      "itemId": "db:flavordb-flavordb2",
       "name": "FlavorDB / FlavorDB2",
       "url": "https://cosylab.iiitd.edu.in/flavordb/",
       "group": "Flavor & Taste Compound Databases",
@@ -6976,6 +7211,7 @@
     },
     {
       "slug": "bitterdb",
+      "itemId": "db:bitterdb",
       "name": "BitterDB",
       "url": "https://bitterdb.agri.huji.ac.il/",
       "group": "Flavor & Taste Compound Databases",
@@ -7008,6 +7244,7 @@
     },
     {
       "slug": "pherobase",
+      "itemId": "db:pherobase",
       "name": "Pherobase",
       "url": "https://www.pherobase.com/",
       "group": "Flavor & Taste Compound Databases",
@@ -7036,6 +7273,7 @@
     },
     {
       "slug": "flavornet",
+      "itemId": "db:flavornet",
       "name": "Flavornet",
       "url": "https://www.flavornet.org/",
       "group": "Flavor & Taste Compound Databases",
@@ -7066,6 +7304,7 @@
     },
     {
       "slug": "the-good-scents-company",
+      "itemId": "db:the-good-scents-company",
       "name": "The Good Scents Company",
       "url": "https://www.thegoodscentscompany.com/",
       "group": "Flavor & Taste Compound Databases",
@@ -7094,6 +7333,7 @@
     },
     {
       "slug": "foodb",
+      "itemId": "db:foodb",
       "name": "FooDB",
       "url": "https://foodb.ca/",
       "group": "Flavor & Taste Compound Databases",
@@ -7122,6 +7362,7 @@
     },
     {
       "slug": "chemtastesdb",
+      "itemId": "db:chemtastesdb",
       "name": "ChemTastesDB",
       "url": "https://doi.org/10.5281/zenodo.5747393",
       "group": "Flavor & Taste Compound Databases",
@@ -7152,6 +7393,7 @@
     },
     {
       "slug": "vcf-volatile-compounds-in-food",
+      "itemId": "db:vcf-volatile-compounds-in-food",
       "name": "VCF (Volatile Compounds in Food)",
       "url": "https://www.vcf-online.nl/",
       "group": "Flavor & Taste Compound Databases",
@@ -7180,6 +7422,7 @@
     },
     {
       "slug": "olfactionbase",
+      "itemId": "db:olfactionbase",
       "name": "OlfactionBase",
       "url": "https://olfactionbase.com/",
       "group": "Flavor & Taste Compound Databases",
@@ -7210,6 +7453,7 @@
     },
     {
       "slug": "umamimeta",
+      "itemId": "db:umamimeta",
       "name": "UmamiMeta",
       "url": "https://hwwlab.com/Webserver/umamimeta",
       "group": "Flavor & Taste Compound Databases",
@@ -7240,6 +7484,7 @@
     },
     {
       "slug": "biopep-uwm",
+      "itemId": "db:biopep-uwm",
       "name": "BIOPEP-UWM",
       "url": "https://biochemia.uwm.edu.pl/biopep-uwm/",
       "group": "Flavor & Taste Compound Databases",
@@ -7278,6 +7523,7 @@
     },
     {
       "slug": "plantmoleculartastedb",
+      "itemId": "db:plantmoleculartastedb",
       "name": "PlantMolecularTasteDB",
       "url": "https://plantmoleculartastedb.org/",
       "group": "Flavor & Taste Compound Databases",
@@ -7306,6 +7552,7 @@
     },
     {
       "slug": "aromadb",
+      "itemId": "db:aromadb",
       "name": "AromaDb",
       "url": "https://bioinfo.cimap.res.in/aromadb/",
       "group": "Flavor & Taste Compound Databases",
@@ -7334,6 +7581,7 @@
     },
     {
       "slug": "lipid-maps",
+      "itemId": "db:lipid-maps",
       "name": "LIPID MAPS",
       "url": "https://www.lipidmaps.org/",
       "group": "Lipidomics Databases",
@@ -7363,6 +7611,7 @@
     },
     {
       "slug": "swisslipids",
+      "itemId": "db:swisslipids",
       "name": "SwissLipids",
       "url": "https://www.swisslipids.org/",
       "group": "Lipidomics Databases",
@@ -7388,6 +7637,7 @@
     },
     {
       "slug": "lipidbank",
+      "itemId": "db:lipidbank",
       "name": "LipidBank",
       "url": "https://lipidbank.jp/",
       "group": "Lipidomics Databases",
@@ -7413,6 +7663,7 @@
     },
     {
       "slug": "pisces-phylogenetic-index-of-seafood-characteristics",
+      "itemId": "db:pisces-phylogenetic-index-of-seafood-characteristics",
       "name": "PISCES — Phylogenetic Index of Seafood CharactEriStics",
       "url": "https://gfi.org/resource/aggregating-data-for-alternative-seafood/",
       "group": "Seafood Species Reference Databases",
@@ -7436,6 +7687,7 @@
     },
     {
       "slug": "atlas-archetype-library-for-alternative-seafood",
+      "itemId": "db:atlas-archetype-library-for-alternative-seafood",
       "name": "ATLAS — ArcheType Library for Alternative Seafood",
       "url": "https://gfi.org/resource/aggregating-data-for-alternative-seafood/",
       "group": "Seafood Species Reference Databases",
@@ -7464,6 +7716,7 @@
     },
     {
       "slug": "agris-fao",
+      "itemId": "db:agris-fao",
       "name": "AGRIS (FAO)",
       "url": "https://agris.fao.org/",
       "group": "Literature & Bibliographic Databases",
@@ -7487,6 +7740,7 @@
     },
     {
       "slug": "usda-national-agricultural-library-search",
+      "itemId": "db:usda-national-agricultural-library-search",
       "name": "USDA National Agricultural Library Search",
       "url": "https://search.nal.usda.gov/",
       "group": "Literature & Bibliographic Databases",
@@ -7510,6 +7764,7 @@
     },
     {
       "slug": "gfi-alternative-protein-literature-library",
+      "itemId": "db:gfi-alternative-protein-literature-library",
       "name": "GFI Alternative Protein Literature Library",
       "url": "https://gfi.org/resource/alternative-protein-literature-library/",
       "group": "Literature & Bibliographic Databases",
@@ -7533,6 +7788,7 @@
     },
     {
       "slug": "wikipedia-list-of-biological-databases",
+      "itemId": "db:wikipedia-list-of-biological-databases",
       "name": "Wikipedia: List of biological databases",
       "url": "https://en.wikipedia.org/wiki/List_of_biological_databases",
       "group": "Database Directories & Reference Guides",
@@ -7556,6 +7812,7 @@
     },
     {
       "slug": "wikipedia-list-of-chemical-databases",
+      "itemId": "db:wikipedia-list-of-chemical-databases",
       "name": "Wikipedia: List of chemical databases",
       "url": "https://en.wikipedia.org/wiki/List_of_chemical_databases",
       "group": "Database Directories & Reference Guides",
@@ -7579,6 +7836,7 @@
     },
     {
       "slug": "uark-food-science-research-guide",
+      "itemId": "db:uark-food-science-research-guide",
       "name": "UArk Food Science Research Guide",
       "url": "https://libguides.uark.edu/FoodScience/Databases",
       "group": "Database Directories & Reference Guides",
@@ -7602,6 +7860,7 @@
     },
     {
       "slug": "fda-gras-notice-inventory",
+      "itemId": "db:fda-gras-notice-inventory",
       "name": "FDA GRAS Notice Inventory",
       "url": "https://www.hfpappexternal.fda.gov/scripts/fdcc/index.cfm?set=GRASNotices",
       "group": "Regulatory & Food-Safety Databases",
@@ -7625,6 +7884,7 @@
     },
     {
       "slug": "fda-inventory-of-completed-pre-market-consultations-for-human-food-made-with-cultured-animal-cells",
+      "itemId": "db:fda-inventory-of-completed-pre-market-consultations-for-human-food-made-with-cultured-animal-cells",
       "name": "FDA Inventory of Completed Pre-market Consultations for Human Food Made with Cultured Animal Cells",
       "url": "https://www.hfpappexternal.fda.gov/scripts/fdcc/index.cfm?set=animalcellculturefoods",
       "group": "Regulatory & Food-Safety Databases",
@@ -7648,6 +7908,7 @@
     },
     {
       "slug": "eu-novel-food",
+      "itemId": "db:eu-novel-food",
       "name": "EU Novel Food",
       "url": "https://food.ec.europa.eu/food-safety/novel-food_en",
       "group": "Regulatory & Food-Safety Databases",
@@ -7671,6 +7932,7 @@
     },
     {
       "slug": "fda-substances-added-to-food",
+      "itemId": "db:fda-substances-added-to-food",
       "name": "FDA Substances Added to Food",
       "url": "https://www.hfpappexternal.fda.gov/scripts/fdcc/index.cfm?set=FoodSubstances",
       "group": "Regulatory & Food-Safety Databases",
@@ -7694,6 +7956,7 @@
     },
     {
       "slug": "efsa-openfoodtox",
+      "itemId": "db:efsa-openfoodtox",
       "name": "EFSA OpenFoodTox",
       "url": "https://www.efsa.europa.eu/en/data-report/chemical-hazards-database-openfoodtox",
       "group": "Regulatory & Food-Safety Databases",
@@ -7719,6 +7982,7 @@
     },
     {
       "slug": "gfi-alternative-protein-researcher-directory",
+      "itemId": "db:gfi-alternative-protein-researcher-directory",
       "name": "GFI Alternative Protein Researcher Directory",
       "url": "https://gfi.org/resource/alternative-protein-researcher-directory/",
       "group": "Ecosystem & Industry Directories",
@@ -7742,6 +8006,7 @@
     },
     {
       "slug": "gfi-alternative-protein-company-database",
+      "itemId": "db:gfi-alternative-protein-company-database",
       "name": "GFI Alternative Protein Company Database",
       "url": "https://gfi.org/resource/alternative-protein-company-database/",
       "group": "Ecosystem & Industry Directories",
@@ -7765,6 +8030,7 @@
     },
     {
       "slug": "gfi-apac-alternative-protein-ecosystem-database",
+      "itemId": "db:gfi-apac-alternative-protein-ecosystem-database",
       "name": "GFI APAC Alternative Protein Ecosystem Database",
       "url": "https://gfi-apac.org/industry/alternative-protein-ecosystem-database/",
       "group": "Ecosystem & Industry Directories",
@@ -7788,6 +8054,7 @@
     },
     {
       "slug": "gfi-database-of-solutions-for-the-alternative-protein-industry",
+      "itemId": "db:gfi-database-of-solutions-for-the-alternative-protein-industry",
       "name": "GFI Database of Solutions for the Alternative Protein Industry",
       "url": "https://gfi.org/solutions/",
       "group": "Ecosystem & Industry Directories",
@@ -7811,6 +8078,7 @@
     },
     {
       "slug": "gfi-where-cultivated-meat-can-be-sold",
+      "itemId": "db:gfi-where-cultivated-meat-can-be-sold",
       "name": "GFI Where Cultivated Meat Can Be Sold",
       "url": "https://gfi.org/resource/where-cultivated-meat-can-be-sold/",
       "group": "Ecosystem & Industry Directories",
@@ -7834,6 +8102,7 @@
     },
     {
       "slug": "pando-foray-bioscience",
+      "itemId": "db:pando-foray-bioscience",
       "name": "Pando (Foray Bioscience)",
       "url": "https://pando.foraybio.com/",
       "group": "Ecosystem & Industry Directories",
@@ -7857,6 +8126,7 @@
     },
     {
       "slug": "food-systems-dashboard",
+      "itemId": "db:food-systems-dashboard",
       "name": "Food Systems Dashboard",
       "url": "https://www.foodsystemsdashboard.org/",
       "group": "Ecosystem & Industry Directories",
@@ -7882,6 +8152,7 @@
     },
     {
       "slug": "casp-prediction-center",
+      "itemId": "db:casp-prediction-center",
       "name": "CASP — Prediction Center",
       "url": "https://predictioncenter.org/",
       "group": "Benchmark Leaderboards & Results Trackers",
@@ -7910,6 +8181,7 @@
     },
     {
       "slug": "compbiobench-v1-leaderboard",
+      "itemId": "db:compbiobench-v1-leaderboard",
       "name": "CompBioBench v1 Leaderboard",
       "url": "https://huggingface.co/spaces/Genentech/compbiobench-leaderboard-v1",
       "group": "Benchmark Leaderboards & Results Trackers",
@@ -7938,6 +8210,7 @@
     },
     {
       "slug": "humanitys-last-exam-leaderboard",
+      "itemId": "db:humanitys-last-exam-leaderboard",
       "name": "Humanity's Last Exam Leaderboard",
       "url": "https://lastexam.ai/",
       "group": "Benchmark Leaderboards & Results Trackers",
@@ -7966,6 +8239,7 @@
     },
     {
       "slug": "mmlu-pro-leaderboard",
+      "itemId": "db:mmlu-pro-leaderboard",
       "name": "MMLU-Pro Leaderboard",
       "url": "https://huggingface.co/spaces/TIGER-Lab/MMLU-Pro",
       "group": "Benchmark Leaderboards & Results Trackers",
@@ -7994,6 +8268,7 @@
     },
     {
       "slug": "proteingym-leaderboard",
+      "itemId": "db:proteingym-leaderboard",
       "name": "ProteinGym Leaderboard",
       "url": "https://www.proteingym.org/",
       "group": "Benchmark Leaderboards & Results Trackers",
@@ -8022,6 +8297,7 @@
     },
     {
       "slug": "swe-bench-leaderboard",
+      "itemId": "db:swe-bench-leaderboard",
       "name": "SWE-bench Leaderboard",
       "url": "https://www.swebench.com/",
       "group": "Benchmark Leaderboards & Results Trackers",
@@ -8050,6 +8326,7 @@
     },
     {
       "slug": "whoiuis-allergen-nomenclature-database",
+      "itemId": "db:whoiuis-allergen-nomenclature-database",
       "name": "WHO/IUIS Allergen Nomenclature Database",
       "url": "http://www.allergen.org/",
       "group": "Food Safety & Allergen Databases",
@@ -8077,6 +8354,7 @@
     },
     {
       "slug": "allergenonline-farrp",
+      "itemId": "db:allergenonline-farrp",
       "name": "AllergenOnline (FARRP)",
       "url": "http://www.allergenonline.org/",
       "group": "Food Safety & Allergen Databases",
@@ -8102,6 +8380,7 @@
     },
     {
       "slug": "compare-database",
+      "itemId": "db:compare-database",
       "name": "COMPARE Database",
       "url": "http://www.comparedatabase.org",
       "group": "Food Safety & Allergen Databases",
@@ -8127,6 +8406,7 @@
     },
     {
       "slug": "sdap-20-structural-database-of-allergenic-proteins",
+      "itemId": "db:sdap-20-structural-database-of-allergenic-proteins",
       "name": "SDAP 2.0 (Structural Database of Allergenic Proteins)",
       "url": "https://fermi.utmb.edu/SDAP/",
       "group": "Food Safety & Allergen Databases",
@@ -8153,6 +8433,7 @@
     },
     {
       "slug": "allergome",
+      "itemId": "db:allergome",
       "name": "Allergome",
       "url": "https://www.allergome.org/",
       "group": "Food Safety & Allergen Databases",
@@ -8176,6 +8457,7 @@
     },
     {
       "slug": "allfam-database-of-allergen-families",
+      "itemId": "db:allfam-database-of-allergen-families",
       "name": "AllFam (Database of Allergen Families)",
       "url": "https://www.meduniwien.ac.at/allfam/",
       "group": "Food Safety & Allergen Databases",
@@ -8201,6 +8483,7 @@
     },
     {
       "slug": "ecoinvent",
+      "itemId": "db:ecoinvent",
       "name": "ecoinvent",
       "url": "https://ecoinvent.org/",
       "group": "Life-Cycle Inventory & Sustainability Databases",
@@ -8226,6 +8509,7 @@
     },
     {
       "slug": "agribalyse",
+      "itemId": "db:agribalyse",
       "name": "AGRIBALYSE",
       "url": "https://doc.agribalyse.fr/documentation-en",
       "group": "Life-Cycle Inventory & Sustainability Databases",
@@ -8249,6 +8533,7 @@
     },
     {
       "slug": "usda-federal-lca-commons",
+      "itemId": "db:usda-federal-lca-commons",
       "name": "USDA Federal LCA Commons",
       "url": "https://www.lcacommons.gov/",
       "group": "Life-Cycle Inventory & Sustainability Databases",
@@ -8272,6 +8557,7 @@
     },
     {
       "slug": "world-food-lca-database-wfldb",
+      "itemId": "db:world-food-lca-database-wfldb",
       "name": "World Food LCA Database (WFLDB)",
       "url": "https://quantis.com/services-solutions/consortium-building-and-management/wfldb/",
       "group": "Life-Cycle Inventory & Sustainability Databases",
@@ -8295,6 +8581,7 @@
     },
     {
       "slug": "eu-environmental-footprint-eplca-jrc",
+      "itemId": "db:eu-environmental-footprint-eplca-jrc",
       "name": "EU Environmental Footprint (EPLCA / JRC)",
       "url": "https://eplca.jrc.ec.europa.eu/EnvironmentalFootprint.html",
       "group": "Life-Cycle Inventory & Sustainability Databases",
@@ -8318,6 +8605,7 @@
     },
     {
       "slug": "esu-services-lca-data",
+      "itemId": "db:esu-services-lca-data",
       "name": "ESU-services LCA data",
       "url": "https://esu-services.ch/data/",
       "group": "Life-Cycle Inventory & Sustainability Databases",
@@ -8341,6 +8629,7 @@
     },
     {
       "slug": "agri-footprint",
+      "itemId": "db:agri-footprint",
       "name": "Agri-Footprint",
       "url": "https://blonksustainability.nl/tools-and-databases/agri-footprint",
       "group": "Life-Cycle Inventory & Sustainability Databases",

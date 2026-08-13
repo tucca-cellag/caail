@@ -1005,6 +1005,17 @@
           "slug": {
             "type": "string"
           },
+          "itemId": {
+            "default": null,
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "name": {
             "type": "string"
           },
@@ -1119,6 +1130,7 @@
         },
         "required": [
           "slug",
+          "itemId",
           "name",
           "url",
           "group",

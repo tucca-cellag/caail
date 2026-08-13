@@ -320,6 +320,21 @@ export function generateData(
         `(type, url, name) topic-join key — two entries normalize identically. Disambiguate their names.`,
     );
   }
+  // Frozen-id guard, the forward direction of the join above: every parsed catalog entry
+  // must resolve to an `sw:`/`db:` id. Software.md and Databases.md are GENERATED from the
+  // catalog NDJSON, so an entry without a row means the two have drifted. Reader corrections
+  // travel by that id, and an entry missing one silently loses its report link rather than
+  // rendering visibly wrong, so this has to fail the build rather than degrade.
+  const idless = [...catalog.software, ...catalog.databases].filter((e) => !e.itemId);
+  if (idless.length > 0) {
+    throw new Error(
+      `generate-data: ${idless.length} catalog entr(ies) resolve to no frozen item id: ` +
+        `${idless.slice(0, 8).map((e) => `"${e.name}"`).join(', ')}. The parsed entry's ` +
+        `(type, url, name) is absent from site/db/ndjson/catalog.ndjson — re-run ` +
+        `\`pnpm db:emit\` so the Markdown matches the DB, or fix the diverging name/url.`,
+    );
+  }
+
   const datasetEntryIds = new Set(datasets.entries.map((e) => e.id));
   const orphanTopics = unresolvedTopicItems(paperIds, catalogKeys, datasetEntryIds);
   if (orphanTopics.length > 0) {
