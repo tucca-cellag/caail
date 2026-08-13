@@ -1,6 +1,6 @@
 ---
 name: caail-pr-wrapup
-description: Use when a finished, reviewed, locally-green CAAIL feature branch is ready to ship — push it, open a PR to main, watch CI, merge (after confirming), watch the GitHub Pages deploy to green, verify the live site, clean up the worktree/branch, and close out the GitHub issue + Jira ticket. Invoke whenever the user says to ship / wrap up / finish / "open a PR and merge" / "merge and deploy" a branch, asks to watch the deploy, asks to clean up a worktree after merge, or asks to close the ticket for shipped work — even if they don't name the skill. The CAAIL realization of the "Finish & Ship" stage.
+description: Use when a finished, locally-green CAAIL feature branch is ready to ship — run the multi-round code review, push it, open a PR to main, watch CI, merge (after confirming), watch the GitHub Pages deploy to green, verify the live site, clean up the worktree/branch, and close out the GitHub issue + Jira ticket. Invoke whenever the user says to ship / wrap up / finish / "open a PR and merge" / "merge and deploy" a branch, asks to watch the deploy, asks to clean up a worktree after merge, or asks to close the ticket for shipped work — even if they don't name the skill. The CAAIL realization of the "Finish & Ship" stage.
 ---
 
 # CAAIL PR wrap-up
@@ -8,18 +8,23 @@ description: Use when a finished, reviewed, locally-green CAAIL feature branch i
 ## Overview
 
 This is the **Ship stage** for CAAIL: it takes a feature branch whose work is done, committed, and
-locally green, and lands it on `main` and the live site — push → PR → cross-model review → checks →
-merge → GitHub Pages deploy → verify → clean up → close the trackers. CAAIL deploys only on push to `main` (via
-`.github/workflows/docs.yml`, which gates on Lighthouse), so "shipped" means *merged **and** the deploy
-is green*, not just merged. Before merging, the open PR also gets an independent **Gemini adversarial
-review** (Step 3) for decorrelated blind spots.
+locally green, and lands it on `main` and the live site — review rounds → push → PR → cross-model
+second angle → checks → merge → GitHub Pages deploy → verify → clean up → close the trackers. CAAIL
+deploys only on push to `main` (via `.github/workflows/docs.yml`, which gates on Lighthouse), so
+"shipped" means *merged **and** the deploy is green*, not just merged.
+
+**Review here is a phase, not a step.** Step 1 runs `/code-review` at a level chosen from the shape of
+the diff, applies or triages the findings, and then **reviews again on the updated diff**, repeating
+until a round produces nothing worth acting on. Two rounds is the floor. The reasoning, and the
+condition under which it can come back down to one, is in step 1: read it before shortening it. The
+cross-model pass (step 4) stays, as a cheap extra angle rather than the safety gate.
 
 The brittle, repeatable machinery lives in **`ship-pr.sh`** (in this skill's directory): pushing,
 opening the PR, watching checks, merging with the known worktree gotcha handled, finding + watching
 the deploy run, and curling the live routes. This manual keeps the judgment with you: re-running the
-local gate, composing the PR body, **pausing to confirm before the merge** (it triggers a public
-deploy) and before deleting a hand-made worktree, the worktree cleanup itself, and closing the
-trackers once the deploy is actually green.
+local gate, **the review rounds and the level they run at**, composing the PR body, **pausing to confirm
+before the merge** (it triggers a public deploy) and before deleting a hand-made worktree, the worktree
+cleanup itself, and closing the trackers once the deploy is actually green.
 
 This is a **skill, not an agent**, on purpose: it *acts* (push/merge/deploy), and the cleanup uses
 `ExitWorktree`, which only works in the main session — a subagent can't switch the parent session's
@@ -45,10 +50,10 @@ Run the helper from the repo (worktree) root: `bash .claude/skills/caail-pr-wrap
   repo), enforced at the Bash layer by **`.claude/hooks/check-public-publish.sh`** (registered in
   the committed `.claude/settings.json`, so it protects anyone who clones this repo, not just the
   machine it was written on).
-- *(optional)* For the Step 3 cross-model review, the `gemini` CLI must be installed and OAuth-authed.
-  If it isn't, surface that at Step 3 and let the operator decide whether to ship without the cross-model
-  pass — it's an optional reviewer, not a blocker, but the call is theirs (consistent with Step 3 and the
-  Gotchas row; the agent never skips it autonomously).
+- *(optional)* For the step 4 cross-model review, the `gemini` CLI must be installed and OAuth-authed.
+  If it isn't, surface that at step 4 and let the operator decide whether to ship without the cross-model
+  pass — it's an optional extra angle, not a blocker, but the call is theirs (consistent with step 4 and
+  the Gotchas row; the agent never skips it autonomously).
 
 ## Procedure
 
@@ -58,15 +63,101 @@ bash .claude/skills/caail-pr-wrapup/ship-pr.sh preflight
 ```
 This confirms the branch/tree/auth, lists the changed paths, and — from the real CI path filters —
 predicts **which of `lint-papers`, `test` and `guards` will run on the PR** and **whether `docs.yml`
-will deploy on merge**, plus the routes worth verifying live. It tells you what to expect in steps 4
-and 6. Then re-run the local gate (above) if you haven't this session.
+will deploy on merge**, plus the routes worth verifying live. It tells you what to expect in steps 5
+and 7. The changed-path list it prints is also the input to step 1's level choice. Then re-run the local
+gate (above) if you haven't this session.
 
-### 1. Push
+### 1. Review rounds
+
+Run `/code-review <level>`, apply or triage every finding, then **run it again on the updated diff**.
+Repeat until a round returns nothing you act on. **Two rounds is the floor, not the target.** Do this
+before the push, so fixes land as ordinary commits instead of churn on an open PR.
+
+**Pick the level from the shape of the diff, not its line count.** Blast radius is what matters: a
+presentational change and a parser change do not deserve the same budget.
+
+| Diff shape | Level | Rounds floor |
+| --- | --- | --- |
+| Prose only: `.claude/` rules/agents/skills, `docs/**`, editorial prose in a canonical page | `medium` | 2 |
+| Structured catalog: `site/db/**` NDJSON, `dois-manual.json`, `dois-related.json`, `licenses-manual.json`, and the Markdown `db:emit` regenerates from them | `high` | 2 |
+| Site code: `site/src/**`, `site/e2e/**`, `site/scripts/parser/**` | `high`, rising to `xhigh`/`max` when it crosses a route or page boundary, changes `generate-data.ts`, or touches a shared component more than one page mounts | 2, usually 3 |
+| Trust boundaries and guards: `workers/**`, `.claude/hooks/**`, `ship-pr.sh`, `check-ci-paths.py`, `.github/workflows/**` | `max` | 3 |
+
+`db:check` / `db:verify` output belongs *in* the review of a catalog change, not instead of it: those
+assert referential integrity and round-tripping, which is a different question from whether the entry is
+right. `ultra` (the multi-agent cloud pass) is the deepest option available, but it is **user-triggered
+and billed, so you cannot launch it** — say it's worth it and let the user decide.
+
+**What each round has to do:**
+
+- **Round 1 over the whole branch diff.** Name the range explicitly (`origin/main...HEAD`, or the PR
+  number once one exists) so the review covers everything the PR will contain rather than only the
+  uncommitted delta.
+- **Apply or triage every finding.** Fixed, or declined with a stated reason, and if it is real but out
+  of scope it gets a ticket. "Not acted on" and "not a defect" are different outcomes; only one is free.
+- **Round 2 over the whole diff again, at the same level.** Not narrowed to the files round 1 touched.
+  The point of round 2 is the defects the *fixes* introduced, and a bad fix does not confine its damage
+  to its own file.
+- **Round 3 (and beyond)** when round 2 returned anything you acted on, or when the round-2 fixes were
+  more than typo-scale. Stop on a quiet round, never on a round count.
+
+**How to review, each rule bought with a real defect:**
+
+- **Measure the rendered result; never trust a comment that asserts it.** A source comment claiming a
+  value is not evidence about the built page, and when the two disagree the comment is the older of the
+  two facts.
+- **Check the surfaces the diff did not touch.** A change that states a fact on one page can contradict
+  what another page one click away already says. Nothing in the diff shows you that.
+- **Coverage is not absence.** axe reports zero violations *on the routes a spec visits*. A new or
+  changed route that no spec visits has not been checked, and "no violations" from a suite that never
+  loaded it is not a result.
+- **A guard added while fixing a finding is not trusted until it has been seen failing on that defect**
+  (`CAAIL-221`). Restore the broken state, run the new test, confirm it fails **with a message naming the
+  real problem**, restore the fix, then say in the PR body that this was done. A test written only
+  against fixed code proves the code passes the test, which is not the claim you need.
+
+#### Why this is more than one pass, and why that is provisional
+
+Read this before shortening the procedure. The rounds are not general caution; they compensate for a
+specific, measured asymmetry, and they are marked *for now* on purpose.
+
+**The cross-model reviewer is much weaker than the Claude reviewer it sits beside** (maintainer call,
+2026-08-12, from having run both across this repo's merges). Its design rationale is decorrelation:
+Claude reviewing Claude cannot find the class of error invisible to Claude. That rationale assumes the
+non-Claude model is strong enough to exercise the decorrelation, and the models the step 4 reviewer can
+currently reach are not. The failure is silent in the worst direction: **a weak reviewer returns few
+findings, and few findings read as "clean" rather than as "under-reviewed".** The step runs, the report
+looks reassuring, the pipeline goes green, and the ship stage carries a review budget that looks larger
+than it is. So the depth has to come from the Claude side instead.
+
+**The evidence that one pass is not enough** (one session, 2026-08-12, PR #185: six files at the first
+pass, ten by merge). Three `/code-review high` passes found **14 defects** on that small a diff:
+
+- **Pass 1** found three Starlight style leaks, measured on the built page, **each contradicting a
+  comment in the same file that asserted otherwise**.
+- **Pass 2** found a hub surface contradicting the homepage band's central claim one click away.
+- **Pass 3** found a link-in-text-block contrast failure at **2.99:1** on a route no axe spec visited,
+  plus a unit test that checked presence rather than pairing and so passed while crediting one curator
+  with another's ORCID.
+
+**Two of the fourteen were introduced while fixing earlier findings**, including an accessibility
+regression created by the fix for a different accessibility finding. That is the case a single pass
+cannot catch by construction: it reviews a diff that does not yet contain the defect. It is the sharpest
+argument for round 2 existing at all, and it is why round 2 re-reads the whole diff rather than the
+fixed files.
+
+**Revisit condition.** This is a workaround for a model-availability constraint, not a permanent view of
+how much review a diff needs. When a stronger non-Claude model becomes reachable by the step 4 reviewer,
+the extra rounds can come back down, because the decorrelated pass will then be doing the work they were
+added to replace. Until then, do not "simplify" this to one pass: the shape that produced the 14 findings
+above is the shape being kept.
+
+### 2. Push
 ```bash
 bash .claude/skills/caail-pr-wrapup/ship-pr.sh push
 ```
 
-### 2. Open the PR
+### 3. Open the PR
 Compose the title and body yourself, then write the body to a temp file and open the PR:
 ```bash
 bash .claude/skills/caail-pr-wrapup/ship-pr.sh open-pr "<title>" /tmp/pr-body.md
@@ -75,8 +166,11 @@ bash .claude/skills/caail-pr-wrapup/ship-pr.sh open-pr "<title>" /tmp/pr-body.md
   `papers`, `software`, `data`/`datasets`, `databases`, `resources`, `research-areas`, `site`, `docs`,
   `chore`, `fix`. Reuse the lead commit's subject when it already fits.
 - **Body:** what changed and *why*; the research area(s)/AI method(s) or routes it touches; and the
-  verification you already ran (tests/build/e2e, reviewer agents). **No AI attribution** — CAAIL
-  commits and PRs never carry "Co-Authored-By: Claude" or "Generated with" lines.
+  verification you already ran (tests/build/e2e, reviewer agents). Say **how the review went**: the
+  level, how many rounds, and that the last one was quiet. If a round-2 finding was declined rather
+  than fixed, say which and why, since a reader cannot tell a triaged finding from an unnoticed one. If
+  the change added a guard, state that it was seen failing on the defect first (step 1). **No AI
+  attribution** — CAAIL commits and PRs never carry "Co-Authored-By: Claude" or "Generated with" lines.
 - **Link the trackers.** If this PR resolves a public GitHub issue, include a `Closes #N` line —
   GitHub then closes it on merge, so the close is declarative and can't be forgotten or fail after the
   merge is already irreversible. Name the Jira key (`CAAIL-NNN`) too, so the public record points back
@@ -85,12 +179,16 @@ bash .claude/skills/caail-pr-wrapup/ship-pr.sh open-pr "<title>" /tmp/pr-body.md
   (`.claude/rules/publishing.md`). If the work has no ticket on either tracker, that is a process
   miss worth saying out loud rather than inventing a reference.
 
-### 3. Cross-model adversarial review (Gemini)
-Get an independent second opinion on the diff before merging — a different model catches failure classes
-a Claude self-review tends to miss. Dispatch a cross-model adversarial reviewer agent on this PR's
-diff — on this maintainer's machine that is a **user-global** agent, so it may simply not exist in a
-fresh clone. If no such agent is configured, say so and move on; this step is optional by design and
-must never block a ship. Example dispatch:
+### 4. Cross-model second angle (Gemini, optional)
+A cheap extra angle on the diff, and **not the safety gate**. Step 1 is the gate. The reason for the
+demotion is in step 1's rationale: the reachable non-Claude models return few findings, and a thin report
+from a weak reviewer is indistinguishable from a clean diff, so nothing load-bearing may rest on it. It
+stays in the procedure because the decorrelation is real when it fires and the pass costs little, not
+because it is what catches the misses.
+
+Dispatch a cross-model adversarial reviewer agent on this PR's diff — on this maintainer's machine that
+is a **user-global** agent, so it may simply not exist in a fresh clone. If no such agent is configured,
+say so and move on; this step is optional by design and must never block a ship. Example dispatch:
 
 > Adversarially review the diff for PR #`<pr>` in this repo (run `gh pr diff <pr>`, or
 > `git diff origin/main...HEAD` from the worktree root). Return confirmed issues with file:line and a net
@@ -98,10 +196,14 @@ must never block a ship. Example dispatch:
 
 The agent runs `gemini` read-only, **verifies every finding against the actual source** (Gemini output is
 untrusted — it filters out hallucinations), and returns severity-ranked confirmed issues plus a **net
-recommendation: ship / fix-first / needs-human-call**. Feed that into the Step 5 merge confirmation:
-- **ship** → proceed.
+recommendation: ship / fix-first / needs-human-call**. Feed that into the step 6 merge confirmation:
+- **ship** → proceed, but read it as "this reviewer found nothing", not as a clean bill of health. It is
+  the weaker of the two reviewers, and a thin report is its normal output whether or not the diff is
+  sound. Step 1's quiet round is what "reviewed" rests on.
 - **fix-first** (confirmed correctness/security issues) → stop, fix them, commit + push (this updates the
-  open PR), then re-review or proceed once resolved. Don't merge over confirmed real findings.
+  open PR), then re-review or proceed once resolved. Don't merge over confirmed real findings. A finding
+  strong enough to land here is worth an extra step-1 round on the updated diff, since the fix is now
+  unreviewed code.
 - **needs-human-call** → surface the report and let the user decide.
 
 *When to run:* most valuable for **code** diffs (`site/**`). For docs-/config-/`.claude`-only diffs the
@@ -111,7 +213,7 @@ secrets into Gemini. If it reports the **gemini OAuth token expired** (it can't 
 that and let the operator decide whether to ship without the cross-model pass — an unavailable *optional*
 reviewer must not hard-block the whole ship.
 
-### 4. Watch the checks
+### 5. Watch the checks
 ```bash
 bash .claude/skills/caail-pr-wrapup/ship-pr.sh watch-checks <pr>
 ```
@@ -129,18 +231,21 @@ than expected quiet** — that is the exact failure this skill's own CI section 
 
 If a check **fails**, stop — surface it and fix the branch; do not merge red.
 
-### 5. Confirm, then merge
+### 6. Confirm, then merge
 **Pause here.** Merging triggers the public deploy, so confirm with the user before proceeding (unless
-they've already said to merge autonomously this run). Weigh **both** inputs: CI must be green (Step 4)
-*and* the Step 3 cross-model review must not have left unresolved confirmed issues (a "fix-first"). Then:
+they've already said to merge autonomously this run). Weigh **three** inputs, in this order of weight:
+step 1's review rounds must have ended on a quiet round with every finding fixed or explicitly triaged;
+CI must be green (step 5); and the step 4 cross-model pass must not have left unresolved confirmed issues
+(a "fix-first"). A green CI plus a thin cross-model report is **not** a substitute for the first of those:
+neither of them reads the diff the way step 1 does. Then:
 ```bash
 bash .claude/skills/caail-pr-wrapup/ship-pr.sh merge <pr>
 ```
 This merges with a merge commit, deletes the remote branch, tolerates the benign "main already checked
 out" gotcha (see below), verifies the PR is actually `MERGED`, and prints the **merge commit SHA** you
-need for step 6.
+need for step 7.
 
-### 6. Watch the deploy
+### 7. Watch the deploy
 ```bash
 bash .claude/skills/caail-pr-wrapup/ship-pr.sh watch-deploy <merge-sha>
 ```
@@ -150,7 +255,7 @@ passed — *that* is a successful ship. If preflight predicted no deploy (the di
 paths), the helper says so and returns cleanly. **If Lighthouse fails, stop** — read the lhci report
 and fix the regression; do not re-run blindly hoping it passes.
 
-### 7. Verify live
+### 8. Verify live
 ```bash
 bash .claude/skills/caail-pr-wrapup/ship-pr.sh verify-live <route> [<route> ...]   # '' = homepage
 ```
@@ -158,8 +263,8 @@ Use the routes preflight suggested. Beyond the 200 check the helper does, add a 
 what you changed — e.g. `curl -s <url> | grep` for a new heading, the corrected link target, or the
 absence of a stale `./X.md` link — so you confirm the *content* shipped, not just that the page exists.
 
-### 8. Clean up
-**Check where you are first — `git branch --show-current`.** If step 5 took gh's succeeding path it
+### 9. Clean up
+**Check where you are first — `git branch --show-current`.** If step 6 took gh's succeeding path it
 already moved you to `main` and deleted the branch, so the first two items below are done and
 re-running them reports confusing errors rather than doing anything (see the Gotchas row).
 
@@ -176,12 +281,12 @@ re-running them reports confusing errors rather than doing anything (see the Got
   with the user first**, then `git worktree remove <path>` and `git branch -D <branch>`.
 - **Stop any background preview server** still holding `:4321`.
 
-### 9. Close the loop on the trackers
-Do this **last, after step 7 verified the live site** — not at merge time. CAAIL only counts as shipped
+### 10. Close the loop on the trackers
+Do this **last, after step 8 verified the live site** — not at merge time. CAAIL only counts as shipped
 once the deploy is green, so a ticket moved to `Done` at merge is a lie whenever Lighthouse fails
 afterwards. Both trackers, in this order:
 
-- **GitHub.** The `Closes #N` line from step 2 already closed the issue on merge; confirm rather than
+- **GitHub.** The `Closes #N` line from step 3 already closed the issue on merge; confirm rather than
   assume, since a typo'd or missing line fails silently:
   ```bash
   gh issue view <N> --json number,state,stateReason
@@ -205,7 +310,7 @@ naming so the next piece of work doesn't repeat it.
 ## CI: what runs when
 
 **The workflows are the source of truth; the table below is a snapshot** (taken 2026-08-12) kept only
-so step 4/6 expectations are legible without opening four YAML files. `preflight` computes the real
+so step 5/7 expectations are legible without opening four YAML files. `preflight` computes the real
 answer from the `LINT_PAPERS_PATHS` / `TEST_PATHS` / `DOCS_PATHS` / `GUARDS_PATHS` lists in
 `ship-pr.sh`. **Each is named for its workflow file** (`<stem uppercased, - to _>_PATHS`), and so is
 its `matches_<stem>` wrapper — that coupling is what lets the check derive what to look for instead of
@@ -250,15 +355,20 @@ adding it there too, or the guard will happily confirm that an incomplete set is
 
 | Symptom / situation | What it means / do |
 | --- | --- |
-| `gh pr merge --delete-branch` — **two outcomes, both fine** | Which one you get depends on whether anything holds `main`. **(a) Something does** (the primary checkout, or a worktree): gh's post-merge *local* step fails with `fatal: 'main' is already checked out at …`. Benign — the **remote merge already succeeded**; the helper verifies `state==MERGED` and API-deletes the remote branch. **(b) Nothing does:** gh succeeds, which means it **switches this checkout to `main` and deletes the local feature branch itself**. Then step 8's fast-forward is already done and `git branch -d <branch>` answers `error: branch '<branch>' not found` — also benign, and not a sign the merge went wrong. Either way trust `MERGED`, not gh's exit code, and check `git branch --show-current` before assuming where you are. |
+| **Round 1 comes back empty** on a code-heavy or multi-file diff | Read it as a fact about the review, not about the diff. Raise the level a notch, or point it at a narrower target and go again. A quiet round is only evidence once a non-quiet round has happened at that level. |
+| A finding's **fix is itself unreviewed code** | It is, and that is the whole reason for round 2. Two of the fourteen defects in step 1's evidence arrived this way, one an accessibility regression created by the fix for a different accessibility finding. Never merge a fix that no round has seen. |
+| Cross-model pass returns **one or two findings, or none** | Normal output for the weaker reviewer; it is not evidence the diff is clean (step 1's rationale). Do not let it stand in for a step-1 round, and do not report it as "reviewed by two models" as if the two carried equal weight. |
+| `/code-review ultra` looks warranted | **You cannot launch it** — it is user-triggered and billed. Say why the diff deserves it (parser, Worker, hook, or a change crossing several routes) and let the user run it. |
+| Someone proposes collapsing step 1 back to a single pass | Point them at step 1's rationale block and its revisit condition. The rounds compensate for a measured reviewer-strength asymmetry, and the condition for lowering them is a stronger non-Claude reviewer, not a diff that feels small. |
+| `gh pr merge --delete-branch` — **two outcomes, both fine** | Which one you get depends on whether anything holds `main`. **(a) Something does** (the primary checkout, or a worktree): gh's post-merge *local* step fails with `fatal: 'main' is already checked out at …`. Benign — the **remote merge already succeeded**; the helper verifies `state==MERGED` and API-deletes the remote branch. **(b) Nothing does:** gh succeeds, which means it **switches this checkout to `main` and deletes the local feature branch itself**. Then step 9's fast-forward is already done and `git branch -d <branch>` answers `error: branch '<branch>' not found` — also benign, and not a sign the merge went wrong. Either way trust `MERGED`, not gh's exit code, and check `git branch --show-current` before assuming where you are. |
 | Deploy run fails on **Lighthouse** | A11y/perf regression on landing or explorer. **Hard stop** — read the lhci output, fix it, ship again. Never blind-retry. |
-| Gemini Adversarial Reviewer reports an **auth/login prompt** | The Google OAuth token expired and can't refresh headlessly. Run `gemini` once interactively to re-auth, or skip the cross-model pass (Step 3 is optional) — note it and let the operator decide. Never hard-block the ship on an unavailable optional reviewer. |
+| Gemini Adversarial Reviewer reports an **auth/login prompt** | The Google OAuth token expired and can't refresh headlessly. Run `gemini` once interactively to re-auth, or skip the cross-model pass (step 4 is optional) — note it and let the operator decide. Never hard-block the ship on an unavailable optional reviewer. |
 | `lhci` reports a bogus ~0.5 perf score | A stale `astro dev`/preview is holding `:4321`; lhci silently measured it. Free the port (`lsof -ti:4321 | xargs kill`). Only relevant if running Lighthouse locally; CI runners are fresh. |
 | Any site command (build/test/lighthouse) | Needs **Node ≥ 22.12**: `source ~/.nvm/nvm.sh && nvm use 22` first; the system default may be older. |
 | PR body / commit | **No AI attribution** anywhere in CAAIL git history. |
-| GitHub issue still `OPEN` after merge | The `Closes #N` line was missing or malformed — GitHub fails silently on both. Close it by hand (step 9) and don't assume next time; `gh issue view` is the check. |
-| Jira ticket left in `In Progress` after a green deploy | Nothing else transitions it — no hook, no workflow, no other skill. Step 9 is the only place it happens, so a skipped step 9 means a permanently stale board. |
-| Step 9 fails (Rovo auth, wrong cloud id, `gh` error) | **Bookkeeping only** — the merge and deploy already succeeded. Report which tracker is stale; never retry in a loop or try to unwind the ship. |
+| GitHub issue still `OPEN` after merge | The `Closes #N` line was missing or malformed — GitHub fails silently on both. Close it by hand (step 10) and don't assume next time; `gh issue view` is the check. |
+| Jira ticket left in `In Progress` after a green deploy | Nothing else transitions it — no hook, no workflow, no other skill. Step 10 is the only place it happens, so a skipped step 10 means a permanently stale board. |
+| Step 10 fails (Rovo auth, wrong cloud id, `gh` error) | **Bookkeeping only** — the merge and deploy already succeeded. Report which tracker is stale; never retry in a loop or try to unwind the ship. |
 | Worktree cleanup | Managed (`EnterWorktree`) → `ExitWorktree` remove. Plain branch → `git branch -d/-D`. Hand-made stale worktree → confirm, then `git worktree remove` + `git branch -D`. |
 
 ## `ship-pr.sh` reference
@@ -272,3 +382,9 @@ adding it there too, or the guard will happily confirm that an incomplete set is
 | `merge <pr>` | merge + delete remote branch (gotcha-handled); prints merge SHA | yes |
 | `watch-deploy <merge-sha>` | finds + watches the `docs.yml` run; 0 if no deploy fires | no |
 | `verify-live <route>...` | curls each live route; non-zero if any ≠ 200 | no |
+
+**Step 1 has no subcommand, and nothing in CI enforces it.** The rounds are judgment, which is why they
+live in this manual rather than in the helper, but that also means the only thing keeping them is someone
+reading this file. That is a weaker guarantee than the path-filter check in `guards.yml`, and it is worth
+knowing which of the two you are relying on: if a ship skipped the rounds, the PR body is the only place
+it would show.
