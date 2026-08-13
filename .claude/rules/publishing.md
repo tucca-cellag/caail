@@ -101,6 +101,13 @@ mundane: `gh auth status` failing is not something anyone checks before typing
 `gh issue create`, and a guard that stops guarding without saying so is still
 being counted on.
 
+**`gh gist create` always takes that path**, because a gist has no repository to
+resolve. That is intended rather than an oversight: a gist is publication, as
+this file says, and a fenced code block in one is exactly the pasted-from-a-
+private-repo leak the fence signal exists to catch. It is also the noisiest
+case, since gists are code by nature, so expect the override to be the normal
+answer there and read the three questions before reaching for it.
+
 **It ships in this repo, wired through the committed `.claude/settings.json`,
 so it protects anyone who clones — not only the machine it was written on.** A
 byte-identical copy at `~/.claude/hooks/` covers every other repo; the global

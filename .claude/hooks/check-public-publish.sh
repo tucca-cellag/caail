@@ -271,30 +271,38 @@ fi
 unresolved=""
 meta=""
 
-# GNU coreutils. macOS ships no `timeout` at all, and Homebrew installs it as
-# `gtimeout` unless gnubin is on PATH, so looking only for `timeout` pinned such
-# a machine to UNRESOLVED permanently: every risky publish denied and every
-# ordinary one carried a degradation notice, on a host where `gh` was fine. That
-# is the "cries wolf, gets switched off" failure, not an outage. The bound itself
-# is kept rather than dropped, because an unbounded `gh` can hang before a publish.
+# GNU coreutils, under either of its two names. A missing bound is NOT a reason
+# to call the destination unreadable, and treating it as one was worse than the
+# hang it avoided: BSD ships no `timeout` and Homebrew installs it as `gtimeout`
+# only with coreutils, so stock macOS — the default for anyone cloning this
+# public repo — was pinned to UNRESOLVED permanently, denying every risky publish
+# on a perfectly healthy `gh`. Neither machine that runs this code would have
+# noticed: this Mac has coreutils and CI is Linux.
+#
+# So the bound is applied when it exists and skipped when it does not. An
+# unbounded `gh` can hang before a publish, which is a real cost, but it is a
+# cost paid only where no bound is installable, and a hook that hangs is at least
+# visibly wrong, where one that cries wolf gets switched off.
 TIMEOUT_BIN=$(command -v timeout || command -v gtimeout || true)
+gh_bounded() {  # gh_bounded <seconds> <gh args…>
+  local secs=$1; shift
+  if [[ -n $TIMEOUT_BIN ]]; then "$TIMEOUT_BIN" "$secs" gh "$@"; else gh "$@"; fi
+}
 
 if ! command -v gh >/dev/null 2>&1; then
   unresolved="\`gh\` is not installed"
-elif [[ -z $TIMEOUT_BIN ]]; then
-  unresolved="neither \`timeout\` nor \`gtimeout\` is installed, so no bounded \`gh\` call can be made"
 else
   if [[ -n $dest ]]; then
-    meta=$("$TIMEOUT_BIN" 10 gh repo view "$dest" --json nameWithOwner,visibility 2>/dev/null)
+    meta=$(gh_bounded 10 repo view "$dest" --json nameWithOwner,visibility 2>/dev/null)
     [[ -z $meta ]] && unresolved="\`gh\` could not read '${dest}'"
   elif [[ -n $cd_dir ]]; then
-    meta=$( (cd "$cd_dir" 2>/dev/null && "$TIMEOUT_BIN" 10 gh repo view --json nameWithOwner,visibility 2>/dev/null) )
+    meta=$( (cd "$cd_dir" 2>/dev/null && gh_bounded 10 repo view --json nameWithOwner,visibility 2>/dev/null) )
     # A cd we could not follow is not the same as "no repo here", and must not be
     # treated as one. Resolving from our own cwd instead would be the original bug;
     # skipping the payload scan would move the hole rather than close it.
     [[ -z $meta ]] && unresolved="the command changes directory to '${cd_dir}', which could not be entered or holds no repository \`gh\` can read"
   else
-    meta=$("$TIMEOUT_BIN" 10 gh repo view --json nameWithOwner,visibility 2>/dev/null)
+    meta=$(gh_bounded 10 repo view --json nameWithOwner,visibility 2>/dev/null)
     [[ -z $meta ]] && unresolved="\`gh\` could not read a repository for this command"
   fi
 
@@ -304,7 +312,7 @@ else
   # at 5s rather than 10: this is diagnostic wording, and the one time it runs is
   # the one time the network may be hanging, where it would otherwise double the
   # stall in front of every publish.
-  if [[ -n $unresolved ]] && ! "$TIMEOUT_BIN" 5 gh auth status >/dev/null 2>&1; then
+  if [[ -n $unresolved ]] && ! gh_bounded 5 auth status >/dev/null 2>&1; then
     unresolved+="; \`gh auth status\` reports no working login (an expired token, no token, or an unreachable github.com all land here)"
   fi
 fi
@@ -327,13 +335,36 @@ if [[ -n $unresolved ]]; then
   # `gh api -X POST /repos/<owner>/<repo>/issues` carries its own destination and
   # needs no local repository, so from any non-repo directory it would have
   # worked and this hook denied it. That is why the endpoint is parsed above.
-  # What remains: an `api` call whose `repos/` tokens disagree, and a token
-  # scoped to write issues but not read repo metadata. Both are unusual, and both
-  # pay the one-line override rather than a silent pass.
+  # What remains: an `api` call whose `repos/` tokens disagree; a token scoped to
+  # write issues but not read repo metadata; and `gh gist create`, which is in the
+  # tripwire and has no repository at all, so it always lands here. That last one
+  # is a deliberate behaviour change and not an oversight: a gist IS publication
+  # under .claude/rules/publishing.md, and a fenced block in one is exactly the
+  # pasted-from-a-private-repo leak the fence signal exists to catch. It is the
+  # noisiest of the three, because gists are code by nature. All pay the one-line
+  # override rather than a silent pass. (The mirror case is unchanged from main
+  # and still open: a gist created from inside a PRIVATE repo resolves that repo
+  # and short-circuits, so the payload is never scanned.)
   repo="an unresolved destination"
-  vis_phrase="whose visibility could NOT be resolved (${unresolved}), so it is treated as if it were public. No owner was read either, so the foreign-owner signal could not be computed and did not run; the fenced-block and security-vocabulary signals did"
-  vis_tag="UNRESOLVED, ${unresolved}"
+
+  # The destination's OWNER is often known even when its visibility is not:
+  # `$dest` is `owner/repo` by construction, whether it came from `--repo`/`-R` or
+  # from the api endpoint. Suppressing the foreign-owner comparison merely because
+  # `gh` could not answer threw that away, and measured, it flipped a deny to an
+  # ALLOW on the originating incident's own payload shape (a paraphrase plus a
+  # link, no fence, no vocabulary) the moment a token lapsed — with the owner
+  # sitting in the command string the whole time. The crying-wolf argument for
+  # suppressing it only ever applied to the genuinely owner-less cwd and `cd`
+  # paths, which is where it still applies.
   owner=""
+  [[ $dest =~ ^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$ ]] && owner="${dest%%/*}"
+  if [[ -n $owner ]]; then
+    owner_clause="The owner is known from the command itself (${owner}), so the foreign-owner signal DID run"
+  else
+    owner_clause="No owner was read either, so the foreign-owner signal could not be computed and did not run; the fenced-block and security-vocabulary signals did"
+  fi
+  vis_phrase="whose visibility could NOT be resolved (${unresolved}), so it is treated as if it were public. ${owner_clause}"
+  vis_tag="UNRESOLVED, ${unresolved}"
 else
   repo=$(jq -r '.nameWithOwner // empty' <<<"$meta" 2>/dev/null)
   vis=$(jq -r '.visibility // empty' <<<"$meta" 2>/dev/null)

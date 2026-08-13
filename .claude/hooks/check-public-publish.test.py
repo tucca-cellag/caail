@@ -204,6 +204,20 @@ _t = shutil.which("timeout") or shutil.which("gtimeout")
 if _t: os.symlink(_t, os.path.join(gtimeout_bin, "gtimeout"))
 ONLY_GTIMEOUT = {"PATH": gtimeout_bin}
 
+# And a PATH with NEITHER, which is stock macOS: BSD ships no `timeout` and
+# `gtimeout` arrives only with Homebrew coreutils. Treating a missing bound as an
+# unreadable destination pinned such a machine to permanent UNRESOLVED, denying
+# every risky publish on a healthy `gh`. Neither machine that runs this code
+# would have caught it: this Mac has coreutils and CI is Linux, so the case has
+# to be constructed.
+no_bound_bin = os.path.join(tmp, "nbbin"); os.makedirs(no_bound_bin)
+for tool in ("cat", "jq", "shasum", "cut", "find", "grep", "sed", "awk", "gh",
+             "tr", "head", "paste", "sort", "dirname", "basename", "rm", "env",
+             "git", "security", "tail", "wc"):
+    src = shutil.which(tool)
+    if src: os.symlink(src, os.path.join(no_bound_bin, tool))
+NO_BOUND = {"PATH": no_bound_bin}
+
 # The asserted phrase has to pin the branch it names. A bare "not installed" is
 # equally a substring of the timeout branch's message, so it would pass while
 # testing nothing about which cause was reported.
@@ -276,7 +290,30 @@ ok = "PASS" if undegraded else "FAIL"
 if not undegraded: fails += 1
 print(f"  [{ok}] gtimeout only: destination still resolved, not reported degraded")
 
-shutil.rmtree(tmp, ignore_errors=True)
+# Neither binary: the bound is skipped, not converted into "unreadable".
+for name, cmd, want in CASES:
+    got, _, _ = run(HOOK_PROJ, cmd, {**NO_BOUND, "CLAUDE_PROJECT_DIR": proj}, cwd=proj)
+    ok = "PASS" if got == want else "FAIL"
+    if got != want: fails += 1
+    print(f"  [{ok}] no timeout at all: {name:28s} want={want:5s} got={got}")
+_, why, _ = run(HOOK_PROJ, CASES[0][1], {**NO_BOUND, "CLAUDE_PROJECT_DIR": proj}, cwd=proj)
+undegraded = "(PUBLIC)" in why and "UNRESOLVED" not in why
+ok = "PASS" if undegraded else "FAIL"
+if not undegraded: fails += 1
+print(f"  [{ok}] no timeout at all: destination still resolved, not reported degraded")
+
+# The owner is often known even when the visibility is not: `--repo owner/name`
+# says it outright. Keying the foreign-owner signal on `gh` succeeding threw that
+# away, and the flip it caused was deny -> ALLOW on the originating incident's own
+# payload shape, triggered by the very outage this branch exists to survive.
+got, why, _ = run(HOOK_PROJ,
+                  f'{V} --repo tucca-cellag/caail --title "feat: add paper" '
+                  '--body "adapted from https://github.com/someoneelse/theirrepo"',
+                  {**NO_AUTH, "CLAUDE_PROJECT_DIR": proj}, cwd=proj, unset=NO_TOKENS)
+kept = got == "deny" and "another owner's repo (someoneelse)" in why
+ok = "PASS" if kept else "FAIL"
+if not kept: fails += 1
+print(f"  [{ok}] an owner named in the command survives the visibility outage")
 
 # --- `gh api` carries its own destination ----------------------------------
 # `gh api -X POST /repos/<owner>/<repo>/issues` needs no local repository, so its
@@ -469,6 +506,13 @@ surfaced = got == "allow" and "someoneelse" in ctx
 ok = "PASS" if surfaced else "FAIL"
 if not surfaced: fails += 1
 print(f"  [{ok}] uncompared owners are still named in the announcement")
+
+# Cleanup sits HERE, after the last consumer of the fixture. It used to run ~190
+# lines earlier, so the "uncompared owners" case ran with GH_CONFIG_DIR pointing
+# into a deleted directory and passed only because gh treats a missing config dir
+# the same as an empty one. A test that passes by accident of the tool's
+# behaviour is not testing the state it names.
+shutil.rmtree(tmp, ignore_errors=True)
 
 print("\n=== fail-open safety ===")
 for label, payload in [("malformed json", "not json"), ("empty stdin", "")]:
