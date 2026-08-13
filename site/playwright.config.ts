@@ -49,6 +49,18 @@ if (preflightFailure) throw new Error(preflightFailure);
 
 export default defineConfig({
   testDir: './e2e',
+  // `list` is Playwright's own default and is named explicitly because adding a second
+  // reporter replaces the default set rather than extending it. The second one names
+  // any failing test on the known-unreliable register and prints the control that
+  // separates its condition from a real defect; it is silent otherwise. Reporters are
+  // constructed by the runner, so unlike the preflight above it needs no worker guard.
+  // `--reporter` on the command line replaces this list, so a run given one goes
+  // without the register. Stated rather than left to be rediscovered: a guard that is
+  // off while appearing to be on is the failure the register is about. CI runs bare
+  // `pnpm --dir site test:e2e`, so CI is covered.
+  //
+  // See scripts/test-reliability/register.ts.
+  reporter: [['list'], ['./scripts/test-reliability/playwright-reporter.ts']],
   webServer: {
     command: `pnpm preview --port ${PORT}`,
     url: BASE,

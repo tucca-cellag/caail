@@ -18,6 +18,7 @@
     "db:check": "NODE_OPTIONS='--experimental-sqlite --no-warnings' tsx scripts/db/check.ts",
     "db:fetch-licenses": "NODE_OPTIONS='--experimental-sqlite --no-warnings' tsx scripts/db/fetch-licenses.ts",
     "test": "NODE_OPTIONS='--experimental-sqlite --no-warnings' vitest run",
+    "bench:fixtures": "NODE_OPTIONS='--experimental-sqlite --no-warnings' tsx scripts/test-reliability/bench-fixtures.ts",
     "dev": "pnpm parse && astro dev",
     "start": "astro dev",
     "build": "pnpm parse && astro build",
