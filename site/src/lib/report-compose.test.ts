@@ -5,6 +5,7 @@ import { describe, it, expect } from 'vitest';
 import { buildCorrectionForm } from '../../scripts/parser/correction-form.js';
 import { correctionMailto } from './report';
 import {
+  DOI_MAX_LENGTH,
   MAILTO_MAX_URL,
   NOTE_MAX_ENCODED,
   NOTE_MAX_LENGTH,
@@ -408,35 +409,35 @@ describe('composeBody', () => {
     expect(encodeURIComponent(body).length).toBeLessThan(1800);
   });
 
-  it('keeps the WORST REAL mailto under the limit, using the longest committed id', () => {
-    // The budget in NOTE_MAX_ENCODED's comment is prose; this is the check. Both inputs are
-    // read rather than chosen: the longest id the DB actually holds (it appears twice, in
-    // the subject and in the Entry line) and the longest label the live template offers.
-    // The previous version of this assertion used a hand-picked 66-character id and a
-    // fixed 1,800 ceiling, so it would have kept passing while the real headroom was eaten.
+
+  it.each([
+    ['a note', 'note' as const],
+    // The path the note's fix never reached. A 200-character DOI in a nine-bytes-encoded
+    // script measured 1,738 encoded and put the mailto at 2,096, past the limit, while the
+    // shape check called it valid — the same truncated-email failure, one field over.
+    ['a DOI', 'doi' as const],
+  ])('keeps the worst real mailto under the limit via %s', (_label, kind) => {
     const ids = readFileSync(new URL('../../db/ndjson/items.ndjson', import.meta.url), 'utf-8')
       .trim()
       .split('\n')
       .map((line) => (JSON.parse(line) as { id: string }).id)
       .filter((id) => !id.startsWith('topic:'));
     const longestId = ids.reduce((a, b) => (b.length > a.length ? b : a));
-
-    // Through the parser rather than by re-reading the YAML here: a second, slightly
-    // different reader in a test is how a test starts passing against a shape the code
-    // does not see.
     const longestReason = buildCorrectionForm().reasons.reduce((a, b) =>
       b.label.length > a.label.length ? b : a,
     );
 
-    // A note that saturates the ENCODED cap, which is what a non-Latin script produces.
+    // Saturate whichever field this kind uses, in a script that costs nine encoded each.
+    const answers =
+      kind === 'note'
+        ? { note: '提'.repeat(NOTE_MAX_LENGTH) }
+        : { doi: `10.1234/${'提'.repeat(DOI_MAX_LENGTH)}` };
     const body = composeBody(
-      { itemId: longestId, reason: longestReason, note: '提'.repeat(NOTE_MAX_LENGTH) },
+      { itemId: longestId, reason: { ...longestReason, kind }, ...answers },
       VOCAB,
     );
     const url = correctionMailto(longestId, body);
     expect(url.length).toBeLessThan(MAILTO_MAX_URL);
-    // And with real margin, not by a hair: a limit this close to the wire is one longer
-    // id away from silently truncating someone's report.
     expect(MAILTO_MAX_URL - url.length).toBeGreaterThan(200);
   });
 

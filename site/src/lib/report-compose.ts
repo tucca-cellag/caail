@@ -362,6 +362,21 @@ const DOI_RE = /^10\.\d{4,9}\/[^\s?#]+$/;
 export const DOI_MAX_LENGTH = 200;
 
 /**
+ * The same bound in encoded characters, for the same reason {@link NOTE_MAX_ENCODED} exists.
+ *
+ * A character cap does not bound a URL. The note learned this and the DOI did not: a DOI of
+ * exactly 200 characters in a script costing nine encoded each measures 1,738 encoded and
+ * put the mailto at 2,096, over {@link MAILTO_MAX_URL}, while `isDoiShape` reported it fine.
+ * That is the truncated-email failure this module already guards against on the other path,
+ * reachable through the one field it did not cover.
+ *
+ * 600 is far beyond any registered DOI — the suffix is conventionally ASCII, so a real one
+ * of 200 characters encodes to about 200 — and still leaves the worst-case URL near 950.
+ * The point is to have a bound in the unit that binds, not to be tight.
+ */
+export const DOI_MAX_ENCODED = 600;
+
+/**
  * Normalise the ways a reader will paste a DOI into the bare `10.x/…` form.
  *
  * Readers copy what they are looking at, which is usually a resolver URL from the address
@@ -387,7 +402,14 @@ export function normaliseDoi(raw: string): string {
 /** True when `value` normalises to something DOI-shaped. Empty is not an error, just absent. */
 export function isDoiShape(value: string): boolean {
   const doi = normaliseDoi(value);
-  return doi.length <= DOI_MAX_LENGTH && DOI_RE.test(doi);
+  return (
+    doi.length <= DOI_MAX_LENGTH &&
+    // Both bounds, exactly as boundNote applies both: the character cap is what the input
+    // field counts, and the encoded cap is what keeps the URL deliverable. They coincide
+    // for ASCII, which is why checking only the first one looked sufficient.
+    encodedLength(doi) <= DOI_MAX_ENCODED &&
+    DOI_RE.test(doi)
+  );
 }
 
 /**
