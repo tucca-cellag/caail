@@ -131,15 +131,40 @@ route_for() {
   esac
 }
 
+# The preconditions that must hold at BOTH step 0 and step 2, which is why they
+# live here instead of inside cmd_preflight. Every one of them can go stale in
+# between, because step 1's review rounds sit in the gap: they edit files (so a
+# clean tree becomes dirty), they can be driven from another checkout after a
+# `git checkout` (so the branch identity changes, and the primary checkout holds
+# main), and they take long enough for a token to lapse.
+#
+# The dirty-tree case is the one worth spelling out. A fix a round produced and
+# nobody committed does not ship, and it fails silently in both directions: the
+# working tree the review was performed against still looks correct, and the PR
+# body truthfully claims the finding was fixed. Pushing is the last moment the
+# two can still be reconciled.
+#
+# Deliberately NOT here: the non-empty-diff assertion. It needs the fetch that
+# cmd_preflight is already doing for its path prediction, so duplicating it here
+# would buy a second network round trip for a case preflight already catches.
+assert_shippable() {
+  local br; br="$(current_branch)"
+  [ "$br" != "$DEFAULT_BRANCH" ] || die "on the default branch ($DEFAULT_BRANCH) — ship from a feature branch."
+  local dirty; dirty="$(git status --porcelain)"
+  if [ -n "$dirty" ]; then
+    printf 'ship-pr: working tree is not clean — refusing to proceed\n' >&2
+    printf '%s\n' "$dirty" >&2
+    die 'commit the above, then re-run preflight. A stashed fix does not ship.'
+  fi
+  gh auth status >/dev/null 2>&1 || die "gh not authenticated (run: gh auth login)."
+}
+
 cmd_preflight() {
   local br; br="$(current_branch)"
   printf 'Branch: %s   Repo: %s   Default: %s\n' "$br" "$REPO" "$DEFAULT_BRANCH"
-  [ "$br" != "$DEFAULT_BRANCH" ] || die "on the default branch ($DEFAULT_BRANCH) — ship from a feature branch."
-  if [ -n "$(git status --porcelain)" ]; then
-    die "working tree is dirty — commit or stash before shipping."
-  fi
+  assert_shippable
   note "working tree clean ✓"
-  if gh auth status >/dev/null 2>&1; then note "gh authenticated ✓"; else die "gh not authenticated (run: gh auth login)."; fi
+  note "gh authenticated ✓"
 
   local paths lint=no tests=no deploy=no guards=no; local routes=()
   paths="$(changed_paths)"
@@ -180,21 +205,11 @@ cmd_preflight() {
 
 cmd_push() {
   local br; br="$(current_branch)"
-
-  # Refuse a dirty tree. `preflight` also checks this, but it runs at step 0 —
-  # BEFORE the review rounds edit files — so it cannot see a fix that a round
-  # produced and nobody committed. That gap is silent in both directions: the
-  # working tree the review was performed against still looks correct, and the
-  # PR body truthfully claims the finding was fixed, while the fix itself never
-  # leaves the machine. Pushing is the last moment the two can still be
-  # reconciled, so the check belongs here as well as there.
-  local dirty; dirty="$(git status --porcelain)"
-  if [ -n "$dirty" ]; then
-    printf 'ship-pr: working tree is not clean — refusing to push\n' >&2
-    printf '%s\n' "$dirty" >&2
-    die 'commit (or stash) the above, then re-run preflight and push again'
-  fi
-
+  # Re-assert everything, not just the tree. Copying one assertion out of
+  # preflight is how this grew a hole: the first version of this guard checked
+  # the tree and not the branch, so `push` would have pushed main straight to
+  # origin — no PR, no checks, and docs.yml deploying an unreviewed commit.
+  assert_shippable
   git push -u origin "$br"
 }
 

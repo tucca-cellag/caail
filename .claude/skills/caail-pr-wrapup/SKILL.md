@@ -70,66 +70,91 @@ gate (above) if you haven't this session.
 
 ### 1. Review rounds
 
-Run `/code-review <level>`, apply or triage every finding, then **run it again on the updated diff**.
-The table below sets the level *and* the floor on rounds for each diff shape; the stop rule under it is
-what ends the phase. Do this before the push, so fixes land as ordinary commits instead of churn on an
-open PR.
+**The level is always `high`.** Every round, every diff shape:
 
-**Pick the level from the shape of the diff, not its line count.** Blast radius is what matters: a
-presentational change and a parser change do not deserve the same budget. **When a diff matches several
-rows, the highest-blast-radius row wins** — a `site/src/**` change that also edits a workflow or a hook
-is a guards-row diff, not a site-code one, and CAAIL PRs span rows routinely.
+```
+/code-review high origin/main...HEAD
+```
 
-| Diff shape | Level | Rounds floor |
-| --- | --- | --- |
-| Prose only: `.claude/` rules/agents/skills, `docs/**`, editorial prose in a canonical page | `medium` | 2 |
-| Structured catalog: `site/db/**` NDJSON, `dois-manual.json`, `dois-related.json`, `licenses-manual.json`, and the Markdown `db:emit` regenerates from them | `high` | 2 |
-| Site code: `site/src/**`, `site/e2e/**`, `site/scripts/parser/**` | `high`, rising to `xhigh`/`max` when it crosses a route or page boundary, changes `generate-data.ts`, or touches a shared component more than one page mounts | 2, usually 3 |
-| Trust boundaries and guards: `workers/**`, `.claude/hooks/**`, `ship-pr.sh`, `check-ci-paths.py`, `.github/workflows/**` | `max` | 3 |
+Then apply or triage every finding and **run it again on the updated diff**, until the findings die out.
+Do this before the push, so fixes land as ordinary commits instead of churn on an open PR.
+
+**Depth comes from the number of rounds, not from the level.** That is the deliberate choice here, and it
+is what "scale with the diff" means in this skill: a presentational change and a parser change get the
+same level and a different number of passes. Do not reach for `max`, `xhigh` or `ultra`. They are not the
+lever, and two of them are actively worse than they look: `xhigh` falls back to `high` on models other
+than the newest Opus without saying so, and `ultra` is user-triggered and billed, so an agent cannot run
+it at all. A level you think you raised but did not is the same silent failure as the thin cross-model
+report this whole phase exists to compensate for.
+
+**The floor on rounds comes from blast radius.** When a diff spans shapes, the widest one wins, and CAAIL
+PRs span shapes routinely.
+
+| Diff shape | Rounds floor |
+| --- | --- |
+| Prose only: `.claude/` rules and agents, `docs/**`, editorial prose in a canonical page | 2 |
+| Structured catalog: the committed NDJSON, the curated `dois-*.json` / `licenses-manual.json` inputs, and the Markdown `db:emit` regenerates from them | 2 |
+| Site code: anything under `site/src/**`, `site/e2e/**`, or the parser | 3 |
+| Everything that regenerates published content or mints public ids: the DB tooling under `site/scripts/db/**` | 3 |
+| Trust boundaries and guards: the Worker, the hooks, this skill's own scripts, the workflows | 3 |
+
+**Ask `preflight` which shapes a diff actually spans; don't pattern-match paths by eye.** It prints the
+changed-path list and predicts which workflows fire, from the same path lists `check-ci-paths.py` asserts
+against the YAML. Re-typing those globs here would be a fifth hand-maintained copy beside four
+machine-checked ones, which is this repo's most expensive recurring bug.
 
 `db:check` / `db:verify` output belongs *in* the review of a catalog change, not instead of it: those
 assert referential integrity and round-tripping, which is a different question from whether the entry is
-right. `ultra` (the multi-agent cloud pass) is the deepest option available, but it is **user-triggered
-and billed, so you cannot launch it** — say it's worth it and let the user decide.
+right.
 
 **What each round has to do:**
 
-- **Round 1 over the whole branch diff.** Name the range explicitly: `origin/main...HEAD`. Nothing is
-  pushed yet, so any default that resolves against an upstream has none to resolve against, and a
-  default scoped to the working tree sees only the uncommitted delta rather than what the PR will
-  contain.
+- **Round 1 over the whole branch diff.** Name the range explicitly, and put the level **first**:
+  `/code-review high origin/main...HEAD`. The level is read from the first argument only, so
+  `/code-review origin/main...HEAD` silently reuses whatever level was last typed in any session, and the
+  PR body then claims a level that never ran. The range matters too: nothing is pushed yet, so a default
+  that resolves against an upstream has none, and the fallbacks land on either `main...HEAD` or a single
+  commit, which reviews one commit of a multi-commit branch.
 - **Apply or triage every finding.** Fixed, or declined with a stated reason, and if it is real but out
-  of scope it gets a ticket. "Not acted on" and "not a defect" are different outcomes; only one is free.
-- **Round 2 over the whole diff again**, at the level round 1 ran at (or the raised one, below). Not
-  narrowed to the files round 1 touched: the point of round 2 is the defects the *fixes* introduced, and
-  a bad fix does not confine its damage to its own file.
-- **Round 3 (and beyond)** when round 2 returned anything you acted on, or when the round-2 fixes were
-  more than typo-scale.
+  of scope it gets a Jira ticket (search the open board first, per `CLAUDE.md`; a finding that names an
+  unpatched weakness in a live service gets `disclosure-private` and no GitHub issue). "Not acted on" and
+  "not a defect" are different outcomes; only one is free.
+- **Round 2 over the whole diff again.** Not narrowed to the files round 1 touched: the point of round 2
+  is the defects the *fixes* introduced, and a bad fix does not confine its damage to its own file.
+- **Round 3 and beyond, until the findings die out.** Each round takes the previous round's triage list,
+  so it stops re-deriving candidates an earlier round already refuted.
 
 **When to stop.** Both conditions, not either:
 
-1. The **floor for the diff's row** in the table above has been reached.
+1. The **floor for the widest shape in the diff** has been reached.
 2. The **last round returned nothing you acted on.**
 
 An empty round does not shorten the floor; it only ends the sequence once the floor is already met. So a
-prose diff whose round 1 is empty still gets round 2, and a guards-row diff still gets three.
+prose diff whose round 1 is empty still gets round 2, and a site-code or guards diff still gets three.
 
-**When an empty round is suspicious rather than reassuring.** On anything above the prose row, an empty
-*first* round says more about the review than about the diff. Raise one notch and re-run **over the whole
-diff** (an extra narrowed pass at a hot spot is fine on top of that, never instead of it). At `max` there
-is no notch left: run out the floor, then stop and say why the shape still looks under-reviewed so the
-user can decide about `ultra`. Escalating with nowhere to go is a loop, not a gate.
+**An empty first round on a wide diff is suspicious, not reassuring.** There is no level to raise, so the
+answer is to keep going to the floor and to say plainly that a round came back empty on a diff that shape.
+An extra pass narrowed to a hot spot is fine on top of a whole-diff round, never instead of one.
 
 **Then close the phase properly**, because moving review before the push removed the only clean-tree
 checkpoint that used to sit between editing and shipping:
 
-- **Re-run the local gate for whatever a round touched.** The precondition gate was evaluated *before*
-  step 1, so every fix made here is ungated code, and under the old ordering (review after the PR was
-  open) CI had already seen it. Now it hasn't. `site/**` or `workers/**` → `pnpm --dir site test`, plus
-  `build` / `test:e2e` for the affected specs. The guards row has local tests too, and they are the ones
-  easiest to forget because they are not npm scripts: `.claude/hooks/**` →
-  `python3 .claude/hooks/check-public-publish.test.py`; `ship-pr.sh`, `check-ci-paths.py` or
-  `.github/workflows/**` → `python3 .claude/skills/caail-pr-wrapup/check-ci-paths.py`.
+- **Re-run the local gate for whatever a round touched.** Every fix made here is ungated code: the
+  precondition gate was evaluated *before* step 1. Match the gate to what changed, because the mapping is
+  not uniform and two of these are easy to get wrong:
+
+  | A round touched | Re-run |
+  | --- | --- |
+  | `site/**`, `workers/**` | `pnpm --dir site test`, plus `build` / `test:e2e` for the affected specs |
+  | the committed NDJSON or the curated DOI/license inputs | `pnpm --dir site db:check` **and** `db:verify`, then `db:emit` and confirm `git diff` is empty. Skipping the re-emit is how the Markdown drifts from the DB, and the first signal would be a red sync guard at step 5, after the push |
+  | `check-public-publish.sh` | `python3 .claude/hooks/check-public-publish.test.py` |
+  | `block-generated-edits.py` | `pnpm --dir site test` — its only coverage is `site/scripts/db/hook.test.ts`, so the publish-hook suite above does **not** exercise it. The two hooks are tested in different places; the CI section below says so too |
+  | `ship-pr.sh`, `check-ci-paths.py`, `.github/workflows/**` | `python3 .claude/skills/caail-pr-wrapup/check-ci-paths.py` |
+  | canonical Markdown (`Datasets/**`, `Primers/**`, root `*.md`) | `pnpm --dir site test` — `test.yml` and `docs.yml` both fire on these, so a local run is the cheaper reader |
+
+  Note `pnpm --dir site build` rewrites tracked files under `site/public/api/`, so running it can dirty
+  the tree. That is expected; commit or discard before the push rather than being surprised by the
+  clean-tree refusal.
 - **Commit the fixes, then re-run `preflight`.** A fix left uncommitted does not ship, and the failure is
   silent in both directions: the tree you reviewed still looks correct, and the PR body truthfully says
   the finding was fixed. `preflight` is the dirty-tree check and it ran at step 0, before these edits
@@ -147,9 +172,13 @@ checkpoint that used to sit between editing and shipping:
   changed route that no spec visits has not been checked, and "no violations" from a suite that never
   loaded it is not a result.
 - **A guard added while fixing a finding is not trusted until it has been seen failing on that defect**
-  (`CAAIL-221`). Restore the broken state, run the new test, confirm it fails **with a message naming the
-  real problem**, restore the fix, then say in the PR body that this was done. A test written only
-  against fixed code proves the code passes the test, which is not the claim you need.
+  (`CAAIL-221`). A test written only against fixed code proves the code passes the test, which is not the
+  claim you need. **Commit the fix and the guard first**, then reproduce the defect on top of the commit,
+  run the guard, confirm it fails **with a message naming the real problem**, and `git restore` back to
+  the committed state. Do it in that order: at this point in step 1 the fix usually exists only in the
+  working tree, and the obvious way to "restore the broken state" is a `git checkout --` that destroys it
+  with nothing to restore from. If you must stay uncommitted, `git stash -u` (plain `git stash` leaves new
+  files behind) and restore explicitly. Then say in the PR body that the guard was seen failing.
 
 #### Why this is more than one pass, and why that is provisional
 
