@@ -1,7 +1,7 @@
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { defineConfig } from '@playwright/test';
-import { preflightOnce } from './scripts/e2e-preflight';
+import { preflight } from './scripts/e2e-preflight';
 
 /**
  * Preview port, overridable via CAAIL_E2E_PORT.
@@ -34,11 +34,12 @@ const REUSE_EXISTING_SERVER = !process.env.CI;
  * against Playwright's own server. Config evaluation is the only phase strictly
  * earlier than that. See scripts/e2e-preflight.ts for the two failure modes.
  *
- * `preflightOnce` rather than `runPreflight` because Playwright re-evaluates this
+ * `preflight` rather than `runPreflight` because Playwright re-evaluates this
  * file in every worker process, and workers start after the web server — so an
- * unguarded check would hit that same trap from the other side.
+ * unguarded port probe would hit that same trap from the other side. It skips the
+ * port probe in workers and still checks the build artifacts on every evaluation.
  */
-const preflightFailure = preflightOnce({
+const preflightFailure = preflight({
   distDir: join(dirname(fileURLToPath(import.meta.url)), 'dist'),
   port: PORT,
   reuseExistingServer: REUSE_EXISTING_SERVER,

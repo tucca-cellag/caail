@@ -48,7 +48,20 @@ import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-/** The pagefind artifacts every search spec depends on, relative to `dist/`. */
+/**
+ * The pagefind artifacts every search spec depends on, relative to `dist/`.
+ *
+ * **Deliberately a named list, not a walk of `dist/pagefind/`.** Scanning that
+ * directory looks like the obvious generalisation, and it is wrong: a healthy build
+ * of this site ships three files that are *legitimately* entirely NUL —
+ * `pagefind-ui.js`, `pagefind-modular-ui.js` and `pagefind-modular-ui.css` (measured
+ * on a build whose search specs pass). Starlight renders its own search UI and never
+ * loads them. A wholesale scan would therefore fail every healthy run, which is worse
+ * than having no guard at all.
+ *
+ * Extend this list only with a file whose corruption has actually been observed to
+ * break search, and only after checking that a healthy build's copy is not all-NUL.
+ */
 export const PAGEFIND_ARTIFACTS = ['pagefind/pagefind.js', 'pagefind/pagefind-entry.json'] as const;
 
 export type ArtifactVerdict =
@@ -83,6 +96,12 @@ function readArtifact(path: string): Uint8Array | null {
 export interface PagefindProblem {
   /** Path relative to `dist/`, e.g. `pagefind/pagefind.js`. */
   relative: string;
+  /**
+   * `corrupt` = present but unusable (all-NUL or zero length), so a byte-count
+   * command can confirm it. `missing` = not on disk, where that command would
+   * print a file-not-found error instead of the promised zero.
+   */
+  kind: 'corrupt' | 'missing';
   /** One-line description naming the file and what is wrong with it. */
   message: string;
 }
@@ -117,7 +136,8 @@ export function checkPagefindArtifacts(
         : verdict.status === 'empty'
           ? 'is zero bytes'
           : 'is missing';
-    problems.push({ relative, message: `dist/${relative} ${detail}` });
+    const kind = verdict.status === 'absent' ? 'missing' : 'corrupt';
+    problems.push({ relative, kind, message: `dist/${relative} ${detail}` });
   }
   return problems;
 }
@@ -190,6 +210,14 @@ export function describePortHolder(port: number): string {
 export const PREFLIGHT_DONE_ENV = 'CAAIL_E2E_PREFLIGHT_DONE';
 
 /**
+ * Set by the runner when it deliberately attached to a server it did not start, so
+ * workers skip the artifact check too. Without it the runner warns and proceeds
+ * while every worker independently faults the local `dist` — a build nobody is
+ * serving. Workers inherit the runner's env at fork time, which is after this is set.
+ */
+export const PREFLIGHT_ATTACHED_ENV = 'CAAIL_E2E_ATTACHED';
+
+/**
  * Whether this process is the one that starts the web server, rather than a worker
  * Playwright forked afterwards.
  *
@@ -216,6 +244,14 @@ export interface PreflightOptions {
   reuseExistingServer: boolean;
   /** Escape hatch: attach to the existing server deliberately, with a warning. */
   allowExistingServer: boolean;
+  /**
+   * Whether to probe the port. False in a Playwright worker, which starts after the
+   * web server and would therefore always see the port held. Defaults to true so a
+   * direct caller gets the full check.
+   */
+  checkPort?: boolean;
+  /** Called when the run deliberately attaches to a server it did not start. */
+  onAttach?: () => void;
   /** Injected in tests. */
   portIsHeld?: (port: number) => boolean;
   describeHolder?: (port: number) => string;
@@ -224,18 +260,34 @@ export interface PreflightOptions {
 }
 
 /**
- * The entry point the Playwright config calls: run every check exactly once per
- * `playwright test` invocation, in the runner process only.
+ * The entry point the Playwright config calls.
  *
- * Returns a fully-formed error message when the run would be untrustworthy, or
- * `null` when it is safe to proceed (including when this is a worker and the
- * runner already vouched for the run).
+ * The **port** probe runs only in the runner process: workers start after the web
+ * server and would see the port held on every healthy run. The **artifact** check
+ * runs on every config evaluation instead, because it is idempotent and cheap, and
+ * because a long-lived runner (`--ui`, an IDE test server) re-evaluates the config
+ * after a rebuild — gating it to the first evaluation would leave every later run in
+ * that session unguarded against exactly the corruption it exists to catch.
  */
-export function preflightOnce(options: PreflightOptions): string | null {
+export function preflight(options: PreflightOptions): string | null {
   const env = options.env ?? process.env;
-  if (!isMainRunnerProcess(env)) return null;
+
+  if (!isMainRunnerProcess(env)) {
+    // The runner attached to a server this dist does not back, so nothing here
+    // describes what the specs are about to exercise.
+    if (env[PREFLIGHT_ATTACHED_ENV] === '1') return null;
+    return runPreflight({ ...options, checkPort: false });
+  }
+
   env[PREFLIGHT_DONE_ENV] = '1';
-  return runPreflight(options);
+  return runPreflight({
+    ...options,
+    checkPort: true,
+    onAttach: () => {
+      env[PREFLIGHT_ATTACHED_ENV] = '1';
+      options.onAttach?.();
+    },
+  });
 }
 
 /**
@@ -248,35 +300,17 @@ export function runPreflight(options: PreflightOptions): string | null {
     port,
     reuseExistingServer,
     allowExistingServer,
+    checkPort = true,
+    onAttach,
     portIsHeld = isPortHeld,
     describeHolder = describePortHolder,
     warn = (message: string) => console.warn(message),
   } = options;
 
-  const pagefindProblems = checkPagefindArtifacts(distDir);
-  if (pagefindProblems.length > 0) {
-    return [
-      'e2e preflight: the pagefind search index in this build is corrupt.',
-      '',
-      ...pagefindProblems.map((problem) => `  - ${problem.message}`),
-      '',
-      'Pagefind will never initialise, the search dialog will stay empty, and every',
-      'spec that opens search fails on a content assertion ten seconds later — which',
-      'reads as a regression in whatever you changed. It is not: an incremental build',
-      'intermittently writes these files correctly sized and entirely zero-filled.',
-      '',
-      'Fix: rm -rf dist && pnpm build',
-      'Confirm (0 means corrupt):',
-      ...pagefindProblems.map(
-        (problem) => `  tr -d '\\000' < ${join(distDir, problem.relative)} | wc -c`,
-      ),
-    ].join('\n');
-  }
-
-  if (!reuseExistingServer) return null;
-  if (!portIsHeld(port)) return null;
-
-  if (allowExistingServer) {
+  // Port first. When a foreign server holds the port, THAT is what the specs will
+  // exercise, so the state of the local dist is not yet the interesting question.
+  if (checkPort && reuseExistingServer && portIsHeld(port)) {
+    if (!allowExistingServer) return portHeldMessage(port, describeHolder(port));
     warn(
       [
         `e2e preflight: port ${port} is held by ${describeHolder(port)} and`,
@@ -285,11 +319,58 @@ export function runPreflight(options: PreflightOptions): string | null {
         `the build in ${distDir}.`,
       ].join('\n'),
     );
+    // Deliberately attached, so the artifact check is skipped: it describes distDir,
+    // and the whole point of the escape hatch is that distDir is not what is served.
+    // Aborting here would demand `rm -rf dist && pnpm build` for a build nobody is
+    // testing, which is the same mistake in the other direction.
+    onAttach?.();
     return null;
   }
 
+  const pagefindProblems = checkPagefindArtifacts(distDir);
+  if (pagefindProblems.length > 0) return pagefindMessage(distDir, pagefindProblems);
+
+  return null;
+}
+
+/** The message for a build whose pagefind index cannot work. */
+function pagefindMessage(distDir: string, problems: PagefindProblem[]): string {
+  const corrupt = problems.filter((problem) => problem.kind === 'corrupt');
   return [
-    `e2e preflight: port ${port} is already held by ${describeHolder(port)},`,
+    "e2e preflight: this build's pagefind search index is unusable.",
+    '',
+    ...problems.map((problem) => `  - ${problem.message}`),
+    '',
+    'Pagefind will never initialise, the search dialog will stay empty, and every',
+    'spec that opens search fails on a content assertion ten seconds later — which',
+    'reads as a regression in whatever you changed. It is not.',
+    ...(corrupt.length > 0
+      ? [
+          '',
+          'An incremental build intermittently writes these files at the correct size',
+          'and entirely zero-filled.',
+        ]
+      : []),
+    '',
+    'Fix: rm -rf dist && pnpm build',
+    // Only for files that exist: on a missing one this prints a file-not-found error
+    // rather than the promised zero, contradicting the diagnosis. LC_ALL=C because
+    // `tr` bails with "Illegal byte sequence" on non-UTF-8 bytes in a UTF-8 locale.
+    ...(corrupt.length > 0
+      ? [
+          'Confirm (0 means corrupt):',
+          ...corrupt.map(
+            (problem) => `  LC_ALL=C tr -d '\\000' < ${join(distDir, problem.relative)} | wc -c`,
+          ),
+        ]
+      : []),
+  ].join('\n');
+}
+
+/** The message for a port held by a server this run did not start. */
+function portHeldMessage(port: number, holder: string): string {
+  return [
+    `e2e preflight: port ${port} is already held by ${holder},`,
     'which this run did not start.',
     '',
     'reuseExistingServer is on outside CI, so Playwright would silently ATTACH to that',

@@ -1,15 +1,17 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { createServer, type Server } from 'node:net';
 import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+// `join` and `writeFileSync` are also used directly by the named-list test below.
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import {
   checkPagefindArtifacts,
   classifyArtifact,
   isPortHeld,
-  preflightOnce,
+  preflight,
   runPreflight,
   PAGEFIND_ARTIFACTS,
+  PREFLIGHT_ATTACHED_ENV,
   PREFLIGHT_DONE_ENV,
 } from './e2e-preflight';
 
@@ -77,21 +79,38 @@ describe('checkPagefindArtifacts', () => {
     expect(problems).toEqual([
       {
         relative: 'pagefind/pagefind.js',
+        kind: 'corrupt',
         message:
           'dist/pagefind/pagefind.js is 45555 bytes of NUL — the correct size, entirely zero-filled',
       },
       {
         relative: 'pagefind/pagefind-entry.json',
+        kind: 'corrupt',
         message:
           'dist/pagefind/pagefind-entry.json is 172 bytes of NUL — the correct size, entirely zero-filled',
       },
     ]);
   });
 
-  it('reports a missing artifact', () => {
+  it('reports a missing artifact, distinguished from a corrupt one', () => {
     expect(checkPagefindArtifacts(makeDist({ 'pagefind/pagefind.js': null }))).toEqual([
-      { relative: 'pagefind/pagefind.js', message: 'dist/pagefind/pagefind.js is missing' },
+      {
+        relative: 'pagefind/pagefind.js',
+        kind: 'missing',
+        message: 'dist/pagefind/pagefind.js is missing',
+      },
     ]);
+  });
+
+  it('ignores an all-NUL file that is not one of the named artifacts', () => {
+    // Load-bearing, and the reason PAGEFIND_ARTIFACTS is a named list rather than a
+    // walk of dist/pagefind/. A HEALTHY build of this site ships three legitimately
+    // all-NUL files (pagefind-ui.js, pagefind-modular-ui.js, pagefind-modular-ui.css)
+    // that Starlight never loads, measured on a build whose search specs pass.
+    // Generalising this check to the whole directory would fail every healthy run.
+    const dir = makeDist({});
+    writeFileSync(join(dir, 'pagefind/pagefind-ui.js'), Buffer.alloc(119987));
+    expect(checkPagefindArtifacts(dir)).toEqual([]);
   });
 
   it('says nothing when dist does not exist', () => {
@@ -138,7 +157,7 @@ describe('runPreflight', () => {
       ...base,
       distDir: makeDist({ 'pagefind/pagefind.js': Buffer.alloc(45555) }),
     });
-    expect(message).toContain('pagefind search index in this build is corrupt');
+    expect(message).toContain("this build's pagefind search index is unusable");
     expect(message).toContain('45555 bytes of NUL');
     expect(message).toContain('rm -rf dist && pnpm build');
   });
@@ -160,6 +179,21 @@ describe('runPreflight', () => {
     expect(confirmLines).not.toContain('pagefind.js');
   });
 
+  it('suggests no byte-count command for a missing file, and no zero-fill story', () => {
+    // `tr -d '\000' < <missing>` prints a file-not-found error, not the promised 0,
+    // and "written correctly sized and zero-filled" is simply false for a file that
+    // is not there. Same defect class as the hardcoded confirm path: a diagnostic
+    // that contradicts itself exactly when it has to be believed.
+    const message = runPreflight({
+      ...base,
+      distDir: makeDist({ 'pagefind/pagefind.js': null }),
+    })!;
+    expect(message).toContain('dist/pagefind/pagefind.js is missing');
+    expect(message).not.toContain('tr -d');
+    expect(message).not.toContain('zero-filled');
+    expect(message).toContain('rm -rf dist && pnpm build');
+  });
+
   it('suggests one confirm command per broken artifact', () => {
     const message = runPreflight({
       ...base,
@@ -171,16 +205,43 @@ describe('runPreflight', () => {
     expect(message.split('\n').filter((line) => line.includes('tr -d'))).toHaveLength(2);
   });
 
-  it('reports the corrupt build even when the port is also held', () => {
-    // Artifact first: a wrong build is the more misleading of the two, and a
-    // single message beats two competing explanations for one red run.
+  it('reports the held port first when the build is also corrupt', () => {
+    // Port wins: when a foreign server holds the port, that is what the specs will
+    // exercise, so the state of the local dist is not yet the interesting question.
+    // Reporting the build first would send someone to rebuild a dist this run is
+    // not going to serve.
     const message = runPreflight({
       ...base,
       distDir: makeDist({ 'pagefind/pagefind.js': Buffer.alloc(45555) }),
       portIsHeld: () => true,
     });
-    expect(message).toContain('corrupt');
-    expect(message).not.toContain('already held');
+    expect(message).toContain('already held');
+    expect(message).not.toContain('zero-filled');
+  });
+
+  it('does not fault the local build when the run deliberately attaches elsewhere', () => {
+    // The escape hatch asserts that distDir is not what is being served, so
+    // demanding `rm -rf dist && pnpm build` for it would be the same category error
+    // the port check exists to prevent, pointed the other way.
+    const message = runPreflight({
+      ...base,
+      distDir: makeDist({ 'pagefind/pagefind.js': Buffer.alloc(45555) }),
+      portIsHeld: () => true,
+      allowExistingServer: true,
+    });
+    expect(message).toBeNull();
+  });
+
+  it('still faults the local build when the opt-out is set but no server is there', () => {
+    // Nothing to attach to, so Playwright starts its own server on this dist and
+    // the artifact check is once again about the build that will be served.
+    const message = runPreflight({
+      ...base,
+      distDir: makeDist({ 'pagefind/pagefind.js': Buffer.alloc(45555) }),
+      portIsHeld: () => false,
+      allowExistingServer: true,
+    });
+    expect(message).toContain('zero-filled');
   });
 
   it('fails on a held port, naming the holder and the escapes', () => {
@@ -221,7 +282,7 @@ describe('runPreflight', () => {
   });
 });
 
-describe('preflightOnce', () => {
+describe('preflight', () => {
   const base = {
     port: 4321,
     reuseExistingServer: true,
@@ -230,9 +291,9 @@ describe('preflightOnce', () => {
     warn: () => {},
   };
 
-  it('checks in a runner process, and marks the env so children know', () => {
+  it('probes the port in a runner process, and marks the env so children know', () => {
     const env: NodeJS.ProcessEnv = {};
-    const message = preflightOnce({
+    const message = preflight({
       ...base,
       distDir: makeDist({}),
       portIsHeld: () => true,
@@ -242,14 +303,14 @@ describe('preflightOnce', () => {
     expect(env[PREFLIGHT_DONE_ENV]).toBe('1');
   });
 
-  it('skips in a Playwright worker process', () => {
+  it('does not probe the port in a Playwright worker process', () => {
     // The bug this pins: Playwright re-evaluates the config in each worker, and a
     // worker starts AFTER the web server. Left unguarded the port probe sees
     // Playwright's own preview server and fails every healthy run.
     let probed = false;
-    const message = preflightOnce({
+    const message = preflight({
       ...base,
-      distDir: makeDist({ 'pagefind/pagefind.js': Buffer.alloc(45555) }),
+      distDir: makeDist({}),
       portIsHeld: () => {
         probed = true;
         return true;
@@ -260,10 +321,10 @@ describe('preflightOnce', () => {
     expect(probed).toBe(false);
   });
 
-  it('skips when a parent process already ran the checks', () => {
+  it('does not probe the port when a parent process already did', () => {
     // Second signal, independent of Playwright internals: forked workers inherit
     // the runner's env.
-    const message = preflightOnce({
+    const message = preflight({
       ...base,
       distDir: makeDist({}),
       portIsHeld: () => true,
@@ -272,10 +333,52 @@ describe('preflightOnce', () => {
     expect(message).toBeNull();
   });
 
-  it('is idempotent within one process', () => {
+  it('still checks the build artifacts on every evaluation, not only the first', () => {
+    // A long-lived runner (`--ui`, an IDE test server) re-evaluates the config after
+    // a rebuild. Gating the artifact check to the first evaluation would leave every
+    // later run in that session unguarded against the corruption it exists to catch.
     const env: NodeJS.ProcessEnv = {};
-    const options = { ...base, distDir: makeDist({}), portIsHeld: () => true, env };
-    expect(preflightOnce(options)).toContain('already held');
-    expect(preflightOnce(options)).toBeNull();
+    const options = {
+      ...base,
+      distDir: makeDist({ 'pagefind/pagefind.js': Buffer.alloc(45555) }),
+      portIsHeld: () => false,
+      env,
+    };
+    expect(preflight(options)).toContain('zero-filled');
+    expect(preflight(options)).toContain('zero-filled');
+  });
+
+  it('checks the build artifacts even inside a worker', () => {
+    const message = preflight({
+      ...base,
+      distDir: makeDist({ 'pagefind/pagefind.js': Buffer.alloc(45555) }),
+      portIsHeld: () => true,
+      env: { TEST_WORKER_INDEX: '0' },
+    });
+    expect(message).toContain('zero-filled');
+  });
+
+  it('tells workers when the runner attached, so they do not fault the local build', () => {
+    // Observed end to end before this was wired: with a corrupt local dist and
+    // CAAIL_E2E_ALLOW_EXISTING_SERVER=1, the runner warned and proceeded, then every
+    // worker independently threw about a build nobody was serving. The runner's
+    // decision has to reach the workers, since only it probes the port.
+    const env: NodeJS.ProcessEnv = {};
+    const distDir = makeDist({ 'pagefind/pagefind.js': Buffer.alloc(45555) });
+
+    expect(
+      preflight({ ...base, distDir, portIsHeld: () => true, allowExistingServer: true, env }),
+    ).toBeNull();
+    expect(env[PREFLIGHT_ATTACHED_ENV]).toBe('1');
+
+    // A worker forked afterwards inherits that env.
+    expect(
+      preflight({
+        ...base,
+        distDir,
+        portIsHeld: () => true,
+        env: { ...env, TEST_WORKER_INDEX: '0' },
+      }),
+    ).toBeNull();
   });
 });
