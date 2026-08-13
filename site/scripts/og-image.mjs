@@ -14,7 +14,10 @@ import { fileURLToPath } from 'node:url';
 
 const OUT = fileURLToPath(new URL('../public/og.png', import.meta.url));
 
-// The 6 Okabe–Ito research-area colors (from tokens.css / DESIGN.md §2).
+// The Okabe–Ito research-area colors, one per matrix column (from tokens.css / DESIGN.md
+// §2). Hand-copied, so adding or retiring a column means editing this too; the LENGTH is
+// asserted against the areas registry in agent-api.test.ts, the hexes are not. Re-run this
+// script by hand afterwards — nothing in the build or CI regenerates og.png.
 const AREA = ['#0072B2', '#009E73', '#E69F00', '#56B4E9', '#D55E00', '#CC79A7'];
 const dots = AREA.map((c, i) => `<circle cx="${104 + i * 52}" cy="556" r="15" fill="${c}" />`).join('');
 

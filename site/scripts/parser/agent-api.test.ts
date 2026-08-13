@@ -433,19 +433,34 @@ describe('prose that quotes the matrix grid size', () => {
    */
   const numbersBefore = (text: string, phrase: string): number[] => {
     const esc = phrase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    // `(?<![\d,])` anchors the start of the numeral. Without it a thousands separator
-    // passes silently with the wrong figure: "1,345 papers" reads as 345, which equals
-    // the live count. A silent pass is the one failure mode this guard cannot afford,
-    // and `counts.datasets` is already 238 and climbing toward the threshold.
-    return [...text.matchAll(new RegExp(`(?<![\\d,])(\\d+)\\s*${esc}`, 'g'))].map((m) =>
+    // `(?<![\d.,])` anchors the START of the numeral, so a number that has been split by a
+    // separator cannot be read as a smaller whole one. Without the comma, "1,345 papers"
+    // matched 345 — which equals the live count, so the guard passed while the shipped text
+    // was wrong. Without the dot, "§4.6 research areas" matches 6, and "v0.1.0 papers"
+    // matches 0. A silent pass is the one failure mode this guard cannot have.
+    return [...text.matchAll(new RegExp(`(?<![\\d.,])(\\d+)\\s*${esc}`, 'g'))].map((m) =>
       Number(m[1]),
     );
   };
 
-  /** Assert the phrase carries a number at least once, and that every one is `expected`. */
+  /**
+   * Assert the phrase carries a number at least once, and that every one is `expected`.
+   *
+   * The two failure messages are deliberately different. A separator-split number matches
+   * zero times by design, so reporting that as "no number" would misdiagnose the first
+   * legitimate "1,024 datasets" as a missing figure rather than as a format this guard
+   * cannot read. `counts.datasets` is 238 and climbing, so that day is coming.
+   */
   const everyMention = (text: string, phrase: string, expected: number, label: string) => {
     const found = numbersBefore(text, phrase);
-    expect(found.length, `${label}: no number written against "${phrase}"`).toBeGreaterThan(0);
+    if (found.length === 0) {
+      const near = new RegExp(`[\\d.,]+\\s*${phrase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`);
+      expect(
+        text.match(near)?.[0] ?? null,
+        `${label}: no plain-integer count against "${phrase}" — write 1024, not 1,024 or 1.0k`,
+      ).toBeNull();
+      expect.fail(`${label}: no number written against "${phrase}"`);
+    }
     expect(found, label).toEqual(found.map(() => expected));
   };
 
@@ -456,11 +471,23 @@ describe('prose that quotes the matrix grid size', () => {
     .filter(([s]) => s.includes('Reference Work'))
     .reduce((a, [, n]) => a + n, 0);
 
-  /** The number inside `(…)` immediately after a phrase, e.g. "Perspectives (74)". */
-  const parenAfter = (text: string, phrase: string): number | null => {
+  /**
+   * EVERY number inside `(…)` immediately after a phrase, e.g. "Perspectives (74)".
+   *
+   * Global for the same reason `numbersBefore` is: a non-global match reads only the first
+   * occurrence, so a second restatement carrying a stale figure passes. That hole was fixed
+   * once in this file and reintroduced here in the same commit, which is a good argument for
+   * every phrase-matcher in this block defaulting to "all of them".
+   */
+  const parensAfter = (text: string, phrase: string): number[] => {
     const esc = phrase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const m = text.match(new RegExp(`${esc}\\s*\\((\\d+)\\)`));
-    return m ? Number(m[1]) : null;
+    return [...text.matchAll(new RegExp(`${esc}\\s*\\((\\d+)\\)`, 'g'))].map((m) => Number(m[1]));
+  };
+
+  /** Every value found must equal `expected`, and at least one must have been found. */
+  const everyEquals = (found: number[], expected: number, label: string) => {
+    expect(found.length, `${label}: phrase not found with a parenthesised count`).toBeGreaterThan(0);
+    expect(found, label).toEqual(found.map(() => expected));
   };
 
   it('the installed plugin skill states the live total and empty-cell counts', () => {
@@ -473,13 +500,31 @@ describe('prose that quotes the matrix grid size', () => {
    * The rest of SKILL.md's figures. Its "Counting" section exists to stop an agent
    * quoting "345 papers" as the matrix corpus, so those per-section numbers being wrong
    * would defeat the one paragraph written to prevent a miscount.
+   *
+   * The corpus total is checked in the FRONTMATTER only, not across the file. Demanding
+   * that every "N papers" in SKILL.md equal 345 would forbid writing "229 papers are
+   * matrix-eligible" — a true sentence, in the one file whose whole thesis is that a
+   * paper count must name its population. A guard that blocks the correct text is worse
+   * than no guard on that line.
    */
   it('the installed plugin skill states live paper counts', () => {
     const src = read('plugin', 'skills', 'caail', 'SKILL.md');
-    everyMention(src, ' papers', counts.papers, 'SKILL.md: total papers');
-    expect(parenAfter(src, '`References`'), 'SKILL.md: matrix-eligible').toBe(bySection['References']);
-    expect(parenAfter(src, 'Perspectives'), 'SKILL.md: reviews').toBe(bySection['Reviews & Perspectives']);
-    expect(parenAfter(src, 'Reference Work sections'), 'SKILL.md: reference works').toBe(referenceWorkTotal);
+    const frontmatter = src.slice(0, src.indexOf('\n---', 4));
+    everyMention(frontmatter, ' papers', counts.papers, 'SKILL.md frontmatter: total papers');
+    everyEquals(parensAfter(src, '`References`'), bySection['References'], 'SKILL.md: matrix-eligible');
+    everyEquals(parensAfter(src, 'Perspectives'), bySection['Reviews & Perspectives'], 'SKILL.md: reviews');
+    everyEquals(parensAfter(src, 'Reference Work sections'), referenceWorkTotal, 'SKILL.md: reference works');
+
+    // The spelled-out counts in the same sentence. Both oracles are already computed here,
+    // and leaving them out would let "spans six sections" go stale beside a digit that the
+    // line above keeps honest — a half-guarded sentence reads as a checked one.
+    const WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'];
+    const sectionCount = Object.keys(bySection).length;
+    const refWorkSections = Object.keys(bySection).filter((s) => s.includes('Reference Work')).length;
+    expect(src, `SKILL.md: "${WORDS[sectionCount]} sections"`).toContain(`spans ${WORDS[sectionCount]} sections`);
+    expect(src, `SKILL.md: "${WORDS[refWorkSections]} Reference Work sections"`).toContain(
+      `${WORDS[refWorkSections]} Reference Work sections`,
+    );
   });
 
   /**
@@ -499,10 +544,14 @@ describe('prose that quotes the matrix grid size', () => {
     everyMention(src, 'with no indexed paper', matrix.emptyCells, 'agent-api: empty count');
     everyMention(src, 'populated ones', matrix.populatedCells, 'agent-api: populated count');
     // `buildMatrix`'s docstring phrases the same pair as "references (70 of 150)" rather
-    // than in words. Global AND anchored to the phrase, both deliberately: a non-global
-    // match reads only the first pair and so re-opens the very hole this assertion closed,
-    // and a bare /\((\d+) of (\d+)\)/ claims any parenthetical — "11 of its 24 tasks"
-    // appears in this repo's own taxonomy prose, and would be reported as a grid mismatch.
+    // than in words, so it needs its own matcher. Global, because a non-global match reads
+    // only the first pair and re-opens the hole this assertion exists to close.
+    //
+    // Anchored to "references (", which is a real trade rather than a free win: it stops an
+    // unrelated "(N of M)" elsewhere in this file being reported as a grid mismatch, and in
+    // exchange a future restatement worded "the populated cells (70 of 150)" escapes the
+    // check entirely. Anchoring is the safer side only because a false alarm on an unrelated
+    // parenthetical would train the next reader to loosen the guard.
     const ofPairs = [...src.matchAll(/references \((\d+) of (\d+)\)/g)];
     expect(ofPairs.length, 'agent-api: the "references (N of M)" restatement').toBeGreaterThan(0);
     for (const p of ofPairs) {
@@ -514,19 +563,18 @@ describe('prose that quotes the matrix grid size', () => {
   });
 
   /**
-   * The marketplace description, which is the one corpus summary with NO workflow behind
-   * it: until this branch no `paths:` filter matched `plugin/.claude-plugin/**`, so an
-   * edit there triggered nothing. It was found stale twice over in one review (a retired
-   * column, and a dataset total 33 short), which is what a figure nobody checks looks like.
+   * The social card GENERATOR's palette — not the card. The distinction is the whole point
+   * of the title: `og.png` is a committed artifact regenerated only by a manual
+   * `node scripts/og-image.mjs`, with no npm script and no CI regen-and-diff, so this
+   * asserts the source a re-run would use and cannot prove the shipped PNG matches it.
+   * Extending `AREA` and not re-running the script still ships a stale card with a green
+   * suite, which is exactly what happened when the column was retired. Closing that needs
+   * a regen-and-diff step in CI (as `setup.md` has); this is the cheap half.
+   *
+   * The palette is also a hand-copied duplicate of the `--caail-area-*` tokens, so the
+   * hexes themselves remain unguarded — only the count has an oracle.
    */
-  /**
-   * The social card's palette is a hand-copied duplicate of the `--caail-area-*` tokens,
-   * with no npm script, no CI regen-and-diff, and nothing comparing it to the registry.
-   * Retiring a column already shipped a wrong dot count and a wrong caption offset on the
-   * site-wide og:image while every check stayed green, so the count gets an oracle even
-   * though the hexes themselves still have to be kept by hand.
-   */
-  it('the social card draws one dot per research area', () => {
+  it('the social card generator defines one dot colour per research area', () => {
     const src = read('site', 'scripts', 'og-image.mjs');
     const arr = src.match(/const AREA = \[([^\]]*)\]/);
     expect(arr, 'og-image.mjs: the AREA palette').not.toBeNull();
@@ -534,6 +582,12 @@ describe('prose that quotes the matrix grid size', () => {
     expect(hexes.length, 'og-image.mjs: one colour per area').toBe(papers.areas.length);
   });
 
+  /**
+   * The plugin manifest's description, which is the corpus summary that had NO workflow
+   * behind it: until this branch no `paths:` filter matched `plugin/.claude-plugin/**`, so
+   * an edit there triggered nothing. It was found stale twice over in one review (a retired
+   * column, and a dataset total 33 short), which is what a figure nobody checks looks like.
+   */
   it('the plugin marketplace description states live corpus figures', () => {
     const desc = JSON.parse(read('plugin', '.claude-plugin', 'plugin.json')).description as string;
     everyMention(desc, ' papers', counts.papers, 'plugin.json: papers');
