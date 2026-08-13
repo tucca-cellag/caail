@@ -92,6 +92,15 @@ into context, and denies when the payload carries a fenced code block, a foreign
 repo owner, or security-finding vocabulary — requiring the three questions above
 to be answered explicitly before an override.
 
+A destination it *cannot resolve* (no `gh`, no working login, no repository it
+can read) is not waved through in silence. It announces the failure and names
+the cause, treats the destination as public because it cannot be ruled out as
+one, and scans the payload anyway. Fail-open is kept for the inputs it has
+nothing to work with, such as malformed JSON on stdin. The realistic outage is
+mundane: `gh auth status` failing is not something anyone checks before typing
+`gh issue create`, and a guard that stops guarding without saying so is still
+being counted on.
+
 **It ships in this repo, wired through the committed `.claude/settings.json`,
 so it protects anyone who clones — not only the machine it was written on.** A
 byte-identical copy at `~/.claude/hooks/` covers every other repo; the global
