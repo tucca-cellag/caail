@@ -37,15 +37,15 @@
 /* margin:0 — same Starlight reset; the flex `gap` already spaces title↔summary. */
 /* Card footer metric row (the "cited by N" badge). Sits below the topic chips. */
 /* The card's trailing meta row: the citation badge (when there is a count) and the
-   report link. Flex + wrap because the row now holds more than one item and the two
-   have very different widths; `space-between` keeps the report link trailing whether
-   or not a badge precedes it. */
+   report link. The link is pushed right by its own auto margin rather than by
+   `space-between` on this row, because `space-between` only separates two or more
+   children — on the 24 of 139 software cards with no citation badge it would leave the
+   link flush left, so its position would alternate down one grid. */
 .cb-meta {
   margin: .35rem 0 0;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
   gap: .5rem;
 }
 .cb-sum { font-size: .76rem; color: var(--caail-muted); line-height: 1.5; margin: 0; }

@@ -35,6 +35,15 @@
   line-height: 1;
 }
 
+/* In a card's trailing meta row the link trails, with or without a citation badge
+   beside it. Doing it with an auto margin rather than the row's `justify-content` is
+   what keeps its position stable across a grid where only some cards carry a badge.
+   In `.px-badges` it stays in normal flow, sitting after the DOI/Code/Data pills. */
+.cb-meta .report-link,
+.ds-meta .report-link {
+  margin-inline-start: auto;
+}
+
 .report-link:hover,
 .report-link:focus-visible {
   color: var(--caail-link);

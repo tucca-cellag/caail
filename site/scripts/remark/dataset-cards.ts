@@ -98,7 +98,9 @@ function reportLinkHtml(entry: DatasetCardEntry): string {
   return (
     `<a class="report-link" href="${esc(reportHref(BASE, entry.id))}" ` +
     `aria-label="Report an issue with ${esc(entry.name)}" ` +
-    `title="Report an issue with this entry (${esc(entry.id)})">Report an issue</a>`
+    `title="Report an issue with this entry (${esc(entry.id)})" ` +
+    // Chrome, not content — keeps the repeated phrase out of the Pagefind index.
+    `data-pagefind-ignore>Report an issue</a>`
   );
 }
 

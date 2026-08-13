@@ -8,7 +8,6 @@ import {
   correctionIssueUrl,
   correctionMailto,
   isItemId,
-  itemKind,
   reportHref,
 } from './report';
 
@@ -37,11 +36,6 @@ describe('isItemId against every committed id', () => {
     const topics = ITEM_IDS.filter((id) => id.startsWith('topic:'));
     expect(topics.length).toBeGreaterThan(0);
     expect(topics.filter(isItemId)).toEqual([]);
-  });
-
-  it('classifies every content id to a kind', () => {
-    const content = ITEM_IDS.filter((id) => !id.startsWith('topic:'));
-    expect(content.filter((id) => itemKind(id) === null)).toEqual([]);
   });
 });
 

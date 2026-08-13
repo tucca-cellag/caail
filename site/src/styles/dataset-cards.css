@@ -29,12 +29,13 @@
 
 /* Card footer metric row (the "cited by N" badge), below the topic chips. */
 /* Trailing meta row: citation badge and report link, mirroring the catalog card's
-   `.cb-meta`. Flex so the report link trails whether or not a badge precedes it. */
+   `.cb-meta`, including why the link trails on its own auto margin rather than on
+   `space-between` (which does nothing when the badge is absent and the link is the
+   row's only child). */
 .ds-card > .ds-meta {
   margin: .5rem 0 0;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
   gap: .5rem;
 }

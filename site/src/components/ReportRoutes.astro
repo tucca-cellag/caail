@@ -53,7 +53,8 @@ const mailto = correctionMailto(null);
       and where to find one, rather than reading as a step the reader got wrong. */}
   <p class="rp-none" id="caail-report-none">
     Every route below works as it is. If your report is about one entry, though, it is much
-    quicker to act on when it names that entry: each card carries its own
+    quicker to act on when it names that entry: entry cards on the Papers, Software,
+    Databases and Datasets pages carry their own
     <span class="rp-nowrap">Report an issue</span> link, which brings the id here with it.
     Reports about a whole subject theme, or about the library as a whole, need no id.
   </p>
@@ -146,12 +147,26 @@ const mailto = correctionMailto(null);
     // stays hidden where the Clipboard API is unavailable rather than failing on click.
     if (copy && navigator.clipboard) {
       copy.hidden = false;
+      let clear: number | undefined;
+      // Re-announcing needs the region to CHANGE, and a second copy writes the same
+      // string as the first, so without clearing it a screen-reader user hears nothing
+      // the second time. src/lib/tabs.ts solves it the same way, and
+      // homepage-agent.spec.ts has a regression test named for exactly this.
+      const announce = (msg: string) => {
+        if (!status) return;
+        if (clear !== undefined) window.clearTimeout(clear);
+        status.textContent = msg;
+        clear = window.setTimeout(() => {
+          status.textContent = '';
+          clear = undefined;
+        }, 2000);
+      };
       copy.addEventListener('click', async () => {
         try {
           await navigator.clipboard.writeText(id);
-          if (status) status.textContent = 'Entry id copied.';
+          announce('Entry id copied.');
         } catch {
-          if (status) status.textContent = 'Could not copy. Select the id and copy it manually.';
+          announce('Could not copy. Select the id and copy it manually.');
         }
       });
     }

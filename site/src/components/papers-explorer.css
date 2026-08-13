@@ -61,7 +61,12 @@
 .px-au { font-size: .76rem; font-weight: 700; color: var(--caail-ink); }
 .px-ti { font-size: .72rem; color: var(--caail-muted); line-height: 1.4; margin: .1rem 0 .3rem; }
 .px-jo { font-style: italic; }
-.px-badges { display: flex; gap: .35rem; flex-wrap: wrap; }
+/* `align-items: center` is load-bearing, not tidying. This row defaulted to `stretch`,
+   so its tallest child set every sibling's height: adding the report link, which carries
+   a 24px minimum for its tap target, stretched each DOI/Code/Data/citation pill from
+   20.5px to 24px with the text top-aligned. `.cb-meta` and `.ds-meta` already center for
+   the same reason. */
+.px-badges { display: flex; gap: .35rem; flex-wrap: wrap; align-items: center; }
 .px-bdg { font-size: .62rem; font-weight: 700; padding: .1rem .4rem; border-radius: 5px; text-decoration: none; }
 .px-bdg.doi { background: color-mix(in oklab, var(--caail-link) 15%, transparent); color: var(--caail-link); font-family: var(--caail-font-mono); font-weight: 500; }
 .px-bdg.code { background: color-mix(in oklab, #009E73 18%, transparent); color: #0c6b4f; }

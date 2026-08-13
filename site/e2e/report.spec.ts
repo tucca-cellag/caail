@@ -129,6 +129,40 @@ test('following a card link lands on the report page with that entry resolved', 
   await expect(page.locator('#caail-report-id-value')).toHaveText(expected);
 });
 
+test('the report link does not stretch the badges it sits beside', async ({ page }) => {
+  // The link carries a 24px minimum for its tap target, and `.px-badges` used to default
+  // to align-items: stretch, so adding it made every DOI/Code/citation pill on the row
+  // 24px tall with its text top-aligned. Asserted on the pills, not on the link.
+  await page.goto('./papers/reviews/');
+  await awaitHydrated(page, 'ReferenceShelf');
+  const pill = page.locator('.px-ref .px-bdg.doi').first();
+  await expect(pill).toBeVisible();
+  const height = await pill.evaluate((el) => el.getBoundingClientRect().height);
+  expect(height).toBeLessThan(24);
+});
+
+test('the report link trails its meta row whether or not a citation badge precedes it', async ({ page }) => {
+  // `space-between` separates two or more children and does nothing for one, so on the
+  // cards with no citation badge the link would sit flush left and its position would
+  // alternate down the grid. Both cases are checked because only one of them regressed.
+  await page.goto('./software/');
+  await awaitHydrated(page, 'CatalogBrowser');
+  const offsets = await page.locator('.cb-card .cb-meta').evaluateAll((rows) =>
+    rows.map((row) => {
+      const link = row.querySelector('.report-link');
+      if (!link) return null;
+      return {
+        withBadge: row.querySelector('.cite-badge') !== null,
+        gap: row.getBoundingClientRect().right - link.getBoundingClientRect().right,
+      };
+    }).filter((o): o is { withBadge: boolean; gap: number } => o !== null),
+  );
+  expect(offsets.some((o) => o.withBadge)).toBe(true);
+  expect(offsets.some((o) => !o.withBadge)).toBe(true);
+  // Every link ends flush with the row's right edge, in both populations.
+  for (const o of offsets) expect(Math.abs(o.gap)).toBeLessThan(1);
+});
+
 test("the homepage topics band's correction CTA points at the report page", async ({ page }) => {
   await page.goto('./');
   // Previously a Slack invite, which is not a report path: a reader who noticed a theme

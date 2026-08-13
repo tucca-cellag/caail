@@ -19,7 +19,7 @@ A maintainer will incorporate accepted suggestions. This is the right path if yo
 
 ### Correcting an entry that is already here
 
-Every catalogued item carries a permanent id (`paper:214`, `sw:cellpose`, `db:string`, `ds:chickengtex-portal`), and on the documentation site every card has a **Report an issue** link that carries its own id to the [report page](https://tucca-cellag.github.io/caail/report/). Starting from there is worth the click: a correction naming the id points at exactly one entry, where one describing a page is a search before it is a fix. That page also offers email and Slack routes for anyone without a GitHub account.
+Every catalogued item carries a permanent id (`paper:214`, `sw:cellpose`, `db:string`, `ds:chickengtex-portal`), and on the documentation site the entry cards on the Papers, Software, Databases and Datasets pages each have a **Report an issue** link that carries their own id to the [report page](https://tucca-cellag.github.io/caail/report/). Starting from there is worth the click: a correction naming the id points at exactly one entry, where one describing a page is a search before it is a fix. That page also offers email and Slack routes for anyone without a GitHub account.
 
 ### Option 2, Open a pull request
 

@@ -48,33 +48,9 @@ export const CORRECTION_EMAIL = 'benjamin.bromberg@tufts.edu';
  */
 const ITEM_ID_RE = /^(?:paper:[1-9][0-9]{0,6}|(?:sw|db|ds):[a-z0-9][a-z0-9-]{0,119})$/;
 
-/** The four content types a report can be filed against. */
-export type ItemKind = 'paper' | 'software' | 'database' | 'dataset';
-
-const KIND_BY_PREFIX: Record<string, ItemKind> = {
-  paper: 'paper',
-  sw: 'software',
-  db: 'database',
-  ds: 'dataset',
-};
-
-/** Reader-facing noun per kind, for link labels and page copy. */
-export const KIND_NOUN: Record<ItemKind, string> = {
-  paper: 'paper',
-  software: 'software tool',
-  database: 'database',
-  dataset: 'dataset entry',
-};
-
 /** True when `value` is a well-formed frozen item id. The gate on every untrusted `?item=`. */
 export function isItemId(value: unknown): value is string {
   return typeof value === 'string' && ITEM_ID_RE.test(value);
-}
-
-/** The content type an id belongs to, or null when the id is malformed. */
-export function itemKind(id: string): ItemKind | null {
-  if (!isItemId(id)) return null;
-  return KIND_BY_PREFIX[id.slice(0, id.indexOf(':'))] ?? null;
 }
 
 /**

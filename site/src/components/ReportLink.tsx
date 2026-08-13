@@ -33,6 +33,10 @@ export default function ReportLink({ itemId, label }: { itemId: string | null; l
       // It opens with the visible string, which is what WCAG's label-in-name requires.
       aria-label={`Report an issue with ${label}`}
       title={`Report an issue with this entry (${itemId})`}
+      // Chrome, not content. Without this the phrase enters the Pagefind index 139 times
+      // on /software/ alone, so the page would rank for "report" and "issue" on a control
+      // that repeats per card rather than on anything it is actually about.
+      data-pagefind-ignore
     >
       Report an issue
     </a>
