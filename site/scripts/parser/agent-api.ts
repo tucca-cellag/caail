@@ -10,8 +10,8 @@
  * Two things here are DERIVED rather than copied, because they answer questions the
  * site's own JSON cannot:
  *
- *   matrix.json  — all 175 method×area cells, INCLUDING the 107 with no indexed paper.
- *                  papers.json carries only the 68 populated ones, so an agent could
+ *   matrix.json  — all 150 method×area cells, INCLUDING the 80 with no indexed paper.
+ *                  papers.json carries only the 70 populated ones, so an agent could
  *                  never distinguish "no paper here" from "I didn't find one". Every
  *                  empty cell carries its own scope note (see SCOPE_NOTE) so absence in
  *                  the corpus cannot be read as absence in the literature.
@@ -158,7 +158,7 @@ export interface MatrixCell {
 /**
  * Expand the populated cells into the complete method×area grid.
  *
- * `papers.cells` holds only cells that have references (68 of 175). Emitting just those
+ * `papers.cells` holds only cells that have references (70 of 150). Emitting just those
  * would make an empty cell indistinguishable from a cell the agent failed to look up,
  * which is the precise confusion this endpoint exists to remove.
  */
