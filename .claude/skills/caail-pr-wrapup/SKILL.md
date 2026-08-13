@@ -15,9 +15,10 @@ deploys only on push to `main` (via `.github/workflows/docs.yml`, which gates on
 
 **Review here is a phase, not a step.** Step 1 runs `/code-review` at a level chosen from the shape of
 the diff, applies or triages the findings, and then **reviews again on the updated diff**, repeating
-until a round produces nothing worth acting on. Two rounds is the floor. The reasoning, and the
-condition under which it can come back down to one, is in step 1: read it before shortening it. The
-cross-model pass (step 4) stays, as a cheap extra angle rather than the safety gate.
+until a round produces nothing worth acting on and the floor for that diff shape is met. Step 1's table
+sets both the level and the floor, so read it rather than assuming a number; the reasoning, and the
+condition under which the extra rounds can come back down, is there too. The cross-model pass (step 4)
+stays, as a cheap extra angle rather than the safety gate.
 
 The brittle, repeatable machinery lives in **`ship-pr.sh`** (in this skill's directory): pushing,
 opening the PR, watching checks, merging with the known worktree gotcha handled, finding + watching
@@ -70,8 +71,9 @@ gate (above) if you haven't this session.
 ### 1. Review rounds
 
 Run `/code-review <level>`, apply or triage every finding, then **run it again on the updated diff**.
-**Two rounds is the floor, not the target**, and the stop rule is below rather than a round count. Do
-this before the push, so fixes land as ordinary commits instead of churn on an open PR.
+The table below sets the level *and* the floor on rounds for each diff shape; the stop rule under it is
+what ends the phase. Do this before the push, so fixes land as ordinary commits instead of churn on an
+open PR.
 
 **Pick the level from the shape of the diff, not its line count.** Blast radius is what matters: a
 presentational change and a parser change do not deserve the same budget. **When a diff matches several
@@ -92,27 +94,47 @@ and billed, so you cannot launch it** — say it's worth it and let the user dec
 
 **What each round has to do:**
 
-- **Round 1 over the whole branch diff.** Name the range explicitly (`origin/main...HEAD`, or the PR
-  number once one exists) so the review covers everything the PR will contain rather than only the
-  uncommitted delta.
+- **Round 1 over the whole branch diff.** Name the range explicitly: `origin/main...HEAD`. Nothing is
+  pushed yet, so any default that resolves against an upstream has none to resolve against, and a
+  default scoped to the working tree sees only the uncommitted delta rather than what the PR will
+  contain.
 - **Apply or triage every finding.** Fixed, or declined with a stated reason, and if it is real but out
   of scope it gets a ticket. "Not acted on" and "not a defect" are different outcomes; only one is free.
-- **Round 2 over the whole diff again**, at the level round 1 ran at, or the raised one if round 1 came
-  back empty (below). Not narrowed to the files round 1 touched: the point of round 2 is the defects the
-  *fixes* introduced, and a bad fix does not confine its damage to its own file.
+- **Round 2 over the whole diff again**, at the level round 1 ran at (or the raised one, below). Not
+  narrowed to the files round 1 touched: the point of round 2 is the defects the *fixes* introduced, and
+  a bad fix does not confine its damage to its own file.
 - **Round 3 (and beyond)** when round 2 returned anything you acted on, or when the round-2 fixes were
   more than typo-scale.
-- **The stop rule**, which is not a round count: stop when a round returns nothing you act on **and**
-  that round was not the first one at its level on a diff bigger than the prose row. An empty first
-  round on a code diff says more about the review than about the diff, so raise one notch or narrow the
-  target and go again (Gotchas). **An empty round at `max` is a stop**, not an escalation loop: `max` is
-  the deepest level you can run, so if the shape still feels under-reviewed, say why and let the user
-  decide about `ultra` rather than re-running the same level hoping for a different answer.
-- **Re-run the local gate before pushing** whenever a round changed anything under `site/**` or
-  `workers/**`. The precondition gate was evaluated *before* step 1, so every fix made here is
-  ungated code, and under the old ordering (review after the PR was open) CI had already seen it. Now
-  it hasn't: a round-2 fix that breaks a vitest or e2e spec reaches CI as the first reader unless you
-  re-run `pnpm --dir site test` (plus `build` / `test:e2e` for the affected specs) at the end of step 1.
+
+**When to stop.** Both conditions, not either:
+
+1. The **floor for the diff's row** in the table above has been reached.
+2. The **last round returned nothing you acted on.**
+
+An empty round does not shorten the floor; it only ends the sequence once the floor is already met. So a
+prose diff whose round 1 is empty still gets round 2, and a guards-row diff still gets three.
+
+**When an empty round is suspicious rather than reassuring.** On anything above the prose row, an empty
+*first* round says more about the review than about the diff. Raise one notch and re-run **over the whole
+diff** (an extra narrowed pass at a hot spot is fine on top of that, never instead of it). At `max` there
+is no notch left: run out the floor, then stop and say why the shape still looks under-reviewed so the
+user can decide about `ultra`. Escalating with nowhere to go is a loop, not a gate.
+
+**Then close the phase properly**, because moving review before the push removed the only clean-tree
+checkpoint that used to sit between editing and shipping:
+
+- **Re-run the local gate for whatever a round touched.** The precondition gate was evaluated *before*
+  step 1, so every fix made here is ungated code, and under the old ordering (review after the PR was
+  open) CI had already seen it. Now it hasn't. `site/**` or `workers/**` → `pnpm --dir site test`, plus
+  `build` / `test:e2e` for the affected specs. The guards row has local tests too, and they are the ones
+  easiest to forget because they are not npm scripts: `.claude/hooks/**` →
+  `python3 .claude/hooks/check-public-publish.test.py`; `ship-pr.sh`, `check-ci-paths.py` or
+  `.github/workflows/**` → `python3 .claude/skills/caail-pr-wrapup/check-ci-paths.py`.
+- **Commit the fixes, then re-run `preflight`.** A fix left uncommitted does not ship, and the failure is
+  silent in both directions: the tree you reviewed still looks correct, and the PR body truthfully says
+  the finding was fixed. `preflight` is the dirty-tree check and it ran at step 0, before these edits
+  existed, so it has to run again. `push` also refuses a dirty tree, but a guard you rely on rather than
+  a step you take is a worse place to discover this.
 
 **How to review, each rule bought with a real defect:**
 
@@ -182,7 +204,13 @@ bash .claude/skills/caail-pr-wrapup/ship-pr.sh open-pr "<title>" /tmp/pr-body.md
   verification you already ran (tests/build/e2e, reviewer agents). Say **how the review went**: the
   level, how many rounds, and that the last one was quiet. **Any** finding declined rather than fixed,
   in any round, gets named with its reason, since a reader cannot tell a triaged finding from an
-  unnoticed one and the rounds it came from are invisible to them. If
+  unnoticed one and the rounds it came from are invisible to them. **The one exception is a declined
+  finding that describes an unpatched weakness in a live service** (the events Worker, say): a declined
+  finding is by construction unfixed, and this body is world-readable and permanent. That one goes to
+  Jira with `disclosure-private`, and the body says only that a finding was triaged there, naming
+  neither the weakness nor the endpoint. Publishing it would breach `.claude/rules/publishing.md`, and
+  `check-public-publish.sh` will deny the `gh pr create` on the security vocabulary anyway, so treating
+  this as a rule conflict to resolve at the last moment just strands you between two rules. If
   the change added a guard, state that it was seen failing on the defect first (step 1). **No AI
   attribution** — CAAIL commits and PRs never carry "Co-Authored-By: Claude" or "Generated with" lines.
 - **Link the trackers.** If this PR resolves a public GitHub issue, include a `Closes #N` line —
@@ -370,6 +398,7 @@ adding it there too, or the guard will happily confirm that an incomplete set is
 | Symptom / situation | What it means / do |
 | --- | --- |
 | **Round 1 comes back empty** on a code-heavy or multi-file diff | Read it as a fact about the review, not about the diff. Raise the level a notch, or point it at a narrower target, and go again. If the raised round is also empty, **that is a stop** — `max` is the ceiling you can run, and an escalation with nowhere left to go is a loop, not a gate. Say why the shape still worries you and let the user decide about `ultra`. |
+| `push` says **working tree is not clean** and lists files | A step-1 fix was never committed. Not a nuisance check: `preflight` ran before the rounds edited anything, so this is the only thing between an uncommitted fix and a PR that looks correct while missing it. Commit (or stash) what it lists, re-run `preflight`, push again. |
 | A finding's **fix is itself unreviewed code** | It is, and that is the whole reason for round 2. Two of the fourteen defects in step 1's evidence arrived this way, one an accessibility regression created by the fix for a different accessibility finding. Never merge a fix that no round has seen. |
 | Cross-model pass returns **one or two findings, or none** | Normal output for the weaker reviewer; it is not evidence the diff is clean (step 1's rationale). Do not let it stand in for a step-1 round, and do not report it as "reviewed by two models" as if the two carried equal weight. |
 | `/code-review ultra` looks warranted | **You cannot launch it** — it is user-triggered and billed. Say why the diff deserves it (parser, Worker, hook, or a change crossing several routes) and let the user run it. |
@@ -390,7 +419,7 @@ adding it there too, or the guard will happily confirm that an incomplete set is
 | Subcommand | Effect | Mutates? |
 | --- | --- | --- |
 | `preflight` | branch/tree/auth checks + CI prediction + route hints | no |
-| `push` | `git push -u origin <branch>` | yes |
+| `push` | `git push -u origin <branch>`; **refuses a dirty tree** | yes |
 | `open-pr <title> <body-file>` | `gh pr create --base main`; prints PR url | yes |
 | `watch-checks <pr>` | blocks on checks; 0 if none/clean, non-zero on failure | no |
 | `merge <pr>` | merge + delete remote branch (gotcha-handled); prints merge SHA | yes |
@@ -402,3 +431,7 @@ live in this manual rather than in the helper, but that also means the only thin
 reading this file. That is a weaker guarantee than the path-filter check in `guards.yml`, and it is worth
 knowing which of the two you are relying on: if a ship skipped the rounds, the PR body is the only place
 it would show.
+
+The **one** part of step 1 that is enforced in code is the clean tree, because `push` refuses a dirty one.
+That is deliberate: a skipped round produces a thin PR body a reader can notice, whereas an uncommitted
+fix produces a PR that *looks* right and is missing the fix, and nothing downstream can tell.

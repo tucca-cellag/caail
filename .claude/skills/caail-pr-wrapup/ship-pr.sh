@@ -180,6 +180,21 @@ cmd_preflight() {
 
 cmd_push() {
   local br; br="$(current_branch)"
+
+  # Refuse a dirty tree. `preflight` also checks this, but it runs at step 0 —
+  # BEFORE the review rounds edit files — so it cannot see a fix that a round
+  # produced and nobody committed. That gap is silent in both directions: the
+  # working tree the review was performed against still looks correct, and the
+  # PR body truthfully claims the finding was fixed, while the fix itself never
+  # leaves the machine. Pushing is the last moment the two can still be
+  # reconciled, so the check belongs here as well as there.
+  local dirty; dirty="$(git status --porcelain)"
+  if [ -n "$dirty" ]; then
+    printf 'ship-pr: working tree is not clean — refusing to push\n' >&2
+    printf '%s\n' "$dirty" >&2
+    die 'commit (or stash) the above, then re-run preflight and push again'
+  fi
+
   git push -u origin "$br"
 }
 
