@@ -13,17 +13,17 @@ second angle → checks → merge → GitHub Pages deploy → verify → clean u
 deploys only on push to `main` (via `.github/workflows/docs.yml`, which gates on Lighthouse), so
 "shipped" means *merged **and** the deploy is green*, not just merged.
 
-**Review here is a phase, not a step.** Step 1 runs `/code-review` at a level chosen from the shape of
-the diff, applies or triages the findings, and then **reviews again on the updated diff**, repeating
-until a round produces nothing worth acting on and the floor for that diff shape is met. Step 1's table
-sets both the level and the floor, so read it rather than assuming a number; the reasoning, and the
-condition under which the extra rounds can come back down, is there too. The cross-model pass (step 4)
-stays, as a cheap extra angle rather than the safety gate.
+**Review here is a phase, not a step.** Step 1 runs `/code-review high`, applies or triages the findings,
+and then **reviews again on the updated diff**, repeating until the findings die out and the floor for
+that diff shape is met. The level is fixed; the depth comes from the number of rounds, and step 1's table
+is the only place that floor is written down. The reasoning, and the condition under which the extra
+rounds can come back down, is there too. The cross-model pass (step 4) stays, as a cheap extra angle
+rather than the safety gate.
 
 The brittle, repeatable machinery lives in **`ship-pr.sh`** (in this skill's directory): pushing,
 opening the PR, watching checks, merging with the known worktree gotcha handled, finding + watching
 the deploy run, and curling the live routes. This manual keeps the judgment with you: re-running the
-local gate, **the review rounds and the level they run at**, composing the PR body, **pausing to confirm
+local gate, **the review rounds and when they stop**, composing the PR body, **pausing to confirm
 before the merge** (it triggers a public deploy) and before deleting a hand-made worktree, the worktree
 cleanup itself, and closing the trackers once the deploy is actually green.
 
@@ -65,8 +65,8 @@ bash .claude/skills/caail-pr-wrapup/ship-pr.sh preflight
 This confirms the branch/tree/auth, lists the changed paths, and — from the real CI path filters —
 predicts **which of `lint-papers`, `test` and `guards` will run on the PR** and **whether `docs.yml`
 will deploy on merge**, plus the routes worth verifying live. It tells you what to expect in steps 5
-and 7. The changed-path list it prints is also the input to step 1's level choice. Then re-run the local
-gate (above) if you haven't this session.
+and 7. The changed-path list it prints is also what step 1 reads to pick its floor on rounds. Then re-run
+the local gate (above) if you haven't this session.
 
 ### 1. Review rounds
 
@@ -158,8 +158,8 @@ checkpoint that used to sit between editing and shipping:
 - **Commit the fixes, then re-run `preflight`.** A fix left uncommitted does not ship, and the failure is
   silent in both directions: the tree you reviewed still looks correct, and the PR body truthfully says
   the finding was fixed. `preflight` is the dirty-tree check and it ran at step 0, before these edits
-  existed, so it has to run again. `push` also refuses a dirty tree, but a guard you rely on rather than
-  a step you take is a worse place to discover this.
+  existed, so it has to run again. `push` re-asserts the same three preconditions itself, but a guard you
+  rely on rather than a step you take is a worse place to discover this.
 
 **How to review, each rule bought with a real defect:**
 
@@ -350,7 +350,11 @@ re-running them reports confusing errors rather than doing anything (see the Got
   so the SHA differs from what landed).
 - **A stale/superseded worktree someone made by hand** (e.g. a predecessor of this work): **confirm
   with the user first**, then `git worktree remove <path>` and `git branch -D <branch>`.
-- **Stop any background preview server** still holding `:4321`.
+- **Stop every background preview server this work started, on whatever port it took.** Naming one port
+  is not enough: `pnpm preview` is given a free port per run, so real leaks sit on 4370, 4399, 4402-4406
+  and anywhere else, and one worktree was found holding five at once, days old, one per e2e attempt.
+  `pgrep -f 'astro.mjs preview'` finds all of them regardless of port; `ps` the PIDs to see which worktree
+  each belongs to before killing anything, since a peer session may have one mid-run.
 
 ### 10. Close the loop on the trackers
 Do this **last, after step 8 verified the live site** — not at merge time. CAAIL only counts as shipped
@@ -426,8 +430,9 @@ adding it there too, or the guard will happily confirm that an incomplete set is
 
 | Symptom / situation | What it means / do |
 | --- | --- |
-| **Round 1 comes back empty** on a code-heavy or multi-file diff | Read it as a fact about the review, not about the diff. Raise the level a notch, or point it at a narrower target, and go again. If the raised round is also empty, **that is a stop** — `max` is the ceiling you can run, and an escalation with nowhere left to go is a loop, not a gate. Say why the shape still worries you and let the user decide about `ultra`. |
-| `push` says **working tree is not clean** and lists files | A step-1 fix was never committed. Not a nuisance check: `preflight` ran before the rounds edited anything, so this is the only thing between an uncommitted fix and a PR that looks correct while missing it. Commit (or stash) what it lists, re-run `preflight`, push again. |
+| **Round 1 comes back empty** on a code-heavy or multi-file diff | Read it as a fact about the review, not about the diff. There is no level to raise (the level is always `high`), so run out the floor and say plainly that a round came back empty on a diff that shape. An extra pass narrowed to a hot spot is fine on top of a whole-diff round, never instead of one. |
+| `push` says **working tree is not clean** and lists files | A step-1 fix was never committed. Not a nuisance check: `preflight` ran before the rounds edited anything, so this is the only thing between an uncommitted fix and a PR that looks correct while missing it. **Commit** what it lists, then re-run `preflight` and push. Don't stash it: a stashed fix produces exactly the outcome the check exists to prevent, and step 9's `ExitWorktree` with `discard_changes` then destroys the stash. |
+| `push` says **on the default branch** | You are shipping from a checkout that holds `main` (the primary one usually does). Nothing was pushed. Get onto the feature branch, or run the skill from its worktree. Without this the push would have gone straight to `origin/main`, skipping the PR and every check, with `docs.yml` deploying it. |
 | A finding's **fix is itself unreviewed code** | It is, and that is the whole reason for round 2. Two of the fourteen defects in step 1's evidence arrived this way, one an accessibility regression created by the fix for a different accessibility finding. Never merge a fix that no round has seen. |
 | Cross-model pass returns **one or two findings, or none** | Normal output for the weaker reviewer; it is not evidence the diff is clean (step 1's rationale). Do not let it stand in for a step-1 round, and do not report it as "reviewed by two models" as if the two carried equal weight. |
 | `/code-review ultra` looks warranted | **You cannot launch it** — it is user-triggered and billed. Say why the diff deserves it (parser, Worker, hook, or a change crossing several routes) and let the user run it. |
@@ -448,7 +453,7 @@ adding it there too, or the guard will happily confirm that an incomplete set is
 | Subcommand | Effect | Mutates? |
 | --- | --- | --- |
 | `preflight` | branch/tree/auth checks + CI prediction + route hints | no |
-| `push` | `git push -u origin <branch>`; **refuses a dirty tree** | yes |
+| `push` | `git push -u origin <branch>`; **re-asserts branch, clean tree and auth first** | yes |
 | `open-pr <title> <body-file>` | `gh pr create --base main`; prints PR url | yes |
 | `watch-checks <pr>` | blocks on checks; 0 if none/clean, non-zero on failure | no |
 | `merge <pr>` | merge + delete remote branch (gotcha-handled); prints merge SHA | yes |
@@ -461,6 +466,7 @@ reading this file. That is a weaker guarantee than the path-filter check in `gua
 knowing which of the two you are relying on: if a ship skipped the rounds, the PR body is the only place
 it would show.
 
-The **one** part of step 1 that is enforced in code is the clean tree, because `push` refuses a dirty one.
+The **one** part of step 1 that is enforced in code is the clean tree, because `push` refuses to run on a
+dirty one (alongside the branch and auth assertions it shares with `preflight`).
 That is deliberate: a skipped round produces a thin PR body a reader can notice, whereas an uncommitted
 fix produces a PR that *looks* right and is missing the fix, and nothing downstream can tell.

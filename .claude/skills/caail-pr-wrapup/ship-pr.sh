@@ -152,7 +152,7 @@ assert_shippable() {
   [ "$br" != "$DEFAULT_BRANCH" ] || die "on the default branch ($DEFAULT_BRANCH) — ship from a feature branch."
   local dirty; dirty="$(git status --porcelain)"
   if [ -n "$dirty" ]; then
-    printf 'ship-pr: working tree is not clean — refusing to proceed\n' >&2
+    printf 'ship-pr: working tree is not clean, refusing to proceed\n' >&2
     printf '%s\n' "$dirty" >&2
     die 'commit the above, then re-run preflight. A stashed fix does not ship.'
   fi
@@ -208,7 +208,7 @@ cmd_push() {
   # Re-assert everything, not just the tree. Copying one assertion out of
   # preflight is how this grew a hole: the first version of this guard checked
   # the tree and not the branch, so `push` would have pushed main straight to
-  # origin — no PR, no checks, and docs.yml deploying an unreviewed commit.
+  # origin: no PR, no checks, and docs.yml deploying an unreviewed commit.
   assert_shippable
   git push -u origin "$br"
 }
