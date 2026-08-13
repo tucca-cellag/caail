@@ -198,28 +198,28 @@
 {"method":"Robot Scientists & Lab Automation","area_key":"tooling","ref_id":62,"label":"Qiu et al. 2025","ordinal":197}
 {"method":"Robot Scientists & Lab Automation","area_key":"tooling","ref_id":154,"label":"Ghareeb et al. 2026","ordinal":198}
 {"method":"Robot Scientists & Lab Automation","area_key":"tooling","ref_id":274,"label":"Darvish et al. 2025","ordinal":199}
-{"method":"Benchmarks & Evaluation Frameworks","area_key":"eval","ref_id":55,"label":"Sadhuka et al. 2025","ordinal":200}
-{"method":"Benchmarks & Evaluation Frameworks","area_key":"eval","ref_id":89,"label":"Brouwer et al. 2026","ordinal":201}
-{"method":"Benchmarks & Evaluation Frameworks","area_key":"eval","ref_id":108,"label":"Mitchener et al. 2025","ordinal":202}
-{"method":"Benchmarks & Evaluation Frameworks","area_key":"eval","ref_id":109,"label":"Bushuiev et al. 2024","ordinal":203}
-{"method":"Benchmarks & Evaluation Frameworks","area_key":"eval","ref_id":110,"label":"Sze & Hassoun 2024","ordinal":204}
-{"method":"Benchmarks & Evaluation Frameworks","area_key":"eval","ref_id":127,"label":"Chevalley et al. 2025","ordinal":205}
-{"method":"Benchmarks & Evaluation Frameworks","area_key":"eval","ref_id":146,"label":"Laurent et al. 2024","ordinal":206}
-{"method":"Benchmarks & Evaluation Frameworks","area_key":"eval","ref_id":147,"label":"Gu et al. 2025","ordinal":207}
-{"method":"Benchmarks & Evaluation Frameworks","area_key":"eval","ref_id":148,"label":"Notin et al. 2023","ordinal":208}
-{"method":"Benchmarks & Evaluation Frameworks","area_key":"eval","ref_id":149,"label":"Duan et al. 2025","ordinal":209}
-{"method":"Benchmarks & Evaluation Frameworks","area_key":"eval","ref_id":150,"label":"Nair et al. 2026","ordinal":210}
-{"method":"Benchmarks & Evaluation Frameworks","area_key":"eval","ref_id":155,"label":"Jimenez et al. 2024","ordinal":211}
-{"method":"Benchmarks & Evaluation Frameworks","area_key":"eval","ref_id":156,"label":"Rein et al. 2023","ordinal":212}
-{"method":"Benchmarks & Evaluation Frameworks","area_key":"eval","ref_id":157,"label":"Wang et al. 2024","ordinal":213}
-{"method":"Benchmarks & Evaluation Frameworks","area_key":"eval","ref_id":158,"label":"Phan et al. 2026","ordinal":214}
-{"method":"Benchmarks & Evaluation Frameworks","area_key":"eval","ref_id":159,"label":"Wang et al. 2026a","ordinal":215}
-{"method":"Benchmarks & Evaluation Frameworks","area_key":"eval","ref_id":164,"label":"Huang et al. 2026","ordinal":216}
-{"method":"Benchmarks & Evaluation Frameworks","area_key":"eval","ref_id":53,"label":"Liu et al. 2026","ordinal":217}
-{"method":"Benchmarks & Evaluation Frameworks","area_key":"eval","ref_id":57,"label":"Adduri et al. 2025","ordinal":218}
-{"method":"Benchmarks & Evaluation Frameworks","area_key":"eval","ref_id":225,"label":"Miller et al. 2025","ordinal":219}
-{"method":"Benchmarks & Evaluation Frameworks","area_key":"eval","ref_id":239,"label":"Ahmed et al. 2026","ordinal":220}
-{"method":"Benchmarks & Evaluation Frameworks","area_key":"eval","ref_id":241,"label":"Li & Ho 2026","ordinal":221}
+{"method":"Benchmarks & Evaluation Frameworks","area_key":"tooling","ref_id":55,"label":"Sadhuka et al. 2025","ordinal":200}
+{"method":"Benchmarks & Evaluation Frameworks","area_key":"cell","ref_id":89,"label":"Brouwer et al. 2026","ordinal":201}
+{"method":"Benchmarks & Evaluation Frameworks","area_key":"tooling","ref_id":108,"label":"Mitchener et al. 2025","ordinal":202}
+{"method":"Benchmarks & Evaluation Frameworks","area_key":"tooling","ref_id":109,"label":"Bushuiev et al. 2024","ordinal":203}
+{"method":"Benchmarks & Evaluation Frameworks","area_key":"tooling","ref_id":110,"label":"Sze & Hassoun 2024","ordinal":204}
+{"method":"Benchmarks & Evaluation Frameworks","area_key":"cell","ref_id":127,"label":"Chevalley et al. 2025","ordinal":205}
+{"method":"Benchmarks & Evaluation Frameworks","area_key":"tooling","ref_id":146,"label":"Laurent et al. 2024","ordinal":206}
+{"method":"Benchmarks & Evaluation Frameworks","area_key":"tooling","ref_id":147,"label":"Gu et al. 2025","ordinal":207}
+{"method":"Benchmarks & Evaluation Frameworks","area_key":"cell","ref_id":148,"label":"Notin et al. 2023","ordinal":208}
+{"method":"Benchmarks & Evaluation Frameworks","area_key":"cell","ref_id":149,"label":"Duan et al. 2025","ordinal":209}
+{"method":"Benchmarks & Evaluation Frameworks","area_key":"cell","ref_id":150,"label":"Nair et al. 2026","ordinal":210}
+{"method":"Benchmarks & Evaluation Frameworks","area_key":"tooling","ref_id":155,"label":"Jimenez et al. 2024","ordinal":211}
+{"method":"Benchmarks & Evaluation Frameworks","area_key":"tooling","ref_id":156,"label":"Rein et al. 2023","ordinal":212}
+{"method":"Benchmarks & Evaluation Frameworks","area_key":"tooling","ref_id":157,"label":"Wang et al. 2024","ordinal":213}
+{"method":"Benchmarks & Evaluation Frameworks","area_key":"tooling","ref_id":158,"label":"Phan et al. 2026","ordinal":214}
+{"method":"Benchmarks & Evaluation Frameworks","area_key":"tooling","ref_id":159,"label":"Wang et al. 2026a","ordinal":215}
+{"method":"Benchmarks & Evaluation Frameworks","area_key":"cell","ref_id":164,"label":"Huang et al. 2026","ordinal":216}
+{"method":"Benchmarks & Evaluation Frameworks","area_key":"tooling","ref_id":53,"label":"Liu et al. 2026","ordinal":217}
+{"method":"Benchmarks & Evaluation Frameworks","area_key":"cell","ref_id":57,"label":"Adduri et al. 2025","ordinal":218}
+{"method":"Benchmarks & Evaluation Frameworks","area_key":"cell","ref_id":225,"label":"Miller et al. 2025","ordinal":219}
+{"method":"Benchmarks & Evaluation Frameworks","area_key":"tooling","ref_id":239,"label":"Ahmed et al. 2026","ordinal":220}
+{"method":"Benchmarks & Evaluation Frameworks","area_key":"tooling","ref_id":241,"label":"Li & Ho 2026","ordinal":221}
 {"method":"Agent Infrastructure (Frameworks, KGs, Protocols)","area_key":"tooling","ref_id":41,"label":"Gao et al. 2025b","ordinal":222}
 {"method":"Agent Infrastructure (Frameworks, KGs, Protocols)","area_key":"tooling","ref_id":48,"label":"Lobentanzer et al. 2025","ordinal":223}
 {"method":"Agent Infrastructure (Frameworks, KGs, Protocols)","area_key":"tooling","ref_id":67,"label":"Ruscone et al. 2025","ordinal":224}
@@ -269,8 +269,9 @@
 {"method":"Chemometrics","area_key":"sensory","ref_id":347,"label":"Chen et al. 2020","ordinal":268}
 {"method":"Chemometrics","area_key":"sensory","ref_id":348,"label":"Ma et al. 2017","ordinal":269}
 {"method":"CNN","area_key":"scaffolding","ref_id":349,"label":"Yang 2026","ordinal":270}
-{"method":"Benchmarks & Evaluation Frameworks","area_key":"eval","ref_id":349,"label":"Yang 2026","ordinal":271}
+{"method":"Benchmarks & Evaluation Frameworks","area_key":"scaffolding","ref_id":349,"label":"Yang 2026","ordinal":271}
 {"method":"Linear & Regularized Models","area_key":"scaffolding","ref_id":171,"label":"Kircali Ata et al. 2023","ordinal":272}
 {"method":"Linear & Regularized Models","area_key":"sensory","ref_id":171,"label":"Kircali Ata et al. 2023","ordinal":273}
 {"method":"SVM","area_key":"sensory","ref_id":334,"label":"Cao et al. 2023","ordinal":274}
 {"method":"CNN","area_key":"sensory","ref_id":330,"label":"Sharma et al. 2021","ordinal":275}
+{"method":"Benchmarks & Evaluation Frameworks","area_key":"tooling","ref_id":225,"label":"Miller et al. 2025","ordinal":276}

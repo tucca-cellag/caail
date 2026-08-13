@@ -3,8 +3,10 @@
  *
  * Previously the answer was hardcoded per-slug in three CSS files (topic-chips.css,
  * topic-hub.css, and the dashboard), which drifted: `metabolism-modeling` was painted
- * with `--caail-area-eval` despite having no matrix area, and `food-safety` had no
- * mapping at all and fell back to grey.
+ * with a matrix area's token despite having no matrix area, and `food-safety` had no
+ * mapping at all and fell back to grey. That token has since been retired along with
+ * its column, which is the second reason not to borrow one: the borrowed variable can
+ * stop existing.
  *
  * The mapping is now DERIVED from `areaKey` in topics.json, which comes from the DB's
  * `topics.area_key`. A theme that maps to a matrix research area takes that area's

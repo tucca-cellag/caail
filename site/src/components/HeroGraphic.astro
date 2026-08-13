@@ -53,7 +53,7 @@ const show = (v: string) => both || variant === v;
       {[
         [70, 90, 26, 'media'], [180, 70, 18, 'cell'], [225, 150, 30, 'bioprocess'],
         [120, 160, 22, 'sensory'], [60, 220, 20, 'tooling'], [200, 250, 26, 'cell'],
-        [140, 280, 16, 'media'], [255, 285, 14, 'scaffolding'], [95, 300, 12, 'eval'],
+        [140, 280, 16, 'media'], [255, 285, 14, 'scaffolding'], [95, 300, 12, 'sensory'],
       ].map(([cx, cy, r, area], i) => (
         <g class={`hg-orb hg-o${i % 5}`}>
           <circle cx={cx} cy={cy} r={r} class="hg-membrane" style={`color: var(--caail-area-${area})`} />

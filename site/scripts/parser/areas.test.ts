@@ -8,8 +8,8 @@ import { describe, it, expect } from 'vitest';
 import { AREAS, areaKeyForLabel } from './areas';
 
 describe('AREAS registry', () => {
-  it('has exactly 7 entries', () => {
-    expect(AREAS).toHaveLength(7);
+  it('has exactly 6 entries', () => {
+    expect(AREAS).toHaveLength(6);
   });
 
   it('entries are in matrix column order with correct keys and labels', () => {
@@ -20,12 +20,11 @@ describe('AREAS registry', () => {
       { key: 'scaffolding', label: 'Scaffolding' },
       { key: 'sensory',     label: 'Sensory Prediction' },
       { key: 'tooling',     label: 'AI Tooling / Methodology' },
-      { key: 'eval',        label: 'AI Evaluation & Benchmarking' },
     ]);
   });
 
   it('keys exactly match the --caail-area-* CSS token names', () => {
-    const expectedKeys = ['media', 'cell', 'bioprocess', 'scaffolding', 'sensory', 'tooling', 'eval'];
+    const expectedKeys = ['media', 'cell', 'bioprocess', 'scaffolding', 'sensory', 'tooling'];
     expect(AREAS.map((a) => a.key)).toEqual(expectedKeys);
   });
 });
@@ -38,7 +37,14 @@ describe('areaKeyForLabel', () => {
     expect(areaKeyForLabel('Scaffolding')).toBe('scaffolding');
     expect(areaKeyForLabel('Sensory Prediction')).toBe('sensory');
     expect(areaKeyForLabel('AI Tooling / Methodology')).toBe('tooling');
-    expect(areaKeyForLabel('AI Evaluation & Benchmarking')).toBe('eval');
+  });
+
+  // CAAIL-164: the column was retired because its definition duplicated the
+  // `Benchmarks & Evaluation Frameworks` method row, which survives. A stale
+  // Papers.md header carrying the old label must resolve to null (and so WARN)
+  // rather than silently reviving the column.
+  it('returns null for the retired AI Evaluation & Benchmarking column', () => {
+    expect(areaKeyForLabel('AI Evaluation & Benchmarking')).toBeNull();
   });
 
   it('trims surrounding whitespace before matching', () => {

@@ -1,5 +1,5 @@
 {
-  "corpusDate": "2026-08-12",
+  "corpusDate": "2026-08-13",
   "status": "beta",
   "placementsUnderReview": true,
   "methods": [
@@ -53,15 +53,11 @@
     {
       "key": "tooling",
       "label": "AI Tooling / Methodology"
-    },
-    {
-      "key": "eval",
-      "label": "AI Evaluation & Benchmarking"
     }
   ],
-  "totalCells": 175,
-  "populatedCells": 68,
-  "emptyCells": 107,
+  "totalCells": 150,
+  "populatedCells": 70,
+  "emptyCells": 80,
   "scopeNote": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall.",
   "placementNote": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself.",
   "cells": [
@@ -125,14 +121,6 @@
       "method": "Bayesian Optimization",
       "area": "tooling",
       "areaLabel": "AI Tooling / Methodology",
-      "refIds": [],
-      "emptyInCorpus": true,
-      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
-    },
-    {
-      "method": "Bayesian Optimization",
-      "area": "eval",
-      "areaLabel": "AI Evaluation & Benchmarking",
       "refIds": [],
       "emptyInCorpus": true,
       "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
@@ -222,14 +210,6 @@
       "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
-      "method": "Deep Learning",
-      "area": "eval",
-      "areaLabel": "AI Evaluation & Benchmarking",
-      "refIds": [],
-      "emptyInCorpus": true,
-      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
-    },
-    {
       "method": "GNN",
       "area": "media",
       "areaLabel": "Media Optimization",
@@ -291,14 +271,6 @@
       ],
       "emptyInCorpus": false,
       "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
-    },
-    {
-      "method": "GNN",
-      "area": "eval",
-      "areaLabel": "AI Evaluation & Benchmarking",
-      "refIds": [],
-      "emptyInCorpus": true,
-      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
     },
     {
       "method": "CNN",
@@ -369,14 +341,6 @@
       "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
     },
     {
-      "method": "CNN",
-      "area": "eval",
-      "areaLabel": "AI Evaluation & Benchmarking",
-      "refIds": [],
-      "emptyInCorpus": true,
-      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
-    },
-    {
       "method": "GAN / VAE",
       "area": "media",
       "areaLabel": "Media Optimization",
@@ -432,14 +396,6 @@
       ],
       "emptyInCorpus": false,
       "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
-    },
-    {
-      "method": "GAN / VAE",
-      "area": "eval",
-      "areaLabel": "AI Evaluation & Benchmarking",
-      "refIds": [],
-      "emptyInCorpus": true,
-      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
     },
     {
       "method": "Genetic Algorithms",
@@ -506,14 +462,6 @@
       "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
     },
     {
-      "method": "Genetic Algorithms",
-      "area": "eval",
-      "areaLabel": "AI Evaluation & Benchmarking",
-      "refIds": [],
-      "emptyInCorpus": true,
-      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
-    },
-    {
       "method": "SVM",
       "area": "media",
       "areaLabel": "Media Optimization",
@@ -574,14 +522,6 @@
       "method": "SVM",
       "area": "tooling",
       "areaLabel": "AI Tooling / Methodology",
-      "refIds": [],
-      "emptyInCorpus": true,
-      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
-    },
-    {
-      "method": "SVM",
-      "area": "eval",
-      "areaLabel": "AI Evaluation & Benchmarking",
       "refIds": [],
       "emptyInCorpus": true,
       "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
@@ -676,14 +616,6 @@
       "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
-      "method": "Ensemble Learning",
-      "area": "eval",
-      "areaLabel": "AI Evaluation & Benchmarking",
-      "refIds": [],
-      "emptyInCorpus": true,
-      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
-    },
-    {
       "method": "K-Nearest Neighbors",
       "area": "media",
       "areaLabel": "Media Optimization",
@@ -733,14 +665,6 @@
       "method": "K-Nearest Neighbors",
       "area": "tooling",
       "areaLabel": "AI Tooling / Methodology",
-      "refIds": [],
-      "emptyInCorpus": true,
-      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
-    },
-    {
-      "method": "K-Nearest Neighbors",
-      "area": "eval",
-      "areaLabel": "AI Evaluation & Benchmarking",
       "refIds": [],
       "emptyInCorpus": true,
       "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
@@ -797,14 +721,6 @@
       "method": "Linear & Regularized Models",
       "area": "tooling",
       "areaLabel": "AI Tooling / Methodology",
-      "refIds": [],
-      "emptyInCorpus": true,
-      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
-    },
-    {
-      "method": "Linear & Regularized Models",
-      "area": "eval",
-      "areaLabel": "AI Evaluation & Benchmarking",
       "refIds": [],
       "emptyInCorpus": true,
       "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
@@ -872,14 +788,6 @@
       "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
-      "method": "Chemometrics",
-      "area": "eval",
-      "areaLabel": "AI Evaluation & Benchmarking",
-      "refIds": [],
-      "emptyInCorpus": true,
-      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
-    },
-    {
       "method": "Active Learning",
       "area": "media",
       "areaLabel": "Media Optimization",
@@ -941,14 +849,6 @@
       "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
-      "method": "Active Learning",
-      "area": "eval",
-      "areaLabel": "AI Evaluation & Benchmarking",
-      "refIds": [],
-      "emptyInCorpus": true,
-      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
-    },
-    {
       "method": "Reinforcement Learning",
       "area": "media",
       "areaLabel": "Media Optimization",
@@ -1007,14 +907,6 @@
       "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
-      "method": "Reinforcement Learning",
-      "area": "eval",
-      "areaLabel": "AI Evaluation & Benchmarking",
-      "refIds": [],
-      "emptyInCorpus": true,
-      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
-    },
-    {
       "method": "Foundation Models: Next-Token Prediction",
       "area": "media",
       "areaLabel": "Media Optimization",
@@ -1070,14 +962,6 @@
       ],
       "emptyInCorpus": false,
       "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
-    },
-    {
-      "method": "Foundation Models: Next-Token Prediction",
-      "area": "eval",
-      "areaLabel": "AI Evaluation & Benchmarking",
-      "refIds": [],
-      "emptyInCorpus": true,
-      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
     },
     {
       "method": "Foundation Models: Masked Language Modeling",
@@ -1138,14 +1022,6 @@
       "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
-      "method": "Foundation Models: Masked Language Modeling",
-      "area": "eval",
-      "areaLabel": "AI Evaluation & Benchmarking",
-      "refIds": [],
-      "emptyInCorpus": true,
-      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
-    },
-    {
       "method": "Foundation Models: LM + Biological Priors",
       "area": "media",
       "areaLabel": "Media Optimization",
@@ -1191,14 +1067,6 @@
       "method": "Foundation Models: LM + Biological Priors",
       "area": "tooling",
       "areaLabel": "AI Tooling / Methodology",
-      "refIds": [],
-      "emptyInCorpus": true,
-      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
-    },
-    {
-      "method": "Foundation Models: LM + Biological Priors",
-      "area": "eval",
-      "areaLabel": "AI Evaluation & Benchmarking",
       "refIds": [],
       "emptyInCorpus": true,
       "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
@@ -1258,14 +1126,6 @@
       "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
-      "method": "Foundation Models: Cell-State & Perturbation Prediction",
-      "area": "eval",
-      "areaLabel": "AI Evaluation & Benchmarking",
-      "refIds": [],
-      "emptyInCorpus": true,
-      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
-    },
-    {
       "method": "Foundation Models (other modalities)",
       "area": "media",
       "areaLabel": "Media Optimization",
@@ -1319,14 +1179,6 @@
       ],
       "emptyInCorpus": false,
       "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
-    },
-    {
-      "method": "Foundation Models (other modalities)",
-      "area": "eval",
-      "areaLabel": "AI Evaluation & Benchmarking",
-      "refIds": [],
-      "emptyInCorpus": true,
-      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
     },
     {
       "method": "Scientific Literature & Discovery Agents",
@@ -1388,14 +1240,6 @@
       "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
-      "method": "Scientific Literature & Discovery Agents",
-      "area": "eval",
-      "areaLabel": "AI Evaluation & Benchmarking",
-      "refIds": [],
-      "emptyInCorpus": true,
-      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
-    },
-    {
       "method": "General-Purpose Biomedical Agents",
       "area": "media",
       "areaLabel": "Media Optimization",
@@ -1453,14 +1297,6 @@
       "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
-      "method": "General-Purpose Biomedical Agents",
-      "area": "eval",
-      "areaLabel": "AI Evaluation & Benchmarking",
-      "refIds": [],
-      "emptyInCorpus": true,
-      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
-    },
-    {
       "method": "Chemistry / Synthesis Agents",
       "area": "media",
       "areaLabel": "Media Optimization",
@@ -1510,14 +1346,6 @@
       ],
       "emptyInCorpus": false,
       "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
-    },
-    {
-      "method": "Chemistry / Synthesis Agents",
-      "area": "eval",
-      "areaLabel": "AI Evaluation & Benchmarking",
-      "refIds": [],
-      "emptyInCorpus": true,
-      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
     },
     {
       "method": "Domain-Specific Biomedical Agents",
@@ -1587,14 +1415,6 @@
       "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
-      "method": "Domain-Specific Biomedical Agents",
-      "area": "eval",
-      "areaLabel": "AI Evaluation & Benchmarking",
-      "refIds": [],
-      "emptyInCorpus": true,
-      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
-    },
-    {
       "method": "Robot Scientists & Lab Automation",
       "area": "media",
       "areaLabel": "Media Optimization",
@@ -1655,14 +1475,6 @@
       "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
-      "method": "Robot Scientists & Lab Automation",
-      "area": "eval",
-      "areaLabel": "AI Evaluation & Benchmarking",
-      "refIds": [],
-      "emptyInCorpus": true,
-      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
-    },
-    {
       "method": "Benchmarks & Evaluation Frameworks",
       "area": "media",
       "areaLabel": "Media Optimization",
@@ -1674,9 +1486,18 @@
       "method": "Benchmarks & Evaluation Frameworks",
       "area": "cell",
       "areaLabel": "Cellular Engineering",
-      "refIds": [],
-      "emptyInCorpus": true,
-      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+      "refIds": [
+        89,
+        127,
+        148,
+        149,
+        150,
+        164,
+        57,
+        225
+      ],
+      "emptyInCorpus": false,
+      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
       "method": "Benchmarks & Evaluation Frameworks",
@@ -1690,9 +1511,11 @@
       "method": "Benchmarks & Evaluation Frameworks",
       "area": "scaffolding",
       "areaLabel": "Scaffolding",
-      "refIds": [],
-      "emptyInCorpus": true,
-      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+      "refIds": [
+        349
+      ],
+      "emptyInCorpus": false,
+      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
     },
     {
       "method": "Benchmarks & Evaluation Frameworks",
@@ -1706,38 +1529,22 @@
       "method": "Benchmarks & Evaluation Frameworks",
       "area": "tooling",
       "areaLabel": "AI Tooling / Methodology",
-      "refIds": [],
-      "emptyInCorpus": true,
-      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
-    },
-    {
-      "method": "Benchmarks & Evaluation Frameworks",
-      "area": "eval",
-      "areaLabel": "AI Evaluation & Benchmarking",
       "refIds": [
         55,
-        89,
         108,
         109,
         110,
-        127,
         146,
         147,
-        148,
-        149,
-        150,
         155,
         156,
         157,
         158,
         159,
-        164,
         53,
-        57,
-        225,
         239,
         241,
-        349
+        225
       ],
       "emptyInCorpus": false,
       "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
@@ -1800,14 +1607,6 @@
       ],
       "emptyInCorpus": false,
       "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
-    },
-    {
-      "method": "Agent Infrastructure (Frameworks, KGs, Protocols)",
-      "area": "eval",
-      "areaLabel": "AI Evaluation & Benchmarking",
-      "refIds": [],
-      "emptyInCorpus": true,
-      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
     }
   ]
 }

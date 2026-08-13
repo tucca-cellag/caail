@@ -168,8 +168,18 @@ AREA_KW: dict[str, list[str]] = {
                            "meat quality", "freshness"],
     "AI Tooling / Methodology": ["agent", "framework", "tool", "pipeline", "platform",
                                  "methodology", "knowledge graph"],
-    "AI Evaluation & Benchmarking": ["benchmark", "evaluation", "eval", "leaderboard"],
 }
+# NOTE: a benchmark paper takes the column of the area it measures, so a ProteinGym-style
+# benchmark sits in Cellular Engineering and only corroborates if that area's own
+# vocabulary appears in its text. Where it does not, `_area_ok` fails and the ref drops
+# to residual for LLM review — more review, not less, which is the safe direction.
+#
+# Do NOT add the retired column's terms ("benchmark", "evaluation", "eval", "leaderboard")
+# to the tooling list to compensate. `_area_ok` matches substrings, and "eval" is inside
+# "evaluation", "evaluated" and "retrieval", which appear in nearly every ML methods
+# section — so tooling's corroboration check would pass on "we evaluated the model" alone
+# and auto-clear mis-placements that currently reach a reviewer. That inverts this
+# function's safe direction, which is why it is called out rather than left to judgment.
 
 
 def _text(ref: dict) -> str:

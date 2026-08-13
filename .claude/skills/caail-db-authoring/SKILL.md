@@ -165,7 +165,7 @@ re-tagging, corrections), use the full procedure below.
 | Editing `caail.db` but forgetting `db:export` | The `.db` is gitignored; only the NDJSON is tracked. Export or the change is lost. |
 | Renumbering / reusing a `paper:N` id | Frozen and permanent (matrix links + external bookmarks). New paper = `max(ref_id)+1`; a removed paper's id is retired, not reused. |
 | Adding a reference without a matrix cell (or a cell without the reference) | Same-commit rule; `db:check` reachability + `lint:papers` catch it. |
-| Re-listing the matrix method rows in prose | They drift (see #81). The live set is `Papers.md`; only the 7 columns are enumerated + guarded. |
+| Re-listing the matrix method rows in prose | They drift (see #81). The live set is `Papers.md`; only the columns are enumerated + guarded, and `db:check` asserts that list — so don't write the column *count* here either, it goes stale the next time one is added or retired. |
 | Running `db:bootstrap` to fold a new license/DOI | Bootstrap re-derives topics from classifiers (reverting `db:add` curation) and renumbers ordinals (#100). Use `db:reseed-axes` for the license/DOI fold; reserve `db:bootstrap` for a full canonical-Markdown re-import. |
 
 ## CLI reference

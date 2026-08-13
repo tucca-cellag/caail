@@ -31,7 +31,7 @@ describe('buildRecentModel — real repo', () => {
     for (const e of recent) {
       expect(e.date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
       expect(['Paper', 'Software', 'Dataset', 'Database', 'Resource']).toContain(e.kind);
-      expect(['media', 'cell', 'bioprocess', 'scaffolding', 'sensory', 'tooling', 'eval']).toContain(e.area);
+      expect(['media', 'cell', 'bioprocess', 'scaffolding', 'sensory', 'tooling']).toContain(e.area);
       expect(e.title.length).toBeGreaterThan(0);
     }
   });

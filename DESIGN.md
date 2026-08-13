@@ -35,7 +35,7 @@ Values are authored in OKLch; hexes above are the targets. The Contribute action
 ### Data encoding
 
 - **Sequential (density):** single-hue navy ramp `--caail-density-0..4` (`#F4F6FA → #C9D7EC → #7E9BC9 → #27579F → #002E6D`). Single-hue lightness is inherently CVD-safe and on-brand. Used for matrix cell shading and any intensity/heatmap.
-- **Categorical (7 research areas):** Okabe–Ito (Color Universal Design), CVD-safe:
+- **Categorical (6 research areas):** Okabe–Ito (Color Universal Design), CVD-safe:
 
 | Area | Token | Hex |
 |---|---|---|
@@ -45,7 +45,6 @@ Values are authored in OKLch; hexes above are the targets. The Contribute action
 | Scaffolding | `--caail-area-scaffolding` | `#56B4E9` |
 | Sensory Prediction | `--caail-area-sensory` | `#D55E00` |
 | AI Tooling / Methodology | `--caail-area-tooling` | `#CC79A7` |
-| AI Evaluation & Benchmarking | `--caail-area-eval` | `#917800` (Okabe–Ito yellow darkened to amber for AA on white) |
 
 **Encoding rules:** color is never the only signal (every area keeps its text label; matrix cells also show the count). All text/background pairs target WCAG-AA (≥4.5:1 body, ≥3:1 large/UI). Categorical colors identify *area* only (legend, column headers, network clusters, metric bars, filter dots); cells use the density ramp.
 
