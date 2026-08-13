@@ -774,6 +774,45 @@ export type TopicNode = z.infer<typeof TopicNodeSchema>;
 export type TopicsData = z.infer<typeof TopicsDataSchema>;
 
 // ---------------------------------------------------------------------------
+// correction-form.json — the /report/ composer's reason vocabulary
+// ---------------------------------------------------------------------------
+
+/**
+ * One option of the correction template's `reason` dropdown, resolved to the follow-up
+ * question the composer asks after it.
+ *
+ * `value` is the template's option string verbatim, which is what makes this the prefill
+ * contract rather than a paraphrase of it: the composer names the error class exactly as
+ * the GitHub form does, so a curator reading the issue sees one vocabulary and not two.
+ * `label` and `hint` are that same string split at its em dash for display, and carry no
+ * identity — see resolveReasons in src/lib/report-compose.ts.
+ */
+export const CorrectionReasonSchema = z.object({
+  value: z.string().min(1),
+  head: z.string().min(1),
+  label: z.string().min(1),
+  hint: z.string(),
+  kind: z.enum(['matrix', 'licence', 'topics', 'doi', 'note', 'none']),
+  noteLabel: z.string().min(1).optional(),
+});
+
+/**
+ * Schema for correction-form.json — read from `.github/ISSUE_TEMPLATE/entry-correction.yml`
+ * at build time so the composer's reason list cannot drift from the form it prefills.
+ *
+ * `fieldIds` is emitted alongside the reasons because it is what the prefill actually keys
+ * on: GitHub matches a query parameter to a field's `id`, and a renamed field arrives blank
+ * rather than erroring. Carrying the real list lets the build assert the parameters the page
+ * sets still land somewhere.
+ */
+export const CorrectionFormSchema = z.object({
+  reasons: z.array(CorrectionReasonSchema).min(1),
+  fieldIds: z.array(z.string().min(1)).min(1),
+});
+export type CorrectionReason = z.infer<typeof CorrectionReasonSchema>;
+export type CorrectionFormData = z.infer<typeof CorrectionFormSchema>;
+
+// ---------------------------------------------------------------------------
 // The agent API's response bodies (site/public/api/*.json)
 // ---------------------------------------------------------------------------
 

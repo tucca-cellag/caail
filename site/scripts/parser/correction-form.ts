@@ -1,0 +1,138 @@
+/**
+ * correction-form.ts — reads the GitHub issue form that /report/ composes against.
+ *
+ * WHY THE SITE READS THE TEMPLATE INSTEAD OF AGREEING WITH IT
+ * -----------------------------------------------------------
+ * `.github/ISSUE_TEMPLATE/entry-correction.yml` is the prefill contract. GitHub matches a
+ * URL query parameter to a field's `id`, so a renamed field silently stops prefilling, and
+ * the composer would offer a reason the form does not list. Both failures are invisible on
+ * the page: the form still opens, it is just empty where it should be filled.
+ *
+ * Restating either list in the site's source would be the defect this repo pays for most
+ * often — a hand-typed fact beside a machine-derived one with nothing checking they agree.
+ * So the reasons and the field ids are READ from the template at build time, and
+ * `resolveReasons` demands a bijection between the options and the follow-ups the composer
+ * knows how to ask about. Reword an option's trailing hint and nothing breaks; rename the
+ * error class, add a ninth option, or delete the `details` field, and the BUILD fails
+ * naming the string it could not reconcile.
+ *
+ * WHY THIS IS NOT A YAML PARSER
+ * ------------------------------
+ * The site has no YAML dependency and this needs two things out of one file with a fixed,
+ * committed shape. A real parser would be the right answer for arbitrary YAML; for a known
+ * document, a narrow reader that throws the moment the shape stops matching its assumptions
+ * is smaller, has no dependency, and fails just as loudly. Every assumption it makes is
+ * asserted rather than assumed — see the throws below, all of which name the file.
+ */
+
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+
+import { resolveReasons, type ResolvedReason } from '../../src/lib/report-compose.js';
+
+/**
+ * Absolute path to the correction template, resolved from this module's location
+ * (parser → scripts → site → repo root), stable regardless of cwd. Mirrors
+ * TAXONOMY_MD_PATH in taxonomy.ts.
+ */
+export const CORRECTION_TEMPLATE_PATH: string = fileURLToPath(
+  new URL('../../../.github/ISSUE_TEMPLATE/entry-correction.yml', import.meta.url),
+);
+
+/**
+ * The query parameters /report/ prefills, and therefore the field ids the template must
+ * still carry.
+ *
+ * `item` is CAAIL-255's contract and already has a test; `details` is where the composed
+ * body lands, and is the one this ticket adds. Losing either is silent at runtime — GitHub
+ * ignores a query parameter that matches no field — which is exactly why it is asserted at
+ * build time instead.
+ */
+export const REQUIRED_FIELD_IDS: readonly string[] = ['item', 'details'];
+
+/** The correction form, as far as the composer needs to know about it. */
+export interface CorrectionForm {
+  /** The `reason` dropdown's options, resolved to the follow-up each one needs. */
+  readonly reasons: readonly ResolvedReason[];
+  /** Every `id:` the template declares, in document order. */
+  readonly fieldIds: readonly string[];
+}
+
+/** Every `id: <name>` in the document. Field ids are a bare word by GitHub's own schema. */
+function readFieldIds(src: string): string[] {
+  return [...src.matchAll(/^\s*id:\s*([A-Za-z0-9_-]+)\s*$/gm)].map((m) => m[1]!);
+}
+
+/**
+ * The `options:` list belonging to the `reason` field.
+ *
+ * Scoped to that field rather than to the first `options:` in the file: the template is free
+ * to grow a second dropdown, and a reader that silently took whichever list came first would
+ * then compose against the wrong vocabulary. The slice runs from the `reason` field's `id:`
+ * to its `validations:`, which is the block GitHub's schema requires to follow the options.
+ */
+function readReasonOptions(src: string): string[] {
+  const start = src.search(/^\s*id:\s*reason\s*$/m);
+  if (start < 0) {
+    throw new Error(
+      `correction-form: no "id: reason" field in ${CORRECTION_TEMPLATE_PATH}. /report/ ` +
+        `composes a report whose error class comes from that dropdown; without it there ` +
+        `is no vocabulary to offer.`,
+    );
+  }
+  const rest = src.slice(start);
+  const optionsAt = rest.search(/^\s*options:\s*$/m);
+  const validationsAt = rest.search(/^\s*validations:\s*$/m);
+  if (optionsAt < 0) {
+    throw new Error(
+      `correction-form: the "reason" field in ${CORRECTION_TEMPLATE_PATH} has no ` +
+        `"options:" list. It is expected to be a dropdown.`,
+    );
+  }
+  // A `validations:` block before the options belongs to an earlier field, so an end
+  // marker at or before the start means the reason field has none of its own; take the
+  // rest of the document in that case rather than slicing to a negative length.
+  const end = validationsAt > optionsAt ? validationsAt : rest.length;
+  const block = rest.slice(optionsAt, end);
+
+  const options = [...block.matchAll(/^\s*-\s+(.+?)\s*$/gm)].map((m) => m[1]!);
+  if (options.length === 0) {
+    throw new Error(
+      `correction-form: the "reason" dropdown in ${CORRECTION_TEMPLATE_PATH} lists no ` +
+        `options.`,
+    );
+  }
+  return options;
+}
+
+/**
+ * Build the correction-form model from the committed issue template.
+ *
+ * @param templatePath  Path to entry-correction.yml (defaults to the repo's).
+ * @returns             The resolved reason vocabulary and the template's field ids.
+ * @throws              If the reason dropdown is missing or empty, if a required field id
+ *                      has been renamed away, or if the options and the composer's
+ *                      follow-up declarations are not in bijection.
+ */
+export function buildCorrectionForm(
+  templatePath: string = CORRECTION_TEMPLATE_PATH,
+): CorrectionForm {
+  const src = readFileSync(templatePath, 'utf-8');
+
+  const fieldIds = readFieldIds(src);
+  const missing = REQUIRED_FIELD_IDS.filter((id) => !fieldIds.includes(id));
+  if (missing.length > 0) {
+    throw new Error(
+      `correction-form: ${templatePath} is missing the field id(s) ` +
+        `${missing.map((m) => `"${m}"`).join(', ')}. GitHub prefills an issue form by ` +
+        `matching a query parameter to a field's id, so a renamed field does not error — ` +
+        `it silently arrives blank, and the reader is handed the empty box this whole ` +
+        `route exists to avoid.`,
+    );
+  }
+
+  // Throws on any drift between the template's vocabulary and the composer's.
+  const reasons = resolveReasons(readReasonOptions(src));
+
+  return { reasons, fieldIds };
+}

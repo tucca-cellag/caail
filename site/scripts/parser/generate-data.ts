@@ -18,6 +18,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import { buildPapersModel } from './papers.js';
 import { buildTaxonomyModel } from './taxonomy.js';
+import { buildCorrectionForm } from './correction-form.js';
 import { computeCounts } from './counts.js';
 import { buildCatalogModel } from './catalog.js';
 import { buildTalksModel, talkItemCount } from './talks.js';
@@ -43,6 +44,7 @@ import {
   MetricsSchema,
   RecentSchema,
   TaxonomyDataSchema,
+  CorrectionFormSchema,
   TopicsDataSchema,
   DatasetsDataSchema,
   type Counts,
@@ -144,6 +146,7 @@ export function generateData(
   graphEdges: number;
   recentEntries: number;
   taxonomyDefs: number;
+  correctionReasons: number;
   awesomeLists: number;
   apiFiles: number;
 } {
@@ -172,6 +175,11 @@ export function generateData(
 
   // Taxonomy.md row/column definitions for the explorer's hover/click popups.
   const taxonomy = buildTaxonomyModel();
+
+  // The correction issue form's reason vocabulary, for the /report/ composer. Throws when
+  // the template's options and the composer's follow-up declarations stop being in
+  // bijection, or when a prefilled field id has been renamed away.
+  const correctionForm = buildCorrectionForm();
 
   // Topic tree (theme→tag) folded from the committed topic NDJSON — drives the hub,
   // card chips, and filters. (Catalog/paper entries already carry their topic refs.)
@@ -203,6 +211,7 @@ export function generateData(
   MetricsSchema.parse(metrics);
   RecentSchema.parse(recent);
   TaxonomyDataSchema.parse(taxonomy);
+  CorrectionFormSchema.parse(correctionForm);
   TopicsDataSchema.parse(topics);
   DatasetsDataSchema.parse(datasets);
 
@@ -442,6 +451,16 @@ export function generateData(
     'utf-8',
   );
 
+  // Write correction-form.json — the /report/ composer's reason vocabulary, read from the
+  // GitHub issue template it prefills. Emitted rather than imported directly by the
+  // component so it goes through the same validate-then-write path as every other model,
+  // and so a drift between the template and the composer is a BUILD failure.
+  writeFileSync(
+    join(outDir, 'correction-form.json'),
+    JSON.stringify(correctionForm, null, 2) + '\n',
+    'utf-8',
+  );
+
   // Emit the agent-facing static API under public/, from the same validated models the
   // site renders, so the two can't disagree about the corpus.
   const apiFiles = buildAgentApi({
@@ -473,6 +492,7 @@ export function generateData(
       Object.keys(taxonomy.axes.method).length +
       Object.keys(taxonomy.axes.theme).length,
     awesomeLists: awesome.groups.reduce((n, g) => n + g.items.length, 0),
+    correctionReasons: correctionForm.reasons.length,
   };
 }
 
@@ -506,6 +526,7 @@ if (isMain) {
       recentEntries,
       taxonomyDefs,
       awesomeLists,
+      correctionReasons,
     } = generateData();
     // Full-text agent index (public/llms-full.txt) — generated alongside the
     // JSON, but written to public/ rather than the data dir, so it lives in the
@@ -521,6 +542,7 @@ if (isMain) {
         `graph.json (${graphNodes} nodes / ${graphEdges} edges), metrics.json, ` +
         `recent.json (${recentEntries} entries), ` +
         `taxonomy.json (${taxonomyDefs} definitions across 3 axes), ` +
+        `correction-form.json (${correctionReasons} reasons), ` +
         `and llms-full.txt (${llmsBytes} bytes)`,
     );
     // eslint-disable-next-line no-console
