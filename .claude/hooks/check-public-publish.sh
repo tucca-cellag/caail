@@ -152,37 +152,33 @@ before_verb=""
 publish_seg=$(tail -c "+$((verb_at + 1))" <<<"$cmd" | tr '\n' ';' \
   | sed -E 's/^[[:space:]]*[;&|(]*[[:space:]]*//; s/[;&|].*$//')
 
-# An explicit --repo/-R. As a whole-command grep this took a `-R` quoted inside a
-# `--body` and published to whatever that named: reproduced with an ordinary
-# bug-report body containing `reproduce with: gh pr list -R octocat/Hello-World`,
-# which resolved the destination to that repo and announced it. Pre-dates this
-# branch.
+# An explicit --repo/-R, read from the WHOLE command on purpose.
 #
-# The segment alone does not fix it, because the quoted flag sits before any
-# separator. Telling a quoted example from a real flag needs shell-quote
-# reasoning, which is deliberately NOT attempted: a check that parses quoting can
-# be fooled on purpose, and it fails silently when it is.
+# A positional rule was tried here and withdrawn, and the reason is worth keeping
+# because it will look like an omission otherwise. The known hole is that a `-R`
+# quoted inside a body steers the destination: an ordinary bug report saying
+# `reproduce with: gh pr list -R octocat/Hello-World` publishes to that repo.
+# Closing it needs shell-quote reasoning, which is deliberately not attempted
+# here: a check that parses quoting can be fooled on purpose and fails silently
+# when it is.
 #
-# So the rule is positional and refuses to guess. Only a repo flag before the
-# first body-bearing flag can be the real destination; anything at or after one
-# is inside the body value or follows it. More than one, or one that is only
-# found after the body flag, makes the command AMBIGUOUS, and an ambiguous
-# destination resolves to nothing rather than to a guess. That is the difference
-# that matters: a guess can land on a private repo and take the short-circuit
-# that skips the payload scan, while nothing lands on the unresolved path, which
-# announces and scans.
-REPO_FLAG_RE='(^|[[:space:]])(--repo|-R)[[:space:]]+[^[:space:]]+'
-seg_head=$(sed -E 's/[[:space:]](-b|--body|--body-file|-F|-f|--field|--raw-field)([[:space:]=]).*$//' <<<"$publish_seg")
-repo_all=$(grep -oE "$REPO_FLAG_RE" <<<"$publish_seg" | wc -l | tr -d '[:space:]')
-repo_head=$(grep -oE "$REPO_FLAG_RE" <<<"$seg_head" | wc -l | tr -d '[:space:]')
-
-dest=""
-dest_ambiguous=0
-if [[ $repo_all -gt 1 || $repo_head -ne $repo_all ]]; then
-  dest_ambiguous=1
-elif [[ $repo_head -eq 1 ]]; then
-  dest=$(grep -oE "$REPO_FLAG_RE" <<<"$seg_head" | head -n1 | awk '{print $NF}' | tr -d "\"'")
-fi
+# The positional approximation (only a repo flag before the first body flag
+# counts) was worse than the hole it addressed, because it turned a rare wrong
+# answer into several common ones, each of them CONFIDENT rather than unresolved.
+# All measured on this hook: a `--repo` on a backslash-continuation line became
+# invisible; a `;` or `|` inside a `--title` truncated the segment before the
+# flag; `--comment`, `--notes` and `-d` were absent from the body-flag list even
+# though `close`/`release`/`gist` publish through exactly those; and a `--title`
+# is free text that sits before the body flag by construction, so no list could
+# have covered it. Each fell back to the cwd's repo, and a private cwd there
+# takes the `vis != PUBLIC` short-circuit and skips the payload scan, which is
+# the failure this whole branch is about.
+#
+# So this stays as it was, one strict improvement aside: `--repo=O/R` and the
+# attached `-RO/R` are valid `gh` and were not matched, and each of those also
+# fell back to the cwd. `--repository` is excluded by requiring a separator.
+dest=$(grep -oE '(--repo[=[:space:]]|-R[[:space:]]?)[^[:space:]]+' <<<"$cmd" | head -n1 \
+  | sed -E 's/^(--repo[=[:space:]]|-R[[:space:]]?)//' | tr -d "\"'")
 
 # `gh api -X POST /repos/<owner>/<repo>/issues` names its destination in the
 # endpoint and needs no local repository at all, so resolving it from the cwd
@@ -203,7 +199,7 @@ fi
 # the endpoint cannot be told apart from the payload, and guessing wrong is how
 # the paragraph above happened. Disagreement stays unresolved, which announces
 # and scans rather than guessing.
-if [[ -z $dest && $dest_ambiguous -eq 0 ]] && grep -qE '^(sudo[[:space:]]+)?gh[[:space:]]+api([[:space:]]|$)' <<<"$publish_seg"; then
+if [[ -z $dest ]] && grep -qE '^(sudo[[:space:]]+)?gh[[:space:]]+api([[:space:]]|$)' <<<"$publish_seg"; then
   api_dest=$(grep -oE 'repos/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/(issues|comments|releases|pulls)' <<<"$publish_seg" \
     | sed -E 's|^repos/([^/]+/[^/]+)/.*|\1|' | sort -u)
   [[ -n $api_dest && $(printf '%s\n' "$api_dest" | wc -l) -eq 1 ]] && dest="$api_dest"
@@ -247,9 +243,7 @@ meta=""
 # is kept rather than dropped, because an unbounded `gh` can hang before a publish.
 TIMEOUT_BIN=$(command -v timeout || command -v gtimeout || true)
 
-if [[ $dest_ambiguous -eq 1 ]]; then
-  unresolved="the command names a repository more than once, or only after the body flag, so the real destination cannot be told apart from quoted text"
-elif ! command -v gh >/dev/null 2>&1; then
+if ! command -v gh >/dev/null 2>&1; then
   unresolved="\`gh\` is not installed"
 elif [[ -z $TIMEOUT_BIN ]]; then
   unresolved="neither \`timeout\` nor \`gtimeout\` is installed, so no bounded \`gh\` call can be made"

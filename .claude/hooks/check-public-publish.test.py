@@ -370,34 +370,46 @@ ok = "PASS" if scoped else "FAIL"
 if not scoped: fails += 1
 print(f"  [{ok}] a newline ends the segment, so a heredoc body cannot steer it")
 
-# The same invariant, on the OTHER destination extractor. `--repo`/`-R` was read
-# from the whole command, so an ordinary bug report quoting a command in its body
-# published to whatever that quoted `-R` named. Pre-dates this branch; it is the
-# third extractor to be caught reading the payload, which is why the segment is
-# now the rule rather than a patch applied one extractor at a time.
-#
-# The segment alone does NOT close this one: the quoted flag sits before any
-# separator. Quote-aware parsing is deliberately not attempted, so the rule is
-# positional and refuses to guess — a repo flag found only after the body flag
-# makes the destination ambiguous, and ambiguous resolves to nothing rather than
-# to a guess. Nothing lands on the unresolved path, which announces and scans; a
-# guess can land on a private repo and skip the scan entirely.
-quoted_r = (f'{V} --title x --body "reproduce with: gh pr list '
-            f'-R octocat/Hello-World ; then {RISK}"')
-got, why, _ = run(HOOK_PROJ, quoted_r, {"CLAUDE_PROJECT_DIR": proj}, cwd=proj)
-scoped = got == "deny" and "UNRESOLVED" in why and "octocat/Hello-World" not in why
-ok = "PASS" if scoped else "FAIL"
-if not scoped: fails += 1
-print(f"  [{ok}] a -R quoted inside the body does not steer the destination")
+# --- an explicit repo flag is read, in every form gh accepts ----------------
+# A positional rule was tried here (only a repo flag before the first body flag
+# counts) and withdrawn: it turned one rare wrong answer into four common ones,
+# each CONFIDENT rather than unresolved, and each falling back to the cwd's repo
+# — where a private cwd takes the short-circuit that skips the payload scan.
+# These four are the shapes it broke, kept as the standing check that any future
+# attempt at the same idea has to survive. All are run from OUTSIDE any repo, so
+# a fallback to the cwd cannot accidentally produce the right answer.
+print("\n=== an explicit repo flag is read, in every form gh accepts ===")
+for label, flag in (
+    ("plain -R",              "-R tucca-cellag/caail"),
+    ("--repo=",               "--repo=tucca-cellag/caail"),
+    ("attached -R",           "-Rtucca-cellag/caail"),
+    ("on a continuation line", "\\\n  --repo tucca-cellag/caail"),
+):
+    got, _, ctx = run(HOOK_PROJ, f'{V} {flag} --title x --body "one ref"',
+                      {"CLAUDE_PROJECT_DIR": proj}, cwd=elsewhere)
+    honoured = got == "allow" and "tucca-cellag/caail" in ctx and "which is PUBLIC" in ctx
+    ok = "PASS" if honoured else "FAIL"
+    if not honoured: fails += 1
+    print(f"  [{ok}] {label:22s} resolves to the named repo, not the cwd")
 
-# A real `-R` still has to work, or the fix above would have broken the ordinary
-# case while passing its own regression test.
-got, _, ctx = run(HOOK_PROJ, f'{V} -R tucca-cellag/caail --title x --body "one ref"',
+# A separator inside an ordinary --title must not lose the flag either. This is
+# the shape that made the positional rule dangerous rather than merely wrong.
+got, _, ctx = run(HOOK_PROJ,
+                  f'{V} --title "parser: a|b breaks; then c" '
+                  '--repo tucca-cellag/caail --body "one ref"',
                   {"CLAUDE_PROJECT_DIR": proj}, cwd=elsewhere)
-honoured = got == "allow" and "tucca-cellag/caail" in ctx and "which is PUBLIC" in ctx
+honoured = got == "allow" and "tucca-cellag/caail" in ctx
 ok = "PASS" if honoured else "FAIL"
 if not honoured: fails += 1
-print(f"  [{ok}] and a real -R is still honoured from outside any repo")
+print(f"  [{ok}] a separator inside --title does not lose the repo flag")
+
+# `--repository` is a different flag and must not be mistaken for `--repo`.
+got, _, ctx = run(HOOK_PROJ, f'{P} --title "feat: x" --body "one ref"',
+                  {"CLAUDE_PROJECT_DIR": proj}, cwd=proj)
+plain = got == "allow" and "tucca-cellag/caail" in ctx
+ok = "PASS" if plain else "FAIL"
+if not plain: fails += 1
+print(f"  [{ok}] and a command with no repo flag still resolves from the cwd")
 
 # Suppressing the foreign-owner signal must not make the owners invisible. The
 # originating incident's payload shape (a paraphrase plus a link, no fence, no
