@@ -118,11 +118,14 @@ fi
 # same command, changing nothing but the hook's cwd: deny from one, silent
 # pass-through from the other. That is this guard's own cautionary pattern, a
 # check that looks present and is not.
-# Where the publishing verb sits, and the command split around it. EVERY
-# destination extractor below reads one of these two slices and never the whole
-# command, because reading the whole command is how the payload gets to choose
-# where the hook thinks the publish is going. That has now happened three times,
-# in three different extractors, so it is the invariant rather than a precaution.
+# Where the publishing verb sits, and the command split around it. The `cd` and
+# `gh api` extractors read one of these two slices and never the whole command,
+# because reading the whole command is how the payload gets to choose where the
+# hook thinks the publish is going.
+#
+# The `--repo`/`-R` extractor below is the deliberate exception, and its argument
+# is written out there rather than here: scoping it was tried and was worse than
+# the hole it addressed. Do not "restore the invariant" without reading that.
 #
 # BYTE offsets, so the slicing uses `head -c`/`tail -c` and not bash substring
 # expansion, which counts CHARACTERS. With multibyte text ahead of the verb the
@@ -174,11 +177,22 @@ publish_seg=$(tail -c "+$((verb_at + 1))" <<<"$cmd" | tr '\n' ';' \
 # takes the `vis != PUBLIC` short-circuit and skips the payload scan, which is
 # the failure this whole branch is about.
 #
-# So this stays as it was, one strict improvement aside: `--repo=O/R` and the
-# attached `-RO/R` are valid `gh` and were not matched, and each of those also
-# fell back to the cwd. `--repository` is excluded by requiring a separator.
-dest=$(grep -oE '(--repo[=[:space:]]|-R[[:space:]]?)[^[:space:]]+' <<<"$cmd" | head -n1 \
-  | sed -E 's/^(--repo[=[:space:]]|-R[[:space:]]?)//' | tr -d "\"'")
+# So this stays EXACTLY as it was. Widening it to also accept `--repo=O/R` and
+# the attached `-RO/R` was tried and reverted: both are valid `gh` and both fell
+# back to the cwd, so the change looked strictly good, and it was a regression.
+# Dropping the mandatory space after `-R` let the flag match inside ordinary
+# prose. Measured on this hook: a body mentioning "X-Ray" resolved the
+# destination to `ay`, and because that does not exist the command went
+# UNRESOLVED with no owner, which suppressed the foreign-owner signal and ALLOWED
+# a payload that denies without those two words. `-Rzotero-context` in prose
+# resolved to a real repo (a bare name resolves as <current-user>/<name>), and a
+# private one there short-circuits the scan. `chmod -Rv`, `grep -Ri` and
+# `Bio-Rad` all matched too. The mandatory space is what makes the flag a flag.
+#
+# The gap that leaves is real and matches main: `--repo=O/R`, the attached form,
+# and `--repo` followed by two spaces all fall back to the cwd. That is recorded
+# with the residual rather than fixed by loosening this pattern.
+dest=$(grep -oE '(--repo|-R) +[^ ]+' <<<"$cmd" | head -n1 | awk '{print $2}' | tr -d "\"'")
 
 # `gh api -X POST /repos/<owner>/<repo>/issues` names its destination in the
 # endpoint and needs no local repository at all, so resolving it from the cwd
@@ -199,10 +213,25 @@ dest=$(grep -oE '(--repo[=[:space:]]|-R[[:space:]]?)[^[:space:]]+' <<<"$cmd" | h
 # the endpoint cannot be told apart from the payload, and guessing wrong is how
 # the paragraph above happened. Disagreement stays unresolved, which announces
 # and scans rather than guessing.
-if [[ -z $dest ]] && grep -qE '^(sudo[[:space:]]+)?gh[[:space:]]+api([[:space:]]|$)' <<<"$publish_seg"; then
+#
+# For a `gh api` call the endpoint REPLACES anything the flag scrape found, and
+# is not merely a fallback for when it found nothing. `gh api` accepts no
+# `--repo`/`-R` at all, so in an `api` command every match of that flag is by
+# definition payload text, and letting it win let the payload disable the one
+# authoritative source. Measured: a body containing `chmod -Rv` resolved the
+# destination to `v`, skipped the endpoint entirely, and reported UNRESOLVED,
+# denying a command that would have worked from any directory.
+#
+# An `api` call whose endpoint cannot be read resolves to nothing rather than
+# falling back to that scrape, for the same reason.
+if grep -qE '^(sudo[[:space:]]+)?gh[[:space:]]+api([[:space:]]|$)' <<<"$publish_seg"; then
   api_dest=$(grep -oE 'repos/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/(issues|comments|releases|pulls)' <<<"$publish_seg" \
     | sed -E 's|^repos/([^/]+/[^/]+)/.*|\1|' | sort -u)
-  [[ -n $api_dest && $(printf '%s\n' "$api_dest" | wc -l) -eq 1 ]] && dest="$api_dest"
+  if [[ -n $api_dest && $(printf '%s\n' "$api_dest" | wc -l) -eq 1 ]]; then
+    dest="$api_dest"
+  else
+    dest=""
+  fi
 fi
 
 cd_dir=""

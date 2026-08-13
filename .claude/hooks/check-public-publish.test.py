@@ -381,8 +381,7 @@ print(f"  [{ok}] a newline ends the segment, so a heredoc body cannot steer it")
 print("\n=== an explicit repo flag is read, in every form gh accepts ===")
 for label, flag in (
     ("plain -R",              "-R tucca-cellag/caail"),
-    ("--repo=",               "--repo=tucca-cellag/caail"),
-    ("attached -R",           "-Rtucca-cellag/caail"),
+    ("plain --repo",          "--repo tucca-cellag/caail"),
     ("on a continuation line", "\\\n  --repo tucca-cellag/caail"),
 ):
     got, _, ctx = run(HOOK_PROJ, f'{V} {flag} --title x --body "one ref"',
@@ -403,13 +402,50 @@ ok = "PASS" if honoured else "FAIL"
 if not honoured: fails += 1
 print(f"  [{ok}] a separator inside --title does not lose the repo flag")
 
-# `--repository` is a different flag and must not be mistaken for `--repo`.
 got, _, ctx = run(HOOK_PROJ, f'{P} --title "feat: x" --body "one ref"',
                   {"CLAUDE_PROJECT_DIR": proj}, cwd=proj)
 plain = got == "allow" and "tucca-cellag/caail" in ctx
 ok = "PASS" if plain else "FAIL"
 if not plain: fails += 1
 print(f"  [{ok}] and a command with no repo flag still resolves from the cwd")
+
+# The mandatory space after `-R` is what makes the flag a flag. Dropping it to
+# accept the attached `-RO/R` form looked like a strict improvement and was a
+# regression: the pattern then matched inside ordinary prose. Each of these
+# resolved a destination out of a hyphenated word, and the first is the worse
+# one, because an unresolvable destination has no owner, which SUPPRESSES the
+# foreign-owner signal — so two unrelated words in a body turned a deny into an
+# allow, on the originating incident's own payload shape.
+print("\n=== a hyphenated word in prose is not a repo flag ===")
+prose = [
+    ("X-Ray in the body",  f'{P} --title "feat: add paper" --body '
+                           '"adapted from https://github.com/someoneelse/theirrepo, X-Ray module"'),
+    ("X-Ray in the title", f'{V} --title "X-Ray detector bug" --repo tucca-cellag/caail '
+                           '--body "see https://github.com/someoneelse/theirrepo"'),
+    ("a -Rname in prose",  f'{P} --title "feat: x" --body '
+                           '"port of the -Rzotero-context notes, https://github.com/someoneelse/theirrepo"'),
+]
+for label, cmd in prose:
+    got, why, _ = run(HOOK_PROJ, cmd, {"CLAUDE_PROJECT_DIR": proj}, cwd=proj)
+    # BOTH halves, because the verdict alone is not enough: `-Rzotero-context`
+    # resolved to a real repo of the current user, and being public it kept the
+    # foreign-owner signal firing, so a verdict-only check passed while the
+    # destination was wrong. Naming the destination is what catches that.
+    intact = (got == "deny" and "tucca-cellag/caail" in why
+              and "another owner's repo (someoneelse)" in why)
+    ok = "PASS" if intact else "FAIL"
+    if not intact: fails += 1
+    print(f"  [{ok}] {label:20s} does not become the destination")
+
+# `gh api` takes no --repo/-R at all, so any such match in an api command is
+# payload text by construction. Letting it win let the payload disable the one
+# authoritative source and denied a command that would have worked.
+got, why, _ = run(HOOK_PROJ, f'{API} -f title=x -f body="chmod -Rv output, {RISK}"',
+                  {"CLAUDE_PROJECT_DIR": proj}, cwd=elsewhere)
+endpoint_wins = got == "deny" and "tucca-cellag/caail" in why and "UNRESOLVED" not in why
+ok = "PASS" if endpoint_wins else "FAIL"
+if not endpoint_wins: fails += 1
+print(f"  [{ok}] a flag-shaped token in an api body does not beat the endpoint")
 
 # Suppressing the foreign-owner signal must not make the owners invisible. The
 # originating incident's payload shape (a paraphrase plus a link, no fence, no
