@@ -154,7 +154,7 @@ assert_shippable() {
   if [ -n "$dirty" ]; then
     printf 'ship-pr: working tree is not clean, refusing to proceed\n' >&2
     printf '%s\n' "$dirty" >&2
-    die 'commit the above, then re-run preflight. A stashed fix does not ship.'
+    die 'commit the above, then re-run preflight. If any of it is a review fix, commit it rather than stashing: a stashed fix clears this check without shipping.'
   fi
   gh auth status >/dev/null 2>&1 || die "gh not authenticated (run: gh auth login)."
 }

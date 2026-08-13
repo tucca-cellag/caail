@@ -88,20 +88,25 @@ it at all. A level you think you raised but did not is the same silent failure a
 report this whole phase exists to compensate for.
 
 **The floor on rounds comes from blast radius.** When a diff spans shapes, the widest one wins, and CAAIL
-PRs span shapes routinely.
+PRs span shapes routinely. **A diff that matches no row is a 2, never a 1** — the floor is two rounds for
+anything, and a shape nobody thought to list is not evidence that a change is safe.
 
 | Diff shape | Rounds floor |
 | --- | --- |
-| Prose only: `.claude/` rules and agents, `docs/**`, editorial prose in a canonical page | 2 |
+| Prose only: `.claude/` rules, agents and skill manuals (including this file), `docs/**`, editorial prose in a canonical page | 2 |
 | Structured catalog: the committed NDJSON, the curated `dois-*.json` / `licenses-manual.json` inputs, and the Markdown `db:emit` regenerates from them | 2 |
 | Site code: anything under `site/src/**`, `site/e2e/**`, or the parser | 3 |
 | Everything that regenerates published content or mints public ids: the DB tooling under `site/scripts/db/**` | 3 |
 | Trust boundaries and guards: the Worker, the hooks, this skill's own scripts, the workflows | 3 |
 
-**Ask `preflight` which shapes a diff actually spans; don't pattern-match paths by eye.** It prints the
-changed-path list and predicts which workflows fire, from the same path lists `check-ci-paths.py` asserts
-against the YAML. Re-typing those globs here would be a fifth hand-maintained copy beside four
-machine-checked ones, which is this repo's most expensive recurring bug.
+**These globs are hand-typed and nothing checks them, so read them as a guide and not as an authority.**
+`preflight` prints the changed-path list, which is the input you want, but it does **not** compute these
+shapes: it answers which of four workflows fire, and a `site/src/**`-only diff and an editorial-prose-only
+diff produce the identical `test: yes / docs: yes / lint-papers: no`. Nothing in its output separates the
+3-round row from the 2-round row, so that mapping is yours to make. The machine-checked lists in
+`ship-pr.sh` govern *which workflows run*, which is a different question from how much review a change
+deserves; where the two disagree about a path, neither is wrong, they are answering different things. When
+a diff sits on a boundary, take the deeper row.
 
 `db:check` / `db:verify` output belongs *in* the review of a catalog change, not instead of it: those
 assert referential integrity and round-tripping, which is a different question from whether the entry is
@@ -119,6 +124,12 @@ right.
   of scope it gets a Jira ticket (search the open board first, per `CLAUDE.md`; a finding that names an
   unpatched weakness in a live service gets `disclosure-private` and no GitHub issue). "Not acted on" and
   "not a defect" are different outcomes; only one is free.
+- **Commit the fixes before the next round starts.** Not at the end of the phase: `origin/main...HEAD` is
+  a merge-base-to-commit range and **does not include the working tree**, and passing an explicit target
+  also suppresses the reviewer's own uncommitted-changes fallback. So an uncommitted fix leaves the next
+  round reading the pre-fix code, where it either re-reports what you just fixed or calls the diff sound.
+  Either way the defects the fixes *introduced* are invisible to it, which is the one thing the next round
+  exists to find.
 - **Round 2 over the whole diff again.** Not narrowed to the files round 1 touched: the point of round 2
   is the defects the *fixes* introduced, and a bad fix does not confine its damage to its own file.
 - **Round 3 and beyond, until the findings die out.** Each round takes the previous round's triage list,
@@ -353,8 +364,10 @@ re-running them reports confusing errors rather than doing anything (see the Got
 - **Stop every background preview server this work started, on whatever port it took.** Naming one port
   is not enough: `pnpm preview` is given a free port per run, so real leaks sit on 4370, 4399, 4402-4406
   and anywhere else, and one worktree was found holding five at once, days old, one per e2e attempt.
-  `pgrep -f 'astro.mjs preview'` finds all of them regardless of port; `ps` the PIDs to see which worktree
-  each belongs to before killing anything, since a peer session may have one mid-run.
+  `pgrep -f 'astro.mjs (preview|dev)'` finds them regardless of port. Match `dev` as well as `preview`: a
+  leaked `astro dev` is what the bogus lhci score below is usually blamed on, and a pattern that only says
+  `preview` reports a clean machine while one is still holding the port. `ps` the PIDs to see which
+  worktree each belongs to before killing anything, since a peer session may have one mid-run.
 
 ### 10. Close the loop on the trackers
 Do this **last, after step 8 verified the live site** — not at merge time. CAAIL only counts as shipped
@@ -431,7 +444,7 @@ adding it there too, or the guard will happily confirm that an incomplete set is
 | Symptom / situation | What it means / do |
 | --- | --- |
 | **Round 1 comes back empty** on a code-heavy or multi-file diff | Read it as a fact about the review, not about the diff. There is no level to raise (the level is always `high`), so run out the floor and say plainly that a round came back empty on a diff that shape. An extra pass narrowed to a hot spot is fine on top of a whole-diff round, never instead of one. |
-| `push` says **working tree is not clean** and lists files | A step-1 fix was never committed. Not a nuisance check: `preflight` ran before the rounds edited anything, so this is the only thing between an uncommitted fix and a PR that looks correct while missing it. **Commit** what it lists, then re-run `preflight` and push. Don't stash it: a stashed fix produces exactly the outcome the check exists to prevent, and step 9's `ExitWorktree` with `discard_changes` then destroys the stash. |
+| `push` says **working tree is not clean** and lists files | A step-1 fix was never committed. Not a nuisance check: `preflight` ran before the rounds edited anything, so this is the only thing between an uncommitted fix and a PR that looks correct while missing it. **Commit** what it lists, then re-run `preflight` and push. Stashing a *fix* clears the check while producing exactly the outcome it exists to prevent: the tree goes clean, the push succeeds, and the fix is not in the diff. The stash itself is safe (`refs/stash` is shared across worktrees and survives `git worktree remove --force`, verified), so a fix stashed by mistake is one `git stash pop` away. Stashing unrelated work in progress is fine. |
 | `push` says **on the default branch** | You are shipping from a checkout that holds `main` (the primary one usually does). Nothing was pushed. Get onto the feature branch, or run the skill from its worktree. Without this the push would have gone straight to `origin/main`, skipping the PR and every check, with `docs.yml` deploying it. |
 | A finding's **fix is itself unreviewed code** | It is, and that is the whole reason for round 2. Two of the fourteen defects in step 1's evidence arrived this way, one an accessibility regression created by the fix for a different accessibility finding. Never merge a fix that no round has seen. |
 | Cross-model pass returns **one or two findings, or none** | Normal output for the weaker reviewer; it is not evidence the diff is clean (step 1's rationale). Do not let it stand in for a step-1 round, and do not report it as "reviewed by two models" as if the two carried equal weight. |
