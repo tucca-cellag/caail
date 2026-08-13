@@ -78,8 +78,8 @@ ADR rather than a quiet addition.
 **Adopt GFI's Alternative Protein Solutions facets as the column axis** (Production Platform,
 Value Chain Segment, Technology Sector, End Product Focus, Relevant Actor, Maturity Level,
 Solution Category, Topic). Rejected on a concrete count: none of the eight facets has a place for
-a general AI method, and `AI Tooling / Methodology` holds roughly 89 references once the retired
-column's are absorbed, so 40% of the matrix would be homeless. Underneath that, GFI's facets
+a general AI method, and `AI Tooling / Methodology` holds 81 references once the retired
+column's are absorbed, so 35% of the matrix would be homeless. Underneath that, GFI's facets
 answer "who should act on this gap" and CAAIL's column answers "what did this paper demonstrate".
 A crosswalk table in `Taxonomy.md` maps each column to its nearest GFI sector and states the four
 gaps as gaps, which delivers the legibility without the axis change. `Production Platform`
@@ -90,7 +90,7 @@ it can land at any time.
 
 ## Consequences
 
-- `AI Tooling / Methodology` grows from 66 distinct references to roughly 89, making the
+- `AI Tooling / Methodology` grows from 66 distinct references to 81, making the
   library's largest column larger still.
 - A retired column has no tombstone machinery (`retired_paper_ids` covers reference ids only),
   so `/research-areas/aievaluation/` gets a redirect to its new method-page home and the
