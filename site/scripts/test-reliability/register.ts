@@ -11,8 +11,8 @@
  *
  * ## Why the condition, and not just the name
  *
- * A list of names is worse than useless here, because the two shapes below want
- * opposite triage moves and the standard move is right for only one of them:
+ * A list of names is worse than useless here, because the three shapes below want
+ * different triage moves, and the standard move is right for only one of them:
  *
  *  - **load** — fails under CPU contention, passes when the machine is quiet, and the
  *    failing *set moves between runs*. Re-running is informative. `--no-file-parallelism`
@@ -23,20 +23,33 @@
  *    build are one observation counted N times. Re-running is actively misleading. These
  *    are caught before the suite starts by `scripts/e2e-preflight.ts`; they are listed
  *    here so this file is the whole inventory, not re-checked here.
+ *  - **residue** — depends on a file an *earlier, unrelated run* left in the workspace.
+ *    Deterministic while the residue exists and gone the moment it is cleared, so
+ *    re-running never helps and the control is to delete the leftover. This one is
+ *    genuinely run-order-dependent: the order that matters is between runs, not between
+ *    tests, so it survives every per-test isolation flag there is.
  *
- * A third shape, "order-dependent", was recorded on CAAIL-239 for
- * `licenses.spec.ts`'s license facet on the evidence that it failed 0/5 alone and
- * passed 30/30 in its file. **It does not exist.** The isolating run used
- * `--repeat-each=5` with no `--workers`, and Playwright starts one worker per repeat
- * group, so "run just this one test five times" silently became "launch five browsers
- * at once" while the file run used `--workers=1`. The variable was concurrency, not
- * order. Measured on the unfixed spec: `--workers=1 --repeat-each=5` passes 5/5,
- * `--workers=16 --repeat-each=16` fails 5/16.
+ * ## The shape that was claimed and does not exist, and the one that does
  *
- * That mistake is the reason for this file's central rule: **a run that "isolates" a
- * test has to be checked for what else it changed.** An entry here records the
- * condition in terms of the variable that was actually held, or it teaches the next
- * reader a false rule, which is worse than teaching them nothing.
+ * CAAIL-239 recorded `licenses.spec.ts`'s license facet as *order-dependent between
+ * tests*, on the evidence that it failed 0/5 alone and passed 30/30 in its file.
+ * **That reading was wrong.** The isolating run used `--repeat-each=5` with no
+ * `--workers`, and Playwright starts one worker per repeat group, so "run just this one
+ * test five times" silently became "launch five browsers at once" while the file run
+ * used `--workers=1`. The variable was concurrency: measured on the unfixed spec,
+ * `--workers=1 --repeat-each=5` passes 5/5 and `--workers=16 --repeat-each=16` fails
+ * 5/16. It was **load**, and it is fixed.
+ *
+ * That correction is easy to over-apply, so state the limit: **a run-order shape does
+ * exist in this repo**, it is `residue`, and it is not the one that was claimed. It
+ * turns on which *runs* have happened in this workspace rather than on the order of
+ * tests within a run, which is why no amount of `--workers=1` reaches it. CAAIL-215 is
+ * the live instance.
+ *
+ * The rule both halves come from: **a run that "isolates" a test has to be checked for
+ * what else it changed.** An entry here records the condition in terms of the variable
+ * that was actually held, or it teaches the next reader a false rule, which is worse
+ * than teaching them nothing.
  *
  * ## What an entry is NOT
  *
@@ -56,7 +69,7 @@
  */
 
 /** The condition class an entry misbehaves under. See the module docstring. */
-export type Shape = 'load' | 'artifact';
+export type Shape = 'load' | 'artifact' | 'residue';
 
 export type Status =
   /** Still misbehaves. Expect to meet it. */
@@ -278,6 +291,37 @@ export const REGISTER: readonly UnreliableEntry[] = [
     mitigation:
       "waitForSelector('.ng-canvas canvas') for the graph; retrying assertions on .hf-bar for the hub filters.",
     tickets: ['CAAIL-239', 'CAAIL-2'],
+  },
+
+  // -------------------------------------------------------------------------
+  // residue: a leftover from an earlier run in the same workspace.
+  // -------------------------------------------------------------------------
+  {
+    id: 'vitest-community-invite-walk',
+    suite: 'vitest',
+    file: 'src/lib/community.test.ts',
+    unit: 'appears nowhere under site/ except this module and its test',
+    anchor: "const SKIP = new Set(['node_modules', 'dist', 'coverage', '.astro', '.git', 'public']);",
+    shape: 'residue',
+    condition:
+      'The walk that enforces where the Slack invite may appear does not respect .gitignore, ' +
+      'so it reads generated output too. A failed Playwright run writes a page snapshot to ' +
+      'site/test-results/, the homepage snapshot contains the invite because CommunityBand ' +
+      'renders it, and the next vitest run reports that snapshot as an offender.',
+    misleadingTriage:
+      'It fails as a content-confinement violation in a file the developer has never touched, ' +
+      'on a branch that changed something unrelated, so it reads as a real disclosure leak. ' +
+      'Re-running does not clear it and neither does any isolation flag, because the trigger ' +
+      'is a previous run rather than this one. Only deleting the leftover changes the outcome.',
+    evidence:
+      '2026-08-13, reproduced end to end on the real path rather than by planting a file: ' +
+      'injected a failure into homepage-agent.spec.ts, restored the spec, and community.test.ts ' +
+      'then failed on test-results/homepage-agent-the-hero-co-b5cfc--before-the-typewriter-runs/' +
+      'error-context.md, the same file CAAIL-215 reported. rm -rf site/test-results and it ' +
+      'passed again with nothing else changed.',
+    reproduce: 'rm -rf site/test-results && pnpm --dir site test src/lib/community.test.ts',
+    status: 'open',
+    tickets: ['CAAIL-215', 'CAAIL-239'],
   },
 
   // -------------------------------------------------------------------------
