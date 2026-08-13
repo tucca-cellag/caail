@@ -167,9 +167,15 @@ AREA_KW: dict[str, list[str]] = {
     "Sensory Prediction": ["odor", "olfact", "taste", "flavor", "aroma", "bitter", "sensory",
                            "meat quality", "freshness"],
     "AI Tooling / Methodology": ["agent", "framework", "tool", "pipeline", "platform",
-                                 "methodology", "knowledge graph"],
-    "AI Evaluation & Benchmarking": ["benchmark", "evaluation", "eval", "leaderboard"],
+                                 "methodology", "knowledge graph", "benchmark", "evaluation",
+                                 "eval", "leaderboard"],
 }
+# NOTE: a benchmark paper now takes the column of the area it measures, so a
+# ProteinGym-style benchmark sits in Cellular Engineering and only corroborates if
+# that area's own vocabulary appears in its text. Where it does not, `_area_ok`
+# fails and the ref drops to residual for LLM review — more review, not less, which
+# is the safe direction. Widening these lists for benchmarks would trade that safety
+# for throughput, so do it deliberately rather than as a tidy-up.
 
 
 def _text(ref: dict) -> str:

@@ -1,6 +1,6 @@
 # Benchmark & Evaluation Datasets
 
-Curated *eval* datasets — released to benchmark AI models rather than to train them. Collected here — separate from the per-species data pages — because their primary use is downstream model evaluation, and because they pair with the [AI Evaluation & Benchmarking](../ResearchAreas/AIEvaluation.md) deep-dive page and column in [Papers.md](../Papers.md). Each entry is the canonical home of the *data* — the questions, scenarios, spectra, or sequences models are evaluated against — with the bundled scoring code (where present) noted inline. Live leaderboards / results trackers are catalogued separately in [`Databases.md`](../Databases.md).
+Curated *eval* datasets — released to benchmark AI models rather than to train them. Collected here — separate from the per-species data pages — because their primary use is downstream model evaluation, and because they pair with the [AI Evaluation & Benchmarking](../ResearchAreas/AIEvaluation.md) deep-dive page and the **Benchmarks & Evaluation Frameworks** method row in [Papers.md](../Papers.md). Each entry is the canonical home of the *data* — the questions, scenarios, spectra, or sequences models are evaluated against — with the bundled scoring code (where present) noted inline. Live leaderboards / results trackers are catalogued separately in [`Databases.md`](../Databases.md).
 
 For fixed train-on data artifacts organized by species, see the per-species pages indexed in [`README.md`](./README.md).
 

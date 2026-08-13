@@ -214,7 +214,12 @@ correspondence/commentary about an evaluation (→ *Reviews & Perspectives*).
 A paper in this row takes the **column of the research area its benchmark measures**, read off the
 task set rather than the title: a benchmark of protein-fitness or gene-perturbation tasks is
 *Cellular Engineering*, one of gel-microstructure tasks is *Scaffolding*, and one whose tasks span
-many sciences with no applied cell-ag endpoint is *AI Tooling / Methodology*.
+many sciences with no applied cell-ag endpoint is *AI Tooling / Methodology*. What decides it is the
+**quantity the benchmark grades**, not how much of its subject matter sounds biological: a suite
+scoring a statistical estimate recovered from simulated data measures analytic skill, whichever field
+supplied the scenario. A multi-domain suite whose task set genuinely splits, with each side
+substantially represented and one side outside every research area, is **dual-classified** across
+both columns rather than forced into one.
 
 ### Agent Infrastructure (Frameworks, KGs, Protocols)
 The **substrate that agents run on**: agent frameworks, knowledge graphs, tool/communication

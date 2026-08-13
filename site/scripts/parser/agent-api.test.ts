@@ -388,3 +388,44 @@ describe('site/public/api/datasets.json (the shipped file)', () => {
     expect(shippedBenchmarks.length).toBe(curatedEntryCount(REPO_ROOT, 'Benchmarks'));
   });
 });
+
+/**
+ * The prose that quotes these counts back at a reader.
+ *
+ * `plugin/skills/caail/SKILL.md` is loaded into every plugin user's context on every
+ * session, and it states the grid size under a heading called "The one thing to get
+ * right" — so a stale number there is read far more often than it is edited, and it
+ * contradicts the endpoint it tells the agent to fetch in the same breath. It went stale
+ * exactly once, when CAAIL-164 retired a column and moved the grid from 175/107 to
+ * 150/80; nothing failed. `agent-api.ts`'s own module doc is the text SKILL.md's wording
+ * was derived from, so it is checked too, or the next rewrite re-derives it wrong.
+ *
+ * This is the repo's standing rule against a hand-typed fact sitting next to a
+ * machine-derived one (CLAUDE.md, "Gotchas"). Neither number can be derived at read time
+ * — both live in prose — so the remedy is the other one: fail when they disagree.
+ */
+describe('prose that quotes the matrix grid size', () => {
+  const matrix = buildMatrix(papers, DATE);
+  const read = (...seg: string[]) => readFileSync(join(REPO_ROOT, ...seg), 'utf-8');
+
+  /** Every integer in the file that is written as a bare number, in order. */
+  const ints = (s: string) => (s.match(/\b\d+\b/g) ?? []).map(Number);
+
+  it('the installed plugin skill states the live total and empty-cell counts', () => {
+    // Scoped to the sentence, so an unrelated number elsewhere in the skill can't satisfy it.
+    const sentence = read('plugin', 'skills', 'caail', 'SKILL.md')
+      .split('\n\n')
+      .find((p) => p.includes('method×area cells'));
+    expect(sentence, 'no paragraph in SKILL.md mentions "method×area cells"').toBeDefined();
+    expect(ints(sentence!)).toContain(matrix.totalCells);
+    expect(ints(sentence!)).toContain(matrix.emptyCells);
+  });
+
+  it('agent-api.ts’s module doc states the live total, empty and populated counts', () => {
+    const src = read('site', 'scripts', 'parser', 'agent-api.ts');
+    const doc = src.slice(0, src.indexOf('*/'));
+    expect(ints(doc)).toContain(matrix.totalCells);
+    expect(ints(doc)).toContain(matrix.emptyCells);
+    expect(ints(doc)).toContain(matrix.populatedCells);
+  });
+});

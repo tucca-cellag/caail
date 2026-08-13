@@ -1,6 +1,6 @@
 # ResearchAreas/, context for Claude Code and AI agents
 
-This directory holds one deep-dive page per column in the [Papers.md matrix](../Papers.md). Each page **synthesizes and editorializes** the column's papers, tools, and data resources: describing their scope, sub-dividing them into thematic clusters, and framing each entry's relevance to cellular agriculture. These pages are *not* the canonical source for any paper, tool, dataset, or database they reference.
+This directory holds the deep-dive pages for the [Papers.md matrix](../Papers.md). Most are one page per column, but the mapping is not one-to-one in either direction: `MetabolicModeling.md` and `AIEvaluation.md` describe subjects that are not columns (the second covers the `Benchmarks & Evaluation Frameworks` method row). Each page **synthesizes and editorializes** its papers, tools, and data resources: describing their scope, sub-dividing them into thematic clusters, and framing each entry's relevance to cellular agriculture. These pages are *not* the canonical source for any paper, tool, dataset, or database they reference.
 
 ## Note for AI agents and LLMs
 
