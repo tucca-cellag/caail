@@ -255,17 +255,40 @@ const vocabJson = JSON.stringify(vocabularies).replace(/</g, '\\u003c');
 
 <script>
   import { isItemId, correctionIssueUrl, correctionMailto } from '../lib/report';
+  // Only what this file calls. `boundNote` and `normaliseDoi` are deliberately NOT
+  // imported: composeBody applies both itself, and importing them here would invite a
+  // second, differently-bounded copy of the same rule at the point of input.
   import {
     NOTE_MAX_LENGTH,
-    boundNote,
     composeBody,
     isDoiShape,
-    normaliseDoi,
     type CorrectionAnswers,
     type CorrectionVocabularies,
     type FollowUpKind,
     type ResolvedReason,
   } from '../lib/report-compose';
+
+  /** The three steps, in order. `detail` is skipped when the reason has no follow-up. */
+  type StepName = 'reason' | 'detail' | 'review';
+
+  /**
+   * What step 2 is called, per follow-up kind.
+   *
+   * Keyed by the union, so a new kind fails to compile here rather than rendering a step
+   * with an empty heading. Declared ABOVE the call to startComposer below, not after it:
+   * `const` is in the temporal dead zone until its own line runs, and startComposer paints
+   * the first step synchronously. That only failed to throw because the first step has no
+   * reason yet and the lookup short-circuits, which is the kind of accident that stops
+   * being one the moment a reason is ever preselected.
+   */
+  const DETAIL_HEADING: Record<FollowUpKind, string> = {
+    matrix: 'Where it should sit',
+    licence: 'The licence tier it should have',
+    topics: 'The subject theme it should have',
+    doi: 'The DOI it should have',
+    note: 'What it should say',
+    none: '',
+  };
 
   const raw = new URLSearchParams(window.location.search).get('item');
   const id = isItemId(raw) ? raw : null;
@@ -340,20 +363,6 @@ const vocabJson = JSON.stringify(vocabularies).replace(/</g, '\\u003c');
   // ─────────────────────────────────────────────────────────────────────────────
   // The composer
   // ─────────────────────────────────────────────────────────────────────────────
-
-  /** The three steps, in order. `detail` is skipped when the reason has no follow-up. */
-  type StepName = 'reason' | 'detail' | 'review';
-
-  /** What step 2 is called, per follow-up kind. Keyed by the union, so a new kind fails to
-      compile here rather than rendering a step with an empty heading. */
-  const DETAIL_HEADING: Record<FollowUpKind, string> = {
-    matrix: 'Where it should sit',
-    licence: 'The licence tier it should have',
-    topics: 'The subject theme it should have',
-    doi: 'The DOI it should have',
-    note: 'What it should say',
-    none: '',
-  };
 
   function startComposer(itemId: string) {
     const section = document.getElementById('caail-compose');
