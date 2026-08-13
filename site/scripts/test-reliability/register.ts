@@ -225,12 +225,16 @@ export const REGISTER: readonly UnreliableEntry[] = [
       'license facet; it was the most contended configuration available.',
     evidence:
       '2026-08-13, unfixed: --workers=1 --repeat-each=5 passed 5/5, --workers=16 --repeat-each=16 ' +
-      'failed 5/16. Fixed: 16/16 at --workers=16 under load average 26.9.',
+      'failed 5/16. Fixed: 16/16 at --workers=16 under load average 26.9. Independently on ' +
+      '2026-08-12 (f548fc8) it failed 3 runs in 5 on main, and adding a report link to every ' +
+      'catalog card pushed that to 4 in 5, which is corroboration rather than coincidence: more ' +
+      'DOM means slower hydration means a wider window for the click to be lost.',
     reproduce:
       'cd site && CAAIL_E2E_PORT=<free> pnpm exec playwright test e2e/licenses.spec.ts ' +
       '-g "narrows the grid" --repeat-each=16 --workers=16',
     status: 'mitigated',
-    mitigation: 'awaitHydrated(page, \'CatalogBrowser\') before the facet click.',
+    mitigation:
+      "awaitHydrated(page, 'CatalogBrowser') before the facet click, landed in f548fc8.",
     tickets: ['CAAIL-239'],
   },
   {
