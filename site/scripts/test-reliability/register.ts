@@ -93,6 +93,19 @@ export interface UnreliableEntry {
    * `register.test.ts` rather than leaving a stale entry that reads as live.
    */
   anchor: string;
+  /**
+   * vitest only: match these exact test names rather than the whole module.
+   *
+   * Absent means module-level matching, which is right for the five slow-fixture
+   * files: their failing *test* moves between runs, so naming one would be precise
+   * about the wrong thing. It is wrong wherever a module holds tests the entry is not
+   * about, because the reporter would then label a genuine failure as known-unreliable
+   * — the harm the Playwright side's title matching already exists to avoid.
+   *
+   * Each name here must appear verbatim in `file`; `register.test.ts` enforces it, so
+   * this doubles as the vitest title-drift oracle.
+   */
+  tests?: readonly string[];
   shape: Shape;
   /** One or two sentences: when does it misbehave, and when does it not. */
   condition: string;
@@ -113,10 +126,14 @@ export interface UnreliableEntry {
 }
 
 /**
- * Playwright title matching is exact against `TestCase.title`; vitest matching is by
- * module path only. That asymmetry is deliberate: the vitest entries fail as whole
- * files whose failing *test* moves between runs (three consecutive full runs produced
- * three different sets), so naming one test would be precise about the wrong thing.
+ * Playwright matching is always file plus exact title. vitest matching defaults to the
+ * module and narrows to named tests when an entry sets `tests`.
+ *
+ * The default is not laziness: the five slow-fixture entries below genuinely fail as
+ * whole files, and which test inside them fails moves between runs (three consecutive
+ * full runs produced three different sets), so naming one would be precise about the
+ * wrong thing. An entry whose module holds unrelated tests must set `tests`, or the
+ * reporter labels those as known-unreliable on no evidence.
  */
 export const REGISTER: readonly UnreliableEntry[] = [
   // -------------------------------------------------------------------------
@@ -301,13 +318,22 @@ export const REGISTER: readonly UnreliableEntry[] = [
     suite: 'vitest',
     file: 'src/lib/community.test.ts',
     unit: 'appears nowhere under site/ except this module and its test',
+    // Two tests in this module have nothing to do with residue, and one of them is the
+    // guard against a real Slack-invite paste. Matching the module would greet that
+    // leak with "this is a known artifact".
+    tests: ['appears nowhere under site/ except this module and its test'],
+    // Anchored on the skip list rather than the test title, because the skip list is
+    // what makes the condition true: widen it and this entry is obsolete, so the entry
+    // should be forced back under review. The title is covered by `tests` above.
     anchor: "const SKIP = new Set(['node_modules', 'dist', 'coverage', '.astro', '.git', 'public']);",
     shape: 'residue',
     condition:
-      'The walk that enforces where the Slack invite may appear does not respect .gitignore, ' +
-      'so it reads generated output too. A failed Playwright run writes a page snapshot to ' +
-      'site/test-results/, the homepage snapshot contains the invite because CommunityBand ' +
-      'renders it, and the next vitest run reports that snapshot as an offender.',
+      'The walk that enforces where the Slack invite may appear does not respect .gitignore. ' +
+      'It skips a hand-maintained list (node_modules, dist, coverage, .astro, .git, public) ' +
+      'plus dot-prefixed names, so every OTHER generated directory is in scope, including ' +
+      'the two Playwright writes to: site/test-results/ and site/playwright-report/. A ' +
+      'failed run leaves a page snapshot in one of them, the homepage snapshot contains the ' +
+      'invite because CommunityBand renders it, and the next vitest run calls it an offender.',
     misleadingTriage:
       'It fails as a content-confinement violation in a file the developer has never touched, ' +
       'on a branch that changed something unrelated, so it reads as a real disclosure leak. ' +
@@ -319,7 +345,11 @@ export const REGISTER: readonly UnreliableEntry[] = [
       'then failed on test-results/homepage-agent-the-hero-co-b5cfc--before-the-typewriter-runs/' +
       'error-context.md, the same file CAAIL-215 reported. rm -rf site/test-results and it ' +
       'passed again with nothing else changed.',
-    reproduce: 'rm -rf site/test-results && pnpm --dir site test src/lib/community.test.ts',
+    // Both directories, because clearing only one leaves the failure standing and the
+    // report's own instruction ("if it survives the control, it is real") would then
+    // certify a fabricated disclosure leak.
+    reproduce:
+      'rm -rf site/test-results site/playwright-report && pnpm --dir site test src/lib/community.test.ts',
     status: 'open',
     tickets: ['CAAIL-215', 'CAAIL-239'],
   },
@@ -385,14 +415,18 @@ export function openEntries(register: readonly UnreliableEntry[] = REGISTER): Un
  */
 export function entriesForVitestModule(
   moduleId: string,
+  failedTestNames: readonly string[] = [],
   register: readonly UnreliableEntry[] = REGISTER,
 ): UnreliableEntry[] {
   const normalised = moduleId.replaceAll('\\', '/');
-  return register.filter(
-    (entry) =>
-      entry.suite === 'vitest' &&
-      (normalised === entry.file || normalised.endsWith(`/${entry.file}`)),
-  );
+  return register.filter((entry) => {
+    if (entry.suite !== 'vitest') return false;
+    if (normalised !== entry.file && !normalised.endsWith(`/${entry.file}`)) return false;
+    // No `tests` means the whole module is registered, which is the right reading for
+    // an entry whose failing test moves between runs.
+    if (!entry.tests) return true;
+    return entry.tests.some((name) => failedTestNames.includes(name));
+  });
 }
 
 /**
