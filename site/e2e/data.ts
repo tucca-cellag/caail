@@ -30,7 +30,6 @@ type Papers = {
 type CorrectionForm = {
   reasons: { value: string; label: string; kind: string }[];
   fieldIds: string[];
-  reasonLabel: string;
   requiredConfirmations: number;
 };
 type SubjectRow = {

@@ -32,8 +32,8 @@ on:
       - .claude/hooks/**
       - .claude/settings.json
       - .github/workflows/test.yml
-      # The correction issue form. /report/ composes a report against this file: its
-      # dropdown options ARE the composer's reason vocabulary, and its field ids are
+      # The correction issue form. /report/ composes a report against this file: the error
+      # classes its reason field lists ARE the composer's vocabulary, and its field ids are
       # what GitHub prefills by. correction-form.test.ts checks the two agree, and
       # buildCorrectionForm fails the build when they stop agreeing. Without this path
       # a template-only edit triggered NO workflow at all, so the one change most likely
@@ -64,8 +64,8 @@ on:
       - .claude/hooks/**
       - .claude/settings.json
       - .github/workflows/test.yml
-      # The correction issue form. /report/ composes a report against this file: its
-      # dropdown options ARE the composer's reason vocabulary, and its field ids are
+      # The correction issue form. /report/ composes a report against this file: the error
+      # classes its reason field lists ARE the composer's vocabulary, and its field ids are
       # what GitHub prefills by. correction-form.test.ts checks the two agree, and
       # buildCorrectionForm fails the build when they stop agreeing. Without this path
       # a template-only edit triggered NO workflow at all, so the one change most likely

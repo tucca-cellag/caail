@@ -3,10 +3,11 @@ import { readFileSync } from 'node:fs';
 import { describe, it, expect } from 'vitest';
 
 import { buildCorrectionForm } from '../../scripts/parser/correction-form.js';
-import { correctionMailto } from './report';
+import { correctionIssueUrl, correctionMailto } from './report';
 import {
   DOI_MAX_ENCODED,
   DOI_MAX_LENGTH,
+  GITHUB_MAX_URL,
   MAILTO_MAX_URL,
   NOTE_MAX_ENCODED,
   NOTE_MAX_LENGTH,
@@ -523,6 +524,25 @@ describe('composeBody', () => {
     const url = correctionMailto(longestId, body);
     expect(url.length).toBeLessThan(MAILTO_MAX_URL);
     expect(MAILTO_MAX_URL - url.length).toBeGreaterThan(200);
+
+    // The GitHub URL carries the same body PLUS the error class, which the mailto does not:
+    // that one states the problem in the body and has no field to fill. Bounded here for
+    // the same reason the mailto is, at a much looser budget — see GITHUB_MAX_URL.
+    //
+    // The body was composed with the longest LABEL and the parameter takes the longest
+    // VALUE, which need not be the same reason. That is deliberate: the pair is an upper
+    // bound over every real combination rather than any one of them.
+    const longestValue = buildCorrectionForm().reasons.reduce((a, b) =>
+      b.value.length > a.value.length ? b : a,
+    ).value;
+    const issue = correctionIssueUrl(longestId, body, longestValue);
+    // Read back through URLSearchParams rather than string-matched: the two encodings
+    // differ on spaces and parentheses, and two of the eight error classes carry
+    // parentheses, so a `toContain` here would be one rename away from failing on a
+    // correct URL.
+    expect(new URL(issue).searchParams.get('reason')).toBe(longestValue);
+    expect(issue.length).toBeLessThan(GITHUB_MAX_URL);
+    expect(GITHUB_MAX_URL - issue.length).toBeGreaterThan(1000);
   });
 
   it('rejects a DOI that passes the character cap but blows the encoded one', () => {

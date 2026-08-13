@@ -16,6 +16,18 @@
  * error class, add a ninth option, or delete the `details` field, and the BUILD fails
  * naming the string it could not reconcile.
  *
+ * WHERE THE VOCABULARY LIVES, AND WHY IT IS NOT AN `options:` LIST
+ * ----------------------------------------------------------------
+ * It used to be, because `reason` was a `dropdown`. A dropdown does not prefill — GitHub
+ * takes the query parameter and ignores it — so the composer could compose the answer and
+ * then had to ask the reader to pick it again by hand. Making the field an `input` fixed
+ * that and cost the `options:` key, which was the vocabulary's home.
+ *
+ * The list therefore moved into the input's `description:`, where it is still exactly one
+ * copy, still in the template, and still what the reader is shown. Only the KEY this module
+ * reads it out of changed. The alternative — a bare input, with the eight class names
+ * retyped in the site's source — is the defect above, reintroduced to buy a prefill.
+ *
  * WHY THIS IS NOT A YAML PARSER
  * ------------------------------
  * The site has no YAML dependency and this needs two things out of one file with a fixed,
@@ -54,19 +66,10 @@ export const REQUIRED_FIELD_IDS: readonly string[] = Object.values(CORRECTION_FI
 
 /** The correction form, as far as the composer needs to know about it. */
 export interface CorrectionForm {
-  /** The `reason` dropdown's options, resolved to the follow-up each one needs. */
+  /** The `reason` field's listed error classes, resolved to the follow-up each one needs. */
   readonly reasons: readonly ResolvedReason[];
   /** Every `id:` the template declares, in document order. */
   readonly fieldIds: readonly string[];
-  /**
-   * The reason dropdown's visible `label:`.
-   *
-   * The review step tells the reader which field to find on the GitHub form, so it has to
-   * name it as the form does. Extracted rather than written into the page, because a
-   * reworded label would otherwise leave the site directing every reader to a field name
-   * that no longer exists, with every check still green.
-   */
-  readonly reasonLabel: string;
   /**
    * How many confirmation checkboxes the form marks `required: true`.
    *
@@ -97,13 +100,19 @@ function readFieldIds(src: string): string[] {
  *
  * Both failed loudly, because `resolveReasons` rejects a checkbox label as an error class.
  * Both failed naming the wrong field, which is the part that costs an afternoon.
+ *
+ * The missing-anchor throw below is UNREACHABLE from `buildCorrectionForm`, which checks
+ * REQUIRED_FIELD_IDS first and reports the same template in the same breath with a better
+ * message (it names the prefill that would silently stop). Kept anyway, because this
+ * function's contract should not depend on its one caller checking first — and because a
+ * caller that did not would otherwise slice from index -1.
  */
 function reasonField(src: string): string {
   const anchor = src.search(/^[ \t]*id:[ \t]*reason[ \t]*$/m);
   if (anchor < 0) {
     throw new Error(
       `correction-form: no "id: reason" field in ${CORRECTION_TEMPLATE_PATH}. /report/ ` +
-        `composes a report whose error class comes from that dropdown; without it there ` +
+        `composes a report whose error class comes from that field; without it there ` +
         `is no vocabulary to offer.`,
     );
   }
@@ -121,30 +130,64 @@ function reasonField(src: string): string {
 }
 
 /**
- * The `options:` list belonging to the `reason` field.
+ * Assert the `reason` field is the kind that can be prefilled.
+ *
+ * The whole point of the composer is that the reader does not answer a question twice, and
+ * a `dropdown` breaks that in the one way nothing else here would notice: GitHub accepts
+ * the `reason=` query parameter, ignores it, and opens the form with the field empty. No
+ * error, no warning, and the review step goes on telling the reader that only the
+ * confirmations are left — which is then false, since `reason` is `required: true`. So the
+ * field type is checked rather than assumed, at build time, where it is loud.
+ */
+function assertPrefillable(field: string): void {
+  const type = /^[ \t]*-[ \t]+type:[ \t]*(\S+)[ \t]*$/m.exec(field)?.[1];
+  if (type !== 'input') {
+    throw new Error(
+      `correction-form: the "reason" field in ${CORRECTION_TEMPLATE_PATH} is ` +
+        `"type: ${type}", not "type: input". Only an input prefills from a URL query ` +
+        `parameter — GitHub takes the parameter for a dropdown and silently ignores it — ` +
+        `so /report/ would compose the error class and then hand the reader a blank ` +
+        `required field, under copy saying it had been filled in for them.`,
+    );
+  }
+}
+
+/**
+ * The error classes the `reason` field lists, read from its `description:`.
+ *
+ * They are a markdown list inside a literal block rather than an `options:` list because
+ * the field is an input (see {@link assertPrefillable}). Everything below is about reading
+ * a YAML block safely, and every rule in it was put there by a real failure:
  *
  * The block ENDS AT THE FIRST DEDENT. Indentation is what actually delimits a YAML block,
  * so scanning for a sibling key as an end marker assumes an ordering the format does not
  * promise. Combined with {@link reasonField} above, the read no longer depends on where any
  * of the field's keys sit relative to each other.
  *
- * The searches use `[ \t]*` and never `\s*`: `\s` matches a newline, so `/^\s*options:/m`
+ * The searches use `[ \t]*` and never `\s*`: `\s` matches a newline, so `/^\s*description:/m`
  * can begin its match on a BLANK LINE above the key. The slice would then start one line
  * early, that line's indent reads as 0, and the dedent bound never trips. One blank line in
  * the template was all it took.
+ *
+ * The block scalar must be LITERAL (`|`), not folded (`>`). A folded block joins its lines,
+ * so the eight bullets would arrive as one string and `resolveReasons` would reject it —
+ * loudly, but naming a reason head rather than the block style that actually broke.
+ * Non-bullet lines in the block are prose and are skipped, which is what lets the
+ * description carry an instruction sentence above the list.
  */
 function readReasonOptions(src: string): string[] {
   const rest = reasonField(src);
-  const optionsAt = rest.search(/^[ \t]*options:[ \t]*$/m);
-  if (optionsAt < 0) {
+  const descriptionAt = rest.search(/^[ \t]*description:[ \t]*\|[-+0-9]*[ \t]*$/m);
+  if (descriptionAt < 0) {
     throw new Error(
       `correction-form: the "reason" field in ${CORRECTION_TEMPLATE_PATH} has no ` +
-        `"options:" list. It is expected to be a dropdown.`,
+        `"description: |" literal block. That block is where its error classes are ` +
+        `listed, and it is the only copy of that vocabulary.`,
     );
   }
 
   const indentOf = (line: string): number => line.length - line.trimStart().length;
-  const [header, ...body] = rest.slice(optionsAt).split('\n');
+  const [header, ...body] = rest.slice(descriptionAt).split('\n');
   const baseIndent = indentOf(header!);
 
   const block: string[] = [];
@@ -161,8 +204,8 @@ function readReasonOptions(src: string): string[] {
   });
   if (options.length === 0) {
     throw new Error(
-      `correction-form: the "reason" dropdown in ${CORRECTION_TEMPLATE_PATH} lists no ` +
-        `options.`,
+      `correction-form: the "reason" field in ${CORRECTION_TEMPLATE_PATH} describes no ` +
+        `error classes. Its description is expected to carry them as a markdown list.`,
     );
   }
   return options;
@@ -189,9 +232,10 @@ function countRequiredConfirmations(src: string): number {
  *
  * @param templatePath  Path to entry-correction.yml (defaults to the repo's).
  * @returns             The resolved reason vocabulary and the template's field ids.
- * @throws              If the reason dropdown is missing or empty, if a required field id
- *                      has been renamed away, or if the options and the composer's
- *                      follow-up declarations are not in bijection.
+ * @throws              If the reason field is missing, empty or no longer prefillable, if a
+ *                      required field id has been renamed away, or if the listed error
+ *                      classes and the composer's follow-up declarations are not in
+ *                      bijection.
  */
 export function buildCorrectionForm(
   templatePath: string = CORRECTION_TEMPLATE_PATH,
@@ -210,23 +254,14 @@ export function buildCorrectionForm(
     );
   }
 
-  // Throws on any drift between the template's vocabulary and the composer's.
-  const field = reasonField(src);
+  // Throws if the field can no longer be prefilled, or on any drift between the template's
+  // vocabulary and the composer's.
+  assertPrefillable(reasonField(src));
   const reasons = resolveReasons(readReasonOptions(src));
-
-  const label = /^[ \t]*label:[ \t]*(.+?)[ \t]*$/m.exec(field);
-  if (!label) {
-    throw new Error(
-      `correction-form: the "reason" field in ${templatePath} has no "label:". The review ` +
-        `step on /report/ names that field so the reader can find it on the GitHub form, ` +
-        `and it has to name it as the form does.`,
-    );
-  }
 
   return {
     reasons,
     fieldIds,
-    reasonLabel: label[1]!,
     requiredConfirmations: countRequiredConfirmations(src),
   };
 }

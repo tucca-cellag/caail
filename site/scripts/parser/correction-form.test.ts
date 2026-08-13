@@ -28,6 +28,28 @@ function buildEdited(edit: (src: string) => string): () => ReturnType<typeof bui
   return () => buildCorrectionForm(path);
 }
 
+/**
+ * Where the `reason` field's `- type:` item starts and ends, found INDEPENDENTLY of the
+ * parser under test.
+ *
+ * The template carries three `input` fields, so `indexOf('  - type: input')` finds `item`
+ * and the tests that reorder the reason field's keys would quietly rewrite the wrong one
+ * and then assert nothing. It is located from `id: reason` outwards instead, which is the
+ * one line that is unambiguous.
+ */
+function reasonFieldBounds(src: string): [number, number] {
+  const anchor = src.indexOf('\n    id: reason\n');
+  if (anchor < 0) throw new Error('the template has no `id: reason` field to edit');
+  const next = src.indexOf('\n  - type:', anchor);
+  return [src.lastIndexOf('\n  - type:', anchor) + 1, next < 0 ? src.length : next + 1];
+}
+
+/** Rewrite only the `reason` field, leaving the rest of the template byte-identical. */
+function editReasonField(src: string, edit: (field: string) => string): string {
+  const [start, end] = reasonFieldBounds(src);
+  return src.slice(0, start) + edit(src.slice(start, end)) + src.slice(end);
+}
+
 describe('buildCorrectionForm against the committed template', () => {
   const form = buildCorrectionForm();
 
@@ -71,9 +93,9 @@ describe('buildCorrectionForm against the committed template', () => {
     for (const id of REQUIRED_FIELD_IDS) expect(form.fieldIds).toContain(id);
   });
 
-  it('reads the reason dropdown, not some other list in the file', () => {
+  it('reads the reason field, not some other list in the file', () => {
     // The template opens with a markdown block and carries several fields; a reader that
-    // grabbed the first `- ` lines it found would return prose, not options.
+    // grabbed the first `- ` lines it found would return prose, not error classes.
     for (const reason of form.reasons) {
       expect(reason.value).not.toMatch(/^\s*type:/);
       expect(reason.value.length).toBeGreaterThan(3);
@@ -82,10 +104,51 @@ describe('buildCorrectionForm against the committed template', () => {
 });
 
 describe('buildCorrectionForm fails loudly when the template drifts', () => {
-  it('throws when the reason dropdown is gone', () => {
+  it('throws when the reason field is gone', () => {
+    // Reported by the field-id check rather than by `reasonField`, because `reason` is one
+    // of the parameters /report/ prefills and so is in REQUIRED_FIELD_IDS. That check runs
+    // first and names the prefill consequence, which is the more useful of the two messages.
     expect(buildEdited((s) => s.replace('id: reason', 'id: why'))).toThrow(
-      /no "id: reason" field/,
+      /missing the field id\(s\) "reason"/,
     );
+  });
+
+  it('throws when the reason field goes back to being a dropdown', () => {
+    // The regression this exists for is entirely silent: GitHub accepts `reason=` for a
+    // dropdown, ignores it, and opens the form with a blank REQUIRED field — under a review
+    // step saying the only thing left is the confirmations. Nothing else in this suite, and
+    // nothing on the page, distinguishes that from a working prefill.
+    expect(
+      buildEdited((s) =>
+        editReasonField(s, (field) => field.replace('- type: input', '- type: dropdown')),
+      ),
+    ).toThrow(/is "type: dropdown", not "type: input"/);
+  });
+
+  it('throws when the description stops being a literal block', () => {
+    // A folded block (`>`) joins its lines, so the eight bullets would arrive as one string.
+    // `resolveReasons` would still reject that, but naming a reason head — which sends the
+    // next reader looking at REASON_SPECS rather than at the block style that broke it.
+    expect(
+      buildEdited((s) =>
+        editReasonField(s, (field) => field.replace('description: |', 'description: >')),
+      ),
+    ).toThrow(/no "description: \|" literal block/);
+  });
+
+  it('ignores prose in the description, which is where the instruction sentence lives', () => {
+    // The list shares its block with the sentence telling the reader what to do with it, so
+    // the read has to take the bullets and leave everything else. Asserted by adding more
+    // prose rather than by reading the committed sentence, which is copy and will change.
+    const form = buildEdited((s) =>
+      editReasonField(s, (field) =>
+        field.replace(
+          /^ {8}- Wrong matrix placement/m,
+          '        One more sentence of guidance, added by a curator.\n\n        - Wrong matrix placement',
+        ),
+      ),
+    )();
+    expect(form.reasons).toEqual(buildCorrectionForm().reasons);
   });
 
   it('throws when a prefilled field id is renamed away', () => {
@@ -122,21 +185,20 @@ describe('buildCorrectionForm fails loudly when the template drifts', () => {
     ).toThrow(/no reason head in REASON_SPECS matches/);
   });
 
-  it('reads the options when the field writes validations before attributes', () => {
+  it('reads the error classes when the field writes validations before attributes', () => {
     // YAML mappings are unordered and GitHub accepts the reason field's keys in any order.
-    // Bounding the options block on a trailing `validations:` therefore assumed something
-    // the format does not guarantee: with the key moved up, the block ran to the end of
-    // the file and swallowed the `confirmations` checkbox labels, which are `- ` items at
-    // the same indent. It failed loudly, but named a checkbox and the wrong problem.
-    const form = buildEdited((src) => {
-      const start = src.indexOf('  - type: dropdown');
-      const end = src.indexOf('  - type: textarea', start);
-      const field = src.slice(start, end);
-      const validations = /^ {4}validations:\n(?: {6}.*\n)+/m.exec(field)![0];
-      const moved =
-        field.replace(validations, '').replace('    attributes:', `${validations}    attributes:`);
-      return src.slice(0, start) + moved + src.slice(end);
-    })();
+    // Bounding the block on a trailing `validations:` therefore assumed something the
+    // format does not guarantee: with the key moved up, the block ran to the end of the
+    // file and swallowed the `confirmations` checkbox labels, which are `- ` items at the
+    // same indent. It failed loudly, but named a checkbox and the wrong problem.
+    const form = buildEdited((src) =>
+      editReasonField(src, (field) => {
+        const validations = /^ {4}validations:\n(?: {6}.*\n)+/m.exec(field)![0];
+        return field
+          .replace(validations, '')
+          .replace('    attributes:', `${validations}    attributes:`);
+      }),
+    )();
 
     // Exactly the same vocabulary as the committed order produces, with no checkbox text.
     expect(form.reasons).toEqual(buildCorrectionForm().reasons);
@@ -145,13 +207,19 @@ describe('buildCorrectionForm fails loudly when the template drifts', () => {
     }
   });
 
-  it('reads the options when a blank line sits above the options key', () => {
-    // `\s` matches a newline, so `/^\s*options:/m` could begin matching on the blank line
-    // ABOVE the key. The slice then started one line early, its first line was '', that
-    // line's indent read as 0, and the dedent bound never tripped: the block ran to end of
-    // file and picked up 13 "options" including `type: checkboxes` and the confirmation
-    // labels. One blank line in the template was the whole trigger.
-    const form = buildEdited((src) => src.replace(/^( +options:)$/m, '\n$1'))();
+  it('reads the error classes when a blank line sits above the description key', () => {
+    // `\s` matches a newline, so `/^\s*description:/m` could begin matching on the blank
+    // line ABOVE the key. The slice then started one line early, its first line was '',
+    // that line's indent read as 0, and the dedent bound never tripped: the block ran to
+    // end of file and picked up everything below it including `type: checkboxes` and the
+    // confirmation labels. One blank line in the template was the whole trigger.
+    //
+    // Edited inside the reason field only. Three fields carry a `description: |`, and the
+    // first in the file belongs to `item`, so a bare replace would have moved a blank line
+    // somewhere this test does not read from and then asserted that nothing broke.
+    const form = buildEdited((src) =>
+      editReasonField(src, (field) => field.replace(/^( +description: \|)$/m, '\n$1')),
+    )();
     expect(form.reasons).toEqual(buildCorrectionForm().reasons);
     for (const reason of form.reasons) {
       expect(reason.value).not.toMatch(/^type:/);
@@ -159,20 +227,19 @@ describe('buildCorrectionForm fails loudly when the template drifts', () => {
     }
   });
 
-  it('reads the options when the field writes its id after its attributes', () => {
+  it('reads the error classes when the field writes its id after its attributes', () => {
     // The symmetric case to the reordering test above, and the one the earlier
     // "everything after `id: reason`" scope could not survive: with the anchor written
-    // AFTER its own options, the search found the next `options:` in the file, which is
-    // the confirmations checkbox list, and returned two checkbox labels as the reason
-    // vocabulary.
-    const form = buildEdited((src) => {
-      const start = src.indexOf('  - type: dropdown');
-      const end = src.indexOf('  - type: textarea', start);
-      const field = src.slice(start, end);
-      const idLine = /^ {4}id: reason\n/m.exec(field)![0];
-      const moved = field.replace(idLine, '').replace(/^ {4}validations:$/m, `${idLine}    validations:`);
-      return src.slice(0, start) + moved + src.slice(end);
-    })();
+    // AFTER its own description, the search found the next matching key in the file and
+    // returned something else entirely as the reason vocabulary.
+    const form = buildEdited((src) =>
+      editReasonField(src, (field) => {
+        const idLine = /^ {4}id: reason\n/m.exec(field)![0];
+        return field
+          .replace(idLine, '')
+          .replace(/^ {4}validations:$/m, `${idLine}    validations:`);
+      }),
+    )();
 
     expect(form.reasons).toEqual(buildCorrectionForm().reasons);
     for (const reason of form.reasons) {

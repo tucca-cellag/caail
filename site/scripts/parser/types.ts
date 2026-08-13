@@ -778,15 +778,15 @@ export type TopicsData = z.infer<typeof TopicsDataSchema>;
 // ---------------------------------------------------------------------------
 
 /**
- * One option of the correction template's `reason` dropdown, resolved to the follow-up
- * question the composer asks after it.
+ * One error class listed by the correction template's `reason` field, resolved to the
+ * follow-up question the composer asks after it.
  *
- * `value` is the template's option string verbatim. It is what the composer quotes when it
- * tells the reader which entry to pick in the GitHub form's dropdown, so it has to match
- * that dropdown character for character. `label` and `hint` are that same string split at
- * its em dash for display: `label` names the error class on the radio and in the composed
- * body, where the trailing explanation would only be noise. Neither carries identity —
- * that is the `head`, matched by resolveReasons in src/lib/report-compose.ts.
+ * `value` is the template's line verbatim, and it is what the composer PREFILLS the field
+ * with, so it has to match the template character for character. `label` and `hint` are
+ * that same string split at its em dash for display: `label` names the error class on the
+ * radio and in the composed body, where the trailing explanation would only be noise.
+ * Neither carries identity — that is the `head`, matched by resolveReasons in
+ * src/lib/report-compose.ts.
  */
 export const CorrectionReasonSchema = z.object({
   value: z.string().min(1),
@@ -809,8 +809,6 @@ export const CorrectionReasonSchema = z.object({
 export const CorrectionFormSchema = z.object({
   reasons: z.array(CorrectionReasonSchema).min(1),
   fieldIds: z.array(z.string().min(1)).min(1),
-  /** The reason dropdown's visible label, as the review step must name it. */
-  reasonLabel: z.string().min(1),
   /** How many confirmation checkboxes the form requires. Zero is legitimate. */
   requiredConfirmations: z.number().int().min(0),
 });

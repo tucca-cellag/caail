@@ -12,18 +12,19 @@
  *
  * WHY THE REASON VOCABULARY IS MATCHED RATHER THAN RESTATED
  * ---------------------------------------------------------
- * The reasons are the `reason` dropdown in `.github/ISSUE_TEMPLATE/entry-correction.yml`,
- * and that file is the prefill contract: a report composed against a list that has drifted
- * from the template describes an error class the form does not offer. Restating the eight
- * option strings here would be one more hand-typed fact beside a machine-derived one, which
- * is this repo's most expensive recurring defect.
+ * The reasons are the error classes the `reason` field lists in
+ * `.github/ISSUE_TEMPLATE/entry-correction.yml`, and that file is the prefill contract: a
+ * report composed against a list that has drifted from the template names an error class
+ * the form does not offer, and prefills the field with it. Restating the eight strings here
+ * would be one more hand-typed fact beside a machine-derived one, which is this repo's most
+ * expensive recurring defect.
  *
- * So {@link REASON_SPECS} carries only the identifying HEAD of each option — the shortest
+ * So {@link REASON_SPECS} carries only the identifying HEAD of each one — the shortest
  * leading phrase that names the error class — and {@link resolveReasons} matches those
- * heads against the template's real options, demanding a bijection. Reword an option's
- * trailing hint (prose that will be edited) and nothing breaks; rename the class itself and
- * the build fails naming the string it could not match. The head is the identity; the rest
- * of the option is display text this module never has to know.
+ * heads against the template's real list, demanding a bijection. Reword a trailing hint
+ * (prose that will be edited) and nothing breaks; rename the class itself and the build
+ * fails naming the string it could not match. The head is the identity; the rest of the
+ * line is display text this module never has to know.
  *
  * WHY THE COMPOSED BODY IS PLAIN LINES, NOT MARKDOWN
  * --------------------------------------------------
@@ -58,8 +59,8 @@ export type FollowUpKind =
 /** What {@link REASON_SPECS} declares about one error class. */
 export interface ReasonSpec {
   /**
-   * The identifying leading phrase of the template's dropdown option. Must match exactly
-   * one option by prefix, and must not be a prefix of another head (see
+   * The identifying leading phrase of the error class as the template lists it. Must match
+   * exactly one of them by prefix, and must not be a prefix of another head (see
    * {@link resolveReasons}).
    */
   readonly head: string;
@@ -109,7 +110,7 @@ export interface ResolvedReason {
 const EM_DASH = '\u2014';
 
 /**
- * Split a dropdown option into its display label and hint.
+ * Split one listed error class into its display label and hint.
  *
  * Display only: the identity of an option is its head (see {@link REASON_SPECS}), never
  * this split. An option with no em dash is all label, which is correct for the short ones.
@@ -121,9 +122,9 @@ export function splitOption(option: string): { label: string; hint: string } {
 }
 
 /**
- * Match {@link REASON_SPECS} against the template's real dropdown options.
+ * Match {@link REASON_SPECS} against the error classes the template really lists.
  *
- * @param options  The `reason` dropdown's options, in template order.
+ * @param options  The `reason` field's listed error classes, in template order.
  * @param specs    The follow-up declarations to match against. Defaults to
  *                 {@link REASON_SPECS}; a parameter only so the failure branches below are
  *                 reachable from a test, since a module-level constant cannot be varied and
@@ -244,6 +245,22 @@ export const NOTE_MAX_ENCODED = 1400;
  * sends it, and the recipient gets a cut-off one, with nothing anywhere saying so.
  */
 export const MAILTO_MAX_URL = 2048;
+
+/**
+ * The budget the composed GitHub issue URL is kept inside.
+ *
+ * A budget CAAIL keeps to, not a limit anyone has measured on github.com: 8 KiB is the
+ * conventional ceiling a server puts on a whole request line, and staying an order of
+ * magnitude inside it is cheaper than finding out. It is loose on purpose — the point is
+ * that the URL has a bound at all, now that it carries three prefilled fields rather than
+ * two, and that raising a field's cap far enough to matter fails a test instead of a
+ * reader's submit.
+ *
+ * Much larger than {@link MAILTO_MAX_URL} because the constraint is different in kind: the
+ * mailto limit is a real, low, client-side truncation that delivers a silently cut-off
+ * report, which is why that one is tight and this one is not.
+ */
+export const GITHUB_MAX_URL = 8192;
 
 /**
  * Encoded length of `text`, tolerating a trailing lone surrogate.

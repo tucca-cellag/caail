@@ -47,6 +47,8 @@ export const REPORT_PATH = '/report/';
 export const CORRECTION_FIELDS = {
   /** The frozen entry id. CAAIL-255's contract. */
   item: 'item',
+  /** The error class, in the template's own words. See {@link correctionIssueUrl}. */
+  reason: 'reason',
   /** The composed report body. */
   details: 'details',
 } as const;
@@ -97,23 +99,37 @@ export function reportHref(base: string, itemId: string): string {
  * `details` textarea. Omitted when empty, so the CAAIL-255 behaviour — a bare anchored
  * form — is exactly what a caller that passes no body still gets.
  *
- * WHAT IS DELIBERATELY NOT SET HERE: `reason`. The template's `reason` field is a
- * dropdown, and passing its option text as a query parameter does NOT select it — checked
- * against the live form rather than inferred, because GitHub's schema documentation says
- * only that a field's `id` "is the canonical identifier for the field in URL query
- * parameter prefills" and never states how a dropdown encodes its value. Sending a
- * parameter that does nothing would read, to anyone maintaining this, like a working
- * prefill. The error class travels in the composed body instead, where it is stated in
- * the template's own words, and the reader picks the dropdown themselves — which is why
- * the page says so rather than promising a single click.
+ * `reason` is the error class in the template's own words, and lands in the `reason` field.
+ * It prefills only because that field is an `input`: a `dropdown` takes the same parameter
+ * and ignores it. That was CHECKED against the live form rather than inferred — GitHub's
+ * schema documentation says only that a field's `id` "is the canonical identifier for the
+ * field in URL query parameter prefills", and never states how a dropdown encodes its
+ * value — so the finding is worth keeping written down, since the whole shape of the
+ * template rests on it. `scripts/parser/correction-form.ts` fails the build if the field
+ * stops being an input, because a parameter that silently does nothing reads, to anyone
+ * maintaining this, exactly like a working prefill.
+ *
+ * While it was a dropdown the page had to ask the reader to pick, by hand, the one thing
+ * they had just told us, at the end of a flow whose whole promise is that it writes the
+ * report for them.
+ *
+ * NOT set here, and deliberately: the two `confirmations` checkboxes. They are an
+ * acknowledgement that the issue is public and MIT-licensed, so ticking them on the
+ * reader's behalf would be worth nothing even if it worked — the point of the box is that
+ * a person ticked it.
  */
-export function correctionIssueUrl(itemId: string | null, body?: string | null): string {
+export function correctionIssueUrl(
+  itemId: string | null,
+  body?: string | null,
+  reason?: string | null,
+): string {
   const q = new URLSearchParams({ template: CORRECTION_TEMPLATE });
   if (itemId && isItemId(itemId)) {
     // `title` is a GitHub built-in, not a template field, so it is not in CORRECTION_FIELDS.
     q.set('title', `Correction: ${itemId}`);
     q.set(CORRECTION_FIELDS.item, itemId);
   }
+  if (reason) q.set(CORRECTION_FIELDS.reason, reason);
   if (body) q.set(CORRECTION_FIELDS.details, body);
   return `https://github.com/${CAAIL_REPO}/issues/new?${q.toString()}`;
 }

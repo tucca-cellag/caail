@@ -91,12 +91,11 @@ const vocabularies = {
   areas: papers.areas.map((a) => a.label),
   themes: topics.themes.map((t) => t.label),
   tiers: LICENSE_TIERS.map((t) => TIER_META[t].label),
-  // What the review step must say about the GitHub form: the name of the field the reader
-  // has to find, and whether it asks for confirmations. Both were written into the copy by
-  // hand, which put two facts about entry-correction.yml in the one place a reader sees
-  // and nothing checking them — the exact drift this module exists to prevent, reintroduced
-  // downstream of it.
-  reasonLabel: correctionForm.reasonLabel,
+  // What the review step must say about the GitHub form: whether anything is still asked of
+  // the reader once the prefill has done its work. Written into the copy by hand once,
+  // which put a fact about entry-correction.yml in the one place a reader sees with nothing
+  // checking it — the exact drift this module exists to prevent, reintroduced downstream
+  // of it.
   requiredConfirmations: correctionForm.requiredConfirmations,
 };
 
@@ -181,7 +180,10 @@ const vocabJson = JSON.stringify(vocabularies).replace(/</g, '\\u003c');
       <h3 class="rc-h" id="caail-h-reason" tabindex="-1"></h3>
       <fieldset class="rc-fs">
         <legend class="rc-legend" id="caail-compose-legend"></legend>
-        <div class="rc-opts" id="caail-compose-reasons"></div>
+        {/* `not-content`: see the margin note in the style block. Starlight's prose-flow
+            rule exempts `:where(.not-content *)`, so this opts every control the script
+            builds inside here out of it. */}
+        <div class="rc-opts not-content" id="caail-compose-reasons"></div>
       </fieldset>
       {/* Empty on first render, so the message IS the change when it appears. An alert
           region that starts populated announces on load and then goes unnoticed. */}
@@ -190,7 +192,8 @@ const vocabJson = JSON.stringify(vocabularies).replace(/</g, '\\u003c');
 
     <div class="rc-step" id="caail-step-detail" hidden>
       <h3 class="rc-h" id="caail-h-detail" tabindex="-1"></h3>
-      <div class="rc-fields" id="caail-compose-fields"></div>
+      {/* `not-content` for the same reason as the option list above. */}
+      <div class="rc-fields not-content" id="caail-compose-fields"></div>
     </div>
 
     <div class="rc-step" id="caail-step-review" hidden>
@@ -201,7 +204,7 @@ const vocabJson = JSON.stringify(vocabularies).replace(/</g, '\\u003c');
           the explanation is back on a step that is no longer on screen. Empty on first
           render so the message is the change when it appears. */}
       <p class="rc-dropped" id="caail-compose-dropped" role="status"></p>
-      <p class="rc-review-note" id="caail-compose-dropdown-note"></p>
+      <p class="rc-review-note" id="caail-compose-remaining"></p>
       <pre class="rc-body" id="caail-compose-body"></pre>
       <p class="rc-actions">
         <button class="rp-copy" id="caail-compose-copy" type="button" hidden>Copy report</button>
@@ -412,8 +415,7 @@ const vocabJson = JSON.stringify(vocabularies).replace(/</g, '\\u003c');
 
     const vocab = JSON.parse(payload.textContent) as CorrectionVocabularies & {
       reasons: ResolvedReason[];
-      /** The GitHub form's own name for the reason field, and its confirmation count. */
-      reasonLabel: string;
+      /** How many confirmations the GitHub form still asks the reader for. */
       requiredConfirmations: number;
     };
 
@@ -424,7 +426,7 @@ const vocabJson = JSON.stringify(vocabularies).replace(/</g, '\\u003c');
       error: document.getElementById('caail-compose-error'),
       fields: document.getElementById('caail-compose-fields'),
       body: document.getElementById('caail-compose-body'),
-      dropdownNote: document.getElementById('caail-compose-dropdown-note'),
+      remaining: document.getElementById('caail-compose-remaining'),
       dropped: document.getElementById('caail-compose-dropped'),
       account: document.getElementById('caail-compose-account'),
       back: document.getElementById('caail-compose-back') as HTMLButtonElement | null,
@@ -863,30 +865,33 @@ const vocabJson = JSON.stringify(vocabularies).replace(/</g, '\\u003c');
       // Every route gets the composed body. The GitHub link is updated even while the
       // reader is mid-wizard, so bailing out to it early still carries whatever has been
       // answered so far rather than dropping it.
-      if (gh) gh.href = correctionIssueUrl(itemId, composed);
+      //
+      // `value`, not `label`: the GitHub field is prefilled with this, so it has to be the
+      // template's line verbatim. The label is the display split and would arrive as a
+      // truncated version of an answer the reader never edited.
+      //
+      // The mailto gets no third argument because there is no field to fill — the error
+      // class is already the body's `Problem:` line, which is where a human reads it.
+      const reason = answers.reason?.value ?? null;
+      if (gh) gh.href = correctionIssueUrl(itemId, composed, reason);
       if (mail) mail.href = correctionMailto(itemId, composed);
-      if (el.submit) el.submit.href = correctionIssueUrl(itemId, composed);
+      if (el.submit) el.submit.href = correctionIssueUrl(itemId, composed, reason);
 
       // Cancel a pending re-post first: it would otherwise repaint a message this render
       // is in the middle of clearing.
       cancelDroppedTimer();
       if (el.dropped) el.dropped.textContent = droppedMessage();
 
-      if (el.dropdownNote) {
-        // `value`, not `label`: this tells the reader which entry to find in a dropdown,
-        // so it has to be the option verbatim. The label is the display split and would
-        // only ever be a prefix of what they are looking at.
-        //
-        // The field name and the confirmations both come from the template, not from this
-        // sentence. A reader told that one dropdown was all that remained would meet a form
-        // refusing to submit for reasons this page had implied were handled, and a reworded
-        // `label:` would send every reader looking for a field that no longer exists.
-        // Phrased without a numeral so the count cannot go stale either: a form with no
-        // required confirmations simply stops mentioning them.
-        const confirmations =
-          vocab.requiredConfirmations > 0 ? ', and tick the confirmations' : '';
-        el.dropdownNote.textContent = answers.reason
-          ? `Your report is filled in for you on GitHub. What is left there: pick "${answers.reason.value}" under "${vocab.reasonLabel}"${confirmations}.`
+      if (el.remaining) {
+        // What is left on the GitHub form comes FROM THE TEMPLATE, not from this sentence.
+        // A reader told nothing remains would meet a form refusing to submit for reasons
+        // this page had implied were handled. Phrased without a numeral so the count cannot
+        // go stale either: a form with no required confirmations simply stops mentioning
+        // them, and this drops to the shorter sentence.
+        el.remaining.textContent = answers.reason
+          ? vocab.requiredConfirmations > 0
+            ? 'Your report is filled in for you on GitHub, the error class included. All that is left there is to tick the confirmations and submit.'
+            : 'Your report is filled in for you on GitHub, the error class included. Read it over and submit.'
           : '';
       }
 
@@ -1132,6 +1137,10 @@ const vocabJson = JSON.stringify(vocabularies).replace(/</g, '\\u003c');
   .rc-opts {
     display: flex;
     flex-direction: column;
+    /* Smaller than an option's own 0.5rem padding, so the eight read as one list of cards
+       rather than as eight separate blocks. It used to be 1rem and not on purpose: the
+       separation came entirely from Starlight's prose margin — see the note below. */
+    gap: 0.25rem;
   }
 
   /* ── EVERY RULE BELOW TARGETS AN ELEMENT THE SCRIPT CREATES ────────────────
@@ -1150,6 +1159,39 @@ const vocabJson = JSON.stringify(vocabularies).replace(/</g, '\\u003c');
 
      Scoped under `.rc` — a template element, so it keeps its hash — which bounds
      these to this component exactly as the scoping would have. */
+
+  /* Starlight's prose rhythm does not apply to a form the script builds.
+     `.sl-markdown-content` gives every adjacent sibling pair a `margin-top`, exempting a
+     handful of inline tags — a list that includes `input` and excludes `select`,
+     `textarea`, `label` and `div`. The composer builds its controls into that content and
+     spaces them with `gap`, so the prose margin landed ON TOP of every gap it did not
+     exempt, and only on some of them:
+
+       * the second `.rc-field` gained 16px, staggering the matrix step's two selects;
+       * a `select` or `textarea` gained 16px under its label, making the 0.25rem field gap
+         20px;
+       * the DOI `input` gained nothing, so one of the three step-2 layouts was right and
+         the other two were not. That asymmetry is why it read as an alignment fault rather
+         than as spacing, and why it survived a visual pass over a single step;
+       * every `.rc-opt` after the first gained 16px, which is where the reason list's
+         entire visible separation came from.
+
+     The real fix is upstream in the markup: `.not-content` on the two containers, because
+     Starlight's own rules all exempt `:where(.not-content *)`. That covers the whole
+     subtree, so a control type added later is exempt without anyone remembering to come
+     back here — which a list of selectors would not be. It is the same fix `.topic-chips`
+     carries for the same bug (#67).
+
+     The reset below is belt-and-suspenders behind it, exactly as `topic-chips.css` keeps
+     its `li { margin: 0 }`: it states the intent locally, and it holds if a container ever
+     loses the class. Everything the composer builds is spaced by a `gap` it declares
+     itself. Two e2e specs measure that geometrically; reading this stylesheet could not
+     have caught the bug, since the rules in force came from Starlight. */
+  .rc :global(.rc-opt),
+  .rc :global(.rc-field),
+  .rc :global(.rc-field > *) {
+    margin-block: 0;
+  }
 
   .rc :global(.rc-opt) {
     display: flex;

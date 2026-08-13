@@ -318,17 +318,42 @@ test('the final step offers submit as a link, and says the account wall is uncha
   // against the raw text rather than a whitespace-normalised copy of it.
   await expect(account).toContainText(/email\s+and Slack routes below/);
 
-  // And it must be honest that the dropdown still needs picking, since a dropdown does not
-  // prefill from its option text.
-  const note = page.locator('#caail-compose-dropdown-note');
-  await expect(note).toContainText('Not machine learning at all');
-  // Named as the GitHub form names it, read from the template rather than written here, so
-  // a reworded `label:` cannot leave the page directing readers to a field that is gone.
-  await expect(note).toContainText(correctionForm.reasonLabel);
-  // And the confirmations, which are `required: true` and would otherwise block a submit
-  // the page implied was one click away.
+  // And it must say what is genuinely left. The error class is prefilled now, so the only
+  // thing the reader still does on GitHub is the confirmations — which are `required: true`
+  // and would otherwise block a submit the page implied was one click away.
+  const note = page.locator('#caail-compose-remaining');
   expect(correctionForm.requiredConfirmations).toBeGreaterThan(0);
   await expect(note).toContainText('confirmations');
+  // It must NOT go back to asking the reader to pick the error class by hand.
+  await expect(note).not.toContainText('pick');
+});
+
+test('the error class is prefilled on GitHub, not left for the reader to pick', async ({
+  page,
+}) => {
+  // The reason for the whole `dropdown` → `input` change in the issue template: a dropdown
+  // takes this parameter and ignores it, so the composer used to compose the answer and
+  // then ask for it again. Asserted on the URL the reader actually follows, for both the
+  // wizard's own Submit and the route list's GitHub link, because they are built separately
+  // and only one of them was wrong the first time.
+  await page.goto('./report/?item=db:string');
+  const reason = correctionForm.reasons.find((r) => r.label === 'Wrong licence tier')!;
+  await chooseReason(page, reason.label);
+  await page.getByLabel('Licence tier it should be').selectOption('Copyleft');
+
+  for (const selector of [SUBMIT, GITHUB_LINK]) {
+    const url = new URL((await page.locator(selector).getAttribute('href'))!);
+    // Verbatim, including the explanation after the em dash: this lands in a text field, so
+    // it has to be the template's own line rather than the display split.
+    expect(url.searchParams.get('reason'), selector).toBe(reason.value);
+    expect(url.searchParams.get('item'), selector).toBe('db:string');
+  }
+
+  // The email route has no field to fill, so it carries no such parameter — the error class
+  // is the body's `Problem:` line, which is where a human reads it.
+  const mail = (await page.locator(EMAIL_LINK).getAttribute('href'))!;
+  expect(mail).not.toContain('reason=');
+  expect(decodeURIComponent(mail)).toContain('Problem: Wrong licence tier');
 });
 
 test('a DOI is normalised from what a reader actually pastes', async ({ page }) => {
@@ -483,6 +508,99 @@ test('the controls the script builds are actually styled', async ({ page }) => {
   expect(
     parseFloat(await select.evaluate((el) => getComputedStyle(el).borderTopLeftRadius)),
   ).toBeGreaterThan(0);
+});
+
+test('step 2 lays its fields out on its own grid, not on Starlight prose rhythm', async ({
+  page,
+}) => {
+  // Starlight gives every adjacent pair inside `.sl-markdown-content` a `margin-top: 1rem`,
+  // excluding a short list of inline tags that happens to include `input` and NOT `select`,
+  // `textarea`, `label` or `div`. The composer builds its controls with `document
+  // .createElement` into that content, and lays them out with `gap` — so the prose margin
+  // was added ON TOP of every gap it did not exclude, and only on some of them:
+  //
+  //   * the second `.rc-field` picked up 16px, so the matrix step's two selects were
+  //     staggered — "Research area" and its select sat 16px below "AI/ML method";
+  //   * a `select` or `textarea` following its label picked up 16px, putting the label
+  //     20px from its control where the field asks for 4;
+  //   * the DOI field's `input` did not, so one of the three step-2 layouts was correct
+  //     and the other two were not, which is what made it read as an alignment bug rather
+  //     than as spacing.
+  //
+  // Measured as GEOMETRY against the field's own `row-gap`, not compared to a literal 4px:
+  // the assertion is "the only thing between a label and its control is the gap the field
+  // declares", which stays true if that gap is ever retuned and fails the moment anything
+  // else contributes. Reading the stylesheet could not have caught this at all — the rules
+  // that were in force came from Starlight, not from this component.
+  await page.goto('./report/?item=paper:214');
+  await chooseReason(page, 'Wrong matrix placement');
+
+  // `expect.soft` throughout, so one run reports every layout that is wrong rather than the
+  // first. The three field kinds fail independently — that is the whole shape of the bug —
+  // and a hard assertion on the first would have hidden two thirds of it.
+  const fields = page.locator('#caail-compose-fields .rc-field');
+  await expect(fields).toHaveCount(2);
+  const tops = await fields.evaluateAll((els) => els.map((el) => el.getBoundingClientRect().top));
+  expect.soft(Math.abs(tops[0]! - tops[1]!), 'the two matrix fields start on one line').toBeLessThan(1);
+
+  /** The distance from a control's label to the control, and the gap that should be all of it. */
+  const spacing = (label: string) =>
+    page.getByLabel(label).evaluate((control) => {
+      const field = control.closest('.rc-field')!;
+      return {
+        declared: parseFloat(getComputedStyle(field).rowGap),
+        measured:
+          control.getBoundingClientRect().top -
+          field.querySelector('label')!.getBoundingClientRect().bottom,
+      };
+    });
+
+  // All three control tags, because the defect was per-tag: `input` was exempt from
+  // Starlight's rule and the other two were not, so checking one would have proved nothing
+  // about the others.
+  for (const label of ['AI/ML method it should be', 'Research area it should be']) {
+    const { declared, measured } = await spacing(label);
+    expect(declared, `${label}: the field declares no row gap`).toBeGreaterThan(0);
+    expect.soft(Math.abs(measured - declared), `${label}: ${measured}px for a ${declared}px gap`).toBeLessThan(1);
+  }
+
+  for (const [reason, label] of [
+    ['Wrong or missing DOI', 'The DOI it should have'],
+    ['Something else', 'What is wrong with it (optional)'],
+  ] as const) {
+    await page.goto('./report/?item=paper:214');
+    await chooseReason(page, reason);
+    const { declared, measured } = await spacing(label);
+    expect.soft(Math.abs(measured - declared), `${label}: ${measured}px for a ${declared}px gap`).toBeLessThan(1);
+  }
+});
+
+test('the reason options are spaced by the list, not by inherited prose margins', async ({
+  page,
+}) => {
+  // Same root cause as the step-2 test above, one step earlier: `.rc-opt` is a `label`, so
+  // every option after the first inherited Starlight's 16px. `.rc-opts` is a gapless flex
+  // column, so the list's whole visible separation came from a rule that is not this
+  // component's and excludes tags for reasons that have nothing to do with it.
+  await page.goto('./report/?item=paper:214');
+  const options = page.locator('#caail-compose-reasons .rc-opt');
+  await expect(options.first()).toBeVisible();
+
+  const { declared, gaps } = await page.locator('#caail-compose-reasons').evaluate((list) => {
+    const rows = [...list.querySelectorAll('.rc-opt')].map((el) => el.getBoundingClientRect());
+    return {
+      declared: parseFloat(getComputedStyle(list).rowGap),
+      gaps: rows.slice(1).map((r, i) => r.top - rows[i]!.bottom),
+    };
+  });
+
+  expect(gaps.length).toBeGreaterThan(1);
+  // Asserted before the comparison, because `row-gap` computes to the keyword `normal` when
+  // nothing sets it and `parseFloat` turns that into NaN — which fails every comparison
+  // below for the right reason while reporting "NaNpx", naming neither the missing gap nor
+  // the margin that was standing in for it.
+  expect(declared, 'the option list declares no row gap, so its spacing is not its own').toBeGreaterThan(0);
+  for (const gap of gaps) expect.soft(Math.abs(gap - declared), `${gap}px for a ${declared}px gap`).toBeLessThan(1);
 });
 
 test('the DOI error renders in the danger colour, not body text', async ({ page }) => {

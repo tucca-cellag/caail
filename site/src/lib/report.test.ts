@@ -116,14 +116,19 @@ describe('correctionIssueUrl', () => {
     }
   });
 
-  it('does NOT send `reason`, because a dropdown does not prefill from its option text', () => {
-    // Checked against the live form rather than inferred: GitHub's schema docs say only
-    // that a field's `id` is "the canonical identifier for the field in URL query
-    // parameter prefills" and never say how a dropdown encodes its value. A parameter
-    // that does nothing would read to a maintainer like a working prefill, so the error
-    // class travels in the body instead and the page tells the reader to pick it.
-    const url = new URL(correctionIssueUrl('paper:214', 'Problem: Wrong licence tier'));
-    expect(url.searchParams.has('reason')).toBe(false);
+  it('lands the error class in the template `reason` field', () => {
+    const url = new URL(
+      correctionIssueUrl('paper:214', 'Problem: Wrong licence tier', 'Wrong licence tier'),
+    );
+    expect(url.searchParams.get('reason')).toBe('Wrong licence tier');
+  });
+
+  it('omits `reason` when no error class was picked', () => {
+    for (const reason of [undefined, null, '']) {
+      expect(
+        new URL(correctionIssueUrl('paper:214', 'body', reason)).searchParams.has('reason'),
+      ).toBe(false);
+    }
   });
 });
 
