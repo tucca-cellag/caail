@@ -845,6 +845,56 @@ test.describe('worked-queries carousel', () => {
   });
 
   /**
+   * Every prose block in a card ends at the same right edge.
+   *
+   * The closing paragraph carried `max-width: 82ch` while nothing else in the card had a
+   * max-width, so at 1440px the head ran to 1014px, the row text to 1014px, and the tail
+   * stopped at 724px. Four ragged lines of small type under two full-width blocks reads as
+   * text hard-wrapped to a column and pasted in, and that is how a reader described it.
+   *
+   * Asserted on each block's BOX edge, not on how far its text happens to run. The first
+   * version measured the rendered text and had to allow slack for ragged wrapping, which
+   * put the threshold (60px) within spitting distance of a real 62px rag on the row text —
+   * a test that fails on ordinary word-wrap and would have to be loosened until it could no
+   * longer see a small regression. The box edge has no raggedness in it: a constrained
+   * measure moves it and normal wrapping does not, so the tolerance can be a couple of
+   * pixels of subpixel rounding and mean something.
+   *
+   * Checked at several widths because the old value was a fixed `ch` measure: it fell short
+   * of the card at wide viewports and agreed with it at narrow ones, so a single-width test
+   * at 1024px would have called it fine.
+   */
+  for (const width of [1440, 1280, 1024]) {
+    test(`card prose shares one right edge at ${width}px`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto('./');
+      await page.locator('.ask .stack').scrollIntoViewIfNeeded();
+      await page.waitForTimeout(400);
+
+      const edges = await page.evaluate(() => {
+        const card = document.querySelector('.ask [data-card]:not([data-off])')!;
+        const cbody = card.querySelector('.cbody')!;
+        const boxRight = (el: Element | null) => (el ? el.getBoundingClientRect().right : null);
+        return {
+          limit: cbody.getBoundingClientRect().right - parseFloat(getComputedStyle(cbody).paddingRight),
+          head: boxRight(card.querySelector('.head')),
+          row: boxRight(card.querySelector('.rows li span')),
+          tail: boxRight(card.querySelector('.tail')),
+        };
+      });
+
+      for (const [name, edge] of [['head', edges.head], ['row text', edges.row], ['tail', edges.tail]] as const) {
+        expect(edge, `no ${name} found in the showing card`).not.toBeNull();
+        expect(
+          edges.limit - edge!,
+          `${name} is ${Math.round(edges.limit - edge!)}px narrower than the card at ${width}px, ` +
+            'so it wraps to its own measure and reads as hard-wrapped beside the blocks around it',
+        ).toBeLessThan(2);
+      }
+    });
+  }
+
+  /**
    * The active dot used to transition `width`, so marking one active re-laid-out the row.
    *
    * Measured PER DOT, and this is the whole test rather than a detail of it. Measuring the

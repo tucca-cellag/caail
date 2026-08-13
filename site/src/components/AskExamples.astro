@@ -954,7 +954,17 @@ if (examples.length !== 4) {
   }
   .rows span { font-size: var(--caail-fs-sm); color: var(--caail-muted); }
 
-  .tail { font-size: var(--caail-fs-sm); color: var(--caail-muted); margin: 0; line-height: 1.6; max-width: 82ch; text-wrap: pretty; }
+  /* NO max-width, and that is the fix rather than an omission.
+     This carried `max-width: 82ch`, a reasonable reading measure in isolation and wrong
+     here: it is the only element in the card that has one. Measured on the live page at
+     1440px, the head ran to 1014px, the row text ran to 1014px, and the tail stopped at
+     724px — three right edges in one card, with the odd one out being four ragged lines of
+     small muted type at the bottom. It read as text that had been hard-wrapped to a column
+     and pasted in, which is how it was reported.
+     The measure that results is long (~115ch at desktop), so if this ever wants
+     constraining, constrain the CARD and let all three blocks keep one right edge. Bounding
+     one block inside a wider one is what looked broken. */
+  .tail { font-size: var(--caail-fs-sm); color: var(--caail-muted); margin: 0; line-height: 1.6; text-wrap: pretty; }
 
   .foot { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: var(--caail-space-2) var(--caail-space-5); margin: var(--caail-space-5) 0 0; }
   .more {
