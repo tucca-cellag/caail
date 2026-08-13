@@ -112,6 +112,13 @@ jobs:
       - name: Methods-section extraction tests
         run: python3 .claude/skills/matrix-classification-audit/docling_sections.test.py
 
+      # The other half of the same chain: what a located availability statement
+      # yields. Same reason it can run here -- stdlib only, no Zotero, no
+      # network, no gitignored corpus. It also guards that this directory's
+      # README lists every script in it, which had already drifted.
+      - name: Accession-extraction tests
+        run: python3 .claude/skills/matrix-classification-audit/extract_accessions.test.py
+
       - name: DB integrity + round-trip verify
         run: |
           pnpm --dir site db:check
