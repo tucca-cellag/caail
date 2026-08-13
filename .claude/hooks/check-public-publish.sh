@@ -77,7 +77,14 @@ cmd=$(printf '%s' "$input" | jq -r '.tool_input.command // empty' 2>/dev/null)
 # switched off. A real publish is always at command position; a mention is not.
 # `close`/`reopen`/`review` are in the list because each accepts --comment/--body
 # and therefore publishes text, which is easy to forget when reaching for them.
-if ! grep -qE '(^|[;&|(]|&&|\|\|)[[:space:]]*(sudo[[:space:]]+)?gh[[:space:]]+((issue|pr|release|gist)[[:space:]]+(create|comment|edit|close|reopen|review)|api[[:space:]][^|]*-X[[:space:]]*POST[^|]*(issues|comments|releases))' <<<"$cmd"; then
+#
+# Held in a variable because the `cd` resolution below needs the SAME pattern to
+# find where the verb sits. Written twice, the two would drift, and the way that
+# fails is the tripwire matching a command whose verb position the other half
+# then locates wrongly.
+PUBLISH_VERB_RE='(^|[;&|(]|&&|\|\|)[[:space:]]*(sudo[[:space:]]+)?gh[[:space:]]+((issue|pr|release|gist)[[:space:]]+(create|comment|edit|close|reopen|review)|api[[:space:]][^|]*-X[[:space:]]*POST[^|]*(issues|comments|releases))'
+
+if ! grep -qE "$PUBLISH_VERB_RE" <<<"$cmd"; then
   printf '%s\n' "$PASS_THROUGH"
   exit 0
 fi
@@ -112,12 +119,44 @@ fi
 # pass-through from the other. That is this guard's own cautionary pattern, a
 # check that looks present and is not.
 dest=$(grep -oE '(--repo|-R) +[^ ]+' <<<"$cmd" | head -n1 | awk '{print $2}' | tr -d "\"'")
+
+# `gh api -X POST /repos/<owner>/<repo>/issues` names its destination in the
+# endpoint and needs no local repository at all, so resolving it from the cwd
+# asks about the wrong place. That was harmless while this hook failed open;
+# now that an unreadable destination denies on risk, it would refuse a working
+# command from any directory that is not itself a repo. Reproduced from /tmp on
+# a healthy authenticated `gh` before this branch parsed the endpoint.
+#
+# Taken only when every `repos/<owner>/<repo>` in the command agrees. Two
+# different ones mean the endpoint cannot be told apart from the body, and
+# guessing wrong could resolve a PRIVATE repo and take the short-circuit below,
+# skipping the payload scan. Disagreement therefore stays unresolved, which
+# announces and scans rather than guessing.
+if [[ -z $dest ]] && grep -qE '(^|[;&|(]|&&|\|\|)[[:space:]]*(sudo[[:space:]]+)?gh[[:space:]]+api([[:space:]]|$)' <<<"$cmd"; then
+  api_dest=$(grep -oE 'repos/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+' <<<"$cmd" \
+    | sed -E 's|^repos/||' | sort -u)
+  [[ -n $api_dest && $(printf '%s\n' "$api_dest" | wc -l) -eq 1 ]] && dest="$api_dest"
+fi
+
 cd_dir=""
 if [[ -z $dest ]]; then
-  # First `cd` at the start of the command or of a segment. Deliberately narrow:
-  # it catches the shape that actually occurs (`cd X && gh …`) and leaves anything
-  # cleverer to the undetermined branch below rather than guessing at it.
-  cd_dir=$(grep -oE '(^|[;&|(]) *cd +[^ ;&|)]+' <<<"$cmd" | head -n1 | sed -E 's/.*cd +//' | tr -d "\"'")
+  # First `cd` at the start of the command or of a segment, and — this is the part
+  # that was missing — only one that runs BEFORE the publishing verb. Only such a
+  # `cd` can change where the publish lands.
+  #
+  # Searching the whole command matched a trailing `cd` too, which inverts the
+  # guard rather than merely confusing it: `gh issue create --body '…api_key…' &&
+  # cd ~/some-private-repo` resolved the destination as that private repo, took
+  # the `vis != PUBLIC` short-circuit below, and passed the payload through
+  # unscanned. That is the same "guard disappearing" failure described above, in
+  # the opposite command order, and the comment claiming the match was narrow was
+  # describing an ordering the regex never enforced.
+  #
+  # Deliberately still narrow: it catches the shape that occurs and leaves
+  # anything cleverer to the unresolved branch, which announces and scans.
+  verb_at=$(grep -boE "$PUBLISH_VERB_RE" <<<"$cmd" | head -n1 | cut -d: -f1)
+  cd_dir=$(grep -oE '(^|[;&|(]) *cd +[^ ;&|)]+' <<<"${cmd:0:${verb_at:-0}}" \
+    | head -n1 | sed -E 's/.*cd +//' | tr -d "\"'")
   cd_dir="${cd_dir/#\~/$HOME}"
 fi
 
@@ -130,33 +169,40 @@ fi
 unresolved=""
 meta=""
 
+# GNU coreutils. macOS ships no `timeout` at all, and Homebrew installs it as
+# `gtimeout` unless gnubin is on PATH, so looking only for `timeout` pinned such
+# a machine to UNRESOLVED permanently: every risky publish denied and every
+# ordinary one carried a degradation notice, on a host where `gh` was fine. That
+# is the "cries wolf, gets switched off" failure, not an outage. The bound itself
+# is kept rather than dropped, because an unbounded `gh` can hang before a publish.
+TIMEOUT_BIN=$(command -v timeout || command -v gtimeout || true)
+
 if ! command -v gh >/dev/null 2>&1; then
   unresolved="\`gh\` is not installed"
-elif ! command -v timeout >/dev/null 2>&1; then
-  # GNU coreutils, absent from a stock macOS. Every `gh` call below would then
-  # die as "command not found", previously indistinguishable from "no repository
-  # here". Named rather than worked around: dropping the bound would trade a
-  # silent guard for a hook that can hang before every publish.
-  unresolved="\`timeout\` is not installed, so no bounded \`gh\` call can be made"
+elif [[ -z $TIMEOUT_BIN ]]; then
+  unresolved="neither \`timeout\` nor \`gtimeout\` is installed, so no bounded \`gh\` call can be made"
 else
   if [[ -n $dest ]]; then
-    meta=$(timeout 10 gh repo view "$dest" --json nameWithOwner,visibility 2>/dev/null)
+    meta=$("$TIMEOUT_BIN" 10 gh repo view "$dest" --json nameWithOwner,visibility 2>/dev/null)
     [[ -z $meta ]] && unresolved="\`gh\` could not read '${dest}'"
   elif [[ -n $cd_dir ]]; then
-    meta=$( (cd "$cd_dir" 2>/dev/null && timeout 10 gh repo view --json nameWithOwner,visibility 2>/dev/null) )
+    meta=$( (cd "$cd_dir" 2>/dev/null && "$TIMEOUT_BIN" 10 gh repo view --json nameWithOwner,visibility 2>/dev/null) )
     # A cd we could not follow is not the same as "no repo here", and must not be
     # treated as one. Resolving from our own cwd instead would be the original bug;
     # skipping the payload scan would move the hole rather than close it.
     [[ -z $meta ]] && unresolved="the command changes directory to '${cd_dir}', which could not be entered or holds no repository \`gh\` can read"
   else
-    meta=$(timeout 10 gh repo view --json nameWithOwner,visibility 2>/dev/null)
+    meta=$("$TIMEOUT_BIN" 10 gh repo view --json nameWithOwner,visibility 2>/dev/null)
     [[ -z $meta ]] && unresolved="\`gh\` could not read a repository for this command"
   fi
 
   # `gh` is here and still could not answer. An auth lapse is the routine cause
   # and the actionable one, so it gets named separately. Probed only on the path
-  # that already failed, so an ordinary publish pays nothing for it.
-  if [[ -n $unresolved ]] && ! timeout 10 gh auth status >/dev/null 2>&1; then
+  # that already failed, so an ordinary publish pays nothing for it, and bounded
+  # at 5s rather than 10: this is diagnostic wording, and the one time it runs is
+  # the one time the network may be hanging, where it would otherwise double the
+  # stall in front of every publish.
+  if [[ -n $unresolved ]] && ! "$TIMEOUT_BIN" 5 gh auth status >/dev/null 2>&1; then
     unresolved+="; \`gh auth status\` reports no working login (an expired token, no token, or an unreachable github.com all land here)"
   fi
 fi
@@ -168,12 +214,20 @@ if [[ -n $unresolved ]]; then
   # one question is the split this closes — the `cd` branch denied while every
   # other unresolvable cause waved the payload through unread.
   #
-  # The deny costs close to nothing, because the conditions that stop
-  # `gh repo view` answering also stop `gh issue create` succeeding: no `gh`, no
-  # login, no reachable github.com, no repository. The deny lands on a command
-  # that was going to fail anyway, and says something useful instead of nothing.
-  # The exception is a token scoped to write issues but not to read repo
-  # metadata; that is unusual, and it pays the one-line override.
+  # The deny is usually free, because the conditions that stop `gh repo view`
+  # answering mostly stop `gh issue create` succeeding too: no `gh`, no login, no
+  # reachable github.com, no repository to infer. There the deny lands on a
+  # command that was going to fail anyway and says something useful instead of
+  # nothing.
+  #
+  # "Mostly" is doing real work in that sentence, and an earlier draft of this
+  # comment claimed "always" while a counterexample sat one tripwire branch away:
+  # `gh api -X POST /repos/<owner>/<repo>/issues` carries its own destination and
+  # needs no local repository, so from any non-repo directory it would have
+  # worked and this hook denied it. That is why the endpoint is parsed above.
+  # What remains: an `api` call whose `repos/` tokens disagree, and a token
+  # scoped to write issues but not read repo metadata. Both are unusual, and both
+  # pay the one-line override rather than a silent pass.
   repo="an unresolved destination"
   vis_phrase="whose visibility could NOT be resolved (${unresolved}), so it is treated as if it were public"
   vis_tag="UNRESOLVED, ${unresolved}"

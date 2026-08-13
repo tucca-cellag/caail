@@ -16,6 +16,16 @@ CASES = [
     ("verb as DATA in a variable",       f"RISKY='{V} --body \"{RISK}\"'",           "allow"),
     ("verb as DATA in an echo",          f'echo "run: {V} --body \\"{RISK}\\""',     "allow"),
     ("real publish after a separator",   f'cd /tmp && {V} --title x --body "{RISK}"', "deny"),
+    # A `cd` AFTER the verb cannot change where the publish lands, so it must not
+    # be used to resolve the destination. It was: the extraction took the first
+    # `cd` anywhere in the command, so this shape resolved the destination as the
+    # trailing directory, and where that was private the `vis != PUBLIC`
+    # short-circuit passed the payload through UNSCANNED. Same "guard
+    # disappearing" failure the cd handling exists to close, in the opposite
+    # command order. `/tmp` holds no repo, so the destination here is unresolved,
+    # which is announced and scanned rather than waved through.
+    ("trailing cd does not steer the destination",
+     f'{V} --title x --body "{RISK}" && cd /tmp',                                    "deny"),
     ("read-only command",                "gh issue list --limit 5",                   "allow"),
     # close/reopen/review publish text via --comment, easy to forget.
     ("close with a risky comment",       f'gh issue close 1 --comment "{RISK}"',      "deny"),
@@ -134,7 +144,11 @@ NO_TOKENS = ("GH_TOKEN", "GITHUB_TOKEN", "GH_ENTERPRISE_TOKEN", "GITHUB_ENTERPRI
 # this PATH keeps everything the hook needs except the one thing under test.
 no_gh_bin = os.path.join(tmp, "bin"); os.makedirs(no_gh_bin)
 for tool in ("cat", "jq", "shasum", "cut", "find", "grep", "timeout", "sed", "awk",
-             "tr", "head", "paste", "sort", "dirname", "basename", "rm", "env"):
+             "tr", "head", "paste", "sort", "dirname", "basename", "rm", "env",
+             # `gh repo view` with no argument shells out to git to read the
+             # remote, and on macOS reaches the keychain through `security`.
+             # Omit either and gh fails for a reason the test never meant to set.
+             "git", "security"):
     src = shutil.which(tool)
     if src: os.symlink(src, os.path.join(no_gh_bin, tool))
 NO_GH = {"PATH": no_gh_bin}
@@ -142,9 +156,30 @@ NO_GH = {"PATH": no_gh_bin}
 # label, env, a phrase the hook must name as the cause. The two causes are
 # genuinely different news: `gh` absent is a fresh clone and expected, `gh`
 # present and unable to log in is a machine that was guarding yesterday.
+# Same PATH trick, but hiding only `timeout` and offering `gtimeout` in its
+# place. That is not a contrived shape: it is a stock macOS with Homebrew
+# coreutils and no gnubin on PATH. Looking for `timeout` alone pinned such a
+# machine to UNRESOLVED permanently, denying every risky publish on a host where
+# `gh` was working, which is the failure that gets a guard switched off.
+gtimeout_bin = os.path.join(tmp, "gtbin"); os.makedirs(gtimeout_bin)
+for tool in ("cat", "jq", "shasum", "cut", "find", "grep", "sed", "awk", "gh",
+             "tr", "head", "paste", "sort", "dirname", "basename", "rm", "env",
+             # `gh repo view` with no argument shells out to git to read the
+             # remote, and on macOS reaches the keychain through `security`.
+             # Omit either and gh fails for a reason the test never meant to set.
+             "git", "security"):
+    src = shutil.which(tool)
+    if src: os.symlink(src, os.path.join(gtimeout_bin, tool))
+_t = shutil.which("timeout") or shutil.which("gtimeout")
+if _t: os.symlink(_t, os.path.join(gtimeout_bin, "gtimeout"))
+ONLY_GTIMEOUT = {"PATH": gtimeout_bin}
+
+# The asserted phrase has to pin the branch it names. A bare "not installed" is
+# equally a substring of the timeout branch's message, so it would pass while
+# testing nothing about which cause was reported.
 OUTAGES = [
     ("gh unauthenticated", {**NO_AUTH, "CLAUDE_PROJECT_DIR": proj}, "gh auth status"),
-    ("gh not installed",   {**NO_GH,   "CLAUDE_PROJECT_DIR": proj}, "not installed"),
+    ("gh not installed",   {**NO_GH,   "CLAUDE_PROJECT_DIR": proj}, "`gh` is not installed"),
 ]
 
 for label, env, cause in OUTAGES:
@@ -188,7 +223,54 @@ ok = "PASS" if honest else "FAIL"
 if not honest: fails += 1
 print(f"  [{ok}] an owner it never compared is not reported as another owner's")
 
+# `gtimeout` is the same bound under the name Homebrew gives it. A machine with
+# it must behave as a fully working one, not as a degraded one forever.
+for name, cmd, want in CASES:
+    got, _, _ = run(HOOK_PROJ, cmd, {**ONLY_GTIMEOUT, "CLAUDE_PROJECT_DIR": proj}, cwd=proj)
+    ok = "PASS" if got == want else "FAIL"
+    if got != want: fails += 1
+    print(f"  [{ok}] gtimeout only: {name:33s} want={want:5s} got={got}")
+_, why, _ = run(HOOK_PROJ, CASES[0][1], {**ONLY_GTIMEOUT, "CLAUDE_PROJECT_DIR": proj}, cwd=proj)
+undegraded = "(PUBLIC)" in why and "UNRESOLVED" not in why
+ok = "PASS" if undegraded else "FAIL"
+if not undegraded: fails += 1
+print(f"  [{ok}] gtimeout only: destination still resolved, not reported degraded")
+
 shutil.rmtree(tmp, ignore_errors=True)
+
+# --- `gh api` carries its own destination ----------------------------------
+# `gh api -X POST /repos/<owner>/<repo>/issues` needs no local repository, so its
+# destination has to come from the endpoint. Resolving it from the cwd was
+# harmless while the hook failed open; once an unreadable destination started
+# denying on risk, it refused a working command from any non-repo directory.
+# These run from `elsewhere` for that reason: from inside the repo the cwd would
+# accidentally give the right answer and the regression would hide.
+print("\n=== gh api resolves from the endpoint, not the cwd ===")
+API = "gh" + " api -X POST /repos/tucca-cellag/caail/issues"
+
+got, why, _ = run(HOOK_PROJ, f'{API} -f title=x -f body="{RISK}"',
+                  {"CLAUDE_PROJECT_DIR": proj}, cwd=elsewhere)
+named = got == "deny" and "tucca-cellag/caail" in why and "UNRESOLVED" not in why
+ok = "PASS" if named else "FAIL"
+if not named: fails += 1
+print(f"  [{ok}] risky api publish denies AND names the endpoint's repo")
+
+got, _, ctx = run(HOOK_PROJ, f'{API} -f title=x -f body="one ref"',
+                  {"CLAUDE_PROJECT_DIR": proj}, cwd=elsewhere)
+works = got == "allow" and "which is PUBLIC" in ctx
+ok = "PASS" if works else "FAIL"
+if not works: fails += 1
+print(f"  [{ok}] ordinary api publish from a non-repo dir is not refused")
+
+# Two disagreeing repos: the endpoint cannot be told from the body. Guessing
+# could land on a PRIVATE repo and take the short-circuit that skips the payload
+# scan, so it stays unresolved, which announces and scans.
+got, why, _ = run(HOOK_PROJ, f'{API} -f body="see repos/someone/elsewhere {RISK}"',
+                  {"CLAUDE_PROJECT_DIR": proj}, cwd=elsewhere)
+careful = got == "deny" and "UNRESOLVED" in why
+ok = "PASS" if careful else "FAIL"
+if not careful: fails += 1
+print(f"  [{ok}] disagreeing repos/ tokens stay unresolved rather than guessing")
 
 print("\n=== fail-open safety ===")
 for label, payload in [("malformed json", "not json"), ("empty stdin", "")]:
