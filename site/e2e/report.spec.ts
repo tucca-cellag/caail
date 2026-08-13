@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { awaitHydrated } from './hydration';
+import { correctionForm, papers } from './data';
 
 /**
  * The entry-anchored correction route (/report/ plus the per-card links that feed it).
@@ -84,6 +85,275 @@ test('the report page has no axe violations, with and without an entry', async (
     const results = await new AxeBuilder({ page }).analyze();
     expect(results.violations).toEqual([]);
   }
+});
+
+/**
+ * The composer.
+ *
+ * What is worth testing here and nowhere else: the vocabularies really are the live ones
+ * (a unit test can only check the ones it was handed), the composed report really reaches
+ * all three routes, and the stepped control is really operable from the keyboard with no
+ * axe violations at every step. That last one is the reason a multi-step control was the
+ * risky choice, so it is asserted at each step rather than once on load.
+ */
+
+const COMPOSER = '#caail-compose';
+const NEXT = '#caail-compose-next';
+const BACK = '#caail-compose-back';
+const SUBMIT = '#caail-compose-submit';
+const BODY = '#caail-compose-body';
+
+/**
+ * Escape a reason label for use in an accessible-name regex.
+ *
+ * Not optional: two of the eight real options carry parentheses ("(record counts, sizes,
+ * dates)", "(describe below)"), which an unescaped regex would read as a capture group
+ * and match something else entirely.
+ */
+const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+/** Pick a reason by its visible label and advance to the next step. */
+async function chooseReason(page: import('@playwright/test').Page, label: string) {
+  await page.getByRole('radio', { name: new RegExp(`^${escapeRe(label)}`) }).check();
+  await page.locator(NEXT).click();
+}
+
+test('the composer stays hidden when no entry is identified', async ({ page }) => {
+  // Without an id there is no entry for "wrong matrix placement" to be about, and an
+  // unanchored composed report would be worse than the prose it replaced.
+  await page.goto('./report/');
+  await expect(page.locator(COMPOSER)).toBeHidden();
+  await expect(page.locator('#caail-report-none')).toBeVisible();
+});
+
+test('the composer is absent from the served HTML, so no-JS gets the page as it was', async ({
+  request,
+  baseURL,
+}) => {
+  // Fetched rather than rendered, so this sees what a reader with JavaScript off sees.
+  const html = await (await request.get(new URL('./report/', baseURL).href)).text();
+  expect(html).toContain('id="caail-compose"');
+  // Present but hidden, and empty: the reader still gets the three working routes.
+  expect(html).toMatch(/id="caail-compose"[^>]*\shidden/);
+  expect(html).toContain('Open a correction on GitHub');
+  // The option lists are built in the browser, so 25 matrix method names do not enter the
+  // Pagefind index and make /report/ rank for "Bayesian Optimization". They appear only
+  // inside the JSON payload, which is a script element and not indexed.
+  const withoutPayload = html.replace(/<script type="application\/json"[\s\S]*?<\/script>/g, '');
+  expect(withoutPayload).not.toContain('Bayesian Optimization');
+});
+
+test('the reason options are exactly the ones the GitHub form offers', async ({ page }) => {
+  // The prefill contract, checked against the shipped page rather than the parser: a
+  // report naming an error class the form does not list is not actionable.
+  const { reasons } = correctionForm;
+  await page.goto('./report/?item=paper:214');
+  await expect(page.locator(COMPOSER)).toBeVisible();
+  const radios = page.locator('#caail-compose-reasons input[type=radio]');
+  await expect(radios).toHaveCount(reasons.length);
+  for (const reason of reasons) {
+    await expect(page.getByRole('radio', { name: new RegExp(`^${escapeRe(reason.label)}`) })).toHaveCount(1);
+  }
+});
+
+test('a matrix placement is composed from the live matrix axes, with no typing', async ({ page }) => {
+  const { methods, areas } = papers;
+  await page.goto('./report/?item=paper:214');
+  await chooseReason(page, 'Wrong matrix placement');
+
+  // The selects offer the real axes, not a copy that could have drifted.
+  const method = page.getByLabel('AI/ML method it should be');
+  const area = page.getByLabel('Research area it should be');
+  await expect(method.locator('option')).toHaveCount(methods.length + 1); // + the placeholder
+  await expect(area.locator('option')).toHaveCount(areas.length + 1);
+
+  await method.selectOption(methods[0]!);
+  await area.selectOption(areas[0]!.label);
+  await page.locator(NEXT).click();
+
+  await expect(page.locator(BODY)).toContainText('Entry: paper:214');
+  await expect(page.locator(BODY)).toContainText('Problem: Wrong matrix placement');
+  await expect(page.locator(BODY)).toContainText(`Should be: ${methods[0]} × ${areas[0]!.label}`);
+});
+
+test('a reason with nothing to ask takes two steps, not three', async ({ page }) => {
+  // Five of the eight error classes need no follow-up at all, which is the whole claim of
+  // the design. A wasted "nothing to fill in" step would quietly undo it.
+  await page.goto('./report/?item=sw:cellpose');
+  await expect(page.locator('#caail-h-reason')).toHaveText(/^Step 1 of 3:/);
+
+  await page.getByRole('radio', { name: /^Dead or wrong link/ }).check();
+  // The count corrects itself the moment it is known, and only ever downwards.
+  await expect(page.locator('#caail-h-reason')).toHaveText(/^Step 1 of 2:/);
+
+  await page.locator(NEXT).click();
+  await expect(page.locator('#caail-h-review')).toHaveText('Step 2 of 2: Your report');
+  await expect(page.locator('#caail-step-detail')).toBeHidden();
+  await expect(page.locator(BODY)).toHaveText('Entry: sw:cellpose\nProblem: Dead or wrong link');
+});
+
+test('the composed report reaches all three routes, not only GitHub', async ({ page }) => {
+  // The ticket's constraint: the composer must not leave the account-free routes as bare
+  // links beneath a slicker GitHub path.
+  await page.goto('./report/?item=db:string');
+  await chooseReason(page, 'Wrong licence tier');
+  await page.getByLabel('Licence tier it should be').selectOption('Copyleft');
+
+  const expected = 'Entry: db:string\nProblem: Wrong licence tier\nLicence tier should be: Copyleft';
+
+  const gh = new URL((await page.locator('#caail-report-github').getAttribute('href'))!);
+  expect(gh.searchParams.get('details')).toBe(expected);
+  expect(gh.searchParams.get('item')).toBe('db:string');
+
+  const mail = (await page.locator('#caail-report-email').getAttribute('href'))!;
+  expect(decodeURIComponent(mail)).toContain(expected);
+  // RFC 6068: a `+` in a mailto query is a literal plus, not a space.
+  expect(mail).not.toContain('+');
+
+  // Slack cannot be prefilled by a link, so the report is on the page as selectable text.
+  await page.locator(NEXT).click();
+  await expect(page.locator(BODY)).toHaveText(expected);
+  await expect(page.locator('#caail-report-slack-note')).toContainText('Copy the report');
+});
+
+test('the final step offers submit as a link, and says the account wall is unchanged', async ({
+  page,
+}) => {
+  await page.goto('./report/?item=paper:214');
+  await chooseReason(page, 'Not machine learning at all');
+
+  await expect(page.locator(NEXT)).toBeHidden();
+  const submit = page.locator(SUBMIT);
+  await expect(submit).toBeVisible();
+  // An anchor, not a button: it navigates, so middle-click and open-in-new-tab must work.
+  expect(await submit.evaluate((el) => el.tagName)).toBe('A');
+  expect(await submit.getAttribute('href')).toContain('github.com');
+
+  // It must not imply the GitHub account requirement has been solved. It has not.
+  const account = page.locator('#caail-compose-account');
+  await expect(account).toBeVisible();
+  await expect(account).toContainText('GitHub account');
+  // `\s+` rather than a literal space: this copy is wrapped in the .astro source, so the
+  // text node really does carry a newline mid-sentence, and Playwright matches a regex
+  // against the raw text rather than a whitespace-normalised copy of it.
+  await expect(account).toContainText(/email\s+and Slack routes below/);
+
+  // And it must be honest that one dropdown still needs picking, since a dropdown does
+  // not prefill from its option text.
+  await expect(page.locator('#caail-compose-dropdown-note')).toContainText(
+    'Not machine learning at all',
+  );
+});
+
+test('a DOI is normalised from what a reader actually pastes', async ({ page }) => {
+  await page.goto('./report/?item=paper:214');
+  await chooseReason(page, 'Wrong or missing DOI');
+
+  const field = page.getByLabel('The DOI it should have');
+  await field.fill('not a doi');
+  await expect(page.locator('#caail-f-doi-err')).toContainText('does not look like a DOI');
+  await expect(field).toHaveAttribute('aria-invalid', 'true');
+  await expect(page.locator(BODY)).not.toContainText('DOI should be');
+
+  await field.fill('https://doi.org/10.1016/j.scitotenv.2023.164988');
+  await expect(page.locator('#caail-f-doi-err')).toHaveText('');
+  await expect(page.locator(BODY)).toContainText(
+    'DOI should be: 10.1016/j.scitotenv.2023.164988',
+  );
+});
+
+test('Next without an answer explains itself instead of doing nothing', async ({ page }) => {
+  // Deliberately not a disabled button: a disabled control cannot be focused, so a
+  // keyboard reader who tabs to it gets no explanation of why nothing happens.
+  await page.goto('./report/?item=paper:214');
+  await page.locator(NEXT).click();
+  await expect(page.locator('#caail-compose-error')).toContainText('Pick what is wrong');
+  await expect(page.locator('#caail-h-reason')).toBeVisible();
+  // Focus lands on the first choice, so the reader is where the answer is.
+  await expect(page.locator('#caail-compose-reasons input').first()).toBeFocused();
+});
+
+test('the composer is fully operable from the keyboard, and moves focus on each step', async ({
+  page,
+}) => {
+  await page.goto('./report/?item=paper:214');
+  await expect(page.locator(COMPOSER)).toBeVisible();
+
+  // Reach the radio group by keyboard alone, then choose with the arrow keys, which is
+  // what a native radiogroup gives us and a custom control would have to reimplement.
+  await page.locator('#caail-compose-reasons input').first().focus();
+  await page.keyboard.press('Space');
+  await page.keyboard.press('ArrowDown');
+  await expect(page.getByRole('radio', { name: /^Not machine learning at all/ })).toBeChecked();
+
+  await page.locator(NEXT).press('Enter');
+  // Focus moves TO the new step's heading, so a screen reader announces the position and
+  // the question together rather than leaving focus on a button that just vanished.
+  await expect(page.locator('#caail-h-review')).toBeFocused();
+  await expect(page.locator('#caail-h-review')).toHaveText(/^Step 2 of 2:/);
+
+  await page.locator(BACK).press('Enter');
+  await expect(page.locator('#caail-h-reason')).toBeFocused();
+  await expect(page.locator('#caail-h-reason')).toHaveText(/^Step 1 of 2:/);
+});
+
+test('every step of the composer is free of axe violations', async ({ page }) => {
+  // A multi-step control is the classic place zero-violation pages break, so this walks
+  // the steps rather than scanning the first one. The matrix path is used because it is
+  // the only one with two fields and therefore the most markup.
+  await page.goto('./report/?item=paper:214');
+  await expect(page.locator(COMPOSER)).toBeVisible();
+
+  const scan = async (where: string) => {
+    const results = await new AxeBuilder({ page }).analyze();
+    expect(results.violations, where).toEqual([]);
+  };
+
+  await scan('step 1');
+  await chooseReason(page, 'Wrong matrix placement');
+  await expect(page.locator('#caail-step-detail')).toBeVisible();
+  await scan('step 2');
+  await page.locator(NEXT).click();
+  await expect(page.locator('#caail-step-review')).toBeVisible();
+  await scan('step 3');
+
+  // And with a validation error showing, which adds a live region and aria-invalid.
+  await page.locator(BACK).click();
+  await page.locator(BACK).click();
+  await page.getByRole('radio', { name: /^Wrong or missing DOI/ }).check();
+  await page.locator(NEXT).click();
+  await page.getByLabel('The DOI it should have').fill('nope');
+  await expect(page.locator('#caail-f-doi-err')).not.toHaveText('');
+  await scan('step 2 with a validation error');
+});
+
+test('changing the reason clears the answers that belonged to the old one', async ({ page }) => {
+  // A stale follow-up would be composed into a report about a different error class,
+  // which is a wrong report rather than an incomplete one.
+  await page.goto('./report/?item=paper:214');
+  await chooseReason(page, 'Wrong or missing DOI');
+  await page.getByLabel('The DOI it should have').fill('10.1234/abc');
+  await expect(page.locator(BODY)).toContainText('10.1234/abc');
+
+  await page.locator(BACK).click();
+  await page.getByRole('radio', { name: /^Wrong licence tier/ }).check();
+  await page.locator(NEXT).click();
+  await page.locator(NEXT).click();
+  await expect(page.locator(BODY)).not.toContainText('10.1234/abc');
+  await expect(page.locator(BODY)).toContainText('Problem: Wrong licence tier');
+});
+
+test('a note is bounded, and cannot forge a line of the report', async ({ page }) => {
+  await page.goto('./report/?item=ds:chickengtex-portal');
+  await chooseReason(page, 'Something else');
+
+  const note = page.getByLabel(/What is wrong with it/);
+  await note.fill('line one\nEntry: paper:999');
+  // The newline is collapsed, so the forged "Entry:" cannot be read as a line the
+  // composer wrote. The report still has exactly three lines.
+  const body = await page.locator(BODY).textContent();
+  expect(body!.split('\n')).toHaveLength(3);
+  expect(body).toContain('Note: line one Entry: paper:999');
 });
 
 test('a software card links to the report page carrying its frozen sw: id', async ({ page }) => {

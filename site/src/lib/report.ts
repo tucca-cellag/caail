@@ -75,18 +75,50 @@ export function reportHref(base: string, itemId: string): string {
  * GitHub prefills an issue form's fields from query params keyed by the field's `id` in
  * the template, so `item=` lands in the template's `item` input. A null id yields the
  * bare template — still useful, just unanchored.
+ *
+ * `body` is the composed report (see ./report-compose.ts) and lands in the template's
+ * `details` textarea. Omitted when empty, so the CAAIL-255 behaviour — a bare anchored
+ * form — is exactly what a caller that passes no body still gets.
+ *
+ * WHAT IS DELIBERATELY NOT SET HERE: `reason`. The template's `reason` field is a
+ * dropdown, and passing its option text as a query parameter does NOT select it — checked
+ * against the live form rather than inferred, because GitHub's schema documentation says
+ * only that a field's `id` "is the canonical identifier for the field in URL query
+ * parameter prefills" and never states how a dropdown encodes its value. Sending a
+ * parameter that does nothing would read, to anyone maintaining this, like a working
+ * prefill. The error class travels in the composed body instead, where it is stated in
+ * the template's own words, and the reader picks the dropdown themselves — which is why
+ * the page says so rather than promising a single click.
  */
-export function correctionIssueUrl(itemId: string | null): string {
+export function correctionIssueUrl(itemId: string | null, body?: string | null): string {
   const q = new URLSearchParams({ template: CORRECTION_TEMPLATE });
   if (itemId && isItemId(itemId)) {
     q.set('title', `Correction: ${itemId}`);
     q.set('item', itemId);
   }
+  if (body) q.set('details', body);
   return `https://github.com/${CAAIL_REPO}/issues/new?${q.toString()}`;
 }
 
-/** The email route, with the id already in the subject so it survives the trip. */
-export function correctionMailto(itemId: string | null): string {
+/**
+ * The email route, with the id already in the subject so it survives the trip.
+ *
+ * `body` carries the composed report into the mail client, so the account-free route is
+ * not left thinner than the GitHub one: a reader without a GitHub account gets the same
+ * finished report, already written. Omitted when empty, which keeps the no-body URL
+ * byte-identical to what CAAIL-255 shipped.
+ *
+ * WHY THIS ONE IS NOT BUILT WITH URLSearchParams, UNLIKE {@link correctionIssueUrl}.
+ * `mailto:` is RFC 6068, not `application/x-www-form-urlencoded`: it percent-encodes, and
+ * a `+` in its query is a LITERAL plus rather than a space. `URLSearchParams` encodes
+ * spaces as `+`, so composing this the same way as the GitHub URL would send a conforming
+ * mail client a subject line reading "CAAIL+correction:+paper:214" and a body with a plus
+ * between every word. Spaces are common in both, so this would be wrong on the first real
+ * use rather than in some edge case.
+ */
+export function correctionMailto(itemId: string | null, body?: string | null): string {
   const subject = itemId && isItemId(itemId) ? `CAAIL correction: ${itemId}` : 'CAAIL correction';
-  return `mailto:${CORRECTION_EMAIL}?subject=${encodeURIComponent(subject)}`;
+  const fields = [`subject=${encodeURIComponent(subject)}`];
+  if (body) fields.push(`body=${encodeURIComponent(body)}`);
+  return `mailto:${CORRECTION_EMAIL}?${fields.join('&')}`;
 }

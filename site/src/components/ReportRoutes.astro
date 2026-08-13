@@ -25,14 +25,75 @@
  *   3. Cloudflare Web Analytics discards query strings, so page views here are countable
  *      in total but not per entry. The per-entry signal comes from the existing
  *      outbound-click event, which keeps the destination URL.
+ *
+ * THE COMPOSER, AND WHAT IT DOES NOT FIX
+ * --------------------------------------
+ * Anchoring a report is not the same as making it easy to write, and until the composer
+ * below existed the reader still met a blank textarea at the end of every route. It asks
+ * the error class first, then one follow-up drawn from a vocabulary CAAIL already owns —
+ * the real matrix rows and columns, the four licence tiers, the eight subject themes — and
+ * writes the report itself. Five of the eight error classes need no typing at all.
+ *
+ * It does NOT fix the GitHub account requirement, and nothing here should imply it does.
+ * That is why the composed report is handed to all three routes and not only to GitHub:
+ * the email link carries the whole body, and the report is on the page as selectable text
+ * for anyone pasting it into Slack. The account wall is unchanged; only the composition is.
+ *
+ * WHY THE COMPOSER IS SERVER-RENDERED HIDDEN, RATHER THAN NOT RENDERED
+ * -------------------------------------------------------------------
+ * It is an empty skeleton in the HTML with `hidden` set, and the script fills it and
+ * reveals it. Two things fall out of that. A reader with no JavaScript gets precisely the
+ * page CAAIL-255 shipped, because the only thing that changed for them is a hidden empty
+ * div. And the option lists are built in the browser from the JSON payload below rather
+ * than server-rendered as `<option>` elements, so 25 matrix method names do not enter the
+ * Pagefind index and make /report/ rank for "Bayesian Optimization".
+ *
+ * WHY THE STEP COUNT ONLY EVER SHRINKS
+ * ------------------------------------
+ * A reason with no follow-up (a dead link; a paper that is not machine learning at all)
+ * has two steps, not three, because there is nothing to ask. Before a reason is picked the
+ * total is genuinely unknown, so the heading says "of 3" — the maximum — and corrects to
+ * "of 2" if the reader picks one of those. The count therefore never grows under the
+ * reader, which is the direction that would feel like the page moving the goalposts.
  */
 import { COMMUNITY_PATH } from '../lib/community';
 import { CORRECTION_EMAIL, correctionIssueUrl, correctionMailto } from '../lib/report';
+import { LICENSE_TIERS, TIER_META } from '../lib/licenses';
+import correctionForm from '../content/data/correction-form.json';
+import papers from '../content/data/papers.json';
+import topics from '../content/data/topics.json';
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 // Unanchored fallbacks. The script replaces both when a valid `?item=` is present.
 const issueUrl = correctionIssueUrl(null);
 const mailto = correctionMailto(null);
+
+/**
+ * Every vocabulary the composer offers, all of it DERIVED.
+ *
+ * The reasons come from the GitHub issue template this page prefills, the methods and
+ * areas are the live matrix axes, the themes are the subject-theme tier, and the tiers are
+ * the shared licence classifier's own labels. Nothing here is a list typed beside the file
+ * that already knows it — which is the failure mode this repo pays for most often, and the
+ * one that would show up here as a reader reporting a correct placement against a row the
+ * matrix no longer has.
+ */
+const vocabularies = {
+  reasons: correctionForm.reasons,
+  methods: papers.methods,
+  areas: papers.areas.map((a) => a.label),
+  themes: topics.themes.map((t) => t.label),
+  tiers: LICENSE_TIERS.map((t) => TIER_META[t].label),
+};
+
+/**
+ * Serialised for a `<script type="application/json">` block.
+ *
+ * `<` is escaped so no value can close the script element early. Nothing in these
+ * vocabularies contains one today; the escape is here so that a future label which does
+ * cannot turn a data block into markup.
+ */
+const vocabJson = JSON.stringify(vocabularies).replace(/</g, '\\u003c');
 ---
 
 <div class="rp">
@@ -68,6 +129,69 @@ const mailto = correctionMailto(null);
     about the library as a whole, are not about a single entry at all.
   </p>
 
+  {/* The composer. Empty and hidden in the served HTML; the script fills it from the
+      payload below and reveals it, but ONLY when a valid entry id resolved. Without an id
+      there is no entry for "wrong matrix placement" to be about, and a composer that
+      produced an unanchored report would be worse than the prose it replaced.
+
+      data-pagefind-ignore because this is a control, not content: without it the eight
+      reason strings and every field label would be indexed, and /report/ would start
+      ranking for words it only contains as form furniture. */}
+  <section class="rc" id="caail-compose" aria-labelledby="caail-compose-title" hidden data-pagefind-ignore>
+    <h2 id="caail-compose-title">Tell us what is wrong</h2>
+    <p class="rc-lede">
+      Two questions at most, answered from lists rather than typed. We write the report for
+      you, and all three routes below carry it.
+    </p>
+
+    {/* Decorative: the same "Step N of M" is in the step heading, which is what a screen
+        reader announces when focus moves there, so voicing this too would say it twice. */}
+    <div class="rc-track" aria-hidden="true"><i id="caail-compose-track"></i></div>
+
+    <div class="rc-step" id="caail-step-reason">
+      <h3 class="rc-h" id="caail-h-reason" tabindex="-1"></h3>
+      <fieldset class="rc-fs">
+        <legend class="rc-legend" id="caail-compose-legend"></legend>
+        <div class="rc-opts" id="caail-compose-reasons"></div>
+      </fieldset>
+      {/* Empty on first render, so the message IS the change when it appears. An alert
+          region that starts populated announces on load and then goes unnoticed. */}
+      <p class="rc-err" id="caail-compose-error" role="alert"></p>
+    </div>
+
+    <div class="rc-step" id="caail-step-detail" hidden>
+      <h3 class="rc-h" id="caail-h-detail" tabindex="-1"></h3>
+      <div class="rc-fields" id="caail-compose-fields"></div>
+    </div>
+
+    <div class="rc-step" id="caail-step-review" hidden>
+      <h3 class="rc-h" id="caail-h-review" tabindex="-1"></h3>
+      <p class="rc-review-note" id="caail-compose-dropdown-note"></p>
+      <pre class="rc-body" id="caail-compose-body"></pre>
+      <p class="rc-actions">
+        <button class="rp-copy" id="caail-compose-copy" type="button" hidden>Copy report</button>
+        <span class="rp-copy-status" id="caail-compose-copy-status" role="status" aria-live="polite"></span>
+      </p>
+    </div>
+
+    <div class="rc-nav">
+      <button class="rc-btn" id="caail-compose-back" type="button" hidden>Back</button>
+      {/* Next is a button because it changes this page. Submit is an ANCHOR because it
+          navigates: that keeps middle-click, open-in-new-tab and the browser's own status
+          bar working, none of which a button-with-a-click-handler gives you. */}
+      <button class="rc-btn rc-primary" id="caail-compose-next" type="button">Next</button>
+      <a class="rc-btn rc-primary" id="caail-compose-submit" href={issueUrl} hidden>
+        Submit on GitHub
+      </a>
+    </div>
+    <p class="rc-account" id="caail-compose-account" hidden>
+      Submitting needs a GitHub account, which this does not change. Without one, the email
+      and Slack routes below carry the same report.
+    </p>
+  </section>
+
+  <script type="application/json" id="caail-compose-vocab" set:html={vocabJson}></script>
+
   <h2 id="how-to-report">How to report it</h2>
 
   <p>
@@ -78,7 +202,7 @@ const mailto = correctionMailto(null);
   <ul class="rp-routes">
     <li>
       <a id="caail-report-github" href={issueUrl}>Open a correction on GitHub</a>
-      <span class="rp-note">
+      <span class="rp-note" id="caail-report-github-note">
         Needs a GitHub account. The form is prefilled with the entry id, and the report,
         the discussion and the eventual fix all end up in one public place with a permanent
         link.
@@ -86,14 +210,14 @@ const mailto = correctionMailto(null);
     </li>
     <li>
       <a id="caail-report-email" href={mailto}>Send an email</a>
-      <span class="rp-note">
+      <span class="rp-note" id="caail-report-email-note">
         No account needed. Goes to <code>{CORRECTION_EMAIL}</code>, with the entry id already
         in the subject line.
       </span>
     </li>
     <li>
       <a href={`${base}${COMMUNITY_PATH}`}>Say so in Slack</a>
-      <span class="rp-note">
+      <span class="rp-note" id="caail-report-slack-note">
         No GitHub account needed. Paste the entry id into your message so a curator knows
         which entry you mean.
       </span>
@@ -131,6 +255,17 @@ const mailto = correctionMailto(null);
 
 <script>
   import { isItemId, correctionIssueUrl, correctionMailto } from '../lib/report';
+  import {
+    NOTE_MAX_LENGTH,
+    boundNote,
+    composeBody,
+    isDoiShape,
+    normaliseDoi,
+    type CorrectionAnswers,
+    type CorrectionVocabularies,
+    type FollowUpKind,
+    type ResolvedReason,
+  } from '../lib/report-compose';
 
   const raw = new URLSearchParams(window.location.search).get('item');
   const id = isItemId(raw) ? raw : null;
@@ -144,6 +279,51 @@ const mailto = correctionMailto(null);
   const copy = document.getElementById('caail-report-copy') as HTMLButtonElement | null;
   const status = document.getElementById('caail-report-copy-status');
 
+  /**
+   * Re-announcing needs the region to CHANGE, and a second copy writes the same string as
+   * the first, so without clearing it a screen-reader user hears nothing the second time.
+   * src/lib/tabs.ts solves it the same way, and homepage-agent.spec.ts has a regression
+   * test named for exactly this.
+   */
+  function announcer(region: HTMLElement | null) {
+    let clear: number | undefined;
+    return (msg: string) => {
+      if (!region) return;
+      if (clear !== undefined) window.clearTimeout(clear);
+      region.textContent = msg;
+      clear = window.setTimeout(() => {
+        region.textContent = '';
+        clear = undefined;
+      }, 2000);
+    };
+  }
+
+  /**
+   * Wire a copy button to a string it reads at click time.
+   *
+   * The button stays hidden where the Clipboard API is unavailable rather than failing on
+   * click: in both places it is used the text is selectable on the page anyway, so the
+   * button is pure enhancement and its absence costs nothing.
+   */
+  function wireCopy(
+    button: HTMLButtonElement | null,
+    region: HTMLElement | null,
+    read: () => string,
+    label: string,
+  ) {
+    if (!button || !navigator.clipboard) return;
+    const announce = announcer(region);
+    button.hidden = false;
+    button.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(read());
+        announce(`${label} copied.`);
+      } catch {
+        announce(`Could not copy. Select the ${label.toLowerCase()} and copy it manually.`);
+      }
+    });
+  }
+
   if (id) {
     // textContent, never innerHTML: `id` has passed the grammar check, and this keeps it
     // inert regardless of what that grammar is later widened to admit.
@@ -152,34 +332,417 @@ const mailto = correctionMailto(null);
     none.forEach((el) => { (el as HTMLElement).hidden = true; });
     if (gh) gh.href = correctionIssueUrl(id);
     if (mail) mail.href = correctionMailto(id);
+    wireCopy(copy, status, () => id, 'Entry id');
 
-    // The copy button is pure enhancement — the id is selectable text without it — so it
-    // stays hidden where the Clipboard API is unavailable rather than failing on click.
-    if (copy && navigator.clipboard) {
-      copy.hidden = false;
-      let clear: number | undefined;
-      // Re-announcing needs the region to CHANGE, and a second copy writes the same
-      // string as the first, so without clearing it a screen-reader user hears nothing
-      // the second time. src/lib/tabs.ts solves it the same way, and
-      // homepage-agent.spec.ts has a regression test named for exactly this.
-      const announce = (msg: string) => {
-        if (!status) return;
-        if (clear !== undefined) window.clearTimeout(clear);
-        status.textContent = msg;
-        clear = window.setTimeout(() => {
-          status.textContent = '';
-          clear = undefined;
-        }, 2000);
-      };
-      copy.addEventListener('click', async () => {
-        try {
-          await navigator.clipboard.writeText(id);
-          announce('Entry id copied.');
-        } catch {
-          announce('Could not copy. Select the id and copy it manually.');
+    startComposer(id);
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // The composer
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  /** The three steps, in order. `detail` is skipped when the reason has no follow-up. */
+  type StepName = 'reason' | 'detail' | 'review';
+
+  /** What step 2 is called, per follow-up kind. Keyed by the union, so a new kind fails to
+      compile here rather than rendering a step with an empty heading. */
+  const DETAIL_HEADING: Record<FollowUpKind, string> = {
+    matrix: 'Where it should sit',
+    licence: 'The licence tier it should have',
+    topics: 'The subject theme it should have',
+    doi: 'The DOI it should have',
+    note: 'What it should say',
+    none: '',
+  };
+
+  function startComposer(itemId: string) {
+    const section = document.getElementById('caail-compose');
+    const payload = document.getElementById('caail-compose-vocab');
+    if (!section || !payload?.textContent) return;
+
+    const vocab = JSON.parse(payload.textContent) as CorrectionVocabularies & {
+      reasons: ResolvedReason[];
+    };
+
+    const el = {
+      track: document.getElementById('caail-compose-track'),
+      legend: document.getElementById('caail-compose-legend'),
+      reasons: document.getElementById('caail-compose-reasons'),
+      error: document.getElementById('caail-compose-error'),
+      fields: document.getElementById('caail-compose-fields'),
+      body: document.getElementById('caail-compose-body'),
+      dropdownNote: document.getElementById('caail-compose-dropdown-note'),
+      account: document.getElementById('caail-compose-account'),
+      back: document.getElementById('caail-compose-back') as HTMLButtonElement | null,
+      next: document.getElementById('caail-compose-next') as HTMLButtonElement | null,
+      submit: document.getElementById('caail-compose-submit') as HTMLAnchorElement | null,
+      copy: document.getElementById('caail-compose-copy') as HTMLButtonElement | null,
+      copyStatus: document.getElementById('caail-compose-copy-status'),
+      ghNote: document.getElementById('caail-report-github-note'),
+      mailNote: document.getElementById('caail-report-email-note'),
+      slackNote: document.getElementById('caail-report-slack-note'),
+    };
+
+    const heading: Record<StepName, HTMLElement | null> = {
+      reason: document.getElementById('caail-h-reason'),
+      detail: document.getElementById('caail-h-detail'),
+      review: document.getElementById('caail-h-review'),
+    };
+    const panel: Record<StepName, HTMLElement | null> = {
+      reason: document.getElementById('caail-step-reason'),
+      detail: document.getElementById('caail-step-detail'),
+      review: document.getElementById('caail-step-review'),
+    };
+
+    /**
+     * Typed as CorrectionAnswers itself rather than cast to it at the call site. The cast
+     * was hiding a missing `itemId`, so every composed report opened "Entry: undefined" —
+     * the one line the whole feature exists to carry.
+     */
+    const answers: {
+      -readonly [K in keyof CorrectionAnswers]: CorrectionAnswers[K];
+    } & { method: string; area: string; tier: string; theme: string; doi: string; note: string } = {
+      itemId,
+      reason: null,
+      method: '',
+      area: '',
+      tier: '',
+      theme: '',
+      doi: '',
+      note: '',
+    };
+
+    let current: StepName = 'reason';
+
+    /**
+     * The three route notes are rewritten once, the moment a report first exists, and the
+     * email one is built from the address the page already renders rather than a second
+     * copy of the constant. Read here, before anything overwrites the element it lives in.
+     */
+    const mailAddress =
+      document.querySelector('#caail-report-email-note code')?.textContent ?? '';
+    let routeNotesRewritten = false;
+
+    /** The steps this reason actually needs. Three at most, two when nothing to ask. */
+    function plan(): StepName[] {
+      if (answers.reason && answers.reason.kind !== 'none') return ['reason', 'detail', 'review'];
+      if (answers.reason) return ['reason', 'review'];
+      // Unknown until a reason is picked, so assume the maximum. See the file header:
+      // the count may shrink under the reader but must never grow.
+      return ['reason', 'detail', 'review'];
+    }
+
+    function body(): string {
+      return composeBody(answers, vocab);
+    }
+
+    // ── rendering ─────────────────────────────────────────────────────────────
+
+    function buildReasons() {
+      if (!el.reasons) return;
+      vocab.reasons.forEach((reason, i) => {
+        const label = document.createElement('label');
+        label.className = 'rc-opt';
+
+        const input = document.createElement('input');
+        input.type = 'radio';
+        input.name = 'caail-reason';
+        input.id = `caail-reason-${i}`;
+        // The index, not the option string: the value never leaves this page, and an
+        // index cannot be mistaken by a later reader for something that gets submitted.
+        input.value = String(i);
+
+        const text = document.createElement('span');
+        const strong = document.createElement('span');
+        strong.className = 'rc-opt-label';
+        strong.textContent = reason.label;
+        text.appendChild(strong);
+        if (reason.hint) {
+          const hint = document.createElement('span');
+          hint.className = 'rc-opt-hint';
+          hint.textContent = reason.hint;
+          text.appendChild(hint);
         }
+
+        input.addEventListener('change', () => {
+          answers.reason = reason;
+          // Clear every follow-up answer: they belong to the previous reason, and a stale
+          // one would be composed into a report about a different error class.
+          answers.method = answers.area = answers.tier = '';
+          answers.theme = answers.doi = answers.note = '';
+          if (el.error) el.error.textContent = '';
+          buildFields();
+          // Picking a reason is the ONLY thing that changes the step plan, and until it is
+          // picked the total is a guess. Repaint the current step so the count corrects
+          // itself before the reader can act on it. `false`: no focus move, because the
+          // reader is mid-choice in the radio group and yanking focus to the heading would
+          // interrupt them.
+          show(current, false);
+          render();
+        });
+
+        label.append(input, text);
+        el.reasons!.appendChild(label);
       });
     }
+
+    /** A labelled `<select>` over one live vocabulary. */
+    function selectField(
+      id: string,
+      labelText: string,
+      options: readonly string[],
+      placeholder: string,
+      read: () => string,
+      write: (v: string) => void,
+    ): HTMLElement {
+      const wrap = document.createElement('div');
+      wrap.className = 'rc-field';
+
+      const label = document.createElement('label');
+      label.htmlFor = id;
+      label.textContent = labelText;
+
+      const select = document.createElement('select');
+      select.id = id;
+      const blank = document.createElement('option');
+      blank.value = '';
+      blank.textContent = placeholder;
+      select.appendChild(blank);
+      for (const option of options) {
+        const node = document.createElement('option');
+        node.value = option;
+        node.textContent = option;
+        select.appendChild(node);
+      }
+      select.value = read();
+      select.addEventListener('change', () => {
+        write(select.value);
+        render();
+      });
+
+      wrap.append(label, select);
+      return wrap;
+    }
+
+    function buildFields() {
+      if (!el.fields) return;
+      el.fields.replaceChildren();
+      const reason = answers.reason;
+      if (!reason) return;
+
+      if (reason.kind === 'matrix') {
+        el.fields.append(
+          selectField(
+            'caail-f-method', 'AI/ML method it should be', vocab.methods,
+            'Choose a method', () => answers.method, (v) => { answers.method = v; },
+          ),
+          selectField(
+            'caail-f-area', 'Research area it should be', vocab.areas,
+            'Choose an area', () => answers.area, (v) => { answers.area = v; },
+          ),
+        );
+      } else if (reason.kind === 'licence') {
+        el.fields.append(selectField(
+          'caail-f-tier', 'Licence tier it should be', vocab.tiers,
+          'Choose a tier', () => answers.tier, (v) => { answers.tier = v; },
+        ));
+      } else if (reason.kind === 'topics') {
+        el.fields.append(selectField(
+          'caail-f-theme', 'Subject theme it should be', vocab.themes,
+          'Choose a theme', () => answers.theme, (v) => { answers.theme = v; },
+        ));
+      } else if (reason.kind === 'doi') {
+        el.fields.appendChild(doiField());
+      } else if (reason.kind === 'note') {
+        el.fields.appendChild(noteField(reason.noteLabel ?? 'What it should say'));
+      }
+    }
+
+    function doiField(): HTMLElement {
+      const wrap = document.createElement('div');
+      wrap.className = 'rc-field';
+
+      const label = document.createElement('label');
+      label.htmlFor = 'caail-f-doi';
+      label.textContent = 'The DOI it should have';
+
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.id = 'caail-f-doi';
+      input.placeholder = '10.1016/j.scitotenv.2023.164988';
+      input.value = answers.doi;
+      input.setAttribute('aria-describedby', 'caail-f-doi-help caail-f-doi-err');
+
+      const help = document.createElement('span');
+      help.className = 'rc-help';
+      help.id = 'caail-f-doi-help';
+      help.textContent = 'A doi.org address works too; we trim it down.';
+
+      // role=alert rather than a static hint, so the message is announced when the shape
+      // check starts failing rather than read out on every visit to this step.
+      const error = document.createElement('span');
+      error.className = 'rc-err';
+      error.id = 'caail-f-doi-err';
+      error.setAttribute('role', 'alert');
+
+      input.addEventListener('input', () => {
+        answers.doi = input.value;
+        const typed = input.value.trim();
+        const ok = typed === '' || isDoiShape(typed);
+        error.textContent = ok
+          ? ''
+          : 'That does not look like a DOI. One starts with "10." and contains a slash.';
+        input.setAttribute('aria-invalid', ok ? 'false' : 'true');
+        render();
+      });
+
+      wrap.append(label, input, help, error);
+      return wrap;
+    }
+
+    function noteField(labelText: string): HTMLElement {
+      const wrap = document.createElement('div');
+      wrap.className = 'rc-field';
+
+      const label = document.createElement('label');
+      label.htmlFor = 'caail-f-note';
+      label.textContent = `${labelText} (optional)`;
+
+      const area = document.createElement('textarea');
+      area.id = 'caail-f-note';
+      area.maxLength = NOTE_MAX_LENGTH;
+      area.rows = 3;
+      area.value = answers.note;
+      area.setAttribute('aria-describedby', 'caail-f-note-count');
+
+      // Not a live region: it would announce on every keystroke. The cap is also enforced
+      // by maxLength and again by boundNote, so this is a convenience readout.
+      const count = document.createElement('span');
+      count.className = 'rc-help';
+      count.id = 'caail-f-note-count';
+      const paint = () => {
+        count.textContent = `${area.value.length} of ${NOTE_MAX_LENGTH} characters`;
+      };
+      paint();
+
+      area.addEventListener('input', () => {
+        answers.note = area.value;
+        paint();
+        render();
+      });
+
+      wrap.append(label, area, count);
+      return wrap;
+    }
+
+    // ── step machinery ────────────────────────────────────────────────────────
+
+    function show(step: StepName, moveFocus: boolean) {
+      const steps = plan();
+      const index = steps.indexOf(step);
+      current = step;
+
+      for (const name of ['reason', 'detail', 'review'] as StepName[]) {
+        const node = panel[name];
+        if (node) node.hidden = name !== step;
+      }
+
+      // The count lives in the heading rather than in a separate live region, so moving
+      // focus here announces the position and the question in one breath instead of two.
+      const position = `Step ${index + 1} of ${steps.length}`;
+      const titles: Record<StepName, string> = {
+        reason: 'What is wrong with it?',
+        detail: answers.reason ? DETAIL_HEADING[answers.reason.kind] : '',
+        review: 'Your report',
+      };
+      const node = heading[step];
+      if (node) node.textContent = `${position}: ${titles[step]}`;
+      // The fieldset's legend repeats the question for the radio group. Kept in step with
+      // the heading rather than written twice.
+      if (el.legend) el.legend.textContent = titles.reason;
+
+      if (el.track) el.track.style.transform = `scaleX(${(index + 1) / steps.length})`;
+
+      if (el.back) el.back.hidden = index === 0;
+      if (el.next) el.next.hidden = step === 'review';
+      if (el.submit) el.submit.hidden = step !== 'review';
+      if (el.account) el.account.hidden = step !== 'review';
+
+      // Focus moves only on a deliberate step change, never on the first paint: stealing
+      // focus on load would drop a keyboard reader into the middle of the page.
+      if (moveFocus && node) node.focus();
+    }
+
+    function go(delta: 1 | -1) {
+      const steps = plan();
+      const index = steps.indexOf(current);
+      const next = steps[index + delta];
+      if (next) show(next, true);
+    }
+
+    // ── live output ───────────────────────────────────────────────────────────
+
+    function render() {
+      const composed = body();
+
+      if (el.body) {
+        el.body.textContent = composed;
+        // A pre with no content collapses to nothing and reads as a rendering fault.
+        el.body.hidden = composed === '';
+      }
+
+      // Every route gets the composed body. The GitHub link is updated even while the
+      // reader is mid-wizard, so bailing out to it early still carries whatever has been
+      // answered so far rather than dropping it.
+      if (gh) gh.href = correctionIssueUrl(itemId, composed);
+      if (mail) mail.href = correctionMailto(itemId, composed);
+      if (el.submit) el.submit.href = correctionIssueUrl(itemId, composed);
+
+      if (el.dropdownNote) {
+        el.dropdownNote.textContent = answers.reason
+          ? `Everything below is filled in for you on GitHub. The one thing the form still asks you to pick is "What is wrong with it", where the answer is "${answers.reason.label}".`
+          : '';
+      }
+
+      // Rewritten once, when a report first exists, rather than on every render: the
+      // email note's replacement text is built from `mailAddress`, which is read out of
+      // the note's own markup and would be gone the second time round.
+      if (composed && !routeNotesRewritten) {
+        routeNotesRewritten = true;
+        if (el.ghNote) {
+          el.ghNote.textContent =
+            'Needs a GitHub account. The form opens with your report already written into it, and the report, the discussion and the eventual fix all end up in one public place with a permanent link.';
+        }
+        if (el.mailNote) {
+          el.mailNote.textContent = `No account needed. Opens your mail app with the whole report already written, addressed to ${mailAddress}.`;
+        }
+        if (el.slackNote) {
+          el.slackNote.textContent =
+            'No GitHub account needed. Copy the report from the last step and paste it into your message.';
+        }
+      }
+    }
+
+    // ── wiring ────────────────────────────────────────────────────────────────
+
+    el.next?.addEventListener('click', () => {
+      if (current === 'reason' && !answers.reason) {
+        // Deliberately not a disabled button: a disabled control cannot be focused, so a
+        // keyboard reader who tabs to it gets no explanation of why nothing happens.
+        if (el.error) el.error.textContent = 'Pick what is wrong with the entry to continue.';
+        (el.reasons?.querySelector('input') as HTMLInputElement | null)?.focus();
+        return;
+      }
+      go(1);
+    });
+    el.back?.addEventListener('click', () => go(-1));
+
+    wireCopy(el.copy, el.copyStatus, body, 'Report');
+
+    buildReasons();
+    show('reason', false);
+    render();
+    section.hidden = false;
   }
 </script>
 
@@ -189,7 +752,8 @@ const mailto = correctionMailto(null);
      `[hidden] { display: none }`, so `.rp-id`'s flex below would render the banner even
      while the attribute is set. Restated here at higher specificity than any rule in
      this file so every hideable element in the page obeys the attribute. */
-  .rp [hidden] {
+  .rp [hidden],
+  .rc [hidden] {
     display: none;
   }
 
@@ -240,5 +804,213 @@ const mailto = correctionMailto(null);
     display: block;
     color: var(--caail-muted);
     font-size: 0.9rem;
+  }
+
+  /* ── composer ─────────────────────────────────────────────────────────────── */
+
+  .rc {
+    margin-block: 2rem;
+    padding: 1.1rem 1.2rem 1.2rem;
+    border: 1px solid var(--caail-border);
+    border-radius: 0.6rem;
+    background: var(--caail-bg);
+  }
+  .rc > h2 {
+    margin-top: 0;
+  }
+  .rc-lede {
+    color: var(--caail-muted);
+    font-size: 0.95rem;
+  }
+
+  .rc-track {
+    height: 4px;
+    margin-block: 1rem;
+    border-radius: 99px;
+    background: var(--caail-border);
+    overflow: hidden;
+  }
+  /* Full width, scaled down: the fill is driven by `transform: scaleX()` rather than by
+     `width`, so advancing a step composites instead of triggering layout. */
+  .rc-track > i {
+    display: block;
+    height: 100%;
+    width: 100%;
+    transform: scaleX(0.33);
+    transform-origin: left center;
+    background: var(--caail-link);
+    transition: transform 0.18s ease;
+  }
+  /* Honour a reader who has asked the OS for less motion. The fill still moves; it just
+     stops sliding there. */
+  @media (prefers-reduced-motion: reduce) {
+    .rc-track > i {
+      transition: none;
+    }
+  }
+
+  .rc-h {
+    font-size: 1.05rem;
+    margin-block: 0 0.75rem;
+  }
+  /* The step headings are focus targets (tabindex="-1"), so they need a visible ring:
+     moving focus somewhere invisible is worse than not moving it. */
+  .rc-h:focus-visible {
+    outline: 2px solid var(--caail-link);
+    outline-offset: 3px;
+    border-radius: 0.2rem;
+  }
+
+  .rc-fs {
+    border: 0;
+    margin: 0;
+    padding: 0;
+    min-inline-size: 0;
+  }
+  /* The legend repeats the step heading, which is the right thing for the radio group's
+     accessible name and the wrong thing to show twice on screen. */
+  .rc-legend {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .rc-opts {
+    display: flex;
+    flex-direction: column;
+  }
+  .rc-opt {
+    display: flex;
+    gap: 0.6rem;
+    align-items: flex-start;
+    padding: 0.5rem 0.6rem;
+    border: 1px solid transparent;
+    border-radius: 0.45rem;
+    cursor: pointer;
+  }
+  .rc-opt:hover {
+    background: var(--caail-surface);
+  }
+  .rc-opt:has(input:checked) {
+    background: var(--caail-surface);
+    border-color: var(--caail-link);
+  }
+  .rc-opt:has(input:focus-visible) {
+    outline: 2px solid var(--caail-link);
+    outline-offset: 2px;
+  }
+  .rc-opt input {
+    flex: none;
+    margin-top: 0.35rem;
+    accent-color: var(--caail-link);
+  }
+  .rc-opt-hint {
+    display: block;
+    font-size: 0.875rem;
+    color: var(--caail-muted);
+  }
+
+  .rc-fields {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  .rc-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    flex: 1 1 16rem;
+  }
+  .rc-field > label {
+    font-size: 0.875rem;
+    color: var(--caail-muted);
+  }
+  .rc select,
+  .rc input[type='text'],
+  .rc textarea {
+    font: inherit;
+    font-size: 0.95rem;
+    padding: 0.4rem 0.5rem;
+    color: var(--caail-ink);
+    background: var(--caail-bg);
+    border: 1px solid var(--caail-border);
+    border-radius: 0.4rem;
+    width: 100%;
+  }
+  .rc textarea {
+    resize: vertical;
+  }
+  .rc-help {
+    font-size: 0.8rem;
+    color: var(--caail-muted);
+  }
+  .rc-err {
+    font-size: 0.875rem;
+    color: var(--caail-danger, #b3261e);
+  }
+  .rc-err:empty {
+    display: none;
+  }
+
+  .rc-review-note {
+    font-size: 0.9rem;
+    color: var(--caail-muted);
+  }
+  .rc-body {
+    padding: 0.75rem 0.85rem;
+    background: var(--caail-surface);
+    border: 1px solid var(--caail-border);
+    border-radius: 0.5rem;
+    font-size: 0.85rem;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+  .rc-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .rc-nav {
+    display: flex;
+    gap: 0.6rem;
+    align-items: center;
+    margin-top: 1.1rem;
+  }
+  .rc-btn {
+    font: inherit;
+    font-size: 0.95rem;
+    padding: 0.4rem 1rem;
+    /* 44px is the WCAG 2.5.8 target minimum; these are the page's primary controls. */
+    min-height: 2.75rem;
+    display: inline-flex;
+    align-items: center;
+    color: var(--caail-ink);
+    background: var(--caail-bg);
+    border: 1px solid var(--caail-border);
+    border-radius: 0.45rem;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  .rc-primary {
+    color: var(--caail-bg);
+    background: var(--caail-link);
+    border-color: var(--caail-link);
+  }
+  .rc-primary:hover,
+  .rc-primary:focus-visible {
+    color: var(--caail-bg);
+    background: var(--caail-primary);
+    border-color: var(--caail-primary);
+  }
+  .rc-account {
+    font-size: 0.875rem;
+    color: var(--caail-muted);
+    margin-bottom: 0;
   }
 </style>
