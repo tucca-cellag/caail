@@ -70,11 +70,13 @@ gate (above) if you haven't this session.
 ### 1. Review rounds
 
 Run `/code-review <level>`, apply or triage every finding, then **run it again on the updated diff**.
-Repeat until a round returns nothing you act on. **Two rounds is the floor, not the target.** Do this
-before the push, so fixes land as ordinary commits instead of churn on an open PR.
+**Two rounds is the floor, not the target**, and the stop rule is below rather than a round count. Do
+this before the push, so fixes land as ordinary commits instead of churn on an open PR.
 
 **Pick the level from the shape of the diff, not its line count.** Blast radius is what matters: a
-presentational change and a parser change do not deserve the same budget.
+presentational change and a parser change do not deserve the same budget. **When a diff matches several
+rows, the highest-blast-radius row wins** — a `site/src/**` change that also edits a workflow or a hook
+is a guards-row diff, not a site-code one, and CAAIL PRs span rows routinely.
 
 | Diff shape | Level | Rounds floor |
 | --- | --- | --- |
@@ -95,11 +97,22 @@ and billed, so you cannot launch it** — say it's worth it and let the user dec
   uncommitted delta.
 - **Apply or triage every finding.** Fixed, or declined with a stated reason, and if it is real but out
   of scope it gets a ticket. "Not acted on" and "not a defect" are different outcomes; only one is free.
-- **Round 2 over the whole diff again, at the same level.** Not narrowed to the files round 1 touched.
-  The point of round 2 is the defects the *fixes* introduced, and a bad fix does not confine its damage
-  to its own file.
+- **Round 2 over the whole diff again**, at the level round 1 ran at, or the raised one if round 1 came
+  back empty (below). Not narrowed to the files round 1 touched: the point of round 2 is the defects the
+  *fixes* introduced, and a bad fix does not confine its damage to its own file.
 - **Round 3 (and beyond)** when round 2 returned anything you acted on, or when the round-2 fixes were
-  more than typo-scale. Stop on a quiet round, never on a round count.
+  more than typo-scale.
+- **The stop rule**, which is not a round count: stop when a round returns nothing you act on **and**
+  that round was not the first one at its level on a diff bigger than the prose row. An empty first
+  round on a code diff says more about the review than about the diff, so raise one notch or narrow the
+  target and go again (Gotchas). **An empty round at `max` is a stop**, not an escalation loop: `max` is
+  the deepest level you can run, so if the shape still feels under-reviewed, say why and let the user
+  decide about `ultra` rather than re-running the same level hoping for a different answer.
+- **Re-run the local gate before pushing** whenever a round changed anything under `site/**` or
+  `workers/**`. The precondition gate was evaluated *before* step 1, so every fix made here is
+  ungated code, and under the old ordering (review after the PR was open) CI had already seen it. Now
+  it hasn't: a round-2 fix that breaks a vitest or e2e spec reaches CI as the first reader unless you
+  re-run `pnpm --dir site test` (plus `build` / `test:e2e` for the affected specs) at the end of step 1.
 
 **How to review, each rule bought with a real defect:**
 
@@ -167,8 +180,9 @@ bash .claude/skills/caail-pr-wrapup/ship-pr.sh open-pr "<title>" /tmp/pr-body.md
   `chore`, `fix`. Reuse the lead commit's subject when it already fits.
 - **Body:** what changed and *why*; the research area(s)/AI method(s) or routes it touches; and the
   verification you already ran (tests/build/e2e, reviewer agents). Say **how the review went**: the
-  level, how many rounds, and that the last one was quiet. If a round-2 finding was declined rather
-  than fixed, say which and why, since a reader cannot tell a triaged finding from an unnoticed one. If
+  level, how many rounds, and that the last one was quiet. **Any** finding declined rather than fixed,
+  in any round, gets named with its reason, since a reader cannot tell a triaged finding from an
+  unnoticed one and the rounds it came from are invisible to them. If
   the change added a guard, state that it was seen failing on the defect first (step 1). **No AI
   attribution** — CAAIL commits and PRs never carry "Co-Authored-By: Claude" or "Generated with" lines.
 - **Link the trackers.** If this PR resolves a public GitHub issue, include a `Closes #N` line —
@@ -355,7 +369,7 @@ adding it there too, or the guard will happily confirm that an incomplete set is
 
 | Symptom / situation | What it means / do |
 | --- | --- |
-| **Round 1 comes back empty** on a code-heavy or multi-file diff | Read it as a fact about the review, not about the diff. Raise the level a notch, or point it at a narrower target and go again. A quiet round is only evidence once a non-quiet round has happened at that level. |
+| **Round 1 comes back empty** on a code-heavy or multi-file diff | Read it as a fact about the review, not about the diff. Raise the level a notch, or point it at a narrower target, and go again. If the raised round is also empty, **that is a stop** — `max` is the ceiling you can run, and an escalation with nowhere left to go is a loop, not a gate. Say why the shape still worries you and let the user decide about `ultra`. |
 | A finding's **fix is itself unreviewed code** | It is, and that is the whole reason for round 2. Two of the fourteen defects in step 1's evidence arrived this way, one an accessibility regression created by the fix for a different accessibility finding. Never merge a fix that no round has seen. |
 | Cross-model pass returns **one or two findings, or none** | Normal output for the weaker reviewer; it is not evidence the diff is clean (step 1's rationale). Do not let it stand in for a step-1 round, and do not report it as "reviewed by two models" as if the two carried equal weight. |
 | `/code-review ultra` looks warranted | **You cannot launch it** — it is user-triggered and billed. Say why the diff deserves it (parser, Worker, hook, or a change crossing several routes) and let the user run it. |
