@@ -30,6 +30,7 @@ ingest is **stdlib-only and zero-token**.
 | `prefilter_corpus.py` | Deterministic pass that auto-clears lexically-obvious placements and emits the residual needing human judgment. Never auto-clears deep-learning / agent / foundation-model rows. |
 | `skim_to_audit_ids.py` | Glue that validates skim batches and emits a deduped id list. Only useful with the retired workflow. |
 | `verify_routing.mjs` | Routing checks. |
+| `hpc/` | Running the ingest as a SLURM array instead of one process. Conversion measured a median of 1m50s per paper, so the matrix corpus is about seven hours serially and about twenty minutes at 20-way concurrency. The array writes only `docs/`; `sections/` is derived afterwards by the real `--respan`, so the heading rule is never reimplemented. See `hpc/README.md`. |
 
 ## The Docling ingest (CAAIL-206)
 

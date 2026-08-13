@@ -119,6 +119,15 @@ jobs:
       - name: Accession-extraction tests
         run: python3 .claude/skills/matrix-classification-audit/extract_accessions.test.py
 
+      # The join that decides WHICH paper each reference's evidence comes from.
+      # It fails silently in the expensive direction: a reference whose PDF sat
+      # in the library with 63,880 characters indexed was reported as having no
+      # full text for three weeks, because Zotero had stored its URL with a
+      # `#discussion` anchor and the normalizer kept the fragment. Same reason
+      # it can run here -- stdlib only, no Zotero, no network, no corpus.
+      - name: URL-join normalizer tests
+        run: python3 .claude/skills/matrix-classification-audit/norm_url.test.py
+
       - name: DB integrity + round-trip verify
         run: |
           pnpm --dir site db:check

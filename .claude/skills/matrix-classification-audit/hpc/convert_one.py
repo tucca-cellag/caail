@@ -66,8 +66,15 @@ def main():
 
     # Write via a temp file then rename. A task killed mid-write would otherwise
     # leave a truncated JSON that the resume check above treats as done.
+    #
+    # The encoding is explicit because ensure_ascii=False deliberately emits
+    # non-ASCII. Without it the write takes the locale default, and a cluster
+    # environment with a non-UTF-8 locale -- or PYTHONCOERCECLOCALE=0, which
+    # disables the PEP 538 coercion that usually hides this -- raises
+    # UnicodeEncodeError on essentially every paper rather than on an unlucky one.
     tmp = dest.with_suffix('.json.partial')
-    tmp.write_text(json.dumps(doc.export_to_dict(), ensure_ascii=False))
+    tmp.write_text(json.dumps(doc.export_to_dict(), ensure_ascii=False),
+                   encoding='utf-8')
     tmp.rename(dest)
 
     print(f'ref {args.ref}: ok, {doc.num_pages()} pages, {dest.stat().st_size} bytes')

@@ -50,9 +50,14 @@ ls -1 "$CAAIL_MODELS"
 
 echo
 echo "=== converter smoke test ==="
-# Build the converter with the SAME options the array uses. This is the check
-# that matters: a version or weights mismatch fails here, in one job with a
-# readable log, rather than N times in parallel.
+# Build the converter with the SAME options the array uses, then force the
+# pipeline to initialize. Constructing the converter is not enough: docling
+# builds pipelines lazily on the first convert() and caches them per
+# (pipeline class, options hash), so a constructor-only check never reads
+# artifacts_path at all. It would print "converter built OK" against a partial
+# or version-mismatched tableformer download and then fail once per array task
+# -- exactly the outcome this job exists to prevent. initialize_pipeline is the
+# eager path, and it is what raises on missing local model files.
 CAAIL_MODELS="$CAAIL_MODELS" python - <<'PY'
 import os
 from docling.datamodel.base_models import InputFormat
@@ -63,6 +68,8 @@ opts = PdfPipelineOptions()
 opts.do_ocr = False
 opts.do_table_structure = True
 opts.artifacts_path = os.environ["CAAIL_MODELS"]
-DocumentConverter(format_options={InputFormat.PDF: PdfFormatOption(pipeline_options=opts)})
-print("converter built OK with artifacts_path and table structure enabled")
+conv = DocumentConverter(
+    format_options={InputFormat.PDF: PdfFormatOption(pipeline_options=opts)})
+conv.initialize_pipeline(InputFormat.PDF)
+print("pipeline initialized OK from artifacts_path, table structure enabled")
 PY

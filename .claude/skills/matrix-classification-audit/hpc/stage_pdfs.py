@@ -75,7 +75,14 @@ def order_main_text_first(attachments):
 
 
 def merge(paths, dest):
-    """Concatenate PDFs into one file. Milliseconds; no rendering, no ML."""
+    """Concatenate PDFs into one file. Milliseconds; no rendering, no ML.
+
+    `pypdfium2` is the one non-stdlib import in this skill, and it is deferred
+    to here on purpose: every other path through this script -- and every other
+    script in the directory -- stays stdlib-only, so a ref with a single PDF
+    never needs it installed. It ships as a docling dependency, so any machine
+    that can run the ingest already has it.
+    """
     import pypdfium2 as pdfium
 
     out = pdfium.PdfDocument.new()
@@ -108,44 +115,75 @@ def main():
 
     doi_index, url_index = ex.build_indexes(args.api, groups)
 
-    wanted = sorted(set(args.only) or (matrix_ids if args.matrix_only else refs))
-    staged, skipped, merged = [], [], []
+    # --only and --matrix-only COMPOSE, matching docling_ingest.py's ordering.
+    # Making --only override would let `--only 900 --matrix-only` stage a
+    # non-matrix ref without complaint, and leave the two tools disagreeing
+    # about the same pair of flags.
+    wanted = sorted(set(args.only)) if args.only else sorted(refs)
+    if args.matrix_only:
+        wanted = [r for r in wanted if r in matrix_ids]
+
+    staged, skipped, merged, partial = [], [], [], []
+
+    def write_manifest():
+        """Written after every ref, not once at the end.
+
+        An exception mid-loop -- a malformed PDF, or the deferred pypdfium2
+        import failing -- would otherwise leave N staged files on disk and no
+        refs.txt at all, so the directory looks staged while the documented
+        next step (`wc -l < refs.txt`) fails on it.
+        """
+        (out / "refs.txt").write_text("\n".join(str(r) for r in staged) + "\n")
+        json.dump({"staged": staged, "skipped": skipped,
+                   "merged": {str(r): names for r, names in merged},
+                   "partial": {str(r): n for r, n in partial}},
+                  open(out / "stage-manifest.json", "w"), indent=2)
 
     for rid in wanted:
-        ref = refs.get(rid)
-        if not ref:
-            skipped.append((rid, "no-reference"))
-            continue
-        hit = (doi_index.get(ref["doi"].lower()) if ref["doi"] else None) \
-            or (url_index.get(ex._norm_url(ref["url"])) if ref["url"] else None)
-        if not hit:
-            skipped.append((rid, "not-in-zotero"))
-            continue
+        try:
+            ref = refs.get(rid)
+            if not ref:
+                skipped.append((rid, "no-reference"))
+                continue
+            hit = (doi_index.get(ref["doi"].lower()) if ref["doi"] else None) \
+                or (url_index.get(ex._norm_url(ref["url"])) if ref["url"] else None)
+            if not hit:
+                skipped.append((rid, "not-in-zotero"))
+                continue
 
-        group, item = hit
-        atts = order_main_text_first(pdf_attachments(args.api, group, item.get("key")))
-        paths = []
-        for key, _fname in atts:
-            d = storage / key
-            found = sorted(d.glob("*.pdf")) if d.is_dir() else []
-            if found:
-                paths.append(found[0])
-        if not paths:
-            skipped.append((rid, "no-pdf-attachment"))
-            continue
+            group, item = hit
+            atts = order_main_text_first(pdf_attachments(args.api, group, item.get("key")))
+            paths = []
+            for key, _fname in atts:
+                d = storage / key
+                found = sorted(d.glob("*.pdf")) if d.is_dir() else []
+                if found:
+                    paths.append(found[0])
+            if not paths:
+                skipped.append((rid, "no-pdf-attachment"))
+                continue
 
-        dest = out / f"ref-{rid}.pdf"
-        if len(paths) == 1:
-            shutil.copy2(paths[0], dest)
-        else:
-            merge(paths, dest)
-            merged.append((rid, [p.name for p in paths]))
-        staged.append(rid)
+            # An attachment Zotero knows about but has not downloaded (or a
+            # linked file with no storage directory) is a silent half-merge:
+            # `paths` comes back length 1, the merge branch never runs, and the
+            # manifest is indistinguishable from a genuinely single-PDF ref.
+            # That is the "converting either file alone loses half the evidence"
+            # failure this script exists to prevent, so it is recorded loudly
+            # rather than inferred from a page count later.
+            if len(paths) != len(atts):
+                partial.append((rid, f"{len(paths)} of {len(atts)} attachments on disk"))
 
-    (out / "refs.txt").write_text("\n".join(str(r) for r in staged) + "\n")
-    json.dump({"staged": staged, "skipped": skipped,
-               "merged": {str(r): names for r, names in merged}},
-              open(out / "stage-manifest.json", "w"), indent=2)
+            dest = out / f"ref-{rid}.pdf"
+            if len(paths) == 1:
+                shutil.copy2(paths[0], dest)
+            else:
+                merge(paths, dest)
+                merged.append((rid, [p.name for p in paths]))
+            staged.append(rid)
+        except Exception as exc:  # noqa: BLE001 - one bad ref must not strand the rest
+            skipped.append((rid, f"{type(exc).__name__}: {exc}"))
+        finally:
+            write_manifest()
 
     print(f"staged {len(staged)} refs -> {out}")
     if merged:
@@ -154,6 +192,10 @@ def main():
             print(f"  ref {rid}:")
             for n in names:
                 print(f"      {n}")
+    if partial:
+        print(f"INCOMPLETE -- some attachments were not on disk ({len(partial)}):")
+        for rid, why in partial:
+            print(f"  ref {rid}: {why}  (sync Zotero, then re-stage this ref)")
     if skipped:
         print(f"skipped {len(skipped)}:")
         for rid, why in skipped:

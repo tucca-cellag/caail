@@ -182,6 +182,40 @@ scripts = sorted(f for f in os.listdir(HERE)
 missing = [f for f in scripts if f not in readme]
 check("README documents every script", missing, [])
 
+# `os.listdir` is not recursive, so a whole subdirectory of scripts was invisible
+# to the check above: `hpc/` arrived with five files and this guard stayed green
+# while the table described none of them. The guard was itself an instance of the
+# defect it exists to catch.
+#
+# Flattening every nested path into one table would make the top-level README the
+# hand-maintained fact again. Instead, require that a subdirectory holding scripts
+# is named here AND carries its own README -- which is what makes delegating the
+# detail to it checkable rather than assumed.
+SCRIPT_EXTS = (".py", ".mjs", ".sbatch")
+subdirs = sorted(d for d in os.listdir(HERE)
+                 if os.path.isdir(os.path.join(HERE, d))
+                 and not d.startswith((".", "_"))
+                 and any(f.endswith(SCRIPT_EXTS)
+                         for f in os.listdir(os.path.join(HERE, d))))
+
+# Either form counts as documented, because the two shapes here are genuinely
+# different: `testdata/` is one fixture helper the top-level table names by path,
+# while `hpc/` is a five-file workflow whose detail belongs in its own README.
+# Demanding a README per directory would add an empty file to satisfy a checker;
+# demanding the top-level table list every nested file would recreate the
+# hand-maintained fact this whole check exists to catch.
+undocumented = []
+for d in subdirs:
+    sub_path = os.path.join(HERE, d, "README.md")
+    sub_readme = (open(sub_path, encoding="utf-8").read()
+                  if os.path.exists(sub_path) else "")
+    for f in sorted(x for x in os.listdir(os.path.join(HERE, d))
+                    if x.endswith(SCRIPT_EXTS) and not x.startswith("_")):
+        if f"{d}/{f}" not in readme and f not in sub_readme:
+            undocumented.append(f"{d}/{f}")
+check("every script in a subdirectory is documented, here or in its own README",
+      undocumented, [])
+
 
 print(f'\n{"FAILED" if fails else "OK"}: {fails} failure(s)')
 sys.exit(1 if fails else 0)

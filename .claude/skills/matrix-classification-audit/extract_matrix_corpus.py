@@ -290,9 +290,21 @@ def _norm_url(url):
     and every report said it was missing, because `has_fulltext` answers "can the
     matcher reach it" and gets read as "does it exist".
     """
+    return _keep_fragment(url).split("#", 1)[0].rstrip("/")
+
+
+def _keep_fragment(url):
+    """Everything `_norm_url` does EXCEPT dropping the fragment.
+
+    Exists so a key collision can be attributed. Scheme, case and trailing-slash
+    merges predate the fragment rule and are intended; a collision that survives
+    this normalization is one the fragment rule caused, and only those are worth
+    warning about. Without the distinction the warning fires on every `http://`
+    vs `https://` pair of the same paper -- three of them in this library today --
+    and a warning that is usually noise is a warning nobody reads.
+    """
     u = (url or "").strip().lower()
     u = re.sub(r"^https?://", "", u)
-    u = u.split("#", 1)[0]
     return u.rstrip("/")
 
 
@@ -301,8 +313,23 @@ def build_indexes(api, groups):
 
     Returns (doi_index, url_index), each {key: (group, item)}. Earlier groups
     win, so list caail (6549203) first to prefer its copies.
+
+    Collisions are reported rather than silently resolved first-wins. Normalizing
+    a URL necessarily merges keys, and every rule that merges more can merge two
+    *different* papers: a hash-routed URL like `https://site.org/#/paper/123`
+    normalizes to the bare domain, so a DOI-less reference citing `https://site.org`
+    would join to it and inherit its abstract, PDF and methods text.
+
+    That direction of error is the expensive one. A missed join reports
+    `has_fulltext: false` and someone goes looking for a paper we already have,
+    which is annoying and visible. A wrong join reports `has_fulltext: true` and a
+    placement gets audited against a different paper's methods section, which is
+    invisible and lands in the matrix. So the join stays strict and says when two
+    distinct URLs land on one key.
     """
     doi_index, url_index = {}, {}
+    url_sources = {}
+    collisions = []
     for group in groups:
         items = scope._paginate(f"{api}/groups/{group}/items/top?format=json")
         for it in items:
@@ -312,9 +339,25 @@ def build_indexes(api, groups):
             doi = (data.get("DOI") or "").strip().lower()
             if doi and doi not in doi_index:
                 doi_index[doi] = (group, it)
-            url = _norm_url(data.get("url"))
-            if url and url not in url_index:
+            raw = (data.get("url") or "").strip()
+            url = _norm_url(raw)
+            if not url:
+                continue
+            if url not in url_index:
                 url_index[url] = (group, it)
+                url_sources[url] = raw
+            elif _keep_fragment(raw) != _keep_fragment(url_sources[url]):
+                # Same key, and they differ by more than scheme, case or a
+                # trailing slash -- so it is the FRAGMENT that merged them.
+                collisions.append((url, url_sources[url], raw))
+
+    if collisions:
+        print(f"WARNING: {len(collisions)} URL key collision(s) caused by fragment "
+              f"stripping — a ref joining on one of these may resolve to the wrong "
+              f"item:", file=sys.stderr)
+        for key, first, other in collisions:
+            print(f"  {key}\n    kept: {first}\n    also: {other}", file=sys.stderr)
+
     return doi_index, url_index
 
 

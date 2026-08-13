@@ -95,6 +95,41 @@ check("slash and fragment together",
       ex._norm_url("https://example.org/a/#frag"), "example.org/a")
 
 # ---------------------------------------------------------------------------
+print("\n=== collision attribution: which merges did the fragment rule cause? ===")
+
+# `build_indexes` warns only when two raw URLs collide *because of* the fragment
+# rule. Scheme, case and trailing-slash merges predate it and are intended, and a
+# warning that fires on those is noise nobody reads -- this library holds three
+# http/https pairs of the same arXiv paper today, so it would fire on every run.
+# `_keep_fragment` is the predicate that tells the two apart.
+
+def benign(name, a, b):
+    """Collides, but not because of the fragment: must NOT warn."""
+    check(name, (ex._norm_url(a) == ex._norm_url(b),
+                 ex._keep_fragment(a) == ex._keep_fragment(b)), (True, True))
+
+
+def fragment_caused(name, a, b):
+    """Collides ONLY once the fragment is stripped: must warn."""
+    check(name, (ex._norm_url(a) == ex._norm_url(b),
+                 ex._keep_fragment(a) == ex._keep_fragment(b)), (True, False))
+
+
+benign("http vs https on one arXiv paper",
+       "http://arxiv.org/abs/2412.21154", "https://arxiv.org/abs/2412.21154")
+benign("trailing slash", "https://example.org/a/", "https://example.org/a")
+benign("case", "https://Example.org/A", "https://example.org/a")
+
+# The defect this guards. A hash-routed URL collapses to the bare domain, so a
+# DOI-less ref citing the domain would inherit that item's PDF and methods text
+# -- a wrong `has_fulltext: true`, which lands silently in the matrix.
+fragment_caused("hash-routed SPA path vs the bare domain",
+                "https://site.org/#/paper/123", "https://site.org")
+fragment_caused("two anchors on one page are one resource, but two different "
+                "pages are not",
+                "https://site.org/#/a", "https://site.org/#/b")
+
+# ---------------------------------------------------------------------------
 print()
 if fails:
     print(f"FAILED: {fails} check(s)")

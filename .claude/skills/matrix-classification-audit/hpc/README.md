@@ -7,6 +7,16 @@ each ref reads one PDF and writes one file named after its own id, and no two re
 touch the same path — so an array finishes the backlog in the wall time of the slowest
 paper plus queueing. The same 224 refs took **about 20 minutes at 20-way concurrency**.
 
+## What is here
+
+| File | What it does |
+| --- | --- |
+| `stage_pdfs.py` | Runs on the machine with Zotero. Resolves each ref to its PDFs the same way `docling_ingest.py` does, **merges** a paper's attachments into one `ref-<id>.pdf` (main text first, supplements after), and writes `refs.txt` + `stage-manifest.json`. |
+| `caail-docling-setup.sbatch` | Downloads layout **and** tableformer weights once, then initializes a pipeline against them so a bad download fails here rather than once per array task. |
+| `caail-docling.sbatch` | The array. One staged PDF per task. |
+| `convert_one.py` | What a task runs: one PDF → `docs/ref-<id>.json`, with the pipeline options mirroring `docling_ingest.build_converter()`. Resumable and atomic — it skips a ref whose doc exists, and writes through a temp file so a killed task cannot leave a truncated doc the skip check would treat as finished. |
+| `caail-docling-respan.sbatch` | Runs the real `docling_ingest.py --respan` to derive `sections/` from `docs/`. |
+
 ## The split, and why it is worth keeping
 
 The array does **only** the expensive half: PDF → `docs/ref-<id>.json`. Sections are
@@ -57,18 +67,31 @@ python3 stage_pdfs.py --out <stage> --matrix-only
 
 # 2. Download the weights ONCE. Not left to the array: N tasks starting together race
 #    on one cache directory, and the usual outcome is half-written model files.
-sbatch caail-docling-setup.sbatch
+SETUP=$(sbatch --parsable caail-docling-setup.sbatch)
 
-# 3. Size the array to the file and submit.
+# 3. Size the array to the file and submit, AFTER the weights are actually there.
+#    sbatch returns as soon as the job is queued, so without the dependency the
+#    array starts while the download is still running and every task races the
+#    same cache -- reintroducing precisely what step 2 exists to prevent.
 N=$(wc -l < "$CAAIL_PDF_DIR/refs.txt")
-sbatch --array=1-"$N"%20 caail-docling.sbatch
+ARRAY=$(sbatch --parsable --dependency=afterok:"$SETUP" --array=1-"$N"%20 caail-docling.sbatch)
 
-# 4. Derive sections/ from docs/ with the committed rule.
-sbatch caail-docling-respan.sbatch
+# 4. Derive sections/ from docs/ with the committed rule, after the array drains.
+#    afterany rather than afterok: a partial corpus is still worth respanning,
+#    and a single failed task should not strand the other 223. Without the
+#    dependency this runs against whatever docs/ happens to hold and reports
+#    "respanned N documents" for a partial corpus with exit 0, which reads as
+#    success.
+sbatch --dependency=afterany:"$ARRAY" caail-docling-respan.sbatch
 
 # 5. Pull docs/ and sections/ back, then re-run the extract against them:
 #    extract_matrix_corpus.py --docling-corpus <dir>
 ```
+
+Check the array's outcome before trusting the respan: `sacct -j "$ARRAY"
+--format=JobID,State,Elapsed,MaxRSS,ExitCode -n -X`. A `docs/` count alone cannot
+distinguish "all converted" from "six of seven converted", and the failure mode
+below is one where the error message blames the document rather than the node.
 
 ## Staging merges a paper's PDFs rather than picking one
 
