@@ -79,17 +79,24 @@ Every paper, tool, database and dataset entry carries a coarse tier: `permissive
 `restricted`, `unknown`. It is a triage signal derived from SPDX identifiers and OpenAlex, not
 verified terms — confirm at the source before relying on it.
 
-The tier governs **redistribution**, not use. Two different questions:
+The tier is about **redistribution**. It answers one of these questions and not the other:
 
 - **Publishing** text, or shipping it in a public tool or dataset: filter on the license tier, and
   **never** on open-access status. Being free to read is not permission to republish — 148 works in
   this corpus carry no license grant at all, including every bronze one, where the publisher's page
   is free but default copyright still applies.
-- **Internal use** inside an organisation that already has legitimate access, such as a private RAG
-  index behind its own subscriptions: the license tier is not the constraint. What that organisation
-  may lawfully read, it may generally index for itself. The constraint is on making it public.
+- **Copying for internal use**, such as a private index behind your own subscriptions: the tier does
+  not answer this and neither does CAAIL. It turns on the agreement you got access under and on the
+  text-and-data-mining exception where you operate, and both are narrower than they are usually
+  assumed to be. UK CDPA s.29A covers computational analysis only "for the sole purpose of research
+  for a non-commercial purpose". In the EU the research exception (DSM Art. 3) reaches only research
+  organisations and cultural-heritage institutions as defined in Art. 2(1); anyone else relies on
+  Art. 4, which applies only where rights have not been "expressly reserved" (Art. 4(3)) and which
+  Art. 7(1) does not shield from contract terms — and a subscription agreement is such a term.
 
-So the tier tells you what you can *ship*, not what you can *work with*.
+So the tier tells you what you can *ship*. Whether you may copy something you are allowed to read is
+a question about your own agreements and jurisdiction: say so plainly rather than guessing, and do
+not treat this section as legal advice.
 
 ## Contributing
 
