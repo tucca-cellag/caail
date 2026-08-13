@@ -86,17 +86,12 @@ The tier is about **redistribution**. It answers one of these questions and not 
   this corpus carry no license grant at all, including every bronze one, where the publisher's page
   is free but default copyright still applies.
 - **Copying for internal use**, such as a private index behind your own subscriptions: the tier does
-  not answer this and neither does CAAIL. It turns on the agreement you got access under and on the
-  text-and-data-mining exception where you operate, and both are narrower than they are usually
-  assumed to be. UK CDPA s.29A covers computational analysis only "for the sole purpose of research
-  for a non-commercial purpose". In the EU the research exception (DSM Art. 3) reaches only research
-  organisations and cultural-heritage institutions as defined in Art. 2(1); anyone else relies on
-  Art. 4, which applies only where rights have not been "expressly reserved" (Art. 4(3)) and which
-  Art. 7(1) does not shield from contract terms — and a subscription agreement is such a term.
+  not answer this and neither does CAAIL. It depends on the agreement you got access under and on
+  the law where you operate. Do not assume that being allowed to read something settles whether you
+  may copy it.
 
-So the tier tells you what you can *ship*. Whether you may copy something you are allowed to read is
-a question about your own agreements and jurisdiction: say so plainly rather than guessing, and do
-not treat this section as legal advice.
+So the tier tells you what you can *ship*. Anything beyond that is a question for the asker's own
+agreements and counsel, and saying so is the right answer.
 
 ## Contributing
 

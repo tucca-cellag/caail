@@ -429,13 +429,12 @@ non-catalog canonical files (`OtherResources.md`, `ReferenceWorks.md`, `AwesomeL
   `licenseTier ∈ {permissive, copyleft}` (131 works, 38%), never on `is_oa` (~74%). The tier governs
   *redistribution*. **Do not restate that as a permission to copy internally**, which is what this
   line used to do, and what the #ask band's licensing card was deleted for: whether an organisation
-  may index what it can read turns on its access agreement and on the text-and-data-mining exception
-  where it operates, and both are narrow. UK CDPA s.29A is non-commercial research only; EU DSM
-  Art. 3 reaches only research organisations per Art. 2(1), and the general Art. 4 exception is
-  opt-outable (Art. 4(3)) and is absent from Art. 7(1)'s list of contract-proof exceptions, so a
-  subscription agreement overrides it. The tier bounds publishing; it licenses nothing. (Verified
-  against the statutes twice, months apart, because the claim survived its own retraction in two
-  files: when a claim is withdrawn anywhere, grep for every copy of it.)
+  may index what it can read depends on its own access agreements and on the law where it operates,
+  and CAAIL takes no position on it. The tier bounds publishing; it licenses nothing. (Checked
+  against the statutes twice, and deliberately not summarised here or in the agent skill — a library
+  that indexes work should not be handing out legal conclusions about it. The reasoning is on
+  CAAIL-2. Note also that the claim survived its own retraction in two files, so when a claim is
+  withdrawn anywhere, grep for every copy of it.)
 - **DOIs & citation counts** are a second DB-owned axis mirroring licenses. `catalog` +
   `dataset_entries` carry nullable `doi` + `doi_source` (`manual` = curator-verified; `auto` reserved).
   Like licenses the DOI is **DB-only** (not in canonical Markdown): `seedDois` (run via `db:reseed-axes`) folds the
