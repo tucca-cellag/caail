@@ -20,7 +20,7 @@ import {
   type CitationCache,
 } from './citations.js';
 import { licenseTier } from '../../src/lib/licenses.js';
-import { buildPapersModel } from './papers.js';
+import { corpusPapers } from './corpus-fixture.js';
 import { loadCitationCache } from './generate-data.js';
 import type { PapersData, Reference } from './types.js';
 
@@ -164,7 +164,7 @@ describe('buildCitationData — empty / missing cache', () => {
 
 describe('buildCitationData — committed cache', () => {
   it('yields a non-trivial, internally consistent citation graph', () => {
-    const model = buildPapersModel();
+    const model = corpusPapers();
     const data = buildCitationData(model, loadCitationCache());
     expect(data.edges.length).toBeGreaterThan(0);
     const sumCites = [...data.citesCount.values()].reduce((s, n) => s + n, 0);
@@ -268,7 +268,7 @@ describe('isOaByDoi', () => {
 
 describe('paper open-access axis (real corpus)', () => {
   it('records is_oa for most references, and never conflates it with redistribution', () => {
-    const refs = buildPapersModel().references;
+    const refs = corpusPapers().references;
     const recorded = refs.filter((r) => r.isOa !== null);
     // The homepage quotes both figures over this denominator, so it must be a real
     // majority of the corpus rather than a handful of matched works.
@@ -304,7 +304,7 @@ describe('paper open-access axis (real corpus)', () => {
 
 describe('paper license axis (real corpus)', () => {
   it('every licensed reference has a source, and every unlicensed one has none', () => {
-    const refs = buildPapersModel().references;
+    const refs = corpusPapers().references;
     for (const r of refs) {
       expect(r.license == null).toBe(r.licenseSource == null);
       if (r.licenseSource != null) expect(r.licenseSource).toBe('auto');
@@ -312,7 +312,7 @@ describe('paper license axis (real corpus)', () => {
   });
 
   it('classifies the OpenAlex license strings the corpus actually contains', () => {
-    const refs = buildPapersModel().references;
+    const refs = corpusPapers().references;
     const seen = new Set(refs.map((r) => r.license).filter((l): l is string => !!l));
     // Without this the loop below passes vacuously on an empty/absent cache.
     expect(seen.size).toBeGreaterThan(0);

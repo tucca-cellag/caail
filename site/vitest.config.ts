@@ -1,6 +1,14 @@
 import { defineConfig } from 'vitest/config';
+import { HOOK_TIMEOUT_MS, TEST_TIMEOUT_MS } from './scripts/test-reliability/budgets.js';
+
 export default defineConfig({
   test: {
+    // Imported rather than typed here, so the measurement in budgets.ts and the number
+    // vitest enforces cannot drift apart. `pnpm bench:fixtures` prints the current
+    // headroom against these. Raising a budget is not a fix and does not retire a
+    // register entry; see budgets.ts for why it is nevertheless most of the answer.
+    hookTimeout: HOOK_TIMEOUT_MS,
+    testTimeout: TEST_TIMEOUT_MS,
     include: [
       'scripts/**/*.test.ts',
       'src/content/**/*.test.ts',

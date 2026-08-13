@@ -128,6 +128,11 @@ export const REGISTER: readonly UnreliableEntry[] = [
       'is quiet, of which ~1.2s is buildMetricsModel itself, the function under test.',
     reproduce: 'pnpm --dir site test -- --no-file-parallelism',
     status: 'open',
+    mitigation:
+      'Partly. The hook budget is now 30s against ~1-2s of work (scripts/test-reliability/' +
+      'budgets.ts, headroom via `pnpm bench:fixtures`). Sharing the corpus models does NOT ' +
+      'help this file: it builds each once, and ~60% of the hook is buildMetricsModel, the ' +
+      'unit under test. Still open because a budget is not a fix.',
     tickets: ['CAAIL-239'],
   },
   {
@@ -143,6 +148,9 @@ export const REGISTER: readonly UnreliableEntry[] = [
     evidence: '2026-08-12: observed timing out in a full parallel run. Runs ~2.3s serial.',
     reproduce: 'pnpm --dir site test -- --no-file-parallelism',
     status: 'open',
+    mitigation:
+      'Partly: the hook budget is now 30s (scripts/test-reliability/budgets.ts). The corpus ' +
+      'models it builds are not the bulk of it, so the shared fixture does not apply.',
     tickets: ['CAAIL-239'],
   },
   {
@@ -156,6 +164,7 @@ export const REGISTER: readonly UnreliableEntry[] = [
     evidence: '2026-08-12: in one of three consecutive full runs, each of which failed a different set.',
     reproduce: 'pnpm --dir site test -- --no-file-parallelism',
     status: 'open',
+    mitigation: 'Partly: the hook budget is now 30s (scripts/test-reliability/budgets.ts).',
     tickets: ['CAAIL-239'],
   },
   {
@@ -172,6 +181,9 @@ export const REGISTER: readonly UnreliableEntry[] = [
     evidence: '2026-08-13: failed in the first of two back-to-back parallel runs, passed in the second. Runs ~4.3s serial.',
     reproduce: 'pnpm --dir site test -- --no-file-parallelism',
     status: 'open',
+    mitigation:
+      'Partly: the per-test budget is now 20s (scripts/test-reliability/budgets.ts). The work ' +
+      'itself cannot be shared, because each test needs a fresh DB and a fresh re-parse.',
     tickets: ['CAAIL-239'],
   },
   {
@@ -188,6 +200,9 @@ export const REGISTER: readonly UnreliableEntry[] = [
     evidence: '2026-08-13: failed in the first of two back-to-back parallel runs, passed in the second. Runs ~5.9s serial, slowest test ~1.4s.',
     reproduce: 'pnpm --dir site test -- --no-file-parallelism',
     status: 'open',
+    mitigation:
+      'Partly: the per-test budget is now 20s (scripts/test-reliability/budgets.ts). The work ' +
+      'itself cannot be shared, because each test needs a fresh DB and a fresh re-parse.',
     tickets: ['CAAIL-239'],
   },
 
