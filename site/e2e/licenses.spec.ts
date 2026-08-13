@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { awaitHydrated } from './hydration';
 
 test('Software cards show tier-colored license badges linking to the hub', async ({ page }) => {
   await page.goto('./software/');
@@ -71,6 +72,11 @@ test('the license facet toggles are not offset by Starlight prose-flow margins (
 
 test('the catalog license facet narrows the grid to a tier', async ({ page }) => {
   await page.goto('./software/');
+  // The facet is a hydrated island control, so clicking before hydration LOSES the click
+  // rather than delaying it, and the grid stays at its full server-rendered count. Without
+  // this wait the test failed 3 runs in 5. See e2e/hydration.ts for why retrying the
+  // assertion cannot recover from it.
+  await awaitHydrated(page, 'CatalogBrowser');
   const total = await page.locator('.cb-card').count();
   await page.getByRole('button', { name: 'Restricted' }).click();
   const narrowed = await page.locator('.cb-card').count();
