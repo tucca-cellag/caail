@@ -12,6 +12,21 @@ matrix-corpus.json
 matrix-corpus/
 AUDIT_REPORT.md
 
+# Docling ingest output (docling_ingest.py), same pattern as site/caail.db: a
+# local artifact rebuilt from a committed source, never committed itself. Two
+# reasons it must stay out, either of which would be sufficient.
+#
+# Size: measured at 0.49 MB per ref over the first 47 (2026-08-12), so roughly
+# 170 MB across the corpus. `du -sh docling-corpus` prints the real figure.
+#
+# Licensing: it holds the full text of works CAAIL may read but may not
+# redistribute -- the local curation tier of CAAIL-169. Committing it to a public
+# repo is exactly the publication that tier exists to avoid, and git history
+# would keep it fetchable by SHA afterwards.
+docling-corpus/
+docling-corpus-ingest.log
+docling-eval/
+
 # macOS Finder metadata
 .DS_Store
 

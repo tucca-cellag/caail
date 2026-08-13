@@ -46,6 +46,10 @@
 import topics from '../content/data/topics.json';
 import { chipStyle } from '../lib/theme-colors';
 import { COMMUNITY_PATH } from '../lib/community';
+// "Telling us a theme looks wrong" is a correction, so it goes to the entry-anchored
+// report page rather than the Slack invite. The lead ask below stays on /community/:
+// volunteering to curate a theme is a conversation, not a correction.
+import { REPORT_PATH } from '../lib/report';
 import { curatorFor, LEAD_GUARANTEE, LEAD_ASK, leadCoverageLine } from '../lib/topic-curators';
 /* The `?t=` deep-link shape is a contract with `hub-filters.readSecondary`, and it is
    already written down once, unit-tested, and used by TopicHub. Building the URL inline
@@ -137,7 +141,7 @@ if (!themes.some((t) => TYPES.some((ty) => countOf(t, ty.key) === 0))) {
       entries. The counts are uneven, and none of them is offered as completeness: a column
       with nothing in it is a result CAAIL returns rather than a gap it hides. Tagging is
       curator-assigned and has not been audited end to end, so if your own area looks wrong
-      here, that is worth <a href={`${base}${COMMUNITY_PATH}`}>telling us</a>.
+      here, that is worth <a href={`${base}${REPORT_PATH}`}>telling us</a>.
     </p>
   </div>
 

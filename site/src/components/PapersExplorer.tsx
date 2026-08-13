@@ -6,6 +6,7 @@ import taxonomy from '../content/data/taxonomy.json';
 import TopicChips from './TopicChips';
 import CitationBadge from './CitationBadge';
 import LicenseBadge from './LicenseBadge';
+import ReportLink from './ReportLink';
 import { licenseTier } from '../lib/licenses';
 import { taxonomyHref as taxHref } from '../lib/axis-links';
 import type { TopicRef } from '../lib/topic-chips';
@@ -203,6 +204,7 @@ export default function PapersExplorer() {
           tier={licenseTier(r.license)}
           autoSource="OpenAlex"
         />
+        <ReportLink itemId={`paper:${r.id}`} label={r.title ?? `reference ${r.id}`} />
       </div>
       <TopicChips topics={r.topics} />
     </div>

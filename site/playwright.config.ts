@@ -1,4 +1,7 @@
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
 import { defineConfig } from '@playwright/test';
+import { preflight } from './scripts/e2e-preflight';
 
 /**
  * Preview port, overridable via CAAIL_E2E_PORT.
@@ -20,12 +23,48 @@ if (!Number.isInteger(PORT) || PORT <= 0 || PORT > 65535) {
 }
 const BASE = `http://localhost:${PORT}/caail/`;
 
+const REUSE_EXISTING_SERVER = !process.env.CI;
+
+/**
+ * Preflight runs HERE, during config evaluation, and not in a `globalSetup` file.
+ *
+ * Playwright composes startup as `[removeOutputDirs, ...pluginSetup, ...globalSetup]`
+ * and registers `webServer` as a plugin, so by the time `globalSetup` runs the
+ * preview server is already listening. A port check there would fire on every run,
+ * against Playwright's own server. Config evaluation is the only phase strictly
+ * earlier than that. See scripts/e2e-preflight.ts for the two failure modes.
+ *
+ * `preflight` rather than `runPreflight` because Playwright re-evaluates this
+ * file in every worker process, and workers start after the web server — so an
+ * unguarded port probe would hit that same trap from the other side. It skips the
+ * port probe in workers and still checks the build artifacts on every evaluation.
+ */
+const preflightFailure = preflight({
+  distDir: join(dirname(fileURLToPath(import.meta.url)), 'dist'),
+  port: PORT,
+  reuseExistingServer: REUSE_EXISTING_SERVER,
+  allowExistingServer: process.env.CAAIL_E2E_ALLOW_EXISTING_SERVER === '1',
+});
+if (preflightFailure) throw new Error(preflightFailure);
+
 export default defineConfig({
   testDir: './e2e',
+  // `list` is Playwright's own default and is named explicitly because adding a second
+  // reporter replaces the default set rather than extending it. The second one names
+  // any failing test on the known-unreliable register and prints the control that
+  // separates its condition from a real defect; it is silent otherwise. Reporters are
+  // constructed by the runner, so unlike the preflight above it needs no worker guard.
+  // `--reporter` on the command line replaces this list, so a run given one goes
+  // without the register. Stated rather than left to be rediscovered: a guard that is
+  // off while appearing to be on is the failure the register is about. CI runs bare
+  // `pnpm --dir site test:e2e`, so CI is covered.
+  //
+  // See scripts/test-reliability/register.ts.
+  reporter: [['list'], ['./scripts/test-reliability/playwright-reporter.ts']],
   webServer: {
     command: `pnpm preview --port ${PORT}`,
     url: BASE,
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: REUSE_EXISTING_SERVER,
     timeout: 120_000,
   },
   use: { baseURL: BASE },

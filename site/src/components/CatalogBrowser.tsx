@@ -6,11 +6,14 @@ import { groupSlug } from '../lib/catalog-groups';
 import TopicChips from './TopicChips';
 import LicenseBadge from './LicenseBadge';
 import CitationBadge from './CitationBadge';
+import ReportLink from './ReportLink';
 import type { TopicRef } from '../lib/topic-chips';
 import { LICENSE_TIERS, TIER_META, type LicenseTier } from '../lib/licenses';
 
 type Entry = {
   slug: string;
+  /** Frozen `sw:`/`db:` id, folded in by the parser — what a correction report carries. */
+  itemId: string | null;
   name: string;
   url: string;
   group: string;
@@ -99,11 +102,12 @@ export default function CatalogBrowser({ kind }: Props) {
         dangerouslySetInnerHTML={{ __html: e.summaryHtml }}
       />
       <TopicChips topics={e.topics} />
-      {e.citationCount != null && (
-        <p class="cb-meta">
+      <p class="cb-meta">
+        {e.citationCount != null && (
           <CitationBadge doi={e.doi} citationCount={e.citationCount} citationSources={e.citationSources} citationDois={e.citationDois} />
-        </p>
-      )}
+        )}
+        <ReportLink itemId={e.itemId ?? null} label={e.name} />
+      </p>
     </article>
   );
 

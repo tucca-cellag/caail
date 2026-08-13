@@ -28,4 +28,14 @@
 .ds-card > h3 { margin-top: 0; font-size: 1.1rem; }
 
 /* Card footer metric row (the "cited by N" badge), below the topic chips. */
-.ds-card > .ds-meta { margin: .5rem 0 0; }
+/* Trailing meta row: citation badge and report link, mirroring the catalog card's
+   `.cb-meta`, including why the link trails on its own auto margin rather than on
+   `space-between` (which does nothing when the badge is absent and the link is the
+   row's only child). */
+.ds-card > .ds-meta {
+  margin: .5rem 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem;
+}

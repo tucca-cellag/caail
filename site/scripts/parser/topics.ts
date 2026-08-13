@@ -71,18 +71,46 @@ export function catalogNameKey(name: string): string {
  */
 export function catalogTopicLookup(): (type: 'software' | 'database', url: string, name: string) => TopicRef[] {
   const byId = topicsByItemId();
-  const keyToId = new Map<string, string>();
-  const key = (type: string, url: string, name: string) => `${type}\x00${url}\x00${catalogNameKey(name)}`;
-  for (const r of readNdjson<{ item_id: string; url: string; name: string }>('catalog')) {
-    const type = r.item_id.startsWith('sw:') ? 'software' : r.item_id.startsWith('db:') ? 'database' : null;
-    if (type) keyToId.set(key(type, r.url, r.name), r.item_id);
-  }
-  return (type, url, name) => byId.get(keyToId.get(key(type, url, name)) ?? '') ?? [];
+  const keyToId = catalogIdByJoinKey();
+  return (type, url, name) => byId.get(keyToId.get(catalogJoinKey(type, url, name)) ?? '') ?? [];
 }
 
 /** The join key `catalogTopicLookup` uses, for building the guard's parsed-key set. */
 export function catalogJoinKey(type: 'software' | 'database', url: string, name: string): string {
   return `${type}\x00${url}\x00${catalogNameKey(name)}`;
+}
+
+/**
+ * Join key → frozen `sw:`/`db:` id, built once from the catalog NDJSON. The single
+ * place the `item_id` prefix is turned back into a content type, so the topic lookup,
+ * the orphan check and the id lookup below can't drift apart on it.
+ */
+function catalogIdByJoinKey(): Map<string, string> {
+  const out = new Map<string, string>();
+  for (const r of readNdjson<{ item_id: string; url: string; name: string }>('catalog')) {
+    const type = r.item_id.startsWith('sw:') ? 'software' : r.item_id.startsWith('db:') ? 'database' : null;
+    if (type) out.set(catalogJoinKey(type, r.url, r.name), r.item_id);
+  }
+  return out;
+}
+
+/**
+ * Resolve a parsed catalog entry to its frozen `sw:`/`db:` id, or null when the entry
+ * has no NDJSON row.
+ *
+ * Needed because the frozen id is DB-owned and appears nowhere in the canonical Markdown,
+ * yet the site has to surface it: it is what a reader's correction report carries. It is
+ * looked up on the SAME content triple as the topic join rather than guessed from the
+ * slug, because `sw:${slug}` is not reliably the id — a dual-listed entry (`sw:gnps` /
+ * `db:gnps`) shares a URL and only `(type, url, name)` separates the two.
+ */
+export function catalogItemIdLookup(): (
+  type: 'software' | 'database',
+  url: string,
+  name: string,
+) => string | null {
+  const keyToId = catalogIdByJoinKey();
+  return (type, url, name) => keyToId.get(catalogJoinKey(type, url, name)) ?? null;
 }
 
 /**
@@ -99,11 +127,7 @@ export function unresolvedTopicItems(
   catalogKeys: Set<string>,
   datasetEntryIds: Set<string>,
 ): string[] {
-  const idToKey = new Map<string, string>();
-  for (const r of readNdjson<{ item_id: string; url: string; name: string }>('catalog')) {
-    const type = r.item_id.startsWith('sw:') ? 'software' : r.item_id.startsWith('db:') ? 'database' : null;
-    if (type) idToKey.set(r.item_id, catalogJoinKey(type, r.url, r.name));
-  }
+  const idToKey = new Map([...catalogIdByJoinKey()].map(([k, id]) => [id, k]));
   const inventoryIds = new Set(readNdjson<{ item_id: string }>('dataset_rows').map((r) => r.item_id));
   const bad: string[] = [];
   for (const id of new Set(readNdjson<ItemTopicRow>('item_topics').map((r) => r.item_id))) {
