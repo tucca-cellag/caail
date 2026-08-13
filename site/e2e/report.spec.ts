@@ -327,6 +327,33 @@ test('every step of the composer is free of axe violations', async ({ page }) =>
   await scan('step 2 with a validation error');
 });
 
+test('the composer is axe-clean on the DARK theme, error messages included', async ({ page }) => {
+  // The gap this closes: every other axe scan here runs on the default light scheme, and
+  // the palette inverts by lightness, so a colour that passes on white can fail on the
+  // dark ground and no scan would say so. It did: the error text was a hardcoded #b3261e,
+  // 6.54:1 on white and 2.93:1 on the dark background, on exactly the text that has to be
+  // readable.
+  await page.emulateMedia({ colorScheme: 'dark' });
+  await page.goto('./report/?item=paper:214');
+
+  // Asserted, not assumed. Starlight sets data-theme from its own script, so without this
+  // the whole test could pass while still measuring the light theme.
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+  await expect(page.locator(COMPOSER)).toBeVisible();
+
+  // Both error messages on screen at once: the step-1 alert and the DOI shape error.
+  await page.locator(NEXT).click();
+  await expect(page.locator('#caail-compose-error')).not.toHaveText('');
+  const stepOne = await new AxeBuilder({ page }).analyze();
+  expect(stepOne.violations, 'dark theme, step 1 with an error').toEqual([]);
+
+  await chooseReason(page, 'Wrong or missing DOI');
+  await page.getByLabel('The DOI it should have').fill('nope');
+  await expect(page.locator('#caail-f-doi-err')).not.toHaveText('');
+  const withError = await new AxeBuilder({ page }).analyze();
+  expect(withError.violations, 'dark theme, DOI error').toEqual([]);
+});
+
 test('changing the reason clears the answers that belonged to the old one', async ({ page }) => {
   // A stale follow-up would be composed into a report about a different error class,
   // which is a wrong report rather than an incomplete one.

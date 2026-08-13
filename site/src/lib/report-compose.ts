@@ -216,6 +216,12 @@ export const NOTE_MAX_LENGTH = 400;
  * forge another `Key: value` line; drop control characters, which are invisible in the
  * preview the reader is asked to check; and cap the length so the composed URL stays far
  * inside what a browser and GitHub will carry.
+ *
+ * The cap then drops a trailing lone surrogate, because `slice` counts UTF-16 code units
+ * and will happily cut an emoji in half. `encodeURIComponent` THROWS `URIError` on a lone
+ * surrogate, and the caller composes the GitHub href before the mailto one, so the failure
+ * would not even be uniform: the GitHub link would update while the email and submit links
+ * silently stopped. One character of a truncated note is the right thing to lose.
  */
 export function boundNote(raw: string): string {
   return raw
@@ -225,7 +231,8 @@ export function boundNote(raw: string): string {
     .replace(/[\u0000-\u001F\u007F]/g, ' ')
     .replace(/\s+/g, ' ')
     .trim()
-    .slice(0, NOTE_MAX_LENGTH);
+    .slice(0, NOTE_MAX_LENGTH)
+    .replace(/[\uD800-\uDBFF]$/, '');
 }
 
 /**

@@ -28,6 +28,7 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
+import { CORRECTION_FIELDS } from '../../src/lib/report.js';
 import { resolveReasons, type ResolvedReason } from '../../src/lib/report-compose.js';
 
 /**
@@ -43,12 +44,13 @@ export const CORRECTION_TEMPLATE_PATH: string = fileURLToPath(
  * The query parameters /report/ prefills, and therefore the field ids the template must
  * still carry.
  *
- * `item` is CAAIL-255's contract and already has a test; `details` is where the composed
- * body lands, and is the one this ticket adds. Losing either is silent at runtime — GitHub
- * ignores a query parameter that matches no field — which is exactly why it is asserted at
- * build time instead.
+ * DERIVED from the URL builder rather than listed again here. `correctionIssueUrl` in
+ * src/lib/report.ts sets exactly these keys, so a rename on that side moves this list with
+ * it; typing them out here instead would leave a check that keeps asserting the old name
+ * while the prefill silently stops. Losing a field is invisible at runtime — GitHub ignores
+ * a query parameter that matches no field — which is why it is asserted at build time.
  */
-export const REQUIRED_FIELD_IDS: readonly string[] = ['item', 'details'];
+export const REQUIRED_FIELD_IDS: readonly string[] = Object.values(CORRECTION_FIELDS);
 
 /** The correction form, as far as the composer needs to know about it. */
 export interface CorrectionForm {
@@ -68,8 +70,15 @@ function readFieldIds(src: string): string[] {
  *
  * Scoped to that field rather than to the first `options:` in the file: the template is free
  * to grow a second dropdown, and a reader that silently took whichever list came first would
- * then compose against the wrong vocabulary. The slice runs from the `reason` field's `id:`
- * to its `validations:`, which is the block GitHub's schema requires to follow the options.
+ * then compose against the wrong vocabulary.
+ *
+ * The block ENDS AT THE FIRST DEDENT, not at `validations:`. YAML mappings are unordered and
+ * GitHub accepts the keys of a field in any order, so a template writing `validations:`
+ * before `attributes:` would leave an end marker that never arrives; the options block would
+ * then run to the end of the file and swallow the `confirmations` checkbox labels, which are
+ * `- ` items at the same indent. That fails loudly rather than silently, but it fails
+ * pointing at a checkbox label and naming the wrong problem. Indentation is what actually
+ * delimits a YAML block, so that is what this reads.
  */
 function readReasonOptions(src: string): string[] {
   const start = src.search(/^\s*id:\s*reason\s*$/m);
@@ -82,20 +91,29 @@ function readReasonOptions(src: string): string[] {
   }
   const rest = src.slice(start);
   const optionsAt = rest.search(/^\s*options:\s*$/m);
-  const validationsAt = rest.search(/^\s*validations:\s*$/m);
   if (optionsAt < 0) {
     throw new Error(
       `correction-form: the "reason" field in ${CORRECTION_TEMPLATE_PATH} has no ` +
         `"options:" list. It is expected to be a dropdown.`,
     );
   }
-  // A `validations:` block before the options belongs to an earlier field, so an end
-  // marker at or before the start means the reason field has none of its own; take the
-  // rest of the document in that case rather than slicing to a negative length.
-  const end = validationsAt > optionsAt ? validationsAt : rest.length;
-  const block = rest.slice(optionsAt, end);
 
-  const options = [...block.matchAll(/^\s*-\s+(.+?)\s*$/gm)].map((m) => m[1]!);
+  const indentOf = (line: string): number => line.length - line.trimStart().length;
+  const [header, ...body] = rest.slice(optionsAt).split('\n');
+  const baseIndent = indentOf(header!);
+
+  const block: string[] = [];
+  for (const line of body) {
+    // A blank line does not end a YAML block, and carries no indentation to judge.
+    if (line.trim() === '') continue;
+    if (indentOf(line) <= baseIndent) break;
+    block.push(line);
+  }
+
+  const options = block.flatMap((line) => {
+    const m = /^\s*-\s+(.+?)\s*$/.exec(line);
+    return m ? [m[1]!] : [];
+  });
   if (options.length === 0) {
     throw new Error(
       `correction-form: the "reason" dropdown in ${CORRECTION_TEMPLATE_PATH} lists no ` +

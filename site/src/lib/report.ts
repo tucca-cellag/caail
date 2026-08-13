@@ -35,6 +35,23 @@ export const CORRECTION_TEMPLATE = 'entry-correction.yml';
 export const REPORT_PATH = '/report/';
 
 /**
+ * The template field ids {@link correctionIssueUrl} prefills, as query-parameter names.
+ *
+ * Exported and used by the builder below rather than spelled inline, because the build's
+ * check that the template still carries these fields
+ * (`scripts/parser/correction-form.ts`) reads THIS constant. Without that link the two
+ * would be a hand-typed pair: renaming the parameter here would keep passing a check that
+ * was still asserting the old name, and the prefill would stop silently, which is the one
+ * way it fails — GitHub ignores a query parameter matching no field rather than erroring.
+ */
+export const CORRECTION_FIELDS = {
+  /** The frozen entry id. CAAIL-255's contract. */
+  item: 'item',
+  /** The composed report body. */
+  details: 'details',
+} as const;
+
+/**
  * Where an email correction goes when the reader has no GitHub account.
  *
  * Published deliberately: the account requirement is the real exclusion for CAAIL's
@@ -93,10 +110,11 @@ export function reportHref(base: string, itemId: string): string {
 export function correctionIssueUrl(itemId: string | null, body?: string | null): string {
   const q = new URLSearchParams({ template: CORRECTION_TEMPLATE });
   if (itemId && isItemId(itemId)) {
+    // `title` is a GitHub built-in, not a template field, so it is not in CORRECTION_FIELDS.
     q.set('title', `Correction: ${itemId}`);
-    q.set('item', itemId);
+    q.set(CORRECTION_FIELDS.item, itemId);
   }
-  if (body) q.set('details', body);
+  if (body) q.set(CORRECTION_FIELDS.details, body);
   return `https://github.com/${CAAIL_REPO}/issues/new?${q.toString()}`;
 }
 

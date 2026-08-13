@@ -781,11 +781,12 @@ export type TopicsData = z.infer<typeof TopicsDataSchema>;
  * One option of the correction template's `reason` dropdown, resolved to the follow-up
  * question the composer asks after it.
  *
- * `value` is the template's option string verbatim, which is what makes this the prefill
- * contract rather than a paraphrase of it: the composer names the error class exactly as
- * the GitHub form does, so a curator reading the issue sees one vocabulary and not two.
- * `label` and `hint` are that same string split at its em dash for display, and carry no
- * identity — see resolveReasons in src/lib/report-compose.ts.
+ * `value` is the template's option string verbatim. It is what the composer quotes when it
+ * tells the reader which entry to pick in the GitHub form's dropdown, so it has to match
+ * that dropdown character for character. `label` and `hint` are that same string split at
+ * its em dash for display: `label` names the error class on the radio and in the composed
+ * body, where the trailing explanation would only be noise. Neither carries identity —
+ * that is the `head`, matched by resolveReasons in src/lib/report-compose.ts.
  */
 export const CorrectionReasonSchema = z.object({
   value: z.string().min(1),

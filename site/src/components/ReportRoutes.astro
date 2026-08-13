@@ -139,9 +139,13 @@ const vocabJson = JSON.stringify(vocabularies).replace(/</g, '\\u003c');
       ranking for words it only contains as form furniture. */}
   <section class="rc" id="caail-compose" aria-labelledby="caail-compose-title" hidden data-pagefind-ignore>
     <h2 id="caail-compose-title">Tell us what is wrong</h2>
+    {/* "carry it" is claimed only for the two routes that actually do. A link cannot
+        prefill a Slack message, so that one is a copy and paste, and saying otherwise
+        here would be the same overclaim this page is careful to avoid about accounts. */}
     <p class="rc-lede">
       Two questions at most, answered from lists rather than typed. We write the report for
-      you, and all three routes below carry it.
+      you. The GitHub and email routes below carry it as it stands; for Slack you copy it
+      across.
     </p>
 
     {/* Decorative: the same "Step N of M" is in the step heading, which is what a screen
@@ -708,8 +712,11 @@ const vocabJson = JSON.stringify(vocabularies).replace(/</g, '\\u003c');
       if (el.submit) el.submit.href = correctionIssueUrl(itemId, composed);
 
       if (el.dropdownNote) {
+        // `value`, not `label`: this tells the reader which entry to find in a dropdown,
+        // so it has to be the option verbatim. The label is the display split and would
+        // only ever be a prefix of what they are looking at.
         el.dropdownNote.textContent = answers.reason
-          ? `Everything below is filled in for you on GitHub. The one thing the form still asks you to pick is "What is wrong with it", where the answer is "${answers.reason.label}".`
+          ? `Everything below is filled in for you on GitHub. The one thing the form still asks you to pick is "What is wrong with it", where the answer is "${answers.reason.value}".`
           : '';
       }
 
@@ -734,11 +741,36 @@ const vocabJson = JSON.stringify(vocabularies).replace(/</g, '\\u003c');
 
     // ── wiring ────────────────────────────────────────────────────────────────
 
+    /**
+     * Put a message in the `role="alert"` region so it is announced EVERY time.
+     *
+     * `role=alert` fires on a content change, so writing the same string twice announces
+     * once: a reader who presses Next with nothing selected, then presses it again, hears
+     * the reason the first time and silence the second. Clearing first makes the rewrite a
+     * change. Only when the text is identical, so the common case does not flicker.
+     *
+     * Not the `announcer` helper above, despite the same underlying problem: that one
+     * clears the region after two seconds, which is right for a transient "copied" status
+     * and wrong for a validation error that must stay on screen until it is fixed.
+     */
+    function alert(message: string) {
+      const region = el.error;
+      if (!region) return;
+      if (region.textContent !== message) {
+        region.textContent = message;
+        return;
+      }
+      region.textContent = '';
+      window.setTimeout(() => {
+        region.textContent = message;
+      }, 60);
+    }
+
     el.next?.addEventListener('click', () => {
       if (current === 'reason' && !answers.reason) {
         // Deliberately not a disabled button: a disabled control cannot be focused, so a
         // keyboard reader who tabs to it gets no explanation of why nothing happens.
-        if (el.error) el.error.textContent = 'Pick what is wrong with the entry to continue.';
+        alert('Pick what is wrong with the entry to continue.');
         (el.reasons?.querySelector('input') as HTMLInputElement | null)?.focus();
         return;
       }
@@ -958,9 +990,12 @@ const vocabJson = JSON.stringify(vocabularies).replace(/</g, '\\u003c');
     font-size: 0.8rem;
     color: var(--caail-muted);
   }
+  /* No literal fallback. A `var(--x, #hardcoded)` fallback silently becomes the real
+     value if the token is ever missing, and a red picked for a white background is the
+     one that fails on the dark one. If the token goes away this should look broken. */
   .rc-err {
     font-size: 0.875rem;
-    color: var(--caail-danger, #b3261e);
+    color: var(--caail-danger);
   }
   .rc-err:empty {
     display: none;
@@ -1011,11 +1046,14 @@ const vocabJson = JSON.stringify(vocabularies).replace(/</g, '\\u003c');
     background: var(--caail-link);
     border-color: var(--caail-link);
   }
+  /* `--caail-primary-hover`, not `--caail-primary`: tokens.css defines link and primary as
+     the SAME colour in dark mode and says so in its own comment, so hovering the page's
+     two primary controls changed nothing at all on that theme. */
   .rc-primary:hover,
   .rc-primary:focus-visible {
     color: var(--caail-bg);
-    background: var(--caail-primary);
-    border-color: var(--caail-primary);
+    background: var(--caail-primary-hover);
+    border-color: var(--caail-primary-hover);
   }
   .rc-account {
     font-size: 0.875rem;

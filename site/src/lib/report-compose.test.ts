@@ -146,6 +146,22 @@ describe('boundNote', () => {
   it('returns empty for whitespace-only input, so no empty Note line is composed', () => {
     expect(boundNote('   \n\t ')).toBe('');
   });
+
+  it('never leaves a lone surrogate at the cap, which would break URL encoding', () => {
+    // `slice` counts UTF-16 code units, so capping mid-emoji leaves half a pair, and
+    // `encodeURIComponent` throws URIError on one. The GitHub href is composed before the
+    // mailto, so the failure would not even be uniform: one link would update and the
+    // other two would silently stop.
+    const note = 'a'.repeat(NOTE_MAX_LENGTH - 1) + '😀';
+    const bounded = boundNote(note);
+    expect(bounded).toHaveLength(NOTE_MAX_LENGTH - 1);
+    expect(() => encodeURIComponent(bounded)).not.toThrow();
+  });
+
+  it('keeps a surrogate pair that fits inside the cap', () => {
+    // The trim must be a truncation repair, not a blanket ban on astral characters.
+    expect(boundNote('ok 😀')).toBe('ok 😀');
+  });
 });
 
 describe('normaliseDoi and isDoiShape', () => {

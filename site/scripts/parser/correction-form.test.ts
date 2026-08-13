@@ -122,6 +122,29 @@ describe('buildCorrectionForm fails loudly when the template drifts', () => {
     ).toThrow(/no reason head in REASON_SPECS matches/);
   });
 
+  it('reads the options when the field writes validations before attributes', () => {
+    // YAML mappings are unordered and GitHub accepts the reason field's keys in any order.
+    // Bounding the options block on a trailing `validations:` therefore assumed something
+    // the format does not guarantee: with the key moved up, the block ran to the end of
+    // the file and swallowed the `confirmations` checkbox labels, which are `- ` items at
+    // the same indent. It failed loudly, but named a checkbox and the wrong problem.
+    const form = buildEdited((src) => {
+      const start = src.indexOf('  - type: dropdown');
+      const end = src.indexOf('  - type: textarea', start);
+      const field = src.slice(start, end);
+      const validations = /^ {4}validations:\n(?: {6}.*\n)+/m.exec(field)![0];
+      const moved =
+        field.replace(validations, '').replace('    attributes:', `${validations}    attributes:`);
+      return src.slice(0, start) + moved + src.slice(end);
+    })();
+
+    // Exactly the same vocabulary as the committed order produces, with no checkbox text.
+    expect(form.reasons).toEqual(buildCorrectionForm().reasons);
+    for (const reason of form.reasons) {
+      expect(reason.value).not.toContain('I understand');
+    }
+  });
+
   it('tolerates a reworded hint, which is prose and will be edited', () => {
     // The complement of the test above, and the whole reason a reason is identified by a
     // PREFIX rather than by its full option string: the explanation after the em dash is
