@@ -59,6 +59,12 @@ changed_paths() {
 # hid `workers/**` entirely. A comment saying "keep these in sync" documents a
 # risk; it does not mitigate one.
 #
+# Fourth drift, 2026-08-12, and the first the check caught rather than recorded
+# after the fact: `.claude/skills/matrix-classification-audit/**` was added to
+# `lint-papers.yml` and not here, in the same branch that added the extraction
+# tests it gates. It failed the PR instead of shipping, which is the whole
+# point. Expect a fifth; the mitigation is the check, not this paragraph.
+#
 # `path_matches` implements exactly the three pattern forms these workflows use,
 # and deliberately no more: a literal, a `prefix/**` subtree, and a bare `*.md`,
 # which GitHub scopes to the ROOT level only. That last one is not a detail —
@@ -66,7 +72,7 @@ changed_paths() {
 # `Taxonomy.md` and `Primers/**` were silently missing. The check also refuses
 # any pattern outside those three forms, since `path_matches` would silently
 # match nothing rather than erroring.
-LINT_PAPERS_PATHS='Papers.md Software.md Databases.md OtherResources.md Taxonomy.md Datasets/** CONTRIBUTING.md CLAUDE.md site/scripts/parser/** site/scripts/db/** site/db/** site/public/api/** site/public/setup.md plugin/skills/** skills/**'
+LINT_PAPERS_PATHS='Papers.md Software.md Databases.md OtherResources.md Taxonomy.md Datasets/** CONTRIBUTING.md CLAUDE.md site/scripts/parser/** site/scripts/db/** site/db/** site/public/api/** site/public/setup.md plugin/skills/** skills/** .claude/skills/matrix-classification-audit/**'
 TEST_PATHS='site/** workers/** *.md ResearchAreas/** Datasets/** Primers/** .claude/hooks/** .claude/settings.json .github/workflows/test.yml'
 DOCS_PATHS='site/** *.md ResearchAreas/** Datasets/** Primers/**'
 GUARDS_PATHS='.claude/hooks/** .claude/settings.json .claude/skills/caail-pr-wrapup/** .github/workflows/**'

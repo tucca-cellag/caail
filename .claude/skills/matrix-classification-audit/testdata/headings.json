@@ -1,0 +1,4626 @@
+{
+  "24": {
+    "title": "",
+    "regex_found_methods": true,
+    "headings": [
+      {
+        "text": "Employing active learning in the optimization of culture medium for mammalian cells",
+        "level": 1,
+        "page": 1
+      },
+      {
+        "text": "Abstract",
+        "level": 1,
+        "page": 2
+      },
+      {
+        "text": "Introduction",
+        "level": 1,
+        "page": 3
+      },
+      {
+        "text": "Results",
+        "level": 1,
+        "page": 4
+      },
+      {
+        "text": "Experimental design for acquiring the training data",
+        "level": 1,
+        "page": 4
+      },
+      {
+        "text": "Regular and time-saving modes of active learning for medium optimization",
+        "level": 1,
+        "page": 4
+      },
+      {
+        "text": "Contribution and composition of fine-tuned medium components",
+        "level": 1,
+        "page": 5
+      },
+      {
+        "text": "Comparison of the fine-tuned media to the original medium",
+        "level": 1,
+        "page": 6
+      },
+      {
+        "text": "Discussion",
+        "level": 1,
+        "page": 7
+      },
+      {
+        "text": "Materials and Methods",
+        "level": 1,
+        "page": 9
+      },
+      {
+        "text": "Cell line and culture",
+        "level": 1,
+        "page": 9
+      },
+      {
+        "text": "Preparation of cell stocks",
+        "level": 1,
+        "page": 9
+      },
+      {
+        "text": "Preparation of medium combinations",
+        "level": 1,
+        "page": 9
+      },
+      {
+        "text": "Cell counting according to single-particle analysis",
+        "level": 1,
+        "page": 10
+      },
+      {
+        "text": "Cell counting by imaging analysis",
+        "level": 1,
+        "page": 10
+      },
+      {
+        "text": "Temporal changes of cell culture evaluated by chemical assay",
+        "level": 1,
+        "page": 10
+      },
+      {
+        "text": "Data processing",
+        "level": 1,
+        "page": 10
+      },
+      {
+        "text": "Machine learning",
+        "level": 1,
+        "page": 11
+      },
+      {
+        "text": "Active learning for medium optimization",
+        "level": 1,
+        "page": 11
+      },
+      {
+        "text": "Evaluation of the ML models",
+        "level": 1,
+        "page": 11
+      },
+      {
+        "text": "Acknowledgments",
+        "level": 1,
+        "page": 12
+      },
+      {
+        "text": "Author contributions",
+        "level": 1,
+        "page": 12
+      },
+      {
+        "text": "Competing interests",
+        "level": 1,
+        "page": 12
+      },
+      {
+        "text": "Data availability",
+        "level": 1,
+        "page": 12
+      },
+      {
+        "text": "References",
+        "level": 1,
+        "page": 12
+      },
+      {
+        "text": "Figure legends",
+        "level": 1,
+        "page": 19
+      }
+    ]
+  },
+  "34": {
+    "title": "Designing cultured tissue moulds using evolutionary strategies",
+    "regex_found_methods": false,
+    "headings": [
+      {
+        "text": "Designing cultured tissue moulds using evolutionary strategies",
+        "level": 1,
+        "page": 1
+      },
+      {
+        "text": "I. INTRODUCTION",
+        "level": 1,
+        "page": 1
+      },
+      {
+        "text": "II. GENETIC ALGORITHM",
+        "level": 1,
+        "page": 2
+      },
+      {
+        "text": "A. Algorithm overview",
+        "level": 1,
+        "page": 2
+      },
+      {
+        "text": "B. Mould encoding",
+        "level": 1,
+        "page": 2
+      },
+      {
+        "text": "C. Initial population",
+        "level": 1,
+        "page": 3
+      },
+      {
+        "text": "D. Crossover",
+        "level": 1,
+        "page": 3
+      },
+      {
+        "text": "E. Mutation",
+        "level": 1,
+        "page": 4
+      },
+      {
+        "text": "F. Fitness functions",
+        "level": 1,
+        "page": 4
+      },
+      {
+        "text": "1. Maximum Alignment",
+        "level": 1,
+        "page": 4
+      },
+      {
+        "text": "2. Uniform Density",
+        "level": 1,
+        "page": 5
+      },
+      {
+        "text": "III. RESULTS",
+        "level": 1,
+        "page": 5
+      },
+      {
+        "text": "A. Maximum x -axis alignment for low cell-matrix interaction",
+        "level": 1,
+        "page": 5
+      },
+      {
+        "text": "B. Maximum x -axis alignment for high cell-matrix interaction",
+        "level": 1,
+        "page": 6
+      },
+      {
+        "text": "C. Uniform Density",
+        "level": 1,
+        "page": 6
+      },
+      {
+        "text": "IV. DISCUSSION AND CONCLUSIONS",
+        "level": 1,
+        "page": 7
+      }
+    ]
+  },
+  "43": {
+    "title": "Development of an Agentic AI Model for NGS Downstream Analysis Targeting Researchers with Limited Biological Background.",
+    "regex_found_methods": true,
+    "headings": [
+      {
+        "text": "Development of an Agentic AI Model for NGS Downstream Analysis Targeting Researchers with Limited Biological Background",
+        "level": 1,
+        "page": 1
+      },
+      {
+        "text": "1. INTRODUCTION",
+        "level": 1,
+        "page": 3
+      },
+      {
+        "text": "2. MATERIALS AND METHODS",
+        "level": 1,
+        "page": 4
+      },
+      {
+        "text": "System Overview",
+        "level": 1,
+        "page": 4
+      },
+      {
+        "text": "Core Downstream Analysis and Visualization",
+        "level": 1,
+        "page": 5
+      },
+      {
+        "text": "Interpretation, Literature Integration, and Advanced Agentic Actions",
+        "level": 1,
+        "page": 5
+      },
+      {
+        "text": "3. RESULTS",
+        "level": 1,
+        "page": 6
+      },
+      {
+        "text": "4. CONCLUSION",
+        "level": 1,
+        "page": 7
+      },
+      {
+        "text": "ACKNOWLEDGEMENT",
+        "level": 1,
+        "page": 7
+      },
+      {
+        "text": "References",
+        "level": 1,
+        "page": 8
+      }
+    ]
+  },
+  "51": {
+    "title": "Medea: An omics AI agent for therapeutic discovery.",
+    "regex_found_methods": false,
+    "headings": [
+      {
+        "text": "MEDEA: An omics AI agent for therapeutic discovery",
+        "level": 1,
+        "page": 1
+      },
+      {
+        "text": "Introduction",
+        "level": 1,
+        "page": 2
+      },
+      {
+        "text": "Results",
+        "level": 1,
+        "page": 3
+      },
+      {
+        "text": "MEDEA agent for verified omics reasoning",
+        "level": 1,
+        "page": 3
+      },
+      {
+        "text": "Benchmark for cell type specific target nomination",
+        "level": 1,
+        "page": 4
+      },
+      {
+        "text": "Cell type specific target nomination",
+        "level": 1,
+        "page": 5
+      },
+      {
+        "text": "Context verification improves cell type level performance",
+        "level": 1,
+        "page": 6
+      },
+      {
+        "text": "Dissecting contributions of MEDEA's agentic modules",
+        "level": 1,
+        "page": 7
+      },
+      {
+        "text": "Inferring synthetic lethality in cellular contexts",
+        "level": 1,
+        "page": 8
+      },
+      {
+        "text": "MEDEA corrects errors and abstentions of LLMs",
+        "level": 1,
+        "page": 9
+      },
+      {
+        "text": "Personalized treatment response prediction from tumor transcriptomes",
+        "level": 1,
+        "page": 10
+      },
+      {
+        "text": "Interpreting treatment response from TMB and microenvironment",
+        "level": 1,
+        "page": 11
+      },
+      {
+        "text": "Discussion",
+        "level": 1,
+        "page": 12
+      },
+      {
+        "text": "Competing interests. None.",
+        "level": 1,
+        "page": 15
+      },
+      {
+        "text": "Online Methods",
+        "level": 1,
+        "page": 22
+      },
+      {
+        "text": "1 Overview of MEDEA",
+        "level": 1,
+        "page": 22
+      },
+      {
+        "text": "1.1 Global tool space",
+        "level": 1,
+        "page": 22
+      },
+      {
+        "text": "1.2 ResearchPlanning module",
+        "level": 1,
+        "page": 26
+      },
+      {
+        "text": "1.3 Analysis module",
+        "level": 1,
+        "page": 27
+      },
+      {
+        "text": "1.4 LiteratureReasoning module",
+        "level": 1,
+        "page": 28
+      },
+      {
+        "text": "1.5 MultiRoundDiscussion module",
+        "level": 1,
+        "page": 28
+      },
+      {
+        "text": "1.6 Implementation details",
+        "level": 1,
+        "page": 29
+      },
+      {
+        "text": "2 Therapeutic target nomination",
+        "level": 1,
+        "page": 29
+      },
+      {
+        "text": "2.1 Single-cell disease atlas processing",
+        "level": 1,
+        "page": 30
+      },
+      {
+        "text": "2.2 Dataset construction",
+        "level": 1,
+        "page": 30
+      },
+      {
+        "text": "3 Synthetic lethality prediction",
+        "level": 1,
+        "page": 30
+      },
+      {
+        "text": "3.1 Dataset construction",
+        "level": 1,
+        "page": 31
+      },
+      {
+        "text": "4 Immunotherapy response prediction",
+        "level": 1,
+        "page": 31
+      },
+      {
+        "text": "4.1 Dataset construction",
+        "level": 1,
+        "page": 31
+      },
+      {
+        "text": "5 Evaluation of model outputs",
+        "level": 1,
+        "page": 31
+      },
+      {
+        "text": "5.1 LLM judge",
+        "level": 1,
+        "page": 31
+      },
+      {
+        "text": "5.2 Model evaluation",
+        "level": 1,
+        "page": 32
+      },
+      {
+        "text": "5.3 Accuracy metric",
+        "level": 1,
+        "page": 32
+      },
+      {
+        "text": "5.4 Statistical significance testing",
+        "level": 1,
+        "page": 32
+      },
+      {
+        "text": "References",
+        "level": 1,
+        "page": 34
+      }
+    ]
+  },
+  "93": {
+    "title": "CellForge: Agentic Design of Virtual Cell Models.",
+    "regex_found_methods": true,
+    "headings": [
+      {
+        "text": "CELLFORGE: AGENTIC DESIGN OF VIRTUAL CELL MODELS",
+        "level": 1,
+        "page": 1
+      },
+      {
+        "text": "ABSTRACT",
+        "level": 1,
+        "page": 1
+      },
+      {
+        "text": "1 INTRODUCTION",
+        "level": 1,
+        "page": 1
+      },
+      {
+        "text": "2 RELATED WORK",
+        "level": 1,
+        "page": 2
+      },
+      {
+        "text": "3 PRELIMINARY AND BACKGROUND",
+        "level": 1,
+        "page": 3
+      },
+      {
+        "text": "4 METHOD",
+        "level": 1,
+        "page": 4
+      },
+      {
+        "text": "4.1 TASK ANALYSIS MODULE",
+        "level": 1,
+        "page": 4
+      },
+      {
+        "text": "4.2 DESIGN MODULE",
+        "level": 1,
+        "page": 5
+      },
+      {
+        "text": "4.3 EXPERIMENT EXECUTION MODULE",
+        "level": 1,
+        "page": 6
+      },
+      {
+        "text": "5 MAIN RESULTS",
+        "level": 1,
+        "page": 6
+      },
+      {
+        "text": "5.1 EVALUATION SETUP",
+        "level": 1,
+        "page": 6
+      },
+      {
+        "text": "5.2 PREDICTIVE PERFORMANCE",
+        "level": 1,
+        "page": 7
+      },
+      {
+        "text": "5.3 BIOLOGICAL VALIDATION",
+        "level": 1,
+        "page": 7
+      },
+      {
+        "text": "5.4 LLM-AS-A-JUDGE AND HUMAN EVALUATION FOR TASK ANALYSIS MODULE AND DESIGN MODULE",
+        "level": 1,
+        "page": 8
+      },
+      {
+        "text": "5.6 RETRIEVAL EFFECTIVENESS",
+        "level": 1,
+        "page": 9
+      },
+      {
+        "text": "5.7 COMPONENT CONTRIBUTIONS",
+        "level": 1,
+        "page": 9
+      },
+      {
+        "text": "5.8 COSTS AND FAILURE CASES",
+        "level": 1,
+        "page": 9
+      },
+      {
+        "text": "6 CONCLUSION",
+        "level": 1,
+        "page": 10
+      },
+      {
+        "text": "ETHICS STATEMENT",
+        "level": 1,
+        "page": 10
+      },
+      {
+        "text": "REPRODUCIBILITY STATEMENT",
+        "level": 1,
+        "page": 10
+      },
+      {
+        "text": "USAGE OF LANGUAGE MODELS",
+        "level": 1,
+        "page": 10
+      },
+      {
+        "text": "REFERENCES",
+        "level": 1,
+        "page": 11
+      },
+      {
+        "text": "Part I Appendix",
+        "level": 1,
+        "page": 20
+      },
+      {
+        "text": "A RELATED WORK",
+        "level": 1,
+        "page": 21
+      },
+      {
+        "text": "B EXPLORATORY APPLICATIONS",
+        "level": 1,
+        "page": 22
+      },
+      {
+        "text": "C CASE STUDY",
+        "level": 1,
+        "page": 24
+      },
+      {
+        "text": "EXTERNAL PILOT STUDY (N=2)",
+        "level": 1,
+        "page": 24
+      },
+      {
+        "text": "C.1 PREDICTING CAR-T THERAPY RESPONSE FOR REFRACTORY B CELL LYMPHOMA FROM PATIENT SINGLE-CELL PROFILES",
+        "level": 1,
+        "page": 24
+      },
+      {
+        "text": "C.2 INTERPRETABLE CARDIOMYOPATHY DISEASE SUBTYPE PREDICTION WITH SINGLE-NUCLEUS PROFILE OF PATIENT HEART CELLS",
+        "level": 1,
+        "page": 25
+      },
+      {
+        "text": "D EXPERIMENTAL DETAILS",
+        "level": 1,
+        "page": 27
+      },
+      {
+        "text": "D.1 DATASETS INTRODUCTION",
+        "level": 1,
+        "page": 27
+      },
+      {
+        "text": "D.2 AGENT CONFIGURATIONS",
+        "level": 1,
+        "page": 27
+      },
+      {
+        "text": "D.3 MEMORY MODULE CONSTRUCTION",
+        "level": 1,
+        "page": 28
+      },
+      {
+        "text": "D.4 EXPERTS DISCUSSION CONSTRUCTION DETAILS",
+        "level": 1,
+        "page": 28
+      },
+      {
+        "text": "D.5 EMBEDDING QUALITY ON THE SCPERTURB BENCHMARK",
+        "level": 1,
+        "page": 30
+      },
+      {
+        "text": "D.6 ABLATION STUDY SETUP",
+        "level": 1,
+        "page": 31
+      },
+      {
+        "text": "D.7 HYPERPARAMETER CONFIGURATION",
+        "level": 1,
+        "page": 31
+      },
+      {
+        "text": "D.7.1 AGENTIC-RETRIEVAL HYPERPARAMETERS",
+        "level": 1,
+        "page": 31
+      },
+      {
+        "text": "D.7.2 GRAPH-BASED DISCUSSION HYPERPARAMETERS",
+        "level": 1,
+        "page": 32
+      },
+      {
+        "text": "E EVALUATION DETAILS",
+        "level": 1,
+        "page": 34
+      },
+      {
+        "text": "E.1 MEAN SQUARED ERROR (MSE)",
+        "level": 1,
+        "page": 34
+      },
+      {
+        "text": "E.2 PEARSON CORRELATION COEFFICIENT (PCC)",
+        "level": 1,
+        "page": 34
+      },
+      {
+        "text": "E.3 COEFFICIENT OF DETERMINATION ( R 2 )",
+        "level": 1,
+        "page": 34
+      },
+      {
+        "text": "E.4 METRICS WITH DIFFERENTIAL EXPRESSION (DE)",
+        "level": 1,
+        "page": 34
+      },
+      {
+        "text": "E.5 LATENTSPACE LINEAR SEPARABILITY",
+        "level": 1,
+        "page": 35
+      },
+      {
+        "text": "E.6 PERTURBATION CONSISTENCY",
+        "level": 1,
+        "page": 35
+      },
+      {
+        "text": "E.7 LATENT SPACE DIRECT ORGANIZATION",
+        "level": 1,
+        "page": 35
+      },
+      {
+        "text": "E.8 LINEAR INTERPRETABILITY OF LATENT SPACE",
+        "level": 1,
+        "page": 35
+      },
+      {
+        "text": "F RAGBENCH EVALUATION DETAILS",
+        "level": 1,
+        "page": 37
+      },
+      {
+        "text": "HALLUCINATION DETECTION (HAL)",
+        "level": 1,
+        "page": 37
+      },
+      {
+        "text": "CONTEXT RELEVANCE (REL)",
+        "level": 1,
+        "page": 37
+      },
+      {
+        "text": "CONTEXT UTILIZATION (UTL)",
+        "level": 1,
+        "page": 38
+      },
+      {
+        "text": "G DETAILED ALGORITHM SPECIFICATIONS",
+        "level": 1,
+        "page": 39
+      },
+      {
+        "text": "G.1 AGENTIC RETRIEVAL SYSTEM",
+        "level": 1,
+        "page": 39
+      },
+      {
+        "text": "G.1.1 QUERY CONSTRUCTION AND INITIALIZATION",
+        "level": 1,
+        "page": 39
+      },
+      {
+        "text": "G.1.2 ALTERNATING SEARCH STRATEGY",
+        "level": 1,
+        "page": 39
+      },
+      {
+        "text": "Algorithm 2 Alternating BFS-DFS Retrieval",
+        "level": 1,
+        "page": 40
+      },
+      {
+        "text": "G.2 GRAPH-BASED MULTI-EXPERT DISCUSSION",
+        "level": 1,
+        "page": 40
+      },
+      {
+        "text": "G.3 CODE IMPLEMENTATION AND REFINEMENT PROCESS",
+        "level": 1,
+        "page": 41
+      },
+      {
+        "text": "Algorithm 3 Iterative Implementation Refinement",
+        "level": 1,
+        "page": 41
+      },
+      {
+        "text": "H AGENT COMMUNICATION PROTOCOL DETAILS",
+        "level": 1,
+        "page": 42
+      },
+      {
+        "text": "H.1 PROTOCOL DESIGN AND COMPARISON",
+        "level": 1,
+        "page": 42
+      },
+      {
+        "text": "H.2 PROTOCOL IMPLEMENTATION DETAILS",
+        "level": 1,
+        "page": 42
+      },
+      {
+        "text": "I COST ANALYSIS",
+        "level": 1,
+        "page": 44
+      },
+      {
+        "text": "I.1 TRAINING INFRASTRUCTURE",
+        "level": 1,
+        "page": 44
+      },
+      {
+        "text": "I.2 TOKEN UTILIZATION AND COST ESTIMATION",
+        "level": 1,
+        "page": 44
+      },
+      {
+        "text": "I.2.1 TOKEN USAGE BREAKDOWN BY PHASE",
+        "level": 1,
+        "page": 44
+      },
+      {
+        "text": "I.2.2 PER-REQUEST COST CALCULATION",
+        "level": 1,
+        "page": 44
+      },
+      {
+        "text": "I.3 COST-EFFECTIVENESS ANALYSIS",
+        "level": 1,
+        "page": 44
+      },
+      {
+        "text": "I.4 EFFICIENCY ANALYSIS: MULTI-AGENT VS. SINGLE-LLM APPROACHES",
+        "level": 1,
+        "page": 45
+      },
+      {
+        "text": "I.5 TOKEN UTILIZATION AND COST COMPARISON",
+        "level": 1,
+        "page": 45
+      },
+      {
+        "text": "I.6 END-TO-END WORKFLOW EFFICIENCY",
+        "level": 1,
+        "page": 46
+      },
+      {
+        "text": "J FAILURE CASE AND RANDOMNESS ANALYSES",
+        "level": 1,
+        "page": 47
+      },
+      {
+        "text": "J.1 FAILURECASES",
+        "level": 1,
+        "page": 47
+      },
+      {
+        "text": "J.2 BUG-FIX SOLUTIONS OF EXPERIMENT EXECUTION MODULE",
+        "level": 1,
+        "page": 48
+      },
+      {
+        "text": "J.3 VARIANCE OF EACH RUNS",
+        "level": 1,
+        "page": 49
+      },
+      {
+        "text": "J.4 STABILITY ENHANCEMENT WITH CONFIDENCE REGULARIZATION",
+        "level": 1,
+        "page": 49
+      },
+      {
+        "text": "K PERFORMANCE VARIES ACROSS DIFFERENT LLMS AND AI CODERS",
+        "level": 1,
+        "page": 50
+      },
+      {
+        "text": "K.1 EXPERIMENTAL SETUP",
+        "level": 1,
+        "page": 50
+      },
+      {
+        "text": "Dataset Description:",
+        "level": 1,
+        "page": 50
+      },
+      {
+        "text": "Task Definition:",
+        "level": 1,
+        "page": 50
+      },
+      {
+        "text": "Evaluation Metrics:",
+        "level": 1,
+        "page": 50
+      },
+      {
+        "text": "K.2 KEY FINDINGS",
+        "level": 1,
+        "page": 51
+      },
+      {
+        "text": "K.3 ANALYSIS OF FAILURE MODES",
+        "level": 1,
+        "page": 51
+      },
+      {
+        "text": "K.4 IMPLICATIONS FOR SCIENTIFIC AI SYSTEMS",
+        "level": 1,
+        "page": 52
+      },
+      {
+        "text": "K.5 PERFORMANCE WITH SMALLER LLMS",
+        "level": 1,
+        "page": 52
+      },
+      {
+        "text": "L DESIGNED MODELS",
+        "level": 1,
+        "page": 53
+      },
+      {
+        "text": "L.1 METHODOLOGY",
+        "level": 1,
+        "page": 53
+      },
+      {
+        "text": "L.2 BIOLOGICAL INTERPRETATION OF ARCHITECTURAL CHOICES",
+        "level": 1,
+        "page": 53
+      },
+      {
+        "text": "L.2.1 GENE PERTURBATION MODELS",
+        "level": 1,
+        "page": 53
+      },
+      {
+        "text": "L.2.2 DRUG PERTURBATION MODELS",
+        "level": 1,
+        "page": 54
+      },
+      {
+        "text": "L.2.3 CITE-SEQ MULTI-MODAL PERTURBATION MODELS",
+        "level": 1,
+        "page": 55
+      },
+      {
+        "text": "L.2.4 ATAC-SEQ CHROMATIN ACCESSIBILITY MODELS",
+        "level": 1,
+        "page": 56
+      },
+      {
+        "text": "L.2.5 CYTOKINE PERTURBATION MODELS",
+        "level": 1,
+        "page": 57
+      },
+      {
+        "text": "M BIOLOGICAL ANALYSIS OF PERTURBATION RESULTS",
+        "level": 1,
+        "page": 59
+      },
+      {
+        "text": "M.1 PATHWAY ANALYSIS",
+        "level": 1,
+        "page": 59
+      },
+      {
+        "text": "M.1.1 SCRNA-SEQ GENE PERTURBATION DATASET PERFORMANCE",
+        "level": 1,
+        "page": 59
+      },
+      {
+        "text": "M.1.2 SCRNA-SEQ CYTOKINES DATASET PERFORMANCE",
+        "level": 1,
+        "page": 59
+      },
+      {
+        "text": "M.1.3 SCCITE-SEQ DATASET PERFORMANCE",
+        "level": 1,
+        "page": 60
+      },
+      {
+        "text": "M.1.4 UMAP VISUALIZATION",
+        "level": 1,
+        "page": 60
+      },
+      {
+        "text": "M.2 RESULTS AND INTERPRETATION",
+        "level": 1,
+        "page": 61
+      },
+      {
+        "text": "M.2.1 GENE PERTURBATION ANALYSIS",
+        "level": 1,
+        "page": 61
+      },
+      {
+        "text": "M.2.2 DRUG PERTURBATION ANALYSIS",
+        "level": 1,
+        "page": 61
+      },
+      {
+        "text": "M.2.3 CYTOKINE PERTURBATION ANALYSIS",
+        "level": 1,
+        "page": 62
+      },
+      {
+        "text": "M.3 QUANTITATIVE ASSESSMENT",
+        "level": 1,
+        "page": 62
+      },
+      {
+        "text": "M.4 BIOLOGICAL SIGNIFICANCE",
+        "level": 1,
+        "page": 62
+      },
+      {
+        "text": "M.5 LIMITATIONS AND CONSIDERATIONS",
+        "level": 1,
+        "page": 62
+      },
+      {
+        "text": "M.6 IMPLICATIONS FOR MODEL DEVELOPMENT",
+        "level": 1,
+        "page": 63
+      },
+      {
+        "text": "N ADDITIONAL VISUALIZATIONS",
+        "level": 1,
+        "page": 64
+      },
+      {
+        "text": "N.1 COMPARATIVE PERFORMANCE ANALYSIS",
+        "level": 1,
+        "page": 64
+      },
+      {
+        "text": "Key Performance Insights:",
+        "level": 1,
+        "page": 64
+      },
+      {
+        "text": "O KNOWLEDGE BASE FOR AGENTIC RETRIEVAL",
+        "level": 1,
+        "page": 65
+      },
+      {
+        "text": "P LLM-AS-A-JUDGE DETAILS",
+        "level": 1,
+        "page": 67
+      },
+      {
+        "text": "P.1 METHODS",
+        "level": 1,
+        "page": 67
+      },
+      {
+        "text": "P.2 PROMPTS",
+        "level": 1,
+        "page": 67
+      },
+      {
+        "text": "LLMAs Judge-Gene",
+        "level": 1,
+        "page": 67
+      },
+      {
+        "text": "LLMAs Judge-Gene",
+        "level": 1,
+        "page": 68
+      },
+      {
+        "text": "Method Design",
+        "level": 1,
+        "page": 68
+      },
+      {
+        "text": "EVALUATION CRITERIA",
+        "level": 1,
+        "page": 69
+      },
+      {
+        "text": "FORMAT FOR YOUR EVALUATION:",
+        "level": 1,
+        "page": 69
+      },
+      {
+        "text": "P.3 EXAMPLE OUTPUT",
+        "level": 1,
+        "page": 71
+      },
+      {
+        "text": "LLMAs Judge Output-Gene",
+        "level": 1,
+        "page": 71
+      },
+      {
+        "text": "Task Analysis-Claude 3.7",
+        "level": 1,
+        "page": 71
+      },
+      {
+        "text": "4. AREAS FOR IMPROVEMENT",
+        "level": 1,
+        "page": 72
+      },
+      {
+        "text": "5. OVERALL RECOMMENDATION",
+        "level": 1,
+        "page": 72
+      },
+      {
+        "text": "LLMAs Judge Output-Gene",
+        "level": 1,
+        "page": 72
+      },
+      {
+        "text": "Method Design-Claude 3.7",
+        "level": 1,
+        "page": 72
+      },
+      {
+        "text": "2.DETAILED JUSTIFICATION",
+        "level": 1,
+        "page": 72
+      },
+      {
+        "text": "P.4 DETAILED RESULTS",
+        "level": 1,
+        "page": 75
+      },
+      {
+        "text": "P.4.1 TASK ANALYSIS PHASE EVALUATION",
+        "level": 1,
+        "page": 75
+      },
+      {
+        "text": "P.4.2 METHOD DESIGN PHASE EVALUATION",
+        "level": 1,
+        "page": 75
+      },
+      {
+        "text": "P.4.3 CROSS-TASK PERFORMANCE ANALYSIS",
+        "level": 1,
+        "page": 77
+      },
+      {
+        "text": "P.4.4 INTER-JUDGE AGREEMENT AND RELIABILITY",
+        "level": 1,
+        "page": 77
+      },
+      {
+        "text": "P.5 INTER-JUDGE CONSISTENCY ANALYSIS",
+        "level": 1,
+        "page": 77
+      },
+      {
+        "text": "Q HUMAN SCIENTISTS' EVALUATION DETAILS",
+        "level": 1,
+        "page": 79
+      },
+      {
+        "text": "Q.1 METHODS",
+        "level": 1,
+        "page": 79
+      },
+      {
+        "text": "Q.2 DETAILED RESULTS",
+        "level": 1,
+        "page": 79
+      },
+      {
+        "text": "R PROMPT TEMPLATES",
+        "level": 1,
+        "page": 81
+      },
+      {
+        "text": "R.1 TASK DESCRIPTION INPUT",
+        "level": 1,
+        "page": 81
+      },
+      {
+        "text": "Task Desciption Input",
+        "level": 1,
+        "page": 81
+      },
+      {
+        "text": "R.2 TASK ANALYSIS COLLABORATION AGENTS SETTINGS",
+        "level": 1,
+        "page": 82
+      },
+      {
+        "text": "Task Analysis Collaboration Agent Settings",
+        "level": 1,
+        "page": 82
+      },
+      {
+        "text": "Task Analysis Collaboration Agent Settings",
+        "level": 1,
+        "page": 84
+      },
+      {
+        "text": "Task Analysis Collaboration Agent Settings",
+        "level": 1,
+        "page": 85
+      },
+      {
+        "text": "Baseline Assessor",
+        "level": 1,
+        "page": 85
+      },
+      {
+        "text": "Task Analysis Collaboration Agent Settings",
+        "level": 1,
+        "page": 87
+      },
+      {
+        "text": "R.3 MULTI-EXPERTS SETTINGS",
+        "level": 1,
+        "page": 89
+      },
+      {
+        "text": "Data Expert",
+        "level": 1,
+        "page": 89
+      },
+      {
+        "text": "Expert Role Setting",
+        "level": 1,
+        "page": 89
+      },
+      {
+        "text": "Data Expert",
+        "level": 1,
+        "page": 89
+      },
+      {
+        "text": "Model Architecture Expert",
+        "level": 1,
+        "page": 89
+      },
+      {
+        "text": "Expert Role Setting",
+        "level": 1,
+        "page": 89
+      },
+      {
+        "text": "Model Architecture Expert",
+        "level": 1,
+        "page": 89
+      },
+      {
+        "text": "Deep Learning Expert",
+        "level": 1,
+        "page": 90
+      },
+      {
+        "text": "Expert Role Setting",
+        "level": 1,
+        "page": 90
+      },
+      {
+        "text": "Deep Learning Expert",
+        "level": 1,
+        "page": 90
+      },
+      {
+        "text": "Training Expert",
+        "level": 1,
+        "page": 90
+      },
+      {
+        "text": "Expert Role Setting",
+        "level": 1,
+        "page": 90
+      },
+      {
+        "text": "Training Expert",
+        "level": 1,
+        "page": 90
+      },
+      {
+        "text": "Drug Response Expert",
+        "level": 1,
+        "page": 91
+      },
+      {
+        "text": "Expert Role Setting",
+        "level": 1,
+        "page": 91
+      },
+      {
+        "text": "Drug Response Expert",
+        "level": 1,
+        "page": 91
+      },
+      {
+        "text": "Your objectives:",
+        "level": 1,
+        "page": 91
+      },
+      {
+        "text": "Pathway Expert",
+        "level": 1,
+        "page": 91
+      },
+      {
+        "text": "Expert Role Setting",
+        "level": 1,
+        "page": 91
+      },
+      {
+        "text": "Pathway Expert",
+        "level": 1,
+        "page": 91
+      },
+      {
+        "text": "Cell Communication Expert",
+        "level": 1,
+        "page": 92
+      },
+      {
+        "text": "Expert Role Setting",
+        "level": 1,
+        "page": 92
+      },
+      {
+        "text": "Cell Communication Expert",
+        "level": 1,
+        "page": 92
+      },
+      {
+        "text": "Omics Modality Expert",
+        "level": 1,
+        "page": 92
+      },
+      {
+        "text": "Expert Role Setting",
+        "level": 1,
+        "page": 92
+      },
+      {
+        "text": "Omics Modality Expert",
+        "level": 1,
+        "page": 92
+      },
+      {
+        "text": "S DETAILED OUTPUTS FROM CELLFORGE",
+        "level": 1,
+        "page": 94
+      },
+      {
+        "text": "S.1 DATA PARSER",
+        "level": 1,
+        "page": 94
+      },
+      {
+        "text": "S.2 AGENTIC RETRIEVAL",
+        "level": 1,
+        "page": 96
+      },
+      {
+        "text": "Task Analysis",
+        "level": 1,
+        "page": 96
+      },
+      {
+        "text": "Example Agentic Retrieval Output",
+        "level": 1,
+        "page": 96
+      },
+      {
+        "text": "S.3 TASK ANALYSIS REPORT",
+        "level": 1,
+        "page": 98
+      },
+      {
+        "text": "Data Analyst Output",
+        "level": 1,
+        "page": 98
+      },
+      {
+        "text": "### Recommendations",
+        "level": 1,
+        "page": 99
+      },
+      {
+        "text": "### Refinement Suggestions",
+        "level": 1,
+        "page": 99
+      },
+      {
+        "text": "Problem Investigator Output",
+        "level": 1,
+        "page": 99
+      },
+      {
+        "text": "Task Analysis",
+        "level": 1,
+        "page": 99
+      },
+      {
+        "text": "### Biological Question",
+        "level": 1,
+        "page": 99
+      },
+      {
+        "text": "### Task Formulation",
+        "level": 1,
+        "page": 99
+      },
+      {
+        "text": "### Justification",
+        "level": 1,
+        "page": 99
+      },
+      {
+        "text": "Baseline Assessor Output",
+        "level": 1,
+        "page": 100
+      },
+      {
+        "text": "Task Analysis",
+        "level": 1,
+        "page": 100
+      },
+      {
+        "text": "Crtic Refinement Output",
+        "level": 1,
+        "page": 103
+      },
+      {
+        "text": "Task Analysis",
+        "level": 1,
+        "page": 103
+      },
+      {
+        "text": "### Task Definition",
+        "level": 1,
+        "page": 104
+      },
+      {
+        "text": "### Baseline Models",
+        "level": 1,
+        "page": 104
+      },
+      {
+        "text": "### Constraints",
+        "level": 1,
+        "page": 104
+      },
+      {
+        "text": "Final Report",
+        "level": 1,
+        "page": 105
+      },
+      {
+        "text": "Task Analysis",
+        "level": 1,
+        "page": 105
+      },
+      {
+        "text": "S.4 MODEL DESIGN MODULE",
+        "level": 1,
+        "page": 109
+      },
+      {
+        "text": "S.4.1 GRAPH BASED DISCUSSION",
+        "level": 1,
+        "page": 109
+      },
+      {
+        "text": "Graph Based Discussion Output",
+        "level": 1,
+        "page": 109
+      },
+      {
+        "text": "Round 1",
+        "level": 1,
+        "page": 109
+      },
+      {
+        "text": "Graph Based Discussion Output",
+        "level": 1,
+        "page": 110
+      },
+      {
+        "text": "Round 2",
+        "level": 1,
+        "page": 110
+      },
+      {
+        "text": "Graph Based Discussion Output",
+        "level": 1,
+        "page": 112
+      },
+      {
+        "text": "Round 3",
+        "level": 1,
+        "page": 112
+      },
+      {
+        "text": "Graph Based Discussion Output",
+        "level": 1,
+        "page": 114
+      },
+      {
+        "text": "Round 4",
+        "level": 1,
+        "page": 114
+      },
+      {
+        "text": "S.4.2 METHOD DESIGN RESEARCH PLAN",
+        "level": 1,
+        "page": 116
+      },
+      {
+        "text": "Graph Based Discussion Output",
+        "level": 1,
+        "page": 116
+      },
+      {
+        "text": "S.4.3 DETAILED RESEARCH PLAN",
+        "level": 1,
+        "page": 121
+      },
+      {
+        "text": "### 9.3 Practical Applications",
+        "level": 1,
+        "page": 126
+      },
+      {
+        "text": "S.4.4 EXAMPLE MODEL FRAMEWORK AND PSEUDOCODE",
+        "level": 1,
+        "page": 127
+      },
+      {
+        "text": "Graph Based Discussion Output",
+        "level": 1,
+        "page": 127
+      },
+      {
+        "text": "T DETAILED OUTPUTS FROM OTHER RESEARCH AGENTS",
+        "level": 1,
+        "page": 132
+      },
+      {
+        "text": "Research Agent Output",
+        "level": 1,
+        "page": 135
+      },
+      {
+        "text": "Research Agent Output",
+        "level": 1,
+        "page": 138
+      },
+      {
+        "text": "Schiebinger et al.(cytokines, scRNA-seq)",
+        "level": 1,
+        "page": 138
+      },
+      {
+        "text": "OpenAI DeepResearch Output",
+        "level": 1,
+        "page": 142
+      },
+      {
+        "text": "Research Agent Output",
+        "level": 1,
+        "page": 142
+      },
+      {
+        "text": "Norman et al. dataset(gene knockout, scRNA-seq)",
+        "level": 1,
+        "page": 142
+      },
+      {
+        "text": "Perplexity DeepResearch",
+        "level": 1,
+        "page": 150
+      },
+      {
+        "text": "Research Agent Output",
+        "level": 1,
+        "page": 150
+      },
+      {
+        "text": "Norman et al. dataset(gene knockout, scRNA-seq)",
+        "level": 1,
+        "page": 150
+      },
+      {
+        "text": "Gemini DeepResearch",
+        "level": 1,
+        "page": 152
+      },
+      {
+        "text": "Research Agent Output",
+        "level": 1,
+        "page": 153
+      },
+      {
+        "text": "**Code Structure and Key Functions**",
+        "level": 1,
+        "page": 158
+      }
+    ]
+  },
+  "98": {
+    "title": "Simplifying bioinformatics data analysis through conversation",
+    "regex_found_methods": false,
+    "headings": [
+      {
+        "text": "Simplifying bioinformatics data analysis through conversation",
+        "level": 1,
+        "page": 1
+      },
+      {
+        "text": "Abstract",
+        "level": 1,
+        "page": 1
+      },
+      {
+        "text": "1 Introduction",
+        "level": 1,
+        "page": 1
+      },
+      {
+        "text": "2 Results 119",
+        "level": 1,
+        "page": 5
+      },
+      {
+        "text": "2.1 The design of Python tools influence the effectiveness of conversational 120 data analysis 121",
+        "level": 1,
+        "page": 5
+      },
+      {
+        "text": "2.2 BioMANIA accurately manages each step in its pipeline 170",
+        "level": 1,
+        "page": 7
+      },
+      {
+        "text": "2.3 BioMANIA enables conversational single-cell transcriptome data analysis 246",
+        "level": 1,
+        "page": 10
+      },
+      {
+        "text": "2.4 BioMANIA empowers conversational analysis across much broader 301 domains 302",
+        "level": 1,
+        "page": 12
+      },
+      {
+        "text": "3 Discussion",
+        "level": 1,
+        "page": 14
+      },
+      {
+        "text": "4 Methods",
+        "level": 1,
+        "page": 15
+      },
+      {
+        "text": "4.1 The key components of BioMANIA",
+        "level": 1,
+        "page": 15
+      },
+      {
+        "text": "4.1.1 Tool parsing",
+        "level": 1,
+        "page": 15
+      },
+      {
+        "text": "4.1.2 Chit-chat recognition",
+        "level": 1,
+        "page": 16
+      },
+      {
+        "text": "4.1.3 Task planning",
+        "level": 1,
+        "page": 16
+      },
+      {
+        "text": "4.1.4 API shortlisting",
+        "level": 1,
+        "page": 17
+      },
+      {
+        "text": "4.1.5 API prediction",
+        "level": 1,
+        "page": 17
+      },
+      {
+        "text": "4.1.6 Argument prediction",
+        "level": 1,
+        "page": 17
+      },
+      {
+        "text": "4.1.7 API execution",
+        "level": 1,
+        "page": 18
+      },
+      {
+        "text": "4.2 Tools used for evaluation",
+        "level": 1,
+        "page": 18
+      },
+      {
+        "text": "4.3 Human annotation",
+        "level": 1,
+        "page": 19
+      },
+      {
+        "text": "4.4 Code and data availability",
+        "level": 1,
+        "page": 19
+      },
+      {
+        "text": "Declarations",
+        "level": 1,
+        "page": 19
+      },
+      {
+        "text": "References",
+        "level": 1,
+        "page": 19
+      },
+      {
+        "text": "A Appendix 684",
+        "level": 1,
+        "page": 22
+      },
+      {
+        "text": "A.1 Details of the tools used by BioMANIA 685",
+        "level": 1,
+        "page": 22
+      },
+      {
+        "text": "A.2 Evaluating the performance of BioMANIA key components 686",
+        "level": 1,
+        "page": 22
+      },
+      {
+        "text": "A.3 Case studies of BioMANIA 687",
+        "level": 1,
+        "page": 26
+      },
+      {
+        "text": "A.4 Failure cases of code generation using GPT-4 688",
+        "level": 1,
+        "page": 28
+      },
+      {
+        "text": "GPT-4 Failure Example 1: Batch correction",
+        "level": 1,
+        "page": 28
+      },
+      {
+        "text": "Prompt:",
+        "level": 1,
+        "page": 28
+      },
+      {
+        "text": "GPT-4 Turbo Answer:",
+        "level": 1,
+        "page": 28
+      },
+      {
+        "text": "Explanation:",
+        "level": 1,
+        "page": 29
+      },
+      {
+        "text": "Note:",
+        "level": 1,
+        "page": 29
+      },
+      {
+        "text": "GPT-4 Failure Example 2: Trajectory inference",
+        "level": 1,
+        "page": 29
+      },
+      {
+        "text": "Prompt:",
+        "level": 1,
+        "page": 29
+      },
+      {
+        "text": "GPT-4 Turbo Answer:",
+        "level": 1,
+        "page": 29
+      },
+      {
+        "text": "GPT-4 Failure Example 3: Gene ranking",
+        "level": 1,
+        "page": 31
+      },
+      {
+        "text": "Prompt:",
+        "level": 1,
+        "page": 31
+      },
+      {
+        "text": "GPT-4 Turbo Answer:",
+        "level": 1,
+        "page": 31
+      },
+      {
+        "text": "Notes:",
+        "level": 1,
+        "page": 31
+      },
+      {
+        "text": "Note:",
+        "level": 1,
+        "page": 31
+      },
+      {
+        "text": "GPT-4 Failure Example 4: Violin visualization",
+        "level": 1,
+        "page": 32
+      },
+      {
+        "text": "Prompt:",
+        "level": 1,
+        "page": 32
+      },
+      {
+        "text": "GPT-4 Turbo Answer:",
+        "level": 1,
+        "page": 32
+      },
+      {
+        "text": "Description of Steps:",
+        "level": 1,
+        "page": 32
+      },
+      {
+        "text": "Considerations:",
+        "level": 1,
+        "page": 32
+      },
+      {
+        "text": "Note:",
+        "level": 1,
+        "page": 32
+      },
+      {
+        "text": "GPT-4 Failure Example 5: Quality control",
+        "level": 1,
+        "page": 33
+      },
+      {
+        "text": "Prompt:",
+        "level": 1,
+        "page": 33
+      },
+      {
+        "text": "GPT-4 Turbo Answer:",
+        "level": 1,
+        "page": 33
+      },
+      {
+        "text": "Explanation:",
+        "level": 1,
+        "page": 33
+      },
+      {
+        "text": "Note:",
+        "level": 1,
+        "page": 33
+      },
+      {
+        "text": "GPT-4 Failure Example 6: Heatmap visualization",
+        "level": 1,
+        "page": 34
+      },
+      {
+        "text": "Prompt:",
+        "level": 1,
+        "page": 34
+      },
+      {
+        "text": "GPT-4 Turbo Answer:",
+        "level": 1,
+        "page": 34
+      },
+      {
+        "text": "Note:",
+        "level": 1,
+        "page": 34
+      },
+      {
+        "text": "GPT-4 Failure Example 7: Moran's I Metric",
+        "level": 1,
+        "page": 34
+      },
+      {
+        "text": "Prompt:",
+        "level": 1,
+        "page": 34
+      },
+      {
+        "text": "GPT-4 Failure Example 8: Cell density embedding",
+        "level": 1,
+        "page": 36
+      },
+      {
+        "text": "Prompt:",
+        "level": 1,
+        "page": 36
+      },
+      {
+        "text": "GPT-4 Turbo Answer:",
+        "level": 1,
+        "page": 36
+      },
+      {
+        "text": "Explanation of Code:",
+        "level": 1,
+        "page": 36
+      },
+      {
+        "text": "Note:",
+        "level": 1,
+        "page": 36
+      },
+      {
+        "text": "GPT-4 Failure Example 9: Hierarchically-clustered heatmap",
+        "level": 1,
+        "page": 36
+      },
+      {
+        "text": "Prompt:",
+        "level": 1,
+        "page": 36
+      },
+      {
+        "text": "GPT-4 Turbo Answer:",
+        "level": 1,
+        "page": 36
+      },
+      {
+        "text": "Explanation of Key Steps:",
+        "level": 1,
+        "page": 37
+      },
+      {
+        "text": "Note:",
+        "level": 1,
+        "page": 37
+      },
+      {
+        "text": "GPT-4 Failure Example 10: Dotplot visualization",
+        "level": 1,
+        "page": 38
+      },
+      {
+        "text": "Prompt:",
+        "level": 1,
+        "page": 38
+      },
+      {
+        "text": "GPT-4 Turbo Answer:",
+        "level": 1,
+        "page": 38
+      },
+      {
+        "text": "Explanation:",
+        "level": 1,
+        "page": 38
+      },
+      {
+        "text": "Note:",
+        "level": 1,
+        "page": 38
+      },
+      {
+        "text": "GPT-4 Failure Example 11: Tracksplot Visualization",
+        "level": 1,
+        "page": 39
+      },
+      {
+        "text": "Prompt:",
+        "level": 1,
+        "page": 39
+      },
+      {
+        "text": "GPT-4 Turbo Answer:",
+        "level": 1,
+        "page": 39
+      },
+      {
+        "text": "Explanation:",
+        "level": 1,
+        "page": 39
+      },
+      {
+        "text": "Note:",
+        "level": 1,
+        "page": 40
+      },
+      {
+        "text": "GPT-4 Failure Example 12: Stacked violin ranking visualization",
+        "level": 1,
+        "page": 40
+      },
+      {
+        "text": "Prompt:",
+        "level": 1,
+        "page": 40
+      },
+      {
+        "text": "GPT-4 Turbo Answer:",
+        "level": 1,
+        "page": 40
+      },
+      {
+        "text": "Explanation:",
+        "level": 1,
+        "page": 40
+      },
+      {
+        "text": "Note:",
+        "level": 1,
+        "page": 40
+      },
+      {
+        "text": "A.5 Prompts used by BioMANIA 708",
+        "level": 1,
+        "page": 41
+      },
+      {
+        "text": "A.5.1 Prompt for task planning 709",
+        "level": 1,
+        "page": 41
+      },
+      {
+        "text": "# Example Input : Lib: Scanpy Goal description: Could you integrate pbmc3k processed and pbmc68k processed dataset, and conduct batch correction?",
+        "level": 1,
+        "page": 41
+      },
+      {
+        "text": "A.5.2 Prompt for task polishing 713",
+        "level": 1,
+        "page": 42
+      },
+      {
+        "text": "A.5.3 Prompt for task summarization 718",
+        "level": 1,
+        "page": 44
+      },
+      {
+        "text": "# Task Description",
+        "level": 1,
+        "page": 44
+      },
+      {
+        "text": "# Example Input :",
+        "level": 1,
+        "page": 44
+      },
+      {
+        "text": "# Example Output :",
+        "level": 1,
+        "page": 44
+      },
+      {
+        "text": "# Example Output",
+        "level": 1,
+        "page": 45
+      },
+      {
+        "text": "A.5.4 Prompt for instruction generation",
+        "level": 1,
+        "page": 45
+      },
+      {
+        "text": "# Instruction :",
+        "level": 1,
+        "page": 45
+      },
+      {
+        "text": "A.5.5 Prompt for API prediction 726",
+        "level": 1,
+        "page": 46
+      },
+      {
+        "text": "A.5.6 Prompt for argument prediction 730",
+        "level": 1,
+        "page": 47
+      },
+      {
+        "text": "A.5.6.1 Argument prediction for Literal type 731",
+        "level": 1,
+        "page": 47
+      },
+      {
+        "text": "# Example Input :",
+        "level": 1,
+        "page": 48
+      },
+      {
+        "text": "A.5.6.2 Argument prediction for Bool type 736",
+        "level": 1,
+        "page": 49
+      },
+      {
+        "text": "# Parameter type: Boolean",
+        "level": 1,
+        "page": 49
+      },
+      {
+        "text": "## Task Description :",
+        "level": 1,
+        "page": 49
+      },
+      {
+        "text": "Instructions:",
+        "level": 1,
+        "page": 49
+      },
+      {
+        "text": "A.5.6.3 Argument prediction for Other type 740",
+        "level": 1,
+        "page": 50
+      },
+      {
+        "text": "Instructions:",
+        "level": 1,
+        "page": 51
+      },
+      {
+        "text": "# Example Input :",
+        "level": 1,
+        "page": 51
+      },
+      {
+        "text": "A.5.7 Prompt for code explanation 746",
+        "level": 1,
+        "page": 53
+      },
+      {
+        "text": "# Task Description",
+        "level": 1,
+        "page": 53
+      },
+      {
+        "text": "A.5.8 Prompt for code troubleshooting 751",
+        "level": 1,
+        "page": 56
+      }
+    ]
+  },
+  "104": {
+    "title": "BitterMatch: recommendation systems for matching molecules with bitter taste receptors",
+    "regex_found_methods": true,
+    "headings": [
+      {
+        "text": "RESEARCH",
+        "level": 1,
+        "page": 1
+      },
+      {
+        "text": "BitterMatch: recommendation systems for matching molecules with bitter taste receptors",
+        "level": 1,
+        "page": 1
+      },
+      {
+        "text": "Abstract",
+        "level": 1,
+        "page": 1
+      },
+      {
+        "text": "Introduction",
+        "level": 1,
+        "page": 1
+      },
+      {
+        "text": "Results",
+        "level": 1,
+        "page": 2
+      },
+      {
+        "text": "Ligand-receptor associations",
+        "level": 1,
+        "page": 2
+      },
+      {
+        "text": "Ligand and receptor properties",
+        "level": 1,
+        "page": 2
+      },
+      {
+        "text": "Similarity calculations for feature derivation",
+        "level": 1,
+        "page": 2
+      },
+      {
+        "text": "Extracting neighbor-informed features from similarities",
+        "level": 1,
+        "page": 3
+      },
+      {
+        "text": "' Filling the gaps ' scenario",
+        "level": 1,
+        "page": 3
+      },
+      {
+        "text": "Evaluation of the model",
+        "level": 1,
+        "page": 3
+      },
+      {
+        "text": "'Filling the gaps' predictions",
+        "level": 1,
+        "page": 5
+      },
+      {
+        "text": "' New ligands ' scenario",
+        "level": 1,
+        "page": 5
+      },
+      {
+        "text": "Prospective predictions and their validation",
+        "level": 1,
+        "page": 6
+      },
+      {
+        "text": "Predicting TAS2R associations of drugs from DrugBank",
+        "level": 1,
+        "page": 8
+      },
+      {
+        "text": "Feature importance",
+        "level": 1,
+        "page": 8
+      },
+      {
+        "text": "Discussion",
+        "level": 1,
+        "page": 8
+      },
+      {
+        "text": "Conclusions",
+        "level": 1,
+        "page": 10
+      },
+      {
+        "text": "Methods",
+        "level": 1,
+        "page": 10
+      },
+      {
+        "text": "Data curation",
+        "level": 1,
+        "page": 10
+      },
+      {
+        "text": "Ligand features",
+        "level": 1,
+        "page": 10
+      },
+      {
+        "text": "Ligand preparation",
+        "level": 1,
+        "page": 10
+      },
+      {
+        "text": "Ligand chemical properties calculation",
+        "level": 1,
+        "page": 10
+      },
+      {
+        "text": "Receptor features",
+        "level": 1,
+        "page": 10
+      },
+      {
+        "text": "TAS2Rs structure preparation",
+        "level": 1,
+        "page": 10
+      },
+      {
+        "text": "Receptor descriptors calculation",
+        "level": 1,
+        "page": 11
+      },
+      {
+        "text": "Sequence based features",
+        "level": 1,
+        "page": 11
+      },
+      {
+        "text": "Binding site features",
+        "level": 1,
+        "page": 11
+      },
+      {
+        "text": "Protein 3D features",
+        "level": 1,
+        "page": 11
+      },
+      {
+        "text": "Additional information on the receptor",
+        "level": 1,
+        "page": 11
+      },
+      {
+        "text": "Chemical similarities of ligands and receptors",
+        "level": 1,
+        "page": 11
+      },
+      {
+        "text": "Ligand similarities",
+        "level": 1,
+        "page": 11
+      },
+      {
+        "text": "Receptor sequence similarities and identities",
+        "level": 1,
+        "page": 11
+      },
+      {
+        "text": "Receptor binding site: sub-sequence similarities and identities",
+        "level": 1,
+        "page": 12
+      },
+      {
+        "text": "Collaborative similarities",
+        "level": 1,
+        "page": 12
+      },
+      {
+        "text": "BitterMatch algorithm",
+        "level": 1,
+        "page": 12
+      },
+      {
+        "text": "Feature extraction from similarities",
+        "level": 1,
+        "page": 12
+      },
+      {
+        "text": "Feature matrices",
+        "level": 1,
+        "page": 12
+      },
+      {
+        "text": "Classification",
+        "level": 1,
+        "page": 13
+      },
+      {
+        "text": "Evaluation",
+        "level": 1,
+        "page": 13
+      },
+      {
+        "text": "Baseline models",
+        "level": 1,
+        "page": 13
+      },
+      {
+        "text": "Recall-precision",
+        "level": 1,
+        "page": 13
+      },
+      {
+        "text": "Feature importance",
+        "level": 1,
+        "page": 14
+      },
+      {
+        "text": "Validation set",
+        "level": 1,
+        "page": 14
+      },
+      {
+        "text": "Curation of molecules for validation set",
+        "level": 1,
+        "page": 14
+      },
+      {
+        "text": "In-vitro testing of BitterMatch predictions",
+        "level": 1,
+        "page": 14
+      },
+      {
+        "text": "Chemicals and materials",
+        "level": 1,
+        "page": 14
+      },
+      {
+        "text": "Functional receptor screening",
+        "level": 1,
+        "page": 14
+      },
+      {
+        "text": "Determination of threshold values of TAS2Rs activation",
+        "level": 1,
+        "page": 14
+      },
+      {
+        "text": "Functional analogs analysis",
+        "level": 1,
+        "page": 14
+      },
+      {
+        "text": "Prediction of DrugBank dataset",
+        "level": 1,
+        "page": 14
+      },
+      {
+        "text": "Implementation",
+        "level": 1,
+        "page": 14
+      },
+      {
+        "text": "Abbreviations",
+        "level": 1,
+        "page": 14
+      },
+      {
+        "text": "Supplementary Information",
+        "level": 1,
+        "page": 15
+      },
+      {
+        "text": "Acknowledgements",
+        "level": 1,
+        "page": 15
+      },
+      {
+        "text": "Author contributions",
+        "level": 1,
+        "page": 15
+      },
+      {
+        "text": "Funding",
+        "level": 1,
+        "page": 15
+      },
+      {
+        "text": "Code availability",
+        "level": 1,
+        "page": 15
+      },
+      {
+        "text": "Declarations",
+        "level": 1,
+        "page": 15
+      },
+      {
+        "text": "Competing interests",
+        "level": 1,
+        "page": 15
+      },
+      {
+        "text": "Author details",
+        "level": 1,
+        "page": 15
+      },
+      {
+        "text": "References",
+        "level": 1,
+        "page": 15
+      },
+      {
+        "text": "Publisher's Note",
+        "level": 1,
+        "page": 17
+      },
+      {
+        "text": "Ready to submit your research  ?  Choose BMC and benefit from:",
+        "level": 1,
+        "page": 17
+      }
+    ]
+  },
+  "162": {
+    "title": "SciAtlas: A Large-Scale Knowledge Graph for Automated Scientific Research.",
+    "regex_found_methods": false,
+    "headings": [
+      {
+        "text": "SciAtlas: A Large-Scale Knowledge Graph for Automated Scientific Research",
+        "level": 1,
+        "page": 1
+      },
+      {
+        "text": "1. Introduction",
+        "level": 1,
+        "page": 2
+      },
+      {
+        "text": "2. SciAtlas",
+        "level": 1,
+        "page": 3
+      },
+      {
+        "text": "2.1. Overview of SciAtlas",
+        "level": 1,
+        "page": 4
+      },
+      {
+        "text": "2.2. SciAtlas Construction",
+        "level": 1,
+        "page": 4
+      },
+      {
+        "text": "Examples of Good and Bad Keywords",
+        "level": 1,
+        "page": 5
+      },
+      {
+        "text": "2.3. SciAtlas Update",
+        "level": 1,
+        "page": 5
+      },
+      {
+        "text": "3. Neuro-Symbolic Retrieval",
+        "level": 1,
+        "page": 6
+      },
+      {
+        "text": "3.1. Node Matching",
+        "level": 1,
+        "page": 6
+      },
+      {
+        "text": "3.2. Weight Setting",
+        "level": 1,
+        "page": 8
+      },
+      {
+        "text": "3.3. Random Walk with Restart",
+        "level": 1,
+        "page": 8
+      },
+      {
+        "text": "3.4. Final Ranking",
+        "level": 1,
+        "page": 9
+      },
+      {
+        "text": "4. Downstream Application of SciAtlas",
+        "level": 1,
+        "page": 10
+      },
+      {
+        "text": "4.1. Literature Review",
+        "level": 1,
+        "page": 10
+      },
+      {
+        "text": "4.2. Idea Grounding and Evaluation",
+        "level": 1,
+        "page": 10
+      },
+      {
+        "text": "An Example of Idea Grounding",
+        "level": 1,
+        "page": 11
+      },
+      {
+        "text": "4.3. Idea Generation",
+        "level": 1,
+        "page": 11
+      },
+      {
+        "text": "An Example of Idea Generation",
+        "level": 1,
+        "page": 11
+      },
+      {
+        "text": "Key References:",
+        "level": 1,
+        "page": 12
+      },
+      {
+        "text": "4.4. Research Trend Predicting",
+        "level": 1,
+        "page": 12
+      },
+      {
+        "text": "An Example of Research Trend Predicting",
+        "level": 1,
+        "page": 12
+      },
+      {
+        "text": "Future Directions:",
+        "level": 1,
+        "page": 12
+      },
+      {
+        "text": "4.5. Related Author Retrieval",
+        "level": 1,
+        "page": 13
+      },
+      {
+        "text": "4.6. Researcher Background Review",
+        "level": 1,
+        "page": 13
+      },
+      {
+        "text": "Researcher Background Review",
+        "level": 1,
+        "page": 13
+      },
+      {
+        "text": "Research Trajectory:",
+        "level": 1,
+        "page": 13
+      },
+      {
+        "text": "1. Knowledge-Enhanced Language Models & Information Extraction (2018-2023)",
+        "level": 1,
+        "page": 13
+      },
+      {
+        "text": "2. Reasoning, Planning, and Agentic AI Systems (2023-2026)",
+        "level": 1,
+        "page": 13
+      },
+      {
+        "text": "3. Model Analysis, Control, and Alignment (2023-2026)",
+        "level": 1,
+        "page": 13
+      },
+      {
+        "text": "5. Limitations and Future Work",
+        "level": 1,
+        "page": 14
+      },
+      {
+        "text": "6. Related Work",
+        "level": 1,
+        "page": 14
+      },
+      {
+        "text": "6.1. Automated Scientific Research",
+        "level": 1,
+        "page": 14
+      },
+      {
+        "text": "6.2. Scientific Search and Discovery",
+        "level": 1,
+        "page": 15
+      },
+      {
+        "text": "7. Conclusion",
+        "level": 1,
+        "page": 15
+      },
+      {
+        "text": "References",
+        "level": 1,
+        "page": 16
+      },
+      {
+        "text": "A. Full Schema of SciAtlas",
+        "level": 1,
+        "page": 21
+      },
+      {
+        "text": "B. Prompts Used in this Report",
+        "level": 1,
+        "page": 23
+      },
+      {
+        "text": "B.1. Keyword Extraction",
+        "level": 1,
+        "page": 24
+      },
+      {
+        "text": "Keyword Extraction",
+        "level": 1,
+        "page": 24
+      },
+      {
+        "text": "Requirements:",
+        "level": 1,
+        "page": 24
+      },
+      {
+        "text": "Avoid:",
+        "level": 1,
+        "page": 24
+      },
+      {
+        "text": "B.2. Downstream Tasks",
+        "level": 1,
+        "page": 25
+      },
+      {
+        "text": "B.2.1. Idea Grounding - Query Generation",
+        "level": 1,
+        "page": 25
+      },
+      {
+        "text": "Idea Grounding - Query Generation: Generate dense-retrieval queries from structured scientific extraction results.",
+        "level": 1,
+        "page": 25
+      },
+      {
+        "text": "Requirements:",
+        "level": 1,
+        "page": 25
+      },
+      {
+        "text": "B.2.2. Idea Grounding - Grounding",
+        "level": 1,
+        "page": 25
+      },
+      {
+        "text": "Idea Grounding - Grounding: Analyze how retrieved evidence aligns with a research idea unit.",
+        "level": 1,
+        "page": 25
+      },
+      {
+        "text": "B.2.3. Idea Generation",
+        "level": 1,
+        "page": 27
+      },
+      {
+        "text": "B.2.4. Research Trend Predicting",
+        "level": 1,
+        "page": 27
+      },
+      {
+        "text": "Research Trend Predicting: Summarize research trends from chronologically ordered papers.",
+        "level": 1,
+        "page": 27
+      },
+      {
+        "text": "B.2.5. Author Research Profile",
+        "level": 1,
+        "page": 28
+      },
+      {
+        "text": "Author Research Profile: Summarize a researcher's major directions from their publication list.",
+        "level": 1,
+        "page": 28
+      }
+    ]
+  },
+  "220": {
+    "title": "PloverDB: a high-performance platform for serving biomedical knowledge graphs as standards-compliant web APIs",
+    "regex_found_methods": false,
+    "headings": [
+      {
+        "text": "Databases and ontologies",
+        "level": 1,
+        "page": 1
+      },
+      {
+        "text": "PloverDB: a high-performance platform for serving biomedical knowledge graphs as standards-compliant web APIs",
+        "level": 1,
+        "page": 1
+      },
+      {
+        "text": "Abstract",
+        "level": 1,
+        "page": 1
+      },
+      {
+        "text": "1 Introduction",
+        "level": 1,
+        "page": 1
+      },
+      {
+        "text": "2 Implementation",
+        "level": 1,
+        "page": 2
+      },
+      {
+        "text": "2.1 Capabilities",
+        "level": 1,
+        "page": 2
+      },
+      {
+        "text": "2.1.1 Query structure",
+        "level": 1,
+        "page": 2
+      },
+      {
+        "text": "2.1.2 Built-in reasoning",
+        "level": 1,
+        "page": 3
+      },
+      {
+        "text": "2.1.3 Simplified deployment",
+        "level": 1,
+        "page": 3
+      },
+      {
+        "text": "2.1.4 Performance",
+        "level": 1,
+        "page": 3
+      },
+      {
+        "text": "3 Usage",
+        "level": 1,
+        "page": 4
+      },
+      {
+        "text": "4 Conclusion",
+        "level": 1,
+        "page": 4
+      },
+      {
+        "text": "Acknowledgements",
+        "level": 1,
+        "page": 4
+      },
+      {
+        "text": "Author contributions",
+        "level": 1,
+        "page": 4
+      },
+      {
+        "text": "Supplementary data",
+        "level": 1,
+        "page": 4
+      },
+      {
+        "text": "Funding",
+        "level": 1,
+        "page": 4
+      },
+      {
+        "text": "References",
+        "level": 1,
+        "page": 4
+      }
+    ]
+  },
+  "333": {
+    "title": "Odor Impression Prediction from Mass Spectra",
+    "regex_found_methods": false,
+    "headings": [
+      {
+        "text": "Odor Impression Prediction from Mass Spectra",
+        "level": 1,
+        "page": 1
+      },
+      {
+        "text": "Abstract",
+        "level": 1,
+        "page": 1
+      },
+      {
+        "text": "Introduction",
+        "level": 1,
+        "page": 1
+      },
+      {
+        "text": "Experiment",
+        "level": 1,
+        "page": 2
+      },
+      {
+        "text": "Data preparation",
+        "level": 1,
+        "page": 4
+      },
+      {
+        "text": "Training algorithms",
+        "level": 1,
+        "page": 4
+      },
+      {
+        "text": "Model evaluation",
+        "level": 1,
+        "page": 6
+      },
+      {
+        "text": "Results",
+        "level": 1,
+        "page": 6
+      },
+      {
+        "text": "Performance of autoencoder",
+        "level": 1,
+        "page": 6
+      },
+      {
+        "text": "Performance of predictive model",
+        "level": 1,
+        "page": 9
+      },
+      {
+        "text": "Analysis of the prediction result",
+        "level": 1,
+        "page": 13
+      },
+      {
+        "text": "Discussion and Conclusion",
+        "level": 1,
+        "page": 13
+      },
+      {
+        "text": "Supporting Information",
+        "level": 1,
+        "page": 13
+      },
+      {
+        "text": "Acknowledgments",
+        "level": 1,
+        "page": 14
+      },
+      {
+        "text": "Author Contributions",
+        "level": 1,
+        "page": 14
+      },
+      {
+        "text": "References",
+        "level": 1,
+        "page": 14
+      }
+    ]
+  },
+  "3": {
+    "title": "Multi‐information source Bayesian optimization of culture media for cellular agriculture",
+    "regex_found_methods": true,
+    "headings": [
+      {
+        "text": "ARTICLE",
+        "level": 1,
+        "page": 1
+      },
+      {
+        "text": "Multi -information source Bayesian optimization of culture media for cellular agriculture",
+        "level": 1,
+        "page": 1
+      },
+      {
+        "text": "Zachary Cosenza 1",
+        "level": 1,
+        "page": 1
+      },
+      {
+        "text": "Correspondence",
+        "level": 1,
+        "page": 1
+      },
+      {
+        "text": "Funding information",
+        "level": 1,
+        "page": 1
+      },
+      {
+        "text": "1 | I NTRODUCTION",
+        "level": 1,
+        "page": 1
+      },
+      {
+        "text": "Abstract",
+        "level": 1,
+        "page": 1
+      },
+      {
+        "text": "KEYWORDS",
+        "level": 1,
+        "page": 1
+      },
+      {
+        "text": "2 | METHODS",
+        "level": 1,
+        "page": 2
+      },
+      {
+        "text": "2.1 | Cells and media components",
+        "level": 1,
+        "page": 2
+      },
+      {
+        "text": "2.2 | Cell growth experiments and assays",
+        "level": 1,
+        "page": 2
+      },
+      {
+        "text": "2.3 | DOE method",
+        "level": 1,
+        "page": 4
+      },
+      {
+        "text": "2.4 | BO method",
+        "level": 1,
+        "page": 4
+      },
+      {
+        "text": "2.4.1 | Bayesian model",
+        "level": 1,
+        "page": 4
+      },
+      {
+        "text": "2.4.2 | BO acquisition function",
+        "level": 1,
+        "page": 5
+      },
+      {
+        "text": "2.4.3 | BO algorithm",
+        "level": 1,
+        "page": 5
+      },
+      {
+        "text": "2.5 | Computational environment and packages",
+        "level": 1,
+        "page": 6
+      },
+      {
+        "text": "3 | RESULTS",
+        "level": 1,
+        "page": 7
+      },
+      {
+        "text": "3.1 | Computational validation of BO method",
+        "level": 1,
+        "page": 7
+      },
+      {
+        "text": "3.2 | Experimental validation of BO method",
+        "level": 1,
+        "page": 7
+      },
+      {
+        "text": "3.3 | Experimental validation of long -term cell number objective function",
+        "level": 1,
+        "page": 8
+      },
+      {
+        "text": "3.4 | Sensitivity analysis",
+        "level": 1,
+        "page": 9
+      },
+      {
+        "text": "4 | DISCUSSION AND CONCLUSION",
+        "level": 1,
+        "page": 11
+      },
+      {
+        "text": "ACKNOWLEDGMENT",
+        "level": 1,
+        "page": 11
+      },
+      {
+        "text": "DATA AVAILABILITY STATEMENT",
+        "level": 1,
+        "page": 11
+      },
+      {
+        "text": "ORCID",
+        "level": 1,
+        "page": 11
+      },
+      {
+        "text": "REFERENCES",
+        "level": 1,
+        "page": 11
+      },
+      {
+        "text": "SUPPORTING INFORMATION",
+        "level": 1,
+        "page": 12
+      }
+    ]
+  },
+  "56": {
+    "title": "SpatialAgent: An autonomous AI agent for spatial biology.",
+    "regex_found_methods": true,
+    "headings": [
+      {
+        "text": "SpatialAgent: An autonomous AI agent for spatial biology",
+        "level": 1,
+        "page": 1
+      },
+      {
+        "text": "1. Introduction",
+        "level": 1,
+        "page": 1
+      },
+      {
+        "text": "2. Results",
+        "level": 1,
+        "page": 2
+      },
+      {
+        "text": "3. Discussion",
+        "level": 1,
+        "page": 7
+      },
+      {
+        "text": "SpatialAgent: An autonomous AI agent for spatial biology",
+        "level": 1,
+        "page": 15
+      },
+      {
+        "text": "SpatialAgent: An autonomous AI agent for spatial biology",
+        "level": 1,
+        "page": 16
+      },
+      {
+        "text": "Methods Summary",
+        "level": 1,
+        "page": 19
+      },
+      {
+        "text": "Acknowledgments",
+        "level": 1,
+        "page": 20
+      },
+      {
+        "text": "References",
+        "level": 1,
+        "page": 21
+      },
+      {
+        "text": "Supplementary Information",
+        "level": 1,
+        "page": 24
+      },
+      {
+        "text": "1. SpatialAgent",
+        "level": 1,
+        "page": 24
+      },
+      {
+        "text": "1.1. Configurations of base LLMs",
+        "level": 1,
+        "page": 24
+      },
+      {
+        "text": "1.2. LangChain framework",
+        "level": 1,
+        "page": 24
+      },
+      {
+        "text": "1.3. Tools developments",
+        "level": 1,
+        "page": 24
+      },
+      {
+        "text": "1.3.1. Databases",
+        "level": 1,
+        "page": 24
+      },
+      {
+        "text": "1.3.2. Data Processing",
+        "level": 1,
+        "page": 25
+      },
+      {
+        "text": "1.3.3. Aggregation",
+        "level": 1,
+        "page": 27
+      },
+      {
+        "text": "1.3.4. General purpose",
+        "level": 1,
+        "page": 28
+      },
+      {
+        "text": "1.4. Plan templates",
+        "level": 1,
+        "page": 28
+      },
+      {
+        "text": "1.5. Core prompts in the agentic framework",
+        "level": 1,
+        "page": 28
+      },
+      {
+        "text": "1.6. Extendability",
+        "level": 1,
+        "page": 32
+      },
+      {
+        "text": "1.7. Generalization",
+        "level": 1,
+        "page": 33
+      },
+      {
+        "text": "1.7.1. Annotation harmonization",
+        "level": 1,
+        "page": 33
+      },
+      {
+        "text": "1.7.2. Gene Regulatory Network Inference with the Spatial Context",
+        "level": 1,
+        "page": 35
+      },
+      {
+        "text": "1.7.3. Summary",
+        "level": 1,
+        "page": 37
+      },
+      {
+        "text": "1.8. Interaction design of SpatialAgent",
+        "level": 1,
+        "page": 38
+      },
+      {
+        "text": "2. Gene panel design",
+        "level": 1,
+        "page": 39
+      },
+      {
+        "text": "2.1. Computational baselines",
+        "level": 1,
+        "page": 39
+      },
+      {
+        "text": "2.2. Human scientists evaluation",
+        "level": 1,
+        "page": 39
+      },
+      {
+        "text": "2.2.1. Study design",
+        "level": 1,
+        "page": 39
+      },
+      {
+        "text": "Panel Design Workflow",
+        "level": 1,
+        "page": 40
+      },
+      {
+        "text": "2.2.2. Overview of human solutions",
+        "level": 1,
+        "page": 40
+      },
+      {
+        "text": "2.3. Pairwise comparisons on cell type prediction",
+        "level": 1,
+        "page": 41
+      },
+      {
+        "text": "2.3.1. More metrics on location restoration",
+        "level": 1,
+        "page": 41
+      },
+      {
+        "text": "2.3.2. Performance via human expert rating",
+        "level": 1,
+        "page": 42
+      },
+      {
+        "text": "3. Cell type and tissue niche annotation",
+        "level": 1,
+        "page": 44
+      },
+      {
+        "text": "3.1. Overview",
+        "level": 1,
+        "page": 44
+      },
+      {
+        "text": "3.2. Baselines",
+        "level": 1,
+        "page": 44
+      },
+      {
+        "text": "3.3. Per cluster annotation between GPTCellType and SpatialAgent",
+        "level": 1,
+        "page": 44
+      },
+      {
+        "text": "3.4. Removing small clusters in UTAG",
+        "level": 1,
+        "page": 44
+      },
+      {
+        "text": "3.5. Analysis of human expert annotations",
+        "level": 1,
+        "page": 45
+      },
+      {
+        "text": "3.6. Confusion matrix",
+        "level": 1,
+        "page": 45
+      },
+      {
+        "text": "3.7. Summary",
+        "level": 1,
+        "page": 45
+      },
+      {
+        "text": "Cell Annotation Workflow",
+        "level": 1,
+        "page": 46
+      },
+      {
+        "text": "Niche Annotation Workflow",
+        "level": 1,
+        "page": 46
+      },
+      {
+        "text": "Supplementary Figure 24: Annotation of GPTCellType and SpatialAgent on Leiden clusters (2/4)",
+        "level": 1,
+        "page": 48
+      },
+      {
+        "text": "Supplementary Figure 25: Annotation of GPTCellType and SpatialAgent on Leiden clusters (3/4)",
+        "level": 1,
+        "page": 49
+      },
+      {
+        "text": "Supplementary Figure 26: Annotation of GPTCellType and SpatialAgent on Leiden clusters (4/4)",
+        "level": 1,
+        "page": 50
+      },
+      {
+        "text": "SpatialAgent: An autonomous AI agent for spatial biology",
+        "level": 1,
+        "page": 52
+      },
+      {
+        "text": "4. Mining cell-cell interaction and report generation",
+        "level": 1,
+        "page": 75
+      },
+      {
+        "text": "4.1. Overview",
+        "level": 1,
+        "page": 75
+      },
+      {
+        "text": "4.2. Summarization",
+        "level": 1,
+        "page": 76
+      },
+      {
+        "text": "4.2.1. Condition specific analysis",
+        "level": 1,
+        "page": 76
+      },
+      {
+        "text": "4.2.2. Cell type specific analysis",
+        "level": 1,
+        "page": 76
+      },
+      {
+        "text": "4.2.3. Tissue region specific analysis",
+        "level": 1,
+        "page": 76
+      },
+      {
+        "text": "4.3. Factor analysis in CCI",
+        "level": 1,
+        "page": 76
+      },
+      {
+        "text": "4.4. Generated report",
+        "level": 1,
+        "page": 77
+      },
+      {
+        "text": "Supplementary Figure 67: SpatialAgent generated report (4/8)",
+        "level": 1,
+        "page": 90
+      },
+      {
+        "text": "Supplementary Figure 69: SpatialAgent generated report (6/8)",
+        "level": 1,
+        "page": 92
+      },
+      {
+        "text": "Supplementary Figure 70: SpatialAgent generated report (7/8)",
+        "level": 1,
+        "page": 93
+      },
+      {
+        "text": "Supplementary Figure 71: SpatialAgent generated report (8/8)",
+        "level": 1,
+        "page": 94
+      },
+      {
+        "text": "5. Designing additional customized genes upon Xenium 5k panel",
+        "level": 1,
+        "page": 95
+      },
+      {
+        "text": "5.1. Overview",
+        "level": 1,
+        "page": 95
+      },
+      {
+        "text": "5.2. Customized gene panel improves cell-type resolution and clustering",
+        "level": 1,
+        "page": 95
+      },
+      {
+        "text": "5.3. Customized gene panel enhances the capture of cell-cell interactions",
+        "level": 1,
+        "page": 95
+      },
+      {
+        "text": "5.4. Summary",
+        "level": 1,
+        "page": 95
+      },
+      {
+        "text": "SpatialAgent: An autonomous AI agent for spatial biology",
+        "level": 1,
+        "page": 98
+      },
+      {
+        "text": "SpatialAgent: An autonomous AI agent for spatial biology",
+        "level": 1,
+        "page": 99
+      },
+      {
+        "text": "6. Tools",
+        "level": 1,
+        "page": 101
+      },
+      {
+        "text": "Supplementary Figure 78: Tool description (1/15)",
+        "level": 1,
+        "page": 101
+      },
+      {
+        "text": "Supplementary Figure 79: Tool description (2/15)",
+        "level": 1,
+        "page": 101
+      },
+      {
+        "text": "Supplementary Figure 80: Tool description (3/15)",
+        "level": 1,
+        "page": 101
+      },
+      {
+        "text": "Supplementary Figure 81: Tool description (4/15)",
+        "level": 1,
+        "page": 102
+      },
+      {
+        "text": "Supplementary Figure 82: Tool description (5/15)",
+        "level": 1,
+        "page": 102
+      },
+      {
+        "text": "Supplementary Figure 83: Tool description (6/15)",
+        "level": 1,
+        "page": 102
+      },
+      {
+        "text": "Supplementary Figure 84: Tool description (7/15)",
+        "level": 1,
+        "page": 102
+      },
+      {
+        "text": "Supplementary Figure 85: Tool description (8/15)",
+        "level": 1,
+        "page": 103
+      },
+      {
+        "text": "Supplementary Figure 86: Tool description (9/15)",
+        "level": 1,
+        "page": 103
+      },
+      {
+        "text": "Supplementary Figure 87: Tool description (10/15)",
+        "level": 1,
+        "page": 103
+      },
+      {
+        "text": "Supplementary Figure 88: Tool description (11/15)",
+        "level": 1,
+        "page": 103
+      },
+      {
+        "text": "Supplementary Figure 89: Tool description (12/15)",
+        "level": 1,
+        "page": 104
+      },
+      {
+        "text": "Supplementary Figure 90: Tool description (13/15)",
+        "level": 1,
+        "page": 104
+      },
+      {
+        "text": "Supplementary Figure 91: Tool description (14/15)",
+        "level": 1,
+        "page": 104
+      },
+      {
+        "text": "Supplementary Figure 92: Tool description (15/15)",
+        "level": 1,
+        "page": 105
+      },
+      {
+        "text": "Supplementary Figure 93: Tool prompt (1/16)",
+        "level": 1,
+        "page": 105
+      },
+      {
+        "text": "Supplementary Figure 94: Tool prompt (2/16)",
+        "level": 1,
+        "page": 105
+      },
+      {
+        "text": "Supplementary Figure 95: Tool prompt (3/16)",
+        "level": 1,
+        "page": 105
+      },
+      {
+        "text": "Supplementary Figure 96: Tool prompt (4/16)",
+        "level": 1,
+        "page": 106
+      },
+      {
+        "text": "Supplementary Figure 97: Tool prompt (5/16)",
+        "level": 1,
+        "page": 106
+      },
+      {
+        "text": "Supplementary Figure 98: Tool prompt (6/16)",
+        "level": 1,
+        "page": 106
+      },
+      {
+        "text": "Supplementary Figure 99: Tool prompt (7/16)",
+        "level": 1,
+        "page": 107
+      },
+      {
+        "text": "Supplementary Figure 100: Tool prompt (8/16)",
+        "level": 1,
+        "page": 107
+      },
+      {
+        "text": "Supplementary Figure 101: Tool prompt (9/16)",
+        "level": 1,
+        "page": 108
+      },
+      {
+        "text": "Supplementary Figure 102: Tool prompt (10/16)",
+        "level": 1,
+        "page": 108
+      },
+      {
+        "text": "Supplementary Figure 103: Tool prompt (11/16)",
+        "level": 1,
+        "page": 109
+      },
+      {
+        "text": "Supplementary Figure 104: Tool prompt (12/16)",
+        "level": 1,
+        "page": 109
+      },
+      {
+        "text": "Supplementary Figure 105: Tool prompt (13/16)",
+        "level": 1,
+        "page": 109
+      },
+      {
+        "text": "Supplementary Figure 106: Tool prompt (14/16)",
+        "level": 1,
+        "page": 110
+      },
+      {
+        "text": "Supplementary Figure 107: Tool prompt (15/16)",
+        "level": 1,
+        "page": 110
+      },
+      {
+        "text": "Supplementary Figure 108: Tool prompt (16/16)",
+        "level": 1,
+        "page": 110
+      }
+    ]
+  },
+  "70": {
+    "title": "Autonomous chemical research with large language models",
+    "regex_found_methods": false,
+    "headings": [
+      {
+        "text": "Autonomous chemical research with large language models",
+        "level": 1,
+        "page": 1
+      },
+      {
+        "text": "Coscientist system architecture",
+        "level": 1,
+        "page": 1
+      },
+      {
+        "text": "Web search module",
+        "level": 1,
+        "page": 2
+      },
+      {
+        "text": "Article",
+        "level": 1,
+        "page": 3
+      },
+      {
+        "text": "Documentation search module",
+        "level": 1,
+        "page": 3
+      },
+      {
+        "text": "Controlling laboratory hardware",
+        "level": 1,
+        "page": 4
+      },
+      {
+        "text": "Integrated chemical experiment design",
+        "level": 1,
+        "page": 5
+      },
+      {
+        "text": "Chemical reasoning capabilities",
+        "level": 1,
+        "page": 6
+      },
+      {
+        "text": "Article",
+        "level": 1,
+        "page": 7
+      },
+      {
+        "text": "Discussion",
+        "level": 1,
+        "page": 8
+      },
+      {
+        "text": "Technology use disclosure",
+        "level": 1,
+        "page": 8
+      },
+      {
+        "text": "Online content",
+        "level": 1,
+        "page": 8
+      },
+      {
+        "text": "Article",
+        "level": 1,
+        "page": 9
+      },
+      {
+        "text": "Data availability",
+        "level": 1,
+        "page": 10
+      },
+      {
+        "text": "Code availability",
+        "level": 1,
+        "page": 10
+      },
+      {
+        "text": "Additional information",
+        "level": 1,
+        "page": 10
+      },
+      {
+        "text": "Article",
+        "level": 1,
+        "page": 11
+      },
+      {
+        "text": "Article",
+        "level": 1,
+        "page": 13
+      }
+    ]
+  },
+  "92": {
+    "title": "TranscriptFormer: A generative cell atlas across 1.5 billion years of evolution",
+    "regex_found_methods": true,
+    "headings": [
+      {
+        "text": "TranscriptFormer: A generative cell atlas across 1.5 billion years of evolution",
+        "level": 1,
+        "page": 1
+      },
+      {
+        "text": "The TranscriptFormer model family",
+        "level": 1,
+        "page": 2
+      },
+      {
+        "text": "Cell  atlas  pretraining  enables  generalizable  cell  type and state representations across species",
+        "level": 1,
+        "page": 2
+      },
+      {
+        "text": "TranscriptFormer infers human cell states across biological contexts",
+        "level": 1,
+        "page": 3
+      },
+      {
+        "text": "Emergent  hierarchical  biological  structure  in  TranscriptFormer cell and gene embeddings",
+        "level": 1,
+        "page": 4
+      },
+      {
+        "text": "Using  TranscriptFormer  as  a  virtual  instrument  via prompting",
+        "level": 1,
+        "page": 5
+      },
+      {
+        "text": "Conclusions",
+        "level": 1,
+        "page": 6
+      },
+      {
+        "text": "Materials and methods summary Data curation and processing",
+        "level": 1,
+        "page": 7
+      },
+      {
+        "text": "Modeling framework",
+        "level": 1,
+        "page": 7
+      },
+      {
+        "text": "Network architecture",
+        "level": 1,
+        "page": 7
+      },
+      {
+        "text": "Training and configurations",
+        "level": 1,
+        "page": 7
+      },
+      {
+        "text": "Analysis methods",
+        "level": 1,
+        "page": 7
+      },
+      {
+        "text": "REFERENCES AND NOTES",
+        "level": 1,
+        "page": 7
+      },
+      {
+        "text": "ACKNOWLEDGMENTS",
+        "level": 1,
+        "page": 10
+      },
+      {
+        "text": "SUPPLEMENTARY MATERIALS",
+        "level": 1,
+        "page": 10
+      },
+      {
+        "text": "TranscriptFormer: A generative cell atlas across 1.5 billion years of evolution",
+        "level": 1,
+        "page": 18
+      },
+      {
+        "text": "View the article online",
+        "level": 1,
+        "page": 18
+      }
+    ]
+  },
+  "105": {
+    "title": "BitterMasS: Predicting Bitterness from Mass Spectra",
+    "regex_found_methods": true,
+    "headings": [
+      {
+        "text": "BitterMasS: Predicting Bitterness from Mass Spectra",
+        "level": 1,
+        "page": 1
+      },
+      {
+        "text": "ACCESS",
+        "level": 1,
+        "page": 1
+      },
+      {
+        "text": "■ INTRODUCTION",
+        "level": 1,
+        "page": 1
+      },
+      {
+        "text": "■ MATERIALS AND METHODS",
+        "level": 1,
+        "page": 2
+      },
+      {
+        "text": "■ RESULTS",
+        "level": 1,
+        "page": 5
+      },
+      {
+        "text": "■ DISCUSSION",
+        "level": 1,
+        "page": 7
+      },
+      {
+        "text": "Table 5. Test Results of Spectrum -Property and Spectrum -Structure -Property Strategies on External Set 1",
+        "level": 1,
+        "page": 8
+      },
+      {
+        "text": "■ ASSOCIATED CONTENT",
+        "level": 1,
+        "page": 9
+      },
+      {
+        "text": "* sı Supporting Information",
+        "level": 1,
+        "page": 9
+      },
+      {
+        "text": "■ AUTHOR INFORMATION",
+        "level": 1,
+        "page": 9
+      },
+      {
+        "text": "Corresponding Author",
+        "level": 1,
+        "page": 9
+      },
+      {
+        "text": "Authors",
+        "level": 1,
+        "page": 9
+      },
+      {
+        "text": "Funding",
+        "level": 1,
+        "page": 9
+      },
+      {
+        "text": "Notes",
+        "level": 1,
+        "page": 9
+      },
+      {
+        "text": "■ ACKNOWLEDGMENTS",
+        "level": 1,
+        "page": 9
+      },
+      {
+        "text": "■ REFERENCES",
+        "level": 1,
+        "page": 9
+      }
+    ]
+  },
+  "115": {
+    "title": "Generative pretraining from large-scale transcriptomes for single-cell deciphering",
+    "regex_found_methods": true,
+    "headings": [
+      {
+        "text": "iScience",
+        "level": 1,
+        "page": 1
+      },
+      {
+        "text": "Article",
+        "level": 1,
+        "page": 1
+      },
+      {
+        "text": "Generative pretraining from large-scale transcriptomes for single-cell deciphering",
+        "level": 1,
+        "page": 1
+      },
+      {
+        "text": "iScience",
+        "level": 1,
+        "page": 2
+      },
+      {
+        "text": "Article",
+        "level": 1,
+        "page": 2
+      },
+      {
+        "text": "Generative pretraining from large-scale transcriptomes for single-cell deciphering",
+        "level": 1,
+        "page": 2
+      },
+      {
+        "text": "SUMMARY",
+        "level": 1,
+        "page": 2
+      },
+      {
+        "text": "INTRODUCTION",
+        "level": 1,
+        "page": 2
+      },
+      {
+        "text": "RESULTS",
+        "level": 1,
+        "page": 3
+      },
+      {
+        "text": "An overview of tGPT and its downstream applications",
+        "level": 1,
+        "page": 3
+      },
+      {
+        "text": "Quantitative evaluations of tGPT on clustering",
+        "level": 1,
+        "page": 3
+      },
+      {
+        "text": "Distinct features learned by tGPT are connected to cell types",
+        "level": 1,
+        "page": 6
+      },
+      {
+        "text": "Figure 4. Diffusion pseudo-time analysis on the HCA and HCL datasets",
+        "level": 1,
+        "page": 8
+      },
+      {
+        "text": "Inference of developmental lineage",
+        "level": 1,
+        "page": 8
+      },
+      {
+        "text": "Clinical significance of tGPT in bulk sequencing sample",
+        "level": 1,
+        "page": 8
+      },
+      {
+        "text": "DISCUSSION",
+        "level": 1,
+        "page": 8
+      },
+      {
+        "text": "Figure 5. Continued",
+        "level": 1,
+        "page": 10
+      },
+      {
+        "text": "Conclusion",
+        "level": 1,
+        "page": 11
+      },
+      {
+        "text": "Limitations of the study",
+        "level": 1,
+        "page": 11
+      },
+      {
+        "text": "STAR + METHODS",
+        "level": 1,
+        "page": 11
+      },
+      {
+        "text": "SUPPLEMENTAL INFORMATION",
+        "level": 1,
+        "page": 11
+      },
+      {
+        "text": "ACKNOWLEDGMENTS",
+        "level": 1,
+        "page": 11
+      },
+      {
+        "text": "AUTHOR CONTRIBUTIONS",
+        "level": 1,
+        "page": 12
+      },
+      {
+        "text": "DECLARATION OF INTERESTS",
+        "level": 1,
+        "page": 12
+      },
+      {
+        "text": "REFERENCES",
+        "level": 1,
+        "page": 12
+      },
+      {
+        "text": "STAR + METHODS",
+        "level": 1,
+        "page": 14
+      },
+      {
+        "text": "KEY RESOURCES TABLE",
+        "level": 1,
+        "page": 14
+      },
+      {
+        "text": "RESOURCE AVAILABILITY",
+        "level": 1,
+        "page": 14
+      },
+      {
+        "text": "Lead contact",
+        "level": 1,
+        "page": 14
+      },
+      {
+        "text": "Materials availability",
+        "level": 1,
+        "page": 14
+      },
+      {
+        "text": "Data and code availability",
+        "level": 1,
+        "page": 14
+      },
+      {
+        "text": "EXPERIMENTAL MODEL AND SUBJECT DETAILS",
+        "level": 1,
+        "page": 14
+      },
+      {
+        "text": "Human Cell Atlas Census of Immune Cells (HCA)",
+        "level": 1,
+        "page": 15
+      },
+      {
+        "text": "Human cell Landscape (HCL)",
+        "level": 1,
+        "page": 15
+      },
+      {
+        "text": "Tabula Mursi",
+        "level": 1,
+        "page": 15
+      },
+      {
+        "text": "The Cancer Genome Atlas (TCGA)",
+        "level": 1,
+        "page": 15
+      },
+      {
+        "text": "Genotype-Tissue Expression Project (GTEx)",
+        "level": 1,
+        "page": 15
+      },
+      {
+        "text": "METHOD DETAILS",
+        "level": 1,
+        "page": 15
+      },
+      {
+        "text": "Input preprocessing",
+        "level": 1,
+        "page": 15
+      },
+      {
+        "text": "The architecture of tGPT",
+        "level": 1,
+        "page": 15
+      },
+      {
+        "text": "Training scheme",
+        "level": 1,
+        "page": 16
+      },
+      {
+        "text": "Clustering on feature representation from tGPT",
+        "level": 1,
+        "page": 16
+      },
+      {
+        "text": "Features derived from self-attention",
+        "level": 1,
+        "page": 16
+      },
+      {
+        "text": "Attention analysis in relation to signaling",
+        "level": 1,
+        "page": 17
+      },
+      {
+        "text": "Diffusion pseudo-time maps construction",
+        "level": 1,
+        "page": 17
+      },
+      {
+        "text": "Benchmark methods",
+        "level": 1,
+        "page": 18
+      },
+      {
+        "text": "QUANTIFICATION AND STATISTICAL ANALYSIS",
+        "level": 1,
+        "page": 18
+      },
+      {
+        "text": "Clustering and batch-effect metrics",
+        "level": 1,
+        "page": 18
+      },
+      {
+        "text": "ADDITIONAL RESOURCES",
+        "level": 1,
+        "page": 20
+      }
+    ]
+  },
+  "259": {
+    "title": "Machine learning aided UV absorbance spectroscopy for microbial contamination in cell therapy products",
+    "regex_found_methods": true,
+    "headings": [
+      {
+        "text": "OPEN",
+        "level": 1,
+        "page": 1
+      },
+      {
+        "text": "Results Time to detection of E. coli using machine-learning aided UV absorbance spectroscopy",
+        "level": 1,
+        "page": 2
+      },
+      {
+        "text": "Detection of other microbial contaminants",
+        "level": 1,
+        "page": 4
+      },
+      {
+        "text": "Investigating robustness of machine-learning aided UV absorbance spectroscopy",
+        "level": 1,
+        "page": 5
+      },
+      {
+        "text": "Discussion",
+        "level": 1,
+        "page": 6
+      },
+      {
+        "text": "Conclusion",
+        "level": 1,
+        "page": 7
+      },
+      {
+        "text": "Methods Materials",
+        "level": 1,
+        "page": 9
+      },
+      {
+        "text": "Preparation of varying concentrations of NA and NAM in PBS",
+        "level": 1,
+        "page": 10
+      },
+      {
+        "text": "Human bone-marrow-derived MSCS isolation and culture",
+        "level": 1,
+        "page": 10
+      },
+      {
+        "text": "Preparation of PBS spiked sterile samples",
+        "level": 1,
+        "page": 11
+      },
+      {
+        "text": "Preparation of microbes inoculated samples",
+        "level": 1,
+        "page": 11
+      },
+      {
+        "text": "MSCs inoculated with E. coli for time detection experiments",
+        "level": 1,
+        "page": 11
+      },
+      {
+        "text": "Selection of suitable PAT",
+        "level": 1,
+        "page": 12
+      },
+      {
+        "text": "UV-absorbance spectrometer measurements",
+        "level": 1,
+        "page": 12
+      },
+      {
+        "text": "UV-absorbance spectral processing",
+        "level": 1,
+        "page": 12
+      },
+      {
+        "text": "Selection of suitable machine-learning algorithm",
+        "level": 1,
+        "page": 12
+      },
+      {
+        "text": "Construction of SVM model",
+        "level": 1,
+        "page": 12
+      },
+      {
+        "text": "LC-MS data analysis",
+        "level": 1,
+        "page": 12
+      },
+      {
+        "text": "Data availability",
+        "level": 1,
+        "page": 13
+      },
+      {
+        "text": "References",
+        "level": 1,
+        "page": 13
+      },
+      {
+        "text": "Acknowledgements",
+        "level": 1,
+        "page": 14
+      },
+      {
+        "text": "Author contributions",
+        "level": 1,
+        "page": 14
+      },
+      {
+        "text": "Declarations",
+        "level": 1,
+        "page": 14
+      },
+      {
+        "text": "Competing interests",
+        "level": 1,
+        "page": 14
+      },
+      {
+        "text": "Additional information",
+        "level": 1,
+        "page": 14
+      }
+    ]
+  },
+  "334": {
+    "title": "Rapid and Non-Invasive Assessment of Texture Profile Analysis of Common Carp (Cyprinus carpio L.) Using Hyperspectral Imaging and Machine Learning",
+    "regex_found_methods": true,
+    "headings": [
+      {
+        "text": "Rapid and Non-Invasive Assessment of Texture Profile Analysis of Common Carp ( Cyprinus carpio L.) Using Hyperspectral Imaging and Machine Learning",
+        "level": 1,
+        "page": 1
+      },
+      {
+        "text": "1. Introduction",
+        "level": 1,
+        "page": 1
+      },
+      {
+        "text": "2. Materials and Methods",
+        "level": 1,
+        "page": 2
+      },
+      {
+        "text": "2.1. Ethics Statement and Sampling",
+        "level": 1,
+        "page": 2
+      },
+      {
+        "text": "2.2. Acquiring the Skin Hyperspectral Images of Four Regions of Live Common Carp",
+        "level": 1,
+        "page": 3
+      },
+      {
+        "text": "2.3. Processing the Skin HSI",
+        "level": 1,
+        "page": 3
+      },
+      {
+        "text": "2.4. Selecting the Optimal Wavelength",
+        "level": 1,
+        "page": 3
+      },
+      {
+        "text": "2.5. Measuring the Texture Indicators of Common Carp Muscle",
+        "level": 1,
+        "page": 3
+      },
+      {
+        "text": "2.6. Estimating the Muscle Texture Indicators with the Skin HSI Data",
+        "level": 1,
+        "page": 4
+      },
+      {
+        "text": "2.7. Evaluating the Accuracies of Six ML Models",
+        "level": 1,
+        "page": 4
+      },
+      {
+        "text": "2.8. Visualizing the Images of TPA Values",
+        "level": 1,
+        "page": 5
+      },
+      {
+        "text": "3. Results",
+        "level": 1,
+        "page": 5
+      },
+      {
+        "text": "3.1. Spectral Features of the Skin of Scaled Common Carp",
+        "level": 1,
+        "page": 5
+      },
+      {
+        "text": "represent the reflectance of four skin regions. 3.2. Texture Diversities of Common Carp Muscles",
+        "level": 1,
+        "page": 6
+      },
+      {
+        "text": "3.3. Accurate Prediction of Muscle Texture Profiles Based on the Full Spectral Range",
+        "level": 1,
+        "page": 7
+      },
+      {
+        "text": "3.4. Accurate Prediction of the Muscle Texture Profiles Based on the Optimum Wavelengths",
+        "level": 1,
+        "page": 8
+      },
+      {
+        "text": "3.5. Visualizing the Texture Parameters",
+        "level": 1,
+        "page": 11
+      },
+      {
+        "text": "4. Discussion",
+        "level": 1,
+        "page": 12
+      },
+      {
+        "text": "5. Conclusions",
+        "level": 1,
+        "page": 14
+      },
+      {
+        "text": "References",
+        "level": 1,
+        "page": 15
+      }
+    ]
+  },
+  "18": {
+    "title": "Sequential Learning Methods for the Experimental Optimization of Cell Culture Media for Cellular Agriculture",
+    "regex_found_methods": true,
+    "headings": [
+      {
+        "text": "UC Davis",
+        "level": 1,
+        "page": 1
+      },
+      {
+        "text": "UC Davis Electronic Theses and Dissertations",
+        "level": 1,
+        "page": 1
+      },
+      {
+        "text": "Title",
+        "level": 1,
+        "page": 1
+      },
+      {
+        "text": "Permalink",
+        "level": 1,
+        "page": 1
+      },
+      {
+        "text": "Author",
+        "level": 1,
+        "page": 1
+      },
+      {
+        "text": "Publication Date",
+        "level": 1,
+        "page": 1
+      },
+      {
+        "text": "Sequential Learning Methods for the Experimental Optimization of Cell Culture Media for Cellular Agriculture",
+        "level": 1,
+        "page": 2
+      },
+      {
+        "text": "ZACHARY ANTHONY COSENZA DISSERTATION",
+        "level": 1,
+        "page": 2
+      },
+      {
+        "text": "Contents",
+        "level": 1,
+        "page": 4
+      },
+      {
+        "text": "Abstract",
+        "level": 1,
+        "page": 6
+      },
+      {
+        "text": "Acknowledgments",
+        "level": 1,
+        "page": 7
+      },
+      {
+        "text": "CHAPTER 1",
+        "level": 1,
+        "page": 8
+      },
+      {
+        "text": "Introduction and Literature Review",
+        "level": 1,
+        "page": 8
+      },
+      {
+        "text": "1.1. Review of Cellular Agriculture and Cell Culture Media",
+        "level": 1,
+        "page": 8
+      },
+      {
+        "text": "1.2. Review of Experimental Optimization Methods",
+        "level": 1,
+        "page": 13
+      },
+      {
+        "text": "1.3. Review of Thesis",
+        "level": 1,
+        "page": 23
+      },
+      {
+        "text": "CHAPTER 2",
+        "level": 1,
+        "page": 26
+      },
+      {
+        "text": "A Generalizable Hybrid Surrogate Framework for Expensive Design Optimization Problems",
+        "level": 1,
+        "page": 26
+      },
+      {
+        "text": "2.1. Introduction",
+        "level": 1,
+        "page": 26
+      },
+      {
+        "text": "2.2. Methods",
+        "level": 1,
+        "page": 28
+      },
+      {
+        "text": "2.3. Results",
+        "level": 1,
+        "page": 34
+      },
+      {
+        "text": "2.3.2. Algorithm Performance in the Presence of Simulated Experimental Noise. To",
+        "level": 1,
+        "page": 35
+      },
+      {
+        "text": "2.3.3. Evaluating the Effect of Convergence Parameters on Algorithm Performance.",
+        "level": 1,
+        "page": 35
+      },
+      {
+        "text": "2.4. Discussion",
+        "level": 1,
+        "page": 40
+      },
+      {
+        "text": "CHAPTER 3",
+        "level": 1,
+        "page": 44
+      },
+      {
+        "text": "Optimization of Muscle Cell Culture Media using Nonlinear Design of Experiments",
+        "level": 1,
+        "page": 44
+      },
+      {
+        "text": "3.1. Introduction",
+        "level": 1,
+        "page": 44
+      },
+      {
+        "text": "3.2. Materials and Methods",
+        "level": 1,
+        "page": 46
+      },
+      {
+        "text": "3.3. Results",
+        "level": 1,
+        "page": 51
+      },
+      {
+        "text": "3.3.3. Comparison of Media Resulting from Novel HND and Traditional DOE. Fig-",
+        "level": 1,
+        "page": 52
+      },
+      {
+        "text": "3.4. Discussion",
+        "level": 1,
+        "page": 56
+      },
+      {
+        "text": "CHAPTER 4",
+        "level": 1,
+        "page": 58
+      },
+      {
+        "text": "Multi-Information Source Bayesian Optimization of Culture Media for Cellular Agriculture",
+        "level": 1,
+        "page": 58
+      },
+      {
+        "text": "4.1. Introduction",
+        "level": 1,
+        "page": 58
+      },
+      {
+        "text": "4.2. Methods",
+        "level": 1,
+        "page": 60
+      },
+      {
+        "text": "4.3. Results",
+        "level": 1,
+        "page": 68
+      },
+      {
+        "text": "4.4. Discussion",
+        "level": 1,
+        "page": 74
+      },
+      {
+        "text": "CHAPTER 5",
+        "level": 1,
+        "page": 78
+      },
+      {
+        "text": "Multi-Objective Bayesian Optimization of Serum-Free Culture Media for Cellular Agriculture",
+        "level": 1,
+        "page": 78
+      },
+      {
+        "text": "5.1. Introduction",
+        "level": 1,
+        "page": 78
+      },
+      {
+        "text": "5.2. Materials and Methods",
+        "level": 1,
+        "page": 81
+      },
+      {
+        "text": "5.2.3. Cell Growth Experiments and Assays. We utilized a multi-information source (IS)",
+        "level": 1,
+        "page": 82
+      },
+      {
+        "text": "5.3. Results",
+        "level": 1,
+        "page": 87
+      },
+      {
+        "text": "5.4. Discussion",
+        "level": 1,
+        "page": 92
+      },
+      {
+        "text": "CHAPTER 6",
+        "level": 1,
+        "page": 94
+      },
+      {
+        "text": "Review of Thesis and Future Work",
+        "level": 1,
+        "page": 94
+      },
+      {
+        "text": "APPENDIX A",
+        "level": 1,
+        "page": 97
+      },
+      {
+        "text": "Optimization of Muscle Cell Culture Media using Nonlinear Design of Experiments",
+        "level": 1,
+        "page": 97
+      },
+      {
+        "text": "APPENDIX B",
+        "level": 1,
+        "page": 99
+      },
+      {
+        "text": "Multi-Information Source Bayesian Optimization of Culture Media for Cellular Agriculture",
+        "level": 1,
+        "page": 99
+      },
+      {
+        "text": "B.1. Bayesian Model Details",
+        "level": 1,
+        "page": 99
+      },
+      {
+        "text": "B.2. BO Acquisition Function Details",
+        "level": 1,
+        "page": 100
+      },
+      {
+        "text": "B.3. Computational Validation of BO Method Test Function Details",
+        "level": 1,
+        "page": 101
+      },
+      {
+        "text": "B.4. Data and Model Availability",
+        "level": 1,
+        "page": 102
+      },
+      {
+        "text": "APPENDIX C",
+        "level": 1,
+        "page": 103
+      },
+      {
+        "text": "Multi-Objective Bayesian Optimization of Serum-Free Culture Media for Cellular Agriculture",
+        "level": 1,
+        "page": 103
+      },
+      {
+        "text": "C.1. Serum-Free Media Components",
+        "level": 1,
+        "page": 103
+      },
+      {
+        "text": "C.2. Computational Validation of MOBO Method",
+        "level": 1,
+        "page": 106
+      },
+      {
+        "text": "C.3. Computational Test Problem Information",
+        "level": 1,
+        "page": 107
+      },
+      {
+        "text": "C.4. Data and Model Availability",
+        "level": 1,
+        "page": 108
+      },
+      {
+        "text": "Bibliography",
+        "level": 1,
+        "page": 109
+      }
+    ]
+  }
+}

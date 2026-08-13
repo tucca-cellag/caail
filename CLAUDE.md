@@ -61,10 +61,15 @@ over and still hold:
   matrix-header link pointing there) are never auto-added.
 
 `.claude/skills/matrix-classification-audit/` retains the zero-token
-`extract_matrix_corpus.py`, which pulls each matrix ref's methods text from the Zotero
-PDF full-text cache and reports per-ref `has_fulltext` — the mechanical half of an audit,
-and the fastest way to see which placements are grounded in a paper anyone has read. See
-that directory's `README.md`.
+`extract_matrix_corpus.py`, which pulls each matrix ref's methods text and reports per-ref
+`has_fulltext` — the mechanical half of an audit, and the fastest way to see which
+placements are grounded in a paper anyone has read. It reads a **Docling section** where
+one exists and falls back to Zotero's flat PDF full-text cache where it does not, so weigh
+evidence by the record's `methods_source`: the fallback path has no end boundary and
+truncates at 12,000 chars (96% of refs), while a Docling section carries both boundaries
+and its page range. Build the Docling side with the opt-in `docling_ingest.py`; run
+`measure_extraction_quality.py` for the live figures rather than trusting any written down.
+See that directory's `README.md`.
 
 Every drafted or re-audited entry is verified before commit by read-only adversarial reviewer
 subagents in `.claude/agents/` — **`caail-citation-reviewer`** (Papers.md bibliographic
