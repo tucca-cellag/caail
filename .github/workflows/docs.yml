@@ -52,7 +52,7 @@ jobs:
           # Repository variable, not a secret: this URL is compiled into the
           # client bundle by design. Unset, the two usage events no-op.
           PUBLIC_CAAIL_EVENTS_API: ${{ vars.PUBLIC_CAAIL_EVENTS_API }}
-      - name: Lighthouse (a11y both; perf landing-only)
+      - name: Lighthouse (a11y blocks, perf warns; both URLs)
         run: pnpm --dir site exec lhci autorun --config=lighthouserc.json
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v5
