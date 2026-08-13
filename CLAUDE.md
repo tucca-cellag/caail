@@ -427,8 +427,14 @@ non-catalog canonical files (`OtherResources.md`, `ReferenceWorks.md`, `AwesomeL
   are free to read with no license at all (every bronze, 30 of the green), and 41 more are `-nd`. So
   anything that **publishes** text (a public tool, a shipped dataset) must filter on
   `licenseTier ∈ {permissive, copyleft}` (131 works, 38%), never on `is_oa` (~74%). The tier governs
-  *redistribution*, not use: an organisation with legitimate access may generally index privately
-  whatever it may lawfully read, so the constraint binds on making it public, not on working with it.
+  *redistribution*. **Do not restate that as a permission to copy internally**, which is what this
+  line used to do, and what the #ask band's licensing card was deleted for: whether an organisation
+  may index what it can read depends on its own access agreements and on the law where it operates,
+  and CAAIL takes no position on it. The tier bounds publishing; it licenses nothing. (Checked
+  against the statutes twice, and deliberately not summarised here or in the agent skill — a library
+  that indexes work should not be handing out legal conclusions about it. The reasoning is on
+  CAAIL-2. Note also that the claim survived its own retraction in two files, so when a claim is
+  withdrawn anywhere, grep for every copy of it.)
 - **DOIs & citation counts** are a second DB-owned axis mirroring licenses. `catalog` +
   `dataset_entries` carry nullable `doi` + `doi_source` (`manual` = curator-verified; `auto` reserved).
   Like licenses the DOI is **DB-only** (not in canonical Markdown): `seedDois` (run via `db:reseed-axes`) folds the
