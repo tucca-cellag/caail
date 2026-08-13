@@ -6,41 +6,28 @@ needs no PDF and no conversion. Keeping the split means the section rule stays
 in the committed `docling_sections.py` and is never reimplemented here — a
 second copy of that rule is exactly the drift this repo keeps paying for.
 
-Pipeline options mirror `docling_ingest.build_converter()` verbatim:
-OCR off (these are born-digital publisher PDFs with a real text layer, and OCR
-nearly tripled per-document time for no gain), table structure ON (it is what
-makes the data-availability and accession extraction possible).
+The converter comes from `docling_ingest.build_converter()` rather than being
+rebuilt here. Those options (OCR off, table structure on) decide what a converted
+document *contains*, so a second copy would let cluster- and locally-converted
+docs diverge with nothing failing — the same argument that keeps the section rule
+in one place, one layer down.
+
+Requires the skill directory on `sys.path`; the sbatch passes `CAAIL_SKILL_DIR`.
 """
 import argparse
 import json
+import os
+import sys
 from pathlib import Path
 
+# The sibling skill scripts, shipped to the cluster alongside this file. The
+# sbatch sets CAAIL_SKILL_DIR; the relative fallback keeps this runnable from a
+# checkout where hpc/ still sits inside the skill directory.
+_SKILL = os.environ.get('CAAIL_SKILL_DIR') or str(Path(__file__).resolve().parent.parent)
+sys.path.insert(0, _SKILL)
+sys.path.insert(0, str(Path(_SKILL).parent / 'zotero-collection-scope'))
 
-def build_converter(artifacts_path, threads):
-    from docling.datamodel.base_models import InputFormat
-    from docling.datamodel.pipeline_options import PdfPipelineOptions
-    from docling.document_converter import DocumentConverter, PdfFormatOption
-
-    opts = PdfPipelineOptions()
-    opts.do_ocr = False
-    opts.do_table_structure = True
-    if artifacts_path:
-        # Pre-staged weights. Without this every array task races the same
-        # HuggingFace cache, which is how you get half-written model files.
-        opts.artifacts_path = artifacts_path
-
-    # Thread pinning is best-effort: the accelerator options moved between
-    # docling versions, and a stale signature must not fail the whole array.
-    try:
-        from docling.datamodel.pipeline_options import (AcceleratorDevice,
-                                                        AcceleratorOptions)
-        opts.accelerator_options = AcceleratorOptions(
-            num_threads=threads, device=AcceleratorDevice.CPU)
-    except Exception as exc:  # noqa: BLE001
-        print(f'accelerator options unavailable ({exc}); using defaults')
-
-    return DocumentConverter(
-        format_options={InputFormat.PDF: PdfFormatOption(pipeline_options=opts)})
+import docling_ingest  # noqa: E402
 
 
 def main():
@@ -61,7 +48,8 @@ def main():
         print(f'ref {args.ref}: docs already present, skipping')
         return
 
-    conv = build_converter(args.artifacts_path or None, args.threads)
+    conv = docling_ingest.build_converter(
+        artifacts_path=args.artifacts_path or None, threads=args.threads)
     doc = conv.convert(args.pdf).document
 
     # Write via a temp file then rename. A task killed mid-write would otherwise

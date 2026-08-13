@@ -34,6 +34,11 @@ set -euo pipefail
 : "${CAAIL_PDF_DIR:?set CAAIL_PDF_DIR to the staged PDFs + refs.txt}"
 : "${CAAIL_OUT_DIR:?set CAAIL_OUT_DIR to the ingest output directory}"
 : "${CAAIL_HPC_DIR:?set CAAIL_HPC_DIR to this directory on the cluster}"
+# convert_one.py builds its converter from docling_ingest.build_converter()
+# rather than keeping a second copy of those options, so it needs the skill on
+# sys.path. Its relative fallback is only correct in a checkout where hpc/ still
+# sits inside the skill directory, which is not the shipped layout.
+: "${CAAIL_SKILL_DIR:?set CAAIL_SKILL_DIR to the skill scripts on the cluster}"
 
 REF=$(sed -n "${SLURM_ARRAY_TASK_ID}p" "$CAAIL_PDF_DIR/refs.txt")
 if [ -z "$REF" ]; then

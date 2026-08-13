@@ -30,9 +30,16 @@ also means improving the rule costs a 40-second respan rather than another full 
 
 ## Site configuration
 
-These scripts hardcode no paths. Every location is a required environment variable, so a
-missing one fails loudly at submit time rather than silently writing somewhere wrong.
-Set them in your shell, or in a small uncommitted wrapper:
+These scripts hardcode no paths. Every location is a required environment variable
+(`: "${VAR:?…}"`), so a missing one aborts the job with a message naming the variable
+rather than writing somewhere plausible and wrong.
+
+**That check runs on the allocated node, not at submit time.** `sbatch` accepts the job,
+it queues, waits for an allocation, and only then fails — and under the dependency chain
+below, a setup job that dies this way leaves the whole array sitting in
+`DependencyNeverSatisfied` with nothing obviously wrong. Export the variables in the same
+shell you submit from, and if you want a real submit-time check, put the `:?` guards in a
+wrapper that runs before `sbatch`.
 
 | Variable | What it points at |
 | --- | --- |

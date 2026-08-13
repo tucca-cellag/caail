@@ -204,6 +204,16 @@ subdirs = sorted(d for d in os.listdir(HERE)
 # Demanding a README per directory would add an empty file to satisfy a checker;
 # demanding the top-level table list every nested file would recreate the
 # hand-maintained fact this whole check exists to catch.
+#
+# The delegating form carries one extra obligation, asserted below: a
+# subdirectory that documents itself must still be NAMED in the top-level README.
+# Otherwise the detail is discoverable only by someone who already knows the
+# directory exists, and "delegated" becomes indistinguishable from "undocumented".
+check("README names every subdirectory that documents itself",
+      [d for d in subdirs
+       if os.path.exists(os.path.join(HERE, d, "README.md"))
+       and f"{d}/" not in readme], [])
+
 undocumented = []
 for d in subdirs:
     sub_path = os.path.join(HERE, d, "README.md")

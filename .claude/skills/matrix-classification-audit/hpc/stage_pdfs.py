@@ -2,8 +2,19 @@
 """Stage each ref's PDFs as one `ref-<id>.pdf` for the cluster array, plus refs.txt.
 
 Runs on the machine that has Zotero, since the cluster cannot reach the local
-Zotero API. It resolves refs the same way `docling_ingest.py` does, so what gets
-staged is what the extractor will later look for.
+Zotero API. It resolves each ref to its Zotero item the same way
+`docling_ingest.py` does, so what gets staged is what the extractor will later
+look for.
+
+**It does not build the same input document.** `docling_ingest.resolve_pdfs` takes
+`scope.find_pdf_attachment_key`, which is one PDF per item; this merges all of
+them. So a ref converted here and the same ref converted by a local
+`docling_ingest.py` run can differ in their *input*, not merely in extractor
+version, and `docs/ref-<id>.json` records neither. Since the ingest is resumable
+and skips refs whose docs already exist, mixing the two paths produces a corpus
+that is heterogeneous in a way nothing downstream can see. Convert a corpus by
+one route or the other; if that is impossible, re-convert the overlap rather than
+letting the skip decide.
 
 ## Why this merges rather than picking one file
 
@@ -133,7 +144,12 @@ def main():
         refs.txt at all, so the directory looks staged while the documented
         next step (`wc -l < refs.txt`) fails on it.
         """
-        (out / "refs.txt").write_text("\n".join(str(r) for r in staged) + "\n")
+        # Empty must be a genuinely empty file. "\n".join([]) + "\n" is one
+        # newline, so `wc -l < refs.txt` reports 1, the documented submit line
+        # launches a one-task array, and "nothing staged" surfaces as a SLURM
+        # task failing its `[ -z "$REF" ]` guard instead of as a staging error.
+        (out / "refs.txt").write_text(
+            "".join(f"{r}\n" for r in staged))
         json.dump({"staged": staged, "skipped": skipped,
                    "merged": {str(r): names for r, names in merged},
                    "partial": {str(r): n for r, n in partial}},
@@ -165,13 +181,33 @@ def main():
 
             # An attachment Zotero knows about but has not downloaded (or a
             # linked file with no storage directory) is a silent half-merge:
-            # `paths` comes back length 1, the merge branch never runs, and the
-            # manifest is indistinguishable from a genuinely single-PDF ref.
-            # That is the "converting either file alone loses half the evidence"
-            # failure this script exists to prevent, so it is recorded loudly
-            # rather than inferred from a page count later.
+            # `paths` comes back short, the merge branch may not run at all, and
+            # the result is indistinguishable from a genuinely single-PDF ref.
+            #
+            # So it is SKIPPED, not staged with a note. Staging it converts the
+            # supplement alone into a `docs/ref-<id>.json` that looks exactly like
+            # a complete one, which is the expensive, invisible error; leaving the
+            # ref out is the cheap, visible one. Same choice as `build_indexes`
+            # makes on the join, for the same reason.
             if len(paths) != len(atts):
-                partial.append((rid, f"{len(paths)} of {len(atts)} attachments on disk"))
+                partial.append((rid, f"only {len(paths)} of {len(atts)} attachments "
+                                     f"are on disk"))
+                continue
+
+            # More than one non-supplement PDF is almost always two copies of the
+            # same article -- a publisher "Full Text PDF" beside an accepted
+            # manuscript, or a re-saved duplicate. Concatenating those converts the
+            # paper twice: the section's page numbers stop matching the published
+            # article and the availability statement can be located twice.
+            # `find_pdf_attachment_key`'s single-PDF behaviour was immune to this,
+            # so merging must not regress it.
+            n_main = sum(1 for _k, fname in atts if not SUPPLEMENT_RE.search(fname))
+            if n_main > 1:
+                skipped.append((rid, f"{n_main} non-supplement PDFs — probably "
+                                     f"duplicate copies of the article, which would "
+                                     f"be converted twice; merge by hand or remove "
+                                     f"the duplicate"))
+                continue
 
             dest = out / f"ref-{rid}.pdf"
             if len(paths) == 1:

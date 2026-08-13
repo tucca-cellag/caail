@@ -52,13 +52,21 @@ from docling_sections import (AVAILABILITY_HEADING_RE, find_labeled_spans,  # no
                               find_methods_span)
 
 
-def build_converter():
+def build_converter(artifacts_path=None, threads=None):
     """Docling converter tuned for born-digital publisher PDFs.
 
     OCR is off: these PDFs carry a real text layer, and OCR nearly tripled the
     per-document time in the CAAIL-206 smoke test (119s -> 43s with it off) for
     no gain. Table structure stays on -- it is what makes data-availability and
     accession extraction possible, which is half the point of the ingest.
+
+    `artifacts_path` and `threads` exist for the cluster caller (`hpc/`), which
+    needs pre-staged weights and a task-local thread count. They are parameters
+    rather than a second copy of this function on purpose: these options decide
+    what a converted document contains, so two definitions would let cluster- and
+    locally-converted docs diverge with nothing failing. The section rule is kept
+    single-sourced for the same reason; this is that argument applied one layer
+    down.
     """
     from docling.datamodel.base_models import InputFormat
     from docling.datamodel.pipeline_options import PdfPipelineOptions
@@ -67,6 +75,21 @@ def build_converter():
     opts = PdfPipelineOptions()
     opts.do_ocr = False
     opts.do_table_structure = True
+    if artifacts_path:
+        # Pre-staged weights. Without this every array task races the same
+        # HuggingFace cache, which is how you get half-written model files.
+        opts.artifacts_path = artifacts_path
+    if threads:
+        # Best-effort: the accelerator options moved between docling versions,
+        # and a stale signature must not fail a 224-task array.
+        try:
+            from docling.datamodel.pipeline_options import (AcceleratorDevice,
+                                                            AcceleratorOptions)
+            opts.accelerator_options = AcceleratorOptions(
+                num_threads=threads, device=AcceleratorDevice.CPU)
+        except Exception as exc:  # noqa: BLE001
+            print(f"accelerator options unavailable ({exc}); using defaults")
+
     return DocumentConverter(
         format_options={InputFormat.PDF: PdfFormatOption(pipeline_options=opts)})
 

@@ -293,6 +293,28 @@ def _norm_url(url):
     return _keep_fragment(url).split("#", 1)[0].rstrip("/")
 
 
+def check_url_join(rid, ref_url, item):
+    """Warn when a ref matched an item only because the fragment was dropped.
+
+    The dangerous join involves ONE item, so `build_indexes` cannot see it: a ref
+    citing `https://site.org` matches an item whose captured URL is
+    `https://site.org/#/paper/123`, and inherits that item's abstract, PDF and
+    methods text under a `has_fulltext: true` nobody has reason to doubt.
+
+    Equality after the safe normalizations (scheme, case, trailing slash) means
+    the fragment played no part, which is the overwhelmingly common case and
+    stays silent.
+    """
+    item_url = (item.get("data", {}).get("url") or "").strip()
+    if not ref_url or not item_url:
+        return
+    if _keep_fragment(ref_url) != _keep_fragment(item_url):
+        print(f"WARNING: ref {rid} joined to a Zotero item only after dropping a "
+              f"URL fragment — confirm it is the same paper:\n"
+              f"    Papers.md: {ref_url}\n"
+              f"    Zotero:    {item_url}", file=sys.stderr)
+
+
 def _keep_fragment(url):
     """Everything `_norm_url` does EXCEPT dropping the fragment.
 
@@ -314,18 +336,19 @@ def build_indexes(api, groups):
     Returns (doi_index, url_index), each {key: (group, item)}. Earlier groups
     win, so list caail (6549203) first to prefer its copies.
 
-    Collisions are reported rather than silently resolved first-wins. Normalizing
-    a URL necessarily merges keys, and every rule that merges more can merge two
-    *different* papers: a hash-routed URL like `https://site.org/#/paper/123`
-    normalizes to the bare domain, so a DOI-less reference citing `https://site.org`
-    would join to it and inherit its abstract, PDF and methods text.
+    Reports when two *Zotero items* collide on one URL key because of the fragment
+    rule, since first-wins then silently picks one of them.
 
-    That direction of error is the expensive one. A missed join reports
-    `has_fulltext: false` and someone goes looking for a paper we already have,
-    which is annoying and visible. A wrong join reports `has_fulltext: true` and a
-    placement gets audited against a different paper's methods section, which is
-    invisible and lands in the matrix. So the join stays strict and says when two
-    distinct URLs land on one key.
+    This is only half the exposure and the smaller half. The other half is a
+    *reference* joining to an item whose raw URL differs from the one cited: one
+    item, no collision, nothing to detect here. `check_url_join` covers that side
+    and is called from the resolution loop, where both URLs are in hand.
+
+    Both exist because that direction of error is the expensive one. A missed join
+    reports `has_fulltext: false`, someone goes looking for a paper we already
+    have, and the waste is visible. A wrong join reports `has_fulltext: true`, a
+    placement gets audited against a different paper's methods section, and
+    nothing looks broken.
     """
     doi_index, url_index = {}, {}
     url_sources = {}
@@ -459,13 +482,16 @@ def main():
                 rec["methods_pages"] = [section.get("page_start"),
                                         section.get("page_end")]
 
-        hit = (doi_index.get(doi.lower()) if doi else None) \
-            or (url_index.get(_norm_url(url)) if url else None)
+        by_doi = doi_index.get(doi.lower()) if doi else None
+        hit = by_doi or (url_index.get(_norm_url(url)) if url else None)
         if not hit:
             n_nozot += 1
             corpus.append(rec)
             continue
         group, item = hit
+        # Only the URL path can be wrong this way; a DOI match is exact.
+        if not by_doi:
+            check_url_join(rid, url, item)
         rec["zotero_group"] = group
         rec["abstract"] = (item.get("data", {}).get("abstractNote") or "").strip()
         pdf_key = scope.find_pdf_attachment_key(args.api, group, item.get("key"))
