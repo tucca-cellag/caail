@@ -20,11 +20,10 @@ const citationEdges = graph.citationEdges as CEdge[];
 const meta = graph.metadata as { nodes: number; sharedAuthor: ModeStats; citation: ModeStats };
 const base = (import.meta.env.BASE_URL ?? '/').replace(/\/$/, '');
 
-const AREA_KEYS = ['media', 'cell', 'bioprocess', 'scaffolding', 'sensory', 'tooling', 'eval'] as const;
+const AREA_KEYS = ['media', 'cell', 'bioprocess', 'scaffolding', 'sensory', 'tooling'] as const;
 const AREA_LABELS: Record<string, string> = {
   media: 'Media Optimization', cell: 'Cellular Engineering', bioprocess: 'Bioprocess Control',
   scaffolding: 'Scaffolding', sensory: 'Sensory Prediction', tooling: 'AI Tooling / Methodology',
-  eval: 'AI Evaluation & Benchmarking',
 };
 
 /** Connectivity in the active edge mode (drives sizing + isolation). */

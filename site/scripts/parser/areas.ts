@@ -1,5 +1,5 @@
 /**
- * areas.ts — fixed registry of the 7 research-area matrix columns.
+ * areas.ts — fixed registry of the 6 research-area matrix columns.
  *
  * Keys match the `--caail-area-*` CSS design tokens exactly so colors stay
  * in CSS, not in data.  Labels are the verbatim column headers from Papers.md.
@@ -10,7 +10,7 @@
 import type { Area } from './types';
 
 /**
- * The 7 research-area columns, in matrix column order.
+ * The 6 research-area columns, in matrix column order.
  * Used as the `areas` array in papers.json.
  */
 export const AREAS: ReadonlyArray<Area> = [
@@ -20,7 +20,6 @@ export const AREAS: ReadonlyArray<Area> = [
   { key: 'scaffolding', label: 'Scaffolding' },
   { key: 'sensory',     label: 'Sensory Prediction' },
   { key: 'tooling',     label: 'AI Tooling / Methodology' },
-  { key: 'eval',        label: 'AI Evaluation & Benchmarking' },
 ] as const;
 
 /** Fast lookup: trimmed label → key. Built once at module load. */

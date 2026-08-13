@@ -42,4 +42,4 @@ The methodological momentum here is real but the cell-ag-native evidence is thin
 
 - Software: the [AI Agents & Foundation Models](../Software.md#ai-agents--foundation-models) section in `Software.md`.
 - Data: the [Single-cell & perturbation corpora](../Datasets/HumanReference.md#single-cell--perturbation-corpora) in `Datasets/HumanReference.md` and the [Cell Line & Single-Cell Reference Atlases](../Databases.md#cell-line--single-cell-reference-atlases) in `Databases.md`.
-- Adjacent research areas: [Media Optimization](./MediaOptimization.md), [Bioprocess & Scale-Up](./Bioprocess.md), [Metabolic Modeling](./MetabolicModeling.md), [AI Tooling / Methodology](./AITooling.md), [AI Evaluation & Benchmarking](./AIEvaluation.md).
+- Adjacent research areas: [Media Optimization](./MediaOptimization.md), [Bioprocess & Scale-Up](./Bioprocess.md), [Metabolic Modeling](./MetabolicModeling.md), [AI Tooling / Methodology](./AITooling.md).

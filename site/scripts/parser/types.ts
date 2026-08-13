@@ -712,7 +712,6 @@ export const RecentEntrySchema = z.object({
     'scaffolding',
     'sensory',
     'tooling',
-    'eval',
   ]),
 });
 

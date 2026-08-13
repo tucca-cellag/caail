@@ -74,13 +74,6 @@ described in general form (a biomedical agent, an agent framework, a knowledge-g
 papers. Out of scope: a tool applied to a concrete cell-ag problem, which belongs in that problem's
 column (e.g. an agent used for media design → *Media Optimization*).
 
-### AI Evaluation & Benchmarking
-**Benchmarks, evaluation frameworks, and measurement methods** for AI and agent performance on
-biological / cell-ag-adjacent tasks. In scope: benchmark datasets bundled with protocols and metrics,
-evaluation methodologies, and verification frameworks. Out of scope: a model that merely *reports*
-benchmark numbers (it belongs in its own method × area), a dataset with no evaluation protocol
-(→ the `Datasets/` directory), and a leaderboard service (→ `Databases.md`).
-
 ## AI/ML methods (rows)
 
 ### Bayesian Optimization
@@ -215,8 +208,13 @@ wet-lab execution, not an in-silico agent alone.
 Papers whose **primary contribution is a benchmark or evaluation framework**: datasets paired with
 tasks, protocols, and metrics, or a method for scoring/verifying AI and agent performance. **Not** a
 model that is merely evaluated on a benchmark (→ its own method × area), a dataset shipped without an
-evaluation protocol (→ `Datasets/`), or a correspondence/commentary about an evaluation (→ *Reviews &
-Perspectives*).
+evaluation protocol (→ `Datasets/`), a leaderboard service (→ `Databases.md`), or a
+correspondence/commentary about an evaluation (→ *Reviews & Perspectives*).
+
+A paper in this row takes the **column of the research area its benchmark measures**, read off the
+task set rather than the title: a benchmark of protein-fitness or gene-perturbation tasks is
+*Cellular Engineering*, one of gel-microstructure tasks is *Scaffolding*, and one whose tasks span
+many sciences with no applied cell-ag endpoint is *AI Tooling / Methodology*.
 
 ### Agent Infrastructure (Frameworks, KGs, Protocols)
 The **substrate that agents run on**: agent frameworks, knowledge graphs, tool/communication

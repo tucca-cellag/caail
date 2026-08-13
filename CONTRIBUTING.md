@@ -69,7 +69,7 @@ The matrix and the `## References` list must be kept in sync:
 
    The matrix rows are the AI/ML methods currently in [Papers.md](./Papers.md): from classical ML (Bayesian Optimization, Deep Learning, GNN, …) through the foundation-model and agentic families. Each row label links to its definition in [Taxonomy.md](./Taxonomy.md); the live set is whatever `Papers.md` contains. Pick the row(s) that match; if none fit, add one (step 5).
 
-   Current matrix columns (research areas): Media Optimization, Cellular Engineering, Bioprocess & Scale-Up, Scaffolding, Sensory Prediction, AI Tooling / Methodology, AI Evaluation & Benchmarking.
+   Current matrix columns (research areas): Media Optimization, Cellular Engineering, Bioprocess & Scale-Up, Scaffolding, Sensory Prediction, AI Tooling / Methodology.
 
 5. **If the paper uses an AI method that isn't yet a row**, add a new row. The row label should link to the Wikipedia article for that method (so the link stays stable):
 
