@@ -51,8 +51,9 @@ over-request quietly costs future scheduling priority and buys nothing.
 ## Sequence
 
 ```bash
-# 1. Stage PDFs on the machine that has Zotero: ref-<id>.pdf + refs.txt, then ship
-#    them along with this directory and the skill scripts.
+# 1. Stage on the machine that has Zotero (the cluster cannot reach the local
+#    Zotero API), then ship the result along with this directory and the skill.
+python3 stage_pdfs.py --out <stage> --matrix-only
 
 # 2. Download the weights ONCE. Not left to the array: N tasks starting together race
 #    on one cache directory, and the usual outcome is half-written model files.
@@ -68,6 +69,31 @@ sbatch caail-docling-respan.sbatch
 # 5. Pull docs/ and sections/ back, then re-run the extract against them:
 #    extract_matrix_corpus.py --docling-corpus <dir>
 ```
+
+## Staging merges a paper's PDFs rather than picking one
+
+`scope.find_pdf_attachment_key` returns a **single** PDF per item, which is the
+wrong answer for any paper whose methods were published separately. Three refs in
+this corpus are exactly that: two *Science* papers and a preprint whose main text
+carries the model description and results while the methods sit in a
+supplementary PDF. Converting either file alone loses half the evidence, and
+letting the resolver take whichever it finds first makes that choice silently,
+and differently per ref.
+
+So `stage_pdfs.py` merges every PDF attached to the item into one document, main
+text first and supplements after, and Docling then sees a single paper in which
+`find_methods_span` can locate the methods wherever they actually are. Merging is
+a page-level concatenation with `pypdfium2` — milliseconds, no rendering, no ML —
+so it belongs on the staging machine rather than in the array.
+
+Supplements go last because the section rule reads in document order, and the
+supplement's own front matter should not precede the main text's introduction.
+The test is the filename, which is what publishers encode: PMC author-manuscript
+supplements carry `-supplement-`, publisher media files are `media-<n>.pdf`.
+Anything unrecognised is treated as main text and keeps Zotero's ordering, so a
+new naming convention degrades to "ordered as found" rather than to a wrong
+answer. The manifest records which refs were merged and from what, so the choice
+is auditable after the fact instead of implicit in a page count.
 
 ## Two things that will bite
 
