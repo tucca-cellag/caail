@@ -189,9 +189,12 @@ publish_seg=$(tail -c "+$((verb_at + 1))" <<<"$cmd" | tr '\n' ';' \
 # private one there short-circuits the scan. `chmod -Rv`, `grep -Ri` and
 # `Bio-Rad` all matched too. The mandatory space is what makes the flag a flag.
 #
-# The gap that leaves is real and matches main: `--repo=O/R`, the attached form,
-# and `--repo` followed by two spaces all fall back to the cwd. That is recorded
-# with the residual rather than fixed by loosening this pattern.
+# The gap that leaves is real and matches main: `--repo=O/R` and the attached
+# `-RO/R` fall back to the cwd. Recorded with the residual rather than fixed by
+# loosening this pattern. Two spaces after `--repo` are NOT a gap and were
+# wrongly listed as one here: ` +` is greedy and `awk` splits on whitespace runs,
+# measured resolving correctly from outside the repo. A residual that names
+# working behaviour invites a fix to the one pattern that must not be touched.
 dest=$(grep -oE '(--repo|-R) +[^ ]+' <<<"$cmd" | head -n1 | awk '{print $2}' | tr -d "\"'")
 
 # `gh api -X POST /repos/<owner>/<repo>/issues` names its destination in the
@@ -218,9 +221,13 @@ dest=$(grep -oE '(--repo|-R) +[^ ]+' <<<"$cmd" | head -n1 | awk '{print $2}' | t
 # is not merely a fallback for when it found nothing. `gh api` accepts no
 # `--repo`/`-R` at all, so in an `api` command every match of that flag is by
 # definition payload text, and letting it win let the payload disable the one
-# authoritative source. Measured: a body containing `chmod -Rv` resolved the
-# destination to `v`, skipped the endpoint entirely, and reported UNRESOLVED,
-# denying a command that would have worked from any directory.
+# authoritative source. Measured against the pattern above: a body containing
+# `chmod -R 755` resolves the destination to `755`, and under fallback semantics
+# that skips the endpoint entirely and reports UNRESOLVED, denying a command
+# that would have worked from any directory. `grep -R pattern` does it too.
+# (The example has to be a SPACED one. An earlier draft cited `chmod -Rv`, which
+# was measured against round 5's widened pattern and does not reproduce against
+# this one, so it read as an argument that this rule is unnecessary.)
 #
 # An `api` call whose endpoint cannot be read resolves to nothing rather than
 # falling back to that scrape, for the same reason.

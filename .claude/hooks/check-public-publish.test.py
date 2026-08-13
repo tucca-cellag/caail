@@ -378,7 +378,11 @@ print(f"  [{ok}] a newline ends the segment, so a heredoc body cannot steer it")
 # These four are the shapes it broke, kept as the standing check that any future
 # attempt at the same idea has to survive. All are run from OUTSIDE any repo, so
 # a fallback to the cwd cannot accidentally produce the right answer.
-print("\n=== an explicit repo flag is read, in every form gh accepts ===")
+# The header says "space-separated" and not "every form" on purpose: `gh` also
+# accepts `--repo=O/R` and the attached `-RO/R`, and this hook reads neither, by
+# design (see the hook's own note). A header claiming every form would be read as
+# a coverage guarantee and leaned on.
+print("\n=== an explicit repo flag is read, in its space-separated forms ===")
 for label, flag in (
     ("plain -R",              "-R tucca-cellag/caail"),
     ("plain --repo",          "--repo tucca-cellag/caail"),
@@ -440,7 +444,14 @@ for label, cmd in prose:
 # `gh api` takes no --repo/-R at all, so any such match in an api command is
 # payload text by construction. Letting it win let the payload disable the one
 # authoritative source and denied a command that would have worked.
-got, why, _ = run(HOOK_PROJ, f'{API} -f title=x -f body="chmod -Rv output, {RISK}"',
+#
+# The payload must use the SPACED form. An earlier version said `chmod -Rv`,
+# which the repo-flag pattern does not match at all (that is the whole point of
+# the mandatory space), so `dest` was already empty and the case passed
+# identically whether the endpoint replaces the scrape or merely falls back to
+# it. `chmod -R 755` does trip the scrape, so it separates the two: under
+# fallback semantics this reports UNRESOLVED and denies a working command.
+got, why, _ = run(HOOK_PROJ, f'{API} -f title=x -f body="chmod -R 755 dir, {RISK}"',
                   {"CLAUDE_PROJECT_DIR": proj}, cwd=elsewhere)
 endpoint_wins = got == "deny" and "tucca-cellag/caail" in why and "UNRESOLVED" not in why
 ok = "PASS" if endpoint_wins else "FAIL"
