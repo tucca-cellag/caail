@@ -59,14 +59,26 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
    invented references versus real ones, is the one every reader has already been
    burned by.
 
-   And a cell NO OTHER SECTION USES. This was Bayesian Optimization × Media Optimization,
-   which is also what the first worked-query card demonstrates, so two adjacent bands were
-   arguing from the same example and the page looked thinner than the corpus is. Ensemble
-   Learning × Sensory Prediction is the most populated cell in the matrix, and none of the
-   four worked queries touches sensory. It also happens to be the most intuitive claim on
-   the page to a general reader: whether the thing tastes right. */
-const METHOD = 'Ensemble Learning';
-const AREA = 'sensory';
+   And a cell NO OTHER SECTION USES. This has now moved twice for that reason, which is the
+   thing to know before moving it again. It was Bayesian Optimization × Media Optimization
+   until a worked-query card took that cell; it then became Ensemble Learning × Sensory
+   Prediction, chosen on the reasoning that "none of the four worked queries touches
+   sensory" — and the very next rewrite of that band made its fourth card a sensory card
+   naming this exact cell, while `#why` asked "which papers used ensemble models to predict
+   flavour or texture" two hundred words above a card asking which methods predict sensory
+   outcomes from instrumental measurements. Two bands, one cell, nearly one question.
+
+   The claim "no other section uses it" is therefore not a fact about this file, and no
+   comment here can keep it true. `homepage-agent.spec.ts` asserts it instead, by reading
+   the cell this band advertises and failing if the `#ask` band's rendered text names it.
+   Move this cell and that test tells you immediately whether you have collided again.
+
+   Deep Learning × Cellular Engineering is the largest cell in an application column that no
+   card argues from, and enough of it links code for the "runnable code" line to say
+   something. Card 2 owns the media column and card 4 the sensory one; cards 1 and 3 read
+   the dataset inventory and the catalogue and touch no cell at all. */
+const METHOD = 'Deep Learning';
+const AREA = 'cell';
 const cell = matrix.cells.find((c) => c.method === METHOD && c.area === AREA);
 if (!cell) throw new Error(`WhyCaail: ${METHOD} × ${AREA} is not in matrix.json`);
 const AREA_LABEL = cell.areaLabel;
@@ -176,7 +188,7 @@ const contentTypeList = `${CONTENT_TYPES.slice(0, -1).join(', ')} and ${CONTENT_
 /* Short on purpose. This is a chat bubble, not a worked query: the #ask band is where the
    three-sentence research questions live. What this one has to be is fabricable, meaning
    a question whose plausible wrong answer is indistinguishable from a right one. */
-const Q = 'Which papers used ensemble models to predict flavour or texture from composition, and which of them released code I can run?';
+const Q = 'Which papers applied deep learning to cell-line engineering for cultivated meat, and which of them released code I can run?';
 
 /* Properties of an answer reconstructed from training data. Each states a mechanism of
    how decoding works, not a complaint about model quality: a better model has every one
@@ -261,9 +273,9 @@ const fromIndex = [
         <div class="turn">
           <span class="who who--ai">AI</span>
           <p class="bubble bubble--guess">
-            Random forests and gradient boosting have both been used to predict sensory
-            panels from composition, for example Zhang et al. (2021) in
-            <em>Food Chem.</em>… <em>[nothing here tells you whether this exists]</em>
+            Convolutional and transformer models have both been used to guide cell-line
+            engineering, for example Zhang et al. (2021) in
+            <em>Metab. Eng.</em>… <em>[nothing here tells you whether this exists]</em>
           </p>
         </div>
       </div>

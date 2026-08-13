@@ -886,6 +886,51 @@ test.describe('worked-queries carousel', () => {
   });
 });
 
+/**
+ * The two bands must not argue from the same matrix cell.
+ *
+ * `#why` picks one cell by hand and shows what querying it returns; `#ask` derives cells
+ * from the questions its cards ask. Adjacent on the page, both leading on the same cell,
+ * they read as one band said twice — and the corpus looks thinner than it is.
+ *
+ * This has now happened twice. WhyCaail moved off Bayesian Optimization × Media Optimization
+ * because a worked-query card took it, landed on Ensemble Learning × Sensory Prediction on
+ * the reasoning that no card touched sensory, and the next rewrite of that band added a
+ * sensory card naming that exact cell. Both times the constraint was written down as a
+ * comment in the file doing the choosing, which cannot see the other band. So it is asserted
+ * here instead, against what the two bands actually render.
+ */
+test('the #why example cell is not one the #ask band also argues from', async ({ page }) => {
+  await page.goto('./');
+
+  // Same source the #why mock test parses: the band advertises its cell in the API line.
+  const claimed = (await page.locator('#why .bubble--tool code').innerText()).trim();
+  const m = /matrix\.json\s*→\s*(.+?)\s*×\s*(.+)$/.exec(claimed);
+  expect(m, `could not parse the #why API line: "${claimed}"`).not.toBeNull();
+  const [, method, areaLabel] = m!;
+
+  // `textContent`, NOT `innerText`. Only one card is showing at a time and the rest are
+  // `visibility: hidden`, so `innerText` returns the rendered text of card 1 alone — this
+  // assertion passed against a known collision because the colliding card was the hidden
+  // fourth one. What is being asserted is a property of the whole band, so it has to read
+  // the whole band.
+  const ask = (await page.locator('.ask').textContent()) ?? '';
+  expect(
+    ask.includes(`${method} × ${areaLabel}`),
+    `both homepage bands lead on ${method} × ${areaLabel}. #why picks its cell by hand, so ` +
+      'move that one: pick a populated cell in a column no card argues from.',
+  ).toBe(false);
+
+  // The area alone is the softer half of the collision and the one that bit last time: a
+  // card can own a column without naming the same cell, and two bands on one research area
+  // still read as repetition.
+  expect(
+    ask.includes(`× ${areaLabel}`),
+    `#why argues from the ${areaLabel} column and so does a card in #ask. Even where the ` +
+      'method differs, the two bands are then making the same point about the same area.',
+  ).toBe(false);
+});
+
 test('the homepage agent bands have no serious accessibility violations', async ({ page }) => {
   await page.goto('./');
   const results = await new AxeBuilder({ page })

@@ -63,7 +63,6 @@ import matrix from '../../public/api/matrix.json';
 import papers from '../../public/api/papers.json';
 import datasetsApi from '../../public/api/datasets.json';
 import catalog from '../../public/api/catalog.json';
-import counts from '../content/data/counts.json';
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
@@ -81,44 +80,18 @@ const cite = (id: number): string => {
 const mediaBo = matrix.cells.find((c) => c.method === 'Bayesian Optimization' && c.area === 'media')!;
 if (!mediaBo) throw new Error('AskExamples: Bayesian Optimization × media cell missing from matrix.json');
 
-/* Populations, each labelled by what it counted.
+/* This band used to open by enumerating the corpus: primary papers, reviews, reference
+   works, tools, databases, curated dataset entries, inventory rows, methods and areas, with
+   a closing line about every figure being read from the corpus at build time. `WhyCaail`
+   opens by enumerating the same populations and closes on the same sentence, and the two
+   bands are adjacent, so a reader met one inventory twice about two hundred words apart.
 
-   This used to render one figure: papers + software + databases + datasets, presented as
-   "N curated resources". That sum overstates curation in two directions at once. The paper
-   total is every entry across all six sections, not the matrix-eligible subset, and the
-   dataset total is mostly per-study inventory rows rather than curated entries. Summing
-   four populations that were counted by four different rules produces a number about
-   nothing, and it is the largest number on the band, so it is the one a reader carries away.
-
-   CLAUDE.md states the rule directly: "345 papers" and "papers in the matrix" are different
-   numbers, so label every count with the population it counted. The lede names the parts and
-   no longer offers a total.
-
-   Every figure is read from the same endpoints an agent would read, and the two partitions
-   are asserted below. A hand-typed number beside a machine-derived one is this repo's most
-   expensive recurring defect; the mitigation is to derive it or to fail when the two
-   disagree, and this does both. */
-const primaryPapers = papers.references.filter((r) => r.isPrimary).length;
-const reviewPapers = papers.references.filter((r) => r.section === 'Reviews & Perspectives').length;
-const referenceWorkPapers = papers.references.length - primaryPapers - reviewPapers;
-const curatedDatasets = datasetsApi.entries.length;
-const inventoryRows = datasetsApi.inventory.length;
-
-/* Partition guards. These fire at build time, so a section rename in Papers.md or a new
-   dataset page shape breaks the build instead of quietly reallocating readers between two
-   populations the page names separately. */
-if (primaryPapers + reviewPapers + referenceWorkPapers !== counts.papers) {
-  throw new Error(
-    `AskExamples: paper populations do not partition: ${primaryPapers} primary + ` +
-      `${reviewPapers} reviews + ${referenceWorkPapers} reference-work ≠ ${counts.papers} total`,
-  );
-}
-if (curatedDatasets + inventoryRows !== counts.datasets) {
-  throw new Error(
-    `AskExamples: dataset populations do not partition: ${curatedDatasets} curated + ` +
-      `${inventoryRows} inventory ≠ ${counts.datasets} total`,
-  );
-}
+   It belongs to `#why`, whose subject IS the corpus and whether it is worth trusting. This
+   band's subject is four questions, so the lede describes those instead. The partition
+   guards went with the figures rather than being left to protect nothing: `WhyCaail` runs
+   its own, against `papers.references.length` rather than `counts.papers`, and it is the
+   component that renders the claim. Two guards over one sentence in two files was the same
+   duplication one layer down. */
 
 /* ---- Card 1: the bovine substrate a planned timecourse would have to join ----------------
    Every figure below is read from datasets.json rather than named, because the whole point of
@@ -466,7 +439,21 @@ const examples = [
       'says otherwise. It is that the methods you would use are the cheap ones, and the panel ' +
       'sessions are buying the thing the literature will not hand you.',
   },
-];---
+];
+
+/* The lede opens with the word "Four", which is a number typed beside an array that knows
+   its own length — the shape of defect this repo pays for most often. It is spelled rather
+   than interpolated because `{examples.length} questions` reads as a stat block at the top
+   of a band whose whole argument is that these are questions a person would type, so the
+   count is guarded instead of derived. Four is also an editorial decision rather than a
+   corpus figure (it was settled after five failed review), so a fifth card is exactly the
+   moment someone should be made to reread the sentence. */
+if (examples.length !== 4) {
+  throw new Error(
+    `AskExamples: the lede opens "Four questions" and there are now ${examples.length}. ` +
+      'Update the lede and this guard together.',
+  );
+}---
 
 <section class="ask" id="ask">
   <div class="hd sr">
@@ -476,16 +463,13 @@ const examples = [
     <p class="eyebrow"><span class="bar" aria-hidden="true"></span>What you can ask</p>
     <h2 class="caail-display">Ask something specific</h2>
     <p class="lede">
-      Real questions against the real endpoints. Behind them: {primaryPapers} primary-research
-      papers in the matrix, plus {reviewPapers} reviews and {referenceWorkPapers} reference-work
-      chapters; {counts.software} tools and {counts.databases} databases; and {curatedDatasets}
-      curated dataset entries over {inventoryRows} per-study deposits. Indexed across
-      {matrix.methods.length} AI methods and {matrix.areas.length} research areas.
+      Four questions a working researcher would actually type, run against the endpoints an
+      agent would query.
     </p>
     <p class="sub">
       These are what the endpoints return, not finished answers; your agent reasons on top of
-      them. Every figure is read from the corpus when this page is built, so nothing here is
-      illustrative.
+      them. Nothing here is a mock-up: every figure in the answers is computed from the corpus
+      when this page is built.
     </p>
   </div>
 
