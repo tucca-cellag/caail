@@ -74,6 +74,32 @@ describe('register integrity', () => {
     expect(drifted).toEqual([]);
   });
 
+  it('every named vitest test still exists in its file', () => {
+    // The vitest analogue of the Playwright title check below. Without it, renaming a
+    // test that an entry narrows to leaves the entry silently matching nothing: the
+    // register keeps listing it, the reporter never fires, and the failure it was
+    // written for reads as unregistered.
+    const drifted: string[] = [];
+    for (const entry of REGISTER) {
+      if (entry.suite !== 'vitest' || !entry.tests) continue;
+      const source = readFileSync(join(SITE_ROOT, entry.file), 'utf-8');
+      for (const name of entry.tests) {
+        if (!source.includes(name)) {
+          drifted.push(`${entry.id}: no test named ${JSON.stringify(name)} in ${entry.file}`);
+        }
+      }
+    }
+    expect(drifted).toEqual([]);
+  });
+
+  it('a vitest entry whose module holds unregistered tests narrows to named tests', () => {
+    // community.test.ts holds three tests and only one is residue-prone; one of the
+    // other two is the guard against a real Slack-invite paste. An entry there without
+    // `tests` would label a genuine leak as a known artifact.
+    const community = REGISTER.find((entry) => entry.file === 'src/lib/community.test.ts');
+    expect(community?.tests, 'the community entry must narrow to its one residue-prone test').toBeTruthy();
+  });
+
   it('every entry carries a control command and at least one ticket', () => {
     for (const entry of REGISTER) {
       expect(entry.reproduce.length, `${entry.id} has no control command`).toBeGreaterThan(0);
@@ -116,6 +142,26 @@ describe('entriesForVitestModule', () => {
   it('matches a project-relative module id', () => {
     const hits = entriesForVitestModule('scripts/parser/metrics.test.ts');
     expect(hits.map((entry) => entry.id)).toEqual(['vitest-metrics-corpus-hook']);
+  });
+
+  it('matches a module-level entry even when no failed test name is known', () => {
+    // A hook timeout produces no failed TestCase, which is exactly how the five
+    // slow-fixture entries fail. They must still match.
+    expect(entriesForVitestModule('scripts/parser/metrics.test.ts', []).map((e) => e.id)).toEqual([
+      'vitest-metrics-corpus-hook',
+    ]);
+  });
+
+  it('a narrowed entry matches only when one of its named tests failed', () => {
+    const file = 'src/lib/community.test.ts';
+    const registered = 'appears nowhere under site/ except this module and its test';
+    expect(entriesForVitestModule(file, [registered]).map((e) => e.id)).toEqual([
+      'vitest-community-invite-walk',
+    ]);
+    // A real Slack-invite paste fails the SAME test, so that case is still registered;
+    // what must not match is the module's other tests failing on their own.
+    expect(entriesForVitestModule(file, ['exposes a base-relative community path, not a baked-in /caail prefix'])).toEqual([]);
+    expect(entriesForVitestModule(file, [])).toEqual([]);
   });
 
   it('matches an absolute path ending in the registered file', () => {
