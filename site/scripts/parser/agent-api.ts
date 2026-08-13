@@ -388,6 +388,7 @@ export function buildManifest(
   matrix: ReturnType<typeof buildMatrix>,
   corpusDate: string,
   datasets: { curated: number; inventory: number } = { curated: 0, inventory: 0 },
+  catalog: { software: number; databases: number } = { software: 0, databases: 0 },
 ): unknown {
   const bySection: Record<string, number> = {};
   for (const r of papers.references) bySection[r.section] = (bySection[r.section] ?? 0) + 1;
@@ -424,6 +425,16 @@ export function buildManifest(
       datasetsCurated: datasets.curated,
       datasetsInventoryRows: datasets.inventory,
       datasetsTotal: datasets.curated + datasets.inventory,
+      // The catalogue, counted here for the same reason as everything above it, and added
+      // after an agent pointed out it could not do the check this manifest tells it to do.
+      // The skill sends a reader here to compare against the rows they actually parsed,
+      // because this file is small enough to always arrive whole — and papers and datasets
+      // were counted while software and databases were not, so the one endpoint that was
+      // measured reporting "Total database entries: 0" against 150 was also the one whose
+      // real figure appeared nowhere a truncated reader could reach.
+      software: catalog.software,
+      databases: catalog.databases,
+      catalogTotal: catalog.software + catalog.databases,
     },
     endpoints: [
       { path: 'index.json', use: 'This manifest: corpus date, counts by population, endpoint list.' },
@@ -462,9 +473,14 @@ export function buildAgentApi(inputs: AgentApiInputs): ApiFile[] {
     curated: ((inputs.datasets as { entries?: unknown[] } | null)?.entries ?? []).length,
     inventory: (inputs.inventory?.inventory ?? []).length,
   };
+  const cat = inputs.catalog as { software?: unknown[]; databases?: unknown[] } | null;
+  const catalogCounts = {
+    software: (Array.isArray(cat?.software) ? cat.software : []).length,
+    databases: (Array.isArray(cat?.databases) ? cat.databases : []).length,
+  };
 
   const files: ApiFile[] = [
-    { name: 'index.json', body: buildManifest(inputs.papers, matrix, corpusDate, datasetCounts) },
+    { name: 'index.json', body: buildManifest(inputs.papers, matrix, corpusDate, datasetCounts, catalogCounts) },
     { name: 'matrix.json', body: matrix },
     { name: 'papers-index.json', body: buildPapersIndex(inputs.papers, corpusDate) },
     { name: 'papers.json', body: { ...inputs.papers, scopeNote: SCOPE_NOTE, corpusDate } },

@@ -25,7 +25,10 @@
     "matrixEmptyCells": 107,
     "datasetsCurated": 62,
     "datasetsInventoryRows": 176,
-    "datasetsTotal": 238
+    "datasetsTotal": 238,
+    "software": 139,
+    "databases": 150,
+    "catalogTotal": 289
   },
   "endpoints": [
     {

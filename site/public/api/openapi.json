@@ -261,6 +261,21 @@
                 "minimum": 0,
                 "maximum": 9007199254740991
               },
+              "software": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "databases": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "catalogTotal": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
               "datasetsCurated": {
                 "type": "integer",
                 "minimum": 0,
@@ -284,6 +299,9 @@
               "matrixTotalCells",
               "matrixPopulatedCells",
               "matrixEmptyCells",
+              "software",
+              "databases",
+              "catalogTotal",
               "datasetsCurated",
               "datasetsInventoryRows",
               "datasetsTotal"

@@ -422,6 +422,18 @@ describe('the compact indexes', () => {
     expect(offMatrix.length, 'no off-matrix references, so this endpoint guards nothing').toBeGreaterThan(0);
   });
 
+  it('gives index.json a figure for every index, or the check it prescribes is impossible', () => {
+    // The skill tells a reader to compare the rows they parsed against index.json, because
+    // index.json is small enough to always arrive whole. That only works if index.json
+    // actually counts the thing. It counted papers and datasets and not the catalogue —
+    // so the one endpoint measured reporting "0 databases" against 150 was also the one
+    // whose real figure a truncated reader could not reach. Found by an agent, not by us.
+    const manifest = built.find((f) => f.name === 'index.json')!.body as any;
+    expect(manifest.counts.software + manifest.counts.databases).toBe(body('catalog-index.json').count);
+    expect(manifest.counts.catalogTotal).toBe(body('catalog-index.json').count);
+    expect(manifest.counts.papersAllSections).toBe(body('papers-index.json').count);
+  });
+
   it('states its own row count BEFORE the rows, so a truncation is detectable', () => {
     // The point of the count is to survive the truncation it exists to reveal. A count
     // emitted after the array would be lost in exactly the case it is needed.

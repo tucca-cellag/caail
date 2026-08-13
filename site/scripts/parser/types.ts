@@ -856,6 +856,9 @@ export const ApiManifestSchema = z.strictObject({
     matrixTotalCells: z.number().int().nonnegative(),
     matrixPopulatedCells: z.number().int().nonnegative(),
     matrixEmptyCells: z.number().int().nonnegative(),
+    software: z.number().int().nonnegative(),
+    databases: z.number().int().nonnegative(),
+    catalogTotal: z.number().int().nonnegative(),
     datasetsCurated: z.number().int().nonnegative(),
     datasetsInventoryRows: z.number().int().nonnegative(),
     /** the two above, which are disjoint and exhaustive — == the library total */
