@@ -29,6 +29,9 @@ Two layers with different rules: **chrome** (brand identity) and **data encoding
 | `--caail-primary-hover` | `#013A86` | hover/active |
 | `--caail-link` | `#3172AE` | Tufts Digital Blue (AA-rated) — links, focus, active underline |
 | `--caail-accent` | `#5E4B3C` | Tufts Brown (PMS 7519) — small text accents only (eyebrows), never large buttons |
+| `--caail-danger` | `#B02B27` | validation-error text — the only "attend to this" colour; never a background |
+
+**Use `--caail-danger`, never a literal red.** The palette inverts by lightness in dark mode, so a single fixed red cannot pass AA against both grounds: the `#b3261e` this token replaced measured 6.5:1 on white and 2.9:1 on the dark background, failing exactly where an error message has to be legible. The token is `oklch(50% 0.17 27)` light / `oklch(75% 0.17 27)` dark, each ≥6:1 against `--caail-bg` and `--caail-surface` in its own theme. Note that axe will not catch a regression here by default: it scans the light scheme, where almost any red passes.
 
 Values are authored in OKLch; hexes above are the targets. The Contribute action is a navy **outline** button (Tufts Brown is reserved for small accents, since a solid brown button reads muddy).
 

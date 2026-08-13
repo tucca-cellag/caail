@@ -1,5 +1,11 @@
+import { readFileSync } from 'node:fs';
+
 import { describe, it, expect } from 'vitest';
+
+import { buildCorrectionForm } from '../../scripts/parser/correction-form.js';
+import { correctionMailto } from './report';
 import {
+  MAILTO_MAX_URL,
   NOTE_MAX_ENCODED,
   NOTE_MAX_LENGTH,
   REASON_SPECS,
@@ -400,6 +406,38 @@ describe('composeBody', () => {
       VOCAB,
     );
     expect(encodeURIComponent(body).length).toBeLessThan(1800);
+  });
+
+  it('keeps the WORST REAL mailto under the limit, using the longest committed id', () => {
+    // The budget in NOTE_MAX_ENCODED's comment is prose; this is the check. Both inputs are
+    // read rather than chosen: the longest id the DB actually holds (it appears twice, in
+    // the subject and in the Entry line) and the longest label the live template offers.
+    // The previous version of this assertion used a hand-picked 66-character id and a
+    // fixed 1,800 ceiling, so it would have kept passing while the real headroom was eaten.
+    const ids = readFileSync(new URL('../../db/ndjson/items.ndjson', import.meta.url), 'utf-8')
+      .trim()
+      .split('\n')
+      .map((line) => (JSON.parse(line) as { id: string }).id)
+      .filter((id) => !id.startsWith('topic:'));
+    const longestId = ids.reduce((a, b) => (b.length > a.length ? b : a));
+
+    // Through the parser rather than by re-reading the YAML here: a second, slightly
+    // different reader in a test is how a test starts passing against a shape the code
+    // does not see.
+    const longestReason = buildCorrectionForm().reasons.reduce((a, b) =>
+      b.label.length > a.label.length ? b : a,
+    );
+
+    // A note that saturates the ENCODED cap, which is what a non-Latin script produces.
+    const body = composeBody(
+      { itemId: longestId, reason: longestReason, note: '提'.repeat(NOTE_MAX_LENGTH) },
+      VOCAB,
+    );
+    const url = correctionMailto(longestId, body);
+    expect(url.length).toBeLessThan(MAILTO_MAX_URL);
+    // And with real margin, not by a hair: a limit this close to the wire is one longer
+    // id away from silently truncating someone's report.
+    expect(MAILTO_MAX_URL - url.length).toBeGreaterThan(200);
   });
 
   it('does not compose a DOI longer than any real one', () => {

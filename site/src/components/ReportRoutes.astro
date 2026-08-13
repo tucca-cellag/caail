@@ -1169,8 +1169,21 @@ const vocabJson = JSON.stringify(vocabularies).replace(/</g, '\\u003c');
     font-size: 0.875rem;
     color: var(--caail-danger);
   }
+  /* `margin: 0`, NOT `display: none`.
+
+     Both `.rc-err` regions are `role="alert"`, and a live region that is `display: none`
+     at the moment its content changes is not reliably announced by NVDA, JAWS or
+     VoiceOver. An empty one always is display:none under a `:empty` rule, and empty is by
+     definition the state immediately before it is written — so the rule silently defeated
+     the announcement it was sitting next to, including the clear-and-re-post machinery
+     written specifically to guarantee it. That code can make the region CHANGE; it cannot
+     make it PRESENT.
+
+     Zeroing the margin is enough for the visual problem it was solving: an empty block
+     element generates no line boxes, so it already has no height. It just keeps Starlight's
+     paragraph margins from opening a gap. */
   .rc :global(.rc-err:empty) {
-    display: none;
+    margin: 0;
   }
 
   .rc-review-note {
@@ -1184,8 +1197,14 @@ const vocabJson = JSON.stringify(vocabularies).replace(/</g, '\\u003c');
     font-size: 0.9rem;
     color: var(--caail-danger);
   }
+  /* Same reasoning as `.rc-err:empty` above, and here the code actively drives the case:
+     `announceDropped` empties this region and repopulates it 60ms later, which under a
+     `display: none` rule is exactly the hidden-then-shown-with-content sequence live
+     regions do not announce. The function's own comment says it exists because a change
+     inside a hidden subtree announces nothing; this rule was reintroducing the hidden
+     subtree one line of CSS later. */
   .rc-dropped:empty {
-    display: none;
+    margin: 0;
   }
   .rc-body {
     padding: 0.75rem 0.85rem;

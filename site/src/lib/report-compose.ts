@@ -219,11 +219,31 @@ export const NOTE_MAX_LENGTH = 400;
  * silently cut-off report — and the reader has no way to know, because the preview on the
  * page is complete.
  *
- * Budget: the whole mailto must clear 2,048 with room to spare. Address, subject and the
- * report's fixed lines account for roughly 250 encoded characters, so 1,500 leaves the
- * total under 1,800 in the worst case.
+ * Budget: the whole mailto must clear {@link MAILTO_MAX_URL} with room to spare. The fixed
+ * overhead is larger than it looks, which an earlier version of this comment got wrong by
+ * guessing at it: the longest committed item id is 101 characters and appears in BOTH the
+ * subject and the `Entry:` line, and the longest reason label is 71. Measured rather than
+ * estimated, that overhead is 176 encoded characters, so a note at 1,500 put the worst-case
+ * URL at 1,908 — inside the limit, but with 140 characters of headroom rather than the
+ * ~250 the old figure implied.
+ *
+ * 1,400 restores the margin. It costs a Chinese note about eleven characters and buys back
+ * a hundred against a limit that is itself a conservative reading of what mail clients do.
+ *
+ * These figures are a snapshot; `report-compose.test.ts` derives the real worst case from
+ * the committed ids and the live template and fails if it stops fitting, so the numbers
+ * here are commentary and the test is the guarantee.
  */
-export const NOTE_MAX_ENCODED = 1500;
+export const NOTE_MAX_ENCODED = 1400;
+
+/**
+ * The `mailto:` URL length this module keeps its output under.
+ *
+ * Windows shell and Outlook truncate around here, and a truncated mailto is the worst
+ * failure available to this feature: the reader sees a complete report in the preview,
+ * sends it, and the recipient gets a cut-off one, with nothing anywhere saying so.
+ */
+export const MAILTO_MAX_URL = 2048;
 
 /**
  * Encoded length of `text`, tolerating a trailing lone surrogate.

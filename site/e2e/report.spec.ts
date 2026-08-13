@@ -509,6 +509,32 @@ test('the DOI error renders in the danger colour, not body text', async ({ page 
   expect(built).not.toBe(body);
 });
 
+test('the live regions stay in the accessibility tree while empty', async ({ page }) => {
+  // A `role="alert"` / `role="status"` region that is `display: none` at the moment its
+  // content changes is not reliably announced by NVDA, JAWS or VoiceOver — and empty is by
+  // definition the state immediately before it is written. A `:empty { display: none }`
+  // rule therefore silently defeats every announcement these regions exist for, including
+  // the clear-and-re-post machinery written to guarantee them: that code can make a region
+  // change, it cannot make it present.
+  //
+  // Zero height is fine and expected; `display: none` is not.
+  await page.goto('./report/?item=paper:214');
+  await expect(page.locator(COMPOSER)).toBeVisible();
+
+  for (const id of ['#caail-compose-error', '#caail-compose-dropped']) {
+    const region = page.locator(id);
+    await expect(region).toHaveText('');
+    const display = await region.evaluate((el) => getComputedStyle(el).display);
+    expect(display, `${id} while empty`).not.toBe('none');
+  }
+
+  // And the script-built one, which is empty until the shape check fails.
+  await chooseReason(page, 'Wrong or missing DOI');
+  const doiError = page.locator('#caail-f-doi-err');
+  await expect(doiError).toHaveText('');
+  expect(await doiError.evaluate((el) => getComputedStyle(el).display)).not.toBe('none');
+});
+
 test('the composer is axe-clean on the DARK theme, error messages included', async ({ page }) => {
   // The gap this closes: every other axe scan here runs on the default light scheme, and
   // the palette inverts by lightness, so a colour that passes on white can fail on the
