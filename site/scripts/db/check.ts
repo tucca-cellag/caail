@@ -21,7 +21,7 @@
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { importNdjson, REPO_ROOT, SITE_ROOT, type Db } from './lib.js';
+import { importNdjson, ACCESSION_EXACT, idAccession, REPO_ROOT, SITE_ROOT, type Db } from './lib.js';
 import { THEME_SLUGS } from './seed.js';
 import { buildTaxonomyModel } from '../parser/taxonomy.js';
 import type { TaxonomyData } from '../parser/types.js';
@@ -340,22 +340,23 @@ export function checkSubseries(db: Db, subseriesPath: string = SUBSERIES_PATH): 
     out.push(ok('subseries.json: every override id matches a dataset inventory row',
       bad.length === 0, `unmatched: ${bad.slice(0, 3).join(', ')}`));
   }
-  const accRe = /^(?:GSE\d+|PRJ[A-Z]+\d+|E-MTAB-\d+|CRA\d+|PXD\d+)$/;
   const problems: string[] = [];
   /** member accession -> the distinct PARENT accessions claiming it. */
   const memberToParents = new Map<string, Set<string>>();
   const rows = db.prepare('SELECT item_id, subseries FROM dataset_rows WHERE subseries IS NOT NULL')
     .all() as { item_id: string; subseries: string }[];
   for (const r of rows) {
-    // ds:gse158430-2 -> GSE158430: the per-species fan-out of one accession.
-    const parentAcc = r.item_id.slice(3).replace(/-\d+$/, '').toUpperCase();
+    // ds:gse158430-2 -> GSE158430: the per-species fan-out of one accession. Shared with the
+    // parser rather than re-derived here, so the two cannot drift; the inline copy this
+    // replaces also mis-read `e-mtab-9622` as `E-MTAB`, collapsing every ArrayExpress row.
+    const parentAcc = idAccession(r.item_id);
     let arr: unknown;
     try { arr = JSON.parse(r.subseries); } catch { problems.push(`${r.item_id}: subseries not JSON`); continue; }
     if (!Array.isArray(arr)) { problems.push(`${r.item_id}: subseries not an array`); continue; }
     if (arr.length === 0) { problems.push(`${r.item_id}: subseries is empty (use NULL, not [])`); continue; }
     const seen = new Set<string>();
     for (const a of arr) {
-      if (typeof a !== 'string' || a !== a.toUpperCase() || !accRe.test(a)) { problems.push(`${r.item_id}: bad accession '${String(a)}'`); continue; }
+      if (typeof a !== 'string' || a !== a.toUpperCase() || !ACCESSION_EXACT.test(a)) { problems.push(`${r.item_id}: bad accession '${String(a)}'`); continue; }
       if (a === parentAcc) problems.push(`${r.item_id}: lists itself (${a}) as its own subseries`);
       if (seen.has(a)) problems.push(`${r.item_id}: duplicate member ${a}`);
       seen.add(a);

@@ -382,6 +382,29 @@ describe('checkSubseries', () => {
     const r = subResult(db); expect(r.ok).toBe(false); expect(r.detail).toMatch(/bad accession/);
   });
 
+  // The guard's allowlist had diverged from the id minter's, which accepts SRP and GSM.
+  // 12 SRP rows exist in the corpus, so a curator recording one would have been told a
+  // perfectly valid accession was malformed. Both now read one shared constant.
+  it('accepts every accession family the id minter mints', () => {
+    const db = miniDb();
+    insRow(db, 'ds:parent', '["GSE1","GSM2","PRJNA3","SRP4","PXD5","CRA6","E-MTAB-7"]');
+    expect(subResult(db).ok).toBe(true);
+  });
+
+  // rowAccession used to strip a trailing `-\d+`, reducing e-mtab-9622 to E-MTAB. Two
+  // different ArrayExpress parents then keyed the same and a real conflict read as one.
+  it('keeps hyphenated E-MTAB parents distinct', () => {
+    const db = miniDb();
+    insRow(db, 'ds:e-mtab-9622', '["GSE100"]');
+    insRow(db, 'ds:e-mtab-1234', '["GSE100"]');
+    const r = subResult(db); expect(r.ok).toBe(false); expect(r.detail).toMatch(/claimed by 2 different parents/);
+  });
+
+  it('flags an E-MTAB row listing itself', () => {
+    const db = miniDb(); insRow(db, 'ds:e-mtab-9622', '["E-MTAB-9622"]');
+    const r = subResult(db); expect(r.ok).toBe(false); expect(r.detail).toMatch(/lists itself/);
+  });
+
   it('flags a duplicate member within one array', () => {
     const db = miniDb(); insRow(db, 'ds:gse1', '["GSE2","GSE2"]');
     const r = subResult(db); expect(r.ok).toBe(false); expect(r.detail).toMatch(/duplicate member/);

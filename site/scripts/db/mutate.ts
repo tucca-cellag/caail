@@ -9,10 +9,8 @@
  * the db:add / db:remove CLIs wrap these with export + emit + check.
  */
 
-import { frozenSlug, type Db } from './lib.js';
+import { frozenSlug, ACCESSION, type Db } from './lib.js';
 import { INVENTORY_PAGES } from '../parser/datasets.js';
-
-const ACCESSION = /GSE\d+|PRJ[A-Z]+\d+|PXD\d+|CRA\d+|E-MTAB-\d+|SRP\d+|GSM\d+/;
 
 /**
  * The next free namespaced id for a base slug: `base`, else `base-2`, `base-3`, …,

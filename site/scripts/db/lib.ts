@@ -117,6 +117,44 @@ export function importNdjson(dir: string = NDJSON_DIR, dbPath = ':memory:'): Db 
   return db;
 }
 
+/**
+ * The repository accession families CAAIL indexes, as one source of truth.
+ *
+ * There were three copies of this vocabulary and they had already diverged: the id minter
+ * accepted `SRP`/`GSM` while the subseries member guard did not, so a curator recording a
+ * perfectly valid `SRP…` member would have been told it was malformed. That is the
+ * hand-typed-fact-beside-a-machine-derived-one defect this repo names as its most expensive
+ * recurring bug, in its smallest form. Import these rather than re-typing the alternation.
+ *
+ * `E-MTAB-\d+` is the only family carrying an internal hyphen, which is why an id's
+ * accession must be read with `ACCESSION_PREFIX` rather than by stripping a trailing `-N`:
+ * `e-mtab-9622` would otherwise reduce to `E-MTAB`.
+ */
+export const ACCESSION_SOURCE = String.raw`GSE\d+|GSM\d+|PRJ[A-Z]+\d+|SRP\d+|PXD\d+|CRA\d+|E-MTAB-\d+`;
+/** First accession appearing anywhere in a string (used to seed a frozen `ds:` id). */
+export const ACCESSION = new RegExp(ACCESSION_SOURCE);
+/** The whole string is exactly one accession (used to validate a curated member). */
+export const ACCESSION_EXACT = new RegExp(`^(?:${ACCESSION_SOURCE})$`);
+/** The accession a string STARTS with, ignoring any `-2`/`-3` id disambiguator after it. */
+export const ACCESSION_PREFIX = new RegExp(`^(?:${ACCESSION_SOURCE})`);
+
+/**
+ * The accession encoded in a frozen `ds:` id, ignoring any `-2`/`-3` disambiguator
+ * (`ds:gse158430-2` -> `GSE158430`, `ds:e-mtab-9622` -> `E-MTAB-9622`).
+ *
+ * Read with `ACCESSION_PREFIX` rather than by stripping a trailing `-N`, because `E-MTAB-…`
+ * carries an internal hyphen and would otherwise reduce to `E-MTAB`, collapsing every
+ * ArrayExpress row onto one key. Falls back to the bare slug for an id minted from a title.
+ *
+ * Lives here rather than beside its parser caller so `check.ts` can share it without
+ * importing the parser: that edge pulled the whole Markdown-parsing graph into the DB
+ * guards and multiplied the test suite's import time roughly sixfold.
+ */
+export function idAccession(itemId: string): string {
+  const slug = itemId.slice(3).toUpperCase();
+  return slug.match(ACCESSION_PREFIX)?.[0] ?? slug;
+}
+
 /** Slugify a display name into the local part of a frozen namespaced id. */
 export function slugify(name: string): string {
   return name

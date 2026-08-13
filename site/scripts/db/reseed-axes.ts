@@ -1,6 +1,7 @@
 /**
- * reseed-axes.ts — fold ONLY the DB-owned side axes (license + DOI) from their
- * committed inputs into the NDJSON, without going through `db:bootstrap`.
+ * reseed-axes.ts — fold ONLY the DB-owned side axes (license, DOI, related DOIs and
+ * SuperSeries membership) from their committed inputs into the NDJSON, without going
+ * through `db:bootstrap`.
  *
  *   NODE_OPTIONS='--experimental-sqlite --no-warnings' pnpm --dir site db:reseed-axes
  *
@@ -9,11 +10,17 @@
  * topics `db:add` assigned from a descriptor) and catalog `ordinal`s. So using bootstrap
  * to fold a new license or DOI silently reverts curated topics and renumbers ordinals.
  *
- * This command instead materializes the committed NDJSON as-is and re-runs only
- * `seedLicenses` + `seedDois` (idempotent UPDATEs keyed by url / ds: id), then exports.
- * The diff is confined to `license` / `doi` (and their `_source`) columns — topics,
- * ordinals, and all Markdown are untouched. This is the fold step for the license/DOI
- * curation workflow (see the `caail-db-authoring` skill).
+ * This command instead materializes the committed NDJSON as-is and re-runs the axis
+ * seeders (idempotent UPDATEs keyed by url / ds: id), then exports. The diff is confined
+ * to `license` / `doi` (and their `_source`), `related_dois` on catalog + dataset_entries,
+ * and `subseries` on dataset_rows — topics, ordinals, and all Markdown are untouched. This
+ * is the fold step for the license/DOI/subseries curation workflow (see the
+ * `caail-db-authoring` skill).
+ *
+ * Keep this list in step with `reseedAxes` below. It has already gone stale once: the
+ * subseries axis was added to the clear-and-reseed while three separate comments and the
+ * CLI's own output still said "license + DOI only", which is precisely the drift class
+ * CLAUDE.md names as this repo's most expensive recurring defect.
  *
  * The testable core (`reseedAxes`) takes an already-imported DB and is side-effect-free;
  * the NDJSON write happens only under the isMain CLI guard.
@@ -33,10 +40,10 @@ export interface ReseedSummary {
 /**
  * Re-seed the license + DOI axes onto an already-imported DB. In-place, returns counts.
  *
- * Clears the four side-axis columns first, THEN re-seeds. This makes a reseed a pure
+ * Clears the side-axis columns first, THEN re-seeds. This makes a reseed a pure
  * function of the current committed inputs (`licenses-manual.json` + `license-cache.json`
- * + `dois-manual.json`), so removing a manual override reconciles — the underlying
- * `seedLicenses`/`seedDois` only UPDATE keys still present, so without the clear a
+ * + `dois-manual.json` + `dois-related.json` + `subseries.json`), so removing a manual
+ * override reconciles — the underlying seeders only UPDATE keys still present, so without the clear a
  * retracted value would persist stale (the DB here is already populated, unlike the
  * fresh rows `db:bootstrap` seeds onto). Every license/DOI is reproducible from those
  * inputs (DOIs are all `manual`; licenses are `manual` or the auto SPDX cache), so the
@@ -67,7 +74,8 @@ function main(): void {
       `subseries sets ${subseries.rows}.`,
   );
   console.log(
-    `  Only license/doi columns change; topics + ordinals are left intact. ` +
+    `  Only the side-axis columns change (license, doi, related_dois on catalog + ` +
+      `dataset_entries; subseries on dataset_rows); topics + ordinals are left intact. ` +
       `Review the diff and commit the NDJSON with its input file(s).`,
   );
 }

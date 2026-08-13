@@ -420,13 +420,26 @@ interface ManualSubseries { datasets: Record<string, string[]> }
  * checker that inferred it from our own data would have the same blind spot that produced
  * the defect.
  */
-export function seedSubseries(db: Db): { rows: number } {
-  const manual = readJson<ManualSubseries>(join(SITE_ROOT, 'scripts', 'db', 'subseries.json'), { datasets: {} });
+export function seedSubseries(
+  db: Db,
+  subseriesPath: string = join(SITE_ROOT, 'scripts', 'db', 'subseries.json'),
+): { rows: number } {
+  const manual = readJson<ManualSubseries>(subseriesPath, { datasets: {} });
   const set = db.prepare('UPDATE dataset_rows SET subseries=? WHERE item_id=?');
   let rows = 0;
   for (const [id, list] of Object.entries(manual.datasets ?? {})) {
     const members = [...new Set((list ?? []).map((a) => a.trim().toUpperCase()).filter(Boolean))];
-    if (members.length && set.run(JSON.stringify(members), id).changes) rows++;
+    // An empty list is a half-finished edit, not a statement that the row has no members —
+    // that is what omitting the key means. Silently skipping it would leave the column NULL,
+    // and `db:check` only inspects rows WHERE subseries IS NOT NULL, so the one shape the
+    // guard explicitly rejects would be the one shape nothing could see.
+    if (!members.length) {
+      throw new Error(
+        `seedSubseries: '${id}' in subseries.json has no members. Remove the key, or list ` +
+          `the member accessions; an empty array records nothing and cannot be validated.`,
+      );
+    }
+    if (set.run(JSON.stringify(members), id).changes) rows++;
   }
   return { rows };
 }
