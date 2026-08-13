@@ -411,15 +411,12 @@ describe('prose that quotes the matrix grid size', () => {
   const read = (...seg: string[]) => readFileSync(join(REPO_ROOT, ...seg), 'utf-8');
 
   /**
-   * The number attached to a specific phrase, not merely present somewhere nearby.
+   * EVERY number written directly against a phrase, not just the first.
    *
-   * Set membership is too weak for what this guards: "all 80 method×area cells,
-   * including the 150 with no indexed paper" contains both live values and would pass,
+   * Set membership was the first attempt and is too weak: "all 80 method×area cells,
+   * including the 150 with no indexed paper" contains both live values and would pass
    * while saying something false. A transposition is exactly the edit these numbers
    * invite, since they are read far more often than they are changed.
-   */
-  /**
-   * EVERY number written directly against a phrase, not just the first.
    *
    * Scoping to one comment block was itself a hole: `agent-api.ts` states the same pair
    * twice, in the module doc and again in `buildMatrix`'s docstring 148 lines below, and
@@ -436,7 +433,13 @@ describe('prose that quotes the matrix grid size', () => {
    */
   const numbersBefore = (text: string, phrase: string): number[] => {
     const esc = phrase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    return [...text.matchAll(new RegExp(`(\\d+)\\s*${esc}`, 'g'))].map((m) => Number(m[1]));
+    // `(?<![\d,])` anchors the start of the numeral. Without it a thousands separator
+    // passes silently with the wrong figure: "1,345 papers" reads as 345, which equals
+    // the live count. A silent pass is the one failure mode this guard cannot afford,
+    // and `counts.datasets` is already 238 and climbing toward the threshold.
+    return [...text.matchAll(new RegExp(`(?<![\\d,])(\\d+)\\s*${esc}`, 'g'))].map((m) =>
+      Number(m[1]),
+    );
   };
 
   /** Assert the phrase carries a number at least once, and that every one is `expected`. */
@@ -446,10 +449,48 @@ describe('prose that quotes the matrix grid size', () => {
     expect(found, label).toEqual(found.map(() => expected));
   };
 
+  /** `Records<section, n>` over the live corpus, for the figures SKILL.md quotes. */
+  const bySection: Record<string, number> = {};
+  for (const r of papers.references) bySection[r.section] = (bySection[r.section] ?? 0) + 1;
+  const referenceWorkTotal = Object.entries(bySection)
+    .filter(([s]) => s.includes('Reference Work'))
+    .reduce((a, [, n]) => a + n, 0);
+
+  /** The number inside `(…)` immediately after a phrase, e.g. "Perspectives (74)". */
+  const parenAfter = (text: string, phrase: string): number | null => {
+    const esc = phrase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const m = text.match(new RegExp(`${esc}\\s*\\((\\d+)\\)`));
+    return m ? Number(m[1]) : null;
+  };
+
   it('the installed plugin skill states the live total and empty-cell counts', () => {
     const src = read('plugin', 'skills', 'caail', 'SKILL.md');
     everyMention(src, 'method×area cells', matrix.totalCells, 'SKILL.md: cell total');
     everyMention(src, 'with no indexed paper', matrix.emptyCells, 'SKILL.md: empty count');
+  });
+
+  /**
+   * The rest of SKILL.md's figures. Its "Counting" section exists to stop an agent
+   * quoting "345 papers" as the matrix corpus, so those per-section numbers being wrong
+   * would defeat the one paragraph written to prevent a miscount.
+   */
+  it('the installed plugin skill states live paper counts', () => {
+    const src = read('plugin', 'skills', 'caail', 'SKILL.md');
+    everyMention(src, ' papers', counts.papers, 'SKILL.md: total papers');
+    expect(parenAfter(src, '`References`'), 'SKILL.md: matrix-eligible').toBe(bySection['References']);
+    expect(parenAfter(src, 'Perspectives'), 'SKILL.md: reviews').toBe(bySection['Reviews & Perspectives']);
+    expect(parenAfter(src, 'Reference Work sections'), 'SKILL.md: reference works').toBe(referenceWorkTotal);
+  });
+
+  /**
+   * The ROOT marketplace manifest, one directory above the plugin one. Same class of file
+   * carrying the same class of figure, and until this branch `.claude-plugin/**` was
+   * matched by no workflow's `paths:` filter at all — so the gap the plugin manifest was
+   * just fixed for existed one level up, unguarded and unnoticed.
+   */
+  it('the root marketplace manifest states the live paper total', () => {
+    const mkt = JSON.parse(read('.claude-plugin', 'marketplace.json'));
+    everyMention(mkt.metadata.description, ' papers', counts.papers, 'marketplace.json: papers');
   });
 
   it('every restatement in agent-api.ts agrees with the live grid', () => {
@@ -457,13 +498,19 @@ describe('prose that quotes the matrix grid size', () => {
     everyMention(src, 'method×area cells', matrix.totalCells, 'agent-api: cell total');
     everyMention(src, 'with no indexed paper', matrix.emptyCells, 'agent-api: empty count');
     everyMention(src, 'populated ones', matrix.populatedCells, 'agent-api: populated count');
-    // `buildMatrix`'s docstring phrases the same pair as "(70 of 150)" rather than in words.
-    const ofPair = src.match(/\((\d+) of (\d+)\)/);
-    expect(ofPair, 'agent-api: the "(N of M)" restatement').not.toBeNull();
-    expect([Number(ofPair![1]), Number(ofPair![2])], 'agent-api: populated of total').toEqual([
-      matrix.populatedCells,
-      matrix.totalCells,
-    ]);
+    // `buildMatrix`'s docstring phrases the same pair as "references (70 of 150)" rather
+    // than in words. Global AND anchored to the phrase, both deliberately: a non-global
+    // match reads only the first pair and so re-opens the very hole this assertion closed,
+    // and a bare /\((\d+) of (\d+)\)/ claims any parenthetical — "11 of its 24 tasks"
+    // appears in this repo's own taxonomy prose, and would be reported as a grid mismatch.
+    const ofPairs = [...src.matchAll(/references \((\d+) of (\d+)\)/g)];
+    expect(ofPairs.length, 'agent-api: the "references (N of M)" restatement').toBeGreaterThan(0);
+    for (const p of ofPairs) {
+      expect([Number(p[1]), Number(p[2])], 'agent-api: populated of total').toEqual([
+        matrix.populatedCells,
+        matrix.totalCells,
+      ]);
+    }
   });
 
   /**
@@ -472,6 +519,21 @@ describe('prose that quotes the matrix grid size', () => {
    * edit there triggered nothing. It was found stale twice over in one review (a retired
    * column, and a dataset total 33 short), which is what a figure nobody checks looks like.
    */
+  /**
+   * The social card's palette is a hand-copied duplicate of the `--caail-area-*` tokens,
+   * with no npm script, no CI regen-and-diff, and nothing comparing it to the registry.
+   * Retiring a column already shipped a wrong dot count and a wrong caption offset on the
+   * site-wide og:image while every check stayed green, so the count gets an oracle even
+   * though the hexes themselves still have to be kept by hand.
+   */
+  it('the social card draws one dot per research area', () => {
+    const src = read('site', 'scripts', 'og-image.mjs');
+    const arr = src.match(/const AREA = \[([^\]]*)\]/);
+    expect(arr, 'og-image.mjs: the AREA palette').not.toBeNull();
+    const hexes = [...arr![1].matchAll(/'(#[0-9A-Fa-f]{6})'/g)].map((m) => m[1]);
+    expect(hexes.length, 'og-image.mjs: one colour per area').toBe(papers.areas.length);
+  });
+
   it('the plugin marketplace description states live corpus figures', () => {
     const desc = JSON.parse(read('plugin', '.claude-plugin', 'plugin.json')).description as string;
     everyMention(desc, ' papers', counts.papers, 'plugin.json: papers');

@@ -31,17 +31,18 @@ on:
       # site build and e2e pass on a doc edit.
       - .claude/hooks/**
       - .claude/settings.json
-      # The plugin text that DOES have tests. `plugin/skills/caail/SKILL.md` states
-      # the matrix grid size and `plugin/.claude-plugin/plugin.json`'s marketplace
-      # description states six corpus figures; agent-api.test.ts asserts both against
-      # the built models. Without these lines the guards only fire in the direction
-      # where the CORPUS moved (Papers.md matches '*.md'), never the one where the
-      # plugin file is itself the thing edited — so mistyping a count in the file a
-      # guard exists to protect would trigger no workflow at all. `lint-papers.yml`
-      # watches plugin/skills/** but never runs vitest, and nothing at all watched
-      # plugin/.claude-plugin/**, which is how its description went stale twice.
+      # The plugin text that DOES have tests. `plugin/skills/caail/SKILL.md` states the
+      # matrix grid size and the per-section paper counts; both manifests' descriptions
+      # state corpus figures. agent-api.test.ts asserts all of them against the built
+      # models. Without these lines the guards only fire in the direction where the
+      # CORPUS moved (Papers.md matches '*.md'), never the one where the plugin file is
+      # itself the thing edited — so mistyping a count in the file a guard exists to
+      # protect would trigger no workflow at all. `lint-papers.yml` watches
+      # plugin/skills/** but never runs vitest, and neither manifest directory was
+      # matched by any workflow, which is how plugin.json went stale twice over.
       - plugin/skills/**
       - plugin/.claude-plugin/**
+      - .claude-plugin/**
       - .github/workflows/test.yml
   push:
     branches: [main]
@@ -67,17 +68,18 @@ on:
       # site build and e2e pass on a doc edit.
       - .claude/hooks/**
       - .claude/settings.json
-      # The plugin text that DOES have tests. `plugin/skills/caail/SKILL.md` states
-      # the matrix grid size and `plugin/.claude-plugin/plugin.json`'s marketplace
-      # description states six corpus figures; agent-api.test.ts asserts both against
-      # the built models. Without these lines the guards only fire in the direction
-      # where the CORPUS moved (Papers.md matches '*.md'), never the one where the
-      # plugin file is itself the thing edited — so mistyping a count in the file a
-      # guard exists to protect would trigger no workflow at all. `lint-papers.yml`
-      # watches plugin/skills/** but never runs vitest, and nothing at all watched
-      # plugin/.claude-plugin/**, which is how its description went stale twice.
+      # The plugin text that DOES have tests. `plugin/skills/caail/SKILL.md` states the
+      # matrix grid size and the per-section paper counts; both manifests' descriptions
+      # state corpus figures. agent-api.test.ts asserts all of them against the built
+      # models. Without these lines the guards only fire in the direction where the
+      # CORPUS moved (Papers.md matches '*.md'), never the one where the plugin file is
+      # itself the thing edited — so mistyping a count in the file a guard exists to
+      # protect would trigger no workflow at all. `lint-papers.yml` watches
+      # plugin/skills/** but never runs vitest, and neither manifest directory was
+      # matched by any workflow, which is how plugin.json went stale twice over.
       - plugin/skills/**
       - plugin/.claude-plugin/**
+      - .claude-plugin/**
       - .github/workflows/test.yml
   workflow_dispatch:
 
