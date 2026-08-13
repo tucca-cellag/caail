@@ -113,14 +113,22 @@ const vocabJson = JSON.stringify(vocabularies).replace(/</g, '\\u003c');
     they sit in different sections and a marker on one is a marker someone can move the
     other out from under.
 
-    It names `details` — the field the composed body goes into — rather than dropping the
-    query wholesale, which also discarded `item=`. That parameter is the ONLY per-entry
-    attribution this route has: the Cloudflare beacon strips query strings from page views,
-    so the outbound event is the whole signal, exactly as the header above says. Dropping it
-    made that comment false while looking like a privacy improvement.
+    It names `details` and `reason` — the two fields the reader's answers go into — rather
+    than dropping the query wholesale, which also discarded `item=`. That parameter is the
+    ONLY per-entry attribution this route has: the Cloudflare beacon strips query strings
+    from page views, so the outbound event is the whole signal, exactly as the header above
+    says. Dropping it made that comment false while looking like a privacy improvement.
 
-    The name comes from the URL builder rather than being retyped, so a rename moves both. */}
-<div class="rp" {...{ [NO_QUERY_ANALYTICS_ATTR]: CORRECTION_FIELDS.details }}>
+    `reason` is here because `details` is. The composed body's first line IS the error
+    class, so excluding the body and keeping the same answer under its own parameter would
+    have re-added, by accident, exactly what dropping `details` was a decision to leave out.
+    It arrived when the field became prefillable and nothing connected the two.
+
+    Both names come from the URL builder rather than being retyped, so a rename moves them. */}
+<div
+  class="rp"
+  {...{ [NO_QUERY_ANALYTICS_ATTR]: `${CORRECTION_FIELDS.details} ${CORRECTION_FIELDS.reason}` }}
+>
   {/* Identified-entry banner. Hidden until the script validates an id, so a reader who
       lands here with no query string, or with a malformed one, never sees an empty slot. */}
   <p class="rp-id" id="caail-report-id" hidden>
@@ -297,15 +305,18 @@ const vocabJson = JSON.stringify(vocabularies).replace(/</g, '\\u003c');
   // telling the reader how much of a note survives. They are never used to pre-bound a
   // value before composing, because composeBody applies them itself and a second, slightly
   // different bounding at the point of input is how the two would drift.
-  // `normaliseDoi` stays out for the same reason: composeBody normalises.
+  // `normaliseDoi` stays out for the same reason: composeBody normalises. It was imported
+  // for a hand-copied shape regex that has since become `isDoiShapeIgnoringLength`, which
+  // normalises internally — so the comment above is true again rather than aspirational.
   import {
     DOI_INPUT_MAX_LENGTH,
+    NOTE_INPUT_MAX_LENGTH,
     NOTE_MAX_LENGTH,
     boundNote,
     collapseNote,
     composeBody,
     isDoiShape,
-    normaliseDoi,
+    isDoiShapeIgnoringLength,
     type CorrectionAnswers,
     type CorrectionVocabularies,
     type FollowUpKind,
@@ -661,8 +672,11 @@ const vocabJson = JSON.stringify(vocabularies).replace(/</g, '\\u003c');
         // Two different rejections, two different messages. A DOI can also fail on encoded
         // length, and telling a reader whose input plainly starts with 10. and has a slash
         // that it does not is asserting something false to their face.
-        const tooLong = typed !== '' && normaliseDoi(typed).length > 0 && !ok
-          && /^10\.\d{4,9}\/[^\s?#]+$/.test(normaliseDoi(typed));
+        //
+        // The predicate is IMPORTED. This line used to carry its own copy of the shape
+        // regex, byte-identical to the library's and with nothing checking they stayed
+        // that way — see isDoiShapeIgnoringLength for what the drift would have done.
+        const tooLong = typed !== '' && !ok && isDoiShapeIgnoringLength(typed);
         error.textContent = ok
           ? ''
           : tooLong
@@ -686,13 +700,17 @@ const vocabJson = JSON.stringify(vocabularies).replace(/</g, '\\u003c');
 
       const area = document.createElement('textarea');
       area.id = 'caail-f-note';
-      area.maxLength = NOTE_MAX_LENGTH;
+      // NOTE_INPUT_MAX_LENGTH, deliberately NOT NOTE_MAX_LENGTH. maxLength bounds the raw
+      // value while the cap and the counter both measure the collapsed one, so equal bounds
+      // let the raw one bind invisibly: the field stops accepting keystrokes while the
+      // readout below still shows headroom. Same shape as the DOI field's cap.
+      area.maxLength = NOTE_INPUT_MAX_LENGTH;
       area.rows = 3;
       area.value = answers.note;
       area.setAttribute('aria-describedby', 'caail-f-note-count');
 
-      // Not a live region: it would announce on every keystroke. The cap is also enforced
-      // by maxLength and again by boundNote, so this is a convenience readout.
+      // Not a live region: it would announce on every keystroke. `boundNote` is what
+      // actually caps the note, so this is a convenience readout.
       const count = document.createElement('span');
       count.className = 'rc-help';
       count.id = 'caail-f-note-count';

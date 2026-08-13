@@ -10,6 +10,7 @@ import {
   DOI_MAX_LENGTH,
   GITHUB_MAX_URL,
   MAILTO_MAX_URL,
+  NOTE_INPUT_MAX_LENGTH,
   NOTE_MAX_ENCODED,
   NOTE_MAX_LENGTH,
   REASON_SPECS,
@@ -17,6 +18,7 @@ import {
   collapseNote,
   composeBody,
   isDoiShape,
+  isDoiShapeIgnoringLength,
   normaliseDoi,
   resolveReasons,
   splitOption,
@@ -627,6 +629,40 @@ describe('composeBody', () => {
         );
       }
     }
+  });
+
+  it('separates "malformed" from "merely too long", which is two error messages', () => {
+    // The DOI field says "longer than any real DOI" for one and "that does not look like a
+    // DOI" for the other, and it used to decide with its own copy of the shape regex. The
+    // predicate is exported so there is one definition; this pins the distinction it draws.
+    const wellFormedButTooLong = `10.1234/${'提'.repeat(100)}`;
+    expect(isDoiShapeIgnoringLength(wellFormedButTooLong)).toBe(true);
+    expect(isDoiShape(wellFormedButTooLong), 'should fail on length alone').toBe(false);
+
+    for (const malformed of ['not a doi', '11.1234/abc', '10.1/abc', '10.1234/']) {
+      expect(isDoiShapeIgnoringLength(malformed), malformed).toBe(false);
+    }
+    // And it agrees with the full check on everything that is simply fine.
+    expect(isDoiShapeIgnoringLength('https://doi.org/10.1234/abc')).toBe(true);
+    expect(isDoiShape('https://doi.org/10.1234/abc')).toBe(true);
+  });
+
+  it('bounds the note field looser than the cap the counter names', () => {
+    // maxLength bounds the RAW value; NOTE_MAX_LENGTH and the counter both measure the
+    // COLLAPSED one. Equal bounds let the raw one bind invisibly — the field stops taking
+    // keystrokes while the readout still shows headroom — so the field's bound has to be
+    // the looser of the two. Same property as the DOI field, one control over.
+    expect(NOTE_INPUT_MAX_LENGTH).toBeGreaterThan(NOTE_MAX_LENGTH);
+
+    // The case that made it visible: whitespace-heavy text over the raw bound that collapses
+    // under it. 70 repeats is 420 raw characters collapsing to 349 — the assertions below
+    // are what keep that arithmetic honest rather than the comment.
+    const raw = 'word  '.repeat(70);
+    expect(raw.length).toBeGreaterThan(NOTE_MAX_LENGTH);
+    expect(raw.length).toBeLessThanOrEqual(NOTE_INPUT_MAX_LENGTH);
+    // It fits in the field, and what the counter reports is what actually survives.
+    expect(collapseNote(raw).length).toBeLessThanOrEqual(NOTE_MAX_LENGTH);
+    expect(boundNote(raw)).toBe(collapseNote(raw));
   });
 
   it('rejects a DOI that passes the character cap but blows the encoded one', () => {

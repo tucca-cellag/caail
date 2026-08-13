@@ -154,10 +154,11 @@ export function resolveSink(scope: AnalyticsGlobals, beaconUrl?: string): Sink |
  * (`…/acc.cgi?acc=GSE12345`). Fragments are dropped as pure noise.
  *
  * `dropParams` is for the one place that premise fails. /report/'s composer puts
- * the reader's whole correction, including a free-text note, into the GitHub
- * link's `details=` parameter, so recording that href verbatim would post
- * visitor-authored text to the collector — while the privacy page says search
- * text is the only free text collected.
+ * the reader's own answers, free-text note included, into the GitHub link's
+ * query, so recording that href verbatim would post visitor-authored content to
+ * the collector — while the privacy page says search text is the only free text
+ * collected. Which parameters those are is the caller's business, not this
+ * function's; ReportRoutes.astro names them from the URL builder.
  *
  * NAMED PARAMETERS, not the whole query. Dropping the query wholesale also threw
  * away `item=`, which is the only per-entry attribution this site has on that

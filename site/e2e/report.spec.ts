@@ -377,6 +377,27 @@ test('a DOI is normalised from what a reader actually pastes', async ({ page }) 
   );
 });
 
+test('a DOI rejected for length says so, rather than calling it malformed', async ({ page }) => {
+  // Two rejections, two messages, and the field used to decide between them with its own
+  // copy of the shape regex. This is also the first test of the "too long" branch at all:
+  // until the field's cap was raised above the validation cap it was unreachable from the
+  // UI, because the browser truncated the input into something that passed.
+  await page.goto('./report/?item=paper:214');
+  await chooseReason(page, 'Wrong or missing DOI');
+  const field = page.getByLabel('The DOI it should have');
+  const error = page.locator('#caail-f-doi-err');
+
+  // Well-formed, and far over the ENCODED cap: 108 characters that encode to 908.
+  await field.fill(`10.1234/${'提'.repeat(100)}`);
+  await expect(error).toContainText('longer than any real DOI');
+  await expect(error).not.toContainText('does not look like');
+  await expect(page.locator(BODY)).not.toContainText('DOI should be');
+
+  // And the other branch still fires for something genuinely malformed.
+  await field.fill('not a doi');
+  await expect(error).toContainText('does not look like a DOI');
+});
+
 test('a DOI that could not be read is reported as dropped, not silently discarded', async ({
   page,
 }) => {
@@ -667,6 +688,12 @@ test("a reader's note never reaches the analytics collector", async ({ page }) =
   // ...but carries neither the note nor the composed body.
   expect(serialised).not.toContain(secret);
   expect(serialised).not.toContain('details');
+  // Nor the error class, which arrived as its own parameter when the field became
+  // prefillable. The composed body's first line IS the error class, so dropping `details`
+  // and keeping `reason` would have re-added by accident exactly what dropping the body
+  // was a decision to leave out.
+  expect(serialised).not.toContain('reason');
+  expect(serialised).not.toContain('Something%20else');
   // And still carries the entry id. Dropping the whole query took this with it, which
   // removed the only per-entry attribution the route has (the page-view beacon strips
   // query strings) while looking like a privacy improvement.

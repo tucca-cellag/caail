@@ -210,6 +210,26 @@ export function resolveReasons(
 export const NOTE_MAX_LENGTH = 400;
 
 /**
+ * What the note field itself will hold — looser than the cap above, for the same reason
+ * {@link DOI_INPUT_MAX_LENGTH} is.
+ *
+ * `maxLength` bounds the RAW value; {@link NOTE_MAX_LENGTH} bounds the COLLAPSED one, and
+ * collapsing only ever shortens. Setting them equal therefore makes the raw bound the one
+ * that binds, and it binds invisibly: the browser refuses the next keystroke while the
+ * counter, which measures the collapsed text, still reports headroom. A note with blank
+ * lines and double spaces running to 400 raw characters collapses to around 340, so the
+ * reader is told "340 of 400" by a field that has already stopped accepting input. Pasting
+ * past the bound is worse — it is silently cut, in a component that otherwise takes care
+ * never to lose reader input without saying so.
+ *
+ * With the raw bound loose, the collapsed cap is what binds, `boundNote` does the capping,
+ * and the counter's own "of which N fit in the report" branch explains any loss. A bound is
+ * still wanted: it keeps a pasted article out of a field whose value is re-measured on
+ * every keystroke.
+ */
+export const NOTE_INPUT_MAX_LENGTH = NOTE_MAX_LENGTH * 2;
+
+/**
  * The same cap expressed in the unit that actually matters: percent-encoded length.
  *
  * `NOTE_MAX_LENGTH` counts UTF-16 code units, but the constraint it exists to satisfy is
@@ -500,6 +520,27 @@ function stripDoiPrefixes(trimmed: string): string {
   return afterResolver.replace(/^doi:\s*/i, '').trim();
 }
 
+/**
+ * True when `value` normalises to the `10.x/…` SHAPE, saying nothing about its length.
+ *
+ * Exported for the DOI field's error message, which has to tell two rejections apart: a
+ * well-formed DOI that is merely too long gets "longer than any real DOI", and anything
+ * else gets "that does not look like a DOI". Telling a reader whose input plainly starts
+ * `10.` and contains a slash that it does not look like a DOI is asserting something false
+ * to their face.
+ *
+ * It exists as an export because the page had the regex COPIED into it. The two were
+ * byte-identical, so nothing misbehaved — and the day they diverged the divergence would
+ * have been silent and would have inverted the message: widen {@link DOI_RE} to admit a
+ * `?`, and a genuinely well-formed DOI over the encoded cap falls out of the "too long"
+ * branch and is told it is malformed. That is the hand-typed-fact-beside-a-derived-one
+ * defect this repo pays for most often, sitting two lines under a comment explaining why
+ * the branch exists.
+ */
+export function isDoiShapeIgnoringLength(value: string): boolean {
+  return DOI_RE.test(normaliseDoi(value));
+}
+
 /** True when `value` normalises to something DOI-shaped. Empty is not an error, just absent. */
 export function isDoiShape(value: string): boolean {
   const doi = normaliseDoi(value);
@@ -509,7 +550,10 @@ export function isDoiShape(value: string): boolean {
     // field counts, and the encoded cap is what keeps the URL deliverable. They coincide
     // for ASCII, which is why checking only the first one looked sufficient.
     encodedLength(doi) <= DOI_MAX_ENCODED &&
-    DOI_RE.test(doi)
+    // Re-normalising `doi` inside is harmless because normaliseDoi reaches a true fixed
+    // point; before it did, composing the two predicates like this is exactly what made the
+    // shape check disagree with what was composed.
+    isDoiShapeIgnoringLength(doi)
   );
 }
 
