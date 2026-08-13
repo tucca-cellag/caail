@@ -1,0 +1,285 @@
+/**
+ * Preflight checks that run before the Playwright e2e suite, in `playwright.config.ts`.
+ *
+ * These guard the two ways a red e2e run has been actively misleading rather than
+ * merely flaky. Both are properties of the *build artifact or the environment*, not
+ * of any test, and both are deterministic within one `dist`: the suite fails
+ * identically every time, which reads as a solid reproducible regression.
+ * `--repeat-each` makes it look stronger rather than weaker, because repeated runs
+ * against one `dist` are one observation counted N times. Both also land on the
+ * search specs specifically (`explorer.spec.ts`, `privacy.spec.ts`), so any change
+ * that plausibly touches search gets blamed for them.
+ *
+ * 1. `dist/pagefind/*` written as entirely NUL bytes. An incremental `pnpm build`
+ *    intermittently produces `pagefind.js` and `pagefind-entry.json` at the correct
+ *    size and completely zero-filled. Pagefind then never initialises, the search
+ *    dialog stays empty, and every spec that opens search fails on a content
+ *    assertion ten seconds later. `rm -rf dist && pnpm build` fixes it.
+ *
+ * 2. The port already held by a server this run did not start. `reuseExistingServer`
+ *    is `!process.env.CI`, so a local run silently ATTACHES to whatever is listening.
+ *    A hand-started `pnpm preview` outliving a `rm -rf dist` keeps serving the
+ *    deleted build, and the run reports on an artifact nobody built.
+ *
+ * ## Why this module is imported from the config and not from `globalSetup`
+ *
+ * Playwright composes its startup as
+ * `[removeOutputDirs, ...pluginSetup, ...globalTeardown, ...globalSetup]`, and
+ * `webServer` is registered as a *plugin*. So the web server is already up by the
+ * time `globalSetup` runs, and a port check there would see the port held on every
+ * single run — by Playwright's own preview server. Config evaluation is the only
+ * phase that is strictly earlier than the webServer plugin.
+ *
+ * That is also why the port probe is synchronous. Firing an async probe during
+ * config evaluation and awaiting it in `globalSetup` would leave a race between the
+ * probe and the server start, and a guard whose whole purpose is trustworthiness
+ * cannot itself be racy.
+ *
+ * ## Why it must run only once per run
+ *
+ * Playwright re-evaluates the config in every worker process, and a worker starts
+ * *after* the web server. A port check that ran there would see the port held — by
+ * Playwright's own preview server — and fail every healthy run. That is the same
+ * trap as the `globalSetup` one, arriving through a different door; it was observed
+ * before this guard shipped, which is why `preflightOnce` exists.
+ */
+
+import { spawnSync } from 'node:child_process';
+import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
+/** The pagefind artifacts every search spec depends on, relative to `dist/`. */
+export const PAGEFIND_ARTIFACTS = ['pagefind/pagefind.js', 'pagefind/pagefind-entry.json'] as const;
+
+export type ArtifactVerdict =
+  | { status: 'ok'; bytes: number }
+  | { status: 'absent' }
+  | { status: 'empty' }
+  | { status: 'all-nul'; bytes: number };
+
+/**
+ * Classify one artifact's bytes. `null` means the file does not exist.
+ *
+ * The corrupt case is specifically *right size, all zeroes* — the file is neither
+ * missing nor truncated, which is why nothing downstream notices until a browser
+ * tries to execute it. A zero-length file is called out separately: also broken,
+ * but a different failure with a different cause.
+ */
+export function classifyArtifact(bytes: Uint8Array | null): ArtifactVerdict {
+  if (bytes === null) return { status: 'absent' };
+  if (bytes.length === 0) return { status: 'empty' };
+  // `.every` short-circuits, so a healthy file costs one byte comparison in practice:
+  // real pagefind.js starts with source text, not a NUL.
+  if (bytes.every((b) => b === 0)) return { status: 'all-nul', bytes: bytes.length };
+  return { status: 'ok', bytes: bytes.length };
+}
+
+/** Read an artifact's bytes, or `null` when it does not exist. */
+function readArtifact(path: string): Uint8Array | null {
+  if (!existsSync(path)) return null;
+  return readFileSync(path);
+}
+
+/**
+ * Check the pagefind artifacts under `distDir`.
+ *
+ * Returns one message per broken artifact, empty when everything is fine. A `dist`
+ * that does not exist at all yields no messages: that is the stale/absent-build
+ * problem, which `pnpm preview` reports on its own terms, and claiming it here
+ * would make this guard fire on a checkout that has simply never been built.
+ */
+export function checkPagefindArtifacts(
+  distDir: string,
+  read: (path: string) => Uint8Array | null = readArtifact,
+): string[] {
+  if (!existsSync(distDir)) return [];
+
+  const problems: string[] = [];
+  for (const relative of PAGEFIND_ARTIFACTS) {
+    const path = join(distDir, relative);
+    const verdict = classifyArtifact(read(path));
+    if (verdict.status === 'ok') continue;
+    const detail =
+      verdict.status === 'all-nul'
+        ? `is ${verdict.bytes} bytes of NUL — the correct size, entirely zero-filled`
+        : verdict.status === 'empty'
+          ? 'is zero bytes'
+          : 'is missing';
+    problems.push(`dist/${relative} ${detail}`);
+  }
+  return problems;
+}
+
+/**
+ * Probe a local TCP port synchronously. `true` means something is listening.
+ *
+ * Node has no synchronous socket API, so this spawns a short-lived child. Both
+ * loopback families are tried: `astro preview` binds to `localhost`, which resolves
+ * to `::1` before `127.0.0.1` on some hosts, and a probe of the wrong family would
+ * report a held port as free.
+ */
+export function isPortHeld(port: number): boolean {
+  const probe = `
+    const net = require('node:net');
+    const port = Number(process.argv[1]);
+    let pending = 2;
+    let held = false;
+    for (const host of ['127.0.0.1', '::1']) {
+      const socket = net.connect({ port, host });
+      socket.setTimeout(2000);
+      const settle = (isHeld) => {
+        held ||= isHeld;
+        socket.destroy();
+        if (--pending === 0) process.exit(held ? 10 : 0);
+      };
+      socket.on('connect', () => settle(true));
+      socket.on('error', () => settle(false));
+      socket.on('timeout', () => settle(false));
+    }
+  `;
+  const result = spawnSync(process.execPath, ['-e', probe, String(port)], { timeout: 10_000 });
+  return result.status === 10;
+}
+
+/**
+ * Best-effort description of what holds a port, for the error message only.
+ *
+ * `lsof` is not present everywhere and its output format is not a contract, so a
+ * failure here degrades to "something", never to a wrong verdict. Nothing branches
+ * on the result.
+ */
+export function describePortHolder(port: number): string {
+  try {
+    const result = spawnSync('lsof', ['-nP', `-iTCP:${port}`, '-sTCP:LISTEN'], {
+      encoding: 'utf8',
+      timeout: 5_000,
+    });
+    const rows = (result.stdout ?? '')
+      .split('\n')
+      .slice(1) // drop lsof's COMMAND/PID/... header
+      .filter((line) => line.trim().length > 0)
+      .map((line) => {
+        const [command, pid] = line.split(/\s+/);
+        return `${command} (pid ${pid})`;
+      });
+    return rows.length > 0 ? [...new Set(rows)].join(', ') : 'an unidentified process';
+  } catch {
+    return 'an unidentified process';
+  }
+}
+
+/** Set by the runner process so its workers can tell they are not it. */
+export const PREFLIGHT_DONE_ENV = 'CAAIL_E2E_PREFLIGHT_DONE';
+
+/**
+ * Whether this process is the one that starts the web server, rather than a worker
+ * Playwright forked afterwards.
+ *
+ * Two independent signals, either of which is sufficient, because a false negative
+ * here fails every healthy run:
+ *
+ *  - `TEST_WORKER_INDEX` is set by Playwright's own `workerProcessEntry`. Reliable,
+ *    but it is an internal and could be renamed.
+ *  - `CAAIL_E2E_PREFLIGHT_DONE` is set by us on the runner's `process.env`, which
+ *    forked workers inherit. This depends only on Node's env inheritance.
+ */
+function isMainRunnerProcess(env: NodeJS.ProcessEnv): boolean {
+  return env.TEST_WORKER_INDEX === undefined && env[PREFLIGHT_DONE_ENV] !== '1';
+}
+
+export interface PreflightOptions {
+  distDir: string;
+  port: number;
+  /**
+   * Whether Playwright will adopt an already-listening server. When false it always
+   * starts its own and fails on a busy port by itself, so the port check has nothing
+   * to add. This is how the check stays out of CI's way.
+   */
+  reuseExistingServer: boolean;
+  /** Escape hatch: attach to the existing server deliberately, with a warning. */
+  allowExistingServer: boolean;
+  /** Injected in tests. */
+  portIsHeld?: (port: number) => boolean;
+  describeHolder?: (port: number) => string;
+  warn?: (message: string) => void;
+  env?: NodeJS.ProcessEnv;
+}
+
+/**
+ * The entry point the Playwright config calls: run every check exactly once per
+ * `playwright test` invocation, in the runner process only.
+ *
+ * Returns a fully-formed error message when the run would be untrustworthy, or
+ * `null` when it is safe to proceed (including when this is a worker and the
+ * runner already vouched for the run).
+ */
+export function preflightOnce(options: PreflightOptions): string | null {
+  const env = options.env ?? process.env;
+  if (!isMainRunnerProcess(env)) return null;
+  env[PREFLIGHT_DONE_ENV] = '1';
+  return runPreflight(options);
+}
+
+/**
+ * Run every preflight check. Returns a fully-formed error message when the run
+ * would be untrustworthy, or `null` when it is safe to proceed.
+ */
+export function runPreflight(options: PreflightOptions): string | null {
+  const {
+    distDir,
+    port,
+    reuseExistingServer,
+    allowExistingServer,
+    portIsHeld = isPortHeld,
+    describeHolder = describePortHolder,
+    warn = (message: string) => console.warn(message),
+  } = options;
+
+  const pagefindProblems = checkPagefindArtifacts(distDir);
+  if (pagefindProblems.length > 0) {
+    return [
+      'e2e preflight: the pagefind search index in this build is corrupt.',
+      '',
+      ...pagefindProblems.map((problem) => `  - ${problem}`),
+      '',
+      'Pagefind will never initialise, the search dialog will stay empty, and every',
+      'spec that opens search fails on a content assertion ten seconds later — which',
+      'reads as a regression in whatever you changed. It is not: an incremental build',
+      'intermittently writes these files correctly sized and entirely zero-filled.',
+      '',
+      'Fix: rm -rf dist && pnpm build',
+      `Confirm: tr -d '\\000' < ${join(distDir, PAGEFIND_ARTIFACTS[0])} | wc -c   # 0 means corrupt`,
+    ].join('\n');
+  }
+
+  if (!reuseExistingServer) return null;
+  if (!portIsHeld(port)) return null;
+
+  if (allowExistingServer) {
+    warn(
+      [
+        `e2e preflight: port ${port} is held by ${describeHolder(port)} and`,
+        'CAAIL_E2E_ALLOW_EXISTING_SERVER is set, so this run will attach to it.',
+        'These results describe whatever that server is serving, not necessarily',
+        `the build in ${distDir}.`,
+      ].join('\n'),
+    );
+    return null;
+  }
+
+  return [
+    `e2e preflight: port ${port} is already held by ${describeHolder(port)},`,
+    'which this run did not start.',
+    '',
+    'reuseExistingServer is on outside CI, so Playwright would silently ATTACH to that',
+    'server instead of starting its own. A preview server that outlived a `rm -rf dist`',
+    'keeps serving the deleted build, so the suite would report on an artifact nobody',
+    'built — passing or failing for reasons unrelated to your working tree.',
+    '',
+    'Pick one:',
+    '  - Give this run its own port:  CAAIL_E2E_PORT=<free port> pnpm test:e2e',
+    `  - Stop the existing server:     kill $(lsof -ti:${port})`,
+    '  - Attach on purpose:            CAAIL_E2E_ALLOW_EXISTING_SERVER=1 pnpm test:e2e',
+    '    (prints a warning; you are asserting that server serves the build you want)',
+  ].join('\n');
+}

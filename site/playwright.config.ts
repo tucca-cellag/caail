@@ -1,4 +1,7 @@
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
 import { defineConfig } from '@playwright/test';
+import { preflightOnce } from './scripts/e2e-preflight';
 
 /**
  * Preview port, overridable via CAAIL_E2E_PORT.
@@ -20,12 +23,35 @@ if (!Number.isInteger(PORT) || PORT <= 0 || PORT > 65535) {
 }
 const BASE = `http://localhost:${PORT}/caail/`;
 
+const REUSE_EXISTING_SERVER = !process.env.CI;
+
+/**
+ * Preflight runs HERE, during config evaluation, and not in a `globalSetup` file.
+ *
+ * Playwright composes startup as `[removeOutputDirs, ...pluginSetup, ...globalSetup]`
+ * and registers `webServer` as a plugin, so by the time `globalSetup` runs the
+ * preview server is already listening. A port check there would fire on every run,
+ * against Playwright's own server. Config evaluation is the only phase strictly
+ * earlier than that. See scripts/e2e-preflight.ts for the two failure modes.
+ *
+ * `preflightOnce` rather than `runPreflight` because Playwright re-evaluates this
+ * file in every worker process, and workers start after the web server — so an
+ * unguarded check would hit that same trap from the other side.
+ */
+const preflightFailure = preflightOnce({
+  distDir: join(dirname(fileURLToPath(import.meta.url)), 'dist'),
+  port: PORT,
+  reuseExistingServer: REUSE_EXISTING_SERVER,
+  allowExistingServer: process.env.CAAIL_E2E_ALLOW_EXISTING_SERVER === '1',
+});
+if (preflightFailure) throw new Error(preflightFailure);
+
 export default defineConfig({
   testDir: './e2e',
   webServer: {
     command: `pnpm preview --port ${PORT}`,
     url: BASE,
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: REUSE_EXISTING_SERVER,
     timeout: 120_000,
   },
   use: { baseURL: BASE },
