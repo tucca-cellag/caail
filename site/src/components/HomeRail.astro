@@ -41,10 +41,18 @@ const items = [
      specific" (an instruction with no destination in it). The eyebrow already IS the
      compressed categorical tag, so it is the right source.
      Be precise about the blast radius: that guard exempts any section with no
-     `.eyebrow`, and `why` is currently the ONLY section that renders one. Every other
+     `.eyebrow`, and three rail entries name a section that renders one — `topics`, `why`
+     and `ask`. (The hero renders one too, but `top` is exempted by id: that eyebrow is the
+     site tagline rather than a categorical tag.) Every other
      label below is hand-written and unguarded, so renaming one of those sections drifts
-     the rail silently. Give a section an eyebrow and it joins the guard automatically. */
+     the rail silently. Give a section an eyebrow and it joins the guard automatically.
+     (This sentence said `why` was the only one for as long as there were three. The count
+     is checkable in one grep — `grep -rn 'class="eyebrow"' site/src/components` — which is
+     the argument for not writing it down here at all if it drifts again.) */
   { id: 'why', label: 'Why CAAIL' },
+  /* `ask` is guarded like `why`: its section renders an `.eyebrow`, so this string and that
+     eyebrow are compared on every e2e run. Keep the two identical. */
+  { id: 'ask', label: 'What you can ask' },
   { id: 'connect', label: 'Connect your agent' },
   { id: 'community-band', label: 'Community' },
   { id: 'cite-band', label: 'Cite CAAIL' },

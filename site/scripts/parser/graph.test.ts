@@ -11,7 +11,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 
 import { authorKey, buildGraphModel } from './graph.js';
-import { buildPapersModel } from './papers.js';
+import { corpusPapers } from './corpus-fixture.js';
 import { loadCitationCache } from './generate-data.js';
 import { GraphSchema, type PapersData, type Reference } from './types.js';
 
@@ -129,11 +129,11 @@ describe('buildGraphModel — real corpus', () => {
   let graph: ReturnType<typeof buildGraphModel>;
   beforeAll(() => {
     // Build WITH the committed OpenAlex cache so both edge modes are exercised.
-    graph = buildGraphModel(buildPapersModel(), loadCitationCache());
+    graph = buildGraphModel(corpusPapers(), loadCitationCache());
   });
 
   it('emits one node per reference (matches the model)', () => {
-    const model = buildPapersModel();
+    const model = corpusPapers();
     expect(graph.nodes).toHaveLength(model.references.length);
     expect(graph.metadata.nodes).toBe(model.references.length);
   });

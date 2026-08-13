@@ -265,6 +265,116 @@ export function buildTopicIndex(
 }
 
 // ---------------------------------------------------------------------------
+// The compact indexes
+// ---------------------------------------------------------------------------
+
+/**
+ * What an agent is told when the matrix is the wrong instrument.
+ *
+ * This is the defect the indexes were built after, and it is worth stating in the payload
+ * because it has now been made three times, twice by this project's own curators with full
+ * repository access, and once by an outside agent using nothing but the published API and
+ * the skill. All three concluded that CAAIL indexes no paper coupling a genome-scale model
+ * to media design. Reference 240 is exactly that paper. It is invisible to `matrix.json`
+ * because it sits in a Reference Work section with no method and no area, and nothing in
+ * the API said that such a reference could exist.
+ *
+ * SCOPE_NOTE bounds what an empty cell proves, which is the failure everyone anticipated.
+ * This bounds what the matrix's SILENCE proves, which is the one that actually fired.
+ */
+/**
+ * The count, and why it is stated before the rows rather than inferred from them.
+ *
+ * Shrinking the index from 554 KB to 110 KB took a summarising fetch from carrying ~15% of
+ * the references to ~90%. Measured, not assumed — and 90% is not 100%, so the last rows can
+ * still be lost, and the tool reports that inconsistently when it reports it at all. Byte
+ * golf cannot close that gap: the budget belongs to someone else's tool and moves.
+ *
+ * What CAN be closed is the DETECTABILITY. An agent that parses N rows and can compare N
+ * against a count it read at the top of the same file knows whether it has everything. That
+ * converts a silent truncation into a checkable one, which is the difference between a
+ * confident wrong answer and a caveated right one. It is the same move as the matrix note
+ * below: state the limit in the payload, where the reader actually is.
+ */
+export const TRUNCATION_NOTE =
+  'Compare the number of rows you parsed against `count`. If you have fewer, your fetch ' +
+  'truncated this file and you are looking at part of the corpus: say so, and do not report ' +
+  'an absence from it. Fetching with a tool that returns bytes rather than a summary avoids ' +
+  'this entirely.';
+
+export const MATRIX_NOTE =
+  'A reference with empty `methods` and `areas` is indexed but occupies no matrix cell: ' +
+  'only the References section is matrix-eligible, so reviews and reference works never ' +
+  'appear in matrix.json however directly they answer a question. Searching the matrix ' +
+  'alone will not find them. Before concluding that CAAIL indexes no work on something, ' +
+  'search this index over every section, or the topic index in topics.json.';
+
+/** One row per reference: enough to select, small enough to survive a summarising fetch. */
+export function buildPapersIndex(papers: PapersData, corpusDate: string): unknown {
+  // Same reason as buildCatalogIndex: never throw ahead of the validator. A malformed
+  // `references` should be reported as papers.json failing its schema, by name.
+  const refs = Array.isArray(papers?.references) ? papers.references : [];
+  // Key order is the emitted order, so `count` and the notes precede the rows and survive a
+  // truncation that eats the tail. A count at the bottom would be lost exactly when needed.
+  return {
+    corpusDate,
+    count: refs.length,
+    scopeNote: SCOPE_NOTE,
+    truncationNote: TRUNCATION_NOTE,
+    matrixNote: MATRIX_NOTE,
+    references: refs.map((r) => ({
+      id: r.id,
+      title: r.title,
+      year: r.year ?? null,
+      // The first author is what an author-year citation label needs. The full list is
+      // 72 KB across the corpus and is one fetch away in papers.json.
+      firstAuthor: r.authors?.[0] ?? null,
+      section: r.section,
+      isPrimary: r.isPrimary,
+      methods: r.methods ?? [],
+      areas: r.areas ?? [],
+      doi: r.doi ?? null,
+      hasCode: Boolean(r.hasCode),
+      hasData: Boolean(r.hasData),
+    })),
+  };
+}
+
+/** The same trade for the catalogue, where the duplicated summary prose is two thirds of it. */
+export function buildCatalogIndex(catalog: unknown, corpusDate: string): unknown {
+  type Entry = {
+    slug?: string;
+    name?: string;
+    group?: string;
+    url?: string | null;
+    doi?: string | null;
+    tier?: string | null;
+  };
+  const cat = catalog as { software?: Entry[]; databases?: Entry[] } | null;
+  // Tolerate a malformed input rather than throwing on it. These builders run BEFORE
+  // `assertValid`, so a bare `.filter` here turns "catalog.json failed its schema" — which
+  // names the file and the offending key — into `list.filter is not a function`, which
+  // names neither. Degrade to empty and let the validator report it properly; the sibling
+  // catalog.json in the same batch carries the same bad input and will fail on it.
+  const arr = (v: unknown): Entry[] => (Array.isArray(v) ? (v as Entry[]) : []);
+  const rows = ([['software', arr(cat?.software)], ['database', arr(cat?.databases)]] as const)
+    .flatMap(([kind, list]) =>
+      list
+        .filter((e) => e && e.slug)
+        .map((e) => ({
+          slug: e.slug as string,
+          name: e.name ?? '',
+          kind,
+          group: e.group ?? '',
+          url: e.url ?? null,
+          doi: e.doi ?? null,
+          tier: e.tier ?? null,
+        })),
+    );
+  return { corpusDate, count: rows.length, truncationNote: TRUNCATION_NOTE, entries: rows };
+}
+
+// ---------------------------------------------------------------------------
 // index.json — the manifest an agent reads first
 // ---------------------------------------------------------------------------
 
@@ -278,6 +388,7 @@ export function buildManifest(
   matrix: ReturnType<typeof buildMatrix>,
   corpusDate: string,
   datasets: { curated: number; inventory: number } = { curated: 0, inventory: 0 },
+  catalog: { software: number; databases: number } = { software: 0, databases: 0 },
 ): unknown {
   const bySection: Record<string, number> = {};
   for (const r of papers.references) bySection[r.section] = (bySection[r.section] ?? 0) + 1;
@@ -314,12 +425,24 @@ export function buildManifest(
       datasetsCurated: datasets.curated,
       datasetsInventoryRows: datasets.inventory,
       datasetsTotal: datasets.curated + datasets.inventory,
+      // The catalogue, counted here for the same reason as everything above it, and added
+      // after an agent pointed out it could not do the check this manifest tells it to do.
+      // The skill sends a reader here to compare against the rows they actually parsed,
+      // because this file is small enough to always arrive whole — and papers and datasets
+      // were counted while software and databases were not, so the one endpoint that was
+      // measured reporting "Total database entries: 0" against 150 was also the one whose
+      // real figure appeared nowhere a truncated reader could reach.
+      software: catalog.software,
+      databases: catalog.databases,
+      catalogTotal: catalog.software + catalog.databases,
     },
     endpoints: [
       { path: 'index.json', use: 'This manifest: corpus date, counts by population, endpoint list.' },
-      { path: 'matrix.json', use: 'All method×area cells, empties included. Use to ask what has and has not been indexed.' },
-      { path: 'papers.json', use: 'Every reference with DOI, code URL, data URL, topics, license and citation count.' },
-      { path: 'catalog.json', use: 'Software and databases, with topic, license tier and DOI.' },
+      { path: 'matrix.json', use: 'All method×area cells, empties included. Use to ask what has and has not been indexed — then read `matrixNote` in papers-index.json before reading a silence as an absence.' },
+      { path: 'papers-index.json', use: 'START HERE for papers. Every reference, one compact row: id, title, year, first author, section, methods, areas, DOI, code/data flags. A sixth the size of papers.json, so it survives a fetch tool that truncates. Enumerate here, then fetch full records.' },
+      { path: 'papers.json', use: 'Full records for the references you selected. Large (~554 KB): if your fetch summarises rather than returning bytes, a "not found" from this file is not evidence of absence.' },
+      { path: 'catalog-index.json', use: 'START HERE for software and databases. One compact row each: slug, name, kind, group, URL, DOI, license tier. A tenth the size of catalog.json.' },
+      { path: 'catalog.json', use: 'Full records with summaries. Large (~576 KB), two thirds of it the same summary prose as Markdown and as HTML; same truncation caveat as papers.json.' },
       {
         path: 'datasets.json',
         use:
@@ -350,11 +473,18 @@ export function buildAgentApi(inputs: AgentApiInputs): ApiFile[] {
     curated: ((inputs.datasets as { entries?: unknown[] } | null)?.entries ?? []).length,
     inventory: (inputs.inventory?.inventory ?? []).length,
   };
+  const cat = inputs.catalog as { software?: unknown[]; databases?: unknown[] } | null;
+  const catalogCounts = {
+    software: (Array.isArray(cat?.software) ? cat.software : []).length,
+    databases: (Array.isArray(cat?.databases) ? cat.databases : []).length,
+  };
 
   const files: ApiFile[] = [
-    { name: 'index.json', body: buildManifest(inputs.papers, matrix, corpusDate, datasetCounts) },
+    { name: 'index.json', body: buildManifest(inputs.papers, matrix, corpusDate, datasetCounts, catalogCounts) },
     { name: 'matrix.json', body: matrix },
+    { name: 'papers-index.json', body: buildPapersIndex(inputs.papers, corpusDate) },
     { name: 'papers.json', body: { ...inputs.papers, scopeNote: SCOPE_NOTE, corpusDate } },
+    { name: 'catalog-index.json', body: buildCatalogIndex(inputs.catalog, corpusDate) },
     { name: 'catalog.json', body: { ...(inputs.catalog as object), corpusDate } },
     {
       name: 'datasets.json',
@@ -388,11 +518,40 @@ export function buildAgentApi(inputs: AgentApiInputs): ApiFile[] {
   return files;
 }
 
+/**
+ * The two index files are serialised ONE ROW PER LINE rather than fully pretty-printed.
+ *
+ * Two-space indent puts every field of every row on its own line, which took the papers
+ * index to 150 KB for 84 KB of data — 78% whitespace, in the one file whose entire purpose
+ * is to be small enough to survive a fetch tool that truncates. Minifying it outright would
+ * fix the size and produce a single-line diff on a committed, CI-diffed artifact, so that
+ * trades one real problem for another.
+ *
+ * Row-per-line gets both: the payload is compact, and a reference changing shows up as one
+ * changed line with the id visible at the front of it.
+ */
+const COMPACT_ARRAY: Record<string, string> = {
+  'papers-index.json': 'references',
+  'catalog-index.json': 'entries',
+};
+
+export function serializeApiFile(name: string, body: unknown): string {
+  const key = COMPACT_ARRAY[name];
+  const rows = key ? (body as Record<string, unknown>)[key] : undefined;
+  if (!key || !Array.isArray(rows)) return JSON.stringify(body, null, 2) + '\n';
+
+  // Everything except the row array keeps its readable form; the array is emitted with one
+  // minified object per line, which is valid JSON and stays reviewable in a diff.
+  const rest = JSON.stringify({ ...(body as object), [key]: [] }, null, 2);
+  const lines = rows.map((r) => '    ' + JSON.stringify(r)).join(',\n');
+  return rest.replace(`"${key}": []`, `"${key}": [\n${lines}\n  ]`) + '\n';
+}
+
 /** Write the built files into `apiDir`, creating it if needed. */
 export function writeAgentApi(files: ApiFile[], apiDir: string): void {
   mkdirSync(apiDir, { recursive: true });
   for (const f of files) {
-    writeFileSync(join(apiDir, f.name), JSON.stringify(f.body, null, 2) + '\n', 'utf-8');
+    writeFileSync(join(apiDir, f.name), serializeApiFile(f.name, f.body), 'utf-8');
   }
 }
 

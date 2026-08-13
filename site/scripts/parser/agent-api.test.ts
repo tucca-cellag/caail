@@ -22,6 +22,9 @@ import {
   buildTopicIndex,
   buildManifest,
   readCorpusDate,
+  serializeApiFile,
+  buildPapersIndex,
+  buildCatalogIndex,
   SCOPE_NOTE,
   PLACEMENT_NOTE,
 } from './agent-api.js';
@@ -386,5 +389,110 @@ describe('site/public/api/datasets.json (the shipped file)', () => {
       (e: any) => e.page === 'Benchmarks',
     );
     expect(shippedBenchmarks.length).toBe(curatedEntryCount(REPO_ROOT, 'Benchmarks'));
+  });
+});
+
+/**
+ * The compact indexes.
+ *
+ * These exist because two agents, given only the published skill and the live endpoints,
+ * were measured answering from a silently truncated fetch: "No matches found" for terms
+ * that are in the corpus, "Total database entries: 0" against 150 databases, and a section
+ * that exists reported as absent. The endpoints were complete and correct; the failure was
+ * their size meeting a fetch tool that summarises rather than returning bytes.
+ *
+ * So the property under test is SIZE and COVERAGE together: every item present, and small
+ * enough that the tool which truncated the parent does not truncate this. A shape-only
+ * test would pass happily on an index that had quietly grown back to the parent's size.
+ */
+describe('the compact indexes', () => {
+  const built = buildAgentApi({ papers, catalog, datasets, inventory, topics, taxonomy, corpusDate: DATE });
+  const body = (name: string) => built.find((f) => f.name === name)!.body as any;
+  const bytes = (name: string) => serializeApiFile(name, built.find((f) => f.name === name)!.body).length;
+
+  it('carries EVERY reference, including the ones no matrix cell reaches', () => {
+    const rows = body('papers-index.json').references as { id: number; methods: string[] }[];
+    expect(rows).toHaveLength(papers.references.length);
+    expect(new Set(rows.map((r) => r.id)).size).toBe(papers.references.length);
+
+    // The exact failure this endpoint was built after: references that answer a question
+    // directly, are indexed, and appear in no cell. Derived rather than hardcoded — if the
+    // corpus ever holds none, this assertion should be deleted, not weakened.
+    const offMatrix = rows.filter((r) => r.methods.length === 0);
+    expect(offMatrix.length, 'no off-matrix references, so this endpoint guards nothing').toBeGreaterThan(0);
+  });
+
+  it('gives index.json a figure for every index, or the check it prescribes is impossible', () => {
+    // The skill tells a reader to compare the rows they parsed against index.json, because
+    // index.json is small enough to always arrive whole. That only works if index.json
+    // actually counts the thing. It counted papers and datasets and not the catalogue —
+    // so the one endpoint measured reporting "0 databases" against 150 was also the one
+    // whose real figure a truncated reader could not reach. Found by an agent, not by us.
+    const manifest = built.find((f) => f.name === 'index.json')!.body as any;
+    expect(manifest.counts.software + manifest.counts.databases).toBe(body('catalog-index.json').count);
+    expect(manifest.counts.catalogTotal).toBe(body('catalog-index.json').count);
+    expect(manifest.counts.papersAllSections).toBe(body('papers-index.json').count);
+  });
+
+  it('states its own row count BEFORE the rows, so a truncation is detectable', () => {
+    // The point of the count is to survive the truncation it exists to reveal. A count
+    // emitted after the array would be lost in exactly the case it is needed.
+    for (const [file, key] of [['papers-index.json', 'references'], ['catalog-index.json', 'entries']] as const) {
+      expect(body(file).count).toBe(body(file)[key].length);
+      const text = serializeApiFile(file, body(file));
+      expect(
+        text.indexOf('"count"'),
+        `${file}: count must precede the rows or a truncated read cannot use it`,
+      ).toBeLessThan(text.indexOf(`"${key}"`));
+      expect(body(file).truncationNote).toMatch(/count/);
+    }
+  });
+
+  it('names the trap in the payload, where an agent will actually meet it', () => {
+    const note = body('papers-index.json').matrixNote as string;
+    expect(note).toMatch(/matrix/i);
+    // It must say what to do instead, not merely that a limit exists.
+    expect(note).toMatch(/topics\.json|search this index/i);
+  });
+
+  it('is materially smaller than the endpoint it indexes, which is the whole point', () => {
+    // Ratios rather than byte ceilings: the corpus grows, and a fixed ceiling would either
+    // fail on growth or stop meaning anything. What must hold is that the index stays a
+    // small fraction of the file it lets an agent avoid fetching.
+    expect(bytes('papers-index.json')).toBeLessThan(bytes('papers.json') / 4);
+    expect(bytes('catalog-index.json')).toBeLessThan(bytes('catalog.json') / 6);
+  });
+
+  it('omits the fields that made the parent large, rather than trimming a little', () => {
+    const row = body('papers-index.json').references[0] as object;
+    for (const heavy of ['raw', 'authors', 'authorsText', 'topics', 'summary', 'summaryHtml']) {
+      expect(Object.keys(row), `${heavy} is back in the index row`).not.toContain(heavy);
+    }
+  });
+
+  it('covers software and databases in one list, each labelled by kind', () => {
+    const rows = body('catalog-index.json').entries as { kind: string }[];
+    const cat = catalog as unknown as { software: unknown[]; databases: unknown[] };
+    expect(rows).toHaveLength(cat.software.length + cat.databases.length);
+    expect(rows.filter((r) => r.kind === 'software')).toHaveLength(cat.software.length);
+    expect(rows.filter((r) => r.kind === 'database')).toHaveLength(cat.databases.length);
+  });
+
+  it('serialises one row per line, so a committed artifact stays diff-reviewable', () => {
+    const text = serializeApiFile('papers-index.json', body('papers-index.json'));
+    expect(JSON.parse(text).references).toHaveLength(papers.references.length);
+
+    // One line per reference, each opening with its id: that is what makes a change to one
+    // paper show up as one changed line rather than as a rewritten file.
+    const rowLines = text.split('\n').filter((l) => l.trimStart().startsWith('{"id":'));
+    expect(rowLines).toHaveLength(papers.references.length);
+  });
+
+  it('degrades instead of throwing ahead of the validator', () => {
+    // These builders run before assertValid. Throwing here would replace "catalog.json
+    // failed its schema", which names the file and the key, with a bare TypeError that
+    // names neither — which is exactly what the first version of this code did.
+    expect(() => buildCatalogIndex({ software: 'not an array' }, DATE)).not.toThrow();
+    expect(() => buildPapersIndex({ references: null } as never, DATE)).not.toThrow();
   });
 });

@@ -18,13 +18,30 @@
  *    37rem` was a measured guess that still left ~115px of void under the shortest panel.
  * 2. Inactive cards are hidden with `visibility`, never `hidden`/`display: none` — a
  *    display-none card contributes nothing to grid sizing, which would collapse the frame
- *    and reintroduce the jump. `visibility: hidden` still sizes the grid, still leaves the
- *    a11y tree, and still blocks pointer and focus.
+ *    and reintroduce the jump. Be exact about what that costs, because this comment used
+ *    to claim the opposite and the claim survived several reviews: `visibility: hidden`
+ *    DOES remove a card from the accessibility tree, so only the showing card is ever
+ *    exposed to assistive tech. That is what the WAI-ARIA carousel pattern does rather than
+ *    a defect, but be equally exact about what the fix for it does, or this comment repeats
+ *    its own history in the other direction. The LABELS carry all of it: the stack's name
+ *    ("Worked queries: 4 examples") and each slide's ("2 of 4: Media & metabolism") are what
+ *    tell a listener there are four and which one they have. `aria-roledescription` only
+ *    changes how the role is spoken and adds no navigation whatsoever; `aria-controls` is
+ *    correctness with weak support, not a route. So: the three cards that are not showing
+ *    are ABSENT from the accessibility tree, and every reader who wants them gets there
+ *    through the pills, which are labelled buttons and always were.
  * 3. The entrance is TRANSFORM-ONLY. The old tab fade animated opacity and justified it on
  *    the grounds that an accessibility audit never clicks a tab. Auto-advance destroys that
  *    argument — an audit can now sample a card mid-fade, and axe computes contrast through
  *    opacity, with `docs.yml` gating deploys on Lighthouse accessibility ≥ 0.90. Same
  *    constraint, same resolution as styles/reveal.css.
+ * 4. Rotation is BOUNDED, and starts when the band is first on screen. It used to start at
+ *    page load several screens above here, so a reader arriving at the band landed on an
+ *    arbitrary card behind a half-drawn progress bar and never saw the first one; and it
+ *    then advanced every 16s for as long as the tab stayed open. It now makes three passes
+ *    over the set and rests, holds while the pointer or focus is inside, and carries an
+ *    explicit stop button, because hover is not a mechanism a keyboard or screen-reader
+ *    user has and WCAG 2.2.2 asks for one they do.
  *
  * Two deliberate departures from the reference.
  *
@@ -43,23 +60,13 @@
  */
 import { Icon } from 'astro-icon/components';
 import matrix from '../../public/api/matrix.json';
-import topicsApi from '../../public/api/topics.json';
 import papers from '../../public/api/papers.json';
-import { licenseTier } from '../lib/licenses';
-import counts from '../content/data/counts.json';
+import datasetsApi from '../../public/api/datasets.json';
+import catalog from '../../public/api/catalog.json';
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
 type Cell = (typeof matrix.cells)[number];
-const cells = (area: string) =>
-  matrix.cells.filter((c) => c.area === area && !c.emptyInCorpus).sort((a, b) => b.refIds.length - a.refIds.length);
-const emptyIn = (area: string) => matrix.cells.filter((c) => c.area === area && c.emptyInCorpus);
-
-const topic = (slug: string) => {
-  const t = (topicsApi.index as Record<string, Record<string, unknown[]>>)[slug];
-  if (!t) throw new Error(`AskExamples: topic "${slug}" missing from topics.json`);
-  return t;
-};
 
 const byId = new Map(papers.references.map((r) => [r.id, r]));
 const cite = (id: number): string => {
@@ -68,150 +75,385 @@ const cite = (id: number): string => {
   const who = (r.authors?.[0] ?? '').split(',')[0] || 'Unknown';
   return `${who}${r.year ? ` ${r.year}` : ''} (#${id})`;
 };
-const sum = (cs: Cell[]) => cs.reduce((s, c) => s + c.refIds.length, 0);
-
-const scaffold = cells('scaffolding');
-const bioproc = cells('bioprocess');
-const media = cells('media');
-const emptyScaffold = emptyIn('scaffolding');
-if (!scaffold.length || !emptyScaffold.length || !bioproc.length || !media.length) {
-  throw new Error('AskExamples: expected populated and empty cells in scaffolding, bioprocess and media');
-}
 
 /** The named method row a reader would name in a question. */
 const mediaBo = matrix.cells.find((c) => c.method === 'Bayesian Optimization' && c.area === 'media')!;
+if (!mediaBo) throw new Error('AskExamples: Bayesian Optimization × media cell missing from matrix.json');
 
-const serumFree = topic('serum-free-media');
-const bioreactor = topic('bioreactor-scale-up');
-/* The tier is DERIVED, not stored — papers.json carries the raw OpenAlex licence string
-   and nothing else. Reading a `licenseTier` field off it silently yielded 0, because the
-   field does not exist. Same classifier the /licenses/ hub uses, so the homepage figure
-   and the hub can never disagree. */
-const redistributable = papers.references.filter((r) => {
-  const tier = licenseTier(r.license);
-  return tier === 'permissive' || tier === 'copyleft';
-}).length;
-const withLicence = papers.references.filter((r) => r.license).length;
-/* Four content types, one catalogue. Labelling each population matters here: 345 is every
-   paper entry across all sections, NOT the matrix-eligible subset, and the examples below
-   quote both. */
-const catalogued = counts.papers + counts.software + counts.databases + counts.datasets;
+/* This band used to open by enumerating the corpus: primary papers, reviews, reference
+   works, tools, databases, curated dataset entries, inventory rows, methods and areas, with
+   a closing line about every figure being read from the corpus at build time. `WhyCaail`
+   opens by enumerating the same populations and closes on the same sentence, and the two
+   bands are adjacent, so a reader met one inventory twice about two hundred words apart.
 
-/* Questions are built on cross-cutting themes found by sweeping all 112 entries in GFI's
-   solutions database (gfi.org/solutions, 12 pages, cross-checked against its public REST
-   endpoint). Each spans more than one axis on purpose: the matrix says what has been
-   tried, the subject index says what exists to work with, and the licence axis says what
-   you may do with it. A question answerable by one lookup is not worth a worked example.
+   It belongs to `#why`, whose subject IS the corpus and whether it is worth trusting. This
+   band's subject is four questions, so the lede describes those instead. The partition
+   guards went with the figures rather than being left to protect nothing: `WhyCaail` runs
+   its own, against `papers.references.length` rather than `counts.papers`, and it is the
+   component that renders the claim. Two guards over one sentence in two files was the same
+   duplication one layer down. */
 
-   ATTRIBUTION lives in the section credit and in the ANSWERS, never in the questions.
-   Three of these used to open "GFI names…" / "GFI lists…" / "GFI notes…", which read as
-   GFI's agenda rather than as something a researcher would type, and put three near
-   identical openings in a row in what is now a rotating carousel. The one place the link
-   genuinely pays off — that the paper GFI cites as prior art for media formulation is
-   already ref #3 with code attached — is stated in Q1's answer, where it lands as evidence
-   instead of preamble. The observation that separately-funded priorities share one
-   underlying problem is ours, not GFI's; GFI lists them as unlinked entries.
+/* ---- Card 1: the bovine substrate a planned timecourse would have to join ----------------
+   Every figure below is read from datasets.json rather than named, because the whole point of
+   the card is that the inventory is deeper than a browsing reader would guess. `columns` exists
+   only on inventory rows (curated entries have no table), hence the optional access. */
+type InventoryRow = { page: string; columns?: Record<string, string> };
+const cowInventory = (datasetsApi.inventory as InventoryRow[]).filter((r) => r.page === 'Cow');
+const cowCurated = datasetsApi.entries.filter((e) => e.page === 'Cow');
+const cowTotal = cowInventory.length + cowCurated.length;
+const col = (r: InventoryRow, k: string) => r.columns?.[k] ?? '';
+const acc = (r: InventoryRow) => col(r, 'Data').replace(/\[`|`\]\(.*/g, '');
 
-   VOICE is two audiences on purpose, not by accident. Q1–Q3 are one researcher in the
-   first person; Q4 is a team shipping something, because the redistribution trap only
-   bites when a tool leaves your network, and "Building on it" is the pill that signals
-   the shift. */
+/* This card said the opposite until CAAIL-258 landed, and the reversal is the point.
+   `GSE173199` is a GEO SuperSeries, and CAAIL indexed only the parent, so the bulk
+   0/24/48/72/96 h timecourse inside it was unreachable from the endpoint. The card
+   concluded from that silence that the only real timecourse was single-nucleus and told
+   the reader to copy its grid. A ten-minute GEO search returned the right answer the whole
+   time. Now that the members are indexed, the honest advice inverts: the grid is already
+   public at n=4 under serum starvation, so the 12 libraries are worth more under the
+   trigger that has no replicated series.
+
+   Each deposit is matched on its DESIGN rather than its accession, so a re-deposit under a
+   new accession does not silently drop a row, and each guard below names what it protects.
+
+   A parent SuperSeries row now DESCRIBES its members, including their grid and replication, so
+   a filter for the timecourse matches the parent too. `.find()` then returns whichever comes
+   first in table order, which is the parent, and the card renders the accession that resolves
+   to nothing analysable. That is how this card was wrong the first time, arriving by a new
+   route: the fix to the parent's description armed it. So every lookup here EXCLUDES SuperSeries
+   parents and asserts it matched exactly one row, rather than trusting the first hit. */
+const only = (rows: InventoryRow[], what: string): InventoryRow => {
+  if (rows.length !== 1) {
+    throw new Error(
+      `AskExamples card 1: expected exactly one ${what} in the Cow inventory, found ` +
+        `${rows.length}${rows.length ? ` (${rows.map(acc).join(', ')})` : ''}. A .find() here ` +
+        `would have silently taken the first.`,
+    );
+  }
+  return rows[0]!;
+};
+const notSuperSeries = (r: InventoryRow) => !/superseries/i.test(col(r, 'Description'));
+const cowBulkTimecourse = only(
+  cowInventory.filter(
+    (r) => notSuperSeries(r)
+      && /^rna-seq/i.test(col(r, 'Type'))
+      && /0\/24\/48\/72\/96/.test(col(r, 'Description'))
+      && /quadruplicate/i.test(col(r, 'Description')),
+  ),
+  'bulk quadruplicate timecourse',
+);
+/* The serum-free arm: bulk, but two points rather than a series. */
+const cowSerumFreeArm = only(
+  cowInventory.filter(
+    (r) => notSuperSeries(r)
+      && /^rna-seq/i.test(col(r, 'Type'))
+      && /serum-free arm/i.test(col(r, 'Description')),
+  ),
+  'bulk serum-free arm',
+);
+/* The one deposit that does cover the full grid under serum-free induction, and cannot be
+   pooled with: a single multiplexed single-nucleus library, so n=1 at every timepoint. */
+const cowSingleNucleus = only(
+  cowInventory.filter(
+    (r) => notSuperSeries(r)
+      && /snrna-seq/i.test(col(r, 'Type'))
+      && /0\/24\/48\/72\/96/.test(col(r, 'Description')),
+  ),
+  'single-nucleus deposit on the same grid',
+);
+/* The card's checkable catch: the obvious regulatory reference cannot actually be used yet.
+   If the deposit opens up this throws rather than shipping a stale warning. */
+const cowEmbargoed = cowInventory.find((r) => /embargoed/i.test(col(r, 'Description')));
+if (!cowEmbargoed) {
+  throw new Error(
+    'AskExamples card 1: the embargoed annotation reference is gone from the Cow inventory, so ' +
+      'the "check before you rely on it" row no longer has a subject.',
+  );
+}
+/* The three deposits must be three DIFFERENT rows. Two of the filters resolving to one row would
+   render the same accession twice and read as a contradiction rather than a comparison. */
+if (new Set([cowBulkTimecourse, cowSerumFreeArm, cowSingleNucleus].map(acc)).size !== 3) {
+  throw new Error(
+    'AskExamples card 1: the timecourse, the serum-free arm and the single-nucleus deposit did ' +
+      `not resolve to three distinct accessions (${acc(cowBulkTimecourse)}, ` +
+      `${acc(cowSerumFreeArm)}, ${acc(cowSingleNucleus)}).`,
+  );
+}
+/* The card's whole argument is that the serum-free side has no replicated series. If one is
+   ever deposited, the advice flips back and the card has to be rewritten rather than quietly
+   continuing to send readers at the thin arm. */
+if (/triplicate|quadruplicate/i.test(col(cowSerumFreeArm, 'Description'))
+    && /0\/24\/48\/72\/96/.test(col(cowSerumFreeArm, 'Description'))) {
+  throw new Error(
+    'AskExamples card 1: the serum-free arm now covers the full grid with replication, so ' +
+      '"spend your libraries there" is no longer the advice. Rewrite the card.',
+  );
+}
+
+/* ---- Card 2: where the model-plus-loop work is actually filed ----------------------------
+   This card previously led on "none of the 10 is ALSO tagged metabolic modeling, and all 10 are
+   tagged, so the gap is in their content and not in our coverage". That verification does not hold
+   and the claim has been removed.
+
+   Two reasons it fails. Topic tags mark a paper's PRIMARY SUBJECT, not the methods it uses: the
+   27 papers tagged metabolic-modeling are GEM reconstructions and flux-balance work, so asking
+   whether a media-optimization paper is "also tagged metabolic modeling" asks whether it is
+   primarily a metabolic-modeling paper, which is close to tautologically no. And tagging is far
+   too sparse to carry an absence claim: 53 papers in the corpus have no tags at all and 131 have
+   exactly one, so "every paper here is tagged" is satisfied by a single obvious label and says
+   nothing about what was considered. Ref #249 couples solution thermodynamics to a BO media loop
+   and would have falsified the old headline on its own.
+
+   The rebuild then smuggled the same error back in a new form: it filtered on `methods`, which
+   116 of 345 references do not carry, because it is populated only for matrix-eligible primary
+   research. Ref #240 is the asker's question answered (the first genome-scale model for Sus
+   scrofa, constrained with measured biomass composition and uptake fluxes, validated by
+   supplementation) and it was invisible to that filter by construction, being filed as a
+   reference work.
+
+   So this card now derives from `title` and `section`, both of which every reference carries.
+   The finding it reports is that structural fact rather than a claim about the field: the matrix
+   reaches a fraction of the genome-scale work, because most of it is not method-to-area
+   research. That is arithmetic over a total field and cannot be wrong the way a superlative can. */
+const gemPapers = papers.references.filter((r) =>
+  /genome-scale|metabolic network|metabolic model/i.test(r.title),
+);
+const gemInMatrix = gemPapers.filter((r) => (r.methods ?? []).length > 0);
+/* The one that answers the question as asked, matched on what makes it that rather than by id. */
+const gemMediaDesign = gemPapers.find((r) => /media design|media formulation/i.test(r.title));
+const mediaBoCode = papers.references.filter((r) => mediaBo.refIds.includes(r.id) && r.hasCode);
+const mediaBoBoth = papers.references.filter(
+  (r) => mediaBo.refIds.includes(r.id) && r.hasCode && r.hasData,
+);
+if (!gemMediaDesign || gemInMatrix.length >= gemPapers.length) {
+  throw new Error(
+    'AskExamples card 2: expected a genome-scale media-design paper and genome-scale work ' +
+      `filed outside the matrix; got mediaDesign=${!!gemMediaDesign} ` +
+      `inMatrix=${gemInMatrix.length} of ${gemPapers.length}`,
+  );
+}
+
+/* ---- Card 3: allergenicity screening for a novel-food submission -------------------------
+   This slot held a coverage card reading the matrix as a map of the field. It was cut, and the
+   reason is worth keeping: CAAIL's curation is mid-flight (new matrix columns and a placement
+   re-audit are both open), so a card whose entire subject is coverage asserts something that is
+   still moving, and a scope hedge cannot rescue a claim that IS the scope.
+
+   What replaced it names things a reader opens instead of counting the corpus. Every row below
+   is a list drawn from `catalog.json` groups, so the card cannot claim a tool exists that the
+   catalog does not carry, and adding one to Databases.md puts it on the homepage automatically.
+
+   The reasoning the card contributes, which a search does not: these tools look interchangeable
+   and are not. One implements the FAO/WHO Codex criterion itself; the rest are classifiers
+   answering "allergen-like" against different training sets, so agreement between them is not
+   confirmation. Deliberately no claim about what any regulator accepts. */
+type CatalogEntry = { name: string; url: string; group: string };
+const inGroup = (list: CatalogEntry[], group: string) => list.filter((e) => e.group === group);
+const allergenTools = inGroup(catalog.software as CatalogEntry[], 'Food Safety & Allergenicity');
+const allergenDbs = inGroup(catalog.databases as CatalogEntry[], 'Food Safety & Allergen Databases');
+/* The screen that is the criterion rather than a model of it. */
+const codexScreen = allergenTools.find((e) => /Allermatch/i.test(e.name));
+/* The precedent archive, and the row nobody expects: every cultured-animal-cell food that has
+   completed an FDA pre-market consultation, with the sponsor's own safety submission attached. */
+const culturedCellPrecedent = (catalog.databases as CatalogEntry[]).find((e) =>
+  /Cultured Animal Cells/i.test(e.name),
+);
+const classifiers = allergenTools.filter((e) => !/Allermatch/i.test(e.name));
+if (!codexScreen || !culturedCellPrecedent || classifiers.length < 3 || allergenDbs.length < 3) {
+  throw new Error(
+    'AskExamples card 3: expected the Codex screen, the FDA cultured-cell consultation ' +
+      'inventory, 3+ other allergenicity classifiers and 3+ allergen reference databases; got ' +
+      `codex=${!!codexScreen} precedent=${!!culturedCellPrecedent} ` +
+      `classifiers=${classifiers.length} databases=${allergenDbs.length}`,
+  );
+}
+
+/* ---- Card 4: sensory, and what a small-n asker can actually build on ----------------------
+   The head used to be "40 samples is not the shortfall it looks like". The corpus does not
+   support that and ref #72 measured the opposite: a subsampling analysis from 50 to 170 training
+   samples with 39 held out, on 209 total, with accuracy still rising across the range. So the
+   card keeps the useful half (the sensory literature is classical and small-n friendly) and stops
+   telling the reader their sample count is fine.
+
+   The regex here names FOUR rows and must keep matching four. The previous one included `Linear`,
+   which silently pulled in a fifth row (Linear & Regularized Models) and turned the prose's 32
+   into a rendered 34 that no sentence on the card accounted for. The guard below pins that. */
+const sensoryCells = matrix.cells
+  .filter((c) => c.area === 'sensory' && !c.emptyInCorpus)
+  .sort((a, b) => b.refIds.length - a.refIds.length);
+const sensoryTop = sensoryCells[0];
+const sensoryDeep = sensoryCells.filter((c) => /Deep Learning|CNN|GNN/i.test(c.method));
+const sensoryClassical = sensoryCells.filter((c) =>
+  /Ensemble|SVM|Chemometrics|Nearest Neighbors/i.test(c.method),
+);
+const nRefs = (cs: Cell[]) => new Set(cs.flatMap((c) => c.refIds)).size;
+const sensoryIds = new Set(sensoryCells.flatMap((c) => c.refIds));
+const sensoryRefs = papers.references.filter((r) => sensoryIds.has(r.id));
+/* Code release, on MATCHED populations. The earlier version compared sensory against all 345,
+   which folds in 116 reviews and reference-work entries that structurally cannot carry a repo,
+   so it understated the corpus baseline and made sensory look normal. Every sensory reference is
+   primary research (asserted below), so the comparison group is the rest of the primary corpus. */
+const sensoryCode = sensoryRefs.filter((r) => r.hasCode).length;
+const nonSensoryPrimary = papers.references.filter((r) => r.isPrimary && !sensoryIds.has(r.id));
+const nonSensoryCode = nonSensoryPrimary.filter((r) => r.hasCode).length;
+const pct = (a: number, b: number) => Math.round((100 * a) / b);
+/* The one paper in the column that measured the sample-count question the asker is asking, so
+   the card cites it rather than asserting a floor of its own. Derived by title, not by ref id:
+   an id typed into prose is the same hand-typed-fact defect as a typed count. */
+const sensoryLearningCurve = sensoryRefs.find((r) => /metabolomic selection/i.test(r.title));
+if (!sensoryLearningCurve) {
+  throw new Error(
+    'AskExamples card 4: the sample-count row cites the one sensory paper that ran a training-set ' +
+      'subsampling analysis, and it is no longer in the column. Recheck the row before shipping.',
+  );
+}
+if (!sensoryTop || sensoryClassical.length !== 4 || nRefs(sensoryClassical) <= nRefs(sensoryDeep)) {
+  throw new Error(
+    'AskExamples card 4: the card names four classical method rows and rests on them ' +
+      `outnumbering the deep rows; got rows=${sensoryClassical.length} ` +
+      `classical=${nRefs(sensoryClassical)} deep=${nRefs(sensoryDeep)}`,
+  );
+}
+if (!sensoryRefs.every((r) => r.isPrimary)) {
+  throw new Error(
+    'AskExamples card 4: a sensory reference is no longer primary research, so comparing its ' +
+      'code-release rate against the rest of the primary corpus is no longer like for like.',
+  );
+}
+
+/* The licensing card that stood here was cut. Its central row said "what your organisation may
+   lawfully read, it may generally index for itself", and the statutes say otherwise for the
+   reader it addressed: UK CDPA s.29A permits text and data mining only for non-commercial
+   research, and EU DSM Art. 3 is limited to research organisations (Art. 2(1): not-for-profit or
+   public-interest), so a company falls to Art. 4, which carries a machine-readable opt-out and is
+   the one exception Art. 7(1) leaves contractually overridable. Nothing replaces it: a homepage
+   card is the wrong place to hold a jurisdictional position, and a corrected sentence would still
+   be one. The licence tiers remain available at /licenses/ where they carry their own caveats. */
+
+/* FOUR questions, each answerable only by a tool call PLUS judgement, and each drawing on a
+   different slice so no two are answerable from the same part of the corpus: bovine deposits,
+   the paper corpus read across its sections, the software and database catalog, and the matrix.
+
+   A note on what is NOT here. An earlier version credited "all 112 entries in GFI's solutions
+   database". That figure was hand-typed, it sat nine words after "nothing here is illustrative",
+   and the page does not support it: gfi.org/solutions advertises 45+ research opportunities,
+   50+ commercial whitespaces and 35+ ecosystem needs, and states no total. It is gone rather
+   than corrected, because a number nobody can check is worth less than the sentence it cost.
+
+   VOICE: every asker already has cells, data and expertise. They are not being introduced to
+   the field, and no card explains cellular agriculture to them. Q3 is a team preparing a
+   submission rather than an individual at a bench, which is why its pill reads differently. */
 const examples = [
+  {
+    id: 'design',
+    tab: 'Designing to integrate',
+    icon: 'lucide:dna',
+    label: 'Experiment design × existing deposits',
+    q:
+      'I am planning an RNA-seq timecourse on primary bovine satellite cells through differentiation, ' +
+      'budget for about 12 libraries. I would like this to be integrable with existing data rather ' +
+      'than standing alone. Which public datasets could mine realistically be combined with, and what ' +
+      'do I need to match in the design (timepoints, depth, annotation build) for that to be possible?',
+    src: ['datasets.json'],
+    head: 'The grid you were going to spend 12 libraries on is already public. What is thin is the trigger you would be spending them under',
+    rows: [
+      { k: 'Already public, at full grid', v: `${acc(cowBulkTimecourse)} is bulk RNA-seq at 0/24/48/72/96 h in biological quadruplicates, with differentiation induced by serum starvation. Repeating that grid under that trigger buys you replication, not reach` },
+      { k: 'Where the public grid is thin', v: `Under serum-free induction there is no comparable series. ${acc(cowSerumFreeArm)} is bulk but samples only 0 h and 72 h, and ${acc(cowSingleNucleus)} covers all five timepoints in a single multiplexed single-nucleus library` },
+      { k: 'What you actually have to match', v: 'The induction trigger, not the timing. Match serum starvation and you can pool with the existing series directly. Choose serum-free and your 12 libraries become the first replicated timecourse under that trigger, which is the more valuable of the two things you could buy' },
+      { k: 'Check before you rely on it', v: `The bovine FAANG epigenome atlas is the obvious annotation reference and its new deposits are embargoed until journal acceptance` },
+    ],
+    tail:
+      'Both arms are deposited inside one parent accession that names neither, so a list of deposits ' +
+      'will not tell you this and the design lines will. Read the thin side as thin in what is ' +
+      `indexed here: CAAIL holds ${cowTotal} bovine datasets as a curated subset and has not ` +
+      'measured its own recall, so this is not evidence that nobody has run it.',
+  },
   {
     id: 'media',
     tab: 'Media & metabolism',
     icon: 'lucide:flask-conical',
     label: 'Media optimization × metabolic modeling',
     q:
-      'Draft genome-scale models exist for salmon, bovine, shrimp and chicken, but every one of them ' +
-      'still needs experimental validation, and most media work still screens one factor at a time. ' +
-      'Which indexed work actually couples a metabolic model to a design loop, and which of it ' +
-      'released code I could re-run on my own cell line?',
-    src: ['matrix.json', 'topics.json', 'papers.json'],
-    head: `${mediaBo.refIds.length} papers in Bayesian Optimization × Media Optimization, including Cosenza 2022 (#3), the paper GFI cites as prior art for media formulation`,
+      'We are trying to cut the cost of our serum-free medium and have reached the point where ' +
+      'one-factor-at-a-time screening has stopped paying. I have a draft genome-scale model for our ' +
+      'species but no experience closing the loop between a model and a screen. What work couples a ' +
+      'metabolic model to an experimental design loop, and what did those groups actually have to ' +
+      'measure to make the model useful?',
+    src: ['matrix.json', 'papers.json'],
+    head: `${gemPapers.length} papers here are genome-scale or metabolic-network work. The matrix reaches ${gemInMatrix.length} of them`,
     rows: [
-      { k: 'The paper GFI cites', v: '#3 Cosenza 2022: already indexed, with a code repository attached' },
-      { k: 'Metabolic modeling', v: `${topic('metabolic-modeling').papers.length} papers, ${topic('metabolic-modeling').software.length} tools and ${topic('metabolic-modeling').datasets.length} dataset entries, GEM files among them` },
-      { k: 'Reproducibility filter', v: `${papers.references.filter((r) => r.hasCode && r.hasData).length} of ${papers.references.length} papers link BOTH code and a data deposit` },
+      { k: 'The cell you would search', v: `Bayesian Optimization × Media Optimization holds ${mediaBo.refIds.length} papers. ${mediaBoCode.length} link released code, and ${mediaBoBoth.length} of the ${mediaBo.refIds.length} links both code and a data deposit, which is what re-running a loop yourself requires` },
+      { k: 'Where the rest of it sits', v: `The other ${gemPapers.length - gemInMatrix.length} carry no matrix method at all, because they are filed as reference works and reviews rather than as method-to-area research. Searching the matrix will not surface them` },
+      { k: 'The closest answer to your question', v: `${cite(gemMediaDesign.id)}, "${gemMediaDesign.title}", constrains its model with experimentally determined biomass composition and uptake and excretion fluxes from a muscle satellite-cell line, then validates it by amino-acid supplementation. That is the measurement burden you asked about. It is a preprint and has not been peer reviewed` },
     ],
     tail:
-      'The last row is the one a search engine cannot answer. A model-plus-design-loop is only ' +
-      're-runnable if both halves were deposited, and most papers release neither.',
+      'What each group had to measure is in their methods sections rather than in any metadata ' +
+      'field, which is why this ends in papers to read rather than in a filter. Read the scope ' +
+      'precisely: this is where the coupling is indexed, not a claim about who has done it.',
   },
   {
-    id: 'species',
-    tab: 'Species substrate',
-    icon: 'lucide:dna',
-    label: 'Cell lines × single-cell atlases',
+    id: 'safety',
+    tab: 'Screening for a submission',
+    icon: 'lucide:shield-check',
+    label: 'Allergenicity × novel-food dossier',
     q:
-      'Species genomics, aquatic cell lines, cell-line repositories and fish stemness get funded as ' +
-      'separate problems, but they share one precondition: I cannot model an organism nobody has ' +
-      'annotated. Which single-cell atlases exist for food species, which papers used one to call ' +
-      'proliferation or stemness markers, and where does an atlas exist that nobody has modelled?',
-    src: ['topics.json', 'catalog.json'],
-    head: `${topic('single-cell-atlases').papers.length} papers, ${topic('single-cell-atlases').datasets.length} dataset entries and ${topic('single-cell-atlases').databases.length} databases on single-cell atlases`,
+      'We have engineered a bovine line expressing a couple of non-native proteins and we are ' +
+      'scoping a novel-food submission. Before I commission wet-lab allergenicity work, what can I ' +
+      'screen the sequences against computationally, and has anyone in cultivated meat already been ' +
+      'through this whose submission I can read?',
+    src: ['catalog.json'],
+    head: `Only one of these implements the Codex criterion itself. The other ${classifiers.length} score allergen similarity by other means`,
     rows: [
-      { k: 'Species coverage', v: `${counts.species} species pages, each separating atlases, GEMs and raw sequencing deposits` },
-      { k: 'Cell-line work', v: `${topic('cell-line-engineering').papers.length} papers tagged cell-line engineering` },
-      { k: 'The gap to look for', v: 'A deposit with an accession that no paper cites: the reverse audit CAAIL runs against itself' },
+      { k: 'The screen that is the criterion', v: `${codexScreen.name} implements the FAO/WHO Codex Alimentarius test directly: a sliding 80-mer window at or above 35% identity, plus an exact 6-mer match, run against curated allergen sets` },
+      { k: 'The classifiers, which answer "allergen-like"', v: `${classifiers.map((e) => e.name).join(', ')}. Alignment-free, homology-plus-structure and deep-learning methods, each trained on a different set, so agreement between them is not confirmation` },
+      { k: 'What they are all standing on', v: `${allergenDbs.map((e) => e.name).join(', ')}. Which reference set you screen against moves the answer more than which classifier you run` },
+      { k: 'Who has already been through it', v: `${culturedCellPrecedent.name} publishes, per product, the file number, the sponsor's own safety submission and the agency's response` },
     ],
     tail:
-      'The aquatic species are the thin ones, and that is the point: this crosses papers, per-species ' +
-      'datasets and databases in one pass, and none of the three answers it alone.',
+      'The screens are cheap, and the choice that matters is the reference set rather than the ' +
+      'classifier. What none of them settles is whether your specific protein needs serum-IgE work, ' +
+      'which is the spend you were scoping. CAAIL links what each resource says about itself, so ' +
+      'check scope and update dates at the source before relying on one.',
   },
   {
-    id: 'transport',
-    tab: 'Scale-up & transport',
-    icon: 'lucide:gauge',
-    label: 'Bioprocess × perfusion modelling',
+    id: 'sensory',
+    tab: 'Flavor & sensory',
+    icon: 'lucide:donut',
+    label: 'Sensory prediction × small-n reality',
     q:
-      'Oxygen, nutrients and shear inside a dense construct are coupled, spatially heterogeneous, and ' +
-      'change as cells fill the void space. Before I commit to a spatially resolved model rather than ' +
-      'treating the vessel as well-mixed, which indexed methods actually resolve those gradients, and ' +
-      'what could I validate one against?',
-    src: ['matrix.json', 'topics.json'],
-    /* The NULL is the headline here, not a footnote. This is the only card that demonstrates
-       the thing no general model can do — report that something is absent instead of
-       silently returning less. Burying it in a closing caveat, as this did, inverts the
-       section's own argument.
+      'We run a small cultured-pork line and have GC-MS volatile panels plus trained-panel scores ' +
+      'for about 40 samples, nowhere near enough to train on. Before I commit to another year of ' +
+      'panel sessions, which approaches have actually predicted sensory outcomes from instrumental ' +
+      'measurements in meat, and what did those groups need in sample counts and reference ' +
+      'standards to make it work?',
+    src: ['matrix.json', 'papers.json'],
+    head: 'The methods are settled and small-n friendly. What is thin is anything you could build on',
+    rows: [
+      { k: 'What the field actually uses', v: `${nRefs(sensoryClassical)} papers across the ensemble, SVM, chemometrics and nearest-neighbour rows, against ${nRefs(sensoryDeep)} on deep learning, CNN and GNN combined. The largest single cell in the matrix is ${sensoryTop.method} × Sensory Prediction at ${sensoryTop.refIds.length} papers, so your problem is not the architecture` },
+      { k: 'What those methods needed in samples', v: `${cite(sensoryLearningCurve.id)} ran your question as a subsampling analysis: training sets from 50 to 170 with 39 held out, on 209 samples, accuracy still climbing across that range though some traits were already usable at 50. The smallest configuration it reports is about 90 samples` },
+      { k: 'Why you are starting the baseline, not joining one', v: `Sensory papers release code at ${sensoryCode} of ${sensoryRefs.length} (${pct(sensoryCode, sensoryRefs.length)}%), against ${nonSensoryCode} of ${nonSensoryPrimary.length} (${pct(nonSensoryCode, nonSensoryPrimary.length)}%) across the rest of the primary literature. Every sensory reference is primary research, so that is like for like` },
+    ],
+    tail:
+      'What each group had to measure is in their methods sections, which is the reading this ends ' +
+      'in. The useful read is not that 40 samples is fine, because the one paper that measured it ' +
+      'says otherwise. It is that the methods you would use are the cheap ones, and the panel ' +
+      'sessions are buying the thing the literature will not hand you.',
+  },
+];
 
-       Note the scope wording. This previously read "no public multi-run process time-series
-       exists", which is a claim about the WORLD that CAAIL has no standing to make — it can
-       only speak for what it indexes. It also committed the exact error the #why band above
-       attacks models for: conflating "I found none" with "there are none". */
-    head: 'Nothing to validate against: no indexed dataset carries multi-run process time-series, and reporting that is not the same as returning an empty result',
-    rows: [
-      ...bioproc.slice(0, 2).map((c) => ({ k: c.method, v: `${c.refIds.length}: ${c.refIds.slice(0, 2).map(cite).join(', ')}` })),
-      { k: 'What is indexed', v: `${sum(bioproc)} papers across ${bioproc.length} method rows, plus ${bioreactor.datasets.length} dataset entries and ${bioreactor.software.length} tools on the bioreactor axis` },
-    ],
-    tail:
-      'Read the scope precisely: none is indexed here, which is not the same as none existing. ' +
-      'Validation data for scale-up is largely industrial and unpublished, so a thin result is a ' +
-      'publication gap before it is a research gap, and telling those two apart is the judgement a ' +
-      'general model cannot make on your behalf.',
-  },
-  {
-    id: 'build',
-    tab: 'Building on it',
-    icon: 'lucide:layers',
-    label: 'Internal tooling × licensing',
-    q:
-      'Much precompetitive work in this field is re-derived privately and never published, so sparse ' +
-      'literature does not mean unstudied. We want an internal assistant over what IS published, and ' +
-      'it may go customer-facing later. What may we redistribute versus only read internally, and what ' +
-      'would need licensing separately the day it leaves our network?',
-    src: ['papers.json', 'catalog.json'],
-    head: `${redistributable} of the ${papers.references.length} papers carry a licence permitting redistribution, not the ~74% that are open access`,
-    rows: [
-      { k: 'Internal use', v: 'What your organisation may lawfully read, it may generally index for itself: the tier binds on publishing, not on working' },
-      { k: 'Going public', v: `Filter on licenceTier ∈ {permissive, copyleft}; ${withLicence} works carry a machine-readable licence at all` },
-      { k: 'Safety coverage', v: `${topic('allergenicity').papers.length} papers, ${topic('allergenicity').software.length} tools and ${topic('allergenicity').databases.length} databases tagged allergenicity; food safety is thinner` },
-    ],
-    tail:
-      'Free to read is not permission to republish. The two get conflated in both directions, either ' +
-      'costing you most of the corpus, or exposing you the day the tool ships.',
-  },
-];---
+/* The lede opens with the word "Four", which is a number typed beside an array that knows
+   its own length — the shape of defect this repo pays for most often. It is spelled rather
+   than interpolated because `{examples.length} questions` reads as a stat block at the top
+   of a band whose whole argument is that these are questions a person would type, so the
+   count is guarded instead of derived. Four is also an editorial decision rather than a
+   corpus figure (it was settled after five failed review), so a fifth card is exactly the
+   moment someone should be made to reread the sentence. */
+if (examples.length !== 4) {
+  throw new Error(
+    `AskExamples: the lede opens "Four questions" and there are now ${examples.length}. ` +
+      'Update the lede and this guard together.',
+  );
+}---
 
 <section class="ask" id="ask">
   <div class="hd sr">
@@ -221,21 +463,19 @@ const examples = [
     <p class="eyebrow"><span class="bar" aria-hidden="true"></span>What you can ask</p>
     <h2 class="caail-display">Ask something specific</h2>
     <p class="lede">
-      Real questions against the real endpoints, answered from {catalogued} curated resources
-      ({counts.papers} papers, {counts.software} tools, {counts.databases} databases and
-      {counts.datasets} dataset entries), indexed across {matrix.methods.length} AI methods.
+      Four questions a working researcher would actually type, run against the endpoints an
+      agent would query.
     </p>
     <p class="sub">
       These are what the endpoints return, not finished answers; your agent reasons on top of
-      them. Every figure is read from the corpus when this page is built, so nothing here is
-      illustrative. Questions draw on cross-cutting themes across all 112 entries in
-      <a href="https://gfi.org/solutions/">GFI's solutions database</a>.
+      them. Nothing here is a mock-up: every figure in the answers is computed from the corpus
+      when this page is built.
     </p>
   </div>
 
   <div class="pills sr sr-d1">
     {examples.map((e, i) => (
-      <button type="button" class="pill" data-pill aria-pressed={i === 0 ? 'true' : 'false'}>
+      <button type="button" class="pill" data-pill aria-controls="ask-stack" aria-pressed={i === 0 ? 'true' : 'false'}>
         <Icon name={e.icon} />{e.tab}
       </button>
     ))}
@@ -243,10 +483,34 @@ const examples = [
 
   {/* Announces the change for screen readers, which see neither the pill state nor the
       card swap. Deliberately announces the short label, not the four-line question —
-      re-reading a paragraph on every advance is punishing to listen to. */}
+      re-reading a paragraph on every advance is punishing to listen to.
+
+      Written ONLY on a change the reader asked for. The timer used to write here too, so
+      anyone listening to any part of this page was interrupted every 16 seconds for as
+      long as the tab stayed open, whether or not they had ever been near the band.
+
+      A deliberate DEPARTURE from the WAI-ARIA carousel pattern, not an implementation of
+      it, and the difference matters to anyone who later tries to close the gap. The pattern
+      puts `aria-live` on the slide wrapper itself — `off` while rotating, `polite` once it
+      is not — which here would read a ~200-word card aloud end to end on every change. This
+      announces a short label from a region of its own instead, and only on a change the
+      reader made. Same principle, since nothing automatic is announced either way; not the
+      same mechanism. */}
   <p class="vh" aria-live="polite" aria-atomic="true" data-live></p>
 
-  <div class="stack sr sr-d2">
+  {/* Named and role-described so the one exposed card is announced as part of something,
+      rather than as a stray group with no context. `aria-roledescription` is spoken only if
+      the element also has a role and an accessible name, hence all three attributes.
+      Its reach is narrow and worth stating: it renames the role and does nothing else. It
+      does not expose the hidden cards, and it gives nobody a way to move between them. The
+      count in this label is what carries that, which is why the label states one. */}
+  <div
+    class="stack sr sr-d2"
+    id="ask-stack"
+    role="group"
+    aria-roledescription="carousel"
+    aria-label={`Worked queries: ${examples.length} examples`}
+  >
     {/* Full width with no JS, where it simply reads as the card's accent edge. With JS it
         animates 0 → 1 across the dwell, and its `animationend` is what advances the
         carousel — one clock instead of two, so pausing the animation pauses the advance
@@ -254,7 +518,14 @@ const examples = [
     <div class="prog" data-prog aria-hidden="true"></div>
 
     {examples.map((e, i) => (
-      <article class="card" data-card data-off={i === 0 ? null : ''}>
+      <article
+        class="card"
+        data-card
+        data-off={i === 0 ? null : ''}
+        role="group"
+        aria-roledescription="slide"
+        aria-label={`${i + 1} of ${examples.length}: ${e.tab}`}
+      >
         <div class="chead">
           <p class="plabel"><Icon name={e.icon} />{e.label}</p>
           <p class="q">{e.q}</p>
@@ -277,15 +548,27 @@ const examples = [
   </div>
 
   <div class="ctrls sr sr-d3">
-    <button type="button" class="arrow" data-prev aria-label="Previous example">
+    {/* The rotation control, first, as the WAI-ARIA carousel pattern places it. WCAG 2.2.2
+        wants a mechanism to stop content that moves by itself, and the two this band had —
+        pause on hover, and stop on using any other control — are both mechanisms a reader
+        has to already possess a pointer, or already be pressing something, to reach. This
+        is the one that is simply there and says what it does. Rendered stopped, because at
+        load it is: rotation does not begin until the band is scrolled to.
+        Two icons swapped by `display`, which is the `.setup .copy` shape — see the margin
+        note beside `.ask .rotate` in starlight-overrides.css. */}
+    <button type="button" class="arrow rotate" data-rotate aria-controls="ask-stack" aria-label="Start automatic rotation">
+      <Icon name="lucide:play" class="i-play" />
+      <Icon name="lucide:pause" class="i-pause" />
+    </button>
+    <button type="button" class="arrow" data-prev aria-controls="ask-stack" aria-label="Previous example">
       <Icon name="lucide:chevron-left" />
     </button>
     <div class="dots">
       {examples.map((e, i) => (
-        <button type="button" class="dot" data-dot aria-label={`Show example ${i + 1} of ${examples.length}: ${e.tab}`} aria-current={i === 0 ? 'true' : 'false'}></button>
+        <button type="button" class="dot" data-dot aria-controls="ask-stack" aria-label={`Show example ${i + 1} of ${examples.length}: ${e.tab}`} aria-current={i === 0 ? 'true' : 'false'}></button>
       ))}
     </div>
-    <button type="button" class="arrow" data-next aria-label="Next example">
+    <button type="button" class="arrow" data-next aria-controls="ask-stack" aria-label="Next example">
       <Icon name="lucide:chevron-right" />
     </button>
   </div>
@@ -317,61 +600,165 @@ const examples = [
   if (root && cards.length > 1) {
     const prog = root.querySelector<HTMLElement>('[data-prog]')!;
     const live = root.querySelector<HTMLElement>('[data-live]')!;
+    const stack = root.querySelector<HTMLElement>('.stack')!;
+    const rotate = root.querySelector<HTMLButtonElement>('[data-rotate]')!;
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
 
-    let at = 0;
-    // Auto-advance is off under reduced motion, and switches off permanently the moment
-    // anyone touches a control — once a reader has expressed intent, moving the content
-    // out from under them is hostile. It also pauses on hover and on focus-within, which
-    // together are the pause mechanism WCAG 2.2.2 asks of auto-moving content.
-    let auto = !reduce.matches;
+    // Rotation is BOUNDED: three passes over the set, then it comes to rest back on the
+    // first card. Counted in COMPLETED timed dwells, which is exactly what `animationend`
+    // fires once per, and derived from the card count rather than typed so that adding a
+    // fifth card does not silently turn three passes into two and a bit.
+    const DWELLS_PER_CARD = 3;
+    const budget = cards.length * DWELLS_PER_CARD;
 
-    const show = (n: number, announce: boolean) => {
+    let at = 0;
+    let completed = 0;
+    // `armed` is whether the clock is running at all; `hovering` and `focused` are the two
+    // independent reasons to hold it. They used to share one inline style, so whichever
+    // ENDED last won: a keyboard user holding focus in the band had the rotation resume
+    // under them the moment a passing mouse left the section, and blurring a pill restarted
+    // it with the pointer still inside. Two booleans and one place that reads both.
+    let armed = false;
+    let hovering = false;
+    let focused = false;
+    // An explicit start outranks the hold that pressing the start button itself creates.
+    // Nobody can activate a control inside the band without the pointer or the focus being
+    // inside the band, so `hovering || focused` is ALWAYS true at that moment: without this
+    // the button armed the rotation and froze it at scaleX(0) in the same breath, and a
+    // reader pressed play and watched nothing happen — by mouse and by keyboard alike.
+    // Cleared once BOTH holds have left rather than on the first of the two, because a mouse
+    // click also takes focus, so clearing it on `pointerleave` puts the freeze straight back.
+    let overrideHold = false;
+    // Held here rather than beside its own construction because both stopping and starting
+    // the rotation have to be able to cancel an arming that has not happened yet.
+    let io: IntersectionObserver | null = null;
+
+    const syncHold = () => {
+      const held = hovering || focused;
+      if (!held) overrideHold = false;
+      prog.style.animationPlayState = held && !overrideHold ? 'paused' : '';
+    };
+
+    const setArmed = (on: boolean) => {
+      armed = on;
+      root.toggleAttribute('data-rotating', on);
+      rotate.classList.toggle('is-playing', on);
+      rotate.setAttribute('aria-label', on ? 'Stop automatic rotation' : 'Start automatic rotation');
+      if (!on) prog.classList.remove('run');
+    };
+
+    const restart = () => {
+      prog.classList.remove('run');
+      if (!armed) return;
+      // The class change only takes effect once the removal has been flushed; without the
+      // forced reflow the animation is never re-run and the carousel stalls after one card.
+      void prog.offsetWidth;
+      prog.classList.add('run');
+      syncHold(); // re-assert a hold that was in force across the restart
+    };
+
+    /**
+     * `byUser` separates a change the reader asked for from one the clock made. It decides
+     * whether the live region speaks — not whether the card animates, which it always does.
+     * Those two were one flag, which is how the timer came to announce itself every 16
+     * seconds to anyone reading anywhere on the homepage.
+     */
+    const show = (n: number, byUser: boolean) => {
       at = (n + cards.length) % cards.length;
       cards.forEach((c, i) => {
         if (i === at) c.removeAttribute('data-off');
         else c.setAttribute('data-off', '');
         // Never `hidden`: display:none removes the card from grid sizing and the frame
         // would collapse to the active card's height, jumping on every change.
-        c.classList.toggle('is-enter', i === at && announce);
+        c.classList.toggle('is-enter', i === at);
       });
       pills.forEach((p, i) => p.setAttribute('aria-pressed', String(i === at)));
       dots.forEach((d, i) => d.setAttribute('aria-current', String(i === at)));
-      if (announce) live.textContent = `${pills[at]?.textContent?.trim() ?? ''}: example ${at + 1} of ${cards.length}`;
+      if (byUser) live.textContent = `${pills[at]?.textContent?.trim() ?? ''}: example ${at + 1} of ${cards.length}`;
       restart();
     };
 
-    const restart = () => {
-      prog.classList.remove('run');
-      if (!auto) return;
-      // The class change only takes effect once the removal has been flushed; without the
-      // forced reflow the animation is never re-run and the carousel stalls after one card.
-      void prog.offsetWidth;
-      prog.classList.add('run');
+    const startRotation = () => {
+      // The observer's only job is the FIRST arming, so an explicit start makes it redundant
+      // — and leaving it connected lets it fire a moment later and reset the count under a
+      // reader who had just started the rotation themselves.
+      io?.disconnect();
+      io = null;
+      completed = 0;
+      overrideHold = true;
+      setArmed(true);
+      restart();
+    };
+    const stopRotation = () => {
+      // Cancels a PENDING arm as well as a running one. Rotation starts when the band is
+      // scrolled to, so a reader who reaches the band and picks a card in the same movement
+      // could otherwise have the observer start rotating a moment later — the exact
+      // interruption that stopping on first interaction exists to prevent. Narrow window,
+      // but the whole invariant is "a deliberate move ends it", and a race that breaks it
+      // occasionally is not a weaker version of that rule, it is not that rule.
+      io?.disconnect();
+      io = null;
+      if (armed) setArmed(false);
     };
 
-    const stopAuto = () => {
-      auto = false;
-      prog.classList.remove('run');
-      root.setAttribute('data-manual', '');
-    };
+    prog.addEventListener('animationend', () => {
+      if (!armed) return;
+      completed += 1;
+      // `completed` counts dwells that have FINISHED, so it starts at 0 and this is the only
+      // place it moves. That base is the whole of the accounting, and it is easy to get
+      // wrong in a way nothing shows: seeding it at 1 to mean "a dwell is in progress" costs
+      // the trailing card a turn, giving [3,3,3,2] and resting on the last card instead of
+      // [3,3,3,3] resting on the first. Whether this check runs before or after the advance
+      // makes no difference to either — it was checked by simulating all four combinations,
+      // not reasoned about — so it sits first, where it saves `show` a pointless restart.
+      if (completed >= budget) stopRotation();
+      show(at + 1, false);
+    });
 
-    prog.addEventListener('animationend', () => { if (auto) show(at + 1, true); });
+    // Any deliberate move stops the rotation for good: once a reader has expressed intent,
+    // moving the content out from under them again is hostile. The rotate button is the one
+    // control that can also start it, which is what makes it a mechanism rather than a sign.
+    pills.forEach((p, i) => p.addEventListener('click', () => { stopRotation(); show(i, true); }));
+    dots.forEach((d, i) => d.addEventListener('click', () => { stopRotation(); show(i, true); }));
+    root.querySelector('[data-prev]')?.addEventListener('click', () => { stopRotation(); show(at - 1, true); });
+    root.querySelector('[data-next]')?.addEventListener('click', () => { stopRotation(); show(at + 1, true); });
+    rotate.addEventListener('click', () => { if (armed) stopRotation(); else startRotation(); });
 
-    pills.forEach((p, i) => p.addEventListener('click', () => { stopAuto(); show(i, true); }));
-    dots.forEach((d, i) => d.addEventListener('click', () => { stopAuto(); show(i, true); }));
-    root.querySelector('[data-prev]')?.addEventListener('click', () => { stopAuto(); show(at - 1, true); });
-    root.querySelector('[data-next]')?.addEventListener('click', () => { stopAuto(); show(at + 1, true); });
+    root.addEventListener('pointerenter', () => { hovering = true; syncHold(); });
+    root.addEventListener('pointerleave', () => { hovering = false; syncHold(); });
+    root.addEventListener('focusin', () => { focused = true; syncHold(); });
+    root.addEventListener('focusout', (e) => {
+      // `focusout` fires before the incoming element takes focus, and `relatedTarget` is
+      // where it is going. Moving between two controls inside the band is not leaving it.
+      if (e.relatedTarget instanceof Node && root.contains(e.relatedTarget)) return;
+      focused = false;
+      syncHold();
+    });
 
-    const pause = () => { prog.style.animationPlayState = 'paused'; };
-    const play = () => { prog.style.animationPlayState = ''; };
-    root.addEventListener('pointerenter', pause);
-    root.addEventListener('pointerleave', play);
-    root.addEventListener('focusin', pause);
-    root.addEventListener('focusout', play);
+    reduce.addEventListener('change', () => { if (reduce.matches) stopRotation(); });
 
-    reduce.addEventListener('change', () => { if (reduce.matches) stopAuto(); });
-    restart();
+    setArmed(false); // establishes the button's rendered state; the observer below arms it
+
+    if (!reduce.matches) {
+      // The clock used to start here, at parse time, with the band several screens below
+      // the fold: a reader who scrolled down arrived at whatever card the timer had reached
+      // behind a part-drawn progress bar, and never saw the first one. Start it when the
+      // card frame is first on screen instead.
+      //
+      // Observing the STACK rather than the section, at threshold 0. A tall section on a
+      // short viewport can never reach a fractional threshold, which is a failure that only
+      // shows up on the phones least able to report it.
+      if ('IntersectionObserver' in window) {
+        io = new IntersectionObserver((entries) => {
+          if (!entries.some((e) => e.isIntersecting)) return;
+          io?.disconnect();
+          startRotation();
+        }, { threshold: 0 });
+        io.observe(stack);
+      } else {
+        startRotation();
+      }
+    }
   }
 </script>
 
@@ -475,19 +862,64 @@ const examples = [
   }
   .arrow [data-icon] { width: 1.05rem; height: 1.05rem; }
   .arrow:hover { color: var(--caail-ink); border-color: var(--caail-link); }
+
+  /* Icons swapped by `display`, so exactly one is ever laid out and the button cannot
+     change size across the swap. Rendered state is "stopped", which is true at load. */
+  .rotate .i-play, .rotate .i-pause { display: none; }
+  .rotate:not(.is-playing) .i-play { display: block; }
+  .rotate.is-playing .i-pause { display: block; }
+  /* While it is rotating, the control is the live thing on the row rather than another
+     grey affordance — it is the one a reader is looking for when they want it to stop. */
+  .rotate.is-playing { color: var(--caail-link); border-color: var(--caail-link); }
+
   .dots { display: flex; align-items: center; gap: .4rem; }
+  /* The dot's BOX never changes size; only the pill drawn inside it does.
+     This used to transition `width` from .5rem to 1.1rem, which is a layout property: every
+     frame of every change re-laid-out the row, and the dots either side slid to make room.
+     `clip-path` paints the same pill without touching layout, and 27% of 1.1rem leaves
+     .5rem showing, so the inactive dot is the size it always was. The constant 1.1rem box
+     also gives the hit target somewhere to grow from — see the expander below.
+     Interpolation sampled mid-transition in Chromium and Firefox; WebKit is not installed
+     here and is unverified. The risk that leaves is bounded and cosmetic: the box is a
+     constant width whether or not the clip animates, so an engine that refused to
+     interpolate would snap the indicator, not move the row. */
   .dot {
-    width: .5rem; height: .5rem; padding: 0; cursor: pointer;
-    border: 0; border-radius: 999px; background: var(--caail-border);
-    transition: width .2s ease-out, background .2s ease-out;
+    position: relative;
+    width: 1.1rem; height: .5rem; padding: 0; cursor: pointer;
+    border: 0; background: none;
   }
-  .dot:hover { background: var(--caail-muted); }
-  .dot[aria-current='true'] { width: 1.1rem; background: var(--caail-link); }
+  .dot::before {
+    content: ''; display: block; width: 100%; height: 100%;
+    border-radius: 999px; background: var(--caail-border);
+    clip-path: inset(0 27% 0 27% round 999px);
+    transition: clip-path .2s ease-out, background .2s ease-out;
+  }
+  .dot:hover::before { background: var(--caail-muted); }
+  .dot[aria-current='true']::before {
+    clip-path: inset(0 0 0 0 round 999px);
+    background: var(--caail-link);
+  }
+  /* An 8px-tall dot is a poor pointer target, and a touch one is worse. Measured with
+     elementFromPoint rather than reasoned about, which is the only reason the sentence below
+     is accurate: each dot ends up about 22.6x26px and owns its own centre and the whole of
+     its visible pill. The edge is where arithmetic and rendering part company — a 17.59px
+     box in a 6.39px gap leaves 0.39px between adjacent expanders, which subpixel rounding
+     eats, so a sliver at the middle of each gap answers for the later dot rather than for
+     neither. That sliver is nowhere near either pill and costs a reader nothing; widen this
+     and it stops being a sliver.
+     22.6px is under WCAG 2.5.8's 24px, so the "equivalent control" exemption is load-bearing
+     rather than decorative here: the pills select the same cards at full size. Nothing
+     automated is watching — the axe run is tagged wcag2a/wcag2aa and 2.5.8 is in neither. */
+  .dot::after { content: ''; position: absolute; inset: -9px -3px; }
 
   @media (prefers-reduced-motion: reduce) {
     .card.is-enter > * { animation: none; }
     .prog.run { animation: none; }
-    .dot { transition: none; }
+    .dot::before { transition: none; }
+    /* The rotation this button controls never starts under reduced motion, and the progress
+       animation it would wait on is disabled, so pressing it would advance nothing. A
+       control that cannot act is worse than no control. */
+    .rotate { display: none; }
   }
 
   .plabel {
@@ -522,7 +954,17 @@ const examples = [
   }
   .rows span { font-size: var(--caail-fs-sm); color: var(--caail-muted); }
 
-  .tail { font-size: var(--caail-fs-sm); color: var(--caail-muted); margin: 0; line-height: 1.6; max-width: 82ch; text-wrap: pretty; }
+  /* NO max-width, and that is the fix rather than an omission.
+     This carried `max-width: 82ch`, a reasonable reading measure in isolation and wrong
+     here: it is the only element in the card that has one. Measured on the live page at
+     1440px, the head ran to 1014px, the row text ran to 1014px, and the tail stopped at
+     724px — three right edges in one card, with the odd one out being four ragged lines of
+     small muted type at the bottom. It read as text that had been hard-wrapped to a column
+     and pasted in, which is how it was reported.
+     The measure that results is long (~115ch at desktop), so if this ever wants
+     constraining, constrain the CARD and let all three blocks keep one right edge. Bounding
+     one block inside a wider one is what looked broken. */
+  .tail { font-size: var(--caail-fs-sm); color: var(--caail-muted); margin: 0; line-height: 1.6; text-wrap: pretty; }
 
   .foot { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: var(--caail-space-2) var(--caail-space-5); margin: var(--caail-space-5) 0 0; }
   .more {

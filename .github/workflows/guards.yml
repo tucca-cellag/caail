@@ -58,9 +58,13 @@ jobs:
       - name: Install PyYAML
         run: python -m pip install --quiet --disable-pip-version-check pyyaml
 
-      # Resolves the destination's visibility with `gh repo view` and fails OPEN
-      # when it cannot: on an unauthenticated runner four of the eight tripwire
-      # cases flip from deny to allow. The token is load-bearing, not decorative.
+      # Resolves the destination's visibility with `gh repo view`. It no longer
+      # fails open when it cannot (it announces, scans the payload and denies on
+      # risk), so an unauthenticated runner no longer flips tripwire verdicts.
+      # The token is still load-bearing: the suite asserts that a destination gh
+      # CAN read is announced as read rather than as degraded, which is the check
+      # that stops "announces something" passing for both states. Without a token
+      # that assertion fails, which is the intended noise.
       - name: Publish-provenance hook guard
         run: python3 .claude/hooks/check-public-publish.test.py
         env:

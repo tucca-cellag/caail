@@ -17,6 +17,7 @@ import TopicsBand from '../../components/TopicsBand.astro';
 import CommunityBand from '../../components/CommunityBand.astro';
 import CiteBand from '../../components/CiteBand.astro';
 import WhyCaail from '../../components/WhyCaail.astro';
+import AskExamples from '../../components/AskExamples.astro';
 import GetStarted from '../../components/GetStarted.astro';
 
 {/* Arms the scroll-reveal system. Must precede every `.sr` element on the page so the
@@ -40,7 +41,14 @@ import GetStarted from '../../components/GetStarted.astro';
     and above `#why`, which argues why the answer is worth trusting once you have it. */}
 <TopicsBand />
 
+{/* Order is load-bearing twice over. `#why` argues the answers are worth trusting, `#ask`
+    shows four of them, and `#connect` is how you get your own — so the CTA at the foot of
+    the band has the install path immediately under it. And HomeRail's scroll-spy takes the
+    LAST rail entry whose offsetTop is above the viewport midpoint, walking the entries in
+    list order, so rail order and document order have to agree or a tick lights on the wrong
+    section. */}
 <WhyCaail />
+<AskExamples />
 <GetStarted />
 
 {/* Paired. Each band is one short line of copy plus two actions, so at full width both
