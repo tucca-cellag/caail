@@ -30,7 +30,9 @@ export const taxonomyHref = (label: string): string => `${BASE}/taxonomy/#${ghSl
  * Matrix area key → its ResearchAreas deep-dive route. Keys are the `areas.ts`
  * registry keys; values are the page ids in `caail-pages.ts`. A deep-dive page can
  * exist without a matrix column, and two now do: Metabolic Modeling, and AI Evaluation
- * since CAAIL-164 retired that column. Neither has a key here.
+ * since CAAIL-164 retired that column. Neither has a key here, so both fall back to the
+ * Taxonomy definition below. The eval deep dive has since moved to
+ * `/methods/benchmarksevaluation/`, so there is no research-area page left to point at.
  */
 export const RESEARCH_AREA_SLUG: Record<string, string> = {
   media: 'mediaoptimization',

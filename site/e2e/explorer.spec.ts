@@ -95,8 +95,10 @@ test('internal prose link to a rendered page resolves to a site route; deferred 
 test('pagefind indexes prose content', async ({ page }) => {
   await page.goto('./');
   // Open Starlight search. Prefer the visible search button; fall back to the "/" shortcut.
-  // Anchor the name so it targets the "Search" button and not the "Research Areas"
-  // nav dropdown (whose accessible name contains the substring "search").
+  // Anchor the name to the START of the accessible name so it targets the
+  // "Search" button and not some nav dropdown that merely contains the
+  // substring "search" (as "Research Areas" did before the two matrix axes were
+  // merged into one "Matrix Axes" trigger).
   const searchButton = page.getByRole('button', { name: /^search/i });
   if (await searchButton.count()) { await searchButton.first().click(); } else { await page.keyboard.press('/'); }
   const input = page.getByPlaceholder(/search/i);

@@ -9,7 +9,7 @@
  *      pages keep behaving exactly as before.
  *
  *   2. The canonical repo-root prose files (`ResearchAreas/*.md`,
- *      `Datasets/*.md`, `CONTRIBUTING.md`) — read directly from disk WITHOUT
+ *      `Methods/*.md`, `Datasets/*.md`, `CONTRIBUTING.md`) — read directly from disk WITHOUT
  *      modifying them, and injected into the store with a synthetic `title`
  *      from `CAAIL_PAGES`.
  *
@@ -72,7 +72,7 @@ const REPO_ROOT = new URL('../../../../', import.meta.url);
  * those directories) is skipped, so the directory scan is allowed to be broad.
  */
 const CANONICAL_SOURCES = {
-  dirs: ['ResearchAreas', 'Datasets'],
+  dirs: ['ResearchAreas', 'Methods', 'Datasets'],
   files: [
     'CONTRIBUTING.md',
     'OtherResources.md',
@@ -168,7 +168,10 @@ export function caailDocsLoader(): Loader {
 
       // Warn about any CAAIL_PAGES prose entries that were not produced from a
       // real file on disk (catches renamed / removed canonical sources).
-      const proseGroups = new Set(['research-areas', 'datasets', 'top']);
+      // Every PageGroup, since all of them are backed by a canonical file on
+      // disk. Keep in step with the `PageGroup` union in caail-pages.ts — a
+      // group missing here loses the warning below, silently.
+      const proseGroups = new Set(['research-areas', 'methods', 'datasets', 'top']);
       const missingFromDisk = CAAIL_PAGES.all()
         .filter((p) => proseGroups.has(p.group) && !storedIds.has(p.id))
         .map((p) => p.id);
