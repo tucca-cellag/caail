@@ -51,7 +51,7 @@ body:
     attributes:
       label: What it should say instead
       description: |
-        What is wrong, and what the correct version is. A pointer to where you are reading it from (a section of the paper, the dataset's own documentation, the repository's licence file) is the single most useful thing you can add, because it is what a curator has to find before changing anything.
+        What is wrong, what the correct version is, and the source you are reading that from (a section of the paper, the dataset's own documentation, the repository's licence file). A curator checks the correction against its source before editing the entry.
       placeholder: |
         The matrix places this under Deep Learning, but the methods section (2.3) describes a Gaussian-process Bayesian optimisation loop. There is no neural network in the paper.
     validations:
@@ -72,4 +72,4 @@ body:
       value: |
         **What happens next.** A curator checks the report against the source and, where it holds up, corrects the entry through the library's authoring backend. We do not promise a turnaround time: the review path runs through one person, and a schedule we cannot keep is worse than none.
 
-        Reports are welcome whether or not they turn out to be right. An entry that survives a challenge is worth as much to us as one that gets fixed.
+        Certainty is not a requirement. Every report is checked against the source either way, and one that does not hold up changes nothing.
