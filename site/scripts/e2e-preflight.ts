@@ -211,7 +211,13 @@ export function isPortHeld(
     for (const host of hosts) {
       const socket = net.connect({ port, host });
       socket.setTimeout(2000);
+      // One decision per socket. A second event on an already-settled socket would
+      // decrement \`pending\` twice, so the child could exit before the OTHER family
+      // reported — losing a real "held" and returning the one verdict that matters.
+      let settled = false;
       const settle = (state) => {
+        if (settled) return;
+        settled = true;
         if (state === 'held') held = true;
         if (state === 'unknown') undetermined = true;
         socket.destroy();
