@@ -75,14 +75,22 @@ describe('checkPagefindArtifacts', () => {
       }),
     );
     expect(problems).toEqual([
-      'dist/pagefind/pagefind.js is 45555 bytes of NUL — the correct size, entirely zero-filled',
-      'dist/pagefind/pagefind-entry.json is 172 bytes of NUL — the correct size, entirely zero-filled',
+      {
+        relative: 'pagefind/pagefind.js',
+        message:
+          'dist/pagefind/pagefind.js is 45555 bytes of NUL — the correct size, entirely zero-filled',
+      },
+      {
+        relative: 'pagefind/pagefind-entry.json',
+        message:
+          'dist/pagefind/pagefind-entry.json is 172 bytes of NUL — the correct size, entirely zero-filled',
+      },
     ]);
   });
 
   it('reports a missing artifact', () => {
     expect(checkPagefindArtifacts(makeDist({ 'pagefind/pagefind.js': null }))).toEqual([
-      'dist/pagefind/pagefind.js is missing',
+      { relative: 'pagefind/pagefind.js', message: 'dist/pagefind/pagefind.js is missing' },
     ]);
   });
 
@@ -133,6 +141,34 @@ describe('runPreflight', () => {
     expect(message).toContain('pagefind search index in this build is corrupt');
     expect(message).toContain('45555 bytes of NUL');
     expect(message).toContain('rm -rf dist && pnpm build');
+  });
+
+  it('points the confirm command at the artifact that is actually broken', () => {
+    // A hardcoded confirm path named pagefind.js whatever was wrong. When only
+    // entry.json is corrupt that prints a large byte count under a comment reading
+    // "0 means corrupt", contradicting the diagnosis exactly when it must be
+    // believed. The healthy file must not appear in the suggested command.
+    const message = runPreflight({
+      ...base,
+      distDir: makeDist({ 'pagefind/pagefind-entry.json': Buffer.alloc(172) }),
+    })!;
+    const confirmLines = message
+      .split('\n')
+      .filter((line) => line.includes('tr -d'))
+      .join('\n');
+    expect(confirmLines).toContain('pagefind-entry.json');
+    expect(confirmLines).not.toContain('pagefind.js');
+  });
+
+  it('suggests one confirm command per broken artifact', () => {
+    const message = runPreflight({
+      ...base,
+      distDir: makeDist({
+        'pagefind/pagefind.js': Buffer.alloc(45555),
+        'pagefind/pagefind-entry.json': Buffer.alloc(172),
+      }),
+    })!;
+    expect(message.split('\n').filter((line) => line.includes('tr -d'))).toHaveLength(2);
   });
 
   it('reports the corrupt build even when the port is also held', () => {

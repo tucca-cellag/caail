@@ -80,21 +80,33 @@ function readArtifact(path: string): Uint8Array | null {
   return readFileSync(path);
 }
 
+export interface PagefindProblem {
+  /** Path relative to `dist/`, e.g. `pagefind/pagefind.js`. */
+  relative: string;
+  /** One-line description naming the file and what is wrong with it. */
+  message: string;
+}
+
 /**
  * Check the pagefind artifacts under `distDir`.
  *
- * Returns one message per broken artifact, empty when everything is fine. A `dist`
- * that does not exist at all yields no messages: that is the stale/absent-build
+ * Returns one problem per broken artifact, empty when everything is fine. A `dist`
+ * that does not exist at all yields no problems: that is the stale/absent-build
  * problem, which `pnpm preview` reports on its own terms, and claiming it here
  * would make this guard fire on a checkout that has simply never been built.
+ *
+ * The `relative` path is carried alongside the message so callers can point their
+ * suggested diagnostic command at the artifact that is actually broken. Naming a
+ * healthy file there would print a large byte count under a comment reading "0
+ * means corrupt", contradicting the diagnosis at the moment it has to be believed.
  */
 export function checkPagefindArtifacts(
   distDir: string,
   read: (path: string) => Uint8Array | null = readArtifact,
-): string[] {
+): PagefindProblem[] {
   if (!existsSync(distDir)) return [];
 
-  const problems: string[] = [];
+  const problems: PagefindProblem[] = [];
   for (const relative of PAGEFIND_ARTIFACTS) {
     const path = join(distDir, relative);
     const verdict = classifyArtifact(read(path));
@@ -105,7 +117,7 @@ export function checkPagefindArtifacts(
         : verdict.status === 'empty'
           ? 'is zero bytes'
           : 'is missing';
-    problems.push(`dist/${relative} ${detail}`);
+    problems.push({ relative, message: `dist/${relative} ${detail}` });
   }
   return problems;
 }
@@ -117,6 +129,12 @@ export function checkPagefindArtifacts(
  * loopback families are tried: `astro preview` binds to `localhost`, which resolves
  * to `::1` before `127.0.0.1` on some hosts, and a probe of the wrong family would
  * report a held port as free.
+ *
+ * Only the explicit exit code 10 counts as held, so every other outcome — a
+ * `spawnSync` timeout kill, a crash, a future Node change — reads as free and the
+ * run proceeds. That direction is deliberate: this guard exists to stop a
+ * misleading run, and a probe that blocked runs whenever it could not answer would
+ * itself become the thing nobody trusts.
  */
 export function isPortHeld(port: number): boolean {
   const probe = `
@@ -240,7 +258,7 @@ export function runPreflight(options: PreflightOptions): string | null {
     return [
       'e2e preflight: the pagefind search index in this build is corrupt.',
       '',
-      ...pagefindProblems.map((problem) => `  - ${problem}`),
+      ...pagefindProblems.map((problem) => `  - ${problem.message}`),
       '',
       'Pagefind will never initialise, the search dialog will stay empty, and every',
       'spec that opens search fails on a content assertion ten seconds later — which',
@@ -248,7 +266,10 @@ export function runPreflight(options: PreflightOptions): string | null {
       'intermittently writes these files correctly sized and entirely zero-filled.',
       '',
       'Fix: rm -rf dist && pnpm build',
-      `Confirm: tr -d '\\000' < ${join(distDir, PAGEFIND_ARTIFACTS[0])} | wc -c   # 0 means corrupt`,
+      'Confirm (0 means corrupt):',
+      ...pagefindProblems.map(
+        (problem) => `  tr -d '\\000' < ${join(distDir, problem.relative)} | wc -c`,
+      ),
     ].join('\n');
   }
 
