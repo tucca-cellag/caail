@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
+  NOTE_MAX_ENCODED,
   NOTE_MAX_LENGTH,
   REASON_SPECS,
   boundNote,
@@ -162,6 +163,31 @@ describe('boundNote', () => {
     // The trim must be a truncation repair, not a blanket ban on astral characters.
     expect(boundNote('ok 😀')).toBe('ok 😀');
   });
+
+  it('caps on ENCODED length too, which is the unit the URL limit is in', () => {
+    // NOTE_MAX_LENGTH counts UTF-16 code units, and the two only agree for ASCII. A full
+    // 400-character note in Chinese encodes to roughly 3,600 characters, so the mailto
+    // sailed past the ~2,048 that Windows and Outlook truncate at: the email route would
+    // deliver a cut-off report while the preview on the page looked complete.
+    const cjk = boundNote('提'.repeat(NOTE_MAX_LENGTH));
+    expect(encodeURIComponent(cjk).length).toBeLessThanOrEqual(NOTE_MAX_ENCODED);
+    // Still generous: this is a real note, not a token.
+    expect(cjk.length).toBeGreaterThan(100);
+  });
+
+  it('leaves an ASCII note at the character cap, where the encoded cap does not bind', () => {
+    const ascii = boundNote('z'.repeat(NOTE_MAX_LENGTH + 50));
+    expect(ascii).toHaveLength(NOTE_MAX_LENGTH);
+  });
+
+  it('does not split a surrogate pair when the ENCODED cap is the binding one', () => {
+    // The two caps truncate at different points, so the pair-splitting repair has to
+    // survive whichever one fires.
+    const emoji = boundNote('😀'.repeat(NOTE_MAX_LENGTH));
+    expect(() => encodeURIComponent(emoji)).not.toThrow();
+    expect(encodeURIComponent(emoji).length).toBeLessThanOrEqual(NOTE_MAX_ENCODED);
+    expect(emoji).not.toMatch(/[\uD800-\uDBFF]$/);
+  });
 });
 
 describe('normaliseDoi and isDoiShape', () => {
@@ -186,8 +212,21 @@ describe('normaliseDoi and isDoiShape', () => {
     ['a whole citation', 'Nikkhah et al. 2023'],
     ['a URL that is not a DOI', 'https://example.com/paper'],
     ['registrant too short', '10.1/x'],
+    // A bare paste with a query is ambiguous: outside a URL nothing says the `?` is not
+    // part of the identifier, so this refuses rather than guessing.
+    ['a bare DOI carrying a query string', '10.1016/j.x?utm_source=news'],
+    ['a bare DOI carrying a fragment', '10.1016/j.x#sec3'],
+    ['a suffix past any real DOI length', `10.1016/${'x'.repeat(3000)}`],
   ])('rejects %s', (_label, input) => {
     expect(isDoiShape(input)).toBe(false);
+  });
+
+  it('drops the tracking parameters that come with a copied doi.org link', () => {
+    // The common paste, and previously accepted verbatim: the page told the reader the DOI
+    // was fine and composed one that resolves to nothing.
+    const pasted = 'https://doi.org/10.1016/j.x.2024.1?utm_source=news&foo=bar#sec3';
+    expect(normaliseDoi(pasted)).toBe('10.1016/j.x.2024.1');
+    expect(isDoiShape(pasted)).toBe(true);
   });
 });
 
@@ -303,17 +342,33 @@ describe('composeBody', () => {
     }
   });
 
-  it('stays far inside any URL length worth worrying about', () => {
-    // The body travels in a query string to GitHub and in a mailto to a mail client. With
-    // the note capped, the longest possible body is bounded, so this is a real ceiling.
+  it.each([
+    ['ASCII', 'z'],
+    // The case the ASCII-only version of this test never reached. Each of these costs nine
+    // characters encoded, so a note that "fits" by character count did not fit at all.
+    ['Chinese', '提'],
+    ['Cyrillic', 'д'],
+    ['emoji', '😀'],
+  ])('stays inside a deliverable URL length with a full %s note', (_script, char) => {
+    // The body travels in a query string to GitHub and in a mailto to a mail client, and
+    // the mailto is the tight one: Windows and Outlook truncate around 2,048.
     const body = composeBody(
       {
         itemId: 'ds:a-very-long-dataset-identifier-of-the-kind-the-db-actually-mints',
         reason: reason({ kind: 'note', label: 'Stale or wrong figures in the description' }),
-        note: 'z'.repeat(NOTE_MAX_LENGTH),
+        note: char.repeat(NOTE_MAX_LENGTH),
       },
       VOCAB,
     );
-    expect(encodeURIComponent(body).length).toBeLessThan(1000);
+    expect(encodeURIComponent(body).length).toBeLessThan(1800);
+  });
+
+  it('does not compose a DOI longer than any real one', () => {
+    const body = composeBody(
+      { itemId: 'paper:1', reason: reason({ kind: 'doi' }), doi: `10.1016/${'x'.repeat(3000)}` },
+      VOCAB,
+    );
+    expect(body).not.toContain('DOI should be');
+    expect(encodeURIComponent(body).length).toBeLessThan(200);
   });
 });

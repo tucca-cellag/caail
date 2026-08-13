@@ -27,7 +27,12 @@ type Papers = {
   areas: { key: string; label: string }[];
 };
 /** The /report/ composer's reason vocabulary, read from the GitHub issue form it prefills. */
-type CorrectionForm = { reasons: { value: string; label: string; kind: string }[]; fieldIds: string[] };
+type CorrectionForm = {
+  reasons: { value: string; label: string; kind: string }[];
+  fieldIds: string[];
+  reasonLabel: string;
+  requiredConfirmations: number;
+};
 type SubjectRow = {
   slug: string; label: string; kind: 'theme' | 'tag'; theme: string | null;
   total: number; cells: { key: string; count: number }[];

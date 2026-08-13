@@ -183,7 +183,8 @@ test('a reason with nothing to ask takes two steps, not three', async ({ page })
   await expect(page.locator('#caail-h-reason')).toHaveText(/^Step 1 of 3:/);
 
   await page.getByRole('radio', { name: /^Dead or wrong link/ }).check();
-  // The count corrects itself the moment it is known, and only ever downwards.
+  // The count corrects itself the moment it is known. It is not monotonic; the sibling
+  // test below covers it moving back up.
   await expect(page.locator('#caail-h-reason')).toHaveText(/^Step 1 of 2:/);
 
   await page.locator(NEXT).click();
@@ -317,11 +318,17 @@ test('the final step offers submit as a link, and says the account wall is uncha
   // against the raw text rather than a whitespace-normalised copy of it.
   await expect(account).toContainText(/email\s+and Slack routes below/);
 
-  // And it must be honest that one dropdown still needs picking, since a dropdown does
-  // not prefill from its option text.
-  await expect(page.locator('#caail-compose-dropdown-note')).toContainText(
-    'Not machine learning at all',
-  );
+  // And it must be honest that the dropdown still needs picking, since a dropdown does not
+  // prefill from its option text.
+  const note = page.locator('#caail-compose-dropdown-note');
+  await expect(note).toContainText('Not machine learning at all');
+  // Named as the GitHub form names it, read from the template rather than written here, so
+  // a reworded `label:` cannot leave the page directing readers to a field that is gone.
+  await expect(note).toContainText(correctionForm.reasonLabel);
+  // And the confirmations, which are `required: true` and would otherwise block a submit
+  // the page implied was one click away.
+  expect(correctionForm.requiredConfirmations).toBeGreaterThan(0);
+  await expect(note).toContainText('confirmations');
 });
 
 test('a DOI is normalised from what a reader actually pastes', async ({ page }) => {

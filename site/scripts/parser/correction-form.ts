@@ -58,6 +58,23 @@ export interface CorrectionForm {
   readonly reasons: readonly ResolvedReason[];
   /** Every `id:` the template declares, in document order. */
   readonly fieldIds: readonly string[];
+  /**
+   * The reason dropdown's visible `label:`.
+   *
+   * The review step tells the reader which field to find on the GitHub form, so it has to
+   * name it as the form does. Extracted rather than written into the page, because a
+   * reworded label would otherwise leave the site directing every reader to a field name
+   * that no longer exists, with every check still green.
+   */
+  readonly reasonLabel: string;
+  /**
+   * How many confirmation checkboxes the form marks `required: true`.
+   *
+   * Same reason: the review step says what is left to do after the prefill, and the
+   * confirmations are part of that. Counted so the page cannot claim a number the form
+   * does not ask for, and so a form with none stops mentioning them at all.
+   */
+  readonly requiredConfirmations: number;
 }
 
 /** Every `id: <name>` in the document. Field ids are a bare word by GitHub's own schema. */
@@ -152,6 +169,22 @@ function readReasonOptions(src: string): string[] {
 }
 
 /**
+ * How many of the `confirmations` field's checkboxes are `required: true`.
+ *
+ * Zero is a legitimate answer, not an error: a template that drops the confirmations is a
+ * curator's decision, and the page simply stops mentioning them. What must not happen is
+ * the page asserting a count the form does not ask for.
+ */
+function countRequiredConfirmations(src: string): number {
+  const anchor = src.search(/^[ \t]*id:[ \t]*confirmations[ \t]*$/m);
+  if (anchor < 0) return 0;
+  const bounds = [...src.matchAll(/^[ \t]*-[ \t]+type:[ \t]*\S+[ \t]*$/gm)].map((m) => m.index!);
+  const start = bounds.filter((i) => i <= anchor).pop() ?? 0;
+  const field = src.slice(start, bounds.find((i) => i > start) ?? src.length);
+  return (field.match(/^[ \t]*required:[ \t]*true[ \t]*$/gm) ?? []).length;
+}
+
+/**
  * Build the correction-form model from the committed issue template.
  *
  * @param templatePath  Path to entry-correction.yml (defaults to the repo's).
@@ -178,7 +211,22 @@ export function buildCorrectionForm(
   }
 
   // Throws on any drift between the template's vocabulary and the composer's.
+  const field = reasonField(src);
   const reasons = resolveReasons(readReasonOptions(src));
 
-  return { reasons, fieldIds };
+  const label = /^[ \t]*label:[ \t]*(.+?)[ \t]*$/m.exec(field);
+  if (!label) {
+    throw new Error(
+      `correction-form: the "reason" field in ${templatePath} has no "label:". The review ` +
+        `step on /report/ names that field so the reader can find it on the GitHub form, ` +
+        `and it has to name it as the form does.`,
+    );
+  }
+
+  return {
+    reasons,
+    fieldIds,
+    reasonLabel: label[1]!,
+    requiredConfirmations: countRequiredConfirmations(src),
+  };
 }

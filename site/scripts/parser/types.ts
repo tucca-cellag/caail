@@ -809,6 +809,10 @@ export const CorrectionReasonSchema = z.object({
 export const CorrectionFormSchema = z.object({
   reasons: z.array(CorrectionReasonSchema).min(1),
   fieldIds: z.array(z.string().min(1)).min(1),
+  /** The reason dropdown's visible label, as the review step must name it. */
+  reasonLabel: z.string().min(1),
+  /** How many confirmation checkboxes the form requires. Zero is legitimate. */
+  requiredConfirmations: z.number().int().min(0),
 });
 export type CorrectionReason = z.infer<typeof CorrectionReasonSchema>;
 export type CorrectionFormData = z.infer<typeof CorrectionFormSchema>;

@@ -205,8 +205,53 @@ export function resolveReasons(
   return resolved;
 }
 
-/** How much reader-typed prose one report may carry. */
+/** How much reader-typed prose one report may carry, in characters. */
 export const NOTE_MAX_LENGTH = 400;
+
+/**
+ * The same cap expressed in the unit that actually matters: percent-encoded length.
+ *
+ * `NOTE_MAX_LENGTH` counts UTF-16 code units, but the constraint it exists to satisfy is
+ * URL length, and the two are only the same for ASCII. A character outside the Basic Latin
+ * range costs three to nine characters once encoded, so a full 400-character note in
+ * Chinese, Japanese, Korean, Greek or Cyrillic produces a `mailto:` past 3,700 characters.
+ * Windows and Outlook truncate mailto URLs around 2,048, so the email route would deliver a
+ * silently cut-off report — and the reader has no way to know, because the preview on the
+ * page is complete.
+ *
+ * Budget: the whole mailto must clear 2,048 with room to spare. Address, subject and the
+ * report's fixed lines account for roughly 250 encoded characters, so 1,500 leaves the
+ * total under 1,800 in the worst case.
+ */
+export const NOTE_MAX_ENCODED = 1500;
+
+/**
+ * Encoded length of `text`, tolerating a trailing lone surrogate.
+ *
+ * `encodeURIComponent` throws `URIError` on an unpaired surrogate, and the truncation
+ * search below probes arbitrary cut points, so it will produce them.
+ */
+function encodedLength(text: string): number {
+  return encodeURIComponent(text.replace(/[\uD800-\uDBFF]$/, '')).length;
+}
+
+/**
+ * Truncate `text` to the longest prefix whose encoded form fits `maxEncoded`.
+ *
+ * Binary search rather than a character-by-character walk, because encoded cost per
+ * character is not constant and the answer is not derivable arithmetically.
+ */
+function truncateToEncoded(text: string, maxEncoded: number): string {
+  if (encodedLength(text) <= maxEncoded) return text;
+  let low = 0;
+  let high = text.length;
+  while (low < high) {
+    const mid = Math.ceil((low + high) / 2);
+    if (encodedLength(text.slice(0, mid)) <= maxEncoded) low = mid;
+    else high = mid - 1;
+  }
+  return text.slice(0, low);
+}
 
 /**
  * Reduce a reader's note to one bounded, single-line string.
@@ -224,15 +269,20 @@ export const NOTE_MAX_LENGTH = 400;
  * silently stopped. One character of a truncated note is the right thing to lose.
  */
 export function boundNote(raw: string): string {
-  return raw
+  const collapsed = raw
     // Escapes, not literal bytes: a control-character class written literally is
     // invisible in the source and reads as a stray paste. U+007F (DEL) is in the
     // class too, which a \x00-\x1F shorthand leaves out.
     .replace(/[\u0000-\u001F\u007F]/g, ' ')
     .replace(/\s+/g, ' ')
-    .trim()
-    .slice(0, NOTE_MAX_LENGTH)
-    .replace(/[\uD800-\uDBFF]$/, '');
+    .trim();
+  // Both caps, because they bind on different inputs. The character cap is what the
+  // textarea counts down for the reader and is the binding one for Latin text; the
+  // encoded cap is what keeps the URL deliverable and binds on everything else.
+  return truncateToEncoded(collapsed.slice(0, NOTE_MAX_LENGTH), NOTE_MAX_ENCODED).replace(
+    /[\uD800-\uDBFF]$/,
+    '',
+  );
 }
 
 /**
@@ -242,7 +292,19 @@ export function boundNote(raw: string): string {
  * nothing to resolve against, and a DOI that is well-formed but wrong is a curator's
  * problem to catch against the source — the same standard the rest of the report is held to.
  */
-const DOI_RE = /^10\.\d{4,9}\/\S+$/;
+const DOI_RE = /^10\.\d{4,9}\/[^\s?#]+$/;
+
+/**
+ * Longest DOI this will accept.
+ *
+ * The DOI syntax itself sets no limit, but registered DOIs are short: the longest in
+ * CAAIL's own corpus is well under 100 characters, and Crossref's own guidance is that
+ * they should be. Without a bound the composed body inherits whatever was pasted, so
+ * `10.1016/` followed by three thousand characters produced a three-thousand-character
+ * mailto and GitHub URL. This module's header states the length rule; it was applied to
+ * the note and not here.
+ */
+const DOI_MAX_LENGTH = 200;
 
 /**
  * Normalise the ways a reader will paste a DOI into the bare `10.x/…` form.
@@ -252,16 +314,25 @@ const DOI_RE = /^10\.\d{4,9}\/\S+$/;
  * here and saves an error message that would otherwise fire on a correct answer.
  */
 export function normaliseDoi(raw: string): string {
-  return raw
-    .trim()
-    .replace(/^https?:\/\/(?:dx\.)?doi\.org\//i, '')
-    .replace(/^doi:\s*/i, '')
-    .trim();
+  const trimmed = raw.trim();
+  const resolver = /^https?:\/\/(?:dx\.)?doi\.org\/(.*)$/is.exec(trimmed);
+  if (resolver) {
+    // A resolver URL's query and fragment belong to the URL, not to the DOI. This is not a
+    // theoretical case: copying a DOI link out of a newsletter or a search result brings
+    // `?utm_source=…` with it, and composing that verbatim produced a DOI that resolves to
+    // nothing while the page told the reader it had been accepted.
+    return resolver[1]!.replace(/[?#][\s\S]*$/, '').trim();
+  }
+  // A bare `doi:` prefix gets no such treatment: outside a URL there is nothing that says
+  // a `?` is a query rather than part of the identifier, so the shape check below rejects
+  // it rather than this quietly guessing.
+  return trimmed.replace(/^doi:\s*/i, '').trim();
 }
 
 /** True when `value` normalises to something DOI-shaped. Empty is not an error, just absent. */
 export function isDoiShape(value: string): boolean {
-  return DOI_RE.test(normaliseDoi(value));
+  const doi = normaliseDoi(value);
+  return doi.length <= DOI_MAX_LENGTH && DOI_RE.test(doi);
 }
 
 /**

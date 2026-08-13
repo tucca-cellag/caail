@@ -90,6 +90,13 @@ const vocabularies = {
   areas: papers.areas.map((a) => a.label),
   themes: topics.themes.map((t) => t.label),
   tiers: LICENSE_TIERS.map((t) => TIER_META[t].label),
+  // What the review step must say about the GitHub form: the name of the field the reader
+  // has to find, and whether it asks for confirmations. Both were written into the copy by
+  // hand, which put two facts about entry-correction.yml in the one place a reader sees
+  // and nothing checking them — the exact drift this module exists to prevent, reintroduced
+  // downstream of it.
+  reasonLabel: correctionForm.reasonLabel,
+  requiredConfirmations: correctionForm.requiredConfirmations,
 };
 
 /**
@@ -387,6 +394,9 @@ const vocabJson = JSON.stringify(vocabularies).replace(/</g, '\\u003c');
 
     const vocab = JSON.parse(payload.textContent) as CorrectionVocabularies & {
       reasons: ResolvedReason[];
+      /** The GitHub form's own name for the reason field, and its confirmation count. */
+      reasonLabel: string;
+      requiredConfirmations: number;
     };
 
     const el = {
@@ -455,8 +465,9 @@ const vocabJson = JSON.stringify(vocabularies).replace(/</g, '\\u003c');
     function plan(): StepName[] {
       if (answers.reason && answers.reason.kind !== 'none') return ['reason', 'detail', 'review'];
       if (answers.reason) return ['reason', 'review'];
-      // Unknown until a reason is picked, so assume the maximum. See the file header:
-      // the count may shrink under the reader but must never grow.
+      // Unknown until a reason is picked, so assume the maximum: an opening guess can then
+      // only overstate what is left, never understate it. It does NOT stay the maximum —
+      // the total follows the current answer and moves both ways. See the file header.
       return ['reason', 'detail', 'review'];
     }
 
@@ -598,6 +609,10 @@ const vocabJson = JSON.stringify(vocabularies).replace(/</g, '\\u003c');
       input.type = 'text';
       input.id = 'caail-f-doi';
       input.placeholder = '10.1016/j.scitotenv.2023.164988';
+      // Bounded at the point of entry as well as in the shape check, so a paste of a whole
+      // article body cannot sit in the field looking like a pending answer. The value is
+      // still re-checked in composeBody: this is the affordance, not the guarantee.
+      input.maxLength = 200;
       input.value = answers.doi;
       input.setAttribute('aria-describedby', 'caail-f-doi-help caail-f-doi-err');
 
@@ -747,13 +762,16 @@ const vocabJson = JSON.stringify(vocabularies).replace(/</g, '\\u003c');
         // so it has to be the option verbatim. The label is the display split and would
         // only ever be a prefix of what they are looking at.
         //
-        // And it names the confirmations as well as the dropdown. The template marks both
-        // checkboxes `required: true`, so a reader told that one dropdown was all that
-        // remained would meet a form refusing to submit for two reasons this page had
-        // implied were handled. The same standard the page holds itself to about the
-        // account wall applies to the form's own required fields.
+        // The field name and the confirmations both come from the template, not from this
+        // sentence. A reader told that one dropdown was all that remained would meet a form
+        // refusing to submit for reasons this page had implied were handled, and a reworded
+        // `label:` would send every reader looking for a field that no longer exists.
+        // Phrased without a numeral so the count cannot go stale either: a form with no
+        // required confirmations simply stops mentioning them.
+        const confirmations =
+          vocab.requiredConfirmations > 0 ? ', and tick the confirmations' : '';
         el.dropdownNote.textContent = answers.reason
-          ? `Your report is filled in for you on GitHub. Two things are left there: pick "${answers.reason.value}" under "What is wrong with it", and tick the two confirmations.`
+          ? `Your report is filled in for you on GitHub. What is left there: pick "${answers.reason.value}" under "${vocab.reasonLabel}"${confirmations}.`
           : '';
       }
 
@@ -1024,6 +1042,12 @@ const vocabJson = JSON.stringify(vocabularies).replace(/</g, '\\u003c');
     flex: none;
     margin-top: 0.35rem;
     accent-color: var(--caail-link);
+  }
+  /* The class existed with no rule, so the error class and its explanation were told apart
+     only by the hint being smaller and muted. The name of the thing you are choosing should
+     carry the weight. */
+  .rc-opt-label {
+    font-weight: 500;
   }
   .rc-opt-hint {
     display: block;
