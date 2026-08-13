@@ -582,6 +582,53 @@ describe('composeBody', () => {
     expect(normaliseDoi(pasted)).toBe(longest);
   });
 
+  it('normalises to a true fixed point, so one string is both validated and composed', () => {
+    // `isDoiShape` normalises its own argument, so `isDoiShape(normaliseDoi(x))` applies the
+    // rule twice as many times as `composeBody` does when it emits `normaliseDoi(x)`. While
+    // the pass count was a constant, anything needing more than that many passes but fewer
+    // than twice as many validated as one string and was composed as another: the field
+    // said "That does not look like a DOI" and the review step said the answer had been
+    // dropped, directly above a report reading `DOI should be: doi:10.1234/abc`.
+    //
+    // Asserted as IDEMPOTENCE rather than as a pass count, because idempotence is what the
+    // two call sites actually need in order to agree.
+    for (const nesting of [1, 8, 9, 40]) {
+      const raw = `${'doi:'.repeat(nesting)}10.1234/abc`;
+      expect(normaliseDoi(raw), `${nesting} nested prefixes`).toBe('10.1234/abc');
+      expect(normaliseDoi(normaliseDoi(raw)), `${nesting}: not a fixed point`).toBe(
+        normaliseDoi(raw),
+      );
+      expect(isDoiShape(raw), `${nesting}: shape check disagrees`).toBe(true);
+      expect(
+        composeBody({ itemId: 'paper:1', reason: reason({ kind: 'doi' }), doi: raw }, VOCAB),
+      ).toContain('DOI should be: 10.1234/abc');
+    }
+  });
+
+  it('never composes a DOI the shape check did not accept', () => {
+    // The invariant the fixed point exists to guarantee, stated over inputs designed to
+    // need many passes: whatever reaches the body must be something isDoiShape said yes to.
+    for (const raw of [
+      `${'doi:'.repeat(30)}10.1234/abc`,
+      `${'https://doi.org/'.repeat(12)}10.1234/abc`,
+      `DOI: ${'https://doi.org/doi:'.repeat(10)}10.1234/abc`,
+      'doi:'.repeat(50),
+      `${'https://doi.org/'.repeat(9)}not-a-doi`,
+    ]) {
+      const body = composeBody(
+        { itemId: 'paper:1', reason: reason({ kind: 'doi' }), doi: raw },
+        VOCAB,
+      );
+      const composed = /^DOI should be: (.*)$/m.exec(body)?.[1];
+      if (composed !== undefined) {
+        expect(isDoiShape(composed), `composed "${composed}" fails its own shape check`).toBe(true);
+        expect(composed, 'composed a value that is not already normalised').toBe(
+          normaliseDoi(composed),
+        );
+      }
+    }
+  });
+
   it('rejects a DOI that passes the character cap but blows the encoded one', () => {
     // The regression test for DOI_MAX_ENCODED, which the budget test above is NOT: that
     // one sizes its input to the largest value the caps admit, so it stays green whatever

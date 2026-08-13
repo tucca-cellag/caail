@@ -451,8 +451,25 @@ export function normaliseDoi(raw: string): string {
   // to have closed by making this idempotent; it closed one ordering.
   //
   // Terminates because every pass either strips a prefix, strictly shortening the
-  // string, or changes nothing and returns. The bound is belt and braces.
-  for (let pass = 0; pass < 8; pass += 1) {
+  // string, or changes nothing and returns.
+  //
+  // The bound is THE INPUT'S OWN LENGTH, not a constant, and that distinction is the whole
+  // correctness argument rather than a micro-optimisation. A pass that does anything
+  // removes at least one character, so the input's length is an upper bound on the passes
+  // that can do anything, and reaching it means the fixed point is already reached. A
+  // CONSTANT bound instead reintroduced the exact defect these comments describe as closed,
+  // by a route nobody looked at: `isDoiShape` normalises its OWN argument, so
+  // `isDoiShape(normaliseDoi(x))` runs the rule 2N times while `composeBody` emits the
+  // N-pass value. Anything needing N+1..2N passes therefore validated as one string and was
+  // composed as another — with N = 8, nine nested `doi:` prefixes put "That does not look
+  // like a DOI" and a dropped-answer notice directly above a report reading
+  // `DOI should be: doi:10.1234/abc`. Contrived input, structural asymmetry.
+  //
+  // Captured before the loop rather than read each turn: `value` shrinks as passes strip,
+  // so testing against the CURRENT length can exit before the fixed point when a pass
+  // removes more than one character.
+  const maxPasses = value.length + 1;
+  for (let pass = 0; pass < maxPasses; pass += 1) {
     const next = stripDoiPrefixes(value);
     if (next === value) break;
     value = next;
