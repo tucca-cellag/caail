@@ -154,6 +154,88 @@ test('a search query holding an email address is never recorded', async ({ page 
   expect(await readEvents(page)).toEqual([]);
 });
 
+// ---------------------------------------------------------------------------
+// The Cloudflare beacon fires on the deployed origin and nowhere else
+// ---------------------------------------------------------------------------
+
+const BEACON_HOST = 'https://static.cloudflareinsights.com';
+const DEPLOYED = 'https://tucca-cellag.github.io/caail/';
+
+/** Record every request the page makes to the beacon host. */
+function watchBeacon(page: import('@playwright/test').Page) {
+  const hits: string[] = [];
+  page.on('request', (r) => {
+    if (r.url().startsWith(BEACON_HOST)) hits.push(r.url());
+  });
+  return hits;
+}
+
+test('the beacon never loads off the deployed origin', async ({ page }) => {
+  // This suite runs against `pnpm preview` on localhost — the same production
+  // build the deploy serves. That is exactly the case a build-time guard cannot
+  // catch, and with ~170 specs each loading pages it was also the largest source
+  // of self-recorded page views.
+  const hits = watchBeacon(page);
+
+  await page.goto('./');
+  await page.waitForTimeout(500);
+
+  expect(hits).toEqual([]);
+  await expect(page.locator(`head script[src^="${BEACON_HOST}"]`)).toHaveCount(0);
+
+  // ...and it stayed away because the guard held, not because someone deleted
+  // analytics outright. Without this half, removing the beacon entirely would
+  // make the assertion above pass.
+  const guards = await page
+    .locator('head script:not([src])')
+    .evaluateAll((els) => els.filter((el) => el.textContent?.includes('cloudflareinsights')).length);
+  expect(guards).toBe(1);
+});
+
+test('the beacon does load on the deployed origin', async ({ page, context }) => {
+  // The guard keys on `location.hostname`, which only the URL can set, so serve
+  // the locally built page under the deployed hostname. Nothing leaves the
+  // runner: the document is the local preview's own HTML and the beacon script
+  // is stubbed.
+  //
+  // The negative test above passes just as well if the hostname is mistyped, and
+  // that failure is the costly one — analytics silently dead in production, with
+  // the site unable to be tested at its real hostname before it deploys.
+  // The marker is what keeps this test honest. Without it, an interception that
+  // does not take hold loads the REAL deployed site instead, and since that site
+  // is what we are changing, it answers with the old unconditional beacon and
+  // the test passes green having measured production rather than this build.
+  // That is not hypothetical: it happened while writing this test.
+  const MARKER = 'caail-e2e-local-build';
+  const html = (await (await page.request.get('./')).text()).replace(
+    '</head>',
+    `<meta name="${MARKER}" content="1"></head>`,
+  );
+
+  // Registered first so the specific routes below take precedence: nothing in
+  // this test may leave the runner. If precedence ever changed, the document
+  // would be aborted and `goto` would throw — loud, not silently green.
+  await context.route('**/*', (route) =>
+    route.request().url().startsWith('http://localhost') ? route.continue() : route.abort(),
+  );
+  await context.route('https://tucca-cellag.github.io/**', (route) =>
+    route.request().url() === DEPLOYED
+      ? route.fulfill({ status: 200, contentType: 'text/html', body: html })
+      : // Subresources resolve against the faked host too; empty is fine, the
+        // assertion is about the inline guard, not about rendering the page.
+        route.fulfill({ status: 200, body: '' }),
+  );
+  await context.route(`${BEACON_HOST}/**`, (route) =>
+    route.fulfill({ status: 200, contentType: 'application/javascript', body: '' }),
+  );
+
+  const hits = watchBeacon(page);
+  await page.goto(DEPLOYED);
+
+  await expect(page.locator(`head meta[name="${MARKER}"]`)).toHaveCount(1);
+  await expect.poll(() => hits.length).toBe(1);
+});
+
 test('same-origin links emit nothing', async ({ page }) => {
   await page.goto('./privacy/');
   await captureEvents(page);

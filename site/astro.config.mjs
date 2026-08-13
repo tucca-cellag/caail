@@ -12,6 +12,11 @@ import { CAAIL_PAGES } from './src/content/caail-pages.ts';
 // astro.config.mjs lives in site/ — one level up is the repo root (trailing slash)
 const REPO_ROOT = fileURLToPath(new URL('../', import.meta.url));
 const BASE = '/caail';
+// The deployed origin. `site:` below and the analytics origin guard both read
+// it, so the guard cannot drift from where the site actually deploys — if this
+// ever moves to a TUCCA-owned domain, the beacon follows it in the same edit.
+const SITE = 'https://tucca-cellag.github.io';
+const ANALYTICS_HOST = new URL(SITE).hostname;
 
 // Curated dataset entries (datasets.json), grouped by page, loaded once for the
 // dataset-card transform. Empty when parse hasn't run yet (transform is then a no-op).
@@ -59,7 +64,7 @@ function groupItems(group) {
 }
 
 export default defineConfig({
-  site: 'https://tucca-cellag.github.io',
+  site: SITE,
   base: '/caail',
   markdown: {
     remarkPlugins: [caailProseRemark],
@@ -134,16 +139,41 @@ export default defineConfig({
           },
         },
         // Cloudflare Web Analytics — cookieless, privacy-light usage stats.
-        // `defer` so the beacon loads after paint and doesn't dent the
-        // Lighthouse performance budget (docs.yml gates Performance ≥0.90).
-        // The beacon only reports for the site configured under this token.
+        //
+        // Loaded only when the page is being served from the deployed origin, so
+        // `pnpm dev`, `pnpm preview` and the Playwright suite record nothing.
+        // Without this the measured baseline is partly our own browser, which
+        // matters because that baseline is what outreach is measured against.
+        //
+        // It has to be a *runtime* check, not a build-time one. `preview` and
+        // the e2e run serve the very same production build the deploy does, so
+        // a build flag cannot tell them apart — and `import.meta.env` is not
+        // available in this file at all, since Astro evaluates the config before
+        // Vite's env transform (so `import.meta.env.PROD` here reads undefined
+        // and would disable analytics everywhere, including production).
+        //
+        // Cloudflare does also validate the hostname server-side, by postfix
+        // match against the site configured under the token, so a localhost
+        // beacon is rejected on arrival — "When payload gets sent to the beacon
+        // endpoint, we validate the hostname with postfix matching"
+        // (https://developers.cloudflare.com/web-analytics/faq/). That is a
+        // third party's behaviour rather than ours, and postfix matching is
+        // looser than it first reads (a token for example.com also admits
+        // fooexample.com), so this guard means we do not send it in the first
+        // place rather than trusting them to discard it.
+        //
+        // Appending the script instead of emitting the tag keeps it off the
+        // critical path — dynamically inserted scripts are async by default,
+        // which is what the previous `defer` was protecting (docs.yml gates
+        // Lighthouse Performance ≥0.90).
         {
           tag: 'script',
-          attrs: {
-            defer: true,
-            src: 'https://static.cloudflareinsights.com/beacon.min.js',
-            'data-cf-beacon': '{"token": "a815722483f84116b51e8120158aaea3"}',
-          },
+          content:
+            `(()=>{if(location.hostname!==${JSON.stringify(ANALYTICS_HOST)})return;` +
+            `var s=document.createElement('script');` +
+            `s.src='https://static.cloudflareinsights.com/beacon.min.js';` +
+            `s.setAttribute('data-cf-beacon','{"token": "a815722483f84116b51e8120158aaea3"}');` +
+            `document.head.appendChild(s);})();`,
         },
       ],
       social: [
