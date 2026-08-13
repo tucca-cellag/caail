@@ -248,6 +248,27 @@ cmd_merge() {
   br="$(gh pr view "$pr" --json headRefName -q .headRefName)"
   [ -n "$br" ] || die "could not resolve head branch for PR #$pr."
 
+  # Refuse to merge while a local commit has not been pushed. This is the other
+  # half of the failure `push` guards: a fix can be committed and never pushed,
+  # and then the merge takes whatever the remote happens to hold. It is silent
+  # in both directions, because the local tree is clean, the log shows the fix,
+  # and the PR body truthfully claims it. Only check when the local checkout is
+  # actually on this PR's branch: several PRs are often open at once, and from
+  # another branch (or the primary checkout) local HEAD says nothing about this
+  # one, so comparing it would be noise rather than a signal.
+  if [ "$(current_branch)" = "$br" ]; then
+    git fetch -q origin "$br" 2>/dev/null || true
+    local local_head remote_head
+    local_head="$(git rev-parse HEAD)"
+    remote_head="$(git rev-parse "origin/${br}" 2>/dev/null || echo none)"
+    if [ "$local_head" != "$remote_head" ]; then
+      printf 'ship-pr: local %s is not what origin has, refusing to merge\n' "$br" >&2
+      printf '  local  HEAD        %s\n' "$local_head" >&2
+      printf '  origin/%s  %s\n' "$br" "$remote_head" >&2
+      die 'push first (a committed but unpushed fix is not in the PR), then merge.'
+    fi
+  fi
+
   # The merge itself: gh's POST-merge LOCAL step (`git branch -d`/switch) fails
   # with "fatal: '<default>' is already checked out" when run from a linked
   # worktree while the primary checkout holds the default branch. That is

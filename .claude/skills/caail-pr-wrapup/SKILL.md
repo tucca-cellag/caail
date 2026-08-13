@@ -52,10 +52,14 @@ Run the helper from the repo (worktree) root: `bash .claude/skills/caail-pr-wrap
   repo), enforced at the Bash layer by **`.claude/hooks/check-public-publish.sh`** (registered in
   the committed `.claude/settings.json`, so it protects anyone who clones this repo, not just the
   machine it was written on).
-- *(optional)* For the step 4 cross-model review, the `gemini` CLI must be installed and OAuth-authed.
-  If it isn't, surface that at step 4 and let the operator decide whether to ship without the cross-model
-  pass — it's an optional extra angle, not a blocker, but the call is theirs (consistent with step 4 and
-  the Gotchas row; the agent never skips it autonomously).
+- *(optional)* For the step 4 cross-model review, the **Cross-Model Adversarial Reviewer** agent must be
+  configured and whatever CLI it wraps must be authenticated. **Don't test for a particular binary, and
+  never call one directly**: the agent owns which non-Claude backend it uses and enforces that the model is
+  not a Claude one, so probing for a named CLI both mis-reports availability and invites bypassing that
+  check. Ask the agent; if it reports itself unavailable or unauthenticated, surface exactly what it said
+  and let the operator decide whether to ship without the pass. It's an optional extra angle, not a
+  blocker, but the call is theirs (consistent with step 4 and the Gotchas row; the agent never skips it
+  autonomously).
 
 ## Procedure
 
@@ -96,7 +100,7 @@ anything, and a shape nobody thought to list is not evidence that a change is sa
 | --- | --- |
 | Prose only: `.claude/` rules, agents and skill manuals (including this file), `docs/**`, editorial prose in a canonical page | 2 |
 | Structured catalog: the committed NDJSON, the curated `dois-*.json` / `licenses-manual.json` inputs, and the Markdown `db:emit` regenerates from them | 2 |
-| Site code: anything under `site/src/**`, `site/e2e/**`, or the parser | 3 |
+| Site code: anything under `site/src/**`, `site/e2e/**`, the parser, or `site/astro.config.mjs` (which carries the analytics beacon and its origin gate, and whose other half, the Worker, is a 3 in the row below) | 3 |
 | Everything that regenerates published content or mints public ids: the DB tooling under `site/scripts/db/**` | 3 |
 | Trust boundaries and guards: the Worker, the hooks, this skill's own scripts, the workflows | 3 |
 
@@ -126,9 +130,10 @@ right.
   unpatched weakness in a live service gets `disclosure-private` and no GitHub issue). "Not acted on" and
   "not a defect" are different outcomes; only one is free.
 - **Commit the fixes before the next round starts.** Not at the end of the phase: `origin/main...HEAD` is
-  a merge-base-to-commit range and **does not include the working tree**, and passing an explicit target
-  also suppresses the reviewer's own uncommitted-changes fallback. So an uncommitted fix leaves the next
-  round reading the pre-fix code, where it either re-reports what you just fixed or calls the diff sound.
+  a merge-base-to-commit range and **does not include the working tree**. Don't rely on the reviewer
+  noticing uncommitted work and folding it in; whether it does is its business, and the range you handed it
+  is the one thing you control. So an uncommitted fix risks leaving the next round reading the pre-fix
+  code, where it either re-reports what you just fixed or calls the diff sound.
   Either way the defects the fixes *introduced* are invisible to it, which is the one thing the next round
   exists to find.
 - **Round 2 over the whole diff again.** Not narrowed to the files round 1 touched: the point of round 2
@@ -169,7 +174,8 @@ checkpoint that used to sit between editing and shipping:
   | `check-public-publish.sh` | `python3 .claude/hooks/check-public-publish.test.py` |
   | `block-generated-edits.py` | `pnpm --dir site test`. Its only coverage is `site/scripts/db/hook.test.ts`, so the publish-hook suite above does **not** exercise it. The two hooks are tested in different places; the CI section below says so too |
   | `ship-pr.sh`, `check-ci-paths.py`, `.github/workflows/**` | `python3 .claude/skills/caail-pr-wrapup/check-ci-paths.py` |
-  | canonical Markdown (`Datasets/**`, `Primers/**`, root `*.md`) | `pnpm --dir site test`, since `test.yml` and `docs.yml` both fire on these and a local run is the cheaper reader |
+  | canonical Markdown (`Datasets/**`, `Primers/**`, root `*.md`, `Taxonomy.md`), `skills/**`, `plugin/skills/**`, `.claude/settings.json` | `pnpm --dir site test`, **and** `pnpm --dir site parse` followed by `git diff --exit-code -- site/public/api site/public/setup.md`. The second is not optional and `test` does not cover it: `test` never regenerates those artifacts, so the committed API JSON and `setup.md` can disagree with the model and only `lint-papers.yml`'s sync guard notices, at step 5, after the push |
+  | anything not listed above | run `pnpm --dir site test` and think about which guard in `lint-papers.yml` and `test.yml` covers the path. A shape nobody listed is not a shape nothing checks |
 
   Note `pnpm --dir site build` rewrites tracked files under `site/public/api/`, so running it can dirty the
   tree. **Do not reflexively discard that.** Those files are real output: if your fix changed anything the
@@ -201,8 +207,10 @@ checkpoint that used to sit between editing and shipping:
   run the guard, confirm it fails **with a message naming the real problem**, then get back to the committed
   state with `git restore --source=HEAD --staged --worktree :/`. Use that exact form: bare `git restore` is
   a fatal error (it demands paths), `git checkout --` on an uncommitted fix destroys it with nothing to
-  restore from, and `git reset --hard` / `git checkout .` are both denied by
-  `hooks/check-dangerous-git.sh`. It restores tracked files but leaves anything new you made while
+  restore from, and `git reset --hard` / `git checkout .` throw away more than the defect. (On this
+  maintainer's machine those two are also hook-denied, but that hook is user-global and **not** in this
+  repo, so a fresh clone runs them unguarded. Prefer the restore form because it is narrow, not because
+  something will stop you.) It restores tracked files but leaves anything new you made while
   reproducing the defect, so finish with `git clean -n` and remove what it lists. Committing first is what
   makes all of this safe. Then say in the PR body that the guard was seen failing.
 
@@ -263,9 +271,11 @@ bash .claude/skills/caail-pr-wrapup/ship-pr.sh open-pr "<title>" /tmp/pr-body.md
   finding that describes an unpatched weakness in a live service** (the events Worker, say): a declined
   finding is by construction unfixed, and this body is world-readable and permanent. That one goes to
   Jira with `disclosure-private`, and the body says only that a finding was triaged there, naming
-  neither the weakness nor the endpoint. Publishing it would breach `.claude/rules/publishing.md`, and
-  `check-public-publish.sh` will deny the `gh pr create` on the security vocabulary anyway, so treating
-  this as a rule conflict to resolve at the last moment just strands you between two rules. If
+  neither the weakness nor the endpoint. Publishing it would breach `.claude/rules/publishing.md`.
+  **Nothing will stop you**, so decide before you write it: `check-public-publish.sh` is a PreToolUse
+  *Bash* hook that matches `gh pr create` at command position, and step 3 runs `gh pr create` **inside**
+  `ship-pr.sh`, where the hook cannot see it. On this path there is no deny and not even the visibility
+  announce. The judgment is entirely yours. If
   the change added a guard, state that it was seen failing on the defect first (step 1). **No AI
   attribution** — CAAIL commits and PRs never carry "Co-Authored-By: Claude" or "Generated with" lines.
 - **Link the trackers.** If this PR resolves a public GitHub issue, include a `Closes #N` line —
@@ -276,7 +286,7 @@ bash .claude/skills/caail-pr-wrapup/ship-pr.sh open-pr "<title>" /tmp/pr-body.md
   (`.claude/rules/publishing.md`). If the work has no ticket on either tracker, that is a process
   miss worth saying out loud rather than inventing a reference.
 
-### 4. Cross-model second angle (Gemini, optional)
+### 4. Cross-model second angle (optional)
 A cheap extra angle on the diff, and **not the safety gate**. Step 1 is the gate. The reason for the
 demotion is in step 1's rationale: the reachable non-Claude models return few findings, and a thin report
 from a weak reviewer is indistinguishable from a clean diff, so nothing load-bearing may rest on it. It
@@ -291,8 +301,9 @@ say so and move on; this step is optional by design and must never block a ship.
 > `git diff origin/main...HEAD` from the worktree root). Return confirmed issues with file:line and a net
 > recommendation.
 
-The agent runs `gemini` read-only, **verifies every finding against the actual source** (Gemini output is
-untrusted — it filters out hallucinations), and returns severity-ranked confirmed issues plus a **net
+The agent runs its own non-Claude backend read-only through its wrapper script, **verifies every finding
+against the actual source** (that backend's output is untrusted, so the agent filters out its
+hallucinations), and returns severity-ranked confirmed issues plus a **net
 recommendation: ship / fix-first / needs-human-call**. Feed that into the step 6 merge confirmation:
 - **ship** → proceed, but read it as "this reviewer found nothing", not as a clean bill of health. It is
   the weaker of the two reviewers, and a thin report is its normal output whether or not the diff is
@@ -306,9 +317,9 @@ recommendation: ship / fix-first / needs-human-call**. Feed that into the step 6
 *When to run:* most valuable for **code** diffs (`site/**`). For docs-/config-/`.claude`-only diffs the
 code review adds little — either run it in the agent's **design/prose** mode (it still catches logical
 gaps in a procedure doc or prose page) or skip it with a one-line reason. The agent guards against piping
-secrets into Gemini. If it reports the **gemini OAuth token expired** (it can't refresh headlessly), note
-that and let the operator decide whether to ship without the cross-model pass — an unavailable *optional*
-reviewer must not hard-block the whole ship.
+secrets into its backend. If it reports an **expired or missing credential** (it can't re-auth headlessly),
+pass along what it reported and let the operator decide whether to ship without the cross-model pass: an
+unavailable *optional* reviewer must not hard-block the whole ship.
 
 ### 5. Watch the checks
 ```bash
@@ -467,7 +478,7 @@ adding it there too, or the guard will happily confirm that an incomplete set is
 | Someone proposes collapsing step 1 back to a single pass | Point them at step 1's rationale block and its revisit condition. The rounds compensate for a measured reviewer-strength asymmetry, and the condition for lowering them is a stronger non-Claude reviewer, not a diff that feels small. |
 | `gh pr merge --delete-branch` — **two outcomes, both fine** | Which one you get depends on whether anything holds `main`. **(a) Something does** (the primary checkout, or a worktree): gh's post-merge *local* step fails with `fatal: 'main' is already checked out at …`. Benign — the **remote merge already succeeded**; the helper verifies `state==MERGED` and API-deletes the remote branch. **(b) Nothing does:** gh succeeds, which means it **switches this checkout to `main` and deletes the local feature branch itself**. Then step 9's fast-forward is already done and `git branch -d <branch>` answers `error: branch '<branch>' not found` — also benign, and not a sign the merge went wrong. Either way trust `MERGED`, not gh's exit code, and check `git branch --show-current` before assuming where you are. |
 | Deploy run fails on **Lighthouse** | A11y/perf regression on landing or explorer. **Hard stop** — read the lhci output, fix it, ship again. Never blind-retry. |
-| Gemini Adversarial Reviewer reports an **auth/login prompt** | The Google OAuth token expired and can't refresh headlessly. Run `gemini` once interactively to re-auth, or skip the cross-model pass (step 4 is optional) — note it and let the operator decide. Never hard-block the ship on an unavailable optional reviewer. |
+| The cross-model reviewer reports an **auth/login prompt** | Its backend's credential lapsed and cannot be refreshed headlessly. Re-auth **whatever the agent names**, interactively, rather than guessing at a CLI: this skill deliberately does not record which backend it wraps, because that is the agent's business and a stale name here would send you to re-auth something the reviewer never runs. Or skip the pass (step 4 is optional) and let the operator decide. Never hard-block a ship on an unavailable optional reviewer. |
 | `lhci` reports a bogus ~0.5 perf score | A stale `astro dev`/preview is holding `:4321`; lhci silently measured it. Free the port (`lsof -ti:4321 | xargs kill`). Only relevant if running Lighthouse locally; CI runners are fresh. |
 | Any site command (build/test/lighthouse) | Needs **Node ≥ 22.12**: `source ~/.nvm/nvm.sh && nvm use 22` first; the system default may be older. |
 | PR body / commit | **No AI attribution** anywhere in CAAIL git history. |
