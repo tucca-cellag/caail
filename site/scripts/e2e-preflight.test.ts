@@ -79,13 +79,13 @@ describe('checkPagefindArtifacts', () => {
     expect(problems).toEqual([
       {
         relative: 'pagefind/pagefind.js',
-        kind: 'corrupt',
+        kind: 'all-nul',
         message:
           'dist/pagefind/pagefind.js is 45555 bytes of NUL — the correct size, entirely zero-filled',
       },
       {
         relative: 'pagefind/pagefind-entry.json',
-        kind: 'corrupt',
+        kind: 'all-nul',
         message:
           'dist/pagefind/pagefind-entry.json is 172 bytes of NUL — the correct size, entirely zero-filled',
       },
@@ -121,20 +121,50 @@ describe('checkPagefindArtifacts', () => {
 });
 
 describe('isPortHeld', () => {
-  it('detects a real listening socket, and a free port', async () => {
+  /** Listen on an ephemeral port and return it. */
+  async function listen(): Promise<number> {
     const server = createServer();
     servers.push(server);
-    const port = await new Promise<number>((resolve) => {
-      server.listen(0, '127.0.0.1', () => {
-        resolve((server.address() as { port: number }).port);
-      });
+    return new Promise<number>((resolve) => {
+      server.listen(0, '127.0.0.1', () => resolve((server.address() as { port: number }).port));
     });
+  }
 
+  it('detects a real listening socket, and a free port', async () => {
+    const port = await listen();
     expect(isPortHeld(port)).toBe(true);
 
+    const server = servers.pop()!;
     await new Promise<void>((resolve) => server.close(() => resolve()));
-    servers.pop();
     expect(isPortHeld(port)).toBe(false);
+  });
+
+  it('does not let an inherited NODE_OPTIONS silently disable it', async () => {
+    // Measured before this was fixed: with a real listener bound, the same call
+    // returned true on a clean environment and false with a NODE_OPTIONS the child
+    // rejects — the guard off while still appearing to run. Not hypothetical: this
+    // repo's own `pnpm test` sets NODE_OPTIONS, and a Node that does not know a flag
+    // there refuses to start at all.
+    const port = await listen();
+    const original = process.env.NODE_OPTIONS;
+    process.env.NODE_OPTIONS = '--a-flag-no-node-accepts';
+    try {
+      expect(isPortHeld(port)).toBe(true);
+    } finally {
+      if (original === undefined) delete process.env.NODE_OPTIONS;
+      else process.env.NODE_OPTIONS = original;
+    }
+  });
+
+  it('says so out loud when the probe cannot run, rather than reporting free', async () => {
+    // A port that is genuinely free and a probe that never ran are the same `false`
+    // to the caller, so the second has to announce itself or the guard sits disabled.
+    const warnings: string[] = [];
+    // 0 is not a connectable port, so the child exits non-zero without connecting.
+    const held = isPortHeld(-1 as unknown as number, (message) => warnings.push(message));
+    expect(held).toBe(false);
+    expect(warnings.join('\n')).toContain('could not probe port');
+    expect(warnings.join('\n')).toContain('NOT protected');
   });
 });
 
@@ -192,6 +222,45 @@ describe('runPreflight', () => {
     expect(message).not.toContain('tr -d');
     expect(message).not.toContain('zero-filled');
     expect(message).toContain('rm -rf dist && pnpm build');
+  });
+
+  it('does not tell the zero-filled story about a zero-byte file', () => {
+    // classifyArtifact already separates empty from all-NUL; the message has to keep
+    // that distinction or it prints "written at the correct size and entirely
+    // zero-filled" directly under a line saying the file is zero bytes.
+    const message = runPreflight({
+      ...base,
+      distDir: makeDist({ 'pagefind/pagefind.js': Buffer.alloc(0) }),
+    })!;
+    expect(message).toContain('dist/pagefind/pagefind.js is zero bytes');
+    expect(message).not.toContain('correct size');
+    // A byte count still means something for a file that exists, so keep the command.
+    expect(message).toContain('tr -d');
+  });
+
+  it('quotes the path in the confirm command, for checkouts containing spaces', () => {
+    const message = runPreflight({
+      ...base,
+      distDir: makeDist({ 'pagefind/pagefind.js': Buffer.alloc(45555) }),
+    })!;
+    const confirm = message.split('\n').find((line) => line.includes('tr -d'))!;
+    expect(confirm).toMatch(/< '.*pagefind\.js' \| wc -c$/);
+  });
+
+  it('names an unreadable artifact instead of throwing out of config evaluation', () => {
+    // A concurrent `pnpm build` rm -rf's dist, so a file can vanish between the
+    // existence check and the read. Escaping here would throw a raw stack from a
+    // file the reader has no reason to suspect.
+    const message = runPreflight({
+      ...base,
+      distDir: makeDist({}),
+      read: () => {
+        throw new Error('EACCES: permission denied');
+      },
+    })!;
+    expect(message).toContain('could not be read');
+    expect(message).toContain('EACCES');
+    expect(message).not.toContain('tr -d');
   });
 
   it('suggests one confirm command per broken artifact', () => {

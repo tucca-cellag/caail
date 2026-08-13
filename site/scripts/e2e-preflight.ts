@@ -41,7 +41,9 @@
  * *after* the web server. A port check that ran there would see the port held — by
  * Playwright's own preview server — and fail every healthy run. That is the same
  * trap as the `globalSetup` one, arriving through a different door; it was observed
- * before this guard shipped, which is why `preflightOnce` exists.
+ * before this guard shipped, which is why `preflight` gates the port probe to the
+ * runner process. The artifact check is not gated: it is idempotent, and a
+ * long-lived runner re-evaluates the config after a rebuild.
  */
 
 import { spawnSync } from 'node:child_process';
@@ -97,11 +99,13 @@ export interface PagefindProblem {
   /** Path relative to `dist/`, e.g. `pagefind/pagefind.js`. */
   relative: string;
   /**
-   * `corrupt` = present but unusable (all-NUL or zero length), so a byte-count
-   * command can confirm it. `missing` = not on disk, where that command would
-   * print a file-not-found error instead of the promised zero.
+   * Kept at this granularity because the message differs per kind, and a message
+   * that describes the wrong failure is the defect this whole module is about.
+   * `all-nul` is the only one the incremental-build story explains; `all-nul` and
+   * `empty` are the only ones a byte-count command can confirm, since on the other
+   * two it prints an error rather than the promised zero.
    */
-  kind: 'corrupt' | 'missing';
+  kind: 'all-nul' | 'empty' | 'missing' | 'unreadable';
   /** One-line description naming the file and what is wrong with it. */
   message: string;
 }
@@ -128,7 +132,24 @@ export function checkPagefindArtifacts(
   const problems: PagefindProblem[] = [];
   for (const relative of PAGEFIND_ARTIFACTS) {
     const path = join(distDir, relative);
-    const verdict = classifyArtifact(read(path));
+
+    let bytes: Uint8Array | null;
+    try {
+      bytes = read(path);
+    } catch (error) {
+      // A concurrent `pnpm build` rm -rf's dist, so the file can vanish between the
+      // existence check and the read. Letting that escape would throw a raw stack out
+      // of config evaluation, from a file the reader has no reason to suspect — the
+      // misleading red run this module exists to prevent, produced by the guard.
+      problems.push({
+        relative,
+        kind: 'unreadable',
+        message: `dist/${relative} could not be read (${(error as Error).message})`,
+      });
+      continue;
+    }
+
+    const verdict = classifyArtifact(bytes);
     if (verdict.status === 'ok') continue;
     const detail =
       verdict.status === 'all-nul'
@@ -136,7 +157,7 @@ export function checkPagefindArtifacts(
         : verdict.status === 'empty'
           ? 'is zero bytes'
           : 'is missing';
-    const kind = verdict.status === 'absent' ? 'missing' : 'corrupt';
+    const kind = verdict.status === 'absent' ? 'missing' : verdict.status;
     problems.push({ relative, kind, message: `dist/${relative} ${detail}` });
   }
   return problems;
@@ -154,9 +175,21 @@ export function checkPagefindArtifacts(
  * `spawnSync` timeout kill, a crash, a future Node change — reads as free and the
  * run proceeds. That direction is deliberate: this guard exists to stop a
  * misleading run, and a probe that blocked runs whenever it could not answer would
- * itself become the thing nobody trusts.
+ * itself become the thing nobody trusts. It does say so out loud, though: a probe
+ * that never ran and a port that is genuinely free are the same `false` to the
+ * caller, and an unreported one lets the guard sit disabled while looking active.
+ *
+ * The child is given an empty `NODE_OPTIONS` because that is exactly how it stops
+ * working. This repo's own `pnpm test` sets `NODE_OPTIONS='--experimental-sqlite
+ * --no-warnings'`, and a Node that does not recognise a flag there refuses to start
+ * at all — measured: with a real listener bound, the same call returns `true` on a
+ * clean environment and `false` with a `NODE_OPTIONS` the child rejects. The probe
+ * needs no runtime flags of its own.
  */
-export function isPortHeld(port: number): boolean {
+export function isPortHeld(
+  port: number,
+  warn: (message: string) => void = (message) => console.warn(message),
+): boolean {
   const probe = `
     const net = require('node:net');
     const port = Number(process.argv[1]);
@@ -175,8 +208,25 @@ export function isPortHeld(port: number): boolean {
       socket.on('timeout', () => settle(false));
     }
   `;
-  const result = spawnSync(process.execPath, ['-e', probe, String(port)], { timeout: 10_000 });
-  return result.status === 10;
+  const result = spawnSync(process.execPath, ['-e', probe, String(port)], {
+    timeout: 10_000,
+    encoding: 'utf8',
+    env: { ...process.env, NODE_OPTIONS: '' },
+  });
+  if (result.status === 10) return true;
+  if (result.status !== 0) {
+    warn(
+      [
+        `e2e preflight: could not probe port ${port} (the probe exited ` +
+          `${result.status === null ? 'abnormally' : String(result.status)}).`,
+        'Treating the port as free, so this run is NOT protected against attaching to',
+        'a server it did not start. Check that the port is yours before trusting the',
+        'result.',
+        ...(result.stderr ? [`Probe stderr: ${String(result.stderr).trim()}`] : []),
+      ].join('\n'),
+    );
+  }
+  return false;
 }
 
 /**
@@ -255,6 +305,7 @@ export interface PreflightOptions {
   /** Injected in tests. */
   portIsHeld?: (port: number) => boolean;
   describeHolder?: (port: number) => string;
+  read?: (path: string) => Uint8Array | null;
   warn?: (message: string) => void;
   env?: NodeJS.ProcessEnv;
 }
@@ -302,9 +353,12 @@ export function runPreflight(options: PreflightOptions): string | null {
     allowExistingServer,
     checkPort = true,
     onAttach,
-    portIsHeld = isPortHeld,
-    describeHolder = describePortHolder,
     warn = (message: string) => console.warn(message),
+    // Routed through the same `warn`, so a probe that could not run is reported
+    // wherever the caller sends its output rather than only to the console.
+    portIsHeld = (probePort: number) => isPortHeld(probePort, warn),
+    describeHolder = describePortHolder,
+    read = readArtifact,
   } = options;
 
   // Port first. When a foreign server holds the port, THAT is what the specs will
@@ -327,7 +381,7 @@ export function runPreflight(options: PreflightOptions): string | null {
     return null;
   }
 
-  const pagefindProblems = checkPagefindArtifacts(distDir);
+  const pagefindProblems = checkPagefindArtifacts(distDir, read);
   if (pagefindProblems.length > 0) return pagefindMessage(distDir, pagefindProblems);
 
   return null;
@@ -335,7 +389,14 @@ export function runPreflight(options: PreflightOptions): string | null {
 
 /** The message for a build whose pagefind index cannot work. */
 function pagefindMessage(distDir: string, problems: PagefindProblem[]): string {
-  const corrupt = problems.filter((problem) => problem.kind === 'corrupt');
+  // Only the zero-filled case is explained by the incremental-build story; saying
+  // "written at the correct size and entirely zero-filled" about a zero-byte or
+  // absent file contradicts the line listing it two lines above.
+  const zeroFilled = problems.filter((problem) => problem.kind === 'all-nul');
+  // A byte count only means anything for a file that exists.
+  const countable = problems.filter(
+    (problem) => problem.kind === 'all-nul' || problem.kind === 'empty',
+  );
   return [
     "e2e preflight: this build's pagefind search index is unusable.",
     '',
@@ -344,7 +405,7 @@ function pagefindMessage(distDir: string, problems: PagefindProblem[]): string {
     'Pagefind will never initialise, the search dialog will stay empty, and every',
     'spec that opens search fails on a content assertion ten seconds later — which',
     'reads as a regression in whatever you changed. It is not.',
-    ...(corrupt.length > 0
+    ...(zeroFilled.length > 0
       ? [
           '',
           'An incremental build intermittently writes these files at the correct size',
@@ -353,14 +414,15 @@ function pagefindMessage(distDir: string, problems: PagefindProblem[]): string {
       : []),
     '',
     'Fix: rm -rf dist && pnpm build',
-    // Only for files that exist: on a missing one this prints a file-not-found error
-    // rather than the promised zero, contradicting the diagnosis. LC_ALL=C because
-    // `tr` bails with "Illegal byte sequence" on non-UTF-8 bytes in a UTF-8 locale.
-    ...(corrupt.length > 0
+    // LC_ALL=C because `tr` bails with "Illegal byte sequence" on non-UTF-8 bytes in
+    // a UTF-8 locale. The path is quoted because a checkout path may contain spaces,
+    // and a suggested command that errors when pasted undermines the diagnosis at
+    // the moment it has to be believed.
+    ...(countable.length > 0
       ? [
           'Confirm (0 means corrupt):',
-          ...corrupt.map(
-            (problem) => `  LC_ALL=C tr -d '\\000' < ${join(distDir, problem.relative)} | wc -c`,
+          ...countable.map(
+            (problem) => `  LC_ALL=C tr -d '\\000' < '${join(distDir, problem.relative)}' | wc -c`,
           ),
         ]
       : []),
