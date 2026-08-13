@@ -26,6 +26,7 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { toString as mdastToString } from 'mdast-util-to-string';
 
+import { ACCESSION, idAccession } from '../db/lib.js';
 import { extractInventory } from '../db/extract.js';
 import { parseMarkdown } from './markdown.js';
 import { topicsByItemId } from './topics.js';
@@ -45,7 +46,47 @@ interface RowNdjson {
   item_id: string;
   page: string;
   cells_json: string;
+  subseries: string | null;
   ordinal: number;
+}
+
+/**
+ * Parse the `subseries` JSON-array column (a committed string) into member accessions.
+ * Tolerates absent/malformed values by returning `[]` — `db:check` is what fails a bad
+ * one, and a parse that threw here would take the whole build down for a curation typo.
+ */
+export function parseSubseries(raw: string | null | undefined): string[] {
+  if (!raw) return [];
+  try {
+    const arr: unknown = JSON.parse(raw);
+    return Array.isArray(arr) ? arr.filter((a): a is string => typeof a === 'string') : [];
+  } catch { return []; }
+}
+
+/** Re-exported so callers of this module get the id/deposit pair from one import. */
+export { idAccession };
+
+/**
+ * The accession a row's deposit is actually filed under: the first accession in its **Data**
+ * column, falling back to the one encoded in its id.
+ *
+ * The id alone is not trustworthy for this, which is the subtle part. `db:add` mints a `ds:`
+ * id from the first accession found anywhere in the joined cells, so a row whose Data column
+ * carries no accession — `unavailable`, `on request`, `none named`, or a non-NCBI badge — is
+ * named after an accession merely MENTIONED in its Description. Five rows in the corpus are
+ * like that today; `ds:prjeb41939` is the clearest, a bovine FAANG atlas row whose Data reads
+ * `unavailable` and whose id comes from public data the study REUSED.
+ *
+ * Resolving members by id would therefore have pointed an agent at a row that is not the
+ * deposit it asked for: the same class of silent wrongness the subseries axis exists to fix,
+ * reintroduced by the fix. Reading the Data column keeps the claim and the mention apart,
+ * which is what the id cannot do.
+ *
+ * @param dataCell The row's `Data` cell, located by header label rather than by index —
+ *   multi-species pages insert a Species column and nothing guarantees a fixed position.
+ */
+export function rowDepositAccession(itemId: string, dataCell: string): string {
+  return dataCell.toUpperCase().match(ACCESSION)?.[0] ?? idAccession(itemId);
 }
 
 /**
@@ -106,6 +147,8 @@ export function buildDatasetInventory(
   ];
 
   const inventory: DatasetInventoryRow[] = [];
+  /** item_id -> its raw member accessions, resolved once every page has been read. */
+  const pending = new Map<string, string[]>();
   for (const page of pages) {
     const path = join(repoRoot, 'Datasets', `${page}.md`);
     // Check existence separately: extractInventory readFileSync's the path, so a page
@@ -148,8 +191,42 @@ export function buildDatasetInventory(
         columns: Object.fromEntries(header.map((h, i) => [h, cells[i]!])),
         links: rowLinks(cells),
         topics: byId.get(r.item_id) ?? [],
+        // Filled in below: resolution needs every page's rows to exist first.
+        subseries: [],
       });
+      pending.set(r.item_id, parseSubseries(r.subseries));
     }
+  }
+
+  /*
+   * Accession -> the id of the row catalogueing it, so a SuperSeries member resolves to its
+   * own row where one exists.
+   *
+   * Built over EVERY page rather than per page, because a multi-species SuperSeries has
+   * members that surface on a different species page than its parent, and a per-page map
+   * would report those as uncatalogued.
+   *
+   * Two properties this depends on. The accession comes from each row's DATA column, not
+   * from its id (see rowDepositAccession). And it is built by walking `inventory`, which is
+   * already in canonical page-then-ordinal order, keeping the FIRST claimant — so where one
+   * accession legitimately has several rows (GSE158430 is fanned across three species pages,
+   * PRJNA527944 across two) the winner is stable. Building it from the raw NDJSON would have
+   * been last-write-wins over an unordered list, and since `db:add` assigns a GLOBAL
+   * `MAX(ordinal)+1`, adding an unrelated row on any page could silently flip which species
+   * row a member pointed at between two builds.
+   */
+  const dataOf = (r: DatasetInventoryRow): string => r.columns.Data ?? '';
+  const rowByAccession = new Map<string, string>();
+  for (const r of inventory) {
+    const acc = rowDepositAccession(r.id, dataOf(r));
+    if (!rowByAccession.has(acc)) rowByAccession.set(acc, r.id);
+  }
+
+  for (const r of inventory) {
+    r.subseries = (pending.get(r.id) ?? []).map((accession) => ({
+      accession,
+      id: rowByAccession.get(accession) ?? null,
+    }));
   }
 
   return DatasetInventorySchema.parse({ inventory });

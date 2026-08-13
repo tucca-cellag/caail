@@ -2665,7 +2665,8 @@
           "label": "Serum-free media",
           "theme": "media-growth-factors"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna1331774",
@@ -2702,7 +2703,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:cra006598",
@@ -2729,7 +2731,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:srp374834",
@@ -2756,7 +2759,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna729271",
@@ -2783,7 +2787,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:gse241619",
@@ -2810,7 +2815,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:gse114452",
@@ -2837,7 +2843,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna563347",
@@ -2869,7 +2876,8 @@
           "label": "Metabolism & Modeling",
           "theme": "metabolism-modeling"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:oxidative-stress-and",
@@ -2926,7 +2934,8 @@
           "label": "Sensory & Flavor",
           "theme": "sensory-flavor"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:authentication-of-nine",
@@ -2968,7 +2977,8 @@
           "label": "Sensory & Flavor",
           "theme": "sensory-flavor"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:serum-and-muscle",
@@ -3029,7 +3039,8 @@
           "label": "Serum-free media",
           "theme": "media-growth-factors"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:dataset-of-the",
@@ -3066,7 +3077,8 @@
           "label": "Sensory & Flavor",
           "theme": "sensory-flavor"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna1017808",
@@ -3103,7 +3115,8 @@
           "label": "Metabolism & Modeling",
           "theme": "metabolism-modeling"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjeb55656",
@@ -3136,7 +3149,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:gse184128",
@@ -3168,7 +3182,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:gse211428",
@@ -3200,7 +3215,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:gse240556",
@@ -3242,7 +3258,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:gse173199",
@@ -3255,13 +3272,15 @@
         "Data": "[`GSE173199`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE173199)",
         "Type": "RNA-seq",
         "Tissue": "Muscle",
-        "Description": "Serum-starvation series (20%→2% FBS) and SFM vs 20% FBS comparison",
+        "Description": "GEO SuperSeries pairing a serum-starvation differentiation timecourse (20%→2% FBS, harvested 0/24/48/72/96 h in biological quadruplicates, [`GSE173198`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE173198)) with a serum-free differentiation comparison against 20% FBS at 0 h and 72 h in triplicate ([`GSE173196`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE173196)); the two arms are deposited separately and neither is reachable from this accession alone",
         "Size": "93.25 Gb",
         "Area of research": "Cultured meat"
       },
       "links": [
         "https://doi.org/10.1038/s43016-021-00419-1",
-        "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE173199"
+        "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE173199",
+        "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE173198",
+        "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE173196"
       ],
       "topics": [
         {
@@ -3283,6 +3302,16 @@
           "slug": "serum-free-media",
           "label": "Serum-free media",
           "theme": "media-growth-factors"
+        }
+      ],
+      "subseries": [
+        {
+          "accession": "GSE173196",
+          "id": "ds:gse173196"
+        },
+        {
+          "accession": "GSE173198",
+          "id": "ds:gse173198"
         }
       ]
     },
@@ -3325,7 +3354,8 @@
           "label": "Serum-free media",
           "theme": "media-growth-factors"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:gse330550",
@@ -3362,7 +3392,8 @@
           "label": "Media & Growth Factors",
           "theme": "media-growth-factors"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:cra006626",
@@ -3394,7 +3425,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:gse158430",
@@ -3420,6 +3452,40 @@
           "slug": "cell-lines-engineering",
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
+        }
+      ],
+      "subseries": [
+        {
+          "accession": "GSE158412",
+          "id": null
+        },
+        {
+          "accession": "GSE158414",
+          "id": null
+        },
+        {
+          "accession": "GSE158416",
+          "id": null
+        },
+        {
+          "accession": "GSE158417",
+          "id": null
+        },
+        {
+          "accession": "GSE158418",
+          "id": null
+        },
+        {
+          "accession": "GSE158419",
+          "id": null
+        },
+        {
+          "accession": "GSE158427",
+          "id": null
+        },
+        {
+          "accession": "GSE158429",
+          "id": null
         }
       ]
     },
@@ -3448,7 +3514,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:gse182909",
@@ -3475,7 +3542,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:gse205347",
@@ -3507,7 +3575,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:gse161967",
@@ -3534,7 +3603,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:gene-expression-of",
@@ -3560,7 +3630,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:gse262758",
@@ -3573,14 +3644,17 @@
         "Data": "[`GSE262758`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE262758)",
         "Type": "RNA-seq + scRNA-seq + LC-MS proteomics",
         "Tissue": "Muscle",
-        "Description": "Bovine myoblast lines from four muscles (MA, MM, PM, MLL) differentiated under iFRhi or iFRC small-molecule cocktails (forskolin + RepSox ± CHIR99021) vs conventional differentiation media, in 2D and tissue-engineered 3D models; proteomics also at PRIDE [`PXD051019`](https://www.ebi.ac.uk/pride/archive/projects/PXD051019); 11k–19k cells per scRNA-seq dataset",
+        "Description": "Bovine myoblast lines from four muscles (MA, MM, PM, MLL) differentiated under iFRhi or iFRC small-molecule cocktails (forskolin + RepSox ± CHIR99021) vs conventional differentiation media, in 2D and tissue-engineered 3D models; proteomics also at PRIDE [`PXD051019`](https://www.ebi.ac.uk/pride/archive/projects/PXD051019); 11k–19k cells per scRNA-seq dataset; GEO SuperSeries of [`GSE262675`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE262675) (bulk RNA-seq), [`GSE262757`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE262757) (in vitro scRNA-seq) and [`GSE290556`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE290556) (in vivo scRNA-seq)",
         "Size": "—",
         "Area of research": "Cultivated-meat media development"
       },
       "links": [
         "https://doi.org/10.1002/advs.202413998",
         "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE262758",
-        "https://www.ebi.ac.uk/pride/archive/projects/PXD051019"
+        "https://www.ebi.ac.uk/pride/archive/projects/PXD051019",
+        "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE262675",
+        "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE262757",
+        "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE290556"
       ],
       "topics": [
         {
@@ -3602,6 +3676,20 @@
           "slug": "single-cell-atlases",
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
+        }
+      ],
+      "subseries": [
+        {
+          "accession": "GSE262675",
+          "id": "ds:gse262675"
+        },
+        {
+          "accession": "GSE262757",
+          "id": "ds:gse262757"
+        },
+        {
+          "accession": "GSE290556",
+          "id": "ds:gse290556"
         }
       ]
     },
@@ -3630,7 +3718,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:mir-10167-3p-targets-tcf7l1",
@@ -3656,7 +3745,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna1056565",
@@ -3683,7 +3773,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:integrated-multi-omics-reveals",
@@ -3729,7 +3820,8 @@
           "label": "Sensory & Flavor",
           "theme": "sensory-flavor"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:pxd017535",
@@ -3757,7 +3849,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:changes-in-glycolytic",
@@ -3789,7 +3882,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:dark-cutting-beef-mitochondrial",
@@ -3821,7 +3915,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:application-of-proteomics",
@@ -3853,7 +3948,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:shotgun-proteomics-for",
@@ -3894,7 +3990,8 @@
           "label": "Sensory & Flavor",
           "theme": "sensory-flavor"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:preliminary-study-on",
@@ -3945,7 +4042,8 @@
           "label": "Sensory & Flavor",
           "theme": "sensory-flavor"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:metabolomics-of-meat",
@@ -3996,7 +4094,8 @@
           "label": "Sensory & Flavor",
           "theme": "sensory-flavor"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:metabolomics-profiling-to",
@@ -4047,7 +4146,8 @@
           "label": "Sensory & Flavor",
           "theme": "sensory-flavor"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:rapid-lc-msms-method",
@@ -4078,7 +4178,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:meatscan-an-image",
@@ -4105,7 +4206,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:electronic-nose-dataset",
@@ -4137,7 +4239,8 @@
           "label": "Sensory & Flavor",
           "theme": "sensory-flavor"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:electronic-nose-homogeneous",
@@ -4169,7 +4272,8 @@
           "label": "Sensory & Flavor",
           "theme": "sensory-flavor"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:gse179821",
@@ -4196,7 +4300,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:gse253395",
@@ -4223,7 +4328,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjeb41939",
@@ -4254,7 +4360,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:synergetic-hallmark-knockouts",
@@ -4295,7 +4402,363 @@
           "label": "Scaffolds & biomaterials",
           "theme": "scaffolding-biomaterials"
         }
-      ]
+      ],
+      "subseries": []
+    },
+    {
+      "id": "ds:gse173198",
+      "kind": "inventory",
+      "page": "Cow",
+      "name": "A serum-free media formulation for cultured meat production supports bovine satellite cell differentiation [Timecourse]",
+      "columns": {
+        "Study": "A serum-free media formulation for cultured meat production supports bovine satellite cell differentiation [Timecourse]",
+        "Paper": "[DOI](https://doi.org/10.1038/s43016-021-00419-1)",
+        "Data": "[`GSE173198`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE173198)",
+        "Type": "RNA-seq",
+        "Tissue": "Muscle",
+        "Description": "Bulk RNA-seq differentiation timecourse: satellite cells switched from 20% FBS growth medium to 2% FBS differentiation medium (serum starvation) and harvested at 0/24/48/72/96 h in biological quadruplicates; 20 libraries. Subseries of [`GSE173199`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE173199)",
+        "Size": "—",
+        "Area of research": "Cultured meat"
+      },
+      "links": [
+        "https://doi.org/10.1038/s43016-021-00419-1",
+        "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE173198",
+        "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE173199"
+      ],
+      "topics": [
+        {
+          "slug": "cell-lines-engineering",
+          "label": "Cell Lines & Engineering",
+          "theme": "cell-lines-engineering"
+        },
+        {
+          "slug": "media-growth-factors",
+          "label": "Media & Growth Factors",
+          "theme": "media-growth-factors"
+        },
+        {
+          "slug": "media-optimization",
+          "label": "Media optimization",
+          "theme": "media-growth-factors"
+        },
+        {
+          "slug": "serum-free-media",
+          "label": "Serum-free media",
+          "theme": "media-growth-factors"
+        }
+      ],
+      "subseries": []
+    },
+    {
+      "id": "ds:gse173196",
+      "kind": "inventory",
+      "page": "Cow",
+      "name": "A serum-free media formulation for cultured meat production supports bovine satellite cell differentiation [SF_Diff]",
+      "columns": {
+        "Study": "A serum-free media formulation for cultured meat production supports bovine satellite cell differentiation [SF_Diff]",
+        "Paper": "[DOI](https://doi.org/10.1038/s43016-021-00419-1)",
+        "Data": "[`GSE173196`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE173196)",
+        "Type": "RNA-seq",
+        "Tissue": "Muscle",
+        "Description": "Bulk RNA-seq of the serum-free arm: growth in 20% FBS medium or serum-free growth medium (SFGM), then 72 h differentiation in 2% FBS medium, serum-free base (SFB), serum-free DMEM/F-12 (SFDM) or DMEM; sampled at 0 h and 72 h in biological triplicates; 18 libraries. Subseries of [`GSE173199`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE173199)",
+        "Size": "—",
+        "Area of research": "Cultured meat"
+      },
+      "links": [
+        "https://doi.org/10.1038/s43016-021-00419-1",
+        "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE173196",
+        "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE173199"
+      ],
+      "topics": [
+        {
+          "slug": "cell-lines-engineering",
+          "label": "Cell Lines & Engineering",
+          "theme": "cell-lines-engineering"
+        },
+        {
+          "slug": "media-growth-factors",
+          "label": "Media & Growth Factors",
+          "theme": "media-growth-factors"
+        },
+        {
+          "slug": "media-optimization",
+          "label": "Media optimization",
+          "theme": "media-growth-factors"
+        },
+        {
+          "slug": "serum-free-media",
+          "label": "Serum-free media",
+          "theme": "media-growth-factors"
+        }
+      ],
+      "subseries": []
+    },
+    {
+      "id": "ds:gse262675",
+      "kind": "inventory",
+      "page": "Cow",
+      "name": "Enhanced Media Optimize Bovine Myogenesis in 2D and 3D Models for Cultivated Meat Applications [RNA-Seq]",
+      "columns": {
+        "Study": "Enhanced Media Optimize Bovine Myogenesis in 2D and 3D Models for Cultivated Meat Applications [RNA-Seq]",
+        "Paper": "[DOI](https://doi.org/10.1002/advs.202413998)",
+        "Data": "[`GSE262675`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE262675)",
+        "Type": "RNA-seq",
+        "Tissue": "Muscle",
+        "Description": "Bulk RNA-seq of myoblast and differentiated-myoblast cultures across two base media (myoblast, iMPC) and three differentiation media (conventional, iFR_hi, iFRC), analysed at day 2 or day 15; 15 libraries. Subseries of [`GSE262758`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE262758)",
+        "Size": "—",
+        "Area of research": "Cultivated-meat media development"
+      },
+      "links": [
+        "https://doi.org/10.1002/advs.202413998",
+        "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE262675",
+        "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE262758"
+      ],
+      "topics": [
+        {
+          "slug": "cell-lines-engineering",
+          "label": "Cell Lines & Engineering",
+          "theme": "cell-lines-engineering"
+        },
+        {
+          "slug": "media-growth-factors",
+          "label": "Media & Growth Factors",
+          "theme": "media-growth-factors"
+        },
+        {
+          "slug": "media-optimization",
+          "label": "Media optimization",
+          "theme": "media-growth-factors"
+        }
+      ],
+      "subseries": []
+    },
+    {
+      "id": "ds:gse262757",
+      "kind": "inventory",
+      "page": "Cow",
+      "name": "Enhanced Media Optimize Bovine Myogenesis in 2D and 3D Models for Cultivated Meat Applications [in vitro scRNA-Seq]",
+      "columns": {
+        "Study": "Enhanced Media Optimize Bovine Myogenesis in 2D and 3D Models for Cultivated Meat Applications [in vitro scRNA-Seq]",
+        "Paper": "[DOI](https://doi.org/10.1002/advs.202413998)",
+        "Data": "[`GSE262757`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE262757)",
+        "Type": "scRNA-seq",
+        "Tissue": "Muscle",
+        "Description": "Single-cell RNA-seq of the same culture panel (myoblast and iMPC base media; conventional, iFR_hi and iFRC differentiation media), analysed at day 2 or day 10; 5 libraries. Subseries of [`GSE262758`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE262758)",
+        "Size": "—",
+        "Area of research": "Cultivated-meat media development"
+      },
+      "links": [
+        "https://doi.org/10.1002/advs.202413998",
+        "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE262757",
+        "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE262758"
+      ],
+      "topics": [
+        {
+          "slug": "cell-lines-engineering",
+          "label": "Cell Lines & Engineering",
+          "theme": "cell-lines-engineering"
+        },
+        {
+          "slug": "media-growth-factors",
+          "label": "Media & Growth Factors",
+          "theme": "media-growth-factors"
+        },
+        {
+          "slug": "media-optimization",
+          "label": "Media optimization",
+          "theme": "media-growth-factors"
+        },
+        {
+          "slug": "single-cell-atlases",
+          "label": "Single-cell atlases",
+          "theme": "cell-lines-engineering"
+        }
+      ],
+      "subseries": []
+    },
+    {
+      "id": "ds:gse290556",
+      "kind": "inventory",
+      "page": "Cow",
+      "name": "Enhanced Media Optimize Bovine Myogenesis in 2D and 3D Models for Cultivated Meat Applications [in vivo scRNA-Seq]",
+      "columns": {
+        "Study": "Enhanced Media Optimize Bovine Myogenesis in 2D and 3D Models for Cultivated Meat Applications [in vivo scRNA-Seq]",
+        "Paper": "[DOI](https://doi.org/10.1002/advs.202413998)",
+        "Data": "[`GSE290556`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE290556)",
+        "Type": "scRNA-seq",
+        "Tissue": "Muscle",
+        "Description": "Single-cell RNA-seq of in vivo bovine skeletal muscle from M. abdominis and M. masseter, mechanically minced, enzymatically dissociated and FACS-sorted for viable cells; 2 libraries, the in vivo reference the cultured panel is compared against. Subseries of [`GSE262758`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE262758)",
+        "Size": "—",
+        "Area of research": "Cultivated-meat media development"
+      },
+      "links": [
+        "https://doi.org/10.1002/advs.202413998",
+        "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE290556",
+        "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE262758"
+      ],
+      "topics": [
+        {
+          "slug": "cell-lines-engineering",
+          "label": "Cell Lines & Engineering",
+          "theme": "cell-lines-engineering"
+        },
+        {
+          "slug": "single-cell-atlases",
+          "label": "Single-cell atlases",
+          "theme": "cell-lines-engineering"
+        }
+      ],
+      "subseries": []
+    },
+    {
+      "id": "ds:gse189296",
+      "kind": "inventory",
+      "page": "Cow",
+      "name": "Muscle-derived fibro-adipogenic progenitor cells for production of cultured bovine adipose tissue",
+      "columns": {
+        "Study": "Muscle-derived fibro-adipogenic progenitor cells for production of cultured bovine adipose tissue",
+        "Paper": "[DOI](https://doi.org/10.1038/s41538-021-00122-2)",
+        "Data": "[`GSE189296`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE189296)",
+        "Type": "RNA-seq",
+        "Tissue": "Muscle (FAPs and satellite cells)",
+        "Description": "Bulk RNA-seq contrasting bovine muscle-derived fibro-adipogenic progenitors (FAPs) against satellite cells purified from the same muscle sample by a single FACS strategy; FAPs proliferate extensively and mature into fat in edible three-dimensional hydrogels whose lipid profile and taste track traditional beef fat, making them a candidate cell type for cultivated fat (Dohmen, Hubalek, Melke, Messmer, Cantoni, Mei, Hueber, Mitic, Remmers, Moutsatsou, Post, Jackisch & Flack 2022, *npj Science of Food*)",
+        "Size": "—",
+        "Area of research": "Cultivated fat"
+      },
+      "links": [
+        "https://doi.org/10.1038/s41538-021-00122-2",
+        "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE189296"
+      ],
+      "topics": [
+        {
+          "slug": "cell-lines-engineering",
+          "label": "Cell Lines & Engineering",
+          "theme": "cell-lines-engineering"
+        },
+        {
+          "slug": "single-cell-atlases",
+          "label": "Single-cell atlases",
+          "theme": "cell-lines-engineering"
+        }
+      ],
+      "subseries": []
+    },
+    {
+      "id": "ds:gse289644",
+      "kind": "inventory",
+      "page": "Cow",
+      "name": "Paracrine effect of fibroblasts on the proliferation and differentiation of bovine satellite cells in vitro",
+      "columns": {
+        "Study": "Paracrine effect of fibroblasts on the proliferation and differentiation of bovine satellite cells in vitro",
+        "Paper": "[DOI](https://doi.org/10.1016/j.biochi.2025.11.006)",
+        "Data": "[`GSE289644`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE289644)",
+        "Type": "RNA-seq",
+        "Tissue": "Muscle (satellite cells)",
+        "Description": "Bulk RNA-seq of bovine satellite cells co-cultured with fibroblasts across a 0.4 μm transwell against monoculture, sampled at day 5 of proliferation and 24 h and 72 h after differentiation was induced; separating paracrine signalling from direct cell-cell contact, with EGR1, IL6 and SOCS3 up and ITGA7 down (Zygmunt, Żukowski, Piórkowska, Smołucha, Wierzbicka & Witarski 2025, *Biochimie*)",
+        "Size": "—",
+        "Area of research": "Cultured meat (fibroblast co-culture)"
+      },
+      "links": [
+        "https://doi.org/10.1016/j.biochi.2025.11.006",
+        "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE289644"
+      ],
+      "topics": [
+        {
+          "slug": "cell-lines-engineering",
+          "label": "Cell Lines & Engineering",
+          "theme": "cell-lines-engineering"
+        }
+      ],
+      "subseries": []
+    },
+    {
+      "id": "ds:gse305686",
+      "kind": "inventory",
+      "page": "Cow",
+      "name": "Single-cell transcriptomic analysis suggests potential differences in the developmental stage and quantity of adipose progenitor cells between bovine intramuscular and subcutaneous fat",
+      "columns": {
+        "Study": "Single-cell transcriptomic analysis suggests potential differences in the developmental stage and quantity of adipose progenitor cells between bovine intramuscular and subcutaneous fat",
+        "Paper": "[DOI](https://doi.org/10.1186/s12864-025-12312-3)",
+        "Data": "[`GSE305686`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE305686)",
+        "Type": "scRNA-seq",
+        "Tissue": "Intramuscular fat, subcutaneous fat, skeletal muscle",
+        "Description": "10x scRNA-seq of stromal vascular fractions from intramuscular and subcutaneous fat of adult Angus crossbred steers plus mononuclear fractions from newborn calf longissimus dorsi (n=2 per tissue, 14,802 cells): intramuscular fat carries fewer adipose progenitors and they are adipogenically less committed, and no progenitors were detectable in neonatal muscle (Tan, Lyu & Jiang 2025, *BMC Genomics*)",
+        "Size": "—",
+        "Area of research": "Adipogenesis & marbling"
+      },
+      "links": [
+        "https://doi.org/10.1186/s12864-025-12312-3",
+        "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE305686"
+      ],
+      "topics": [
+        {
+          "slug": "cell-lines-engineering",
+          "label": "Cell Lines & Engineering",
+          "theme": "cell-lines-engineering"
+        },
+        {
+          "slug": "single-cell-atlases",
+          "label": "Single-cell atlases",
+          "theme": "cell-lines-engineering"
+        }
+      ],
+      "subseries": []
+    },
+    {
+      "id": "ds:gse173477",
+      "kind": "inventory",
+      "page": "Cow",
+      "name": "Transcriptome-wide N6-methyladenosine methylome profiling reveals m6A regulation of skeletal myoblast differentiation in cattle",
+      "columns": {
+        "Study": "Transcriptome-wide N6-methyladenosine methylome profiling reveals m6A regulation of skeletal myoblast differentiation in cattle",
+        "Paper": "[DOI](https://doi.org/10.3389/fcell.2021.785380)",
+        "Data": "[`GSE173477`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE173477)",
+        "Type": "m6A-seq (MeRIP-seq) + RNA-seq",
+        "Tissue": "Muscle (myoblasts and myotubes)",
+        "Description": "Paired m6A-seq and RNA-seq of bovine proliferating myoblasts (80% confluence, growth medium) against myotubes differentiated for four days, in triplicate; 1,437 differentially methylated genes and 268 changing at both the methylation and expression level, extending the regulatory picture of differentiation from DNA methylation into RNA modification (Yang, Wang, Ma, Du, Mei & Zan 2021, *Frontiers in Cell and Developmental Biology*)",
+        "Size": "—",
+        "Area of research": "Epitranscriptomic regulation of differentiation"
+      },
+      "links": [
+        "https://doi.org/10.3389/fcell.2021.785380",
+        "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE173477"
+      ],
+      "topics": [
+        {
+          "slug": "cell-lines-engineering",
+          "label": "Cell Lines & Engineering",
+          "theme": "cell-lines-engineering"
+        }
+      ],
+      "subseries": []
+    },
+    {
+      "id": "ds:gse186730",
+      "kind": "inventory",
+      "page": "Cow",
+      "name": "Integrated analysis of mRNA and microRNA co-expressed network for the differentiation of bovine skeletal muscle cells after polyphenol resveratrol treatment",
+      "columns": {
+        "Study": "Integrated analysis of mRNA and microRNA co-expressed network for the differentiation of bovine skeletal muscle cells after polyphenol resveratrol treatment",
+        "Paper": "[DOI](https://doi.org/10.3389/fvets.2021.777477)",
+        "Data": "[`GSE186730`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE186730)",
+        "Type": "RNA-seq + small RNA-seq",
+        "Tissue": "Muscle (primary myoblasts)",
+        "Description": "Primary bovine myoblasts treated with 20 μM resveratrol in differentiation medium for four days against a DMSO control, three cultures per arm, with paired mRNA and miRNA sequencing feeding a co-expression network analysis; a small-molecule perturbation of bovine myogenic differentiation rather than a cultivated-meat process study (Hao, Wang, Yang, Thomsen, Holm, Qu, Huang & Chen 2021, *Frontiers in Veterinary Science*)",
+        "Size": "—",
+        "Area of research": "Small-molecule modulation of differentiation"
+      },
+      "links": [
+        "https://doi.org/10.3389/fvets.2021.777477",
+        "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE186730"
+      ],
+      "topics": [
+        {
+          "slug": "cell-lines-engineering",
+          "label": "Cell Lines & Engineering",
+          "theme": "cell-lines-engineering"
+        }
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna987844",
@@ -4323,7 +4786,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:single-cell-transcriptomic-atlas",
@@ -4360,7 +4824,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:gse306674",
@@ -4403,7 +4868,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna1302321",
@@ -4436,7 +4902,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:cra022393",
@@ -4469,7 +4936,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:comparative-transcriptome-analysis",
@@ -4498,7 +4966,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:srp128934",
@@ -4526,7 +4995,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:comparative-transcriptomic-characterization",
@@ -4555,7 +5025,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:whole-transcriptome-analysis",
@@ -4584,7 +5055,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:actin-genes-and",
@@ -4618,7 +5090,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna664224",
@@ -4640,7 +5113,8 @@
         "https://doi.org/10.1016/j.gene.2021.145642",
         "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA664224"
       ],
-      "topics": []
+      "topics": [],
+      "subseries": []
     },
     {
       "id": "ds:srp304278",
@@ -4668,7 +5142,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna389966",
@@ -4696,7 +5171,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:identification-of-eriocheir",
@@ -4725,7 +5201,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna577772",
@@ -4747,7 +5224,8 @@
         "https://doi.org/10.1007/s00438-019-01621-4",
         "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA577772"
       ],
-      "topics": []
+      "topics": [],
+      "subseries": []
     },
     {
       "id": "ds:srp095377",
@@ -4775,7 +5253,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:srp056408",
@@ -4803,7 +5282,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna737102",
@@ -4834,7 +5314,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna780617",
@@ -4872,7 +5353,8 @@
           "label": "Media & Growth Factors",
           "theme": "media-growth-factors"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:cra030323",
@@ -4905,7 +5387,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna1307069",
@@ -4943,7 +5426,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna726590",
@@ -4975,7 +5459,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna1254901",
@@ -5007,7 +5492,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:cra037446",
@@ -5044,7 +5530,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:gse152947",
@@ -5071,7 +5558,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna564810",
@@ -5104,7 +5592,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:deep-rna-sequencing",
@@ -5132,7 +5621,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:identification-of-myogenic",
@@ -5160,7 +5650,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjeb7712",
@@ -5188,7 +5679,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna970983",
@@ -5221,7 +5713,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:proteomic-characterization-of",
@@ -5248,7 +5741,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:substantial-downregulation-of",
@@ -5277,7 +5771,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna661185",
@@ -5311,7 +5806,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:rna-seq-analysis-of",
@@ -5339,7 +5835,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:gse90058",
@@ -5367,7 +5864,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:gse18389",
@@ -5395,7 +5893,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:srp074282",
@@ -5423,7 +5922,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:gse97173",
@@ -5451,7 +5951,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna848289",
@@ -5479,7 +5980,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna843454",
@@ -5512,7 +6014,8 @@
           "label": "Scaffolding & Biomaterials",
           "theme": "scaffolding-biomaterials"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:metabolic-profile-of",
@@ -5560,7 +6063,8 @@
           "label": "Sensory & Flavor",
           "theme": "sensory-flavor"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:pxd026377",
@@ -5603,7 +6107,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna706530",
@@ -5631,7 +6136,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:srp321375",
@@ -5665,7 +6171,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna1124228",
@@ -5693,7 +6200,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:gse252828",
@@ -5726,7 +6234,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:proteomic-insights-into",
@@ -5758,7 +6267,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:establishment-of-spontaneously",
@@ -5790,7 +6300,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:establishment-and-characterization",
@@ -5822,7 +6333,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:development-of-serum-reduced",
@@ -5869,7 +6381,8 @@
           "label": "Serum-free media",
           "theme": "media-growth-factors"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:genome-scale-metabolic-network",
@@ -5912,7 +6425,8 @@
           "label": "Metabolism & Modeling",
           "theme": "metabolism-modeling"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:gse223922",
@@ -5945,7 +6459,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna940501",
@@ -5983,7 +6498,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna1121101",
@@ -6017,7 +6533,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:distinct-muscle-stem",
@@ -6049,7 +6566,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:characterization-of-myogenesis",
@@ -6076,7 +6594,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:continuous-fish-muscle",
@@ -6104,7 +6623,8 @@
           "label": "Cell-line engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjca049754",
@@ -6136,7 +6656,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:srp531789",
@@ -6163,7 +6684,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:srp033481",
@@ -6191,7 +6713,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna1467315",
@@ -6229,7 +6752,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:cell-type-diversity",
@@ -6261,7 +6785,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna906172",
@@ -6294,7 +6819,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:pxd005166",
@@ -6333,7 +6859,8 @@
           "label": "Sensory & Flavor",
           "theme": "sensory-flavor"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:srp009061",
@@ -6363,7 +6890,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna508885",
@@ -6385,7 +6913,8 @@
         "https://doi.org/10.3390/toxins11020097",
         "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA508885"
       ],
-      "topics": []
+      "topics": [],
+      "subseries": []
     },
     {
       "id": "ds:prjna695322",
@@ -6413,7 +6942,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna822005",
@@ -6441,7 +6971,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna1381342",
@@ -6474,7 +7005,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna1187280",
@@ -6507,7 +7039,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjeb74031",
@@ -6540,7 +7073,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna983861",
@@ -6573,7 +7107,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna1244049",
@@ -6616,7 +7151,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:gse206914",
@@ -6629,13 +7165,15 @@
         "Data": "[`GSE206914`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE206914)",
         "Type": "scRNA-seq + ATAC-seq",
         "Tissue": "Muscle",
-        "Description": "Somites and myotomes at E18, E21, E28 from Tibetan and Duroc×Tibetan pigs",
+        "Description": "Somites and myotomes at E18, E21, E28 from Tibetan and Duroc×Tibetan pigs; GEO SuperSeries of [`GSE206911`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE206911) (scRNA-seq) and [`GSE206913`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE206913) (scATAC-seq)",
         "Size": "599.17 Gb",
         "Area of research": "Skeletal muscle ontogeny"
       },
       "links": [
         "https://doi.org/10.1186/s12915-023-01519-z",
-        "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE206914"
+        "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE206914",
+        "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE206911",
+        "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE206913"
       ],
       "topics": [
         {
@@ -6647,6 +7185,16 @@
           "slug": "single-cell-atlases",
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
+        }
+      ],
+      "subseries": [
+        {
+          "accession": "GSE206911",
+          "id": "ds:gse206911"
+        },
+        {
+          "accession": "GSE206913",
+          "id": "ds:gse206913"
         }
       ]
     },
@@ -6680,7 +7228,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:gse247753",
@@ -6712,7 +7261,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:cra011788",
@@ -6744,7 +7294,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:cra011059",
@@ -6782,7 +7333,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:gse180840",
@@ -6809,7 +7361,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:srp180031",
@@ -6837,7 +7390,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:cra003275",
@@ -6864,7 +7418,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:srp066398",
@@ -6891,7 +7446,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna527944",
@@ -6918,7 +7474,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna527944-2",
@@ -6950,7 +7507,8 @@
           "label": "Metabolism & Modeling",
           "theme": "metabolism-modeling"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:gse86441",
@@ -6977,7 +7535,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna820138",
@@ -7004,7 +7563,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:lipidomic-and-transcriptomic",
@@ -7035,7 +7595,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:gse158430-2",
@@ -7061,6 +7622,40 @@
           "slug": "cell-lines-engineering",
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
+        }
+      ],
+      "subseries": [
+        {
+          "accession": "GSE158412",
+          "id": null
+        },
+        {
+          "accession": "GSE158414",
+          "id": null
+        },
+        {
+          "accession": "GSE158416",
+          "id": null
+        },
+        {
+          "accession": "GSE158417",
+          "id": null
+        },
+        {
+          "accession": "GSE158418",
+          "id": null
+        },
+        {
+          "accession": "GSE158419",
+          "id": null
+        },
+        {
+          "accession": "GSE158427",
+          "id": null
+        },
+        {
+          "accession": "GSE158429",
+          "id": null
         }
       ]
     },
@@ -7093,7 +7688,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:gse223433",
@@ -7141,7 +7737,8 @@
           "label": "Sensory & Flavor",
           "theme": "sensory-flavor"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:integrated-lipidomics-and",
@@ -7187,7 +7784,8 @@
           "label": "Scaffolds & biomaterials",
           "theme": "scaffolding-biomaterials"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna597497",
@@ -7216,7 +7814,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:gse271977",
@@ -7259,7 +7858,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:cost-effective-production-of",
@@ -7320,7 +7920,8 @@
           "label": "Serum-free media",
           "theme": "media-growth-factors"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:comparative-proteomic-profiling",
@@ -7352,7 +7953,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:tmt-based-quantitative-proteomic",
@@ -7383,7 +7985,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:snrna-seq-and-spatial",
@@ -7434,7 +8037,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:gse158430-3",
@@ -7462,6 +8066,40 @@
           "slug": "cell-lines-engineering",
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
+        }
+      ],
+      "subseries": [
+        {
+          "accession": "GSE158412",
+          "id": null
+        },
+        {
+          "accession": "GSE158414",
+          "id": null
+        },
+        {
+          "accession": "GSE158416",
+          "id": null
+        },
+        {
+          "accession": "GSE158417",
+          "id": null
+        },
+        {
+          "accession": "GSE158418",
+          "id": null
+        },
+        {
+          "accession": "GSE158419",
+          "id": null
+        },
+        {
+          "accession": "GSE158427",
+          "id": null
+        },
+        {
+          "accession": "GSE158429",
+          "id": null
         }
       ]
     },
@@ -7491,7 +8129,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:tecator-nir-meat",
@@ -7537,7 +8176,77 @@
           "label": "Sensory & Flavor",
           "theme": "sensory-flavor"
         }
-      ]
+      ],
+      "subseries": []
+    },
+    {
+      "id": "ds:gse206911",
+      "kind": "inventory",
+      "page": "Pig",
+      "name": "Integrative single-cell RNA-seq and ATAC-seq analysis of myogenic differentiation in pig [scRNA-seq]",
+      "columns": {
+        "Study": "Integrative single-cell RNA-seq and ATAC-seq analysis of myogenic differentiation in pig [scRNA-seq]",
+        "Paper": "[DOI](https://doi.org/10.1186/s12915-023-01519-z)",
+        "Data": "[`GSE206911`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE206911)",
+        "Type": "scRNA-seq",
+        "Tissue": "Muscle",
+        "Description": "Single-cell RNA-seq of somite tissue at E16, E18 and E21 and myotome tissue at E28 from Tibetan (ZZ) and Duroc×Tibetan (DZ) pigs, each library a pool of five embryos from one sow, collagenase-dissociated; 8 libraries. Subseries of [`GSE206914`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE206914)",
+        "Size": "—",
+        "Area of research": "Skeletal muscle ontogeny"
+      },
+      "links": [
+        "https://doi.org/10.1186/s12915-023-01519-z",
+        "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE206911",
+        "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE206914"
+      ],
+      "topics": [
+        {
+          "slug": "cell-lines-engineering",
+          "label": "Cell Lines & Engineering",
+          "theme": "cell-lines-engineering"
+        },
+        {
+          "slug": "single-cell-atlases",
+          "label": "Single-cell atlases",
+          "theme": "cell-lines-engineering"
+        }
+      ],
+      "subseries": []
+    },
+    {
+      "id": "ds:gse206913",
+      "kind": "inventory",
+      "page": "Pig",
+      "name": "Integrative single-cell RNA-seq and ATAC-seq analysis of myogenic differentiation in pig [scATAC-seq]",
+      "columns": {
+        "Study": "Integrative single-cell RNA-seq and ATAC-seq analysis of myogenic differentiation in pig [scATAC-seq]",
+        "Paper": "[DOI](https://doi.org/10.1186/s12915-023-01519-z)",
+        "Data": "[`GSE206913`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE206913)",
+        "Type": "scATAC-seq",
+        "Tissue": "Muscle",
+        "Description": "Single-cell ATAC-seq of somite tissue at E18 and E21 and myotome tissue at E28 from the same Tibetan (ZZ) and Duroc×Tibetan (DZ) pools of five embryos; 6 libraries, the chromatin counterpart to [`GSE206911`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE206911). Subseries of [`GSE206914`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE206914)",
+        "Size": "—",
+        "Area of research": "Skeletal muscle ontogeny"
+      },
+      "links": [
+        "https://doi.org/10.1186/s12915-023-01519-z",
+        "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE206913",
+        "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE206911",
+        "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE206914"
+      ],
+      "topics": [
+        {
+          "slug": "cell-lines-engineering",
+          "label": "Cell Lines & Engineering",
+          "theme": "cell-lines-engineering"
+        },
+        {
+          "slug": "single-cell-atlases",
+          "label": "Single-cell atlases",
+          "theme": "cell-lines-engineering"
+        }
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna1001505",
@@ -7569,7 +8278,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:proteomics-analysis-to",
@@ -7600,7 +8310,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:proteomic-investigation-of",
@@ -7641,7 +8352,8 @@
           "label": "Sensory & Flavor",
           "theme": "sensory-flavor"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:a-hydrophilic-interaction",
@@ -7692,7 +8404,8 @@
           "label": "Sensory & Flavor",
           "theme": "sensory-flavor"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:proteomic-and-metabolomic",
@@ -7744,7 +8457,8 @@
           "label": "Sensory & Flavor",
           "theme": "sensory-flavor"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:cra019589",
@@ -7782,7 +8496,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna1280141",
@@ -7809,7 +8524,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna1196520",
@@ -7846,7 +8562,8 @@
           "label": "Media & Growth Factors",
           "theme": "media-growth-factors"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjna842679",
@@ -7873,7 +8590,8 @@
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:growth-factor-thermostability",
@@ -7902,7 +8620,8 @@
           "label": "Media & Growth Factors",
           "theme": "media-growth-factors"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:nmr-metabolomics-of",
@@ -7951,7 +8670,8 @@
           "label": "Serum-free media",
           "theme": "media-growth-factors"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:plant-based-meat-textural-properties",
@@ -7975,7 +8695,8 @@
           "label": "AI Methods & Tooling",
           "theme": "ai-methods-tooling"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjeb27455",
@@ -8004,7 +8725,8 @@
           "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:prjeb14330",
@@ -8022,7 +8744,8 @@
       "links": [
         "https://doi.org/10.1186/s12864-020-07078-9"
       ],
-      "topics": []
+      "topics": [],
+      "subseries": []
     },
     {
       "id": "ds:mycelium-mechanics",
@@ -8061,7 +8784,8 @@
           "label": "Sensory & Flavor",
           "theme": "sensory-flavor"
         }
-      ]
+      ],
+      "subseries": []
     },
     {
       "id": "ds:lions-mane-mushroom-steak",
@@ -8100,8 +8824,9 @@
           "label": "Sensory & Flavor",
           "theme": "sensory-flavor"
         }
-      ]
+      ],
+      "subseries": []
     }
   ],
-  "corpusDate": "2026-08-11"
+  "corpusDate": "2026-08-12"
 }

@@ -1,0 +1,38 @@
+{
+  "_comment": "Member accessions of repository SuperSeries whose inventory row names only the parent (CAAIL-258). Keyed by ds: id -> array of bare uppercase member accessions. Curator-maintained and DB-only, like dois-related.json; folded by db:reseed-axes and validated by db:check. Every entry here was read from the parent's own GEO Series relation record, never inferred from a title or a sample count. A member that also has its own inventory row is resolved to it at parse; one that does not is still served, so nothing in the corpus is unreachable.",
+  "datasets": {
+    "ds:gse173199": ["GSE173196", "GSE173198"],
+    "ds:gse262758": ["GSE262675", "GSE262757", "GSE290556"],
+    "ds:gse206914": ["GSE206911", "GSE206913"],
+    "ds:gse158430": [
+      "GSE158412",
+      "GSE158414",
+      "GSE158416",
+      "GSE158417",
+      "GSE158418",
+      "GSE158419",
+      "GSE158427",
+      "GSE158429"
+    ],
+    "ds:gse158430-2": [
+      "GSE158412",
+      "GSE158414",
+      "GSE158416",
+      "GSE158417",
+      "GSE158418",
+      "GSE158419",
+      "GSE158427",
+      "GSE158429"
+    ],
+    "ds:gse158430-3": [
+      "GSE158412",
+      "GSE158414",
+      "GSE158416",
+      "GSE158417",
+      "GSE158418",
+      "GSE158419",
+      "GSE158427",
+      "GSE158429"
+    ]
+  }
+}

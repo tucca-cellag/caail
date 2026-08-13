@@ -12,7 +12,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { openDb, importNdjson, type Db } from './lib.js';
-import { checkIntegrity, checkReachability, checkColumnDrift, checkTaxonomyAxes, checkTopicTiers, checkCatalogHeadings, checkLicenses, checkManualLicenseKeys, checkDois, checkManualDoiKeys, checkRelatedDois, runChecks } from './check.js';
+import { checkIntegrity, checkReachability, checkColumnDrift, checkTaxonomyAxes, checkTopicTiers, checkCatalogHeadings, checkLicenses, checkManualLicenseKeys, checkDois, checkManualDoiKeys, checkRelatedDois, checkSubseries, runChecks } from './check.js';
 import { THEME_SLUGS } from './seed.js';
 
 const failing = (results: { label: string; ok: boolean }[], match: RegExp) =>
@@ -349,6 +349,100 @@ describe('checkRelatedDois', () => {
     insCat(db, 'sw:dual', 'https://dual', '10.1234/d', '["10.1234/sib"]');
     insCat(db, 'db:dual', 'https://dual', '10.1234/d', '["10.1234/sib"]'); // same url -> not a cross-resource dup
     expect(relResult(db).ok).toBe(true);
+  });
+});
+
+describe('checkSubseries', () => {
+  const NOFILE = join(tmpdir(), 'no-such-subseries.json'); // skip the file-key check; test the stored column
+  const insRow = (db: Db, id: string, subseries: string | null): void => {
+    db.prepare("INSERT INTO items(id,type,slug) VALUES(?,'dataset',?)").run(id, id.slice(3));
+    db.prepare('INSERT INTO dataset_rows(item_id,page,cells_json,subseries,ordinal) VALUES(?,?,?,?,0)')
+      .run(id, 'Cow', '["a"]', subseries);
+  };
+  const subResult = (db: Db) => checkSubseries(db, NOFILE).find((r) => /valid accession arrays/.test(r.label))!;
+
+  it('passes on a valid member array', () => {
+    const db = miniDb(); insRow(db, 'ds:gse173199', '["GSE173196","GSE173198"]');
+    expect(subResult(db).ok).toBe(true);
+  });
+
+  // The confusion that produced the defect: a SuperSeries accession reads like a dataset.
+  it('flags a row listing itself as its own subseries', () => {
+    const db = miniDb(); insRow(db, 'ds:gse173199', '["GSE173199"]');
+    const r = subResult(db); expect(r.ok).toBe(false); expect(r.detail).toMatch(/lists itself/);
+  });
+
+  it('flags a malformed accession', () => {
+    const db = miniDb(); insRow(db, 'ds:gse1', '["not-an-accession"]');
+    const r = subResult(db); expect(r.ok).toBe(false); expect(r.detail).toMatch(/bad accession/);
+  });
+
+  it('flags a lowercase accession', () => {
+    const db = miniDb(); insRow(db, 'ds:gse1', '["gse173198"]');
+    const r = subResult(db); expect(r.ok).toBe(false); expect(r.detail).toMatch(/bad accession/);
+  });
+
+  // The guard's allowlist had diverged from the id minter's, which accepts SRP and GSM.
+  // 12 SRP rows exist in the corpus, so a curator recording one would have been told a
+  // perfectly valid accession was malformed. Both now read one shared constant.
+  it('accepts every accession family the id minter mints', () => {
+    const db = miniDb();
+    insRow(db, 'ds:parent', '["GSE1","GSM2","PRJNA3","SRP4","PXD5","CRA6","E-MTAB-7"]');
+    expect(subResult(db).ok).toBe(true);
+  });
+
+  // rowAccession used to strip a trailing `-\d+`, reducing e-mtab-9622 to E-MTAB. Two
+  // different ArrayExpress parents then keyed the same and a real conflict read as one.
+  it('keeps hyphenated E-MTAB parents distinct', () => {
+    const db = miniDb();
+    insRow(db, 'ds:e-mtab-9622', '["GSE100"]');
+    insRow(db, 'ds:e-mtab-1234', '["GSE100"]');
+    const r = subResult(db); expect(r.ok).toBe(false); expect(r.detail).toMatch(/claimed by 2 different parents/);
+  });
+
+  it('flags an E-MTAB row listing itself', () => {
+    const db = miniDb(); insRow(db, 'ds:e-mtab-9622', '["E-MTAB-9622"]');
+    const r = subResult(db); expect(r.ok).toBe(false); expect(r.detail).toMatch(/lists itself/);
+  });
+
+  it('flags a duplicate member within one array', () => {
+    const db = miniDb(); insRow(db, 'ds:gse1', '["GSE2","GSE2"]');
+    const r = subResult(db); expect(r.ok).toBe(false); expect(r.detail).toMatch(/duplicate member/);
+  });
+
+  it('flags subseries that is not a JSON array', () => {
+    const db = miniDb(); insRow(db, 'ds:gse1', '{"a":1}');
+    const r = subResult(db); expect(r.ok).toBe(false); expect(r.detail).toMatch(/not an array/);
+  });
+
+  it('flags an empty array (NULL means "not a SuperSeries"; [] is ambiguous)', () => {
+    const db = miniDb(); insRow(db, 'ds:gse1', '[]');
+    const r = subResult(db); expect(r.ok).toBe(false); expect(r.detail).toMatch(/is empty/);
+  });
+
+  // A GEO subseries has exactly one parent, so two claims mean one of them is wrong.
+  it('flags one member claimed by two different parent accessions', () => {
+    const db = miniDb();
+    insRow(db, 'ds:gse100', '["GSE999"]');
+    insRow(db, 'ds:gse200', '["GSE999"]');
+    const r = subResult(db); expect(r.ok).toBe(false); expect(r.detail).toMatch(/claimed by 2 different parents/);
+  });
+
+  // But one accession fanned out per species is still ONE parent, and must not trip that.
+  it('allows the per-species fan-out of one accession to share a member list', () => {
+    const db = miniDb();
+    insRow(db, 'ds:gse158430', '["GSE158412"]');
+    insRow(db, 'ds:gse158430-2', '["GSE158412"]'); // same GEO accession, different species page
+    expect(subResult(db).ok).toBe(true);
+  });
+
+  it('flags a subseries.json key that matches no inventory row', () => {
+    const db = miniDb(); insRow(db, 'ds:gse173199', '["GSE173198"]');
+    const dir = mkdtempSync(join(tmpdir(), 'caail-subseries-'));
+    const path = join(dir, 'subseries.json');
+    writeFileSync(path, JSON.stringify({ datasets: { 'ds:nope': ['GSE1'] } }));
+    const r = checkSubseries(db, path).find((x) => /every override id matches/.test(x.label))!;
+    expect(r.ok).toBe(false); expect(r.detail).toMatch(/ds:nope/);
   });
 });
 

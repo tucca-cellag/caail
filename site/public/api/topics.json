@@ -47,8 +47,8 @@
           "paper": 51,
           "software": 14,
           "database": 38,
-          "dataset": 188,
-          "total": 291
+          "dataset": 200,
+          "total": 303
         },
         "tags": [
           "cell-line-engineering",
@@ -82,8 +82,8 @@
           "paper": 28,
           "software": 17,
           "database": 4,
-          "dataset": 32,
-          "total": 81
+          "dataset": 36,
+          "total": 85
         },
         "tags": [
           "growth-factors",
@@ -275,8 +275,8 @@
           "paper": 8,
           "software": 17,
           "database": 0,
-          "dataset": 7,
-          "total": 32
+          "dataset": 11,
+          "total": 36
         },
         "tags": []
       },
@@ -320,8 +320,8 @@
           "paper": 4,
           "software": 0,
           "database": 0,
-          "dataset": 9,
-          "total": 13
+          "dataset": 11,
+          "total": 15
         },
         "tags": []
       },
@@ -335,8 +335,8 @@
           "paper": 26,
           "software": 0,
           "database": 22,
-          "dataset": 66,
-          "total": 114
+          "dataset": 72,
+          "total": 120
         },
         "tags": []
       },
@@ -1817,5 +1817,5 @@
       "datasets": []
     }
   },
-  "corpusDate": "2026-08-11"
+  "corpusDate": "2026-08-12"
 }

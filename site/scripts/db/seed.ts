@@ -397,3 +397,49 @@ export function seedRelatedDois(db: Db): { rows: number } {
   }
   return { rows };
 }
+
+interface ManualSubseries { datasets: Record<string, string[]> }
+
+/**
+ * Seed `subseries` onto dataset_rows from the committed `scripts/db/subseries.json` —
+ * the MEMBER ACCESSIONS of a repository SuperSeries whose inventory row names only the
+ * parent (CAAIL-258).
+ *
+ * The defect this closes: a GEO SuperSeries accession resolves to no analysable data, so
+ * indexing only the parent hides every member from anyone querying the endpoint. Four
+ * parents in the corpus hid fifteen subseries and 408 samples, including the bulk n=4
+ * differentiation timecourse a homepage example asserted did not exist.
+ *
+ * Keyed by `ds:` id (dataset_rows, not dataset_entries — accessions live on the inventory
+ * rows). Values are bare uppercase accessions, deduped and stored as a JSON string;
+ * empty/absent -> left NULL. DB-only like the license and DOI axes, so it never reaches
+ * canonical Markdown. Folded by `db:reseed-axes` and `db:bootstrap`; validated by `db:check`.
+ *
+ * Deliberately NOT derived from the parent accession at parse time: membership is a fact
+ * about the repository, not about CAAIL, and the only way to learn it is to ask GEO. A
+ * checker that inferred it from our own data would have the same blind spot that produced
+ * the defect.
+ */
+export function seedSubseries(
+  db: Db,
+  subseriesPath: string = join(SITE_ROOT, 'scripts', 'db', 'subseries.json'),
+): { rows: number } {
+  const manual = readJson<ManualSubseries>(subseriesPath, { datasets: {} });
+  const set = db.prepare('UPDATE dataset_rows SET subseries=? WHERE item_id=?');
+  let rows = 0;
+  for (const [id, list] of Object.entries(manual.datasets ?? {})) {
+    const members = [...new Set((list ?? []).map((a) => a.trim().toUpperCase()).filter(Boolean))];
+    // An empty list is a half-finished edit, not a statement that the row has no members —
+    // that is what omitting the key means. Silently skipping it would leave the column NULL,
+    // and `db:check` only inspects rows WHERE subseries IS NOT NULL, so the one shape the
+    // guard explicitly rejects would be the one shape nothing could see.
+    if (!members.length) {
+      throw new Error(
+        `seedSubseries: '${id}' in subseries.json has no members. Remove the key, or list ` +
+          `the member accessions; an empty array records nothing and cannot be validated.`,
+      );
+    }
+    if (set.run(JSON.stringify(members), id).changes) rows++;
+  }
+  return { rows };
+}

@@ -102,10 +102,20 @@ CREATE TABLE catalog (
 );
 
 -- Dataset inventory rows promoted to first-class records ----------------------
+-- `subseries` records the MEMBER ACCESSIONS of a repository SuperSeries whose row
+-- names only the parent (CAAIL-258). A GEO SuperSeries publishes one accession that
+-- resolves to nothing analysable: GSE173199's row said "RNA-seq / serum-starvation
+-- series", while the five-timepoint n=4 timecourse everyone actually wants is the
+-- separate accession GSE173198. An agent could not reach it, so CAAIL answered worse
+-- than a ten-minute GEO search. DB-only like license/doi/related_dois — never written
+-- to canonical Markdown, folded into the site JSON at parse, where each member is
+-- RESOLVED against the inventory so the row says which members are catalogued in
+-- their own right and which are recorded here only.
 CREATE TABLE dataset_rows (
   item_id    TEXT PRIMARY KEY REFERENCES items(id),
   page       TEXT NOT NULL,            -- species page ('Cow')
   cells_json TEXT NOT NULL,            -- inventory-table row cells (ordered), JSON array of markdown strings
+  subseries  TEXT,                     -- JSON array of member accessions (bare, uppercase); NULL = not a SuperSeries (CAAIL-258)
   ordinal    INTEGER NOT NULL
 );
 
