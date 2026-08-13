@@ -4,4 +4,3 @@
 {"key":"scaffolding","label":"Scaffolding","header_md":"[Scaffolding](./Taxonomy.md#scaffolding)","ordinal":3}
 {"key":"sensory","label":"Sensory Prediction","header_md":"[Sensory Prediction](./Taxonomy.md#sensory-prediction)","ordinal":4}
 {"key":"tooling","label":"AI Tooling / Methodology","header_md":"[AI Tooling / Methodology](./Taxonomy.md#ai-tooling--methodology)","ordinal":5}
-{"key":"eval","label":"AI Evaluation & Benchmarking","header_md":"[AI Evaluation & Benchmarking](./Taxonomy.md#ai-evaluation--benchmarking)","ordinal":6}

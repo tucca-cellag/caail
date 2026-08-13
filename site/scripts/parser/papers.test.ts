@@ -177,8 +177,8 @@ describe('buildPapersModel — real Papers.md', () => {
     expect(model.methods.length).toBe(25);
   });
 
-  it('has 7 areas with the exact keys in column order', () => {
-    expect(model.areas.length).toBe(7);
+  it('has 6 areas with the exact keys in column order', () => {
+    expect(model.areas.length).toBe(6);
     expect(model.areas.map((a) => a.key)).toEqual([
       'media',
       'cell',
@@ -186,7 +186,6 @@ describe('buildPapersModel — real Papers.md', () => {
       'scaffolding',
       'sensory',
       'tooling',
-      'eval',
     ]);
   });
 

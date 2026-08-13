@@ -5,7 +5,7 @@
  * This module composes four lower-level, independently-tested modules:
  *   - markdown.ts : structural mdast helpers (parseFile, firstTable, …)
  *   - apa.ts      : APA citation-field parser (parseApa)
- *   - areas.ts    : the fixed 7-column area registry (areaKeyForLabel)
+ *   - areas.ts    : the fixed 6-column area registry (areaKeyForLabel)
  *   - types.ts    : the zod schema / types for the output shape
  *
  * It owns NO low-level parsing logic of its own — it wires the helpers together

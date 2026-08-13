@@ -23,10 +23,6 @@
     {
       "key": "tooling",
       "label": "AI Tooling / Methodology"
-    },
-    {
-      "key": "eval",
-      "label": "AI Evaluation & Benchmarking"
     }
   ],
   "methods": [
@@ -1073,56 +1069,74 @@
     },
     {
       "method": "Benchmarks & Evaluation Frameworks",
-      "area": "eval",
+      "area": "cell",
       "refIds": [
-        55,
         89,
-        108,
-        109,
-        110,
         127,
-        146,
-        147,
         148,
         149,
         150,
+        164,
+        57,
+        225
+      ],
+      "labels": [
+        "Brouwer et al. 2026",
+        "Chevalley et al. 2025",
+        "Notin et al. 2023",
+        "Duan et al. 2025",
+        "Nair et al. 2026",
+        "Huang et al. 2026",
+        "Adduri et al. 2025",
+        "Miller et al. 2025"
+      ]
+    },
+    {
+      "method": "Benchmarks & Evaluation Frameworks",
+      "area": "scaffolding",
+      "refIds": [
+        349
+      ],
+      "labels": [
+        "Yang 2026"
+      ]
+    },
+    {
+      "method": "Benchmarks & Evaluation Frameworks",
+      "area": "tooling",
+      "refIds": [
+        55,
+        108,
+        109,
+        110,
+        146,
+        147,
         155,
         156,
         157,
         158,
         159,
-        164,
         53,
-        57,
-        225,
         239,
         241,
-        349
+        225
       ],
       "labels": [
         "Sadhuka et al. 2025",
-        "Brouwer et al. 2026",
         "Mitchener et al. 2025",
         "Bushuiev et al. 2024",
         "Sze & Hassoun 2024",
-        "Chevalley et al. 2025",
         "Laurent et al. 2024",
         "Gu et al. 2025",
-        "Notin et al. 2023",
-        "Duan et al. 2025",
-        "Nair et al. 2026",
         "Jimenez et al. 2024",
         "Rein et al. 2023",
         "Wang et al. 2024",
         "Phan et al. 2026",
         "Wang et al. 2026a",
-        "Huang et al. 2026",
         "Liu et al. 2026",
-        "Adduri et al. 2025",
-        "Miller et al. 2025",
         "Ahmed et al. 2026",
         "Li & Ho 2026",
-        "Yang 2026"
+        "Miller et al. 2025"
       ]
     },
     {
@@ -3443,7 +3457,7 @@
         "Benchmarks & Evaluation Frameworks"
       ],
       "areas": [
-        "eval"
+        "tooling"
       ],
       "hasCode": false,
       "hasData": false,
@@ -3551,7 +3565,7 @@
         "Benchmarks & Evaluation Frameworks"
       ],
       "areas": [
-        "eval"
+        "tooling"
       ],
       "hasCode": false,
       "hasData": false,
@@ -3691,8 +3705,7 @@
         "Benchmarks & Evaluation Frameworks"
       ],
       "areas": [
-        "cell",
-        "eval"
+        "cell"
       ],
       "hasCode": true,
       "hasData": false,
@@ -4557,7 +4570,7 @@
         "Benchmarks & Evaluation Frameworks"
       ],
       "areas": [
-        "eval"
+        "cell"
       ],
       "hasCode": false,
       "hasData": false,
@@ -5225,7 +5238,7 @@
         "Benchmarks & Evaluation Frameworks"
       ],
       "areas": [
-        "eval"
+        "tooling"
       ],
       "hasCode": true,
       "hasData": false,
@@ -5296,7 +5309,7 @@
         "Benchmarks & Evaluation Frameworks"
       ],
       "areas": [
-        "eval"
+        "tooling"
       ],
       "hasCode": true,
       "hasData": false,
@@ -5339,7 +5352,7 @@
         "Benchmarks & Evaluation Frameworks"
       ],
       "areas": [
-        "eval"
+        "tooling"
       ],
       "hasCode": false,
       "hasData": false,
@@ -6143,7 +6156,7 @@
         "Benchmarks & Evaluation Frameworks"
       ],
       "areas": [
-        "eval"
+        "cell"
       ],
       "hasCode": true,
       "hasData": false,
@@ -6309,7 +6322,7 @@
         "Benchmarks & Evaluation Frameworks"
       ],
       "areas": [
-        "eval"
+        "tooling"
       ],
       "hasCode": true,
       "hasData": false,
@@ -6355,7 +6368,7 @@
         "Benchmarks & Evaluation Frameworks"
       ],
       "areas": [
-        "eval"
+        "tooling"
       ],
       "hasCode": true,
       "hasData": false,
@@ -6411,7 +6424,7 @@
         "Benchmarks & Evaluation Frameworks"
       ],
       "areas": [
-        "eval"
+        "cell"
       ],
       "hasCode": true,
       "hasData": false,
@@ -6460,7 +6473,7 @@
         "Benchmarks & Evaluation Frameworks"
       ],
       "areas": [
-        "eval"
+        "cell"
       ],
       "hasCode": false,
       "hasData": false,
@@ -6501,7 +6514,7 @@
         "Benchmarks & Evaluation Frameworks"
       ],
       "areas": [
-        "eval"
+        "cell"
       ],
       "hasCode": true,
       "hasData": true,
@@ -6656,7 +6669,7 @@
         "Benchmarks & Evaluation Frameworks"
       ],
       "areas": [
-        "eval"
+        "tooling"
       ],
       "hasCode": true,
       "hasData": false,
@@ -6694,7 +6707,7 @@
         "Benchmarks & Evaluation Frameworks"
       ],
       "areas": [
-        "eval"
+        "tooling"
       ],
       "hasCode": true,
       "hasData": false,
@@ -6747,7 +6760,7 @@
         "Benchmarks & Evaluation Frameworks"
       ],
       "areas": [
-        "eval"
+        "tooling"
       ],
       "hasCode": true,
       "hasData": false,
@@ -6803,7 +6816,7 @@
         "Benchmarks & Evaluation Frameworks"
       ],
       "areas": [
-        "eval"
+        "tooling"
       ],
       "hasCode": true,
       "hasData": false,
@@ -6851,7 +6864,7 @@
         "Benchmarks & Evaluation Frameworks"
       ],
       "areas": [
-        "eval"
+        "tooling"
       ],
       "hasCode": false,
       "hasData": true,
@@ -7042,7 +7055,7 @@
         "Benchmarks & Evaluation Frameworks"
       ],
       "areas": [
-        "eval"
+        "cell"
       ],
       "hasCode": true,
       "hasData": true,
@@ -8652,7 +8665,8 @@
         "Benchmarks & Evaluation Frameworks"
       ],
       "areas": [
-        "eval"
+        "cell",
+        "tooling"
       ],
       "hasCode": true,
       "hasData": false,
@@ -8910,7 +8924,7 @@
         "Benchmarks & Evaluation Frameworks"
       ],
       "areas": [
-        "eval"
+        "tooling"
       ],
       "hasCode": false,
       "hasData": false,
@@ -8953,7 +8967,7 @@
         "Benchmarks & Evaluation Frameworks"
       ],
       "areas": [
-        "eval"
+        "tooling"
       ],
       "hasCode": true,
       "hasData": false,
@@ -12078,8 +12092,7 @@
         "Benchmarks & Evaluation Frameworks"
       ],
       "areas": [
-        "scaffolding",
-        "eval"
+        "scaffolding"
       ],
       "hasCode": true,
       "hasData": false,
@@ -16647,5 +16660,5 @@
     }
   ],
   "scopeNote": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall.",
-  "corpusDate": "2026-08-12"
+  "corpusDate": "2026-08-13"
 }

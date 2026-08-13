@@ -26,7 +26,8 @@ describe('themeColor', () => {
   });
 
   it('never paints an area-less theme with an area colour', () => {
-    // The exact bug that shipped: metabolism-modeling wearing --caail-area-eval.
+    // The exact bug that shipped: metabolism-modeling wearing a matrix area's token,
+    // one since retired with its column — so borrowing now paints an undefined variable.
     for (const t of themes.filter((x) => !x.areaKey)) {
       expect(themeColor(t.slug)).not.toMatch(/--caail-area-/);
     }

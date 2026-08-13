@@ -57,10 +57,14 @@ const ADDITION_VERBS: readonly string[] = [
  * ground, so it's a best-effort match against the title; first hit wins, and
  * anything unmatched falls back to `tooling` (the neutral "general method/tool"
  * column). Keep the method/cell-biology cues before the generic tooling cues.
+ *
+ * There is deliberately no benchmark row: a benchmark takes the area it measures,
+ * so a domain cue in the same title should win, and a domain-less benchmark reaches
+ * `tooling` via the fallback anyway. Adding "benchmark"/"eval" to the `tooling` entry
+ * would be dead weight — it is the last entry, so those titles already land there.
  */
 const AREA_KEYWORDS: ReadonlyArray<readonly [RecentEntry['area'], readonly string[]]> = [
   ['sensory', ['burger', 'flavor', 'flavour', 'aroma', 'taste', 'sensory', 'mass spec', 'metabolom', 'volatile']],
-  ['eval', ['benchmark', 'leaderboard', 'eval']],
   ['bioprocess', ['bioreactor', 'bioprocess', 'scale-up', 'scale up', 'perfusion', 'microcarrier']],
   ['scaffolding', ['scaffold', 'biomaterial', 'hydrogel']],
   ['media', ['media', 'medium', 'growth factor', 'serum']],
