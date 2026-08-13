@@ -18,13 +18,30 @@
  *    37rem` was a measured guess that still left ~115px of void under the shortest panel.
  * 2. Inactive cards are hidden with `visibility`, never `hidden`/`display: none` — a
  *    display-none card contributes nothing to grid sizing, which would collapse the frame
- *    and reintroduce the jump. `visibility: hidden` still sizes the grid, still leaves the
- *    a11y tree, and still blocks pointer and focus.
+ *    and reintroduce the jump. Be exact about what that costs, because this comment used
+ *    to claim the opposite and the claim survived several reviews: `visibility: hidden`
+ *    DOES remove a card from the accessibility tree, so only the showing card is ever
+ *    exposed to assistive tech. That is what the WAI-ARIA carousel pattern does rather than
+ *    a defect, but be equally exact about what the fix for it does, or this comment repeats
+ *    its own history in the other direction. The LABELS carry all of it: the stack's name
+ *    ("Worked queries: 4 examples") and each slide's ("2 of 4: Media & metabolism") are what
+ *    tell a listener there are four and which one they have. `aria-roledescription` only
+ *    changes how the role is spoken and adds no navigation whatsoever; `aria-controls` is
+ *    correctness with weak support, not a route. So: the three cards that are not showing
+ *    are ABSENT from the accessibility tree, and every reader who wants them gets there
+ *    through the pills, which are labelled buttons and always were.
  * 3. The entrance is TRANSFORM-ONLY. The old tab fade animated opacity and justified it on
  *    the grounds that an accessibility audit never clicks a tab. Auto-advance destroys that
  *    argument — an audit can now sample a card mid-fade, and axe computes contrast through
  *    opacity, with `docs.yml` gating deploys on Lighthouse accessibility ≥ 0.90. Same
  *    constraint, same resolution as styles/reveal.css.
+ * 4. Rotation is BOUNDED, and starts when the band is first on screen. It used to start at
+ *    page load several screens above here, so a reader arriving at the band landed on an
+ *    arbitrary card behind a half-drawn progress bar and never saw the first one; and it
+ *    then advanced every 16s for as long as the tab stayed open. It now makes three passes
+ *    over the set and rests, holds while the pointer or focus is inside, and carries an
+ *    explicit stop button, because hover is not a mechanism a keyboard or screen-reader
+ *    user has and WCAG 2.2.2 asks for one they do.
  *
  * Two deliberate departures from the reference.
  *
@@ -474,7 +491,7 @@ const examples = [
 
   <div class="pills sr sr-d1">
     {examples.map((e, i) => (
-      <button type="button" class="pill" data-pill aria-pressed={i === 0 ? 'true' : 'false'}>
+      <button type="button" class="pill" data-pill aria-controls="ask-stack" aria-pressed={i === 0 ? 'true' : 'false'}>
         <Icon name={e.icon} />{e.tab}
       </button>
     ))}
@@ -482,10 +499,34 @@ const examples = [
 
   {/* Announces the change for screen readers, which see neither the pill state nor the
       card swap. Deliberately announces the short label, not the four-line question —
-      re-reading a paragraph on every advance is punishing to listen to. */}
+      re-reading a paragraph on every advance is punishing to listen to.
+
+      Written ONLY on a change the reader asked for. The timer used to write here too, so
+      anyone listening to any part of this page was interrupted every 16 seconds for as
+      long as the tab stayed open, whether or not they had ever been near the band.
+
+      A deliberate DEPARTURE from the WAI-ARIA carousel pattern, not an implementation of
+      it, and the difference matters to anyone who later tries to close the gap. The pattern
+      puts `aria-live` on the slide wrapper itself — `off` while rotating, `polite` once it
+      is not — which here would read a ~200-word card aloud end to end on every change. This
+      announces a short label from a region of its own instead, and only on a change the
+      reader made. Same principle, since nothing automatic is announced either way; not the
+      same mechanism. */}
   <p class="vh" aria-live="polite" aria-atomic="true" data-live></p>
 
-  <div class="stack sr sr-d2">
+  {/* Named and role-described so the one exposed card is announced as part of something,
+      rather than as a stray group with no context. `aria-roledescription` is spoken only if
+      the element also has a role and an accessible name, hence all three attributes.
+      Its reach is narrow and worth stating: it renames the role and does nothing else. It
+      does not expose the hidden cards, and it gives nobody a way to move between them. The
+      count in this label is what carries that, which is why the label states one. */}
+  <div
+    class="stack sr sr-d2"
+    id="ask-stack"
+    role="group"
+    aria-roledescription="carousel"
+    aria-label={`Worked queries: ${examples.length} examples`}
+  >
     {/* Full width with no JS, where it simply reads as the card's accent edge. With JS it
         animates 0 → 1 across the dwell, and its `animationend` is what advances the
         carousel — one clock instead of two, so pausing the animation pauses the advance
@@ -493,7 +534,14 @@ const examples = [
     <div class="prog" data-prog aria-hidden="true"></div>
 
     {examples.map((e, i) => (
-      <article class="card" data-card data-off={i === 0 ? null : ''}>
+      <article
+        class="card"
+        data-card
+        data-off={i === 0 ? null : ''}
+        role="group"
+        aria-roledescription="slide"
+        aria-label={`${i + 1} of ${examples.length}: ${e.tab}`}
+      >
         <div class="chead">
           <p class="plabel"><Icon name={e.icon} />{e.label}</p>
           <p class="q">{e.q}</p>
@@ -516,15 +564,27 @@ const examples = [
   </div>
 
   <div class="ctrls sr sr-d3">
-    <button type="button" class="arrow" data-prev aria-label="Previous example">
+    {/* The rotation control, first, as the WAI-ARIA carousel pattern places it. WCAG 2.2.2
+        wants a mechanism to stop content that moves by itself, and the two this band had —
+        pause on hover, and stop on using any other control — are both mechanisms a reader
+        has to already possess a pointer, or already be pressing something, to reach. This
+        is the one that is simply there and says what it does. Rendered stopped, because at
+        load it is: rotation does not begin until the band is scrolled to.
+        Two icons swapped by `display`, which is the `.setup .copy` shape — see the margin
+        note beside `.ask .rotate` in starlight-overrides.css. */}
+    <button type="button" class="arrow rotate" data-rotate aria-controls="ask-stack" aria-label="Start automatic rotation">
+      <Icon name="lucide:play" class="i-play" />
+      <Icon name="lucide:pause" class="i-pause" />
+    </button>
+    <button type="button" class="arrow" data-prev aria-controls="ask-stack" aria-label="Previous example">
       <Icon name="lucide:chevron-left" />
     </button>
     <div class="dots">
       {examples.map((e, i) => (
-        <button type="button" class="dot" data-dot aria-label={`Show example ${i + 1} of ${examples.length}: ${e.tab}`} aria-current={i === 0 ? 'true' : 'false'}></button>
+        <button type="button" class="dot" data-dot aria-controls="ask-stack" aria-label={`Show example ${i + 1} of ${examples.length}: ${e.tab}`} aria-current={i === 0 ? 'true' : 'false'}></button>
       ))}
     </div>
-    <button type="button" class="arrow" data-next aria-label="Next example">
+    <button type="button" class="arrow" data-next aria-controls="ask-stack" aria-label="Next example">
       <Icon name="lucide:chevron-right" />
     </button>
   </div>
@@ -556,61 +616,165 @@ const examples = [
   if (root && cards.length > 1) {
     const prog = root.querySelector<HTMLElement>('[data-prog]')!;
     const live = root.querySelector<HTMLElement>('[data-live]')!;
+    const stack = root.querySelector<HTMLElement>('.stack')!;
+    const rotate = root.querySelector<HTMLButtonElement>('[data-rotate]')!;
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
 
-    let at = 0;
-    // Auto-advance is off under reduced motion, and switches off permanently the moment
-    // anyone touches a control — once a reader has expressed intent, moving the content
-    // out from under them is hostile. It also pauses on hover and on focus-within, which
-    // together are the pause mechanism WCAG 2.2.2 asks of auto-moving content.
-    let auto = !reduce.matches;
+    // Rotation is BOUNDED: three passes over the set, then it comes to rest back on the
+    // first card. Counted in COMPLETED timed dwells, which is exactly what `animationend`
+    // fires once per, and derived from the card count rather than typed so that adding a
+    // fifth card does not silently turn three passes into two and a bit.
+    const DWELLS_PER_CARD = 3;
+    const budget = cards.length * DWELLS_PER_CARD;
 
-    const show = (n: number, announce: boolean) => {
+    let at = 0;
+    let completed = 0;
+    // `armed` is whether the clock is running at all; `hovering` and `focused` are the two
+    // independent reasons to hold it. They used to share one inline style, so whichever
+    // ENDED last won: a keyboard user holding focus in the band had the rotation resume
+    // under them the moment a passing mouse left the section, and blurring a pill restarted
+    // it with the pointer still inside. Two booleans and one place that reads both.
+    let armed = false;
+    let hovering = false;
+    let focused = false;
+    // An explicit start outranks the hold that pressing the start button itself creates.
+    // Nobody can activate a control inside the band without the pointer or the focus being
+    // inside the band, so `hovering || focused` is ALWAYS true at that moment: without this
+    // the button armed the rotation and froze it at scaleX(0) in the same breath, and a
+    // reader pressed play and watched nothing happen — by mouse and by keyboard alike.
+    // Cleared once BOTH holds have left rather than on the first of the two, because a mouse
+    // click also takes focus, so clearing it on `pointerleave` puts the freeze straight back.
+    let overrideHold = false;
+    // Held here rather than beside its own construction because both stopping and starting
+    // the rotation have to be able to cancel an arming that has not happened yet.
+    let io: IntersectionObserver | null = null;
+
+    const syncHold = () => {
+      const held = hovering || focused;
+      if (!held) overrideHold = false;
+      prog.style.animationPlayState = held && !overrideHold ? 'paused' : '';
+    };
+
+    const setArmed = (on: boolean) => {
+      armed = on;
+      root.toggleAttribute('data-rotating', on);
+      rotate.classList.toggle('is-playing', on);
+      rotate.setAttribute('aria-label', on ? 'Stop automatic rotation' : 'Start automatic rotation');
+      if (!on) prog.classList.remove('run');
+    };
+
+    const restart = () => {
+      prog.classList.remove('run');
+      if (!armed) return;
+      // The class change only takes effect once the removal has been flushed; without the
+      // forced reflow the animation is never re-run and the carousel stalls after one card.
+      void prog.offsetWidth;
+      prog.classList.add('run');
+      syncHold(); // re-assert a hold that was in force across the restart
+    };
+
+    /**
+     * `byUser` separates a change the reader asked for from one the clock made. It decides
+     * whether the live region speaks — not whether the card animates, which it always does.
+     * Those two were one flag, which is how the timer came to announce itself every 16
+     * seconds to anyone reading anywhere on the homepage.
+     */
+    const show = (n: number, byUser: boolean) => {
       at = (n + cards.length) % cards.length;
       cards.forEach((c, i) => {
         if (i === at) c.removeAttribute('data-off');
         else c.setAttribute('data-off', '');
         // Never `hidden`: display:none removes the card from grid sizing and the frame
         // would collapse to the active card's height, jumping on every change.
-        c.classList.toggle('is-enter', i === at && announce);
+        c.classList.toggle('is-enter', i === at);
       });
       pills.forEach((p, i) => p.setAttribute('aria-pressed', String(i === at)));
       dots.forEach((d, i) => d.setAttribute('aria-current', String(i === at)));
-      if (announce) live.textContent = `${pills[at]?.textContent?.trim() ?? ''}: example ${at + 1} of ${cards.length}`;
+      if (byUser) live.textContent = `${pills[at]?.textContent?.trim() ?? ''}: example ${at + 1} of ${cards.length}`;
       restart();
     };
 
-    const restart = () => {
-      prog.classList.remove('run');
-      if (!auto) return;
-      // The class change only takes effect once the removal has been flushed; without the
-      // forced reflow the animation is never re-run and the carousel stalls after one card.
-      void prog.offsetWidth;
-      prog.classList.add('run');
+    const startRotation = () => {
+      // The observer's only job is the FIRST arming, so an explicit start makes it redundant
+      // — and leaving it connected lets it fire a moment later and reset the count under a
+      // reader who had just started the rotation themselves.
+      io?.disconnect();
+      io = null;
+      completed = 0;
+      overrideHold = true;
+      setArmed(true);
+      restart();
+    };
+    const stopRotation = () => {
+      // Cancels a PENDING arm as well as a running one. Rotation starts when the band is
+      // scrolled to, so a reader who reaches the band and picks a card in the same movement
+      // could otherwise have the observer start rotating a moment later — the exact
+      // interruption that stopping on first interaction exists to prevent. Narrow window,
+      // but the whole invariant is "a deliberate move ends it", and a race that breaks it
+      // occasionally is not a weaker version of that rule, it is not that rule.
+      io?.disconnect();
+      io = null;
+      if (armed) setArmed(false);
     };
 
-    const stopAuto = () => {
-      auto = false;
-      prog.classList.remove('run');
-      root.setAttribute('data-manual', '');
-    };
+    prog.addEventListener('animationend', () => {
+      if (!armed) return;
+      completed += 1;
+      // `completed` counts dwells that have FINISHED, so it starts at 0 and this is the only
+      // place it moves. That base is the whole of the accounting, and it is easy to get
+      // wrong in a way nothing shows: seeding it at 1 to mean "a dwell is in progress" costs
+      // the trailing card a turn, giving [3,3,3,2] and resting on the last card instead of
+      // [3,3,3,3] resting on the first. Whether this check runs before or after the advance
+      // makes no difference to either — it was checked by simulating all four combinations,
+      // not reasoned about — so it sits first, where it saves `show` a pointless restart.
+      if (completed >= budget) stopRotation();
+      show(at + 1, false);
+    });
 
-    prog.addEventListener('animationend', () => { if (auto) show(at + 1, true); });
+    // Any deliberate move stops the rotation for good: once a reader has expressed intent,
+    // moving the content out from under them again is hostile. The rotate button is the one
+    // control that can also start it, which is what makes it a mechanism rather than a sign.
+    pills.forEach((p, i) => p.addEventListener('click', () => { stopRotation(); show(i, true); }));
+    dots.forEach((d, i) => d.addEventListener('click', () => { stopRotation(); show(i, true); }));
+    root.querySelector('[data-prev]')?.addEventListener('click', () => { stopRotation(); show(at - 1, true); });
+    root.querySelector('[data-next]')?.addEventListener('click', () => { stopRotation(); show(at + 1, true); });
+    rotate.addEventListener('click', () => { if (armed) stopRotation(); else startRotation(); });
 
-    pills.forEach((p, i) => p.addEventListener('click', () => { stopAuto(); show(i, true); }));
-    dots.forEach((d, i) => d.addEventListener('click', () => { stopAuto(); show(i, true); }));
-    root.querySelector('[data-prev]')?.addEventListener('click', () => { stopAuto(); show(at - 1, true); });
-    root.querySelector('[data-next]')?.addEventListener('click', () => { stopAuto(); show(at + 1, true); });
+    root.addEventListener('pointerenter', () => { hovering = true; syncHold(); });
+    root.addEventListener('pointerleave', () => { hovering = false; syncHold(); });
+    root.addEventListener('focusin', () => { focused = true; syncHold(); });
+    root.addEventListener('focusout', (e) => {
+      // `focusout` fires before the incoming element takes focus, and `relatedTarget` is
+      // where it is going. Moving between two controls inside the band is not leaving it.
+      if (e.relatedTarget instanceof Node && root.contains(e.relatedTarget)) return;
+      focused = false;
+      syncHold();
+    });
 
-    const pause = () => { prog.style.animationPlayState = 'paused'; };
-    const play = () => { prog.style.animationPlayState = ''; };
-    root.addEventListener('pointerenter', pause);
-    root.addEventListener('pointerleave', play);
-    root.addEventListener('focusin', pause);
-    root.addEventListener('focusout', play);
+    reduce.addEventListener('change', () => { if (reduce.matches) stopRotation(); });
 
-    reduce.addEventListener('change', () => { if (reduce.matches) stopAuto(); });
-    restart();
+    setArmed(false); // establishes the button's rendered state; the observer below arms it
+
+    if (!reduce.matches) {
+      // The clock used to start here, at parse time, with the band several screens below
+      // the fold: a reader who scrolled down arrived at whatever card the timer had reached
+      // behind a part-drawn progress bar, and never saw the first one. Start it when the
+      // card frame is first on screen instead.
+      //
+      // Observing the STACK rather than the section, at threshold 0. A tall section on a
+      // short viewport can never reach a fractional threshold, which is a failure that only
+      // shows up on the phones least able to report it.
+      if ('IntersectionObserver' in window) {
+        io = new IntersectionObserver((entries) => {
+          if (!entries.some((e) => e.isIntersecting)) return;
+          io?.disconnect();
+          startRotation();
+        }, { threshold: 0 });
+        io.observe(stack);
+      } else {
+        startRotation();
+      }
+    }
   }
 </script>
 
@@ -714,19 +878,64 @@ const examples = [
   }
   .arrow [data-icon] { width: 1.05rem; height: 1.05rem; }
   .arrow:hover { color: var(--caail-ink); border-color: var(--caail-link); }
+
+  /* Icons swapped by `display`, so exactly one is ever laid out and the button cannot
+     change size across the swap. Rendered state is "stopped", which is true at load. */
+  .rotate .i-play, .rotate .i-pause { display: none; }
+  .rotate:not(.is-playing) .i-play { display: block; }
+  .rotate.is-playing .i-pause { display: block; }
+  /* While it is rotating, the control is the live thing on the row rather than another
+     grey affordance — it is the one a reader is looking for when they want it to stop. */
+  .rotate.is-playing { color: var(--caail-link); border-color: var(--caail-link); }
+
   .dots { display: flex; align-items: center; gap: .4rem; }
+  /* The dot's BOX never changes size; only the pill drawn inside it does.
+     This used to transition `width` from .5rem to 1.1rem, which is a layout property: every
+     frame of every change re-laid-out the row, and the dots either side slid to make room.
+     `clip-path` paints the same pill without touching layout, and 27% of 1.1rem leaves
+     .5rem showing, so the inactive dot is the size it always was. The constant 1.1rem box
+     also gives the hit target somewhere to grow from — see the expander below.
+     Interpolation sampled mid-transition in Chromium and Firefox; WebKit is not installed
+     here and is unverified. The risk that leaves is bounded and cosmetic: the box is a
+     constant width whether or not the clip animates, so an engine that refused to
+     interpolate would snap the indicator, not move the row. */
   .dot {
-    width: .5rem; height: .5rem; padding: 0; cursor: pointer;
-    border: 0; border-radius: 999px; background: var(--caail-border);
-    transition: width .2s ease-out, background .2s ease-out;
+    position: relative;
+    width: 1.1rem; height: .5rem; padding: 0; cursor: pointer;
+    border: 0; background: none;
   }
-  .dot:hover { background: var(--caail-muted); }
-  .dot[aria-current='true'] { width: 1.1rem; background: var(--caail-link); }
+  .dot::before {
+    content: ''; display: block; width: 100%; height: 100%;
+    border-radius: 999px; background: var(--caail-border);
+    clip-path: inset(0 27% 0 27% round 999px);
+    transition: clip-path .2s ease-out, background .2s ease-out;
+  }
+  .dot:hover::before { background: var(--caail-muted); }
+  .dot[aria-current='true']::before {
+    clip-path: inset(0 0 0 0 round 999px);
+    background: var(--caail-link);
+  }
+  /* An 8px-tall dot is a poor pointer target, and a touch one is worse. Measured with
+     elementFromPoint rather than reasoned about, which is the only reason the sentence below
+     is accurate: each dot ends up about 22.6x26px and owns its own centre and the whole of
+     its visible pill. The edge is where arithmetic and rendering part company — a 17.59px
+     box in a 6.39px gap leaves 0.39px between adjacent expanders, which subpixel rounding
+     eats, so a sliver at the middle of each gap answers for the later dot rather than for
+     neither. That sliver is nowhere near either pill and costs a reader nothing; widen this
+     and it stops being a sliver.
+     22.6px is under WCAG 2.5.8's 24px, so the "equivalent control" exemption is load-bearing
+     rather than decorative here: the pills select the same cards at full size. Nothing
+     automated is watching — the axe run is tagged wcag2a/wcag2aa and 2.5.8 is in neither. */
+  .dot::after { content: ''; position: absolute; inset: -9px -3px; }
 
   @media (prefers-reduced-motion: reduce) {
     .card.is-enter > * { animation: none; }
     .prog.run { animation: none; }
-    .dot { transition: none; }
+    .dot::before { transition: none; }
+    /* The rotation this button controls never starts under reduced motion, and the progress
+       animation it would wait on is disabled, so pressing it would advance nothing. A
+       control that cannot act is worse than no control. */
+    .rotate { display: none; }
   }
 
   .plabel {

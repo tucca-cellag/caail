@@ -516,11 +516,382 @@ test('the #why mock answers the same cell it claims to query', async ({ page }) 
   ).toBe(cell!.refIds.length);
 });
 
+/**
+ * The worked-queries carousel.
+ *
+ * Rotation is deliberately BOUNDED (three dwells per card, then it rests) and deliberately
+ * late (it does not start until the card frame is on screen). Both are properties of a
+ * clock, so most of what follows drives that clock rather than waiting on it: `hurry()`
+ * collapses the 16s dwell to a few milliseconds by restyling the animation the carousel
+ * uses as its timer. Waiting the real duration would put a single test at over three
+ * minutes and would still be measuring the same property.
+ */
+test.describe('worked-queries carousel', () => {
+  /**
+   * Collapse the dwell so a full rotation budget runs in a couple of seconds.
+   *
+   * 200ms rather than the tempting 40: the whole rotation then lasts 12 x 200ms, and a test
+   * that first has to observe rotation IN PROGRESS gets a 2.4s window to do it in. At 40ms
+   * that window is ~0.5s, which on a contended runner is a coin toss, and it would fail
+   * reporting "expected data-rotating" — a message about the harness, not about the
+   * property under test. This repo already has a ticket for tests that fail under load.
+   */
+  const hurry = (page: import('@playwright/test').Page, ms = 200) =>
+    page.addStyleTag({ content: `.ask .prog.run { animation-duration: ${ms}ms !important; }` });
+
+  /** Scrolling the stack into view is what arms the rotation, so most tests start here. */
+  const reachTheBand = async (page: import('@playwright/test').Page) => {
+    await page.locator('.ask .stack').scrollIntoViewIfNeeded();
+    await expect(page.locator('.ask')).toHaveAttribute('data-rotating', '');
+  };
+
+  test('exactly one card is showing, and the frame never resizes as they change', async ({ page }) => {
+    await page.goto('./');
+    const stack = page.locator('.ask .stack');
+    await expect(stack).toBeVisible();
+
+    const pills = page.locator('.ask [data-pill]');
+    const n = await pills.count();
+    expect(n, 'no carousel pills found — the selector has drifted').toBeGreaterThan(1);
+
+    const heights = new Set<number>();
+    for (let i = 0; i < n; i++) {
+      await pills.nth(i).click();
+      await page.waitForTimeout(650); // let the entrance settle
+      heights.add(Math.round((await stack.boundingBox())!.height));
+
+      // `visibility`, not `hidden` — so count what is actually being shown rather than
+      // what is in the DOM. Every card is present in the DOM at all times by design.
+      const shown = await page.locator('.ask [data-card]').evaluateAll((els) =>
+        els.filter((e) => getComputedStyle(e).visibility !== 'hidden').length,
+      );
+      expect(shown, `card ${i}: ${shown} cards visible at once`).toBe(1);
+    }
+    expect(
+      [...heights],
+      `the frame resized between cards (${[...heights].join(', ')}px) — the grid stack is not sizing to the tallest card`,
+    ).toHaveLength(1);
+  });
+
+  test('the first card is readable with no JavaScript at all', async ({ browser }) => {
+    const ctx = await browser.newContext({ javaScriptEnabled: false });
+    const page = await ctx.newPage();
+    await page.goto('./');
+    // The controls are inert without JS, but the content must not be.
+    await expect(page.locator('.ask [data-card]').first()).toBeVisible();
+    await expect(page.locator('.ask [data-card]').first().locator('.q')).not.toBeEmpty();
+    await ctx.close();
+  });
+
+  /**
+   * The clock used to start at parse time, with the band several screens below the fold, so
+   * a reader who scrolled down arrived at whatever card the timer had reached and never saw
+   * the first one. Asserted on the running ANIMATION rather than on the class, because the
+   * class is what the fix touches and the animation is what the reader experiences.
+   */
+  test('rotation does not start until the band is on screen', async ({ page }) => {
+    // Pinned, because this test's premise is that the band is BELOW the fold. Inheriting the
+    // default viewport makes the suite silently depend on it, and the failure when it changes
+    // would look like a carousel bug.
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await page.goto('./');
+    await page.waitForTimeout(1500); // ~ where the old 16s clock would already be a tenth in
+
+    // Belt and braces: if the band is ever on screen at load anyway, say so rather than
+    // passing on a premise that no longer holds.
+    const box = (await page.locator('.ask .stack').boundingBox())!;
+    expect(
+      box.y > page.viewportSize()!.height,
+      'the band is already on screen at load, so "it has not started yet" is not the property being measured',
+    ).toBe(true);
+
+    await expect(page.locator('.ask')).not.toHaveAttribute('data-rotating', '');
+    expect(
+      await page.locator('.ask .prog').evaluate((el) => el.getAnimations().length),
+      'the progress bar is animating while the band is still below the fold',
+    ).toBe(0);
+    await expect(page.locator('.ask [data-card]').first()).toBeVisible();
+
+    await reachTheBand(page);
+    expect(
+      await page.locator('.ask .prog').evaluate((el) => el.getAnimations().length),
+      'scrolling to the band did not start the rotation',
+    ).toBe(1);
+  });
+
+  /**
+   * Hover-pause and focus-pause were one inline style with two writers, so whichever
+   * condition ENDED last won. The commonest form: a keyboard user holds focus in the band,
+   * a mouse crosses it and leaves, and the rotation resumes under them.
+   */
+  test('a passing pointer does not resume rotation under a held focus', async ({ page }) => {
+    await page.goto('./');
+    await reachTheBand(page);
+    const playState = () => page.locator('.ask .prog').evaluate((el) => getComputedStyle(el).animationPlayState);
+
+    await page.locator('.ask [data-pill]').first().focus();
+    expect(await playState(), 'focus did not pause the rotation').toBe('paused');
+
+    // Mouse enters the band and leaves again, while focus never moves.
+    await page.locator('.ask .stack').hover();
+    expect(await playState()).toBe('paused');
+    await page.mouse.move(0, 0);
+    expect(await playState(), 'the pointer leaving cancelled a pause that focus still holds').toBe('paused');
+
+    // And the mirror image: pointer inside, focus taken and given up.
+    await page.locator('.ask .stack').hover();
+    await page.locator('.ask [data-pill]').first().focus();
+    await page.locator('.ask [data-pill]').first().blur();
+    expect(await playState(), 'blurring cancelled a pause that the pointer still holds').toBe('paused');
+  });
+
+  /**
+   * A live region that speaks on every automatic advance speaks to a reader anywhere on the
+   * page, every 16 seconds, for as long as the tab is open — and they may never have been
+   * near the band. Automatic movement is not a status message; a response to a control is.
+   */
+  test('the live region is silent while it rotates and speaks when a control is used', async ({ page }) => {
+    await page.goto('./');
+    await hurry(page);
+    await reachTheBand(page);
+    const live = page.locator('.ask [data-live]');
+
+    /**
+     * Watch, rather than sample afterwards. Two things have to hold across the WHOLE
+     * rotation and an assertion taken once it has finished can see neither of them: that
+     * the cards actually advanced — a rotation that never moved would announce nothing and
+     * pass triumphantly — and that the region was never written, since a write that
+     * something later cleared leaves no trace in the final state. A MutationObserver cannot
+     * miss either, where polling at this dwell is a race.
+     */
+    const observed = await page.evaluate(
+      (ms) =>
+        new Promise<{ cards: number[]; announcements: string[] }>((resolve) => {
+          const root = document.querySelector('.ask')!;
+          const pills = [...root.querySelectorAll('[data-pill]')];
+          const liveEl = root.querySelector('[data-live]')!;
+          const cards = new Set<number>();
+          const announcements: string[] = [];
+          const readPills = () =>
+            pills.forEach((p, i) => {
+              if (p.getAttribute('aria-pressed') === 'true') cards.add(i);
+            });
+          readPills();
+          const pillObs = new MutationObserver(readPills);
+          pills.forEach((p) => pillObs.observe(p, { attributes: true, attributeFilter: ['aria-pressed'] }));
+          const liveObs = new MutationObserver(() => announcements.push(liveEl.textContent ?? ''));
+          liveObs.observe(liveEl, { childList: true, characterData: true, subtree: true });
+          setTimeout(() => {
+            pillObs.disconnect();
+            liveObs.disconnect();
+            resolve({ cards: [...cards], announcements });
+          }, ms);
+        }),
+      4000, // longer than the whole hurried budget of 12 x 200ms
+    );
+
+    expect(
+      observed.cards.length,
+      'the rotation never advanced, so "it announced nothing" proves nothing',
+    ).toBeGreaterThan(1);
+    expect(
+      observed.announcements,
+      `the timer announced its own advances: ${JSON.stringify(observed.announcements)}`,
+    ).toEqual([]);
+
+    await page.locator('.ask [data-next]').click();
+    await expect(live, 'a reader-initiated change was not announced').not.toBeEmpty();
+  });
+
+  /**
+   * Picking a card BEFORE the band has been reached must also cancel the rotation that has
+   * not started yet.
+   *
+   * Rotation arms on an IntersectionObserver, so the two orderings differ: stopping a
+   * running clock is one thing, cancelling a pending one is another, and only the first was
+   * handled. A reader who reaches the band and picks a card in the same movement would have
+   * had the rotation start under them a frame later. The window is small, which is the
+   * argument for a test rather than against one — nobody would reproduce this by hand.
+   */
+  test('picking a card before the band is reached cancels the rotation that had not started', async ({ page }) => {
+    await page.goto('./');
+    await expect(page.locator('.ask'), 'rotation started before the band was on screen').not.toHaveAttribute(
+      'data-rotating',
+      '',
+    );
+
+    // Click without scrolling the band into view first: Playwright scrolls to the element as
+    // part of the click, so the observer fires in the same movement as the interaction.
+    await page.locator('.ask [data-pill]').nth(2).click();
+    await page.waitForTimeout(600); // well past the observer's callback
+
+    await expect(page.locator('.ask'), 'a pending observer armed the rotation after the reader chose').not.toHaveAttribute(
+      'data-rotating',
+      '',
+    );
+    await expect(page.locator('.ask [data-pill]').nth(2), 'the chosen card did not stay chosen').toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    expect(await page.locator('.ask .prog').evaluate((el) => el.getAnimations().length)).toBe(0);
+  });
+
+  /**
+   * The carousel semantics, which are the only thing standing between a screen-reader user
+   * and three cards they cannot see.
+   *
+   * `visibility: hidden` removes the inactive cards from the accessibility tree — that is
+   * the WAI-ARIA carousel pattern working, not a bug, but only if the widget says what it
+   * is. Nothing in axe checks for that, so it is checked here. The header comment in
+   * AskExamples.astro asserted the exact opposite of how `visibility` behaves for months,
+   * which is why this property gets an assertion rather than a comment.
+   */
+  test('the stack describes itself as a carousel of labelled slides', async ({ page }) => {
+    await page.goto('./');
+    const stack = page.locator('.ask .stack');
+    await expect(stack).toHaveAttribute('aria-roledescription', 'carousel');
+    await expect(stack).toHaveAttribute('role', 'group');
+    await expect(stack, 'aria-roledescription is not announced without an accessible name').toHaveAttribute(
+      'aria-label',
+      /\S/,
+    );
+
+    const cards = page.locator('.ask [data-card]');
+    const pills = page.locator('.ask [data-pill]');
+    const n = await cards.count();
+    for (let i = 0; i < n; i++) {
+      await expect(cards.nth(i)).toHaveAttribute('aria-roledescription', 'slide');
+      // Position AND name: "2 of 4: Media & metabolism". Position alone leaves a listener
+      // who arrives mid-band with no idea what they are hearing.
+      const tab = ((await pills.nth(i).textContent()) ?? '').trim();
+      await expect(cards.nth(i)).toHaveAttribute('aria-label', `${i + 1} of ${n}: ${tab}`);
+    }
+
+    // Every control names the thing it drives, and that thing exists.
+    const dangling = await page.evaluate(() =>
+      [...document.querySelectorAll<HTMLElement>('.ask [aria-controls]')]
+        .filter((el) => !document.getElementById(el.getAttribute('aria-controls')!))
+        .map((el) => el.getAttribute('aria-label') ?? el.textContent?.trim()),
+    );
+    expect(dangling, `controls pointing at a missing id: ${dangling.join(', ')}`).toEqual([]);
+    expect(
+      await page.locator('.ask [aria-controls]').count(),
+      'no control claims to control anything — the pills, dots and arrows should all point at the stack',
+    ).toBe(n * 2 + 3); // a pill and a dot each, plus prev / next / rotate
+  });
+
+  /**
+   * Bounded rotation is the whole reason the other two defects stop mattering: content that
+   * moves by itself forever cannot be made acceptable by announcing it more politely.
+   */
+  test('rotation stops on its own after three passes, and rests on the first card', async ({ page }) => {
+    await page.goto('./');
+    await hurry(page);
+    await reachTheBand(page);
+
+    await expect(page.locator('.ask'), 'the rotation never ended').not.toHaveAttribute('data-rotating', '', {
+      timeout: 8000, // the hurried budget is 12 x 200ms, plus room for a slow runner
+    });
+    const shown = await page.locator('.ask [data-card]').evaluateAll((els) =>
+      els.filter((e) => getComputedStyle(e).visibility !== 'hidden').length,
+    );
+    expect(shown, 'the band came to rest showing something other than exactly one card').toBe(1);
+    // Resting on the first card is what tells you every card got its full three turns: end
+    // the rotation one dwell earlier and it comes to rest on the last card instead, having
+    // given that one two turns and every other one three.
+    await expect(
+      page.locator('.ask [data-pill]').first(),
+      'the rotation ended somewhere other than back at the first card, so a card was short-changed a turn',
+    ).toHaveAttribute('aria-pressed', 'true');
+    expect(
+      await page.locator('.ask .prog').evaluate((el) => el.getAnimations().length),
+      'the progress bar is still running after the rotation ended',
+    ).toBe(0);
+  });
+
+  /**
+   * WCAG 2.2.2 asks for a mechanism to stop moving content. Pausing on hover is not one for
+   * a keyboard or screen-reader user, and "press any other control" is not one you can find.
+   */
+  test('the rotation control stops the rotation, and its label says which it will do', async ({ page }) => {
+    await page.goto('./');
+    await reachTheBand(page);
+    const btn = page.locator('.ask [data-rotate]');
+
+    await expect(btn).toHaveAttribute('aria-label', /stop/i);
+    await btn.click();
+    await expect(page.locator('.ask')).not.toHaveAttribute('data-rotating', '');
+    await expect(btn).toHaveAttribute('aria-label', /start/i);
+    expect(await page.locator('.ask .prog').evaluate((el) => el.getAnimations().length)).toBe(0);
+
+    // And back on, because a control that only stops is a sign, not a mechanism.
+    await btn.click();
+    await expect(page.locator('.ask')).toHaveAttribute('data-rotating', '');
+
+    /**
+     * And it must actually RUN, not merely say it is running.
+     *
+     * Rotation holds while the pointer or focus is inside the band — and you cannot press
+     * this button without the pointer or focus being inside the band. So the act of starting
+     * the rotation satisfied its own pause condition: `data-rotating` was set, the icon
+     * swapped to pause, the label said "Stop", and the progress bar sat frozen at scaleX(0)
+     * until the reader moved the mouse off the whole section. Every state assertion above
+     * passed while the feature did nothing, which is why this one measures the clock.
+     */
+    expect(
+      await page.locator('.ask .prog').evaluate((el) => getComputedStyle(el).animationPlayState),
+      'the rotation reports itself as running but the clock it runs on is paused',
+    ).toBe('running');
+  });
+
+  /**
+   * The active dot used to transition `width`, so marking one active re-laid-out the row.
+   *
+   * Measured PER DOT, and this is the whole test rather than a detail of it. Measuring the
+   * `.dots` container instead cannot see the bug at all: exactly one dot is wide under
+   * either implementation, so the container's width is identical no matter which dot that
+   * is, and identical mid-transition too, since one dot grows by exactly what the other
+   * shrinks. A container-level assertion passes just as happily against the `width`
+   * transition it is supposed to forbid. What actually moves is the individual dots — so
+   * that is what gets asserted: every dot keeps the same x and the same width, whichever
+   * one is current.
+   */
+  test('marking a dot active moves and resizes no dot', async ({ page }) => {
+    await page.goto('./');
+    await reachTheBand(page);
+    await page.locator('.ask [data-rotate]').click(); // stop the clock so it cannot move under the measurement
+
+    const geometry = () =>
+      page.locator('.ask [data-dot]').evaluateAll((els) =>
+        els
+          .map((e) => {
+            const b = e.getBoundingClientRect();
+            return `${b.x.toFixed(1)}/${b.width.toFixed(1)}`;
+          })
+          .join(' '),
+      );
+
+    const dots = page.locator('.ask [data-dot]');
+    const n = await dots.count();
+    const seen = new Set<string>();
+    for (let i = 0; i < n; i++) {
+      await dots.nth(i).click();
+      await page.waitForTimeout(300); // longer than the .2s indicator transition
+      seen.add(await geometry());
+    }
+    expect(
+      [...seen],
+      `the dots changed size or position as the active one changed:\n${[...seen].join('\n')}`,
+    ).toHaveLength(1);
+  });
+});
+
 test('the homepage agent bands have no serious accessibility violations', async ({ page }) => {
   await page.goto('./');
   const results = await new AxeBuilder({ page })
     .withTags(['wcag2a', 'wcag2aa'])
     .include('.why')
+    .include('.ask')
     .include('.gs')
     .include('.hero')
     .analyze();

@@ -144,11 +144,18 @@ a.site-title {
    shoving the command row down. Note the depth: `.setup .cmd` above already zeroes the
    margin on `.copy` itself, but the icons are one level further in, so the container has
    to be listed by ITS own class too. Anything that swaps children by display belongs
-   here — the bug is invisible until the swap happens. */
+   here — the bug is invisible until the swap happens. `.ask .rotate` is that same shape, a
+   play icon and a pause icon in one button, and it is listed here having caused no bug at
+   all: it went in with the carousel's stop control rather than after someone noticed the
+   row jump 16px the first time that control was pressed.
+   Deliberately NOT given an ordinal. The numbers above count bugs that happened, the next
+   one is already spoken for by the hero rule below, and a second hand-maintained counter in
+   one file is the defect this repo's CLAUDE.md names first. Add pre-emptive entries here
+   freely; do not number them. */
 .sl-markdown-content :is(
   .setup .tabs, .setup .panels, .setup .panel, .setup .cmd, .setup .clients, .setup .copy,
   .why .split, .why .half, .why .chat, .why .turn, .why .pts li,
-  .ask .pills, .ask .stack, .ask .csrc, .ask .rows li, .ask .ctrls, .ask .dots,
+  .ask .pills, .ask .stack, .ask .csrc, .ask .rows li, .ask .ctrls, .ask .dots, .ask .rotate,
   .hero-router, .hero-setup, .hero .tick,
   .caail-communityband, .caail-communityband .lead, .caail-communityband .actions,
   .caail-citeband, .caail-citeband .lead, .caail-citeband .actions
