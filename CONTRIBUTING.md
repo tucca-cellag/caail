@@ -179,14 +179,20 @@ create a new `##` section rather than mixing it into an existing list.
 A research area is a column in the `Papers.md` matrix, backed by a deep-dive page under `ResearchAreas/`. To add one:
 
 1. **Create `ResearchAreas/<AreaName>.md`** (PascalCase, no spaces, e.g. `ProteinDesign.md`). The file should give a short overview of why the area matters to cellular agriculture and what computational/AI techniques are being applied to it. Existing files like `MediaOptimization.md` are good models.
-2. **Add a column** to the `Papers.md` matrix, with the column header linked to your new file:
+2. **Define the column in `Taxonomy.md`** and add it to the `Papers.md` matrix with the header linked
+   to that definition, not to the deep-dive page. `Taxonomy.md` is the trusted scope for every row and
+   column; the `ResearchAreas/` page is an editorial companion.
 
    ```markdown
-   | | ... | [Protein Design](./ResearchAreas/ProteinDesign.md) | ... |
+   | | ... | [Protein Design](./Taxonomy.md#protein-design) | ... |
    ```
 
-3. **Link your new area from the README's "What's Inside" section** if it stands as a primary entry point. (Not every research area needs to, small/exploratory areas can live only inside `Papers.md`.)
-4. **Backfill matrix cells** for any existing references that also apply to your new area.
+3. **Register the page for the site** in `site/src/content/caail-pages.ts` (group `research-areas`,
+   with its own meta description). This is not optional: `caail-pages.test.ts` asserts every file in
+   `ResearchAreas/` has a map entry, so a page without one fails CI.
+
+4. **Link your new area from the README's "What's Inside" section** if it stands as a primary entry point. (Not every research area needs to, small/exploratory areas can live only inside `Papers.md`.)
+5. **Backfill matrix cells** for any existing references that also apply to your new area.
 
 ## Adding a deep-dive page for an AI/ML method
 

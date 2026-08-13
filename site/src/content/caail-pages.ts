@@ -85,7 +85,7 @@ const PAGES: Record<string, PageMeta> = {
 
   // ── Methods ────────────────────────────────────────────────────────────────
   // Deep dives on the matrix's *row* axis. Filled in one row at a time, so this
-  // block is expected to be much shorter than the 25-row matrix for a while.
+  // block is expected to be much shorter than the matrix's row set for a while.
   'methods/benchmarksevaluation': {
     title: 'Benchmarks & Evaluation Frameworks',
     sidebarLabel: 'Benchmarks & Evaluation',

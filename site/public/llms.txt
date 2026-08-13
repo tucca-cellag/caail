@@ -15,7 +15,7 @@ This website is a navigation layer over canonical, human-readable Markdown in th
 - [Datasets](https://tucca-cellag.github.io/caail/datasets/readme/): train-on data artifacts organized by species, plus cross-species reference data and AI/ML benchmarks.
 - [Talks & Videos](https://tucca-cellag.github.io/caail/talks/): curated lectures, talks, and educational playlists.
 - [By the Numbers](https://tucca-cellag.github.io/caail/by-the-numbers/): library metrics, matrix coverage, and per-species dataset gaps.
-- [Research Areas](https://tucca-cellag.github.io/caail/research-areas/mediaoptimization/): deep-dive pages per matrix column, the research areas (media optimization, cellular engineering, bioprocess, scaffolding, sensory prediction, AI tooling).
+- [Research Areas](https://tucca-cellag.github.io/caail/research-areas/mediaoptimization/): deep-dive pages for the research-area axis (media optimization, cellular engineering, bioprocess, scaffolding, sensory prediction, AI tooling), plus metabolic modeling, which has a page without being a matrix column.
 - [Methods](https://tucca-cellag.github.io/caail/methods/benchmarksevaluation/): deep-dive pages per matrix row, the AI/ML methods.
 
 ## About & contributing

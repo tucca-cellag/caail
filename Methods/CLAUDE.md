@@ -10,11 +10,11 @@ The directory is being filled in one page at a time, so most rows have no page y
 
 **A new row does not require a page here first.** No `db:check` guard asserts that a method row has a page, and none should be added while this directory is incomplete: a bijection guard over a half-written axis blocks every new method row on someone writing prose for it, which would make adding a row to the matrix strictly harder than the taxonomy work justifies. Extend the guard to this axis only once every row has a page, and say so in the same change.
 
-A narrower assertion does **not** have that problem and could land earlier: *a page that exists covers its row's refs*. It is checkable wherever a page exists and vacuous where none does, so it blocks nothing. Nothing enforces it today, and this page currently covers 20 of its row's 23 refs.
+A narrower assertion does **not** have that problem and could land earlier: *a page that exists covers its row's refs*. It is checkable wherever a page exists and vacuous where none does, so it blocks nothing. Nothing enforces it today, and at least one page does not satisfy it: compare a page's refs against its row's with `jq` over `site/public/api/papers.json` rather than trusting a number written here.
 
 ## Wiring a new page
 
-Each page needs an entry in `site/src/content/caail-pages.ts` (with its own meta description) and inclusion in `site/src/content/loaders/caail-docs-loader.ts`'s canonical sources. The `caailProseRemark` guard in `site/astro.config.mjs` derives its allowlist from `CAAIL_PAGES`, so it follows automatically; the route and sidebar entry likewise come from the map. A page whose filename would lowercase into an unreadable id needs an explicit case in `idForSourcePath` (`ReferenceWorks` → `reference-works` is the precedent).
+Each page needs one thing: an entry in `site/src/content/caail-pages.ts`, with its own meta description. `caail-docs-loader.ts` already scans this whole directory (`CANONICAL_SOURCES.dirs` contains `Methods`), so a new page here needs no loader edit; only a new *directory* would. The `caailProseRemark` guard in `site/astro.config.mjs` derives its allowlist from `CAAIL_PAGES`, so it follows automatically; the route and sidebar entry likewise come from the map. A page whose filename would lowercase into an unreadable id needs an explicit case in `idForSourcePath` (`ReferenceWorks` → `reference-works` is the precedent).
 
 ## Note for AI agents and LLMs
 
