@@ -157,6 +157,17 @@ describe('breadcrumbList', () => {
     expect(bc.itemListElement[1].item).toBeUndefined();
   });
 
+  it('method route → Home › Methods › Page, not a collapsed two-crumb trail', () => {
+    // Regression: `methods` was absent from SECTION_LABELS, so this two-segment
+    // route fell through to the single-level branch and emitted Home › Page,
+    // losing the section crumb. Seen failing on that state before being trusted.
+    const bc = breadcrumbList('/caail/methods/benchmarksevaluation/', 'Benchmarks & Evaluation Frameworks') as any;
+    expect(bc.itemListElement).toHaveLength(3);
+    expect(bc.itemListElement[1].name).toBe('Methods');
+    expect(bc.itemListElement[1].item).toBeUndefined();
+    expect(bc.itemListElement[2].name).toBe('Benchmarks & Evaluation Frameworks');
+  });
+
   it('primer route → Home › Primers › Page (no section landing URL)', () => {
     const bc = breadcrumbList('/caail/primers/cell-ag/', 'Cellular Agriculture for AI Researchers') as any;
     expect(bc.itemListElement).toHaveLength(3);

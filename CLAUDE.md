@@ -127,12 +127,15 @@ Primers/               Two-audience onboarding hubs (canonical md; media embedde
   README.md            Directory landing + index
   CellAg.md            Cellular agriculture, for AI researchers
   AI.md                AI/ML fundamentals, for cell-ag researchers
-ResearchAreas/         Per-area deep-dive pages
+ResearchAreas/         Per-area deep-dive pages (the matrix's COLUMN axis)
   Bioprocess.md
   CellEngineering.md
   MediaOptimization.md
   Scaffolding.md
   SensoryPrediction.md
+Methods/               Per-method deep-dive pages (the matrix's ROW axis)
+  CLAUDE.md            Directory rules, incl. why a method page must not live in ResearchAreas/
+  BenchmarksEvaluation.md
 CONTRIBUTING.md        How to add resources (read before editing)
 LICENSE                MIT License
 ```
@@ -347,7 +350,7 @@ Markdown (issue #78). This covers `Papers.md` (matrix + references), `Software.m
 **plus the curated `### …` entries** (featured atlases, GEMs, reference entries — every H3
 outside the inventory section). Everything else — editorial prose in those files, and all the
 non-catalog canonical files (`OtherResources.md`, `ReferenceWorks.md`, `AwesomeLists.md`,
-`Funding.md`, `ResearchAreas/`, `Talks.md`, `Primers/`) — stays hand-authored Markdown.
+`Funding.md`, `ResearchAreas/`, `Methods/`, `Talks.md`, `Primers/`) — stays hand-authored Markdown.
 
 - **Source of truth = `site/db/ndjson/`** (per-table PK-sorted NDJSON, committed). `site/db/schema.sql`
   is the DDL; `site/caail.db` is a gitignored artifact rebuilt from the NDJSON. Every item has a
@@ -464,7 +467,7 @@ non-catalog canonical files (`OtherResources.md`, `ReferenceWorks.md`, `AwesomeL
 
 ## Documentation site (`site/`)
 
-The canonical root content remains build-free, GitHub-rendered Markdown — that is unchanged. Separately, a generated **documentation website** lives in the top-level `site/` directory (Astro Starlight). It is a navigable layer over the canonical Markdown, never a replacement, and **site work must never modify the canonical files** (`Papers.md`, `Software.md`, `Databases.md`, `OtherResources.md`, `ReferenceWorks.md`, `AwesomeLists.md`, `Funding.md`, `ResearchAreas/`, `Datasets/`).
+The canonical root content remains build-free, GitHub-rendered Markdown — that is unchanged. Separately, a generated **documentation website** lives in the top-level `site/` directory (Astro Starlight). It is a navigable layer over the canonical Markdown, never a replacement, and **site work must never modify the canonical files** (`Papers.md`, `Software.md`, `Databases.md`, `OtherResources.md`, `ReferenceWorks.md`, `AwesomeLists.md`, `Funding.md`, `ResearchAreas/`, `Methods/`, `Datasets/`).
 
 - **Stack:** Astro + Starlight, Preact islands, `astro-icon` (Phosphor icon set), self-hosted fonts via `@fontsource` (Bricolage Grotesque for display, Inter for body, JetBrains Mono for code/identifiers), OKLch design tokens, `lite-youtube-embed` for talk facades, `cytoscape` for the citation-network graph (lazy-loaded via `client:idle`). The design system is documented in the repo-root `DESIGN.md`.
 - **Node:** requires Node ≥ 22.12 (pinned in `site/.nvmrc`). Run `nvm use 22` (e.g. `source ~/.nvm/nvm.sh && nvm use 22`) before any site command, since the system default may be older.

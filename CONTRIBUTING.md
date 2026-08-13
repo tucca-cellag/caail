@@ -188,6 +188,26 @@ A research area is a column in the `Papers.md` matrix, backed by a deep-dive pag
 3. **Link your new area from the README's "What's Inside" section** if it stands as a primary entry point. (Not every research area needs to, small/exploratory areas can live only inside `Papers.md`.)
 4. **Backfill matrix cells** for any existing references that also apply to your new area.
 
+## Adding a deep-dive page for an AI/ML method
+
+The matrix has two axes, and they have separate homes. A **research area** is a column, written up under
+`ResearchAreas/`; an **AI/ML method** is a row, written up under `Methods/`. A method page goes in
+`Methods/`, never in `ResearchAreas/`.
+
+That is a hard rule with a mechanical reason: `counts.json`'s `researchAreas` figure is derived by counting
+the `*.md` files in `ResearchAreas/`, and the homepage labels that number "Research Areas". A method page
+placed there would silently inflate a public statistic that says it is counting something else.
+
+1. **Create `Methods/<MethodName>.md`** (PascalCase, no spaces, e.g. `BenchmarksEvaluation.md`), naming the
+   matrix row it covers. `Methods/BenchmarksEvaluation.md` is the model.
+2. **Do not add a matrix row for it.** A page describes a row that already exists; adding a row is a
+   separate, deliberate change that needs its `Taxonomy.md` definition in the same commit.
+3. **Register it for the site** in `site/src/content/caail-pages.ts` (group `methods`, with its own meta
+   description). The sidebar entry, the route and the link-rewriting guard all derive from that map.
+
+Unlike a research-area page, a method page is optional: most rows have none, and a row is never blocked on
+one being written.
+
 ## Citation style
 
 We use APA throughout `Papers.md`. In short: author last name, initials, year, title, italicized journal/venue, volume(issue), pages, DOI.

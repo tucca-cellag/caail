@@ -73,8 +73,8 @@ changed_paths() {
 # any pattern outside those three forms, since `path_matches` would silently
 # match nothing rather than erroring.
 LINT_PAPERS_PATHS='Papers.md Software.md Databases.md OtherResources.md Taxonomy.md Datasets/** CONTRIBUTING.md CLAUDE.md site/scripts/parser/** site/scripts/db/** site/db/** site/public/api/** site/public/setup.md plugin/skills/** skills/** .claude/skills/matrix-classification-audit/**'
-TEST_PATHS='site/** workers/** *.md ResearchAreas/** Datasets/** Primers/** .claude/hooks/** .claude/settings.json .github/workflows/test.yml .github/ISSUE_TEMPLATE/**'
-DOCS_PATHS='site/** *.md ResearchAreas/** Datasets/** Primers/** .github/ISSUE_TEMPLATE/**'
+TEST_PATHS='site/** workers/** *.md ResearchAreas/** Datasets/** Primers/** Methods/** .claude/hooks/** .claude/settings.json .github/workflows/test.yml .github/ISSUE_TEMPLATE/**'
+DOCS_PATHS='site/** *.md ResearchAreas/** Datasets/** Primers/** Methods/** .github/ISSUE_TEMPLATE/**'
 GUARDS_PATHS='.claude/hooks/** .claude/settings.json .claude/skills/caail-pr-wrapup/** .github/workflows/**'
 
 # Does $1 (a repo-relative path) match $2 (one GitHub Actions paths pattern)?

@@ -66,7 +66,7 @@ SHIP_PR = Path(__file__).resolve().parent / "ship-pr.sh"
 # Repo-root canonical content that the site renders. A change to any of these
 # must both be tested and reach a reader. See assertion 5 on why this one list
 # cannot be derived.
-CONTENT_PATHS = ["site/**", "*.md", "ResearchAreas/**", "Datasets/**", "Primers/**"]
+CONTENT_PATHS = ["site/**", "*.md", "ResearchAreas/**", "Methods/**", "Datasets/**", "Primers/**"]
 
 # The three pattern forms ship-pr.sh's `path_matches` implements, and no others.
 SUPPORTED = (

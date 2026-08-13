@@ -16,6 +16,7 @@ on:
       - ResearchAreas/**
       - Datasets/**
       - Primers/**
+      - Methods/**
       # The agent guards that ship in this repo, and the settings file that wires
       # them. Until now NOTHING under `.claude/` appeared in any workflow's paths
       # filter or any run step, so a PR touching only a hook triggered nothing at
@@ -48,6 +49,7 @@ on:
       - ResearchAreas/**
       - Datasets/**
       - Primers/**
+      - Methods/**
       # The agent guards that ship in this repo, and the settings file that wires
       # them. Until now NOTHING under `.claude/` appeared in any workflow's paths
       # filter or any run step, so a PR touching only a hook triggered nothing at

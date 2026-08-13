@@ -1,6 +1,6 @@
 # site/ — context for Claude Code and AI agents
 
-This directory holds CAAIL's generated **documentation website** (Astro Starlight). It is a navigable layer over the canonical Markdown at the repo root, never a replacement: the canonical content itself stays build-free, GitHub-rendered Markdown, and **site work must never modify the canonical files** (`Papers.md`, `Software.md`, `Databases.md`, `OtherResources.md`, `ReferenceWorks.md`, `AwesomeLists.md`, `Funding.md`, `ResearchAreas/`, `Datasets/`).
+This directory holds CAAIL's generated **documentation website** (Astro Starlight). It is a navigable layer over the canonical Markdown at the repo root, never a replacement: the canonical content itself stays build-free, GitHub-rendered Markdown, and **site work must never modify the canonical files** (`Papers.md`, `Software.md`, `Databases.md`, `OtherResources.md`, `ReferenceWorks.md`, `AwesomeLists.md`, `Funding.md`, `ResearchAreas/`, `Methods/`, `Datasets/`).
 
 Paths and commands below are written to run from the **repo root**, not from `site/`. Everything outside this directory — the canonical file schemas, the SQLite authoring backend that generates them, and the Jira / branching / commit conventions — lives in the repo-root [`CLAUDE.md`](../CLAUDE.md).
 

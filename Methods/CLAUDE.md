@@ -2,13 +2,15 @@
 
 This directory holds one deep-dive page per **row** of the [Papers.md matrix](../Papers.md), the AI/ML method axis. [`ResearchAreas/`](../ResearchAreas/) is its counterpart on the **column** axis, the research-area one. Both are an editorial product; [`Taxonomy.md`](../Taxonomy.md) is the only trusted scope definition for any row or column, and a matrix header links there rather than here.
 
-The directory is being filled in one page at a time, so most of the 25 rows have no page yet. That is the expected state, not a gap to close in a batch.
+The directory is being filled in one page at a time, so most rows have no page yet. That is the expected state, not a gap to close in a batch. **Do not write the row count into prose here**: the live set drifts and re-enumerating it is the defect #81 records. `jq '.methods | length' site/public/api/papers.json` prints it.
 
 ## Two rules that are load-bearing
 
 **A method page must not be added to `ResearchAreas/`.** `site/scripts/parser/counts.ts` derives `counts.json`'s `researchAreas` by counting `*.md` files in that directory (excluding `CLAUDE.md`), and the homepage card labels that number "Research Areas". A method page dropped there silently inflates a count labelled as something else. If a `methods` count is ever wanted on the homepage, derive it the same way from this directory rather than merging the two populations.
 
-**A new row does not require a page here first.** No `db:check` guard asserts that a method row has a page, and none should be added until all 25 exist: a bijection guard over a half-written axis blocks every new method row on someone writing prose for it, which would have blocked the Gaussian Processes row. Extend the guard to this axis only once the set is complete, and say so in the same change.
+**A new row does not require a page here first.** No `db:check` guard asserts that a method row has a page, and none should be added while this directory is incomplete: a bijection guard over a half-written axis blocks every new method row on someone writing prose for it, which would make adding a row to the matrix strictly harder than the taxonomy work justifies. Extend the guard to this axis only once every row has a page, and say so in the same change.
+
+A narrower assertion does **not** have that problem and could land earlier: *a page that exists covers its row's refs*. It is checkable wherever a page exists and vacuous where none does, so it blocks nothing. Nothing enforces it today, and this page currently covers 20 of its row's 23 refs.
 
 ## Wiring a new page
 
