@@ -824,6 +824,29 @@ test('changing the reason clears the answers that belonged to the old one', asyn
   await expect(page.locator(BODY)).toContainText('Problem: Wrong licence tier');
 });
 
+test('a full note field says so, rather than losing a paste in silence', async ({ page }) => {
+  // `maxLength` bounds the raw value while the counter measures the collapsed one, and
+  // collapsing can shorten by any factor — so a whitespace-heavy paste gets cut by the
+  // field while the numbers still show headroom. 1,200 characters that would have reached
+  // the report whole arrived as "267 of 400", 132 short, with nothing saying so.
+  await page.goto('./report/?item=paper:214');
+  await chooseReason(page, 'Something else');
+  const field = page.getByLabel(/What is wrong with it/);
+  const count = page.locator('#caail-f-note-count');
+
+  // Well under the field's capacity: the ordinary readout, no full-field warning.
+  await field.fill('a short note');
+  await expect(count).toContainText('characters');
+  await expect(count).not.toContainText('field is full');
+
+  // At capacity, whichever way it got there.
+  const cap = Number(await field.getAttribute('maxlength'));
+  expect(cap).toBeGreaterThan(0);
+  await field.fill('a'.repeat(cap));
+  await expect(count).toContainText('field is full');
+  await expect(count).toContainText(String(cap));
+});
+
 test('a note is bounded, and cannot forge a line of the report', async ({ page }) => {
   await page.goto('./report/?item=ds:chickengtex-portal');
   await chooseReason(page, 'Something else');

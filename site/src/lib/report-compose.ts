@@ -222,10 +222,17 @@ export const NOTE_MAX_LENGTH = 400;
  * past the bound is worse — it is silently cut, in a component that otherwise takes care
  * never to lose reader input without saying so.
  *
- * With the raw bound loose, the collapsed cap is what binds, `boundNote` does the capping,
- * and the counter's own "of which N fit in the report" branch explains any loss. A bound is
- * still wanted: it keeps a pasted article out of a field whose value is re-measured on
- * every keystroke.
+ * DOUBLING DOES NOT GUARANTEE IT, which an earlier version of this comment implied. A 2×
+ * margin only holds if collapsing compresses by less than 2×, and it can compress by any
+ * factor: every whitespace run becomes one space. Measured: `('a' + 5 spaces) × 200` is
+ * 1,200 raw and collapses to 399 — it would have reached the report WHOLE — but the field
+ * cuts it at 800, which collapses to 267, and the counter cheerfully reads "267 of 400".
+ * 132 characters of the reader's only free-text answer, lost for no reason and in silence.
+ *
+ * So the bound stays (it keeps a pasted article out of a field whose value is re-measured
+ * on every keystroke) and the counter SAYS when the field is full, rather than the bound
+ * pretending to be one the reader can never reach. Losing input is survivable here; losing
+ * it silently is what this component is careful about everywhere else.
  */
 export const NOTE_INPUT_MAX_LENGTH = NOTE_MAX_LENGTH * 2;
 
@@ -430,14 +437,20 @@ export const DOI_MAX_ENCODED = 600;
  *     200 it normalises to 184, passes, and is composed 11 characters short. Readers paste
  *     resolver URLs — the help text invites it — so this is the ordinary path.
  *
- * The property that makes truncation harmless, rather than the number: whatever the field
- * can hold, minus the longest prefix `normaliseDoi` strips (`https://doi.org/doi:`, 20),
- * must still exceed {@link DOI_MAX_LENGTH}. Then every truncated value is over the cap and
- * is refused rather than quietly accepted. 400 − 20 = 380 > 200 clears it with room, and
- * `report-compose.test.ts` asserts the property rather than the arithmetic.
+ * A LOOSER BOUND IS NOT ENOUGH ON ITS OWN, which an earlier version of this comment got
+ * wrong. It argued that the field's capacity less the longest prefix `normaliseDoi` strips
+ * (`https://doi.org/doi:`, 20) must exceed {@link DOI_MAX_LENGTH}, so every truncated value
+ * stays over the cap. Prefixes NEST, and normalisation runs to a fixed point, so the amount
+ * stripped has no bound of 20 or of anything else. Measured: `'doi:'×50 + '10.1234/' +
+ * 'a'×250` is 458 characters, normalises to 258 and is correctly refused — cut to 400 by
+ * the field it normalises to exactly 200 and is ACCEPTED. The reasoning was also made
+ * obsolete by a later fix in the same branch, since the fixed-point loop is what removed
+ * the bound its arithmetic assumed.
  *
- * A bound is still wanted here: without one, a pasted article body sits in the field
- * looking like a pending answer.
+ * What actually makes truncation harmless is in {@link isDoiShape}: a value that has
+ * REACHED this length is refused outright, so the verdict is the same whether or not the
+ * browser cut it. No real DOI comes near 400 characters even with a resolver prefix, so
+ * nothing legitimate is caught by that.
  */
 export const DOI_INPUT_MAX_LENGTH = DOI_MAX_LENGTH * 2;
 
@@ -541,8 +554,23 @@ export function isDoiShapeIgnoringLength(value: string): boolean {
   return DOI_RE.test(normaliseDoi(value));
 }
 
-/** True when `value` normalises to something DOI-shaped. Empty is not an error, just absent. */
+/**
+ * True when `value` normalises to something DOI-shaped. Empty is not an error, just absent.
+ *
+ * Takes the RAW field value, not a pre-normalised one, because the first bound below is
+ * about what the reader's input looked like before anything was stripped from it.
+ */
 export function isDoiShape(value: string): boolean {
+  // Anything that reached the FIELD's capacity is refused, and `>=` rather than `>` is the
+  // whole point: at exactly that length the browser may or may not have cut characters off
+  // the end, and this function cannot tell. Refusing both cases makes the verdict
+  // independent of a truncation it cannot observe. Without it, nesting enough `doi:`
+  // prefixes lets truncation strip its way back under the cap and turn a refusal into an
+  // acceptance — see DOI_INPUT_MAX_LENGTH for the measured case.
+  //
+  // Trimmed and desurrogated first so this measures the same string normaliseDoi starts from.
+  if (stripUnpairedSurrogates(value).trim().length >= DOI_INPUT_MAX_LENGTH) return false;
+
   const doi = normaliseDoi(value);
   return (
     doi.length <= DOI_MAX_LENGTH &&
@@ -623,8 +651,13 @@ export function composeBody(
     const theme = fromVocabulary(answers.theme, vocab.themes);
     if (theme) lines.push(`Subject theme should be: ${theme}`);
   } else if (reason.kind === 'doi') {
-    const doi = normaliseDoi(answers.doi ?? '');
-    if (isDoiShape(doi)) lines.push(`DOI should be: ${doi}`);
+    // Checked against the RAW answer and emitted as its normalisation, not checked against
+    // the normalised one. isDoiShape's first bound is about the length the reader's input
+    // REACHED, and a pre-normalised string has already lost that: handing it the short
+    // version skipped the check entirely and let a truncated paste through. Safe to
+    // normalise twice here because normaliseDoi reaches a fixed point.
+    const raw = answers.doi ?? '';
+    if (isDoiShape(raw)) lines.push(`DOI should be: ${normaliseDoi(raw)}`);
   } else if (reason.kind === 'note') {
     const note = boundNote(answers.note ?? '');
     if (note) lines.push(`Note: ${note}`);

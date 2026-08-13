@@ -727,10 +727,20 @@ const vocabJson = JSON.stringify(vocabularies).replace(/</g, '\\u003c');
         // space.
         const collapsed = collapseNote(area.value);
         const kept = boundNote(area.value);
-        count.textContent =
+        const base =
           kept.length < collapsed.length
             ? `${collapsed.length} characters, of which ${kept.length} fit in the report`
             : `${collapsed.length} of ${NOTE_MAX_LENGTH} characters`;
+        // A FULL FIELD is said out loud. `maxLength` bounds the raw value while everything
+        // above measures the collapsed one, and collapsing can shorten by any factor, so a
+        // whitespace-heavy paste can be cut by the field while these numbers still show
+        // headroom — 1,200 raw characters that would have fitted whole arrived as 267 of
+        // 400, with 132 lost and nothing on screen saying so. The bound cannot be removed
+        // (this runs on every keystroke), so it is disclosed instead.
+        count.textContent =
+          area.value.length >= NOTE_INPUT_MAX_LENGTH
+            ? `${base}. The field is full at ${NOTE_INPUT_MAX_LENGTH} characters, so anything after that was not kept.`
+            : base;
       };
       paint();
 

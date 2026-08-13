@@ -563,6 +563,11 @@ describe('composeBody', () => {
       `10.1234/${'a'.repeat(2000)}`,
       `https://doi.org/10.1234/${'a'.repeat(2000)}`,
       `https://doi.org/doi:10.1234/${'a'.repeat(2000)}`,
+      // NESTED prefixes, which is where a looser field bound alone was not enough:
+      // normalisation runs to a fixed point, so truncation can strip its way back under
+      // the cap. 458 characters normalising to 258 became 400 normalising to exactly 200.
+      `${'doi:'.repeat(50)}10.1234/${'a'.repeat(250)}`,
+      `${'https://doi.org/'.repeat(20)}10.1234/${'a'.repeat(150)}`,
     ]) {
       expect(isDoiShape(raw), raw.slice(0, 24)).toBe(false);
       expect(
@@ -570,6 +575,29 @@ describe('composeBody', () => {
         `the field truncated "${raw.slice(0, 24)}…" into a DOI that passes`,
       ).toBe(false);
     }
+  });
+
+  it('gives the same verdict whether or not the field truncated, at every cut point', () => {
+    // The property stated as a property, over the one input where it used to fail. A value
+    // AT the field's capacity may or may not have lost characters off the end and nothing
+    // downstream can tell, so both readings have to be refused; anything shorter was not
+    // cut at all, so its verdict is already the honest one.
+    const raw = `${'doi:'.repeat(50)}10.1234/${'a'.repeat(250)}`;
+    expect(raw.length).toBeGreaterThan(DOI_INPUT_MAX_LENGTH);
+    expect(isDoiShape(raw), 'the untruncated value').toBe(false);
+    expect(isDoiShape(raw.slice(0, DOI_INPUT_MAX_LENGTH)), 'what the field would hold').toBe(false);
+
+    // And it is enforced where it matters, not only in the predicate: composeBody checks
+    // the raw answer, so handing it the truncated paste composes nothing.
+    const body = composeBody(
+      {
+        itemId: 'paper:1',
+        reason: reason({ kind: 'doi' }),
+        doi: raw.slice(0, DOI_INPUT_MAX_LENGTH),
+      },
+      VOCAB,
+    );
+    expect(body).not.toContain('DOI should be');
   });
 
   it('still admits the longest DOI the cap allows, pasted as a resolver URL', () => {
