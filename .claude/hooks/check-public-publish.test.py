@@ -315,6 +315,45 @@ ok = "PASS" if kept else "FAIL"
 if not kept: fails += 1
 print(f"  [{ok}] an owner named in the command survives the visibility outage")
 
+# ...and the allow-path message must agree with what actually ran. It hardcoded
+# the owner-less sentence, so it went on asserting the foreign-owner signal had
+# not run after the owner became derivable from the command.
+got, _, ctx = run(HOOK_PROJ, f'{V} --repo tucca-cellag/caail --title x --body "one ref"',
+                  {**NO_AUTH, "CLAUDE_PROJECT_DIR": proj}, cwd=proj, unset=NO_TOKENS)
+agrees = got == "allow" and "DID run" in ctx and "could not be computed" not in ctx
+ok = "PASS" if agrees else "FAIL"
+if not agrees: fails += 1
+print(f"  [{ok}] and the allow-path message says the signal ran, because it did")
+
+# An owner the PAYLOAD supplied (the accepted `-R`-in-a-body hole) makes every
+# link under that same owner compare equal, so nothing is raised. Listing what
+# was seen is all that is left, and deriving the owner from $dest had silently
+# removed even that.
+got, _, ctx = run(HOOK_PROJ, f'{V} --title x --body '
+                  # No trailing punctuation on the repo: the scrape takes the
+                  # whole whitespace-delimited token, so a comma would leave
+                  # `someoneelse/mirror,` which fails the owner/repo shape check
+                  # and lands in the owner-less branch instead of this one.
+                  '"-R someoneelse/mirror adapted from https://github.com/someoneelse/theirrepo"',
+                  {**NO_AUTH, "CLAUDE_PROJECT_DIR": proj}, cwd=proj, unset=NO_TOKENS)
+listed = got == "allow" and "someoneelse" in ctx and "NOT confirmed" in ctx
+ok = "PASS" if listed else "FAIL"
+if not listed: fails += 1
+print(f"  [{ok}] a payload-supplied owner is named as unconfirmed, not trusted silently")
+
+# A reply that is non-empty but does not parse is a resolution failure too. The
+# invariant was written over emptiness alone, so this fell through to the
+# `vis != PUBLIC` short-circuit and passed silently. Stray stdout ahead of the
+# JSON is all it takes: with CDPATH exported, bash prints the resolved directory
+# on a CDPATH-resolved `cd`, which is inside the same command substitution.
+got, why, _ = run(HOOK_PROJ,
+                  f'cd {os.path.basename(proj)} && {V} --title x --body "{RISK}"',
+                  {"CLAUDE_PROJECT_DIR": proj, "CDPATH": os.path.dirname(proj)}, cwd=proj)
+caught = got == "deny" and "UNRESOLVED" in why
+ok = "PASS" if caught else "FAIL"
+if not caught: fails += 1
+print(f"  [{ok}] a reply that does not parse is unresolved, not a clean pass")
+
 # --- `gh api` carries its own destination ----------------------------------
 # `gh api -X POST /repos/<owner>/<repo>/issues` needs no local repository, so its
 # destination has to come from the endpoint. Resolving it from the cwd was

@@ -370,13 +370,32 @@ else
   vis=$(jq -r '.visibility // empty' <<<"$meta" 2>/dev/null)
   owner="${repo%%/*}"
 
-  # Private destination: the leak class this guards against does not apply.
-  if [[ $vis != "PUBLIC" ]]; then
-    printf '%s\n' "$PASS_THROUGH"
-    exit 0
+  # A non-empty `$meta` that does not parse is a resolution failure too, and the
+  # invariant above was written over emptiness only, so this fell straight
+  # through: `$vis` came out empty, `!= PUBLIC` was true, and the bare
+  # pass-through went out with no announcement and no scan. Exactly the silence
+  # this branch exists to delete, reached by a different door.
+  #
+  # It takes only stray stdout ahead of the JSON. Reproduced with `CDPATH`
+  # exported, where bash prints the resolved directory on a CDPATH-resolved `cd`:
+  # the same publish denied with an absolute path and passed silently with a
+  # relative one. `cd -` with `OLDPWD` set does it too. Pre-dates this branch.
+  if [[ -z $repo || -z $vis ]]; then
+    unresolved="\`gh\` answered but the reply did not parse (something wrote to stdout ahead of it)"
+    repo="an unresolved destination"
+    owner=""
+    owner_clause="No owner was read either, so the foreign-owner signal could not be computed and did not run; the fenced-block and security-vocabulary signals did"
+    vis_phrase="whose visibility could NOT be resolved (${unresolved}), so it is treated as if it were public. ${owner_clause}"
+    vis_tag="UNRESOLVED, ${unresolved}"
+  else
+    # Private destination: the leak class this guards against does not apply.
+    if [[ $vis != "PUBLIC" ]]; then
+      printf '%s\n' "$PASS_THROUGH"
+      exit 0
+    fi
+    vis_phrase="which is PUBLIC"
+    vis_tag="PUBLIC"
   fi
-  vis_phrase="which is PUBLIC"
-  vis_tag="PUBLIC"
 fi
 
 # --- Gather the payload ---------------------------------------------------
@@ -411,6 +430,18 @@ if [[ -n $owner ]]; then
     | sed -E 's|github\.com/||' | cut -d/ -f1 | sort -u \
     | grep -vix "$owner" | head -n3 | paste -sd, -)
   [[ -n $foreign ]] && signals+=("references to another owner's repo ($foreign)")
+
+  # An owner known from the command but NOT confirmed by `gh` is only as
+  # trustworthy as the command, and the `-R`-inside-a-body hole means the payload
+  # can supply it. Where it does, every link under that same owner compares equal
+  # and raises nothing, so listing what was seen is the only thing left. Before
+  # the owner was derived from `$dest` this case still produced the note below,
+  # so saying nothing here would extend an accepted hole rather than hold it.
+  if [[ -n $unresolved ]]; then
+    seen=$(grep -oE 'github\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+' <<<"$payload" \
+      | sed -E 's|github\.com/||' | cut -d/ -f1 | sort -u | head -n3 | paste -sd, -)
+    [[ -n $seen ]] && owner_note=" The owner used for that comparison (${owner}) came from the command and was NOT confirmed by \`gh\`, and the payload references these github.com owners: ${seen}. Check them yourself."
+  fi
 else
   # Not denying is not the same as saying nothing. The originating incident's
   # payload shape — a paraphrase of a third party's repo, with a link, and no
@@ -434,7 +465,12 @@ fi
 # guardrail. They are different sentences now.
 if [[ ${#signals[@]} -eq 0 ]]; then
   if [[ -n $unresolved ]]; then
-    ctx="The public-publish provenance guard could NOT resolve this command's destination (${unresolved}), so it never checked whether the destination is public. It scanned the payload anyway and found nothing risky, so this is allowed. Note that with no owner read, the foreign-owner signal could not be computed and did not run; only the fenced-block and security-vocabulary signals did. Until that is fixed, treat the visibility half of this guard as absent rather than as having passed.${owner_note}"
+    # `$owner_clause`, not a second copy of it. Hardcoding the owner-less
+    # sentence here asserted the foreign-owner signal had not run even after the
+    # owner became derivable from the command, so the message contradicted the
+    # code while the correct clause sat two branches up. Same defect class the
+    # rest of this branch is about, in the text rather than the logic.
+    ctx="The public-publish provenance guard could NOT resolve this command's destination (${unresolved}), so it never checked whether the destination is public. It scanned the payload anyway and found nothing risky, so this is allowed. ${owner_clause}. Until that is fixed, treat the visibility half of this guard as absent rather than as having passed.${owner_note}"
   else
     ctx="Publishing to ${repo}, ${vis_phrase}. Nothing in the payload tripped the provenance guard."
   fi

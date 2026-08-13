@@ -113,7 +113,10 @@ so it protects anyone who clones — not only the machine it was written on.** A
 byte-identical copy at `~/.claude/hooks/` covers every other repo; the global
 copy detects the project copy and passes through, so `gh` is never queried
 twice. Keep the two in sync (`diff` them); this file is likewise mirrored at
-`~/.claude/rules/publishing.md`.
+`~/.claude/docs/rules/publishing.md`, which is the path the hook itself cites.
+**Not** `~/.claude/rules/publishing.md`: that is a condensed always-on summary
+that points here, so anyone who followed the old path in this sentence and
+"resolved" the mismatch would load 120 lines into every session forever.
 
 A guardrail that lives only in one person's home directory is not a guardrail,
 it is a note to self. That is the same defect as citing a path a collaborator
