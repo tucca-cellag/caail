@@ -400,7 +400,18 @@ export const DOI_MAX_ENCODED = 600;
  * here and saves an error message that would otherwise fire on a correct answer.
  */
 export function normaliseDoi(raw: string): string {
-  const trimmed = raw.trim();
+  // Unpaired surrogates out FIRST, for the reason stripUnpairedSurrogates exists: the
+  // shape check below calls encodeURIComponent, which throws URIError on one, and it is
+  // called from the DOI field's `input` listener, which has no try/catch. A lone LOW
+  // surrogate therefore threw on every keystroke from then on, freezing the preview and
+  // all three links at their last value with nothing on screen; a lone HIGH one was worse,
+  // because it passed the check and threw later, from inside the mailto composer.
+  //
+  // Notes got this in an earlier round and the DOI path did not, then the round that added
+  // the encoded bound put encodeURIComponent on that path without the sanitising that made
+  // it safe. Doing it here rather than in isDoiShape keeps it true of the string that is
+  // actually composed, since composeBody emits what normaliseDoi returns.
+  const trimmed = stripUnpairedSurrogates(raw).trim();
   const resolver = /^https?:\/\/(?:dx\.)?doi\.org\/(.*)$/is.exec(trimmed);
   // A resolver URL's query and fragment belong to the URL, not to the DOI. This is not a
   // theoretical case: copying a DOI link out of a newsletter or a search result brings

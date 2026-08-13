@@ -5,6 +5,7 @@ import { describe, it, expect } from 'vitest';
 import { buildCorrectionForm } from '../../scripts/parser/correction-form.js';
 import { correctionMailto } from './report';
 import {
+  DOI_MAX_ENCODED,
   DOI_MAX_LENGTH,
   MAILTO_MAX_URL,
   NOTE_MAX_ENCODED,
@@ -267,6 +268,25 @@ describe('normaliseDoi and isDoiShape', () => {
     expect(isDoiShape(input)).toBe(false);
   });
 
+  it.each([
+    ['a lone LOW surrogate', '10.1234/a\uDC00b'],
+    ['a lone HIGH surrogate at the end', '10.1234/ab\uD800'],
+    ['a lone HIGH surrogate mid-string', '10.1234/a\uD800b'],
+  ])('never lets %s reach encodeURIComponent', (_label, input) => {
+    // Both directions were live. A lone LOW surrogate made `isDoiShape` itself throw
+    // URIError, inside the DOI field's `input` listener, which has no try/catch — so
+    // `render()` stopped running and the preview and all three links froze at their last
+    // value on every keystroke after, with nothing on screen to say why. A lone HIGH one
+    // was accepted, composed, and threw later from the mailto builder instead.
+    expect(() => isDoiShape(input)).not.toThrow();
+    const body = composeBody(
+      { itemId: 'paper:1', reason: reason({ kind: 'doi' }), doi: input },
+      VOCAB,
+    );
+    expect(() => correctionMailto('paper:1', body)).not.toThrow();
+    expect(body).not.toMatch(/[\uD800-\uDFFF]/);
+  });
+
   it('is idempotent, so validating and composing cannot disagree', () => {
     // `composeBody` normalises once and emits that string; `isDoiShape` normalises again
     // internally. If the two rounds differ, the page validates one string and publishes
@@ -456,21 +476,42 @@ describe('composeBody', () => {
     );
 
     // Saturate whichever field this kind uses, in a script that costs nine encoded each.
-    // Exactly AT each cap, never over it. `10.1234/` + DOI_MAX_LENGTH characters is 208
-    // long, so the CHARACTER bound rejects it and the encoded bound is never consulted —
-    // which is why the first version of this test passed with the encoded check deleted.
-    // The worst case is the longest input the character cap still admits.
+    // The largest input each field ACCEPTS, which is the only thing that stresses the
+    // budget. Both earlier versions of this test failed that in different ways: the first
+    // used a DOI over the character cap, the second one over the ENCODED cap, and each
+    // time the value was rejected, `composeBody` dropped it, and the assertion measured a
+    // 113-character mailto with no DOI in it at all. A vacuous test survived being fixed.
+    //
+    // So the DOI is sized to sit just under DOI_MAX_ENCODED rather than at any character
+    // count, and the test asserts it was actually composed before measuring anything.
     const answers =
       kind === 'note'
         ? { note: '提'.repeat(NOTE_MAX_LENGTH) }
-        : { doi: `10.1234/${'提'.repeat(DOI_MAX_LENGTH - '10.1234/'.length)}` };
+        : { doi: `10.1234/${'提'.repeat(Math.floor((DOI_MAX_ENCODED - 20) / 9))}` };
     const body = composeBody(
       { itemId: longestId, reason: { ...longestReason, kind }, ...answers },
       VOCAB,
     );
+    // The answer REACHED the body. Without this the whole assertion can pass on a report
+    // that dropped the field, which is exactly how this test was vacuous twice.
+    expect(body, `${kind} was dropped, so nothing is under test`).toMatch(
+      kind === 'note' ? /^Note: /m : /^DOI should be: /m,
+    );
+
     const url = correctionMailto(longestId, body);
     expect(url.length).toBeLessThan(MAILTO_MAX_URL);
     expect(MAILTO_MAX_URL - url.length).toBeGreaterThan(200);
+  });
+
+  it('rejects a DOI that passes the character cap but blows the encoded one', () => {
+    // The regression test for DOI_MAX_ENCODED, which the budget test above is NOT: that
+    // one sizes its input to the largest value the caps admit, so it stays green whatever
+    // the caps are and only catches someone raising them too far. Isolating the encoded
+    // bound needs an input the CHARACTER cap accepts and the encoded cap does not.
+    const doi = `10.1234/${'提'.repeat(100)}`; // 108 characters, 908 encoded
+    expect(doi.length).toBeLessThan(DOI_MAX_LENGTH);
+    expect(encodeURIComponent(doi).length).toBeGreaterThan(DOI_MAX_ENCODED);
+    expect(isDoiShape(doi)).toBe(false);
   });
 
   it('does not compose a DOI longer than any real one', () => {

@@ -16,6 +16,16 @@ CASES = [
     ("verb as DATA in a variable",       f"RISKY='{V} --body \"{RISK}\"'",           "allow"),
     ("verb as DATA in an echo",          f'echo "run: {V} --body \\"{RISK}\\""',     "allow"),
     ("real publish after a separator",   f'cd /tmp && {V} --title x --body "{RISK}"', "deny"),
+    # A `cd` AFTER the verb cannot change where the publish lands, so it must not
+    # be used to resolve the destination. It was: the extraction took the first
+    # `cd` anywhere in the command, so this shape resolved the destination as the
+    # trailing directory, and where that was private the `vis != PUBLIC`
+    # short-circuit passed the payload through UNSCANNED. Same "guard
+    # disappearing" failure the cd handling exists to close, in the opposite
+    # command order. `/tmp` holds no repo, so the destination here is unresolved,
+    # which is announced and scanned rather than waved through.
+    ("trailing cd does not steer the destination",
+     f'{V} --title x --body "{RISK}" && cd /tmp',                                    "deny"),
     ("read-only command",                "gh issue list --limit 5",                   "allow"),
     # close/reopen/review publish text via --comment, easy to forget.
     ("close with a risky comment",       f'gh issue close 1 --comment "{RISK}"',      "deny"),
