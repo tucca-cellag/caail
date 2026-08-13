@@ -205,6 +205,22 @@ export function resolveReasons(
   return resolved;
 }
 
+/**
+ * Marks a subtree whose outbound links must be recorded WITHOUT their query string.
+ *
+ * `outboundEvent` keeps query strings by design, on the premise that an outbound href is
+ * content CAAIL published rather than something a visitor typed — for a deposit link the
+ * query string *is* the accession. The composer breaks that premise: it puts the whole
+ * report, note and all, into the GitHub link's `details=` parameter, so the site-wide
+ * click handler would post a reader's free text to the events collector. The privacy page
+ * says search text is the only free text collected, and that has to stay true by
+ * construction rather than by amendment.
+ *
+ * Declared here rather than in analytics.ts because the composer is what creates the
+ * hazard; the analytics layer only has to honour the marker.
+ */
+export const NO_QUERY_ANALYTICS_ATTR = 'data-analytics-no-query';
+
 /** How much reader-typed prose one report may carry, in characters. */
 export const NOTE_MAX_LENGTH = 400;
 
@@ -386,17 +402,24 @@ export const DOI_MAX_ENCODED = 600;
 export function normaliseDoi(raw: string): string {
   const trimmed = raw.trim();
   const resolver = /^https?:\/\/(?:dx\.)?doi\.org\/(.*)$/is.exec(trimmed);
-  if (resolver) {
-    // A resolver URL's query and fragment belong to the URL, not to the DOI. This is not a
-    // theoretical case: copying a DOI link out of a newsletter or a search result brings
-    // `?utm_source=…` with it, and composing that verbatim produced a DOI that resolves to
-    // nothing while the page told the reader it had been accepted.
-    return resolver[1]!.replace(/[?#][\s\S]*$/, '').trim();
-  }
-  // A bare `doi:` prefix gets no such treatment: outside a URL there is nothing that says
-  // a `?` is a query rather than part of the identifier, so the shape check below rejects
-  // it rather than this quietly guessing.
-  return trimmed.replace(/^doi:\s*/i, '').trim();
+  // A resolver URL's query and fragment belong to the URL, not to the DOI. This is not a
+  // theoretical case: copying a DOI link out of a newsletter or a search result brings
+  // `?utm_source=…` with it, and composing that verbatim produced a DOI that resolves to
+  // nothing while the page told the reader it had been accepted.
+  //
+  // A bare `?` still gets no such treatment: outside a URL nothing says it is a query
+  // rather than part of the identifier, so the shape check rejects that rather than
+  // guessing.
+  const afterResolver = resolver ? resolver[1]!.replace(/[?#][\s\S]*$/, '').trim() : trimmed;
+
+  // The `doi:` strip runs on BOTH paths, which is what makes this idempotent. It used to
+  // sit on the else branch only, so `https://doi.org/doi:10.1234/abc` returned
+  // `doi:10.1234/abc` — and because `isDoiShape` normalises again internally while
+  // `composeBody` emitted the once-normalised value, the two disagreed: the review step
+  // said "not shaped like a DOI, so it is not in the report below" directly above a report
+  // that contained it. Validating and emitting the same string is the invariant; being
+  // idempotent is how it is guaranteed rather than remembered.
+  return afterResolver.replace(/^doi:\s*/i, '').trim();
 }
 
 /** True when `value` normalises to something DOI-shaped. Empty is not an error, just absent. */

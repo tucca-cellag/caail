@@ -89,25 +89,69 @@ fi
 # --- Resolve the destination repo and its visibility ----------------------
 command -v gh >/dev/null 2>&1 || { printf '%s\n' "$PASS_THROUGH"; exit 0; }
 
-# An explicit --repo/-R wins; otherwise gh infers from cwd.
+# An explicit --repo/-R wins; otherwise gh infers from the directory the command
+# will actually run in — which is NOT necessarily this hook's cwd.
+#
+# The hook runs before the command, in the session's directory. A command that
+# begins `cd <elsewhere> && gh issue create …` publishes to <elsewhere>'s repo,
+# and resolving from our own cwd answers a question nobody asked.
+#
+# Both directions were reproduced, and only one of them is harmless. Naming the
+# wrong repo in the announcement is merely wrong. The other direction is the
+# guard disappearing: with the session in a PRIVATE repo and the command doing
+# `cd <public repo> && gh issue create --body '…api_key…'`, the private verdict
+# short-circuits below and the payload is never scanned. Measured on the exact
+# same command, changing nothing but the hook's cwd: deny from one, silent
+# pass-through from the other. That is this guard's own cautionary pattern, a
+# check that looks present and is not.
 dest=$(grep -oE '(--repo|-R) +[^ ]+' <<<"$cmd" | head -n1 | awk '{print $2}' | tr -d "\"'")
+cd_dir=""
+if [[ -z $dest ]]; then
+  # First `cd` at the start of the command or of a segment. Deliberately narrow:
+  # it catches the shape that actually occurs (`cd X && gh …`) and leaves anything
+  # cleverer to the undetermined branch below rather than guessing at it.
+  cd_dir=$(grep -oE '(^|[;&|(]) *cd +[^ ;&|)]+' <<<"$cmd" | head -n1 | sed -E 's/.*cd +//' | tr -d "\"'")
+  cd_dir="${cd_dir/#\~/$HOME}"
+fi
+
+dest_unknown=0
 if [[ -n $dest ]]; then
   meta=$(timeout 10 gh repo view "$dest" --json nameWithOwner,visibility 2>/dev/null)
+elif [[ -n $cd_dir ]]; then
+  meta=$( (cd "$cd_dir" 2>/dev/null && timeout 10 gh repo view --json nameWithOwner,visibility 2>/dev/null) )
+  # A cd we could not follow is not the same as "no repo here", and must not be
+  # treated as one. Resolving from our own cwd instead would be the original bug;
+  # skipping the payload scan would move the hole rather than close it. So the
+  # destination is marked unknown and the scan runs anyway: an unknown
+  # destination cannot be ruled public, so risky content is denied and the reason
+  # says why it could not be resolved.
+  [[ -z $meta ]] && dest_unknown=1
 else
   meta=$(timeout 10 gh repo view --json nameWithOwner,visibility 2>/dev/null)
 fi
 
-# Can't determine the destination — fail open rather than block real work.
-[[ -z $meta ]] && { printf '%s\n' "$PASS_THROUGH"; exit 0; }
+if [[ $dest_unknown -eq 1 ]]; then
+  repo="an unresolved destination (the command changes directory to '${cd_dir}')"
+  vis_phrase="whose visibility could NOT be resolved, so it is treated as if it were public"
+  vis_tag="UNRESOLVED"
+  # No owner, so the foreign-owner signal cannot be computed. Left empty
+  # deliberately: it degrades to "not a signal" rather than matching everything.
+  owner=""
+else
+  # Can't determine the destination at all — fail open rather than block real work.
+  [[ -z $meta ]] && { printf '%s\n' "$PASS_THROUGH"; exit 0; }
 
-repo=$(jq -r '.nameWithOwner // empty' <<<"$meta" 2>/dev/null)
-vis=$(jq -r '.visibility // empty' <<<"$meta" 2>/dev/null)
-owner="${repo%%/*}"
+  repo=$(jq -r '.nameWithOwner // empty' <<<"$meta" 2>/dev/null)
+  vis=$(jq -r '.visibility // empty' <<<"$meta" 2>/dev/null)
+  owner="${repo%%/*}"
 
-# Private destination: the leak class this guards against does not apply.
-if [[ $vis != "PUBLIC" ]]; then
-  printf '%s\n' "$PASS_THROUGH"
-  exit 0
+  # Private destination: the leak class this guards against does not apply.
+  if [[ $vis != "PUBLIC" ]]; then
+    printf '%s\n' "$PASS_THROUGH"
+    exit 0
+  fi
+  vis_phrase="which is PUBLIC"
+  vis_tag="PUBLIC"
 fi
 
 # --- Gather the payload ---------------------------------------------------
@@ -136,16 +180,16 @@ fi
 
 # --- No signals: announce visibility, allow ------------------------------
 if [[ ${#signals[@]} -eq 0 ]]; then
-  jq -nc --arg ctx "Publishing to ${repo}, which is PUBLIC. Nothing in the payload tripped the provenance guard." \
+  jq -nc --arg ctx "Publishing to ${repo}, ${vis_phrase}. Nothing in the payload tripped the provenance guard." \
     '{hookSpecificOutput:{hookEventName:"PreToolUse",additionalContext:$ctx}}'
   exit 0
 fi
 
 # --- Signals: deny pending explicit provenance confirmation ---------------
 joined=$(printf '%s; ' "${signals[@]}"); joined="${joined%; }"
-reason="Publishing to ${repo} (PUBLIC) with: ${joined}."
+reason="Publishing to ${repo} (${vis_tag}) with: ${joined}."
 
-ctx="BLOCKED by the public-publish provenance guard (${RULE}). Destination ${repo} is PUBLIC. Payload contains: ${joined}.
+ctx="BLOCKED by the public-publish provenance guard (${RULE}). Destination: ${repo}, ${vis_phrase}. Payload contains: ${joined}.
 
 Before retrying, verify EACH of these and state the answers explicitly:
   1. PROVENANCE — does every quoted file path, code block, config value and architectural detail originate in THIS repo? Anything learned from a private repo, a third party's source, or an authenticated API for a repo you do not own MUST NOT be published. Paraphrase discloses as much as a quote.

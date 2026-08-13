@@ -509,6 +509,44 @@ test('the DOI error renders in the danger colour, not body text', async ({ page 
   expect(built).not.toBe(body);
 });
 
+test("a reader's note never reaches the analytics collector", async ({ page }) => {
+  // The composer puts the whole correction, note included, into the GitHub link's
+  // `details=` parameter, and the site-wide outbound_click handler records `link_url` WITH
+  // its query string by design (for a deposit link the query string is the accession). So
+  // without the marker attribute, clicking Submit posts the reader's free text to the
+  // events collector — while privacy.mdx says search text is the only free text collected.
+  //
+  // Asserted on what the sink actually receives, not on the attribute being present: the
+  // attribute is the mechanism and could be honoured incorrectly.
+  await page.addInitScript(() => {
+    (window as unknown as { dataLayer: unknown[] }).dataLayer = [];
+  });
+  await page.goto('./report/?item=paper:214');
+  await chooseReason(page, 'Something else');
+
+  const secret = 'zzconfidentialcolleaguenamezz';
+  await page.getByLabel(/What is wrong with it/).fill(secret);
+  await page.locator(NEXT).click();
+  await expect(page.locator(BODY)).toContainText(secret);
+
+  // Follow the composed GitHub link, without leaving the page.
+  await page.locator(SUBMIT).evaluate((el) => {
+    el.setAttribute('target', '_blank');
+    (el as HTMLAnchorElement).click();
+  });
+
+  const events = await page.evaluate(
+    () => (window as unknown as { dataLayer: unknown[] }).dataLayer,
+  );
+  const serialised = JSON.stringify(events);
+  // The click was recorded...
+  expect(serialised).toContain('outbound_click');
+  expect(serialised).toContain('github.com');
+  // ...but carries neither the note nor the composed body.
+  expect(serialised).not.toContain(secret);
+  expect(serialised).not.toContain('details');
+});
+
 test('the live regions stay in the accessibility tree while empty', async ({ page }) => {
   // A `role="alert"` / `role="status"` region that is `display: none` at the moment its
   // content changes is not reliably announced by NVDA, JAWS or VoiceOver — and empty is by

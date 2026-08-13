@@ -21,6 +21,7 @@
 
 <script>
   import { resolveSink, outboundEvent, normalizeQuery, parseResultCount } from '../lib/analytics';
+  import { NO_QUERY_ANALYTICS_ATTR } from '../lib/report-compose';
 
   /** Quiet period after the last search mutation before we judge a result set final. */
   const SEARCH_SETTLE_MS = 1200;
@@ -42,7 +43,12 @@
     if (!link) return;
     const href = link.getAttribute('href');
     if (!href) return;
-    const ev = outboundEvent(href, location.href);
+    // `closest`, so marking one container covers every link inside it — the composer's
+    // submit and the route list's GitHub link both carry the composed report, and they sit
+    // in different parts of the page. Reading an attribute adds no DOM and does not touch
+    // the event, so the two constraints on this file still hold.
+    const dropQuery = Boolean(link.closest(`[${NO_QUERY_ANALYTICS_ATTR}]`));
+    const ev = outboundEvent(href, location.href, dropQuery);
     if (!ev) return;
     sink()?.('outbound_click', { link_url: ev.url, link_domain: ev.domain, resource_kind: ev.kind });
   });

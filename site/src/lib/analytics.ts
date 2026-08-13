@@ -133,12 +133,24 @@ export function resolveSink(scope: AnalyticsGlobals, beaconUrl?: string): Sink |
  * one (same-origin navigation, a non-web scheme like `mailto:`, or an
  * unparseable href).
  *
- * Query strings are kept, unlike Cloudflare's beacon: an outbound href is
- * content we published from the canonical Markdown, not something the visitor
- * typed, and for deposit links the query string *is* the accession
+ * Query strings are kept by default, unlike Cloudflare's beacon: an outbound
+ * href is content we published from the canonical Markdown, not something the
+ * visitor typed, and for deposit links the query string *is* the accession
  * (`…/acc.cgi?acc=GSE12345`). Fragments are dropped as pure noise.
+ *
+ * `dropQuery` is for the one place that premise fails. /report/'s composer puts
+ * the reader's whole correction, including a free-text note, into the GitHub
+ * link's `details=` parameter, so recording that href verbatim would post
+ * visitor-authored text to the collector — while the privacy page says search
+ * text is the only free text collected. The caller decides, by honouring the
+ * marker attribute in report-compose.ts, rather than this function learning
+ * which parameters are sensitive on which route.
  */
-export function outboundEvent(href: string, siteOrigin: string): OutboundEvent | null {
+export function outboundEvent(
+  href: string,
+  siteOrigin: string,
+  dropQuery = false,
+): OutboundEvent | null {
   let url: URL;
   try {
     url = new URL(href, siteOrigin);
@@ -150,6 +162,7 @@ export function outboundEvent(href: string, siteOrigin: string): OutboundEvent |
 
   const domain = url.hostname.toLowerCase().replace(/^www\./, '');
   url.hash = '';
+  if (dropQuery) url.search = '';
   return { url: url.toString(), domain, kind: DOMAIN_KINDS[domain] ?? 'external' };
 }
 

@@ -267,6 +267,34 @@ describe('normaliseDoi and isDoiShape', () => {
     expect(isDoiShape(input)).toBe(false);
   });
 
+  it('is idempotent, so validating and composing cannot disagree', () => {
+    // `composeBody` normalises once and emits that string; `isDoiShape` normalises again
+    // internally. If the two rounds differ, the page validates one string and publishes
+    // another. It did: `https://doi.org/doi:10.1234/abc` normalised once to
+    // `doi:10.1234/abc`, which is not DOI-shaped, so the review step said "not shaped like
+    // a DOI, so it is not in the report below" directly above a report containing it.
+    for (const raw of [
+      'https://doi.org/doi:10.1234/abc',
+      'https://dx.doi.org/DOI:10.1234/abc',
+      'doi: 10.1234/abc',
+      '10.1234/abc',
+      'not a doi',
+    ]) {
+      expect(normaliseDoi(normaliseDoi(raw)), raw).toBe(normaliseDoi(raw));
+    }
+  });
+
+  it('composes exactly the string it validated', () => {
+    const raw = 'https://doi.org/doi:10.1234/abc';
+    expect(isDoiShape(raw)).toBe(true);
+    const body = composeBody(
+      { itemId: 'paper:1', reason: reason({ kind: 'doi' }), doi: raw },
+      VOCAB,
+    );
+    expect(body).toContain('DOI should be: 10.1234/abc');
+    expect(body).not.toContain('doi:10.1234');
+  });
+
   it('drops the tracking parameters that come with a copied doi.org link', () => {
     // The common paste, and previously accepted verbatim: the page told the reader the DOI
     // was fine and composed one that resolves to nothing.

@@ -65,6 +65,7 @@
 import { COMMUNITY_PATH } from '../lib/community';
 import { CORRECTION_EMAIL, correctionIssueUrl, correctionMailto } from '../lib/report';
 import { LICENSE_TIERS, TIER_META } from '../lib/licenses';
+import { NO_QUERY_ANALYTICS_ATTR } from '../lib/report-compose';
 import correctionForm from '../content/data/correction-form.json';
 import papers from '../content/data/papers.json';
 import topics from '../content/data/topics.json';
@@ -109,7 +110,11 @@ const vocabularies = {
 const vocabJson = JSON.stringify(vocabularies).replace(/</g, '\\u003c');
 ---
 
-<div class="rp">
+{/* Marks the whole page, not just the two links that carry the composed report, because
+    they sit in different sections and a marker on one is a marker someone can move the
+    other out from under. Nothing on this page has a query string worth recording: the
+    Slack link is internal and the mailto is dropped before it reaches the event. */}
+<div class="rp" {...{ [NO_QUERY_ANALYTICS_ATTR]: true }}>
   {/* Identified-entry banner. Hidden until the script validates an id, so a reader who
       lands here with no query string, or with a malformed one, never sees an empty slot. */}
   <p class="rp-id" id="caail-report-id" hidden>

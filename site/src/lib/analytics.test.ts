@@ -147,6 +147,26 @@ describe('outboundEvent', () => {
     expect(outboundEvent('http://', ORIGIN)).toBeNull();
   });
 
+  it('drops the query string when asked, so reader-typed text is never recorded', () => {
+    // /report/'s composer puts the whole correction, including a free-text note, into the
+    // GitHub link's `details=`. Recording that href verbatim would post visitor-authored
+    // text to the collector, while the privacy page says search text is the only free text
+    // collected. The claim stays true by construction rather than by amendment.
+    const href =
+      'https://github.com/tucca-cellag/caail/issues/new?template=entry-correction.yml' +
+      '&item=paper%3A214&details=Entry%3A%20paper%3A214%0ANote%3A%20a%20colleague%27s%20name';
+    const kept = outboundEvent(href, ORIGIN);
+    expect(kept?.url).toContain('details=');
+
+    const dropped = outboundEvent(href, ORIGIN, true);
+    expect(dropped?.url).toBe('https://github.com/tucca-cellag/caail/issues/new');
+    expect(dropped?.url).not.toContain('details=');
+    expect(dropped?.url).not.toContain('colleague');
+    // Still classified, so the click is still counted — only its payload is dropped.
+    expect(dropped?.kind).toBe('repo');
+    expect(dropped?.domain).toBe('github.com');
+  });
+
   it('keeps the query string, because for deposit links it carries the accession', () => {
     const e = outboundEvent('https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE123456', ORIGIN);
     expect(e?.url).toBe('https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE123456');
