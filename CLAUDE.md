@@ -127,15 +127,10 @@ Primers/               Two-audience onboarding hubs (canonical md; media embedde
   README.md            Directory landing + index
   CellAg.md            Cellular agriculture, for AI researchers
   AI.md                AI/ML fundamentals, for cell-ag researchers
-ResearchAreas/         Per-area deep-dive pages (the matrix's COLUMN axis)
-  Bioprocess.md
-  CellEngineering.md
-  MediaOptimization.md
-  Scaffolding.md
-  SensoryPrediction.md
-Methods/               Per-method deep-dive pages (the matrix's ROW axis)
-  CLAUDE.md            Directory rules, incl. why a method page must not live in ResearchAreas/
-  BenchmarksEvaluation.md
+ResearchAreas/         Per-area deep-dive pages (the matrix's COLUMN axis). One file per
+                       page; the set drifts, so it is deliberately not enumerated here
+Methods/               Per-method deep-dive pages (the matrix's ROW axis). Same, plus a
+                       CLAUDE.md carrying why a method page must not live in ResearchAreas/
 CONTRIBUTING.md        How to add resources (read before editing)
 LICENSE                MIT License
 ```

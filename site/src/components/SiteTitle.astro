@@ -177,8 +177,18 @@ const isLink = (it: any): it is { label: string; href: string; external?: boolea
         {dropdowns.map((d) => (
           <>
             <span class="caail-mobilenav__sep">{d.label}</span>
-            {d.items.filter(isLink).map((it) => (
-              <a href={it.href} {...(it.external ? { rel: 'noopener' } : {})}>{it.label}{it.external ? ' ↗' : ''}</a>
+            {/* Render the group headings too, not just the links. Filtering them out
+                collapses a dropdown's internal structure: "Matrix Axes" holds the two
+                matrix AXES, so dropping its headings listed the method page directly
+                under the seven research areas and made it read as an eighth research
+                area — the exact confusion this nav exists to remove. On splash pages
+                this panel is the only nav, so there is no sidebar to correct it. */}
+            {d.items.map((it) => (
+              isLink(it) ? (
+                <a href={it.href} {...(it.external ? { rel: 'noopener' } : {})}>{it.label}{it.external ? ' ↗' : ''}</a>
+              ) : (
+                <span class="caail-mobilenav__subsep">{it.heading}</span>
+              )
             ))}
           </>
         ))}
@@ -321,6 +331,16 @@ const isLink = (it: any): it is { label: string; href: string; external?: boolea
     transition: color 0.15s, background 0.15s;
   }
   .caail-mobilenav__panel a:hover { color: var(--caail-primary); background: var(--caail-surface); }
+  .caail-mobilenav__subsep {
+    display: block;
+    padding: 0.45rem 0.6rem 0.15rem;
+    font-size: 0.6rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--caail-muted, var(--sl-color-gray-3));
+  }
+
   .caail-mobilenav__sep {
     display: block;
     margin-block-start: 0.3rem;
