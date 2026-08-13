@@ -81,7 +81,14 @@ function readFieldIds(src: string): string[] {
  * delimits a YAML block, so that is what this reads.
  */
 function readReasonOptions(src: string): string[] {
-  const start = src.search(/^\s*id:\s*reason\s*$/m);
+  // `[ \t]*`, never `\s*`. `\s` matches a newline, so `/^\s*options:/m` can begin its match
+  // on a BLANK LINE above the key: `^` anchors at the empty line, `\s*` eats the newline
+  // and the indent, and the match index points one line too early. The first line of the
+  // slice is then `''`, its indent reads as 0, and the dedent bound below never trips — so
+  // the block runs to end of file and swallows the confirmations checkboxes, which is the
+  // exact failure the indentation rule was written to prevent. One blank line in the
+  // template is all it takes.
+  const start = src.search(/^[ \t]*id:[ \t]*reason[ \t]*$/m);
   if (start < 0) {
     throw new Error(
       `correction-form: no "id: reason" field in ${CORRECTION_TEMPLATE_PATH}. /report/ ` +
@@ -90,7 +97,7 @@ function readReasonOptions(src: string): string[] {
     );
   }
   const rest = src.slice(start);
-  const optionsAt = rest.search(/^\s*options:\s*$/m);
+  const optionsAt = rest.search(/^[ \t]*options:[ \t]*$/m);
   if (optionsAt < 0) {
     throw new Error(
       `correction-form: the "reason" field in ${CORRECTION_TEMPLATE_PATH} has no ` +

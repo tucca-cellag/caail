@@ -14,6 +14,13 @@ on:
       - ResearchAreas/**
       - Datasets/**
       - Primers/**
+      # The correction issue form, for the same reason as Primers/ above. /report/'s
+      # composer bakes the form's dropdown options into the built page (they are read at
+      # parse time and inlined as a JSON payload), and its review step quotes the chosen
+      # option back to the reader as the entry to pick in the form. So a template-only
+      # change lints, tests, merges — and the live page keeps naming an option that no
+      # longer exists, until some unrelated push happens to trigger a build.
+      - .github/ISSUE_TEMPLATE/**
   workflow_dispatch:
 
 permissions:

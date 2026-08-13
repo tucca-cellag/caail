@@ -145,6 +145,20 @@ describe('buildCorrectionForm fails loudly when the template drifts', () => {
     }
   });
 
+  it('reads the options when a blank line sits above the options key', () => {
+    // `\s` matches a newline, so `/^\s*options:/m` could begin matching on the blank line
+    // ABOVE the key. The slice then started one line early, its first line was '', that
+    // line's indent read as 0, and the dedent bound never tripped: the block ran to end of
+    // file and picked up 13 "options" including `type: checkboxes` and the confirmation
+    // labels. One blank line in the template was the whole trigger.
+    const form = buildEdited((src) => src.replace(/^( +options:)$/m, '\n$1'))();
+    expect(form.reasons).toEqual(buildCorrectionForm().reasons);
+    for (const reason of form.reasons) {
+      expect(reason.value).not.toMatch(/^type:/);
+      expect(reason.value).not.toContain('I understand');
+    }
+  });
+
   it('tolerates a reworded hint, which is prose and will be edited', () => {
     // The complement of the test above, and the whole reason a reason is identified by a
     // PREFIX rather than by its full option string: the explanation after the em dash is

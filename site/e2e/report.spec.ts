@@ -192,6 +192,54 @@ test('a reason with nothing to ask takes two steps, not three', async ({ page })
   await expect(page.locator(BODY)).toHaveText('Entry: sw:cellpose\nProblem: Dead or wrong link');
 });
 
+test('the step count tracks the answer in both directions', async ({ page }) => {
+  // The count is not monotonic, and a comment here once claimed it was. It follows the
+  // current selection, which is the honest behaviour; what must hold is that it only ever
+  // moves because the reader answered something, never while they are reading a step.
+  await page.goto('./report/?item=sw:cellpose');
+  const heading = page.locator('#caail-h-reason');
+  await expect(heading).toHaveText(/^Step 1 of 3:/);
+
+  await page.getByRole('radio', { name: /^Dead or wrong link/ }).check();
+  await expect(heading).toHaveText(/^Step 1 of 2:/);
+
+  await page.getByRole('radio', { name: /^Wrong matrix placement/ }).check();
+  await expect(heading).toHaveText(/^Step 1 of 3:/);
+});
+
+test('an armed error re-post does not resurrect over an answered step', async ({ page }) => {
+  // Pressing Next twice with nothing selected arms a 60ms re-post of the alert, which
+  // exists so a repeated identical message is announced rather than swallowed. Answering
+  // inside that window used to let the timer repaint the error over a step the reader had
+  // just satisfied, and nothing cleared it for the rest of the flow.
+  await page.goto('./report/?item=paper:214');
+  const error = page.locator('#caail-compose-error');
+
+  await page.locator(NEXT).click();
+  await expect(error).not.toHaveText('');
+  await page.locator(NEXT).click();
+  // Answer immediately, inside the re-post window.
+  await page.getByRole('radio', { name: /^Dead or wrong link/ }).check();
+
+  await expect(error).toHaveText('');
+  // Still empty once the timer would have fired.
+  await page.waitForTimeout(200);
+  await expect(error).toHaveText('');
+});
+
+test('the email address keeps its code styling after a report composes', async ({ page }) => {
+  // The note is rewritten once a report exists, and writing textContent destroyed the
+  // <code> the address lives in. Because that rewrite latches, the styling could never
+  // come back for the rest of the visit.
+  await page.goto('./report/?item=db:string');
+  await expect(page.locator('#caail-report-email-note code')).toHaveCount(1);
+
+  await chooseReason(page, 'Dead or wrong link');
+  const code = page.locator('#caail-report-email-note code');
+  await expect(code).toHaveCount(1);
+  await expect(code).toContainText('@');
+});
+
 test('the composed report reaches all three routes, not only GitHub', async ({ page }) => {
   // The ticket's constraint: the composer must not leave the account-free routes as bare
   // links beneath a slicker GitHub path.

@@ -48,13 +48,19 @@
  * than server-rendered as `<option>` elements, so 25 matrix method names do not enter the
  * Pagefind index and make /report/ rank for "Bayesian Optimization".
  *
- * WHY THE STEP COUNT ONLY EVER SHRINKS
- * ------------------------------------
+ * WHERE THE STEP COUNT COMES FROM
+ * -------------------------------
  * A reason with no follow-up (a dead link; a paper that is not machine learning at all)
  * has two steps, not three, because there is nothing to ask. Before a reason is picked the
- * total is genuinely unknown, so the heading says "of 3" — the maximum — and corrects to
- * "of 2" if the reader picks one of those. The count therefore never grows under the
- * reader, which is the direction that would feel like the page moving the goalposts.
+ * total is genuinely unknown, so the heading says "of 3" — the maximum, so the first thing
+ * a reader sees can only ever overstate what is left, never understate it.
+ *
+ * After that the total tracks whatever is currently selected, and it moves in BOTH
+ * directions: 3 to 2 on picking a dead link, and back to 3 on changing that to a matrix
+ * placement. An earlier version of this comment claimed it only ever shrank, which was
+ * simply not true and was reachable in one click. The invariant actually worth having is
+ * the narrower one: the count never moves except as a direct result of the reader
+ * answering. It does not drift while they are reading a step.
  */
 import { COMMUNITY_PATH } from '../lib/community';
 import { CORRECTION_EMAIL, correctionIssueUrl, correctionMailto } from '../lib/report';
@@ -426,6 +432,8 @@ const vocabJson = JSON.stringify(vocabularies).replace(/</g, '\\u003c');
     };
 
     let current: StepName = 'reason';
+    /** Pending re-post of the step-1 alert. Held so it can be cancelled; see `alert`. */
+    let alertTimer: number | undefined;
 
     /**
      * The three route notes are rewritten once, the moment a report first exists, and the
@@ -483,7 +491,7 @@ const vocabJson = JSON.stringify(vocabularies).replace(/</g, '\\u003c');
           // one would be composed into a report about a different error class.
           answers.method = answers.area = answers.tier = '';
           answers.theme = answers.doi = answers.note = '';
-          if (el.error) el.error.textContent = '';
+          clearAlert();
           buildFields();
           // Picking a reason is the ONLY thing that changes the step plan, and until it is
           // picked the total is a guess. Repaint the current step so the count corrects
@@ -730,7 +738,20 @@ const vocabJson = JSON.stringify(vocabularies).replace(/</g, '\\u003c');
             'Needs a GitHub account. The form opens with your report already written into it, and the report, the discussion and the eventual fix all end up in one public place with a permanent link.';
         }
         if (el.mailNote) {
-          el.mailNote.textContent = `No account needed. Opens your mail app with the whole report already written, addressed to ${mailAddress}.`;
+          // Rebuilt as nodes rather than assigned as text, so the address keeps its <code>
+          // treatment. Writing textContent here destroyed the element the address is
+          // rendered in, and because this block latches it could never come back: the
+          // moment a report first composed, the email address silently lost its monospace
+          // styling for the rest of the visit.
+          const address = document.createElement('code');
+          address.textContent = mailAddress;
+          el.mailNote.replaceChildren(
+            document.createTextNode(
+              'No account needed. Opens your mail app with the whole report already written, addressed to ',
+            ),
+            address,
+            document.createTextNode('.'),
+          );
         }
         if (el.slackNote) {
           el.slackNote.textContent =
@@ -756,14 +777,33 @@ const vocabJson = JSON.stringify(vocabularies).replace(/</g, '\\u003c');
     function alert(message: string) {
       const region = el.error;
       if (!region) return;
+      clearAlert();
       if (region.textContent !== message) {
         region.textContent = message;
         return;
       }
       region.textContent = '';
-      window.setTimeout(() => {
+      alertTimer = window.setTimeout(() => {
         region.textContent = message;
+        alertTimer = undefined;
       }, 60);
+    }
+
+    /**
+     * Drop the alert, INCLUDING a re-post that has been armed but not yet fired.
+     *
+     * Without cancelling the timer the message comes back from the dead: press Next twice
+     * with nothing selected (arming the 60ms re-post), then answer the question inside that
+     * window, and the timer repaints "Pick what is wrong with the entry to continue" over a
+     * step the reader has already satisfied. Nothing would clear it for the rest of the
+     * flow, so the contradiction just sits there.
+     */
+    function clearAlert() {
+      if (alertTimer !== undefined) {
+        window.clearTimeout(alertTimer);
+        alertTimer = undefined;
+      }
+      if (el.error) el.error.textContent = '';
     }
 
     el.next?.addEventListener('click', () => {
