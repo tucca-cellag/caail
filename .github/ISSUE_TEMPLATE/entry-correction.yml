@@ -46,12 +46,12 @@ body:
 
         - Wrong matrix placement — the AI method or research area is not what the paper does
         - Not machine learning at all — the paper does not apply an AI/ML method
-        - Stale or wrong figures in the description (record counts, sizes, dates)
+        - Stale or wrong figures in the description — record counts, sizes, dates
         - Dead or wrong link
         - Wrong licence tier
         - Wrong or missing DOI
         - Wrong or missing subject topics — the theme and tag chips, or a whole theme that looks mis-tagged
-        - Something else (describe below)
+        - Something else — describe it below
       placeholder: Wrong matrix placement
     validations:
       required: true

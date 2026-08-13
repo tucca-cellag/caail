@@ -147,8 +147,11 @@ describe('correctionMailto', () => {
 
   it('carries the composed body, so the account-free route is not the thin one', () => {
     const body = 'Entry: paper:214\nProblem: Dead or wrong link';
-    expect(correctionMailto('paper:214', body)).toContain(
-      `body=${encodeURIComponent(body)}`,
+    // Compared after decoding, and against the CRLF form: the composer emits `\n` and the
+    // mailto must carry `\r\n` per RFC 6068 (see the note on correctionMailto), so an
+    // assertion against the raw body would be asserting the bug.
+    expect(decodeURIComponent(correctionMailto('paper:214', body))).toContain(
+      body.replace(/\n/g, '\r\n'),
     );
   });
 
@@ -160,6 +163,23 @@ describe('correctionMailto', () => {
     const url = correctionMailto('paper:214', 'Entry: paper:214\nProblem: Dead or wrong link');
     expect(url).not.toContain('+');
     expect(url).toContain('%20');
+  });
+
+  it('encodes line breaks as CRLF, which RFC 6068 requires of a mailto body', () => {
+    // `encodeURIComponent('\n')` is a bare `%0A`, which a strict client may drop. The report
+    // is a stack of `Key: value` lines and nothing else, so losing the breaks collapses it
+    // into one run-on sentence — and the clients most likely to do it are the Windows ones
+    // the URL-length budget is already calibrated against.
+    const url = correctionMailto('paper:214', 'Entry: paper:214\nProblem: Dead or wrong link');
+    expect(url).toContain('%0D%0A');
+    // No bare LF survives anywhere: every %0A in the URL is preceded by %0D.
+    expect(url.replace(/%0D%0A/g, '')).not.toContain('%0A');
+  });
+
+  it('does not double the CR on a body that already carries CRLF', () => {
+    const url = correctionMailto('paper:214', 'Entry: paper:214\r\nProblem: Dead or wrong link');
+    expect(url).toContain('%0D%0A');
+    expect(url).not.toContain('%0D%0D');
   });
 
   it('omits the body when there is none, leaving the shipped URL unchanged', () => {

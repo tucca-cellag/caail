@@ -87,6 +87,20 @@ describe('buildCorrectionForm against the committed template', () => {
     }
   });
 
+  it('keeps form instructions out of the label, which is published verbatim', () => {
+    // `label` is what reaches the composed body as `Problem: …`, and from there a public
+    // GitHub issue. A trailing "(describe below)" is an instruction to whoever is filling
+    // the form; published as the problem statement it reads as part of the report, and
+    // "below" refers to a place the reader of the issue is not standing.
+    //
+    // The template's convention is that anything of that kind goes after an em dash, where
+    // splitOption files it as a hint — shown beside the radio, never composed. So the rule
+    // is simply that a label does not end in a parenthetical.
+    for (const reason of form.reasons) {
+      expect(reason.label, `${reason.value}: put the aside after an em dash`).not.toMatch(/\)$/);
+    }
+  });
+
   it('finds the field ids the page prefills', () => {
     // `item` is CAAIL-255's contract; `details` is where the composed body lands. GitHub
     // ignores a query parameter matching no field, so losing either is silent at runtime.
@@ -165,7 +179,7 @@ describe('buildCorrectionForm fails loudly when the template drifts', () => {
       buildEdited((s) =>
         s.replace(
           /^ {8}- Something else.*$/m,
-          '        - Something else (describe below)\n        - A brand new error class',
+          '        - Something else — describe it below\n        - A brand new error class',
         ),
       ),
     ).toThrow(/no reason head in REASON_SPECS matches/);

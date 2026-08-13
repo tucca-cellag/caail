@@ -299,7 +299,7 @@ const vocabJson = JSON.stringify(vocabularies).replace(/</g, '\\u003c');
   // different bounding at the point of input is how the two would drift.
   // `normaliseDoi` stays out for the same reason: composeBody normalises.
   import {
-    DOI_MAX_LENGTH,
+    DOI_INPUT_MAX_LENGTH,
     NOTE_MAX_LENGTH,
     boundNote,
     collapseNote,
@@ -635,11 +635,10 @@ const vocabJson = JSON.stringify(vocabularies).replace(/</g, '\\u003c');
       // article body cannot sit in the field looking like a pending answer. The value is
       // still re-checked in composeBody: this is the affordance, not the guarantee.
       //
-      // The constant, not a literal 200. The note field beside it already imports its cap;
-      // typing this one out put a hand-written number next to the derived one it has to
-      // agree with, which is the defect this branch spent two rounds removing from other
-      // places. Raise the cap in the lib and this follows.
-      input.maxLength = DOI_MAX_LENGTH;
+      // DOI_INPUT_MAX_LENGTH, deliberately NOT DOI_MAX_LENGTH. Sharing the validation cap
+      // here is the obvious move and it silently truncates instead of rejecting — including
+      // a real DOI pasted as a resolver URL. See that constant for the two measured cases.
+      input.maxLength = DOI_INPUT_MAX_LENGTH;
       input.value = answers.doi;
       input.setAttribute('aria-describedby', 'caail-f-doi-help caail-f-doi-err');
 
@@ -800,15 +799,24 @@ const vocabJson = JSON.stringify(vocabularies).replace(/</g, '\\u003c');
       // An UNANSWERED follow-up, which is a different thing from a dropped one and was the
       // larger gap: picking the first reason and pressing Next twice produces a report that
       // names the problem and not the correction, under a lede promising "we write the
-      // report for you". The three select kinds are the ones where that matters.
+      // report for you".
+      //
+      // `note` is in this list even though the field is labelled optional, because an empty
+      // one is where the gap is worst rather than mildest: "Something else" with no note
+      // composes two lines that say an entry is wrong and nothing whatever about how. That
+      // body is then prefilled into GitHub's `details`, which is `required: true` — so the
+      // form's own "describe this" gate is satisfied by content-free text and the reader is
+      // never asked again. It reads oddly to flag an optional field, which is why this is a
+      // notice and not a block: the copy says a curator can still act on it, just less
+      // quickly, and that is true for both note kinds.
       //
       // Not the DOI: "Wrong or missing DOI" with the field left empty is a complete report
-      // on its own, since missing is one of the two things it reports. Not `note` either,
-      // which is optional by construction.
+      // on its own, since missing is one of the two things it reports.
       const unanswered =
         (kind === 'matrix' && !answers.method && !answers.area) ||
         (kind === 'licence' && !answers.tier) ||
-        (kind === 'topics' && !answers.theme);
+        (kind === 'topics' && !answers.theme) ||
+        (kind === 'note' && !boundNote(answers.note ?? ''));
       return unanswered
         ? 'Your report names the problem but not what it should be instead. Go back to say, or send it as it stands: a curator can still act on it, just less quickly.'
         : '';

@@ -106,9 +106,11 @@ const BODY = '#caail-compose-body';
 /**
  * Escape a reason label for use in an accessible-name regex.
  *
- * Not optional: two of the eight real options carry parentheses ("(record counts, sizes,
- * dates)", "(describe below)"), which an unescaped regex would read as a capture group
- * and match something else entirely.
+ * No label carries a regex metacharacter today — two did, and the parentheses moved behind
+ * the em dash when the composed `Problem:` line stopped publishing form instructions. This
+ * stays because the labels are read from the template at build time rather than written
+ * here, so the next curator to add an option decides what characters this has to survive,
+ * and an unescaped `(` would be read as a capture group and match something else entirely.
  */
 const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
@@ -286,7 +288,9 @@ test('the composed report reaches all three routes, not only GitHub', async ({ p
   expect(gh.searchParams.get('item')).toBe('db:string');
 
   const mail = (await page.locator('#caail-report-email').getAttribute('href'))!;
-  expect(decodeURIComponent(mail)).toContain(expected);
+  // CRLF, because RFC 6068 requires it of a body's line breaks and a bare LF is dropped by
+  // strict clients — which would collapse the whole report into one run-on line.
+  expect(decodeURIComponent(mail)).toContain(expected.replace(/\n/g, '\r\n'));
   // RFC 6068: a `+` in a mailto query is a literal plus, not a space.
   expect(mail).not.toContain('+');
 
@@ -689,6 +693,39 @@ test('an unanswered follow-up is flagged, not just an unusable one', async ({ pa
   await page.locator(NEXT).click();
   await expect(dropped).toHaveText('');
   await expect(page.locator(BODY)).toContainText('Research area should be:');
+});
+
+test('a catch-all reason with an empty note is flagged as saying nothing', async ({ page }) => {
+  // "Something else" with the note left blank composes two lines that say an entry is wrong
+  // and nothing at all about how. That body is prefilled into GitHub's `details` field,
+  // which is `required: true` — so the form's own "describe this" gate is satisfied by
+  // content-free text and the reader is never asked again. The unanswered-follow-up notice
+  // covered the three select kinds and skipped this one, on the grounds that the note is
+  // optional; optional is exactly why it is the likeliest to be empty.
+  await page.goto('./report/?item=paper:214');
+  await chooseReason(page, 'Something else');
+  await page.locator(NEXT).click();
+
+  const dropped = page.locator('#caail-compose-dropped');
+  await expect(dropped).toBeVisible();
+  await expect(dropped).toContainText('names the problem but not what it should be');
+
+  // And it clears as soon as there is something to read, rather than latching.
+  await page.locator(BACK).click();
+  await page.getByLabel(/What is wrong with it/).fill('The summary says 12 species; the table lists 17.');
+  await page.locator(NEXT).click();
+  await expect(dropped).toHaveText('');
+  await expect(page.locator(BODY)).toContainText('Note: The summary says 12 species');
+});
+
+test('the composed problem line carries no form instructions', async ({ page }) => {
+  // The reason's label is published verbatim into a public issue. "Something else (describe
+  // below)" told the reader of that issue to look below, at nothing.
+  await page.goto('./report/?item=paper:214');
+  await chooseReason(page, 'Something else');
+  await page.locator(NEXT).click();
+  await expect(page.locator(BODY)).toContainText('Problem: Something else');
+  await expect(page.locator(BODY)).not.toContainText('describe');
 });
 
 test('the live regions stay in the accessibility tree while empty', async ({ page }) => {

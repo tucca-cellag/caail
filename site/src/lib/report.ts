@@ -149,10 +149,19 @@ export function correctionIssueUrl(
  * mail client a subject line reading "CAAIL+correction:+paper:214" and a body with a plus
  * between every word. Spaces are common in both, so this would be wrong on the first real
  * use rather than in some edge case.
+ *
+ * The same RFC is why the body's line breaks are normalised to CRLF first. RFC 6068 §5
+ * requires a line break in a body to be `%0D%0A`; `encodeURIComponent` turns the composer's
+ * `\n` into a bare `%0A`, which a strict client is free to drop. The report is a stack of
+ * `Key: value` lines and nothing else, so losing the breaks collapses it into one run-on
+ * sentence — the structure this whole route exists to produce. Windows and Outlook are the
+ * client family most likely to do it, and they are also the ones `MAILTO_MAX_URL` (in
+ * ./report-compose.ts) is calibrated against, so this is the same audience twice.
  */
 export function correctionMailto(itemId: string | null, body?: string | null): string {
   const subject = itemId && isItemId(itemId) ? `CAAIL correction: ${itemId}` : 'CAAIL correction';
   const fields = [`subject=${encodeURIComponent(subject)}`];
-  if (body) fields.push(`body=${encodeURIComponent(body)}`);
+  // `\r?\n` rather than `\n`, so a body that already carries CRLF is not given a second CR.
+  if (body) fields.push(`body=${encodeURIComponent(body.replace(/\r?\n/g, '\r\n'))}`);
   return `mailto:${CORRECTION_EMAIL}?${fields.join('&')}`;
 }

@@ -5,6 +5,7 @@ import { describe, it, expect } from 'vitest';
 import { buildCorrectionForm } from '../../scripts/parser/correction-form.js';
 import { correctionIssueUrl, correctionMailto } from './report';
 import {
+  DOI_INPUT_MAX_LENGTH,
   DOI_MAX_ENCODED,
   DOI_MAX_LENGTH,
   GITHUB_MAX_URL,
@@ -543,6 +544,42 @@ describe('composeBody', () => {
     expect(new URL(issue).searchParams.get('reason')).toBe(longestValue);
     expect(issue.length).toBeLessThan(GITHUB_MAX_URL);
     expect(GITHUB_MAX_URL - issue.length).toBeGreaterThan(1000);
+  });
+
+  it('cannot be truncated by its own input field into a DOI that passes', () => {
+    // The field's `maxLength` is enforced by the browser, so it is the most composeBody can
+    // ever be handed. While that bound equalled DOI_MAX_LENGTH the character-cap rejection
+    // was unreachable and became silent truncation instead — the report carried a DOI the
+    // reader never typed, with no error and no dropped notice.
+    //
+    // Asserted as the PROPERTY rather than as the numbers: whatever the field can hold must
+    // still fail the shape check when it was too long to begin with. The resolver forms are
+    // here because they are the realistic case, not the exotic one — a real 195-character
+    // DOI pasted as `https://doi.org/…` is 219 characters, and cutting it to 200 produced a
+    // valid-looking DOI eleven characters short of the one on the page.
+    for (const raw of [
+      `10.1234/${'a'.repeat(2000)}`,
+      `https://doi.org/10.1234/${'a'.repeat(2000)}`,
+      `https://doi.org/doi:10.1234/${'a'.repeat(2000)}`,
+    ]) {
+      expect(isDoiShape(raw), raw.slice(0, 24)).toBe(false);
+      expect(
+        isDoiShape(raw.slice(0, DOI_INPUT_MAX_LENGTH)),
+        `the field truncated "${raw.slice(0, 24)}…" into a DOI that passes`,
+      ).toBe(false);
+    }
+  });
+
+  it('still admits the longest DOI the cap allows, pasted as a resolver URL', () => {
+    // The complement, so the fix above cannot be "make the field tiny". The field has to
+    // hold a full-length DOI plus the prefix normaliseDoi strips, or it truncates a valid
+    // answer instead of an invalid one, which is the same defect wearing the other hat.
+    const longest = `10.1234/${'a'.repeat(DOI_MAX_LENGTH - 8)}`;
+    expect(longest).toHaveLength(DOI_MAX_LENGTH);
+    const pasted = `https://doi.org/${longest}`;
+    expect(pasted.length).toBeLessThanOrEqual(DOI_INPUT_MAX_LENGTH);
+    expect(isDoiShape(pasted)).toBe(true);
+    expect(normaliseDoi(pasted)).toBe(longest);
   });
 
   it('rejects a DOI that passes the character cap but blows the encoded one', () => {

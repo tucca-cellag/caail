@@ -394,6 +394,34 @@ export const DOI_MAX_LENGTH = 200;
 export const DOI_MAX_ENCODED = 600;
 
 /**
+ * What the DOI field itself will hold, which must be STRICTLY LOOSER than the cap above.
+ *
+ * `maxLength` on the input is enforced by the browser, so it is the most this module can
+ * ever be handed. Setting it to {@link DOI_MAX_LENGTH} — the obvious thing, and what this
+ * branch did until a review caught it — makes the character-cap rejection unreachable and
+ * converts it into SILENT TRUNCATION, which is the one outcome the module says it never
+ * produces: an answer that fails the check is dropped, never repaired.
+ *
+ * Two measured cases, the second of which is not an edge case at all:
+ *
+ *   * `10.1234/` + 400 `a`s is correctly rejected at 408 characters; cut to 200 by the
+ *     field it passes, and the report carries a DOI the reader never typed.
+ *   * A REAL 195-character DOI pasted as `https://doi.org/…` is 219 characters. Cut to
+ *     200 it normalises to 184, passes, and is composed 11 characters short. Readers paste
+ *     resolver URLs — the help text invites it — so this is the ordinary path.
+ *
+ * The property that makes truncation harmless, rather than the number: whatever the field
+ * can hold, minus the longest prefix `normaliseDoi` strips (`https://doi.org/doi:`, 20),
+ * must still exceed {@link DOI_MAX_LENGTH}. Then every truncated value is over the cap and
+ * is refused rather than quietly accepted. 400 − 20 = 380 > 200 clears it with room, and
+ * `report-compose.test.ts` asserts the property rather than the arithmetic.
+ *
+ * A bound is still wanted here: without one, a pasted article body sits in the field
+ * looking like a pending answer.
+ */
+export const DOI_INPUT_MAX_LENGTH = DOI_MAX_LENGTH * 2;
+
+/**
  * Normalise the ways a reader will paste a DOI into the bare `10.x/…` form.
  *
  * Readers copy what they are looking at, which is usually a resolver URL from the address
