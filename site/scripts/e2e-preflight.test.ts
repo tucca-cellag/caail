@@ -1,12 +1,13 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { createServer, type Server } from 'node:net';
-import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 // `join` and `writeFileSync` are also used directly by the named-list test below.
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import {
   checkPagefindArtifacts,
   classifyArtifact,
+  isListOnly,
   isPortHeld,
   preflight,
   runPreflight,
@@ -159,13 +160,58 @@ describe('isPortHeld', () => {
   it('says so out loud when the probe cannot run, rather than reporting free', async () => {
     // A port that is genuinely free and a probe that never ran are the same `false`
     // to the caller, so the second has to announce itself or the guard sits disabled.
+    // -1 makes `net.connect` throw ERR_SOCKET_BAD_PORT before any socket exists, so
+    // the child dies rather than exiting through `settle`. Port 0 would NOT do this:
+    // it connects-and-refuses, exits 0, and this assertion would fail.
     const warnings: string[] = [];
-    // 0 is not a connectable port, so the child exits non-zero without connecting.
     const held = isPortHeld(-1 as unknown as number, (message) => warnings.push(message));
     expect(held).toBe(false);
     expect(warnings.join('\n')).toContain('could not probe port');
     expect(warnings.join('\n')).toContain('NOT protected');
   });
+
+  it('reports a genuinely free port without warning', async () => {
+    // The other half of the pair above: a refused connection is evidence, so it must
+    // stay silent. If it warned, every healthy run would print a scary message and
+    // the warning would stop meaning anything.
+    const port = await listen();
+    const server = servers.pop()!;
+    await new Promise<void>((resolve) => server.close(() => resolve()));
+
+    const warnings: string[] = [];
+    expect(isPortHeld(port, (message) => warnings.push(message))).toBe(false);
+    expect(warnings).toEqual([]);
+  });
+});
+
+describe('isListOnly', () => {
+  it('recognises an enumerate-only invocation', () => {
+    expect(isListOnly(['node', 'playwright', 'test', '--list'])).toBe(true);
+    expect(isListOnly(['node', 'playwright', 'test'])).toBe(false);
+    expect(isListOnly(['node', 'playwright', 'test', '--reporter=list'])).toBe(false);
+  });
+});
+
+describe('PAGEFIND_ARTIFACTS against a real build', () => {
+  // The named list is hand-typed against Starlight/pagefind's current output, and a
+  // `missing` verdict is a hard abort telling you to rebuild. If an upgrade renames
+  // one of these, every e2e run fails on a healthy build and the suggested rebuild
+  // loops forever — the misleading red run this module exists to prevent, produced
+  // by the guard. This is the oracle: it fails when the names stop matching reality.
+  //
+  // Existence only, deliberately. Whether the bytes are sound is the preflight's
+  // job at run time; asserting content here would make `pnpm test` fail because of
+  // a corrupt dist, which is a different problem reported in the wrong place.
+  const distDir = join(import.meta.dirname, '..', 'dist');
+
+  it.skipIf(!existsSync(join(distDir, 'pagefind')))(
+    'every named artifact exists in the built site',
+    () => {
+      for (const relative of PAGEFIND_ARTIFACTS) {
+        expect(existsSync(join(distDir, relative)), `${relative} missing from dist/`).toBe(true);
+      }
+    },
+  );
 });
 
 describe('runPreflight', () => {
@@ -425,6 +471,24 @@ describe('preflight', () => {
       env: { TEST_WORKER_INDEX: '0' },
     });
     expect(message).toContain('zero-filled');
+  });
+
+  it('checks nothing for an enumerate-only invocation', () => {
+    // Reproduced before this was gated: with a listener on the configured port,
+    // `playwright test --list` exited 1 with the port abort and listed nothing.
+    let probed = false;
+    const message = preflight({
+      ...base,
+      distDir: makeDist({ 'pagefind/pagefind.js': Buffer.alloc(45555) }),
+      portIsHeld: () => {
+        probed = true;
+        return true;
+      },
+      argv: ['node', 'playwright', 'test', '--list'],
+      env: {},
+    });
+    expect(message).toBeNull();
+    expect(probed).toBe(false);
   });
 
   it('tells workers when the runner attached, so they do not fault the local build', () => {

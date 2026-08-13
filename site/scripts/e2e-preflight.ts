@@ -178,6 +178,9 @@ export function checkPagefindArtifacts(
  * itself become the thing nobody trusts. It does say so out loud, though: a probe
  * that never ran and a port that is genuinely free are the same `false` to the
  * caller, and an unreported one lets the guard sit disabled while looking active.
+ * That is why the child separates "every family refused" (0) from "could not tell"
+ * (11) rather than mapping every non-connect to free — `EMFILE` and `ECONNREFUSED`
+ * are different facts and only one of them is evidence.
  *
  * The child is given an empty `NODE_OPTIONS` because that is exactly how it stops
  * working. This repo's own `pnpm test` sets `NODE_OPTIONS='--experimental-sqlite
@@ -190,22 +193,33 @@ export function isPortHeld(
   port: number,
   warn: (message: string) => void = (message) => console.warn(message),
 ): boolean {
+  // Exit codes: 10 = something is listening, 0 = nothing is (every family refused),
+  // 11 = could not tell. The third exists because "refused" and "the probe could not
+  // ask" are different facts, and collapsing them is how a guard sits disabled while
+  // looking active. ECONNREFUSED means genuinely free; the address-family errors mean
+  // this host has no such loopback, which is also not evidence of a listener, so
+  // neither is treated as undetermined. Anything else (EMFILE, EACCES, a dropped SYN
+  // reaching the timeout) is.
   const probe = `
     const net = require('node:net');
     const port = Number(process.argv[1]);
-    let pending = 2;
+    const FREE = new Set(['ECONNREFUSED', 'EADDRNOTAVAIL', 'EAFNOSUPPORT', 'ENETUNREACH']);
+    const hosts = ['127.0.0.1', '::1'];
+    let pending = hosts.length;
     let held = false;
-    for (const host of ['127.0.0.1', '::1']) {
+    let undetermined = false;
+    for (const host of hosts) {
       const socket = net.connect({ port, host });
       socket.setTimeout(2000);
-      const settle = (isHeld) => {
-        held ||= isHeld;
+      const settle = (state) => {
+        if (state === 'held') held = true;
+        if (state === 'unknown') undetermined = true;
         socket.destroy();
-        if (--pending === 0) process.exit(held ? 10 : 0);
+        if (--pending === 0) process.exit(held ? 10 : undetermined ? 11 : 0);
       };
-      socket.on('connect', () => settle(true));
-      socket.on('error', () => settle(false));
-      socket.on('timeout', () => settle(false));
+      socket.on('connect', () => settle('held'));
+      socket.on('error', (error) => settle(FREE.has(error.code) ? 'free' : 'unknown'));
+      socket.on('timeout', () => settle('unknown'));
     }
   `;
   const result = spawnSync(process.execPath, ['-e', probe, String(port)], {
@@ -283,6 +297,11 @@ function isMainRunnerProcess(env: NodeJS.ProcessEnv): boolean {
   return env.TEST_WORKER_INDEX === undefined && env[PREFLIGHT_DONE_ENV] !== '1';
 }
 
+/** Whether this invocation only enumerates tests rather than running any. */
+export function isListOnly(argv: readonly string[]): boolean {
+  return argv.includes('--list');
+}
+
 export interface PreflightOptions {
   distDir: string;
   port: number;
@@ -302,6 +321,8 @@ export interface PreflightOptions {
   checkPort?: boolean;
   /** Called when the run deliberately attaches to a server it did not start. */
   onAttach?: () => void;
+  /** Defaults to `process.argv`. Injected in tests. */
+  argv?: string[];
   /** Injected in tests. */
   portIsHeld?: (port: number) => boolean;
   describeHolder?: (port: number) => string;
@@ -322,6 +343,14 @@ export interface PreflightOptions {
  */
 export function preflight(options: PreflightOptions): string | null {
   const env = options.env ?? process.env;
+
+  // `--list` enumerates tests and runs none: no web server is started, nothing is
+  // attached to, and no browser opens the search dialog, so neither check has a
+  // subject. Aborting here is a false positive on a healthy workflow — and not a
+  // rare one, since the default port 4321 is also `astro dev`'s, so anyone with
+  // `pnpm dev` running lost IDE test discovery (which lists through this same path)
+  // and was told to kill their dev server for a command that never touched it.
+  if (isListOnly(options.argv ?? process.argv)) return null;
 
   if (!isMainRunnerProcess(env)) {
     // The runner attached to a server this dist does not back, so nothing here
