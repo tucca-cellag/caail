@@ -170,12 +170,19 @@ function watchBeacon(page: import('@playwright/test').Page) {
   return hits;
 }
 
-test('the beacon never loads off the deployed origin', async ({ page }) => {
+test('the beacon never loads off the deployed origin', async ({ page, context }) => {
   // This suite runs against `pnpm preview` on localhost — the same production
   // build the deploy serves. That is exactly the case a build-time guard cannot
   // catch, and with ~170 specs each loading pages it was also the largest source
   // of self-recorded page views.
   const hits = watchBeacon(page);
+
+  // Abort rather than allow: should the guard ever regress, the assertion below
+  // still catches it (the request event fires before the abort), but the hit
+  // never leaves the runner. A test whose subject is "do not pollute the
+  // analytics" should not itself be the thing that pollutes them on the run
+  // that discovers the bug.
+  await context.route(`${BEACON_HOST}/**`, (route) => route.abort());
 
   await page.goto('./');
   await page.waitForTimeout(500);
@@ -234,6 +241,16 @@ test('the beacon does load on the deployed origin', async ({ page, context }) =>
 
   await expect(page.locator(`head meta[name="${MARKER}"]`)).toHaveCount(1);
   await expect.poll(() => hits.length).toBe(1);
+
+  // The request reaching Cloudflare is not the whole guarantee: a beacon that
+  // loads without its token reports to no site at all, and every assertion above
+  // still passes. Drop the setAttribute line and this is the only thing that
+  // notices — which is the same "silently dead in production" failure the test
+  // exists for, one layer in.
+  await expect(page.locator(`head script[src^="${BEACON_HOST}"]`)).toHaveAttribute(
+    'data-cf-beacon',
+    /"token":\s*"[0-9a-f]{32}"/,
+  );
 });
 
 test('same-origin links emit nothing', async ({ page }) => {

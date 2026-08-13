@@ -162,15 +162,24 @@ export default defineConfig({
         // fooexample.com), so this guard means we do not send it in the first
         // place rather than trusting them to discard it.
         //
-        // Appending the script instead of emitting the tag keeps it off the
-        // critical path — dynamically inserted scripts are async by default,
-        // which is what the previous `defer` was protecting (docs.yml gates
-        // Lighthouse Performance ≥0.90).
+        // Loading cost: a dynamically inserted script is `async`, set here
+        // explicitly rather than left implicit. That is a real change from the
+        // `defer` this replaces, and marginally worse rather than better —
+        // `defer` guarantees execution after parsing, while `async` executes as
+        // soon as it arrives and can interrupt parsing. It is accepted because
+        // the beacon is small and the alternative reintroduces the defect.
+        //
+        // Note the Lighthouse gate can no longer see this either way:
+        // lighthouserc.json collects from http://localhost:4321/caail/, which is
+        // precisely the origin excluded above, so CI now measures a page that
+        // never loads the beacon. Its performance number is that much
+        // optimistic against what a reader gets, and a beacon-induced
+        // regression would have to be caught by hand.
         {
           tag: 'script',
           content:
             `(()=>{if(location.hostname!==${JSON.stringify(ANALYTICS_HOST)})return;` +
-            `var s=document.createElement('script');` +
+            `var s=document.createElement('script');s.async=true;` +
             `s.src='https://static.cloudflareinsights.com/beacon.min.js';` +
             `s.setAttribute('data-cf-beacon','{"token": "a815722483f84116b51e8120158aaea3"}');` +
             `document.head.appendChild(s);})();`,
