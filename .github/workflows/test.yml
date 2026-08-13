@@ -31,14 +31,17 @@ on:
       # site build and e2e pass on a doc edit.
       - .claude/hooks/**
       - .claude/settings.json
-      # The one skill that DOES have a test. `plugin/skills/caail/SKILL.md` states
-      # the matrix grid size, and agent-api.test.ts asserts those numbers against
-      # `buildMatrix`. Without this line the guard only fires in the direction where
-      # the MATRIX moved (Papers.md matches '*.md'), never the one where the SKILL
-      # file is itself the thing edited — so mistyping the count in the file the
+      # The plugin text that DOES have tests. `plugin/skills/caail/SKILL.md` states
+      # the matrix grid size and `plugin/.claude-plugin/plugin.json`'s marketplace
+      # description states six corpus figures; agent-api.test.ts asserts both against
+      # the built models. Without these lines the guards only fire in the direction
+      # where the CORPUS moved (Papers.md matches '*.md'), never the one where the
+      # plugin file is itself the thing edited — so mistyping a count in the file a
       # guard exists to protect would trigger no workflow at all. `lint-papers.yml`
-      # does watch plugin/skills/** but never runs vitest.
+      # watches plugin/skills/** but never runs vitest, and nothing at all watched
+      # plugin/.claude-plugin/**, which is how its description went stale twice.
       - plugin/skills/**
+      - plugin/.claude-plugin/**
       - .github/workflows/test.yml
   push:
     branches: [main]
@@ -64,14 +67,17 @@ on:
       # site build and e2e pass on a doc edit.
       - .claude/hooks/**
       - .claude/settings.json
-      # The one skill that DOES have a test. `plugin/skills/caail/SKILL.md` states
-      # the matrix grid size, and agent-api.test.ts asserts those numbers against
-      # `buildMatrix`. Without this line the guard only fires in the direction where
-      # the MATRIX moved (Papers.md matches '*.md'), never the one where the SKILL
-      # file is itself the thing edited — so mistyping the count in the file the
+      # The plugin text that DOES have tests. `plugin/skills/caail/SKILL.md` states
+      # the matrix grid size and `plugin/.claude-plugin/plugin.json`'s marketplace
+      # description states six corpus figures; agent-api.test.ts asserts both against
+      # the built models. Without these lines the guards only fire in the direction
+      # where the CORPUS moved (Papers.md matches '*.md'), never the one where the
+      # plugin file is itself the thing edited — so mistyping a count in the file a
       # guard exists to protect would trigger no workflow at all. `lint-papers.yml`
-      # does watch plugin/skills/** but never runs vitest.
+      # watches plugin/skills/** but never runs vitest, and nothing at all watched
+      # plugin/.claude-plugin/**, which is how its description went stale twice.
       - plugin/skills/**
+      - plugin/.claude-plugin/**
       - .github/workflows/test.yml
   workflow_dispatch:
 

@@ -26,6 +26,7 @@ import {
   PLACEMENT_NOTE,
 } from './agent-api.js';
 import { buildPapersModel } from './papers.js';
+import { computeCounts } from './counts.js';
 import { buildCatalogModel } from './catalog.js';
 import { buildDatasetsModel } from './datasets-entries.js';
 import { buildDatasetInventory } from './dataset-inventory.js';
@@ -35,6 +36,7 @@ import { extractInventory } from '../db/extract.js';
 import { curatedEntryCount } from './datasets.js';
 
 const papers = buildPapersModel();
+const counts = computeCounts(papers);
 const catalog = buildCatalogModel();
 const datasets = buildDatasetsModel();
 const inventory = buildDatasetInventory();
@@ -416,24 +418,68 @@ describe('prose that quotes the matrix grid size', () => {
    * while saying something false. A transposition is exactly the edit these numbers
    * invite, since they are read far more often than they are changed.
    */
-  const numberBefore = (text: string, phrase: string): number | null => {
-    const i = text.indexOf(phrase);
-    if (i < 0) return null;
-    const m = text.slice(0, i).match(/(\d+)\D*$/);
-    return m ? Number(m[1]) : null;
+  /**
+   * EVERY number written directly against a phrase, not just the first.
+   *
+   * Scoping to one comment block was itself a hole: `agent-api.ts` states the same pair
+   * twice, in the module doc and again in `buildMatrix`'s docstring 148 lines below, and
+   * a guard that stopped at the first close-comment left the second free to contradict
+   * it with a green suite. Returning every occurrence means a third restatement cannot
+   * quietly escape the check.
+   *
+   * The number must be ADJACENT. Scanning backwards to the nearest digit anywhere ahead
+   * of the phrase reads unrelated numbers as claims: it took a line number out of nearby
+   * code as the count for the manifest's number-less "All method×area cells", and the 17
+   * of "17 dataset pages" as the count for "which tools, datasets and prior work". Those
+   * are prose mentions, not assertions, so a phrase with no number against it is not a
+   * claim this guard has anything to say about.
+   */
+  const numbersBefore = (text: string, phrase: string): number[] => {
+    const esc = phrase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return [...text.matchAll(new RegExp(`(\\d+)\\s*${esc}`, 'g'))].map((m) => Number(m[1]));
+  };
+
+  /** Assert the phrase carries a number at least once, and that every one is `expected`. */
+  const everyMention = (text: string, phrase: string, expected: number, label: string) => {
+    const found = numbersBefore(text, phrase);
+    expect(found.length, `${label}: no number written against "${phrase}"`).toBeGreaterThan(0);
+    expect(found, label).toEqual(found.map(() => expected));
   };
 
   it('the installed plugin skill states the live total and empty-cell counts', () => {
     const src = read('plugin', 'skills', 'caail', 'SKILL.md');
-    expect(numberBefore(src, 'method×area cells'), 'SKILL.md: cell total').toBe(matrix.totalCells);
-    expect(numberBefore(src, 'with no indexed paper'), 'SKILL.md: empty count').toBe(matrix.emptyCells);
+    everyMention(src, 'method×area cells', matrix.totalCells, 'SKILL.md: cell total');
+    everyMention(src, 'with no indexed paper', matrix.emptyCells, 'SKILL.md: empty count');
   });
 
-  it('agent-api.ts’s module doc states the live total, empty and populated counts', () => {
+  it('every restatement in agent-api.ts agrees with the live grid', () => {
     const src = read('site', 'scripts', 'parser', 'agent-api.ts');
-    const doc = src.slice(0, src.indexOf('*/'));
-    expect(numberBefore(doc, 'method×area cells'), 'agent-api doc: cell total').toBe(matrix.totalCells);
-    expect(numberBefore(doc, 'with no indexed paper'), 'agent-api doc: empty count').toBe(matrix.emptyCells);
-    expect(numberBefore(doc, 'populated ones'), 'agent-api doc: populated count').toBe(matrix.populatedCells);
+    everyMention(src, 'method×area cells', matrix.totalCells, 'agent-api: cell total');
+    everyMention(src, 'with no indexed paper', matrix.emptyCells, 'agent-api: empty count');
+    everyMention(src, 'populated ones', matrix.populatedCells, 'agent-api: populated count');
+    // `buildMatrix`'s docstring phrases the same pair as "(70 of 150)" rather than in words.
+    const ofPair = src.match(/\((\d+) of (\d+)\)/);
+    expect(ofPair, 'agent-api: the "(N of M)" restatement').not.toBeNull();
+    expect([Number(ofPair![1]), Number(ofPair![2])], 'agent-api: populated of total').toEqual([
+      matrix.populatedCells,
+      matrix.totalCells,
+    ]);
+  });
+
+  /**
+   * The marketplace description, which is the one corpus summary with NO workflow behind
+   * it: until this branch no `paths:` filter matched `plugin/.claude-plugin/**`, so an
+   * edit there triggered nothing. It was found stale twice over in one review (a retired
+   * column, and a dataset total 33 short), which is what a figure nobody checks looks like.
+   */
+  it('the plugin marketplace description states live corpus figures', () => {
+    const desc = JSON.parse(read('plugin', '.claude-plugin', 'plugin.json')).description as string;
+    everyMention(desc, ' papers', counts.papers, 'plugin.json: papers');
+    everyMention(desc, ' methods', papers.methods.length, 'plugin.json: methods');
+    everyMention(desc, ' research areas', papers.areas.length, 'plugin.json: areas');
+    everyMention(desc, ' software tools', counts.software, 'plugin.json: software');
+    everyMention(desc, ' databases', counts.databases, 'plugin.json: databases');
+    everyMention(desc, ' datasets', counts.datasets, 'plugin.json: datasets');
+    everyMention(desc, ' dataset pages', counts.species, 'plugin.json: dataset pages');
   });
 });

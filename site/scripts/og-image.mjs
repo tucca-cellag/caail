@@ -60,7 +60,7 @@ const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" v
   <text x="100" y="504" font-family="${FONT}" font-size="38" font-weight="500" fill="#C9D7EC">agriculture and AI.</text>
   <!-- research-area color dots -->
   ${dots}
-  <text x="${104 + 7 * 52 + 8}" y="566" font-family="${FONT}" font-size="24" font-weight="600" fill="#7E9BC9">papers · software · databases · datasets</text>
+  <text x="${104 + AREA.length * 52 + 8}" y="566" font-family="${FONT}" font-size="24" font-weight="600" fill="#7E9BC9">papers · software · databases · datasets</text>
 </svg>`;
 
 const png = new Resvg(svg, {

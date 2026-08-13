@@ -76,9 +76,9 @@
      DO map to an area take that area's colour, resolved from data in lib/theme-colors.ts
      — never hardcoded per-slug in CSS.
 
-     These two need their own values, and honestly: 6 areas + 2 area-less themes sits at
-     the ~7-category limit where colours stay reliably distinguishable, especially under
-     CVD. So they are separated by LIGHTNESS as well as hue (both much darker than the
+     These two need their own values, and honestly: 6 areas + 2 area-less themes is 8,
+     still past the ~7-category limit where colours stay reliably distinguishable, and
+     more so under CVD. So they are separated by LIGHTNESS as well as hue (both much darker than the
      nearest area) rather than by hue alone, and neither reuses an area token — the
      By the Numbers page shows areas and themes together, so one colour meaning two
      different things there would be exactly the confusion this palette exists to avoid.
