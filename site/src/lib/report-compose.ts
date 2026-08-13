@@ -205,22 +205,6 @@ export function resolveReasons(
   return resolved;
 }
 
-/**
- * Marks a subtree whose outbound links must be recorded WITHOUT their query string.
- *
- * `outboundEvent` keeps query strings by design, on the premise that an outbound href is
- * content CAAIL published rather than something a visitor typed — for a deposit link the
- * query string *is* the accession. The composer breaks that premise: it puts the whole
- * report, note and all, into the GitHub link's `details=` parameter, so the site-wide
- * click handler would post a reader's free text to the events collector. The privacy page
- * says search text is the only free text collected, and that has to stay true by
- * construction rather than by amendment.
- *
- * Declared here rather than in analytics.ts because the composer is what creates the
- * hazard; the analytics layer only has to honour the marker.
- */
-export const NO_QUERY_ANALYTICS_ATTR = 'data-analytics-no-query';
-
 /** How much reader-typed prose one report may carry, in characters. */
 export const NOTE_MAX_LENGTH = 400;
 

@@ -63,9 +63,9 @@
  * answering. It does not drift while they are reading a step.
  */
 import { COMMUNITY_PATH } from '../lib/community';
-import { CORRECTION_EMAIL, correctionIssueUrl, correctionMailto } from '../lib/report';
+import { CORRECTION_EMAIL, CORRECTION_FIELDS, correctionIssueUrl, correctionMailto } from '../lib/report';
 import { LICENSE_TIERS, TIER_META } from '../lib/licenses';
-import { NO_QUERY_ANALYTICS_ATTR } from '../lib/report-compose';
+import { NO_QUERY_ANALYTICS_ATTR } from '../lib/analytics';
 import correctionForm from '../content/data/correction-form.json';
 import papers from '../content/data/papers.json';
 import topics from '../content/data/topics.json';
@@ -112,9 +112,16 @@ const vocabJson = JSON.stringify(vocabularies).replace(/</g, '\\u003c');
 
 {/* Marks the whole page, not just the two links that carry the composed report, because
     they sit in different sections and a marker on one is a marker someone can move the
-    other out from under. Nothing on this page has a query string worth recording: the
-    Slack link is internal and the mailto is dropped before it reaches the event. */}
-<div class="rp" {...{ [NO_QUERY_ANALYTICS_ATTR]: true }}>
+    other out from under.
+
+    It names `details` — the field the composed body goes into — rather than dropping the
+    query wholesale, which also discarded `item=`. That parameter is the ONLY per-entry
+    attribution this route has: the Cloudflare beacon strips query strings from page views,
+    so the outbound event is the whole signal, exactly as the header above says. Dropping it
+    made that comment false while looking like a privacy improvement.
+
+    The name comes from the URL builder rather than being retyped, so a rename moves both. */}
+<div class="rp" {...{ [NO_QUERY_ANALYTICS_ATTR]: CORRECTION_FIELDS.details }}>
   {/* Identified-entry banner. Hidden until the script validates an id, so a reader who
       lands here with no query string, or with a malformed one, never sees an empty slot. */}
   <p class="rp-id" id="caail-report-id" hidden>
@@ -770,9 +777,28 @@ const vocabJson = JSON.stringify(vocabularies).replace(/</g, '\\u003c');
      * honest version, and an incomplete report still beats no report.
      */
     function droppedMessage(): string {
+      const kind = answers.reason?.kind;
+      if (!kind) return '';
+
       const typed = (answers.doi ?? '').trim();
-      return answers.reason?.kind === 'doi' && typed !== '' && !isDoiShape(typed)
-        ? 'What you typed is not shaped like a DOI, so it is not in the report below. Go back to change it, or send the report as it stands.'
+      if (kind === 'doi' && typed !== '' && !isDoiShape(typed)) {
+        return 'What you typed is not shaped like a DOI, so it is not in the report below. Go back to change it, or send the report as it stands.';
+      }
+
+      // An UNANSWERED follow-up, which is a different thing from a dropped one and was the
+      // larger gap: picking the first reason and pressing Next twice produces a report that
+      // names the problem and not the correction, under a lede promising "we write the
+      // report for you". The three select kinds are the ones where that matters.
+      //
+      // Not the DOI: "Wrong or missing DOI" with the field left empty is a complete report
+      // on its own, since missing is one of the two things it reports. Not `note` either,
+      // which is optional by construction.
+      const unanswered =
+        (kind === 'matrix' && !answers.method && !answers.area) ||
+        (kind === 'licence' && !answers.tier) ||
+        (kind === 'topics' && !answers.theme);
+      return unanswered
+        ? 'Your report names the problem but not what it should be instead. Go back to say, or send it as it stands: a curator can still act on it, just less quickly.'
         : '';
     }
 

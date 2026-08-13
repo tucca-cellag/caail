@@ -158,10 +158,14 @@ describe('outboundEvent', () => {
     const kept = outboundEvent(href, ORIGIN);
     expect(kept?.url).toContain('details=');
 
-    const dropped = outboundEvent(href, ORIGIN, true);
-    expect(dropped?.url).toBe('https://github.com/tucca-cellag/caail/issues/new');
+    const dropped = outboundEvent(href, ORIGIN, ['details']);
     expect(dropped?.url).not.toContain('details=');
     expect(dropped?.url).not.toContain('colleague');
+    // Only the named parameter goes. `item=` is the ONLY per-entry attribution this
+    // route has, because the page-view beacon strips query strings, so dropping the
+    // whole query removed the signal the outbound event exists to carry.
+    expect(dropped?.url).toContain('item=paper%3A214');
+    expect(dropped?.url).toContain('template=entry-correction.yml');
     // Still classified, so the click is still counted — only its payload is dropped.
     expect(dropped?.kind).toBe('repo');
     expect(dropped?.domain).toBe('github.com');

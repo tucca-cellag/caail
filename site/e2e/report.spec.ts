@@ -545,6 +545,32 @@ test("a reader's note never reaches the analytics collector", async ({ page }) =
   // ...but carries neither the note nor the composed body.
   expect(serialised).not.toContain(secret);
   expect(serialised).not.toContain('details');
+  // And still carries the entry id. Dropping the whole query took this with it, which
+  // removed the only per-entry attribution the route has (the page-view beacon strips
+  // query strings) while looking like a privacy improvement.
+  expect(serialised).toContain('item=paper%3A214');
+});
+
+test('an unanswered follow-up is flagged, not just an unusable one', async ({ page }) => {
+  // Picking the first reason and pressing Next twice produced a report naming the problem
+  // and not the correction, with nothing on screen saying so — under a lede that promises
+  // "we write the report for you". The dropped-answer notice covered only the DOI path,
+  // which is the rarer case.
+  await page.goto('./report/?item=paper:214');
+  await chooseReason(page, 'Wrong matrix placement');
+  await page.locator(NEXT).click();
+
+  const dropped = page.locator('#caail-compose-dropped');
+  await expect(dropped).toBeVisible();
+  await expect(dropped).toContainText('names the problem but not what it should be');
+  await expect(page.locator(BODY)).not.toContainText('Should be');
+
+  // Answering either axis clears it: a half-answered placement still says something.
+  await page.locator(BACK).click();
+  await page.getByLabel('Research area it should be').selectOption({ index: 1 });
+  await page.locator(NEXT).click();
+  await expect(dropped).toHaveText('');
+  await expect(page.locator(BODY)).toContainText('Research area should be:');
 });
 
 test('the live regions stay in the accessibility tree while empty', async ({ page }) => {

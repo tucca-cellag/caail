@@ -32,6 +32,21 @@ export interface AnalyticsGlobals {
   fetch?: (input: string, init?: Record<string, unknown>) => unknown;
 }
 
+/**
+ * Marks a subtree whose outbound links must have named query parameters dropped
+ * before recording. The attribute's VALUE is the space-separated list.
+ *
+ * Declared here rather than beside the page that needs it, and that placement is
+ * the whole point: `Analytics.astro` is mounted from the footer, so it loads on
+ * every page including the Lighthouse-gated landing page. Importing this
+ * constant from `report-compose.ts` made Rollup emit a 1.6 KB chunk carrying the
+ * entire correction composer — `composeBody`, the note bounding, the DOI
+ * regex — as a second waterfall hop on all 52 pages, to read one string. This
+ * module is already a dependency of the analytics script, so putting it here
+ * costs nothing.
+ */
+export const NO_QUERY_ANALYTICS_ATTR = 'data-analytics-drop-params';
+
 /** Longest search query we will record. Long strings are pasted text, not queries. */
 const MAX_QUERY_LEN = 80;
 
@@ -138,18 +153,25 @@ export function resolveSink(scope: AnalyticsGlobals, beaconUrl?: string): Sink |
  * visitor typed, and for deposit links the query string *is* the accession
  * (`…/acc.cgi?acc=GSE12345`). Fragments are dropped as pure noise.
  *
- * `dropQuery` is for the one place that premise fails. /report/'s composer puts
+ * `dropParams` is for the one place that premise fails. /report/'s composer puts
  * the reader's whole correction, including a free-text note, into the GitHub
  * link's `details=` parameter, so recording that href verbatim would post
  * visitor-authored text to the collector — while the privacy page says search
- * text is the only free text collected. The caller decides, by honouring the
- * marker attribute in report-compose.ts, rather than this function learning
- * which parameters are sensitive on which route.
+ * text is the only free text collected.
+ *
+ * NAMED PARAMETERS, not the whole query. Dropping the query wholesale also threw
+ * away `item=`, which is the only per-entry attribution this site has on that
+ * route: page views cannot supply it, because the Cloudflare beacon discards
+ * query strings, so the outbound event is the entire signal. Removing the
+ * reader's text is required; removing the entry id was collateral, and it
+ * contradicted a comment in ReportRoutes.astro that still promised the signal.
+ * The caller names what is sensitive, so this function needs to know nothing
+ * about any route.
  */
 export function outboundEvent(
   href: string,
   siteOrigin: string,
-  dropQuery = false,
+  dropParams: readonly string[] = [],
 ): OutboundEvent | null {
   let url: URL;
   try {
@@ -162,7 +184,7 @@ export function outboundEvent(
 
   const domain = url.hostname.toLowerCase().replace(/^www\./, '');
   url.hash = '';
-  if (dropQuery) url.search = '';
+  for (const name of dropParams) url.searchParams.delete(name);
   return { url: url.toString(), domain, kind: DOMAIN_KINDS[domain] ?? 'external' };
 }
 
