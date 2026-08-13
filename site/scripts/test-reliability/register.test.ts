@@ -91,8 +91,23 @@ describe('register integrity', () => {
   it('artifact entries are guarded, because a preflight is the only thing that catches them', () => {
     // An artifact-shape entry left open would be a promise this repo does not keep: the
     // failure is deterministic within one build, so no amount of re-running surfaces it.
+    // Deliberately not extended to `residue`: that shape has a live unguarded instance
+    // (CAAIL-215), and asserting otherwise would force either a fake status or a guard
+    // nobody has written.
     for (const entry of REGISTER.filter((e) => e.shape === 'artifact')) {
       expect(entry.status, `${entry.id} is artifact-shaped but not guarded`).toBe('guarded');
+    }
+  });
+
+  it('every entry whose triage is misleading says so, for the shapes where it always is', () => {
+    // `artifact` and `residue` both survive a re-run, so the obvious move returns a
+    // confident wrong answer every time rather than sometimes. An entry of either shape
+    // without that warning is the register withholding the half that matters.
+    for (const entry of REGISTER.filter((e) => e.shape === 'artifact' || e.shape === 'residue')) {
+      expect(
+        entry.misleadingTriage,
+        `${entry.id} is ${entry.shape}-shaped but does not say how triage misleads`,
+      ).toBeTruthy();
     }
   });
 });
