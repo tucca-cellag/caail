@@ -19,22 +19,45 @@ import type { Reporter, TestCase, TestResult } from '@playwright/test/reporter';
 import { entriesForPlaywrightTest, formatReport, type UnreliableEntry } from './register.js';
 
 export default class KnownUnreliableReporter implements Reporter {
-  private readonly matched: UnreliableEntry[] = [];
+  /**
+   * Candidates, not conclusions. Filtered by final outcome in `onEnd`.
+   *
+   * This decides on the test's **final outcome** rather than on an attempt index. The
+   * earlier version gated on `result.retry === 0`, which happens to produce the same
+   * output today: measured with `--retries=1` and a test failing only its first
+   * attempt, both forms print, and both are correct to, because Playwright still shows
+   * that failure and labels the run flaky. So this is not a bug fix, and claiming one
+   * would be the kind of unverified assertion this branch exists to discourage.
+   *
+   * It is still the right shape. "Was this test ultimately not fine?" is the question
+   * being asked, and an attempt index only answers it by coincidence of the current
+   * retry semantics and of `retries` being unset in this repo. Both could change
+   * without anyone thinking about this file.
+   *
+   * `flaky` is reported deliberately: a registered load-shaped test going flaky is the
+   * entry doing its job, and that is precisely when its control command is worth
+   * printing.
+   */
+  private readonly candidates: TestCase[] = [];
 
   onTestEnd(test: TestCase, result: TestResult): void {
     // `timedOut` is counted as well as `failed`: a hydration race that overruns the
     // spec's budget surfaces as a timeout, and treating those as unregistered would
     // drop exactly the shape most of this register is about.
     if (result.status !== 'failed' && result.status !== 'timedOut') return;
-    // Playwright retries would otherwise report the same test once per attempt. The
-    // report de-duplicates by entry id, so this is belt and braces rather than load
-    // bearing, but it keeps the intent visible if retries are ever enabled.
-    if (result.retry > 0) return;
-    this.matched.push(...entriesForPlaywrightTest(test.title));
+    this.candidates.push(test);
   }
 
   onEnd(): void {
-    const report = formatReport(this.matched);
+    const matched: UnreliableEntry[] = [];
+    for (const test of this.candidates) {
+      // `expected` covers a test that failed an attempt and passed on retry; `flaky`
+      // and `unexpected` are both worth reporting, since a registered test going flaky
+      // is the entry doing its job.
+      if (test.outcome() === 'expected') continue;
+      matched.push(...entriesForPlaywrightTest(test.location.file, test.title));
+    }
+    const report = formatReport(matched);
     if (report) console.error(report);
   }
 

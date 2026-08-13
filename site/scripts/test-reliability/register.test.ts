@@ -130,13 +130,38 @@ describe('entriesForVitestModule', () => {
 });
 
 describe('entriesForPlaywrightTest', () => {
-  it('matches on the exact test title', () => {
-    const hits = entriesForPlaywrightTest('the catalog license facet narrows the grid to a tier');
+  const LICENSES = '/checkout/site/e2e/licenses.spec.ts';
+
+  it('matches on file plus exact test title', () => {
+    const hits = entriesForPlaywrightTest(
+      LICENSES,
+      'the catalog license facet narrows the grid to a tier',
+    );
     expect(hits.map((entry) => entry.id)).toEqual(['pw-license-facet']);
   });
 
   it('does not match the other nine tests in the same registered file', () => {
-    expect(entriesForPlaywrightTest('the /licenses/ hub lists the 4 tiers')).toEqual([]);
+    expect(entriesForPlaywrightTest(LICENSES, 'the /licenses/ hub lists the 4 tiers')).toEqual([]);
+  });
+
+  it('does not match the registered title in a DIFFERENT spec file', () => {
+    // Copying licenses.spec.ts to cover /databases/ is the obvious next change here.
+    // A title-only match would greet a genuine failure in the copy with this entry's
+    // "already mitigated" verdict, which is the mislabelling the register prevents.
+    expect(
+      entriesForPlaywrightTest(
+        '/checkout/site/e2e/databases-licenses.spec.ts',
+        'the catalog license facet narrows the grid to a tier',
+      ),
+    ).toEqual([]);
+  });
+
+  it('accepts a site-relative path as well as an absolute one', () => {
+    const hits = entriesForPlaywrightTest(
+      'e2e/licenses.spec.ts',
+      'the catalog license facet narrows the grid to a tier',
+    );
+    expect(hits.map((entry) => entry.id)).toEqual(['pw-license-facet']);
   });
 });
 
@@ -168,13 +193,24 @@ describe('formatReport', () => {
 
   it('de-duplicates by id so a file failing twice is reported once', () => {
     const report = formatReport([entry(), entry()])!;
-    expect(report).toContain('1 of the failures');
+    expect(report).toContain('1 known-unreliable entry accounts');
     expect(report.match(/fails under load/g)).toHaveLength(1);
   });
 
   it('agrees in number and verb', () => {
-    expect(formatReport([entry()])!).toContain('1 of the failures above is');
-    expect(formatReport([entry(), entry({ id: 'y' })])!).toContain('2 of the failures above are');
+    expect(formatReport([entry()])!).toContain('1 known-unreliable entry accounts');
+    expect(formatReport([entry(), entry({ id: 'y' })])!).toContain(
+      '2 known-unreliable entries account',
+    );
+  });
+
+  it('counts entries rather than failures, and says which it is counting', () => {
+    // One registered vitest file can fail fifteen tests when its budget is blown.
+    // "1 of the failures above" would then invite the reader to treat the other
+    // fourteen as unregistered regressions when they are the same file.
+    const report = formatReport([entry()])!;
+    expect(report).not.toContain('of the failures above');
+    expect(report).toContain('count of\nentries rather than of failures');
   });
 });
 
@@ -205,8 +241,16 @@ describe('formatEntry', () => {
 });
 
 describe('openEntries', () => {
-  it('excludes mitigated and guarded entries', () => {
-    const statuses = new Set(openEntries().map((entry) => entry.status));
-    expect([...statuses]).toEqual(['open']);
+  it('returns only open entries', () => {
+    // Asserted as "nothing returned is non-open" rather than "the set of statuses is
+    // exactly ['open']". The latter goes red the day the last flake is fixed and every
+    // entry becomes mitigated or guarded, which is the one outcome this work is for.
+    expect(openEntries().filter((entry) => entry.status !== 'open')).toEqual([]);
+  });
+
+  it('returns nothing when the register is entirely mitigated', () => {
+    expect(
+      openEntries(REGISTER.map((entry) => ({ ...entry, status: 'mitigated' as const }))),
+    ).toEqual([]);
   });
 });

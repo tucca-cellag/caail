@@ -157,8 +157,8 @@ export const REGISTER: readonly UnreliableEntry[] = [
     id: 'vitest-db-dataset-entries',
     suite: 'vitest',
     file: 'scripts/db/dataset-entries.test.ts',
-    unit: 'beforeAll (curated dataset entries)',
-    anchor: 'beforeAll(() => {',
+    unit: "beforeAll of 'seedDatasets (rows + entries share the ds: namespace)'",
+    anchor: "describe('seedDatasets (rows + entries share the ds: namespace)'",
     shape: 'load',
     condition: 'Hook timeout under contention. Runs ~1.6s serial.',
     evidence: '2026-08-12: in one of three consecutive full runs, each of which failed a different set.',
@@ -350,15 +350,31 @@ export function entriesForVitestModule(
 /**
  * Entries registered against a Playwright test.
  *
- * Matched on the exact test title, not the file: `licenses.spec.ts` has ten tests and
- * only one of them is registered, so a file-level match would label the other nine as
- * known-unreliable on no evidence.
+ * Matched on **both** the spec file and the exact test title.
+ *
+ * The title is required because `licenses.spec.ts` holds ten tests and one of them is
+ * registered, so a file-level match would label the other nine as known-unreliable on
+ * no evidence. The file is required because a title is not unique across the suite:
+ * copying a spec to cover `/databases/` alongside `/software/` is the obvious next
+ * change here, and a title-only match would then greet a genuine failure in the new
+ * file with the old file's "already mitigated" entry. Both halves of that are the
+ * mislabelling this register exists to prevent rather than cause.
+ *
+ * `file` is matched by suffix so Playwright's absolute `TestCase.location.file`
+ * resolves against the `site/`-relative path an entry records.
  */
 export function entriesForPlaywrightTest(
+  file: string,
   title: string,
   register: readonly UnreliableEntry[] = REGISTER,
 ): UnreliableEntry[] {
-  return register.filter((entry) => entry.suite === 'playwright' && entry.unit === title);
+  const normalised = file.replaceAll('\\', '/');
+  return register.filter(
+    (entry) =>
+      entry.suite === 'playwright' &&
+      entry.unit === title &&
+      (normalised === entry.file || normalised.endsWith(`/${entry.file}`)),
+  );
 }
 
 /**
@@ -388,13 +404,23 @@ export function formatEntry(entry: UnreliableEntry): string {
  * unregistered should print nothing at all, so that seeing this header is itself the
  * signal. A header over an empty list would read as "checked, nothing to say" and get
  * skimmed past on the runs where it does have something to say.
+ *
+ * The header counts **entries, not failures**, and says so. One registered vitest file
+ * can fail fifteen tests at once when its budget is blown, and "1 of the failures above
+ * is on the register" would then invite the reader to treat the other fourteen as
+ * unregistered regressions. They are the same file. Miscounting in that direction is
+ * worse than not printing at all, since it manufactures exactly the "which of these is
+ * real" doubt this register exists to remove.
  */
 export function formatReport(entries: readonly UnreliableEntry[]): string | null {
   if (entries.length === 0) return null;
   const unique = [...new Map(entries.map((entry) => [entry.id, entry])).values()];
+  const n = unique.length;
   return [
     '',
-    `${unique.length} of the failures above ${unique.length === 1 ? 'is' : 'are'} on the known-unreliable register (CAAIL-239).`,
+    `${n} known-unreliable ${n === 1 ? 'entry accounts' : 'entries account'} for failures above (CAAIL-239).`,
+    'A single entry can account for many failing tests at once, so this is a count of',
+    'entries rather than of failures.',
     '',
     'This is NOT permission to ignore them. It narrows where to look first: run the',
     'control below and see whether the failure survives it. If it does, it is real.',
