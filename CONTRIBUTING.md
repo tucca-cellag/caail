@@ -13,8 +13,15 @@ Pick the template that fits and fill it out:
 - [**Suggest a paper**](https://github.com/tucca-cellag/caail/issues/new?template=paper.yml): for peer-reviewed papers and preprints. Asks for DOI, AI methods, and research areas.
 - [**Suggest software, a dataset, or other resource**](https://github.com/tucca-cellag/caail/issues/new?template=resource.yml): for entries that would go in `Software.md`, the `Datasets/` directory, `Databases.md`, or `OtherResources.md`.
 - [**Propose a new research area**](https://github.com/tucca-cellag/caail/issues/new?template=research-area.yml): for a new column in the Papers.md matrix.
+- [**Report an issue with an entry**](https://github.com/tucca-cellag/caail/issues/new?template=entry-correction.yml): for something already in the library that is wrong, rather than something missing.
 
 A maintainer will incorporate accepted suggestions. This is the right path if you're not comfortable with pull requests or just want to flag something quickly.
+
+### Correcting an entry that is already here
+
+Every catalogued item carries a permanent id (`paper:214`, `sw:cellpose`, `db:string`, `ds:chickengtex-portal`), and on the documentation site the entry cards on the Papers, Software, Databases and Datasets pages each have a **Report an issue** link that carries their own id to the [report page](https://tucca-cellag.github.io/caail/report/). Starting from there is worth the click: a correction naming the id points at exactly one entry, where one describing a page is a search before it is a fix. That page also offers email and Slack routes for anyone without a GitHub account.
+
+Rows in a dataset page's `## Complete data inventory` table are listed rather than carded, so they have no such link. Quote the accession and the page instead, and a curator can find the row from that.
 
 ### Option 2, Open a pull request
 

@@ -4,7 +4,13 @@ import remarkParse from 'remark-parse';
 import type { Root } from 'mdast';
 import { datasetCards, type DatasetCardEntry } from './dataset-cards.ts';
 
+// These fixtures had drifted from the interface — they omitted every field added since
+// they were written (doi, the three citation fields, and now id). Nothing caught it: no
+// `astro check` or `tsc` runs in CI, and at runtime each missing field simply read as
+// undefined and suppressed the markup that depends on it, so the assertions below still
+// passed while covering less than they appeared to. Keep them complete.
 const ATLAS: DatasetCardEntry = {
+  id: 'ds:chickengtex-portal',
   name: 'ChickenGTEx-Portal',
   kind: 'atlas',
   anchor: 'ds-chickengtex-portal',
@@ -12,8 +18,26 @@ const ATLAS: DatasetCardEntry = {
   license: 'CC-BY-4.0',
   licenseSource: 'manual',
   tier: 'permissive',
+  doi: null,
+  citationCount: null,
+  citationSources: 0,
+  citationDois: [],
 };
-const GEM: DatasetCardEntry = { name: 'iES1300', kind: 'gem', anchor: 'ds-ies1300', topics: [], license: null, licenseSource: null, tier: 'unknown' };
+// Named as datasets.json holds it: markdown-preserving, emphasis markers and all.
+const GEM: DatasetCardEntry = {
+  id: 'ds:ies1300',
+  name: 'iES1300 — *Gallus gallus* (chicken)',
+  kind: 'gem',
+  anchor: 'ds-ies1300',
+  topics: [],
+  license: null,
+  licenseSource: null,
+  tier: 'unknown',
+  doi: null,
+  citationCount: null,
+  citationSources: 0,
+  citationDois: [],
+};
 
 const MD = `## Featured atlases
 
@@ -195,5 +219,33 @@ Parse body.
     // entry → the transform must be a no-op for the page, not miscorrelate.
     const kids = run(MD, 'Datasets/Chicken.md', [ATLAS]); // 2 H3s, 1 entry
     expect(html(kids).length).toBe(0);
+  });
+});
+
+describe('report link (the raw-HTML twin of ReportLink.tsx)', () => {
+  it('carries the entry’s frozen ds: id to the report page', () => {
+    const out = html(run(MD, 'Datasets/Chicken.md', [ATLAS, GEM])).join('');
+    expect(out).toContain('href="/caail/report/?item=ds%3Achickengtex-portal"');
+    expect(out).toContain('href="/caail/report/?item=ds%3Aies1300"');
+  });
+
+  it('flattens the markdown in a name before it becomes an accessible name', () => {
+    // An aria-label is spoken, not rendered, so emphasis markers would be read aloud.
+    const out = html(run(MD, 'Datasets/Chicken.md', [ATLAS, GEM])).join('');
+    expect(out).toContain('aria-label="Report an issue with iES1300 — Gallus gallus (chicken)"');
+    expect(out).not.toContain('*Gallus gallus*');
+  });
+
+  it('stays out of the search index, being chrome rather than content', () => {
+    const out = html(run(MD, 'Datasets/Chicken.md', [ATLAS, GEM])).join('');
+    expect(out.match(/data-pagefind-ignore/g)).toHaveLength(2);
+  });
+
+  it('renders nothing for an id that fails the grammar, matching the component', () => {
+    const bad = { ...ATLAS, id: 'not-an-id' };
+    const out = html(run(MD, 'Datasets/Chicken.md', [bad, GEM])).join('');
+    expect(out).not.toContain('report/?item=not-an-id');
+    // The other entry is unaffected — one malformed id does not cost the page its links.
+    expect(out).toContain('href="/caail/report/?item=ds%3Aies1300"');
   });
 });

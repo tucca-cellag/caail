@@ -22,9 +22,13 @@ import { toString as mdastToString } from 'mdast-util-to-string';
 import { TIER_META, type LicenseTier } from '../../src/lib/licenses.ts';
 import { chipStyle } from '../../src/lib/theme-colors.ts';
 import { compactCount, citationTitle, openAlexWorksUrl } from '../../src/lib/citation-format.ts';
+import { isItemId, reportHref } from '../../src/lib/report.ts';
 import { entryHeadingDepth, isEntryHeading } from '../parser/datasets.ts';
+import { catalogNameKey } from '../parser/topics.ts';
 
 export interface DatasetCardEntry {
+  /** Frozen `ds:` id — what the card's report link carries. */
+  id: string;
   name: string;
   kind: 'atlas' | 'gem' | 'other';
   anchor: string; // 'ds-…' — the card element id
@@ -88,6 +92,24 @@ function citationBadgeHtml(entry: DatasetCardEntry): string {
   );
 }
 
+/** "Report an issue" link markup mirroring ReportLink.tsx; '' when the id is malformed.
+ *  Uses the shared report helpers so the route and the id grammar can't drift. */
+function reportLinkHtml(entry: DatasetCardEntry): string {
+  if (!isItemId(entry.id)) return '';
+  // Dataset names are markdown-preserving, and an accessible name is read aloud rather
+  // than rendered: 8 of the 62 curated entries would otherwise have a screen reader
+  // announce their emphasis markers ("iES1300 — *Gallus gallus* (chicken)"). The heading
+  // beside it renders the markdown properly, so this is the only surface that leaks it.
+  // catalogNameKey is the flattening the topic join already uses.
+  return (
+    `<a class="report-link" href="${esc(reportHref(BASE, entry.id))}" ` +
+    `aria-label="Report an issue with ${esc(catalogNameKey(entry.name))}" ` +
+    `title="Report an issue with this entry (${esc(entry.id)})" ` +
+    // Chrome, not content — keeps the repeated phrase out of the Pagefind index.
+    `data-pagefind-ignore>Report an issue</a>`
+  );
+}
+
 /**
  * Load datasets.json grouped by page (document order preserved), for the config
  * wrapper. Returns an empty map when the build artifact is absent (e.g. a dev run
@@ -101,7 +123,7 @@ export function loadDatasetEntriesByPage(): Map<string, DatasetCardEntry[]> {
   };
   for (const e of entries) {
     const list = out.get(e.page) ?? out.set(e.page, []).get(e.page)!;
-    list.push({ name: e.name, kind: e.kind, anchor: e.anchor, topics: e.topics, license: e.license, licenseSource: e.licenseSource, tier: e.tier, doi: e.doi, citationCount: e.citationCount, citationSources: e.citationSources, citationDois: e.citationDois });
+    list.push({ id: e.id, name: e.name, kind: e.kind, anchor: e.anchor, topics: e.topics, license: e.license, licenseSource: e.licenseSource, tier: e.tier, doi: e.doi, citationCount: e.citationCount, citationSources: e.citationSources, citationDois: e.citationDois });
   }
   return out;
 }
@@ -158,8 +180,11 @@ export function datasetCards(options: {
         while (i < kids.length && !(kids[i].type === 'heading' && kids[i].depth <= depth)) { out.push(kids[i]); i++; }
         const chips = chipsHtml(entry);
         if (chips) out.push({ type: 'html', value: chips });
-        const cite = citationBadgeHtml(entry);
-        if (cite) out.push({ type: 'html', value: `<p class="ds-meta not-content">${cite}</p>` });
+        // One trailing meta row holding the citation badge and the report link, mirroring
+        // the catalog card's `.cb-meta`. Emitted only when at least one of them exists,
+        // so a bare entry gains no empty paragraph.
+        const meta = citationBadgeHtml(entry) + reportLinkHtml(entry);
+        if (meta) out.push({ type: 'html', value: `<p class="ds-meta not-content">${meta}</p>` });
         out.push({ type: 'html', value: '</article>' });
         continue;
       }

@@ -128,6 +128,13 @@ export const ReferenceSchema = z.object({
 export const CatalogEntrySchema = z.object({
   /** Slugified name with a/b disambiguation, e.g. "biometa", "biometa-b" */
   slug: z.string(),
+  /**
+   * Frozen `sw:`/`db:` id, folded in from the committed catalog NDJSON on the same
+   * `(type, url, name)` triple as topics. NOT derivable from `slug` — a dual-listed
+   * entry shares its URL across two namespaces. Null only if the entry has no DB row,
+   * which `generate-data.ts` fails the build on.
+   */
+  itemId: z.string().nullable().default(null),
   /** Display name (the H3 link text), e.g. "BioMeta" */
   name: z.string(),
   /** Canonical home URL (the H3 link target) */

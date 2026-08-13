@@ -5,6 +5,7 @@ import { useMemo, useState } from 'preact/hooks';
 import data from '../content/data/papers.json';
 import TopicChips from './TopicChips';
 import CitationBadge from './CitationBadge';
+import ReportLink from './ReportLink';
 import type { TopicRef } from '../lib/topic-chips';
 
 type Cell = { method: string; area: string; refIds: number[]; labels: string[] };
@@ -84,6 +85,7 @@ const renderRef = (r: Ref) => (
       {r.codeUrl && <a class="px-bdg code" href={r.codeUrl}>⟨⟩ Code</a>}
       {r.dataUrl && <a class="px-bdg data" href={r.dataUrl}>▤ Data</a>}
       <CitationBadge doi={r.doi} citationCount={r.citedByOpenAlex} />
+      <ReportLink itemId={`paper:${r.id}`} label={r.title ?? `reference ${r.id}`} />
     </div>
     <TopicChips topics={r.topics} />
   </div>

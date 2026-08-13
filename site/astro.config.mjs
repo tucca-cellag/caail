@@ -244,6 +244,9 @@ export default defineConfig({
         // Same rationale for the "cited by N" OpenAlex badge (CitationBadge component +
         // the raw-HTML dataset citation badges from the dataset-cards remark).
         './src/styles/citation-badge.css',
+        // Same rationale again for the per-card "Report an issue" link (ReportLink
+        // component + the raw-HTML dataset twin from the dataset-cards remark).
+        './src/styles/report-link.css',
       ],
       components: {
         // Append per-route schema.org JSON-LD (CollectionPage + ItemList +

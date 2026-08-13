@@ -1,0 +1,75 @@
+name: Report an issue with an entry
+description: Tell us an entry already in CAAIL is wrong — a misplaced paper, a stale figure, a dead link.
+title: "Correction: "
+labels: ["correction"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this to correct something already in the library. To suggest something new, use "Suggest a paper" or "Suggest software, dataset, or other resource" instead.
+
+        If you arrived from an entry's "Report an issue" link, the entry id below is already filled in. That id is the most useful thing in this form: it points at exactly one row and saves a curator having to work out which entry you meant.
+
+  - type: input
+    id: item
+    attributes:
+      label: Entry id
+      description: |
+        The frozen id of the entry, e.g. `paper:214`, `sw:cellpose`, `db:string`, `ds:chickengtex-portal`.
+        Prefilled if you came from the entry. If you got here another way, or your report is about a whole subject theme rather than one entry, write `unknown` and paste the page address below.
+      placeholder: paper:214
+    validations:
+      required: true
+
+  - type: input
+    id: page
+    attributes:
+      label: Where you saw it (optional)
+      description: The address of the page you were reading, if you have it to hand.
+      placeholder: https://tucca-cellag.github.io/caail/papers/explorer/
+
+  - type: dropdown
+    id: reason
+    attributes:
+      label: What is wrong with it
+      description: |
+        Pick the closest. These are the error classes a curator audit of the library actually turned up, so a report matching one of them maps to a known fix.
+      options:
+        - Wrong matrix placement — the AI method or research area is not what the paper does
+        - Not machine learning at all — the paper does not apply an AI/ML method
+        - Stale or wrong figures in the description (record counts, sizes, dates)
+        - Dead or wrong link
+        - Wrong licence tier
+        - Wrong or missing DOI
+        - Wrong or missing subject topics — the theme and tag chips, or a whole theme that looks mis-tagged
+        - Something else (describe below)
+    validations:
+      required: true
+
+  - type: textarea
+    id: details
+    attributes:
+      label: What it should say instead
+      description: |
+        What is wrong, what the correct version is, and the source you are reading that from (a section of the paper, the dataset's own documentation, the repository's licence file). A curator checks the correction against its source before editing the entry.
+      placeholder: |
+        The matrix places this under Deep Learning, but the methods section (2.3) describes a Gaussian-process Bayesian optimisation loop. There is no neural network in the paper.
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: confirmations
+    attributes:
+      label: Confirmations
+      options:
+        - label: I understand this issue is public, and that anything I write here is world-readable and permanently archived.
+          required: true
+        - label: I understand that contributions to this repository are licensed under the MIT License.
+          required: true
+
+  - type: markdown
+    attributes:
+      value: |
+        **What happens next.** A curator checks the report against the source and, where it holds up, corrects the entry through the library's authoring backend. We do not promise a turnaround time: the review path runs through one person, and a schedule we cannot keep is worse than none.
+
+        Certainty is not a requirement. Every report is checked against the source either way, and one that does not hold up changes nothing.
