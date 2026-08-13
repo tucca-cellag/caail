@@ -159,6 +159,27 @@ describe('buildCorrectionForm fails loudly when the template drifts', () => {
     }
   });
 
+  it('reads the options when the field writes its id after its attributes', () => {
+    // The symmetric case to the reordering test above, and the one the earlier
+    // "everything after `id: reason`" scope could not survive: with the anchor written
+    // AFTER its own options, the search found the next `options:` in the file, which is
+    // the confirmations checkbox list, and returned two checkbox labels as the reason
+    // vocabulary.
+    const form = buildEdited((src) => {
+      const start = src.indexOf('  - type: dropdown');
+      const end = src.indexOf('  - type: textarea', start);
+      const field = src.slice(start, end);
+      const idLine = /^ {4}id: reason\n/m.exec(field)![0];
+      const moved = field.replace(idLine, '').replace(/^ {4}validations:$/m, `${idLine}    validations:`);
+      return src.slice(0, start) + moved + src.slice(end);
+    })();
+
+    expect(form.reasons).toEqual(buildCorrectionForm().reasons);
+    for (const reason of form.reasons) {
+      expect(reason.value).not.toContain('I understand');
+    }
+  });
+
   it('tolerates a reworded hint, which is prose and will be edited', () => {
     // The complement of the test above, and the whole reason a reason is identified by a
     // PREFIX rather than by its full option string: the explanation after the em dash is

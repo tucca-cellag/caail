@@ -207,6 +207,37 @@ test('the step count tracks the answer in both directions', async ({ page }) => 
   await expect(heading).toHaveText(/^Step 1 of 3:/);
 });
 
+test('a repeated identical alert is cleared and re-posted, so it is announced twice', async ({
+  page,
+}) => {
+  // `role="alert"` announces on a content CHANGE, so writing the same string twice
+  // announces once and the second press is silent. The fix clears the region and re-posts.
+  //
+  // Asserted by WATCHING THE MUTATIONS rather than by reading the text afterwards, because
+  // the end state is identical either way: the message is on screen whether or not it was
+  // re-posted. A version of this test that only checked the timer's cancellation passed
+  // for a whole round against a branch that could never run.
+  await page.goto('./report/?item=paper:214');
+  await page.locator(NEXT).click();
+  await expect(page.locator('#caail-compose-error')).not.toHaveText('');
+
+  await page.evaluate(() => {
+    const region = document.getElementById('caail-compose-error')!;
+    const seen: string[] = [];
+    (window as unknown as { __alertSeq: string[] }).__alertSeq = seen;
+    new MutationObserver(() => seen.push(region.textContent ?? '')).observe(region, {
+      childList: true,
+      characterData: true,
+      subtree: true,
+    });
+  });
+
+  await page.locator(NEXT).click();
+  await expect
+    .poll(() => page.evaluate(() => (window as unknown as { __alertSeq: string[] }).__alertSeq))
+    .toEqual(['', 'Pick what is wrong with the entry to continue.']);
+});
+
 test('an armed error re-post does not resurrect over an answered step', async ({ page }) => {
   // Pressing Next twice with nothing selected arms a 60ms re-post of the alert, which
   // exists so a repeated identical message is announced rather than swallowed. Answering
@@ -308,6 +339,30 @@ test('a DOI is normalised from what a reader actually pastes', async ({ page }) 
   await expect(page.locator(BODY)).toContainText(
     'DOI should be: 10.1016/j.scitotenv.2023.164988',
   );
+});
+
+test('a DOI that could not be read is reported as dropped, not silently discarded', async ({
+  page,
+}) => {
+  // The reader can advance from step 2 with an unusable DOI. composeBody drops it, so the
+  // review step would otherwise show a report saying the DOI is wrong and not saying what
+  // it should be, with the explanation left behind on a step that is no longer on screen.
+  await page.goto('./report/?item=paper:214');
+  await chooseReason(page, 'Wrong or missing DOI');
+  await page.getByLabel('The DOI it should have').fill('10.1016 j.xyz');
+  await page.locator(NEXT).click();
+
+  const dropped = page.locator('#caail-compose-dropped');
+  await expect(dropped).toBeVisible();
+  await expect(dropped).toContainText('not shaped like a DOI');
+  await expect(page.locator(BODY)).not.toContainText('DOI should be');
+
+  // And it goes away once the answer is usable, rather than latching.
+  await page.locator(BACK).click();
+  await page.getByLabel('The DOI it should have').fill('10.1016/j.xyz');
+  await page.locator(NEXT).click();
+  await expect(dropped).toHaveText('');
+  await expect(page.locator(BODY)).toContainText('DOI should be: 10.1016/j.xyz');
 });
 
 test('Next without an answer explains itself instead of doing nothing', async ({ page }) => {

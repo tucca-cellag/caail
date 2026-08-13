@@ -66,37 +66,58 @@ function readFieldIds(src: string): string[] {
 }
 
 /**
- * The `options:` list belonging to the `reason` field.
+ * The `- type: …` list item that declares the `reason` field.
  *
- * Scoped to that field rather than to the first `options:` in the file: the template is free
- * to grow a second dropdown, and a reader that silently took whichever list came first would
- * then compose against the wrong vocabulary.
+ * The field is bounded by ITS OWN LIST ITEM, not by "everything after `id: reason`". YAML
+ * mappings are unordered and GitHub accepts a field's keys in any order, so both of these
+ * are valid templates and both used to read wrong:
  *
- * The block ENDS AT THE FIRST DEDENT, not at `validations:`. YAML mappings are unordered and
- * GitHub accepts the keys of a field in any order, so a template writing `validations:`
- * before `attributes:` would leave an end marker that never arrives; the options block would
- * then run to the end of the file and swallow the `confirmations` checkbox labels, which are
- * `- ` items at the same indent. That fails loudly rather than silently, but it fails
- * pointing at a checkbox label and naming the wrong problem. Indentation is what actually
- * delimits a YAML block, so that is what this reads.
+ *   - `validations:` written before `attributes:`, which removed the end marker an earlier
+ *     version scanned for, so the options ran to end of file.
+ *   - `id:` written after `attributes:`, which puts the anchor AFTER its own options, so a
+ *     search starting there found the next `options:` in the file: the `confirmations`
+ *     checkbox list, returned as the reason vocabulary.
+ *
+ * Both failed loudly, because `resolveReasons` rejects a checkbox label as an error class.
+ * Both failed naming the wrong field, which is the part that costs an afternoon.
  */
-function readReasonOptions(src: string): string[] {
-  // `[ \t]*`, never `\s*`. `\s` matches a newline, so `/^\s*options:/m` can begin its match
-  // on a BLANK LINE above the key: `^` anchors at the empty line, `\s*` eats the newline
-  // and the indent, and the match index points one line too early. The first line of the
-  // slice is then `''`, its indent reads as 0, and the dedent bound below never trips — so
-  // the block runs to end of file and swallows the confirmations checkboxes, which is the
-  // exact failure the indentation rule was written to prevent. One blank line in the
-  // template is all it takes.
-  const start = src.search(/^[ \t]*id:[ \t]*reason[ \t]*$/m);
-  if (start < 0) {
+function reasonField(src: string): string {
+  const anchor = src.search(/^[ \t]*id:[ \t]*reason[ \t]*$/m);
+  if (anchor < 0) {
     throw new Error(
       `correction-form: no "id: reason" field in ${CORRECTION_TEMPLATE_PATH}. /report/ ` +
         `composes a report whose error class comes from that dropdown; without it there ` +
         `is no vocabulary to offer.`,
     );
   }
-  const rest = src.slice(start);
+  // Every field in the form body opens with `- type: <kind>`, which is what separates one
+  // from the next regardless of how its own keys are ordered inside it.
+  const bounds = [...src.matchAll(/^[ \t]*-[ \t]+type:[ \t]*\S+[ \t]*$/gm)].map((m) => m.index!);
+  const start = bounds.filter((i) => i <= anchor).pop();
+  if (start === undefined) {
+    throw new Error(
+      `correction-form: "id: reason" in ${CORRECTION_TEMPLATE_PATH} is not inside a ` +
+        `"- type:" field item, so its options cannot be told apart from another field's.`,
+    );
+  }
+  return src.slice(start, bounds.find((i) => i > start) ?? src.length);
+}
+
+/**
+ * The `options:` list belonging to the `reason` field.
+ *
+ * The block ENDS AT THE FIRST DEDENT. Indentation is what actually delimits a YAML block,
+ * so scanning for a sibling key as an end marker assumes an ordering the format does not
+ * promise. Combined with {@link reasonField} above, the read no longer depends on where any
+ * of the field's keys sit relative to each other.
+ *
+ * The searches use `[ \t]*` and never `\s*`: `\s` matches a newline, so `/^\s*options:/m`
+ * can begin its match on a BLANK LINE above the key. The slice would then start one line
+ * early, that line's indent reads as 0, and the dedent bound never trips. One blank line in
+ * the template was all it took.
+ */
+function readReasonOptions(src: string): string[] {
+  const rest = reasonField(src);
   const optionsAt = rest.search(/^[ \t]*options:[ \t]*$/m);
   if (optionsAt < 0) {
     throw new Error(

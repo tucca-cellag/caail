@@ -176,6 +176,12 @@ const vocabJson = JSON.stringify(vocabularies).replace(/</g, '\\u003c');
 
     <div class="rc-step" id="caail-step-review" hidden>
       <h3 class="rc-h" id="caail-h-review" tabindex="-1"></h3>
+      {/* An answer the composer could not use is DROPPED rather than repaired, because a
+          silently corrected report is worse than a shorter one. Dropping it silently is
+          worse still: the reader typed a DOI, sees a report that does not mention one, and
+          the explanation is back on a step that is no longer on screen. Empty on first
+          render so the message is the change when it appears. */}
+      <p class="rc-dropped" id="caail-compose-dropped" role="status"></p>
       <p class="rc-review-note" id="caail-compose-dropdown-note"></p>
       <pre class="rc-body" id="caail-compose-body"></pre>
       <p class="rc-actions">
@@ -391,6 +397,7 @@ const vocabJson = JSON.stringify(vocabularies).replace(/</g, '\\u003c');
       fields: document.getElementById('caail-compose-fields'),
       body: document.getElementById('caail-compose-body'),
       dropdownNote: document.getElementById('caail-compose-dropdown-note'),
+      dropped: document.getElementById('caail-compose-dropped'),
       account: document.getElementById('caail-compose-account'),
       back: document.getElementById('caail-compose-back') as HTMLButtonElement | null,
       next: document.getElementById('caail-compose-next') as HTMLButtonElement | null,
@@ -719,12 +726,34 @@ const vocabJson = JSON.stringify(vocabularies).replace(/</g, '\\u003c');
       if (mail) mail.href = correctionMailto(itemId, composed);
       if (el.submit) el.submit.href = correctionIssueUrl(itemId, composed);
 
+      if (el.dropped) {
+        // Only the DOI can reach this by ordinary use. An out-of-vocabulary select value
+        // is dropped by composeBody the same way, but getting one requires editing the
+        // DOM, and a reader who has done that does not need telling.
+        //
+        // Deliberately NOT a block on Next. Refusing to advance would trap a reader who
+        // cannot find the DOI and typed something wrong: the way out would be to work out
+        // that emptying the field is allowed. Saying what happened and letting them send
+        // it is the honest version, and an incomplete report still beats no report.
+        const typed = (answers.doi ?? '').trim();
+        el.dropped.textContent =
+          answers.reason?.kind === 'doi' && typed !== '' && !isDoiShape(typed)
+            ? 'What you typed is not shaped like a DOI, so it is not in the report below. Go back to change it, or send the report as it stands.'
+            : '';
+      }
+
       if (el.dropdownNote) {
         // `value`, not `label`: this tells the reader which entry to find in a dropdown,
         // so it has to be the option verbatim. The label is the display split and would
         // only ever be a prefix of what they are looking at.
+        //
+        // And it names the confirmations as well as the dropdown. The template marks both
+        // checkboxes `required: true`, so a reader told that one dropdown was all that
+        // remained would meet a form refusing to submit for two reasons this page had
+        // implied were handled. The same standard the page holds itself to about the
+        // account wall applies to the form's own required fields.
         el.dropdownNote.textContent = answers.reason
-          ? `Everything below is filled in for you on GitHub. The one thing the form still asks you to pick is "What is wrong with it", where the answer is "${answers.reason.value}".`
+          ? `Your report is filled in for you on GitHub. Two things are left there: pick "${answers.reason.value}" under "What is wrong with it", and tick the two confirmations.`
           : '';
       }
 
@@ -777,12 +806,18 @@ const vocabJson = JSON.stringify(vocabularies).replace(/</g, '\\u003c');
     function alert(message: string) {
       const region = el.error;
       if (!region) return;
+      // Read BEFORE clearing. `clearAlert` empties the region, so comparing after it
+      // compares against '' and is therefore always true: the early return below fires
+      // every time and the re-post can never arm. That is how the timer-cancel guard
+      // added in one round silently reverted the re-announce fix added in the one before,
+      // while the test written for it went on passing against a code path that no longer
+      // existed.
+      const previous = region.textContent;
       clearAlert();
-      if (region.textContent !== message) {
+      if (previous !== message) {
         region.textContent = message;
         return;
       }
-      region.textContent = '';
       alertTimer = window.setTimeout(() => {
         region.textContent = message;
         alertTimer = undefined;
@@ -1044,6 +1079,16 @@ const vocabJson = JSON.stringify(vocabularies).replace(/</g, '\\u003c');
   .rc-review-note {
     font-size: 0.9rem;
     color: var(--caail-muted);
+  }
+  /* Reads as a warning rather than an error: nothing is broken, an answer was just not
+     usable. Same token as .rc-err, which is the only colour in the system that means
+     "attend to this" and is contrast-checked against both themes. */
+  .rc-dropped {
+    font-size: 0.9rem;
+    color: var(--caail-danger);
+  }
+  .rc-dropped:empty {
+    display: none;
   }
   .rc-body {
     padding: 0.75rem 0.85rem;
