@@ -120,21 +120,47 @@ fi
 # check that looks present and is not.
 dest=$(grep -oE '(--repo|-R) +[^ ]+' <<<"$cmd" | head -n1 | awk '{print $2}' | tr -d "\"'")
 
+# Where the publishing verb sits, and the command split around it. Everything
+# below reasons about "before the verb" and "the verb's own segment", and both
+# have already been got wrong once each, in opposite directions.
+#
+# BYTE offsets, so the slicing uses `head -c`/`tail -c` and not bash substring
+# expansion, which counts CHARACTERS. With multibyte text ahead of the verb the
+# two drift apart by the encoding overhead (measured: one em dash costs 2), and
+# once the drift exceeds the length of the publish itself the "before" prefix
+# reaches a trailing `cd` and that `cd` steers the destination again. 60 em
+# dashes reopened the hole the segment logic exists to close.
+verb_at=$(grep -boE "$PUBLISH_VERB_RE" <<<"$cmd" | head -n1 | cut -d: -f1)
+verb_at=${verb_at:-0}
+before_verb=$(head -c "$verb_at" <<<"$cmd")
+# The verb's own segment: from the verb to the next shell separator, with the
+# leading separator the match itself captured stripped first. A payload carrying
+# a separator only shortens this, which is the safe direction.
+publish_seg=$(tail -c "+$((verb_at + 1))" <<<"$cmd" \
+  | sed -E 's/^[[:space:]]*[;&|(]*[[:space:]]*//; s/[;&|].*$//')
+
 # `gh api -X POST /repos/<owner>/<repo>/issues` names its destination in the
 # endpoint and needs no local repository at all, so resolving it from the cwd
 # asks about the wrong place. That was harmless while this hook failed open;
 # now that an unreadable destination denies on risk, it would refuse a working
 # command from any directory that is not itself a repo. Reproduced from /tmp on
-# a healthy authenticated `gh` before this branch parsed the endpoint.
+# a healthy authenticated `gh`.
 #
-# Taken only when every `repos/<owner>/<repo>` in the command agrees. Two
-# different ones mean the endpoint cannot be told apart from the body, and
-# guessing wrong could resolve a PRIVATE repo and take the short-circuit below,
-# skipping the payload scan. Disagreement therefore stays unresolved, which
-# announces and scans rather than guessing.
-if [[ -z $dest ]] && grep -qE '(^|[;&|(]|&&|\|\|)[[:space:]]*(sudo[[:space:]]+)?gh[[:space:]]+api([[:space:]]|$)' <<<"$cmd"; then
-  api_dest=$(grep -oE 'repos/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+' <<<"$cmd" \
-    | sed -E 's|^repos/||' | sort -u)
+# Read ONLY from the segment the publishing verb is in, and only when that
+# segment is itself the `gh api` call. Scanning the whole command was worse than
+# the bug it fixed: `gh api repos/<a private repo> --jq .name && gh issue create
+# --body '…'` set the destination to the repo that was merely READ, took the
+# `vis != PUBLIC` short-circuit below, and passed the payload through unscanned
+# and unannounced. A `gh api` read inside a `--body` did it too, since `$(`
+# satisfies the separator class the verb pattern anchors on.
+#
+# Endpoint-shaped tokens only, and only when they agree. Two different ones mean
+# the endpoint cannot be told apart from the payload, and guessing wrong is how
+# the paragraph above happened. Disagreement stays unresolved, which announces
+# and scans rather than guessing.
+if [[ -z $dest ]] && grep -qE '^(sudo[[:space:]]+)?gh[[:space:]]+api([[:space:]]|$)' <<<"$publish_seg"; then
+  api_dest=$(grep -oE 'repos/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/(issues|comments|releases|pulls)' <<<"$publish_seg" \
+    | sed -E 's|^repos/([^/]+/[^/]+)/.*|\1|' | sort -u)
   [[ -n $api_dest && $(printf '%s\n' "$api_dest" | wc -l) -eq 1 ]] && dest="$api_dest"
 fi
 
@@ -154,8 +180,7 @@ if [[ -z $dest ]]; then
   #
   # Deliberately still narrow: it catches the shape that occurs and leaves
   # anything cleverer to the unresolved branch, which announces and scans.
-  verb_at=$(grep -boE "$PUBLISH_VERB_RE" <<<"$cmd" | head -n1 | cut -d: -f1)
-  cd_dir=$(grep -oE '(^|[;&|(]) *cd +[^ ;&|)]+' <<<"${cmd:0:${verb_at:-0}}" \
+  cd_dir=$(grep -oE '(^|[;&|(]) *cd +[^ ;&|)]+' <<<"$before_verb" \
     | head -n1 | sed -E 's/.*cd +//' | tr -d "\"'")
   cd_dir="${cd_dir/#\~/$HOME}"
 fi
@@ -229,11 +254,8 @@ if [[ -n $unresolved ]]; then
   # scoped to write issues but not read repo metadata. Both are unusual, and both
   # pay the one-line override rather than a silent pass.
   repo="an unresolved destination"
-  vis_phrase="whose visibility could NOT be resolved (${unresolved}), so it is treated as if it were public"
+  vis_phrase="whose visibility could NOT be resolved (${unresolved}), so it is treated as if it were public. No owner was read either, so the foreign-owner signal could not be computed and did not run; the fenced-block and security-vocabulary signals did"
   vis_tag="UNRESOLVED, ${unresolved}"
-  # No owner was read, so no owner can be compared against. Kept empty on
-  # purpose; the foreign-owner signal below handles that case explicitly rather
-  # than letting `grep`'s empty-pattern behaviour decide it by accident.
   owner=""
 else
   repo=$(jq -r '.nameWithOwner // empty' <<<"$meta" 2>/dev/null)
@@ -264,21 +286,22 @@ signals=()
 grep -qE '```' <<<"$payload" && signals+=("a fenced code block")
 
 # A github.com URL under an owner that is not this repo's owner.
-foreign=$(grep -oE 'github\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+' <<<"$payload" \
-  | sed -E 's|github\.com/||' | cut -d/ -f1 | sort -u \
-  | grep -vix "$owner" | head -n3 | paste -sd, -)
-if [[ -n $foreign ]]; then
-  if [[ -n $owner ]]; then
-    signals+=("references to another owner's repo ($foreign)")
-  else
-    # An unresolved destination has no owner to compare against, so "another
-    # owner" is a claim this hook cannot make. Measured, not assumed: with an
-    # empty $owner, `grep -vix ""` matches only the empty line and therefore
-    # KEEPS every owner, so this branch is live and every github.com reference
-    # reaches it. That is the safe direction and it stays; only the wording
-    # changes, because a guard against unsupported claims must not make one.
-    signals+=("github.com references ($foreign) whose owner could not be compared to the destination's")
-  fi
+#
+# Computed only when an owner was actually read. "Foreign" is defined relative to
+# the destination, so with no destination it is not a weaker signal, it is an
+# undefined one — and letting it run anyway was measurably worse than useless.
+# With `$owner` empty, `grep -vix ""` matches only the empty line and so KEEPS
+# every owner: every github.com URL became a signal. That state used to need an
+# unfollowable `cd` and was rare; making an expired `gh` token reach it turned an
+# ordinary PR body linking to this repo's own issue into a deny. Crying wolf on
+# the routine case is how a guard gets switched off, which this file argues
+# against three times over. The unresolved announcement says the comparison did
+# not run, so its absence is stated rather than silent.
+if [[ -n $owner ]]; then
+  foreign=$(grep -oE 'github\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+' <<<"$payload" \
+    | sed -E 's|github\.com/||' | cut -d/ -f1 | sort -u \
+    | grep -vix "$owner" | head -n3 | paste -sd, -)
+  [[ -n $foreign ]] && signals+=("references to another owner's repo ($foreign)")
 fi
 
 if grep -qiE 'no auth|unauthenticated|without auth|rate.?limit|api[ _-]?key|auth_token|credential|\bsecret\b|password|samesite|allow_credentials|vulnerab|exploit|CVE-[0-9]|XSS|injection|logs? (the )?(full|raw|verbatim)' <<<"$payload"; then
@@ -292,7 +315,7 @@ fi
 # guardrail. They are different sentences now.
 if [[ ${#signals[@]} -eq 0 ]]; then
   if [[ -n $unresolved ]]; then
-    ctx="The public-publish provenance guard could NOT resolve this command's destination (${unresolved}), so it never checked whether the destination is public. It scanned the payload anyway and found nothing risky, so this is allowed. Until that is fixed, treat the visibility half of this guard as absent rather than as having passed."
+    ctx="The public-publish provenance guard could NOT resolve this command's destination (${unresolved}), so it never checked whether the destination is public. It scanned the payload anyway and found nothing risky, so this is allowed. Note that with no owner read, the foreign-owner signal could not be computed and did not run; only the fenced-block and security-vocabulary signals did. Until that is fixed, treat the visibility half of this guard as absent rather than as having passed."
   else
     ctx="Publishing to ${repo}, ${vis_phrase}. Nothing in the payload tripped the provenance guard."
   fi

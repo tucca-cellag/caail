@@ -226,18 +226,28 @@ ok = "PASS" if resolved else "FAIL"
 if not resolved: fails += 1
 print(f"  [{ok}] a destination it CAN read is announced as read, not as degraded")
 
-# An unresolved destination has no owner, so the foreign-owner signal cannot call
-# a reference "another owner's" repo. Measured: with an empty owner the signal
-# still fires, which is the safe direction and stays. What it must not do is
-# dress an owner it never compared up as one it did.
-got, why, _ = run(HOOK_PROJ,
-                  f'cd /nonexistent-{os.getpid()} && {V} --title x '
-                  '--body "context: https://github.com/someoneelse/theirrepo"',
-                  {"CLAUDE_PROJECT_DIR": proj}, cwd=proj)
-honest = got == "deny" and "another owner" not in why
-ok = "PASS" if honest else "FAIL"
-if not honest: fails += 1
-print(f"  [{ok}] an owner it never compared is not reported as another owner's")
+# "Foreign" is defined relative to the destination's owner, so with no owner it
+# is undefined, not merely weaker. Letting it run anyway made every github.com
+# URL a signal (empty `$owner` makes `grep -vix ""` keep every line), and once an
+# expired token became a routine way to reach that state, an ordinary PR body
+# linking to this repo's own issue denied. The signal must not fire, and the
+# announcement must SAY it did not run, or its absence is just more silence.
+got, why, ctx = run(HOOK_PROJ, f'{P} --title "feat: add paper" '
+                    '--body "closes https://github.com/tucca-cellag/caail/issues/1"',
+                    {**NO_AUTH, "CLAUDE_PROJECT_DIR": proj}, cwd=proj, unset=NO_TOKENS)
+quiet = got == "allow" and "could not be computed" in ctx
+ok = "PASS" if quiet else "FAIL"
+if not quiet: fails += 1
+print(f"  [{ok}] an unreadable owner suppresses the foreign-owner signal, and says so")
+
+# The other two signals must still fire in that state, or suppressing the first
+# would have quietly disarmed the scan the unresolved path exists to run.
+got, why, _ = run(HOOK_PROJ, f'{V} --title x --body "{RISK}"',
+                  {**NO_AUTH, "CLAUDE_PROJECT_DIR": proj}, cwd=proj, unset=NO_TOKENS)
+still = got == "deny" and "security-finding vocabulary" in why
+ok = "PASS" if still else "FAIL"
+if not still: fails += 1
+print(f"  [{ok}] and the fenced-block / vocabulary signals still fire there")
 
 # `gtimeout` is the same bound under the name Homebrew gives it. A machine with
 # it must behave as a fully working one, not as a degraded one forever.
@@ -278,15 +288,54 @@ ok = "PASS" if works else "FAIL"
 if not works: fails += 1
 print(f"  [{ok}] ordinary api publish from a non-repo dir is not refused")
 
-# Two disagreeing repos: the endpoint cannot be told from the body. Guessing
-# could land on a PRIVATE repo and take the short-circuit that skips the payload
-# scan, so it stays unresolved, which announces and scans.
-got, why, _ = run(HOOK_PROJ, f'{API} -f body="see repos/someone/elsewhere {RISK}"',
+# Two disagreeing endpoint-shaped tokens: the endpoint cannot be told from the
+# payload, so it stays unresolved rather than guessing. The body's token is put
+# FIRST deliberately — with the endpoint first, a naive `head -n1` would pick the
+# right repo by luck and the check would pin nothing. Flags may precede the
+# endpoint in a real `gh api` call, so this is a legal invocation, and the wrong
+# implementation resolves octocat/Hello-World, which is public and therefore
+# resolves, so the mistake is visible in the reason rather than swallowed.
+got, why, _ = run(HOOK_PROJ,
+                  'gh' ' api -f body="see repos/octocat/Hello-World/issues '
+                  f'{RISK}" -X POST /repos/tucca-cellag/caail/issues',
                   {"CLAUDE_PROJECT_DIR": proj}, cwd=elsewhere)
-careful = got == "deny" and "UNRESOLVED" in why
+careful = got == "deny" and "UNRESOLVED" in why and "octocat/Hello-World" not in why
 ok = "PASS" if careful else "FAIL"
 if not careful: fails += 1
 print(f"  [{ok}] disagreeing repos/ tokens stay unresolved rather than guessing")
+
+# --- a `gh api` READ must not name the destination of a publish beside it -----
+# The round-1 fix scanned the whole command for `repos/<o>/<r>`, so an unrelated
+# read set the destination for a publish that was not going there. Where that
+# repo was private the hook took the `vis != PUBLIC` short-circuit and passed a
+# risky payload through unscanned AND unannounced — the failure this branch
+# exists to close, reintroduced by its own fix. octocat/Hello-World is public, so
+# these assert on WHICH repo is named rather than needing a private one.
+print("\n=== a gh api read beside a publish does not steer the destination ===")
+READ = "gh" + " api repos/octocat/Hello-World --jq .name"
+for label, cmd in (
+    ("read, then publish",       f'{READ} && {V} --title x --body "{RISK}"'),
+    ("read inside the --body",   f'{V} --title x --body "ref $({READ}) {RISK}"'),
+):
+    got, why, _ = run(HOOK_PROJ, cmd, {"CLAUDE_PROJECT_DIR": proj}, cwd=proj)
+    right = got == "deny" and "tucca-cellag/caail" in why and "octocat/Hello-World" not in why
+    ok = "PASS" if right else "FAIL"
+    if not right: fails += 1
+    print(f"  [{ok}] {label:26s} resolves the cwd's repo, not the one read")
+
+# `grep -bo` counts BYTES; bash substring expansion counts CHARACTERS. Multibyte
+# text ahead of the verb drifts the two apart, and once the drift exceeds the
+# publish's own length the "before the verb" prefix reaches a trailing `cd` and
+# it steers the destination again. 60 em dashes was the measured threshold, so
+# this pads well past it.
+pad = "—" * 120
+got, why, _ = run(HOOK_PROJ,
+                  f'echo "{pad}" && {V} --title x --body "{RISK}" && cd /nonexistent-{os.getpid()}',
+                  {"CLAUDE_PROJECT_DIR": proj}, cwd=proj)
+bytesafe = got == "deny" and "(PUBLIC)" in why and "UNRESOLVED" not in why
+ok = "PASS" if bytesafe else "FAIL"
+if not bytesafe: fails += 1
+print(f"  [{ok}] multibyte text before the verb does not re-open the trailing cd")
 
 print("\n=== fail-open safety ===")
 for label, payload in [("malformed json", "not json"), ("empty stdin", "")]:
