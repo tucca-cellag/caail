@@ -121,6 +121,22 @@ ok = "PASS" if honest else "FAIL"
 if not honest: fails += 1
 print(f"  [{ok}] and it says UNRESOLVED rather than claiming the destination is PUBLIC")
 
+# The verdict alone does NOT test the trailing-`cd` fix. Measured against the
+# pre-fix hook: `<publish> && cd /tmp` denies either way, because /tmp holds no
+# repo and an unresolved destination denies on risk too. The case looked like a
+# guard and pinned nothing. What separates the two is WHICH destination gets
+# reported: the fixed hook ignores a `cd` after the verb and resolves the cwd's
+# repo, the broken one resolves /tmp and reports UNRESOLVED. The real-world
+# damage needs the trailing directory to be a PRIVATE repo, where the pre-fix
+# hook takes the `vis != PUBLIC` short-circuit and skips the payload scan
+# entirely; that needs no private repo to detect, only this assertion.
+_, why, _ = run(HOOK_PROJ, f'{V} --title x --body "{RISK}" && cd /tmp',
+                {"CLAUDE_PROJECT_DIR": proj}, cwd=proj)
+steered = "(PUBLIC)" in why and "UNRESOLVED" not in why
+ok = "PASS" if steered else "FAIL"
+if not steered: fails += 1
+print(f"  [{ok}] a trailing cd does not steer WHICH destination is resolved")
+
 # --- a destination gh could not READ is announced, never waved through -------
 # The measured defect: with `gh` unauthenticated, `gh repo view` returns nothing,
 # no PUBLIC verdict follows, and the hook emits the SAME empty pass-through it
