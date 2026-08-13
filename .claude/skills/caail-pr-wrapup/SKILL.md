@@ -43,15 +43,24 @@ Run the helper from the repo (worktree) root: `bash .claude/skills/caail-pr-wrap
   `pnpm --dir site build` and `pnpm --dir site test:e2e` for the affected specs. A red gate means the
   branch isn't ready; fix it before shipping.
 - **`gh` is authenticated** (`gh auth status`).
+- **If the branch touches `workers/**` at all, deploy the Worker by hand before step 2**:
+  `pnpm --dir workers/events run deploy`. No workflow deploys it, so shipping the code does not ship the
+  change, and a push publishes a commit message describing behaviour that is not live yet. Check this
+  against the whole branch, not just what the review rounds edited: the gate table in step 1 only covers
+  files a *round* touched, so a branch whose original commits changed the Worker and whose rounds did not
+  would otherwise never be reminded.
 - **The PR body is publishable.** `caail` is a **public** repo, so the body, every commit message,
   and the branch name become world-readable, and unlike issues a **PR cannot be deleted**. Before
   composing the body, confirm every quoted path, code block and architectural detail originates in
   *this* repo — anything read from a private repo or a third party's source is not publishable, and
   paraphrase discloses as much as a quote. Nothing may describe an unpatched weakness in a live
-  service; that goes to its owner privately. Full rule: **`.claude/rules/publishing.md`** (in this
-  repo), enforced at the Bash layer by **`.claude/hooks/check-public-publish.sh`** (registered in
-  the committed `.claude/settings.json`, so it protects anyone who clones this repo, not just the
-  machine it was written on).
+  service; that goes to its owner privately. Full rule: **`.claude/rules/publishing.md`** (in this repo).
+  **Do not expect the hook to catch it on this path.** `.claude/hooks/check-public-publish.sh` is
+  registered in the committed `.claude/settings.json` and does protect anyone who clones this repo, but it
+  is a PreToolUse *Bash* hook whose tripwire is anchored to `gh pr create` at command position, and step 3
+  opens the PR from **inside** `ship-pr.sh`. It therefore sees nothing here: no deny, and not even the
+  visibility announce. On this path you are the only check, which is why `preflight` prints the
+  destination's visibility by hand.
 - *(optional)* For the step 4 cross-model review, the **Cross-Model Adversarial Reviewer** agent must be
   configured and whatever CLI it wraps must be authenticated. **Don't test for a particular binary, and
   never call one directly**: the agent owns which non-Claude backend it uses and enforces that the model is
@@ -81,19 +90,23 @@ the local gate (above) if you haven't this session.
 /code-review high origin/main...HEAD
 ```
 
+(`main` here is this repo's default branch. `ship-pr.sh` derives that name rather than assuming it, so a
+fork keeps working; if `preflight` printed a different `Default:`, use that name instead of copying this
+line literally.)
+
 Then apply or triage every finding and **run it again on the updated diff**, until the findings die out.
 Do this before the push, so fixes land as ordinary commits instead of churn on an open PR.
 
 **Depth comes from the number of rounds, not from the level.** That is a maintainer decision, and it is
 what "scale with the diff" means in this skill: a presentational change and a parser change get the same
-level and a different number of passes. Do not reach for `max` or `xhigh`; add a round instead. `ultra` is
-not an option at all from here, being user-triggered and billed, so an agent cannot run it.
+level and a different number of passes. **Do not reach for a deeper level; add a round instead.** `ultra`
+is not an option from here in any case, being user-triggered and billed, so an agent cannot run it.
 
-(Whether a deeper level behaves exactly as its name suggests is a property of the review tool, which moves
-independently of this repo, so this file deliberately makes no claim about it. Two reviews of this very
-change disagreed about what `xhigh` does, which is the argument for not writing it down: an unverifiable
-claim about someone else's internals is the kind of fact that rots silently. The rule above stands on the
-decision, not on the mechanism.)
+(This file names no level but `high`, and makes no claim about how the deeper ones behave. That is
+deliberate: the review tool moves independently of this repo, and three rounds of review on this very
+change gave three different accounts of one of those levels, including whether it exists. An unverifiable
+claim about another tool's internals is the kind of fact that rots silently and is believed anyway. The
+rule above rests on a maintainer decision, which needs no mechanism to be true.)
 
 **The floor on rounds comes from blast radius.** When a diff spans shapes, the widest one wins, and CAAIL
 PRs span shapes routinely. **A diff that matches no row is a 2, never a 1.** Two rounds is the floor for
@@ -518,5 +531,12 @@ the commit the PR would merge. Between them they cover the uncommitted and unpus
 failure, with one gap worth knowing: the `merge` check only runs when you are **on** that PR's branch,
 because from anywhere else local `HEAD` says nothing about this PR. Merging PR #A while standing on branch
 B is therefore unguarded against an unpushed commit on A. Nothing checks that the rounds happened at all.
+
+**Neither guard has automated coverage.** `check-ci-paths.py` is what CI runs when this script changes,
+and it only text-scrapes the `*_PATHS` variables and their `matches_*` wrappers; it never executes
+`assert_shippable` or the divergence block. So a refactor could silently turn either into a no-op and
+every check would stay green, on the one script whose failure mode is shipping a PR that is missing a fix.
+Until there is a harness, treat both as things to re-demonstrate by hand (per the `CAAIL-221` rule above)
+whenever you touch them, rather than as things CI is watching.
 That is deliberate: a skipped round produces a thin PR body a reader can notice, whereas an uncommitted
 fix produces a PR that *looks* right and is missing the fix, and nothing downstream can tell.
