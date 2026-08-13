@@ -428,10 +428,14 @@ describe('composeBody', () => {
     );
 
     // Saturate whichever field this kind uses, in a script that costs nine encoded each.
+    // Exactly AT each cap, never over it. `10.1234/` + DOI_MAX_LENGTH characters is 208
+    // long, so the CHARACTER bound rejects it and the encoded bound is never consulted —
+    // which is why the first version of this test passed with the encoded check deleted.
+    // The worst case is the longest input the character cap still admits.
     const answers =
       kind === 'note'
         ? { note: '提'.repeat(NOTE_MAX_LENGTH) }
-        : { doi: `10.1234/${'提'.repeat(DOI_MAX_LENGTH)}` };
+        : { doi: `10.1234/${'提'.repeat(DOI_MAX_LENGTH - '10.1234/'.length)}` };
     const body = composeBody(
       { itemId: longestId, reason: { ...longestReason, kind }, ...answers },
       VOCAB,
