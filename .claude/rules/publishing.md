@@ -92,12 +92,31 @@ into context, and denies when the payload carries a fenced code block, a foreign
 repo owner, or security-finding vocabulary — requiring the three questions above
 to be answered explicitly before an override.
 
+A destination it *cannot resolve* (no `gh`, no working login, no repository it
+can read) is not waved through in silence. It announces the failure and names
+the cause, treats the destination as public because it cannot be ruled out as
+one, and scans the payload anyway. Fail-open is kept for the inputs it has
+nothing to work with, such as malformed JSON on stdin. The realistic outage is
+mundane: `gh auth status` failing is not something anyone checks before typing
+`gh issue create`, and a guard that stops guarding without saying so is still
+being counted on.
+
+**`gh gist create` always takes that path**, because a gist has no repository to
+resolve. That is intended rather than an oversight: a gist is publication, as
+this file says, and a fenced code block in one is exactly the pasted-from-a-
+private-repo leak the fence signal exists to catch. It is also the noisiest
+case, since gists are code by nature, so expect the override to be the normal
+answer there and read the three questions before reaching for it.
+
 **It ships in this repo, wired through the committed `.claude/settings.json`,
 so it protects anyone who clones — not only the machine it was written on.** A
 byte-identical copy at `~/.claude/hooks/` covers every other repo; the global
 copy detects the project copy and passes through, so `gh` is never queried
 twice. Keep the two in sync (`diff` them); this file is likewise mirrored at
-`~/.claude/rules/publishing.md`.
+`~/.claude/docs/rules/publishing.md`, which is the path the hook itself cites.
+**Not** `~/.claude/rules/publishing.md`: that is a condensed always-on summary
+that points here, so anyone who followed the old path in this sentence and
+"resolved" the mismatch would load 120 lines into every session forever.
 
 A guardrail that lives only in one person's home directory is not a guardrail,
 it is a note to self. That is the same defect as citing a path a collaborator
