@@ -402,7 +402,15 @@
             "type": "string",
             "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
           },
+          "count": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
           "scopeNote": {
+            "type": "string"
+          },
+          "truncationNote": {
             "type": "string"
           },
           "matrixNote": {
@@ -417,7 +425,9 @@
         },
         "required": [
           "corpusDate",
+          "count",
           "scopeNote",
+          "truncationNote",
           "matrixNote",
           "references"
         ],
@@ -475,6 +485,14 @@
             "type": "string",
             "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
           },
+          "count": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "truncationNote": {
+            "type": "string"
+          },
           "entries": {
             "type": "array",
             "items": {
@@ -484,6 +502,8 @@
         },
         "required": [
           "corpusDate",
+          "count",
+          "truncationNote",
           "entries"
         ],
         "additionalProperties": false

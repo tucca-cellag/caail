@@ -49,6 +49,13 @@ and a tenth the size and carry every item, so enumerate there and fetch a full r
 know which one you want. If you only have a summarising fetch, an absence you saw in `papers.json` or
 `catalog.json` is not evidence of anything.
 
+**Then check that you got all of it.** Every `-index` file states `count` before its rows. Compare
+`count` against the number of rows you actually parsed. Fewer means your fetch truncated the file and
+you are holding part of the corpus — say so, and do not report an absence from it. Measured on the
+same tool that lost ~85% of `papers.json`: the index gets ~90% through, which is much better and is
+still not all of it, and the tool does not reliably say when it stopped. `count` is how you find out
+rather than guess.
+
 For "what could I combine my own run with", read `inventory`, not `entries`. The curated entries are
 portals, atlases and model files; the inventory rows are the individual deposits, each carrying its
 accession, assay type, tissue and size under the source page's own column labels.

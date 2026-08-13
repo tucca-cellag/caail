@@ -282,6 +282,26 @@ export function buildTopicIndex(
  * SCOPE_NOTE bounds what an empty cell proves, which is the failure everyone anticipated.
  * This bounds what the matrix's SILENCE proves, which is the one that actually fired.
  */
+/**
+ * The count, and why it is stated before the rows rather than inferred from them.
+ *
+ * Shrinking the index from 554 KB to 110 KB took a summarising fetch from carrying ~15% of
+ * the references to ~90%. Measured, not assumed — and 90% is not 100%, so the last rows can
+ * still be lost, and the tool reports that inconsistently when it reports it at all. Byte
+ * golf cannot close that gap: the budget belongs to someone else's tool and moves.
+ *
+ * What CAN be closed is the DETECTABILITY. An agent that parses N rows and can compare N
+ * against a count it read at the top of the same file knows whether it has everything. That
+ * converts a silent truncation into a checkable one, which is the difference between a
+ * confident wrong answer and a caveated right one. It is the same move as the matrix note
+ * below: state the limit in the payload, where the reader actually is.
+ */
+export const TRUNCATION_NOTE =
+  'Compare the number of rows you parsed against `count`. If you have fewer, your fetch ' +
+  'truncated this file and you are looking at part of the corpus: say so, and do not report ' +
+  'an absence from it. Fetching with a tool that returns bytes rather than a summary avoids ' +
+  'this entirely.';
+
 export const MATRIX_NOTE =
   'A reference with empty `methods` and `areas` is indexed but occupies no matrix cell: ' +
   'only the References section is matrix-eligible, so reviews and reference works never ' +
@@ -294,9 +314,13 @@ export function buildPapersIndex(papers: PapersData, corpusDate: string): unknow
   // Same reason as buildCatalogIndex: never throw ahead of the validator. A malformed
   // `references` should be reported as papers.json failing its schema, by name.
   const refs = Array.isArray(papers?.references) ? papers.references : [];
+  // Key order is the emitted order, so `count` and the notes precede the rows and survive a
+  // truncation that eats the tail. A count at the bottom would be lost exactly when needed.
   return {
     corpusDate,
+    count: refs.length,
     scopeNote: SCOPE_NOTE,
+    truncationNote: TRUNCATION_NOTE,
     matrixNote: MATRIX_NOTE,
     references: refs.map((r) => ({
       id: r.id,
@@ -347,7 +371,7 @@ export function buildCatalogIndex(catalog: unknown, corpusDate: string): unknown
           tier: e.tier ?? null,
         })),
     );
-  return { corpusDate, entries: rows };
+  return { corpusDate, count: rows.length, truncationNote: TRUNCATION_NOTE, entries: rows };
 }
 
 // ---------------------------------------------------------------------------

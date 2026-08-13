@@ -422,6 +422,20 @@ describe('the compact indexes', () => {
     expect(offMatrix.length, 'no off-matrix references, so this endpoint guards nothing').toBeGreaterThan(0);
   });
 
+  it('states its own row count BEFORE the rows, so a truncation is detectable', () => {
+    // The point of the count is to survive the truncation it exists to reveal. A count
+    // emitted after the array would be lost in exactly the case it is needed.
+    for (const [file, key] of [['papers-index.json', 'references'], ['catalog-index.json', 'entries']] as const) {
+      expect(body(file).count).toBe(body(file)[key].length);
+      const text = serializeApiFile(file, body(file));
+      expect(
+        text.indexOf('"count"'),
+        `${file}: count must precede the rows or a truncated read cannot use it`,
+      ).toBeLessThan(text.indexOf(`"${key}"`));
+      expect(body(file).truncationNote).toMatch(/count/);
+    }
+  });
+
   it('names the trap in the payload, where an agent will actually meet it', () => {
     const note = body('papers-index.json').matrixNote as string;
     expect(note).toMatch(/matrix/i);

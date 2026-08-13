@@ -917,7 +917,10 @@ export const ApiPaperIndexRowSchema = z.strictObject({
 
 export const ApiPapersIndexSchema = z.strictObject({
   corpusDate: CorpusDateSchema,
+  /** Stated before the rows so it survives a truncation that eats the tail. */
+  count: z.number().int(),
   scopeNote: z.string(),
+  truncationNote: z.string(),
   /** States the trap this endpoint exists to make visible. Prose, so it reaches an agent. */
   matrixNote: z.string(),
   references: z.array(ApiPaperIndexRowSchema),
@@ -936,6 +939,8 @@ export const ApiCatalogIndexRowSchema = z.strictObject({
 
 export const ApiCatalogIndexSchema = z.strictObject({
   corpusDate: CorpusDateSchema,
+  count: z.number().int(),
+  truncationNote: z.string(),
   entries: z.array(ApiCatalogIndexRowSchema),
 });
 

@@ -1,5 +1,7 @@
 {
   "corpusDate": "2026-08-12",
+  "count": 289,
+  "truncationNote": "Compare the number of rows you parsed against `count`. If you have fewer, your fetch truncated this file and you are looking at part of the corpus: say so, and do not report an absence from it. Fetching with a tool that returns bytes rather than a summary avoids this entirely.",
   "entries": [
     {"slug":"alphafold","name":"AlphaFold","kind":"software","group":"Media Optimization & Cell Line Engineering","url":"https://github.com/google-deepmind/alphafold","doi":"10.1038/s41586-021-03819-2","tier":"permissive"},
     {"slug":"protein-language-models","name":"Protein Language Models","kind":"software","group":"Media Optimization & Cell Line Engineering","url":"https://github.com/ISYSLAB-HUST/Protein-Language-Models","doi":null,"tier":"unknown"},
