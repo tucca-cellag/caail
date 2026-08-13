@@ -4,6 +4,7 @@ import {
   NOTE_MAX_LENGTH,
   REASON_SPECS,
   boundNote,
+  collapseNote,
   composeBody,
   isDoiShape,
   normaliseDoi,
@@ -138,6 +139,44 @@ describe('boundNote', () => {
 
   it('collapses whitespace runs and trims', () => {
     expect(boundNote('  a   \t  b  ')).toBe('a b');
+  });
+
+  it('strips C1 controls, which neither the C0 class nor the whitespace collapse reached', () => {
+    // U+0085 NEL is a line break that sat in the gap between the two rules and reached the
+    // composed body verbatim, which is exactly what the one-line guarantee rules out.
+    expect(boundNote('a\u0085b\u0080c\u009Fd')).toBe('a b c d');
+  });
+
+  it.each([
+    ['a lone LOW surrogate', 'ok\uDC00bad'],
+    ['a lone HIGH surrogate mid-string', 'ok\uD800bad'],
+    ['both', '\uDC00ok\uD800'],
+  ])('removes %s, which would throw inside encodeURIComponent', (_label, input) => {
+    // `render()` has no try/catch, so one URIError freezes the preview and all three links
+    // at whatever they last held, on every subsequent keystroke, with nothing on screen to
+    // say why. The truncation guard only ever handled a TRAILING high surrogate, which is
+    // the half of the problem truncation itself creates.
+    const bounded = boundNote(input);
+    expect(() => encodeURIComponent(bounded)).not.toThrow();
+    expect(bounded).toContain('ok');
+  });
+
+  it('keeps a valid pair while removing an unpaired unit beside it', () => {
+    expect(boundNote('a😀b\uDC00c')).toBe('a😀bc');
+  });
+});
+
+describe('collapseNote', () => {
+  it('tidies without capping, so a caller can tell truncation from tidying', () => {
+    // The note counter compares the two. Without this split, trimming a trailing space
+    // would read to the reader as having lost a character.
+    expect(collapseNote('  a \n b  ')).toBe('a b');
+    expect(collapseNote('z'.repeat(NOTE_MAX_LENGTH + 50))).toHaveLength(NOTE_MAX_LENGTH + 50);
+  });
+
+  it('agrees with boundNote whenever neither cap binds', () => {
+    const short = ' hello \n world ';
+    expect(collapseNote(short)).toBe(boundNote(short));
   });
 
   it('caps at NOTE_MAX_LENGTH', () => {

@@ -254,6 +254,48 @@ function truncateToEncoded(text: string, maxEncoded: number): string {
 }
 
 /**
+ * Remove surrogate code units that are not part of a valid pair.
+ *
+ * `encodeURIComponent` throws `URIError` on any lone surrogate, and `render()` has no
+ * try/catch: one unpaired code unit anywhere in a note would throw on every keystroke from
+ * then on, freezing the preview and all three links at whatever they last held, with
+ * nothing on screen to say so. The truncation guard elsewhere in this module strips only a
+ * TRAILING HIGH surrogate, which is the half of the problem truncation itself creates.
+ *
+ * `Array.from` iterates by code point: a valid pair arrives as one two-unit string, a lone
+ * surrogate as a one-unit string in the surrogate range. That distinction is exactly the
+ * test, and it needs no lookbehind (unsupported in Safari before 16.4).
+ */
+function stripUnpairedSurrogates(text: string): string {
+  return Array.from(text)
+    .filter((ch) => !(ch.length === 1 && ch.charCodeAt(0) >= 0xd800 && ch.charCodeAt(0) <= 0xdfff))
+    .join('');
+}
+
+/**
+ * The tidying half of {@link boundNote}: unpaired surrogates and control characters out,
+ * whitespace runs collapsed, ends trimmed. No capping.
+ *
+ * Exported so a caller can tell TRUNCATION from TIDYING. The note field reports how much of
+ * what was typed will survive, and "typed 400, kept 166" is only honest if the comparison
+ * is against the collapsed text rather than the raw keystrokes — otherwise trimming a
+ * trailing space would read as losing a character.
+ */
+export function collapseNote(raw: string): string {
+  return (
+    stripUnpairedSurrogates(raw)
+      // Escapes, not literal bytes: a control-character class written literally is
+      // invisible in the source and reads as a stray paste. U+007F (DEL) is in the
+      // class too, along with C1 (U+0080-U+009F). C1 is the range a \x00-\x1F shorthand
+      // leaves out and the \s+ collapse below does not reach: U+0085 NEL in particular is
+      // a line break that neither rule saw, so it reached the composed body verbatim.
+      .replace(/[\u0000-\u001F\u007F-\u009F]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+  );
+}
+
+/**
  * Reduce a reader's note to one bounded, single-line string.
  *
  * Three rules, and the reasoning for each is in this module's header: collapse every
@@ -269,17 +311,10 @@ function truncateToEncoded(text: string, maxEncoded: number): string {
  * silently stopped. One character of a truncated note is the right thing to lose.
  */
 export function boundNote(raw: string): string {
-  const collapsed = raw
-    // Escapes, not literal bytes: a control-character class written literally is
-    // invisible in the source and reads as a stray paste. U+007F (DEL) is in the
-    // class too, which a \x00-\x1F shorthand leaves out.
-    .replace(/[\u0000-\u001F\u007F]/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
   // Both caps, because they bind on different inputs. The character cap is what the
   // textarea counts down for the reader and is the binding one for Latin text; the
   // encoded cap is what keeps the URL deliverable and binds on everything else.
-  return truncateToEncoded(collapsed.slice(0, NOTE_MAX_LENGTH), NOTE_MAX_ENCODED).replace(
+  return truncateToEncoded(collapseNote(raw).slice(0, NOTE_MAX_LENGTH), NOTE_MAX_ENCODED).replace(
     /[\uD800-\uDBFF]$/,
     '',
   );

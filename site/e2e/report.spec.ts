@@ -437,6 +437,78 @@ test('every step of the composer is free of axe violations', async ({ page }) =>
   await scan('step 2 with a validation error');
 });
 
+test('the controls the script builds are actually styled', async ({ page }) => {
+  // Astro compiles a scoped selector to `.rc-opt:where(.astro-HASH)` and stamps that hash
+  // class onto TEMPLATE elements only. Nothing puts it on a node from
+  // `document.createElement`, and the hash is generated per build, so the script could not
+  // add it if it tried. The rules therefore compiled, shipped, and matched nothing: the
+  // radio list lost its padding, its selected highlight and its focus ring, the selects and
+  // textarea fell back to browser defaults, and the DOI error rendered in body-text colour
+  // instead of --caail-danger.
+  //
+  // Asserted on COMPUTED STYLE of elements the script builds, because that is the only
+  // thing that tells a rule which matched from one which merely exists. Nothing else in
+  // this file would have failed.
+  await page.goto('./report/?item=paper:214');
+  await expect(page.locator(COMPOSER)).toBeVisible();
+
+  const option = page.locator('#caail-compose-reasons .rc-opt').first();
+  await expect(option).toBeVisible();
+  const optionStyle = await option.evaluate((el) => {
+    const s = getComputedStyle(el);
+    return { display: s.display, padding: s.paddingLeft, radius: s.borderTopLeftRadius };
+  });
+  expect(optionStyle.display).toBe('flex');
+  expect(parseFloat(optionStyle.padding)).toBeGreaterThan(0);
+  expect(parseFloat(optionStyle.radius)).toBeGreaterThan(0);
+
+  // The hint sits on its own line under the label, rather than running on after it.
+  const hint = page.locator('#caail-compose-reasons .rc-opt-hint').first();
+  expect(await hint.evaluate((el) => getComputedStyle(el).display)).toBe('block');
+  const label = page.locator('#caail-compose-reasons .rc-opt-label').first();
+  expect(
+    parseInt(await label.evaluate((el) => getComputedStyle(el).fontWeight), 10),
+  ).toBeGreaterThan(400);
+
+  // Selecting one gives visible feedback.
+  await page.getByRole('radio', { name: /^Wrong matrix placement/ }).check();
+  const checkedBorder = await option.evaluate((el) => getComputedStyle(el).borderTopColor);
+  expect(checkedBorder).not.toBe('rgba(0, 0, 0, 0)');
+
+  // And the step-2 field wrapper and its select are styled too.
+  await page.locator(NEXT).click();
+  const field = page.locator('#caail-compose-fields .rc-field').first();
+  expect(await field.evaluate((el) => getComputedStyle(el).flexDirection)).toBe('column');
+  const select = page.getByLabel('AI/ML method it should be');
+  expect(
+    parseFloat(await select.evaluate((el) => getComputedStyle(el).borderTopLeftRadius)),
+  ).toBeGreaterThan(0);
+});
+
+test('the DOI error renders in the danger colour, not body text', async ({ page }) => {
+  // The span is built by the script, so `.rc-err` only reaches it via the global form. The
+  // dark-theme axe scan cannot catch this: unstyled body text has fine contrast, so losing
+  // the colour makes the page MORE accessible by that measure and less legible in fact.
+  await page.goto('./report/?item=paper:214');
+  await chooseReason(page, 'Wrong or missing DOI');
+  await page.getByLabel('The DOI it should have').fill('nope');
+
+  const error = page.locator('#caail-f-doi-err');
+  await expect(error).not.toHaveText('');
+
+  // Compared against the TEMPLATE error rather than against a literal colour. Both carry
+  // `.rc-err`, so they must render identically; the scoping bug is precisely the case where
+  // one does and the other silently does not. A literal would also have to be written in
+  // whatever form the browser serialises `oklch()` into, which is a hostage to fortune.
+  const [built, template, body] = await Promise.all([
+    error.evaluate((el) => getComputedStyle(el).color),
+    page.locator('#caail-compose-error').evaluate((el) => getComputedStyle(el).color),
+    page.locator('.rc-lede').evaluate((el) => getComputedStyle(el).color),
+  ]);
+  expect(built).toBe(template);
+  expect(built).not.toBe(body);
+});
+
 test('the composer is axe-clean on the DARK theme, error messages included', async ({ page }) => {
   // The gap this closes: every other axe scan here runs on the default light scheme, and
   // the palette inverts by lightness, so a colour that passes on white can fail on the

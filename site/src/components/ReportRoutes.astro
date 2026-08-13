@@ -278,11 +278,15 @@ const vocabJson = JSON.stringify(vocabularies).replace(/</g, '\\u003c');
 
 <script>
   import { isItemId, correctionIssueUrl, correctionMailto } from '../lib/report';
-  // Only what this file calls. `boundNote` and `normaliseDoi` are deliberately NOT
-  // imported: composeBody applies both itself, and importing them here would invite a
-  // second, differently-bounded copy of the same rule at the point of input.
+  // Only what this file calls. `boundNote` and `collapseNote` are used for ONE purpose:
+  // telling the reader how much of a note survives. They are never used to pre-bound a
+  // value before composing, because composeBody applies them itself and a second, slightly
+  // different bounding at the point of input is how the two would drift.
+  // `normaliseDoi` stays out for the same reason: composeBody normalises.
   import {
     NOTE_MAX_LENGTH,
+    boundNote,
+    collapseNote,
     composeBody,
     isDoiShape,
     type CorrectionAnswers,
@@ -664,7 +668,22 @@ const vocabJson = JSON.stringify(vocabularies).replace(/</g, '\\u003c');
       count.className = 'rc-help';
       count.id = 'caail-f-note-count';
       const paint = () => {
-        count.textContent = `${area.value.length} of ${NOTE_MAX_LENGTH} characters`;
+        // Reports what SURVIVES, not what was typed. `NOTE_MAX_LENGTH` counts characters
+        // while `boundNote` also caps encoded length, and a character outside Basic Latin
+        // costs three to nine encoded, so a reader typing 400 Chinese characters saw
+        // "400 of 400" while about 166 reached the report. Silently losing two thirds of
+        // someone's only free-text answer is the failure the review step's dropped notice
+        // exists to prevent, one field over.
+        //
+        // Compared against the COLLAPSED text, not the raw keystrokes: whitespace tidying
+        // shortens the string too, and reporting that as loss would fire on a trailing
+        // space.
+        const collapsed = collapseNote(area.value);
+        const kept = boundNote(area.value);
+        count.textContent =
+          kept.length < collapsed.length
+            ? `${collapsed.length} characters, of which ${kept.length} fit in the report`
+            : `${collapsed.length} of ${NOTE_MAX_LENGTH} characters`;
       };
       paint();
 
@@ -714,6 +733,10 @@ const vocabJson = JSON.stringify(vocabularies).replace(/</g, '\\u003c');
       // Focus moves only on a deliberate step change, never on the first paint: stealing
       // focus on load would drop a keyboard reader into the middle of the page.
       if (moveFocus && node) node.focus();
+
+      // The review step's notice is written while its panel is still hidden, so it has to
+      // be re-posted once the panel is actually on screen or it is never announced.
+      if (moveFocus && step === 'review') announceDropped();
     }
 
     function go(delta: 1 | -1) {
@@ -721,6 +744,44 @@ const vocabJson = JSON.stringify(vocabularies).replace(/</g, '\\u003c');
       const index = steps.indexOf(current);
       const next = steps[index + delta];
       if (next) show(next, true);
+    }
+
+    /**
+     * What the reader answered that the composer could not use, if anything.
+     *
+     * Only the DOI can reach this by ordinary use. An out-of-vocabulary select value is
+     * dropped by composeBody the same way, but getting one requires editing the DOM, and a
+     * reader who has done that does not need telling.
+     *
+     * Deliberately NOT a block on Next. Refusing to advance would trap a reader who cannot
+     * find the DOI and typed something wrong: the way out would be to work out that
+     * emptying the field is allowed. Saying what happened and letting them send it is the
+     * honest version, and an incomplete report still beats no report.
+     */
+    function droppedMessage(): string {
+      const typed = (answers.doi ?? '').trim();
+      return answers.reason?.kind === 'doi' && typed !== '' && !isDoiShape(typed)
+        ? 'What you typed is not shaped like a DOI, so it is not in the report below. Go back to change it, or send the report as it stands.'
+        : '';
+    }
+
+    /**
+     * Re-post the dropped-answer notice as the review step becomes visible.
+     *
+     * `role="status"` announces on a content change, and `render()` writes this message
+     * while the reader is still on the DETAIL step, inside a panel that is `hidden`. A
+     * change inside a hidden subtree announces nothing, and revealing the panel is not
+     * itself a change — so the notice appeared on screen having never been spoken. Writing
+     * it again at the moment the panel is shown is the change that announces it.
+     */
+    function announceDropped() {
+      const region = el.dropped;
+      const message = droppedMessage();
+      if (!region || !message) return;
+      region.textContent = '';
+      window.setTimeout(() => {
+        region.textContent = message;
+      }, 60);
     }
 
     // ── live output ───────────────────────────────────────────────────────────
@@ -741,21 +802,7 @@ const vocabJson = JSON.stringify(vocabularies).replace(/</g, '\\u003c');
       if (mail) mail.href = correctionMailto(itemId, composed);
       if (el.submit) el.submit.href = correctionIssueUrl(itemId, composed);
 
-      if (el.dropped) {
-        // Only the DOI can reach this by ordinary use. An out-of-vocabulary select value
-        // is dropped by composeBody the same way, but getting one requires editing the
-        // DOM, and a reader who has done that does not need telling.
-        //
-        // Deliberately NOT a block on Next. Refusing to advance would trap a reader who
-        // cannot find the DOI and typed something wrong: the way out would be to work out
-        // that emptying the field is allowed. Saying what happened and letting them send
-        // it is the honest version, and an incomplete report still beats no report.
-        const typed = (answers.doi ?? '').trim();
-        el.dropped.textContent =
-          answers.reason?.kind === 'doi' && typed !== '' && !isDoiShape(typed)
-            ? 'What you typed is not shaped like a DOI, so it is not in the report below. Go back to change it, or send the report as it stands.'
-            : '';
-      }
+      if (el.dropped) el.dropped.textContent = droppedMessage();
 
       if (el.dropdownNote) {
         // `value`, not `label`: this tells the reader which entry to find in a dropdown,
@@ -1018,7 +1065,25 @@ const vocabJson = JSON.stringify(vocabularies).replace(/</g, '\\u003c');
     display: flex;
     flex-direction: column;
   }
-  .rc-opt {
+
+  /* ── EVERY RULE BELOW TARGETS AN ELEMENT THE SCRIPT CREATES ────────────────
+     and so must be `:global()`. Astro compiles a scoped selector to
+     `.rc-opt:where(.astro-HASH)` and stamps that hash class onto elements IN THE
+     TEMPLATE only. Nothing adds it to a node built with `document.createElement`,
+     and the hash is generated per build so the script could not add it anyway.
+
+     The failure is silent and total: the rule compiles, ships, matches nothing.
+     The composer's radio list lost its padding, its selected-state highlight and
+     its focus ring; the hint ran on after the label instead of onto its own line;
+     the selects, the DOI input and the note textarea fell back to browser
+     defaults; and the DOI error rendered in body-text colour rather than
+     `--caail-danger`. That last one is also why the dark-theme axe scan passed on
+     it: unstyled body text has fine contrast.
+
+     Scoped under `.rc` — a template element, so it keeps its hash — which bounds
+     these to this component exactly as the scoping would have. */
+
+  .rc :global(.rc-opt) {
     display: flex;
     gap: 0.6rem;
     align-items: flex-start;
@@ -1027,29 +1092,28 @@ const vocabJson = JSON.stringify(vocabularies).replace(/</g, '\\u003c');
     border-radius: 0.45rem;
     cursor: pointer;
   }
-  .rc-opt:hover {
+  .rc :global(.rc-opt:hover) {
     background: var(--caail-surface);
   }
-  .rc-opt:has(input:checked) {
+  .rc :global(.rc-opt:has(input:checked)) {
     background: var(--caail-surface);
     border-color: var(--caail-link);
   }
-  .rc-opt:has(input:focus-visible) {
+  .rc :global(.rc-opt:has(input:focus-visible)) {
     outline: 2px solid var(--caail-link);
     outline-offset: 2px;
   }
-  .rc-opt input {
+  .rc :global(.rc-opt input) {
     flex: none;
     margin-top: 0.35rem;
     accent-color: var(--caail-link);
   }
-  /* The class existed with no rule, so the error class and its explanation were told apart
-     only by the hint being smaller and muted. The name of the thing you are choosing should
-     carry the weight. */
-  .rc-opt-label {
+  /* The name of the thing you are choosing should carry the weight; without this the
+     error class and its explanation differ only by the hint being smaller and muted. */
+  .rc :global(.rc-opt-label) {
     font-weight: 500;
   }
-  .rc-opt-hint {
+  .rc :global(.rc-opt-hint) {
     display: block;
     font-size: 0.875rem;
     color: var(--caail-muted);
@@ -1060,19 +1124,19 @@ const vocabJson = JSON.stringify(vocabularies).replace(/</g, '\\u003c');
     flex-wrap: wrap;
     gap: 1rem;
   }
-  .rc-field {
+  .rc :global(.rc-field) {
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
     flex: 1 1 16rem;
   }
-  .rc-field > label {
+  .rc :global(.rc-field > label) {
     font-size: 0.875rem;
     color: var(--caail-muted);
   }
-  .rc select,
-  .rc input[type='text'],
-  .rc textarea {
+  .rc :global(select),
+  .rc :global(input[type='text']),
+  .rc :global(textarea) {
     font: inherit;
     font-size: 0.95rem;
     padding: 0.4rem 0.5rem;
@@ -1082,21 +1146,24 @@ const vocabJson = JSON.stringify(vocabularies).replace(/</g, '\\u003c');
     border-radius: 0.4rem;
     width: 100%;
   }
-  .rc textarea {
+  .rc :global(textarea) {
     resize: vertical;
   }
-  .rc-help {
+  .rc :global(.rc-help) {
     font-size: 0.8rem;
     color: var(--caail-muted);
   }
-  /* No literal fallback. A `var(--x, #hardcoded)` fallback silently becomes the real
-     value if the token is ever missing, and a red picked for a white background is the
-     one that fails on the dark one. If the token goes away this should look broken. */
-  .rc-err {
+  /* Global too, and one rule for both: `#caail-compose-error` is in the template while
+     the DOI error span is built by the script, and only the global form reaches both.
+
+     No literal fallback on the token. A `var(--x, #hardcoded)` fallback silently becomes
+     the real value if the token is ever missing, and a red picked for a white background
+     is the one that fails on the dark one. If the token goes away this should look broken. */
+  .rc :global(.rc-err) {
     font-size: 0.875rem;
     color: var(--caail-danger);
   }
-  .rc-err:empty {
+  .rc :global(.rc-err:empty) {
     display: none;
   }
 
