@@ -20,6 +20,17 @@ the ones CAAIL does not hold anywhere. That is the input to a curation decision,
 not the decision: this cannot say whether an accession belongs in the inventory,
 only that the paper names it and the repo does not mention it.
 
+Two things decide whether an accession is a deposit or reused data, and the tool
+says which one decided each. `fetch_accession_citations.py` asks the registry
+whether the record cites this paper, which is a fact about the record. Where the
+registry is silent or does not cover it, a heuristic reads the sentence around
+the accession, which is a guess. Registry evidence always wins.
+
+Half the corpus turns out to be reused data (73 of 145 measured on 2026-08-12),
+which is why the distinction is load-bearing rather than pedantic: an early
+version of this reported every absent accession as a gap in CAAIL's inventory,
+and most of that number was papers' bibliographies.
+
 Stdlib only. Reads the gitignored docling-corpus/ written by docling_ingest.py.
 """
 import argparse
@@ -125,7 +136,24 @@ def main():
     ap.add_argument("--orphans", action="store_true",
                     help="also check each declared accession against the repo")
     ap.add_argument("--json", default="")
+    ap.add_argument("--citations",
+                    default=str(REPO / "docling-corpus/accession-citations.json"),
+                    help="fetch_accession_citations.py output. When present its "
+                         "verdicts override the sentence heuristic, because the "
+                         "registry knows and the sentence only hints.")
     args = ap.parse_args()
+
+    # Registry evidence, if it has been fetched. An accession whose GEO/SRA
+    # record cites this paper is a deposit; one whose record cites a different
+    # paper is data the authors reused. That is a fact about the record rather
+    # than a reading of a sentence, so it wins wherever it exists.
+    cites = {}
+    cp = Path(args.citations)
+    if cp.is_file():
+        try:
+            cites = json.loads(cp.read_text())
+        except ValueError:
+            cites = {}
 
     sec_dir = Path(args.corpus) / "sections"
     paths = sorted(sec_dir.glob("ref-*.json"), key=lambda x: int(x.stem.split("-")[1]))
@@ -151,6 +179,15 @@ def main():
         repos = sorted({m.group(1).rstrip(".,);")
                         for a in d.get("availability", [])
                         for m in GITHUB_RE.finditer(a["text"])})
+        for tok, meta in declared.items():
+            v = cites.get(tok, {})
+            meta["source_of_kind"] = "sentence"
+            if v.get("verdict") in ("deposit", "reuse"):
+                meta["kind"] = v["verdict"]
+                meta["source_of_kind"] = "registry"
+            elif v.get("verdict") == "no-linked-citation":
+                meta["source_of_kind"] = "registry-silent"
+
         if declared or repos:
             rows.append({
                 "id": d["id"],
@@ -180,13 +217,22 @@ def main():
     print("  called deposits.")
 
     by_kind = Counter(v["kind"] for r in rows for v in r["accessions"].values())
-    print("\nby kind (heuristic, from the language around the accession):")
+    by_evi = Counter(v.get("source_of_kind", "sentence")
+                     for r in rows for v in r["accessions"].values())
+    print("\nby kind:")
     for kind in ("deposit", "reuse", "unclear"):
         print(f"  {by_kind.get(kind, 0):>4}  {kind}")
-    print("  'unclear' dominates and is left dominating on purpose. Most papers")
-    print("  state an accession without saying in that sentence whether they made")
-    print("  it, and guessing would produce a confident wrong answer where the")
-    print("  honest one is that a human has to look.")
+    print("\nwhat decided the kind:")
+    for src, k in by_evi.most_common():
+        print(f"  {k:>4}  {src}")
+    if not cites:
+        print("  No registry evidence loaded. Run fetch_accession_citations.py to")
+        print("  replace the sentence guess with what the record actually says.")
+    else:
+        print("  'registry' means the record's own citation settled it. 'sentence'")
+        print("  means it did not, and the reading of the surrounding text stands.")
+        print("  'registry-silent' means the record links no paper at all, which is")
+        print("  common for recent deposits and is not evidence either way.")
 
     if args.orphans:
         print("\n--- DEPOSITS the paper announces that the repo does not mention ---")
