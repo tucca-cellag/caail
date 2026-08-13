@@ -19,5 +19,17 @@ export default defineConfig({
       '../workers/*/src/**/*.test.ts',
     ],
     environment: 'node',
+    // After a red run, name any failing file that is on the known-unreliable register
+    // and print the control that separates its condition from a real defect. Silent on
+    // a green run and on a red run with no registered failure, so seeing the block is
+    // itself the signal. See scripts/test-reliability/register.ts.
+    //
+    // `--reporter` on the command line REPLACES this list rather than adding to it, so
+    // `vitest run --reporter=dot` runs without the register. Vitest has no "extra
+    // reporter" option, so this cannot be defended in config. It is stated here rather
+    // than left to be rediscovered, because a guard that is silently off while
+    // appearing to be on is the failure this whole register is about. CI runs bare
+    // `pnpm --dir site test`, so CI is covered.
+    reporters: ['default', './scripts/test-reliability/vitest-reporter.ts'],
   },
 });
