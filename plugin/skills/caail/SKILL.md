@@ -32,13 +32,22 @@ https://tucca-cellag.github.io/caail/api/ if you want to read one in a browser.
 | "What should I use for <cell-ag task>?" | https://raw.githubusercontent.com/tucca-cellag/caail/main/site/public/api/topics.json — the inverted index maps a subject to papers, software, databases **and** datasets at once |
 | "What AI methods have been applied to <area>?" | https://raw.githubusercontent.com/tucca-cellag/caail/main/site/public/api/matrix.json |
 | "Has anyone applied <method> to <area>?" | https://raw.githubusercontent.com/tucca-cellag/caail/main/site/public/api/matrix.json — then read the caveat below |
-| "Find me papers on X" | https://raw.githubusercontent.com/tucca-cellag/caail/main/site/public/api/papers.json |
-| "What software / databases exist for X?" | https://raw.githubusercontent.com/tucca-cellag/caail/main/site/public/api/catalog.json |
+| "Find me papers on X" | https://raw.githubusercontent.com/tucca-cellag/caail/main/site/public/api/papers-index.json — one compact row per reference across every section. Then fetch `papers.json` for the full records you picked |
+| "What software / databases exist for X?" | https://raw.githubusercontent.com/tucca-cellag/caail/main/site/public/api/catalog-index.json — one compact row per tool and database. Then fetch `catalog.json` for the summaries you want |
 | "What data exists for <species>?" | https://raw.githubusercontent.com/tucca-cellag/caail/main/site/public/api/datasets.json — two arrays: `entries` are curated portals and atlases, `inventory` are the per-study deposits. Filter either by `page` |
 | "What does CAAIL mean by <method or area>?" | https://raw.githubusercontent.com/tucca-cellag/caail/main/site/public/api/taxonomy.json — read before trusting or disputing a placement |
 
 The papers endpoint carries DOI, code URL, data URL, topics, license and citation count per entry, so
 you can usually answer without fetching anything else.
+
+**Fetch the `-index` file first, and treat a "not found" from a big one with suspicion.** `papers.json`
+is ~554 KB and `catalog.json` ~576 KB. Both are complete and correct, and both are past what a fetch
+tool that renders a page to text and summarises it will carry. That failure is silent: it does not
+error, it answers confidently from the fragment it kept. Measured, on this corpus: "No matches found"
+for terms that are in it, and "Total database entries: 0" against 150. The `-index` files are a sixth
+and a tenth the size and carry every item, so enumerate there and fetch a full record only once you
+know which one you want. If you only have a summarising fetch, an absence you saw in `papers.json` or
+`catalog.json` is not evidence of anything.
 
 For "what could I combine my own run with", read `inventory`, not `entries`. The curated entries are
 portals, atlases and model files; the inventory rows are the individual deposits, each carrying its
@@ -66,6 +75,27 @@ Correct: *"CAAIL indexes no paper applying graph neural networks to scaffolding 
 That is a gap in this curated corpus, not established absence in the literature."*
 
 Wrong: *"Nobody has applied graph neural networks to scaffolding."*
+
+## The one thing to get right, second half
+
+The caveat above is about an EMPTY cell. This one is about the matrix's silence, and it is the
+mistake that actually gets made.
+
+**Only the References section is matrix-eligible.** Reviews, perspectives and the four reference-work
+sections carry no method and no area, so they appear in `matrix.json` nowhere, however directly they
+answer a question. A reference can be indexed, on point, and invisible to every matrix query you run.
+
+This is not hypothetical. Asked what work couples a genome-scale metabolic model to a media design
+loop, three separate attempts — two of them by this library's own maintainers, with the whole
+repository open in front of them — concluded that CAAIL indexes none. It indexes exactly that paper:
+a genome-scale model-guided strategy for rational media design in cultivated pork, with experimental
+validation. It sits in a reference-work section, so it has no cell, and every search of the matrix
+missed it.
+
+So before you report that CAAIL contains no work on something: search `papers-index.json`, which
+covers every section and shows `methods: []` and `areas: []` on exactly these references, or use the
+subject index in `topics.json`. The matrix answers "what has been placed where". It does not answer
+"what is indexed".
 
 ## Counting
 
