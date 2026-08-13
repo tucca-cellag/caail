@@ -49,6 +49,25 @@ module load miniforge
 # directory is not on conda's search path in a non-interactive shell.
 source activate "$CAAIL_ENV_DIR"
 
+# Give each task its own scratch, and keep it off node-local /tmp.
+#
+# Torch's inductor backend JIT-compiles kernels and writes them under TMPDIR.
+# Node-local /tmp is small and shared with every other job on the box, so a
+# long document can exhaust it mid-conversion. The failure is worth describing
+# because it does not look like a disk problem: docling reports
+# `ConversionError`, and the actual cause -- `fatal error: ... header.i: No
+# space left on device` -- sits under roughly two thousand lines of dynamo
+# traceback. One 39-page document failed this way after seven minutes while
+# every shorter document on the same array succeeded, which reads as "that PDF
+# is broken" rather than "that node was full".
+TASK_SCRATCH="$CAAIL_OUT_DIR/tmp/${SLURM_ARRAY_JOB_ID:-$SLURM_JOB_ID}_${SLURM_ARRAY_TASK_ID:-0}"
+mkdir -p "$TASK_SCRATCH"
+export TMPDIR="$TASK_SCRATCH"
+export TORCHINDUCTOR_CACHE_DIR="$TASK_SCRATCH/inductor"
+# Self-cleaning: the compiled kernels are worthless once the task ends, and a
+# per-task directory left behind on a shared volume is the same problem moved.
+trap 'rm -rf "$TASK_SCRATCH"' EXIT
+
 srun python "$CAAIL_HPC_DIR/convert_one.py" \
   --pdf "$CAAIL_PDF_DIR/ref-${REF}.pdf" \
   --ref "$REF" \
