@@ -248,19 +248,23 @@ export const NOTE_INPUT_MAX_LENGTH = NOTE_MAX_LENGTH * 2;
  * page is complete.
  *
  * Budget: the whole mailto must clear {@link MAILTO_MAX_URL} with room to spare. The fixed
- * overhead is larger than it looks, which an earlier version of this comment got wrong by
- * guessing at it: the longest committed item id is 101 characters and appears in BOTH the
- * subject and the `Entry:` line, and the longest reason label is 71. Measured rather than
- * estimated, that overhead is 176 encoded characters, so a note at 1,500 put the worst-case
- * URL at 1,908 — inside the limit, but with 140 characters of headroom rather than the
- * ~250 the old figure implied.
+ * overhead is larger than it looks — the longest committed item id appears in BOTH the
+ * subject and the `Entry:` line, so it is paid twice — and 1,400 leaves the worst real case
+ * a few hundred characters clear of a limit that is itself a conservative reading of what
+ * mail clients do.
  *
- * 1,400 restores the margin. It costs a Chinese note about eleven characters and buys back
- * a hundred against a limit that is itself a conservative reading of what mail clients do.
+ * NO ARITHMETIC IS WRITTEN OUT HERE, and that is the point of this paragraph rather than an
+ * omission. It used to carry the overhead, the worst-case total and the headroom as three
+ * measured figures, under a sentence boasting they were "measured rather than estimated"
+ * after an earlier version had guessed. All three went stale anyway: two of them drifted as
+ * the corpus moved, and the third — the longest reason label — was invalidated in this very
+ * branch by a template edit that shortened it from 71 characters to 41, several commits
+ * before anyone noticed the comment still said 71. A figure that has to be re-measured by
+ * hand every time the data moves is the defect this repo names as its most expensive, and
+ * writing "measured" next to it buys nothing.
  *
- * These figures are a snapshot; `report-compose.test.ts` derives the real worst case from
- * the committed ids and the live template and fails if it stops fitting, so the numbers
- * here are commentary and the test is the guarantee.
+ * `report-compose.test.ts` derives the real worst case from the committed ids and the live
+ * template on every run and fails if it stops fitting. Run it for the numbers.
  */
 export const NOTE_MAX_ENCODED = 1400;
 

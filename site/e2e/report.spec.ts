@@ -824,6 +824,50 @@ test('changing the reason clears the answers that belonged to the old one', asyn
   await expect(page.locator(BODY)).toContainText('Problem: Wrong licence tier');
 });
 
+test('the review step tells the same story about a DOI as the field did', async ({ page }) => {
+  // The field splits its rejection two ways on purpose; the review step used to collapse
+  // both into "not shaped like a DOI". So a reader whose DOI was merely too long was told
+  // it was well formed on step 2 and malformed on step 3, about one unchanged string.
+  await page.goto('./report/?item=paper:214');
+  await chooseReason(page, 'Wrong or missing DOI');
+  const field = page.getByLabel('The DOI it should have');
+  const dropped = page.locator('#caail-compose-dropped');
+
+  await field.fill(`10.1234/${'提'.repeat(100)}`);
+  await expect(page.locator('#caail-f-doi-err')).toContainText('longer than any real DOI');
+  await page.locator(NEXT).click();
+  await expect(dropped).toContainText('longer than any real DOI');
+  await expect(dropped).not.toContainText('not shaped like');
+
+  // The malformed branch still reads as it did.
+  await page.locator(BACK).click();
+  await field.fill('not a doi');
+  await page.locator(NEXT).click();
+  await expect(dropped).toContainText('not shaped like a DOI');
+});
+
+test('a note the report could not carry whole is flagged on the review step', async ({ page }) => {
+  // boundNote caps encoded length as well as characters, and a CJK character costs three
+  // encoded — so 400 of them compose as 155. The note counter says so, and the counter is
+  // on step 2, which is not on screen here. Losing nearly two thirds of the reader's only
+  // free-text answer with nothing on the final step saying so is the exact failure this
+  // notice was added for, reached through the field it did not cover.
+  await page.goto('./report/?item=paper:214');
+  await chooseReason(page, 'Something else');
+  await page.getByLabel(/What is wrong with it/).fill('提'.repeat(400));
+  await page.locator(NEXT).click();
+
+  const dropped = page.locator('#caail-compose-dropped');
+  await expect(dropped).toBeVisible();
+  await expect(dropped).toContainText('longer than the report can carry');
+
+  // A note that fits entirely says nothing at all.
+  await page.locator(BACK).click();
+  await page.getByLabel(/What is wrong with it/).fill('The table lists 17 species, the summary says 12.');
+  await page.locator(NEXT).click();
+  await expect(dropped).toHaveText('');
+});
+
 test('a full note field says so, rather than losing a paste in silence', async ({ page }) => {
   // `maxLength` bounds the raw value while the counter measures the collapsed one, and
   // collapsing can shorten by any factor — so a whitespace-heavy paste gets cut by the

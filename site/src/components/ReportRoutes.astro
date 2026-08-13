@@ -329,12 +329,23 @@ const vocabJson = JSON.stringify(vocabularies).replace(/</g, '\\u003c');
   /**
    * What step 2 is called, per follow-up kind.
    *
-   * Keyed by the union, so a new kind fails to compile here rather than rendering a step
-   * with an empty heading. Declared ABOVE the call to startComposer below, not after it:
-   * `const` is in the temporal dead zone until its own line runs, and startComposer paints
-   * the first step synchronously. That only failed to throw because the first step has no
-   * reason yet and the lookup short-circuits, which is the kind of accident that stops
-   * being one the moment a reason is ever preselected.
+   * Keyed by the union so that a missing kind is a type error — but NOTHING TYPECHECKS THIS
+   * FILE, so read that as intent rather than as a guarantee. There is no `astro check` or
+   * `tsc` script, `astro build` strips types through esbuild without checking them, and CI
+   * runs vitest and Playwright only. This comment previously claimed the compile would
+   * fail; it would not.
+   *
+   * What does fail is the BUILD, one file over: `CorrectionReasonSchema.kind` in
+   * scripts/parser/types.ts is a `z.enum` over the same kinds, and generate-data.ts parses
+   * the emitted model through it. A ninth error class with a new follow-up kind therefore
+   * stops the build there. The fallback below is for the gap between the two — a kind added
+   * to the enum and forgotten here renders a generic heading rather than "undefined".
+   *
+   * Declared ABOVE the call to startComposer below, not after it: `const` is in the
+   * temporal dead zone until its own line runs, and startComposer paints the first step
+   * synchronously. That only failed to throw because the first step has no reason yet and
+   * the lookup short-circuits, which is the kind of accident that stops being one the
+   * moment a reason is ever preselected.
    */
   const DETAIL_HEADING: Record<FollowUpKind, string> = {
     matrix: 'Where it should sit',
@@ -630,6 +641,25 @@ const vocabJson = JSON.stringify(vocabularies).replace(/</g, '\\u003c');
       }
     }
 
+    /**
+     * Why a DOI was refused — or null when it is fine, or simply absent.
+     *
+     * ONE decision, read by both places that report it: the inline error under the field
+     * and the dropped-answer notice on the review step. They had made the call separately,
+     * and the review step collapsed both rejections into "not shaped like a DOI" — so a
+     * reader whose DOI was merely too long was told it was well formed on step 2 and
+     * malformed on step 3, about the same string. The field's own comment calls that
+     * "asserting something false to their face"; it was, one step later.
+     *
+     * The wordings stay separate on purpose. The field is terse and present-tense; the
+     * review step has to say where the answer went and what the reader can still do.
+     */
+    function doiRejection(raw: string): 'too-long' | 'malformed' | null {
+      const typed = raw.trim();
+      if (typed === '' || isDoiShape(typed)) return null;
+      return isDoiShapeIgnoringLength(typed) ? 'too-long' : 'malformed';
+    }
+
     function doiField(): HTMLElement {
       const wrap = document.createElement('div');
       wrap.className = 'rc-field';
@@ -667,22 +697,14 @@ const vocabJson = JSON.stringify(vocabularies).replace(/</g, '\\u003c');
 
       input.addEventListener('input', () => {
         answers.doi = input.value;
-        const typed = input.value.trim();
-        const ok = typed === '' || isDoiShape(typed);
-        // Two different rejections, two different messages. A DOI can also fail on encoded
-        // length, and telling a reader whose input plainly starts with 10. and has a slash
-        // that it does not is asserting something false to their face.
-        //
-        // The predicate is IMPORTED. This line used to carry its own copy of the shape
-        // regex, byte-identical to the library's and with nothing checking they stayed
-        // that way — see isDoiShapeIgnoringLength for what the drift would have done.
-        const tooLong = typed !== '' && !ok && isDoiShapeIgnoringLength(typed);
-        error.textContent = ok
-          ? ''
-          : tooLong
-            ? 'That is longer than any real DOI, so it is not in the report.'
-            : 'That does not look like a DOI. One starts with "10." and contains a slash.';
-        input.setAttribute('aria-invalid', ok ? 'false' : 'true');
+        const rejection = doiRejection(input.value);
+        error.textContent =
+          rejection === null
+            ? ''
+            : rejection === 'too-long'
+              ? 'That is longer than any real DOI, so it is not in the report.'
+              : 'That does not look like a DOI. One starts with "10." and contains a slash.';
+        input.setAttribute('aria-invalid', rejection === null ? 'false' : 'true');
         render();
       });
 
@@ -771,7 +793,9 @@ const vocabJson = JSON.stringify(vocabularies).replace(/</g, '\\u003c');
       const position = `Step ${index + 1} of ${steps.length}`;
       const titles: Record<StepName, string> = {
         reason: 'What is wrong with it?',
-        detail: answers.reason ? DETAIL_HEADING[answers.reason.kind] : '',
+        // `??` because this file is not typechecked (see DETAIL_HEADING): a kind added to
+        // the zod enum and forgotten here would otherwise render "Step 2 of 3: undefined".
+        detail: answers.reason ? (DETAIL_HEADING[answers.reason.kind] ?? 'More about it') : '',
         review: 'Your report',
       };
       const node = heading[step];
@@ -806,7 +830,8 @@ const vocabJson = JSON.stringify(vocabularies).replace(/</g, '\\u003c');
     /**
      * What the reader answered that the composer could not use, if anything.
      *
-     * Only the DOI can reach this by ordinary use. An out-of-vocabulary select value is
+     * The DOI and the note are what reach this by ordinary use — the DOI when it is refused
+     * outright, the note when only part of it fits. An out-of-vocabulary select value is
      * dropped by composeBody the same way, but getting one requires editing the DOM, and a
      * reader who has done that does not need telling.
      *
@@ -819,9 +844,33 @@ const vocabJson = JSON.stringify(vocabularies).replace(/</g, '\\u003c');
       const kind = answers.reason?.kind;
       if (!kind) return '';
 
-      const typed = (answers.doi ?? '').trim();
-      if (kind === 'doi' && typed !== '' && !isDoiShape(typed)) {
-        return 'What you typed is not shaped like a DOI, so it is not in the report below. Go back to change it, or send the report as it stands.';
+      // The SAME two-way split the field makes, from the same function, because saying
+      // "longer than any real DOI" on one step and "not shaped like a DOI" on the next —
+      // about one unchanged string — is worse than either message alone.
+      if (kind === 'doi') {
+        const rejection = doiRejection(answers.doi ?? '');
+        if (rejection === 'too-long') {
+          return 'What you typed is longer than any real DOI, so it is not in the report below. Go back to shorten it, or send the report as it stands.';
+        }
+        if (rejection === 'malformed') {
+          return 'What you typed is not shaped like a DOI, so it is not in the report below. Go back to change it, or send the report as it stands.';
+        }
+      }
+
+      // A note the report could not carry WHOLE. `boundNote` caps encoded length as well as
+      // characters, and a character outside Basic Latin costs three to nine encoded, so 400
+      // CJK characters compose as 155 — the reader loses nearly two thirds of their only
+      // free-text answer. The note counter says so on step 2, and step 2 is not on screen
+      // here. That is precisely the situation this notice exists for, described in the
+      // markup above as "the explanation is back on a step that is no longer on screen",
+      // reached through the other field. Only a PARTIAL loss lands here; an empty note is
+      // the unanswered case below.
+      if (kind === 'note') {
+        const kept = boundNote(answers.note ?? '');
+        const collapsed = collapseNote(answers.note ?? '');
+        if (kept.length > 0 && kept.length < collapsed.length) {
+          return `Your note is longer than the report can carry, so only its first ${kept.length} characters are below. Go back to shorten it, or send it as it stands.`;
+        }
       }
 
       // An UNANSWERED follow-up, which is a different thing from a dropped one and was the
