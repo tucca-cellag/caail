@@ -36,7 +36,8 @@ Run the helper from the repo (worktree) root: `bash .claude/skills/caail-pr-wrap
 ## Preconditions (stop if any fail)
 
 - **On a feature branch, never `main`.** Ideally a worktree created by `EnterWorktree` this session.
-- **Working tree clean.** Commit or stash first.
+- **Working tree clean.** Commit first. Stashing is fine for unrelated work in progress, but never for a
+  review fix: it clears the check while leaving the fix out of the diff (step 1, and the Gotchas row).
 - **The local gate is green.** Re-verify it now — don't ship on faith. With Node 22 (`source
   ~/.nvm/nvm.sh && nvm use 22`): `pnpm --dir site test`, and when the change touches `site/**` also
   `pnpm --dir site build` and `pnpm --dir site test:e2e` for the affected specs. A red gate means the
@@ -88,7 +89,7 @@ it at all. A level you think you raised but did not is the same silent failure a
 report this whole phase exists to compensate for.
 
 **The floor on rounds comes from blast radius.** When a diff spans shapes, the widest one wins, and CAAIL
-PRs span shapes routinely. **A diff that matches no row is a 2, never a 1** — the floor is two rounds for
+PRs span shapes routinely. **A diff that matches no row is a 2, never a 1.** Two rounds is the floor for
 anything, and a shape nobody thought to list is not evidence that a change is safe.
 
 | Diff shape | Rounds floor |
@@ -137,8 +138,14 @@ right.
 
 **When to stop.** Both conditions, not either:
 
-1. The **floor for the widest shape in the diff** has been reached.
-2. The **last round returned nothing you acted on.**
+1. The **floor for the widest shape in the diff** has been reached, judged against the diff **as it stands
+   now**, not as preflight found it at step 0. A fix can widen the shape and raise its own floor: a
+   prose-only PR whose round-1 fix edits `site/src/**` is a 3-round diff from that moment on. Re-check the
+   shape after each round's fixes land, since the mandated `preflight` re-run happens after the rounds have
+   already stopped and is therefore too late to tell you.
+2. The **last round returned no finding that was a defect in this diff.** Deferring real defects to Jira
+   does not satisfy this: "not acted on" and "not a defect" are different outcomes, and a round that
+   surfaces three genuine defects and tickets all three has not gone quiet, it has gone unaddressed.
 
 An empty round does not shorten the floor; it only ends the sequence once the floor is already met. So a
 prose diff whose round 1 is empty still gets round 2, and a site-code or guards diff still gets three.
@@ -156,16 +163,22 @@ checkpoint that used to sit between editing and shipping:
 
   | A round touched | Re-run |
   | --- | --- |
-  | `site/**`, `workers/**` | `pnpm --dir site test`, plus `build` / `test:e2e` for the affected specs |
+  | `site/**` | `pnpm --dir site test`. If any e2e spec is in scope, `build` **then** `test:e2e`, in that order and never one without the other: `test:e2e` is bare `playwright test`, so `webServer` serves whatever already sits in `site/dist` and a stale build passes green against code your fix never reached |
+  | `workers/**` | `pnpm --dir site test` (the Worker's suite runs inside it). Then **deploy the Worker by hand before step 2**, `pnpm --dir workers/events run deploy`: no workflow deploys it, so shipping the code does not ship the change, and pushing publishes a commit message describing behaviour that is not live yet |
   | the committed NDJSON or the curated DOI/license inputs | `pnpm --dir site db:check` **and** `db:verify`, then `db:emit` and confirm `git diff` is empty. Skipping the re-emit is how the Markdown drifts from the DB, and the first signal would be a red sync guard at step 5, after the push |
   | `check-public-publish.sh` | `python3 .claude/hooks/check-public-publish.test.py` |
   | `block-generated-edits.py` | `pnpm --dir site test`. Its only coverage is `site/scripts/db/hook.test.ts`, so the publish-hook suite above does **not** exercise it. The two hooks are tested in different places; the CI section below says so too |
   | `ship-pr.sh`, `check-ci-paths.py`, `.github/workflows/**` | `python3 .claude/skills/caail-pr-wrapup/check-ci-paths.py` |
   | canonical Markdown (`Datasets/**`, `Primers/**`, root `*.md`) | `pnpm --dir site test`, since `test.yml` and `docs.yml` both fire on these and a local run is the cheaper reader |
 
-  Note `pnpm --dir site build` rewrites tracked files under `site/public/api/`, so running it can dirty
-  the tree. That is expected; commit or discard before the push rather than being surprised by the
-  clean-tree refusal.
+  Note `pnpm --dir site build` rewrites tracked files under `site/public/api/`, so running it can dirty the
+  tree. **Do not reflexively discard that.** Those files are real output: if your fix changed anything the
+  parser reads, the new API JSON *is* part of the fix and must be committed with it. Discarding it ships a
+  stale endpoint, and nothing catches that, because `lint-papers.yml`'s API sync guard does not fire on
+  `site/src/**`, yet `site/src/lib/**` is imported by the parser, so a fix there can change the served
+  output while leaving the guard silent. The test: re-run `build` from a clean tree at the commit before
+  your fix. Whatever still differs is output your change caused; commit it. Only churn that reproduces
+  identically either way is safe to discard.
 - **Commit the fixes, then re-run `preflight`.** A fix left uncommitted does not ship, and the failure is
   silent in both directions: the tree you reviewed still looks correct, and the PR body truthfully says
   the finding was fixed. `preflight` is the dirty-tree check and it ran at step 0, before these edits
@@ -185,11 +198,13 @@ checkpoint that used to sit between editing and shipping:
 - **A guard added while fixing a finding is not trusted until it has been seen failing on that defect**
   (`CAAIL-221`). A test written only against fixed code proves the code passes the test, which is not the
   claim you need. **Commit the fix and the guard first**, then reproduce the defect on top of the commit,
-  run the guard, confirm it fails **with a message naming the real problem**, and `git restore` back to
-  the committed state. Do it in that order: at this point in step 1 the fix usually exists only in the
-  working tree, and the obvious way to "restore the broken state" is a `git checkout --` that destroys it
-  with nothing to restore from. If you must stay uncommitted, `git stash -u` (plain `git stash` leaves new
-  files behind) and restore explicitly. Then say in the PR body that the guard was seen failing.
+  run the guard, confirm it fails **with a message naming the real problem**, then get back to the committed
+  state with `git restore --source=HEAD --staged --worktree :/`. Use that exact form: bare `git restore` is
+  a fatal error (it demands paths), `git checkout --` on an uncommitted fix destroys it with nothing to
+  restore from, and `git reset --hard` / `git checkout .` are both denied by
+  `hooks/check-dangerous-git.sh`. It restores tracked files but leaves anything new you made while
+  reproducing the defect, so finish with `git clean -n` and remove what it lists. Committing first is what
+  makes all of this safe. Then say in the PR body that the guard was seen failing.
 
 #### Why this is more than one pass, and why that is provisional
 
