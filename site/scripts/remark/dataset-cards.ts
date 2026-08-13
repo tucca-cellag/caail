@@ -24,6 +24,7 @@ import { chipStyle } from '../../src/lib/theme-colors.ts';
 import { compactCount, citationTitle, openAlexWorksUrl } from '../../src/lib/citation-format.ts';
 import { isItemId, reportHref } from '../../src/lib/report.ts';
 import { entryHeadingDepth, isEntryHeading } from '../parser/datasets.ts';
+import { catalogNameKey } from '../parser/topics.ts';
 
 export interface DatasetCardEntry {
   /** Frozen `ds:` id — what the card's report link carries. */
@@ -95,9 +96,14 @@ function citationBadgeHtml(entry: DatasetCardEntry): string {
  *  Uses the shared report helpers so the route and the id grammar can't drift. */
 function reportLinkHtml(entry: DatasetCardEntry): string {
   if (!isItemId(entry.id)) return '';
+  // Dataset names are markdown-preserving, and an accessible name is read aloud rather
+  // than rendered: 8 of the 62 curated entries would otherwise have a screen reader
+  // announce their emphasis markers ("iES1300 — *Gallus gallus* (chicken)"). The heading
+  // beside it renders the markdown properly, so this is the only surface that leaks it.
+  // catalogNameKey is the flattening the topic join already uses.
   return (
     `<a class="report-link" href="${esc(reportHref(BASE, entry.id))}" ` +
-    `aria-label="Report an issue with ${esc(entry.name)}" ` +
+    `aria-label="Report an issue with ${esc(catalogNameKey(entry.name))}" ` +
     `title="Report an issue with this entry (${esc(entry.id)})" ` +
     // Chrome, not content — keeps the repeated phrase out of the Pagefind index.
     `data-pagefind-ignore>Report an issue</a>`

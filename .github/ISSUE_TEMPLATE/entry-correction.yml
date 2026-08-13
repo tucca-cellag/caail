@@ -64,7 +64,7 @@ body:
       options:
         - label: I understand this issue is public, and that anything I write here is world-readable and permanently archived.
           required: true
-        - label: I understand that contributions to this repository are licensed under CC BY 4.0.
+        - label: I understand that contributions to this repository are licensed under the MIT License.
           required: true
 
   - type: markdown

@@ -142,25 +142,30 @@ test('the report link does not stretch the badges it sits beside', async ({ page
 });
 
 test('the report link trails its meta row whether or not a citation badge precedes it', async ({ page }) => {
-  // `space-between` separates two or more children and does nothing for one, so on the
-  // cards with no citation badge the link would sit flush left and its position would
-  // alternate down the grid. Both cases are checked because only one of them regressed.
+  // `space-between` separates two or more children and does nothing for one, so on a card
+  // with no citation badge the link would sit flush left and its position would alternate
+  // down the grid.
+  //
+  // The badge-less case is produced by REMOVING a badge rather than by finding a card that
+  // lacks one. DOI backfill is an ongoing curation task, so the day it finishes, a spec
+  // that required a badge-less card would go red on a data commit touching no code — and
+  // would report a layout problem that does not exist.
   await page.goto('./software/');
   await awaitHydrated(page, 'CatalogBrowser');
-  const offsets = await page.locator('.cb-card .cb-meta').evaluateAll((rows) =>
-    rows.map((row) => {
-      const link = row.querySelector('.report-link');
-      if (!link) return null;
-      return {
-        withBadge: row.querySelector('.cite-badge') !== null,
-        gap: row.getBoundingClientRect().right - link.getBoundingClientRect().right,
-      };
-    }).filter((o): o is { withBadge: boolean; gap: number } => o !== null),
-  );
-  expect(offsets.some((o) => o.withBadge)).toBe(true);
-  expect(offsets.some((o) => !o.withBadge)).toBe(true);
-  // Every link ends flush with the row's right edge, in both populations.
-  for (const o of offsets) expect(Math.abs(o.gap)).toBeLessThan(1);
+  const gaps = await page.locator('.cb-card .cb-meta').evaluateAll((rows) => {
+    const trailingGap = (row: Element) => {
+      const link = row.querySelector('.report-link')!;
+      return row.getBoundingClientRect().right - link.getBoundingClientRect().right;
+    };
+    const withBadge = rows.find((r) => r.querySelector('.cite-badge') && r.querySelector('.report-link'));
+    if (!withBadge) return null;
+    const before = trailingGap(withBadge);
+    withBadge.querySelector('.cite-badge')!.remove();
+    return { before, alone: trailingGap(withBadge) };
+  });
+  expect(gaps).not.toBeNull();
+  expect(Math.abs(gaps!.before)).toBeLessThan(1);
+  expect(Math.abs(gaps!.alone)).toBeLessThan(1);
 });
 
 test("the homepage topics band's correction CTA points at the report page", async ({ page }) => {
