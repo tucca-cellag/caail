@@ -322,6 +322,30 @@ function truncateToEncoded(text: string, maxEncoded: number): string {
 }
 
 /**
+ * Characters that must never survive into a composed report, shared by BOTH reader-typed
+ * paths so neither can be sanitised while the other is not.
+ *
+ * It began on the note only, and the DOI went without: `10.1234/ab<U+0085>cd` passed the
+ * shape check and was composed verbatim, because JS `\s` covers neither the C0/C1 ranges
+ * nor the zero-width characters, so `DOI_RE`'s `[^\s?#]+` happily matches them. Two
+ * consequences, and the mundane one is the likelier: a reader who copies a DOI out of a PDF
+ * or a styled web page picks up a zero-width space, the preview renders a clean one-line
+ * DOI, and the report names an identifier that resolves to nothing. The sharper one is that
+ * a client treating U+0085 as a line break can render a single-line DOI as two, which is
+ * the report-forging this module's header calls structurally impossible.
+ *
+ * C1 (U+0080-U+009F) is in the class because a `\x00-\x1F` shorthand leaves it out and the
+ * whitespace collapse does not reach it — U+0085 NEL in particular is a line break that
+ * neither rule saw. The zero-width and bidi controls (U+200B-U+200F, U+FEFF) are here
+ * because they are invisible in a preview the reader is asked to check.
+ *
+ * On the note these become a space and collapse away. On the DOI they become a space too,
+ * which makes the shape check REJECT the value rather than quietly repairing it — the same
+ * "dropped, never repaired" rule the rest of this module follows.
+ */
+const INVISIBLE_RE = /[\u0000-\u001F\u007F-\u009F\u200B-\u200F\uFEFF]/g;
+
+/**
  * Remove surrogate code units that are not part of a valid pair.
  *
  * `encodeURIComponent` throws `URIError` on any lone surrogate, and `render()` has no
@@ -352,12 +376,9 @@ function stripUnpairedSurrogates(text: string): string {
 export function collapseNote(raw: string): string {
   return (
     stripUnpairedSurrogates(raw)
-      // Escapes, not literal bytes: a control-character class written literally is
-      // invisible in the source and reads as a stray paste. U+007F (DEL) is in the
-      // class too, along with C1 (U+0080-U+009F). C1 is the range a \x00-\x1F shorthand
-      // leaves out and the \s+ collapse below does not reach: U+0085 NEL in particular is
-      // a line break that neither rule saw, so it reached the composed body verbatim.
-      .replace(/[\u0000-\u001F\u007F-\u009F]/g, ' ')
+      // The shared class, so this path and the DOI path cannot be sanitised
+      // differently — see INVISIBLE_RE for why its contents are what they are.
+      .replace(INVISIBLE_RE, ' ')
       .replace(/\s+/g, ' ')
       .trim()
   );
@@ -477,7 +498,11 @@ export function normaliseDoi(raw: string): string {
   // the encoded bound put encodeURIComponent on that path without the sanitising that made
   // it safe. Doing it here rather than in isDoiShape keeps it true of the string that is
   // actually composed, since composeBody emits what normaliseDoi returns.
-  let value = stripUnpairedSurrogates(raw).trim();
+  // The same invisible characters the note path strips, and for a sharper reason: JS
+  // \s covers neither the C0/C1 ranges nor the zero-width characters, so DOI_RE's
+  // `[^\s?#]+` matched them and composed them verbatim. Replaced with a space rather
+  // than deleted, so the shape check REJECTS the value instead of quietly repairing it.
+  let value = stripUnpairedSurrogates(raw).replace(INVISIBLE_RE, ' ').trim();
   // To a FIXED POINT, not one pass of each rule. The two prefixes nest in both
   // orders — `https://doi.org/doi:10.x` and `DOI: https://doi.org/10.x`, the second
   // being what a pasted APA citation looks like — and a single pass only ever
@@ -573,7 +598,11 @@ export function isDoiShape(value: string): boolean {
   // acceptance — see DOI_INPUT_MAX_LENGTH for the measured case.
   //
   // Trimmed and desurrogated first so this measures the same string normaliseDoi starts from.
-  if (stripUnpairedSurrogates(value).trim().length >= DOI_INPUT_MAX_LENGTH) return false;
+  // Measured on the value AS THE FIELD HOLDS IT, before trimming. Trimming first let a
+  // 400-character paste whose retained prefix ends in whitespace fall back under the
+  // bound and be accepted — which is the truncated-input acceptance this check exists to
+  // prevent, so the trim quietly falsified the property stated on DOI_INPUT_MAX_LENGTH.
+  if (value.length >= DOI_INPUT_MAX_LENGTH) return false;
 
   const doi = normaliseDoi(value);
   return (

@@ -185,7 +185,14 @@ export function outboundEvent(
 
   const domain = url.hostname.toLowerCase().replace(/^www\./, '');
   url.hash = '';
-  for (const name of dropParams) url.searchParams.delete(name);
+  // Guarded, because mutating searchParams re-serialises the WHOLE query in
+  // application/x-www-form-urlencoded form: one delete rewrote `a~b%20c` as `a%7Eb+c` on
+  // parameters nothing had asked to drop. Harmless while the only marked link is GitHub,
+  // but the deposit links this function keeps query strings FOR are the ones it would
+  // silently rewrite the day a marker lands on a subtree containing one.
+  for (const name of dropParams) {
+    if (url.searchParams.has(name)) url.searchParams.delete(name);
+  }
   return { url: url.toString(), domain, kind: DOMAIN_KINDS[domain] ?? 'external' };
 }
 

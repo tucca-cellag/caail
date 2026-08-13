@@ -693,6 +693,49 @@ describe('composeBody', () => {
     expect(boundNote(raw)).toBe(collapseNote(raw));
   });
 
+  it('refuses a DOI carrying an invisible character rather than composing it', () => {
+    // JS \\s covers neither the C0/C1 ranges nor the zero-width characters, so
+    // DOI_RE's `[^\s?#]+` matched them and the body carried them verbatim. The mundane
+    // harm is a reader pasting from a PDF and getting a DOI that resolves to nothing; the
+    // sharper one is that a client treating U+0085 as a line break renders one line as two.
+    const invisible = [
+      ['\u0000', 'NUL'],
+      ['\u0085', 'NEL'],
+      ['\u007F', 'DEL'],
+      ['\u009F', 'APC'],
+      ['\u200B', 'zero-width space'],
+      ['\uFEFF', 'zero-width no-break space'],
+    ] as const;
+    for (const [ch, name] of invisible) {
+      const doi = `10.1234/ab${ch}cd`;
+      expect(isDoiShape(doi), name).toBe(false);
+      const body = composeBody(
+        { itemId: 'paper:1', reason: reason({ kind: 'doi' }), doi },
+        VOCAB,
+      );
+      expect(body, name).not.toContain('DOI should be');
+    }
+  });
+
+  it('strips the same invisible characters from a note as from a DOI', () => {
+    // One class, both reader-typed paths. The note path had it and the DOI path did not,
+    // which is how the DOI path went three review rounds without anyone noticing.
+    for (const ch of ['\u0000', '\u0085', '\u200B', '\uFEFF']) {
+      expect(collapseNote(`a${ch}b`), JSON.stringify(ch)).toBe('a b');
+    }
+  });
+
+  it('measures the field-capacity bound before trimming, not after', () => {
+    // The bound exists to make the verdict independent of a truncation this code cannot
+    // observe. Trimming first let a full field whose retained prefix ends in whitespace
+    // fall back under it, which is exactly the acceptance it was added to prevent.
+    const padded = ' '.repeat(242) + '10.1234/' + 'a'.repeat(150);
+    expect(padded).toHaveLength(DOI_INPUT_MAX_LENGTH);
+    expect(isDoiShape(padded), 'a full field is refused however it is padded').toBe(false);
+
+    // One character shorter is not at capacity, so it was not truncated, so it stands.
+    expect(isDoiShape(padded.slice(1))).toBe(true);
+  });
   it('rejects a DOI that passes the character cap but blows the encoded one', () => {
     // The regression test for DOI_MAX_ENCODED, which the budget test above is NOT: that
     // one sizes its input to the largest value the caps admit, so it stays green whatever

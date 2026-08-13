@@ -241,3 +241,23 @@ describe('parseResultCount', () => {
     expect(parseResultCount('no results', 0)).toBe(0);
   });
 });
+
+describe('outboundEvent leaves an untouched query untouched', () => {
+  it('does not re-encode parameters it was not asked to drop', () => {
+    // Mutating searchParams re-serialises the whole query as form-urlencoded, so a single
+    // delete rewrote `a~b%20c` as `a%7Eb+c` on parameters nothing had asked about. The
+    // deposit links this function deliberately keeps query strings for are the ones that
+    // would be silently rewritten if a drop marker ever wrapped one.
+    const href = 'https://example.com/a?acc=GSE12345&x=a~b%20c';
+    const plain = outboundEvent(href, 'https://caail.test/');
+    const dropped = outboundEvent(href, 'https://caail.test/', ['details', 'reason']);
+    expect(dropped?.url).toBe(plain?.url);
+  });
+
+  it('still drops a parameter that is actually present', () => {
+    const href = 'https://example.com/a?acc=GSE12345&details=secret';
+    const dropped = outboundEvent(href, 'https://caail.test/', ['details']);
+    expect(dropped?.url).toContain('acc=GSE12345');
+    expect(dropped?.url).not.toContain('secret');
+  });
+});
