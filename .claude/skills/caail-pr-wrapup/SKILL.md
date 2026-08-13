@@ -211,7 +211,10 @@ checkpoint that used to sit between editing and shipping:
   maintainer's machine those two are also hook-denied, but that hook is user-global and **not** in this
   repo, so a fresh clone runs them unguarded. Prefer the restore form because it is narrow, not because
   something will stop you.) It restores tracked files but leaves anything new you made while
-  reproducing the defect, so finish with `git clean -n` and remove what it lists. Committing first is what
+  reproducing the defect, so finish with `git clean -nd` and remove what it lists. The `-d` matters: plain
+  `git clean -n` does not list untracked *directories*, while the push-time check reports them (`?? dir/`),
+  so without it you can believe the tree is clean and be refused at step 2 over leftovers you thought were
+  gone. Committing first is what
   makes all of this safe. Then say in the PR body that the guard was seen failing.
 
 #### Why this is more than one pass, and why that is provisional
@@ -495,7 +498,7 @@ adding it there too, or the guard will happily confirm that an incomplete set is
 | `push` | `git push -u origin <branch>`; **re-asserts branch, clean tree and auth first** | yes |
 | `open-pr <title> <body-file>` | `gh pr create --base main`; prints PR url | yes |
 | `watch-checks <pr>` | blocks on checks; 0 if none/clean, non-zero on failure | no |
-| `merge <pr>` | merge + delete remote branch (gotcha-handled); prints merge SHA | yes |
+| `merge <pr>` | **refuses if local `HEAD` differs from the PR head** (naming which way, since the remedies are opposite), then merges + deletes the remote branch (gotcha-handled); prints merge SHA | yes |
 | `watch-deploy <merge-sha>` | finds + watches the `docs.yml` run; 0 if no deploy fires | no |
 | `verify-live <route>...` | curls each live route; non-zero if any ≠ 200 | no |
 
@@ -505,7 +508,9 @@ reading this file. That is a weaker guarantee than the path-filter check in `gua
 knowing which of the two you are relying on: if a ship skipped the rounds, the PR body is the only place
 it would show.
 
-The **one** part of step 1 that is enforced in code is the clean tree, because `push` refuses to run on a
-dirty one (alongside the branch and auth assertions it shares with `preflight`).
+What *is* enforced in code is that the fixes reach the PR: `push` refuses a dirty tree (alongside the
+branch and auth assertions it shares with `preflight`), and `merge` refuses when local `HEAD` is not the
+commit the PR would merge. Those two cover the uncommitted and unpushed halves of the same failure. Nothing
+checks that the rounds happened at all.
 That is deliberate: a skipped round produces a thin PR body a reader can notice, whereas an uncommitted
 fix produces a PR that *looks* right and is missing the fix, and nothing downstream can tell.
