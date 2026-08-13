@@ -28,7 +28,7 @@ test('with no ?item= the page is still usable and says no entry is identified', 
 });
 
 test('the no-entry copy covers the cases that have no card link to follow', async ({ page }) => {
-  // Inventory rows are 164 of the 226 dataset items and are deliberately never carded, so
+  // Inventory rows are most of the dataset corpus and are deliberately never carded, so
   // most of the dataset corpus reaches this page with no id and no link it could have
   // followed. Telling that reader to go back and find one is a dead end.
   await page.goto('./report/');

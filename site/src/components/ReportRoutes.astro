@@ -302,6 +302,7 @@ const vocabJson = JSON.stringify(vocabularies).replace(/</g, '\\u003c');
     collapseNote,
     composeBody,
     isDoiShape,
+    normaliseDoi,
     type CorrectionAnswers,
     type CorrectionVocabularies,
     type FollowUpKind,
@@ -656,9 +657,16 @@ const vocabJson = JSON.stringify(vocabularies).replace(/</g, '\\u003c');
         answers.doi = input.value;
         const typed = input.value.trim();
         const ok = typed === '' || isDoiShape(typed);
+        // Two different rejections, two different messages. A DOI can also fail on encoded
+        // length, and telling a reader whose input plainly starts with 10. and has a slash
+        // that it does not is asserting something false to their face.
+        const tooLong = typed !== '' && normaliseDoi(typed).length > 0 && !ok
+          && /^10\.\d{4,9}\/[^\s?#]+$/.test(normaliseDoi(typed));
         error.textContent = ok
           ? ''
-          : 'That does not look like a DOI. One starts with "10." and contains a slash.';
+          : tooLong
+            ? 'That is longer than any real DOI, so it is not in the report.'
+            : 'That does not look like a DOI. One starts with "10." and contains a slash.';
         input.setAttribute('aria-invalid', ok ? 'false' : 'true');
         render();
       });
