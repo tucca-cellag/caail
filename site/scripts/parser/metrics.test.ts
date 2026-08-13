@@ -91,7 +91,7 @@ describe('buildMetricsModel — real corpus', () => {
     expect(coveragePct).toBeCloseTo((filledCells / totalCells) * 100, 1);
   });
 
-  it('per-area covers all 7 areas; per-method covers every matrix method', () => {
+  it('per-area covers every research area; per-method covers every matrix method', () => {
     expect(metrics.matrix.perArea).toHaveLength(AREAS.length);
     expect(metrics.matrix.perMethod).toHaveLength(model.methods.length);
     // every area paper count is bounded by the total reference count

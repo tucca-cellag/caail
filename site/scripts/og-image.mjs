@@ -14,8 +14,8 @@ import { fileURLToPath } from 'node:url';
 
 const OUT = fileURLToPath(new URL('../public/og.png', import.meta.url));
 
-// The 7 Okabe–Ito research-area colors (from tokens.css / DESIGN.md §2).
-const AREA = ['#0072B2', '#009E73', '#E69F00', '#56B4E9', '#D55E00', '#CC79A7', '#917800'];
+// The 6 Okabe–Ito research-area colors (from tokens.css / DESIGN.md §2).
+const AREA = ['#0072B2', '#009E73', '#E69F00', '#56B4E9', '#D55E00', '#CC79A7'];
 const dots = AREA.map((c, i) => `<circle cx="${104 + i * 52}" cy="556" r="15" fill="${c}" />`).join('');
 
 // Static, recolored-for-dark version of the hero bioreactor (viewBox 300×340):

@@ -64,32 +64,32 @@
   --caail-density-4: oklch(31% 0.12 264);      /* #002E6D  8+ */
 
   /* Canonical categorical palette: consumed via var(--caail-area-*) in components (the island carries only area keys, never colors). */
-  /* Data — categorical (Okabe–Ito, CVD-safe); 7 research areas */
+  /* Data — categorical (Okabe–Ito, CVD-safe); 6 research areas */
   --caail-area-media: #0072B2;
   --caail-area-cell: #009E73;
   --caail-area-bioprocess: #E69F00;
   --caail-area-scaffolding: #56B4E9;
   --caail-area-sensory: #D55E00;
   --caail-area-tooling: #CC79A7;
-  --caail-area-eval: #917800;       /* Okabe–Ito yellow darkened to amber for AA on white */
 
   /* Subject themes without a matrix area (topics.ndjson `area_key` is null). Themes that
      DO map to an area take that area's colour, resolved from data in lib/theme-colors.ts
      — never hardcoded per-slug in CSS.
 
-     These two need their own values, and honestly: 7 areas + 2 area-less themes is past
+     These two need their own values, and honestly: 6 areas + 2 area-less themes sits at
      the ~7-category limit where colours stay reliably distinguishable, especially under
      CVD. So they are separated by LIGHTNESS as well as hue (both much darker than the
      nearest area) rather than by hue alone, and neither reuses an area token — the
      By the Numbers page shows areas and themes together, so one colour meaning two
      different things there would be exactly the confusion this palette exists to avoid.
-     Metabolism previously borrowed --caail-area-eval, which collided on that page. */
+     Metabolism previously borrowed an area token and collided on that page. */
   --caail-theme-metabolism: oklch(42% 0.10 220);   /* deep teal-blue; area sky is far lighter */
   --caail-theme-food-safety: oklch(52% 0.12 200);
 
   /* Data — license tiers.
-     The 7 area hues exhaust the Okabe–Ito CVD-safe categorical set, so tiers must not
-     borrow one: an area colour has to mean a research area and nothing else. Tiers use a
+     The area hues all but exhaust the Okabe–Ito CVD-safe categorical set, and tiers must
+     not borrow one regardless: an area colour has to mean a research area and nothing
+     else, and a spare Okabe–Ito hue is the next COLUMN's, not a tier's. Tiers use a
      single unused hue family (violet ~300) as a ramp instead, so violet on any page means
      "license". Darker = more restrictive, i.e. more caution before reuse. Unknown is
      neutral grey because it encodes missing information, not a level of openness. */

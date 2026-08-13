@@ -58,10 +58,10 @@ const ADDITION_VERBS: readonly string[] = [
  * anything unmatched falls back to `tooling` (the neutral "general method/tool"
  * column). Keep the method/cell-biology cues before the generic tooling cues.
  *
- * The benchmark cues sit in the `tooling` row rather than in one of their own:
- * since CAAIL-164 retired the `AI Evaluation & Benchmarking` column, a benchmark
- * belongs in the area it measures, so a domain cue in the same title should win
- * and only a domain-less benchmark should land on the neutral column.
+ * There is deliberately no benchmark row: a benchmark takes the area it measures,
+ * so a domain cue in the same title should win, and a domain-less benchmark reaches
+ * `tooling` via the fallback anyway. Adding "benchmark"/"eval" to the `tooling` entry
+ * would be dead weight — it is the last entry, so those titles already land there.
  */
 const AREA_KEYWORDS: ReadonlyArray<readonly [RecentEntry['area'], readonly string[]]> = [
   ['sensory', ['burger', 'flavor', 'flavour', 'aroma', 'taste', 'sensory', 'mass spec', 'metabolom', 'volatile']],
@@ -69,7 +69,7 @@ const AREA_KEYWORDS: ReadonlyArray<readonly [RecentEntry['area'], readonly strin
   ['scaffolding', ['scaffold', 'biomaterial', 'hydrogel']],
   ['media', ['media', 'medium', 'growth factor', 'serum']],
   ['cell', ['knockout', 'crispr', 'satellite cell', 'differentiation', 'atlas', 'single-cell', 'scrna', 'rna-seq', 'cell line', 'cell-line', 'lineage', 'transcriptom']],
-  ['tooling', ['agent', 'mcp', 'llm', 'foundation model', 'framework', 'tool', 'docs', 'pipeline', 'benchmark', 'leaderboard', 'eval']],
+  ['tooling', ['agent', 'mcp', 'llm', 'foundation model', 'framework', 'tool', 'docs', 'pipeline']],
 ];
 
 /**

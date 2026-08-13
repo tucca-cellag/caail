@@ -408,24 +408,32 @@ describe('prose that quotes the matrix grid size', () => {
   const matrix = buildMatrix(papers, DATE);
   const read = (...seg: string[]) => readFileSync(join(REPO_ROOT, ...seg), 'utf-8');
 
-  /** Every integer in the file that is written as a bare number, in order. */
-  const ints = (s: string) => (s.match(/\b\d+\b/g) ?? []).map(Number);
+  /**
+   * The number attached to a specific phrase, not merely present somewhere nearby.
+   *
+   * Set membership is too weak for what this guards: "all 80 method×area cells,
+   * including the 150 with no indexed paper" contains both live values and would pass,
+   * while saying something false. A transposition is exactly the edit these numbers
+   * invite, since they are read far more often than they are changed.
+   */
+  const numberBefore = (text: string, phrase: string): number | null => {
+    const i = text.indexOf(phrase);
+    if (i < 0) return null;
+    const m = text.slice(0, i).match(/(\d+)\D*$/);
+    return m ? Number(m[1]) : null;
+  };
 
   it('the installed plugin skill states the live total and empty-cell counts', () => {
-    // Scoped to the sentence, so an unrelated number elsewhere in the skill can't satisfy it.
-    const sentence = read('plugin', 'skills', 'caail', 'SKILL.md')
-      .split('\n\n')
-      .find((p) => p.includes('method×area cells'));
-    expect(sentence, 'no paragraph in SKILL.md mentions "method×area cells"').toBeDefined();
-    expect(ints(sentence!)).toContain(matrix.totalCells);
-    expect(ints(sentence!)).toContain(matrix.emptyCells);
+    const src = read('plugin', 'skills', 'caail', 'SKILL.md');
+    expect(numberBefore(src, 'method×area cells'), 'SKILL.md: cell total').toBe(matrix.totalCells);
+    expect(numberBefore(src, 'with no indexed paper'), 'SKILL.md: empty count').toBe(matrix.emptyCells);
   });
 
   it('agent-api.ts’s module doc states the live total, empty and populated counts', () => {
     const src = read('site', 'scripts', 'parser', 'agent-api.ts');
     const doc = src.slice(0, src.indexOf('*/'));
-    expect(ints(doc)).toContain(matrix.totalCells);
-    expect(ints(doc)).toContain(matrix.emptyCells);
-    expect(ints(doc)).toContain(matrix.populatedCells);
+    expect(numberBefore(doc, 'method×area cells'), 'agent-api doc: cell total').toBe(matrix.totalCells);
+    expect(numberBefore(doc, 'with no indexed paper'), 'agent-api doc: empty count').toBe(matrix.emptyCells);
+    expect(numberBefore(doc, 'populated ones'), 'agent-api doc: populated count').toBe(matrix.populatedCells);
   });
 });

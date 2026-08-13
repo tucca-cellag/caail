@@ -31,6 +31,14 @@ on:
       # site build and e2e pass on a doc edit.
       - .claude/hooks/**
       - .claude/settings.json
+      # The one skill that DOES have a test. `plugin/skills/caail/SKILL.md` states
+      # the matrix grid size, and agent-api.test.ts asserts those numbers against
+      # `buildMatrix`. Without this line the guard only fires in the direction where
+      # the MATRIX moved (Papers.md matches '*.md'), never the one where the SKILL
+      # file is itself the thing edited — so mistyping the count in the file the
+      # guard exists to protect would trigger no workflow at all. `lint-papers.yml`
+      # does watch plugin/skills/** but never runs vitest.
+      - plugin/skills/**
       - .github/workflows/test.yml
   push:
     branches: [main]
@@ -56,6 +64,14 @@ on:
       # site build and e2e pass on a doc edit.
       - .claude/hooks/**
       - .claude/settings.json
+      # The one skill that DOES have a test. `plugin/skills/caail/SKILL.md` states
+      # the matrix grid size, and agent-api.test.ts asserts those numbers against
+      # `buildMatrix`. Without this line the guard only fires in the direction where
+      # the MATRIX moved (Papers.md matches '*.md'), never the one where the SKILL
+      # file is itself the thing edited — so mistyping the count in the file the
+      # guard exists to protect would trigger no workflow at all. `lint-papers.yml`
+      # does watch plugin/skills/** but never runs vitest.
+      - plugin/skills/**
       - .github/workflows/test.yml
   workflow_dispatch:
 
