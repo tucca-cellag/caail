@@ -41,10 +41,3 @@
   text-decoration: underline;
   text-underline-offset: 0.2em;
 }
-
-/* Dataset cards get the link on its own trailing row, since the raw-HTML twin has no
-   flex meta row to sit in. `.not-content` keeps Starlight's prose-flow margins off it
-   (the #67 trap), so the margin is set here rather than inherited from the article. */
-.ds-card .report-link {
-  margin-top: 0.4rem;
-}

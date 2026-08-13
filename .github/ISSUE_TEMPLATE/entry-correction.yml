@@ -16,7 +16,7 @@ body:
       label: Entry id
       description: |
         The frozen id of the entry, e.g. `paper:214`, `sw:cellpose`, `db:string`, `ds:chickengtex-portal`.
-        Prefilled if you came from the entry. If you got here another way, the entry's report page shows its id — or write `unknown` and paste the page address below.
+        Prefilled if you came from the entry. If you got here another way, or your report is about a whole subject theme rather than one entry, write `unknown` and paste the page address below.
       placeholder: paper:214
     validations:
       required: true
@@ -41,6 +41,7 @@ body:
         - Dead or wrong link
         - Wrong licence tier
         - Wrong or missing DOI
+        - Wrong or missing subject topics — the theme and tag chips, or a whole theme that looks mis-tagged
         - Something else (describe below)
     validations:
       required: true

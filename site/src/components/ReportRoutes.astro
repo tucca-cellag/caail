@@ -47,10 +47,15 @@ const mailto = correctionMailto(null);
     <span class="rp-copy-status" id="caail-report-copy-status" role="status" aria-live="polite"></span>
   </p>
 
+  {/* Reached with no id from two quite different places: someone who navigated here
+      directly, and someone following the homepage topics band, whose complaint is about a
+      whole subject theme and has no single entry behind it. So this says what the id buys
+      and where to find one, rather than reading as a step the reader got wrong. */}
   <p class="rp-none" id="caail-report-none">
-    No entry is identified in this address. Every route below still works, but a correction
-    is far quicker to act on when it names the entry, so it is worth going back to the entry
-    and using its own <span class="rp-nowrap">Report an issue</span> link.
+    Every route below works as it is. If your report is about one entry, though, it is much
+    quicker to act on when it names that entry: each card carries its own
+    <span class="rp-nowrap">Report an issue</span> link, which brings the id here with it.
+    Reports about a whole subject theme, or about the library as a whole, need no id.
   </p>
 
   <h2 id="how-to-report">How to report it</h2>

@@ -14,12 +14,17 @@
  * Presentational; styling is in ../styles/report-link.css (global, so the raw-HTML
  * dataset-card twin emitted by the dataset-cards remark shares it).
  */
-import { reportHref } from '../lib/report';
+import { isItemId, reportHref } from '../lib/report';
 
 const BASE = import.meta.env.BASE_URL;
 
 export default function ReportLink({ itemId, label }: { itemId: string | null; label: string }) {
-  if (!itemId) return null;
+  // Gated on the grammar, not merely on presence, so this agrees with its raw-HTML twin
+  // in dataset-cards.ts. A malformed id would be harmless here (Preact escapes the
+  // attribute, reportHref encodes it) but it would render a wrong link on catalog cards
+  // while vanishing on dataset cards, and a rule that holds on one surface and not the
+  // other is the kind of divergence nothing would catch.
+  if (!isItemId(itemId)) return null;
   return (
     <a
       class="report-link"
