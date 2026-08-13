@@ -164,7 +164,14 @@ for tool in ("cat", "jq", "shasum", "cut", "find", "grep", "timeout", "sed", "aw
              # `gh repo view` with no argument shells out to git to read the
              # remote, and on macOS reaches the keychain through `security`.
              # Omit either and gh fails for a reason the test never meant to set.
-             "git", "security"):
+             "git", "security",
+             # `tail` and `wc` slice and count the publish segment. They were
+             # missing once, and the effect was not a failure but a hole in the
+             # coverage: `publish_seg` came out empty, so the whole endpoint path
+             # was dead in these blocks while they still reported PASS. A curated
+             # PATH is a claim about what the hook needs, and it has to be kept
+             # true as the hook changes.
+             "tail", "wc"):
     src = shutil.which(tool)
     if src: os.symlink(src, os.path.join(no_gh_bin, tool))
 NO_GH = {"PATH": no_gh_bin}
@@ -183,7 +190,14 @@ for tool in ("cat", "jq", "shasum", "cut", "find", "grep", "sed", "awk", "gh",
              # `gh repo view` with no argument shells out to git to read the
              # remote, and on macOS reaches the keychain through `security`.
              # Omit either and gh fails for a reason the test never meant to set.
-             "git", "security"):
+             "git", "security",
+             # `tail` and `wc` slice and count the publish segment. They were
+             # missing once, and the effect was not a failure but a hole in the
+             # coverage: `publish_seg` came out empty, so the whole endpoint path
+             # was dead in these blocks while they still reported PASS. A curated
+             # PATH is a claim about what the hook needs, and it has to be kept
+             # true as the hook changes.
+             "tail", "wc"):
     src = shutil.which(tool)
     if src: os.symlink(src, os.path.join(gtimeout_bin, tool))
 _t = shutil.which("timeout") or shutil.which("gtimeout")
@@ -336,6 +350,66 @@ bytesafe = got == "deny" and "(PUBLIC)" in why and "UNRESOLVED" not in why
 ok = "PASS" if bytesafe else "FAIL"
 if not bytesafe: fails += 1
 print(f"  [{ok}] multibyte text before the verb does not re-open the trailing cd")
+
+# A newline is a shell separator, and `sed` is line-oriented, so truncating the
+# segment with sed alone ended it at the first line only: everything after the
+# first newline stayed inside "the verb's own segment", which put a heredoc body
+# there. Measured on one body and one real destination: the single-line form
+# denied and named the right repo, the multi-line form allowed and announced a
+# repo named only in the PAYLOAD. Where such a repo resolves private, that
+# reaches the short-circuit and nothing is scanned at all.
+multiline = (f'{V} --title x --body "$(cat <<EOF\n'
+             'design notes\n'
+             'gh api repos/octocat/Hello-World/issues\n'
+             f'{RISK}\n'
+             'EOF\n'
+             ')"')
+got, why, _ = run(HOOK_PROJ, multiline, {"CLAUDE_PROJECT_DIR": proj}, cwd=proj)
+scoped = got == "deny" and "tucca-cellag/caail" in why and "octocat/Hello-World" not in why
+ok = "PASS" if scoped else "FAIL"
+if not scoped: fails += 1
+print(f"  [{ok}] a newline ends the segment, so a heredoc body cannot steer it")
+
+# The same invariant, on the OTHER destination extractor. `--repo`/`-R` was read
+# from the whole command, so an ordinary bug report quoting a command in its body
+# published to whatever that quoted `-R` named. Pre-dates this branch; it is the
+# third extractor to be caught reading the payload, which is why the segment is
+# now the rule rather than a patch applied one extractor at a time.
+#
+# The segment alone does NOT close this one: the quoted flag sits before any
+# separator. Quote-aware parsing is deliberately not attempted, so the rule is
+# positional and refuses to guess — a repo flag found only after the body flag
+# makes the destination ambiguous, and ambiguous resolves to nothing rather than
+# to a guess. Nothing lands on the unresolved path, which announces and scans; a
+# guess can land on a private repo and skip the scan entirely.
+quoted_r = (f'{V} --title x --body "reproduce with: gh pr list '
+            f'-R octocat/Hello-World ; then {RISK}"')
+got, why, _ = run(HOOK_PROJ, quoted_r, {"CLAUDE_PROJECT_DIR": proj}, cwd=proj)
+scoped = got == "deny" and "UNRESOLVED" in why and "octocat/Hello-World" not in why
+ok = "PASS" if scoped else "FAIL"
+if not scoped: fails += 1
+print(f"  [{ok}] a -R quoted inside the body does not steer the destination")
+
+# A real `-R` still has to work, or the fix above would have broken the ordinary
+# case while passing its own regression test.
+got, _, ctx = run(HOOK_PROJ, f'{V} -R tucca-cellag/caail --title x --body "one ref"',
+                  {"CLAUDE_PROJECT_DIR": proj}, cwd=elsewhere)
+honoured = got == "allow" and "tucca-cellag/caail" in ctx and "which is PUBLIC" in ctx
+ok = "PASS" if honoured else "FAIL"
+if not honoured: fails += 1
+print(f"  [{ok}] and a real -R is still honoured from outside any repo")
+
+# Suppressing the foreign-owner signal must not make the owners invisible. The
+# originating incident's payload shape (a paraphrase plus a link, no fence, no
+# security vocabulary) trips no other signal, so the announcement is the only
+# place it can surface at all.
+got, _, ctx = run(HOOK_PROJ, f'{P} --title "feat: add paper" '
+                  '--body "adapted from https://github.com/someoneelse/theirrepo"',
+                  {**NO_AUTH, "CLAUDE_PROJECT_DIR": proj}, cwd=proj, unset=NO_TOKENS)
+surfaced = got == "allow" and "someoneelse" in ctx
+ok = "PASS" if surfaced else "FAIL"
+if not surfaced: fails += 1
+print(f"  [{ok}] uncompared owners are still named in the announcement")
 
 print("\n=== fail-open safety ===")
 for label, payload in [("malformed json", "not json"), ("empty stdin", "")]:

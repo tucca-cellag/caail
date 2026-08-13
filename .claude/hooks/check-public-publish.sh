@@ -118,11 +118,11 @@ fi
 # same command, changing nothing but the hook's cwd: deny from one, silent
 # pass-through from the other. That is this guard's own cautionary pattern, a
 # check that looks present and is not.
-dest=$(grep -oE '(--repo|-R) +[^ ]+' <<<"$cmd" | head -n1 | awk '{print $2}' | tr -d "\"'")
-
-# Where the publishing verb sits, and the command split around it. Everything
-# below reasons about "before the verb" and "the verb's own segment", and both
-# have already been got wrong once each, in opposite directions.
+# Where the publishing verb sits, and the command split around it. EVERY
+# destination extractor below reads one of these two slices and never the whole
+# command, because reading the whole command is how the payload gets to choose
+# where the hook thinks the publish is going. That has now happened three times,
+# in three different extractors, so it is the invariant rather than a precaution.
 #
 # BYTE offsets, so the slicing uses `head -c`/`tail -c` and not bash substring
 # expansion, which counts CHARACTERS. With multibyte text ahead of the verb the
@@ -132,12 +132,57 @@ dest=$(grep -oE '(--repo|-R) +[^ ]+' <<<"$cmd" | head -n1 | awk '{print $2}' | t
 # dashes reopened the hole the segment logic exists to close.
 verb_at=$(grep -boE "$PUBLISH_VERB_RE" <<<"$cmd" | head -n1 | cut -d: -f1)
 verb_at=${verb_at:-0}
-before_verb=$(head -c "$verb_at" <<<"$cmd")
+# `head -c 0` is an error on BSD/macOS `head`, and offset 0 is the common case
+# (any command starting with the verb), so it printed to stderr on every publish.
+before_verb=""
+[[ $verb_at -gt 0 ]] && before_verb=$(head -c "$verb_at" <<<"$cmd")
+
 # The verb's own segment: from the verb to the next shell separator, with the
 # leading separator the match itself captured stripped first. A payload carrying
 # a separator only shortens this, which is the safe direction.
-publish_seg=$(tail -c "+$((verb_at + 1))" <<<"$cmd" \
+#
+# Newlines are separators too, and `tr` is what makes that true. `sed` is
+# line-oriented, so it truncated only the FIRST line and everything past the
+# first newline stayed inside "the segment" — which put a heredoc body there.
+# Measured on the same body and the same real destination: single-line denied
+# and named the right repo, the multi-line form allowed and announced
+# `octocat/Hello-World`, a repo named only in the payload. Where the payload
+# names a repo that resolves PRIVATE, that reaches the `vis != PUBLIC`
+# short-circuit and the payload is never scanned at all.
+publish_seg=$(tail -c "+$((verb_at + 1))" <<<"$cmd" | tr '\n' ';' \
   | sed -E 's/^[[:space:]]*[;&|(]*[[:space:]]*//; s/[;&|].*$//')
+
+# An explicit --repo/-R. As a whole-command grep this took a `-R` quoted inside a
+# `--body` and published to whatever that named: reproduced with an ordinary
+# bug-report body containing `reproduce with: gh pr list -R octocat/Hello-World`,
+# which resolved the destination to that repo and announced it. Pre-dates this
+# branch.
+#
+# The segment alone does not fix it, because the quoted flag sits before any
+# separator. Telling a quoted example from a real flag needs shell-quote
+# reasoning, which is deliberately NOT attempted: a check that parses quoting can
+# be fooled on purpose, and it fails silently when it is.
+#
+# So the rule is positional and refuses to guess. Only a repo flag before the
+# first body-bearing flag can be the real destination; anything at or after one
+# is inside the body value or follows it. More than one, or one that is only
+# found after the body flag, makes the command AMBIGUOUS, and an ambiguous
+# destination resolves to nothing rather than to a guess. That is the difference
+# that matters: a guess can land on a private repo and take the short-circuit
+# that skips the payload scan, while nothing lands on the unresolved path, which
+# announces and scans.
+REPO_FLAG_RE='(^|[[:space:]])(--repo|-R)[[:space:]]+[^[:space:]]+'
+seg_head=$(sed -E 's/[[:space:]](-b|--body|--body-file|-F|-f|--field|--raw-field)([[:space:]=]).*$//' <<<"$publish_seg")
+repo_all=$(grep -oE "$REPO_FLAG_RE" <<<"$publish_seg" | wc -l | tr -d '[:space:]')
+repo_head=$(grep -oE "$REPO_FLAG_RE" <<<"$seg_head" | wc -l | tr -d '[:space:]')
+
+dest=""
+dest_ambiguous=0
+if [[ $repo_all -gt 1 || $repo_head -ne $repo_all ]]; then
+  dest_ambiguous=1
+elif [[ $repo_head -eq 1 ]]; then
+  dest=$(grep -oE "$REPO_FLAG_RE" <<<"$seg_head" | head -n1 | awk '{print $NF}' | tr -d "\"'")
+fi
 
 # `gh api -X POST /repos/<owner>/<repo>/issues` names its destination in the
 # endpoint and needs no local repository at all, so resolving it from the cwd
@@ -158,7 +203,7 @@ publish_seg=$(tail -c "+$((verb_at + 1))" <<<"$cmd" \
 # the endpoint cannot be told apart from the payload, and guessing wrong is how
 # the paragraph above happened. Disagreement stays unresolved, which announces
 # and scans rather than guessing.
-if [[ -z $dest ]] && grep -qE '^(sudo[[:space:]]+)?gh[[:space:]]+api([[:space:]]|$)' <<<"$publish_seg"; then
+if [[ -z $dest && $dest_ambiguous -eq 0 ]] && grep -qE '^(sudo[[:space:]]+)?gh[[:space:]]+api([[:space:]]|$)' <<<"$publish_seg"; then
   api_dest=$(grep -oE 'repos/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/(issues|comments|releases|pulls)' <<<"$publish_seg" \
     | sed -E 's|^repos/([^/]+/[^/]+)/.*|\1|' | sort -u)
   [[ -n $api_dest && $(printf '%s\n' "$api_dest" | wc -l) -eq 1 ]] && dest="$api_dest"
@@ -202,7 +247,9 @@ meta=""
 # is kept rather than dropped, because an unbounded `gh` can hang before a publish.
 TIMEOUT_BIN=$(command -v timeout || command -v gtimeout || true)
 
-if ! command -v gh >/dev/null 2>&1; then
+if [[ $dest_ambiguous -eq 1 ]]; then
+  unresolved="the command names a repository more than once, or only after the body flag, so the real destination cannot be told apart from quoted text"
+elif ! command -v gh >/dev/null 2>&1; then
   unresolved="\`gh\` is not installed"
 elif [[ -z $TIMEOUT_BIN ]]; then
   unresolved="neither \`timeout\` nor \`gtimeout\` is installed, so no bounded \`gh\` call can be made"
@@ -297,11 +344,22 @@ grep -qE '```' <<<"$payload" && signals+=("a fenced code block")
 # the routine case is how a guard gets switched off, which this file argues
 # against three times over. The unresolved announcement says the comparison did
 # not run, so its absence is stated rather than silent.
+owner_note=""
 if [[ -n $owner ]]; then
   foreign=$(grep -oE 'github\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+' <<<"$payload" \
     | sed -E 's|github\.com/||' | cut -d/ -f1 | sort -u \
     | grep -vix "$owner" | head -n3 | paste -sd, -)
   [[ -n $foreign ]] && signals+=("references to another owner's repo ($foreign)")
+else
+  # Not denying is not the same as saying nothing. The originating incident's
+  # payload shape — a paraphrase of a third party's repo, with a link, and no
+  # fenced block or security vocabulary — trips none of the other signals, so
+  # dropping this one silently would leave exactly that case unremarked. The
+  # owners are named without a verdict attached, which is all the hook can
+  # honestly offer when it never learned whose repo it is publishing to.
+  seen=$(grep -oE 'github\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+' <<<"$payload" \
+    | sed -E 's|github\.com/||' | cut -d/ -f1 | sort -u | head -n3 | paste -sd, -)
+  [[ -n $seen ]] && owner_note=" The payload references these github.com owners: ${seen}. With no destination owner read, whether any is foreign could not be decided, so this did NOT deny on their account — check them yourself, since a paraphrase of another party's repo discloses as much as a quote."
 fi
 
 if grep -qiE 'no auth|unauthenticated|without auth|rate.?limit|api[ _-]?key|auth_token|credential|\bsecret\b|password|samesite|allow_credentials|vulnerab|exploit|CVE-[0-9]|XSS|injection|logs? (the )?(full|raw|verbatim)' <<<"$payload"; then
@@ -315,7 +373,7 @@ fi
 # guardrail. They are different sentences now.
 if [[ ${#signals[@]} -eq 0 ]]; then
   if [[ -n $unresolved ]]; then
-    ctx="The public-publish provenance guard could NOT resolve this command's destination (${unresolved}), so it never checked whether the destination is public. It scanned the payload anyway and found nothing risky, so this is allowed. Note that with no owner read, the foreign-owner signal could not be computed and did not run; only the fenced-block and security-vocabulary signals did. Until that is fixed, treat the visibility half of this guard as absent rather than as having passed."
+    ctx="The public-publish provenance guard could NOT resolve this command's destination (${unresolved}), so it never checked whether the destination is public. It scanned the payload anyway and found nothing risky, so this is allowed. Note that with no owner read, the foreign-owner signal could not be computed and did not run; only the fenced-block and security-vocabulary signals did. Until that is fixed, treat the visibility half of this guard as absent rather than as having passed.${owner_note}"
   else
     ctx="Publishing to ${repo}, ${vis_phrase}. Nothing in the payload tripped the provenance guard."
   fi
@@ -327,7 +385,7 @@ fi
 joined=$(printf '%s; ' "${signals[@]}"); joined="${joined%; }"
 reason="Publishing to ${repo} (${vis_tag}) with: ${joined}."
 
-ctx="BLOCKED by the public-publish provenance guard (${RULE}). Destination: ${repo}, ${vis_phrase}. Payload contains: ${joined}.
+ctx="BLOCKED by the public-publish provenance guard (${RULE}). Destination: ${repo}, ${vis_phrase}. Payload contains: ${joined}.${owner_note}
 
 Before retrying, verify EACH of these and state the answers explicitly:
   1. PROVENANCE — does every quoted file path, code block, config value and architectural detail originate in THIS repo? Anything learned from a private repo, a third party's source, or an authenticated API for a repo you do not own MUST NOT be published. Paraphrase discloses as much as a quote.
