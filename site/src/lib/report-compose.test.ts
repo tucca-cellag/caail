@@ -296,12 +296,34 @@ describe('normaliseDoi and isDoiShape', () => {
     for (const raw of [
       'https://doi.org/doi:10.1234/abc',
       'https://dx.doi.org/DOI:10.1234/abc',
+      // The REVERSED nesting, which the first fix missed: this is what a pasted APA
+      // reference looks like, and one pass left a resolver URL that composeBody emitted
+      // while isDoiShape normalised again and validated the bare DOI.
+      'DOI: https://doi.org/10.1234/abc',
+      'doi:https://dx.doi.org/10.1234/abc',
+      'doi:doi:10.1234/abc',
       'doi: 10.1234/abc',
       '10.1234/abc',
       'not a doi',
     ]) {
       expect(normaliseDoi(normaliseDoi(raw)), raw).toBe(normaliseDoi(raw));
     }
+  });
+
+  it.each([
+    ['a pasted APA reference', 'DOI: https://doi.org/10.1234/abc'],
+    ['a doubled scheme prefix', 'doi:doi:10.1234/abc'],
+    ['a doi: wrapping a resolver URL', 'doi:https://dx.doi.org/10.1234/abc'],
+  ])('accepts and composes the bare DOI from %s', (_label, raw) => {
+    // The contradiction this closes: the field said "that does not look like a DOI" while
+    // the report below it carried the resolver URL as though it were one.
+    expect(isDoiShape(raw), raw).toBe(true);
+    const body = composeBody(
+      { itemId: 'paper:1', reason: reason({ kind: 'doi' }), doi: raw },
+      VOCAB,
+    );
+    expect(body).toContain('DOI should be: 10.1234/abc');
+    expect(body).not.toContain('doi.org');
   });
 
   it('composes exactly the string it validated', () => {

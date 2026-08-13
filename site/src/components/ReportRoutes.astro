@@ -468,6 +468,8 @@ const vocabJson = JSON.stringify(vocabularies).replace(/</g, '\\u003c');
     let current: StepName = 'reason';
     /** Pending re-post of the step-1 alert. Held so it can be cancelled; see `alert`. */
     let alertTimer: number | undefined;
+    /** Pending re-post of the review step's dropped-answer notice. Held so it can be cancelled. */
+    let droppedTimer: number | undefined;
 
     /**
      * The three route notes are rewritten once, the moment a report first exists, and the
@@ -813,12 +815,30 @@ const vocabJson = JSON.stringify(vocabularies).replace(/</g, '\\u003c');
      */
     function announceDropped() {
       const region = el.dropped;
+      if (!region) return;
+      // Cancel any pending re-post before arming another, and let render() cancel it too.
+      // Without that this had the same defect `clearAlert` exists to prevent, one region
+      // over: arm the timer with an unusable DOI, go Back inside 60ms, fix the DOI —
+      // render() clears the region, the stale timer then repaints "not shaped like a DOI,
+      // so it is not in the report below", and nothing clears it again, because the review
+      // step has no inputs to trigger another render and announceDropped early-returns
+      // once the message is empty. The reader ends up with that sentence directly above a
+      // report containing the DOI.
+      cancelDroppedTimer();
       const message = droppedMessage();
-      if (!region || !message) return;
+      if (!message) return;
       region.textContent = '';
-      window.setTimeout(() => {
+      droppedTimer = window.setTimeout(() => {
         region.textContent = message;
+        droppedTimer = undefined;
       }, 60);
+    }
+
+    function cancelDroppedTimer() {
+      if (droppedTimer !== undefined) {
+        window.clearTimeout(droppedTimer);
+        droppedTimer = undefined;
+      }
     }
 
     // ── live output ───────────────────────────────────────────────────────────
@@ -839,6 +859,9 @@ const vocabJson = JSON.stringify(vocabularies).replace(/</g, '\\u003c');
       if (mail) mail.href = correctionMailto(itemId, composed);
       if (el.submit) el.submit.href = correctionIssueUrl(itemId, composed);
 
+      // Cancel a pending re-post first: it would otherwise repaint a message this render
+      // is in the middle of clearing.
+      cancelDroppedTimer();
       if (el.dropped) el.dropped.textContent = droppedMessage();
 
       if (el.dropdownNote) {

@@ -395,7 +395,28 @@ export function normaliseDoi(raw: string): string {
   // the encoded bound put encodeURIComponent on that path without the sanitising that made
   // it safe. Doing it here rather than in isDoiShape keeps it true of the string that is
   // actually composed, since composeBody emits what normaliseDoi returns.
-  const trimmed = stripUnpairedSurrogates(raw).trim();
+  let value = stripUnpairedSurrogates(raw).trim();
+  // To a FIXED POINT, not one pass of each rule. The two prefixes nest in both
+  // orders — `https://doi.org/doi:10.x` and `DOI: https://doi.org/10.x`, the second
+  // being what a pasted APA citation looks like — and a single pass only ever
+  // handled one of them. The other left a resolver URL that `composeBody` emitted
+  // while `isDoiShape` normalised a second time and validated the bare DOI, so the
+  // field said "that does not look like a DOI" above a report containing it. That
+  // is the same validate-one-string, emit-another failure an earlier round claimed
+  // to have closed by making this idempotent; it closed one ordering.
+  //
+  // Terminates because every pass either strips a prefix, strictly shortening the
+  // string, or changes nothing and returns. The bound is belt and braces.
+  for (let pass = 0; pass < 8; pass += 1) {
+    const next = stripDoiPrefixes(value);
+    if (next === value) break;
+    value = next;
+  }
+  return value;
+}
+
+/** One pass of the two prefix rules. See {@link normaliseDoi}, which iterates it. */
+function stripDoiPrefixes(trimmed: string): string {
   const resolver = /^https?:\/\/(?:dx\.)?doi\.org\/(.*)$/is.exec(trimmed);
   // A resolver URL's query and fragment belong to the URL, not to the DOI. This is not a
   // theoretical case: copying a DOI link out of a newsletter or a search result brings
