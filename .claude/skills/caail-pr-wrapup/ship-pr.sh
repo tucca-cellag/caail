@@ -280,9 +280,19 @@ cmd_merge() {
     printf 'ship-pr: local %s and the PR head are different commits, refusing to merge\n' "$br" >&2
     printf '  local HEAD    %s\n' "$local_head" >&2
     printf '  PR #%s head   %s\n' "$pr" "$pr_head" >&2
-    # Need the PR's head object locally to say which way it went.
-    git cat-file -e "${pr_head}^{commit}" || git fetch origin "$br" >&2 ||
-      die "cannot fetch origin/$br to tell which way these diverged; reconcile by hand, do not force."
+    # Need the PR's head object locally to say which way it went, and it has to
+    # be ASSERTED present rather than assumed: `merge-base --is-ancestor` exits
+    # 128 (not 1) on a missing commit, so both tests below would be false and
+    # control would fall through to "DIVERGED, do not force-push" — a confident
+    # wrong answer, which is the one outcome this block is designed to avoid.
+    # Reachable when the PR head is on a fork, or when the ref moved between the
+    # headRefOid read above and now.
+    if ! git rev-parse --verify --quiet "${pr_head}^{commit}" >/dev/null; then
+      git fetch origin "$br" >&2 ||
+        die "cannot fetch origin/$br to tell which way these diverged; reconcile by hand, do not force."
+      git rev-parse --verify --quiet "${pr_head}^{commit}" >/dev/null ||
+        die "the PR's head commit is not in this repo even after fetching origin/$br (a fork PR, or the ref moved); reconcile by hand, do not force."
+    fi
     if git merge-base --is-ancestor "$pr_head" "$local_head"; then
       die "local is AHEAD of the PR: push, then merge. A committed but unpushed fix is not in the PR."
     elif git merge-base --is-ancestor "$local_head" "$pr_head"; then

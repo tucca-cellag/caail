@@ -84,13 +84,16 @@ the local gate (above) if you haven't this session.
 Then apply or triage every finding and **run it again on the updated diff**, until the findings die out.
 Do this before the push, so fixes land as ordinary commits instead of churn on an open PR.
 
-**Depth comes from the number of rounds, not from the level.** That is the deliberate choice here, and it
-is what "scale with the diff" means in this skill: a presentational change and a parser change get the
-same level and a different number of passes. Do not reach for `max`, `xhigh` or `ultra`. They are not the
-lever, and two of them are actively worse than they look: `xhigh` falls back to `high` on models other
-than the newest Opus without saying so, and `ultra` is user-triggered and billed, so an agent cannot run
-it at all. A level you think you raised but did not is the same silent failure as the thin cross-model
-report this whole phase exists to compensate for.
+**Depth comes from the number of rounds, not from the level.** That is a maintainer decision, and it is
+what "scale with the diff" means in this skill: a presentational change and a parser change get the same
+level and a different number of passes. Do not reach for `max` or `xhigh`; add a round instead. `ultra` is
+not an option at all from here, being user-triggered and billed, so an agent cannot run it.
+
+(Whether a deeper level behaves exactly as its name suggests is a property of the review tool, which moves
+independently of this repo, so this file deliberately makes no claim about it. Two reviews of this very
+change disagreed about what `xhigh` does, which is the argument for not writing it down: an unverifiable
+claim about someone else's internals is the kind of fact that rots silently. The rule above stands on the
+decision, not on the mechanism.)
 
 **The floor on rounds comes from blast radius.** When a diff spans shapes, the widest one wins, and CAAIL
 PRs span shapes routinely. **A diff that matches no row is a 2, never a 1.** Two rounds is the floor for
@@ -168,9 +171,10 @@ checkpoint that used to sit between editing and shipping:
 
   | A round touched | Re-run |
   | --- | --- |
-  | `site/**` | `pnpm --dir site test`. If any e2e spec is in scope, `build` **then** `test:e2e`, in that order and never one without the other: `test:e2e` is bare `playwright test`, so `webServer` serves whatever already sits in `site/dist` and a stale build passes green against code your fix never reached |
+  | `site/**` | `pnpm --dir site test`. If any e2e spec is in scope, `build` **then** `test:e2e`, in that order and never one without the other: `test:e2e` is bare `playwright test`, so `webServer` serves whatever already sits in `site/dist` and a stale build passes green against code your fix never reached. For `site/scripts/parser/**` or `site/scripts/db/**`, add `parse` and commit the `site/public/api/` result, as in the NDJSON row: those paths feed the same CI sync guard |
   | `workers/**` | `pnpm --dir site test` (the Worker's suite runs inside it). Then **deploy the Worker by hand before step 2**, `pnpm --dir workers/events run deploy`: no workflow deploys it, so shipping the code does not ship the change, and pushing publishes a commit message describing behaviour that is not live yet |
-  | the committed NDJSON or the curated DOI/license inputs | `pnpm --dir site db:check` **and** `db:verify`, then `db:emit` and confirm `git diff` is empty. Skipping the re-emit is how the Markdown drifts from the DB, and the first signal would be a red sync guard at step 5, after the push |
+  | the committed NDJSON | `db:check` **and** `db:verify`, then `db:emit` and confirm it **introduces nothing new** (the fix itself is still uncommitted, so `git diff` is non-empty by construction; what you are checking is that re-emitting adds no further Markdown change). Then `pnpm --dir site parse` and commit whatever changes under `site/public/api/` and `site/public/setup.md`: those are NDJSON-derived, `pnpm test` does not regenerate them, and `lint-papers.yml`'s API sync guard re-derives them in CI, so skipping this goes red at step 5 after the push |
+  | the curated DOI / license / related-DOI inputs (`dois-manual.json`, `licenses-manual.json`, `dois-related.json`) | **`db:reseed-axes` first**, then the NDJSON row above. Those files are inputs that get folded into the NDJSON; until the reseed runs, the intended change is not in the DB at all, so `db:check` passes and `db:emit` produces nothing while nothing you meant to change has happened |
   | `check-public-publish.sh` | `python3 .claude/hooks/check-public-publish.test.py` |
   | `block-generated-edits.py` | `pnpm --dir site test`. Its only coverage is `site/scripts/db/hook.test.ts`, so the publish-hook suite above does **not** exercise it. The two hooks are tested in different places; the CI section below says so too |
   | `ship-pr.sh`, `check-ci-paths.py`, `.github/workflows/**` | `python3 .claude/skills/caail-pr-wrapup/check-ci-paths.py` |
@@ -477,7 +481,7 @@ adding it there too, or the guard will happily confirm that an incomplete set is
 | `push` says **on the default branch** | You are shipping from a checkout that holds `main` (the primary one usually does). Nothing was pushed. Get onto the feature branch, or run the skill from its worktree. Without this the push would have gone straight to `origin/main`, skipping the PR and every check, with `docs.yml` deploying it. |
 | A finding's **fix is itself unreviewed code** | It is, and that is the whole reason for round 2. Two of the fourteen defects in step 1's evidence arrived this way, one an accessibility regression created by the fix for a different accessibility finding. Never merge a fix that no round has seen. |
 | Cross-model pass returns **one or two findings, or none** | Normal output for the weaker reviewer; it is not evidence the diff is clean (step 1's rationale). Do not let it stand in for a step-1 round, and do not report it as "reviewed by two models" as if the two carried equal weight. |
-| A deeper level than `high` looks warranted | It isn't the lever here, and reaching for one is how a review gets quietly shallower rather than deeper: `xhigh` degrades to `high` on models other than the newest Opus without saying so, and `ultra` is user-triggered and billed, so an agent cannot run it at all. Add a round instead. If you still think the diff needs something else, say so and let the user decide. |
+| A deeper level than `high` looks warranted | It isn't the lever here: **add a round instead.** `ultra` is not available to an agent regardless, being user-triggered and billed. If you still think the diff needs something other than another round, say so and let the user decide rather than changing the level quietly. |
 | Someone proposes collapsing step 1 back to a single pass | Point them at step 1's rationale block and its revisit condition. The rounds compensate for a measured reviewer-strength asymmetry, and the condition for lowering them is a stronger non-Claude reviewer, not a diff that feels small. |
 | `gh pr merge --delete-branch` — **two outcomes, both fine** | Which one you get depends on whether anything holds `main`. **(a) Something does** (the primary checkout, or a worktree): gh's post-merge *local* step fails with `fatal: 'main' is already checked out at …`. Benign — the **remote merge already succeeded**; the helper verifies `state==MERGED` and API-deletes the remote branch. **(b) Nothing does:** gh succeeds, which means it **switches this checkout to `main` and deletes the local feature branch itself**. Then step 9's fast-forward is already done and `git branch -d <branch>` answers `error: branch '<branch>' not found` — also benign, and not a sign the merge went wrong. Either way trust `MERGED`, not gh's exit code, and check `git branch --show-current` before assuming where you are. |
 | Deploy run fails on **Lighthouse** | A11y/perf regression on landing or explorer. **Hard stop** — read the lhci output, fix it, ship again. Never blind-retry. |
@@ -498,7 +502,7 @@ adding it there too, or the guard will happily confirm that an incomplete set is
 | `push` | `git push -u origin <branch>`; **re-asserts branch, clean tree and auth first** | yes |
 | `open-pr <title> <body-file>` | `gh pr create --base main`; prints PR url | yes |
 | `watch-checks <pr>` | blocks on checks; 0 if none/clean, non-zero on failure | no |
-| `merge <pr>` | **refuses if local `HEAD` differs from the PR head** (naming which way, since the remedies are opposite), then merges + deletes the remote branch (gotcha-handled); prints merge SHA | yes |
+| `merge <pr>` | **when run from the PR's own branch**, refuses if local `HEAD` differs from the PR head, naming which way it diverged since the remedies are opposite. From any other branch that check cannot mean anything and is skipped, so an unpushed commit is **not** caught there. Then merges + deletes the remote branch (gotcha-handled); prints merge SHA | yes |
 | `watch-deploy <merge-sha>` | finds + watches the `docs.yml` run; 0 if no deploy fires | no |
 | `verify-live <route>...` | curls each live route; non-zero if any ≠ 200 | no |
 
@@ -508,9 +512,11 @@ reading this file. That is a weaker guarantee than the path-filter check in `gua
 knowing which of the two you are relying on: if a ship skipped the rounds, the PR body is the only place
 it would show.
 
-What *is* enforced in code is that the fixes reach the PR: `push` refuses a dirty tree (alongside the
-branch and auth assertions it shares with `preflight`), and `merge` refuses when local `HEAD` is not the
-commit the PR would merge. Those two cover the uncommitted and unpushed halves of the same failure. Nothing
-checks that the rounds happened at all.
+What *is* partly enforced in code is that the fixes reach the PR: `push` refuses a dirty tree (alongside
+the branch and auth assertions it shares with `preflight`), and `merge` refuses when local `HEAD` is not
+the commit the PR would merge. Between them they cover the uncommitted and unpushed halves of the same
+failure, with one gap worth knowing: the `merge` check only runs when you are **on** that PR's branch,
+because from anywhere else local `HEAD` says nothing about this PR. Merging PR #A while standing on branch
+B is therefore unguarded against an unpushed commit on A. Nothing checks that the rounds happened at all.
 That is deliberate: a skipped round produces a thin PR body a reader can notice, whereas an uncommitted
 fix produces a PR that *looks* right and is missing the fix, and nothing downstream can tell.
