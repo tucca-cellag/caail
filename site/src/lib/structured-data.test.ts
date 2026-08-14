@@ -173,7 +173,10 @@ describe('breadcrumbList', () => {
     // SECTION_LABELS is hand-kept and keyed on route prefixes, so it goes stale
     // the moment a new canonical directory is added — which is exactly how
     // `methods` came to be missing. Deriving the cases from CAAIL_PAGES means the
-    // NEXT directory fails here instead of shipping a collapsed breadcrumb.
+    // next CANONICAL directory fails here instead of shipping a collapsed
+    // breadcrumb. It does NOT cover nested in-repo Starlight routes
+    // (`papers/network`, `primers/ai`): those are not in CAAIL_PAGES, so their
+    // labels remain hand-added and unguarded.
     const nested = CAAIL_PAGES.all().filter((p) => p.id.includes('/'));
     expect(nested.length).toBeGreaterThan(0);
     const collapsed = nested.filter(
