@@ -61,6 +61,16 @@ The matrix and the `## References` list must be kept in sync:
    > **Code**: https://github.com/<owner>/<repo>
    ```
 
+   **If the publisher has issued a correction or erratum**, record it the same way under its own DOI, and separate the two with a blank line:
+
+   ```markdown
+   > **Code**: https://github.com/<owner>/<repo>
+
+   > **Correction**: https://doi.org/<correction-doi>
+   ```
+
+   The blank line matters: GitHub renders two adjacent `>` lines as one run-on line, and GitHub is where these are read.
+
 4. **Add the paper to every applicable matrix cell.** For each AI method (row) and research area (column) the paper covers, add `[42](#42)` to the corresponding cell, comma-separated with any existing entries:
 
    ```markdown
@@ -179,42 +189,14 @@ create a new `##` section rather than mixing it into an existing list.
 A research area is a column in the `Papers.md` matrix, backed by a deep-dive page under `ResearchAreas/`. To add one:
 
 1. **Create `ResearchAreas/<AreaName>.md`** (PascalCase, no spaces, e.g. `ProteinDesign.md`). The file should give a short overview of why the area matters to cellular agriculture and what computational/AI techniques are being applied to it. Existing files like `MediaOptimization.md` are good models.
-2. **Define the column in `Taxonomy.md`** and add it to the `Papers.md` matrix with the header linked
-   to that definition, not to the deep-dive page. `Taxonomy.md` is the trusted scope for every row and
-   column; the `ResearchAreas/` page is an editorial companion.
+2. **Add a column** to the `Papers.md` matrix, with the column header linked to your new file:
 
    ```markdown
-   | | ... | [Protein Design](./Taxonomy.md#protein-design) | ... |
+   | | ... | [Protein Design](./ResearchAreas/ProteinDesign.md) | ... |
    ```
 
-3. **Register the page for the site** in `site/src/content/caail-pages.ts` (group `research-areas`,
-   with its own meta description). This is not optional: `caail-pages.test.ts` asserts every file in
-   `ResearchAreas/` has a map entry, so a page without one fails CI.
-
-4. **Link your new area from the README's "What's Inside" section** if it stands as a primary entry point. (Not every research area needs to, small/exploratory areas can live only inside `Papers.md`.)
-5. **Backfill matrix cells** for any existing references that also apply to your new area.
-
-## Adding a deep-dive page for an AI/ML method
-
-The matrix has two axes, and they have separate homes. A **research area** is a column, written up under
-`ResearchAreas/`; an **AI/ML method** is a row, written up under `Methods/`. A method page goes in
-`Methods/`, never in `ResearchAreas/`.
-
-That is a hard rule with a mechanical reason: `counts.json`'s `researchAreas` figure is derived by counting
-the `*.md` files in `ResearchAreas/`, and the homepage labels that number "Research Areas". A method page
-placed there would silently inflate a public statistic that says it is counting something else.
-
-1. **Create `Methods/<MethodName>.md`** (PascalCase, no spaces, e.g. `BenchmarksEvaluation.md`), naming the
-   matrix row it covers. `Methods/BenchmarksEvaluation.md` is the model.
-2. **Do not add a matrix row for it.** A page describes a row that already exists; adding a row is a
-   separate, deliberate change that needs its `Taxonomy.md` definition in the same commit.
-3. **Register it for the site** in `site/src/content/caail-pages.ts` (group `methods`, with its own meta
-   description). The sidebar entry, the route and the link-rewriting guard all derive from that map. As
-   with a research-area page this is not optional: `caail-pages.test.ts` asserts every file in `Methods/`
-   has a map entry, so a page without one fails CI.
-
-What is optional is *whether a row has a page at all*: most rows have none, and a row is never blocked on
-one being written. The three steps above are not optional once you decide to write one.
+3. **Link your new area from the README's "What's Inside" section** if it stands as a primary entry point. (Not every research area needs to, small/exploratory areas can live only inside `Papers.md`.)
+4. **Backfill matrix cells** for any existing references that also apply to your new area.
 
 ## Citation style
 

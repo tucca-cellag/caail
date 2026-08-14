@@ -673,6 +673,8 @@ in its methods, not what it could be applied to. Short form:
 
 > **Code**: https://github.com/faezesarlakifar/AllerTrans
 
+> **Correction**: https://doi.org/10.1093/biomethods/bpaf076
+
 <a id="290">290</a> Sharma, N., Patiyal, S., Dhall, A., Pande, A., Arora, C., & Raghava, G. P. S. (2021). AlgPred 2.0: An improved method for predicting allergenic proteins and mapping of IgE epitopes. *Briefings in Bioinformatics, 22*(4), bbaa294. https://doi.org/10.1093/bib/bbaa294
 
 <a id="309">309</a> Dahl, J. F., Schlangen, M., van der Goot, A. J., & Corredig, M. (2025). Predicting rheological parameters of food biopolymer mixtures using machine learning. *Food Hydrocolloids, 160*, 110786. https://doi.org/10.1016/j.foodhyd.2024.110786
