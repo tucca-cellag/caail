@@ -88,11 +88,21 @@ import scope  # noqa: E402
 # supplement, which are the entire reason merging exists, are the ones dropped.
 # The first version of this pattern knew only the PMC convention and one
 # publisher's, which is most of the corpus's supplements missed.
+# Every alternative is anchored, because a Zotero filename embeds the paper's
+# TITLE (`Author - Year - Title.pdf`) and this corpus is about cell culture. An
+# unanchored `supplement` matched "amino acid supplementation" and "media
+# supplemented with"; unanchored `appendix` and `supporting info` matched titles
+# containing those ordinary words. Each false positive is worse than it sounds:
+# if the article is the item's only PDF it classifies as a supplement, `n_main`
+# is 0, and the ref is refused -- a real paper dropped for having a common word
+# in its title.
 SUPPLEMENT_RE = re.compile(
-    r"supplement(al|ary)?"   # supplement / supplemental / supplementary, anywhere,
-                             # which also covers PMC's NIHMS…-supplement-….pdf and
-                             # Cell Press "Supplemental Information.pdf"
-    r"|supporting[-_ ]info"  # ACS/RSC "Supporting Information"
+    # supplement / supplemental / supplementary as a whole word, so
+    # "supplementation" and "supplemented" do not match. Covers PMC's
+    # NIHMS…-supplement-….pdf and Cell Press "Supplemental Information.pdf".
+    r"supplement(al|ary)?(?![a-z])"
+    # ACS/RSC, but only as the tail of the filename rather than mid-sentence.
+    r"|supporting[-_ ]info(rmation)?[-_ ]?[a-z0-9]*\.pdf$"
     r"|^media-\d+\.pdf$"     # OUP/BMC publisher media
     r"|moesm\d*"             # Springer Nature: 41586_2024_1234_MOESM1_ESM.pdf
     r"|mmc\d+"               # Elsevier: 1-s2.0-…-mmc1.pdf
@@ -100,7 +110,8 @@ SUPPLEMENT_RE = re.compile(
     r"|sapp\.pdf$"           # PNAS: pnas.…sapp.pdf
     r"|[-_]sm\.pdf$"         # Science: science.abc1234_sm.pdf
     r"|[-_]si\d*\.pdf$"      # …_si.pdf / …-si1.pdf
-    r"|appendix",
+    # appendix only as its own filename, not the word inside a title.
+    r"|(^|[-_ ])appendix[-_ ]?[a-z0-9]*\.pdf$",
     re.I)
 
 

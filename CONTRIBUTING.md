@@ -61,6 +61,16 @@ The matrix and the `## References` list must be kept in sync:
    > **Code**: https://github.com/<owner>/<repo>
    ```
 
+   **If the publisher has issued a correction or erratum**, record it the same way under its own DOI, and separate the two with a blank line:
+
+   ```markdown
+   > **Code**: https://github.com/<owner>/<repo>
+
+   > **Correction**: https://doi.org/<correction-doi>
+   ```
+
+   The blank line matters: GitHub renders two adjacent `>` lines as one run-on line, and GitHub is where these are read.
+
 4. **Add the paper to every applicable matrix cell.** For each AI method (row) and research area (column) the paper covers, add `[42](#42)` to the corresponding cell, comma-separated with any existing entries:
 
    ```markdown

@@ -1,5 +1,5 @@
 {
-  "corpusDate": "2026-08-13",
+  "corpusDate": "2026-08-14",
   "count": 345,
   "scopeNote": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall.",
   "truncationNote": "Compare the number of rows you parsed against `count`. If you have fewer, your fetch truncated this file and you are looking at part of the corpus: say so, and do not report an absence from it. Fetching with a tool that returns bytes rather than a summary avoids this entirely.",

@@ -75,6 +75,16 @@ ARTICLES = [
     "Sarlakifar et al. - 2025 - AllerTrans.pdf",
     "1-s2.0-S0308814624001234-main.pdf",
     "41586_2024_1234_Article.pdf",
+    # The false-positive direction, and the reason every alternative is anchored.
+    # A Zotero filename embeds the paper's TITLE, and this corpus is about cell
+    # culture, so these are ordinary words here rather than exotic edge cases.
+    # Each one, unanchored, made the article classify as a supplement -- and if
+    # it is the item's only PDF, `n_main` is 0 and the ref is refused outright.
+    "Zhang et al. - 2024 - Effect of amino acid supplementation on myoblasts.pdf",
+    "Lee et al. - 2023 - Serum-free media supplemented with growth factors.pdf",
+    "Kim et al. - 2025 - Appendix-free protocol for scaffold seeding.pdf",
+    "Roell et al. - 2022 - Supporting information systems for bioprocess.pdf",
+    "Du et al. - 2025 - Supplementing basal medium for bovine satellite cells.pdf",
 ]
 for fname in ARTICLES:
     check(f"article: {fname[:48]}", bool(sp.SUPPLEMENT_RE.search(fname)), False)

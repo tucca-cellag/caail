@@ -157,6 +157,16 @@ LICENSE                MIT License
      > **Code**: https://github.com/<owner>/<repo>
      ```
 
+   - If the publisher has issued a **correction, erratum or expression of concern**, record it the same way, under its own DOI:
+
+     ```markdown
+     > **Correction**: https://doi.org/<correction-doi>
+     ```
+
+     **Separate multiple blockquote labels with a blank line.** GitHub does not convert a soft break into a line break in a repository file, so two adjacent `>` lines render as a single run-on line — and GitHub is the surface these notices are read on. Every multi-label reference in `Papers.md` follows this convention.
+
+     Two things to know before adding one. The site parser lifts only the `Code` and `Data` labels (`site/scripts/parser/papers.ts`), so a `Correction` reaches GitHub and `llms-full.txt` but **not** `api/papers.json` or the Papers Explorer — tracked as tucca-cellag/caail#202. And record one even when it looks cosmetic: the correction on ref 289 changed a single word of the abstract, 2-fold to 5-fold cross-validation, which is precisely the claim an abstract-only classification would have rested on.
+
 3. **A `## Reviews & Perspectives` section** below `## References` — for review articles, position papers, and commentaries that survey or opine on the field rather than applying a specific method:
    - Same anchor format and APA style as the primary references.
    - **No matrix participation.** Reviews don't get cell anchors in the matrix — they live only in this section.

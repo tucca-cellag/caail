@@ -489,6 +489,9 @@ def main():
             "methods_end_heading": "",
             "methods_pages": None,      # [first, last] for docling sections
             "methods_truncated": False,
+            # Non-empty when this ref matched its Zotero item only after a URL
+            # fragment was dropped, i.e. the join may have found another paper.
+            "suspect_join": "",
         }
         # A Docling section stands on its own: it comes from the PDF, not the
         # ft-cache, so it is available even for a ref whose ft-cache is missing.
@@ -511,9 +514,11 @@ def main():
             corpus.append(rec)
             continue
         group, item = hit
-        # Only the URL path can be wrong this way; a DOI match is exact.
+        # Only the URL path can be wrong this way; a DOI match is exact. Kept on
+        # the record, not just printed: on a 345-ref run the warning scrolls past,
+        # and this is the one anomaly worth finding again later.
         if not by_doi:
-            check_url_join(rid, url, item)
+            rec["suspect_join"] = check_url_join(rid, url, item) or ""
         rec["zotero_group"] = group
         rec["abstract"] = (item.get("data", {}).get("abstractNote") or "").strip()
         pdf_key = scope.find_pdf_attachment_key(args.api, group, item.get("key"))

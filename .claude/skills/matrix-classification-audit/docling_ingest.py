@@ -283,13 +283,15 @@ def resolve_pdfs(api, groups, storage, papers_md):
         # cluster: the item resolved here decides which PDF gets converted and
         # stored as this ref's document. A wrong join is therefore not a
         # measurement error but another paper's methods filed under this id.
-        if not by_doi:
-            ex.check_url_join(rid, ref["url"], item)
+        suspect = ex.check_url_join(rid, ref["url"], item) if not by_doi else None
         pdf_key = scope.find_pdf_attachment_key(api, group, item.get("key"))
         d = Path(storage) / pdf_key if pdf_key else None
         pdfs = sorted(d.glob("*.pdf")) if d and d.is_dir() else []
         out.append({
             "id": rid,
+            # Carried through to ingest-log.json rather than only printed: this
+            # run converts and stores whatever the join picked.
+            "suspect_join": suspect or "",
             "pdf": str(pdfs[0]) if pdfs else "",
             "why": "" if pdfs else "no-pdf-attachment",
             "in_matrix": rid in matrix_ids,
