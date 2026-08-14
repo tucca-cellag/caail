@@ -672,6 +672,7 @@ in its methods, not what it could be applied to. Short form:
 <a id="289">289</a> Sarlakifar, F., Malek, H., & Allahyari Fard, N. (2025). AllerTrans: A deep learning method for predicting the allergenicity of protein sequences. *Biology Methods and Protocols, 10*(1), bpaf040. https://doi.org/10.1093/biomethods/bpaf040
 
 > **Code**: https://github.com/faezesarlakifar/AllerTrans
+
 > **Correction**: https://doi.org/10.1093/biomethods/bpaf076
 
 <a id="290">290</a> Sharma, N., Patiyal, S., Dhall, A., Pande, A., Arora, C., & Raghava, G. P. S. (2021). AlgPred 2.0: An improved method for predicting allergenic proteins and mapping of IgE epitopes. *Briefings in Bioinformatics, 22*(4), bbaa294. https://doi.org/10.1093/bib/bbaa294

@@ -41,7 +41,14 @@ import time
 import traceback
 from pathlib import Path
 
-REPO = Path(__file__).resolve().parents[3]
+# Only used for argparse defaults, which every cluster caller overrides. Guarded
+# because this module is now imported from arbitrary paths -- convert_one.py
+# imports it, and two sbatch scripts run or import it under whatever
+# CAAIL_SKILL_DIR points at. A shallow path (`/scratch/caail/`) has fewer than
+# four parents, and an unguarded index would raise IndexError at import time, so
+# every array task would die with a traceback saying nothing about paths.
+_parents = Path(__file__).resolve().parents
+REPO = _parents[3] if len(_parents) > 3 else Path.cwd()
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 sys.path.insert(0, str(HERE.parent / "zotero-collection-scope"))

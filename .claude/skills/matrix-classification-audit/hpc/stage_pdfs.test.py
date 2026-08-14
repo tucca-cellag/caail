@@ -56,6 +56,11 @@ SUPPLEMENTS = [
     ("paper_si.pdf", "generic supporting-information suffix"),
     ("Supplementary Data.pdf", "the plain word"),
     ("appendix-a.pdf", "appendix"),
+    ("Supplemental Information.pdf", "Cell Press"),
+    ("Supplemental Material.pdf", "the -al spelling"),
+    ("Smith2024_supplement.pdf", "bare 'supplement' as a suffix"),
+    ("Supplement.pdf", "bare 'supplement' alone"),
+    ("science.abc1234_sm.pdf", "Science"),
 ]
 for fname, who in SUPPLEMENTS:
     check(f"{who}: {fname}", bool(sp.SUPPLEMENT_RE.search(fname)), True)

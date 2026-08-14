@@ -9,12 +9,20 @@ look for.
 **It does not build the same input document.** `docling_ingest.resolve_pdfs` takes
 `scope.find_pdf_attachment_key`, which is one PDF per item; this merges all of
 them. So a ref converted here and the same ref converted by a local
-`docling_ingest.py` run can differ in their *input*, not merely in extractor
-version, and `docs/ref-<id>.json` records neither. Since the ingest is resumable
-and skips refs whose docs already exist, mixing the two paths produces a corpus
-that is heterogeneous in a way nothing downstream can see. Convert a corpus by
-one route or the other; if that is impossible, re-convert the overlap rather than
-letting the skip decide.
+`docling_ingest.py` run differ in their *input*, not merely in extractor version,
+and `docs/ref-<id>.json` records neither.
+
+**And the two disagree about what counts as done, in a direction that destroys
+work.** `convert_one.py` skips a ref whose `docs/` file exists; `docling_ingest`
+skips on `sections/`. The array writes only `docs/`. So in the window between the
+array draining and `--respan` succeeding -- or if the respan fails, or ran against
+a partial corpus -- a local `docling_ingest.py` run sees no section for any
+cluster-converted ref, re-converts every one of them, and **overwrites the merged
+`docs/ref-<id>.json` with a single-PDF document**. The refs that lose most are the
+merged supplement ones this module exists for, and nothing records the swap.
+
+Run the respan before any local ingest touches the same output directory, or keep
+the two corpora apart.
 
 ## Why this merges rather than picking one file
 
@@ -81,14 +89,16 @@ import scope  # noqa: E402
 # The first version of this pattern knew only the PMC convention and one
 # publisher's, which is most of the corpus's supplements missed.
 SUPPLEMENT_RE = re.compile(
-    r"-supplement-"          # PMC author manuscripts: NIHMS…-supplement-….pdf
-    r"|supplementary"        # the generic word, anywhere
+    r"supplement(al|ary)?"   # supplement / supplemental / supplementary, anywhere,
+                             # which also covers PMC's NIHMS…-supplement-….pdf and
+                             # Cell Press "Supplemental Information.pdf"
     r"|supporting[-_ ]info"  # ACS/RSC "Supporting Information"
     r"|^media-\d+\.pdf$"     # OUP/BMC publisher media
     r"|moesm\d*"             # Springer Nature: 41586_2024_1234_MOESM1_ESM.pdf
     r"|mmc\d+"               # Elsevier: 1-s2.0-…-mmc1.pdf
     r"|-sup-\d+"             # Wiley: …-sup-0001-….pdf
     r"|sapp\.pdf$"           # PNAS: pnas.…sapp.pdf
+    r"|[-_]sm\.pdf$"         # Science: science.abc1234_sm.pdf
     r"|[-_]si\d*\.pdf$"      # …_si.pdf / …-si1.pdf
     r"|appendix",
     re.I)
@@ -185,7 +195,7 @@ def main():
     if args.matrix_only:
         wanted = [r for r in wanted if r in matrix_ids]
 
-    staged, skipped, merged, partial, ambiguous = [], [], [], [], []
+    staged, skipped, merged, partial, ambiguous, suspect = [], [], [], [], [], []
 
     def write_manifest():
         """Written after every ref, not once at the end.
@@ -210,8 +220,17 @@ def main():
             json.dump({"staged": staged, "skipped": skipped,
                        "merged": {str(r): names for r, names in merged},
                        "partial": {str(r): n for r, n in partial},
-                       "ambiguous": {str(r): n for r, n in ambiguous}},
+                       "ambiguous": {str(r): n for r, n in ambiguous},
+                       "suspect_join": {str(r): n for r, n in suspect}},
                       fh, indent=2)
+
+    # Written once before the loop as well as after every ref. If `wanted` is
+    # empty -- `--only` naming an id that is not in Papers.md, or `--matrix-only`
+    # filtering everything out -- the loop body never runs, and a previous run's
+    # refs.txt in the same --out would survive intact. The documented next step
+    # sizes an array from that file, so the operator would launch against stale
+    # content believing they had just re-staged.
+    write_manifest()
 
     for rid in wanted:
         try:
@@ -233,7 +252,9 @@ def main():
             # someone else's methods section. Same check as the extractor makes,
             # made here too because this is the copy that ships to the cluster.
             if not by_doi:
-                ex.check_url_join(rid, ref["url"], item)
+                why = ex.check_url_join(rid, ref["url"], item)
+                if why:
+                    suspect.append((rid, why))
             atts = order_main_text_first(pdf_attachments(args.api, group, item.get("key")))
             paths = []
             for key, _fname in atts:
@@ -312,6 +333,12 @@ def main():
             print(f"  ref {rid}:")
             for n in names:
                 print(f"      {n}")
+    if suspect:
+        print(f"SUSPECT JOIN -- matched a Zotero item only after dropping a URL "
+              f"fragment that may carry the paper's identity ({len(suspect)}). "
+              f"The wrong paper's PDF would be staged under this ref:")
+        for rid, why in suspect:
+            print(f"  ref {rid}: {why}")
     if ambiguous:
         print(f"CHECK -- merged, but the attachments could not be classified "
               f"({len(ambiguous)}). Either a supplement this pattern does not "

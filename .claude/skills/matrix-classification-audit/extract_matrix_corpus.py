@@ -330,6 +330,11 @@ def check_url_join(rid, ref_url, item):
           f"paper:\n"
           f"    Papers.md: {ref_url}\n"
           f"    Zotero:    {item_url}", file=sys.stderr)
+    # Returned as well as printed so a caller can keep it. On a several-hundred-ref
+    # run a printed line scrolls past, and this is the one anomaly the toolchain
+    # calls the expensive invisible error -- it should not be the only one with no
+    # durable record.
+    return f"{ref_url} -> {item_url}"
 
 
 def _keep_fragment(url):
