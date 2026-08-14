@@ -76,6 +76,22 @@ test('homepage has no serious/critical a11y violations', async ({ page }) => {
   expect(serious, JSON.stringify(serious, null, 2)).toEqual([]);
 });
 
+test('the retired research-area route redirects to the method page, base included', async ({ page }) => {
+  // astro.config.mjs base-prefixes a redirect's KEY but emits its DESTINATION
+  // verbatim, so omitting ${BASE} there builds cleanly, passes every unit test
+  // and every other e2e spec, and ships a meta-refresh to a domain-root 404.
+  // Nothing but a real navigation catches it. Seen failing on the un-prefixed
+  // destination before this was trusted.
+  await page.goto('./research-areas/aievaluation/');
+  // Assert the URL rather than waiting for it: a missing base still navigates,
+  // just to the wrong place, so toHaveURL reports the actual destination instead
+  // of timing out with nothing to read.
+  await expect(page).toHaveURL(/\/caail\/methods\/benchmarksevaluation\/$/);
+  await expect(
+    page.getByRole('heading', { level: 1, name: 'Benchmarks & Evaluation Frameworks' }),
+  ).toBeVisible();
+});
+
 test('research area prose page renders with its mapped title', async ({ page }) => {
   await page.goto('./research-areas/bioprocess/');
   await expect(page.getByRole('heading', { level: 1, name: 'Bioprocess & Scale-Up' })).toBeVisible();

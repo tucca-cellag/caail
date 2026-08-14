@@ -166,14 +166,17 @@ export function caailDocsLoader(): Loader {
         storedIds.add(id);
       }
 
-      // Warn about any CAAIL_PAGES prose entries that were not produced from a
-      // real file on disk (catches renamed / removed canonical sources).
-      // Every PageGroup, since all of them are backed by a canonical file on
-      // disk. Keep in step with the `PageGroup` union in caail-pages.ts — a
-      // group missing here loses the warning below, silently.
-      const proseGroups = new Set(['research-areas', 'methods', 'datasets', 'top']);
+      // Warn about any CAAIL_PAGES entry that was not produced from a real file
+      // on disk (catches renamed / removed canonical sources).
+      //
+      // No group filter: every entry in the map is backed by a canonical file,
+      // so filtering by an enumerated group list only creates a way to lose the
+      // warning silently when a new PageGroup is added and this line is not
+      // updated. A comment asking the next reader to keep two lists in step
+      // documents that risk without mitigating it; not having the second list
+      // removes it.
       const missingFromDisk = CAAIL_PAGES.all()
-        .filter((p) => proseGroups.has(p.group) && !storedIds.has(p.id))
+        .filter((p) => !storedIds.has(p.id))
         .map((p) => p.id);
       if (missingFromDisk.length > 0) {
         context.logger.warn(
