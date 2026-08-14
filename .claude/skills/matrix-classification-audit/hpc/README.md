@@ -49,7 +49,7 @@ wrapper that runs before `sbatch`.
 | `CAAIL_PDF_DIR` | staged PDFs, named `ref-<id>.pdf`, plus `refs.txt` |
 | `CAAIL_OUT_DIR` | where `docs/` and `sections/` are written |
 | `CAAIL_HPC_DIR` | this directory, on the cluster |
-| `CAAIL_SKILL_DIR` | the skill scripts on the cluster (needs `docling_ingest.py`, `docling_sections.py`, and a sibling `zotero-collection-scope/scope.py`, which `docling_ingest` imports at module scope) |
+| `CAAIL_SKILL_DIR` | the skill scripts on the cluster. Ship the **whole** directory rather than picking files: `docling_ingest.py` imports `extract_matrix_corpus`, `docling_sections` and `scope` at module scope, so a partial copy raises `ModuleNotFoundError` at import — in every array task, before any of them does work. It also needs the sibling `zotero-collection-scope/` beside it. |
 
 `#SBATCH` directives cannot expand variables, so partition, memory and log paths are set
 to portable defaults and overridden on the command line:

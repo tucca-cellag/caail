@@ -61,8 +61,14 @@ Anything unrecognised is treated as main text and keeps its relative order, so a
 new naming convention degrades to "ordered as Zotero returned it" rather than to
 a wrong answer.
 
+Exits non-zero if any ref matched its Zotero item only after a URL fragment was
+dropped, since the documented next step submits an array straight from
+`refs.txt` and that join may have found a different paper. Pass
+`--allow-suspect-joins` once each has been confirmed.
+
 Usage:
     python3 stage_pdfs.py --out <dir> [--only N ...] [--matrix-only]
+                          [--allow-suspect-joins]
 """
 import argparse
 import json
@@ -82,13 +88,14 @@ import scope  # noqa: E402
 
 # Publisher conventions for "this file is the supplement, not the article".
 #
-# Breadth matters more than precision here, because of what a miss costs. An
-# unrecognised supplement is counted as a second main text, and the duplicate
-# check below then refuses the ref -- so the papers whose methods live in a
-# supplement, which are the entire reason merging exists, are the ones dropped.
-# The first version of this pattern knew only the PMC convention and one
-# publisher's, which is most of the corpus's supplements missed.
-# Every alternative is anchored, because a Zotero filename embeds the paper's
+# Both directions of error are costly, which is why this pattern has been through
+# several rounds. A MISS counts a supplement as a second article, so the ref is
+# merged and flagged ambiguous rather than merged cleanly -- noise, and a page
+# order decided by Zotero rather than by the rule. The first version knew only
+# the PMC convention and one publisher's, missing most of the corpus.
+#
+# A FALSE POSITIVE is worse. Every alternative is anchored, because a Zotero
+# filename embeds the paper's
 # TITLE (`Author - Year - Title.pdf`) and this corpus is about cell culture. An
 # unanchored `supplement` matched "amino acid supplementation" and "media
 # supplemented with"; unanchored `appendix` and `supporting info` matched titles
@@ -184,6 +191,10 @@ def main():
     ap.add_argument("--group", action="append", default=[])
     ap.add_argument("--only", type=int, action="append", default=[])
     ap.add_argument("--matrix-only", action="store_true")
+    ap.add_argument("--allow-suspect-joins", action="store_true",
+                    help="stage anyway when a ref matched its Zotero item only "
+                         "after a URL fragment was dropped (default: exit non-zero "
+                         "so the array is not submitted over a bad join)")
     args = ap.parse_args()
 
     groups = args.group or ["6549203", "5178481"]
@@ -366,6 +377,24 @@ def main():
         for rid, why in skipped:
             print(f"  ref {rid}: {why}")
 
+    # A suspect join is the severest failure this script can produce -- another
+    # paper's PDF written as this ref's document, converted, and reported as its
+    # methods -- and printing it is not enough. This run takes minutes over a few
+    # hundred refs, the summary scrolls, and the documented next step submits an
+    # array straight from refs.txt. So the files are written (they may be fine,
+    # and re-staging is not free) and the RUN fails, which is what stops the
+    # array being submitted over a join nobody looked at.
+    #
+    # Note this is stricter than the `n_main == 0` refusal above only in where it
+    # puts the stop: that one drops a ref quietly because the alternative is a
+    # silently wrong document, this one keeps everything and blocks the pipeline.
+    if suspect and not args.allow_suspect_joins:
+        print(f"\nERROR: {len(suspect)} ref(s) matched a Zotero item only after "
+              f"dropping a URL fragment. Confirm each is the same paper, fix the "
+              f"URL in Zotero, or re-run with --allow-suspect-joins.", file=sys.stderr)
+        return 1
+    return 0
+
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main() or 0)

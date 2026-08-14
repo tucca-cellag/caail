@@ -345,7 +345,11 @@ def main():
         rid = t["id"]
         sec_path = out / "sections" / f"ref-{rid}.json"
         rec = {"id": rid, "in_matrix": t["in_matrix"], "pdf": t["pdf"],
-               "ok": False, "skipped": False, "error": t["why"], "seconds": 0.0}
+               "ok": False, "skipped": False, "error": t["why"], "seconds": 0.0,
+               # Copied from the target, or the field resolve_pdfs sets never
+               # reaches the log and the one stderr line among 345 refs is the
+               # only trace that this document may be another paper entirely.
+               "suspect_join": t.get("suspect_join", "")}
 
         if not t["pdf"]:
             log.append(rec)
