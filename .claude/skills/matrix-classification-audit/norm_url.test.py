@@ -130,6 +130,46 @@ fragment_caused("two anchors on one page are one resource, but two different "
                 "https://site.org/#/a", "https://site.org/#/b")
 
 # ---------------------------------------------------------------------------
+print("\n=== check_url_join warns on identity-bearing fragments only ===")
+
+# The ref->item side, which build_indexes structurally cannot see: one item, so
+# no key collision. The discrimination that matters is between an anchor into a
+# page and a fragment carrying the paper's identity, because warning on the
+# former means warning every run about ref 52 -- the corpus's one confirmed-good
+# pair, and the very case that motivated the fix.
+
+
+class _Item:
+    def __init__(self, url):
+        self._url = url
+
+    def get(self, _key, _default=None):
+        return {"url": self._url}
+
+
+def joins(name, ref_url, item_url, want_warning):
+    import io
+    import contextlib
+    buf = io.StringIO()
+    with contextlib.redirect_stderr(buf):
+        ex.check_url_join(52, ref_url, _Item(item_url))
+    check(name, bool(buf.getvalue().strip()), want_warning)
+
+
+joins("ref 52: a plain anchor is silent",
+      "https://openreview.net/forum?id=FmDuKzM8f7",
+      "https://openreview.net/forum?id=FmDuKzM8f7#discussion", False)
+joins("a section anchor is silent",
+      "https://www.nature.com/articles/s41586-020-2649-2",
+      "https://www.nature.com/articles/s41586-020-2649-2#Sec12", False)
+joins("a hash ROUTE warns",
+      "https://site.org", "https://site.org/#/paper/123", True)
+joins("a fragment on a bare domain warns",
+      "https://site.org", "https://site.org#123", True)
+joins("identical URLs are silent",
+      "https://site.org/a", "https://site.org/a", False)
+
+# ---------------------------------------------------------------------------
 print()
 if fails:
     print(f"FAILED: {fails} check(s)")

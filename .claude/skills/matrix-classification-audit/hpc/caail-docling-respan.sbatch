@@ -31,6 +31,11 @@ source activate "$CAAIL_ENV_DIR"
 
 echo "docs to respan: $(ls -1 "$CAAIL_OUT_DIR/docs" | wc -l)"
 
+# See the note in caail-docling.sbatch: srun stops inheriting --cpus-per-task at
+# Slurm 22.05. Respan is short and not thread-bound, so the cost here is a
+# warning rather than a slowdown, but the two should not disagree.
+export SRUN_CPUS_PER_TASK="$SLURM_CPUS_PER_TASK"
+
 srun python "$CAAIL_SKILL_DIR/docling_ingest.py" --respan --out "$CAAIL_OUT_DIR"
 
 echo

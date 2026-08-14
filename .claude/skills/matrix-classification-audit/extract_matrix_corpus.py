@@ -294,25 +294,42 @@ def _norm_url(url):
 
 
 def check_url_join(rid, ref_url, item):
-    """Warn when a ref matched an item only because the fragment was dropped.
+    """Warn when a ref matched an item on a fragment that was carrying identity.
 
     The dangerous join involves ONE item, so `build_indexes` cannot see it: a ref
-    citing `https://site.org` matches an item whose captured URL is
-    `https://site.org/#/paper/123`, and inherits that item's abstract, PDF and
+    citing `https://site.org` matches an item captured as
+    `https://site.org/#/paper/123` and inherits that item's abstract, PDF and
     methods text under a `has_fulltext: true` nobody has reason to doubt.
 
-    Equality after the safe normalizations (scheme, case, trailing slash) means
-    the fragment played no part, which is the overwhelmingly common case and
-    stays silent.
+    But most dropped fragments are ordinary anchors into the same page — Zotero
+    captured `…?id=X#discussion` for a paper cited as `…?id=X` — and warning on
+    those means warning on every run about the corpus's one confirmed-good pair.
+    A warning that is usually noise is a warning nobody reads, which is the same
+    reason `_keep_fragment` exists at all; a guard that cries wolf on its own
+    motivating example has failed twice over.
+
+    So the test is whether the fragment could be carrying identity:
+
+    - it contains `/`, i.e. it is a hash route rather than an anchor, or
+    - stripping it leaves no path at all, so the entire identity was in it.
     """
     item_url = (item.get("data", {}).get("url") or "").strip()
     if not ref_url or not item_url:
         return
-    if _keep_fragment(ref_url) != _keep_fragment(item_url):
-        print(f"WARNING: ref {rid} joined to a Zotero item only after dropping a "
-              f"URL fragment — confirm it is the same paper:\n"
-              f"    Papers.md: {ref_url}\n"
-              f"    Zotero:    {item_url}", file=sys.stderr)
+    if _keep_fragment(ref_url) == _keep_fragment(item_url):
+        return  # differ by scheme/case/slash only: the fragment played no part
+
+    dropped = [u.split("#", 1)[1] for u in (ref_url, item_url) if "#" in u]
+    routed = any("/" in frag for frag in dropped)
+    pathless = "/" not in _norm_url(item_url)
+    if not (routed or pathless):
+        return  # a plain anchor into the same page
+
+    print(f"WARNING: ref {rid} joined to a Zotero item only after dropping a URL "
+          f"fragment that may carry the paper's identity — confirm it is the same "
+          f"paper:\n"
+          f"    Papers.md: {ref_url}\n"
+          f"    Zotero:    {item_url}", file=sys.stderr)
 
 
 def _keep_fragment(url):

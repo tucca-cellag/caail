@@ -73,6 +73,14 @@ export TORCHINDUCTOR_CACHE_DIR="$TASK_SCRATCH/inductor"
 # per-task directory left behind on a shared volume is the same problem moved.
 trap 'rm -rf "$TASK_SCRATCH"' EXIT
 
+# Since Slurm 22.05 `srun` no longer inherits --cpus-per-task from the batch
+# allocation, so without this the step gets ONE cpu while docling is told to use
+# $SLURM_CPUS_PER_TASK threads. Under cgroup enforcement those threads contend
+# for a single core: conversions run several times slower than the median the
+# --time above is sized against, which pushes the long-tail papers toward the
+# walltime. The symptom is a timeout, so it reads as "this PDF is too big".
+export SRUN_CPUS_PER_TASK="$SLURM_CPUS_PER_TASK"
+
 srun python "$CAAIL_HPC_DIR/convert_one.py" \
   --pdf "$CAAIL_PDF_DIR/ref-${REF}.pdf" \
   --ref "$REF" \

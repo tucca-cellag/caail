@@ -125,6 +125,20 @@ new naming convention degrades to "ordered as found" rather than to a wrong
 answer. The manifest records which refs were merged and from what, so the choice
 is auditable after the fact instead of implicit in a page count.
 
+Two things merging costs, both worth stating rather than discovering:
+
+**`methods_pages` becomes a merged-document index.** For a ref whose methods are
+in the supplement it is neither the published article's pagination nor the
+supplement's own. Seeing the whole paper is worth that; not seeing the methods at
+all is the alternative.
+
+**More than one non-supplement PDF is refused, not merged.** An item carrying a
+publisher PDF beside an accepted manuscript would otherwise have the same paper
+converted twice — the same page distortion, buying nothing, since the second copy
+adds no evidence the first lacks. `find_pdf_attachment_key`'s single-PDF
+behaviour was immune to that, so the merge must not regress it. A ref in that
+state is skipped with a reason rather than staged.
+
 ## Two things that will bite
 
 **The weights the figure pipelines download are not the weights this needs.** A

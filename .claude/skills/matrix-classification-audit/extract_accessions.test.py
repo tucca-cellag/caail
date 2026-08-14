@@ -176,9 +176,17 @@ print("\n=== every script in this directory is listed in the README ===")
 # the thing that already knows it. The README's script table is exactly that,
 # and it had already drifted: it listed neither accession script for two
 # commits. Deriving the table is not worth it; failing when it drifts is.
+#
+# ONE definition of what counts as a script, used by both the top-level scan and
+# the subdirectory walk. They were briefly two lists, the top-level one narrower,
+# so a `.sbatch` added here would have escaped the guard entirely -- a second
+# hand-maintained fact, inside the block that exists to catch hand-maintained
+# facts.
+SCRIPT_EXTS = (".py", ".mjs", ".sbatch", ".sh")
+
 readme = open(os.path.join(HERE, "README.md"), encoding="utf-8").read()
 scripts = sorted(f for f in os.listdir(HERE)
-                 if f.endswith((".py", ".mjs")) and not f.startswith("_"))
+                 if f.endswith(SCRIPT_EXTS) and not f.startswith("_"))
 missing = [f for f in scripts if f not in readme]
 check("README documents every script", missing, [])
 
@@ -191,12 +199,21 @@ check("README documents every script", missing, [])
 # hand-maintained fact again. Instead, require that a subdirectory holding scripts
 # is named here AND carries its own README -- which is what makes delegating the
 # detail to it checkable rather than assumed.
-SCRIPT_EXTS = (".py", ".mjs", ".sbatch")
-subdirs = sorted(d for d in os.listdir(HERE)
-                 if os.path.isdir(os.path.join(HERE, d))
-                 and not d.startswith((".", "_"))
-                 and any(f.endswith(SCRIPT_EXTS)
-                         for f in os.listdir(os.path.join(HERE, d))))
+#
+# `os.walk` rather than one level down, because a one-level walk would leave
+# `hpc/sub/foo.py` exactly as invisible as `hpc/` was, which is the bug this
+# paragraph is about.
+subdir_scripts = {}
+for root, dirnames, filenames in os.walk(HERE):
+    dirnames[:] = [d for d in dirnames if not d.startswith((".", "_"))]
+    rel = os.path.relpath(root, HERE)
+    if rel == ".":
+        continue
+    found = sorted(f for f in filenames
+                   if f.endswith(SCRIPT_EXTS) and not f.startswith("_"))
+    if found:
+        subdir_scripts[rel] = found
+subdirs = sorted(subdir_scripts)
 
 # Either form counts as documented, because the two shapes here are genuinely
 # different: `testdata/` is one fixture helper the top-level table names by path,
@@ -216,13 +233,18 @@ check("README names every subdirectory that documents itself",
 
 undocumented = []
 for d in subdirs:
-    sub_path = os.path.join(HERE, d, "README.md")
-    sub_readme = (open(sub_path, encoding="utf-8").read()
-                  if os.path.exists(sub_path) else "")
-    for f in sorted(x for x in os.listdir(os.path.join(HERE, d))
-                    if x.endswith(SCRIPT_EXTS) and not x.startswith("_")):
-        if f"{d}/{f}" not in readme and f not in sub_readme:
-            undocumented.append(f"{d}/{f}")
+    # A nested script may be documented by its own directory's README or by any
+    # README above it, so walk up rather than looking only at the leaf.
+    parts = d.split(os.sep)
+    readmes = []
+    for i in range(len(parts), 0, -1):
+        p = os.path.join(HERE, *parts[:i], "README.md")
+        if os.path.exists(p):
+            readmes.append(open(p, encoding="utf-8").read())
+    for f in subdir_scripts[d]:
+        rel = f"{d}/{f}".replace(os.sep, "/")
+        if rel not in readme and not any(f in r for r in readmes):
+            undocumented.append(rel)
 check("every script in a subdirectory is documented, here or in its own README",
       undocumented, [])
 

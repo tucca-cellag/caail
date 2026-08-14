@@ -26,9 +26,17 @@ Converting either file alone loses half the evidence, and letting the resolver
 pick whichever it finds first makes the choice silently and differently per ref.
 
 So every PDF attached to the item is merged into one document, main text first
-and supplements after. Docling then sees a single paper, `find_methods_span`
-locates the methods wherever they actually are, and page numbers stay continuous
-and meaningful.
+and supplements after. Docling then sees a single paper and `find_methods_span`
+locates the methods wherever they actually are.
+
+**The page numbers this produces are merged-document indices**, not the published
+article's pagination. For a ref whose methods are in the supplement, a
+`methods_pages` of [31, 38] means pages 31-38 of main-text-plus-supplement, which
+is neither the article's numbering nor the supplement's own. That is the price of
+seeing the whole paper at once, and it is worth paying here because the
+alternative is not seeing the methods at all. It is also why more than one
+non-supplement PDF is refused below rather than merged: there the same distortion
+buys nothing, because the second copy adds no evidence the first lacks.
 
 ## Ordering
 
@@ -49,6 +57,7 @@ import json
 import re
 import shutil
 import sys
+import urllib.request
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
@@ -69,9 +78,20 @@ def pdf_attachments(api, group, item_key):
     `scope.find_pdf_attachment_key` deliberately returns only the first; this is
     the same walk without that truncation. Keys come from `data.key` to match
     how the rest of the toolchain addresses attachment storage directories.
+
+    The request is made here rather than through `scope.fetch_item_children`
+    because that helper turns a failed request into an empty list. A transient
+    local-Zotero error would then be indistinguishable from an item that
+    genuinely has no PDF, and the ref would be dropped as `no-pdf-attachment` --
+    the silent miss the rest of this script exists to make visible. Letting the
+    error propagate puts it in the caller's per-ref handler, where it is recorded
+    as what it is.
     """
+    url = f"{api}/groups/{group}/items/{item_key}/children"
+    with urllib.request.urlopen(url, timeout=30) as resp:
+        children = json.load(resp)
     out = []
-    for c in scope.fetch_item_children(api, group, item_key) or []:
+    for c in children or []:
         d = c.get("data", {})
         if d.get("contentType") == "application/pdf":
             out.append((d.get("key"), d.get("filename") or ""))
@@ -161,13 +181,21 @@ def main():
             if not ref:
                 skipped.append((rid, "no-reference"))
                 continue
-            hit = (doi_index.get(ref["doi"].lower()) if ref["doi"] else None) \
-                or (url_index.get(ex._norm_url(ref["url"])) if ref["url"] else None)
+            by_doi = doi_index.get(ref["doi"].lower()) if ref["doi"] else None
+            hit = by_doi or (url_index.get(ex._norm_url(ref["url"]))
+                             if ref["url"] else None)
             if not hit:
                 skipped.append((rid, "not-in-zotero"))
                 continue
 
             group, item = hit
+            # Staging is where a wrong join acquires a physical consequence: the
+            # other paper's PDF is written to ref-<id>.pdf, the array converts
+            # it, and every downstream reader sees a confident has_fulltext with
+            # someone else's methods section. Same check as the extractor makes,
+            # made here too because this is the copy that ships to the cluster.
+            if not by_doi:
+                ex.check_url_join(rid, ref["url"], item)
             atts = order_main_text_first(pdf_attachments(args.api, group, item.get("key")))
             paths = []
             for key, _fname in atts:
