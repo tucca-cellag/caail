@@ -8,6 +8,7 @@
  */
 import { describe, it, expect } from 'vitest';
 
+import { CAAIL_PAGES } from '../content/caail-pages.ts';
 import catalog from '../content/data/catalog.json';
 import papers from '../content/data/papers.json';
 import talks from '../content/data/talks.json';
@@ -155,6 +156,36 @@ describe('breadcrumbList', () => {
     const bc = breadcrumbList('/caail/research-areas/bioprocess/', 'Bioprocess & Scale-Up') as any;
     expect(bc.itemListElement[1].name).toBe('Research Areas');
     expect(bc.itemListElement[1].item).toBeUndefined();
+  });
+
+  it('method route → Home › Methods › Page, not a collapsed two-crumb trail', () => {
+    // Regression: `methods` was absent from SECTION_LABELS, so this two-segment
+    // route fell through to the single-level branch and emitted Home › Page,
+    // losing the section crumb. Seen failing on that state before being trusted.
+    const bc = breadcrumbList('/caail/methods/benchmarksevaluation/', 'Benchmarks & Evaluation Frameworks') as any;
+    expect(bc.itemListElement).toHaveLength(3);
+    expect(bc.itemListElement[1].name).toBe('Methods');
+    expect(bc.itemListElement[1].item).toBeUndefined();
+    expect(bc.itemListElement[2].name).toBe('Benchmarks & Evaluation Frameworks');
+  });
+
+  it('every two-segment page route gets a section crumb (derived, not enumerated)', () => {
+    // SECTION_LABELS is hand-kept and keyed on route prefixes, so it goes stale
+    // the moment a new canonical directory is added — which is exactly how
+    // `methods` came to be missing. Deriving the cases from CAAIL_PAGES means the
+    // next CANONICAL directory fails here instead of shipping a collapsed
+    // breadcrumb. It does NOT cover nested in-repo Starlight routes
+    // (`papers/network`, `primers/ai`): those are not in CAAIL_PAGES, so their
+    // labels remain hand-added and unguarded.
+    const nested = CAAIL_PAGES.all().filter((p) => p.id.includes('/'));
+    expect(nested.length).toBeGreaterThan(0);
+    const collapsed = nested.filter(
+      (p) => (breadcrumbList(`/caail/${p.id}/`, p.title) as any).itemListElement.length !== 3,
+    );
+    expect(
+      collapsed.map((p) => p.id),
+      'these routes have no SECTION_LABELS entry, so their breadcrumb collapses to Home > Page',
+    ).toEqual([]);
   });
 
   it('primer route → Home › Primers › Page (no section landing URL)', () => {

@@ -3,10 +3,12 @@
  *
  * Titles for Datasets pages are verified against the real H1 headers in the
  * canonical Markdown files (stripping leading `# ` and de-emphasising `*…*`).
- * Titles for ResearchAreas pages use the matrix column labels from Papers.md.
+ * Titles for ResearchAreas pages use the matrix column labels from Papers.md,
+ * and titles for Methods pages the matrix row labels: the two directories are
+ * the two matrix axes, one deep-dive page each.
  */
 
-export type PageGroup = 'research-areas' | 'datasets' | 'top';
+export type PageGroup = 'research-areas' | 'methods' | 'datasets' | 'top';
 
 export interface PageMeta {
   title: string;
@@ -72,14 +74,6 @@ const PAGES: Record<string, PageMeta> = {
     description:
       'General-purpose AI methods, agents, and tooling applicable to cellular agriculture: foundation models, LLM agents, and ML infrastructure.',
   },
-  'research-areas/aievaluation': {
-    title: 'AI Evaluation & Benchmarking',
-    sidebarLabel: 'AI Evaluation',
-    group: 'research-areas',
-    order: 7,
-    description:
-      'Benchmarks and evaluation methods for AI in biology and cellular agriculture: eval datasets, leaderboards, and model assessment.',
-  },
   'research-areas/metabolicmodeling': {
     title: 'Metabolic Modeling',
     sidebarLabel: 'Metabolic Modeling',
@@ -87,6 +81,18 @@ const PAGES: Record<string, PageMeta> = {
     order: 8,
     description:
       'Genome-scale metabolic modeling and strain design for cellular agriculture: constraint-based modeling, flux analysis, and metabolic engineering.',
+  },
+
+  // ── Methods ────────────────────────────────────────────────────────────────
+  // Deep dives on the matrix's *row* axis. Filled in one row at a time, so this
+  // block is expected to be much shorter than the matrix's row set for a while.
+  'methods/benchmarksevaluation': {
+    title: 'Benchmarks & Evaluation Frameworks',
+    sidebarLabel: 'Benchmarks & Evaluation',
+    group: 'methods',
+    order: 1,
+    description:
+      'Benchmarks and evaluation frameworks for AI in biology and cellular agriculture: eval datasets, agent benchmarks, leaderboards, and verifier-reliability methodology.',
   },
 
   // ── Datasets ───────────────────────────────────────────────────────────────
@@ -303,6 +309,7 @@ const PAGES: Record<string, PageMeta> = {
 
 const DIR_SLUG: Record<string, string> = {
   ResearchAreas: 'research-areas',
+  Methods: 'methods',
   Datasets: 'datasets',
 };
 

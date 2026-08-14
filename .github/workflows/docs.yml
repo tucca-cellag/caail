@@ -14,6 +14,7 @@ on:
       - ResearchAreas/**
       - Datasets/**
       - Primers/**
+      - Methods/**
       # The correction issue form, for the same reason as Primers/ above. /report/'s
       # composer bakes the error classes the form lists into the built page (they are read
       # at parse time and inlined as a JSON payload), and prefills the chosen one back into

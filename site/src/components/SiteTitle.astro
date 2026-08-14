@@ -2,9 +2,10 @@
 /**
  * SiteTitle override — Starlight's default wordmark plus a horizontal primary
  * nav of dropdown menus that mirror the site's sections. Every top-level entry
- * is a dropdown (Primers · Papers · Catalog · Datasets · Research Areas · More ·
+ * is a dropdown (Primers · Papers · Catalog · Datasets · Matrix Axes · More ·
  * TUCCA), so the whole site is reachable from the header while the row stays
- * compact. Search / theme / GitHub stay where Starlight puts them.
+ * compact. The matrix's two axes share ONE dropdown because the row has no width
+ * for an eighth trigger; see the comment above `matrixAxesItems`. Search / theme / GitHub stay where Starlight puts them.
  *
  * Each dropdown is a `<caail-navdd>`: a click-toggle disclosure (button +
  * aria-expanded + a plain list of links — not an ARIA menu, which keeps the
@@ -13,8 +14,8 @@
  * `.title-wrapper { overflow: clip }` WITHOUT letting the nav row spill over the
  * search box. Opening one closes the others.
  *
- * Datasets / Research Areas items are derived from the same `CAAIL_PAGES` map
- * the sidebar uses, so new pages appear automatically.
+ * Datasets and Matrix Axes items are derived from the same `CAAIL_PAGES` map
+ * the sidebar uses, so new research-area and method pages appear automatically.
  *
  * Mobile: the dropdown row hides below the fit breakpoint. Doc pages hand off to
  * Starlight's hamburger + sidebar (which lists every section); splash pages
@@ -28,7 +29,7 @@ const { hasSidebar } = Astro.locals.starlightRoute;
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
 const linkFor = (id: string) => `${base}/${id}/`;
-const byGroup = (group: 'datasets' | 'research-areas') =>
+const byGroup = (group: 'datasets' | 'research-areas' | 'methods') =>
   CAAIL_PAGES.all()
     .filter((p) => p.group === group)
     .sort((a, b) => a.order - b.order);
@@ -47,7 +48,19 @@ const datasetsItems = [
   { label: 'All datasets →', href: linkFor('datasets/readme') },
 ];
 
-const researchAreasItems = byGroup('research-areas').map(dsItem);
+// The matrix's two axes share ONE dropdown, split by heading: research areas are
+// the columns, methods the rows. One dropdown rather than two because the row
+// of triggers has no width left — an eighth trigger clips the wordmark between
+// 1025px and the ~1110px where the row finally fits, and the hamburger does not
+// take over until 1024px. Merging is also the honest shape: they are two axes of
+// one table, not two unrelated sections. Both derive from CAAIL_PAGES, so the
+// Methods list fills in on its own as the remaining row pages are written.
+const matrixAxesItems = [
+  { heading: 'Research areas (columns)' },
+  ...byGroup('research-areas').map(dsItem),
+  { heading: 'Methods (rows)' },
+  ...byGroup('methods').map(dsItem),
+];
 
 // Each dropdown: label, the path prefixes that light its active state, items
 // (a link {label, href, external?} or a {heading}), and an external flag.
@@ -80,7 +93,7 @@ const dropdowns = [
     ],
   },
   { label: 'Datasets', matches: [`${base}/datasets/`], items: datasetsItems },
-  { label: 'Research Areas', matches: [`${base}/research-areas/`], items: researchAreasItems },
+  { label: 'Matrix Axes', matches: [`${base}/research-areas/`, `${base}/methods/`], items: matrixAxesItems },
   {
     label: 'More',
     matches: [
@@ -164,8 +177,18 @@ const isLink = (it: any): it is { label: string; href: string; external?: boolea
         {dropdowns.map((d) => (
           <>
             <span class="caail-mobilenav__sep">{d.label}</span>
-            {d.items.filter(isLink).map((it) => (
-              <a href={it.href} {...(it.external ? { rel: 'noopener' } : {})}>{it.label}{it.external ? ' ↗' : ''}</a>
+            {/* Render the group headings too, not just the links. Filtering them out
+                collapses a dropdown's internal structure: "Matrix Axes" holds the two
+                matrix AXES, so dropping its headings listed the method page directly
+                under the seven research areas and made it read as an eighth research
+                area — the exact confusion this nav exists to remove. On splash pages
+                this panel is the only nav, so there is no sidebar to correct it. */}
+            {d.items.map((it) => (
+              isLink(it) ? (
+                <a href={it.href} {...(it.external ? { rel: 'noopener' } : {})}>{it.label}{it.external ? ' ↗' : ''}</a>
+              ) : (
+                <span class="caail-mobilenav__subsep">{it.heading}</span>
+              )
             ))}
           </>
         ))}
@@ -308,6 +331,16 @@ const isLink = (it: any): it is { label: string; href: string; external?: boolea
     transition: color 0.15s, background 0.15s;
   }
   .caail-mobilenav__panel a:hover { color: var(--caail-primary); background: var(--caail-surface); }
+  .caail-mobilenav__subsep {
+    display: block;
+    padding: 0.45rem 0.6rem 0.15rem;
+    font-size: 0.6rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--caail-muted, var(--sl-color-gray-3));
+  }
+
   .caail-mobilenav__sep {
     display: block;
     margin-block-start: 0.3rem;

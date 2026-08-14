@@ -59,6 +59,7 @@ const SECTION_LABELS: Record<string, string> = {
   databases: 'Databases',
   datasets: 'Datasets',
   'research-areas': 'Research Areas',
+  methods: 'Methods',
   talks: 'Talks & Videos',
   'other-resources': 'Other Resources',
   'by-the-numbers': 'By the Numbers',

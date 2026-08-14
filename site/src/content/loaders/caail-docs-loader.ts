@@ -9,7 +9,7 @@
  *      pages keep behaving exactly as before.
  *
  *   2. The canonical repo-root prose files (`ResearchAreas/*.md`,
- *      `Datasets/*.md`, `CONTRIBUTING.md`) — read directly from disk WITHOUT
+ *      `Methods/*.md`, `Datasets/*.md`, `CONTRIBUTING.md`) — read directly from disk WITHOUT
  *      modifying them, and injected into the store with a synthetic `title`
  *      from `CAAIL_PAGES`.
  *
@@ -72,7 +72,7 @@ const REPO_ROOT = new URL('../../../../', import.meta.url);
  * those directories) is skipped, so the directory scan is allowed to be broad.
  */
 const CANONICAL_SOURCES = {
-  dirs: ['ResearchAreas', 'Datasets'],
+  dirs: ['ResearchAreas', 'Methods', 'Datasets'],
   files: [
     'CONTRIBUTING.md',
     'OtherResources.md',
@@ -166,11 +166,17 @@ export function caailDocsLoader(): Loader {
         storedIds.add(id);
       }
 
-      // Warn about any CAAIL_PAGES prose entries that were not produced from a
-      // real file on disk (catches renamed / removed canonical sources).
-      const proseGroups = new Set(['research-areas', 'datasets', 'top']);
+      // Warn about any CAAIL_PAGES entry that was not produced from a real file
+      // on disk (catches renamed / removed canonical sources).
+      //
+      // No group filter: every entry in the map is backed by a canonical file,
+      // so filtering by an enumerated group list only creates a way to lose the
+      // warning silently when a new PageGroup is added and this line is not
+      // updated. A comment asking the next reader to keep two lists in step
+      // documents that risk without mitigating it; not having the second list
+      // removes it.
       const missingFromDisk = CAAIL_PAGES.all()
-        .filter((p) => proseGroups.has(p.group) && !storedIds.has(p.id))
+        .filter((p) => !storedIds.has(p.id))
         .map((p) => p.id);
       if (missingFromDisk.length > 0) {
         context.logger.warn(

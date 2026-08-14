@@ -66,6 +66,20 @@ function groupItems(group) {
 export default defineConfig({
   site: SITE,
   base: '/caail',
+  // Canonical pages that moved. `AIEvaluation` described the matrix's
+  // `Benchmarks & Evaluation Frameworks` *row*, not a research area, so it moved
+  // to Methods/, the directory for the row axis. Published URLs outlive their
+  // directory, so the old route redirects rather than 404s.
+  //
+  // The key is base-relative (Astro prepends `base` when it places the generated
+  // page) but the DESTINATION is emitted verbatim into the meta-refresh, the
+  // canonical link and the fallback anchor. Writing it without `${BASE}` builds
+  // cleanly and points every one of those at tucca-cellag.github.io/methods/…,
+  // which is a 404: this is a project page served under /caail/. Verify a new
+  // redirect by reading dist/<old-path>/index.html, not by reading the config.
+  redirects: {
+    '/research-areas/aievaluation': `${BASE}/methods/benchmarksevaluation/`,
+  },
   markdown: {
     remarkPlugins: [caailProseRemark],
   },
@@ -215,6 +229,7 @@ export default defineConfig({
         { label: 'AI Agents & Foundation Models', link: '/ai-agents-foundation-models/' },
         { label: 'Datasets (by species)', items: groupItems('datasets') },
         { label: 'Research Areas', items: groupItems('research-areas') },
+        { label: 'Methods', items: groupItems('methods') },
         { label: 'Talks & Videos', link: '/talks/' },
         { label: 'Other Resources', link: '/other-resources/' },
         { label: 'Reference Works', link: '/reference-works/' },

@@ -8,6 +8,10 @@ const REPO_ROOT = fileURLToPath(new URL('../../../', import.meta.url));
 describe('CAAIL_PAGES', () => {
   it('maps a known source path to a route id', () => {
     expect(CAAIL_PAGES.idForSourcePath('ResearchAreas/Bioprocess')).toBe('research-areas/bioprocess');
+    // Methods/ is the row axis, ResearchAreas/ the column axis. Its dir slug is
+    // the plain lowercase of the directory, so it needs no DIR_SLUG special case.
+    expect(CAAIL_PAGES.idForSourcePath('Methods/BenchmarksEvaluation')).toBe('methods/benchmarksevaluation');
+    expect(CAAIL_PAGES.idForSourcePath('Methods/BenchmarksEvaluation.md')).toBe('methods/benchmarksevaluation');
     expect(CAAIL_PAGES.idForSourcePath('Datasets/Cow')).toBe('datasets/cow');
     expect(CAAIL_PAGES.idForSourcePath('CONTRIBUTING')).toBe('contributing');
     // Single-word top-level file: falls through to plain lowercasing, no
@@ -26,6 +30,10 @@ describe('CAAIL_PAGES', () => {
   });
   it('returns title + sidebar metadata by id', () => {
     expect(CAAIL_PAGES.byId('research-areas/bioprocess')?.title).toBe('Bioprocess & Scale-Up');
+    expect(CAAIL_PAGES.byId('methods/benchmarksevaluation')).toMatchObject({
+      group: 'methods',
+      title: 'Benchmarks & Evaluation Frameworks',
+    });
     expect(CAAIL_PAGES.byId('datasets/cow')?.title).toContain('Cow');
     expect(CAAIL_PAGES.byId('other-resources')).toMatchObject({ group: 'top', title: 'Other Resources' });
     expect(CAAIL_PAGES.byId('ai-agents-foundation-models')).toMatchObject({ group: 'top', title: 'AI Agents & Foundation Models' });
@@ -41,10 +49,11 @@ describe('CAAIL_PAGES', () => {
     expect(typeof cow?.sidebarLabel).toBe('string');
     expect(typeof cow?.order).toBe('number');
   });
-  it('has an entry for every rendered ResearchAreas and Datasets page (no missing map entries)', () => {
+  it('has an entry for every rendered ResearchAreas, Methods and Datasets page (no missing map entries)', () => {
     const ra = readdirSync(`${REPO_ROOT}ResearchAreas`).filter((f) => f.endsWith('.md') && f !== 'CLAUDE.md');
+    const me = readdirSync(`${REPO_ROOT}Methods`).filter((f) => f.endsWith('.md') && f !== 'CLAUDE.md');
     const ds = readdirSync(`${REPO_ROOT}Datasets`).filter((f) => f.endsWith('.md') && !['CLAUDE.md', 'README.md'].includes(f));
-    const missing = CAAIL_PAGES.missingEntries({ ResearchAreas: ra, Datasets: ds });
+    const missing = CAAIL_PAGES.missingEntries({ ResearchAreas: ra, Methods: me, Datasets: ds });
     expect(missing).toEqual([]);
   });
 });

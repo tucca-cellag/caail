@@ -22,7 +22,7 @@ In the [Papers matrix](./Papers.md), this area is reachable two ways: the **LLMs
 
 ## Evaluation & benchmarks
 
-How well these models and agents actually perform is tracked separately. The benchmark *datasets* (including the foundation-model-relevant ProteinGym, LAB-Bench, and BixBench) are catalogued in [Datasets/Benchmarks.md](./Datasets/Benchmarks.md), and the evaluation methodology, assay-level work such as AssayBench, and the **Benchmarks & Evaluation Frameworks** matrix method row are covered in the [AI Evaluation & Benchmarking page](./ResearchAreas/AIEvaluation.md). Not every benchmark there is AI-agent-specific (many are general or domain benchmarks) which is why evaluation keeps its own home rather than folding into this page.
+How well these models and agents actually perform is tracked separately. The benchmark *datasets* (including the foundation-model-relevant ProteinGym, LAB-Bench, and BixBench) are catalogued in [Datasets/Benchmarks.md](./Datasets/Benchmarks.md), and the evaluation methodology, assay-level work such as AssayBench, and the **Benchmarks & Evaluation Frameworks** matrix method row are covered in [its method page](./Methods/BenchmarksEvaluation.md). Not every benchmark there is AI-agent-specific (many are general or domain benchmarks) which is why evaluation keeps its own home rather than folding into this page.
 
 ## Talks & onboarding
 
