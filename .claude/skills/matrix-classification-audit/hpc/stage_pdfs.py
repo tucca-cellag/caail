@@ -33,10 +33,14 @@ locates the methods wherever they actually are.
 article's pagination. For a ref whose methods are in the supplement, a
 `methods_pages` of [31, 38] means pages 31-38 of main-text-plus-supplement, which
 is neither the article's numbering nor the supplement's own. That is the price of
-seeing the whole paper at once, and it is worth paying here because the
-alternative is not seeing the methods at all. It is also why more than one
-non-supplement PDF is refused below rather than merged: there the same distortion
-buys nothing, because the second copy adds no evidence the first lacks.
+seeing the whole paper at once, and it is worth paying because the alternative is
+not seeing the methods at all.
+
+That trade also decides the ambiguous case below. Two PDFs that both look like
+article text are either a duplicate or a supplement this module's pattern does
+not recognise, and the filename cannot say which; the ref is merged and recorded
+as ambiguous rather than skipped, because merging a duplicate still finds the
+methods while skipping a supplement does not.
 
 ## Ordering
 
@@ -197,11 +201,17 @@ def main():
         # task failing its `[ -z "$REF" ]` guard instead of as a staging error.
         (out / "refs.txt").write_text(
             "".join(f"{r}\n" for r in staged))
-        json.dump({"staged": staged, "skipped": skipped,
-                   "merged": {str(r): names for r, names in merged},
-                   "partial": {str(r): n for r, n in partial},
-                   "ambiguous": {str(r): n for r, n in ambiguous}},
-                  open(out / "stage-manifest.json", "w"), indent=2)
+        # `with`, not a bare open(): this runs in a `finally` after every ref
+        # precisely so an interrupted run still has a manifest, and a handle
+        # closed only by refcounting would leave that manifest truncated on any
+        # runtime that does not refcount -- defeating the reason it is written
+        # here at all.
+        with open(out / "stage-manifest.json", "w", encoding="utf-8") as fh:
+            json.dump({"staged": staged, "skipped": skipped,
+                       "merged": {str(r): names for r, names in merged},
+                       "partial": {str(r): n for r, n in partial},
+                       "ambiguous": {str(r): n for r, n in ambiguous}},
+                      fh, indent=2)
 
     for rid in wanted:
         try:
@@ -269,6 +279,19 @@ def main():
             if n_main > 1:
                 ambiguous.append((rid, f"{n_main} PDFs look like main text: "
                                        f"{', '.join(f for _k, f in atts)}"))
+            # And the mirror case, which is worse and was unchecked. If EVERY
+            # attachment classifies as a supplement, either only the supplement
+            # was downloaded or an article filename false-positived on one of the
+            # looser alternatives (`supplementary`, `appendix` match anywhere).
+            # Nothing else notices: the counts agree so it is not `partial`, and
+            # the ref stages, converts, and reports a confident has_fulltext over
+            # a document containing none of the article. Staging supplement-only
+            # text is the expensive invisible failure, so it is refused.
+            elif n_main == 0:
+                skipped.append((rid, f"every attachment looks like a supplement, so "
+                                     f"the article itself may be missing: "
+                                     f"{', '.join(f for _k, f in atts)}"))
+                continue
 
             dest = out / f"ref-{rid}.pdf"
             if len(paths) == 1:

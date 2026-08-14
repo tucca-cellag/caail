@@ -264,13 +264,20 @@ def resolve_pdfs(api, groups, storage, papers_md):
     out = []
     for rid in ordered:
         ref = refs[rid]
-        hit = (doi_index.get(ref["doi"].lower()) if ref["doi"] else None) \
-            or (url_index.get(ex._norm_url(ref["url"])) if ref["url"] else None)
+        by_doi = doi_index.get(ref["doi"].lower()) if ref["doi"] else None
+        hit = by_doi or (url_index.get(ex._norm_url(ref["url"]))
+                         if ref["url"] else None)
         if not hit:
             out.append({"id": rid, "pdf": "", "why": "not-in-zotero",
                         "in_matrix": rid in matrix_ids})
             continue
         group, item = hit
+        # This is the local ingest's equivalent of what staging does on the
+        # cluster: the item resolved here decides which PDF gets converted and
+        # stored as this ref's document. A wrong join is therefore not a
+        # measurement error but another paper's methods filed under this id.
+        if not by_doi:
+            ex.check_url_join(rid, ref["url"], item)
         pdf_key = scope.find_pdf_attachment_key(api, group, item.get("key"))
         d = Path(storage) / pdf_key if pdf_key else None
         pdfs = sorted(d.glob("*.pdf")) if d and d.is_dir() else []

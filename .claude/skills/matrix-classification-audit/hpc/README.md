@@ -133,12 +133,22 @@ in the supplement it is neither the published article's pagination nor the
 supplement's own. Seeing the whole paper is worth that; not seeing the methods at
 all is the alternative.
 
-**More than one non-supplement PDF is refused, not merged.** An item carrying a
-publisher PDF beside an accepted manuscript would otherwise have the same paper
-converted twice — the same page distortion, buying nothing, since the second copy
-adds no evidence the first lacks. `find_pdf_attachment_key`'s single-PDF
-behaviour was immune to that, so the merge must not regress it. A ref in that
-state is skipped with a reason rather than staged.
+**More than one non-supplement PDF is merged anyway, and recorded as ambiguous.**
+Two article PDFs on one item is either a duplicate (a publisher copy beside an
+accepted manuscript) or a supplement whose filename `SUPPLEMENT_RE` does not
+recognise, and the name alone cannot tell them apart. That pattern will always be
+incomplete — publishers keep inventing conventions, the same reason the section
+rule needs periodic work — so the tie breaks toward preserving evidence: merging
+a genuine duplicate distorts page numbers and finds the methods anyway, while
+skipping a genuine supplement loses the methods altogether.
+
+An earlier version skipped instead, and it inverted the feature: an unrecognised
+supplement made the ref look like a duplicate pair, so the papers whose methods
+live in a supplement were the ones dropped, under a message confidently calling
+them duplicates. The run prints a `CHECK` block naming every ambiguous ref and
+its filenames; a genuinely duplicated article wants one copy removed, and an
+unrecognised supplement wants its convention added to `SUPPLEMENT_RE` (and to
+`stage_pdfs.test.py`, which pins both directions).
 
 ## Two things that will bite
 

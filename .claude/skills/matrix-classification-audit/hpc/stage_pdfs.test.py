@@ -112,6 +112,39 @@ check("several supplements all follow the article",
       ["article-main.pdf", "mmc1.pdf", "mmc2.pdf"])
 
 # ---------------------------------------------------------------------------
+print("\n=== the three classifier outcomes, which decide what is converted ===")
+
+# `n_main` is the count of attachments that do NOT look like supplements, and it
+# selects between three behaviours in `main()`. The count is asserted here rather
+# than the branch because the branch needs live Zotero; getting the count wrong is
+# what makes the branch wrong.
+
+
+def n_main(*filenames):
+    return sum(1 for f in filenames if not sp.SUPPLEMENT_RE.search(f))
+
+
+check("article + supplement -> 1 (the normal merge)",
+      n_main("Lee et al. - 2023 - A principal odor map.pdf",
+             "NIHMS1-supplement-Supplementary_Material.pdf"), 1)
+
+# > 1 is merged and recorded as ambiguous. It cannot be told from a filename
+# whether this is a duplicated article or an unrecognised supplement, and merging
+# a duplicate still finds the methods while skipping a supplement does not.
+check("two article-looking PDFs -> 2 (ambiguous, merged, recorded)",
+      n_main("article-v1.pdf", "article-accepted.pdf"), 2)
+
+# 0 is refused. Every attachment looking like a supplement means the article
+# itself is probably absent, and staging it would convert supplement-only text
+# into a document reported as this paper's full text -- a confident
+# has_fulltext over none of the article, which nothing downstream can detect.
+check("supplement-only item -> 0 (refused)",
+      n_main("NIHMS1-supplement-Supplementary_Material.pdf", "mmc1.pdf"), 0)
+
+check("a lone article -> 1",
+      n_main("Sarlakifar et al. - 2025 - AllerTrans.pdf"), 1)
+
+# ---------------------------------------------------------------------------
 print()
 if fails:
     print(f"FAILED: {fails} check(s)")
