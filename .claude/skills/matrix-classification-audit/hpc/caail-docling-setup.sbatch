@@ -77,7 +77,15 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.environ["CAAIL_SKILL_DIR"]),
 import docling_ingest
 from docling.datamodel.base_models import InputFormat
 
-conv = docling_ingest.build_converter(artifacts_path=os.environ["CAAIL_MODELS"])
+# threads is passed because the array passes it, and it selects a branch of
+# build_converter that is deliberately wrapped in a swallow-everything try/except
+# so a docling upgrade cannot fail 224 tasks. That safety is exactly what makes
+# the branch invisible: without exercising it here, an upgrade that moved the
+# accelerator options would degrade silently across the whole array instead of
+# printing once, in this job, where someone is reading.
+conv = docling_ingest.build_converter(
+    artifacts_path=os.environ["CAAIL_MODELS"],
+    threads=int(os.environ.get("SLURM_CPUS_PER_TASK", "4")))
 conv.initialize_pipeline(InputFormat.PDF)
 print("pipeline initialized OK from artifacts_path, using the array's own options")
 PY

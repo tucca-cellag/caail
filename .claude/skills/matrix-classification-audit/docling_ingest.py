@@ -310,6 +310,10 @@ def main():
                     help="stop after N conversions (0 = no limit)")
     ap.add_argument("--only", type=int, action="append", default=[],
                     help="convert only these ref ids (repeatable)")
+    ap.add_argument("--allow-suspect-joins", action="store_true",
+                    help="convert anyway when a ref matched its Zotero item only "
+                         "after a URL fragment was dropped (default: exit "
+                         "non-zero, matching hpc/stage_pdfs.py)")
     ap.add_argument("--matrix-only", action="store_true",
                     help="skip refs that participate in no matrix cell")
     ap.add_argument("--respan", action="store_true",
@@ -354,7 +358,18 @@ def main():
         if not t["pdf"]:
             log.append(rec)
             continue
-        if sec_path.exists():
+        # Skip on EITHER artifact. Sections alone was the original rule, and it
+        # is not enough now that the cluster array writes `docs/` and derives
+        # `sections/` afterwards: between the array draining and `--respan`
+        # succeeding, every cluster-converted ref looks unconverted here. This
+        # loop would then re-convert all of them and overwrite each merged
+        # main-text-plus-supplement document with a single-PDF one, silently, and
+        # the refs that lose most are exactly the ones merging exists for.
+        #
+        # `--respan` regenerates a missing section from the doc in seconds, so
+        # honouring `docs/` costs nothing and closes the window.
+        doc_path = out / "docs" / f"ref-{rid}.json"
+        if sec_path.exists() or doc_path.exists():
             rec.update(ok=True, skipped=True, error="")
             skipped += 1
             log.append(rec)
@@ -403,6 +418,23 @@ def main():
             strategies[r.get("strategy", "?")] = strategies.get(r.get("strategy", "?"), 0) + 1
     print("strategies:", json.dumps(strategies))
 
+    # Same stop as hpc/stage_pdfs.py, for the same reason. A suspect join means
+    # this run may have converted another paper's PDF and written it as this
+    # ref's document -- and unlike staging, that document is the artifact every
+    # later curation pass reads. The conversions are kept (they may be correct,
+    # and reconverting is expensive) and the RUN fails, so nothing downstream
+    # consumes the corpus without someone having looked.
+    suspect = [r for r in log if r.get("suspect_join")]
+    if suspect and not args.allow_suspect_joins:
+        print(f"\nERROR: {len(suspect)} ref(s) matched a Zotero item only after "
+              f"dropping a URL fragment that may carry the paper's identity. "
+              f"Confirm each, fix the URL in Zotero, or re-run with "
+              f"--allow-suspect-joins:", file=sys.stderr)
+        for r in suspect:
+            print(f"  ref {r['id']}: {r['suspect_join']}", file=sys.stderr)
+        return 1
+    return 0
+
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main() or 0)

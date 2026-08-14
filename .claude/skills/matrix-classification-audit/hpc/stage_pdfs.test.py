@@ -5,12 +5,18 @@ Stdlib only: no Zotero, no network, no PDFs, no docling. Run:
 
     python3 .claude/skills/matrix-classification-audit/hpc/stage_pdfs.test.py
 
-`SUPPLEMENT_RE` looks cosmetic and is not. A supplement whose filename it does
-not recognise is counted as a second main text, and the ref is then reported as
-a probable duplicate pair -- so the papers whose methods live in a supplement,
-which are the entire reason merging exists, are the ones flagged. The first
-version knew two conventions and missed Springer, Elsevier, Wiley and PNAS,
-which is most of the corpus's supplements.
+`is_supplement` looks cosmetic and is not. It decides which PDF becomes the
+document a curator later reads, and it fails expensively in both directions: a
+supplement it misses is counted as a second article, and an ARTICLE it
+misidentifies can be refused outright when it is the item's only PDF.
+
+The false-positive direction is the one that took several rounds, because the
+filename Zotero generates contains the paper's TITLE -- so every keyword rule is
+really being run against the title, and in a cell-culture corpus "supplement",
+"supplementary" and even the gene name MMC1 are ordinary. Tightening the keywords
+fixed each instance and left the class intact. Checking the
+`Author - Year - Title.pdf` shape first is what actually closed it, and both
+directions are pinned below.
 
 Ordering matters for the same reason it matters in `docling_sections`: the
 section rule reads in document order, so a supplement placed before the main
@@ -63,7 +69,7 @@ SUPPLEMENTS = [
     ("science.abc1234_sm.pdf", "Science"),
 ]
 for fname, who in SUPPLEMENTS:
-    check(f"{who}: {fname}", bool(sp.SUPPLEMENT_RE.search(fname)), True)
+    check(f"{who}: {fname}", sp.is_supplement(fname), True)
 
 print("\n=== article PDFs are NOT mistaken for supplements ===")
 
@@ -85,9 +91,20 @@ ARTICLES = [
     "Kim et al. - 2025 - Appendix-free protocol for scaffold seeding.pdf",
     "Roell et al. - 2022 - Supporting information systems for bioprocess.pdf",
     "Du et al. - 2025 - Supplementing basal medium for bovine satellite cells.pdf",
+    # Anchoring alone never closed this class: the bare noun has to match for
+    # "Supplement.pdf" to be recognised, and the same noun is ordinary in these
+    # titles. `is_supplement` checks the Zotero `Author - Year - Title.pdf` shape
+    # first, so these are articles no matter what the keyword rules would say.
+    "Zhang et al. - 2024 - A serum-free supplement for bovine satellite cells.pdf",
+    "Kim et al. - 2023 - Supplementary feeding of fish cell lines.pdf",
+    "Park et al. - 2022 - Supplemental protein sources for cultivated meat.pdf",
+    # MMC1 is a gene, and `mmc\d+` is Elsevier's supplement convention.
+    "Chen et al. - 2024 - MMC1 knockdown in bovine myoblasts.pdf",
+    # SI is also a unit system, and SM a common initialism.
+    "Ito et al. - 2021 - Conversion to SI units in bioprocess reporting.pdf",
 ]
 for fname in ARTICLES:
-    check(f"article: {fname[:48]}", bool(sp.SUPPLEMENT_RE.search(fname)), False)
+    check(f"article: {fname[:48]}", sp.is_supplement(fname), False)
 
 # ---------------------------------------------------------------------------
 print("\n=== ordering puts the article first and supplements after ===")
@@ -136,7 +153,10 @@ print("\n=== the three classifier outcomes, which decide what is converted ===")
 
 
 def n_main(*filenames):
-    return sum(1 for f in filenames if not sp.SUPPLEMENT_RE.search(f))
+    # is_supplement, not SUPPLEMENT_RE: `main()` counts with the former, and a
+    # helper that reaches past it would assert the behaviour of a predicate the
+    # code no longer uses.
+    return sum(1 for f in filenames if not sp.is_supplement(f))
 
 
 check("article + supplement -> 1 (the normal merge)",

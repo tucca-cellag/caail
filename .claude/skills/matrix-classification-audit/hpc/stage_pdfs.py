@@ -12,17 +12,13 @@ them. So a ref converted here and the same ref converted by a local
 `docling_ingest.py` run differ in their *input*, not merely in extractor version,
 and `docs/ref-<id>.json` records neither.
 
-**And the two disagree about what counts as done, in a direction that destroys
-work.** `convert_one.py` skips a ref whose `docs/` file exists; `docling_ingest`
-skips on `sections/`. The array writes only `docs/`. So in the window between the
-array draining and `--respan` succeeding -- or if the respan fails, or ran against
-a partial corpus -- a local `docling_ingest.py` run sees no section for any
-cluster-converted ref, re-converts every one of them, and **overwrites the merged
-`docs/ref-<id>.json` with a single-PDF document**. The refs that lose most are the
-merged supplement ones this module exists for, and nothing records the swap.
-
-Run the respan before any local ingest touches the same output directory, or keep
-the two corpora apart.
+The two used to disagree about what counts as done, in a direction that destroyed
+work: `convert_one.py` skips on `docs/`, `docling_ingest` skipped on `sections/`,
+and the array writes only `docs/` -- so between the array draining and `--respan`
+succeeding, a local ingest saw every cluster ref as unconverted and overwrote each
+merged document with a single-PDF one. `docling_ingest` now skips on either
+artifact, which closes that window. The input-shape difference above remains, so
+still convert a corpus by one route or the other.
 
 ## Why this merges rather than picking one file
 
@@ -61,10 +57,11 @@ Anything unrecognised is treated as main text and keeps its relative order, so a
 new naming convention degrades to "ordered as Zotero returned it" rather than to
 a wrong answer.
 
-Exits non-zero if any ref matched its Zotero item only after a URL fragment was
-dropped, since the documented next step submits an array straight from
-`refs.txt` and that join may have found a different paper. Pass
-`--allow-suspect-joins` once each has been confirmed.
+Exits non-zero on two conditions, because the documented next step submits an
+array straight from `refs.txt` and both leave that file quietly wrong: a ref that
+failed while staging (so it is missing), and a ref that matched its Zotero item
+only after a URL fragment was dropped (so it may be a different paper). Pass
+`--allow-suspect-joins` once the joins have been confirmed.
 
 Usage:
     python3 stage_pdfs.py --out <dir> [--only N ...] [--matrix-only]
@@ -94,15 +91,13 @@ import scope  # noqa: E402
 # order decided by Zotero rather than by the rule. The first version knew only
 # the PMC convention and one publisher's, missing most of the corpus.
 #
-# A FALSE POSITIVE is worse. Every alternative is anchored, because a Zotero
-# filename embeds the paper's
-# TITLE (`Author - Year - Title.pdf`) and this corpus is about cell culture. An
-# unanchored `supplement` matched "amino acid supplementation" and "media
-# supplemented with"; unanchored `appendix` and `supporting info` matched titles
-# containing those ordinary words. Each false positive is worse than it sounds:
-# if the article is the item's only PDF it classifies as a supplement, `n_main`
-# is 0, and the ref is refused -- a real paper dropped for having a common word
-# in its title.
+# A FALSE POSITIVE is worse: if the article is the item's only PDF it classifies
+# as a supplement, `n_main` is 0, and the ref is refused -- a real paper dropped
+# for a word in its title. The alternatives below are anchored to reduce that,
+# but anchoring is not what fixes it. `is_supplement` checks the Zotero article
+# shape FIRST, so a filename the parent item generated is the article regardless
+# of what these patterns would say about its title. That ordering is the actual
+# guard; treat everything below as evidence about publisher payloads only.
 SUPPLEMENT_RE = re.compile(
     # supplement / supplemental / supplementary as a whole word, so
     # "supplementation" and "supplemented" do not match. Covers PMC's
@@ -157,10 +152,37 @@ def pdf_attachments(api, group, item_key):
     return out
 
 
+# Zotero's own filename template: `Author - Year - Title.pdf`. Matching this is
+# far stronger evidence than any keyword, and it has to be checked FIRST.
+#
+# The reason is that the title is *inside the filename*, so every keyword rule is
+# really being run against the paper's title, and in this corpus that is a
+# minefield: "A serum-free supplement for bovine satellite cell expansion",
+# "Supplemental protein sources for cultivated meat", "MMC1 knockdown in bovine
+# myoblasts" -- the last of which trips the Elsevier `mmc\d+` rule because MMC1
+# is a gene. Three rounds of tightening the keyword pattern each fixed the
+# instance in front of it and left the class intact; this asks a different
+# question, and the answer does not depend on vocabulary at all.
+ZOTERO_ARTICLE_RE = re.compile(r"^.+ - \d{4} - .+\.pdf$", re.I)
+
+
+def is_supplement(filename):
+    """True when this attachment is a supplement rather than the article.
+
+    A filename Zotero generated for the parent item is the article, whatever
+    words the title happens to contain. Only filenames that are NOT in that shape
+    -- publisher payloads like `mmc1.pdf`, `media-1.pdf`, `NIHMS…-supplement-….pdf`
+    -- are judged on their keywords.
+    """
+    if ZOTERO_ARTICLE_RE.match(filename):
+        return False
+    return bool(SUPPLEMENT_RE.search(filename))
+
+
 def order_main_text_first(attachments):
     """Main text first, supplements after, each group keeping Zotero's order."""
-    main = [a for a in attachments if not SUPPLEMENT_RE.search(a[1])]
-    supp = [a for a in attachments if SUPPLEMENT_RE.search(a[1])]
+    main = [a for a in attachments if not is_supplement(a[1])]
+    supp = [a for a in attachments if is_supplement(a[1])]
     return main + supp
 
 
@@ -217,7 +239,8 @@ def main():
     if args.matrix_only:
         wanted = [r for r in wanted if r in matrix_ids]
 
-    staged, skipped, merged, partial, ambiguous, suspect = [], [], [], [], [], []
+    staged, skipped, merged, partial, ambiguous, suspect, errors = ([], [], [], [], [],
+                                                                    [], [])
 
     def write_manifest():
         """Written after every ref, not once at the end.
@@ -243,7 +266,8 @@ def main():
                        "merged": {str(r): names for r, names in merged},
                        "partial": {str(r): n for r, n in partial},
                        "ambiguous": {str(r): n for r, n in ambiguous},
-                       "suspect_join": {str(r): n for r, n in suspect}},
+                       "suspect_join": {str(r): n for r, n in suspect},
+                   "errors": {str(r): n for r, n in errors}},
                       fh, indent=2)
 
     # Written once before the loop as well as after every ref. If `wanted` is
@@ -318,7 +342,7 @@ def main():
             # Merging a genuine duplicate costs distorted page numbers and a
             # doubled availability statement, and the methods are still found;
             # skipping a genuine supplement costs the methods altogether.
-            n_main = sum(1 for _k, fname in atts if not SUPPLEMENT_RE.search(fname))
+            n_main = sum(1 for _k, fname in atts if not is_supplement(fname))
             if n_main > 1:
                 ambiguous.append((rid, f"{n_main} PDFs look like main text: "
                                        f"{', '.join(f for _k, f in atts)}"))
@@ -344,7 +368,13 @@ def main():
                 merged.append((rid, [p.name for p in paths]))
             staged.append(rid)
         except Exception as exc:  # noqa: BLE001 - one bad ref must not strand the rest
-            skipped.append((rid, f"{type(exc).__name__}: {exc}"))
+            # Its OWN bucket, not `skipped`. `pdf_attachments` deliberately lets a
+            # failed Zotero request propagate here so it is "recorded as what it
+            # is" -- and folding it in with not-in-zotero would undo exactly that,
+            # leaving a run where Zotero died halfway through indistinguishable
+            # from one where those refs genuinely had no PDF. refs.txt comes back
+            # short and the documented next step sizes an array from it.
+            errors.append((rid, f"{type(exc).__name__}: {exc}"))
         finally:
             write_manifest()
 
@@ -388,6 +418,13 @@ def main():
     # Note this is stricter than the `n_main == 0` refusal above only in where it
     # puts the stop: that one drops a ref quietly because the alternative is a
     # silently wrong document, this one keeps everything and blocks the pipeline.
+    if errors:
+        print(f"\nERROR: {len(errors)} ref(s) failed while staging — refs.txt is "
+              f"incomplete and an array sized from it would silently skip them:",
+              file=sys.stderr)
+        for rid, why in errors:
+            print(f"  ref {rid}: {why}", file=sys.stderr)
+        return 1
     if suspect and not args.allow_suspect_joins:
         print(f"\nERROR: {len(suspect)} ref(s) matched a Zotero item only after "
               f"dropping a URL fragment. Confirm each is the same paper, fix the "

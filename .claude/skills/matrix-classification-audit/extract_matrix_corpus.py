@@ -565,6 +565,16 @@ def main():
           f"(of which truncated: {n(lambda r: r['methods_truncated'])})   "
           f"no evidence: {n(lambda r: not r['methods_text'].strip())}",
           file=sys.stderr)
+    # Every other figure here is derived from `corpus` so a printed number cannot
+    # drift from the file. This one belongs for the same reason and was missing:
+    # `check_url_join`'s docstring calls it the one anomaly worth finding again
+    # later, and it was the only field written to every record and counted by
+    # nothing.
+    n_suspect = n(lambda r: r.get("suspect_join"))
+    if n_suspect:
+        print(f"  SUSPECT JOINS: {n_suspect} ref(s) matched a Zotero item only "
+              f"after dropping a URL fragment — see `suspect_join` on each record",
+              file=sys.stderr)
     if n_ftcache:
         print(f"  NOTE: {n_ftcache} refs still read the ft-cache path; "
               f"run docling_ingest.py to cover them.", file=sys.stderr)
