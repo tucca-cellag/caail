@@ -551,9 +551,13 @@ export function serializeApiFile(name: string, body: unknown): string {
   // dollar sign in any title, tool name or URL would be interpreted. A callable replacement
   // is never scanned, which closes the whole class rather than escaping one case.
   //
-  // Worth knowing why nothing caught this for as long as it existed: `$$` yields VALID JSON
-  // with a silently wrong value, so it survived the schema validation, the round-trip parse
-  // and the CI sync guard alike (regeneration is deterministic, so both sides matched).
+  // Never realised: no row in the corpus has ever carried a dollar sign, so nothing wrong
+  // was ever served and no artifact needed repairing. Do not go looking for one.
+  //
+  // Worth knowing why no existing check would have caught it either, had one arrived: `$$`
+  // yields VALID JSON with a silently wrong value, so it would pass the schema validation,
+  // the round-trip parse and the CI sync guard alike — the last because regeneration is
+  // deterministic, so the committed and regenerated copies would be corrupt identically.
   return rest.replace(`"${key}": []`, () => `"${key}": [\n${lines}\n  ]`) + '\n';
 }
 

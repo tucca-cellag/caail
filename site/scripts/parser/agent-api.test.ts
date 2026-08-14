@@ -491,14 +491,16 @@ describe('the compact indexes', () => {
   it('emits a $ in row data literally, rather than as a replacement directive', () => {
     // `String.prototype.replace` given a STRING replacement expands `$$`, `$&`, "$`" and
     // `$'` inside that replacement (ECMA-262 GetSubstitution). The replacement here is the
-    // stringified corpus rows, so a dollar sign in any title, tool name or URL was being
+    // stringified corpus rows, so a dollar sign in any title, tool name or URL would be
     // interpreted. The pattern is a plain string with no capture groups, which is exactly
-    // why the mechanism reads as inert and the two-arg form looked safe.
+    // why the mechanism reads as inert and the two-arg form looked safe. It was caught
+    // while still latent — no corpus row has ever carried one — so this guards an entry
+    // nobody has authored yet rather than repairing something that shipped.
     //
-    // The oracle has to be the SOURCE STRING, not the shape of the output. `$$` produced
-    // valid JSON that parsed, validated against the published schema, and regenerated
-    // byte-identically under the CI sync guard — so every check the repo already had
-    // passed on a corrupted title. Only comparing back to what was authored sees it.
+    // The oracle has to be the SOURCE STRING, not the shape of the output. `$$` yields
+    // valid JSON that parses, validates against the published schema, and regenerates
+    // byte-identically under the CI sync guard, so every check the repo already had would
+    // pass on a corrupted title. Only comparing back to what was authored catches it.
     const roundTrip = (titles: string[]) => {
       const rows = titles.map((title, i) => ({ id: i + 1, title }));
       const text = serializeApiFile('papers-index.json', { count: rows.length, references: rows });
