@@ -39,6 +39,12 @@
   --caail-primary-hover: oklch(36% 0.13 264);  /* #013A86 */
   --caail-link: oklch(52% 0.11 256);           /* #3172AE Tufts Digital Blue (AA) */
   --caail-accent: oklch(40% 0.035 60);         /* #5E4B3C Tufts Brown */
+  /* Validation-error text. A token rather than a literal because the palette inverts by
+     lightness in dark mode and a single fixed red cannot pass AA against both grounds:
+     the #b3261e this replaces measured 6.54:1 on white and 2.93:1 on the dark bg, so the
+     one place it had to be readable was the one place it was not. Chosen for >=6:1 on
+     both --caail-bg and --caail-surface in the matching theme. */
+  --caail-danger: oklch(50% 0.17 27);          /* ~#B02B27, 6.55:1 on white */
 
   /* Hero diagonal stripe gradient stops. DELIBERATELY sRGB, not oklch like every
      other token here — the one place in this file that breaks the OKLch rule.
@@ -124,6 +130,7 @@
   --caail-primary-hover: oklch(80% 0.10 256);
   --caail-link: oklch(72% 0.10 256);           /* ~#5B8AD1 */
   --caail-accent: oklch(70% 0.05 60);
+  --caail-danger: oklch(75% 0.17 27);          /* ~#FF7D71, 7.70:1 on the dark bg */
   /* Same two stops against the dark ramp, likewise in sRGB (see the light-mode
      note above). --caail-link and --caail-primary are the same colour on dark,
      so these differ only in alpha. */

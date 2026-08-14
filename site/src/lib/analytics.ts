@@ -32,6 +32,21 @@ export interface AnalyticsGlobals {
   fetch?: (input: string, init?: Record<string, unknown>) => unknown;
 }
 
+/**
+ * Marks a subtree whose outbound links must have named query parameters dropped
+ * before recording. The attribute's VALUE is the space-separated list.
+ *
+ * Declared here rather than beside the page that needs it, and that placement is
+ * the whole point: `Analytics.astro` is mounted from the footer, so it loads on
+ * every page including the Lighthouse-gated landing page. Importing this
+ * constant from `report-compose.ts` made Rollup emit a 1.6 KB chunk carrying the
+ * entire correction composer — `composeBody`, the note bounding, the DOI
+ * regex — as a second waterfall hop on all 52 pages, to read one string. This
+ * module is already a dependency of the analytics script, so putting it here
+ * costs nothing.
+ */
+export const NO_QUERY_ANALYTICS_ATTR = 'data-analytics-drop-params';
+
 /** Longest search query we will record. Long strings are pasted text, not queries. */
 const MAX_QUERY_LEN = 80;
 
@@ -133,12 +148,32 @@ export function resolveSink(scope: AnalyticsGlobals, beaconUrl?: string): Sink |
  * one (same-origin navigation, a non-web scheme like `mailto:`, or an
  * unparseable href).
  *
- * Query strings are kept, unlike Cloudflare's beacon: an outbound href is
- * content we published from the canonical Markdown, not something the visitor
- * typed, and for deposit links the query string *is* the accession
+ * Query strings are kept by default, unlike Cloudflare's beacon: an outbound
+ * href is content we published from the canonical Markdown, not something the
+ * visitor typed, and for deposit links the query string *is* the accession
  * (`…/acc.cgi?acc=GSE12345`). Fragments are dropped as pure noise.
+ *
+ * `dropParams` is for the one place that premise fails. /report/'s composer puts
+ * the reader's own answers, free-text note included, into the GitHub link's
+ * query, so recording that href verbatim would post visitor-authored content to
+ * the collector — while the privacy page says search text is the only free text
+ * collected. Which parameters those are is the caller's business, not this
+ * function's; ReportRoutes.astro names them from the URL builder.
+ *
+ * NAMED PARAMETERS, not the whole query. Dropping the query wholesale also threw
+ * away `item=`, which is the only per-entry attribution this site has on that
+ * route: page views cannot supply it, because the Cloudflare beacon discards
+ * query strings, so the outbound event is the entire signal. Removing the
+ * reader's text is required; removing the entry id was collateral, and it
+ * contradicted a comment in ReportRoutes.astro that still promised the signal.
+ * The caller names what is sensitive, so this function needs to know nothing
+ * about any route.
  */
-export function outboundEvent(href: string, siteOrigin: string): OutboundEvent | null {
+export function outboundEvent(
+  href: string,
+  siteOrigin: string,
+  dropParams: readonly string[] = [],
+): OutboundEvent | null {
   let url: URL;
   try {
     url = new URL(href, siteOrigin);
@@ -150,6 +185,14 @@ export function outboundEvent(href: string, siteOrigin: string): OutboundEvent |
 
   const domain = url.hostname.toLowerCase().replace(/^www\./, '');
   url.hash = '';
+  // Guarded, because mutating searchParams re-serialises the WHOLE query in
+  // application/x-www-form-urlencoded form: one delete rewrote `a~b%20c` as `a%7Eb+c` on
+  // parameters nothing had asked to drop. Harmless while the only marked link is GitHub,
+  // but the deposit links this function keeps query strings FOR are the ones it would
+  // silently rewrite the day a marker lands on a subtree containing one.
+  for (const name of dropParams) {
+    if (url.searchParams.has(name)) url.searchParams.delete(name);
+  }
   return { url: url.toString(), domain, kind: DOMAIN_KINDS[domain] ?? 'external' };
 }
 

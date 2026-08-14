@@ -101,6 +101,35 @@ describe('correctionIssueUrl', () => {
     expect(url.searchParams.has('item')).toBe(false);
     expect(url.searchParams.has('title')).toBe(false);
   });
+
+  it('lands the composed body in the template `details` field', () => {
+    const body = 'Entry: paper:214\nProblem: Wrong licence tier';
+    const url = new URL(correctionIssueUrl('paper:214', body));
+    expect(url.searchParams.get('details')).toBe(body);
+  });
+
+  it('omits `details` entirely when there is no body', () => {
+    // Keeps the CAAIL-255 behaviour byte-for-byte for every caller that composes nothing,
+    // which is every per-card link on the site.
+    for (const body of [undefined, null, '']) {
+      expect(new URL(correctionIssueUrl('paper:214', body)).searchParams.has('details')).toBe(false);
+    }
+  });
+
+  it('lands the error class in the template `reason` field', () => {
+    const url = new URL(
+      correctionIssueUrl('paper:214', 'Problem: Wrong licence tier', 'Wrong licence tier'),
+    );
+    expect(url.searchParams.get('reason')).toBe('Wrong licence tier');
+  });
+
+  it('omits `reason` when no error class was picked', () => {
+    for (const reason of [undefined, null, '']) {
+      expect(
+        new URL(correctionIssueUrl('paper:214', 'body', reason)).searchParams.has('reason'),
+      ).toBe(false);
+    }
+  });
 });
 
 describe('correctionMailto', () => {
@@ -114,6 +143,50 @@ describe('correctionMailto', () => {
     const bare = `mailto:${CORRECTION_EMAIL}?subject=${encodeURIComponent('CAAIL correction')}`;
     expect(correctionMailto(null)).toBe(bare);
     expect(correctionMailto('../evil')).toBe(bare);
+  });
+
+  it('carries the composed body, so the account-free route is not the thin one', () => {
+    const body = 'Entry: paper:214\nProblem: Dead or wrong link';
+    // Compared after decoding, and against the CRLF form: the composer emits `\n` and the
+    // mailto must carry `\r\n` per RFC 6068 (see the note on correctionMailto), so an
+    // assertion against the raw body would be asserting the bug.
+    expect(decodeURIComponent(correctionMailto('paper:214', body))).toContain(
+      body.replace(/\n/g, '\r\n'),
+    );
+  });
+
+  it('percent-encodes spaces rather than writing "+", because mailto is RFC 6068', () => {
+    // `mailto:` is NOT application/x-www-form-urlencoded: a `+` in its query is a literal
+    // plus, so building this with URLSearchParams would send a conforming mail client a
+    // subject reading "CAAIL+correction:+paper:214" and a body with a plus between every
+    // word. Both strings are space-heavy, so this would be wrong on the first real use.
+    const url = correctionMailto('paper:214', 'Entry: paper:214\nProblem: Dead or wrong link');
+    expect(url).not.toContain('+');
+    expect(url).toContain('%20');
+  });
+
+  it('encodes line breaks as CRLF, which RFC 6068 requires of a mailto body', () => {
+    // `encodeURIComponent('\n')` is a bare `%0A`, which a strict client may drop. The report
+    // is a stack of `Key: value` lines and nothing else, so losing the breaks collapses it
+    // into one run-on sentence — and the clients most likely to do it are the Windows ones
+    // the URL-length budget is already calibrated against.
+    const url = correctionMailto('paper:214', 'Entry: paper:214\nProblem: Dead or wrong link');
+    expect(url).toContain('%0D%0A');
+    // No bare LF survives anywhere: every %0A in the URL is preceded by %0D.
+    expect(url.replace(/%0D%0A/g, '')).not.toContain('%0A');
+  });
+
+  it('does not double the CR on a body that already carries CRLF', () => {
+    const url = correctionMailto('paper:214', 'Entry: paper:214\r\nProblem: Dead or wrong link');
+    expect(url).toContain('%0D%0A');
+    expect(url).not.toContain('%0D%0D');
+  });
+
+  it('omits the body when there is none, leaving the shipped URL unchanged', () => {
+    const bare = `mailto:${CORRECTION_EMAIL}?subject=${encodeURIComponent('CAAIL correction: paper:1')}`;
+    for (const body of [undefined, null, '']) {
+      expect(correctionMailto('paper:1', body)).toBe(bare);
+    }
   });
 });
 

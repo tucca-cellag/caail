@@ -20,7 +20,18 @@ const read = <T>(name: string): T => JSON.parse(readFileSync(`${dataDir}${name}`
 type Counts = { papers: number; software: number; databases: number; species: number; datasets: number };
 type Cell = { method: string; area: string; refIds: number[] };
 type Ref = { id: number; section: string };
-type Papers = { cells: Cell[]; references: Ref[] };
+type Papers = {
+  cells: Cell[];
+  references: Ref[];
+  methods: string[];
+  areas: { key: string; label: string }[];
+};
+/** The /report/ composer's reason vocabulary, read from the GitHub issue form it prefills. */
+type CorrectionForm = {
+  reasons: { value: string; label: string; kind: string }[];
+  fieldIds: string[];
+  requiredConfirmations: number;
+};
 type SubjectRow = {
   slug: string; label: string; kind: 'theme' | 'tag'; theme: string | null;
   total: number; cells: { key: string; count: number }[];
@@ -46,6 +57,7 @@ export const papers = read<Papers>('papers.json');
 export const metrics = read<Metrics>('metrics.json');
 export const primers = read<Primers>('primers.json');
 export const topics = read<Topics>('topics.json');
+export const correctionForm = read<CorrectionForm>('correction-form.json');
 
 /** How many references sit in a given matrix cell. */
 export function cellRefCount(method: string, area: string): number {

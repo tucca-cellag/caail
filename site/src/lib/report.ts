@@ -35,6 +35,25 @@ export const CORRECTION_TEMPLATE = 'entry-correction.yml';
 export const REPORT_PATH = '/report/';
 
 /**
+ * The template field ids {@link correctionIssueUrl} prefills, as query-parameter names.
+ *
+ * Exported and used by the builder below rather than spelled inline, because the build's
+ * check that the template still carries these fields
+ * (`scripts/parser/correction-form.ts`) reads THIS constant. Without that link the two
+ * would be a hand-typed pair: renaming the parameter here would keep passing a check that
+ * was still asserting the old name, and the prefill would stop silently, which is the one
+ * way it fails — GitHub ignores a query parameter matching no field rather than erroring.
+ */
+export const CORRECTION_FIELDS = {
+  /** The frozen entry id. CAAIL-255's contract. */
+  item: 'item',
+  /** The error class, in the template's own words. See {@link correctionIssueUrl}. */
+  reason: 'reason',
+  /** The composed report body. */
+  details: 'details',
+} as const;
+
+/**
  * Where an email correction goes when the reader has no GitHub account.
  *
  * Published deliberately: the account requirement is the real exclusion for CAAIL's
@@ -75,18 +94,74 @@ export function reportHref(base: string, itemId: string): string {
  * GitHub prefills an issue form's fields from query params keyed by the field's `id` in
  * the template, so `item=` lands in the template's `item` input. A null id yields the
  * bare template — still useful, just unanchored.
+ *
+ * `body` is the composed report (see ./report-compose.ts) and lands in the template's
+ * `details` textarea. Omitted when empty, so the CAAIL-255 behaviour — a bare anchored
+ * form — is exactly what a caller that passes no body still gets.
+ *
+ * `reason` is the error class in the template's own words, and lands in the `reason` field.
+ * It prefills only because that field is an `input`: a `dropdown` takes the same parameter
+ * and ignores it. That was CHECKED against the live form rather than inferred — GitHub's
+ * schema documentation says only that a field's `id` "is the canonical identifier for the
+ * field in URL query parameter prefills", and never states how a dropdown encodes its
+ * value — so the finding is worth keeping written down, since the whole shape of the
+ * template rests on it. `scripts/parser/correction-form.ts` fails the build if the field
+ * stops being an input, because a parameter that silently does nothing reads, to anyone
+ * maintaining this, exactly like a working prefill.
+ *
+ * While it was a dropdown the page had to ask the reader to pick, by hand, the one thing
+ * they had just told us, at the end of a flow whose whole promise is that it writes the
+ * report for them.
+ *
+ * NOT set here, and deliberately: the two `confirmations` checkboxes. They are an
+ * acknowledgement that the issue is public and MIT-licensed, so ticking them on the
+ * reader's behalf would be worth nothing even if it worked — the point of the box is that
+ * a person ticked it.
  */
-export function correctionIssueUrl(itemId: string | null): string {
+export function correctionIssueUrl(
+  itemId: string | null,
+  body?: string | null,
+  reason?: string | null,
+): string {
   const q = new URLSearchParams({ template: CORRECTION_TEMPLATE });
   if (itemId && isItemId(itemId)) {
+    // `title` is a GitHub built-in, not a template field, so it is not in CORRECTION_FIELDS.
     q.set('title', `Correction: ${itemId}`);
-    q.set('item', itemId);
+    q.set(CORRECTION_FIELDS.item, itemId);
   }
+  if (reason) q.set(CORRECTION_FIELDS.reason, reason);
+  if (body) q.set(CORRECTION_FIELDS.details, body);
   return `https://github.com/${CAAIL_REPO}/issues/new?${q.toString()}`;
 }
 
-/** The email route, with the id already in the subject so it survives the trip. */
-export function correctionMailto(itemId: string | null): string {
+/**
+ * The email route, with the id already in the subject so it survives the trip.
+ *
+ * `body` carries the composed report into the mail client, so the account-free route is
+ * not left thinner than the GitHub one: a reader without a GitHub account gets the same
+ * finished report, already written. Omitted when empty, which keeps the no-body URL
+ * byte-identical to what CAAIL-255 shipped.
+ *
+ * WHY THIS ONE IS NOT BUILT WITH URLSearchParams, UNLIKE {@link correctionIssueUrl}.
+ * `mailto:` is RFC 6068, not `application/x-www-form-urlencoded`: it percent-encodes, and
+ * a `+` in its query is a LITERAL plus rather than a space. `URLSearchParams` encodes
+ * spaces as `+`, so composing this the same way as the GitHub URL would send a conforming
+ * mail client a subject line reading "CAAIL+correction:+paper:214" and a body with a plus
+ * between every word. Spaces are common in both, so this would be wrong on the first real
+ * use rather than in some edge case.
+ *
+ * The same RFC is why the body's line breaks are normalised to CRLF first. RFC 6068 §5
+ * requires a line break in a body to be `%0D%0A`; `encodeURIComponent` turns the composer's
+ * `\n` into a bare `%0A`, which a strict client is free to drop. The report is a stack of
+ * `Key: value` lines and nothing else, so losing the breaks collapses it into one run-on
+ * sentence — the structure this whole route exists to produce. Windows and Outlook are the
+ * client family most likely to do it, and they are also the ones `MAILTO_MAX_URL` (in
+ * ./report-compose.ts) is calibrated against, so this is the same audience twice.
+ */
+export function correctionMailto(itemId: string | null, body?: string | null): string {
   const subject = itemId && isItemId(itemId) ? `CAAIL correction: ${itemId}` : 'CAAIL correction';
-  return `mailto:${CORRECTION_EMAIL}?subject=${encodeURIComponent(subject)}`;
+  const fields = [`subject=${encodeURIComponent(subject)}`];
+  // `\r?\n` rather than `\n`, so a body that already carries CRLF is not given a second CR.
+  if (body) fields.push(`body=${encodeURIComponent(body.replace(/\r?\n/g, '\r\n'))}`);
+  return `mailto:${CORRECTION_EMAIL}?${fields.join('&')}`;
 }

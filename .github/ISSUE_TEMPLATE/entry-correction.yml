@@ -28,21 +28,31 @@ body:
       description: The address of the page you were reading, if you have it to hand.
       placeholder: https://tucca-cellag.github.io/caail/papers/explorer/
 
-  - type: dropdown
+  # An input rather than a dropdown, because a dropdown cannot be prefilled: GitHub matches
+  # a query parameter to a field's id, and for a dropdown that parameter does not select an
+  # option. The report page composes this answer already, so a dropdown here would mean
+  # asking the reader to pick, by hand, the one thing they have just told us — and they
+  # will not. The list below is therefore the field's DESCRIPTION rather than its options,
+  # and it stays the single source of that vocabulary: site/scripts/parser/correction-form.ts
+  # reads these bullets at build time and the build FAILS if they and the composer's
+  # follow-up questions stop being in bijection. Reword a trailing explanation freely;
+  # renaming an error class, adding one or removing one is a code change too.
+  - type: input
     id: reason
     attributes:
       label: What is wrong with it
       description: |
-        Pick the closest. These are the error classes a curator audit of the library actually turned up, so a report matching one of them maps to a known fix.
-      options:
+        Prefilled if you came from an entry's "Report an issue" link. Otherwise copy whichever line below comes closest. These are the error classes a curator audit of the library actually turned up, so a report matching one of them maps to a known fix.
+
         - Wrong matrix placement — the AI method or research area is not what the paper does
         - Not machine learning at all — the paper does not apply an AI/ML method
-        - Stale or wrong figures in the description (record counts, sizes, dates)
+        - Stale or wrong figures in the description — record counts, sizes, dates
         - Dead or wrong link
         - Wrong licence tier
         - Wrong or missing DOI
         - Wrong or missing subject topics — the theme and tag chips, or a whole theme that looks mis-tagged
-        - Something else (describe below)
+        - Something else — describe it below
+      placeholder: Wrong matrix placement
     validations:
       required: true
 

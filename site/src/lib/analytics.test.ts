@@ -147,6 +147,30 @@ describe('outboundEvent', () => {
     expect(outboundEvent('http://', ORIGIN)).toBeNull();
   });
 
+  it('drops the query string when asked, so reader-typed text is never recorded', () => {
+    // /report/'s composer puts the whole correction, including a free-text note, into the
+    // GitHub link's `details=`. Recording that href verbatim would post visitor-authored
+    // text to the collector, while the privacy page says search text is the only free text
+    // collected. The claim stays true by construction rather than by amendment.
+    const href =
+      'https://github.com/tucca-cellag/caail/issues/new?template=entry-correction.yml' +
+      '&item=paper%3A214&details=Entry%3A%20paper%3A214%0ANote%3A%20a%20colleague%27s%20name';
+    const kept = outboundEvent(href, ORIGIN);
+    expect(kept?.url).toContain('details=');
+
+    const dropped = outboundEvent(href, ORIGIN, ['details']);
+    expect(dropped?.url).not.toContain('details=');
+    expect(dropped?.url).not.toContain('colleague');
+    // Only the named parameter goes. `item=` is the ONLY per-entry attribution this
+    // route has, because the page-view beacon strips query strings, so dropping the
+    // whole query removed the signal the outbound event exists to carry.
+    expect(dropped?.url).toContain('item=paper%3A214');
+    expect(dropped?.url).toContain('template=entry-correction.yml');
+    // Still classified, so the click is still counted — only its payload is dropped.
+    expect(dropped?.kind).toBe('repo');
+    expect(dropped?.domain).toBe('github.com');
+  });
+
   it('keeps the query string, because for deposit links it carries the accession', () => {
     const e = outboundEvent('https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE123456', ORIGIN);
     expect(e?.url).toBe('https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE123456');
@@ -215,5 +239,25 @@ describe('parseResultCount', () => {
     expect(parseResultCount(null, 4)).toBe(4);
     expect(parseResultCount(undefined, 4)).toBe(4);
     expect(parseResultCount('no results', 0)).toBe(0);
+  });
+});
+
+describe('outboundEvent leaves an untouched query untouched', () => {
+  it('does not re-encode parameters it was not asked to drop', () => {
+    // Mutating searchParams re-serialises the whole query as form-urlencoded, so a single
+    // delete rewrote `a~b%20c` as `a%7Eb+c` on parameters nothing had asked about. The
+    // deposit links this function deliberately keeps query strings for are the ones that
+    // would be silently rewritten if a drop marker ever wrapped one.
+    const href = 'https://example.com/a?acc=GSE12345&x=a~b%20c';
+    const plain = outboundEvent(href, 'https://caail.test/');
+    const dropped = outboundEvent(href, 'https://caail.test/', ['details', 'reason']);
+    expect(dropped?.url).toBe(plain?.url);
+  });
+
+  it('still drops a parameter that is actually present', () => {
+    const href = 'https://example.com/a?acc=GSE12345&details=secret';
+    const dropped = outboundEvent(href, 'https://caail.test/', ['details']);
+    expect(dropped?.url).toContain('acc=GSE12345');
+    expect(dropped?.url).not.toContain('secret');
   });
 });
