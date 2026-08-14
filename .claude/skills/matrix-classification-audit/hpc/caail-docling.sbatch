@@ -71,7 +71,13 @@ export TMPDIR="$TASK_SCRATCH"
 export TORCHINDUCTOR_CACHE_DIR="$TASK_SCRATCH/inductor"
 # Self-cleaning: the compiled kernels are worthless once the task ends, and a
 # per-task directory left behind on a shared volume is the same problem moved.
-trap 'rm -rf "$TASK_SCRATCH"' EXIT
+#
+# TERM and INT as well as EXIT, because a non-interactive bash dies on SIGTERM
+# without running its EXIT trap -- and SIGTERM is how Slurm ends a job that hits
+# the walltime or the memory limit. Those are precisely the long-tail and
+# large-document tasks, so an EXIT-only trap would leave behind the caches of
+# exactly the runs most likely to fail, while claiming to be self-cleaning.
+trap 'rm -rf "$TASK_SCRATCH"' EXIT TERM INT
 
 # Since Slurm 22.05 `srun` no longer inherits --cpus-per-task from the batch
 # allocation, so without this the step gets ONE cpu while docling is told to use

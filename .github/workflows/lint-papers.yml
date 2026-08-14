@@ -128,6 +128,13 @@ jobs:
       - name: URL-join normalizer tests
         run: python3 .claude/skills/matrix-classification-audit/norm_url.test.py
 
+      # Which attachment is the article and which is the supplement. A missed
+      # publisher convention does not degrade gracefully: the supplement is
+      # counted as a second article, and the ref is reported as a duplicate pair
+      # -- so the papers whose methods live in a supplement are the ones flagged.
+      - name: PDF staging classifier tests
+        run: python3 .claude/skills/matrix-classification-audit/hpc/stage_pdfs.test.py
+
       - name: DB integrity + round-trip verify
         run: |
           pnpm --dir site db:check

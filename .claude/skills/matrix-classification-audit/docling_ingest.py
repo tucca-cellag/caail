@@ -204,7 +204,7 @@ def write_section(out, rid, doc):
         "methods_text": text,
         "availability": availability,
         "tables": collect_tables(doc),
-    }, ensure_ascii=False, indent=2))
+    }, ensure_ascii=False, indent=2), encoding="utf-8")
     return span, len(text)
 
 
@@ -233,10 +233,10 @@ def respan(out):
         before = ""
         if sec_path.exists():
             try:
-                before = json.loads(sec_path.read_text()).get("strategy", "")
+                before = json.loads(sec_path.read_text(encoding="utf-8")).get("strategy", "")
             except ValueError:
                 before = ""
-        doc = DoclingDocument.model_validate(json.loads(p.read_text()))
+        doc = DoclingDocument.model_validate(json.loads(p.read_text(encoding="utf-8")))
         span, n = write_section(out, rid, doc)
         strategies[span["strategy"]] = strategies.get(span["strategy"], 0) + 1
         if before and before != span["strategy"]:
@@ -347,7 +347,8 @@ def main():
         try:
             doc = converter.convert(t["pdf"]).document
             (out / "docs" / f"ref-{rid}.json").write_text(
-                json.dumps(doc.export_to_dict(), ensure_ascii=False))
+                json.dumps(doc.export_to_dict(), ensure_ascii=False),
+                encoding="utf-8")
             span, n_chars = write_section(out, rid, doc)
             rec.update(ok=True, error="", strategy=span["strategy"],
                        chars=n_chars, n_pages=doc.num_pages())
@@ -367,13 +368,13 @@ def main():
               f'{rec.get("strategy", "-")} chars={rec.get("chars", 0)} '
               f'| done={done} skip={skipped} fail={failed} '
               f'eta={remaining * rate / 60:.0f}min', flush=True)
-        (out / "ingest-log.json").write_text(json.dumps(log, indent=2))
+        (out / "ingest-log.json").write_text(json.dumps(log, indent=2), encoding="utf-8")
 
         if args.limit and converted >= args.limit:
             print(f"reached --limit {args.limit}", flush=True)
             break
 
-    (out / "ingest-log.json").write_text(json.dumps(log, indent=2))
+    (out / "ingest-log.json").write_text(json.dumps(log, indent=2), encoding="utf-8")
     print(f"\nconverted={converted} skipped={skipped} failed={failed} "
           f"elapsed={(time.time() - t_start) / 60:.1f}min")
     strategies = {}

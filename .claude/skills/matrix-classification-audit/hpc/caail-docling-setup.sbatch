@@ -26,6 +26,9 @@ set -euo pipefail
 
 : "${CAAIL_ENV_DIR:?set CAAIL_ENV_DIR to the conda env holding docling}"
 : "${CAAIL_MODELS:?set CAAIL_MODELS to the weights destination}"
+# The smoke test builds its converter from docling_ingest.build_converter()
+# rather than keeping a second copy of the options, so it needs the skill.
+: "${CAAIL_SKILL_DIR:?set CAAIL_SKILL_DIR to the skill scripts on the cluster}"
 
 module load miniforge
 source activate "$CAAIL_ENV_DIR"
@@ -58,18 +61,23 @@ echo "=== converter smoke test ==="
 # or version-mismatched tableformer download and then fail once per array task
 # -- exactly the outcome this job exists to prevent. initialize_pipeline is the
 # eager path, and it is what raises on missing local model files.
-CAAIL_MODELS="$CAAIL_MODELS" python - <<'PY'
+# The converter comes from docling_ingest.build_converter(), not from a copy of
+# its options here. A second copy would let this job verify a pipeline the array
+# does not build: enable OCR or a formula model upstream and the smoke test would
+# download and check the wrong weights, report success, and leave every array
+# task to fail on a model it never fetched -- which is the failure this job
+# exists to prevent, reintroduced by the check itself.
+python - <<'PY'
 import os
-from docling.datamodel.base_models import InputFormat
-from docling.datamodel.pipeline_options import PdfPipelineOptions
-from docling.document_converter import DocumentConverter, PdfFormatOption
+import sys
 
-opts = PdfPipelineOptions()
-opts.do_ocr = False
-opts.do_table_structure = True
-opts.artifacts_path = os.environ["CAAIL_MODELS"]
-conv = DocumentConverter(
-    format_options={InputFormat.PDF: PdfFormatOption(pipeline_options=opts)})
+sys.path.insert(0, os.environ["CAAIL_SKILL_DIR"])
+sys.path.insert(0, os.path.join(os.path.dirname(os.environ["CAAIL_SKILL_DIR"]),
+                                "zotero-collection-scope"))
+import docling_ingest
+from docling.datamodel.base_models import InputFormat
+
+conv = docling_ingest.build_converter(artifacts_path=os.environ["CAAIL_MODELS"])
 conv.initialize_pipeline(InputFormat.PDF)
-print("pipeline initialized OK from artifacts_path, table structure enabled")
+print("pipeline initialized OK from artifacts_path, using the array's own options")
 PY

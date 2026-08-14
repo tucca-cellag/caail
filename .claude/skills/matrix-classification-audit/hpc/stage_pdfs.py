@@ -69,7 +69,25 @@ import extract_matrix_corpus as ex  # noqa: E402
 import scope  # noqa: E402
 
 # Publisher conventions for "this file is the supplement, not the article".
-SUPPLEMENT_RE = re.compile(r"-supplement-|supplementary|^media-\d+\.pdf$", re.I)
+#
+# Breadth matters more than precision here, because of what a miss costs. An
+# unrecognised supplement is counted as a second main text, and the duplicate
+# check below then refuses the ref -- so the papers whose methods live in a
+# supplement, which are the entire reason merging exists, are the ones dropped.
+# The first version of this pattern knew only the PMC convention and one
+# publisher's, which is most of the corpus's supplements missed.
+SUPPLEMENT_RE = re.compile(
+    r"-supplement-"          # PMC author manuscripts: NIHMS…-supplement-….pdf
+    r"|supplementary"        # the generic word, anywhere
+    r"|supporting[-_ ]info"  # ACS/RSC "Supporting Information"
+    r"|^media-\d+\.pdf$"     # OUP/BMC publisher media
+    r"|moesm\d*"             # Springer Nature: 41586_2024_1234_MOESM1_ESM.pdf
+    r"|mmc\d+"               # Elsevier: 1-s2.0-…-mmc1.pdf
+    r"|-sup-\d+"             # Wiley: …-sup-0001-….pdf
+    r"|sapp\.pdf$"           # PNAS: pnas.…sapp.pdf
+    r"|[-_]si\d*\.pdf$"      # …_si.pdf / …-si1.pdf
+    r"|appendix",
+    re.I)
 
 
 def pdf_attachments(api, group, item_key):
@@ -93,8 +111,17 @@ def pdf_attachments(api, group, item_key):
     out = []
     for c in children or []:
         d = c.get("data", {})
-        if d.get("contentType") == "application/pdf":
-            out.append((d.get("key"), d.get("filename") or ""))
+        if d.get("contentType") != "application/pdf":
+            continue
+        # Only stored files have a `storage/<key>/` directory. A `linked_url`
+        # attachment (a "Full Text PDF" link) or a `linked_file` pointing outside
+        # the Zotero store can never resolve to a path, so counting it would make
+        # `len(paths) != len(atts)` permanently true: the ref would be recorded
+        # as partial and skipped on every run, advised to "sync Zotero" -- which
+        # cannot fix it, because there is nothing to sync.
+        if d.get("linkMode") not in ("imported_file", "imported_url"):
+            continue
+        out.append((d.get("key"), d.get("filename") or ""))
     return out
 
 
@@ -154,7 +181,7 @@ def main():
     if args.matrix_only:
         wanted = [r for r in wanted if r in matrix_ids]
 
-    staged, skipped, merged, partial = [], [], [], []
+    staged, skipped, merged, partial, ambiguous = [], [], [], [], []
 
     def write_manifest():
         """Written after every ref, not once at the end.
@@ -172,7 +199,8 @@ def main():
             "".join(f"{r}\n" for r in staged))
         json.dump({"staged": staged, "skipped": skipped,
                    "merged": {str(r): names for r, names in merged},
-                   "partial": {str(r): n for r, n in partial}},
+                   "partial": {str(r): n for r, n in partial},
+                   "ambiguous": {str(r): n for r, n in ambiguous}},
                   open(out / "stage-manifest.json", "w"), indent=2)
 
     for rid in wanted:
@@ -222,20 +250,25 @@ def main():
                                      f"are on disk"))
                 continue
 
-            # More than one non-supplement PDF is almost always two copies of the
-            # same article -- a publisher "Full Text PDF" beside an accepted
-            # manuscript, or a re-saved duplicate. Concatenating those converts the
-            # paper twice: the section's page numbers stop matching the published
-            # article and the availability statement can be located twice.
-            # `find_pdf_attachment_key`'s single-PDF behaviour was immune to this,
-            # so merging must not regress it.
+            # More than one non-supplement PDF is EITHER two copies of the same
+            # article (a publisher "Full Text PDF" beside an accepted manuscript)
+            # OR a supplement whose filename this pattern does not recognise.
+            # The two are indistinguishable from the name alone, and the pattern
+            # will always be incomplete -- publishers keep inventing conventions,
+            # which is the same reason the section rule needs periodic work.
+            #
+            # So this records rather than decides, and the residual case MERGES.
+            # An earlier version skipped instead, which inverted the feature: a
+            # supplement under an unrecognised name made the ref look like a
+            # duplicate pair, and the papers whose methods live in a supplement --
+            # the entire population merging exists for -- were the ones dropped.
+            # Merging a genuine duplicate costs distorted page numbers and a
+            # doubled availability statement, and the methods are still found;
+            # skipping a genuine supplement costs the methods altogether.
             n_main = sum(1 for _k, fname in atts if not SUPPLEMENT_RE.search(fname))
             if n_main > 1:
-                skipped.append((rid, f"{n_main} non-supplement PDFs — probably "
-                                     f"duplicate copies of the article, which would "
-                                     f"be converted twice; merge by hand or remove "
-                                     f"the duplicate"))
-                continue
+                ambiguous.append((rid, f"{n_main} PDFs look like main text: "
+                                       f"{', '.join(f for _k, f in atts)}"))
 
             dest = out / f"ref-{rid}.pdf"
             if len(paths) == 1:
@@ -256,6 +289,13 @@ def main():
             print(f"  ref {rid}:")
             for n in names:
                 print(f"      {n}")
+    if ambiguous:
+        print(f"CHECK -- merged, but the attachments could not be classified "
+              f"({len(ambiguous)}). Either a supplement this pattern does not "
+              f"recognise (fine, and worth adding to SUPPLEMENT_RE) or two copies "
+              f"of the same article (converted twice; remove one and re-stage):")
+        for rid, why in ambiguous:
+            print(f"  ref {rid}: {why}")
     if partial:
         print(f"INCOMPLETE -- some attachments were not on disk ({len(partial)}):")
         for rid, why in partial:

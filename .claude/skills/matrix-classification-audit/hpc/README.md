@@ -16,6 +16,7 @@ paper plus queueing. The same 224 refs took **about 20 minutes at 20-way concurr
 | `caail-docling.sbatch` | The array. One staged PDF per task. |
 | `convert_one.py` | What a task runs: one PDF → `docs/ref-<id>.json`, with the pipeline options mirroring `docling_ingest.build_converter()`. Resumable and atomic — it skips a ref whose doc exists, and writes through a temp file so a killed task cannot leave a truncated doc the skip check would treat as finished. |
 | `caail-docling-respan.sbatch` | Runs the real `docling_ingest.py --respan` to derive `sections/` from `docs/`. |
+| `stage_pdfs.test.py` | Guards the attachment classifier: which filenames are supplements, across publishers, and that the article sorts first. Stdlib only, so CI runs it. A missed convention does not degrade gracefully — it makes a supplement look like a duplicate article. |
 
 ## The split, and why it is worth keeping
 
