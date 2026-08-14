@@ -209,10 +209,12 @@ placed there would silently inflate a public statistic that says it is counting 
 2. **Do not add a matrix row for it.** A page describes a row that already exists; adding a row is a
    separate, deliberate change that needs its `Taxonomy.md` definition in the same commit.
 3. **Register it for the site** in `site/src/content/caail-pages.ts` (group `methods`, with its own meta
-   description). The sidebar entry, the route and the link-rewriting guard all derive from that map.
+   description). The sidebar entry, the route and the link-rewriting guard all derive from that map. As
+   with a research-area page this is not optional: `caail-pages.test.ts` asserts every file in `Methods/`
+   has a map entry, so a page without one fails CI.
 
-Unlike a research-area page, a method page is optional: most rows have none, and a row is never blocked on
-one being written.
+What is optional is *whether a row has a page at all*: most rows have none, and a row is never blocked on
+one being written. The three steps above are not optional once you decide to write one.
 
 ## Citation style
 
