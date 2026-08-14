@@ -46,6 +46,16 @@ __pycache__/
 .env.*
 !.env.example
 
-# Worker build output and local wrangler state
-workers/*/node_modules/
+# Installed packages, at any depth. Bare rather than anchored on purpose: the workspaces
+# under site/ and workers/ are not the only places one appears. A command that resolves a
+# package from the repo ROOT creates one there -- an npx run from a worktree root rather
+# than from site/, or a pnpm add typed one directory too high -- and nothing was ignoring
+# it, so `git add -A` stages the lot. Nothing in this repo's history carries such a path:
+# the one time it reached a commit, the commit was amended before it was ever pushed, which
+# is a catch rather than a control. This pattern subsumes the workers/*/node_modules/ rule
+# that used to sit here, which is why that one is gone. site/.gitignore keeps its own copy
+# on purpose, so that workspace stays self-contained.
+node_modules/
+
+# Local wrangler state
 workers/*/.wrangler/
