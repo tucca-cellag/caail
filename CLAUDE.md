@@ -155,13 +155,15 @@ LICENSE                MIT License
      > **Code**: https://github.com/<owner>/<repo>
      ```
 
-   - If the publisher has issued a **post-publication notice**, record it the same way, under its own DOI. **Use the publisher's own word for the notice as the label** (`Correction`, `Erratum`, `Expression of concern`, `Retraction`), never a generic one:
+   - If the publisher has issued a **post-publication notice that leaves the paper standing** (a correction, an erratum, an expression of concern), record it the same way, under its own DOI. **Use the publisher's own word for the notice as the label** (`Correction`, `Erratum`, `Expression of concern`), never a generic one:
 
      ```markdown
      > **Correction**: https://doi.org/<correction-doi>
      ```
 
      The label is the claim. An expression of concern says the publisher doubts the work and has fixed nothing, so filing one under `Correction` tells every reader the opposite of what was published.
+
+     **A retraction is not one of these, and this rule does not cover it.** A blockquote is discarded by the parser (below), so recording a retraction that way would leave the reference sitting in its matrix cells, served by `api/papers.json` and the plugin skill as an ordinary recommendation, with nothing anywhere saying the paper was withdrawn. Whether a retracted paper keeps its cells, gets a tombstone, or is retired the way a removed ref id is, is a curator decision nobody has made. Raise it rather than inferring an answer from the pattern above.
 
      **The blockquote is DB-owned. Author it through `caail-db-authoring`, never by typing into `Papers.md`.** `db:emit` rebuilds every trailing blockquote from `papers.blockquotes_md`, so a line typed into the Markdown is either deleted by the next emit or reddens the CI sync guard. `block-generated-edits.py` will not catch it either: its markers are `<a id="`, `](#` and `### [`, and a blockquote-only edit contains none of them, so the local guard that exists for this file stays silent. `site/scripts/db/hook.test.ts` pins that gap, so closing it turns the suite red and forces this sentence to be rewritten rather than left asserting the opposite.
 

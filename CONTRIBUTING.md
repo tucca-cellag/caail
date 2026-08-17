@@ -61,7 +61,7 @@ The matrix and the `## References` list must be kept in sync:
    > **Code**: https://github.com/<owner>/<repo>
    ```
 
-   **If the publisher has issued a post-publication notice** (a correction, erratum, expression of concern or retraction), record it the same way under its own DOI, and separate the two with a blank line. Label it with the publisher's own word for the notice, never a generic one: an expression of concern filed under `Correction` tells the reader an error was fixed when nothing was.
+   **If the publisher has issued a post-publication notice that leaves the paper standing** (a correction, erratum or expression of concern), record it the same way under its own DOI, and separate the two with a blank line. Label it with the publisher's own word for the notice, never a generic one: an expression of concern filed under `Correction` tells the reader an error was fixed when nothing was. A *retraction* is not covered here, because it raises the separate question of whether the paper keeps its matrix cells at all; propose it in the issue rather than recording it as a blockquote.
 
    ```markdown
    > **Code**: https://github.com/<owner>/<repo>
@@ -71,7 +71,7 @@ The matrix and the `## References` list must be kept in sync:
 
    The blank line matters: GitHub renders two adjacent `>` lines as one run-on line, and GitHub is where these are read. Note that the notice reaches GitHub but not the entry's card on the site, because the parser keeps only the `Code` and `Data` labels (tucca-cellag/caail#202).
 
-   As with the citation itself, a maintainer lands this through the DB rather than by typing it into `Papers.md`: the trailing blockquotes are regenerated from the database, so a hand-typed line is dropped again on the next regeneration.
+   **The Markdown in these steps shows you the shape of the result, not a file to edit.** The reference, its matrix cells and these trailing blockquotes are all regenerated from the database, so a maintainer lands the whole entry through the DB and anything typed straight into `Papers.md` is dropped by the next regeneration. Propose the content in your issue or PR description; you do not need DB access to contribute one.
 
 4. **Add the paper to every applicable matrix cell.** For each AI method (row) and research area (column) the paper covers, add `[42](#42)` to the corresponding cell, comma-separated with any existing entries:
 

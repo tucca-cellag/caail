@@ -17,6 +17,17 @@ import { PapersDataSchema, type PapersData } from './types.js';
 /** Ref 289's published correction: the repo's only post-publication notice. */
 const CORRECTION_DOI = '10.1093/biomethods/bpaf076';
 
+/** The committed source the blockquote runs are stored in and emitted from. */
+const PAPERS_NDJSON_PATH = join(
+  fileURLToPath(import.meta.url),
+  '..',
+  '..',
+  '..',
+  'db',
+  'ndjson',
+  'papers.ndjson',
+);
+
 const FIXTURE_PATH = join(
   fileURLToPath(import.meta.url),
   '..',
@@ -245,9 +256,16 @@ describe('buildPapersModel — real Papers.md', () => {
       "ref 289 no longer carries its correction blockquote, so the rest of this test proves nothing: either restore it, or retire this guard and the post-publication-notice paragraphs in CLAUDE.md and CONTRIBUTING.md with it",
     ).toBe(true);
 
-    const ref289 = model.references.find((r) => r.id === 289)!;
-    expect(ref289.codeUrl).toBe('https://github.com/faezesarlakifar/AllerTrans');
-    expect(ref289.dataUrl).toBeNull();
+    // Checked before dereferencing: the assertion above only proves the notice
+    // line is somewhere in Papers.md, not that it still belongs to 289. If 289
+    // were retired while the string survived elsewhere, a bare `!` would throw
+    // "cannot read properties of undefined" and none of the guidance messages
+    // written into this test would ever print.
+    const ref289 = model.references.find((r) => r.id === 289);
+    expect(ref289, 'ref 289 is gone from Papers.md; retire this guard and the post-publication-notice paragraphs in CLAUDE.md and CONTRIBUTING.md with it').toBeDefined();
+
+    expect(ref289!.codeUrl).toBe('https://github.com/faezesarlakifar/AllerTrans');
+    expect(ref289!.dataUrl).toBeNull();
 
     // Searched over the whole model, not just ref 289, so a sibling structure (a
     // notices map keyed by ref id) trips it too.
@@ -277,59 +295,30 @@ describe('buildPapersModel — real Papers.md', () => {
   // blockquote rule. Without this, adjacent `> **` lines pass every gate while
   // GitHub renders them as one run-on line — and GitHub is where they are read.
   //
-  // Scoped to blockquotes attached to a citation, NOT every `> **` line in the
-  // file: Papers.md:76 is a hand-authored prose callout in the region db:emit
-  // preserves verbatim, and a future editorial callout written as two bolded
-  // blockquote lines is legitimate Markdown this must not reject.
+  // Checked in the STORED string, not in the rendered Papers.md. Three earlier
+  // attempts scanned the Markdown by line shape and each missed a different
+  // legitimate form — `>**Label**` without the space, a lazy continuation whose
+  // second line has no `>` at all, an unlabelled `> See also` line inside the
+  // run — while also having to special-case the hand-authored prose callout at
+  // Papers.md:76. None of that matters here: emitSectionRefs writes
+  // blockquotes_md VERBATIM (it joins only ACROSS papers), so the separator has
+  // to already be in the stored string, and the stored string contains nothing
+  // but one paper's blockquote run. The invariant is therefore just "every
+  // newline is part of a blank line", which no Markdown line shape can evade.
   it('separates every multi-label blockquote with a blank line', () => {
-    const lines = readFileSync(PAPERS_MD_PATH, 'utf8').split('\n');
+    const rows = readFileSync(PAPERS_NDJSON_PATH, 'utf8')
+      .split('\n')
+      .filter(Boolean)
+      .map((l) => JSON.parse(l) as { ref_id: number; blockquotes_md: string | null });
 
-    // Whitespace-tolerant, matching every other anchor matcher in the codebase
-    // (extract.ts, emit's isRefPara, the parser's ANCHOR_OPEN_RE). `<a  id="291">`
-    // is a valid reference to all of them, and a startsWith('<a id=') here would
-    // classify its blockquotes as unattached and miss a genuine run-on.
-    const ANCHOR_RE = /^<a\s+id="\d+">/;
+    const runOn = rows
+      .filter((r) => r.blockquotes_md && /(?<!\n)\n(?!\n)/.test(r.blockquotes_md))
+      .map((r) => `ref ${r.ref_id}: blockquotes_md joins labels with a single newline`);
 
-    // `>**Correction**:` with no space is valid Markdown that remark and
-    // labeledLinksAfter both accept, and it renders as the same run-on line, so
-    // matching the literal three characters `> **` would let the guard's whole
-    // point through.
-    const BQ_LABEL_RE = /^>\s*\*\*/;
-
-    /** Walks to the TOP of this blockquote run — over the blank lines the
-     *  convention puts between labels — and asks whether the run as a whole
-     *  hangs off an `<a id="N">` paragraph. Checking only one line back would
-     *  call the middle lines of a 3-or-more-line prose callout "attached",
-     *  because their predecessor is itself a `> **` line. */
-    const attachedToCitation = (i: number): boolean => {
-      let j = i;
-      for (;;) {
-        let k = j - 1;
-        while (k >= 0 && lines[k].trim() === '') k--;
-        if (k < 0) return false;
-        if (BQ_LABEL_RE.test(lines[k])) {
-          j = k;
-          continue;
-        }
-        return ANCHOR_RE.test(lines[k]);
-      }
-    };
-
-    const runOn = lines.flatMap((line, i) => {
-      const next = lines[i + 1] ?? '';
-      if (!BQ_LABEL_RE.test(line) || !BQ_LABEL_RE.test(next)) return [];
-      if (!attachedToCitation(i)) return [];
-      // Names the NDJSON, not Papers.md. emitSectionRefs writes blockquotes_md
-      // VERBATIM (it joins only across papers), so emit normalizes nothing
-      // inside one paper's run and the separator has to already be in the
-      // stored string. Papers.md is generated, so editing it there would be
-      // reverted by the next emit and fail the sync guard instead.
-      return [
-        `${line} / ${next} run together (near Papers.md:${i + 2}); fix blockquotes_md in site/db/ndjson/papers.ndjson, not Papers.md`,
-      ];
-    });
-
-    expect(runOn).toEqual([]);
+    expect(
+      runOn,
+      'GitHub renders adjacent blockquote lines as one run-on, and it is the surface these are read on. Separate the labels with a blank line (\\n\\n) in site/db/ndjson/papers.ndjson, then re-run db:emit',
+    ).toEqual([]);
   });
 
   it('validates against the schema', () => {
