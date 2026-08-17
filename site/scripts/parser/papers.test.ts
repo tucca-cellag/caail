@@ -262,7 +262,7 @@ describe('buildPapersModel — real Papers.md', () => {
     const src = readFileSync(PAPERS_MD_PATH, 'utf8').toLowerCase();
     expect(
       src.includes(`> **correction**: https://doi.org/${CORRECTION_DOI}`),
-      "ref 289 no longer carries its correction blockquote, so the rest of this test proves nothing: either restore it, or retire this guard and the post-publication-notice paragraphs in CLAUDE.md and CONTRIBUTING.md with it",
+      "ref 289's correction blockquote no longer matches CORRECTION_DOI, so the rest of this test proves nothing. If the notice was superseded or its DOI renormalized, repoint the constant. If the notice was removed on purpose, retire this guard and the post-publication-notice paragraphs in CLAUDE.md and CONTRIBUTING.md with it. Do not restore a superseded DOI to make this pass",
     ).toBe(true);
 
     // Checked before dereferencing: the assertion above only proves the notice

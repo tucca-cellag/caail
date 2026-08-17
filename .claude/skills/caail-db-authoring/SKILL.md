@@ -107,7 +107,15 @@ Descriptor examples (see `ItemAdd` in `site/scripts/db/mutate.ts`):
   "body": "Summary: …", "topics": ["metabolic-modeling"] }
 { "type": "paper", "raw": "Author, A. (2026). Title. *Journal*. https://doi.org/…", "label": "Author 2026",
   "cells": [{ "method": "Deep Learning", "area": "Media Optimization" }], "topics": ["media-optimization"] }
+{ "type": "paper", "raw": "…", "label": "…", "cells": [ … ],
+  "codeUrl": "https://github.com/o/r",
+  "blockquotes": ["> **Correction**: https://doi.org/10.xxxx/yyyy"] }
 ```
+
+`codeUrl` / `dataUrl` / `blockquotes` are what save you the hand-edit: `db:add` joins them
+into `blockquotes_md` with a real blank line for you, which is the one part of this field
+nothing checks (see the bullet under step 2). Prefer this path over editing the NDJSON when
+the paper is new.
 
 Then **review the diff and commit Markdown + NDJSON together**. The method/area/topic must
 already exist (adding a new matrix row/column is a deliberate act — define it in `Taxonomy.md`
