@@ -134,6 +134,14 @@ label the form shows, and suggest what you would pick, so the user is choosing r
 from nothing. Both lists above are reconciled against the templates at build time, so read them
 rather than counting from memory.
 
+**The method and area dropdowns are a coarse triage list and do not track the live matrix**, which
+carries more method rows than the form offers. So do not treat the options as the vocabulary: name
+the real method and area from
+<https://raw.githubusercontent.com/tucca-cellag/caail/main/site/public/api/taxonomy.json> in the
+free-text field, and suggest the nearest option, or `Other`, for the dropdown itself. A maintainer
+assigns the final cell, so a precise sentence in the notes is worth more than a forced dropdown
+pick, and claiming a row that does not exist is worse than either.
+
 Leave the confirmation checkboxes alone. They ask the user to confirm they searched the library and
 that they accept the contribution licence, and it is not your place to answer either.
 

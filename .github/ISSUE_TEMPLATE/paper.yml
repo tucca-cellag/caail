@@ -72,6 +72,7 @@ body:
       description: |
         Select all that apply. If the method isn't listed, choose "Other" and describe it in the notes field.
         For reviews or commentaries that survey many methods, choose "Not applicable — review or commentary".
+        These options are a coarse triage list and cover only part of the live matrix, which carries considerably more method rows (the foundation-model and agent families in particular); the authoritative rows are defined in Taxonomy.md. "Other" plus the method named in the notes is always a safe answer, and a maintainer decides the final row.
       multiple: true
       options:
         - Bayesian Optimization
@@ -98,11 +99,12 @@ body:
         Select all that apply. If the area isn't listed, choose "Other" and describe it in the notes field.
         Use "AI Tooling / Methodology" for papers about general-purpose AI methods or agent frameworks that don't yet have a specific cell-ag application.
         For reviews, choose "Not applicable — review or commentary".
+        These options are a coarse triage list and do not track the live matrix; the authoritative columns are defined in Taxonomy.md. A maintainer decides the final placement, so "Other" plus a sentence in the notes is always a safe answer.
       multiple: true
       options:
         - Media Optimization
         - Cellular Engineering
-        - Bioprocess Control
+        - Bioprocess & Scale-Up
         - Scaffolding
         - Sensory Prediction
         - AI Tooling / Methodology

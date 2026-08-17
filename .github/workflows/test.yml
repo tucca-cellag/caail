@@ -40,12 +40,13 @@ on:
       # a template-only edit triggered NO workflow at all, so the one change most likely
       # to break the composer was the one change nothing ran against.
       - .github/ISSUE_TEMPLATE/**
-      # The caail-contribute skill, which is the OTHER half of the same agreement. It is the
-      # exception to the "skill prose has no test to run" note above: contribute-form.test.ts
-      # reads this SKILL.md as its input, because the parameter list it documents is the only
-      # copy of what the composed issue URLs set. A skill-only edit that renames a parameter
-      # would otherwise ship a URL that GitHub silently ignores, on someone else's machine.
-      - plugin-contribute/**
+      # NOTE on the caail-contribute skill, which is deliberately NOT listed here.
+      # `plugin-contribute/**` is the other half of the same agreement, and a skill-only edit
+      # that renames a parameter would ship a URL GitHub silently ignores. But that contract is
+      # enforced by `pnpm parse` (contribute-form.ts aborts on drift), and lint-papers.yml runs
+      # parse in its sync-guard step and DOES filter on that path. Listing it here as well would
+      # verify the same contract twice per PR and spend a full Astro build, a Chromium install
+      # and the axe suite on a prose edit -- exactly what guards.yml's header argues against.
   push:
     branches: [main]
     paths:
@@ -79,12 +80,13 @@ on:
       # a template-only edit triggered NO workflow at all, so the one change most likely
       # to break the composer was the one change nothing ran against.
       - .github/ISSUE_TEMPLATE/**
-      # The caail-contribute skill, which is the OTHER half of the same agreement. It is the
-      # exception to the "skill prose has no test to run" note above: contribute-form.test.ts
-      # reads this SKILL.md as its input, because the parameter list it documents is the only
-      # copy of what the composed issue URLs set. A skill-only edit that renames a parameter
-      # would otherwise ship a URL that GitHub silently ignores, on someone else's machine.
-      - plugin-contribute/**
+      # NOTE on the caail-contribute skill, which is deliberately NOT listed here.
+      # `plugin-contribute/**` is the other half of the same agreement, and a skill-only edit
+      # that renames a parameter would ship a URL GitHub silently ignores. But that contract is
+      # enforced by `pnpm parse` (contribute-form.ts aborts on drift), and lint-papers.yml runs
+      # parse in its sync-guard step and DOES filter on that path. Listing it here as well would
+      # verify the same contract twice per PR and spend a full Astro build, a Chromium install
+      # and the axe suite on a prose edit -- exactly what guards.yml's header argues against.
   workflow_dispatch:
 
 permissions:
