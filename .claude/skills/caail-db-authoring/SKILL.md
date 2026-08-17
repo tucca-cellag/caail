@@ -79,7 +79,8 @@ Folded into a `related_dois` column by `db:reseed-axes`; the badge then shows a 
 describing the SAME resource** (verify each names it); `db:check` guards format, key resolution, and
 no-overlap-with-primary. Re-run `fetch:citations` after adding related DOIs so their counts are cached.
 
-Topics are **two-tier**: a fixed 8-**theme** backbone + earned **fine tags** (each `tier='tag'` under
+Topics are **two-tier**: a fixed **theme** backbone (`site/scripts/db/check.ts` asserts the exact
+list and is the source of truth for it, not this line) + earned **fine tags** (each `tier='tag'` under
 one `theme_slug`; theme and tag slugs share one namespace, so they must be disjoint). When tagging an
 item, prefer an existing fine tag; mint a new fine tag only when ≥3 items cluster under it (curator
 sign-off), and add new themes rarely and deliberately (they're defined in `Taxonomy.md`). `db:check`

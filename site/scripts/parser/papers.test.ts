@@ -313,9 +313,10 @@ describe('buildPapersModel — real Papers.md', () => {
       const next = lines[i + 1] ?? '';
       if (!line.startsWith('> **') || !next.startsWith('> **')) return [];
       if (!attachedToCitation(i)) return [];
-      // Names the NDJSON, not Papers.md: Papers.md is generated, db:emit always
-      // joins blockquote blocks with a blank line, so the only way to author a
-      // run-on is a hand-joined blockquotes_md. Editing Papers.md would be
+      // Names the NDJSON, not Papers.md. emitSectionRefs writes blockquotes_md
+      // VERBATIM (it joins only across papers), so emit normalizes nothing
+      // inside one paper's run and the separator has to already be in the
+      // stored string. Papers.md is generated, so editing it there would be
       // reverted by the next emit and fail the sync guard instead.
       return [
         `${line} / ${next} run together (near Papers.md:${i + 2}); fix blockquotes_md in site/db/ndjson/papers.ndjson, not Papers.md`,

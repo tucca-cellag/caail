@@ -45,6 +45,25 @@ describe('block-generated-edits hook', () => {
   it('DENIES only the structured member of a MultiEdit', () => {
     expect(decide({ tool_name: 'MultiEdit', tool_input: { file_path: P('Papers.md'), edits: [{ old_string: 'prose', new_string: 'p2' }, { old_string: '<a id="9">9</a>', new_string: 'z' }] } })).toBe('deny');
   });
+
+  // Pins a GAP rather than a desirable behaviour, deliberately. CLAUDE.md's
+  // post-publication-notice rule tells maintainers this hook will NOT stop a
+  // blockquote-only edit to Papers.md, because MARKERS keys on the anchor, the
+  // matrix link and the catalog H3, none of which such an edit contains. That
+  // sentence is hand-typed against a tuple nothing else checks. If someone ever
+  // closes the gap by adding '> **' to MARKERS, this goes red — which is the
+  // signal to rewrite that paragraph in the same change, rather than leave
+  // always-on context asserting the opposite of what the hook now does.
+  it('ALLOWS a blockquote-only edit to Papers.md — the MARKERS gap CLAUDE.md documents', () => {
+    expect(decide({
+      tool_name: 'Edit',
+      tool_input: {
+        file_path: P('Papers.md'),
+        old_string: '> **Code**: https://github.com/owner/repo',
+        new_string: '> **Code**: https://github.com/owner/repo\n\n> **Correction**: https://doi.org/10.0000/x',
+      },
+    })).toBeNull();
+  });
 });
 
 /**
