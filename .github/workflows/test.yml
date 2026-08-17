@@ -36,10 +36,15 @@ on:
       # The citation record. Two suites read it and fail when a copy of it drifts:
       # project-name.test.ts (the hero eyebrow and the BibTeX block agree with its
       # `title:`) and topic-curators.test.ts (a curator's name and ORCID belong to one
-      # author in it). Both were unreachable from CI until this entry existed, and the
-      # scenario each is written for is exactly the one that never triggered them: a
-      # release PR that bumps CITATION.cff and nothing else. That PR ran no workflow
-      # and merged green with the copies stale, which is the guard being decorative.
+      # author in it). Both were unreachable from CI until this entry existed: a PR
+      # editing only CITATION.cff triggered no workflow at all, so a retitling or an
+      # author/ORCID change merged green with every copy stale.
+      #
+      # Scoped honestly: this covers a TITLE or AUTHOR edit. It does NOT cover a plain
+      # version or DOI bump, which is the more common release edit — nothing asserts
+      # that citation.ts, cite.mdx, README.md and .zenodo.json still agree on `version:`
+      # or `doi:`. That gap is real and is not closed here; do not read this entry as
+      # making release bumps safe.
       - CITATION.cff
       # The correction issue form. /report/ composes a report against this file: the error
       # classes its reason field lists ARE the composer's vocabulary, and its field ids are
@@ -88,10 +93,15 @@ on:
       # The citation record. Two suites read it and fail when a copy of it drifts:
       # project-name.test.ts (the hero eyebrow and the BibTeX block agree with its
       # `title:`) and topic-curators.test.ts (a curator's name and ORCID belong to one
-      # author in it). Both were unreachable from CI until this entry existed, and the
-      # scenario each is written for is exactly the one that never triggered them: a
-      # release PR that bumps CITATION.cff and nothing else. That PR ran no workflow
-      # and merged green with the copies stale, which is the guard being decorative.
+      # author in it). Both were unreachable from CI until this entry existed: a PR
+      # editing only CITATION.cff triggered no workflow at all, so a retitling or an
+      # author/ORCID change merged green with every copy stale.
+      #
+      # Scoped honestly: this covers a TITLE or AUTHOR edit. It does NOT cover a plain
+      # version or DOI bump, which is the more common release edit — nothing asserts
+      # that citation.ts, cite.mdx, README.md and .zenodo.json still agree on `version:`
+      # or `doi:`. That gap is real and is not closed here; do not read this entry as
+      # making release bumps safe.
       - CITATION.cff
       # The correction issue form. /report/ composes a report against this file: the error
       # classes its reason field lists ARE the composer's vocabulary, and its field ids are

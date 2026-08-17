@@ -21,12 +21,32 @@
 import blkbl from '../assets/tucca/cca-horiz-blkbl.png';
 import white from '../assets/tucca/cca-horiz-white.png';
 
+/**
+ * The accessible name, in ONE place.
+ *
+ * It is needed twice — as the link's `aria-label`, and (opt-in) as text so the mark
+ * is not invisible to `textContent` and select-and-copy, since the lockup is a
+ * background image and the anchor otherwise contributes only whitespace. Typing it
+ * in the caller was the first attempt and produced two copies that nothing pinned
+ * together: rename or shorten one and sighted, AT and copied text disagree silently.
+ */
+const NAME = 'Tufts University Center for Cellular Agriculture';
+
 interface Props {
   width?: number;
   class?: string;
+  /**
+   * Emit the name as visually-hidden, `aria-hidden` text after the mark.
+   *
+   * Opt-in rather than always-on: it only matters where the lockup sits inside a
+   * sentence (the hero attribution), and turning it on globally would change what
+   * every other placement extracts to. `aria-hidden` because the anchor's
+   * `aria-label` already gives assistive tech the name; this is for copied text.
+   */
+  textName?: boolean;
 }
 
-const { width = 168, class: className } = Astro.props;
+const { width = 168, class: className, textName = false } = Astro.props;
 const height = Math.round((width * blkbl.height) / blkbl.width);
 const style = `--tl-w:${width}px;--tl-h:${height}px;--tl-light:url("${blkbl.src}");--tl-dark:url("${white.src}")`;
 ---
@@ -34,17 +54,30 @@ const style = `--tl-w:${width}px;--tl-h:${height}px;--tl-light:url("${blkbl.src}
 <a
   class:list={['tl', className]}
   href="https://cellularagriculture.tufts.edu/"
-  aria-label="Tufts University Center for Cellular Agriculture"
+  aria-label={NAME}
   style={style}
 >
   <span class="tl-mark" aria-hidden="true"></span>
-</a>
+</a>{textName && <span class="tl-name" aria-hidden="true">{NAME}</span>}
 
 <style>
   .tl {
     display: inline-block;
     line-height: 0;
     border-radius: 4px;
+  }
+  /* Present in the DOM for text extraction, absent from layout and from the
+     accessibility tree (the anchor's aria-label already names this). */
+  .tl-name {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
   }
   .tl-mark {
     display: block;
