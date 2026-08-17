@@ -49,9 +49,11 @@ blockquote — plus the DOI of each, and the matrix row each was placed in.
      - **The kind of notice.** The label must be the publisher's own word for it.
        A notice titled "Expression of Concern" filed under `Correction` tells the
        reader an error was fixed when nothing was. Equally, do not CONTRADICT a
-       label just because it is not one you expected: Nature deposits "Author
-       Correction" and "Publisher Correction", Elsevier and OUP "Corrigendum",
-       and each of those is the right label for its notice.
+       label just because it is not one you expected: publishers deposit
+       "Corrigendum", "Author Correction", "Publisher Correction" and "Addendum"
+       among others, and the same publisher uses different words for different
+       notices, so read the record rather than inferring the word from the
+       imprint.
      - **That it targets *this* paper.** A correction to a different article in
        the same issue resolves just as cleanly as the right one.
 

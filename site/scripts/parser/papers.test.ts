@@ -15,8 +15,13 @@ import { buildPapersModel, PAPERS_MD_PATH } from './papers.js';
 import { doiKey } from './citations.js';
 import { PapersDataSchema, type PapersData } from './types.js';
 
-/** Ref 289's published correction: the repo's only post-publication notice. */
-const CORRECTION_DOI = '10.1093/biomethods/bpaf076';
+/**
+ * Ref 289's published correction: the repo's only post-publication notice.
+ * Normalized through the same doiKey the comparisons below use, so retyping it
+ * with any uppercase (equally valid, DOIs are case-insensitive) cannot leave the
+ * needle mixed-case against a lowercased haystack and pass silently forever.
+ */
+const CORRECTION_DOI = doiKey('10.1093/biomethods/bpaf076')!;
 
 /**
  * The article-id suffix, derived rather than retyped. This is the needle the
