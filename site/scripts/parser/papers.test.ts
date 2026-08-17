@@ -12,6 +12,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { buildPapersModel, PAPERS_MD_PATH } from './papers.js';
+import { doiKey } from './citations.js';
 import { PapersDataSchema, type PapersData } from './types.js';
 
 /** Ref 289's published correction: the repo's only post-publication notice. */
@@ -268,9 +269,14 @@ describe('buildPapersModel — real Papers.md', () => {
     // that: a reference whose OWN doi is the correction, which is the only
     // legitimate way the string belongs in the model (someone one day giving the
     // notice its own numbered entry).
+    // Compared through doiKey, not as a raw string: parseApa preserves the
+    // source case, so a differently-cased entry for the same DOI would slip the
+    // filter and fail here with a message announcing that #202 had landed when
+    // nothing of the sort had. That is the misdirection this guard was already
+    // corrected for once.
     const searchable = JSON.stringify({
       ...model,
-      references: model.references.filter((r) => r.doi !== CORRECTION_DOI),
+      references: model.references.filter((r) => doiKey(r.doi) !== CORRECTION_DOI),
     });
     expect(
       searchable.includes(CORRECTION_DOI),
