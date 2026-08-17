@@ -23,6 +23,17 @@ Every catalogued item carries a permanent id (`paper:214`, `sw:cellpose`, `db:st
 
 Rows in a dataset page's `## Complete data inventory` table are listed rather than carded, so they have no such link. Quote the accession and the page instead, and a curator can find the row from that.
 
+### Letting your AI agent draft the suggestion
+
+If you work in Claude Code, the `caail-contribute` plugin fills either form in for you. When you're reading a paper or evaluating a tool, it checks whether CAAIL already indexes it, and if not it composes a prefilled issue link from what it read. You review and submit it yourself; it never files anything on your behalf.
+
+```bash
+claude plugin marketplace add tucca-cellag/caail
+claude plugin install caail-contribute@caail
+```
+
+It's a separate install from the `caail` query plugin, so you can take either one alone. A file named `.caail-no-contribute` in a repository's root silences it there.
+
 ### Option 2, Open a pull request
 
 Faster to merge, and you get authorship credit in the Git history. Branch from `main` (e.g. `feat/papers-cosenza-2024`, `docs/add-bioprocess-section`), apply the change directly, and open the PR back against `main`. The format guides below tell you exactly what to edit.

@@ -40,6 +40,12 @@ on:
       # a template-only edit triggered NO workflow at all, so the one change most likely
       # to break the composer was the one change nothing ran against.
       - .github/ISSUE_TEMPLATE/**
+      # The caail-contribute skill, which is the OTHER half of the same agreement. It is the
+      # exception to the "skill prose has no test to run" note above: contribute-form.test.ts
+      # reads this SKILL.md as its input, because the parameter list it documents is the only
+      # copy of what the composed issue URLs set. A skill-only edit that renames a parameter
+      # would otherwise ship a URL that GitHub silently ignores, on someone else's machine.
+      - plugin-contribute/**
   push:
     branches: [main]
     paths:
@@ -73,6 +79,12 @@ on:
       # a template-only edit triggered NO workflow at all, so the one change most likely
       # to break the composer was the one change nothing ran against.
       - .github/ISSUE_TEMPLATE/**
+      # The caail-contribute skill, which is the OTHER half of the same agreement. It is the
+      # exception to the "skill prose has no test to run" note above: contribute-form.test.ts
+      # reads this SKILL.md as its input, because the parameter list it documents is the only
+      # copy of what the composed issue URLs set. A skill-only edit that renames a parameter
+      # would otherwise ship a URL that GitHub silently ignores, on someone else's machine.
+      - plugin-contribute/**
   workflow_dispatch:
 
 permissions:
