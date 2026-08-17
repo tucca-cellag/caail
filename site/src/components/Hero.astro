@@ -144,7 +144,13 @@ const statSentence = `Indexing ${stats.map((s) => `${s.n} ${s.label}`).join(', '
     <a href={`${base}/papers/explorer/`}><Icon name="lucide:layout-grid" /> Browse the matrix</a>
     <a href={`${base}/community/`}><Icon name="lucide:users" /> Community</a>
     <a href={`${base}/cite/`}><Icon name="lucide:quote" /> Cite CAAIL</a>
-    <p class="hero-attrib"><span>A project of</span><TuccaLockup width={150} /></p>
+    {/* "Built and used in R&D at" rather than "A project of": it carries provenance and
+        dogfooding in the same breath, next to the lockup, which is the highest-visibility
+        slot on the page. Deliberately unquantified — what CAAIL adds to an agent's answers
+        is unmeasured (CAAIL-168), so "we use it" is assertable and "it works better" is not.
+        This doubles the span's text beside a 150px logo; the row is `flex-wrap`, and the
+        two-line wrap at narrow widths was checked rather than assumed. */}
+    <p class="hero-attrib"><span>Built and used in R&amp;D at</span><TuccaLockup width={150} /></p>
   </nav>
 </section>
 
