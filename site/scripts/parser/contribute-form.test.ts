@@ -120,11 +120,53 @@ describe('readClaims', () => {
     expect(() => readClaims('# a skill with no prefill claims')).toThrow(/no prefill claims found/);
   });
 
-  it('throws when a pick-by-hand list names a template no prefill list does', () => {
+  it('survives the intro wrapping across a line break', () => {
+    // The earlier `[^\n]*` anchor required the template marker and the heading to share a line,
+    // so reflowing one break dropped resource.yml from coverage entirely, with no error.
+    const reflowed = SKILL.replace(
+      '**Software, datasets, databases and other resources** (`template=resource.yml`), prefillable\nparameters:',
+      '**Software, datasets, databases and other resources**\n(`template=resource.yml`),\nprefillable parameters:',
+    );
+    expect(reflowed).not.toBe(SKILL);
+    expect(readClaims(reflowed).map((c) => c.template)).toContain('resource.yml');
+  });
+
+  it('throws when a mentioned template has no prefill list at all', () => {
     const run = stage({
-      skill: (s) => s.replace('(`template=resource.yml`), fields to pick by\nhand:', '(`template=resorce.yml`), fields to pick by\nhand:'),
+      skill: (s) =>
+        s.replace(
+          '**Software, datasets, databases and other resources** (`template=resource.yml`), prefillable\nparameters:',
+          '**Software, datasets, databases and other resources** (`template=resource.yml`), fine\nprint:',
+        ),
     });
-    expect(run).toThrow(/pick-by-hand fields for "resorce\.yml"/);
+    expect(run).toThrow(/mentions the template\(s\) "resource\.yml"/);
+  });
+
+  it('throws when one template declares the same list twice', () => {
+    const dup =
+      '\n\n**Preprints** (`template=paper.yml`), prefillable parameters:\n\n`doi`\n';
+    expect(() => readClaims(SKILL + dup)).toThrow(/declares "prefillable parameters" for "paper\.yml" more than once/);
+  });
+
+  it('quotes a heading that exists in the skill, not the regex it was matched with', () => {
+    const run = stage({
+      skill: (s) => s.replace('`paper_type`, `ai_methods`, `research_areas`', 'none'),
+    });
+    expect(run).toThrow(/"fields to pick by hand"/);
+    expect(run).not.toThrow(/\\s\+/);
+  });
+
+  it('throws when a pick-by-hand list names a template no prefill list does', () => {
+    // Caught by the mentioned-template check rather than a separate orphan check: the typo'd
+    // name is itself a mention, so one guard covers it and names the file to fix.
+    const run = stage({
+      skill: (s) =>
+        s.replace(
+          '(`template=resource.yml`), fields to pick by\nhand:',
+          '(`template=resorce.yml`), fields to pick by\nhand:',
+        ),
+    });
+    expect(run).toThrow(/mentions the template\(s\) "resorce\.yml"/);
   });
 });
 
@@ -165,6 +207,16 @@ describe('verifyContributeForms', () => {
   it('fails when a template reuses a field id GitHub reserves', () => {
     const run = stage({ template: ['paper.yml', (s) => s.replace('id: paper_title', 'id: title')] });
     expect(run).toThrow(/reserves for its own/);
+  });
+
+  it('fails on `template`, the reserved id every composed URL already carries', () => {
+    const run = stage({ template: ['paper.yml', (s) => s.replace('id: venue', 'id: template')] });
+    expect(run).toThrow(/reserves for its own/);
+  });
+
+  it('names the missing file itself when a template name is wrong in both lists', () => {
+    const run = stage({ skill: (s) => s.replaceAll('template=resource.yml', 'template=resorce.yml') });
+    expect(run).toThrow(/composes URLs for "resorce\.yml", which does not exist/);
   });
 
   it('fails when a new required input is added that the skill does not fill', () => {

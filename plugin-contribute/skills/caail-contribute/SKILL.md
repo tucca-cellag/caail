@@ -120,9 +120,15 @@ agriculture intersection, in the user's own framing where you have it.
 
 ### Route 2, no GitHub account
 
-Point at <https://tucca-cellag.github.io/caail/report/>, which carries email and Slack routes.
-Offer this without being asked if the user says they have no GitHub account, and never assume they
-do have one.
+Point at <https://tucca-cellag.github.io/caail/community/>, which carries the Slack and email
+routes and is where proposing an addition is handled. Hand over the summary you would have put in
+the issue, so the user has something to paste rather than starting again. Offer this without being
+asked if the user says they have no GitHub account, and never assume they have one.
+
+**Not `/report/`.** That page is for an entry CAAIL already has that is wrong, its composer only
+renders for a supplied entry id, and its GitHub route opens the correction template. Sending
+someone there moments after telling them their paper is *missing* asks them which existing entry
+they are correcting. Use it only when the user's point is that a real entry is wrong.
 
 ## Rules
 

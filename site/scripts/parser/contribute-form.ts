@@ -51,12 +51,26 @@
  * is smaller and fails just as loudly as a real parser would.
  */
 
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-/** Field ids GitHub reserves for its own query parameters, so a template must not use them. */
-export const RESERVED_FIELD_IDS: readonly string[] = ['title', 'body', 'labels', 'assignees'];
+/**
+ * Field ids GitHub consumes as its own `issues/new` query parameters, so a template must not use
+ * them: the parameter is eaten by the built-in and the field arrives blank, exactly as `title` did.
+ *
+ * `template` is the one most likely to be chosen innocently, and it is the parameter every URL
+ * this skill composes already carries.
+ */
+export const RESERVED_FIELD_IDS: readonly string[] = [
+  'title',
+  'body',
+  'labels',
+  'assignees',
+  'milestone',
+  'projects',
+  'template',
+];
 
 /** Field types whose value GitHub will actually take from a query parameter. */
 const PREFILLABLE_TYPES: readonly string[] = ['input', 'textarea'];
@@ -138,25 +152,46 @@ export function readFields(src: string): FormField[] {
  * claim is only an error when NO claim is found at all, a second template could have gone
  * unchecked forever without anything saying so.
  */
-function readClaimLists(skillSrc: string, heading: string, skillPath: string): Map<string, string[]> {
+function readClaimLists(
+  skillSrc: string,
+  pattern: string,
+  label: string,
+  skillPath: string,
+): Map<string, string[]> {
+  // `[^:]` rather than `[^\n]`, so the intro may WRAP. The earlier form required the template
+  // marker and the heading to share a line, which made a reflow silently drop a whole template:
+  // moving one line break in the resource.yml intro left `readClaims` returning paper.yml alone,
+  // with no error, and resource.yml's parameters unreconciled from then on. A colon is what
+  // actually ends an intro, and no heading contains one, so this cannot run past its own list.
   const intro = new RegExp(
-    String.raw`\(\x60template=([A-Za-z0-9._-]+\.yml)\x60\)[^\n]*` + heading + String.raw`:\s*\n`,
+    String.raw`\(\x60template=([A-Za-z0-9._-]+\.yml)\x60\)[^:]{0,120}?` + pattern + String.raw`:[ \t]*\n`,
     'g',
   );
   const out = new Map<string, string[]>();
 
   for (const m of skillSrc.matchAll(intro)) {
+    const template = m[1]!;
     const rest = skillSrc.slice(m.index! + m[0].length);
     const line = rest.split('\n').find((l) => l.trim() !== '');
     const ids = [...(line ?? '').matchAll(/`([A-Za-z0-9_-]+)`/g)].map((p) => p[1]!);
     if (ids.length === 0) {
       throw new Error(
-        `contribute-form: the skill announces "${heading}" for "${m[1]}" and then lists none. ` +
-          `${skillPath} is the only copy of that list; an empty one means the check below ` +
-          `covers nothing.`,
+        `contribute-form: the skill announces ${label} for "${template}" and then lists none. ` +
+          `${skillPath} is the only copy of that list; an empty one means the checks below ` +
+          `cover nothing.`,
       );
     }
-    out.set(m[1]!, ids);
+    // Last-write-wins would discard the first list in silence. A plausible edit — documenting a
+    // narrower variant of the same template — would then leave the real list unchecked while
+    // everything still passed.
+    if (out.has(template)) {
+      throw new Error(
+        `contribute-form: ${skillPath} declares ${label} for "${template}" more than once. ` +
+          `Only one list per template can be reconciled, so a second one would silently ` +
+          `replace the first and the original list would stop being checked.`,
+      );
+    }
+    out.set(template, ids);
   }
   return out;
 }
@@ -170,8 +205,18 @@ function readClaimLists(skillSrc: string, heading: string, skillPath: string): M
  * account for, which is what a wrongly-omitted list would produce.
  */
 export function readClaims(skillSrc: string, skillPath: string = SKILL_PATH): TemplateClaim[] {
-  const prefill = readClaimLists(skillSrc, 'prefillable\\s+parameters', skillPath);
-  const manual = readClaimLists(skillSrc, 'fields to pick by\\s+hand', skillPath);
+  const prefill = readClaimLists(
+    skillSrc,
+    String.raw`prefillable\s+parameters`,
+    '"prefillable parameters"',
+    skillPath,
+  );
+  const manual = readClaimLists(
+    skillSrc,
+    String.raw`fields to pick by\s+hand`,
+    '"fields to pick by hand"',
+    skillPath,
+  );
 
   if (prefill.size === 0) {
     throw new Error(
@@ -182,12 +227,22 @@ export function readClaims(skillSrc: string, skillPath: string = SKILL_PATH): Te
     );
   }
 
-  const orphan = [...manual.keys()].find((t) => !prefill.has(t));
-  if (orphan !== undefined) {
+  // Every template the skill MENTIONS anywhere must have a prefill claim.
+  //
+  // Without this, "how many templates are covered" is decided by whether a regex happened to
+  // match, and a template that silently stopped matching looks exactly like a template the skill
+  // never mentioned. Deriving the expected set from the prose independently is what turns a
+  // dropped claim from invisible into a build failure.
+  const mentioned = new Set(
+    [...skillSrc.matchAll(/template=([A-Za-z0-9._-]+\.yml)/g)].map((m) => m[1]!),
+  );
+  const uncovered = [...mentioned].filter((t) => !prefill.has(t));
+  if (uncovered.length > 0) {
     throw new Error(
-      `contribute-form: ${skillPath} declares pick-by-hand fields for "${orphan}" but no ` +
-        `prefillable parameters for it. That is almost certainly a typo in one of the two ` +
-        `template names, which would leave the other list checked against nothing.`,
+      `contribute-form: ${skillPath} mentions the template(s) ` +
+        `${uncovered.map((t) => `"${t}"`).join(', ')} but declares no prefillable parameters ` +
+        `for them, so nothing reconciles what it composes against those forms. Either add the ` +
+        `list, or stop naming the template.`,
     );
   }
 
@@ -305,7 +360,18 @@ export function verifyContributeForms(
   const claims = readClaims(readFileSync(skillPath, 'utf-8'), skillPath);
 
   for (const claim of claims) {
-    const fields = readFields(readFileSync(join(templateDir, claim.template), 'utf-8'));
+    // The orphan check in readClaims only catches a template name mistyped in ONE of the two
+    // lists. Copy-paste the same wrong name into both and this is where it lands, so it answers
+    // in the module's own voice rather than as a bare ENOENT from the middle of `pnpm parse`.
+    const templatePath = join(templateDir, claim.template);
+    if (!existsSync(templatePath)) {
+      throw new Error(
+        `contribute-form: the caail-contribute skill composes URLs for "${claim.template}", ` +
+          `which does not exist in ${templateDir}. Check the template name in both of the ` +
+          `skill's lists for it; a name wrong in both places passes every earlier check.`,
+      );
+    }
+    const fields = readFields(readFileSync(templatePath, 'utf-8'));
     if (fields.length === 0) {
       throw new Error(
         `contribute-form: ${claim.template} declares no fields with an id, so nothing the ` +

@@ -25,7 +25,7 @@ Rows in a dataset page's `## Complete data inventory` table are listed rather th
 
 ### Letting your AI agent draft the suggestion
 
-If you work in Claude Code, the `caail-contribute` plugin fills either form in for you. When you're reading a paper or evaluating a tool, it checks whether CAAIL already indexes it, and if not it composes a prefilled issue link from what it read. You review and submit it yourself; it never files anything on your behalf.
+If you work in Claude Code, the `caail-contribute` plugin fills in the paper and resource forms above for you. When you're reading a paper or evaluating a tool, it checks whether CAAIL already indexes it, and if not it composes a prefilled issue link from what it read. You review and submit it yourself; it never files anything on your behalf. Corrections to entries that are already here stay a manual job, via the report page linked above.
 
 ```bash
 claude plugin marketplace add tucca-cellag/caail
