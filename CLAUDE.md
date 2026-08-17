@@ -155,13 +155,17 @@ LICENSE                MIT License
      > **Code**: https://github.com/<owner>/<repo>
      ```
 
-   - If the publisher has issued a **post-publication notice that leaves the paper standing** (a correction, an erratum, an expression of concern), record it the same way, under its own DOI. **Use the publisher's own word for the notice as the label** (`Correction`, `Erratum`, `Expression of concern`), never a generic one:
+   - If the publisher has issued a **post-publication notice that leaves the paper standing** (a correction, an erratum, an expression of concern), record it the same way, under its own DOI, **separated from any preceding blockquote by a blank line**:
 
      ```markdown
+     > **Code**: https://github.com/<owner>/<repo>
+
      > **Correction**: https://doi.org/<correction-doi>
      ```
 
-     The label is the claim, so it has to be the publisher's own word. An expression of concern says the publisher doubts the work and has fixed nothing, and filing one under `Correction` tells every reader the opposite of what was published. Those three are examples, not a closed list: `Corrigendum`, `Author Correction`, `Publisher Correction` and `Addendum` are all deposited by real publishers and all belong here.
+     That blank line is load-bearing and nothing checks it: two adjacent `>` lines render as one run-on on GitHub, which is where these are read, and every gate in the repo passes either form.
+
+     **The label is the claim, so it has to be the publisher's own word.** An expression of concern says the publisher doubts the work and has fixed nothing, and filing one under `Correction` tells every reader the opposite of what was published. `Correction`, `Erratum` and `Expression of concern` are examples, not a closed list: `Corrigendum`, `Author Correction`, `Publisher Correction` and `Addendum` are all deposited by real publishers and all belong here.
 
      Record one even when it looks cosmetic. The correction on ref 289 changed a single word of the abstract, 2-fold to 5-fold cross-validation, which is precisely the claim an abstract-only classification would have rested on.
 

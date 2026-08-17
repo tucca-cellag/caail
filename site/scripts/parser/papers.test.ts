@@ -18,6 +18,14 @@ import { PapersDataSchema, type PapersData } from './types.js';
 /** Ref 289's published correction: the repo's only post-publication notice. */
 const CORRECTION_DOI = '10.1093/biomethods/bpaf076';
 
+/**
+ * The article-id suffix, derived rather than retyped. This is the needle the
+ * #202 guard searches for, because a fix could surface the notice as a
+ * publisher URL (`…/biomethods/article/10/1/bpaf076/8320166`) rather than as
+ * the DOI, and that URL carries the suffix but not the DOI.
+ */
+const CORRECTION_ARTICLE_ID = CORRECTION_DOI.split('/').pop()!;
+
 const FIXTURE_PATH = join(
   fileURLToPath(import.meta.url),
   '..',
@@ -278,12 +286,16 @@ describe('buildPapersModel — real Papers.md', () => {
       ...model,
       references: model.references.filter((r) => doiKey(r.doi) !== CORRECTION_DOI),
     });
-    // Lowercased on this side too. Routing only the exclusion through doiKey
-    // while leaving the detection case-sensitive would reintroduce the same bug
-    // on the opposite side: a #202 that stored the DOI uppercased or as a
-    // DOI-URL would reach api/papers.json while this stayed green.
+    // Searches for the article-id suffix, not the full DOI, so a fix that
+    // surfaces the notice as a publisher URL trips it too — that URL carries
+    // `bpaf076` but not `10.1093/biomethods/bpaf076`. Safe against a false
+    // positive from ref 289's own citation, which carries bpaf040.
+    //
+    // Lowercased on this side too: routing only the exclusion through doiKey
+    // and leaving the detection case-sensitive would reintroduce the same bug
+    // on the opposite side.
     expect(
-      searchable.toLowerCase().includes(CORRECTION_DOI),
+      searchable.toLowerCase().includes(CORRECTION_ARTICLE_ID),
       "ref 289's correction reached the parsed model: #202 has landed, so rewrite the post-publication-notice paragraphs in CLAUDE.md and CONTRIBUTING.md",
     ).toBe(false);
   });

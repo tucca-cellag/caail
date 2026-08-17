@@ -55,13 +55,15 @@ The matrix and the `## References` list must be kept in sync:
 
    - Use APA style, with the journal name italicized (`*…*`) and the DOI as a full `https://doi.org/...` link.
    - List all authors, don't abbreviate to "et al." in the reference list.
-3. **If the paper has associated code**, add a blockquote on the next line:
+3. **Add any trailing blockquotes the paper needs.** If it has associated code:
 
    ```markdown
    > **Code**: https://github.com/<owner>/<repo>
    ```
 
-   **If the publisher has issued a post-publication notice that leaves the paper standing** (a correction, erratum, corrigendum, addendum or expression of concern), record it the same way under its own DOI, and separate the two with a blank line. Label it with the publisher's own word for the notice, whatever that is, never a generic one: an expression of concern filed under `Correction` tells the reader an error was fixed when nothing was. A *retraction* is not covered here, because it raises the separate question of whether the paper keeps its matrix cells at all; propose it in the issue rather than recording it as a blockquote.
+   **If the publisher has issued a post-publication notice that leaves the paper standing** (a correction, erratum, corrigendum, addendum or expression of concern), record that under its own DOI in the same way, whether or not the paper also has code. Label it with the publisher's own word for the notice, whatever that is, never a generic one: an expression of concern filed under `Correction` tells the reader an error was fixed when nothing was. A *retraction* is not covered here, because it raises the separate question of whether the paper keeps its matrix cells at all; propose it in the issue rather than recording it as a blockquote.
+
+   Where a paper has both, each blockquote is separated from the next by a blank line:
 
    ```markdown
    > **Code**: https://github.com/<owner>/<repo>
@@ -71,7 +73,7 @@ The matrix and the `## References` list must be kept in sync:
 
    The blank line matters: GitHub renders two adjacent `>` lines as one run-on line, and GitHub is where these are read. Note that the notice reaches GitHub but not the entry's card on the site, because the parser keeps only the `Code` and `Data` labels (tucca-cellag/caail#202).
 
-   As the callout at the top of this section says, the reference, its matrix cells and these trailing blockquotes are all regenerated from the database, so editing the Markdown here **proposes** an entry rather than landing one: a maintainer re-enters it through the DB. Two things follow that are worth knowing before you open such a PR, neither of which means you have done something wrong. CI's DB-to-Markdown sync guard will flag it, because the generated file now disagrees with the database; say in the PR description that it is a proposal and leave it red for the maintainer to reconcile. And if you are working inside a clone with this repo's Claude Code configuration, a pre-edit hook refuses agent edits that touch a reference anchor or a matrix link — write the entry out in the PR description or the issue instead, which is all a maintainer needs.
+   As the callout at the top of this section says, the reference, its matrix cells and these trailing blockquotes are all regenerated from the database, so editing the Markdown here **proposes** an entry rather than landing one: a maintainer re-enters it through the DB. Two things follow that are worth knowing before you open such a PR, neither of which means you have done something wrong. CI's DB-to-Markdown sync guard will flag it, because the generated file now disagrees with the database; say in the PR description that it is a proposal and leave it red for the maintainer to reconcile. And if you are working inside a clone with this repo's Claude Code configuration, a pre-edit hook refuses any whole-file write to `Papers.md`, and refuses agent edits that touch a reference anchor or a matrix link. Adding a blockquote to a reference that already exists is not refused, so a notice like the one above you can simply edit in. For anything the hook does stop, write the entry out in the PR description or the issue instead, which is all a maintainer needs.
 
 4. **Add the paper to every applicable matrix cell.** For each AI method (row) and research area (column) the paper covers, add `[42](#42)` to the corresponding cell, comma-separated with any existing entries:
 
