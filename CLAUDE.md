@@ -171,7 +171,7 @@ LICENSE                MIT License
 
      **A retraction is not one of these, and this rule does not cover it.** An unrecognised label is discarded by the parser, so recording a retraction this way would leave the reference sitting in its matrix cells, served by `api/papers.json` and the plugin skill as an ordinary recommendation, with nothing saying the paper was withdrawn. Whether a retracted paper keeps its cells, gets a tombstone, or is retired the way a removed ref id is, is a curator decision nobody has made. Raise it rather than inferring an answer from the pattern above.
 
-     Notices are **DB-owned like the citation itself**, and the parser lifts only `Code` and `Data`, so one reaches GitHub and `llms-full.txt` but not `api/papers.json` or the Papers Explorer (tucca-cellag/caail#202). The authoring mechanics, the separator convention and what does and does not guard them are in **`caail-db-authoring`**, which is loaded when you are actually writing one.
+     Notices are **DB-owned like the citation itself**, and the parser lifts only `Code` and `Data`, so one reaches GitHub and `llms-full.txt` but not `api/papers.json` or the Papers Explorer (tucca-cellag/caail#202). How to write one into the DB, and which of these rules any check actually enforces, are in **`caail-db-authoring`**, which is loaded when you are writing one. Where the two disagree about what is enforced, that skill is the one kept alongside the checks.
 
 3. **A `## Reviews & Perspectives` section** below `## References` — for review articles, position papers, and commentaries that survey or opine on the field rather than applying a specific method:
    - Same anchor format and APA style as the primary references.

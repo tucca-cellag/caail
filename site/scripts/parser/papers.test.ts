@@ -254,9 +254,14 @@ describe('buildPapersModel — real Papers.md', () => {
     // and the model ~400 KB, so a bare toContain/not.toContain prints the whole
     // thing on failure and buries the one line saying what to do about it. The
     // codeUrl/dataUrl checks below are small and self-describing, so they don't.
-    const src = readFileSync(PAPERS_MD_PATH, 'utf8');
+    // Haystack lowercased, matching the needle doiKey already normalized.
+    // Papers.md carries 47 DOIs with uppercase in them (10.48550/arXiv.…,
+    // 10.7554/eLife.…), so a re-cased notice line is an ordinary shape here, not
+    // a hypothetical, and a case-sensitive compare would fail telling the reader
+    // to retire live documentation when the notice is still sitting there.
+    const src = readFileSync(PAPERS_MD_PATH, 'utf8').toLowerCase();
     expect(
-      src.includes(`> **Correction**: https://doi.org/${CORRECTION_DOI}`),
+      src.includes(`> **correction**: https://doi.org/${CORRECTION_DOI}`),
       "ref 289 no longer carries its correction blockquote, so the rest of this test proves nothing: either restore it, or retire this guard and the post-publication-notice paragraphs in CLAUDE.md and CONTRIBUTING.md with it",
     ).toBe(true);
 
