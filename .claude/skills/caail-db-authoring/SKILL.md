@@ -135,11 +135,17 @@ re-tagging, corrections), use the full procedure below.
      neighbouring paper on re-emit. Label a post-publication notice with the publisher's
      own word for it, per `CLAUDE.md`. Three things about this field have no guard, so
      they are on you at the moment you write it:
-     - **Join multiple labels with a blank line** (`\n\n`). GitHub renders two adjacent
-       `>` lines as one run-on, and nothing catches it: emit reproduces the string as
-       stored, `labeledLinksAfter` reads either form so `db:verify` round-trips both
-       identically, `db:check` never reads `blockquotes_md`, and `lint-papers` has no
-       blockquote rule. A run-on reaches GitHub with every gate green.
+     - **Join multiple labels with a real blank line.** In the NDJSON that is `\n\n`;
+       in `sqlite3` it is `char(10)||char(10)`, because SQLite string literals do not
+       interpret backslash escapes and a typed `'…\n\n…'` stores the two characters
+       literally. GitHub renders two adjacent `>` lines as one run-on, and nothing
+       catches it: emit reproduces the string as stored, `labeledLinksAfter` reads
+       either form so `db:verify` round-trips both identically, `db:check` never reads
+       `blockquotes_md`, and `lint-papers` has no blockquote rule. A run-on reaches
+       GitHub with every gate green. A literal `\n` is worse still: emit puts both
+       labels on one line, and GFM's autolinker then swallows the escape sequence
+       *and the following `>`* into the preceding URL — measured, the entry's
+       `codeUrl` becomes `https://github.com/o/r\n\n>`, a guaranteed 404 on the card.
      - **Never type it into `Papers.md`.** `db:emit` rebuilds the whole run from this
        column, so a hand-typed line is deleted by the next emit or reddens the CI sync
        guard.
