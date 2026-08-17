@@ -41,12 +41,17 @@ blockquote — plus the DOI of each, and the matrix row each was placed in.
      is a CONTRADICTED field. For a `> **Code**:` repo, also confirm it is this
      paper's actual project repository, not a cited dependency or baseline.
    - **A post-publication-notice label** (`> **Correction**:`, `> **Erratum**:`,
-     `> **Expression of concern**:`) — resolving is not enough, because the label
-     is itself a claim about what the publisher did. Fetch the notice's Crossref
-     record and establish two things:
+     `> **Corrigendum**:`, `> **Author Correction**:`, `> **Expression of
+     concern**:`, and any other notice type a publisher deposits that leaves the
+     paper standing — treat that list as illustrative, never as closed) —
+     resolving is not enough, because the label is itself a claim about what the
+     publisher did. Fetch the notice's Crossref record and establish two things:
      - **The kind of notice.** The label must be the publisher's own word for it.
        A notice titled "Expression of Concern" filed under `Correction` tells the
-       reader an error was fixed when nothing was.
+       reader an error was fixed when nothing was. Equally, do not CONTRADICT a
+       label just because it is not one you expected: Nature deposits "Author
+       Correction" and "Publisher Correction", Elsevier and OUP "Corrigendum",
+       and each of those is the right label for its notice.
      - **That it targets *this* paper.** A correction to a different article in
        the same issue resolves just as cleanly as the right one.
 

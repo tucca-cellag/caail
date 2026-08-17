@@ -61,7 +61,7 @@ The matrix and the `## References` list must be kept in sync:
    > **Code**: https://github.com/<owner>/<repo>
    ```
 
-   **If the publisher has issued a post-publication notice that leaves the paper standing** (a correction, erratum or expression of concern), record it the same way under its own DOI, and separate the two with a blank line. Label it with the publisher's own word for the notice, never a generic one: an expression of concern filed under `Correction` tells the reader an error was fixed when nothing was. A *retraction* is not covered here, because it raises the separate question of whether the paper keeps its matrix cells at all; propose it in the issue rather than recording it as a blockquote.
+   **If the publisher has issued a post-publication notice that leaves the paper standing** (a correction, erratum, corrigendum, addendum or expression of concern), record it the same way under its own DOI, and separate the two with a blank line. Label it with the publisher's own word for the notice, whatever that is, never a generic one: an expression of concern filed under `Correction` tells the reader an error was fixed when nothing was. A *retraction* is not covered here, because it raises the separate question of whether the paper keeps its matrix cells at all; propose it in the issue rather than recording it as a blockquote.
 
    ```markdown
    > **Code**: https://github.com/<owner>/<repo>

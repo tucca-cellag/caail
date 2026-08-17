@@ -132,11 +132,21 @@ re-tagging, corrections), use the full procedure below.
      `> **Models**:`, or a post-publication notice such as `> **Correction**:`): update that
      row's `blockquotes_md`. There is no per-label column — the whole `> …` run is stored
      verbatim as one string, which is what stops an unmodelled label floating onto the
-     neighbouring paper on re-emit. **Join multiple labels with a blank line** (`\n\n`):
-     GitHub renders two adjacent `>` lines as one run-on, and **no check anywhere catches
-     that** — emit reproduces the string as stored, and the parser reads either form — so
-     it is on you at the moment you write it. Label a notice with the publisher's own word
-     for it, per `CLAUDE.md`.
+     neighbouring paper on re-emit. Label a post-publication notice with the publisher's
+     own word for it, per `CLAUDE.md`. Three things about this field have no guard, so
+     they are on you at the moment you write it:
+     - **Join multiple labels with a blank line** (`\n\n`). GitHub renders two adjacent
+       `>` lines as one run-on, and nothing catches it: emit reproduces the string as
+       stored, `labeledLinksAfter` reads either form so `db:verify` round-trips both
+       identically, `db:check` never reads `blockquotes_md`, and `lint-papers` has no
+       blockquote rule. A run-on reaches GitHub with every gate green.
+     - **Never type it into `Papers.md`.** `db:emit` rebuilds the whole run from this
+       column, so a hand-typed line is deleted by the next emit or reddens the CI sync
+       guard.
+     - **The pre-edit hook will not stop you.** `block-generated-edits.py` denies a
+       whole-file `Write`, but an `Edit` or `MultiEdit` touching only a `> **Label**:`
+       line matches none of its markers (`<a id="`, `](#`, `### [`) and passes.
+       `site/scripts/db/hook.test.ts` pins that gap, so closing it turns the suite red.
    - **Add a tool/database:** insert `items` + `catalog(name,url,grp,body_md,ordinal)`; `name`
      is the inline markdown of the H3 link text, `body_md` the entry body.
    - **Add a curated dataset entry:** insert `items('ds:<slug>','dataset',…)` + `dataset_entries`

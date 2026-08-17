@@ -278,8 +278,12 @@ describe('buildPapersModel — real Papers.md', () => {
       ...model,
       references: model.references.filter((r) => doiKey(r.doi) !== CORRECTION_DOI),
     });
+    // Lowercased on this side too. Routing only the exclusion through doiKey
+    // while leaving the detection case-sensitive would reintroduce the same bug
+    // on the opposite side: a #202 that stored the DOI uppercased or as a
+    // DOI-URL would reach api/papers.json while this stayed green.
     expect(
-      searchable.includes(CORRECTION_DOI),
+      searchable.toLowerCase().includes(CORRECTION_DOI),
       "ref 289's correction reached the parsed model: #202 has landed, so rewrite the post-publication-notice paragraphs in CLAUDE.md and CONTRIBUTING.md",
     ).toBe(false);
   });
