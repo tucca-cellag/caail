@@ -6,15 +6,18 @@ import { describe, it, expect } from 'vitest';
 import {
   SKILL_PATH,
   TEMPLATE_DIR,
+  readClaims,
   readFields,
-  readPrefillClaims,
   verifyContributeForms,
 } from './contribute-form.js';
 
 const SKILL = readFileSync(SKILL_PATH, 'utf-8');
 
-/** Every template the skill claims to prefill, so a scenario can copy the real set. */
-const TEMPLATES = readPrefillClaims(SKILL).map((c) => c.template);
+/** Every template the skill claims, so a scenario can copy the real set. */
+const TEMPLATES = readClaims(SKILL).map((c) => c.template);
+
+const paperFields = (): ReturnType<typeof readFields> =>
+  readFields(readFileSync(join(TEMPLATE_DIR, 'paper.yml'), 'utf-8'));
 
 /**
  * Stage the REAL skill and the REAL templates in a temp directory, optionally editing one of
@@ -34,7 +37,7 @@ function stage(
     const src = readFileSync(join(TEMPLATE_DIR, t), 'utf-8');
     if (opts.template && opts.template[0] === t) {
       const edited = opts.template[1](src);
-      if (edited === src) throw new Error(`the ${t} edit matched nothing, so this test proves nothing`);
+      if (edited === src) throw new Error(`the ${t} edit matched nothing, so this proves nothing`);
       writeFileSync(join(dir, t), edited, 'utf-8');
     } else {
       copyFileSync(join(TEMPLATE_DIR, t), join(dir, t));
@@ -46,8 +49,13 @@ function stage(
   if (opts.skill && skill === SKILL) throw new Error('the skill edit matched nothing');
   writeFileSync(skillPath, skill, 'utf-8');
 
-  return () => verifyContributeForms(skillPath, `${dir}/`);
+  return () => verifyContributeForms(skillPath, dir);
 }
+
+/** Append a field to a template, so a scenario can add one of any type/requiredness. */
+const appendField = (type: string, id: string, required: boolean) => (src: string) =>
+  `${src}\n  - type: ${type}\n    id: ${id}\n    attributes:\n      label: Added\n` +
+  (required ? '    validations:\n      required: true\n' : '');
 
 describe('readFields', () => {
   it('reads a field regardless of where its id sits among the field keys', () => {
@@ -81,24 +89,42 @@ describe('readFields', () => {
       { id: 'second', type: 'input', required: false },
     ]);
   });
+
+  it('still sees a field whose keys carry trailing comments', () => {
+    // A `[ \t]*$` anchor made this field vanish entirely, taking its required flag with it.
+    const src = [
+      '  - type: dropdown # picked by hand',
+      '    id: species # new axis',
+      '    validations:',
+      '      required: true # must answer',
+    ].join('\n');
+    expect(readFields(src)).toEqual([{ id: 'species', type: 'dropdown', required: true }]);
+  });
 });
 
-describe('readPrefillClaims', () => {
-  it('finds a claim for every template the skill composes for', () => {
-    expect(TEMPLATES.length).toBeGreaterThan(0);
-    expect(TEMPLATES).toContain('paper.yml');
+describe('readClaims', () => {
+  it('finds both lists for every template the skill composes for', () => {
+    const claims = readClaims(SKILL);
+    expect(claims.map((c) => c.template)).toContain('paper.yml');
+    const paper = claims.find((c) => c.template === 'paper.yml')!;
+    expect(paper.prefill).toContain('doi');
+    expect(paper.manual).toContain('ai_methods');
   });
 
   it('ignores the worked URL example, which also names a template', () => {
-    // The example is the reason the anchor is the introducing sentence and not `template=`.
     expect(SKILL).toContain('issues/new?template=paper.yml');
-    expect(readPrefillClaims(SKILL).filter((c) => c.template === 'paper.yml')).toHaveLength(1);
+    expect(readClaims(SKILL).filter((c) => c.template === 'paper.yml')).toHaveLength(1);
   });
 
-  it('throws when the wording it anchors on is gone, rather than silently checking nothing', () => {
-    expect(() => readPrefillClaims('# a skill with no prefill claims')).toThrow(
-      /no prefill claims found/,
-    );
+  it('throws when the wording it anchors on is gone, rather than checking nothing', () => {
+    expect(() => readClaims('# a skill with no prefill claims')).toThrow(/no prefill claims found/);
+  });
+
+  it('throws when a pick-by-hand list names a template no prefill list does', () => {
+    const run = stage({
+      skill: (s) => s.replace('(`template=resource.yml`), fields to pick by\nhand:', '(`template=resorce.yml`), fields to pick by\nhand:'),
+    });
+    expect(run).toThrow(/pick-by-hand fields for "resorce\.yml"/);
   });
 });
 
@@ -129,34 +155,55 @@ describe('verifyContributeForms', () => {
     expect(run).toThrow(/"ai_methods" as type: dropdown/);
   });
 
+  it('fails when the skill asks the reader to hand-fill something it could prefill', () => {
+    const run = stage({
+      skill: (s) => s.replace('`paper_type`, `ai_methods`', '`paper_type`, `venue`, `ai_methods`'),
+    });
+    expect(run).toThrow(/"venue" by hand on paper\.yml, but type: input prefills/);
+  });
+
   it('fails when a template reuses a field id GitHub reserves', () => {
     const run = stage({ template: ['paper.yml', (s) => s.replace('id: paper_title', 'id: title')] });
     expect(run).toThrow(/reserves for its own/);
   });
 
   it('fails when a new required input is added that the skill does not fill', () => {
-    const run = stage({
-      template: [
-        'paper.yml',
-        (s) =>
-          `${s}\n  - type: input\n    id: funder\n    attributes:\n      label: Funder\n    validations:\n      required: true\n`,
-      ],
+    const run = stage({ template: ['paper.yml', appendField('input', 'funder', true)] });
+    expect(run).toThrow(/requires "funder" \(type: input\)/);
+  });
+
+  // The regression that motivated checking required fields of EVERY type. Under the earlier
+  // type-filtered check this passed silently, and the shipped skill went on naming three
+  // pick-by-hand fields while the composed issue carried a fourth blank required dropdown.
+  it('fails when a new required DROPDOWN is added that the skill never mentions', () => {
+    const run = stage({ template: ['paper.yml', appendField('dropdown', 'species', true)] });
+    expect(run).toThrow(/requires "species" \(type: dropdown\)/);
+  });
+
+  it('ignores a new OPTIONAL field, which submits fine left blank', () => {
+    const run = stage({ template: ['paper.yml', appendField('dropdown', 'species', false)] });
+    expect(run).not.toThrow();
+  });
+
+  it('exempts only the confirmations field, not required checkboxes generally', () => {
+    // Proves UNPREFILLED_BY_DESIGN is load-bearing and narrow: the committed `confirmations`
+    // field is required checkboxes and passes, while a second required checkboxes field does not.
+    expect(paperFields().find((f) => f.id === 'confirmations')).toEqual({
+      id: 'confirmations',
+      type: 'checkboxes',
+      required: true,
     });
-    expect(run).toThrow(/requires "funder"/);
+    expect(() => verifyContributeForms()).not.toThrow();
+
+    const run = stage({ template: ['paper.yml', appendField('checkboxes', 'consent', true)] });
+    expect(run).toThrow(/requires "consent" \(type: checkboxes\)/);
   });
 
-  it('does not object to a required field that cannot be prefilled anyway', () => {
-    // research_areas is a required dropdown in the committed template, and the skill's job is
-    // to tell the reader to pick it rather than to prefill it.
-    const fields = readFields(readFileSync(join(TEMPLATE_DIR, 'paper.yml'), 'utf-8'));
-    const areas = fields.find((f) => f.id === 'research_areas');
-    expect(areas).toEqual({ id: 'research_areas', type: 'dropdown', required: true });
-    expect(() => verifyContributeForms()).not.toThrow();
-  });
-
-  it('does not object to the confirmation checkboxes, which are never prefilled by design', () => {
-    const fields = readFields(readFileSync(join(TEMPLATE_DIR, 'paper.yml'), 'utf-8'));
-    expect(fields.find((f) => f.id === 'confirmations')?.required).toBe(true);
-    expect(() => verifyContributeForms()).not.toThrow();
+  it('names the skill it was actually given, not the committed one, when a claim is empty', () => {
+    const run = stage({
+      skill: (s) => s.replace('`paper_type`, `ai_methods`, `research_areas`', 'none'),
+    });
+    expect(run).toThrow(/caail-contribute-/);
+    expect(run).not.toThrow(/plugin-contribute/);
   });
 });

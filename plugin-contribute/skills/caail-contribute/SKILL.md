@@ -42,6 +42,12 @@ a fetch tool that summarises will answer confidently from the fragment it kept.
 | Software / database | `https://raw.githubusercontent.com/tucca-cellag/caail/main/site/public/api/catalog-index.json` | URL, then name |
 | Dataset / accession | `https://raw.githubusercontent.com/tucca-cellag/caail/main/site/public/api/datasets.json` | accession, then name |
 
+**Datasets have no index endpoint, and that bounds what you may conclude from them.** There is no
+`datasets-index.json`; `datasets.json` is the full file at roughly 330 KB, so for datasets the
+hazard above is unavoidable rather than avoidable. If your fetch returns bytes you can read it
+normally. If it summarises, you cannot establish a dataset absence from it at all: say which
+accession you could not check, and do not offer a suggestion on that basis.
+
 **Be generous about deciding CAAIL already holds it, and strict about deciding it does not.** A
 false "CAAIL is missing this" costs the user a wasted click and sends the maintainers a duplicate;
 a false "CAAIL already has this" costs nothing but a missed suggestion. So:
@@ -76,10 +82,19 @@ Build the URL and hand it over. The user reviews and submits it themselves.
 
 `paper_title`, `authors`, `year`, `venue`, `doi`, `code_url`, `notes`
 
+**Papers** (`template=paper.yml`), fields to pick by hand:
+
+`paper_type`, `ai_methods`, `research_areas`
+
 **Software, datasets, databases and other resources** (`template=resource.yml`), prefillable
 parameters:
 
 `name`, `url`, `category`, `summary`, `notes`
+
+**Software, datasets, databases and other resources** (`template=resource.yml`), fields to pick by
+hand:
+
+`resource_type`
 
 URL-encode every value:
 
@@ -87,17 +102,21 @@ URL-encode every value:
 https://github.com/tucca-cellag/caail/issues/new?template=paper.yml&paper_title=...&doi=...
 ```
 
-**Three fields cannot be prefilled and you must say so.** GitHub accepts a query parameter for a
-`dropdown` field and then silently ignores it, so the form opens with the field empty. On the paper
-template these are **Paper type**, **AI / ML method(s)** and **Research area(s)**; on the resource
-template it is **Resource type**. Tell the user which dropdowns are left to pick, and suggest what
-you would pick, so they are choosing rather than starting from nothing.
+**The pick-by-hand fields cannot be prefilled, and you must say so.** GitHub accepts a query
+parameter for a `dropdown` field and then silently ignores it, so the form opens with that field
+empty however carefully you built the URL. Name the ones on the template you are using, by the
+label the form shows, and suggest what you would pick, so the user is choosing rather than starting
+from nothing. Both lists above are reconciled against the templates at build time, so read them
+rather than counting from memory.
 
 Leave the confirmation checkboxes alone. They ask the user to confirm they searched the library and
 that they accept the contribution licence, and it is not your place to answer either.
 
-Fill `notes` with one or two sentences on what the resource contributes to the AI plus cellular
-agriculture intersection, in the user's own framing where you have it. That field is required.
+**The free-text field is required on both templates, and it is not the same field.** On
+`paper.yml` it is `notes`. On `resource.yml` it is `summary`, which becomes the body text of the
+published entry, while `notes` there is optional and is for anything that did not fit a structured
+field. Write one or two sentences on what the resource contributes to the AI plus cellular
+agriculture intersection, in the user's own framing where you have it.
 
 ### Route 2, no GitHub account
 

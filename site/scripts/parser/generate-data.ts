@@ -495,7 +495,7 @@ export function generateData(
     recentEntries: recent.length,
     apiFiles: apiFiles.length,
     contributeTemplates: contributeClaims.length,
-    contributeParams: contributeClaims.reduce((n, c) => n + c.params.length, 0),
+    contributeParams: contributeClaims.reduce((n, c) => n + c.prefill.length, 0),
     // Count across all three axes, so this equals the number of `###` headings
     // in Taxonomy.md and can be checked against the file by eye. Counting
     // `definitions` instead would silently omit the themes.
