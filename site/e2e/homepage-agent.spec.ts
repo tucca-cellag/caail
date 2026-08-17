@@ -1029,7 +1029,7 @@ test.describe('homepage section rail', () => {
     const mismatched = await page.evaluate(() =>
       [...document.querySelectorAll<HTMLAnchorElement>('.rail a[data-rail]')]
         .map((a) => {
-          if (a.dataset.rail === 'top') return null; // tagline, not a categorical tag
+          if (a.dataset.rail === 'top') return null; // exempt: not a categorical tag
           const section = document.getElementById(a.dataset.rail!);
           const eyebrow = section?.querySelector('.eyebrow');
           if (!eyebrow) return null; // no eyebrow: nothing to derive from

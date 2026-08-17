@@ -36,7 +36,11 @@ const statSentence = `Indexing ${stats.map((s) => `${s.n} ${s.label}`).join(', '
   <div class="hero-text">
     {/* Spells out the acronym. The nav title is a bare "CAAIL" and the h1 is the stylised
         wordmark, so without this line a first-time reader never learns what it stands for.
-        Expansion matches CITATION.cff, the README H1 and the Zenodo record verbatim. */}
+
+        The expansion is a hand-typed copy of CITATION.cff's title, which is the defect class
+        CLAUDE.md calls this repo's most expensive. It is checked rather than asserted:
+        `src/lib/project-name.test.ts` fails if the two drift. Do not replace that with a
+        comment promising they match — that is the thing the rule forbids. */}
     <p class="eyebrow">CAAIL · Cellular Agriculture AI Library</p>
     <h1 class="h-title caail-display">
       <span class="l1">Cell&nbsp;Ag</span>
@@ -45,8 +49,8 @@ const statSentence = `Indexing ${stats.map((s) => `${s.n} ${s.label}`).join(', '
 
     <p class="lede">
       The curated library at the intersection of cellular agriculture and AI, and a grounding
-      database an AI assistant can query: research and industry questions answered from a fixed,
-      citable index, not from model memory.
+      database an AI assistant can query, so research and industry questions can be answered
+      from a fixed, citable index rather than from model memory.
     </p>
 
     <div class="cta-row">
@@ -147,12 +151,21 @@ const statSentence = `Indexing ${stats.map((s) => `${s.n} ${s.label}`).join(', '
     {/* Two spans, because the line has to carry two different claims and an earlier draft
         lost one of them. Replacing "A project of" outright with "Built and used in R&D at"
         left the homepage saying only that TUCCA *uses* CAAIL, which reads as a third-party
-        tool TUCCA adopted; ownership then survived only on /about, and DESIGN.md §1 still
-        prescribes "A project of ..." as the text credit under Tufts brand policy.
+        tool TUCCA adopted, and ownership then survived only on /about.
+
+        The trailing spaces are load-bearing. `TuccaLockup`'s anchor contains only an
+        `aria-hidden` span, so there is no whitespace text node between these elements and the
+        separation is `flex gap`, which is visual and not textual. Without them, select-and-copy
+        and Pagefind both get "A project ofand used in ...".
+
+        "TUCCA's own" rather than "its own": the nearest antecedent is a link whose visible
+        content is an image, so "its" can attach to CAAIL and claim CAAIL is used in CAAIL's
+        own R&D.
+
         Deliberately unquantified — what CAAIL adds to an agent's answers is unmeasured
         (CAAIL-168), so "we use it" is assertable and "it works better" is not.
         The row is `flex-wrap`; the wrap was checked at 390 and 1440, not assumed. */}
-    <p class="hero-attrib"><span>A project of</span><TuccaLockup width={150} /><span>and used in its own R&amp;D</span></p>
+    <p class="hero-attrib"><span>A project of </span><TuccaLockup width={150} /><span> and used in TUCCA&rsquo;s own R&amp;D</span></p>
   </nav>
 </section>
 
