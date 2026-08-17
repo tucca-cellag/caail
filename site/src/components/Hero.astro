@@ -144,13 +144,15 @@ const statSentence = `Indexing ${stats.map((s) => `${s.n} ${s.label}`).join(', '
     <a href={`${base}/papers/explorer/`}><Icon name="lucide:layout-grid" /> Browse the matrix</a>
     <a href={`${base}/community/`}><Icon name="lucide:users" /> Community</a>
     <a href={`${base}/cite/`}><Icon name="lucide:quote" /> Cite CAAIL</a>
-    {/* "Built and used in R&D at" rather than "A project of": it carries provenance and
-        dogfooding in the same breath, next to the lockup, which is the highest-visibility
-        slot on the page. Deliberately unquantified — what CAAIL adds to an agent's answers
-        is unmeasured (CAAIL-168), so "we use it" is assertable and "it works better" is not.
-        This doubles the span's text beside a 150px logo; the row is `flex-wrap`, and the
-        two-line wrap at narrow widths was checked rather than assumed. */}
-    <p class="hero-attrib"><span>Built and used in R&amp;D at</span><TuccaLockup width={150} /></p>
+    {/* Two spans, because the line has to carry two different claims and an earlier draft
+        lost one of them. Replacing "A project of" outright with "Built and used in R&D at"
+        left the homepage saying only that TUCCA *uses* CAAIL, which reads as a third-party
+        tool TUCCA adopted; ownership then survived only on /about, and DESIGN.md §1 still
+        prescribes "A project of ..." as the text credit under Tufts brand policy.
+        Deliberately unquantified — what CAAIL adds to an agent's answers is unmeasured
+        (CAAIL-168), so "we use it" is assertable and "it works better" is not.
+        The row is `flex-wrap`; the wrap was checked at 390 and 1440, not assumed. */}
+    <p class="hero-attrib"><span>A project of</span><TuccaLockup width={150} /><span>and used in its own R&amp;D</span></p>
   </nav>
 </section>
 
