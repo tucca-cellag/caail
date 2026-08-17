@@ -61,7 +61,7 @@ The matrix and the `## References` list must be kept in sync:
    > **Code**: https://github.com/<owner>/<repo>
    ```
 
-   **If the publisher has issued a correction or erratum**, record it the same way under its own DOI, and separate the two with a blank line:
+   **If the publisher has issued a post-publication notice** (a correction, erratum, expression of concern or retraction), record it the same way under its own DOI, and separate the two with a blank line. Label it with the publisher's own word for the notice, never a generic one: an expression of concern filed under `Correction` tells the reader an error was fixed when nothing was.
 
    ```markdown
    > **Code**: https://github.com/<owner>/<repo>
@@ -69,7 +69,7 @@ The matrix and the `## References` list must be kept in sync:
    > **Correction**: https://doi.org/<correction-doi>
    ```
 
-   The blank line matters: GitHub renders two adjacent `>` lines as one run-on line, and GitHub is where these are read.
+   The blank line matters: GitHub renders two adjacent `>` lines as one run-on line, and GitHub is where these are read. Note that the notice reaches GitHub but not the entry's card on the site, because the parser keeps only the `Code` and `Data` labels (tucca-cellag/caail#202).
 
 4. **Add the paper to every applicable matrix cell.** For each AI method (row) and research area (column) the paper covers, add `[42](#42)` to the corresponding cell, comma-separated with any existing entries:
 

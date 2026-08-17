@@ -155,15 +155,17 @@ LICENSE                MIT License
      > **Code**: https://github.com/<owner>/<repo>
      ```
 
-   - If the publisher has issued a **correction, erratum or expression of concern**, record it the same way, under its own DOI:
+   - If the publisher has issued a **post-publication notice**, record it the same way, under its own DOI. **Use the publisher's own word for the notice as the label** (`Correction`, `Erratum`, `Expression of concern`, `Retraction`), never a generic one:
 
      ```markdown
      > **Correction**: https://doi.org/<correction-doi>
      ```
 
+     The label is the claim. An expression of concern says the publisher doubts the work and has fixed nothing, so filing one under `Correction` tells every reader the opposite of what was published.
+
      **Separate multiple blockquote labels with a blank line.** GitHub does not convert a soft break into a line break in a repository file, so two adjacent `>` lines render as a single run-on line — and GitHub is the surface these notices are read on. Every multi-label reference in `Papers.md` follows this convention.
 
-     Two things to know before adding one. The site parser lifts only the `Code` and `Data` labels (`site/scripts/parser/papers.ts`), so a `Correction` reaches GitHub and `llms-full.txt` but **not** `api/papers.json` or the Papers Explorer — tracked as tucca-cellag/caail#202. And record one even when it looks cosmetic: the correction on ref 289 changed a single word of the abstract, 2-fold to 5-fold cross-validation, which is precisely the claim an abstract-only classification would have rested on.
+     Two things to know before adding one. The site parser lifts only the `Code` and `Data` labels (`site/scripts/parser/papers.ts`), so a notice reaches GitHub and `llms-full.txt` but **not** `api/papers.json` or the Papers Explorer. That gap is tracked as tucca-cellag/caail#202, and the claim is pinned by the `drops a post-publication notice label` case in `site/scripts/parser/papers.test.ts`: it fails the moment the parser learns the label, so this paragraph cannot go stale without CI saying so. And record a notice even when it looks cosmetic: the correction on ref 289 changed a single word of the abstract, 2-fold to 5-fold cross-validation, which is precisely the claim an abstract-only classification would have rested on.
 
 3. **A `## Reviews & Perspectives` section** below `## References` — for review articles, position papers, and commentaries that survey or opine on the field rather than applying a specific method:
    - Same anchor format and APA style as the primary references.

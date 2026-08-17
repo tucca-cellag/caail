@@ -215,6 +215,22 @@ describe('buildPapersModel — real Papers.md', () => {
     expect(ref6.isPrimary).toBe(true);
   });
 
+  // Pins the claim CLAUDE.md and CONTRIBUTING.md both make about post-publication
+  // notices: they reach GitHub and llms-full.txt but never the parsed model, because
+  // parseReferences selects blockquote labels by name and keeps only Code/Data.
+  // Ref 289 carries `> **Code**: …` and `> **Correction**: …`, so it is the only
+  // live example. When tucca-cellag/caail#202 teaches the parser the label, this
+  // fails, and the two docs need their paragraph rewritten in the same change.
+  it('drops a post-publication notice label, keeping only Code/Data (#202)', () => {
+    const ref289 = model.references.find((r) => r.id === 289)!;
+    expect(ref289.codeUrl).toBe('https://github.com/faezesarlakifar/AllerTrans');
+    expect(ref289.dataUrl).toBeNull();
+    // The correction's own DOI must not reach ANY field of the parsed reference.
+    // Asserting on the whole serialized ref rather than a named field is what
+    // makes this fail when #202 adds one, whatever that new field is called.
+    expect(JSON.stringify(ref289)).not.toContain('bpaf076');
+  });
+
   it('validates against the schema', () => {
     expect(PapersDataSchema.safeParse(model).success).toBe(true);
   });
