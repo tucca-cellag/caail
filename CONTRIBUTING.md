@@ -71,6 +71,8 @@ The matrix and the `## References` list must be kept in sync:
 
    The blank line matters: GitHub renders two adjacent `>` lines as one run-on line, and GitHub is where these are read. Note that the notice reaches GitHub but not the entry's card on the site, because the parser keeps only the `Code` and `Data` labels (tucca-cellag/caail#202).
 
+   As with the citation itself, a maintainer lands this through the DB rather than by typing it into `Papers.md`: the trailing blockquotes are regenerated from the database, so a hand-typed line is dropped again on the next regeneration.
+
 4. **Add the paper to every applicable matrix cell.** For each AI method (row) and research area (column) the paper covers, add `[42](#42)` to the corresponding cell, comma-separated with any existing entries:
 
    ```markdown

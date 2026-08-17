@@ -227,6 +227,11 @@ describe('buildPapersModel — real Papers.md', () => {
   // When tucca-cellag/caail#202 teaches the parser the label it must also widen the
   // schema to carry it — buildPapersModel ends in PapersDataSchema.parse(), which
   // strips unknown keys — and this test then fails. Rewrite both paragraphs with it.
+  //
+  // Scope, so the docs do not over-claim what this covers: it fails for any fix that
+  // routes the notice through the parsed model, including a sibling structure keyed
+  // by ref id, because the assertion is over the whole model. It does NOT fire for a
+  // fix that renders the notice on the card straight from the canonical Markdown.
   it('drops a post-publication notice label, keeping only Code/Data (#202)', () => {
     const src = readFileSync(PAPERS_MD_PATH, 'utf8');
     expect(src).toContain(
@@ -236,9 +241,24 @@ describe('buildPapersModel — real Papers.md', () => {
     const ref289 = model.references.find((r) => r.id === 289)!;
     expect(ref289.codeUrl).toBe('https://github.com/faezesarlakifar/AllerTrans');
     expect(ref289.dataUrl).toBeNull();
-    // Asserted over the whole serialized ref rather than a named field, so it
-    // still fires whatever #202 ends up calling the new one.
-    expect(JSON.stringify(ref289)).not.toContain('bpaf076');
+    // Over the whole model, not just ref 289, so a top-level notices map trips it too.
+    expect(JSON.stringify(model)).not.toContain('bpaf076');
+  });
+
+  // The blank-line separator between two blockquote labels is a RENDERING
+  // convention, and nothing else enforces it: labeledLinksAfter recovers both
+  // labels from the soft-break-joined form as well, so db:verify round-trips
+  // identically, db:check never reads blockquotes_md, and lint-papers has no
+  // blockquote rule. Without this, adjacent `> **` lines pass every gate while
+  // GitHub renders them as one run-on line — and GitHub is where they are read.
+  it('separates every multi-label blockquote with a blank line', () => {
+    const lines = readFileSync(PAPERS_MD_PATH, 'utf8').split('\n');
+    const runOn = lines.flatMap((line, i) =>
+      line.startsWith('> **') && (lines[i + 1] ?? '').startsWith('> **')
+        ? [`Papers.md:${i + 2} "${lines[i + 1]}" follows "${line}" with no blank line`]
+        : [],
+    );
+    expect(runOn).toEqual([]);
   });
 
   it('validates against the schema', () => {
