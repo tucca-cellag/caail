@@ -241,8 +241,15 @@ describe('buildPapersModel — real Papers.md', () => {
     const ref289 = model.references.find((r) => r.id === 289)!;
     expect(ref289.codeUrl).toBe('https://github.com/faezesarlakifar/AllerTrans');
     expect(ref289.dataUrl).toBeNull();
-    // Over the whole model, not just ref 289, so a top-level notices map trips it too.
-    expect(JSON.stringify(model)).not.toContain('bpaf076');
+    // Over the whole model, not just ref 289, so a top-level notices map trips it
+    // too. Asserted as a boolean rather than `expect(json).not.toContain(...)`,
+    // because the latter prints the entire serialized model (~400 KB) on failure
+    // and buries the one line telling you what to do about it.
+    const reachedModel = JSON.stringify(model).includes('bpaf076');
+    expect(
+      reachedModel,
+      'ref 289\'s correction DOI reached the parsed model: #202 has landed, so rewrite the post-publication-notice paragraphs in CLAUDE.md and CONTRIBUTING.md',
+    ).toBe(false);
   });
 
   // The blank-line separator between two blockquote labels is a RENDERING
