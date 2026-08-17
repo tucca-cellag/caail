@@ -290,6 +290,12 @@ describe('buildPapersModel — real Papers.md', () => {
     // classify its blockquotes as unattached and miss a genuine run-on.
     const ANCHOR_RE = /^<a\s+id="\d+">/;
 
+    // `>**Correction**:` with no space is valid Markdown that remark and
+    // labeledLinksAfter both accept, and it renders as the same run-on line, so
+    // matching the literal three characters `> **` would let the guard's whole
+    // point through.
+    const BQ_LABEL_RE = /^>\s*\*\*/;
+
     /** Walks to the TOP of this blockquote run — over the blank lines the
      *  convention puts between labels — and asks whether the run as a whole
      *  hangs off an `<a id="N">` paragraph. Checking only one line back would
@@ -301,7 +307,7 @@ describe('buildPapersModel — real Papers.md', () => {
         let k = j - 1;
         while (k >= 0 && lines[k].trim() === '') k--;
         if (k < 0) return false;
-        if (lines[k].startsWith('> **')) {
+        if (BQ_LABEL_RE.test(lines[k])) {
           j = k;
           continue;
         }
@@ -311,7 +317,7 @@ describe('buildPapersModel — real Papers.md', () => {
 
     const runOn = lines.flatMap((line, i) => {
       const next = lines[i + 1] ?? '';
-      if (!line.startsWith('> **') || !next.startsWith('> **')) return [];
+      if (!BQ_LABEL_RE.test(line) || !BQ_LABEL_RE.test(next)) return [];
       if (!attachedToCitation(i)) return [];
       // Names the NDJSON, not Papers.md. emitSectionRefs writes blockquotes_md
       // VERBATIM (it joins only across papers), so emit normalizes nothing
