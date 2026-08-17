@@ -134,15 +134,29 @@ export interface TemplateClaim {
  * `markdown` blocks carry no `id` and are skipped: they are prose shown to the reader, not fields.
  */
 export function readFields(src: string): FormField[] {
-  const bounds = [...src.matchAll(/^[ \t]*-[ \t]+type:[ \t]*(\S+)[ \t]*(?:#.*)?$/gm)];
+  const bounds = [...src.matchAll(/^[ \t]*-[ \t]+type:[ \t]*(["']?)([A-Za-z0-9_-]+)\1[ \t]*(?:#.*)?$/gm)];
   return bounds.flatMap((m, i) => {
     const start = m.index!;
     const end = bounds[i + 1]?.index ?? src.length;
     const item = src.slice(start, end);
-    const id = /^[ \t]*id:[ \t]*([A-Za-z0-9_-]+)[ \t]*(?:#.*)?$/m.exec(item)?.[1];
-    if (id === undefined) return [];
+    const type = m[2]!;
+    const id = /^[ \t]*id:[ \t]*(["']?)([A-Za-z0-9_-]+)\1[ \t]*(?:#.*)?$/m.exec(item)?.[2];
+    if (id === undefined) {
+      // `markdown` is prose shown to the reader and carries no id by GitHub's own schema.
+      // Anything else without one is a field this module cannot see, and an invisible field
+      // takes its `required` flag with it: that is precisely the regression assertRequiredCovered
+      // exists to stop, so it must not be reachable by writing the id in a form this reader
+      // fails to parse. Quoted scalars are accepted above; this catches every other spelling.
+      if (type === 'markdown') return [];
+      throw new Error(
+        `contribute-form: a "- type: ${type}" field carries no id this reader can parse. A field ` +
+          `with no readable id is invisible to every check here, including whether it is ` +
+          `required, so a required one would reach a contributor as a blank box with nothing ` +
+          `reporting it. Write the id as a bare or quoted word.`,
+      );
+    }
     return [
-      { id, type: m[1]!, required: /^[ \t]*required:[ \t]*true[ \t]*(?:#.*)?$/m.test(item) },
+      { id, type, required: /^[ \t]*required:[ \t]*true[ \t]*(?:#.*)?$/m.test(item) },
     ];
   });
 }
@@ -228,13 +242,21 @@ function readClaimLists(
       block.push(line);
     }
 
-    const next = after.slice(end).find((l) => l.trim() !== '');
-    if (next !== undefined && isParameterLine(next)) {
+    // Every remaining line up to the NEXT claim intro, not just the next paragraph.
+    //
+    // Checking only the paragraph immediately after left `list / prose / more list` dropping its
+    // tail in silence, which is the same failure in the one shape the guard did not look at. The
+    // window stops at the next `(`template=…`)` because that is where another claim's own list
+    // legitimately begins, and scanning past it would report every later list as a stray.
+    const tail = after.slice(end);
+    const nextIntro = tail.findIndex((l) => /\(`template=[A-Za-z0-9._-]+\.yml`\)/.test(l));
+    const stray = (nextIntro < 0 ? tail : tail.slice(0, nextIntro)).find((l) => isParameterLine(l));
+    if (stray !== undefined) {
       throw new Error(
-        `contribute-form: the ${label} list for "${template}" in ${skillPath} is split across a ` +
-          `blank line — ${JSON.stringify(next.trim())} reads as a second paragraph. Only the ` +
-          `first would be checked, and the parameters after the break would silently stop ` +
-          `being reconciled. Keep the list in one paragraph.`,
+        `contribute-form: the ${label} list for "${template}" in ${skillPath} continues after a ` +
+          `break — ${JSON.stringify(stray.trim())} reads as a separate paragraph. Only the ` +
+          `first would be checked, and the parameters after the break would silently stop being ` +
+          `reconciled. Keep the whole list in one paragraph.`,
       );
     }
 

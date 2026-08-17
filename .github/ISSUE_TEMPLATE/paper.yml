@@ -72,7 +72,7 @@ body:
       description: |
         Select all that apply. If the method isn't listed, choose "Other" and describe it in the notes field.
         For reviews or commentaries that survey many methods, choose "Not applicable — review or commentary".
-        These options are a coarse triage list and cover only part of the live matrix, which carries considerably more method rows (the foundation-model and agent families in particular); the authoritative rows are defined in Taxonomy.md. "Other" plus the method named in the notes is always a safe answer, and a maintainer decides the final row.
+        These options are a coarse triage list, not the matrix rows themselves. The live matrix carries considerably more rows, and the foundation-model and agent families are each several rows rather than one, which is why the last two options ask you to name the specific one in the notes. The authoritative rows are defined in Taxonomy.md. "Other" plus the method named in the notes is always a safe answer, and a maintainer decides the final row.
       multiple: true
       options:
         - Bayesian Optimization
@@ -85,7 +85,8 @@ body:
         - Ensemble Learning
         - K-Nearest Neighbors
         - Active Learning
-        - LLMs / AI Agents
+        - LLM / agent methods (name the specific row in the notes)
+        - Foundation models (name the specific row in the notes)
         - Not applicable — review or commentary
         - Other (describe in notes)
     validations:

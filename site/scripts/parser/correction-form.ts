@@ -91,7 +91,9 @@ export interface CorrectionForm {
  * WRONG NUMBER with no throw, which is exactly what its own docstring says must not happen.
  */
 function readFieldIds(src: string): string[] {
-  return [...src.matchAll(/^[ \t]*id:[ \t]*([A-Za-z0-9_-]+)[ \t]*(?:#.*)?$/gm)].map((m) => m[1]!);
+  return [...src.matchAll(/^[ \t]*id:[ \t]*(["']?)([A-Za-z0-9_-]+)\1[ \t]*(?:#.*)?$/gm)].map(
+    (m) => m[2]!,
+  );
 }
 
 /**
@@ -117,7 +119,7 @@ function readFieldIds(src: string): string[] {
  * caller that did not would otherwise slice from index -1.
  */
 function reasonField(src: string): string {
-  const anchor = src.search(/^[ \t]*id:[ \t]*reason[ \t]*(?:#.*)?$/m);
+  const anchor = src.search(/^[ \t]*id:[ \t]*(["']?)reason\1[ \t]*(?:#.*)?$/m);
   if (anchor < 0) {
     throw new Error(
       `correction-form: no "id: reason" field in ${CORRECTION_TEMPLATE_PATH}. /report/ ` +
@@ -151,7 +153,7 @@ function reasonField(src: string): string {
  * field type is checked rather than assumed, at build time, where it is loud.
  */
 function assertPrefillable(field: string): void {
-  const type = /^[ \t]*-[ \t]+type:[ \t]*(\S+)[ \t]*(?:#.*)?$/m.exec(field)?.[1];
+  const type = /^[ \t]*-[ \t]+type:[ \t]*(["']?)([A-Za-z0-9_-]+)\1[ \t]*(?:#.*)?$/m.exec(field)?.[2];
   if (type !== 'input') {
     throw new Error(
       `correction-form: the "reason" field in ${CORRECTION_TEMPLATE_PATH} is ` +
@@ -230,7 +232,7 @@ function readReasonOptions(src: string): string[] {
  * the page asserting a count the form does not ask for.
  */
 function countRequiredConfirmations(src: string): number {
-  const anchor = src.search(/^[ \t]*id:[ \t]*confirmations[ \t]*(?:#.*)?$/m);
+  const anchor = src.search(/^[ \t]*id:[ \t]*(["']?)confirmations\1[ \t]*(?:#.*)?$/m);
   if (anchor < 0) return 0;
   const bounds = [...src.matchAll(/^[ \t]*-[ \t]+type:[ \t]*\S+[ \t]*(?:#.*)?$/gm)].map(
     (m) => m.index!,

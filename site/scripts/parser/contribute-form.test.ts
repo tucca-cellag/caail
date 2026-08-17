@@ -90,6 +90,25 @@ describe('readFields', () => {
     ]);
   });
 
+  it('sees a field whose id and type are quoted, which YAML treats as identical', () => {
+    // A quoted id made the whole field invisible, taking its `required` flag with it — the
+    // exact regression assertRequiredCovered exists to stop, under a spelling YAML considers
+    // the same. The quoted type was the mirror: it captured `"input"` with the quotes and
+    // reported a perfectly prefillable field as unprefillable.
+    const src = [
+      '  - type: "input"',
+      '    id: "species"',
+      '    validations:',
+      '      required: true',
+    ].join('\n');
+    expect(readFields(src)).toEqual([{ id: 'species', type: 'input', required: true }]);
+  });
+
+  it('throws on a non-markdown field whose id it cannot parse, rather than skipping it', () => {
+    const src = ['  - type: dropdown', '    attributes:', '      label: No id here'].join('\n');
+    expect(() => readFields(src)).toThrow(/carries no id this reader can parse/);
+  });
+
   it('still sees a field whose keys carry trailing comments', () => {
     // A `[ \t]*$` anchor made this field vanish entirely, taking its required flag with it.
     const src = [
@@ -154,7 +173,24 @@ describe('readClaims', () => {
       '`name`, `url`, `category`, `summary`,\n\n`notes`',
     );
     expect(split).not.toBe(SKILL);
-    expect(() => readClaims(split)).toThrow(/split across a blank line/);
+    expect(() => readClaims(split)).toThrow(/continues after a break/);
+  });
+
+  it('throws when the list resumes after an intervening paragraph of prose', () => {
+    // The shape the earlier guard did not scan: it only inspected the paragraph immediately
+    // after the list, so `list / prose / more list` dropped its tail in silence.
+    const interrupted = SKILL.replace(
+      '`paper_title`, `authors`, `year`, `venue`, `doi`, `code_url`, `notes`',
+      '`paper_title`, `authors`, `year`, `venue`, `doi`, `notes`\n\nAnd also, less commonly:\n\n`code_url`',
+    );
+    expect(interrupted).not.toBe(SKILL);
+    expect(() => readClaims(interrupted)).toThrow(/continues after a break/);
+  });
+
+  it('does not mistake the next claim\'s own list for a stray continuation', () => {
+    // The scan window has to stop at the next `(template=…)` intro, or every later list in the
+    // file reads as a stray and the committed skill itself would fail.
+    expect(() => readClaims(SKILL)).not.toThrow();
   });
 
   it('throws on a continuation line carrying a word, rather than dropping its tail', () => {
