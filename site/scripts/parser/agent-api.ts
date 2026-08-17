@@ -544,7 +544,21 @@ export function serializeApiFile(name: string, body: unknown): string {
   // minified object per line, which is valid JSON and stays reviewable in a diff.
   const rest = JSON.stringify({ ...(body as object), [key]: [] }, null, 2);
   const lines = rows.map((r) => '    ' + JSON.stringify(r)).join(',\n');
-  return rest.replace(`"${key}": []`, `"${key}": [\n${lines}\n  ]`) + '\n';
+
+  // The replacement is a FUNCTION, not a string, and that is load-bearing rather than
+  // stylistic. Given a string, `replace` scans it for `$$`, `$&`, "$`" and `$'` and expands
+  // them (ECMA-262 GetSubstitution) — and this replacement is the stringified corpus, so a
+  // dollar sign in any title, tool name or URL would be interpreted. A callable replacement
+  // is never scanned, which closes the whole class rather than escaping one case.
+  //
+  // Never realised: no row in the corpus has ever carried a dollar sign, so nothing wrong
+  // was ever served and no artifact needed repairing. Do not go looking for one.
+  //
+  // Worth knowing why no existing check would have caught it either, had one arrived: `$$`
+  // yields VALID JSON with a silently wrong value, so it would pass the schema validation,
+  // the round-trip parse and the CI sync guard alike — the last because regeneration is
+  // deterministic, so the committed and regenerated copies would be corrupt identically.
+  return rest.replace(`"${key}": []`, () => `"${key}": [\n${lines}\n  ]`) + '\n';
 }
 
 /** Write the built files into `apiDir`, creating it if needed. */

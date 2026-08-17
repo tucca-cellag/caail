@@ -488,6 +488,36 @@ describe('the compact indexes', () => {
     expect(rowLines).toHaveLength(papers.references.length);
   });
 
+  it('emits a $ in row data literally, rather than as a replacement directive', () => {
+    // `String.prototype.replace` given a STRING replacement expands `$$`, `$&`, "$`" and
+    // `$'` inside that replacement (ECMA-262 GetSubstitution). The replacement here is the
+    // stringified corpus rows, so a dollar sign in any title, tool name or URL would be
+    // interpreted. The pattern is a plain string with no capture groups, which is exactly
+    // why the mechanism reads as inert and the two-arg form looked safe. It was caught
+    // while still latent — no corpus row has ever carried one — so this guards an entry
+    // nobody has authored yet rather than repairing something that shipped.
+    //
+    // The oracle has to be the SOURCE STRING, not the shape of the output. `$$` yields
+    // valid JSON that parses, validates against the published schema, and regenerates
+    // byte-identically under the CI sync guard, so every check the repo already had would
+    // pass on a corrupted title. Only comparing back to what was authored catches it.
+    const roundTrip = (titles: string[]) => {
+      const rows = titles.map((title, i) => ({ id: i + 1, title }));
+      const text = serializeApiFile('papers-index.json', { count: rows.length, references: rows });
+      const parsed = JSON.parse(text) as { references: { title: string }[] };
+      return parsed.references.map((r) => r.title);
+    };
+
+    // `$$` gets its own assertion, serialised alone, because it is the only one of the four
+    // that stays VALID JSON when mishandled. Bundled with the others it would never be
+    // reached: `$&` throws in JSON.parse first, so a fix that addressed only the noisy
+    // sequences would turn a combined test green while the silent corruption survived.
+    expect(roundTrip(['Cost $$ per litre'])).toEqual(['Cost $$ per litre']);
+
+    const noisy = ['A $& B', "Media $' design", 'Before $` after'];
+    expect(roundTrip(noisy)).toEqual(noisy);
+  });
+
   it('degrades instead of throwing ahead of the validator', () => {
     // These builders run before assertValid. Throwing here would replace "catalog.json
     // failed its schema", which names the file and the key, with a bare TypeError that
