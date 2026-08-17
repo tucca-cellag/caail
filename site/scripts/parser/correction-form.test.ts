@@ -115,6 +115,21 @@ describe('buildCorrectionForm against the committed template', () => {
       expect(reason.value.length).toBeGreaterThan(3);
     }
   });
+
+  it('is unmoved by trailing YAML comments on the lines it anchors on', () => {
+    // The sibling reader (contribute-form.ts) hit this as a real defect: an intolerant `$`
+    // made a commented field vanish along with its `required` flag. Here it is quieter and
+    // worse, because requiredConfirmations would return a wrong number rather than throw.
+    const commented = buildEdited((s) =>
+      s
+        .replace('    id: reason', '    id: reason # the error class')
+        .replace('    id: confirmations', '    id: confirmations # keep last')
+        .replace(/^ {10}required: true$/m, '          required: true # must tick'),
+    )();
+    expect(commented.reasons.map((r) => r.value)).toEqual(form.reasons.map((r) => r.value));
+    expect(commented.requiredConfirmations).toBe(form.requiredConfirmations);
+    expect(commented.requiredConfirmations).toBeGreaterThan(0);
+  });
 });
 
 describe('buildCorrectionForm fails loudly when the template drifts', () => {

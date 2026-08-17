@@ -83,8 +83,15 @@ const PREFILLABLE_TYPES: readonly string[] = ['input', 'textarea'];
  * This is a real exemption rather than documentation. {@link assertRequiredCovered} covers every
  * required field regardless of type, so without this entry the committed `confirmations` field
  * would be reported as unaccounted for.
+ *
+ * Matched on type as well as id, because the whole justification above is about the field being a
+ * confirmation CHECKBOX. On id alone, a template declaring a required `input` named `confirmations`
+ * would inherit an exemption that reasons about something else entirely, and its blank required box
+ * would reach a contributor unreported.
  */
-const UNPREFILLED_BY_DESIGN: readonly string[] = ['confirmations'];
+const UNPREFILLED_BY_DESIGN: readonly { id: string; type: string }[] = [
+  { id: 'confirmations', type: 'checkboxes' },
+];
 
 export const SKILL_PATH: string = fileURLToPath(
   new URL('../../../plugin-contribute/skills/caail-contribute/SKILL.md', import.meta.url),
@@ -243,6 +250,12 @@ export function readClaims(skillSrc: string, skillPath: string = SKILL_PATH): Te
   // match, and a template that silently stopped matching looks exactly like a template the skill
   // never mentioned. Deriving the expected set from the prose independently is what turns a
   // dropped claim from invisible into a build failure.
+  //
+  // The scan is deliberately blunt: any `template=<x>.yml` counts, including one inside a sentence
+  // telling the reader NOT to use that template. Narrowing it to the claim intros would make the
+  // check circular and worthless. The cost is that naming a deliberately-uncomposed template in
+  // that literal form trips the build, so the error below offers dropping the `template=` form as
+  // a remedy rather than only deleting the sentence.
   const mentioned = new Set(
     [...skillSrc.matchAll(/template=([A-Za-z0-9._-]+\.yml)/g)].map((m) => m[1]!),
   );
@@ -252,7 +265,9 @@ export function readClaims(skillSrc: string, skillPath: string = SKILL_PATH): Te
       `contribute-form: ${skillPath} mentions the template(s) ` +
         `${uncovered.map((t) => `"${t}"`).join(', ')} but declares no prefillable parameters ` +
         `for them, so nothing reconciles what it composes against those forms. Either add the ` +
-        `list, or stop naming the template.`,
+        `list, or — if the skill names that template precisely to say it does NOT compose for ` +
+        `it — refer to it without the literal "template=<name>" form, which is what this check ` +
+        `scans for.`,
     );
   }
 
@@ -327,8 +342,10 @@ function assertManualIsUnprefillable(claim: TemplateClaim, fields: readonly Form
  * either one.
  */
 function assertRequiredCovered(claim: TemplateClaim, fields: readonly FormField[]): void {
-  const handled = new Set([...claim.prefill, ...claim.manual, ...UNPREFILLED_BY_DESIGN]);
-  const stranded = fields.filter((f) => f.required && !handled.has(f.id));
+  const handled = new Set([...claim.prefill, ...claim.manual]);
+  const exempt = (f: FormField): boolean =>
+    UNPREFILLED_BY_DESIGN.some((e) => e.id === f.id && e.type === f.type);
+  const stranded = fields.filter((f) => f.required && !handled.has(f.id) && !exempt(f));
   if (stranded.length > 0) {
     throw new Error(
       `contribute-form: ${claim.template} requires ` +

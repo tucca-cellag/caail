@@ -80,9 +80,18 @@ export interface CorrectionForm {
   readonly requiredConfirmations: number;
 }
 
-/** Every `id: <name>` in the document. Field ids are a bare word by GitHub's own schema. */
+/**
+ * Every `id: <name>` in the document. Field ids are a bare word by GitHub's own schema.
+ *
+ * A trailing `# comment` is tolerated here and on every other line anchor in this module.
+ * contribute-form.ts, the sibling that reconciles the caail-contribute skill against these same
+ * templates, hit this as a real defect: an intolerant `$` made a commented field vanish from the
+ * model along with its `required` flag, silently disabling every check that depended on it. Here
+ * the same slip is quieter and therefore worse — `countRequiredConfirmations` would return a
+ * WRONG NUMBER with no throw, which is exactly what its own docstring says must not happen.
+ */
 function readFieldIds(src: string): string[] {
-  return [...src.matchAll(/^\s*id:\s*([A-Za-z0-9_-]+)\s*$/gm)].map((m) => m[1]!);
+  return [...src.matchAll(/^[ \t]*id:[ \t]*([A-Za-z0-9_-]+)[ \t]*(?:#.*)?$/gm)].map((m) => m[1]!);
 }
 
 /**
@@ -108,7 +117,7 @@ function readFieldIds(src: string): string[] {
  * caller that did not would otherwise slice from index -1.
  */
 function reasonField(src: string): string {
-  const anchor = src.search(/^[ \t]*id:[ \t]*reason[ \t]*$/m);
+  const anchor = src.search(/^[ \t]*id:[ \t]*reason[ \t]*(?:#.*)?$/m);
   if (anchor < 0) {
     throw new Error(
       `correction-form: no "id: reason" field in ${CORRECTION_TEMPLATE_PATH}. /report/ ` +
@@ -118,7 +127,9 @@ function reasonField(src: string): string {
   }
   // Every field in the form body opens with `- type: <kind>`, which is what separates one
   // from the next regardless of how its own keys are ordered inside it.
-  const bounds = [...src.matchAll(/^[ \t]*-[ \t]+type:[ \t]*\S+[ \t]*$/gm)].map((m) => m.index!);
+  const bounds = [...src.matchAll(/^[ \t]*-[ \t]+type:[ \t]*\S+[ \t]*(?:#.*)?$/gm)].map(
+    (m) => m.index!,
+  );
   const start = bounds.filter((i) => i <= anchor).pop();
   if (start === undefined) {
     throw new Error(
@@ -140,7 +151,7 @@ function reasonField(src: string): string {
  * field type is checked rather than assumed, at build time, where it is loud.
  */
 function assertPrefillable(field: string): void {
-  const type = /^[ \t]*-[ \t]+type:[ \t]*(\S+)[ \t]*$/m.exec(field)?.[1];
+  const type = /^[ \t]*-[ \t]+type:[ \t]*(\S+)[ \t]*(?:#.*)?$/m.exec(field)?.[1];
   if (type !== 'input') {
     throw new Error(
       `correction-form: the "reason" field in ${CORRECTION_TEMPLATE_PATH} is ` +
@@ -219,12 +230,14 @@ function readReasonOptions(src: string): string[] {
  * the page asserting a count the form does not ask for.
  */
 function countRequiredConfirmations(src: string): number {
-  const anchor = src.search(/^[ \t]*id:[ \t]*confirmations[ \t]*$/m);
+  const anchor = src.search(/^[ \t]*id:[ \t]*confirmations[ \t]*(?:#.*)?$/m);
   if (anchor < 0) return 0;
-  const bounds = [...src.matchAll(/^[ \t]*-[ \t]+type:[ \t]*\S+[ \t]*$/gm)].map((m) => m.index!);
+  const bounds = [...src.matchAll(/^[ \t]*-[ \t]+type:[ \t]*\S+[ \t]*(?:#.*)?$/gm)].map(
+    (m) => m.index!,
+  );
   const start = bounds.filter((i) => i <= anchor).pop() ?? 0;
   const field = src.slice(start, bounds.find((i) => i > start) ?? src.length);
-  return (field.match(/^[ \t]*required:[ \t]*true[ \t]*$/gm) ?? []).length;
+  return (field.match(/^[ \t]*required:[ \t]*true[ \t]*(?:#.*)?$/gm) ?? []).length;
 }
 
 /**

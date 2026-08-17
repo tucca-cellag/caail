@@ -265,6 +265,13 @@ describe('verifyContributeForms', () => {
     expect(run).not.toThrow();
   });
 
+  it('does not extend the confirmations exemption to a field of another type', () => {
+    // The exemption is justified entirely by the field being a confirmation CHECKBOX. Matching on
+    // id alone would hand that reasoning to a required input, whose blank box does reach someone.
+    const run = stage({ template: ['resource.yml', appendField('input', 'confirmations', true)] });
+    expect(run).toThrow(/requires "confirmations" \(type: input\)/);
+  });
+
   it('exempts only the confirmations field, not required checkboxes generally', () => {
     // Proves UNPREFILLED_BY_DESIGN is load-bearing and narrow: the committed `confirmations`
     // field is required checkboxes and passes, while a second required checkboxes field does not.

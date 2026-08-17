@@ -36,6 +36,12 @@ citing in passing, or anything you inferred rather than read.
 Fetch the index endpoints, not the full ones. `papers.json` and `catalog.json` are over 500 KB and
 a fetch tool that summarises will answer confidently from the fragment it kept.
 
+**Then check you got the whole file, because a smaller one can truncate too.** Both index endpoints
+carry a `count` before their rows, and a `truncationNote` saying what to do. Compare the rows you
+actually parsed against `count`. Fewer means you are holding part of the corpus, so you have not
+established anything: say which check you could not complete, and offer no suggestion from it. This
+is the cheapest way to avoid the false "CAAIL is missing this" that costs a stranger their goodwill.
+
 | Kind | Fetch | Match on |
 |---|---|---|
 | Paper / preprint | `https://raw.githubusercontent.com/tucca-cellag/caail/main/site/public/api/papers-index.json` | DOI first, then title, then first author + year |
