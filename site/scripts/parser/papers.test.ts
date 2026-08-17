@@ -241,7 +241,7 @@ describe('buildPapersModel — real Papers.md', () => {
     // whole thing on failure and buries the one line saying what to do about it.
     const src = readFileSync(PAPERS_MD_PATH, 'utf8');
     expect(
-      src.includes('> **Correction**: https://doi.org/10.1093/biomethods/bpaf076'),
+      src.includes(`> **Correction**: https://doi.org/${CORRECTION_DOI}`),
       "ref 289 no longer carries its correction blockquote, so the rest of this test proves nothing: either restore it, or retire this guard and the post-publication-notice paragraphs in CLAUDE.md and CONTRIBUTING.md with it",
     ).toBe(true);
 
@@ -265,7 +265,7 @@ describe('buildPapersModel — real Papers.md', () => {
       references: model.references.filter((r) => r.doi !== CORRECTION_DOI),
     });
     expect(
-      searchable.includes('bpaf076'),
+      searchable.includes(CORRECTION_DOI),
       "ref 289's correction reached the parsed model: #202 has landed, so rewrite the post-publication-notice paragraphs in CLAUDE.md and CONTRIBUTING.md",
     ).toBe(false);
   });
@@ -284,12 +284,29 @@ describe('buildPapersModel — real Papers.md', () => {
   it('separates every multi-label blockquote with a blank line', () => {
     const lines = readFileSync(PAPERS_MD_PATH, 'utf8').split('\n');
 
-    /** A `> **…` line belongs to a citation if the nearest non-blank line above
-     *  it is either the `<a id="N">` paragraph or another such blockquote. */
+    // Whitespace-tolerant, matching every other anchor matcher in the codebase
+    // (extract.ts, emit's isRefPara, the parser's ANCHOR_OPEN_RE). `<a  id="291">`
+    // is a valid reference to all of them, and a startsWith('<a id=') here would
+    // classify its blockquotes as unattached and miss a genuine run-on.
+    const ANCHOR_RE = /^<a\s+id="\d+">/;
+
+    /** Walks to the TOP of this blockquote run — over the blank lines the
+     *  convention puts between labels — and asks whether the run as a whole
+     *  hangs off an `<a id="N">` paragraph. Checking only one line back would
+     *  call the middle lines of a 3-or-more-line prose callout "attached",
+     *  because their predecessor is itself a `> **` line. */
     const attachedToCitation = (i: number): boolean => {
-      let j = i - 1;
-      while (j >= 0 && lines[j].trim() === '') j--;
-      return j >= 0 && (lines[j].startsWith('<a id=') || lines[j].startsWith('> **'));
+      let j = i;
+      for (;;) {
+        let k = j - 1;
+        while (k >= 0 && lines[k].trim() === '') k--;
+        if (k < 0) return false;
+        if (lines[k].startsWith('> **')) {
+          j = k;
+          continue;
+        }
+        return ANCHOR_RE.test(lines[k]);
+      }
     };
 
     const runOn = lines.flatMap((line, i) => {
