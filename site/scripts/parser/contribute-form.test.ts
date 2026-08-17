@@ -145,6 +145,33 @@ describe('readClaims', () => {
     expect(paper.prefill).toContain('notes');
   });
 
+  it('reads a parameter list split across a blank line', () => {
+    // A wrap and a paragraph break both truncate the TAIL, which is where the optional
+    // parameters live. `notes` is optional on resource.yml, so nothing downstream rescues it:
+    // the skill would go on setting a `notes=` parameter that a later rename made dead.
+    const split = SKILL.replace(
+      '`name`, `url`, `category`, `summary`, `notes`',
+      '`name`, `url`, `category`, `summary`,\n\n`notes`',
+    );
+    expect(split).not.toBe(SKILL);
+    const resource = readClaims(split).find((c) => c.template === 'resource.yml')!;
+    expect(resource.prefill).toContain('notes');
+  });
+
+  it('does not absorb the paragraph after the list when no blank line separates them', () => {
+    // The paragraph following the paper list opens "**Set `title` as well.**", so a reader that
+    // ran on would demand a field id `title` from paper.yml — which RESERVED_FIELD_IDS forbids,
+    // sending the maintainer to fix the wrong file over a whitespace slip in the skill.
+    const joined = SKILL.replace(
+      '`resource_type`\n\n**Set `title` as well.**',
+      '`resource_type`\n**Set `title` as well.**',
+    );
+    expect(joined).not.toBe(SKILL);
+    const resource = readClaims(joined).find((c) => c.template === 'resource.yml')!;
+    expect(resource.manual).toEqual(['resource_type']);
+    expect(resource.manual).not.toContain('title');
+  });
+
   it('stops the parameter list at the blank line, not at the next paragraph', () => {
     const paper = readClaims(SKILL).find((c) => c.template === 'paper.yml')!;
     // Would pick up prose words from the following paragraph if the block ran on.

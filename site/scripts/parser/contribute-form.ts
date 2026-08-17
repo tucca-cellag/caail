@@ -159,6 +159,19 @@ export function readFields(src: string): FormField[] {
  * claim is only an error when NO claim is found at all, a second template could have gone
  * unchecked forever without anything saying so.
  */
+/**
+ * Is this line part of a parameter list, rather than the prose that follows one?
+ *
+ * True when the line is code spans and separators and nothing else. That is the shape of every
+ * list the skill declares, and it is not the shape of any sentence around them, including the
+ * sentences that mention a parameter in passing: those carry words outside the backticks.
+ */
+function isParameterLine(line: string): boolean {
+  const spans = [...line.matchAll(/`[A-Za-z0-9_-]+`/g)];
+  if (spans.length === 0) return false;
+  return line.replace(/`[A-Za-z0-9_-]+`/g, '').trim().replace(/[,;]/g, '').trim() === '';
+}
+
 function readClaimLists(
   skillSrc: string,
   pattern: string,
@@ -178,16 +191,30 @@ function readClaimLists(
 
   for (const m of skillSrc.matchAll(intro)) {
     const template = m[1]!;
-    // The whole paragraph, not just its first line. Reading one line had the same reflow hazard
-    // the intro bound above was widened for, and one step worse: a wrapped list drops only its
-    // TAIL, which is where the optional parameters sit (`code_url`, `notes`). Optional means
-    // assertRequiredCovered does not rescue them, so a later rename would ship a parameter
-    // GitHub ignores and the paper's code repo would silently stop reaching the issue.
+    // Take every line that IS a parameter list, and stop at the first line that is not.
+    //
+    // Two earlier rules each closed one hazard and left the other open, and both failures land
+    // on the list's TAIL, which is where the optional parameters sit (`code_url`, `notes`).
+    // Optional means assertRequiredCovered never rescues them, so the loss is total and silent:
+    //
+    //   - "first non-empty line only" dropped everything after a WRAP.
+    //   - "up to the first blank line" closed the wrap but not a PARAGRAPH BREAK, and it also
+    //     absorbed the following line when no blank line separated them. That second one was
+    //     worse than it sounds: the paragraph after the paper list begins "**Set `title` as
+    //     well.**", so deleting one blank line made the module demand a field id named `title`
+    //     from paper.yml, which RESERVED_FIELD_IDS forbids on the next check down.
+    //
+    // Shape is the right test rather than position: a parameter line is code spans and
+    // separators and nothing else, so prose ends the block wherever it sits and a blank line
+    // does not, which is what lets the list be reflowed or split freely.
     const after = skillSrc.slice(m.index! + m[0].length).split('\n');
-    const first = after.findIndex((l) => l.trim() !== '');
     const block: string[] = [];
-    for (const l of first < 0 ? [] : after.slice(first)) {
-      if (l.trim() === '') break;
+    for (const l of after) {
+      if (l.trim() === '') {
+        if (block.length === 0) continue; // leading blank lines, before the list starts
+        continue; // a break INSIDE the list; the shape test below decides where it ends
+      }
+      if (!isParameterLine(l)) break;
       block.push(l);
     }
     const ids = [...block.join(' ').matchAll(/`([A-Za-z0-9_-]+)`/g)].map((p) => p[1]!);

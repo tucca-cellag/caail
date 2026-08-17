@@ -22,6 +22,20 @@ on:
       # offering an error class that no longer exists, until some unrelated push happens to
       # trigger a build.
       - .github/ISSUE_TEMPLATE/**
+      # `plugin-contribute/**` is deliberately NOT here, and the reason differs from the
+      # near-identical note in test.yml -- read both before "fixing" either.
+      #
+      # `pnpm build` does hard-depend on it: generateData calls verifyContributeForms() first,
+      # so drift between the skill and the issue templates fails the build. But adding a trigger
+      # here would buy no verification, only a deploy: lint-papers.yml and test.yml both filter
+      # on that path, on pull_request AND on push to main, so drift is caught at the moment it
+      # lands and attributed to the diff that caused it. Nothing under plugin-contribute/ is
+      # published to the site, so a trigger would spend a full build, a Lighthouse run and a
+      # Pages deploy to ship a byte-identical site.
+      #
+      # The residual risk is real but narrow: drift reaching main by a route that skips the PR
+      # checks would fail the NEXT unrelated site push at the build step. That push would find
+      # lint-papers already red on the offending commit, which is where the attribution lives.
   workflow_dispatch:
 
 permissions:
