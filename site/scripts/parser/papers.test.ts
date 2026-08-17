@@ -7,6 +7,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -218,16 +219,25 @@ describe('buildPapersModel — real Papers.md', () => {
   // Pins the claim CLAUDE.md and CONTRIBUTING.md both make about post-publication
   // notices: they reach GitHub and llms-full.txt but never the parsed model, because
   // parseReferences selects blockquote labels by name and keeps only Code/Data.
-  // Ref 289 carries `> **Code**: …` and `> **Correction**: …`, so it is the only
-  // live example. When tucca-cellag/caail#202 teaches the parser the label, this
-  // fails, and the two docs need their paragraph rewritten in the same change.
+  //
+  // Ref 289 is the only reference carrying such a notice, so the source assertion
+  // comes first: without it the rest passes vacuously the day someone removes the
+  // notice, and goes on confirming a claim that nothing is testing any more.
+  //
+  // When tucca-cellag/caail#202 teaches the parser the label it must also widen the
+  // schema to carry it — buildPapersModel ends in PapersDataSchema.parse(), which
+  // strips unknown keys — and this test then fails. Rewrite both paragraphs with it.
   it('drops a post-publication notice label, keeping only Code/Data (#202)', () => {
+    const src = readFileSync(PAPERS_MD_PATH, 'utf8');
+    expect(src).toContain(
+      '> **Correction**: https://doi.org/10.1093/biomethods/bpaf076',
+    );
+
     const ref289 = model.references.find((r) => r.id === 289)!;
     expect(ref289.codeUrl).toBe('https://github.com/faezesarlakifar/AllerTrans');
     expect(ref289.dataUrl).toBeNull();
-    // The correction's own DOI must not reach ANY field of the parsed reference.
-    // Asserting on the whole serialized ref rather than a named field is what
-    // makes this fail when #202 adds one, whatever that new field is called.
+    // Asserted over the whole serialized ref rather than a named field, so it
+    // still fires whatever #202 ends up calling the new one.
     expect(JSON.stringify(ref289)).not.toContain('bpaf076');
   });
 
