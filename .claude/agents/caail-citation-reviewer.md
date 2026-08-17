@@ -43,13 +43,22 @@ blockquote — plus the DOI of each, and the matrix row each was placed in.
    - **A post-publication-notice label** (`> **Correction**:`, `> **Erratum**:`,
      `> **Expression of concern**:`) — resolving is not enough, because the label
      is itself a claim about what the publisher did. Fetch the notice's Crossref
-     record and require **both** that its title carries the publisher's own word
-     for the notice, and that it names *this* paper. A notice the publisher
-     titled "Expression of Concern" filed under `Correction` tells the reader an
-     error was fixed when nothing was, and a correction to a *different* article
-     in the same issue resolves just as cleanly as the right one. Both are
-     CONTRADICTED. A `> **Retraction**:` label is outside the schema (`CLAUDE.md`
-     excludes it deliberately) and is CONTRADICTED on sight.
+     record and establish two things:
+     - **The kind of notice.** The label must be the publisher's own word for it.
+       A notice titled "Expression of Concern" filed under `Correction` tells the
+       reader an error was fixed when nothing was.
+     - **That it targets *this* paper.** A correction to a different article in
+       the same issue resolves just as cleanly as the right one.
+
+     Either can be evidenced by the title or by the record's linkage fields
+     (`update-to`, `relation.is-correction-of`), whichever the publisher
+     populated. **Do not require the title to carry both**: many publishers
+     deposit notices titled bare — "Erratum", "Correction" — and put the target in
+     `update-to`, so a title-only rule would mark valid entries CONTRADICTED, and
+     this reviewer gates them. When neither the title nor the linkage settles a
+     point, that point is UNVERIFIABLE rather than CONTRADICTED. A
+     `> **Retraction**:` label is outside the schema (`CLAUDE.md` excludes it
+     deliberately) and is CONTRADICTED on sight.
 3. **Matrix placement** — given what the paper actually is, is the assigned
    method row defensible? Flag it if not.
 

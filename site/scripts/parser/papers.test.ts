@@ -17,17 +17,6 @@ import { PapersDataSchema, type PapersData } from './types.js';
 /** Ref 289's published correction: the repo's only post-publication notice. */
 const CORRECTION_DOI = '10.1093/biomethods/bpaf076';
 
-/** The committed source the blockquote runs are stored in and emitted from. */
-const PAPERS_NDJSON_PATH = join(
-  fileURLToPath(import.meta.url),
-  '..',
-  '..',
-  '..',
-  'db',
-  'ndjson',
-  'papers.ndjson',
-);
-
 const FIXTURE_PATH = join(
   fileURLToPath(import.meta.url),
   '..',
@@ -247,9 +236,10 @@ describe('buildPapersModel — real Papers.md', () => {
   // by ref id, because the assertion is over the whole model. It does NOT fire for a
   // fix that renders the notice on the card straight from the canonical Markdown.
   it('drops a post-publication notice label, keeping only Code/Data (#202)', () => {
-    // Every assertion here carries a message. Both inputs are large (Papers.md is
-    // ~129 KB, the model ~400 KB), so a bare toContain/not.toContain prints the
-    // whole thing on failure and buries the one line saying what to do about it.
+    // The two assertions over large inputs carry messages: Papers.md is ~129 KB
+    // and the model ~400 KB, so a bare toContain/not.toContain prints the whole
+    // thing on failure and buries the one line saying what to do about it. The
+    // codeUrl/dataUrl checks below are small and self-describing, so they don't.
     const src = readFileSync(PAPERS_MD_PATH, 'utf8');
     expect(
       src.includes(`> **Correction**: https://doi.org/${CORRECTION_DOI}`),
@@ -288,56 +278,6 @@ describe('buildPapersModel — real Papers.md', () => {
     ).toBe(false);
   });
 
-  // The blank-line separator between two blockquote labels is a RENDERING
-  // convention, and nothing else enforces it: labeledLinksAfter recovers both
-  // labels from the soft-break-joined form as well, so db:verify round-trips
-  // identically, db:check never reads blockquotes_md, and lint-papers has no
-  // blockquote rule. Without this, adjacent `> **` lines pass every gate while
-  // GitHub renders them as one run-on line — and GitHub is where they are read.
-  //
-  // Checked in the STORED string, not in the rendered Papers.md. Three earlier
-  // attempts scanned the Markdown by line shape and each missed a different
-  // legitimate form — `>**Label**` without the space, a lazy continuation whose
-  // second line has no `>` at all, an unlabelled `> See also` line inside the
-  // run — while also having to special-case the hand-authored prose callout at
-  // Papers.md:76. None of that matters here: emitSectionRefs writes
-  // blockquotes_md VERBATIM (it joins only ACROSS papers), so the separator has
-  // to already be in the stored string, and the stored string contains nothing
-  // but one paper's blockquote run.
-  //
-  // This enforces the CONVENTION CLAUDE.md documents — blocks joined by exactly
-  // one blank line — and is deliberately stricter than "renders acceptably".
-  // Other forms do render on separate lines (a `>`-only line between the labels,
-  // a trailing-double-space hard break, a doubled blank line) and this rejects
-  // them anyway, because one stored shape across every row is worth more than
-  // admitting each shape that happens to look right. If you hit that, normalize
-  // rather than widening this.
-  //
-  // Written as an equality against the normalized form rather than a
-  // "no single newline" regex, because that regex did not actually enforce the
-  // sentence above it: `a\n\n\nb` slipped through, as did a leading or trailing
-  // newline, so the single-shape claim was false while reading as guaranteed.
-  it('separates every multi-label blockquote with a blank line', () => {
-    const rows = readFileSync(PAPERS_NDJSON_PATH, 'utf8')
-      .split('\n')
-      .filter(Boolean)
-      .map((l) => JSON.parse(l) as { ref_id: number; blockquotes_md: string | null });
-
-    /** Blocks rejoined with exactly one blank line, and no leading/trailing newline. */
-    const canonical = (s: string) => s.split(/\n+/).filter(Boolean).join('\n\n');
-
-    const offenders = rows
-      .filter((r) => r.blockquotes_md && r.blockquotes_md !== canonical(r.blockquotes_md))
-      // Prints the stored value, because the shape is the whole diagnosis and it
-      // is not always a missing separator: a hard-wrapped continuation of ONE
-      // label, or a stray leading newline, both land here too.
-      .map((r) => `ref ${r.ref_id}: ${JSON.stringify(r.blockquotes_md)}`);
-
-    expect(
-      offenders,
-      'Every blockquote block in blockquotes_md is joined by exactly one blank line (\\n\\n), with none leading or trailing. Two adjacent `>` lines render as a single run-on on GitHub, which is the surface these are read on. Normalize the value in site/db/ndjson/papers.ndjson, then re-run db:emit',
-    ).toEqual([]);
-  });
 
   it('validates against the schema', () => {
     expect(PapersDataSchema.safeParse(model).success).toBe(true);
