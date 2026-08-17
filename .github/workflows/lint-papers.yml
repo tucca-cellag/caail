@@ -32,6 +32,14 @@ on:
       # the corpus extraction scripts. docling_sections.test.py runs here because it
       # needs neither Zotero nor the network -- it reads committed heading fixtures.
       - .claude/skills/matrix-classification-audit/**
+      # the caail-contribute skill and the issue forms it composes URLs for. `pnpm parse`
+      # now ABORTS when the two disagree (contribute-form.ts), and the sync guard step
+      # below runs parse -- so without these two paths a skill-only or template-only
+      # change could reach main untested and then surface as a red "Agent API <-> corpus
+      # sync guard" on the next unrelated Papers.md PR, blaming a diff that did not cause
+      # it. Same class as the Taxonomy.md comment above.
+      - plugin-contribute/**
+      - .github/ISSUE_TEMPLATE/**
   push:
     branches:
       - main
@@ -65,6 +73,14 @@ on:
       # the corpus extraction scripts. docling_sections.test.py runs here because it
       # needs neither Zotero nor the network -- it reads committed heading fixtures.
       - .claude/skills/matrix-classification-audit/**
+      # the caail-contribute skill and the issue forms it composes URLs for. `pnpm parse`
+      # now ABORTS when the two disagree (contribute-form.ts), and the sync guard step
+      # below runs parse -- so without these two paths a skill-only or template-only
+      # change could reach main untested and then surface as a red "Agent API <-> corpus
+      # sync guard" on the next unrelated Papers.md PR, blaming a diff that did not cause
+      # it. Same class as the Taxonomy.md comment above.
+      - plugin-contribute/**
+      - .github/ISSUE_TEMPLATE/**
   workflow_dispatch:
 
 concurrency:

@@ -488,7 +488,6 @@ export function generateData(
   writeAgentApi(apiFiles, apiDir);
   publishSkillDoc(SKILL_DOC_PATH, join(apiDir, '..'));
 
-
   return {
     counts,
     papersRefs: model.references.length,
