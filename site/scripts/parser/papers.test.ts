@@ -242,10 +242,20 @@ describe('buildPapersModel — real Papers.md', () => {
     expect(ref289.codeUrl).toBe('https://github.com/faezesarlakifar/AllerTrans');
     expect(ref289.dataUrl).toBeNull();
     // Over the whole model, not just ref 289, so a top-level notices map trips it
-    // too. Asserted as a boolean rather than `expect(json).not.toContain(...)`,
-    // because the latter prints the entire serialized model (~400 KB) on failure
-    // and buries the one line telling you what to do about it.
-    const reachedModel = JSON.stringify(model).includes('bpaf076');
+    // too — but with the fields that legitimately carry citation text blanked
+    // first. A bare DOI suffix also matches any reference's own `raw`/`doi`, so
+    // without this, recording the correction as its own numbered entry one day
+    // would turn the test red and send a maintainer off to rewrite two paragraphs
+    // that were still entirely accurate. Misdirection is the expensive part.
+    //
+    // Asserted as a boolean rather than `expect(json).not.toContain(...)`, because
+    // the latter prints the whole serialized model (~400 KB) on failure and buries
+    // the one line saying what to do about it.
+    const searchable = JSON.stringify({
+      ...model,
+      references: model.references.map((r) => ({ ...r, raw: '', doi: '' })),
+    });
+    const reachedModel = searchable.includes('bpaf076');
     expect(
       reachedModel,
       'ref 289\'s correction DOI reached the parsed model: #202 has landed, so rewrite the post-publication-notice paragraphs in CLAUDE.md and CONTRIBUTING.md',
