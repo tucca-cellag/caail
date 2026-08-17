@@ -153,21 +153,24 @@ const statSentence = `Indexing ${stats.map((s) => `${s.n} ${s.label}`).join(', '
         left the homepage saying only that TUCCA *uses* CAAIL, which reads as a third-party
         tool TUCCA adopted, and ownership then survived only on /about.
 
-        The spaces inside the spans are deliberate. Word separation here must not depend on
-        `TuccaLockup`'s internal formatting: its anchor happens to emit whitespace around the
-        `aria-hidden` span today, so `textContent` reads correctly without them, but that is
-        incidental line-breaking in another component rather than anything this line controls.
-        Reformat or minify that file differently and the words run together in select-and-copy
-        and in the Pagefind index, where the `flex gap` between them does not exist.
+        The visually-hidden name is what makes the sentence a sentence outside the browser.
+        `TuccaLockup` renders the name as a background image on an `aria-hidden` span, so the
+        anchor contributes NO text — only whitespace — and the name reaches assistive tech
+        solely through its `aria-label`. Sighted rendering is fine and so is a screen reader,
+        but `textContent` and the Pagefind index both saw "A project of  and used in ...",
+        a sentence with its subject missing. Before the second span that read as merely
+        incomplete; after it, ungrammatical. It is `aria-hidden` so AT is not told twice, and
+        the trailing span can then say "its own" without ambiguity, because in extracted text
+        the antecedent is now literally present.
 
-        "TUCCA's own" rather than "its own": the nearest antecedent is a link whose visible
-        content is an image, so "its" can attach to CAAIL and claim CAAIL is used in CAAIL's
-        own R&D.
+        The spaces inside the spans are deliberate for the same class of reason: word
+        separation must not depend on `TuccaLockup`'s incidental line-breaking, which is
+        invisible to select-and-copy and to Pagefind where the `flex gap` does not exist.
 
         Deliberately unquantified — what CAAIL adds to an agent's answers is unmeasured
         (CAAIL-168), so "we use it" is assertable and "it works better" is not.
         The row is `flex-wrap`; the wrap was checked at 390 and 1440, not assumed. */}
-    <p class="hero-attrib"><span>A project of </span><TuccaLockup width={150} /><span> and used in TUCCA&rsquo;s own R&amp;D</span></p>
+    <p class="hero-attrib"><span>A project of </span><TuccaLockup width={150} /><span class="visually-hidden" aria-hidden="true">Tufts University Center for Cellular Agriculture</span><span> and used in its own R&amp;D</span></p>
   </nav>
 </section>
 

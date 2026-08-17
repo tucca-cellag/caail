@@ -57,11 +57,22 @@ export function parseHeroEyebrow(astro: string): string {
   return all[0][1].trim();
 }
 
-/** The BibTeX `title` field, with brace protection stripped. */
+/**
+ * The BibTeX `title` field, with brace protection stripped.
+ *
+ * Requires exactly one, for the same reason `parseHeroEyebrow` does: add a second
+ * BibTeX block (a per-version entry, say) and a first-match parser would silently
+ * check the wrong line and pass on a drifted page.
+ */
 export function parseBibtexTitle(ts: string): string {
-  const m = ts.match(/^\s*title\s*=\s*\{(.+)\},\s*$/m);
-  if (!m) throw new Error('citation.ts has no BibTeX `title = {...}` line — this guard cannot run');
-  return m[1].replace(/[{}]/g, '');
+  const all = [...ts.matchAll(/^\s*title\s*=\s*\{(.+)\},\s*$/gm)];
+  if (all.length !== 1) {
+    throw new Error(
+      `citation.ts has ${all.length} BibTeX \`title = {...}\` lines, expected exactly 1 — ` +
+        'this guard cannot tell which one titles the work',
+    );
+  }
+  return all[0][1].replace(/[{}]/g, '');
 }
 
 describe('the project title agrees everywhere it is written by hand', () => {
@@ -92,7 +103,12 @@ describe('the guard fails loudly rather than silently when a source is restructu
 
   it('rejects a missing BibTeX title line', () => {
     expect(() => parseBibtexTitle('export const X = `@misc{a, year = {2026},}`;')).toThrow(
-      /no BibTeX/,
+      /0 BibTeX/,
     );
+  });
+
+  it('rejects a second BibTeX title rather than silently checking the first', () => {
+    const two = '  title        = {{CAAIL}: A},\n  title        = {{CAAIL}: B},\n';
+    expect(() => parseBibtexTitle(two)).toThrow(/2 BibTeX/);
   });
 });
