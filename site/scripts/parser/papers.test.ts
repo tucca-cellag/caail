@@ -14,6 +14,9 @@ import { fileURLToPath } from 'node:url';
 import { buildPapersModel, PAPERS_MD_PATH } from './papers.js';
 import { PapersDataSchema, type PapersData } from './types.js';
 
+/** Ref 289's published correction: the repo's only post-publication notice. */
+const CORRECTION_DOI = '10.1093/biomethods/bpaf076';
+
 const FIXTURE_PATH = join(
   fileURLToPath(import.meta.url),
   '..',
@@ -233,32 +236,37 @@ describe('buildPapersModel — real Papers.md', () => {
   // by ref id, because the assertion is over the whole model. It does NOT fire for a
   // fix that renders the notice on the card straight from the canonical Markdown.
   it('drops a post-publication notice label, keeping only Code/Data (#202)', () => {
+    // Every assertion here carries a message. Both inputs are large (Papers.md is
+    // ~129 KB, the model ~400 KB), so a bare toContain/not.toContain prints the
+    // whole thing on failure and buries the one line saying what to do about it.
     const src = readFileSync(PAPERS_MD_PATH, 'utf8');
-    expect(src).toContain(
-      '> **Correction**: https://doi.org/10.1093/biomethods/bpaf076',
-    );
+    expect(
+      src.includes('> **Correction**: https://doi.org/10.1093/biomethods/bpaf076'),
+      "ref 289 no longer carries its correction blockquote, so the rest of this test proves nothing: either restore it, or retire this guard and the post-publication-notice paragraphs in CLAUDE.md and CONTRIBUTING.md with it",
+    ).toBe(true);
 
     const ref289 = model.references.find((r) => r.id === 289)!;
     expect(ref289.codeUrl).toBe('https://github.com/faezesarlakifar/AllerTrans');
     expect(ref289.dataUrl).toBeNull();
-    // Over the whole model, not just ref 289, so a top-level notices map trips it
-    // too — but with the fields that legitimately carry citation text blanked
-    // first. A bare DOI suffix also matches any reference's own `raw`/`doi`, so
-    // without this, recording the correction as its own numbered entry one day
-    // would turn the test red and send a maintainer off to rewrite two paragraphs
-    // that were still entirely accurate. Misdirection is the expensive part.
+
+    // Searched over the whole model, not just ref 289, so a sibling structure (a
+    // notices map keyed by ref id) trips it too.
     //
-    // Asserted as a boolean rather than `expect(json).not.toContain(...)`, because
-    // the latter prints the whole serialized model (~400 KB) on failure and buries
-    // the one line saying what to do about it.
+    // `raw` is deliberately KEPT in the search. Blanking it would open a blind
+    // spot in the exact claim this guard exists to pin: the Explorer renders the
+    // citation from `raw`, so a #202 that folds the notice in there would reach
+    // api/papers.json and the card while this stayed green and both paragraphs
+    // went silently false. What is excluded instead is narrower and cannot hide
+    // that: a reference whose OWN doi is the correction, which is the only
+    // legitimate way the string belongs in the model (someone one day giving the
+    // notice its own numbered entry).
     const searchable = JSON.stringify({
       ...model,
-      references: model.references.map((r) => ({ ...r, raw: '', doi: '' })),
+      references: model.references.filter((r) => r.doi !== CORRECTION_DOI),
     });
-    const reachedModel = searchable.includes('bpaf076');
     expect(
-      reachedModel,
-      'ref 289\'s correction DOI reached the parsed model: #202 has landed, so rewrite the post-publication-notice paragraphs in CLAUDE.md and CONTRIBUTING.md',
+      searchable.includes('bpaf076'),
+      "ref 289's correction reached the parsed model: #202 has landed, so rewrite the post-publication-notice paragraphs in CLAUDE.md and CONTRIBUTING.md",
     ).toBe(false);
   });
 
@@ -268,13 +276,35 @@ describe('buildPapersModel — real Papers.md', () => {
   // identically, db:check never reads blockquotes_md, and lint-papers has no
   // blockquote rule. Without this, adjacent `> **` lines pass every gate while
   // GitHub renders them as one run-on line — and GitHub is where they are read.
+  //
+  // Scoped to blockquotes attached to a citation, NOT every `> **` line in the
+  // file: Papers.md:76 is a hand-authored prose callout in the region db:emit
+  // preserves verbatim, and a future editorial callout written as two bolded
+  // blockquote lines is legitimate Markdown this must not reject.
   it('separates every multi-label blockquote with a blank line', () => {
     const lines = readFileSync(PAPERS_MD_PATH, 'utf8').split('\n');
-    const runOn = lines.flatMap((line, i) =>
-      line.startsWith('> **') && (lines[i + 1] ?? '').startsWith('> **')
-        ? [`Papers.md:${i + 2} "${lines[i + 1]}" follows "${line}" with no blank line`]
-        : [],
-    );
+
+    /** A `> **…` line belongs to a citation if the nearest non-blank line above
+     *  it is either the `<a id="N">` paragraph or another such blockquote. */
+    const attachedToCitation = (i: number): boolean => {
+      let j = i - 1;
+      while (j >= 0 && lines[j].trim() === '') j--;
+      return j >= 0 && (lines[j].startsWith('<a id=') || lines[j].startsWith('> **'));
+    };
+
+    const runOn = lines.flatMap((line, i) => {
+      const next = lines[i + 1] ?? '';
+      if (!line.startsWith('> **') || !next.startsWith('> **')) return [];
+      if (!attachedToCitation(i)) return [];
+      // Names the NDJSON, not Papers.md: Papers.md is generated, db:emit always
+      // joins blockquote blocks with a blank line, so the only way to author a
+      // run-on is a hand-joined blockquotes_md. Editing Papers.md would be
+      // reverted by the next emit and fail the sync guard instead.
+      return [
+        `${line} / ${next} run together (near Papers.md:${i + 2}); fix blockquotes_md in site/db/ndjson/papers.ndjson, not Papers.md`,
+      ];
+    });
+
     expect(runOn).toEqual([]);
   });
 

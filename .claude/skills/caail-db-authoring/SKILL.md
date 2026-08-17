@@ -122,10 +122,18 @@ re-tagging, corrections), use the full procedure below.
 2. **Make the change** — in the DB (`sqlite3 site/caail.db`) or, for a one-line change, by
    editing `site/db/ndjson/<table>.ndjson` directly and skipping to step 4.
    - **Add a paper:** insert `items('paper:N','paper','N')` + `papers(...)` with the full
-     citation markdown (including the `<a id="N">N</a>` anchor) in `raw`, `code_url`/`data_url`
-     if present; then insert its `matrix_cells` rows (one per method×area cell). **The matrix
-     rows and the reference must change together** — the #1 CAAIL error. A primary paper must
-     appear in ≥1 cell; a Review/Perspective goes in a non-`References` section and gets no cell.
+     citation markdown (including the `<a id="N">N</a>` anchor) in `raw`, and any trailing
+     labelled blockquotes in `blockquotes_md`; then insert its `matrix_cells` rows (one per
+     method×area cell). **The matrix rows and the reference must change together** — the #1
+     CAAIL error. A primary paper must appear in ≥1 cell; a Review/Perspective goes in a
+     non-`References` section and gets no cell.
+   - **Attach or edit a blockquote on an existing paper** (a `> **Code**:`, `> **Data**:`,
+     `> **Models**:`, or a post-publication notice such as `> **Correction**:`): update that
+     row's `blockquotes_md`. There is no per-label column — the whole `> …` run is stored
+     verbatim as one string, which is what stops an unmodelled label floating onto the
+     neighbouring paper on re-emit. **Join multiple labels with a blank line** (`\n\n`):
+     GitHub renders two adjacent `>` lines as one run-on, and `papers.test.ts` fails on it.
+     Label a notice with the publisher's own word for it, per `CLAUDE.md`.
    - **Add a tool/database:** insert `items` + `catalog(name,url,grp,body_md,ordinal)`; `name`
      is the inline markdown of the H3 link text, `body_md` the entry body.
    - **Add a curated dataset entry:** insert `items('ds:<slug>','dataset',…)` + `dataset_entries`
