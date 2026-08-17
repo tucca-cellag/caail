@@ -73,7 +73,7 @@ changed_paths() {
 # any pattern outside those three forms, since `path_matches` would silently
 # match nothing rather than erroring.
 LINT_PAPERS_PATHS='Papers.md Software.md Databases.md OtherResources.md Taxonomy.md Datasets/** CONTRIBUTING.md CLAUDE.md site/scripts/parser/** site/scripts/db/** site/db/** site/public/api/** site/public/setup.md plugin/skills/** skills/** .claude/skills/matrix-classification-audit/** plugin-contribute/** .github/ISSUE_TEMPLATE/**'
-TEST_PATHS='site/** workers/** *.md ResearchAreas/** Datasets/** Primers/** Methods/** .claude/hooks/** .claude/settings.json .github/workflows/test.yml .github/ISSUE_TEMPLATE/**'
+TEST_PATHS='site/** workers/** *.md ResearchAreas/** Datasets/** Primers/** Methods/** .claude/hooks/** .claude/settings.json .github/workflows/test.yml .github/ISSUE_TEMPLATE/** plugin-contribute/**'
 DOCS_PATHS='site/** *.md ResearchAreas/** Datasets/** Primers/** Methods/** .github/ISSUE_TEMPLATE/**'
 GUARDS_PATHS='.claude/hooks/** .claude/settings.json .claude/skills/caail-pr-wrapup/** .github/workflows/**'
 

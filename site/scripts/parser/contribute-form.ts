@@ -384,6 +384,16 @@ export function verifyContributeForms(
   skillPath: string = SKILL_PATH,
   templateDir: string = TEMPLATE_DIR,
 ): TemplateClaim[] {
+  // Checked rather than left to readFileSync, because this is now the FIRST thing `pnpm parse`
+  // does: relocating or renaming plugin-contribute/ would otherwise kill every site build and
+  // the lint-papers sync guard with a bare ENOENT naming no module and no reason.
+  if (!existsSync(skillPath)) {
+    throw new Error(
+      `contribute-form: no caail-contribute skill at ${skillPath}. That file is the only copy ` +
+        `of the parameter lists the composed issue URLs set, so there is nothing to reconcile ` +
+        `the issue templates against. If the plugin moved, update SKILL_PATH in this module.`,
+    );
+  }
   const claims = readClaims(readFileSync(skillPath, 'utf-8'), skillPath);
 
   for (const claim of claims) {

@@ -40,13 +40,17 @@ on:
       # a template-only edit triggered NO workflow at all, so the one change most likely
       # to break the composer was the one change nothing ran against.
       - .github/ISSUE_TEMPLATE/**
-      # NOTE on the caail-contribute skill, which is deliberately NOT listed here.
-      # `plugin-contribute/**` is the other half of the same agreement, and a skill-only edit
-      # that renames a parameter would ship a URL GitHub silently ignores. But that contract is
-      # enforced by `pnpm parse` (contribute-form.ts aborts on drift), and lint-papers.yml runs
-      # parse in its sync-guard step and DOES filter on that path. Listing it here as well would
-      # verify the same contract twice per PR and spend a full Astro build, a Chromium install
-      # and the axe suite on a prose edit -- exactly what guards.yml's header argues against.
+      # The caail-contribute skill. This IS the exception to the "skill prose has no test to
+      # run" note above, and the reason is worth stating because it was got wrong once here:
+      # `lint-papers.yml` also filters on this path and its sync-guard step runs `pnpm parse`,
+      # which aborts on drift -- so it looks like listing the path here only buys a second run
+      # of the same check. It does not. `contribute-form.test.ts` asserts strictly more than
+      # parse does: it pins exact SKILL.md prose, because every `stage({skill: ...})` scenario
+      # throws when its string edit matches nothing. Rewrapping one line of the resource.yml
+      # intro -- a legitimate prose reflow -- leaves `pnpm parse` green and fails two vitest
+      # cases. Without this path such a PR merges green and the next unrelated `site/**` PR
+      # inherits a red suite blaming a diff that did not cause it.
+      - plugin-contribute/**
   push:
     branches: [main]
     paths:
@@ -80,13 +84,17 @@ on:
       # a template-only edit triggered NO workflow at all, so the one change most likely
       # to break the composer was the one change nothing ran against.
       - .github/ISSUE_TEMPLATE/**
-      # NOTE on the caail-contribute skill, which is deliberately NOT listed here.
-      # `plugin-contribute/**` is the other half of the same agreement, and a skill-only edit
-      # that renames a parameter would ship a URL GitHub silently ignores. But that contract is
-      # enforced by `pnpm parse` (contribute-form.ts aborts on drift), and lint-papers.yml runs
-      # parse in its sync-guard step and DOES filter on that path. Listing it here as well would
-      # verify the same contract twice per PR and spend a full Astro build, a Chromium install
-      # and the axe suite on a prose edit -- exactly what guards.yml's header argues against.
+      # The caail-contribute skill. This IS the exception to the "skill prose has no test to
+      # run" note above, and the reason is worth stating because it was got wrong once here:
+      # `lint-papers.yml` also filters on this path and its sync-guard step runs `pnpm parse`,
+      # which aborts on drift -- so it looks like listing the path here only buys a second run
+      # of the same check. It does not. `contribute-form.test.ts` asserts strictly more than
+      # parse does: it pins exact SKILL.md prose, because every `stage({skill: ...})` scenario
+      # throws when its string edit matches nothing. Rewrapping one line of the resource.yml
+      # intro -- a legitimate prose reflow -- leaves `pnpm parse` green and fails two vitest
+      # cases. Without this path such a PR merges green and the next unrelated `site/**` PR
+      # inherits a red suite blaming a diff that did not cause it.
+      - plugin-contribute/**
   workflow_dispatch:
 
 permissions:
