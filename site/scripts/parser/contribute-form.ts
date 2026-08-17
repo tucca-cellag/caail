@@ -191,32 +191,53 @@ function readClaimLists(
 
   for (const m of skillSrc.matchAll(intro)) {
     const template = m[1]!;
-    // Take every line that IS a parameter list, and stop at the first line that is not.
+    // The list is the ONE paragraph after the intro, and every way it can go wrong THROWS.
     //
-    // Two earlier rules each closed one hazard and left the other open, and both failures land
-    // on the list's TAIL, which is where the optional parameters sit (`code_url`, `notes`).
-    // Optional means assertRequiredCovered never rescues them, so the loss is total and silent:
+    // Three earlier rules each closed one hazard and left another open, and every failure lands
+    // on the list's TAIL, where the optional parameters sit (`code_url` on paper.yml, `notes` on
+    // resource.yml). Optional means assertRequiredCovered never rescues them, and a
+    // truncated-but-non-empty list never trips the ids.length === 0 throw, so the loss was
+    // total and silent every time:
     //
     //   - "first non-empty line only" dropped everything after a WRAP.
-    //   - "up to the first blank line" closed the wrap but not a PARAGRAPH BREAK, and it also
-    //     absorbed the following line when no blank line separated them. That second one was
-    //     worse than it sounds: the paragraph after the paper list begins "**Set `title` as
-    //     well.**", so deleting one blank line made the module demand a field id named `title`
-    //     from paper.yml, which RESERVED_FIELD_IDS forbids on the next check down.
+    //   - "up to the first blank line" closed the wrap, not a PARAGRAPH BREAK.
+    //   - "every line that looks like a list" closed the paragraph break, but stopped dead at
+    //     the first continuation line carrying a word: `` `code_url` and `notes` `` reflowed
+    //     onto a second line silently lost both.
     //
-    // Shape is the right test rather than position: a parameter line is code spans and
-    // separators and nothing else, so prose ends the block wherever it sits and a blank line
-    // does not, which is what lets the list be reflowed or split freely.
+    // The lesson is that no terminator rule is safe here, because "the list ended" and "the
+    // list continued in a form I did not expect" are indistinguishable by shape and differ
+    // only in consequence. So nothing is inferred: a non-list line inside the paragraph is an
+    // ERROR naming the line, and a list-shaped line in the NEXT paragraph is an ERROR too.
+    // Reflow freely within the paragraph; anything else stops the build instead of the reader.
     const after = skillSrc.slice(m.index! + m[0].length).split('\n');
+    const start = after.findIndex((l) => l.trim() !== '');
     const block: string[] = [];
-    for (const l of after) {
-      if (l.trim() === '') {
-        if (block.length === 0) continue; // leading blank lines, before the list starts
-        continue; // a break INSIDE the list; the shape test below decides where it ends
+    let end = start < 0 ? 0 : start;
+    for (; end < after.length && after[end]!.trim() !== ''; end++) {
+      const line = after[end]!;
+      if (!isParameterLine(line)) {
+        throw new Error(
+          `contribute-form: the ${label} list for "${template}" in ${skillPath} runs into a ` +
+            `line that is not part of it: ${JSON.stringify(line.trim())}. The list must be one ` +
+            `paragraph of code spans separated by commas, because anything else is ` +
+            `indistinguishable from the list having ended, and a parameter dropped that way is ` +
+            `silent all the way to a contributor's screen. Put prose in its own paragraph.`,
+        );
       }
-      if (!isParameterLine(l)) break;
-      block.push(l);
+      block.push(line);
     }
+
+    const next = after.slice(end).find((l) => l.trim() !== '');
+    if (next !== undefined && isParameterLine(next)) {
+      throw new Error(
+        `contribute-form: the ${label} list for "${template}" in ${skillPath} is split across a ` +
+          `blank line — ${JSON.stringify(next.trim())} reads as a second paragraph. Only the ` +
+          `first would be checked, and the parameters after the break would silently stop ` +
+          `being reconciled. Keep the list in one paragraph.`,
+      );
+    }
+
     const ids = [...block.join(' ').matchAll(/`([A-Za-z0-9_-]+)`/g)].map((p) => p[1]!);
     if (ids.length === 0) {
       throw new Error(

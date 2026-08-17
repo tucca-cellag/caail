@@ -145,31 +145,41 @@ describe('readClaims', () => {
     expect(paper.prefill).toContain('notes');
   });
 
-  it('reads a parameter list split across a blank line', () => {
-    // A wrap and a paragraph break both truncate the TAIL, which is where the optional
-    // parameters live. `notes` is optional on resource.yml, so nothing downstream rescues it:
-    // the skill would go on setting a `notes=` parameter that a later rename made dead.
+  it('throws when a parameter list is split across a blank line', () => {
+    // The tail is where the optional parameters live (`notes` on resource.yml), and optional
+    // means assertRequiredCovered never rescues them. Silently reading the first paragraph
+    // would leave the skill setting a `notes=` parameter a later rename had made dead.
     const split = SKILL.replace(
       '`name`, `url`, `category`, `summary`, `notes`',
       '`name`, `url`, `category`, `summary`,\n\n`notes`',
     );
     expect(split).not.toBe(SKILL);
-    const resource = readClaims(split).find((c) => c.template === 'resource.yml')!;
-    expect(resource.prefill).toContain('notes');
+    expect(() => readClaims(split)).toThrow(/split across a blank line/);
   });
 
-  it('does not absorb the paragraph after the list when no blank line separates them', () => {
-    // The paragraph following the paper list opens "**Set `title` as well.**", so a reader that
-    // ran on would demand a field id `title` from paper.yml — which RESERVED_FIELD_IDS forbids,
+  it('throws on a continuation line carrying a word, rather than dropping its tail', () => {
+    // The case a pure shape test got wrong: `code_url` and `notes` reflowed onto a second line
+    // with a conjunction. "The list ended" and "the list continued in a form I did not expect"
+    // look identical, so the reader must refuse to guess.
+    const conjoined = SKILL.replace(
+      '`paper_title`, `authors`, `year`, `venue`, `doi`, `code_url`, `notes`',
+      '`paper_title`, `authors`, `year`, `venue`, `doi`,\n`code_url` and `notes`',
+    );
+    expect(conjoined).not.toBe(SKILL);
+    expect(() => readClaims(conjoined)).toThrow(/runs into a line that is not part of it/);
+  });
+
+  it('throws when the paragraph after the list is joined onto it', () => {
+    // The paragraph after the resource list opens "**Set `title` as well.**". Reading on would
+    // demand a field id `title` from a template where RESERVED_FIELD_IDS forbids exactly that,
     // sending the maintainer to fix the wrong file over a whitespace slip in the skill.
     const joined = SKILL.replace(
       '`resource_type`\n\n**Set `title` as well.**',
       '`resource_type`\n**Set `title` as well.**',
     );
     expect(joined).not.toBe(SKILL);
-    const resource = readClaims(joined).find((c) => c.template === 'resource.yml')!;
-    expect(resource.manual).toEqual(['resource_type']);
-    expect(resource.manual).not.toContain('title');
+    expect(() => readClaims(joined)).toThrow(/runs into a line that is not part of it/);
+    expect(() => readClaims(joined)).not.toThrow(/paper_title/);
   });
 
   it('stops the parameter list at the blank line, not at the next paragraph', () => {
