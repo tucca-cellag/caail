@@ -305,27 +305,37 @@ describe('buildPapersModel — real Papers.md', () => {
   // to already be in the stored string, and the stored string contains nothing
   // but one paper's blockquote run.
   //
-  // This enforces the CONVENTION CLAUDE.md documents — one canonical separator,
-  // `\n\n` — and is deliberately stricter than "renders acceptably". Other forms
-  // do render on separate lines (a `>`-only line between the labels, a
-  // trailing-double-space hard break) and this rejects them anyway, because one
-  // stored shape across all 95 rows is worth more than admitting every shape
-  // that happens to look right. If you hit that, the fix is to normalize to
-  // `\n\n`, not to widen this. What it must never do is miss a real run-on, and
-  // no line shape can evade it in that direction.
+  // This enforces the CONVENTION CLAUDE.md documents — blocks joined by exactly
+  // one blank line — and is deliberately stricter than "renders acceptably".
+  // Other forms do render on separate lines (a `>`-only line between the labels,
+  // a trailing-double-space hard break, a doubled blank line) and this rejects
+  // them anyway, because one stored shape across every row is worth more than
+  // admitting each shape that happens to look right. If you hit that, normalize
+  // rather than widening this.
+  //
+  // Written as an equality against the normalized form rather than a
+  // "no single newline" regex, because that regex did not actually enforce the
+  // sentence above it: `a\n\n\nb` slipped through, as did a leading or trailing
+  // newline, so the single-shape claim was false while reading as guaranteed.
   it('separates every multi-label blockquote with a blank line', () => {
     const rows = readFileSync(PAPERS_NDJSON_PATH, 'utf8')
       .split('\n')
       .filter(Boolean)
       .map((l) => JSON.parse(l) as { ref_id: number; blockquotes_md: string | null });
 
+    /** Blocks rejoined with exactly one blank line, and no leading/trailing newline. */
+    const canonical = (s: string) => s.split(/\n+/).filter(Boolean).join('\n\n');
+
     const offenders = rows
-      .filter((r) => r.blockquotes_md && /(?<!\n)\n(?!\n)/.test(r.blockquotes_md))
-      .map((r) => `ref ${r.ref_id}: blockquotes_md separates labels with something other than a blank line`);
+      .filter((r) => r.blockquotes_md && r.blockquotes_md !== canonical(r.blockquotes_md))
+      // Prints the stored value, because the shape is the whole diagnosis and it
+      // is not always a missing separator: a hard-wrapped continuation of ONE
+      // label, or a stray leading newline, both land here too.
+      .map((r) => `ref ${r.ref_id}: ${JSON.stringify(r.blockquotes_md)}`);
 
     expect(
       offenders,
-      'Blockquote labels are separated by a blank line (\\n\\n) and nothing else. Two adjacent `>` lines render as one run-on on GitHub, which is the surface these are read on; other separators may render acceptably but are still off-convention. Normalize to \\n\\n in site/db/ndjson/papers.ndjson, then re-run db:emit',
+      'Every blockquote block in blockquotes_md is joined by exactly one blank line (\\n\\n), with none leading or trailing. Two adjacent `>` lines render as a single run-on on GitHub, which is the surface these are read on. Normalize the value in site/db/ndjson/papers.ndjson, then re-run db:emit',
     ).toEqual([]);
   });
 

@@ -71,7 +71,7 @@ The matrix and the `## References` list must be kept in sync:
 
    The blank line matters: GitHub renders two adjacent `>` lines as one run-on line, and GitHub is where these are read. Note that the notice reaches GitHub but not the entry's card on the site, because the parser keeps only the `Code` and `Data` labels (tucca-cellag/caail#202).
 
-   **The Markdown in these steps shows you the shape of the result, not a file to edit.** The reference, its matrix cells and these trailing blockquotes are all regenerated from the database, so a maintainer lands the whole entry through the DB and anything typed straight into `Papers.md` is dropped by the next regeneration. Propose the content in your issue or PR description; you do not need DB access to contribute one.
+   As the callout at the top of this section says, the reference, its matrix cells and these trailing blockquotes are all regenerated from the database, so editing the Markdown here **proposes** an entry rather than landing one: a maintainer re-enters it through the DB. Two things follow that are worth knowing before you open such a PR. CI's DB-to-Markdown sync guard will flag it, because the generated file now disagrees with the database — that is expected on a proposal PR and is not a mistake on your part. And an edit that touches a reference anchor or a matrix link is refused outright by a local pre-edit hook, so if you are working with an AI agent it will be blocked from making one.
 
 4. **Add the paper to every applicable matrix cell.** For each AI method (row) and research area (column) the paper covers, add `[42](#42)` to the corresponding cell, comma-separated with any existing entries:
 
