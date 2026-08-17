@@ -55,8 +55,12 @@ blockquote — plus the DOI of each, and the matrix row each was placed in.
      populated. **Do not require the title to carry both**: many publishers
      deposit notices titled bare — "Erratum", "Correction" — and put the target in
      `update-to`, so a title-only rule would mark valid entries CONTRADICTED, and
-     this reviewer gates them. When neither the title nor the linkage settles a
-     point, that point is UNVERIFIABLE rather than CONTRADICTED. A
+     this reviewer gates them. When neither settles it, **read the notice itself**
+     before giving up: the landing page almost always names the corrected article
+     and quotes the emended text. Only if that fails too is the point
+     UNVERIFIABLE — and an unverifiable *target* blocks landing rather than merely
+     being listed, because a notice belonging to a different article in the same
+     issue is indistinguishable from the right one at every other level. A
      `> **Retraction**:` label is outside the schema (`CLAUDE.md` excludes it
      deliberately) and is CONTRADICTED on sight.
 3. **Matrix placement** — given what the paper actually is, is the assigned

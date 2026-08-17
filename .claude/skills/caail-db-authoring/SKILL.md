@@ -133,8 +133,10 @@ re-tagging, corrections), use the full procedure below.
      row's `blockquotes_md`. There is no per-label column — the whole `> …` run is stored
      verbatim as one string, which is what stops an unmodelled label floating onto the
      neighbouring paper on re-emit. **Join multiple labels with a blank line** (`\n\n`):
-     GitHub renders two adjacent `>` lines as one run-on, and `papers.test.ts` fails on it.
-     Label a notice with the publisher's own word for it, per `CLAUDE.md`.
+     GitHub renders two adjacent `>` lines as one run-on, and **no check anywhere catches
+     that** — emit reproduces the string as stored, and the parser reads either form — so
+     it is on you at the moment you write it. Label a notice with the publisher's own word
+     for it, per `CLAUDE.md`.
    - **Add a tool/database:** insert `items` + `catalog(name,url,grp,body_md,ordinal)`; `name`
      is the inline markdown of the H3 link text, `body_md` the entry body.
    - **Add a curated dataset entry:** insert `items('ds:<slug>','dataset',…)` + `dataset_entries`
