@@ -153,10 +153,12 @@ const statSentence = `Indexing ${stats.map((s) => `${s.n} ${s.label}`).join(', '
         left the homepage saying only that TUCCA *uses* CAAIL, which reads as a third-party
         tool TUCCA adopted, and ownership then survived only on /about.
 
-        The trailing spaces are load-bearing. `TuccaLockup`'s anchor contains only an
-        `aria-hidden` span, so there is no whitespace text node between these elements and the
-        separation is `flex gap`, which is visual and not textual. Without them, select-and-copy
-        and Pagefind both get "A project ofand used in ...".
+        The spaces inside the spans are deliberate. Word separation here must not depend on
+        `TuccaLockup`'s internal formatting: its anchor happens to emit whitespace around the
+        `aria-hidden` span today, so `textContent` reads correctly without them, but that is
+        incidental line-breaking in another component rather than anything this line controls.
+        Reformat or minify that file differently and the words run together in select-and-copy
+        and in the Pagefind index, where the `flex gap` between them does not exist.
 
         "TUCCA's own" rather than "its own": the nearest antecedent is a link whose visible
         content is an image, so "its" can attach to CAAIL and claim CAAIL is used in CAAIL's
