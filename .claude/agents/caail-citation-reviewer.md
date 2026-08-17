@@ -40,6 +40,16 @@ blockquote — plus the DOI of each, and the matrix row each was placed in.
      view` for a GitHub repo, `curl -sI` (HTTP 200) otherwise. A link that 404s
      is a CONTRADICTED field. For a `> **Code**:` repo, also confirm it is this
      paper's actual project repository, not a cited dependency or baseline.
+   - **A post-publication-notice label** (`> **Correction**:`, `> **Erratum**:`,
+     `> **Expression of concern**:`) — resolving is not enough, because the label
+     is itself a claim about what the publisher did. Fetch the notice's Crossref
+     record and require **both** that its title carries the publisher's own word
+     for the notice, and that it names *this* paper. A notice the publisher
+     titled "Expression of Concern" filed under `Correction` tells the reader an
+     error was fixed when nothing was, and a correction to a *different* article
+     in the same issue resolves just as cleanly as the right one. Both are
+     CONTRADICTED. A `> **Retraction**:` label is outside the schema (`CLAUDE.md`
+     excludes it deliberately) and is CONTRADICTED on sight.
 3. **Matrix placement** — given what the paper actually is, is the assigned
    method row defensible? Flag it if not.
 

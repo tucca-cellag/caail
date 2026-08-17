@@ -303,21 +303,29 @@ describe('buildPapersModel — real Papers.md', () => {
   // Papers.md:76. None of that matters here: emitSectionRefs writes
   // blockquotes_md VERBATIM (it joins only ACROSS papers), so the separator has
   // to already be in the stored string, and the stored string contains nothing
-  // but one paper's blockquote run. The invariant is therefore just "every
-  // newline is part of a blank line", which no Markdown line shape can evade.
+  // but one paper's blockquote run.
+  //
+  // This enforces the CONVENTION CLAUDE.md documents — one canonical separator,
+  // `\n\n` — and is deliberately stricter than "renders acceptably". Other forms
+  // do render on separate lines (a `>`-only line between the labels, a
+  // trailing-double-space hard break) and this rejects them anyway, because one
+  // stored shape across all 95 rows is worth more than admitting every shape
+  // that happens to look right. If you hit that, the fix is to normalize to
+  // `\n\n`, not to widen this. What it must never do is miss a real run-on, and
+  // no line shape can evade it in that direction.
   it('separates every multi-label blockquote with a blank line', () => {
     const rows = readFileSync(PAPERS_NDJSON_PATH, 'utf8')
       .split('\n')
       .filter(Boolean)
       .map((l) => JSON.parse(l) as { ref_id: number; blockquotes_md: string | null });
 
-    const runOn = rows
+    const offenders = rows
       .filter((r) => r.blockquotes_md && /(?<!\n)\n(?!\n)/.test(r.blockquotes_md))
-      .map((r) => `ref ${r.ref_id}: blockquotes_md joins labels with a single newline`);
+      .map((r) => `ref ${r.ref_id}: blockquotes_md separates labels with something other than a blank line`);
 
     expect(
-      runOn,
-      'GitHub renders adjacent blockquote lines as one run-on, and it is the surface these are read on. Separate the labels with a blank line (\\n\\n) in site/db/ndjson/papers.ndjson, then re-run db:emit',
+      offenders,
+      'Blockquote labels are separated by a blank line (\\n\\n) and nothing else. Two adjacent `>` lines render as one run-on on GitHub, which is the surface these are read on; other separators may render acceptably but are still off-convention. Normalize to \\n\\n in site/db/ndjson/papers.ndjson, then re-run db:emit',
     ).toEqual([]);
   });
 
