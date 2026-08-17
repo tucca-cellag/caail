@@ -153,6 +153,17 @@ export function generateData(
   contributeTemplates: number;
   contributeParams: number;
 } {
+  // Reconcile the caail-contribute skill against the issue forms it composes URLs for. Emits
+  // nothing: the skill ships as Markdown and the templates ship as YAML, so there is no artifact
+  // to write, only an agreement to enforce. Checked at build time rather than only in the test
+  // suite because the failure is invisible at runtime (GitHub ignores a query parameter that
+  // matches no field) and lands on a contributor's screen, not ours.
+  //
+  // FIRST, before anything is written. It depends on no generated output, so running it last
+  // meant a drift failure aborted `pnpm parse` only after src/content/data and the TRACKED
+  // site/public/api had already been rewritten, leaving a dirty tree behind a non-zero exit.
+  const contributeClaims = verifyContributeForms();
+
   // Build and validate the papers model.
   const model = buildPapersModel();
 
@@ -477,12 +488,6 @@ export function generateData(
   writeAgentApi(apiFiles, apiDir);
   publishSkillDoc(SKILL_DOC_PATH, join(apiDir, '..'));
 
-  // Reconcile the caail-contribute skill against the issue forms it composes URLs for. Emits
-  // nothing: the skill ships as Markdown and the templates ship as YAML, so there is no artifact
-  // to write, only an agreement to enforce. Checked here rather than only in the test suite
-  // because the failure is invisible at runtime (GitHub ignores a query parameter that matches
-  // no field) and lands on a contributor's screen, not ours.
-  const contributeClaims = verifyContributeForms();
 
   return {
     counts,

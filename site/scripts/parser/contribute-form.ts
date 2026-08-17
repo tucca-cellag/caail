@@ -171,9 +171,19 @@ function readClaimLists(
 
   for (const m of skillSrc.matchAll(intro)) {
     const template = m[1]!;
-    const rest = skillSrc.slice(m.index! + m[0].length);
-    const line = rest.split('\n').find((l) => l.trim() !== '');
-    const ids = [...(line ?? '').matchAll(/`([A-Za-z0-9_-]+)`/g)].map((p) => p[1]!);
+    // The whole paragraph, not just its first line. Reading one line had the same reflow hazard
+    // the intro bound above was widened for, and one step worse: a wrapped list drops only its
+    // TAIL, which is where the optional parameters sit (`code_url`, `notes`). Optional means
+    // assertRequiredCovered does not rescue them, so a later rename would ship a parameter
+    // GitHub ignores and the paper's code repo would silently stop reaching the issue.
+    const after = skillSrc.slice(m.index! + m[0].length).split('\n');
+    const first = after.findIndex((l) => l.trim() !== '');
+    const block: string[] = [];
+    for (const l of first < 0 ? [] : after.slice(first)) {
+      if (l.trim() === '') break;
+      block.push(l);
+    }
+    const ids = [...block.join(' ').matchAll(/`([A-Za-z0-9_-]+)`/g)].map((p) => p[1]!);
     if (ids.length === 0) {
       throw new Error(
         `contribute-form: the skill announces ${label} for "${template}" and then lists none. ` +

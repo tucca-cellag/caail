@@ -42,11 +42,24 @@ a fetch tool that summarises will answer confidently from the fragment it kept.
 | Software / database | `https://raw.githubusercontent.com/tucca-cellag/caail/main/site/public/api/catalog-index.json` | URL, then name |
 | Dataset / accession | `https://raw.githubusercontent.com/tucca-cellag/caail/main/site/public/api/datasets.json` | accession, then name |
 
+**`catalog-index.json` holds software and databases only, and nothing else has an endpoint.**
+CAAIL also curates awesome lists, talks, editorials and ecosystem initiatives, reference works and
+funding programmes, and **none of them is served by any endpoint you can reach**. A curated
+bibliography repository satisfies the "named tool with a repository" trigger above word for word
+and will be absent from `catalog-index.json` whether or not CAAIL holds it. So a miss in the
+catalogue index is only evidence about software and databases. For anything else, you have not
+checked and cannot say you have: tell the user CAAIL may already list it under a page you could
+not query, and let them decide whether to look.
+
 **Datasets have no index endpoint, and that bounds what you may conclude from them.** There is no
 `datasets-index.json`; `datasets.json` is the full file at roughly 330 KB, so for datasets the
 hazard above is unavoidable rather than avoidable. If your fetch returns bytes you can read it
 normally. If it summarises, you cannot establish a dataset absence from it at all: say which
 accession you could not check, and do not offer a suggestion on that basis.
+
+`datasets.json` carries **two arrays and you must read both**: `entries` (curated portals, atlases
+and GEMs) and `inventory` (the per-study deposits). Accessions live on the `inventory` rows, so
+checking `entries` alone covers a minority of the corpus and reports a gap for every deposit.
 
 **Be generous about deciding CAAIL already holds it, and strict about deciding it does not.** A
 false "CAAIL is missing this" costs the user a wasted click and sends the maintainers a duplicate;
@@ -96,10 +109,16 @@ hand:
 
 `resource_type`
 
+**Set `title` as well.** It is not a form field, it is GitHub's built-in issue title, and it is the
+one parameter neither list above covers. Leave it out and the issue is created under the template's
+literal placeholder, so the tracker fills with entries called `[Paper] <Author YEAR — short title>`.
+Follow the placeholder's shape: `[Paper] Cosenza 2024 — multi-fidelity Bayesian media design`, or
+`[Resource] <name>` on the resource template.
+
 URL-encode every value:
 
 ```
-https://github.com/tucca-cellag/caail/issues/new?template=paper.yml&paper_title=...&doi=...
+https://github.com/tucca-cellag/caail/issues/new?template=paper.yml&title=...&paper_title=...&doi=...
 ```
 
 **The pick-by-hand fields cannot be prefilled, and you must say so.** GitHub accepts a query
@@ -120,10 +139,13 @@ agriculture intersection, in the user's own framing where you have it.
 
 ### Route 2, no GitHub account
 
-Point at <https://tucca-cellag.github.io/caail/community/>, which carries the Slack and email
-routes and is where proposing an addition is handled. Hand over the summary you would have put in
-the issue, so the user has something to paste rather than starting again. Offer this without being
-asked if the user says they have no GitHub account, and never assume they have one.
+Point at <https://tucca-cellag.github.io/caail/community/>, where proposing an addition is handled
+and where suggestions go in Slack without a GitHub account. Hand over the summary you would have
+put in the issue, so the user has something to paste rather than starting again. Offer this without
+being asked if the user says they have no GitHub account, and never assume they have one.
+
+Say **Slack**, not email. The only addresses on that page are the Code of Conduct report contacts,
+and directing a resource suggestion to them is worse than giving no route at all.
 
 **Not `/report/`.** That page is for an entry CAAIL already has that is wrong, its composer only
 renders for a supplied entry id, and its GitHub route opens the correction template. Sending

@@ -131,6 +131,34 @@ describe('readClaims', () => {
     expect(readClaims(reflowed).map((c) => c.template)).toContain('resource.yml');
   });
 
+  it('reads a parameter list that wraps onto a second line', () => {
+    // Reading only the first non-empty line dropped the list's TAIL, which is where the optional
+    // parameters sit. Optional means assertRequiredCovered never rescues them, so the loss was
+    // total and silent.
+    const wrapped = SKILL.replace(
+      '`paper_title`, `authors`, `year`, `venue`, `doi`, `code_url`, `notes`',
+      '`paper_title`, `authors`, `year`, `venue`, `doi`,\n`code_url`, `notes`',
+    );
+    expect(wrapped).not.toBe(SKILL);
+    const paper = readClaims(wrapped).find((c) => c.template === 'paper.yml')!;
+    expect(paper.prefill).toContain('code_url');
+    expect(paper.prefill).toContain('notes');
+  });
+
+  it('stops the parameter list at the blank line, not at the next paragraph', () => {
+    const paper = readClaims(SKILL).find((c) => c.template === 'paper.yml')!;
+    // Would pick up prose words from the following paragraph if the block ran on.
+    expect(paper.prefill).toEqual([
+      'paper_title',
+      'authors',
+      'year',
+      'venue',
+      'doi',
+      'code_url',
+      'notes',
+    ]);
+  });
+
   it('throws when a mentioned template has no prefill list at all', () => {
     const run = stage({
       skill: (s) =>
