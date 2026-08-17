@@ -34,15 +34,19 @@ const statSentence = `Indexing ${stats.map((s) => `${s.n} ${s.label}`).join(', '
 <section class="hero" id="top">
   <div class="hero-stripe" aria-hidden="true"></div>
   <div class="hero-text">
-    <p class="eyebrow">Cellular Agriculture × Artificial Intelligence</p>
+    {/* Spells out the acronym. The nav title is a bare "CAAIL" and the h1 is the stylised
+        wordmark, so without this line a first-time reader never learns what it stands for.
+        Expansion matches CITATION.cff, the README H1 and the Zenodo record verbatim. */}
+    <p class="eyebrow">CAAIL · Cellular Agriculture AI Library</p>
     <h1 class="h-title caail-display">
       <span class="l1">Cell&nbsp;Ag</span>
       <span class="l2"><span class="x">×</span> AI</span>
     </h1>
 
     <p class="lede">
-      The curated library at the intersection of cellular agriculture and AI, with every entry
-      cross-linked back to canonical Markdown on GitHub.
+      The curated library at the intersection of cellular agriculture and AI, and a grounding
+      database an AI assistant can query: research and industry questions answered from a fixed,
+      citable index, not from model memory.
     </p>
 
     <div class="cta-row">
