@@ -20,6 +20,13 @@ is the only place that floor is written down. The reasoning, and the condition u
 rounds can come back down, is there too. The cross-model pass (step 4) stays, as a cheap extra angle
 rather than the safety gate.
 
+**Step 1 is not unattended.** It carries two `AskUserQuestion` pauses, and they are the only two decisions
+in the phase that belong to the maintainer rather than to the agent: whether to keep reviewing once the
+floor is met (the **stop gate**) and whether a finding this diff did not cause belongs in the PR at all
+(the **scope gate**). Both are prose in a phase with no mechanism, so they are worth exactly the reading
+of them and no more; the closing note of the `ship-pr.sh` reference says why that matters. Neither gate
+exists below the floor.
+
 The brittle, repeatable machinery lives in **`ship-pr.sh`** (in this skill's directory): pushing,
 opening the PR, watching checks, merging with the known worktree gotcha handled, finding + watching
 the deploy run, and curling the live routes. This manual keeps the judgment with you: re-running the
@@ -141,10 +148,31 @@ right.
   PR body then claims a level that never ran. The range matters too: nothing is pushed yet, so a default
   that resolves against an upstream has none, and the fallbacks land on either `main...HEAD` or a single
   commit, which reviews one commit of a multi-commit branch.
-- **Apply or triage every finding.** Fixed, or declined with a stated reason, and if it is real but out
-  of scope it gets a Jira ticket (search the open board first, per `CLAUDE.md`; a finding that names an
-  unpatched weakness in a live service gets `disclosure-private` and no GitHub issue). "Not acted on" and
-  "not a defect" are different outcomes; only one is free.
+- **Apply or triage every finding, and default an out-of-scope one to a ticket.** Fixed, or declined with
+  a stated reason. "Not acted on" and "not a defect" are different outcomes; only one is free.
+
+  **The scope boundary is causation, not file identity.** A finding this diff *caused* is fixed here; a
+  pre-existing one it merely *revealed* gets a ticket, and that is the default rather than the exception.
+  Do not use "the files this session edited" as the test, because it is wrong in both directions: a fix in
+  one file that breaks another **without editing it** was caused by this diff and belongs here (that is
+  what round 2 is for, and it is the PR #185 case where an a11y fix created a different a11y regression),
+  while a pre-existing bug you happened to read in a file you did edit does not. Causation is also what
+  keeps this consistent with "check the surfaces the diff did not touch" below: a contradiction this
+  change *introduced* one click away is in scope, one that was already there is not.
+
+  **Scope gate.** When a round produces findings you have classified as pre-existing, do not act on that
+  classification alone. Put them to the user in **one** `AskUserQuestion` for the round, never one per
+  finding, multiSelect, with **nothing selected by default** so the no-op answer files them all. Whatever
+  comes back selected is the stated reason to fix it here, recorded rather than assumed. Skip the prompt
+  entirely when a round produced no out-of-scope finding.
+
+  Every ticket goes to Jira: search the open board first, per `CLAUDE.md`, and a finding that names an
+  unpatched weakness in a live service gets `disclosure-private` and no GitHub issue.
+
+  This codifies what already happens rather than inventing a rule. `CAAIL-79` and `CAAIL-82` were filed
+  from a review of `feat/homepage-agent-sections` instead of being fixed in it, and `CAAIL-271` and
+  `CAAIL-272` were recorded as residuals from a `/code-review high` over PR #204 and deliberately left
+  out of it.
 - **Commit the fixes before the next round starts.** Not at the end of the phase: `origin/main...HEAD` is
   a merge-base-to-commit range and **does not include the working tree**. Don't rely on the reviewer
   noticing uncommitted work and folding it in; whether it does is its business, and the range you handed it
@@ -164,12 +192,34 @@ right.
    prose-only PR whose round-1 fix edits `site/src/**` is a 3-round diff from that moment on. Re-check the
    shape after each round's fixes land, since the mandated `preflight` re-run happens after the rounds have
    already stopped and is therefore too late to tell you.
-2. The **last round returned no finding that was a defect in this diff.** Deferring real defects to Jira
-   does not satisfy this: "not acted on" and "not a defect" are different outcomes, and a round that
-   surfaces three genuine defects and tickets all three has not gone quiet, it has gone unaddressed.
+2. The **last round returned no finding that was a defect this diff caused.** Deferring one of those to
+   Jira does not satisfy this: "not acted on" and "not a defect" are different outcomes, and a round that
+   surfaces three genuine defects and tickets all three has not gone quiet, it has gone unaddressed. A
+   **pre-existing** defect, properly ticketed under the scope gate above, does **not** block a quiet
+   round. That distinction is load-bearing rather than a nicety. Without it the scope gate makes this
+   loop non-terminating, because rounds keep re-finding the same pre-existing problems and each ticketing
+   keeps the sequence alive, and the symptom reads as a thorough reviewer rather than as a broken
+   procedure. So do not "simplify" condition 2 back to "no defect in this diff" while the scope gate
+   exists; the two were written together.
 
 An empty round does not shorten the floor; it only ends the sequence once the floor is already met. So a
 prose diff whose round 1 is empty still gets round 2, and a site-code or guards diff still gets three.
+
+**Stop gate.** Once condition 1 is met and condition 2 is **not**, the choice between another round and
+shipping is the maintainer's, so ask instead of deciding it. Fire one `AskUserQuestion` carrying enough
+for the answer to mean something: the rounds run so far, the floor for the diff's shape **as re-checked
+after the last round's fixes landed**, and every surviving finding labelled either a defect this diff
+caused or already ticketed. Two options, another round or triage-the-rest-and-ship. The reason to ask at
+all is that every round is a whole-diff `/code-review high` whose cost does not shrink as the fixes do, so
+a round prompted by a one-line fix costs what round 1 cost. `CAAIL-269` records eight rounds on PR #205,
+with four findings deliberately left unfixed by the end of them.
+
+**The gate does not exist below the floor, and must not be added there.** Rounds 1..floor run unprompted.
+The floor's only enforcement is that it is written unconditionally: step 1 has no `ship-pr.sh` subcommand
+and nothing in CI checks it, so a prompt in front of those rounds would convert a rule into a default, and
+a default gets accepted at the end of a long session, which is exactly when this stage runs. The evidence
+those rounds rest on is in the rationale block below, and the Gotchas row refusing to collapse step 1 to a
+single pass applies just as much to reaching that end through this gate.
 
 **An empty first round on a wide diff is suspicious, not reassuring.** There is no level to raise, so the
 answer is to keep going to the floor and to say plainly that a round came back empty on a diff that shape.
@@ -285,7 +335,10 @@ bash .claude/skills/caail-pr-wrapup/ship-pr.sh open-pr "<title>" /tmp/pr-body.md
   `chore`, `fix`. Reuse the lead commit's subject when it already fits.
 - **Body:** what changed and *why*; the research area(s)/AI method(s) or routes it touches; and the
   verification you already ran (tests/build/e2e, reviewer agents). Say **how the review went**: the
-  level, how many rounds, and that the last one was quiet. **Any** finding declined rather than fixed,
+  level, how many rounds, and that the last one was quiet. **If the rounds ended at the stop gate rather
+  than on a quiet round, say so instead and name what was left outstanding**, since a shortened run and a
+  completed one are otherwise indistinguishable to a reader of this body. Findings routed to a ticket by
+  the scope gate are named here too, by key. **Any** finding declined rather than fixed,
   in any round, gets named with its reason, since a reader cannot tell a triaged finding from an
   unnoticed one and the rounds it came from are invisible to them. **The one exception is a declined
   finding that describes an unpatched weakness in a live service** (the events Worker, say): a declined
@@ -489,6 +542,8 @@ adding it there too, or the guard will happily confirm that an incomplete set is
 | Symptom / situation | What it means / do |
 | --- | --- |
 | **Round 1 comes back empty** on a code-heavy or multi-file diff | Read it as a fact about the review, not about the diff. There is no level to raise (the level is always `high`), so run out the floor and say plainly that a round came back empty on a diff that shape. An extra pass narrowed to a hot spot is fine on top of a whole-diff round, never instead of one. |
+| The **stop gate** fires before the floor is met | It should not, and the answer is not to accept it. Rounds 1..floor run unprompted; the gate exists only once condition 1 holds and condition 2 does not. A prompt below the floor turns the floor into a default, which is the erosion the next row is about. Run the remaining floor rounds. |
+| A round's findings are **all pre-existing**, and the loop will not go quiet | Once they are ticketed under the scope gate, that *is* a quiet round: only a defect this diff **caused** blocks one. A loop still running on the same old findings means condition 2 is being read in its pre-scope-gate form, which does not terminate. |
 | `push` says **working tree is not clean** and lists files | A step-1 fix was never committed. Not a nuisance check: `preflight` ran before the rounds edited anything, so this is the only thing between an uncommitted fix and a PR that looks correct while missing it. **Commit** what it lists, then re-run `preflight` and push. Stashing a *fix* clears the check while producing exactly the outcome it exists to prevent: the tree goes clean, the push succeeds, and the fix is not in the diff. The stash itself is safe (`refs/stash` is shared across worktrees and survives `git worktree remove --force`, verified), so a fix stashed by mistake is one `git stash pop` away. Stashing unrelated work in progress is fine. |
 | `push` says **on the default branch** | You are shipping from a checkout that holds `main` (the primary one usually does). Nothing was pushed. Get onto the feature branch, or run the skill from its worktree. Without this the push would have gone straight to `origin/main`, skipping the PR and every check, with `docs.yml` deploying it. |
 | A finding's **fix is itself unreviewed code** | It is, and that is the whole reason for round 2. Two of the fourteen defects in step 1's evidence arrived this way, one an accessibility regression created by the fix for a different accessibility finding. Never merge a fix that no round has seen. |
