@@ -20,7 +20,9 @@ is the only place that floor is written down. The reasoning, and the condition u
 rounds can come back down, is there too. The cross-model pass (step 4) stays, as a cheap extra angle
 rather than the safety gate.
 
-**Step 1 is not unattended.** It carries two `AskUserQuestion` pauses, and they are the only two decisions
+**Step 1 is not unattended.** It carries two *kinds* of `AskUserQuestion` pause, not two pauses: the scope
+gate fires at every round that has an out-of-scope finding, so a long run holds several. They are the only
+two decisions
 in the phase that belong to the maintainer rather than to the agent: whether to keep reviewing once the
 floor is met (the **stop gate**) and whether a finding this diff did not cause belongs in the PR at all
 (the **scope gate**). Both are prose in a phase with no mechanism, so they are worth exactly the reading
@@ -160,7 +162,9 @@ right.
   pre-existing one it merely *revealed* gets a ticket, and that is the default rather than the exception.
   Do not use "the files this session edited" as the test, because it is wrong in both directions: a fix in
   one file that breaks another **without editing it** was caused by this diff and belongs here (that is
-  what round 2 is for, and it is the PR #185 case where an a11y fix created a different a11y regression),
+  what round 2 is for, and the rationale block below records an a11y fix creating a different a11y
+  regression on PR #185; whether that one crossed files is not recorded, so do not cite it as though it
+  were),
   while a pre-existing bug you happened to read in a file you did edit does not. Causation is also what
   keeps this consistent with "check the surfaces the diff did not touch" below: a contradiction this
   change *introduced* one click away is in scope, one that was already there is not.
@@ -170,12 +174,23 @@ right.
   finding, multiSelect. Whatever comes back selected is the stated reason to fix it here, recorded rather
   than assumed; everything left unselected is filed.
 
+  **Keep all three outcomes alive.** The bullet above insists that "not acted on" and "not a defect" are
+  different, and a two-way gate quietly collapses them into one: unselected would mean *filed*, so three
+  pre-existing non-defects become three tickets, at a full backlog re-enumeration each. A finding that is
+  simply not a defect is declined with a reason and never reaches the gate. If some reach it anyway,
+  carry an explicit **"none of these are worth a ticket"** option so declining stays reachable from
+  inside the prompt.
+
   **Build the option list to fit the tool, and say when you had to compress it.** `AskUserQuestion` caps
   the options on one question (**four, observed 2026-08-18**: a snapshot, not a fact about the tool;
   check it rather than trusting this line, for the same reason the level discussion above refuses to
   describe another tool's internals). Reserve one slot for "file all of them" and give the findings the
   rest; when there are more findings than remaining slots, group them into labelled bundles by the
-  surface they sit on. Always include an
+  surface they sit on, and **put each bundle's actual contents in that option's description**, since the
+  round's triage is written after the answer comes back and a label alone is approval of something
+  unseen. Note also that a bundle is all-or-nothing, so prefer bundling findings a maintainer would
+  plausibly want to treat alike; when they clearly would not, say so and ask about the odd one
+  separately rather than forcing the bundle. Always include an
   explicit **"file all of them"** option rather than letting an empty submission carry that meaning: an
   empty multiSelect is not a documented no-op, and a safe default that depends on the user submitting
   nothing fails silently the moment they submit something. When you have bundled, say in the round's
@@ -199,7 +214,8 @@ right.
   filing costs, and check rather than assume.** On this maintainer's machine the duplicate guard denies
   each create once and re-enumerates the whole project first, injecting the entire backlog before it lets
   the create through, so four findings is four of those rather than one check covering the batch. Do not
-  read that as a property of this repo: like the destructive-git hook mentioned above, **that guard is
+  read that as a property of this repo: like `check-dangerous-git.sh` (noted further down, and not to be
+  confused with `check-public-publish.sh`, which *does* ship here), **that guard is
   user-global and not in this repo**, so a fresh clone has none of it, and it has been observed changing
   under a running session without any signal. The instruction is to know which of those you are on before
   a round produces several tickets, not to trust this sentence.
@@ -270,6 +286,13 @@ avoid paying for it is to decline the fix at the scope gate, not to skip the rou
 
 So **"ship" at this gate always means shipping with findings outstanding and unfixed, never with fixes
 nobody has reviewed.** If you are about to offer it in any other state, the gate has been misread.
+
+**Do not re-ask an unchanged question.** Answering "another round" while electing no fix returns the run to
+the identical state, since condition 3 stays met and the deferred findings are carried forward rather than
+refuted, so the gate would fire again with byte-identical content and go on doing so. Offer "another round"
+**once per unchanged outstanding set**: if the next round leaves that set unchanged, the sequence ends
+there and the PR body records that it did. This is the same guard the scope gate gets above, and it is
+needed here for the same reason.
 
 **The stop gate does not exist below the floor, and must not be added there.** Rounds 1..floor run without
 *it*; the scope gate still fires in them and should, so this paragraph is about the stop gate alone.
@@ -607,7 +630,7 @@ adding it there too, or the guard will happily confirm that an incomplete set is
 | --- | --- |
 | **Round 1 comes back empty** on a code-heavy or multi-file diff | Read it as a fact about the review, not about the diff. There is no level to raise (the level is always `high`), so run out the floor and say plainly that a round came back empty on a diff that shape. An extra pass narrowed to a hot spot is fine on top of a whole-diff round, never instead of one. |
 | The **stop gate** fires before the floor is met | It should not, and the answer is not to accept it. Rounds 1..floor run without the *stop* gate; it exists only once condition 1 holds, condition 3 holds, and condition 2 does not. The **scope gate** does fire in those rounds and should, so do not read one as evidence the other is misfiring. A stop prompt below the floor turns the floor into a default, which is the erosion the next row is about. Run the remaining floor rounds. |
-| A round's findings are **all pre-existing**, and the loop will not go quiet | Once they are ticketed under the scope gate **and nothing was fixed in response**, that *is* a quiet round: only a defect this diff **caused** blocks one. If the maintainer elected to fix any of them here, condition 3 applies and the round is not quiet, because that fix is unreviewed code like any other. A loop still running on the same old findings means condition 2 is being read in its pre-scope-gate form, which does not terminate. |
+| A round's findings are **all pre-existing**, and the loop will not go quiet | Once they are ticketed under the scope gate **and nothing was fixed in response**, that *is* a quiet round, meaning quiet for condition 2 only: condition 1 still applies, so it does not ship below the floor. Only a defect this diff **caused** blocks a quiet round. If the maintainer elected to fix any of them here, condition 3 applies and the round is not quiet, because that fix is unreviewed code like any other. A loop still running on the same old findings means condition 2 is being read in its pre-scope-gate form, which does not terminate. |
 | `push` says **working tree is not clean** and lists files | A step-1 fix was never committed. Not a nuisance check: `preflight` ran before the rounds edited anything, so this is the only thing between an uncommitted fix and a PR that looks correct while missing it. **Commit** what it lists, then re-run `preflight` and push. Stashing a *fix* clears the check while producing exactly the outcome it exists to prevent: the tree goes clean, the push succeeds, and the fix is not in the diff. The stash itself is safe (`refs/stash` is shared across worktrees and survives `git worktree remove --force`, verified), so a fix stashed by mistake is one `git stash pop` away. Stashing unrelated work in progress is fine. |
 | `push` says **on the default branch** | You are shipping from a checkout that holds `main` (the primary one usually does). Nothing was pushed. Get onto the feature branch, or run the skill from its worktree. Without this the push would have gone straight to `origin/main`, skipping the PR and every check, with `docs.yml` deploying it. |
 | A finding's **fix is itself unreviewed code** | It is, and that is the whole reason for round 2. Two of the fourteen defects in step 1's evidence arrived this way, one an accessibility regression created by the fix for a different accessibility finding. Never merge a fix that no round has seen. |
