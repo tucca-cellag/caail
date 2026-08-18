@@ -233,6 +233,11 @@ right.
    failure the whole phase exists to prevent: a round whose findings were *all* pre-existing satisfies
    condition 2 by construction, so without this the run stops and ships fixes written in response to the
    last round, which is precisely what the "a finding's fix is itself unreviewed code" row forbids.
+   **This changes what termination rests on, so do not try to re-derive it later.** Before condition 3 the
+   sequence ended when the *diff* went quiet. It now ends when the *maintainer* stops electing fixes,
+   which still terminates, because a person choosing to keep fixing is work rather than a loop. It is a
+   different argument though, and this rule cannot be proved terminating from the diff alone. It is not
+   meant to be.
 
 An empty round does not shorten the floor; it only ends the sequence once the floor is already met. So a
 prose diff whose round 1 is empty still gets round 2, and a site-code or guards diff still gets three.
