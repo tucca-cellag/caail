@@ -9,9 +9,8 @@ item is, not on which skill produced it.
 | **GitHub** | `tucca-cellag/caail` (**public**), issues enabled | Discrete self-contained requests, anything a PR will close, content suggestions from outside contributors, reproducible bugs in shipped behaviour |
 
 **The Jira site and cloud id are deliberately not recorded here.** This file is
-committed to a public repo. Resolve them at runtime with
-`getAccessibleAtlassianResources`, then `getVisibleJiraProjects` to confirm the
-`CAAIL` project key.
+committed to a public repo. Resolve them at runtime: `acli jira auth status`
+names the site, and the cloud id is the Keychain entry `JIRA_CLOUD_ID`.
 
 ## Routing rule
 
@@ -39,25 +38,25 @@ recall failure mode that enumeration does not — Jira's text index tokenizes, s
 need. See the `tracker-dedupe` skill.
 
 `~/.claude/hooks/check-tracker-duplicates.sh` enforces this, denying
-`gh issue create` and MCP `createJiraIssue` until a digest exists. The mark is
-time-based (45 minutes), so **one enumeration covers a whole `/to-tickets`
-batch** rather than gating each ticket.
+`gh issue create` and `acli jira workitem create` until the backlog has been
+reviewed. There is NO time-based bypass any more (removed 2026-08-18): the hook
+enumerates on every create and injects the result, so each ticket is gated
+individually and cleared by its own single-use override.
 
 ```bash
 ~/.claude/scripts/tracker-digest.sh --github tucca-cellag/caail
 ```
 
-Jira has no CLI here and is reachable only over MCP, so it is two steps:
+Jira is one command; it fetches the project over REST and compacts it:
 
-```
-searchJiraIssuesUsingJql
-  cloudId: <resolved at runtime>
-  jql: "project = CAAIL ORDER BY created DESC"
-  fields: ["summary","status","issuetype","labels","priority","parent"]
-  maxResults: 100
+```bash
+~/.claude/scripts/jira-cache.sh list CAAIL
 ```
 
-Then `~/.claude/scripts/tracker-digest.sh --jira CAAIL --from <saved-file>`.
+The Rovo MCP was removed 2026-08-18, and could not enumerate a board anyway: it
+returned 5 issues per response regardless of `maxResults` while advancing
+`nextPageToken` by the requested value, so paging at 100 skipped 95 of every 100
+and reported the sweep complete.
 Page with `nextPageToken` until exhausted.
 
 **Request every one of those fields, every time.** A field you omit comes back as
@@ -143,9 +142,9 @@ subject; `Blocks` says one cannot start until the other is finished. Only
 `Blocks` makes a ticket grabbable, which is the mechanic behind tracer-bullet
 tickets: any ticket whose blockers are Done can be picked up.
 
-`createIssueLink` with `inwardIssue` = the blocker, `outwardIssue` = the blocked
-ticket. Without these, `/to-tickets` output degrades to a flat list sequenced by
-hand.
+`acli jira workitem link create --out <blocked> --in <blocker> --type Blocks
+--yes` — note acli's `--in` is the INWARD side, which is the blocker. Without
+these, `/to-tickets` output degrades to a flat list sequenced by hand.
 
 A **wrong** edge is worse than a missing one: a missing edge costs a moment of
 thought, a false edge creates a gate that stops work which was actually ready,
@@ -154,11 +153,11 @@ structural.
 
 ### Operations
 
-- **Create**: `createJiraIssue` with `projectKey: "CAAIL"`.
-- **Read**: `getJiraIssue` with `fields: ["summary","description","comment"]`.
-- **Transition**: `getTransitionsForJiraIssue` then `transitionJiraIssue`.
-- **Comment**: `addCommentToJiraIssue`.
-- **Link**: `createIssueLink` (`getIssueLinkTypes` for the available types).
+- **Create**: `acli jira workitem create --project CAAIL --type Task --summary "..." --description-file <f> --json`. Pass `--json`: without it acli prints only the key, and the reconcile hook needs the numeric id.
+- **Read**: `~/.claude/scripts/jira-cache.sh show CAAIL CAAIL-nn` (description and comments, ADF flattened to text).
+- **Transition**: `acli jira workitem transition --key CAAIL-nn --status "Done" --yes`.
+- **Comment**: `acli jira workitem comment create --key CAAIL-nn --body-file <f>`.
+- **Link**: `acli jira workitem link create --out CAAIL-nn --in CAAIL-mm --type Relates --yes` (`link type` lists them). `acli jira workitem link delete --id <linkId>` is the ONLY way to remove one here — the MCP had no delete verb and the read-only API token cannot write.
 
 ### No GitHub-Jira integration
 
@@ -167,8 +166,8 @@ commits, no cross-linking automation. Consequences to work with rather than
 around:
 
 - **Ticket transitions are explicit.** Nothing transitions a Jira ticket from a
-  commit. Call `getTransitionsForJiraIssue` then `transitionJiraIssue`
-  deliberately.
+  commit. Call `acli jira workitem transition --key CAAIL-nn --status "Done"
+  --yes` deliberately.
 - **A commit message referencing `CAAIL-nn` is a human-readable pointer only.**
   It creates no link on either side. Same for a `#nn` GitHub reference in a Jira
   ticket.
@@ -221,7 +220,7 @@ the wrong venue and GitHub sometimes is.
 
 ## When a skill says "fetch the relevant ticket"
 
-`getJiraIssue` for a `CAAIL-nn` key, `gh issue view <n> --comments` for a `#n`.
+`jira-cache.sh show CAAIL CAAIL-nn` for a key, `gh issue view <n> --comments` for a `#n`.
 
 ## Wayfinding operations
 
@@ -233,9 +232,12 @@ Used by `/wayfinder`. The **map** is one issue with **child** tickets. On Jira:
 - **Child ticket**: a `Task` with the map Workstream as its `parent`. Record the
   ticket type as a `wayfinder:<type>` label — `research`, `prototype`,
   `grilling`, or `task`.
-- **Blocking**: `createIssueLink` with `Blocks`. A ticket is unblocked when every
-  blocker is Done (`statusCategory.key == "done"`, rather than matching a status
-  name).
+- **Blocking**: `acli jira workitem link create --out <blocked> --in <blocker>
+  --type Blocks --yes`. A ticket is unblocked when every blocker is Done
+  (`statusCategory.key == "done"`, rather than matching a status name).
+  `~/.claude/scripts/jira-cache.sh blockers CAAIL` computes this across the whole
+  board, and separates tickets whose blockers are ALL Done — those are falsely
+  parked, and the dead edges should be removed with `link delete`.
 - **Frontier query**: open Tasks under the map Workstream with no open blocker
   and no assignee; first in map order wins.
 - **Claim**: assign to self — the session's first write.
