@@ -170,14 +170,23 @@ right.
   finding, multiSelect. Whatever comes back selected is the stated reason to fix it here, recorded rather
   than assumed; everything left unselected is filed.
 
-  **Build the option list to fit the tool, and say when you had to compress it.** `AskUserQuestion` caps a
-  question at four options, so one option per finding only works for a round with three or fewer. Above
-  that, group them into at most three labelled bundles by the surface they sit on. Always include an
+  **Build the option list to fit the tool, and say when you had to compress it.** `AskUserQuestion` caps
+  the options on one question (**four, observed 2026-08-18**: a snapshot, not a fact about the tool;
+  check it rather than trusting this line, for the same reason the level discussion above refuses to
+  describe another tool's internals). Reserve one slot for "file all of them" and give the findings the
+  rest; when there are more findings than remaining slots, group them into labelled bundles by the
+  surface they sit on. Always include an
   explicit **"file all of them"** option rather than letting an empty submission carry that meaning: an
   empty multiSelect is not a documented no-op, and a safe default that depends on the user submitting
   nothing fails silently the moment they submit something. When you have bundled, say in the round's
   triage which findings went into which bundle, or the compression is invisible and the maintainer has
   approved something they were never shown.
+
+  **Decide the contradictory answer before it arrives.** Selecting a finding *and* "file all of them" is a
+  legal submission and someone will make it, because the file-all option reads as a harmless extra click
+  rather than as an exclusive one. Resolve it the same way every time: **named selections win, and "file
+  all of them" then means "file the rest".** Say that resolution back in the round's triage so the
+  maintainer can correct it, rather than resolving it silently.
 
   **Skip the prompt when it has nothing new to ask.** No out-of-scope finding this round, no prompt. A
   finding **already ticketed by an earlier round** is likewise not re-asked: carry its key forward in the
@@ -211,7 +220,7 @@ right.
 - **Round 3 and beyond, until the findings die out.** Each round takes the previous round's triage list,
   so it stops re-deriving candidates an earlier round already refuted.
 
-**When to stop.** Both conditions, not either:
+**When to stop.** All three conditions, not any one of them:
 
 1. The **floor for the widest shape in the diff** has been reached, judged against the diff **as it stands
    now**, not as preflight found it at step 0. A fix can widen the shape and raise its own floor: a
@@ -242,16 +251,28 @@ right.
 An empty round does not shorten the floor; it only ends the sequence once the floor is already met. So a
 prose diff whose round 1 is empty still gets round 2, and a site-code or guards diff still gets three.
 
-**Stop gate.** Once condition 1 is met and condition 2 is **not**, the choice between another round and
-shipping is the maintainer's, so ask instead of deciding it. Fire one `AskUserQuestion` carrying enough
-for the answer to mean something: the rounds run so far, the floor for the diff's shape **as re-checked
-after the last round's fixes landed**, and every surviving finding labelled either a defect this diff
-caused or already ticketed. Two options, another round or triage-the-rest-and-ship. The reason to ask at
-all is that every round is a whole-diff `/code-review high` whose cost does not shrink as the fixes do, so
-a round prompted by a one-line fix costs what round 1 cost. `CAAIL-269` records eight rounds on PR #205,
-with four findings deliberately left unfixed by the end of them.
+**Stop gate.** The gate fires on one combination only: condition 1 met, condition 3 **met**, and condition
+2 **not**. That is, the floor is done, the last round changed nothing, and what it surfaced were
+diff-caused defects you are proposing to leave unfixed. That is the only state in which shipping is a real
+option, so it is the only state where the choice is the maintainer's. Fire one `AskUserQuestion` carrying
+enough for the answer to mean something: the rounds run so far, the floor for the diff's shape **as
+re-checked after the last round's fixes landed**, and every outstanding finding labelled either a defect
+this diff caused or already ticketed. Two options, another round or triage-the-rest-and-ship. The reason to
+ask at all is that every round is a whole-diff `/code-review high` whose cost does not shrink as the fixes
+do, so a round prompted by a one-line fix costs what round 1 cost. `CAAIL-269` records eight rounds on
+PR #205, with four findings deliberately left unfixed by the end of them.
 
-**The gate does not exist below the floor, and must not be added there.** Rounds 1..floor run unprompted.
+**When condition 3 is unmet, another round is mandatory and there is no prompt.** A round that produced
+fixes has produced unreviewed code, so "ship now" would merge precisely what the Gotchas row forbids: a fix
+no round has seen. There is no decision to put to anyone there, and offering one would only invite the
+wrong answer. This is the path condition 3 creates and it is deliberately the expensive one. The way to
+avoid paying for it is to decline the fix at the scope gate, not to skip the round after making it.
+
+So **"ship" at this gate always means shipping with findings outstanding and unfixed, never with fixes
+nobody has reviewed.** If you are about to offer it in any other state, the gate has been misread.
+
+**The stop gate does not exist below the floor, and must not be added there.** Rounds 1..floor run without
+*it*; the scope gate still fires in them and should, so this paragraph is about the stop gate alone.
 The floor's only enforcement is that it is written unconditionally: step 1 has no `ship-pr.sh` subcommand
 and nothing in CI checks it, so a prompt in front of those rounds would convert a rule into a default, and
 a default gets accepted at the end of a long session, which is exactly when this stage runs. The evidence
@@ -375,11 +396,11 @@ bash .claude/skills/caail-pr-wrapup/ship-pr.sh open-pr "<title>" /tmp/pr-body.md
   level, how many rounds, and that the last one was quiet. **If the rounds ended at the stop gate rather
   than on a quiet round, say so instead and name what was left outstanding**, since a shortened run and a
   completed one are otherwise indistinguishable to a reader of this body. Findings routed to a ticket by
-  the scope gate are named here too, by key, **under the same publishing exception as a declined
-  finding**: one describing an unpatched weakness in a live service is reported only as having been
-  triaged to Jira, naming neither the weakness, the endpoint, nor the key. For that exception alone,
-  treat "declined" and "routed to a ticket" as the same category, even though this file is careful to
-  separate them everywhere else. **Any** finding declined rather than fixed,
+  the scope gate are named here too, by key, and **the publishing exception below covers them as well**:
+  for that exception alone, treat "declined" and "routed to a ticket" as one category, even though this
+  file is careful to separate them everywhere else. Deliberately not restated here, because there is one
+  copy of that rule and it is a few lines down; two copies drifted apart the moment this sentence was
+  written. **Any** finding declined rather than fixed,
   in any round, gets named with its reason, since a reader cannot tell a triaged finding from an
   unnoticed one and the rounds it came from are invisible to them. **The one exception is a declined
   finding that describes an unpatched weakness in a live service** (the events Worker, say): a declined
@@ -585,7 +606,7 @@ adding it there too, or the guard will happily confirm that an incomplete set is
 | Symptom / situation | What it means / do |
 | --- | --- |
 | **Round 1 comes back empty** on a code-heavy or multi-file diff | Read it as a fact about the review, not about the diff. There is no level to raise (the level is always `high`), so run out the floor and say plainly that a round came back empty on a diff that shape. An extra pass narrowed to a hot spot is fine on top of a whole-diff round, never instead of one. |
-| The **stop gate** fires before the floor is met | It should not, and the answer is not to accept it. Rounds 1..floor run without the *stop* gate; it exists only once condition 1 holds and condition 2 does not. The **scope gate** does fire in those rounds and should, so do not read one as evidence the other is misfiring. A stop prompt below the floor turns the floor into a default, which is the erosion the next row is about. Run the remaining floor rounds. |
+| The **stop gate** fires before the floor is met | It should not, and the answer is not to accept it. Rounds 1..floor run without the *stop* gate; it exists only once condition 1 holds, condition 3 holds, and condition 2 does not. The **scope gate** does fire in those rounds and should, so do not read one as evidence the other is misfiring. A stop prompt below the floor turns the floor into a default, which is the erosion the next row is about. Run the remaining floor rounds. |
 | A round's findings are **all pre-existing**, and the loop will not go quiet | Once they are ticketed under the scope gate **and nothing was fixed in response**, that *is* a quiet round: only a defect this diff **caused** blocks one. If the maintainer elected to fix any of them here, condition 3 applies and the round is not quiet, because that fix is unreviewed code like any other. A loop still running on the same old findings means condition 2 is being read in its pre-scope-gate form, which does not terminate. |
 | `push` says **working tree is not clean** and lists files | A step-1 fix was never committed. Not a nuisance check: `preflight` ran before the rounds edited anything, so this is the only thing between an uncommitted fix and a PR that looks correct while missing it. **Commit** what it lists, then re-run `preflight` and push. Stashing a *fix* clears the check while producing exactly the outcome it exists to prevent: the tree goes clean, the push succeeds, and the fix is not in the diff. The stash itself is safe (`refs/stash` is shared across worktrees and survives `git worktree remove --force`, verified), so a fix stashed by mistake is one `git stash pop` away. Stashing unrelated work in progress is fine. |
 | `push` says **on the default branch** | You are shipping from a checkout that holds `main` (the primary one usually does). Nothing was pushed. Get onto the feature branch, or run the skill from its worktree. Without this the push would have gone straight to `origin/main`, skipping the PR and every check, with `docs.yml` deploying it. |
