@@ -21,8 +21,8 @@ rounds can come back down, is there too. The cross-model pass (step 4) stays, as
 rather than the safety gate.
 
 **Step 1 is not unattended.** It carries two *kinds* of `AskUserQuestion` pause, not two pauses: the scope
-gate fires at every round that has an out-of-scope finding, so a long run holds several. They are the only
-two decisions
+gate can fire on any round, so a long run holds several (on the exact condition, and when it is skipped,
+read the gate itself rather than this sentence). They are the only two decisions
 in the phase that belong to the maintainer rather than to the agent: whether to keep reviewing once the
 floor is met (the **stop gate**) and whether a finding this diff did not cause belongs in the PR at all
 (the **scope gate**). Both are prose in a phase with no mechanism, so they are worth exactly the reading
@@ -170,44 +170,29 @@ right.
   change *introduced* one click away is in scope, one that was already there is not.
 
   **Scope gate.** When a round produces findings you have classified as pre-existing, do not act on that
-  classification alone. Put them to the user in **one** `AskUserQuestion` for the round, never one per
-  finding, multiSelect. Whatever comes back selected is the stated reason to fix it here, recorded rather
-  than assumed; everything left unselected is filed.
+  classification alone. **Write the triage first, then ask once.** List every pre-existing finding in the
+  round's triage with the disposition you propose for it, then put that whole triage to the user as a
+  single `AskUserQuestion` with two options: accept it, or adjust it. Their answer is the stated reason,
+  recorded rather than assumed.
 
-  **Keep all three outcomes alive.** The bullet above insists that "not acted on" and "not a defect" are
-  different, and a two-way gate quietly collapses them into one: unselected would mean *filed*, so three
-  pre-existing non-defects become three tickets, at a full backlog re-enumeration each. A finding that is
-  simply not a defect is declined with a reason and never reaches the gate. If some reach it anyway,
-  carry an explicit **"none of these are worth a ticket"** option so declining stays reachable from
-  inside the prompt.
+  Proposing before asking is what keeps this both cheap and honest. The maintainer sees every finding and
+  its proposed fate together, instead of approving a label whose contents are disclosed afterwards, and
+  the prompt stays two options wide however many findings a round produces. An earlier draft of this gate
+  put one option per finding and needed a cap, a bundling rule, a meaning for the unselected ones and a
+  resolution for contradictory submissions; four review rounds found defects in that machinery and none in
+  the idea underneath it. Do not reintroduce it.
 
-  **Build the option list to fit the tool, and say when you had to compress it.** `AskUserQuestion` caps
-  the options on one question (**four, observed 2026-08-18**: a snapshot, not a fact about the tool;
-  check it rather than trusting this line, for the same reason the level discussion above refuses to
-  describe another tool's internals). Reserve one slot for "file all of them" and give the findings the
-  rest; when there are more findings than remaining slots, group them into labelled bundles by the
-  surface they sit on, and **put each bundle's actual contents in that option's description**, since the
-  round's triage is written after the answer comes back and a label alone is approval of something
-  unseen. Note also that a bundle is all-or-nothing, so prefer bundling findings a maintainer would
-  plausibly want to treat alike; when they clearly would not, say so and ask about the odd one
-  separately rather than forcing the bundle. Always include an
-  explicit **"file all of them"** option rather than letting an empty submission carry that meaning: an
-  empty multiSelect is not a documented no-op, and a safe default that depends on the user submitting
-  nothing fails silently the moment they submit something. When you have bundled, say in the round's
-  triage which findings went into which bundle, or the compression is invisible and the maintainer has
-  approved something they were never shown.
-
-  **Decide the contradictory answer before it arrives.** Selecting a finding *and* "file all of them" is a
-  legal submission and someone will make it, because the file-all option reads as a harmless extra click
-  rather than as an exclusive one. Resolve it the same way every time: **named selections win, and "file
-  all of them" then means "file the rest".** Say that resolution back in the round's triage so the
-  maintainer can correct it, rather than resolving it silently.
+  **All three dispositions are available, and they are yours to propose.** The bullet above insists "not
+  acted on" and "not a defect" are different outcomes, so a finding may be ticketed, declined with a
+  reason, or fixed here. Declining is a disposition you write into the triage, not an extra button on a
+  prompt.
 
   **Skip the prompt when it has nothing new to ask.** No out-of-scope finding this round, no prompt. A
-  finding **already ticketed by an earlier round** is likewise not re-asked: carry its key forward in the
-  triage list the way a refuted candidate is carried. Otherwise a long run puts the identical question to
-  the maintainer once per round, which is the prompt fatigue the floor paragraph below is otherwise
-  careful about, and `CAAIL-269` records a run of eight.
+  finding an earlier round already disposed of is not re-proposed either, whichever way it went: carry its
+  disposition forward in the triage list the way a refuted candidate is carried. Ticketed findings carry
+  their key, declined ones carry the reason. Without that, every later round re-finds the same
+  pre-existing problem and re-asks the identical question, which is the fatigue `CAAIL-269`'s eight-round
+  run illustrates.
 
   Every ticket goes to Jira: search the open board first, per `CLAUDE.md`, and a finding that names an
   unpatched weakness in a live service gets `disclosure-private` and no GitHub issue. **Budget for what
@@ -252,7 +237,11 @@ right.
    keeps the sequence alive, and the symptom reads as a thorough reviewer rather than as a broken
    procedure. So do not "simplify" condition 2 back to "no defect in this diff" while the scope gate
    exists; the two were written together.
-3. **Nothing was changed in response to that round.** A pre-existing finding the maintainer elects to fix
+3. **Nothing in the diff was changed in response to that round.** Filing a ticket, declining a finding and
+   updating the triage list are not changes to the diff and do not re-open the sequence; only an edit to
+   the code under review does. Read any other way this condition never clears, since every round produces
+   *some* response, which would reinstate the non-termination condition 2 was rewritten to rule out. A
+   pre-existing finding the maintainer elects to fix
    here is still a fix no round has seen, so selecting one at the scope gate re-opens the sequence exactly
    as a diff-caused defect would. This condition is not redundant with 2, and dropping it recreates the
    failure the whole phase exists to prevent: a round whose findings were *all* pre-existing satisfies
@@ -502,7 +491,10 @@ If a check **fails**, stop — surface it and fix the branch; do not merge red.
 they've already said to merge autonomously this run). Weigh **three** inputs, in this order of weight:
 step 1's review rounds must have ended on a quiet round with every finding fixed or explicitly triaged,
 **or** at the stop gate with the maintainer's explicit decision to ship, in which case the findings left
-outstanding are exactly the ones the PR body names and no others;
+outstanding are exactly the ones the PR body names and no others, **or** at the stop gate's unchanged-set
+rule, where the maintainer asked for another round and that round left the outstanding set exactly as it
+was. Treat that third ending as what it is and do not record it as a decision to ship: the maintainer
+chose more review and got it, the review found nothing further, and the PR body says so in those words;
 CI must be green (step 5); and the step 4 cross-model pass must not have left unresolved confirmed issues
 (a "fix-first"). A green CI plus a thin cross-model report is **not** a substitute for the first of those:
 neither of them reads the diff the way step 1 does. Then:
@@ -630,7 +622,7 @@ adding it there too, or the guard will happily confirm that an incomplete set is
 | --- | --- |
 | **Round 1 comes back empty** on a code-heavy or multi-file diff | Read it as a fact about the review, not about the diff. There is no level to raise (the level is always `high`), so run out the floor and say plainly that a round came back empty on a diff that shape. An extra pass narrowed to a hot spot is fine on top of a whole-diff round, never instead of one. |
 | The **stop gate** fires before the floor is met | It should not, and the answer is not to accept it. Rounds 1..floor run without the *stop* gate; it exists only once condition 1 holds, condition 3 holds, and condition 2 does not. The **scope gate** does fire in those rounds and should, so do not read one as evidence the other is misfiring. A stop prompt below the floor turns the floor into a default, which is the erosion the next row is about. Run the remaining floor rounds. |
-| A round's findings are **all pre-existing**, and the loop will not go quiet | Once they are ticketed under the scope gate **and nothing was fixed in response**, that *is* a quiet round, meaning quiet for condition 2 only: condition 1 still applies, so it does not ship below the floor. Only a defect this diff **caused** blocks a quiet round. If the maintainer elected to fix any of them here, condition 3 applies and the round is not quiet, because that fix is unreviewed code like any other. A loop still running on the same old findings means condition 2 is being read in its pre-scope-gate form, which does not terminate. |
+| A round's findings are **all pre-existing**, and the loop will not go quiet | Once they are ticketed under the scope gate **and nothing in the diff was changed in response**, that *is* a quiet round, meaning quiet for condition 2 only: condition 1 still applies, so it does not ship below the floor. Only a defect this diff **caused** blocks a quiet round. If the maintainer elected to fix any of them here, condition 3 applies and the round is not quiet, because that fix is unreviewed code like any other. A loop still running on the same old findings means condition 2 is being read in its pre-scope-gate form, which does not terminate. |
 | `push` says **working tree is not clean** and lists files | A step-1 fix was never committed. Not a nuisance check: `preflight` ran before the rounds edited anything, so this is the only thing between an uncommitted fix and a PR that looks correct while missing it. **Commit** what it lists, then re-run `preflight` and push. Stashing a *fix* clears the check while producing exactly the outcome it exists to prevent: the tree goes clean, the push succeeds, and the fix is not in the diff. The stash itself is safe (`refs/stash` is shared across worktrees and survives `git worktree remove --force`, verified), so a fix stashed by mistake is one `git stash pop` away. Stashing unrelated work in progress is fine. |
 | `push` says **on the default branch** | You are shipping from a checkout that holds `main` (the primary one usually does). Nothing was pushed. Get onto the feature branch, or run the skill from its worktree. Without this the push would have gone straight to `origin/main`, skipping the PR and every check, with `docs.yml` deploying it. |
 | A finding's **fix is itself unreviewed code** | It is, and that is the whole reason for round 2. Two of the fourteen defects in step 1's evidence arrived this way, one an accessibility regression created by the fix for a different accessibility finding. Never merge a fix that no round has seen. |
