@@ -21,8 +21,10 @@ rounds can come back down, is there too. The cross-model pass (step 4) stays, as
 rather than the safety gate.
 
 **Step 1 usually does not run unattended.** It carries two *kinds* of `AskUserQuestion` pause, not two pauses, and
-a run whose floor rounds come back quiet *and* surface no pre-existing findings fires neither and finishes
-without asking anything. Quiet means condition 2 only, so a quiet round that surfaces a pre-existing
+a run whose floor rounds come back quiet, surface no pre-existing findings *and* change nothing in the
+diff fires neither and finishes without asking anything. All three matter: "quiet" is condition 2 alone, so
+a round that found a defect and fixed it is quiet while condition 3 is unmet, and the stop gate must
+still fire. Quiet means condition 2 only, so a quiet round that surfaces a pre-existing
 finding still fires the scope gate: the scope
 gate can fire on any round, and the stop gate once the floor round has finished and before every round
 after it, so a long run holds several of each
@@ -135,7 +137,7 @@ bash .claude/skills/caail-pr-wrapup/ship-pr.sh open-pr "<title>" /tmp/pr-body.md
 - **Body:** what changed and *why*; the research area(s)/AI method(s) or routes it touches; and the
   verification you already ran (tests/build/e2e, reviewer agents). Say **how the review went**: the
   level and how many rounds, and then **which of the stop rule's two endings this run reached**. A quiet
-  **Ending 1**, naming its three conditions rather than calling it a quiet round: say so. The maintainer answering **"ship now"** at the stop gate: say
+  **Ending 1**, named by its three conditions and never as "a quiet round": say so. The maintainer answering **"ship now"** at the stop gate: say
   that instead, name everything left outstanding, and **if the last round changed the diff, say that those
   fixes were never reviewed and give the reason they gave**. That is the one ending that ships code no
   round has read, so a body that omits it is not merely thin, it is wrong. Write this here, because the
@@ -143,13 +145,12 @@ bash .claude/skills/caail-pr-wrapup/ship-pr.sh open-pr "<title>" /tmp/pr-body.md
   PR is already open. Findings routed to a ticket by
   the scope gate are named here too, by key, and **the publishing exception below covers them as well**:
   for that exception alone, treat "declined" and "routed to a ticket" as one category, even though this
-  file is careful to separate them everywhere else. Deliberately not restated here, because there is one
-  copy of that rule and it is a few lines down; two copies drifted apart the moment this sentence was
-  written. **The publishing carve-out is defined once, in step 1's Definitions**, and it binds here, where
+  file is careful to separate them everywhere else. Deliberately not restated here: there is one copy and it is in
+  `reference/review-phase.md`, and two copies drifted apart the moment a second was written. **The publishing carve-out is defined once, in the Definitions in `reference/review-phase.md`**, and it binds here, where
   the body is actually written. **Any** finding declined rather than fixed,
   in any round, gets named with its reason, since a reader cannot tell a triaged finding from an
   unnoticed one and the rounds it came from are invisible to them. **The exception is the publishing
-  carve-out in step 1's Definitions**, which governs its own scope; this body is world-readable and
+  carve-out in the Definitions in `reference/review-phase.md`**, which governs its own scope; this body is world-readable and
   permanent, and publishing what that carve-out withholds would breach `.claude/rules/publishing.md`.
   **Nothing will stop you**, so decide before you write it: `check-public-publish.sh` is a PreToolUse
   *Bash* hook that matches `gh pr create` at command position, and step 3 runs `gh pr create` **inside**
@@ -240,7 +241,7 @@ step 1's review rounds must have genuinely reached an ending, which means **chec
 conditions** rather than accepting the label: "it ended" is not evidence, since every run ends somehow. In the second case the
 findings left outstanding are exactly the ones the PR body names and no others, and if the last round
 changed the diff the body also says those fixes went unreviewed. **The exception is the publishing
-carve-out in step 1's Definitions**, so a finding it withholds satisfies this check by being unnamed rather
+carve-out in the Definitions in `reference/review-phase.md`**, so a finding it withholds satisfies this check by being unnamed rather
 than failing it. Do not "fix" a failing check here by naming it; that publishes the weakness in a PR that
 cannot be deleted. CI must be green (step 5); and the step 4 cross-model pass must not have left unresolved confirmed issues
 (a "fix-first"). **A "ship now" answer is not itself an autonomous-merge waiver**: it authorised ending

@@ -27,7 +27,7 @@ B is therefore unguarded against an unpushed commit on A. Nothing checks that th
 and it only text-scrapes the `*_PATHS` variables and their `matches_*` wrappers; it never executes
 `assert_shippable` or the divergence block. So a refactor could silently turn either into a no-op and
 every check would stay green, on the one script whose failure mode is shipping a PR that is missing a fix.
-Until there is a harness, treat both as things to re-demonstrate by hand (per the `CAAIL-221` rule in `reference/review-phase.md`)
+Until there is a harness, treat both as things to re-demonstrate by hand (per the `CAAIL-221` rule in `review-phase.md`)
 whenever you touch them, rather than as things CI is watching.
 That is deliberate: a skipped round produces a thin PR body a reader can notice, whereas an uncommitted
 fix produces a PR that *looks* right and is missing the fix, and nothing downstream can tell.

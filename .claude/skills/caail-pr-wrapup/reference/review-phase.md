@@ -311,7 +311,10 @@ absolutely and binds the maintainer only with disclosure.
    because there is nothing to decide. Pre-existing findings ticketed or declined along the way do not prevent this ending; if they
    did, any run that filed a single ticket could never reach either ending and would match no case at all.
 2. **The maintainer answers "ship now".** The body names whatever was outstanding, and if the last round
-   changed the diff it also says those fixes went unreviewed and gives the reason.
+   changed the diff it also says those fixes went unreviewed and gives the reason. **Ending 2 does not skip
+   "close the phase properly" below**: the last round's fixes are by construction ungated code, so re-run
+   the local gate for whatever it touched, commit, and re-run `preflight` before step 2. `push` catches the
+   uncommitted half of that and nothing catches the un-re-gated half.
 
 There is deliberately no rule ending the run on the agent's own judgement, and no cap on rounds. Asking is
 cheap beside a whole-diff `/code-review high`, and a maintainer who wants ten rounds may have ten.
@@ -329,7 +332,7 @@ The floor's only enforcement is that it is written unconditionally: step 1 has n
 and nothing in CI checks it, so a prompt in front of those rounds would convert a rule into a default, and
 a default gets accepted at the end of a long session, which is exactly when this stage runs. The evidence
 those rounds rest on is in the rationale block at the end of this file, and the row in
-`reference/gotchas.md` refusing to collapse step 1 to a
+`gotchas.md` refusing to collapse step 1 to a
 single pass applies just as much to reaching that end through this gate.
 
 **An empty first round on a wide diff is suspicious, not reassuring.** There is no level to raise, so the
@@ -350,7 +353,7 @@ checkpoint that used to sit between editing and shipping:
   | the committed NDJSON | `db:check` **and** `db:verify`, then `db:emit` and confirm it **introduces nothing new** (the fix itself is still uncommitted, so `git diff` is non-empty by construction; what you are checking is that re-emitting adds no further Markdown change). Then `pnpm --dir site parse` and commit whatever changes under `site/public/api/` and `site/public/setup.md`: those are NDJSON-derived, `pnpm test` does not regenerate them, and `lint-papers.yml`'s API sync guard re-derives them in CI, so skipping this goes red at step 5 after the push |
   | the curated DOI / license / related-DOI inputs (`dois-manual.json`, `licenses-manual.json`, `dois-related.json`) | **`db:reseed-axes` first**, then the NDJSON row above. Those files are inputs that get folded into the NDJSON; until the reseed runs, the intended change is not in the DB at all, so `db:check` passes and `db:emit` produces nothing while nothing you meant to change has happened |
   | `check-public-publish.sh` | `python3 .claude/hooks/check-public-publish.test.py` |
-  | `block-generated-edits.py` | `pnpm --dir site test`. Its only coverage is `site/scripts/db/hook.test.ts`, so the publish-hook suite above does **not** exercise it. The two hooks are tested in different places; `reference/ci-paths.md` says so too |
+  | `block-generated-edits.py` | `pnpm --dir site test`. Its only coverage is `site/scripts/db/hook.test.ts`, so the publish-hook suite above does **not** exercise it. The two hooks are tested in different places; `ci-paths.md` says so too |
   | `ship-pr.sh`, `check-ci-paths.py`, `.github/workflows/**` | `python3 .claude/skills/caail-pr-wrapup/check-ci-paths.py` |
   | canonical Markdown (`Datasets/**`, `Primers/**`, root `*.md`, `Taxonomy.md`), `skills/**`, `plugin/skills/**`, `.claude/settings.json` | `pnpm --dir site test`, **and** `pnpm --dir site parse` followed by `git diff --exit-code -- site/public/api site/public/setup.md`. The second is not optional and `test` does not cover it: `test` never regenerates those artifacts, so the committed API JSON and `setup.md` can disagree with the model and only `lint-papers.yml`'s sync guard notices, at step 5, after the push |
   | anything not listed above | run `pnpm --dir site test` and think about which guard in `lint-papers.yml` and `test.yml` covers the path. A shape nobody listed is not a shape nothing checks |
