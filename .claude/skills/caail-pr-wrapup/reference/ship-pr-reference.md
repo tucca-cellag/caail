@@ -4,7 +4,7 @@
 | --- | --- | --- |
 | `preflight` | branch/tree/auth checks + CI prediction + route hints | no |
 | `push` | `git push -u origin <branch>`; **re-asserts branch, clean tree and auth first** | yes |
-| `open-pr <title> <body-file>` | `gh pr create --base main`; prints PR url | yes |
+| `open-pr <title> <body-file>` | `gh pr create --base "$DEFAULT_BRANCH"` (resolved from `gh repo view`, not hardcoded, so a fork works); prints PR url | yes |
 | `watch-checks <pr>` | blocks on checks; 0 if none/clean, non-zero on failure | no |
 | `merge <pr>` | **when run from the PR's own branch**, refuses if local `HEAD` differs from the PR head, naming which way it diverged since the remedies are opposite. From any other branch that check cannot mean anything and is skipped, so an unpushed commit is **not** caught there. Then merges + deletes the remote branch (gotcha-handled); prints merge SHA | yes |
 | `watch-deploy <merge-sha>` | finds + watches the `docs.yml` run; 0 if no deploy fires | no |
