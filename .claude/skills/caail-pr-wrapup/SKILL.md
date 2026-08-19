@@ -199,7 +199,8 @@ right.
   resolution for contradictory submissions; four review rounds found defects in that machinery and none in
   the idea underneath it. Do not reintroduce it.
 
-  **All three dispositions are available, and they are yours to propose.** The bullet above insists "not
+  **All four dispositions are available, and they are yours to propose** (see Definitions; a pre-existing
+  finding that is simply not a defect is **refuted**, not ticketed).** The bullet above insists "not
   acted on" and "not a defect" are different outcomes, so a finding may be ticketed, declined with a
   reason, or fixed here. Declining is a disposition you write into the triage, not an extra button on a
   prompt.
@@ -254,10 +255,14 @@ written in two places, with the fix applied to one of them. If you change a defi
 nowhere else.
 
 - **Blocking.** A defect this diff *caused* that has been neither fixed nor refuted, **including one
-  deferred to Jira and one declined**. Only fixing or refuting clears it. Blocking items are the only ones
-  that bear on whether the sequence may end.
+  deferred to Jira and one declined**. Only fixing or refuting clears it. Blocking items are what
+  condition 2 tests; conditions 1 and 3 are separate and equally binding, so "nothing is blocking" is never
+  on its own a reason to stop.
 - **Disposed of.** A *pre-existing* finding, ticketed or declined. Shown at the gates for context, never
   blocking.
+- **Outstanding.** Blocking items **and** disposed-of items together, which is everything a round surfaced
+  and did not refute or fix. The gates display all of it; only the blocking part governs whether the
+  sequence may end, and only the blocking part is what an ending 2 body is disclosing.
 - **The four dispositions.** **Fixed**, changed in the diff. **Refuted**, shown not to be a defect, with
   the reason stated. **Deferred**, agreed real and filed to Jira. **Declined**, agreed real and left alone.
   Only the first two clear a blocking finding. The last two leave it blocking, which is exactly why
@@ -272,7 +277,9 @@ nowhere else.
   that finding **however it was disposed of**, declined or deferred or scope-gate-routed. A PR cannot be
   deleted, so this binds wherever the body is actually written, which is step 3.
 
-**Severity, and who decides it.** The stop rule turns on whether a round produced a **Major**, so classify
+**Severity, and who decides it.** The stop *gate*'s option set turns on whether a **Major** is
+**outstanding** (the stop rule's three conditions never mention severity, and a Major found and fixed in
+round 1 governs nothing), so classify
 every finding yourself and treat the reviewer's own label as evidence rather than as the answer. Across the
 rounds run on the change that added this section (**ten by 2026-08-19**, a snapshot, and deliberately
 without a command beside it: nothing in the repo counts review rounds, and `git log` counts commits, which
@@ -282,21 +289,28 @@ High/Medium/Low, lowercase variants), hybrids like `MEDIUM-HIGH`, and **no label
 A rule that reads a field which is sometimes absent is a rule that is sometimes undefined.
 
 **Three outcomes are Major by definition, whatever label arrives with them**, because they are named by
-their consequence in this repo rather than by anyone's severity scale. **The test applies to a finding
-about this file, never to the run's current state**: a Major is one where *an agent following the file as
-written* would end up doing the thing. The pending state at the stop gate is not a finding, and reading it
-as one is how this rule deadlocks itself, since "fixes are unreviewed until someone says otherwise" is
-exactly the state the gate exists to resolve.
+their consequence in this repo rather than by anyone's severity scale. **They are about what shipping this
+PR would do, not about what any one file says**, so they apply to every diff this skill ever ships and not
+only to changes to this skill:
 
-1. Following the file would **publish a `disclosure-private` finding**, or any unpatched weakness in a live
-   service, into a PR body, commit message or issue. PRs cannot be deleted.
-2. Following the file would **merge code no round has read without the maintainer having answered "ship
-   now" to precisely that**. Unreviewed fixes sitting in the diff at the gate are not this; being asked
-   about them is the remedy working.
-3. Following the file would **merge below the floor**, or erode the floor so that a later run does.
+1. Shipping would **publish a `disclosure-private` finding**, or any unpatched weakness in a live service,
+   into a PR body, commit message or issue. PRs cannot be deleted.
+2. Shipping would **merge code no round has read**, without the maintainer having answered "ship now" to
+   precisely that.
+3. Shipping would **merge below the floor**, or erode the floor so a later run does.
 
-Beyond those three, a Major is a finding that would make an agent following this file *do* the wrong thing,
-as against one that makes it read awkwardly. When you are unsure, say which of the three it is nearest and
+**Beyond those three, a Major is a defect in the change under review that would cause wrong behaviour, data
+loss, or a security weakness if merged.** For a content or procedure diff that means a rule an agent
+following it would act on wrongly; for a code diff it means the ordinary thing. State it in terms of the
+consequence, never the file.
+
+**Two scoping traps, both hit while writing this.** The first: the test classifies a **finding**, never the
+run's current state. Unreviewed fixes sitting in the diff at the gate are not Major 2; being asked about
+them is the remedy working, and reading the pending state as a finding deadlocks the gate, because the
+option it withholds is the only one that ends the run. The second, which is how the first was
+over-corrected: scoping the classes to "a finding about this file" made every one of them unmatchable on an
+ordinary `site/src/**` diff, so the withholding rule engaged only when this skill reviewed itself. A safety
+rule that fires solely on its own test case is not a safety rule. When you are unsure, say which of the three it is nearest and
 let the maintainer rule. Do not settle it by quoting the reviewer's label, and do not inflate severity to
 justify another round.
 
@@ -348,13 +362,13 @@ fresh output. So a prose diff whose round 1 is empty still gets round 2, and a s
 still gets three.
 
 **Stop gate.** Once the floor is met, ask before every further round. **One question, always the same
-shape.** Propose one of the four dispositions (see Definitions) for every outstanding finding first,
-exactly as the scope gate does, and remember that **declining or deferring a blocking finding does not
+shape.** Propose one of the four dispositions (see Definitions) for every outstanding finding first, the
+same way the scope gate does, and remember that **declining or deferring a blocking finding does not
 clear it**, so a triage full of those is an ending 2 and must be offered as one, then offer **two options: accept this triage and run another round, or ship now, leaving
-everything outstanding unfixed and named in the body.** Do not call that second option "declined": this
-file uses *refuted* for a finding shown not to be a defect, and these are agreed real and shipped anyway,
-which is the opposite. A body reporting them as refuted would undo the disclosure this ending exists to
-force. Anything finer grained arrives through **Other**. Since condition 3 is absolute, a
+everything outstanding unfixed and named in the body.** In the Definitions' vocabulary those findings end
+up **declined**, agreed real and left alone, which is what ship-now does to them. Do not report them as
+**refuted**: that word is reserved for a finding shown not to be a defect, and using it here would undo the
+disclosure this ending exists to force. Anything finer grained arrives through **Other**. Since condition 3 is absolute, a
 triage that proposes **newly** any fix *is* another round; there is no third option where a fix proposed
 here lands and the run still ends. Fixes that landed in earlier rounds are a different matter entirely:
 they are why condition 3 is unmet and the gate fired at all, and "ship now" ends the run with them in the
@@ -368,13 +382,10 @@ The question carries four things, and they are what make the answer mean anythin
   reuse: a fix can widen the shape and raise its own floor, and the state right after a fix landed is
   where that happens. If the re-checked floor is no longer met, do not ask at all, and run the remaining
   floor rounds.
-- **Everything still outstanding, split into the two kinds that are not the same thing.** **Blocking**
-  items are defects this diff caused that have been neither fixed nor refuted, *including any deferred to
-  Jira*. **Disposed of** items are pre-existing findings ticketed or declined; they are shown because they
-  are part of what the round did, and they do not stop the run. A diff-caused defect that was deferred is
-  **blocking**, never disposed of: it is the one item that is both filed and unresolved, and showing it as
-  settled at the moment someone chooses whether to ship is the worst place to lose it. Only blocking items
-  bear on whether the sequence may end.
+- **Everything outstanding, labelled blocking or disposed of** as Definitions sets those out. Get the
+  labels right rather than restating them here: a diff-caused defect that was deferred *or declined* is
+  blocking, and showing it as settled at the moment someone chooses whether to ship is the worst possible
+  place to lose it.
 - **What has changed since you last asked**, including "nothing". Someone being asked a third time should
   be able to see that it is the same question.
 - **Whether the last round changed the diff.** If it did, say that shipping now merges code no round has
@@ -564,11 +575,9 @@ bash .claude/skills/caail-pr-wrapup/ship-pr.sh open-pr "<title>" /tmp/pr-body.md
   written. **The publishing carve-out is defined once, in step 1's Definitions**, and it binds here, where
   the body is actually written. **Any** finding declined rather than fixed,
   in any round, gets named with its reason, since a reader cannot tell a triaged finding from an
-  unnoticed one and the rounds it came from are invisible to them. **The one exception is a declined
-  finding that describes an unpatched weakness in a live service** (the events Worker, say): a declined
-  finding is by construction unfixed, and this body is world-readable and permanent. That one goes to
-  Jira with `disclosure-private`, and the body says only that a finding was triaged there, naming
-  neither the weakness nor the endpoint. Publishing it would breach `.claude/rules/publishing.md`.
+  unnoticed one and the rounds it came from are invisible to them. **The exception is the publishing
+  carve-out in step 1's Definitions**, which governs its own scope; this body is world-readable and
+  permanent, and publishing what that carve-out withholds would breach `.claude/rules/publishing.md`.
   **Nothing will stop you**, so decide before you write it: `check-public-publish.sh` is a PreToolUse
   *Bash* hook that matches `gh pr create` at command position, and step 3 runs `gh pr create` **inside**
   `ship-pr.sh`, where the hook cannot see it. On this path there is no deny and not even the visibility
@@ -606,9 +615,12 @@ recommendation: ship / fix-first / needs-human-call**. Feed that into the step 6
   the weaker of the two reviewers, and a thin report is its normal output whether or not the diff is
   sound. Step 1's ending, whichever of the two it was, is what "reviewed" rests on.
 - **fix-first** (confirmed correctness/security issues) → stop, fix them, commit + push (this updates the
-  open PR), then **re-review**: the "or proceed" that used to sit here is gone, because step 6 now checks
-  which of the stop rule's two endings step 1 reached, and proceeding without a round leaves that ending
-  describing a diff the fixes have already changed. Don't merge over confirmed real findings. A finding
+  open PR), then **re-review**: the "or proceed" that used to sit here is gone, because step 6 checks which
+  ending step 1 reached, and proceeding without a round leaves that ending describing a diff the fixes have
+  already changed. That is a rule about what *you* may decide, not a fourth ending. The fixes changed the
+  diff, so condition 3 is unmet and the stop gate fires as usual, and the maintainer may answer "ship now"
+  there and end the run without the round. Record it as ending 2 and say the fix-first fixes went
+  unreviewed. Don't merge over confirmed real findings. A finding
   strong enough to land here is worth an extra step-1 round on the updated diff, since the fix is now
   unreviewed code. That round can change how the review ended, and the body was composed back at step 3,
   so **amend it with `gh pr edit` rather than leaving the open PR describing an ending that no longer
@@ -654,11 +666,10 @@ they've already said to merge autonomously this run). Weigh **three** inputs, in
 step 1's review rounds must have ended at **ending 1 or ending 2** as step 1's Definitions set them out,
 and ending 1 means checking its three conditions rather than the "quiet round" shorthand. In the second case the
 findings left outstanding are exactly the ones the PR body names and no others, and if the last round
-changed the diff the body also says those fixes went unreviewed. **The one exception is step 3's
-publishing carve-out**: a finding describing an unpatched weakness in a live service is deliberately
-unnamed: see the publishing carve-out in step 1's Definitions for what it reaches. An unnamed outstanding
-finding of that kind satisfies this check rather than failing it. Do
-not "fix" a failing check here by naming it; that publishes the weakness in a PR that cannot be deleted. CI must be green (step 5); and the step 4 cross-model pass must not have left unresolved confirmed issues
+changed the diff the body also says those fixes went unreviewed. **The exception is the publishing
+carve-out in step 1's Definitions**, so a finding it withholds satisfies this check by being unnamed rather
+than failing it. Do not "fix" a failing check here by naming it; that publishes the weakness in a PR that
+cannot be deleted. CI must be green (step 5); and the step 4 cross-model pass must not have left unresolved confirmed issues
 (a "fix-first"). **A "ship now" answer is not itself an autonomous-merge waiver**: it authorised ending
 the review, not merging unasked, so it alone never substitutes for the confirmation above, though a waiver
 the user granted separately still stands. A green CI plus a thin cross-model report is **not** a substitute
