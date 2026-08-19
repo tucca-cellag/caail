@@ -8,9 +8,9 @@
 - The floor on rounds, by blast radius
 - What each round has to do
 - **Definitions** (blocking, disposed of, outstanding, the four dispositions, the two endings, the publishing carve-out) — the single source for every load-bearing term
+- The **scope gate** (per-round, out-of-scope findings), inside "What each round has to do" above
 - Severity: classified by you, shown at the gates, never acted on by the agent
 - When to stop: the three conditions
-- The **scope gate** (per-round, out-of-scope findings)
 - The **stop gate** (post-floor, whether to keep reviewing)
 - Closing the phase: re-running the local gate for whatever a round touched
 - How to review, each rule bought with a real defect

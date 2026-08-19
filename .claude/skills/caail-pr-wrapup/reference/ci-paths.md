@@ -27,11 +27,20 @@ correct because there is nothing to run. **Skills split both ways**, so do not g
 either direction: `skills/**`, `plugin/skills/**` and `.claude/skills/matrix-classification-audit/**` are
 in `lint-papers.yml` and `.claude/skills/caail-pr-wrapup/**` is in `guards.yml`, while the other four
 `.claude/skills/*` directories (`caail-db-authoring`, `papers-dataset-audit`, `zotero-collection-scope`,
-`zotero-to-caail-sync`) are in no filter and genuinely run nothing. `.claude/hooks/**` and
+`zotero-to-caail-sync`) are in no filter and genuinely run nothing.
+
+**The full check-free list, which lives here and nowhere else** (`SKILL.md` step 5 points at it rather
+than restating it, because the enumeration has already been wrong in both directions once each):
+`.claude/` rules and agents, the four unfiltered `.claude/skills/*` directories named above, `docs/**`,
+`LICENSE`, `CITATION.cff`, `.zenodo.json`, `.gitignore`, and the two plugin manifests
+(`.claude-plugin/marketplace.json` and `plugin/.claude-plugin/plugin.json`; only `plugin/skills/**` is
+filtered, not `plugin/**`). `preflight` computes the real answer from the YAML and the YAML wins over this
+list. `.claude/hooks/**` and
 `.claude/settings.json` trigger **both** `test.yml` and `guards.yml`, because the two hooks are tested
 in different places (`check-public-publish.test.py` in `guards.yml`, `block-generated-edits.py` via
-`site/scripts/db/hook.test.ts` in the vitest suite). Editing this skill or **any** workflow triggers
-`guards.yml` alone — deliberately, so a prose tweak here does not spend an Astro build, a Playwright
+`site/scripts/db/hook.test.ts` in the vitest suite). Editing this skill, or **any** workflow other than
+`test.yml` itself, triggers `guards.yml` alone, deliberately, so a prose tweak here does not spend an
+Astro build, a Playwright
 browser install and the axe suite.
 
 **Two paths gaps were fixed on 2026-08-12 and the class is worth remembering**, since `'*.md'` is

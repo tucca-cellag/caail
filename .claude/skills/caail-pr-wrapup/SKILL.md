@@ -202,7 +202,13 @@ recommendation: ship / fix-first / needs-human-call**. Feed that into the step 6
      longer met, run the remaining floor rounds and do not ask**, since the stop gate may never fire below
      the floor. Otherwise the gate fires as usual (the fixes changed the diff, so condition 3 is unmet) and
      the maintainer may answer "ship now" there and end the run without a further round.
-  4. **Amend the PR body with `gh pr edit`, whichever way the floor re-check went.** The body was composed
+  4. **Any fix those rounds produce goes back through items 1 and 2**, re-gated, committed and pushed,
+     before you go anywhere near step 5. Nothing downstream will catch it if you don't: `preflight` and
+     `push` are both behind you, and `merge` checks only that local `HEAD` matches the PR head, never that
+     the tree is clean, so an uncommitted fix from a step-4 round merges silently. That is exactly the
+     "PR that looks right and is missing the fix" case `reference/ship-pr-reference.md` says nothing
+     downstream can detect.
+  5. **Amend the PR body with `gh pr edit`, whichever way the floor re-check went.** The body was composed
      back at step 3 of this skill and can no longer be right: a further round can change how the review
      ended, and a "ship now" here makes this an ending 2 on a PR whose body still claims ending 1. Step 6
      checks ending 2's disclosure against that body, so leaving it unamended either fails a check that
