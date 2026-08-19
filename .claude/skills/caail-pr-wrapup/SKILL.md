@@ -32,7 +32,8 @@ the gates rather than this sentence for when. They are the only two decisions
 in the phase that belong to the maintainer rather than to the agent: whether to keep reviewing once the
 floor is met (the **stop gate**) and whether a finding this diff did not cause belongs in the PR at all
 (the **scope gate**). Both are prose in a phase with no mechanism, so they are worth exactly the reading
-of them and no more; the closing note of `reference/ship-pr-reference.md` says why that matters.
+of them and no more; `reference/ship-pr-reference.md`'s opening note, that step 1 has no subcommand and
+nothing in CI enforces it, says why that matters.
 
 **The two fire at different moments, and collapsing them defeats one of them.** The **scope gate** runs at
 every round's triage, *including rounds below the floor*, because a finding's disposition is decided the
@@ -117,7 +118,7 @@ undocumented:
 - **Two `AskUserQuestion` gates live in this phase**, so it may not run unattended: a **scope gate** each
   round for findings this diff did not cause, and a **stop gate** once the floor is met for whether to keep
   reviewing. Neither is an agent's decision to take.
-- **Severity is yours to weigh, not the agent's to act on.** Findings are graded and shown at the stop
+- **Severity is the maintainer's to weigh, never yours to act on.** Findings are graded and shown at the stop
   gate; nothing in the phase withholds an option or forces a round on the strength of a grade.
 
 ### 2. Push
@@ -185,30 +186,31 @@ recommendation: ship / fix-first / needs-human-call**. Feed that into the step 6
 - **ship** → proceed, but read it as "this reviewer found nothing", not as a clean bill of health. It is
   the weaker of the two reviewers, and a thin report is its normal output whether or not the diff is
   sound. Step 1's ending, whichever of the two it was, is what "reviewed" rests on.
-- **fix-first** (confirmed correctness/security issues) → stop and fix them. **Re-gate before you push**:
-  these fixes are ungated code exactly as a review round's are, so run the re-gate table in
-  `reference/review-phase.md` for whatever they touched, and commit whatever it regenerates. Nothing
-  downstream catches this: the push has already happened by the time you are here, so `preflight`'s
-  dirty-tree guard is behind you, and a fix under `site/src/lib/**` changes what the parser emits into
-  `site/public/api/**` while `lint-papers.yml`'s API sync guard does not fire on `site/src/**`, so a stale
-  endpoint ships with every check green. **Then amend the PR body with `gh pr edit` whichever way this
-  goes**, because the body was composed at step 3 and both branches below can change what it should say.
-  Then commit + push (this updates the open PR) and **re-review**: the "or proceed" that used to sit here is gone, because step 6 checks which
-  ending step 1 reached, and proceeding without a round leaves that ending describing a diff the fixes have
-  already changed. That is a rule about what *you* may decide, not a fourth ending. The fixes changed the
-  diff, so condition 3 is unmet and the run continues; whether the **gate** then fires is the gate's own
-  question, not this step's. **Re-check the floor first**, because a fix-first fix is exactly the kind that
-  widens the shape: a security fix touching `site/src/**` or a hook turns a prose PR into a 3-round diff,
-  and the gate is forbidden to ask below the floor. If the floor still holds, the maintainer may answer
-  "ship now" and end the run without the round; **that makes this an ending 2 on a PR whose body says
-  ending 1**, so amend the body to say so and to name the fix-first fixes as unreviewed, or step 6 checks
-  ending 2's disclosure against a body that never claimed it. If the floor does not hold, run the
-  remaining floor rounds and do not ask. Don't merge over confirmed real findings. A finding
-  strong enough to land here is worth an extra step-1 round on the updated diff, since the fix is now
-  unreviewed code. That round can change how the review ended, and the body was composed back at step 3,
-  so **amend it with `gh pr edit` rather than leaving the open PR describing an ending that no longer
-  happened**. This is the one place the body is written after the PR exists; `ship-pr.sh` has no
-  subcommand for it, which is why the command is named here.
+- **fix-first** (confirmed correctness/security issues) → stop and fix them, in this order:
+
+  1. **Re-gate the fixes before pushing.** They are ungated code exactly as a review round's are, so run
+     the re-gate table in `reference/review-phase.md` for whatever they touched and commit what it
+     regenerates. **Read that table's timings relative to the push you are about to make, not to step 2**,
+     which is already behind you: a `workers/**` fix has to be deployed by hand *now*, because no workflow
+     deploys the Worker and the table's "before step 2" wording is unreachable from here. Nothing
+     downstream catches any of this. `preflight`'s dirty-tree guard ran before step 2, and a fix under
+     `site/src/lib/**` changes what the parser emits into `site/public/api/**` while `lint-papers.yml`'s
+     API sync guard does not fire on `site/src/**`, so a stale endpoint would ship with every check green.
+  2. **Commit and push.** This updates the open PR.
+  3. **Re-check the floor**, because a fix-first fix is exactly the kind that widens the shape: one
+     touching `site/src/**` or a hook turns a prose PR into a 3-round diff. **If the re-checked floor is no
+     longer met, run the remaining floor rounds and do not ask**, since the stop gate may never fire below
+     the floor. Otherwise the gate fires as usual (the fixes changed the diff, so condition 3 is unmet) and
+     the maintainer may answer "ship now" there and end the run without a further round.
+  4. **Amend the PR body with `gh pr edit`, whichever way the floor re-check went.** The body was composed
+     back at step 3 of this skill and can no longer be right: a further round can change how the review
+     ended, and a "ship now" here makes this an ending 2 on a PR whose body still claims ending 1. Step 6
+     checks ending 2's disclosure against that body, so leaving it unamended either fails a check that
+     should pass or passes one that should fail. This is the only place the body is written after the PR
+     exists, and `ship-pr.sh` has no subcommand for it, which is why the command is named.
+
+  Don't merge over confirmed real findings.
+
   **And note the hook property here is the inverse of step 3's.** `gh pr edit` is run by you, at command
   position, so `check-public-publish.sh` *does* see it, unlike the `gh pr create` inside `ship-pr.sh` that
   step 3 says nothing will stop. A fix-first is defined here as confirmed correctness or **security**
@@ -232,17 +234,10 @@ bash .claude/skills/caail-pr-wrapup/ship-pr.sh watch-checks <pr>
 Per `reference/ci-paths.md`, `lint-papers` runs only when the diff touches content/parser paths, and the
 deploy is **post-merge**, so not every PR has every check. A PR with **no checks at all** is now a
 narrow case: `guards.yml` fires on `.claude/hooks/**`, `.claude/settings.json`, this skill, and **any**
-`.github/workflows/**` edit. Genuinely check-free paths include `.claude/` rules and agents, `docs/**`, `LICENSE`, `CITATION.cff`,
-`.zenodo.json`, `.gitignore`, the two plugin manifests (`.claude-plugin/marketplace.json` and
-`plugin/.claude-plugin/plugin.json`; only `plugin/skills/**` is filtered, not `plugin/**`), and the four
-`.claude/skills/*` directories in no filter at all: `caail-db-authoring`, `papers-dataset-audit`,
-`zotero-collection-scope`, `zotero-to-caail-sync`.
-
-**Do not edit this list from memory. It has now been wrong in both directions.** It once said "any skill
-other than `caail-pr-wrapup`" is check-free, which is false for `skills/**`, `plugin/skills/**` and
-`.claude/skills/matrix-classification-audit/**`; the correction then deleted the clause outright, which
-made it false for the four above. `preflight` computes the real answer from the YAML, and the YAML wins;
-this list is a convenience that has cost more than it saved.
+`.github/workflows/**` edit. **The check-free paths are enumerated once, in `reference/ci-paths.md`, and deliberately not repeated
+here.** That list has already been wrong in both directions once each, so a second copy in this file is
+the exact hand-typed-fact-beside-another defect the enumeration keeps causing. `preflight` computes the
+real answer from the YAML, and the YAML wins over both.
 
 The helper reports "no checks reported" and proceeds when that is genuinely the case. **If you expected
 a guard to run and it did not, and the diff is not in that list, treat it as a paths-filter gap rather
@@ -260,8 +255,10 @@ Definitions say both endings disclose all of it and a reader cannot tell an unme
 unnoticed one. **For ending 2** additionally, the findings left outstanding are exactly the ones the body
 names and no others, and if the last round changed the diff the body also says those fixes went
 unreviewed. **The exception is the publishing
-carve-out in the Definitions in `reference/review-phase.md`**, so a finding it withholds satisfies this check by being unnamed rather
-than failing it. Do not "fix" a failing check here by naming it; that publishes the weakness in a PR that
+carve-out in the Definitions in `reference/review-phase.md`**, so a finding it withholds satisfies this check by being
+disclosed as a `disclosure-private` triage without the weakness or the endpoint named, rather than by
+being absent. An outstanding finding that appears nowhere at all fails this check like any other; the
+carve-out withholds the details, never the fact that something was triaged. Do not "fix" a failing check here by naming it; that publishes the weakness in a PR that
 cannot be deleted. CI must be green (step 5); and the step 4 cross-model pass must not have left unresolved confirmed issues
 (a "fix-first"). **A "ship now" answer is not itself an autonomous-merge waiver**: it authorised ending
 the review, not merging unasked, so it alone never substitutes for the confirmation above, though a waiver
