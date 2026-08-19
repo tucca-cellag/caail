@@ -196,7 +196,8 @@ nowhere else.
 
 **Severity: classify it, then show it.** Grade every finding yourself and treat the reviewer's own label
 as evidence rather than as the answer, because across the rounds run on the change that added this section
-(**ten by 2026-08-19**, a snapshot; nothing in the repo counts review rounds, so no command is given here)
+(**at least ten by 2026-08-19**, a floor rather than a count, because nothing in the repo counts review
+rounds and the number only has to be large enough to carry the point)
 it emitted three vocabularies (Major/Minor, High/Medium/Low, lowercase variants), hybrids like
 `MEDIUM-HIGH`, and **no labels at all on two rounds**. A rule reading a field that is sometimes absent is a
 rule that is sometimes undefined.
@@ -212,6 +213,7 @@ outstanding withheld the "ship now" option. It deadlocked three times, each dead
 repair of the last, because "a Major is outstanding" is a condition that never clears once a pre-existing
 finding is ticketed. **Do not reintroduce it.** The maintainer deciding at the gate does the same work
 without a rule that can contradict itself.
+
 **When to stop.** All three conditions, not any one of them:
 
 1. The **floor for the widest shape in the diff** has been reached, judged against the diff **as it stands

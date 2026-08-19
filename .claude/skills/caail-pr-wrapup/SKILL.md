@@ -16,7 +16,9 @@ deploys only on push to `main` (via `.github/workflows/docs.yml`, which gates on
 **Review here is a phase, not a step.** Step 1 runs `/code-review high`, applies or triages the findings,
 and then **reviews again on the updated diff**, repeating until **one of** the stop rule's two endings is
 reached. The level is fixed; the depth comes from the number of rounds, and `reference/review-phase.md`
-is the only place that floor is written down. The reasoning, and the condition under which the extra
+is where that floor is set out in full. The one part
+restated below is its default, that a diff matching no row is a 2, and it is restated because an agent that
+reads only this file still has to get that right; every other part of the rule lives there alone. The reasoning, and the condition under which the extra
 rounds can come back down, is there too. The cross-model pass (step 4) stays, as a cheap extra angle
 rather than the safety gate.
 
@@ -236,8 +238,8 @@ If a check **fails**, stop — surface it and fix the branch; do not merge red.
 **Pause here.** Merging triggers the public deploy, so confirm with the user before proceeding (unless
 they've already said to merge autonomously this run). Weigh **three** inputs, in this order of weight:
 step 1's review rounds must have genuinely reached an ending, which means **checking ending 1's three
-conditions** rather than accepting the label: "it ended" is not evidence, since every run ends somehow. In the second case the
-findings left outstanding are exactly the ones the PR body names and no others, and if the last round
+conditions** rather than accepting the label: "it ended" is not evidence, since every run ends somehow.
+**For ending 2**, the findings left outstanding are exactly the ones the PR body names and no others, and if the last round
 changed the diff the body also says those fixes went unreviewed. **The exception is the publishing
 carve-out in the Definitions in `reference/review-phase.md`**, so a finding it withholds satisfies this check by being unnamed rather
 than failing it. Do not "fix" a failing check here by naming it; that publishes the weakness in a PR that
@@ -293,7 +295,7 @@ re-running them reports confusing errors rather than doing anything (see `refere
   is not enough: `pnpm preview` is given a free port per run, so real leaks sit on 4370, 4399, 4402-4406
   and anywhere else, and one worktree was found holding five at once, days old, one per e2e attempt.
   `pgrep -f 'astro.mjs (preview|dev)'` finds them regardless of port. Match `dev` as well as `preview`: a
-  leaked `astro dev` is what the bogus lhci score below is usually blamed on, and a pattern that only says
+  leaked `astro dev` is what the bogus lhci score in `reference/gotchas.md` is usually blamed on, and a pattern that only says
   `preview` reports a clean machine while one is still holding the port. `ps` the PIDs to see which
   worktree each belongs to before killing anything, since a peer session may have one mid-run.
 

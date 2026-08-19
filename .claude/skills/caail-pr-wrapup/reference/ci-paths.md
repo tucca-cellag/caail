@@ -22,8 +22,10 @@ wins and the table is the bug.
 | `docs.yml` (build + Lighthouse + deploy) | **push to `main` only** | `site/**`, root `*.md`, `ResearchAreas/**`, `Methods/**`, `Datasets/**`, `Primers/**`, `.github/ISSUE_TEMPLATE/**` |
 
 Consequences: `test.yml` runs on almost any `site/**` or root-`*.md` PR, so most PRs have at least the
-`test` check. A change confined to `.claude/` **rules or agents**, or to a skill other than
-`caail-pr-wrapup`, still has no PR checks — correct, there is nothing to run. `.claude/hooks/**` and
+`test` check. A change confined to `.claude/` **rules or agents** still has no PR checks, and that is
+correct because there is nothing to run. **A skill is not in that category**: `skills/**`,
+`plugin/skills/**` and `.claude/skills/matrix-classification-audit/**` are all in `lint-papers.yml`, and
+`.claude/skills/caail-pr-wrapup/**` is in `guards.yml`, so editing almost any skill does run a check. `.claude/hooks/**` and
 `.claude/settings.json` trigger **both** `test.yml` and `guards.yml`, because the two hooks are tested
 in different places (`check-public-publish.test.py` in `guards.yml`, `block-generated-edits.py` via
 `site/scripts/db/hook.test.ts` in the vitest suite). Editing this skill or **any** workflow triggers
