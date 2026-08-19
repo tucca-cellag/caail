@@ -21,8 +21,9 @@ rounds can come back down, is there too. The cross-model pass (step 4) stays, as
 rather than the safety gate.
 
 **Step 1 is not unattended.** It carries two *kinds* of `AskUserQuestion` pause, not two pauses: the scope
-gate can fire on any round, so a long run holds several (on the exact condition, and when it is skipped,
-read the gate itself rather than this sentence). They are the only two decisions
+gate can fire on any round and the stop gate on any post-floor round, so a long run holds several of each
+and neither is a budget of one (for the exact conditions, and when each is skipped, read the gates rather
+than this sentence). They are the only two decisions
 in the phase that belong to the maintainer rather than to the agent: whether to keep reviewing once the
 floor is met (the **stop gate**) and whether a finding this diff did not cause belongs in the PR at all
 (the **scope gate**). Both are prose in a phase with no mechanism, so they are worth exactly the reading
@@ -176,7 +177,11 @@ right.
   recorded rather than assumed. **"Adjust it" is answered in the question's own free-text field**, and you
   then restate the corrected triage in the round's record and proceed. Do not re-prompt: a second question
   collides with the no-re-ask guard below, and reaching for one is how the option-per-finding machinery
-  gets rebuilt.
+  gets rebuilt. The one exception is an adjustment you genuinely cannot resolve, such as "ticket the first
+  two" against a list with no stated order: that is a *different* question, so the guard does not reach it,
+  and acting on a guessed reading is worse, because a misread disposition is silent. Ask once, narrowly.
+  (Whether the prompt offers a free-text field at all is a property of the tool, **observed 2026-08-18**;
+  check it rather than trusting this line, as with every other external-tool claim here.)
 
   Proposing before asking is what keeps this both cheap and honest. The maintainer sees every finding and
   its proposed fate together, instead of approving a label whose contents are disclosed afterwards, and
@@ -240,13 +245,19 @@ right.
    keeps the sequence alive, and the symptom reads as a thorough reviewer rather than as a broken
    procedure. So do not "simplify" condition 2 back to "no defect in this diff" while the scope gate
    exists; the two were written together.
+   **A diff-caused defect that was deferred rather than refuted stays outstanding**, and condition 2 is
+   judged against that carried set rather than against one round's fresh output. Without that the set the
+   stop gate reasons about and the set condition 2 tests are different things: a defect deferred in round
+   3 and not re-derived in round 4 would make round 4 "quiet", end the run with no gate firing at all, and
+   have the PR body report a quiet ending while known defects shipped unmentioned. Deferring is not
+   refuting, and only refuting or fixing clears the set.
 3. **Nothing in the diff was changed in response to that round.** Filing a ticket, declining a finding and
    updating the triage list are not changes to the diff and do not re-open the sequence; only an edit to
    the code under review does. Read any other way this condition never clears, since every round produces
    *some* response, which would reinstate the non-termination condition 2 was rewritten to rule out. A
    pre-existing finding the maintainer elects to fix
-   here is still a fix no round has seen, so selecting one at the scope gate re-opens the sequence exactly
-   as a diff-caused defect would. This condition is not redundant with 2, and dropping it recreates the
+   here is still a fix no round has seen, so an adjustment at the scope gate electing that fix re-opens the
+   sequence exactly as a diff-caused defect would. This condition is not redundant with 2, and dropping it recreates the
    failure the whole phase exists to prevent: a round whose findings were *all* pre-existing satisfies
    condition 2 by construction, so without this the run stops and ships fixes written in response to the
    last round, which is precisely what the "a finding's fix is itself unreviewed code" row forbids.
@@ -271,7 +282,13 @@ of.
 
 **Case B, condition 3 unmet.** The last round produced fixes, so the diff now carries code no round has
 seen. The default is another round and the question must say so, but **the maintainer may accept those
-fixes unreviewed and ship.** This is the case the gate exists for and the one that actually costs: every
+fixes unreviewed and ship.** Carry the same payload Case A carries, and **re-check the floor before firing
+at all**: Case B is the state immediately after fixes landed, so it is the one state where the floor may
+have just risen under condition 1, and a prose-only branch whose fix touched `site/src/**` is a 3-round
+diff from that moment. If the re-checked floor is no longer met, the gate does **not** fire and the
+remaining floor rounds run, because offering a ship option below the floor is the erosion this section
+otherwise refuses. Giving the riskier of the two questions less context than the safer one would be exactly
+backwards. This is the case the gate exists for and the one that actually costs: every
 round is a whole-diff `/code-review high` whose price does not shrink as the fixes do, so a round prompted
 by a one-line fix costs what round 1 cost, and `CAAIL-269` records eight rounds on PR #205 reached exactly
 this way.
@@ -426,7 +443,10 @@ bash .claude/skills/caail-pr-wrapup/ship-pr.sh open-pr "<title>" /tmp/pr-body.md
   completed one are otherwise indistinguishable to a reader of this body. **If it ended at the gate's
   case B, say that the last round's fixes were never reviewed and give the reason the maintainer gave.**
   That is the one ending that ships code no round has read, so a body that omits it is not merely thin,
-  it is wrong. Findings routed to a ticket by
+  it is wrong. **If it ended at the unchanged-set rule, say that the maintainer asked for another round
+  and that round re-reported the same findings rather than clearing them.** Step 6 checks for that
+  sentence, and the body is composed here, so it has to be written here: `ship-pr.sh` has no `edit`
+  subcommand and by step 6 the PR is already open. Findings routed to a ticket by
   the scope gate are named here too, by key, and **the publishing exception below covers them as well**:
   for that exception alone, treat "declined" and "routed to a ticket" as one category, even though this
   file is careful to separate them everywhere else. Deliberately not restated here, because there is one
@@ -513,7 +533,8 @@ step 1's review rounds must have ended on a quiet round with every finding fixed
 outstanding are exactly the ones the PR body names and no others (and if that decision was the gate's case
 B, the body also says the last round's fixes went unreviewed), **or** at the stop gate's unchanged-set
 rule, where the maintainer asked for another round and that round left the outstanding set exactly as it
-was. Treat that third ending as what it is and do not record it as a decision to ship: the maintainer
+was **and condition 3 is still met**. If a fix landed during that round this ending does not apply, case B
+does, and merging here would ship the unreviewed fix the whole case B argument exists to bound. Treat that third ending as what it is and do not record it as a decision to ship: the maintainer
 chose more review, got it, and the round re-reported the same findings rather than clearing them, so the
 PR body says that in those words. **That ending does not inherit the autonomous-merge waiver above**;
 confirm it explicitly, because the last answer you have from the maintainer on those defects was a refusal
