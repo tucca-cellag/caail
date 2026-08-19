@@ -185,16 +185,25 @@ recommendation: ship / fix-first / needs-human-call**. Feed that into the step 6
 - **ship** → proceed, but read it as "this reviewer found nothing", not as a clean bill of health. It is
   the weaker of the two reviewers, and a thin report is its normal output whether or not the diff is
   sound. Step 1's ending, whichever of the two it was, is what "reviewed" rests on.
-- **fix-first** (confirmed correctness/security issues) → stop, fix them, commit + push (this updates the
-  open PR), then **re-review**: the "or proceed" that used to sit here is gone, because step 6 checks which
+- **fix-first** (confirmed correctness/security issues) → stop and fix them. **Re-gate before you push**:
+  these fixes are ungated code exactly as a review round's are, so run the re-gate table in
+  `reference/review-phase.md` for whatever they touched, and commit whatever it regenerates. Nothing
+  downstream catches this: the push has already happened by the time you are here, so `preflight`'s
+  dirty-tree guard is behind you, and a fix under `site/src/lib/**` changes what the parser emits into
+  `site/public/api/**` while `lint-papers.yml`'s API sync guard does not fire on `site/src/**`, so a stale
+  endpoint ships with every check green. **Then amend the PR body with `gh pr edit` whichever way this
+  goes**, because the body was composed at step 3 and both branches below can change what it should say.
+  Then commit + push (this updates the open PR) and **re-review**: the "or proceed" that used to sit here is gone, because step 6 checks which
   ending step 1 reached, and proceeding without a round leaves that ending describing a diff the fixes have
   already changed. That is a rule about what *you* may decide, not a fourth ending. The fixes changed the
   diff, so condition 3 is unmet and the run continues; whether the **gate** then fires is the gate's own
   question, not this step's. **Re-check the floor first**, because a fix-first fix is exactly the kind that
   widens the shape: a security fix touching `site/src/**` or a hook turns a prose PR into a 3-round diff,
   and the gate is forbidden to ask below the floor. If the floor still holds, the maintainer may answer
-  "ship now" and end the run without the round; record it as ending 2 and say the fix-first fixes went
-  unreviewed. If it does not, run the remaining floor rounds and do not ask. Don't merge over confirmed real findings. A finding
+  "ship now" and end the run without the round; **that makes this an ending 2 on a PR whose body says
+  ending 1**, so amend the body to say so and to name the fix-first fixes as unreviewed, or step 6 checks
+  ending 2's disclosure against a body that never claimed it. If the floor does not hold, run the
+  remaining floor rounds and do not ask. Don't merge over confirmed real findings. A finding
   strong enough to land here is worth an extra step-1 round on the updated diff, since the fix is now
   unreviewed code. That round can change how the review ended, and the body was composed back at step 3,
   so **amend it with `gh pr edit` rather than leaving the open PR describing an ending that no longer
@@ -246,8 +255,11 @@ If a check **fails**, stop — surface it and fix the branch; do not merge red.
 they've already said to merge autonomously this run). Weigh **three** inputs, in this order of weight:
 step 1's review rounds must have genuinely reached an ending, which means **checking ending 1's three
 conditions** rather than accepting the label: "it ended" is not evidence, since every run ends somehow.
-**For ending 2**, the findings left outstanding are exactly the ones the PR body names and no others, and if the last round
-changed the diff the body also says those fixes went unreviewed. **The exception is the publishing
+**For either ending**, the body names every finding that was ticketed or declined along the way, since the
+Definitions say both endings disclose all of it and a reader cannot tell an unmentioned finding from an
+unnoticed one. **For ending 2** additionally, the findings left outstanding are exactly the ones the body
+names and no others, and if the last round changed the diff the body also says those fixes went
+unreviewed. **The exception is the publishing
 carve-out in the Definitions in `reference/review-phase.md`**, so a finding it withholds satisfies this check by being unnamed rather
 than failing it. Do not "fix" a failing check here by naming it; that publishes the weakness in a PR that
 cannot be deleted. CI must be green (step 5); and the step 4 cross-model pass must not have left unresolved confirmed issues
