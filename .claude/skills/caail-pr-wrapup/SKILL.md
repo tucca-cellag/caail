@@ -14,13 +14,17 @@ deploys only on push to `main` (via `.github/workflows/docs.yml`, which gates on
 "shipped" means *merged **and** the deploy is green*, not just merged.
 
 **Review here is a phase, not a step.** Step 1 runs `/code-review high`, applies or triages the findings,
-and then **reviews again on the updated diff**, repeating until the findings die out and the floor for
+and then **reviews again on the updated diff**, repeating until the stop rule's two endings are reached
+(a quiet round with nothing blocking, or the maintainer answering "ship now" at the stop gate) and the
+floor for
 that diff shape is met. The level is fixed; the depth comes from the number of rounds, and step 1's table
 is the only place that floor is written down. The reasoning, and the condition under which the extra
 rounds can come back down, is there too. The cross-model pass (step 4) stays, as a cheap extra angle
 rather than the safety gate.
 
-**Step 1 is not unattended.** It carries two *kinds* of `AskUserQuestion` pause, not two pauses: the scope
+**Step 1 may not run unattended.** It carries two *kinds* of `AskUserQuestion` pause, not two pauses, and
+a run whose floor rounds come back quiet with nothing blocking fires neither and finishes without asking
+anything: the scope
 gate can fire on any round, and the stop gate once the floor round has finished and before every round
 after it, so a long run holds several of each
 and neither is a budget of one (for the exact conditions, and when each is skipped, read the gates rather
@@ -110,7 +114,8 @@ the local gate (above) if you haven't this session.
 fork keeps working; if `preflight` printed a different `Default:`, use that name instead of copying this
 line literally.)
 
-Then apply or triage every finding and **run it again on the updated diff**, until the findings die out.
+Then apply or triage every finding and **run it again on the updated diff**, until the stop rule below
+says you are done. It has two endings, and "the findings die out" is only one of them.
 Do this before the push, so fixes land as ordinary commits instead of churn on an open PR.
 
 **Depth comes from the number of rounds, not from the level.** That is a maintainer decision, and it is
@@ -174,9 +179,12 @@ right.
   **Scope gate.** When a round produces findings you have classified as pre-existing, do not act on that
   classification alone. **Write the triage first, then ask once.** List every pre-existing finding in the
   round's triage with the disposition you propose for it, then put that whole triage to the user as a
-  single `AskUserQuestion` with two options: accept it, or adjust it. Their answer is the stated reason,
-  recorded rather than assumed. **"Adjust it" is answered in the question's own free-text field**, and you
-  then restate the corrected triage in the round's record and proceed. Do not re-prompt: a second question
+  single `AskUserQuestion` whose two options are both answers you can act on: **accept this triage**, or
+  **file all of them instead**. Their answer is the stated reason, recorded rather than assumed. Anything
+  finer grained arrives through the **Other** field, which the tool offers beside the options on every
+  question, so do not spend an option on "adjust it": an option carries only its own label, and a
+  maintainer selecting it would hand you a rejection with no content. Restate whatever comes back as the
+  corrected triage and proceed. Do not re-prompt: a second question
   is how the option-per-finding machinery gets rebuilt, one question at a time. The one exception is an adjustment you genuinely cannot resolve, such as "ticket the first
   two" against a list with no stated order: that is a *different* question, so the guard does not reach it,
   and acting on a guessed reading is worse, because a misread disposition is silent. Ask once, narrowly.
@@ -233,7 +241,7 @@ right.
   exists to find.
 - **Round 2 over the whole diff again.** Not narrowed to the files round 1 touched: the point of round 2
   is the defects the *fixes* introduced, and a bad fix does not confine its damage to its own file.
-- **Round 3 and beyond, until the findings die out.** Each round takes the previous round's triage list,
+- **Round 3 and beyond, until the stop rule ends it either way.** Each round takes the previous round's triage list,
   so it stops re-deriving candidates an earlier round already refuted.
 
 **When to stop.** All three conditions, not any one of them:
@@ -456,7 +464,7 @@ bash .claude/skills/caail-pr-wrapup/ship-pr.sh open-pr "<title>" /tmp/pr-body.md
 - **Body:** what changed and *why*; the research area(s)/AI method(s) or routes it touches; and the
   verification you already ran (tests/build/e2e, reviewer agents). Say **how the review went**: the
   level and how many rounds, and then **which of the stop rule's two endings this run reached**. A quiet
-  round with nothing outstanding: say so. The maintainer answering **"ship now"** at the stop gate: say
+  round with nothing blocking: say so. The maintainer answering **"ship now"** at the stop gate: say
   that instead, name everything left outstanding, and **if the last round changed the diff, say that those
   fixes were never reviewed and give the reason they gave**. That is the one ending that ships code no
   round has read, so a body that omits it is not merely thin, it is wrong. Write this here, because the
@@ -508,14 +516,23 @@ hallucinations), and returns severity-ranked confirmed issues plus a **net
 recommendation: ship / fix-first / needs-human-call**. Feed that into the step 6 merge confirmation:
 - **ship** → proceed, but read it as "this reviewer found nothing", not as a clean bill of health. It is
   the weaker of the two reviewers, and a thin report is its normal output whether or not the diff is
-  sound. Step 1's quiet round is what "reviewed" rests on.
+  sound. Step 1's ending, whichever of the two it was, is what "reviewed" rests on.
 - **fix-first** (confirmed correctness/security issues) → stop, fix them, commit + push (this updates the
-  open PR), then re-review or proceed once resolved. Don't merge over confirmed real findings. A finding
+  open PR), then **re-review**: the "or proceed" that used to sit here is gone, because step 6 now checks
+  which of the stop rule's two endings step 1 reached, and proceeding without a round leaves that ending
+  describing a diff the fixes have already changed. Don't merge over confirmed real findings. A finding
   strong enough to land here is worth an extra step-1 round on the updated diff, since the fix is now
   unreviewed code. That round can change how the review ended, and the body was composed back at step 3,
   so **amend it with `gh pr edit` rather than leaving the open PR describing an ending that no longer
   happened**. This is the one place the body is written after the PR exists; `ship-pr.sh` has no
   subcommand for it, which is why the command is named here.
+  **And note the hook property here is the inverse of step 3's.** `gh pr edit` is run by you, at command
+  position, so `check-public-publish.sh` *does* see it, unlike the `gh pr create` inside `ship-pr.sh` that
+  step 3 says nothing will stop. A fix-first is defined here as confirmed correctness or **security**
+  issues, so an amended body describing them is a likely denial on the security vocabulary or a fenced
+  code block. That is the guard working. Answer its three questions and rewrite the body so it says what
+  changed without describing an unpatched weakness in a live service; reaching for the single-use override
+  because the amend is inconvenient is the one response that is always wrong.
 - **needs-human-call** → surface the report and let the user decide.
 
 *When to run:* most valuable for **code** diffs (`site/**`). For docs-/config-/`.claude`-only diffs the
@@ -552,9 +569,9 @@ findings left outstanding are exactly the ones the PR body names and no others, 
 changed the diff the body also says those fixes went unreviewed. **The one exception is step 3's
 publishing carve-out**: a finding describing an unpatched weakness in a live service is deliberately
 unnamed, so an unnamed outstanding finding of that kind satisfies this check rather than failing it. Do
-not "fix" a failing check here by naming it; that publishes the weakness in a PR that cannot be deleted. **A "ship now" ending does not inherit
-the autonomous-merge waiver above**, so confirm the merge explicitly: that answer authorised ending the
-review, not merging without being asked;
+not "fix" a failing check here by naming it; that publishes the weakness in a PR that cannot be deleted. **A "ship now" answer is not itself an
+autonomous-merge waiver**: it authorised ending the review, not merging unasked, so it alone never
+substitutes for the confirmation. If the user separately granted the waiver above, that still stands;
 CI must be green (step 5); and the step 4 cross-model pass must not have left unresolved confirmed issues
 (a "fix-first"). A green CI plus a thin cross-model report is **not** a substitute for the first of those:
 neither of them reads the diff the way step 1 does. Then:
@@ -682,7 +699,7 @@ adding it there too, or the guard will happily confirm that an incomplete set is
 | --- | --- |
 | **Round 1 comes back empty** on a code-heavy or multi-file diff | Read it as a fact about the review, not about the diff. There is no level to raise (the level is always `high`), so run out the floor and say plainly that a round came back empty on a diff that shape. An extra pass narrowed to a hot spot is fine on top of a whole-diff round, never instead of one. |
 | The **stop gate** fires before the floor is met | It should not, and the answer is not to accept it. Rounds 1..floor run without the *stop* gate; it exists only once condition 1 holds, and then on any state where the run would otherwise continue. The **scope gate** does fire in those rounds and should, so do not read one as evidence the other is misfiring. A stop prompt below the floor turns the floor into a default, which is the erosion the next row is about. Run the remaining floor rounds. |
-| A round's findings are **all pre-existing**, and the loop will not go quiet | Once they are ticketed under the scope gate **and nothing in the diff was changed in response**, that *is* a quiet round, meaning quiet for condition 2 only: condition 1 still applies, so it does not ship below the floor. Only a defect this diff **caused** blocks a quiet round. If the maintainer elected to fix any of them here, condition 3 applies and the round is not quiet, because that fix is unreviewed code like any other. A loop still running on the same old findings means condition 2 is being read in its pre-scope-gate form, which does not terminate. |
+| A round's findings are **all pre-existing**, and the loop will not go quiet | Once they are ticketed under the scope gate **and nothing in the diff was changed in response**, that *is* a quiet round, meaning quiet for condition 2 only: condition 1 still applies, so it does not ship below the floor. Only a defect this diff **caused** blocks a quiet round. If the maintainer elected to fix any of them here, condition 3 applies and the round is not quiet, because that fix is unreviewed code like any other. Check the carried set too, not just this round's output: condition 2 is judged against what is still blocking from any round, so a diff-caused defect deferred earlier keeps blocking even when this round found only pre-existing ones. A loop still running on the same old findings means condition 2 is being read in its pre-scope-gate form, which does not terminate. |
 | `push` says **working tree is not clean** and lists files | A step-1 fix was never committed. Not a nuisance check: `preflight` ran before the rounds edited anything, so this is the only thing between an uncommitted fix and a PR that looks correct while missing it. **Commit** what it lists, then re-run `preflight` and push. Stashing a *fix* clears the check while producing exactly the outcome it exists to prevent: the tree goes clean, the push succeeds, and the fix is not in the diff. The stash itself is safe (`refs/stash` is shared across worktrees and survives `git worktree remove --force`, verified), so a fix stashed by mistake is one `git stash pop` away. Stashing unrelated work in progress is fine. |
 | `push` says **on the default branch** | You are shipping from a checkout that holds `main` (the primary one usually does). Nothing was pushed. Get onto the feature branch, or run the skill from its worktree. Without this the push would have gone straight to `origin/main`, skipping the PR and every check, with `docs.yml` deploying it. |
 | A finding's **fix is itself unreviewed code** | It is, and that is the whole reason for round 2. Two of the fourteen defects in step 1's evidence arrived this way, one an accessibility regression created by the fix for a different accessibility finding. Never merge a fix that no round has seen **unless the maintainer took the stop gate's "ship now" with that stated, which is the one override and is human-only**. An agent may never reach that outcome on its own. |
