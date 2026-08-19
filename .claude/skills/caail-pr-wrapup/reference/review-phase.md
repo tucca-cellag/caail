@@ -219,7 +219,8 @@ without a rule that can contradict itself.
    prose-only PR whose round-1 fix edits `site/src/**` is a 3-round diff from that moment on. Re-check the
    shape after each round's fixes land, since the mandated `preflight` re-run happens after the rounds have
    already stopped and is therefore too late to tell you.
-2. The **last round returned no finding that was a defect this diff caused.** Deferring one of those to
+2. **Nothing is blocking** (see Definitions), which is the carried set and not one round's fresh output.
+   Deferring a blocking finding to
    Jira does not satisfy this: "not acted on" and "not a defect" are different outcomes, and a round that
    surfaces three genuine defects and tickets all three has not gone quiet, it has gone unaddressed. A
    **pre-existing** defect, properly ticketed under the scope gate above, does **not** block a quiet
@@ -262,7 +263,10 @@ the scope gate's skip rule; re-proposing them puts the same question to the main
 clear it**, so a triage full of those is an ending 2 and must be offered as one, then offer **two options: accept this triage and run another round, or ship now, leaving
 everything outstanding unfixed and named in the body.** A finding with no ticket ends up **declined**,
 agreed real and left alone; one already **deferred** keeps its key and stays deferred, so the body names
-the key rather than reporting a filed finding as unfiled. Do not report them as
+the key rather than reporting a filed finding as unfiled. **The publishing carve-out overrides that
+default**: a finding describing an unpatched weakness in a live service is filed to Jira with
+`disclosure-private` before the run ends, never declined, because declining would leave the weakness
+recorded nowhere while the body reports a triage that did not happen. Do not report them as
 **refuted**: that word is reserved for a finding shown not to be a defect, and using it here would undo the
 disclosure this ending exists to force. Anything finer grained arrives through **Other**. Since condition 3 is absolute, a
 triage that proposes **newly** any fix *is* another round; there is no third option where a fix proposed
@@ -272,7 +276,7 @@ diff, which is the ending's whole point. It fires whenever the floor is met and 
 otherwise continue, which is any state where condition 2 or condition 3 is unmet. It never fires below the
 floor.
 
-The question carries four things, and they are what make the answer mean anything:
+The question carries five things, and they are what make the answer mean anything:
 
 - **Rounds run so far, against the floor for the diff's shape re-checked now.** Re-check rather than
   reuse: a fix can widen the shape and raise its own floor, and the state right after a fix landed is
@@ -284,6 +288,8 @@ The question carries four things, and they are what make the answer mean anythin
   place to lose it.
 - **What has changed since you last asked**, including "nothing". Someone being asked a third time should
   be able to see that it is the same question.
+- **Each finding's severity**, stated as a consequence rather than a grade. This is the only place
+  severity does anything, so a gate built without it has silently dropped the whole of its role.
 - **Whether the last round changed the diff.** If it did, say that shipping now merges code no round has
   read, and that this file's own rationale block records **two of fourteen defects as introduced by fixes
   to earlier findings**, one an accessibility regression created by the fix for a different accessibility

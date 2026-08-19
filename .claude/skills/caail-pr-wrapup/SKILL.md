@@ -22,14 +22,11 @@ rather than the safety gate.
 
 **Step 1 usually does not run unattended.** It carries two *kinds* of `AskUserQuestion` pause, not two pauses, and
 a run whose floor rounds come back quiet, surface no pre-existing findings *and* change nothing in the
-diff fires neither and finishes without asking anything. All three matter: "quiet" is condition 2 alone, so
-a round that found a defect and fixed it is quiet while condition 3 is unmet, and the stop gate must
-still fire. Quiet means condition 2 only, so a quiet round that surfaces a pre-existing
-finding still fires the scope gate: the scope
-gate can fire on any round, and the stop gate once the floor round has finished and before every round
-after it, so a long run holds several of each
-and neither is a budget of one (for the exact conditions, and when each is skipped, read the gates rather
-than this sentence). They are the only two decisions
+diff fires neither and finishes without asking anything. All three matter, because **"quiet" is condition
+2 alone**: a round that found a defect and fixed it is quiet while condition 3 is unmet, and a quiet round
+that surfaced a pre-existing finding still fires the scope gate. Either gate can fire more than once and
+neither is a budget of one, and each fires only on its own condition rather than on every round, so read
+the gates rather than this sentence for when. They are the only two decisions
 in the phase that belong to the maintainer rather than to the agent: whether to keep reviewing once the
 floor is met (the **stop gate**) and whether a finding this diff did not cause belongs in the PR at all
 (the **scope gate**). Both are prose in a phase with no mechanism, so they are worth exactly the reading
@@ -136,18 +133,16 @@ bash .claude/skills/caail-pr-wrapup/ship-pr.sh open-pr "<title>" /tmp/pr-body.md
   `chore`, `fix`. Reuse the lead commit's subject when it already fits.
 - **Body:** what changed and *why*; the research area(s)/AI method(s) or routes it touches; and the
   verification you already ran (tests/build/e2e, reviewer agents). Say **how the review went**: the
-  level and how many rounds, and then **which of the stop rule's two endings this run reached**. A quiet
-  **Ending 1**, named by its three conditions and never as "a quiet round": say so. The maintainer answering **"ship now"** at the stop gate: say
+  level and how many rounds, and then **which of the stop rule's two endings this run reached**. For
+  **ending 1**, say so by naming its three conditions, never as "a quiet round". The maintainer answering **"ship now"** at the stop gate: say
   that instead, name everything left outstanding, and **if the last round changed the diff, say that those
   fixes were never reviewed and give the reason they gave**. That is the one ending that ships code no
   round has read, so a body that omits it is not merely thin, it is wrong. Write this here, because the
   body is composed here and step 6 checks for it: `ship-pr.sh` has no `edit` subcommand, and by step 6 the
   PR is already open. Findings routed to a ticket by
-  the scope gate are named here too, by key, and **the publishing exception below covers them as well**:
-  for that exception alone, treat "declined" and "routed to a ticket" as one category, even though this
-  file is careful to separate them everywhere else. Deliberately not restated here: there is one copy and it is in
-  `reference/review-phase.md`, and two copies drifted apart the moment a second was written. **The publishing carve-out is defined once, in the Definitions in `reference/review-phase.md`**, and it binds here, where
-  the body is actually written. **Any** finding declined rather than fixed,
+  the scope gate are named here too, by key. **The publishing carve-out binds here**, where the body is
+  actually written, and it is defined once in the Definitions in `reference/review-phase.md`; for it alone,
+  treat "declined" and "routed to a ticket" as one category. **Any** finding declined rather than fixed,
   in any round, gets named with its reason, since a reader cannot tell a triaged finding from an
   unnoticed one and the rounds it came from are invisible to them. **The exception is the publishing
   carve-out in the Definitions in `reference/review-phase.md`**, which governs its own scope; this body is world-readable and
@@ -223,10 +218,13 @@ bash .claude/skills/caail-pr-wrapup/ship-pr.sh watch-checks <pr>
 Per `reference/ci-paths.md`, `lint-papers` runs only when the diff touches content/parser paths, and the
 deploy is **post-merge**, so not every PR has every check. A PR with **no checks at all** is now a
 narrow case: `guards.yml` fires on `.claude/hooks/**`, `.claude/settings.json`, this skill, and **any**
-`.github/workflows/**` edit. Genuinely check-free paths include `.claude/` rules and agents, any skill
-other than `caail-pr-wrapup`, `docs/**`, `LICENSE`, `CITATION.cff`, `.zenodo.json`, `.gitignore`,
-`.github/ISSUE_TEMPLATE/**`, and the two plugin manifests (`.claude-plugin/marketplace.json` and
-`plugin/.claude-plugin/plugin.json` — only `plugin/skills/**` is filtered, not `plugin/**`).
+`.github/workflows/**` edit. Genuinely check-free paths include `.claude/` rules and agents, `docs/**`, `LICENSE`, `CITATION.cff`,
+`.zenodo.json`, `.gitignore`, and the two plugin manifests (`.claude-plugin/marketplace.json` and
+`plugin/.claude-plugin/plugin.json`; only `plugin/skills/**` is filtered, not `plugin/**`). **Do not add
+to this list from memory.** Three entries were wrong here until 2026-08-19: `.github/ISSUE_TEMPLATE/**` is
+in `test.yml` and `docs.yml`, `skills/**` and `.claude/skills/matrix-classification-audit/**` are in
+`lint-papers.yml`, so "any skill other than `caail-pr-wrapup`" was false. `preflight` computes the real
+answer; this list is a convenience and the YAML wins.
 
 The helper reports "no checks reported" and proceeds when that is genuinely the case. **If you expected
 a guard to run and it did not, and the diff is not in that list, treat it as a paths-filter gap rather
