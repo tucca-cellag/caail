@@ -176,8 +176,10 @@ nowhere else.
   blocking.
 - **Outstanding.** Blocking items **and** disposed-of items together, which is everything a round surfaced
   and did not refute or fix. The gates display all of it; only the blocking part governs whether the
-  sequence may end. An ending 2 body names **all** of it, blocking and disposed of alike, because a reader
-  cannot tell an unmentioned finding from an unnoticed one.
+  sequence may end. **Both endings' bodies name all of it**, blocking and disposed of alike, because a
+  reader cannot tell an unmentioned finding from an unnoticed one. Ending 2 additionally has to say the
+  findings were shipped outstanding; ending 1 is not thereby excused from naming what it ticketed or
+  declined along the way.
 - **The four dispositions.** **Fixed**, changed in the diff. **Refuted**, shown not to be a defect, with
   the reason stated. **Deferred**, agreed real and filed to Jira. **Declined**, agreed real and left alone.
   Only the first two clear a blocking finding. The last two leave it blocking, which is exactly why
@@ -246,7 +248,7 @@ without a rule that can contradict itself.
    sequence exactly as a diff-caused defect would. This condition is not redundant with 2, and dropping it recreates the
    failure the whole phase exists to prevent: a round whose findings were *all* pre-existing satisfies
    condition 2 by construction, so without this the run stops and ships fixes written in response to the
-   last round, which is precisely what the "a finding's fix is itself unreviewed code" row forbids.
+   last round, which is precisely what the "a finding's fix is itself unreviewed code" row in `gotchas.md` forbids.
    **This changes what termination rests on, so do not try to re-derive it later.** Before condition 3 the
    sequence ended when the *diff* went quiet. It now ends when the *maintainer* stops electing fixes,
    which still terminates, because a person choosing to keep fixing is work rather than a loop. It is a
@@ -261,9 +263,14 @@ still gets three.
 **Stop gate.** Once the floor is met, ask before every further round. **One question, always the same
 shape.** Propose one of the four dispositions (see Definitions) for every **blocking** finding first, the
 same way the scope gate does. Disposed-of findings are shown for context and **not re-proposed**, matching
-the scope gate's skip rule; re-proposing them puts the same question to the maintainer every round, and remember that **declining or deferring a blocking finding does not
-clear it**, so a triage full of those is an ending 2 and must be offered as one, then offer **two options: accept this triage and run another round, or ship now, leaving
-everything outstanding unfixed and named in the body.** A finding with no ticket ends up **declined**,
+the scope gate's skip rule, because re-proposing them puts the same question to the maintainer every
+round.
+
+**Declining or deferring a blocking finding does not clear it**, so a triage full of those is an ending 2
+and must be offered as one rather than dressed up as a plan.
+
+Then offer **two options: accept this triage and run another round, or ship now, leaving everything
+outstanding unfixed and named in the body.** A finding with no ticket ends up **declined**,
 agreed real and left alone; one already **deferred** keeps its key and stays deferred, so the body names
 the key rather than reporting a filed finding as unfiled. **The publishing carve-out overrides that
 default**: a finding describing an unpatched weakness in a live service is filed to Jira with

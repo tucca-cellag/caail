@@ -19,6 +19,6 @@
 | PR body / commit | **No AI attribution** anywhere in CAAIL git history. |
 | GitHub issue still `OPEN` after merge | The `Closes #N` line was missing or malformed — GitHub fails silently on both. Close it by hand (step 10) and don't assume next time; `gh issue view` is the check. |
 | Jira ticket left in `In Progress` after a green deploy | Nothing else transitions it — no hook, no workflow, no other skill. Step 10 is the only place it happens, so a skipped step 10 means a permanently stale board. |
-| Step 10 fails (Rovo auth, wrong cloud id, `gh` error) | **Bookkeeping only** — the merge and deploy already succeeded. Report which tracker is stale; never retry in a loop or try to unwind the ship. |
+| Step 10 fails (`acli` auth, `gh` error) | **Bookkeeping only** — the merge and deploy already succeeded. Report which tracker is stale; never retry in a loop or try to unwind the ship. |
 | Worktree cleanup | Managed (`EnterWorktree`) → `ExitWorktree` remove. Plain branch → `git branch -d/-D`. Hand-made stale worktree → confirm, then `git worktree remove` + `git branch -D`. |
 

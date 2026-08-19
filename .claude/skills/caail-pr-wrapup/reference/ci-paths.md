@@ -23,9 +23,11 @@ wins and the table is the bug.
 
 Consequences: `test.yml` runs on almost any `site/**` or root-`*.md` PR, so most PRs have at least the
 `test` check. A change confined to `.claude/` **rules or agents** still has no PR checks, and that is
-correct because there is nothing to run. **A skill is not in that category**: `skills/**`,
-`plugin/skills/**` and `.claude/skills/matrix-classification-audit/**` are all in `lint-papers.yml`, and
-`.claude/skills/caail-pr-wrapup/**` is in `guards.yml`, so editing almost any skill does run a check. `.claude/hooks/**` and
+correct because there is nothing to run. **Skills split both ways**, so do not generalise
+either direction: `skills/**`, `plugin/skills/**` and `.claude/skills/matrix-classification-audit/**` are
+in `lint-papers.yml` and `.claude/skills/caail-pr-wrapup/**` is in `guards.yml`, while the other four
+`.claude/skills/*` directories (`caail-db-authoring`, `papers-dataset-audit`, `zotero-collection-scope`,
+`zotero-to-caail-sync`) are in no filter and genuinely run nothing. `.claude/hooks/**` and
 `.claude/settings.json` trigger **both** `test.yml` and `guards.yml`, because the two hooks are tested
 in different places (`check-public-publish.test.py` in `guards.yml`, `block-generated-edits.py` via
 `site/scripts/db/hook.test.ts` in the vitest suite). Editing this skill or **any** workflow triggers

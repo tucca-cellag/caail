@@ -136,8 +136,8 @@ bash .claude/skills/caail-pr-wrapup/ship-pr.sh open-pr "<title>" /tmp/pr-body.md
 - **Body:** what changed and *why*; the research area(s)/AI method(s) or routes it touches; and the
   verification you already ran (tests/build/e2e, reviewer agents). Say **how the review went**: the
   level and how many rounds, and then **which of the stop rule's two endings this run reached**. For
-  **ending 1**, say so by naming its three conditions, never as "a quiet round". The maintainer answering **"ship now"** at the stop gate: say
-  that instead, name everything left outstanding, and **if the last round changed the diff, say that those
+  **ending 1**, say so by naming its three conditions, never as "a quiet round". For **ending 2**, say that
+  the maintainer answered **"ship now"** at the stop gate, name everything left outstanding, and **if the last round changed the diff, say that those
   fixes were never reviewed and give the reason they gave**. That is the one ending that ships code no
   round has read, so a body that omits it is not merely thin, it is wrong. Write this here, because the
   body is composed here and step 6 checks for it: `ship-pr.sh` has no `edit` subcommand, and by step 6 the
@@ -189,9 +189,12 @@ recommendation: ship / fix-first / needs-human-call**. Feed that into the step 6
   open PR), then **re-review**: the "or proceed" that used to sit here is gone, because step 6 checks which
   ending step 1 reached, and proceeding without a round leaves that ending describing a diff the fixes have
   already changed. That is a rule about what *you* may decide, not a fourth ending. The fixes changed the
-  diff, so condition 3 is unmet and the stop gate fires as usual, and the maintainer may answer "ship now"
-  there and end the run without the round. Record it as ending 2 and say the fix-first fixes went
-  unreviewed. Don't merge over confirmed real findings. A finding
+  diff, so condition 3 is unmet and the run continues; whether the **gate** then fires is the gate's own
+  question, not this step's. **Re-check the floor first**, because a fix-first fix is exactly the kind that
+  widens the shape: a security fix touching `site/src/**` or a hook turns a prose PR into a 3-round diff,
+  and the gate is forbidden to ask below the floor. If the floor still holds, the maintainer may answer
+  "ship now" and end the run without the round; record it as ending 2 and say the fix-first fixes went
+  unreviewed. If it does not, run the remaining floor rounds and do not ask. Don't merge over confirmed real findings. A finding
   strong enough to land here is worth an extra step-1 round on the updated diff, since the fix is now
   unreviewed code. That round can change how the review ended, and the body was composed back at step 3,
   so **amend it with `gh pr edit` rather than leaving the open PR describing an ending that no longer
@@ -221,12 +224,16 @@ Per `reference/ci-paths.md`, `lint-papers` runs only when the diff touches conte
 deploy is **post-merge**, so not every PR has every check. A PR with **no checks at all** is now a
 narrow case: `guards.yml` fires on `.claude/hooks/**`, `.claude/settings.json`, this skill, and **any**
 `.github/workflows/**` edit. Genuinely check-free paths include `.claude/` rules and agents, `docs/**`, `LICENSE`, `CITATION.cff`,
-`.zenodo.json`, `.gitignore`, and the two plugin manifests (`.claude-plugin/marketplace.json` and
-`plugin/.claude-plugin/plugin.json`; only `plugin/skills/**` is filtered, not `plugin/**`). **Do not add
-to this list from memory.** Three entries were wrong here until 2026-08-19: `.github/ISSUE_TEMPLATE/**` is
-in `test.yml` and `docs.yml`, `skills/**` and `.claude/skills/matrix-classification-audit/**` are in
-`lint-papers.yml`, so "any skill other than `caail-pr-wrapup`" was false. `preflight` computes the real
-answer; this list is a convenience and the YAML wins.
+`.zenodo.json`, `.gitignore`, the two plugin manifests (`.claude-plugin/marketplace.json` and
+`plugin/.claude-plugin/plugin.json`; only `plugin/skills/**` is filtered, not `plugin/**`), and the four
+`.claude/skills/*` directories in no filter at all: `caail-db-authoring`, `papers-dataset-audit`,
+`zotero-collection-scope`, `zotero-to-caail-sync`.
+
+**Do not edit this list from memory. It has now been wrong in both directions.** It once said "any skill
+other than `caail-pr-wrapup`" is check-free, which is false for `skills/**`, `plugin/skills/**` and
+`.claude/skills/matrix-classification-audit/**`; the correction then deleted the clause outright, which
+made it false for the four above. `preflight` computes the real answer from the YAML, and the YAML wins;
+this list is a convenience that has cost more than it saved.
 
 The helper reports "no checks reported" and proceeds when that is genuinely the case. **If you expected
 a guard to run and it did not, and the diff is not in that list, treat it as a paths-filter gap rather
