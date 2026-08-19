@@ -21,8 +21,8 @@ rounds can come back down, is there too. The cross-model pass (step 4) stays, as
 rather than the safety gate.
 
 **Step 1 is not unattended.** It carries two *kinds* of `AskUserQuestion` pause, not two pauses: the scope
-gate can fire on any round and the stop gate before every round from the floor round onward, so a long run
-holds several of each
+gate can fire on any round, and the stop gate once the floor round has finished and before every round
+after it, so a long run holds several of each
 and neither is a budget of one (for the exact conditions, and when each is skipped, read the gates rather
 than this sentence). They are the only two decisions
 in the phase that belong to the maintainer rather than to the agent: whether to keep reviewing once the
@@ -213,6 +213,13 @@ right.
   under a running session without any signal. The instruction is to know which of those you are on before
   a round produces several tickets, not to trust this sentence.
 
+  For the same reason, **let the filing command's output come back rather than redirecting it to a file**.
+  On this maintainer's machine a `PostToolUse` recorder reads that response to close Jira's
+  read-after-write window, which is real (measured at 1 to 2 seconds) and matters most here, since a round
+  files several *related* tickets back to back and relatedness is what makes a duplicate likely.
+  Redirecting the output silently disables it. Like the guard above, that recorder is user-global and not
+  in this repo, so check rather than assume.
+
   This codifies what already happens rather than inventing a rule. `CAAIL-79` and `CAAIL-82` were filed
   from a review of `feat/homepage-agent-sections` instead of being fixed in it, and `CAAIL-271` and
   `CAAIL-272` were recorded as residuals from a `/code-review high` over PR #204 and deliberately left
@@ -268,7 +275,7 @@ right.
    meant to be.
 
 An empty round does not shorten the floor; it only ends the sequence once the floor is already met **and
-nothing is outstanding**, since condition 2 is judged against the carried set and not against one round's
+nothing is blocking**, since condition 2 is judged against the carried set and not against one round's
 fresh output. So a prose diff whose round 1 is empty still gets round 2, and a site-code or guards diff
 still gets three.
 
@@ -283,7 +290,13 @@ The question carries four things, and they are what make the answer mean anythin
   reuse: a fix can widen the shape and raise its own floor, and the state right after a fix landed is
   where that happens. If the re-checked floor is no longer met, do not ask at all, and run the remaining
   floor rounds.
-- **Everything still outstanding**, each labelled a defect this diff caused or already disposed of.
+- **Everything still outstanding, split into the two kinds that are not the same thing.** **Blocking**
+  items are defects this diff caused that have been neither fixed nor refuted, *including any deferred to
+  Jira*. **Disposed of** items are pre-existing findings ticketed or declined; they are shown because they
+  are part of what the round did, and they do not stop the run. A diff-caused defect that was deferred is
+  **blocking**, never disposed of: it is the one item that is both filed and unresolved, and showing it as
+  settled at the moment someone chooses whether to ship is the worst place to lose it. Only blocking items
+  bear on whether the sequence may end.
 - **What has changed since you last asked**, including "nothing". Someone being asked a third time should
   be able to see that it is the same question.
 - **Whether the last round changed the diff.** If it did, say that shipping now merges code no round has
@@ -304,8 +317,9 @@ absolutely and binds the maintainer only with disclosure.
 
 **The sequence ends in exactly two ways**, and the PR body says which:
 
-1. **A quiet round with nothing outstanding.** No prompt is needed to stop, because there is nothing to
-   decide.
+1. **A quiet round with nothing blocking.** No prompt is needed to stop, because there is nothing to
+   decide. Pre-existing findings ticketed or declined along the way do not prevent this ending; if they
+   did, any run that filed a single ticket could never reach either ending and would match no case at all.
 2. **The maintainer answers "ship now".** The body names whatever was outstanding, and if the last round
    changed the diff it also says those fixes went unreviewed and gives the reason.
 
@@ -498,7 +512,10 @@ recommendation: ship / fix-first / needs-human-call**. Feed that into the step 6
 - **fix-first** (confirmed correctness/security issues) → stop, fix them, commit + push (this updates the
   open PR), then re-review or proceed once resolved. Don't merge over confirmed real findings. A finding
   strong enough to land here is worth an extra step-1 round on the updated diff, since the fix is now
-  unreviewed code.
+  unreviewed code. That round can change how the review ended, and the body was composed back at step 3,
+  so **amend it with `gh pr edit` rather than leaving the open PR describing an ending that no longer
+  happened**. This is the one place the body is written after the PR exists; `ship-pr.sh` has no
+  subcommand for it, which is why the command is named here.
 - **needs-human-call** → surface the report and let the user decide.
 
 *When to run:* most valuable for **code** diffs (`site/**`). For docs-/config-/`.claude`-only diffs the
@@ -530,9 +547,12 @@ If a check **fails**, stop — surface it and fix the branch; do not merge red.
 **Pause here.** Merging triggers the public deploy, so confirm with the user before proceeding (unless
 they've already said to merge autonomously this run). Weigh **three** inputs, in this order of weight:
 step 1's review rounds must have ended one of the two ways the stop rule allows: a quiet round with
-nothing outstanding, or the maintainer answering "ship now" at the stop gate. In the second case the
+nothing blocking, or the maintainer answering "ship now" at the stop gate. In the second case the
 findings left outstanding are exactly the ones the PR body names and no others, and if the last round
-changed the diff the body also says those fixes went unreviewed. **A "ship now" ending does not inherit
+changed the diff the body also says those fixes went unreviewed. **The one exception is step 3's
+publishing carve-out**: a finding describing an unpatched weakness in a live service is deliberately
+unnamed, so an unnamed outstanding finding of that kind satisfies this check rather than failing it. Do
+not "fix" a failing check here by naming it; that publishes the weakness in a PR that cannot be deleted. **A "ship now" ending does not inherit
 the autonomous-merge waiver above**, so confirm the merge explicitly: that answer authorised ending the
 review, not merging without being asked;
 CI must be green (step 5); and the step 4 cross-model pass must not have left unresolved confirmed issues
@@ -665,7 +685,7 @@ adding it there too, or the guard will happily confirm that an incomplete set is
 | A round's findings are **all pre-existing**, and the loop will not go quiet | Once they are ticketed under the scope gate **and nothing in the diff was changed in response**, that *is* a quiet round, meaning quiet for condition 2 only: condition 1 still applies, so it does not ship below the floor. Only a defect this diff **caused** blocks a quiet round. If the maintainer elected to fix any of them here, condition 3 applies and the round is not quiet, because that fix is unreviewed code like any other. A loop still running on the same old findings means condition 2 is being read in its pre-scope-gate form, which does not terminate. |
 | `push` says **working tree is not clean** and lists files | A step-1 fix was never committed. Not a nuisance check: `preflight` ran before the rounds edited anything, so this is the only thing between an uncommitted fix and a PR that looks correct while missing it. **Commit** what it lists, then re-run `preflight` and push. Stashing a *fix* clears the check while producing exactly the outcome it exists to prevent: the tree goes clean, the push succeeds, and the fix is not in the diff. The stash itself is safe (`refs/stash` is shared across worktrees and survives `git worktree remove --force`, verified), so a fix stashed by mistake is one `git stash pop` away. Stashing unrelated work in progress is fine. |
 | `push` says **on the default branch** | You are shipping from a checkout that holds `main` (the primary one usually does). Nothing was pushed. Get onto the feature branch, or run the skill from its worktree. Without this the push would have gone straight to `origin/main`, skipping the PR and every check, with `docs.yml` deploying it. |
-| A finding's **fix is itself unreviewed code** | It is, and that is the whole reason for round 2. Two of the fourteen defects in step 1's evidence arrived this way, one an accessibility regression created by the fix for a different accessibility finding. Never merge a fix that no round has seen. |
+| A finding's **fix is itself unreviewed code** | It is, and that is the whole reason for round 2. Two of the fourteen defects in step 1's evidence arrived this way, one an accessibility regression created by the fix for a different accessibility finding. Never merge a fix that no round has seen **unless the maintainer took the stop gate's "ship now" with that stated, which is the one override and is human-only**. An agent may never reach that outcome on its own. |
 | Cross-model pass returns **one or two findings, or none** | Normal output for the weaker reviewer; it is not evidence the diff is clean (step 1's rationale). Do not let it stand in for a step-1 round, and do not report it as "reviewed by two models" as if the two carried equal weight. |
 | A deeper level than `high` looks warranted | It isn't the lever here: **add a round instead.** `ultra` is not available to an agent regardless, being user-triggered and billed. If you still think the diff needs something other than another round, say so and let the user decide rather than changing the level quietly. |
 | Someone proposes collapsing step 1 back to a single pass | Point them at step 1's rationale block and its revisit condition. The rounds compensate for a measured reviewer-strength asymmetry, and the condition for lowering them is a stronger non-Claude reviewer, not a diff that feels small. |
