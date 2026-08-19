@@ -8,7 +8,7 @@
 - The floor on rounds, by blast radius
 - What each round has to do
 - **Definitions** (blocking, disposed of, outstanding, the four dispositions, the two endings, the publishing carve-out) — the single source for every load-bearing term
-- Severity, who assigns it, and the three Majors-by-definition
+- Severity: classified by you, shown at the gates, never acted on by the agent
 - When to stop: the three conditions
 - The **scope gate** (per-round, out-of-scope findings)
 - The **stop gate** (post-floor, whether to keep reviewing)
@@ -114,7 +114,7 @@ right.
   the idea underneath it. Do not reintroduce it.
 
   **All four dispositions are available, and they are yours to propose** (see Definitions; a pre-existing
-  finding that is simply not a defect is **refuted**, not ticketed).** The bullet above insists "not
+  finding that is simply not a defect is **refuted**, not ticketed). The bullet above insists "not
   acted on" and "not a defect" are different outcomes, so a finding may be ticketed, declined with a
   reason, or fixed here. Declining is a disposition you write into the triage, not an extra button on a
   prompt.
@@ -162,7 +162,7 @@ right.
 
 #### Definitions
 
-These five terms are load-bearing, and this is the **only** place any of them is defined. Everywhere else
+The terms below are load-bearing, and this is the **only** place any of them is defined. Everywhere else
 in this file points here rather than restating them. That is not tidiness. Three consecutive review rounds
 on the change that introduced these gates each found a Major, and every one was the same defect: a rule
 written in two places, with the fix applied to one of them. If you change a definition, change it here and
@@ -176,7 +176,8 @@ nowhere else.
   blocking.
 - **Outstanding.** Blocking items **and** disposed-of items together, which is everything a round surfaced
   and did not refute or fix. The gates display all of it; only the blocking part governs whether the
-  sequence may end, and only the blocking part is what an ending 2 body is disclosing.
+  sequence may end. An ending 2 body names **all** of it, blocking and disposed of alike, because a reader
+  cannot tell an unmentioned finding from an unnoticed one.
 - **The four dispositions.** **Fixed**, changed in the diff. **Refuted**, shown not to be a defect, with
   the reason stated. **Deferred**, agreed real and filed to Jira. **Declined**, agreed real and left alone.
   Only the first two clear a blocking finding. The last two leave it blocking, which is exactly why
@@ -187,51 +188,30 @@ nowhere else.
   condition 2 alone, and a 3-round diff whose round 1 came back quiet satisfies the shorthand while failing
   the ending.
 - **The publishing carve-out.** An outstanding finding describing an unpatched weakness in a live service
-  is reported only as having been triaged to Jira, naming neither the weakness nor the endpoint. It reaches
-  that finding **however it was disposed of**, declined or deferred or scope-gate-routed. A PR cannot be
+  **goes to Jira with `disclosure-private`** and the body says only that a finding was triaged there,
+  naming neither the weakness nor the endpoint. It reaches that finding however it was disposed of, and it
+  **forces the filing**: such a finding is never merely declined, because declining leaves the weakness
+  recorded nowhere while the body claims a triage that did not happen. A PR cannot be
   deleted, so this binds wherever the body is actually written, which is step 3.
 
-**Severity, and who decides it.** The stop *gate*'s option set turns on whether a **Major** is
-**outstanding** (the stop rule's three conditions never mention severity, and a Major found and fixed in
-round 1 governs nothing), so classify
-every finding yourself and treat the reviewer's own label as evidence rather than as the answer. Across the
-rounds run on the change that added this section (**ten by 2026-08-19**, a snapshot, and deliberately
-without a command beside it: nothing in the repo counts review rounds, and `git log` counts commits, which
-is a different number and would invite exactly the correction this parenthesis exists to prevent) it
-emitted three different vocabularies (Major/Minor,
-High/Medium/Low, lowercase variants), hybrids like `MEDIUM-HIGH`, and **no labels at all on two rounds**.
-A rule that reads a field which is sometimes absent is a rule that is sometimes undefined.
+**Severity: classify it, then show it.** Grade every finding yourself and treat the reviewer's own label
+as evidence rather than as the answer, because across the rounds run on the change that added this section
+(**ten by 2026-08-19**, a snapshot; nothing in the repo counts review rounds, so no command is given here)
+it emitted three vocabularies (Major/Minor, High/Medium/Low, lowercase variants), hybrids like
+`MEDIUM-HIGH`, and **no labels at all on two rounds**. A rule reading a field that is sometimes absent is a
+rule that is sometimes undefined.
 
-**Three outcomes are Major by definition, whatever label arrives with them**, because they are named by
-their consequence in this repo rather than by anyone's severity scale. **They are about what shipping this
-PR would do, not about what any one file says**, so they apply to every diff this skill ever ships and not
-only to changes to this skill:
+**Severity is shown at the gates, never acted on by the agent.** It goes in the stop gate's payload beside
+each finding so the maintainer can weigh it, and that is the whole of its role: nothing in this phase
+withholds an option, ends a run, or forces a round on the strength of it. State severity as a consequence
+("would publish a `disclosure-private` finding", "would merge below the floor", "would cause wrong
+behaviour if merged") rather than as a grade, since a consequence is checkable and a grade is an opinion.
 
-1. Shipping would **publish a `disclosure-private` finding**, or any unpatched weakness in a live service,
-   into a PR body, commit message or issue. PRs cannot be deleted.
-2. Shipping would **merge code no round has read**, without the maintainer having answered "ship now" to
-   precisely that.
-3. Shipping would **merge below the floor**, or erode the floor so a later run does.
-
-**Beyond those three, a Major is a defect in the change under review that would cause wrong behaviour, data
-loss, or a security weakness if merged.** For a content or procedure diff that means a rule an agent
-following it would act on wrongly; for a code diff it means the ordinary thing. State it in terms of the
-consequence, never the file.
-
-**Two scoping traps, both hit while writing this.** The first: the test classifies a **finding**, never the
-run's current state. Unreviewed fixes sitting in the diff at the gate are not Major 2; being asked about
-them is the remedy working, and reading the pending state as a finding deadlocks the gate, because the
-option it withholds is the only one that ends the run. The second, which is how the first was
-over-corrected: scoping the classes to "a finding about this file" made every one of them unmatchable on an
-ordinary `site/src/**` diff, so the withholding rule engaged only when this skill reviewed itself. A safety
-rule that fires solely on its own test case is not a safety rule. When you are unsure, say which of the three it is nearest and
-let the maintainer rule. Do not settle it by quoting the reviewer's label, and do not inflate severity to
-justify another round.
-
-**Majors are fixed, never deferred.** They may be **refuted**, which means showing the finding is not a
-defect and saying why, because "not acted on" and "not a defect" are different outcomes here as everywhere
-else in this phase. They may not be agreed real and left in.
-
+An earlier draft made severity load-bearing: three outcomes were Major by definition and a Major being
+outstanding withheld the "ship now" option. It deadlocked three times, each deadlock introduced by the
+repair of the last, because "a Major is outstanding" is a condition that never clears once a pre-existing
+finding is ticketed. **Do not reintroduce it.** The maintainer deciding at the gate does the same work
+without a rule that can contradict itself.
 **When to stop.** All three conditions, not any one of them:
 
 1. The **floor for the widest shape in the diff** has been reached, judged against the diff **as it stands
@@ -276,11 +256,13 @@ fresh output. So a prose diff whose round 1 is empty still gets round 2, and a s
 still gets three.
 
 **Stop gate.** Once the floor is met, ask before every further round. **One question, always the same
-shape.** Propose one of the four dispositions (see Definitions) for every outstanding finding first, the
-same way the scope gate does, and remember that **declining or deferring a blocking finding does not
+shape.** Propose one of the four dispositions (see Definitions) for every **blocking** finding first, the
+same way the scope gate does. Disposed-of findings are shown for context and **not re-proposed**, matching
+the scope gate's skip rule; re-proposing them puts the same question to the maintainer every round, and remember that **declining or deferring a blocking finding does not
 clear it**, so a triage full of those is an ending 2 and must be offered as one, then offer **two options: accept this triage and run another round, or ship now, leaving
-everything outstanding unfixed and named in the body.** In the Definitions' vocabulary those findings end
-up **declined**, agreed real and left alone, which is what ship-now does to them. Do not report them as
+everything outstanding unfixed and named in the body.** A finding with no ticket ends up **declined**,
+agreed real and left alone; one already **deferred** keeps its key and stays deferred, so the body names
+the key rather than reporting a filed finding as unfiled. Do not report them as
 **refuted**: that word is reserved for a finding shown not to be a defect, and using it here would undo the
 disclosure this ending exists to force. Anything finer grained arrives through **Other**. Since condition 3 is absolute, a
 triage that proposes **newly** any fix *is* another round; there is no third option where a fix proposed
@@ -307,17 +289,6 @@ The question carries four things, and they are what make the answer mean anythin
   to earlier findings**, one an accessibility regression created by the fix for a different accessibility
   finding. Give the number rather than a caution about risk; the point of asking is that they are deciding
   against it.
-
-**When any Major is outstanding, the gate still fires but "ship now" is not among the options.** The two
-it does offer are **accept this triage and run another round** and **refute one of the Majors, saying which
-and why in Other**, because a one-option question is not a question and the tool requires at least two
-(**observed 2026-08-19**; check rather than trust, as with every external-tool claim here). A refutation
-with no reason is not a refutation, so if that second option comes back empty, treat it as no answer and
-**ask once, narrowly**, exactly as the scope gate does for an adjustment you cannot resolve. Do not refute
-it yourself: nothing here ends a run on the agent's own judgement. Do not suppress
-the whole prompt instead: the maintainer should see a Major round rather than
-be routed around it, and they can still overrule through **Other**, which is theirs. What an agent may not
-do is *offer* the option.
 
 **Only an unambiguous "ship now" is one.** A hedged or conditional reply, "ship it once the a11y thing is
 fixed", is not a ship: it is an instruction to do the condition and ask again. Read it that way even when

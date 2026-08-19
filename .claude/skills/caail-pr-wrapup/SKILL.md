@@ -20,7 +20,7 @@ is the only place that floor is written down. The reasoning, and the condition u
 rounds can come back down, is there too. The cross-model pass (step 4) stays, as a cheap extra angle
 rather than the safety gate.
 
-**Step 1 may not run unattended.** It carries two *kinds* of `AskUserQuestion` pause, not two pauses, and
+**Step 1 usually does not run unattended.** It carries two *kinds* of `AskUserQuestion` pause, not two pauses, and
 a run whose floor rounds come back quiet *and* surface no pre-existing findings fires neither and finishes
 without asking anything. Quiet means condition 2 only, so a quiet round that surfaces a pre-existing
 finding still fires the scope gate: the scope
@@ -66,7 +66,7 @@ Run the helper from the repo (worktree) root: `bash .claude/skills/caail-pr-wrap
 - **If the branch touches `workers/**` at all, deploy the Worker by hand before step 2**:
   `pnpm --dir workers/events run deploy`. No workflow deploys it, so shipping the code does not ship the
   change, and a push publishes a commit message describing behaviour that is not live yet. Check this
-  against the whole branch, not just what the review rounds edited: the gate table in step 1 only covers
+  against the whole branch, not just what the review rounds edited: the re-gate table in `reference/review-phase.md` only covers
   files a *round* touched, so a branch whose original commits changed the Worker and whose rounds did not
   would otherwise never be reminded.
 - **The PR body is publishable.** `caail` is a **public** repo, so the body, every commit message,
@@ -116,9 +116,8 @@ undocumented:
 - **Two `AskUserQuestion` gates live in this phase**, so it may not run unattended: a **scope gate** each
   round for findings this diff did not cause, and a **stop gate** once the floor is met for whether to keep
   reviewing. Neither is an agent's decision to take.
-- **Majors are fixed or refuted, never deferred**, and three outcomes are Major whatever a reviewer labels
-  them: it would publish a `disclosure-private` finding, merge code no round has read, or merge below the
-  floor.
+- **Severity is yours to weigh, not the agent's to act on.** Findings are graded and shown at the stop
+  gate; nothing in the phase withholds an option or forces a round on the strength of a grade.
 
 ### 2. Push
 ```bash
@@ -136,8 +135,7 @@ bash .claude/skills/caail-pr-wrapup/ship-pr.sh open-pr "<title>" /tmp/pr-body.md
 - **Body:** what changed and *why*; the research area(s)/AI method(s) or routes it touches; and the
   verification you already ran (tests/build/e2e, reviewer agents). Say **how the review went**: the
   level and how many rounds, and then **which of the stop rule's two endings this run reached**. A quiet
-  **Ending 1** (see Definitions, and name its three conditions rather than calling it a quiet round): say
-  so. The maintainer answering **"ship now"** at the stop gate: say
+  **Ending 1**, naming its three conditions rather than calling it a quiet round: say so. The maintainer answering **"ship now"** at the stop gate: say
   that instead, name everything left outstanding, and **if the last round changed the diff, say that those
   fixes were never reviewed and give the reason they gave**. That is the one ending that ships code no
   round has read, so a body that omits it is not merely thin, it is wrong. Write this here, because the
@@ -238,8 +236,8 @@ If a check **fails**, stop — surface it and fix the branch; do not merge red.
 ### 6. Confirm, then merge
 **Pause here.** Merging triggers the public deploy, so confirm with the user before proceeding (unless
 they've already said to merge autonomously this run). Weigh **three** inputs, in this order of weight:
-step 1's review rounds must have ended at **ending 1 or ending 2** as step 1's Definitions set them out,
-and ending 1 means checking its three conditions rather than the "quiet round" shorthand. In the second case the
+step 1's review rounds must have genuinely reached an ending, which means **checking ending 1's three
+conditions** rather than accepting the label: "it ended" is not evidence, since every run ends somehow. In the second case the
 findings left outstanding are exactly the ones the PR body names and no others, and if the last round
 changed the diff the body also says those fixes went unreviewed. **The exception is the publishing
 carve-out in step 1's Definitions**, so a finding it withholds satisfies this check by being unnamed rather
