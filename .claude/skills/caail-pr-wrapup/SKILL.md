@@ -280,11 +280,16 @@ need for step 7.
 ```bash
 bash .claude/skills/caail-pr-wrapup/ship-pr.sh watch-deploy <merge-sha>
 ```
-This finds the `docs.yml` run for that SHA and blocks until it finishes. Green = build + **Lighthouse
-gate** (accessibility ≥0.90 on landing + explorer; performance ≥0.90 on landing) + Deploy to Pages all
-passed — *that* is a successful ship. If preflight predicted no deploy (the diff touched no deploy
-paths), the helper says so and returns cleanly. **If Lighthouse fails, stop** — read the lhci report
-and fix the regression; do not re-run blindly hoping it passes.
+This finds the `docs.yml` run for that SHA and blocks until it finishes. Green = build + Lighthouse gate +
+Deploy to Pages all passed, and *that* is a successful ship. If preflight predicted no deploy (the diff
+touched no deploy paths), the helper says so and returns cleanly.
+
+**Which Lighthouse categories block is deliberately not written here.** `CLAUDE.md` carries that sentence,
+`site/scripts/lighthouse-gate.ts` generates it from `site/lighthouserc.json`, and a test asserts it
+verbatim, so it cannot drift; a second hand-typed copy can, and this one did, calling performance blocking
+when it has been warn-level since `e627e97` and scoping it to the landing page when the assertion matches
+every collected URL. Read `CLAUDE.md`'s sentence, or run the generator. **If a *blocking* category fails,
+stop**: read the lhci report and fix the regression rather than re-running and hoping.
 
 ### 8. Verify live
 ```bash
