@@ -38,9 +38,8 @@ filtered, not `plugin/**`). `preflight` computes the real answer from the YAML a
 list. `.claude/hooks/**` and
 `.claude/settings.json` trigger **both** `test.yml` and `guards.yml`, because the two hooks are tested
 in different places (`check-public-publish.test.py` in `guards.yml`, `block-generated-edits.py` via
-`site/scripts/db/hook.test.ts` in the vitest suite). Editing this skill, or **any** workflow other than
-`test.yml` itself, triggers `guards.yml` alone, deliberately, so a prose tweak here does not spend an
-Astro build, a Playwright
+`site/scripts/db/hook.test.ts` in the vitest suite). Editing this skill or **any** workflow triggers
+`guards.yml` alone — deliberately, so a prose tweak here does not spend an Astro build, a Playwright
 browser install and the axe suite.
 
 **Two paths gaps were fixed on 2026-08-12 and the class is worth remembering**, since `'*.md'` is
