@@ -428,11 +428,10 @@ afterwards. Both trackers, in this order:
   If it's still `OPEN`, close it now with a comment naming the merge SHA — `gh issue close <N> --comment
   "Shipped in <sha>, live at <url>"`.
 - **Jira.** `CAAIL` is the durable record and nothing else transitions it, so this step is the only
-  thing standing between the board and a permanent backlog of finished work. Resolve the site and cloud
-  id **at runtime** (`getAccessibleAtlassianResources`, then `getVisibleJiraProjects`) — they are
-  deliberately not written down in this world-readable repo — then `transitionJiraIssue` to **`Done`
-  (transition id `41`)** and `addCommentToJiraIssue` with the **merge SHA** and the **live URL**, so the
-  ticket records where the work landed. If the ticket is a `Task` under a `Workstream`, check whether it
+  thing standing between the board and a permanent backlog of finished work. The Rovo MCP was removed
+  2026-08-18, so this goes through `acli`, which needs no cloud id: `acli jira workitem transition --key
+  CAAIL-nn --status "Done" --yes`, then `acli jira workitem comment create --key CAAIL-nn --body "Shipped
+  in <sha>, live at <url>"` — so the ticket records where the work landed. If the ticket is a `Task` under a `Workstream`, check whether it
   was the last open child; a Workstream whose children are all `Done` should be transitioned too.
 
 Both calls happen **after** the irreversible part of the ship, so a failure here is bookkeeping, not a

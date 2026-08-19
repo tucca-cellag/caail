@@ -264,7 +264,7 @@ This is a distinct virtue from the coverage humility already in `api/index.json`
 
 ## Workflow
 
-- **Jira first, always.** Every piece of work gets an issue in the private **CAAIL** Jira project *before* the work starts, not after. A public GitHub issue is an additional venue when the content is genuinely world-safe, never a substitute. The failure this prevents: a session's reasoning is the expensive part and it evaporates on compaction, so anything that lives only in a todo list or a chat transcript is already lost. See "Jira conventions" below for the schema. (The site and cloud id are deliberately not recorded in this world-readable file — resolve them at runtime via `getAccessibleAtlassianResources` and `getVisibleJiraProjects`.)
+- **Jira first, always.** Every piece of work gets an issue in the private **CAAIL** Jira project *before* the work starts, not after. A public GitHub issue is an additional venue when the content is genuinely world-safe, never a substitute. The failure this prevents: a session's reasoning is the expensive part and it evaporates on compaction, so anything that lives only in a todo list or a chat transcript is already lost. See "Jira conventions" below for the schema. (The site and cloud id are deliberately not recorded in this world-readable file — resolve them at runtime: `acli jira auth status` names the site, and the cloud id is the Keychain entry `JIRA_CLOUD_ID`.)
 - **The structured catalog is authored in a SQLite DB, not by hand** — see "The SQLite authoring backend" below. The matrix + references in `Papers.md`, the entries in `Software.md` / `Databases.md`, and the inventory tables in `Datasets/*.md` are **generated** from `site/db/ndjson/`; don't hand-edit those regions (a hook blocks it; CI fails on drift). Prose in those files, and every other canonical file, is still just hand-authored Markdown — preview in any Markdown viewer or let GitHub render it. (The generated website under `site/` has its own build — see "Documentation site (`site/`)" below.)
 - **Branching.** Work on `<type>/<slug>` branches off `main`; open PRs against `main`. Never commit directly to `main`.
 - **Superpowers specs stay local.** `.gitignore` excludes `docs/superpowers/`, so write the design doc there but don't commit it — the skill's default to commit doesn't apply here, and the existing specs are all untracked.
@@ -311,10 +311,13 @@ Jira is the durable record. Claude's todo list is session-scoped and dies with t
 
 **Do not rely on a JQL text search to find it.** Jira's text index tokenizes, so `summary ~ "full text"` and `description ~ "CAAIL-166"` both miss matches you need — hyphenated keys in particular. The only sound method is to pull every open issue and scan locally:
 
-```
-# via the Rovo MCP: project = CAAIL AND statusCategory != Done ORDER BY key ASC
-# fields: key, summary, parent, priority, labels   (descriptions too if the topic is subtle)
-jq -r '.issues.nodes[] | [.key, .fields.summary] | @tsv' <saved-result> | grep -i '<concept>'
+```bash
+# One command. Fetches the whole project over REST and compacts it to one line
+# per issue: key, type, status, updated, priority, labels, parent, links, summary.
+~/.claude/scripts/jira-cache.sh list CAAIL
+
+# Full text, including descriptions AND comments:
+~/.claude/scripts/jira-cache.sh grep CAAIL '<concept>'
 ```
 
 Search for the **concept**, not your phrasing of it. A ticket about "refs whose classification rests on something short of full text" is the same work as one about "abstract-only placements", and no keyword search finds the second from the first. Read the summaries of anything adjacent before concluding it is new.
