@@ -173,7 +173,10 @@ right.
   classification alone. **Write the triage first, then ask once.** List every pre-existing finding in the
   round's triage with the disposition you propose for it, then put that whole triage to the user as a
   single `AskUserQuestion` with two options: accept it, or adjust it. Their answer is the stated reason,
-  recorded rather than assumed.
+  recorded rather than assumed. **"Adjust it" is answered in the question's own free-text field**, and you
+  then restate the corrected triage in the round's record and proceed. Do not re-prompt: a second question
+  collides with the no-re-ask guard below, and reaching for one is how the option-per-finding machinery
+  gets rebuilt.
 
   Proposing before asking is what keeps this both cheap and honest. The maintainer sees every finding and
   its proposed fate together, instead of approving a label whose contents are disclosed afterwards, and
@@ -199,8 +202,8 @@ right.
   filing costs, and check rather than assume.** On this maintainer's machine the duplicate guard denies
   each create once and re-enumerates the whole project first, injecting the entire backlog before it lets
   the create through, so four findings is four of those rather than one check covering the batch. Do not
-  read that as a property of this repo: like `check-dangerous-git.sh` (noted further down, and not to be
-  confused with `check-public-publish.sh`, which *does* ship here), **that guard is
+  read that as a property of this repo. Unlike `check-public-publish.sh`, which *does* ship here through
+  the committed `.claude/settings.json`, **that guard is
   user-global and not in this repo**, so a fresh clone has none of it, and it has been observed changing
   under a running session without any signal. The instruction is to know which of those you are on before
   a round produces several tickets, not to trust this sentence.
@@ -256,32 +259,45 @@ right.
 An empty round does not shorten the floor; it only ends the sequence once the floor is already met. So a
 prose diff whose round 1 is empty still gets round 2, and a site-code or guards diff still gets three.
 
-**Stop gate.** The gate fires on one combination only: condition 1 met, condition 3 **met**, and condition
-2 **not**. That is, the floor is done, the last round changed nothing, and what it surfaced were
-diff-caused defects you are proposing to leave unfixed. That is the only state in which shipping is a real
-option, so it is the only state where the choice is the maintainer's. Fire one `AskUserQuestion` carrying
-enough for the answer to mean something: the rounds run so far, the floor for the diff's shape **as
-re-checked after the last round's fixes landed**, and every outstanding finding labelled either a defect
-this diff caused or already ticketed. Two options, another round or triage-the-rest-and-ship. The reason to
-ask at all is that every round is a whole-diff `/code-review high` whose cost does not shrink as the fixes
-do, so a round prompted by a one-line fix costs what round 1 cost. `CAAIL-269` records eight rounds on
-PR #205, with four findings deliberately left unfixed by the end of them.
+**Stop gate.** Once the floor is met, the gate fires on **any** state where the run would otherwise
+continue: condition 2 unmet, condition 3 unmet, or both. Below the floor it never fires. Which question it
+asks depends on why the run is continuing, and the two are not interchangeable.
 
-**When condition 3 is unmet, another round is mandatory and there is no prompt.** A round that produced
-fixes has produced unreviewed code, so "ship now" would merge precisely what the Gotchas row forbids: a fix
-no round has seen. There is no decision to put to anyone there, and offering one would only invite the
-wrong answer. This is the path condition 3 creates and it is deliberately the expensive one. The way to
-avoid paying for it is to decline the fix at the scope gate, not to skip the round after making it.
+**Case A, condition 3 met and condition 2 not.** The last round changed nothing, and what it surfaced were
+diff-caused defects you propose to leave unfixed. Ask: another round, or triage-the-rest-and-ship. Carry
+the rounds run so far, the floor for the diff's shape **as re-checked after the most recent round that
+changed the diff**, and every outstanding finding labelled a defect this diff caused or already disposed
+of.
 
-So **"ship" at this gate always means shipping with findings outstanding and unfixed, never with fixes
-nobody has reviewed.** If you are about to offer it in any other state, the gate has been misread.
+**Case B, condition 3 unmet.** The last round produced fixes, so the diff now carries code no round has
+seen. The default is another round and the question must say so, but **the maintainer may accept those
+fixes unreviewed and ship.** This is the case the gate exists for and the one that actually costs: every
+round is a whole-diff `/code-review high` whose price does not shrink as the fixes do, so a round prompted
+by a one-line fix costs what round 1 cost, and `CAAIL-269` records eight rounds on PR #205 reached exactly
+this way.
 
-**Do not re-ask an unchanged question.** Answering "another round" while electing no fix returns the run to
-the identical state, since condition 3 stays met and the deferred findings are carried forward rather than
-refuted, so the gate would fire again with byte-identical content and go on doing so. Offer "another round"
-**once per unchanged outstanding set**: if the next round leaves that set unchanged, the sequence ends
-there and the PR body records that it did. This is the same guard the scope gate gets above, and it is
-needed here for the same reason.
+**Case B is the one that can ship a defect, so it carries its own evidence.** The question must state that
+this file's own rationale block records **two of fourteen defects as introduced by fixes to earlier
+findings**, one of them an accessibility regression created by the fix for a different accessibility
+finding. Do not soften that into "there is some risk"; give the maintainer the number, because the whole
+point of asking is that they are deciding against it. And **the PR body must record that the last round's
+fixes went unreviewed, and the reason given**, in the same breath as the round count. A run that ended this
+way is not a quiet run and must never be described as one.
+
+An earlier draft made case B a mandatory round with no prompt, on the ground that "never merge a fix no
+round has seen" is absolute. That is coherent but it makes the sequence unbounded by construction, since
+any fix mandates a round and any round may find something needing a fix. It also put the only checkpoint on
+the cheap path: five review rounds on this very change never once fired the gate, because a fix was made
+every round. The rule is therefore overridable by a human on the record rather than absolute. It is not
+overridable by an agent, and an agent must never choose case B's ship option on the maintainer's behalf.
+
+**Do not re-ask an unchanged question.** Answering "another round" while nothing then changes returns the
+run to the same state, so the gate would ask the same question about the same outstanding set forever.
+Offer "another round" **once per unchanged outstanding set**. If the next round leaves that set unchanged
+*and* condition 3 is still met, the sequence ends there and the PR body records that it did. **If condition
+3 became unmet in the meantime, the set being unchanged does not end anything**: a fix was made, and case B
+applies, or the run would ship the unreviewed fix this rule exists to catch. This is the same guard the
+scope gate gets above and it is needed here for the same reason.
 
 **The stop gate does not exist below the floor, and must not be added there.** Rounds 1..floor run without
 *it*; the scope gate still fires in them and should, so this paragraph is about the stop gate alone.
@@ -407,7 +423,10 @@ bash .claude/skills/caail-pr-wrapup/ship-pr.sh open-pr "<title>" /tmp/pr-body.md
   verification you already ran (tests/build/e2e, reviewer agents). Say **how the review went**: the
   level, how many rounds, and that the last one was quiet. **If the rounds ended at the stop gate rather
   than on a quiet round, say so instead and name what was left outstanding**, since a shortened run and a
-  completed one are otherwise indistinguishable to a reader of this body. Findings routed to a ticket by
+  completed one are otherwise indistinguishable to a reader of this body. **If it ended at the gate's
+  case B, say that the last round's fixes were never reviewed and give the reason the maintainer gave.**
+  That is the one ending that ships code no round has read, so a body that omits it is not merely thin,
+  it is wrong. Findings routed to a ticket by
   the scope gate are named here too, by key, and **the publishing exception below covers them as well**:
   for that exception alone, treat "declined" and "routed to a ticket" as one category, even though this
   file is careful to separate them everywhere else. Deliberately not restated here, because there is one
@@ -491,10 +510,14 @@ If a check **fails**, stop — surface it and fix the branch; do not merge red.
 they've already said to merge autonomously this run). Weigh **three** inputs, in this order of weight:
 step 1's review rounds must have ended on a quiet round with every finding fixed or explicitly triaged,
 **or** at the stop gate with the maintainer's explicit decision to ship, in which case the findings left
-outstanding are exactly the ones the PR body names and no others, **or** at the stop gate's unchanged-set
+outstanding are exactly the ones the PR body names and no others (and if that decision was the gate's case
+B, the body also says the last round's fixes went unreviewed), **or** at the stop gate's unchanged-set
 rule, where the maintainer asked for another round and that round left the outstanding set exactly as it
 was. Treat that third ending as what it is and do not record it as a decision to ship: the maintainer
-chose more review and got it, the review found nothing further, and the PR body says so in those words;
+chose more review, got it, and the round re-reported the same findings rather than clearing them, so the
+PR body says that in those words. **That ending does not inherit the autonomous-merge waiver above**;
+confirm it explicitly, because the last answer you have from the maintainer on those defects was a refusal
+to ship them;
 CI must be green (step 5); and the step 4 cross-model pass must not have left unresolved confirmed issues
 (a "fix-first"). A green CI plus a thin cross-model report is **not** a substitute for the first of those:
 neither of them reads the diff the way step 1 does. Then:
@@ -621,7 +644,7 @@ adding it there too, or the guard will happily confirm that an incomplete set is
 | Symptom / situation | What it means / do |
 | --- | --- |
 | **Round 1 comes back empty** on a code-heavy or multi-file diff | Read it as a fact about the review, not about the diff. There is no level to raise (the level is always `high`), so run out the floor and say plainly that a round came back empty on a diff that shape. An extra pass narrowed to a hot spot is fine on top of a whole-diff round, never instead of one. |
-| The **stop gate** fires before the floor is met | It should not, and the answer is not to accept it. Rounds 1..floor run without the *stop* gate; it exists only once condition 1 holds, condition 3 holds, and condition 2 does not. The **scope gate** does fire in those rounds and should, so do not read one as evidence the other is misfiring. A stop prompt below the floor turns the floor into a default, which is the erosion the next row is about. Run the remaining floor rounds. |
+| The **stop gate** fires before the floor is met | It should not, and the answer is not to accept it. Rounds 1..floor run without the *stop* gate; it exists only once condition 1 holds, and then on any state where the run would otherwise continue. The **scope gate** does fire in those rounds and should, so do not read one as evidence the other is misfiring. A stop prompt below the floor turns the floor into a default, which is the erosion the next row is about. Run the remaining floor rounds. |
 | A round's findings are **all pre-existing**, and the loop will not go quiet | Once they are ticketed under the scope gate **and nothing in the diff was changed in response**, that *is* a quiet round, meaning quiet for condition 2 only: condition 1 still applies, so it does not ship below the floor. Only a defect this diff **caused** blocks a quiet round. If the maintainer elected to fix any of them here, condition 3 applies and the round is not quiet, because that fix is unreviewed code like any other. A loop still running on the same old findings means condition 2 is being read in its pre-scope-gate form, which does not terminate. |
 | `push` says **working tree is not clean** and lists files | A step-1 fix was never committed. Not a nuisance check: `preflight` ran before the rounds edited anything, so this is the only thing between an uncommitted fix and a PR that looks correct while missing it. **Commit** what it lists, then re-run `preflight` and push. Stashing a *fix* clears the check while producing exactly the outcome it exists to prevent: the tree goes clean, the push succeeds, and the fix is not in the diff. The stash itself is safe (`refs/stash` is shared across worktrees and survives `git worktree remove --force`, verified), so a fix stashed by mistake is one `git stash pop` away. Stashing unrelated work in progress is fine. |
 | `push` says **on the default branch** | You are shipping from a checkout that holds `main` (the primary one usually does). Nothing was pushed. Get onto the feature branch, or run the skill from its worktree. Without this the push would have gone straight to `origin/main`, skipping the PR and every check, with `docs.yml` deploying it. |
