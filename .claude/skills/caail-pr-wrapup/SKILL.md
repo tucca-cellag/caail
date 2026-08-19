@@ -244,6 +244,29 @@ right.
 - **Round 3 and beyond, until the stop rule ends it either way.** Each round takes the previous round's triage list,
   so it stops re-deriving candidates an earlier round already refuted.
 
+**Severity, and who decides it.** The stop rule turns on whether a round produced a **Major**, so classify
+every finding yourself and treat the reviewer's own label as evidence rather than as the answer. Across the
+ten rounds run on the change that added this section it emitted three different vocabularies (Major/Minor,
+High/Medium/Low, lowercase variants), hybrids like `MEDIUM-HIGH`, and **no labels at all on two of the ten**.
+A rule that reads a field which is sometimes absent is a rule that is sometimes undefined.
+
+**Three outcomes are Major by definition, whatever label arrives with them**, because they are named by
+their consequence in this repo rather than by anyone's severity scale:
+
+1. It would **publish a `disclosure-private` finding**, or any unpatched weakness in a live service, into a
+   PR body, commit message or issue. PRs cannot be deleted.
+2. It would **merge code no round has read**, other than by the maintainer's own "ship now".
+3. It would **merge below the floor.**
+
+Beyond those three, a Major is a finding that would make an agent following this file *do* the wrong thing,
+as against one that makes it read awkwardly. When you are unsure, say which of the three it is nearest and
+let the maintainer rule. Do not settle it by quoting the reviewer's label, and do not inflate severity to
+justify another round.
+
+**Majors are fixed, never deferred.** They may be **refuted**, which means showing the finding is not a
+defect and saying why, because "not acted on" and "not a defect" are different outcomes here as everywhere
+else in this phase. They may not be agreed real and left in.
+
 **When to stop.** All three conditions, not any one of them:
 
 1. The **floor for the widest shape in the diff** has been reached, judged against the diff **as it stands
@@ -288,7 +311,11 @@ fresh output. So a prose diff whose round 1 is empty still gets round 2, and a s
 still gets three.
 
 **Stop gate.** Once the floor is met, ask before every further round. **One question, always the same
-shape, two options: run another round, or ship now.** It fires whenever the floor is met and the run would
+shape.** Propose a disposition for every outstanding finding first, fix or decline, exactly as the scope
+gate does, then offer **two options: accept this triage and run another round, or ship now with everything
+outstanding declined.** Anything finer grained arrives through **Other**. Since condition 3 is absolute, a
+triage that proposes any fix *is* another round; there is no third option where fixes land and the run
+still ends. It fires whenever the floor is met and the run would
 otherwise continue, which is any state where condition 2 or condition 3 is unmet. It never fires below the
 floor.
 
@@ -313,7 +340,17 @@ The question carries four things, and they are what make the answer mean anythin
   finding. Give the number rather than a caution about risk; the point of asking is that they are deciding
   against it.
 
-**"Ship now" is always offerable and only a human may take it.** An agent never chooses it on the
+**When any Major is outstanding, the gate still fires but "ship now" is withheld**, leaving the triage
+option alone. Do not suppress the whole prompt instead: the maintainer should see a Major round rather than
+be routed around it, and they can still overrule through **Other**, which is theirs. What an agent may not
+do is *offer* the option.
+
+**Only an unambiguous "ship now" is one.** A hedged or conditional reply, "ship it once the a11y thing is
+fixed", is not a ship: it is an instruction to do the condition and ask again. Read it that way even when
+it plainly means "stop bothering me", because the alternative is an agent deciding a qualified yes was
+close enough and merging code no round has read.
+
+**Otherwise "ship now" is always offerable, and only a human may take it.** An agent never chooses it on the
 maintainer's behalf, however small the outstanding fixes look. That is the safety property this section
 rests on and it has no exceptions.
 
@@ -325,8 +362,10 @@ absolutely and binds the maintainer only with disclosure.
 
 **The sequence ends in exactly two ways**, and the PR body says which:
 
-1. **A quiet round with nothing blocking.** No prompt is needed to stop, because there is nothing to
-   decide. Pre-existing findings ticketed or declined along the way do not prevent this ending; if they
+1. **The floor is met, nothing is blocking, and the last round changed nothing**, which is all three
+   conditions holding at once. No prompt is needed to stop, because there is nothing to decide. Name all
+   three rather than saying "a quiet round": step 6 uses this ending as its pre-merge check, and a
+   shorthand that carries only condition 2 passes a 3-round diff whose round 1 came back quiet. Pre-existing findings ticketed or declined along the way do not prevent this ending; if they
    did, any run that filed a single ticket could never reach either ending and would match no case at all.
 2. **The maintainer answers "ship now".** The body names whatever was outstanding, and if the last round
    changed the diff it also says those fixes went unreviewed and gives the reason.
@@ -568,7 +607,10 @@ nothing blocking, or the maintainer answering "ship now" at the stop gate. In th
 findings left outstanding are exactly the ones the PR body names and no others, and if the last round
 changed the diff the body also says those fixes went unreviewed. **The one exception is step 3's
 publishing carve-out**: a finding describing an unpatched weakness in a live service is deliberately
-unnamed, so an unnamed outstanding finding of that kind satisfies this check rather than failing it. Do
+unnamed. That carve-out reaches **any** outstanding finding describing an unpatched weakness in a live
+service, however it was disposed of, including a diff-caused defect deferred to Jira, which is neither
+declined nor routed by the scope gate and so fell outside the narrower wording. An unnamed outstanding
+finding of that kind satisfies this check rather than failing it. Do
 not "fix" a failing check here by naming it; that publishes the weakness in a PR that cannot be deleted. **A "ship now" answer is not itself an
 autonomous-merge waiver**: it authorised ending the review, not merging unasked, so it alone never
 substitutes for the confirmation. If the user separately granted the waiver above, that still stands;
