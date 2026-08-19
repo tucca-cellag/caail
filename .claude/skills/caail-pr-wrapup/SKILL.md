@@ -14,8 +14,9 @@ deploys only on push to `main` (via `.github/workflows/docs.yml`, which gates on
 "shipped" means *merged **and** the deploy is green*, not just merged.
 
 **Review here is a phase, not a step.** Step 1 runs `/code-review high`, applies or triages the findings,
-and then **reviews again on the updated diff**, repeating until the stop rule's two endings are reached
-(a quiet round with nothing blocking, or the maintainer answering "ship now" at the stop gate) and the
+and then **reviews again on the updated diff**, repeating until **one of** the stop rule's two endings is
+reached: all three stop conditions holding at once, or the maintainer answering "ship now" at the stop
+gate. The
 floor for
 that diff shape is met. The level is fixed; the depth comes from the number of rounds, and step 1's table
 is the only place that floor is written down. The reasoning, and the condition under which the extra
@@ -23,8 +24,9 @@ rounds can come back down, is there too. The cross-model pass (step 4) stays, as
 rather than the safety gate.
 
 **Step 1 may not run unattended.** It carries two *kinds* of `AskUserQuestion` pause, not two pauses, and
-a run whose floor rounds come back quiet with nothing blocking fires neither and finishes without asking
-anything: the scope
+a run whose floor rounds come back quiet *and* surface no pre-existing findings fires neither and finishes
+without asking anything. Quiet means condition 2 only, so a quiet round that surfaces a pre-existing
+finding still fires the scope gate: the scope
 gate can fire on any round, and the stop gate once the floor round has finished and before every round
 after it, so a long run holds several of each
 and neither is a budget of one (for the exact conditions, and when each is skipped, read the gates rather
@@ -180,7 +182,9 @@ right.
   classification alone. **Write the triage first, then ask once.** List every pre-existing finding in the
   round's triage with the disposition you propose for it, then put that whole triage to the user as a
   single `AskUserQuestion` whose two options are both answers you can act on: **accept this triage**, or
-  **file all of them instead**. Their answer is the stated reason, recorded rather than assumed. Anything
+  **fix all of them here instead**. The second is deliberately the opposite of the default rather than a
+  restatement of it: filing is what the bullet above already makes the default, so an option offering it
+  again would give the maintainer two labels for one outcome and record nothing. Their answer is the stated reason, recorded rather than assumed. Anything
   finer grained arrives through the **Other** field, which the tool offers beside the options on every
   question, so do not spend an option on "adjust it": an option carries only its own label, and a
   maintainer selecting it would hand you a rejection with no content. Restate whatever comes back as the
@@ -246,17 +250,24 @@ right.
 
 **Severity, and who decides it.** The stop rule turns on whether a round produced a **Major**, so classify
 every finding yourself and treat the reviewer's own label as evidence rather than as the answer. Across the
-ten rounds run on the change that added this section it emitted three different vocabularies (Major/Minor,
-High/Medium/Low, lowercase variants), hybrids like `MEDIUM-HIGH`, and **no labels at all on two of the ten**.
+rounds run on the change that added this section (ten of them by **2026-08-19**, a snapshot; `git log
+--oneline origin/main..HEAD` is the live count) it emitted three different vocabularies (Major/Minor,
+High/Medium/Low, lowercase variants), hybrids like `MEDIUM-HIGH`, and **no labels at all on two rounds**.
 A rule that reads a field which is sometimes absent is a rule that is sometimes undefined.
 
 **Three outcomes are Major by definition, whatever label arrives with them**, because they are named by
-their consequence in this repo rather than by anyone's severity scale:
+their consequence in this repo rather than by anyone's severity scale. **The test applies to a finding
+about this file, never to the run's current state**: a Major is one where *an agent following the file as
+written* would end up doing the thing. The pending state at the stop gate is not a finding, and reading it
+as one is how this rule deadlocks itself, since "fixes are unreviewed until someone says otherwise" is
+exactly the state the gate exists to resolve.
 
-1. It would **publish a `disclosure-private` finding**, or any unpatched weakness in a live service, into a
-   PR body, commit message or issue. PRs cannot be deleted.
-2. It would **merge code no round has read**, other than by the maintainer's own "ship now".
-3. It would **merge below the floor.**
+1. Following the file would **publish a `disclosure-private` finding**, or any unpatched weakness in a live
+   service, into a PR body, commit message or issue. PRs cannot be deleted.
+2. Following the file would **merge code no round has read without the maintainer having answered "ship
+   now" to precisely that**. Unreviewed fixes sitting in the diff at the gate are not this; being asked
+   about them is the remedy working.
+3. Following the file would **merge below the floor**, or erode the floor so that a later run does.
 
 Beyond those three, a Major is a finding that would make an agent following this file *do* the wrong thing,
 as against one that makes it read awkwardly. When you are unsure, say which of the three it is nearest and
@@ -312,10 +323,15 @@ still gets three.
 
 **Stop gate.** Once the floor is met, ask before every further round. **One question, always the same
 shape.** Propose a disposition for every outstanding finding first, fix or decline, exactly as the scope
-gate does, then offer **two options: accept this triage and run another round, or ship now with everything
-outstanding declined.** Anything finer grained arrives through **Other**. Since condition 3 is absolute, a
-triage that proposes any fix *is* another round; there is no third option where fixes land and the run
-still ends. It fires whenever the floor is met and the run would
+gate does, then offer **two options: accept this triage and run another round, or ship now, leaving
+everything outstanding unfixed and named in the body.** Do not call that second option "declined": this
+file uses *refuted* for a finding shown not to be a defect, and these are agreed real and shipped anyway,
+which is the opposite. A body reporting them as refuted would undo the disclosure this ending exists to
+force. Anything finer grained arrives through **Other**. Since condition 3 is absolute, a
+triage that proposes **newly** any fix *is* another round; there is no third option where a fix proposed
+here lands and the run still ends. Fixes that landed in earlier rounds are a different matter entirely:
+they are why condition 3 is unmet and the gate fired at all, and "ship now" ends the run with them in the
+diff, which is the ending's whole point. It fires whenever the floor is met and the run would
 otherwise continue, which is any state where condition 2 or condition 3 is unmet. It never fires below the
 floor.
 
@@ -340,8 +356,11 @@ The question carries four things, and they are what make the answer mean anythin
   finding. Give the number rather than a caution about risk; the point of asking is that they are deciding
   against it.
 
-**When any Major is outstanding, the gate still fires but "ship now" is withheld**, leaving the triage
-option alone. Do not suppress the whole prompt instead: the maintainer should see a Major round rather than
+**When any Major is outstanding, the gate still fires but "ship now" is not among the options.** The two
+it does offer are **accept this triage and run another round** and **refute one of the Majors, saying which
+and why in Other**, because a one-option question is not a question and the tool requires at least two
+(**observed 2026-08-19**; check rather than trust, as with every external-tool claim here). Do not suppress
+the whole prompt instead: the maintainer should see a Major round rather than
 be routed around it, and they can still overrule through **Other**, which is theirs. What an agent may not
 do is *offer* the option.
 
@@ -356,8 +375,8 @@ rests on and it has no exceptions.
 
 **So "never merge a fix that no round has seen" is overridable on the record rather than absolute.** That
 is a deliberate change. As an absolute it makes the sequence unbounded by construction, since any fix
-mandates a round and any round may find something needing a fix: five review rounds on this very change
-never reached a stopping state, because a fix was made every round. The rule now binds the agent
+mandates a round and any round may find something needing a fix: by the time this rule was written, five
+review rounds on this very change had reached no stopping state, because a fix was made every round. The rule now binds the agent
 absolutely and binds the maintainer only with disclosure.
 
 **The sequence ends in exactly two ways**, and the PR body says which:
@@ -513,7 +532,11 @@ bash .claude/skills/caail-pr-wrapup/ship-pr.sh open-pr "<title>" /tmp/pr-body.md
   for that exception alone, treat "declined" and "routed to a ticket" as one category, even though this
   file is careful to separate them everywhere else. Deliberately not restated here, because there is one
   copy of that rule and it is a few lines down; two copies drifted apart the moment this sentence was
-  written. **Any** finding declined rather than fixed,
+  written. **The carve-out below reaches any outstanding finding describing an unpatched weakness in a live
+  service, however it was disposed of**, including a diff-caused defect merely deferred to Jira, which is
+  neither declined nor scope-gate-routed and so fell outside the narrower wording. Step 6 already reads it
+  that way, and step 6 runs *after* the PR is public and there is no `edit` subcommand, so the wide reading
+  has to hold here, where the body is actually written. **Any** finding declined rather than fixed,
   in any round, gets named with its reason, since a reader cannot tell a triaged finding from an
   unnoticed one and the rounds it came from are invisible to them. **The one exception is a declined
   finding that describes an unpatched weakness in a live service** (the events Worker, say): a declined
@@ -602,8 +625,11 @@ If a check **fails**, stop — surface it and fix the branch; do not merge red.
 ### 6. Confirm, then merge
 **Pause here.** Merging triggers the public deploy, so confirm with the user before proceeding (unless
 they've already said to merge autonomously this run). Weigh **three** inputs, in this order of weight:
-step 1's review rounds must have ended one of the two ways the stop rule allows: a quiet round with
-nothing blocking, or the maintainer answering "ship now" at the stop gate. In the second case the
+step 1's review rounds must have ended one of the two ways the stop rule allows: **all three conditions
+holding at once** (floor met, nothing blocking, and the last round changed nothing), or the maintainer
+answering "ship now" at the stop gate. Check the three, not the "quiet round" shorthand: it carries only
+condition 2, and a 3-round site-code diff whose round 1 came back quiet passes the shorthand while failing
+the rule. In the second case the
 findings left outstanding are exactly the ones the PR body names and no others, and if the last round
 changed the diff the body also says those fixes went unreviewed. **The one exception is step 3's
 publishing carve-out**: a finding describing an unpatched weakness in a live service is deliberately
