@@ -17,7 +17,7 @@ wins and the table is the bug.
 | Workflow | Trigger | Paths (snapshot) |
 | --- | --- | --- |
 | `lint-papers.yml` (matrix ↔ ref lint + `db:check`/`db:verify` + sync guards) | **pull_request** + push to main | `Papers.md`, `Software.md`, `Databases.md`, `OtherResources.md`, `Taxonomy.md`, `Datasets/**`, `CONTRIBUTING.md`, `CLAUDE.md`, `site/scripts/parser/**`, `site/scripts/db/**`, `site/db/**`, `site/public/api/**`, `site/public/setup.md`, `plugin/skills/**`, `skills/**`, `.claude/skills/matrix-classification-audit/**`, `plugin-contribute/**`, `.github/ISSUE_TEMPLATE/**` |
-| `test.yml` (Worker config + vitest + Playwright/axe) | **pull_request** + push to main | `site/**`, `workers/**`, root `*.md`, `ResearchAreas/**`, `Methods/**`, `Datasets/**`, `Primers/**`, `.claude/hooks/**`, `.claude/settings.json`, `.github/ISSUE_TEMPLATE/**`, `.github/workflows/test.yml`, `plugin-contribute/**` |
+| `test.yml` (Worker config + vitest + Playwright/axe) | **pull_request** + push to main | `site/**`, `workers/**`, root `*.md`, `ResearchAreas/**`, `Methods/**`, `Datasets/**`, `Primers/**`, `.claude/hooks/**`, `.claude/settings.json`, `.github/ISSUE_TEMPLATE/**`, `.github/workflows/test.yml`, `CITATION.cff`, `plugin-contribute/**` |
 | `guards.yml` (publish-provenance hook + CI-paths consistency) | **pull_request** + push to main | `.claude/hooks/**`, `.claude/settings.json`, `.claude/skills/caail-pr-wrapup/**`, `.github/workflows/**` |
 | `docs.yml` (build + Lighthouse + deploy) | **push to `main` only** | `site/**`, root `*.md`, `ResearchAreas/**`, `Methods/**`, `Datasets/**`, `Primers/**`, `.github/ISSUE_TEMPLATE/**` |
 
@@ -35,7 +35,7 @@ issue templates disagree.
 **The full check-free list, which lives here and nowhere else** (`SKILL.md` step 5 points at it rather
 than restating it, because the enumeration has already been wrong in both directions once each):
 `.claude/` rules and agents, the four unfiltered `.claude/skills/*` directories named above, `docs/**`,
-`LICENSE`, `CITATION.cff`, `.zenodo.json`, `.gitignore`, and two of the three plugin manifests
+`LICENSE`, `.zenodo.json`, `.gitignore`, and two of the three plugin manifests
 (`.claude-plugin/marketplace.json` and `plugin/.claude-plugin/plugin.json`; only `plugin/skills/**` is
 filtered, not `plugin/**`). The third, `plugin-contribute/.claude-plugin/plugin.json`, is **not**
 check-free: `plugin-contribute/**` is filtered whole, so everything under it runs checks. On what `preflight` reads, see the lede above; on how current it
