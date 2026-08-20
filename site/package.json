@@ -64,5 +64,10 @@
     "unist-util-visit": "^5.1.0",
     "vitest": "^4.1.7",
     "zod": "^4.4.3"
+  },
+  "pnpm": {
+    "overrides": {
+      "sharp": "0.35.3"
+    }
   }
 }
