@@ -743,6 +743,7 @@
 {"id":"sw:allergenfp","type":"software","slug":"allergenfp"}
 {"id":"sw:allermatch","type":"software","slug":"allermatch"}
 {"id":"sw:allertop-v2","type":"software","slug":"allertop-v2"}
+{"id":"sw:allertrans","type":"software","slug":"allertrans"}
 {"id":"sw:alphafold","type":"software","slug":"alphafold"}
 {"id":"sw:amii-cell-ag-tools","type":"software","slug":"amii-cell-ag-tools"}
 {"id":"sw:asari","type":"software","slug":"asari"}
@@ -772,6 +773,7 @@
 {"id":"sw:cellprofiler","type":"software","slug":"cellprofiler"}
 {"id":"sw:cellrank","type":"software","slug":"cellrank"}
 {"id":"sw:chai-1","type":"software","slug":"chai-1"}
+{"id":"sw:chalpred","type":"software","slug":"chalpred"}
 {"id":"sw:chemotools","type":"software","slug":"chemotools"}
 {"id":"sw:cnapy","type":"software","slug":"cnapy"}
 {"id":"sw:cobra-toolbox","type":"software","slug":"cobra-toolbox"}
@@ -816,6 +818,7 @@
 {"id":"sw:ms2query","type":"software","slug":"ms2query"}
 {"id":"sw:mxlpy","type":"software","slug":"mxlpy"}
 {"id":"sw:mzmine-3","type":"software","slug":"mzmine-3"}
+{"id":"sw:netallergen","type":"software","slug":"netallergen"}
 {"id":"sw:nf-coreampliseq","type":"software","slug":"nf-coreampliseq"}
 {"id":"sw:nf-coremag","type":"software","slug":"nf-coremag"}
 {"id":"sw:nf-coremetaboigniter","type":"software","slug":"nf-coremetaboigniter"}
