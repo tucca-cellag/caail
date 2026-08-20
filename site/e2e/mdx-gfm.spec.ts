@@ -145,6 +145,10 @@ for (const { file, route, tables } of pagesWithTables) {
     // A pipe-delimited row surviving as paragraph text is the exact shape of the
     // failure. Assert it directly so a regression names its own cause instead of
     // surfacing as an unrelated "cell not found" somewhere else in the suite.
-    await expect(page.locator('main p').filter({ hasText: /\|\s*-+\s*\|/ })).toHaveCount(0);
+    // `:?` on both sides so an ALIGNMENT row (`|:---|`, `|---:|`, `|:--:|`) still
+    // matches. Without it this assertion goes vacuous the first time an MDX table
+    // uses column alignment, and a real regression would surface only as the count
+    // mismatch above, losing the diagnostic this line exists to provide.
+    await expect(page.locator('main p').filter({ hasText: /\|\s*:?-+:?\s*\|/ })).toHaveCount(0);
   });
 }
