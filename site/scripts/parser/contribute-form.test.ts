@@ -348,6 +348,16 @@ describe('verifyContributeForms', () => {
     expect(run).toThrow(/sets "summary"/);
   });
 
+  it('accepts a GitHub built-in in the example that no form field is named after', () => {
+    // `labels` is one GitHub consumes itself, and both templates set `labels:`. With `builtins`
+    // held as a second list it failed here, and the remedy the error suggested then failed
+    // assertPresent, so no edit to the skill satisfied both checks.
+    const run = stage({
+      skill: (s) => s.replace('issues/new?template=paper.yml', 'issues/new?labels=suggestion&template=paper.yml'),
+    });
+    expect(run).not.toThrow();
+  });
+
   it('fails when the skill carries no worked URL example at all', () => {
     // A guard over an empty set passes forever, so deleting the example would otherwise retire
     // the check rather than trip it.

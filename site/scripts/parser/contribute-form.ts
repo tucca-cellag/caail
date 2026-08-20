@@ -428,7 +428,13 @@ function assertExampleUrlParams(
   skillPath: string,
   skillSrc: string,
 ): void {
-  const builtins = new Set(['template', 'title']);
+  // DERIVED from RESERVED_FIELD_IDS rather than listed again. They are the same set by
+  // definition — a parameter GitHub consumes itself is exactly a parameter no form field may be
+  // named after — and holding two copies produced a trap with no valid way out: an example adding
+  // a legitimate built-in like `&labels=suggestion` failed here saying the prefill list "does not
+  // claim" it, and the remedy this error suggests, adding it to that list, then failed
+  // `assertPresent`, because no form field carries that id. No edit to the skill satisfied both.
+  const builtins = new Set(RESERVED_FIELD_IDS);
   const examples = skillSrc.split('\n').filter((l) => l.includes('issues/new?'));
   if (examples.length === 0) {
     throw new Error(
