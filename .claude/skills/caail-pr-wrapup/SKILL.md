@@ -98,8 +98,8 @@ Run the helper from the repo (worktree) root: `bash .claude/skills/caail-pr-wrap
 ```bash
 bash .claude/skills/caail-pr-wrapup/ship-pr.sh preflight
 ```
-This confirms the branch/tree/auth, lists the changed paths, and predicts **which of `lint-papers`,
-`test` and `guards` will run on the PR** and **whether `docs.yml`
+This confirms the branch/tree/auth, lists the changed paths, and predicts (from `ship-pr.sh`'s mirrored
+lists, not the YAML: see step 5) **which of `lint-papers`, `test` and `guards` will run on the PR** and **whether `docs.yml`
 will deploy on merge**, plus the routes worth verifying live. It tells you what to expect in steps 5
 and 7. The changed-path list it prints is also what step 1 reads to pick its floor on rounds. Then re-run
 the local gate (above) if you haven't this session.
@@ -137,7 +137,9 @@ bash .claude/skills/caail-pr-wrapup/ship-pr.sh open-pr "<title>" /tmp/pr-body.md
 - **Body:** what changed and *why*; the research area(s)/AI method(s) or routes it touches; and the
   verification you already ran (tests/build/e2e, reviewer agents). Say **how the review went**: the
   level and how many rounds, and then **which of the stop rule's two endings this run reached**. For
-  **ending 1**, say so by naming its three conditions, never as "a quiet round". For **ending 2**, say that
+  **ending 1**, say so by naming its three conditions, never as "a quiet round". **Either way give the
+  rounds run against the floor for the diff's final shape**, since step 6 checks condition 1 for both
+  endings and has no other source for it. For **ending 2**, say that
   the maintainer answered **"ship now"** at the stop gate, name everything left outstanding, and **if the last round changed the diff, say that those
   fixes were never reviewed and give the reason they gave**. That is the one ending that ships code no
   round has read, so a body that omits it is not merely thin, it is wrong. Write this here, because the
@@ -249,9 +251,10 @@ narrow case: `guards.yml` fires on `.claude/hooks/**`, `.claude/settings.json`, 
 here.** That list has already been wrong in both directions once each, so a second copy in this file is
 the exact hand-typed-fact-beside-another defect the enumeration keeps causing. `preflight` computes its answer from the
 `*_PATHS` lists in `ship-pr.sh`, **not from the YAML**, and `check-ci-paths.py` is the only thing that
-pins those lists to the YAML. It runs in `guards.yml`, so a PR touching none of that
-workflow's four triggers, listed above, leaves a drifted `*_PATHS` list unchecked while `preflight` states
-its consequence confidently.
+pins those lists to the YAML. It runs in `guards.yml`, and both files that can desync the
+lists, `ship-pr.sh` and the workflows, are inside that trigger set on `pull_request` and `push`, so drift
+cannot be *introduced* past it. What survives is drift that predates the guard or landed through a red or
+bypassed merge: rare, but `preflight` would state its consequence just as confidently.
 When a check you expected is missing, open the workflow rather than trusting either the list above or
 `preflight`.
 
@@ -267,9 +270,11 @@ they've already said to merge autonomously this run). Weigh **three** inputs, in
 step 1's review rounds must have genuinely reached an ending rather than merely stopped, and "it ended" is
 not evidence, since every run ends somehow. **For either ending, condition 1 must have been met**: the stop
 gate never fires below the floor, so a sub-floor ship is invalid however the body labels it. **If the body
-claims ending 1, additionally check conditions 2 and 3**. Do not use those two as a label check on an
-ending 2: the gate fires when condition 2 **or** condition 3 is unmet, so an ending 2 needs only one of
-them to fail and the other may well hold. Treating both as failing by construction would have you call a
+claims ending 1, additionally check conditions 2 and 3**. Condition 1 is the floor for the diff **as it
+stands now**, so re-derive the shape from the final diff rather than reusing step 0's prediction, which
+predates every fix. Do not use conditions 2 and 3 as a label check on an
+ending 2: the gate fires when condition 2 **or** condition 3 is unmet (see the gate itself
+rather than this line), so an ending 2 needs only one of them to fail and the other may well hold. Treating both as failing by construction would have you call a
 correctly labelled body mislabelled, and refuse the merge over it.
 **For either ending**, the body names every finding that was ticketed or declined along the way, since the
 Definitions say both endings disclose all of it and a reader cannot tell an unmentioned finding from an
