@@ -155,6 +155,24 @@ LICENSE                MIT License
      > **Code**: https://github.com/<owner>/<repo>
      ```
 
+   - If the publisher has issued a **post-publication notice that leaves the paper standing** (a correction, an erratum, an expression of concern), record it the same way, under its own DOI, **separated from any preceding blockquote by a blank line**:
+
+     ```markdown
+     > **Code**: https://github.com/<owner>/<repo>
+
+     > **Correction**: https://doi.org/<correction-doi>
+     ```
+
+     That blank line is load-bearing and nothing checks it: two adjacent `>` lines render as one run-on on GitHub, which is where these are read, and every gate in the repo passes either form.
+
+     **The label is the claim, so it has to be the publisher's own word.** An expression of concern says the publisher doubts the work and has fixed nothing, and filing one under `Correction` tells every reader the opposite of what was published. `Correction`, `Erratum` and `Expression of concern` are examples, not a closed list: `Corrigendum`, `Author Correction`, `Publisher Correction` and `Addendum` are all deposited by real publishers and all belong here.
+
+     Record one even when it looks cosmetic. The correction on ref 289 changed a single word of the abstract, 2-fold to 5-fold cross-validation, which is precisely the claim an abstract-only classification would have rested on.
+
+     **A retraction is not one of these, and this rule does not cover it.** What separates it is not how visible the notice is: every label here is discarded by the parser, and that is as true of an expression of concern as of a retraction. It is whether the paper still belongs in the matrix at all. A correction or an expression of concern leaves the placement correct, because the paper still applied that method to that area, and the reader who follows the DOI learns the rest. A retraction withdraws the work, so leaving the reference in its cells has `api/papers.json` and the plugin skill recommending withdrawn research. Whether a retracted paper keeps its cells, gets a tombstone, or is retired the way a removed ref id is, is a curator decision nobody has made. Raise it rather than inferring an answer from the pattern above.
+
+     Notices are **DB-owned like the citation itself**: author one through the DB and never by typing into `Papers.md`, which `db:emit` regenerates. The parser lifts only the `Code` and `Data` labels (`site/scripts/parser/papers.ts`), so a notice reaches GitHub and `llms-full.txt` but not `api/papers.json` or the Papers Explorer, tracked as tucca-cellag/caail#202. Whoever closes that issue has to handle the whole label set rather than `Correction` alone, or the other sanctioned words stay invisible with nothing flagging them, since the parser's discard path is silent.
+
 3. **A `## Reviews & Perspectives` section** below `## References` — for review articles, position papers, and commentaries that survey or opine on the field rather than applying a specific method:
    - Same anchor format and APA style as the primary references.
    - **No matrix participation.** Reviews don't get cell anchors in the matrix — they live only in this section.

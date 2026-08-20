@@ -55,11 +55,25 @@ The matrix and the `## References` list must be kept in sync:
 
    - Use APA style, with the journal name italicized (`*…*`) and the DOI as a full `https://doi.org/...` link.
    - List all authors, don't abbreviate to "et al." in the reference list.
-3. **If the paper has associated code**, add a blockquote on the next line:
+3. **Add any trailing blockquotes the paper needs.** If it has associated code:
 
    ```markdown
    > **Code**: https://github.com/<owner>/<repo>
    ```
+
+   **If the publisher has issued a post-publication notice that leaves the paper standing** (a correction, erratum, corrigendum, addendum or expression of concern), record that under its own DOI in the same way, whether or not the paper also has code. Label it with the publisher's own word for the notice, whatever that is, never a generic one: an expression of concern filed under `Correction` tells the reader an error was fixed when nothing was. A *retraction* is not covered here, because it raises the separate question of whether the paper keeps its matrix cells at all; propose it in the issue rather than recording it as a blockquote.
+
+   Where a paper has both, each blockquote is separated from the next by a blank line:
+
+   ```markdown
+   > **Code**: https://github.com/<owner>/<repo>
+
+   > **Correction**: https://doi.org/<correction-doi>
+   ```
+
+   The blank line matters: GitHub renders two adjacent `>` lines as one run-on line, and GitHub is where these are read. Note that the notice reaches GitHub but not the entry's card on the site, because the parser keeps only the `Code` and `Data` labels (tucca-cellag/caail#202).
+
+   As the callout at the top of this section says, the reference, its matrix cells and these trailing blockquotes are all regenerated from the database, so editing the Markdown here **proposes** an entry rather than landing one: a maintainer re-enters it through the DB. **The easiest way to propose one is to write the entry out in the issue or the PR description.** That is all a maintainer needs, and it keeps CI meaningful. If you do edit the Markdown, CI's DB-to-Markdown sync guard will fail, because the generated file now disagrees with the database. That is expected rather than a mistake on your part, but it leaves the branch red, and a real problem pushed to it afterwards is then hard to tell apart from the expected failure.
 
 4. **Add the paper to every applicable matrix cell.** For each AI method (row) and research area (column) the paper covers, add `[42](#42)` to the corresponding cell, comma-separated with any existing entries:
 
