@@ -1,9 +1,9 @@
 # CI: what runs when
 
 **The workflows are the source of truth; the table below is a snapshot** (taken 2026-08-19) kept only
-so step 5/7 expectations are legible without opening four YAML files. `preflight` computes the real
-answer from the `LINT_PAPERS_PATHS` / `TEST_PATHS` / `DOCS_PATHS` / `GUARDS_PATHS` lists in
-`ship-pr.sh`. **Each is named for its workflow file** (`<stem uppercased, - to _>_PATHS`), and so is
+so step 5/7 expectations are legible without opening four YAML files. `preflight` computes its answer from the
+`LINT_PAPERS_PATHS` / `TEST_PATHS` / `DOCS_PATHS` / `GUARDS_PATHS` lists in `ship-pr.sh`, which mirror the
+YAML rather than being read from it. **Each is named for its workflow file** (`<stem uppercased, - to _>_PATHS`), and so is
 its `matches_<stem>` wrapper — that coupling is what lets the check derive what to look for instead of
 carrying its own list of workflows.
 
@@ -35,8 +35,8 @@ than restating it, because the enumeration has already been wrong in both direct
 `LICENSE`, `CITATION.cff`, `.zenodo.json`, `.gitignore`, and the two plugin manifests
 (`.claude-plugin/marketplace.json` and `plugin/.claude-plugin/plugin.json`; only `plugin/skills/**` is
 filtered, not `plugin/**`). `preflight` computes its answer from the `*_PATHS` lists in `ship-pr.sh`, not
-from the YAML, so it is only as current as those lists; the lede above says the same and this sentence
-used to contradict it. When a check you expected is missing, open the workflow. `.claude/hooks/**` and
+from the YAML, so it is only as current as those lists. When a check you expected is missing, open the
+workflow. `.claude/hooks/**` and
 `.claude/settings.json` trigger **both** `test.yml` and `guards.yml`, because the two hooks are tested
 in different places (`check-public-publish.test.py` in `guards.yml`, `block-generated-edits.py` via
 `site/scripts/db/hook.test.ts` in the vitest suite). Editing this skill or **any** workflow triggers

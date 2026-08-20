@@ -98,8 +98,8 @@ Run the helper from the repo (worktree) root: `bash .claude/skills/caail-pr-wrap
 ```bash
 bash .claude/skills/caail-pr-wrapup/ship-pr.sh preflight
 ```
-This confirms the branch/tree/auth, lists the changed paths, and — from the real CI path filters —
-predicts **which of `lint-papers`, `test` and `guards` will run on the PR** and **whether `docs.yml`
+This confirms the branch/tree/auth, lists the changed paths, and predicts **which of `lint-papers`,
+`test` and `guards` will run on the PR** and **whether `docs.yml`
 will deploy on merge**, plus the routes worth verifying live. It tells you what to expect in steps 5
 and 7. The changed-path list it prints is also what step 1 reads to pick its floor on rounds. Then re-run
 the local gate (above) if you haven't this session.
@@ -249,9 +249,9 @@ narrow case: `guards.yml` fires on `.claude/hooks/**`, `.claude/settings.json`, 
 here.** That list has already been wrong in both directions once each, so a second copy in this file is
 the exact hand-typed-fact-beside-another defect the enumeration keeps causing. `preflight` computes its answer from the
 `*_PATHS` lists in `ship-pr.sh`, **not from the YAML**, and `check-ci-paths.py` is the only thing that
-pins those lists to the YAML. It runs in `guards.yml`, so a PR touching none of that workflow's four
-triggers (`.claude/hooks/**`, `.claude/settings.json`, this skill, any `.github/workflows/**`) leaves a
-drifted `*_PATHS` list unchecked while `preflight` states its consequence confidently.
+pins those lists to the YAML. It runs in `guards.yml`, so a PR touching none of that
+workflow's four triggers, listed above, leaves a drifted `*_PATHS` list unchecked while `preflight` states
+its consequence confidently.
 When a check you expected is missing, open the workflow rather than trusting either the list above or
 `preflight`.
 
@@ -267,9 +267,10 @@ they've already said to merge autonomously this run). Weigh **three** inputs, in
 step 1's review rounds must have genuinely reached an ending rather than merely stopped, and "it ended" is
 not evidence, since every run ends somehow. **For either ending, condition 1 must have been met**: the stop
 gate never fires below the floor, so a sub-floor ship is invalid however the body labels it. **If the body
-claims ending 1, additionally check conditions 2 and 3**; do not apply those two to an ending 2, where
-they fail by construction, or you will refuse the review ending the stop gate just authorised. That answer
-ended the review; it did not authorise this merge, which is what the pause above is for.
+claims ending 1, additionally check conditions 2 and 3**. Do not use those two as a label check on an
+ending 2: the gate fires when condition 2 **or** condition 3 is unmet, so an ending 2 needs only one of
+them to fail and the other may well hold. Treating both as failing by construction would have you call a
+correctly labelled body mislabelled, and refuse the merge over it.
 **For either ending**, the body names every finding that was ticketed or declined along the way, since the
 Definitions say both endings disclose all of it and a reader cannot tell an unmentioned finding from an
 unnoticed one. **For ending 2** additionally, the findings left outstanding are exactly the ones the body
