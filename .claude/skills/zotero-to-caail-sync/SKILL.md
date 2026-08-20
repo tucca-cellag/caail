@@ -109,12 +109,7 @@ A bibliographic-fidelity check against the version of record (Crossref +
 publisher): the title is the *article* title, not a benchmark/tool/project name;
 the author list, order, and initials are correct; the APA 21+-author rule lands
 on the genuine final author; year, venue, volume/issue/pages, and DOI all match;
-any `> **Code**:` repo is the paper's real repository; and any post-publication
-notice (`> **Correction**:`, `> **Erratum**:` and the rest) carries the
-publisher's own word for that notice and targets *this* paper. **Dispatch the
-entry with every trailing blockquote it has**, not the citation line alone: a
-notice's label is a claim about what a publisher did, and the reviewer can only
-check one it has been shown. This is a metadata check —
+any `> **Code**:` repo is the paper's real repository. This is a metadata check —
 no source full text required.
 
 **Track 2 — prose entries (`Datasets/`, `Databases.md`, `Software.md`,

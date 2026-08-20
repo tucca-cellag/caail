@@ -79,8 +79,7 @@ Folded into a `related_dois` column by `db:reseed-axes`; the badge then shows a 
 describing the SAME resource** (verify each names it); `db:check` guards format, key resolution, and
 no-overlap-with-primary. Re-run `fetch:citations` after adding related DOIs so their counts are cached.
 
-Topics are **two-tier**: a fixed **theme** backbone (`site/scripts/db/check.ts` asserts the exact
-list and is the source of truth for it, not this line) + earned **fine tags** (each `tier='tag'` under
+Topics are **two-tier**: a fixed 7-**theme** backbone + earned **fine tags** (each `tier='tag'` under
 one `theme_slug`; theme and tag slugs share one namespace, so they must be disjoint). When tagging an
 item, prefer an existing fine tag; mint a new fine tag only when ≥3 items cluster under it (curator
 sign-off), and add new themes rarely and deliberately (they're defined in `Taxonomy.md`). `db:check`
@@ -107,15 +106,7 @@ Descriptor examples (see `ItemAdd` in `site/scripts/db/mutate.ts`):
   "body": "Summary: …", "topics": ["metabolic-modeling"] }
 { "type": "paper", "raw": "Author, A. (2026). Title. *Journal*. https://doi.org/…", "label": "Author 2026",
   "cells": [{ "method": "Deep Learning", "area": "Media Optimization" }], "topics": ["media-optimization"] }
-{ "type": "paper", "raw": "…", "label": "…", "cells": [ … ],
-  "codeUrl": "https://github.com/o/r",
-  "blockquotes": ["> **Correction**: https://doi.org/10.xxxx/yyyy"] }
 ```
-
-`codeUrl` / `dataUrl` / `blockquotes` are what save you the hand-edit: `db:add` joins them
-into `blockquotes_md` with a real blank line for you, which is the one part of this field
-nothing checks (see the bullet under step 2). Prefer this path over editing the NDJSON when
-the paper is new.
 
 Then **review the diff and commit Markdown + NDJSON together**. The method/area/topic must
 already exist (adding a new matrix row/column is a deliberate act — define it in `Taxonomy.md`
@@ -131,36 +122,10 @@ re-tagging, corrections), use the full procedure below.
 2. **Make the change** — in the DB (`sqlite3 site/caail.db`) or, for a one-line change, by
    editing `site/db/ndjson/<table>.ndjson` directly and skipping to step 4.
    - **Add a paper:** insert `items('paper:N','paper','N')` + `papers(...)` with the full
-     citation markdown (including the `<a id="N">N</a>` anchor) in `raw`, and any trailing
-     labelled blockquotes in `blockquotes_md`; then insert its `matrix_cells` rows (one per
-     method×area cell). **The matrix rows and the reference must change together** — the #1
-     CAAIL error. A primary paper must appear in ≥1 cell; a Review/Perspective goes in a
-     non-`References` section and gets no cell.
-   - **Attach or edit a blockquote on an existing paper** (a `> **Code**:`, `> **Data**:`,
-     `> **Models**:`, or a post-publication notice such as `> **Correction**:`): update that
-     row's `blockquotes_md`. There is no per-label column — the whole `> …` run is stored
-     verbatim as one string, which is what stops an unmodelled label floating onto the
-     neighbouring paper on re-emit. Label a post-publication notice with the publisher's
-     own word for it, per `CLAUDE.md`. Three things about this field have no guard, so
-     they are on you at the moment you write it:
-     - **Join multiple labels with a real blank line.** In the NDJSON that is `\n\n`;
-       in `sqlite3` it is `char(10)||char(10)`, because SQLite string literals do not
-       interpret backslash escapes and a typed `'…\n\n…'` stores the two characters
-       literally. GitHub renders two adjacent `>` lines as one run-on, and nothing
-       catches it: emit reproduces the string as stored, `labeledLinksAfter` reads
-       either form so `db:verify` round-trips both identically, `db:check` never reads
-       `blockquotes_md`, and `lint-papers` has no blockquote rule. A run-on reaches
-       GitHub with every gate green. A literal `\n` is worse still: emit puts both
-       labels on one line, and GFM's autolinker then swallows the escape sequence
-       *and the following `>`* into the preceding URL — measured, the entry's
-       `codeUrl` becomes `https://github.com/o/r\n\n>`, a guaranteed 404 on the card.
-     - **Never type it into `Papers.md`.** `db:emit` rebuilds the whole run from this
-       column, so a hand-typed line is deleted by the next emit or reddens the CI sync
-       guard.
-     - **The pre-edit hook will not stop you.** `block-generated-edits.py` denies a
-       whole-file `Write`, but an `Edit` or `MultiEdit` touching only a `> **Label**:`
-       line matches none of its markers (`<a id="`, `](#`, `### [`) and passes.
-       `site/scripts/db/hook.test.ts` pins that gap, so closing it turns the suite red.
+     citation markdown (including the `<a id="N">N</a>` anchor) in `raw`, `code_url`/`data_url`
+     if present; then insert its `matrix_cells` rows (one per method×area cell). **The matrix
+     rows and the reference must change together** — the #1 CAAIL error. A primary paper must
+     appear in ≥1 cell; a Review/Perspective goes in a non-`References` section and gets no cell.
    - **Add a tool/database:** insert `items` + `catalog(name,url,grp,body_md,ordinal)`; `name`
      is the inline markdown of the H3 link text, `body_md` the entry body.
    - **Add a curated dataset entry:** insert `items('ds:<slug>','dataset',…)` + `dataset_entries`

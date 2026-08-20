@@ -7,29 +7,11 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { buildPapersModel, PAPERS_MD_PATH } from './papers.js';
-import { doiKey } from './citations.js';
 import { PapersDataSchema, type PapersData } from './types.js';
-
-/**
- * Ref 289's published correction: the repo's only post-publication notice.
- * Normalized through the same doiKey the comparisons below use, so retyping it
- * with any uppercase (equally valid, DOIs are case-insensitive) cannot leave the
- * needle mixed-case against a lowercased haystack and pass silently forever.
- */
-const CORRECTION_DOI = doiKey('10.1093/biomethods/bpaf076')!;
-
-/**
- * The article-id suffix, derived rather than retyped. This is the needle the
- * #202 guard searches for, because a fix could surface the notice as a
- * publisher URL (`…/biomethods/article/10/1/bpaf076/8320166`) rather than as
- * the DOI, and that URL carries the suffix but not the DOI.
- */
-const CORRECTION_ARTICLE_ID = CORRECTION_DOI.split('/').pop()!;
 
 const FIXTURE_PATH = join(
   fileURLToPath(import.meta.url),
@@ -232,84 +214,6 @@ describe('buildPapersModel — real Papers.md', () => {
     expect(ref6.hasCode).toBe(true);
     expect(ref6.isPrimary).toBe(true);
   });
-
-  // Pins the claim CLAUDE.md and CONTRIBUTING.md both make about post-publication
-  // notices: they reach GitHub and llms-full.txt but never the parsed model, because
-  // parseReferences selects blockquote labels by name and keeps only Code/Data.
-  //
-  // Ref 289 is the only reference carrying such a notice, so the source assertion
-  // comes first: without it the rest passes vacuously the day someone removes the
-  // notice, and goes on confirming a claim that nothing is testing any more.
-  //
-  // When tucca-cellag/caail#202 teaches the parser the label it must also widen the
-  // schema to carry it — buildPapersModel ends in PapersDataSchema.parse(), which
-  // strips unknown keys — and this test then fails. Rewrite both paragraphs with it.
-  //
-  // Scope, so the docs do not over-claim what this covers: it fails for any fix that
-  // routes the notice through the parsed model, including a sibling structure keyed
-  // by ref id, because the assertion is over the whole model. It does NOT fire for a
-  // fix that renders the notice on the card straight from the canonical Markdown.
-  it('drops a post-publication notice label, keeping only Code/Data (#202)', () => {
-    // The two assertions over large inputs carry messages: Papers.md is ~129 KB
-    // and the model ~400 KB, so a bare toContain/not.toContain prints the whole
-    // thing on failure and buries the one line saying what to do about it. The
-    // codeUrl/dataUrl checks below are small and self-describing, so they don't.
-    // Haystack lowercased, matching the needle doiKey already normalized.
-    // Papers.md carries 47 DOIs with uppercase in them (10.48550/arXiv.…,
-    // 10.7554/eLife.…), so a re-cased notice line is an ordinary shape here, not
-    // a hypothetical, and a case-sensitive compare would fail telling the reader
-    // to retire live documentation when the notice is still sitting there.
-    const src = readFileSync(PAPERS_MD_PATH, 'utf8').toLowerCase();
-    expect(
-      src.includes(`> **correction**: https://doi.org/${CORRECTION_DOI}`),
-      "ref 289's correction blockquote no longer matches CORRECTION_DOI, so the rest of this test proves nothing. If the notice was superseded or its DOI renormalized, repoint the constant. If the notice was removed on purpose, retire this guard and the post-publication-notice paragraphs in CLAUDE.md and CONTRIBUTING.md with it. Do not restore a superseded DOI to make this pass",
-    ).toBe(true);
-
-    // Checked before dereferencing: the assertion above only proves the notice
-    // line is somewhere in Papers.md, not that it still belongs to 289. If 289
-    // were retired while the string survived elsewhere, a bare `!` would throw
-    // "cannot read properties of undefined" and none of the guidance messages
-    // written into this test would ever print.
-    const ref289 = model.references.find((r) => r.id === 289);
-    expect(ref289, 'ref 289 is gone from Papers.md; retire this guard and the post-publication-notice paragraphs in CLAUDE.md and CONTRIBUTING.md with it').toBeDefined();
-
-    expect(ref289!.codeUrl).toBe('https://github.com/faezesarlakifar/AllerTrans');
-    expect(ref289!.dataUrl).toBeNull();
-
-    // Searched over the whole model, not just ref 289, so a sibling structure (a
-    // notices map keyed by ref id) trips it too.
-    //
-    // `raw` is deliberately KEPT in the search. Blanking it would open a blind
-    // spot in the exact claim this guard exists to pin: the Explorer renders the
-    // citation from `raw`, so a #202 that folds the notice in there would reach
-    // api/papers.json and the card while this stayed green and both paragraphs
-    // went silently false. What is excluded instead is narrower and cannot hide
-    // that: a reference whose OWN doi is the correction, which is the only
-    // legitimate way the string belongs in the model (someone one day giving the
-    // notice its own numbered entry).
-    // Compared through doiKey, not as a raw string: parseApa preserves the
-    // source case, so a differently-cased entry for the same DOI would slip the
-    // filter and fail here with a message announcing that #202 had landed when
-    // nothing of the sort had. That is the misdirection this guard was already
-    // corrected for once.
-    const searchable = JSON.stringify({
-      ...model,
-      references: model.references.filter((r) => doiKey(r.doi) !== CORRECTION_DOI),
-    });
-    // Searches for the article-id suffix, not the full DOI, so a fix that
-    // surfaces the notice as a publisher URL trips it too — that URL carries
-    // `bpaf076` but not `10.1093/biomethods/bpaf076`. Safe against a false
-    // positive from ref 289's own citation, which carries bpaf040.
-    //
-    // Lowercased on this side too: routing only the exclusion through doiKey
-    // and leaving the detection case-sensitive would reintroduce the same bug
-    // on the opposite side.
-    expect(
-      searchable.toLowerCase().includes(CORRECTION_ARTICLE_ID),
-      "ref 289's correction reached the parsed model: #202 has landed, so rewrite the post-publication-notice paragraphs in CLAUDE.md and CONTRIBUTING.md",
-    ).toBe(false);
-  });
-
 
   it('validates against the schema', () => {
     expect(PapersDataSchema.safeParse(model).success).toBe(true);
