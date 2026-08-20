@@ -62,4 +62,25 @@ describe('CAAIL_PAGES', () => {
     const missing = CAAIL_PAGES.missingEntries({ ResearchAreas: ra, Methods: me, Datasets: ds });
     expect(missing).toEqual([]);
   });
+  it('has a backing file for every ResearchAreas, Methods and Datasets entry (no orphan map entries)', () => {
+    // The mirror of the test above, and covered by neither it nor the all() count.
+    // missingEntries() only walks files -> map, so DELETING or RENAMING a page while
+    // its entry stays leaves every remaining file mapped and the count still 57: the
+    // suite passes while groupItems() in astro.config.mjs goes on emitting a sidebar
+    // link, which is a 404 on every page of the site. (An *added* orphan entry is
+    // caught, by the count going to 58 - that is the case this does not duplicate.)
+    //
+    // README.md is included here, unlike in the test above, because Datasets/README.md
+    // backs the real `datasets/readme` route; excluding it would report a false orphan.
+    const idsFrom = (dir: string) =>
+      readdirSync(`${REPO_ROOT}${dir}`)
+        .filter((f) => f.endsWith('.md') && f !== 'CLAUDE.md')
+        .map((f) => CAAIL_PAGES.idForSourcePath(`${dir}/${f}`));
+    const backed = new Set([...idsFrom('ResearchAreas'), ...idsFrom('Methods'), ...idsFrom('Datasets')]);
+    const orphans = CAAIL_PAGES.all()
+      .filter((p) => p.group === 'research-areas' || p.group === 'methods' || p.group === 'datasets')
+      .map((p) => p.id)
+      .filter((id) => !backed.has(id));
+    expect(orphans).toEqual([]);
+  });
 });

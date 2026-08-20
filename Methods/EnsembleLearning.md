@@ -6,7 +6,7 @@ This page describes the **Ensemble Learning** row of the [Papers.md matrix](../P
 
 Trees, bagging or boosting are what put a paper here, which separates the row from [SVM](./SVM.md) (kernels and margins), [Linear & Regularized Models](./LinearRegularizedModels.md) (no trees) and [Chemometrics](./Chemometrics.md) (latent-variable projection). The taxonomy's own phrasing is the most useful thing about it: this is "the default strong baseline for tabular prediction". A paper appears here because someone reached for the thing that usually works on a few hundred rows of features, and very often it did.
 
-That makes it the largest row on the method axis and the one most concentrated in a single column, with the great majority of its references in [Sensory Prediction](../ResearchAreas/SensoryPrediction.md), where the data is almost always a table of molecular descriptors against a panel-derived label.
+That makes it the largest row on the method axis, and a heavily concentrated one, with the great majority of its references in [Sensory Prediction](../ResearchAreas/SensoryPrediction.md), where the data is almost always a table of molecular descriptors against a panel-derived label.
 
 **Read the membership of this row as provisional.** Because it is the default baseline, papers land here whose principal model is arguably something else, and a re-audit of matrix placements is open work; a reference whose headline model turns out to be, say, a standalone Gaussian process rather than a tree ensemble would move out. Re-derive the current set from the matrix rather than treating the list below as closed.
 

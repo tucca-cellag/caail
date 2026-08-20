@@ -4,7 +4,7 @@ This page describes the **SVM** row of the [Papers.md matrix](../Papers.md): sup
 
 ## Scope boundary
 
-The kernel and the margin are what put a paper here, which separates the row from [Linear & Regularized Models](./LinearRegularizedModels.md) (no kernel), [Ensemble Learning](./EnsembleLearning.md) (no trees or boosting) and [Chemometrics](./Chemometrics.md) (not a latent-variable projection). "Modest, well-featurized" in the taxonomy is doing real work: nearly every reference here has a few hundred samples with hand-built or spectral features, which is precisely the regime where an SVM is a sensible default and a deep network is not.
+The kernel and the margin are what put a paper here, which separates the row from [Linear & Regularized Models](./LinearRegularizedModels.md) (no kernel), [Ensemble Learning](./EnsembleLearning.md) (trees and boosting) and [Chemometrics](./Chemometrics.md) (latent-variable projection). "Modest, well-featurized" in the taxonomy is doing real work: nearly every reference here has a few hundred samples with hand-built or spectral features, which is precisely the regime where an SVM is a sensible default and a deep network is not.
 
 That makes the row a good place to look for the field's honest small-data evidence. Several of these papers set out to test whether a neural network beats an SVM on their data, and report that it does not. It also means the row overlaps heavily with its neighbours: most references appear in a comparison table alongside them.
 

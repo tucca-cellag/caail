@@ -4,7 +4,7 @@ This page describes the **Active Learning** row of the [Papers.md matrix](../Pap
 
 ## Scope boundary
 
-The taxonomy places this row and [Bayesian Optimization](./BayesianOptimization.md) in a deliberate containment relation: Bayesian optimization is a specific acquisition-driven instance, and this row is the broader iterative-selection framing. In practice the distinction that matters when reading a paper is the surrogate. A Gaussian process with an explicit acquisition function is the BO row; a gradient-boosting or ensemble surrogate whose top-ranked predictions are simply sent to the bench is this one. Papers that do both, such as [#58](../Papers.md#58) and [#169](../Papers.md#169), sit in both.
+The taxonomy places this row and [Bayesian Optimization](./BayesianOptimization.md) in a deliberate containment relation: Bayesian optimization is a specific acquisition-driven instance, and this row is the broader iterative-selection framing. In practice the distinction that matters when reading a paper is the surrogate. A Gaussian process with an explicit acquisition function is the BO row; a gradient-boosting or ensemble surrogate whose top-ranked predictions are simply sent to the bench is this one. A paper that does both, such as [#58](../Papers.md#58), sits in both.
 
 What the row is really about is experiment budget. Every reference below exists because the search space is astronomically larger than what a lab can test, and the paper's contribution is a defensible way of choosing the next plate. That makes it the most directly transferable row on the method axis for cultivated-meat media work, and the one where the wet-lab detail in the methods sections is worth as much as the algorithm.
 
