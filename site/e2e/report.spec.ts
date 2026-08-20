@@ -149,12 +149,17 @@ test('the composer is absent from the served HTML, so no-JS gets the page as it 
   // sidebar of EVERY page. Both sit above `data-pagefind-body` and are not indexed, so the
   // property this guards was never actually broken — the assertion was just reading site
   // chrome. Slicing keeps it failing for the reason it was written for.
-  // Located before slicing: indexOf returns -1 when the marker is absent, and slice(-1)
-  // counts from the end, so the assertion below would run against the last character of
-  // the document and pass while guarding nothing.
+  // Bounded at BOTH ends, so this reads the indexed region and nothing else. Both
+  // bounds are asserted before use: indexOf returns -1 when a marker is absent, and
+  // slice(-1) counts from the end, so an unchecked start would run the assertion
+  // against the last character of the document and pass while guarding nothing. An
+  // unchecked end would run to EOF and re-admit the chrome below `</main>`, which is
+  // the same false failure at the other end of the document.
   const bodyStart = html.indexOf('data-pagefind-body');
   expect(bodyStart).toBeGreaterThan(-1);
-  const indexed = html.slice(bodyStart);
+  const bodyEnd = html.indexOf('</main>', bodyStart);
+  expect(bodyEnd).toBeGreaterThan(bodyStart);
+  const indexed = html.slice(bodyStart, bodyEnd);
   const withoutPayload = indexed.replace(/<script type="application\/json"[\s\S]*?<\/script>/g, '');
   expect(withoutPayload).not.toContain('Bayesian Optimization');
 });
