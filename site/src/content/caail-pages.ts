@@ -234,7 +234,7 @@ const PAGES: Record<string, PageMeta> = {
     group: 'methods',
     order: 18,
     description:
-      'Pretrained models beyond single-cell transcriptomics: multimodal omics LLMs, spectral structure elucidation, natural-product graph pretraining, and protein-phenotype models.',
+      'Pretrained models beyond single-cell transcriptomics: taste-peptide predictors, multimodal omics LLMs, natural-product graph pretraining, and protein-phenotype models.',
   },
   'methods/literaturediscoveryagents': {
     title: 'Scientific Literature & Discovery Agents',

@@ -4,7 +4,7 @@ This page describes the **Foundation Models (other modalities)** row of the [Pap
 
 ## Scope boundary
 
-This row is defined by exclusion, which is unusual on the method axis and worth stating plainly: a model belongs here when it is a pretrained, transferable foundation model *and* none of the three transcriptomics-specific foundation-model rows fits. Those are [Next-Token Prediction](./FoundationModelsNextToken.md), [Masked Language Modeling](./FoundationModelsMaskedLM.md) and [Cell-State & Perturbation Prediction](./FoundationModelsCellState.md), plus [LM + Biological Priors](./FoundationModelsBioPriors.md) for models that inject structured biology into the backbone.
+This row is defined by exclusion, which is unusual on the method axis and worth stating plainly: a model belongs here when it is a pretrained, transferable foundation model *and* none of the four transcriptomics-specific foundation-model rows fits. Those are [Next-Token Prediction](./FoundationModelsNextToken.md), [Masked Language Modeling](./FoundationModelsMaskedLM.md) and [Cell-State & Perturbation Prediction](./FoundationModelsCellState.md), plus [LM + Biological Priors](./FoundationModelsBioPriors.md) for models that inject structured biology into the backbone.
 
 A consequence to hold on to: an exclusion-defined row will not read as a coherent research programme, and this one does not. A protein-phenotype model and a natural-product graph model share a training paradigm and nothing else. The grouping is a routing decision, not a claim that these papers speak to each other.
 
