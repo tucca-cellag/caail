@@ -138,10 +138,20 @@ test('the composer is absent from the served HTML, so no-JS gets the page as it 
   // Present but hidden, and empty: the reader still gets the three working routes.
   expect(html).toMatch(/id="caail-compose"[^>]*\shidden/);
   expect(html).toContain('Open a correction on GitHub');
-  // The option lists are built in the browser, so 25 matrix method names do not enter the
+  // The option lists are built in the browser, so the matrix method names do not enter the
   // Pagefind index and make /report/ rank for "Bayesian Optimization". They appear only
   // inside the JSON payload, which is a script element and not indexed.
-  const withoutPayload = html.replace(/<script type="application\/json"[\s\S]*?<\/script>/g, '');
+  //
+  // Scoped to the Pagefind body rather than the whole document, because ranking is what
+  // this is about and only that region is indexed. The whole-document form worked until
+  // every matrix row got a Methods/ deep dive (CAAIL-266): the row labels are now nav
+  // entries, so "Bayesian Optimization" appears in the header dropdown and the Starlight
+  // sidebar of EVERY page. Both sit above `data-pagefind-body` and are not indexed, so the
+  // property this guards was never actually broken — the assertion was just reading site
+  // chrome. Slicing keeps it failing for the reason it was written for.
+  const indexed = html.slice(html.indexOf('data-pagefind-body'));
+  expect(indexed).not.toBe('');
+  const withoutPayload = indexed.replace(/<script type="application\/json"[\s\S]*?<\/script>/g, '');
   expect(withoutPayload).not.toContain('Bayesian Optimization');
 });
 
