@@ -35,12 +35,18 @@ function mdxFiles(dir: string): string[] {
 }
 
 /**
- * The leading `---` fenced block, if present. Only the first one counts as
- * frontmatter, and only when it opens the file.
+ * The leading `---` block, split into the fields and where the block ends.
+ *
+ * Both numbers are returned together because they are different lengths and
+ * using one for the other is a live bug rather than a hypothetical: slicing the
+ * source by the length of the FIELDS leaves a ragged tail of the frontmatter
+ * behind (`---\ntitle: A\n---\n\nbody` becomes `e: A\n---\n\nbody`), which is then
+ * scanned as page content. A stray ``` in a frontmatter value would open a fence
+ * that never closes and suppress every table on the page.
  */
-function frontmatter(src: string): string {
+function frontmatter(src: string): { fields: string; end: number } {
   const m = /^---\r?\n([\s\S]*?)\r?\n---\r?\n/.exec(src);
-  return m ? m[1] : '';
+  return m ? { fields: m[1], end: m[0].length } : { fields: '', end: 0 };
 }
 
 /**
@@ -72,7 +78,7 @@ function isDelimiterRow(line: string): boolean {
  * it is not a table at all, it is a paragraph. Both are skipped.
  */
 function countTables(src: string): number {
-  const lines = src.slice(frontmatter(src).length).split('\n');
+  const lines = src.slice(frontmatter(src).end).split('\n');
   let fence: string | null = null;
   let count = 0;
   for (let i = 0; i < lines.length; i++) {
@@ -101,12 +107,15 @@ function countTables(src: string): number {
  * whatever this derivation still gets wrong.
  */
 function routeFor(absPath: string, src: string): string {
-  const slugLine = /^slug:\s*(.+?)\s*$/m.exec(frontmatter(src));
+  const slugLine = /^slug:\s*(.+?)\s*$/m.exec(frontmatter(src).fields);
   const slug = slugLine
     ? slugLine[1].replace(/^['"]|['"]$/g, '')
     : relative(DOCS, absPath).replace(/\.mdx$/, '');
-  const clean = slug.replace(/^\/+|\/+$/g, '');
-  return clean === '' || clean === 'index' ? './' : `./${clean}/`;
+  // Strip a trailing `index` at ANY depth, not just the root: papers/index.mdx
+  // routes to /papers/, so collapsing only the top-level case would send this
+  // spec to /papers/index/ and report a 404 as a GFM regression.
+  const clean = slug.replace(/^\/+|\/+$/g, '').replace(/(^|\/)index$/, '');
+  return clean === '' ? './' : `./${clean}/`;
 }
 
 const pagesWithTables = mdxFiles(DOCS)
@@ -116,7 +125,7 @@ const pagesWithTables = mdxFiles(DOCS)
   })
   // A draft page is not built, so navigating to it would 404 and read as a GFM
   // regression rather than as a page that deliberately does not exist.
-  .filter((p) => p.tables > 0 && !/^draft:\s*true\s*$/m.test(frontmatter(p.src)));
+  .filter((p) => p.tables > 0 && !/^draft:\s*true\s*$/m.test(frontmatter(p.src).fields));
 
 test('the MDX sources still contain at least one GFM table to check', () => {
   // Guards the derivation itself. If every table were refactored out of MDX the
@@ -138,7 +147,16 @@ for (const { file, route, tables } of pagesWithTables) {
 
     // The count must match the source: one <table> short means one table
     // silently degraded, which a bare "at least one table" assertion would miss.
-    await expect(page.locator('main table')).toHaveCount(tables);
+    //
+    // `:not(.not-content)` excludes tables a component rendered rather than
+    // Markdown. Starlight marks non-prose output with `.not-content`, and
+    // MetricsDashboard.astro already emits two `table.md-grid.not-content`
+    // inside <main> on /by-the-numbers/ — inside `.sl-markdown-content` too, so
+    // that wrapper does not discriminate. by-the-numbers.mdx has no GFM table
+    // today and so is not in this set, but the whole point of deriving the set
+    // is that it covers a page the day one is added, and on that day a bare
+    // `main table` would expect 1, find 3, and blame a GFM regression.
+    await expect(page.locator('main table:not(.not-content)')).toHaveCount(tables);
 
     // A pipe-delimited row surviving as paragraph text is the exact shape of the
     // failure. Assert it directly so a regression names its own cause instead of
