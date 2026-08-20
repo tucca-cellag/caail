@@ -33,11 +33,12 @@ and read every other number against the files above.
 ## Why the counts must not be read as one number
 
 Every theme's population is larger than its research area's, because a theme spans content
-types the matrix cannot hold, and the gap is not small: `Metabolism & Modeling` carries 171
-tag rows (70 datasets, 40 software, 34 databases, 27 papers) of which 10 are matrix-eligible
-references, occupying 13 cells. (References and placements are different counts, per
-`CONTEXT.md`; a reference in three cells is three placements.) The disagreement is not even
-one-directional: `Scaffolding & Biomaterials` tags 10 matrix papers while the `Scaffolding`
+types the matrix cannot hold, and the gap is not small: `Metabolism & Modeling` carries 104
+distinct items (171 tag rows: 70 datasets, 40 software, 34 databases, 27 papers, counted with
+its fine tag rolled in, so an item tagged both ways is one item and two rows). Ten of those
+items are matrix-eligible references, making 13 placements across 12 cells. References,
+placements and cells are three different counts, per `CONTEXT.md`, and two of those references
+share a cell. The disagreement is not even one-directional: `Scaffolding & Biomaterials` tags 10 matrix papers while the `Scaffolding`
 column holds 12, so the column contains papers the theme does not.
 
 That is why the **labels must stay different**, as a convention this ADR establishes: a
@@ -60,12 +61,13 @@ failure it exists to catch.
 
 The key is not yet **written** that way, and this is the sharpest trap in implementing this ADR.
 `seedTopics` resolves a theme's `area_key` by looking the area up **by label**
-(`SELECT key FROM areas WHERE label=?`, `site/scripts/db/seed.ts:222`) and falls back to `null`
+(`SELECT key FROM areas WHERE label=?`, `site/scripts/db/seed.ts:222-223`) and falls back to `null`
 on a miss without complaining. A theme's `area` field therefore has to carry the column's label
 character for character. Since this ADR requires theme and area labels to *differ*, that lookup
 is the one place the two axes still meet by name, and getting it wrong is silent in every
-direction that matters: the theme keeps `area_key: null`, its papers go untagged (`seed.ts:244`
-skips an area with no theme), and `db:check` passes because it validates only non-null keys.
+direction that matters: the theme keeps `area_key: null`, it is left out of the `areaToTheme` map
+(`seed.ts:244`), every matrix cell in that area is then skipped at `seed.ts:247` so its papers go
+untagged, and `db:check` passes because it validates only non-null keys.
 Whoever lands the two columns should pass the area **key** rather than the label, or make the
 miss throw. Doing neither leaves the bijection resting on two strings agreeing.
 
@@ -99,12 +101,19 @@ miss throw. Doing neither leaves the bijection resting on two strings agreeing.
 - `ResearchAreas/AIEvaluation.md` has migrated to `Methods/BenchmarksEvaluation.md`, and
   `/research-areas/aievaluation/` redirects to its new home in `astro.config.mjs`.
 - `benchmarks-evaluation` remains a fine tag under `AI Methods & Tooling`.
+- **`/by-the-numbers/` already labels the two axes**, saying themes are "a different axis from
+  the N research areas above, not a renaming of them", and naming the area-less themes and the
+  unthemed columns. It **derives** all three from the data (`MetricsDashboard.astro:53-56`,
+  rendered at `:113-123`), so the sentence self-corrects as curation closes the gap. Do not
+  re-implement it, and do not replace the derivation with a hardcoded list when the columns land.
 
 **Not yet implemented.** Each of the following is a sentence this ADR would otherwise assert
 as fact, and none of it is true today:
 
-- **The bijection does not hold.** Live state is 8 themes, 6 research areas, 7 deep-dive
-  pages. `Metabolism & Modeling` and `Food Safety` both carry `area_key: null`.
+- **The bijection does not hold.** Live state is 8 themes, 6 research areas and 7 research-area
+  deep-dive pages. (`CONTEXT.md` defines a deep-dive page as covering either axis, so the
+  all-axes count is 8 including `Methods/BenchmarksEvaluation.md`; the bijection is about the
+  research-area ones.) `Metabolism & Modeling` and `Food Safety` both carry `area_key: null`.
 - **`db:check` asserts no bijection and no not-null `area_key`.** `checkTopicTiers` asserts
   only that a **non-null** `area_key` resolves to an existing area, so a theme is free to carry
   none. There is no assertion that every theme has one, that every column has exactly one theme,
@@ -125,8 +134,10 @@ as fact, and none of it is true today:
   single matrix column", and `ResearchAreas/MetabolicModeling.md` still opens by calling itself
   a cross-cutting methodology overview rather than a research area. Considered options below
   commits to rewriting both; neither is done.
-- **The axes are not labelled on the surfaces that render both**, `/by-the-numbers/` and
-  `/topics/`. That absence is what let GH #132 read a deliberate design as three gaps.
+- **`/topics/` does not say which axis a reader is looking at.** `TopicHub` never mentions the
+  matrix, so a reader arriving there has no cue that themes are not the columns. `/by-the-numbers/`
+  is **not** in this gap; see Landed above before touching it. That remaining absence is the live
+  half of what let GH #132 read a deliberate design as three gaps.
 
 Re-tighten each of these into present-tense fact in the change that lands it, not before.
 
