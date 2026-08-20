@@ -135,6 +135,24 @@ export interface TemplateClaim {
  */
 export function readFields(src: string): FormField[] {
   const bounds = [...src.matchAll(/^[ \t]*-[ \t]+type:[ \t]*(["']?)([A-Za-z0-9_-]+)\1[ \t]*(?:#.*)?$/gm)];
+
+  // The `- type:` line is what SEPARATES one field from the next, so an unparseable one is worse
+  // than an unparseable id: the field is not merely unreadable, it stops being a boundary, merges
+  // into its predecessor and disappears entirely — id, type and `required: true` with it. The id
+  // guard below throws for exactly that reason and had no counterpart here, which left the
+  // invariant it states ("must not be reachable by writing it in a form this reader fails to
+  // parse") true of one key and false of the other. Counting loosely and comparing is the cheapest
+  // way to notice, because the strict pattern cannot report what it failed to match.
+  const loose = [...src.matchAll(/^[ \t]*-[ \t]+type:/gm)];
+  if (loose.length !== bounds.length) {
+    throw new Error(
+      `contribute-form: ${loose.length - bounds.length} of ${loose.length} "- type:" lines are ` +
+        `written in a form this reader cannot parse. Each one stops separating its field from the ` +
+        `one before it, so that field vanishes from every check here along with its required ` +
+        `flag. Write the type as a bare or quoted word.`,
+    );
+  }
+
   return bounds.flatMap((m, i) => {
     const start = m.index!;
     const end = bounds[i + 1]?.index ?? src.length;

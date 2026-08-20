@@ -257,6 +257,22 @@ export function buildCorrectionForm(
 ): CorrectionForm {
   const src = readFileSync(templatePath, 'utf-8');
 
+  // Every `- type:` line must be parseable, because that line is what separates one field from the
+  // next: an unparseable one stops being a boundary, so its field merges into the previous one and
+  // vanishes, taking `required: true` with it. `countRequiredConfirmations` would then return a
+  // wrong number with no throw, which this module's own docstring says must not happen. Same guard
+  // as contribute-form.ts's readFields, added there first and mirrored here for the same inputs.
+  const looseTypes = (src.match(/^[ \t]*-[ \t]+type:/gm) ?? []).length;
+  const strictTypes = (src.match(/^[ \t]*-[ \t]+type:[ \t]*\S+[ \t]*(?:#.*)?$/gm) ?? []).length;
+  if (looseTypes !== strictTypes) {
+    throw new Error(
+      `correction-form: ${looseTypes - strictTypes} of ${looseTypes} "- type:" lines in ` +
+        `${templatePath} are written in a form this reader cannot parse, so the fields they open ` +
+        `merge into the one before them and disappear — including from the required-confirmation ` +
+        `count the page publishes. Write the type as a bare word.`,
+    );
+  }
+
   const fieldIds = readFieldIds(src);
   const missing = REQUIRED_FIELD_IDS.filter((id) => !fieldIds.includes(id));
   if (missing.length > 0) {

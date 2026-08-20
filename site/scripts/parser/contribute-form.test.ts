@@ -104,6 +104,24 @@ describe('readFields', () => {
     expect(readFields(src)).toEqual([{ id: 'species', type: 'input', required: true }]);
   });
 
+  it('throws on a `- type:` line it cannot parse, which would delete the field entirely', () => {
+    // Worse than an unparseable id: the `- type:` line is the boundary between fields, so an
+    // unreadable one merges its field into the previous one and it vanishes with its required
+    // flag. Without this guard readFields returned only `doi` and `notes` here, and
+    // assertRequiredCovered silently stopped covering the required `species` field between them.
+    const src = [
+      '  - type: input',
+      '    id: doi',
+      '  - type: !!str dropdown',
+      '    id: species',
+      '    validations:',
+      '      required: true',
+      '  - type: input',
+      '    id: notes',
+    ].join('\n');
+    expect(() => readFields(src)).toThrow(/"- type:" lines are written in a form this reader cannot parse/);
+  });
+
   it('throws on a non-markdown field whose id it cannot parse, rather than skipping it', () => {
     const src = ['  - type: dropdown', '    attributes:', '      label: No id here'].join('\n');
     expect(() => readFields(src)).toThrow(/carries no id this reader can parse/);

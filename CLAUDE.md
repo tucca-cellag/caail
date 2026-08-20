@@ -182,7 +182,7 @@ LICENSE                MIT License
 
 **The `AI Tooling / Methodology` column** is the home for papers about general-purpose AI methods, agents, or tools that *could be applied* to cell-ag but don't yet have a specific application — e.g. a TxAgent or ToolUniverse paper that describes a general biomedical agent framework. When a follow-up paper applies one of these tools to (say) media optimization, that follow-up goes in the appropriate research-area column instead.
 
-**The `LLMs / AI Agents` row** captures large-language-model and agentic-AI methods. This is distinct from "Deep Learning" because LLM agents involve tool use, retrieval, and reasoning architectures that aren't accurately described by the deep-learning row alone.
+**Large-language-model and agentic work is spread across several rows, not one.** It used to be a single `LLMs / AI Agents` row; that row no longer exists, having been split into the foundation-model and agent families. Read the live set from `Taxonomy.md` or `api/matrix.json` rather than from here, and do not reintroduce the old name: naming a row that no longer exists sends a placement to a cell nothing can hold. The reason for the split is the reason the single row was there in the first place, and it still holds: agentic methods involve tool use, retrieval and reasoning architectures that "Deep Learning" does not describe.
 
 **Stability rules** (these prevent silently breaking links):
 
