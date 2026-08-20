@@ -70,27 +70,29 @@
   --caail-density-4: oklch(31% 0.12 264);      /* #002E6D  8+ */
 
   /* Canonical categorical palette: consumed via var(--caail-area-*) in components (the island carries only area keys, never colors). */
-  /* Data — categorical (Okabe–Ito, CVD-safe); 6 research areas */
+  /* Data — categorical (Okabe–Ito, CVD-safe) for the first six; 8 research areas.
+
+     The last two are NOT Okabe–Ito. Six of that palette's eight usable hues are spent
+     above, and the remainder (yellow #F0E442, black) are unusable here: yellow fails
+     contrast on white, black reads as text. So Metabolic Modeling and Food Safety
+     Prediction are separated by LIGHTNESS as well as hue — both markedly darker than the
+     nearest area — rather than by hue alone, which is what keeps them apart under CVD at
+     8 categories, past the ~7 where hue alone stays reliably distinguishable.
+
+     These two values are inherited deliberately rather than invented: they were the
+     tokens the Metabolism & Modeling and Food Safety *themes* carried while those themes
+     had no matrix column. Now that each names a column, the theme resolves to its area's
+     colour from data (lib/theme-colors.ts) and the standalone theme tokens are gone —
+     so a reader who knew a chip by its colour sees the same colour, now meaning one
+     thing on both axes instead of two things that happened to look alike. */
   --caail-area-media: #0072B2;
   --caail-area-cell: #009E73;
   --caail-area-bioprocess: #E69F00;
   --caail-area-scaffolding: #56B4E9;
   --caail-area-sensory: #D55E00;
+  --caail-area-metabolic: oklch(42% 0.10 220);   /* deep teal-blue; area sky is far lighter */
+  --caail-area-foodsafety: oklch(52% 0.12 200);
   --caail-area-tooling: #CC79A7;
-
-  /* Subject themes without a matrix area (topics.ndjson `area_key` is null). Themes that
-     DO map to an area take that area's colour, resolved from data in lib/theme-colors.ts
-     — never hardcoded per-slug in CSS.
-
-     These two need their own values, and honestly: 6 areas + 2 area-less themes is 8,
-     still past the ~7-category limit where colours stay reliably distinguishable, and
-     more so under CVD. So they are separated by LIGHTNESS as well as hue (both much darker than the
-     nearest area) rather than by hue alone, and neither reuses an area token — the
-     By the Numbers page shows areas and themes together, so one colour meaning two
-     different things there would be exactly the confusion this palette exists to avoid.
-     Metabolism previously borrowed an area token and collided on that page. */
-  --caail-theme-metabolism: oklch(42% 0.10 220);   /* deep teal-blue; area sky is far lighter */
-  --caail-theme-food-safety: oklch(52% 0.12 200);
 
   /* Data — license tiers.
      The area hues all but exhaust the Okabe–Ito CVD-safe categorical set, and tiers must
@@ -143,10 +145,14 @@
   --caail-density-4: oklch(78% 0.10 256);
   /* Categorical area colors keep hue; lighten ~8% for AA on dark (kept inline in components) */
 
-  /* Theme / tier scales keep hue, lightness inverted for AA on dark. The band tokens
+  /* The six Okabe-Ito area hues are kept inline in components (see the note above), but
+     the two oklch areas are tokens and DO need inverting for AA on dark, exactly as the
+     tier scale does. They carry the values the matching themes used to hold. */
+  --caail-area-metabolic: oklch(72% 0.09 220);
+  --caail-area-foodsafety: oklch(70% 0.11 200);
+
+  /* Tier scales keep hue, lightness inverted for AA on dark. The band tokens
      need no override: they alias the density ramp, which is already inverted above. */
-  --caail-theme-metabolism: oklch(72% 0.09 220);
-  --caail-theme-food-safety: oklch(70% 0.11 200);
   --caail-tier-permissive: oklch(80% 0.09 300);
   --caail-tier-copyleft: oklch(70% 0.12 300);
   --caail-tier-restricted: oklch(60% 0.15 300);

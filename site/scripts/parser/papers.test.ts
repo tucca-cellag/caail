@@ -177,14 +177,16 @@ describe('buildPapersModel — real Papers.md', () => {
     expect(model.methods.length).toBe(25);
   });
 
-  it('has 6 areas with the exact keys in column order', () => {
-    expect(model.areas.length).toBe(6);
+  it('has 8 areas with the exact keys in column order', () => {
+    expect(model.areas.length).toBe(8);
     expect(model.areas.map((a) => a.key)).toEqual([
       'media',
       'cell',
       'bioprocess',
       'scaffolding',
       'sensory',
+      'metabolic',
+      'foodsafety',
       'tooling',
     ]);
   });
@@ -202,8 +204,11 @@ describe('buildPapersModel — real Papers.md', () => {
       (c) => c.method === 'Deep Learning' && c.area === 'cell',
     )!;
     expect(cell).toBeDefined();
-    expect(cell.refIds).toEqual([5, 122, 57, 145, 118, 123, 263]);
-    expect(cell.refIds.length).toBe(7);
+    // #145 (MetaGEM) left this cell for `Deep Learning x Metabolic Modeling`:
+    // it reconstructs genome-scale metabolic networks, which Cellular Engineering
+    // excludes ("gene regulation ... that does not run through a metabolic network").
+    expect(cell.refIds).toEqual([5, 122, 57, 118, 123, 263]);
+    expect(cell.refIds.length).toBe(6);
   });
 
   it('spot-checks reference id 6', () => {

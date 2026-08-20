@@ -1,6 +1,6 @@
 # ResearchAreas/, context for Claude Code and AI agents
 
-This directory holds the deep-dive pages for the **column** axis of the [Papers.md matrix](../Papers.md), the research areas. The row axis, the AI/ML methods, has its own pages in [`Methods/`](../Methods/). The mapping to columns is not quite one-to-one: `MetabolicModeling.md` describes a subject that is not a column. Each page **synthesizes and editorializes** its papers, tools, and data resources: describing their scope, sub-dividing them into thematic clusters, and framing each entry's relevance to cellular agriculture. These pages are *not* the canonical source for any paper, tool, dataset, or database they reference.
+This directory holds the deep-dive pages for the **column** axis of the [Papers.md matrix](../Papers.md), the research areas. The row axis, the AI/ML methods, has its own pages in [`Methods/`](../Methods/). The mapping to columns is one-to-one and is enforced: `db:check` asserts that every matrix column has exactly one page in this directory, joined through the area key rather than by matching labels. Each page **synthesizes and editorializes** its papers, tools, and data resources: describing their scope, sub-dividing them into thematic clusters, and framing each entry's relevance to cellular agriculture. These pages are *not* the canonical source for any paper, tool, dataset, or database they reference.
 
 ## Note for AI agents and LLMs
 

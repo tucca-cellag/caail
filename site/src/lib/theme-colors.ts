@@ -8,10 +8,15 @@
  * its column, which is the second reason not to borrow one: the borrowed variable can
  * stop existing.
  *
- * The mapping is now DERIVED from `areaKey` in topics.json, which comes from the DB's
+ * The mapping is DERIVED from `areaKey` in topics.json, which comes from the DB's
  * `topics.area_key`. A theme that maps to a matrix research area takes that area's
- * colour, so an area and its theme always agree. The two themes with no area
- * (Food Safety, Metabolism & Modeling) get their own tokens.
+ * colour, so an area and its theme always agree.
+ *
+ * Every theme now maps: ADR-0001 gave Metabolism & Modeling and Food Safety matrix
+ * columns, so the two standalone `--caail-theme-*` tokens this file used to fall back to
+ * are gone and the fallback map with them. That is enforced rather than assumed —
+ * `db:check` asserts every theme has a non-null `area_key` — so the derivation is total
+ * for themes and the remaining fallback only catches an unknown slug.
  *
  * Returns a `var(--…)` string rather than a literal so light/dark mode still resolve
  * through tokens.css. Callers set it as an inline custom property (`--chip`), which is
@@ -35,13 +40,6 @@ const themeOfTag = new Map<string, string>(
   (topicsData.tags as any[]).map((t) => [t.slug, t.theme as string]),
 );
 
-/** Themes with no matrix area. Kept explicit and tiny — if it grows, that is a signal
- *  the taxonomy has drifted from the matrix and wants a curator, not another entry. */
-const AREALESS: Record<string, string> = {
-  'metabolism-modeling': 'var(--caail-theme-metabolism)',
-  'food-safety': 'var(--caail-theme-food-safety)',
-};
-
 /**
  * CSS colour for a theme OR fine-tag slug. Unknown slugs degrade to muted rather than
  * throwing, so a stale link can't break a render.
@@ -55,7 +53,10 @@ export function themeColor(slug: string | null | undefined): string {
   const themeSlug = themeOfTag.get(slug) ?? slug;
   const areaKey = areaKeyBySlug.get(themeSlug) ?? null;
   if (areaKey) return `var(--caail-area-${areaKey})`;
-  return AREALESS[themeSlug] ?? 'var(--caail-muted)';
+  // Unreachable for a theme: `db:check`'s bijection guard asserts every theme carries a
+  // non-null area_key. Kept as a total fallback for an unknown or stale slug, which is a
+  // render concern rather than a data one, and degrades to muted rather than throwing.
+  return 'var(--caail-muted)';
 }
 
 /** Inline style string setting the `--chip` custom property consumers already read. */

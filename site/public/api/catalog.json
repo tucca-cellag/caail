@@ -587,7 +587,7 @@
       "topics": [
         {
           "slug": "bioprocess-scale-up",
-          "label": "Bioprocess & Scale-Up",
+          "label": "Bioprocess & Manufacturing",
           "theme": "bioprocess-scale-up"
         },
         {
@@ -618,7 +618,7 @@
       "topics": [
         {
           "slug": "bioprocess-scale-up",
-          "label": "Bioprocess & Scale-Up",
+          "label": "Bioprocess & Manufacturing",
           "theme": "bioprocess-scale-up"
         },
         {
@@ -649,7 +649,7 @@
       "topics": [
         {
           "slug": "bioprocess-scale-up",
-          "label": "Bioprocess & Scale-Up",
+          "label": "Bioprocess & Manufacturing",
           "theme": "bioprocess-scale-up"
         },
         {
@@ -680,7 +680,7 @@
       "topics": [
         {
           "slug": "bioprocess-scale-up",
-          "label": "Bioprocess & Scale-Up",
+          "label": "Bioprocess & Manufacturing",
           "theme": "bioprocess-scale-up"
         },
         {
@@ -711,7 +711,7 @@
       "topics": [
         {
           "slug": "bioprocess-scale-up",
-          "label": "Bioprocess & Scale-Up",
+          "label": "Bioprocess & Manufacturing",
           "theme": "bioprocess-scale-up"
         },
         {
@@ -742,7 +742,7 @@
       "topics": [
         {
           "slug": "bioprocess-scale-up",
-          "label": "Bioprocess & Scale-Up",
+          "label": "Bioprocess & Manufacturing",
           "theme": "bioprocess-scale-up"
         },
         {
@@ -771,7 +771,7 @@
       "topics": [
         {
           "slug": "bioprocess-scale-up",
-          "label": "Bioprocess & Scale-Up",
+          "label": "Bioprocess & Manufacturing",
           "theme": "bioprocess-scale-up"
         },
         {
@@ -8726,5 +8726,5 @@
       "citationDois": []
     }
   ],
-  "corpusDate": "2026-08-20"
+  "corpusDate": "2026-08-21"
 }

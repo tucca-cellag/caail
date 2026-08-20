@@ -70,7 +70,7 @@ const PAGES: Record<string, PageMeta> = {
     title: 'AI Tooling / Methodology',
     sidebarLabel: 'AI Tooling',
     group: 'research-areas',
-    order: 6,
+    order: 8,
     description:
       'General-purpose AI methods, agents, and tooling applicable to cellular agriculture: foundation models, LLM agents, and ML infrastructure.',
   },
@@ -78,9 +78,17 @@ const PAGES: Record<string, PageMeta> = {
     title: 'Metabolic Modeling',
     sidebarLabel: 'Metabolic Modeling',
     group: 'research-areas',
-    order: 8,
+    order: 6,
     description:
       'Genome-scale metabolic modeling and strain design for cellular agriculture: constraint-based modeling, flux analysis, and metabolic engineering.',
+  },
+  'research-areas/foodsafetyprediction': {
+    title: 'Food Safety Prediction',
+    sidebarLabel: 'Food Safety Prediction',
+    group: 'research-areas',
+    order: 7,
+    description:
+      'Predicting the allergenicity, immunogenicity, and toxicity of the novel proteins cultivated meat and precision fermentation introduce: sequence-based classifiers, IgE-epitope mapping, and regulatory screening.',
   },
 
   // ── Methods ────────────────────────────────────────────────────────────────

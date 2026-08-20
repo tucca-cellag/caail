@@ -20,10 +20,15 @@ const citationEdges = graph.citationEdges as CEdge[];
 const meta = graph.metadata as { nodes: number; sharedAuthor: ModeStats; citation: ModeStats };
 const base = (import.meta.env.BASE_URL ?? '/').replace(/\/$/, '');
 
-const AREA_KEYS = ['media', 'cell', 'bioprocess', 'scaffolding', 'sensory', 'tooling'] as const;
+const AREA_KEYS = ['media', 'cell', 'bioprocess', 'scaffolding', 'sensory', 'metabolic', 'foodsafety', 'tooling'] as const;
+// Labels must match the `areas` table in the DB. 'bioprocess' read 'Bioprocess Control'
+// here for long after the column was renamed to 'Bioprocess & Scale-Up' — a name that
+// existed nowhere else in the repo, rendered in the filter, legend and node summary.
+// Nothing guards this map; if you rename a column, grep site/src for the old string.
 const AREA_LABELS: Record<string, string> = {
-  media: 'Media Optimization', cell: 'Cellular Engineering', bioprocess: 'Bioprocess Control',
-  scaffolding: 'Scaffolding', sensory: 'Sensory Prediction', tooling: 'AI Tooling / Methodology',
+  media: 'Media Optimization', cell: 'Cellular Engineering', bioprocess: 'Bioprocess & Scale-Up',
+  scaffolding: 'Scaffolding', sensory: 'Sensory Prediction', metabolic: 'Metabolic Modeling',
+  foodsafety: 'Food Safety Prediction', tooling: 'AI Tooling / Methodology',
 };
 
 /** Connectivity in the active edge mode (drives sizing + isolation). */

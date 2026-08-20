@@ -100,12 +100,16 @@ describe('computeCounts — real corpus (ground-truth contract)', () => {
       databases: 150,
       species: 17,
       datasets: 238,
-      // 7, not 8: `AIEvaluation.md` described the *Benchmarks & Evaluation
-      // Frameworks* method row rather than a research area, and moved to
-      // `Methods/`. This count is derived from the `ResearchAreas/` file count
-      // and is labelled "Research Areas" on the homepage, so a method page left
-      // in that directory would inflate a number labelled as something else.
-      researchAreas: 7,
+      // 8: derived from the `ResearchAreas/` file count and labelled "Research
+      // Areas" on the homepage. It went 8 -> 7 when `AIEvaluation.md` moved to
+      // `Methods/` (it described the *Benchmarks & Evaluation Frameworks* method
+      // row, not an area), and 7 -> 8 again when ADR-0001 added the Metabolic
+      // Modeling and Food Safety Prediction columns — MetabolicModeling.md already
+      // existed, so only FoodSafetyPrediction.md is new. It now equals the matrix
+      // column count by construction rather than by coincidence, which `db:check`
+      // asserts. A method page left in this directory would still inflate a number
+      // labelled as something else.
+      researchAreas: 8,
       talks: 14,
     });
   });

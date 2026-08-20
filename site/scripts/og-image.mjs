@@ -14,14 +14,21 @@ import { fileURLToPath } from 'node:url';
 
 const OUT = fileURLToPath(new URL('../public/og.png', import.meta.url));
 
-// The Okabe–Ito research-area colors, one per matrix column (from tokens.css / DESIGN.md
-// §2). Hand-copied and UNCHECKED: nothing asserts this against the areas registry, and
+// The research-area colors, one per matrix column (from tokens.css / DESIGN.md §2).
+// Hand-copied and UNCHECKED: nothing asserts this against the areas registry, and
 // nothing in the build or CI regenerates og.png. So adding or retiring a column means
 // editing this array AND re-running this script by hand, or the social card ships a dot
 // row that disagrees with the matrix while every check stays green — which is what
 // happened when the eval column was retired. An oracle for the length is tracked on
 // CAAIL-204; until it lands, this comment is the only thing standing in the way.
-const AREA = ['#0072B2', '#009E73', '#E69F00', '#56B4E9', '#D55E00', '#CC79A7'];
+//
+// Two caveats on the last two entries, which are Metabolic Modeling and Food Safety
+// Prediction. (1) They are `oklch()` in tokens.css; resvg renders SVG 1.1 and would not
+// resolve that, so they are pre-converted to sRGB here. (2) They are the DARK-mode
+// values, not the light-mode ones. This card is a navy field: the light-mode values
+// measure 1.64:1 and 2.62:1 against it and vanish, while these measure 5.40:1 and
+// 5.12:1. Same reason the site inverts them for dark mode.
+const AREA = ['#0072B2', '#009E73', '#E69F00', '#56B4E9', '#D55E00', '#5DB2CC', '#2BB3B9', '#CC79A7'];
 const dots = AREA.map((c, i) => `<circle cx="${104 + i * 52}" cy="556" r="15" fill="${c}" />`).join('');
 
 // Static, recolored-for-dark version of the hero bioreactor (viewBox 300×340):

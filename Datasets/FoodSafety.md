@@ -14,5 +14,5 @@ The labeled corpus behind the AlgPred 2.0 allergen predictor: 10,075 allergen an
 
 - Allergenicity-prediction tools: [Software.md / Food Safety & Allergenicity](../Software.md#food-safety--allergenicity).
 - Reference allergen databases (WHO/IUIS, AllergenOnline, COMPARE, SDAP 2.0, Allergome, AllFam): [Databases.md / Food Safety & Allergen Databases](../Databases.md#food-safety--allergen-databases).
-- Deep-learning allergenicity methods in the matrix: [Papers.md ref #289](../Papers.md#289) (AllerTrans) and [Papers.md ref #290](../Papers.md#290) (AlgPred 2.0), both in the AI Tooling / Methodology column.
+- Allergenicity methods in the matrix: [Papers.md ref #290](../Papers.md#290) (AlgPred 2.0), in the [Food Safety Prediction](../ResearchAreas/FoodSafetyPrediction.md) column, and [Papers.md ref #289](../Papers.md#289) (AllerTrans), which is classified under AI Tooling / Methodology because the paper presents itself as a general-purpose predictor rather than a food-safety one.
 - Cell-ag allergenicity reviews: [Papers.md ref #291](../Papers.md#291) (Li et al. 2026) and [Papers.md ref #292](../Papers.md#292) (Ham et al. 2025).

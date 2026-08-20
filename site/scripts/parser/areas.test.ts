@@ -8,8 +8,8 @@ import { describe, it, expect } from 'vitest';
 import { AREAS, areaKeyForLabel } from './areas';
 
 describe('AREAS registry', () => {
-  it('has exactly 6 entries', () => {
-    expect(AREAS).toHaveLength(6);
+  it('has exactly 8 entries', () => {
+    expect(AREAS).toHaveLength(8);
   });
 
   it('entries are in matrix column order with correct keys and labels', () => {
@@ -19,12 +19,14 @@ describe('AREAS registry', () => {
       { key: 'bioprocess',  label: 'Bioprocess & Scale-Up' },
       { key: 'scaffolding', label: 'Scaffolding' },
       { key: 'sensory',     label: 'Sensory Prediction' },
+      { key: 'metabolic',   label: 'Metabolic Modeling' },
+      { key: 'foodsafety',  label: 'Food Safety Prediction' },
       { key: 'tooling',     label: 'AI Tooling / Methodology' },
     ]);
   });
 
   it('keys exactly match the --caail-area-* CSS token names', () => {
-    const expectedKeys = ['media', 'cell', 'bioprocess', 'scaffolding', 'sensory', 'tooling'];
+    const expectedKeys = ['media', 'cell', 'bioprocess', 'scaffolding', 'sensory', 'metabolic', 'foodsafety', 'tooling'];
     expect(AREAS.map((a) => a.key)).toEqual(expectedKeys);
   });
 });

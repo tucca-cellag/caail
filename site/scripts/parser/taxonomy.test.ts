@@ -120,16 +120,31 @@ describe('Taxonomy.md ⨯ Papers.md (real files)', () => {
     }
   });
 
-  // The specific case that motivated the fix: this column and a subject theme
-  // share a heading, and the column's text is the one with scope boundaries.
-  it('resolves Bioprocess & Scale-Up to the column scope, not the theme blurb', () => {
+  // `Bioprocess & Scale-Up` was once BOTH a column and a theme, and the flatten bug
+  // let the theme's blurb overwrite the column's scope. ADR-0001 removed the clash at
+  // the source by renaming the theme to `Bioprocess & Manufacturing`, so this now
+  // asserts the convention rather than the collision: the column resolves to a real
+  // scope definition, and the theme axis no longer claims that label.
+  //
+  // The axis-keying that fixed the original bug is still exercised — by the fixture
+  // test above ("keeps both definitions rather than letting the later one win"), which
+  // constructs a shared label deliberately. That is where it belongs: this file should
+  // not depend on the real corpus continuing to contain a collision it just removed.
+  it('resolves Bioprocess & Scale-Up to the column scope, and no theme claims that label', () => {
     const label = 'Bioprocess & Scale-Up';
     expect(axes.area[label]).toBeTruthy();
-    expect(axes.theme[label]).toBeTruthy();
-    expect(axes.area[label]).not.toBe(axes.theme[label]);
+    expect(axes.theme[label]).toBeUndefined();
     expect(definitions[label]).toBe(axes.area[label]);
-    // The column definition is the one that states what is out of scope; the
-    // theme blurb is a one-line description that does not.
+    // The column definition is the one that states what is out of scope.
     expect(definitions[label]).toMatch(/out of scope/i);
+  });
+
+  // The naming convention Taxonomy.md now states, made checkable: a column reads as a
+  // problem, a theme as an &-joined subject, and no label appears on both axes. This is
+  // what lets `db:check`'s bijection guard join on `area_key` and forbid label equality
+  // — a label comparison would fail on every correct repo once this holds.
+  it('shares no label between the research-area and subject-theme axes', () => {
+    const shared = Object.keys(axes.area).filter((l) => axes.theme[l] !== undefined);
+    expect(shared, `labels on both axes: ${shared.join(', ')}`).toEqual([]);
   });
 });

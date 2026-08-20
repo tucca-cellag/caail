@@ -12,7 +12,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { openDb, importNdjson, type Db } from './lib.js';
-import { checkIntegrity, checkReachability, checkColumnDrift, checkTaxonomyAxes, checkTopicTiers, checkCatalogHeadings, checkLicenses, checkManualLicenseKeys, checkDois, checkManualDoiKeys, checkRelatedDois, checkSubseries, runChecks } from './check.js';
+import { checkIntegrity, checkReachability, checkColumnDrift, checkTaxonomyAxes, checkTopicTiers, checkAxisBijection, checkCatalogHeadings, checkLicenses, checkManualLicenseKeys, checkDois, checkManualDoiKeys, checkRelatedDois, checkSubseries, runChecks } from './check.js';
 import { THEME_SLUGS } from './seed.js';
 
 const failing = (results: { label: string; ok: boolean }[], match: RegExp) =>
@@ -498,6 +498,63 @@ describe('checkTopicTiers', () => {
     const db = importNdjson(); db.exec('PRAGMA foreign_keys=OFF');
     db.prepare("INSERT INTO items(id,type,slug) VALUES('topic:z','topic','z')").run();
     expect(() => db.prepare("INSERT INTO topics(item_id,slug,label,tier,theme_slug,area_key) VALUES('topic:z','z','Z','tag',NULL,NULL)").run()).toThrow();
+  });
+});
+
+describe('checkAxisBijection', () => {
+  it('passes on the real committed DB', () => {
+    expect(checkAxisBijection(importNdjson()).every((r) => r.ok)).toBe(true);
+  });
+
+  it('flags a theme that names no research area (the null area_key gap)', () => {
+    // The exact hole this guard was added to close: checkTopicTiers only asserts a
+    // NON-NULL area_key resolves, so it passes on this DB and this one must not.
+    const db = importNdjson(); db.exec('PRAGMA foreign_keys=OFF');
+    db.prepare("UPDATE topics SET area_key=NULL WHERE slug='food-safety'").run();
+    expect(checkTopicTiers(db).every((r) => r.ok)).toBe(true);
+    expect(failing(checkAxisBijection(db), /names a research area/)).toBe(true);
+  });
+
+  it('flags a research area no theme names', () => {
+    const db = importNdjson(); db.exec('PRAGMA foreign_keys=OFF');
+    db.prepare("INSERT INTO areas(key,label,header_md,ordinal) VALUES('orphan','Orphan Column','x',99)").run();
+    expect(failing(checkAxisBijection(db), /exactly one theme/)).toBe(true);
+  });
+
+  it('flags a research area named by two themes', () => {
+    const db = importNdjson(); db.exec('PRAGMA foreign_keys=OFF');
+    db.prepare("UPDATE topics SET area_key='sensory' WHERE slug='food-safety'").run();
+    expect(failing(checkAxisBijection(db), /exactly one theme/)).toBe(true);
+  });
+
+  it('flags a new column added without a ResearchAreas page mapping', () => {
+    const db = importNdjson(); db.exec('PRAGMA foreign_keys=OFF');
+    db.prepare("INSERT INTO areas(key,label,header_md,ordinal) VALUES('newcol','New Column','x',99)").run();
+    expect(failing(checkAxisBijection(db), /covers exactly the DB areas/)).toBe(true);
+  });
+
+  it('flags a mapped page whose file is absent from disk', () => {
+    const emptyRoot = mkdtempSync(join(tmpdir(), 'caail-nopages-'));
+    expect(failing(checkAxisBijection(importNdjson(), emptyRoot), /page on disk/)).toBe(true);
+  });
+
+  it('flags the parser AREAS registry drifting from the DB areas', () => {
+    // The silent one: parseMatrix warns and skips an unknown column header, so a column
+    // present in the DB but missing from the parser orphans its refs with a green parse.
+    const db = importNdjson(); db.exec('PRAGMA foreign_keys=OFF');
+    db.prepare("INSERT INTO areas(key,label,header_md,ordinal) VALUES('newcol','New Column','x',99)").run();
+    expect(failing(checkAxisBijection(db), /parser AREAS registry/)).toBe(true);
+  });
+
+  it('does not compare labels: the paired theme and column are deliberately named differently', () => {
+    // Bioprocess is the pair that once shared a label and caused the taxonomy.json
+    // overwrite. The names now differ on purpose, so a label-equality guard would
+    // fail here on a correct repo. This asserts the guard joins on area_key instead.
+    const db = importNdjson();
+    const theme = db.prepare("SELECT label FROM topics WHERE slug='bioprocess-scale-up'").get() as { label: string };
+    const area = db.prepare("SELECT label FROM areas WHERE key='bioprocess'").get() as { label: string };
+    expect(theme.label).not.toBe(area.label);
+    expect(checkAxisBijection(db).every((r) => r.ok)).toBe(true);
   });
 });
 

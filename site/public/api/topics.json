@@ -21,7 +21,7 @@
       },
       {
         "slug": "bioprocess-scale-up",
-        "label": "Bioprocess & Scale-Up",
+        "label": "Bioprocess & Manufacturing",
         "tier": "theme",
         "theme": null,
         "areaKey": "bioprocess",
@@ -60,7 +60,7 @@
         "label": "Food Safety",
         "tier": "theme",
         "theme": null,
-        "areaKey": null,
+        "areaKey": "foodsafety",
         "counts": {
           "paper": 4,
           "software": 10,
@@ -96,7 +96,7 @@
         "label": "Metabolism & Modeling",
         "tier": "theme",
         "theme": null,
-        "areaKey": null,
+        "areaKey": "metabolic",
         "counts": {
           "paper": 27,
           "software": 22,
@@ -1820,5 +1820,5 @@
       "datasets": []
     }
   },
-  "corpusDate": "2026-08-20"
+  "corpusDate": "2026-08-21"
 }

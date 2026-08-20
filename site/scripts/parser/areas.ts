@@ -1,8 +1,19 @@
 /**
- * areas.ts — fixed registry of the 6 research-area matrix columns.
+ * areas.ts — fixed registry of the 8 research-area matrix columns.
  *
  * Keys match the `--caail-area-*` CSS design tokens exactly so colors stay
  * in CSS, not in data.  Labels are the verbatim column headers from Papers.md.
+ *
+ * THIS LIST MUST MATCH `site/db/ndjson/areas.ndjson` in key, label and order.
+ * It is a second hand-maintained copy of the column axis, and the failure mode
+ * when it drifts is silent-by-design: `areaKeyForLabel` returns null for an
+ * unknown header and `parseMatrix` WARNS AND SKIPS THE WHOLE COLUMN, so every
+ * reference whose only cells are in that column becomes unreachable while the
+ * parse still succeeds. That is not hypothetical — adding these two columns
+ * orphaned refs #145 and #290 until this file was updated.
+ *
+ * `db:check` now asserts this array against the DB, so the drift fails loudly
+ * rather than warning into a build log nobody reads.
  *
  * No I/O.  No Zod dependency (plain inline type is sufficient here).
  */
@@ -10,7 +21,7 @@
 import type { Area } from './types';
 
 /**
- * The 6 research-area columns, in matrix column order.
+ * The 8 research-area columns, in matrix column order.
  * Used as the `areas` array in papers.json.
  */
 export const AREAS: ReadonlyArray<Area> = [
@@ -19,6 +30,8 @@ export const AREAS: ReadonlyArray<Area> = [
   { key: 'bioprocess',  label: 'Bioprocess & Scale-Up' },
   { key: 'scaffolding', label: 'Scaffolding' },
   { key: 'sensory',     label: 'Sensory Prediction' },
+  { key: 'metabolic',   label: 'Metabolic Modeling' },
+  { key: 'foodsafety',  label: 'Food Safety Prediction' },
   { key: 'tooling',     label: 'AI Tooling / Methodology' },
 ] as const;
 
