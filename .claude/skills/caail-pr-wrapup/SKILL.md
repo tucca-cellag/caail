@@ -205,7 +205,8 @@ recommendation: ship / fix-first / needs-human-call**. Feed that into the step 6
   4. **Any fix those rounds produce goes back through items 1 to 3**, re-gated, committed, pushed, and the
      floor re-checked, before you go anywhere near step 5. Routing it through items 1 and 2 alone is not
      enough: those cover the gate and the push, and skipping item 3 leaves a run where condition 3 is unmet
-     with the floor met, which is the one state the stop gate must fire in, so the procedure would reach
+     with the floor met, which is one of the states the stop gate must fire in (it fires whenever the floor is
+     met and condition 2 **or** condition 3 is unmet; see the gate itself rather than this line), so the procedure would reach
      step 5 with fixes no round has read, no "ship now" on the record, and an ending that is neither 1
      nor 2 for step 6 to validate. Nothing downstream will catch it if you don't: `preflight` and
      `push` are both behind you, and `merge` checks only that local `HEAD` matches the PR head, never that
@@ -248,8 +249,9 @@ narrow case: `guards.yml` fires on `.claude/hooks/**`, `.claude/settings.json`, 
 here.** That list has already been wrong in both directions once each, so a second copy in this file is
 the exact hand-typed-fact-beside-another defect the enumeration keeps causing. `preflight` computes its answer from the
 `*_PATHS` lists in `ship-pr.sh`, **not from the YAML**, and `check-ci-paths.py` is the only thing that
-pins those lists to the YAML. It runs in `guards.yml`, so on a PR touching neither this skill nor a
-workflow, a drifted `*_PATHS` list is unchecked and `preflight` will state its consequence confidently.
+pins those lists to the YAML. It runs in `guards.yml`, so a PR touching none of that workflow's four
+triggers (`.claude/hooks/**`, `.claude/settings.json`, this skill, any `.github/workflows/**`) leaves a
+drifted `*_PATHS` list unchecked while `preflight` states its consequence confidently.
 When a check you expected is missing, open the workflow rather than trusting either the list above or
 `preflight`.
 
@@ -263,9 +265,11 @@ If a check **fails**, stop — surface it and fix the branch; do not merge red.
 **Pause here.** Merging triggers the public deploy, so confirm with the user before proceeding (unless
 they've already said to merge autonomously this run). Weigh **three** inputs, in this order of weight:
 step 1's review rounds must have genuinely reached an ending rather than merely stopped, and "it ended" is
-not evidence, since every run ends somehow. **If the body claims ending 1, check its three conditions**;
-do not apply them to an ending 2, where they fail by construction, or you will refuse the merge the stop
-gate just authorised.
+not evidence, since every run ends somehow. **For either ending, condition 1 must have been met**: the stop
+gate never fires below the floor, so a sub-floor ship is invalid however the body labels it. **If the body
+claims ending 1, additionally check conditions 2 and 3**; do not apply those two to an ending 2, where
+they fail by construction, or you will refuse the review ending the stop gate just authorised. That answer
+ended the review; it did not authorise this merge, which is what the pause above is for.
 **For either ending**, the body names every finding that was ticketed or declined along the way, since the
 Definitions say both endings disclose all of it and a reader cannot tell an unmentioned finding from an
 unnoticed one. **For ending 2** additionally, the findings left outstanding are exactly the ones the body
