@@ -15,14 +15,15 @@ import { fileURLToPath } from 'node:url';
  *
  * Covered: the hero eyebrow (`Hero.astro`); the BibTeX block in
  * `src/lib/citation.ts`, whose own docstring says to update `CITATION.cff` first
- * and mirror it there — an instruction with nothing enforcing it until now; and
- * the APA line in `content/docs/cite.mdx`.
+ * and mirror it there — an instruction with nothing enforcing it until now; the
+ * APA line in `content/docs/cite.mdx`; and both citations in `README.md`.
  *
- * The APA line is here for a sharper reason than the other two. It and the BibTeX
- * block render side by side on `/cite/`, so pinning one without the other would
- * make a retitle worse than doing nothing: the page would show two citations that
- * disagree about the name of the work, which is harder to notice, and harder to
- * trust, than two that are equally out of date.
+ * The citation pairs are here for a sharper reason than the eyebrow. An APA line
+ * and a BibTeX block render side by side on `/cite/`, and again on `README.md`, so
+ * pinning one of a pair without the other would make a retitle worse than doing
+ * nothing: the page would show two citations that disagree about the name of the
+ * work, which is harder to notice, and harder to trust, than two that are equally
+ * out of date. Pin a pair or neither of it.
  *
  * NOT covered, and deliberately not enumerated: the expansion appears in several
  * other files too. An earlier draft of this docstring listed them, and the list was
@@ -136,6 +137,16 @@ describe('every pinned copy of the title agrees with CITATION.cff', () => {
 
   it('the BibTeX title matches CITATION.cff once brace protection is stripped', () => {
     expect(parseBibtexTitle(read('site/src/lib/citation.ts'))).toBe(title());
+  });
+
+  it('README renders the same two citations, so both are pinned there too', () => {
+    // README.md carries its own APA line and its own BibTeX block, on one page, for
+    // the same reason /cite/ does. It is also the most-read page in the repo. Leaving
+    // it out would reproduce there the exact self-contradiction the case below exists
+    // to prevent — and the parsers need no changes to reach it.
+    const readme = read('README.md');
+    expect(parseApaTitle(readme)).toBe(title());
+    expect(parseBibtexTitle(readme)).toBe(title());
   });
 
   it('the APA title on /cite/ matches the BibTeX title rendered beside it', () => {

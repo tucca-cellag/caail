@@ -91,14 +91,18 @@ test('the hero attribution extracts as one clean sentence, subject included', as
   // with its subject missing, past four screenshots and a clean axe run.
   const text = (await page.locator('.hero-attrib').textContent()) ?? '';
 
-  expect(text).toContain('A project of');
-  expect(text).toContain('Tufts University Center for Cellular Agriculture');
-  expect(text).toContain('and used in its own R&D');
-
-  // No run of two spaces. The visually-hidden name sits between an explicit trailing
-  // space and whatever whitespace the anchor emits, so a stray newline in
-  // TuccaLockup.astro's markup silently pads the copied sentence.
-  expect(text, `hero attribution has padded whitespace: ${JSON.stringify(text)}`).not.toMatch(
-    /  +/,
-  );
+  // ONE assertion on the whole sentence, not three on its parts. Three `toContain`s
+  // pass in any order, so a regression that emitted the org name after "and used in
+  // its own R&D" would satisfy them while reading as nonsense. This pins the words,
+  // their order, and the single spaces between them in one go.
+  //
+  // It also subsumes the padding check that used to sit here as `not.toMatch(/  +/)`:
+  // re-indenting TuccaLockup.astro's markup emits whitespace text nodes inside the
+  // anchor, which Astro's `compressHTML` collapses to spaces that stack with the
+  // explicit trailing space in "A project of ". Measured: the three-space and
+  // two-space forms both fail this.
+  expect(
+    text,
+    `hero attribution is not one clean sentence: ${JSON.stringify(text)}`,
+  ).toContain('A project of Tufts University Center for Cellular Agriculture and used in its own R&D');
 });
