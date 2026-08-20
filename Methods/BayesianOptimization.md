@@ -6,7 +6,7 @@ This page describes the **Bayesian Optimization** row of the [Papers.md matrix](
 
 Two exclusions do most of the work. Bayesian optimization is **not Bayesian inference**: posterior or flux estimation that quantifies uncertainty without using it to select the next experiment is not this row. And the acquisition function is what separates it from [Active Learning](./ActiveLearning.md), which the taxonomy frames as the broader iterative-selection family containing this one as its acquisition-driven instance. In practice a paper here has a probabilistic surrogate (usually a Gaussian process) and an explicit rule for turning predicted mean and variance into a decision about what to run next.
 
-This is the workhorse row for cellular agriculture, and the only one where the field's own literature leads rather than borrows. Ten of its twelve references sit in [Media Optimization](../ResearchAreas/MediaOptimization.md), several were written specifically about cultivated meat, and the recurring finding across them is not that a particular acquisition function wins but that **the objective function is the hard part**.
+This is the workhorse row for cellular agriculture, and the only one where the field's own literature leads rather than borrows. Most of its references sit in [Media Optimization](../ResearchAreas/MediaOptimization.md), several were written specifically about cultivated meat, and the recurring finding across them is not that a particular acquisition function wins but that **the objective function is the hard part**.
 
 ## Media Optimization
 

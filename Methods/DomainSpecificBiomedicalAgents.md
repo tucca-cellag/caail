@@ -50,5 +50,5 @@ This is the largest of the agent rows, which is itself informative: it is easier
 ## Further reading
 
 - Research areas: [AI Tooling / Methodology](../ResearchAreas/AITooling.md), [Cellular Engineering](../ResearchAreas/CellEngineering.md), [Metabolic Modeling](../ResearchAreas/MetabolicModeling.md).
-- Software: [TxAgent](../Software.md#tooluniverse), [BioDiscoveryAgent](../Software.md#biodiscoveryagent), [AIAgents4Pharma](../Software.md#aiagents4pharma), [CellForge](../Software.md#cellforge), [scDataset](../Software.md#scdataset).
+- Software: [ToolUniverse](../Software.md#tooluniverse), [BioDiscoveryAgent](../Software.md#biodiscoveryagent), [AIAgents4Pharma](../Software.md#aiagents4pharma), [CellForge](../Software.md#cellforge), [scDataset](../Software.md#scdataset).
 - Field overview: [`AIAgentsFoundationModels.md`](../AIAgentsFoundationModels.md).

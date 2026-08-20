@@ -6,7 +6,7 @@ This page describes the **GAN / VAE** row of the [Papers.md matrix](../Papers.md
 
 What puts a paper here is that the generative objective is doing the work. A network that happens to contain an encoder is not enough: the reference must use adversarial training, a variational latent, or both, to synthesize data, augment a small dataset, or learn a latent space that a downstream task then reads. A discriminative convolutional model belongs in [CNN](./CNN.md), and a network that is simply deep belongs in [Deep Learning](./DeepLearning.md).
 
-The row is small and unusually spread out, with references in four of the six columns. That spread is the interesting part: the same two architectures show up as a sequence designer, a dimensionality reducer, a physics surrogate, and a data augmenter, which are four different jobs sharing one mathematical idea.
+The row is small and unusually spread out, with references in most of the matrix's columns. That spread is the interesting part: the same two architectures show up as a sequence designer, a dimensionality reducer, a physics surrogate, and a data augmenter, which are four different jobs sharing one mathematical idea.
 
 ## Cellular Engineering
 

@@ -238,8 +238,8 @@ placed there would silently inflate a public statistic that says it is counting 
    with a research-area page this is not optional: `caail-pages.test.ts` asserts every file in `Methods/`
    has a map entry, so a page without one fails CI.
 
-What is optional is *whether a row has a page at all*: most rows have none, and a row is never blocked on
-one being written. The three steps above are not optional once you decide to write one.
+What is optional is *whether a row has a page at all*: a row is never blocked on one being written, and a
+new row may land with its `Taxonomy.md` definition and no page. The three steps above are not optional once you decide to write one.
 
 ## Citation style
 
