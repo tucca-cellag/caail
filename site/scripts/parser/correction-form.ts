@@ -47,7 +47,12 @@ import { readFileSync } from 'node:fs';
 import { isMap, isScalar, isSeq, parseDocument } from 'yaml';
 import { fileURLToPath } from 'node:url';
 
-import { findItem, readIssueForm, requiredOptionCount } from './issue-form-fields.js';
+import {
+  PREFILLABLE_TYPES,
+  findItem,
+  readIssueForm,
+  requiredOptionCount,
+} from './issue-form-fields.js';
 import { CORRECTION_FIELDS } from '../../src/lib/report.js';
 import { resolveReasons, type ResolvedReason } from '../../src/lib/report-compose.js';
 
@@ -175,20 +180,32 @@ export function buildCorrectionForm(
     );
   }
 
-  // The `reason` field must still be the kind that prefills. A `dropdown` breaks the composer in
-  // the one way nothing else here would notice: GitHub accepts the `reason=` parameter, ignores
-  // it, and opens the form with the field empty, under a review step saying only the confirmations
-  // are left — which is then false, since `reason` is required.
-  const reason = findItem(form, 'reason')!;
-  if (reason.type !== 'input') {
+  // EVERY prefilled field must still be the kind that prefills, not just `reason`.
+  //
+  // A `dropdown` breaks the composer in the one way nothing else here would notice: GitHub accepts
+  // the parameter, ignores it, and opens the form with the field empty, under a review step saying
+  // only the confirmations are left — which is then false for any of these, since all three are
+  // required. `reason` was checked and `item` and `details` were not, so flipping either of those
+  // to a dropdown left `pnpm parse`, `db:check` and the whole suite green while the prefill died.
+  //
+  // The field list is REQUIRED_FIELD_IDS, which is derived from the URL builder, so a fourth
+  // prefilled parameter is covered the moment `correctionIssueUrl` sets it. Checking a hand-typed
+  // subset was how `reason` came to be the only one covered.
+  const byId = new Map(form.fields.map((f) => [f.id, f]));
+  const unprefillable = REQUIRED_FIELD_IDS.map((id) => byId.get(id)!).filter(
+    (f) => !PREFILLABLE_TYPES.includes(f.type),
+  );
+  if (unprefillable.length > 0) {
     throw new Error(
-      `correction-form: the "reason" field in ${templatePath} is ` +
-        `"type: ${String(reason.type)}", not "type: input". Only an input prefills from a URL ` +
-        `query parameter — GitHub takes the parameter for a dropdown and silently ignores it — ` +
-        `so /report/ would compose the error class and then hand the reader a blank ` +
-        `required field, under copy saying it had been filled in for them.`,
+      `correction-form: ${unprefillable.map((f) => `"${f.id}" is "type: ${f.type}"`).join(', ')} ` +
+        `in ${templatePath}, and /report/ prefills ${unprefillable.length === 1 ? 'it' : 'them'} ` +
+        `from a URL query parameter. Only ${PREFILLABLE_TYPES.join(' and ')} prefill — GitHub ` +
+        `takes the parameter for a dropdown and silently ignores it — so /report/ would compose ` +
+        `the value and then hand the reader a blank required field, under copy saying it had ` +
+        `been filled in for them.`,
     );
   }
+  const reason = findItem(form, 'reason')!;
 
   const attributes = reason.attributes as { description?: unknown } | undefined;
   const description = attributes?.description;

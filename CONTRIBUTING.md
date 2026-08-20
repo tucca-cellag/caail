@@ -32,7 +32,7 @@ claude plugin marketplace add tucca-cellag/caail
 claude plugin install caail-contribute@caail
 ```
 
-It's a separate install from the `caail` query plugin, so you can take either one alone. A file named `.caail-no-contribute` in a repository's root silences it there.
+It's a separate install from the `caail` query plugin, so you can take either one alone. A file named `.caail-no-contribute` in the directory you started Claude in silences it there. (The directory you started in, not the repository root: the plugin gives up its shell access while it runs, so it has no way to resolve a repo root, and an opt-out it could not find would be worse than none.)
 
 ### Option 2, Open a pull request
 

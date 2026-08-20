@@ -1,7 +1,7 @@
 ---
 name: caail-contribute
 description: Suggest a paper, software tool, dataset or database back to CAAIL, the curated library of AI/ML work in cellular agriculture, when it is not already indexed there. Use when the user is reading, citing, summarising or evaluating a specific cell-ag or cultivated-meat resource and it turns out CAAIL does not hold it; also use when the user asks how to contribute to CAAIL, suggest a paper to CAAIL, or report something CAAIL is missing.
-disallowed-tools: Bash, Write, Edit, NotebookEdit
+disallowed-tools: Bash, Write, Edit, NotebookEdit, Agent
 ---
 
 # Contribute to CAAIL
@@ -200,9 +200,12 @@ they are correcting. Use it only when the user's point is that a real entry is w
   a claim they did not read.
 
   The `disallowed-tools` line in this skill's frontmatter backs that up rather than restating it:
-  it removes `Bash`, `Write`, `Edit` and `NotebookEdit` from the pool while the skill is active, so
-  the `gh issue create` path and every local write are gone, and the restriction clears when the
-  user sends their next message. That matters because this skill reads text an attacker may
+  it removes `Bash`, `Write`, `Edit`, `NotebookEdit` and `Agent` from the pool while the skill is
+  active, so the `gh issue create` path and every local write are gone, and the restriction clears
+  when the user sends their next message. **`Agent` is on that list for the same reason as the
+  rest**, and it is the one people leave off: removing a tool from this agent does nothing if this
+  agent can spawn a subagent that still has it, so delegation is the cheapest way around a per-tool
+  removal and injected text asking for it reads as ordinary work. That matters because this skill reads text an attacker may
   control: a prompt-injected paper should not be one instruction-following lapse away from filing a
   public, undeletable issue under the user's name.
 
@@ -226,8 +229,15 @@ Stop raising suggestions, for the rest of the session, when the user says so in 
 suggesting", "not interested", "I know, leave it"). Treat one refusal as covering the session, not
 just that resource.
 
-Never raise a suggestion, in any session, when the working directory's repository root contains a
-file named `.caail-no-contribute`. Check once per session, cheaply, before the first suggestion.
+Never raise a suggestion, in any session, when a file named `.caail-no-contribute` sits in **the
+working directory**. Check for it with `Read` or `Glob`, once per session, before the first
+suggestion.
+
+The working directory rather than the repository root, because those are the same place only when
+the session was started there. Resolving a repository root means `git rev-parse --show-toplevel`,
+and `Bash` is removed while this skill is active, so an opt-out documented at the root would be one
+this skill cannot reliably find: a user who put the file there and then worked from a subdirectory
+would have a silencer that silently does nothing, which is worse than not offering one.
 
 To remove the behaviour entirely, the user uninstalls this plugin. It is deliberately a separate
 install from the `caail` query plugin so that removing one leaves the other working.

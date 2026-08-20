@@ -62,7 +62,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { readIssueForm, type FormField } from './issue-form-fields.js';
+import { PREFILLABLE_TYPES, readIssueForm, type FormField } from './issue-form-fields.js';
 
 /**
  * Field ids GitHub consumes as its own `issues/new` query parameters, so a template must not use
@@ -80,9 +80,6 @@ export const RESERVED_FIELD_IDS: readonly string[] = [
   'projects',
   'template',
 ];
-
-/** Field types whose value GitHub will actually take from a query parameter. */
-const PREFILLABLE_TYPES: readonly string[] = ['input', 'textarea'];
 
 /**
  * Confirmation checkboxes are deliberately never prefilled and never picked for the reader: they

@@ -151,7 +151,24 @@ describe('buildCorrectionForm fails loudly when the template drifts', () => {
       buildEdited((s) =>
         editReasonField(s, (field) => field.replace('- type: input', '- type: dropdown')),
       ),
-    ).toThrow(/is "type: dropdown", not "type: input"/);
+    ).toThrow(/"reason" is "type: dropdown".*\/report\/ prefills it/s);
+  });
+
+  it('throws when ANY prefilled field stops being prefillable, not just reason', () => {
+    // `reason` was the only one type-checked, so flipping `item` or `details` to a dropdown left
+    // parse, db:check and the whole suite green while GitHub silently dropped the parameter and
+    // the reader got a blank required box under copy saying it was filled in.
+    for (const id of ['item', 'details']) {
+      expect(
+        buildEdited((s) =>
+          s.replace(
+            new RegExp(`  - type: (input|textarea)\\n    id: ${id}$`, 'm'),
+            `  - type: dropdown\n    id: ${id}`,
+          ),
+        ),
+        id,
+      ).toThrow(new RegExp(`"${id}" is "type: dropdown"`));
+    }
   });
 
   it('throws when the description stops being a literal block', () => {

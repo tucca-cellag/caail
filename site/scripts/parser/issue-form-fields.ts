@@ -39,6 +39,15 @@
 
 import { parse } from 'yaml';
 
+/**
+ * Field types whose value GitHub will actually take from a query parameter.
+ *
+ * Shared because both readers reconcile a composed URL against a form, and a disagreement about
+ * which types prefill would let one of them bless a URL the other would reject. It is also the
+ * single fact this whole pair of modules rests on, so it should have one home.
+ */
+export const PREFILLABLE_TYPES: readonly string[] = ['input', 'textarea'];
+
 /** One field of an issue form, as far as prefilling cares. */
 export interface FormField {
   readonly id: string;
