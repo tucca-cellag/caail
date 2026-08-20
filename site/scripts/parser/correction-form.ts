@@ -40,6 +40,7 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
+import { assertEveryFieldOpensWithType } from './issue-form-fields.js';
 import { CORRECTION_FIELDS } from '../../src/lib/report.js';
 import { resolveReasons, type ResolvedReason } from '../../src/lib/report-compose.js';
 
@@ -272,6 +273,13 @@ export function buildCorrectionForm(
         `count the page publishes. Write the type as a bare word.`,
     );
   }
+
+  // A field written id-first contributes no `- type:` line, so the counter above sees a
+  // well-formed file while `countRequiredConfirmations` slices from the WRONG field: write
+  // `confirmations` id-first and the slice starts at `details` and counts its `required: true`
+  // too, publishing "3 confirmations" against a form that asks for 2. That is the wrong-number-
+  // with-no-throw this module says must not happen, so the check is shared rather than restated.
+  assertEveryFieldOpensWithType(src, templatePath);
 
   const fieldIds = readFieldIds(src);
   const missing = REQUIRED_FIELD_IDS.filter((id) => !fieldIds.includes(id));

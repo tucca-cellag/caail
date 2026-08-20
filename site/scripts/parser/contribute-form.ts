@@ -55,6 +55,8 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { assertEveryFieldOpensWithType } from './issue-form-fields.js';
+
 /**
  * Field ids GitHub consumes as its own `issues/new` query parameters, so a template must not use
  * them: the parameter is eaten by the built-in and the field arrives blank, exactly as `title` did.
@@ -152,6 +154,11 @@ export function readFields(src: string): FormField[] {
         `flag. Write the type as a bare or quoted word.`,
     );
   }
+
+  // The counter above only sees a `- type:` line that EXISTS. A field written id-first contributes
+  // none, so it is invisible to it and to everything below. Shared with correction-form.ts, which
+  // is blind the same way for a different reason.
+  assertEveryFieldOpensWithType(src, 'this issue form');
 
   return bounds.flatMap((m, i) => {
     const start = m.index!;
@@ -266,9 +273,15 @@ function readClaimLists(
     // tail in silence, which is the same failure in the one shape the guard did not look at. The
     // window stops at the next `(`template=…`)` because that is where another claim's own list
     // legitimately begins, and scanning past it would report every later list as a stray.
+    // Bounded by the next claim intro OR the next Markdown heading, whichever comes first. The
+    // intro alone left the LAST claim's window running to end of file, over ~70 lines of unrelated
+    // prose, where any future line that happened to be only code spans and separators — a list of
+    // the "turn it off" spellings, say — would fail the build pointing at a list nowhere near it.
     const tail = after.slice(end);
-    const nextIntro = tail.findIndex((l) => /\(`template=[A-Za-z0-9._-]+\.yml`\)/.test(l));
-    const stray = (nextIntro < 0 ? tail : tail.slice(0, nextIntro)).find((l) => isParameterLine(l));
+    const stopAt = tail.findIndex(
+      (l) => /\(`template=[A-Za-z0-9._-]+\.yml`\)/.test(l) || /^#{1,6}[ \t]/.test(l),
+    );
+    const stray = (stopAt < 0 ? tail : tail.slice(0, stopAt)).find((l) => isParameterLine(l));
     if (stray !== undefined) {
       throw new Error(
         `contribute-form: the ${label} list for "${template}" in ${skillPath} continues after a ` +
@@ -445,6 +458,36 @@ function assertRequiredCovered(claim: TemplateClaim, fields: readonly FormField[
   }
 }
 
+/**
+ * The worked URL example must only set parameters the claim list covers.
+ *
+ * The example exists to be copied, which is exactly why it must not be the one hand-typed copy
+ * nothing reconciles: rename a parameter and the checked list moves while the example goes on
+ * naming a dead one, so an agent following it composes a URL GitHub silently drops a value from.
+ * `readClaims` scans that line only for the template name, and `assertPresent` reads the code-span
+ * lists, so without this the example is checked by nothing.
+ *
+ * `template` and `title` are GitHub's own built-ins rather than form fields, so the example is
+ * expected to set them and they are not claimable. Everything else has to be in the prefill list.
+ */
+function assertExampleUrlParams(claim: TemplateClaim, skillPath: string, skillSrc: string): void {
+  const builtins = new Set(['template', 'title']);
+  for (const line of skillSrc.split('\n')) {
+    if (!line.includes(`issues/new?template=${claim.template}`)) continue;
+    const params = [...line.matchAll(/[?&]([A-Za-z0-9_-]+)=/g)].map((m) => m[1]!);
+    const unclaimed = params.filter((p) => !builtins.has(p) && !claim.prefill.includes(p));
+    if (unclaimed.length > 0) {
+      throw new Error(
+        `contribute-form: the worked URL example in ${skillPath} sets ` +
+          `${unclaimed.map((p) => `"${p}"`).join(', ')} on ${claim.template}, which the ` +
+          `prefillable-parameter list above it does not claim. The example is what an agent ` +
+          `copies, so a parameter only it names is one GitHub will ignore with nothing reporting ` +
+          `it. Keep the example a subset of the list.`,
+      );
+    }
+  }
+}
+
 /** No template may use a field id GitHub has reserved for its own parameters. */
 function assertNoReservedIds(template: string, fields: readonly FormField[]): void {
   const clashes = fields.filter((f) => RESERVED_FIELD_IDS.includes(f.id));
@@ -504,6 +547,7 @@ export function verifyContributeForms(
       );
     }
     assertNoReservedIds(claim.template, fields);
+    assertExampleUrlParams(claim, skillPath, readFileSync(skillPath, 'utf-8'));
     assertPresent(claim, fields);
     assertPrefillable(claim, fields);
     assertManualIsUnprefillable(claim, fields);

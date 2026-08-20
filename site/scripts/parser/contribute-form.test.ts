@@ -294,6 +294,35 @@ describe('verifyContributeForms', () => {
     expect(() => verifyContributeForms()).not.toThrow();
   });
 
+  it('fails when a field is written id-first, which no `- type:` count can see', () => {
+    const run = stage({
+      template: [
+        'paper.yml',
+        (s) => s.replace('  - type: input\n    id: venue', '  - id: venue\n    type: input'),
+      ],
+    });
+    expect(run).toThrow(/open with "id" rather than "type"/);
+  });
+
+  it('fails when the worked URL example sets a parameter the list does not claim', () => {
+    // The example is what an agent copies, so a parameter only it names is one GitHub drops.
+    const run = stage({
+      skill: (s) => s.replace('&paper_title=...&doi=...', '&paper_title=...&summary=...'),
+    });
+    expect(run).toThrow(/worked URL example .* sets "summary"/s);
+  });
+
+  it('bounds the stray-continuation scan at the next heading', () => {
+    // Without the heading bound the LAST claim's window ran to end of file, so a later paragraph
+    // that happened to be only code spans failed the build naming a list nowhere near it.
+    const withLater = SKILL.replace(
+      '## Rules',
+      '## Rules\n\n`stop suggesting`, `not interested`\n',
+    );
+    expect(withLater).not.toBe(SKILL);
+    expect(() => readClaims(withLater)).not.toThrow();
+  });
+
   it('fails when a template renames a field the skill prefills', () => {
     const run = stage({ template: ['paper.yml', (s) => s.replace('id: doi', 'id: doi_url')] });
     expect(run).toThrow(/no field id\(s\) "doi"/);
