@@ -49,9 +49,20 @@ export function parseCitationTitle(cff: string): string {
 export function parseHeroEyebrow(astro: string): string {
   const all = [...astro.matchAll(/<p class="eyebrow">([^<]+)<\/p>/g)];
   if (all.length !== 1) {
+    // `[^<]+` cannot cross a child element, so a *present* eyebrow carrying nested
+    // markup counts as 0 matches and is indistinguishable here from a deleted one.
+    // That is not hypothetical: WhyCaail.astro's eyebrow already opens with a
+    // `<span class="bar" aria-hidden="true">`, so giving the hero the same decoration
+    // trips this. Say so, rather than sending the reader to hunt for a `<p>` that is
+    // still there.
+    const zero =
+      all.length === 0
+        ? ' (0 can also mean the eyebrow is still there but now contains nested markup, ' +
+          'which this matcher cannot read — check before assuming it was deleted)'
+        : '';
     throw new Error(
-      `Hero.astro has ${all.length} \`.eyebrow\` paragraphs, expected exactly 1 — ` +
-        'this guard cannot tell which one spells out the acronym',
+      `Hero.astro has ${all.length} \`.eyebrow\` paragraphs of plain text, expected ` +
+        `exactly 1 — this guard cannot tell which one spells out the acronym${zero}`,
     );
   }
   return all[0][1].trim();
@@ -75,7 +86,11 @@ export function parseBibtexTitle(ts: string): string {
   return all[0][1].replace(/[{}]/g, '');
 }
 
-describe('the project title agrees everywhere it is written by hand', () => {
+// Named for exactly what it checks, not for the ambition behind it. An earlier title
+// said the project name agreed "everywhere it is written by hand", which is the coverage
+// the docstring above explicitly disclaims — and a describe string is printed on every
+// run, so a green result read as "all copies agree" when it means "these two do".
+describe('the hero eyebrow and the BibTeX title agree with CITATION.cff', () => {
   const title = () => parseCitationTitle(read('CITATION.cff'));
 
   it('the hero eyebrow expands the acronym exactly as CITATION.cff titles the work', () => {
@@ -99,6 +114,15 @@ describe('the guard fails loudly rather than silently when a source is restructu
   it('rejects a second .eyebrow rather than silently checking the first', () => {
     const two = '<p class="eyebrow">Something else</p>\n<p class="eyebrow">CAAIL · X</p>';
     expect(() => parseHeroEyebrow(two)).toThrow(/2 `\.eyebrow` paragraphs/);
+  });
+
+  it('says nested markup may be the cause, not only a deleted eyebrow', () => {
+    // The decoration WhyCaail.astro's own eyebrow already carries. Giving the hero the
+    // same one leaves the paragraph present and this matcher blind to it, so the message
+    // has to name that possibility or it sends the reader after the wrong thing.
+    const nested =
+      '<p class="eyebrow"><span class="bar" aria-hidden="true"></span>CAAIL · X</p>';
+    expect(() => parseHeroEyebrow(nested)).toThrow(/nested markup/);
   });
 
   it('rejects a missing BibTeX title line', () => {

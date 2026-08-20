@@ -37,14 +37,21 @@ on:
       # project-name.test.ts (the hero eyebrow and the BibTeX block agree with its
       # `title:`) and topic-curators.test.ts (a curator's name and ORCID belong to one
       # author in it). Both were unreachable from CI until this entry existed: a PR
-      # editing only CITATION.cff triggered no workflow at all, so a retitling or an
-      # author/ORCID change merged green with every copy stale.
+      # editing only CITATION.cff triggered no workflow at all, so neither guard ran on
+      # the one edit it exists to catch.
       #
-      # Scoped honestly: this covers a TITLE or AUTHOR edit. It does NOT cover a plain
-      # version or DOI bump, which is the more common release edit — nothing asserts
-      # that citation.ts, cite.mdx, README.md and .zenodo.json still agree on `version:`
-      # or `doi:`. That gap is real and is not closed here; do not read this entry as
-      # making release bumps safe.
+      # What this does NOT buy, stated because the obvious reading is too generous:
+      # project-name.test.ts pins exactly TWO copies of the title, the hero eyebrow and
+      # citation.ts's BibTeX block. The expansion is hand-typed in several other files
+      # that nothing reads, so a retitle still lands with those stale. They are
+      # deliberately not listed here — project-name.test.ts's docstring says why an
+      # inventory of hand-typed copies is itself a hand-typed copy, and carries the rule
+      # (add a copy, add it there). Nor does this cover a plain version or DOI bump,
+      # which is the more common release edit: nothing asserts that citation.ts,
+      # cite.mdx, README.md and .zenodo.json still agree on `version:` or `doi:`.
+      #
+      # So: this makes two copies of the title checkable and makes an author/ORCID edit
+      # reachable. It does not make a retitle or a release bump safe.
       - CITATION.cff
       # The correction issue form. /report/ composes a report against this file: the error
       # classes its reason field lists ARE the composer's vocabulary, and its field ids are
@@ -94,14 +101,21 @@ on:
       # project-name.test.ts (the hero eyebrow and the BibTeX block agree with its
       # `title:`) and topic-curators.test.ts (a curator's name and ORCID belong to one
       # author in it). Both were unreachable from CI until this entry existed: a PR
-      # editing only CITATION.cff triggered no workflow at all, so a retitling or an
-      # author/ORCID change merged green with every copy stale.
+      # editing only CITATION.cff triggered no workflow at all, so neither guard ran on
+      # the one edit it exists to catch.
       #
-      # Scoped honestly: this covers a TITLE or AUTHOR edit. It does NOT cover a plain
-      # version or DOI bump, which is the more common release edit — nothing asserts
-      # that citation.ts, cite.mdx, README.md and .zenodo.json still agree on `version:`
-      # or `doi:`. That gap is real and is not closed here; do not read this entry as
-      # making release bumps safe.
+      # What this does NOT buy, stated because the obvious reading is too generous:
+      # project-name.test.ts pins exactly TWO copies of the title, the hero eyebrow and
+      # citation.ts's BibTeX block. The expansion is hand-typed in several other files
+      # that nothing reads, so a retitle still lands with those stale. They are
+      # deliberately not listed here — project-name.test.ts's docstring says why an
+      # inventory of hand-typed copies is itself a hand-typed copy, and carries the rule
+      # (add a copy, add it there). Nor does this cover a plain version or DOI bump,
+      # which is the more common release edit: nothing asserts that citation.ts,
+      # cite.mdx, README.md and .zenodo.json still agree on `version:` or `doi:`.
+      #
+      # So: this makes two copies of the title checkable and makes an author/ORCID edit
+      # reachable. It does not make a retitle or a release bump safe.
       - CITATION.cff
       # The correction issue form. /report/ composes a report against this file: the error
       # classes its reason field lists ARE the composer's vocabulary, and its field ids are
