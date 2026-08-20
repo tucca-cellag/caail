@@ -101,10 +101,6 @@ export function parseBibtexTitle(ts: string): string {
   return all[0][1].replace(/[{}]/g, '');
 }
 
-// Named for exactly what it checks, not for the ambition behind it. An earlier title
-// said the project name agreed "everywhere it is written by hand", which is the coverage
-// the docstring above explicitly disclaims — and a describe string is printed on every
-// run, so a green result read as "all copies agree" when it means "these two do".
 /**
  * The APA title from `cite.mdx`, e.g. `CAAIL: Cellular Agriculture AI Library`.
  *
@@ -123,7 +119,13 @@ export function parseApaTitle(mdx: string): string {
   return all[0][1];
 }
 
-describe('the hero eyebrow and the BibTeX title agree with CITATION.cff', () => {
+// The name says the RELATIONSHIP, not the membership. Two earlier titles enumerated
+// what this block covers — "everywhere it is written by hand", then "the hero eyebrow
+// and the BibTeX title" — and each was falsified by the next commit that added an `it`,
+// while still printing on every run as though it were true. A describe string that
+// lists its contents is a hand-typed copy of the list directly below it. The `it`
+// names are the inventory; this is not.
+describe('every pinned copy of the title agrees with CITATION.cff', () => {
   const title = () => parseCitationTitle(read('CITATION.cff'));
 
   it('the hero eyebrow expands the acronym exactly as CITATION.cff titles the work', () => {

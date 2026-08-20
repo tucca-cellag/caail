@@ -41,17 +41,16 @@ on:
       # the one edit it exists to catch.
       #
       # What this does NOT buy, stated because the obvious reading is too generous:
-      # project-name.test.ts pins exactly TWO copies of the title, the hero eyebrow and
-      # citation.ts's BibTeX block. The expansion is hand-typed in several other files
-      # that nothing reads, so a retitle still lands with those stale. They are
-      # deliberately not listed here — project-name.test.ts's docstring says why an
-      # inventory of hand-typed copies is itself a hand-typed copy, and carries the rule
-      # (add a copy, add it there). Nor does this cover a plain version or DOI bump,
-      # which is the more common release edit: nothing asserts that citation.ts,
-      # cite.mdx, README.md and .zenodo.json still agree on `version:` or `doi:`.
+      # project-name.test.ts pins SOME of the hand-typed copies of the title, not all
+      # of them, so a retitle still lands with the rest stale. Which ones are covered
+      # is deliberately not restated here — read that file's docstring, which is also
+      # where the rule lives (add a copy, add it there). An earlier version of this
+      # comment named the covered set and a later commit changed it, so the count was
+      # wrong here, twice over, while both copies of this block still read correctly.
       #
-      # So: this makes two copies of the title checkable and makes an author/ORCID edit
-      # reachable. It does not make a retitle or a release bump safe.
+      # Nor does this cover a plain version or DOI bump, which is the more common
+      # release edit: nothing asserts that citation.ts, cite.mdx, README.md and
+      # .zenodo.json still agree on `version:` or `doi:`.
       - CITATION.cff
       # The correction issue form. /report/ composes a report against this file: the error
       # classes its reason field lists ARE the composer's vocabulary, and its field ids are
@@ -105,17 +104,16 @@ on:
       # the one edit it exists to catch.
       #
       # What this does NOT buy, stated because the obvious reading is too generous:
-      # project-name.test.ts pins exactly TWO copies of the title, the hero eyebrow and
-      # citation.ts's BibTeX block. The expansion is hand-typed in several other files
-      # that nothing reads, so a retitle still lands with those stale. They are
-      # deliberately not listed here — project-name.test.ts's docstring says why an
-      # inventory of hand-typed copies is itself a hand-typed copy, and carries the rule
-      # (add a copy, add it there). Nor does this cover a plain version or DOI bump,
-      # which is the more common release edit: nothing asserts that citation.ts,
-      # cite.mdx, README.md and .zenodo.json still agree on `version:` or `doi:`.
+      # project-name.test.ts pins SOME of the hand-typed copies of the title, not all
+      # of them, so a retitle still lands with the rest stale. Which ones are covered
+      # is deliberately not restated here — read that file's docstring, which is also
+      # where the rule lives (add a copy, add it there). An earlier version of this
+      # comment named the covered set and a later commit changed it, so the count was
+      # wrong here, twice over, while both copies of this block still read correctly.
       #
-      # So: this makes two copies of the title checkable and makes an author/ORCID edit
-      # reachable. It does not make a retitle or a release bump safe.
+      # Nor does this cover a plain version or DOI bump, which is the more common
+      # release edit: nothing asserts that citation.ts, cite.mdx, README.md and
+      # .zenodo.json still agree on `version:` or `doi:`.
       - CITATION.cff
       # The correction issue form. /report/ composes a report against this file: the error
       # classes its reason field lists ARE the composer's vocabulary, and its field ids are

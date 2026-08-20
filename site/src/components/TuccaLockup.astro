@@ -34,7 +34,13 @@ import white from '../assets/tucca/cca-horiz-white.png';
 const NAME = 'Tufts University Center for Cellular Agriculture';
 
 interface Props {
+  /**
+   * Display width in px. The height is derived from the official lockup's own
+   * 1093×169 ratio rather than passed in, so the box can never be set to a shape
+   * the asset is not.
+   */
   width?: number;
+  /** Extra class(es) for the link element. */
   class?: string;
   /**
    * Emit the name as visually-hidden, `aria-hidden` text immediately AFTER the
