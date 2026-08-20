@@ -28,19 +28,26 @@
  * reads it out of changed. The alternative — a bare input, with the eight class names
  * retyped in the site's source — is the defect above, reintroduced to buy a prefill.
  *
- * WHY THIS IS NOT A YAML PARSER
- * ------------------------------
- * The site has no YAML dependency and this needs two things out of one file with a fixed,
- * committed shape. A real parser would be the right answer for arbitrary YAML; for a known
- * document, a narrow reader that throws the moment the shape stops matching its assumptions
- * is smaller, has no dependency, and fails just as loudly. Every assumption it makes is
- * asserted rather than assumed — see the throws below, all of which name the file.
+ * WHY THIS IS NOW A YAML PARSER, HAVING ARGUED THE OPPOSITE
+ * ---------------------------------------------------------
+ * This file used to say a narrow hand-rolled reader was right for a document of known, committed
+ * shape, and that a real parser was only worth it for arbitrary YAML. That was wrong, and the
+ * evidence is in `issue-form-fields.ts`: three consecutive review rounds each found a different
+ * VALID spelling of the same template that made a field disappear from the reader, and here a
+ * disappearing field did not error — it made `countRequiredConfirmations` publish a number the
+ * form does not ask for. A regex reader has to enumerate YAML's spellings; a parser does not have
+ * to know they differ. Field reading is now shared with contribute-form.ts through that module.
+ *
+ * What is still read by hand is the markdown list INSIDE the description string, which is markdown
+ * and not YAML, so a YAML parser has nothing to say about it.
  */
 
 import { readFileSync } from 'node:fs';
+
+import { isMap, isScalar, isSeq, parseDocument } from 'yaml';
 import { fileURLToPath } from 'node:url';
 
-import { assertEveryFieldOpensWithType } from './issue-form-fields.js';
+import { findItem, readIssueForm, requiredOptionCount } from './issue-form-fields.js';
 import { CORRECTION_FIELDS } from '../../src/lib/report.js';
 import { resolveReasons, type ResolvedReason } from '../../src/lib/report-compose.js';
 
@@ -82,117 +89,20 @@ export interface CorrectionForm {
 }
 
 /**
- * Every `id: <name>` in the document. Field ids are a bare word by GitHub's own schema.
+ * The `reason` field's listed error classes, read from its `description:`.
  *
- * A trailing `# comment` is tolerated here and on every other line anchor in this module.
- * contribute-form.ts, the sibling that reconciles the caail-contribute skill against these same
- * templates, hit this as a real defect: an intolerant `$` made a commented field vanish from the
- * model along with its `required` flag, silently disabling every check that depended on it. Here
- * the same slip is quieter and therefore worse — `countRequiredConfirmations` would return a
- * WRONG NUMBER with no throw, which is exactly what its own docstring says must not happen.
+ * They are a markdown list inside the description rather than an `options:` list because the field
+ * is an `input` (see the assertion in {@link buildCorrectionForm}): a `dropdown` would not prefill.
+ * Non-bullet lines are prose and are skipped, which is what lets the description carry an
+ * instruction sentence above the list.
+ *
+ * The block must be LITERAL (`|`), not folded (`>`). A folded block joins its lines, so the eight
+ * bullets arrive as one string; `resolveReasons` would still reject that, but naming a reason head
+ * rather than the block style that actually broke. Asserted against the parsed node's own type,
+ * which is exact, where the previous reader inferred it from a regex over the raw text.
  */
-function readFieldIds(src: string): string[] {
-  return [...src.matchAll(/^[ \t]*id:[ \t]*(["']?)([A-Za-z0-9_-]+)\1[ \t]*(?:#.*)?$/gm)].map(
-    (m) => m[2]!,
-  );
-}
-
-/**
- * The `- type: …` list item that declares the `reason` field.
- *
- * The field is bounded by ITS OWN LIST ITEM, not by "everything after `id: reason`". YAML
- * mappings are unordered and GitHub accepts a field's keys in any order, so both of these
- * are valid templates and both used to read wrong:
- *
- *   - `validations:` written before `attributes:`, which removed the end marker an earlier
- *     version scanned for, so the options ran to end of file.
- *   - `id:` written after `attributes:`, which puts the anchor AFTER its own options, so a
- *     search starting there found the next `options:` in the file: the `confirmations`
- *     checkbox list, returned as the reason vocabulary.
- *
- * Both failed loudly, because `resolveReasons` rejects a checkbox label as an error class.
- * Both failed naming the wrong field, which is the part that costs an afternoon.
- *
- * The missing-anchor throw below is UNREACHABLE from `buildCorrectionForm`, which checks
- * REQUIRED_FIELD_IDS first and reports the same template in the same breath with a better
- * message (it names the prefill that would silently stop). Kept anyway, because this
- * function's contract should not depend on its one caller checking first — and because a
- * caller that did not would otherwise slice from index -1.
- */
-function reasonField(src: string): string {
-  const anchor = src.search(/^[ \t]*id:[ \t]*(["']?)reason\1[ \t]*(?:#.*)?$/m);
-  if (anchor < 0) {
-    throw new Error(
-      `correction-form: no "id: reason" field in ${CORRECTION_TEMPLATE_PATH}. /report/ ` +
-        `composes a report whose error class comes from that field; without it there ` +
-        `is no vocabulary to offer.`,
-    );
-  }
-  // Every field in the form body opens with `- type: <kind>`, which is what separates one
-  // from the next regardless of how its own keys are ordered inside it.
-  const bounds = [...src.matchAll(/^[ \t]*-[ \t]+type:[ \t]*\S+[ \t]*(?:#.*)?$/gm)].map(
-    (m) => m.index!,
-  );
-  const start = bounds.filter((i) => i <= anchor).pop();
-  if (start === undefined) {
-    throw new Error(
-      `correction-form: "id: reason" in ${CORRECTION_TEMPLATE_PATH} is not inside a ` +
-        `"- type:" field item, so its options cannot be told apart from another field's.`,
-    );
-  }
-  return src.slice(start, bounds.find((i) => i > start) ?? src.length);
-}
-
-/**
- * Assert the `reason` field is the kind that can be prefilled.
- *
- * The whole point of the composer is that the reader does not answer a question twice, and
- * a `dropdown` breaks that in the one way nothing else here would notice: GitHub accepts
- * the `reason=` query parameter, ignores it, and opens the form with the field empty. No
- * error, no warning, and the review step goes on telling the reader that only the
- * confirmations are left — which is then false, since `reason` is `required: true`. So the
- * field type is checked rather than assumed, at build time, where it is loud.
- */
-function assertPrefillable(field: string): void {
-  const type = /^[ \t]*-[ \t]+type:[ \t]*(["']?)([A-Za-z0-9_-]+)\1[ \t]*(?:#.*)?$/m.exec(field)?.[2];
-  if (type !== 'input') {
-    throw new Error(
-      `correction-form: the "reason" field in ${CORRECTION_TEMPLATE_PATH} is ` +
-        `"type: ${type}", not "type: input". Only an input prefills from a URL query ` +
-        `parameter — GitHub takes the parameter for a dropdown and silently ignores it — ` +
-        `so /report/ would compose the error class and then hand the reader a blank ` +
-        `required field, under copy saying it had been filled in for them.`,
-    );
-  }
-}
-
-/**
- * The error classes the `reason` field lists, read from its `description:`.
- *
- * They are a markdown list inside a literal block rather than an `options:` list because
- * the field is an input (see {@link assertPrefillable}). Everything below is about reading
- * a YAML block safely, and every rule in it was put there by a real failure:
- *
- * The block ENDS AT THE FIRST DEDENT. Indentation is what actually delimits a YAML block,
- * so scanning for a sibling key as an end marker assumes an ordering the format does not
- * promise. Combined with {@link reasonField} above, the read no longer depends on where any
- * of the field's keys sit relative to each other.
- *
- * The searches use `[ \t]*` and never `\s*`: `\s` matches a newline, so `/^\s*description:/m`
- * can begin its match on a BLANK LINE above the key. The slice would then start one line
- * early, that line's indent reads as 0, and the dedent bound never trips. One blank line in
- * the template was all it took.
- *
- * The block scalar must be LITERAL (`|`), not folded (`>`). A folded block joins its lines,
- * so the eight bullets would arrive as one string and `resolveReasons` would reject it —
- * loudly, but naming a reason head rather than the block style that actually broke.
- * Non-bullet lines in the block are prose and are skipped, which is what lets the
- * description carry an instruction sentence above the list.
- */
-function readReasonOptions(src: string): string[] {
-  const rest = reasonField(src);
-  const descriptionAt = rest.search(/^[ \t]*description:[ \t]*\|[-+0-9]*[ \t]*$/m);
-  if (descriptionAt < 0) {
+function readReasonOptions(description: string, isLiteralBlock: boolean): string[] {
+  if (!isLiteralBlock) {
     throw new Error(
       `correction-form: the "reason" field in ${CORRECTION_TEMPLATE_PATH} has no ` +
         `"description: |" literal block. That block is where its error classes are ` +
@@ -200,19 +110,7 @@ function readReasonOptions(src: string): string[] {
     );
   }
 
-  const indentOf = (line: string): number => line.length - line.trimStart().length;
-  const [header, ...body] = rest.slice(descriptionAt).split('\n');
-  const baseIndent = indentOf(header!);
-
-  const block: string[] = [];
-  for (const line of body) {
-    // A blank line does not end a YAML block, and carries no indentation to judge.
-    if (line.trim() === '') continue;
-    if (indentOf(line) <= baseIndent) break;
-    block.push(line);
-  }
-
-  const options = block.flatMap((line) => {
+  const options = description.split('\n').flatMap((line) => {
     const m = /^\s*-\s+(.+?)\s*$/.exec(line);
     return m ? [m[1]!] : [];
   });
@@ -226,21 +124,27 @@ function readReasonOptions(src: string): string[] {
 }
 
 /**
- * How many of the `confirmations` field's checkboxes are `required: true`.
+ * Is the `reason` field's `description` written as a LITERAL block (`|`) rather than folded (`>`)?
  *
- * Zero is a legitimate answer, not an error: a template that drops the confirmations is a
- * curator's decision, and the page simply stops mentioning them. What must not happen is
- * the page asserting a count the form does not ask for.
+ * Asked of the parsed node's own block style, which is exact. The previous reader inferred it from
+ * a regex over the raw text, and inferring a YAML property from its spelling is the whole class of
+ * mistake this module was rewritten to leave behind.
+ *
+ * A folded block joins its lines, so the eight bullets arrive as one string and no bullet is found.
+ * `resolveReasons` would still reject that, but naming a reason head rather than the block style
+ * that actually broke, which sends the next reader to REASON_SPECS instead of to the template.
  */
-function countRequiredConfirmations(src: string): number {
-  const anchor = src.search(/^[ \t]*id:[ \t]*(["']?)confirmations\1[ \t]*(?:#.*)?$/m);
-  if (anchor < 0) return 0;
-  const bounds = [...src.matchAll(/^[ \t]*-[ \t]+type:[ \t]*\S+[ \t]*(?:#.*)?$/gm)].map(
-    (m) => m.index!,
-  );
-  const start = bounds.filter((i) => i <= anchor).pop() ?? 0;
-  const field = src.slice(start, bounds.find((i) => i > start) ?? src.length);
-  return (field.match(/^[ \t]*required:[ \t]*true[ \t]*(?:#.*)?$/gm) ?? []).length;
+function reasonDescriptionIsLiteral(src: string): boolean {
+  const body = parseDocument(src).get('body');
+  if (!isSeq(body)) return false;
+  for (const item of body.items) {
+    if (!isMap(item) || item.get('id') !== 'reason') continue;
+    const attributes = item.get('attributes');
+    if (!isMap(attributes)) return false;
+    const description = attributes.get('description', true);
+    return isScalar(description) && description.type === 'BLOCK_LITERAL';
+  }
+  return false;
 }
 
 /**
@@ -257,31 +161,9 @@ export function buildCorrectionForm(
   templatePath: string = CORRECTION_TEMPLATE_PATH,
 ): CorrectionForm {
   const src = readFileSync(templatePath, 'utf-8');
+  const form = readIssueForm(src, templatePath);
 
-  // Every `- type:` line must be parseable, because that line is what separates one field from the
-  // next: an unparseable one stops being a boundary, so its field merges into the previous one and
-  // vanishes, taking `required: true` with it. `countRequiredConfirmations` would then return a
-  // wrong number with no throw, which this module's own docstring says must not happen. Same guard
-  // as contribute-form.ts's readFields, added there first and mirrored here for the same inputs.
-  const looseTypes = (src.match(/^[ \t]*-[ \t]+type:/gm) ?? []).length;
-  const strictTypes = (src.match(/^[ \t]*-[ \t]+type:[ \t]*\S+[ \t]*(?:#.*)?$/gm) ?? []).length;
-  if (looseTypes !== strictTypes) {
-    throw new Error(
-      `correction-form: ${looseTypes - strictTypes} of ${looseTypes} "- type:" lines in ` +
-        `${templatePath} are written in a form this reader cannot parse, so the fields they open ` +
-        `merge into the one before them and disappear — including from the required-confirmation ` +
-        `count the page publishes. Write the type as a bare word.`,
-    );
-  }
-
-  // A field written id-first contributes no `- type:` line, so the counter above sees a
-  // well-formed file while `countRequiredConfirmations` slices from the WRONG field: write
-  // `confirmations` id-first and the slice starts at `details` and counts its `required: true`
-  // too, publishing "3 confirmations" against a form that asks for 2. That is the wrong-number-
-  // with-no-throw this module says must not happen, so the check is shared rather than restated.
-  assertEveryFieldOpensWithType(src, templatePath);
-
-  const fieldIds = readFieldIds(src);
+  const fieldIds = form.fields.map((f) => f.id);
   const missing = REQUIRED_FIELD_IDS.filter((id) => !fieldIds.includes(id));
   if (missing.length > 0) {
     throw new Error(
@@ -293,14 +175,42 @@ export function buildCorrectionForm(
     );
   }
 
-  // Throws if the field can no longer be prefilled, or on any drift between the template's
-  // vocabulary and the composer's.
-  assertPrefillable(reasonField(src));
-  const reasons = resolveReasons(readReasonOptions(src));
+  // The `reason` field must still be the kind that prefills. A `dropdown` breaks the composer in
+  // the one way nothing else here would notice: GitHub accepts the `reason=` parameter, ignores
+  // it, and opens the form with the field empty, under a review step saying only the confirmations
+  // are left — which is then false, since `reason` is required.
+  const reason = findItem(form, 'reason')!;
+  if (reason.type !== 'input') {
+    throw new Error(
+      `correction-form: the "reason" field in ${templatePath} is ` +
+        `"type: ${String(reason.type)}", not "type: input". Only an input prefills from a URL ` +
+        `query parameter — GitHub takes the parameter for a dropdown and silently ignores it — ` +
+        `so /report/ would compose the error class and then hand the reader a blank ` +
+        `required field, under copy saying it had been filled in for them.`,
+    );
+  }
 
+  const attributes = reason.attributes as { description?: unknown } | undefined;
+  const description = attributes?.description;
+  if (typeof description !== 'string') {
+    throw new Error(
+      `correction-form: the "reason" field in ${templatePath} has no "description". That block ` +
+        `is where its error classes are listed, and it is the only copy of that vocabulary.`,
+    );
+  }
+
+  // Throws on any drift between the template's vocabulary and the composer's.
+  const reasons = resolveReasons(readReasonOptions(description, reasonDescriptionIsLiteral(src)));
+
+  const confirmations = findItem(form, 'confirmations');
   return {
     reasons,
     fieldIds,
-    requiredConfirmations: countRequiredConfirmations(src),
+    // Zero is a legitimate answer, not an error: a template that drops the confirmations is a
+    // curator's decision and the page stops mentioning them. What must not happen is the page
+    // asserting a count the form does not ask for, which is what the old text-slicing reader did
+    // whenever the field was written in a spelling it could not bound.
+    requiredConfirmations: confirmations === undefined ? 0 : requiredOptionCount(confirmations),
   };
 }
+

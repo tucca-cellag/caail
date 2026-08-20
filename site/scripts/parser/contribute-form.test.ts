@@ -104,11 +104,9 @@ describe('readFields', () => {
     expect(readFields(src)).toEqual([{ id: 'species', type: 'input', required: true }]);
   });
 
-  it('throws on a `- type:` line it cannot parse, which would delete the field entirely', () => {
-    // Worse than an unparseable id: the `- type:` line is the boundary between fields, so an
-    // unreadable one merges its field into the previous one and it vanishes with its required
-    // flag. Without this guard readFields returned only `doi` and `notes` here, and
-    // assertRequiredCovered silently stopped covering the required `species` field between them.
+  it('reads a tagged-scalar type, which the regex reader deleted the field for', () => {
+    // The round-11 reader counted `- type:` lines and threw here, on the ground that it could not
+    // parse one. The parser reads all three fields, which is what the template always meant.
     const src = [
       '  - type: input',
       '    id: doi',
@@ -119,12 +117,13 @@ describe('readFields', () => {
       '  - type: input',
       '    id: notes',
     ].join('\n');
-    expect(() => readFields(src)).toThrow(/"- type:" lines are written in a form this reader cannot parse/);
+    expect(readFields(src).map((f) => f.id)).toEqual(['doi', 'species', 'notes']);
+    expect(readFields(src).find((f) => f.id === 'species')?.required).toBe(true);
   });
 
-  it('throws on a non-markdown field whose id it cannot parse, rather than skipping it', () => {
+  it('throws on a non-markdown field with no id, which can never be prefilled', () => {
     const src = ['  - type: dropdown', '    attributes:', '      label: No id here'].join('\n');
-    expect(() => readFields(src)).toThrow(/carries no id this reader can parse/);
+    expect(() => readFields(src)).toThrow(/has no string "id"/);
   });
 
   it('still sees a field whose keys carry trailing comments', () => {
@@ -294,14 +293,30 @@ describe('verifyContributeForms', () => {
     expect(() => verifyContributeForms()).not.toThrow();
   });
 
-  it('fails when a field is written id-first, which no `- type:` count can see', () => {
+  it('still sees a field written id-first, rather than losing it', () => {
+    // Round 12's finding: the item contributes no `- type:` line, so every scanner missed it.
+    // A parser reads it, so the claim still reconciles and nothing needs to know it was rewritten.
     const run = stage({
       template: [
         'paper.yml',
         (s) => s.replace('  - type: input\n    id: venue', '  - id: venue\n    type: input'),
       ],
     });
-    expect(run).toThrow(/open with "id" rather than "type"/);
+    expect(run).not.toThrow();
+  });
+
+  it('keeps covering a required field written id-first, which is what vanishing cost', () => {
+    // The consequence that made the spelling matter: an unseen field takes its required flag with
+    // it, so assertRequiredCovered stops covering it and a blank required box reaches a
+    // contributor. Asserted by adding one the skill does not claim, and requiring the complaint.
+    const run = stage({
+      template: [
+        'paper.yml',
+        (s) =>
+          `${s}\n  - id: species\n    type: dropdown\n    attributes:\n      label: Species\n    validations:\n      required: true\n`,
+      ],
+    });
+    expect(run).toThrow(/requires "species" \(type: dropdown\)/);
   });
 
   it('fails when the worked URL example sets a parameter the list does not claim', () => {

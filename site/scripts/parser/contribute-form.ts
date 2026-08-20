@@ -44,18 +44,25 @@
  * field stays empty. paper.yml's field was renamed to `paper_title` for exactly this reason, and
  * {@link RESERVED_FIELD_IDS} keeps it renamed.
  *
- * WHY THIS IS NOT A YAML PARSER
- * ------------------------------
- * Same answer as correction-form.ts: the site has no YAML dependency, these are known documents
- * with a committed shape, and a narrow reader that throws the moment its assumptions stop holding
- * is smaller and fails just as loudly as a real parser would.
+ * THE FIELD READING IS A REAL YAML PARSER, HAVING ARGUED IT NEED NOT BE
+ * ---------------------------------------------------------------------
+ * This header used to say a narrow hand-rolled reader was enough for a document of committed
+ * shape. `issue-form-fields.ts` now owns that half and records why it was wrong: three consecutive
+ * review rounds each found a different VALID spelling of the same template that made a field
+ * vanish from the scanner along with its `required` flag, which is the exact regression
+ * {@link assertRequiredCovered} exists to prevent. A regex must enumerate YAML's spellings; a
+ * parser never has to know they differ.
+ *
+ * The SKILL half below is still read by hand, and that is not the same bet. It reads Markdown
+ * prose, where there is no parser to defer to and no equivalent class of silent alternatives — and
+ * where every way it could still go quiet is now an explicit throw rather than a terminator rule.
  */
 
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { assertEveryFieldOpensWithType } from './issue-form-fields.js';
+import { readIssueForm, type FormField } from './issue-form-fields.js';
 
 /**
  * Field ids GitHub consumes as its own `issues/new` query parameters, so a template must not use
@@ -103,12 +110,13 @@ export const TEMPLATE_DIR: string = fileURLToPath(
   new URL('../../../.github/ISSUE_TEMPLATE/', import.meta.url),
 );
 
-/** One field of an issue form, as far as prefilling cares. */
-export interface FormField {
-  readonly id: string;
-  readonly type: string;
-  readonly required: boolean;
-}
+/**
+ * One field of an issue form, as far as prefilling cares.
+ *
+ * Re-exported from the shared reader rather than declared again, so the two modules cannot come to
+ * disagree about what a field is.
+ */
+export type { FormField } from './issue-form-fields.js';
 
 /** What the skill claims about one template. */
 export interface TemplateClaim {
@@ -121,69 +129,17 @@ export interface TemplateClaim {
 }
 
 /**
- * Every `- type: <kind>` item in a template, with its `id` and whether anything in it is
- * `required: true`.
+ * Every field in a template, with its `id`, `type` and whether answering it is required.
  *
- * Bounded by the `- type:` items themselves rather than by scanning forward from an `id:`, because
- * YAML mappings are unordered and GitHub accepts a field's keys in any order. correction-form.ts
- * records two real failures caused by assuming otherwise; this reader is built the same way so it
- * cannot repeat them.
- *
- * A trailing `# comment` is tolerated on all three keys. An earlier version anchored on `[ \t]*$`,
- * which made `- type: input  # required` invisible: the field vanished from the model entirely,
- * taking its `required` flag with it, and every check here silently stopped covering it.
+ * Delegates to the shared YAML-backed reader. It used to scan for `- type:` lines, and three
+ * consecutive review rounds each found a different valid YAML spelling that made a field vanish
+ * along with its `required` flag; `issue-form-fields.ts` records them and why a parser ends the
+ * class rather than the instance.
  *
  * `markdown` blocks carry no `id` and are skipped: they are prose shown to the reader, not fields.
  */
 export function readFields(src: string): FormField[] {
-  const bounds = [...src.matchAll(/^[ \t]*-[ \t]+type:[ \t]*(["']?)([A-Za-z0-9_-]+)\1[ \t]*(?:#.*)?$/gm)];
-
-  // The `- type:` line is what SEPARATES one field from the next, so an unparseable one is worse
-  // than an unparseable id: the field is not merely unreadable, it stops being a boundary, merges
-  // into its predecessor and disappears entirely — id, type and `required: true` with it. The id
-  // guard below throws for exactly that reason and had no counterpart here, which left the
-  // invariant it states ("must not be reachable by writing it in a form this reader fails to
-  // parse") true of one key and false of the other. Counting loosely and comparing is the cheapest
-  // way to notice, because the strict pattern cannot report what it failed to match.
-  const loose = [...src.matchAll(/^[ \t]*-[ \t]+type:/gm)];
-  if (loose.length !== bounds.length) {
-    throw new Error(
-      `contribute-form: ${loose.length - bounds.length} of ${loose.length} "- type:" lines are ` +
-        `written in a form this reader cannot parse. Each one stops separating its field from the ` +
-        `one before it, so that field vanishes from every check here along with its required ` +
-        `flag. Write the type as a bare or quoted word.`,
-    );
-  }
-
-  // The counter above only sees a `- type:` line that EXISTS. A field written id-first contributes
-  // none, so it is invisible to it and to everything below. Shared with correction-form.ts, which
-  // is blind the same way for a different reason.
-  assertEveryFieldOpensWithType(src, 'this issue form');
-
-  return bounds.flatMap((m, i) => {
-    const start = m.index!;
-    const end = bounds[i + 1]?.index ?? src.length;
-    const item = src.slice(start, end);
-    const type = m[2]!;
-    const id = /^[ \t]*id:[ \t]*(["']?)([A-Za-z0-9_-]+)\1[ \t]*(?:#.*)?$/m.exec(item)?.[2];
-    if (id === undefined) {
-      // `markdown` is prose shown to the reader and carries no id by GitHub's own schema.
-      // Anything else without one is a field this module cannot see, and an invisible field
-      // takes its `required` flag with it: that is precisely the regression assertRequiredCovered
-      // exists to stop, so it must not be reachable by writing the id in a form this reader
-      // fails to parse. Quoted scalars are accepted above; this catches every other spelling.
-      if (type === 'markdown') return [];
-      throw new Error(
-        `contribute-form: a "- type: ${type}" field carries no id this reader can parse. A field ` +
-          `with no readable id is invisible to every check here, including whether it is ` +
-          `required, so a required one would reach a contributor as a blank box with nothing ` +
-          `reporting it. Write the id as a bare or quoted word.`,
-      );
-    }
-    return [
-      { id, type, required: /^[ \t]*required:[ \t]*true[ \t]*(?:#.*)?$/m.test(item) },
-    ];
-  });
+  return [...readIssueForm(src, 'this issue form').fields];
 }
 
 /**
