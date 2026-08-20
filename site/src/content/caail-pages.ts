@@ -84,15 +84,213 @@ const PAGES: Record<string, PageMeta> = {
   },
 
   // ── Methods ────────────────────────────────────────────────────────────────
-  // Deep dives on the matrix's *row* axis. Filled in one row at a time, so this
-  // block is expected to be much shorter than the matrix's row set for a while.
+  // Deep dives on the matrix's *row* axis, one page per row. `order` follows the
+  // matrix's own row order (methods.ndjson `ordinal` + 1) rather than the
+  // alphabetical filename order, so the sidebar reads top-to-bottom the way the
+  // matrix does — the same convention the ResearchAreas block uses for columns.
+  //
+  // Route ids are run-together lowercase (`methods/bayesianoptimization`): the
+  // hyphenation special cases in `idForSourcePath` fire only for TOP-LEVEL files,
+  // never for a path containing a `/`. See Methods/CLAUDE.md.
+  'methods/bayesianoptimization': {
+    title: 'Bayesian Optimization',
+    sidebarLabel: 'Bayesian Optimization',
+    group: 'methods',
+    order: 1,
+    description:
+      'Bayesian optimization for cellular agriculture: Gaussian-process surrogates and acquisition functions that choose the next media, cryoprotectant, or bioreactor experiment under a tight budget.',
+  },
+  'methods/deeplearning': {
+    title: 'Deep Learning',
+    sidebarLabel: 'Deep Learning',
+    group: 'methods',
+    order: 2,
+    description:
+      'Neural networks across cell-ag: bioprocess surrogates and hybrid physics-informed controllers, cross-species cell embeddings, scaffold property prediction, and structure-to-odor models.',
+  },
+  'methods/gnn': {
+    title: 'GNN',
+    sidebarLabel: 'GNN',
+    group: 'methods',
+    order: 3,
+    description:
+      'Graph neural networks in cellular agriculture: cell-cell similarity graphs for single-cell clustering, gene-interaction networks for perturbation prediction, and molecular graphs for taste and odor.',
+  },
+  'methods/cnn': {
+    title: 'CNN',
+    sidebarLabel: 'CNN',
+    group: 'methods',
+    order: 4,
+    description:
+      'Convolutional networks for cell-ag imaging: brightfield differentiation scoring, digital staining of bovine satellite cells, contamination detection, hyperspectral metabolite sensing, and scaffold microstructure.',
+  },
+  'methods/ganvae': {
+    title: 'GAN / VAE',
+    sidebarLabel: 'GAN / VAE',
+    group: 'methods',
+    order: 5,
+    description:
+      'Deep generative models in cell-ag: synthetic regulatory-DNA design, single-cell dimensionality reduction, tissue-mould surrogates, and generative augmentation of small sensory datasets.',
+  },
+  'methods/geneticalgorithms': {
+    title: 'Genetic Algorithms',
+    sidebarLabel: 'Genetic Algorithms',
+    group: 'methods',
+    order: 6,
+    description:
+      'Evolutionary search for cellular agriculture: media formulation, fermentation control trajectories, cryoprotectant cocktails, and tissue-mould design over large combinatorial spaces.',
+  },
+  'methods/svm': {
+    title: 'SVM',
+    sidebarLabel: 'SVM',
+    group: 'methods',
+    order: 7,
+    description:
+      'Support vector machines and regression in cell-ag: serum-free media screening, one-class contamination detection in bioreactors, and taste and texture prediction on small featurized datasets.',
+  },
+  'methods/ensemblelearning': {
+    title: 'Ensemble Learning',
+    sidebarLabel: 'Ensemble Learning',
+    group: 'methods',
+    order: 8,
+    description:
+      'Tree ensembles and model averaging in cellular agriculture: the default strong baseline for media, bioprocess soft sensors, scaffold rheology, and structure-to-taste prediction.',
+  },
+  'methods/knearestneighbors': {
+    title: 'K-Nearest Neighbors',
+    sidebarLabel: 'K-Nearest Neighbors',
+    group: 'methods',
+    order: 9,
+    description:
+      'Instance-based prediction in cell-ag, almost always as a benchmarked baseline: syngas fermentation, algal odor classification, bitter-receptor matching, and sweetness QSTR.',
+  },
+  'methods/linearregularizedmodels': {
+    title: 'Linear & Regularized Models',
+    sidebarLabel: 'Linear & Regularized',
+    group: 'methods',
+    order: 10,
+    description:
+      'Linear and penalized models in cell-ag, chosen for interpretability: porcine muscle stem-cell potency from morphology, meat-analog texture, and sequence-based umami and odor scoring.',
+  },
+  'methods/chemometrics': {
+    title: 'Chemometrics',
+    sidebarLabel: 'Chemometrics',
+    group: 'methods',
+    order: 11,
+    description:
+      'Multivariate spectral statistics for cellular agriculture: PLS, PLS-DA, PCA and OPLS behind NIR and Raman process analytical technology and hyperspectral meat and fish quality prediction.',
+  },
+  'methods/activelearning': {
+    title: 'Active Learning',
+    sidebarLabel: 'Active Learning',
+    group: 'methods',
+    order: 12,
+    description:
+      'Iterative design of experiments for cell-ag: predict, test the most informative formulations, retrain. Media optimization campaigns for HeLa, CHO and mAb production, and Perturb-seq gene selection.',
+  },
+  'methods/reinforcementlearning': {
+    title: 'Reinforcement Learning',
+    sidebarLabel: 'Reinforcement Learning',
+    group: 'methods',
+    order: 13,
+    description:
+      'Reward-driven learning in cellular agriculture: policy-gradient and hybrid MPC control of bioreactors, and reinforcement post-training of virtual-cell and chemistry reasoning models.',
+  },
+  'methods/foundationmodelsnexttoken': {
+    title: 'Foundation Models: Next-Token Prediction',
+    sidebarLabel: 'FM: Next-Token',
+    group: 'methods',
+    order: 14,
+    description:
+      'Autoregressive foundation models for biology: generative cell atlases spanning twelve species, cell-sentence LLMs, and conditional protein language models used to design taste-active peptides.',
+  },
+  'methods/foundationmodelsmaskedlm': {
+    title: 'Foundation Models: Masked Language Modeling',
+    sidebarLabel: 'FM: Masked LM',
+    group: 'methods',
+    order: 15,
+    description:
+      'BERT-style pretrained models for biology: scBERT, scFoundation, CellFM and Geneformer for single-cell transfer learning, DNABERT for regulatory DNA, and Umami-BERT for taste peptides.',
+  },
+  'methods/foundationmodelsbiopriors': {
+    title: 'Foundation Models: LM + Biological Priors',
+    sidebarLabel: 'FM: LM + Bio Priors',
+    group: 'methods',
+    order: 16,
+    description:
+      'Foundation models that build an explicit biological prior into the backbone, tokenizing genes by protein-language-model embeddings so cells from unseen species can be embedded without orthology mapping.',
+  },
+  'methods/foundationmodelscellstate': {
+    title: 'Foundation Models: Cell-State & Perturbation Prediction',
+    sidebarLabel: 'FM: Cell-State',
+    group: 'methods',
+    order: 17,
+    description:
+      'Pretrained virtual-cell models predicting perturbation response across contexts: State, Stack, C2S-Scale and scGPT, and what their generalization claims rest on for livestock cell biology.',
+  },
+  'methods/foundationmodelsothermodalities': {
+    title: 'Foundation Models (other modalities)',
+    sidebarLabel: 'FM: Other Modalities',
+    group: 'methods',
+    order: 18,
+    description:
+      'Pretrained models beyond single-cell transcriptomics: multimodal omics LLMs, spectral structure elucidation, natural-product graph pretraining, and protein-phenotype models.',
+  },
+  'methods/literaturediscoveryagents': {
+    title: 'Scientific Literature & Discovery Agents',
+    sidebarLabel: 'Literature & Discovery Agents',
+    group: 'methods',
+    order: 19,
+    description:
+      'LLM agents for literature synthesis and autonomous discovery: retrieval-augmented paper QA, idea-to-manuscript pipelines, and lab-in-the-loop systems, and how each one verifies its own output.',
+  },
+  'methods/generalpurposebiomedicalagents': {
+    title: 'General-Purpose Biomedical Agents',
+    sidebarLabel: 'General-Purpose Agents',
+    group: 'methods',
+    order: 20,
+    description:
+      'LLM agents built for breadth across biomedical tasks without task-specific tuning: Biomni, BRAD, OLAF, STELLA, BioMANIA and the Virtual Lab, and where each of them places its trust.',
+  },
+  'methods/chemistrysynthesisagents': {
+    title: 'Chemistry / Synthesis Agents',
+    sidebarLabel: 'Chemistry Agents',
+    group: 'methods',
+    order: 21,
+    description:
+      'LLM agents specialized for chemistry: Coscientist and ChemCrow, their tool layers and safety checks, and why the architecture transfers to media, scaffold and flavor chemistry in cell-ag.',
+  },
+  'methods/domainspecificbiomedicalagents': {
+    title: 'Domain-Specific Biomedical Agents',
+    sidebarLabel: 'Domain-Specific Agents',
+    group: 'methods',
+    order: 22,
+    description:
+      'LLM agents purpose-built for one biomedical task: perturbation design, spatial biology, RNA-seq analysis, kinetic modeling, gene editing, protein design and single-cell data curation.',
+  },
+  'methods/robotscientistslabautomation': {
+    title: 'Robot Scientists & Lab Automation',
+    sidebarLabel: 'Robot Scientists',
+    group: 'methods',
+    order: 23,
+    description:
+      'AI coupled to physical lab automation for cellular agriculture: robotic search for iPSC differentiation conditions, automated strain design, autonomous cell passaging, and the Adam-to-Genesis lineage.',
+  },
   'methods/benchmarksevaluation': {
     title: 'Benchmarks & Evaluation Frameworks',
     sidebarLabel: 'Benchmarks & Evaluation',
     group: 'methods',
-    order: 1,
+    order: 24,
     description:
       'Benchmarks and evaluation frameworks for AI in biology and cellular agriculture: eval datasets, agent benchmarks, leaderboards, and verifier-reliability methodology.',
+  },
+  'methods/agentinfrastructure': {
+    title: 'Agent Infrastructure (Frameworks, KGs, Protocols)',
+    sidebarLabel: 'Agent Infrastructure',
+    group: 'methods',
+    order: 25,
+    description:
+      'The substrate biomedical AI agents run on: tool ecosystems and MCP protocols, biomedical knowledge graphs and graph-serving platforms, and language-agent training environments.',
   },
 
   // ── Datasets ───────────────────────────────────────────────────────────────

@@ -43,7 +43,13 @@ describe('CAAIL_PAGES', () => {
   });
   it('all() returns {id,...meta} objects', () => {
     const all = CAAIL_PAGES.all();
-    expect(all.length).toBe(33);
+    // 33 → 57: CAAIL-266 filled in the Methods/ row axis, adding the 24 pages the
+    // matrix's other rows were missing (the axis had held only Benchmarks &
+    // Evaluation, migrated there when the eval column was retired). This is a
+    // ground-truth contract, not a derived value — it is meant to fail when the
+    // page set changes, so update it deliberately with the reason rather than
+    // relaxing it to `toBeGreaterThan`.
+    expect(all.length).toBe(57);
     const cow = all.find((p) => p.id === 'datasets/cow');
     expect(cow).toMatchObject({ id: 'datasets/cow', group: 'datasets' });
     expect(typeof cow?.sidebarLabel).toBe('string');
