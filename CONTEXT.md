@@ -12,10 +12,13 @@ describes the repository as it is **today**, not as a decision intends it to bec
 the two differ, the entry says so and points at the ADR that closes the gap. A glossary
 that states a decided end-state as present fact tells a reader the work is already done.
 
-**Every count below is a snapshot taken 2026-08-20 from `site/db/ndjson/`.** `pnpm --dir site
-parse` prints the live figures; `areas.ndjson`, `topics.ndjson`, `item_topics.ndjson` and
-`matrix_cells.ndjson` are the source of truth. Where a number here disagrees with those, they
-are right and this file is stale.
+**Every count below is a snapshot taken 2026-08-20 from `site/db/ndjson/`.** `areas.ndjson`,
+`topics.ndjson`, `item_topics.ndjson` and `matrix_cells.ndjson` are the source of truth: where a
+number here disagrees with them, they are right and this file is stale. **No one command prints
+all of these.** `pnpm --dir site db:check` prints the theme assertions, including that there are
+exactly eight; `pnpm --dir site parse` prints the headline totals (345 papers, 7 research areas)
+but not the 229 matrix-eligible subset, nor any theme or `area_key` count. For the rest, read the
+four files.
 
 ## Language
 
@@ -109,9 +112,8 @@ subject** (`Media & Growth Factors`, `Sensory & Flavor`, `Cell Lines & Engineeri
 ADR-0001 this **binds new labels rather than describing the existing ones**, and neither half
 holds across the live set: `Scaffolding` and `AI Tooling / Methodology` are columns naming no
 problem, `Food Safety` is a theme carrying no `&`, and `Bioprocess & Scale-Up` is an
-`&`-joined column. Where it does hold, the difference is
-deliberate and load-bearing where it holds, because it is the only cue a reader has that two
-similar names denote different populations. One label is still shared across the axes:
+`&`-joined column. Where it does hold, the difference is deliberate and load-bearing, because it
+is the only cue a reader has that two similar names denote different populations. One label is still shared across the axes:
 `Bioprocess & Scale-Up` names both a research area and a theme, which is the collision
 `Taxonomy.md` still carries as a duplicate `###` heading. ADR-0001 closes it by relabelling
 the theme `Bioprocess & Manufacturing`.

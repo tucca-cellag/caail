@@ -32,8 +32,7 @@ as true of the code you are about to touch.
 ├── CONTEXT.md
 ├── docs/
 │   ├── adr/
-│   │   ├── 0001-matrix-axis-model.md
-│   │   └── 0002-....md
+│   │   └── 0001-matrix-axis-model.md   ← the only one so far
 │   └── agents/          ← this directory
 └── site/
 ```

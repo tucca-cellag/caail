@@ -11,7 +11,8 @@ taxonomy, spanning papers, datasets, software and databases). GH #132 read the p
 where the two disagreed as three gaps to close. We are closing them, but the model that
 results is deliberately not "one taxonomy": the axes stay distinct populations with
 distinct labels, joined by a single stored key (`area_key`). The target is a bijection:
-eight themes, eight research areas, one deep-dive page each, asserted by `db:check`.
+eight themes, eight research areas, one research-area deep-dive page each, **to be** asserted
+by `db:check`. That guard does not exist yet; see Implementation status.
 
 That target is not the repository's current state, and this ADR is careful to say which
 sentences describe which. **Implementation status** below lists what has landed and what
