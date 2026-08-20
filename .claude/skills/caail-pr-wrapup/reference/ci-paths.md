@@ -34,8 +34,8 @@ than restating it, because the enumeration has already been wrong in both direct
 `.claude/` rules and agents, the four unfiltered `.claude/skills/*` directories named above, `docs/**`,
 `LICENSE`, `CITATION.cff`, `.zenodo.json`, `.gitignore`, and the two plugin manifests
 (`.claude-plugin/marketplace.json` and `plugin/.claude-plugin/plugin.json`; only `plugin/skills/**` is
-filtered, not `plugin/**`). On what `preflight` reads, and how current it is, see the lede
-above rather than a second copy here. When a check you expected is missing, open the workflow. `.claude/hooks/**` and
+filtered, not `plugin/**`). On what `preflight` reads, see the lede above; on how current it
+is, the paragraph after it, on `check-ci-paths.py`. Neither is restated here. When a check you expected is missing, open the workflow. `.claude/hooks/**` and
 `.claude/settings.json` trigger **both** `test.yml` and `guards.yml`, because the two hooks are tested
 in different places (`check-public-publish.test.py` in `guards.yml`, `block-generated-edits.py` via
 `site/scripts/db/hook.test.ts` in the vitest suite). Editing this skill or **any** workflow triggers

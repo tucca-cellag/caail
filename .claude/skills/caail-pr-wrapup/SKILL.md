@@ -217,8 +217,10 @@ recommendation: ship / fix-first / needs-human-call**. Feed that into the step 6
      downstream can detect.
   5. **Amend the PR body with `gh pr edit`, whichever way the floor re-check went.** The body was composed
      back at step 3 of this skill and can no longer be right: a further round can change how the review
-     ended, and a "ship now" here makes this an ending 2 on a PR whose body still claims ending 1. Step 6
-     checks ending 2's disclosure against that body, so leaving it unamended either fails a check that
+     ended, and a "ship now" here makes this an ending 2 on a PR whose body still claims ending 1. **The
+     rounds-against-floor line goes stale here too**, since item 3 can add rounds and a fix-first fix can
+     widen the shape, and step 6 checks condition 1 against exactly that line. Step 6 checks ending 2's
+     disclosure against the same body, so leaving it unamended either fails a check that
      should pass or passes one that should fail. This is the only place the body is written after the PR
      exists, and `ship-pr.sh` has no subcommand for it, which is why the command is named.
 
@@ -252,9 +254,13 @@ here.** That list has already been wrong in both directions once each, so a seco
 the exact hand-typed-fact-beside-another defect the enumeration keeps causing. `preflight` computes its answer from the
 `*_PATHS` lists in `ship-pr.sh`, **not from the YAML**, and `check-ci-paths.py` is the only thing that
 pins those lists to the YAML. It runs in `guards.yml`, and both files that can desync the
-lists, `ship-pr.sh` and the workflows, are inside that trigger set on `pull_request` and `push`, so drift
-cannot be *introduced* past it. What survives is drift that predates the guard or landed through a red or
-bypassed merge: rare, but `preflight` would state its consequence just as confidently.
+lists, `ship-pr.sh` and the workflows, are inside that trigger set on `pull_request` and `push`. **That is
+narrower than it sounds and is not a guarantee.** `check-ci-paths.py` builds its workflow set from the
+files that *have* a `paths:` block, so a PR deleting one drops that workflow out of the comparison, prints
+ALL PASS, leaves its `*_PATHS` list untouched, and merges green while `preflight` goes on predicting "no
+job" for a job that now runs on everything. Nothing asserts the reverse direction, and nothing asserts that
+`guards.yml`'s own filter still covers both sides. So drift can also predate the guard or land through a
+red or bypassed merge, and `preflight` states its consequence just as confidently either way.
 When a check you expected is missing, open the workflow rather than trusting either the list above or
 `preflight`.
 
