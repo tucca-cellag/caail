@@ -37,7 +37,11 @@ interface Props {
   width?: number;
   class?: string;
   /**
-   * Emit the name as visually-hidden, `aria-hidden` text after the mark.
+   * Emit the name as visually-hidden, `aria-hidden` text immediately AFTER the
+   * link — outside the anchor, not inside it. That placement is load-bearing
+   * rather than incidental: inside the anchor it would compete with the
+   * `aria-label` for the link's accessible name, and being outside is exactly
+   * why `aria-hidden` on its own is sufficient here.
    *
    * Opt-in rather than always-on: it only matters where the lockup sits inside a
    * sentence (the hero attribution), and turning it on globally would change what
@@ -52,14 +56,20 @@ const height = Math.round((width * blkbl.height) / blkbl.width);
 const style = `--tl-w:${width}px;--tl-h:${height}px;--tl-light:url("${blkbl.src}");--tl-dark:url("${white.src}")`;
 ---
 
+<!-- The mark is deliberately tight against both tags below, and that is NOT stray
+     formatting to tidy up. Astro preserves whitespace inside an element, so putting
+     `.tl-mark` on its own indented line emits two text nodes inside the anchor. They
+     are invisible in layout (`.tl` sets `line-height: 0`) but they are real to
+     `textContent`: with `textName` on, the hero attribution extracted as
+     "A project of___Tufts…" — three spaces — in the copy-and-paste surface this prop
+     exists to fix. Measured on the built page rather than reasoned about. Keep the
+     tags closed up; `cite.spec.ts` asserts the sentence contains no double space. -->
 <a
   class:list={['tl', className]}
   href="https://cellularagriculture.tufts.edu/"
   aria-label={NAME}
   style={style}
->
-  <span class="tl-mark" aria-hidden="true"></span>
-</a>{textName && <span class="tl-name" aria-hidden="true">{NAME}</span>}
+><span class="tl-mark" aria-hidden="true"></span></a>{textName && <span class="tl-name" aria-hidden="true">{NAME}</span>}
 
 <style>
   .tl {

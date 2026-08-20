@@ -80,3 +80,25 @@ test('homepage surfaces the TUCCA lockup in hero and footer, linked to TUCCA', a
   // the lockup mark renders (theme-swapped background-image on a fixed-size box)
   await expect(hero.locator('.tl-mark')).toBeVisible();
 });
+
+test('the hero attribution extracts as one clean sentence, subject included', async ({ page }) => {
+  await page.goto('./');
+
+  // `textContent`, not `innerText`: this is about what select-and-copy and any text
+  // extractor get. The lockup draws the org name as a CSS background image on an
+  // `aria-hidden` span, so the anchor contributes NO text of its own — which is how
+  // this line once shipped as "A project of  and used in its own R&D", a sentence
+  // with its subject missing, past four screenshots and a clean axe run.
+  const text = (await page.locator('.hero-attrib').textContent()) ?? '';
+
+  expect(text).toContain('A project of');
+  expect(text).toContain('Tufts University Center for Cellular Agriculture');
+  expect(text).toContain('and used in its own R&D');
+
+  // No run of two spaces. The visually-hidden name sits between an explicit trailing
+  // space and whatever whitespace the anchor emits, so a stray newline in
+  // TuccaLockup.astro's markup silently pads the copied sentence.
+  expect(text, `hero attribution has padded whitespace: ${JSON.stringify(text)}`).not.toMatch(
+    /  +/,
+  );
+});

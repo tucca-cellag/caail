@@ -47,7 +47,14 @@ export function parseCitationTitle(cff: string): string {
  * drifting page — the failure mode this file exists to prevent.
  */
 export function parseHeroEyebrow(astro: string): string {
-  const all = [...astro.matchAll(/<p class="eyebrow">([^<]+)<\/p>/g)];
+  // Match any single-`class`-attribute <p> and test the class LIST, rather than
+  // hardcoding `class="eyebrow"`. Pinning the attribute exactly made every second
+  // class a silent zero-match — `class="eyebrow sr"` would have read as a deleted
+  // eyebrow — and this repo wraps homepage section heads in `.sr` already
+  // (WhyCaail.astro's `<div class="hd sr">`), so that edit is one refactor away.
+  const all = [...astro.matchAll(/<p class="([^"]*)">([^<]+)<\/p>/g)].filter(([, cls]) =>
+    cls.split(/\s+/).includes('eyebrow'),
+  );
   if (all.length !== 1) {
     // `[^<]+` cannot cross a child element, so a *present* eyebrow carrying nested
     // markup counts as 0 matches and is indistinguishable here from a deleted one.
@@ -57,15 +64,16 @@ export function parseHeroEyebrow(astro: string): string {
     // still there.
     const zero =
       all.length === 0
-        ? ' (0 can also mean the eyebrow is still there but now contains nested markup, ' +
-          'which this matcher cannot read — check before assuming it was deleted)'
+        ? ' (0 does NOT necessarily mean it was deleted: this matcher also misses an ' +
+          'eyebrow that has gained nested markup, or whose `class` is not a single ' +
+          'double-quoted attribute — check the element before assuming it is gone)'
         : '';
     throw new Error(
       `Hero.astro has ${all.length} \`.eyebrow\` paragraphs of plain text, expected ` +
         `exactly 1 — this guard cannot tell which one spells out the acronym${zero}`,
     );
   }
-  return all[0][1].trim();
+  return all[0][2].trim();
 }
 
 /**
@@ -114,6 +122,15 @@ describe('the guard fails loudly rather than silently when a source is restructu
   it('rejects a second .eyebrow rather than silently checking the first', () => {
     const two = '<p class="eyebrow">Something else</p>\n<p class="eyebrow">CAAIL · X</p>';
     expect(() => parseHeroEyebrow(two)).toThrow(/2 `\.eyebrow` paragraphs/);
+  });
+
+  it('still finds the eyebrow when it carries a second class', () => {
+    // `.sr` is this homepage's scroll-reveal hook. It sits on a wrapper today, so the
+    // eyebrows are all single-class — but nothing enforces that, and an exact
+    // `class="eyebrow"` match would have turned that refactor into a guard reporting
+    // a deleted element.
+    const withSr = '<p class="eyebrow sr">CAAIL · X</p>';
+    expect(parseHeroEyebrow(withSr)).toBe('CAAIL · X');
   });
 
   it('says nested markup may be the cause, not only a deleted eyebrow', () => {

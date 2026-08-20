@@ -47,8 +47,10 @@ const items = [
      label below is hand-written and unguarded, so renaming one of those sections drifts
      the rail silently. Give a section an eyebrow and it joins the guard automatically.
      (This sentence said `why` was the only one for as long as there were three. The count
-     is checkable in one grep — `grep -rn 'class="eyebrow"' site/src/components` — which is
-     the argument for not writing it down here at all if it drifts again.) */
+     is checkable in one grep — `grep -rn 'class="eyebrow' site/src/components` — which is
+     the argument for not writing it down here at all if it drifts again. Note the
+     unclosed quote: matching `class="eyebrow"` would miss an eyebrow that ever gains a
+     second class, and report a smaller count with no sign it had gone blind.) */
   { id: 'why', label: 'Why CAAIL' },
   /* `ask` is guarded like `why`: its section renders an `.eyebrow`, so this string and that
      eyebrow are compared on every e2e run. Keep the two identical. */
