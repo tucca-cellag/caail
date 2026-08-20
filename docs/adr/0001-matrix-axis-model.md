@@ -17,11 +17,18 @@ That target is not the repository's current state, and this ADR is careful to sa
 sentences describe which. **Implementation status** below lists what has landed and what
 has not; the decision is accepted, the delivery is partial.
 
-Every count in this document was measured from `site/db/ndjson/` on 2026-08-20. To
-re-measure rather than trust them, read `areas.ndjson`, `topics.ndjson`, `item_topics.ndjson`
-and `matrix_cells.ndjson` directly. They are the source of truth, and a number written into
-prose beside them is exactly the drift this repository's `CLAUDE.md` calls its most expensive
-recurring bug.
+The **live** counts in this document were measured from `site/db/ndjson/` on 2026-08-20.
+Re-measure them from `areas.ndjson`, `topics.ndjson`, `item_topics.ndjson` and
+`matrix_cells.ndjson` rather than trusting them here: those are the source of truth, and a
+number written into prose beside them is exactly the drift this repository's `CLAUDE.md`
+calls its most expensive recurring bug.
+
+The figures describing the matrix **before** the `AI Evaluation & Benchmarking` column was
+retired are not in those files and cannot be re-measured from them: the `eval` key is gone
+from both `areas.ndjson` and `matrix_cells.ndjson`. That covers the 23 references the column
+held, its collapse to a single method row against 6 to 17 elsewhere, and `AI Tooling /
+Methodology`'s starting 66. Read those against `0333b01f^`, the commit before the retirement,
+and read every other number against the files above.
 
 ## Why the counts must not be read as one number
 
@@ -84,11 +91,14 @@ as fact, and none of it is true today:
 - **The bijection does not hold.** Live state is 8 themes, 6 research areas, 7 deep-dive
   pages. `Metabolism & Modeling` and `Food Safety` both carry `area_key: null`.
 - **`db:check` asserts no bijection and no not-null `area_key`.** `checkTopicTiers` asserts
-  only that a **non-null** `area_key` resolves to an existing area. There is no assertion that
-  every theme has one, that every column has exactly one theme, or that every column has a
-  deep-dive page. Until that guard exists a future cross-cutting theme *can* be added quietly:
-  the claim that it would be a deliberate reopening of this ADR is a statement about the guard,
-  and the guard is the part that has not shipped.
+  only that a **non-null** `area_key` resolves to an existing area, so a theme is free to carry
+  none. There is no assertion that every theme has one, that every column has exactly one theme,
+  or that every column has a deep-dive page. Be precise about what this does *not* say: the
+  theme **list** is already guarded, since `db:check` asserts the live themes are exactly
+  `THEME_SLUGS`, so a ninth theme fails CI until someone edits that constant, which is a
+  deliberate act. The missing guard is the narrower one this ADR leans on, that a theme must
+  name a research area. Until it exists, a theme added through `THEME_SLUGS` can still be
+  cross-cutting, and nothing objects.
 - **The `Bioprocess & Scale-Up` theme has not been relabelled**, so one label is still shared
   across the axes and `Taxonomy.md` still carries it as a duplicate `###` heading.
 - **The naming convention is not written into `Taxonomy.md`.** It exists only here and in
@@ -139,6 +149,10 @@ audit verdict depends on it, so it can land at any time.
 
 - `AI Tooling / Methodology` grew from 66 distinct references to 81 when the retired column's
   references were re-placed, making the library's largest column larger still.
+- The `Bioprocess & Manufacturing` relabel moves the **label only**. `topic:bioprocess-scale-up`
+  is a frozen id and its `slug` is what `/topics/?t=<slug>` and `api/topics.json` carry, so the
+  label and the slug diverge permanently. That is the intended trade, since changing the slug
+  would break a public URL, but expect the mismatch rather than reading it as drift to repair.
 - A retired column has no tombstone machinery (`retired_paper_ids` covers reference ids only),
   so `/research-areas/aievaluation/` gets a redirect to its new method-page home and the
   `Taxonomy.md` column anchor stops resolving. Judged acceptable rather than worth new schema.

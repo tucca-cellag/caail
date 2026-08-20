@@ -26,8 +26,11 @@ A row of the matrix: a family of AI/ML techniques.
 _Avoid_: technique, model class, algorithm, approach
 
 **Research area**:
-A column of the matrix: the cellular-agriculture problem a paper's method is demonstrated
-on. Distinct from a subject theme, which spans research areas and every content type.
+A column of the matrix. Usually the cellular-agriculture problem a paper's method is
+demonstrated on, with `AI Tooling / Methodology` as the deliberate exception: it holds
+general methods, agents and tools not yet tied to an applied cell-ag result. Read each
+column's actual boundary from `Taxonomy.md` rather than from this sentence. Distinct from a
+subject theme, which spans research areas and every content type.
 _Avoid_: domain, application area, sector, field
 
 **Cell**:
@@ -64,18 +67,21 @@ The umbrella term covering both themes and fine tags. Never a synonym for either
 A subject that spans research areas rather than naming one. Two themes are cross-cutting
 today (`Metabolism & Modeling` and `Food Safety`), because neither has a research area to
 name. ADR-0001 decides to empty the class by giving both a column, after which a new
-cross-cutting theme becomes a deliberate reopening of that ADR. Until those columns land
-the class has two members, and nothing rejects a theme that has no research area.
+cross-cutting theme becomes a deliberate reopening of that ADR. Until those columns land the
+class has two members. `db:check` does guard the theme *list*, asserting it is exactly
+`THEME_SLUGS`, so a ninth theme cannot appear unnoticed; what it does not do is require a
+theme to carry an `area_key`, so an added theme may still be cross-cutting.
 
 ### Joining the axes
 
 **area_key**:
 The stored link from a subject theme to its research area, and the single joint between the
 two axes. Correspondence between the axes is always carried by this key and never inferred
-from a shared label. The join is not yet total: eight themes point at six research areas
-and seven deep-dive pages, and two themes carry no key at all. ADR-0001's target is a
-bijection (eight themes, eight research areas, one deep-dive page each), reached by the two
-columns it adds.
+from a shared label. The join is not yet total: two of the eight themes carry no key, so only
+six reach a research area. A deep-dive page hangs off the research area rather than the theme
+(`RESEARCH_AREA_SLUG`), and `ResearchAreas/` holds seven pages against six columns, because
+`MetabolicModeling.md` has a page with no column. ADR-0001's target is a bijection (eight
+themes, eight research areas, one deep-dive page each), reached by the two columns it adds.
 
 **Deep-dive page**:
 A hand-authored prose overview of one axis member: `ResearchAreas/<Area>.md` for a research
@@ -87,8 +93,10 @@ _Avoid_: area page, docs page
 
 A research area's label reads as a **problem** (`Media Optimization`, `Sensory
 Prediction`, `Cellular Engineering`). A subject theme's label reads as an **`&`-joined
-subject** (`Media & Growth Factors`, `Sensory & Flavor`, `Cell Lines & Engineering`). The
-difference is deliberate and load-bearing: it is the only cue a reader has that two
+subject** (`Media & Growth Factors`, `Sensory & Flavor`, `Cell Lines & Engineering`). That is
+the usual form rather than a rule with no exceptions: `Food Safety` is a live theme carrying
+no `&`, and it is one of the two this model is currently arguing about. The difference is
+deliberate and load-bearing where it holds, because it is the only cue a reader has that two
 similar names denote different populations. One label is still shared across the axes:
 `Bioprocess & Scale-Up` names both a research area and a theme, which is the collision
 `Taxonomy.md` still carries as a duplicate `###` heading. ADR-0001 closes it by relabelling
