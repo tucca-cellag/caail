@@ -121,9 +121,24 @@ describe('readFields', () => {
     expect(readFields(src).find((f) => f.id === 'species')?.required).toBe(true);
   });
 
-  it('throws on a non-markdown field with no id, which can never be prefilled', () => {
-    const src = ['  - type: dropdown', '    attributes:', '      label: No id here'].join('\n');
-    expect(() => readFields(src)).toThrow(/has no string "id"/);
+  it('throws on a REQUIRED field with no id, which can never be prefilled', () => {
+    const src = [
+      '  - type: dropdown',
+      '    attributes:',
+      '      label: No id here',
+      '    validations:',
+      '      required: true',
+    ].join('\n');
+    expect(() => readFields(src)).toThrow(/required "- type: dropdown" field/);
+  });
+
+  it('names the file it was given when the YAML is invalid', () => {
+    // The one build-aborting error that used to name nothing: readFields hardcoded a label while
+    // verifyContributeForms had the path in hand, so a mis-indented paper.yml aborted the build
+    // saying only "this issue form".
+    expect(() => readFields('body:\n  - type: input\n   id: bad\n', 'paper.yml')).toThrow(
+      /paper\.yml is not valid YAML/,
+    );
   });
 
   it('still sees a field whose keys carry trailing comments', () => {
@@ -317,6 +332,27 @@ describe('verifyContributeForms', () => {
       ],
     });
     expect(run).toThrow(/requires "species" \(type: dropdown\)/);
+  });
+
+  it('checks the worked URL example however its query string is ordered', () => {
+    // The guard matched the literal `issues/new?template=<t>`, so putting `title=` first — a
+    // natural edit — turned the whole check into a silent no-op. That is the failure class the
+    // check exists to catch, occurring in the check.
+    const run = stage({
+      skill: (s) =>
+        s.replace(
+          'issues/new?template=paper.yml&title=...&paper_title=...&doi=...',
+          'issues/new?title=...&template=paper.yml&paper_title=...&summary=...',
+        ),
+    });
+    expect(run).toThrow(/sets "summary"/);
+  });
+
+  it('fails when the skill carries no worked URL example at all', () => {
+    // A guard over an empty set passes forever, so deleting the example would otherwise retire
+    // the check rather than trip it.
+    const run = stage({ skill: (s) => s.replace(/^https:\/\/github\.com\/.*issues\/new\?.*$/m, 'none') });
+    expect(run).toThrow(/contains no worked "issues\/new\?" URL example/);
   });
 
   it('fails when the worked URL example sets a parameter the list does not claim', () => {

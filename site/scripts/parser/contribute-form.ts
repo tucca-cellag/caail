@@ -138,8 +138,8 @@ export interface TemplateClaim {
  *
  * `markdown` blocks carry no `id` and are skipped: they are prose shown to the reader, not fields.
  */
-export function readFields(src: string): FormField[] {
-  return [...readIssueForm(src, 'this issue form').fields];
+export function readFields(src: string, where = 'this issue form'): FormField[] {
+  return [...readIssueForm(src, where).fields];
 }
 
 /**
@@ -426,11 +426,33 @@ function assertRequiredCovered(claim: TemplateClaim, fields: readonly FormField[
  * `template` and `title` are GitHub's own built-ins rather than form fields, so the example is
  * expected to set them and they are not claimable. Everything else has to be in the prefill list.
  */
-function assertExampleUrlParams(claim: TemplateClaim, skillPath: string, skillSrc: string): void {
+function assertExampleUrlParams(
+  claims: readonly TemplateClaim[],
+  skillPath: string,
+  skillSrc: string,
+): void {
   const builtins = new Set(['template', 'title']);
-  for (const line of skillSrc.split('\n')) {
-    if (!line.includes(`issues/new?template=${claim.template}`)) continue;
+  const examples = skillSrc.split('\n').filter((l) => l.includes('issues/new?'));
+  if (examples.length === 0) {
+    throw new Error(
+      `contribute-form: ${skillPath} contains no worked "issues/new?" URL example. The example ` +
+        `is what an agent copies, and this check has nothing to reconcile without one, so its ` +
+        `absence would silently retire the check rather than trip it.`,
+    );
+  }
+
+  for (const line of examples) {
     const params = [...line.matchAll(/[?&]([A-Za-z0-9_-]+)=/g)].map((m) => m[1]!);
+    const template = /[?&]template=([A-Za-z0-9._-]+\.yml)/.exec(line)?.[1];
+    const claim = claims.find((c) => c.template === template);
+    if (claim === undefined) {
+      throw new Error(
+        `contribute-form: a worked URL example in ${skillPath} composes for ` +
+          `${template === undefined ? 'no template at all' : `"${template}"`}, which declares no ` +
+          `prefillable parameters, so nothing checks what it sets. Name a template the skill ` +
+          `claims.`,
+      );
+    }
     const unclaimed = params.filter((p) => !builtins.has(p) && !claim.prefill.includes(p));
     if (unclaimed.length > 0) {
       throw new Error(
@@ -481,7 +503,12 @@ export function verifyContributeForms(
         `the issue templates against. If the plugin moved, update SKILL_PATH in this module.`,
     );
   }
-  const claims = readClaims(readFileSync(skillPath, 'utf-8'), skillPath);
+  const skillSrc = readFileSync(skillPath, 'utf-8');
+  const claims = readClaims(skillSrc, skillPath);
+
+  // Once over the whole skill rather than per claim: an example names its own template, and the
+  // per-claim form quietly checked nothing for any template whose example did not exist.
+  assertExampleUrlParams(claims, skillPath, skillSrc);
 
   for (const claim of claims) {
     // The orphan check in readClaims only catches a template name mistyped in ONE of the two
@@ -495,7 +522,7 @@ export function verifyContributeForms(
           `skill's lists for it; a name wrong in both places passes every earlier check.`,
       );
     }
-    const fields = readFields(readFileSync(templatePath, 'utf-8'));
+    const fields = readFields(readFileSync(templatePath, 'utf-8'), templatePath);
     if (fields.length === 0) {
       throw new Error(
         `contribute-form: ${claim.template} declares no fields with an id, so nothing the ` +
@@ -503,7 +530,6 @@ export function verifyContributeForms(
       );
     }
     assertNoReservedIds(claim.template, fields);
-    assertExampleUrlParams(claim, skillPath, readFileSync(skillPath, 'utf-8'));
     assertPresent(claim, fields);
     assertPrefillable(claim, fields);
     assertManualIsUnprefillable(claim, fields);

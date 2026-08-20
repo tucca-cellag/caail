@@ -108,21 +108,30 @@ export function readIssueForm(src: string, where: string): IssueForm {
     // `markdown` is prose shown to the reader and carries no id by GitHub's schema.
     if (type === 'markdown') continue;
 
+    const validations = item.validations as { required?: unknown } | undefined;
+    const required = validations?.required === true || requiredOptionCount(item) > 0;
+
     const id = item.id;
     if (typeof id !== 'string') {
+      // `id` is OPTIONAL in GitHub's schema, and an optional field without one is legal and
+      // harmless: nothing needs to prefill it, and leaving it blank submits fine. Throwing on
+      // every id-less field would turn a valid template into a failed build and a blocked deploy,
+      // which is a worse outcome than the one being guarded against.
+      //
+      // A REQUIRED field without an id is the case worth stopping: it can never be prefilled, by
+      // this skill or anything else, so it reaches a contributor as a blank box they must fill by
+      // hand under copy saying the form was filled in for them. That is the consequence this
+      // throw was written for, and it is the only one it now covers.
+      if (!required) continue;
       throw new Error(
-        `issue-form: a "- type: ${type}" field in ${where} has no string "id". GitHub prefills ` +
-          `by matching a query parameter to an id, so a field without one can never be filled ` +
-          `in, and a required one would reach a contributor as a blank box.`,
+        `issue-form: a required "- type: ${type}" field in ${where} has no string "id". GitHub ` +
+          `prefills by matching a query parameter to an id, so a required field without one can ` +
+          `never be filled in and reaches a contributor as a blank box. Give it an id, or make ` +
+          `it optional.`,
       );
     }
 
-    const validations = item.validations as { required?: unknown } | undefined;
-    fields.push({
-      id,
-      type,
-      required: validations?.required === true || requiredOptionCount(item) > 0,
-    });
+    fields.push({ id, type, required });
   }
 
   return { fields, items };

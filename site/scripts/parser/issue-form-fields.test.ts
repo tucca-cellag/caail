@@ -92,9 +92,23 @@ describe('readIssueForm still fails loudly on what is genuinely wrong', () => {
     expect(() => readIssueForm('name: only a name\n', 'x.yml')).toThrow(/has no "body:" sequence/);
   });
 
-  it('throws on a non-markdown field with no id', () => {
-    const src = ['- type: dropdown', '  attributes:', '    label: No id here'].join('\n');
-    expect(() => readIssueForm(src, 'x.yml')).toThrow(/has no string "id"/);
+  it('throws on a REQUIRED field with no id, which can never be prefilled', () => {
+    const src = [
+      '- type: dropdown',
+      '  attributes:',
+      '    label: No id here',
+      '  validations:',
+      '    required: true',
+    ].join('\n');
+    expect(() => readIssueForm(src, 'x.yml')).toThrow(/required "- type: dropdown" field/);
+  });
+
+  it('accepts an OPTIONAL field with no id, which GitHub\'s schema allows', () => {
+    // `id` is optional by GitHub's own schema, and an optional field without one is harmless:
+    // nothing needs to prefill it and leaving it blank submits fine. Throwing here would turn a
+    // legal template into a failed build and a blocked deploy, which is worse than what it guards.
+    const src = ['- type: textarea', '  attributes:', '    label: Anything else?'].join('\n');
+    expect(readIssueForm(src, 'x.yml').fields).toEqual([]);
   });
 
   it('skips a markdown block rather than demanding an id from it', () => {
