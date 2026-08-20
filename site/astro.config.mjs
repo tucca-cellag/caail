@@ -82,6 +82,34 @@ export default defineConfig({
   },
   markdown: {
     remarkPlugins: [caailProseRemark],
+    // Explicit, and NOT redundant: do not "clean this up".
+    //
+    // Astro 6.4 moved the markdown defaults onto its new `unified()` processor
+    // and made `markdown.gfm` an optional field that is left `undefined` unless
+    // you set it (see astro/dist/core/config/schemas/base.js). Astro's own
+    // pipeline still defaults GFM on internally, so the canonical-prose pages
+    // are unaffected either way.
+    //
+    // `@astrojs/mdx` predates that redesign: it reads the raw resolved config
+    // and gates the plugin on `if (mdxOptions.gfm)`. With the default gone that
+    // read is `undefined`, so remark-gfm is never added to the MDX pipeline and
+    // every GFM construct in src/content/docs/**.mdx degrades silently to plain
+    // text. The privacy page's subprocessor table rendered as a paragraph of
+    // pipe characters, which is a GDPR Art. 13 disclosure, not a cosmetic bug.
+    //
+    // Setting it here is the only lever that reaches MDX: it has no awareness of
+    // `markdown.processor`, so configuring the processor instead does nothing
+    // for .mdx. Astro logs a deprecation notice for this field; that notice is
+    // expected.
+    //
+    // The condition for removing this line is behavioural, not a version number.
+    // Starlight declares `@astrojs/mdx: ^5.0.4` and it is the LOCKFILE that
+    // currently pins 5.0.6, so a patched release inside that range could arrive
+    // on any routine relock. What has to be true is that the resolved mdx stops
+    // gating on `markdown.gfm` and understands `markdown.processor`; "we are off
+    // 5.x" is neither necessary nor sufficient for that. Check the behaviour,
+    // and let e2e/mdx-gfm.spec.ts be the thing that answers it.
+    gfm: true,
   },
   integrations: [
     starlight({
