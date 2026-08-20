@@ -19,6 +19,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { buildPapersModel } from './papers.js';
 import { buildTaxonomyModel } from './taxonomy.js';
 import { buildCorrectionForm } from './correction-form.js';
+import { verifyContributeForms } from './contribute-form.js';
 import { computeCounts } from './counts.js';
 import { buildCatalogModel } from './catalog.js';
 import { buildTalksModel, talkItemCount } from './talks.js';
@@ -149,7 +150,20 @@ export function generateData(
   correctionReasons: number;
   awesomeLists: number;
   apiFiles: number;
+  contributeTemplates: number;
+  contributeParams: number;
 } {
+  // Reconcile the caail-contribute skill against the issue forms it composes URLs for. Emits
+  // nothing: the skill ships as Markdown and the templates ship as YAML, so there is no artifact
+  // to write, only an agreement to enforce. Checked at build time rather than only in the test
+  // suite because the failure is invisible at runtime (GitHub ignores a query parameter that
+  // matches no field) and lands on a contributor's screen, not ours.
+  //
+  // FIRST, before anything is written. It depends on no generated output, so running it last
+  // meant a drift failure aborted `pnpm parse` only after src/content/data and the TRACKED
+  // site/public/api had already been rewritten, leaving a dirty tree behind a non-zero exit.
+  const contributeClaims = verifyContributeForms();
+
   // Build and validate the papers model.
   const model = buildPapersModel();
 
@@ -484,6 +498,8 @@ export function generateData(
     graphEdges: graph.edges.length,
     recentEntries: recent.length,
     apiFiles: apiFiles.length,
+    contributeTemplates: contributeClaims.length,
+    contributeParams: contributeClaims.reduce((n, c) => n + c.prefill.length, 0),
     // Count across all three axes, so this equals the number of `###` headings
     // in Taxonomy.md and can be checked against the file by eye. Counting
     // `definitions` instead would silently omit the themes.
@@ -527,6 +543,8 @@ if (isMain) {
       taxonomyDefs,
       awesomeLists,
       correctionReasons,
+      contributeTemplates,
+      contributeParams,
     } = generateData();
     // Full-text agent index (public/llms-full.txt) — generated alongside the
     // JSON, but written to public/ rather than the data dir, so it lives in the
@@ -543,7 +561,8 @@ if (isMain) {
         `recent.json (${recentEntries} entries), ` +
         `taxonomy.json (${taxonomyDefs} definitions across 3 axes), ` +
         `correction-form.json (${correctionReasons} reasons), ` +
-        `and llms-full.txt (${llmsBytes} bytes)`,
+        `and llms-full.txt (${llmsBytes} bytes); verified caail-contribute prefills ` +
+        `${contributeParams} parameters across ${contributeTemplates} issue templates`,
     );
     // eslint-disable-next-line no-console
     console.log('counts:', counts);

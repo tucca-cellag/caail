@@ -1,0 +1,19 @@
+{
+  "name": "caail-contribute",
+  "description": "Notices when a paper, tool, dataset or database you are reading is not indexed in CAAIL, and offers to suggest it back to the library as a prefilled GitHub issue. Opt-in: installing it is the consent, and it never files anything without you.",
+  "author": {
+    "name": "Tufts University Center for Cellular Agriculture"
+  },
+  "homepage": "https://tucca-cellag.github.io/caail/",
+  "repository": "https://github.com/tucca-cellag/caail",
+  "license": "MIT",
+  "keywords": [
+    "cellular-agriculture",
+    "cultivated-meat",
+    "alternative-protein",
+    "cell-ag",
+    "contribution",
+    "curation",
+    "literature"
+  ]
+}

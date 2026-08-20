@@ -1,0 +1,543 @@
+/**
+ * contribute-form.ts — reconcile the caail-contribute skill against the issue forms it prefills.
+ *
+ * WHY THIS EXISTS
+ * ---------------
+ * `plugin-contribute/skills/caail-contribute/SKILL.md` tells an agent to compose a GitHub issue
+ * URL for a resource CAAIL does not index. GitHub prefills an issue form by matching a query
+ * parameter to a field's `id`, and it reports nothing when the match fails: a renamed field, or a
+ * field of the wrong type, arrives BLANK. The form still opens. The agent still says it filled the
+ * form in. The contributor is handed the empty box this whole route exists to avoid.
+ *
+ * Restating the field list in the skill and hoping it tracks the templates is the defect this repo
+ * pays for most often, and it is worse here than on /report/: the skill ships to other people's
+ * machines, so a stale copy is wrong somewhere nobody can see it. So the skill keeps exactly one
+ * copy of each list, this module READS those copies, and the build fails naming the string it
+ * could not reconcile. Sibling of correction-form.ts, which does the same for /report/.
+ *
+ * THE TRAP THIS IS MOSTLY HERE TO CATCH
+ * -------------------------------------
+ * A `dropdown` does not prefill. GitHub takes the query parameter and ignores it. `paper.yml`
+ * carries three dropdowns (`paper_type`, `ai_methods`, `research_areas`) that are the obvious
+ * things to want to prefill and the exact things that cannot be, so the skill has to tell the
+ * reader to pick them by hand.
+ *
+ * WHY THE SKILL DECLARES BOTH LISTS, NOT JUST THE PREFILLED ONE
+ * -------------------------------------------------------------
+ * An earlier version checked only the prefill list and let the skill say "three fields cannot be
+ * prefilled" in prose. That number was the one hand-typed fact in the file, and nothing derived or
+ * checked it: adding a required `Species` dropdown to `paper.yml` left CI green while the shipped
+ * skill went on naming three, and the composed issue arrived with a fourth blank required dropdown
+ * that GitHub refuses to submit.
+ *
+ * So the skill declares the pick-by-hand list too, and {@link assertRequiredCovered} demands that
+ * EVERY required field is accounted for by one list or the other. A new required field of any type
+ * now fails the build until the skill says what to do with it, and the count lives nowhere.
+ *
+ * Optional fields are deliberately not covered: an optional field left blank submits fine, so
+ * requiring the skill to enumerate them would be noise with no failure behind it.
+ *
+ * `title` IS NOT A USABLE FIELD ID, WHICH IS WHY paper.yml SAYS `paper_title`
+ * ---------------------------------------------------------------------------
+ * `title` is GitHub's built-in issue-title parameter. A template field whose id is `title` is
+ * therefore ambiguous at best: the parameter is consumed by the issue title and the required body
+ * field stays empty. paper.yml's field was renamed to `paper_title` for exactly this reason, and
+ * {@link RESERVED_FIELD_IDS} keeps it renamed.
+ *
+ * THE FIELD READING IS A REAL YAML PARSER, HAVING ARGUED IT NEED NOT BE
+ * ---------------------------------------------------------------------
+ * This header used to say a narrow hand-rolled reader was enough for a document of committed
+ * shape. `issue-form-fields.ts` now owns that half and records why it was wrong: three consecutive
+ * review rounds each found a different VALID spelling of the same template that made a field
+ * vanish from the scanner along with its `required` flag, which is the exact regression
+ * {@link assertRequiredCovered} exists to prevent. A regex must enumerate YAML's spellings; a
+ * parser never has to know they differ.
+ *
+ * The SKILL half below is still read by hand, and that is not the same bet. It reads Markdown
+ * prose, where there is no parser to defer to and no equivalent class of silent alternatives — and
+ * where every way it could still go quiet is now an explicit throw rather than a terminator rule.
+ */
+
+import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+import { PREFILLABLE_TYPES, readIssueForm, type FormField } from './issue-form-fields.js';
+
+/**
+ * Field ids GitHub consumes as its own `issues/new` query parameters, so a template must not use
+ * them: the parameter is eaten by the built-in and the field arrives blank, exactly as `title` did.
+ *
+ * `template` is the one most likely to be chosen innocently, and it is the parameter every URL
+ * this skill composes already carries.
+ */
+export const RESERVED_FIELD_IDS: readonly string[] = [
+  'title',
+  'body',
+  'labels',
+  'assignees',
+  'milestone',
+  'projects',
+  'template',
+];
+
+/**
+ * Confirmation checkboxes are deliberately never prefilled and never picked for the reader: they
+ * ask the contributor to confirm they searched the library and that they accept the contribution
+ * licence, and an agent answering either on their behalf is the point of the checkbox defeated.
+ *
+ * This is a real exemption rather than documentation. {@link assertRequiredCovered} covers every
+ * required field regardless of type, so without this entry the committed `confirmations` field
+ * would be reported as unaccounted for.
+ *
+ * Matched on type as well as id, because the whole justification above is about the field being a
+ * confirmation CHECKBOX. On id alone, a template declaring a required `input` named `confirmations`
+ * would inherit an exemption that reasons about something else entirely, and its blank required box
+ * would reach a contributor unreported.
+ */
+const UNPREFILLED_BY_DESIGN: readonly { id: string; type: string }[] = [
+  { id: 'confirmations', type: 'checkboxes' },
+];
+
+export const SKILL_PATH: string = fileURLToPath(
+  new URL('../../../plugin-contribute/skills/caail-contribute/SKILL.md', import.meta.url),
+);
+
+export const TEMPLATE_DIR: string = fileURLToPath(
+  new URL('../../../.github/ISSUE_TEMPLATE/', import.meta.url),
+);
+
+/**
+ * One field of an issue form, as far as prefilling cares.
+ *
+ * Re-exported from the shared reader rather than declared again, so the two modules cannot come to
+ * disagree about what a field is.
+ */
+export type { FormField } from './issue-form-fields.js';
+
+/** What the skill claims about one template. */
+export interface TemplateClaim {
+  /** The template filename, e.g. `paper.yml`. */
+  readonly template: string;
+  /** The query parameters the skill documents as prefillable, in document order. */
+  readonly prefill: readonly string[];
+  /** The field ids the skill tells the reader to pick by hand. */
+  readonly manual: readonly string[];
+}
+
+/**
+ * Every field in a template, with its `id`, `type` and whether answering it is required.
+ *
+ * Delegates to the shared YAML-backed reader. It used to scan for `- type:` lines, and three
+ * consecutive review rounds each found a different valid YAML spelling that made a field vanish
+ * along with its `required` flag; `issue-form-fields.ts` records them and why a parser ends the
+ * class rather than the instance.
+ *
+ * `markdown` blocks carry no `id` and are skipped: they are prose shown to the reader, not fields.
+ */
+export function readFields(src: string, where = 'this issue form'): FormField[] {
+  return [...readIssueForm(src, where).fields];
+}
+
+/**
+ * Read one kind of claim list out of the skill's prose.
+ *
+ * Anchored on the sentence that introduces each list, so the worked URL example further down the
+ * page (which also contains `template=paper.yml`) is not mistaken for a claim. The parameters are
+ * the code spans on the next non-empty line, which is the single copy of that list anywhere.
+ *
+ * The template name accepts the whole set GitHub allows rather than lowercase-and-dash only. The
+ * narrow charset silently failed to recognise a claim for `paper_form.yml`, and because a missing
+ * claim is only an error when NO claim is found at all, a second template could have gone
+ * unchecked forever without anything saying so.
+ */
+/**
+ * Is this line part of a parameter list, rather than the prose that follows one?
+ *
+ * True when the line is code spans and separators and nothing else. That is the shape of every
+ * list the skill declares, and it is not the shape of any sentence around them, including the
+ * sentences that mention a parameter in passing: those carry words outside the backticks.
+ */
+function isParameterLine(line: string): boolean {
+  const spans = [...line.matchAll(/`[A-Za-z0-9_-]+`/g)];
+  if (spans.length === 0) return false;
+  return line.replace(/`[A-Za-z0-9_-]+`/g, '').trim().replace(/[,;]/g, '').trim() === '';
+}
+
+function readClaimLists(
+  skillSrc: string,
+  pattern: string,
+  label: string,
+  skillPath: string,
+): Map<string, string[]> {
+  // `[^:]` rather than `[^\n]`, so the intro may WRAP. The earlier form required the template
+  // marker and the heading to share a line, which made a reflow silently drop a whole template:
+  // moving one line break in the resource.yml intro left `readClaims` returning paper.yml alone,
+  // with no error, and resource.yml's parameters unreconciled from then on. A colon is what
+  // actually ends an intro, and no heading contains one, so this cannot run past its own list.
+  const intro = new RegExp(
+    String.raw`\(\x60template=([A-Za-z0-9._-]+\.yml)\x60\)[^:]{0,120}?` + pattern + String.raw`:[ \t]*\n`,
+    'g',
+  );
+  const out = new Map<string, string[]>();
+
+  for (const m of skillSrc.matchAll(intro)) {
+    const template = m[1]!;
+    // The list is the ONE paragraph after the intro, and every way it can go wrong THROWS.
+    //
+    // Three earlier rules each closed one hazard and left another open, and every failure lands
+    // on the list's TAIL, where the optional parameters sit (`code_url` on paper.yml, `notes` on
+    // resource.yml). Optional means assertRequiredCovered never rescues them, and a
+    // truncated-but-non-empty list never trips the ids.length === 0 throw, so the loss was
+    // total and silent every time:
+    //
+    //   - "first non-empty line only" dropped everything after a WRAP.
+    //   - "up to the first blank line" closed the wrap, not a PARAGRAPH BREAK.
+    //   - "every line that looks like a list" closed the paragraph break, but stopped dead at
+    //     the first continuation line carrying a word: `` `code_url` and `notes` `` reflowed
+    //     onto a second line silently lost both.
+    //
+    // The lesson is that no terminator rule is safe here, because "the list ended" and "the
+    // list continued in a form I did not expect" are indistinguishable by shape and differ
+    // only in consequence. So nothing is inferred: a non-list line inside the paragraph is an
+    // ERROR naming the line, and a list-shaped line in the NEXT paragraph is an ERROR too.
+    // Reflow freely within the paragraph; anything else stops the build instead of the reader.
+    const after = skillSrc.slice(m.index! + m[0].length).split('\n');
+    const start = after.findIndex((l) => l.trim() !== '');
+    const block: string[] = [];
+    let end = start < 0 ? 0 : start;
+    for (; end < after.length && after[end]!.trim() !== ''; end++) {
+      const line = after[end]!;
+      if (!isParameterLine(line)) {
+        throw new Error(
+          `contribute-form: the ${label} list for "${template}" in ${skillPath} runs into a ` +
+            `line that is not part of it: ${JSON.stringify(line.trim())}. The list must be one ` +
+            `paragraph of code spans separated by commas, because anything else is ` +
+            `indistinguishable from the list having ended, and a parameter dropped that way is ` +
+            `silent all the way to a contributor's screen. Put prose in its own paragraph.`,
+        );
+      }
+      block.push(line);
+    }
+
+    // Every remaining line up to the NEXT claim intro, not just the next paragraph.
+    //
+    // Checking only the paragraph immediately after left `list / prose / more list` dropping its
+    // tail in silence, which is the same failure in the one shape the guard did not look at. The
+    // window stops at the next `(`template=…`)` because that is where another claim's own list
+    // legitimately begins, and scanning past it would report every later list as a stray.
+    // Bounded by the next claim intro OR the next Markdown heading, whichever comes first. The
+    // intro alone left the LAST claim's window running to end of file, over ~70 lines of unrelated
+    // prose, where any future line that happened to be only code spans and separators — a list of
+    // the "turn it off" spellings, say — would fail the build pointing at a list nowhere near it.
+    const tail = after.slice(end);
+    const stopAt = tail.findIndex(
+      (l) => /\(`template=[A-Za-z0-9._-]+\.yml`\)/.test(l) || /^#{1,6}[ \t]/.test(l),
+    );
+    const stray = (stopAt < 0 ? tail : tail.slice(0, stopAt)).find((l) => isParameterLine(l));
+    if (stray !== undefined) {
+      throw new Error(
+        `contribute-form: the ${label} list for "${template}" in ${skillPath} continues after a ` +
+          `break — ${JSON.stringify(stray.trim())} reads as a separate paragraph. Only the ` +
+          `first would be checked, and the parameters after the break would silently stop being ` +
+          `reconciled. Keep the whole list in one paragraph.`,
+      );
+    }
+
+    const ids = [...block.join(' ').matchAll(/`([A-Za-z0-9_-]+)`/g)].map((p) => p[1]!);
+    if (ids.length === 0) {
+      throw new Error(
+        `contribute-form: the skill announces ${label} for "${template}" and then lists none. ` +
+          `${skillPath} is the only copy of that list; an empty one means the checks below ` +
+          `cover nothing.`,
+      );
+    }
+    // Last-write-wins would discard the first list in silence. A plausible edit — documenting a
+    // narrower variant of the same template — would then leave the real list unchecked while
+    // everything still passed.
+    if (out.has(template)) {
+      throw new Error(
+        `contribute-form: ${skillPath} declares ${label} for "${template}" more than once. ` +
+          `Only one list per template can be reconciled, so a second one would silently ` +
+          `replace the first and the original list would stop being checked.`,
+      );
+    }
+    out.set(template, ids);
+  }
+  return out;
+}
+
+/**
+ * The claims the skill makes, one entry per template it composes URLs for.
+ *
+ * A template may legitimately have no pick-by-hand list (nothing unprefillable and required), so a
+ * missing `manual` list is an empty array rather than an error. That is safe because
+ * {@link assertRequiredCovered} independently fails on any required field the skill did not
+ * account for, which is what a wrongly-omitted list would produce.
+ */
+export function readClaims(skillSrc: string, skillPath: string = SKILL_PATH): TemplateClaim[] {
+  const prefill = readClaimLists(
+    skillSrc,
+    String.raw`prefillable\s+parameters`,
+    '"prefillable parameters"',
+    skillPath,
+  );
+  const manual = readClaimLists(
+    skillSrc,
+    String.raw`fields to pick by\s+hand`,
+    '"fields to pick by hand"',
+    skillPath,
+  );
+
+  if (prefill.size === 0) {
+    throw new Error(
+      `contribute-form: no prefill claims found in ${skillPath}. Expected at least one line ` +
+        `of the form "(\`template=<file>.yml\`) … prefillable parameters:" followed by the ` +
+        `parameter names as code spans. Either the skill stopped composing prefilled URLs, or ` +
+        `its wording changed and this reader can no longer find the list it checks.`,
+    );
+  }
+
+  // Every template the skill MENTIONS anywhere must have a prefill claim.
+  //
+  // Without this, "how many templates are covered" is decided by whether a regex happened to
+  // match, and a template that silently stopped matching looks exactly like a template the skill
+  // never mentioned. Deriving the expected set from the prose independently is what turns a
+  // dropped claim from invisible into a build failure.
+  //
+  // The scan is deliberately blunt: any `template=<x>.yml` counts, including one inside a sentence
+  // telling the reader NOT to use that template. Narrowing it to the claim intros would make the
+  // check circular and worthless. The cost is that naming a deliberately-uncomposed template in
+  // that literal form trips the build, so the error below offers dropping the `template=` form as
+  // a remedy rather than only deleting the sentence.
+  const mentioned = new Set(
+    [...skillSrc.matchAll(/template=([A-Za-z0-9._-]+\.yml)/g)].map((m) => m[1]!),
+  );
+  const uncovered = [...mentioned].filter((t) => !prefill.has(t));
+  if (uncovered.length > 0) {
+    throw new Error(
+      `contribute-form: ${skillPath} mentions the template(s) ` +
+        `${uncovered.map((t) => `"${t}"`).join(', ')} but declares no prefillable parameters ` +
+        `for them, so nothing reconciles what it composes against those forms. Either add the ` +
+        `list, or — if the skill names that template precisely to say it does NOT compose for ` +
+        `it — refer to it without the literal "template=<name>" form, which is what this check ` +
+        `scans for.`,
+    );
+  }
+
+  return [...prefill.entries()].map(([template, ids]) => ({
+    template,
+    prefill: ids,
+    manual: manual.get(template) ?? [],
+  }));
+}
+
+/** Every id the skill names must still be a field on that template. */
+function assertPresent(claim: TemplateClaim, fields: readonly FormField[]): void {
+  const ids = new Set(fields.map((f) => f.id));
+  const missing = [...claim.prefill, ...claim.manual].filter((p) => !ids.has(p));
+  if (missing.length > 0) {
+    throw new Error(
+      `contribute-form: ${claim.template} has no field id(s) ` +
+        `${missing.map((m) => `"${m}"`).join(', ')}, but the caail-contribute skill names them. ` +
+        `GitHub ignores a query parameter matching no field, so the issue opens with those ` +
+        `boxes empty and nothing reports it. Rename them in the skill or restore them in the ` +
+        `template.`,
+    );
+  }
+}
+
+/** Every documented parameter must be a type GitHub will actually prefill. */
+function assertPrefillable(claim: TemplateClaim, fields: readonly FormField[]): void {
+  const byId = new Map(fields.map((f) => [f.id, f]));
+  const wrong = claim.prefill
+    .map((p) => byId.get(p))
+    .filter((f): f is FormField => f !== undefined && !PREFILLABLE_TYPES.includes(f.type));
+  if (wrong.length > 0) {
+    throw new Error(
+      `contribute-form: ${claim.template} declares ` +
+        `${wrong.map((f) => `"${f.id}" as type: ${f.type}`).join(', ')}, and the ` +
+        `caail-contribute skill lists it as prefillable. Only ` +
+        `${PREFILLABLE_TYPES.join(' and ')} prefill from a URL query parameter. GitHub takes ` +
+        `the parameter for a dropdown and silently ignores it, so the reader is handed a blank ` +
+        `required field under copy saying it was filled in for them.`,
+    );
+  }
+}
+
+/**
+ * Nothing may be on the pick-by-hand list that the skill could simply have filled in.
+ *
+ * The lists are opposites, so a field on the wrong one is a real error rather than a stylistic
+ * choice: it asks the contributor to type something the agent already knew.
+ */
+function assertManualIsUnprefillable(claim: TemplateClaim, fields: readonly FormField[]): void {
+  const byId = new Map(fields.map((f) => [f.id, f]));
+  const fillable = claim.manual
+    .map((p) => byId.get(p))
+    .filter((f): f is FormField => f !== undefined && PREFILLABLE_TYPES.includes(f.type));
+  if (fillable.length > 0) {
+    throw new Error(
+      `contribute-form: the caail-contribute skill tells the reader to fill ` +
+        `${fillable.map((f) => `"${f.id}"`).join(', ')} by hand on ${claim.template}, but ` +
+        `type: ${fillable[0]!.type} prefills perfectly well. Move it to the prefillable list ` +
+        `rather than asking a contributor to retype something the agent already has.`,
+    );
+  }
+}
+
+/**
+ * Every required field is accounted for: prefilled, named as pick-by-hand, or exempt by design.
+ *
+ * Covers required fields of EVERY type, which is the point. A required `input` the skill forgot
+ * produces a blank box under copy claiming the form was filled in; a required `dropdown` the skill
+ * forgot produces a blank box the contributor is never told to fill, and GitHub then refuses the
+ * submission. Both are invisible here until this check runs, because nothing at runtime reports
+ * either one.
+ */
+function assertRequiredCovered(claim: TemplateClaim, fields: readonly FormField[]): void {
+  const handled = new Set([...claim.prefill, ...claim.manual]);
+  const exempt = (f: FormField): boolean =>
+    UNPREFILLED_BY_DESIGN.some((e) => e.id === f.id && e.type === f.type);
+  const stranded = fields.filter((f) => f.required && !handled.has(f.id) && !exempt(f));
+  if (stranded.length > 0) {
+    throw new Error(
+      `contribute-form: ${claim.template} requires ` +
+        `${stranded.map((f) => `"${f.id}" (type: ${f.type})`).join(', ')}, which the ` +
+        `caail-contribute skill neither prefills nor tells the reader to pick. A composed issue ` +
+        `would arrive with a blank required box. Add it to the skill's prefillable list if its ` +
+        `type allows, otherwise to its pick-by-hand list.`,
+    );
+  }
+}
+
+/**
+ * The worked URL example must only set parameters the claim list covers.
+ *
+ * The example exists to be copied, which is exactly why it must not be the one hand-typed copy
+ * nothing reconciles: rename a parameter and the checked list moves while the example goes on
+ * naming a dead one, so an agent following it composes a URL GitHub silently drops a value from.
+ * `readClaims` scans that line only for the template name, and `assertPresent` reads the code-span
+ * lists, so without this the example is checked by nothing.
+ *
+ * `template` and `title` are GitHub's own built-ins rather than form fields, so the example is
+ * expected to set them and they are not claimable. Everything else has to be in the prefill list.
+ */
+function assertExampleUrlParams(
+  claims: readonly TemplateClaim[],
+  skillPath: string,
+  skillSrc: string,
+): void {
+  // DERIVED from RESERVED_FIELD_IDS rather than listed again. They are the same set by
+  // definition — a parameter GitHub consumes itself is exactly a parameter no form field may be
+  // named after — and holding two copies produced a trap with no valid way out: an example adding
+  // a legitimate built-in like `&labels=suggestion` failed here saying the prefill list "does not
+  // claim" it, and the remedy this error suggests, adding it to that list, then failed
+  // `assertPresent`, because no form field carries that id. No edit to the skill satisfied both.
+  const builtins = new Set(RESERVED_FIELD_IDS);
+  const examples = skillSrc.split('\n').filter((l) => l.includes('issues/new?'));
+  if (examples.length === 0) {
+    throw new Error(
+      `contribute-form: ${skillPath} contains no worked "issues/new?" URL example. The example ` +
+        `is what an agent copies, and this check has nothing to reconcile without one, so its ` +
+        `absence would silently retire the check rather than trip it.`,
+    );
+  }
+
+  for (const line of examples) {
+    const params = [...line.matchAll(/[?&]([A-Za-z0-9_-]+)=/g)].map((m) => m[1]!);
+    const template = /[?&]template=([A-Za-z0-9._-]+\.yml)/.exec(line)?.[1];
+    const claim = claims.find((c) => c.template === template);
+    if (claim === undefined) {
+      throw new Error(
+        `contribute-form: a worked URL example in ${skillPath} composes for ` +
+          `${template === undefined ? 'no template at all' : `"${template}"`}, which declares no ` +
+          `prefillable parameters, so nothing checks what it sets. Name a template the skill ` +
+          `claims.`,
+      );
+    }
+    const unclaimed = params.filter((p) => !builtins.has(p) && !claim.prefill.includes(p));
+    if (unclaimed.length > 0) {
+      throw new Error(
+        `contribute-form: the worked URL example in ${skillPath} sets ` +
+          `${unclaimed.map((p) => `"${p}"`).join(', ')} on ${claim.template}, which the ` +
+          `prefillable-parameter list above it does not claim. The example is what an agent ` +
+          `copies, so a parameter only it names is one GitHub will ignore with nothing reporting ` +
+          `it. Keep the example a subset of the list.`,
+      );
+    }
+  }
+}
+
+/** No template may use a field id GitHub has reserved for its own parameters. */
+function assertNoReservedIds(template: string, fields: readonly FormField[]): void {
+  const clashes = fields.filter((f) => RESERVED_FIELD_IDS.includes(f.id));
+  if (clashes.length > 0) {
+    throw new Error(
+      `contribute-form: ${template} declares the field id(s) ` +
+        `${clashes.map((f) => `"${f.id}"`).join(', ')}, which GitHub reserves for its own ` +
+        `issue-creation query parameters. The parameter is consumed by the built-in and the ` +
+        `body field stays empty, so the field cannot be prefilled at all. paper.yml's ` +
+        `"title" was renamed to "paper_title" for exactly this reason.`,
+    );
+  }
+}
+
+/**
+ * Reconcile the skill against every template it claims to compose URLs for.
+ *
+ * @param skillPath    Path to the caail-contribute SKILL.md (defaults to the repo's).
+ * @param templateDir  Directory holding the issue forms (defaults to the repo's).
+ * @returns            The verified claims, for a caller that wants to report what was checked.
+ * @throws             If a named field is missing, is on the wrong list for its type, collides
+ *                     with a GitHub built-in, or if any required field is left unaccounted for.
+ */
+export function verifyContributeForms(
+  skillPath: string = SKILL_PATH,
+  templateDir: string = TEMPLATE_DIR,
+): TemplateClaim[] {
+  // Checked rather than left to readFileSync, because this is now the FIRST thing `pnpm parse`
+  // does: relocating or renaming plugin-contribute/ would otherwise kill every site build and
+  // the lint-papers sync guard with a bare ENOENT naming no module and no reason.
+  if (!existsSync(skillPath)) {
+    throw new Error(
+      `contribute-form: no caail-contribute skill at ${skillPath}. That file is the only copy ` +
+        `of the parameter lists the composed issue URLs set, so there is nothing to reconcile ` +
+        `the issue templates against. If the plugin moved, update SKILL_PATH in this module.`,
+    );
+  }
+  const skillSrc = readFileSync(skillPath, 'utf-8');
+  const claims = readClaims(skillSrc, skillPath);
+
+  // Once over the whole skill rather than per claim: an example names its own template, and the
+  // per-claim form quietly checked nothing for any template whose example did not exist.
+  assertExampleUrlParams(claims, skillPath, skillSrc);
+
+  for (const claim of claims) {
+    // The orphan check in readClaims only catches a template name mistyped in ONE of the two
+    // lists. Copy-paste the same wrong name into both and this is where it lands, so it answers
+    // in the module's own voice rather than as a bare ENOENT from the middle of `pnpm parse`.
+    const templatePath = join(templateDir, claim.template);
+    if (!existsSync(templatePath)) {
+      throw new Error(
+        `contribute-form: the caail-contribute skill composes URLs for "${claim.template}", ` +
+          `which does not exist in ${templateDir}. Check the template name in both of the ` +
+          `skill's lists for it; a name wrong in both places passes every earlier check.`,
+      );
+    }
+    const fields = readFields(readFileSync(templatePath, 'utf-8'), templatePath);
+    if (fields.length === 0) {
+      throw new Error(
+        `contribute-form: ${claim.template} declares no fields with an id, so nothing the ` +
+          `caail-contribute skill composes for it can prefill.`,
+      );
+    }
+    assertNoReservedIds(claim.template, fields);
+    assertPresent(claim, fields);
+    assertPrefillable(claim, fields);
+    assertManualIsUnprefillable(claim, fields);
+    assertRequiredCovered(claim, fields);
+  }
+
+  return claims;
+}

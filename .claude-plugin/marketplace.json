@@ -15,6 +15,13 @@
       "description": "Query CAAIL when choosing tools, datasets or databases for a cell-ag experiment or pipeline, or when asking what AI work exists in cultivated meat and alternative protein. Static JSON, nothing to install or authenticate.",
       "category": "science",
       "strict": false
+    },
+    {
+      "name": "caail-contribute",
+      "source": "./plugin-contribute",
+      "description": "Offers to suggest a paper, tool, dataset or database back to CAAIL when it turns out the library does not index it. Composes a prefilled GitHub issue for you to review and submit; it never files anything itself. Separate from the caail plugin so installing it is the consent, and removing it leaves querying intact.",
+      "category": "science",
+      "strict": false
     }
   ]
 }

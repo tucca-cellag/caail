@@ -40,6 +40,17 @@ on:
       # a template-only edit triggered NO workflow at all, so the one change most likely
       # to break the composer was the one change nothing ran against.
       - .github/ISSUE_TEMPLATE/**
+      # The caail-contribute skill. This IS the exception to the "skill prose has no test to
+      # run" note above, and the reason is worth stating because it was got wrong once here:
+      # `lint-papers.yml` also filters on this path and its sync-guard step runs `pnpm parse`,
+      # which aborts on drift -- so it looks like listing the path here only buys a second run
+      # of the same check. It does not. `contribute-form.test.ts` asserts strictly more than
+      # parse does: it pins exact SKILL.md prose, because every `stage({skill: ...})` scenario
+      # throws when its string edit matches nothing. Rewrapping one line of the resource.yml
+      # intro -- a legitimate prose reflow -- leaves `pnpm parse` green and fails two vitest
+      # cases. Without this path such a PR merges green and the next unrelated `site/**` PR
+      # inherits a red suite blaming a diff that did not cause it.
+      - plugin-contribute/**
   push:
     branches: [main]
     paths:
@@ -73,6 +84,17 @@ on:
       # a template-only edit triggered NO workflow at all, so the one change most likely
       # to break the composer was the one change nothing ran against.
       - .github/ISSUE_TEMPLATE/**
+      # The caail-contribute skill. This IS the exception to the "skill prose has no test to
+      # run" note above, and the reason is worth stating because it was got wrong once here:
+      # `lint-papers.yml` also filters on this path and its sync-guard step runs `pnpm parse`,
+      # which aborts on drift -- so it looks like listing the path here only buys a second run
+      # of the same check. It does not. `contribute-form.test.ts` asserts strictly more than
+      # parse does: it pins exact SKILL.md prose, because every `stage({skill: ...})` scenario
+      # throws when its string edit matches nothing. Rewrapping one line of the resource.yml
+      # intro -- a legitimate prose reflow -- leaves `pnpm parse` green and fails two vitest
+      # cases. Without this path such a PR merges green and the next unrelated `site/**` PR
+      # inherits a red suite blaming a diff that did not cause it.
+      - plugin-contribute/**
   workflow_dispatch:
 
 permissions:

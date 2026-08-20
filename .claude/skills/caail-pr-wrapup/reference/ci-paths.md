@@ -16,8 +16,8 @@ wins and the table is the bug.
 
 | Workflow | Trigger | Paths (snapshot) |
 | --- | --- | --- |
-| `lint-papers.yml` (matrix ↔ ref lint + `db:check`/`db:verify` + sync guards) | **pull_request** + push to main | `Papers.md`, `Software.md`, `Databases.md`, `OtherResources.md`, `Taxonomy.md`, `Datasets/**`, `CONTRIBUTING.md`, `CLAUDE.md`, `site/scripts/parser/**`, `site/scripts/db/**`, `site/db/**`, `site/public/api/**`, `site/public/setup.md`, `plugin/skills/**`, `skills/**`, `.claude/skills/matrix-classification-audit/**` |
-| `test.yml` (Worker config + vitest + Playwright/axe) | **pull_request** + push to main | `site/**`, `workers/**`, root `*.md`, `ResearchAreas/**`, `Methods/**`, `Datasets/**`, `Primers/**`, `.claude/hooks/**`, `.claude/settings.json`, `.github/ISSUE_TEMPLATE/**`, `.github/workflows/test.yml` |
+| `lint-papers.yml` (matrix ↔ ref lint + `db:check`/`db:verify` + sync guards) | **pull_request** + push to main | `Papers.md`, `Software.md`, `Databases.md`, `OtherResources.md`, `Taxonomy.md`, `Datasets/**`, `CONTRIBUTING.md`, `CLAUDE.md`, `site/scripts/parser/**`, `site/scripts/db/**`, `site/db/**`, `site/public/api/**`, `site/public/setup.md`, `plugin/skills/**`, `skills/**`, `.claude/skills/matrix-classification-audit/**`, `plugin-contribute/**`, `.github/ISSUE_TEMPLATE/**` |
+| `test.yml` (Worker config + vitest + Playwright/axe) | **pull_request** + push to main | `site/**`, `workers/**`, root `*.md`, `ResearchAreas/**`, `Methods/**`, `Datasets/**`, `Primers/**`, `.claude/hooks/**`, `.claude/settings.json`, `.github/ISSUE_TEMPLATE/**`, `.github/workflows/test.yml`, `plugin-contribute/**` |
 | `guards.yml` (publish-provenance hook + CI-paths consistency) | **pull_request** + push to main | `.claude/hooks/**`, `.claude/settings.json`, `.claude/skills/caail-pr-wrapup/**`, `.github/workflows/**` |
 | `docs.yml` (build + Lighthouse + deploy) | **push to `main` only** | `site/**`, root `*.md`, `ResearchAreas/**`, `Methods/**`, `Datasets/**`, `Primers/**`, `.github/ISSUE_TEMPLATE/**` |
 
@@ -27,14 +27,18 @@ correct because there is nothing to run. **Skills split both ways**, so do not g
 either direction: `skills/**`, `plugin/skills/**` and `.claude/skills/matrix-classification-audit/**` are
 in `lint-papers.yml` and `.claude/skills/caail-pr-wrapup/**` is in `guards.yml`, while the other four
 `.claude/skills/*` directories (`caail-db-authoring`, `papers-dataset-audit`, `zotero-collection-scope`,
-`zotero-to-caail-sync`) are in no filter and genuinely run nothing.
+`zotero-to-caail-sync`) are in no filter and genuinely run nothing. `plugin-contribute/**` is in **both**
+`lint-papers.yml` and `test.yml`, which is the one skill directory with a test of its own:
+`contribute-form.test.ts` reads its `SKILL.md` as input, and `pnpm parse` aborts when that skill and the
+issue templates disagree.
 
 **The full check-free list, which lives here and nowhere else** (`SKILL.md` step 5 points at it rather
 than restating it, because the enumeration has already been wrong in both directions once each):
 `.claude/` rules and agents, the four unfiltered `.claude/skills/*` directories named above, `docs/**`,
-`LICENSE`, `CITATION.cff`, `.zenodo.json`, `.gitignore`, and the two plugin manifests
+`LICENSE`, `CITATION.cff`, `.zenodo.json`, `.gitignore`, and two of the three plugin manifests
 (`.claude-plugin/marketplace.json` and `plugin/.claude-plugin/plugin.json`; only `plugin/skills/**` is
-filtered, not `plugin/**`). On what `preflight` reads, see the lede above; on how current it
+filtered, not `plugin/**`). The third, `plugin-contribute/.claude-plugin/plugin.json`, is **not**
+check-free: `plugin-contribute/**` is filtered whole, so everything under it runs checks. On what `preflight` reads, see the lede above; on how current it
 is, the paragraph after it, on `check-ci-paths.py`. Neither is restated here. When a check you expected is missing, open the workflow. `.claude/hooks/**` and
 `.claude/settings.json` trigger **both** `test.yml` and `guards.yml`, because the two hooks are tested
 in different places (`check-public-publish.test.py` in `guards.yml`, `block-generated-edits.py` via
