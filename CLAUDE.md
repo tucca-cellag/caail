@@ -282,7 +282,7 @@ This is a distinct virtue from the coverage humility already in `api/index.json`
 
 ## Workflow
 
-- **Jira first, always.** Every piece of work gets an issue in the private **CAAIL** Jira project *before* the work starts, not after. A public GitHub issue is an additional venue when the content is genuinely world-safe, never a substitute. The failure this prevents: a session's reasoning is the expensive part and it evaporates on compaction, so anything that lives only in a todo list or a chat transcript is already lost. See "Jira conventions" below for the schema. (The site and cloud id are deliberately not recorded in this world-readable file — resolve them at runtime via `getAccessibleAtlassianResources` and `getVisibleJiraProjects`.)
+- **Jira first, always.** Every piece of work gets an issue in the private **CAAIL** Jira project *before* the work starts, not after. A public GitHub issue is an additional venue when the content is genuinely world-safe, never a substitute. The failure this prevents: a session's reasoning is the expensive part and it evaporates on compaction, so anything that lives only in a todo list or a chat transcript is already lost. See "Jira conventions" below for the schema. (The site and cloud id are deliberately not recorded in this world-readable file — resolve them at runtime: `acli jira auth status` names the site, and the cloud id is the Keychain entry `JIRA_CLOUD_ID`.)
 - **The structured catalog is authored in a SQLite DB, not by hand** — see "The SQLite authoring backend" below. The matrix + references in `Papers.md`, the entries in `Software.md` / `Databases.md`, and the inventory tables in `Datasets/*.md` are **generated** from `site/db/ndjson/`; don't hand-edit those regions (a hook blocks it; CI fails on drift). Prose in those files, and every other canonical file, is still just hand-authored Markdown — preview in any Markdown viewer or let GitHub render it. (The generated website under `site/` has its own build — see "Documentation site (`site/`)" below.)
 - **Branching.** Work on `<type>/<slug>` branches off `main`; open PRs against `main`. Never commit directly to `main`.
 - **Superpowers specs stay local.** `.gitignore` excludes `docs/superpowers/`, so write the design doc there but don't commit it — the skill's default to commit doesn't apply here, and the existing specs are all untracked.
@@ -292,7 +292,7 @@ This is a distinct virtue from the coverage humility already in `api/index.json`
   - `fix(papers): correct DOI on reference 17`
 - **PRs.** Describe what you added and why it fits — for papers, mention the AI method(s) and research area(s) it spans (i.e. which matrix cells get updated).
 - **Publishing is irreversible.** `tucca-cellag/caail` is **public**: issue bodies, PR bodies, commit messages, branch names **and `.gitignore` comments** are all world-readable, GitHub issues can be deleted but **pull requests cannot**, and GHArchive permanently captures every public event. Before filing or commenting, confirm every quoted path, code block and architectural detail originates in *this* repo — anything read from a private repo or a third party's source is not publishable, and paraphrase discloses as much as a quote. Findings about a weakness in someone else's live service go to its owner privately, never a tracker. Rule: `.claude/rules/publishing.md`; enforced at the Bash layer by `.claude/hooks/check-public-publish.sh` (wired in the committed `.claude/settings.json`, tests in `check-public-publish.test.py`).
-- **Shipping a branch.** When a feature branch is done and locally green, the **`caail-pr-wrapup`** skill (in `.claude/skills/`) is the Ship stage: it runs the code review, pushes, opens the PR, watches CI, merges (after confirming — the merge triggers the public Pages deploy), watches the `docs.yml` deploy to green (build + Lighthouse + deploy), verifies the live site, and cleans up the worktree/branch. **Review belongs to that skill, not upstream of it**, and it is deliberately more than one round. The level, the floor on rounds and the stop rule live in the skill's step 1 and are deliberately not repeated here: this file loads every session while the skill loads at ship time, so a copy here would go on issuing the old instruction after the skill changed, and would win. Read step 1 rather than assuming, and read its rationale before shortening it. It also owns the CAAIL-specific gotchas (the `gh pr merge` "main already checked out" benign failure, the Lighthouse gate, which CI runs on which paths) so they don't have to be re-derived each time.
+- **Shipping a branch.** When a feature branch is done and locally green, the **`caail-pr-wrapup`** skill (in `.claude/skills/`) is the Ship stage: it runs the code review, pushes, opens the PR, watches CI, merges (after confirming — the merge triggers the public Pages deploy), watches the `docs.yml` deploy to green (build + Lighthouse + deploy), verifies the live site, and cleans up the worktree/branch. **Review belongs to that skill, not upstream of it**, and it is deliberately more than one round. The level, the floor on rounds, the stop rule and the two human-in-the-loop gates live in `.claude/skills/caail-pr-wrapup/reference/review-phase.md`, which the skill's step 1 points at, and are deliberately not repeated here: this file loads every session while the skill loads at ship time, so a copy here would go on issuing the old instruction after the skill changed, and would win. Read that file rather than assuming, and read its rationale before shortening it. It also owns the CAAIL-specific gotchas (the `gh pr merge` "main already checked out" benign failure, the Lighthouse gate, which CI runs on which paths) so they don't have to be re-derived each time.
 
 ## Jira conventions
 
@@ -329,10 +329,13 @@ Jira is the durable record. Claude's todo list is session-scoped and dies with t
 
 **Do not rely on a JQL text search to find it.** Jira's text index tokenizes, so `summary ~ "full text"` and `description ~ "CAAIL-166"` both miss matches you need — hyphenated keys in particular. The only sound method is to pull every open issue and scan locally:
 
-```
-# via the Rovo MCP: project = CAAIL AND statusCategory != Done ORDER BY key ASC
-# fields: key, summary, parent, priority, labels   (descriptions too if the topic is subtle)
-jq -r '.issues.nodes[] | [.key, .fields.summary] | @tsv' <saved-result> | grep -i '<concept>'
+```bash
+# One command. Fetches the whole project over REST and compacts it to one line
+# per issue: key, type, status, updated, priority, labels, parent, links, summary.
+~/.claude/scripts/jira-cache.sh list CAAIL
+
+# Full text, including descriptions AND comments:
+~/.claude/scripts/jira-cache.sh grep CAAIL '<concept>'
 ```
 
 Search for the **concept**, not your phrasing of it. A ticket about "refs whose classification rests on something short of full text" is the same work as one about "abstract-only placements", and no keyword search finds the second from the first. Read the summaries of anything adjacent before concluding it is new.
