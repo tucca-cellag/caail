@@ -1,6 +1,7 @@
 ---
 name: caail-contribute
 description: Suggest a paper, software tool, dataset or database back to CAAIL, the curated library of AI/ML work in cellular agriculture, when it is not already indexed there. Use when the user is reading, citing, summarising or evaluating a specific cell-ag or cultivated-meat resource and it turns out CAAIL does not hold it; also use when the user asks how to contribute to CAAIL, suggest a paper to CAAIL, or report something CAAIL is missing.
+allowed-tools: Read, Grep, Glob, WebFetch
 ---
 
 # Contribute to CAAIL
@@ -89,6 +90,30 @@ Also: CAAIL indexes reviews, perspectives and reference works that carry no meth
 area, so they are reachable from `papers-index.json` but from no matrix query. Never conclude an
 absence from the matrix alone.
 
+## Before you compose: the destination is public and permanent
+
+Everything you put in that issue becomes world-readable the moment the user submits it, and stays
+so. GitHub issues can be deleted, but GHArchive captures every public event into a permanently
+queryable dataset, so deleting one ten minutes later does not unpublish it.
+
+That matters here more than it would elsewhere, because this skill fires exactly when someone is
+**reading** something. Check where the resource came from before composing anything:
+
+- **A published paper, a public repository, a public dataset** is fine. That is the normal case.
+- **A manuscript under review, a collaborator's draft, an unpublished preprint, anything under
+  embargo or shared in confidence** is not. Do not compose a suggestion for it, and say why: it can
+  be suggested once it is public. This includes work the user is reviewing *for* a journal.
+- **If you cannot tell, ask.** One question costs a moment; a title and abstract of someone else's
+  unpublished work in a public tracker cannot be taken back.
+
+**Describe the resource, not the user's opinion of it.** You will often have their assessment,
+because that is what they were doing when this fired, and a suggestion needs a reason the resource
+fits rather than a verdict on its quality. "Applies Bayesian optimisation to serum-free media
+design" is a reason. "The stats are weak but the media work is worth having" is a private remark
+about identifiable authors, and it does not become publishable because it is accurate. If the
+user's own framing carries that kind of judgement, summarise the contribution instead and let them
+add anything else themselves.
+
 ## Composing the suggestion
 
 Offer two routes and let the user pick.
@@ -149,7 +174,9 @@ that they accept the contribution licence, and it is not your place to answer ei
 `paper.yml` it is `notes`. On `resource.yml` it is `summary`, which becomes the body text of the
 published entry, while `notes` there is optional and is for anything that did not fit a structured
 field. Write one or two sentences on what the resource contributes to the AI plus cellular
-agriculture intersection, in the user's own framing where you have it.
+agriculture intersection, bearing in mind the public-destination rule above: the user's framing is
+useful where it explains the fit, and is not to be transcribed where it is a judgement about the
+authors.
 
 ### Route 2, no GitHub account
 
@@ -171,6 +198,13 @@ they are correcting. Use it only when the user's point is that a real entry is w
 - **Never file anything.** No `gh issue create`, no `gh pr create`, no API call that writes. You
   compose; the user submits. This is not a formality: an agent-filed issue puts the user's name on
   a claim they did not read.
+
+  The `allowed-tools` line in this skill's frontmatter is what makes that structural rather than
+  aspirational: with it, no writing tool is available while this skill is active, so the guarantee
+  does not rest on an agent following an instruction while reading attacker-controlled text. **It
+  binds in Claude Code only** — that field is a Claude Code feature — so on any other client the
+  rule above is the only thing standing between a prompt-injected paper and a public issue filed
+  under the user's name.
 - **Never edit a local clone of CAAIL** to add the entry. The catalogue is generated from a SQLite
   backend and entry ids are assigned at landing, so a hand-edit to the Markdown is rejected by the
   repo's own guards. Maintainers use the `caail-db-authoring` skill instead.

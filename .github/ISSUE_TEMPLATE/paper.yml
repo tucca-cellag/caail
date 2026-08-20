@@ -136,5 +136,5 @@ body:
       options:
         - label: I've searched existing entries in Papers.md and this paper isn't already listed.
           required: true
-        - label: I understand that contributions to this repository are licensed under CC BY 4.0.
+        - label: I understand that contributions to this repository are licensed under the MIT License.
           required: true
