@@ -31,7 +31,9 @@ demonstrated on, with `AI Tooling / Methodology` as the deliberate exception: it
 general methods, agents and tools not yet tied to an applied cell-ag result. Read each
 column's actual boundary from `Taxonomy.md` rather than from this sentence. Distinct from a
 subject theme, which spans research areas and every content type.
-_Avoid_: domain, application area, sector, field
+_Avoid as a synonym_: domain, sector, field, application area. The last of those is banned only
+in this sense: it is the live name for the `Software.md` and `Databases.md` groupings, so keep
+using it there.
 
 **Cell**:
 The intersection of one method and one research area, holding anchor links to references.
@@ -51,8 +53,10 @@ unqualified count is always the wrong number)
 
 **Subject theme**:
 One of the eight top-level browse subjects, spanning every content type (papers, datasets,
-software, databases). A theme's population is therefore always larger than its research
-area's, and the two counts are not comparable.
+software, databases). A theme spans content types the matrix cannot hold, so its population is
+larger than its research area's for every pair today. Read that as a measurement rather than an
+invariant: `Food Safety` tags 19 items in all, so a column holding more than 19 references
+would reverse it. Either way the two counts are not comparable.
 _Avoid_: category, area, subject area
 
 **Fine tag**:
@@ -76,8 +80,11 @@ theme to carry an `area_key`, so an added theme may still be cross-cutting.
 
 **area_key**:
 The stored link from a subject theme to its research area, and the single joint between the
-two axes. Correspondence between the axes is always carried by this key and never inferred
-from a shared label. The join is not yet total: two of the eight themes carry no key, so only
+two axes. Correspondence between the axes is **read** from this key and never from a shared
+label. Note the asymmetry, which is a trap rather than a nicety: the key is currently
+**populated** by a label lookup in `seedTopics`, which returns `null` silently when no area
+label matches, so a label still has to match exactly at seed time even though nothing
+downstream reads one. The join is not yet total: two of the eight themes carry no key, so only
 six reach a research area. A deep-dive page hangs off the research area rather than the theme
 (`RESEARCH_AREA_SLUG`), and `ResearchAreas/` holds seven pages against six columns, because
 `MetabolicModeling.md` has a page with no column. ADR-0001's target is a bijection (eight

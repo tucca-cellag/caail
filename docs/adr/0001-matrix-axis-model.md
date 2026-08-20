@@ -35,24 +35,39 @@ and read every other number against the files above.
 Every theme's population is larger than its research area's, because a theme spans content
 types the matrix cannot hold, and the gap is not small: `Metabolism & Modeling` carries 171
 tag rows (70 datasets, 40 software, 34 databases, 27 papers) of which 10 are matrix-eligible
-placements. The disagreement is not even one-directional: `Scaffolding & Biomaterials` tags
-10 matrix papers while the `Scaffolding` column holds 12, so the column contains papers the
-theme does not.
+references, occupying 13 cells. (References and placements are different counts, per
+`CONTEXT.md`; a reference in three cells is three placements.) The disagreement is not even
+one-directional: `Scaffolding & Biomaterials` tags 10 matrix papers while the `Scaffolding`
+column holds 12, so the column contains papers the theme does not.
 
 That is why the **labels must stay different**, as a convention this ADR establishes: a
-research area reads as a problem (`Media Optimization`, `Sensory Prediction`), a theme reads
-as an `&`-joined subject (`Media & Growth Factors`, `Sensory & Flavor`). It is the only cue a
-reader has that two similar names count different things, and `/by-the-numbers/` renders both
-on one page. The one pair that already shares a label, `Bioprocess & Scale-Up`, is the one
+research area should read as a problem (`Media Optimization`, `Sensory Prediction`) and a theme
+as an `&`-joined subject (`Media & Growth Factors`, `Sensory & Flavor`). **The convention binds
+new labels rather than describing the existing ones**, because neither half holds across the
+live set: `Scaffolding` and `AI Tooling / Methodology` are columns naming no problem,
+`Food Safety` is a theme carrying no `&`, and `Bioprocess & Scale-Up` is an `&`-joined *column*,
+which is the pair this ADR relabels. Where it does hold it is the only cue a reader has that two
+similar names count different things, and `/by-the-numbers/` renders both on one page. The one pair that already shares a label, `Bioprocess & Scale-Up`, is the one
 pair that produced a bug: `Taxonomy.md` defines it twice and the theme blurb silently
 overwrote the column's scope in `taxonomy.json`, so an auditor sent to read the column's
 boundaries got two lines with none (GH #133, CAAIL-240). CAAIL-240 fixed the overwrite by
 keying on axis; the duplicate heading and the shared label are both still there, and this ADR
 resolves them by relabelling the theme `Bioprocess & Manufacturing`.
 
-Correspondence is carried by `area_key` and never inferred from a shared label. A guard that
-compared labels would pass exactly when the names matched and the populations diverged, which
-is the failure it exists to catch.
+Correspondence is **read** from `area_key` and never from a shared label. A guard that compared
+labels would pass exactly when the names matched and the populations diverged, which is the
+failure it exists to catch.
+
+The key is not yet **written** that way, and this is the sharpest trap in implementing this ADR.
+`seedTopics` resolves a theme's `area_key` by looking the area up **by label**
+(`SELECT key FROM areas WHERE label=?`, `site/scripts/db/seed.ts:222`) and falls back to `null`
+on a miss without complaining. A theme's `area` field therefore has to carry the column's label
+character for character. Since this ADR requires theme and area labels to *differ*, that lookup
+is the one place the two axes still meet by name, and getting it wrong is silent in every
+direction that matters: the theme keeps `area_key: null`, its papers go untagged (`seed.ts:244`
+skips an area with no theme), and `db:check` passes because it validates only non-null keys.
+Whoever lands the two columns should pass the area **key** rather than the label, or make the
+miss throw. Doing neither leaves the bijection resting on two strings agreeing.
 
 ## What has to change to reach the bijection
 
@@ -105,6 +120,11 @@ as fact, and none of it is true today:
   `CONTEXT.md`.
 - **No GFI crosswalk table exists in `Taxonomy.md`.** It is offered below as the mitigation for
   rejecting the GFI-facet option; it is a commitment, not a delivery.
+- **The two cross-cutting prose statements have not been rewritten.** `Taxonomy.md` still
+  describes both `Metabolism & Modeling` and `Food Safety` as "a cross-cutting subject with no
+  single matrix column", and `ResearchAreas/MetabolicModeling.md` still opens by calling itself
+  a cross-cutting methodology overview rather than a research area. Considered options below
+  commits to rewriting both; neither is done.
 - **The axes are not labelled on the surfaces that render both**, `/by-the-numbers/` and
   `/topics/`. That absence is what let GH #132 read a deliberate design as three gaps.
 
