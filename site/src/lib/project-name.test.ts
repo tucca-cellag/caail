@@ -13,9 +13,16 @@ import { fileURLToPath } from 'node:url';
  * explicit that a comment saying "keep these in sync" documents the risk without
  * mitigating it. This is the check.
  *
- * Covered: the hero eyebrow (`Hero.astro`), and the BibTeX block in
+ * Covered: the hero eyebrow (`Hero.astro`); the BibTeX block in
  * `src/lib/citation.ts`, whose own docstring says to update `CITATION.cff` first
- * and mirror it there — an instruction with nothing enforcing it until now.
+ * and mirror it there — an instruction with nothing enforcing it until now; and
+ * the APA line in `content/docs/cite.mdx`.
+ *
+ * The APA line is here for a sharper reason than the other two. It and the BibTeX
+ * block render side by side on `/cite/`, so pinning one without the other would
+ * make a retitle worse than doing nothing: the page would show two citations that
+ * disagree about the name of the work, which is harder to notice, and harder to
+ * trust, than two that are equally out of date.
  *
  * NOT covered, and deliberately not enumerated: the expansion appears in several
  * other files too. An earlier draft of this docstring listed them, and the list was
@@ -98,6 +105,24 @@ export function parseBibtexTitle(ts: string): string {
 // said the project name agreed "everywhere it is written by hand", which is the coverage
 // the docstring above explicitly disclaims — and a describe string is printed on every
 // run, so a green result read as "all copies agree" when it means "these two do".
+/**
+ * The APA title from `cite.mdx`, e.g. `CAAIL: Cellular Agriculture AI Library`.
+ *
+ * Anchored on the APA form itself — an italicised work title immediately followed
+ * by a `(Version …)` parenthetical — rather than on "the only italics in the file",
+ * which is false: there are three, and the other two are ordinary emphasis.
+ */
+export function parseApaTitle(mdx: string): string {
+  const all = [...mdx.matchAll(/\*([^*]+)\*\s+\(Version\b/g)];
+  if (all.length !== 1) {
+    throw new Error(
+      `cite.mdx has ${all.length} italicised titles followed by "(Version …)", expected ` +
+        'exactly 1 — this guard cannot tell which one titles the work',
+    );
+  }
+  return all[0][1];
+}
+
 describe('the hero eyebrow and the BibTeX title agree with CITATION.cff', () => {
   const title = () => parseCitationTitle(read('CITATION.cff'));
 
@@ -109,6 +134,15 @@ describe('the hero eyebrow and the BibTeX title agree with CITATION.cff', () => 
 
   it('the BibTeX title matches CITATION.cff once brace protection is stripped', () => {
     expect(parseBibtexTitle(read('site/src/lib/citation.ts'))).toBe(title());
+  });
+
+  it('the APA title on /cite/ matches the BibTeX title rendered beside it', () => {
+    // /cite/ renders these two citations on one page. Pinning only the BibTeX one
+    // would make a retitle WORSE than leaving both alone: CITATION.cff, the hero and
+    // the BibTeX would move together while the APA line stayed put, and the page
+    // would show two citations disagreeing about the name of the work. Uniformly
+    // stale is recoverable; self-contradicting is not.
+    expect(parseApaTitle(read('site/src/content/docs/cite.mdx'))).toBe(title());
   });
 });
 
@@ -151,5 +185,21 @@ describe('the guard fails loudly rather than silently when a source is restructu
   it('rejects a second BibTeX title rather than silently checking the first', () => {
     const two = '  title        = {{CAAIL}: A},\n  title        = {{CAAIL}: B},\n';
     expect(() => parseBibtexTitle(two)).toThrow(/2 BibTeX/);
+  });
+
+  it('ignores ordinary emphasis and reads only the APA work title', () => {
+    // cite.mdx carries three italic spans; only one is the title, and it is the one
+    // an APA "(Version …)" parenthetical follows.
+    const mdx =
+      'See *“Cite this repository”* on GitHub.\n\n' +
+      'Author, A. (2026). *CAAIL: X* (Version 1.0.0). Zenodo.\n\n' +
+      'Credit the *original source*.\n';
+    expect(parseApaTitle(mdx)).toBe('CAAIL: X');
+  });
+
+  it('rejects an APA line whose title lost its italics', () => {
+    expect(() => parseApaTitle('Author, A. (2026). CAAIL: X (Version 1.0.0).')).toThrow(
+      /0 italicised titles/,
+    );
   });
 });

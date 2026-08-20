@@ -54,16 +54,33 @@ interface Props {
 const { width = 168, class: className, textName = false } = Astro.props;
 const height = Math.round((width * blkbl.height) / blkbl.width);
 const style = `--tl-w:${width}px;--tl-h:${height}px;--tl-light:url("${blkbl.src}");--tl-dark:url("${white.src}")`;
+
+/*
+ * On the markup below: the mark is deliberately tight against both anchor tags,
+ * and that is NOT stray formatting to tidy up.
+ *
+ * Astro preserves whitespace inside an element, so putting `.tl-mark` on its own
+ * indented line emits text nodes inside the anchor. They are invisible in layout
+ * (`.tl` sets `line-height: 0`) but they are real to `textContent`: with `textName`
+ * on, the hero attribution extracted as "A project of" + three spaces + "Tufts…",
+ * in the copy-and-paste surface this prop exists to fix. `cite.spec.ts` asserts the
+ * sentence contains no double space, so re-indenting it turns that spec red.
+ *
+ * This note lives in the frontmatter on purpose, and the two nearer places it could
+ * go are both wrong:
+ *
+ *   - An HTML comment beside the markup is what it started as. Astro ships those
+ *     verbatim; it reached 52 built pages and, on the homepage, landed INSIDE
+ *     `<p class="hero-attrib">`.
+ *   - An Astro expression comment immediately above the anchor fails differently:
+ *     the newline between it and the tag becomes the very whitespace text node
+ *     this note is about.
+ *
+ * (Writing that second form out literally here would also end this comment early,
+ * since it contains a block-comment terminator. It did, once.)
+ */
 ---
 
-<!-- The mark is deliberately tight against both tags below, and that is NOT stray
-     formatting to tidy up. Astro preserves whitespace inside an element, so putting
-     `.tl-mark` on its own indented line emits two text nodes inside the anchor. They
-     are invisible in layout (`.tl` sets `line-height: 0`) but they are real to
-     `textContent`: with `textName` on, the hero attribution extracted as
-     "A project of___Tufts…" — three spaces — in the copy-and-paste surface this prop
-     exists to fix. Measured on the built page rather than reasoned about. Keep the
-     tags closed up; `cite.spec.ts` asserts the sentence contains no double space. -->
 <a
   class:list={['tl', className]}
   href="https://cellularagriculture.tufts.edu/"
