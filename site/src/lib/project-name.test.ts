@@ -40,10 +40,24 @@ import { fileURLToPath } from 'node:url';
 const REPO_ROOT = fileURLToPath(new URL('../../../', import.meta.url));
 const read = (rel: string) => readFileSync(join(REPO_ROOT, rel), 'utf8');
 
+/**
+ * Read a repo file and hand the parser its path, so a failure names the file it
+ * actually read.
+ *
+ * Every parser below takes `source` rather than hardcoding a filename, and this
+ * helper is why that cannot drift: the path is written once and used for both the
+ * read and the message. Two of them DID hardcode one, and it stopped being true the
+ * moment `README.md` became a second call site — a failure there announced
+ * `citation.ts has 0 BibTeX title lines`, sending the reader to a file that was
+ * correct. That is the same misdirection `parseHeroEyebrow` argues against below.
+ */
+const readFrom = <T>(rel: string, parse: (text: string, source: string) => T): T =>
+  parse(read(rel), rel);
+
 /** The `title:` value from CITATION.cff, e.g. `CAAIL: Cellular Agriculture AI Library`. */
-export function parseCitationTitle(cff: string): string {
+export function parseCitationTitle(cff: string, source: string): string {
   const m = cff.match(/^title:\s*"([^"]+)"\s*$/m);
-  if (!m) throw new Error('CITATION.cff has no quoted top-level `title:` — this guard cannot run');
+  if (!m) throw new Error(`${source} has no quoted top-level \`title:\` — this guard cannot run`);
   return m[1];
 }
 
@@ -54,7 +68,7 @@ export function parseCitationTitle(cff: string): string {
  * check the wrong element if one were added above it, which is a passing guard on a
  * drifting page — the failure mode this file exists to prevent.
  */
-export function parseHeroEyebrow(astro: string): string {
+export function parseHeroEyebrow(astro: string, source: string): string {
   // Match any single-`class`-attribute <p> and test the class LIST, rather than
   // hardcoding `class="eyebrow"`. Pinning the attribute exactly made every second
   // class a silent zero-match — `class="eyebrow sr"` would have read as a deleted
@@ -77,7 +91,7 @@ export function parseHeroEyebrow(astro: string): string {
           'double-quoted attribute — check the element before assuming it is gone)'
         : '';
     throw new Error(
-      `Hero.astro has ${all.length} \`.eyebrow\` paragraphs of plain text, expected ` +
+      `${source} has ${all.length} \`.eyebrow\` paragraphs of plain text, expected ` +
         `exactly 1 — this guard cannot tell which one spells out the acronym${zero}`,
     );
   }
@@ -91,11 +105,11 @@ export function parseHeroEyebrow(astro: string): string {
  * BibTeX block (a per-version entry, say) and a first-match parser would silently
  * check the wrong line and pass on a drifted page.
  */
-export function parseBibtexTitle(ts: string): string {
+export function parseBibtexTitle(ts: string, source: string): string {
   const all = [...ts.matchAll(/^\s*title\s*=\s*\{(.+)\},\s*$/gm)];
   if (all.length !== 1) {
     throw new Error(
-      `citation.ts has ${all.length} BibTeX \`title = {...}\` lines, expected exactly 1 — ` +
+      `${source} has ${all.length} BibTeX \`title = {...}\` lines, expected exactly 1 — ` +
         'this guard cannot tell which one titles the work',
     );
   }
@@ -103,17 +117,17 @@ export function parseBibtexTitle(ts: string): string {
 }
 
 /**
- * The APA title from `cite.mdx`, e.g. `CAAIL: Cellular Agriculture AI Library`.
+ * The APA work title, e.g. `CAAIL: Cellular Agriculture AI Library`.
  *
  * Anchored on the APA form itself — an italicised work title immediately followed
  * by a `(Version …)` parenthetical — rather than on "the only italics in the file",
- * which is false: there are three, and the other two are ordinary emphasis.
+ * which is false: `cite.mdx` has three, and the other two are ordinary emphasis.
  */
-export function parseApaTitle(mdx: string): string {
+export function parseApaTitle(mdx: string, source: string): string {
   const all = [...mdx.matchAll(/\*([^*]+)\*\s+\(Version\b/g)];
   if (all.length !== 1) {
     throw new Error(
-      `cite.mdx has ${all.length} italicised titles followed by "(Version …)", expected ` +
+      `${source} has ${all.length} italicised titles followed by "(Version …)", expected ` +
         'exactly 1 — this guard cannot tell which one titles the work',
     );
   }
@@ -127,16 +141,18 @@ export function parseApaTitle(mdx: string): string {
 // lists its contents is a hand-typed copy of the list directly below it. The `it`
 // names are the inventory; this is not.
 describe('every pinned copy of the title agrees with CITATION.cff', () => {
-  const title = () => parseCitationTitle(read('CITATION.cff'));
+  const title = () => readFrom('CITATION.cff', parseCitationTitle);
 
   it('the hero eyebrow expands the acronym exactly as CITATION.cff titles the work', () => {
     const expansion = title().replace(/^CAAIL:\s*/, '');
     expect(expansion, 'CITATION.cff title should read "CAAIL: <expansion>"').not.toBe(title());
-    expect(parseHeroEyebrow(read('site/src/components/Hero.astro'))).toBe(`CAAIL · ${expansion}`);
+    expect(readFrom('site/src/components/Hero.astro', parseHeroEyebrow)).toBe(
+      `CAAIL · ${expansion}`,
+    );
   });
 
   it('the BibTeX title matches CITATION.cff once brace protection is stripped', () => {
-    expect(parseBibtexTitle(read('site/src/lib/citation.ts'))).toBe(title());
+    expect(readFrom('site/src/lib/citation.ts', parseBibtexTitle)).toBe(title());
   });
 
   it('README renders the same two citations, so both are pinned there too', () => {
@@ -144,9 +160,8 @@ describe('every pinned copy of the title agrees with CITATION.cff', () => {
     // the same reason /cite/ does. It is also the most-read page in the repo. Leaving
     // it out would reproduce there the exact self-contradiction the case below exists
     // to prevent — and the parsers need no changes to reach it.
-    const readme = read('README.md');
-    expect(parseApaTitle(readme)).toBe(title());
-    expect(parseBibtexTitle(readme)).toBe(title());
+    expect(readFrom('README.md', parseApaTitle)).toBe(title());
+    expect(readFrom('README.md', parseBibtexTitle)).toBe(title());
   });
 
   it('the APA title on /cite/ matches the BibTeX title rendered beside it', () => {
@@ -155,20 +170,22 @@ describe('every pinned copy of the title agrees with CITATION.cff', () => {
     // the BibTeX would move together while the APA line stayed put, and the page
     // would show two citations disagreeing about the name of the work. Uniformly
     // stale is recoverable; self-contradicting is not.
-    expect(parseApaTitle(read('site/src/content/docs/cite.mdx'))).toBe(title());
+    expect(readFrom('site/src/content/docs/cite.mdx', parseApaTitle)).toBe(title());
   });
 });
 
 describe('the guard fails loudly rather than silently when a source is restructured', () => {
   it('rejects an unquoted CITATION.cff title instead of returning nothing', () => {
-    expect(() => parseCitationTitle('title: CAAIL: Cellular Agriculture AI Library\n')).toThrow(
+    expect(() =>
+      parseCitationTitle('title: CAAIL: Cellular Agriculture AI Library\n', '<fixture>'),
+    ).toThrow(
       /no quoted top-level/,
     );
   });
 
   it('rejects a second .eyebrow rather than silently checking the first', () => {
     const two = '<p class="eyebrow">Something else</p>\n<p class="eyebrow">CAAIL · X</p>';
-    expect(() => parseHeroEyebrow(two)).toThrow(/2 `\.eyebrow` paragraphs/);
+    expect(() => parseHeroEyebrow(two, '<fixture>')).toThrow(/2 `\.eyebrow` paragraphs/);
   });
 
   it('still finds the eyebrow when it carries a second class', () => {
@@ -177,7 +194,7 @@ describe('the guard fails loudly rather than silently when a source is restructu
     // `class="eyebrow"` match would have turned that refactor into a guard reporting
     // a deleted element.
     const withSr = '<p class="eyebrow sr">CAAIL · X</p>';
-    expect(parseHeroEyebrow(withSr)).toBe('CAAIL · X');
+    expect(parseHeroEyebrow(withSr, '<fixture>')).toBe('CAAIL · X');
   });
 
   it('says nested markup may be the cause, not only a deleted eyebrow', () => {
@@ -186,18 +203,18 @@ describe('the guard fails loudly rather than silently when a source is restructu
     // has to name that possibility or it sends the reader after the wrong thing.
     const nested =
       '<p class="eyebrow"><span class="bar" aria-hidden="true"></span>CAAIL · X</p>';
-    expect(() => parseHeroEyebrow(nested)).toThrow(/nested markup/);
+    expect(() => parseHeroEyebrow(nested, '<fixture>')).toThrow(/nested markup/);
   });
 
   it('rejects a missing BibTeX title line', () => {
-    expect(() => parseBibtexTitle('export const X = `@misc{a, year = {2026},}`;')).toThrow(
+    expect(() => parseBibtexTitle('export const X = `@misc{a, year = {2026},}`;', '<fixture>')).toThrow(
       /0 BibTeX/,
     );
   });
 
   it('rejects a second BibTeX title rather than silently checking the first', () => {
     const two = '  title        = {{CAAIL}: A},\n  title        = {{CAAIL}: B},\n';
-    expect(() => parseBibtexTitle(two)).toThrow(/2 BibTeX/);
+    expect(() => parseBibtexTitle(two, '<fixture>')).toThrow(/2 BibTeX/);
   });
 
   it('ignores ordinary emphasis and reads only the APA work title', () => {
@@ -207,11 +224,11 @@ describe('the guard fails loudly rather than silently when a source is restructu
       'See *“Cite this repository”* on GitHub.\n\n' +
       'Author, A. (2026). *CAAIL: X* (Version 1.0.0). Zenodo.\n\n' +
       'Credit the *original source*.\n';
-    expect(parseApaTitle(mdx)).toBe('CAAIL: X');
+    expect(parseApaTitle(mdx, '<fixture>')).toBe('CAAIL: X');
   });
 
   it('rejects an APA line whose title lost its italics', () => {
-    expect(() => parseApaTitle('Author, A. (2026). CAAIL: X (Version 1.0.0).')).toThrow(
+    expect(() => parseApaTitle('Author, A. (2026). CAAIL: X (Version 1.0.0).', '<fixture>')).toThrow(
       /0 italicised titles/,
     );
   });
