@@ -165,16 +165,25 @@ const statSentence = `Indexing ${stats.map((s) => `${s.n} ${s.label}`).join(', '
         nothing pinned to the first. The trailing span can then say "its own" without
         ambiguity, because in extracted text the antecedent is now literally present.
 
-        Select-and-copy is the surface this is for, NOT search: checked by decompressing
+        Text extraction is the surface this is for, NOT search: checked by decompressing
         `dist/pagefind/fragment/*.pf_fragment`, the homepage fragment contains neither "A
         project of" nor the org name, so nothing here reaches the Pagefind index either way.
         An earlier version of this comment claimed it did, which is the same
         asserted-without-measuring defect the comment on the eyebrow above warns about.
         (Grepping those files directly proves nothing — they are gzip.)
 
+        "Extraction" covers two surfaces that differ, and saying "select-and-copy" alone
+        was wrong for the same reason the Pagefind claim was. Measured: `textContent` is
+        one clean sentence, while `innerText` and `Selection.toString()` give THREE lines
+        in mixed case — this row is `display: flex`, so the serialiser blockifies each
+        child, and the `text-transform: uppercase` below does not reach `.tl-name`, which
+        sits in `TuccaLockup`'s own scope. What the prop delivers on both surfaces is the
+        subject being present at all; the clean-sentence form is `textContent` only.
+        `cite.spec.ts` now asserts each surface for what is actually true of it.
+
         The spaces inside the spans are deliberate for the same class of reason: word
         separation must not depend on `TuccaLockup`'s incidental line-breaking, which is
-        invisible to select-and-copy where the `flex gap` does not exist.
+        invisible to text extraction, where the `flex gap` does not exist.
 
         Deliberately unquantified — what CAAIL adds to an agent's answers is unmeasured
         (CAAIL-168), so "we use it" is assertable and "it works better" is not.

@@ -26,10 +26,10 @@ import white from '../assets/tucca/cca-horiz-white.png';
  * The accessible name, in ONE place.
  *
  * It is needed twice — as the link's `aria-label`, and (opt-in) as text so the mark
- * is not invisible to `textContent` and select-and-copy, since the lockup is a
- * background image and the anchor otherwise contributes only whitespace. Typing it
- * in the caller was the first attempt and produced two copies that nothing pinned
- * together: rename or shorten one and sighted, AT and copied text disagree silently.
+ * is not invisible to text extraction, since the lockup is a background image and the
+ * anchor otherwise contributes only whitespace. Typing it in the caller was the first
+ * attempt and produced two copies that nothing pinned together: rename or shorten one
+ * and sighted, AT and extracted text disagree silently.
  */
 const NAME = 'Tufts University Center for Cellular Agriculture';
 
@@ -52,7 +52,13 @@ interface Props {
    * Opt-in rather than always-on: it only matters where the lockup sits inside a
    * sentence (the hero attribution), and turning it on globally would change what
    * every other placement extracts to. `aria-hidden` because the anchor's
-   * `aria-label` already gives assistive tech the name; this is for copied text.
+   * `aria-label` already gives assistive tech the name; this is for extracted text.
+   *
+   * What it delivers is the name being PRESENT, not a tidy sentence. A caller whose
+   * row is `display: flex` with `text-transform` on its other children — the hero
+   * attribution is both — gets a multi-line, mixed-case string from `innerText` and
+   * from a selection, because this span sits in its own scope and inherits neither.
+   * `textContent` is the surface that reads as one sentence. Measured, not assumed.
    */
   textName?: boolean;
 }
@@ -68,9 +74,9 @@ const style = `--tl-w:${width}px;--tl-h:${height}px;--tl-light:url("${blkbl.src}
  * Astro preserves whitespace inside an element, so putting `.tl-mark` on its own
  * indented line emits text nodes inside the anchor. They are invisible in layout
  * (`.tl` sets `line-height: 0`) but they are real to `textContent`: with `textName`
- * on, the hero attribution extracted as "A project of" + three spaces + "Tufts…",
- * in the copy-and-paste surface this prop exists to fix. `cite.spec.ts` asserts the
- * whole sentence, single spaces included, so re-indenting this turns that spec red.
+ * on, the hero attribution's `textContent` read "A project of" + three spaces +
+ * "Tufts…", in the extraction surface this prop exists to fix. `cite.spec.ts` asserts
+ * that whole sentence, single spaces included, so re-indenting this turns it red.
  *
  * This note lives in the frontmatter on purpose, and the two nearer places it could
  * go are both wrong:

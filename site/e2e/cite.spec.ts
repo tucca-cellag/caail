@@ -81,14 +81,31 @@ test('homepage surfaces the TUCCA lockup in hero and footer, linked to TUCCA', a
   await expect(hero.locator('.tl-mark')).toBeVisible();
 });
 
-test('the hero attribution extracts as one clean sentence, subject included', async ({ page }) => {
+test('the hero attribution names its subject in every text-extraction surface', async ({
+  page,
+}) => {
   await page.goto('./');
 
-  // `textContent`, not `innerText`: this is about what select-and-copy and any text
-  // extractor get. The lockup draws the org name as a CSS background image on an
-  // `aria-hidden` span, so the anchor contributes NO text of its own — which is how
-  // this line once shipped as "A project of  and used in its own R&D", a sentence
-  // with its subject missing, past four screenshots and a clean axe run.
+  // The defect this guards: the lockup draws the org name as a CSS background image
+  // on an `aria-hidden` span, so the anchor contributes NO text of its own. This line
+  // once shipped as "A project of  and used in its own R&D" — a sentence with its
+  // subject missing — past four screenshots and a clean axe run, because sighted
+  // rendering and assistive tech were both fine and neither check reads extracted text.
+  //
+  // The two surfaces are checked SEPARATELY because they genuinely differ here, and an
+  // earlier version of this test asserted one while its name and three source comments
+  // claimed the other. Measured on the built page:
+  //
+  //   textContent -> "A project of Tufts University Center for Cellular Agriculture
+  //                   and used in its own R&D"
+  //   innerText   -> "A PROJECT OF\nTufts University Center for Cellular
+  //                   Agriculture\nAND USED IN ITS OWN R&D"
+  //
+  // `.hero-attrib` is `display: flex`, so the serialiser blockifies each child and
+  // inserts newlines; and its spans carry `text-transform: uppercase`, which does not
+  // reach `.tl-name` because that span is emitted under TuccaLockup's own Astro scope.
+  // So copied text is three lines with mixed casing, by design of the hero's styling
+  // rather than by accident, and calling it "one clean sentence" would be false.
   const text = (await page.locator('.hero-attrib').textContent()) ?? '';
 
   // ONE assertion on the whole sentence, not three on its parts. Three `toContain`s
@@ -103,6 +120,21 @@ test('the hero attribution extracts as one clean sentence, subject included', as
   // two-space forms both fail this.
   expect(
     text,
-    `hero attribution is not one clean sentence: ${JSON.stringify(text)}`,
+    `hero attribution is not one clean sentence in textContent: ${JSON.stringify(text)}`,
   ).toContain('A project of Tufts University Center for Cellular Agriculture and used in its own R&D');
+
+  // `innerText` is the model for select-and-copy (and what `Selection.toString()`
+  // returns here — checked, they match). It is asserted for the one property that
+  // matters and that this change actually delivers: the SUBJECT IS PRESENT. Before
+  // `textName`, a reader copying this line got "A PROJECT OF / AND USED IN ITS OWN
+  // R&D" with no org name at all.
+  //
+  // Deliberately not asserted here: line count, casing, or a single-sentence form.
+  // Those are properties of the hero's flex + uppercase styling, not of this prop,
+  // and pinning them would make an unrelated design change fail this spec.
+  const copied = await page.locator('.hero-attrib').innerText();
+  expect(
+    copied.replace(/\s+/g, ' '),
+    `the org name is missing from copied text: ${JSON.stringify(copied)}`,
+  ).toContain('Tufts University Center for Cellular Agriculture');
 });
