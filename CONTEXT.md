@@ -16,9 +16,11 @@ that states a decided end-state as present fact tells a reader the work is alrea
 `topics.ndjson`, `item_topics.ndjson` and `matrix_cells.ndjson` are the source of truth: where a
 number here disagrees with them, they are right and this file is stale. **No one command prints
 all of these.** `pnpm --dir site db:check` prints the theme assertions, including that there are
-exactly eight; `pnpm --dir site parse` prints the headline totals (345 papers, 7 research areas)
-but not the 229 matrix-eligible subset, nor any theme or `area_key` count. For the rest, read the
-four files.
+exactly eight; `pnpm --dir site parse` prints the headline totals but not the 229 matrix-eligible
+subset, nor any theme or `area_key` count. Read `parse`'s output carefully: its `researchAreas`
+figure counts files in `ResearchAreas/`, currently 7, and is **not** the number of research areas
+as defined below, which is the 6 matrix columns in `areas.ndjson`. For the rest, read the four
+files.
 
 ## Language
 
@@ -62,9 +64,10 @@ unqualified count is always the wrong number)
 **Subject theme**:
 One of the eight top-level browse subjects, spanning every content type (papers, datasets,
 software, databases). A theme spans content types the matrix cannot hold, so its population is
-larger than its research area's for every pair today. Read that as a measurement rather than an
-invariant: `Food Safety` tags 19 items in all, so a column holding more than 19 references
-would reverse it. Either way the two counts are not comparable.
+larger than its research area's for every joined pair today. Read that as a measurement rather
+than an invariant, and note it holds only over the **whole** population: on the matrix-eligible
+subset the direction has already reversed, since `Scaffolding & Biomaterials` tags 10 matrix
+papers where the `Scaffolding` column holds 12. Either way the two counts are not comparable.
 _Avoid_: category, area, subject area
 
 **Fine tag**:

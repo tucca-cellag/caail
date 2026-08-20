@@ -17,8 +17,8 @@ absence; don't suggest creating them upfront. The `/domain-modeling` skill
 (reached via `/grill-with-docs` and `/improve-codebase-architecture`) creates
 them lazily when terms or decisions actually get resolved.
 
-Both now exist: `CONTEXT.md` at the repo root and one ADR,
-`docs/adr/0001-matrix-axis-model.md`.
+Both now exist. Read `docs/adr/` for what is in it rather than trusting any
+count written down here.
 
 An ADR records a decision, which is not the same as a description of the
 repository. ADR-0001 carries an **Implementation status** section splitting what
@@ -32,7 +32,7 @@ as true of the code you are about to touch.
 ├── CONTEXT.md
 ├── docs/
 │   ├── adr/
-│   │   └── 0001-matrix-axis-model.md   ← the only one so far
+│   │   └── 0001-matrix-axis-model.md
 │   └── agents/          ← this directory
 └── site/
 ```
@@ -50,7 +50,7 @@ what a glossary would:
   architecture of the SQLite authoring backend.
 
 `CONTEXT.md` therefore points at `Taxonomy.md` for the curation vocabulary rather
-than restating it — a hand-typed copy of a definition that already exists
+than restating it, because a hand-typed copy of a definition that already exists
 elsewhere is exactly the drift this repo's most expensive recurring bug comes
 from. Keep it that way when extending it.
 

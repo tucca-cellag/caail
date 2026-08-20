@@ -56,6 +56,17 @@ boundaries got two lines with none (GH #133, CAAIL-240). CAAIL-240 fixed the ove
 keying on axis; the duplicate heading and the shared label are both still there, and this ADR
 resolves them by relabelling the theme `Bioprocess & Manufacturing`.
 
+**That relabel overrules a decision already recorded in code, and says so rather than quietly
+reversing it.** `site/scripts/parser/taxonomy.ts` argues the opposite: the two are "different
+things that happen to be named the same", and "renaming either to dodge the clash would be the
+tail wagging the dog". That reasoning is right about the **parser**, which is why the axis-keyed
+lookup stays exactly as it is: correctness must never depend on two labels differing, and a
+guard that assumed it would break the moment they matched again. It is overruled for the
+**reader**, who has no axis to key on and meets both labels rendered on one page. So the code
+keeps its invariant and the labels stop colliding, and neither claim rests on the other.
+Whoever lands the relabel updates that comment in the same change; leaving it is how the next
+person finds two documents disagreeing with no way to tell which won.
+
 Correspondence is **read** from `area_key` and never from a shared label. A guard that compared
 labels would pass exactly when the names matched and the populations diverged, which is the
 failure it exists to catch.
@@ -85,6 +96,14 @@ miss throw. Doing neither leaves the bijection resting on two strings agreeing.
   does not become a second identical-label pair over a tenfold population gap. **Both are
   required**: the bijection is eight themes against eight areas, so landing one of the two
   leaves the other's theme without an `area_key` and the model unreached.
+  **`Metabolic Modeling` breaks the problem-shaped rule this ADR sets, deliberately.** It names
+  a technique, which is the same objection the rejected keep-it-cross-cutting option raises
+  below ("the model is the technique"). The alternative is to name it for the problem, and there
+  is no single problem to name: a metabolic-modeling paper's problem is usually media design or
+  bioprocess yield, so a problem-shaped label would split the column across two that already
+  exist, which is the split having a column is meant to avoid. Recorded as an exception with its
+  reason rather than left for a reader to catch. If a curator prefers the split, that reopens
+  this bullet and not the naming convention.
 - **`benchmarks-evaluation` stays a fine tag** under `AI Methods & Tooling`. Promoting it
   would make nine themes against eight areas and reopen the mismatch from the other side.
 - **`counts.json`'s `researchAreas` needs no relabel.** It is derived from the file count in
@@ -168,7 +187,10 @@ part of the same not-yet-implemented work.
 Value Chain Segment, Technology Sector, End Product Focus, Relevant Actor, Maturity Level,
 Solution Category, Topic). Rejected on a concrete count: none of the eight facets has a place for
 a general AI method, and `AI Tooling / Methodology` holds 81 of the 229 matrix-eligible
-references now that the retired column's are absorbed, so 35% of the matrix would be homeless.
+references after the retirement, so 35% of the matrix would be homeless. ("After", not
+"absorbing them all": of the retired column's 23 references, 15 went to `AI Tooling /
+Methodology` and 7 to `Cellular Engineering`, which is the re-placement described above rather
+than one column swallowing a whole axis.)
 Underneath that, GFI's facets answer "who should act on this gap" and CAAIL's column answers
 "what did this paper demonstrate". A crosswalk table in `Taxonomy.md` is to map each column to
 its nearest GFI sector and state the four gaps as gaps, which delivers the legibility without the
