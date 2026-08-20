@@ -27,13 +27,13 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
-    "@astrojs/preact": "^6.0.1",
+    "@astrojs/preact": "^6.0.4",
     "@astrojs/starlight": "^0.39.2",
     "@fontsource-variable/bricolage-grotesque": "^5.2.10",
     "@fontsource-variable/inter": "^5.2.8",
     "@fontsource-variable/jetbrains-mono": "^5.2.8",
     "@iconify-json/ph": "^1.2.2",
-    "astro": "^6.4.6",
+    "astro": "^6.4.8",
     "astro-icon": "^1.2.0",
     "cytoscape": "^3.33.4",
     "hast-util-sanitize": "^5.0.2",
@@ -43,7 +43,7 @@
     "preact": "^10.29.2",
     "remark-gfm": "^4.0.1",
     "remark-parse": "^11.0.0",
-    "sharp": "^0.35.0",
+    "sharp": "^0.35.3",
     "unified": "^11.0.5"
   },
   "devDependencies": {
