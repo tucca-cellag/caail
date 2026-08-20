@@ -16,7 +16,8 @@ import { fileURLToPath } from 'node:url';
  * Covered: the hero eyebrow (`Hero.astro`); the BibTeX block in
  * `src/lib/citation.ts`, whose own docstring says to update `CITATION.cff` first
  * and mirror it there — an instruction with nothing enforcing it until now; the
- * APA line in `content/docs/cite.mdx`; and both citations in `README.md`.
+ * APA line in `content/docs/cite.mdx`; and `README.md`'s heading and both of its
+ * citations.
  *
  * The citation pairs are here for a sharper reason than the eyebrow. An APA line
  * and a BibTeX block render side by side on `/cite/`, and again on `README.md`, so
@@ -140,6 +141,31 @@ export function parseApaTitle(mdx: string, source: string): string {
 // while still printing on every run as though it were true. A describe string that
 // lists its contents is a hand-typed copy of the list directly below it. The `it`
 // names are the inventory; this is not.
+/**
+ * The document title of a Markdown file: its FIRST LINE, which must be an H1.
+ *
+ * Anchored on position, not on uniqueness. An earlier draft required the file to
+ * contain exactly one `# ` heading, on the reasoning that a Markdown document has
+ * one H1 by convention — and `README.md` has EIGHT, because it heads every section
+ * that way. That draft failed on the real file, which is the outcome it was built
+ * for: the premise was wrong and said so instead of quietly matching something.
+ *
+ * Taking the first of many would have been worse than either. It would have passed,
+ * pinned the correct string by luck, and left a guard that silently follows whatever
+ * heading happens to sort first if the document is ever reordered.
+ */
+export function parseMarkdownH1(md: string, source: string): string {
+  const first = md.split('\n', 1)[0];
+  const m = /^# (.+)$/.exec(first);
+  if (!m) {
+    throw new Error(
+      `${source} does not begin with an \`# \` heading — its first line is ` +
+        `${JSON.stringify(first.slice(0, 60))}, so this guard cannot read the title`,
+    );
+  }
+  return m[1].trim();
+}
+
 describe('every pinned copy of the title agrees with CITATION.cff', () => {
   const title = () => readFrom('CITATION.cff', parseCitationTitle);
 
@@ -153,6 +179,14 @@ describe('every pinned copy of the title agrees with CITATION.cff', () => {
 
   it('the BibTeX title matches CITATION.cff once brace protection is stripped', () => {
     expect(readFrom('site/src/lib/citation.ts', parseBibtexTitle)).toBe(title());
+  });
+
+  it('README’s heading agrees with the citations further down the same page', () => {
+    // The H1 sits about forty lines above README's APA and BibTeX blocks. Pinning
+    // those two and not this one would leave the repo's most-read page announcing
+    // one title at the top and citing another below it — the same
+    // half-a-pair failure the citation cases exist to prevent, one element up.
+    expect(readFrom('README.md', parseMarkdownH1)).toBe(title());
   });
 
   it('README renders the same two citations, so both are pinned there too', () => {
@@ -225,6 +259,23 @@ describe('the guard fails loudly rather than silently when a source is restructu
       'Author, A. (2026). *CAAIL: X* (Version 1.0.0). Zenodo.\n\n' +
       'Credit the *original source*.\n';
     expect(parseApaTitle(mdx, '<fixture>')).toBe('CAAIL: X');
+  });
+
+  it('reads the leading H1 on a file that uses H1 for every section', () => {
+    // Not a hypothetical: README.md heads all eight of its sections with `# `. A
+    // uniqueness-based parser fails here, and a first-match one passes for the wrong
+    // reason. Position is the property that actually identifies the title.
+    const many = '# The Title\n\ntext\n\n# A Section\n\nmore\n\n# Another\n';
+    expect(parseMarkdownH1(many, '<fixture>')).toBe('The Title');
+  });
+
+  it('rejects a file whose first line is not an H1, and quotes what it found', () => {
+    expect(() => parseMarkdownH1('## Not the title\n', '<fixture>')).toThrow(
+      /does not begin with an .# . heading/,
+    );
+    expect(() => parseMarkdownH1('\n# Title after a blank line\n', '<fixture>')).toThrow(
+      /first line is ""/,
+    );
   });
 
   it('rejects an APA line whose title lost its italics', () => {
