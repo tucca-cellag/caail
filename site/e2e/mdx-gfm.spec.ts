@@ -2,6 +2,10 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { relative, join } from 'node:path';
 import { test, expect } from '@playwright/test';
+import { unified } from 'unified';
+import remarkParse from 'remark-parse';
+import remarkGfm from 'remark-gfm';
+import { visit } from 'unist-util-visit';
 
 /**
  * GFM survives in the in-repo Starlight MDX pipeline.
@@ -37,12 +41,10 @@ function mdxFiles(dir: string): string[] {
 /**
  * The leading `---` block, split into the fields and where the block ends.
  *
- * Both numbers are returned together because they are different lengths and
- * using one for the other is a live bug rather than a hypothetical: slicing the
- * source by the length of the FIELDS leaves a ragged tail of the frontmatter
- * behind (`---\ntitle: A\n---\n\nbody` becomes `e: A\n---\n\nbody`), which is then
- * scanned as page content. A stray ``` in a frontmatter value would open a fence
- * that never closes and suppress every table on the page.
+ * Both are returned together because they are different lengths and using one
+ * for the other is a live bug rather than a hypothetical: slicing the source by
+ * the length of the FIELDS leaves a ragged tail of the frontmatter behind, which
+ * is then parsed as page content.
  */
 function frontmatter(src: string): { fields: string; end: number } {
   const m = /^---\r?\n([\s\S]*?)\r?\n---\r?\n/.exec(src);
@@ -50,71 +52,53 @@ function frontmatter(src: string): { fields: string; end: number } {
 }
 
 /**
- * A GFM delimiter row: the `| --- | --- |` line under a table's header.
+ * Count the GFM tables a page will render, by parsing it.
  *
- * Deliberately not a single regex. GFM accepts a single dash per cell (`| - |`)
- * and omitted outer pipes (`--- | ---`), and a naive `\|(?:\s*:?-{2,}:?\s*\|)+`
- * misses both — which would make the expected count too LOW and fail this spec
- * on a page that is rendering perfectly. Parsing the cells is the only form that
- * matches the grammar rather than one common spelling of it.
- */
-function isDelimiterRow(line: string): boolean {
-  const t = line.trim();
-  // GFM requires at least one pipe; without this a thematic break (`---`) counts.
-  if (!t.includes('|')) return false;
-  let body = t;
-  if (body.startsWith('|')) body = body.slice(1);
-  if (body.endsWith('|')) body = body.slice(0, -1);
-  const cells = body.split('|');
-  return cells.length > 0 && cells.every((c) => /^:?-+:?$/.test(c.trim()));
-}
-
-/**
- * Count the tables a page will actually render.
- *
- * Two things stop the count over-expecting, which would fail the spec while
- * naming the wrong cause. A delimiter row inside a fenced code block is emitted
- * as `<pre>`, never a `<table>`; and a delimiter row with no header line above
- * it is not a table at all, it is a paragraph. Both are skipped.
+ * This deliberately asks remark rather than pattern-matching the source. Two
+ * earlier hand-rolled versions of this function were wrong in opposite
+ * directions and both would have failed the spec on a page that renders fine:
+ * a regex that missed single-dash and outer-pipe-less delimiter rows undercounted,
+ * and a hand-tracked code fence that closes on the first matching marker
+ * character regardless of fence length mis-pairs nested fences, so a table below
+ * a ```-inside-```` block was skipped. remark-gfm is the same extension Astro
+ * feeds its own pipeline, it is already a direct dependency here, and it settles
+ * fences, delimiter grammar and indentation exactly rather than approximately.
  */
 function countTables(src: string): number {
-  const lines = src.slice(frontmatter(src).end).split('\n');
-  let fence: string | null = null;
-  let count = 0;
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-    const opener = /^ {0,3}(`{3,}|~{3,})/.exec(line);
-    if (opener) {
-      const marker = opener[1][0];
-      if (fence === null) fence = marker;
-      else if (fence === marker) fence = null;
-      continue;
-    }
-    if (fence !== null) continue;
-    // A delimiter row only forms a table when a header row sits directly above.
-    const prev = i > 0 ? lines[i - 1].trim() : '';
-    if (isDelimiterRow(line) && prev !== '' && prev.includes('|')) count++;
-  }
-  return count;
+  const tree = unified()
+    .use(remarkParse)
+    .use(remarkGfm)
+    .parse(src.slice(frontmatter(src).end));
+  let n = 0;
+  visit(tree, 'table', () => {
+    n++;
+  });
+  return n;
 }
 
 /**
  * Starlight routes a docs file by its path relative to src/content/docs, minus
- * the extension, with `index` collapsing to the base itself — unless the page
- * overrides it with a `slug:`. Reading the frontmatter rather than assuming the
- * default keeps a future `slug:` page from 404ing here and reporting it as a
- * GFM regression. The `response.ok()` assertion in the test is the backstop for
- * whatever this derivation still gets wrong.
+ * the extension, with an `index` segment collapsing away — unless the page
+ * overrides it with a `slug:`.
+ *
+ * Astro slugifies each path segment, which lowercases it, so a capitalised
+ * filename does NOT route at its literal path. Deriving the route verbatim sent
+ * this spec to a 404 and reported it as a GFM regression. Lowercasing covers the
+ * filenames this repo actually uses; `response.ok()` in the test is the backstop
+ * for whatever else Astro's slugger does that this does not, and it fails with a
+ * message naming the route rather than blaming GFM.
  */
 function routeFor(absPath: string, src: string): string {
   const slugLine = /^slug:\s*(.+?)\s*$/m.exec(frontmatter(src).fields);
-  const slug = slugLine
+  const raw = slugLine
     ? slugLine[1].replace(/^['"]|['"]$/g, '')
     : relative(DOCS, absPath).replace(/\.mdx$/, '');
-  // Strip a trailing `index` at ANY depth, not just the root: papers/index.mdx
-  // routes to /papers/, so collapsing only the top-level case would send this
-  // spec to /papers/index/ and report a 404 as a GFM regression.
-  const clean = slug.replace(/^\/+|\/+$/g, '').replace(/(^|\/)index$/, '');
+  const clean = raw
+    .split('/')
+    .map((seg) => seg.toLowerCase())
+    .join('/')
+    .replace(/^\/+|\/+$/g, '')
+    .replace(/(^|\/)index$/, '');
   return clean === '' ? './' : `./${clean}/`;
 }
 
