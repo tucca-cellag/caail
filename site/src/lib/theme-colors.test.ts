@@ -25,10 +25,18 @@ describe('themeColor', () => {
     }
   });
 
-  it('never paints an area-less theme with an area colour', () => {
+  it('has no area-less theme left to mis-paint, and would not mis-paint one', () => {
     // The exact bug that shipped: metabolism-modeling wearing a matrix area's token,
     // one since retired with its column — so borrowing now paints an undefined variable.
-    for (const t of themes.filter((x) => !x.areaKey)) {
+    //
+    // ADR-0001 gave every theme an area, so the filter below is empty and the loop
+    // asserts nothing. That is the state we want, but a test whose body never runs is
+    // green whatever the code does, so assert the emptiness itself — it is the real
+    // invariant now, and `db:check`'s bijection guard enforces it at the source.
+    const areaLess = themes.filter((x) => !x.areaKey);
+    expect(areaLess).toEqual([]);
+    // Kept executable for the day a cross-cutting theme is deliberately reintroduced.
+    for (const t of areaLess) {
       expect(themeColor(t.slug)).not.toMatch(/--caail-area-/);
     }
   });

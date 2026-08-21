@@ -1,5 +1,5 @@
 {
-  "corpusDate": "2026-08-20",
+  "corpusDate": "2026-08-21",
   "status": "beta",
   "placementsUnderReview": true,
   "methods": [
@@ -51,13 +51,21 @@
       "label": "Sensory Prediction"
     },
     {
+      "key": "metabolic",
+      "label": "Metabolic Modeling"
+    },
+    {
+      "key": "foodsafety",
+      "label": "Food Safety Prediction"
+    },
+    {
       "key": "tooling",
       "label": "AI Tooling / Methodology"
     }
   ],
-  "totalCells": 150,
-  "populatedCells": 70,
-  "emptyCells": 80,
+  "totalCells": 200,
+  "populatedCells": 72,
+  "emptyCells": 128,
   "scopeNote": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall.",
   "placementNote": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself.",
   "cells": [
@@ -119,6 +127,22 @@
     },
     {
       "method": "Bayesian Optimization",
+      "area": "metabolic",
+      "areaLabel": "Metabolic Modeling",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Bayesian Optimization",
+      "area": "foodsafety",
+      "areaLabel": "Food Safety Prediction",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Bayesian Optimization",
       "area": "tooling",
       "areaLabel": "AI Tooling / Methodology",
       "refIds": [],
@@ -145,7 +169,6 @@
         5,
         122,
         57,
-        145,
         118,
         123,
         263
@@ -199,6 +222,24 @@
     },
     {
       "method": "Deep Learning",
+      "area": "metabolic",
+      "areaLabel": "Metabolic Modeling",
+      "refIds": [
+        145
+      ],
+      "emptyInCorpus": false,
+      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+    },
+    {
+      "method": "Deep Learning",
+      "area": "foodsafety",
+      "areaLabel": "Food Safety Prediction",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Deep Learning",
       "area": "tooling",
       "areaLabel": "AI Tooling / Methodology",
       "refIds": [
@@ -225,8 +266,7 @@
         13,
         8,
         12,
-        121,
-        68
+        121
       ],
       "emptyInCorpus": false,
       "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
@@ -261,6 +301,24 @@
       ],
       "emptyInCorpus": false,
       "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+    },
+    {
+      "method": "GNN",
+      "area": "metabolic",
+      "areaLabel": "Metabolic Modeling",
+      "refIds": [
+        68
+      ],
+      "emptyInCorpus": false,
+      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+    },
+    {
+      "method": "GNN",
+      "area": "foodsafety",
+      "areaLabel": "Food Safety Prediction",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
     },
     {
       "method": "GNN",
@@ -334,6 +392,22 @@
     },
     {
       "method": "CNN",
+      "area": "metabolic",
+      "areaLabel": "Metabolic Modeling",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "CNN",
+      "area": "foodsafety",
+      "areaLabel": "Food Safety Prediction",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "CNN",
       "area": "tooling",
       "areaLabel": "AI Tooling / Methodology",
       "refIds": [],
@@ -386,6 +460,22 @@
       ],
       "emptyInCorpus": false,
       "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+    },
+    {
+      "method": "GAN / VAE",
+      "area": "metabolic",
+      "areaLabel": "Metabolic Modeling",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "GAN / VAE",
+      "area": "foodsafety",
+      "areaLabel": "Food Safety Prediction",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
     },
     {
       "method": "GAN / VAE",
@@ -455,6 +545,22 @@
     },
     {
       "method": "Genetic Algorithms",
+      "area": "metabolic",
+      "areaLabel": "Metabolic Modeling",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Genetic Algorithms",
+      "area": "foodsafety",
+      "areaLabel": "Food Safety Prediction",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Genetic Algorithms",
       "area": "tooling",
       "areaLabel": "AI Tooling / Methodology",
       "refIds": [],
@@ -517,6 +623,22 @@
       ],
       "emptyInCorpus": false,
       "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+    },
+    {
+      "method": "SVM",
+      "area": "metabolic",
+      "areaLabel": "Metabolic Modeling",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "SVM",
+      "area": "foodsafety",
+      "areaLabel": "Food Safety Prediction",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
     },
     {
       "method": "SVM",
@@ -607,13 +729,29 @@
     },
     {
       "method": "Ensemble Learning",
-      "area": "tooling",
-      "areaLabel": "AI Tooling / Methodology",
+      "area": "metabolic",
+      "areaLabel": "Metabolic Modeling",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Ensemble Learning",
+      "area": "foodsafety",
+      "areaLabel": "Food Safety Prediction",
       "refIds": [
         290
       ],
       "emptyInCorpus": false,
       "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+    },
+    {
+      "method": "Ensemble Learning",
+      "area": "tooling",
+      "areaLabel": "AI Tooling / Methodology",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
     },
     {
       "method": "K-Nearest Neighbors",
@@ -660,6 +798,22 @@
       ],
       "emptyInCorpus": false,
       "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+    },
+    {
+      "method": "K-Nearest Neighbors",
+      "area": "metabolic",
+      "areaLabel": "Metabolic Modeling",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "K-Nearest Neighbors",
+      "area": "foodsafety",
+      "areaLabel": "Food Safety Prediction",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
     },
     {
       "method": "K-Nearest Neighbors",
@@ -716,6 +870,22 @@
       ],
       "emptyInCorpus": false,
       "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+    },
+    {
+      "method": "Linear & Regularized Models",
+      "area": "metabolic",
+      "areaLabel": "Metabolic Modeling",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Linear & Regularized Models",
+      "area": "foodsafety",
+      "areaLabel": "Food Safety Prediction",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
     },
     {
       "method": "Linear & Regularized Models",
@@ -778,6 +948,22 @@
     },
     {
       "method": "Chemometrics",
+      "area": "metabolic",
+      "areaLabel": "Metabolic Modeling",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Chemometrics",
+      "area": "foodsafety",
+      "areaLabel": "Food Safety Prediction",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Chemometrics",
       "area": "tooling",
       "areaLabel": "AI Tooling / Methodology",
       "refIds": [
@@ -833,6 +1019,22 @@
       "method": "Active Learning",
       "area": "sensory",
       "areaLabel": "Sensory Prediction",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Active Learning",
+      "area": "metabolic",
+      "areaLabel": "Metabolic Modeling",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Active Learning",
+      "area": "foodsafety",
+      "areaLabel": "Food Safety Prediction",
       "refIds": [],
       "emptyInCorpus": true,
       "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
@@ -898,6 +1100,22 @@
     },
     {
       "method": "Reinforcement Learning",
+      "area": "metabolic",
+      "areaLabel": "Metabolic Modeling",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Reinforcement Learning",
+      "area": "foodsafety",
+      "areaLabel": "Food Safety Prediction",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Reinforcement Learning",
       "area": "tooling",
       "areaLabel": "AI Tooling / Methodology",
       "refIds": [
@@ -951,6 +1169,22 @@
       ],
       "emptyInCorpus": false,
       "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+    },
+    {
+      "method": "Foundation Models: Next-Token Prediction",
+      "area": "metabolic",
+      "areaLabel": "Metabolic Modeling",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Foundation Models: Next-Token Prediction",
+      "area": "foodsafety",
+      "areaLabel": "Food Safety Prediction",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
     },
     {
       "method": "Foundation Models: Next-Token Prediction",
@@ -1011,6 +1245,22 @@
     },
     {
       "method": "Foundation Models: Masked Language Modeling",
+      "area": "metabolic",
+      "areaLabel": "Metabolic Modeling",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Foundation Models: Masked Language Modeling",
+      "area": "foodsafety",
+      "areaLabel": "Food Safety Prediction",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Foundation Models: Masked Language Modeling",
       "area": "tooling",
       "areaLabel": "AI Tooling / Methodology",
       "refIds": [
@@ -1065,6 +1315,22 @@
     },
     {
       "method": "Foundation Models: LM + Biological Priors",
+      "area": "metabolic",
+      "areaLabel": "Metabolic Modeling",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Foundation Models: LM + Biological Priors",
+      "area": "foodsafety",
+      "areaLabel": "Food Safety Prediction",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Foundation Models: LM + Biological Priors",
       "area": "tooling",
       "areaLabel": "AI Tooling / Methodology",
       "refIds": [],
@@ -1111,6 +1377,22 @@
       "method": "Foundation Models: Cell-State & Perturbation Prediction",
       "area": "sensory",
       "areaLabel": "Sensory Prediction",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Foundation Models: Cell-State & Perturbation Prediction",
+      "area": "metabolic",
+      "areaLabel": "Metabolic Modeling",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Foundation Models: Cell-State & Perturbation Prediction",
+      "area": "foodsafety",
+      "areaLabel": "Food Safety Prediction",
       "refIds": [],
       "emptyInCorpus": true,
       "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
@@ -1170,6 +1452,22 @@
     },
     {
       "method": "Foundation Models (other modalities)",
+      "area": "metabolic",
+      "areaLabel": "Metabolic Modeling",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Foundation Models (other modalities)",
+      "area": "foodsafety",
+      "areaLabel": "Food Safety Prediction",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Foundation Models (other modalities)",
       "area": "tooling",
       "areaLabel": "AI Tooling / Methodology",
       "refIds": [
@@ -1216,6 +1514,22 @@
       "method": "Scientific Literature & Discovery Agents",
       "area": "sensory",
       "areaLabel": "Sensory Prediction",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Scientific Literature & Discovery Agents",
+      "area": "metabolic",
+      "areaLabel": "Metabolic Modeling",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Scientific Literature & Discovery Agents",
+      "area": "foodsafety",
+      "areaLabel": "Food Safety Prediction",
       "refIds": [],
       "emptyInCorpus": true,
       "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
@@ -1281,6 +1595,22 @@
     },
     {
       "method": "General-Purpose Biomedical Agents",
+      "area": "metabolic",
+      "areaLabel": "Metabolic Modeling",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "General-Purpose Biomedical Agents",
+      "area": "foodsafety",
+      "areaLabel": "Food Safety Prediction",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "General-Purpose Biomedical Agents",
       "area": "tooling",
       "areaLabel": "AI Tooling / Methodology",
       "refIds": [
@@ -1338,6 +1668,22 @@
     },
     {
       "method": "Chemistry / Synthesis Agents",
+      "area": "metabolic",
+      "areaLabel": "Metabolic Modeling",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Chemistry / Synthesis Agents",
+      "area": "foodsafety",
+      "areaLabel": "Food Safety Prediction",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Chemistry / Synthesis Agents",
       "area": "tooling",
       "areaLabel": "AI Tooling / Methodology",
       "refIds": [
@@ -1387,6 +1733,22 @@
       "method": "Domain-Specific Biomedical Agents",
       "area": "sensory",
       "areaLabel": "Sensory Prediction",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Domain-Specific Biomedical Agents",
+      "area": "metabolic",
+      "areaLabel": "Metabolic Modeling",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Domain-Specific Biomedical Agents",
+      "area": "foodsafety",
+      "areaLabel": "Food Safety Prediction",
       "refIds": [],
       "emptyInCorpus": true,
       "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
@@ -1461,6 +1823,22 @@
     },
     {
       "method": "Robot Scientists & Lab Automation",
+      "area": "metabolic",
+      "areaLabel": "Metabolic Modeling",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Robot Scientists & Lab Automation",
+      "area": "foodsafety",
+      "areaLabel": "Food Safety Prediction",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Robot Scientists & Lab Automation",
       "area": "tooling",
       "areaLabel": "AI Tooling / Methodology",
       "refIds": [
@@ -1527,6 +1905,22 @@
     },
     {
       "method": "Benchmarks & Evaluation Frameworks",
+      "area": "metabolic",
+      "areaLabel": "Metabolic Modeling",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Benchmarks & Evaluation Frameworks",
+      "area": "foodsafety",
+      "areaLabel": "Food Safety Prediction",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Benchmarks & Evaluation Frameworks",
       "area": "tooling",
       "areaLabel": "AI Tooling / Methodology",
       "refIds": [
@@ -1585,6 +1979,22 @@
       "method": "Agent Infrastructure (Frameworks, KGs, Protocols)",
       "area": "sensory",
       "areaLabel": "Sensory Prediction",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Agent Infrastructure (Frameworks, KGs, Protocols)",
+      "area": "metabolic",
+      "areaLabel": "Metabolic Modeling",
+      "refIds": [],
+      "emptyInCorpus": true,
+      "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."
+    },
+    {
+      "method": "Agent Infrastructure (Frameworks, KGs, Protocols)",
+      "area": "foodsafety",
+      "areaLabel": "Food Safety Prediction",
       "refIds": [],
       "emptyInCorpus": true,
       "scope": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."

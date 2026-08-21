@@ -15,15 +15,20 @@
  *    only the stable column axis is guarded);
  *  - #133 axis resolution: Taxonomy.md's three vocabularies may share a label,
  *    so every DB row/column must resolve to a definition under its OWN H2, and
- *    no label may be defined twice within one axis.
+ *    no label may be defined twice within one axis;
+ *  - ADR-0001 subject-axis bijection: every theme names a research area, every
+ *    research area is named by exactly one theme, and every research area has a
+ *    ResearchAreas page. Asserted through `area_key`, never by label equality.
+ *    Research-area axis only; the method-row axis is deliberately not gated.
  */
 
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { importNdjson, ACCESSION_EXACT, idAccession, REPO_ROOT, SITE_ROOT, type Db } from './lib.js';
-import { THEME_SLUGS } from './seed.js';
+import { THEME_SLUGS, THEMES } from './seed.js';
 import { buildTaxonomyModel } from '../parser/taxonomy.js';
+import { AREAS } from '../parser/areas.js';
 import type { TaxonomyData } from '../parser/types.js';
 
 const MANUAL_LICENSES_PATH = join(SITE_ROOT, 'scripts', 'db', 'licenses-manual.json');
@@ -150,6 +155,176 @@ export function checkTopicTiers(db: Db): CheckResult[] {
   out.push(ok('topics: no theme carries a theme_slug', badTheme.length === 0, badTheme.map((t) => t.slug).join(', ')));
   const badArea = db.prepare('SELECT slug FROM topics WHERE area_key IS NOT NULL AND area_key NOT IN (SELECT key FROM areas)').all() as unknown[];
   out.push(ok('topics: every area_key resolves', badArea.length === 0, `${badArea.length} unresolved`));
+  return out;
+}
+
+/**
+ * Area key → its `ResearchAreas/` deep-dive page, WITHOUT the `.md`.
+ *
+ * A page slug is not derivable from its key (`cell` → `CellEngineering`), so this
+ * join has to be stored somewhere. It is not a DB column because `db:bootstrap`
+ * reconstructs `areas` from Papers.md, which carries no page name — a column here
+ * would be a field bootstrap could never reproduce. Keeping it in the guard is safe
+ * precisely because the guard asserts the map covers the DB's areas EXACTLY, so a
+ * column added without a page fails naming the missing key rather than drifting.
+ */
+const RESEARCH_AREA_PAGES: Record<string, string> = {
+  media: 'MediaOptimization',
+  cell: 'CellEngineering',
+  bioprocess: 'Bioprocess',
+  scaffolding: 'Scaffolding',
+  sensory: 'SensoryPrediction',
+  metabolic: 'MetabolicModeling',
+  foodsafety: 'FoodSafetyPrediction',
+  tooling: 'AITooling',
+};
+
+/**
+ * ADR-0001's subject-axis bijection, on the RESEARCH-AREA axis only.
+ *
+ * The model: subject themes and matrix research areas are two axes over different
+ * populations, paired one-to-one by `topics.area_key`, with one deep-dive page per
+ * area. This guard is what makes "paired" a fact rather than an intention.
+ *
+ * It asserts the pairing THROUGH `area_key` and never by comparing labels. That is
+ * the whole point, not a stylistic preference: the two axes count different things
+ * (a theme tags every content type, a column only matrix-eligible papers), so their
+ * populations differ on every pair. A label comparison would therefore
+ * pass in exactly the case the guard exists to catch — names that match while the
+ * things behind them do not — and the labels are deliberately shaped so they never
+ * match anyway (`Bioprocess & Manufacturing` the theme, `Bioprocess & Scale-Up` the
+ * column). Comparing them would fail on every correct repo.
+ *
+ * Deliberately NOT extended to the method-row axis. The original blocker (a bijection
+ * over a half-written axis would block every new row on prose) no longer applies now
+ * that the axis is complete, but gating on it would move that cost to the next row
+ * anyone proposes rather than remove it. Whether to add it is an open curator
+ * decision, recorded in `Methods/CLAUDE.md` — not an oversight here. That file asks
+ * that the row count not be restated in prose, so it is not restated here.
+ */
+export function checkAxisBijection(db: Db, repoRoot: string = REPO_ROOT): CheckResult[] {
+  const out: CheckResult[] = [];
+
+  // 1. Every theme names a research area. Complements checkTopicTiers, which only
+  //    asserts that a NON-NULL area_key resolves and so passes on a null one.
+  const keyless = (db.prepare("SELECT slug FROM topics WHERE tier='theme' AND area_key IS NULL").all() as { slug: string }[])
+    .map((r) => r.slug);
+  out.push(ok('axes: every subject theme names a research area', keyless.length === 0,
+    `themes with a null area_key: [${keyless.join(', ')}] — ADR-0001 retired the "cross-cutting theme" class, so a theme without a column is a deliberate reopening of it`));
+
+  // 2. Every research area is named by exactly one theme.
+  const areaKeys = (db.prepare('SELECT key FROM areas ORDER BY ordinal').all() as { key: string }[]).map((r) => r.key);
+  const themeCounts = new Map(areaKeys.map((k) => [k, 0]));
+  const unknownKeys: string[] = [];
+  for (const r of db.prepare("SELECT area_key FROM topics WHERE tier='theme' AND area_key IS NOT NULL").all() as { area_key: string }[]) {
+    // Only count keys that name a real area. Without this an unresolvable key lands in the
+    // map with count 1, passes the `!== 1` filter, and the failure message then names the
+    // real area that dropped to 0 rather than the bogus key that caused it. `checkTopicTiers`
+    // would also fail, but this function is exported and unit-tested on its own.
+    if (!themeCounts.has(r.area_key)) { unknownKeys.push(r.area_key); continue; }
+    themeCounts.set(r.area_key, (themeCounts.get(r.area_key) ?? 0) + 1);
+  }
+  const notOne = [...themeCounts].filter(([, n]) => n !== 1).map(([k, n]) => `${k}=${n}`);
+  out.push(ok('axes: every research area is named by exactly one theme', notOne.length === 0 && unknownKeys.length === 0,
+    `areas whose naming theme count is not 1: [${notOne.join(', ')}]`
+    + (unknownKeys.length ? `; themes naming an area that does not exist: [${unknownKeys.join(', ')}]` : '')));
+
+  // 3. Every research area has a deep-dive page, and the map above matches the DB.
+  const mapped = new Set(Object.keys(RESEARCH_AREA_PAGES));
+  const unmapped = areaKeys.filter((k) => !mapped.has(k));
+  const phantom = [...mapped].filter((k) => !areaKeys.includes(k));
+  out.push(ok('axes: RESEARCH_AREA_PAGES covers exactly the DB areas', unmapped.length === 0 && phantom.length === 0,
+    `areas with no page mapping: [${unmapped.join(', ')}]; mappings for areas that no longer exist: [${phantom.join(', ')}]`));
+
+  // Distinct values, not just a matching key set: two columns mapped to the same filename
+  // would pass coverage and both existsSync checks while deep-linking to one page.
+  const pageValues = areaKeys.filter((k) => mapped.has(k)).map((k) => RESEARCH_AREA_PAGES[k]);
+  const dupPages = [...new Set(pageValues.filter((v, i) => pageValues.indexOf(v) !== i))];
+  out.push(ok('axes: no two research areas share a ResearchAreas page', dupPages.length === 0,
+    `pages claimed by more than one area: [${dupPages.join(', ')}]`));
+
+  const missingFiles = areaKeys
+    .filter((k) => mapped.has(k))
+    .filter((k) => !existsSync(join(repoRoot, 'ResearchAreas', `${RESEARCH_AREA_PAGES[k]}.md`)));
+  out.push(ok('axes: every research area has a ResearchAreas page on disk', missingFiles.length === 0,
+    `areas whose page file is missing: [${missingFiles.map((k) => `${k} → ResearchAreas/${RESEARCH_AREA_PAGES[k]}.md`).join(', ')}]`));
+
+  // 4. The build-time parser keeps its own copy of the column axis, and drift there is
+  //    SILENT: `parseMatrix` warns on an unrecognised header and skips the whole column,
+  //    so every ref whose only cells sit in it becomes unreachable while the parse still
+  //    succeeds. Adding these two columns did exactly that to #145 and #290. Compare key,
+  //    label AND order, since papers.json's `areas` array is rendered in this order.
+  const dbAreas = db.prepare('SELECT key,label FROM areas ORDER BY ordinal').all() as { key: string; label: string }[];
+  const dbSig = dbAreas.map((a) => `${a.key}=${a.label}`);
+  const parserSig = AREAS.map((a) => `${a.key}=${a.label}`);
+  out.push(ok('axes: parser AREAS registry matches the DB areas (key, label, order)',
+    JSON.stringify(dbSig) === JSON.stringify(parserSig),
+    `DB:     [${dbSig.join(' | ')}]\n      parser: [${parserSig.join(' | ')}]\n      → update site/scripts/parser/areas.ts`));
+
+  // 5. The seed's THEMES constant is a THIRD copy of this axis, and the most dangerous
+  //    one, because `db:bootstrap` re-creates the topic vocabulary from it wholesale
+  //    (only `item_topics` survives). A stale entry therefore does not fail — it
+  //    silently overwrites curated data on the next bootstrap:
+  //      * a theme whose `area` string does not match an area LABEL exactly seeds
+  //        `area_key` as null, because `seedTopics` resolves it with
+  //        `SELECT key FROM areas WHERE label=?` and falls back to null on a miss;
+  //      * a stale `label` re-mints the theme under its old name, which is how the
+  //        `Bioprocess & Scale-Up` cross-axis collision would come back.
+  //    The label half is invisible to every other guard here: assertion 2 joins on
+  //    `area_key` and never compares labels (deliberately, see above), and
+  //    `checkTaxonomyAxes` compares only theme cardinality. So it is asserted here.
+  // The same area->page join exists a second time in `src/lib/axis-links.ts`, which decides
+  // whether a By the Numbers bar links to a deep dive or falls back to a Taxonomy anchor. A
+  // missing key there is silent. It cannot be imported here (it reads `import.meta.env` at
+  // module scope, which is undefined under tsx), so its key set is asserted from source.
+  const axisLinksSrc = readFileSync(join(SITE_ROOT, 'src', 'lib', 'axis-links.ts'), 'utf-8');
+  const slugBlock = axisLinksSrc.match(/RESEARCH_AREA_SLUG[^=]*=\s*\{([^}]*)\}/);
+  const slugKeys = slugBlock ? [...slugBlock[1].matchAll(/^\s*(\w+)\s*:/gm)].map((m) => m[1]).sort() : [];
+  out.push(ok('axes: axis-links RESEARCH_AREA_SLUG covers exactly the DB areas',
+    slugBlock !== null && JSON.stringify(slugKeys) === JSON.stringify([...areaKeys].sort()),
+    slugBlock === null
+      ? 'could not find RESEARCH_AREA_SLUG in src/lib/axis-links.ts'
+      : `axis-links: [${slugKeys.join(', ')}]; DB: [${[...areaKeys].sort().join(', ')}]`
+        + ' -> a missing key there silently links the bar to a Taxonomy anchor instead of the deep dive'));
+
+  // A correct key set with a typo'd VALUE routes the bar to a 404 instead, which is just
+  // as silent. The route slug is the page filename lowercased, so the two maps are
+  // cross-checkable without reading a third file.
+  const slugPairs = slugBlock ? [...slugBlock[1].matchAll(/^\s*(\w+)\s*:\s*'([^']+)'/gm)] : [];
+  const badSlugValue = slugPairs
+    .filter((m) => RESEARCH_AREA_PAGES[m[1]] !== undefined)
+    .filter((m) => m[2] !== RESEARCH_AREA_PAGES[m[1]].toLowerCase())
+    .map((m) => `${m[1]}: '${m[2]}' vs page ${RESEARCH_AREA_PAGES[m[1]]}.md`);
+  // Assert the value scrape found as many pairs as the key scrape found keys. Without
+  // this the check degrades to green rather than to red: the value regex only matches
+  // single-quoted strings, so reformatting the literal to double quotes (or a `}` inside
+  // a comment, which truncates the block match) empties `slugPairs`, `badSlugValue` is
+  // then trivially empty, and this reports ✓ having tested nothing. A guard whose
+  // failure mode is silent success is the defect it exists to close.
+  out.push(ok('axes: axis-links route slugs match their ResearchAreas page names',
+    badSlugValue.length === 0 && slugPairs.length === slugKeys.length,
+    slugPairs.length !== slugKeys.length
+      ? `parsed ${slugPairs.length} slug values but ${slugKeys.length} keys — the value scrape in check.ts no longer matches axis-links.ts's formatting, so this check was about to pass without testing anything`
+      : `${badSlugValue.join('; ')} -> the By the Numbers bar would 404`));
+
+  const dbThemes = db.prepare("SELECT slug,label,area_key FROM topics WHERE tier='theme' ORDER BY slug")
+    .all() as { slug: string; label: string; area_key: string | null }[];
+  const areaKeyByLabel = new Map(dbAreas.map((a) => [a.label, a.key]));
+  const seedBySlug = new Map(THEMES.map((t) => [t.slug, t]));
+  const seedDrift: string[] = [];
+  for (const t of dbThemes) {
+    const seed = seedBySlug.get(t.slug);
+    if (!seed) { seedDrift.push(`${t.slug}: absent from THEMES`); continue; }
+    if (seed.label !== t.label) seedDrift.push(`${t.slug}: label '${seed.label}' vs DB '${t.label}'`);
+    const seeded = seed.area ? (areaKeyByLabel.get(seed.area) ?? null) : null;
+    if (seeded !== t.area_key) {
+      seedDrift.push(`${t.slug}: seeds area_key ${seeded === null ? 'null' : `'${seeded}'`} vs DB '${t.area_key}'`
+        + (seed.area && seeded === null ? ` (area '${seed.area}' matches no area label)` : ''));
+    }
+  }
+  out.push(ok('axes: seed THEMES reproduces the committed themes (label + area_key)', seedDrift.length === 0,
+    `${seedDrift.join('; ')}\n      → update THEMES in site/scripts/db/seed.ts; a bootstrap would otherwise revert the committed topics.ndjson`));
+
   return out;
 }
 
@@ -375,10 +550,14 @@ export function checkSubseries(db: Db, subseriesPath: string = SUBSERIES_PATH): 
  * Taxonomy axis guard: every matrix row and column must resolve to a definition
  * under *its own* H2 vocabulary in Taxonomy.md.
  *
- * The file defines three vocabularies that may legitimately share a label — the
- * `Bioprocess & Scale-Up` matrix column and the `Bioprocess & Scale-Up` subject
- * theme are different things with the same name. A whole-file flatten therefore
- * loses one of them silently, and the pre-existing guards could not see it:
+ * The file defines three vocabularies that may in principle share a label, so a
+ * whole-file flatten loses one of them silently. That is not hypothetical: the
+ * `Bioprocess & Scale-Up` column and a same-named subject theme collided exactly
+ * this way. ADR-0001 has since renamed the theme to `Bioprocess & Manufacturing`
+ * and `taxonomy.test.ts` now asserts the two axes share no label at all, so the
+ * collision is gone at the source — this guard is defence in depth against a
+ * convention a future edit could breach, not a live condition. The pre-existing
+ * guards could not see it:
  * `generate-data.ts` asserted the label had a *non-empty* definition (it did,
  * the theme's), and nothing asserted heading uniqueness at all.
  *
@@ -439,7 +618,8 @@ export function checkTaxonomyAxes(db: Db, repoRoot: string = REPO_ROOT): CheckRe
 export function runChecks(db: Db, repoRoot: string = REPO_ROOT): CheckResult[] {
   return [...checkIntegrity(db), ...checkReachability(db), ...checkColumnDrift(db, repoRoot),
     ...checkTaxonomyAxes(db, repoRoot),
-    ...checkTopicTiers(db), ...checkCatalogHeadings(db), ...checkLicenses(db), ...checkManualLicenseKeys(db),
+    ...checkTopicTiers(db), ...checkAxisBijection(db, repoRoot),
+    ...checkCatalogHeadings(db), ...checkLicenses(db), ...checkManualLicenseKeys(db),
     ...checkDois(db), ...checkManualDoiKeys(db), ...checkRelatedDois(db), ...checkSubseries(db)];
 }
 

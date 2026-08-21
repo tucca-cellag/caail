@@ -77,7 +77,7 @@ below because the caveat never fires.
 
 ## The one thing to get right
 
-`matrix.json` enumerates **all 150 method×area cells**, including the 80 with no indexed paper. An
+`matrix.json` enumerates **all 200 method×area cells**, including the 128 with no indexed paper. An
 empty cell means **CAAIL contains no paper classified there**. It does **not** mean no such work
 exists. CAAIL is a curated subset, not a census, and it has not measured its own recall.
 
@@ -100,8 +100,10 @@ answer a question. A reference can be indexed, exactly on point, and invisible t
 you run — and unlike an empty cell, nothing in the response tells you so. A full-looking column is
 not evidence that you have seen everything CAAIL holds on the subject.
 
-Some subjects have no column at all. `taxonomy.json` says which: read a subject's definition before
-reading a silence, because several are marked there as cross-cutting with no single matrix column.
+An empty cell is not the same as an absent subject. Read a subject's definition in
+`taxonomy.json` before reading a silence: the definitions state what each column excludes and
+where that work is filed instead, and a subject can be well covered in the catalogue while
+holding few matrix cells or none.
 
 So before reporting that CAAIL contains no work on something, do one of these:
 

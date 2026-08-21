@@ -48,8 +48,15 @@ const unknownTier = licenses.tiers.find((t) => t.tier === 'unknown');
 const knownLicenses = licenses.total - (unknownTier?.count ?? 0);
 
 // Themes and matrix areas are related but not identical axes, and the page shows both.
-// Derive the exceptions rather than hardcoding them, so the copy stays true if curation
-// closes the gap (an added theme or area_key silently corrects this sentence).
+// Derive the exceptions rather than hardcoding them.
+//
+// Deriving them is NOT sufficient on its own, which is how this sentence broke once:
+// both lists are empty now that ADR-0001 closed the gap, and the copy emitted the
+// exception clauses unconditionally, rendering "…share its colour;  are themes with no
+// matrix column, and The matrix classifies…". Every clause that names a derived list
+// must therefore be guarded on that list being non-empty, and the all-closed case needs
+// its own sentence rather than falling out of the general one. No e2e spec asserts this
+// copy, so nothing but reading it catches a regression here.
 const themedAreas = topics.perTheme.filter((t) => t.areaKey).length;
 const areaLessThemes = topics.perTheme.filter((t) => !t.areaKey).map((t) => t.label);
 const themedAreaKeys = new Set(topics.perTheme.map((t) => t.areaKey).filter(Boolean));
@@ -112,15 +119,24 @@ const datasetsDays = daysAgo(momentum?.datasetsLastModified ?? null);
     </p>
     <p class="md-note">
       Themes are a <strong>different axis</strong> from the {matrix.perArea.length} research areas
-      above, not a renaming of them. {themedAreas} themes map onto a matrix area and share its
-      colour; {areaLessThemes.join(' and ')} {areaLessThemes.length === 1 ? 'is a theme' : 'are themes'}{' '}
-      with no matrix column, and{' '}
-      {unthemedAreas.length > 0 && (
-        <Fragment>{unthemedAreas.join(' and ')}{' '}
-        {unthemedAreas.length === 1 ? 'is a column' : 'are columns'} with no theme.{' '}</Fragment>
+      above, not a renaming of them.{' '}
+      {areaLessThemes.length === 0 && unthemedAreas.length === 0 ? (
+        <Fragment>Each theme names one research area and each research area is named by one
+        theme, so they pair one-to-one and share a colour.{' '}</Fragment>
+      ) : (
+        <Fragment>{themedAreas} themes map onto a matrix area and share its colour.{' '}
+        {areaLessThemes.length > 0 && (
+          <Fragment>{areaLessThemes.join(' and ')}{' '}
+          {areaLessThemes.length === 1 ? 'is a theme' : 'are themes'} with no matrix column.{' '}</Fragment>
+        )}
+        {unthemedAreas.length > 0 && (
+          <Fragment>{unthemedAreas.join(' and ')}{' '}
+          {unthemedAreas.length === 1 ? 'is a column' : 'are columns'} with no theme.{' '}</Fragment>
+        )}</Fragment>
       )}
-      The matrix classifies <em>what a paper did</em>; themes tag <em>what a resource is about</em>,
-      across papers, software, databases and datasets alike.
+      Pairing is not equivalence: the two axes count different populations, so never add or
+      compare the numbers. The matrix classifies <em>what a paper did</em>; themes tag
+      <em>what a resource is about</em>, across papers, software, databases and datasets alike.
     </p>
     <div class="md-bars">
       {themesSorted.map((t) => (

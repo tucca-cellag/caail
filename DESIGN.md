@@ -38,16 +38,22 @@ Values are authored in OKLch; hexes above are the targets. The Contribute action
 ### Data encoding
 
 - **Sequential (density):** single-hue navy ramp `--caail-density-0..4` (`#F4F6FA → #C9D7EC → #7E9BC9 → #27579F → #002E6D`). Single-hue lightness is inherently CVD-safe and on-brand. Used for matrix cell shading and any intensity/heatmap.
-- **Categorical (6 research areas):** Okabe–Ito (Color Universal Design), CVD-safe:
+- **Categorical (8 research areas):** Okabe–Ito (Color Universal Design), CVD-safe, for the first six; the last two are lightness-separated oklch (the CVD-safe set has only six usable hues, and 8 categories is past where hue alone separates reliably):
 
-| Area | Token | Hex |
+| Area | Token | Value |
 |---|---|---|
 | Media Optimization | `--caail-area-media` | `#0072B2` |
 | Cellular Engineering | `--caail-area-cell` | `#009E73` |
-| Bioprocess Control | `--caail-area-bioprocess` | `#E69F00` |
+| Bioprocess & Scale-Up | `--caail-area-bioprocess` | `#E69F00` |
 | Scaffolding | `--caail-area-scaffolding` | `#56B4E9` |
 | Sensory Prediction | `--caail-area-sensory` | `#D55E00` |
+| Metabolic Modeling | `--caail-area-metabolic` | `oklch(42% 0.10 220)` |
+| Food Safety Prediction | `--caail-area-foodsafety` | `oklch(52% 0.12 200)` |
 | AI Tooling / Methodology | `--caail-area-tooling` | `#CC79A7` |
+
+This table is a hand-copied duplicate of `tokens.css` with no oracle checking it. The row above read "Bioprocess Control" for months after that column was renamed. If you change an area colour or label, change both.
+
+`scripts/og-image.mjs`'s `AREA` array is a third copy but **not** a duplicate of these values, and must not be synced to them: the social card is a fixed navy field where the two `oklch()` areas measure under 3:1 and disappear, so the card carries lightened substitutes derived against that background *and* against the separation of the other dots. Change the count there when a column lands; do not copy the hexes.
 
 **Encoding rules:** color is never the only signal (every area keeps its text label; matrix cells also show the count). All text/background pairs target WCAG-AA (≥4.5:1 body, ≥3:1 large/UI). Categorical colors identify *area* only (legend, column headers, network clusters, metric bars, filter dots); cells use the density ramp.
 

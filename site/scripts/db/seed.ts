@@ -157,14 +157,14 @@ interface Theme { slug: string; label: string; area?: string; kw: RegExp; }
 interface FineTag { slug: string; label: string; theme: string; kw: RegExp; sections?: RegExp; }
 
 /** The fixed 7-theme backbone (curator-designed). `area` links to a matrix column. */
-const THEMES: Theme[] = [
+export const THEMES: Theme[] = [
   { slug: 'media-growth-factors', label: 'Media & Growth Factors', area: 'Media Optimization', kw: /media|serum|growth[- ]?factor|formulation|cytokine/i },
   { slug: 'cell-lines-engineering', label: 'Cell Lines & Engineering', area: 'Cellular Engineering', kw: /cell[- ]?line|engineering|crispr|perturbation|differentiation|stem|senescen|immortal|atlas|single[- ]?cell|muscle|adipo/i },
-  { slug: 'bioprocess-scale-up', label: 'Bioprocess & Scale-Up', area: 'Bioprocess & Scale-Up', kw: /bioprocess|bioreactor|scal(e|ing)|fermentation|perfusion|process/i },
+  { slug: 'bioprocess-scale-up', label: 'Bioprocess & Manufacturing', area: 'Bioprocess & Scale-Up', kw: /bioprocess|bioreactor|scal(e|ing)|fermentation|perfusion|process/i },
   { slug: 'scaffolding-biomaterials', label: 'Scaffolding & Biomaterials', area: 'Scaffolding', kw: /scaffold|biomaterial|bioprint|3d[- ]?print|hydrogel|texture/i },
   { slug: 'sensory-flavor', label: 'Sensory & Flavor', area: 'Sensory Prediction', kw: /sensor|flavou?r|taste|aroma|mass[- ]?spec|chemometr|spectr|metabolomic/i },
-  { slug: 'metabolism-modeling', label: 'Metabolism & Modeling', kw: /metabol|flux|genome[- ]?scale|pathway|\bgem\b|sbml|strain/i },
-  { slug: 'food-safety', label: 'Food Safety', kw: /allergen|allergenic|immunogenic|food safety/i },
+  { slug: 'metabolism-modeling', label: 'Metabolism & Modeling', area: 'Metabolic Modeling', kw: /metabol|flux|genome[- ]?scale|pathway|\bgem\b|sbml|strain/i },
+  { slug: 'food-safety', label: 'Food Safety', area: 'Food Safety Prediction', kw: /allergen|allergenic|immunogenic|food safety/i },
   { slug: 'ai-methods-tooling', label: 'AI Methods & Tooling', area: 'AI Tooling / Methodology', kw: /agent|foundation[- ]?model|\bllm\b|benchmark|framework|ontolog|database|repositor|\btool/i },
 ];
 

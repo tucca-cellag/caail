@@ -69,6 +69,13 @@ const AREA_KEYWORDS: ReadonlyArray<readonly [RecentEntry['area'], readonly strin
   ['scaffolding', ['scaffold', 'biomaterial', 'hydrogel']],
   ['media', ['media', 'medium', 'growth factor', 'serum']],
   ['cell', ['knockout', 'crispr', 'satellite cell', 'differentiation', 'atlas', 'single-cell', 'scrna', 'rna-seq', 'cell line', 'cell-line', 'lineage', 'transcriptom']],
+  // `metabolom` is deliberately NOT here: it belongs to `sensory` above and stays there,
+  // because measuring metabolites to predict an eating-quality attribute is a sensory
+  // result, while this area is for modelling the metabolic network. That is the same
+  // boundary Taxonomy.md draws between the two columns, so the shadowing is correct
+  // rather than a collision to work around.
+  ['metabolic', ['genome-scale', 'genome scale', 'metabolic model', 'metabolic network', 'strain design', 'sbml', 'gem']],
+  ['foodsafety', ['allergen', 'allergenic', 'immunogenic', 'food safety', 'ige', 'toxicity']],
   ['tooling', ['agent', 'mcp', 'llm', 'foundation model', 'framework', 'tool', 'docs', 'pipeline']],
 ];
 
@@ -84,10 +91,58 @@ function git(repoRoot: string, args: string[]): string {
 }
 
 /** First keyword match wins; unmatched titles default to `tooling`. */
-function classifyArea(title: string): RecentEntry['area'] {
+/**
+ * Short stems that are also the start of unrelated common words, so they must match a
+ * WHOLE word rather than a prefix: `gem` begins "Gemini" and "Gemma", `ige` begins "iGEM".
+ * Both are realistic commit subjects here and each would paint a wrong area dot.
+ *
+ * `seed.ts` spells the same two concepts `\bgem\b` and `\bige\b` in its allergenicity
+ * tag, so this keeps the two classifiers agreeing rather than inventing a second rule.
+ *
+ * `flux` was a third and has been REMOVED from the keyword list instead, because anchoring
+ * cannot help it: metabolic flux and Flux the image model are the same word, not a stem
+ * inside a longer one, and this repo plausibly commits about both. A boundary rule
+ * separates a stem from a word it begins; nothing lexical separates two homonyms. The
+ * remaining metabolic cues are specific enough to carry the area without it.
+ */
+const WHOLE_WORD_ONLY = new Set(['gem', 'ige']);
+
+/**
+ * True when `kw` occurs in `haystack` at a word boundary.
+ *
+ * The trailing edge is asserted only for `WHOLE_WORD_ONLY` stems. Everything else is a
+ * prefix match, because a keyword has to match its own inflections: `allergen` must match
+ * "allergenicity" and `metabolic model` must match "metabolic modeling", which is most of
+ * why these entries are stems in the first place.
+ *
+ * Both of the obvious uniform rules are wrong and both were tried. Matching a bare
+ * substring tagged "The AI4CM Hub and the Food Intelligence Lab" as `foodsafety`, because
+ * "intelligence" contains "ige". Anchoring every keyword at both edges then silently sent
+ * "Three allergenicity predictors" and "Metabolic Modeling and Food Safety Prediction
+ * columns" to the `tooling` fallback. The rule has to vary per keyword because the
+ * keywords do: some are stems and some are words that other words begin with.
+ *
+ * The keyword is escaped, so a future entry containing regex punctuation stays literal.
+ */
+function wordMatch(haystack: string, kw: string): boolean {
+  const escaped = kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const tail = WHOLE_WORD_ONLY.has(kw) ? '([^a-z0-9]|$)' : '';
+  return new RegExp(`(^|[^a-z0-9])${escaped}${tail}`, 'i').test(haystack);
+}
+
+export function classifyArea(title: string): RecentEntry['area'] {
   const haystack = title.toLowerCase();
   for (const [area, keywords] of AREA_KEYWORDS) {
-    if (keywords.some((kw) => haystack.includes(kw))) return area;
+    // Whole-word match, NOT `includes`. A bare substring test tagged "The AI4CM Hub and
+    // the Food Intelligence Lab" as `foodsafety`, because "intelligence" contains "ige";
+    // "gem" is likewise inside "management" and "engagement". Short keywords are the
+    // useful ones here (titles are commit subjects, so they are terse), which makes
+    // substring matching actively wrong rather than merely loose. `seed.ts` already
+    // spells the same concept `\bige\b` in its allergenicity tag.
+    //
+    // Keywords may contain spaces and hyphens, so the boundary is asserted by hand
+    // rather than with \b, which does not fire next to a hyphen.
+    if (keywords.some((kw) => wordMatch(haystack, kw))) return area;
   }
   return 'tooling';
 }

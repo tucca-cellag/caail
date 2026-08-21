@@ -17,7 +17,7 @@
 {"method":"Deep Learning","area_key":"cell","ref_id":5,"label":"Li et al. 2020","ordinal":16}
 {"method":"Deep Learning","area_key":"cell","ref_id":122,"label":"Magnusson et al. 2024","ordinal":17}
 {"method":"Deep Learning","area_key":"cell","ref_id":57,"label":"Adduri et al. 2025","ordinal":18}
-{"method":"Deep Learning","area_key":"cell","ref_id":145,"label":"Xiao et al. 2026","ordinal":19}
+{"method":"Deep Learning","area_key":"metabolic","ref_id":145,"label":"Xiao et al. 2026","ordinal":19}
 {"method":"Deep Learning","area_key":"cell","ref_id":118,"label":"Rosen et al. 2024","ordinal":20}
 {"method":"Deep Learning","area_key":"cell","ref_id":123,"label":"Littman et al. 2025","ordinal":21}
 {"method":"Deep Learning","area_key":"cell","ref_id":263,"label":"Vaishnav et al. 2022","ordinal":22}
@@ -39,7 +39,7 @@
 {"method":"GNN","area_key":"cell","ref_id":8,"label":"Ciortan & Defrance 2022","ordinal":38}
 {"method":"GNN","area_key":"cell","ref_id":12,"label":"Shan et al. 2023","ordinal":39}
 {"method":"GNN","area_key":"cell","ref_id":121,"label":"Roohani et al. 2024","ordinal":40}
-{"method":"GNN","area_key":"cell","ref_id":68,"label":"Li et al. 2024","ordinal":41}
+{"method":"GNN","area_key":"metabolic","ref_id":68,"label":"Li et al. 2024","ordinal":41}
 {"method":"GNN","area_key":"sensory","ref_id":14,"label":"Lee et al. 2023","ordinal":42}
 {"method":"GNN","area_key":"sensory","ref_id":36,"label":"Qian et al. 2023","ordinal":43}
 {"method":"GNN","area_key":"sensory","ref_id":285,"label":"Steuer et al. 2026","ordinal":44}
@@ -232,7 +232,7 @@
 {"method":"Agent Infrastructure (Frameworks, KGs, Protocols)","area_key":"tooling","ref_id":220,"label":"Glen et al. 2025","ordinal":231}
 {"method":"Chemometrics","area_key":"media","ref_id":287,"label":"Wang et al. 2026b","ordinal":232}
 {"method":"Deep Learning","area_key":"tooling","ref_id":289,"label":"Sarlakifar et al. 2025","ordinal":233}
-{"method":"Ensemble Learning","area_key":"tooling","ref_id":290,"label":"Sharma et al. 2021","ordinal":234}
+{"method":"Ensemble Learning","area_key":"foodsafety","ref_id":290,"label":"Sharma et al. 2021","ordinal":234}
 {"method":"Ensemble Learning","area_key":"scaffolding","ref_id":171,"label":"Kircali Ata et al. 2023","ordinal":235}
 {"method":"Ensemble Learning","area_key":"scaffolding","ref_id":309,"label":"Dahl et al. 2025","ordinal":236}
 {"method":"CNN","area_key":"scaffolding","ref_id":310,"label":"Kim et al. 2026","ordinal":237}

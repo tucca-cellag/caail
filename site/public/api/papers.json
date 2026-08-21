@@ -21,6 +21,14 @@
       "label": "Sensory Prediction"
     },
     {
+      "key": "metabolic",
+      "label": "Metabolic Modeling"
+    },
+    {
+      "key": "foodsafety",
+      "label": "Food Safety Prediction"
+    },
+    {
       "key": "tooling",
       "label": "AI Tooling / Methodology"
     }
@@ -124,7 +132,6 @@
         5,
         122,
         57,
-        145,
         118,
         123,
         263
@@ -133,7 +140,6 @@
         "Li et al. 2020",
         "Magnusson et al. 2024",
         "Adduri et al. 2025",
-        "Xiao et al. 2026",
         "Rosen et al. 2024",
         "Littman et al. 2025",
         "Vaishnav et al. 2022"
@@ -199,6 +205,16 @@
     },
     {
       "method": "Deep Learning",
+      "area": "metabolic",
+      "refIds": [
+        145
+      ],
+      "labels": [
+        "Xiao et al. 2026"
+      ]
+    },
+    {
+      "method": "Deep Learning",
       "area": "tooling",
       "refIds": [
         197,
@@ -218,15 +234,13 @@
         13,
         8,
         12,
-        121,
-        68
+        121
       ],
       "labels": [
         "Wang et al. 2021",
         "Ciortan & Defrance 2022",
         "Shan et al. 2023",
-        "Roohani et al. 2024",
-        "Li et al. 2024"
+        "Roohani et al. 2024"
       ]
     },
     {
@@ -247,6 +261,16 @@
         "Srivastava et al. 2024",
         "He et al. 2024",
         "Song et al. 2023"
+      ]
+    },
+    {
+      "method": "GNN",
+      "area": "metabolic",
+      "refIds": [
+        68
+      ],
+      "labels": [
+        "Li et al. 2024"
       ]
     },
     {
@@ -577,7 +601,7 @@
     },
     {
       "method": "Ensemble Learning",
-      "area": "tooling",
+      "area": "foodsafety",
       "refIds": [
         290
       ],
@@ -1470,7 +1494,7 @@
       "topics": [
         {
           "slug": "bioprocess-scale-up",
-          "label": "Bioprocess & Scale-Up",
+          "label": "Bioprocess & Manufacturing",
           "theme": "bioprocess-scale-up"
         }
       ],
@@ -2341,7 +2365,7 @@
       "topics": [
         {
           "slug": "bioprocess-scale-up",
-          "label": "Bioprocess & Scale-Up",
+          "label": "Bioprocess & Manufacturing",
           "theme": "bioprocess-scale-up"
         },
         {
@@ -2440,7 +2464,7 @@
       "topics": [
         {
           "slug": "bioprocess-scale-up",
-          "label": "Bioprocess & Scale-Up",
+          "label": "Bioprocess & Manufacturing",
           "theme": "bioprocess-scale-up"
         },
         {
@@ -2485,7 +2509,7 @@
       "topics": [
         {
           "slug": "bioprocess-scale-up",
-          "label": "Bioprocess & Scale-Up",
+          "label": "Bioprocess & Manufacturing",
           "theme": "bioprocess-scale-up"
         },
         {
@@ -2530,7 +2554,7 @@
       "topics": [
         {
           "slug": "bioprocess-scale-up",
-          "label": "Bioprocess & Scale-Up",
+          "label": "Bioprocess & Manufacturing",
           "theme": "bioprocess-scale-up"
         },
         {
@@ -2585,7 +2609,7 @@
         },
         {
           "slug": "bioprocess-scale-up",
-          "label": "Bioprocess & Scale-Up",
+          "label": "Bioprocess & Manufacturing",
           "theme": "bioprocess-scale-up"
         },
         {
@@ -2629,7 +2653,7 @@
       "topics": [
         {
           "slug": "bioprocess-scale-up",
-          "label": "Bioprocess & Scale-Up",
+          "label": "Bioprocess & Manufacturing",
           "theme": "bioprocess-scale-up"
         },
         {
@@ -3801,7 +3825,7 @@
       "topics": [
         {
           "slug": "bioprocess-scale-up",
-          "label": "Bioprocess & Scale-Up",
+          "label": "Bioprocess & Manufacturing",
           "theme": "bioprocess-scale-up"
         },
         {
@@ -3873,7 +3897,7 @@
         },
         {
           "slug": "bioprocess-scale-up",
-          "label": "Bioprocess & Scale-Up",
+          "label": "Bioprocess & Manufacturing",
           "theme": "bioprocess-scale-up"
         }
       ],
@@ -4223,7 +4247,7 @@
         "Domain-Specific Biomedical Agents"
       ],
       "areas": [
-        "cell",
+        "metabolic",
         "tooling"
       ],
       "hasCode": true,
@@ -6267,7 +6291,7 @@
         "Deep Learning"
       ],
       "areas": [
-        "cell"
+        "metabolic"
       ],
       "hasCode": false,
       "hasData": false,
@@ -7554,7 +7578,7 @@
       "topics": [
         {
           "slug": "bioprocess-scale-up",
-          "label": "Bioprocess & Scale-Up",
+          "label": "Bioprocess & Manufacturing",
           "theme": "bioprocess-scale-up"
         }
       ],
@@ -7594,7 +7618,7 @@
       "topics": [
         {
           "slug": "bioprocess-scale-up",
-          "label": "Bioprocess & Scale-Up",
+          "label": "Bioprocess & Manufacturing",
           "theme": "bioprocess-scale-up"
         },
         {
@@ -7638,7 +7662,7 @@
       "topics": [
         {
           "slug": "bioprocess-scale-up",
-          "label": "Bioprocess & Scale-Up",
+          "label": "Bioprocess & Manufacturing",
           "theme": "bioprocess-scale-up"
         },
         {
@@ -7681,7 +7705,7 @@
       "topics": [
         {
           "slug": "bioprocess-scale-up",
-          "label": "Bioprocess & Scale-Up",
+          "label": "Bioprocess & Manufacturing",
           "theme": "bioprocess-scale-up"
         }
       ],
@@ -7719,7 +7743,7 @@
       "topics": [
         {
           "slug": "bioprocess-scale-up",
-          "label": "Bioprocess & Scale-Up",
+          "label": "Bioprocess & Manufacturing",
           "theme": "bioprocess-scale-up"
         },
         {
@@ -7766,7 +7790,7 @@
       "topics": [
         {
           "slug": "bioprocess-scale-up",
-          "label": "Bioprocess & Scale-Up",
+          "label": "Bioprocess & Manufacturing",
           "theme": "bioprocess-scale-up"
         }
       ],
@@ -7812,7 +7836,7 @@
       "topics": [
         {
           "slug": "bioprocess-scale-up",
-          "label": "Bioprocess & Scale-Up",
+          "label": "Bioprocess & Manufacturing",
           "theme": "bioprocess-scale-up"
         },
         {
@@ -7868,7 +7892,7 @@
       "topics": [
         {
           "slug": "bioprocess-scale-up",
-          "label": "Bioprocess & Scale-Up",
+          "label": "Bioprocess & Manufacturing",
           "theme": "bioprocess-scale-up"
         }
       ],
@@ -7910,7 +7934,7 @@
       "topics": [
         {
           "slug": "bioprocess-scale-up",
-          "label": "Bioprocess & Scale-Up",
+          "label": "Bioprocess & Manufacturing",
           "theme": "bioprocess-scale-up"
         },
         {
@@ -7954,7 +7978,7 @@
       "topics": [
         {
           "slug": "bioprocess-scale-up",
-          "label": "Bioprocess & Scale-Up",
+          "label": "Bioprocess & Manufacturing",
           "theme": "bioprocess-scale-up"
         }
       ],
@@ -9259,7 +9283,7 @@
       "topics": [
         {
           "slug": "bioprocess-scale-up",
-          "label": "Bioprocess & Scale-Up",
+          "label": "Bioprocess & Manufacturing",
           "theme": "bioprocess-scale-up"
         }
       ],
@@ -9299,7 +9323,7 @@
       "topics": [
         {
           "slug": "bioprocess-scale-up",
-          "label": "Bioprocess & Scale-Up",
+          "label": "Bioprocess & Manufacturing",
           "theme": "bioprocess-scale-up"
         }
       ],
@@ -9342,7 +9366,7 @@
       "topics": [
         {
           "slug": "bioprocess-scale-up",
-          "label": "Bioprocess & Scale-Up",
+          "label": "Bioprocess & Manufacturing",
           "theme": "bioprocess-scale-up"
         }
       ],
@@ -9381,7 +9405,7 @@
       "topics": [
         {
           "slug": "bioprocess-scale-up",
-          "label": "Bioprocess & Scale-Up",
+          "label": "Bioprocess & Manufacturing",
           "theme": "bioprocess-scale-up"
         },
         {
@@ -9428,7 +9452,7 @@
       "topics": [
         {
           "slug": "bioprocess-scale-up",
-          "label": "Bioprocess & Scale-Up",
+          "label": "Bioprocess & Manufacturing",
           "theme": "bioprocess-scale-up"
         },
         {
@@ -9471,7 +9495,7 @@
       "topics": [
         {
           "slug": "bioprocess-scale-up",
-          "label": "Bioprocess & Scale-Up",
+          "label": "Bioprocess & Manufacturing",
           "theme": "bioprocess-scale-up"
         },
         {
@@ -9521,7 +9545,7 @@
       "topics": [
         {
           "slug": "bioprocess-scale-up",
-          "label": "Bioprocess & Scale-Up",
+          "label": "Bioprocess & Manufacturing",
           "theme": "bioprocess-scale-up"
         },
         {
@@ -9572,7 +9596,7 @@
       "topics": [
         {
           "slug": "bioprocess-scale-up",
-          "label": "Bioprocess & Scale-Up",
+          "label": "Bioprocess & Manufacturing",
           "theme": "bioprocess-scale-up"
         }
       ],
@@ -9613,7 +9637,7 @@
       "topics": [
         {
           "slug": "bioprocess-scale-up",
-          "label": "Bioprocess & Scale-Up",
+          "label": "Bioprocess & Manufacturing",
           "theme": "bioprocess-scale-up"
         },
         {
@@ -9658,7 +9682,7 @@
       "topics": [
         {
           "slug": "bioprocess-scale-up",
-          "label": "Bioprocess & Scale-Up",
+          "label": "Bioprocess & Manufacturing",
           "theme": "bioprocess-scale-up"
         },
         {
@@ -10585,7 +10609,7 @@
         "Ensemble Learning"
       ],
       "areas": [
-        "tooling"
+        "foodsafety"
       ],
       "hasCode": false,
       "hasData": false,
@@ -16660,5 +16684,5 @@
     }
   ],
   "scopeNote": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall.",
-  "corpusDate": "2026-08-20"
+  "corpusDate": "2026-08-21"
 }

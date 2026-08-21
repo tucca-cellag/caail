@@ -3,4 +3,6 @@
 {"key":"bioprocess","label":"Bioprocess & Scale-Up","header_md":"[Bioprocess & Scale-Up](./Taxonomy.md#bioprocess--scale-up)","ordinal":2}
 {"key":"scaffolding","label":"Scaffolding","header_md":"[Scaffolding](./Taxonomy.md#scaffolding)","ordinal":3}
 {"key":"sensory","label":"Sensory Prediction","header_md":"[Sensory Prediction](./Taxonomy.md#sensory-prediction)","ordinal":4}
-{"key":"tooling","label":"AI Tooling / Methodology","header_md":"[AI Tooling / Methodology](./Taxonomy.md#ai-tooling--methodology)","ordinal":5}
+{"key":"metabolic","label":"Metabolic Modeling","header_md":"[Metabolic Modeling](./Taxonomy.md#metabolic-modeling)","ordinal":5}
+{"key":"foodsafety","label":"Food Safety Prediction","header_md":"[Food Safety Prediction](./Taxonomy.md#food-safety-prediction)","ordinal":6}
+{"key":"tooling","label":"AI Tooling / Methodology","header_md":"[AI Tooling / Methodology](./Taxonomy.md#ai-tooling--methodology)","ordinal":7}

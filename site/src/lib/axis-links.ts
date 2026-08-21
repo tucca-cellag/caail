@@ -28,12 +28,23 @@ export const taxonomyHref = (label: string): string => `${BASE}/taxonomy/#${ghSl
 
 /**
  * Matrix area key → its ResearchAreas deep-dive route. Keys are the `areas.ts`
- * registry keys; values are the page ids in `caail-pages.ts`. One area has a
- * deep-dive page without being a matrix column (Metabolic Modeling), and it has no
- * key here, so it falls back to the Taxonomy definition below. `eval` is gone
- * entirely: CAAIL-164 retired the column, and its deep dive turned out to describe
- * the Benchmarks & Evaluation Frameworks *row*, so it moved to `Methods/` and is no
- * longer a research area's page to point at.
+ * registry keys; values are the page ids in `caail-pages.ts`.
+ *
+ * Every matrix column now has a page and therefore a key here: ADR-0001 made the
+ * area axis bijective, so the Taxonomy fallback below is no longer reached for any
+ * live column and exists only so an unknown key degrades instead of throwing. It was
+ * previously reached in normal operation, by Metabolic Modeling, which had a deep
+ * dive without being a column. **A missing key here is silent at runtime** — the bar
+ * simply links to a definition instead of a deep dive — so `db:check` asserts this map's
+ * key set against the DB areas, alongside the parallel `RESEARCH_AREA_PAGES` map in
+ * `scripts/db/check.ts`. It does that by reading this file's source rather than importing
+ * it, because `BASE` above evaluates `import.meta.env` at module scope and that is
+ * undefined under tsx. Keep the object literal shape (`key: 'value',` one per line) or
+ * that guard stops matching.
+ *
+ * `eval` is gone entirely: CAAIL-164 retired the column, and its deep dive turned out
+ * to describe the Benchmarks & Evaluation Frameworks *row*, so it moved to `Methods/`
+ * and is no longer a research area's page to point at.
  */
 export const RESEARCH_AREA_SLUG: Record<string, string> = {
   media: 'mediaoptimization',
@@ -41,6 +52,8 @@ export const RESEARCH_AREA_SLUG: Record<string, string> = {
   bioprocess: 'bioprocess',
   scaffolding: 'scaffolding',
   sensory: 'sensoryprediction',
+  metabolic: 'metabolicmodeling',
+  foodsafety: 'foodsafetyprediction',
   tooling: 'aitooling',
 };
 

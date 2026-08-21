@@ -7,7 +7,7 @@
 
 import { describe, it, expect, beforeAll } from 'vitest';
 
-import { buildRecentModel, lastAdditionDate } from './recent.js';
+import { buildRecentModel, lastAdditionDate, classifyArea } from './recent.js';
 import { RecentSchema, type Recent } from './types.js';
 
 describe('buildRecentModel — real repo', () => {
@@ -31,7 +31,7 @@ describe('buildRecentModel — real repo', () => {
     for (const e of recent) {
       expect(e.date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
       expect(['Paper', 'Software', 'Dataset', 'Database', 'Resource']).toContain(e.kind);
-      expect(['media', 'cell', 'bioprocess', 'scaffolding', 'sensory', 'tooling']).toContain(e.area);
+      expect(['media', 'cell', 'bioprocess', 'scaffolding', 'sensory', 'metabolic', 'foodsafety', 'tooling']).toContain(e.area);
       expect(e.title.length).toBeGreaterThan(0);
     }
   });
@@ -85,5 +85,48 @@ describe('lastAdditionDate — real repo', () => {
 
   it('returns null when git history is unavailable', () => {
     expect(lastAdditionDate('Paper', '/nonexistent-not-a-git-repo')).toBeNull();
+  });
+});
+
+describe('classifyArea — keyword matching', () => {
+  // The bug this guards: keywords were matched with `includes`, so "ige" (an
+  // allergenicity cue) matched "intelligence" and mis-tagged a live homepage entry.
+  it('does not match a keyword occurring mid-word', () => {
+    expect(classifyArea('The AI4CM Hub and the Food Intelligence Lab')).not.toBe('foodsafety');
+    expect(classifyArea('add a data management tool')).not.toBe('metabolic');
+  });
+
+  // The over-correction: anchoring BOTH edges broke inflections and silently sent these
+  // two to the `tooling` fallback. Leading-edge-only is the rule that satisfies both.
+  it('still matches a keyword that continues into a longer word', () => {
+    expect(classifyArea('Three allergenicity predictors')).toBe('foodsafety');
+    expect(classifyArea('Metabolic Modeling and Food Safety Prediction columns')).toBe('metabolic');
+  });
+
+  // Round 6: leading-anchor alone still admitted word-INITIAL substrings. Each of these
+  // is a realistic commit subject for this repo and each painted a wrong area dot.
+  it('does not let a short stem match a longer word it begins', () => {
+    expect(classifyArea('add a Gemini cross-model review step')).toBe('tooling');
+    expect(classifyArea('add the Gemma 3 model card')).toBe('tooling');
+    // `flux` is not in the keyword list at all: it is a homonym rather than a stem, so
+    // no boundary rule could separate metabolic flux from Flux the image model.
+    expect(classifyArea('wire the Flux image pipeline')).toBe('tooling');
+    expect(classifyArea('add iGEM 2025 team resources')).not.toBe('foodsafety');
+  });
+
+  it('still matches those stems as whole words', () => {
+    expect(classifyArea('add the bovine GEM reconstruction')).toBe('metabolic');
+    expect(classifyArea('record IgE epitope mapping coverage')).toBe('foodsafety');
+  });
+
+  it('leaves metabolomics on the sensory axis, per Taxonomy.md', () => {
+    // Measuring metabolites to predict an eating-quality attribute is a sensory result;
+    // modelling the network is Metabolic Modeling. `sensory` is evaluated first, so this
+    // shadowing is intentional rather than a collision to fix.
+    expect(classifyArea('metabolomic selection for flavour')).toBe('sensory');
+  });
+
+  it('falls back to tooling when nothing matches', () => {
+    expect(classifyArea('add a thing')).toBe('tooling');
   });
 });

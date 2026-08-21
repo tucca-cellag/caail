@@ -13,10 +13,17 @@
  *
  * Taxonomy.md defines three *separate* vocabularies under three H2 sections:
  * research areas (matrix columns), AI/ML methods (matrix rows), and subject
- * themes (topic tags). They are deliberately allowed to share a label — the
- * `Bioprocess & Scale-Up` column and the `Bioprocess & Scale-Up` theme are
- * different things that happen to be named the same, and renaming either to
- * dodge the clash would be the tail wagging the dog.
+ * themes (topic tags). Sharing a label across two of them is legal here, and
+ * this keying is what makes it safe.
+ *
+ * The clash that motivated this — a `Bioprocess & Scale-Up` column beside a
+ * `Bioprocess & Scale-Up` theme — no longer exists: ADR-0001 renamed the theme
+ * to `Bioprocess & Manufacturing` and wrote a naming convention into Taxonomy.md
+ * saying no label may appear on both subject axes. This module predates that and
+ * is kept anyway, as defence in depth rather than as the only defence: the
+ * convention is prose that a future editor can breach in one keystroke, and the
+ * failure it produces is silent (see below). Axis-keying makes that breach
+ * harmless instead of catastrophic.
  *
  * An earlier version flattened every `### Heading` into one map, so the later
  * heading won. The theme blurb (two lines, no scope boundaries, ending in a

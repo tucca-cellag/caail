@@ -10,6 +10,36 @@ text** measured against these definitions.
 A guiding rule for every category: a placement records what a paper **actually does**, demonstrated in
 its methods: not what it could be applied to, and not what its title gestures at.
 
+## Two axes, and how to tell which one you are reading
+
+This file defines three vocabularies, and two of them are *subject* axes over different populations:
+
+- **Research areas** are the matrix's columns. They are a classification instrument: one axis of
+  *AI method x research area*, covering only work that applies a method to a problem.
+- **Subject themes** are the browse taxonomy behind `/topics/`. They tag *any* content type, so they
+  reach databases, datasets and software that never enter the matrix.
+
+The two are **paired but never equated**. Each theme names exactly one research area and each research
+area is named by exactly one theme, a correspondence stored as `topics.area_key` and asserted by
+`db:check`. The assertion runs through that key and never by comparing labels, because the populations
+genuinely differ: on every pair the theme is the larger, because it also tags datasets, software and
+databases that never enter the matrix, and the size of the gap varies widely from pair to pair.
+**Their counts must never be added together or compared.**
+
+Because the axes are paired, their labels are deliberately shaped differently so that no label appears
+on both:
+
+- a **research area** reads as a *problem* (Media Optimization, Sensory Prediction, Food Safety Prediction);
+- a **subject theme** reads as an *&-joined subject* (Media & Growth Factors, Sensory & Flavor).
+
+The one pair that once shared a label, `Bioprocess & Scale-Up`, is the one pair that produced a bug: a
+whole-file flatten let the theme's two-line blurb silently overwrite the column's scope definition. The
+theme is therefore named **Bioprocess & Manufacturing** while the column keeps **Bioprocess & Scale-Up**.
+Theme labels are independent of their frozen `topic:` slugs, so that naming carries no identifier change.
+
+This convention governs the two subject axes only. It says nothing about the section names used in
+`Software.md` and `Databases.md`, which group entries for browsing and are free to read differently.
+
 ## Research areas (columns)
 
 ### Media Optimization
@@ -65,6 +95,44 @@ prediction; and meat-quality/freshness classification. A perceived-texture resul
 structural matrix as a material, judged by the same two-part test given under *Scaffolding*. Out
 of scope: designing the structural biomaterial itself as a material (→ *Scaffolding*), and purely
 nutritional composition with no sensory target.
+
+### Metabolic Modeling
+Reconstructing, simulating, and searching **metabolism itself**: genome-scale metabolic models (GEMs),
+flux balance analysis and related constraint-based methods, kinetic/ODE models of metabolic pathways,
+pathway and strain design, and the metabolic-network resources these depend on. In scope: GEM
+reconstruction, curation, and simulation; flux prediction; pathway enumeration and enzyme or pathway
+selection **decided against a network model**; strain design; and machine learning trained on
+metabolic-network structure or flux data. Out of scope: black-box optimization of an enzyme cascade's
+composition, where the demonstrated result is a formulation and no network is modelled; choosing what
+goes into the medium,
+even when a metabolic model motivates the choice, where the demonstrated result is a formulation
+(→ *Media Optimization*); gene regulation and cell-state modeling that does not run through a metabolic
+network (→ *Cellular Engineering*); reactor operation and scale-up (→ *Bioprocess & Scale-Up*); and,
+importantly, **metabolomics used as an analytical input to predict an eating-quality attribute**, which
+is a sensory result measured by metabolite chemistry rather than a model of metabolism
+(→ *Sensory Prediction*). The distinguishing question is whether the paper models the metabolic
+network, or merely measures metabolites.
+
+### Food Safety Prediction
+Computationally assessing **the safety of the proteins and compounds an alternative-protein product
+introduces**: allergenicity and immunogenicity prediction, IgE-epitope mapping, cross-reactivity
+assessment, and toxicity prediction for novel or heterologously-expressed proteins. In scope: trained
+classifiers and learned representations that predict allergenic, immunogenic, or toxic potential from
+sequence, structure, or physicochemical descriptors, including protein-language-model approaches. Out
+of scope: the allergen reference databases such a method is trained or screened against, which are
+catalogued in [`Databases.md`](./Databases.md) rather than placed in the matrix; sensory or spoilage
+quality, which is a different kind of safety-adjacent question (→ *Sensory Prediction*); and a
+general-purpose predictor presented with no alternative-protein or cell-ag framing
+(→ *AI Tooling / Methodology*).
+
+**A boundary this column needs stated, because titles hide it.** Not every published allergenicity
+predictor applies an AI/ML method, and a tool that applies none has no row to sit on and is therefore
+not matrix-eligible at all, however well it fits this column's subject. Sequence-similarity screening
+against a reference set (a sliding-window identity threshold of the kind the FAO/WHO Codex
+Alimentarius prescribes) and fingerprint comparison by a similarity coefficient are retrieval
+procedures, not trained models. Judge this from the methods section rather than the name: several
+tools in this space are named like classifiers and are not. Where an existing placement is affected,
+raise it for re-audit rather than silently unseating it.
 
 ### AI Tooling / Methodology
 **General-purpose AI methods, agents, tools, and frameworks** that are applicable to cellular
@@ -233,7 +301,9 @@ software, databases, datasets) for cross-content discovery. Unlike research area
 problems an AI method is applied *to*: themes are what the material is *about*, so they fit
 databases and datasets that never enter the matrix (per the Databases-vs-ResearchAreas distinction).
 Themes are a fixed backbone; finer tags live under them and are minted only when several items
-cluster. A theme may link to a matrix research area where the two align.
+cluster. Every theme names exactly one matrix research area, and every research area is named by
+exactly one theme; see *Two axes, and how to tell which one you are reading* above for what that
+pairing does and does not license.
 
 ### Media & Growth Factors
 Culture-medium composition and optimization: serum-free/serum-reduced formulations, growth factors
@@ -245,7 +315,7 @@ The cells themselves and their manipulation: cell-line establishment and charact
 engineering (CRISPR, perturbation), differentiation and myogenesis, stemness/senescence, and
 single-cell atlases. Links to *Cellular Engineering*.
 
-### Bioprocess & Scale-Up
+### Bioprocess & Manufacturing
 Growing cells at scale: bioreactor design and CFD, perfusion and fed-batch, soft sensors and process
 control, and scale-up engineering. Links to *Bioprocess & Scale-Up*.
 
@@ -260,15 +330,59 @@ and the mass-spectrometry / chemometrics / metabolomics infrastructure used to m
 
 ### Metabolism & Modeling
 Metabolic knowledge and models: genome-scale metabolic models (GEMs), flux analysis, pathway and
-strain design, and metabolic-network resources. A cross-cutting subject with no single matrix column.
+strain design, and metabolic-network resources. Pairs with the *Metabolic Modeling* research area,
+which is narrower: the column holds papers that model a metabolic network, while this theme also
+collects the model files, databases and tools that never enter the matrix.
 
 ### Food Safety
 The safety assessment of the proteins a cultured product introduces: allergenicity and immunogenicity
 prediction, IgE-epitope mapping, and the allergen reference databases that screening pipelines compare
-against. A cross-cutting subject with no single matrix column; the *allergenicity* fine tag groups the
-in-silico screening tools, allergen databases, and their methods papers.
+against. Pairs with the *Food Safety Prediction* research area; the *allergenicity* fine tag groups the
+in-silico screening tools, allergen databases, and their methods papers, most of which are catalogue
+entries rather than matrix placements.
 
 ### AI Methods & Tooling
 General-purpose AI capability and infrastructure applied across cell-ag: agents and foundation
 models, benchmarks and evaluation, frameworks, ontologies, and lookup databases/tooling. Links to
 *AI Tooling / Methodology*.
+
+## Crosswalk to GFI's solutions taxonomy
+
+The Good Food Institute organises its [solutions database](https://gfi.org/solutions/) on two facets,
+*Technology sector* and *Value chain segment*. Readers arriving from GFI's vocabulary need to know how
+it lines up with the matrix columns, so this table maps each CAAIL research area to its nearest GFI
+technology sector and says how good the fit is.
+
+Adopting GFI's facets as the matrix column axis was considered and rejected. The reason is visible in
+the table: GFI's axis answers *who should act on this gap*, while a CAAIL column answers *what did this
+paper demonstrate*, and GFI has no facet at all for a general-purpose AI method. The largest CAAIL
+column is exactly that, so adopting their axis would leave a large share of the matrix with nowhere to
+sit. The crosswalk buys the legibility without the axis change.
+
+| CAAIL research area | Nearest GFI technology sector | Fit |
+|---|---|---|
+| Media Optimization | Cell culture media | direct |
+| Cellular Engineering | Cell line development *and* Host strain development | splits across two |
+| Bioprocess & Scale-Up | Bioprocess design | direct |
+| Scaffolding | Scaffolding | direct |
+| Sensory Prediction | End product formulation & manufacturing | partial: GFI's is a production activity, CAAIL's is a prediction target |
+| Metabolic Modeling | Host strain development | partial: nearest neighbour only, GFI has no modelling facet |
+| Food Safety Prediction | *(none)* | no GFI sector covers safety assessment |
+| AI Tooling / Methodology | *(none)* | no GFI sector covers general-purpose AI method work |
+
+The gaps run in both directions, and both are real rather than an artefact of mapping:
+
+- **CAAIL areas with no GFI sector:** Food Safety Prediction and AI Tooling / Methodology, with Sensory
+  Prediction and Metabolic Modeling matching only loosely.
+- **GFI sectors with no CAAIL column:** Crop development, Ingredient optimization, and Target molecule
+  selection. These are largely plant-based and fermentation-ingredient concerns that the matrix's
+  cultivated-cell focus does not reach.
+
+Two details worth stating because they are easy to get wrong. GFI lists **Scaffolding** on *both*
+facets, as a technology sector and as a value chain segment, where CAAIL has only the one axis. And
+almost every paper in the matrix would fall under GFI's **R&D** value chain segment, so that facet
+does not discriminate between CAAIL columns and is not mapped per-row here.
+
+*GFI's facet lists were read from `gfi.org/solutions` on 2026-08-20 and are reproduced verbatim. They
+are a third party's taxonomy and can change without notice; re-read the page rather than trusting this
+snapshot.*

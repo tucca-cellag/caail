@@ -76,7 +76,7 @@ The row's centre of gravity. Almost all of it is structure-to-taste or structure
 - [#171](../Papers.md#171) (Kircali Ata et al. 2023, *Foods*): meat-analogue hardness and chewiness from composition, with carbohydrates, fat and targeted moisture content the dominant features. Described in [Linear & Regularized Models](./LinearRegularizedModels.md).
 - [#341](../Papers.md#341) (Oppen et al. 2023, *Food Research International*): the most unusual input in the row. Rather than measuring texture by deformation force or a panel, it builds a pipeline over **mastication physics**, the measured dynamics of 11 panellists' jaw movement, to identify samples differing in particle size and fibrousness. The argument is that meat and meat alternatives differ in more than texture, which makes an isolated texture impression hard to extract by conventional means, so measuring how the food is actually chewed sidesteps the confound. Directly relevant to cultivated and hybrid products, where the eating experience is the acceptance criterion.
 
-## AI Tooling / Methodology
+## Food Safety Prediction
 
 - [#290 AlgPred 2.0](../Papers.md#290) (Sharma et al. 2021, *Briefings in Bioinformatics*, Raghava lab): predicts allergenic proteins and maps IgE epitopes, trained on a balanced set of 10,075 allergens and 10,075 non-allergens assembled from COMPARE, AllergenOnline, the original AlgPred and AllerTOP datasets and Swiss-Prot, plus 10,451 experimentally validated IgE epitopes for identifying antigenic regions, with non-standard-character and short sequences filtered out. Allergenicity assessment is a regulatory requirement for novel food proteins and recombinant growth factors, so this and [#289 AllerTrans](../Papers.md#289) in [Deep Learning](./DeepLearning.md) are two routes at the same gate. The tool is catalogued in [`Software.md`](../Software.md#algpred-20).
 
@@ -89,7 +89,7 @@ The row's centre of gravity. Almost all of it is structure-to-taste or structure
 
 ## Further reading
 
-- Research areas: [Sensory Prediction](../ResearchAreas/SensoryPrediction.md) above all, plus [Media Optimization](../ResearchAreas/MediaOptimization.md), [Bioprocess & Scale-Up](../ResearchAreas/Bioprocess.md) and [Scaffolding](../ResearchAreas/Scaffolding.md).
+- Research areas: [Sensory Prediction](../ResearchAreas/SensoryPrediction.md) above all, plus [Media Optimization](../ResearchAreas/MediaOptimization.md), [Bioprocess & Scale-Up](../ResearchAreas/Bioprocess.md), [Scaffolding](../ResearchAreas/Scaffolding.md) and [Food Safety Prediction](../ResearchAreas/FoodSafetyPrediction.md).
 - Software: [BitterSweet](../Software.md#bittersweet), [TastepepAI](../Software.md#tastepepai), [OpenPOM](../Software.md#openpom), [Pyrfume](../Software.md#pyrfume), and the allergenicity predictors including [AlgPred 2.0](../Software.md#algpred-20).
 - Databases: [BitterDB](../Databases.md#bitterdb) and the other taste and odour resources this row is almost entirely built on.
 - Datasets: [`Datasets/CrossSpecies.md`](../Datasets/CrossSpecies.md) for the meat-analogue texture table, and [`Datasets/Benchmarks.md`](../Datasets/Benchmarks.md) for the peptide benchmark sets.

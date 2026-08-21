@@ -44,7 +44,10 @@ describe('buildTopicsModel', () => {
     const meta = m.themes.find((t) => t.slug === 'metabolism-modeling')!;
     expect(meta.counts.total).toBeGreaterThan(0);
     expect(meta.tags.length).toBeGreaterThan(0);
-    expect(meta.areaKey).toBeNull(); // metabolism is a subject theme, no matrix column
+    // Every theme now names exactly one matrix research area (ADR-0001); `db:check`'s
+    // bijection guard asserts no theme carries a null areaKey.
+    expect(meta.areaKey).toBe('metabolic');
+    expect(m.themes.every((t) => t.areaKey !== null)).toBe(true);
   });
 
   it('a theme count is the deduped union, so >= any of its child-tag counts', () => {

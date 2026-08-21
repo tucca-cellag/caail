@@ -79,27 +79,31 @@ _Avoid_: subtag, subtopic
 The umbrella term covering both themes and fine tags. Never a synonym for either alone.
 
 **Cross-cutting subject**:
-A subject that spans research areas rather than naming one. Two themes are cross-cutting
-today (`Metabolism & Modeling` and `Food Safety`), because neither has a research area to
-name. ADR-0001 decides to empty the class by giving both a column, after which a new
-cross-cutting theme becomes a deliberate reopening of that ADR. Until those columns land the
-class has two members. `db:check` does guard the theme *list*, asserting it is exactly
-`THEME_SLUGS`, so a ninth theme cannot appear unnoticed; what it does not do is require a
-theme to carry an `area_key`, so an added theme may still be cross-cutting.
+A subject that spans research areas rather than naming one. The class is **empty**:
+ADR-0001 gave `Metabolism & Modeling` and `Food Safety` the columns they were missing, so every
+theme now names a research area. The term is kept because it explains why the taxonomy is shaped
+as it is, not because anything is filed under it.
+
+Adding a cross-cutting theme is therefore a deliberate reopening of ADR-0001 rather than a quiet
+addition, and that is now enforced rather than asked for: `db:check` requires every theme to carry
+a non-null `area_key`, so such a theme fails the build. It separately guards the theme *list*
+against `THEME_SLUGS`, so a ninth theme cannot appear unnoticed either.
 
 ### Joining the axes
 
 **area_key**:
 The stored link from a subject theme to its research area, and the single joint between the
 two axes. Correspondence between the axes is **read** from this key and never from a shared
-label. Note the asymmetry, which is a trap rather than a nicety: the key is currently
-**populated** by a label lookup in `seedTopics`, which returns `null` silently when no area
-label matches, so a label still has to match exactly at seed time even though nothing
-downstream reads one. The join is not yet total: two of the eight themes carry no key, so only
-six reach a research area. A deep-dive page hangs off the research area rather than the theme
-(`RESEARCH_AREA_SLUG`), and `ResearchAreas/` holds seven pages against six columns, because
-`MetabolicModeling.md` has a page with no column. ADR-0001's target is a bijection (eight
-themes, eight research areas, one deep-dive page each), reached by the two columns it adds.
+label. Note the asymmetry, which is a trap rather than a nicety: the key is **populated** by a
+label lookup in `seedTopics`, which returns `null` silently when no area label matches, so a
+label still has to match exactly at seed time even though nothing downstream reads one. Two
+`db:check` assertions now cover that seam — every theme must carry a key, and the seed constant
+must reproduce the committed themes on label *and* key — because a stale label there re-mints a
+theme under its old name with a valid key, which the first assertion alone would not catch.
+
+**The join is total.** Each of the eight themes reaches one of the eight research areas, and each
+research area has exactly one `ResearchAreas/` deep-dive page hanging off it rather than off the
+theme (`RESEARCH_AREA_SLUG`). ADR-0001's bijection is the live state rather than its target.
 
 **Deep-dive page**:
 A hand-authored prose overview of one axis member: `ResearchAreas/<Area>.md` for a research

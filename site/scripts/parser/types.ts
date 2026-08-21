@@ -711,6 +711,8 @@ export const RecentEntrySchema = z.object({
     'bioprocess',
     'scaffolding',
     'sensory',
+    'metabolic',
+    'foodsafety',
     'tooling',
   ]),
 });
