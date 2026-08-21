@@ -43,6 +43,8 @@ in its methods, not what it could be applied to. Short form:
 - **[Bioprocess & Scale-Up](./Taxonomy.md#bioprocess--scale-up)**: running and scaling the bioprocess (reactor design, CFD/mixing, mass transfer, monitoring, control).
 - **[Scaffolding](./Taxonomy.md#scaffolding)**: scaffolds and structural biomaterials for tissue form and texture.
 - **[Sensory Prediction](./Taxonomy.md#sensory-prediction)**: flavor, odor, taste, texture, color, and freshness/quality.
+- **[Metabolic Modeling](./Taxonomy.md#metabolic-modeling)**: modelling the metabolic network itself (GEM reconstruction, flux prediction, pathway and strain design).
+- **[Food Safety Prediction](./Taxonomy.md#food-safety-prediction)**: predicting allergenicity, immunogenicity or toxicity of the novel proteins an alternative-protein product introduces.
 - **[AI Tooling / Methodology](./Taxonomy.md#ai-tooling--methodology)**: general AI methods/agents/tools not yet tied to a specific cell-ag application.
 
 **AI/ML methods (rows)**

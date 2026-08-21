@@ -98,10 +98,20 @@
      is not: the card's dots carry no text label, so colour is the only signal and has to
      do the whole job. Every in-app surface renders the area's name beside the swatch
      (DESIGN.md section 2), so colour is a redundant cue there and a smaller separation is
-     survivable. That argument is load-bearing, so it has to stay true — the "Recently
-     added" dot was the one surface that broke it, and now carries an accessible name. If
-     a new surface shows an area colour with no label, either label it or use the card's
-     floor; do not extend this exemption to it.
+     survivable. That argument is load-bearing, so it has to stay true, and it is worth
+     being exact about what "beside the swatch" covers:
+
+       * the Papers Explorer legend, the By the Numbers bars and the topic chips name the
+         area in the same element as the colour — the strong form;
+       * `/papers/network/` is the weaker form. A node's colour is its area and its label
+         is the citation slug, so the mapping lives in a legend elsewhere on the page
+         rather than on the node. That is ordinary practice for a graph and is accepted
+         here, but note the legend is `aria-hidden`, so the colour channel carries nothing
+         for a screen reader either way;
+       * the "Recently added" dot had NEITHER, and now carries an accessible name.
+
+     If a new surface shows an area colour with no label and no legend, either label it or
+     use the card's floor; do not extend this exemption to it.
 
      These two values are inherited deliberately rather than invented: they were the
      tokens the Metabolism & Modeling and Food Safety *themes* carried while those themes

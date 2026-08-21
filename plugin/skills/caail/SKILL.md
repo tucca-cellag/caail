@@ -77,7 +77,7 @@ below because the caveat never fires.
 
 ## The one thing to get right
 
-`matrix.json` enumerates **all 150 method×area cells**, including the 80 with no indexed paper. An
+`matrix.json` enumerates **all 200 method×area cells**, including the 128 with no indexed paper. An
 empty cell means **CAAIL contains no paper classified there**. It does **not** mean no such work
 exists. CAAIL is a curated subset, not a census, and it has not measured its own recall.
 
