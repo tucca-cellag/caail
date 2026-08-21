@@ -1,0 +1,30 @@
+# K-Nearest Neighbors
+
+This page describes the **K-Nearest Neighbors** row of the [Papers.md matrix](../Papers.md): instance-based prediction, where a new sample is scored from the labels of the training points it most resembles rather than from a fitted decision surface. The row's authoritative scope is its [Taxonomy.md definition](../Taxonomy.md#k-nearest-neighbors); this page synthesizes what currently sits in it.
+
+## Scope boundary
+
+The defining feature of the row is what a paper does with k-NN, not that k-NN appears in it. Every reference here comes from a study that ran several classical models against the same data, and the taxonomy says so directly: k-NN "usually appears alongside other classical models in comparative studies." So the row is small, it overlaps heavily with [SVM](./SVM.md), [Ensemble Learning](./EnsembleLearning.md), [Linear & Regularized Models](./LinearRegularizedModels.md) and [Chemometrics](./Chemometrics.md), and a reference appearing in it is usually also in one or more of those.
+
+That overlap is the useful signal rather than noise. A paper in this row has, by construction, reported how a nearest-neighbor baseline did against everything else it tried, which is what a cell-ag team needs when deciding whether a more expensive model is earning its cost on a dataset of a few hundred samples.
+
+## Bioprocess & Scale-Up
+
+- [#32](../Papers.md#32) (Roell et al. 2022, *Biochemical Engineering Journal*): benchmarks seven families of algorithm, k-nearest neighbors among them, on *Clostridium carboxidivorans* syngas fermentation. The paper's central move is a reframing rather than a model: pairing syngas composition and current metabolite concentrations with instantaneous *production rates*, which removes time as a feature and lifts 176 input-output pairs to 836 after Savitzky-Golay smoothing and interpolation. Training runs are separated from test runs by fermentation condition so no condition appears in both. Every family fits the training data well and most generalize poorly; random forests and support vector machines carried to unseen conditions best, and neural networks overfit. Code at [garrettroell/SyngasMachineLearning](https://github.com/garrettroell/SyngasMachineLearning).
+
+## Sensory Prediction
+
+- [#28](../Papers.md#28) (Sun et al. 2026, *Journal of Food Engineering*): classifies algal-derived odor compounds from RDKit molecular descriptors, sourced from OlfactionBase and PubChem and combined with GC-MS volatiles measured from *Saccharina japonica*. Six algorithms were compared over a set of 87 odor molecules balanced between "ammonia-like" and "rancid" classes, with recursive feature elimination and PCA ahead of training. k-Nearest Neighbors was the best binary classifier, at 94.25% and 93.11% accuracy under 3-fold and 5-fold cross-validation; when a third "other" class was added for mixed profiles, stochastic gradient descent took the lead instead. A useful illustration of the row's pattern: the nearest-neighbor model wins on the narrow, small, well-separated problem and loses when the label space gets messier. Code at [llllhhhhkkkk/odor-prediction-ML](https://github.com/llllhhhhkkkk/odor-prediction-ML).
+- [#104 BitterMatch](../Papers.md#104) (Margulis et al. 2022, *Journal of Cheminformatics*, Niv lab): predicts which TAS2R bitter-taste receptors a given ligand activates, over 4,501 curated ligand-receptor pairs spanning 21 human and 20 mouse receptors and 303 ligands, of which 740 are positive associations confirmed in vitro. The nearest-neighbor content is architectural rather than a baseline comparison: the algorithm is built on hybrid-recommender ideas, and its contribution is a set of similarity features that let an unknown pair borrow evidence from chemically similar ligands and from related receptors. Reported at roughly 80% precision at roughly 50% recall, with 80% precision and 42% recall on a subsequent in-vitro test. The paper notes that this neighbor-informed component should improve as experimental coverage grows, which is the opposite of the usual small-data caution. Code at [YuliSl/BitterMatch](https://github.com/YuliSl/BitterMatch); the underlying compound and receptor data is [BitterDB](../Databases.md#bitterdb).
+- [#340](../Papers.md#340) (Rojas et al. 2017, *Frontiers in Chemistry*): a QSTR expert system for sweet versus non-sweet classification over 649 curated molecules (435 sweet, 214 non-sweet), described by extended-connectivity fingerprints and molecular descriptors and validated against the OECD principles for (Q)SAR models. Molecules falling in fingerprint-space regions where the taste assignment is hardest are handed to a consensus of a linear model (PLS-DA) and a local one (an N-nearest-neighbor classifier), which is the row's placement: nearest-neighbor prediction used deliberately for the part of the chemical space a global model handles badly. Also in [Chemometrics](./Chemometrics.md).
+
+## Adjacent methods
+
+- [SVM](./SVM.md), [Ensemble Learning](./EnsembleLearning.md), [Linear & Regularized Models](./LinearRegularizedModels.md): the models k-NN is benchmarked against in nearly every reference above.
+- [Chemometrics](./Chemometrics.md): where the multivariate spectral half of the sensory work sits, including [#340](../Papers.md#340)'s PLS-DA component.
+- [Deep Learning](./DeepLearning.md): the comparison point these papers repeatedly find does not pay off at their data scale.
+
+## Further reading
+
+- Research areas: [Sensory Prediction](../ResearchAreas/SensoryPrediction.md) and [Bioprocess & Scale-Up](../ResearchAreas/Bioprocess.md).
+- Databases: [BitterDB](../Databases.md#bitterdb) for the bitter compound and receptor data behind the taste models.
