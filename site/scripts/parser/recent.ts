@@ -69,6 +69,13 @@ const AREA_KEYWORDS: ReadonlyArray<readonly [RecentEntry['area'], readonly strin
   ['scaffolding', ['scaffold', 'biomaterial', 'hydrogel']],
   ['media', ['media', 'medium', 'growth factor', 'serum']],
   ['cell', ['knockout', 'crispr', 'satellite cell', 'differentiation', 'atlas', 'single-cell', 'scrna', 'rna-seq', 'cell line', 'cell-line', 'lineage', 'transcriptom']],
+  // `metabolom` is deliberately NOT here: it belongs to `sensory` above and stays there,
+  // because measuring metabolites to predict an eating-quality attribute is a sensory
+  // result, while this area is for modelling the metabolic network. That is the same
+  // boundary Taxonomy.md draws between the two columns, so the shadowing is correct
+  // rather than a collision to work around.
+  ['metabolic', ['genome-scale', 'genome scale', 'flux', 'metabolic model', 'metabolic network', 'strain design', 'sbml', 'gem']],
+  ['foodsafety', ['allergen', 'allergenic', 'immunogenic', 'food safety', 'ige', 'toxicity']],
   ['tooling', ['agent', 'mcp', 'llm', 'foundation model', 'framework', 'tool', 'docs', 'pipeline']],
 ];
 

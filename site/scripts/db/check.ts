@@ -287,6 +287,17 @@ export function checkAxisBijection(db: Db, repoRoot: string = REPO_ROOT): CheckR
       : `axis-links: [${slugKeys.join(', ')}]; DB: [${[...areaKeys].sort().join(', ')}]`
         + ' -> a missing key there silently links the bar to a Taxonomy anchor instead of the deep dive'));
 
+  // A correct key set with a typo'd VALUE routes the bar to a 404 instead, which is just
+  // as silent. The route slug is the page filename lowercased, so the two maps are
+  // cross-checkable without reading a third file.
+  const slugPairs = slugBlock ? [...slugBlock[1].matchAll(/^\s*(\w+)\s*:\s*'([^']+)'/gm)] : [];
+  const badSlugValue = slugPairs
+    .filter((m) => RESEARCH_AREA_PAGES[m[1]] !== undefined)
+    .filter((m) => m[2] !== RESEARCH_AREA_PAGES[m[1]].toLowerCase())
+    .map((m) => `${m[1]}: '${m[2]}' vs page ${RESEARCH_AREA_PAGES[m[1]]}.md`);
+  out.push(ok('axes: axis-links route slugs match their ResearchAreas page names', badSlugValue.length === 0,
+    `${badSlugValue.join('; ')} -> the By the Numbers bar would 404`));
+
   const dbThemes = db.prepare("SELECT slug,label,area_key FROM topics WHERE tier='theme' ORDER BY slug")
     .all() as { slug: string; label: string; area_key: string | null }[];
   const areaKeyByLabel = new Map(dbAreas.map((a) => [a.label, a.key]));
@@ -530,10 +541,14 @@ export function checkSubseries(db: Db, subseriesPath: string = SUBSERIES_PATH): 
  * Taxonomy axis guard: every matrix row and column must resolve to a definition
  * under *its own* H2 vocabulary in Taxonomy.md.
  *
- * The file defines three vocabularies that may legitimately share a label — the
- * `Bioprocess & Scale-Up` matrix column and the `Bioprocess & Scale-Up` subject
- * theme are different things with the same name. A whole-file flatten therefore
- * loses one of them silently, and the pre-existing guards could not see it:
+ * The file defines three vocabularies that may in principle share a label, so a
+ * whole-file flatten loses one of them silently. That is not hypothetical: the
+ * `Bioprocess & Scale-Up` column and a same-named subject theme collided exactly
+ * this way. ADR-0001 has since renamed the theme to `Bioprocess & Manufacturing`
+ * and `taxonomy.test.ts` now asserts the two axes share no label at all, so the
+ * collision is gone at the source — this guard is defence in depth against a
+ * convention a future edit could breach, not a live condition. The pre-existing
+ * guards could not see it:
  * `generate-data.ts` asserted the label had a *non-empty* definition (it did,
  * the theme's), and nothing asserted heading uniqueness at all.
  *

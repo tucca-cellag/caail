@@ -159,11 +159,20 @@
      Un-inverted they sit at 0.096, which is not generous but is four times the separation
      and, more to the point, means one rule governs all eight.
 
-     The cost, stated because it is real: `Metabolic Modeling` measures 2.07:1 against the
-     dark background, below `Media Optimization`'s 3.18:1, which was already the darkest.
-     That is acceptable only because these are category swatches and never the sole signal —
-     every surface renders the area's text label beside the colour (DESIGN.md section 2). It
-     would not be acceptable for text.
+     The cost, stated because it is real. Against the two dark backgrounds THIS FILE
+     defines, `Metabolic Modeling` measures 2.41:1 on `--caail-bg` and 2.19:1 on
+     `--caail-surface`; `Media Optimization`, previously the darkest area, measures 3.69:1
+     and 3.35:1. So Metabolic Modeling sits below WCAG 1.4.11's 3:1 non-text threshold in
+     dark mode on both grounds, and Media Optimization is marginal on one.
+
+     That is accepted only because these are category swatches that are never the sole
+     signal — every surface renders the area's text label beside the colour (DESIGN.md
+     section 2) — and it would not be acceptable for text or for a control. If a future
+     change makes an area colour load-bearing on its own, revisit this pair before it ships.
+
+     (Measure against `--caail-bg` or `--caail-surface`, not `--caail-density-0`. An earlier
+     version of this note quoted 2.07:1 and 3.18:1, which are that ramp's darkest stop — a
+     data colour, not a page background.)
 
      If a future change does invert the areas for dark mode, invert ALL eight together or
      the same collision returns. */
