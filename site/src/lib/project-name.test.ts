@@ -17,8 +17,8 @@ import { fileURLToPath } from 'node:url';
  * `src/lib/citation.ts`, whose own docstring says to update `CITATION.cff` first
  * and mirror it there — an instruction with nothing enforcing it until now; the
  * APA line in `content/docs/cite.mdx`; `README.md`'s heading and both of its
- * citations; and the two agent-facing names, `api/index.json`'s `name` (emitted from
- * `agent-api.ts`) and `llms.txt`'s heading.
+ * citations; the two agent-facing names, `api/index.json`'s `name` (emitted from
+ * `agent-api.ts`) and `llms.txt`'s heading; and `.zenodo.json`'s deposit `title`.
  *
  * WHAT IS IN AND WHAT IS OUT, since "one more copy exists" is true indefinitely and
  * is not on its own a reason. Two things earn a pin:
@@ -33,6 +33,14 @@ import { fileURLToPath } from 'node:url';
  *      queried by agents. `api/index.json`'s `name` is, per its own comment, the
  *      first thing an agent reads. A retitle that moves the hero and not the API
  *      leaves those two surfaces announcing different names for the same project.
+ *   3. A COPY THAT CANNOT BE CORRECTED AFTERWARDS. `.zenodo.json` titles the
+ *      deposition the concept DOI resolves to, and that DOI is cited from README,
+ *      `/cite/` and `CITATION.cff`. Every other copy here is fixed by editing a file;
+ *      a minted DOI record is not. Nothing derives it from `CITATION.cff` — there is
+ *      no cffconvert step — so hand-editing or this check are the only two options.
+ *      Note it does NOT qualify under 1: the Zenodo page's title and its citation
+ *      export come from one deposited record, so they cannot disagree with each
+ *      other. It can only disagree with this repo.
  *
  * Everything else is deliberately unpinned, and deliberately not enumerated. The
  * expansion appears in prose in several other files; an earlier draft of this
@@ -190,13 +198,29 @@ export function parseMarkdownH1(md: string, source: string): string {
  * The artifact is committed and `lint-papers.yml`'s API sync guard re-derives it, so
  * it cannot drift from the source; the assertion below says where to fix it.
  */
-export function parseAgentApiName(json: string, source: string): string {
+function jsonStringField(json: string, source: string, field: string): string {
   const parsed: unknown = JSON.parse(json);
-  const name = (parsed as { name?: unknown }).name;
-  if (typeof name !== 'string' || name === '') {
-    throw new Error(`${source} has no top-level string \`name\` — this guard cannot run`);
+  const value = (parsed as Record<string, unknown>)[field];
+  if (typeof value !== 'string' || value === '') {
+    throw new Error(`${source} has no top-level string \`${field}\` — this guard cannot run`);
   }
-  return name;
+  return value;
+}
+
+/** `api/index.json` names the library under `name`. */
+export function parseAgentApiName(json: string, source: string): string {
+  return jsonStringField(json, source, 'name');
+}
+
+/**
+ * `.zenodo.json` titles the deposit under `title`, NOT `name`.
+ *
+ * Two parsers rather than one reading whichever key is present: a lenient
+ * "try `name`, else `title`" would keep passing if either file were restructured to
+ * use the other key, which is exactly the silent-success this file exists to refuse.
+ */
+export function parseZenodoTitle(json: string, source: string): string {
+  return jsonStringField(json, source, 'title');
 }
 
 describe('every pinned copy of the title agrees with CITATION.cff', () => {
@@ -241,6 +265,19 @@ describe('every pinned copy of the title agrees with CITATION.cff', () => {
       readFrom('site/public/api/index.json', parseAgentApiName),
       'fix the `name:` literal in site/scripts/parser/agent-api.ts, then `pnpm --dir site parse`',
     ).toBe(title());
+  });
+
+  it('the archived deposit is titled the same as the record that cites it', () => {
+    // `.zenodo.json` titles the Zenodo deposition the concept DOI resolves to, and
+    // that DOI is cited from README, /cite/ and CITATION.cff. Nothing derives this
+    // file from CITATION.cff — no cffconvert step, no generator — so hand-editing or
+    // this check are the only two things keeping them in step.
+    //
+    // Pinned for the reason in 3 above rather than 1: the Zenodo page cannot
+    // contradict ITSELF, since its displayed title and its citation export come from
+    // the same deposited record. It can contradict the repo, and that is the copy
+    // nobody can correct afterwards by editing a file.
+    expect(readFrom('.zenodo.json', parseZenodoTitle)).toBe(title());
   });
 
   it('llms.txt announces the same name to agents that find it that way', () => {
@@ -329,11 +366,22 @@ describe('the guard fails loudly rather than silently when a source is restructu
     );
   });
 
-  it('rejects an API payload with no top-level name, rather than reading undefined', () => {
+  it('rejects a JSON payload missing its field, rather than reading undefined', () => {
     expect(() => parseAgentApiName('{"corpusDate":"2026-01-01"}', '<fixture>')).toThrow(
       /no top-level string `name`/,
     );
     expect(() => parseAgentApiName('{"name":""}', '<fixture>')).toThrow(/no top-level string/);
+    expect(() => parseZenodoTitle('{"upload_type":"software"}', '<fixture>')).toThrow(
+      /no top-level string `title`/,
+    );
+  });
+
+  it('does not accept one file’s key standing in for the other’s', () => {
+    // The lenient form would be a single parser trying `name` then `title`. It would
+    // keep passing if either file were restructured onto the other key, which is the
+    // silent success this file refuses everywhere else.
+    expect(() => parseAgentApiName('{"title":"CAAIL: X"}', '<fixture>')).toThrow(/`name`/);
+    expect(() => parseZenodoTitle('{"name":"CAAIL: X"}', '<fixture>')).toThrow(/`title`/);
   });
 
   it('rejects an APA line whose title lost its italics', () => {
