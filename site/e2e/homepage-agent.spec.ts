@@ -1017,16 +1017,19 @@ test.describe('homepage section rail', () => {
    * label is read cold. Sections without an eyebrow are exempt.
    *
    * The hero is exempt by id, not by accident. It carries an `.eyebrow` too, but that one
-   * is the site's tagline ("Cellular Agriculture × Artificial Intelligence"), not a
-   * categorical tag, and the correct rail label for the top of a page is "Top". This
-   * assertion found that case on its first run.
+   * expands the acronym rather than naming a category, and the correct rail label for the
+   * top of a page is "Top". This assertion found that case on its first run.
+   *
+   * Deliberately not quoting the hero eyebrow's text here. An earlier version did, and the
+   * quote outlived the string it described — which is the drift this repo keeps paying for.
+   * The exemption is by id, so no comment needs to track what that eyebrow says.
    */
   test('rail labels match the eyebrow of the section they name', async ({ page }) => {
     await page.goto('./');
     const mismatched = await page.evaluate(() =>
       [...document.querySelectorAll<HTMLAnchorElement>('.rail a[data-rail]')]
         .map((a) => {
-          if (a.dataset.rail === 'top') return null; // tagline, not a categorical tag
+          if (a.dataset.rail === 'top') return null; // exempt: not a categorical tag
           const section = document.getElementById(a.dataset.rail!);
           const eyebrow = section?.querySelector('.eyebrow');
           if (!eyebrow) return null; // no eyebrow: nothing to derive from

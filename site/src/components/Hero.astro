@@ -34,15 +34,23 @@ const statSentence = `Indexing ${stats.map((s) => `${s.n} ${s.label}`).join(', '
 <section class="hero" id="top">
   <div class="hero-stripe" aria-hidden="true"></div>
   <div class="hero-text">
-    <p class="eyebrow">Cellular Agriculture × Artificial Intelligence</p>
+    {/* Spells out the acronym. The nav title is a bare "CAAIL" and the h1 is the stylised
+        wordmark, so without this line a first-time reader never learns what it stands for.
+
+        The expansion is a hand-typed copy of CITATION.cff's title, which is the defect class
+        CLAUDE.md calls this repo's most expensive. It is checked rather than asserted:
+        `src/lib/project-name.test.ts` fails if the two drift. Do not replace that with a
+        comment promising they match — that is the thing the rule forbids. */}
+    <p class="eyebrow">CAAIL · Cellular Agriculture AI Library</p>
     <h1 class="h-title caail-display">
       <span class="l1">Cell&nbsp;Ag</span>
       <span class="l2"><span class="x">×</span> AI</span>
     </h1>
 
     <p class="lede">
-      The curated library at the intersection of cellular agriculture and AI, with every entry
-      cross-linked back to canonical Markdown on GitHub.
+      The curated library at the intersection of cellular agriculture and AI, and a grounding
+      database an AI assistant can query, so research and industry questions can be answered
+      from a fixed, citable index rather than from model memory.
     </p>
 
     <div class="cta-row">
@@ -140,7 +148,47 @@ const statSentence = `Indexing ${stats.map((s) => `${s.n} ${s.label}`).join(', '
     <a href={`${base}/papers/explorer/`}><Icon name="lucide:layout-grid" /> Browse the matrix</a>
     <a href={`${base}/community/`}><Icon name="lucide:users" /> Community</a>
     <a href={`${base}/cite/`}><Icon name="lucide:quote" /> Cite CAAIL</a>
-    <p class="hero-attrib"><span>A project of</span><TuccaLockup width={150} /></p>
+    {/* Two spans, because the line has to carry two different claims and an earlier draft
+        lost one of them. Replacing "A project of" outright with "Built and used in R&D at"
+        left the homepage saying only that TUCCA *uses* CAAIL, which reads as a third-party
+        tool TUCCA adopted, and ownership then survived only on /about.
+
+        `textName` is what makes the sentence a sentence outside the browser. `TuccaLockup`
+        renders the name as a background image on an `aria-hidden` span, so the anchor
+        contributes NO text — only whitespace — and the name reaches assistive tech solely
+        through its `aria-label`. Sighted rendering is fine and so is a screen reader, but
+        `textContent` saw "A project of  and used in ...", a sentence with its subject
+        missing. Before the second span that read as merely incomplete; after it,
+        ungrammatical. The prop emits it as visually-hidden `aria-hidden` text from the one
+        constant that also feeds the `aria-label`, so AT is not told twice and the two cannot
+        drift; typing the name here instead was the first attempt and made a second copy that
+        nothing pinned to the first. The trailing span can then say "its own" without
+        ambiguity, because in extracted text the antecedent is now literally present.
+
+        Text extraction is the surface this is for, NOT search: checked by decompressing
+        `dist/pagefind/fragment/*.pf_fragment`, the homepage fragment contains neither "A
+        project of" nor the org name, so nothing here reaches the Pagefind index either way.
+        An earlier version of this comment claimed it did, which is the same
+        asserted-without-measuring defect the comment on the eyebrow above warns about.
+        (Grepping those files directly proves nothing — they are gzip.)
+
+        "Extraction" covers two surfaces that differ, and saying "select-and-copy" alone
+        was wrong for the same reason the Pagefind claim was. Measured: `textContent` is
+        one clean sentence, while `innerText` and `Selection.toString()` give THREE lines
+        in mixed case — this row is `display: flex`, so the serialiser blockifies each
+        child, and the `text-transform: uppercase` below does not reach `.tl-name`, which
+        sits in `TuccaLockup`'s own scope. What the prop delivers on both surfaces is the
+        subject being present at all; the clean-sentence form is `textContent` only.
+        `cite.spec.ts` now asserts each surface for what is actually true of it.
+
+        The spaces inside the spans are deliberate for the same class of reason: word
+        separation must not depend on `TuccaLockup`'s incidental line-breaking, which is
+        invisible to text extraction, where the `flex gap` does not exist.
+
+        Deliberately unquantified — what CAAIL adds to an agent's answers is unmeasured
+        (CAAIL-168), so "we use it" is assertable and "it works better" is not.
+        The row is `flex-wrap`; the wrap was checked at 390 and 1440, not assumed. */}
+    <p class="hero-attrib"><span>A project of </span><TuccaLockup width={150} textName /><span> and used in its own R&amp;D</span></p>
   </nav>
 </section>
 

@@ -33,6 +33,36 @@ on:
       - .claude/hooks/**
       - .claude/settings.json
       - .github/workflows/test.yml
+      # The citation record. Two suites read it and fail when a copy of it drifts:
+      # project-name.test.ts, which pins the title, and topic-curators.test.ts, which
+      # checks a curator's name and ORCID belong to one author in it. Both were
+      # unreachable from CI until this entry existed: a PR editing only CITATION.cff
+      # triggered no workflow at all, so neither guard ran on the one edit it exists
+      # to catch.
+      #
+      # What this does NOT buy, stated because the obvious reading is too generous:
+      # project-name.test.ts pins SOME of the hand-typed copies of the title, not all
+      # of them, so a retitle still lands with the rest stale. Which ones are covered
+      # is deliberately not restated here — read that file's docstring, which is also
+      # where the rule lives (add a copy, add it there). An earlier version of this
+      # comment named the covered set and a later commit changed it, so the count was
+      # wrong here, twice over, while both copies of this block still read correctly.
+      #
+      # Nor does this cover a plain version or DOI bump, which is the more common
+      # release edit: nothing asserts that citation.ts, cite.mdx, README.md and
+      # .zenodo.json still agree on `version:` or `doi:`.
+      #
+      # WHY THIS FILE AND NOT .zenodo.json, which carries the same strings and is
+      # deliberately left out. The cost is identical and real — a full build and a
+      # browser install for a handful of file reads, which is CAAIL-298 — so the
+      # asymmetry needs a reason rather than a preference. It is blast radius.
+      # CITATION.cff is the SOURCE every pin compares against, so an edit to it alone
+      # changes the expected value of all of them at once and can leave the repo
+      # inconsistent in half a dozen places. .zenodo.json is a leaf: an edit to it can
+      # only make itself wrong, and the realistic retitle starts at CITATION.cff and
+      # so trips this filter anyway. One is the thing that moves everything; the other
+      # is one of the things that move. CAAIL-301 holds the decision to revisit it.
+      - CITATION.cff
       # The correction issue form. /report/ composes a report against this file: the error
       # classes its reason field lists ARE the composer's vocabulary, and its field ids are
       # what GitHub prefills by. correction-form.test.ts checks the two agree, and
@@ -77,6 +107,36 @@ on:
       - .claude/hooks/**
       - .claude/settings.json
       - .github/workflows/test.yml
+      # The citation record. Two suites read it and fail when a copy of it drifts:
+      # project-name.test.ts, which pins the title, and topic-curators.test.ts, which
+      # checks a curator's name and ORCID belong to one author in it. Both were
+      # unreachable from CI until this entry existed: a PR editing only CITATION.cff
+      # triggered no workflow at all, so neither guard ran on the one edit it exists
+      # to catch.
+      #
+      # What this does NOT buy, stated because the obvious reading is too generous:
+      # project-name.test.ts pins SOME of the hand-typed copies of the title, not all
+      # of them, so a retitle still lands with the rest stale. Which ones are covered
+      # is deliberately not restated here — read that file's docstring, which is also
+      # where the rule lives (add a copy, add it there). An earlier version of this
+      # comment named the covered set and a later commit changed it, so the count was
+      # wrong here, twice over, while both copies of this block still read correctly.
+      #
+      # Nor does this cover a plain version or DOI bump, which is the more common
+      # release edit: nothing asserts that citation.ts, cite.mdx, README.md and
+      # .zenodo.json still agree on `version:` or `doi:`.
+      #
+      # WHY THIS FILE AND NOT .zenodo.json, which carries the same strings and is
+      # deliberately left out. The cost is identical and real — a full build and a
+      # browser install for a handful of file reads, which is CAAIL-298 — so the
+      # asymmetry needs a reason rather than a preference. It is blast radius.
+      # CITATION.cff is the SOURCE every pin compares against, so an edit to it alone
+      # changes the expected value of all of them at once and can leave the repo
+      # inconsistent in half a dozen places. .zenodo.json is a leaf: an edit to it can
+      # only make itself wrong, and the realistic retitle starts at CITATION.cff and
+      # so trips this filter anyway. One is the thing that moves everything; the other
+      # is one of the things that move. CAAIL-301 holds the decision to revisit it.
+      - CITATION.cff
       # The correction issue form. /report/ composes a report against this file: the error
       # classes its reason field lists ARE the composer's vocabulary, and its field ids are
       # what GitHub prefills by. correction-form.test.ts checks the two agree, and
