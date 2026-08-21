@@ -281,39 +281,52 @@ export function parseLockupName(astro: string, source: string): string {
 }
 
 /**
- * The organisation `.zenodo.json` credits, from the `contributors`/`creators` entry
- * whose `name` is the org rather than a person.
+ * Every `creators[].name` in `.zenodo.json`.
  *
- * Matched as the one `"name"` sitting on its own line with no `orcid` beside it
- * would be fragile, so this reads the entity by structure: the only entry whose
- * `name` contains "Center for", which is what distinguishes the body from the three
- * people. Stated rather than clever, and it fails loudly if that stops being true.
+ * Returns the whole list rather than trying to pick out the organisation, because
+ * the caller already knows the org's name from `CITATION.cff` and can simply ask
+ * whether it is credited. Two earlier attempts tried to IDENTIFY the org entry and
+ * both were wrong:
+ *
+ *   - by a substring of its name ("contains 'Center for'"), which uses the value
+ *     under test to locate the value under test;
+ *   - by the affiliation the human creators share, which is worse than a heuristic:
+ *     it fails on a CORRECT change. Add one contributor from another institution —
+ *     realistic for a repo that takes outside contributions — and there are two
+ *     distinct affiliations and the guard rejects a legitimate edit. It also
+ *     contradicted `parseCitationOrg` directly, whose docstring argues against
+ *     reading an affiliation because changing one author's employer would read as
+ *     renaming the project's owner.
+ *
+ * Containment has neither problem: renaming the org entry alone still fails, and
+ * adding any number of other creators does not.
  */
-export function parseZenodoCreatorName(json: string, source: string): string {
+export function parseZenodoCreatorNames(json: string, source: string): string[] {
+  // Shape-guarded at every step, for the reason `jsonStringField` is: a truncated or
+  // hand-mangled file must fail with a message naming the file and the cause, not
+  // with `creators.map is not a function`.
   const parsed: unknown = JSON.parse(json);
-  if (typeof parsed !== 'object' || parsed === null) {
-    throw new Error(`${source} did not parse to a JSON object — this guard cannot run`);
-  }
-  const creators = ((parsed as Record<string, unknown>).creators as unknown[] | undefined) ?? [];
-  // Every human creator carries the organisation as their `affiliation`, so the
-  // affiliations ARE the org name and they must agree with each other. Reading them
-  // rather than picking the creator whose name looks institutional keeps this
-  // structural: no substring heuristic, and a disagreement among the people is
-  // itself a defect worth failing on.
-  const affiliations = [
-    ...new Set(
-      creators
-        .map((c) => (c as { affiliation?: unknown }).affiliation)
-        .filter((a): a is string => typeof a === 'string' && a !== ''),
-    ),
-  ];
-  if (affiliations.length !== 1) {
+  if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
     throw new Error(
-      `${source} has ${affiliations.length} distinct creator affiliations, expected exactly 1 — ` +
-        `this guard cannot tell which names the organisation (${JSON.stringify(affiliations)})`,
+      `${source} did not parse to a JSON object (got ${parsed === null ? 'null' : typeof parsed}) — ` +
+        'this guard cannot run',
     );
   }
-  return affiliations[0];
+  const creators = (parsed as Record<string, unknown>).creators;
+  if (!Array.isArray(creators)) {
+    throw new Error(
+      `${source} has no top-level \`creators\` array (got ${
+        creators === undefined ? 'nothing' : typeof creators
+      }) — this guard cannot run`,
+    );
+  }
+  const names = creators
+    .map((c) => (typeof c === 'object' && c !== null ? (c as { name?: unknown }).name : undefined))
+    .filter((n): n is string => typeof n === 'string' && n !== '');
+  if (names.length === 0) {
+    throw new Error(`${source} has no creator with a non-empty \`name\` — this guard cannot run`);
+  }
+  return names;
 }
 
 describe('every pinned copy of the title agrees with CITATION.cff', () => {
@@ -379,14 +392,16 @@ describe('every pinned copy of the title agrees with CITATION.cff', () => {
     expect(readFrom('site/src/components/TuccaLockup.astro', parseLockupName)).toBe(display);
   });
 
-  it('the archived deposit affiliates its authors to that same organisation', () => {
-    // The other half, and the one that gets minted. Every human creator in
-    // `.zenodo.json` lists the organisation as their affiliation, so if that drifts
-    // from CITATION.cff the deposit credits a differently-named body than the
-    // citation record does — on a record nobody can edit afterwards.
-    expect(readFrom('.zenodo.json', parseZenodoCreatorName)).toBe(
-      readFrom('CITATION.cff', parseCitationOrg),
-    );
+  it('the archived deposit credits that same organisation', () => {
+    // The other half, and the one that gets minted. Asked as containment rather than
+    // equality: the question is whether the org CITATION.cff names is among the
+    // deposit's creators, which stays true and stays checkable however many other
+    // contributors are added.
+    const org = readFrom('CITATION.cff', parseCitationOrg);
+    expect(
+      readFrom('.zenodo.json', parseZenodoCreatorNames),
+      `.zenodo.json does not credit ${JSON.stringify(org)} — the minted deposit would name a different body than CITATION.cff`,
+    ).toContain(org);
   });
 
   it('the archived deposit is titled the same as the record that cites it', () => {
@@ -504,6 +519,33 @@ describe('the guard fails loudly rather than silently when a source is restructu
     expect(() => parseZenodoTitle('null', '<fixture>')).toThrow(/did not parse to a JSON object/);
     expect(() => parseAgentApiName('[]', '<fixture>')).toThrow(/did not parse to a JSON object/);
     expect(() => parseZenodoTitle('null', 'the-real-file.json')).toThrow(/the-real-file\.json/);
+  });
+
+  it('keeps crediting the org when a contributor from elsewhere is added', () => {
+    // The case that broke the previous implementation. It required every creator to
+    // share one affiliation, so this correct edit failed CI.
+    const withOutsider = JSON.stringify({
+      creators: [
+        { name: 'Bromberg, Benjamin', affiliation: 'TUCCA' },
+        { name: 'Outside, Contributor', affiliation: 'Some Other University' },
+        { name: 'The Org (X)' },
+      ],
+    });
+    expect(parseZenodoCreatorNames(withOutsider, '<fixture>')).toContain('The Org (X)');
+  });
+
+  it('names the file when creators is missing or the wrong shape', () => {
+    expect(() => parseZenodoCreatorNames('{"title":"x"}', '<fixture>')).toThrow(
+      /no top-level `creators` array/,
+    );
+    expect(() => parseZenodoCreatorNames('{"creators":{}}', '<fixture>')).toThrow(
+      /no top-level `creators` array/,
+    );
+    expect(() => parseZenodoCreatorNames('[]', 'real.json')).toThrow(/real\.json/);
+    // A null element must not throw a bare TypeError from the map.
+    expect(() => parseZenodoCreatorNames('{"creators":[null,{}]}', '<fixture>')).toThrow(
+      /no creator with a non-empty `name`/,
+    );
   });
 
   it('does not accept one file’s key standing in for the other’s', () => {
