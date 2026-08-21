@@ -71,17 +71,31 @@ Correspondence is **read** from `area_key` and never from a shared label. A guar
 labels would pass exactly when the names matched and the populations diverged, which is the
 failure it exists to catch.
 
-The key is not yet **written** that way, and this is the sharpest trap in implementing this ADR.
+The key is not written that way, and this is the sharpest trap in implementing this ADR.
 `seedTopics` resolves a theme's `area_key` by looking the area up **by label**
-(`SELECT key FROM areas WHERE label=?`, `site/scripts/db/seed.ts:222-223`) and falls back to `null`
+(`SELECT key FROM areas WHERE label=?`, `site/scripts/db/seed.ts`) and falls back to `null`
 on a miss without complaining. A theme's `area` field therefore has to carry the column's label
 character for character. Since this ADR requires theme and area labels to *differ*, that lookup
-is the one place the two axes still meet by name, and getting it wrong is silent in every
-direction that matters: the theme keeps `area_key: null`, it is left out of the `areaToTheme` map
-(`seed.ts:244`), every matrix cell in that area is then skipped at `seed.ts:247` so its papers go
-untagged, and `db:check` passes because it validates only non-null keys.
-Whoever lands the two columns should pass the area **key** rather than the label, or make the
-miss throw. Doing neither leaves the bijection resting on two strings agreeing.
+is the one place the two axes still meet by name.
+
+**The label reaches the DB by two silent paths, and the second is the dangerous one.** This ADR
+originally recorded only the first.
+
+1. **The lookup misses.** The theme keeps `area_key: null`, it is left out of the `areaToTheme`
+   map, every matrix cell in that area is skipped so its papers go untagged, and `db:check`
+   passes because it validates only non-null keys.
+2. **The lookup succeeds against a stale `THEMES` entry.** `db:bootstrap` re-creates the topic
+   vocabulary from that constant wholesale, so a `label` left at its old value re-mints the theme
+   under the old name *with a perfectly valid `area_key`*. Every guard named in path 1 is
+   satisfied. This is how the `Bioprocess & Scale-Up` cross-axis collision (GH #133, CAAIL-240)
+   would come back, and it would come back green: the bijection guard joins on `area_key` and
+   deliberately never compares labels, and the theme-list guard compares only cardinality.
+
+Both are now asserted rather than documented. `db:check` checks that `THEMES` reproduces the
+committed themes on **label and `area_key`** together, which is the only pairing that closes path
+2, and it was confirmed failing on a hand-reverted `THEMES` before being relied on. The advice
+this section used to give — pass the key rather than the label, or make the miss throw — is still
+worth doing, but it addresses path 1 alone and is no longer what the bijection rests on.
 
 ## What has to change to reach the bijection
 
@@ -117,7 +131,7 @@ miss throw. Doing neither leaves the bijection resting on two strings agreeing.
 **Landed.**
 
 - The `AI Evaluation & Benchmarking` column is retired and its 23 references re-placed
-  (PR #206). `areas.ndjson` holds 6 columns.
+  (PR #206). `areas.ndjson` then held 6 columns, and holds 8 once the two below land.
 - `ResearchAreas/AIEvaluation.md` has migrated to `Methods/BenchmarksEvaluation.md`, and
   `/research-areas/aievaluation/` redirects to its new home in `astro.config.mjs`.
 - `benchmarks-evaluation` remains a fine tag under `AI Methods & Tooling`.
@@ -127,34 +141,35 @@ miss throw. Doing neither leaves the bijection resting on two strings agreeing.
   rendered at `:113-123`), so the sentence self-corrects as curation closes the gap. Do not
   re-implement it, and do not replace the derivation with a hardcoded list when the columns land.
 
-**Not yet implemented.** Each of the following is a sentence this ADR would otherwise assert
-as fact, and none of it is true today:
+- **The bijection holds.** 8 subject themes, 8 research areas, one `ResearchAreas/` deep-dive
+  page each, with `Metabolic Modeling` and `Food Safety Prediction` added as columns and
+  `ResearchAreas/FoodSafetyPrediction.md` added as the page the second was missing. No theme
+  carries `area_key: null`. (A deep-dive page in `CONTEXT.md`'s sense covers *either* axis, so the
+  all-axes total is larger and moves whenever `Methods/` does — it went from 8 to 33 across two
+  merges. The bijection concerns the research-area pages only; read those against it and do not
+  reach for an all-axes count, which is why none is quoted here.)
+- **`db:check` asserts the bijection.** Every theme names a research area, every research area is
+  named by exactly one theme, and every research area has a page on disk — asserted through
+  `area_key` and never by label equality, since the labels are now deliberately different and a
+  label comparison would fail on every correct repo. Two further copies of the axis are asserted
+  against the DB in the same guard: the parser's own `AREAS` registry, whose drift is silent
+  because `parseMatrix` warns and *skips* an unrecognised column (it orphaned two references
+  during implementation), and the seed's `THEMES`, per the two paths described above. The guard is
+  deliberately **not** extended to the method-row axis.
+- **The `Bioprocess & Scale-Up` theme is relabelled `Bioprocess & Manufacturing`.** No label is
+  shared across the axes, and `Taxonomy.md` no longer carries a duplicate `###` heading. A test
+  asserts the two axes share no label at all, rather than asserting the old collision resolves.
+- **The naming convention is written into `Taxonomy.md`**, in a section that also tells a reader
+  which axis they are looking at and states that the two counts must never be compared.
+- **The GFI crosswalk table exists in `Taxonomy.md`**, mapping each column to its nearest GFI
+  technology sector with the fit stated per row and the gaps stated in both directions. Its facet
+  lists were read from `gfi.org/solutions` on the date the table records, and it says so.
+- **The two cross-cutting prose statements are rewritten.** Neither `Taxonomy.md` nor
+  `ResearchAreas/MetabolicModeling.md` describes its subject as cross-cutting or as lacking a
+  column.
 
-- **The bijection does not hold.** Live state is 8 themes, 6 research areas and 7 research-area
-  deep-dive pages. (`CONTEXT.md` defines a deep-dive page as covering either axis, and the
-  all-axes count is 32: these 7 plus 25 under `Methods/`. The bijection concerns the
-  research-area ones only, so read the 7 and never the 32 against it.) `Metabolism & Modeling`
-  and `Food Safety` both carry `area_key: null`.
-- **`db:check` asserts no bijection and no not-null `area_key`.** `checkTopicTiers` asserts
-  only that a **non-null** `area_key` resolves to an existing area, so a theme is free to carry
-  none. There is no assertion that every theme has one, that every column has exactly one theme,
-  or that every column has a deep-dive page. Be precise about what this does *not* say: the
-  theme **list** is already guarded, since `db:check` asserts the live themes are exactly
-  `THEME_SLUGS`, so a ninth theme fails CI until someone edits that constant, which is a
-  deliberate act. The missing guard is the narrower one this ADR leans on, that a theme must
-  name a research area. Until it exists, a theme added through `THEME_SLUGS` can still be
-  cross-cutting, and nothing objects.
-- **The `Bioprocess & Scale-Up` theme has not been relabelled**, so one label is still shared
-  across the axes and `Taxonomy.md` still carries it as a duplicate `###` heading.
-- **The naming convention is not written into `Taxonomy.md`.** It exists only here and in
-  `CONTEXT.md`.
-- **No GFI crosswalk table exists in `Taxonomy.md`.** It is offered below as the mitigation for
-  rejecting the GFI-facet option; it is a commitment, not a delivery.
-- **The two cross-cutting prose statements have not been rewritten.** `Taxonomy.md` still
-  describes both `Metabolism & Modeling` and `Food Safety` as "a cross-cutting subject with no
-  single matrix column", and `ResearchAreas/MetabolicModeling.md` still opens by calling itself
-  a cross-cutting methodology overview rather than a research area. Considered options below
-  commits to rewriting both; neither is done.
+**Not yet implemented.**
+
 - **`/topics/` does not say which axis a reader is looking at.** `TopicHub` never mentions the
   matrix, so a reader arriving there has no cue that themes are not the columns. `/by-the-numbers/`
   is **not** in this gap; see Landed above before touching it. That remaining absence is the live
@@ -172,8 +187,8 @@ and the corpus supports only a 20-against-3 split whose minority halves again.
 **Explain the collapse as intended** and describe the matrix as five research-area columns plus
 two columns of unapplied work. Rejected in favour of the bijection, which leaves no mismatch to
 explain. The concept of an "unapplied column" was drafted for this option and is not adopted:
-after the retirement, `AI Tooling / Methodology` spans 18 method rows and will pair with a
-theme, so nothing about it is anomalous and the term would name a class of one.
+`AI Tooling / Methodology` spans 17 method rows and pairs with a theme, so nothing about it is
+anomalous and the term would name a class of one.
 
 **Keep both themes as cross-cutting subjects with no column**, which is what `Taxonomy.md` and
 the opening paragraph of `ResearchAreas/MetabolicModeling.md` both said before this decision.
@@ -191,8 +206,8 @@ Topic. **Read that as the list observed then, not a verified enumeration**: it i
 party's live site that this repository does not control and cannot guard, and a later read
 turned up at least one facet absent from it. The rejection deliberately does not rest on the
 list being complete. Rejected on a concrete count: no facet there has a place for a general AI
-method, and `AI Tooling / Methodology` holds 81 of the 229 matrix-eligible
-references after the retirement, so 35% of the matrix would be homeless. ("After", not
+method, and `AI Tooling / Methodology` holds 80 of the 229 matrix-eligible
+references, so 35% of the matrix would be homeless. ("After", not
 "absorbing them all": of the retired column's 23 references, 15 went to `AI Tooling /
 Methodology` and 7 to `Cellular Engineering`, which is the re-placement described above rather
 than one column swallowing a whole axis.)
@@ -207,7 +222,8 @@ audit verdict depends on it, so it can land at any time.
 ## Consequences
 
 - `AI Tooling / Methodology` grew from 66 distinct references to 81 when the retired column's
-  references were re-placed, making the library's largest column larger still.
+  references were re-placed, and stands at 80 once ref 290 moves into `Food Safety Prediction`.
+  It remains the library's largest column by a wide margin.
 - The `Bioprocess & Manufacturing` relabel moves the **label only**. `topic:bioprocess-scale-up`
   is a frozen id and its `slug` is what `/topics/?t=<slug>` and `api/topics.json` carry, so the
   label and the slug diverge permanently. That is the intended trade, since changing the slug
