@@ -42,6 +42,14 @@ import { fileURLToPath } from 'node:url';
  *      export come from one deposited record, so they cannot disagree with each
  *      other. It can only disagree with this repo.
  *
+ *      READ THE REACH OF THIS ONE NARROWLY. `.zenodo.json` is in no workflow's
+ *      `paths:` filter, so a PR editing ONLY that file runs nothing and this check
+ *      does not fire on it. What it does catch is the realistic retitle, which
+ *      starts at `CITATION.cff` and therefore does trigger `test.yml`. Closing the
+ *      remaining case means adding the path, which buys a full build and browser
+ *      install for one JSON read; that trade is CAAIL-298 and the decision is
+ *      CAAIL-301.
+ *
  * Everything else is deliberately unpinned, and deliberately not enumerated. The
  * expansion appears in prose in several other files; an earlier draft of this
  * docstring listed them and was already missing `citation.ts` on the day it was
@@ -200,6 +208,16 @@ export function parseMarkdownH1(md: string, source: string): string {
  */
 function jsonStringField(json: string, source: string, field: string): string {
   const parsed: unknown = JSON.parse(json);
+  // Guard the shape before indexing it. `JSON.parse('null')` is valid and returns
+  // null, and a truncated write can produce exactly that — indexing it throws
+  // "Cannot read properties of null", which names neither the file nor the cause.
+  // Every message in this file is built to identify both.
+  if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+    throw new Error(
+      `${source} did not parse to a JSON object (got ${parsed === null ? 'null' : typeof parsed}) — ` +
+        'this guard cannot run',
+    );
+  }
   const value = (parsed as Record<string, unknown>)[field];
   if (typeof value !== 'string' || value === '') {
     throw new Error(`${source} has no top-level string \`${field}\` — this guard cannot run`);
@@ -374,6 +392,14 @@ describe('the guard fails loudly rather than silently when a source is restructu
     expect(() => parseZenodoTitle('{"upload_type":"software"}', '<fixture>')).toThrow(
       /no top-level string `title`/,
     );
+  });
+
+  it('names the file when the JSON is not an object at all', () => {
+    // `JSON.parse('null')` is valid. Indexing the result throws a TypeError naming
+    // neither the file nor the cause, which is the one thing this file never does.
+    expect(() => parseZenodoTitle('null', '<fixture>')).toThrow(/did not parse to a JSON object/);
+    expect(() => parseAgentApiName('[]', '<fixture>')).toThrow(/did not parse to a JSON object/);
+    expect(() => parseZenodoTitle('null', 'the-real-file.json')).toThrow(/the-real-file\.json/);
   });
 
   it('does not accept one file’s key standing in for the other’s', () => {
