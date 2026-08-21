@@ -34,10 +34,13 @@ export const taxonomyHref = (label: string): string => `${BASE}/taxonomy/#${ghSl
  * area axis bijective, so the Taxonomy fallback below is no longer reached for any
  * live column and exists only so an unknown key degrades instead of throwing. It was
  * previously reached in normal operation, by Metabolic Modeling, which had a deep
- * dive without being a column. **A missing key here is silent** — the bar simply
- * links to a definition instead of a deep dive, which is why adding a column means
- * editing this map. `db:check` asserts the parallel `RESEARCH_AREA_PAGES` map in
- * `scripts/db/check.ts` against the DB; this one has no such guard.
+ * dive without being a column. **A missing key here is silent at runtime** — the bar
+ * simply links to a definition instead of a deep dive — so `db:check` asserts this map's
+ * key set against the DB areas, alongside the parallel `RESEARCH_AREA_PAGES` map in
+ * `scripts/db/check.ts`. It does that by reading this file's source rather than importing
+ * it, because `BASE` above evaluates `import.meta.env` at module scope and that is
+ * undefined under tsx. Keep the object literal shape (`key: 'value',` one per line) or
+ * that guard stops matching.
  *
  * `eval` is gone entirely: CAAIL-164 retired the column, and its deep dive turned out
  * to describe the Benchmarks & Evaluation Frameworks *row*, so it moved to `Methods/`

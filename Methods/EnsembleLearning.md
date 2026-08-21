@@ -89,7 +89,7 @@ The row's centre of gravity. Almost all of it is structure-to-taste or structure
 
 ## Further reading
 
-- Research areas: [Food Safety Prediction](../ResearchAreas/FoodSafetyPrediction.md), [Sensory Prediction](../ResearchAreas/SensoryPrediction.md) above all, plus [Media Optimization](../ResearchAreas/MediaOptimization.md), [Bioprocess & Scale-Up](../ResearchAreas/Bioprocess.md) and [Scaffolding](../ResearchAreas/Scaffolding.md).
+- Research areas: [Sensory Prediction](../ResearchAreas/SensoryPrediction.md) above all, plus [Media Optimization](../ResearchAreas/MediaOptimization.md), [Bioprocess & Scale-Up](../ResearchAreas/Bioprocess.md) and [Scaffolding](../ResearchAreas/Scaffolding.md).
 - Software: [BitterSweet](../Software.md#bittersweet), [TastepepAI](../Software.md#tastepepai), [OpenPOM](../Software.md#openpom), [Pyrfume](../Software.md#pyrfume), and the allergenicity predictors including [AlgPred 2.0](../Software.md#algpred-20).
 - Databases: [BitterDB](../Databases.md#bitterdb) and the other taste and odour resources this row is almost entirely built on.
 - Datasets: [`Datasets/CrossSpecies.md`](../Datasets/CrossSpecies.md) for the meat-analogue texture table, and [`Datasets/Benchmarks.md`](../Datasets/Benchmarks.md) for the peptide benchmark sets.

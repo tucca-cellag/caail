@@ -105,9 +105,12 @@ describe('computeCounts — real corpus (ground-truth contract)', () => {
       // `Methods/` (it described the *Benchmarks & Evaluation Frameworks* method
       // row, not an area), and 7 -> 8 again when ADR-0001 added the Metabolic
       // Modeling and Food Safety Prediction columns — MetabolicModeling.md already
-      // existed, so only FoodSafetyPrediction.md is new. It now equals the matrix
-      // column count by construction rather than by coincidence, which `db:check`
-      // asserts. A method page left in this directory would still inflate a number
+      // existed, so only FoodSafetyPrediction.md is new. It now equals the matrix column
+      // count, but that equality is coincidental-and-tested rather than enforced:
+      // `db:check` asserts every column HAS a page, never that this directory holds only
+      // column pages, so a non-column page here would keep that guard green while making
+      // this number 9 against 8 columns. This literal and `caail-pages.test.ts` are what
+      // catch that. A method page left in this directory would still inflate a number
       // labelled as something else.
       researchAreas: 8,
       talks: 14,

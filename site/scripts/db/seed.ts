@@ -157,9 +157,6 @@ interface Theme { slug: string; label: string; area?: string; kw: RegExp; }
 interface FineTag { slug: string; label: string; theme: string; kw: RegExp; sections?: RegExp; }
 
 /** The fixed 7-theme backbone (curator-designed). `area` links to a matrix column. */
-/** Exported for `db:check`'s seed-drift guard, which asserts these against the
- *  committed `topics.ndjson`. A bootstrap re-creates the topic vocabulary from this
- *  constant, so a stale entry here silently reverts curated data. */
 export const THEMES: Theme[] = [
   { slug: 'media-growth-factors', label: 'Media & Growth Factors', area: 'Media Optimization', kw: /media|serum|growth[- ]?factor|formulation|cytokine/i },
   { slug: 'cell-lines-engineering', label: 'Cell Lines & Engineering', area: 'Cellular Engineering', kw: /cell[- ]?line|engineering|crispr|perturbation|differentiation|stem|senescen|immortal|atlas|single[- ]?cell|muscle|adipo/i },

@@ -121,17 +121,20 @@ worth doing, but it addresses path 1 alone and is no longer what the bijection r
 - **`benchmarks-evaluation` stays a fine tag** under `AI Methods & Tooling`. Promoting it
   would make nine themes against eight areas and reopen the mismatch from the other side.
 - **`counts.json`'s `researchAreas` needs no relabel.** It is derived from the file count in
-  `ResearchAreas/`, which reads 7: the `AIEvaluation.md` migration already moved it off 8, and
-  it exceeds the 6 columns by one because `MetabolicModeling.md` has a page but no column.
-  Adding `FoodSafetyPrediction.md` alongside the two columns moves it 7 to 8, where it means
-  the column count rather than coinciding with it.
+  `ResearchAreas/`. The `AIEvaluation.md` migration moved it 8 to 7, at which point it exceeded
+  the then-6 columns by one because `MetabolicModeling.md` had a page but no column. Adding
+  `FoodSafetyPrediction.md` alongside the two columns moved it back to 8, where it equals the
+  column count. Note that equality is not enforced: `db:check` asserts every column has a page,
+  never that this directory holds only column pages, so a non-column page here would inflate a
+  number labelled "Research Areas". The literal in `counts.test.ts` is what catches that.
 
 ## Implementation status
 
 **Landed.**
 
 - The `AI Evaluation & Benchmarking` column is retired and its 23 references re-placed
-  (PR #206). `areas.ndjson` then held 6 columns, and holds 8 once the two below land.
+  (PR #206), taking `areas.ndjson` from 7 columns to 6. It holds 8 now that Metabolic Modeling
+  and Food Safety Prediction have landed.
 - `ResearchAreas/AIEvaluation.md` has migrated to `Methods/BenchmarksEvaluation.md`, and
   `/research-areas/aievaluation/` redirects to its new home in `astro.config.mjs`.
 - `benchmarks-evaluation` remains a fine tag under `AI Methods & Tooling`.

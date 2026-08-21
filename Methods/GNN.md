@@ -39,6 +39,6 @@ The row splits cleanly into two halves that share a mathematical object and noth
 
 ## Further reading
 
-- Research areas: [Metabolic Modeling](../ResearchAreas/MetabolicModeling.md), [Cellular Engineering](../ResearchAreas/CellEngineering.md), [Sensory Prediction](../ResearchAreas/SensoryPrediction.md), [AI Tooling / Methodology](../ResearchAreas/AITooling.md).
+- Research areas: [Cellular Engineering](../ResearchAreas/CellEngineering.md), [Sensory Prediction](../ResearchAreas/SensoryPrediction.md), [AI Tooling / Methodology](../ResearchAreas/AITooling.md).
 - Software: [GEARS](../Software.md#gears), [OpenPOM](../Software.md#openpom) for an open reimplementation of the principal-odor-map idea, [Pyrfume](../Software.md#pyrfume), and [bitter-peptide-design](../Software.md#bitter-peptide-design).
 - Databases: [BitterDB](../Databases.md#bitterdb) and the other taste resources these models are trained on.

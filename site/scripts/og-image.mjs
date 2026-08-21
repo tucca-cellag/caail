@@ -30,15 +30,27 @@ const OUT = fileURLToPath(new URL('../public/og.png', import.meta.url));
 // so they are pre-converted to sRGB here.
 //
 // (2) They are NOT their token values, and this is the only place in the repo where an
-// area is drawn in a colour tokens.css does not define. tokens.css gives each area ONE
-// value for both colour schemes: the six Okabe-Ito hues are never inverted for dark mode,
-// and inverting these two alone is what once put Metabolic Modeling within ~2 JND of
-// Scaffolding. This card is neither scheme — it is a fixed navy field — and against it the
-// token values measure 1.64:1 and 2.62:1, which is invisible. The lightened values below
-// measure 5.40:1 and 5.12:1. So they are lightened FOR THIS ARTIFACT; there is no
-// dark-mode token to inherit from. If the tokens change, re-derive these against the
-// card's own #002E6D rather than copying whatever tokens.css then says.
-const AREA = ['#0072B2', '#009E73', '#E69F00', '#56B4E9', '#D55E00', '#5DB2CC', '#2BB3B9', '#CC79A7'];
+// area is drawn in a colour tokens.css does not define. The token values are dark
+// (oklch 42% and 52%) and measure 1.64:1 and 2.62:1 against this card's navy, which is
+// invisible, so the card cannot use them.
+//
+// Deriving replacements on contrast ALONE is how this went wrong once, and the mistake is
+// worth naming because it is easy to repeat: the first attempt lightened them to #5DB2CC
+// and #2BB3B9, which cleared 5:1 comfortably and sat OKLab dE 0.042 from Scaffolding and
+// 0.045 from each other — the identical collision that had just been removed from
+// tokens.css for being ~2 JND. Contrast against the background and separation from the
+// other dots are different measurements and the second was never taken.
+//
+// So these are derived against BOTH: >=4.5:1 on #002E6D, and >=0.156 OKLab from every
+// other dot, 0.156 being the closest pair among the six Okabe-Ito hues and therefore the
+// separation this palette already accepts. The pair below measures 0.222. That forces them
+// out of the teal family the tokens use — there is no teal that clears 0.156 against
+// Scaffolding — which is acceptable here only because the card cannot show the token
+// colours anyway. Separation matters more than family resemblance on this artifact,
+// because unlike every in-app surface these dots carry NO text label: `dots` emits bare
+// <circle> elements, so colour is the only signal. Re-derive against both measures if the
+// palette changes; do not copy tokens.css.
+const AREA = ['#0072B2', '#009E73', '#E69F00', '#56B4E9', '#D55E00', '#6CEFA2', '#FECEE4', '#CC79A7'];
 const dots = AREA.map((c, i) => `<circle cx="${104 + i * 52}" cy="556" r="15" fill="${c}" />`).join('');
 
 // Static, recolored-for-dark version of the hero bioreactor (viewBox 300×340):

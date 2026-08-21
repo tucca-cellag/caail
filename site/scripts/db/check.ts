@@ -236,6 +236,13 @@ export function checkAxisBijection(db: Db, repoRoot: string = REPO_ROOT): CheckR
   out.push(ok('axes: RESEARCH_AREA_PAGES covers exactly the DB areas', unmapped.length === 0 && phantom.length === 0,
     `areas with no page mapping: [${unmapped.join(', ')}]; mappings for areas that no longer exist: [${phantom.join(', ')}]`));
 
+  // Distinct values, not just a matching key set: two columns mapped to the same filename
+  // would pass coverage and both existsSync checks while deep-linking to one page.
+  const pageValues = areaKeys.filter((k) => mapped.has(k)).map((k) => RESEARCH_AREA_PAGES[k]);
+  const dupPages = [...new Set(pageValues.filter((v, i) => pageValues.indexOf(v) !== i))];
+  out.push(ok('axes: no two research areas share a ResearchAreas page', dupPages.length === 0,
+    `pages claimed by more than one area: [${dupPages.join(', ')}]`));
+
   const missingFiles = areaKeys
     .filter((k) => mapped.has(k))
     .filter((k) => !existsSync(join(repoRoot, 'ResearchAreas', `${RESEARCH_AREA_PAGES[k]}.md`)));
@@ -266,6 +273,20 @@ export function checkAxisBijection(db: Db, repoRoot: string = REPO_ROOT): CheckR
   //    The label half is invisible to every other guard here: assertion 2 joins on
   //    `area_key` and never compares labels (deliberately, see above), and
   //    `checkTaxonomyAxes` compares only theme cardinality. So it is asserted here.
+  // The same area->page join exists a second time in `src/lib/axis-links.ts`, which decides
+  // whether a By the Numbers bar links to a deep dive or falls back to a Taxonomy anchor. A
+  // missing key there is silent. It cannot be imported here (it reads `import.meta.env` at
+  // module scope, which is undefined under tsx), so its key set is asserted from source.
+  const axisLinksSrc = readFileSync(join(SITE_ROOT, 'src', 'lib', 'axis-links.ts'), 'utf-8');
+  const slugBlock = axisLinksSrc.match(/RESEARCH_AREA_SLUG[^=]*=\s*\{([^}]*)\}/);
+  const slugKeys = slugBlock ? [...slugBlock[1].matchAll(/^\s*(\w+)\s*:/gm)].map((m) => m[1]).sort() : [];
+  out.push(ok('axes: axis-links RESEARCH_AREA_SLUG covers exactly the DB areas',
+    slugBlock !== null && JSON.stringify(slugKeys) === JSON.stringify([...areaKeys].sort()),
+    slugBlock === null
+      ? 'could not find RESEARCH_AREA_SLUG in src/lib/axis-links.ts'
+      : `axis-links: [${slugKeys.join(', ')}]; DB: [${[...areaKeys].sort().join(', ')}]`
+        + ' -> a missing key there silently links the bar to a Taxonomy anchor instead of the deep dive'));
+
   const dbThemes = db.prepare("SELECT slug,label,area_key FROM topics WHERE tier='theme' ORDER BY slug")
     .all() as { slug: string; label: string; area_key: string | null }[];
   const areaKeyByLabel = new Map(dbAreas.map((a) => [a.label, a.key]));

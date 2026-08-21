@@ -51,7 +51,9 @@ Values are authored in OKLch; hexes above are the targets. The Contribute action
 | Food Safety Prediction | `--caail-area-foodsafety` | `oklch(52% 0.12 200)` |
 | AI Tooling / Methodology | `--caail-area-tooling` | `#CC79A7` |
 
-This table and `scripts/og-image.mjs`'s `AREA` array are hand-copied duplicates of `tokens.css` with no oracle checking them. The row above read "Bioprocess Control" for months after that column was renamed. If you change an area colour or label, change all three.
+This table is a hand-copied duplicate of `tokens.css` with no oracle checking it. The row above read "Bioprocess Control" for months after that column was renamed. If you change an area colour or label, change both.
+
+`scripts/og-image.mjs`'s `AREA` array is a third copy but **not** a duplicate of these values, and must not be synced to them: the social card is a fixed navy field where the two `oklch()` areas measure under 3:1 and disappear, so the card carries lightened substitutes derived against that background *and* against the separation of the other dots. Change the count there when a column lands; do not copy the hexes.
 
 **Encoding rules:** color is never the only signal (every area keeps its text label; matrix cells also show the count). All text/background pairs target WCAG-AA (≥4.5:1 body, ≥3:1 large/UI). Categorical colors identify *area* only (legend, column headers, network clusters, metric bars, filter dots); cells use the density ramp.
 
