@@ -17,7 +17,13 @@ absence; don't suggest creating them upfront. The `/domain-modeling` skill
 (reached via `/grill-with-docs` and `/improve-codebase-architecture`) creates
 them lazily when terms or decisions actually get resolved.
 
-Neither exists yet, which is the expected starting state.
+Both now exist. Read `docs/adr/` for what is in it rather than trusting any
+count written down here.
+
+An ADR records a decision, which is not the same as a description of the
+repository. ADR-0001 carries an **Implementation status** section splitting what
+has landed from what has not; read it before treating any assertion in that file
+as true of the code you are about to touch.
 
 ## File structure
 
@@ -26,16 +32,15 @@ Neither exists yet, which is the expected starting state.
 ├── CONTEXT.md
 ├── docs/
 │   ├── adr/
-│   │   ├── 0001-sqlite-authoring-backend.md
-│   │   └── 0002-....md
+│   │   └── 0001-matrix-axis-model.md
 │   └── agents/          ← this directory
 └── site/
 ```
 
 ## What already carries domain vocabulary
 
-`CONTEXT.md` does not exist yet, but this repo is not undocumented — two files
-already hold most of what a glossary would:
+`CONTEXT.md` is deliberately thin, because two other files already hold most of
+what a glossary would:
 
 - **`Taxonomy.md`** is the canonical, CAAIL-specific definition of every matrix
   row (AI/ML method) and column (research area), plus the subject themes. It is
@@ -44,10 +49,10 @@ already hold most of what a glossary would:
 - **`CLAUDE.md`** holds the schema rules, the file-routing rules, and the
   architecture of the SQLite authoring backend.
 
-When `/domain-modeling` does create `CONTEXT.md`, it should point at
-`Taxonomy.md` for the curation vocabulary rather than restating it — a hand-typed
-copy of a definition that already exists elsewhere is exactly the drift this
-repo's most expensive recurring bug comes from.
+`CONTEXT.md` therefore points at `Taxonomy.md` for the curation vocabulary rather
+than restating it, because a hand-typed copy of a definition that already exists
+elsewhere is exactly the drift this repo's most expensive recurring bug comes
+from. Keep it that way when extending it.
 
 ## Use the glossary's vocabulary
 

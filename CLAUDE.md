@@ -356,7 +356,7 @@ Two independent axes. **State** answers what is blocking a ticket now, and has t
 
 ### Domain docs
 
-Single-context: `CONTEXT.md` + `docs/adr/` at the repo root, both created lazily by `/domain-modeling` rather than seeded. Neither exists yet, which is the expected starting state; `Taxonomy.md` already carries the curation vocabulary a glossary would restate. See `docs/agents/domain.md`.
+Single-context: `CONTEXT.md` + `docs/adr/` at the repo root, both created lazily by `/domain-modeling` rather than seeded. Both now exist. `CONTEXT.md` is the glossary and names concepts only, pointing at `Taxonomy.md` for the scope of any individual row or column rather than restating it; `docs/adr/0001-matrix-axis-model.md` records why the matrix research areas and the subject themes are two axes joined by `area_key` rather than one taxonomy. An ADR states a decision, not a delivery: read its **Implementation status** section before treating any assertion in it as describing the repository today. See `docs/agents/domain.md`.
 
 ## The SQLite authoring backend (structured catalog)
 
