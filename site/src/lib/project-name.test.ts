@@ -241,6 +241,81 @@ export function parseZenodoTitle(json: string, source: string): string {
   return jsonStringField(json, source, 'title');
 }
 
+/**
+ * The organisation `CITATION.cff` names as an author, e.g.
+ * `Tufts University Center for Cellular Agriculture (TUCCA)`.
+ *
+ * Read from the entity `- name:` under `authors`, NOT from an `affiliation:`. The
+ * two carry the same string today, but they answer different questions — who the
+ * work is by, versus where a person happens to work — and pinning the site's display
+ * name to an affiliation would make changing one author's employer read as renaming
+ * the project's owner.
+ */
+export function parseCitationOrg(cff: string, source: string): string {
+  // Identified by the website the lockup itself links to, not by position and not by
+  // a substring of the name. CITATION.cff lists TWO entity authors — the centre and
+  // "The CAAIL Contributors" — so "the only `- name:`" is false, and matching on the
+  // name would mean using the value under test to find the value under test.
+  const all = [
+    ...cff.matchAll(/^\s*-\s+name:\s*"([^"]+)"\s*\n\s*website:\s*"([^"]+)"\s*$/gm),
+  ].filter(([, , site]) => site.includes('cellularagriculture.tufts.edu'));
+  if (all.length !== 1) {
+    throw new Error(
+      `${source} has ${all.length} entity authors whose website is TUCCA's, expected ` +
+        'exactly 1 — this guard cannot tell which one names the organisation',
+    );
+  }
+  return all[0][1];
+}
+
+/** The `NAME` constant `TuccaLockup` uses for its `aria-label` and its text form. */
+export function parseLockupName(astro: string, source: string): string {
+  const all = [...astro.matchAll(/^const NAME = '([^']+)';$/gm)];
+  if (all.length !== 1) {
+    throw new Error(
+      `${source} has ${all.length} \`const NAME = '…'\` declarations, expected exactly 1 — ` +
+        'this guard cannot tell which one names the organisation',
+    );
+  }
+  return all[0][1];
+}
+
+/**
+ * The organisation `.zenodo.json` credits, from the `contributors`/`creators` entry
+ * whose `name` is the org rather than a person.
+ *
+ * Matched as the one `"name"` sitting on its own line with no `orcid` beside it
+ * would be fragile, so this reads the entity by structure: the only entry whose
+ * `name` contains "Center for", which is what distinguishes the body from the three
+ * people. Stated rather than clever, and it fails loudly if that stops being true.
+ */
+export function parseZenodoCreatorName(json: string, source: string): string {
+  const parsed: unknown = JSON.parse(json);
+  if (typeof parsed !== 'object' || parsed === null) {
+    throw new Error(`${source} did not parse to a JSON object — this guard cannot run`);
+  }
+  const creators = ((parsed as Record<string, unknown>).creators as unknown[] | undefined) ?? [];
+  // Every human creator carries the organisation as their `affiliation`, so the
+  // affiliations ARE the org name and they must agree with each other. Reading them
+  // rather than picking the creator whose name looks institutional keeps this
+  // structural: no substring heuristic, and a disagreement among the people is
+  // itself a defect worth failing on.
+  const affiliations = [
+    ...new Set(
+      creators
+        .map((c) => (c as { affiliation?: unknown }).affiliation)
+        .filter((a): a is string => typeof a === 'string' && a !== ''),
+    ),
+  ];
+  if (affiliations.length !== 1) {
+    throw new Error(
+      `${source} has ${affiliations.length} distinct creator affiliations, expected exactly 1 — ` +
+        `this guard cannot tell which names the organisation (${JSON.stringify(affiliations)})`,
+    );
+  }
+  return affiliations[0];
+}
+
 describe('every pinned copy of the title agrees with CITATION.cff', () => {
   const title = () => readFrom('CITATION.cff', parseCitationTitle);
 
@@ -283,6 +358,35 @@ describe('every pinned copy of the title agrees with CITATION.cff', () => {
       readFrom('site/public/api/index.json', parseAgentApiName),
       'fix the `name:` literal in site/scripts/parser/agent-api.ts, then `pnpm --dir site parse`',
     ).toBe(title());
+  });
+
+  it('the lockup names the same organisation the citation record credits', () => {
+    // `TuccaLockup`'s NAME constant is what the hero, the footer and every extracted
+    // form of the attribution say. Until this assertion it was pinned to nothing:
+    // `cite.spec.ts` hardcodes the identical string, so the hero was checked against
+    // a second copy of itself. Rename TUCCA in `CITATION.cff` and `.zenodo.json` and
+    // every check stayed green while the site and the citation record credited
+    // differently-named organisations.
+    //
+    // Criterion 3: the org name is deposited as a creator on the Zenodo record, so
+    // it lands in the same place the title does and is no more correctable after the
+    // fact. The `(TUCCA)` parenthetical is stripped for the same reason `CAAIL: ` is
+    // stripped from the title above — the record carries the formal form, the page
+    // carries the display form, and the relationship between them is what is pinned.
+    const org = readFrom('CITATION.cff', parseCitationOrg);
+    const display = org.replace(/\s*\(TUCCA\)$/, '');
+    expect(display, 'CITATION.cff should name the org as "<display name> (TUCCA)"').not.toBe(org);
+    expect(readFrom('site/src/components/TuccaLockup.astro', parseLockupName)).toBe(display);
+  });
+
+  it('the archived deposit affiliates its authors to that same organisation', () => {
+    // The other half, and the one that gets minted. Every human creator in
+    // `.zenodo.json` lists the organisation as their affiliation, so if that drifts
+    // from CITATION.cff the deposit credits a differently-named body than the
+    // citation record does — on a record nobody can edit afterwards.
+    expect(readFrom('.zenodo.json', parseZenodoCreatorName)).toBe(
+      readFrom('CITATION.cff', parseCitationOrg),
+    );
   });
 
   it('the archived deposit is titled the same as the record that cites it', () => {
