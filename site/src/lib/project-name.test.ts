@@ -16,21 +16,30 @@ import { fileURLToPath } from 'node:url';
  * Covered: the hero eyebrow (`Hero.astro`); the BibTeX block in
  * `src/lib/citation.ts`, whose own docstring says to update `CITATION.cff` first
  * and mirror it there — an instruction with nothing enforcing it until now; the
- * APA line in `content/docs/cite.mdx`; and `README.md`'s heading and both of its
- * citations.
+ * APA line in `content/docs/cite.mdx`; `README.md`'s heading and both of its
+ * citations; and the two agent-facing names, `api/index.json`'s `name` (emitted from
+ * `agent-api.ts`) and `llms.txt`'s heading.
  *
- * The citation pairs are here for a sharper reason than the eyebrow. An APA line
- * and a BibTeX block render side by side on `/cite/`, and again on `README.md`, so
- * pinning one of a pair without the other would make a retitle worse than doing
- * nothing: the page would show two citations that disagree about the name of the
- * work, which is harder to notice, and harder to trust, than two that are equally
- * out of date. Pin a pair or neither of it.
+ * WHAT IS IN AND WHAT IS OUT, since "one more copy exists" is true indefinitely and
+ * is not on its own a reason. Two things earn a pin:
  *
- * NOT covered, and deliberately not enumerated: the expansion appears in several
- * other files too. An earlier draft of this docstring listed them, and the list was
- * already missing `citation.ts` on the day it was written — a hand-typed inventory
- * of hand-typed copies, in a file whose whole thesis is that those drift. Rather
- * than maintain it, the rule is: if you add a copy, add it here.
+ *   1. A PAIR RENDERED TOGETHER. An APA line and a BibTeX block sit side by side on
+ *      `/cite/`, and again on `README.md`, whose H1 sits forty lines above its own
+ *      citations. Pinning one of a pair without the other makes a retitle WORSE than
+ *      doing nothing: the page then shows two titles that disagree, which is harder
+ *      to notice and harder to trust than two that are equally stale. Pin a pair, or
+ *      neither of it.
+ *   2. THE TWO AUDIENCES DISAGREEING. This library exists to be read by humans and
+ *      queried by agents. `api/index.json`'s `name` is, per its own comment, the
+ *      first thing an agent reads. A retitle that moves the hero and not the API
+ *      leaves those two surfaces announcing different names for the same project.
+ *
+ * Everything else is deliberately unpinned, and deliberately not enumerated. The
+ * expansion appears in prose in several other files; an earlier draft of this
+ * docstring listed them and was already missing `citation.ts` on the day it was
+ * written — a hand-typed inventory of hand-typed copies, in a file whose whole
+ * thesis is that those drift. Rather than maintain one, the rule is: if you add a
+ * copy that meets 1 or 2 above, add it here.
  *
  * These read **source text, not rendered output**. Writing the separator or any
  * part of the expansion as an HTML entity will fail this guard on a page that
@@ -166,6 +175,30 @@ export function parseMarkdownH1(md: string, source: string): string {
   return m[1].trim();
 }
 
+/**
+ * The `name` the agent API announces, read from the GENERATED `api/index.json`.
+ *
+ * Reading the artifact rather than `agent-api.ts`'s literal is deliberate, and the
+ * first attempt went the other way for a good-sounding reason — a failure should
+ * name the file a person edits. It could not be made precise: `agent-api.ts` has
+ * three `name:` properties on their own line, and the other two are output
+ * FILENAMES (`datasets.json`, `topics.json`). Separating them by regex means
+ * matching on the value, which is the thing under test, so the guard would have
+ * asserted the title by assuming it.
+ *
+ * The JSON has exactly one top-level `name`, so there is nothing to disambiguate.
+ * The artifact is committed and `lint-papers.yml`'s API sync guard re-derives it, so
+ * it cannot drift from the source; the assertion below says where to fix it.
+ */
+export function parseAgentApiName(json: string, source: string): string {
+  const parsed: unknown = JSON.parse(json);
+  const name = (parsed as { name?: unknown }).name;
+  if (typeof name !== 'string' || name === '') {
+    throw new Error(`${source} has no top-level string \`name\` — this guard cannot run`);
+  }
+  return name;
+}
+
 describe('every pinned copy of the title agrees with CITATION.cff', () => {
   const title = () => readFrom('CITATION.cff', parseCitationTitle);
 
@@ -196,6 +229,24 @@ describe('every pinned copy of the title agrees with CITATION.cff', () => {
     // to prevent — and the parsers need no changes to reach it.
     expect(readFrom('README.md', parseApaTitle)).toBe(title());
     expect(readFrom('README.md', parseBibtexTitle)).toBe(title());
+  });
+
+  it('the name agents read from the API agrees with the one humans read', () => {
+    // `api/index.json`'s `name` is, by its own adjacent comment, "the first thing an
+    // agent reads". This library's stated purpose is to be queried by agents, so the
+    // human-facing and agent-facing names disagreeing is not a cosmetic mismatch —
+    // it is the two surfaces this project exists to keep aligned saying different
+    // things about what the project is called.
+    expect(
+      readFrom('site/public/api/index.json', parseAgentApiName),
+      'fix the `name:` literal in site/scripts/parser/agent-api.ts, then `pnpm --dir site parse`',
+    ).toBe(title());
+  });
+
+  it('llms.txt announces the same name to agents that find it that way', () => {
+    // The other agent-facing entry point, and a plain Markdown H1, so it needs no
+    // parser of its own.
+    expect(readFrom('site/public/llms.txt', parseMarkdownH1)).toBe(title());
   });
 
   it('the APA title on /cite/ matches the BibTeX title rendered beside it', () => {
@@ -276,6 +327,13 @@ describe('the guard fails loudly rather than silently when a source is restructu
     expect(() => parseMarkdownH1('\n# Title after a blank line\n', '<fixture>')).toThrow(
       /first line is ""/,
     );
+  });
+
+  it('rejects an API payload with no top-level name, rather than reading undefined', () => {
+    expect(() => parseAgentApiName('{"corpusDate":"2026-01-01"}', '<fixture>')).toThrow(
+      /no top-level string `name`/,
+    );
+    expect(() => parseAgentApiName('{"name":""}', '<fixture>')).toThrow(/no top-level string/);
   });
 
   it('rejects an APA line whose title lost its italics', () => {
