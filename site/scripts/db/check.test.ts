@@ -538,6 +538,22 @@ describe('checkAxisBijection', () => {
     expect(failing(checkAxisBijection(importNdjson(), emptyRoot), /page on disk/)).toBe(true);
   });
 
+  it('flags seed THEMES drifting from the committed themes (the silent bootstrap revert)', () => {
+    // Both halves of the real defect. A bootstrap re-creates the topic vocabulary from
+    // THEMES, so a stale entry there overwrites curated data rather than failing:
+    // an `area` that matches no area LABEL seeds area_key null, and a stale `label`
+    // re-mints the theme under its old name. The label half is invisible to every
+    // other guard here, which is why this one compares labels even though the
+    // bijection assertion above deliberately does not.
+    const db = importNdjson(); db.exec('PRAGMA foreign_keys=OFF');
+    db.prepare("UPDATE topics SET label='Bioprocess & Scale-Up' WHERE slug='bioprocess-scale-up'").run();
+    expect(failing(checkAxisBijection(db), /seed THEMES reproduces/)).toBe(true);
+
+    const db2 = importNdjson(); db2.exec('PRAGMA foreign_keys=OFF');
+    db2.prepare("UPDATE topics SET area_key='sensory' WHERE slug='food-safety'").run();
+    expect(failing(checkAxisBijection(db2), /seed THEMES reproduces/)).toBe(true);
+  });
+
   it('flags the parser AREAS registry drifting from the DB areas', () => {
     // The silent one: parseMatrix warns and skips an unknown column header, so a column
     // present in the DB but missing from the parser orphans its refs with a green parse.

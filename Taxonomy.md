@@ -22,8 +22,9 @@ This file defines three vocabularies, and two of them are *subject* axes over di
 The two are **paired but never equated**. Each theme names exactly one research area and each research
 area is named by exactly one theme, a correspondence stored as `topics.area_key` and asserted by
 `db:check`. The assertion runs through that key and never by comparing labels, because the populations
-genuinely differ: every pair disagrees several-fold, and in at least one case the column is the larger
-of the two. **Their counts must never be added together or compared.**
+genuinely differ: on every pair the theme is the larger, because it also tags datasets, software and
+databases that never enter the matrix, and the size of the gap varies widely from pair to pair.
+**Their counts must never be added together or compared.**
 
 Because the axes are paired, their labels are deliberately shaped differently so that no label appears
 on both:

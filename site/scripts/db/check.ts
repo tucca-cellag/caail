@@ -26,7 +26,7 @@ import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { importNdjson, ACCESSION_EXACT, idAccession, REPO_ROOT, SITE_ROOT, type Db } from './lib.js';
-import { THEME_SLUGS } from './seed.js';
+import { THEME_SLUGS, THEMES } from './seed.js';
 import { buildTaxonomyModel } from '../parser/taxonomy.js';
 import { AREAS } from '../parser/areas.js';
 import type { TaxonomyData } from '../parser/types.js';
@@ -189,16 +189,18 @@ const RESEARCH_AREA_PAGES: Record<string, string> = {
  * It asserts the pairing THROUGH `area_key` and never by comparing labels. That is
  * the whole point, not a stylistic preference: the two axes count different things
  * (a theme tags every content type, a column only matrix-eligible papers), so their
- * populations diverge severalfold on every pair. A label comparison would therefore
+ * populations differ on every pair. A label comparison would therefore
  * pass in exactly the case the guard exists to catch — names that match while the
  * things behind them do not — and the labels are deliberately shaped so they never
  * match anyway (`Bioprocess & Manufacturing` the theme, `Bioprocess & Scale-Up` the
  * column). Comparing them would fail on every correct repo.
  *
- * Deliberately NOT extended to the method-row axis. Every one of the 25 rows now has
- * a `Methods/` page, so the original blocker is gone, but gating on it would make the
- * next new method row wait on someone writing prose first. Whether to add it is an
- * open curator decision, recorded in `Methods/CLAUDE.md` — not an oversight here.
+ * Deliberately NOT extended to the method-row axis. The original blocker (a bijection
+ * over a half-written axis would block every new row on prose) no longer applies now
+ * that the axis is complete, but gating on it would move that cost to the next row
+ * anyone proposes rather than remove it. Whether to add it is an open curator
+ * decision, recorded in `Methods/CLAUDE.md` — not an oversight here. That file asks
+ * that the row count not be restated in prose, so it is not restated here.
  */
 export function checkAxisBijection(db: Db, repoRoot: string = REPO_ROOT): CheckResult[] {
   const out: CheckResult[] = [];
@@ -244,6 +246,36 @@ export function checkAxisBijection(db: Db, repoRoot: string = REPO_ROOT): CheckR
   out.push(ok('axes: parser AREAS registry matches the DB areas (key, label, order)',
     JSON.stringify(dbSig) === JSON.stringify(parserSig),
     `DB:     [${dbSig.join(' | ')}]\n      parser: [${parserSig.join(' | ')}]\n      → update site/scripts/parser/areas.ts`));
+
+  // 5. The seed's THEMES constant is a THIRD copy of this axis, and the most dangerous
+  //    one, because `db:bootstrap` re-creates the topic vocabulary from it wholesale
+  //    (only `item_topics` survives). A stale entry therefore does not fail — it
+  //    silently overwrites curated data on the next bootstrap:
+  //      * a theme whose `area` string does not match an area LABEL exactly seeds
+  //        `area_key` as null, because `seedTopics` resolves it with
+  //        `SELECT key FROM areas WHERE label=?` and falls back to null on a miss;
+  //      * a stale `label` re-mints the theme under its old name, which is how the
+  //        `Bioprocess & Scale-Up` cross-axis collision would come back.
+  //    The label half is invisible to every other guard here: assertion 2 joins on
+  //    `area_key` and never compares labels (deliberately, see above), and
+  //    `checkTaxonomyAxes` compares only theme cardinality. So it is asserted here.
+  const dbThemes = db.prepare("SELECT slug,label,area_key FROM topics WHERE tier='theme' ORDER BY slug")
+    .all() as { slug: string; label: string; area_key: string | null }[];
+  const areaKeyByLabel = new Map(dbAreas.map((a) => [a.label, a.key]));
+  const seedBySlug = new Map(THEMES.map((t) => [t.slug, t]));
+  const seedDrift: string[] = [];
+  for (const t of dbThemes) {
+    const seed = seedBySlug.get(t.slug);
+    if (!seed) { seedDrift.push(`${t.slug}: absent from THEMES`); continue; }
+    if (seed.label !== t.label) seedDrift.push(`${t.slug}: label '${seed.label}' vs DB '${t.label}'`);
+    const seeded = seed.area ? (areaKeyByLabel.get(seed.area) ?? null) : null;
+    if (seeded !== t.area_key) {
+      seedDrift.push(`${t.slug}: seeds area_key ${seeded === null ? 'null' : `'${seeded}'`} vs DB '${t.area_key}'`
+        + (seed.area && seeded === null ? ` (area '${seed.area}' matches no area label)` : ''));
+    }
+  }
+  out.push(ok('axes: seed THEMES reproduces the committed themes (label + area_key)', seedDrift.length === 0,
+    `${seedDrift.join('; ')}\n      → update THEMES in site/scripts/db/seed.ts; a bootstrap would otherwise revert the committed topics.ndjson`));
 
   return out;
 }
