@@ -74,10 +74,34 @@
 
      The last two are NOT Okabe–Ito. Six of that palette's eight usable hues are spent
      above, and the remainder (yellow #F0E442, black) are unusable here: yellow fails
-     contrast on white, black reads as text. So Metabolic Modeling and Food Safety
-     Prediction are separated by LIGHTNESS as well as hue — both markedly darker than the
-     nearest area — rather than by hue alone, which is what keeps them apart under CVD at
-     8 categories, past the ~7 where hue alone stays reliably distinguishable.
+     contrast on white, black reads as text.
+
+     THE HONEST NUMBERS, because an earlier version of this note claimed a separation
+     that does not exist ("both markedly darker than the nearest area" — Food Safety
+     Prediction is L 52%, Media Optimization is L 53.2%, a gap of one point). Measured
+     OKLab dE across all eight:
+
+       media <-> foodsafety      0.096   <- closest pair in the palette
+       metabolic <-> foodsafety  0.109
+       cell <-> foodsafety       0.125
+       media <-> metabolic       0.126
+       bioprocess <-> sensory    0.156   <- closest pair among the ORIGINAL SIX
+
+     So four pairs sit below the six's own internal floor. Eight categories is past the
+     ~7 where a categorical palette stays reliably distinguishable, and this is what that
+     costs; there is no arrangement of two more hues that fixes it, because the free hue
+     space is either violet (reserved repo-wide for license tiers) or green (already
+     `cell`, and green-on-green collapses under deuteranopia).
+
+     WHY THAT IS ACCEPTED HERE AND NOT ON THE SOCIAL CARD. `scripts/og-image.mjs` derives
+     its dots against a >=0.156 floor and this file does not, which looks inconsistent and
+     is not: the card's dots carry no text label, so colour is the only signal and has to
+     do the whole job. Every in-app surface renders the area's name beside the swatch
+     (DESIGN.md section 2), so colour is a redundant cue there and a smaller separation is
+     survivable. That argument is load-bearing, so it has to stay true — the "Recently
+     added" dot was the one surface that broke it, and now carries an accessible name. If
+     a new surface shows an area colour with no label, either label it or use the card's
+     floor; do not extend this exemption to it.
 
      These two values are inherited deliberately rather than invented: they were the
      tokens the Metabolism & Modeling and Food Safety *themes* carried while those themes

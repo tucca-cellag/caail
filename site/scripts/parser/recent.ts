@@ -91,10 +91,37 @@ function git(repoRoot: string, args: string[]): string {
 }
 
 /** First keyword match wins; unmatched titles default to `tooling`. */
-function classifyArea(title: string): RecentEntry['area'] {
+/**
+ * True when `kw` occurs in `haystack` starting at a word boundary. The LEADING edge is
+ * asserted and the trailing edge deliberately is not, so a keyword still matches its own
+ * inflections — `allergen` has to match "allergenicity" and `metabolic model` has to match
+ * "metabolic modeling", which is most of why these entries are short stems.
+ *
+ * Anchoring both edges was tried and is wrong: it silently reclassified those two live
+ * entries to the `tooling` fallback. Anchoring neither is what tagged "The AI4CM Hub and
+ * the Food Intelligence Lab" as `foodsafety`, because "intelligence" contains "ige".
+ * Leading-only is the rule that fixes the second without causing the first.
+ *
+ * The keyword is escaped, so a future entry containing regex punctuation stays literal.
+ */
+function wordMatch(haystack: string, kw: string): boolean {
+  const escaped = kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return new RegExp(`(^|[^a-z0-9])${escaped}`, 'i').test(haystack);
+}
+
+export function classifyArea(title: string): RecentEntry['area'] {
   const haystack = title.toLowerCase();
   for (const [area, keywords] of AREA_KEYWORDS) {
-    if (keywords.some((kw) => haystack.includes(kw))) return area;
+    // Whole-word match, NOT `includes`. A bare substring test tagged "The AI4CM Hub and
+    // the Food Intelligence Lab" as `foodsafety`, because "intelligence" contains "ige";
+    // "gem" is likewise inside "management" and "engagement". Short keywords are the
+    // useful ones here (titles are commit subjects, so they are terse), which makes
+    // substring matching actively wrong rather than merely loose. `seed.ts` already
+    // spells the same concept `\bige\b` in its allergenicity tag.
+    //
+    // Keywords may contain spaces and hyphens, so the boundary is asserted by hand
+    // rather than with \b, which does not fire next to a hyphen.
+    if (keywords.some((kw) => wordMatch(haystack, kw))) return area;
   }
   return 'tooling';
 }

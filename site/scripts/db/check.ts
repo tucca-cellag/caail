@@ -295,8 +295,17 @@ export function checkAxisBijection(db: Db, repoRoot: string = REPO_ROOT): CheckR
     .filter((m) => RESEARCH_AREA_PAGES[m[1]] !== undefined)
     .filter((m) => m[2] !== RESEARCH_AREA_PAGES[m[1]].toLowerCase())
     .map((m) => `${m[1]}: '${m[2]}' vs page ${RESEARCH_AREA_PAGES[m[1]]}.md`);
-  out.push(ok('axes: axis-links route slugs match their ResearchAreas page names', badSlugValue.length === 0,
-    `${badSlugValue.join('; ')} -> the By the Numbers bar would 404`));
+  // Assert the value scrape found as many pairs as the key scrape found keys. Without
+  // this the check degrades to green rather than to red: the value regex only matches
+  // single-quoted strings, so reformatting the literal to double quotes (or a `}` inside
+  // a comment, which truncates the block match) empties `slugPairs`, `badSlugValue` is
+  // then trivially empty, and this reports ✓ having tested nothing. A guard whose
+  // failure mode is silent success is the defect it exists to close.
+  out.push(ok('axes: axis-links route slugs match their ResearchAreas page names',
+    badSlugValue.length === 0 && slugPairs.length === slugKeys.length,
+    slugPairs.length !== slugKeys.length
+      ? `parsed ${slugPairs.length} slug values but ${slugKeys.length} keys — the value scrape in check.ts no longer matches axis-links.ts's formatting, so this check was about to pass without testing anything`
+      : `${badSlugValue.join('; ')} -> the By the Numbers bar would 404`));
 
   const dbThemes = db.prepare("SELECT slug,label,area_key FROM topics WHERE tier='theme' ORDER BY slug")
     .all() as { slug: string; label: string; area_key: string | null }[];
