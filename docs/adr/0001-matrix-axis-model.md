@@ -131,9 +131,10 @@ miss throw. Doing neither leaves the bijection resting on two strings agreeing.
 as fact, and none of it is true today:
 
 - **The bijection does not hold.** Live state is 8 themes, 6 research areas and 7 research-area
-  deep-dive pages. (`CONTEXT.md` defines a deep-dive page as covering either axis, so the
-  all-axes count is 8 including `Methods/BenchmarksEvaluation.md`; the bijection is about the
-  research-area ones.) `Metabolism & Modeling` and `Food Safety` both carry `area_key: null`.
+  deep-dive pages. (`CONTEXT.md` defines a deep-dive page as covering either axis, and the
+  all-axes count is 32: these 7 plus 25 under `Methods/`. The bijection concerns the
+  research-area ones only, so read the 7 and never the 32 against it.) `Metabolism & Modeling`
+  and `Food Safety` both carry `area_key: null`.
 - **`db:check` asserts no bijection and no not-null `area_key`.** `checkTopicTiers` asserts
   only that a **non-null** `area_key` resolves to an existing area, so a theme is free to carry
   none. There is no assertion that every theme has one, that every column has exactly one theme,
@@ -183,10 +184,14 @@ both prose statements are to be rewritten as the things that were wrong. The gua
 future cross-cutting theme a deliberate reopening of this ADR rather than a quiet addition is
 part of the same not-yet-implemented work.
 
-**Adopt GFI's Alternative Protein Solutions facets as the column axis** (Production Platform,
-Value Chain Segment, Technology Sector, End Product Focus, Relevant Actor, Maturity Level,
-Solution Category, Topic). Rejected on a concrete count: none of the eight facets has a place for
-a general AI method, and `AI Tooling / Methodology` holds 81 of the 229 matrix-eligible
+**Adopt GFI's Alternative Protein Solutions facets as the column axis.** The facets seen on
+`gfi.org/solutions` when this was decided were Production Platform, Value Chain Segment,
+Technology Sector, End Product Focus, Relevant Actor, Maturity Level, Solution Category and
+Topic. **Read that as the list observed then, not a verified enumeration**: it is a third
+party's live site that this repository does not control and cannot guard, and a later read
+turned up at least one facet absent from it. The rejection deliberately does not rest on the
+list being complete. Rejected on a concrete count: no facet there has a place for a general AI
+method, and `AI Tooling / Methodology` holds 81 of the 229 matrix-eligible
 references after the retirement, so 35% of the matrix would be homeless. ("After", not
 "absorbing them all": of the retired column's 23 references, 15 went to `AI Tooling /
 Methodology` and 7 to `Cellular Engineering`, which is the re-placement described above rather
@@ -210,8 +215,11 @@ audit verdict depends on it, so it can land at any time.
 - A retired column has no tombstone machinery (`retired_paper_ids` covers reference ids only),
   so `/research-areas/aievaluation/` gets a redirect to its new method-page home and the
   `Taxonomy.md` column anchor stops resolving. Judged acceptable rather than worth new schema.
-- The bijection guard is to cover the **research-area axis only**. Extending it to the method
-  axis would require all 25 method deep dives to exist, which would in turn block any new method
-  row on writing a page.
+- The bijection guard is to cover the **research-area axis only**. The reason recorded when this
+  was decided, that extending it to the method axis would require all 25 method deep dives to
+  exist, no longer holds: `Methods/` now carries 25 pages against the matrix's 25 method rows,
+  so the precondition is met. What survives is the second half, that such a guard would block
+  any new method row on writing its page first. Whether that price is worth paying is a live
+  question now rather than a foreclosed one, and answering it is not this ADR's business.
 - The freeze (CAAIL-151) must follow all of this, since retiring one column, adding two, and
   re-placing 23 references all move the counts a freeze would fix.
