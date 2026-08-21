@@ -84,7 +84,10 @@
      had no matrix column. Now that each names a column, the theme resolves to its area's
      colour from data (lib/theme-colors.ts) and the standalone theme tokens are gone —
      so a reader who knew a chip by its colour sees the same colour, now meaning one
-     thing on both axes instead of two things that happened to look alike. */
+     thing on both axes instead of two things that happened to look alike.
+
+     These are the values in BOTH modes; see the dark block below for why there is no
+     override. */
   --caail-area-media: #0072B2;
   --caail-area-cell: #009E73;
   --caail-area-bioprocess: #E69F00;
@@ -145,11 +148,25 @@
   --caail-density-4: oklch(78% 0.10 256);
   /* Categorical area colors keep hue; lighten ~8% for AA on dark (kept inline in components) */
 
-  /* The six Okabe-Ito area hues are kept inline in components (see the note above), but
-     the two oklch areas are tokens and DO need inverting for AA on dark, exactly as the
-     tier scale does. They carry the values the matching themes used to hold. */
-  --caail-area-metabolic: oklch(72% 0.09 220);
-  --caail-area-foodsafety: oklch(70% 0.11 200);
+  /* NO dark-mode override for the area hues, and that is deliberate for all eight.
+
+     These two were briefly inverted here, on the reasoning that a token should invert for
+     AA the way the tier scale does. That was wrong, and measurably: the six Okabe-Ito areas
+     are hex literals kept inline in components and are never inverted, so lifting only these
+     two moved them into the others' lightness band. `Metabolic Modeling` landed OKLab dE
+     0.042 from `Scaffolding` and 0.045 from `Food Safety Prediction` — around 2 JND on a
+     15px legend swatch, against a palette whose own closest existing pair is 0.156.
+     Un-inverted they sit at 0.096, which is not generous but is four times the separation
+     and, more to the point, means one rule governs all eight.
+
+     The cost, stated because it is real: `Metabolic Modeling` measures 2.07:1 against the
+     dark background, below `Media Optimization`'s 3.18:1, which was already the darkest.
+     That is acceptable only because these are category swatches and never the sole signal —
+     every surface renders the area's text label beside the colour (DESIGN.md section 2). It
+     would not be acceptable for text.
+
+     If a future change does invert the areas for dark mode, invert ALL eight together or
+     the same collision returns. */
 
   /* Tier scales keep hue, lightness inverted for AA on dark. The band tokens
      need no override: they alias the density ramp, which is already inverted above. */

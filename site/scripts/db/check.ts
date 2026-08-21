@@ -215,12 +215,19 @@ export function checkAxisBijection(db: Db, repoRoot: string = REPO_ROOT): CheckR
   // 2. Every research area is named by exactly one theme.
   const areaKeys = (db.prepare('SELECT key FROM areas ORDER BY ordinal').all() as { key: string }[]).map((r) => r.key);
   const themeCounts = new Map(areaKeys.map((k) => [k, 0]));
+  const unknownKeys: string[] = [];
   for (const r of db.prepare("SELECT area_key FROM topics WHERE tier='theme' AND area_key IS NOT NULL").all() as { area_key: string }[]) {
+    // Only count keys that name a real area. Without this an unresolvable key lands in the
+    // map with count 1, passes the `!== 1` filter, and the failure message then names the
+    // real area that dropped to 0 rather than the bogus key that caused it. `checkTopicTiers`
+    // would also fail, but this function is exported and unit-tested on its own.
+    if (!themeCounts.has(r.area_key)) { unknownKeys.push(r.area_key); continue; }
     themeCounts.set(r.area_key, (themeCounts.get(r.area_key) ?? 0) + 1);
   }
   const notOne = [...themeCounts].filter(([, n]) => n !== 1).map(([k, n]) => `${k}=${n}`);
-  out.push(ok('axes: every research area is named by exactly one theme', notOne.length === 0,
-    `areas whose naming theme count is not 1: [${notOne.join(', ')}]`));
+  out.push(ok('axes: every research area is named by exactly one theme', notOne.length === 0 && unknownKeys.length === 0,
+    `areas whose naming theme count is not 1: [${notOne.join(', ')}]`
+    + (unknownKeys.length ? `; themes naming an area that does not exist: [${unknownKeys.join(', ')}]` : '')));
 
   // 3. Every research area has a deep-dive page, and the map above matches the DB.
   const mapped = new Set(Object.keys(RESEARCH_AREA_PAGES));

@@ -6,7 +6,7 @@ This page describes the **Deep Learning** row of the [Papers.md matrix](../Paper
 
 This is the axis's declared **catch-all**, and reading it correctly means reading the exclusions first. A paper whose core architecture is a [CNN](./CNN.md), a [GNN](./GNN.md), a [GAN or VAE](./GANVAE.md), or a pretrained foundation model belongs in that row instead. The taxonomy also excludes two things that are easy to admit by mistake: shallow models, such as radial-basis-function networks or single-hidden-layer MLPs used only as a baseline, and non-neural methods sometimes loosely called deep learning, such as [Chemometrics](./Chemometrics.md) and network propagation.
 
-Because it is a residual category, this row is not a coherent research programme and should not be read as one. What it does give is the broadest coverage of any method row, appearing in all six columns, which makes it a reasonable starting point when the question is "has anyone applied a neural network to this part of the process at all". Many of its references are described in more depth on the page for whichever other row they also occupy.
+Because it is a residual category, this row is not a coherent research programme and should not be read as one. What it does give is the broadest coverage of any method row, appearing in more research areas than any other, which makes it a reasonable starting point when the question is "has anyone applied a neural network to this part of the process at all". Many of its references are described in more depth on the page for whichever other row they also occupy.
 
 ## Media Optimization
 
@@ -66,6 +66,6 @@ This column is the row's densest, and it traces one clear methodological arc: fr
 
 ## Further reading
 
-- Research areas: all six columns, but especially [Bioprocess & Scale-Up](../ResearchAreas/Bioprocess.md), [Cellular Engineering](../ResearchAreas/CellEngineering.md) and [Sensory Prediction](../ResearchAreas/SensoryPrediction.md).
+- Research areas: nearly every column, but especially [Bioprocess & Scale-Up](../ResearchAreas/Bioprocess.md), [Cellular Engineering](../ResearchAreas/CellEngineering.md) and [Sensory Prediction](../ResearchAreas/SensoryPrediction.md).
 - Software: [pyFOOMB](../Software.md#pyfoomb), [MxlPy](../Software.md#mxlpy) and [PC-Gym](../Software.md#pc-gym) for bioprocess modelling, and [AllerCatPro 2.0](../Software.md#allercatpro-20) and the other allergenicity predictors alongside [#289](../Papers.md#289).
 - Datasets: [`Datasets/CHOReference.md`](../Datasets/CHOReference.md) for the CHO work that dominates the bioprocess column.

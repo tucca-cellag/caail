@@ -22,12 +22,22 @@ const OUT = fileURLToPath(new URL('../public/og.png', import.meta.url));
 // happened when the eval column was retired. An oracle for the length is tracked on
 // CAAIL-204; until it lands, this comment is the only thing standing in the way.
 //
-// Two caveats on the last two entries, which are Metabolic Modeling and Food Safety
-// Prediction. (1) They are `oklch()` in tokens.css; resvg renders SVG 1.1 and would not
-// resolve that, so they are pre-converted to sRGB here. (2) They are the DARK-mode
-// values, not the light-mode ones. This card is a navy field: the light-mode values
-// measure 1.64:1 and 2.62:1 against it and vanish, while these measure 5.40:1 and
-// 5.12:1. Same reason the site inverts them for dark mode.
+// Two caveats on the Metabolic Modeling and Food Safety Prediction entries, which are
+// AREA[5] and AREA[6] — the array is in matrix column order, so AI Tooling / Methodology
+// is last, not these.
+//
+// (1) They are `oklch()` in tokens.css; resvg renders SVG 1.1 and would not resolve that,
+// so they are pre-converted to sRGB here.
+//
+// (2) They are NOT their token values, and this is the only place in the repo where an
+// area is drawn in a colour tokens.css does not define. tokens.css gives each area ONE
+// value for both colour schemes: the six Okabe-Ito hues are never inverted for dark mode,
+// and inverting these two alone is what once put Metabolic Modeling within ~2 JND of
+// Scaffolding. This card is neither scheme — it is a fixed navy field — and against it the
+// token values measure 1.64:1 and 2.62:1, which is invisible. The lightened values below
+// measure 5.40:1 and 5.12:1. So they are lightened FOR THIS ARTIFACT; there is no
+// dark-mode token to inherit from. If the tokens change, re-derive these against the
+// card's own #002E6D rather than copying whatever tokens.css then says.
 const AREA = ['#0072B2', '#009E73', '#E69F00', '#56B4E9', '#D55E00', '#5DB2CC', '#2BB3B9', '#CC79A7'];
 const dots = AREA.map((c, i) => `<circle cx="${104 + i * 52}" cy="556" r="15" fill="${c}" />`).join('');
 

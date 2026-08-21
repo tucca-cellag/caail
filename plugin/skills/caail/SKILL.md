@@ -100,8 +100,10 @@ answer a question. A reference can be indexed, exactly on point, and invisible t
 you run — and unlike an empty cell, nothing in the response tells you so. A full-looking column is
 not evidence that you have seen everything CAAIL holds on the subject.
 
-Some subjects have no column at all. `taxonomy.json` says which: read a subject's definition before
-reading a silence, because several are marked there as cross-cutting with no single matrix column.
+An empty cell is not the same as an absent subject. Read a subject's definition in
+`taxonomy.json` before reading a silence: the definitions state what each column excludes and
+where that work is filed instead, and a subject can be well covered in the catalogue while
+holding few matrix cells or none.
 
 So before reporting that CAAIL contains no work on something, do one of these:
 

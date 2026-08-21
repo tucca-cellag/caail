@@ -135,11 +135,17 @@ worth doing, but it addresses path 1 alone and is no longer what the bijection r
 - `ResearchAreas/AIEvaluation.md` has migrated to `Methods/BenchmarksEvaluation.md`, and
   `/research-areas/aievaluation/` redirects to its new home in `astro.config.mjs`.
 - `benchmarks-evaluation` remains a fine tag under `AI Methods & Tooling`.
-- **`/by-the-numbers/` already labels the two axes**, saying themes are "a different axis from
-  the N research areas above, not a renaming of them", and naming the area-less themes and the
-  unthemed columns. It **derives** all three from the data (`MetricsDashboard.astro:53-56`,
-  rendered at `:113-123`), so the sentence self-corrects as curation closes the gap. Do not
-  re-implement it, and do not replace the derivation with a hardcoded list when the columns land.
+- **`/by-the-numbers/` labels the two axes**, saying themes are "a different axis from the N
+  research areas above, not a renaming of them", and it **derives** the exception lists from the
+  data (`MetricsDashboard.astro`) rather than hardcoding them. Keep the derivation; do not
+  replace it with a hardcoded list.
+  **This ADR previously said the sentence would "self-correct as curation closes the gap". It
+  did not, and the claim was the reason nobody checked.** Both derived lists went empty when the
+  columns landed, and the copy emitted their clauses unconditionally, rendering "…share its
+  colour;  are themes with no matrix column, and The matrix classifies…". Deriving a value is not
+  the same as handling every value it can take, and the empty case is the one a closing gap
+  produces. Each clause is now guarded on its own list, with a separate sentence for the
+  all-closed state. No e2e spec asserts this copy.
 
 - **The bijection holds.** 8 subject themes, 8 research areas, one `ResearchAreas/` deep-dive
   page each, with `Metabolic Modeling` and `Food Safety Prediction` added as columns and
