@@ -13,15 +13,16 @@ import { fileURLToPath } from 'node:url';
  * explicit that a comment saying "keep these in sync" documents the risk without
  * mitigating it. This is the check.
  *
- * Covered: the hero eyebrow (`Hero.astro`); the BibTeX block in
- * `src/lib/citation.ts`, whose own docstring says to update `CITATION.cff` first
- * and mirror it there — an instruction with nothing enforcing it until now; the
- * APA line in `content/docs/cite.mdx`; `README.md`'s heading and both of its
- * citations; the two agent-facing names, `api/index.json`'s `name` (emitted from
- * `agent-api.ts`) and `llms.txt`'s heading; and `.zenodo.json`'s deposit `title`.
+ * WHAT IS COVERED IS THE LIST OF `it` NAMES BELOW, and is deliberately not restated
+ * up here. Three drafts of this docstring carried such a list and all three were
+ * falsified by the next commit that added a pin — the first was missing
+ * `citation.ts` on the day it was written, and the last omitted both organisation
+ * pins. An inventory of hand-typed copies is itself a hand-typed copy, in a file
+ * whose entire thesis is that those drift. The `it` names cannot go stale, because
+ * they are the things.
  *
- * WHAT IS IN AND WHAT IS OUT, since "one more copy exists" is true indefinitely and
- * is not on its own a reason. Two things earn a pin:
+ * WHAT EARNS A PIN, since "one more copy exists" is true indefinitely and is not on
+ * its own a reason:
  *
  *   1. A PAIR RENDERED TOGETHER. An APA line and a BibTeX block sit side by side on
  *      `/cite/`, and again on `README.md`, whose H1 sits forty lines above its own
@@ -50,12 +51,10 @@ import { fileURLToPath } from 'node:url';
  *      install for one JSON read; that trade is CAAIL-298 and the decision is
  *      CAAIL-301.
  *
- * Everything else is deliberately unpinned, and deliberately not enumerated. The
- * expansion appears in prose in several other files; an earlier draft of this
- * docstring listed them and was already missing `citation.ts` on the day it was
- * written — a hand-typed inventory of hand-typed copies, in a file whose whole
- * thesis is that those drift. Rather than maintain one, the rule is: if you add a
- * copy that meets 1 or 2 above, add it here.
+ * Everything else is deliberately unpinned. The expansion appears in prose in
+ * several other files and chasing each one would make this file the inventory it
+ * argues against. The rule is: if you add a copy that meets one of the criteria
+ * above, add a pin for it here — and do not add it to a list.
  *
  * These read **source text, not rendered output**. Writing the separator or any
  * part of the expansion as an HTML entity will fail this guard on a page that
@@ -206,12 +205,31 @@ export function parseMarkdownH1(md: string, source: string): string {
  * The artifact is committed and `lint-papers.yml`'s API sync guard re-derives it, so
  * it cannot drift from the source; the assertion below says where to fix it.
  */
+/**
+ * `JSON.parse`, but a failure names the file.
+ *
+ * The bare call throws `SyntaxError: Unexpected end of JSON input`, which identifies
+ * neither the file nor what was wrong with it — and a truncated write, the case the
+ * shape guards below were added for, produces INVALID json far more often than it
+ * produces valid `null`. An earlier comment here claimed otherwise, which meant the
+ * guard covered the rarer half of the case it was written for.
+ */
+function parseJson(json: string, source: string): unknown {
+  try {
+    return JSON.parse(json) as unknown;
+  } catch (e) {
+    throw new Error(
+      `${source} is not valid JSON (${e instanceof Error ? e.message : String(e)}) — ` +
+        'this guard cannot run',
+    );
+  }
+}
+
 function jsonStringField(json: string, source: string, field: string): string {
-  const parsed: unknown = JSON.parse(json);
-  // Guard the shape before indexing it. `JSON.parse('null')` is valid and returns
-  // null, and a truncated write can produce exactly that — indexing it throws
-  // "Cannot read properties of null", which names neither the file nor the cause.
-  // Every message in this file is built to identify both.
+  const parsed = parseJson(json, source);
+  // Then guard the shape before indexing it: `JSON.parse('null')` is valid and
+  // returns null, and indexing that throws "Cannot read properties of null", which
+  // again names neither the file nor the cause.
   if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
     throw new Error(
       `${source} did not parse to a JSON object (got ${parsed === null ? 'null' : typeof parsed}) — ` +
@@ -305,7 +323,7 @@ export function parseZenodoCreatorNames(json: string, source: string): string[] 
   // Shape-guarded at every step, for the reason `jsonStringField` is: a truncated or
   // hand-mangled file must fail with a message naming the file and the cause, not
   // with `creators.map is not a function`.
-  const parsed: unknown = JSON.parse(json);
+  const parsed = parseJson(json, source);
   if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
     throw new Error(
       `${source} did not parse to a JSON object (got ${parsed === null ? 'null' : typeof parsed}) — ` +
@@ -329,7 +347,14 @@ export function parseZenodoCreatorNames(json: string, source: string): string[] 
   return names;
 }
 
-describe('every pinned copy of the title agrees with CITATION.cff', () => {
+// The name states the RELATIONSHIP, not the membership. Three earlier titles named
+// their own contents — "everywhere it is written by hand", then "the hero eyebrow and
+// the BibTeX title", then "every pinned copy of the TITLE" — and each was falsified by
+// the next commit that added an `it`, while still printing on every run as though it
+// were true. The third outlived its truth by two rounds, from the moment the
+// organisation pins below made it cover more than titles. A describe string that lists
+// its contents is a hand-typed copy of the list directly beneath it.
+describe('what CITATION.cff records and what the project shows agree', () => {
   const title = () => readFrom('CITATION.cff', parseCitationTitle);
 
   it('the hero eyebrow expands the acronym exactly as CITATION.cff titles the work', () => {
@@ -511,6 +536,15 @@ describe('the guard fails loudly rather than silently when a source is restructu
     expect(() => parseZenodoTitle('{"upload_type":"software"}', '<fixture>')).toThrow(
       /no top-level string `title`/,
     );
+  });
+
+  it('names the file when the JSON does not parse at all', () => {
+    // The commoner half of a truncated write, and the half the shape guards below do
+    // not reach: `JSON.parse` throws before they run.
+    expect(() => parseZenodoTitle('{"title":', 'half-written.json')).toThrow(
+      /half-written\.json is not valid JSON/,
+    );
+    expect(() => parseZenodoCreatorNames('', 'empty.json')).toThrow(/empty\.json is not valid/);
   });
 
   it('names the file when the JSON is not an object at all', () => {

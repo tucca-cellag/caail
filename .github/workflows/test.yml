@@ -51,6 +51,17 @@ on:
       # Nor does this cover a plain version or DOI bump, which is the more common
       # release edit: nothing asserts that citation.ts, cite.mdx, README.md and
       # .zenodo.json still agree on `version:` or `doi:`.
+      #
+      # WHY THIS FILE AND NOT .zenodo.json, which carries the same strings and is
+      # deliberately left out. The cost is identical and real — a full build and a
+      # browser install for a handful of file reads, which is CAAIL-298 — so the
+      # asymmetry needs a reason rather than a preference. It is blast radius.
+      # CITATION.cff is the SOURCE every pin compares against, so an edit to it alone
+      # changes the expected value of all of them at once and can leave the repo
+      # inconsistent in half a dozen places. .zenodo.json is a leaf: an edit to it can
+      # only make itself wrong, and the realistic retitle starts at CITATION.cff and
+      # so trips this filter anyway. One is the thing that moves everything; the other
+      # is one of the things that move. CAAIL-301 holds the decision to revisit it.
       - CITATION.cff
       # The correction issue form. /report/ composes a report against this file: the error
       # classes its reason field lists ARE the composer's vocabulary, and its field ids are
@@ -114,6 +125,17 @@ on:
       # Nor does this cover a plain version or DOI bump, which is the more common
       # release edit: nothing asserts that citation.ts, cite.mdx, README.md and
       # .zenodo.json still agree on `version:` or `doi:`.
+      #
+      # WHY THIS FILE AND NOT .zenodo.json, which carries the same strings and is
+      # deliberately left out. The cost is identical and real — a full build and a
+      # browser install for a handful of file reads, which is CAAIL-298 — so the
+      # asymmetry needs a reason rather than a preference. It is blast radius.
+      # CITATION.cff is the SOURCE every pin compares against, so an edit to it alone
+      # changes the expected value of all of them at once and can leave the repo
+      # inconsistent in half a dozen places. .zenodo.json is a leaf: an edit to it can
+      # only make itself wrong, and the realistic retitle starts at CITATION.cff and
+      # so trips this filter anyway. One is the thing that moves everything; the other
+      # is one of the things that move. CAAIL-301 holds the decision to revisit it.
       - CITATION.cff
       # The correction issue form. /report/ composes a report against this file: the error
       # classes its reason field lists ARE the composer's vocabulary, and its field ids are

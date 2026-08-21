@@ -57,9 +57,9 @@ interface Props {
    * for the other one: with the span outside, a link-aware extractor (turndown,
    * Readability, an agent scraping the page) sees an anchor whose only child is an
    * empty `.tl-mark` and emits an unlabelled `[](url)` followed by loose text.
-   * Tracked separately rather than changed here, because it alters rendered markup
+   * Tracked as CAAIL-303 rather than changed here, because it alters rendered markup
    * on an extraction-quality argument nobody has yet measured against a real
-   * extractor.
+   * extractor. That ticket's first step is to run one.
    *
    * Opt-in rather than always-on: it only matters where the lockup sits inside a
    * sentence (the hero attribution), and turning it on globally would change what
