@@ -3952,6 +3952,80 @@
       ]
     },
     {
+      "slug": "allertrans",
+      "itemId": "sw:allertrans",
+      "name": "AllerTrans",
+      "url": "https://github.com/faezesarlakifar/AllerTrans",
+      "group": "Food Safety & Allergenicity",
+      "summary": "Predicts whether a protein sequence is allergenic by encoding it with two protein language models, ESM-2 and ProtT5, concatenating their embedding vectors, and classifying the result with a deep neural network; the released model ensembles the top-performing variants to balance sensitivity against specificity. It reports 97.91% sensitivity, 97.69% specificity and 97.80% accuracy under 5-fold cross-validation on AlgPred 2.0’s own training and validation split, the corpus catalogued in Datasets/FoodSafety.md, so those figures are not independent of the AlgPred 2.0 entry above. Because it learns from pretrained sequence representations rather than homology to a known allergen, it is applicable to the recombinant growth factors, media proteins and scaffold proteins introduced into cultured products, which often have limited similarity to catalogued allergens. A hosted demo runs as a Hugging Face Space; companion to Papers.md ref #289.",
+      "summaryHtml": "<p>Predicts whether a protein sequence is allergenic by encoding it with two protein language models, ESM-2 and ProtT5, concatenating their embedding vectors, and classifying the result with a deep neural network; the released model ensembles the top-performing variants to balance sensitivity against specificity. It reports 97.91% sensitivity, 97.69% specificity and 97.80% accuracy under 5-fold cross-validation on AlgPred 2.0’s own training and validation split, the corpus catalogued in <a href=\"/caail/datasets/foodsafety/\">Datasets/FoodSafety.md</a>, so those figures are not independent of the AlgPred 2.0 entry above. Because it learns from pretrained sequence representations rather than homology to a known allergen, it is applicable to the recombinant growth factors, media proteins and scaffold proteins introduced into cultured products, which often have limited similarity to catalogued allergens. A hosted demo runs as a <a href=\"https://huggingface.co/spaces/sfaezella/AllerTrans\">Hugging Face Space</a>; companion to <a href=\"https://github.com/tucca-cellag/caail/blob/main/Papers.md#289\">Papers.md ref #289</a>.</p>",
+      "topics": [
+        {
+          "slug": "allergenicity",
+          "label": "Allergenicity",
+          "theme": "food-safety"
+        }
+      ],
+      "license": "MIT",
+      "licenseSource": "manual",
+      "tier": "permissive",
+      "doi": "10.1093/biomethods/bpaf040",
+      "doiSource": "manual",
+      "citationCount": 5,
+      "citationSources": 1,
+      "citationDois": [
+        "10.1093/biomethods/bpaf040"
+      ]
+    },
+    {
+      "slug": "netallergen",
+      "itemId": "sw:netallergen",
+      "name": "NetAllergen",
+      "url": "https://services.healthtech.dtu.dk/services/NetAllergen-1.0/",
+      "group": "Food Safety & Allergenicity",
+      "summary": "Random-forest allergenicity predictor from DTU Health Tech that introduces MHC class II peptide presentation propensity, computed for HLA-DR and HLA-DQ alleles, as a feature alongside conventional physicochemical descriptors. It was trained on IgE-inducing allergens from AllergenOnline after redundancy removal through a protein-partitioning pipeline. Its reported advantage is specifically on proteins with limited sequence similarity to known allergens, where it outperforms a BLAST baseline and AlgPred 2. That is the regime that matters for novel cell-ag proteins, which are precisely the ones homology screens handle worst.",
+      "summaryHtml": "<p>Random-forest allergenicity predictor from DTU Health Tech that introduces MHC class II peptide presentation propensity, computed for HLA-DR and HLA-DQ alleles, as a feature alongside conventional physicochemical descriptors. It was trained on IgE-inducing allergens from AllergenOnline after redundancy removal through a protein-partitioning pipeline. Its reported advantage is specifically on proteins with limited sequence similarity to known allergens, where it outperforms a BLAST baseline and AlgPred 2. That is the regime that matters for novel cell-ag proteins, which are precisely the ones homology screens handle worst.</p>",
+      "topics": [
+        {
+          "slug": "allergenicity",
+          "label": "Allergenicity",
+          "theme": "food-safety"
+        }
+      ],
+      "license": null,
+      "licenseSource": null,
+      "tier": "unknown",
+      "doi": "10.1093/bioadv/vbad151",
+      "doiSource": "manual",
+      "citationCount": null,
+      "citationSources": 0,
+      "citationDois": []
+    },
+    {
+      "slug": "chalpred",
+      "itemId": "sw:chalpred",
+      "name": "ChAlPred",
+      "url": "https://webs.iiitd.edu.in/raghava/chalpred/",
+      "group": "Food Safety & Allergenicity",
+      "summary": "Predicts the allergenic potential of chemical compounds rather than proteins, filling a gap the sequence-based allergen predictors do not cover. It was trained on 403 allergenic and 1,074 non-allergenic compounds from IEDB, using PaDEL-computed 2D, 3D and fingerprint molecular descriptors across several machine-learning classifiers, and it also generates analogs with a desired allergenicity. For cellular agriculture the relevant surface is the small-molecule side of a formulation (media additives, supplements, process residues and cryoprotectants), which protein allergenicity screens cannot assess.",
+      "summaryHtml": "<p>Predicts the allergenic potential of <strong>chemical compounds</strong> rather than proteins, filling a gap the sequence-based allergen predictors do not cover. It was trained on 403 allergenic and 1,074 non-allergenic compounds from IEDB, using PaDEL-computed 2D, 3D and fingerprint molecular descriptors across several machine-learning classifiers, and it also generates analogs with a desired allergenicity. For cellular agriculture the relevant surface is the small-molecule side of a formulation (media additives, supplements, process residues and cryoprotectants), which protein allergenicity screens cannot assess.</p>",
+      "topics": [
+        {
+          "slug": "allergenicity",
+          "label": "Allergenicity",
+          "theme": "food-safety"
+        }
+      ],
+      "license": null,
+      "licenseSource": null,
+      "tier": "unknown",
+      "doi": "10.1016/j.compbiomed.2021.104746",
+      "doiSource": "manual",
+      "citationCount": null,
+      "citationSources": 0,
+      "citationDois": []
+    },
+    {
       "slug": "biosteam",
       "itemId": "sw:biosteam",
       "name": "BioSTEAM",
@@ -8652,5 +8726,5 @@
       "citationDois": []
     }
   ],
-  "corpusDate": "2026-08-14"
+  "corpusDate": "2026-08-20"
 }

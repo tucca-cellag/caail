@@ -1,6 +1,6 @@
 {
-  "corpusDate": "2026-08-14",
-  "count": 289,
+  "corpusDate": "2026-08-20",
+  "count": 292,
   "truncationNote": "Compare the number of rows you parsed against `count`. If you have fewer, your fetch truncated this file and you are looking at part of the corpus: say so, and do not report an absence from it. Fetching with a tool that returns bytes rather than a summary avoids this entirely.",
   "entries": [
     {"slug":"alphafold","name":"AlphaFold","kind":"software","group":"Media Optimization & Cell Line Engineering","url":"https://github.com/google-deepmind/alphafold","doi":"10.1038/s41586-021-03819-2","tier":"permissive"},
@@ -134,6 +134,9 @@
     {"slug":"allermatch","name":"Allermatch","kind":"software","group":"Food Safety & Allergenicity","url":"https://www.allermatch.org/","doi":"10.1186/1471-2105-5-133","tier":"unknown"},
     {"slug":"allerdet","name":"ALLERDET","kind":"software","group":"Food Safety & Allergenicity","url":"http://allerdet.frangam.com","doi":"10.1016/j.jbi.2022.104217","tier":"permissive"},
     {"slug":"allergenai","name":"AllergenAI","kind":"software","group":"Food Safety & Allergenicity","url":"https://compbio.uth.edu/AllergenAI/","doi":"10.1186/s12859-025-06302-1","tier":"unknown"},
+    {"slug":"allertrans","name":"AllerTrans","kind":"software","group":"Food Safety & Allergenicity","url":"https://github.com/faezesarlakifar/AllerTrans","doi":"10.1093/biomethods/bpaf040","tier":"permissive"},
+    {"slug":"netallergen","name":"NetAllergen","kind":"software","group":"Food Safety & Allergenicity","url":"https://services.healthtech.dtu.dk/services/NetAllergen-1.0/","doi":"10.1093/bioadv/vbad151","tier":"unknown"},
+    {"slug":"chalpred","name":"ChAlPred","kind":"software","group":"Food Safety & Allergenicity","url":"https://webs.iiitd.edu.in/raghava/chalpred/","doi":"10.1016/j.compbiomed.2021.104746","tier":"unknown"},
     {"slug":"biosteam","name":"BioSTEAM","kind":"software","group":"Techno-Economic & Life-Cycle Assessment","url":"https://github.com/BioSTEAMDevelopmentGroup/biosteam","doi":"10.1021/acssuschemeng.9b07040","tier":"permissive"},
     {"slug":"qsdsan","name":"QSDsan","kind":"software","group":"Techno-Economic & Life-Cycle Assessment","url":"https://github.com/QSD-Group/QSDsan","doi":"10.1039/d2ew00455k","tier":"permissive"},
     {"slug":"brightway","name":"Brightway","kind":"software","group":"Techno-Economic & Life-Cycle Assessment","url":"https://github.com/brightway-lca","doi":"10.21105/joss.00236","tier":"permissive"},

@@ -63,10 +63,10 @@
         "areaKey": null,
         "counts": {
           "paper": 4,
-          "software": 7,
+          "software": 10,
           "database": 7,
           "dataset": 1,
-          "total": 19
+          "total": 22
         },
         "tags": [
           "allergenicity"
@@ -168,10 +168,10 @@
         "areaKey": null,
         "counts": {
           "paper": 4,
-          "software": 7,
+          "software": 10,
           "database": 7,
           "dataset": 1,
-          "total": 19
+          "total": 22
         },
         "tags": []
       },
@@ -1675,7 +1675,10 @@
         "algpred-20",
         "allermatch",
         "allerdet",
-        "allergenai"
+        "allergenai",
+        "allertrans",
+        "netallergen",
+        "chalpred"
       ],
       "databases": [
         "biopep-uwm",
@@ -1817,5 +1820,5 @@
       "datasets": []
     }
   },
-  "corpusDate": "2026-08-14"
+  "corpusDate": "2026-08-20"
 }

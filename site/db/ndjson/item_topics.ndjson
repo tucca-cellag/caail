@@ -1409,6 +1409,7 @@
 {"item_id":"sw:allergenfp","topic_id":"topic:allergenicity"}
 {"item_id":"sw:allermatch","topic_id":"topic:allergenicity"}
 {"item_id":"sw:allertop-v2","topic_id":"topic:allergenicity"}
+{"item_id":"sw:allertrans","topic_id":"topic:allergenicity"}
 {"item_id":"sw:alphafold","topic_id":"topic:cell-line-engineering"}
 {"item_id":"sw:alphafold","topic_id":"topic:media-growth-factors"}
 {"item_id":"sw:alphafold","topic_id":"topic:media-optimization"}
@@ -1461,6 +1462,7 @@
 {"item_id":"sw:chai-1","topic_id":"topic:cell-line-engineering"}
 {"item_id":"sw:chai-1","topic_id":"topic:media-growth-factors"}
 {"item_id":"sw:chai-1","topic_id":"topic:media-optimization"}
+{"item_id":"sw:chalpred","topic_id":"topic:allergenicity"}
 {"item_id":"sw:chemotools","topic_id":"topic:mass-spectrometry"}
 {"item_id":"sw:chemotools","topic_id":"topic:sensory-flavor"}
 {"item_id":"sw:cnapy","topic_id":"topic:metabolic-modeling"}
@@ -1549,6 +1551,7 @@
 {"item_id":"sw:mxlpy","topic_id":"topic:bioreactor-scale-up"}
 {"item_id":"sw:mzmine-3","topic_id":"topic:mass-spectrometry"}
 {"item_id":"sw:mzmine-3","topic_id":"topic:sensory-flavor"}
+{"item_id":"sw:netallergen","topic_id":"topic:allergenicity"}
 {"item_id":"sw:nf-coreampliseq","topic_id":"topic:ai-methods-tooling"}
 {"item_id":"sw:nf-coremag","topic_id":"topic:ai-methods-tooling"}
 {"item_id":"sw:nf-coremetaboigniter","topic_id":"topic:ai-methods-tooling"}
