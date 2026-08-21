@@ -34,11 +34,11 @@ on:
       - .claude/settings.json
       - .github/workflows/test.yml
       # The citation record. Two suites read it and fail when a copy of it drifts:
-      # project-name.test.ts (the hero eyebrow and the BibTeX block agree with its
-      # `title:`) and topic-curators.test.ts (a curator's name and ORCID belong to one
-      # author in it). Both were unreachable from CI until this entry existed: a PR
-      # editing only CITATION.cff triggered no workflow at all, so neither guard ran on
-      # the one edit it exists to catch.
+      # project-name.test.ts, which pins the title, and topic-curators.test.ts, which
+      # checks a curator's name and ORCID belong to one author in it. Both were
+      # unreachable from CI until this entry existed: a PR editing only CITATION.cff
+      # triggered no workflow at all, so neither guard ran on the one edit it exists
+      # to catch.
       #
       # What this does NOT buy, stated because the obvious reading is too generous:
       # project-name.test.ts pins SOME of the hand-typed copies of the title, not all
@@ -97,11 +97,11 @@ on:
       - .claude/settings.json
       - .github/workflows/test.yml
       # The citation record. Two suites read it and fail when a copy of it drifts:
-      # project-name.test.ts (the hero eyebrow and the BibTeX block agree with its
-      # `title:`) and topic-curators.test.ts (a curator's name and ORCID belong to one
-      # author in it). Both were unreachable from CI until this entry existed: a PR
-      # editing only CITATION.cff triggered no workflow at all, so neither guard ran on
-      # the one edit it exists to catch.
+      # project-name.test.ts, which pins the title, and topic-curators.test.ts, which
+      # checks a curator's name and ORCID belong to one author in it. Both were
+      # unreachable from CI until this entry existed: a PR editing only CITATION.cff
+      # triggered no workflow at all, so neither guard ran on the one edit it exists
+      # to catch.
       #
       # What this does NOT buy, stated because the obvious reading is too generous:
       # project-name.test.ts pins SOME of the hand-typed copies of the title, not all

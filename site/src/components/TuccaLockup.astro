@@ -44,10 +44,22 @@ interface Props {
   class?: string;
   /**
    * Emit the name as visually-hidden, `aria-hidden` text immediately AFTER the
-   * link — outside the anchor, not inside it. That placement is load-bearing
-   * rather than incidental: inside the anchor it would compete with the
-   * `aria-label` for the link's accessible name, and being outside is exactly
-   * why `aria-hidden` on its own is sufficient here.
+   * link, outside the anchor.
+   *
+   * That placement is NOT load-bearing for accessibility, and an earlier version of
+   * this comment claimed it was — that inside the anchor the text would compete with
+   * the `aria-label` for the link's accessible name. Checked against the accname
+   * spec, that is wrong twice over: `aria-label` is evaluated before name-from-
+   * content and so wins outright, and an `aria-hidden` subtree is excluded from name
+   * computation regardless. Inside would compute the same accessible name.
+   *
+   * So the placement is a choice rather than a constraint, and there is an argument
+   * for the other one: with the span outside, a link-aware extractor (turndown,
+   * Readability, an agent scraping the page) sees an anchor whose only child is an
+   * empty `.tl-mark` and emits an unlabelled `[](url)` followed by loose text.
+   * Tracked separately rather than changed here, because it alters rendered markup
+   * on an extraction-quality argument nobody has yet measured against a real
+   * extractor.
    *
    * Opt-in rather than always-on: it only matters where the lockup sits inside a
    * sentence (the hero attribution), and turning it on globally would change what

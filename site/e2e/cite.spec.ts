@@ -132,9 +132,16 @@ test('the hero attribution names its subject in every text-extraction surface', 
   // Deliberately not asserted here: line count, casing, or a single-sentence form.
   // Those are properties of the hero's flex + uppercase styling, not of this prop,
   // and pinning them would make an unrelated design change fail this spec.
+  //
+  // Case-folded on BOTH sides to make that true rather than merely intended.
+  // `innerText` applies `text-transform`, and the org name survives in title case
+  // only because the `uppercase` rule is on `.hero-attrib > span`, which misses
+  // `.tl-name` (a different Astro scope). Move that one declaration up to
+  // `.hero-attrib` — a purely stylistic edit — and a case-sensitive match would fail
+  // reporting the name as MISSING when it is present and merely shouting.
   const copied = await page.locator('.hero-attrib').innerText();
   expect(
-    copied.replace(/\s+/g, ' '),
+    copied.replace(/\s+/g, ' ').toLowerCase(),
     `the org name is missing from copied text: ${JSON.stringify(copied)}`,
-  ).toContain('Tufts University Center for Cellular Agriculture');
+  ).toContain('tufts university center for cellular agriculture');
 });
