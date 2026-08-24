@@ -74,8 +74,9 @@ export function privateCompanionGlobExclusions(): string[] {
 /**
  * True when `name` is a Markdown file belonging to the published corpus.
  *
- * Excludes agent-instruction files and private companions. Takes a bare file
- * name, not a path.
+ * Excludes agent-instruction files and private companions. Accepts either a
+ * bare file name or a path; the basename is taken first, so a caller that
+ * already holds `${dir}/${name}` can pass it straight in.
  *
  * The extension and instruction-file tests are deliberately case-SENSITIVE,
  * unlike `isPrivateCompanion`. They pair with the other enumerators rather

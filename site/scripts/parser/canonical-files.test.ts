@@ -146,13 +146,24 @@ describe('the ignore rules and the predicate agree on what a companion is', () =
       const names = readdirSync(join(REPO_ROOT, dir));
       const published = names.filter((n) => isPublishedMarkdown(n));
       if (published.length === 0) continue;
-      const res = spawnSync('git', ['check-ignore', '--stdin'], {
+      // --no-index is load-bearing, not a flag someone added for tidiness.
+      // In index-aware mode git check-ignore NEVER reports a TRACKED path, and
+      // in a CI checkout every file in these directories is tracked — so
+      // without it this assertion reads an always-empty stdout and passes
+      // whatever .gitignore says. That is worse than the unreachable-guard
+      // defect this diff's test.yml comment describes: this one runs, and
+      // checks nothing.
+      const res = spawnSync('git', ['check-ignore', '--no-index', '--stdin'], {
         cwd: REPO_ROOT,
         input: published.map((n) => `${dir}/${n}`).join('\n'),
         encoding: 'utf-8',
       });
-      // exit 1 = nothing matched, which is what we want. exit 0 = some
-      // published file is gitignored, i.e. private content is being served.
+      // 0 = something matched, 1 = nothing matched. Anything else (128, or a
+      // missing git) means the check did not happen, and an unchecked check
+      // must fail rather than pass quietly: stdout is empty in that case too,
+      // which is indistinguishable from success.
+      expect(res.error, `git check-ignore could not run for ${dir}/`).toBeUndefined();
+      expect([0, 1], `git check-ignore exited ${res.status} for ${dir}/`).toContain(res.status);
       const ignored = (res.stdout ?? '').trim();
       expect(ignored, `these ${dir}/ files are gitignored but treated as published`).toBe('');
     }
