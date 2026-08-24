@@ -11,3 +11,4 @@
 .env
 .env.*
 *.local.md
+*.local.mdx

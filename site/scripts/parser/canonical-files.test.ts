@@ -15,16 +15,23 @@
  */
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { mkdtempSync, mkdirSync, writeFileSync, cpSync, rmSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { isPublishedMarkdown, PRIVATE_COMPANION_SUFFIX } from '../../src/lib/canonical-files.js';
+import {
+  isPublishedMarkdown,
+  isPrivateCompanion,
+  PRIVATE_COMPANION_SUFFIXES,
+} from '../../src/lib/canonical-files.js';
 import { llmsFullSources } from './llms-full.js';
 import { computeCounts } from './counts.js';
 import type { PapersData } from './types.js';
 
 const FIXTURE_DIR = join(fileURLToPath(import.meta.url), '..', 'fixtures');
+/** parser/ → scripts/ → site/ → repo root. */
+const REPO_ROOT = fileURLToPath(new URL('../../../', import.meta.url));
 
 describe('isPublishedMarkdown', () => {
   it('admits ordinary canonical pages', () => {
@@ -46,10 +53,17 @@ describe('isPublishedMarkdown', () => {
   it('rejects companions whatever their case, because .gitignore ignores case', () => {
     // core.ignoreCase=true here, so git treats all of these as ignored — i.e.
     // private. A case-sensitive test would publish them.
-    for (const n of ['Cow.LOCAL.md', 'Cow.Local.MD', 'COW.LOCAL.MD']) {
+    for (const n of ['Cow.LOCAL.md', 'Cow.Local.md', 'COW.LOCAL.md']) {
       expect(isPublishedMarkdown(n)).toBe(false);
     }
-    expect(isPublishedMarkdown('claude.MD')).toBe(false);
+  });
+
+  it('keeps the extension test case-SENSITIVE, matching the other enumerators', () => {
+    // idForSourcePath and the docs loader's canonical scan both test `.md`
+    // case-sensitively. Admitting Foo.MD here would have this function alone
+    // call it a page, which is the disagreement the predicate exists to end.
+    expect(isPublishedMarkdown('Foo.MD')).toBe(false);
+    expect(isPublishedMarkdown('claude.md')).toBe(true);
   });
 
   it('rejects non-Markdown', () => {
@@ -60,8 +74,40 @@ describe('isPublishedMarkdown', () => {
 
   it('does not treat "local.md" as a companion without the dot separator', () => {
     // `mylocal.md` ends with "local.md" but is not `*.local.md`.
-    expect(PRIVATE_COMPANION_SUFFIX).toBe('.local.md');
     expect(isPublishedMarkdown('mylocal.md')).toBe(true);
+    expect(isPrivateCompanion('mylocal.md')).toBe(false);
+  });
+});
+
+describe('isPrivateCompanion', () => {
+  it('covers .mdx as well as .md', () => {
+    // Not optional: every file under site/src/content/docs/ is .mdx, and the
+    // convention sanctions a companion beside them.
+    expect(PRIVATE_COMPANION_SUFFIXES).toEqual(['.local.md', '.local.mdx']);
+    expect(isPrivateCompanion('privacy.local.mdx')).toBe(true);
+    expect(isPrivateCompanion('privacy.local.MDX')).toBe(true);
+  });
+
+  it('leaves ordinary pages alone', () => {
+    for (const n of ['privacy.mdx', 'Cow.md', 'README.md']) {
+      expect(isPrivateCompanion(n)).toBe(false);
+    }
+  });
+});
+
+describe('the ignore rules and the predicate agree on what a companion is', () => {
+  // The predicate decides what gets PUBLISHED; .gitignore decides what is
+  // COMMITTABLE. Both have to know the same suffixes, and nothing but this
+  // test connects them. It exists because they did diverge: .gitignore
+  // covered only *.local.md while every file under site/src/content/docs/ is
+  // .mdx, so the commonest companion was excluded from the build and
+  // committable into a public repo at the same time.
+  it('git ignores a companion at every suffix the predicate recognises', () => {
+    for (const suffix of PRIVATE_COMPANION_SUFFIXES) {
+      const probe = `site/src/content/docs/probe${suffix}`;
+      const res = spawnSync('git', ['check-ignore', '-q', probe], { cwd: REPO_ROOT });
+      expect(res.status, `${probe} is NOT gitignored — a companion here is committable`).toBe(0);
+    }
   });
 });
 
@@ -80,9 +126,9 @@ describe('llmsFullSources — private companions are never inlined', () => {
 
   afterAll(() => rmSync(root, { recursive: true, force: true }));
 
-  it('omits every *.local.md from the source list', () => {
+  it('omits every private companion from the source list', () => {
     const sources = llmsFullSources(root);
-    const leaked = sources.filter((s) => s.endsWith(PRIVATE_COMPANION_SUFFIX));
+    const leaked = sources.filter((s) => isPrivateCompanion(s));
     expect(leaked).toEqual([]);
   });
 

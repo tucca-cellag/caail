@@ -113,8 +113,10 @@ rather than placed.
 Accepted, delivery partial.
 
 - The test is stated here and in `CLAUDE.md`. **Done.**
-- The mechanism: the `*.local.md` ignore rule, and `.worktreeinclude` committed so those
-  companions reach worktrees. **Done, here.**
+- The mechanism: the `*.local.md` and `*.local.mdx` ignore rules, and `.worktreeinclude`
+  committed so those companions reach worktrees. **Done, here.** Both suffixes, because
+  every file under `site/src/content/docs/` is `.mdx`, so covering only `.local.md` would
+  have left the commonest companion committable into a public repo.
 - The first migration under it, splitting `docs/agents/issue-tracker.md`. **Not yet.**
   Follows immediately in its own change, so this decision can be read and argued without
   a 200-line move on top of it.

@@ -90,6 +90,17 @@ export function caailDocsLoader(): Loader {
   // scan below, this branch has no CAAIL_PAGES allow-list, so a private
   // companion placed beside a public page here (ADR-0002 sanctions exactly that
   // placement) would be ingested and built as a route.
+  //
+  // It guards the BUILD only, and that limit is Astro's rather than ours. The
+  // initial load globs with tinyglobby, which honours `!`. The dev watcher
+  // re-tests the same pattern with `picomatch.isMatch(entry, pattern)`, which
+  // treats an array as any-match and ignores the negation outright, so a
+  // companion created while `astro dev` runs is still ingested. Verified
+  // against picomatch 4.0.4 under astro 6.4.8. Nothing shipped is affected —
+  // `astro build` takes the tinyglobby path — and the companion is gitignored
+  // either way, so the residue is a local dev server serving it to the person
+  // who wrote it. Do not "fix" this by dropping the negation because it looks
+  // half-applied: that would lose the build guard too.
   const inRepo = glob({
     base: './src/content/docs',
     pattern: ['**/[^_]*.{md,mdx}', '!**/*.local.*'],

@@ -29,18 +29,23 @@
  */
 
 /** Agent-instruction files, which are never part of the published corpus. */
-const INSTRUCTION_FILES: ReadonlySet<string> = new Set(['claude.md']);
-
-/** The suffix reserved for private companions (ADR-0002), gitignored. */
-export const PRIVATE_COMPANION_SUFFIX = '.local.md';
+const INSTRUCTION_FILES: ReadonlySet<string> = new Set(['CLAUDE.md']);
 
 /**
- * True when `name` is a Markdown file belonging to the published corpus.
+ * The suffixes reserved for private companions (ADR-0002), gitignored.
  *
- * Excludes agent-instruction files and `*.local.md` private companions. Takes
- * a bare file name, not a path.
+ * Both, not just `.md`: every file under `site/src/content/docs/` is `.mdx`,
+ * and that is a directory the convention sanctions a companion in. Keep this
+ * in step with the `*.local.*` entries in `.gitignore` and `.worktreeinclude`
+ * — those decide whether the file is committable, this decides whether it is
+ * published, and the two answering differently is the whole failure mode.
+ */
+export const PRIVATE_COMPANION_SUFFIXES = ['.local.md', '.local.mdx'] as const;
+
+/**
+ * True when `name` is a private companion, whatever its extension or case.
  *
- * Matched case-insensitively, because the `.gitignore` rule it pairs with is:
+ * Case-insensitive on purpose, because the `.gitignore` rule it pairs with is:
  * this repo has `core.ignoreCase=true`, so git treats `Cow.LOCAL.md` as
  * ignored — i.e. private — and a case-sensitive test here would publish it.
  * On a case-sensitive filesystem the divergence runs the other way and the
@@ -48,10 +53,28 @@ export const PRIVATE_COMPANION_SUFFIX = '.local.md';
  * a page missing from the corpus is visible and a private file inlined into
  * llms-full.txt is not.
  */
-export function isPublishedMarkdown(name: string): boolean {
+export function isPrivateCompanion(name: string): boolean {
   const lower = name.toLowerCase();
-  if (!lower.endsWith('.md')) return false;
-  if (INSTRUCTION_FILES.has(lower)) return false;
-  if (lower.endsWith(PRIVATE_COMPANION_SUFFIX)) return false;
+  return PRIVATE_COMPANION_SUFFIXES.some((suffix) => lower.endsWith(suffix));
+}
+
+/**
+ * True when `name` is a Markdown file belonging to the published corpus.
+ *
+ * Excludes agent-instruction files and private companions. Takes a bare file
+ * name, not a path.
+ *
+ * The extension and instruction-file tests are deliberately case-SENSITIVE,
+ * unlike `isPrivateCompanion`. They pair with the other enumerators rather
+ * than with `.gitignore`: `CAAIL_PAGES.idForSourcePath` strips the extension
+ * case-sensitively and the docs loader's canonical scan tests `.md` the same
+ * way, so admitting `Foo.MD` here would have this function alone call it a
+ * page — inlining it into llms-full.txt while the site renders no route for
+ * it and `caail-pages.test.ts` reports it as map drift.
+ */
+export function isPublishedMarkdown(name: string): boolean {
+  if (!name.endsWith('.md')) return false;
+  if (INSTRUCTION_FILES.has(name)) return false;
+  if (isPrivateCompanion(name)) return false;
   return true;
 }

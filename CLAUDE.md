@@ -359,6 +359,11 @@ skills only work inside a private group library and are published anyway, becaus
 classification is answered by how classifications are made. A file can be unusable by an
 outside reader and still belong in public.
 
+A working file that fails the test lives beside its public sibling with a **`.local.md` or
+`.local.mdx`** suffix, gitignored, reaching worktrees through `.worktreeinclude` — which only
+covers the worktrees Claude Code creates, so a hand-made `git worktree add` gets no companion
+and no signal that one is missing.
+
 **"Is it a secret or a weakness" is a different rule** (`.claude/rules/publishing.md`), it
 governs disclosure harm, and it is not a scope rule. Used as one it passes nearly everything,
 which is how ~165 lines of single-user tracker mechanics came to be public and how a section
