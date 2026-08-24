@@ -55,6 +55,7 @@ export function llmsFullSources(repoRoot: string = REPO_ROOT): string[] {
     'Talks.md',
     'CONTRIBUTING.md',
     'Community.md',
+    'site/src/content/docs/curation.mdx',
   ];
 }
 

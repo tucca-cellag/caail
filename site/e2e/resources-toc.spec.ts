@@ -198,6 +198,116 @@ test('reference-works has no serious/critical a11y violations', async ({ page })
   expect(serious, JSON.stringify(serious, null, 2)).toEqual([]);
 });
 
+// ---------------------------------------------------------------------------
+// Curation.md → /curation (what a matrix placement rests on)
+// ---------------------------------------------------------------------------
+
+test('curation renders its evidence tables and dates its coverage figures', async ({ page }) => {
+  await page.goto('./curation/');
+  // The provenance table is what lets a curator weigh one placement against
+  // another, and it is a GFM table, so a silent degradation to pipe text (the
+  // failure mdx-gfm.spec.ts exists for) would remove the page's whole point.
+  expect(await page.locator('main table').count()).toBeGreaterThanOrEqual(3);
+  await expect(page.locator('main table').filter({ hasText: 'methods_source' })).toHaveCount(1);
+  // The coverage figures are a dated snapshot, not a live count: the corpus is
+  // not committed, so nothing can derive them at build time. The date therefore
+  // has to travel with the figures, and this asserts the ISO form rather than
+  // just its presence — a refreshed figure left beside a stale or absent date is
+  // the failure, and "Measured recently" would pass a presence check.
+  await expect(page.locator('main')).toContainText(/Measured \d{4}-\d{2}-\d{2}\./);
+  // Cross-links resolve: Taxonomy is a rendered route, Papers.md is not.
+  await expect(page.locator('main a[href="/caail/taxonomy/"]').first()).toBeVisible();
+  await expect(page.locator('main a[href$=".md"]:not([href*="github.com"])')).toHaveCount(0);
+});
+
+test('curation discloses that entries are AI-drafted, above the fold', async ({ page }) => {
+  await page.goto('./curation/');
+  // The whole page is an argument about controls on an AI-drafted catalogue, so
+  // the disclosure has to arrive before the controls do, not be inferable from
+  // them. Pinned because it is a sentence a later tightening pass would treat as
+  // redundant with section 2 and cut, leaving the page reading as though a human
+  // classified each paper.
+  await expect(page.locator('main')).toContainText('Entries are drafted by AI agents');
+  // …and it sits above the first section, not buried inside one. Compared against
+  // a heading addressed by id rather than `h2:first`, since Starlight injects its
+  // own "On this page" h2 into the same subtree.
+  const disclosure = await page.getByText('Entries are drafted by AI agents').boundingBox();
+  const firstSection = await page.locator('main h2#how-an-entry-is-produced').boundingBox();
+  expect(disclosure!.y).toBeLessThan(firstSection!.y);
+});
+
+test('curation separates the intended process from the running one', async ({ page }) => {
+  await page.goto('./curation/');
+  const main = page.locator('main');
+  // The page describes a pipeline that is partly built, so every stage carries a
+  // status and the roadmap says what is missing. The failure this guards is a
+  // later edit that reads the roadmap as a description of today and drops the
+  // hedges, which would turn a plan into a claim.
+  const stages = page.locator('main table').first();
+  await expect(stages).toContainText('Status');
+  await expect(stages).toContainText('being broadened');
+  await expect(main.locator('h2#_6-roadmap, h2[id$="roadmap"]')).toHaveCount(1);
+  // Both halves of the review claim, which are easy to lose in opposite
+  // directions. Dropping the first understates CAAIL: every entry IS reviewed by
+  // a person before it lands, so the pipeline is human-in-the-loop today.
+  // Dropping the second overstates it: that review is two maintainers covering
+  // eight themes, not a specialist per area, and the page must not read as
+  // though the lead programme were already running.
+  await expect(main).toContainText('reviewed by a person before it enters the catalogue');
+  await expect(main).toContainText('cannot bring the depth a specialist in each would');
+  await expect(main).toContainText('Validate the placements');
+});
+
+test('curation asks for topic leads and for feedback on the method itself', async ({ page }) => {
+  await page.goto('./curation/');
+  const main = page.locator('main');
+  // The page's two recruitment asks. They are the reason a reader who is
+  // qualified to disagree with the methodology has somewhere to go, and they are
+  // the first thing a tightening pass cuts, because neither is load-bearing for
+  // describing the process.
+  await expect(main).toContainText('Becoming a topic lead');
+  await expect(main).toContainText('Feedback on this methodology');
+  // The lead ask is reachable from the section that explains the role, not only
+  // from the bottom of the page.
+  const contact = main.locator('h2[id$="get-in-touch"]');
+  await expect(contact).toHaveCount(1);
+  const id = await contact.getAttribute('id');
+  expect(await main.locator(`a[href="#${id}"]`).count()).toBeGreaterThanOrEqual(1);
+});
+
+test('curation quotes no accuracy figure, only the process', async ({ page }) => {
+  await page.goto('./curation/');
+  const text = (await page.locator('main').innerText()).replace(/\s+/g, ' ');
+  // Internal sampling of classification accuracy exists, and quoting a figure
+  // from it is a standing decision against: the samples are small, so a number
+  // read as a general rate would both overclaim and alarm. "In progress" carries
+  // the same information honestly. This is a SHAPE check rather than a list of
+  // forbidden values, because a test naming them would publish them itself.
+  //
+  // Sentence-level, not proximity. The first version of this used a 40-character
+  // window between the quantity and the error word, passed on the live page, and
+  // did NOT match the sentence it was written to catch — the clause between the
+  // two was longer than the window. It looked like a guard and guarded nothing.
+  // Verified both ways before being trusted: it fires on that sentence, and the
+  // whole current page produces no false positive.
+  const QUANTITY = /\b\d+(\.\d+)?\s*(%|percent)\b|\b\d+\s+of\s+\d+\b|\bof\s+\d+\s+\w+.{0,60}?\b\d+\b/i;
+  const ERRORWORD = /\b(wrong|incorrect|erroneous|inaccurate|misclassif\w*|misplaced|mis-assigned|error rate)\b/i;
+  const offenders = text
+    .split(/(?<=[.!?])\s+/)
+    .filter((s) => QUANTITY.test(s) && ERRORWORD.test(s));
+  expect(offenders, 'an accuracy figure reached the page').toEqual([]);
+  // The replacement has to stay, or removing the figure silently removes the
+  // disclosure too and the page reads as though accuracy were unexamined.
+  await expect(page.locator('main')).toContainText('CAAIL does not publish one');
+});
+
+test('curation has no serious/critical a11y violations', async ({ page }) => {
+  await page.goto('./curation/');
+  const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
+  const serious = results.violations.filter((v) => ['serious', 'critical'].includes(v.impact ?? ''));
+  expect(serious, JSON.stringify(serious, null, 2)).toEqual([]);
+});
+
 for (const kind of ['software', 'databases'] as const) {
   test(`${kind} has a right-rail TOC listing its application areas (anchors resolve)`, async ({ page }) => {
     await page.goto(`./${kind}/`);
