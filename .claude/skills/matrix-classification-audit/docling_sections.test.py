@@ -69,7 +69,7 @@ CASES = [
     # over-collected, running past Results to the end of the document.
     ("43",  "2. MATERIALS AND METHODS", "3. RESULTS",   "explicit"),
 
-    # Back-matter methods. `Online Methods` sits on page 22 of 34, AFTER
+    # Back-matter methods. `Online Methods` sits on page 22 of 43, AFTER
     # Discussion. The old extractor's positional fallback starts 10% into the
     # document and captures none of it.
     ("51",  "Online Methods",           "References",   "explicit"),

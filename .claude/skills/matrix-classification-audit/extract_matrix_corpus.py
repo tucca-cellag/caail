@@ -264,7 +264,7 @@ def extract_methods(fulltext):
       cut lands next to whitespace ends up at 11,990-11,999 and an `== 12000`
       test misses it.
     * **Start detection fails on back-matter methods.** A paper that puts
-      `Online Methods` after Discussion (ref 51 is on page 22 of 34) gets a
+      `Online Methods` after Discussion (ref 51 is on page 22 of 43) gets a
       window from 10% in that contains none of the methods at all.
     """
     start, _ = methods_start(fulltext)

@@ -20,7 +20,7 @@ strings, which affords rules that are unaffordable over 300,000 characters.
 The three failure modes this handles, each observed in the sample
 -----------------------------------------------------------------
 * **Back-matter methods.** Ref 51 (Medea) puts `Online Methods` on page 22 of
-  34, after Discussion. Any rule that assumes methods precedes results, or that
+  43, after Discussion. Any rule that assumes methods precedes results, or that
   slices from a fixed fraction of the document, captures none of it.
 * **Non-standard section names.** Ref 220 calls it `2 Implementation`, ref 333
   calls it `Experiment`, ref 34 calls it `II. GENETIC ALGORITHM`.

@@ -207,7 +207,7 @@ to be written down:
   next to whitespace yields 11,99x and an `== METHODS_WINDOW` test misses it. 54 refs sit
   in that gap.
 * **Truncation is not the only defect, and not the worst one.** A paper that puts
-  `Online Methods` in the back matter (ref 51: page 22 of 34) gets a window taken from
+  `Online Methods` in the back matter (ref 51: page 22 of 43) gets a window taken from
   10% into the document that contains *none* of the methods. Start detection fails there,
   not just the end boundary. Non-standard names (`Implementation`, `Experiment`) and roman
   numerals (`II. GENETIC ALGORITHM`) are the other two.
