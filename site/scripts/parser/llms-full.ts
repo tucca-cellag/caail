@@ -16,15 +16,23 @@ import { readFileSync, writeFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { isPublishedMarkdown } from './canonical-files.js';
+
 /** Repo root: parser → scripts → site → repo (three levels up). */
 const REPO_ROOT: string = fileURLToPath(new URL('../../../', import.meta.url));
 /** site/public/ (two levels up from parser/, then into public/). */
 const PUBLIC_DIR: string = fileURLToPath(new URL('../../public/', import.meta.url));
 
-/** Sorted `.md` files in a canonical dir, README first, CLAUDE.md excluded. */
+/**
+ * Sorted published `.md` files in a canonical dir, README first.
+ *
+ * `isPublishedMarkdown` excludes CLAUDE.md and `*.local.md` private
+ * companions; each match is inlined verbatim below, so a companion admitted
+ * here would be concatenated into the served llms-full.txt.
+ */
 function dirMarkdown(repoRoot: string, dir: string): string[] {
   return readdirSync(join(repoRoot, dir))
-    .filter((f) => f.endsWith('.md') && f !== 'CLAUDE.md')
+    .filter(isPublishedMarkdown)
     .sort((a, b) => (a === 'README.md' ? -1 : b === 'README.md' ? 1 : a.localeCompare(b)))
     .map((f) => `${dir}/${f}`);
 }
