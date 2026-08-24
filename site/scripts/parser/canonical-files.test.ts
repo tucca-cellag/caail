@@ -43,6 +43,15 @@ describe('isPublishedMarkdown', () => {
     expect(isPublishedMarkdown('CLAUDE.md')).toBe(false);
   });
 
+  it('rejects companions whatever their case, because .gitignore ignores case', () => {
+    // core.ignoreCase=true here, so git treats all of these as ignored — i.e.
+    // private. A case-sensitive test would publish them.
+    for (const n of ['Cow.LOCAL.md', 'Cow.Local.MD', 'COW.LOCAL.MD']) {
+      expect(isPublishedMarkdown(n)).toBe(false);
+    }
+    expect(isPublishedMarkdown('claude.MD')).toBe(false);
+  });
+
   it('rejects non-Markdown', () => {
     expect(isPublishedMarkdown('Cow.txt')).toBe(false);
     // A directory named like a companion is still not a .md file.

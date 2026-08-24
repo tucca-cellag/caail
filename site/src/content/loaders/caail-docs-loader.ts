@@ -86,9 +86,13 @@ const CANONICAL_SOURCES = {
 
 export function caailDocsLoader(): Loader {
   // Astro's own loader for the in-repo Starlight docs (mirrors docsLoader()).
+  // The `!**/*.local.*` negation is not cosmetic: unlike the canonical-directory
+  // scan below, this branch has no CAAIL_PAGES allow-list, so a private
+  // companion placed beside a public page here (ADR-0002 sanctions exactly that
+  // placement) would be ingested and built as a route.
   const inRepo = glob({
     base: './src/content/docs',
-    pattern: '**/[^_]*.{md,mdx}',
+    pattern: ['**/[^_]*.{md,mdx}', '!**/*.local.*'],
   });
 
   return {

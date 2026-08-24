@@ -19,15 +19,17 @@
  *   needs it, or a companion is reported as an unregistered page — a failure
  *   that reads as map drift and sends the next reader after a bug that is not
  *   there.
- * - `src/content/loaders/caail-docs-loader.ts` does NOT, and must not be
- *   "fixed" to use it. It filters candidates through the `CAAIL_PAGES`
- *   allow-list, so an unregistered id is dropped already; the allow-list is
- *   the stronger guarantee and this predicate would hide which one is load
- *   bearing.
+ * - `src/content/loaders/caail-docs-loader.ts` has two branches and they are
+ *   covered differently. Its canonical-directory scan does NOT need this
+ *   predicate and must not be "fixed" to use it: candidates go through the
+ *   `CAAIL_PAGES` allow-list, which drops an unregistered id already and is
+ *   the stronger guarantee, so adding the predicate would hide which one is
+ *   load bearing. Its `glob()` over `src/content/docs` has no allow-list at
+ *   all, so it is excluded in the glob pattern instead.
  */
 
 /** Agent-instruction files, which are never part of the published corpus. */
-const INSTRUCTION_FILES: ReadonlySet<string> = new Set(['CLAUDE.md']);
+const INSTRUCTION_FILES: ReadonlySet<string> = new Set(['claude.md']);
 
 /** The suffix reserved for private companions (ADR-0002), gitignored. */
 export const PRIVATE_COMPANION_SUFFIX = '.local.md';
@@ -37,10 +39,19 @@ export const PRIVATE_COMPANION_SUFFIX = '.local.md';
  *
  * Excludes agent-instruction files and `*.local.md` private companions. Takes
  * a bare file name, not a path.
+ *
+ * Matched case-insensitively, because the `.gitignore` rule it pairs with is:
+ * this repo has `core.ignoreCase=true`, so git treats `Cow.LOCAL.md` as
+ * ignored — i.e. private — and a case-sensitive test here would publish it.
+ * On a case-sensitive filesystem the divergence runs the other way and the
+ * file is committable; excluding it is still the right side to err on, since
+ * a page missing from the corpus is visible and a private file inlined into
+ * llms-full.txt is not.
  */
 export function isPublishedMarkdown(name: string): boolean {
-  if (!name.endsWith('.md')) return false;
-  if (INSTRUCTION_FILES.has(name)) return false;
-  if (name.endsWith(PRIVATE_COMPANION_SUFFIX)) return false;
+  const lower = name.toLowerCase();
+  if (!lower.endsWith('.md')) return false;
+  if (INSTRUCTION_FILES.has(lower)) return false;
+  if (lower.endsWith(PRIVATE_COMPANION_SUFFIX)) return false;
   return true;
 }

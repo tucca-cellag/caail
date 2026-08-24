@@ -88,6 +88,16 @@ verified rather than assumed: every worktree created after that file existed rec
 copy, including one created six minutes later, and every worktree predating it did not.
 `.worktreeinclude` therefore becomes load-bearing, and is committed for the same reason.
 
+**What that verification does not cover, and it is the likely way this fails.**
+`.worktreeinclude` is honoured by the worktrees Claude Code creates with its own git
+logic. A worktree made by hand with `git worktree add` copies no ignored file, so the
+companion is simply absent, and so is any signal that it should be there: the public file
+reads as complete. The failure that invites is an agent re-deriving the withheld mechanics
+and writing them back into the public file, which is the drift this ADR exists to stop. A
+`WorktreeCreate` hook replacing the default logic has the same effect. Until the absent
+companion announces itself, treat "the file is not here" as unresolved rather than as
+"there is nothing to know".
+
 **A gap appears the moment the test is applied.** The Docling ingestion layer is curation
 methodology, so it is published by this rule, and it is currently documented nowhere a
 reader can reach: not in `CONTRIBUTING.md`, not in `README.md`, not on the site. It exists
