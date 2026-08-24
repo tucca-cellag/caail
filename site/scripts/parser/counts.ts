@@ -8,11 +8,11 @@
  *   - species       published *.md files in Datasets/ (also excluding README.md)
  *   - datasets      every catalogued dataset across Datasets/ (via datasets.ts)
  *   - researchAreas published *.md files in ResearchAreas/
- *
- * "Published" is `canonical-files.ts`'s predicate: not CLAUDE.md, not a
- * `*.local.md` private companion. Named rather than restated, so this comment
- * cannot drift from the rule.
  *   - talks         video/playlist items across all sections of Talks.md
+ *
+ * "Published" is `src/lib/canonical-files.ts`'s predicate: not CLAUDE.md, not
+ * a `*.local.md` private companion. Named rather than restated, so this
+ * comment cannot drift from the rule.
  *
  * The result is validated with CountsSchema.parse() before returning so a
  * shape regression throws here rather than downstream at build time.
@@ -23,7 +23,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { Root, Heading } from 'mdast';
 
-import { isPublishedMarkdown } from './canonical-files.js';
+import { isPublishedMarkdown } from '../../src/lib/canonical-files.js';
 import { parseMarkdown } from './markdown.js';
 import { buildTalksModel, talkItemCount } from './talks.js';
 import { computeDatasetBreakdown } from './datasets.js';

@@ -16,7 +16,7 @@ import { readFileSync, writeFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { isPublishedMarkdown } from './canonical-files.js';
+import { isPublishedMarkdown } from '../../src/lib/canonical-files.js';
 
 /** Repo root: parser → scripts → site → repo (three levels up). */
 const REPO_ROOT: string = fileURLToPath(new URL('../../../', import.meta.url));

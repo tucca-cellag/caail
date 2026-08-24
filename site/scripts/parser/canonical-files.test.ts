@@ -19,7 +19,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { isPublishedMarkdown, PRIVATE_COMPANION_SUFFIX } from './canonical-files.js';
+import { isPublishedMarkdown, PRIVATE_COMPANION_SUFFIX } from '../../src/lib/canonical-files.js';
 import { llmsFullSources } from './llms-full.js';
 import { computeCounts } from './counts.js';
 import type { PapersData } from './types.js';

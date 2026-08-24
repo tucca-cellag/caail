@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { CAAIL_PAGES } from './caail-pages.ts';
+import { isPublishedMarkdown } from '../lib/canonical-files.ts';
 
 const REPO_ROOT = fileURLToPath(new URL('../../../', import.meta.url));
 
@@ -59,9 +60,12 @@ describe('CAAIL_PAGES', () => {
     expect(typeof cow?.order).toBe('number');
   });
   it('has an entry for every rendered ResearchAreas, Methods and Datasets page (no missing map entries)', () => {
-    const ra = readdirSync(`${REPO_ROOT}ResearchAreas`).filter((f) => f.endsWith('.md') && f !== 'CLAUDE.md');
-    const me = readdirSync(`${REPO_ROOT}Methods`).filter((f) => f.endsWith('.md') && f !== 'CLAUDE.md');
-    const ds = readdirSync(`${REPO_ROOT}Datasets`).filter((f) => f.endsWith('.md') && !['CLAUDE.md', 'README.md'].includes(f));
+    // isPublishedMarkdown, not a bare .md test: a `*.local.md` private
+    // companion (ADR-0002) backs no route, so counting it here would report it
+    // as an unregistered page and read as map drift.
+    const ra = readdirSync(`${REPO_ROOT}ResearchAreas`).filter(isPublishedMarkdown);
+    const me = readdirSync(`${REPO_ROOT}Methods`).filter(isPublishedMarkdown);
+    const ds = readdirSync(`${REPO_ROOT}Datasets`).filter((f) => isPublishedMarkdown(f) && f !== 'README.md');
     const missing = CAAIL_PAGES.missingEntries({ ResearchAreas: ra, Methods: me, Datasets: ds });
     expect(missing).toEqual([]);
   });
@@ -82,7 +86,7 @@ describe('CAAIL_PAGES', () => {
     // backs the real `datasets/readme` route; excluding it would report a false orphan.
     const idsFrom = (dir: string) =>
       readdirSync(`${REPO_ROOT}${dir}`)
-        .filter((f) => f.endsWith('.md') && f !== 'CLAUDE.md')
+        .filter(isPublishedMarkdown)
         .map((f) => CAAIL_PAGES.idForSourcePath(`${dir}/${f}`));
     const backed = new Set([...idsFrom('ResearchAreas'), ...idsFrom('Methods'), ...idsFrom('Datasets')]);
     const orphans = CAAIL_PAGES.all()
