@@ -14,7 +14,7 @@
  * exercising anything.
  */
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { mkdtempSync, mkdirSync, writeFileSync, cpSync, rmSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, cpSync, rmSync, readFileSync, readdirSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -27,6 +27,7 @@ import {
 } from '../../src/lib/canonical-files.js';
 import { llmsFullSources } from './llms-full.js';
 import { computeCounts } from './counts.js';
+import { DOCS_GLOB_PATTERN } from '../../src/content/loaders/caail-docs-loader.js';
 import type { PapersData } from './types.js';
 
 const FIXTURE_DIR = join(fileURLToPath(import.meta.url), '..', 'fixtures');
@@ -66,6 +67,16 @@ describe('isPublishedMarkdown', () => {
     expect(isPublishedMarkdown('claude.md')).toBe(true);
   });
 
+  it('takes a path as well as a bare name, without failing open', () => {
+    // The instruction-file check is a whole-string match, so without a
+    // basename step isPublishedMarkdown('Datasets/CLAUDE.md') returned true.
+    // The module doc invites new enumerators to adopt this predicate and the
+    // nearest candidate already builds `${dir}/${name}` strings.
+    expect(isPublishedMarkdown('Datasets/CLAUDE.md')).toBe(false);
+    expect(isPublishedMarkdown('ResearchAreas/Bioprocess.local.md')).toBe(false);
+    expect(isPublishedMarkdown('Datasets/Cow.md')).toBe(true);
+  });
+
   it('rejects non-Markdown', () => {
     expect(isPublishedMarkdown('Cow.txt')).toBe(false);
     // A directory named like a companion is still not a .md file.
@@ -97,17 +108,69 @@ describe('isPrivateCompanion', () => {
 
 describe('the ignore rules and the predicate agree on what a companion is', () => {
   // The predicate decides what gets PUBLISHED; .gitignore decides what is
-  // COMMITTABLE. Both have to know the same suffixes, and nothing but this
-  // test connects them. It exists because they did diverge: .gitignore
-  // covered only *.local.md while every file under site/src/content/docs/ is
-  // .mdx, so the commonest companion was excluded from the build and
-  // committable into a public repo at the same time.
+  // COMMITTABLE; .worktreeinclude decides what REACHES A WORKTREE. Three
+  // copies of one suffix list, and nothing but this block connects them. It
+  // exists because they did diverge: .gitignore covered only *.local.md while
+  // every file under site/src/content/docs/ is .mdx, so the commonest
+  // companion was excluded from the build and committable into a public repo
+  // at the same time.
   it('git ignores a companion at every suffix the predicate recognises', () => {
     for (const suffix of PRIVATE_COMPANION_SUFFIXES) {
       const probe = `site/src/content/docs/probe${suffix}`;
       const res = spawnSync('git', ['check-ignore', '-q', probe], { cwd: REPO_ROOT });
       expect(res.status, `${probe} is NOT gitignored — a companion here is committable`).toBe(0);
     }
+  });
+
+  it('.worktreeinclude carries every suffix, or companions never reach a worktree', () => {
+    // The third copy. Without this a suffix could be added to the predicate
+    // and .gitignore, and companions at it would silently stop being copied
+    // into new worktrees — first noticed by a curator losing a file.
+    const src = readFileSync(join(REPO_ROOT, '.worktreeinclude'), 'utf-8');
+    const lines = src
+      .split('\n')
+      .map((l) => l.trim())
+      .filter((l) => l && !l.startsWith('#'));
+    for (const suffix of PRIVATE_COMPANION_SUFFIXES) {
+      expect(lines, `.worktreeinclude has no rule covering ${suffix}`).toContain(`*${suffix}`);
+    }
+  });
+
+  it('nothing gitignored in a canonical directory is treated as published', () => {
+    // The OTHER direction, and the one that actually publishes. The check
+    // above proves predicate ⊆ gitignore; this proves gitignore ⊆ predicate.
+    // Without it someone adds `*.private.md` (or `notes-*.md`) to .gitignore,
+    // drops Datasets/notes-internal.md beside Cow.md, and dirMarkdown inlines
+    // it verbatim into the served llms-full.txt while every test stays green.
+    for (const dir of ['Datasets', 'ResearchAreas', 'Methods', 'Primers']) {
+      const names = readdirSync(join(REPO_ROOT, dir));
+      const published = names.filter((n) => isPublishedMarkdown(n));
+      if (published.length === 0) continue;
+      const res = spawnSync('git', ['check-ignore', '--stdin'], {
+        cwd: REPO_ROOT,
+        input: published.map((n) => `${dir}/${n}`).join('\n'),
+        encoding: 'utf-8',
+      });
+      // exit 1 = nothing matched, which is what we want. exit 0 = some
+      // published file is gitignored, i.e. private content is being served.
+      const ignored = (res.stdout ?? '').trim();
+      expect(ignored, `these ${dir}/ files are gitignored but treated as published`).toBe('');
+    }
+  });
+});
+
+describe('the docs glob keeps companions out of the build', () => {
+  it('excludes every companion suffix, derived rather than hardcoded', () => {
+    // Guards the "tidy the array back to a string" edit, which reads as
+    // removing redundancy and actually deploys private companions.
+    expect(Array.isArray(DOCS_GLOB_PATTERN)).toBe(true);
+    for (const suffix of PRIVATE_COMPANION_SUFFIXES) {
+      expect(DOCS_GLOB_PATTERN, `docs glob does not exclude *${suffix}`).toContain(`!**/*${suffix}`);
+    }
+  });
+
+  it('still matches the ordinary pages it exists to load', () => {
+    expect(DOCS_GLOB_PATTERN[0]).toBe('**/[^_]*.{md,mdx}');
   });
 });
 

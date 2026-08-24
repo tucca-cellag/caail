@@ -59,6 +59,19 @@ export function isPrivateCompanion(name: string): boolean {
 }
 
 /**
+ * Glob exclusions for the companion suffixes, for a loader that filters by
+ * pattern rather than by predicate.
+ *
+ * Derived from `PRIVATE_COMPANION_SUFFIXES` rather than written out, so a
+ * pattern cannot be "tidied" back to a plain string without the test that
+ * compares the two going red. That tidy is the likely regression: the array
+ * form reads as redundant to anyone who does not know why it is there.
+ */
+export function privateCompanionGlobExclusions(): string[] {
+  return PRIVATE_COMPANION_SUFFIXES.map((suffix) => `!**/*${suffix}`);
+}
+
+/**
  * True when `name` is a Markdown file belonging to the published corpus.
  *
  * Excludes agent-instruction files and private companions. Takes a bare file
@@ -72,7 +85,16 @@ export function isPrivateCompanion(name: string): boolean {
  * page — inlining it into llms-full.txt while the site renders no route for
  * it and `caail-pages.test.ts` reports it as map drift.
  */
-export function isPublishedMarkdown(name: string): boolean {
+export function isPublishedMarkdown(nameOrPath: string): boolean {
+  // Take the basename first. Without it the instruction-file check, which is a
+  // whole-string match, fails OPEN on a path: isPublishedMarkdown(
+  // 'Datasets/CLAUDE.md') would return true. That matters because this
+  // docstring invites new enumerators to adopt the predicate, and the nearest
+  // candidate — caail-docs-loader.ts's canonical scan — already builds
+  // `${dir}/${name}` strings, so wiring it in as-was would have admitted every
+  // directory's CLAUDE.md. The companion check would have survived (it is a
+  // suffix match); the instruction-file check would not.
+  const name = nameOrPath.split('/').pop() ?? nameOrPath;
   if (!name.endsWith('.md')) return false;
   if (INSTRUCTION_FILES.has(name)) return false;
   if (isPrivateCompanion(name)) return false;
