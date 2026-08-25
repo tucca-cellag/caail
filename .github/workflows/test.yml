@@ -40,7 +40,7 @@ on:
       # no vitest) and merges green with the two copies contradicting each other.
       - .claude/hooks/**
       - .claude/settings.json
-      - .claude/skills/matrix-classification-audit/**
+      - .claude/skills/matrix-classification-audit/README.md
       - .github/workflows/test.yml
       # The two ignore files, because canonical-files.test.ts now asserts they
       # agree with the code about what a private companion is (ADR-0002).
@@ -133,7 +133,7 @@ on:
       # no vitest) and merges green with the two copies contradicting each other.
       - .claude/hooks/**
       - .claude/settings.json
-      - .claude/skills/matrix-classification-audit/**
+      - .claude/skills/matrix-classification-audit/README.md
       - .github/workflows/test.yml
       # The two ignore files, because canonical-files.test.ts now asserts they
       # agree with the code about what a private companion is (ADR-0002).

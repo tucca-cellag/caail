@@ -72,6 +72,13 @@ CASES = [
     # Back-matter methods. `Online Methods` sits on page 22 of 43, AFTER
     # Discussion. The old extractor's positional fallback starts 10% into the
     # document and captures none of it.
+    #
+    # The 43 is NOT verifiable from the fixture beside this file, and reading it
+    # off there is how the figure was wrong (34) in five places for weeks.
+    # headings.json holds HEADINGS: ref 51's last one, `References`, is on page
+    # 34, and the document runs to 43. The total lives only in the gitignored
+    # converted corpus, so measure it with docling_ingest.py rather than
+    # inferring it. curation-page.test.ts checks the five copies agree.
     ("51",  "Online Methods",           "References",   "explicit"),
 
     # Non-standard section name: the methods section is called "Implementation".

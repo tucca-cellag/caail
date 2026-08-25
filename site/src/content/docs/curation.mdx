@@ -101,7 +101,7 @@ These checks confirm the catalogue is internally consistent. Whether a placement
 
 The evidence figures below cannot be checked that way, because the converted corpus is local rather than committed. They are a snapshot. **Measured 2026-08-24.**
 
-Of those 229 matrix references, as at that date:
+Of the 229 matrix references held at that date:
 
 | Evidence available | Count |
 | --- | --- |
@@ -116,7 +116,7 @@ Median located section 13,206 characters; maximum 114,066.
 These figures cover the evidence available to a reviewer. They say nothing about the review itself. Entries are reviewed before they land, as described in section 3; placements made before this pipeline existed are the backlog now being re-checked, in the [roadmap](#6-roadmap).
 
 :::note[These figures are a snapshot]
-The converted corpus is not committed to the repository, so no build step can recompute them. A maintainer prints the current ones by running `measure_extraction_quality.py` from the extraction toolkit. If the numbers matter to a decision you are making, ask us for a fresh run.
+The converted corpus is not committed to the repository, so no build step can recompute them. A maintainer prints the current ones by running `audit_sections.py` from the extraction toolkit, over their local converted corpus. If the numbers matter to a decision you are making, ask us for a fresh run.
 :::
 
 ## 6. Roadmap

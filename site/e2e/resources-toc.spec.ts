@@ -246,7 +246,7 @@ test('curation separates the intended process from the running one', async ({ pa
   const stages = page.locator('main table').first();
   await expect(stages).toContainText('Status');
   await expect(stages).toContainText('being broadened');
-  await expect(main.locator('h2#_6-roadmap, h2[id$="roadmap"]')).toHaveCount(1);
+  await expect(main.locator('h2[id$="roadmap"]')).toHaveCount(1);
   // Both halves of the review claim, which are easy to lose in opposite
   // directions. Dropping the first understates CAAIL: every entry IS reviewed by
   // a person before it lands, so the pipeline is human-in-the-loop today.
@@ -300,7 +300,15 @@ test('curation quotes no accuracy figure, only the process', async ({ page }) =>
   // two was longer than the window. It looked like a guard and guarded nothing.
   // Verified both ways before being trusted: it fires on that sentence, and the
   // whole current page produces no false positive.
-  const QUANTITY = /\b\d+(\.\d+)?\s*(%|percent)\b|\b\d+\s+of\s+\d+\b|\bof\s+\d+\s+\w+.{0,60}?\b\d+\b/i;
+  // Two blind spots fixed after this guard was written, both of which let through the
+  // phrasing a maintainer would ACTUALLY reach for, which is the only phrasing that matters:
+  //   - `of\s+\d+` could not see "6 of the 40", and "N of the M" is this page's own house
+  //     idiom — it writes "7 of the 8" and "1 of the 8" itself.
+  //   - the trailing `\b` after the percent group never matched "15% were", because `%` and
+  //     a space are both non-word characters, so there is no boundary between them. Anchoring
+  //     the `\b` to `percent` (a word) instead of to the alternation fixes it.
+  // Verified against both spellings of each shape before being trusted.
+  const QUANTITY = /\b\d+(\.\d+)?\s*(%|percent\b)|\b\d+\s+of\s+(the\s+)?\d+\b|\bof\s+(the\s+)?\d+\s+\w+.{0,60}?\b\d+\b/i;
   const ERRORWORD = /\b(wrong|incorrect|erroneous|inaccurate|misclassif\w*|misplaced|mis-assigned|error rate)\b/i;
   const offenders = text
     .split(/(?<=[.!?])\s+|\n+/)

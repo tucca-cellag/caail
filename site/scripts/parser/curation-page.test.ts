@@ -37,8 +37,8 @@ import { fileURLToPath } from 'node:url';
 import { describe, it, expect } from 'vitest';
 
 import { curatorCoverage } from '../../src/lib/topic-curators.js';
-import { SCOPE_NOTE } from './agent-api.js';
-import { stripFrontmatter } from './llms-full.js';
+import { MATRIX_SECTION, SCOPE_NOTE } from './agent-api.js';
+import { buildLlmsFullText, splitFrontmatter } from './llms-full.js';
 
 const REPO_ROOT = fileURLToPath(new URL('../../../', import.meta.url));
 const PAGE_REL = 'site/src/content/docs/curation.mdx';
@@ -83,7 +83,7 @@ function num(source: string, re: RegExp, what: string): number {
 describe('curation page: numbers that another source already knows', () => {
   it('corpus totals match papers.json', () => {
     const all = papers.references.length;
-    const matrix = papers.references.filter((r) => r.section === 'References').length;
+    const matrix = papers.references.filter((r) => r.section === MATRIX_SECTION).length;
 
     expect(num(page, /holds ([\d,]+) references/, 'total references')).toBe(all);
     expect(num(page, /([\d,]+) are primary research/, 'matrix references')).toBe(matrix);
@@ -93,9 +93,12 @@ describe('curation page: numbers that another source already knows', () => {
   it('topic-lead coverage matches curatorCoverage()', () => {
     const { held, open, total } = curatorCoverage();
 
-    // Stage table + section 3 + roadmap all state the theme total.
+    // Stage table + section 3 + roadmap: THREE places state the theme total. Asserted as an
+    // exact count, not `>= 2`, which is what this was: at `>= 2` the roadmap's copy could be
+    // deleted or reworded and the loop below would still pass over the survivors, so the page
+    // would quietly stop committing to a number in one of the three places it is claimed.
     const totals = [...page.matchAll(/all (\d+) subject themes/g)].map((m) => Number(m[1]));
-    expect(totals.length, 'nobody states the theme total any more').toBeGreaterThanOrEqual(2);
+    expect(totals, 'a copy of the theme total was removed or reworded').toHaveLength(3);
     for (const t of totals) expect(t).toBe(total);
 
     expect(num(page, /Two people covering (\d+) themes/, 'section 3 lede')).toBe(total);
@@ -130,8 +133,17 @@ describe('curation page: the local-corpus snapshot', () => {
     // NOT derived. A derived denominator over typed rows is the same defect inverted: add one
     // paper and the page reads "Of those 230" above rows summing to 229, with 226 becoming a
     // percentage of the wrong base.
-    const denominator = num(page, /Of those ([\d,]+) matrix references, as at that date/, 'denominator');
-    expect(explicit() + positional()).toBe(bounded());
+    const denominator = num(page, /Of the ([\d,]+) matrix references held at that date/, 'denominator');
+    // NOTE THE TWO POPULATIONS, because a failure here reads like a transcription slip and may
+    // not be one. `explicit` and `positional` are strategy counts over every located section;
+    // `bounded` is the count at or above 400 characters. They are equal today only because no
+    // section is located-but-short. The first one that is makes this fail legitimately, and the
+    // fix is to reword the table rather than to "correct" a number.
+    expect(
+      explicit() + positional(),
+      'strategy counts no longer sum to the usable count: a section is located but under 400 ' +
+        'characters, so the table needs rewording rather than a corrected figure',
+    ).toBe(bounded());
     expect(bounded() + noSection() + noPdf()).toBe(denominator);
   });
 
@@ -158,6 +170,41 @@ describe('curation page: the local-corpus snapshot', () => {
   });
 });
 
+describe('ref 51: the page-count figure that exists in five places', () => {
+  // 22-of-43 is stated on the public page and in four files in the extraction skill, and
+  // until this check nothing compared them. It was 34 in all five for weeks, silently, which
+  // is the drift this repo names as its costliest defect — five copies is simply five chances
+  // to fix one and miss four.
+  //
+  // WHY THE COMMITTED FIXTURE APPEARS TO SAY 34, which is presumably where the wrong value
+  // came from and is the trap for whoever checks this next: testdata/headings.json holds
+  // HEADINGS, not pages. Ref 51's last heading (`References`) is on page 34; the document
+  // runs to 43. The fixture has no `n_pages` field and cannot have one, because the page
+  // count lives in the gitignored converted corpus. So the fixture is not evidence for this
+  // figure in either direction — measure it with docling_ingest.py, do not infer it here.
+  const SOURCES = [
+    PAGE_REL,
+    README_REL,
+    '.claude/skills/matrix-classification-audit/docling_sections.py',
+    '.claude/skills/matrix-classification-audit/docling_sections.test.py',
+    '.claude/skills/matrix-classification-audit/extract_matrix_corpus.py',
+  ];
+
+  it('states the same page and total everywhere it appears', () => {
+    const seen = SOURCES.map((rel) => {
+      const text = readFileSync(join(REPO_ROOT, rel), 'utf-8').replace(/\s+/g, ' ');
+      const m = /page 22 of\s+(\d+)/.exec(text);
+      expect(m, `${rel} no longer states ref 51's page range, so this guard is blind to it`).toBeTruthy();
+      return { rel, total: Number(m![1]) };
+    });
+    const totals = [...new Set(seen.map((x) => x.total))];
+    expect(
+      totals,
+      `ref 51's page total disagrees across copies: ${seen.map((x) => `${x.rel}=${x.total}`).join(', ')}`,
+    ).toHaveLength(1);
+  });
+});
+
 describe('curation page: what reaches an agent', () => {
   it('contributes no brace to llms-full.txt, so no expression can reach an agent unevaluated', () => {
     // THE REGRESSION THIS WHOLE FILE IS NAMED FOR. `llms-full.ts` concatenates raw bytes, so
@@ -171,7 +218,13 @@ describe('curation page: what reaches an agent', () => {
     // enumerates spellings loses to the spelling nobody enumerated. This page needs no brace
     // for any purpose, so the categorical rule is both stronger and simpler to keep true.
     // If a future edit genuinely needs one, it needs a Markdown source for this list instead.
-    const llmsFull = readFileSync(join(REPO_ROOT, 'site/public/llms-full.txt'), 'utf-8');
+    // Computed, NOT read from site/public/llms-full.txt. Reading the artifact validates
+    // whatever the last `pnpm parse` happened to write: add an expression to the page, run
+    // the suite without re-parsing, and this passes on the exact regression it is named for.
+    // It also ENOENTs in a checkout that has never run the parser, since that path is
+    // gitignored — the fresh-worktree gotcha, dressed as a broken test. llms-full.test.ts
+    // already calls the builder for the same reason.
+    const llmsFull = buildLlmsFullText(REPO_ROOT);
     const marker = `# ===== ${PAGE_REL} =====`;
     const start = llmsFull.indexOf(marker);
     expect(start, `${PAGE_REL} is not in llms-full.txt at all`).toBeGreaterThan(-1);
@@ -201,17 +254,38 @@ describe('curation page: what reaches an agent', () => {
   });
 });
 
-describe('llms-full frontmatter stripping', () => {
-  it('removes a leading block but leaves an ordinary horizontal rule alone', () => {
-    // The failure mode of an over-eager version: `---` is also `<hr>` in Markdown, and every
-    // OTHER source in this list is plain canonical Markdown that may well contain one. A rule
-    // that ate from the first `---` to the second would silently delete a chunk of Papers.md.
-    expect(stripFrontmatter('---\ntitle: X\n---\n\nBody here.')).toBe('Body here.');
-    expect(stripFrontmatter('# Heading\n\nText.\n\n---\n\nMore text.')).toBe(
+describe('llms-full frontmatter splitting', () => {
+  // `---` is also `<hr>` in Markdown and this runs over ~45 canonical files, so the cases that
+  // must NOT strip matter more than the one that must. The third of them is the one that
+  // caught a real defect: an earlier version anchored to the start and required a closing
+  // fence, which passed the first two and silently deleted the intro paragraph from the third.
+  // The test that shipped with that version pinned only the no-second-rule case, so it was
+  // green and the docstring's claim was false. Do not remove a case here without adding one.
+  it('takes a real frontmatter block, title included', () => {
+    expect(splitFrontmatter('---\ntitle: X\n---\n\nBody here.')).toEqual({
+      title: 'X',
+      body: 'Body here.',
+    });
+    expect(splitFrontmatter('---\ntitle: "Quoted: with a colon"\nfoo: 1\n---\n\nB.').title).toBe(
+      'Quoted: with a colon',
+    );
+  });
+
+  it('leaves a rule that is not frontmatter completely alone', () => {
+    for (const doc of [
       '# Heading\n\nText.\n\n---\n\nMore text.',
-    );
-    expect(stripFrontmatter('---\n\nA doc that opens with a rule.')).toBe(
       '---\n\nA doc that opens with a rule.',
-    );
+      '---\n\nIntro paragraph that must survive.\n\n---\n\nMore text.',
+      '---\n\n## A section after a rule\n\n---\n\nAnd more.',
+    ]) {
+      expect(splitFrontmatter(doc), doc).toEqual({ title: null, body: doc });
+    }
+  });
+
+  it('re-emits the title so a frontmatter page is not identified only by its path', () => {
+    const full = buildLlmsFullText(REPO_ROOT);
+    const at = full.indexOf(`# ===== ${PAGE_REL} =====`);
+    expect(at).toBeGreaterThan(-1);
+    expect(full.slice(at)).toMatch(/^# ===== [^\n]+ =====\n\n# Curation Methodology\n/);
   });
 });

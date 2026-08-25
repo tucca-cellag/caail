@@ -71,7 +71,14 @@ export const PLACEMENT_NOTE =
 const REPO_ROOT = fileURLToPath(new URL('../../../', import.meta.url));
 
 /** The one section of Papers.md whose references participate in the matrix. */
-const MATRIX_SECTION = 'References';
+/**
+ * The `Papers.md` section whose entries participate in the matrix.
+ *
+ * Exported because `curation-page.test.ts` checks the published figure against the same
+ * population this file counts for `papersMatrixEligible`, and re-typing the string there would
+ * make a rename silently count zero and fail with a message about the wrong thing.
+ */
+export const MATRIX_SECTION = 'References';
 
 export interface AgentApiInputs {
   papers: PapersData;

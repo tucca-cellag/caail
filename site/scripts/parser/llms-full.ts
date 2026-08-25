@@ -66,28 +66,49 @@ const HEADER =
   'authoritative full text. Source repository: https://github.com/tucca-cellag/caail\n';
 
 /**
- * Drop a leading YAML frontmatter block.
+ * Split a leading YAML frontmatter block off a source file.
  *
  * Every canonical repo-root source here is plain Markdown with no frontmatter, so this is a
  * no-op for all of them. It exists for the one Starlight page in the list, whose `title:` and
- * `description:` would otherwise be concatenated in as body prose: this function inlines RAW
- * BYTES, so an agent fetching llms-full.txt reads the YAML as content. The heading delimiter
- * above already states the path, which is what the title would have told it.
+ * `description:` would otherwise be concatenated in as body prose: `buildLlmsFullText` inlines
+ * RAW BYTES, so an agent fetching llms-full.txt reads the YAML as content.
  *
- * Anchored to the very start and requiring the closing fence, so a horizontal rule (`---`) in
- * ordinary Markdown, or a file that merely opens with one, is left alone.
+ * THE SHAPE CHECK IS NOT BELT-AND-BRACES, IT IS THE WHOLE CORRECTNESS ARGUMENT. `---` is also
+ * `<hr>` in Markdown, and this function runs over ~45 canonical files it must not touch. An
+ * earlier version anchored to the start and required a closing fence, which sounds sufficient
+ * and is not: on `---\n\nIntro paragraph.\n\n---\n\nMore text.` the lazy body matches through
+ * to the SECOND rule and the intro paragraph is silently deleted from the agent-facing
+ * artifact. Requiring the captured block to look like YAML — every non-blank line a `key:`, a
+ * continuation, or a comment, and at least one real key — is what tells the two apart, because
+ * a prose paragraph has no colon-terminated key at the start of a line.
  */
-export function stripFrontmatter(content: string): string {
-  const m = /^---\r?\n[\s\S]*?\r?\n---\r?\n?/.exec(content);
-  return m ? content.slice(m[0].length).replace(/^\s+/, '') : content;
+export function splitFrontmatter(content: string): { title: string | null; body: string } {
+  const m = /^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/.exec(content);
+  if (!m) return { title: null, body: content };
+
+  const block = m[1];
+  const lines = block.split(/\r?\n/);
+  const isYamlish = (l: string) =>
+    l.trim() === '' || l.trimStart().startsWith('#') || /^\s+\S/.test(l) || /^[A-Za-z_][\w.-]*\s*:/.test(l);
+  const hasKey = lines.some((l) => /^[A-Za-z_][\w.-]*\s*:/.test(l));
+  if (!hasKey || !lines.every(isYamlish)) return { title: null, body: content };
+
+  const titleLine = /^title\s*:\s*(.+?)\s*$/m.exec(block);
+  const title = titleLine ? titleLine[1].replace(/^["']|["']$/g, '') : null;
+  return { title, body: content.slice(m[0].length).replace(/^\s+/, '') };
 }
 
 /** Build the full llms-full.txt content from the canonical Markdown. */
 export function buildLlmsFullText(repoRoot: string = REPO_ROOT): string {
   const parts = [HEADER];
   for (const rel of llmsFullSources(repoRoot)) {
-    const content = stripFrontmatter(readFileSync(join(repoRoot, rel), 'utf-8')).trimEnd();
-    parts.push(`\n\n# ===== ${rel} =====\n\n${content}\n`);
+    const { title, body } = splitFrontmatter(readFileSync(join(repoRoot, rel), 'utf-8'));
+    // Every canonical source opens with its own `# H1`, which is how a reader of the
+    // concatenated file knows what a section is. A frontmatter page has its title in the
+    // metadata instead, so re-emit it rather than letting the section be identified only by
+    // a path: `site/src/content/docs/curation.mdx` does not say "Curation Methodology".
+    const heading = title ? `# ${title}\n\n` : '';
+    parts.push(`\n\n# ===== ${rel} =====\n\n${heading}${body.trimEnd()}\n`);
   }
   return parts.join('');
 }
