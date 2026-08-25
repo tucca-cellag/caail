@@ -12,7 +12,7 @@
  * `topics.area_key`. A theme that maps to a matrix research area takes that area's
  * colour, so an area and its theme always agree.
  *
- * Every theme now maps: ADR-0001 gave Metabolism & Modeling and Food Safety matrix
+ * Every theme now maps: Metabolism & Modeling and Food Safety were given matrix
  * columns, so the two standalone `--caail-theme-*` tokens this file used to fall back to
  * are gone and the fallback map with them. That is enforced rather than assumed —
  * `db:check` asserts every theme has a non-null `area_key` — so the derivation is total

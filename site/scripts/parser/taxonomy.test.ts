@@ -121,7 +121,7 @@ describe('Taxonomy.md ⨯ Papers.md (real files)', () => {
   });
 
   // `Bioprocess & Scale-Up` was once BOTH a column and a theme, and the flatten bug
-  // let the theme's blurb overwrite the column's scope. ADR-0001 removed the clash at
+  // let the theme's blurb overwrite the column's scope. the axis split removed the clash at
   // the source by renaming the theme to `Bioprocess & Manufacturing`, so this now
   // asserts the convention rather than the collision: the column resolves to a real
   // scope definition, and the theme axis no longer claims that label.

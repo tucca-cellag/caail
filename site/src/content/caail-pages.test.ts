@@ -47,7 +47,7 @@ describe('CAAIL_PAGES', () => {
     // 33 → 57: CAAIL-266 filled in the Methods/ row axis, adding the 24 pages the
     // matrix's other rows were missing (the axis had held only Benchmarks &
     // Evaluation, migrated there when the eval column was retired).
-    // 57 → 58: ADR-0001's 8th research area added ResearchAreas/FoodSafetyPrediction.md.
+    // 57 → 58: the 8th research area added ResearchAreas/FoodSafetyPrediction.md.
     // Only +1, not +2 — MetabolicModeling.md already existed as a deep dive for a
     // subject that was not yet a column.
     // This is a ground-truth contract, not a derived value — it is meant to fail when
@@ -61,7 +61,7 @@ describe('CAAIL_PAGES', () => {
   });
   it('has an entry for every rendered ResearchAreas, Methods and Datasets page (no missing map entries)', () => {
     // isPublishedMarkdown, not a bare .md test: a `*.local.md` private
-    // companion (ADR-0002) backs no route, so counting it here would report it
+    // companion backs no route, so counting it here would report it
     // as an unregistered page and read as map drift.
     const ra = readdirSync(`${REPO_ROOT}ResearchAreas`).filter(isPublishedMarkdown);
     const me = readdirSync(`${REPO_ROOT}Methods`).filter(isPublishedMarkdown);

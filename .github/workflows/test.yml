@@ -52,7 +52,7 @@ on:
       - .claude/skills/matrix-classification-audit/extract_matrix_corpus.py
       - .github/workflows/test.yml
       # The two ignore files, because canonical-files.test.ts now asserts they
-      # agree with the code about what a private companion is (ADR-0002).
+      # agree with the code about what a private companion is (the publishing rule in CLAUDE.md).
       # Without these entries the guard never runs on the edit most likely to
       # break it: a PR that deletes the `*.local.mdx` line from .gitignore
       # touches no other path, triggers zero workflows, merges green, and makes
@@ -154,7 +154,7 @@ on:
       - .claude/skills/matrix-classification-audit/extract_matrix_corpus.py
       - .github/workflows/test.yml
       # The two ignore files, because canonical-files.test.ts now asserts they
-      # agree with the code about what a private companion is (ADR-0002).
+      # agree with the code about what a private companion is (the publishing rule in CLAUDE.md).
       # Without these entries the guard never runs on the edit most likely to
       # break it: a PR that deletes the `*.local.mdx` line from .gitignore
       # touches no other path, triggers zero workflows, merges green, and makes

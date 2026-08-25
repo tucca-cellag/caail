@@ -19,9 +19,10 @@ number here disagrees with them, they are right and this file is stale. **No one
 all of these.** `pnpm --dir site db:check` prints the theme assertions, including that there are
 exactly eight; `pnpm --dir site parse` prints the headline totals but not the 229 matrix-eligible
 subset, nor any theme or `area_key` count. Read `parse`'s output carefully: its `researchAreas`
-figure counts files in `ResearchAreas/`, currently 7, and is **not** the number of research areas
-as defined below, which is the 6 matrix columns in `areas.ndjson`. For the rest, read the four
-files.
+figure counts files in `ResearchAreas/` and is **not** the number of research areas as defined
+below, which is the matrix columns in `areas.ndjson`. Both are 8 today, and that is the
+bijection holding rather than the two being the same measurement: they can diverge, and
+`db:check` is what fails when they do. Read the four files rather than either figure.
 
 ## Language
 
@@ -81,11 +82,11 @@ The umbrella term covering both themes and fine tags. Never a synonym for either
 
 **Cross-cutting subject**:
 A subject that spans research areas rather than naming one. The class is **empty**:
-ADR-0001 gave `Metabolism & Modeling` and `Food Safety` the columns they were missing, so every
+`Metabolism & Modeling` and `Food Safety` were given the columns they were missing, so every
 theme now names a research area. The term is kept because it explains why the taxonomy is shaped
 as it is, not because anything is filed under it.
 
-Adding a cross-cutting theme is therefore a deliberate reopening of ADR-0001 rather than a quiet
+Adding a cross-cutting theme is therefore a deliberate reopening of a settled decision rather than a quiet
 addition, and that is now enforced rather than asked for: `db:check` requires every theme to carry
 a non-null `area_key`, so such a theme fails the build. It separately guards the theme *list*
 against `THEME_SLUGS`, so a ninth theme cannot appear unnoticed either.
@@ -104,7 +105,8 @@ theme under its old name with a valid key, which the first assertion alone would
 
 **The join is total.** Each of the eight themes reaches one of the eight research areas, and each
 research area has exactly one `ResearchAreas/` deep-dive page hanging off it rather than off the
-theme (`RESEARCH_AREA_SLUG`). ADR-0001's bijection is the live state rather than its target.
+theme (`RESEARCH_AREA_SLUG`). The bijection is the live state rather than a target, and
+`db:check`'s `checkAxisBijection` is what holds it there.
 
 **Deep-dive page**:
 A hand-authored prose overview of one axis member: `ResearchAreas/<Area>.md` for a research
@@ -117,11 +119,11 @@ _Avoid_: area page, docs page
 A research area's label should read as a **problem** (`Media Optimization`, `Sensory
 Prediction`, `Cellular Engineering`). A subject theme's label should read as an **`&`-joined
 subject** (`Media & Growth Factors`, `Sensory & Flavor`, `Cell Lines & Engineering`). Per
-ADR-0001 this **binds new labels rather than describing the existing ones**, and neither half
+the naming convention this **binds new labels rather than describing the existing ones**, and neither half
 holds across the live set: `Scaffolding` and `AI Tooling / Methodology` are columns naming no
 problem, `Food Safety` is a theme carrying no `&`, and `Bioprocess & Scale-Up` is an
 `&`-joined column. Where it does hold, the difference is deliberate and load-bearing, because it
 is the only cue a reader has that two similar names denote different populations. One label is still shared across the axes:
 `Bioprocess & Scale-Up` names both a research area and a theme, which is the collision
-`Taxonomy.md` still carries as a duplicate `###` heading. ADR-0001 closes it by relabelling
-the theme `Bioprocess & Manufacturing`.
+`Taxonomy.md` still carries as a duplicate `###` heading. The settled fix is to relabel
+the theme `Bioprocess & Manufacturing`, which has not landed (CAAIL-261).

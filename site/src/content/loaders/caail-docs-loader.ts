@@ -90,7 +90,7 @@ const CANONICAL_SOURCES = {
  *
  * Exported so it can be tested. This is the ONE branch of this loader with no
  * `CAAIL_PAGES` allow-list, so the pattern is the only thing standing between
- * a private companion placed beside a public page — the placement ADR-0002
+ * a private companion placed beside a public page — the placement the publishing rule
  * sanctions — and a built, deployed route.
  *
  * The exclusions are derived from `PRIVATE_COMPANION_SUFFIXES`, not written

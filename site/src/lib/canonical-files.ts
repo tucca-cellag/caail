@@ -32,7 +32,7 @@
 const INSTRUCTION_FILES: ReadonlySet<string> = new Set(['CLAUDE.md']);
 
 /**
- * The suffixes reserved for private companions (ADR-0002), gitignored.
+ * The suffixes reserved for private companions, gitignored.
  *
  * Both, not just `.md`: every file under `site/src/content/docs/` is `.mdx`,
  * and that is a directory the convention sanctions a companion in. Keep this

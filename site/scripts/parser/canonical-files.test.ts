@@ -251,7 +251,7 @@ describe('computeCounts — private companions do not inflate the counts', () =>
   beforeAll(() => {
     root = mkdtempSync(join(tmpdir(), 'caail-counts-'));
     cpSync(join(FIXTURE_DIR, 'counts-repo-root-fixture'), root, { recursive: true });
-    // A curator follows ADR-0002 and drops a companion beside a public page.
+    // A curator follows the publishing rule and drops a companion beside a public page.
     writeFileSync(join(root, 'Datasets', 'Cow.local.md'), 'PRIVATE\n');
     writeFileSync(join(root, 'ResearchAreas', 'Bioprocess.local.md'), 'PRIVATE\n');
   });

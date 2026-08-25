@@ -379,6 +379,14 @@ decision record that happens to describe the matrix schema still reads as "how t
 made"; it is a decision about the library, which is a different thing. The only files a clone
 receives are active documentation and the library itself.
 
+`docs/` does not currently exist, having been emptied under that rule. **Two of its subpaths
+are still gitignored** (`docs/superpowers/`, `docs/research/`), deliberately, because agents
+carrying an older instruction still write there and the rules are what stop an unpublished spec
+being committed. The consequence to know before recreating the directory: a page written to
+either of those two paths is silently swallowed, never reaching the repo or the site, with
+nothing failing. `site/scripts/private-paths.test.ts` guards the rules and asserts nothing about
+publishability under `docs/`.
+
 ## Agent skills
 
 ### Issue tracker
@@ -393,7 +401,7 @@ Two independent axes. **State** answers what is blocking a ticket now, and has t
 
 `CONTEXT.md` at the repo root is the glossary, and names concepts only: the scope of any individual row or column lives in `Taxonomy.md`, the trusted definition source, and is never restated. `ResearchAreas/*.md` and `Methods/*.md` are prose deep dives and are explicitly not a definition source.
 
-**Architecture decisions are recorded on the tracker, not in this repository.** They are decisions rather than library documentation, so they go where decisions go. The one most likely to be needed: the matrix research areas and the subject themes are **two distinct populations joined by `area_key`**, deliberately not one taxonomy, targeting a bijection of eight themes to eight research areas to one deep-dive page each (CAAIL-261). A decision is not a delivery, so check the DB before treating any decided end-state as present fact: `site/db/ndjson/` is the source of truth and `db:check` says what is actually asserted.
+**Architecture decisions are recorded on the tracker, not in this repository.** They are decisions rather than library documentation, so they go where decisions go. The one most likely to be needed: the matrix research areas and the subject themes are **two distinct populations joined by `area_key`**, deliberately not one taxonomy. The bijection is **live, not a target** — eight themes, eight research areas, one deep-dive page each — and `db:check`'s `checkAxisBijection` asserts it, so a theme without a column fails the build rather than being caught by review. Read `site/db/ndjson/` and `db:check` for what is actually enforced rather than any count written into prose.
 
 ## The SQLite authoring backend (structured catalog)
 
