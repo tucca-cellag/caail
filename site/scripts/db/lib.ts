@@ -4,7 +4,7 @@
  * Paths, the schema-loaded DB opener, per-table PK-sorted NDJSON export/import
  * (sqlite-diffable style — one file per table, localized git diffs), and the
  * frozen namespaced-slug helper. Promoted from the proven spike
- * (docs/spikes/sqlite-replatform/spike.ts); this is the production, reusable form.
+ * (a sqlite-replatform spike, since removed); this is the production, reusable form.
  *
  * Requires Node 22's built-in node:sqlite behind `--experimental-sqlite`
  * (no new dependency, network-free). The DB is authoring-time only — it never

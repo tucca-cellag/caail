@@ -368,23 +368,32 @@ and no signal that one is missing.
 governs disclosure harm, and it is not a scope rule. Used as one it passes nearly everything,
 which is how ~165 lines of single-user tracker mechanics came to be public and how a section
 on authenticating a tracker write was then added beside them, caught by a review round rather
-than by any rule. Rationale, rejected alternatives and what has not yet been re-examined:
-`docs/adr/0002-what-the-repo-publishes.md`, whose Implementation status is explicit that the
-repo does not yet comply with its own test.
+than by any rule. The rationale, the rejected alternatives and the sweep of what has not yet
+been re-examined live on the tracker (CAAIL-317), not in this repository: a decision record is
+not library documentation, so it goes where decisions go.
+
+**A sharper form of the same rule governs what may sit in a directory at all.** `docs/` holds
+documentation for the live library and nothing else. Scoping, planning and decision records go
+to Jira and GitHub. Applied file by file the test above is too permissive here, because a
+decision record that happens to describe the matrix schema still reads as "how the library is
+made"; it is a decision about the library, which is a different thing. The only files a clone
+receives are active documentation and the library itself.
 
 ## Agent skills
 
 ### Issue tracker
 
-Split. Jira project `CAAIL` is the durable record and is never skipped (`/to-spec`, `/to-tickets`, `/wayfinder`); public GitHub `tucca-cellag/caail` takes discrete world-safe requests and anything a PR closes, and is what `/triage` reads. Enumerate **both** before creating anything. See `docs/agents/issue-tracker.md`.
+Split. Jira project `CAAIL` is the durable record and is never skipped (`/to-spec`, `/to-tickets`, `/wayfinder`); public GitHub `tucca-cellag/caail` takes discrete world-safe requests and anything a PR closes, and is what `/triage` reads. Enumerate **both** before creating anything; a keyword search is not enumeration, because Jira's text index tokenizes and misses hyphenated keys. The conventions in full are maintainer-local and deliberately not in this repository.
 
 ### Triage labels
 
-Two independent axes. **State** answers what is blocking a ticket now, and has two spellings because it has two writers: `state:<class>` on Jira (from `tracker-backfill`) and the five canonical triage roles on GitHub (from `/triage`, for issues someone else filed) — `wontfix` already exists on the repo and should be applied rather than duplicated. **Type** answers what kind of work resolves it: `wayfinder:<type>`, on both trackers, applied to every ticket regardless of how it was created. See `docs/agents/triage-labels.md`.
+Two independent axes. **State** answers what is blocking a ticket now, and has two spellings because it has two writers: `state:<class>` on Jira (from `tracker-backfill`) and the five canonical triage roles on GitHub (from `/triage`, for issues someone else filed) — `wontfix` already exists on the repo and should be applied rather than duplicated. **Type** answers what kind of work resolves it: `wayfinder:<type>`, on both trackers, applied to every ticket regardless of how it was created. The full label tables are maintainer-local.
 
 ### Domain docs
 
-Single-context: `CONTEXT.md` + `docs/adr/` at the repo root, both created lazily by `/domain-modeling` rather than seeded. Both now exist. `CONTEXT.md` is the glossary and names concepts only, pointing at `Taxonomy.md` for the scope of any individual row or column rather than restating it; `docs/adr/0001-matrix-axis-model.md` records why the matrix research areas and the subject themes are two axes joined by `area_key` rather than one taxonomy. An ADR states a decision, not a delivery: read its **Implementation status** section before treating any assertion in it as describing the repository today. See `docs/agents/domain.md`.
+`CONTEXT.md` at the repo root is the glossary, and names concepts only: the scope of any individual row or column lives in `Taxonomy.md`, the trusted definition source, and is never restated. `ResearchAreas/*.md` and `Methods/*.md` are prose deep dives and are explicitly not a definition source.
+
+**Architecture decisions are recorded on the tracker, not in this repository.** They are decisions rather than library documentation, so they go where decisions go. The one most likely to be needed: the matrix research areas and the subject themes are **two distinct populations joined by `area_key`**, deliberately not one taxonomy, targeting a bijection of eight themes to eight research areas to one deep-dive page each (CAAIL-261). A decision is not a delivery, so check the DB before treating any decided end-state as present fact: `site/db/ndjson/` is the source of truth and `db:check` says what is actually asserted.
 
 ## The SQLite authoring backend (structured catalog)
 

@@ -2,7 +2,7 @@
  * canonical-files.test.ts — private `*.local.md` companions stay out of the
  * published corpus.
  *
- * `docs/adr/0002-what-the-repo-publishes.md` puts a private companion BESIDE
+ * The repo's publishing rule (CLAUDE.md) puts a private companion BESIDE
  * its public file, so one can land inside a canonical directory. Two parser
  * entry points enumerate those directories: llms-full.ts inlines each match
  * verbatim into the served public/llms-full.txt, and counts.ts derives the

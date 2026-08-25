@@ -68,7 +68,7 @@ node_modules/
 # Local wrangler state
 workers/*/.wrangler/
 
-# Per-file private companions: content that fails the docs/adr/0002 publishing
+# Per-file private companions: content that fails the repo's own publishing
 # test lives beside its public file with a .local.md / .local.mdx suffix,
 # gitignored, and reaches worktrees through .worktreeinclude.
 #

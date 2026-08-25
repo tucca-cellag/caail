@@ -7,10 +7,11 @@ else: the **scope** of any individual matrix row or column lives in
 restated here. `ResearchAreas/*.md` and `Methods/*.md` are prose deep dives and are
 explicitly not a definition source.
 
-Decisions about how these concepts relate live in [`docs/adr/`](./docs/adr/). This file
-describes the repository as it is **today**, not as a decision intends it to become: where
-the two differ, the entry says so and points at the ADR that closes the gap. A glossary
-that states a decided end-state as present fact tells a reader the work is already done.
+Decisions about how these concepts relate live on the tracker, not in this repository: a
+decision record is not library documentation. This file describes the repository as it is
+**today**, not as a decision intends it to become. Where the two differ, the entry says so
+and names the ticket that closes the gap. A glossary that states a decided end-state as
+present fact tells a reader the work is already done.
 
 **Every count below is a snapshot taken 2026-08-20 from `site/db/ndjson/`.** `areas.ndjson`,
 `topics.ndjson`, `item_topics.ndjson` and `matrix_cells.ndjson` are the source of truth: where a

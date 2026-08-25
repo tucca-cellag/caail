@@ -23,15 +23,15 @@
  * edit most likely to break it. Before that filter existed, a PR touching only
  * `.gitignore` triggered no workflow at all.
  *
- * WHY `docs/superpowers/` AND `docs/research/` ARE HERE despite being empty on
- * disk. Until this branch, `CLAUDE.md` and `docs/agents/issue-tracker.md` both
- * directed writers to `docs/superpowers/`; both now point at `internal-docs/`,
- * so nothing tracked routes there any more. The rules stay guarded anyway,
- * because that is precisely when they look dead and invite a tidy-up: an agent
- * carrying the old instruction (a cached skill, an older session, a stale
- * branch) still writes there, and with the rule deleted that lands an
- * unpublished spec in a public repo with nothing red. Removing the rules is a
- * decision someone can take deliberately; it should not happen by tidying.
+ * WHY `docs/superpowers/` AND `docs/research/` ARE HERE when `docs/` no longer
+ * exists at all. The directory was emptied and removed, because it held only
+ * decision records and process conventions and no library documentation. Their
+ * `.gitignore` rules were kept, and that is exactly when a rule looks dead and
+ * invites a tidy-up. An agent carrying an older instruction (a cached skill, a
+ * stale branch, a session that began before the change) still writes to
+ * `docs/superpowers/`, and with the rule deleted that lands an unpublished spec
+ * in a public repo with nothing red. Removing the rules is a decision someone
+ * can take deliberately; it should not happen by tidying.
  */
 import { describe, it, expect } from 'vitest';
 import { spawnSync } from 'node:child_process';
@@ -124,9 +124,9 @@ const PROBES = [
  * than editing an existing one) changes no probe at all, and only this list
  * sees it.
  *
- * `docs/adr/` is the sharpest case and is here on purpose: two of its sibling
- * directories under `docs/` ARE ignored, so a rule widened from
- * `docs/research/` to `docs/` would be invisible to every assertion above.
+ * Nothing under `docs/` appears in this list. That is not an oversight: `docs/`
+ * has been removed, and asserting that some path under it must stay publishable
+ * would encode a publishing policy as a side effect of testing for over-match.
  */
 const MUST_STAY_PUBLISHABLE = [
   // One per canonical directory the build actually enumerates (llms-full.ts
@@ -146,18 +146,17 @@ const MUST_STAY_PUBLISHABLE = [
   // exit-code-only reading. It is the regression test for that hole.
   '.env.example',
 
-  // DELIBERATELY NOT LISTED: anything under docs/. Asserting that a docs/ file
-  // must stay publishable encodes a PUBLISHING POLICY, and this guard has no
-  // business doing that as a side effect of testing for over-match. ADR-0002's
-  // own table puts "tracker conventions, ticket workflow, board state" in the
-  // withheld column, so a probe pinning docs/agents/ as public would have
-  // asserted the opposite of the rule it sits next to. Whether docs/ is
-  // published at all is CAAIL-317's question.
+  // DELIBERATELY NOT LISTED: anything under docs/, which no longer exists. An
+  // earlier draft probed two files there to catch a rule widened to a bare
+  // `docs/`, which made this guard assert a PUBLISHING POLICY as a side effect
+  // of testing for over-match, and got one of them backwards against the rule
+  // it sat beside. The directory has since been removed entirely: it held only
+  // decision records and process conventions, which belong on the trackers.
   //
-  // The cost, stated rather than hidden: docs/research/ and docs/superpowers/
-  // are ignored while their siblings are not, so a rule widened from either to
-  // a bare `docs/` is caught by the PATTERN pin above and by nothing here. A
-  // NEW broad rule added alongside them would be caught by neither.
+  // The cost, stated rather than hidden: the `docs/research/` and
+  // `docs/superpowers/` rules are still live, so a rule widened from either to
+  // a bare `docs/` is caught by the PATTERN pin above and by nothing here, and
+  // a NEW broad rule added alongside them is caught by neither half.
 ];
 
 /** `<source>:<line>:<pattern>\t<pathname>` */
