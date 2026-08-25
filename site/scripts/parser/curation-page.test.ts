@@ -38,6 +38,7 @@ import { describe, it, expect } from 'vitest';
 
 import { curatorCoverage } from '../../src/lib/topic-curators.js';
 import { SCOPE_NOTE } from './agent-api.js';
+import { stripFrontmatter } from './llms-full.js';
 
 const REPO_ROOT = fileURLToPath(new URL('../../../', import.meta.url));
 const PAGE_REL = 'site/src/content/docs/curation.mdx';
@@ -189,5 +190,28 @@ describe('curation page: what reaches an agent', () => {
     // achieved by deleting the sentences instead of rendering them.
     expect(section).toMatch(/holds [\d,]+ references/);
     expect(section).toMatch(/[\d,]+ are primary research/);
+
+    // The page's YAML frontmatter is stripped rather than concatenated in as body prose.
+    // This is the only source in the list that has any, and an agent reading the file has
+    // no way to tell `title:` from a sentence.
+    expect(section).not.toContain('title: Curation Methodology');
+    expect(section, 'frontmatter fence reached the agent artifact').not.toMatch(
+      /^# ===== .+ =====\n\n---\n/,
+    );
+  });
+});
+
+describe('llms-full frontmatter stripping', () => {
+  it('removes a leading block but leaves an ordinary horizontal rule alone', () => {
+    // The failure mode of an over-eager version: `---` is also `<hr>` in Markdown, and every
+    // OTHER source in this list is plain canonical Markdown that may well contain one. A rule
+    // that ate from the first `---` to the second would silently delete a chunk of Papers.md.
+    expect(stripFrontmatter('---\ntitle: X\n---\n\nBody here.')).toBe('Body here.');
+    expect(stripFrontmatter('# Heading\n\nText.\n\n---\n\nMore text.')).toBe(
+      '# Heading\n\nText.\n\n---\n\nMore text.',
+    );
+    expect(stripFrontmatter('---\n\nA doc that opens with a rule.')).toBe(
+      '---\n\nA doc that opens with a rule.',
+    );
   });
 });

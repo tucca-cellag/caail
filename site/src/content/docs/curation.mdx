@@ -23,7 +23,7 @@ A placement records what a paper did. It is not a judgement about whether the ap
 | Enter it into the catalogue | A human maintainer, through the authoring database. | In place |
 | Check consistency | Deterministic checks on every change. | In place |
 
-Every stage marked *in place* runs on every entry. Each placement is anchored to a specific span of a specific section, and that anchor is recorded, so you can look it up and argue with it.
+Every stage marked *in place* runs on every entry added through this pipeline. Placements that predate it are a backlog, and re-checking them is in the [roadmap](#6-roadmap). Each new placement is anchored to a specific span of a specific section, and that anchor is recorded, though it is not yet shown to you: see section 1 for what is held and section 6 for when it surfaces.
 
 ## 1. Evidence & section location
 
@@ -40,15 +40,17 @@ Each located section records how it was found:
 | Field | Value |
 | --- | --- |
 | `methods_source` | `docling`, a section bounded by real headings; or `ftcache`, the fallback below |
-| `methods_strategy` | `explicit`, a heading matching the methods vocabulary; or `positional`, the span from the introduction to the first results heading |
-| `methods_heading` / `methods_end_heading` | the two bounding headings, as printed |
-| `methods_pages` | the page range occupied |
+| `methods_strategy` | how the start was found, and it means different things on each path. Under `docling`: `explicit`, a heading matching the methods vocabulary, or `positional`, the span from the introduction to the first results heading. Under `ftcache`: `heading`, a methods-like string was found, or `positional`, none was, and the window simply starts a tenth of the way into the document |
+| `methods_heading` / `methods_end_heading` | the two bounding headings, as printed. `docling` only |
+| `methods_pages` | the page range occupied. `docling` only |
 | `methods_truncated` | whether the text was cut short of its end |
 
-Where no section can be located, the fallback is a fixed 12,000-character window from the first methods-like string in a flat text dump. It has a start but no end, so a `ftcache` placement is weaker evidence than a `docling` one.
+Where no section can be located, the fallback is a fixed 12,000-character window from the first methods-like string in a flat text dump. It has a start but no end, so a `ftcache` placement is weaker evidence than a `docling` one, and an `ftcache` record whose strategy is `positional` is the weakest thing in the corpus: no heading was matched, so neither boundary was found.
 
 :::note[Not yet shown per entry]
-These fields are recorded for every entry but are not displayed on the site, so you cannot currently look up which of the two a given cell rests on. For now the aggregate in section 5 is what you can see. Displaying them per entry is in the [roadmap](#6-roadmap).
+These fields are not displayed on the site, so you cannot currently look up which of the two a given cell rests on. For now the aggregate in section 5 is what you can see. Displaying them per entry is in the [roadmap](#6-roadmap).
+
+They are also not uniformly available, which that work will have to show rather than hide: the three references with no located section have none of these fields, and the `ftcache` path records no bounding headings and no page range.
 :::
 
 ## 2. Classification & review

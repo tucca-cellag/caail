@@ -65,11 +65,28 @@ const HEADER =
   'The website pages are compressed navigation summaries; this file is the ' +
   'authoritative full text. Source repository: https://github.com/tucca-cellag/caail\n';
 
+/**
+ * Drop a leading YAML frontmatter block.
+ *
+ * Every canonical repo-root source here is plain Markdown with no frontmatter, so this is a
+ * no-op for all of them. It exists for the one Starlight page in the list, whose `title:` and
+ * `description:` would otherwise be concatenated in as body prose: this function inlines RAW
+ * BYTES, so an agent fetching llms-full.txt reads the YAML as content. The heading delimiter
+ * above already states the path, which is what the title would have told it.
+ *
+ * Anchored to the very start and requiring the closing fence, so a horizontal rule (`---`) in
+ * ordinary Markdown, or a file that merely opens with one, is left alone.
+ */
+export function stripFrontmatter(content: string): string {
+  const m = /^---\r?\n[\s\S]*?\r?\n---\r?\n?/.exec(content);
+  return m ? content.slice(m[0].length).replace(/^\s+/, '') : content;
+}
+
 /** Build the full llms-full.txt content from the canonical Markdown. */
 export function buildLlmsFullText(repoRoot: string = REPO_ROOT): string {
   const parts = [HEADER];
   for (const rel of llmsFullSources(repoRoot)) {
-    const content = readFileSync(join(repoRoot, rel), 'utf-8').trimEnd();
+    const content = stripFrontmatter(readFileSync(join(repoRoot, rel), 'utf-8')).trimEnd();
     parts.push(`\n\n# ===== ${rel} =====\n\n${content}\n`);
   }
   return parts.join('');
