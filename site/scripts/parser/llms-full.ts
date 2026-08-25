@@ -9,11 +9,13 @@
  * excluded — they're instructions, not library content.
  *
  * NOT QUITE VERBATIM, AND THE EXCEPTION IS NAMED HERE BECAUSE IT USED TO SAY
- * VERBATIM AND STOPPED BEING TRUE. One source is a Starlight page rather than
- * canonical repo-root Markdown (`site/src/content/docs/curation.mdx`). For that
- * one, and only that one, the YAML frontmatter is stripped and its `title` is
- * re-emitted as an `# H1` so the section opens the way every other section does.
- * Every repo-root source is still byte-for-byte. See `splitFrontmatter`.
+ * VERBATIM AND STOPPED BEING TRUE. Sources under `site/src/content/` are
+ * Starlight pages rather than canonical repo-root Markdown; for those the YAML
+ * frontmatter is stripped and the `title` is re-emitted as an `# H1`, so the
+ * section opens the way every other section does. Every repo-root source is
+ * still byte-for-byte. The served header names which pages those are, derived
+ * rather than typed, so this comment cannot go stale when a second one is added.
+ * See `splitFrontmatter` and `buildHeader`.
  *
  * The build core (`buildLlmsFullText`) is pure and reads only; the file write
  * is invoked from generate-data.ts's CLI block (like the other parser output).
@@ -66,13 +68,27 @@ export function llmsFullSources(repoRoot: string = REPO_ROOT): string[] {
   ];
 }
 
-const HEADER =
-  '# CAAIL — Cellular Agriculture AI Library (full canonical text)\n\n' +
-  "> Single-file concatenation of CAAIL's canonical Markdown, plus the site's " +
-  'Curation Methodology page, for AI agents. Sources are reproduced as written, ' +
-  'except that page, whose metadata block is replaced by its title as a heading. ' +
-  'The website pages are compressed navigation summaries; this file is the ' +
-  'authoritative full text. Source repository: https://github.com/tucca-cellag/caail\n';
+/**
+ * The served header, with the frontmatter caveat DERIVED from the source list.
+ *
+ * `FRONTMATTER_PREFIX` is a prefix test precisely so a second Starlight page can join the
+ * list. The moment one does, a hardcoded "that page, and only that one" is false and nothing
+ * fails, since `llms-full.test.ts` asserts only the first line. This docstring's own history
+ * is the argument: the sentence above it said VERBATIM until this branch made it untrue.
+ */
+function buildHeader(repoRoot: string): string {
+  const withFrontmatter = llmsFullSources(repoRoot).filter((s) => s.startsWith(FRONTMATTER_PREFIX));
+  const caveat = withFrontmatter.length
+    ? `Sources are reproduced as written, except ${withFrontmatter.length === 1 ? 'one site page' : `${withFrontmatter.length} site pages`} (${withFrontmatter.join(', ')}), whose metadata block is replaced by the page title as a heading. `
+    : 'Sources are reproduced as written. ';
+  return (
+    '# CAAIL — Cellular Agriculture AI Library (full canonical text)\n\n' +
+    "> Single-file concatenation of CAAIL's canonical Markdown, for AI agents. " +
+    caveat +
+    'The website pages are compressed navigation summaries; this file is the ' +
+    'authoritative full text. Source repository: https://github.com/tucca-cellag/caail\n'
+  );
+}
 
 /**
  * Sources whose leading `---` block is frontmatter rather than a horizontal rule.
@@ -119,7 +135,7 @@ export function splitFrontmatter(
 
 /** Build the full llms-full.txt content from the canonical Markdown. */
 export function buildLlmsFullText(repoRoot: string = REPO_ROOT): string {
-  const parts = [HEADER];
+  const parts = [buildHeader(repoRoot)];
   for (const rel of llmsFullSources(repoRoot)) {
     const { title, body } = splitFrontmatter(readFileSync(join(repoRoot, rel), 'utf-8'), rel);
     // Every canonical source opens with its own `# H1`, which is how a reader of the

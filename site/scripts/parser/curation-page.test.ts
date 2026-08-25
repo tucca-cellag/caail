@@ -37,7 +37,7 @@ import { fileURLToPath } from 'node:url';
 import { describe, it, expect } from 'vitest';
 
 import { curatorCoverage } from '../../src/lib/topic-curators.js';
-import { MATRIX_SECTION, SCOPE_NOTE } from './agent-api.js';
+import { MATRIX_SECTION, PLACEMENT_NOTE, SCOPE_NOTE } from './agent-api.js';
 import { buildLlmsFullText, splitFrontmatter } from './llms-full.js';
 
 const REPO_ROOT = fileURLToPath(new URL('../../../', import.meta.url));
@@ -50,9 +50,22 @@ const papers = JSON.parse(
   readFileSync(join(REPO_ROOT, 'site/src/content/data/papers.json'), 'utf-8'),
 ) as { references: { section: string }[] };
 
-/** First capture group of `re` against the page, or a failing message naming what is missing. */
+/**
+ * First capture group of `re` against `source`, or a failure naming what went missing.
+ *
+ * `exec`, not `String.prototype.match`, and the `g` guard is not pedantry. Handed a GLOBAL
+ * regex, `match` returns the list of whole matches instead of capture groups, so `m[1]` would
+ * silently become the second whole match: a wrong value, not an error. `num()` survives that
+ * by luck (the isFinite assertion fires on the NaN), `grab()` does not — it would compare a
+ * whole match against an expected value and fail describing the wrong thing, or pass while
+ * comparing something else entirely. This file uses `matchAll` for its deliberately-global
+ * patterns, so the two idioms sit side by side; this refuses the mix rather than documenting it.
+ */
 function grab(source: string, re: RegExp, what: string): string {
-  const m = source.match(re);
+  expect(re.global, `${what}: pattern is global, so capture groups would be silently dropped`).toBe(
+    false,
+  );
+  const m = re.exec(source);
   expect(m, `${what}: no match for ${re} — the sentence was reworded, so this guard is now blind`).toBeTruthy();
   return m![1];
 }
@@ -109,6 +122,30 @@ describe('curation page: numbers that another source already knows', () => {
     expect(grab(page, /(\d+) of the \d+ subject themes have no lead/, 'section 7 ask')).toBe(
       String(open),
     );
+  });
+
+  it('does not contradict PLACEMENT_NOTE about who makes a placement', () => {
+    // THE ONE THING THIS PAGE COULD GET WRONG THAT NOTHING ELSE WOULD CATCH. Both this page
+    // (via llms-full.txt) and `api/matrix.json` are served to agents, and until this branch
+    // PLACEMENT_NOTE said placements are "curator-assigned" while the page says a language
+    // model proposes them. Two CAAIL surfaces, same reader, opposite answers about the single
+    // fact the page exists to disclose. SCOPE_NOTE is pinned verbatim for the same reason;
+    // this is the note whose subject matter the page actually is.
+    //
+    // Matched on substance rather than verbatim, because the two are written for different
+    // readers and should not be forced into one sentence.
+    expect(PLACEMENT_NOTE, 'the API still implies a human classifies').not.toMatch(
+      /curator-assigned/i,
+    );
+    expect(PLACEMENT_NOTE).toMatch(/language-model agent/i);
+    expect(PLACEMENT_NOTE).toMatch(/human maintainer/i);
+    expect(page).toMatch(/language-model agent/i);
+    // Neither may promise the evaluator grading that section 6 lists as unbuilt.
+    expect(PLACEMENT_NOTE, 'the API promises grading the roadmap says is not built').not.toMatch(
+      /graded by evaluators/i,
+    );
+    // And the API points a reader at the full description rather than restating it.
+    expect(PLACEMENT_NOTE).toContain('/caail/curation/');
   });
 
   it('quotes SCOPE_NOTE verbatim, capitalisation included', () => {
@@ -172,10 +209,17 @@ describe('curation page: the local-corpus snapshot', () => {
     expect(r(/(\d+) usable at 400 characters/, 'usable')).toBe(bounded());
     expect(r(/\*\*Unresolved, matrix-participating: (\d+)\*\*/, 'unresolved')).toBe(noSection());
 
-    for (const stat of ['13,206', '114,066']) {
-      expect(page, `page lost the ${stat} figure`).toContain(stat);
-      expect(skillReadme, `README lost the ${stat} figure`).toContain(stat);
-    }
+    // Captured and compared numerically, NOT `toContain`. A substring test passes on a
+    // digit-prefixed divergence — '113,206'.includes('13,206') is true — so a refresh that
+    // wrote 113,206 into the page while the README kept 13,206 would satisfy both sides and
+    // ship contradictory medians, which is the exact contradiction this block exists to stop.
+    // Comparing the two parsed values also removes the literals as a fourth typed copy.
+    expect(num(page, /Median located section ([\d,]+) characters/, 'page median')).toBe(
+      num(skillReadme, /median ([\d,]+) and maximum/, 'README median'),
+    );
+    expect(num(page, /maximum ([\d,]+)\./, 'page maximum')).toBe(
+      num(skillReadme, /and maximum ([\d,]+),/, 'README maximum'),
+    );
 
     // The README states two figures the page does not, so nothing else can check them.
     // `228 sections` is the one that reads as a transcription error on its face — 204 + 22
@@ -200,17 +244,22 @@ describe('curation page: the local-corpus snapshot', () => {
 });
 
 describe('ref 51: the page-count figure that exists in five places', () => {
-  // 22-of-43 is stated on the public page and in four files in the extraction skill, and
+  // The figure is stated on the public page and in four files in the extraction skill, and
   // until this check nothing compared them. It was 34 in all five for weeks, silently, which
   // is the drift this repo names as its costliest defect — five copies is simply five chances
   // to fix one and miss four.
   //
   // WHY THE COMMITTED FIXTURE APPEARS TO SAY 34, which is presumably where the wrong value
   // came from and is the trap for whoever checks this next: testdata/headings.json holds
-  // HEADINGS, not pages. Ref 51's last heading (`References`) is on page 34; the document
-  // runs to 43. The fixture has no `n_pages` field and cannot have one, because the page
-  // count lives in the gitignored converted corpus. So the fixture is not evidence for this
-  // figure in either direction — measure it with docling_ingest.py, do not infer it here.
+  // HEADINGS, not pages. Ref 51's last heading (`References`) sits well before the end of the
+  // document, so reading a total off the fixture gives a number that is too small. The fixture
+  // has no `n_pages` field and cannot have one, because the page count lives in the gitignored
+  // converted corpus. So it is not evidence for this figure in either direction — measure it
+  // with docling_ingest.py, do not infer it here.
+  //
+  // NO FIGURES IN THESE COMMENTS, DELIBERATELY. This file is not in its own SOURCES list, so a
+  // number written here is a sixth copy that the guard below cannot see — which is precisely
+  // the failure the guard is named for, committed inside the guard.
   const SOURCES = [
     PAGE_REL,
     README_REL,
@@ -218,6 +267,26 @@ describe('ref 51: the page-count figure that exists in five places', () => {
     '.claude/skills/matrix-classification-audit/docling_sections.test.py',
     '.claude/skills/matrix-classification-audit/extract_matrix_corpus.py',
   ];
+
+  it('every source it reads is reachable from CI', () => {
+    // The list above is duplicated into test.yml's two `paths:` blocks, and until this the
+    // only thing keeping them equal was a comment saying to keep them equal — in a repo whose
+    // stated remedy for a fact typed twice is to derive it or check it. It has already been
+    // wrong in both directions in this branch alone: first the whole subtree (a full site
+    // build per Python edit), then README.md only, which left three of these unreachable while
+    // commit 84ef88d touched exactly those three. Add a sixth SOURCES entry without touching
+    // test.yml and this fails instead of the guard going quietly unreachable.
+    const workflow = readFileSync(join(REPO_ROOT, '.github/workflows/test.yml'), 'utf-8');
+    const filters = [...workflow.matchAll(/^\s*-\s+(\S+)\s*$/gm)].map((m) => m[1]);
+    for (const src of SOURCES) {
+      if (src === PAGE_REL) continue; // covered by the blanket `site/**`
+      expect(
+        filters,
+        `${src} is read by this test but matches no path filter in test.yml, so the guard ` +
+          'cannot run on the edit most likely to break it',
+      ).toContain(src);
+    }
+  });
 
   it('states the same page and total everywhere it appears', () => {
     // matchAll, not exec. The guard's own rationale is that five copies is five chances to fix

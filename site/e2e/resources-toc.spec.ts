@@ -312,19 +312,34 @@ test('curation quotes no accuracy figure, only the process', async ({ page }) =>
   //     a space are both non-word characters, so there is no boundary between them. Anchoring
   //     the `\b` to `percent` (a word) instead of to the alternation fixes it.
   // Verified against both spellings of each shape before being trusted.
-  const QUANTITY = /\b\d+(\.\d+)?\s*(%|percent\b)|\b\d+\s+of\s+(the\s+)?\d+\b|\bof\s+(the\s+)?\d+\s+\w+.{0,60}?\b\d+\b/i;
-  // `unreliable` is FIRST because it is this page's own house word: section 6 already writes
-  // "Sampling found classifications drawn from abstracts and titles unreliable", so it is
-  // the phrasing a maintainer adding a figure would reach for, and the original list
-  // omitted it. The comment above once claimed this was verified both ways; it was verified
-  // against the SHAPES of a quantity, never against the synonyms of an error.
-  const ERRORWORD =
-    /\b(unreliable|mistaken|wrong|incorrect|erroneous|inaccurate|misclassif\w*|misplaced|mis-assigned|disagree\w*|error rate)\b/i;
+  // Spelled-out numerals and a bare `0.92` are both quantities. "Six of the 40" and
+  // "Precision was 0.92" are how a person writes this; only the digit forms were covered.
+  const NUM = String.raw`(?:\d+(?:\.\d+)?|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|dozen|twenty|thirty|forty|fifty)`;
+  const QUANTITY = new RegExp(
+    String.raw`\b\d+(\.\d+)?\s*(%|percent\b)` + '|' +
+      String.raw`\b${NUM}\s+of\s+(the\s+)?\d+\b` + '|' +
+      String.raw`\bof\s+(the\s+)?\d+\s+\w+.{0,60}?\b${NUM}\b` + '|' +
+      String.raw`\b0\.\d+\b`,
+    'i',
+  );
+  // BOTH POLARITIES, and the positive half is the one that matters. The standing decision is
+  // that CAAIL publishes NO accuracy figure at all, and nobody announcing a good result
+  // writes "wrong": they write "94% accuracy" or "agreed with 38 of the 40". Two earlier
+  // versions of this list held only failure words, so every natural way of publishing the
+  // figure this guard exists to stop sailed through a green suite. `unreliable` is in it
+  // because it is the page's own house word (section 6 writes "found classifications drawn
+  // from abstracts and titles unreliable").
+  //
+  // Verified in both directions before being trusted, which is the only reason to believe
+  // it: nine phrasings across both polarities are caught, and the whole live page produces
+  // ZERO false positives — including section 5's tables, which are dense with counts.
+  const OUTCOMEWORD =
+    /\b(unreliable|mistaken|wrong|incorrect|erroneous|inaccurate|misclassif\w*|misplaced|mis-assigned|disagree\w*|error rate|accuracy|accurate|precision|recall|f1|concordance|agreement|agreed|revised|corrected|right cell|correct cell|correctly)\b/i;
   const offenders = text
     .split(/(?<=[.!?])\s+|\n+/)
     .map((s) => s.trim())
     .filter(Boolean)
-    .filter((s) => QUANTITY.test(s) && ERRORWORD.test(s));
+    .filter((s) => QUANTITY.test(s) && OUTCOMEWORD.test(s));
   expect(offenders, 'an accuracy figure reached the page').toEqual([]);
   // The replacement has to stay, or removing the figure silently removes the
   // disclosure too and the page reads as though accuracy were unexamined.

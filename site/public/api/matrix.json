@@ -67,7 +67,7 @@
   "populatedCells": 72,
   "emptyCells": 128,
   "scopeNote": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall.",
-  "placementNote": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself.",
+  "placementNote": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/",
   "cells": [
     {
       "method": "Bayesian Optimization",
@@ -86,7 +86,7 @@
         251
       ],
       "emptyInCorpus": false,
-      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+      "placement": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/"
     },
     {
       "method": "Bayesian Optimization",
@@ -96,7 +96,7 @@
         16
       ],
       "emptyInCorpus": false,
-      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+      "placement": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/"
     },
     {
       "method": "Bayesian Optimization",
@@ -107,7 +107,7 @@
         256
       ],
       "emptyInCorpus": false,
-      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+      "placement": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/"
     },
     {
       "method": "Bayesian Optimization",
@@ -159,7 +159,7 @@
         212
       ],
       "emptyInCorpus": false,
-      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+      "placement": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/"
     },
     {
       "method": "Deep Learning",
@@ -174,7 +174,7 @@
         263
       ],
       "emptyInCorpus": false,
-      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+      "placement": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/"
     },
     {
       "method": "Deep Learning",
@@ -191,7 +191,7 @@
         257
       ],
       "emptyInCorpus": false,
-      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+      "placement": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/"
     },
     {
       "method": "Deep Learning",
@@ -203,7 +203,7 @@
         216
       ],
       "emptyInCorpus": false,
-      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+      "placement": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/"
     },
     {
       "method": "Deep Learning",
@@ -218,7 +218,7 @@
         338
       ],
       "emptyInCorpus": false,
-      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+      "placement": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/"
     },
     {
       "method": "Deep Learning",
@@ -228,7 +228,7 @@
         145
       ],
       "emptyInCorpus": false,
-      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+      "placement": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/"
     },
     {
       "method": "Deep Learning",
@@ -248,7 +248,7 @@
         289
       ],
       "emptyInCorpus": false,
-      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+      "placement": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/"
     },
     {
       "method": "GNN",
@@ -269,7 +269,7 @@
         121
       ],
       "emptyInCorpus": false,
-      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+      "placement": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/"
     },
     {
       "method": "GNN",
@@ -300,7 +300,7 @@
         324
       ],
       "emptyInCorpus": false,
-      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+      "placement": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/"
     },
     {
       "method": "GNN",
@@ -310,7 +310,7 @@
         68
       ],
       "emptyInCorpus": false,
-      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+      "placement": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/"
     },
     {
       "method": "GNN",
@@ -328,7 +328,7 @@
         52
       ],
       "emptyInCorpus": false,
-      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+      "placement": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/"
     },
     {
       "method": "CNN",
@@ -348,7 +348,7 @@
         265
       ],
       "emptyInCorpus": false,
-      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+      "placement": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/"
     },
     {
       "method": "CNN",
@@ -361,7 +361,7 @@
         261
       ],
       "emptyInCorpus": false,
-      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+      "placement": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/"
     },
     {
       "method": "CNN",
@@ -373,7 +373,7 @@
         349
       ],
       "emptyInCorpus": false,
-      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+      "placement": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/"
     },
     {
       "method": "CNN",
@@ -388,7 +388,7 @@
         330
       ],
       "emptyInCorpus": false,
-      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+      "placement": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/"
     },
     {
       "method": "CNN",
@@ -431,7 +431,7 @@
         10
       ],
       "emptyInCorpus": false,
-      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+      "placement": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/"
     },
     {
       "method": "GAN / VAE",
@@ -449,7 +449,7 @@
         35
       ],
       "emptyInCorpus": false,
-      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+      "placement": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/"
     },
     {
       "method": "GAN / VAE",
@@ -459,7 +459,7 @@
         11
       ],
       "emptyInCorpus": false,
-      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+      "placement": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/"
     },
     {
       "method": "GAN / VAE",
@@ -485,7 +485,7 @@
         238
       ],
       "emptyInCorpus": false,
-      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+      "placement": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/"
     },
     {
       "method": "Genetic Algorithms",
@@ -500,7 +500,7 @@
         252
       ],
       "emptyInCorpus": false,
-      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+      "placement": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/"
     },
     {
       "method": "Genetic Algorithms",
@@ -521,7 +521,7 @@
         258
       ],
       "emptyInCorpus": false,
-      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+      "placement": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/"
     },
     {
       "method": "Genetic Algorithms",
@@ -531,7 +531,7 @@
         34
       ],
       "emptyInCorpus": false,
-      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+      "placement": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/"
     },
     {
       "method": "Genetic Algorithms",
@@ -541,7 +541,7 @@
         342
       ],
       "emptyInCorpus": false,
-      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+      "placement": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/"
     },
     {
       "method": "Genetic Algorithms",
@@ -575,7 +575,7 @@
         21
       ],
       "emptyInCorpus": false,
-      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+      "placement": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/"
     },
     {
       "method": "SVM",
@@ -597,7 +597,7 @@
         262
       ],
       "emptyInCorpus": false,
-      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+      "placement": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/"
     },
     {
       "method": "SVM",
@@ -622,7 +622,7 @@
         334
       ],
       "emptyInCorpus": false,
-      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+      "placement": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/"
     },
     {
       "method": "SVM",
@@ -658,7 +658,7 @@
         213
       ],
       "emptyInCorpus": false,
-      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+      "placement": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/"
     },
     {
       "method": "Ensemble Learning",
@@ -679,7 +679,7 @@
         208
       ],
       "emptyInCorpus": false,
-      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+      "placement": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/"
     },
     {
       "method": "Ensemble Learning",
@@ -693,7 +693,7 @@
         309
       ],
       "emptyInCorpus": false,
-      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+      "placement": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/"
     },
     {
       "method": "Ensemble Learning",
@@ -725,7 +725,7 @@
         346
       ],
       "emptyInCorpus": false,
-      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+      "placement": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/"
     },
     {
       "method": "Ensemble Learning",
@@ -743,7 +743,7 @@
         290
       ],
       "emptyInCorpus": false,
-      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+      "placement": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/"
     },
     {
       "method": "Ensemble Learning",
@@ -777,7 +777,7 @@
         32
       ],
       "emptyInCorpus": false,
-      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+      "placement": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/"
     },
     {
       "method": "K-Nearest Neighbors",
@@ -797,7 +797,7 @@
         340
       ],
       "emptyInCorpus": false,
-      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+      "placement": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/"
     },
     {
       "method": "K-Nearest Neighbors",
@@ -839,7 +839,7 @@
         266
       ],
       "emptyInCorpus": false,
-      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+      "placement": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/"
     },
     {
       "method": "Linear & Regularized Models",
@@ -857,7 +857,7 @@
         171
       ],
       "emptyInCorpus": false,
-      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+      "placement": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/"
     },
     {
       "method": "Linear & Regularized Models",
@@ -869,7 +869,7 @@
         171
       ],
       "emptyInCorpus": false,
-      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+      "placement": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/"
     },
     {
       "method": "Linear & Regularized Models",
@@ -903,7 +903,7 @@
         287
       ],
       "emptyInCorpus": false,
-      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+      "placement": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/"
     },
     {
       "method": "Chemometrics",
@@ -922,7 +922,7 @@
         208
       ],
       "emptyInCorpus": false,
-      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+      "placement": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/"
     },
     {
       "method": "Chemometrics",
@@ -944,7 +944,7 @@
         348
       ],
       "emptyInCorpus": false,
-      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+      "placement": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/"
     },
     {
       "method": "Chemometrics",
@@ -971,7 +971,7 @@
         199
       ],
       "emptyInCorpus": false,
-      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+      "placement": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/"
     },
     {
       "method": "Active Learning",
@@ -986,7 +986,7 @@
         250
       ],
       "emptyInCorpus": false,
-      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+      "placement": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/"
     },
     {
       "method": "Active Learning",
@@ -997,7 +997,7 @@
         97
       ],
       "emptyInCorpus": false,
-      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+      "placement": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/"
     },
     {
       "method": "Active Learning",
@@ -1048,7 +1048,7 @@
         182
       ],
       "emptyInCorpus": false,
-      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+      "placement": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/"
     },
     {
       "method": "Reinforcement Learning",
@@ -1067,7 +1067,7 @@
         120
       ],
       "emptyInCorpus": false,
-      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+      "placement": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/"
     },
     {
       "method": "Reinforcement Learning",
@@ -1080,7 +1080,7 @@
         203
       ],
       "emptyInCorpus": false,
-      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+      "placement": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/"
     },
     {
       "method": "Reinforcement Learning",
@@ -1122,7 +1122,7 @@
         161
       ],
       "emptyInCorpus": false,
-      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+      "placement": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/"
     },
     {
       "method": "Foundation Models: Next-Token Prediction",
@@ -1142,7 +1142,7 @@
         120
       ],
       "emptyInCorpus": false,
-      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+      "placement": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/"
     },
     {
       "method": "Foundation Models: Next-Token Prediction",
@@ -1168,7 +1168,7 @@
         285
       ],
       "emptyInCorpus": false,
-      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+      "placement": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/"
     },
     {
       "method": "Foundation Models: Next-Token Prediction",
@@ -1195,7 +1195,7 @@
         88
       ],
       "emptyInCorpus": false,
-      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+      "placement": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/"
     },
     {
       "method": "Foundation Models: Masked Language Modeling",
@@ -1215,7 +1215,7 @@
         235
       ],
       "emptyInCorpus": false,
-      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+      "placement": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/"
     },
     {
       "method": "Foundation Models: Masked Language Modeling",
@@ -1241,7 +1241,7 @@
         322
       ],
       "emptyInCorpus": false,
-      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+      "placement": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/"
     },
     {
       "method": "Foundation Models: Masked Language Modeling",
@@ -1269,7 +1269,7 @@
         6
       ],
       "emptyInCorpus": false,
-      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+      "placement": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/"
     },
     {
       "method": "Foundation Models: LM + Biological Priors",
@@ -1287,7 +1287,7 @@
         119
       ],
       "emptyInCorpus": false,
-      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+      "placement": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/"
     },
     {
       "method": "Foundation Models: LM + Biological Priors",
@@ -1355,7 +1355,7 @@
         120
       ],
       "emptyInCorpus": false,
-      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+      "placement": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/"
     },
     {
       "method": "Foundation Models: Cell-State & Perturbation Prediction",
@@ -1405,7 +1405,7 @@
         117
       ],
       "emptyInCorpus": false,
-      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+      "placement": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/"
     },
     {
       "method": "Foundation Models (other modalities)",
@@ -1448,7 +1448,7 @@
         270
       ],
       "emptyInCorpus": false,
-      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+      "placement": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/"
     },
     {
       "method": "Foundation Models (other modalities)",
@@ -1476,7 +1476,7 @@
         224
       ],
       "emptyInCorpus": false,
-      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+      "placement": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/"
     },
     {
       "method": "Scientific Literature & Discovery Agents",
@@ -1551,7 +1551,7 @@
         273
       ],
       "emptyInCorpus": false,
-      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+      "placement": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/"
     },
     {
       "method": "General-Purpose Biomedical Agents",
@@ -1624,7 +1624,7 @@
         272
       ],
       "emptyInCorpus": false,
-      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+      "placement": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/"
     },
     {
       "method": "Chemistry / Synthesis Agents",
@@ -1691,7 +1691,7 @@
         71
       ],
       "emptyInCorpus": false,
-      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+      "placement": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/"
     },
     {
       "method": "Domain-Specific Biomedical Agents",
@@ -1711,7 +1711,7 @@
         93
       ],
       "emptyInCorpus": false,
-      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+      "placement": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/"
     },
     {
       "method": "Domain-Specific Biomedical Agents",
@@ -1774,7 +1774,7 @@
         277
       ],
       "emptyInCorpus": false,
-      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+      "placement": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/"
     },
     {
       "method": "Robot Scientists & Lab Automation",
@@ -1793,7 +1793,7 @@
         16
       ],
       "emptyInCorpus": false,
-      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+      "placement": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/"
     },
     {
       "method": "Robot Scientists & Lab Automation",
@@ -1803,7 +1803,7 @@
         61
       ],
       "emptyInCorpus": false,
-      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+      "placement": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/"
     },
     {
       "method": "Robot Scientists & Lab Automation",
@@ -1850,7 +1850,7 @@
         274
       ],
       "emptyInCorpus": false,
-      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+      "placement": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/"
     },
     {
       "method": "Benchmarks & Evaluation Frameworks",
@@ -1875,7 +1875,7 @@
         225
       ],
       "emptyInCorpus": false,
-      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+      "placement": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/"
     },
     {
       "method": "Benchmarks & Evaluation Frameworks",
@@ -1893,7 +1893,7 @@
         349
       ],
       "emptyInCorpus": false,
-      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+      "placement": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/"
     },
     {
       "method": "Benchmarks & Evaluation Frameworks",
@@ -1941,7 +1941,7 @@
         225
       ],
       "emptyInCorpus": false,
-      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+      "placement": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/"
     },
     {
       "method": "Agent Infrastructure (Frameworks, KGs, Protocols)",
@@ -2016,7 +2016,7 @@
         220
       ],
       "emptyInCorpus": false,
-      "placement": "Placements are curator-assigned and are being re-verified against paper full texts, then graded by evaluators. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself."
+      "placement": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/"
     }
   ]
 }

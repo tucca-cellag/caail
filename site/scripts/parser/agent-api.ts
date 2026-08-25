@@ -61,11 +61,14 @@ export const SCOPE_NOTE =
  */
 export const STATUS = 'beta' as const;
 export const PLACEMENT_NOTE =
-  'Placements are curator-assigned and are being re-verified against paper full texts, ' +
-  'then graded by evaluators. Treat a cell as a substantive claim about the paper method ' +
-  'and application area. The residual uncertainty is precision, not inclusion: where a ' +
-  'placement is off it is typically a closely related cell rather than a paper that does ' +
-  'not belong. Cite the paper itself.';
+  'Placements are proposed by a language-model agent reading the paper methods section, ' +
+  'checked by a separate reviewer agent that must quote the passage it relies on, and ' +
+  'entered by a human maintainer; placements made before that pipeline are being ' +
+  're-verified against full texts. Treat a cell as a substantive claim about the paper ' +
+  'method and application area. The residual uncertainty is precision, not inclusion: ' +
+  'where a placement is off it is typically a closely related cell rather than a paper ' +
+  'that does not belong. Cite the paper itself. How this is done, and how far it reaches: ' +
+  'https://tucca-cellag.github.io/caail/curation/';
 
 /** Repo root, two levels above this module's directory (parser/ -> scripts/ -> site/ -> root). */
 const REPO_ROOT = fileURLToPath(new URL('../../../', import.meta.url));
