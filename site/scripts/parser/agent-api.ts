@@ -31,6 +31,7 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { assertValid, buildOpenApiDocument, OPENAPI_FILE } from './openapi.js';
+import { MATRIX_SECTION } from './types.js';
 import type { DatasetInventory, PapersData } from './types.js';
 
 /** Where an agent-visible caveat is stated once and reused everywhere. */
@@ -81,14 +82,9 @@ export const PLACEMENT_NOTE =
 /** Repo root, two levels above this module's directory (parser/ -> scripts/ -> site/ -> root). */
 const REPO_ROOT = fileURLToPath(new URL('../../../', import.meta.url));
 
-/**
- * The `Papers.md` section whose entries participate in the matrix.
- *
- * Exported because `curation-page.test.ts` checks the published figure against the same
- * population this file counts for `papersMatrixEligible`, and re-typing the string there would
- * make a rename silently count zero and fail with a message about the wrong thing.
- */
-export const MATRIX_SECTION = 'References';
+// Re-exported so existing importers keep working; defined in types.ts, which is a zod-only
+// leaf every consumer can reach. See that definition for why the literal must not be re-typed.
+export { MATRIX_SECTION } from './types.js';
 
 export interface AgentApiInputs {
   papers: PapersData;

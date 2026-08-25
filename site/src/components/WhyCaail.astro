@@ -48,6 +48,7 @@ import matrix from '../../public/api/matrix.json';
 import papers from '../../public/api/papers.json';
 import catalog from '../../public/api/catalog.json';
 import { licenseTier } from '../lib/licenses';
+import { MATRIX_SECTION } from '../../scripts/parser/types';
 import counts from '../content/data/counts.json';
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
@@ -115,7 +116,7 @@ if (citedWithoutDoi.length > 0) {
    perspectives, and four reference works. Quoting its length as "papers" is the
    population-mislabelling failure CAAIL-12 was filed about, and it overstates the
    primary corpus by half. The lede names each population instead of summing them. */
-const primary = papers.references.filter((r) => r.section === 'References');
+const primary = papers.references.filter((r) => r.section === MATRIX_SECTION);
 const reviews = papers.references.filter((r) => r.section === 'Reviews & Perspectives');
 const refWorks = papers.references.filter((r) => r.section.endsWith('Reference Work'));
 

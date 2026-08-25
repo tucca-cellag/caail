@@ -29,6 +29,7 @@ import { importNdjson, ACCESSION_EXACT, idAccession, REPO_ROOT, SITE_ROOT, type 
 import { THEME_SLUGS, THEMES } from './seed.js';
 import { buildTaxonomyModel } from '../parser/taxonomy.js';
 import { AREAS } from '../parser/areas.js';
+import { MATRIX_SECTION } from '../parser/types.js';
 import type { TaxonomyData } from '../parser/types.js';
 
 const MANUAL_LICENSES_PATH = join(SITE_ROOT, 'scripts', 'db', 'licenses-manual.json');
@@ -105,7 +106,7 @@ export function checkIntegrity(db: Db): CheckResult[] {
 
 export function checkReachability(db: Db): CheckResult[] {
   const unreachable = db.prepare(
-    `SELECT ref_id FROM papers WHERE section='References'
+    `SELECT ref_id FROM papers WHERE section='${MATRIX_SECTION}'
        AND ref_id NOT IN (SELECT DISTINCT ref_id FROM matrix_cells) ORDER BY ref_id`,
   ).all() as { ref_id: number }[];
   return [ok('every primary `## References` paper is cited in >=1 matrix cell',

@@ -20,6 +20,7 @@
  * (every message includes the affected `#N` id).
  */
 
+import { MATRIX_SECTION } from './types.js';
 import type { PapersData, Reference } from './types.js';
 
 // ---------------------------------------------------------------------------
@@ -121,7 +122,7 @@ function checkUnreachablePrimaries(model: PapersData, errors: string[]): void {
 
   const unreachable: number[] = [];
   for (const ref of model.references) {
-    if (ref.section === 'References' && !citedIds.has(ref.id)) {
+    if (ref.section === MATRIX_SECTION && !citedIds.has(ref.id)) {
       unreachable.push(ref.id);
     }
   }
