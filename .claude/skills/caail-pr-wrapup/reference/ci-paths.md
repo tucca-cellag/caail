@@ -34,7 +34,7 @@ issue templates disagree.
 
 **The full check-free list, which lives here and nowhere else** (`SKILL.md` step 5 points at it rather
 than restating it, because the enumeration has already been wrong in both directions once each):
-`.claude/` rules and agents, the four unfiltered `.claude/skills/*` directories named above, `docs/**`,
+`.claude/` rules and agents, the four unfiltered `.claude/skills/*` directories named above,
 `LICENSE`, `.zenodo.json`, `.gitignore`, and two of the three plugin manifests
 (`.claude-plugin/marketplace.json` and `plugin/.claude-plugin/plugin.json`; only `plugin/skills/**` is
 filtered, not `plugin/**`). The third, `plugin-contribute/.claude-plugin/plugin.json`, is **not**

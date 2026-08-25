@@ -24,8 +24,11 @@
  * `.gitignore` triggered no workflow at all.
  *
  * WHY `docs/superpowers/` AND `docs/research/` ARE HERE when `docs/` no longer
- * exists at all. The directory was emptied and removed, because it held only
- * decision records and process conventions and no library documentation. Their
+ * exists at all. The directory was emptied and removed, because nothing in it
+ * was documentation for the live library: decision records, process
+ * conventions, and one superseded implementation spike whose production form is
+ * `site/scripts/db/lib.ts`. The criterion is what a file IS, not whether it is
+ * prose; a spike is code and still did not belong there. Their
  * `.gitignore` rules were kept, and that is exactly when a rule looks dead and
  * invites a tidy-up. An agent carrying an older instruction (a cached skill, a
  * stale branch, a session that began before the change) still writes to
@@ -150,13 +153,22 @@ const MUST_STAY_PUBLISHABLE = [
   // earlier draft probed two files there to catch a rule widened to a bare
   // `docs/`, which made this guard assert a PUBLISHING POLICY as a side effect
   // of testing for over-match, and got one of them backwards against the rule
-  // it sat beside. The directory has since been removed entirely: it held only
-  // decision records and process conventions, which belong on the trackers.
+  // it sat beside. The directory has since been removed entirely: nothing in
+  // it was library documentation.
   //
-  // The cost, stated rather than hidden: the `docs/research/` and
-  // `docs/superpowers/` rules are still live, so a rule widened from either to
-  // a bare `docs/` is caught by the PATTERN pin above and by nothing here, and
-  // a NEW broad rule added alongside them is caught by neither half.
+  // What this costs, measured rather than reasoned about, because two earlier
+  // drafts of this comment guessed and both were wrong. The `docs/research/`
+  // and `docs/superpowers/` rules are still live. Adding a bare `docs/`
+  // alongside them is caught by the PATTERN pin above from EITHER position:
+  //
+  //   docs/ added after  -> check-ignore reports `docs/`, pin fails
+  //   docs/ added before -> check-ignore reports `docs/`, pin fails
+  //
+  // It is not a last-match-wins question. A bare `docs/` excludes the
+  // DIRECTORY, so git never descends to consider the deeper pattern, which is
+  // the same short-circuit that hides a companion inside a wholly-ignored tree
+  // from `.worktreeinclude`. So this list's blind spot is narrower than it
+  // looks: it sees nothing under `docs/`, but the pin does.
 ];
 
 /** `<source>:<line>:<pattern>\t<pathname>` */
