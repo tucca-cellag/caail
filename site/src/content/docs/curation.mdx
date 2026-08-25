@@ -3,9 +3,6 @@ title: Curation Methodology
 description: "What a placement in the CAAIL matrix rests on: how each paper's methods section is located, how AI-drafted classifications are checked, current coverage, and what we are adding next."
 ---
 
-{/* Numbers here are written out, never interpolated, and guarded by
-    scripts/parser/curation-page.test.ts. Read that file before changing one. */}
-
 Every cell in the matrix at the top of [Papers.md](https://github.com/tucca-cellag/caail/blob/main/Papers.md) says that a named paper applied a named AI/ML method to a named cellular-agriculture research area. This page describes how those placements are made, so you can judge one for yourself.
 
 :::caution[Entries are drafted by AI agents]
@@ -98,7 +95,7 @@ These checks confirm the catalogue is internally consistent. Whether a placement
 
 ## 5. Coverage
 
-[Papers.md](https://github.com/tucca-cellag/caail/blob/main/Papers.md) holds 345 references. 229 are primary research and participate in the matrix. The other 116 are reviews, perspectives and reference-work chapters, which by design have no cell. Those three counts are checked against the catalogue on every build, so a paper landing without them moving fails.
+[Papers.md](https://github.com/tucca-cellag/caail/blob/main/Papers.md) holds 345 references. 229 are primary research and participate in the matrix. The other 116 are reviews, perspectives and reference-work chapters, which by design have no cell. Those three counts are checked against the catalogue in CI on every change, so a paper landing without them moving fails.
 
 The evidence figures below cannot be checked that way, because the converted corpus is local rather than committed. They are a snapshot. **Measured 2026-08-24.**
 

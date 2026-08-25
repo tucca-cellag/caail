@@ -281,7 +281,13 @@ test('curation asks for topic leads and for feedback on the method itself', asyn
 
 test('curation quotes no accuracy figure, only the process', async ({ page }) => {
   await page.goto('./curation/');
-  const text = (await page.locator('main').innerText()).replace(/\s+/g, ' ');
+  // Horizontal whitespace only. Collapsing NEWLINES here (which `\s` does) was the bug:
+  // innerText ends table rows and headings without terminal punctuation, so a sentence
+  // split on /[.!?]/ alone then welded the entire section-5 evidence table and its lede
+  // into one pseudo-sentence. Any later use of "wrong" anywhere in that block would trip
+  // the guard against figures it was never meant to police, and the proximity semantics
+  // it exists for did not hold there at all.
+  const text = (await page.locator('main').innerText()).replace(/[^\S\n]+/g, ' ');
   // Internal sampling of classification accuracy exists, and quoting a figure
   // from it is a standing decision against: the samples are small, so a number
   // read as a general rate would both overclaim and alarm. "In progress" carries
@@ -297,7 +303,9 @@ test('curation quotes no accuracy figure, only the process', async ({ page }) =>
   const QUANTITY = /\b\d+(\.\d+)?\s*(%|percent)\b|\b\d+\s+of\s+\d+\b|\bof\s+\d+\s+\w+.{0,60}?\b\d+\b/i;
   const ERRORWORD = /\b(wrong|incorrect|erroneous|inaccurate|misclassif\w*|misplaced|mis-assigned|error rate)\b/i;
   const offenders = text
-    .split(/(?<=[.!?])\s+/)
+    .split(/(?<=[.!?])\s+|\n+/)
+    .map((s) => s.trim())
+    .filter(Boolean)
     .filter((s) => QUANTITY.test(s) && ERRORWORD.test(s));
   expect(offenders, 'an accuracy figure reached the page').toEqual([]);
   // The replacement has to stay, or removing the figure silently removes the

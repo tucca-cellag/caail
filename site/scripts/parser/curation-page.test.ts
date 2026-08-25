@@ -56,16 +56,37 @@ function grab(source: string, re: RegExp, what: string): string {
   return m![1];
 }
 
+/**
+ * `grab` a figure and parse it as a number, thousands separators included.
+ *
+ * NOT `Number(grab(...))`, which is what this was and which is a guard that disables itself
+ * at exactly the size where it starts to matter. `Number('1,226')` is `NaN`, `toBe` is
+ * `Object.is`, and `Object.is(NaN, NaN)` is TRUE — so once any figure here crosses a
+ * thousand and is written with the comma the `[\d,]+` class exists to permit, every
+ * `expect(a + b).toBe(c)` below would pass by comparing NaN to NaN while the table no
+ * longer added up. The `isFinite` assertion is the part that cannot silently rot.
+ *
+ * Deliberately NOT a `typeof` check, which is the obvious-looking version and is useless:
+ * `typeof NaN` is `'number'`, so it passes on precisely the value it would be there to
+ * reject.
+ */
+function num(source: string, re: RegExp, what: string): number {
+  const parsed = Number(grab(source, re, what).replace(/,/g, ''));
+  expect(
+    Number.isFinite(parsed),
+    `${what}: parsed to ${parsed}, so every comparison against it would pass vacuously`,
+  ).toBe(true);
+  return parsed;
+}
+
 describe('curation page: numbers that another source already knows', () => {
   it('corpus totals match papers.json', () => {
     const all = papers.references.length;
     const matrix = papers.references.filter((r) => r.section === 'References').length;
 
-    expect(Number(grab(page, /holds ([\d,]+) references/, 'total references'))).toBe(all);
-    expect(Number(grab(page, /([\d,]+) are primary research/, 'matrix references'))).toBe(matrix);
-    expect(Number(grab(page, /The other ([\d,]+) are reviews/, 'non-matrix references'))).toBe(
-      all - matrix,
-    );
+    expect(num(page, /holds ([\d,]+) references/, 'total references')).toBe(all);
+    expect(num(page, /([\d,]+) are primary research/, 'matrix references')).toBe(matrix);
+    expect(num(page, /The other ([\d,]+) are reviews/, 'non-matrix references')).toBe(all - matrix);
   });
 
   it('topic-lead coverage matches curatorCoverage()', () => {
@@ -76,7 +97,7 @@ describe('curation page: numbers that another source already knows', () => {
     expect(totals.length, 'nobody states the theme total any more').toBeGreaterThanOrEqual(2);
     for (const t of totals) expect(t).toBe(total);
 
-    expect(Number(grab(page, /Two people covering (\d+) themes/, 'section 3 lede'))).toBe(total);
+    expect(num(page, /Two people covering (\d+) themes/, 'section 3 lede')).toBe(total);
     expect(grab(page, /(\d+ of the \d+) themes has a lead/, 'held count')).toBe(
       `${held} of the ${total}`,
     );
@@ -94,23 +115,21 @@ describe('curation page: numbers that another source already knows', () => {
 });
 
 describe('curation page: the local-corpus snapshot', () => {
-  const bounded = () => Number(grab(page, /Read a bounded methods section \| ([\d,]+)/, 'bounded'));
+  const bounded = () => num(page, /Read a bounded methods section \| ([\d,]+)/, 'bounded');
   const explicit = () =>
-    Number(grab(page, /located from an explicit methods heading \| ([\d,]+)/, 'explicit'));
+    num(page, /located from an explicit methods heading \| ([\d,]+)/, 'explicit');
   const positional = () =>
-    Number(grab(page, /between the introduction and the first results heading \| ([\d,]+)/, 'positional'));
+    num(page, /between the introduction and the first results heading \| ([\d,]+)/, 'positional');
   const noSection = () =>
-    Number(grab(page, /holds it in a supplement we do not have \| (\d+)/, 'no methods section'));
-  const noPdf = () => Number(grab(page, /PDF not held \| (\d+)/, 'no PDF'));
+    num(page, /holds it in a supplement we do not have \| (\d+)/, 'no methods section');
+  const noPdf = () => num(page, /PDF not held \| (\d+)/, 'no PDF');
 
   it('the table sums to its own stated denominator', () => {
     // The denominator is frozen and dated ("Of those N matrix references, as at that date"),
     // NOT derived. A derived denominator over typed rows is the same defect inverted: add one
     // paper and the page reads "Of those 230" above rows summing to 229, with 226 becoming a
     // percentage of the wrong base.
-    const denominator = Number(
-      grab(page, /Of those ([\d,]+) matrix references, as at that date/, 'denominator'),
-    );
+    const denominator = num(page, /Of those ([\d,]+) matrix references, as at that date/, 'denominator');
     expect(explicit() + positional()).toBe(bounded());
     expect(bounded() + noSection() + noPdf()).toBe(denominator);
   });
@@ -119,7 +138,7 @@ describe('curation page: the local-corpus snapshot', () => {
     // The one place these figures appear twice. The README paragraph beside them says a figure
     // edited in one place and not the other is a contradiction CAAIL ships in both directions;
     // this is what makes that statement true rather than aspirational.
-    const r = (re: RegExp, what: string) => Number(grab(skillReadme, re, `README ${what}`));
+    const r = (re: RegExp, what: string) => num(skillReadme, re, `README ${what}`);
 
     expect(r(/(\d+) located from an explicit methods/, 'explicit')).toBe(explicit());
     expect(r(/and (\d+) from the introduction-to-results span/, 'positional')).toBe(positional());
@@ -139,10 +158,18 @@ describe('curation page: the local-corpus snapshot', () => {
 });
 
 describe('curation page: what reaches an agent', () => {
-  it('is in llms-full.txt as rendered prose, not as source', () => {
+  it('contributes no brace to llms-full.txt, so no expression can reach an agent unevaluated', () => {
     // THE REGRESSION THIS WHOLE FILE IS NAMED FOR. `llms-full.ts` concatenates raw bytes, so
-    // ANY JSX expression in this page ships to agents unevaluated. Asserting on the built
+    // ANY JSX expression in this page ships to agents unevaluated. Asserted on the built
     // artifact rather than on the source, because the source is only half the contract.
+    //
+    // NO BRACE AT ALL, rather than a pattern for what an interpolation looks like. The first
+    // version matched `{ident.field}` and `{ident}`, which are the shapes the defect happened
+    // to take — and missed `{curatorCoverage().open}`, which is the shape the NEXT one would
+    // take, since the theme counts are exactly what a later edit would derive. A guard that
+    // enumerates spellings loses to the spelling nobody enumerated. This page needs no brace
+    // for any purpose, so the categorical rule is both stronger and simpler to keep true.
+    // If a future edit genuinely needs one, it needs a Markdown source for this list instead.
     const llmsFull = readFileSync(join(REPO_ROOT, 'site/public/llms-full.txt'), 'utf-8');
     const marker = `# ===== ${PAGE_REL} =====`;
     const start = llmsFull.indexOf(marker);
@@ -151,12 +178,11 @@ describe('curation page: what reaches an agent', () => {
     const nextSection = llmsFull.indexOf('\n# ===== ', start + marker.length);
     const section = llmsFull.slice(start, nextSection === -1 ? undefined : nextSection);
 
-    // `{ident.field}` and `{ident}` — the shapes an interpolated count takes. Code spans on
-    // this page are backticked identifiers (`methods_source`, `ftcache`) and match neither.
-    const expressions = section.match(/\{\s*[A-Za-z_$][\w$]*(\s*\.\s*[\w$]+|\s*\})/g) ?? [];
+    const braces = section.match(/[{}]/g) ?? [];
     expect(
-      expressions,
-      'unevaluated JSX reached llms-full.txt — agents get source code where a number should be',
+      braces,
+      'a brace reached llms-full.txt from curation.mdx — JSX and MDX comments are inlined ' +
+        'raw, so agents would get source code where prose should be',
     ).toEqual([]);
 
     // And the figures are actually present as digits, so an empty match above cannot be
