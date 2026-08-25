@@ -35,10 +35,15 @@ issue templates disagree.
 **The full check-free list, which lives here and nowhere else** (`SKILL.md` step 5 points at it rather
 than restating it, because the enumeration has already been wrong in both directions once each):
 `.claude/` rules and agents, the four unfiltered `.claude/skills/*` directories named above,
-`LICENSE`, `.zenodo.json`, `.gitignore`, and two of the three plugin manifests
+`LICENSE`, `.zenodo.json`, and two of the three plugin manifests
 (`.claude-plugin/marketplace.json` and `plugin/.claude-plugin/plugin.json`; only `plugin/skills/**` is
 filtered, not `plugin/**`). The third, `plugin-contribute/.claude-plugin/plugin.json`, is **not**
-check-free: `plugin-contribute/**` is filtered whole, so everything under it runs checks. On what `preflight` reads, see the lede above; on how current it
+check-free: `plugin-contribute/**` is filtered whole, so everything under it runs checks.
+**`.gitignore` and `.worktreeinclude` are NOT check-free** and were listed here as though they
+were: both are in `test.yml`'s two path filters and in `ship-pr.sh`'s `TEST_PATHS`, so a
+`.gitignore`-only PR runs the full vitest and Playwright suites. They earn that, because
+`site/scripts/private-paths.test.ts` and `canonical-files.test.ts` both assert against them and
+would otherwise be unreachable from CI on the one edit most likely to break them. On what `preflight` reads, see the lede above; on how current it
 is, the paragraph after it, on `check-ci-paths.py`. Neither is restated here. When a check you expected is missing, open the workflow. `.claude/hooks/**` and
 `.claude/settings.json` trigger **both** `test.yml` and `guards.yml`, because the two hooks are tested
 in different places (`check-public-publish.test.py` in `guards.yml`, `block-generated-edits.py` via

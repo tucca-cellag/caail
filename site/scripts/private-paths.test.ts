@@ -40,6 +40,8 @@ import { describe, it, expect } from 'vitest';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
+import { llmsFullSources } from './parser/llms-full.js';
+
 /** scripts/ → site/ → repo root. */
 const REPO_ROOT = fileURLToPath(new URL('../../', import.meta.url));
 
@@ -132,16 +134,17 @@ const PROBES = [
  * would encode a publishing policy as a side effect of testing for over-match.
  */
 const MUST_STAY_PUBLISHABLE = [
-  // One per canonical directory the build actually enumerates (llms-full.ts
-  // and computeCounts read this same set), not one representative. A rule
-  // widened to swallow Methods/ or Primers/ would otherwise be invisible: the
-  // pages vanish from llms-full.txt and the homepage counts with every other
-  // assertion green.
-  'Papers.md',
-  'Datasets/Cow.md',
-  'ResearchAreas/Bioprocess.md',
-  'Methods/DeepLearning.md',
-  'Primers/CellAg.md',
+  // DERIVED from llmsFullSources(), the parser's own enumeration of everything
+  // inlined verbatim into the served llms-full.txt. Hand-listing one file per
+  // canonical DIRECTORY was the previous form, and it covered 1 of the 12
+  // root-level files that function reads: a new rule swallowing Talks.md,
+  // Community.md or Taxonomy.md changed no pattern pin and hit no probe, so the
+  // page dropped out of llms-full.txt and the homepage counts with the whole
+  // suite green. Deriving is the only form that keeps up with the list.
+  ...llmsFullSources(REPO_ROOT),
+  // Not in that list, and both worth holding. The privacy page is a route
+  // rather than corpus, and losing it silently is a compliance problem rather
+  // than a content one.
   'site/src/content/docs/privacy.mdx',
   // The negation case, and the reason checkIgnore cannot use the exit code
   // alone. `!.env.example` MATCHES and exits 0 while leaving the file
@@ -266,13 +269,35 @@ describe('the private working trees stay out of the public repo', () => {
     ).toBe('');
   });
 
-  it.each(MUST_STAY_PUBLISHABLE)('does not over-match and swallow %s', (path) => {
-    const { matched, out } = checkIgnore(path);
+  it('does not over-match and swallow anything the build publishes', () => {
+    // ONE process for the whole set, not one per path: the derived list is
+    // ~60 entries and check-ignore reads a batch on --stdin. It prints a line
+    // only for paths that MATCHED, so silence is the passing case.
+    const res = spawnSync('git', ['check-ignore', '--no-index', '-v', '--stdin'], {
+      cwd: REPO_ROOT,
+      input: MUST_STAY_PUBLISHABLE.join('\n'),
+      encoding: 'utf-8',
+    });
+    expect(res.error, 'git check-ignore could not run').toBeUndefined();
+    expect([0, 1], `git check-ignore exited ${res.status}`).toContain(res.status);
+
+    // A NEGATION matches and prints, while leaving the path publishable, so
+    // filter those out rather than treating any output as failure. This is the
+    // same `!` that makes the exit code alone unusable in checkIgnore above,
+    // and `.env.example` is in the set precisely to exercise it.
+    const swallowed = (res.stdout ?? '')
+      .split('\n')
+      .filter((l) => l.trim())
+      .filter((l) => {
+        const pattern = (l.split('\t')[0] ?? '').split(':').slice(2).join(':');
+        return !pattern.startsWith('!');
+      });
+
     expect(
-      matched,
-      `${path} IS gitignored (${out}). A private-path rule has been widened `
-        + `and is now swallowing canonical content, which silently disappears `
-        + `from the published site and from llms-full.txt.`,
-    ).toBe(false);
+      swallowed,
+      'a private-path rule has been widened and is now swallowing content the '
+        + 'build publishes, which disappears from llms-full.txt and the homepage '
+        + 'counts with everything else green',
+    ).toEqual([]);
   });
 });

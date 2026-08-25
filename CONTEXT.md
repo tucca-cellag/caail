@@ -13,14 +13,15 @@ decision record is not library documentation. This file describes the repository
 and names the ticket that closes the gap. A glossary that states a decided end-state as
 present fact tells a reader the work is already done.
 
-**Every count below is a snapshot taken 2026-08-20 from `site/db/ndjson/`.** `areas.ndjson`,
+**Every count below is a snapshot from `site/db/ndjson/`, taken 2026-08-20 except where a
+line carries its own later date.** `areas.ndjson`,
 `topics.ndjson`, `item_topics.ndjson` and `matrix_cells.ndjson` are the source of truth: where a
 number here disagrees with them, they are right and this file is stale. **No one command prints
 all of these.** `pnpm --dir site db:check` prints the theme assertions, including that there are
 exactly eight; `pnpm --dir site parse` prints the headline totals but not the 229 matrix-eligible
 subset, nor any theme or `area_key` count. Read `parse`'s output carefully: its `researchAreas`
 figure counts files in `ResearchAreas/` and is **not** the number of research areas as defined
-below, which is the matrix columns in `areas.ndjson`. Both are 8 today, and that is the
+below, which is the matrix columns in `areas.ndjson`. Both are 8 as of 2026-08-25, and that is the
 bijection holding rather than the two being the same measurement: they can diverge, and
 `db:check` is what fails when they do. Read the four files rather than either figure.
 
@@ -118,12 +119,16 @@ _Avoid_: area page, docs page
 
 A research area's label should read as a **problem** (`Media Optimization`, `Sensory
 Prediction`, `Cellular Engineering`). A subject theme's label should read as an **`&`-joined
-subject** (`Media & Growth Factors`, `Sensory & Flavor`, `Cell Lines & Engineering`). Per
-the naming convention this **binds new labels rather than describing the existing ones**, and neither half
+subject** (`Media & Growth Factors`, `Sensory & Flavor`, `Cell Lines & Engineering`). This
+convention **binds new labels rather than describing the existing ones**, and neither half
 holds across the live set: `Scaffolding` and `AI Tooling / Methodology` are columns naming no
 problem, `Food Safety` is a theme carrying no `&`, and `Bioprocess & Scale-Up` is an
 `&`-joined column. Where it does hold, the difference is deliberate and load-bearing, because it
-is the only cue a reader has that two similar names denote different populations. One label is still shared across the axes:
-`Bioprocess & Scale-Up` names both a research area and a theme, which is the collision
-`Taxonomy.md` still carries as a duplicate `###` heading. The settled fix is to relabel
-the theme `Bioprocess & Manufacturing`, which has not landed (CAAIL-261).
+is the only cue a reader has that two similar names denote different populations.
+
+**No label is shared across the axes any more.** `Bioprocess & Scale-Up` names the research
+area and the theme is `Bioprocess & Manufacturing`, so `Taxonomy.md` carries two distinct
+`###` headings rather than one collision. Re-read that from `topics.ndjson` and `Taxonomy.md`
+rather than from here. The slug did not move with the label: `topic:bioprocess-scale-up` is a
+frozen id and its slug is what `/topics/?t=<slug>` and `api/topics.json` serve, so label and
+slug diverge permanently and that mismatch is intended rather than drift to repair.

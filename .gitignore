@@ -7,6 +7,13 @@
 # rather than any directory of that name; site/scripts/private-paths.test.ts
 # pins both the source and the exact pattern, and fails if either changes.
 /internal-docs/
+# These two outlive the directory they name. docs/ was removed because nothing
+# in it documented the live library, but an agent carrying an older instruction
+# still writes a spec to docs/superpowers/, and without these rules that lands
+# an unpublished design in a public repo with nothing failing. They look dead,
+# which is exactly when a tidy-up removes them; site/scripts/private-paths.test.ts
+# is what goes red if either is dropped. Removing them is a decision to take
+# deliberately, not a cleanup.
 docs/superpowers/
 docs/research/
 manuscript/

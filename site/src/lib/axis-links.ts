@@ -30,8 +30,9 @@ export const taxonomyHref = (label: string): string => `${BASE}/taxonomy/#${ghSl
  * Matrix area key → its ResearchAreas deep-dive route. Keys are the `areas.ts`
  * registry keys; values are the page ids in `caail-pages.ts`.
  *
- * Every matrix column now has a page and therefore a key here: the axis bijection made the
- * area axis bijective, so the Taxonomy fallback below is no longer reached for any
+ * Every matrix column now has a page and therefore a key here: giving Metabolic Modeling
+ * and Food Safety Prediction their columns closed the last two gaps, so the Taxonomy
+ * fallback below is no longer reached for any
  * live column and exists only so an unknown key degrades instead of throwing. It was
  * previously reached in normal operation, by Metabolic Modeling, which had a deep
  * dive without being a column. **A missing key here is silent at runtime** — the bar

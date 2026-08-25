@@ -376,8 +376,13 @@ not library documentation, so it goes where decisions go.
 documentation for the live library and nothing else. Scoping, planning and decision records go
 to Jira and GitHub. Applied file by file the test above is too permissive here, because a
 decision record that happens to describe the matrix schema still reads as "how the library is
-made"; it is a decision about the library, which is a different thing. The only files a clone
-receives are active documentation and the library itself.
+made"; it is a decision about the library, which is a different thing.
+
+**This narrows `docs/`; it does not narrow the repository.** The section above still publishes
+the curation methodology, the contribution and consumption paths, and the guards that protect
+anyone who clones, which is why `.claude/`, `site/`, `workers/` and the plugins are all tracked
+and belong here. Read this rule as answering "may a planning document live in the tree", not as
+a test to apply to executable content.
 
 `docs/` does not currently exist, having been emptied under that rule. **Two of its subpaths
 are still gitignored** (`docs/superpowers/`, `docs/research/`), deliberately, because agents
@@ -391,7 +396,7 @@ publishability under `docs/`.
 
 ### Issue tracker
 
-Split. Jira project `CAAIL` is the durable record and is never skipped (`/to-spec`, `/to-tickets`, `/wayfinder`); public GitHub `tucca-cellag/caail` takes discrete world-safe requests and anything a PR closes, and is what `/triage` reads. Enumerate **both** before creating anything; a keyword search is not enumeration, because Jira's text index tokenizes and misses hyphenated keys. The conventions in full are maintainer-local and deliberately not in this repository.
+Split. Jira project `CAAIL` is the durable record and is never skipped (`/to-spec`, `/to-tickets`, `/wayfinder`); public GitHub `tucca-cellag/caail` takes discrete world-safe requests and anything a PR closes, and is what `/triage` reads. Enumerate **both** before creating anything. The conventions this project actually applies are in "Jira conventions" below; the generic per-repo routing file other repos carry is deliberately not in this tree, so an agent looking for one and finding none should read that section rather than conclude the trackers are unsplit.
 
 ### Triage labels
 
@@ -401,7 +406,7 @@ Two independent axes. **State** answers what is blocking a ticket now, and has t
 
 `CONTEXT.md` at the repo root is the glossary, and names concepts only: the scope of any individual row or column lives in `Taxonomy.md`, the trusted definition source, and is never restated. `ResearchAreas/*.md` and `Methods/*.md` are prose deep dives and are explicitly not a definition source.
 
-**Architecture decisions are recorded on the tracker, not in this repository.** They are decisions rather than library documentation, so they go where decisions go. The one most likely to be needed: the matrix research areas and the subject themes are **two distinct populations joined by `area_key`**, deliberately not one taxonomy. The bijection is **live, not a target** — eight themes, eight research areas, one deep-dive page each — and `db:check`'s `checkAxisBijection` asserts it, so a theme without a column fails the build rather than being caught by review. Read `site/db/ndjson/` and `db:check` for what is actually enforced rather than any count written into prose.
+**Architecture decisions are recorded on the tracker, not in this repository.** They are decisions rather than library documentation, so they go where decisions go. The one most likely to be needed: the matrix research areas and the subject themes are **two distinct populations joined by `area_key`**, deliberately not one taxonomy. The bijection is **live, not a target**: every theme names a research area, every research area is named by exactly one theme, and each has one deep-dive page. `db:check`'s `checkAxisBijection` asserts it, so a theme without an `area_key` fails **`db:check`** rather than being caught by review. Note that is not `pnpm build`, which does not touch the DB: `lint-papers.yml` is what runs it in CI, and a diff outside that workflow's path filter never exercises the assertion at all. The counts are deliberately not written here; `db:check` and `site/db/ndjson/` are where they live.
 
 ## The SQLite authoring backend (structured catalog)
 

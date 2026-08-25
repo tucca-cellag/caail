@@ -103,8 +103,8 @@ describe('computeCounts — real corpus (ground-truth contract)', () => {
       // 8: derived from the `ResearchAreas/` file count and labelled "Research
       // Areas" on the homepage. It went 8 -> 7 when `AIEvaluation.md` moved to
       // `Methods/` (it described the *Benchmarks & Evaluation Frameworks* method
-      // row, not an area), and 7 -> 8 again when the Metabolic
-      // Modeling and Food Safety Prediction columns — MetabolicModeling.md already
+      // row, not an area), and 7 -> 8 again when the Metabolic Modeling and
+      // Food Safety Prediction columns landed — MetabolicModeling.md already
       // existed, so only FoodSafetyPrediction.md is new. It now equals the matrix column
       // count, but that equality is coincidental-and-tested rather than enforced:
       // `db:check` asserts every column HAS a page, never that this directory holds only
