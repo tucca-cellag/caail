@@ -202,6 +202,41 @@ describe('checkTaxonomyAxes', () => {
     expect(res.every((r) => !r.ok)).toBe(true);
     expect(res.some((r) => /not found/.test(r.detail))).toBe(true);
   });
+
+  const FM = 'Foundation Models: Masked Language Modeling';
+  const fmDb = () => {
+    const db = miniDb();
+    db.prepare('INSERT INTO methods(label,header_md,ordinal) VALUES(?,?,?)')
+      .run(FM, `[${FM}](./Taxonomy.md#fm)`, 1);
+    return db;
+  };
+  const withFmDef = (def: string) =>
+    taxonomyMd({ methods: ['Deep Learning', FM] }).replace(`Method definition for ${FM}.`, def);
+
+  it('passes when every Foundation Models row carries both shared clauses', () => {
+    const res = checkTaxonomyAxes(fmDb(), fixtureRoot(withFmDef(
+      'Pretrained models. Not a paper that merely invokes one. Raise it for re-audit instead.')));
+    expect(res.every((r) => r.ok)).toBe(true);
+  });
+
+  it('flags a Foundation Models row missing the built-vs-called exclusion', () => {
+    const res = checkTaxonomyAxes(fmDb(), fixtureRoot(withFmDef(
+      'Pretrained models, and nothing about who may call them. Raise it for re-audit instead.')));
+    expect(res.some((r) => !r.ok && /built-vs-called/.test(r.label))).toBe(true);
+  });
+
+  it('flags a Foundation Models row missing the raise-rather-than-unseat clause', () => {
+    const res = checkTaxonomyAxes(fmDb(), fixtureRoot(withFmDef(
+      'Pretrained models. Not a paper that merely invokes one.')));
+    expect(res.some((r) => !r.ok && /raise-rather-than-unseat/.test(r.label))).toBe(true);
+  });
+
+  // The stated trade: the guard reads the DB's row list, so a corpus with no such
+  // rows is silent rather than failing. Worth pinning, because the alternative
+  // (assert at least one exists) would fail every fixture in this file.
+  it('is silent, not failing, on a DB with no Foundation Models rows', () => {
+    expect(checkTaxonomyAxes(miniDb(), fixtureRoot(taxonomyMd())).every((r) => r.ok)).toBe(true);
+  });
 });
 
 describe('checkLicenses', () => {

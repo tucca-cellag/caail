@@ -4,7 +4,7 @@ This page describes the **Foundation Models: Masked Language Modeling** row of t
 
 ## Scope boundary
 
-Masked pretraining at scale plus downstream transfer is the whole test. It separates this row from [Next-Token Prediction](./FoundationModelsNextToken.md), which differs only in objective, and from every architecture row, because a model here is defined by how it was pretrained rather than by what it is made of. A BERT-style encoder trained end-to-end on one labelled task is not in this row.
+Masked pretraining at scale plus downstream transfer is the whole test. It separates this row from [Next-Token Prediction](./FoundationModelsNextToken.md), which differs only in objective, and from every architecture row, because a model here is defined by how it was pretrained rather than by what it is made of. A BERT-style encoder trained end-to-end on one labelled task is not in this row. A paper that merely invokes such a model, as an agent's tool call or a queried service, keeps its own row rather than earning this one.
 
 The row's recurring intellectual problem is that a cell has no word order. Genes are not a sequence, so masked pretraining borrowed from text needs a substitute for position, and each paper below solves it differently: gene2vec embeddings as a relative encoding, rank-value ordering, or learned value embeddings with no discretization at all. The variety is the row's real content.
 

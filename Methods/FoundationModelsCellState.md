@@ -4,7 +4,7 @@ This page describes the **Foundation Models: Cell-State & Perturbation Predictio
 
 ## Scope boundary
 
-The discriminator the taxonomy names is pretraining-and-transfer, not subject matter. A single-task supervised predictor is not a foundation model even when perturbation response is exactly what it predicts, and it belongs in its architecture's row instead. GEARS ([#121](../Papers.md#121)) is the clarifying case: it predicts transcriptional outcomes for unperturbed genes, which sounds like this row, but it is a graph network trained end-to-end on one perturbation dataset, so it sits in [GNN](./GNN.md).
+The discriminator the taxonomy names is pretraining-and-transfer, not subject matter. A single-task supervised predictor is not a foundation model even when perturbation response is exactly what it predicts, and it belongs in its architecture's row instead. GEARS ([#121](../Papers.md#121)) is the clarifying case: it predicts transcriptional outcomes for unperturbed genes, which sounds like this row, but it is a graph network trained end-to-end on one perturbation dataset, so it sits in [GNN](./GNN.md). A paper that merely invokes such a model, as an agent's tool call or a queried service, keeps its own row rather than earning this one.
 
 The row overlaps by design with the other foundation-model rows, because a model's pretraining objective and its target are separate facts about it. Most of the references below also appear in at least one other row.
 

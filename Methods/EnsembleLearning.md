@@ -4,7 +4,7 @@ This page describes the **Ensemble Learning** row of the [Papers.md matrix](../P
 
 ## Scope boundary
 
-Trees, bagging or boosting are what put a paper here, which separates the row from [SVM](./SVM.md) (kernels and margins), [Linear & Regularized Models](./LinearRegularizedModels.md) (no trees) and [Chemometrics](./Chemometrics.md) (latent-variable projection). The taxonomy's own phrasing is the most useful thing about it: this is "the default strong baseline for tabular prediction". A paper appears here because someone reached for the thing that usually works on a few hundred rows of features, and very often it did.
+Trees, bagging or boosting are what put a paper here as the **primary learner**, which separates the row from [SVM](./SVM.md) (kernels and margins), [Linear & Regularized Models](./LinearRegularizedModels.md) (no trees) and [Chemometrics](./Chemometrics.md) (latent-variable projection). An ensemble assembled *over* networks that already hold their own architecture row does not additionally earn this one: what the row records is the learner, not the combination rule placed on top of it. The taxonomy's own phrasing is the most useful thing about it: this is "the default strong baseline for tabular prediction". A paper appears here because someone reached for the thing that usually works on a few hundred rows of features, and very often it did.
 
 That makes it the largest row on the method axis, and a heavily concentrated one, with the great majority of its references in [Sensory Prediction](../ResearchAreas/SensoryPrediction.md), where the data is almost always a table of molecular descriptors against a panel-derived label.
 
