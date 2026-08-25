@@ -117,17 +117,6 @@ Accepted, delivery partial.
   committed so those companions reach worktrees. **Done, here.** Both suffixes, because
   every file under `site/src/content/docs/` is `.mdx`, so covering only `.local.md` would
   have left the commonest companion committable into a public repo.
-
-  **One boundary on that, measured rather than assumed.** The copy works for a companion
-  sitting beside tracked files, which is the arrangement this ADR prescribes, and that was
-  verified in a fresh worktree. It does **not** reach a companion inside a directory that
-  is ignored *as a whole*: `git status --ignored` collapses such a directory to its own
-  name, so nothing within it is matched against `.worktreeinclude`. Depth is irrelevant; a
-  companion two directories deep arrives normally when its parents are tracked. So placing
-  a companion inside a wholly-ignored tree silently opts it out of the mechanism, and the
-  remedy is the placement this ADR already asks for: keep the companion beside its public
-  file. (`git ls-files --others --ignored` does descend, so a future fix is a different
-  enumeration rather than a different pattern.)
 - The first migration under it, splitting `docs/agents/issue-tracker.md`. **Not yet.**
   Follows immediately in its own change, so this decision can be read and argued without
   a 200-line move on top of it.
