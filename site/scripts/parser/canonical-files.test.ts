@@ -117,8 +117,36 @@ describe('the ignore rules and the predicate agree on what a companion is', () =
   it('git ignores a companion at every suffix the predicate recognises', () => {
     for (const suffix of PRIVATE_COMPANION_SUFFIXES) {
       const probe = `site/src/content/docs/probe${suffix}`;
-      const res = spawnSync('git', ['check-ignore', '-q', probe], { cwd: REPO_ROOT });
-      expect(res.status, `${probe} is NOT gitignored — a companion here is committable`).toBe(0);
+      // -v, and the SOURCE is asserted, not just the match. With -q alone this
+      // proves only that SOMETHING ignores the probe: a contributor carrying
+      // `*.local.md*` in ~/.config/git/ignore or .git/info/exclude could delete
+      // the committed rule, run this suite, see green and push, and only CI
+      // would catch it. Not hypothetical: this repo's own .git/info/exclude
+      // already carries a rule that masked the `.env` case in
+      // scripts/private-paths.test.ts, which is where this fix came from.
+      //
+      // THE `(?!!)` IS LOAD-BEARING AND WAS ADDED AFTER A REGRESSION. Moving
+      // from -q to -v inverts the exit-code contract: -q exits 1 on a negated
+      // path (correct, it is not ignored) while -v MATCHES the negation and
+      // exits 0. Measured against `!site/src/content/docs/*.local.mdx`:
+      // -q exits 1, -v exits 0 and prints `.gitignore:79:!site/...`. So the
+      // first draft of this very fix made the guard weaker than the -q form it
+      // replaced, passing while a companion was committable. Rejecting a
+      // leading `!` in the pattern is what makes -v safe here.
+      const res = spawnSync('git', ['check-ignore', '-v', probe], {
+        cwd: REPO_ROOT,
+        encoding: 'utf-8',
+      });
+      expect(res.error, `git check-ignore could not run for ${probe}`).toBeUndefined();
+      expect([0, 1], `git check-ignore exited ${res.status} for ${probe}`).toContain(res.status);
+      expect(res.status, `${probe} is NOT gitignored: a companion here is committable`).toBe(0);
+      // Output shape: `<source>:<line>:<pattern>\t<pathname>`.
+      expect(
+        (res.stdout ?? '').trim(),
+        `${probe} is not ignored by a positive rule in this repo's .gitignore: `
+          + `either the rule lives in a personal exclude source, or a negation `
+          + `has un-ignored it. Either way a companion here is committable.`,
+      ).toMatch(/^\.gitignore:\d+:(?!!)/);
     }
   });
 
