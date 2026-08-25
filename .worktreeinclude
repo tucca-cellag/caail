@@ -12,3 +12,7 @@
 .env.*
 *.local.md
 *.local.mdx
+
+# Working documentation. Whether this line does anything is under test:
+# a wholly-ignored parent may hide its contents from the copier.
+/internal-docs/
