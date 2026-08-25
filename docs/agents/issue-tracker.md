@@ -246,5 +246,5 @@ Used by `/wayfinder`. The **map** is one issue with **child** tickets. On Jira:
 
 Research findings land on a throwaway `research/<name>` branch with a context
 pointer from the ticket, per `/research`. Note that `.gitignore` excludes
-`docs/superpowers/`, so design docs written there stay local and are referenced
+`internal-docs/`, so design docs written under it stay local and are referenced
 by path from the ticket rather than committed.

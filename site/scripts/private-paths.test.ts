@@ -24,11 +24,14 @@
  * `.gitignore` triggered no workflow at all.
  *
  * WHY `docs/superpowers/` AND `docs/research/` ARE HERE despite being empty on
- * disk: `CLAUDE.md` still directs writers to put design docs in
- * `docs/superpowers/`. Their rules therefore look dead and invite a tidy-up,
- * after which an agent following the documentation writes an unpublished spec
- * into a public repo with nothing red. A rule that is documented but unused is
- * more dangerous than one that is used, not less.
+ * disk. Until this branch, `CLAUDE.md` and `docs/agents/issue-tracker.md` both
+ * directed writers to `docs/superpowers/`; both now point at `internal-docs/`,
+ * so nothing tracked routes there any more. The rules stay guarded anyway,
+ * because that is precisely when they look dead and invite a tidy-up: an agent
+ * carrying the old instruction (a cached skill, an older session, a stale
+ * branch) still writes there, and with the rule deleted that lands an
+ * unpublished spec in a public repo with nothing red. Removing the rules is a
+ * decision someone can take deliberately; it should not happen by tidying.
  */
 import { describe, it, expect } from 'vitest';
 import { spawnSync } from 'node:child_process';
