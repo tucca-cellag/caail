@@ -41,12 +41,13 @@ const REPO_ROOT = fileURLToPath(new URL('../../', import.meta.url));
  * Each private tree with the EXACT `.gitignore` pattern that must match it.
  *
  * Pinning the pattern, not just the source file, is what makes the anchoring
- * verifiable. `/internal-docs/` is anchored to the repo root on purpose; drop
- * the leading slash and every probe below still passes while a nested
- * `site/src/content/docs/internal-docs/` becomes silently ignored and vanishes
- * from the build. Asserting only "some line in .gitignore matched" cannot see
- * that. `manuscript/` is deliberately recorded as unanchored, which is its
- * current state rather than an endorsement of it.
+ * verifiable. `/internal-docs/` is anchored to the repo root on purpose: drop
+ * the leading slash and a nested `site/src/content/docs/internal-docs/` becomes
+ * silently ignored and vanishes from the build. Under a source-only assertion
+ * ("some line in .gitignore matched") every probe would still pass, which is
+ * why the pattern is pinned; with the pin, that edit fails here immediately.
+ * `manuscript/` is deliberately recorded as unanchored, which is its current
+ * state rather than an endorsement of it.
  */
 const PRIVATE_TREES = [
   { root: 'internal-docs/', pattern: '/internal-docs/' },
@@ -92,16 +93,24 @@ const PROBES = [
     { path: `${root}probe.md`, pattern },
     { path: `${root}nested/probe.bin`, pattern },
   ]),
-  ...PRIVATE_FILES.map(({ path, pattern }) => ({ path, pattern })),
+  // Spread, not mapped: the flatMap above genuinely derives two probes per
+  // tree, these are already in probe shape, and an identity map here would
+  // invite a reader to hunt for a transform that is not there.
+  ...PRIVATE_FILES,
 ];
 
 /**
  * The OTHER direction. The checks above prove the private paths are ignored;
- * nothing in them prevents a rule from being far too broad. Replace
- * `/internal-docs/` with `internal*` or `*docs*` and every probe above still
- * passes, while canonical content silently stops being published: it vanishes
- * from `llms-full.txt` and from the homepage counts, with this guard green and
- * reading as coverage.
+ * nothing in them prevents a rule from being far too broad. Widen
+ * `docs/research/` to `docs/` and the probes catch the pattern change, but
+ * they cannot tell you WHAT ELSE the widened rule swallowed. That is this
+ * list's job: canonical content silently stops being published, vanishing from
+ * `llms-full.txt` and the homepage counts, with everything else green.
+ *
+ * Note the two halves catch different edits and neither subsumes the other. A
+ * widening that keeps the pattern text intact (adding a NEW broad rule rather
+ * than editing an existing one) changes no probe at all, and only this list
+ * sees it.
  *
  * `docs/adr/` is the sharpest case and is here on purpose: two of its sibling
  * directories under `docs/` ARE ignored, so a rule widened from

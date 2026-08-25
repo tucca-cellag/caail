@@ -1,9 +1,11 @@
 # Local working artifacts, not part of the published library.
 #
-# /internal-docs/ is the default-deny home for working documentation: decision
-# records, research notes and this project's own traffic figures. Anchored to
-# the repo root so it names one directory rather than any directory of that
-# name; site/scripts/private-paths.test.ts fails if this line stops matching.
+# /internal-docs/ is the default-deny home for working documentation. What it
+# holds is deliberately not described: this file is world-readable and pushed
+# irreversibly, so naming private material is disclosure whether or not the
+# material itself ships. Anchored to the repo root so it names one directory
+# rather than any directory of that name; site/scripts/private-paths.test.ts
+# pins both the source and the exact pattern, and fails if either changes.
 /internal-docs/
 docs/superpowers/
 docs/research/
