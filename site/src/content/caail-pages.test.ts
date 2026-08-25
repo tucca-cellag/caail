@@ -51,10 +51,14 @@ describe('CAAIL_PAGES', () => {
     // 57 → 58: the 8th research area added ResearchAreas/FoodSafetyPrediction.md.
     // Only +1, not +2 — MetabolicModeling.md already existed as a deep dive for a
     // subject that was not yet a column.
+    // 58 → 60: CAAIL-203 minted two matrix rows, Hybrid Mechanistic-ML Models and
+    // Comparative Studies, each of which takes a Methods/ page under the one-page-per-row
+    // convention CAAIL-266 established. +2, not +3: a third row drafted alongside them,
+    // Gaussian Processes, belongs to CAAIL-235 and was split onto its own branch.
     // This is a ground-truth contract, not a derived value — it is meant to fail when
     // the page set changes, so update it deliberately with the reason rather than
     // relaxing it to `toBeGreaterThan`.
-    expect(all.length).toBe(58);
+    expect(all.length).toBe(60);
     const cow = all.find((p) => p.id === 'datasets/cow');
     expect(cow).toMatchObject({ id: 'datasets/cow', group: 'datasets' });
     expect(typeof cow?.sidebarLabel).toBe('string');
@@ -73,14 +77,14 @@ describe('CAAIL_PAGES', () => {
   it('has a backing file for every ResearchAreas, Methods and Datasets entry (no orphan map entries)', () => {
     // The mirror of the test above, and covered by neither it nor the all() count.
     // missingEntries() only walks files -> map, so DELETING a page while its entry
-    // stays leaves every remaining file mapped and the count still 58: the suite
+    // stays leaves every remaining file mapped and the count still 60: the suite
     // passes while groupItems() in astro.config.mjs goes on emitting a sidebar link,
     // which is a 404 on every page of the site.
     //
     // Deletion is the ONLY uncovered case, and the two neighbours are why. A RENAME
     // is already caught by the sibling test above, because the renamed file has no
     // entry (verified: both fail on a rename). An ADDED orphan entry is caught by the
-    // count going to 58. Do not widen this comment back out: the sibling test is not
+    // count going to 60. Do not widen this comment back out: the sibling test is not
     // redundant.
     //
     // README.md is included here, unlike in the test above, because Datasets/README.md

@@ -203,6 +203,17 @@ Deep generative models (generative adversarial networks and variational autoenco
 synthesis, augmentation, or generative dimensionality reduction. In cell-ag: synthetic regulatory-
 sequence design and scRNA-seq embedding.
 
+### Hybrid Mechanistic-ML Models
+Models that **couple a first-principles description to a learned component**, so that neither half
+stands alone: mass-balance or kinetic ODEs whose unknown rates are supplied by a network,
+physics-informed networks carrying a governing equation in the loss, and grey-box serial or parallel
+structures. **The row is earned by the coupling, not by the network**, which is why a paper whose
+learned part is a small shallow net belongs here rather than in *Deep Learning*, and why a paper
+with a genuinely deep network can hold both rows. **Distinct from** a purely data-driven model that
+merely uses a mechanistic simulation to generate its training data, and from an ensemble that
+averages several learned models and calls the combination hybrid: in both of those the
+first-principles structure is absent from the deployed model.
+
 ### Genetic Algorithms
 Population-based evolutionary search: genetic algorithms, evolutionary strategies, NSGA, differential
 evolution. In cell-ag: optimizing media, process parameters, and tissue/scaffold designs over large
@@ -326,6 +337,22 @@ scoring a statistical estimate recovered from simulated data measures analytic s
 supplied the scenario. A multi-domain suite whose task set genuinely splits, with each side
 substantially represented and one side outside every research area, is **dual-classified** across
 both columns rather than forced into one.
+
+**The boundary against *Comparative Studies*, which this row is otherwise easy to confuse with.** A
+benchmark **ships a reusable task suite, protocol and metrics for others to score against**; a
+comparative study **evaluates existing methods to answer its own question and ships nothing for
+reuse**. A paper may do both, and then it takes both rows. The same test decides whether a paper
+earns a cell in each method family it ran: it does so only where the evaluation is the paper's own
+method study, and not where it supplies a suite for others to run against models it did not build.
+
+### Comparative Studies
+Papers whose **primary contribution is a head-to-head evaluation of existing methods on the authors'
+own data**, run to answer a question the authors have rather than to supply a resource: which model
+family to adopt for a given prediction task, or which measurement modality feeds it best. In scope:
+sweeps across model families, and studies whose stated result is a recommendation about method
+choice. A paper here takes the **column of the research area it evaluates methods for**, on the same
+reading as the row above. Out of scope: an applied paper that happens to try several models before
+reporting the one it uses, since the row records a paper's contribution and not its model count.
 
 ### Agent Infrastructure (Frameworks, KGs, Protocols)
 The **substrate that agents run on**: agent frameworks, knowledge graphs, tool/communication

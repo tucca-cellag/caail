@@ -173,8 +173,25 @@ describe('buildPapersModel — real Papers.md', () => {
     expect(sections.has('Reviews & Perspectives')).toBe(true);
   });
 
-  it('has 24 method rows', () => {
-    expect(model.methods.length).toBe(25);
+  // Deliberately no row count. The method rows are the one matrix axis CAAIL does not
+  // enumerate or guard (#81): the set drifts as rows are split and minted, so a hardcoded
+  // length asserts nothing about correctness and goes red on every legitimate addition.
+  // It had already drifted here, the name saying 24 against an assertion of 25. The
+  // columns below keep their enumeration because db:check holds CONTRIBUTING.md and
+  // CLAUDE.md to that exact list, so there the typed fact has something checking it.
+  // What does not drift is that a row is a distinct, usable label, and that the matrix
+  // cannot cite a row the header set never declared.
+  it('gives every method row a unique, non-empty label', () => {
+    expect(model.methods.every((m) => m.trim().length > 0)).toBe(true);
+    expect(new Set(model.methods).size).toBe(model.methods.length);
+  });
+
+  it('has no matrix cell on an undeclared method row', () => {
+    const declared = new Set(model.methods);
+    const undeclared = model.cells
+      .map((c) => c.method)
+      .filter((m) => !declared.has(m));
+    expect(undeclared).toEqual([]);
   });
 
   it('has 8 areas with the exact keys in column order', () => {

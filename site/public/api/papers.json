@@ -39,6 +39,7 @@
     "GNN",
     "CNN",
     "GAN / VAE",
+    "Hybrid Mechanistic-ML Models",
     "Genetic Algorithms",
     "SVM",
     "Ensemble Learning",
@@ -58,6 +59,7 @@
     "Domain-Specific Biomedical Agents",
     "Robot Scientists & Lab Automation",
     "Benchmarks & Evaluation Frameworks",
+    "Comparative Studies",
     "Agent Infrastructure (Frameworks, KGs, Protocols)"
   ],
   "cells": [
@@ -155,7 +157,6 @@
         205,
         253,
         254,
-        255,
         257
       ],
       "labels": [
@@ -165,7 +166,6 @@
         "Yang et al. 2024",
         "Park et al. 2023",
         "Lu et al. 2025",
-        "Narayanan et al. 2020",
         "Wang et al. 2023a"
       ]
     },
@@ -387,6 +387,18 @@
       ],
       "labels": [
         "Pande et al. 2026"
+      ]
+    },
+    {
+      "method": "Hybrid Mechanistic-ML Models",
+      "area": "bioprocess",
+      "refIds": [
+        205,
+        255
+      ],
+      "labels": [
+        "Yang et al. 2024",
+        "Narayanan et al. 2020"
       ]
     },
     {
@@ -1161,6 +1173,20 @@
         "Ahmed et al. 2026",
         "Li & Ho 2026",
         "Miller et al. 2025"
+      ]
+    },
+    {
+      "method": "Comparative Studies",
+      "area": "bioprocess",
+      "refIds": [
+        32,
+        208,
+        253
+      ],
+      "labels": [
+        "Roell et al. 2022",
+        "Xu et al. 2025",
+        "Park et al. 2023"
       ]
     },
     {
@@ -2593,7 +2619,8 @@
       "methods": [
         "SVM",
         "Ensemble Learning",
-        "K-Nearest Neighbors"
+        "K-Nearest Neighbors",
+        "Comparative Studies"
       ],
       "areas": [
         "bioprocess"
@@ -2616,6 +2643,11 @@
           "slug": "bioreactor-scale-up",
           "label": "Bioreactor & scale-up",
           "theme": "bioprocess-scale-up"
+        },
+        {
+          "slug": "comparative-study",
+          "label": "Comparative studies",
+          "theme": "ai-methods-tooling"
         }
       ],
       "citedByOpenAlex": 21,
@@ -7779,7 +7811,8 @@
       "dataUrl": null,
       "isPrimary": true,
       "methods": [
-        "Deep Learning"
+        "Deep Learning",
+        "Hybrid Mechanistic-ML Models"
       ],
       "areas": [
         "bioprocess"
@@ -7923,7 +7956,8 @@
       "methods": [
         "SVM",
         "Ensemble Learning",
-        "Chemometrics"
+        "Chemometrics",
+        "Comparative Studies"
       ],
       "areas": [
         "bioprocess"
@@ -7936,6 +7970,11 @@
           "slug": "bioprocess-scale-up",
           "label": "Bioprocess & Manufacturing",
           "theme": "bioprocess-scale-up"
+        },
+        {
+          "slug": "comparative-study",
+          "label": "Comparative studies",
+          "theme": "ai-methods-tooling"
         },
         {
           "slug": "mass-spectrometry",
@@ -9272,7 +9311,8 @@
       "dataUrl": null,
       "isPrimary": true,
       "methods": [
-        "Deep Learning"
+        "Deep Learning",
+        "Comparative Studies"
       ],
       "areas": [
         "bioprocess"
@@ -9285,6 +9325,11 @@
           "slug": "bioprocess-scale-up",
           "label": "Bioprocess & Manufacturing",
           "theme": "bioprocess-scale-up"
+        },
+        {
+          "slug": "comparative-study",
+          "label": "Comparative studies",
+          "theme": "ai-methods-tooling"
         }
       ],
       "citedByOpenAlex": 36,
@@ -9355,7 +9400,7 @@
       "dataUrl": null,
       "isPrimary": true,
       "methods": [
-        "Deep Learning"
+        "Hybrid Mechanistic-ML Models"
       ],
       "areas": [
         "bioprocess"
@@ -16684,5 +16729,5 @@
     }
   ],
   "scopeNote": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall.",
-  "corpusDate": "2026-08-21"
+  "corpusDate": "2026-09-01"
 }

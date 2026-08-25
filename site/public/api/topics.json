@@ -8,15 +8,16 @@
         "theme": null,
         "areaKey": "tooling",
         "counts": {
-          "paper": 94,
+          "paper": 96,
           "software": 54,
           "database": 59,
           "dataset": 64,
-          "total": 271
+          "total": 273
         },
         "tags": [
           "ai-agents",
-          "benchmarks-evaluation"
+          "benchmarks-evaluation",
+          "comparative-study"
         ]
       },
       {
@@ -217,6 +218,21 @@
           "database": 5,
           "dataset": 33,
           "total": 59
+        },
+        "tags": []
+      },
+      {
+        "slug": "comparative-study",
+        "label": "Comparative studies",
+        "tier": "tag",
+        "theme": "ai-methods-tooling",
+        "areaKey": null,
+        "counts": {
+          "paper": 3,
+          "software": 0,
+          "database": 0,
+          "dataset": 0,
+          "total": 3
         },
         "tags": []
       },
@@ -1406,6 +1422,16 @@
         "ds:imt1026-imt1026-v30-komagataella-phaffii-pichia-pastoris"
       ]
     },
+    "comparative-study": {
+      "papers": [
+        32,
+        208,
+        253
+      ],
+      "software": [],
+      "databases": [],
+      "datasets": []
+    },
     "metabolic-modeling": {
       "papers": [
         36,
@@ -1820,5 +1846,5 @@
       "datasets": []
     }
   },
-  "corpusDate": "2026-08-21"
+  "corpusDate": "2026-09-01"
 }

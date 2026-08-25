@@ -6,6 +6,7 @@
 {"item_id":"topic:bioreactor-scale-up","slug":"bioreactor-scale-up","label":"Bioreactor & scale-up","tier":"tag","theme_slug":"bioprocess-scale-up","area_key":null}
 {"item_id":"topic:cell-line-engineering","slug":"cell-line-engineering","label":"Cell-line engineering","tier":"tag","theme_slug":"cell-lines-engineering","area_key":null}
 {"item_id":"topic:cell-lines-engineering","slug":"cell-lines-engineering","label":"Cell Lines & Engineering","tier":"theme","theme_slug":null,"area_key":"cell"}
+{"item_id":"topic:comparative-study","slug":"comparative-study","label":"Comparative studies","tier":"tag","theme_slug":"ai-methods-tooling","area_key":null}
 {"item_id":"topic:flavor-sensory","slug":"flavor-sensory","label":"Flavor & sensory prediction","tier":"tag","theme_slug":"sensory-flavor","area_key":null}
 {"item_id":"topic:food-safety","slug":"food-safety","label":"Food Safety","tier":"theme","theme_slug":null,"area_key":"foodsafety"}
 {"item_id":"topic:growth-factors","slug":"growth-factors","label":"Growth factors","tier":"tag","theme_slug":"media-growth-factors","area_key":null}
