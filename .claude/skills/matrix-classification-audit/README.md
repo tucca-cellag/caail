@@ -222,7 +222,8 @@ points at work that does not exist. Read the matrix-participating line, not the 
 these**, which is one command:
 
 ```
-python3 audit_sections.py --corpus <path-to-docling-corpus>
+python3 .claude/skills/matrix-classification-audit/audit_sections.py \
+  --corpus <path-to-docling-corpus>
 ```
 
 At that date: 228 sections, all matrix-participating; 204 located from an explicit methods

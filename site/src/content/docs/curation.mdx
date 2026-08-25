@@ -3,18 +3,8 @@ title: Curation Methodology
 description: "What a placement in the CAAIL matrix rests on: how each paper's methods section is located, how AI-drafted classifications are checked, current coverage, and what we are adding next."
 ---
 
-import { curatorCoverage } from '../../lib/topic-curators';
-import papersData from '../data/papers.json';
-
-export const leads = curatorCoverage();
-
-{/* The corpus totals move with every paper that lands, so they are derived here rather
-    than typed. The Docling figures below them are NOT derivable — the converted corpus is
-    gitignored and local — which is why only those carry a measurement date. */}
-export const corpus = {
-  all: papersData.references.length,
-  matrix: papersData.references.filter((r) => r.section === 'References').length,
-};
+{/* Numbers here are written out, never interpolated, and guarded by
+    scripts/parser/curation-page.test.ts. Read that file before changing one. */}
 
 Every cell in the matrix at the top of [Papers.md](https://github.com/tucca-cellag/caail/blob/main/Papers.md) says that a named paper applied a named AI/ML method to a named cellular-agriculture research area. This page describes how those placements are made, so you can judge one for yourself.
 
@@ -32,7 +22,7 @@ A placement records what a paper did. It is not a judgement about whether the ap
 | Locate the paper's methods section | Automated document conversion, then deterministic boundary rules. No language-model judgement. | In place |
 | Propose a placement | A language-model agent reading that section. | In place |
 | Verify the proposal | A separate adversarial reviewer agent, which must quote a verbatim span from the paper, produces a verdict rather than an edit, and never reviews a proposal it made. | In place |
-| Validate the theme | A maintainer today, covering all {leads.total} subject themes; a per-theme topic lead as themes are taken up. | In place, being broadened |
+| Validate the theme | A maintainer today, covering all 8 subject themes; a per-theme topic lead as themes are taken up. | In place, being broadened |
 | Enter it into the catalogue | A human maintainer, through the authoring database. | In place |
 | Check consistency | Deterministic checks on every change. | In place |
 
@@ -70,7 +60,7 @@ A language-model agent proposes the `(method, area)` placement. A model can misr
 
 The reviewers work under six constraints:
 
-1. **The reviewer produces a verdict, not an edit.** It is granted no file-writing tools and is instructed not to write; the entry still reaches the catalogue only through a maintainer, so a reviewer cannot enter one on its own.
+1. **The reviewer produces a verdict, not an edit.** It is instructed not to write, and nothing it returns reaches the catalogue on its own: an entry is filed by a maintainer, through the authoring database. That is a separation of duties rather than a sandbox, and we would rather say so than imply a guarantee we have not built.
 2. **The proposer never reviews its own entry.** Drafting and checking are separate passes by separate agents.
 3. **A verdict must quote a verbatim span** from the paper that grounds the pair. A placement the reviewer cannot anchor to specific text fails. This is the main control against a fabricated justification, since the quoted text can be checked against the document.
 4. **An abstract is explicitly insufficient.** Where only an abstract is available, the reviewer records reduced confidence as a finding and does not pass the placement.
@@ -81,19 +71,19 @@ The reviewer's verdict is a recommendation. A maintainer enters the entry throug
 
 ## 3. Human review & Topic Leads
 
-Every entry that lands is reviewed by a person before it enters the catalogue. Today that person is one of CAAIL's two maintainers, Benjamin Bromberg and Jim Plotts, who cover all {leads.total} subject themes between them. The pipeline has been human-in-the-loop across the whole catalogue since the automation was introduced.
+Every entry that lands is reviewed by a person before it enters the catalogue. Today that person is one of CAAIL's two maintainers, Benjamin Bromberg and Jim Plotts, who cover all 8 subject themes between them. The pipeline has been human-in-the-loop across the whole catalogue since the automation was introduced.
 
-It is not yet deep in every theme. Two people covering {leads.total} themes cannot bring the depth a specialist in each would. We are recruiting a named **topic lead** for every theme: a researcher working in that area who takes responsibility for what is filed under it. The role has two parts.
+It is not yet deep in every theme. Two people covering 8 themes cannot bring the depth a specialist in each would. We are recruiting a named **topic lead** for every theme: a researcher working in that area who takes responsibility for what is filed under it. The role has two parts.
 
 - **Validate the placements.** Check the proposed classifications in the area against the papers, and correct what is wrong. Sections 1 and 2 exist to make this quick: a lead reviews a placement that already carries the section and page range it was drawn from, instead of re-reading each paper.
 - **Keep the area current.** Judge new candidates as they arrive, from a reader, a contributor, the lead's own reading, or the automated sweep in the [roadmap](#6-roadmap).
 
 A lead adds domain judgement on top of the checks in section 2, and gets public credit for an area of the literature they already follow.
 
-{leads.held} of the {leads.total} themes {leads.held === 1 ? 'has a lead' : 'have leads'} named on the [Topics hub](/caail/topics/) so far. We are building the review tool before recruiting into it. A lead should be able to open a queue of proposed entries, see the evidence already attached to each one, and record a verdict in a few minutes. Handing someone a spreadsheet and a reading list instead is a lot to ask of a volunteer. That tool is the review queue in the [roadmap](#6-roadmap).
+1 of the 8 themes has a lead named on the [Topics hub](/caail/topics/) so far. We are building the review tool before recruiting into it. A lead should be able to open a queue of proposed entries, see the evidence already attached to each one, and record a verdict in a few minutes. Handing someone a spreadsheet and a reading list instead is a lot to ask of a volunteer. That tool is the review queue in the [roadmap](#6-roadmap).
 
 :::tip[Most themes are still open]
-{leads.open} of the {leads.total} have no lead. If you work in one of them, [get in touch](#7-get-in-touch). The two responsibilities above are the role; what we have not fixed is the cadence, and we would rather agree that with whoever takes a theme on than set it in advance.
+7 of the 8 have no lead. If you work in one of them, [get in touch](#7-get-in-touch). The two responsibilities above are the role; what we have not fixed is the cadence, and we would rather agree that with whoever takes a theme on than set it in advance.
 :::
 
 ## 4. Automated checks
@@ -108,13 +98,13 @@ These checks confirm the catalogue is internally consistent. Whether a placement
 
 ## 5. Coverage
 
-[Papers.md](https://github.com/tucca-cellag/caail/blob/main/Papers.md) holds {corpus.all} references. {corpus.matrix} are primary research and participate in the matrix. The other {corpus.all - corpus.matrix} are reviews, perspectives and reference-work chapters, which by design have no cell. Those three counts are read from the catalogue when this page is built, so they move when it does.
+[Papers.md](https://github.com/tucca-cellag/caail/blob/main/Papers.md) holds 345 references. 229 are primary research and participate in the matrix. The other 116 are reviews, perspectives and reference-work chapters, which by design have no cell. Those three counts are checked against the catalogue on every build, so a paper landing without them moving fails.
 
-The evidence figures below are not, because the converted corpus is local rather than committed. They are a snapshot. **Measured 2026-08-24.**
+The evidence figures below cannot be checked that way, because the converted corpus is local rather than committed. They are a snapshot. **Measured 2026-08-24.**
 
-Of those {corpus.matrix} matrix references:
+Of those 229 matrix references, as at that date:
 
-| | Count |
+| Evidence available | Count |
 | --- | --- |
 | Read a bounded methods section | 226 (99%) |
 | ...located from an explicit methods heading | 204 |
@@ -136,7 +126,7 @@ These build on the checks in section 2, and are listed in the order we need to d
 
 **A review queue.** Somewhere candidates and their evidence are presented to a reviewer, who records a verdict in a few minutes. CAAIL has a strong path for gathering evidence about a paper and a strong path for entering an accepted one; the queue joins them. It comes first because the next item depends on it. Nothing goes into the queue that has not already been read.
 
-**More topic leads.** Domain judgement across all {leads.total} subject themes, instead of two maintainers covering all of them. Gated on the queue above, for the reason in section 3. See [get in touch](#7-get-in-touch).
+**More topic leads.** Domain judgement across all 8 subject themes, instead of two maintainers covering all of them. Gated on the queue above, for the reason in section 3. See [get in touch](#7-get-in-touch).
 
 **Automated discovery.** A recurring literature sweep proposing candidates ([tucca-cellag/caail#82](https://github.com/tucca-cellag/caail/issues/82)), sequenced after the queue, since more candidates are no help without the capacity to review them.
 
@@ -154,6 +144,6 @@ These build on the checks in section 2, and are listed in the order we need to d
 
 We would like to hear from you about any of these.
 
-- **Becoming a topic lead.** {leads.open} of the {leads.total} subject themes have no lead. Say hello in the [Slack workspace](/caail/community/) or email the maintainers listed there, and tell us which one you work in.
+- **Becoming a topic lead.** 7 of the 8 subject themes have no lead. Say hello in the [Slack workspace](/caail/community/) or email the maintainers listed there, and tell us which one you work in.
 - **Feedback on this methodology.** If something here is unconvincing, or you would weigh the evidence differently, we would rather hear that than a correction to a single entry. Slack or a [GitHub issue](https://github.com/tucca-cellag/caail/issues/new/choose) both work.
 - **A specific entry that looks wrong.** Use the [correction form](/caail/report/) or a GitHub issue. Tell us which section of the paper you read; that is usually enough to settle it. [Contributing](/caail/contributing/) covers proposing a change directly.

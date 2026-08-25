@@ -272,7 +272,11 @@ test('curation asks for topic leads and for feedback on the method itself', asyn
   const contact = main.locator('h2[id$="get-in-touch"]');
   await expect(contact).toHaveCount(1);
   const id = await contact.getAttribute('id');
-  expect(await main.locator(`a[href="#${id}"]`).count()).toBeGreaterThanOrEqual(1);
+  // `:not(.sl-anchor-link)` is load-bearing, not tidiness. Starlight renders its own
+  // permalink anchor ON the heading, inside <main> and pointing at the heading's own id,
+  // so a bare count is >= 1 even with every body cross-link deleted — the assertion
+  // passed while proving nothing. Excluding it counts only real body references.
+  expect(await main.locator(`a[href="#${id}"]:not(.sl-anchor-link)`).count()).toBeGreaterThanOrEqual(1);
 });
 
 test('curation quotes no accuracy figure, only the process', async ({ page }) => {
