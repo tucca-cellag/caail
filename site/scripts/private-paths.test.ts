@@ -113,6 +113,11 @@ const MUST_STAY_PUBLISHABLE = [
   'docs/adr/0002-what-the-repo-publishes.md',
   'docs/agents/issue-tracker.md',
   'site/src/content/docs/privacy.mdx',
+  // The negation case, and the reason checkIgnore cannot use the exit code
+  // alone. `!.env.example` MATCHES and exits 0 while leaving the file
+  // publishable, so this entry fails on a correct repo under any
+  // exit-code-only reading. It is the regression test for that hole.
+  '.env.example',
 ];
 
 /** `<source>:<line>:<pattern>\t<pathname>` */
@@ -126,11 +131,25 @@ function checkIgnore(path: string) {
     cwd: REPO_ROOT,
     encoding: 'utf-8',
   });
-  // 0 = matched, 1 = no rule matched. Anything else means the check did not
+  // 0 = a pattern matched, 1 = none did. Anything else means the check did not
   // run, and an unchecked check must fail rather than pass quietly.
   expect(res.error, `git check-ignore could not run for ${path}`).toBeUndefined();
   expect([0, 1], `git check-ignore exited ${res.status} for ${path}`).toContain(res.status);
-  return { matched: res.status === 0, out: (res.stdout ?? '').trim() };
+  const out = (res.stdout ?? '').trim();
+
+  // EXIT 0 MEANS "A PATTERN MATCHED", NOT "IS IGNORED", and conflating the two
+  // is a real hole rather than pedantry. A NEGATION matches and exits 0 while
+  // leaving the path publishable:
+  //
+  //   git check-ignore --no-index -v .env.example
+  //     -> .gitignore:53:!.env.example   exit 0, and it is NOT ignored
+  //
+  // So a future `!internal-docs/<anything>` would keep its probe green while
+  // the path became publishable, which is the exact failure this file exists
+  // to prevent. Read the pattern field and honour the `!`.
+  const pattern = out ? (out.split('\t')[0] ?? '').split(':').slice(2).join(':') : '';
+  const negated = pattern.startsWith('!');
+  return { matched: res.status === 0 && !negated, out, pattern };
 }
 
 describe('the private working trees stay out of the public repo', () => {
@@ -172,7 +191,18 @@ describe('the private working trees stay out of the public repo', () => {
     // The rule above can be present and correct while a file committed before
     // it was added stays tracked forever, since .gitignore does not apply
     // retroactively to the index.
-    const roots = PRIVATE_TREES.map(({ root }) => root);
+    // Both lists, not just the trees. PRIVATE_FILES previously had the rule
+    // half and no tracked-files half, which is the same desync the PROBES
+    // docstring claims deriving makes impossible: the probes were derived and
+    // then this pathspec was hand-written from one of the two lists. Since
+    // --no-index is deliberately blind to tracked-ness, nothing caught a
+    // committed .env, the path this file calls highest-stakes: `git add -f
+    // .env` kept every test green. Exact paths, never a glob: `.env.*` as a
+    // pathspec would also match the tracked .env.example template.
+    const roots = [
+      ...PRIVATE_TREES.map(({ root }) => root),
+      ...PRIVATE_FILES.map(({ path }) => path),
+    ];
     const res = spawnSync('git', ['ls-files', '--', ...roots], {
       cwd: REPO_ROOT,
       encoding: 'utf-8',
