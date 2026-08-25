@@ -45,9 +45,17 @@ export const SCOPE_NOTE =
  * SCOPE_NOTE bounds what an EMPTY cell proves. This bounds what a POPULATED one proves,
  * and the two limits are NOT the same size. Absence is genuinely weak evidence: CAAIL has
  * not measured its own recall, so an empty cell says almost nothing about the literature.
- * A placement is strong: it is a curator's substantive claim about the paper's method and
- * application area, and the re-verification underway tightens precision rather than
- * establishing trust that was missing.
+ * A placement is strong: it is a substantive claim about the paper's method and application
+ * area, made from the methods section and checked before it lands, and the re-verification
+ * underway tightens precision rather than establishing trust that was missing.
+ *
+ * DO NOT WRITE "CURATOR-ASSIGNED" HERE, WHICH IS WHAT THIS SAID. A language-model agent
+ * proposes the placement; a maintainer files it. The constant below was corrected to say so
+ * because /curation/ discloses it publicly and the two are served to the same agent — and
+ * this docstring, three lines above it, went on asserting the retracted version, where the
+ * next person editing the constant would read it as the spec. The guard in
+ * curation-page.test.ts bans the literal string in the CONSTANT and cannot see a paraphrase
+ * in a comment, so this paragraph is the only thing standing here.
  *
  * Calibrate the caveat to the actual risk. Where a placement is off it is nearly always a
  * closely related cell — an adjacent method row, a neighbouring area — not a paper that

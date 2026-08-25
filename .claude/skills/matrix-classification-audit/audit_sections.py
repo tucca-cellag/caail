@@ -54,11 +54,15 @@ def main():
     # does not exist. CLAUDE.md's rule is that every count names the population
     # it counted, which is why this script prints the split rather than a total.
     #
-    # NO FIGURES IN THIS COMMENT, DELIBERATELY. It used to say "24 unresolved
-    # rather than 5", and 5 stopped being true on 2026-08-24 while this line went
-    # on saying it — a sixth stale copy of the very number the README beside it
-    # warns about, sitting in the script whose output that README transcribes.
-    # Both counts move with every re-ingest. Run the script for the live ones.
+    # NO FIGURES IN THIS COMMENT, DELIBERATELY. It used to quote both a corpus-wide
+    # total and a matrix-participating one; the second went stale on 2026-08-24 and
+    # this line went on asserting it — a stale copy of the very number the README
+    # beside it warns about, in the script whose output that README transcribes.
+    # Both move with every re-ingest. Run the script for the live ones.
+    #
+    # The first attempt at this fix removed one figure and left the other, INSIDE a
+    # sentence announcing that there are no figures here. curation-page.test.ts now
+    # checks, and caught exactly that on its first run.
     md = (REPO / "Papers.md").read_text(encoding="utf-8")
     _, cell_map = ex.parse_matrix(md)
     paper_refs = ex.parse_references(md)

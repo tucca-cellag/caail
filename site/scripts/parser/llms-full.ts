@@ -76,8 +76,8 @@ export function llmsFullSources(repoRoot: string = REPO_ROOT): string[] {
  * fails, since `llms-full.test.ts` asserts only the first line. This docstring's own history
  * is the argument: the sentence above it said VERBATIM until this branch made it untrue.
  */
-function buildHeader(repoRoot: string): string {
-  const withFrontmatter = llmsFullSources(repoRoot).filter((s) => s.startsWith(FRONTMATTER_PREFIX));
+function buildHeader(sources: string[]): string {
+  const withFrontmatter = sources.filter((s) => s.startsWith(FRONTMATTER_PREFIX));
   const caveat = withFrontmatter.length
     ? `Sources are reproduced as written, except ${withFrontmatter.length === 1 ? 'one site page' : `${withFrontmatter.length} site pages`} (${withFrontmatter.join(', ')}), whose metadata block is replaced by the page title as a heading. `
     : 'Sources are reproduced as written. ';
@@ -126,17 +126,47 @@ export function splitFrontmatter(
   if (!rel.startsWith(FRONTMATTER_PREFIX)) return { title: null, body: content };
 
   const m = /^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/.exec(content);
-  if (!m) return { title: null, body: content };
-
-  const titleLine = /^title\s*:\s*(.+?)\s*$/m.exec(m[1]);
+  const titleLine = m ? /^title\s*:\s*(.+?)\s*$/m.exec(m[1]) : null;
   const title = titleLine ? titleLine[1].replace(/^["']|["']$/g, '') : null;
-  return { title, body: content.slice(m[0].length).replace(/^\s+/, '') };
+  const rest = m ? content.slice(m[0].length).replace(/^\s+/, '') : content;
+  return { title, body: flattenDirectives(rest) };
+}
+
+/**
+ * Turn Starlight container directives into plain Markdown.
+ *
+ * `:::caution[Entries are drafted by AI agents]` is markup only Starlight renders. Inlined
+ * raw, an agent reads the fence instead of an emphasised line — and on this page that line is
+ * the AI-drafting disclosure, which is both the most important sentence on it and the one the
+ * e2e suite pins as must-be-above-the-fold. Five review rounds raised this before it was
+ * fixed. The argument for leaving it was that the TEXT survives, which is true, and is a
+ * weaker property than the text arriving as prose.
+ *
+ * SAFE ONLY BECAUSE THE CALLER ALREADY GATED ON PATH. This runs after the
+ * `FRONTMATTER_PREFIX` check, so it can never reach a canonical repo-root file — where a line
+ * beginning `:::` is ordinary text and rewriting it would be the same class of damage the two
+ * frontmatter heuristics did. Do not lift it out of that branch.
+ */
+function flattenDirectives(body: string): string {
+  return body
+    .split('\n')
+    .map((line) => {
+      const open = /^:::[a-z]+(?:\[(.*)\])?\s*$/i.exec(line);
+      if (open) return open[1] ? `**${open[1]}**` : '';
+      return /^:::\s*$/.test(line) ? '' : line;
+    })
+    .join('\n')
+    .replace(/\n{3,}/g, '\n\n');
 }
 
 /** Build the full llms-full.txt content from the canonical Markdown. */
 export function buildLlmsFullText(repoRoot: string = REPO_ROOT): string {
-  const parts = [buildHeader(repoRoot)];
-  for (const rel of llmsFullSources(repoRoot)) {
+  // One list, computed once and handed to both. Recomputing it inside buildHeader re-ran four
+  // readdirSync passes and, worse, let the header describe a different set than the body
+  // concatenates — the exact invariant buildHeader exists to hold.
+  const sources = llmsFullSources(repoRoot);
+  const parts = [buildHeader(sources)];
+  for (const rel of sources) {
     const { title, body } = splitFrontmatter(readFileSync(join(repoRoot, rel), 'utf-8'), rel);
     // Every canonical source opens with its own `# H1`, which is how a reader of the
     // concatenated file knows what a section is. A frontmatter page has its title in the

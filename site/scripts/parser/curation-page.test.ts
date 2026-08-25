@@ -46,6 +46,10 @@ const README_REL = '.claude/skills/matrix-classification-audit/README.md';
 
 const page = readFileSync(join(REPO_ROOT, PAGE_REL), 'utf-8');
 const skillReadme = readFileSync(join(REPO_ROOT, README_REL), 'utf-8');
+// Built ONCE. Each call re-reads ~45 files and runs four readdirSync passes; this file used
+// it in two places and llms-full.test.ts in a third, so one suite run concatenated the whole
+// 1 MB corpus three times.
+const llmsFull = buildLlmsFullText(REPO_ROOT);
 const papers = JSON.parse(
   readFileSync(join(REPO_ROOT, 'site/src/content/data/papers.json'), 'utf-8'),
 ) as { references: { section: string }[] };
@@ -276,16 +280,50 @@ describe('ref 51: the page-count figure that exists in five places', () => {
     // build per Python edit), then README.md only, which left three of these unreachable while
     // commit 84ef88d touched exactly those three. Add a sixth SOURCES entry without touching
     // test.yml and this fails instead of the guard going quietly unreachable.
+    // PER BLOCK, not over the whole file. test.yml carries two `paths:` filters —
+    // on.pull_request and on.push — and the first version of this check grepped every
+    // single-token list item in the file and compared against the union. A source added to
+    // pull_request only would have passed while a push to main touching it ran no test:
+    // precisely the one-directional gap the comment above recounts having made twice already,
+    // reproduced inside the guard written to stop it.
     const workflow = readFileSync(join(REPO_ROOT, '.github/workflows/test.yml'), 'utf-8');
-    const filters = [...workflow.matchAll(/^\s*-\s+(\S+)\s*$/gm)].map((m) => m[1]);
-    for (const src of SOURCES) {
-      if (src === PAGE_REL) continue; // covered by the blanket `site/**`
-      expect(
-        filters,
-        `${src} is read by this test but matches no path filter in test.yml, so the guard ` +
-          'cannot run on the edit most likely to break it',
-      ).toContain(src);
+    const blocks = [...workflow.matchAll(/^(\s*)paths:\s*$\n((?:\1\s+[-#].*\n|\s*\n)*)/gm)].map(
+      (m) => [...m[2].matchAll(/^\s*-\s+(\S+)\s*$/gm)].map((e) => e[1]),
+    );
+    expect(blocks, 'test.yml no longer has the two paths blocks this reads').toHaveLength(2);
+
+    for (const [i, filters] of blocks.entries()) {
+      for (const src of SOURCES) {
+        if (src === PAGE_REL) continue; // covered by the blanket `site/**`
+        expect(
+          filters,
+          `${src} is read by this test but matches no path filter in test.yml paths block ` +
+            `${i + 1} of 2, so the guard cannot run on the edit most likely to break it`,
+        ).toContain(src);
+      }
     }
+  });
+
+  it('keeps the extraction script free of transcribed counts', () => {
+    // audit_sections.py PRINTS these figures, and for twelve days its own comment also stated
+    // one, stale. That copy was removed and replaced with a note saying not to write figures
+    // here — which is the mitigation CLAUDE.md explicitly says is not one ("a comment saying
+    // keep these in sync documents the risk; it does not mitigate it"). This is the check.
+    // It is deliberately narrow: the script may print counts at runtime and may discuss the
+    // 12,000-character window, but must not transcribe a corpus count into a comment.
+    const script = readFileSync(
+      join(REPO_ROOT, '.claude/skills/matrix-classification-audit/audit_sections.py'),
+      'utf-8',
+    );
+    const comments = script
+      .split('\n')
+      .filter((l) => /^\s*#/.test(l))
+      .join('\n');
+    expect(
+      comments.match(/\b\d+\s+unresolved\b|\bunresolved[^.\n]{0,20}\b\d+\b/gi) ?? [],
+      'a corpus count was transcribed into a comment in audit_sections.py, which is where ' +
+        'the stale "5" lived for twelve days and which no other guard reads',
+    ).toEqual([]);
   });
 
   it('states the same page and total everywhere it appears', () => {
@@ -328,7 +366,6 @@ describe('curation page: what reaches an agent', () => {
     // It also ENOENTs in a checkout that has never run the parser, since that path is
     // gitignored — the fresh-worktree gotcha, dressed as a broken test. llms-full.test.ts
     // already calls the builder for the same reason.
-    const llmsFull = buildLlmsFullText(REPO_ROOT);
     const marker = `# ===== ${PAGE_REL} =====`;
     const start = llmsFull.indexOf(marker);
     expect(start, `${PAGE_REL} is not in llms-full.txt at all`).toBeGreaterThan(-1);
@@ -342,6 +379,19 @@ describe('curation page: what reaches an agent', () => {
       'a brace reached llms-full.txt from curation.mdx — JSX and MDX comments are inlined ' +
         'raw, so agents would get source code where prose should be',
     ).toEqual([]);
+
+    // The OTHER unrendered spelling, and the one five review rounds kept raising while the
+    // brace rule was called categorical. `:::caution[...]` is markup only Starlight renders;
+    // flattenDirectives turns it into `**...**` before it is inlined. Asserted on the built
+    // artifact for the same reason the brace rule is: the contract belongs to the file.
+    expect(
+      section.match(/^:::/gm) ?? [],
+      'a Starlight directive fence reached llms-full.txt — flattenDirectives should have ' +
+        'turned it into plain Markdown before inlining',
+    ).toEqual([]);
+    // …and the disclosure survived the flattening as emphasised prose, so the rule above
+    // cannot be satisfied by deleting the aside instead of converting it.
+    expect(section).toContain('**Entries are drafted by AI agents**');
 
     // And the figures are actually present as digits, so an empty match above cannot be
     // achieved by deleting the sentences instead of rendering them.
@@ -405,9 +455,8 @@ describe('llms-full frontmatter splitting', () => {
   });
 
   it('re-emits the title so a frontmatter page is not identified only by its path', () => {
-    const full = buildLlmsFullText(REPO_ROOT);
-    const at = full.indexOf(`# ===== ${PAGE_REL} =====`);
+    const at = llmsFull.indexOf(`# ===== ${PAGE_REL} =====`);
     expect(at).toBeGreaterThan(-1);
-    expect(full.slice(at)).toMatch(/^# ===== [^\n]+ =====\n\n# Curation Methodology\n/);
+    expect(llmsFull.slice(at)).toMatch(/^# ===== [^\n]+ =====\n\n# Curation Methodology\n/);
   });
 });

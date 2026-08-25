@@ -235,9 +235,19 @@ test('curation discloses that entries are AI-drafted, above the fold', async ({ 
   // reason from a false model of the DOM — and might conclude the `:not(.sl-anchor-link)`
   // filter below is defending against the TOC, when it defends against the heading's own
   // permalink, which IS inside <main> and IS load-bearing.
-  const disclosure = await page.getByText('Entries are drafted by AI agents').boundingBox();
-  const firstSection = await page.locator('main h2#how-an-entry-is-produced').boundingBox();
-  expect(disclosure!.y).toBeLessThan(firstSection!.y);
+  // Asserted visible BEFORE measuring. `boundingBox()` returns null for a missing or hidden
+  // element, so `disclosure!.y` would throw "Cannot read properties of null" — a stack trace
+  // that says nothing about the disclosure having moved, which is the one failure this test
+  // exists to name.
+  const disclosureEl = page.getByText('Entries are drafted by AI agents');
+  const firstSectionEl = page.locator('main h2#how-an-entry-is-produced');
+  await expect(disclosureEl, 'the AI-drafting disclosure is gone from the page').toBeVisible();
+  await expect(firstSectionEl, 'the first section heading id changed').toBeVisible();
+  const disclosure = await disclosureEl.boundingBox();
+  const firstSection = await firstSectionEl.boundingBox();
+  expect(disclosure!.y, 'the disclosure sits below the first section').toBeLessThan(
+    firstSection!.y,
+  );
 });
 
 test('curation separates the intended process from the running one', async ({ page }) => {
@@ -317,7 +327,12 @@ test('curation quotes no accuracy figure, only the process', async ({ page }) =>
   const NUM = String.raw`(?:\d+(?:\.\d+)?|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|dozen|twenty|thirty|forty|fifty)`;
   const QUANTITY = new RegExp(
     String.raw`\b\d+(\.\d+)?\s*(%|percent\b)` + '|' +
-      String.raw`\b${NUM}\s+of\s+(the\s+)?\d+\b` + '|' +
+      // `(?<!page )` is load-bearing: section 1 says ref 51's methods start on "page 22 of
+      // 43", and the sentence before it says papers "disagree" about section naming. Widening
+      // to sentence PAIRS made those two adjacent fragments a match — a page range read as a
+      // sample proportion. A page range is never an accuracy figure, so it is excluded here
+      // rather than by weakening the outcome vocabulary, which would cost a real catch.
+      String.raw`(?<!page )\b${NUM}\s+of\s+(the\s+)?\d+\b` + '|' +
       String.raw`\bof\s+(the\s+)?\d+\s+\w+.{0,60}?\b${NUM}\b` + '|' +
       String.raw`\b0\.\d+\b`,
     'i',
@@ -335,11 +350,26 @@ test('curation quotes no accuracy figure, only the process', async ({ page }) =>
   // ZERO false positives — including section 5's tables, which are dense with counts.
   const OUTCOMEWORD =
     /\b(unreliable|mistaken|wrong|incorrect|erroneous|inaccurate|misclassif\w*|misplaced|mis-assigned|disagree\w*|error rate|accuracy|accurate|precision|recall|f1|concordance|agreement|agreed|revised|corrected|right cell|correct cell|correctly)\b/i;
-  const offenders = text
+  // ADJACENT PAIRS, not single sentences. The page carries the heading "A measured accuracy
+  // figure." — so the likeliest way a figure ever lands here is in the sentence right AFTER
+  // an outcome word, split across the boundary: "A measured accuracy figure. Our internal
+  // sampling put it at 85%." Scored per sentence, neither half trips (one has the word and no
+  // digits, the other has digits and no word) and the guard reports clean. This is the third
+  // scope this check has had — a 40-char window, then one sentence, now sentence pairs — and
+  // each previous one missed the phrasing most likely to occur.
+  //
+  // Verified both ways at this scope: five phrasings caught, including both split-across-
+  // sentences forms, and ZERO false positives over the whole live page.
+  const parts = text
     .split(/(?<=[.!?])\s+|\n+/)
     .map((s) => s.trim())
-    .filter(Boolean)
-    .filter((s) => QUANTITY.test(s) && OUTCOMEWORD.test(s));
+    .filter(Boolean);
+  const windows: string[] = [];
+  for (let i = 0; i < parts.length; i++) {
+    windows.push(parts[i]);
+    if (i + 1 < parts.length) windows.push(`${parts[i]} ${parts[i + 1]}`);
+  }
+  const offenders = windows.filter((s) => QUANTITY.test(s) && OUTCOMEWORD.test(s));
   expect(offenders, 'an accuracy figure reached the page').toEqual([]);
   // The replacement has to stay, or removing the figure silently removes the
   // disclosure too and the page reads as though accuracy were unexamined.
