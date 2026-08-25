@@ -21,6 +21,7 @@ This website is a navigation layer over canonical, human-readable Markdown in th
 ## About & contributing
 
 - [About](https://tucca-cellag.github.io/caail/about/): what CAAIL is and how it is organized.
+- [Curation Methodology](https://tucca-cellag.github.io/caail/curation/): what a matrix placement rests on. How each paper's methods section is located, how AI-drafted classifications are checked before they land, how much of the matrix that currently covers, and what is still missing. Read this before treating a placement as evidence.
 - [Contributing](https://tucca-cellag.github.io/caail/contributing/): how entries are categorized and added.
 - [Other Resources](https://tucca-cellag.github.io/caail/other-resources/): field overviews, courses, books, editorials, ecosystem initiatives, and curated bibliographies.
 
