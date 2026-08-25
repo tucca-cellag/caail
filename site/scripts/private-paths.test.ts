@@ -1,9 +1,10 @@
 /**
  * private-paths.test.ts: the private working trees must resolve as gitignored.
  *
- * `internal-docs/`, `manuscript/`, `docs/superpowers/` and `docs/research/` are
- * this project's private working trees, and `.env` carries its credentials.
- * What they contain is deliberately not described here: this file is
+ * `PRIVATE_TREES` below is the list; it is not restated here, because a prose
+ * copy of a constant drifts from it and an earlier draft of this paragraph
+ * already named four of the six. `.env` and `.env.*` carry the credentials.
+ * What any of them CONTAIN is deliberately not described: this file is
  * world-readable, and naming private material is disclosure whether or not the
  * material itself ships.
  *
@@ -41,6 +42,7 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 import { llmsFullSources } from './parser/llms-full.js';
+import { CANONICAL_SOURCES } from '../src/content/loaders/caail-docs-loader.js';
 
 /** scripts/ → site/ → repo root. */
 const REPO_ROOT = fileURLToPath(new URL('../../', import.meta.url));
@@ -62,6 +64,13 @@ const PRIVATE_TREES = [
   { root: 'manuscript/', pattern: 'manuscript/' },
   { root: 'docs/superpowers/', pattern: 'docs/superpowers/' },
   { root: 'docs/research/', pattern: 'docs/research/' },
+  // The three docs/ subpaths this repo deleted. They need the rule MORE than
+  // the two above, not less: a stale skill or an older session names docs/adr/
+  // and docs/agents/ specifically, because that is what CLAUDE.md and
+  // CONTEXT.md said until they were removed.
+  { root: 'docs/adr/', pattern: 'docs/adr/' },
+  { root: 'docs/agents/', pattern: 'docs/agents/' },
+  { root: 'docs/spikes/', pattern: 'docs/spikes/' },
   // The highest-stakes rule in .gitignore, and it was unguarded while four
   // lower-stakes ones were not. Its own rationale, verbatim from .gitignore:
   // it "holds the full text of works CAAIL may read but may not redistribute",
@@ -134,17 +143,21 @@ const PROBES = [
  * would encode a publishing policy as a side effect of testing for over-match.
  */
 const MUST_STAY_PUBLISHABLE = [
-  // DERIVED from llmsFullSources(), the parser's own enumeration of everything
-  // inlined verbatim into the served llms-full.txt. Hand-listing one file per
-  // canonical DIRECTORY was the previous form, and it covered 1 of the 12
-  // root-level files that function reads: a new rule swallowing Talks.md,
-  // Community.md or Taxonomy.md changed no pattern pin and hit no probe, so the
-  // page dropped out of llms-full.txt and the homepage counts with the whole
-  // suite green. Deriving is the only form that keeps up with the list.
+  // DERIVED from the UNION of two enumerations, because neither is complete on
+  // its own and the first draft of this used only llmsFullSources().
+  //
+  //   llmsFullSources()          what is inlined into the served llms-full.txt
+  //   CANONICAL_SOURCES          what the docs loader turns into site routes
+  //
+  // Taxonomy.md is the case that proves the union is needed: it is a published
+  // route and the trusted definition source for every matrix row and column,
+  // and it is NOT in llms-full's list. A draft of this comment claimed a rule
+  // swallowing Taxonomy.md would be caught. It would not have been, and losing
+  // that file silently takes /taxonomy/ and every definition with it.
   ...llmsFullSources(REPO_ROOT),
-  // Not in that list, and both worth holding. The privacy page is a route
-  // rather than corpus, and losing it silently is a compliance problem rather
-  // than a content one.
+  ...CANONICAL_SOURCES.files,
+  // A route rather than corpus, in neither list. Losing it silently is a
+  // compliance problem rather than a content one.
   'site/src/content/docs/privacy.mdx',
   // The negation case, and the reason checkIgnore cannot use the exit code
   // alone. `!.env.example` MATCHES and exits 0 while leaving the file
@@ -174,6 +187,25 @@ const MUST_STAY_PUBLISHABLE = [
   // looks: it sees nothing under `docs/`, but the pin does.
 ];
 
+/**
+ * The pattern field of one `check-ignore -v` line.
+ *
+ * Line shape: `<source>:<line>:<pattern>\t<pathname>`. `slice(2)` skips the
+ * source and line number, and the `join(':')` puts back any colon inside the
+ * pattern itself rather than truncating at it.
+ *
+ * ONE copy on purpose. Both callers below need to know whether the matching
+ * pattern is a NEGATION, and a second hand-rolled copy of this split is how the
+ * two would come to disagree about what a negation is: fix a parsing bug in one
+ * and the probes and the over-match guard start answering differently, with
+ * nothing failing. Same reasoning the repo applies to hand-rolled command
+ * parsing.
+ */
+function patternOf(line: string): string {
+  if (!line) return '';
+  return (line.split('\t')[0] ?? '').split(':').slice(2).join(':');
+}
+
 /** `<source>:<line>:<pattern>\t<pathname>` */
 function checkIgnore(path: string) {
   // --no-index is load-bearing for the same reason canonical-files.test.ts
@@ -201,7 +233,7 @@ function checkIgnore(path: string) {
   // So a future `!internal-docs/<anything>` would keep its probe green while
   // the path became publishable, which is the exact failure this file exists
   // to prevent. Read the pattern field and honour the `!`.
-  const pattern = out ? (out.split('\t')[0] ?? '').split(':').slice(2).join(':') : '';
+  const pattern = patternOf(out);
   const negated = pattern.startsWith('!');
   return { matched: res.status === 0 && !negated, out, pattern };
 }
@@ -269,10 +301,27 @@ describe('the private working trees stay out of the public repo', () => {
     ).toBe('');
   });
 
+  it('has a non-trivial publishable set to check', () => {
+    // A FLOOR, because everything below is derived and an empty list would
+    // pass asserting nothing: `check-ignore --stdin` on no input exits 1 with
+    // empty stdout, which is the passing case. Narrow either source enumeration
+    // and the guard silently shrinks with it. The numbers are deliberately not
+    // written down; this asserts the shape, not the count.
+    expect(MUST_STAY_PUBLISHABLE.length).toBeGreaterThan(50);
+    // Both sources actually contributed, so dropping one is caught rather than
+    // absorbed. Taxonomy.md comes only from the loader, Papers.md only from
+    // llms-full.
+    expect(MUST_STAY_PUBLISHABLE).toContain('Taxonomy.md');
+    expect(MUST_STAY_PUBLISHABLE).toContain('Papers.md');
+    // And a directory expansion, which is what llmsFullSources adds over a
+    // literal list.
+    expect(MUST_STAY_PUBLISHABLE.some((p) => p.startsWith('Methods/'))).toBe(true);
+  });
+
   it('does not over-match and swallow anything the build publishes', () => {
-    // ONE process for the whole set, not one per path: the derived list is
-    // ~60 entries and check-ignore reads a batch on --stdin. It prints a line
-    // only for paths that MATCHED, so silence is the passing case.
+    // ONE process for the whole set, not one per path: check-ignore reads a
+    // batch on --stdin and prints a line only for paths that MATCHED, so
+    // silence is the passing case.
     const res = spawnSync('git', ['check-ignore', '--no-index', '-v', '--stdin'], {
       cwd: REPO_ROOT,
       input: MUST_STAY_PUBLISHABLE.join('\n'),
@@ -289,8 +338,7 @@ describe('the private working trees stay out of the public repo', () => {
       .split('\n')
       .filter((l) => l.trim())
       .filter((l) => {
-        const pattern = (l.split('\t')[0] ?? '').split(':').slice(2).join(':');
-        return !pattern.startsWith('!');
+        return !patternOf(l).startsWith('!');
       });
 
     expect(

@@ -22,8 +22,11 @@ exactly eight; `pnpm --dir site parse` prints the headline totals but not the 22
 subset, nor any theme or `area_key` count. Read `parse`'s output carefully: its `researchAreas`
 figure counts files in `ResearchAreas/` and is **not** the number of research areas as defined
 below, which is the matrix columns in `areas.ndjson`. Both are 8 as of 2026-08-25, and that is the
-bijection holding rather than the two being the same measurement: they can diverge, and
-`db:check` is what fails when they do. Read the four files rather than either figure.
+bijection holding rather than the two being the same measurement. They can diverge, and
+**only one direction is guarded**: `db:check` fails if a column has no page, and says nothing
+about an extra page that names no column. A ninth non-column file in `ResearchAreas/` passes
+`db:check`; what catches it is `counts.test.ts`'s literal and `caail-pages.test.ts`. Read the
+four files rather than either figure.
 
 ## Language
 

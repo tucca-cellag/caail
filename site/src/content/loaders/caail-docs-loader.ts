@@ -72,7 +72,7 @@ const REPO_ROOT = new URL('../../../../', import.meta.url);
  * any file whose id has no `CAAIL_PAGES` entry (e.g. the `CLAUDE.md` files in
  * those directories) is skipped, so the directory scan is allowed to be broad.
  */
-const CANONICAL_SOURCES = {
+export const CANONICAL_SOURCES = {
   dirs: ['ResearchAreas', 'Methods', 'Datasets'],
   files: [
     'CONTRIBUTING.md',
