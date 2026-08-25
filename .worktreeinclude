@@ -13,6 +13,18 @@
 *.local.md
 *.local.mdx
 
-# Working documentation. Whether this line does anything is under test:
-# a wholly-ignored parent may hide its contents from the copier.
+# Working documentation, so a session in a worktree can reach the decision
+# records rather than re-deriving or contradicting a settled one.
+#
+# THE RULE SHAPE IS LOAD-BEARING, and this is measured rather than reasoned.
+# The copier enumerates gitignored entries the way `git status --ignored` does,
+# which COLLAPSES a wholly-ignored directory to its own name. So:
+#
+#   *.local.md      does NOT reach internal-docs/agents/x.local.md — the file
+#                   was never an entry to match, only the directory was
+#   /internal-docs/ DOES copy the whole tree — it matches that collapsed entry
+#
+# Verified in a fresh worktree: internal-docs/ and internal-docs/adr/ arrive
+# with both ADRs. A file glob cannot reach inside; a directory pattern can.
+# Do not "simplify" this to a glob.
 /internal-docs/

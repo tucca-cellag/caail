@@ -39,6 +39,8 @@
  */
 import { describe, it, expect } from 'vitest';
 import { spawnSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { llmsFullSources } from './parser/llms-full.js';
@@ -299,6 +301,28 @@ describe('the private working trees stay out of the public repo', () => {
       (res.stdout ?? '').trim(),
       'these private files are TRACKED and will be published',
     ).toBe('');
+  });
+
+  it('.worktreeinclude carries internal-docs/ as a DIRECTORY pattern', () => {
+    // Presence, not effect — but the effect was measured before this was
+    // written, which is what makes presence worth asserting. In a fresh
+    // worktree internal-docs/ and internal-docs/adr/ both arrive with this
+    // line, and the decision records are otherwise unreachable from a worktree,
+    // which is this repo's normal working shape.
+    //
+    // The SHAPE is what this pins. A file glob cannot reach inside a
+    // wholly-ignored directory (that is why *.local.md does not deliver the
+    // companion), so "tidying" this to a glob would silently stop delivering
+    // the whole tree while still looking like a rule for it.
+    const rules = readFileSync(join(REPO_ROOT, '.worktreeinclude'), 'utf-8')
+      .split('\n')
+      .map((l) => l.trim())
+      .filter((l) => l && !l.startsWith('#'));
+    expect(
+      rules,
+      '.worktreeinclude lost its internal-docs/ directory rule, so a worktree '
+        + 'session can no longer reach the decision records',
+    ).toContain('/internal-docs/');
   });
 
   it('has a non-trivial publishable set to check', () => {
