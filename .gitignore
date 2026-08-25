@@ -1,4 +1,10 @@
 # Local working artifacts, not part of the published library.
+#
+# /internal-docs/ is the default-deny home for working documentation: decision
+# records, research notes and this project's own traffic figures. Anchored to
+# the repo root so it names one directory rather than any directory of that
+# name; site/scripts/private-paths.test.ts fails if this line stops matching.
+/internal-docs/
 docs/superpowers/
 docs/research/
 manuscript/

@@ -12,3 +12,9 @@
 .env.*
 *.local.md
 *.local.mdx
+
+# Working documentation. Without this a worktree receives the *.local.md
+# companion of a file whose public partner is absent, which is the state
+# ADR-0002 warns produces an agent re-deriving the withheld mechanics and
+# writing them back into a public file.
+/internal-docs/
