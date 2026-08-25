@@ -53,8 +53,15 @@ describe('internal-docs/ stays out of the public repo', () => {
       // path, so the moment one of these was committed (the exact failure) the
       // check would go quiet and pass. Asking about the rule instead is the
       // only form that stays honest after the defect has already happened.
-      const res = spawnSync('git', ['check-ignore', '--no-index', '-q', probe], {
+      // -v, not -q, and the SOURCE is asserted rather than just the match.
+      // check-ignore consults every exclude source: .git/info/exclude,
+      // core.excludesFile, nested .gitignore files. A contributor with
+      // internal-docs/ in ~/.config/git/ignore could delete the committed rule,
+      // run this suite, see green and push. Only CI would catch it, and the
+      // comment in .gitignore claims this test pins that line specifically.
+      const res = spawnSync('git', ['check-ignore', '--no-index', '-v', probe], {
         cwd: REPO_ROOT,
+        encoding: 'utf-8',
       });
       // 0 = matched, 1 = no rule matched. Anything else means the check did not
       // run, and an unchecked check must fail rather than pass quietly.
@@ -64,6 +71,12 @@ describe('internal-docs/ stays out of the public repo', () => {
         res.status,
         `${probe} is NOT gitignored: private working docs are committable into a public repo`,
       ).toBe(0);
+      // Output shape: `<source>:<line>:<pattern>\t<pathname>`.
+      expect(
+        (res.stdout ?? '').trim(),
+        `${probe} is ignored, but by a rule outside the committed .gitignore, `
+          + `so nothing in this repo guarantees it for anyone else`,
+      ).toMatch(/^\.gitignore:\d+:/);
     }
   });
 
@@ -82,11 +95,21 @@ describe('internal-docs/ stays out of the public repo', () => {
     expect(tracked, 'these internal-docs/ files are TRACKED and will be published').toBe('');
   });
 
-  it('carries internal-docs/ into worktrees, or a session there sees only its private half', () => {
+  it('.worktreeinclude carries a rule for internal-docs/ (presence, not effect)', () => {
     // .worktreeinclude copies *.local.md into every worktree. Without a rule
     // for internal-docs/ a worktree receives the private companion of a file
     // whose public partner is absent, which is the state ADR-0002 warns
     // produces an agent re-deriving the withheld mechanics into a public file.
+    //
+    // LIMIT, stated because the name used to overclaim: this asserts the rule
+    // is PRESENT, not that it WORKS. `/internal-docs/` is the file's first
+    // directory pattern; every other rule here is a file glob. Nothing below
+    // verifies the worktree copier expands a trailing-slash directory to the
+    // files beneath it. If it does not, `*.local.md` still copies
+    // internal-docs/agents/issue-tracker.local.md while its public partner
+    // stays absent, which is the half-state above, with this test green.
+    // Verifying the effect means creating a worktree, which no unit test here
+    // should do; it belongs in the same change that relies on the behaviour.
     // Read the working tree, not HEAD, matching canonical-files.test.ts. The
     // rule and the guard for it land in one commit, so a HEAD-based read is
     // red until the moment it is committed and proves nothing either way.
