@@ -1,29 +1,34 @@
 /**
  * private-paths.test.ts: the private working trees must resolve as gitignored.
  *
- * `internal-docs/` holds this project's own decision records, research notes
- * and traffic figures; `manuscript/` holds drafts and the outreach roster.
- * Each is protected by exactly one line in `.gitignore`, and until this file
- * existed nothing verified either line was still there. Delete one, reword it,
- * or lose it in a conflict resolution and nothing fails: no build breaks, no
- * test goes red, and the next `git add -A` stages the contents into a repo
- * that is PUBLIC, where pull requests cannot be deleted.
+ * `internal-docs/`, `manuscript/`, `docs/superpowers/` and `docs/research/` are
+ * this project's private working trees, and `.env` carries its credentials.
+ * What they contain is deliberately not described here: this file is
+ * world-readable, and naming private material is disclosure whether or not the
+ * material itself ships.
  *
- * Snapshot, 2026-08-25, measured on the branch that added the `internal-docs/`
- * rule and with that rule absent: `git add -A --dry-run` reported 43 private
- * paths and looked entirely ordinary. That figure tracks one working
- * directory and will drift; `git add -A --dry-run` prints the real one. It is
- * recorded because the number is the argument, not because it is stable.
+ * Each is protected by exactly one line in `.gitignore`, and until this file
+ * existed nothing verified any of those lines was still there. Delete one,
+ * reword it, or lose it in a conflict resolution and nothing fails: no build
+ * breaks, no test goes red, and the next `git add -A` stages the contents into
+ * a repo that is PUBLIC, where pull requests cannot be deleted.
+ *
+ * Snapshot, 2026-08-25, measured with the `internal-docs/` rule absent:
+ * `git add -A --dry-run` reported 43 private paths and looked entirely
+ * ordinary. That figure tracks one working directory and will drift;
+ * `git add -A --dry-run` prints the real one. It is recorded because the
+ * number is the argument, not because it is stable.
  *
  * `.gitignore` is in `test.yml`'s paths filter, so this runs on exactly the
  * edit most likely to break it. Before that filter existed, a PR touching only
  * `.gitignore` triggered no workflow at all.
  *
- * Covering both trees rather than one: an earlier draft guarded `internal-docs/`
- * alone while naming `manuscript/` as "arguably the more exposed of the two",
- * which is a guard that documents the hole it leaves. Whether this should
- * instead enumerate EVERY must-stay-ignored path as a set, derived rather than
- * listed, is CAAIL-331's open question and is still not answered here.
+ * WHY `docs/superpowers/` AND `docs/research/` ARE HERE despite being empty on
+ * disk: `CLAUDE.md` still directs writers to put design docs in
+ * `docs/superpowers/`. Their rules therefore look dead and invite a tidy-up,
+ * after which an agent following the documentation writes an unpublished spec
+ * into a public repo with nothing red. A rule that is documented but unused is
+ * more dangerous than one that is used, not less.
  */
 import { describe, it, expect } from 'vitest';
 import { spawnSync } from 'node:child_process';
@@ -32,94 +37,161 @@ import { fileURLToPath } from 'node:url';
 /** scripts/ → site/ → repo root. */
 const REPO_ROOT = fileURLToPath(new URL('../../', import.meta.url));
 
-/** The trees whose whole protection is a single .gitignore line. */
-const PRIVATE_TREES = ['internal-docs/', 'manuscript/'];
-
 /**
- * Representative paths, not an inventory. They need not exist on disk:
- * `check-ignore --no-index` answers about the RULE, which is the thing under
- * test. A guard keyed to files that happen to be present would pass in a
- * fresh clone that has none of them.
+ * Each private tree with the EXACT `.gitignore` pattern that must match it.
  *
- * WHAT IS DELIBERATELY NOT PROBED: the nine files under internal-docs/ that
- * duplicate documents still TRACKED and public at docs/ and CONTEXT.md. An
- * earlier draft probed exactly those, so the guard asserted privacy for
- * documents anyone can read on GitHub, and would have passed while every
- * genuinely private file was untouched by it. Probe what is actually secret.
+ * Pinning the pattern, not just the source file, is what makes the anchoring
+ * verifiable. `/internal-docs/` is anchored to the repo root on purpose; drop
+ * the leading slash and every probe below still passes while a nested
+ * `site/src/content/docs/internal-docs/` becomes silently ignored and vanishes
+ * from the build. Asserting only "some line in .gitignore matched" cannot see
+ * that. `manuscript/` is deliberately recorded as unanchored, which is its
+ * current state rather than an endorsement of it.
  */
-const PROBES = [
-  'internal-docs/superpowers/specs/2026-08-05-curator-review-queue-design.md',
-  'internal-docs/research/caail-315-measurement-surface.md',
-  'internal-docs/superpowers/caail-203-audit/audit.py',
-  // Not Markdown, on purpose. Narrowing the rule to `/internal-docs/**/*.md`
-  // would keep every .md probe green while the traffic figures the docstring
-  // names became committable. Two of these three are also not .md for the same
-  // reason: a guard whose probes share one extension tests that extension.
-  'internal-docs/metrics/traffic.ndjson',
-  'manuscript/outreach/roster.csv',
-  'manuscript/figures/figure-1.png',
-  // Paths that do not exist, so the guard is about the RULE rather than
-  // today's directory listing.
-  'internal-docs/some-future-note.md',
-  'manuscript/some-future-draft.md',
+const PRIVATE_TREES = [
+  { root: 'internal-docs/', pattern: '/internal-docs/' },
+  { root: 'manuscript/', pattern: 'manuscript/' },
+  { root: 'docs/superpowers/', pattern: 'docs/superpowers/' },
+  { root: 'docs/research/', pattern: 'docs/research/' },
 ];
 
+/**
+ * Single-file rules with the same property and higher stakes. `.gitignore`
+ * says it in this repo's own words: the repo is public, a pushed secret stays
+ * fetchable by SHA, GHArchive captures the event, and a leaked key must be
+ * rotated rather than deleted. A guard covering drafts and decision records
+ * but not the secrets file would have the severity ordering backwards.
+ */
+const PRIVATE_FILES = [
+  { path: '.env', pattern: '.env' },
+  { path: '.env.local', pattern: '.env.*' },
+];
+
+/**
+ * DERIVED from the two lists above, never hand-listed beside them. Two
+ * independently maintained lists is the defect CLAUDE.md calls this repo's
+ * most expensive recurring bug: adding a tree to `PRIVATE_TREES` alone would
+ * give the tracked-files half with no rule probe, and adding a probe alone
+ * would give the rule half with no tracked-files check. Deriving makes that
+ * impossible rather than documenting it.
+ *
+ * EVERY PROBE IS FICTIONAL, and that is a requirement rather than a
+ * convenience. `check-ignore --no-index` answers about the RULE, so a made-up
+ * path tests exactly what a real one does. An earlier draft named real files
+ * and described what a private tree holds, which published the shape of
+ * private working material into a world-readable file for no gain, and is
+ * irreversible once pushed. Nothing here may name a real private file.
+ *
+ * Two extensions per tree, because a guard whose probes are all `.md` only
+ * tests `.md`: narrowing a rule to match Markdown alone would keep a
+ * Markdown-only probe set green while every other private file, credentials
+ * included, became committable.
+ */
+const PROBES = [
+  ...PRIVATE_TREES.flatMap(({ root, pattern }) => [
+    { path: `${root}probe.md`, pattern },
+    { path: `${root}nested/probe.bin`, pattern },
+  ]),
+  ...PRIVATE_FILES.map(({ path, pattern }) => ({ path, pattern })),
+];
+
+/**
+ * The OTHER direction. The checks above prove the private paths are ignored;
+ * nothing in them prevents a rule from being far too broad. Replace
+ * `/internal-docs/` with `internal*` or `*docs*` and every probe above still
+ * passes, while canonical content silently stops being published: it vanishes
+ * from `llms-full.txt` and from the homepage counts, with this guard green and
+ * reading as coverage.
+ *
+ * `docs/adr/` is the sharpest case and is here on purpose: two of its sibling
+ * directories under `docs/` ARE ignored, so a rule widened from
+ * `docs/research/` to `docs/` would be invisible to every assertion above.
+ */
+const MUST_STAY_PUBLISHABLE = [
+  'Papers.md',
+  'Datasets/Cow.md',
+  'docs/adr/0002-what-the-repo-publishes.md',
+  'docs/agents/issue-tracker.md',
+  'site/src/content/docs/privacy.mdx',
+];
+
+/** `<source>:<line>:<pattern>\t<pathname>` */
+function checkIgnore(path: string) {
+  // --no-index is load-bearing for the same reason canonical-files.test.ts
+  // gives: in index-aware mode git check-ignore never reports a TRACKED path,
+  // so the moment one of these was committed (the exact failure) the check
+  // would go quiet and pass. Asking about the rule instead is the only form
+  // that stays honest after the defect has already happened.
+  const res = spawnSync('git', ['check-ignore', '--no-index', '-v', path], {
+    cwd: REPO_ROOT,
+    encoding: 'utf-8',
+  });
+  // 0 = matched, 1 = no rule matched. Anything else means the check did not
+  // run, and an unchecked check must fail rather than pass quietly.
+  expect(res.error, `git check-ignore could not run for ${path}`).toBeUndefined();
+  expect([0, 1], `git check-ignore exited ${res.status} for ${path}`).toContain(res.status);
+  return { matched: res.status === 0, out: (res.stdout ?? '').trim() };
+}
+
 describe('the private working trees stay out of the public repo', () => {
-  it('gitignores every probe path, by a rule in this repo', () => {
-    for (const probe of PROBES) {
-      // --no-index is load-bearing for the same reason canonical-files.test.ts
-      // gives: in index-aware mode git check-ignore never reports a TRACKED
-      // path, so the moment one of these was committed (the exact failure) the
-      // check would go quiet and pass. Asking about the rule instead is the
-      // only form that stays honest after the defect has already happened.
-      // -v, not -q, and the SOURCE is asserted rather than just the match.
-      // check-ignore consults every exclude source: .git/info/exclude,
-      // core.excludesFile, nested .gitignore files. A contributor with
-      // internal-docs/ in ~/.config/git/ignore could delete the committed rule,
-      // run this suite, see green and push. Only CI would catch it, and the
-      // comment in .gitignore claims this test pins that line specifically.
-      const res = spawnSync('git', ['check-ignore', '--no-index', '-v', probe], {
-        cwd: REPO_ROOT,
-        encoding: 'utf-8',
-      });
-      // 0 = matched, 1 = no rule matched. Anything else means the check did not
-      // run, and an unchecked check must fail rather than pass quietly.
-      expect(res.error, `git check-ignore could not run for ${probe}`).toBeUndefined();
-      expect([0, 1], `git check-ignore exited ${res.status} for ${probe}`).toContain(res.status);
-      expect(
-        res.status,
-        `${probe} is NOT gitignored: private working docs are committable into a public repo`,
-      ).toBe(0);
-      // Output shape: `<source>:<line>:<pattern>\t<pathname>`.
-      //
-      // LIMIT: check-ignore reads the WORKING-TREE .gitignore, not
-      // HEAD:.gitignore, so this proves the rule is in the repo's own file and
-      // not in a personal exclude source. It does NOT prove the rule is
-      // committed: an unstaged local re-add passes here and would fail in CI,
-      // which is the right way round but is not what a message saying
-      // "committed" would mean.
-      expect(
-        (res.stdout ?? '').trim(),
-        `${probe} is ignored, but by a rule outside this repo's .gitignore `
-          + `(a personal core.excludesFile or .git/info/exclude), so nothing `
-          + `here guarantees it for anyone else`,
-      ).toMatch(/^\.gitignore:\d+:/);
-    }
+  // One `it` per probe rather than a loop, so a run that breaks two rules
+  // reports both. A single loop aborts on the first failure, and the reviewer
+  // fixes one line, re-runs, and meets the second on the next round.
+  it.each(PROBES)('gitignores $path, by the $pattern rule in this repo', ({ path, pattern }) => {
+    const { matched, out } = checkIgnore(path);
+    expect(
+      matched,
+      `${path} is NOT gitignored: private working material is committable into a public repo`,
+    ).toBe(true);
+
+    // LIMIT: check-ignore reads the WORKING-TREE .gitignore, not
+    // HEAD:.gitignore, so this proves the rule is in the repo's own file and
+    // not in a personal exclude source. It does NOT prove the rule is
+    // committed: an unstaged local re-add passes here and would fail in CI,
+    // which is the right way round but is not what "committed" would mean.
+    //
+    // Not hypothetical: this machine's .git/info/exclude carries `.env`, so
+    // without the source half the `.env` probe passes even with the committed
+    // rule deleted.
+    expect(
+      out,
+      `${path} is ignored, but by a rule outside this repo's .gitignore `
+        + `(a personal core.excludesFile or .git/info/exclude), so nothing `
+        + `here guarantees it for anyone else`,
+    ).toMatch(/^\.gitignore:\d+:/);
+
+    // The PATTERN, not just the source. This is what pins the anchoring.
+    expect(
+      out,
+      `${path} is ignored by a different pattern than expected. The rule may `
+        + `have been widened or narrowed; both change what is published.`,
+    ).toMatch(new RegExp(`^\\.gitignore:\\d+:${pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\t`));
   });
 
-  it('has no tracked files under either private tree', () => {
-    // The other direction, and the one that means it has already gone wrong.
+  it('has no tracked files under any private tree', () => {
     // The rule above can be present and correct while a file committed before
     // it was added stays tracked forever, since .gitignore does not apply
     // retroactively to the index.
-    const res = spawnSync('git', ['ls-files', '--', ...PRIVATE_TREES], {
+    const roots = PRIVATE_TREES.map(({ root }) => root);
+    const res = spawnSync('git', ['ls-files', '--', ...roots], {
       cwd: REPO_ROOT,
       encoding: 'utf-8',
     });
     expect(res.error, 'git ls-files could not run').toBeUndefined();
     expect(res.status, `git ls-files exited ${res.status}`).toBe(0);
-    const tracked = (res.stdout ?? '').trim();
-    expect(tracked, 'these private files are TRACKED and will be published').toBe('');
+    expect(
+      (res.stdout ?? '').trim(),
+      'these private files are TRACKED and will be published',
+    ).toBe('');
   });
 
+  it.each(MUST_STAY_PUBLISHABLE)('does not over-match and swallow %s', (path) => {
+    const { matched, out } = checkIgnore(path);
+    expect(
+      matched,
+      `${path} IS gitignored (${out}). A private-path rule has been widened `
+        + `and is now swallowing canonical content, which silently disappears `
+        + `from the published site and from llms-full.txt.`,
+    ).toBe(false);
+  });
 });

@@ -117,8 +117,26 @@ describe('the ignore rules and the predicate agree on what a companion is', () =
   it('git ignores a companion at every suffix the predicate recognises', () => {
     for (const suffix of PRIVATE_COMPANION_SUFFIXES) {
       const probe = `site/src/content/docs/probe${suffix}`;
-      const res = spawnSync('git', ['check-ignore', '-q', probe], { cwd: REPO_ROOT });
+      // -v, and the SOURCE is asserted, not just the match. With -q alone this
+      // proves only that SOMETHING ignores the probe: a contributor carrying
+      // `*.local.md*` in ~/.config/git/ignore or .git/info/exclude could delete
+      // the committed rule, run this suite, see green and push, and only CI
+      // would catch it. Not hypothetical — this repo's own .git/info/exclude
+      // already carries a rule that masked the `.env` case in
+      // scripts/private-paths.test.ts, which is where this fix came from.
+      const res = spawnSync('git', ['check-ignore', '-v', probe], {
+        cwd: REPO_ROOT,
+        encoding: 'utf-8',
+      });
+      expect(res.error, `git check-ignore could not run for ${probe}`).toBeUndefined();
+      expect([0, 1], `git check-ignore exited ${res.status} for ${probe}`).toContain(res.status);
       expect(res.status, `${probe} is NOT gitignored — a companion here is committable`).toBe(0);
+      // Output shape: `<source>:<line>:<pattern>\t<pathname>`.
+      expect(
+        (res.stdout ?? '').trim(),
+        `${probe} is ignored, but by a rule outside this repo's .gitignore, `
+          + `so nothing here guarantees it for anyone else`,
+      ).toMatch(/^\.gitignore:\d+:/);
     }
   });
 
