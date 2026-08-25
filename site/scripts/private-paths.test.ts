@@ -57,6 +57,15 @@ const PRIVATE_TREES = [
   { root: 'manuscript/', pattern: 'manuscript/' },
   { root: 'docs/superpowers/', pattern: 'docs/superpowers/' },
   { root: 'docs/research/', pattern: 'docs/research/' },
+  // The highest-stakes rule in .gitignore, and it was unguarded while four
+  // lower-stakes ones were not. Its own rationale, verbatim from .gitignore:
+  // it "holds the full text of works CAAIL may read but may not redistribute",
+  // and committing it to a public repo "is exactly the publication that tier
+  // exists to avoid", with git history keeping it fetchable by SHA afterwards.
+  { root: 'docling-corpus/', pattern: 'docling-corpus/' },
+  // Sits in the same "Local working artifacts" block as manuscript/ and the
+  // two docs/ rules, and was the only member of it with no guard.
+  { root: 'tools/', pattern: 'tools/' },
 ];
 
 /**
