@@ -384,13 +384,15 @@ anyone who clones, which is why `.claude/`, `site/`, `workers/` and the plugins 
 and belong here. Read this rule as answering "may a planning document live in the tree", not as
 a test to apply to executable content.
 
-`docs/` does not currently exist, having been emptied under that rule. **Two of its subpaths
-are still gitignored** (`docs/superpowers/`, `docs/research/`), deliberately, because agents
-carrying an older instruction still write there and the rules are what stop an unpublished spec
-being committed. The consequence to know before recreating the directory: a page written to
-either of those two paths is silently swallowed, never reaching the repo or the site, with
-nothing failing. `site/scripts/private-paths.test.ts` guards the rules and asserts nothing about
-publishability under `docs/`.
+`docs/` does not currently exist, having been emptied under that rule. **Several of its
+subpaths are still gitignored** (read `.gitignore` for which; the list has already grown once
+since this sentence was written), deliberately, because agents carrying an older instruction
+still write there and the rules are what stop an unpublished planning document being committed.
+The consequence to know before recreating the directory: a page written to one of those paths
+is silently swallowed, never reaching the repo or the site, with nothing failing. So recreating
+`docs/` for genuine library documentation means checking `.gitignore` first.
+`site/scripts/private-paths.test.ts` guards the rules and asserts nothing about publishability
+under `docs/`.
 
 ## Agent skills
 

@@ -3,7 +3,8 @@
  *
  * `PRIVATE_TREES` below is the list; it is not restated here, because a prose
  * copy of a constant drifts from it and an earlier draft of this paragraph
- * already named four of the six. `.env` and `.env.*` carry the credentials.
+ * named four while the constant held six, then six while it held nine.
+ * `.env` and `.env.*` carry the credentials.
  * What any of them CONTAIN is deliberately not described: this file is
  * world-readable, and naming private material is disclosure whether or not the
  * material itself ships.
@@ -24,8 +25,10 @@
  * edit most likely to break it. Before that filter existed, a PR touching only
  * `.gitignore` triggered no workflow at all.
  *
- * WHY `docs/superpowers/` AND `docs/research/` ARE HERE when `docs/` no longer
- * exists at all. The directory was emptied and removed, because nothing in it
+ * WHY THE `docs/` SUBPATHS ARE HERE when `docs/` no longer exists at all.
+ * Which ones is `PRIVATE_TREES`'s business, not this paragraph's; an earlier
+ * draft named two while the constant held five.
+ * The directory was emptied and removed, because nothing in it
  * was documentation for the live library: decision records, process
  * conventions, and one superseded implementation spike whose production form is
  * `site/scripts/db/lib.ts`. The criterion is what a file IS, not whether it is
@@ -156,8 +159,10 @@ const MUST_STAY_PUBLISHABLE = [
   // and it is NOT in llms-full's list. A draft of this comment claimed a rule
   // swallowing Taxonomy.md would be caught. It would not have been, and losing
   // that file silently takes /taxonomy/ and every definition with it.
-  ...llmsFullSources(REPO_ROOT),
-  ...CANONICAL_SOURCES.files,
+  ...new Set([
+    ...llmsFullSources(REPO_ROOT),
+    ...CANONICAL_SOURCES.files,
+  ]),
   // A route rather than corpus, in neither list. Losing it silently is a
   // compliance problem rather than a content one.
   'site/src/content/docs/privacy.mdx',
@@ -305,15 +310,14 @@ describe('the private working trees stay out of the public repo', () => {
 
   it('.worktreeinclude carries internal-docs/ as a DIRECTORY pattern', () => {
     // Presence, not effect — but the effect was measured before this was
-    // written, which is what makes presence worth asserting. In a fresh
-    // worktree internal-docs/ and internal-docs/adr/ both arrive with this
-    // line, and the decision records are otherwise unreachable from a worktree,
-    // which is this repo's normal working shape.
+    // written, which is what makes presence worth asserting. Verified in a
+    // fresh worktree: the tree arrives with this line and does not without it,
+    // and worktrees are this repo's normal working shape.
     //
     // The SHAPE is what this pins. A file glob cannot reach inside a
-    // wholly-ignored directory (that is why *.local.md does not deliver the
-    // companion), so "tidying" this to a glob would silently stop delivering
-    // the whole tree while still looking like a rule for it.
+    // wholly-ignored directory (that is why *.local.md does not deliver a
+    // companion placed in one), so "tidying" this to a glob would silently
+    // stop delivering the tree while still looking like a rule for it.
     const rules = readFileSync(join(REPO_ROOT, '.worktreeinclude'), 'utf-8')
       .split('\n')
       .map((l) => l.trim())
@@ -337,9 +341,23 @@ describe('the private working trees stay out of the public repo', () => {
     // llms-full.
     expect(MUST_STAY_PUBLISHABLE).toContain('Taxonomy.md');
     expect(MUST_STAY_PUBLISHABLE).toContain('Papers.md');
-    // And a directory expansion, which is what llmsFullSources adds over a
-    // literal list.
-    expect(MUST_STAY_PUBLISHABLE.some((p) => p.startsWith('Methods/'))).toBe(true);
+
+    // EVERY canonical directory, not just one. llmsFullSources expands these
+    // itself, and the union spreads only CANONICAL_SOURCES.files, so a dropped
+    // dirMarkdown call would remove a whole directory from the guard with
+    // nothing failing: Primers/ is 3 pages, so the total falls well inside a
+    // `> 50` floor and a single Methods/ probe never notices.
+    for (const dir of [...CANONICAL_SOURCES.dirs, 'Primers']) {
+      expect(
+        MUST_STAY_PUBLISHABLE.some((p) => p.startsWith(`${dir}/`)),
+        `${dir}/ contributes nothing to the publishable set, so a rule `
+          + `swallowing it would go unnoticed`,
+      ).toBe(true);
+    }
+
+    // No duplicates, so the floor measures real coverage and a swallowed path
+    // is reported once rather than twice.
+    expect(new Set(MUST_STAY_PUBLISHABLE).size).toBe(MUST_STAY_PUBLISHABLE.length);
   });
 
   it('does not over-match and swallow anything the build publishes', () => {
@@ -358,18 +376,36 @@ describe('the private working trees stay out of the public repo', () => {
     // filter those out rather than treating any output as failure. This is the
     // same `!` that makes the exit code alone unusable in checkIgnore above,
     // and `.env.example` is in the set precisely to exercise it.
-    const swallowed = (res.stdout ?? '')
+    const matched = (res.stdout ?? '')
       .split('\n')
       .filter((l) => l.trim())
-      .filter((l) => {
-        return !patternOf(l).startsWith('!');
-      });
+      // A NEGATION matches and prints while leaving the path publishable, so
+      // filter those out rather than treating any output as failure. Same `!`
+      // that makes the exit code alone unusable in checkIgnore above.
+      .filter((l) => !patternOf(l).startsWith('!'));
+
+    // SPLIT BY SOURCE before asserting. checkIgnore pins `.gitignore:` for
+    // exactly this reason and the first version of this batched test dropped
+    // it, which is a regression of a fix made earlier on this branch: a
+    // developer carrying one of these paths in a personal core.excludesFile or
+    // .git/info/exclude would get a red run blaming the repo's .gitignore,
+    // while CI (which has no such file) stayed green. That sends the reviewer
+    // after a regression that does not exist.
+    const fromRepo = matched.filter((l) => l.startsWith('.gitignore:'));
+    const fromElsewhere = matched.filter((l) => !l.startsWith('.gitignore:'));
 
     expect(
-      swallowed,
-      'a private-path rule has been widened and is now swallowing content the '
-        + 'build publishes, which disappears from llms-full.txt and the homepage '
-        + 'counts with everything else green',
+      fromRepo,
+      'a rule in this repo\'s .gitignore has been widened and is now swallowing '
+        + 'content the build publishes, which disappears from llms-full.txt and '
+        + 'the homepage counts with everything else green',
+    ).toEqual([]);
+
+    expect(
+      fromElsewhere,
+      'these published paths are ignored by a rule OUTSIDE this repo (a personal '
+        + 'core.excludesFile or .git/info/exclude). Nothing is wrong with the '
+        + 'repo; your local git config is hiding published content from you',
     ).toEqual([]);
   });
 });
