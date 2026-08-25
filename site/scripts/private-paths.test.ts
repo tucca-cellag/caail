@@ -129,16 +129,35 @@ const PROBES = [
  * `docs/research/` to `docs/` would be invisible to every assertion above.
  */
 const MUST_STAY_PUBLISHABLE = [
+  // One per canonical directory the build actually enumerates (llms-full.ts
+  // and computeCounts read this same set), not one representative. A rule
+  // widened to swallow Methods/ or Primers/ would otherwise be invisible: the
+  // pages vanish from llms-full.txt and the homepage counts with every other
+  // assertion green.
   'Papers.md',
   'Datasets/Cow.md',
-  'docs/adr/0002-what-the-repo-publishes.md',
-  'docs/agents/issue-tracker.md',
+  'ResearchAreas/Bioprocess.md',
+  'Methods/DeepLearning.md',
+  'Primers/CellAg.md',
   'site/src/content/docs/privacy.mdx',
   // The negation case, and the reason checkIgnore cannot use the exit code
   // alone. `!.env.example` MATCHES and exits 0 while leaving the file
   // publishable, so this entry fails on a correct repo under any
   // exit-code-only reading. It is the regression test for that hole.
   '.env.example',
+
+  // DELIBERATELY NOT LISTED: anything under docs/. Asserting that a docs/ file
+  // must stay publishable encodes a PUBLISHING POLICY, and this guard has no
+  // business doing that as a side effect of testing for over-match. ADR-0002's
+  // own table puts "tracker conventions, ticket workflow, board state" in the
+  // withheld column, so a probe pinning docs/agents/ as public would have
+  // asserted the opposite of the rule it sits next to. Whether docs/ is
+  // published at all is CAAIL-317's question.
+  //
+  // The cost, stated rather than hidden: docs/research/ and docs/superpowers/
+  // are ignored while their siblings are not, so a rule widened from either to
+  // a bare `docs/` is caught by the PATTERN pin above and by nothing here. A
+  // NEW broad rule added alongside them would be caught by neither.
 ];
 
 /** `<source>:<line>:<pattern>\t<pathname>` */
