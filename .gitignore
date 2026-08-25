@@ -59,3 +59,14 @@ node_modules/
 
 # Local wrangler state
 workers/*/.wrangler/
+
+# Per-file private companions: content that fails the docs/adr/0002 publishing
+# test lives beside its public file with a .local.md / .local.mdx suffix,
+# gitignored, and reaches worktrees through .worktreeinclude.
+#
+# .mdx is not optional here. Every file under site/src/content/docs/ is .mdx,
+# and that is a directory the convention explicitly sanctions a companion in,
+# so covering only .local.md would leave the commonest case committable into
+# a public repo -- the leak this whole mechanism exists to prevent.
+*.local.md
+*.local.mdx

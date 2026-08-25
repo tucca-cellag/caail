@@ -56,6 +56,7 @@ import { readFile, readdir } from 'node:fs/promises';
 import { relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { CAAIL_PAGES } from '../caail-pages.ts';
+import { privateCompanionGlobExclusions } from '../../lib/canonical-files.ts';
 
 // content/loaders/ -> content/ -> src/ -> site/ -> repo root
 const REPO_ROOT = new URL('../../../../', import.meta.url);
@@ -84,11 +85,41 @@ const CANONICAL_SOURCES = {
   ],
 } as const;
 
+/**
+ * Glob for the in-repo Starlight docs.
+ *
+ * Exported so it can be tested. This is the ONE branch of this loader with no
+ * `CAAIL_PAGES` allow-list, so the pattern is the only thing standing between
+ * a private companion placed beside a public page — the placement ADR-0002
+ * sanctions — and a built, deployed route.
+ *
+ * The exclusions are derived from `PRIVATE_COMPANION_SUFFIXES`, not written
+ * out, so the suffix list has one owner.
+ *
+ * It guards the BUILD only, and that limit is Astro's rather than ours. The
+ * initial load globs with tinyglobby, which honours `!`. The dev watcher
+ * re-tests the same pattern with `picomatch.isMatch(entry, pattern)`, which
+ * treats an array as any-match and ignores the negation outright, so a
+ * companion created while `astro dev` runs is still ingested. Verified against
+ * picomatch 4.0.4 under astro 6.4.8; tracked as CAAIL-323. Nothing shipped is
+ * affected — `astro build` takes the tinyglobby path — and the companion is
+ * gitignored either way, so the residue is a local dev server serving it to
+ * the person who wrote it.
+ *
+ * Do NOT collapse this back to the plain string `'**\/[^_]*.{md,mdx}'`. The
+ * array reads as redundant and it is not; that edit deploys companions, and
+ * `canonical-files.test.ts` fails on it deliberately.
+ */
+export const DOCS_GLOB_PATTERN: string[] = [
+  '**/[^_]*.{md,mdx}',
+  ...privateCompanionGlobExclusions(),
+];
+
 export function caailDocsLoader(): Loader {
   // Astro's own loader for the in-repo Starlight docs (mirrors docsLoader()).
   const inRepo = glob({
     base: './src/content/docs',
-    pattern: '**/[^_]*.{md,mdx}',
+    pattern: DOCS_GLOB_PATTERN,
   });
 
   return {

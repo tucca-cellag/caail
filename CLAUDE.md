@@ -344,6 +344,34 @@ Search for the **concept**, not your phrasing of it. A ticket about "refs whose 
 
 **Jira vs public GitHub.** Jira is the default and is never skipped. A public GitHub issue is an *additional* venue, appropriate when the content is world-safe and outside contributors benefit from seeing it: reproducible bugs in shipped behaviour, feature proposals, content suggestions. Where both exist, cross-reference each from the other. Anything `disclosure-private` gets no GitHub issue at all.
 
+## What this repo publishes
+
+**The repo is public, and one test decides whether a working file belongs in it:** is it
+part of **how the library is made and used**, or is it **how one person organises their own
+time**? The first is published, the second is not. Curated content, schema and contracts,
+curation methodology, contribution and consumption paths, and guards that protect anyone who
+clones: published. Tracker mechanics, credentials and anything that authenticates, outreach
+rosters and replies, personal scheduling: not.
+
+**Access is not the test**, and getting that wrong is the likely failure. The Zotero curation
+skills only work inside a private group library and are published anyway, because for a
+*curated* library the curation method is the product: a reader deciding whether to trust a
+classification is answered by how classifications are made. A file can be unusable by an
+outside reader and still belong in public.
+
+A working file that fails the test lives beside its public sibling with a **`.local.md` or
+`.local.mdx`** suffix, gitignored, reaching worktrees through `.worktreeinclude` — which only
+covers the worktrees Claude Code creates, so a hand-made `git worktree add` gets no companion
+and no signal that one is missing.
+
+**"Is it a secret or a weakness" is a different rule** (`.claude/rules/publishing.md`), it
+governs disclosure harm, and it is not a scope rule. Used as one it passes nearly everything,
+which is how ~165 lines of single-user tracker mechanics came to be public and how a section
+on authenticating a tracker write was then added beside them, caught by a review round rather
+than by any rule. Rationale, rejected alternatives and what has not yet been re-examined:
+`docs/adr/0002-what-the-repo-publishes.md`, whose Implementation status is explicit that the
+repo does not yet comply with its own test.
+
 ## Agent skills
 
 ### Issue tracker

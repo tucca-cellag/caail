@@ -33,6 +33,16 @@ on:
       - .claude/hooks/**
       - .claude/settings.json
       - .github/workflows/test.yml
+      # The two ignore files, because canonical-files.test.ts now asserts they
+      # agree with the code about what a private companion is (ADR-0002).
+      # Without these entries the guard never runs on the edit most likely to
+      # break it: a PR that deletes the `*.local.mdx` line from .gitignore
+      # touches no other path, triggers zero workflows, merges green, and makes
+      # the commonest companion committable into this public repo. Same defect
+      # the `.claude/hooks/**` note above describes — a test that exists and is
+      # unreachable from CI.
+      - .gitignore
+      - .worktreeinclude
       # The citation record. Two suites read it and fail when a copy of it drifts:
       # project-name.test.ts, which pins the title, and topic-curators.test.ts, which
       # checks a curator's name and ORCID belong to one author in it. Both were
@@ -107,6 +117,16 @@ on:
       - .claude/hooks/**
       - .claude/settings.json
       - .github/workflows/test.yml
+      # The two ignore files, because canonical-files.test.ts now asserts they
+      # agree with the code about what a private companion is (ADR-0002).
+      # Without these entries the guard never runs on the edit most likely to
+      # break it: a PR that deletes the `*.local.mdx` line from .gitignore
+      # touches no other path, triggers zero workflows, merges green, and makes
+      # the commonest companion committable into this public repo. Same defect
+      # the `.claude/hooks/**` note above describes — a test that exists and is
+      # unreachable from CI.
+      - .gitignore
+      - .worktreeinclude
       # The citation record. Two suites read it and fail when a copy of it drifts:
       # project-name.test.ts, which pins the title, and topic-curators.test.ts, which
       # checks a curator's name and ORCID belong to one author in it. Both were

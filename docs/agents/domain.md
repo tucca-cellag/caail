@@ -21,9 +21,11 @@ Both now exist. Read `docs/adr/` for what is in it rather than trusting any
 count written down here.
 
 An ADR records a decision, which is not the same as a description of the
-repository. ADR-0001 carries an **Implementation status** section splitting what
+repository. Each one carries an **Implementation status** section splitting what
 has landed from what has not; read it before treating any assertion in that file
-as true of the code you are about to touch.
+as true of the code you are about to touch. That section is load-bearing rather
+than a formality — an accepted ADR here may be explicit that the repository does
+not yet comply with the rule it just set.
 
 ## File structure
 
@@ -31,8 +33,7 @@ as true of the code you are about to touch.
 /
 ├── CONTEXT.md
 ├── docs/
-│   ├── adr/
-│   │   └── 0001-matrix-axis-model.md
+│   ├── adr/             ← one file per decision; list them with `ls`
 │   └── agents/          ← this directory
 └── site/
 ```

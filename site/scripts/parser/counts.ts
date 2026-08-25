@@ -5,10 +5,14 @@
  * and reads the repo-root corpus files to compute the rest:
  *   - software      H3 headings in Software.md
  *   - databases     H3 headings in Databases.md
- *   - species       *.md files in Datasets/ (excluding README.md, CLAUDE.md)
+ *   - species       published *.md files in Datasets/ (also excluding README.md)
  *   - datasets      every catalogued dataset across Datasets/ (via datasets.ts)
- *   - researchAreas *.md files in ResearchAreas/ (excluding CLAUDE.md)
+ *   - researchAreas published *.md files in ResearchAreas/
  *   - talks         video/playlist items across all sections of Talks.md
+ *
+ * "Published" is `src/lib/canonical-files.ts`'s predicate: not CLAUDE.md, not
+ * a `*.local.md` private companion. Named rather than restated, so this
+ * comment cannot drift from the rule.
  *
  * The result is validated with CountsSchema.parse() before returning so a
  * shape regression throws here rather than downstream at build time.
@@ -19,6 +23,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { Root, Heading } from 'mdast';
 
+import { isPublishedMarkdown } from '../../src/lib/canonical-files.js';
 import { parseMarkdown } from './markdown.js';
 import { buildTalksModel, talkItemCount } from './talks.js';
 import { computeDatasetBreakdown } from './datasets.js';
@@ -54,13 +59,15 @@ function countH3Headings(root: Root): number {
 }
 
 /**
- * Count *.md files in `dir`, excluding the given names (case-sensitive).
+ * Count published *.md files in `dir`, excluding the given names
+ * (case-sensitive) on top of what `isPublishedMarkdown` already drops
+ * (CLAUDE.md and `*.local.md` private companions).
  */
 function countMdFiles(dir: string, exclude: string[]): number {
   const excludeSet = new Set(exclude);
   const entries = readdirSync(dir);
   return entries.filter(
-    (name) => name.endsWith('.md') && !excludeSet.has(name),
+    (name) => isPublishedMarkdown(name) && !excludeSet.has(name),
   ).length;
 }
 
@@ -93,21 +100,18 @@ export function computeCounts(
   const databasesSrc = readFileSync(join(repoRoot, 'Databases.md'), 'utf-8');
   const databases = countH3Headings(parseMarkdown(databasesSrc));
 
-  // --- species: *.md pages in Datasets/ excluding README.md and CLAUDE.md ---
-  const species = countMdFiles(join(repoRoot, 'Datasets'), [
-    'README.md',
-    'CLAUDE.md',
-  ]);
+  // --- species: published *.md pages in Datasets/, minus the directory index ---
+  // CLAUDE.md is not listed here: isPublishedMarkdown already owns that rule,
+  // and naming it twice is how the two copies drift apart.
+  const species = countMdFiles(join(repoRoot, 'Datasets'), ['README.md']);
 
   // --- datasets: every catalogued dataset across all Datasets/ pages ---
   // Built from the same datasets.ts breakdown that feeds metrics.json, so this
   // headline count and the dashboard breakdown can never drift.
   const datasets = computeDatasetBreakdown(repoRoot).total;
 
-  // --- researchAreas: *.md files in ResearchAreas/ excluding CLAUDE.md ---
-  const researchAreas = countMdFiles(join(repoRoot, 'ResearchAreas'), [
-    'CLAUDE.md',
-  ]);
+  // --- researchAreas: published *.md files in ResearchAreas/ ---
+  const researchAreas = countMdFiles(join(repoRoot, 'ResearchAreas'), []);
 
   // --- talks: video/playlist items across all sections of Talks.md ---
   // Built from the same talks.ts model that produces talks.json, so this count

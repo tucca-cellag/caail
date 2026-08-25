@@ -1,0 +1,14 @@
+# Files copied into every worktree Claude Code creates with git.
+#
+# A worktree is a fresh checkout, so gitignored local config is absent and the
+# first build in a new worktree fails for reasons unrelated to the ticket.
+# Syntax is .gitignore syntax. Only files that match AND are gitignored are
+# copied, so tracked files (.env.example) are never duplicated.
+#
+# Not processed if a WorktreeCreate hook replaces the default git logic.
+# Reference: https://code.claude.com/docs/en/worktrees
+
+.env
+.env.*
+*.local.md
+*.local.mdx
