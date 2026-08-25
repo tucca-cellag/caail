@@ -217,7 +217,12 @@ first-principles structure is absent from the deployed model.
 ### Genetic Algorithms
 Population-based evolutionary search: genetic algorithms, evolutionary strategies, NSGA, differential
 evolution. In cell-ag: optimizing media, process parameters, and tissue/scaffold designs over large
-combinatorial spaces.
+combinatorial spaces. **Not** an evolutionary search that optimizes only a model's own
+hyperparameters or architecture, which is the model's training procedure rather than a result about
+the problem. The row is earned when the search's output is a physical design, a formulation, a process
+setting, or a feature subset reported as a finding about the problem domain; reporting which
+hyperparameters won is not such a finding. A paper that does both earns the row on the second, so read
+the whole methods section rather than the first evolutionary-search heading in it.
 
 ### SVM
 Support vector machines and support vector regression, kernel methods for classification and

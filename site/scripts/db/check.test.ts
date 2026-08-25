@@ -12,7 +12,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { openDb, importNdjson, type Db } from './lib.js';
-import { checkIntegrity, checkReachability, checkColumnDrift, checkTaxonomyAxes, checkTopicTiers, checkAxisBijection, checkCatalogHeadings, checkLicenses, checkManualLicenseKeys, checkDois, checkManualDoiKeys, checkRelatedDois, checkSubseries, runChecks } from './check.js';
+import { checkIntegrity, checkReachability, checkColumnDrift, checkTaxonomyAxes, checkTopicTiers, checkAxisBijection, checkCatalogHeadings, checkLicenses, checkManualLicenseKeys, checkDois, checkManualDoiKeys, checkRelatedDois, checkSubseries, checkRowTagParity, runChecks } from './check.js';
 import { THEME_SLUGS } from './seed.js';
 
 const failing = (results: { label: string; ok: boolean }[], match: RegExp) =>
@@ -533,6 +533,37 @@ describe('checkTopicTiers', () => {
     const db = importNdjson(); db.exec('PRAGMA foreign_keys=OFF');
     db.prepare("INSERT INTO items(id,type,slug) VALUES('topic:z','topic','z')").run();
     expect(() => db.prepare("INSERT INTO topics(item_id,slug,label,tier,theme_slug,area_key) VALUES('topic:z','z','Z','tag',NULL,NULL)").run()).toThrow();
+  });
+});
+
+describe('checkRowTagParity', () => {
+  it('passes on the real committed DB', () => {
+    expect(checkRowTagParity(importNdjson()).every((r) => r.ok)).toBe(true);
+  });
+
+  it('flags a ref in the row that is missing the tag', () => {
+    const db = importNdjson(); db.exec('PRAGMA foreign_keys=OFF');
+    db.prepare("DELETE FROM item_topics WHERE topic_id='topic:comparative-study' AND item_id='paper:253'").run();
+    expect(checkRowTagParity(db).some((r) => !r.ok && /carries the/.test(r.label))).toBe(true);
+  });
+
+  it('flags a ref carrying the tag that is not in the row', () => {
+    const db = importNdjson(); db.exec('PRAGMA foreign_keys=OFF');
+    // Ref 1 is a Genetic Algorithms paper and has no business in this row.
+    db.prepare("INSERT INTO item_topics(item_id,topic_id) VALUES('paper:1','topic:comparative-study')").run();
+    expect(checkRowTagParity(db).some((r) => !r.ok && /sits in the/.test(r.label))).toBe(true);
+  });
+
+  // The failure mode this guard is most likely to die of is not a bad pairing, it is a
+  // rename: drop either side and a naive implementation compares two empty sets and
+  // reports success forever. So the resolution of both sides is asserted first, and
+  // that assertion is itself tested.
+  it('fails loudly when the row it names no longer exists, rather than passing vacuously', () => {
+    const db = importNdjson(); db.exec('PRAGMA foreign_keys=OFF');
+    db.prepare("DELETE FROM matrix_cells WHERE method='Comparative Studies'").run();
+    db.prepare("DELETE FROM methods WHERE label='Comparative Studies'").run();
+    const results = checkRowTagParity(db);
+    expect(results.some((r) => !r.ok && /both resolve/.test(r.label))).toBe(true);
   });
 });
 

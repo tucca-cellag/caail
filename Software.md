@@ -20,7 +20,7 @@ Summary: Search large protein databases using monomers and multimers. Can be use
 
 ### [amii-cell-ag-tools](https://github.com/Amii-Applied-AI/amii-cell-ag-tools)
 
-Summary: Open-source applied AI research code from the Alberta Machine Intelligence Institute (Amii) targeting cellular agriculture, hosted under the `Amii-Applied-AI` GitHub organization. The repository collects two Python subprojects: `protein-thermostability-data-tools` (code used in the development of a public protein thermostability dataset) and `active-learning-for-cell-media` (active-learning analysis applied to cell media optimization). MIT-licensed.
+Summary: Open-source applied AI research code from the Alberta Machine Intelligence Institute (Amii) targeting cellular agriculture, hosted under the `Amii-Applied-AI` GitHub organization. The repository collects two Python subprojects: `protein-thermostability-data-tools` (code used in the development of a public protein thermostability dataset) and `active-learning-for-cell-media` (active-learning analysis applied to cell media optimization). MIT-licensed. Companion to [Papers.md ref #350](./Papers.md#350).
 
 ### [ESMFold](https://github.com/facebookresearch/esm)
 

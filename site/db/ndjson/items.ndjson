@@ -661,6 +661,7 @@
 {"id":"paper:348","type":"paper","slug":"348"}
 {"id":"paper:349","type":"paper","slug":"349"}
 {"id":"paper:35","type":"paper","slug":"35"}
+{"id":"paper:350","type":"paper","slug":"350"}
 {"id":"paper:36","type":"paper","slug":"36"}
 {"id":"paper:37","type":"paper","slug":"37"}
 {"id":"paper:38","type":"paper","slug":"38"}
@@ -882,6 +883,7 @@
 {"id":"topic:cell-line-engineering","type":"topic","slug":"cell-line-engineering"}
 {"id":"topic:cell-lines-engineering","type":"topic","slug":"cell-lines-engineering"}
 {"id":"topic:comparative-study","type":"topic","slug":"comparative-study"}
+{"id":"topic:cryopreservation","type":"topic","slug":"cryopreservation"}
 {"id":"topic:flavor-sensory","type":"topic","slug":"flavor-sensory"}
 {"id":"topic:food-safety","type":"topic","slug":"food-safety"}
 {"id":"topic:growth-factors","type":"topic","slug":"growth-factors"}

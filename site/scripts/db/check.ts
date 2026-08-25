@@ -658,13 +658,61 @@ export function checkTaxonomyAxes(db: Db, repoRoot: string = REPO_ROOT): CheckRe
   return out;
 }
 
+/**
+ * Rows whose membership is duplicated onto the topic axis, and must agree both ways.
+ *
+ * `Comparative Studies` is the first matrix row minted alongside a fine tag carrying
+ * the same fact. That is exactly the "hand-typed fact next to a machine-derived one"
+ * shape this repo keeps paying for, and the curator's condition for allowing the
+ * duplication at all was that a guard enforce it rather than a comment asking people
+ * to remember. So the pairing is asserted in BOTH directions: a ref in the row without
+ * the tag, and a ref carrying the tag without the row, each fail here naming the ref.
+ *
+ * The pair is keyed by method label and topic slug. Both are asserted to resolve
+ * before the membership comparison runs, because the way a guard like this usually
+ * dies is a rename turning it into a comparison of two empty sets that passes forever.
+ */
+const ROW_TAG_PAIRS: ReadonlyArray<{ method: string; topic: string }> = [
+  { method: 'Comparative Studies', topic: 'comparative-study' },
+];
+
+export function checkRowTagParity(db: Db): CheckResult[] {
+  const out: CheckResult[] = [];
+  for (const { method, topic } of ROW_TAG_PAIRS) {
+    const hasMethod = db.prepare('SELECT 1 FROM methods WHERE label=?').get(method) !== undefined;
+    const hasTopic = db.prepare('SELECT 1 FROM topics WHERE slug=?').get(topic) !== undefined;
+    out.push(ok(`row/tag parity: '${method}' and '${topic}' both resolve`,
+      hasMethod && hasTopic,
+      `method ${hasMethod ? 'ok' : 'MISSING'}, topic ${hasTopic ? 'ok' : 'MISSING'}`));
+    if (!hasMethod || !hasTopic) continue;
+
+    const inRow = (db.prepare('SELECT DISTINCT ref_id FROM matrix_cells WHERE method=?')
+      .all(method) as { ref_id: number }[]).map((r) => r.ref_id);
+    const tagged = (db.prepare(
+      "SELECT CAST(SUBSTR(item_id, 7) AS INTEGER) AS ref_id FROM item_topics"
+      + " WHERE topic_id=? AND item_id LIKE 'paper:%'",
+    ).all(`topic:${topic}`) as { ref_id: number }[]).map((r) => r.ref_id);
+
+    const rowSet = new Set(inRow);
+    const tagSet = new Set(tagged);
+    const untagged = inRow.filter((r) => !tagSet.has(r)).sort((a, b) => a - b);
+    const unrowed = tagged.filter((r) => !rowSet.has(r)).sort((a, b) => a - b);
+    out.push(ok(`row/tag parity: every '${method}' ref carries the '${topic}' tag`,
+      untagged.length === 0, `untagged ref(s): ${untagged.join(', ')}`));
+    out.push(ok(`row/tag parity: every '${topic}' ref sits in the '${method}' row`,
+      unrowed.length === 0, `ref(s) tagged but not in the row: ${unrowed.join(', ')}`));
+  }
+  return out;
+}
+
 /** Run every guard against a DB. Returns all results (ok + failing). */
 export function runChecks(db: Db, repoRoot: string = REPO_ROOT): CheckResult[] {
   return [...checkIntegrity(db), ...checkReachability(db), ...checkColumnDrift(db, repoRoot),
     ...checkTaxonomyAxes(db, repoRoot),
     ...checkTopicTiers(db), ...checkAxisBijection(db, repoRoot),
     ...checkCatalogHeadings(db), ...checkLicenses(db), ...checkManualLicenseKeys(db),
-    ...checkDois(db), ...checkManualDoiKeys(db), ...checkRelatedDois(db), ...checkSubseries(db)];
+    ...checkDois(db), ...checkManualDoiKeys(db), ...checkRelatedDois(db), ...checkSubseries(db),
+    ...checkRowTagParity(db)];
 }
 
 function main(): void {
