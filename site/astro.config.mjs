@@ -264,6 +264,7 @@ export default defineConfig({
         { label: 'Funding & Grants', link: '/funding/' },
         { label: 'By the Numbers', link: '/by-the-numbers/' },
         { label: 'Contributing', link: '/contributing/' },
+        { label: 'Curation Methodology', link: '/curation/' },
         { label: 'Community', link: '/community/' },
         { label: 'How to Cite', link: '/cite/' },
         { label: 'About', link: '/about/' },

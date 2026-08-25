@@ -1,0 +1,148 @@
+---
+title: Curation Methodology
+description: "What a placement in the CAAIL matrix rests on: how each paper's methods section is located, how AI-drafted classifications are checked, current coverage, and what we are adding next."
+---
+
+Every cell in the matrix at the top of [Papers.md](https://github.com/tucca-cellag/caail/blob/main/Papers.md) says that a named paper applied a named AI/ML method to a named cellular-agriculture research area. This page describes how those placements are made, so you can judge one for yourself.
+
+:::caution[Entries are drafted by AI agents]
+A language model reads each paper's methods section and proposes where it belongs. A second agent then checks that proposal against the paper, and has to quote the passage it relies on. Sections 1 to 5 describe how this works and how far it currently reaches. Section 6 covers what we are adding.
+:::
+
+A placement records what a paper did. It is not a judgement about whether the approach works. The scope of each row and column is defined in [Taxonomy.md](/caail/taxonomy/).
+
+## How an entry is produced
+
+| Stage | Performed by | Status |
+| --- | --- | --- |
+| Discover a candidate paper | A reader, a contributor, or a maintainer's literature sweep. An automated sweep is planned; see the [roadmap](#6-roadmap). | In place, manual |
+| Locate the paper's methods section | Automated document conversion, then deterministic boundary rules. No language-model judgement. | In place |
+| Propose a placement | A language-model agent reading that section. | In place |
+| Verify the proposal | A separate adversarial reviewer agent, which must quote a verbatim span from the paper, produces a verdict rather than an edit, and never reviews a proposal it made. | In place |
+| Validate the theme | A maintainer today, covering all 8 subject themes; a per-theme topic lead as themes are taken up. | In place, being broadened |
+| Enter it into the catalogue | A human maintainer, through the authoring database. | In place |
+| Check consistency | Deterministic checks on every change. | In place |
+
+Every stage marked *in place* runs on every entry added through this pipeline. Placements that predate it are a backlog, and re-checking them is in the [roadmap](#6-roadmap). Each new placement is anchored to a specific span of a specific section, and that anchor is recorded, though it is not yet shown to you: see section 1 for what is held and section 6 for when it surfaces.
+
+## 1. Evidence & section location
+
+Placements are decided from the methods section. An abstract states a paper's headline contribution, which often leaves out most of what it actually used.
+
+This stage is mechanical and runs the same way for every paper. Each PDF in the members-only [Zotero group library](https://www.zotero.org/groups/6549203/caail/library) is converted to a structured document by [Docling](https://github.com/docling-project/docling), and the methods section is located as the span between two real headings in that document. Both boundaries and the page range are recorded.
+
+Docling is an MIT-licensed open-source document-conversion toolkit that recovers a PDF's layout and heading structure (Auer et al., 2024, [arXiv:2408.09869](https://doi.org/10.48550/arXiv.2408.09869)). Recovering that structure is what makes the boundaries below possible; a flat text dump has already discarded it.
+
+Locating it structurally matters because papers disagree about what the section is called and where it sits. An `Online Methods` section sits in the back matter, after the Discussion: in ref [51](https://github.com/tucca-cellag/caail/blob/main/Papers.md#51), a preprint written to that convention, it starts on page 22 of 43. Wiley numbers headings with a pipe, `2 | METHODS`. Cell Press uses `STAR + METHODS`. Some papers use roman numerals (`II. GENETIC ALGORITHM`), some name the section after the system (`Coscientist system architecture`, ref [70](https://github.com/tucca-cellag/caail/blob/main/Papers.md#70)), and PDF layout sometimes runs two headings onto one line. A fixed-offset or single-keyword rule misses all of these without erroring.
+
+Each located section records how it was found:
+
+| Field | Value |
+| --- | --- |
+| `methods_source` | `docling`, a section bounded by real headings; or `ftcache`, the fallback below |
+| `methods_strategy` | how the start was found, and it means different things on each path. Under `docling`: `explicit`, a heading matching the methods vocabulary, or `positional`, the span from the introduction to the first results heading. Under `ftcache`: `heading`, a methods-like string was found, or `positional`, none was, and the window simply starts a tenth of the way into the document |
+| `methods_heading` / `methods_end_heading` | the two bounding headings, as printed. `docling` only |
+| `methods_pages` | the page range occupied. `docling` only |
+| `methods_truncated` | whether the text was cut short of its end |
+
+Where no section can be located, the fallback is a fixed 12,000-character window from the first methods-like string in a flat text dump. It has a start but no end, so a `ftcache` placement is weaker evidence than a `docling` one, and an `ftcache` record whose strategy is `positional` is the weakest thing in the corpus: no heading was matched, so neither boundary was found.
+
+:::note[Not yet shown per entry]
+These fields are not displayed on the site, so you cannot currently look up which of the two a given cell rests on. For now the aggregate in section 5 is what you can see. Displaying them per entry is in the [roadmap](#6-roadmap).
+
+They are also not uniformly available, which that work will have to show rather than hide: the references with no located section, counted in section 5, have none of these fields, and the `ftcache` path records no bounding headings and no page range.
+:::
+
+## 2. Classification & review
+
+A language-model agent proposes the `(method, area)` placement. A model can misread a technique, mistake a benchmark baseline for the paper's own method, or state a justification the paper does not contain. So no proposal reaches the catalogue unchecked. Three reviewers cover distinct claims: bibliographic fidelity against the version of record, factual claims in prose entries against the source, and matrix placement against the methods section.
+
+The reviewers work under six constraints:
+
+1. **The reviewer produces a verdict, not an edit.** It is instructed not to write, and nothing it returns reaches the catalogue on its own: an entry is filed by a maintainer, through the authoring database. That is a separation of duties rather than a sandbox, and we would rather say so than imply a guarantee we have not built.
+2. **The proposer never reviews its own entry.** Drafting and checking are separate passes by separate agents.
+3. **A verdict must quote a verbatim span** from the paper that grounds the pair. A placement the reviewer cannot anchor to specific text fails. This is the main control against a fabricated justification, since the quoted text can be checked against the document.
+4. **An abstract is explicitly insufficient.** Where only an abstract is available, the reviewer records reduced confidence as a finding and does not pass the placement.
+5. **The scope source is named, and so are the untrusted ones.** Scope is judged against [Taxonomy.md](/caail/taxonomy/), resolved to the correct axis. The AI-assisted Research Areas and Methods pages are not admissible as evidence.
+6. **Removal carries a higher burden than retention**, so over-strict review cannot quietly destroy correct entries. A general-purpose method moves to *AI Tooling / Methodology* instead of being removed. Where a paper's real method or area has no matching row or column, the placement is kept and a new one is *proposed* for a human. Rows and columns are never added automatically.
+
+The reviewer's verdict is a recommendation. A maintainer enters the entry through the authoring database. A verified span shows that a method was used; whether the placement is the best one available is still a judgement call, which is what sections 3 and 7 are for.
+
+## 3. Human review & Topic Leads
+
+Every entry that lands is reviewed by a person before it enters the catalogue. Today that person is one of CAAIL's two maintainers, Benjamin Bromberg and Jim Plotts, who cover all 8 subject themes between them. The pipeline has been human-in-the-loop across the whole catalogue since the automation was introduced.
+
+It is not yet deep in every theme. Two people covering 8 themes cannot bring the depth a specialist in each would. We are recruiting a named **topic lead** for every theme: a researcher working in that area who takes responsibility for what is filed under it. The role has two parts.
+
+- **Validate the placements.** Check the proposed classifications in the area against the papers, and correct what is wrong. Sections 1 and 2 exist to make this quick: a lead reviews a placement that already carries the section and page range it was drawn from, instead of re-reading each paper.
+- **Keep the area current.** Judge new candidates as they arrive, from a reader, a contributor, the lead's own reading, or the automated sweep in the [roadmap](#6-roadmap).
+
+A lead adds domain judgement on top of the checks in section 2, and gets public credit for an area of the literature they already follow.
+
+1 of the 8 themes has a lead named on the [Topics hub](/caail/topics/) so far. We are building the review tool before recruiting into it. A lead should be able to open a queue of proposed entries, see the evidence already attached to each one, and record a verdict in a few minutes. Handing someone a spreadsheet and a reading list instead is a lot to ask of a volunteer. That tool is the review queue in the [roadmap](#6-roadmap).
+
+:::tip[Most themes are still open]
+7 of the 8 have no lead. If you work in one of them, [get in touch](#7-get-in-touch). The two responsibilities above are the role; what we have not fixed is the cadence, and we would rather agree that with whoever takes a theme on than set it in advance.
+:::
+
+## 4. Automated checks
+
+The structured catalogue is generated from an in-repo database, which rules out a class of error mechanically. Direct edits to the generated Markdown are blocked, and CI fails if the committed Markdown drifts from the database. On every change:
+
+- **Referential integrity.** Every matrix anchor resolves to a real reference, and every primary-research reference is reachable from at least one cell.
+- **Round-trip verification.** The generated Markdown re-parses to a model identical to the database's.
+- **Axis consistency.** The matrix columns, the Taxonomy definitions and the subject themes must agree.
+
+These checks confirm the catalogue is internally consistent. Whether a placement is correct is section 2's question.
+
+## 5. Coverage
+
+[Papers.md](https://github.com/tucca-cellag/caail/blob/main/Papers.md) holds 345 references. 229 are primary research and participate in the matrix. The other 116 are reviews, perspectives and reference-work chapters, which by design have no cell. Those three counts are checked against the catalogue in CI on every change, so a paper landing without them moving fails.
+
+The evidence figures below cannot be checked that way, because the converted corpus is local rather than committed. They are a snapshot. **Measured 2026-08-24.**
+
+Of the 229 matrix references held at that date:
+
+| Evidence available | Count |
+| --- | --- |
+| Read a bounded methods section | 226 (99%) |
+| ...located from an explicit methods heading | 204 |
+| ...located between the introduction and the first results heading | 22 |
+| PDF contains no methods section, or holds it in a supplement we do not have | 2 (refs 48 and 133) |
+| PDF not held | 1 (ref 195) |
+
+Median located section 13,206 characters; maximum 114,066.
+
+These figures cover the evidence available to a reviewer. They say nothing about the review itself. Entries are reviewed before they land, as described in section 3; placements made before this pipeline existed are the backlog now being re-checked, in the [roadmap](#6-roadmap).
+
+:::note[These figures are a snapshot]
+The converted corpus is not committed to the repository, so no build step can recompute them. A maintainer prints the current ones by running `audit_sections.py` from the extraction toolkit, over their local converted corpus. If the numbers matter to a decision you are making, ask us for a fresh run.
+:::
+
+## 6. Roadmap
+
+These build on the checks in section 2, and are listed in the order we need to do them.
+
+**A review queue.** Somewhere candidates and their evidence are presented to a reviewer, who records a verdict in a few minutes. CAAIL has a strong path for gathering evidence about a paper and a strong path for entering an accepted one; the queue joins them. It comes first because the next item depends on it. Nothing goes into the queue that has not already been read.
+
+**More topic leads.** Domain judgement across all 8 subject themes, instead of two maintainers covering all of them. Gated on the queue above, for the reason in section 3. See [get in touch](#7-get-in-touch).
+
+**Automated discovery.** A recurring literature sweep proposing candidates ([tucca-cellag/caail#82](https://github.com/tucca-cellag/caail/issues/82)), sequenced after the queue, since more candidates are no help without the capacity to review them.
+
+**Re-checking earlier placements.** Placements made before the full-text rule are being re-verified against it. Sampling found classifications drawn from abstracts and titles unreliable, which is why sections 1 and 2 are built the way they are.
+
+**A measured accuracy figure.** CAAIL does not publish one. The sampling above is not one either; it was small and would not generalise. The plan is a blind study in which domain experts classify a sample independently of the catalogue, reported with inter-rater agreement so any figure carries its own uncertainty.
+
+**Coverage estimates per area.** CAAIL measures how accurately it classifies what it holds. It does not measure how much of the field it holds. The agent API says so directly: *"CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."* A dated per-area estimate is something a topic lead is well placed to produce, and would replace that caveat with a figure.
+
+**Per-entry provenance.** Showing the section 1 fields on each entry, so the evidence behind one placement can be weighed on its own.
+
+**Full-corpus extraction and search.** Extending section location to reviews and reference works, and searching over the result, so a question can be answered from the papers themselves. Anything that publishes text depends on the licence terms of the works involved.
+
+## 7. Get in touch
+
+We would like to hear from you about any of these.
+
+- **Becoming a topic lead.** 7 of the 8 subject themes have no lead. Say hello in the [Slack workspace](/caail/community/) or email the maintainers listed there, and tell us which one you work in.
+- **Feedback on this methodology.** If something here is unconvincing, or you would weigh the evidence differently, we would rather hear that than a correction to a single entry. Slack or a [GitHub issue](https://github.com/tucca-cellag/caail/issues/new/choose) both work.
+- **A specific entry that looks wrong.** Use the [correction form](/caail/report/) or a GitHub issue. Tell us which section of the paper you read; that is usually enough to settle it. [Contributing](/caail/contributing/) covers proposing a change directly.

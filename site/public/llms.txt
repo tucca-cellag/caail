@@ -2,7 +2,7 @@
 
 > A curated, openly-licensed library at the intersection of cellular agriculture and artificial intelligence: papers and preprints (an AI-method × research-area matrix), open-source software, databases, per-species datasets, talks, and field resources. A project of the Tufts University Center for Cellular Agriculture (TUCCA); content is MIT-licensed.
 
-Status: beta. The inventory, topic tags and per-item metadata are solid, and each AI-method × research-area placement is a substantive claim about what the paper did. Placements are being re-verified against paper full texts and graded by evaluators, which tightens precision: where one is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself.
+Status: beta. The inventory, topic tags and per-item metadata are solid, and each AI-method × research-area placement is a substantive claim about what the paper did. A placement is proposed by a language-model agent reading the paper's methods section, checked by a separate reviewer agent, and entered by a human maintainer; older placements are being re-verified against full texts. Where one is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. Full method: https://tucca-cellag.github.io/caail/curation/
 
 This website is a navigation layer over canonical, human-readable Markdown in the GitHub repository (https://github.com/tucca-cellag/caail), which is the authoritative source for citation and full detail. The curated summaries on these pages are deliberately compressed; for substantive use, fetch the canonical source (a paper's DOI, a tool's linked repository, or the GitHub Markdown).
 
@@ -21,6 +21,7 @@ This website is a navigation layer over canonical, human-readable Markdown in th
 ## About & contributing
 
 - [About](https://tucca-cellag.github.io/caail/about/): what CAAIL is and how it is organized.
+- [Curation Methodology](https://tucca-cellag.github.io/caail/curation/): what a matrix placement rests on. How each paper's methods section is located, how AI-drafted classifications are checked before they land, how much of the matrix that currently covers, and what is still missing. Read this before treating a placement as evidence.
 - [Contributing](https://tucca-cellag.github.io/caail/contributing/): how entries are categorized and added.
 - [Other Resources](https://tucca-cellag.github.io/caail/other-resources/): field overviews, courses, books, editorials, ecosystem initiatives, and curated bibliographies.
 

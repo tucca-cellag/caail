@@ -108,6 +108,8 @@ The matrix and the `## References` list must be kept in sync:
 
 Before opening the PR, double-check that every matrix `[N](#N)` you added resolves to a reference entry, and that your new reference is reachable from at least one matrix cell.
 
+**Cite the methods section, not the abstract.** A placement is a claim about what a paper *did*, and papers routinely name one method in the abstract while the methods section names three. Tell us which section you read from and, where the paper's own naming is unhelpful, quote the heading. [Curation Methodology](https://tucca-cellag.github.io/caail/curation/) describes how a maintainer verifies a placement and what makes some papers harder than others.
+
 ### Adding a review or perspective paper
 
 Reviews, position papers, and commentaries don't participate in the matrix. Add them to the `## Reviews & Perspectives` section instead:

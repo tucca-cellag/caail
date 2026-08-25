@@ -31,6 +31,7 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { assertValid, buildOpenApiDocument, OPENAPI_FILE } from './openapi.js';
+import { MATRIX_SECTION } from './types.js';
 import type { DatasetInventory, PapersData } from './types.js';
 
 /** Where an agent-visible caveat is stated once and reused everywhere. */
@@ -45,9 +46,17 @@ export const SCOPE_NOTE =
  * SCOPE_NOTE bounds what an EMPTY cell proves. This bounds what a POPULATED one proves,
  * and the two limits are NOT the same size. Absence is genuinely weak evidence: CAAIL has
  * not measured its own recall, so an empty cell says almost nothing about the literature.
- * A placement is strong: it is a curator's substantive claim about the paper's method and
- * application area, and the re-verification underway tightens precision rather than
- * establishing trust that was missing.
+ * A placement is strong: it is a substantive claim about the paper's method and application
+ * area, made from the methods section and checked before it lands, and the re-verification
+ * underway tightens precision rather than establishing trust that was missing.
+ *
+ * DO NOT WRITE "CURATOR-ASSIGNED" HERE, WHICH IS WHAT THIS SAID. A language-model agent
+ * proposes the placement; a maintainer files it. The constant below was corrected to say so
+ * because /curation/ discloses it publicly and the two are served to the same agent — and
+ * this docstring, three lines above it, went on asserting the retracted version, where the
+ * next person editing the constant would read it as the spec. The guard in
+ * curation-page.test.ts bans the literal string in the CONSTANT and cannot see a paraphrase
+ * in a comment, so this paragraph is the only thing standing here.
  *
  * Calibrate the caveat to the actual risk. Where a placement is off it is nearly always a
  * closely related cell — an adjacent method row, a neighbouring area — not a paper that
@@ -61,17 +70,21 @@ export const SCOPE_NOTE =
  */
 export const STATUS = 'beta' as const;
 export const PLACEMENT_NOTE =
-  'Placements are curator-assigned and are being re-verified against paper full texts, ' +
-  'then graded by evaluators. Treat a cell as a substantive claim about the paper method ' +
-  'and application area. The residual uncertainty is precision, not inclusion: where a ' +
-  'placement is off it is typically a closely related cell rather than a paper that does ' +
-  'not belong. Cite the paper itself.';
+  'Placements are proposed by a language-model agent reading the paper methods section, ' +
+  'checked by a separate reviewer agent that must quote the passage it relies on, and ' +
+  'entered by a human maintainer; placements made before that pipeline are being ' +
+  're-verified against full texts. Treat a cell as a substantive claim about the paper ' +
+  'method and application area. The residual uncertainty is precision, not inclusion: ' +
+  'where a placement is off it is typically a closely related cell rather than a paper ' +
+  'that does not belong. Cite the paper itself. How this is done, and how far it reaches: ' +
+  'https://tucca-cellag.github.io/caail/curation/';
 
 /** Repo root, two levels above this module's directory (parser/ -> scripts/ -> site/ -> root). */
 const REPO_ROOT = fileURLToPath(new URL('../../../', import.meta.url));
 
-/** The one section of Papers.md whose references participate in the matrix. */
-const MATRIX_SECTION = 'References';
+// Re-exported so existing importers keep working; defined in types.ts, which is a zod-only
+// leaf every consumer can reach. See that definition for why the literal must not be re-typed.
+export { MATRIX_SECTION } from './types.js';
 
 export interface AgentApiInputs {
   papers: PapersData;

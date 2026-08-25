@@ -29,6 +29,7 @@ import { parseApa } from './apa.js';
 import { areaKeyForLabel } from './areas.js';
 import { topicsByItemId } from './topics.js';
 import { doiKey } from './citations.js';
+import { MATRIX_SECTION } from './types.js';
 import { loadCitedByCounts, loadPaperLicenses, loadPaperIsOa } from './citation-counts.js';
 import {
   PapersDataSchema,
@@ -237,8 +238,8 @@ function deriveCellFields(
   return partials.map((p) => {
     const methods = [...(methodsById.get(p.id) ?? [])];
     const areas = [...(areasById.get(p.id) ?? [])];
-    // 'References' is the canonical ## heading for primary-research entries in Papers.md.
-    const isPrimary = p.section === 'References' && methods.length > 0;
+    // MATRIX_SECTION is the canonical ## heading for primary-research entries in Papers.md.
+    const isPrimary = p.section === MATRIX_SECTION && methods.length > 0;
     return { ...p, methods, areas, isPrimary };
   });
 }

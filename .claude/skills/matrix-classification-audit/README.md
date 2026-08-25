@@ -207,22 +207,37 @@ to be written down:
   next to whitespace yields 11,99x and an `== METHODS_WINDOW` test misses it. 54 refs sit
   in that gap.
 * **Truncation is not the only defect, and not the worst one.** A paper that puts
-  `Online Methods` in the back matter (ref 51: page 22 of 34) gets a window taken from
+  `Online Methods` in the back matter (ref 51: page 22 of 43) gets a window taken from
   10% into the document that contains *none* of the methods. Start detection fails there,
   not just the end boundary. Non-standard names (`Implementation`, `Experiment`) and roman
   numerals (`II. GENETIC ALGORITHM`) are the other two.
 
 ### What "unresolved" counts
 
-`audit_sections.py` reports unresolved refs **split by population**, and the split matters
-more than the total. Over the full corpus 24 refs resolve to no methods section, but 19 of
-those are Reviews & Perspectives entries or Reference Work chapters, which have no methods
-section because of what they are. Counting them overstates the gap five-fold and points at
-work that does not exist.
+`audit_sections.py` reports unresolved refs **split by population**, because a review or a
+reference-work chapter has no methods section by virtue of what it is, and counting those
+points at work that does not exist. Read the matrix-participating line, not the total.
 
-The number that means something is **5 of 222 matrix refs**, and none of the five is a
-naming problem: their PDFs contain no methods section at all, because the methods are in a
-supplementary document nobody acquired. Refs 14 and 80 are *Science* research articles
-whose only "Materials and Methods" string is the supplement URL; 48 and 133 are Nature
-Correspondence pieces; 224 cites "Methods Sec. 4.5" in a supplement. They are recorded on
-CAAIL-246, and they fall through to the ft-cache path meanwhile.
+**Every count below is a snapshot dated 2026-08-24. Print the live ones instead of quoting
+these**, which is one command:
+
+```
+python3 .claude/skills/matrix-classification-audit/audit_sections.py \
+  --corpus <path-to-docling-corpus>
+```
+
+At that date: 228 sections, all matrix-participating; 204 located from an explicit methods
+heading and 22 from the introduction-to-results span; 226 usable at 400 characters or more,
+median 13,206 and maximum 114,066, of which 124 exceed the old 12,000-character window.
+
+**Unresolved, matrix-participating: 2** — refs 48 and 133, neither a naming problem, both
+Nature Correspondence pieces whose PDFs contain no methods section at all. They are recorded
+on CAAIL-246 and fall through to the ft-cache path meanwhile. Ref 195 is a separate case: no
+converted PDF, because the library holds none.
+
+**That number was 5 here for twelve days after it stopped being true**, which is the defect
+this file keeps warning about, committed in this file. Refs 14, 80 and 224 were listed as
+supplement-only and all three now resolve, at 43,612, 18,735 and 114,066 characters (224's is
+the corpus maximum). The same run feeds the public
+[Curation Methodology](https://tucca-cellag.github.io/caail/curation/) page, so a figure
+edited in one place and not the other is a contradiction CAAIL ships in both directions.

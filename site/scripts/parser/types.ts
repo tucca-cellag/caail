@@ -9,6 +9,21 @@
 
 import { z } from 'zod';
 
+/**
+ * The `Papers.md` section whose entries are primary research and participate in the matrix.
+ *
+ * DEFINED HERE, IN A ZOD-ONLY LEAF, so every consumer can reach it without a cycle. It was
+ * briefly exported from `agent-api.ts` with a docstring saying that re-typing the literal
+ * "would make a rename silently count zero" — while five places went on re-typing it, four of
+ * them production: the matrix-reachability lint, `isPrimary` in the papers parser, the DB
+ * integrity check, and the homepage's primary-paper count. Rename the section with those
+ * hardcoded and the lint stops finding unreachable refs, every paper classifies as
+ * non-primary, and the homepage count silently drops to zero, all without a failure that
+ * names the cause. The rationale was sound and was applied to the one consumer where it
+ * mattered least.
+ */
+export const MATRIX_SECTION = 'References';
+
 // ---------------------------------------------------------------------------
 // Sub-schemas (exported for reuse in downstream parser modules)
 // ---------------------------------------------------------------------------

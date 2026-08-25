@@ -26,6 +26,8 @@ We organize and host links to public resources across key areas of research:
 # Companion Zotero Library
 CAAIL has a companion [Zotero group library](https://www.zotero.org/groups/6549203/caail/library) maintained by core TUCCA members, holding the full-text PDFs of papers under consideration. Its purpose is to give AI coding agents running on TUCCA members' machines direct access to paper full text: so that resources are classified from the actual methods rather than abstracts alone. It is a members-only working library, not a contribution channel: to suggest a resource, use the GitHub workflow in [CONTRIBUTING.md](./CONTRIBUTING.md).
 
+[Curation Methodology](https://tucca-cellag.github.io/caail/curation/) describes what that means in practice: how each paper's methods section is located against the PDF's own heading structure, how much of the matrix it currently covers, and what a placement does and does not establish.
+
 # Contributing
 Suggestions of papers, software, datasets, and other resources are welcome. See [CONTRIBUTING.md](./CONTRIBUTING.md) for how to propose additions via pull request or GitHub issue.
 

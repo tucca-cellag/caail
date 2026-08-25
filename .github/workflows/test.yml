@@ -24,14 +24,32 @@ on:
       # (site/scripts/db/hook.test.ts) that simply never ran against the change
       # that could break it.
       #
-      # Scoped to hooks + settings rather than all of `.claude/`: those are the
-      # parts with tests: `block-generated-edits.py` is covered by the vitest
-      # suite below, via site/scripts/db/hook.test.ts. (The other hook's test
-      # runs in guards.yml, which filters on these same paths.) Skill, rule and
-      # agent prose has no test to run, so matching it here would spend a full
-      # site build and e2e pass on a doc edit.
+      # Scoped to the parts of `.claude/` that HAVE a test, rather than all of it:
+      # `block-generated-edits.py` is covered by the vitest suite below, via
+      # site/scripts/db/hook.test.ts. (The other hook's test runs in guards.yml,
+      # which filters on these same paths.) Most skill, rule and agent prose has
+      # no test to run, so matching all of `.claude/` would spend a full site
+      # build and e2e pass on a doc edit.
+      #
+      # The extraction skill is the exception, and is listed for the same reason
+      # the hooks are. `site/scripts/parser/curation-page.test.ts` reads FOUR files
+      # from it and fails when they disagree with what /curation/ publishes: the
+      # README (coverage figures) and three scripts (ref 51's page count, which
+      # exists in five places and was wrong in all five for weeks).
+      #
+      # THE LIST IS THE GUARD'S SOURCES, ENUMERATED, and it has already been wrong
+      # once in each direction. First the whole subtree, which spent a full site
+      # build and Playwright run on every Python edit for coverage of one file.
+      # Then README.md alone, which left 3 of the 4 unreachable — and commit
+      # 84ef88d in this very branch touched exactly those three Python files and
+      # nothing else, so a PR shaped like that would have merged green with the
+      # five copies disagreeing. Keep this list equal to the test's SOURCES.
       - .claude/hooks/**
       - .claude/settings.json
+      - .claude/skills/matrix-classification-audit/README.md
+      - .claude/skills/matrix-classification-audit/docling_sections.py
+      - .claude/skills/matrix-classification-audit/docling_sections.test.py
+      - .claude/skills/matrix-classification-audit/extract_matrix_corpus.py
       - .github/workflows/test.yml
       # The two ignore files, because canonical-files.test.ts now asserts they
       # agree with the code about what a private companion is (ADR-0002).
@@ -108,14 +126,32 @@ on:
       # (site/scripts/db/hook.test.ts) that simply never ran against the change
       # that could break it.
       #
-      # Scoped to hooks + settings rather than all of `.claude/`: those are the
-      # parts with tests: `block-generated-edits.py` is covered by the vitest
-      # suite below, via site/scripts/db/hook.test.ts. (The other hook's test
-      # runs in guards.yml, which filters on these same paths.) Skill, rule and
-      # agent prose has no test to run, so matching it here would spend a full
-      # site build and e2e pass on a doc edit.
+      # Scoped to the parts of `.claude/` that HAVE a test, rather than all of it:
+      # `block-generated-edits.py` is covered by the vitest suite below, via
+      # site/scripts/db/hook.test.ts. (The other hook's test runs in guards.yml,
+      # which filters on these same paths.) Most skill, rule and agent prose has
+      # no test to run, so matching all of `.claude/` would spend a full site
+      # build and e2e pass on a doc edit.
+      #
+      # The extraction skill is the exception, and is listed for the same reason
+      # the hooks are. `site/scripts/parser/curation-page.test.ts` reads FOUR files
+      # from it and fails when they disagree with what /curation/ publishes: the
+      # README (coverage figures) and three scripts (ref 51's page count, which
+      # exists in five places and was wrong in all five for weeks).
+      #
+      # THE LIST IS THE GUARD'S SOURCES, ENUMERATED, and it has already been wrong
+      # once in each direction. First the whole subtree, which spent a full site
+      # build and Playwright run on every Python edit for coverage of one file.
+      # Then README.md alone, which left 3 of the 4 unreachable — and commit
+      # 84ef88d in this very branch touched exactly those three Python files and
+      # nothing else, so a PR shaped like that would have merged green with the
+      # five copies disagreeing. Keep this list equal to the test's SOURCES.
       - .claude/hooks/**
       - .claude/settings.json
+      - .claude/skills/matrix-classification-audit/README.md
+      - .claude/skills/matrix-classification-audit/docling_sections.py
+      - .claude/skills/matrix-classification-audit/docling_sections.test.py
+      - .claude/skills/matrix-classification-audit/extract_matrix_corpus.py
       - .github/workflows/test.yml
       # The two ignore files, because canonical-files.test.ts now asserts they
       # agree with the code about what a private companion is (ADR-0002).
