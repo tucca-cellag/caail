@@ -115,6 +115,13 @@ TRAPS: dict[str, list[str]] = {
                       "compared models", "among 18", "outperformed by", "metapath2vec",
                       "conditional gan", "pix2pix"],
     "CNN": ["surrogate", "flattened", "tabular", "fully connected", "dense network"],
+    # Taxonomy.md's Ensemble Learning row excludes an ensemble assembled OVER networks
+    # that already hold their own architecture row. Without these traps the `ensemble
+    # of` alias auto-clears exactly the placements that rule invalidates, which is the
+    # silent mis-clear this module's invariant forbids.
+    "Ensemble Learning": ["ensemble of cnn", "ensemble of deep", "ensemble of neural",
+                          "model averaging", "snapshot ensembl", "stacking over",
+                          "deep ensemble", "ensemble of resnet"],
     # A Foundation-Model placement is blocked when the text signals a *task-specific*,
     # not-pretrained model (the FM-row trap).
     "Foundation Models: Cell-State & Perturbation Prediction": ["task-specific", "trained end-to-end",

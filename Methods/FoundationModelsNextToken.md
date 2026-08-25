@@ -4,7 +4,7 @@ This page describes the **Foundation Models: Next-Token Prediction** row of the 
 
 ## Scope boundary
 
-Two things have to hold. The objective must be autoregressive, predicting the next token given those before it, which separates this row from [Masked Language Modeling](./FoundationModelsMaskedLM.md) where the model fills in a hidden token from both sides. And the model must be a pretrained foundation model rather than a task-specific network, which is the same test every foundation-model row applies.
+Three things have to hold. The objective must be autoregressive, predicting the next token given those before it, which separates this row from [Masked Language Modeling](./FoundationModelsMaskedLM.md) where the model fills in a hidden token from both sides. The model must be a pretrained foundation model rather than a task-specific network, which is the same test every foundation-model row applies. And the paper must have built or adapted that model rather than called it: invoking one as an agent's tool call or a queried service keeps the paper in its own row.
 
 The interesting wrinkle is that "next token" needs a sequence, and a cell is not one. Each paper here answers that differently: rank the genes by expression and call the ordering a sentence, or make the sampling order itself the generative process. Reading them together is really a survey of how the field turned an unordered expression vector into something a language model can consume. Some references appear in more than one foundation-model row, because scGPT in particular uses both objectives.
 

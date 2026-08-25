@@ -547,6 +547,42 @@ export function checkSubseries(db: Db, subseriesPath: string = SUBSERIES_PATH): 
 }
 
 /**
+ * The five foundation-model rows share two clauses, and neither can live in one
+ * place above them: `buildTaxonomyModel` keeps only prose under an `###`, so a
+ * paragraph introducing the family is dropped and never reaches `taxonomy.json`,
+ * which is what `caail-classification-reviewer` and the `caail` plugin skill fetch
+ * when disputing a placement. The rows therefore each carry the clauses, and a
+ * sentence repeated across five definitions is exactly the thing that rots.
+ *
+ * Driven off the DB's own row list rather than off prose, so adding a sixth row
+ * without the clauses fails here. Renaming every row away from the prefix ends the
+ * check quietly, which is the trade: that is a deliberate restructure, not the
+ * drift this exists to catch.
+ *
+ * Scoped to this family on purpose. The raise-for-re-audit sentence also appears on
+ * `Ensemble Learning`, `Food Safety Prediction` and `Media Optimization`, and those
+ * are NOT guarded, because each is a single row that nobody adds a sibling to. The
+ * risk being covered here is a family that grows: a sixth foundation-model row is a
+ * realistic edit and would silently arrive without the clauses. Guarding the
+ * one-offs would mean typing their names into a list, which is the failure this
+ * whole file exists to avoid.
+ *
+ * These are PRESENCE probes over the definition text, not semantic ones. They
+ * answer "does this row still say something about invoking, and about re-auditing",
+ * which catches the realistic failure (a new row pasted in without the clauses).
+ * They cannot tell an inverted sentence from an upheld one, so a reviewer rewording
+ * a clause still has to read what they wrote.
+ */
+const FM_PREFIX = 'Foundation Models';
+const FM_CLAUSES: ReadonlyArray<readonly [string, RegExp]> = [
+  // Alternations cover the sanctioned phrasings rather than one spelling, so an
+  // editor rewording "invokes" to "calls it as a tool" is not sent back to satisfy
+  // a regex.
+  ['the built-vs-called exclusion', /invok|calls? (it|one|such)|tool call/i],
+  ['the raise-rather-than-unseat clause', /re-audit|raise it .*rather than/i],
+];
+
+/**
  * Taxonomy axis guard: every matrix row and column must resolve to a definition
  * under *its own* H2 vocabulary in Taxonomy.md.
  *
@@ -591,6 +627,13 @@ export function checkTaxonomyAxes(db: Db, repoRoot: string = REPO_ROOT): CheckRe
   const missingMethods = methods.filter((label) => !taxonomy.axes.method[label]?.trim());
   out.push(ok('every DB method is defined under "## AI/ML methods (rows)"', missingMethods.length === 0,
     `missing: [${missingMethods.join(', ')}]`));
+
+  const fmRows = methods.filter((label) => label.startsWith(FM_PREFIX));
+  for (const [what, probe] of FM_CLAUSES) {
+    const missing = fmRows.filter((label) => !probe.test(taxonomy.axes.method[label] ?? ''));
+    out.push(ok(`every "${FM_PREFIX}" row states ${what}`, missing.length === 0,
+      `missing from: [${missing.join(', ')}]`));
+  }
 
   // The themes axis is guarded by count against the same THEME_SLUGS that
   // checkTopicTiers asserts, so a theme added to Taxonomy.md without a topic

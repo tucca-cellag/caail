@@ -49,6 +49,20 @@ media-composition search, formulation design, and the experimental-design loops 
 scope: operating or scaling the bioreactor (→ *Bioprocess & Scale-Up*) and the cells' own biology
 (→ *Cellular Engineering*).
 
+Also in scope: **the other designed solutions a cell line is held in**, chiefly cryoprotectant
+cocktails and vitrification solutions for cell banking. The optimized object is the same kind of
+thing, a multi-component fluid searched over composition under a measured cell response, and the
+search methods are the same; what differs is that the response is post-thaw viability rather than
+proliferation. That difference is not a reason to split the column.
+
+What puts such a paper in scope is the optimized object rather than the sector it names. Cryoprotectant
+optimization has close twins outside this field, in reproductive medicine, cell therapy and biopharma
+cell banking, and this column claims these papers in spite of that rather than by pretending otherwise:
+banking a line is itself a step in a cultivated-meat process, so the work is in scope whoever the authors
+had in mind. Other columns weigh a paper's stated application differently and each states its own test,
+so do not read this paragraph as describing theirs. Where that reading is contested, raise it for
+re-audit rather than moving the cell.
+
 ### Cellular Engineering
 Understanding and engineering **the cells themselves**: gene expression and regulation, cell-state
 and perturbation modeling, differentiation, cell-line characterization, and single-cell analysis used
@@ -134,6 +148,19 @@ procedures, not trained models. Judge this from the methods section rather than 
 tools in this space are named like classifiers and are not. Where an existing placement is affected,
 raise it for re-audit rather than silently unseating it.
 
+**How to apply the framing test above, because the words are usually absent.** Papers that belong in
+this column rarely say "alternative protein" or "cultivated" anywhere, so a keyword test for the
+sector rejects them all. What separates an in-scope paper from an identical method presented for
+another field is **what its body text orients itself around**. A paper that argues from the
+novel-food regulatory apparatus (FAO/WHO allergenicity guidance, Codex Alimentarius, the dossier
+requirements of a food-safety authority) is framed for this column whether or not it names the
+sector. A paper whose stated motivation is clinical or pharmaceutical, such as disease risk or the
+immunogenicity of a therapeutic protein, is not, however closely its method matches. Read this from
+the body text: the title and abstract of an allergenicity paper look the same either way. **This is
+never on its own grounds for a removal.** Where the out-of-scope clause above applies on its own terms,
+it names the destination; where it does not, because the paper is narrowly scoped to another field's
+question rather than general-purpose, raise the placement rather than unseating it.
+
 ### AI Tooling / Methodology
 **General-purpose AI methods, agents, tools, and frameworks** that are applicable to cellular
 agriculture but are not yet tied to a specific applied cell-ag result. This is the home for a method
@@ -188,7 +215,12 @@ regression on modest, well-featurized datasets. Common in sensory and media/proc
 ### Ensemble Learning
 Tree ensembles and model averaging: random forests, gradient boosting / XGBoost, AdaBoost, and
 stacked ensembles. The default strong baseline for tabular prediction across sensory, media, scaffold,
-and process problems.
+and process problems. The row is earned when trees, boosting, or stacking over classical learners is
+the **primary learner**. **Not** an ensemble assembled over networks that already hold their own
+architecture row: model averaging, snapshot ensembling, or stacking over CNNs, GNNs, or deep MLPs
+does not additionally earn this row, because what the row records is the learner, not the combination
+rule placed on top of it. Where an existing placement is affected, raise it for re-audit rather than
+silently unseating it.
 
 ### K-Nearest Neighbors
 Instance-based prediction from nearest-neighbor similarity, for small-data classification and
@@ -226,28 +258,34 @@ Learning policies from reward signals: classical RL, policy-gradient methods, an
 ### Foundation Models: Next-Token Prediction
 Large, **pretrained, transferable** models trained with an autoregressive next-token objective
 (GPT-style), applied to biology, e.g. generative transcriptome and cell-atlas models. The defining
-test is that the model is a pretrained foundation model, not a task-specific network.
+test is that the model is a pretrained foundation model, not a task-specific network. **Not** a paper
+that merely invokes such a model, as an agent's tool call or a queried service: that paper keeps its own
+row, and this one records building the model rather than using it. Where an existing placement is affected, raise it for re-audit rather than silently unseating it.
 
 ### Foundation Models: Masked Language Modeling
 Pretrained, transferable foundation models trained with a **masked** (BERT-style) objective, the
 single-cell foundation models such as scBERT, Geneformer, and scFoundation. Defined by masked
-self-supervised pretraining at scale plus downstream transfer.
+self-supervised pretraining at scale plus downstream transfer. **Not** a paper that merely invokes such
+a model, as an agent's tool call or a queried service: that paper keeps its own row. Where an existing placement is affected, raise it for re-audit rather than silently unseating it.
 
 ### Foundation Models: LM + Biological Priors
 Foundation models that **combine a language-model backbone with explicit biological priors or
 structured knowledge** (e.g. protein-language-model representations integrated with curated biology).
 The model must itself be such a foundation model, a task-specific network that merely *consumes*
-pretrained embeddings as input features does not belong here (it is *Deep Learning* / *GNN*).
+pretrained embeddings as input features does not belong here (it is *Deep Learning* / *GNN*), and
+neither does an agent that *invokes* one as a tool (it keeps its agent row). Where an existing placement is affected, raise it for re-audit rather than silently unseating it.
 
 ### Foundation Models: Cell-State & Perturbation Prediction
 **Pretrained, transferable** foundation models whose target is predicting cell state and perturbation
 responses across contexts. The discriminator is pretraining-and-transfer: a single-task supervised
 predictor (for example a GNN trained end-to-end on one perturbation dataset) is **not** a foundation
-model, even though it predicts perturbations, it belongs in its architecture's row.
+model, even though it predicts perturbations, it belongs in its architecture's row. **Not** a paper
+that merely invokes such a model, as an agent's tool call or a queried service. Where an existing placement is affected, raise it for re-audit rather than silently unseating it.
 
 ### Foundation Models (other modalities)
 Pretrained foundation models for modalities **beyond single-cell transcriptomics** not covered by the
 other foundation-model rows: multimodal omics, spectra, and small-molecule/natural-product models.
+**Not** a paper that merely invokes such a model, as an agent's tool call or a queried service. Where an existing placement is affected, raise it for re-audit rather than silently unseating it.
 
 ### Scientific Literature & Discovery Agents
 LLM agents for **literature search, synthesis, and (semi-)autonomous discovery**: retrieval-augmented
