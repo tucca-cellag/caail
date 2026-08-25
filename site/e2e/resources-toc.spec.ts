@@ -228,9 +228,13 @@ test('curation discloses that entries are AI-drafted, above the fold', async ({ 
   // redundant with section 2 and cut, leaving the page reading as though a human
   // classified each paper.
   await expect(page.locator('main')).toContainText('Entries are drafted by AI agents');
-  // …and it sits above the first section, not buried inside one. Compared against
-  // a heading addressed by id rather than `h2:first`, since Starlight injects its
-  // own "On this page" h2 into the same subtree.
+  // …and it sits above the first section, not buried inside one. Addressed by id rather
+  // than `h2:first` simply because that is stable against reordering; Starlight's
+  // "On this page" h2 is OUTSIDE <main>, so it was never the confound an earlier version
+  // of this comment claimed. Stated correctly because the next reader would otherwise
+  // reason from a false model of the DOM — and might conclude the `:not(.sl-anchor-link)`
+  // filter below is defending against the TOC, when it defends against the heading's own
+  // permalink, which IS inside <main> and IS load-bearing.
   const disclosure = await page.getByText('Entries are drafted by AI agents').boundingBox();
   const firstSection = await page.locator('main h2#how-an-entry-is-produced').boundingBox();
   expect(disclosure!.y).toBeLessThan(firstSection!.y);
@@ -309,7 +313,13 @@ test('curation quotes no accuracy figure, only the process', async ({ page }) =>
   //     the `\b` to `percent` (a word) instead of to the alternation fixes it.
   // Verified against both spellings of each shape before being trusted.
   const QUANTITY = /\b\d+(\.\d+)?\s*(%|percent\b)|\b\d+\s+of\s+(the\s+)?\d+\b|\bof\s+(the\s+)?\d+\s+\w+.{0,60}?\b\d+\b/i;
-  const ERRORWORD = /\b(wrong|incorrect|erroneous|inaccurate|misclassif\w*|misplaced|mis-assigned|error rate)\b/i;
+  // `unreliable` is FIRST because it is this page's own house word: section 6 already writes
+  // "Sampling found classifications drawn from abstracts and titles unreliable", so it is
+  // the phrasing a maintainer adding a figure would reach for, and the original list
+  // omitted it. The comment above once claimed this was verified both ways; it was verified
+  // against the SHAPES of a quantity, never against the synonyms of an error.
+  const ERRORWORD =
+    /\b(unreliable|mistaken|wrong|incorrect|erroneous|inaccurate|misclassif\w*|misplaced|mis-assigned|disagree\w*|error rate)\b/i;
   const offenders = text
     .split(/(?<=[.!?])\s+|\n+/)
     .map((s) => s.trim())

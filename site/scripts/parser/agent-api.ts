@@ -70,7 +70,6 @@ export const PLACEMENT_NOTE =
 /** Repo root, two levels above this module's directory (parser/ -> scripts/ -> site/ -> root). */
 const REPO_ROOT = fileURLToPath(new URL('../../../', import.meta.url));
 
-/** The one section of Papers.md whose references participate in the matrix. */
 /**
  * The `Papers.md` section whose entries participate in the matrix.
  *

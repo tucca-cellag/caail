@@ -128,6 +128,20 @@ describe('curation page: the local-corpus snapshot', () => {
     num(page, /holds it in a supplement we do not have \| (\d+)/, 'no methods section');
   const noPdf = () => num(page, /PDF not held \| (\d+)/, 'no PDF');
 
+  it('the published percentage matches the count printed beside it', () => {
+    // `| Read a bounded methods section | 226 (99%) |` — the 226 is checked against the
+    // README and the denominator; the `(99%)` was checked by nothing, because the capture
+    // stops at the digits. A re-ingest that moves the count and leaves the percentage passes
+    // every other guard in this file and publishes a figure contradicting its own numerator.
+    const denominator = num(page, /Of the ([\d,]+) matrix references held at that date/, 'denominator');
+    const pct = num(page, /Read a bounded methods section \| [\d,]+ \((\d+)%\)/, 'bounded pct');
+    expect(
+      pct,
+      `page says ${pct}% but ${bounded()} of ${denominator} is ` +
+        `${Math.round((bounded() / denominator) * 100)}%`,
+    ).toBe(Math.round((bounded() / denominator) * 100));
+  });
+
   it('the table sums to its own stated denominator', () => {
     // The denominator is frozen and dated ("Of those N matrix references, as at that date"),
     // NOT derived. A derived denominator over typed rows is the same defect inverted: add one
@@ -163,6 +177,21 @@ describe('curation page: the local-corpus snapshot', () => {
       expect(skillReadme, `README lost the ${stat} figure`).toContain(stat);
     }
 
+    // The README states two figures the page does not, so nothing else can check them.
+    // `228 sections` is the one that reads as a transcription error on its face — 204 + 22
+    // is 226, and the gap is the 2 unresolved, stated a paragraph later — so it is exactly
+    // the number someone would "correct". Pinned to the arithmetic that makes it right.
+    const sections = num(skillReadme, /At that date: ([\d,]+) sections/, 'README sections');
+    expect(
+      sections,
+      'README `N sections` no longer equals located + unresolved; one of the three moved',
+    ).toBe(explicit() + positional() + noSection());
+    // `124 exceed the old window` is checked only for presence and internal plausibility:
+    // nothing in the repo can recompute it, but it cannot exceed the usable count.
+    const over = num(skillReadme, /of which ([\d,]+) exceed the old/, 'README over-window');
+    expect(over).toBeGreaterThan(0);
+    expect(over, 'more sections exceed the old window than are usable at all').toBeLessThanOrEqual(bounded());
+
     const date = grab(page, /\*\*Measured (\d{4}-\d{2}-\d{2})\.\*\*/, 'page snapshot date');
     expect(skillReadme, 'the two snapshots claim different dates').toContain(
       `snapshot dated ${date}`,
@@ -191,11 +220,17 @@ describe('ref 51: the page-count figure that exists in five places', () => {
   ];
 
   it('states the same page and total everywhere it appears', () => {
-    const seen = SOURCES.map((rel) => {
+    // matchAll, not exec. The guard's own rationale is that five copies is five chances to fix
+    // one and miss four; WITHIN a file the same arithmetic applies, and extract_matrix_corpus.py
+    // is 21 KB of docstrings that could easily gain a second statement of the figure.
+    const seen = SOURCES.flatMap((rel) => {
       const text = readFileSync(join(REPO_ROOT, rel), 'utf-8').replace(/\s+/g, ' ');
-      const m = /page 22 of\s+(\d+)/.exec(text);
-      expect(m, `${rel} no longer states ref 51's page range, so this guard is blind to it`).toBeTruthy();
-      return { rel, total: Number(m![1]) };
+      const hits = [...text.matchAll(/page 22 of\s+(\d+)/g)];
+      expect(
+        hits.length,
+        `${rel} no longer states ref 51's page range, so this guard is blind to it`,
+      ).toBeGreaterThanOrEqual(1);
+      return hits.map((m) => ({ rel, total: Number(m[1]) }));
     });
     const totals = [...new Set(seen.map((x) => x.total))];
     expect(
@@ -261,24 +296,42 @@ describe('llms-full frontmatter splitting', () => {
   // fence, which passed the first two and silently deleted the intro paragraph from the third.
   // The test that shipped with that version pinned only the no-second-rule case, so it was
   // green and the docstring's claim was false. Do not remove a case here without adding one.
-  it('takes a real frontmatter block, title included', () => {
-    expect(splitFrontmatter('---\ntitle: X\n---\n\nBody here.')).toEqual({
+  const CONTENT = 'site/src/content/docs/x.mdx';
+  const CANONICAL = 'Papers.md';
+
+  it('takes a real frontmatter block from a content page, title included', () => {
+    expect(splitFrontmatter('---\ntitle: X\n---\n\nBody here.', CONTENT)).toEqual({
       title: 'X',
       body: 'Body here.',
     });
-    expect(splitFrontmatter('---\ntitle: "Quoted: with a colon"\nfoo: 1\n---\n\nB.').title).toBe(
-      'Quoted: with a colon',
-    );
+    expect(
+      splitFrontmatter('---\ntitle: "Quoted: with a colon"\nfoo: 1\n---\n\nB.', CONTENT).title,
+    ).toBe('Quoted: with a colon');
+    // A block sequence at column 0 is real Starlight frontmatter (`head:` takes one). The
+    // previous YAML-shape heuristic REJECTED this, so the whole block shipped to agents.
+    expect(splitFrontmatter('---\ntitle: Y\nhead:\n- tag: meta\n---\n\nB.', CONTENT)).toEqual({
+      title: 'Y',
+      body: 'B.',
+    });
   });
 
-  it('leaves a rule that is not frontmatter completely alone', () => {
+  it('never touches a canonical repo-root source, whatever it contains', () => {
+    // THE CASES THAT MATTER MORE THAN THE ONE ABOVE. `---` is `<hr>`, and two earlier versions
+    // of this function silently deleted body text from documents shaped like these. The path
+    // test makes them unreachable rather than defended-against, so they are pinned here to stop
+    // anyone reintroducing a content sniff.
     for (const doc of [
       '# Heading\n\nText.\n\n---\n\nMore text.',
       '---\n\nA doc that opens with a rule.',
       '---\n\nIntro paragraph that must survive.\n\n---\n\nMore text.',
-      '---\n\n## A section after a rule\n\n---\n\nAnd more.',
+      // Survived version 1, DELETED by version 2: `Note:` reads as a YAML key.
+      '---\n\nNote: this is important.\n\n---\n\nBody survives?',
+      '---\n\nSummary: the point.\n\n---\n\nMore.',
+      // Even a genuine-looking frontmatter block is left alone in a canonical file, because
+      // canonical files do not have frontmatter and a match there means something else.
+      '---\ntitle: Not frontmatter here\n---\n\nBody.',
     ]) {
-      expect(splitFrontmatter(doc), doc).toEqual({ title: null, body: doc });
+      expect(splitFrontmatter(doc, CANONICAL), doc).toEqual({ title: null, body: doc });
     }
   });
 

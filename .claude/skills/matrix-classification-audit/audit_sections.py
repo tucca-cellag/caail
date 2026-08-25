@@ -51,9 +51,14 @@ def main():
     # Which refs are expected to HAVE a methods section. A Reviews &
     # Perspectives entry or a Reference Work chapter has none because of what it
     # is, so counting it as a miss overstates the gap and points at work that
-    # does not exist. Reporting 24 unresolved rather than 5 is a five-fold
-    # overstatement, and CLAUDE.md's rule is that every count names the
-    # population it counted.
+    # does not exist. CLAUDE.md's rule is that every count names the population
+    # it counted, which is why this script prints the split rather than a total.
+    #
+    # NO FIGURES IN THIS COMMENT, DELIBERATELY. It used to say "24 unresolved
+    # rather than 5", and 5 stopped being true on 2026-08-24 while this line went
+    # on saying it — a sixth stale copy of the very number the README beside it
+    # warns about, sitting in the script whose output that README transcribes.
+    # Both counts move with every re-ingest. Run the script for the live ones.
     md = (REPO / "Papers.md").read_text(encoding="utf-8")
     _, cell_map = ex.parse_matrix(md)
     paper_refs = ex.parse_references(md)
