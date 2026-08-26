@@ -26,6 +26,7 @@ import {
   PRIVATE_COMPANION_SUFFIXES,
 } from '../../src/lib/canonical-files.js';
 import { worktreeIncludeRules } from '../../src/lib/worktree-include.js';
+import { patternOf, isInRepoGitignore } from '../../src/lib/gitignore-report.js';
 import { llmsFullSources } from './llms-full.js';
 import { computeCounts } from './counts.js';
 import { DOCS_GLOB_PATTERN } from '../../src/content/loaders/caail-docs-loader.js';
@@ -141,13 +142,29 @@ describe('the ignore rules and the predicate agree on what a companion is', () =
       expect(res.error, `git check-ignore could not run for ${probe}`).toBeUndefined();
       expect([0, 1], `git check-ignore exited ${res.status} for ${probe}`).toContain(res.status);
       expect(res.status, `${probe} is NOT gitignored: a companion here is committable`).toBe(0);
-      // Output shape: `<source>:<line>:<pattern>\t<pathname>`.
+      // TWO INDEPENDENT QUESTIONS, asked separately, because one regex asking
+      // both answered neither clearly. `/^\.gitignore:\d+:(?!!)/` was root
+      // anchored, so scoping the `*.local.md` rules into the tracked
+      // `site/.gitignore` (a plausible refactor, since the probe path lives
+      // under `site/`) made it report "the rule lives in a personal exclude
+      // source" about a rule sitting in this repo. That is the third
+      // hand-rolled copy of this parse to get the in-repo test wrong, which is
+      // why the predicate now has one home.
+      const out = (res.stdout ?? '').trim();
       expect(
-        (res.stdout ?? '').trim(),
-        `${probe} is not ignored by a positive rule in this repo's .gitignore: `
-          + `either the rule lives in a personal exclude source, or a negation `
-          + `has un-ignored it. Either way a companion here is committable.`,
-      ).toMatch(/^\.gitignore:\d+:(?!!)/);
+        isInRepoGitignore(out),
+        `${probe} is ignored, but by a rule OUTSIDE this repo (a personal `
+          + `core.excludesFile or .git/info/exclude), so nothing here makes it `
+          + `true for anyone else and a companion is committable for them. `
+          + `The reporting source was: ${out}`,
+      ).toBe(true);
+      expect(
+        patternOf(out).startsWith('!'),
+        `${probe} matched a NEGATION, which un-ignores it, so a companion here `
+          + `is committable. The exit code cannot see this: -v MATCHES a `
+          + `negation and exits 0, which is how an earlier draft of this guard `
+          + `passed while being weaker than the -q form it replaced.`,
+      ).toBe(false);
     }
   });
 

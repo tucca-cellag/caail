@@ -57,11 +57,16 @@ import { relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { CAAIL_PAGES } from '../caail-pages.ts';
 import { privateCompanionGlobExclusions } from '../../lib/canonical-files.ts';
+// Imported, and DELIBERATELY NOT re-exported. An earlier draft re-exported it
+// with a comment claiming that kept existing importers working; there were none,
+// since the only one was repointed at the pure module in the same change.
+// Re-exporting would advertise a supported way to reach this data THROUGH this
+// module, and the next consumer to follow it drags astro/loaders back into a
+// guard that has no business importing it, which is why it was moved out.
 import { CANONICAL_SOURCES } from '../canonical-sources.ts';
 
 // content/loaders/ -> content/ -> src/ -> site/ -> repo root
 const REPO_ROOT = new URL('../../../../', import.meta.url);
-
 
 /**
  * Glob for the in-repo Starlight docs.
@@ -195,10 +200,3 @@ export function caailDocsLoader(): Loader {
     },
   };
 }
-
-// DELIBERATELY NOT re-exported. An earlier draft did, with a comment claiming
-// it kept existing importers working; there were none, since the only one was
-// repointed at the pure module in the same change. Re-exporting it would keep
-// advertising a supported way to reach this data THROUGH this module, and the
-// next consumer to follow it drags astro/loaders back into a guard that has no
-// business importing it, which is the whole reason the constant was moved out.

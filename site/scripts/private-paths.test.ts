@@ -42,7 +42,7 @@
  */
 import { describe, it, expect } from 'vitest';
 import { spawnSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -52,18 +52,35 @@ import { llmsFullSources } from './parser/llms-full.js';
 // would take down the check that proves .env is gitignored.
 import { CANONICAL_SOURCES } from '../src/content/canonical-sources.js';
 import { worktreeIncludeRules } from '../src/lib/worktree-include.js';
+import { patternOf, isInRepoGitignore } from '../src/lib/gitignore-report.js';
 
 /** scripts/ → site/ → repo root. */
 const REPO_ROOT = fileURLToPath(new URL('../../', import.meta.url));
 
 /**
- * ONE enumeration, reused. The containment assertion below used to call
- * `llmsFullSources()` a second time and compare the result against an array
- * built from a first call, which asserts that two consecutive filesystem walks
- * agree rather than that the union was built from this enumeration, and pays
- * for eight readdir passes to do it.
+ * ONE enumeration, computed LAZILY and then reused.
+ *
+ * Both halves of that matter and each was bought with a defect.
+ *
+ * Reused, because the containment assertion once called `llmsFullSources()` a
+ * second time and compared it against an array built from a first call, which
+ * asserts that two consecutive filesystem walks agree rather than that the union
+ * was built from this enumeration.
+ *
+ * Lazy, because the first repair made it a module-scope const, and this file is
+ * the guard proving `.env` and the private trees are gitignored. `dirMarkdown`
+ * does a `readdirSync` per canonical directory, so a renamed directory threw
+ * during COLLECTION. Measured: the run reports `Tests no tests` and an ENOENT
+ * naming the directory, and not one of the private-tree probes executes. The run
+ * is red, so CI does catch it, but every probe is gone and the message sends the
+ * reader after a missing folder rather than a publishing regression. On `main`
+ * this file had no project imports at all and could not be taken down this way.
  */
-const LLMS_FULL_SOURCES = llmsFullSources(REPO_ROOT);
+let llmsFullCache: string[] | undefined;
+function llmsFull(): string[] {
+  llmsFullCache ??= llmsFullSources(REPO_ROOT);
+  return llmsFullCache;
+}
 
 /**
  * Each private tree with the EXACT `.gitignore` pattern that must match it.
@@ -164,7 +181,16 @@ const PROBES = [
  * has been removed, and asserting that some path under it must stay publishable
  * would encode a publishing policy as a side effect of testing for over-match.
  */
-const MUST_STAY_PUBLISHABLE = [
+let publishableCache: string[] | undefined;
+/**
+ * LAZY for the same reason `llmsFull()` is: this array is built from a
+ * filesystem walk, and computing it at module scope makes a renamed directory
+ * take down every probe in this file during collection rather than failing the
+ * one assertion that depends on it. Measured before this was changed: the run
+ * reported `Tests no tests`.
+ */
+function mustStayPublishable(): string[] {
+  publishableCache ??= [
   // DERIVED from the UNION of two enumerations, because neither is complete on
   // its own and the first draft of this used only llmsFullSources().
   //
@@ -183,7 +209,7 @@ const MUST_STAY_PUBLISHABLE = [
   // compute the difference between the two enumerations. Do not read the gap as
   // a single known exception.
   ...new Set([
-    ...LLMS_FULL_SOURCES,
+    ...llmsFull(),
     ...CANONICAL_SOURCES.files,
     // Both of these are INSIDE the Set, not appended after it, so adding
     // either to llmsFullSources() later (a natural change for the privacy
@@ -219,50 +245,10 @@ const MUST_STAY_PUBLISHABLE = [
   // the same short-circuit that hides a companion inside a wholly-ignored tree
   // from `.worktreeinclude`. So this list's blind spot is narrower than it
   // looks: it sees nothing under `docs/`, but the pin does.
-];
-
-/**
- * The pattern field of one `check-ignore -v` line.
- *
- * Line shape: `<source>:<line>:<pattern>\t<pathname>`. `slice(2)` skips the
- * source and line number, and the `join(':')` puts back any colon inside the
- * pattern itself rather than truncating at it.
- *
- * ONE copy on purpose. Both callers below need to know whether the matching
- * pattern is a NEGATION, and a second hand-rolled copy of this split is how the
- * two would come to disagree about what a negation is: fix a parsing bug in one
- * and the probes and the over-match guard start answering differently, with
- * nothing failing. Same reasoning the repo applies to hand-rolled command
- * parsing.
- */
-function patternOf(line: string): string {
-  if (!line) return '';
-  return line.split('\t')[0].split(':').slice(2).join(':');
+  ];
+  return publishableCache;
 }
 
-/**
- * Is this `check-ignore -v` line attributable to a `.gitignore` IN THIS REPO?
- *
- * Two things have to be true at once, and each was bought with a defect on this
- * branch. It has to accept a NESTED gitignore, which reports with its path
- * prefix (`site/.gitignore:2:dist/`), because two guarded paths live under
- * `site/` and matching only the bare name filed a real in-repo regression under
- * "your machine is misconfigured". And it has to reject a source OUTSIDE the
- * repo, because a personal `core.excludesFile` produces an ABSOLUTE path
- * (`/Users/x/.gitignore:1:Papers.md`) and blaming that on the repo sends the
- * reader after a regression that does not exist while CI stays green.
- *
- * The discriminator is the leading slash: git prints an in-repo ignore file as
- * a repo-relative path and an external one absolute. A pattern widened to admit
- * the nested case without that test admits the external case too, which is
- * exactly what happened here: the fix for the first defect reintroduced the
- * second. Measured both directions in the sibling unit test rather than reasoned
- * about, because that is how the reintroduction was found.
- */
-function isInRepoGitignore(line: string): boolean {
-  if (line.startsWith('/')) return false;
-  return /(^|\/)\.gitignore:\d+:/.test(line);
-}
 
 /** `<source>:<line>:<pattern>\t<pathname>` */
 function checkIgnore(path: string) {
@@ -381,11 +367,12 @@ describe('the private working trees stay out of the public repo', () => {
     // The PATTERN, not just the source. This is what pins the anchoring.
     expect(
       out,
-      `${path} is ignored by a different rule than expected. It may have been `
-        + `widened or narrowed, which changes what is published, or MOVED into `
-        + `a nested .gitignore, which does not. The check above already proved `
-        + `the rule is in this repo, so read this one as being about the rule `
-        + `itself rather than about where it lives.`,
+      `${path} is ignored, but not by the expected rule in the ROOT .gitignore. `
+        + `This pin is deliberately location-specific as well as pattern-specific, `
+        + `so it fails on a widening, on a narrowing, AND on a verbatim move into `
+        + `a nested .gitignore. The check above already established the rule is `
+        + `somewhere in this repo, so compare against that one before concluding `
+        + `the pattern changed: if it passed and this failed, the rule moved.`,
     ).toMatch(new RegExp(`^\\.gitignore:\\d+:${pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\t`));
   });
 
@@ -417,6 +404,17 @@ describe('the private working trees stay out of the public repo', () => {
     ).toBe('');
   });
 
+});
+
+describe('.worktreeinclude delivers what a worktree needs', () => {
+  // A SEPARATE describe on purpose. This asserts the OPPOSITE property to the
+  // block above: that a private tree IS copied into a worktree, rather than
+  // that it stays out of the public repo. Both matter and they are different
+  // failures, so a red run here must not read as a leak. Under the previous
+  // heading a reviewer triaging a failure saw 'the private working trees stay
+  // out of the public repo' over a message about losing ACCESS to one, which
+  // inverts the urgency: this is a delivery regression with no publication
+  // risk at all.
   it('.worktreeinclude carries the exact directory rule that was measured', () => {
     // Presence, not effect — but the effect was measured before this was
     // written, which is what makes presence worth asserting. Verified in a
@@ -447,6 +445,8 @@ describe('the private working trees stay out of the public repo', () => {
   });
 
   it('has a non-trivial publishable set to check', () => {
+    const publishable = mustStayPublishable();
+
     // WHY THIS EXISTS: everything below is derived, and an empty list would pass
     // asserting nothing, because `check-ignore --stdin` on no input exits 1 with
     // empty stdout, which is the passing case.
@@ -456,7 +456,7 @@ describe('the private working trees stay out of the public repo', () => {
     // written down, and it had roughly fifteen of slack, so dropping Datasets/
     // (13 pages) still passed it. Derived instead, from the two enumerations
     // themselves, so it cannot go stale as the corpus grows.
-    const fromLlmsFull = LLMS_FULL_SOURCES;
+    const fromLlmsFull = llmsFull();
     const fromLoader = CANONICAL_SOURCES.files;
 
     // Each source is non-empty. This is what the floor was actually protecting
@@ -472,10 +472,10 @@ describe('the private working trees stay out of the public repo', () => {
     // the entire CANONICAL_SOURCES half could be deleted with both probes still
     // green. Containment has no such hole.
     for (const f of fromLlmsFull) {
-      expect(MUST_STAY_PUBLISHABLE, `${f} reached the union from llms-full and was lost`).toContain(f);
+      expect(publishable, `${f} reached the union from llms-full and was lost`).toContain(f);
     }
     for (const f of fromLoader) {
-      expect(MUST_STAY_PUBLISHABLE, `${f} reached the union from the docs loader and was lost`).toContain(f);
+      expect(publishable, `${f} reached the union from the docs loader and was lost`).toContain(f);
     }
 
     // EVERY canonical directory, not just one. llmsFullSources expands these
@@ -491,7 +491,7 @@ describe('the private working trees stay out of the public repo', () => {
     const GUARDED_DIRS = ['Datasets', 'ResearchAreas', 'Methods', 'Primers'];
     for (const dir of GUARDED_DIRS) {
       expect(
-        MUST_STAY_PUBLISHABLE.some((p) => p.startsWith(`${dir}/`)),
+        publishable.some((p) => p.startsWith(`${dir}/`)),
         `${dir}/ contributes nothing to the publishable set, so a rule `
           + `swallowing it would go unnoticed`,
       ).toBe(true);
@@ -511,6 +511,24 @@ describe('the private working trees stay out of the public repo', () => {
     // Asserting the fixed list COVERS the loader's dirs closes that without
     // deriving it from them, so removal is still caught by the list being
     // fixed and addition is now caught here.
+    // EVERY ENTRY EXISTS ON DISK. Without this the set can rot silently: rename
+    // Community.md, or typo one in canonical-sources.ts, and the loader's
+    // idForSourcePath lookup returns undefined and `continue`s, the build emits
+    // only a warning, and `git check-ignore` answers perfectly happily about a
+    // pathname that is not there and reports no match. So the over-match guard
+    // goes green while the entry it was supposed to protect has stopped
+    // referring to anything. The file's whole argument is derive rather than
+    // type, and the directory loop below covers directories only.
+    for (const f of publishable) {
+      expect(
+        existsSync(join(REPO_ROOT, f)),
+        `${f} is in the publishable set but does not exist on disk, so the `
+          + `over-match check silently guards nothing for it. Either it was `
+          + `renamed and an enumeration still names the old path, or it was `
+          + `deleted and should leave the enumeration too`,
+      ).toBe(true);
+    }
+
     for (const dir of CANONICAL_SOURCES.dirs) {
       expect(
         GUARDED_DIRS,
@@ -520,7 +538,7 @@ describe('the private working trees stay out of the public repo', () => {
       ).toContain(dir);
     }
 
-    // NO no-duplicates assertion here, deliberately. MUST_STAY_PUBLISHABLE is
+    // NO no-duplicates assertion here, deliberately. The publishable set is
     // built by spreading a Set, so `new Set(x).size === x.length` holds for
     // every possible input including one where both enumerations collapsed to
     // a single element. It read as load-bearing and could never fail. The two
@@ -534,7 +552,7 @@ describe('the private working trees stay out of the public repo', () => {
     // silence is the passing case.
     const res = spawnSync('git', ['check-ignore', '--no-index', '-v', '--stdin'], {
       cwd: REPO_ROOT,
-      input: MUST_STAY_PUBLISHABLE.join('\n'),
+      input: mustStayPublishable().join('\n'),
       encoding: 'utf-8',
     });
     expect(res.error, 'git check-ignore could not run').toBeUndefined();
@@ -561,14 +579,19 @@ describe('the private working trees stay out of the public repo', () => {
     const fromRepo = matched.filter(isInRepoGitignore);
     const fromElsewhere = matched.filter((l) => !isInRepoGitignore(l));
 
-    expect(
+    // SOFT, so BOTH report. A hard expect on the first throws and the second
+    // never runs, which is the failure this file's probe loop was written as
+    // one `it` per probe to avoid: a reviewer fixes the repo rule, re-runs, and
+    // only then discovers their local config was hiding something too. The two
+    // conditions are independent and can hold at once.
+    expect.soft(
       fromRepo,
       'a rule in this repo\'s .gitignore has been widened and is now swallowing '
         + 'content the build publishes, which disappears from llms-full.txt and '
         + 'the homepage counts with everything else green',
     ).toEqual([]);
 
-    expect(
+    expect.soft(
       fromElsewhere,
       'these published paths are ignored by a rule OUTSIDE this repo (a personal '
         + 'core.excludesFile or .git/info/exclude). Nothing is wrong with the '
