@@ -11,7 +11,10 @@ Decisions about how these concepts relate live on the tracker, not in this repos
 decision record is not library documentation. This file describes the repository as it is
 **today**, not as a decision intends it to become. Where the two differ, the entry says so
 plainly; it does not name a ticket, because the tracker is private and a key would resolve
-for nobody reading this. A glossary that states a decided end-state as present fact tells a
+for nobody reading this. That is a rule about **this file's entries**, not a sweep: the tree
+carries many tracker keys in comments and commit messages, where they are useful to whoever
+can resolve them, and whether an always-loaded public file should carry them is a separate
+argument that belongs on the tracker rather than here. A glossary that states a decided end-state as present fact tells a
 reader the work is already done.
 
 **Every count below is a snapshot from `site/db/ndjson/`, taken 2026-08-20 except where a
