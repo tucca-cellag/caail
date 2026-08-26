@@ -8,10 +8,17 @@
  * presentation CSS lives in starlight-overrides.css. Canonical Markdown is
  * never modified — cards are built client-side by cloning the rendered cells
  * (DOM nodes, not innerHTML), so links/code carry over verbatim.
+ *
+ * "Qualifying" is defined in src/lib/table-layout.ts, not here, because the
+ * stylesheet has to make the same judgement about the same table when it
+ * decides whether the page drops Starlight's prose cap. The two used to
+ * disagree — see that file.
  */
 ---
 
 <script>
+  import { MIN_DATA_TABLE_BODY_ROWS, MIN_DATA_TABLE_COLUMNS } from '../lib/table-layout';
+
   const KEY = 'caail-tableview';
   const getPref = () => {
     try { return localStorage.getItem(KEY) === 'cards' ? 'cards' : 'table'; } catch { return 'table'; }
@@ -78,7 +85,9 @@
       if (table.closest('.caail-tableview')) return; // already enhanced
       const headCells = [...table.querySelectorAll('thead th')];
       const bodyRows = [...table.querySelectorAll<HTMLTableRowElement>('tbody tr')];
-      if (headCells.length < 3 || bodyRows.length < 2) return; // only real data tables
+      // Only real data tables. Same floor the full-width rule in
+      // starlight-overrides.css uses, from the same module.
+      if (headCells.length < MIN_DATA_TABLE_COLUMNS || bodyRows.length < MIN_DATA_TABLE_BODY_ROWS) return;
       const heads = headCells.map((th) => th.textContent?.trim() ?? '');
       const view = getPref();
 
