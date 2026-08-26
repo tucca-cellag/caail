@@ -369,7 +369,7 @@ governs disclosure harm, and it is not a scope rule. Used as one it passes nearl
 which is how ~165 lines of single-user tracker mechanics came to be public and how a section
 on authenticating a tracker write was then added beside them, caught by a review round rather
 than by any rule. The rationale, the rejected alternatives and the sweep of what has not yet
-been re-examined live on the tracker (CAAIL-317), not in this repository: a decision record is
+been re-examined live on the tracker, not in this repository: a decision record is
 not library documentation, so it goes where decisions go.
 
 **A sharper form of the same rule governs what may sit in a directory at all.** `docs/` holds
