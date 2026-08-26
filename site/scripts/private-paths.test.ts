@@ -395,13 +395,18 @@ describe('the private working trees stay out of the public repo', () => {
     ).toBe('');
   });
 
-  it('.worktreeinclude carries internal-docs/ as a DIRECTORY pattern', () => {
+  it('.worktreeinclude carries the exact directory rule that was measured', () => {
     // Presence, not effect — but the effect was measured before this was
     // written, which is what makes presence worth asserting. Verified in a
     // fresh worktree: the tree arrives with this line and does not without it,
     // and worktrees are this repo's normal working shape.
     //
-    // The SHAPE is what this pins. A file glob cannot reach inside a
+    // This pins the exact rule that was MEASURED, not the shape in general.
+    // Widening it to accept any equivalent-looking directory rule would assert
+    // something nobody has run: only this form was verified in a fresh worktree,
+    // and .worktreeinclude's matching is the harness's rather than git's. So the
+    // failure message says the measured rule is gone and explicitly declines to
+    // claim the tree is. A file glob cannot reach inside a
     // wholly-ignored directory (that is why *.local.md does not deliver a
     // companion placed in one), so "tidying" this to a glob would silently
     // stop delivering the tree while still looking like a rule for it.
@@ -410,8 +415,12 @@ describe('the private working trees stay out of the public repo', () => {
     );
     expect(
       rules,
-      '.worktreeinclude lost its internal-docs/ directory rule, so a worktree '
-        + 'session can no longer reach the working-documentation tree',
+      'the exact rule measured to deliver the working-documentation tree into a '
+        + 'worktree is no longer in .worktreeinclude. If it was REPLACED rather '
+        + 'than deleted, the tree may still arrive and this message is wrong '
+        + 'about that: measure the replacement in a fresh worktree before '
+        + 'trusting it, because a file glob cannot reach inside a wholly-ignored '
+        + 'directory and would look right while delivering nothing',
     ).toContain('/internal-docs/');
   });
 
