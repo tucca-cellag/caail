@@ -116,8 +116,7 @@ describe('the ignore rules and the predicate agree on what a companion is', () =
   // every file under site/src/content/docs/ is .mdx, so the commonest
   // companion was excluded from the build and committable into a public repo
   // at the same time.
-  it('git ignores a companion at every suffix the predicate recognises', () => {
-    // TWO PROBES, AT TWO DEPTHS, and the second is not redundant. The suffix
+  // TWO PROBES, AT TWO DEPTHS, and the second is not redundant. The suffix
     // rules live in the ROOT .gitignore today and therefore cover the whole
     // tree, but nothing here required that until this probe existed. Scope them
     // into the tracked `site/.gitignore` instead, which is a plausible tidy-up,
@@ -133,11 +132,19 @@ describe('the ignore rules and the predicate agree on what a companion is', () =
     // terms (a nested in-repo rule is genuinely in-repo) and silently gave up a
     // property the regex had been carrying by accident. A probe states the
     // property directly instead of leaving it to the shape of a pattern.
-    const probes = PRIVATE_COMPANION_SUFFIXES.flatMap((suffix) => [
-      `site/src/content/docs/probe${suffix}`,
-      `Datasets/probe${suffix}`,
-    ]);
-    for (const probe of probes) {
+  //
+  // ONE `it` PER PROBE, not a loop, matching the sibling guard's reason: a run
+  // that breaks two rules must report both. A single loop aborts on the first
+  // failure, so an edit dropping both suffixes reports only the first probe, the
+  // reviewer fixes that one line, re-runs, and only then learns the repo-root
+  // case and the .mdx case are broken too. Three round-trips for one edit, on
+  // the guard whose failure mode is a private companion being committable.
+  const probes = PRIVATE_COMPANION_SUFFIXES.flatMap((suffix) => [
+    `site/src/content/docs/probe${suffix}`,
+    `Datasets/probe${suffix}`,
+  ]);
+
+  it.each(probes)('git ignores a companion at %s', (probe) => {
       // -v, and the SOURCE is asserted, not just the match. With -q alone this
       // proves only that SOMETHING ignores the probe: a contributor carrying
       // `*.local.md*` in ~/.config/git/ignore or .git/info/exclude could delete
@@ -154,7 +161,12 @@ describe('the ignore rules and the predicate agree on what a companion is', () =
       // first draft of this very fix made the guard weaker than the -q form it
       // replaced, passing while a companion was committable. Rejecting a
       // leading `!` in the pattern is what makes -v safe here.
-      const res = spawnSync('git', ['check-ignore', '-v', probe], {
+      // --no-index, for the reason the sibling test 60 lines down gives at
+      // length: in index-aware mode check-ignore never reports a TRACKED path,
+      // so the moment a probe name becomes concrete (which the repo-root probe
+      // invites) stdout goes empty and the assertion below reads nothing while
+      // staying green. That is worse than an unreachable guard: this one runs.
+      const res = spawnSync('git', ['check-ignore', '--no-index', '-v', probe], {
         cwd: REPO_ROOT,
         encoding: 'utf-8',
       });
@@ -184,7 +196,6 @@ describe('the ignore rules and the predicate agree on what a companion is', () =
           + `negation and exits 0, which is how an earlier draft of this guard `
           + `passed while being weaker than the -q form it replaced.`,
       ).toBe(false);
-    }
   });
 
   it('.worktreeinclude carries every suffix, or companions never reach a worktree', () => {

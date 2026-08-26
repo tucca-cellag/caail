@@ -44,6 +44,28 @@ export function patternOf(line: string): string {
 }
 
 /**
+ * Did this line parse as `check-ignore -v` output at all?
+ *
+ * Callers need this because `patternOf` returns the empty string for a line it
+ * cannot read, and `''.startsWith('!')` is false, so an unparseable line reads
+ * as a positive, NON-negated match. Every negation guard therefore failed OPEN:
+ * truncated stdout, a `-z` separator, or any future change to git's output shape
+ * would have been silently treated as "a rule matched and it was not a negation",
+ * which is the one answer that lets a path through. Nothing distinguished an
+ * unreadable line from a readable one carrying no negation.
+ *
+ * (That sentence is worded to avoid writing a quoted phrase after the word
+ * f-r-o-m: pure-modules.test.ts scans this file's RAW source for module
+ * specifiers, deliberately, so prose here must not look like an import. It
+ * caught this very docstring on the first attempt, which is the conservative
+ * direction working: a false positive is loud and takes a minute, a false
+ * negative would have been silent.)
+ */
+export function isCheckIgnoreLine(line: string): boolean {
+  return fields(line) !== null;
+}
+
+/**
  * Is the reporting source a `.gitignore` inside this repository?
  *
  * git prints an in-repo ignore file as a REPO-RELATIVE path and anything else
@@ -59,7 +81,7 @@ export function isInRepoGitignore(line: string): boolean {
   const f = fields(line);
   if (!f) return false;
   const { source } = f;
-  if (!/(^|\/)\.gitignore$/.test(source)) return false;
+  if (!/(^|[/\\])\.gitignore$/.test(source)) return false;
   return !escapesRepo(source);
 }
 

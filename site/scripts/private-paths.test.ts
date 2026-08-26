@@ -51,7 +51,7 @@ import { fileURLToPath } from 'node:url';
 // would take down the check that proves .env is gitignored.
 import { CANONICAL_SOURCES } from '../src/content/canonical-sources.js';
 import { worktreeIncludeRules } from '../src/lib/worktree-include.js';
-import { patternOf, isInRepoGitignore } from '../src/lib/gitignore-report.js';
+import { patternOf, isInRepoGitignore, isCheckIgnoreLine } from '../src/lib/gitignore-report.js';
 
 /** scripts/ → site/ → repo root. */
 const REPO_ROOT = fileURLToPath(new URL('../../', import.meta.url));
@@ -468,12 +468,18 @@ describe('the private working trees stay out of the public repo', () => {
 });
 
 describe('.worktreeinclude delivers what a worktree needs', () => {
-  // BY NAME, not by position. An earlier version reached this through
-  // PRIVATE_TREES[0], and this same branch inserted three entries into that
-  // list; inserting one at the HEAD instead, which is equally natural, would
-  // have repointed the assertion at a different tree while its message went on
-  // talking about this one.
-  const INTERNAL_DOCS = PRIVATE_TREES.find((t) => t.root === 'internal-docs/')!;
+  // THE MEASURED LITERAL, written here and reached from nowhere else.
+  //
+  // It went through two wrong homes first. A bare index into PRIVATE_TREES,
+  // which this branch then inserted three entries into, so a fourth at the head
+  // would have repointed it at another tree. Then a lookup by name in that same
+  // list, which is better but still couples this to the GITIGNORE pattern, and
+  // the two files are different formats answering different questions: git's
+  // ignore syntax there, the harness's copy syntax here. Dropping the leading
+  // slash in .gitignore is a legitimate edit that changes nothing about worktree
+  // delivery, and it would have made this assertion demand the new spelling in a
+  // file nobody had measured it against.
+  const MEASURED_WORKTREE_RULE = '/internal-docs/';
 
   // A SEPARATE describe on purpose. This asserts the OPPOSITE property to the
   // block above: that a private tree IS copied into a worktree, rather than
@@ -513,7 +519,7 @@ describe('.worktreeinclude delivers what a worktree needs', () => {
       // renaming the tree cannot leave this assertion green against a stale
       // literal while the ignore probe fails elsewhere, splitting one failure
       // into two that look unrelated.
-    ).toContain(INTERNAL_DOCS.pattern);
+    ).toContain(MEASURED_WORKTREE_RULE);
   });
 });
 
@@ -613,6 +619,23 @@ describe('the build\'s published content is not swallowed', () => {
       ).toBe(true);
     }
 
+    // AND THE OTHER SOURCE. GUARDED_DIRS was reconciled against the loader's
+    // dirs only, so a directory reaching the union through llmsFullSources'
+    // own dirMarkdown calls, and not through the loader, entered the set with no
+    // membership assertion at all. Derived from what actually arrived rather
+    // than from a second hand-typed list.
+    const dirsInUnion = [...new Set(
+      publishable.filter((f) => f.includes('/')).map((f) => f.split('/')[0]),
+    )].filter((d) => !d.endsWith('.md') && !d.endsWith('.mdx') && d !== 'site');
+    for (const dir of dirsInUnion) {
+      expect(
+        GUARDED_DIRS,
+        `${dir}/ contributes pages to the publishable set but nothing asserts it `
+          + `contributes any, so a rule swallowing the whole directory would be `
+          + `caught only incidentally. Add it to GUARDED_DIRS`,
+      ).toContain(dir);
+    }
+
     for (const dir of CANONICAL_SOURCES.dirs) {
       expect(
         GUARDED_DIRS,
@@ -660,6 +683,18 @@ describe('the build\'s published content is not swallowed', () => {
     // after a regression that does not exist.
     // Which lines count as in-repo is isInRepoGitignore's business, and both
     // directions are pinned in its own test rather than only through this one.
+    // EVERY MATCHED LINE MUST PARSE, asserted before anything is read out of it.
+    // patternOf returns '' for a line it cannot read and '' does not start with
+    // '!', so an unparseable line would be filtered as a positive, non-negated
+    // match: the one reading that lets a swallowed path through unnoticed.
+    const unreadable = matched.filter((l) => !isCheckIgnoreLine(l));
+    expect(
+      unreadable,
+      'git check-ignore printed lines this parser cannot read, so the negation '
+        + 'filter above could not have been applied to them. Treat the whole run '
+        + 'as unreliable rather than as a pass',
+    ).toEqual([]);
+
     // ONE pass, so the halves are complementary by construction. Two filters,
     // one negated, is how the second-copy divergence this file spent four
     // commits closing began: the predicate changes in one and not the other.
