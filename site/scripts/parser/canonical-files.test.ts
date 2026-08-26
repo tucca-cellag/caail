@@ -24,8 +24,8 @@ import {
   isPublishedMarkdown,
   isPrivateCompanion,
   PRIVATE_COMPANION_SUFFIXES,
-  worktreeIncludeRules,
 } from '../../src/lib/canonical-files.js';
+import { worktreeIncludeRules } from '../../src/lib/worktree-include.js';
 import { llmsFullSources } from './llms-full.js';
 import { computeCounts } from './counts.js';
 import { DOCS_GLOB_PATTERN } from '../../src/content/loaders/caail-docs-loader.js';

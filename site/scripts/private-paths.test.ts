@@ -51,10 +51,19 @@ import { llmsFullSources } from './parser/llms-full.js';
 // pulled `astro/loaders` into this guard, so an unrelated Astro breakage
 // would take down the check that proves .env is gitignored.
 import { CANONICAL_SOURCES } from '../src/content/canonical-sources.js';
-import { worktreeIncludeRules } from '../src/lib/canonical-files.js';
+import { worktreeIncludeRules } from '../src/lib/worktree-include.js';
 
 /** scripts/ → site/ → repo root. */
 const REPO_ROOT = fileURLToPath(new URL('../../', import.meta.url));
+
+/**
+ * ONE enumeration, reused. The containment assertion below used to call
+ * `llmsFullSources()` a second time and compare the result against an array
+ * built from a first call, which asserts that two consecutive filesystem walks
+ * agree rather than that the union was built from this enumeration, and pays
+ * for eight readdir passes to do it.
+ */
+const LLMS_FULL_SOURCES = llmsFullSources(REPO_ROOT);
 
 /**
  * Each private tree with the EXACT `.gitignore` pattern that must match it.
@@ -174,7 +183,7 @@ const MUST_STAY_PUBLISHABLE = [
   // compute the difference between the two enumerations. Do not read the gap as
   // a single known exception.
   ...new Set([
-    ...llmsFullSources(REPO_ROOT),
+    ...LLMS_FULL_SOURCES,
     ...CANONICAL_SOURCES.files,
     // Both of these are INSIDE the Set, not appended after it, so adding
     // either to llmsFullSources() later (a natural change for the privacy
@@ -352,18 +361,31 @@ describe('the private working trees stay out of the public repo', () => {
     // Not hypothetical: this machine's .git/info/exclude carries `.env`, so
     // without the source half the `.env` probe passes even with the committed
     // rule deleted.
+    //
+    // THE SAME PREDICATE the batch check uses, deliberately. This assertion
+    // carried its own root-anchored copy of the split, so a rule relocated into
+    // a nested in-repo .gitignore reported as `site/.gitignore:2:...`, failed
+    // here, and told the reader their personal git config was at fault. That is
+    // the misdirection isInRepoGitignore was extracted to end, and having it in
+    // two forms in one file is exactly what patternOf's docstring above argues
+    // against. Latent rather than live today, since every guarded root is
+    // top-level and a nested file cannot match one, but it bites on the next
+    // entry added to PRIVATE_TREES.
     expect(
-      out,
-      `${path} is ignored, but by a rule outside this repo's .gitignore `
-        + `(a personal core.excludesFile or .git/info/exclude), so nothing `
-        + `here guarantees it for anyone else`,
-    ).toMatch(/^\.gitignore:\d+:/);
+      isInRepoGitignore(out),
+      `${path} is ignored, but by a rule outside this repo (a personal `
+        + `core.excludesFile or .git/info/exclude), so nothing here guarantees `
+        + `it for anyone else. The reporting source was: ${out}`,
+    ).toBe(true);
 
     // The PATTERN, not just the source. This is what pins the anchoring.
     expect(
       out,
-      `${path} is ignored by a different pattern than expected. The rule may `
-        + `have been widened or narrowed; both change what is published.`,
+      `${path} is ignored by a different rule than expected. It may have been `
+        + `widened or narrowed, which changes what is published, or MOVED into `
+        + `a nested .gitignore, which does not. The check above already proved `
+        + `the rule is in this repo, so read this one as being about the rule `
+        + `itself rather than about where it lives.`,
     ).toMatch(new RegExp(`^\\.gitignore:\\d+:${pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\t`));
   });
 
@@ -434,7 +456,7 @@ describe('the private working trees stay out of the public repo', () => {
     // written down, and it had roughly fifteen of slack, so dropping Datasets/
     // (13 pages) still passed it. Derived instead, from the two enumerations
     // themselves, so it cannot go stale as the corpus grows.
-    const fromLlmsFull = llmsFullSources(REPO_ROOT);
+    const fromLlmsFull = LLMS_FULL_SOURCES;
     const fromLoader = CANONICAL_SOURCES.files;
 
     // Each source is non-empty. This is what the floor was actually protecting
@@ -466,12 +488,36 @@ describe('the private working trees stay out of the public repo', () => {
     // removing a directory there silently shrinks this check: llms-full would
     // still contribute its pages, the floor would still pass, and nothing goes
     // red. This is the property being asserted, so it is stated.
-    for (const dir of ['Datasets', 'ResearchAreas', 'Methods', 'Primers']) {
+    const GUARDED_DIRS = ['Datasets', 'ResearchAreas', 'Methods', 'Primers'];
+    for (const dir of GUARDED_DIRS) {
       expect(
         MUST_STAY_PUBLISHABLE.some((p) => p.startsWith(`${dir}/`)),
         `${dir}/ contributes nothing to the publishable set, so a rule `
           + `swallowing it would go unnoticed`,
       ).toBe(true);
+    }
+
+    // AND THE OTHER DIRECTION, which the fixed list cannot give on its own.
+    // The union spreads CANONICAL_SOURCES.files and never CANONICAL_SOURCES
+    // .dirs, so the loader's directory half reaches this set only by way of
+    // llmsFullSources' own dirMarkdown calls. Add a directory to the loader
+    // (which is what Methods/CLAUDE.md tells you to do for a new canonical
+    // directory) without adding a matching dirMarkdown line, and not one of its
+    // pages enters the publishable set: the fixed list above does not mention
+    // it, so nothing goes red, and a .gitignore rule swallowing the whole
+    // directory would delete every one of those routes from the site with the
+    // suite green.
+    //
+    // Asserting the fixed list COVERS the loader's dirs closes that without
+    // deriving it from them, so removal is still caught by the list being
+    // fixed and addition is now caught here.
+    for (const dir of CANONICAL_SOURCES.dirs) {
+      expect(
+        GUARDED_DIRS,
+        `${dir}/ is a canonical directory in the docs loader but nothing here `
+          + `guards it. Add it to GUARDED_DIRS, and add a dirMarkdown call for `
+          + `it in llmsFullSources, or its pages are in no enumeration at all`,
+      ).toContain(dir);
     }
 
     // NO no-duplicates assertion here, deliberately. MUST_STAY_PUBLISHABLE is
