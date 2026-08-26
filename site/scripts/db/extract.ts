@@ -2,7 +2,7 @@
  * extract.ts — pull the DB-owned structured content out of the canonical
  * Markdown, reusing the real parser's mdast helpers. Used by both the bootstrap
  * ETL (canonical MD -> DB) and the emitter's fidelity checks. Promoted from the
- * spike's extractGroupEntries / extractInventory / inlineMd.
+ * sqlite-replatform extractGroupEntries / extractInventory / inlineMd.
  */
 
 import { readFileSync } from 'node:fs';

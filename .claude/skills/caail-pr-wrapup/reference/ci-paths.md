@@ -32,7 +32,7 @@ in `lint-papers.yml` and `.claude/skills/caail-pr-wrapup/**` is in `guards.yml`,
 `contribute-form.test.ts` reads its `SKILL.md` as input, and `pnpm parse` aborts when that skill and the
 issue templates disagree.
 
-**The full check-free list, which lives here and nowhere else** (`SKILL.md` step 5 points at it rather
+**The check-free list, which lives here and nowhere else** (one entry is currently dormant; see the end of this paragraph) (`SKILL.md` step 5 points at it rather
 than restating it, because the enumeration has already been wrong in both directions once each):
 `.claude/` rules and agents, the four unfiltered `.claude/skills/*` directories named above,
 `LICENSE`, `.zenodo.json`, and two of the three plugin manifests

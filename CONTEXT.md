@@ -17,7 +17,7 @@ can resolve them, and whether an always-loaded public file should carry them is 
 argument that belongs on the tracker rather than here. A glossary that states a decided end-state as present fact tells a
 reader the work is already done.
 
-**Every count below is a snapshot from `site/db/ndjson/`, taken 2026-08-20 except where a
+**Every count below is a snapshot from `site/db/ndjson/`, except where a line names its own source: the number of pages in `ResearchAreas/` is a filesystem count that no NDJSON file carries, so a disagreement there is resolved by `ls`, not by the DB, taken 2026-08-20 except where a
 line carries its own later date.** `areas.ndjson`,
 `topics.ndjson`, `item_topics.ndjson` and `matrix_cells.ndjson` are the source of truth: where a
 number here disagrees with them, they are right and this file is stale. **No one command prints
