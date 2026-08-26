@@ -1,6 +1,6 @@
 # CI: what runs when
 
-**The workflows are the source of truth; the table below is a snapshot** (taken 2026-08-20) kept only
+**The workflows are the source of truth; the table below is a snapshot** (taken 2026-08-26) kept only
 so step 5/7 expectations are legible without opening four YAML files. `preflight` computes its answer from the
 `LINT_PAPERS_PATHS` / `TEST_PATHS` / `DOCS_PATHS` / `GUARDS_PATHS` lists in `ship-pr.sh`, which mirror the
 YAML rather than being read from it. **Each is named for its workflow file** (`<stem uppercased, - to _>_PATHS`), and so is

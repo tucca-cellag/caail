@@ -77,7 +77,7 @@ export interface CatalogRaw {
 
 /**
  * Every H3 catalog entry in a Software.md / Databases.md file, in document order,
- * WITH its raw body markdown (offset-sliced). Generalizes the spike's
+ * WITH its raw body markdown (offset-sliced). Generalizes the sqlite-replatform
  * extractGroupEntries across all H2 groups.
  */
 export function extractCatalogEntries(path: string): CatalogRaw[] {
