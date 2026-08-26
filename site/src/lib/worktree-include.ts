@@ -3,7 +3,7 @@
  *
  * Its own module rather than a second topic inside `canonical-files.ts`, whose
  * subject is which Markdown in a canonical directory is published. The failure
- * modes here are different ones (a CRLF line ending, a whitespace-only line), and a file answering two unrelated questions is a file
+ * modes here are different ones, and a trailing `#` is the live one, and a file answering two unrelated questions is a file
  * nobody greps for the second one.
  *
  * No imports, and it must keep none. Asserted by a test rather than only stated
@@ -22,7 +22,7 @@
  * It exists because the same four-line strip was written out twice, in
  * `private-paths.test.ts` and `canonical-files.test.ts`, each then asserting
  * `toContain` on the result. A `.worktreeinclude` that ever grows a syntax the
- * strip mishandles (a CRLF line ending, a whitespace-only line)
+ * strip deliberately does not handle (a trailing `#`; see the note at the foot)
  * would get fixed in one copy while the other went on answering differently,
  * with nothing failing. That is the drift `patternOf`'s docstring in the first
  * of those files argues against, two functions further down the same file.

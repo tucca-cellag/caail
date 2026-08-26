@@ -46,7 +46,6 @@ import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { llmsFullSources } from './parser/llms-full.js';
 // The PURE module, deliberately not the loader: importing it from the loader
 // pulled `astro/loaders` into this guard, so an unrelated Astro breakage
 // would take down the check that proves .env is gitignored.
@@ -87,8 +86,18 @@ const REPO_ROOT = fileURLToPath(new URL('../../', import.meta.url));
  * change than this branch should carry.
  */
 let llmsFullCache: string[] | undefined;
-function llmsFull(): string[] {
-  llmsFullCache ??= llmsFullSources(REPO_ROOT);
+async function llmsFull(): Promise<string[]> {
+  // DYNAMIC, so the import happens inside a test body rather than during
+  // collection. Making the walk lazy was not enough on its own: an eager
+  // `import` of parser/llms-full.js pulls in that module and its transitive
+  // chain, and a top-level throw anywhere in it aborts collection of THIS file,
+  // which reports `Tests no tests` with not one probe run. Measured on this
+  // branch before the accessor existed.
+  //
+  // With this gone, every remaining project import here is a module asserted
+  // import-free by pure-modules.test.ts, which is what makes that guard's
+  // premise true rather than aspirational.
+  llmsFullCache ??= (await import('./parser/llms-full.js')).llmsFullSources(REPO_ROOT);
   return llmsFullCache;
 }
 
@@ -199,7 +208,7 @@ let publishableCache: string[] | undefined;
  * one assertion that depends on it. Measured before this was changed: the run
  * reported `Tests no tests`.
  */
-function mustStayPublishable(): string[] {
+async function mustStayPublishable(): Promise<string[]> {
   publishableCache ??= [
   // DERIVED from the UNION of two enumerations, because neither is complete on
   // its own and the first draft of this used only llmsFullSources().
@@ -219,7 +228,7 @@ function mustStayPublishable(): string[] {
   // compute the difference between the two enumerations. Do not read the gap as
   // a single known exception.
   ...new Set([
-    ...llmsFull(),
+    ...(await llmsFull()),
     ...CANONICAL_SOURCES.files,
     // Both of these are INSIDE the Set, not appended after it, so adding
     // either to llmsFullSources() later (a natural change for the privacy
@@ -341,6 +350,16 @@ describe('attributing an ignore rule to this repo or to the developer', () => {
       inRepo: false,
       why: 'a Windows personal excludes file, which has NO leading slash',
     },
+    {
+      line: '../shared/.gitignore:1:Papers.md\tPapers.md',
+      inRepo: false,
+      why: 'a RELATIVE excludes file outside the repo, with no leading separator at all',
+    },
+    {
+      line: 'site/../.gitignore:9:/internal-docs/\tinternal-docs/x',
+      inRepo: true,
+      why: 'a path that walks out and back in, so it never leaves the repo',
+    },
   ];
 
   for (const { line, inRepo, why } of cases) {
@@ -449,6 +468,13 @@ describe('the private working trees stay out of the public repo', () => {
 });
 
 describe('.worktreeinclude delivers what a worktree needs', () => {
+  // BY NAME, not by position. An earlier version reached this through
+  // PRIVATE_TREES[0], and this same branch inserted three entries into that
+  // list; inserting one at the HEAD instead, which is equally natural, would
+  // have repointed the assertion at a different tree while its message went on
+  // talking about this one.
+  const INTERNAL_DOCS = PRIVATE_TREES.find((t) => t.root === 'internal-docs/')!;
+
   // A SEPARATE describe on purpose. This asserts the OPPOSITE property to the
   // block above: that a private tree IS copied into a worktree, rather than
   // that it stays out of the public repo. Both matter and they are different
@@ -487,7 +513,7 @@ describe('.worktreeinclude delivers what a worktree needs', () => {
       // renaming the tree cannot leave this assertion green against a stale
       // literal while the ignore probe fails elsewhere, splitting one failure
       // into two that look unrelated.
-    ).toContain(PRIVATE_TREES[0].pattern);
+    ).toContain(INTERNAL_DOCS.pattern);
   });
 });
 
@@ -502,8 +528,8 @@ describe('the build\'s published content is not swallowed', () => {
   // That is the exact inversion the split was made to prevent, pointed the other
   // way: the heading was reassuring about the one failure here that is not.
 
-  it('derives a publishable set that is non-empty, complete and real', () => {
-    const publishable = mustStayPublishable();
+  it('derives a publishable set that is non-empty, complete and real', async () => {
+    const publishable = await mustStayPublishable();
 
     // WHY THIS EXISTS: everything below is derived, and an empty list would pass
     // asserting nothing, because `check-ignore --stdin` on no input exits 1 with
@@ -514,7 +540,7 @@ describe('the build\'s published content is not swallowed', () => {
     // written down, and it had roughly fifteen of slack, so dropping Datasets/
     // (13 pages) still passed it. Derived instead, from the two enumerations
     // themselves, so it cannot go stale as the corpus grows.
-    const fromLlmsFull = llmsFull();
+    const fromLlmsFull = await llmsFull();
     const fromLoader = CANONICAL_SOURCES.files;
 
     // Each source is non-empty. This is what the floor was actually protecting
@@ -604,13 +630,13 @@ describe('the build\'s published content is not swallowed', () => {
     // doing real work; asserting the result of it is asserting nothing.
   });
 
-  it('does not over-match and swallow anything the build publishes', () => {
+  it('does not over-match and swallow anything the build publishes', async () => {
     // ONE process for the whole set, not one per path: check-ignore reads a
     // batch on --stdin and prints a line only for paths that MATCHED, so
     // silence is the passing case.
     const res = spawnSync('git', ['check-ignore', '--no-index', '-v', '--stdin'], {
       cwd: REPO_ROOT,
-      input: mustStayPublishable().join('\n'),
+      input: (await mustStayPublishable()).join('\n'),
       encoding: 'utf-8',
     });
     expect(res.error, 'git check-ignore could not run').toBeUndefined();

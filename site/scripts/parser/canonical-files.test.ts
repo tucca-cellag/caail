@@ -117,8 +117,27 @@ describe('the ignore rules and the predicate agree on what a companion is', () =
   // companion was excluded from the build and committable into a public repo
   // at the same time.
   it('git ignores a companion at every suffix the predicate recognises', () => {
-    for (const suffix of PRIVATE_COMPANION_SUFFIXES) {
-      const probe = `site/src/content/docs/probe${suffix}`;
+    // TWO PROBES, AT TWO DEPTHS, and the second is not redundant. The suffix
+    // rules live in the ROOT .gitignore today and therefore cover the whole
+    // tree, but nothing here required that until this probe existed. Scope them
+    // into the tracked `site/.gitignore` instead, which is a plausible tidy-up,
+    // and a single `site/`-only probe still reports ignored while every
+    // companion beside a canonical page at the repo root becomes committable
+    // into a public repo.
+    //
+    // MEASURED, not reasoned about, because an earlier version of this guard
+    // pinned the ROOT .gitignore by regex and that pin was replaced with a
+    // shared in-repo predicate: with the rules moved to `site/.gitignore`, this
+    // suite ran 18/18 GREEN while `git check-ignore --no-index -v
+    // Datasets/Cow.local.md` exited 1. The predicate change was right on its own
+    // terms (a nested in-repo rule is genuinely in-repo) and silently gave up a
+    // property the regex had been carrying by accident. A probe states the
+    // property directly instead of leaving it to the shape of a pattern.
+    const probes = PRIVATE_COMPANION_SUFFIXES.flatMap((suffix) => [
+      `site/src/content/docs/probe${suffix}`,
+      `Datasets/probe${suffix}`,
+    ]);
+    for (const probe of probes) {
       // -v, and the SOURCE is asserted, not just the match. With -q alone this
       // proves only that SOMETHING ignores the probe: a contributor carrying
       // `*.local.md*` in ~/.config/git/ignore or .git/info/exclude could delete

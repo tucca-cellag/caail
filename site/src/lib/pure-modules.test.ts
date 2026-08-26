@@ -1,64 +1,100 @@
 /**
  * pure-modules.test.ts — the no-imports constraint, checked rather than asserted.
  *
- * Three modules state in their own docstrings that they have no imports and must
- * keep none. That constraint is load-bearing: `private-paths.test.ts` is the
- * guard proving `.env` and nine private working trees are gitignored, and it
- * reaches all three. Give any of them an import and a throw anywhere in the new
- * dependency chain takes the guard down during collection, which was MEASURED on
- * this branch to report `Tests no tests` with not one probe executed.
+ * `private-paths.test.ts` is the guard proving the credentials file and every
+ * private working tree are gitignored. Give any module it statically imports an
+ * import of its own and a throw anywhere in the new chain aborts COLLECTION of
+ * that file, so not one probe runs. Measured on this branch: the run reports
+ * `Tests no tests` and names whatever module actually threw.
  *
- * Until this file existed the constraint was prose only, which CLAUDE.md's first
- * Gotcha rules out in terms: "A comment saying 'keep these in sync' documents the
- * risk; it does not mitigate it. The fix is always one of two things: derive the
- * value instead of typing it, or add a check that fails when the two disagree."
- * This is the second of those.
+ * Until this existed the constraint was prose in three docstrings, which
+ * CLAUDE.md rules out in terms: "A comment saying 'keep these in sync' documents
+ * the risk; it does not mitigate it. The fix is always one of two things: derive
+ * the value instead of typing it, or add a check that fails when the two
+ * disagree." This does the first.
  *
- * It deliberately does NOT assert the reverse (that these are the only pure
- * modules). A new pure module should be free to appear without editing a list.
+ * THE LIST IS DERIVED, not kept. An earlier version named three modules by hand,
+ * so a fourth extracted the same way would have been unguarded with this file
+ * green, and the docstring counted them in prose beside the array that knew.
+ * Both are the defect this branch spent several rounds removing from the guard
+ * itself. The set now comes from the guard's own static imports, so a module
+ * added there is covered the moment it is added.
  */
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, dirname, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 /** lib/ -> src/ -> site/ */
 const SITE_ROOT = fileURLToPath(new URL('../../', import.meta.url));
+const GUARD = 'scripts/private-paths.test.ts';
 
-const MUST_HAVE_NO_IMPORTS = [
-  // Read by the private-path guard. Extracted OUT of caail-docs-loader.ts
-  // precisely so that guard stops importing `astro/loaders`.
-  'src/content/canonical-sources.ts',
-  // The one `.worktreeinclude` parse, after the same strip existed twice.
-  'src/lib/worktree-include.ts',
-  // The one `git check-ignore -v` parse, after three copies of it disagreed.
-  'src/lib/gitignore-report.ts',
-];
+/** Source with block and line comments removed, so prose cannot trip a scan. */
+function stripComments(src: string): string {
+  return src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^[ \t]*\/\/.*$/gm, '');
+}
+
+/**
+ * Every module specifier this file imports, whether by `import`, by
+ * `export … from`, or dynamically. Multi-line and `export * as ns from` forms
+ * included: an earlier per-line regex missed both, which meant a "pure" module
+ * could take on a real dependency with this suite green.
+ */
+function importedSpecifiers(src: string): string[] {
+  const code = stripComments(src);
+  const out: string[] = [];
+  for (const re of [
+    /\bimport\s+[\s\S]*?\bfrom\s*['"]([^'"]+)['"]/g,  // import x from 'y'
+    /\bimport\s*['"]([^'"]+)['"]/g,                    // side-effect import
+    /\bimport\s*\(\s*['"]([^'"]+)['"]\s*\)/g,          // dynamic import
+    /\bexport\s+[\s\S]*?\bfrom\s*['"]([^'"]+)['"]/g,   // re-export, incl. * as ns
+    /\brequire\s*\(\s*['"]([^'"]+)['"]\s*\)/g,
+  ]) {
+    for (const m of code.matchAll(re)) out.push(m[1]);
+  }
+  return out;
+}
+
+/** The guard's STATIC project imports, as paths relative to site/. */
+function guardStaticProjectImports(): string[] {
+  const src = readFileSync(join(SITE_ROOT, GUARD), 'utf-8');
+  const code = stripComments(src);
+  // Dynamic imports are deliberately excluded: they run inside a test body, so a
+  // throw in one fails that test rather than the whole file, which is the entire
+  // reason the guard was changed to reach the parser that way.
+  const dynamic = new Set(
+    [...code.matchAll(/\bimport\s*\(\s*['"]([^'"]+)['"]\s*\)/g)].map((m) => m[1]),
+  );
+  return importedSpecifiers(src)
+    .filter((spec) => spec.startsWith('.') && !dynamic.has(spec))
+    .map((spec) => normalize(join(dirname(GUARD), spec)).replace(/\.js$/, '.ts'));
+}
 
 describe('the modules the private-path guard depends on stay import-free', () => {
-  for (const rel of MUST_HAVE_NO_IMPORTS) {
-    it(`${rel} imports nothing`, () => {
-      const src = readFileSync(join(SITE_ROOT, rel), 'utf-8');
-      // Static imports, side-effect imports, `export ... from`, and the dynamic
-      // form. A line starting with ` *` is a docstring and never a statement, so
-      // prose describing the rule cannot trip it.
-      const offenders = src
-        .split('\n')
-        .map((l, i) => [i + 1, l] as const)
-        .filter(([, l]) => /^\s*(import\b|export\s+(\*|\{[^}]*\})\s+from\b)/.test(l)
-          || /^[^*/]*\brequire\s*\(/.test(l)
-          || /^[^*/]*\bimport\s*\(/.test(l))
-        .map(([n, l]) => `${n}: ${l.trim()}`);
+  const targets = guardStaticProjectImports();
 
+  it('finds the guard\'s static project imports at all', () => {
+    // A FLOOR. If the scan silently returned nothing, every assertion below
+    // would pass by iterating an empty list, which is the shape this repo has
+    // been bitten by repeatedly.
+    expect(
+      targets,
+      `no static project imports were found in ${GUARD}, which almost certainly `
+        + `means the scan broke rather than that the guard has none`,
+    ).not.toEqual([]);
+  });
+
+  for (const rel of targets) {
+    it(`${rel} imports nothing`, () => {
+      const specs = importedSpecifiers(readFileSync(join(SITE_ROOT, rel), 'utf-8'));
       expect(
-        offenders,
-        `${rel} states in its own docstring that it has no imports, and the `
-          + `private-path guard depends on that: a throw anywhere in a new `
-          + `dependency chain takes every .env and private-tree probe down `
-          + `during collection, reporting "Tests no tests" rather than a `
-          + `publishing failure. If this module genuinely needs an import, the `
-          + `guard needs re-checking first, and the docstring needs correcting `
-          + `either way`,
+        specs,
+        `${rel} is statically imported by ${GUARD}, so it must import nothing: a `
+          + `throw anywhere in a dependency chain takes every private-tree probe `
+          + `down during COLLECTION, reporting "Tests no tests" rather than a `
+          + `publishing failure. If this module genuinely needs an import, change `
+          + `the guard to reach it dynamically instead, the way it reaches the `
+          + `parser`,
       ).toEqual([]);
     });
   }
