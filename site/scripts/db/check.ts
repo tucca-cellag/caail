@@ -211,7 +211,7 @@ export function checkAxisBijection(db: Db, repoRoot: string = REPO_ROOT): CheckR
   const keyless = (db.prepare("SELECT slug FROM topics WHERE tier='theme' AND area_key IS NULL").all() as { slug: string }[])
     .map((r) => r.slug);
   out.push(ok('axes: every subject theme names a research area', keyless.length === 0,
-    `themes with a null area_key: [${keyless.join(', ')}] — every theme names a research area by design, so a theme without a column reopens a settled decision rather than adding one. Give it an area_key, or reopen the axis model deliberately.`));
+    `themes with a null area_key: [${keyless.join(', ')}] — every theme names a research area by design, so a theme without a column reopens a settled decision rather than adding one. The reasoning is the "Cross-cutting subject" entry in CONTEXT.md, which is its one resolvable home in this tree. Give it an area_key, or change the axis model deliberately.`));
 
   // 2. Every research area is named by exactly one theme.
   const areaKeys = (db.prepare('SELECT key FROM areas ORDER BY ordinal').all() as { key: string }[]).map((r) => r.key);

@@ -61,6 +61,7 @@ on:
       # unreachable from CI.
       - .gitignore
       - .worktreeinclude
+      - .env.example
       # The citation record. Two suites read it and fail when a copy of it drifts:
       # project-name.test.ts, which pins the title, and topic-curators.test.ts, which
       # checks a curator's name and ORCID belong to one author in it. Both were
@@ -163,6 +164,7 @@ on:
       # unreachable from CI.
       - .gitignore
       - .worktreeinclude
+      - .env.example
       # The citation record. Two suites read it and fail when a copy of it drifts:
       # project-name.test.ts, which pins the title, and topic-curators.test.ts, which
       # checks a curator's name and ORCID belong to one author in it. Both were

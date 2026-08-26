@@ -32,7 +32,7 @@ in `lint-papers.yml` and `.claude/skills/caail-pr-wrapup/**` is in `guards.yml`,
 `contribute-form.test.ts` reads its `SKILL.md` as input, and `pnpm parse` aborts when that skill and the
 issue templates disagree.
 
-**The check-free list, which lives here and nowhere else** (one entry is currently dormant; see the end of this paragraph) (`SKILL.md` step 5 points at it rather
+**The check-free list, which lives here and nowhere else** (`SKILL.md` step 5 points at it rather
 than restating it, because the enumeration has already been wrong in both directions once each):
 `.claude/` rules and agents, the four unfiltered `.claude/skills/*` directories named above,
 `LICENSE`, `.zenodo.json`, and two of the three plugin manifests
@@ -44,7 +44,7 @@ check-free: `plugin-contribute/**` is filtered whole, so everything under it run
 in `ship-pr.sh`'s `TEST_PATHS`, so a `.gitignore`-only PR runs the full vitest and Playwright
 suites. They earn that: `site/scripts/private-paths.test.ts` and `canonical-files.test.ts` both
 assert against them and would otherwise be unreachable from CI on the one edit most likely to
-break them. `docs/**` is still genuinely check-free and is omitted above only because the
+break them. One entry is deliberately absent from that list rather than dormant in it: `docs/**` is still genuinely check-free, and is omitted only because the
 directory no longer exists; recreate it and this list needs the entry back. On what `preflight` reads, see the lede above; on how current it
 is, the paragraph after it, on `check-ci-paths.py`. Neither is restated here. When a check you expected is missing, open the workflow. `.claude/hooks/**` and
 `.claude/settings.json` trigger **both** `test.yml` and `guards.yml`, because the two hooks are tested
