@@ -61,6 +61,11 @@ on:
       # unreachable from CI.
       - .gitignore
       - .worktreeinclude
+      # .env.example, for a DIFFERENT reason than the two above: the
+      # publishable set asserts every one of its entries exists on disk,
+      # and this is one of them. Without a filter here, renaming or
+      # deleting it in a PR touching nothing else merges green and hands
+      # the red suite to the next unrelated site/** change.
       - .env.example
       # The citation record. Two suites read it and fail when a copy of it drifts:
       # project-name.test.ts, which pins the title, and topic-curators.test.ts, which
@@ -164,6 +169,11 @@ on:
       # unreachable from CI.
       - .gitignore
       - .worktreeinclude
+      # .env.example, for a DIFFERENT reason than the two above: the
+      # publishable set asserts every one of its entries exists on disk,
+      # and this is one of them. Without a filter here, renaming or
+      # deleting it in a PR touching nothing else merges green and hands
+      # the red suite to the next unrelated site/** change.
       - .env.example
       # The citation record. Two suites read it and fail when a copy of it drifts:
       # project-name.test.ts, which pins the title, and topic-curators.test.ts, which

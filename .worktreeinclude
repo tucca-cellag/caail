@@ -34,4 +34,13 @@
 # checkout nor git, and caail-pr-wrapup's cleanup deletes the worktree with the
 # edit still in it. Two parallel worktrees each get an independent snapshot with
 # no merge path. Write to the main checkout.
+# WHAT THIS WIDENS, stated because it is a deliberate trade rather than an
+# oversight. This rule copies the tree into EVERY worktree the harness creates,
+# which includes the short-lived ones spawned for subagents, not only the ones a
+# person opens. Before it, a subagent worktree had no copy and could not read the
+# tree at all. The publishing rule notes that subagents cross trust boundaries
+# silently, and the publish guard covers `gh issue/pr/release/gist` only, so a
+# commit message or a branch name is not on that path. The trade was made because
+# a worktree session could otherwise not reach the working documentation at all,
+# and worktrees are this repo's normal working shape.
 /internal-docs/

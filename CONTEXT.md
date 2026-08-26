@@ -17,7 +17,7 @@ can resolve them, and whether an always-loaded public file should carry them is 
 argument that belongs on the tracker rather than here. A glossary that states a decided end-state as present fact tells a
 reader the work is already done.
 
-**Every count below is a snapshot taken 2026-08-20, except where a line carries its own later date.** Their source is `site/db/ndjson/`, with one exception: the number of pages in `ResearchAreas/` is a filesystem count that no NDJSON file carries, so a disagreement about that one is settled by `ls`, not by the DB. `areas.ndjson`,
+**Every count below is a snapshot taken 2026-08-20, except where a line carries its own later date.** Their source is `site/db/ndjson/`, with one exception: the number of pages in `ResearchAreas/` is a filesystem count that no NDJSON file carries, so a disagreement about that one is settled against the directory rather than the DB. Not by a bare `ls`, which returns nine: the figure counts PUBLISHED pages, and `isPublishedMarkdown` drops `CLAUDE.md` and any `*.local.md` beside them. `areas.ndjson`,
 `topics.ndjson`, `item_topics.ndjson` and `matrix_cells.ndjson` are the source of truth: where a
 number here disagrees with them, they are right and this file is stale. **No one command prints
 all of these.** `pnpm --dir site db:check` prints the theme assertions, including that there are
