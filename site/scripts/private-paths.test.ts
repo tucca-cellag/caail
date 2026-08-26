@@ -73,8 +73,18 @@ const REPO_ROOT = fileURLToPath(new URL('../../', import.meta.url));
  * during COLLECTION. Measured: the run reports `Tests no tests` and an ENOENT
  * naming the directory, and not one of the private-tree probes executes. The run
  * is red, so CI does catch it, but every probe is gone and the message sends the
- * reader after a missing folder rather than a publishing regression. On `main`
- * this file had no project imports at all and could not be taken down this way.
+ * reader after a missing folder rather than a publishing regression.
+ *
+ * WHAT THIS DOES NOT BUY, stated because the first version of this comment
+ * claimed more than the change achieves. Laziness defers the `readdirSync`
+ * calls; it does not defer MODULE EVALUATION. The eager
+ * `import { llmsFullSources } from './parser/llms-full.js'` above still pulls in
+ * that module and its own transitive imports, so a top-level throw anywhere in
+ * that chain reproduces `Tests no tests` exactly as before. On `main` this file
+ * imported nothing from the project and could not be reached at all; it can
+ * still be reached now, just not by the specific route that was measured. Fully
+ * closing it means the guard importing no project module, which is a larger
+ * change than this branch should carry.
  */
 let llmsFullCache: string[] | undefined;
 function llmsFull(): string[] {
@@ -243,8 +253,16 @@ function mustStayPublishable(): string[] {
   // It is not a last-match-wins question. A bare `docs/` excludes the
   // DIRECTORY, so git never descends to consider the deeper pattern, which is
   // the same short-circuit that hides a companion inside a wholly-ignored tree
-  // from `.worktreeinclude`. So this list's blind spot is narrower than it
-  // looks: it sees nothing under `docs/`, but the pin does.
+  // from `.worktreeinclude`.
+  //
+  // A THIRD DRAFT OF THIS SENTENCE, after two guessed and both were wrong, so
+  // this one was measured in a scratch repo rather than reasoned about. With
+  // `.gitignore` = `docs/`, check-ignore reports
+  // `.gitignore:1:docs/\tsite/src/content/docs/privacy.mdx`. Two entries in this
+  // very list live under a directory named `docs`, so the batch check DOES go
+  // red on a bare `docs/` rule. The draft this replaces said the opposite, which
+  // would have told anyone later moving those two entries that they were
+  // removing coverage that did not exist.
   ];
   return publishableCache;
 }
@@ -318,11 +336,35 @@ describe('attributing an ignore rule to this repo or to the developer', () => {
       inRepo: false,
       why: 'a per-clone exclude file, which is not a .gitignore at all',
     },
+    {
+      line: 'C:/Users/someone/.gitignore:1:Papers.md\tPapers.md',
+      inRepo: false,
+      why: 'a Windows personal excludes file, which has NO leading slash',
+    },
   ];
 
   for (const { line, inRepo, why } of cases) {
     it(`${inRepo ? 'claims' : 'disclaims'} ${why}`, () => {
       expect(isInRepoGitignore(line), why).toBe(inRepo);
+    });
+  }
+
+  // THE PATTERN HALF, on the same shapes, because the two questions were once
+  // answered by two different splits in one module: it handled a Windows drive
+  // letter in the source test and broke on it in the pattern test, fifteen lines
+  // apart. A fixed-index split on `:` returns `1:!probe` there, which does not
+  // start with `!`, so the NEGATION check passes a path a rule has un-ignored.
+  // The exit code cannot see that either, which is why the pattern is read at all.
+  const patterns: Array<{ line: string; pattern: string; why: string }> = [
+    { line: '.gitignore:53:!.env.example\t.env.example', pattern: '!.env.example', why: 'a negation in the root file' },
+    { line: 'site/.gitignore:2:dist/\tsite/dist/x', pattern: 'dist/', why: 'a nested file' },
+    { line: 'C:/Users/x/.gitignore:1:!probe\tprobe', pattern: '!probe', why: 'a source carrying its own colon' },
+    { line: 'not a check-ignore line', pattern: '', why: 'a line of the wrong shape' },
+  ];
+
+  for (const { line, pattern, why } of patterns) {
+    it(`reads the pattern from ${why}`, () => {
+      expect(patternOf(line), why).toBe(pattern);
     });
   }
 });
@@ -441,10 +483,26 @@ describe('.worktreeinclude delivers what a worktree needs', () => {
         + 'about that: measure the replacement in a fresh worktree before '
         + 'trusting it, because a file glob cannot reach inside a wholly-ignored '
         + 'directory and would look right while delivering nothing',
-    ).toContain('/internal-docs/');
+      // NOT a second hand-typed copy: the same string the gitignore pin uses, so
+      // renaming the tree cannot leave this assertion green against a stale
+      // literal while the ignore probe fails elsewhere, splitting one failure
+      // into two that look unrelated.
+    ).toContain(PRIVATE_TREES[0].pattern);
   });
+});
 
-  it('has a non-trivial publishable set to check', () => {
+describe('the build\'s published content is not swallowed', () => {
+  // A THIRD describe, and the boundary matters for triage rather than tidiness.
+  // These two are the PUBLICATION guards: they fail when a .gitignore rule has
+  // widened and is eating content the build serves. An earlier attempt to split
+  // the worktree-delivery assertion out of the private-trees block moved the
+  // boundary without checking what fell inside it, so both of these ended up
+  // under '.worktreeinclude delivers what a worktree needs', whose own comment
+  // tells a triaging reviewer that a red run there carries no publication risk.
+  // That is the exact inversion the split was made to prevent, pointed the other
+  // way: the heading was reassuring about the one failure here that is not.
+
+  it('derives a publishable set that is non-empty, complete and real', () => {
     const publishable = mustStayPublishable();
 
     // WHY THIS EXISTS: everything below is derived, and an empty list would pass
@@ -576,8 +634,12 @@ describe('.worktreeinclude delivers what a worktree needs', () => {
     // after a regression that does not exist.
     // Which lines count as in-repo is isInRepoGitignore's business, and both
     // directions are pinned in its own test rather than only through this one.
-    const fromRepo = matched.filter(isInRepoGitignore);
-    const fromElsewhere = matched.filter((l) => !isInRepoGitignore(l));
+    // ONE pass, so the halves are complementary by construction. Two filters,
+    // one negated, is how the second-copy divergence this file spent four
+    // commits closing began: the predicate changes in one and not the other.
+    const fromRepo: string[] = [];
+    const fromElsewhere: string[] = [];
+    for (const l of matched) (isInRepoGitignore(l) ? fromRepo : fromElsewhere).push(l);
 
     // SOFT, so BOTH report. A hard expect on the first throws and the second
     // never runs, which is the failure this file's probe loop was written as

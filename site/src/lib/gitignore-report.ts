@@ -1,49 +1,65 @@
 /**
  * gitignore-report.ts — reading `git check-ignore -v` output.
  *
- * ONE home for this parse, after three hand-rolled copies of it disagreed. The
- * output shape is `<source>:<line>:<pattern>\t<pathname>`, and two questions get
- * asked of it: what the pattern was, and whether the source is a file in THIS
- * repo rather than something on the developer's machine.
+ * ONE home for this parse, after three hand-rolled copies of it disagreed, and
+ * ONE field split inside it, after the first version of this module disagreed
+ * with ITSELF: it handled a Windows drive letter in `isInRepoGitignore` and
+ * broke on it in `patternOf`, fifteen lines apart.
  *
- * Each of the copies got the second question wrong in a different direction, and
- * each wrong answer sends the reader somewhere useless:
+ * The output shape is `<source>:<line>:<pattern>\t<pathname>`, and the source
+ * may itself contain a colon (`C:/Users/x/.gitignore`), so the fields cannot be
+ * recovered by splitting on `:` and taking a fixed index.
  *
- *   - Too narrow (`startsWith('.gitignore:')`) files a real in-repo regression
- *     in a NESTED gitignore under "your local git config is hiding published
- *     content from you".
- *   - Too wide (`/(^|\/)\.gitignore:\d+:/`, written to fix that) puts a personal
- *     `core.excludesFile` back under "a rule in this repo has been widened",
- *     which is the misdirection the split existed to prevent.
+ * Two questions get asked of a line, and each has been answered wrongly here:
  *
- * No imports, and the closure must stay clear of anything framework-shaped: the
- * caller is the guard that proves `.env` and the private trees are gitignored,
- * and it should not be takeable down by an unrelated module.
+ *   - WHAT PATTERN MATCHED. Needed because a NEGATION (`!.env.example`) matches
+ *     and prints while leaving the path publishable, so the exit code alone is
+ *     unusable. A fixed-index split returned `1:!internal-docs/probe` on Windows,
+ *     which does not start with `!`, so the negation check silently passed a path
+ *     a rule had un-ignored.
+ *   - WHETHER THE SOURCE IS IN THIS REPO. Too narrow (`startsWith('.gitignore:')`)
+ *     files a real in-repo regression in a NESTED gitignore under "your local git
+ *     config is hiding published content from you". Too wide (matching anywhere in
+ *     the line, written to fix that) puts a personal `core.excludesFile` back under
+ *     "a rule in this repo has been widened", the misdirection the split prevents.
+ *
+ * No imports. Asserted by a test rather than only stated here, because a
+ * constraint written in prose is documented and not mitigated.
  */
+
+/** `<source>` and `<pattern>` for one line, or null if it is not that shape. */
+function fields(line: string): { source: string; pattern: string } | null {
+  const field = line.split('\t')[0];
+  if (!field) return null;
+  // LAZY source, so the FIRST `:<digits>:` wins. Greedy takes the LAST, which a
+  // pattern containing `:12:` would hijack; lazy stops at the real line number.
+  // Either way this is what lets the source carry its own colon.
+  const m = /^(.*?):(\d+):(.*)$/.exec(field);
+  return m ? { source: m[1], pattern: m[3] } : null;
+}
 
 /** The pattern from a `check-ignore -v` line, e.g. `/internal-docs/`. */
 export function patternOf(line: string): string {
-  if (!line) return '';
-  return line.split('\t')[0].split(':').slice(2).join(':');
+  return fields(line)?.pattern ?? '';
 }
 
 /**
  * Is the reporting source a `.gitignore` inside this repository?
  *
  * git prints an in-repo ignore file as a REPO-RELATIVE path and anything else
- * absolute, so absoluteness is the discriminator rather than the filename.
+ * absolute, so ABSOLUTENESS is the discriminator rather than the filename. A
+ * leading-slash test alone is not absoluteness: Git for Windows reports a
+ * personal excludes file as `C:/Users/x/.gitignore`, which has no leading slash
+ * and would land straight back in the in-repo bucket.
  *
  * `.git/info/exclude` is deliberately false: it is a per-clone exclude file, so
- * it guarantees nothing for anyone else, which is the property the caller is
- * actually asking about.
+ * it guarantees nothing for anyone else, which is the property the caller asks.
  */
 export function isInRepoGitignore(line: string): boolean {
-  const source = line.split('\t')[0] ?? '';
-  // POSIX absolute, plus the Windows shapes `C:/Users/...` and `\\server\share`.
-  // Git for Windows reports a personal excludes file with a drive letter, which
-  // has no leading slash, so a leading-slash test alone silently reclassifies it
-  // as in-repo and reintroduces the exact misattribution this function prevents.
+  const f = fields(line);
+  if (!f) return false;
+  const { source } = f;
   if (source.startsWith('/') || source.startsWith('\\')) return false;
   if (/^[A-Za-z]:[/\\]/.test(source)) return false;
-  return /(^|\/)\.gitignore:\d+:/.test(line);
+  return /(^|\/)\.gitignore$/.test(source);
 }
