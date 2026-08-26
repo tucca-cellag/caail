@@ -154,23 +154,33 @@ const MUST_STAY_PUBLISHABLE = [
   //   llmsFullSources()          what is inlined into the served llms-full.txt
   //   CANONICAL_SOURCES          what the docs loader turns into site routes
   //
-  // Taxonomy.md is the case that proves the union is needed: it is a published
-  // route and the trusted definition source for every matrix row and column,
-  // and it is NOT in llms-full's list. A draft of this comment claimed a rule
-  // swallowing Taxonomy.md would be caught. It would not have been, and losing
-  // that file silently takes /taxonomy/ and every definition with it.
+  // TWO files are loader-only, not one: Taxonomy.md and
+  // AIAgentsFoundationModels.md. Both are published routes and neither is in
+  // llms-full's list. A draft of this comment claimed a rule swallowing
+  // Taxonomy.md would be caught; it would not have been, and losing that file
+  // silently takes /taxonomy/ and every row and column definition with it.
+  //
+  // Worth knowing separately, and NOT fixed here: because they are loader-only,
+  // the served llms-full.txt omits both, while its own header calls itself the
+  // library's full text. That is pre-existing; this is just the first thing to
+  // compute the difference between the two enumerations. Do not read the gap as
+  // a single known exception.
   ...new Set([
     ...llmsFullSources(REPO_ROOT),
     ...CANONICAL_SOURCES.files,
+    // Both of these are INSIDE the Set, not appended after it, so adding
+    // either to llmsFullSources() later (a natural change for the privacy
+    // page) does not trip the no-duplicates assertion on a correct edit.
+    //
+    // privacy.mdx: a route rather than corpus, in neither list. Losing it
+    // silently is a compliance problem rather than a content one.
+    'site/src/content/docs/privacy.mdx',
+    // .env.example: the negation case, and the reason checkIgnore cannot use
+    // the exit code alone. `!.env.example` MATCHES and exits 0 while leaving
+    // the file publishable, so this entry fails on a correct repo under any
+    // exit-code-only reading. It is the regression test for that hole.
+    '.env.example',
   ]),
-  // A route rather than corpus, in neither list. Losing it silently is a
-  // compliance problem rather than a content one.
-  'site/src/content/docs/privacy.mdx',
-  // The negation case, and the reason checkIgnore cannot use the exit code
-  // alone. `!.env.example` MATCHES and exits 0 while leaving the file
-  // publishable, so this entry fails on a correct repo under any
-  // exit-code-only reading. It is the regression test for that hole.
-  '.env.example',
 
   // DELIBERATELY NOT LISTED: anything under docs/, which no longer exists. An
   // earlier draft probed two files there to catch a rule widened to a bare
@@ -325,7 +335,7 @@ describe('the private working trees stay out of the public repo', () => {
     expect(
       rules,
       '.worktreeinclude lost its internal-docs/ directory rule, so a worktree '
-        + 'session can no longer reach the decision records',
+        + 'session can no longer reach the working-documentation tree',
     ).toContain('/internal-docs/');
   });
 
@@ -347,7 +357,12 @@ describe('the private working trees stay out of the public repo', () => {
     // dirMarkdown call would remove a whole directory from the guard with
     // nothing failing: Primers/ is 3 pages, so the total falls well inside a
     // `> 50` floor and a single Methods/ probe never notices.
-    for (const dir of [...CANONICAL_SOURCES.dirs, 'Primers']) {
+    // A FIXED list, deliberately not derived from CANONICAL_SOURCES.dirs.
+    // Deriving the expectation from one of the two things being guarded means
+    // removing a directory there silently shrinks this check: llms-full would
+    // still contribute its pages, the floor would still pass, and nothing goes
+    // red. This is the property being asserted, so it is stated.
+    for (const dir of ['Datasets', 'ResearchAreas', 'Methods', 'Primers']) {
       expect(
         MUST_STAY_PUBLISHABLE.some((p) => p.startsWith(`${dir}/`)),
         `${dir}/ contributes nothing to the publishable set, so a rule `
@@ -391,8 +406,14 @@ describe('the private working trees stay out of the public repo', () => {
     // .git/info/exclude would get a red run blaming the repo's .gitignore,
     // while CI (which has no such file) stayed green. That sends the reviewer
     // after a regression that does not exist.
-    const fromRepo = matched.filter((l) => l.startsWith('.gitignore:'));
-    const fromElsewhere = matched.filter((l) => !l.startsWith('.gitignore:'));
+    // ANY .gitignore in the repo, not just the root one. A nested file reports
+    // with its path prefix (`site/.gitignore:2:dist/`), and two guarded paths
+    // live under site/, so matching the bare name would file a real in-repo
+    // regression under "your machine is misconfigured" and send the reviewer
+    // away from it. Measured, not assumed.
+    const IN_REPO = /(^|\/)\.gitignore:\d+:/;
+    const fromRepo = matched.filter((l) => IN_REPO.test(l));
+    const fromElsewhere = matched.filter((l) => !IN_REPO.test(l));
 
     expect(
       fromRepo,

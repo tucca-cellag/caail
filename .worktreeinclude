@@ -28,4 +28,10 @@
 # Verified in a fresh worktree rather than inferred: the tree arrives with this
 # line and does not without it. Do not "simplify" this to a glob; it would keep
 # looking like a rule for the same thing while delivering nothing.
+#
+# TREAT THE COPY AS READ-ONLY. It is a one-way snapshot, not a link. The tree is
+# gitignored, so an edit made inside a worktree reaches neither the main
+# checkout nor git, and caail-pr-wrapup's cleanup deletes the worktree with the
+# edit still in it. Two parallel worktrees each get an independent snapshot with
+# no merge path. Write to the main checkout.
 /internal-docs/
