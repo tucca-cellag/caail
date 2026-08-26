@@ -47,7 +47,11 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { llmsFullSources } from './parser/llms-full.js';
-import { CANONICAL_SOURCES } from '../src/content/loaders/caail-docs-loader.js';
+// The PURE module, deliberately not the loader: importing it from the loader
+// pulled `astro/loaders` into this guard, so an unrelated Astro breakage
+// would take down the check that proves .env is gitignored.
+import { CANONICAL_SOURCES } from '../src/content/canonical-sources.js';
+import { worktreeIncludeRules } from '../src/lib/canonical-files.js';
 
 /** scripts/ → site/ → repo root. */
 const REPO_ROOT = fileURLToPath(new URL('../../', import.meta.url));
@@ -61,8 +65,12 @@ const REPO_ROOT = fileURLToPath(new URL('../../', import.meta.url));
  * silently ignored and vanishes from the build. Under a source-only assertion
  * ("some line in .gitignore matched") every probe would still pass, which is
  * why the pattern is pinned; with the pin, that edit fails here immediately.
- * `manuscript/` is deliberately recorded as unanchored, which is its current
- * state rather than an endorsement of it.
+ * `manuscript/` and `tools/` are deliberately recorded as unanchored, which is
+ * their current state rather than an endorsement of it. Unanchored means ANY
+ * directory of that name at any depth is ignored, so a future `site/scripts/
+ * tools/` would be swallowed on creation with every check green: nothing under
+ * `site/scripts/` is in the publishable set, so no guard here would see it.
+ * Anchoring them is a behaviour change and therefore a decision, not a tidy-up.
  */
 const PRIVATE_TREES = [
   { root: 'internal-docs/', pattern: '/internal-docs/' },
@@ -220,7 +228,31 @@ const MUST_STAY_PUBLISHABLE = [
  */
 function patternOf(line: string): string {
   if (!line) return '';
-  return (line.split('\t')[0] ?? '').split(':').slice(2).join(':');
+  return line.split('\t')[0].split(':').slice(2).join(':');
+}
+
+/**
+ * Is this `check-ignore -v` line attributable to a `.gitignore` IN THIS REPO?
+ *
+ * Two things have to be true at once, and each was bought with a defect on this
+ * branch. It has to accept a NESTED gitignore, which reports with its path
+ * prefix (`site/.gitignore:2:dist/`), because two guarded paths live under
+ * `site/` and matching only the bare name filed a real in-repo regression under
+ * "your machine is misconfigured". And it has to reject a source OUTSIDE the
+ * repo, because a personal `core.excludesFile` produces an ABSOLUTE path
+ * (`/Users/x/.gitignore:1:Papers.md`) and blaming that on the repo sends the
+ * reader after a regression that does not exist while CI stays green.
+ *
+ * The discriminator is the leading slash: git prints an in-repo ignore file as
+ * a repo-relative path and an external one absolute. A pattern widened to admit
+ * the nested case without that test admits the external case too, which is
+ * exactly what happened here: the fix for the first defect reintroduced the
+ * second. Measured both directions in the sibling unit test rather than reasoned
+ * about, because that is how the reintroduction was found.
+ */
+function isInRepoGitignore(line: string): boolean {
+  if (line.startsWith('/')) return false;
+  return /(^|\/)\.gitignore:\d+:/.test(line);
 }
 
 /** `<source>:<line>:<pattern>\t<pathname>` */
@@ -254,6 +286,51 @@ function checkIgnore(path: string) {
   const negated = pattern.startsWith('!');
   return { matched: res.status === 0 && !negated, out, pattern };
 }
+
+describe('attributing an ignore rule to this repo or to the developer', () => {
+  // BOTH DIRECTIONS, because this predicate has now been wrong in each of them
+  // on this branch, and each wrong answer sends the reader somewhere useless.
+  //
+  // Too narrow (`startsWith('.gitignore:')`) filed a real in-repo regression in
+  // a nested gitignore under "your local git config is hiding published content
+  // from you". Too wide (`/(^|\/)\.gitignore:\d+:/`, the fix for that) put a
+  // developer's personal core.excludesFile back under "a rule in this repo has
+  // been widened", which is the misdirection the split was added to prevent.
+  //
+  // The second was introduced BY the fix for the first and survived four review
+  // rounds, so the shape is pinned here rather than exercised only through the
+  // batch check, where it is reachable only on a machine that happens to carry
+  // one of these paths in a personal exclude file. CI has no such file, so CI
+  // can never reach it.
+  const cases: Array<{ line: string; inRepo: boolean; why: string }> = [
+    {
+      line: '.gitignore:9:/internal-docs/\tinternal-docs/x',
+      inRepo: true,
+      why: 'the root .gitignore, reported repo-relative',
+    },
+    {
+      line: 'site/.gitignore:2:dist/\tsite/dist/x',
+      inRepo: true,
+      why: 'a NESTED in-repo .gitignore, reported with its path prefix',
+    },
+    {
+      line: '/Users/someone/.gitignore:1:Papers.md\tPapers.md',
+      inRepo: false,
+      why: 'a personal core.excludesFile, reported as an ABSOLUTE path',
+    },
+    {
+      line: '.git/info/exclude:1:Papers.md\tPapers.md',
+      inRepo: false,
+      why: 'a per-clone exclude file, which is not a .gitignore at all',
+    },
+  ];
+
+  for (const { line, inRepo, why } of cases) {
+    it(`${inRepo ? 'claims' : 'disclaims'} ${why}`, () => {
+      expect(isInRepoGitignore(line), why).toBe(inRepo);
+    });
+  }
+});
 
 describe('the private working trees stay out of the public repo', () => {
   // One `it` per probe rather than a loop, so a run that breaks two rules
@@ -328,10 +405,9 @@ describe('the private working trees stay out of the public repo', () => {
     // wholly-ignored directory (that is why *.local.md does not deliver a
     // companion placed in one), so "tidying" this to a glob would silently
     // stop delivering the tree while still looking like a rule for it.
-    const rules = readFileSync(join(REPO_ROOT, '.worktreeinclude'), 'utf-8')
-      .split('\n')
-      .map((l) => l.trim())
-      .filter((l) => l && !l.startsWith('#'));
+    const rules = worktreeIncludeRules(
+      readFileSync(join(REPO_ROOT, '.worktreeinclude'), 'utf-8'),
+    );
     expect(
       rules,
       '.worktreeinclude lost its internal-docs/ directory rule, so a worktree '
@@ -340,17 +416,36 @@ describe('the private working trees stay out of the public repo', () => {
   });
 
   it('has a non-trivial publishable set to check', () => {
-    // A FLOOR, because everything below is derived and an empty list would
-    // pass asserting nothing: `check-ignore --stdin` on no input exits 1 with
-    // empty stdout, which is the passing case. Narrow either source enumeration
-    // and the guard silently shrinks with it. The numbers are deliberately not
-    // written down; this asserts the shape, not the count.
-    expect(MUST_STAY_PUBLISHABLE.length).toBeGreaterThan(50);
-    // Both sources actually contributed, so dropping one is caught rather than
-    // absorbed. Taxonomy.md comes only from the loader, Papers.md only from
-    // llms-full.
-    expect(MUST_STAY_PUBLISHABLE).toContain('Taxonomy.md');
-    expect(MUST_STAY_PUBLISHABLE).toContain('Papers.md');
+    // WHY THIS EXISTS: everything below is derived, and an empty list would pass
+    // asserting nothing, because `check-ignore --stdin` on no input exits 1 with
+    // empty stdout, which is the passing case.
+    //
+    // It used to be a hand-typed `> 50` under a comment claiming "the numbers
+    // are deliberately not written down". Both halves were wrong: the number was
+    // written down, and it had roughly fifteen of slack, so dropping Datasets/
+    // (13 pages) still passed it. Derived instead, from the two enumerations
+    // themselves, so it cannot go stale as the corpus grows.
+    const fromLlmsFull = llmsFullSources(REPO_ROOT);
+    const fromLoader = CANONICAL_SOURCES.files;
+
+    // Each source is non-empty. This is what the floor was actually protecting
+    // against, and it says so directly rather than through a proxy count.
+    expect(fromLlmsFull.length, 'llmsFullSources() enumerated nothing').toBeGreaterThan(0);
+    expect(fromLoader.length, 'CANONICAL_SOURCES.files is empty').toBeGreaterThan(0);
+
+    // EVERY file from each source survives into the union. The previous version
+    // probed one literal per source (Taxonomy.md for the loader, Papers.md for
+    // llms-full) and reasoned that this proved both contributed. It did not: the
+    // two enumerations already overlap on five files, so the moment Taxonomy.md
+    // is added to llmsFullSources() (the natural fix for the gap noted above)
+    // the entire CANONICAL_SOURCES half could be deleted with both probes still
+    // green. Containment has no such hole.
+    for (const f of fromLlmsFull) {
+      expect(MUST_STAY_PUBLISHABLE, `${f} reached the union from llms-full and was lost`).toContain(f);
+    }
+    for (const f of fromLoader) {
+      expect(MUST_STAY_PUBLISHABLE, `${f} reached the union from the docs loader and was lost`).toContain(f);
+    }
 
     // EVERY canonical directory, not just one. llmsFullSources expands these
     // itself, and the union spreads only CANONICAL_SOURCES.files, so a dropped
@@ -370,9 +465,12 @@ describe('the private working trees stay out of the public repo', () => {
       ).toBe(true);
     }
 
-    // No duplicates, so the floor measures real coverage and a swallowed path
-    // is reported once rather than twice.
-    expect(new Set(MUST_STAY_PUBLISHABLE).size).toBe(MUST_STAY_PUBLISHABLE.length);
+    // NO no-duplicates assertion here, deliberately. MUST_STAY_PUBLISHABLE is
+    // built by spreading a Set, so `new Set(x).size === x.length` holds for
+    // every possible input including one where both enumerations collapsed to
+    // a single element. It read as load-bearing and could never fail. The two
+    // enumerations genuinely do overlap (five files are in both), so the Set is
+    // doing real work; asserting the result of it is asserting nothing.
   });
 
   it('does not over-match and swallow anything the build publishes', () => {
@@ -394,9 +492,6 @@ describe('the private working trees stay out of the public repo', () => {
     const matched = (res.stdout ?? '')
       .split('\n')
       .filter((l) => l.trim())
-      // A NEGATION matches and prints while leaving the path publishable, so
-      // filter those out rather than treating any output as failure. Same `!`
-      // that makes the exit code alone unusable in checkIgnore above.
       .filter((l) => !patternOf(l).startsWith('!'));
 
     // SPLIT BY SOURCE before asserting. checkIgnore pins `.gitignore:` for
@@ -406,14 +501,10 @@ describe('the private working trees stay out of the public repo', () => {
     // .git/info/exclude would get a red run blaming the repo's .gitignore,
     // while CI (which has no such file) stayed green. That sends the reviewer
     // after a regression that does not exist.
-    // ANY .gitignore in the repo, not just the root one. A nested file reports
-    // with its path prefix (`site/.gitignore:2:dist/`), and two guarded paths
-    // live under site/, so matching the bare name would file a real in-repo
-    // regression under "your machine is misconfigured" and send the reviewer
-    // away from it. Measured, not assumed.
-    const IN_REPO = /(^|\/)\.gitignore:\d+:/;
-    const fromRepo = matched.filter((l) => IN_REPO.test(l));
-    const fromElsewhere = matched.filter((l) => !IN_REPO.test(l));
+    // Which lines count as in-repo is isInRepoGitignore's business, and both
+    // directions are pinned in its own test rather than only through this one.
+    const fromRepo = matched.filter(isInRepoGitignore);
+    const fromElsewhere = matched.filter((l) => !isInRepoGitignore(l));
 
     expect(
       fromRepo,

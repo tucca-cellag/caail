@@ -57,33 +57,12 @@ import { relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { CAAIL_PAGES } from '../caail-pages.ts';
 import { privateCompanionGlobExclusions } from '../../lib/canonical-files.ts';
+// Re-exported below so existing importers of this module keep working.
+import { CANONICAL_SOURCES } from '../canonical-sources.ts';
 
 // content/loaders/ -> content/ -> src/ -> site/ -> repo root
 const REPO_ROOT = new URL('../../../../', import.meta.url);
 
-/**
- * Canonical source files to ingest, as paths relative to the repo root.
- *
- *   - Every top-level `*.md` in `dirs` is considered (enumerated with
- *     `fs.readdir` — no extra glob dependency needed).
- *   - `files` lists individual top-level files.
- *
- * Each candidate is resolved to a route id via `CAAIL_PAGES.idForSourcePath`;
- * any file whose id has no `CAAIL_PAGES` entry (e.g. the `CLAUDE.md` files in
- * those directories) is skipped, so the directory scan is allowed to be broad.
- */
-export const CANONICAL_SOURCES = {
-  dirs: ['ResearchAreas', 'Methods', 'Datasets'],
-  files: [
-    'CONTRIBUTING.md',
-    'OtherResources.md',
-    'Taxonomy.md',
-    'AIAgentsFoundationModels.md',
-    'ReferenceWorks.md',
-    'Funding.md',
-    'Community.md',
-  ],
-} as const;
 
 /**
  * Glob for the in-repo Starlight docs.
@@ -218,3 +197,4 @@ export function caailDocsLoader(): Loader {
   };
 }
 
+export { CANONICAL_SOURCES };

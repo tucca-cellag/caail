@@ -24,6 +24,7 @@ import {
   isPublishedMarkdown,
   isPrivateCompanion,
   PRIVATE_COMPANION_SUFFIXES,
+  worktreeIncludeRules,
 } from '../../src/lib/canonical-files.js';
 import { llmsFullSources } from './llms-full.js';
 import { computeCounts } from './counts.js';
@@ -154,11 +155,9 @@ describe('the ignore rules and the predicate agree on what a companion is', () =
     // The third copy. Without this a suffix could be added to the predicate
     // and .gitignore, and companions at it would silently stop being copied
     // into new worktrees — first noticed by a curator losing a file.
-    const src = readFileSync(join(REPO_ROOT, '.worktreeinclude'), 'utf-8');
-    const lines = src
-      .split('\n')
-      .map((l) => l.trim())
-      .filter((l) => l && !l.startsWith('#'));
+    const lines = worktreeIncludeRules(
+      readFileSync(join(REPO_ROOT, '.worktreeinclude'), 'utf-8'),
+    );
     for (const suffix of PRIVATE_COMPANION_SUFFIXES) {
       expect(lines, `.worktreeinclude has no rule covering ${suffix}`).toContain(`*${suffix}`);
     }
