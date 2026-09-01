@@ -145,57 +145,57 @@ describe('the ignore rules and the predicate agree on what a companion is', () =
   ]);
 
   it.each(probes)('git ignores a companion at %s', (probe) => {
-      // -v, and the SOURCE is asserted, not just the match. With -q alone this
-      // proves only that SOMETHING ignores the probe: a contributor carrying
-      // `*.local.md*` in ~/.config/git/ignore or .git/info/exclude could delete
-      // the committed rule, run this suite, see green and push, and only CI
-      // would catch it. Not hypothetical: this repo's own .git/info/exclude
-      // already carries a rule that masked the `.env` case in
-      // scripts/private-paths.test.ts, which is where this fix came from.
-      //
-      // THE `(?!!)` IS LOAD-BEARING AND WAS ADDED AFTER A REGRESSION. Moving
-      // from -q to -v inverts the exit-code contract: -q exits 1 on a negated
-      // path (correct, it is not ignored) while -v MATCHES the negation and
-      // exits 0. Measured against `!site/src/content/docs/*.local.mdx`:
-      // -q exits 1, -v exits 0 and prints `.gitignore:79:!site/...`. So the
-      // first draft of this very fix made the guard weaker than the -q form it
-      // replaced, passing while a companion was committable. Rejecting a
-      // leading `!` in the pattern is what makes -v safe here.
-      // --no-index, for the reason the sibling test 60 lines down gives at
-      // length: in index-aware mode check-ignore never reports a TRACKED path,
-      // so the moment a probe name becomes concrete (which the repo-root probe
-      // invites) stdout goes empty and the assertion below reads nothing while
-      // staying green. That is worse than an unreachable guard: this one runs.
-      const res = spawnSync('git', ['check-ignore', '--no-index', '-v', probe], {
-        cwd: REPO_ROOT,
-        encoding: 'utf-8',
-      });
-      expect(res.error, `git check-ignore could not run for ${probe}`).toBeUndefined();
-      expect([0, 1], `git check-ignore exited ${res.status} for ${probe}`).toContain(res.status);
-      expect(res.status, `${probe} is NOT gitignored: a companion here is committable`).toBe(0);
-      // TWO INDEPENDENT QUESTIONS, asked separately, because one regex asking
-      // both answered neither clearly. `/^\.gitignore:\d+:(?!!)/` was root
-      // anchored, so scoping the `*.local.md` rules into the tracked
-      // `site/.gitignore` (a plausible refactor, since the probe path lives
-      // under `site/`) made it report "the rule lives in a personal exclude
-      // source" about a rule sitting in this repo. That is the third
-      // hand-rolled copy of this parse to get the in-repo test wrong, which is
-      // why the predicate now has one home.
-      const out = (res.stdout ?? '').trim();
-      expect(
-        isInRepoGitignore(out),
-        `${probe} is ignored, but by a rule OUTSIDE this repo (a personal `
-          + `core.excludesFile or .git/info/exclude), so nothing here makes it `
-          + `true for anyone else and a companion is committable for them. `
-          + `The reporting source was: ${out}`,
-      ).toBe(true);
-      expect(
-        patternOf(out).startsWith('!'),
-        `${probe} matched a NEGATION, which un-ignores it, so a companion here `
-          + `is committable. The exit code cannot see this: -v MATCHES a `
-          + `negation and exits 0, which is how an earlier draft of this guard `
-          + `passed while being weaker than the -q form it replaced.`,
-      ).toBe(false);
+    // -v, and the SOURCE is asserted, not just the match. With -q alone this
+    // proves only that SOMETHING ignores the probe: a contributor carrying
+    // `*.local.md*` in ~/.config/git/ignore or .git/info/exclude could delete
+    // the committed rule, run this suite, see green and push, and only CI
+    // would catch it. Not hypothetical: this repo's own .git/info/exclude
+    // already carries a rule that masked the `.env` case in
+    // scripts/private-paths.test.ts, which is where this fix came from.
+    //
+    // THE `(?!!)` IS LOAD-BEARING AND WAS ADDED AFTER A REGRESSION. Moving
+    // from -q to -v inverts the exit-code contract: -q exits 1 on a negated
+    // path (correct, it is not ignored) while -v MATCHES the negation and
+    // exits 0. Measured against `!site/src/content/docs/*.local.mdx`:
+    // -q exits 1, -v exits 0 and prints `.gitignore:79:!site/...`. So the
+    // first draft of this very fix made the guard weaker than the -q form it
+    // replaced, passing while a companion was committable. Rejecting a
+    // leading `!` in the pattern is what makes -v safe here.
+    // --no-index, for the reason the sibling test 60 lines down gives at
+    // length: in index-aware mode check-ignore never reports a TRACKED path,
+    // so the moment a probe name becomes concrete (which the repo-root probe
+    // invites) stdout goes empty and the assertion below reads nothing while
+    // staying green. That is worse than an unreachable guard: this one runs.
+    const res = spawnSync('git', ['check-ignore', '--no-index', '-v', probe], {
+      cwd: REPO_ROOT,
+      encoding: 'utf-8',
+    });
+    expect(res.error, `git check-ignore could not run for ${probe}`).toBeUndefined();
+    expect([0, 1], `git check-ignore exited ${res.status} for ${probe}`).toContain(res.status);
+    expect(res.status, `${probe} is NOT gitignored: a companion here is committable`).toBe(0);
+    // TWO INDEPENDENT QUESTIONS, asked separately, because one regex asking
+    // both answered neither clearly. `/^\.gitignore:\d+:(?!!)/` was root
+    // anchored, so scoping the `*.local.md` rules into the tracked
+    // `site/.gitignore` (a plausible refactor, since the probe path lives
+    // under `site/`) made it report "the rule lives in a personal exclude
+    // source" about a rule sitting in this repo. That is the third
+    // hand-rolled copy of this parse to get the in-repo test wrong, which is
+    // why the predicate now has one home.
+    const out = (res.stdout ?? '').trim();
+    expect(
+      isInRepoGitignore(out),
+      `${probe} is ignored, but by a rule OUTSIDE this repo (a personal `
+        + `core.excludesFile or .git/info/exclude), so nothing here makes it `
+        + `true for anyone else and a companion is committable for them. `
+        + `The reporting source was: ${out}`,
+    ).toBe(true);
+    expect(
+      patternOf(out).startsWith('!'),
+      `${probe} matched a NEGATION, which un-ignores it, so a companion here `
+        + `is committable. The exit code cannot see this: -v MATCHES a `
+        + `negation and exits 0, which is how an earlier draft of this guard `
+        + `passed while being weaker than the -q form it replaced.`,
+    ).toBe(false);
   });
 
   it('.worktreeinclude carries every suffix, or companions never reach a worktree', () => {
