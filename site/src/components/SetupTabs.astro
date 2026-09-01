@@ -344,7 +344,14 @@ const paths = [
     border: 1px solid var(--caail-border); border-radius: 8px;
     padding: .4rem .5rem;
   }
-  .step .val code { min-width: 0; font-size: var(--caail-fs-xs); line-height: 1.6; color: var(--caail-ink); background: none; padding: 0; overflow-wrap: anywhere; }
+  /* The code carries the COPY BUTTON'S height, not its own. One line of 12px mono is
+     1.2rem; the button is 1.6rem (a 1rem icon inside .3rem of padding), so the button set
+     the well's height while `align-items: flex-start` pinned the text to the top, leaving
+     a one-line value sitting ~3px above the optical centre of the box around it.
+     Centring inside a 1.6rem floor fixes the single-line case and leaves the multi-line
+     case alone: a wrapped prompt simply grows past the floor, so the button stays at the
+     top of the block rather than drifting to the middle of it. */
+  .step .val code { display: flex; align-items: center; min-height: 1.6rem; min-width: 0; font-size: var(--caail-fs-xs); line-height: 1.6; color: var(--caail-ink); background: none; padding: 0; overflow-wrap: anywhere; }
 
   .copy { display: inline-flex; flex: none; padding: .3rem; border-radius: 8px; border: 0; background: none; color: var(--caail-muted); cursor: pointer; transition: color .15s ease-out, background .15s ease-out; }
   .copy:hover, .copy:focus-visible { color: var(--caail-primary); background: color-mix(in oklab, var(--caail-link) 12%, transparent); }
