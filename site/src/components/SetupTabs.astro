@@ -305,12 +305,21 @@ const paths = [
 
      Below 34rem the panels wrap to unpredictable heights and a fixed reserve would strand
      a large gap, so it lifts entirely. That band is therefore UNCOVERED by choice, and the
-     reorder made it worse rather than better: with Claude Science both first and tallest,
-     the section now SHRINKS on every tab away from the default, where it used to grow.
-     Measured spread across tabs: 94px at 390px and 97px at 544px, against roughly 60px
-     before. Reserving it would strand about that much dead space under the shortest panel
-     on a phone, which is the worse trade, so this stays a documented gap rather than a
-     fixed one. Nothing samples below 545px, so it is written down instead of tested.
+     reorder made it worse: measured spread across tabs is 111px at 320px, 94px at 390px and
+     97px at 544px, against roughly 60px before. Since the hero renders these same tabs, a
+     tap on a phone can move everything below it by that much.
+
+     WHICH DIRECTION IT MOVES DEPENDS ON THE WIDTH, and an earlier version of this paragraph
+     said otherwise. "The section now shrinks on every tab away from the default" is true
+     only near 544px. Below roughly 500px the cli panel overtakes Claude Science (390px:
+     738 / 753 / 707 / 659 across the four tabs), so tapping the second tab GROWS the
+     section instead. That claim was written from the 544px sample and asserted across the
+     whole band, which is the third time on this branch that a measurement taken at one
+     width has been stated as a property of a range.
+
+     Reserving this band would strand about that much dead space under the shortest panel on
+     a phone, which is the worse trade, so it stays a documented gap. Nothing samples below
+     545px, so it is written down instead of tested.
 
      Compact and full share one reserve because they measure the same: the variant changes
      the chrome around the panels, not the panels. Confirmed by sweeping both roots. The
