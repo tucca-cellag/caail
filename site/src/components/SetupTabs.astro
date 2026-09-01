@@ -175,8 +175,17 @@ const paths = [
      jump wearing the costume of a reserve.
 
      Measured across every width where the reserve applies: 139 / 166 / 182px at >= 48rem,
-     rising to 159 / 217 / 214px between 34rem and 48rem as the command lines wrap. Hence
-     two bands. Below 34rem the panels wrap to unpredictable heights and a fixed reserve
+     rising between 34rem and 48rem as the command lines wrap. Hence two bands.
+
+     That rise is NOT flat, which the earlier figures (159 / 217 / 214px) hid by being
+     sampled at 600px, near the top of the band. Swept 2026-09-01 with
+     `.panels { min-height: 0 }` forced: the cli panel is 195px at 600px and 236px at
+     545-560px. So the 13.75rem (220px) reserve was 16px short down there and had been
+     since the band was introduced, overflowing exactly as this comment's first paragraph
+     describes. 15rem (240px) clears it. The suite missed it by testing 600px and not
+     560px, so 560px is now in its width list.
+
+     Below 34rem the panels wrap to unpredictable heights and a fixed reserve
      would strand a large gap, so it lifts entirely.
 
      Compact and full share one reserve because they measure the same: the variant changes
@@ -188,7 +197,7 @@ const paths = [
      `homepage-agent.spec.ts` asserts constant section height across tabs for BOTH instances
      at both bands, so a panel that outgrows this fails the suite instead of shipping. */
   .panels { min-height: 11.5rem; }
-  @media (max-width: 48rem) { .panels { min-height: 13.75rem; } }
+  @media (max-width: 48rem) { .panels { min-height: 15rem; } }  /* 240px, clears 236 */
   @media (max-width: 34rem) { .panels { min-height: 0; } }
 
   /* A plain sentence, matching the reference. The icon moved onto the tab, where it

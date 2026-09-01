@@ -337,12 +337,14 @@ test.describe('Connect your agent', () => {
    * one uncovered one is how a property that reads as tested goes untested.
    */
   for (const root of ['.gs', '.hero'])
-  for (const width of [1280, 600]) {
+  for (const width of [1280, 600, 560]) {
     test(`switching tabs does not change the section height, no page jump (${root} @ ${width}px)`, async ({ page }) => {
-      // Two widths because the reserve has two bands. 1280px exercises the >= 48rem band;
-      // 600px sits in the 34-48rem band, where the command lines wrap and the panels grow
-      // by ~35px. Testing one width is how the `.gs` reserve stayed 33px short between
-      // 544 and 768px while reading as covered.
+      // Three widths because the reserve has two bands and the narrow one is not flat.
+      // 1280px exercises the >= 48rem band. 600px and 560px both sit in the 34-48rem
+      // band, and they disagree: the cli panel is 195px at 600 and 236px at 560, so 600
+      // alone cleared a reserve that 560 did not. That is the same defect described one
+      // line down, recurring at a different width. Testing one width per band is not
+      // testing the band.
       await page.setViewportSize({ width, height: 900 });
       await page.goto('./');
       // The section's own height is what everything below it sits on, so holding that
