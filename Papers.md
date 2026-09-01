@@ -750,7 +750,7 @@ technique that text mentions. `Taxonomy.md`'s methods preamble states that rule 
 
 > **Code**: https://github.com/yangzhi1987-sketch/benchmark-food-gel-segmentation
 
-<a id="350">350</a> Parsaee, A., Stahn, M., Amirvaresi, A., Ovissipour, R., & Staszak, D. (2026). A data-driven evaluation of Optimization techniques in Cell Culture Media. *Bioinformatics*. Advance online publication. https://doi.org/10.1093/bioinformatics/btag607
+<a id="350">350</a> Parsaee, A., Stahn, M., Amirvaresi, A., Ovissipour, R., & Staszak, D. (2026). A data-driven evaluation of optimization techniques in cell culture media. *Bioinformatics*. Advance online publication. https://doi.org/10.1093/bioinformatics/btag607
 
 > **Code**: https://github.com/Amii-Applied-AI/amii-cell-ag-tools/tree/main/active-learning-for-cell-media
 

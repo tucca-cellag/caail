@@ -4,7 +4,7 @@ This page describes the **Deep Learning** row of the [Papers.md matrix](../Paper
 
 ## Scope boundary
 
-This is the axis's declared **catch-all**, and reading it correctly means reading the exclusions first. A paper whose core architecture is a [CNN](./CNN.md), a [GNN](./GNN.md), a [GAN or VAE](./GANVAE.md), or a pretrained foundation model belongs in that row instead. The taxonomy also excludes two things that are easy to admit by mistake: shallow models, such as radial-basis-function networks or single-hidden-layer MLPs used only as a baseline, and non-neural methods sometimes loosely called deep learning, such as [Chemometrics](./Chemometrics.md) and network propagation.
+This is the axis's declared **catch-all**, and reading it correctly means reading the exclusions first. A paper whose core architecture is a [CNN](./CNN.md), a [GNN](./GNN.md), a [GAN or VAE](./GANVAE.md), or a pretrained foundation model belongs in that row instead. The taxonomy also excludes two things that are easy to admit by mistake: shallow models, such as radial-basis-function networks or single-hidden-layer MLPs used only as a baseline, and non-neural methods sometimes loosely called deep learning, such as [Chemometrics](./Chemometrics.md) and network propagation. A shallow network supplying the unknown term of a first-principles model is not homeless, though: it belongs in [Hybrid Mechanistic-ML Models](./HybridMechanisticML.md), which is earned by the coupling rather than by the network, and which is where ref [#255](../Papers.md#255) went for exactly that reason.
 
 Because it is a residual category, this row is not a coherent research programme and should not be read as one. What it does give is the broadest coverage of any method row, appearing in more research areas than any other, which makes it a reasonable starting point when the question is "has anyone applied a neural network to this part of the process at all". Many of its references are described in more depth on the page for whichever other row they also occupy.
 
@@ -62,6 +62,7 @@ This column is the row's densest, and it traces one clear methodological arc: fr
 - [CNN](./CNN.md), [GNN](./GNN.md), [GAN / VAE](./GANVAE.md): the architecture-specific rows a paper moves to when one of them describes its core model.
 - The four foundation-model rows ([Next-Token Prediction](./FoundationModelsNextToken.md), [Masked Language Modeling](./FoundationModelsMaskedLM.md), [Cell-State & Perturbation Prediction](./FoundationModelsCellState.md), [LM + Biological Priors](./FoundationModelsBioPriors.md)): where pretrained-and-transferred models go.
 - [Chemometrics](./Chemometrics.md), [SVM](./SVM.md), [Ensemble Learning](./EnsembleLearning.md): the classical comparisons, which win more often in this corpus than the volume of deep-learning papers would suggest.
+- [Hybrid Mechanistic-ML Models](./HybridMechanisticML.md): where a network coupled to a mechanistic core goes, however small the learned part is.
 - [Reinforcement Learning](./ReinforcementLearning.md) and [Bayesian Optimization](./BayesianOptimization.md): the control and experiment-design layers built on top of these networks as surrogates.
 
 ## Further reading

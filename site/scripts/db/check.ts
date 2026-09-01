@@ -591,10 +591,17 @@ const FM_CLAUSES: ReadonlyArray<readonly [string, RegExp]> = [
  * WHY THIS IS NOT A SECOND HAND-TYPED LIST, which the FM comment above rightly
  * refuses. The preamble names the rows that carry the rule; this guard READS that
  * list out of the prose rather than holding a copy. So there is one list, in the
- * file a curator edits, and the check follows it. Add a fourth row to the
- * principle by naming it in the preamble and writing its clause; nothing here
- * changes. Remove one and this stops asking about it, which is correct: the
- * preamble is the statement of which rows are in scope.
+ * file a curator edits, and the check follows it. Remove a row from the preamble
+ * and this stops asking about it, which is correct: the preamble is the statement
+ * of which rows are in scope.
+ *
+ * WHAT THIS DOES NOT DO. CONTRIBUTION_CLAUSE is a fixed VOCABULARY, not a reading
+ * of the principle, so adding a fourth row is not free: its clause has to restate
+ * the rule in one of the recognised forms, or the pattern has to be widened in the
+ * same change. The two rows added alongside this guard are the worked example.
+ * Comparative Studies carries the rule in its own words ("the row records a paper's
+ * contribution and not its model count") and matches none of these stems, so naming
+ * it on the scope line as things stand would fail this check rather than extend it.
  *
  * The FM family stays guarded separately above, by PREFIX, because its risk is
  * different: a sixth foundation-model row arriving without the clauses. That is a

@@ -12264,7 +12264,7 @@
     {
       "id": 350,
       "section": "References",
-      "raw": "<a id=\"350\">350</a> Parsaee, A., Stahn, M., Amirvaresi, A., Ovissipour, R., & Staszak, D. (2026). A data-driven evaluation of Optimization techniques in Cell Culture Media. *Bioinformatics*. Advance online publication. https://doi.org/10.1093/bioinformatics/btag607",
+      "raw": "<a id=\"350\">350</a> Parsaee, A., Stahn, M., Amirvaresi, A., Ovissipour, R., & Staszak, D. (2026). A data-driven evaluation of optimization techniques in cell culture media. *Bioinformatics*. Advance online publication. https://doi.org/10.1093/bioinformatics/btag607",
       "authors": [
         "Parsaee, A.",
         "Stahn, M.",
@@ -12275,7 +12275,7 @@
       "authorsDropped": 0,
       "authorsText": "Parsaee, A., Stahn, M., Amirvaresi, A., Ovissipour, R., & Staszak, D.",
       "year": 2026,
-      "title": "A data-driven evaluation of Optimization techniques in Cell Culture Media",
+      "title": "A data-driven evaluation of optimization techniques in cell culture media",
       "journal": "Bioinformatics",
       "doi": "10.1093/bioinformatics/btag607",
       "codeUrl": "https://github.com/Amii-Applied-AI/amii-cell-ag-tools/tree/main/active-learning-for-cell-media",
