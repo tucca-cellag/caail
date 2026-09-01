@@ -54,7 +54,7 @@
  * which is why this docstring writes its glob example with U+2217.
  */
 import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import { join, dirname, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -86,11 +86,22 @@ function moduleSpecifiers(src: string): string[] {
 /**
  * A relative specifier, as a path relative to site/.
  *
- * `.js` maps to `.ts` because the project's imports are written the way NodeNext
- * wants them emitted, while what is on disk is the TypeScript source.
+ * FOUR CANDIDATE SPELLINGS, because this repo uses more than one and an earlier
+ * version of this function assumed the first. `.js` maps to `.ts` because the
+ * project's imports are written the way NodeNext wants them emitted while what
+ * is on disk is the TypeScript source; the extensionless form is legal and is
+ * what `DataTableViews.astro` uses to reach `table-layout`; and a directory
+ * specifier resolves through its `index.ts`. Assuming the `.js` form alone made
+ * a legal sibling import report as a MISSING FILE, under a message telling the
+ * reader it had been moved.
+ *
+ * Falls back to the primary spelling when none exists, so an unresolvable
+ * specifier is reported by the readability probe rather than silently skipped.
  */
 function resolveFrom(fromRel: string, spec: string): string {
-  return normalize(join(dirname(fromRel), spec)).replace(/\.js$/, '.ts');
+  const base = normalize(join(dirname(fromRel), spec));
+  const candidates = [base.replace(/\.js$/, '.ts'), base, `${base}.ts`, join(base, 'index.ts')];
+  return candidates.find((c) => existsSync(join(SITE_ROOT, c))) ?? candidates[0];
 }
 
 /** The guard's STATIC project imports, as paths relative to site/. */
@@ -187,8 +198,11 @@ describe('the modules the private-path guard depends on stay import-free', () =>
     expect(
       members.filter((m) => m.unreadable).map((m) => `${m.rel}: ${m.unreadable}`),
       `a module reachable from ${GUARD} could not be read, so it was not `
-        + `checked. Either a relative specifier does not resolve to a file on `
-        + `disk, or one was moved`,
+        + `checked. Two causes, and they want opposite fixes. Either the module `
+        + `was moved or renamed, and the specifier pointing at it is now wrong; `
+        + `or this is PROSE, because the scan reads raw source on purpose and a `
+        + `docstring writing a quoted path after the word f-r-o-m is enqueued `
+        + `and read exactly like an import. If it is prose, rewrite the prose`,
     ).toEqual([]);
   });
 

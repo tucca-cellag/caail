@@ -2,6 +2,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { test, expect } from '@playwright/test';
 import { CAAIL_PAGES } from '../src/content/caail-pages.ts';
+import { CANONICAL_SOURCES } from '../src/content/canonical-sources.ts';
 import { isPublishedMarkdown } from '../src/lib/canonical-files.ts';
 import { MIN_DATA_TABLE_COLUMNS } from '../src/lib/table-layout.ts';
 
@@ -22,11 +23,31 @@ import { MIN_DATA_TABLE_COLUMNS } from '../src/lib/table-layout.ts';
  * two-column Markdown table produces a third `th` is a fact about the rendered
  * page rather than about the stylesheet.
  *
- * The page set is DERIVED from the canonical Markdown, so a page that gains or
- * loses a wide table is covered the day it changes rather than the day someone
- * remembers this file. Deriving it the way the loader does — walk the canonical
- * directories and the top-level sources, keep whatever `CAAIL_PAGES` registers —
- * also means a new prose page is picked up automatically.
+ * The page set is DERIVED from the canonical Markdown, so a canonical page that
+ * gains or loses a wide table is covered the day it changes rather than the day
+ * someone remembers this file. It walks the same two enumerations the loader
+ * does, taking `dirs` and `topLevelSources()` from `CANONICAL_SOURCES` rather
+ * than restating either, so a new prose page or a fourth canonical directory is
+ * picked up automatically.
+ *
+ * WHAT THAT DERIVATION DOES NOT REACH, said plainly because the sentence above
+ * used to claim the whole site. The CSS rule fires on any page with a
+ * `.sl-markdown-content` table, and `src/content/docs/*.mdx` is outside these
+ * two enumerations entirely. Two of those pages carry tables today: `/privacy/`
+ * (3 and 4 columns) and `/curation/`, which qualifies ONLY through the single
+ * 3-column table at `curation.mdx:16` since its other two are 2-column. Both
+ * are correct under the current selector, checked by hand at the time of
+ * writing, and neither is covered here: reduce that one table to two columns
+ * and `/curation/` silently drops out of the full-width layout with nothing
+ * failing.
+ *
+ * That gap is not closed by adding the MDX directory to the walk, which is why
+ * it is documented rather than patched. An MDX page's tables can be rendered by
+ * a component at runtime rather than written in the source, as
+ * `/by-the-numbers/` renders two 6-column ones from `MetricsDashboard`, so a
+ * static scan of MDX source is incomplete by construction and would report
+ * coverage it does not have. Extending this to those pages means enumerating
+ * routes and reading the BUILT html, which is a different spec.
  */
 const REPO_ROOT = fileURLToPath(new URL('../../', import.meta.url));
 
@@ -57,12 +78,12 @@ function tableColumnCounts(markdown: string): number[] {
 /** Every canonical prose source the site renders, as `{ route, widestTable }`. */
 function prosePagesWithTables(): Array<{ route: string; columns: number }> {
   const sources: string[] = [];
-  for (const dir of ['ResearchAreas', 'Methods', 'Datasets']) {
+  for (const dir of CANONICAL_SOURCES.dirs) {
     for (const name of readdirSync(`${REPO_ROOT}${dir}`).filter(isPublishedMarkdown)) {
       sources.push(`${dir}/${name}`);
     }
   }
-  sources.push(...CAAIL_PAGES.topLevelSources());
+  sources.push(...CANONICAL_SOURCES.files);
 
   return sources.flatMap((source) => {
     const id = CAAIL_PAGES.idForSourcePath(source);

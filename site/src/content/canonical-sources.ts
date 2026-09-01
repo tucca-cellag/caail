@@ -14,15 +14,29 @@
  * WHAT THE CONSTRAINT ACTUALLY IS: a property of this module's dependency
  * CLOSURE, not of its import count. Nothing reachable from here may throw while
  * being evaluated, because that throw lands during COLLECTION of the guard and
- * reports `Tests no tests` rather than a publishing failure. A third-party
- * package can throw on evaluation; a pure sibling in this repo that imports
- * nothing itself cannot introduce one.
+ * reports `Tests no tests` rather than a publishing failure.
  *
  * So this file may import a project module that is itself inside the checked
  * closure, and may import nothing else. `pure-modules.test.ts` walks that
  * closure rather than checking one level, so the permission and the guarantee
  * are the same fact. Adding a bare specifier here, or to anything reachable
  * from here, fails that test.
+ *
+ * TWO SEPARATE HAZARDS, AND THE WALK ONLY ADDRESSES ONE. An earlier draft of
+ * this comment said a pure in-repo sibling "cannot introduce an evaluation
+ * throw", and the sibling added in the same commit did exactly that:
+ * `topLevelSources()` throws on a `group: 'top'` page with no `source`, so
+ * computing `files` at module scope put that throw back into the guard's
+ * collection, under a different door from the one the walk closes. Measured by
+ * deleting one `source` field: `Tests no tests`, no private-tree probe run,
+ * and the very test written to name the cause collapsed with the rest.
+ *
+ * The walk bounds what may be IMPORTED. It says nothing about what may THROW.
+ * That is why `files` below is a getter: evaluation is deferred to first
+ * access, which happens inside a lazy function or a test body in every reader,
+ * so the throw fails one assertion instead of aborting a file. Its callers do
+ * not change, and `private-paths.test.ts` made its own enumeration lazy for
+ * this exact reason before this module existed.
  */
 
 import { CAAIL_PAGES } from './caail-pages.ts';
@@ -46,5 +60,12 @@ import { CAAIL_PAGES } from './caail-pages.ts';
  */
 export const CANONICAL_SOURCES = {
   dirs: ['ResearchAreas', 'Methods', 'Datasets'],
-  files: CAAIL_PAGES.topLevelSources(),
+  /**
+   * A GETTER, not a value. See "TWO SEPARATE HAZARDS" above: this derivation
+   * can throw, and at module scope that throw aborts collection of the guard
+   * that imports this file rather than failing one test.
+   */
+  get files(): readonly string[] {
+    return CAAIL_PAGES.topLevelSources();
+  },
 } as const;

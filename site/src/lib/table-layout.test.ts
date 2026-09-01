@@ -29,23 +29,40 @@ const COMPONENT = readFileSync(
  * Every `.sl-container:has(… table …)` selector in the stylesheet.
  *
  * Derived rather than counted: a third rule of this shape is covered the day it
- * lands, and an ungated one fails whichever rule it is. The match runs to the
- * opening brace on the same line, which is how every rule in this stylesheet is
- * written; a selector broken across lines would simply not be found, and the
- * `toBeGreaterThan(0)` guard below is what stops that turning the whole file
- * green-and-vacuous.
+ * lands, and an ungated one fails whichever rule it is.
+ *
+ * THE MATCH SPANS NEWLINES, and that is load-bearing rather than incidental. It
+ * runs on `[^{}]`, which matches a newline, so it starts wherever the previous
+ * rule's brace left off and ends at this rule's opening one however the
+ * selector is wrapped. An earlier version anchored per line and its docstring
+ * claimed the floor below caught what that missed. It does not: the floor
+ * asserts that AT LEAST ONE selector matched, and two already do, so a third
+ * rule wrapped for length would have been invisible while the file stayed
+ * green on the other two. Both of the current selectors are near 100 characters
+ * and one more qualifier would wrap either of them, so this was a live gap
+ * rather than a hypothetical one.
+ *
+ * What the floor below actually buys is narrower and worth stating exactly: it
+ * catches TOTAL extraction failure, the case where the shape changes so much
+ * that nothing matches at all. It cannot catch a partial miss, and no
+ * count-based assertion can either without hardcoding how many rules there
+ * ought to be, which is the second-copy defect this file exists to prevent.
  */
 function containerTableSelectors(css: string): string[] {
-  return [...css.matchAll(/^[^\n{]*\.sl-container:has\([^\n{]*\btable\b[^\n{]*\{/gm)].map((m) =>
-    m[0].replace(/\{\s*$/, '').trim(),
+  return [...css.matchAll(/([^{}]*\.sl-container:has\([^{}]*?\btable\b[^{}]*?)\{/g)].map((m) =>
+    // Drop any comment block sitting between the previous rule and this one: it
+    // is preamble, and leaving it in would let prose satisfy the gate assertion.
+    m[1].replace(/^[\s\S]*\*\//, '').trim(),
   );
 }
 
 describe('the full-width data-table rules', () => {
   it('are found in the stylesheet at all', () => {
-    // Guards the derivation. Without this, a selector this regex stops matching
-    // makes the loop below zero assertions and the file reports green while
-    // checking nothing.
+    // Guards the derivation against TOTAL failure only, which is the whole of
+    // what it can do. If every selector stopped matching, the loop below would
+    // make zero assertions and the file would report green while checking
+    // nothing. A PARTIAL miss is not reachable from here and is handled in the
+    // extractor instead, by matching across newlines rather than per line.
     expect(containerTableSelectors(CSS).length).toBeGreaterThan(0);
   });
 
