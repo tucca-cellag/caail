@@ -95,18 +95,33 @@ function tableColumnCounts(markdown: string): number[] {
  * parsed: the fix for an unreadable table is to look at it, not to widen a
  * regex until it swallows prose. Snapshot 2026-09-01: zero canonical pages
  * take this path, so it is a latent hole rather than a live one.
+ *
+ * IT COUNTS RATHER THAN ANSWERING YES OR NO, and that is the difference between
+ * closing the hole and closing half of it. As a boolean it was consulted only
+ * when the counter found NOTHING, which covers a page whose only table is
+ * unreadable and misses the mixed page entirely: one leading-pipe table and one
+ * without leaves `counts.length > 0`, so the unreadable table never enters the
+ * `Math.max` and the page can be classified NARROW while the browser widens it
+ * for the table nobody counted. That failure is worse than the silent one it
+ * replaced, because it fails while pointing at the wrong table.
+ *
+ * Only an EXCESS is treated as a fault. The reverse, more counted tables than
+ * delimiter rows, would mean this probe is narrower than the parser it checks,
+ * which is not a property of the corpus and is not worth a false positive on a
+ * delimiter row that opens a file with no header above it.
  */
-function hasDelimiterRow(markdown: string): boolean {
+function delimiterRowCount(markdown: string): number {
   let inFence = false;
+  let found = 0;
   for (const line of markdown.split('\n')) {
     if (/^\s*(```|~~~)/.test(line)) {
       inFence = !inFence;
       continue;
     }
     if (inFence) continue;
-    if (/^\s*\|?\s*:?-+:?\s*(\|\s*:?-+:?\s*)+\|?\s*$/.test(line)) return true;
+    if (/^\s*\|?\s*:?-+:?\s*(\|\s*:?-+:?\s*)+\|?\s*$/.test(line)) found += 1;
   }
-  return false;
+  return found;
 }
 
 /** Every canonical prose source the site renders, as `{ route, widestTable }`. */
@@ -129,11 +144,14 @@ function prosePagesWithTables(): {
     if (!CAAIL_PAGES.byId(id)) continue;
     const markdown = readFileSync(`${REPO_ROOT}${source}`, 'utf8');
     const counts = tableColumnCounts(markdown);
-    if (counts.length === 0) {
-      // Holds a table this file cannot read, rather than holding none.
-      if (hasDelimiterRow(markdown)) unparsed.push(source);
+    if (delimiterRowCount(markdown) > counts.length) {
+      // Holds at least one table this file cannot read. EXCLUDED as well as
+      // reported: classifying it on the tables that did parse would assert the
+      // wrong thing about the page, and a wrong assertion is worse than none.
+      unparsed.push(source);
       continue;
     }
+    if (counts.length === 0) continue;
     pages.push({ route: `./${id}/`, columns: Math.max(...counts) });
   }
   return { pages, unparsed };

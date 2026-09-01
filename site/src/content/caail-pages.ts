@@ -10,6 +10,25 @@
 
 export type PageGroup = 'research-areas' | 'methods' | 'datasets' | 'top';
 
+/**
+ * ONE CONSTRAINT ON THE PROSE IN THIS FILE, and it is not obvious from here.
+ *
+ * `src/content/canonical-sources.ts` imports this module, and that module is
+ * statically imported by `scripts/private-paths.test.ts`, the guard proving the
+ * credentials file and the private trees are gitignored. So this file is inside
+ * the closure `src/lib/pure-modules.test.ts` walks, and that walk reads RAW
+ * SOURCE with no comment or string stripping, deliberately, because a regex
+ * cannot decide comment context in JavaScript and erring toward false positives
+ * is the safe direction there.
+ *
+ * The consequence lands here: a `description` string, or any comment, that
+ * writes a quoted path after the word f-r-o-m is enqueued and read exactly like
+ * an import. It fails as "a module reachable from the guard could not be read",
+ * which points an editor at a moved file rather than at the sentence they just
+ * wrote. The three modules previously in that closure were small and code-only;
+ * this one carries roughly sixty curator-authored description strings, so the
+ * exposure is new and worth knowing before editing one.
+ */
 export interface PageMeta {
   title: string;
   sidebarLabel: string;

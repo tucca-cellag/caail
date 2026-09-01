@@ -22,11 +22,32 @@
  *
  * The rule the walk enforces: a module in the closure may import PROJECT
  * SIBLINGS, by relative path, and nothing else. Each sibling is then walked on
- * the same terms, so a bare specifier cannot enter at any depth. That admits a
- * pure in-repo module, which cannot introduce an evaluation throw the repo does
- * not already own, and still admits no third-party module graph, which can. A
- * hand-maintained allow-list of permitted siblings was rejected for the reason
- * the walk exists: it would be one more list nothing checks.
+ * the same terms, so a bare specifier cannot enter at any depth. That keeps a
+ * third-party module graph out, which is the largest source of evaluation
+ * throws, and it admits a pure in-repo module. A hand-maintained allow-list of
+ * permitted siblings was rejected for the reason the walk exists: it would be
+ * one more list nothing checks.
+ *
+ * THE SCAN IS NOT SUFFICIENT ON ITS OWN, and an earlier draft of this docstring
+ * said it was, claiming a pure in-repo module "cannot introduce an evaluation
+ * throw the repo does not already own". That is false and was measured false:
+ * a module-scope `throw` in `caail-pages.ts` left this file 6/6 GREEN while
+ * `private-paths.test.ts` reported `(0 test)` — the precise collection abort
+ * this guard exists to name, reachable through the sibling import that made the
+ * scan transitive in the first place. The scan reads what a module IMPORTS; it
+ * cannot read what a module DOES.
+ *
+ * So each closure member is also IMPORTED, dynamically, inside a test body.
+ * That is not a proxy for the property, it is the property: if evaluating the
+ * closure throws, that test fails by name and carries the real error, instead
+ * of the guard going quiet and a different file reporting no tests. Inside a
+ * body is load-bearing, for the same reason everything else here is deferred.
+ *
+ * The two checks answer different questions and neither replaces the other. The
+ * scan is STRUCTURAL and catches a bare import that has not broken anything
+ * yet; the evaluation check is BEHAVIOURAL and catches a throw from code that
+ * imports nothing at all. Removing either leaves a hole this file has already
+ * shipped once.
  *
  * DYNAMIC IMPORTS COUNT INSIDE THE CLOSURE, unlike in the guard itself. The
  * guard's own are excluded because they run in a test body, where a throw fails
@@ -56,7 +77,7 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync, statSync } from 'node:fs';
 import { join, dirname, normalize } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 /** lib/ -> src/ -> site/ */
 const SITE_ROOT = fileURLToPath(new URL('../../', import.meta.url));
@@ -222,6 +243,26 @@ describe('the modules the private-path guard depends on stay import-free', () =>
   });
 
   for (const m of members) {
+    it(`${m.rel} evaluates without throwing`, async () => {
+      // The BEHAVIOURAL half. A module-scope throw anywhere in the closure
+      // aborts collection of the guard; done here, inside a body, it fails one
+      // named test carrying the real error instead.
+      let evalError: unknown;
+      try {
+        await import(/* @vite-ignore */ pathToFileURL(join(SITE_ROOT, m.rel)).href);
+      } catch (e) {
+        evalError = e;
+      }
+      expect(
+        evalError,
+        `evaluating ${m.rel} threw, and it is reachable from ${GUARD} by static `
+          + `imports. That throw lands during COLLECTION of the guard, so every `
+          + `private-tree probe is skipped and the run reports "Tests no tests" `
+          + `rather than a publishing failure. Move whatever throws behind a `
+          + `function or a getter so it runs on access instead of on import`,
+      ).toBeUndefined();
+    });
+
     it(`${m.rel} imports nothing outside the closure`, () => {
       expect(
         m.bare,
