@@ -11,15 +11,34 @@
  * with what it guards, and the failure would name a module the test has no
  * business touching.
  *
- * This file therefore has NO imports and must keep none. It is data.
+ * WHAT THE CONSTRAINT ACTUALLY IS: a property of this module's dependency
+ * CLOSURE, not of its import count. Nothing reachable from here may throw while
+ * being evaluated, because that throw lands during COLLECTION of the guard and
+ * reports `Tests no tests` rather than a publishing failure. A third-party
+ * package can throw on evaluation; a pure sibling in this repo that imports
+ * nothing itself cannot introduce one.
+ *
+ * So this file may import a project module that is itself inside the checked
+ * closure, and may import nothing else. `pure-modules.test.ts` walks that
+ * closure rather than checking one level, so the permission and the guarantee
+ * are the same fact. Adding a bare specifier here, or to anything reachable
+ * from here, fails that test.
  */
+
+import { CAAIL_PAGES } from './caail-pages.ts';
 
 /**
  * Canonical source files to ingest, as paths relative to the repo root.
  *
  *   - Every top-level `*.md` in `dirs` is considered (enumerated with
  *     `fs.readdir` — no extra glob dependency needed).
- *   - `files` lists individual top-level files.
+ *   - `files` is the individual top-level files, DERIVED from `CAAIL_PAGES`
+ *     rather than written out here. It was a literal, and being a literal is
+ *     what let a second reader of the same set carry six of the seven names:
+ *     the prototype branch's per-route Markdown endpoint omitted
+ *     `Community.md`, so `/community/` was the one page on the site with no
+ *     Markdown twin and no Copy-as-Markdown control. Deriving it means the
+ *     next reader has one list to call rather than a list to copy.
  *
  * Each candidate is resolved to a route id via `CAAIL_PAGES.idForSourcePath`;
  * any file whose id has no `CAAIL_PAGES` entry (e.g. the `CLAUDE.md` files in
@@ -27,13 +46,5 @@
  */
 export const CANONICAL_SOURCES = {
   dirs: ['ResearchAreas', 'Methods', 'Datasets'],
-  files: [
-    'CONTRIBUTING.md',
-    'OtherResources.md',
-    'Taxonomy.md',
-    'AIAgentsFoundationModels.md',
-    'ReferenceWorks.md',
-    'Funding.md',
-    'Community.md',
-  ],
+  files: CAAIL_PAGES.topLevelSources(),
 } as const;
