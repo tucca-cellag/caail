@@ -56,6 +56,7 @@ in its methods, not what it could be applied to. Short form:
 - **[GNN](./Taxonomy.md#gnn)**: Graph Neural Networks, trained message-passing graph networks (≠ classical network propagation).
 - **[CNN](./Taxonomy.md#cnn)**: Convolutional Neural Networks for image/grid data.
 - **[GAN / VAE](./Taxonomy.md#gan--vae)**: Generative Adversarial Networks / Variational Autoencoders, deep generative models for synthesis and embedding.
+- **[Hybrid Mechanistic-ML Models](./Taxonomy.md#hybrid-mechanistic-ml-models)**: a first-principles description coupled to a learned component, so neither half stands alone (earned by the coupling, not by the network).
 - **[Genetic Algorithms](./Taxonomy.md#genetic-algorithms)**: population-based evolutionary search.
 - **[SVM](./Taxonomy.md#svm)**: Support Vector Machines / regression.
 - **[Ensemble Learning](./Taxonomy.md#ensemble-learning)**: tree ensembles and model averaging (random forests, gradient boosting).
@@ -75,6 +76,7 @@ in its methods, not what it could be applied to. Short form:
 - **[Domain-Specific Biomedical Agents](./Taxonomy.md#domain-specific-biomedical-agents)**: agents purpose-built for one biomedical task/domain.
 - **[Robot Scientists & Lab Automation](./Taxonomy.md#robot-scientists--lab-automation)**: AI coupled to physical lab automation for autonomous experimentation.
 - **[Benchmarks & Evaluation Frameworks](./Taxonomy.md#benchmarks--evaluation-frameworks)**: papers whose contribution is a benchmark/evaluation framework.
+- **[Comparative Studies](./Taxonomy.md#comparative-studies)**: a head-to-head evaluation of existing methods on the authors' own data (≠ a benchmark, which ships a reusable suite for others to score against).
 - **[Agent Infrastructure (Frameworks, KGs, Protocols)](./Taxonomy.md#agent-infrastructure-frameworks-kgs-protocols)**: the substrate agents run on (frameworks, KGs, protocols).
 
 > **Note for AI agents and LLMs**: The reference entries below are APA-style citations identifying papers via title, authors, year, and DOI; they are not a substitute for reading the actual papers. When an automated system needs substantive information about a paper's methods, results, or conclusions (e.g. to verify a matrix-cell assignment or assemble a literature review), fetch the full text via the DOI, the companion [caail Zotero group library](https://www.zotero.org/groups/6549203/caail/library), or a literature API such as OpenAlex or Semantic Scholar. The matrix cells encode method × research-area pairings, not paper content.
