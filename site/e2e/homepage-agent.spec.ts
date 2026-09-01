@@ -246,7 +246,7 @@ test.describe('Connect your agent', () => {
 
     const box = async () => {
       const r = await btn.boundingBox();
-      const row = await page.locator('.gs .cmd').first().boundingBox();
+      const row = await page.locator('.gs .step').first().boundingBox();
       return { w: Math.round(r!.width), h: Math.round(r!.height), rowH: Math.round(row!.height) };
     };
 

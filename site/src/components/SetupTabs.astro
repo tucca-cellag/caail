@@ -3,11 +3,13 @@
  * SetupTabs — the four install paths, extracted so the hero and the standalone
  * "Connect your agent" band can both render them.
  *
- * `compact` trims the chrome for hero use: no per-step numbering column and tighter
- * spacing. NOT a smaller reserve, which this said until the `.setup--compact` override
- * was deleted; the two variants share one reserve, for the reason given on `.panels`.
- * The content and the tab contract are identical either way, so there is one definition
- * of what the install paths ARE.
+ * `compact` trims the chrome for hero use, and the honest list is short: the tab rail's
+ * gap and bottom margin, plus hiding the "in progress" line so that notice appears once
+ * per page instead of twice. That is all of it. This comment claimed a smaller reserve
+ * until the `.setup--compact` override was deleted, and claimed a dropped step-number
+ * column that no rule has ever implemented. Both were read off intent rather than off the
+ * stylesheet. The panels are identical in both variants, which is why they share one
+ * reserve, and why there is one definition of what the install paths ARE.
  *
  * ORDER IS AN EDITORIAL CLAIM, not arrival order. Claude Science leads because CAAIL's
  * readers are cell-ag researchers rather than engineers. `any` is deliberately LAST
@@ -46,7 +48,7 @@ const paths = [
   {
     id: 'science',
     tab: 'Claude Science',
-    icon: 'lucide:flask-conical',
+    icon: 'simple-icons:claude',
     /* First for an audience reason and a capability reason. CAAIL's readers are
        researchers, and this is the only client that both installs the skills properly
        AND already reaches the databases the library indexes: its Featured connectors
@@ -88,7 +90,7 @@ const paths = [
   {
     id: 'cli',
     tab: 'Claude Code, Cursor, CLI',
-    icon: 'lucide:terminal',
+    icon: 'simple-icons:claudecode',
     /* A prompt, not the two `claude plugin` commands.
        Those commands are correct — but ONLY in Claude Code. This tab names Cursor and
        "CLI" too, and neither implements Claude Code's plugin marketplace, so the panel
@@ -113,7 +115,7 @@ const paths = [
   {
     id: 'web',
     tab: 'claude.ai',
-    icon: 'lucide:app-window',
+    icon: 'simple-icons:anthropic',
     lead: 'The web app installs skills by file upload rather than by URL, so download it first:',
     steps: [
       { t: `${RAW}/plugin/skills/caail/SKILL.md`, copy: true },
@@ -145,6 +147,14 @@ const paths = [
 ];---
 
 <div class:list={['setup', compact && 'setup--compact']}>
+  {/* Tab marks are the PRODUCT'S OWN, one each, so the rail reads as a row of clients
+      rather than a row of metaphors. Three distinct Anthropic marks exist and they are not
+      interchangeable: `claude` for the Claude app surface, `claudecode` for the CLI, and
+      `anthropic` for claude.ai, which is the same mapping the clients row under each panel
+      already uses. "Any agent" keeps a generic lucide glyph on purpose: it is the tab that
+      names no product, and giving it one vendor's mark would pick a winner among the five
+      it lists. They inherit `currentColor`, so they tint with the tab state instead of
+      shouting five brand colours across the rail. */}
   <div class="tabs" role="tablist" aria-label="Setup paths">
     {paths.map((p, i) => (
       <button
@@ -158,36 +168,49 @@ const paths = [
   <div class="panels">
     {paths.map((p, i) => (
       <div role="tabpanel" id={`${idPrefix}-p-${p.id}`} aria-labelledby={`${idPrefix}-t-${p.id}`} class="panel" hidden={i !== 0}>
-        <p class="lead">{p.lead}</p>
+        <div class="main">
+          <p class="lead">{p.lead}</p>
 
-        {/* A step is either a VALUE you paste or an ACTION you take, and only the first
-            gets a copy button. Every step used to get one, because when this was written
-            every step happened to be a command. It stopped being true as soon as a path
-            needed "go to this menu": a copy affordance on a navigation path invites you
-            to paste a menu trail somewhere, and it buries the one line that IS meant to
-            be copied among identical-looking rows. */}
-        {p.steps.map((s, n) => (
-          <div class:list={['cmd', !s.copy && 'cmd--do']}>
-            {p.steps.length > 1 && <span class="n">{n + 1}</span>}
-            {s.copy ? <code>{s.t}</code> : <span class="do">{s.t}</span>}
-            {s.copy && (
-              <button type="button" class="copy" data-copy={s.t} aria-label={`Copy: ${s.t}`}>
-                <Icon name="lucide:copy" class="i-copy" />
-                <Icon name="lucide:check" class="i-done" />
-              </button>
-            )}
-          </div>
-        ))}
+          {/* A step is either a VALUE you paste or an ACTION you take, and only the first
+              gets a copy button. Every step used to get one, because when this was written
+              every step happened to be a command. It stopped being true as soon as a path
+              needed "go to this menu": a copy affordance on a navigation path invites you
+              to paste a menu trail somewhere, and it buries the one line that IS meant to
+              be copied among identical-looking rows.
 
-        <p class="note">
-          <span class="clients">
+              An <ol>, because here the numbers ARE the instruction rather than decoration.
+              A one-step path drops the number, and the column with it. */}
+          <ol class:list={['steps', p.steps.length === 1 && 'steps--single']}>
+            {p.steps.map((s, n) => (
+              <li class="step">
+                {p.steps.length > 1 && <span class="n">{n + 1}</span>}
+                {s.copy ? (
+                  <span class="val">
+                    <code>{s.t}</code>
+                    <button type="button" class="copy" data-copy={s.t} aria-label={`Copy: ${s.t}`}>
+                      <Icon name="lucide:copy" class="i-copy" />
+                      <Icon name="lucide:check" class="i-done" />
+                    </button>
+                  </span>
+                ) : (
+                  <span class="do">{s.t}</span>
+                )}
+              </li>
+            ))}
+          </ol>
+        </div>
+
+        <div class="aside">
+          <p class="clients">
             {p.clients.map((c) => (
               <span class="client"><Icon name={c.i} />{c.n}</span>
             ))}
-          </span>
-          {p.note}
-          {p.link && <a href={p.link.href}>{p.link.text}</a>}
-        </p>
+          </p>
+          <p class="note">
+            {p.note}
+            {p.link && <a href={p.link.href}>{p.link.text}</a>}
+          </p>
+        </div>
       </div>
     ))}
   </div>
@@ -242,20 +265,19 @@ const paths = [
      jump wearing the costume of a reserve.
 
      Measured 2026-09-01 with `.panels { min-height: 0 }` forced, sweeping 545-1600px.
-     Each figure is that panel's MAXIMUM over the range, with the widths it occurs at.
-     Carrying the coordinate is the whole point: an earlier version of this comment gave
-     three numbers with no widths attached, all of them sampled at 600px, and the reserve
-     derived from them was 16px short at 545-560px. That shortfall was live, and nothing
-     in the suite noticed, because the suite sampled 600px too.
+     Each figure is the tallest panel over its range, and the range is a TOPOLOGY rather
+     than an arbitrary breakpoint: from 60rem the panel is two columns, below it the aside
+     stacks under the steps.
 
-       science  240 flat        cli  236 @545-560
-       web      207 @545-560    any  158 @<=740
+       >= 60rem   tallest 172 (science)   shortest 101   spread  71
+       <  60rem   tallest 252 (science)   shortest 144   spread 108
 
-     ONE BAND, not two. There was a second reserve below 48rem because the cli panel
-     outgrew everything else down there as its note wraps. It still does, reaching 236,
-     but the Claude Science panel is 240 and flat, so it is the tallest at every width and
-     one number covers the range. Do not reintroduce a band without re-running the sweep:
-     two numbers where one will do is two things to get wrong.
+     Two reserves because there are two layouts. That is a different thing from the two
+     bands this carried before, which were ONE layout sampled at two widths, and the narrow
+     one was 16px short because it was sampled at 600px, where the cli panel is 195px,
+     rather than at 560px where it is 236px. Carrying the width beside the number is what
+     makes that visible, and the version of this comment that gave three bare numbers is
+     exactly why nobody saw it.
 
      Below 34rem the panels wrap to unpredictable heights and a fixed reserve would strand
      a large gap, so it lifts entirely.
@@ -270,39 +292,59 @@ const paths = [
      `homepage-agent.spec.ts` asserts constant section height across tabs for BOTH
      instances at three widths, so a panel that outgrows this fails the suite instead of
      shipping. */
-  .panels { min-height: 15.25rem; }  /* 244px, clears the 240px tallest at every width */
+  .panels { min-height: 16.25rem; }                                /* 260px, stacked, clears 252 */
+  @media (min-width: 60rem) { .panels { min-height: 11.25rem; } }  /* 180px, 2-col, clears 172 */
   @media (max-width: 34rem) { .panels { min-height: 0; } }
+
+  /* `[hidden]` MUST still win. An explicit `display` on `.panel` outranks the UA
+     stylesheet's `[hidden] { display: none }`, so declaring this grid without the second
+     line renders all four panels stacked at once. */
+  .panel { display: grid; gap: var(--caail-space-4); align-content: start; }
+  .panel[hidden] { display: none; }
+
+  /* Two columns from 60rem, where the panel is ~1080px wide and the steps were using
+     barely half of it while the reserve was sized against the vertical. Moving the
+     supporting column beside the sequence spends the horizontal waste and cuts the spread
+     between the shortest and tallest panel, which is the number the reserve tracks. */
+  @media (min-width: 60rem) {
+    .panel { grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); column-gap: var(--caail-space-6); }
+  }
+  .main { display: flex; flex-direction: column; gap: var(--caail-space-3); }
 
   /* A plain sentence, matching the reference. The icon moved onto the tab, where it
      labels the path itself rather than decorating the instruction. */
-  .lead { font-size: var(--caail-fs-sm); color: var(--caail-muted); margin: 0 0 var(--caail-space-3); line-height: 1.5; }
+  .lead { font-size: var(--caail-fs-sm); color: var(--caail-muted); margin: 0; line-height: 1.5; }
 
-  /* Command row: a tinted well rather than a left rule. A 2px coloured side-stripe is a
-     borrowed shape, and a full container reads as a thing you copy from. */
-  /* Flex, NOT a three-track grid.
-     `grid-template-columns: auto 1fr auto` assumed three children, but the step number
-     is only rendered when a path has more than one step. On the single-step panel the
-     code landed in track 1 (auto, so it took 1033px) and the copy button was squeezed
-     into `1fr` with nothing left — it computed to 10px wide with 0px icons, which read
-     on the page as "the prompt has no copy button at all".
-     Flex has no fixed track count, so a conditional child cannot shift anything. */
-  .cmd {
-    display: flex; align-items: flex-start; gap: .5rem;
+  /* THE WELL WRAPS THE VALUE, NOT THE ROW, and that is the fix. Wrap the row and its own
+     padding indents that row's number by its inset, so with one boxed step beside two
+     plain ones the numbers stop forming a column and a 1-2-3 sequence reads as three
+     unrelated lines. That shipped, and it was most of what "looks bad" was.
+
+     The 1px TRANSPARENT border on `.n` and `.do` is load-bearing for the same reason: the
+     value's well carries a real 1px border, and without a matching one every plain row
+     sits a pixel off it. Identical box geometry, three different appearances. */
+  .steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--caail-space-2); }
+  .step { display: grid; grid-template-columns: 1.1rem minmax(0, 1fr); gap: .5rem; align-items: start; }
+  .steps--single .step { grid-template-columns: minmax(0, 1fr); }
+
+  .step .n, .step .do { border: 1px solid transparent; padding: .4rem 0; }
+  .step .n { font-size: var(--caail-fs-xs); font-weight: 600; color: var(--caail-muted); line-height: 1.6; font-variant-numeric: tabular-nums; }
+  /* Ink, and one step up the scale from the smallest size. These lines say WHERE TO GO,
+     so rendering them as the quietest thing on the panel inverted the hierarchy: squint
+     at it and the tinted well arrived first, the instructions last. */
+  .step .do { font-size: var(--caail-fs-sm); line-height: 1.6; color: var(--caail-ink); overflow-wrap: anywhere; }
+
+  /* `max-content` so an 18-character repo name gets an 18-character well instead of a
+     1080px one. A full-bleed container around a short value reads as an empty field, and
+     it parks the copy button most of a screen away from the thing it copies. */
+  .step .val {
+    display: inline-flex; align-items: flex-start; gap: .5rem;
+    width: max-content; max-width: 100%;
     background: color-mix(in oklab, var(--caail-link) 5%, transparent);
     border: 1px solid var(--caail-border); border-radius: 8px;
-    padding: .55rem .6rem; margin: 0 0 var(--caail-space-2);
+    padding: .4rem .5rem;
   }
-  /* An ACTION row is not a field: no tint, no border, no padding. Those are the visual
-     grammar of "there is something here to take", and a menu trail has nothing to take.
-     Dropping the box also buys back the row's vertical padding, which is why adding a
-     third step to the Claude Science path cost less height than the second one did. */
-  .cmd--do { background: none; border-color: transparent; padding-left: 0; padding-right: 0; }
-  .cmd .do { flex: 1 1 auto; min-width: 0; font-size: var(--caail-fs-xs); line-height: 1.6; color: var(--caail-muted); overflow-wrap: anywhere; }
-
-  /* Same line-height as the code it numbers, so the digit sits on the code's first
-     baseline rather than a few pixels above it. */
-  .cmd .n { flex: none; font-size: var(--caail-fs-xs); font-weight: 600; color: var(--caail-muted); line-height: 1.6; min-width: .75rem; }
-  .cmd code { flex: 1 1 auto; min-width: 0; font-size: var(--caail-fs-xs); line-height: 1.6; color: var(--caail-ink); background: none; padding: 0; overflow-wrap: anywhere; }
+  .step .val code { min-width: 0; font-size: var(--caail-fs-xs); line-height: 1.6; color: var(--caail-ink); background: none; padding: 0; overflow-wrap: anywhere; }
 
   .copy { display: inline-flex; flex: none; padding: .3rem; border-radius: 8px; border: 0; background: none; color: var(--caail-muted); cursor: pointer; transition: color .15s ease-out, background .15s ease-out; }
   .copy:hover, .copy:focus-visible { color: var(--caail-primary); background: color-mix(in oklab, var(--caail-link) 12%, transparent); }
@@ -314,13 +356,15 @@ const paths = [
   .copy.is-done .i-copy { display: none; }
   .copy.is-done .i-done { display: inline-block; }
 
-  .note { font-size: var(--caail-fs-xs); color: var(--caail-muted); margin: var(--caail-space-3) 0 0; line-height: 1.55; max-width: var(--caail-measure); }
+  /* Supporting metadata, not a step, so from 60rem up it sits BESIDE the sequence rather
+     than under it. Two stacked comments used to introduce `.clients`, saying the same
+     thing twice. */
+  .aside { display: flex; flex-direction: column; gap: .4rem; }
+  .note { font-size: var(--caail-fs-xs); color: var(--caail-muted); margin: 0; line-height: 1.55; max-width: var(--caail-measure); }
   .note a { margin-left: .35rem; white-space: nowrap; }
-  /* Names the agents the step actually works in, so the reader can check themselves
-     off the list before copying anything. */
-  /* Names AND marks the agents the step works in. Brand logos are used nominatively —
-     to identify a compatible client — which is what a compatibility list is for. */
-  .clients { display: flex; flex-wrap: wrap; align-items: center; gap: .25rem .7rem; margin: 0 0 .3rem; }
+  /* Names AND marks the agents the path works in. Brand logos are used nominatively, to
+     identify a compatible client, which is what a compatibility list is for. */
+  .clients { display: flex; flex-wrap: wrap; align-items: center; gap: .25rem .7rem; margin: 0; font-size: var(--caail-fs-xs); }
   .client { display: inline-flex; align-items: center; gap: .3rem; color: var(--caail-ink); font-weight: 600; }
   .client [data-icon] { width: .85rem; height: .85rem; opacity: .75; }
 
