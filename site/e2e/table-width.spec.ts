@@ -79,8 +79,41 @@ function tableColumnCounts(markdown: string): number[] {
   return counts;
 }
 
+/**
+ * Does this source hold a GFM table AT ALL, however it is written?
+ *
+ * The counter above requires a leading `|`, which GFM does not: `Name | URL`
+ * over `---|---` is a valid table. A page written that way returned no counts
+ * and was dropped from BOTH lists, so it got no assertion and nothing failed.
+ * That is a silent hole in a file whose stated value is that its coverage is
+ * derived rather than remembered, and the both-sides guard cannot see it
+ * because each list stays non-empty.
+ *
+ * This looks only for the DELIMITER row, which is the unambiguous half of the
+ * construct, and needs at least one pipe so a `---` horizontal rule does not
+ * match. Anything it finds that the counter missed is reported rather than
+ * parsed: the fix for an unreadable table is to look at it, not to widen a
+ * regex until it swallows prose. Snapshot 2026-09-01: zero canonical pages
+ * take this path, so it is a latent hole rather than a live one.
+ */
+function hasDelimiterRow(markdown: string): boolean {
+  let inFence = false;
+  for (const line of markdown.split('\n')) {
+    if (/^\s*(```|~~~)/.test(line)) {
+      inFence = !inFence;
+      continue;
+    }
+    if (inFence) continue;
+    if (/^\s*\|?\s*:?-+:?\s*(\|\s*:?-+:?\s*)+\|?\s*$/.test(line)) return true;
+  }
+  return false;
+}
+
 /** Every canonical prose source the site renders, as `{ route, widestTable }`. */
-function prosePagesWithTables(): Array<{ route: string; columns: number }> {
+function prosePagesWithTables(): {
+  pages: Array<{ route: string; columns: number }>;
+  unparsed: string[];
+} {
   const sources: string[] = [];
   for (const dir of CANONICAL_SOURCES.dirs) {
     for (const name of readdirSync(`${REPO_ROOT}${dir}`).filter(isPublishedMarkdown)) {
@@ -89,13 +122,21 @@ function prosePagesWithTables(): Array<{ route: string; columns: number }> {
   }
   sources.push(...CANONICAL_SOURCES.files);
 
-  return sources.flatMap((source) => {
+  const pages: Array<{ route: string; columns: number }> = [];
+  const unparsed: string[] = [];
+  for (const source of sources) {
     const id = CAAIL_PAGES.idForSourcePath(source);
-    if (!CAAIL_PAGES.byId(id)) return [];
-    const counts = tableColumnCounts(readFileSync(`${REPO_ROOT}${source}`, 'utf8'));
-    if (counts.length === 0) return [];
-    return [{ route: `./${id}/`, columns: Math.max(...counts) }];
-  });
+    if (!CAAIL_PAGES.byId(id)) continue;
+    const markdown = readFileSync(`${REPO_ROOT}${source}`, 'utf8');
+    const counts = tableColumnCounts(markdown);
+    if (counts.length === 0) {
+      // Holds a table this file cannot read, rather than holding none.
+      if (hasDelimiterRow(markdown)) unparsed.push(source);
+      continue;
+    }
+    pages.push({ route: `./${id}/`, columns: Math.max(...counts) });
+  }
+  return { pages, unparsed };
 }
 
 /**
@@ -112,9 +153,43 @@ const CONTAINER_MAX_WIDTH = (table: Element): string => {
   return getComputedStyle(container).maxWidth;
 };
 
-const pages = prosePagesWithTables();
+// CAPTURED, NOT THROWN, and this file is the reason the rest of the branch
+// bothers. `CANONICAL_SOURCES.files` is a getter that throws on a `group: 'top'`
+// page with no `source`, and `readdirSync` throws on a renamed canonical
+// directory. At module scope either aborts LOADING of this spec, so Playwright
+// reports a file that failed to collect instead of a named assertion, and every
+// test below is gone rather than red. Smaller blast radius than the same shape
+// in the vitest guard, since Playwright does surface it, but it is the pattern
+// this branch argues against and it does not get an exception for being ours.
+let pages: Array<{ route: string; columns: number }> = [];
+let unparsed: string[] = [];
+let derivationError: unknown;
+try {
+  ({ pages, unparsed } = prosePagesWithTables());
+} catch (e) {
+  derivationError = e;
+}
 const narrow = pages.filter((p) => p.columns < MIN_DATA_TABLE_COLUMNS);
 const wide = pages.filter((p) => p.columns >= MIN_DATA_TABLE_COLUMNS);
+
+test('the page derivation ran', () => {
+  expect(
+    derivationError,
+    'deriving the page set threw, so every assertion below was skipped rather '
+      + 'than run. A canonical directory was probably renamed, or a top-level '
+      + 'page lost its `source` field',
+  ).toBeUndefined();
+});
+
+test('every canonical page holding a table was parsed', () => {
+  expect(
+    unparsed,
+    'these pages hold a GFM delimiter row but yielded no column count, so they '
+      + 'are in neither the narrow nor the wide list and nothing asserts '
+      + 'anything about them. Most likely a table written without leading '
+      + 'pipes, which `tableColumnCounts` does not read',
+  ).toEqual([]);
+});
 
 test('the derivation found pages on both sides of the threshold', () => {
   // Guards the derivation. Either list going empty would turn its loop below

@@ -105,14 +105,15 @@ describe('DataTableViews', () => {
   });
 
   it('has no second copy of either threshold as a literal', () => {
-    // The literals as the component used to spell them. Matching the shape
-    // rather than the whole line, so a reformat does not silently retire the
-    // check.
-    expect(COMPONENT).not.toMatch(
-      new RegExp(`headCells\\.length\\s*<\\s*${MIN_DATA_TABLE_COLUMNS}\\b`),
-    );
-    expect(COMPONENT).not.toMatch(
-      new RegExp(`bodyRows\\.length\\s*<\\s*${MIN_DATA_TABLE_BODY_ROWS}\\b`),
-    );
+    // ANY numeric literal, deliberately not today's value. Interpolating the
+    // constant made this forbid only the number the constant currently holds,
+    // so raising MIN_DATA_TABLE_COLUMNS to 4 would force the stylesheet to
+    // `th:nth-child(4)` via the test above while a component still reading
+    // `headCells.length < 3` passed both assertions. The component and the CSS
+    // would then disagree about what a data table is, which is the one
+    // divergence this file exists to prevent. `\d` cannot match the constant's
+    // NAME, so the legitimate spelling is unaffected.
+    expect(COMPONENT).not.toMatch(/headCells\.length\s*<\s*\d/);
+    expect(COMPONENT).not.toMatch(/bodyRows\.length\s*<\s*\d/);
   });
 });

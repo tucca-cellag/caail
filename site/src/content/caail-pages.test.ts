@@ -142,11 +142,18 @@ describe('top-level prose pages', () => {
     expect(CAAIL_PAGES.missingTopLevelSources(CANONICAL_SOURCES.files)).toEqual([]);
   });
 
-  it('reports the page an incomplete list would drop', () => {
+  it('reports the page the prototype branch actually dropped', () => {
     // The exact list `site/src/lib/prototype-page-md.ts` shipped on
     // prototype/caail-340-nav, which is where the divergence was found. Kept as
     // a case rather than a comment so the guard is shown discriminating: fed a
     // list that is short a page it names that page, and it named this one.
+    //
+    // `toContain`, NOT `toEqual`, because this list is FROZEN HISTORY while
+    // `topLevelSources()` grows. An eighth top-level page is a correct and
+    // unrelated change, and under an exact assertion it would fail here with a
+    // message about a prototype branch's Markdown endpoint, sending the reader
+    // somewhere with no bearing on what they did. Exactness is not lost; it
+    // moves to the derived case below, which is the one that can carry it.
     const asPrototypeShippedIt = [
       'CONTRIBUTING.md',
       'OtherResources.md',
@@ -155,7 +162,22 @@ describe('top-level prose pages', () => {
       'Taxonomy.md',
       'AIAgentsFoundationModels.md',
     ];
-    expect(CAAIL_PAGES.missingTopLevelSources(asPrototypeShippedIt)).toEqual(['Community.md']);
+    expect(CAAIL_PAGES.missingTopLevelSources(asPrototypeShippedIt)).toContain('Community.md');
+  });
+
+  it('names exactly the page a list is short, whatever the page set becomes', () => {
+    // The exact half, derived so it survives the corpus growing. Dropping ONE
+    // known entry must report that entry and nothing else.
+    //
+    // Not tautological, and the distinction is worth stating because the
+    // obvious version IS. Asserting against
+    // `topLevelSources().filter(s => !input.includes(s))` would restate the
+    // implementation and test nothing. Here the input is built by REMOVING a
+    // named element and the expectation is that single literal name, so the
+    // two sides are derived differently.
+    const all = CAAIL_PAGES.topLevelSources();
+    const dropped = all[0];
+    expect(CAAIL_PAGES.missingTopLevelSources(all.slice(1))).toEqual([dropped]);
   });
 
   it('counts every top-level page the repo root actually backs', () => {

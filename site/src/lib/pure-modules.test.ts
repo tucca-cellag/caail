@@ -54,7 +54,7 @@
  * which is why this docstring writes its glob example with U+2217.
  */
 import { describe, it, expect } from 'vitest';
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, statSync } from 'node:fs';
 import { join, dirname, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -97,11 +97,26 @@ function moduleSpecifiers(src: string): string[] {
  *
  * Falls back to the primary spelling when none exists, so an unresolvable
  * specifier is reported by the readability probe rather than silently skipped.
+ *
+ * TESTED WITH `isFile`, NOT `existsSync`, and the difference is the whole
+ * reason the directory candidate works. `existsSync` is true for a DIRECTORY,
+ * so a specifier like `'../lib'` matched the bare path first and the
+ * `index.ts` candidate below it was unreachable. The walk then read a
+ * directory and recorded `EISDIR` under the message that says the module was
+ * moved or is prose, which is the exact misdiagnosis the candidate list exists
+ * to prevent.
  */
 function resolveFrom(fromRel: string, spec: string): string {
   const base = normalize(join(dirname(fromRel), spec));
   const candidates = [base.replace(/\.js$/, '.ts'), base, `${base}.ts`, join(base, 'index.ts')];
-  return candidates.find((c) => existsSync(join(SITE_ROOT, c))) ?? candidates[0];
+  const isFile = (rel: string): boolean => {
+    try {
+      return statSync(join(SITE_ROOT, rel)).isFile();
+    } catch {
+      return false;
+    }
+  };
+  return candidates.find(isFile) ?? candidates[0];
 }
 
 /** The guard's STATIC project imports, as paths relative to site/. */
