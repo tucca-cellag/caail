@@ -57,40 +57,23 @@ import { relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { CAAIL_PAGES } from '../caail-pages.ts';
 import { privateCompanionGlobExclusions } from '../../lib/canonical-files.ts';
+// Imported, and DELIBERATELY NOT re-exported. An earlier draft re-exported it
+// with a comment claiming that kept existing importers working; there were none,
+// since the only one was repointed at the pure module in the same change.
+// Re-exporting would advertise a supported way to reach this data THROUGH this
+// module, and the next consumer to follow it drags astro/loaders back into a
+// guard that has no business importing it, which is why it was moved out.
+import { CANONICAL_SOURCES } from '../canonical-sources.ts';
 
 // content/loaders/ -> content/ -> src/ -> site/ -> repo root
 const REPO_ROOT = new URL('../../../../', import.meta.url);
-
-/**
- * Canonical source files to ingest, as paths relative to the repo root.
- *
- *   - Every top-level `*.md` in `dirs` is considered (enumerated with
- *     `fs.readdir` — no extra glob dependency needed).
- *   - `files` lists individual top-level files.
- *
- * Each candidate is resolved to a route id via `CAAIL_PAGES.idForSourcePath`;
- * any file whose id has no `CAAIL_PAGES` entry (e.g. the `CLAUDE.md` files in
- * those directories) is skipped, so the directory scan is allowed to be broad.
- */
-const CANONICAL_SOURCES = {
-  dirs: ['ResearchAreas', 'Methods', 'Datasets'],
-  files: [
-    'CONTRIBUTING.md',
-    'OtherResources.md',
-    'Taxonomy.md',
-    'AIAgentsFoundationModels.md',
-    'ReferenceWorks.md',
-    'Funding.md',
-    'Community.md',
-  ],
-} as const;
 
 /**
  * Glob for the in-repo Starlight docs.
  *
  * Exported so it can be tested. This is the ONE branch of this loader with no
  * `CAAIL_PAGES` allow-list, so the pattern is the only thing standing between
- * a private companion placed beside a public page — the placement ADR-0002
+ * a private companion placed beside a public page — the placement the publishing rule
  * sanctions — and a built, deployed route.
  *
  * The exclusions are derived from `PRIVATE_COMPANION_SUFFIXES`, not written
@@ -217,4 +200,3 @@ export function caailDocsLoader(): Loader {
     },
   };
 }
-

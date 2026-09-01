@@ -2,9 +2,9 @@
  * verify.ts — the round-trip oracle. Rebuilds the DB from committed NDJSON, emits
  * each DB-owned canonical file into a temp dir, re-parses it with the REAL parser,
  * and asserts the regenerated model matches the original per the fidelity bar:
- *   - Papers:  JSON-identical PapersData + lint 0 errors      (spike S1)
- *   - Catalog: {name,url,group,summary,summaryHtml} identical (spike S3)
- *   - Datasets: inventory row-set identical                   (spike S4)
+ *   - Papers:  JSON-identical PapersData + lint 0 errors
+ *   - Catalog: {name,url,group,summary,summaryHtml} identical
+ *   - Datasets: inventory row-set identical
  * Never writes canonical files. Exit 1 on any mismatch.
  *
  *   NODE_OPTIONS='--experimental-sqlite --no-warnings' pnpm --dir site db:verify

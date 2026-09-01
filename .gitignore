@@ -7,8 +7,28 @@
 # rather than any directory of that name; site/scripts/private-paths.test.ts
 # pins both the source and the exact pattern, and fails if either changes.
 /internal-docs/
+# These outlive the directory they name. docs/ was removed because nothing in it
+# documented the live library, but an agent carrying an older instruction still
+# writes there, and without these rules that lands a planning document in a
+# public repo with nothing failing. They look dead, which is exactly when a
+# tidy-up removes them; site/scripts/private-paths.test.ts is what goes red if
+# one is dropped. Removing them is a decision to take deliberately.
+#
+# docs/adr/ and docs/agents/ matter most: a stale skill or an older session
+# names those two specifically, because that is what CLAUDE.md and CONTEXT.md
+# said until the deletion, and /domain-modeling still creates docs/adr/.
+# docs/spikes/ is here for consistency rather than for that reason; nothing
+# routed writers to it, so it is the first candidate if this list is ever
+# trimmed. NOT a bare `docs/`, so genuine live-library documentation can still
+# be added there deliberately.
 docs/superpowers/
 docs/research/
+docs/adr/
+docs/agents/
+docs/spikes/
+
+# Unrelated to docs/, and never deleted. Kept out of the block above because
+# the comment there invites trimming and these are not candidates for it.
 manuscript/
 tools/
 
@@ -68,7 +88,7 @@ node_modules/
 # Local wrangler state
 workers/*/.wrangler/
 
-# Per-file private companions: content that fails the docs/adr/0002 publishing
+# Per-file private companions: content that fails the repo's own publishing
 # test lives beside its public file with a .local.md / .local.mdx suffix,
 # gitignored, and reaches worktrees through .worktreeinclude.
 #

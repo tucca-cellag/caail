@@ -16,7 +16,7 @@
  *  - #133 axis resolution: Taxonomy.md's three vocabularies may share a label,
  *    so every DB row/column must resolve to a definition under its OWN H2, and
  *    no label may be defined twice within one axis;
- *  - ADR-0001 subject-axis bijection: every theme names a research area, every
+ *  - subject-axis bijection: every theme names a research area, every
  *    research area is named by exactly one theme, and every research area has a
  *    ResearchAreas page. Asserted through `area_key`, never by label equality.
  *    Research-area axis only; the method-row axis is deliberately not gated.
@@ -181,7 +181,7 @@ const RESEARCH_AREA_PAGES: Record<string, string> = {
 };
 
 /**
- * ADR-0001's subject-axis bijection, on the RESEARCH-AREA axis only.
+ * The subject-axis bijection, on the RESEARCH-AREA axis only.
  *
  * The model: subject themes and matrix research areas are two axes over different
  * populations, paired one-to-one by `topics.area_key`, with one deep-dive page per
@@ -211,7 +211,7 @@ export function checkAxisBijection(db: Db, repoRoot: string = REPO_ROOT): CheckR
   const keyless = (db.prepare("SELECT slug FROM topics WHERE tier='theme' AND area_key IS NULL").all() as { slug: string }[])
     .map((r) => r.slug);
   out.push(ok('axes: every subject theme names a research area', keyless.length === 0,
-    `themes with a null area_key: [${keyless.join(', ')}] — ADR-0001 retired the "cross-cutting theme" class, so a theme without a column is a deliberate reopening of it`));
+    `themes with a null area_key: [${keyless.join(', ')}] — every theme names a research area by design, so a theme without a column reopens a settled decision rather than adding one. The reasoning is the "Cross-cutting subject" entry in CONTEXT.md, which is its one resolvable home in this tree. Give it an area_key, or change the axis model deliberately.`));
 
   // 2. Every research area is named by exactly one theme.
   const areaKeys = (db.prepare('SELECT key FROM areas ORDER BY ordinal').all() as { key: string }[]).map((r) => r.key);
@@ -590,7 +590,7 @@ const FM_CLAUSES: ReadonlyArray<readonly [string, RegExp]> = [
  * The file defines three vocabularies that may in principle share a label, so a
  * whole-file flatten loses one of them silently. That is not hypothetical: the
  * `Bioprocess & Scale-Up` column and a same-named subject theme collided exactly
- * this way. ADR-0001 has since renamed the theme to `Bioprocess & Manufacturing`
+ * this way. The theme has since been renamed to `Bioprocess & Manufacturing`
  * and `taxonomy.test.ts` now asserts the two axes share no label at all, so the
  * collision is gone at the source — this guard is defence in depth against a
  * convention a future edit could breach, not a live condition. The pre-existing

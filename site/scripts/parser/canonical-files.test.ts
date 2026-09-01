@@ -2,7 +2,7 @@
  * canonical-files.test.ts — private `*.local.md` companions stay out of the
  * published corpus.
  *
- * `docs/adr/0002-what-the-repo-publishes.md` puts a private companion BESIDE
+ * The repo's publishing rule (CLAUDE.md) puts a private companion BESIDE
  * its public file, so one can land inside a canonical directory. Two parser
  * entry points enumerate those directories: llms-full.ts inlines each match
  * verbatim into the served public/llms-full.txt, and counts.ts derives the
@@ -25,6 +25,8 @@ import {
   isPrivateCompanion,
   PRIVATE_COMPANION_SUFFIXES,
 } from '../../src/lib/canonical-files.js';
+import { worktreeIncludeRules } from '../../src/lib/worktree-include.js';
+import { patternOf, isInRepoGitignore } from '../../src/lib/gitignore-report.js';
 import { llmsFullSources } from './llms-full.js';
 import { computeCounts } from './counts.js';
 import { DOCS_GLOB_PATTERN } from '../../src/content/loaders/caail-docs-loader.js';
@@ -114,51 +116,95 @@ describe('the ignore rules and the predicate agree on what a companion is', () =
   // every file under site/src/content/docs/ is .mdx, so the commonest
   // companion was excluded from the build and committable into a public repo
   // at the same time.
-  it('git ignores a companion at every suffix the predicate recognises', () => {
-    for (const suffix of PRIVATE_COMPANION_SUFFIXES) {
-      const probe = `site/src/content/docs/probe${suffix}`;
-      // -v, and the SOURCE is asserted, not just the match. With -q alone this
-      // proves only that SOMETHING ignores the probe: a contributor carrying
-      // `*.local.md*` in ~/.config/git/ignore or .git/info/exclude could delete
-      // the committed rule, run this suite, see green and push, and only CI
-      // would catch it. Not hypothetical: this repo's own .git/info/exclude
-      // already carries a rule that masked the `.env` case in
-      // scripts/private-paths.test.ts, which is where this fix came from.
-      //
-      // THE `(?!!)` IS LOAD-BEARING AND WAS ADDED AFTER A REGRESSION. Moving
-      // from -q to -v inverts the exit-code contract: -q exits 1 on a negated
-      // path (correct, it is not ignored) while -v MATCHES the negation and
-      // exits 0. Measured against `!site/src/content/docs/*.local.mdx`:
-      // -q exits 1, -v exits 0 and prints `.gitignore:79:!site/...`. So the
-      // first draft of this very fix made the guard weaker than the -q form it
-      // replaced, passing while a companion was committable. Rejecting a
-      // leading `!` in the pattern is what makes -v safe here.
-      const res = spawnSync('git', ['check-ignore', '-v', probe], {
-        cwd: REPO_ROOT,
-        encoding: 'utf-8',
-      });
-      expect(res.error, `git check-ignore could not run for ${probe}`).toBeUndefined();
-      expect([0, 1], `git check-ignore exited ${res.status} for ${probe}`).toContain(res.status);
-      expect(res.status, `${probe} is NOT gitignored: a companion here is committable`).toBe(0);
-      // Output shape: `<source>:<line>:<pattern>\t<pathname>`.
-      expect(
-        (res.stdout ?? '').trim(),
-        `${probe} is not ignored by a positive rule in this repo's .gitignore: `
-          + `either the rule lives in a personal exclude source, or a negation `
-          + `has un-ignored it. Either way a companion here is committable.`,
-      ).toMatch(/^\.gitignore:\d+:(?!!)/);
-    }
+  // TWO PROBES, AT TWO DEPTHS, and the second is not redundant. The suffix
+    // rules live in the ROOT .gitignore today and therefore cover the whole
+    // tree, but nothing here required that until this probe existed. Scope them
+    // into the tracked `site/.gitignore` instead, which is a plausible tidy-up,
+    // and a single `site/`-only probe still reports ignored while every
+    // companion beside a canonical page at the repo root becomes committable
+    // into a public repo.
+    //
+    // MEASURED, not reasoned about, because an earlier version of this guard
+    // pinned the ROOT .gitignore by regex and that pin was replaced with a
+    // shared in-repo predicate: with the rules moved to `site/.gitignore`, this
+    // suite ran 18/18 GREEN while `git check-ignore --no-index -v
+    // Datasets/Cow.local.md` exited 1. The predicate change was right on its own
+    // terms (a nested in-repo rule is genuinely in-repo) and silently gave up a
+    // property the regex had been carrying by accident. A probe states the
+    // property directly instead of leaving it to the shape of a pattern.
+  //
+  // ONE `it` PER PROBE, not a loop, matching the sibling guard's reason: a run
+  // that breaks two rules must report both. A single loop aborts on the first
+  // failure, so an edit dropping both suffixes reports only the first probe, the
+  // reviewer fixes that one line, re-runs, and only then learns the repo-root
+  // case and the .mdx case are broken too. Three round-trips for one edit, on
+  // the guard whose failure mode is a private companion being committable.
+  const probes = PRIVATE_COMPANION_SUFFIXES.flatMap((suffix) => [
+    `site/src/content/docs/probe${suffix}`,
+    `Datasets/probe${suffix}`,
+  ]);
+
+  it.each(probes)('git ignores a companion at %s', (probe) => {
+    // -v, and the SOURCE is asserted, not just the match. With -q alone this
+    // proves only that SOMETHING ignores the probe: a contributor carrying
+    // `*.local.md*` in ~/.config/git/ignore or .git/info/exclude could delete
+    // the committed rule, run this suite, see green and push, and only CI
+    // would catch it. Not hypothetical: this repo's own .git/info/exclude
+    // already carries a rule that masked the `.env` case in
+    // scripts/private-paths.test.ts, which is where this fix came from.
+    //
+    // THE `(?!!)` IS LOAD-BEARING AND WAS ADDED AFTER A REGRESSION. Moving
+    // from -q to -v inverts the exit-code contract: -q exits 1 on a negated
+    // path (correct, it is not ignored) while -v MATCHES the negation and
+    // exits 0. Measured against `!site/src/content/docs/*.local.mdx`:
+    // -q exits 1, -v exits 0 and prints `.gitignore:79:!site/...`. So the
+    // first draft of this very fix made the guard weaker than the -q form it
+    // replaced, passing while a companion was committable. Rejecting a
+    // leading `!` in the pattern is what makes -v safe here.
+    // --no-index, for the reason the sibling test 60 lines down gives at
+    // length: in index-aware mode check-ignore never reports a TRACKED path,
+    // so the moment a probe name becomes concrete (which the repo-root probe
+    // invites) stdout goes empty and the assertion below reads nothing while
+    // staying green. That is worse than an unreachable guard: this one runs.
+    const res = spawnSync('git', ['check-ignore', '--no-index', '-v', probe], {
+      cwd: REPO_ROOT,
+      encoding: 'utf-8',
+    });
+    expect(res.error, `git check-ignore could not run for ${probe}`).toBeUndefined();
+    expect([0, 1], `git check-ignore exited ${res.status} for ${probe}`).toContain(res.status);
+    expect(res.status, `${probe} is NOT gitignored: a companion here is committable`).toBe(0);
+    // TWO INDEPENDENT QUESTIONS, asked separately, because one regex asking
+    // both answered neither clearly. `/^\.gitignore:\d+:(?!!)/` was root
+    // anchored, so scoping the `*.local.md` rules into the tracked
+    // `site/.gitignore` (a plausible refactor, since the probe path lives
+    // under `site/`) made it report "the rule lives in a personal exclude
+    // source" about a rule sitting in this repo. That is the third
+    // hand-rolled copy of this parse to get the in-repo test wrong, which is
+    // why the predicate now has one home.
+    const out = (res.stdout ?? '').trim();
+    expect(
+      isInRepoGitignore(out),
+      `${probe} is ignored, but by a rule OUTSIDE this repo (a personal `
+        + `core.excludesFile or .git/info/exclude), so nothing here makes it `
+        + `true for anyone else and a companion is committable for them. `
+        + `The reporting source was: ${out}`,
+    ).toBe(true);
+    expect(
+      patternOf(out).startsWith('!'),
+      `${probe} matched a NEGATION, which un-ignores it, so a companion here `
+        + `is committable. The exit code cannot see this: -v MATCHES a `
+        + `negation and exits 0, which is how an earlier draft of this guard `
+        + `passed while being weaker than the -q form it replaced.`,
+    ).toBe(false);
   });
 
   it('.worktreeinclude carries every suffix, or companions never reach a worktree', () => {
     // The third copy. Without this a suffix could be added to the predicate
     // and .gitignore, and companions at it would silently stop being copied
     // into new worktrees — first noticed by a curator losing a file.
-    const src = readFileSync(join(REPO_ROOT, '.worktreeinclude'), 'utf-8');
-    const lines = src
-      .split('\n')
-      .map((l) => l.trim())
-      .filter((l) => l && !l.startsWith('#'));
+    const lines = worktreeIncludeRules(
+      readFileSync(join(REPO_ROOT, '.worktreeinclude'), 'utf-8'),
+    );
     for (const suffix of PRIVATE_COMPANION_SUFFIXES) {
       expect(lines, `.worktreeinclude has no rule covering ${suffix}`).toContain(`*${suffix}`);
     }
@@ -251,7 +297,7 @@ describe('computeCounts — private companions do not inflate the counts', () =>
   beforeAll(() => {
     root = mkdtempSync(join(tmpdir(), 'caail-counts-'));
     cpSync(join(FIXTURE_DIR, 'counts-repo-root-fixture'), root, { recursive: true });
-    // A curator follows ADR-0002 and drops a companion beside a public page.
+    // A curator follows the publishing rule and drops a companion beside a public page.
     writeFileSync(join(root, 'Datasets', 'Cow.local.md'), 'PRIVATE\n');
     writeFileSync(join(root, 'ResearchAreas', 'Bioprocess.local.md'), 'PRIVATE\n');
   });

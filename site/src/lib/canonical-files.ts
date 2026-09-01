@@ -1,7 +1,7 @@
 /**
  * canonical-files.ts — which files in a canonical directory are published.
  *
- * `docs/adr/0002-what-the-repo-publishes.md` establishes `*.local.md` as the
+ * The repo's publishing rule (CLAUDE.md) establishes `*.local.md` as the
  * suffix for a private companion living beside its public file. Nothing stops
  * one being created inside `Datasets/`, `ResearchAreas/`, `Methods/` or
  * `Primers/`, so every reader of those directories has to have an answer for
@@ -32,7 +32,7 @@
 const INSTRUCTION_FILES: ReadonlySet<string> = new Set(['CLAUDE.md']);
 
 /**
- * The suffixes reserved for private companions (ADR-0002), gitignored.
+ * The suffixes reserved for private companions, gitignored.
  *
  * Both, not just `.md`: every file under `site/src/content/docs/` is `.mdx`,
  * and that is a directory the convention sanctions a companion in. Keep this

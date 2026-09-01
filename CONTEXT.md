@@ -7,20 +7,29 @@ else: the **scope** of any individual matrix row or column lives in
 restated here. `ResearchAreas/*.md` and `Methods/*.md` are prose deep dives and are
 explicitly not a definition source.
 
-Decisions about how these concepts relate live in [`docs/adr/`](./docs/adr/). This file
-describes the repository as it is **today**, not as a decision intends it to become: where
-the two differ, the entry says so and points at the ADR that closes the gap. A glossary
-that states a decided end-state as present fact tells a reader the work is already done.
+Decisions about how these concepts relate live on the tracker, not in this repository: a
+decision record is not library documentation. This file describes the repository as it is
+**today**, not as a decision intends it to become. Where the two differ, the entry says so
+plainly; it does not name a ticket, because the tracker is private and a key would resolve
+for nobody reading this. That is a rule about **this file's entries**, not a sweep: the tree
+carries many tracker keys in comments and commit messages, where they are useful to whoever
+can resolve them, and whether an always-loaded public file should carry them is a separate
+argument that belongs on the tracker rather than here. A glossary that states a decided end-state as present fact tells a
+reader the work is already done.
 
-**Every count below is a snapshot taken 2026-08-20 from `site/db/ndjson/`.** `areas.ndjson`,
+**Every count below is a snapshot taken 2026-08-20, except where a line carries its own later date.** Their source is `site/db/ndjson/`, with one exception: the number of pages in `ResearchAreas/` is a filesystem count that no NDJSON file carries, so a disagreement about that one is settled against the directory rather than the DB. Not by a bare `ls`, which returns nine: the figure counts PUBLISHED pages, and `isPublishedMarkdown` drops `CLAUDE.md` and any `*.local.md` beside them. `areas.ndjson`,
 `topics.ndjson`, `item_topics.ndjson` and `matrix_cells.ndjson` are the source of truth: where a
 number here disagrees with them, they are right and this file is stale. **No one command prints
 all of these.** `pnpm --dir site db:check` prints the theme assertions, including that there are
 exactly eight; `pnpm --dir site parse` prints the headline totals but not the 229 matrix-eligible
 subset, nor any theme or `area_key` count. Read `parse`'s output carefully: its `researchAreas`
-figure counts files in `ResearchAreas/`, currently 7, and is **not** the number of research areas
-as defined below, which is the 6 matrix columns in `areas.ndjson`. For the rest, read the four
-files.
+figure counts files in `ResearchAreas/` and is **not** the number of research areas as defined
+below, which is the matrix columns in `areas.ndjson`. Both are 8 as of 2026-08-25, and that is the
+bijection holding rather than the two being the same measurement. They can diverge, and
+**only one direction is guarded**: `db:check` fails if a column has no page, and says nothing
+about an extra page that names no column. A ninth non-column file in `ResearchAreas/` passes
+`db:check`; what catches it is `counts.test.ts`'s literal and `caail-pages.test.ts`. Read the
+four files rather than either figure.
 
 ## Language
 
@@ -80,11 +89,11 @@ The umbrella term covering both themes and fine tags. Never a synonym for either
 
 **Cross-cutting subject**:
 A subject that spans research areas rather than naming one. The class is **empty**:
-ADR-0001 gave `Metabolism & Modeling` and `Food Safety` the columns they were missing, so every
+`Metabolism & Modeling` and `Food Safety` were given the columns they were missing, so every
 theme now names a research area. The term is kept because it explains why the taxonomy is shaped
 as it is, not because anything is filed under it.
 
-Adding a cross-cutting theme is therefore a deliberate reopening of ADR-0001 rather than a quiet
+Adding a cross-cutting theme is therefore a deliberate reopening of a settled decision rather than a quiet
 addition, and that is now enforced rather than asked for: `db:check` requires every theme to carry
 a non-null `area_key`, so such a theme fails the build. It separately guards the theme *list*
 against `THEME_SLUGS`, so a ninth theme cannot appear unnoticed either.
@@ -103,7 +112,8 @@ theme under its old name with a valid key, which the first assertion alone would
 
 **The join is total.** Each of the eight themes reaches one of the eight research areas, and each
 research area has exactly one `ResearchAreas/` deep-dive page hanging off it rather than off the
-theme (`RESEARCH_AREA_SLUG`). ADR-0001's bijection is the live state rather than its target.
+theme (`RESEARCH_AREA_SLUG`). The bijection is the live state rather than a target, and
+`db:check`'s `checkAxisBijection` is what holds it there.
 
 **Deep-dive page**:
 A hand-authored prose overview of one axis member: `ResearchAreas/<Area>.md` for a research
@@ -115,12 +125,16 @@ _Avoid_: area page, docs page
 
 A research area's label should read as a **problem** (`Media Optimization`, `Sensory
 Prediction`, `Cellular Engineering`). A subject theme's label should read as an **`&`-joined
-subject** (`Media & Growth Factors`, `Sensory & Flavor`, `Cell Lines & Engineering`). Per
-ADR-0001 this **binds new labels rather than describing the existing ones**, and neither half
+subject** (`Media & Growth Factors`, `Sensory & Flavor`, `Cell Lines & Engineering`). This
+convention **binds new labels rather than describing the existing ones**, and neither half
 holds across the live set: `Scaffolding` and `AI Tooling / Methodology` are columns naming no
 problem, `Food Safety` is a theme carrying no `&`, and `Bioprocess & Scale-Up` is an
 `&`-joined column. Where it does hold, the difference is deliberate and load-bearing, because it
-is the only cue a reader has that two similar names denote different populations. One label is still shared across the axes:
-`Bioprocess & Scale-Up` names both a research area and a theme, which is the collision
-`Taxonomy.md` still carries as a duplicate `###` heading. ADR-0001 closes it by relabelling
-the theme `Bioprocess & Manufacturing`.
+is the only cue a reader has that two similar names denote different populations.
+
+**No label is shared across the axes any more.** `Bioprocess & Scale-Up` names the research
+area and the theme is `Bioprocess & Manufacturing`, so `Taxonomy.md` carries two distinct
+`###` headings rather than one collision. Re-read that from `topics.ndjson` and `Taxonomy.md`
+rather than from here. The slug did not move with the label: `topic:bioprocess-scale-up` is a
+frozen id and its slug is what `/topics/?t=<slug>` and `api/topics.json` serve, so label and
+slug diverge permanently and that mismatch is intended rather than drift to repair.

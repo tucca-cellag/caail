@@ -368,23 +368,49 @@ and no signal that one is missing.
 governs disclosure harm, and it is not a scope rule. Used as one it passes nearly everything,
 which is how ~165 lines of single-user tracker mechanics came to be public and how a section
 on authenticating a tracker write was then added beside them, caught by a review round rather
-than by any rule. Rationale, rejected alternatives and what has not yet been re-examined:
-`docs/adr/0002-what-the-repo-publishes.md`, whose Implementation status is explicit that the
-repo does not yet comply with its own test.
+than by any rule. The rationale, the rejected alternatives and the sweep of what has not yet
+been re-examined live on the tracker (CAAIL-317), not in this repository: a decision record is
+not library documentation, so it goes where decisions go.
+
+**A sharper form of the same rule governs what may sit in a directory at all.** `docs/` holds
+documentation for the live library and nothing else. Scoping, planning and decision records go
+to Jira and GitHub. Applied file by file the test above is too permissive here, because a
+decision record that happens to describe the matrix schema still reads as "how the library is
+made"; it is a decision about the library, which is a different thing.
+
+**This narrows `docs/`; it does not narrow the repository.** The section above still publishes
+the curation methodology, the contribution and consumption paths, and the guards that protect
+anyone who clones, which is why `.claude/`, `site/`, `workers/` and the plugins are all tracked
+and belong here. Read this rule as answering "may a planning document live in the tree", not as
+a test to apply to executable content.
+
+`docs/` does not currently exist, having been emptied under that rule. **Several of its
+subpaths are still gitignored** (read `.gitignore` for which; the list has already grown once
+since this sentence was written), deliberately, because agents carrying an older instruction
+still write there and the rules are what stop an unpublished planning document being committed.
+The consequence to know before recreating the directory: a page written to one of those paths
+is silently swallowed, never reaching the repo or the site, with nothing failing. So recreating
+`docs/` for genuine library documentation means checking `.gitignore` first.
+`site/scripts/private-paths.test.ts` guards the rules and asserts nothing about publishability
+under `docs/`.
 
 ## Agent skills
 
 ### Issue tracker
 
-Split. Jira project `CAAIL` is the durable record and is never skipped (`/to-spec`, `/to-tickets`, `/wayfinder`); public GitHub `tucca-cellag/caail` takes discrete world-safe requests and anything a PR closes, and is what `/triage` reads. Enumerate **both** before creating anything. See `docs/agents/issue-tracker.md`.
+Split. Jira project `CAAIL` is the durable record and is never skipped (`/to-spec`, `/to-tickets`, `/wayfinder`); public GitHub `tucca-cellag/caail` takes discrete world-safe requests and anything a PR closes, and is what `/triage` reads. Enumerate **both** before creating anything. The conventions this project actually applies are in "Jira conventions" below; the generic per-repo routing file other repos carry is deliberately not in this tree, so an agent looking for one and finding none should read that section rather than conclude the trackers are unsplit.
 
 ### Triage labels
 
-Two independent axes. **State** answers what is blocking a ticket now, and has two spellings because it has two writers: `state:<class>` on Jira (from `tracker-backfill`) and the five canonical triage roles on GitHub (from `/triage`, for issues someone else filed) — `wontfix` already exists on the repo and should be applied rather than duplicated. **Type** answers what kind of work resolves it: `wayfinder:<type>`, on both trackers, applied to every ticket regardless of how it was created. See `docs/agents/triage-labels.md`.
+Two independent axes. **State** answers what is blocking a ticket now, and has two spellings because it has two writers: `state:<class>` on Jira (from `tracker-backfill`) and the five canonical triage roles on GitHub (from `/triage`, for issues someone else filed) — `wontfix` already exists on the repo and should be applied rather than duplicated. **Type** answers what kind of work resolves it: `wayfinder:<type>`, on both trackers, applied to every ticket regardless of how it was created. The full label tables are maintainer-local.
 
 ### Domain docs
 
-Single-context: `CONTEXT.md` + `docs/adr/` at the repo root, both created lazily by `/domain-modeling` rather than seeded. Both now exist. `CONTEXT.md` is the glossary and names concepts only, pointing at `Taxonomy.md` for the scope of any individual row or column rather than restating it; `docs/adr/0001-matrix-axis-model.md` records why the matrix research areas and the subject themes are two axes joined by `area_key` rather than one taxonomy. An ADR states a decision, not a delivery: read its **Implementation status** section before treating any assertion in it as describing the repository today. See `docs/agents/domain.md`.
+`CONTEXT.md` at the repo root is the glossary, and names concepts only: the scope of any individual row or column lives in `Taxonomy.md`, the trusted definition source, and is never restated. `ResearchAreas/*.md` and `Methods/*.md` are prose deep dives and are explicitly not a definition source.
+
+**Architecture decisions are recorded on the tracker, not in this repository.** They are decisions rather than library documentation, so they go where decisions go.
+
+**`/domain-modeling` will not know that.** It writes ADRs to `docs/adr/`, which is gitignored here, so an ADR created that way is silently swallowed: no file in the repo, nothing failing, and the session reporting success. If you run it, move the output to the tracker yourself. The same applies to any instruction routing domain docs to `docs/agents/`. The one most likely to be needed: the matrix research areas and the subject themes are **two distinct populations joined by `area_key`**, deliberately not one taxonomy. The bijection is **live, not a target**: every theme names a research area, every research area is named by exactly one theme, and each has one deep-dive page. `db:check`'s `checkAxisBijection` asserts it, so a theme without an `area_key` fails **`db:check`** rather than being caught by review. Note that is not `pnpm build`, which does not touch the DB: `lint-papers.yml` is what runs it in CI, and a diff outside that workflow's path filter never exercises the assertion at all. The counts are deliberately not written here; `db:check` and `site/db/ndjson/` are where they live.
 
 ## The SQLite authoring backend (structured catalog)
 

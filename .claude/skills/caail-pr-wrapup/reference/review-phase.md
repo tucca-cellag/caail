@@ -48,7 +48,7 @@ anything, and a shape nobody thought to list is not evidence that a change is sa
 
 | Diff shape | Rounds floor |
 | --- | --- |
-| Prose only: `.claude/` rules, agents and skill manuals (including this file), `docs/**`, editorial prose in a canonical page | 2 |
+| Prose only: `.claude/` rules, agents and skill manuals (including this file), `CONTEXT.md`, editorial prose in a canonical page | 2 |
 | Structured catalog: the committed NDJSON, the curated `dois-*.json` / `licenses-manual.json` inputs, and the Markdown `db:emit` regenerates from them | 2 |
 | Site code: anything under `site/src/**`, `site/e2e/**`, the parser, or `site/astro.config.mjs` (which carries the analytics beacon and its origin gate, and whose other half, the Worker, is a 3 in the row below) | 3 |
 | Everything that regenerates published content or mints public ids: the DB tooling under `site/scripts/db/**` | 3 |

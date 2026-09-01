@@ -2,7 +2,7 @@
  * extract.ts — pull the DB-owned structured content out of the canonical
  * Markdown, reusing the real parser's mdast helpers. Used by both the bootstrap
  * ETL (canonical MD -> DB) and the emitter's fidelity checks. Promoted from the
- * spike's extractGroupEntries / extractInventory / inlineMd.
+ * sqlite-replatform extractGroupEntries / extractInventory / inlineMd.
  */
 
 import { readFileSync } from 'node:fs';
@@ -77,7 +77,7 @@ export interface CatalogRaw {
 
 /**
  * Every H3 catalog entry in a Software.md / Databases.md file, in document order,
- * WITH its raw body markdown (offset-sliced). Generalizes the spike's
+ * WITH its raw body markdown (offset-sliced). Generalizes the sqlite-replatform
  * extractGroupEntries across all H2 groups.
  */
 export function extractCatalogEntries(path: string): CatalogRaw[] {

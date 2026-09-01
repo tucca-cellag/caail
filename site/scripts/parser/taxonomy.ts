@@ -17,7 +17,7 @@
  * this keying is what makes it safe.
  *
  * The clash that motivated this — a `Bioprocess & Scale-Up` column beside a
- * `Bioprocess & Scale-Up` theme — no longer exists: ADR-0001 renamed the theme
+ * `Bioprocess & Scale-Up` theme — no longer exists: the theme was renamed
  * to `Bioprocess & Manufacturing` and wrote a naming convention into Taxonomy.md
  * saying no label may appear on both subject axes. This module predates that and
  * is kept anyway, as defence in depth rather than as the only defence: the

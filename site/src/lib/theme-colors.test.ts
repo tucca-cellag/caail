@@ -29,7 +29,7 @@ describe('themeColor', () => {
     // The exact bug that shipped: metabolism-modeling wearing a matrix area's token,
     // one since retired with its column — so borrowing now paints an undefined variable.
     //
-    // ADR-0001 gave every theme an area, so the filter below is empty and the loop
+    // Every theme has an area, so the filter below is empty and the loop
     // asserts nothing. That is the state we want, but a test whose body never runs is
     // green whatever the code does, so assert the emptiness itself — it is the real
     // invariant now, and `db:check`'s bijection guard enforces it at the source.

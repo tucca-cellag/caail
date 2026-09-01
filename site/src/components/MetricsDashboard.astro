@@ -51,7 +51,7 @@ const knownLicenses = licenses.total - (unknownTier?.count ?? 0);
 // Derive the exceptions rather than hardcoding them.
 //
 // Deriving them is NOT sufficient on its own, which is how this sentence broke once:
-// both lists are empty now that ADR-0001 closed the gap, and the copy emitted the
+// both lists are empty now that the axis gap is closed, and the copy emitted the
 // exception clauses unconditionally, rendering "…share its colour;  are themes with no
 // matrix column, and The matrix classifies…". Every clause that names a derived list
 // must therefore be guarded on that list being non-empty, and the all-closed case needs
