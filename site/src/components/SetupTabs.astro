@@ -83,8 +83,15 @@ const paths = [
        OS gate is narrower than any other path here, and on Team and Enterprise an admin
        can disable custom skills outright. The pin is the opposite of how every other
        path behaves: those track the branch, this freezes at the commit you import, which
-       matters because the skill restates corpus counts that move. */
-    note: 'Beta, macOS or Linux, Pro plan or above. Both skills install, pinned to that commit; Check for updates moves them forward.',
+       matters because the skill restates corpus counts that move.
+
+       "unless you untick one" is not padding. The two plugins are deliberately separate
+       marketplace entries so that installing the contribute half is its own consent, and
+       this path offers both in one dialog with both pre-checked. The dialog does carry a
+       checkbox each, so the consent still exists; saying only "both skills install" would
+       have described the default as the whole behaviour and quietly spent a choice the
+       reader is entitled to make. */
+    note: 'Beta, macOS or Linux, Pro plan or above. Imports both skills unless you untick one; pinned to that commit, and Check for updates moves them forward.',
     link: { href: 'https://claude.com/docs/claude-science/connectors-and-skills', text: 'Claude Science skills docs →' },
   },
   {
@@ -269,8 +276,15 @@ const paths = [
      than an arbitrary breakpoint: from 60rem the panel is two columns, below it the aside
      stacks under the steps.
 
-       >= 60rem   tallest 172 (science)   shortest 101   spread  71
-       <  60rem   tallest 252 (science)   shortest 144   spread 108
+       >= 60rem   tallest 164 (science)   shortest 103   spread  61
+       <  60rem   tallest 263 (science)   shortest 146   spread 117
+
+     Re-measured after review round 1, which moved both bands in opposite directions and is
+     why these are not the figures the first draft of this comment carried. Restoring the
+     Starlight list-margin override took 2 x 4px off every panel with three steps, and
+     lengthening the Claude Science note added a line in the stacked band only, where the
+     note has the full width rather than a column of its own. The stacked reserve was 3px
+     short for exactly as long as it took to measure.
 
      Two reserves because there are two layouts. That is a different thing from the two
      bands this carried before, which were ONE layout sampled at two widths, and the narrow
@@ -292,8 +306,8 @@ const paths = [
      `homepage-agent.spec.ts` asserts constant section height across tabs for BOTH
      instances at three widths, so a panel that outgrows this fails the suite instead of
      shipping. */
-  .panels { min-height: 16.25rem; }                                /* 260px, stacked, clears 252 */
-  @media (min-width: 60rem) { .panels { min-height: 11.25rem; } }  /* 180px, 2-col, clears 172 */
+  .panels { min-height: 16.75rem; }                                /* 268px, stacked, clears 263 */
+  @media (min-width: 60rem) { .panels { min-height: 10.75rem; } }  /* 172px, 2-col, clears 164 */
   @media (max-width: 34rem) { .panels { min-height: 0; } }
 
   /* `[hidden]` MUST still win. An explicit `display` on `.panel` outranks the UA

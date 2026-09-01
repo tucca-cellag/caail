@@ -141,19 +141,33 @@ a.site-title {
    16px — but while it is `display: none` that margin collapses to nothing, so the button
    measures correctly, screenshots correctly, and passes every assertion. Click it and the
    check mark gains a box, the margin applies, and the button grows exactly 16px taller,
-   shoving the command row down. Note the depth: `.setup .cmd` above already zeroes the
-   margin on `.copy` itself, but the icons are one level further in, so the container has
-   to be listed by ITS own class too. Anything that swaps children by display belongs
+   shoving the command row down. Note the depth: the swap happens one level further in than
+   the row, so the BUTTON has to be listed by its own class. An earlier wording justified
+   that by saying the row's entry already zeroed `.copy` itself, which was never true:
+   `.copy` follows a `<code>`, and Starlight's sibling rule excludes `code` on its left
+   side, so nothing was zeroing `.copy` and nothing needed to. The icons are the entire
+   reason this entry exists. Anything that swaps children by display belongs
    here — the bug is invisible until the swap happens. `.ask .rotate` is that same shape, a
    play icon and a pause icon in one button, and it is listed here having caused no bug at
    all: it went in with the carousel's stop control rather than after someone noticed the
    row jump 16px the first time that control was pressed.
+   `.setup .steps` is the SIXTH, and it shipped on the branch that added it. Splitting the
+   install steps into an `<ol>` of `<li class="step">` made Starlight's
+   `li + li { margin-top: 0.25rem }` apply to every step after the first, so the sequence
+   rendered 12px apart against the 8px `gap` its own component declares, and the deleted
+   `.setup .cmd` entry that used to cover those rows was not replaced. `.main` and `.aside`
+   went in beside it because `p + ol` and `p + p` both match the general sibling rule and
+   both containers space their children with `gap`, where an inherited margin adds rather
+   than replaces. `.val` is pre-emptive: its two children are a `<code>` and a `<button>`,
+   which the rule excludes today, but a third child would not be.
+
    Deliberately NOT given an ordinal. The numbers above count bugs that happened, the next
    one is already spoken for by the hero rule below, and a second hand-maintained counter in
    one file is the defect this repo's CLAUDE.md names first. Add pre-emptive entries here
    freely; do not number them. */
 .sl-markdown-content :is(
-  .setup .tabs, .setup .panels, .setup .panel, .setup .cmd, .setup .clients, .setup .copy,
+  .setup .tabs, .setup .panels, .setup .panel, .setup .main, .setup .aside,
+  .setup .steps, .setup .val, .setup .clients, .setup .copy,
   .why .split, .why .half, .why .chat, .why .turn, .why .pts li,
   .ask .pills, .ask .stack, .ask .csrc, .ask .rows li, .ask .ctrls, .ask .dots, .ask .rotate,
   .hero-router, .hero-setup, .hero .tick,

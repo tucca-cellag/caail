@@ -246,7 +246,10 @@ test.describe('Connect your agent', () => {
 
     const box = async () => {
       const r = await btn.boundingBox();
-      const row = await page.locator('.gs .step').first().boundingBox();
+      // `:has(.copy)`, not `.first()`. The leading panel's first step is an ACTION row
+      // with no button, so `.first()` measured a row structurally incapable of the
+      // growth this test names, and passed for the wrong reason.
+      const row = await page.locator('.gs .step:has(.copy)').first().boundingBox();
       return { w: Math.round(r!.width), h: Math.round(r!.height), rowH: Math.round(row!.height) };
     };
 
@@ -359,12 +362,19 @@ test.describe('Connect your agent', () => {
   for (const root of ['.gs', '.hero'])
   for (const width of [1280, 600, 560]) {
     test(`switching tabs does not change the section height, no page jump (${root} @ ${width}px)`, async ({ page }) => {
-      // Three widths, though the reserve is now a single number. They are not redundant:
-      // each is where a DIFFERENT panel peaks. 1280px is where the copy stops wrapping;
-      // 600px is the old sample that read as sufficient; 560px is where the cli panel
-      // reaches 236px, having been 195px at 600px. Sampling 600 alone cleared a reserve
-      // that 560 did not, and that shortfall shipped. A reserve is a claim about every
-      // width, so test the widths where the claim is tightest, not one per band.
+      // Three widths for two reserves. 1280px is the two-column topology; 600px and 560px
+      // are both the stacked one.
+      //
+      // 600 and 560 are NOT redundant, and the reason is not that a different panel peaks
+      // at each. Re-measured 2026-09-01 with `min-height: 0` forced, the Claude Science
+      // panel is the tallest at every sampled width: 252px from 545 to 959, 172px from 960
+      // to 1600. What differs is the RUNNER-UP, and that is what 560 buys: the cli panel is
+      // 201px at 600 and 241px at 560, so if the science panel ever shrinks below 241 the
+      // reserve stops being governed by it, and 560 is the width where that hands over.
+      // An earlier version of this comment claimed each width was a different panel's peak
+      // and quoted 236/195 for cli, both true of the single-column layout this file no
+      // longer builds. A reserve is a claim about every width, so sample where the claim is
+      // tightest, and say which measurement the numbers came from.
       await page.setViewportSize({ width, height: 900 });
       await page.goto('./');
       // The section's own height is what everything below it sits on, so holding that
