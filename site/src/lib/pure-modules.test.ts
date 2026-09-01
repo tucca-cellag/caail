@@ -10,6 +10,50 @@
  * Until this existed the constraint was prose in three docstrings, which
  * CLAUDE.md rules out: a comment documents a risk, it does not mitigate it.
  *
+ * IT WALKS THE CLOSURE, NOT ONE LEVEL, and that is the difference between
+ * checking the constraint and checking a proxy for it. The hazard is a throw
+ * during module EVALUATION anywhere the guard can reach, so the property being
+ * protected was always transitive; requiring each direct import to carry zero
+ * specifiers was a sufficient shortcut that happened to hold while all three
+ * were leaf data modules. It stopped holding the moment one of them needed to
+ * derive a list from a sibling rather than restate it, which is the defect
+ * CLAUDE.md names as this repo's most expensive recurring one — so the shortcut
+ * was the thing standing between the guard and a hand-typed copy of a constant.
+ *
+ * The rule the walk enforces: a module in the closure may import PROJECT
+ * SIBLINGS, by relative path, and nothing else. Each sibling is then walked on
+ * the same terms, so a bare specifier cannot enter at any depth. That keeps a
+ * third-party module graph out, which is the largest source of evaluation
+ * throws, and it admits a pure in-repo module. A hand-maintained allow-list of
+ * permitted siblings was rejected for the reason the walk exists: it would be
+ * one more list nothing checks.
+ *
+ * THE SCAN IS NOT SUFFICIENT ON ITS OWN, and an earlier draft of this docstring
+ * said it was, claiming a pure in-repo module "cannot introduce an evaluation
+ * throw the repo does not already own". That is false and was measured false:
+ * a module-scope `throw` in `caail-pages.ts` left this file 6/6 GREEN while
+ * `private-paths.test.ts` reported `(0 test)` — the precise collection abort
+ * this guard exists to name, reachable through the sibling import that made the
+ * scan transitive in the first place. The scan reads what a module IMPORTS; it
+ * cannot read what a module DOES.
+ *
+ * So each closure member is also IMPORTED, dynamically, inside a test body.
+ * That is not a proxy for the property, it is the property: if evaluating the
+ * closure throws, that test fails by name and carries the real error, instead
+ * of the guard going quiet and a different file reporting no tests. Inside a
+ * body is load-bearing, for the same reason everything else here is deferred.
+ *
+ * The two checks answer different questions and neither replaces the other. The
+ * scan is STRUCTURAL and catches a bare import that has not broken anything
+ * yet; the evaluation check is BEHAVIOURAL and catches a throw from code that
+ * imports nothing at all. Removing either leaves a hole this file has already
+ * shipped once.
+ *
+ * DYNAMIC IMPORTS COUNT INSIDE THE CLOSURE, unlike in the guard itself. The
+ * guard's own are excluded because they run in a test body, where a throw fails
+ * that test rather than collection. A module reached by the walk has no such
+ * protection, so every syntax counts against it.
+ *
  * NO COMMENT STRIPPING, DELIBERATELY, and this is the load-bearing decision in
  * the file. An earlier version stripped comments before scanning, which produced
  * a defect in each of two consecutive review rounds:
@@ -31,13 +75,23 @@
  * which is why this docstring writes its glob example with U+2217.
  */
 import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { readFileSync, statSync } from 'node:fs';
 import { join, dirname, normalize } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 /** lib/ -> src/ -> site/ */
 const SITE_ROOT = fileURLToPath(new URL('../../', import.meta.url));
 const GUARD = 'scripts/private-paths.test.ts';
+
+/**
+ * Source extensions a relative specifier may resolve to in this repo.
+ *
+ * `.ts` is the bulk, `.mjs` is what `site/scripts/` uses for its standalone
+ * tools, and the two `.js` forms are legal and cheap to cover. Over-generating
+ * costs a few `statSync` calls that miss; under-generating costs a false
+ * "module was moved" on a correct import.
+ */
+const SOURCE_EXTENSIONS = ['.ts', '.js', '.mts', '.mjs'] as const;
 
 /**
  * Every module specifier in this source, by any syntax.
@@ -60,6 +114,51 @@ function moduleSpecifiers(src: string): string[] {
   return out;
 }
 
+/**
+ * A relative specifier, as a path relative to site/.
+ *
+ * CANDIDATES ARE GENERATED, not listed, because a hand-written list is always
+ * one spelling short and this one twice was. The first version assumed the
+ * `.js`-to-`.ts` rewrite alone; the second added three more by hand and still
+ * had no `.js` or `index.js`, so a member importing a plain `.js` sibling would
+ * have hit the same misdiagnosis the list exists to prevent. Extensions now
+ * come from one array, so adding a spelling is one edit in one place. `.js` maps to `.ts` because the
+ * project's imports are written the way NodeNext wants them emitted while what
+ * is on disk is the TypeScript source; the extensionless form is legal and is
+ * what `DataTableViews.astro` uses to reach `table-layout`; and a directory
+ * specifier resolves through its `index.ts`. Assuming the `.js` form alone made
+ * a legal sibling import report as a MISSING FILE, under a message telling the
+ * reader it had been moved.
+ *
+ * Falls back to the primary spelling when none exists, so an unresolvable
+ * specifier is reported by the readability probe rather than silently skipped.
+ *
+ * TESTED WITH `isFile`, NOT `existsSync`, and the difference is the whole
+ * reason the directory candidate works. `existsSync` is true for a DIRECTORY,
+ * so a specifier like `'../lib'` matched the bare path first and the
+ * `index.ts` candidate below it was unreachable. The walk then read a
+ * directory and recorded `EISDIR` under the message that says the module was
+ * moved or is prose, which is the exact misdiagnosis the candidate list exists
+ * to prevent.
+ */
+function resolveFrom(fromRel: string, spec: string): string {
+  const base = normalize(join(dirname(fromRel), spec));
+  const candidates = [
+    base.replace(/\.js$/, '.ts'),
+    base,
+    ...SOURCE_EXTENSIONS.map((ext) => `${base}${ext}`),
+    ...SOURCE_EXTENSIONS.map((ext) => join(base, `index${ext}`)),
+  ];
+  const isFile = (rel: string): boolean => {
+    try {
+      return statSync(join(SITE_ROOT, rel)).isFile();
+    } catch {
+      return false;
+    }
+  };
+  return candidates.find(isFile) ?? candidates[0];
+}
+
 /** The guard's STATIC project imports, as paths relative to site/. */
 function guardStaticProjectImports(): string[] {
   const src = readFileSync(join(SITE_ROOT, GUARD), 'utf-8');
@@ -71,7 +170,48 @@ function guardStaticProjectImports(): string[] {
   );
   return [...new Set(moduleSpecifiers(src))]
     .filter((spec) => spec.startsWith('.') && !dynamic.has(spec))
-    .map((spec) => normalize(join(dirname(GUARD), spec)).replace(/\.js$/, '.ts'));
+    .map((spec) => resolveFrom(GUARD, spec));
+}
+
+/** A module in the closure, with whatever disqualifies it. */
+interface Member {
+  /** Path relative to site/. */
+  rel: string;
+  /** Specifiers that are not project siblings. Non-empty means it fails. */
+  bare: string[];
+  /** Set when the file could not be read at all. */
+  unreadable?: string;
+}
+
+/**
+ * Every module reachable from `seeds` by relative imports, seeds included.
+ *
+ * Breadth-first and cycle-safe. A module that cannot be READ is recorded rather
+ * than thrown on, for the same reason the seed scan is: a throw here aborts
+ * collection of this file, which is the failure it exists to eliminate.
+ */
+function walkClosure(seeds: string[]): Member[] {
+  const members: Member[] = [];
+  const seen = new Set<string>();
+  const queue = [...seeds];
+  while (queue.length > 0) {
+    const rel = queue.shift() as string;
+    if (seen.has(rel)) continue;
+    seen.add(rel);
+    let src: string;
+    try {
+      src = readFileSync(join(SITE_ROOT, rel), 'utf-8');
+    } catch (e) {
+      members.push({ rel, bare: [], unreadable: (e as Error).message });
+      continue;
+    }
+    const specs = moduleSpecifiers(src);
+    members.push({ rel, bare: specs.filter((spec) => !spec.startsWith('.')) });
+    for (const spec of specs) {
+      if (spec.startsWith('.')) queue.push(resolveFrom(rel, spec));
+    }
+  }
+  return members;
 }
 
 // COLLECTION MUST NOT THROW. Computing this in the describe body once meant a
@@ -79,10 +219,12 @@ function guardStaticProjectImports(): string[] {
 // tests`, which is the precise failure mode it was written to eliminate, in the
 // file that eliminates it. Captured instead, and asserted below as an ordinary
 // test, so the whole suite still reports.
-let targets: string[] = [];
+let seeds: string[] = [];
+let members: Member[] = [];
 let scanError: unknown;
 try {
-  targets = guardStaticProjectImports();
+  seeds = guardStaticProjectImports();
+  members = walkClosure(seeds);
 } catch (e) {
   scanError = e;
 }
@@ -97,21 +239,60 @@ describe('the modules the private-path guard depends on stay import-free', () =>
     // A FLOOR. A silently empty scan would make every assertion below pass by
     // iterating nothing, which is the shape this repo keeps being bitten by.
     expect(
-      targets,
+      seeds,
       `no static project imports were found in ${GUARD}, which almost certainly `
         + `means the scan broke rather than that the guard has none`,
     ).not.toEqual([]);
   });
 
-  for (const rel of targets) {
-    it(`${rel} imports nothing`, () => {
+  // The walk records an unreadable module rather than throwing, so without this
+  // it would fail SILENTLY: an unreadable member carries no specifiers, so its
+  // own assertion below passes by having nothing to check. Same shape as the
+  // floor above, one level down.
+  it('every module in the closure can be read', () => {
+    expect(
+      members.filter((m) => m.unreadable).map((m) => `${m.rel}: ${m.unreadable}`),
+      `a module reachable from ${GUARD} could not be read, so it was not `
+        + `checked. Two causes, and they want opposite fixes. Either the module `
+        + `was moved or renamed, and the specifier pointing at it is now wrong; `
+        + `or this is PROSE, because the scan reads raw source on purpose and a `
+        + `docstring writing a quoted path after the word f-r-o-m is enqueued `
+        + `and read exactly like an import. If it is prose, rewrite the prose`,
+    ).toEqual([]);
+  });
+
+  for (const m of members) {
+    it(`${m.rel} evaluates without throwing`, async () => {
+      // The BEHAVIOURAL half. A module-scope throw anywhere in the closure
+      // aborts collection of the guard; done here, inside a body, it fails one
+      // named test carrying the real error instead.
+      let evalError: unknown;
+      try {
+        await import(/* @vite-ignore */ pathToFileURL(join(SITE_ROOT, m.rel)).href);
+      } catch (e) {
+        evalError = e;
+      }
       expect(
-        moduleSpecifiers(readFileSync(join(SITE_ROOT, rel), 'utf-8')),
-        `${rel} is statically imported by ${GUARD}, so it must import nothing: a `
-          + `throw anywhere in a dependency chain takes every private-tree probe `
-          + `down during COLLECTION, reporting "Tests no tests" rather than a `
-          + `publishing failure. If this module genuinely needs an import, change `
-          + `the guard to reach it dynamically instead, the way it reaches the `
+        evalError,
+        `evaluating ${m.rel} threw, and it is reachable from ${GUARD} by static `
+          + `imports. That throw lands during COLLECTION of the guard, so every `
+          + `private-tree probe is skipped and the run reports "Tests no tests" `
+          + `rather than a publishing failure. Move whatever throws behind a `
+          + `function or a getter so it runs on access instead of on import`,
+      ).toBeUndefined();
+    });
+
+    it(`${m.rel} imports nothing outside the closure`, () => {
+      expect(
+        m.bare,
+        `${m.rel} is reachable from ${GUARD} by static relative imports, so it `
+          + `may import project siblings and nothing else: a throw anywhere in `
+          + `the chain takes every private-tree probe down during COLLECTION, `
+          + `reporting "Tests no tests" rather than a publishing failure. A `
+          + `sibling is walked on these same terms, so importing one is safe; a `
+          + `third-party package is not and is what this rejects. If the guard `
+          + `genuinely needs this module's data through a package, change the `
+          + `guard to reach it dynamically instead, the way it reaches the `
           + `parser. If this is a false positive from prose, rewrite the prose: `
           + `this scan reads raw source on purpose`,
       ).toEqual([]);

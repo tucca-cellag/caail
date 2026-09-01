@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { readdirSync } from 'node:fs';
+import { existsSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { CAAIL_PAGES } from './caail-pages.ts';
+import { CANONICAL_SOURCES } from './canonical-sources.ts';
 import { isPublishedMarkdown } from '../lib/canonical-files.ts';
 
 const REPO_ROOT = fileURLToPath(new URL('../../../', import.meta.url));
@@ -94,5 +95,101 @@ describe('CAAIL_PAGES', () => {
       .map((p) => p.id)
       .filter((id) => !backed.has(id));
     expect(orphans).toEqual([]);
+  });
+});
+
+/**
+ * The top-level prose pages, which the three tests above do not reach.
+ *
+ * `missingEntries` and its mirror walk the canonical DIRECTORIES. A top-level
+ * file has no directory to enumerate, so its name has to be written somewhere,
+ * and every reader that wrote its own copy is a list that can drift from the
+ * others. One already did: the site's loader carried all seven names while the
+ * prototype branch's `<route>/index.md` endpoint carried six, and `/community/`
+ * ended up the one page on the site with no Markdown twin, no Copy-as-Markdown
+ * control, and nothing failing.
+ *
+ * `topLevelSources()` is now the single list and the loader derives from it, so
+ * these are the checks that make the derivation trustworthy rather than a
+ * comment asking for it.
+ */
+describe('top-level prose pages', () => {
+  it('every top-level entry names a source file', () => {
+    const nameless = CAAIL_PAGES.all()
+      .filter((p) => p.group === 'top' && !p.source)
+      .map((p) => p.id);
+    expect(nameless).toEqual([]);
+  });
+
+  it("every source round-trips back to its own page's id", () => {
+    // Catches a misspelling at its source rather than at the next reader: a
+    // `source` that resolves to some other id (or to no page at all) would
+    // otherwise just quietly ingest the wrong file.
+    for (const page of CAAIL_PAGES.all().filter((p) => p.group === 'top')) {
+      expect(CAAIL_PAGES.idForSourcePath(page.source!)).toBe(page.id);
+    }
+  });
+
+  it('every source exists at the repo root', () => {
+    const missing = CAAIL_PAGES.topLevelSources().filter((s) => !existsSync(`${REPO_ROOT}${s}`));
+    expect(missing).toEqual([]);
+  });
+
+  it('the loader ingests every one of them', () => {
+    // The live guard. `CANONICAL_SOURCES.files` is derived today, so this holds
+    // by construction — which is the point: it fails the moment anyone replaces
+    // the derivation with a literal that is short a page.
+    expect(CAAIL_PAGES.missingTopLevelSources(CANONICAL_SOURCES.files)).toEqual([]);
+  });
+
+  it('reports the page the prototype branch actually dropped', () => {
+    // The exact list `site/src/lib/prototype-page-md.ts` shipped on
+    // prototype/caail-340-nav, which is where the divergence was found. Kept as
+    // a case rather than a comment so the guard is shown discriminating: fed a
+    // list that is short a page it names that page, and it named this one.
+    //
+    // `toContain`, NOT `toEqual`, because this list is FROZEN HISTORY while
+    // `topLevelSources()` grows. An eighth top-level page is a correct and
+    // unrelated change, and under an exact assertion it would fail here with a
+    // message about a prototype branch's Markdown endpoint, sending the reader
+    // somewhere with no bearing on what they did. Exactness is not lost; it
+    // moves to the derived case below, which is the one that can carry it.
+    const asPrototypeShippedIt = [
+      'CONTRIBUTING.md',
+      'OtherResources.md',
+      'ReferenceWorks.md',
+      'Funding.md',
+      'Taxonomy.md',
+      'AIAgentsFoundationModels.md',
+    ];
+    expect(CAAIL_PAGES.missingTopLevelSources(asPrototypeShippedIt)).toContain('Community.md');
+  });
+
+  it('names exactly the page a list is short, whatever the page set becomes', () => {
+    // The exact half, derived so it survives the corpus growing. Dropping ONE
+    // known entry must report that entry and nothing else.
+    //
+    // Not tautological, and the distinction is worth stating because the
+    // obvious version IS. Asserting against
+    // `topLevelSources().filter(s => !input.includes(s))` would restate the
+    // implementation and test nothing. Here the input is built by REMOVING a
+    // named element and the expectation is that single literal name, so the
+    // two sides are derived differently.
+    const all = CAAIL_PAGES.topLevelSources();
+    const dropped = all[0];
+    expect(CAAIL_PAGES.missingTopLevelSources(all.slice(1))).toEqual([dropped]);
+  });
+
+  it('counts every top-level page the repo root actually backs', () => {
+    // The other direction, and the one a derived list can still get wrong: a
+    // new top-level page registered in CAAIL_PAGES but filed under some other
+    // group renders with no source and never reaches the loader. Deriving from
+    // `group: 'top'` is what makes that possible, so it is what this checks.
+    const ingested = new Set(CAAIL_PAGES.topLevelSources());
+    const unreached = readdirSync(REPO_ROOT)
+      .filter(isPublishedMarkdown)
+      .filter((f) => CAAIL_PAGES.byId(CAAIL_PAGES.idForSourcePath(f)))
+      .filter((f) => !ingested.has(f));
+    expect(unreached).toEqual([]);
   });
 });

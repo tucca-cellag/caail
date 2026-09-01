@@ -189,16 +189,28 @@ a.site-title {
 /* ── Wide data tables (Datasets/* inventories, etc.) ──────────────────────
  * Canonical Markdown tables (e.g. the per-species "Complete data inventory")
  * are far wider than Starlight's ~45rem prose cap, so by default they scroll
- * left/right inside the column. Let any page carrying a content table widen
- * to fill the content panel and render the whole table, while keeping the
- * narrative prose at a readable measure. Scoped via :has() so only table
- * pages are affected; the canonical Markdown is never modified.
+ * left/right inside the column. Let a page carrying a DATA table widen to fill
+ * the content panel and render the whole table, while keeping the narrative
+ * prose at a readable measure. Scoped via :has() so only those pages are
+ * affected; the canonical Markdown is never modified.
  * `width: max-content` keeps narrow tables compact; `overflow-x: auto`
- * (Starlight default) remains as the fallback for any table still too wide. */
-.sl-container:has(.sl-markdown-content table) { max-width: none; }
+ * (Starlight default) remains as the fallback for any table still too wide.
+ *
+ * `thead th:nth-child(3)` is how a selector counts columns: a header row with a
+ * third cell has at least three. Without it this fired on the presence of ANY
+ * table, so `/community/` and `/datasets/readme/` — two-column "label → target"
+ * tables that sit inside the reading measure comfortably — got the same layout
+ * switch as a nine-column inventory, and got it with no Table/Cards toggle to
+ * explain why the page had changed shape.
+ *
+ * The 3 is `MIN_DATA_TABLE_COLUMNS` in src/lib/table-layout.ts, which is where
+ * the rationale lives and where DataTableViews.astro reads the same number
+ * from. CSS cannot import it, so table-layout.test.ts reads THIS FILE and fails
+ * when the two stop agreeing. Change the constant, not this selector. */
+.sl-container:has(.sl-markdown-content table thead th:nth-child(3)) { max-width: none; }
 /* Center the narrative prose at a readable measure while tables use the
  * reclaimed width (margin-inline:auto keeps text centered, not left-hugging). */
-.sl-container:has(.sl-markdown-content table) .sl-markdown-content > :not(table):not(.caail-tableview) { max-width: 45rem; margin-inline: auto; }
+.sl-container:has(.sl-markdown-content table thead th:nth-child(3)) .sl-markdown-content > :not(table):not(.caail-tableview) { max-width: 45rem; margin-inline: auto; }
 
 /* Branded data tables — styled in the site layer; canonical Markdown untouched. */
 .sl-markdown-content table {

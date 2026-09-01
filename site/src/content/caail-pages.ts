@@ -10,6 +10,25 @@
 
 export type PageGroup = 'research-areas' | 'methods' | 'datasets' | 'top';
 
+/**
+ * ONE CONSTRAINT ON THE PROSE IN THIS FILE, and it is not obvious from here.
+ *
+ * `src/content/canonical-sources.ts` imports this module, and that module is
+ * statically imported by `scripts/private-paths.test.ts`, the guard proving the
+ * credentials file and the private trees are gitignored. So this file is inside
+ * the closure `src/lib/pure-modules.test.ts` walks, and that walk reads RAW
+ * SOURCE with no comment or string stripping, deliberately, because a regex
+ * cannot decide comment context in JavaScript and erring toward false positives
+ * is the safe direction there.
+ *
+ * The consequence lands here: a `description` string, or any comment, that
+ * writes a quoted path after the word f-r-o-m is enqueued and read exactly like
+ * an import. It fails as "a module reachable from the guard could not be read",
+ * which points an editor at a moved file rather than at the sentence they just
+ * wrote. The three modules previously in that closure were small and code-only;
+ * this one carries roughly sixty curator-authored description strings, so the
+ * exposure is new and worth knowing before editing one.
+ */
 export interface PageMeta {
   title: string;
   sidebarLabel: string;
@@ -18,6 +37,23 @@ export interface PageMeta {
   /** Unique meta description / og:description for SEO (the canonical files have
    *  no frontmatter, so without this they'd all inherit the generic site one). */
   description: string;
+  /**
+   * Repo-relative canonical file this page is read from. `group: 'top'` only.
+   *
+   * The three canonical DIRECTORIES are enumerated with `readdir`, so a page in
+   * one needs nothing here — the file is what produces the id. A top-level file
+   * has no directory to scan, so every reader of that set has had to write the
+   * seven names out, and `idForSourcePath` is not invertible (`contributing` →
+   * `CONTRIBUTING.md`, `other-resources` → `OtherResources.md`) so nobody could
+   * derive them either. Two such lists already drifted: the site's own loader
+   * carried all seven while the prototype branch's `<route>/index.md` endpoint
+   * carried six, and `/community/` shipped with no Markdown twin.
+   *
+   * So the name lives with the page, `topLevelSources()` derives the list, and
+   * `caail-pages.test.ts` round-trips each one back through `idForSourcePath`
+   * to its own id. A misspelling fails there rather than at the next reader.
+   */
+  source?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -458,6 +494,7 @@ const PAGES: Record<string, PageMeta> = {
     order: 1,
     description:
       'How to contribute to CAAIL: where each kind of paper, tool, dataset, or resource belongs, and how to add it.',
+    source: 'CONTRIBUTING.md',
   },
   'other-resources': {
     title: 'Other Resources',
@@ -466,6 +503,7 @@ const PAGES: Record<string, PageMeta> = {
     order: 2,
     description:
       'Journal editorials and opinion on AI in science and in animal agriculture, field reports on the state of the sector, and cellular-agriculture ecosystem initiatives: research centers, consortia, and convening efforts.',
+    source: 'OtherResources.md',
   },
   taxonomy: {
     title: 'Matrix Taxonomy',
@@ -474,6 +512,7 @@ const PAGES: Record<string, PageMeta> = {
     order: 3,
     description:
       'Definitions of every AI/ML method row and cellular-agriculture research-area column in the Papers matrix: what each covers, what is out of scope, and how to tell confusable categories apart.',
+    source: 'Taxonomy.md',
   },
   'ai-agents-foundation-models': {
     title: 'AI Agents & Foundation Models',
@@ -482,6 +521,7 @@ const PAGES: Record<string, PageMeta> = {
     order: 4,
     description:
       'The connective hub for AI agents and biological foundation models in cellular agriculture: agent frameworks, single-cell foundation models, the virtual-cell initiative, and where each is catalogued across CAAIL.',
+    source: 'AIAgentsFoundationModels.md',
   },
   'reference-works': {
     title: 'Reference Works',
@@ -490,6 +530,7 @@ const PAGES: Record<string, PageMeta> = {
     order: 5,
     description:
       'Reference textbooks and multi-volume works for cellular agriculture: the foundational cell-ag textbook and the Encyclopedia of Meat Sciences, with a DOI-resolvable chapter index of the cell-ag-relevant subset.',
+    source: 'ReferenceWorks.md',
   },
   funding: {
     title: 'Funding & Grants',
@@ -498,6 +539,7 @@ const PAGES: Record<string, PageMeta> = {
     order: 6,
     description:
       'Funding organizations and funding opportunities for cellular-agriculture research: the organizations that fund the field and the grant programs and research-portfolio mechanisms to follow.',
+    source: 'Funding.md',
   },
   community: {
     title: 'Community',
@@ -506,6 +548,7 @@ const PAGES: Record<string, PageMeta> = {
     order: 7,
     description:
       'The CAAIL community, its Slack workspace, GitHub issue and pull-request workflow, and Zotero group library: where to ask questions, where to propose additions, and the norms that apply across all of them.',
+    source: 'Community.md',
   },
 };
 
@@ -566,6 +609,57 @@ export const CAAIL_PAGES = {
    */
   all(): Array<{ id: string } & PageMeta> {
     return Object.entries(PAGES).map(([id, m]) => ({ id, ...m }));
+  },
+
+  /**
+   * The repo-relative canonical file behind every top-level prose page.
+   *
+   * The one list for the ROUTING side: the content loader, and anything later
+   * that serves or mirrors a page, calls this rather than writing the names
+   * out, because a second copy has already diverged once (see `PageMeta.source`).
+   *
+   * IT IS NOT THE ONLY LIST IN THE REPO, and an earlier draft of this sentence
+   * said it was, which was false when written. `scripts/parser/llms-full.ts`
+   * hand-writes five of these seven names for the SERVED CORPUS, and is
+   * already short `Taxonomy.md` and `AIAgentsFoundationModels.md` -- a gap
+   * `scripts/private-paths.test.ts` documents and warns against reading as a
+   * closed exception. So an eighth top-level page added here gets a route and
+   * is silently absent from `llms-full.txt`, with nothing red.
+   *
+   * That divergence is older than this method and is deliberately not fixed
+   * here: the two lists answer different questions (what the site routes
+   * versus what the corpus serves) and collapsing them is a decision about
+   * the corpus, not a refactor. Tracked on CAAIL-204, which owns hand-typed
+   * facts that duplicate machine-derived ones.
+   *
+   * Order follows `order`, so the list reads the way the sidebar does.
+   */
+  topLevelSources(): string[] {
+    return CAAIL_PAGES.all()
+      .filter((p) => p.group === 'top')
+      .sort((a, b) => a.order - b.order)
+      .map((p) => {
+        if (!p.source) {
+          // Unreachable through the type today (`source` is optional only
+          // because the directory groups do not use it) and caught by
+          // caail-pages.test.ts, but a silent skip here would drop the page
+          // from the site with nothing pointing at the cause.
+          throw new Error(`CAAIL_PAGES: top-level page '${p.id}' has no source file`);
+        }
+        return p.source;
+      });
+  },
+
+  /**
+   * Which top-level pages a candidate ingest list would fail to cover.
+   *
+   * Takes the list rather than reading one, so the divergence this exists to
+   * catch can be checked directly instead of only observed. Returns the
+   * missing repo-relative source paths, in `topLevelSources()` order.
+   */
+  missingTopLevelSources(files: readonly string[]): string[] {
+    const have = new Set(files);
+    return CAAIL_PAGES.topLevelSources().filter((s) => !have.has(s));
   },
 
   /**
