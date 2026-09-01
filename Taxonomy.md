@@ -7,8 +7,10 @@ apart from its neighbours. It serves two audiences: readers orienting themselves
 the automated classification audit, which decides a paper's placement **from the paper's own methods
 text** measured against these definitions.
 
-A guiding rule for every category: a placement records what a paper **actually does**, demonstrated in
-its methods: not what it could be applied to, and not what its title gestures at.
+A guiding rule for every category: a placement rests on what a paper demonstrably did, read from its
+methods text rather than from what it could be applied to or what its title gestures at. What that
+evidence has to establish is set out once in the methods preamble below, and it is narrower than mere
+presence: a row records a paper's contribution, not every technique its methods happen to mention.
 
 ## Two axes, and how to tell which one you are reading
 

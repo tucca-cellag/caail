@@ -276,9 +276,6 @@
 {"method":"Comparative Studies","area_key":"bioprocess","ref_id":208,"label":"Xu et al. 2025","ordinal":275}
 {"method":"Comparative Studies","area_key":"bioprocess","ref_id":253,"label":"Park et al. 2023","ordinal":276}
 {"method":"Benchmarks & Evaluation Frameworks","area_key":"media","ref_id":350,"label":"Parsaee et al. 2026","ordinal":277}
-{"method":"Bayesian Optimization","area_key":"media","ref_id":350,"label":"Parsaee et al. 2026","ordinal":278}
-{"method":"Genetic Algorithms","area_key":"media","ref_id":350,"label":"Parsaee et al. 2026","ordinal":279}
-{"method":"Active Learning","area_key":"media","ref_id":350,"label":"Parsaee et al. 2026","ordinal":280}
 {"method":"Genetic Algorithms","area_key":"media","ref_id":18,"label":"Cosenza 2022","ordinal":281}
 {"method":"Genetic Algorithms","area_key":"media","ref_id":212,"label":"Tu et al. 2022","ordinal":282}
 {"method":"Linear & Regularized Models","area_key":"cell","ref_id":122,"label":"Magnusson et al. 2024","ordinal":284}

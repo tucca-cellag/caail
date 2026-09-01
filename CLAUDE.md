@@ -188,7 +188,7 @@ LICENSE                MIT License
 
 - **Reference IDs are permanent.** Never renumber an existing entry — the matrix points at them by ID and external readers may bookmark anchor URLs.
 - **New entries get the next available ID** (max existing ID + 1), regardless of whether they go in `## References` or `## Reviews & Perspectives` — both sections share one ID counter.
-- **`papers.ndjson` holds six sections, not two:** References (229), Reviews & Perspectives (74), and four `… Reference Work` sections (42). Only the 229 are matrix-eligible, so label every count with the population it counted — "345 papers" and "papers in the matrix" are different numbers.
+- **`papers.ndjson` holds six sections, not two:** References (230), Reviews & Perspectives (74), and four `… Reference Work` sections (42). Only the 230 are matrix-eligible, so label every count with the population it counted — "346 papers" and "papers in the matrix" are different numbers.
 - **Every primary-research reference must appear in at least one matrix cell**, otherwise it is unreachable from the matrix view. Reviews & Perspectives entries are exempt — they're reached via the dedicated section.
 - **Every matrix anchor link must resolve to an existing reference ID**, otherwise the link 404s within the page.
 

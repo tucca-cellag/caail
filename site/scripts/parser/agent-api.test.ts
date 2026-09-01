@@ -127,7 +127,7 @@ describe('index.json manifest', () => {
   const matrix = buildMatrix(papers, DATE);
   const manifest = buildManifest(papers, matrix, DATE) as any;
 
-  it('labels counts with their population, so "345 papers" cannot be quoted as the matrix corpus', () => {
+  it('labels counts with their population, so "346 papers" cannot be quoted as the matrix corpus', () => {
     const bySection = manifest.counts.papersBySection as Record<string, number>;
     const sum = Object.values(bySection).reduce((a, b) => a + b, 0);
 

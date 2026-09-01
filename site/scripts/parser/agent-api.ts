@@ -393,7 +393,7 @@ export function buildCatalogIndex(catalog: unknown, corpusDate: string): unknown
 
 /**
  * Counts are labelled with the POPULATION they counted. `papers.ndjson` carries six
- * sections and only `References` is matrix-eligible, so a bare "345 papers" invites an
+ * sections and only `References` is matrix-eligible, so a bare "346 papers" invites an
  * agent to state a number that is true of one population and false of another.
  */
 export function buildManifest(

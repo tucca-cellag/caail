@@ -74,8 +74,7 @@
         15,
         58,
         249,
-        251,
-        350
+        251
       ],
       "labels": [
         "Cosenza et al. 2022",
@@ -85,8 +84,7 @@
         "Yoshida et al. 2023",
         "Narayanan et al. 2025",
         "Ndahiro et al. 2025",
-        "Emerson et al. 2026",
-        "Parsaee et al. 2026"
+        "Emerson et al. 2026"
       ]
     },
     {
@@ -405,7 +403,6 @@
         210,
         211,
         252,
-        350,
         18,
         212
       ],
@@ -416,7 +413,6 @@
         "Munroe et al. 2019",
         "Cosenza et al. 2021",
         "Pi et al. 2020",
-        "Parsaee et al. 2026",
         "Cosenza 2022",
         "Tu et al. 2022"
       ]
@@ -774,8 +770,7 @@
         25,
         58,
         169,
-        250,
-        350
+        250
       ],
       "labels": [
         "Hashizume et al. 2022",
@@ -783,8 +778,7 @@
         "Ozawa et al. 2025",
         "Narayanan et al. 2025",
         "Hashizume & Ying 2025",
-        "Hashizume et al. 2026",
-        "Parsaee et al. 2026"
+        "Hashizume et al. 2026"
       ]
     },
     {
@@ -12288,9 +12282,6 @@
       "dataUrl": null,
       "isPrimary": true,
       "methods": [
-        "Bayesian Optimization",
-        "Genetic Algorithms",
-        "Active Learning",
         "Benchmarks & Evaluation Frameworks"
       ],
       "areas": [

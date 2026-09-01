@@ -33,10 +33,10 @@ A corpus sweep for CART, decision trees and C4.5 matched many references, but ne
 ## Adjacent methods
 
 - [Benchmarks & Evaluation Frameworks](./BenchmarksEvaluation.md): the row this one is most easily confused with, separated by whether anything reusable ships.
-- [SVM](./SVM.md), [Ensemble Learning](./EnsembleLearning.md), [K-Nearest Neighbors](./KNearestNeighbors.md), [Linear & Regularized Models](./LinearRegularizedModels.md), [Chemometrics](./Chemometrics.md): the families these papers run against each other. Every reference on this page also appears in several of them, by design rather than by accident.
-- [Deep Learning](./DeepLearning.md): the comparison point in all three references, and the one that most often fails to pay off at these data scales.
+- [SVM](./SVM.md), [Ensemble Learning](./EnsembleLearning.md), [K-Nearest Neighbors](./KNearestNeighbors.md), [Linear & Regularized Models](./LinearRegularizedModels.md), [Chemometrics](./Chemometrics.md): the families these papers run against each other. Each reference on this page also sits in the families it genuinely ran, by design rather than by accident, which is why refs 32, 208 and 253 carry several of these rows and ref 20, whose comparison is a different set, carries [Deep Learning](./DeepLearning.md) and [Ensemble Learning](./EnsembleLearning.md) instead.
+- [Deep Learning](./DeepLearning.md): the comparison point in three of the four references here, and the one that most often fails to pay off at these data scales.
 
 ## Further reading
 
-- Research area: [Bioprocess & Scale-Up](../ResearchAreas/Bioprocess.md), the only column this row currently occupies.
+- Research areas: [Bioprocess & Scale-Up](../ResearchAreas/Bioprocess.md) and [Scaffolding](../ResearchAreas/Scaffolding.md), the two columns this row currently occupies.
 - Scope: the [Taxonomy.md definition](../Taxonomy.md#comparative-studies), which is the trusted source for what belongs here, and the [Benchmarks & Evaluation Frameworks definition](../Taxonomy.md#benchmarks--evaluation-frameworks) it is drawn against.

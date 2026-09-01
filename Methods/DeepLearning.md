@@ -11,8 +11,6 @@ Because it is a residual category, this row is not a coherent research programme
 ## Media Optimization
 
 - [#15](../Papers.md#15) (Yoshida et al. 2023, *Journal of Bioscience and Bioengineering*): a deep neural network as the surrogate under Bayesian optimization for 31-component *E. coli* media, including the honest account of a first optimization round predicting badly and being fixed by retraining. Described in [Bayesian Optimization](./BayesianOptimization.md).
-- [#18](../Papers.md#18) (Cosenza 2022, UC Davis dissertation): the neural-network-guided genetic algorithm and multi-information-source Bayesian work behind the cell-ag media thread. Described in [Bayesian Optimization](./BayesianOptimization.md).
-- [#212](../Papers.md#212) (Tu et al. 2022, *Scientific Reports*): artificial neural networks compared against Gaussian process regression for bull-semen cryopreservation extender design, with GPR winning. Described in [Bayesian Optimization](./BayesianOptimization.md).
 
 ## Cellular Engineering
 
