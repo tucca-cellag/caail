@@ -96,11 +96,16 @@ describe('the full-width data-table rules', () => {
 
 describe('DataTableViews', () => {
   it('takes its thresholds from table-layout.ts rather than repeating them', () => {
+    // The `.ts` suffix is OPTIONAL in the pattern. Both spellings are used in
+    // this repo (`canonical-sources.ts` and `caail-pages.test.ts` write it,
+    // this component does not), and pinning one made a correct rewrite fail
+    // under a message saying the component repeats its thresholds, which is the
+    // opposite of what such a rewrite does.
     expect(COMPONENT).toMatch(
-      /import\s*\{[^}]*MIN_DATA_TABLE_COLUMNS[^}]*\}\s*from\s*'\.\.\/lib\/table-layout'/,
+      /import\s*\{[^}]*MIN_DATA_TABLE_COLUMNS[^}]*\}\s*from\s*'\.\.\/lib\/table-layout(\.ts)?'/,
     );
     expect(COMPONENT).toMatch(
-      /import\s*\{[^}]*MIN_DATA_TABLE_BODY_ROWS[^}]*\}\s*from\s*'\.\.\/lib\/table-layout'/,
+      /import\s*\{[^}]*MIN_DATA_TABLE_BODY_ROWS[^}]*\}\s*from\s*'\.\.\/lib\/table-layout(\.ts)?'/,
     );
   });
 

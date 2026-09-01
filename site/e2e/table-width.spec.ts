@@ -72,6 +72,16 @@ function tableColumnCounts(markdown: string): number[] {
     counts.push(
       lines[i]
         .trim()
+        // An escaped pipe is a literal character in a cell, not a boundary, and
+        // a pipe inside an inline code span is the same. Both are legal GFM and
+        // both used to inflate the count, which would classify a 2-column table
+        // wide and then fail against a browser that correctly kept the page
+        // capped, pointing at the CSS rule rather than at the cell. No
+        // canonical page contains either today (snapshot 2026-09-01), so this
+        // is latent; `grep -rn '\\|' Datasets ResearchAreas Methods` and the
+        // top-level sources print the live answer.
+        .replace(/\\\|/g, '')
+        .replace(/`[^`]*`/g, '')
         .replace(/^\||\|$/g, '')
         .split('|').length,
     );

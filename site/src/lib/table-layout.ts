@@ -23,6 +23,20 @@
  *
  * The rule the CSS expresses is `th:nth-child(N)` — a table whose header row
  * has an Nth cell has at least N columns.
+ *
+ * THE TWO SIDES MEASURE SLIGHTLY DIFFERENT THINGS, and this file used to imply
+ * they were identical. The component counts every `th` in `thead`, summed
+ * across however many rows it has; the CSS asks whether a SINGLE row carries an
+ * Nth cell. For a one-row `thead` those agree, which is every table GFM can
+ * produce, so the canonical Markdown cannot reach the gap.
+ *
+ * A MULTI-ROW `thead` can. Two 2-column header rows give the component 4 and
+ * the CSS no match, so the toggle appears on a page that stays capped -- the
+ * direction `MIN_DATA_TABLE_BODY_ROWS` below calls the bad one, a control that
+ * does nothing. Only a component- or MDX-authored table can get there today.
+ * Left as a documented boundary rather than repaired, because CSS has no way to
+ * sum cells across rows: closing it means changing what the COMPONENT counts,
+ * which is a presentation decision rather than a consistency fix.
  */
 
 /**

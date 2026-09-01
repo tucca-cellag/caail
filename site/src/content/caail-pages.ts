@@ -614,10 +614,23 @@ export const CAAIL_PAGES = {
   /**
    * The repo-relative canonical file behind every top-level prose page.
    *
-   * The ONE list of those files. Anything that needs to know which top-level
-   * Markdown the site renders — the content loader, and anything later that
-   * serves or mirrors a page — calls this rather than writing the names out,
-   * because a second copy has already diverged once (see `PageMeta.source`).
+   * The one list for the ROUTING side: the content loader, and anything later
+   * that serves or mirrors a page, calls this rather than writing the names
+   * out, because a second copy has already diverged once (see `PageMeta.source`).
+   *
+   * IT IS NOT THE ONLY LIST IN THE REPO, and an earlier draft of this sentence
+   * said it was, which was false when written. `scripts/parser/llms-full.ts`
+   * hand-writes five of these seven names for the SERVED CORPUS, and is
+   * already short `Taxonomy.md` and `AIAgentsFoundationModels.md` -- a gap
+   * `scripts/private-paths.test.ts` documents and warns against reading as a
+   * closed exception. So an eighth top-level page added here gets a route and
+   * is silently absent from `llms-full.txt`, with nothing red.
+   *
+   * That divergence is older than this method and is deliberately not fixed
+   * here: the two lists answer different questions (what the site routes
+   * versus what the corpus serves) and collapsing them is a decision about
+   * the corpus, not a refactor. Tracked on CAAIL-204, which owns hand-typed
+   * facts that duplicate machine-derived ones.
    *
    * Order follows `order`, so the list reads the way the sidebar does.
    */

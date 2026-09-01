@@ -84,6 +84,16 @@ const SITE_ROOT = fileURLToPath(new URL('../../', import.meta.url));
 const GUARD = 'scripts/private-paths.test.ts';
 
 /**
+ * Source extensions a relative specifier may resolve to in this repo.
+ *
+ * `.ts` is the bulk, `.mjs` is what `site/scripts/` uses for its standalone
+ * tools, and the two `.js` forms are legal and cheap to cover. Over-generating
+ * costs a few `statSync` calls that miss; under-generating costs a false
+ * "module was moved" on a correct import.
+ */
+const SOURCE_EXTENSIONS = ['.ts', '.js', '.mts', '.mjs'] as const;
+
+/**
  * Every module specifier in this source, by any syntax.
  *
  * `from '…'` catches static imports, `import type`, and every re-export form
@@ -107,8 +117,12 @@ function moduleSpecifiers(src: string): string[] {
 /**
  * A relative specifier, as a path relative to site/.
  *
- * FOUR CANDIDATE SPELLINGS, because this repo uses more than one and an earlier
- * version of this function assumed the first. `.js` maps to `.ts` because the
+ * CANDIDATES ARE GENERATED, not listed, because a hand-written list is always
+ * one spelling short and this one twice was. The first version assumed the
+ * `.js`-to-`.ts` rewrite alone; the second added three more by hand and still
+ * had no `.js` or `index.js`, so a member importing a plain `.js` sibling would
+ * have hit the same misdiagnosis the list exists to prevent. Extensions now
+ * come from one array, so adding a spelling is one edit in one place. `.js` maps to `.ts` because the
  * project's imports are written the way NodeNext wants them emitted while what
  * is on disk is the TypeScript source; the extensionless form is legal and is
  * what `DataTableViews.astro` uses to reach `table-layout`; and a directory
@@ -129,7 +143,12 @@ function moduleSpecifiers(src: string): string[] {
  */
 function resolveFrom(fromRel: string, spec: string): string {
   const base = normalize(join(dirname(fromRel), spec));
-  const candidates = [base.replace(/\.js$/, '.ts'), base, `${base}.ts`, join(base, 'index.ts')];
+  const candidates = [
+    base.replace(/\.js$/, '.ts'),
+    base,
+    ...SOURCE_EXTENSIONS.map((ext) => `${base}${ext}`),
+    ...SOURCE_EXTENSIONS.map((ext) => join(base, `index${ext}`)),
+  ];
   const isFile = (rel: string): boolean => {
     try {
       return statSync(join(SITE_ROOT, rel)).isFile();
