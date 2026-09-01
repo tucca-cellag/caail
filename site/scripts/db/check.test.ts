@@ -144,7 +144,18 @@ describe('checkTaxonomyAxes', () => {
       ...(opts.extraAreaDupe ? [`### ${areas[0]}\nA second definition of the same column.\n`] : []),
       '## AI/ML methods (rows)',
       '',
-      ...methods.map((m) => `### ${m}\nMethod definition for ${m}.\n`),
+      // The methods preamble is part of a real Taxonomy.md, not decoration: it
+      // states the contribution principle and names which rows restate it, and
+      // checkTaxonomyAxes reads that line rather than holding its own list. A
+      // fixture without it fails the same way the real file would, which is the
+      // point. Only the FIRST method carries a clause and only it is named, so
+      // `withFmDef`'s exact-string replace on the others still works.
+      'A row records what a paper contributed, not what appears in its methods section.',
+      '',
+      `**Rows that restate it:** ${methods[0]}.`,
+      '',
+      ...methods.map((m, i) => `### ${m}\nMethod definition for ${m}.`
+        + `${i === 0 ? ' Not a paper that merely invokes one.' : ''}\n`),
       '## Subject themes (topic tags)',
       '',
       themeBlock,
@@ -236,6 +247,40 @@ describe('checkTaxonomyAxes', () => {
   // (assert at least one exists) would fail every fixture in this file.
   it('is silent, not failing, on a DB with no Foundation Models rows', () => {
     expect(checkTaxonomyAxes(miniDb(), fixtureRoot(taxonomyMd())).every((r) => r.ok)).toBe(true);
+  });
+
+  // The contribution principle. Unlike the FM clauses above, these assert about the
+  // FILE rather than about DB contents, so absence is a failure rather than silence:
+  // a Taxonomy.md with no principle is the defect, not an empty corpus.
+  it('flags a methods preamble that no longer states the contribution principle', () => {
+    const body = taxonomyMd().replace(
+      'A row records what a paper contributed', 'A row records something else');
+    const res = checkTaxonomyAxes(miniDb(), fixtureRoot(body));
+    expect(res.some((r) => !r.ok && /contribution principle/.test(r.label))).toBe(true);
+  });
+
+  // The vacuity probe, and it is the one that earns its keep. Delete the scope line
+  // and the DERIVED row list is empty, so "every named row carries its clause" is
+  // vacuously true and stays green while checking nothing. Without this assertion,
+  // one deleted line silently disables the check below it.
+  it('flags a missing scope line rather than passing vacuously', () => {
+    const body = taxonomyMd().replace('**Rows that restate it:** Deep Learning.', '');
+    const res = checkTaxonomyAxes(miniDb(), fixtureRoot(body));
+    expect(res.some((r) => !r.ok && /names at least one row/.test(r.label))).toBe(true);
+    // The per-row check is still green, which is exactly why the probe above exists.
+    expect(res.some((r) => r.ok && /carries its contribution clause/.test(r.label))).toBe(true);
+  });
+
+  // Also the derivation test, which is why it uses `Deep Learning`. That label is
+  // named nowhere in check.ts's logic — its only appearance there is inside a
+  // comment — so the row is in scope solely because the fixture's scope line names
+  // it. If the guard held its own list, this would pass while the row went
+  // unchecked, and the list would be the second hand-typed copy the FM comment
+  // above refuses to create.
+  it('flags a named row whose definition dropped its contribution clause', () => {
+    const body = taxonomyMd().replace(' Not a paper that merely invokes one.', '');
+    const res = checkTaxonomyAxes(miniDb(), fixtureRoot(body));
+    expect(res.some((r) => !r.ok && /carries its contribution clause/.test(r.label))).toBe(true);
   });
 });
 

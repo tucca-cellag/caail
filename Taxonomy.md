@@ -171,6 +171,26 @@ column (e.g. an agent used for media design → *Media Optimization*).
 
 ## AI/ML methods (rows)
 
+**A row records what a paper contributed, not what appears in its methods section.** A paper earns a
+method row by *building or applying* that method as part of its reported result. It does not earn one
+by consuming the method as a service, by using it to configure the machinery that produced the
+result, or by being measured against it. The same technique can be a contribution in one paper and a
+component in another, so the question is never whether the method is present but whether the paper is
+making a claim about it.
+
+**Rows that restate it:** Foundation Models, Benchmarks & Evaluation Frameworks, Genetic Algorithms.
+
+Each states it in the terms its own boundary needs, because each has been misread at least once:
+building a model versus invoking one, shipping a benchmark versus being scored by it, and where a
+search's output appears. Read the row's own text for the test that applies. That list is the
+authoritative scope of this principle and is read mechanically, so a row named there without a clause
+in its definition, or a clause deleted while the row stays named, is caught rather than noticed.
+
+**This is not the same as the routing rules** elsewhere in this section, which say a paper belongs in
+a *different* row (a CNN paper goes to *CNN* rather than *Deep Learning*; a data-driven model trained
+on simulation output is not *Hybrid Mechanistic-ML*). Those answer "which row"; this one answers "any
+row at all". Do not merge them.
+
 ### Bayesian Optimization
 Sequential, surrogate-model-based optimization: a probabilistic model (usually a Gaussian process)
 plus an **acquisition function** chooses the next experiment to run, sample-efficiently. In cell-ag,
@@ -217,12 +237,27 @@ first-principles structure is absent from the deployed model.
 ### Genetic Algorithms
 Population-based evolutionary search: genetic algorithms, evolutionary strategies, NSGA, differential
 evolution. In cell-ag: optimizing media, process parameters, and tissue/scaffold designs over large
-combinatorial spaces. **Not** an evolutionary search that optimizes only a model's own
-hyperparameters or architecture, which is the model's training procedure rather than a result about
-the problem. The row is earned when the search's output is a physical design, a formulation, a process
-setting, or a feature subset reported as a finding about the problem domain; reporting which
-hyperparameters won is not such a finding. A paper that does both earns the row on the second, so read
-the whole methods section rather than the first evolutionary-search heading in it.
+combinatorial spaces.
+
+**The test is where the search's output appears.** The row is earned when what the search returned is
+part of what the paper reports: a formulation, a physical design, a process setting, or the fitted
+model itself. It is **not** earned when the output only configures the machinery that produced the
+reported result, which covers a search over hyperparameters, over model architecture, and over which
+preprocessing or feature-selection *technique* to apply. Both kinds are real optimisation and both are
+often described at length, so the length of the description decides nothing. What decides it is whether
+the answer the search returned is one the paper makes a claim about.
+
+A feature subset can itself be a finding, since "these are the variables that matter" is a claim about
+the problem. Feature selection is therefore not excluded as a category; what is excluded is a search
+whose answer is which technique to run.
+
+Two shapes, written out because a single sentence here has already been read both ways. A scoring-card
+method whose evolutionary search produces the score table that *is* the predictor earns the row,
+because the table is the result. A study whose search identifies the best combination of
+feature-selection techniques to reduce features before training does not, because its reported result
+is about the biology and the search's answer is a step in the pipeline. A paper that does both earns
+the row on the first, so read the whole methods section rather than the first evolutionary-search
+heading in it.
 
 ### SVM
 Support vector machines and support vector regression, kernel methods for classification and

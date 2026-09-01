@@ -281,7 +281,6 @@
 {"method":"Active Learning","area_key":"media","ref_id":350,"label":"Parsaee et al. 2026","ordinal":280}
 {"method":"Genetic Algorithms","area_key":"media","ref_id":18,"label":"Cosenza 2022","ordinal":281}
 {"method":"Genetic Algorithms","area_key":"media","ref_id":212,"label":"Tu et al. 2022","ordinal":282}
-{"method":"Genetic Algorithms","area_key":"sensory","ref_id":271,"label":"Pallante et al. 2022","ordinal":283}
 {"method":"Linear & Regularized Models","area_key":"cell","ref_id":122,"label":"Magnusson et al. 2024","ordinal":284}
 {"method":"Linear & Regularized Models","area_key":"bioprocess","ref_id":253,"label":"Park et al. 2023","ordinal":285}
 {"method":"K-Nearest Neighbors","area_key":"bioprocess","ref_id":253,"label":"Park et al. 2023","ordinal":286}

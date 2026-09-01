@@ -451,12 +451,10 @@
       "method": "Genetic Algorithms",
       "area": "sensory",
       "refIds": [
-        342,
-        271
+        342
       ],
       "labels": [
-        "Androutsos et al. 2024",
-        "Pallante et al. 2022"
+        "Androutsos et al. 2024"
       ]
     },
     {
@@ -10207,7 +10205,6 @@
       "dataUrl": null,
       "isPrimary": true,
       "methods": [
-        "Genetic Algorithms",
         "SVM"
       ],
       "areas": [

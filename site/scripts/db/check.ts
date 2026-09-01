@@ -584,6 +584,39 @@ const FM_CLAUSES: ReadonlyArray<readonly [string, RegExp]> = [
 ];
 
 /**
+ * The contribution principle: a row records what a paper CONTRIBUTED, not what
+ * appears in its methods section. Stated once in the methods preamble, and
+ * restated by the rows whose boundary turns on it, each in its own terms.
+ *
+ * WHY THIS IS NOT A SECOND HAND-TYPED LIST, which the FM comment above rightly
+ * refuses. The preamble names the rows that carry the rule; this guard READS that
+ * list out of the prose rather than holding a copy. So there is one list, in the
+ * file a curator edits, and the check follows it. Add a fourth row to the
+ * principle by naming it in the preamble and writing its clause; nothing here
+ * changes. Remove one and this stops asking about it, which is correct: the
+ * preamble is the statement of which rows are in scope.
+ *
+ * The FM family stays guarded separately above, by PREFIX, because its risk is
+ * different: a sixth foundation-model row arriving without the clauses. That is a
+ * growth risk. This one is a drift risk between rows that already exist.
+ *
+ * THE VACUITY PROBE IS LOAD-BEARING. If the preamble stopped naming any row, the
+ * derived list would be empty and the per-row assertion would pass forever while
+ * checking nothing. That exact failure — a guard reduced to comparing two empty
+ * sets — is what the row/tag parity check below also defends against, and it is
+ * the reason both assert their inputs resolve before comparing them.
+ *
+ * Presence probes, like the FM ones: they answer "does this row still say
+ * something about consuming or configuring rather than contributing". They cannot
+ * tell an inverted sentence from an upheld one.
+ */
+const METHODS_H2 = '## AI/ML methods (rows)';
+const CONTRIBUTION_SCOPE_MARKER = 'Rows that restate it:';
+const CONTRIBUTION_PRINCIPLE = /records what a paper contributed/i;
+const CONTRIBUTION_CLAUSE =
+  /invok|tool call|merely (evaluat|us|labell|invok)|configur|consum|scored (by|against)/i;
+
+/**
  * Taxonomy axis guard: every matrix row and column must resolve to a definition
  * under *its own* H2 vocabulary in Taxonomy.md.
  *
@@ -635,6 +668,36 @@ export function checkTaxonomyAxes(db: Db, repoRoot: string = REPO_ROOT): CheckRe
     out.push(ok(`every "${FM_PREFIX}" row states ${what}`, missing.length === 0,
       `missing from: [${missing.join(', ')}]`));
   }
+
+  // The contribution principle, and the rows the preamble names as restating it.
+  // The list is derived from that prose, never held here — see CONTRIBUTION_CLAUSE.
+  const taxonomySrc = readFileSync(taxonomyPath, 'utf-8');
+  const h2At = taxonomySrc.indexOf(METHODS_H2);
+  const preamble = h2At === -1
+    ? ''
+    : taxonomySrc.slice(h2At + METHODS_H2.length).split('\n### ')[0] ?? '';
+
+  out.push(ok('Taxonomy.md states the contribution principle once, in the methods preamble',
+    CONTRIBUTION_PRINCIPLE.test(preamble),
+    `the "${METHODS_H2}" preamble no longer states it, so the rows below have nothing to agree ` +
+    `with and each is free to drift into its own version`));
+
+  // Read the scope off ONE marked line, not off the whole preamble. Scanning the
+  // preamble for any mention picked up `Deep Learning`, which the preamble names
+  // only in the paragraph explaining that routing rules are a DIFFERENT rule. A
+  // label appearing near a principle is not a label governed by it, and that is
+  // the same presence-versus-meaning confusion this principle exists to settle.
+  const scopeLine = preamble.split('\n').find((l) => l.includes(CONTRIBUTION_SCOPE_MARKER)) ?? '';
+  const namedRows = methods.filter((label) =>
+    scopeLine.includes(label) || (label.startsWith(FM_PREFIX) && scopeLine.includes(FM_PREFIX)));
+  out.push(ok('the methods preamble names at least one row as restating it', namedRows.length > 0,
+    `no DB method label appears on the "${CONTRIBUTION_SCOPE_MARKER}" line (or the line is gone), ` +
+    `so the per-row check below would compare an empty set and pass while checking nothing`));
+
+  const missingClause = namedRows.filter(
+    (label) => !CONTRIBUTION_CLAUSE.test(taxonomy.axes.method[label] ?? ''));
+  out.push(ok('every row the preamble names still carries its contribution clause',
+    missingClause.length === 0, `missing from: [${missingClause.join(', ')}]`));
 
   // The themes axis is guarded by count against the same THEME_SLUGS that
   // checkTopicTiers asserts, so a theme added to Taxonomy.md without a topic
