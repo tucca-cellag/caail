@@ -76,7 +76,7 @@ const paths = [
     steps: [
       { t: 'Settings → Skills → Add skill → Import from GitHub' },
       { t: 'tucca-cellag/caail', copy: true },
-      { t: 'Preview → Import 2 skills' },
+      { t: 'Preview → Import' },
     ],
     clients: [{ n: 'Claude Science', i: 'simple-icons:claude' }],
     /* Both caveats are load-bearing and neither is obvious from the dialog. The plan and
@@ -90,8 +90,14 @@ const paths = [
        this path offers both in one dialog with both pre-checked. The dialog does carry a
        checkbox each, so the consent still exists; saying only "both skills install" would
        have described the default as the whole behaviour and quietly spent a choice the
-       reader is entitled to make. */
-    note: 'Beta, macOS or Linux, Pro plan or above. Imports both skills unless you untick one; pinned to that commit, and Check for updates moves them forward.',
+       reader is entitled to make.
+
+       NO COUNT IS TYPED HERE, in the step or the note. The button reads "Import 2 skills"
+       today and the number is the marketplace's, not this file's: `caail-hooks` is a
+       planned third entry (CAAIL-226), and the day it lands a hard-coded 2 would contradict
+       the button while nothing failed. Naming the two skills instead is both count-free and
+       more use to a reader than the arithmetic was. */
+    note: 'Beta, macOS or Linux, Pro plan or above. Imports the query and contribute skills, untick either; pinned to that commit, and Check for updates moves them forward.',
     link: { href: 'https://claude.com/docs/claude-science/connectors-and-skills', text: 'Claude Science skills docs →' },
   },
   {
@@ -108,7 +114,7 @@ const paths = [
     lead: 'Already in a coding agent? Paste this prompt. It reads the guide and installs itself:',
     steps: [{ t: `Read ${INSTALL_DOC} (if 403, use ${INSTALL_RAW}) and install CAAIL for me.`, copy: true }],
     clients: [
-      { n: 'Claude Code', i: 'simple-icons:claude' },
+      { n: 'Claude Code', i: 'simple-icons:claudecode' },
       { n: 'Cursor', i: 'simple-icons:cursor' },
       { n: 'Windsurf', i: 'lucide:wind' },
       { n: 'Cline', i: 'lucide:terminal' },
@@ -187,7 +193,11 @@ const paths = [
 
               An <ol>, because here the numbers ARE the instruction rather than decoration.
               A one-step path drops the number, and the column with it. */}
-          <ol class:list={['steps', p.steps.length === 1 && 'steps--single']}>
+          {/* `role="list"` because `list-style: none` strips list semantics in Safari and
+              VoiceOver, and the whole argument for the <ol> is that the numbers ARE the
+              instruction. The visible digits survive as their own spans; "list, 3 items"
+              does not. axe does not flag this. */}
+          <ol role="list" class:list={['steps', p.steps.length === 1 && 'steps--single']}>
             {p.steps.map((s, n) => (
               <li class="step">
                 {p.steps.length > 1 && <span class="n">{n + 1}</span>}
@@ -294,7 +304,13 @@ const paths = [
      exactly why nobody saw it.
 
      Below 34rem the panels wrap to unpredictable heights and a fixed reserve would strand
-     a large gap, so it lifts entirely.
+     a large gap, so it lifts entirely. That band is therefore UNCOVERED by choice, and the
+     reorder made it worse rather than better: with Claude Science both first and tallest,
+     the section now SHRINKS on every tab away from the default, where it used to grow.
+     Measured spread across tabs: 94px at 390px and 97px at 544px, against roughly 60px
+     before. Reserving it would strand about that much dead space under the shortest panel
+     on a phone, which is the worse trade, so this stays a documented gap rather than a
+     fixed one. Nothing samples below 545px, so it is written down instead of tested.
 
      Compact and full share one reserve because they measure the same: the variant changes
      the chrome around the panels, not the panels. Confirmed by sweeping both roots. The

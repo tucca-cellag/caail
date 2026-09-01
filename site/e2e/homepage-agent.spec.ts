@@ -221,8 +221,11 @@ test.describe('Connect your agent', () => {
     await expect(first).toBeVisible();
     const code = first.locator('code').first();
     await expect(code).toBeVisible();
-    // Non-trivial content: a blank or placeholder command line is what this guards.
-    expect((await code.innerText()).trim().length).toBeGreaterThan(8);
+    // CONTENT, not merely length. `length > 8` passed on any nine characters, which is not
+    // what "readable" means and not what this comment used to claim it guarded. Matching the
+    // union of the two values that can legitimately lead keeps the reorder-independence the
+    // docblock argues for without giving up the assertion.
+    await expect(code).toHaveText(/tucca-cellag\/caail|raw\.githubusercontent\.com/);
   });
 
   /**
@@ -366,15 +369,20 @@ test.describe('Connect your agent', () => {
       // are both the stacked one.
       //
       // 600 and 560 are NOT redundant, and the reason is not that a different panel peaks
-      // at each. Re-measured 2026-09-01 with `min-height: 0` forced, the Claude Science
-      // panel is the tallest at every sampled width: 252px from 545 to 959, 172px from 960
-      // to 1600. What differs is the RUNNER-UP, and that is what 560 buys: the cli panel is
-      // 201px at 600 and 241px at 560, so if the science panel ever shrinks below 241 the
-      // reserve stops being governed by it, and 560 is the width where that hands over.
-      // An earlier version of this comment claimed each width was a different panel's peak
-      // and quoted 236/195 for cli, both true of the single-column layout this file no
-      // longer builds. A reserve is a claim about every width, so sample where the claim is
-      // tightest, and say which measurement the numbers came from.
+      // at each. Measured with `min-height: 0` forced, the Claude Science panel is tallest
+      // at every sampled width: 263px from 545 to 959, 164px from 960 to 1600. What differs
+      // is the RUNNER-UP, and that is what 560 buys: the cli panel is 203px at 600 and 243px
+      // at 560, so if the science panel ever shrank below 243 the reserve would stop being
+      // governed by it, and 560 is the width where that hands over.
+      //
+      // These figures have now gone stale TWICE, and the second time is the instructive one.
+      // The first version quoted 236/195 from the single-column layout. The replacement was
+      // written in the same round that restored the Starlight list-margin override, which
+      // took 2 x 4px off every three-step panel and moved every number here, and only
+      // `SetupTabs.astro` was updated. So a comment carrying "Re-measured" and scolding its
+      // own predecessor was stale within one commit. The lesson is not to measure more
+      // carefully; it is that the same numbers live in two files with nothing tying them
+      // together, and re-deriving them is one `min-height: 0` sweep.
       await page.setViewportSize({ width, height: 900 });
       await page.goto('./');
       // The section's own height is what everything below it sits on, so holding that
