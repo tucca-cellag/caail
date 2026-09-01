@@ -209,11 +209,20 @@ test('the hero stripe meets the header with no gap', async ({ page }) => {
 });
 
 test.describe('Connect your agent', () => {
+  /**
+   * Asserts the PROPERTY (the default panel renders usable content with no interaction),
+   * not which path happens to lead. This pinned `raw.githubusercontent.com` until Claude
+   * Science took first position, then went red on a pure reorder that broke nothing. A
+   * test that fails when the thing it names still works is asserting an accident.
+   */
   test('the first panel is readable before any interaction', async ({ page }) => {
     await page.goto('./');
     const first = page.locator('.gs .panel').first();
     await expect(first).toBeVisible();
-    await expect(first.locator('code').first()).toContainText('raw.githubusercontent.com');
+    const code = first.locator('code').first();
+    await expect(code).toBeVisible();
+    // Non-trivial content: a blank or placeholder command line is what this guards.
+    expect((await code.innerText()).trim().length).toBeGreaterThan(8);
   });
 
   /**
@@ -258,28 +267,39 @@ test.describe('Connect your agent', () => {
    * timer running against that shared live region, so it wiped the second copy's
    * announcement one second in. Only a screen-reader user ever perceives it, which is
    * precisely why it needs an assertion rather than a look.
+   *
+   * It now copies ACROSS tabs rather than within one panel. Once steps were split into
+   * values and actions, only values carry a copy button and no panel exposes two at once.
+   * The race is untouched by that: the <output> is shared per `.setup`, not per panel, so
+   * two copies from different tabs contend for the same live region exactly as two from
+   * one panel used to. If anything it is the likelier path, since a reader comparing
+   * install routes copies from one tab and then another.
    */
   test('a second copy does not have its announcement wiped by the first', async ({ page, context }) => {
     await context.grantPermissions(['clipboard-read', 'clipboard-write']);
     await page.goto('./');
 
-    // Only a panel with two commands can exercise the race; single-command panels cannot.
     const tabs = page.locator('.gs [role="tab"]');
     const count = await tabs.count();
-    const copies = page.locator('.gs .panel:not([hidden]) .copy');
-    for (let i = 0; i < count; i++) {
+    const visibleCopy = page.locator('.gs .panel:not([hidden]) .copy');
+
+    // Find two tabs that each offer something copyable.
+    const withCopy: number[] = [];
+    for (let i = 0; i < count && withCopy.length < 2; i++) {
       await tabs.nth(i).click();
-      if ((await copies.count()) > 1) break;
+      if ((await visibleCopy.count()) > 0) withCopy.push(i);
     }
     expect(
-      await copies.count(),
-      'no panel exposes two copy buttons at once — the race cannot be exercised',
-    ).toBeGreaterThan(1);
+      withCopy.length,
+      'fewer than two tabs expose a copy button — the shared-output race cannot be exercised',
+    ).toBe(2);
 
     const live = page.locator('.gs output');
-    await copies.nth(0).click();
+    await tabs.nth(withCopy[0]).click();
+    await visibleCopy.first().click();
     await page.waitForTimeout(1100);
-    await copies.nth(1).click();
+    await tabs.nth(withCopy[1]).click();
+    await visibleCopy.first().click();
     // Now past the FIRST button's 2s deadline, but well inside the second's.
     await page.waitForTimeout(1100);
 
@@ -339,12 +359,12 @@ test.describe('Connect your agent', () => {
   for (const root of ['.gs', '.hero'])
   for (const width of [1280, 600, 560]) {
     test(`switching tabs does not change the section height, no page jump (${root} @ ${width}px)`, async ({ page }) => {
-      // Three widths because the reserve has two bands and the narrow one is not flat.
-      // 1280px exercises the >= 48rem band. 600px and 560px both sit in the 34-48rem
-      // band, and they disagree: the cli panel is 195px at 600 and 236px at 560, so 600
-      // alone cleared a reserve that 560 did not. That is the same defect described one
-      // line down, recurring at a different width. Testing one width per band is not
-      // testing the band.
+      // Three widths, though the reserve is now a single number. They are not redundant:
+      // each is where a DIFFERENT panel peaks. 1280px is where the copy stops wrapping;
+      // 600px is the old sample that read as sufficient; 560px is where the cli panel
+      // reaches 236px, having been 195px at 600px. Sampling 600 alone cleared a reserve
+      // that 560 did not, and that shortfall shipped. A reserve is a claim about every
+      // width, so test the widths where the claim is tightest, not one per band.
       await page.setViewportSize({ width, height: 900 });
       await page.goto('./');
       // The section's own height is what everything below it sits on, so holding that

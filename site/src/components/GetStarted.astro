@@ -20,9 +20,15 @@ import SetupTabs from './SetupTabs.astro';
 
 <section class="gs" id="connect">
   <h2 class="caail-display sr">Connect your agent</h2>
+  {/* "Nothing to install" was true while every path was a paste or a CLI command. The
+      leading path is now Claude Science, which is an application on a paid plan, so the
+      blanket claim had to go: it is CAAIL that needs no hosting or authentication, not
+      the client. "The only real difference is how long the setup lasts" went with it for
+      the same reason, since eligibility now differs between paths too. */}
   <p class="lede sr sr-d1">
-    Nothing to install, host or authenticate. CAAIL is static JSON on GitHub, so the only
-    real difference between these is how long the setup lasts.
+    CAAIL is static JSON on GitHub, so there is nothing to host and nothing to
+    authenticate. The paths differ in how long the setup lasts, and in what each one
+    asks of you.
   </p>
 
   <div class="sr sr-d2">

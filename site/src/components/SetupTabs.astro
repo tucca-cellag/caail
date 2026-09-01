@@ -1,11 +1,19 @@
 ---
 /**
- * SetupTabs — the three install paths, extracted so the hero and the standalone
+ * SetupTabs — the four install paths, extracted so the hero and the standalone
  * "Connect your agent" band can both render them.
  *
- * `compact` trims the chrome for hero use: no per-step numbering column, tighter
- * spacing, smaller reserve. The content and the tab contract are identical either way,
- * so there is one definition of what the install paths ARE.
+ * `compact` trims the chrome for hero use: no per-step numbering column and tighter
+ * spacing. NOT a smaller reserve, which this said until the `.setup--compact` override
+ * was deleted; the two variants share one reserve, for the reason given on `.panels`.
+ * The content and the tab contract are identical either way, so there is one definition
+ * of what the install paths ARE.
+ *
+ * ORDER IS AN EDITORIAL CLAIM, not arrival order. Claude Science leads because CAAIL's
+ * readers are cell-ag researchers rather than engineers. `any` is deliberately LAST
+ * despite being the lowest-barrier path: it is the fallback for a reader who matched
+ * none of the three named clients, and putting a "nothing persists" option first
+ * answers a question nobody asked yet.
  *
  * Endpoints are GitHub URLs, not this site's. Code execution defaults to network egress
  * for package managers only, which covers GitHub but not GitHub Pages, and on Team and
@@ -36,20 +44,46 @@ const INSTALL_RAW = `${RAW}/skills/caail-install/SKILL.md`;
 
 const paths = [
   {
-    id: 'any',
-    tab: 'Any agent',
-    icon: 'lucide:message-square',
-    lead: 'To use CAAIL, copy this prompt and send it to your AI agent:',
-    steps: [PROMPT],
-    clients: [
-      { n: 'Claude', i: 'simple-icons:anthropic' },
-      { n: 'ChatGPT', i: 'simple-icons:openai' },
-      { n: 'Gemini', i: 'simple-icons:googlegemini' },
-      { n: 'Cursor', i: 'simple-icons:cursor' },
-      { n: 'Copilot', i: 'simple-icons:githubcopilot' },
+    id: 'science',
+    tab: 'Claude Science',
+    icon: 'lucide:flask-conical',
+    /* First for an audience reason and a capability reason. CAAIL's readers are
+       researchers, and this is the only client that both installs the skills properly
+       AND already reaches the databases the library indexes: its Featured connectors
+       cover GEO, PRIDE, ArrayExpress, UniProt, Ensembl, PDB, AlphaFold and ChEMBL. No
+       other path closes that loop.
+
+       It resolves through `.claude-plugin/marketplace.json`, so it takes exactly the two
+       public skills and skips both the maintainer-only `.claude/skills/` and the root
+       `skills/caail-install/`. Record that as a CONDITION rather than a property of this
+       repo: the same dialog also advertises a bare "any repo with skills/ directories"
+       scan, and if the marketplace file ever stops resolving, that scan is what runs
+       instead and the maintainer skills come with it.
+
+       The condition is checkable at a glance rather than by inference, which is the part
+       worth knowing. The Preview panel names the path it took, printing "marketplace
+       manifest" beside the publisher name and the commit it would pin. If that ever reads
+       otherwise, the skip is not happening. Verified 2026-09-01, Claude Science 0.1.43.
+
+       STEPS ARE NAVIGATE, PASTE, CONFIRM, and the order is not cosmetic. The claude.ai
+       path below runs the other way round, value first and destination second, because
+       you cannot upload a file you have not downloaded. Here there is nothing to fetch:
+       you open a dialog and type into it. Leading with the repo name hands the reader a
+       string with nowhere to put it. */
+    lead: 'No download, no command line. In Claude Science:',
+    steps: [
+      { t: 'Settings → Skills → Add skill → Import from GitHub' },
+      { t: 'tucca-cellag/caail', copy: true },
+      { t: 'Preview → Import 2 skills' },
     ],
-    note: 'Loads for this conversation only; nothing is installed.',
-    link: null,
+    clients: [{ n: 'Claude Science', i: 'simple-icons:claude' }],
+    /* Both caveats are load-bearing and neither is obvious from the dialog. The plan and
+       OS gate is narrower than any other path here, and on Team and Enterprise an admin
+       can disable custom skills outright. The pin is the opposite of how every other
+       path behaves: those track the branch, this freezes at the commit you import, which
+       matters because the skill restates corpus counts that move. */
+    note: 'Beta, macOS or Linux, Pro plan or above. Both skills install, pinned to that commit; Check for updates moves them forward.',
+    link: { href: 'https://claude.com/docs/claude-science/connectors-and-skills', text: 'Claude Science skills docs →' },
   },
   {
     id: 'cli',
@@ -63,7 +97,7 @@ const paths = [
        difference; for Claude Code specifically it still ends up running those two
        commands, and the note names them for anyone who would rather run them directly. */
     lead: 'Already in a coding agent? Paste this prompt. It reads the guide and installs itself:',
-    steps: [`Read ${INSTALL_DOC} (if 403, use ${INSTALL_RAW}) and install CAAIL for me.`],
+    steps: [{ t: `Read ${INSTALL_DOC} (if 403, use ${INSTALL_RAW}) and install CAAIL for me.`, copy: true }],
     clients: [
       { n: 'Claude Code', i: 'simple-icons:claude' },
       { n: 'Cursor', i: 'simple-icons:cursor' },
@@ -81,12 +115,31 @@ const paths = [
     tab: 'claude.ai',
     icon: 'lucide:app-window',
     lead: 'The web app installs skills by file upload rather than by URL, so download it first:',
-    steps: [`${RAW}/plugin/skills/caail/SKILL.md`, 'Settings → Customize → Skills → Add → Upload skill'],
+    steps: [
+      { t: `${RAW}/plugin/skills/caail/SKILL.md`, copy: true },
+      { t: 'Settings → Customize → Skills → Add → Upload skill' },
+    ],
     clients: [
       { n: 'claude.ai', i: 'simple-icons:anthropic' },
       { n: 'Claude desktop', i: 'simple-icons:claude' },
     ],
     note: 'Persists across chats. Nothing to host or authenticate.',
+    link: null,
+  },
+  {
+    id: 'any',
+    tab: 'Any agent',
+    icon: 'lucide:message-square',
+    lead: 'To use CAAIL, copy this prompt and send it to your AI agent:',
+    steps: [{ t: PROMPT, copy: true }],
+    clients: [
+      { n: 'Claude', i: 'simple-icons:anthropic' },
+      { n: 'ChatGPT', i: 'simple-icons:openai' },
+      { n: 'Gemini', i: 'simple-icons:googlegemini' },
+      { n: 'Cursor', i: 'simple-icons:cursor' },
+      { n: 'Copilot', i: 'simple-icons:githubcopilot' },
+    ],
+    note: 'Loads for this conversation only; nothing is installed.',
     link: null,
   },
 ];---
@@ -107,14 +160,22 @@ const paths = [
       <div role="tabpanel" id={`${idPrefix}-p-${p.id}`} aria-labelledby={`${idPrefix}-t-${p.id}`} class="panel" hidden={i !== 0}>
         <p class="lead">{p.lead}</p>
 
+        {/* A step is either a VALUE you paste or an ACTION you take, and only the first
+            gets a copy button. Every step used to get one, because when this was written
+            every step happened to be a command. It stopped being true as soon as a path
+            needed "go to this menu": a copy affordance on a navigation path invites you
+            to paste a menu trail somewhere, and it buries the one line that IS meant to
+            be copied among identical-looking rows. */}
         {p.steps.map((s, n) => (
-          <div class="cmd">
+          <div class:list={['cmd', !s.copy && 'cmd--do']}>
             {p.steps.length > 1 && <span class="n">{n + 1}</span>}
-            <code>{s}</code>
-            <button type="button" class="copy" data-copy={s} aria-label={`Copy: ${s}`}>
-              <Icon name="lucide:copy" class="i-copy" />
-              <Icon name="lucide:check" class="i-done" />
-            </button>
+            {s.copy ? <code>{s.t}</code> : <span class="do">{s.t}</span>}
+            {s.copy && (
+              <button type="button" class="copy" data-copy={s.t} aria-label={`Copy: ${s.t}`}>
+                <Icon name="lucide:copy" class="i-copy" />
+                <Icon name="lucide:check" class="i-done" />
+              </button>
+            )}
           </div>
         ))}
 
@@ -131,13 +192,19 @@ const paths = [
     ))}
   </div>
 
-  {/* Says plainly what is built and what is not. The paste-prompt genuinely works in all
-      three today — what does not exist yet is a first-class integration (a Claude Science
-      connector, a ChatGPT app, a Gemini extension), and letting a reader assume otherwise
-      is the kind of overclaim this project exists to avoid. */}
+  {/* Says plainly what is built and what is not, and the list shrank on 2026-09-01.
+      Claude Science left it because its GitHub import installs both skills for real,
+      which had turned this line into an UNDERclaim: the same defect as an overclaim, in
+      the other direction, and harder to notice because nobody complains about a product
+      being undersold. What genuinely does not exist yet is a ChatGPT app or a Gemini
+      extension.
+
+      Removing a name from the list also moves the COUNT, so "all three" became "both".
+      Those two edits are one edit; changing the list alone leaves a sentence that
+      contradicts itself and still reads fine. */}
   <p class="soon">
     <Icon name="lucide:clock" />
-    <span>Dedicated <strong>Claude Science</strong>, <strong>ChatGPT</strong> and <strong>Gemini</strong> integrations are in progress. Until then the prompt above works in all three; it just does not persist.</span>
+    <span>Dedicated <strong>ChatGPT</strong> and <strong>Gemini</strong> integrations are in progress. Until then the <strong>Any agent</strong> prompt works in both; it just does not persist.</span>
   </p>
 
   <output class="visually-hidden" aria-live="polite"></output>
@@ -174,30 +241,36 @@ const paths = [
      shorter merely floors the shortest panel and lets the rest overflow it, which is a
      jump wearing the costume of a reserve.
 
-     Measured across every width where the reserve applies: 139 / 166 / 182px at >= 48rem,
-     rising between 34rem and 48rem as the command lines wrap. Hence two bands.
+     Measured 2026-09-01 with `.panels { min-height: 0 }` forced, sweeping 545-1600px.
+     Each figure is that panel's MAXIMUM over the range, with the widths it occurs at.
+     Carrying the coordinate is the whole point: an earlier version of this comment gave
+     three numbers with no widths attached, all of them sampled at 600px, and the reserve
+     derived from them was 16px short at 545-560px. That shortfall was live, and nothing
+     in the suite noticed, because the suite sampled 600px too.
 
-     That rise is NOT flat, which the earlier figures (159 / 217 / 214px) hid by being
-     sampled at 600px, near the top of the band. Swept 2026-09-01 with
-     `.panels { min-height: 0 }` forced: the cli panel is 195px at 600px and 236px at
-     545-560px. So the 13.75rem (220px) reserve was 16px short down there and had been
-     since the band was introduced, overflowing exactly as this comment's first paragraph
-     describes. 15rem (240px) clears it. The suite missed it by testing 600px and not
-     560px, so 560px is now in its width list.
+       science  240 flat        cli  236 @545-560
+       web      207 @545-560    any  158 @<=740
 
-     Below 34rem the panels wrap to unpredictable heights and a fixed reserve
-     would strand a large gap, so it lifts entirely.
+     ONE BAND, not two. There was a second reserve below 48rem because the cli panel
+     outgrew everything else down there as its note wraps. It still does, reaching 236,
+     but the Claude Science panel is 240 and flat, so it is the tallest at every width and
+     one number covers the range. Do not reintroduce a band without re-running the sweep:
+     two numbers where one will do is two things to get wrong.
+
+     Below 34rem the panels wrap to unpredictable heights and a fixed reserve would strand
+     a large gap, so it lifts entirely.
 
      Compact and full share one reserve because they measure the same: the variant changes
-     the chrome around the panels, not the panels. The old `.setup--compact` override was a
-     second number for identical content, and at 9rem (144px) it cleared only the first
-     panel, so every hero tab click resized the hero by up to 37px and re-ran the stripe
-     ResizeObserver that Hero.astro is written not to provoke.
+     the chrome around the panels, not the panels. Confirmed by sweeping both roots. The
+     old `.setup--compact` override was a second number for identical content, and at 9rem
+     (144px) it cleared only the first panel, so every hero tab click resized the hero by
+     up to 37px and re-ran the stripe ResizeObserver that Hero.astro is written not to
+     provoke.
 
-     `homepage-agent.spec.ts` asserts constant section height across tabs for BOTH instances
-     at both bands, so a panel that outgrows this fails the suite instead of shipping. */
-  .panels { min-height: 11.5rem; }
-  @media (max-width: 48rem) { .panels { min-height: 15rem; } }  /* 240px, clears 236 */
+     `homepage-agent.spec.ts` asserts constant section height across tabs for BOTH
+     instances at three widths, so a panel that outgrows this fails the suite instead of
+     shipping. */
+  .panels { min-height: 15.25rem; }  /* 244px, clears the 240px tallest at every width */
   @media (max-width: 34rem) { .panels { min-height: 0; } }
 
   /* A plain sentence, matching the reference. The icon moved onto the tab, where it
@@ -219,6 +292,13 @@ const paths = [
     border: 1px solid var(--caail-border); border-radius: 8px;
     padding: .55rem .6rem; margin: 0 0 var(--caail-space-2);
   }
+  /* An ACTION row is not a field: no tint, no border, no padding. Those are the visual
+     grammar of "there is something here to take", and a menu trail has nothing to take.
+     Dropping the box also buys back the row's vertical padding, which is why adding a
+     third step to the Claude Science path cost less height than the second one did. */
+  .cmd--do { background: none; border-color: transparent; padding-left: 0; padding-right: 0; }
+  .cmd .do { flex: 1 1 auto; min-width: 0; font-size: var(--caail-fs-xs); line-height: 1.6; color: var(--caail-muted); overflow-wrap: anywhere; }
+
   /* Same line-height as the code it numbers, so the digit sits on the code's first
      baseline rather than a few pixels above it. */
   .cmd .n { flex: none; font-size: var(--caail-fs-xs); font-weight: 600; color: var(--caail-muted); line-height: 1.6; min-width: .75rem; }
