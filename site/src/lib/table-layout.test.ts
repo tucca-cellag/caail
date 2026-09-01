@@ -38,9 +38,26 @@ const COMPONENT = readFileSync(
  * claimed the floor below caught what that missed. It does not: the floor
  * asserts that AT LEAST ONE selector matched, and two already do, so a third
  * rule wrapped for length would have been invisible while the file stayed
- * green on the other two. Both of the current selectors are near 100 characters
- * and one more qualifier would wrap either of them, so this was a live gap
- * rather than a hypothetical one.
+ * green on the other two.
+ *
+ * THE RISK IS CONCRETE, and the numbers say so more sharply than the first
+ * draft of this comment did. Snapshot 2026-09-01: the two selectors are 67 and
+ * 124 characters. The second is ALREADY past any conventional print width, so
+ * it is one reformat away from wrapping rather than one qualifier away, and the
+ * per-line matcher would have stopped seeing it without failing. That earlier
+ * draft said "both are near 100 characters", which is wrong in both directions
+ * and was written without measuring. This prints the live figures:
+ *
+ *   python3 -c "print([len(l.split('{')[0].strip()) for l in
+ *   open('src/styles/starlight-overrides.css') if '.sl-container:has' in l])"
+ *
+ * That one-liner assumes the single-line form both rules have today, which is
+ * the very thing this comment says may change. It is a convenience, not the
+ * check; the extractor below is what still finds a wrapped rule. A first
+ * version of this line reached for the extractor's own regex instead and broke
+ * the build, because that regex spells a comment terminator and ended the
+ * docstring early. Same hazard `pure-modules.test.ts` records for prose that
+ * writes a quoted path: what a comment CONTAINS is not inert.
  *
  * What the floor below actually buys is narrower and worth stating exactly: it
  * catches TOTAL extraction failure, the case where the shape changes so much

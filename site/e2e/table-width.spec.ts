@@ -35,11 +35,15 @@ import { MIN_DATA_TABLE_COLUMNS } from '../src/lib/table-layout.ts';
  * `.sl-markdown-content` table, and `src/content/docs/*.mdx` is outside these
  * two enumerations entirely. Two of those pages carry tables today: `/privacy/`
  * (3 and 4 columns) and `/curation/`, which qualifies ONLY through the single
- * 3-column table at `curation.mdx:16` since its other two are 2-column. Both
- * are correct under the current selector, checked by hand at the time of
- * writing, and neither is covered here: reduce that one table to two columns
- * and `/curation/` silently drops out of the full-width layout with nothing
- * failing.
+ * 3-column table at `curation.mdx:16` since its other two are 2-column.
+ *
+ * SNAPSHOT 2026-09-01, and it is a snapshot rather than a fact: those are the
+ * only two MDX pages carrying a Markdown table at all. `grep -c '^|'
+ * src/content/docs/*.mdx` prints the live answer, and a page going from 0 to
+ * non-zero is a page this file does not cover. Both were correct under the
+ * current selector when measured; neither is covered here, so reduce that one
+ * table to two columns and `/curation/` silently drops out of the full-width
+ * layout with nothing failing.
  *
  * That gap is not closed by adding the MDX directory to the walk, which is why
  * it is documented rather than patched. An MDX page's tables can be rendered by
