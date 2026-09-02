@@ -7,8 +7,10 @@ apart from its neighbours. It serves two audiences: readers orienting themselves
 the automated classification audit, which decides a paper's placement **from the paper's own methods
 text** measured against these definitions.
 
-A guiding rule for every category: a placement records what a paper **actually does**, demonstrated in
-its methods: not what it could be applied to, and not what its title gestures at.
+A guiding rule for every category: a placement rests on what a paper demonstrably did, read from its
+methods text rather than from what it could be applied to or what its title gestures at. What that
+evidence has to establish is set out once in the methods preamble below, and it is narrower than mere
+presence: a row records a paper's contribution, not every technique its methods happen to mention.
 
 ## Two axes, and how to tell which one you are reading
 
@@ -171,6 +173,26 @@ column (e.g. an agent used for media design → *Media Optimization*).
 
 ## AI/ML methods (rows)
 
+**A row records what a paper contributed, not what appears in its methods section.** A paper earns a
+method row by *building or applying* that method as part of its reported result. It does not earn one
+by consuming the method as a service, by using it to configure the machinery that produced the
+result, or by being measured against it. The same technique can be a contribution in one paper and a
+component in another, so the question is never whether the method is present but whether the paper is
+making a claim about it.
+
+**Rows that restate it:** Foundation Models, Benchmarks & Evaluation Frameworks, Genetic Algorithms.
+
+Each states it in the terms its own boundary needs, because each has been misread at least once:
+building a model versus invoking one, shipping a benchmark versus being scored by it, and where a
+search's output appears. Read the row's own text for the test that applies. That list is the
+authoritative scope of this principle and is read mechanically, so a row named there without a clause
+in its definition, or a clause deleted while the row stays named, is caught rather than noticed.
+
+**This is not the same as the routing rules** elsewhere in this section, which say a paper belongs in
+a *different* row (a CNN paper goes to *CNN* rather than *Deep Learning*; a data-driven model trained
+on simulation output is not *Hybrid Mechanistic-ML*). Those answer "which row"; this one answers "any
+row at all". Do not merge them.
+
 ### Bayesian Optimization
 Sequential, surrogate-model-based optimization: a probabilistic model (usually a Gaussian process)
 plus an **acquisition function** chooses the next experiment to run, sample-efficiently. In cell-ag,
@@ -203,10 +225,41 @@ Deep generative models (generative adversarial networks and variational autoenco
 synthesis, augmentation, or generative dimensionality reduction. In cell-ag: synthetic regulatory-
 sequence design and scRNA-seq embedding.
 
+### Hybrid Mechanistic-ML Models
+Models that **couple a first-principles description to a learned component**, so that neither half
+stands alone: mass-balance or kinetic ODEs whose unknown rates are supplied by a network,
+physics-informed networks carrying a governing equation in the loss, and grey-box serial or parallel
+structures. **The row is earned by the coupling, not by the network**, which is why a paper whose
+learned part is a small shallow net belongs here rather than in *Deep Learning*, and why a paper
+with a genuinely deep network can hold both rows. **Distinct from** a purely data-driven model that
+merely uses a mechanistic simulation to generate its training data, and from an ensemble that
+averages several learned models and calls the combination hybrid: in both of those the
+first-principles structure is absent from the deployed model.
+
 ### Genetic Algorithms
 Population-based evolutionary search: genetic algorithms, evolutionary strategies, NSGA, differential
 evolution. In cell-ag: optimizing media, process parameters, and tissue/scaffold designs over large
 combinatorial spaces.
+
+**The test is where the search's output appears.** The row is earned when what the search returned is
+part of what the paper reports: a formulation, a physical design, a process setting, or the fitted
+model itself. It is **not** earned when the output only configures the machinery that produced the
+reported result, which covers a search over hyperparameters, over model architecture, and over which
+preprocessing or feature-selection *technique* to apply. Both kinds are real optimisation and both are
+often described at length, so the length of the description decides nothing. What decides it is whether
+the answer the search returned is one the paper makes a claim about.
+
+A feature subset can itself be a finding, since "these are the variables that matter" is a claim about
+the problem. Feature selection is therefore not excluded as a category; what is excluded is a search
+whose answer is which technique to run.
+
+Two shapes, written out because a single sentence here has already been read both ways. A scoring-card
+method whose evolutionary search produces the score table that *is* the predictor earns the row,
+because the table is the result. A study whose search identifies the best combination of
+feature-selection techniques to reduce features before training does not, because its reported result
+is about the biology and the search's answer is a step in the pipeline. A paper that does both earns
+the row on the first, so read the whole methods section rather than the first evolutionary-search
+heading in it.
 
 ### SVM
 Support vector machines and support vector regression, kernel methods for classification and
@@ -326,6 +379,22 @@ scoring a statistical estimate recovered from simulated data measures analytic s
 supplied the scenario. A multi-domain suite whose task set genuinely splits, with each side
 substantially represented and one side outside every research area, is **dual-classified** across
 both columns rather than forced into one.
+
+**This row is otherwise easy to confuse with *Comparative Studies*, and the boundary between them runs on reuse.** A
+benchmark **ships a reusable task suite, protocol and metrics for others to score against**; a
+comparative study **evaluates existing methods to answer its own question and ships nothing for
+reuse**. A paper may do both, and then it takes both rows. The same test decides whether a paper
+earns a cell in each method family it ran: it does so only where the evaluation is the paper's own
+method study, and not where it supplies a suite for others to run against models it did not build.
+
+### Comparative Studies
+Papers whose **primary contribution is a head-to-head evaluation of existing methods on the authors'
+own data**, run to answer a question the authors have rather than to supply a resource: which model
+family to adopt for a given prediction task, or which measurement modality feeds it best. In scope:
+sweeps across model families, and studies whose stated result is a recommendation about method
+choice. A paper here takes the **column of the research area it evaluates methods for**, on the same
+reading as *Benchmarks & Evaluation Frameworks* above: read off what the study actually measured. Out of scope: an applied paper that happens to try several models before
+reporting the one it uses, since the row records a paper's contribution and not its model count.
 
 ### Agent Infrastructure (Frameworks, KGs, Protocols)
 The **substrate that agents run on**: agent frameworks, knowledge graphs, tool/communication

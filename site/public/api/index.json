@@ -1,6 +1,6 @@
 {
   "name": "CAAIL: Cellular Agriculture AI Library",
-  "corpusDate": "2026-08-21",
+  "corpusDate": "2026-09-02",
   "status": "beta",
   "placementsUnderReview": true,
   "canonical": "https://github.com/tucca-cellag/caail",
@@ -10,19 +10,19 @@
   "openapi": "openapi.json",
   "placementNote": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/",
   "counts": {
-    "papersAllSections": 345,
+    "papersAllSections": 346,
     "papersBySection": {
-      "References": 229,
+      "References": 230,
       "Sensory & Flavor Reference Work": 13,
       "Metabolic Reference Work": 8,
       "Foundational Methods Reference Work": 9,
       "Livestock Functional Genomics Reference Work": 12,
       "Reviews & Perspectives": 74
     },
-    "papersMatrixEligible": 229,
-    "matrixTotalCells": 200,
-    "matrixPopulatedCells": 72,
-    "matrixEmptyCells": 128,
+    "papersMatrixEligible": 230,
+    "matrixTotalCells": 216,
+    "matrixPopulatedCells": 78,
+    "matrixEmptyCells": 138,
     "datasetsCurated": 62,
     "datasetsInventoryRows": 176,
     "datasetsTotal": 238,

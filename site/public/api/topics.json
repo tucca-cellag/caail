@@ -8,15 +8,16 @@
         "theme": null,
         "areaKey": "tooling",
         "counts": {
-          "paper": 94,
+          "paper": 97,
           "software": 54,
           "database": 59,
           "dataset": 64,
-          "total": 271
+          "total": 274
         },
         "tags": [
           "ai-agents",
-          "benchmarks-evaluation"
+          "benchmarks-evaluation",
+          "comparative-study"
         ]
       },
       {
@@ -79,13 +80,14 @@
         "theme": null,
         "areaKey": "media",
         "counts": {
-          "paper": 28,
+          "paper": 29,
           "software": 17,
           "database": 4,
           "dataset": 36,
-          "total": 85
+          "total": 86
         },
         "tags": [
+          "cryopreservation",
           "growth-factors",
           "media-optimization",
           "serum-free-media"
@@ -221,6 +223,36 @@
         "tags": []
       },
       {
+        "slug": "comparative-study",
+        "label": "Comparative studies",
+        "tier": "tag",
+        "theme": "ai-methods-tooling",
+        "areaKey": null,
+        "counts": {
+          "paper": 4,
+          "software": 0,
+          "database": 0,
+          "dataset": 0,
+          "total": 4
+        },
+        "tags": []
+      },
+      {
+        "slug": "cryopreservation",
+        "label": "Cryopreservation",
+        "tier": "tag",
+        "theme": "media-growth-factors",
+        "areaKey": null,
+        "counts": {
+          "paper": 3,
+          "software": 0,
+          "database": 0,
+          "dataset": 0,
+          "total": 3
+        },
+        "tags": []
+      },
+      {
         "slug": "flavor-sensory",
         "label": "Flavor & sensory prediction",
         "tier": "tag",
@@ -272,11 +304,11 @@
         "theme": "media-growth-factors",
         "areaKey": null,
         "counts": {
-          "paper": 8,
+          "paper": 9,
           "software": 17,
           "database": 0,
           "dataset": 11,
-          "total": 36
+          "total": 37
         },
         "tags": []
       },
@@ -431,6 +463,7 @@
         170,
         211,
         287,
+        350,
         175,
         228,
         232,
@@ -1337,6 +1370,17 @@
         "ds:proteingym"
       ]
     },
+    "comparative-study": {
+      "papers": [
+        20,
+        32,
+        208,
+        253
+      ],
+      "software": [],
+      "databases": [],
+      "datasets": []
+    },
     "bioreactor-scale-up": {
       "papers": [
         27,
@@ -1661,6 +1705,16 @@
         "ds:cho-clone-selection-metabolomic-dynamics-dataset-barberi-et-al-2025"
       ]
     },
+    "cryopreservation": {
+      "papers": [
+        212,
+        251,
+        252
+      ],
+      "software": [],
+      "databases": [],
+      "datasets": []
+    },
     "allergenicity": {
       "papers": [
         289,
@@ -1820,5 +1874,5 @@
       "datasets": []
     }
   },
-  "corpusDate": "2026-08-21"
+  "corpusDate": "2026-09-02"
 }

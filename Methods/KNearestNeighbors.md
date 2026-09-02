@@ -10,7 +10,12 @@ That overlap is the useful signal rather than noise. A paper in this row has, by
 
 ## Bioprocess & Scale-Up
 
-- [#32](../Papers.md#32) (Roell et al. 2022, *Biochemical Engineering Journal*): benchmarks seven families of algorithm, k-nearest neighbors among them, on *Clostridium carboxidivorans* syngas fermentation. The paper's central move is a reframing rather than a model: pairing syngas composition and current metabolite concentrations with instantaneous *production rates*, which removes time as a feature and lifts 176 input-output pairs to 836 after Savitzky-Golay smoothing and interpolation. Training runs are separated from test runs by fermentation condition so no condition appears in both. Every family fits the training data well and most generalize poorly; random forests and support vector machines carried to unseen conditions best, and neural networks overfit. Code at [garrettroell/SyngasMachineLearning](https://github.com/garrettroell/SyngasMachineLearning).
+- [#32](../Papers.md#32) (Roell et al. 2022, *Biochemical Engineering Journal*): benchmarks seven families of algorithm, k-nearest neighbors among them, on *Clostridium carboxidivorans* syngas fermentation. The paper's central move is a reframing rather than a model: pairing syngas composition and current metabolite concentrations with instantaneous *production rates*, which removes time as a feature and lifts 176 input-output pairs to 836 after Savitzky-Golay smoothing and interpolation. Training runs are separated from test runs by fermentation condition so no condition appears in both. Every family fits the training data well and most generalize poorly; random forests and support vector machines carried to unseen conditions best, and neural networks overfit. Code at [garrettroell/SyngasMachineLearning](https://github.com/garrettroell/SyngasMachineLearning). Also in [SVM](./SVM.md), [Ensemble Learning](./EnsembleLearning.md), [Linear & Regularized Models](./LinearRegularizedModels.md) and [Comparative Studies](./ComparativeStudies.md).
+- [#253](../Papers.md#253) (Park et al. 2023, *Biotechnology and Bioengineering*): k-nearest neighbors among the twelve classical approaches compared against four deep ones for forecasting fed-batch CHO-K1 profiles. Described in [Comparative Studies](./ComparativeStudies.md); also in [Deep Learning](./DeepLearning.md), [SVM](./SVM.md), [Ensemble Learning](./EnsembleLearning.md) and [Linear & Regularized Models](./LinearRegularizedModels.md).
+
+## Scaffolding
+
+- [#216](../Papers.md#216) (Golbabaei et al. 2024, *RSC Advances*): k-nearest neighbors among the models compared for predicting electrospun-scaffold morphology from processing parameters and polymer chemistry. Described in [Deep Learning](./DeepLearning.md), where the SMILES encoding that lets the model generalize to an unseen polymer is set out; also in [Ensemble Learning](./EnsembleLearning.md).
 
 ## Sensory Prediction
 
@@ -26,5 +31,5 @@ That overlap is the useful signal rather than noise. A paper in this row has, by
 
 ## Further reading
 
-- Research areas: [Sensory Prediction](../ResearchAreas/SensoryPrediction.md) and [Bioprocess & Scale-Up](../ResearchAreas/Bioprocess.md).
+- Research areas: [Sensory Prediction](../ResearchAreas/SensoryPrediction.md), [Bioprocess & Scale-Up](../ResearchAreas/Bioprocess.md) and [Scaffolding](../ResearchAreas/Scaffolding.md).
 - Databases: [BitterDB](../Databases.md#bitterdb) for the bitter compound and receptor data behind the taste models.

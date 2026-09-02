@@ -176,11 +176,19 @@ const PAGES: Record<string, PageMeta> = {
     description:
       'Deep generative models in cell-ag: synthetic regulatory-DNA design, single-cell dimensionality reduction, tissue-mould surrogates, and generative augmentation of small sensory datasets.',
   },
+  'methods/hybridmechanisticml': {
+    title: 'Hybrid Mechanistic-ML Models',
+    sidebarLabel: 'Hybrid Mechanistic-ML',
+    group: 'methods',
+    order: 6,
+    description:
+      'Models coupling first-principles cell-culture equations to a learned component: physics-informed networks over Monod kinetics, and mass-balance models whose specific rates are supplied by a network inside a Kalman filter.',
+  },
   'methods/geneticalgorithms': {
     title: 'Genetic Algorithms',
     sidebarLabel: 'Genetic Algorithms',
     group: 'methods',
-    order: 6,
+    order: 7,
     description:
       'Evolutionary search for cellular agriculture: media formulation, fermentation control trajectories, cryoprotectant cocktails, and tissue-mould design over large combinatorial spaces.',
   },
@@ -188,7 +196,7 @@ const PAGES: Record<string, PageMeta> = {
     title: 'SVM',
     sidebarLabel: 'SVM',
     group: 'methods',
-    order: 7,
+    order: 8,
     description:
       'Support vector machines and regression in cell-ag: serum-free media screening, one-class contamination detection in bioreactors, and taste and texture prediction on small featurized datasets.',
   },
@@ -196,7 +204,7 @@ const PAGES: Record<string, PageMeta> = {
     title: 'Ensemble Learning',
     sidebarLabel: 'Ensemble Learning',
     group: 'methods',
-    order: 8,
+    order: 9,
     description:
       'Tree ensembles and model averaging in cellular agriculture: the default strong baseline for media, bioprocess soft sensors, scaffold rheology, and structure-to-taste prediction.',
   },
@@ -204,7 +212,7 @@ const PAGES: Record<string, PageMeta> = {
     title: 'K-Nearest Neighbors',
     sidebarLabel: 'K-Nearest Neighbors',
     group: 'methods',
-    order: 9,
+    order: 10,
     description:
       'Instance-based prediction in cell-ag, almost always as a benchmarked baseline: syngas fermentation, algal odor classification, bitter-receptor matching, and sweetness QSTR.',
   },
@@ -212,7 +220,7 @@ const PAGES: Record<string, PageMeta> = {
     title: 'Linear & Regularized Models',
     sidebarLabel: 'Linear & Regularized',
     group: 'methods',
-    order: 10,
+    order: 11,
     description:
       'Linear and penalized models in cell-ag, chosen for interpretability: porcine muscle stem-cell potency from morphology, meat-analog texture, and sequence-based umami and odor scoring.',
   },
@@ -220,7 +228,7 @@ const PAGES: Record<string, PageMeta> = {
     title: 'Chemometrics',
     sidebarLabel: 'Chemometrics',
     group: 'methods',
-    order: 11,
+    order: 12,
     description:
       'Multivariate spectral statistics for cellular agriculture: PLS, PLS-DA, PCA and OPLS behind NIR and Raman process analytical technology and hyperspectral meat and fish quality prediction.',
   },
@@ -228,7 +236,7 @@ const PAGES: Record<string, PageMeta> = {
     title: 'Active Learning',
     sidebarLabel: 'Active Learning',
     group: 'methods',
-    order: 12,
+    order: 13,
     description:
       'Iterative design of experiments for cell-ag: predict, test the most informative formulations, retrain. Media optimization campaigns for HeLa, CHO and mAb production, and Perturb-seq gene selection.',
   },
@@ -236,7 +244,7 @@ const PAGES: Record<string, PageMeta> = {
     title: 'Reinforcement Learning',
     sidebarLabel: 'Reinforcement Learning',
     group: 'methods',
-    order: 13,
+    order: 14,
     description:
       'Reward-driven learning in cellular agriculture: policy-gradient and hybrid MPC control of bioreactors, and reinforcement post-training of virtual-cell and chemistry reasoning models.',
   },
@@ -244,7 +252,7 @@ const PAGES: Record<string, PageMeta> = {
     title: 'Foundation Models: Next-Token Prediction',
     sidebarLabel: 'FM: Next-Token',
     group: 'methods',
-    order: 14,
+    order: 15,
     description:
       'Autoregressive foundation models for biology: generative cell atlases spanning twelve species, cell-sentence LLMs, and conditional protein language models used to design taste-active peptides.',
   },
@@ -252,7 +260,7 @@ const PAGES: Record<string, PageMeta> = {
     title: 'Foundation Models: Masked Language Modeling',
     sidebarLabel: 'FM: Masked LM',
     group: 'methods',
-    order: 15,
+    order: 16,
     description:
       'BERT-style pretrained models for biology: scBERT, scFoundation, CellFM and Geneformer for single-cell transfer learning, DNABERT for regulatory DNA, and Umami-BERT for taste peptides.',
   },
@@ -260,7 +268,7 @@ const PAGES: Record<string, PageMeta> = {
     title: 'Foundation Models: LM + Biological Priors',
     sidebarLabel: 'FM: LM + Bio Priors',
     group: 'methods',
-    order: 16,
+    order: 17,
     description:
       'Foundation models that build an explicit biological prior into the backbone, tokenizing genes by protein-language-model embeddings so cells from unseen species can be embedded without orthology mapping.',
   },
@@ -268,7 +276,7 @@ const PAGES: Record<string, PageMeta> = {
     title: 'Foundation Models: Cell-State & Perturbation Prediction',
     sidebarLabel: 'FM: Cell-State',
     group: 'methods',
-    order: 17,
+    order: 18,
     description:
       'Pretrained virtual-cell models predicting perturbation response across contexts: State, Stack, C2S-Scale and scGPT, and what their generalization claims rest on for livestock cell biology.',
   },
@@ -276,7 +284,7 @@ const PAGES: Record<string, PageMeta> = {
     title: 'Foundation Models (other modalities)',
     sidebarLabel: 'FM: Other Modalities',
     group: 'methods',
-    order: 18,
+    order: 19,
     description:
       'Pretrained models beyond single-cell transcriptomics: taste-peptide predictors, multimodal omics LLMs, natural-product graph pretraining, and protein-phenotype models.',
   },
@@ -284,7 +292,7 @@ const PAGES: Record<string, PageMeta> = {
     title: 'Scientific Literature & Discovery Agents',
     sidebarLabel: 'Literature & Discovery Agents',
     group: 'methods',
-    order: 19,
+    order: 20,
     description:
       'LLM agents for literature synthesis and autonomous discovery: retrieval-augmented paper QA, idea-to-manuscript pipelines, and lab-in-the-loop systems, and how each one verifies its own output.',
   },
@@ -292,7 +300,7 @@ const PAGES: Record<string, PageMeta> = {
     title: 'General-Purpose Biomedical Agents',
     sidebarLabel: 'General-Purpose Agents',
     group: 'methods',
-    order: 20,
+    order: 21,
     description:
       'LLM agents built for breadth across biomedical tasks without task-specific tuning: Biomni, BRAD, OLAF, STELLA, BioMANIA and the Virtual Lab, and where each of them places its trust.',
   },
@@ -300,7 +308,7 @@ const PAGES: Record<string, PageMeta> = {
     title: 'Chemistry / Synthesis Agents',
     sidebarLabel: 'Chemistry Agents',
     group: 'methods',
-    order: 21,
+    order: 22,
     description:
       'LLM agents specialized for chemistry: Coscientist and ChemCrow, their tool layers and safety checks, and why the architecture transfers to media, scaffold and flavor chemistry in cell-ag.',
   },
@@ -308,7 +316,7 @@ const PAGES: Record<string, PageMeta> = {
     title: 'Domain-Specific Biomedical Agents',
     sidebarLabel: 'Domain-Specific Agents',
     group: 'methods',
-    order: 22,
+    order: 23,
     description:
       'LLM agents purpose-built for one biomedical task: perturbation design, spatial biology, RNA-seq analysis, kinetic modeling, gene editing, protein design and single-cell data curation.',
   },
@@ -316,7 +324,7 @@ const PAGES: Record<string, PageMeta> = {
     title: 'Robot Scientists & Lab Automation',
     sidebarLabel: 'Robot Scientists',
     group: 'methods',
-    order: 23,
+    order: 24,
     description:
       'AI coupled to physical lab automation for cellular agriculture: robotic search for iPSC differentiation conditions, automated strain design, autonomous cell passaging, and the Adam-to-Genesis lineage.',
   },
@@ -324,15 +332,23 @@ const PAGES: Record<string, PageMeta> = {
     title: 'Benchmarks & Evaluation Frameworks',
     sidebarLabel: 'Benchmarks & Evaluation',
     group: 'methods',
-    order: 24,
+    order: 25,
     description:
       'Benchmarks and evaluation frameworks for AI in biology and cellular agriculture: eval datasets, agent benchmarks, leaderboards, and verifier-reliability methodology.',
+  },
+  'methods/comparativestudies': {
+    title: 'Comparative Studies',
+    sidebarLabel: 'Comparative Studies',
+    group: 'methods',
+    order: 26,
+    description:
+      'Papers whose contribution is the head-to-head comparison itself: model families benchmarked on syngas fermentation, Raman against capacitance for CHO monitoring, and a sixteen-algorithm sweep over fed-batch forecasting.',
   },
   'methods/agentinfrastructure': {
     title: 'Agent Infrastructure (Frameworks, KGs, Protocols)',
     sidebarLabel: 'Agent Infrastructure',
     group: 'methods',
-    order: 25,
+    order: 27,
     description:
       'The substrate biomedical AI agents run on: tool ecosystems and MCP protocols, biomedical knowledge graphs and graph-serving platforms, and language-agent training environments.',
   },

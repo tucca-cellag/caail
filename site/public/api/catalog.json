@@ -112,8 +112,8 @@
       "name": "amii-cell-ag-tools",
       "url": "https://github.com/Amii-Applied-AI/amii-cell-ag-tools",
       "group": "Media Optimization & Cell Line Engineering",
-      "summary": "Open-source applied AI research code from the Alberta Machine Intelligence Institute (Amii) targeting cellular agriculture, hosted under the Amii-Applied-AI GitHub organization. The repository collects two Python subprojects: protein-thermostability-data-tools (code used in the development of a public protein thermostability dataset) and active-learning-for-cell-media (active-learning analysis applied to cell media optimization). MIT-licensed.",
-      "summaryHtml": "<p>Open-source applied AI research code from the Alberta Machine Intelligence Institute (Amii) targeting cellular agriculture, hosted under the <code>Amii-Applied-AI</code> GitHub organization. The repository collects two Python subprojects: <code>protein-thermostability-data-tools</code> (code used in the development of a public protein thermostability dataset) and <code>active-learning-for-cell-media</code> (active-learning analysis applied to cell media optimization). MIT-licensed.</p>",
+      "summary": "Open-source applied AI research code from the Alberta Machine Intelligence Institute (Amii) targeting cellular agriculture, hosted under the Amii-Applied-AI GitHub organization. The repository collects two Python subprojects: protein-thermostability-data-tools (code used in the development of a public protein thermostability dataset) and active-learning-for-cell-media (active-learning analysis applied to cell media optimization). MIT-licensed. Companion to Papers.md ref #350.",
+      "summaryHtml": "<p>Open-source applied AI research code from the Alberta Machine Intelligence Institute (Amii) targeting cellular agriculture, hosted under the <code>Amii-Applied-AI</code> GitHub organization. The repository collects two Python subprojects: <code>protein-thermostability-data-tools</code> (code used in the development of a public protein thermostability dataset) and <code>active-learning-for-cell-media</code> (active-learning analysis applied to cell media optimization). MIT-licensed. Companion to <a href=\"https://github.com/tucca-cellag/caail/blob/main/Papers.md#350\">Papers.md ref #350</a>.</p>",
       "topics": [
         {
           "slug": "cell-line-engineering",
@@ -8726,5 +8726,5 @@
       "citationDois": []
     }
   ],
-  "corpusDate": "2026-08-21"
+  "corpusDate": "2026-09-02"
 }

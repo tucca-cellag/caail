@@ -1,6 +1,6 @@
 ---
 name: caail
-description: Query CAAIL, a curated library of the AI and machine-learning work in cellular agriculture — 345 papers mapped by AI method against research area, plus the software, databases and per-species datasets the field uses. Use when the user is choosing tools, datasets or databases for a cell-ag experiment, pipeline or analysis; asking what AI methods have been applied to media optimization, cell-line engineering, bioprocess scale-up, scaffolding or sensory prediction; looking for cultivated-meat or alternative-protein data for a species; asking whether something has been studied; or asking what CAAIL contains. Also triggers on cultivated meat, cell-ag, cellular agriculture, alternative protein, and on questions about which dataset or tool to use for a cell-ag problem.
+description: Query CAAIL, a curated library of the AI and machine-learning work in cellular agriculture — 346 papers mapped by AI method against research area, plus the software, databases and per-species datasets the field uses. Use when the user is choosing tools, datasets or databases for a cell-ag experiment, pipeline or analysis; asking what AI methods have been applied to media optimization, cell-line engineering, bioprocess scale-up, scaffolding or sensory prediction; looking for cultivated-meat or alternative-protein data for a species; asking whether something has been studied; or asking what CAAIL contains. Also triggers on cultivated meat, cell-ag, cellular agriculture, alternative protein, and on questions about which dataset or tool to use for a cell-ag problem.
 ---
 
 # CAAIL
@@ -77,7 +77,9 @@ below because the caveat never fires.
 
 ## The one thing to get right
 
-`matrix.json` enumerates **all 200 method×area cells**, including the 128 with no indexed paper. An
+`matrix.json` enumerates **every method×area cell**, including the ones with no indexed paper; the
+grid size and the populated/empty split are in `index.json`'s `counts`, which moves when a row or
+column is added, so read them rather than assuming a figure. An
 empty cell means **CAAIL contains no paper classified there**. It does **not** mean no such work
 exists. CAAIL is a curated subset, not a census, and it has not measured its own recall.
 
@@ -116,8 +118,8 @@ The matrix answers "what has been placed where". It does not answer "what is ind
 
 ## Counting
 
-`papers.json` spans six sections and only `References` (229) is matrix-eligible; the rest are Reviews
-& Perspectives (74) and four Reference Work sections (42). "345 papers" and "papers in the matrix" are
+`papers.json` spans six sections and only `References` (230) is matrix-eligible; the rest are Reviews
+& Perspectives (74) and four Reference Work sections (42). "346 papers" and "papers in the matrix" are
 different numbers. Say which population you counted.
 
 ## Licenses

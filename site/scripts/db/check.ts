@@ -584,6 +584,46 @@ const FM_CLAUSES: ReadonlyArray<readonly [string, RegExp]> = [
 ];
 
 /**
+ * The contribution principle: a row records what a paper CONTRIBUTED, not what
+ * appears in its methods section. Stated once in the methods preamble, and
+ * restated by the rows whose boundary turns on it, each in its own terms.
+ *
+ * WHY THIS IS NOT A SECOND HAND-TYPED LIST, which the FM comment above rightly
+ * refuses. The preamble names the rows that carry the rule; this guard READS that
+ * list out of the prose rather than holding a copy. So there is one list, in the
+ * file a curator edits, and the check follows it. Remove a row from the preamble
+ * and this stops asking about it, which is correct: the preamble is the statement
+ * of which rows are in scope.
+ *
+ * WHAT THIS DOES NOT DO. CONTRIBUTION_CLAUSE is a fixed VOCABULARY, not a reading
+ * of the principle, so adding a fourth row is not free: its clause has to restate
+ * the rule in one of the recognised forms, or the pattern has to be widened in the
+ * same change. The two rows added alongside this guard are the worked example.
+ * Comparative Studies carries the rule in its own words ("the row records a paper's
+ * contribution and not its model count") and matches none of these stems, so naming
+ * it on the scope line as things stand would fail this check rather than extend it.
+ *
+ * The FM family stays guarded separately above, by PREFIX, because its risk is
+ * different: a sixth foundation-model row arriving without the clauses. That is a
+ * growth risk. This one is a drift risk between rows that already exist.
+ *
+ * THE VACUITY PROBE IS LOAD-BEARING. If the preamble stopped naming any row, the
+ * derived list would be empty and the per-row assertion would pass forever while
+ * checking nothing. That exact failure — a guard reduced to comparing two empty
+ * sets — is what the row/tag parity check below also defends against, and it is
+ * the reason both assert their inputs resolve before comparing them.
+ *
+ * Presence probes, like the FM ones: they answer "does this row still say
+ * something about consuming or configuring rather than contributing". They cannot
+ * tell an inverted sentence from an upheld one.
+ */
+const METHODS_H2 = '## AI/ML methods (rows)';
+const CONTRIBUTION_SCOPE_MARKER = 'Rows that restate it:';
+const CONTRIBUTION_PRINCIPLE = /records what a paper contributed/i;
+const CONTRIBUTION_CLAUSE =
+  /invok|tool call|merely (evaluat|us|labell|invok)|configur|consum|scored (by|against)/i;
+
+/**
  * Taxonomy axis guard: every matrix row and column must resolve to a definition
  * under *its own* H2 vocabulary in Taxonomy.md.
  *
@@ -636,6 +676,36 @@ export function checkTaxonomyAxes(db: Db, repoRoot: string = REPO_ROOT): CheckRe
       `missing from: [${missing.join(', ')}]`));
   }
 
+  // The contribution principle, and the rows the preamble names as restating it.
+  // The list is derived from that prose, never held here — see CONTRIBUTION_CLAUSE.
+  const taxonomySrc = readFileSync(taxonomyPath, 'utf-8');
+  const h2At = taxonomySrc.indexOf(METHODS_H2);
+  const preamble = h2At === -1
+    ? ''
+    : taxonomySrc.slice(h2At + METHODS_H2.length).split('\n### ')[0] ?? '';
+
+  out.push(ok('Taxonomy.md states the contribution principle once, in the methods preamble',
+    CONTRIBUTION_PRINCIPLE.test(preamble),
+    `the "${METHODS_H2}" preamble no longer states it, so the rows below have nothing to agree ` +
+    `with and each is free to drift into its own version`));
+
+  // Read the scope off ONE marked line, not off the whole preamble. Scanning the
+  // preamble for any mention picked up `Deep Learning`, which the preamble names
+  // only in the paragraph explaining that routing rules are a DIFFERENT rule. A
+  // label appearing near a principle is not a label governed by it, and that is
+  // the same presence-versus-meaning confusion this principle exists to settle.
+  const scopeLine = preamble.split('\n').find((l) => l.includes(CONTRIBUTION_SCOPE_MARKER)) ?? '';
+  const namedRows = methods.filter((label) =>
+    scopeLine.includes(label) || (label.startsWith(FM_PREFIX) && scopeLine.includes(FM_PREFIX)));
+  out.push(ok('the methods preamble names at least one row as restating it', namedRows.length > 0,
+    `no DB method label appears on the "${CONTRIBUTION_SCOPE_MARKER}" line (or the line is gone), ` +
+    `so the per-row check below would compare an empty set and pass while checking nothing`));
+
+  const missingClause = namedRows.filter(
+    (label) => !CONTRIBUTION_CLAUSE.test(taxonomy.axes.method[label] ?? ''));
+  out.push(ok('every row the preamble names still carries its contribution clause',
+    missingClause.length === 0, `missing from: [${missingClause.join(', ')}]`));
+
   // The themes axis is guarded by count against the same THEME_SLUGS that
   // checkTopicTiers asserts, so a theme added to Taxonomy.md without a topic
   // record (or the reverse) fails here rather than drifting quietly. Labels are
@@ -658,13 +728,61 @@ export function checkTaxonomyAxes(db: Db, repoRoot: string = REPO_ROOT): CheckRe
   return out;
 }
 
+/**
+ * Rows whose membership is duplicated onto the topic axis, and must agree both ways.
+ *
+ * `Comparative Studies` is the first matrix row minted alongside a fine tag carrying
+ * the same fact. That is exactly the "hand-typed fact next to a machine-derived one"
+ * shape this repo keeps paying for, and the curator's condition for allowing the
+ * duplication at all was that a guard enforce it rather than a comment asking people
+ * to remember. So the pairing is asserted in BOTH directions: a ref in the row without
+ * the tag, and a ref carrying the tag without the row, each fail here naming the ref.
+ *
+ * The pair is keyed by method label and topic slug. Both are asserted to resolve
+ * before the membership comparison runs, because the way a guard like this usually
+ * dies is a rename turning it into a comparison of two empty sets that passes forever.
+ */
+const ROW_TAG_PAIRS: ReadonlyArray<{ method: string; topic: string }> = [
+  { method: 'Comparative Studies', topic: 'comparative-study' },
+];
+
+export function checkRowTagParity(db: Db): CheckResult[] {
+  const out: CheckResult[] = [];
+  for (const { method, topic } of ROW_TAG_PAIRS) {
+    const hasMethod = db.prepare('SELECT 1 FROM methods WHERE label=?').get(method) !== undefined;
+    const hasTopic = db.prepare('SELECT 1 FROM topics WHERE slug=?').get(topic) !== undefined;
+    out.push(ok(`row/tag parity: '${method}' and '${topic}' both resolve`,
+      hasMethod && hasTopic,
+      `method ${hasMethod ? 'ok' : 'MISSING'}, topic ${hasTopic ? 'ok' : 'MISSING'}`));
+    if (!hasMethod || !hasTopic) continue;
+
+    const inRow = (db.prepare('SELECT DISTINCT ref_id FROM matrix_cells WHERE method=?')
+      .all(method) as { ref_id: number }[]).map((r) => r.ref_id);
+    const tagged = (db.prepare(
+      "SELECT CAST(SUBSTR(item_id, 7) AS INTEGER) AS ref_id FROM item_topics"
+      + " WHERE topic_id=? AND item_id LIKE 'paper:%'",
+    ).all(`topic:${topic}`) as { ref_id: number }[]).map((r) => r.ref_id);
+
+    const rowSet = new Set(inRow);
+    const tagSet = new Set(tagged);
+    const untagged = inRow.filter((r) => !tagSet.has(r)).sort((a, b) => a - b);
+    const unrowed = tagged.filter((r) => !rowSet.has(r)).sort((a, b) => a - b);
+    out.push(ok(`row/tag parity: every '${method}' ref carries the '${topic}' tag`,
+      untagged.length === 0, `untagged ref(s): ${untagged.join(', ')}`));
+    out.push(ok(`row/tag parity: every '${topic}' ref sits in the '${method}' row`,
+      unrowed.length === 0, `ref(s) tagged but not in the row: ${unrowed.join(', ')}`));
+  }
+  return out;
+}
+
 /** Run every guard against a DB. Returns all results (ok + failing). */
 export function runChecks(db: Db, repoRoot: string = REPO_ROOT): CheckResult[] {
   return [...checkIntegrity(db), ...checkReachability(db), ...checkColumnDrift(db, repoRoot),
     ...checkTaxonomyAxes(db, repoRoot),
     ...checkTopicTiers(db), ...checkAxisBijection(db, repoRoot),
     ...checkCatalogHeadings(db), ...checkLicenses(db), ...checkManualLicenseKeys(db),
-    ...checkDois(db), ...checkManualDoiKeys(db), ...checkRelatedDois(db), ...checkSubseries(db)];
+    ...checkDois(db), ...checkManualDoiKeys(db), ...checkRelatedDois(db), ...checkSubseries(db),
+    ...checkRowTagParity(db)];
 }
 
 function main(): void {

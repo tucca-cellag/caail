@@ -39,6 +39,7 @@
     "GNN",
     "CNN",
     "GAN / VAE",
+    "Hybrid Mechanistic-ML Models",
     "Genetic Algorithms",
     "SVM",
     "Ensemble Learning",
@@ -58,6 +59,7 @@
     "Domain-Specific Biomedical Agents",
     "Robot Scientists & Lab Automation",
     "Benchmarks & Evaluation Frameworks",
+    "Comparative Studies",
     "Agent Infrastructure (Frameworks, KGs, Protocols)"
   ],
   "cells": [
@@ -71,8 +73,6 @@
         2,
         15,
         58,
-        211,
-        212,
         249,
         251
       ],
@@ -83,8 +83,6 @@
         "Cosenza et al. 2023",
         "Yoshida et al. 2023",
         "Narayanan et al. 2025",
-        "Cosenza et al. 2021",
-        "Tu et al. 2022",
         "Ndahiro et al. 2025",
         "Emerson et al. 2026"
       ]
@@ -115,14 +113,10 @@
       "method": "Deep Learning",
       "area": "media",
       "refIds": [
-        18,
-        15,
-        212
+        15
       ],
       "labels": [
-        "Cosenza 2022",
-        "Yoshida et al. 2023",
-        "Tu et al. 2022"
+        "Yoshida et al. 2023"
       ]
     },
     {
@@ -155,7 +149,6 @@
         205,
         253,
         254,
-        255,
         257
       ],
       "labels": [
@@ -165,7 +158,6 @@
         "Yang et al. 2024",
         "Park et al. 2023",
         "Lu et al. 2025",
-        "Narayanan et al. 2020",
         "Wang et al. 2023a"
       ]
     },
@@ -390,6 +382,18 @@
       ]
     },
     {
+      "method": "Hybrid Mechanistic-ML Models",
+      "area": "bioprocess",
+      "refIds": [
+        205,
+        255
+      ],
+      "labels": [
+        "Yang et al. 2024",
+        "Narayanan et al. 2020"
+      ]
+    },
+    {
       "method": "Genetic Algorithms",
       "area": "media",
       "refIds": [
@@ -398,7 +402,9 @@
         169,
         210,
         211,
-        252
+        252,
+        18,
+        212
       ],
       "labels": [
         "Cosenza & Block 2021",
@@ -406,7 +412,9 @@
         "Hashizume & Ying 2025",
         "Munroe et al. 2019",
         "Cosenza et al. 2021",
-        "Pi et al. 2020"
+        "Pi et al. 2020",
+        "Cosenza 2022",
+        "Tu et al. 2022"
       ]
     },
     {
@@ -463,14 +471,16 @@
         32,
         208,
         259,
-        262
+        262,
+        253
       ],
       "labels": [
         "Zhang et al. 2020",
         "Roell et al. 2022",
         "Xu et al. 2025",
         "Pandi Chelvam et al. 2025",
-        "Nguyen et al. 2025"
+        "Nguyen et al. 2025",
+        "Park et al. 2023"
       ]
     },
     {
@@ -518,13 +528,15 @@
         32,
         27,
         207,
-        208
+        208,
+        253
       ],
       "labels": [
         "Roell et al. 2022",
         "Du et al. 2025",
         "Behdani et al. 2024",
-        "Xu et al. 2025"
+        "Xu et al. 2025",
+        "Park et al. 2023"
       ]
     },
     {
@@ -535,14 +547,16 @@
         214,
         217,
         171,
-        309
+        309,
+        216
       ],
       "labels": [
         "Rafieyan et al. 2024",
         "Nair et al. 2021",
         "Serpe et al. 2025",
         "Kircali Ata et al. 2023",
-        "Dahl et al. 2025"
+        "Dahl et al. 2025",
+        "Golbabaei et al. 2024"
       ]
     },
     {
@@ -613,10 +627,22 @@
       "method": "K-Nearest Neighbors",
       "area": "bioprocess",
       "refIds": [
-        32
+        32,
+        253
       ],
       "labels": [
-        "Roell et al. 2022"
+        "Roell et al. 2022",
+        "Park et al. 2023"
+      ]
+    },
+    {
+      "method": "K-Nearest Neighbors",
+      "area": "scaffolding",
+      "refIds": [
+        216
+      ],
+      "labels": [
+        "Golbabaei et al. 2024"
       ]
     },
     {
@@ -637,10 +663,26 @@
       "method": "Linear & Regularized Models",
       "area": "cell",
       "refIds": [
-        266
+        266,
+        122
       ],
       "labels": [
-        "Wang et al. 2023b"
+        "Wang et al. 2023b",
+        "Magnusson et al. 2024"
+      ]
+    },
+    {
+      "method": "Linear & Regularized Models",
+      "area": "bioprocess",
+      "refIds": [
+        253,
+        208,
+        32
+      ],
+      "labels": [
+        "Park et al. 2023",
+        "Xu et al. 2025",
+        "Roell et al. 2022"
       ]
     },
     {
@@ -1093,6 +1135,16 @@
     },
     {
       "method": "Benchmarks & Evaluation Frameworks",
+      "area": "media",
+      "refIds": [
+        350
+      ],
+      "labels": [
+        "Parsaee et al. 2026"
+      ]
+    },
+    {
+      "method": "Benchmarks & Evaluation Frameworks",
       "area": "cell",
       "refIds": [
         89,
@@ -1161,6 +1213,30 @@
         "Ahmed et al. 2026",
         "Li & Ho 2026",
         "Miller et al. 2025"
+      ]
+    },
+    {
+      "method": "Comparative Studies",
+      "area": "bioprocess",
+      "refIds": [
+        32,
+        208,
+        253
+      ],
+      "labels": [
+        "Roell et al. 2022",
+        "Xu et al. 2025",
+        "Park et al. 2023"
+      ]
+    },
+    {
+      "method": "Comparative Studies",
+      "area": "scaffolding",
+      "refIds": [
+        20
+      ],
+      "labels": [
+        "Rafieyan et al. 2024"
       ]
     },
     {
@@ -2006,7 +2082,7 @@
       "isPrimary": true,
       "methods": [
         "Bayesian Optimization",
-        "Deep Learning"
+        "Genetic Algorithms"
       ],
       "areas": [
         "media"
@@ -2090,7 +2166,8 @@
       "isPrimary": true,
       "methods": [
         "Deep Learning",
-        "Ensemble Learning"
+        "Ensemble Learning",
+        "Comparative Studies"
       ],
       "areas": [
         "scaffolding"
@@ -2099,6 +2176,11 @@
       "hasData": false,
       "slug": "rafieyan-2024",
       "topics": [
+        {
+          "slug": "comparative-study",
+          "label": "Comparative studies",
+          "theme": "ai-methods-tooling"
+        },
         {
           "slug": "scaffolding-biomaterials",
           "label": "Scaffolding & Biomaterials",
@@ -2593,7 +2675,9 @@
       "methods": [
         "SVM",
         "Ensemble Learning",
-        "K-Nearest Neighbors"
+        "K-Nearest Neighbors",
+        "Linear & Regularized Models",
+        "Comparative Studies"
       ],
       "areas": [
         "bioprocess"
@@ -2616,6 +2700,11 @@
           "slug": "bioreactor-scale-up",
           "label": "Bioreactor & scale-up",
           "theme": "bioprocess-scale-up"
+        },
+        {
+          "slug": "comparative-study",
+          "label": "Comparative studies",
+          "theme": "ai-methods-tooling"
         }
       ],
       "citedByOpenAlex": 21,
@@ -5910,7 +5999,8 @@
       "dataUrl": null,
       "isPrimary": true,
       "methods": [
-        "Deep Learning"
+        "Deep Learning",
+        "Linear & Regularized Models"
       ],
       "areas": [
         "cell"
@@ -7779,7 +7869,8 @@
       "dataUrl": null,
       "isPrimary": true,
       "methods": [
-        "Deep Learning"
+        "Deep Learning",
+        "Hybrid Mechanistic-ML Models"
       ],
       "areas": [
         "bioprocess"
@@ -7923,7 +8014,9 @@
       "methods": [
         "SVM",
         "Ensemble Learning",
-        "Chemometrics"
+        "Linear & Regularized Models",
+        "Chemometrics",
+        "Comparative Studies"
       ],
       "areas": [
         "bioprocess"
@@ -7936,6 +8029,11 @@
           "slug": "bioprocess-scale-up",
           "label": "Bioprocess & Manufacturing",
           "theme": "bioprocess-scale-up"
+        },
+        {
+          "slug": "comparative-study",
+          "label": "Comparative studies",
+          "theme": "ai-methods-tooling"
         },
         {
           "slug": "mass-spectrometry",
@@ -8047,7 +8145,6 @@
       "dataUrl": null,
       "isPrimary": true,
       "methods": [
-        "Bayesian Optimization",
         "Genetic Algorithms"
       ],
       "areas": [
@@ -8095,8 +8192,7 @@
       "dataUrl": null,
       "isPrimary": true,
       "methods": [
-        "Bayesian Optimization",
-        "Deep Learning"
+        "Genetic Algorithms"
       ],
       "areas": [
         "media"
@@ -8105,6 +8201,11 @@
       "hasData": false,
       "slug": "tu-2022",
       "topics": [
+        {
+          "slug": "cryopreservation",
+          "label": "Cryopreservation",
+          "theme": "media-growth-factors"
+        },
         {
           "slug": "media-growth-factors",
           "label": "Media & Growth Factors",
@@ -8270,7 +8371,9 @@
       "dataUrl": null,
       "isPrimary": true,
       "methods": [
-        "Deep Learning"
+        "Deep Learning",
+        "Ensemble Learning",
+        "K-Nearest Neighbors"
       ],
       "areas": [
         "scaffolding"
@@ -9202,6 +9305,11 @@
       "slug": "emerson-2026",
       "topics": [
         {
+          "slug": "cryopreservation",
+          "label": "Cryopreservation",
+          "theme": "media-growth-factors"
+        },
+        {
           "slug": "media-growth-factors",
           "label": "Media & Growth Factors",
           "theme": "media-growth-factors"
@@ -9241,6 +9349,11 @@
       "slug": "pi-2020",
       "topics": [
         {
+          "slug": "cryopreservation",
+          "label": "Cryopreservation",
+          "theme": "media-growth-factors"
+        },
+        {
           "slug": "media-growth-factors",
           "label": "Media & Growth Factors",
           "theme": "media-growth-factors"
@@ -9272,7 +9385,12 @@
       "dataUrl": null,
       "isPrimary": true,
       "methods": [
-        "Deep Learning"
+        "Deep Learning",
+        "SVM",
+        "Ensemble Learning",
+        "K-Nearest Neighbors",
+        "Linear & Regularized Models",
+        "Comparative Studies"
       ],
       "areas": [
         "bioprocess"
@@ -9285,6 +9403,11 @@
           "slug": "bioprocess-scale-up",
           "label": "Bioprocess & Manufacturing",
           "theme": "bioprocess-scale-up"
+        },
+        {
+          "slug": "comparative-study",
+          "label": "Comparative studies",
+          "theme": "ai-methods-tooling"
         }
       ],
       "citedByOpenAlex": 36,
@@ -9355,7 +9478,7 @@
       "dataUrl": null,
       "isPrimary": true,
       "methods": [
-        "Deep Learning"
+        "Hybrid Mechanistic-ML Models"
       ],
       "areas": [
         "bioprocess"
@@ -12137,6 +12260,47 @@
       "license": null,
       "licenseSource": null,
       "isOa": false
+    },
+    {
+      "id": 350,
+      "section": "References",
+      "raw": "<a id=\"350\">350</a> Parsaee, A., Stahn, M., Amirvaresi, A., Ovissipour, R., & Staszak, D. (2026). A data-driven evaluation of optimization techniques in cell culture media. *Bioinformatics, 42*(9), btag607. https://doi.org/10.1093/bioinformatics/btag607",
+      "authors": [
+        "Parsaee, A.",
+        "Stahn, M.",
+        "Amirvaresi, A.",
+        "Ovissipour, R.",
+        "Staszak, D."
+      ],
+      "authorsDropped": 0,
+      "authorsText": "Parsaee, A., Stahn, M., Amirvaresi, A., Ovissipour, R., & Staszak, D.",
+      "year": 2026,
+      "title": "A data-driven evaluation of optimization techniques in cell culture media",
+      "journal": "Bioinformatics",
+      "doi": "10.1093/bioinformatics/btag607",
+      "codeUrl": "https://github.com/Amii-Applied-AI/amii-cell-ag-tools/tree/main/active-learning-for-cell-media",
+      "dataUrl": null,
+      "isPrimary": true,
+      "methods": [
+        "Benchmarks & Evaluation Frameworks"
+      ],
+      "areas": [
+        "media"
+      ],
+      "hasCode": true,
+      "hasData": false,
+      "slug": "parsaee-2026",
+      "topics": [
+        {
+          "slug": "media-optimization",
+          "label": "Media optimization",
+          "theme": "media-growth-factors"
+        }
+      ],
+      "citedByOpenAlex": null,
+      "license": null,
+      "licenseSource": null,
+      "isOa": null
     },
     {
       "id": 73,
@@ -16684,5 +16848,5 @@
     }
   ],
   "scopeNote": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall.",
-  "corpusDate": "2026-08-21"
+  "corpusDate": "2026-09-02"
 }

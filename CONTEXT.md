@@ -21,7 +21,7 @@ reader the work is already done.
 `topics.ndjson`, `item_topics.ndjson` and `matrix_cells.ndjson` are the source of truth: where a
 number here disagrees with them, they are right and this file is stale. **No one command prints
 all of these.** `pnpm --dir site db:check` prints the theme assertions, including that there are
-exactly eight; `pnpm --dir site parse` prints the headline totals but not the 229 matrix-eligible
+exactly eight; `pnpm --dir site parse` prints the headline totals but not the 230 matrix-eligible
 subset, nor any theme or `area_key` count. Read `parse`'s output carefully: its `researchAreas`
 figure counts files in `ResearchAreas/` and is **not** the number of research areas as defined
 below, which is the matrix columns in `areas.ndjson`. Both are 8 as of 2026-08-25, and that is the
@@ -65,7 +65,7 @@ _Avoid_: classification (when naming the result rather than the act), tagging, m
 A reference in `Papers.md`'s `## References` section, the only section whose entries take
 matrix cells. Reviews & Perspectives and the four reference-work sections are not
 matrix-eligible.
-_Avoid_: paper (ambiguous: 345 references exist and 229 are matrix-eligible, so an
+_Avoid_: paper (ambiguous: 346 references exist and 230 are matrix-eligible, so an
 unqualified count is always the wrong number)
 
 ### The subject axis
