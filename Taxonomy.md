@@ -244,8 +244,8 @@ combinatorial spaces.
 **The test is where the search's output appears.** The row is earned when what the search returned is
 part of what the paper reports: a formulation, a physical design, a process setting, or the fitted
 model itself. It is **not** earned when the output only configures the machinery that produced the
-reported result, which covers a search over hyperparameters, over model architecture, and over which
-preprocessing or feature-selection *technique* to apply. Both kinds are real optimisation and both are often
+reported result, which covers a search over hyperparameters, over model architecture (**except as the
+third shape below sets out**), and over which preprocessing or feature-selection *technique* to apply. Both kinds are real optimisation and both are often
 described at length, so the length of the description decides nothing. What decides it is whether the
 answer the search returned is one the paper makes a claim about.
 
