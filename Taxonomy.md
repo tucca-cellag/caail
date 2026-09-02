@@ -244,10 +244,10 @@ combinatorial spaces.
 **The test is where the search's output appears.** The row is earned when what the search returned is
 part of what the paper reports: a formulation, a physical design, a process setting, or the fitted
 model itself. It is **not** earned when the output only configures the machinery that produced the
-reported result, which covers a search over hyperparameters, over model architecture, and over which
-preprocessing or feature-selection *technique* to apply. Both kinds are real optimisation and both are
-often described at length, so the length of the description decides nothing. What decides it is whether
-the answer the search returned is one the paper makes a claim about.
+reported result, which covers a search over hyperparameters, over model architecture (**except as the
+third shape below sets out**), and over which preprocessing or feature-selection *technique* to apply. Both kinds are real optimisation and both are often
+described at length, so the length of the description decides nothing. What decides it is whether the
+answer the search returned is one the paper makes a claim about.
 
 A feature subset can itself be a finding, since "these are the variables that matter" is a claim about
 the problem. Feature selection is therefore not excluded as a category; what is excluded is a search
@@ -260,6 +260,16 @@ feature-selection techniques to reduce features before training does not, becaus
 is about the biology and the search's answer is a step in the pipeline. A paper that does both earns
 the row on the first, so read the whole methods section rather than the first evolutionary-search
 heading in it.
+
+A third shape, because architecture search sits on the line the first two do not. A search over a
+model's architecture produces a fitted model, which the positive test admits, and configures the
+machinery behind a result, which the exclusion refuses. What separates them is not the search but the
+paper: where the method for producing that model is the paper's stated contribution, and its results
+characterise the model the search returned, the row is earned. Where the tuned model is a means to a
+claim about something else, and the paper's results are about that something else, it is not. The
+question to ask is what the paper would still be reporting if the search had been replaced by a
+default configuration. **This clause widens the row**, so where it bears on a placement already made,
+raise it for re-audit rather than silently unseating or adding one.
 
 ### SVM
 Support vector machines and support vector regression, kernel methods for classification and

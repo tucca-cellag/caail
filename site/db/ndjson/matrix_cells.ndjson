@@ -288,3 +288,5 @@
 {"method":"K-Nearest Neighbors","area_key":"scaffolding","ref_id":216,"label":"Golbabaei et al. 2024","ordinal":291}
 {"method":"Ensemble Learning","area_key":"scaffolding","ref_id":216,"label":"Golbabaei et al. 2024","ordinal":292}
 {"method":"Comparative Studies","area_key":"scaffolding","ref_id":20,"label":"Rafieyan et al. 2024","ordinal":293}
+{"method":"Genetic Algorithms","area_key":"sensory","ref_id":269,"label":"Charoenkwan et al. 2020","ordinal":294}
+{"method":"Domain-Specific Biomedical Agents","area_key":"cell","ref_id":276,"label":"Qu et al. 2025","ordinal":295}

@@ -604,7 +604,8 @@
       "area": "sensory",
       "areaLabel": "Sensory Prediction",
       "refIds": [
-        342
+        342,
+        269
       ],
       "emptyInCorpus": false,
       "placement": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/"
@@ -1785,7 +1786,8 @@
       "refIds": [
         97,
         125,
-        93
+        93,
+        276
       ],
       "emptyInCorpus": false,
       "placement": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/"
