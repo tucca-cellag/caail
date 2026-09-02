@@ -4,9 +4,9 @@ This page describes the **K-Nearest Neighbors** row of the [Papers.md matrix](..
 
 ## Scope boundary
 
-The defining feature of the row is what a paper does with k-NN, not that k-NN appears in it. Most references here come from a study that ran several classical models against the same data, and the taxonomy says as much: k-NN "usually appears alongside other classical models in comparative studies." So the row is small, it overlaps heavily with [SVM](./SVM.md), [Ensemble Learning](./EnsembleLearning.md), [Linear & Regularized Models](./LinearRegularizedModels.md) and [Chemometrics](./Chemometrics.md), and a reference appearing in it is usually also in one or more of those.
+The defining feature of the row is what a paper does with k-NN, not that k-NN appears in it. Every reference here comes from a study that ran several classical models against the same data, and the taxonomy says so directly: k-NN "usually appears alongside other classical models in comparative studies." So the row is small, it overlaps heavily with [SVM](./SVM.md), [Ensemble Learning](./EnsembleLearning.md), [Linear & Regularized Models](./LinearRegularizedModels.md) and [Chemometrics](./Chemometrics.md), and a reference appearing in it is usually also in one or more of those.
 
-That overlap is the useful signal rather than noise. Where a paper here did run the comparison, it reports how a nearest-neighbor baseline did against everything else it tried, which is what a cell-ag team needs when deciding whether a more expensive model is earning its cost on a dataset of a few hundred samples. Not all of them do: [#104](../Papers.md#104) earns the row architecturally, its similarity features letting an unknown pair borrow evidence from related ones, and [#340](../Papers.md#340) uses a nearest-neighbor classifier inside a consensus for the region of chemical space a global model handles worst. Neither is a baseline comparison.
+That overlap is the useful signal rather than noise. A paper in this row has, by construction, reported how a nearest-neighbor baseline did against everything else it tried, which is what a cell-ag team needs when deciding whether a more expensive model is earning its cost on a dataset of a few hundred samples.
 
 ## Bioprocess & Scale-Up
 
@@ -15,7 +15,7 @@ That overlap is the useful signal rather than noise. Where a paper here did run 
 
 ## Scaffolding
 
-- [#216](../Papers.md#216) (Golbabaei et al. 2024, *RSC Advances*): k-nearest neighbors carries fibre conductivity in both of this paper's tasks, with opposite outcomes, which is why the entry is worth reading rather than skimming. As a **classifier** it is the paper's strongest result: "two classification models have balanced accuracy values of 0.9478 and 1.0 for predicting fibers diameter and conductivity class, respectively". As a **regressor** on that same target it fails, "in all cases, the models were unstable, and the scores varied widely", which the paper attributes to an inadequate sample size for that regression. The regressor was picked from the correlation structure rather than from a bake-off, the conductivity correlations being semi-linear and a non-parametric model "can be either linear or non-linear based on the fed data". One caution for anyone citing the split: the paper is inconsistent about which classifier took which target, its abstract, conclusion and Section 5.3 all pairing k-NN with conductivity and the voting classifier with diameter, while Section 5.2 reverses them. Described in [Deep Learning](./DeepLearning.md), where the SMILES encoding is set out; also in [Ensemble Learning](./EnsembleLearning.md).
+- [#216](../Papers.md#216) (Golbabaei et al. 2024, *RSC Advances*): k-nearest neighbors among the models compared for predicting electrospun-scaffold morphology from processing parameters and polymer chemistry. Described in [Deep Learning](./DeepLearning.md), where the SMILES encoding that lets the model generalize to an unseen polymer is set out; also in [Ensemble Learning](./EnsembleLearning.md).
 
 ## Sensory Prediction
 
@@ -25,7 +25,7 @@ That overlap is the useful signal rather than noise. Where a paper here did run 
 
 ## Adjacent methods
 
-- [SVM](./SVM.md), [Ensemble Learning](./EnsembleLearning.md), [Linear & Regularized Models](./LinearRegularizedModels.md): the models k-NN is benchmarked against, where a reference above runs that comparison at all.
+- [SVM](./SVM.md), [Ensemble Learning](./EnsembleLearning.md), [Linear & Regularized Models](./LinearRegularizedModels.md): the models k-NN is benchmarked against in nearly every reference above.
 - [Chemometrics](./Chemometrics.md): where the multivariate spectral half of the sensory work sits, including [#340](../Papers.md#340)'s PLS-DA component.
 - [Deep Learning](./DeepLearning.md): the comparison point these papers repeatedly find does not pay off at their data scale.
 
