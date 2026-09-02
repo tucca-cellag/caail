@@ -173,11 +173,14 @@ const statSentence = `Indexing ${stats.map((s) => `${s.n} ${s.label}`).join(', '
         (Grepping those files directly proves nothing — they are gzip.)
 
         "Extraction" covers two surfaces that differ, and saying "select-and-copy" alone
-        was wrong for the same reason the Pagefind claim was. Measured: `textContent` is
-        one clean sentence, while `innerText` and `Selection.toString()` give THREE lines
-        in mixed case — this row is `display: flex`, so the serialiser blockifies each
-        child, and the `text-transform: uppercase` below does not reach `.tl-name`, which
-        sits in `TuccaLockup`'s own scope. What the prop delivers on both surfaces is the
+        was wrong for the same reason the Pagefind claim was. Measured on the built page after
+        the R&D clause was removed: `textContent` is one clean sentence, while `innerText`
+        and `Selection.toString()` give TWO lines in mixed case, "A PROJECT OF" then the
+        name. This row is `display: flex`, so the serialiser blockifies each child, and the
+        `text-transform: uppercase` below does not reach `.tl-name`, which sits in
+        `TuccaLockup`'s own scope. It said THREE until round 5: dropping the trailing span
+        took a child out, `cite.spec.ts` was corrected in the same commit and this copy was
+        not, which is the two-copies defect in miniature. What the prop delivers on both surfaces is the
         subject being present at all; the clean-sentence form is `textContent` only.
         `cite.spec.ts` now asserts each surface for what is actually true of it.
 

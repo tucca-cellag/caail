@@ -151,7 +151,10 @@ a.site-title {
    play icon and a pause icon in one button, and it is listed here having caused no bug at
    all: it went in with the carousel's stop control rather than after someone noticed the
    row jump 16px the first time that control was pressed.
-   `.setup .steps` is the SIXTH, and it shipped on the branch that added it. Splitting the
+   `.setup .steps` shipped on the branch that added it, and takes NO ordinal: the closing
+   paragraph below already spends the next one on the hero rule, and this sentence claimed it
+   too. Two SIXTHs in one file, two sentences after the warning against a second counter.
+   Splitting the
    install steps into an `<ol>` of `<li class="step">` made Starlight's
    `li + li { margin-top: 0.25rem }` apply to every step after the first, so the sequence
    rendered 12px apart against the 8px `gap` its own component declares, and the deleted

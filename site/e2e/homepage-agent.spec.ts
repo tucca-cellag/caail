@@ -221,25 +221,22 @@ test.describe('Connect your agent', () => {
     await expect(first).toBeVisible();
     const code = first.locator('code').first();
     await expect(code).toBeVisible();
-    // CONTENT, not merely length. `length > 8` passed on any nine characters, which is not
-    // what "readable" means and not what this comment used to claim it guarded. Matching the
-    // union of the two values that can legitimately lead keeps the reorder-independence the
-    // docblock argues for without giving up the assertion.
-    await expect(code).toHaveText(/tucca-cellag\/caail|raw\.githubusercontent\.com/);
+    // CONTENT, not merely length, and not a pattern either. `length > 8` passed on any nine
+    // characters. Its replacement, a `tucca-cellag/caail|raw.githubusercontent.com`
+    // alternation, was worse than it looked: the slug is a SUBSTRING of the raw URL that
+    // three of the four panels use, so the regex collapsed to "mentions the repo somewhere"
+    // and would have stayed green if the Claude Science value drifted from the bare slug to
+    // a github.com URL the import dialog cannot accept.
+    //
+    // The invariant that survives a reorder is that what the panel SHOWS is what its button
+    // COPIES. A reader who copies something other than the text they read is the failure,
+    // and it does not care which path leads.
+    const shown = (await code.innerText()).trim();
+    const copied = await first.locator('.val .copy').first().getAttribute('data-copy');
+    expect(shown.length, 'the default panel renders no value at all').toBeGreaterThan(8);
+    expect(shown, 'the default panel shows something other than what it copies').toBe(copied);
   });
 
-  /**
-   * Clicking copy must not resize the button.
-   *
-   * The button holds two icons and swaps them by `display`. The check mark inherited
-   * Starlight's 16px prose-flow margin, which is inert while the icon is `display: none` —
-   * so the button measured right, screenshotted right, and passed everything, right up
-   * until a human clicked it and the box jumped 16px taller, shoving the command row down.
-   *
-   * This is why the assertion is a MEASUREMENT taken across a real click rather than a
-   * check that the class toggled: the class toggle was always correct. Only the geometry
-   * was wrong, and only after interaction.
-   */
   /**
    * The value and its copy button share an optical centre.
    *
@@ -269,6 +266,18 @@ test.describe('Connect your agent', () => {
     ).toBeLessThanOrEqual(1);
   });
 
+  /**
+   * Clicking copy must not resize the button.
+   *
+   * The button holds two icons and swaps them by `display`. The check mark inherited
+   * Starlight's 16px prose-flow margin, which is inert while the icon is `display: none` —
+   * so the button measured right, screenshotted right, and passed everything, right up
+   * until a human clicked it and the box jumped 16px taller, shoving the command row down.
+   *
+   * This is why the assertion is a MEASUREMENT taken across a real click rather than a
+   * check that the class toggled: the class toggle was always correct. Only the geometry
+   * was wrong, and only after interaction.
+   */
   test('the copy button does not change size when clicked', async ({ page, context }) => {
     await context.grantPermissions(['clipboard-read', 'clipboard-write']);
     await page.goto('./');

@@ -118,7 +118,7 @@ Step 2 once they say it is done.
 
 Four things to tell them, because none is visible in that dialog:
 
-- **It imports two skills, not one.** `caail` answers questions from the library;
+- **It imports more than the query skill.** `caail` answers questions from the library;
   `caail-contribute` offers to suggest a resource back when the library does not hold it.
   Preview lists both with a checkbox each, so either can be unticked. They are separate
   marketplace entries precisely so that taking the second one is its own choice.
@@ -133,8 +133,12 @@ Four things to tell them, because none is visible in that dialog:
   path is unavailable and the zero-install route above is the answer.
 
 Preview names the path it resolved: it should read **marketplace manifest**, which is what
-limits the import to the two public skills. If it ever says otherwise, stop and report it
+limits the import to CAAIL's public skills. If it ever says otherwise, stop and report it
 rather than importing.
+
+No count is written here on purpose, and the button's own label is the reason: it reads
+"Import N skills" for whatever the marketplace currently carries, so a number typed here
+would one day contradict the dialog the reader is looking at. Read it off the screen.
 
 ## Step 2: confirm it works
 
