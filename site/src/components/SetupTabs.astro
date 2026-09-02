@@ -199,8 +199,20 @@ const paths = [
               does not. axe does not flag this. */}
           <ol role="list" class:list={['steps', p.steps.length === 1 && 'steps--single']}>
             {p.steps.map((s, n) => (
-              <li class="step">
-                {p.steps.length > 1 && <span class="n">{n + 1}</span>}
+              <li class="step" role="listitem">
+                {/* `aria-hidden` because the LIST now carries the number. Making these rows
+                    `<li>` gave assistive tech a native position announcement, which the
+                    visible digit then duplicated: "1 of 3, 1, Settings to Skills to ...".
+                    That doubling is new to this restructure, and the fix is to let exactly
+                    one of the two speak.
+
+                    `role="listitem"` is explicit for the same reason `role="list"` is on the
+                    <ol>: Safari drops list semantics when `list-style` is `none`, and if it
+                    dropped them from the children while the parent's role was restored, the
+                    position would vanish at the same moment the visible digit went silent.
+                    Redundant in every other browser, and load-bearing in the one that is not.
+                    Removing either half re-opens a different bug from the one it looks like. */}
+                {p.steps.length > 1 && <span class="n" aria-hidden="true">{n + 1}</span>}
                 {s.copy ? (
                   <span class="val">
                     <code>{s.t}</code>

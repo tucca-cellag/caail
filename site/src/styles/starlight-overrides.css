@@ -167,7 +167,11 @@ a.site-title {
    would have invited someone to trim it. It earns its place through a different Starlight
    rule than the sibling one this block reasons about: `.sl-markdown-content code
    { margin-block: -0.125rem }` puts -2px on the value's `<code>`, and this entry's
-   `> * { margin-top: 0 }` is what cancels it. Remove it and the code sits 2px above the
+   `> * { margin-top: 0 }` cancels the TOP half of it. The bottom -2px survives, and saying
+   this "cancels it" overclaimed: `margin-block` sets both. Nothing depends on the bottom
+   today, because `.val` is `align-items: flex-start` and the copy button is the taller child
+   so it sets the row height. That is the condition under which the overclaim is harmless,
+   and it is worth writing down rather than leaving as luck. Remove it and the code sits 2px above the
    copy button's centre, which is precisely the misalignment `0db7ad1` was written to fix.
    `homepage-agent.spec.ts` now asserts that centring, so this is a failing test rather than
    a comment someone has to re-derive.
