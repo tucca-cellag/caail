@@ -244,14 +244,15 @@ combinatorial spaces.
 **The test is where the search's output appears.** The row is earned when what the search returned is
 part of what the paper reports: a formulation, a physical design, a process setting, or the fitted
 model itself. It is **not** earned when the output only configures the machinery that produced the
-reported result, which covers a search over hyperparameters, over model architecture, and over which
-preprocessing or feature-selection *technique* to apply. **One search can satisfy both descriptions**,
-since optimising a model's architecture also produces a fitted model; where it does, the row follows
-what the paper puts forward as its own contribution, so a paper whose stated result is the optimised
-model earns it and a paper that tunes a model in order to report something else does not. Both kinds
-are real optimisation and both are often described at length, so the length of the description decides
-nothing. What decides it is whether
-the answer the search returned is one the paper makes a claim about.
+reported result, which covers a search over hyperparameters, over which preprocessing or
+feature-selection *technique* to apply, and over model architecture **except where the optimised model
+is itself what the paper puts forward**, since optimising an architecture also produces a fitted model
+and one search can answer to both descriptions. Both kinds are real optimisation and both are often
+described at length, so the length of the description decides nothing. What decides it is whether the
+answer the search returned is one the paper makes a claim about.
+
+That architecture clause **widens** this row rather than narrowing it, so where it bears on a placement
+already made, raise it for re-audit rather than silently unseating or adding one.
 
 A feature subset can itself be a finding, since "these are the variables that matter" is a claim about
 the problem. Feature selection is therefore not excluded as a category; what is excluded is a search
