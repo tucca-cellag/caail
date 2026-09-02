@@ -88,18 +88,19 @@ test('the hero attribution names its subject in every text-extraction surface', 
 
   // The defect this guards: the lockup draws the org name as a CSS background image
   // on an `aria-hidden` span, so the anchor contributes NO text of its own. This line
-  // once shipped as "A project of  and used in its own R&D" — a sentence with its
-  // subject missing — past four screenshots and a clean axe run, because sighted
-  // rendering and assistive tech were both fine and neither check reads extracted text.
+  // once shipped with no subject at all, past four screenshots and a clean axe run,
+  // because sighted rendering and assistive tech were both fine and neither check reads
+  // extracted text. The line then carried a trailing "and used in its own R&D", which made
+  // the gap ungrammatical rather than merely incomplete; that clause has since been
+  // removed, so the line now ends on the name and the subject is the ONLY thing after
+  // "A project of". The defect is easier to ship now, not harder.
   //
   // The two surfaces are checked SEPARATELY because they genuinely differ here, and an
   // earlier version of this test asserted one while its name and three source comments
   // claimed the other. Measured on the built page:
   //
-  //   textContent -> "A project of Tufts University Center for Cellular Agriculture
-  //                   and used in its own R&D"
-  //   innerText   -> "A PROJECT OF\nTufts University Center for Cellular
-  //                   Agriculture\nAND USED IN ITS OWN R&D"
+  //   textContent -> "A project of Tufts University Center for Cellular Agriculture"
+  //   innerText   -> "A PROJECT OF\nTufts University Center for Cellular Agriculture"
   //
   // `.hero-attrib` is `display: flex`, so the serialiser blockifies each child and
   // inserts newlines; and its spans carry `text-transform: uppercase`, which does not
@@ -108,10 +109,10 @@ test('the hero attribution names its subject in every text-extraction surface', 
   // rather than by accident, and calling it "one clean sentence" would be false.
   const text = (await page.locator('.hero-attrib').textContent()) ?? '';
 
-  // ONE assertion on the whole sentence, not three on its parts. Three `toContain`s
-  // pass in any order, so a regression that emitted the org name after "and used in
-  // its own R&D" would satisfy them while reading as nonsense. This pins the words,
-  // their order, and the single spaces between them in one go.
+  // ONE assertion on the whole sentence, not one per part. Separate `toContain`s pass in
+  // any order, so a regression that emitted the org name before "A project of" would
+  // satisfy them while reading as nonsense. This pins the words, their order, and the
+  // single space between them in one go.
   //
   // It also subsumes the padding check that used to sit here as `not.toMatch(/  +/)`:
   // re-indenting TuccaLockup.astro's markup emits whitespace text nodes inside the
@@ -121,13 +122,12 @@ test('the hero attribution names its subject in every text-extraction surface', 
   expect(
     text,
     `hero attribution is not one clean sentence in textContent: ${JSON.stringify(text)}`,
-  ).toContain('A project of Tufts University Center for Cellular Agriculture and used in its own R&D');
+  ).toContain('A project of Tufts University Center for Cellular Agriculture');
 
   // `innerText` is the model for select-and-copy (and what `Selection.toString()`
   // returns here — checked, they match). It is asserted for the one property that
   // matters and that this change actually delivers: the SUBJECT IS PRESENT. Before
-  // `textName`, a reader copying this line got "A PROJECT OF / AND USED IN ITS OWN
-  // R&D" with no org name at all.
+  // `textName`, a reader copying this line got "A PROJECT OF" and nothing else.
   //
   // Deliberately not asserted here: line count, casing, or a single-sentence form.
   // Those are properties of the hero's flex + uppercase styling, not of this prop,

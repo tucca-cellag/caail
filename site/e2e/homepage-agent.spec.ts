@@ -209,11 +209,61 @@ test('the hero stripe meets the header with no gap', async ({ page }) => {
 });
 
 test.describe('Connect your agent', () => {
+  /**
+   * Asserts the PROPERTY (the default panel renders usable content with no interaction),
+   * not which path happens to lead. This pinned `raw.githubusercontent.com` until Claude
+   * Science took first position, then went red on a pure reorder that broke nothing. A
+   * test that fails when the thing it names still works is asserting an accident.
+   */
   test('the first panel is readable before any interaction', async ({ page }) => {
     await page.goto('./');
     const first = page.locator('.gs .panel').first();
     await expect(first).toBeVisible();
-    await expect(first.locator('code').first()).toContainText('raw.githubusercontent.com');
+    const code = first.locator('code').first();
+    await expect(code).toBeVisible();
+    // CONTENT, not merely length, and not a pattern either. `length > 8` passed on any nine
+    // characters. Its replacement, a `tucca-cellag/caail|raw.githubusercontent.com`
+    // alternation, was worse than it looked: the slug is a SUBSTRING of the raw URL that
+    // three of the four panels use, so the regex collapsed to "mentions the repo somewhere"
+    // and would have stayed green if the Claude Science value drifted from the bare slug to
+    // a github.com URL the import dialog cannot accept.
+    //
+    // The invariant that survives a reorder is that what the panel SHOWS is what its button
+    // COPIES. A reader who copies something other than the text they read is the failure,
+    // and it does not care which path leads.
+    const shown = (await code.innerText()).trim();
+    const copied = await first.locator('.val .copy').first().getAttribute('data-copy');
+    expect(shown.length, 'the default panel renders no value at all').toBeGreaterThan(8);
+    expect(shown, 'the default panel shows something other than what it copies').toBe(copied);
+  });
+
+  /**
+   * The value and its copy button share an optical centre.
+   *
+   * Two children of different intrinsic heights: one line of 12px mono is 1.2rem, the copy
+   * button is 1.6rem. The button sets the well's height, so without an explicit floor the
+   * text pins to the top and sits ~3px high. Starlight adds a second, quieter way to break
+   * it: `.sl-markdown-content code { margin-block: -0.125rem }` shifts the code -2px unless
+   * `starlight-overrides.css` cancels it, and that override entry reads as removable to
+   * anyone who has not measured it. Both failures are a few pixels, invisible in a
+   * screenshot review, and neither is caught by anything else here.
+   */
+  test('a one-line value is centred against its copy button', async ({ page }) => {
+    await page.goto('./');
+    const panel = page.locator('.gs .panel:not([hidden])');
+    const code = panel.locator('.val code');
+    const btn = panel.locator('.val .copy');
+    await expect(code).toBeVisible();
+    const c = await code.boundingBox();
+    const b = await btn.boundingBox();
+    // Single-line only: a wrapped value legitimately grows past the button, and the button
+    // is meant to stay at the top of the block there rather than drift to its middle.
+    expect(Math.round(c!.height), 'default panel value is not one line').toBeLessThan(30);
+    const drift = Math.abs((c!.y + c!.height / 2) - (b!.y + b!.height / 2));
+    expect(
+      drift,
+      `value and copy button are ${drift.toFixed(1)}px out of alignment`,
+    ).toBeLessThanOrEqual(1);
   });
 
   /**
@@ -237,7 +287,10 @@ test.describe('Connect your agent', () => {
 
     const box = async () => {
       const r = await btn.boundingBox();
-      const row = await page.locator('.gs .cmd').first().boundingBox();
+      // `:has(.copy)`, not `.first()`. The leading panel's first step is an ACTION row
+      // with no button, so `.first()` measured a row structurally incapable of the
+      // growth this test names, and passed for the wrong reason.
+      const row = await page.locator('.gs .step:has(.copy)').first().boundingBox();
       return { w: Math.round(r!.width), h: Math.round(r!.height), rowH: Math.round(row!.height) };
     };
 
@@ -258,28 +311,39 @@ test.describe('Connect your agent', () => {
    * timer running against that shared live region, so it wiped the second copy's
    * announcement one second in. Only a screen-reader user ever perceives it, which is
    * precisely why it needs an assertion rather than a look.
+   *
+   * It now copies ACROSS tabs rather than within one panel. Once steps were split into
+   * values and actions, only values carry a copy button and no panel exposes two at once.
+   * The race is untouched by that: the <output> is shared per `.setup`, not per panel, so
+   * two copies from different tabs contend for the same live region exactly as two from
+   * one panel used to. If anything it is the likelier path, since a reader comparing
+   * install routes copies from one tab and then another.
    */
   test('a second copy does not have its announcement wiped by the first', async ({ page, context }) => {
     await context.grantPermissions(['clipboard-read', 'clipboard-write']);
     await page.goto('./');
 
-    // Only a panel with two commands can exercise the race; single-command panels cannot.
     const tabs = page.locator('.gs [role="tab"]');
     const count = await tabs.count();
-    const copies = page.locator('.gs .panel:not([hidden]) .copy');
-    for (let i = 0; i < count; i++) {
+    const visibleCopy = page.locator('.gs .panel:not([hidden]) .copy');
+
+    // Find two tabs that each offer something copyable.
+    const withCopy: number[] = [];
+    for (let i = 0; i < count && withCopy.length < 2; i++) {
       await tabs.nth(i).click();
-      if ((await copies.count()) > 1) break;
+      if ((await visibleCopy.count()) > 0) withCopy.push(i);
     }
     expect(
-      await copies.count(),
-      'no panel exposes two copy buttons at once — the race cannot be exercised',
-    ).toBeGreaterThan(1);
+      withCopy.length,
+      'fewer than two tabs expose a copy button — the shared-output race cannot be exercised',
+    ).toBe(2);
 
     const live = page.locator('.gs output');
-    await copies.nth(0).click();
+    await tabs.nth(withCopy[0]).click();
+    await visibleCopy.first().click();
     await page.waitForTimeout(1100);
-    await copies.nth(1).click();
+    await tabs.nth(withCopy[1]).click();
+    await visibleCopy.first().click();
     // Now past the FIRST button's 2s deadline, but well inside the second's.
     await page.waitForTimeout(1100);
 
@@ -337,12 +401,26 @@ test.describe('Connect your agent', () => {
    * one uncovered one is how a property that reads as tested goes untested.
    */
   for (const root of ['.gs', '.hero'])
-  for (const width of [1280, 600]) {
+  for (const width of [1280, 600, 560]) {
     test(`switching tabs does not change the section height, no page jump (${root} @ ${width}px)`, async ({ page }) => {
-      // Two widths because the reserve has two bands. 1280px exercises the >= 48rem band;
-      // 600px sits in the 34-48rem band, where the command lines wrap and the panels grow
-      // by ~35px. Testing one width is how the `.gs` reserve stayed 33px short between
-      // 544 and 768px while reading as covered.
+      // Three widths for two reserves. 1280px is the two-column topology; 600px and 560px
+      // are both the stacked one.
+      //
+      // 600 and 560 are NOT redundant, and the reason is not that a different panel peaks
+      // at each. Measured with `min-height: 0` forced, the Claude Science panel is tallest
+      // at every sampled width: 263px from 545 to 959, 164px from 960 to 1600. What differs
+      // is the RUNNER-UP, and that is what 560 buys: the cli panel is 203px at 600 and 243px
+      // at 560, so if the science panel ever shrank below 243 the reserve would stop being
+      // governed by it, and 560 is the width where that hands over.
+      //
+      // These figures have now gone stale TWICE, and the second time is the instructive one.
+      // The first version quoted 236/195 from the single-column layout. The replacement was
+      // written in the same round that restored the Starlight list-margin override, which
+      // took 2 x 4px off every three-step panel and moved every number here, and only
+      // `SetupTabs.astro` was updated. So a comment carrying "Re-measured" and scolding its
+      // own predecessor was stale within one commit. The lesson is not to measure more
+      // carefully; it is that the same numbers live in two files with nothing tying them
+      // together, and re-deriving them is one `min-height: 0` sweep.
       await page.setViewportSize({ width, height: 900 });
       await page.goto('./');
       // The section's own height is what everything below it sits on, so holding that

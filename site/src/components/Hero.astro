@@ -138,7 +138,7 @@ const statSentence = `Indexing ${stats.map((s) => `${s.n} ${s.label}`).join(', '
   </div>
 
   <div class="hero-setup">
-    <p class="hero-setup-hd">Point an AI agent at it</p>
+    <p class="hero-setup-hd">Point an AI agent at CAAIL</p>
     <SetupTabs compact idPrefix="hero" />
   </div>
 
@@ -148,22 +148,22 @@ const statSentence = `Indexing ${stats.map((s) => `${s.n} ${s.label}`).join(', '
     <a href={`${base}/papers/explorer/`}><Icon name="lucide:layout-grid" /> Browse the matrix</a>
     <a href={`${base}/community/`}><Icon name="lucide:users" /> Community</a>
     <a href={`${base}/cite/`}><Icon name="lucide:quote" /> Cite CAAIL</a>
-    {/* Two spans, because the line has to carry two different claims and an earlier draft
-        lost one of them. Replacing "A project of" outright with "Built and used in R&D at"
-        left the homepage saying only that TUCCA *uses* CAAIL, which reads as a third-party
-        tool TUCCA adopted, and ownership then survived only on /about.
+    {/* ONE claim: ownership. A second, "and used in its own R&D", was removed at the
+        curator's request. Keep the surviving half exactly where it is. An earlier draft
+        replaced "A project of" outright with "Built and used in R&D at", which left the
+        homepage saying only that TUCCA *uses* CAAIL, reading as a third-party tool TUCCA
+        adopted, with ownership surviving only on /about. That is the claim to protect.
 
-        `textName` is what makes the sentence a sentence outside the browser. `TuccaLockup`
-        renders the name as a background image on an `aria-hidden` span, so the anchor
-        contributes NO text — only whitespace — and the name reaches assistive tech solely
-        through its `aria-label`. Sighted rendering is fine and so is a screen reader, but
-        `textContent` saw "A project of  and used in ...", a sentence with its subject
-        missing. Before the second span that read as merely incomplete; after it,
-        ungrammatical. The prop emits it as visually-hidden `aria-hidden` text from the one
-        constant that also feeds the `aria-label`, so AT is not told twice and the two cannot
-        drift; typing the name here instead was the first attempt and made a second copy that
-        nothing pinned to the first. The trailing span can then say "its own" without
-        ambiguity, because in extracted text the antecedent is now literally present.
+        `textName` is what makes this a sentence outside the browser, and it matters more
+        now that the line ENDS on the name. `TuccaLockup` renders the name as a background
+        image on an `aria-hidden` span, so the anchor contributes NO text, only whitespace,
+        and the name reaches assistive tech solely through its `aria-label`. Sighted
+        rendering is fine and so is a screen reader, but `textContent` saw "A project of "
+        and nothing further: a sentence with its subject missing. The prop emits the name as
+        visually-hidden `aria-hidden` text from the one constant that also feeds the
+        `aria-label`, so AT is not told twice and the two cannot drift; typing the name here
+        instead was the first attempt and made a second copy that nothing pinned to the
+        first.
 
         Text extraction is the surface this is for, NOT search: checked by decompressing
         `dist/pagefind/fragment/*.pf_fragment`, the homepage fragment contains neither "A
@@ -173,22 +173,23 @@ const statSentence = `Indexing ${stats.map((s) => `${s.n} ${s.label}`).join(', '
         (Grepping those files directly proves nothing — they are gzip.)
 
         "Extraction" covers two surfaces that differ, and saying "select-and-copy" alone
-        was wrong for the same reason the Pagefind claim was. Measured: `textContent` is
-        one clean sentence, while `innerText` and `Selection.toString()` give THREE lines
-        in mixed case — this row is `display: flex`, so the serialiser blockifies each
-        child, and the `text-transform: uppercase` below does not reach `.tl-name`, which
-        sits in `TuccaLockup`'s own scope. What the prop delivers on both surfaces is the
+        was wrong for the same reason the Pagefind claim was. Measured on the built page after
+        the R&D clause was removed: `textContent` is one clean sentence, while `innerText`
+        and `Selection.toString()` give TWO lines in mixed case, "A PROJECT OF" then the
+        name. This row is `display: flex`, so the serialiser blockifies each child, and the
+        `text-transform: uppercase` below does not reach `.tl-name`, which sits in
+        `TuccaLockup`'s own scope. It said THREE until round 5: dropping the trailing span
+        took a child out, `cite.spec.ts` was corrected in the same commit and this copy was
+        not, which is the two-copies defect in miniature. What the prop delivers on both surfaces is the
         subject being present at all; the clean-sentence form is `textContent` only.
         `cite.spec.ts` now asserts each surface for what is actually true of it.
 
-        The spaces inside the spans are deliberate for the same class of reason: word
+        The trailing space inside the span is deliberate for the same class of reason: word
         separation must not depend on `TuccaLockup`'s incidental line-breaking, which is
         invisible to text extraction, where the `flex gap` does not exist.
 
-        Deliberately unquantified — what CAAIL adds to an agent's answers is unmeasured
-        (CAAIL-168), so "we use it" is assertable and "it works better" is not.
         The row is `flex-wrap`; the wrap was checked at 390 and 1440, not assumed. */}
-    <p class="hero-attrib"><span>A project of </span><TuccaLockup width={150} textName /><span> and used in its own R&amp;D</span></p>
+    <p class="hero-attrib"><span>A project of </span><TuccaLockup width={150} textName /></p>
   </nav>
 </section>
 

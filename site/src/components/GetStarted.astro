@@ -5,10 +5,15 @@
  * The install paths themselves live in SetupTabs, shared with the hero. This file owns
  * only the framing: the heading, the lede, and the section rhythm.
  *
- * Tabs rather than a card grid, for a structural reason and not a stylistic one. Three
- * paths with 1, 2 and 2 steps and notes of different lengths can only ever be the same
- * height by accident; side by side they read as three ragged boxes. Stacked into one
- * frame, each path gets the full width and there is nothing left to misalign.
+ * Tabs rather than a card grid, for a structural reason and not a stylistic one. Four
+ * paths with 3, 1, 2 and 1 steps and notes of different lengths can only ever be the same
+ * height by accident; side by side they read as four ragged boxes. Stacked into one frame
+ * they share one alignment, and a reserve holds the frame still while you switch.
+ *
+ * "Each path gets the full width" was true of that arrangement and is not true now: from
+ * 60rem the panel splits `1.45fr / 1fr`, steps left and the supporting note right. What
+ * the tabs buy is one frame per path rather than four competing ones, which is the part
+ * that survived the split.
  *
  * The rail is underlined rather than pilled to stay distinct from the pill control in
  * AskExamples: two identical widgets doing different jobs read as one widget repeated.
@@ -20,9 +25,15 @@ import SetupTabs from './SetupTabs.astro';
 
 <section class="gs" id="connect">
   <h2 class="caail-display sr">Connect your agent</h2>
+  {/* "Nothing to install" was true while every path was a paste or a CLI command. The
+      leading path is now Claude Science, which is an application on a paid plan, so the
+      blanket claim had to go: it is CAAIL that needs no hosting or authentication, not
+      the client. "The only real difference is how long the setup lasts" went with it for
+      the same reason, since eligibility now differs between paths too. */}
   <p class="lede sr sr-d1">
-    Nothing to install, host or authenticate. CAAIL is static JSON on GitHub, so the only
-    real difference between these is how long the setup lasts.
+    CAAIL is static JSON on GitHub, so there is nothing to host and nothing to
+    authenticate. The paths differ in how long the setup lasts, and in what each one
+    asks of you.
   </p>
 
   <div class="sr sr-d2">

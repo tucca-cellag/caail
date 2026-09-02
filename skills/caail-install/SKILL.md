@@ -1,6 +1,6 @@
 ---
 name: caail-install
-description: Set up CAAIL for whichever agent is running: query it immediately with nothing installed, or install it into Claude Code (plugin marketplace), Cursor, Windsurf, or any assistant that can fetch a URL so it persists across sessions. Use when the user asks to use, set up or install CAAIL, or says "install CAAIL for me".
+description: Set up CAAIL for whichever agent is running: query it immediately with nothing installed, or install it into Claude Science (GitHub import), Claude Code (plugin marketplace), Cursor, Windsurf, or any assistant that can fetch a URL so it persists across sessions. Use when the user asks to use, set up or install CAAIL, or says "install CAAIL for me".
 ---
 
 # Set up CAAIL
@@ -43,12 +43,26 @@ Do not ask the user to tell you. Determine it, then confirm what you are about t
 
 | Signal | Client | Path |
 | --- | --- | --- |
+| You are running inside Claude Science | **Claude Science** | Path D |
 | `claude` CLI is on PATH, or you are Claude Code | **Claude Code** | Path A |
 | Cursor, Windsurf, Cline, Zed or similar IDE agent | **IDE agent** | Path B |
 | Browser assistant with no shell | **No shell** | Path C |
 
-If a shell is available, `claude --version` settles Path A. If it fails or the command
-does not exist, you are not in Claude Code — go to Path B.
+**Check Claude Science first, and note it is the one row with no shell test.** Every other
+row here is settled by looking at the machine. This one is settled by knowing what you are:
+if you are running inside Claude Science you have been told so in your own context, and if
+you are not certain that you are, then you are not. Inventing a probe would be worse than
+saying that plainly, so this row says it.
+
+**If you are in Claude Science, do not run the `claude --version` test below.** It is not a
+safe no-op there. Claude Science has a shell and a filesystem, so the test can succeed, and
+a success routes you to Path A, whose two commands then run the Claude Code CLI happily and
+install into Claude Code's plugin config: a product Claude Science never reads. You would
+report a successful install of something that is not there. Falling through to Path B is
+the same failure with a project rules file instead.
+
+Otherwise, if a shell is available, `claude --version` settles Path A. If it fails or the
+command does not exist, you are not in Claude Code — go to Path B.
 
 ## Path A — Claude Code (plugin marketplace)
 
@@ -91,6 +105,40 @@ Nothing can be installed from inside the conversation. Tell the user plainly:
   file upload, not by URL.
 - **Anything else** — CAAIL can still be used for the current conversation by fetching
   the skill directly. It will not carry over to a new chat.
+
+## Path D — Claude Science (import from GitHub)
+
+**You cannot do this one yourself.** It is a settings action in the Claude Science UI, so
+your job is to tell the user exactly where to go and what to expect, then confirm with
+Step 2 once they say it is done.
+
+> Settings → Skills → Add skill → Import from GitHub
+>
+> Paste `tucca-cellag/caail`, press **Preview**, then **Import**.
+
+Four things to tell them, because none is visible in that dialog:
+
+- **It imports more than the query skill.** `caail` answers questions from the library;
+  `caail-contribute` offers to suggest a resource back when the library does not hold it.
+  Preview lists both with a checkbox each, so either can be unticked. They are separate
+  marketplace entries precisely so that taking the second one is its own choice.
+- **It pins to the commit you import and never updates itself.** There is a
+  *Check for updates* button and no background refresh. This matters more for CAAIL than
+  for a static skill, because the query guide restates corpus counts that move.
+- **Skills attach per agent.** The import attaches to the default agent. If they also use
+  the Reviewer, it needs attaching by hand under *Attach to agent*, and a reviewer without
+  CAAIL cannot check a cell-ag claim against the library.
+- **It is gated.** Beta, macOS or Linux, on a Pro, Max, Team or Enterprise plan. On Team
+  and Enterprise an administrator can disable custom skills outright, in which case this
+  path is unavailable and the zero-install route above is the answer.
+
+Preview names the path it resolved: it should read **marketplace manifest**, which is what
+limits the import to CAAIL's public skills. If it ever says otherwise, stop and report it
+rather than importing.
+
+No count is written here on purpose, and the button's own label is the reason: it reads
+"Import N skills" for whatever the marketplace currently carries, so a number typed here
+would one day contradict the dialog the reader is looking at. Read it off the screen.
 
 ## Step 2: confirm it works
 

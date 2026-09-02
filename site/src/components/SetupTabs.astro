@@ -1,11 +1,21 @@
 ---
 /**
- * SetupTabs — the three install paths, extracted so the hero and the standalone
+ * SetupTabs — the four install paths, extracted so the hero and the standalone
  * "Connect your agent" band can both render them.
  *
- * `compact` trims the chrome for hero use: no per-step numbering column, tighter
- * spacing, smaller reserve. The content and the tab contract are identical either way,
- * so there is one definition of what the install paths ARE.
+ * `compact` trims the chrome for hero use, and the honest list is short: the tab rail's
+ * gap and bottom margin, plus hiding the "in progress" line so that notice appears once
+ * per page instead of twice. That is all of it. This comment claimed a smaller reserve
+ * until the `.setup--compact` override was deleted, and claimed a dropped step-number
+ * column that no rule has ever implemented. Both were read off intent rather than off the
+ * stylesheet. The panels are identical in both variants, which is why they share one
+ * reserve, and why there is one definition of what the install paths ARE.
+ *
+ * ORDER IS AN EDITORIAL CLAIM, not arrival order. Claude Science leads because CAAIL's
+ * readers are cell-ag researchers rather than engineers. `any` is deliberately LAST
+ * despite being the lowest-barrier path: it is the fallback for a reader who matched
+ * none of the three named clients, and putting a "nothing persists" option first
+ * answers a question nobody asked yet.
  *
  * Endpoints are GitHub URLs, not this site's. Code execution defaults to network egress
  * for package managers only, which covers GitHub but not GitHub Pages, and on Team and
@@ -36,25 +46,64 @@ const INSTALL_RAW = `${RAW}/skills/caail-install/SKILL.md`;
 
 const paths = [
   {
-    id: 'any',
-    tab: 'Any agent',
-    icon: 'lucide:message-square',
-    lead: 'To use CAAIL, copy this prompt and send it to your AI agent:',
-    steps: [PROMPT],
-    clients: [
-      { n: 'Claude', i: 'simple-icons:anthropic' },
-      { n: 'ChatGPT', i: 'simple-icons:openai' },
-      { n: 'Gemini', i: 'simple-icons:googlegemini' },
-      { n: 'Cursor', i: 'simple-icons:cursor' },
-      { n: 'Copilot', i: 'simple-icons:githubcopilot' },
+    id: 'science',
+    tab: 'Claude Science',
+    icon: 'simple-icons:claude',
+    /* First for an audience reason and a capability reason. CAAIL's readers are
+       researchers, and this is the only client that both installs the skills properly
+       AND already reaches the databases the library indexes: its Featured connectors
+       cover GEO, PRIDE, ArrayExpress, UniProt, Ensembl, PDB, AlphaFold and ChEMBL. No
+       other path closes that loop.
+
+       It resolves through `.claude-plugin/marketplace.json`, so it takes exactly the two
+       public skills and skips both the maintainer-only `.claude/skills/` and the root
+       `skills/caail-install/`. Record that as a CONDITION rather than a property of this
+       repo: the same dialog also advertises a bare "any repo with skills/ directories"
+       scan, and if the marketplace file ever stops resolving, that scan is what runs
+       instead and the maintainer skills come with it.
+
+       The condition is checkable at a glance rather than by inference, which is the part
+       worth knowing. The Preview panel names the path it took, printing "marketplace
+       manifest" beside the publisher name and the commit it would pin. If that ever reads
+       otherwise, the skip is not happening. Verified 2026-09-01, Claude Science 0.1.43.
+
+       STEPS ARE NAVIGATE, PASTE, CONFIRM, and the order is not cosmetic. The claude.ai
+       path below runs the other way round, value first and destination second, because
+       you cannot upload a file you have not downloaded. Here there is nothing to fetch:
+       you open a dialog and type into it. Leading with the repo name hands the reader a
+       string with nowhere to put it. */
+    lead: 'No download, no command line. In Claude Science:',
+    steps: [
+      { t: 'Settings → Skills → Add skill → Import from GitHub' },
+      { t: 'tucca-cellag/caail', copy: true },
+      { t: 'Preview → Import' },
     ],
-    note: 'Loads for this conversation only; nothing is installed.',
-    link: null,
+    clients: [{ n: 'Claude Science', i: 'simple-icons:claude' }],
+    /* Both caveats are load-bearing and neither is obvious from the dialog. The plan and
+       OS gate is narrower than any other path here, and on Team and Enterprise an admin
+       can disable custom skills outright. The pin is the opposite of how every other
+       path behaves: those track the branch, this freezes at the commit you import, which
+       matters because the skill restates corpus counts that move.
+
+       "unless you untick one" is not padding. The two plugins are deliberately separate
+       marketplace entries so that installing the contribute half is its own consent, and
+       this path offers both in one dialog with both pre-checked. The dialog does carry a
+       checkbox each, so the consent still exists; saying only "both skills install" would
+       have described the default as the whole behaviour and quietly spent a choice the
+       reader is entitled to make.
+
+       NO COUNT IS TYPED HERE, in the step or the note. The button reads "Import 2 skills"
+       today and the number is the marketplace's, not this file's: `caail-hooks` is a
+       planned third entry (CAAIL-226), and the day it lands a hard-coded 2 would contradict
+       the button while nothing failed. Naming the two skills instead is both count-free and
+       more use to a reader than the arithmetic was. */
+    note: 'Beta, macOS or Linux, Pro plan or above. Imports the query and contribute skills, untick either; pinned to that commit, and Check for updates moves them forward.',
+    link: { href: 'https://claude.com/docs/claude-science/connectors-and-skills', text: 'Claude Science skills docs →' },
   },
   {
     id: 'cli',
     tab: 'Claude Code, Cursor, CLI',
-    icon: 'lucide:terminal',
+    icon: 'simple-icons:claudecode',
     /* A prompt, not the two `claude plugin` commands.
        Those commands are correct — but ONLY in Claude Code. This tab names Cursor and
        "CLI" too, and neither implements Claude Code's plugin marketplace, so the panel
@@ -63,9 +112,9 @@ const paths = [
        difference; for Claude Code specifically it still ends up running those two
        commands, and the note names them for anyone who would rather run them directly. */
     lead: 'Already in a coding agent? Paste this prompt. It reads the guide and installs itself:',
-    steps: [`Read ${INSTALL_DOC} (if 403, use ${INSTALL_RAW}) and install CAAIL for me.`],
+    steps: [{ t: `Read ${INSTALL_DOC} (if 403, use ${INSTALL_RAW}) and install CAAIL for me.`, copy: true }],
     clients: [
-      { n: 'Claude Code', i: 'simple-icons:claude' },
+      { n: 'Claude Code', i: 'simple-icons:claudecode' },
       { n: 'Cursor', i: 'simple-icons:cursor' },
       { n: 'Windsurf', i: 'lucide:wind' },
       { n: 'Cline', i: 'lucide:terminal' },
@@ -79,9 +128,12 @@ const paths = [
   {
     id: 'web',
     tab: 'claude.ai',
-    icon: 'lucide:app-window',
+    icon: 'simple-icons:anthropic',
     lead: 'The web app installs skills by file upload rather than by URL, so download it first:',
-    steps: [`${RAW}/plugin/skills/caail/SKILL.md`, 'Settings → Customize → Skills → Add → Upload skill'],
+    steps: [
+      { t: `${RAW}/plugin/skills/caail/SKILL.md`, copy: true },
+      { t: 'Settings → Customize → Skills → Add → Upload skill' },
+    ],
     clients: [
       { n: 'claude.ai', i: 'simple-icons:anthropic' },
       { n: 'Claude desktop', i: 'simple-icons:claude' },
@@ -89,9 +141,33 @@ const paths = [
     note: 'Persists across chats. Nothing to host or authenticate.',
     link: null,
   },
+  {
+    id: 'any',
+    tab: 'Any agent',
+    icon: 'lucide:message-square',
+    lead: 'To use CAAIL, copy this prompt and send it to your AI agent:',
+    steps: [{ t: PROMPT, copy: true }],
+    clients: [
+      { n: 'Claude', i: 'simple-icons:anthropic' },
+      { n: 'ChatGPT', i: 'simple-icons:openai' },
+      { n: 'Gemini', i: 'simple-icons:googlegemini' },
+      { n: 'Cursor', i: 'simple-icons:cursor' },
+      { n: 'Copilot', i: 'simple-icons:githubcopilot' },
+    ],
+    note: 'Loads for this conversation only; nothing is installed.',
+    link: null,
+  },
 ];---
 
 <div class:list={['setup', compact && 'setup--compact']}>
+  {/* Tab marks are the PRODUCT'S OWN, one each, so the rail reads as a row of clients
+      rather than a row of metaphors. Three distinct Anthropic marks exist and they are not
+      interchangeable: `claude` for the Claude app surface, `claudecode` for the CLI, and
+      `anthropic` for claude.ai, which is the same mapping the clients row under each panel
+      already uses. "Any agent" keeps a generic lucide glyph on purpose: it is the tab that
+      names no product, and giving it one vendor's mark would pick a winner among the five
+      it lists. They inherit `currentColor`, so they tint with the tab state instead of
+      shouting five brand colours across the rail. */}
   <div class="tabs" role="tablist" aria-label="Setup paths">
     {paths.map((p, i) => (
       <button
@@ -105,39 +181,82 @@ const paths = [
   <div class="panels">
     {paths.map((p, i) => (
       <div role="tabpanel" id={`${idPrefix}-p-${p.id}`} aria-labelledby={`${idPrefix}-t-${p.id}`} class="panel" hidden={i !== 0}>
-        <p class="lead">{p.lead}</p>
+        <div class="main">
+          <p class="lead">{p.lead}</p>
 
-        {p.steps.map((s, n) => (
-          <div class="cmd">
-            {p.steps.length > 1 && <span class="n">{n + 1}</span>}
-            <code>{s}</code>
-            <button type="button" class="copy" data-copy={s} aria-label={`Copy: ${s}`}>
-              <Icon name="lucide:copy" class="i-copy" />
-              <Icon name="lucide:check" class="i-done" />
-            </button>
-          </div>
-        ))}
+          {/* A step is either a VALUE you paste or an ACTION you take, and only the first
+              gets a copy button. Every step used to get one, because when this was written
+              every step happened to be a command. It stopped being true as soon as a path
+              needed "go to this menu": a copy affordance on a navigation path invites you
+              to paste a menu trail somewhere, and it buries the one line that IS meant to
+              be copied among identical-looking rows.
 
-        <p class="note">
-          <span class="clients">
+              An <ol>, because here the numbers ARE the instruction rather than decoration.
+              A one-step path drops the number, and the column with it. */}
+          {/* `role="list"` because `list-style: none` strips list semantics in Safari and
+              VoiceOver, and the whole argument for the <ol> is that the numbers ARE the
+              instruction. The visible digits survive as their own spans; "list, 3 items"
+              does not. axe does not flag this. */}
+          <ol role="list" class:list={['steps', p.steps.length === 1 && 'steps--single']}>
+            {p.steps.map((s, n) => (
+              <li class="step" role="listitem">
+                {/* `aria-hidden` because the LIST now carries the number. Making these rows
+                    `<li>` gave assistive tech a native position announcement, which the
+                    visible digit then duplicated: "1 of 3, 1, Settings to Skills to ...".
+                    That doubling is new to this restructure, and the fix is to let exactly
+                    one of the two speak.
+
+                    `role="listitem"` is explicit for the same reason `role="list"` is on the
+                    <ol>: Safari drops list semantics when `list-style` is `none`, and if it
+                    dropped them from the children while the parent's role was restored, the
+                    position would vanish at the same moment the visible digit went silent.
+                    Redundant in every other browser, and load-bearing in the one that is not.
+                    Removing either half re-opens a different bug from the one it looks like. */}
+                {p.steps.length > 1 && <span class="n" aria-hidden="true">{n + 1}</span>}
+                {s.copy ? (
+                  <span class="val">
+                    <code>{s.t}</code>
+                    <button type="button" class="copy" data-copy={s.t} aria-label={`Copy: ${s.t}`}>
+                      <Icon name="lucide:copy" class="i-copy" />
+                      <Icon name="lucide:check" class="i-done" />
+                    </button>
+                  </span>
+                ) : (
+                  <span class="do">{s.t}</span>
+                )}
+              </li>
+            ))}
+          </ol>
+        </div>
+
+        <div class="aside">
+          <p class="clients">
             {p.clients.map((c) => (
               <span class="client"><Icon name={c.i} />{c.n}</span>
             ))}
-          </span>
-          {p.note}
-          {p.link && <a href={p.link.href}>{p.link.text}</a>}
-        </p>
+          </p>
+          <p class="note">
+            {p.note}
+            {p.link && <a href={p.link.href}>{p.link.text}</a>}
+          </p>
+        </div>
       </div>
     ))}
   </div>
 
-  {/* Says plainly what is built and what is not. The paste-prompt genuinely works in all
-      three today — what does not exist yet is a first-class integration (a Claude Science
-      connector, a ChatGPT app, a Gemini extension), and letting a reader assume otherwise
-      is the kind of overclaim this project exists to avoid. */}
+  {/* Says plainly what is built and what is not, and the list shrank on 2026-09-01.
+      Claude Science left it because its GitHub import installs both skills for real,
+      which had turned this line into an UNDERclaim: the same defect as an overclaim, in
+      the other direction, and harder to notice because nobody complains about a product
+      being undersold. What genuinely does not exist yet is a ChatGPT app or a Gemini
+      extension.
+
+      Removing a name from the list also moves the COUNT, so "all three" became "both".
+      Those two edits are one edit; changing the list alone leaves a sentence that
+      contradicts itself and still reads fine. */}
   <p class="soon">
     <Icon name="lucide:clock" />
-    <span>Dedicated <strong>Claude Science</strong>, <strong>ChatGPT</strong> and <strong>Gemini</strong> integrations are in progress. Until then the prompt above works in all three; it just does not persist.</span>
+    <span>Dedicated <strong>ChatGPT</strong> and <strong>Gemini</strong> integrations are in progress. Until then the <strong>Any agent</strong> prompt works in both; it just does not persist.</span>
   </p>
 
   <output class="visually-hidden" aria-live="polite"></output>
@@ -174,46 +293,116 @@ const paths = [
      shorter merely floors the shortest panel and lets the rest overflow it, which is a
      jump wearing the costume of a reserve.
 
-     Measured across every width where the reserve applies: 139 / 166 / 182px at >= 48rem,
-     rising to 159 / 217 / 214px between 34rem and 48rem as the command lines wrap. Hence
-     two bands. Below 34rem the panels wrap to unpredictable heights and a fixed reserve
-     would strand a large gap, so it lifts entirely.
+     Measured 2026-09-01 with `.panels { min-height: 0 }` forced, sweeping 545-1600px.
+     Each figure is the tallest panel over its range, and the range is a TOPOLOGY rather
+     than an arbitrary breakpoint: from 60rem the panel is two columns, below it the aside
+     stacks under the steps.
+
+       >= 60rem   tallest 164 (science)   shortest 103   spread  61
+       <  60rem   tallest 263 (science)   shortest 146   spread 117
+
+     Re-measured after review round 1, which moved both bands in opposite directions and is
+     why these are not the figures the first draft of this comment carried. Restoring the
+     Starlight list-margin override took 2 x 4px off every panel with three steps, and
+     lengthening the Claude Science note added a line in the stacked band only, where the
+     note has the full width rather than a column of its own. The stacked reserve was 3px
+     short for exactly as long as it took to measure.
+
+     Two reserves because there are two layouts. That is a different thing from the two
+     bands this carried before, which were ONE layout sampled at two widths, and the narrow
+     one was 16px short because it was sampled at 600px, where the cli panel is 195px,
+     rather than at 560px where it is 236px. Carrying the width beside the number is what
+     makes that visible, and the version of this comment that gave three bare numbers is
+     exactly why nobody saw it.
+
+     Below 34rem the panels wrap to unpredictable heights and a fixed reserve would strand
+     a large gap, so it lifts entirely. That band is therefore UNCOVERED by choice, and the
+     reorder made it worse: measured spread across tabs is 111px at 320px, 94px at 390px and
+     97px at 544px, against roughly 60px before. Since the hero renders these same tabs, a
+     tap on a phone can move everything below it by that much.
+
+     WHICH DIRECTION IT MOVES DEPENDS ON THE WIDTH, and an earlier version of this paragraph
+     said otherwise. "The section now shrinks on every tab away from the default" is true
+     only near 544px. Below roughly 500px the cli panel overtakes Claude Science (390px:
+     738 / 753 / 707 / 659 across the four tabs), so tapping the second tab GROWS the
+     section instead. That claim was written from the 544px sample and asserted across the
+     whole band, which is the third time on this branch that a measurement taken at one
+     width has been stated as a property of a range.
+
+     Reserving this band would strand about that much dead space under the shortest panel on
+     a phone, which is the worse trade, so it stays a documented gap. Nothing samples below
+     545px, so it is written down instead of tested.
 
      Compact and full share one reserve because they measure the same: the variant changes
-     the chrome around the panels, not the panels. The old `.setup--compact` override was a
-     second number for identical content, and at 9rem (144px) it cleared only the first
-     panel, so every hero tab click resized the hero by up to 37px and re-ran the stripe
-     ResizeObserver that Hero.astro is written not to provoke.
+     the chrome around the panels, not the panels. Confirmed by sweeping both roots. The
+     old `.setup--compact` override was a second number for identical content, and at 9rem
+     (144px) it cleared only the first panel, so every hero tab click resized the hero by
+     up to 37px and re-ran the stripe ResizeObserver that Hero.astro is written not to
+     provoke.
 
-     `homepage-agent.spec.ts` asserts constant section height across tabs for BOTH instances
-     at both bands, so a panel that outgrows this fails the suite instead of shipping. */
-  .panels { min-height: 11.5rem; }
-  @media (max-width: 48rem) { .panels { min-height: 13.75rem; } }
+     `homepage-agent.spec.ts` asserts constant section height across tabs for BOTH
+     instances at three widths, so a panel that outgrows this fails the suite instead of
+     shipping. */
+  .panels { min-height: 16.75rem; }                                /* 268px, stacked, clears 263 */
+  @media (min-width: 60rem) { .panels { min-height: 10.75rem; } }  /* 172px, 2-col, clears 164 */
   @media (max-width: 34rem) { .panels { min-height: 0; } }
+
+  /* `[hidden]` MUST still win. An explicit `display` on `.panel` outranks the UA
+     stylesheet's `[hidden] { display: none }`, so declaring this grid without the second
+     line renders all four panels stacked at once. */
+  .panel { display: grid; gap: var(--caail-space-4); align-content: start; }
+  .panel[hidden] { display: none; }
+
+  /* Two columns from 60rem, where the panel is ~1080px wide and the steps were using
+     barely half of it while the reserve was sized against the vertical. Moving the
+     supporting column beside the sequence spends the horizontal waste and cuts the spread
+     between the shortest and tallest panel, which is the number the reserve tracks. */
+  @media (min-width: 60rem) {
+    .panel { grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); column-gap: var(--caail-space-6); }
+  }
+  .main { display: flex; flex-direction: column; gap: var(--caail-space-3); }
 
   /* A plain sentence, matching the reference. The icon moved onto the tab, where it
      labels the path itself rather than decorating the instruction. */
-  .lead { font-size: var(--caail-fs-sm); color: var(--caail-muted); margin: 0 0 var(--caail-space-3); line-height: 1.5; }
+  .lead { font-size: var(--caail-fs-sm); color: var(--caail-muted); margin: 0; line-height: 1.5; }
 
-  /* Command row: a tinted well rather than a left rule. A 2px coloured side-stripe is a
-     borrowed shape, and a full container reads as a thing you copy from. */
-  /* Flex, NOT a three-track grid.
-     `grid-template-columns: auto 1fr auto` assumed three children, but the step number
-     is only rendered when a path has more than one step. On the single-step panel the
-     code landed in track 1 (auto, so it took 1033px) and the copy button was squeezed
-     into `1fr` with nothing left — it computed to 10px wide with 0px icons, which read
-     on the page as "the prompt has no copy button at all".
-     Flex has no fixed track count, so a conditional child cannot shift anything. */
-  .cmd {
-    display: flex; align-items: flex-start; gap: .5rem;
+  /* THE WELL WRAPS THE VALUE, NOT THE ROW, and that is the fix. Wrap the row and its own
+     padding indents that row's number by its inset, so with one boxed step beside two
+     plain ones the numbers stop forming a column and a 1-2-3 sequence reads as three
+     unrelated lines. That shipped, and it was most of what "looks bad" was.
+
+     The 1px TRANSPARENT border on `.n` and `.do` is load-bearing for the same reason: the
+     value's well carries a real 1px border, and without a matching one every plain row
+     sits a pixel off it. Identical box geometry, three different appearances. */
+  .steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--caail-space-2); }
+  .step { display: grid; grid-template-columns: 1.1rem minmax(0, 1fr); gap: .5rem; align-items: start; }
+  .steps--single .step { grid-template-columns: minmax(0, 1fr); }
+
+  .step .n, .step .do { border: 1px solid transparent; padding: .4rem 0; }
+  .step .n { font-size: var(--caail-fs-xs); font-weight: 600; color: var(--caail-muted); line-height: 1.6; font-variant-numeric: tabular-nums; }
+  /* Ink, and one step up the scale from the smallest size. These lines say WHERE TO GO,
+     so rendering them as the quietest thing on the panel inverted the hierarchy: squint
+     at it and the tinted well arrived first, the instructions last. */
+  .step .do { font-size: var(--caail-fs-sm); line-height: 1.6; color: var(--caail-ink); overflow-wrap: anywhere; }
+
+  /* `max-content` so an 18-character repo name gets an 18-character well instead of a
+     1080px one. A full-bleed container around a short value reads as an empty field, and
+     it parks the copy button most of a screen away from the thing it copies. */
+  .step .val {
+    display: inline-flex; align-items: flex-start; gap: .5rem;
+    width: max-content; max-width: 100%;
     background: color-mix(in oklab, var(--caail-link) 5%, transparent);
     border: 1px solid var(--caail-border); border-radius: 8px;
-    padding: .55rem .6rem; margin: 0 0 var(--caail-space-2);
+    padding: .4rem .5rem;
   }
-  /* Same line-height as the code it numbers, so the digit sits on the code's first
-     baseline rather than a few pixels above it. */
-  .cmd .n { flex: none; font-size: var(--caail-fs-xs); font-weight: 600; color: var(--caail-muted); line-height: 1.6; min-width: .75rem; }
-  .cmd code { flex: 1 1 auto; min-width: 0; font-size: var(--caail-fs-xs); line-height: 1.6; color: var(--caail-ink); background: none; padding: 0; overflow-wrap: anywhere; }
+  /* The code carries the COPY BUTTON'S height, not its own. One line of 12px mono is
+     1.2rem; the button is 1.6rem (a 1rem icon inside .3rem of padding), so the button set
+     the well's height while `align-items: flex-start` pinned the text to the top, leaving
+     a one-line value sitting ~3px above the optical centre of the box around it.
+     Centring inside a 1.6rem floor fixes the single-line case and leaves the multi-line
+     case alone: a wrapped prompt simply grows past the floor, so the button stays at the
+     top of the block rather than drifting to the middle of it. */
+  .step .val code { display: flex; align-items: center; min-height: 1.6rem; min-width: 0; font-size: var(--caail-fs-xs); line-height: 1.6; color: var(--caail-ink); background: none; padding: 0; overflow-wrap: anywhere; }
 
   .copy { display: inline-flex; flex: none; padding: .3rem; border-radius: 8px; border: 0; background: none; color: var(--caail-muted); cursor: pointer; transition: color .15s ease-out, background .15s ease-out; }
   .copy:hover, .copy:focus-visible { color: var(--caail-primary); background: color-mix(in oklab, var(--caail-link) 12%, transparent); }
@@ -225,13 +414,15 @@ const paths = [
   .copy.is-done .i-copy { display: none; }
   .copy.is-done .i-done { display: inline-block; }
 
-  .note { font-size: var(--caail-fs-xs); color: var(--caail-muted); margin: var(--caail-space-3) 0 0; line-height: 1.55; max-width: var(--caail-measure); }
+  /* Supporting metadata, not a step, so from 60rem up it sits BESIDE the sequence rather
+     than under it. Two stacked comments used to introduce `.clients`, saying the same
+     thing twice. */
+  .aside { display: flex; flex-direction: column; gap: .4rem; }
+  .note { font-size: var(--caail-fs-xs); color: var(--caail-muted); margin: 0; line-height: 1.55; max-width: var(--caail-measure); }
   .note a { margin-left: .35rem; white-space: nowrap; }
-  /* Names the agents the step actually works in, so the reader can check themselves
-     off the list before copying anything. */
-  /* Names AND marks the agents the step works in. Brand logos are used nominatively —
-     to identify a compatible client — which is what a compatibility list is for. */
-  .clients { display: flex; flex-wrap: wrap; align-items: center; gap: .25rem .7rem; margin: 0 0 .3rem; }
+  /* Names AND marks the agents the path works in. Brand logos are used nominatively, to
+     identify a compatible client, which is what a compatibility list is for. */
+  .clients { display: flex; flex-wrap: wrap; align-items: center; gap: .25rem .7rem; margin: 0; font-size: var(--caail-fs-xs); }
   .client { display: inline-flex; align-items: center; gap: .3rem; color: var(--caail-ink); font-weight: 600; }
   .client [data-icon] { width: .85rem; height: .85rem; opacity: .75; }
 
