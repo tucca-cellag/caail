@@ -393,7 +393,7 @@ own data**, run to answer a question the authors have rather than to supply a re
 family to adopt for a given prediction task, or which measurement modality feeds it best. In scope:
 sweeps across model families, and studies whose stated result is a recommendation about method
 choice. A paper here takes the **column of the research area it evaluates methods for**, on the same
-reading as the row above. Out of scope: an applied paper that happens to try several models before
+reading as *Benchmarks & Evaluation Frameworks* above: read off what the study actually measured. Out of scope: an applied paper that happens to try several models before
 reporting the one it uses, since the row records a paper's contribution and not its model count.
 
 ### Agent Infrastructure (Frameworks, KGs, Protocols)
