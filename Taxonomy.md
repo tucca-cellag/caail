@@ -380,7 +380,7 @@ supplied the scenario. A multi-domain suite whose task set genuinely splits, wit
 substantially represented and one side outside every research area, is **dual-classified** across
 both columns rather than forced into one.
 
-**The boundary against *Comparative Studies*, which this row is otherwise easy to confuse with.** A
+**This row is otherwise easy to confuse with *Comparative Studies*, and the boundary between them runs on reuse.** A
 benchmark **ships a reusable task suite, protocol and metrics for others to score against**; a
 comparative study **evaluates existing methods to answer its own question and ships nothing for
 reuse**. A paper may do both, and then it takes both rows. The same test decides whether a paper
