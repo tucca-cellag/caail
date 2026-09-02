@@ -447,10 +447,12 @@
       "method": "Genetic Algorithms",
       "area": "sensory",
       "refIds": [
-        342
+        342,
+        269
       ],
       "labels": [
-        "Androutsos et al. 2024"
+        "Androutsos et al. 2024",
+        "Charoenkwan et al. 2020"
       ]
     },
     {
@@ -1047,12 +1049,14 @@
       "refIds": [
         97,
         125,
-        93
+        93,
+        276
       ],
       "labels": [
         "Hao et al. 2025",
         "Roohani et al. 2025a",
-        "Tang et al. 2026"
+        "Tang et al. 2026",
+        "Qu et al. 2025"
       ]
     },
     {
@@ -10106,6 +10110,7 @@
       "dataUrl": null,
       "isPrimary": true,
       "methods": [
+        "Genetic Algorithms",
         "Linear & Regularized Models"
       ],
       "areas": [
@@ -10437,6 +10442,7 @@
         "Domain-Specific Biomedical Agents"
       ],
       "areas": [
+        "cell",
         "tooling"
       ],
       "hasCode": false,
