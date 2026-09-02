@@ -245,8 +245,12 @@ combinatorial spaces.
 part of what the paper reports: a formulation, a physical design, a process setting, or the fitted
 model itself. It is **not** earned when the output only configures the machinery that produced the
 reported result, which covers a search over hyperparameters, over model architecture, and over which
-preprocessing or feature-selection *technique* to apply. Both kinds are real optimisation and both are
-often described at length, so the length of the description decides nothing. What decides it is whether
+preprocessing or feature-selection *technique* to apply. **One search can satisfy both descriptions**,
+since optimising a model's architecture also produces a fitted model; where it does, the row follows
+what the paper puts forward as its own contribution, so a paper whose stated result is the optimised
+model earns it and a paper that tunes a model in order to report something else does not. Both kinds
+are real optimisation and both are often described at length, so the length of the description decides
+nothing. What decides it is whether
 the answer the search returned is one the paper makes a claim about.
 
 A feature subset can itself be a finding, since "these are the variables that matter" is a claim about

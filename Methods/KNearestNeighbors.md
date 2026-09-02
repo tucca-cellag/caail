@@ -15,7 +15,7 @@ That overlap is the useful signal rather than noise. A paper in this row has, by
 
 ## Scaffolding
 
-- [#216](../Papers.md#216) (Golbabaei et al. 2024, *RSC Advances*): k-nearest neighbors among the models compared for predicting electrospun-scaffold morphology from processing parameters and polymer chemistry. Described in [Deep Learning](./DeepLearning.md), where the SMILES encoding that lets the model generalize to an unseen polymer is set out; also in [Ensemble Learning](./EnsembleLearning.md).
+- [#216](../Papers.md#216) (Golbabaei et al. 2024, *RSC Advances*): the k-nearest-neighbors regressor is the model this paper *deploys* for its second target, fibre conductivity, and it is chosen on a stated argument rather than on a leaderboard position. The correlations for that target are semi-linear, and the methods reason that a non-parametric model "can be either linear or non-linear based on the fed data" and so has the flexibility to fit them, concluding that "the KNN regressor was selected here as the best machine learning model". The row is earned by that selection, not by KNN having been among the entrants. Described in [Deep Learning](./DeepLearning.md), where the SMILES encoding and the deep model chosen for the first target are set out; also in [Ensemble Learning](./EnsembleLearning.md).
 
 ## Sensory Prediction
 
