@@ -240,6 +240,35 @@ test.describe('Connect your agent', () => {
    * check that the class toggled: the class toggle was always correct. Only the geometry
    * was wrong, and only after interaction.
    */
+  /**
+   * The value and its copy button share an optical centre.
+   *
+   * Two children of different intrinsic heights: one line of 12px mono is 1.2rem, the copy
+   * button is 1.6rem. The button sets the well's height, so without an explicit floor the
+   * text pins to the top and sits ~3px high. Starlight adds a second, quieter way to break
+   * it: `.sl-markdown-content code { margin-block: -0.125rem }` shifts the code -2px unless
+   * `starlight-overrides.css` cancels it, and that override entry reads as removable to
+   * anyone who has not measured it. Both failures are a few pixels, invisible in a
+   * screenshot review, and neither is caught by anything else here.
+   */
+  test('a one-line value is centred against its copy button', async ({ page }) => {
+    await page.goto('./');
+    const panel = page.locator('.gs .panel:not([hidden])');
+    const code = panel.locator('.val code');
+    const btn = panel.locator('.val .copy');
+    await expect(code).toBeVisible();
+    const c = await code.boundingBox();
+    const b = await btn.boundingBox();
+    // Single-line only: a wrapped value legitimately grows past the button, and the button
+    // is meant to stay at the top of the block there rather than drift to its middle.
+    expect(Math.round(c!.height), 'default panel value is not one line').toBeLessThan(30);
+    const drift = Math.abs((c!.y + c!.height / 2) - (b!.y + b!.height / 2));
+    expect(
+      drift,
+      `value and copy button are ${drift.toFixed(1)}px out of alignment`,
+    ).toBeLessThanOrEqual(1);
+  });
+
   test('the copy button does not change size when clicked', async ({ page, context }) => {
     await context.grantPermissions(['clipboard-read', 'clipboard-write']);
     await page.goto('./');

@@ -48,10 +48,18 @@ Do not ask the user to tell you. Determine it, then confirm what you are about t
 | Cursor, Windsurf, Cline, Zed or similar IDE agent | **IDE agent** | Path B |
 | Browser assistant with no shell | **No shell** | Path C |
 
-**Check Claude Science first**, because it is the row a shell test gets wrong. It has a
-shell and a filesystem, so an agent that reaches for `claude --version` and then falls
-through to Path B will write a project rules file that Claude Science never reads, and
-report an install that did not happen.
+**Check Claude Science first, and note it is the one row with no shell test.** Every other
+row here is settled by looking at the machine. This one is settled by knowing what you are:
+if you are running inside Claude Science you have been told so in your own context, and if
+you are not certain that you are, then you are not. Inventing a probe would be worse than
+saying that plainly, so this row says it.
+
+**If you are in Claude Science, do not run the `claude --version` test below.** It is not a
+safe no-op there. Claude Science has a shell and a filesystem, so the test can succeed, and
+a success routes you to Path A, whose two commands then run the Claude Code CLI happily and
+install into Claude Code's plugin config: a product Claude Science never reads. You would
+report a successful install of something that is not there. Falling through to Path B is
+the same failure with a project rules file instead.
 
 Otherwise, if a shell is available, `claude --version` settles Path A. If it fails or the
 command does not exist, you are not in Claude Code — go to Path B.
