@@ -229,6 +229,31 @@ export type DatasetEntry = z.infer<typeof DatasetEntrySchema>;
 export type DatasetsData = z.infer<typeof DatasetsDataSchema>;
 
 /**
+ * A field report — a recurring institutional state-of-field survey (GFI State of the
+ * Industry, the Rethink Priorities landscape report), folded from the committed
+ * `reports` NDJSON (CAAIL-363). The T1 SKELETON shape: content + topic refs only. The
+ * series/recency fields (`seriesSlug`, `editionLabel`, derived `current`/`supersededBy`)
+ * are CAAIL-364 and land here additively.
+ */
+export const ReportSchema = z.object({
+  /** frozen report: id, e.g. "report:gfi-state-of-the-industry" */
+  id: z.string(),
+  /** display name — the H3 link text, or the heading text when unlinked */
+  title: z.string(),
+  /** canonical report home (the H3 link target); null for an unlinked heading */
+  url: z.string().nullable(),
+  /** two-tier subject tags, folded in from the committed topic NDJSON */
+  topics: z.array(TopicRefSchema).default([]),
+});
+
+/** Schema for reports.json — the field-report records folded from the reports NDJSON. */
+export const ReportsDataSchema = z.object({
+  reports: z.array(ReportSchema),
+});
+export type Report = z.infer<typeof ReportSchema>;
+export type ReportsData = z.infer<typeof ReportsDataSchema>;
+
+/**
  * One `## Complete data inventory` row — a per-study deposit (accession, tissue, assay,
  * size), as opposed to the curated `### …` entries above.
  *

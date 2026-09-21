@@ -160,6 +160,57 @@ export function emitCatalogFile(db: Db, srcPath: string, type: 'software' | 'dat
   return out.join('\n\n') + '\n';
 }
 
+// --- FieldReports.md -------------------------------------------------------
+
+/**
+ * Regenerate the DB-owned H3 entries of `FieldReports.md` from the `reports` table,
+ * splicing every narrative block (H1, intro, `## …` sections, `> Note` prose) through
+ * verbatim (CAAIL-363). Link-headed like the catalog, so entries use stored `heading_md`
+ * (raw H3, GNPS fidelity lesson) + `body_md`; the splice is POSITIONAL like
+ * `emitDatasetPage` — the Nth source H3 ↔ the Nth DB report, both document-ordered.
+ *
+ * The count assert up front (source H3 count == DB report count) is the drift guard: a
+ * stale source vs an edited DB would otherwise zip the wrong entry under a heading or
+ * crash on an undefined index. Fail loud and actionable instead (the same fail-fast shape
+ * as emitDatasetPage's), so the curator reconciles rather than shipping a mis-slice.
+ */
+export function emitReportsFile(db: Db, srcPath: string): string {
+  const src = readFileSync(srcPath, 'utf-8');
+  const blocks = parseMarkdown(src).children as any[];
+  const sliceOf = (b: any) => src.slice(b.position.start.offset, b.position.end.offset);
+  // Every H3 is a report entry — mirrors extractReports exactly (linked or not), so the
+  // emit and extract notions of "an entry" cannot drift apart.
+  const isEntry = (b: any) => b.type === 'heading' && b.depth === 3;
+  const entries = db.prepare('SELECT heading_md,body_md FROM reports ORDER BY ordinal').all() as
+    { heading_md: string; body_md: string }[];
+
+  const srcEntries = blocks.filter(isEntry).length;
+  if (srcEntries !== entries.length) {
+    throw new Error(
+      `emitReportsFile: source has ${srcEntries} report ### entr(ies) but the DB has ` +
+        `${entries.length}. Re-seed or reconcile the DB and FieldReports.md.`,
+    );
+  }
+
+  const out: string[] = [];
+  let entryIdx = 0;
+  for (let i = 0; i < blocks.length; ) {
+    const b = blocks[i];
+    if (isEntry(b)) {
+      const e = entries[entryIdx++]; // the count assert guarantees this is defined
+      out.push(`### ${e.heading_md}` + (e.body_md ? `\n\n${e.body_md}` : ''));
+      i++;
+      // Skip the DB-owned body blocks up to the next heading at or above the entry depth
+      // (H1/H2/H3) — a deeper H4+ is part of THIS entry's body_md (extract captures it), so
+      // stopping at any heading would re-emit that slice on the next turn (double-emit).
+      while (i < blocks.length && !(blocks[i].type === 'heading' && blocks[i].depth <= 3)) i++;
+      continue;
+    }
+    out.push(sliceOf(b)); i++;
+  }
+  return out.join('\n\n') + '\n';
+}
+
 // --- Datasets/<page>.md ----------------------------------------------------
 
 /**

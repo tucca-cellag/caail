@@ -18,7 +18,7 @@ import { INVENTORY_PAGES, REFERENCE_PAGES, BENCHMARKS_PAGE } from '../parser/dat
 import { REPO_ROOT, SITE_ROOT, assignId, frozenSlug, type Db } from './lib.js';
 import {
   extractCatalogEntries, extractInventory, extractMatrixHeaders, extractPaperBlockquotes,
-  extractDatasetEntries, type CatalogRaw,
+  extractDatasetEntries, extractReports, type CatalogRaw, type ReportRaw,
 } from './extract.js';
 
 // --- papers ----------------------------------------------------------------
@@ -81,6 +81,30 @@ export function seedCatalog(db: Db, entries: CatalogRaw[], type: 'software' | 'd
     insItem.run(id, type, id.slice(prefix.length + 1));
     insCat.run(id, e.name, e.url, e.group, e.headingMd, e.bodyMd, i);
   });
+}
+
+// --- field reports ---------------------------------------------------------
+
+/**
+ * Seed the `FieldReports.md` H3 entries as first-class `report:` records (CAAIL-363).
+ * Modeled on `seedCatalog`: assign a collision-free frozen `report:` slug once, register
+ * the item, store the verbatim `heading_md` + `body_md` in document order. The `report:`
+ * namespace is exclusive to reports, so a local `seen` set is enough (no cross-table
+ * sharing as the `ds:` namespace needs). The skeleton stores content only — no topic tag,
+ * no series/license/doi — matching the T1 scope. Returns the entry count.
+ */
+export function seedReports(db: Db, entries: ReportRaw[]): number {
+  const insItem = db.prepare('INSERT OR IGNORE INTO items(id,type,slug) VALUES(?,?,?)');
+  const insReport = db.prepare(
+    'INSERT INTO reports(item_id,title,url,heading_md,body_md,ordinal) VALUES(?,?,?,?,?,?)',
+  );
+  const seen = new Set<string>();
+  entries.forEach((e, i) => {
+    const id = assignId(seen, frozenSlug(e.name, 'report'));
+    insItem.run(id, 'report', id.slice('report:'.length));
+    insReport.run(id, e.name, e.url, e.headingMd, e.bodyMd, i);
+  });
+  return entries.length;
 }
 
 // --- dataset inventory rows ------------------------------------------------

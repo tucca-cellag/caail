@@ -40,7 +40,7 @@ const SUBSERIES_PATH = join(SITE_ROOT, 'scripts', 'db', 'subseries.json');
 export interface CheckResult { label: string; ok: boolean; detail: string; }
 const ok = (label: string, cond: boolean, detail = ''): CheckResult => ({ label, ok: cond, detail });
 
-const PREFIX: Record<string, string> = { paper: 'paper', software: 'sw', database: 'db', dataset: 'ds', topic: 'topic' };
+const PREFIX: Record<string, string> = { paper: 'paper', software: 'sw', database: 'db', dataset: 'ds', report: 'report', topic: 'topic' };
 
 export function checkIntegrity(db: Db): CheckResult[] {
   const out: CheckResult[] = [];
@@ -54,7 +54,7 @@ export function checkIntegrity(db: Db): CheckResult[] {
 
   const detailType: Array<[string, string | null]> = [
     ['papers', 'paper'], ['catalog', null],
-    ['dataset_rows', 'dataset'], ['dataset_entries', 'dataset'], ['topics', 'topic'],
+    ['dataset_rows', 'dataset'], ['dataset_entries', 'dataset'], ['reports', 'report'], ['topics', 'topic'],
   ];
   for (const [table, type] of detailType) {
     const orphan = db.prepare(

@@ -195,6 +195,46 @@ export function extractDatasetEntries(path: string): DatasetEntryRaw[] {
   return out;
 }
 
+export interface ReportRaw {
+  name: string;              // inline text of the H3 link, or the heading text when unlinked
+  url: string | null;        // H3 link target; null for an unlinked heading
+  headingMd: string;         // full H3 heading source after '### '
+  bodyMd: string;            // raw body markdown after the H3, up to the next heading
+}
+
+/**
+ * Every H3 field-report entry in `FieldReports.md`, in document order, with its raw body
+ * markdown (offset-sliced). The field-reports skeleton (CAAIL-363): a flat file of H3
+ * entries, so unlike `extractCatalogEntries` there is no enclosing H2 group to track, and
+ * unlike it the heading link is OPTIONAL (`url: null` for a bare heading, matching
+ * `extractDatasetEntries`). Every H3 is an entry — `emitReportsFile` mirrors that exactly,
+ * so the extract and emit notions of "an entry" cannot drift apart.
+ */
+export function extractReports(path: string): ReportRaw[] {
+  const src = readFileSync(path, 'utf-8');
+  const kids = parseMarkdown(src).children as any[];
+  const out: ReportRaw[] = [];
+  for (let i = 0; i < kids.length; i++) {
+    const n = kids[i];
+    if (n.type !== 'heading' || n.depth !== 3) continue;
+    const link = (n.children as any[]).find((c) => c.type === 'link');
+    let s: number | null = null, e = 0;
+    // An entry ends at the next H2/H3; a deeper H4+ is body content (mirrors extractCatalogEntries).
+    for (let j = i + 1; j < kids.length; j++) {
+      if (kids[j].type === 'heading' && (kids[j] as any).depth <= 3) break;
+      if (s === null) s = kids[j].position.start.offset;
+      e = kids[j].position.end.offset;
+    }
+    out.push({
+      name: (link ? (link.children ?? []).map(inlineMd).join('') : inlineMd(n)).trim(),
+      url: link ? link.url : null,
+      headingMd: (n.children as any[]).map(inlineMd).join('').trim(),
+      bodyMd: s === null ? '' : src.slice(s, e),
+    });
+  }
+  return out;
+}
+
 export interface Inventory { header: string[]; rows: string[][]; }
 
 /** A page's `## Complete data inventory` GFM table as markdown cell rows. */

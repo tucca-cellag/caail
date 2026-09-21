@@ -33,6 +33,12 @@ describe('block-generated-edits hook', () => {
   it('DENIES a whole-file Write to Software.md', () => {
     expect(decide({ tool_name: 'Write', tool_input: { file_path: P('Software.md'), content: '# x' } })).toBe('deny');
   });
+  it('DENIES editing a field-report H3 entry in FieldReports.md (structured)', () => {
+    expect(decide({ tool_name: 'Edit', tool_input: { file_path: P('FieldReports.md'), old_string: '### [GFI State of the Industry](u)', new_string: '### [GFI](u)' } })).toBe('deny');
+  });
+  it('ALLOWS a prose-only edit in FieldReports.md', () => {
+    expect(decide({ tool_name: 'Edit', tool_input: { file_path: P('FieldReports.md'), old_string: 'Recurring institutional surveys', new_string: 'Periodic institutional surveys' } })).toBeNull();
+  });
   it('ALLOWS a prose-only edit in Papers.md', () => {
     expect(decide({ tool_name: 'Edit', tool_input: { file_path: P('Papers.md'), old_string: 'This document presents', new_string: 'This document collects' } })).toBeNull();
   });
