@@ -31,6 +31,7 @@ import { buildMetricsModel } from './metrics.js';
 import { buildRecentModel } from './recent.js';
 import { buildTopicsModel, unresolvedTopicItems, catalogJoinKey } from './topics.js';
 import { buildDatasetsModel } from './datasets-entries.js';
+import { buildReportsModel } from './reports.js';
 import { buildDatasetInventory } from './dataset-inventory.js';
 import { writeLlmsFull } from './llms-full.js';
 import { buildAgentApi, writeAgentApi, publishSkillDoc } from './agent-api.js';
@@ -48,6 +49,7 @@ import {
   CorrectionFormSchema,
   TopicsDataSchema,
   DatasetsDataSchema,
+  ReportsDataSchema,
   type Counts,
 } from './types.js';
 
@@ -204,6 +206,11 @@ export function generateData(
   // appearance as linkable items in the /topics/ hub.
   const datasets = buildDatasetsModel();
 
+  // Field-report records (GFI State of the Industry, the RP landscape report) folded from
+  // the committed reports NDJSON (CAAIL-363). Content + topics only in this skeleton; the
+  // series/recency projection and the agent endpoint land in CAAIL-364 / T5.
+  const reports = buildReportsModel();
+
   // The `## Complete data inventory` rows — the per-study deposits. Built for the agent
   // API only, NOT folded into `datasets` above: three Preact islands import the site's
   // datasets.json, so these would be shipped to the browser for nothing.
@@ -228,6 +235,7 @@ export function generateData(
   CorrectionFormSchema.parse(correctionForm);
   TopicsDataSchema.parse(topics);
   DatasetsDataSchema.parse(datasets);
+  ReportsDataSchema.parse(reports);
 
   // No-drift guard: the homepage counts and the catalog/talks/graph/metrics
   // artifacts derive from the same canonical files, so their tallies must agree
@@ -462,6 +470,13 @@ export function generateData(
   writeFileSync(
     join(outDir, 'datasets.json'),
     JSON.stringify(datasets, null, 2) + '\n',
+    'utf-8',
+  );
+
+  // Write reports.json (field-report records + topic refs) — CAAIL-363.
+  writeFileSync(
+    join(outDir, 'reports.json'),
+    JSON.stringify(reports, null, 2) + '\n',
     'utf-8',
   );
 

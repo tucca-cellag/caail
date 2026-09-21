@@ -6,6 +6,7 @@ on:
       - Papers.md
       - Software.md
       - Databases.md
+      - FieldReports.md
       - OtherResources.md
       - Datasets/**
       - CONTRIBUTING.md
@@ -47,6 +48,7 @@ on:
       - Papers.md
       - Software.md
       - Databases.md
+      - FieldReports.md
       - OtherResources.md
       - Datasets/**
       - CONTRIBUTING.md
@@ -143,7 +145,7 @@ jobs:
       - name: DB ↔ Markdown sync guard
         run: |
           pnpm --dir site db:emit
-          git diff --exit-code -- Papers.md Software.md Databases.md 'Datasets/*.md' \
+          git diff --exit-code -- Papers.md Software.md Databases.md FieldReports.md 'Datasets/*.md' \
             || { echo "::error::Committed Markdown is out of sync with the DB. Run 'pnpm --dir site db:emit' and commit the result."; exit 1; }
 
       - name: Agent API ↔ corpus sync guard

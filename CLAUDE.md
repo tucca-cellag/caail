@@ -118,6 +118,7 @@ Datasets/              Train-on data artifacts, organized into per-species pages
   HumanReference.md / CHOReference.md            Cross-species & biopharma reference
   Benchmarks.md        AI/ML benchmark & evaluation datasets
 Databases.md           Query/lookup resources (repositories, ontologies, directories)
+FieldReports.md        Recurring institutional field-report surveys (DB-owned; GFI State of the Industry, RP landscape)
 OtherResources.md      Editorials & opinion + non-funding ecosystem initiatives (centers, consortia)
 ReferenceWorks.md      Reference textbooks + Encyclopedia of Meat Sciences (DOI chapter index)
 AwesomeLists.md        Curated bibliographies & "awesome lists" (card page w/ GitHub metrics)

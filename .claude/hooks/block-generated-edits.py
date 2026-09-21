@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """PreToolUse guard (issue #78): the structured catalog in Papers.md / Software.md /
-Databases.md is GENERATED from the SQLite authoring DB. Direct edits to that
-structured content (matrix cells, references, catalog entries) drift from the DB and
-are clobbered on the next `db:emit`, so this blocks them and steers to the DB
-workflow. Surrounding prose is preserved verbatim by db:emit, so prose-only edits are
-allowed through; whole-file Writes are always blocked. The CI sync guard is the
-backstop — this is the fast local reminder."""
+Databases.md / FieldReports.md is GENERATED from the SQLite authoring DB. Direct edits
+to that structured content (matrix cells, references, catalog entries, field-report
+entries) drift from the DB and are clobbered on the next `db:emit`, so this blocks them
+and steers to the DB workflow. Surrounding prose is preserved verbatim by db:emit, so
+prose-only edits are allowed through; whole-file Writes are always blocked. The CI sync
+guard is the backstop — this is the fast local reminder."""
 import json
 import os
 import re
@@ -32,7 +32,7 @@ fp = re.sub(r"^.*/\.claude/worktrees/[^/]+/", "/", fp)
 # Only the repo-root generated catalog files (not site/*, docs/*, .claude/*).
 if "/site/" in fp or "/docs/" in fp or "/.claude/" in fp:
     sys.exit(0)
-if not re.search(r"(^|/)(Papers|Software|Databases)\.md$", fp):
+if not re.search(r"(^|/)(Papers|Software|Databases|FieldReports)\.md$", fp):
     sys.exit(0)
 
 MARKERS = ('<a id="', '](#', '### [')  # references, matrix/anchor links, catalog H3

@@ -19,8 +19,8 @@ import { parseCatalogFile } from '../parser/catalog.js';
 import { INVENTORY_PAGES, REFERENCE_PAGES, BENCHMARKS_PAGE } from '../parser/datasets.js';
 import { existsSync } from 'node:fs';
 import { importNdjson, REPO_ROOT, type Db } from './lib.js';
-import { extractInventory, extractDatasetEntries } from './extract.js';
-import { emitPapersFile, emitCatalogFile, emitDatasetPage } from './emit.js';
+import { extractInventory, extractDatasetEntries, extractReports } from './extract.js';
+import { emitPapersFile, emitCatalogFile, emitDatasetPage, emitReportsFile } from './emit.js';
 
 let failures = 0;
 function check(label: string, cond: boolean, detail = ''): void {
@@ -87,6 +87,18 @@ function verifyDatasets(db: Db): void {
   check(`all ${seen} dataset pages: ${entryTotal} curated entries round-trip identically`, entOk === seen, `${entOk}/${seen} ok`);
 }
 
+function verifyReports(db: Db): void {
+  console.log('\n── FieldReports.md round-trip (entries identical) ──');
+  const src = join(REPO_ROOT, 'FieldReports.md');
+  if (!existsSync(src)) { check('FieldReports.md present', false, `${src} missing`); return; }
+  const original = extractReports(src);
+  const regenPath = join(TMP, 'FieldReports.md');
+  writeFileSync(regenPath, emitReportsFile(db, src));
+  const regen = extractReports(regenPath);
+  const a = JSON.stringify(original), b = JSON.stringify(regen);
+  check(`FieldReports.md entries identical (name/url/heading/body, ${original.length} entries)`, a === b, firstDiff(a, b));
+}
+
 function main(): void {
   console.log(`CAAIL DB round-trip verify — tmp: ${TMP}`);
   const db = importNdjson();
@@ -94,6 +106,7 @@ function main(): void {
   verifyCatalog(db, 'software', 'Software.md');
   verifyCatalog(db, 'database', 'Databases.md');
   verifyDatasets(db);
+  verifyReports(db);
   console.log(`\n${failures === 0 ? '✓ all round-trip checks passed' : `✗ ${failures} check(s) FAILED`}`);
   if (failures) process.exitCode = 1;
 }

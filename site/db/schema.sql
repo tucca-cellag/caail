@@ -19,8 +19,8 @@ PRAGMA foreign_keys = ON;
 
 -- Universal item registry (class-table-inheritance parent) --------------------
 CREATE TABLE items (
-  id    TEXT PRIMARY KEY,   -- namespaced frozen slug: 'paper:249','sw:alphafold','db:geo','ds:cattlegtex','topic:metabolic-modeling'
-  type  TEXT NOT NULL CHECK (type IN ('paper','software','database','dataset','topic')),
+  id    TEXT PRIMARY KEY,   -- namespaced frozen slug: 'paper:249','sw:alphafold','db:geo','ds:cattlegtex','report:gfi-state-of-the-industry','topic:metabolic-modeling'
+  type  TEXT NOT NULL CHECK (type IN ('paper','software','database','dataset','report','topic')),
   slug  TEXT NOT NULL       -- local part (numeric string for papers)
 );
 
@@ -142,6 +142,27 @@ CREATE TABLE dataset_entries (
   doi_source     TEXT CHECK (doi_source IN ('auto','manual')),
   related_dois   TEXT,                 -- JSON array of sibling version DOIs (bare) summed into the badge; NULL = none (#102)
   ordinal    INTEGER NOT NULL          -- document order across all dataset pages
+);
+
+-- Field reports — recurring institutional state-of-field surveys (GFI State of the
+-- Industry, the Rethink Priorities landscape report) promoted to first-class, queryable
+-- records (CAAIL-363). Catalog-shaped and link-headed like `dataset_entries`: `heading_md`
+-- is the full raw H3 source after '### ' (emitted verbatim, GNPS fidelity lesson) and
+-- `body_md` the entry body; `title`/`url` are the parsed link (or heading text) for the id
+-- and tally, and `url` is nullable (matching dataset_entries) for a future unlinked heading.
+--
+-- This is the T1 SKELETON (CAAIL-363): it proves the DB -> FieldReports.md -> reports.json
+-- pipeline with one record and DELIBERATELY carries no series/recency model. The
+-- `series_slug` / `edition_*` columns and the derived `current` / `supersededBy` flags are
+-- CAAIL-364 (T2); the `license` / `doi` side axes are a later slice. Adding them is an
+-- additive column migration, not a rework of this table.
+CREATE TABLE reports (
+  item_id    TEXT PRIMARY KEY REFERENCES items(id),
+  title      TEXT NOT NULL,            -- inline markdown of the H3 link text (id/tally)
+  url        TEXT,                     -- canonical report home; NULL for an unlinked heading
+  heading_md TEXT NOT NULL,            -- full H3 heading source after '### '
+  body_md    TEXT NOT NULL,            -- raw entry body
+  ordinal    INTEGER NOT NULL          -- document order (stable emit)
 );
 
 -- Topic vocabulary — two-tier: a fixed backbone of `theme`s + earned fine `tag`s.

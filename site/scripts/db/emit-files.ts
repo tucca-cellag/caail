@@ -14,7 +14,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { INVENTORY_PAGES, REFERENCE_PAGES, BENCHMARKS_PAGE } from '../parser/datasets.js';
 import { importNdjson, REPO_ROOT, type Db } from './lib.js';
-import { emitPapersFile, emitCatalogFile, emitDatasetPage } from './emit.js';
+import { emitPapersFile, emitCatalogFile, emitDatasetPage, emitReportsFile } from './emit.js';
 import { extractInventory, extractDatasetEntries } from './extract.js';
 
 /**
@@ -34,6 +34,14 @@ export function emitAll(db: Db, root: string = REPO_ROOT): string[] {
     { rel: 'Software.md', text: emitCatalogFile(db, join(root, 'Software.md'), 'software') },
     { rel: 'Databases.md', text: emitCatalogFile(db, join(root, 'Databases.md'), 'database') },
   ];
+  // FieldReports.md is a single DB-owned file at the repo root (CAAIL-363). Guarded by
+  // existsSync — like the dataset pages, not unconditional like the three above — so an
+  // early repo state (or a checkout predating the file) degrades gracefully instead of
+  // throwing on a missing source; once committed it is always present and always emitted.
+  const reportsSrc = join(root, 'FieldReports.md');
+  if (existsSync(reportsSrc)) {
+    files.push({ rel: 'FieldReports.md', text: emitReportsFile(db, reportsSrc) });
+  }
   // A dataset page is DB-owned if it has an inventory table OR curated `### …` entries —
   // so reference pages (no inventory, entries only) are emitted too. Mirror seed.ts's
   // ENTRY_PAGES exactly (incl. BENCHMARKS_PAGE) so a page that ever gains H3 entries can't

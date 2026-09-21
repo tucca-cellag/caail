@@ -4,7 +4,8 @@
  * WHY THE FROZEN ITEM ID IS THE WHOLE POINT
  * -----------------------------------------
  * CAAIL assigns every catalogued item a namespaced id (`paper:214`, `sw:cellpose`,
- * `db:string`, `ds:chickengtex-portal`) once, and never changes it. A correction
+ * `db:string`, `ds:chickengtex-portal`, `report:gfi-state-of-the-industry`) once, and
+ * never changes it. A correction
  * carrying that id drops straight into the `caail-db-authoring` flow; a correction
  * carrying a page URL and a description is a search task before it is a fix. So the
  * id travels through every route offered here — the prefilled GitHub issue, the
@@ -65,12 +66,12 @@ export const CORRECTION_EMAIL = 'benjamin.bromberg@tufts.edu';
 /**
  * The frozen-id grammar.
  *
- * `paper:` ids are positive integers (public anchors people bookmark). The other three
+ * `paper:` ids are positive integers (public anchors people bookmark). The other four
  * namespaces are slugs over `[a-z0-9-]`, opening on an alphanumeric. The 120-char body
  * bound clears the longest committed id (101 chars) with room to spare while keeping a
  * hostile `?item=` from reaching a URL or the DOM at any length worth worrying about.
  */
-const ITEM_ID_RE = /^(?:paper:[1-9][0-9]{0,6}|(?:sw|db|ds):[a-z0-9][a-z0-9-]{0,119})$/;
+const ITEM_ID_RE = /^(?:paper:[1-9][0-9]{0,6}|(?:sw|db|ds|report):[a-z0-9][a-z0-9-]{0,119})$/;
 
 /** True when `value` is a well-formed frozen item id. The gate on every untrusted `?item=`. */
 export function isItemId(value: unknown): value is string {

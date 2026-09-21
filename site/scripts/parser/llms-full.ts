@@ -53,6 +53,7 @@ export function llmsFullSources(repoRoot: string = REPO_ROOT): string[] {
     'Papers.md',
     'Software.md',
     'Databases.md',
+    'FieldReports.md',
     ...dirMarkdown(repoRoot, 'Datasets'),
     ...dirMarkdown(repoRoot, 'ResearchAreas'),
     ...dirMarkdown(repoRoot, 'Methods'),
