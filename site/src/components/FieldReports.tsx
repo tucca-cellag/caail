@@ -8,7 +8,7 @@ import { reportGroups, editionAnchor } from '../lib/report-groups';
  * FieldReports — the field-report card page (FieldReports.md → reports.json).
  *
  * A first-class, series-aware view of the recurring institutional state-of-field
- * surveys (GFI State of the Industry, the Rethink Priorities landscape report).
+ * surveys that track cellular agriculture and alternative proteins as a sector.
  * Mirrors the AwesomeLists / CatalogBrowser card pattern: one `<section>` per
  * series with a shared-slug heading id (so the right-rail TOC anchors match),
  * and one card per edition.

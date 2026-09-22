@@ -81,7 +81,13 @@ function seriesLabel(current: ReportRecord): string {
  * also cannot collide the way a slugified label could.
  */
 function seriesAnchor(current: ReportRecord): string {
-  return current.seriesSlug ? groupSlug(current.seriesSlug) : editionAnchor(current.id);
+  const base = current.seriesSlug ? groupSlug(current.seriesSlug) : editionAnchor(current.id);
+  // Namespace the series heading anchor with `series-` so it can never collide
+  // with an edition CARD anchor (editionAnchor → "report-…"). For a one-off
+  // (seriesSlug null) the series and its sole card both derive from the same
+  // frozen id, so without this prefix the <h2> and the <article> would share a
+  // DOM id and fail the axe duplicate-id check.
+  return `series-${base}`;
 }
 
 /**
