@@ -732,8 +732,15 @@
 {"id":"paper:97","type":"paper","slug":"97"}
 {"id":"paper:98","type":"paper","slug":"98"}
 {"id":"paper:99","type":"paper","slug":"99"}
-{"id":"report:gfi-state-of-the-industry-2024","type":"report","slug":"gfi-state-of-the-industry-2024"}
-{"id":"report:gfi-state-of-the-industry-2026","type":"report","slug":"gfi-state-of-the-industry-2026"}
+{"id":"report:gfi-state-of-global-policy-2024","type":"report","slug":"gfi-state-of-global-policy-2024"}
+{"id":"report:gfi-state-of-global-policy-2026","type":"report","slug":"gfi-state-of-global-policy-2026"}
+{"id":"report:gfi-state-of-the-industry-cultivated-meat-2024","type":"report","slug":"gfi-state-of-the-industry-cultivated-meat-2024"}
+{"id":"report:gfi-state-of-the-industry-cultivated-meat-2026","type":"report","slug":"gfi-state-of-the-industry-cultivated-meat-2026"}
+{"id":"report:gfi-state-of-the-industry-fermentation-2024","type":"report","slug":"gfi-state-of-the-industry-fermentation-2024"}
+{"id":"report:gfi-state-of-the-industry-fermentation-2026","type":"report","slug":"gfi-state-of-the-industry-fermentation-2026"}
+{"id":"report:gfi-state-of-the-industry-plant-based-2024","type":"report","slug":"gfi-state-of-the-industry-plant-based-2024"}
+{"id":"report:gfi-state-of-the-industry-plant-based-2026","type":"report","slug":"gfi-state-of-the-industry-plant-based-2026"}
+{"id":"report:rethink-priorities-ai-and-cultivated-meat-2026","type":"report","slug":"rethink-priorities-ai-and-cultivated-meat-2026"}
 {"id":"sw:ablang","type":"software","slug":"ablang"}
 {"id":"sw:adipoq","type":"software","slug":"adipoq"}
 {"id":"sw:ai-research-skills-library","type":"software","slug":"ai-research-skills-library"}
