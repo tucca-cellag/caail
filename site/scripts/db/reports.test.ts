@@ -125,16 +125,29 @@ describe('checkSeries edition_sort precision (CAAIL-373)', () => {
     expect(res.detail).toMatch(/series 'example-series': edition_sort mixes precisions \(2026, 2026-03-01\)/);
   });
 
-  it('fails a YYYY / YYYY-MM mix too, and does not also report a tie on it', () => {
-    const [res] = checkSeries(seriesDb(['2025', '2026-06', '2026-06']));
-    expect(res.ok).toBe(false);
-    expect(res.detail).toMatch(/mixes precisions/);
-    expect(res.detail).not.toMatch(/tie at the latest/);
+  it('fails a YYYY / YYYY-MM mix, and a YYYY-MM / YYYY-MM-DD mix', () => {
+    expect(checkSeries(seriesDb(['2025', '2026-06']))[0].detail).toMatch(/mixes precisions \(2025, 2026-06\)/);
+    // '2026-06' < '2026-06-01' < '2026-07' by prefix: the same misorder one precision down.
+    expect(checkSeries(seriesDb(['2026-06', '2026-06-01']))[0].detail).toMatch(/mixes precisions \(2026-06, 2026-06-01\)/);
   });
 
-  it('passes a series that keeps one precision throughout', () => {
+  it('reports a malformed edition_sort once, not also as a precision mix', () => {
+    const [res] = checkSeries(seriesDb(['2026', '2026-6']));
+    expect(res.ok).toBe(false);
+    expect(res.detail).toMatch(/edition_sort '2026-6' is not a valid YYYY, YYYY-MM or YYYY-MM-DD date/);
+    expect(res.detail).not.toMatch(/mixes precisions/);
+  });
+
+  it('rejects shape-valid but impossible dates, which would otherwise sort as latest', () => {
+    for (const bad of ['2026-13', '2026-00', '2026-02-30', '2025-02-29', '2026-04-31']) {
+      expect(checkSeries(seriesDb([bad]))[0].detail).toMatch(new RegExp(`'${bad}' is not a valid`));
+    }
+  });
+
+  it('passes a series that keeps one precision throughout, leap day included', () => {
     expect(checkSeries(seriesDb(['2026-03-01', '2026-11-01'])).every((c) => c.ok)).toBe(true);
     expect(checkSeries(seriesDb(['2024-05', '2025-05'])).every((c) => c.ok)).toBe(true);
+    expect(checkSeries(seriesDb(['2023-02-28', '2024-02-29'])).every((c) => c.ok)).toBe(true);
   });
 
   it('does not compare a one-off against a series: differing precision across them is fine', () => {

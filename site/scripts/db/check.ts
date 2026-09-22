@@ -30,6 +30,7 @@ import { THEME_SLUGS, THEMES, FINE_TAGS } from './seed.js';
 import { buildTaxonomyModel } from '../parser/taxonomy.js';
 import { AREAS } from '../parser/areas.js';
 import { MATRIX_SECTION } from '../parser/types.js';
+import { seriesRecency } from '../parser/reports.js';
 import type { TaxonomyData } from '../parser/types.js';
 
 const MANUAL_LICENSES_PATH = join(SITE_ROOT, 'scripts', 'db', 'licenses-manual.json');
@@ -578,51 +579,19 @@ export function checkFineTagSeedDrift(db: Db): CheckResult[] {
 /**
  * Field-report series/recency guard (CAAIL-364), the reports analog of checkSubseries.
  *
- * The parser DERIVES `current`/`supersededBy` from max(edition_sort) per `series_slug`, so
- * the derivation is only well-defined if (a) every report has a non-empty `edition_sort` that
- * is a YYYY, YYYY-MM or YYYY-MM-DD; (b) every edition of one series uses the SAME one of those
- * three precisions; and (c) the latest edition of each series is unique, so exactly one
- * edition derives `current`.
- *
- * (b) is what makes string comparison chronological (CAAIL-373). Within one precision the
- * strings sort by date; across precisions they do not, because '2026' < '2026-03-01' purely
- * as a prefix. Normalising would not rescue it: a bare year has no position relative to a date
- * inside that year, so any padding ('-01-01' or '-12-31') invents an order the source never
- * stated and is wrong for some publisher. A mixed series therefore has no well-defined latest,
- * and the fix is a curator giving the whole series one precision, not a rule guessing.
- *
- * A tie at the maximum edition_sort would silently make two editions current and leave the
- * "grab the latest" guarantee ambiguous. All three fail the build here rather than at parse.
- * A one-off (`series_slug IS NULL`) is its own latest and imposes no series constraint.
+ * The parser DERIVES `current`/`supersededBy` from max(edition_sort) per `series_slug`, and
+ * that derivation is only well-defined under the rules `seriesRecency` (parser/reports.ts)
+ * states and checks: a valid date, one precision per series, no tie at the max. This lists the
+ * same problems `deriveReports` would throw on, by calling the same function, so a curator sees
+ * them at db:check with the rest of the integrity report rather than as a parse abort, and the
+ * check and the derivation cannot disagree. It adds the one rule the derivation does not need:
+ * a non-empty edition_label.
  */
 export function checkSeries(db: Db): CheckResult[] {
   const rows = db.prepare('SELECT item_id, series_slug, edition_label, edition_sort FROM reports').all() as
     { item_id: string; series_slug: string | null; edition_label: string; edition_sort: string }[];
-  const SORT_RE = /^\d{4}(-\d{2}(-\d{2})?)?$/; // YYYY, YYYY-MM, or YYYY-MM-DD
-  const problems: string[] = [];
-  const sortsBySeries = new Map<string, Map<string, string[]>>(); // series -> edition_sort -> ids
-  for (const r of rows) {
-    if (!r.edition_label.trim()) problems.push(`${r.item_id}: empty edition_label`);
-    if (!SORT_RE.test(r.edition_sort)) problems.push(`${r.item_id}: edition_sort '${r.edition_sort}' is not a YYYY or ISO date`);
-    if (r.series_slug !== null) {
-      const m = sortsBySeries.get(r.series_slug) ?? sortsBySeries.set(r.series_slug, new Map()).get(r.series_slug)!;
-      (m.get(r.edition_sort) ?? m.set(r.edition_sort, []).get(r.edition_sort)!).push(r.item_id);
-    }
-  }
-  for (const [series, m] of sortsBySeries) {
-    // Once SORT_RE holds, length alone names the precision: 4 = YYYY, 7 = YYYY-MM, 10 = YYYY-MM-DD.
-    const precisions = new Set([...m.keys()].map((s) => s.length));
-    if (precisions.size > 1) {
-      problems.push(`series '${series}': edition_sort mixes precisions (${[...m.keys()].sort().join(', ')}); ` +
-        'give every edition of a series the same YYYY, YYYY-MM or YYYY-MM-DD form, or "latest" is decided by string prefix, not date');
-      continue; // the max below is meaningless for a mixed series, so don't report a tie on it too
-    }
-    const maxSort = [...m.keys()].sort().at(-1)!;
-    const atMax = m.get(maxSort)!;
-    if (atMax.length > 1) {
-      problems.push(`series '${series}': ${atMax.length} editions tie at the latest edition_sort ${maxSort} (${atMax.join(', ')}); exactly one may be current`);
-    }
-  }
+  const problems = rows.filter((r) => !r.edition_label.trim()).map((r) => `${r.item_id}: empty edition_label`);
+  problems.push(...seriesRecency(rows).problems);
   return [ok('reports series: edition label/sort present + comparable, exactly one current per series',
     problems.length === 0, problems.slice(0, 3).join('; '))];
 }

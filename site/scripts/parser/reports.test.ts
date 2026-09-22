@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { buildReportsModel, deriveReports, type ReportRow } from './reports.js';
+import { buildReportsModel, deriveReports, isEditionSort, seriesRecency, type ReportRow } from './reports.js';
 import { ReportsDataSchema, type Report } from './types.js';
 
 const NO_TOPICS = new Map<string, Report['topics']>();
@@ -78,5 +78,37 @@ describe('deriveReports recency model', () => {
     const out = deriveReports([row('r:mar', 's', '2026-03-01'), row('r:nov', 's', '2026-11-01')], NO_TOPICS);
     expect(out.find((r) => r.id === 'r:nov')!.current).toBe(true);
     expect(out.find((r) => r.id === 'r:mar')!.current).toBe(false);
+  });
+
+  // CAAIL-373: the parser is the guard every build passes through (pnpm parse runs no db:check),
+  // so each case that would otherwise publish a guessed `current` must abort it instead.
+  it('throws on a series mixing precisions rather than picking by string prefix', () => {
+    expect(() => deriveReports([row('r:year', 's', '2026'), row('r:mar', 's', '2026-03-01')], NO_TOPICS))
+      .toThrow(/series 's': edition_sort mixes precisions \(2026, 2026-03-01\)/);
+  });
+
+  it('throws on a tie at the latest edition_sort', () => {
+    expect(() => deriveReports([row('r:a', 's', '2026'), row('r:b', 's', '2026')], NO_TOPICS))
+      .toThrow(/2 editions tie at the latest edition_sort 2026/);
+  });
+
+  it('throws on an impossible date, in a series or a one-off', () => {
+    expect(() => deriveReports([row('r:a', 's', '2026-12'), row('r:b', 's', '2026-13')], NO_TOPICS))
+      .toThrow(/'2026-13' is not a valid/);
+    expect(() => deriveReports([row('r:oneoff', null, '2026-02-30')], NO_TOPICS)).toThrow(/'2026-02-30' is not a valid/);
+  });
+});
+
+describe('seriesRecency (the shared definition of latest)', () => {
+  it('orders editions oldest to newest and names the single latest', () => {
+    const { bySeries, problems } = seriesRecency([row('r:b', 's', '2025'), row('r:a', 's', '2024'), row('r:c', 's', '2026')]);
+    expect(problems).toEqual([]);
+    expect(bySeries.get('s')).toEqual({ editions: ['r:a', 'r:b', 'r:c'], latest: ['r:c'] });
+  });
+
+  it('isEditionSort accepts the three forms and checks the calendar', () => {
+    for (const ok of ['2026', '2026-01', '2026-12', '2026-01-31', '2024-02-29']) expect(isEditionSort(ok)).toBe(true);
+    for (const bad of ['26', '2026-1', '2026-00', '2026-13', '2025-02-29', '2026-04-31', '2026-01-00', 'TBD', ' 2026'])
+      expect(isEditionSort(bad)).toBe(false);
   });
 });

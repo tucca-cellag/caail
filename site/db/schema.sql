@@ -158,7 +158,7 @@ CREATE TABLE dataset_entries (
 -- Series / edition (T2): a report line that recurs annually is one SERIES with many
 -- EDITIONS. `series_slug` groups the editions; it is NULL for a one-off. `edition_label`
 -- is the human label ("2026") and `edition_sort` the sortable key that defines "latest"
--- (a YYYY or an ISO date). Unlike license/doi these are INTRINSIC CONTENT, stored AND
+-- (a YYYY, YYYY-MM or YYYY-MM-DD, one form per series). Unlike license/doi these are INTRINSIC CONTENT, stored AND
 -- emitted into the Markdown (the H2 series section + an italic edition line), so a verbatim
 -- reader of llms-full.txt sees the grouping too — a DB-only side axis would reach
 -- reports.json but be invisible there. The derived `current` / `supersededBy` /

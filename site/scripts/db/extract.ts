@@ -211,7 +211,8 @@ export interface ReportRaw {
  * published <sort>.*`. It is INTRINSIC CONTENT — stored and re-emitted verbatim as part of
  * `body_md`, so a verbatim reader of llms-full.txt sees the edition too (a DB-only side
  * axis would reach reports.json but be invisible there). `<sort>` is the sortable latest-key
- * (a YYYY or an ISO date); `<label>` is the human label. Parsed strictly so a malformed line
+ * (a YYYY, YYYY-MM or YYYY-MM-DD, one form per series; see `seriesRecency`); `<label>` is the
+ * human label. Parsed strictly so a malformed line
  * fails loudly at seed time rather than silently minting a report with no edition.
  */
 export const EDITION_LINE_RE = /\*Edition\s+(?<label>.+?),\s+published\s+(?<sort>.+?)\.\*/;
