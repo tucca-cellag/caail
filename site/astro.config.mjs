@@ -254,6 +254,7 @@ export default defineConfig({
         { label: 'Licenses', link: '/licenses/' },
         { label: 'Citations', link: '/citations/' },
         { label: 'Awesome Lists', link: '/awesome-lists/' },
+        { label: 'Field Reports', link: '/field-reports/' },
         { label: 'AI Agents & Foundation Models', link: '/ai-agents-foundation-models/' },
         { label: 'Datasets (by species)', items: groupItems('datasets') },
         { label: 'Research Areas', items: groupItems('research-areas') },

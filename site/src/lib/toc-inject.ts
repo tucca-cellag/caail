@@ -18,6 +18,7 @@
  */
 import { catalogGroups, type CatalogKind } from './catalog-groups';
 import { awesomeGroups } from './awesome-groups';
+import { reportSections } from './report-groups';
 import { talkSections } from './talk-sections';
 import { primerSections } from './primer-sections';
 
@@ -56,6 +57,9 @@ export function islandTocItems(path: string, overview: TocItem): TocItem[] | nul
   }
   if (path.endsWith('/awesome-lists')) {
     return [overview, ...awesomeGroups().map((g) => section(g.slug, g.label))];
+  }
+  if (path.endsWith('/field-reports')) {
+    return [overview, ...reportSections().map((s) => section(s.slug, s.label))];
   }
   const primerMatch = path.match(/\/primers\/([^/]+)$/);
   if (primerMatch) {
