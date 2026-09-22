@@ -151,18 +151,29 @@ CREATE TABLE dataset_entries (
 -- `body_md` the entry body; `title`/`url` are the parsed link (or heading text) for the id
 -- and tally, and `url` is nullable (matching dataset_entries) for a future unlinked heading.
 --
--- This is the T1 SKELETON (CAAIL-363): it proves the DB -> FieldReports.md -> reports.json
--- pipeline with one record and DELIBERATELY carries no series/recency model. The
--- `series_slug` / `edition_*` columns and the derived `current` / `supersededBy` flags are
--- CAAIL-364 (T2); the `license` / `doi` side axes are a later slice. Adding them is an
--- additive column migration, not a rework of this table.
+-- CAAIL-363 (T1) shipped the skeleton: the DB -> FieldReports.md -> reports.json pipeline
+-- with content columns only. CAAIL-364 (T2) adds the series/recency model below. The
+-- `license` / `doi` side axes remain a later slice.
+--
+-- Series / edition (T2): a report line that recurs annually is one SERIES with many
+-- EDITIONS. `series_slug` groups the editions; it is NULL for a one-off. `edition_label`
+-- is the human label ("2026") and `edition_sort` the sortable key that defines "latest"
+-- (a YYYY or an ISO date). Unlike license/doi these are INTRINSIC CONTENT, stored AND
+-- emitted into the Markdown (the H2 series section + an italic edition line), so a verbatim
+-- reader of llms-full.txt sees the grouping too — a DB-only side axis would reach
+-- reports.json but be invisible there. The derived `current` / `supersededBy` /
+-- `seriesEditions` are NOT stored: the parser computes them from max(edition_sort) per
+-- series, so next year's edition self-demotes this year's with zero stored-flag edits.
 CREATE TABLE reports (
-  item_id    TEXT PRIMARY KEY REFERENCES items(id),
-  title      TEXT NOT NULL,            -- inline markdown of the H3 link text (id/tally)
-  url        TEXT,                     -- canonical report home; NULL for an unlinked heading
-  heading_md TEXT NOT NULL,            -- full H3 heading source after '### '
-  body_md    TEXT NOT NULL,            -- raw entry body
-  ordinal    INTEGER NOT NULL          -- document order (stable emit)
+  item_id       TEXT PRIMARY KEY REFERENCES items(id),
+  title         TEXT NOT NULL,         -- inline markdown of the H3 link text (id/tally)
+  url           TEXT,                  -- canonical report home; NULL for an unlinked heading
+  series_slug   TEXT,                  -- groups editions of one recurring line; NULL = one-off
+  edition_label TEXT NOT NULL,         -- human edition label, e.g. '2026'
+  edition_sort  TEXT NOT NULL,         -- sortable latest-key (YYYY or ISO date); max wins
+  heading_md    TEXT NOT NULL,         -- full H3 heading source after '### '
+  body_md       TEXT NOT NULL,         -- raw entry body (incl. the emitted italic edition line)
+  ordinal       INTEGER NOT NULL       -- document order (stable emit)
 );
 
 -- Topic vocabulary — two-tier: a fixed backbone of `theme`s + earned fine `tag`s.

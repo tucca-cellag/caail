@@ -96,7 +96,7 @@ function verifyReports(db: Db): void {
   writeFileSync(regenPath, emitReportsFile(db, src));
   const regen = extractReports(regenPath);
   const a = JSON.stringify(original), b = JSON.stringify(regen);
-  check(`FieldReports.md entries identical (name/url/heading/body, ${original.length} entries)`, a === b, firstDiff(a, b));
+  check(`FieldReports.md entries identical (name/url/series/edition/heading/body, ${original.length} entries)`, a === b, firstDiff(a, b));
 }
 
 function main(): void {

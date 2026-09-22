@@ -19,9 +19,54 @@ import { topicsByItemId } from './topics.js';
 
 const NDJSON_DIR = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'db', 'ndjson');
 
-interface ReportRow {
+export interface ReportRow {
   item_id: string; title: string; url: string | null;
+  series_slug: string | null; edition_label: string; edition_sort: string;
   heading_md: string; body_md: string; ordinal: number;
+}
+
+/**
+ * Derive the reports.json model from raw report rows (CAAIL-364). Pure and exported so the
+ * recency logic is unit-testable with arbitrary editions. Within a series (`series_slug`),
+ * the edition with the greatest `edition_sort` is `current`; the rest carry `supersededBy` =
+ * the current edition's id. `edition_sort` is a YYYY or an ISO date, both of which sort
+ * correctly as strings. A one-off (`series_slug === null`) is its own latest. Deriving from
+ * max() rather than storing a flag is what makes next year's edition self-demote this year's
+ * with zero edits; `checkSeries` guards that exactly one edition per series is current.
+ */
+export function deriveReports(rows: ReportRow[], topicsById: Map<string, Report['topics']>): Report[] {
+  const maxSort = new Map<string, string>();
+  const editions = new Map<string, ReportRow[]>();
+  for (const r of rows) {
+    if (r.series_slug === null) continue;
+    const cur = maxSort.get(r.series_slug);
+    if (cur === undefined || r.edition_sort > cur) maxSort.set(r.series_slug, r.edition_sort);
+    (editions.get(r.series_slug) ?? editions.set(r.series_slug, []).get(r.series_slug)!).push(r);
+  }
+  const currentId = new Map<string, string>();
+  for (const [series, list] of editions) {
+    list.sort((a, b) => (a.edition_sort < b.edition_sort ? -1 : a.edition_sort > b.edition_sort ? 1 : 0));
+    // The edition at the series max is current. A tie would set two; checkSeries fails the build first.
+    const top = list.find((r) => r.edition_sort === maxSort.get(series));
+    if (top) currentId.set(series, top.item_id);
+  }
+
+  return rows.map((r) => {
+    const isCurrent = r.series_slug === null || r.edition_sort === maxSort.get(r.series_slug);
+    return {
+      id: r.item_id,
+      title: r.title,
+      url: r.url,
+      seriesSlug: r.series_slug,
+      editionLabel: r.edition_label,
+      current: isCurrent,
+      supersededBy: isCurrent ? null : (currentId.get(r.series_slug as string) ?? null),
+      seriesEditions: r.series_slug === null
+        ? [r.item_id]
+        : (editions.get(r.series_slug) ?? []).map((e) => e.item_id),
+      topics: topicsById.get(r.item_id) ?? [],
+    };
+  });
 }
 
 /** Build the reports.json model from the committed reports NDJSON, in document order. */
@@ -29,14 +74,5 @@ export function buildReportsModel(): ReportsData {
   const path = join(NDJSON_DIR, 'reports.ndjson');
   const text = existsSync(path) ? readFileSync(path, 'utf-8').trim() : '';
   const rows = text ? text.split('\n').map((l) => JSON.parse(l) as ReportRow) : [];
-  const byId = topicsByItemId();
-
-  const reports: Report[] = rows.map((r) => ({
-    id: r.item_id,
-    title: r.title,
-    url: r.url,
-    topics: byId.get(r.item_id) ?? [],
-  }));
-
-  return ReportsDataSchema.parse({ reports });
+  return ReportsDataSchema.parse({ reports: deriveReports(rows, topicsByItemId()) });
 }

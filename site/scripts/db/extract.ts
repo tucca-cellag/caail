@@ -8,6 +8,7 @@
 import { readFileSync } from 'node:fs';
 import { parseMarkdown, sectionsAfter } from '../parser/markdown.js';
 import { entryHeadingDepth, isEntryHeading, pageFromPath } from '../parser/datasets.js';
+import { slugify } from './lib.js';
 import type { Table, TableRow, TableCell } from 'mdast';
 
 /**
@@ -196,26 +197,43 @@ export function extractDatasetEntries(path: string): DatasetEntryRaw[] {
 }
 
 export interface ReportRaw {
-  name: string;              // inline text of the H3 link, or the heading text when unlinked
-  url: string | null;        // H3 link target; null for an unlinked heading
-  headingMd: string;         // full H3 heading source after '### '
-  bodyMd: string;            // raw body markdown after the H3, up to the next heading
+  name: string;               // inline text of the H3 link, or the heading text when unlinked
+  url: string | null;         // H3 link target; null for an unlinked heading
+  seriesSlug: string | null;  // slug of the enclosing H2 series section; null for a top-level one-off
+  editionLabel: string;       // human edition label, e.g. '2026' (from the italic edition line)
+  editionSort: string;        // sortable latest-key (YYYY or ISO date); max wins within a series
+  headingMd: string;          // full H3 heading source after '### '
+  bodyMd: string;             // raw body markdown after the H3 (INCLUDES the italic edition line)
 }
 
 /**
- * Every H3 field-report entry in `FieldReports.md`, in document order, with its raw body
- * markdown (offset-sliced). The field-reports skeleton (CAAIL-363): a flat file of H3
- * entries, so unlike `extractCatalogEntries` there is no enclosing H2 group to track, and
- * unlike it the heading link is OPTIONAL (`url: null` for a bare heading, matching
- * `extractDatasetEntries`). Every H3 is an entry — `emitReportsFile` mirrors that exactly,
- * so the extract and emit notions of "an entry" cannot drift apart.
+ * The italic edition line every report body leads with (CAAIL-364): `*Edition <label>,
+ * published <sort>.*`. It is INTRINSIC CONTENT — stored and re-emitted verbatim as part of
+ * `body_md`, so a verbatim reader of llms-full.txt sees the edition too (a DB-only side
+ * axis would reach reports.json but be invisible there). `<sort>` is the sortable latest-key
+ * (a YYYY or an ISO date); `<label>` is the human label. Parsed strictly so a malformed line
+ * fails loudly at seed time rather than silently minting a report with no edition.
+ */
+export const EDITION_LINE_RE = /\*Edition\s+(?<label>.+?),\s+published\s+(?<sort>.+?)\.\*/;
+
+/**
+ * Every H3 field-report entry in `FieldReports.md`, in document order, with its series and
+ * edition (CAAIL-364). A recurring report line is one SERIES (an `## H2` section) with many
+ * EDITIONS (the `### H3`s under it); a top-level H3 with no enclosing H2 is a one-off
+ * (`seriesSlug: null`). The heading link is OPTIONAL (`url: null`), matching
+ * `extractDatasetEntries`. Every H3 is an entry — `emitReportsFile` passes H2 headings
+ * through and re-emits each H3's `body_md` (which carries the edition line), so the extract
+ * and emit notions of "an entry" cannot drift apart.
  */
 export function extractReports(path: string): ReportRaw[] {
   const src = readFileSync(path, 'utf-8');
   const kids = parseMarkdown(src).children as any[];
   const out: ReportRaw[] = [];
+  let seriesSlug: string | null = null;
   for (let i = 0; i < kids.length; i++) {
     const n = kids[i];
+    // An H2 opens a series section; `flat` (plain text) because the slug is derived from it.
+    if (n.type === 'heading' && n.depth === 2) { seriesSlug = slugify(flat(n).trim()) || null; continue; }
     if (n.type !== 'heading' || n.depth !== 3) continue;
     const link = (n.children as any[]).find((c) => c.type === 'link');
     let s: number | null = null, e = 0;
@@ -225,11 +243,22 @@ export function extractReports(path: string): ReportRaw[] {
       if (s === null) s = kids[j].position.start.offset;
       e = kids[j].position.end.offset;
     }
+    const bodyMd = s === null ? '' : src.slice(s, e);
+    const m = EDITION_LINE_RE.exec(bodyMd);
+    if (!m?.groups) {
+      throw new Error(
+        `extractReports: the report "${(link ? (link.children ?? []).map(inlineMd).join('') : inlineMd(n)).trim()}" ` +
+          `in ${path} has no "*Edition <label>, published <sort>.*" line. Every report entry must lead its body with one.`,
+      );
+    }
     out.push({
       name: (link ? (link.children ?? []).map(inlineMd).join('') : inlineMd(n)).trim(),
       url: link ? link.url : null,
+      seriesSlug,
+      editionLabel: m.groups.label.trim(),
+      editionSort: m.groups.sort.trim(),
       headingMd: (n.children as any[]).map(inlineMd).join('').trim(),
-      bodyMd: s === null ? '' : src.slice(s, e),
+      bodyMd,
     });
   }
   return out;
