@@ -12,8 +12,8 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { openDb, importNdjson, type Db } from './lib.js';
-import { checkIntegrity, checkReachability, checkColumnDrift, checkTaxonomyAxes, checkTopicTiers, checkAxisBijection, checkCatalogHeadings, checkLicenses, checkManualLicenseKeys, checkDois, checkManualDoiKeys, checkRelatedDois, checkSubseries, checkRowTagParity, runChecks } from './check.js';
-import { THEME_SLUGS } from './seed.js';
+import { checkIntegrity, checkReachability, checkColumnDrift, checkTaxonomyAxes, checkTopicTiers, checkAxisBijection, checkCatalogHeadings, checkLicenses, checkManualLicenseKeys, checkDois, checkManualDoiKeys, checkRelatedDois, checkSubseries, checkRowTagParity, checkFineTagSeedDrift, runChecks } from './check.js';
+import { THEME_SLUGS, FINE_TAGS } from './seed.js';
 
 const failing = (results: { label: string; ok: boolean }[], match: RegExp) =>
   results.some((r) => match.test(r.label) && !r.ok);
@@ -714,6 +714,26 @@ describe('checkCatalogHeadings', () => {
 // ---------------------------------------------------------------------------
 // B. Integration — the real committed DB passes every guard
 // ---------------------------------------------------------------------------
+
+describe('checkFineTagSeedDrift (CAAIL-371)', () => {
+  it('passes on the committed corpus (seed.ts FINE_TAGS == committed topics)', () => {
+    expect(checkFineTagSeedDrift(importNdjson()).every((r) => r.ok)).toBe(true);
+  });
+  it('bites when a seeded fine tag label drifts from seed.ts in the committed DB', () => {
+    const db = importNdjson();
+    const f = FINE_TAGS[0];
+    db.prepare('UPDATE topics SET label=? WHERE slug=?').run(`${f.label} DRIFTED`, f.slug);
+    expect(failing(checkFineTagSeedDrift(db), /fine tags:/)).toBe(true);
+  });
+  it('bites when a seeded fine tag is missing from the committed DB', () => {
+    const db = importNdjson();
+    const f = FINE_TAGS[0];
+    // Detach the topic row (FK off so the item row can stay) to simulate a curator removing it.
+    db.exec('PRAGMA foreign_keys = OFF');
+    db.prepare('DELETE FROM topics WHERE slug=?').run(f.slug);
+    expect(failing(checkFineTagSeedDrift(db), /fine tags:/)).toBe(true);
+  });
+});
 
 describe('runChecks on the real corpus', () => {
   it('passes every guard', () => {

@@ -93,6 +93,85 @@ export function preserveCuratedItemTopics(db: Db, dir: string = NDJSON_DIR): num
   }
 }
 
+/**
+ * Preserve curator-minted TOPIC VOCABULARY across a re-bootstrap (CAAIL-371). `seedTopics`
+ * creates only the classifier backbone (THEMES + the FINE_TAGS list in seed.ts), but a curator
+ * mints FINE TAGS directly into the committed `topics.ndjson` via db:add (e.g.
+ * `comparative-study` from CAAIL-325, `cryopreservation` from CAAIL-324). Those are the source
+ * of truth once the DB exists, yet a fresh bootstrap re-derives the vocabulary from seed.ts
+ * alone, so `preserveCuratedItemTopics` then THREW: its committed item→topic tags referenced
+ * topics the re-seeded vocabulary did not contain, and bootstrap aborted before writing
+ * anything. That made db:bootstrap — the documented full-reimport tool — unrunnable.
+ *
+ * Fold the curator-minted FINE TAGS the seed lacks back in — INSERT-only. seedTopics owns the
+ * seeded tags: their attributes come from seed.ts's FINE_TAGS, so this deliberately does NOT
+ * overwrite an existing seeded tag from committed, which would silently discard a seed.ts edit
+ * on re-bootstrap (seed and committed for a SEEDED tag are expected to agree; a divergence is a
+ * seed-vs-NDJSON bug, not something to resolve silently here). Themes are likewise not folded:
+ * they are the fixed backbone, `seedTopics` creates all of them, and `db:check` asserts the
+ * theme set is exactly the seed's (checkTopicTiers) and seed == committed (the seed-drift
+ * guard) — so a committed theme the seed did NOT create must surface as a db:check failure, not
+ * be silently accepted here.
+ *
+ * Runs AFTER seedTopics (so a folded tag's parent theme exists) and BEFORE
+ * preserveCuratedItemTopics. A folded tag is validated: its parent theme must resolve to a real
+ * theme, its slug must not collide with a theme slug (a clear message, mirroring seedTopics'
+ * own guard, rather than a raw UNIQUE error), and its area_key must be null (area_key is a
+ * theme-only column). An empty/absent file folds nothing (first import). Returns the count
+ * inserted (the tags that would otherwise make the item-topic preserve throw).
+ */
+export function preserveCuratedTopics(db: Db, dir: string = NDJSON_DIR): number {
+  const path = join(dir, 'topics.ndjson');
+  if (!existsSync(path)) return 0;
+  const text = readFileSync(path, 'utf-8').trim();
+  if (!text) return 0;
+
+  interface TopicRow { item_id: string; slug: string; label: string; tier: 'theme' | 'tag'; theme_slug: string | null; area_key: string | null; }
+  const committed = text.split('\n').filter((l) => l.trim()).map((l) => JSON.parse(l) as TopicRow);
+  const tagSlugs = new Set((db.prepare("SELECT slug FROM topics WHERE tier='tag'").all() as { slug: string }[]).map((r) => r.slug));
+  const themeSlugs = new Set((db.prepare("SELECT slug FROM topics WHERE tier='theme'").all() as { slug: string }[]).map((r) => r.slug));
+  // Only tags the seed did not already create; a seeded tag stays seedTopics' (see docstring).
+  const missing = committed.filter((t) => t.tier === 'tag' && !tagSlugs.has(t.slug));
+
+  // Validate every candidate BEFORE inserting, collecting issues PER ROW so the reported count
+  // is the number of bad tags, not the number of messages, and a duplicate slug within the file
+  // fails here with the offending slug rather than as a raw UNIQUE error mid-insert.
+  const badRows = new Set<string>();
+  const problems: string[] = [];
+  const seenSlugs = new Set<string>();
+  for (const t of missing) {
+    const issues: string[] = [];
+    if (seenSlugs.has(t.slug)) issues.push('duplicate fine-tag slug in topics.ndjson');
+    seenSlugs.add(t.slug);
+    if (themeSlugs.has(t.slug)) issues.push('slug collides with a theme slug');
+    if (!themeSlugs.has(t.theme_slug ?? '')) issues.push(`theme '${t.theme_slug}' is not a known theme`);
+    if (t.area_key !== null) issues.push('carries an area_key (a theme-only column)');
+    if (issues.length) { badRows.add(t.slug); problems.push(`${t.slug}: ${issues.join(', ')}`); }
+  }
+  if (badRows.size) {
+    throw new Error(
+      `preserveCuratedTopics: ${badRows.size} committed fine tag(s) are malformed or reference an ` +
+        `unknown theme (vocabulary drift?): ${problems.slice(0, 5).join(' | ')}`,
+    );
+  }
+
+  db.exec('SAVEPOINT preserve_topics');
+  try {
+    const insItem = db.prepare('INSERT OR IGNORE INTO items(id,type,slug) VALUES(?,?,?)');
+    const insTopic = db.prepare("INSERT INTO topics(item_id,slug,label,tier,theme_slug,area_key) VALUES(?,?,?,'tag',?,?)");
+    for (const t of missing) {
+      insItem.run(t.item_id, 'topic', t.slug);
+      insTopic.run(t.item_id, t.slug, t.label, t.theme_slug, t.area_key);
+    }
+    db.exec('RELEASE preserve_topics');
+    return missing.length;
+  } catch (e) {
+    db.exec('ROLLBACK TO preserve_topics');
+    db.exec('RELEASE preserve_topics');
+    throw e;
+  }
+}
+
 export function main(): void {
   const db = openDb(); // :memory:
 
@@ -111,7 +190,8 @@ export function main(): void {
   const reportCount = existsSync(reportsPath) ? seedReports(db, extractReports(reportsPath)) : 0;
 
   const dsCounts = seedDatasets(db);
-  const topicSummary = seedTopics(db);
+  seedTopics(db);
+  const preservedTopics = preserveCuratedTopics(db);
   const preservedTags = preserveCuratedItemTopics(db);
   const retired = preserveRetiredPaperIds(db);
   const licenseSummary = seedLicenses(db);
@@ -128,9 +208,11 @@ export function main(): void {
   console.log(`  field reports ${reportCount} entries`);
   console.log(`  datasets      ${counts.dataset_rows} inventory rows across ${Object.keys(dsCounts.rows).length} pages`);
   console.log(`  dataset entr. ${counts.dataset_entries} curated entries (atlases / GEMs / reference)`);
+  console.log(`  curated topics ${preservedTopics} minted fine tag(s) preserved from committed NDJSON`);
+  // Counts derived from the exported rows, not the pre-fold seed summary, so the printed totals
+  // match what actually landed in the NDJSON (curated tags folded in, curated item_topics preserved).
   console.log(
-    `  topics        ${topicSummary.topics} topics, ` +
-      `${preservedTags || topicSummary.tags} item-topic tags ` +
+    `  topics        ${counts.topics} topics, ${counts.item_topics} item-topic tags ` +
       `(${preservedTags ? 'curated, preserved from committed NDJSON' : 'classifier-derived — first import'})`,
   );
   console.log(`  retired ids   ${retired} paper tombstone(s) preserved`);
