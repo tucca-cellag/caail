@@ -79,6 +79,31 @@ export const PLACEMENT_NOTE =
   'that does not belong. Cite the paper itself. How this is done, and how far it reaches: ' +
   'https://tucca-cellag.github.io/caail/curation/';
 
+/** The deployed site: the origin plus astro.config.mjs's `base`, with a trailing slash. */
+export const SITE_URL = 'https://tucca-cellag.github.io/caail/';
+
+/**
+ * Make every site-relative link inside the payload's rendered HTML absolute.
+ *
+ * The parser renders catalog summaries once, for the site, where `/caail/...` is the
+ * right href. The same HTML is served here to agents that fetch the JSON off-site (or
+ * from the raw.githubusercontent mirror, where `/caail/` resolves to nothing), so a
+ * root-relative href is a link they cannot follow. Only `href="/caail/` is rewritten:
+ * the attribute form keeps plain prose and JSON paths that merely mention the base
+ * untouched.
+ */
+export function absolutizeSiteHrefs<T>(body: T): T {
+  const walk = (v: unknown): unknown => {
+    if (typeof v === 'string') return v.replaceAll('href="/caail/', `href="${SITE_URL}`);
+    if (Array.isArray(v)) return v.map(walk);
+    if (v && typeof v === 'object') {
+      return Object.fromEntries(Object.entries(v).map(([k, x]) => [k, walk(x)]));
+    }
+    return v;
+  };
+  return walk(body) as T;
+}
+
 /** Repo root, two levels above this module's directory (parser/ -> scripts/ -> site/ -> root). */
 const REPO_ROOT = fileURLToPath(new URL('../../../', import.meta.url));
 
@@ -419,7 +444,7 @@ export function buildManifest(
     status: STATUS,
     placementsUnderReview: true,
     canonical: 'https://github.com/tucca-cellag/caail',
-    site: 'https://tucca-cellag.github.io/caail/',
+    site: SITE_URL,
     license: 'MIT (CAAIL curation). Linked third-party resources keep their own licenses.',
     scopeNote: SCOPE_NOTE,
     // The machine-readable shape of every endpoint below. Named up here rather than only
@@ -540,6 +565,7 @@ export function buildAgentApi(inputs: AgentApiInputs): ApiFile[] {
   // model that changed shape fails the build rather than shipping a payload the document
   // says is impossible. This is what makes the OpenAPI file a property of the output and
   // not a claim about it.
+  for (const f of files) f.body = absolutizeSiteHrefs(f.body);
   for (const f of files) assertValid(f.name, f.body);
 
   // Emitted last, and in the same pass, so it cannot describe a set of files that was

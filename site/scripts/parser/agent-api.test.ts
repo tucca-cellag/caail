@@ -27,6 +27,8 @@ import {
   buildCatalogIndex,
   SCOPE_NOTE,
   PLACEMENT_NOTE,
+  SITE_URL,
+  absolutizeSiteHrefs,
 } from './agent-api.js';
 import { buildPapersModel } from './papers.js';
 import { buildCatalogModel } from './catalog.js';
@@ -440,6 +442,31 @@ describe('datasets.json inventory', () => {
  * then `git diff --exit-code -- site/public/api`) exists to catch — and a model-only
  * assertion would pass while the file an agent actually fetches is still wrong.
  */
+describe('site-relative hrefs in the API', () => {
+  it('absolutizes href="/caail/…" and leaves every other string alone', () => {
+    const out = absolutizeSiteHrefs({
+      html: '<a href="/caail/papers/explorer/">Papers.md</a> <a href="https://x.org/">x</a>',
+      nested: [{ s: 'see /caail/talks/ in prose' }],
+      n: 3,
+    });
+    expect(out.html).toBe(
+      `<a href="${SITE_URL}papers/explorer/">Papers.md</a> <a href="https://x.org/">x</a>`,
+    );
+    expect(out.nested[0].s).toBe('see /caail/talks/ in prose');
+    expect(out.n).toBe(3);
+  });
+
+  it('ships no root-relative href in any emitted endpoint', () => {
+    // An agent reading the JSON off-site (or from the raw mirror) cannot resolve
+    // "/caail/…"; the parser's catalog summaries carry exactly that form for the site.
+    const files = buildAgentApi({ papers, catalog, datasets, inventory, topics, taxonomy, reports, corpusDate: DATE });
+    expect(JSON.stringify(catalog)).toContain('href=\\"/caail/'); // the input really has them
+    for (const f of files) {
+      expect(JSON.stringify(f.body), f.name).not.toContain('href=\\"/caail/');
+    }
+  });
+});
+
 describe('site/public/api/datasets.json (the shipped file)', () => {
   const shipped = JSON.parse(
     readFileSync(join(REPO_ROOT, 'site', 'public', 'api', 'datasets.json'), 'utf-8'),
