@@ -77,17 +77,45 @@ function seriesLabel(current: ReportRecord): string {
  * The stable series anchor id: the immutable seriesSlug for a recurring line, or
  * the one-off's frozen id. Derived from an id the DB owns, never from the mutable
  * display label, so a reworded title in a later edition leaves the anchor (and its
- * TOC link + any bookmark) unchanged. seriesSlugs are unique per series, so this
- * also cannot collide the way a slugified label could.
+ * TOC link + any bookmark) unchanged.
+ *
+ * Every id is `series-<base>`. A one-off's base is `editionAnchor(id)`, which
+ * always begins `report-` (its id is `report:<slug>`); a series' base is
+ * `groupSlug(seriesSlug)`. The two are disjoint ONLY while no series slug itself
+ * slugifies to something beginning `report-`: a series `report-x` and a one-off
+ * `report:x` would both claim `series-report-x`. That case throws rather than
+ * being fixed with a new prefix, because a new prefix would move the live
+ * one-off anchor and break its bookmarks.
  */
-function seriesAnchor(current: ReportRecord): string {
-  const base = current.seriesSlug ? groupSlug(current.seriesSlug) : editionAnchor(current.id);
-  // Namespace the series heading anchor with `series-` so it can never collide
-  // with an edition CARD anchor (editionAnchor → "report-…"). For a one-off
-  // (seriesSlug null) the series and its sole card both derive from the same
-  // frozen id, so without this prefix the <h2> and the <article> would share a
-  // DOM id and fail the axe duplicate-id check.
+export function seriesAnchor(current: Pick<ReportRecord, 'id' | 'seriesSlug'>): string {
+  if (!current.seriesSlug) {
+    // A one-off: its series <h2> and its sole card derive from the same frozen
+    // id, so without the `series-` prefix they would share a DOM id and fail
+    // the axe duplicate-id check.
+    return `series-${editionAnchor(current.id)}`;
+  }
+  const base = groupSlug(current.seriesSlug);
+  if (base.startsWith('report-')) {
+    throw new Error(
+      `report-groups: seriesSlug "${current.seriesSlug}" (on ${current.id}) slugifies to "${base}", ` +
+        'which begins "report-", the namespace reserved for one-off report anchors. Rename the series slug.',
+    );
+  }
+  // `series-` also keeps the heading clear of every edition CARD anchor
+  // (editionAnchor → "report-…").
   return `series-${base}`;
+}
+
+/**
+ * Distinct seriesSlugs can still fold to one `groupSlug` (`a_b` and `a-b`), so
+ * uniqueness of the input does not make the anchors unique. Check the output.
+ */
+export function assertUniqueAnchors(groups: ReadonlyArray<Pick<ReportGroup, 'slug'>>): void {
+  const seen = new Set<string>();
+  for (const { slug } of groups) {
+    if (seen.has(slug)) throw new Error(`report-groups: duplicate series anchor "${slug}"`);
+    seen.add(slug);
+  }
 }
 
 /**
@@ -113,7 +141,7 @@ export function reportGroups(): ReportGroup[] {
     bucket.push(r);
   }
 
-  return order.map((key) => {
+  const groups = order.map((key) => {
     const members = buckets.get(key)!;
     const current = members.find((r) => r.current) ?? members[0];
     const editions = [...current.seriesEditions]
@@ -124,6 +152,8 @@ export function reportGroups(): ReportGroup[] {
     const label = seriesLabel(current);
     return { label, slug: seriesAnchor(current), editions: ordered, current };
   });
+  assertUniqueAnchors(groups);
+  return groups;
 }
 
 /** The Field Reports series, in document order, for the "On This Page" TOC. */
