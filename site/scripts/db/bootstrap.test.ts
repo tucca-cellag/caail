@@ -10,7 +10,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { openDb, type Db } from './lib.js';
-import { preserveCuratedItemTopics } from './bootstrap.js';
+import { preserveCuratedItemTopics, preserveCuratedTopics } from './bootstrap.js';
 
 /** A DB with a 2-topic vocabulary, one item, and a classifier-derived tag (→ ai). */
 function dbWith(): Db {
@@ -71,5 +71,105 @@ describe('preserveCuratedItemTopics', () => {
     writeFileSync(join(dir, 'item_topics.ndjson'), JSON.stringify({ item_id: 'sw:x', topic_id: 'topic:gone' }) + '\n');
     expect(() => preserveCuratedItemTopics(db, dir)).toThrow(/unknown item\/topic/);
     expect(tags(db)).toEqual([{ topic_id: 'topic:ai' }]); // original tag not wiped
+  });
+});
+
+/** A committed topics.ndjson: the 2 backbone themes + one curator-minted fine tag under `ai`. */
+function writeTopicsFile(dir: string, extra: object[] = []): void {
+  const rows = [
+    { item_id: 'topic:media', slug: 'media', label: 'Media', tier: 'theme', theme_slug: null, area_key: null },
+    { item_id: 'topic:ai', slug: 'ai', label: 'AI', tier: 'theme', theme_slug: null, area_key: null },
+    { item_id: 'topic:comparative-study', slug: 'comparative-study', label: 'Comparative studies', tier: 'tag', theme_slug: 'ai', area_key: null },
+    ...extra,
+  ];
+  writeFileSync(join(dir, 'topics.ndjson'), rows.map((r) => JSON.stringify(r)).join('\n') + '\n');
+}
+
+describe('preserveCuratedTopics (CAAIL-371)', () => {
+  it('folds a curator-minted fine tag the seed vocabulary lacks (verbatim: tier + parent theme)', () => {
+    const db = dbWith(); // seeds only the `media` + `ai` backbone themes
+    const dir = tmp();
+    writeTopicsFile(dir);
+    expect(preserveCuratedTopics(db, dir)).toBe(1); // only comparative-study is missing
+    const row = db.prepare("SELECT slug,tier,theme_slug FROM topics WHERE item_id='topic:comparative-study'").get();
+    expect(row).toEqual({ slug: 'comparative-study', tier: 'tag', theme_slug: 'ai' });
+  });
+
+  it('is the fix: with the vocabulary folded first, an item tag on the minted topic no longer throws', () => {
+    // The exact bug — a committed item_topics tag references a curator-minted topic the seed
+    // vocabulary omits, so preserveCuratedItemTopics threw and aborted the whole bootstrap.
+    const db = dbWith();
+    const dir = tmp();
+    writeTopicsFile(dir);
+    writeFileSync(join(dir, 'item_topics.ndjson'), JSON.stringify({ item_id: 'sw:x', topic_id: 'topic:comparative-study' }) + '\n');
+    expect(() => preserveCuratedItemTopics(db, dir)).toThrow(/unknown item\/topic/); // before the fold: throws
+    preserveCuratedTopics(db, dir); // the fix
+    expect(() => preserveCuratedItemTopics(db, dir)).not.toThrow(); // after: resolves
+    expect(tagsOf(db, 'sw:x')).toEqual([{ topic_id: 'topic:comparative-study' }]);
+  });
+
+  it('does not duplicate a topic the seed already created', () => {
+    const db = dbWith();
+    const dir = tmp();
+    writeTopicsFile(dir);
+    preserveCuratedTopics(db, dir);
+    const n = (db.prepare("SELECT COUNT(*) c FROM topics WHERE slug='ai'").get() as { c: number }).c;
+    expect(n).toBe(1); // the `ai` theme was already seeded, not re-inserted
+  });
+
+  it('folds nothing on a first import (no committed topics file)', () => {
+    expect(preserveCuratedTopics(dbWith(), tmp())).toBe(0);
+  });
+
+  it('does NOT overwrite a seeded tag from committed (a seed.ts edit is not silently discarded)', () => {
+    // A tag the seed already created, present in committed with a DRIFTED label. Insert-only means
+    // the seeded row is left as seedTopics wrote it — committed does not win for a seeded tag.
+    const db = dbWith();
+    db.prepare("INSERT INTO items(id,type,slug) VALUES('topic:seeded-tag','topic','seeded-tag')").run();
+    db.prepare("INSERT INTO topics(item_id,slug,label,tier,theme_slug,area_key) VALUES('topic:seeded-tag','seeded-tag','Seed label','tag','ai',NULL)").run();
+    const dir = tmp();
+    writeTopicsFile(dir, [{ item_id: 'topic:seeded-tag', slug: 'seeded-tag', label: 'DRIFTED label', tier: 'tag', theme_slug: 'ai', area_key: null }]);
+    expect(preserveCuratedTopics(db, dir)).toBe(1); // only comparative-study inserted; seeded-tag skipped
+    const row = db.prepare("SELECT label FROM topics WHERE slug='seeded-tag'").get() as { label: string };
+    expect(row.label).toBe('Seed label'); // NOT overwritten by the committed drift
+  });
+
+  it('throws on a genuinely orphaned tag (parent theme in NEITHER seed nor committed)', () => {
+    const db = dbWith();
+    const dir = tmp();
+    writeTopicsFile(dir, [{ item_id: 'topic:orphan', slug: 'orphan', label: 'Orphan', tier: 'tag', theme_slug: 'ghost', area_key: null }]);
+    expect(() => preserveCuratedTopics(db, dir)).toThrow(/not a known theme/);
+  });
+
+  it('throws on a fine tag carrying an area_key (a theme-only column)', () => {
+    const db = dbWith();
+    const dir = tmp();
+    writeTopicsFile(dir, [{ item_id: 'topic:withareakey', slug: 'withareakey', label: 'X', tier: 'tag', theme_slug: 'ai', area_key: 'media' }]);
+    expect(() => preserveCuratedTopics(db, dir)).toThrow(/carries an area_key/);
+  });
+
+  it('throws a clear message (not a raw UNIQUE error) when a tag slug collides with a theme slug', () => {
+    const db = dbWith();
+    const dir = tmp();
+    writeTopicsFile(dir, [{ item_id: 'topic:ai', slug: 'ai', label: 'AI (as a tag)', tier: 'tag', theme_slug: 'media', area_key: null }]);
+    expect(() => preserveCuratedTopics(db, dir)).toThrow(/collides with a theme slug/);
+  });
+
+  it('throws a clear message on a duplicate fine-tag slug (not a raw UNIQUE error mid-insert)', () => {
+    const db = dbWith();
+    const dir = tmp();
+    writeTopicsFile(dir, [
+      { item_id: 'topic:dup', slug: 'dup', label: 'Dup A', tier: 'tag', theme_slug: 'ai', area_key: null },
+      { item_id: 'topic:dup-2', slug: 'dup', label: 'Dup B', tier: 'tag', theme_slug: 'ai', area_key: null },
+    ]);
+    expect(() => preserveCuratedTopics(db, dir)).toThrow(/duplicate fine-tag slug/);
+  });
+
+  it('counts bad ROWS, not messages: one row with two issues reports as 1 bad tag', () => {
+    const db = dbWith();
+    const dir = tmp();
+    // A single row that both collides with a theme slug AND names an unknown theme → two issues.
+    writeTopicsFile(dir, [{ item_id: 'topic:ai', slug: 'ai', label: 'X', tier: 'tag', theme_slug: 'ghost', area_key: null }]);
+    expect(() => preserveCuratedTopics(db, dir)).toThrow(/1 committed fine tag\(s\)/);
   });
 });

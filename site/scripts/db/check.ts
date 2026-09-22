@@ -26,7 +26,7 @@ import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { importNdjson, ACCESSION_EXACT, idAccession, REPO_ROOT, SITE_ROOT, type Db } from './lib.js';
-import { THEME_SLUGS, THEMES } from './seed.js';
+import { THEME_SLUGS, THEMES, FINE_TAGS } from './seed.js';
 import { buildTaxonomyModel } from '../parser/taxonomy.js';
 import { AREAS } from '../parser/areas.js';
 import { MATRIX_SECTION } from '../parser/types.js';
@@ -558,6 +558,34 @@ export function checkSubseries(db: Db, subseriesPath: string = SUBSERIES_PATH): 
  * "grab the latest" guarantee ambiguous, so it fails the build here rather than at parse.
  * A one-off (`series_slug IS NULL`) is its own latest and imposes no series constraint.
  */
+/**
+ * Fine-tag seed-drift guard (CAAIL-371), the fine-tag analog of the THEMES seed-drift check.
+ *
+ * `preserveCuratedTopics` folds a curator-minted fine tag the seed lacks but deliberately does
+ * NOT overwrite a SEEDED tag from committed, so on re-bootstrap a seeded tag's attributes come
+ * from seed.ts's FINE_TAGS. That is only safe if seed.ts and the committed topics.ndjson AGREE
+ * for every seeded tag: otherwise a divergence is resolved silently (seed wins on bootstrap),
+ * which is the hand-typed-fact-silently-discarded class the repo flags. Themes already have this
+ * guard; fine tags did not until now. Assert every seed FINE_TAG resolves to a committed topic
+ * with the same label + parent theme (and no area_key, a theme-only column), so a drift fails
+ * db:check loudly and a curator reconciles seed.ts and the NDJSON rather than one quietly winning.
+ */
+export function checkFineTagSeedDrift(db: Db): CheckResult[] {
+  const rows = db.prepare("SELECT slug,label,theme_slug,area_key FROM topics WHERE tier='tag'").all() as
+    { slug: string; label: string; theme_slug: string | null; area_key: string | null }[];
+  const bySlug = new Map(rows.map((r) => [r.slug, r]));
+  const problems: string[] = [];
+  for (const f of FINE_TAGS) {
+    const row = bySlug.get(f.slug);
+    if (!row) { problems.push(`${f.slug}: in seed.ts FINE_TAGS but absent from committed topics.ndjson`); continue; }
+    if (row.label !== f.label) problems.push(`${f.slug}: label '${row.label}' != seed '${f.label}'`);
+    if (row.theme_slug !== f.theme) problems.push(`${f.slug}: theme '${row.theme_slug}' != seed '${f.theme}'`);
+    if (row.area_key !== null) problems.push(`${f.slug}: has area_key '${row.area_key}' (fine tags carry none)`);
+  }
+  return [ok('fine tags: every seed.ts FINE_TAG matches its committed topic (label + parent theme)',
+    problems.length === 0, problems.slice(0, 3).join('; '))];
+}
+
 export function checkSeries(db: Db): CheckResult[] {
   const rows = db.prepare('SELECT item_id, series_slug, edition_label, edition_sort FROM reports').all() as
     { item_id: string; series_slug: string | null; edition_label: string; edition_sort: string }[];
@@ -818,7 +846,7 @@ export function runChecks(db: Db, repoRoot: string = REPO_ROOT): CheckResult[] {
     ...checkTopicTiers(db), ...checkAxisBijection(db, repoRoot),
     ...checkCatalogHeadings(db), ...checkLicenses(db), ...checkManualLicenseKeys(db),
     ...checkDois(db), ...checkManualDoiKeys(db), ...checkRelatedDois(db), ...checkSubseries(db),
-    ...checkSeries(db), ...checkRowTagParity(db)];
+    ...checkSeries(db), ...checkFineTagSeedDrift(db), ...checkRowTagParity(db)];
 }
 
 function main(): void {

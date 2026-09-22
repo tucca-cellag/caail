@@ -193,7 +193,7 @@ export const THEMES: Theme[] = [
 ];
 
 /** Earned fine tags (initial seed; slugs are DISJOINT from every theme slug). */
-const FINE_TAGS: FineTag[] = [
+export const FINE_TAGS: FineTag[] = [
   { slug: 'serum-free-media', label: 'Serum-free media', theme: 'media-growth-factors', kw: /serum[- ]?free|serum/i },
   { slug: 'media-optimization', label: 'Media optimization', theme: 'media-growth-factors', kw: /media optim|formulation|design of experiment|\bdoe\b/i },
   { slug: 'growth-factors', label: 'Growth factors', theme: 'media-growth-factors', kw: /growth[- ]?factor|cytokine|recombinant protein/i },
