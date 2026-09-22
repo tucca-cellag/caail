@@ -2,6 +2,7 @@ import type { Root } from 'mdast';
 import { visit } from 'unist-util-visit';
 import { posix } from 'node:path';
 import { CAAIL_PAGES } from '../../src/content/caail-pages.ts';
+import { DEDICATED_ROUTES } from '../../src/content/dedicated-routes.ts';
 
 const GITHUB_BLOB_BASE = 'https://github.com/tucca-cellag/caail/blob/main';
 
@@ -11,6 +12,11 @@ const GITHUB_BLOB_BASE = 'https://github.com/tucca-cellag/caail/blob/main';
  *
  * - A link whose target is a rendered M2 page (present in `CAAIL_PAGES`) becomes
  *   the site route `${base}/<id>/` (any cross-file `#anchor` is dropped).
+ * - A link with NO `#anchor` to a file served at a dedicated route (a card or
+ *   island page in `DEDICATED_ROUTES`, e.g. `./FieldReports.md`) becomes that
+ *   route. An anchored one keeps its GitHub blob URL instead: those pages mint
+ *   their own anchors, so `Papers.md#50` or `Software.md#causalbench` would
+ *   land at the top of the on-site page, and the blob still deep-links.
  * - Any other internal `.md` target (deferred pages, missing files) becomes a
  *   GitHub blob URL `${GITHUB_BLOB_BASE}/<repo-relative-path><#anchor>`.
  * - External (`http(s):`, `mailto:`, protocol-relative `//`) and intra-page
@@ -35,8 +41,11 @@ export function rewriteCaailLinks(options: { base: string; sourcePath: string })
       const repoRel = posix.normalize(posix.join(srcDir, path)).replace(/^\.\//, '');
       const idBase = repoRel.replace(/\.md$/i, '');
       const id = CAAIL_PAGES.idForSourcePath(idBase);
+      const dedicated = anchor ? undefined : DEDICATED_ROUTES[repoRel];
       if (CAAIL_PAGES.byId(id)) {
         node.url = `${base}/${id}/`;
+      } else if (dedicated) {
+        node.url = `${base}${dedicated}`;
       } else {
         node.url = `${GITHUB_BLOB_BASE}/${repoRel}${anchor ? '#' + anchor : ''}`;
       }

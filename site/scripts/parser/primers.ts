@@ -27,6 +27,7 @@ import { parseFile, sectionsAfter } from './markdown.js';
 import { itemFromListItem, sectionIntro } from './media.js';
 import { PrimersSchema, type PrimerItem, type Primers } from './types.js';
 import { CAAIL_PAGES } from '../../src/content/caail-pages.ts';
+import { DEDICATED_ROUTES } from '../../src/content/dedicated-routes.ts';
 
 /** Repo root: parser → scripts → site → repo (three levels up). */
 const REPO_ROOT: string = fileURLToPath(new URL('../../../', import.meta.url));
@@ -40,21 +41,6 @@ const PRIMER_SOURCES: ReadonlyArray<{ slug: string; file: string }> = [
   { slug: 'cell-ag', file: 'Primers/CellAg.md' },
   { slug: 'ai', file: 'Primers/AI.md' },
 ];
-
-/**
- * Repo-root Markdown files that map to dedicated site routes rather than to a
- * canonical-prose page in CAAIL_PAGES (those are handled via idForSourcePath).
- */
-const SPECIAL_ROUTES: Record<string, string> = {
-  'README.md': '/',
-  'Papers.md': '/papers/explorer/',
-  'Software.md': '/software/',
-  'Databases.md': '/databases/',
-  'Talks.md': '/talks/',
-  'AwesomeLists.md': '/awesome-lists/',
-  'Primers/CellAg.md': '/primers/cell-ag/',
-  'Primers/AI.md': '/primers/ai/',
-};
 
 /**
  * Rewrite a primer item's URL for the rendered site.
@@ -82,7 +68,7 @@ export function rewritePrimerUrl(url: string, srcDir: string): { url: string; in
   const repoRel = posix.normalize(posix.join(srcDir, path)).replace(/^\.\//, '');
   const anchorSuffix = anchor ? `#${anchor}` : '';
 
-  const special = SPECIAL_ROUTES[repoRel];
+  const special = DEDICATED_ROUTES[repoRel];
   if (special) {
     return { url: `${BASE}${special}${anchorSuffix}`, internal: true };
   }

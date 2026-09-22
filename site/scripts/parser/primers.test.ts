@@ -29,6 +29,7 @@ describe('rewritePrimerUrl', () => {
     });
     expect(rewritePrimerUrl('../Software.md', 'Primers').url).toBe('/caail/software/');
     expect(rewritePrimerUrl('../AwesomeLists.md', 'Primers').url).toBe('/caail/awesome-lists/');
+    expect(rewritePrimerUrl('../FieldReports.md', 'Primers').url).toBe('/caail/field-reports/');
     expect(rewritePrimerUrl('../Talks.md#applied-ai-ml-for-cellular-agriculture', 'Primers').url).toBe(
       '/caail/talks/#applied-ai-ml-for-cellular-agriculture',
     );
