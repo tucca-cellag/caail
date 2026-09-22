@@ -1,14 +1,16 @@
 /**
  * reports.ts — build reports.json (the field-report records: GFI State of the Industry,
  * the Rethink Priorities landscape report) from the committed `reports` NDJSON, read
- * offline like the topic and dataset-entry models (CAAIL-363). Each record is joined to
- * its topic refs (via topicsByItemId) so a future card / hub can render chips.
+ * offline like the topic and dataset-entry models (CAAIL-363). Each record carries its
+ * content, its topic refs (via topicsByItemId), and the series/recency projection that
+ * `deriveReports` computes from the stored series + edition columns (CAAIL-364).
+ *
+ * The model is consumed twice: the /field-reports/ page, and the public agent endpoint
+ * `api/reports.json`, which re-exports it field for field (agent-api.ts). So every field on
+ * ReportSchema is public, and a shape change here is an endpoint change.
  *
  * The parser READS the committed NDJSON; it never touches the DB or the canonical
  * Markdown. An absent file (no reports.ndjson) yields an empty model.
- *
- * This is the T1 SKELETON: content + topics only. The series/recency projection
- * (derived `current` / `supersededBy` / `seriesEditions`) is CAAIL-364 and folds in here.
  */
 
 import { readFileSync, existsSync } from 'node:fs';
