@@ -88,7 +88,12 @@ function seriesLabel(current: ReportRecord): string {
  * one-off anchor and break its bookmarks.
  */
 export function seriesAnchor(current: Pick<ReportRecord, 'id' | 'seriesSlug'>): string {
-  if (!current.seriesSlug) {
+  // Grouping keys on `seriesSlug ?? id`, so an empty string is a real series key
+  // that would merge every such report into one group. Only null means one-off.
+  if (current.seriesSlug === '') {
+    throw new Error(`report-groups: ${current.id} has an empty seriesSlug; use null for a one-off.`);
+  }
+  if (current.seriesSlug === null) {
     // A one-off: its series <h2> and its sole card derive from the same frozen
     // id, so without the `series-` prefix they would share a DOM id and fail
     // the axe duplicate-id check.

@@ -76,7 +76,7 @@ export default function FieldReports() {
                                   context, e.g. in a screen reader's links list
                                   (WCAG 2.4.4). It follows the visible words so the
                                   accessible name still starts with them (2.5.3). */}
-                              <span class="fr-sr"> edition of {g.label}</span>
+                              <span class="sr-only"> edition of {g.label}</span>
                             </a>
                           </>
                         )}

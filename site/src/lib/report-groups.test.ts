@@ -17,6 +17,10 @@ describe('seriesAnchor', () => {
     expect(() => seriesAnchor({ id: 'report:a', seriesSlug: 'report-x' })).toThrow(/report-/);
     expect(() => seriesAnchor({ id: 'report:a', seriesSlug: 'Report_X' })).toThrow(/report-/);
   });
+
+  it('rejects an empty series slug, which would merge unrelated reports', () => {
+    expect(() => seriesAnchor({ id: 'report:a', seriesSlug: '' })).toThrow(/empty seriesSlug/);
+  });
 });
 
 describe('assertUniqueAnchors', () => {
@@ -35,7 +39,7 @@ describe('reportGroups over the committed data', () => {
 
   it('strips the edition label from every series name', () => {
     for (const g of reportGroups()) {
-      expect(g.label, g.current.title).not.toMatch(new RegExp(`\\s${g.current.editionLabel}$`));
+      expect(g.label.endsWith(` ${g.current.editionLabel}`), g.current.title).toBe(false);
       expect(g.label.length).toBeGreaterThan(0);
     }
   });
