@@ -105,6 +105,43 @@ describe('seedReports', () => {
   });
 });
 
+describe('checkSeries edition_sort precision (CAAIL-373)', () => {
+  /** A one-off at `oneoffSort`, then a series whose editions carry `sorts` (label = sort). */
+  function seriesDb(sorts: string[], oneoffSort = '2025-06'): Db {
+    const editions = sorts.map((s, i) =>
+      `### [Example ${i}](https://example.com/${i})\n\n*Edition ${s}, published ${s}.*\n\nBody ${i}.\n`).join('\n');
+    const md = `# Field Reports\n\n### A One-Off\n\n*Edition x, published ${oneoffSort}.*\n\nOne-off.\n\n` +
+      `## Example Series\n\n${editions}`;
+    const db = openDb();
+    seedReports(db, extractReports(fixture(`precision-${sorts.join('_')}.md`, md)));
+    return db;
+  }
+
+  it('fails a series that mixes YYYY and YYYY-MM-DD, naming the series and its sorts', () => {
+    // String order puts '2026' first by prefix, so the year-only edition would lose "latest"
+    // to the March one whichever was really published later.
+    const [res] = checkSeries(seriesDb(['2026', '2026-03-01']));
+    expect(res.ok).toBe(false);
+    expect(res.detail).toMatch(/series 'example-series': edition_sort mixes precisions \(2026, 2026-03-01\)/);
+  });
+
+  it('fails a YYYY / YYYY-MM mix too, and does not also report a tie on it', () => {
+    const [res] = checkSeries(seriesDb(['2025', '2026-06', '2026-06']));
+    expect(res.ok).toBe(false);
+    expect(res.detail).toMatch(/mixes precisions/);
+    expect(res.detail).not.toMatch(/tie at the latest/);
+  });
+
+  it('passes a series that keeps one precision throughout', () => {
+    expect(checkSeries(seriesDb(['2026-03-01', '2026-11-01'])).every((c) => c.ok)).toBe(true);
+    expect(checkSeries(seriesDb(['2024-05', '2025-05'])).every((c) => c.ok)).toBe(true);
+  });
+
+  it('does not compare a one-off against a series: differing precision across them is fine', () => {
+    expect(checkSeries(seriesDb(['2024', '2026'], '2026-06-15')).every((c) => c.ok)).toBe(true);
+  });
+});
+
 describe('emitReportsFile', () => {
   it('round-trips a fixture: H2s + prose preserved, entries re-extract identically', () => {
     const src = fixture('roundtrip.md', SAMPLE);

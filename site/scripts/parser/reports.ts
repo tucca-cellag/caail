@@ -31,10 +31,13 @@ export interface ReportRow {
  * Derive the reports.json model from raw report rows (CAAIL-364). Pure and exported so the
  * recency logic is unit-testable with arbitrary editions. Within a series (`series_slug`),
  * the edition with the greatest `edition_sort` is `current`; the rest carry `supersededBy` =
- * the current edition's id. `edition_sort` is a YYYY or an ISO date, both of which sort
- * correctly as strings. A one-off (`series_slug === null`) is its own latest. Deriving from
- * max() rather than storing a flag is what makes next year's edition self-demote this year's
- * with zero edits; `checkSeries` guards that exactly one edition per series is current.
+ * the current edition's id. `edition_sort` is a YYYY, YYYY-MM or YYYY-MM-DD, compared as a
+ * string, which is chronological only while a series keeps to ONE of those precisions ('2026'
+ * sorts before '2026-03-01' by prefix alone). `checkSeries` fails db:check on a mixed series
+ * rather than this function guessing an order (CAAIL-373). A one-off (`series_slug === null`)
+ * is its own latest. Deriving from max() rather than storing a flag is what makes next year's
+ * edition self-demote this year's with zero edits; `checkSeries` guards that exactly one
+ * edition per series is current.
  */
 export function deriveReports(rows: ReportRow[], topicsById: Map<string, Report['topics']>): Report[] {
   const maxSort = new Map<string, string>();

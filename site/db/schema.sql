@@ -170,7 +170,7 @@ CREATE TABLE reports (
   url           TEXT,                  -- canonical report home; NULL for an unlinked heading
   series_slug   TEXT,                  -- groups editions of one recurring line; NULL = one-off
   edition_label TEXT NOT NULL,         -- human edition label, e.g. '2026'
-  edition_sort  TEXT NOT NULL,         -- sortable latest-key (YYYY or ISO date); max wins
+  edition_sort  TEXT NOT NULL,         -- sortable latest-key (YYYY, YYYY-MM or YYYY-MM-DD, one form per series); max wins
   heading_md    TEXT NOT NULL,         -- full H3 heading source after '### '
   body_md       TEXT NOT NULL,         -- raw entry body (incl. the emitted italic edition line)
   ordinal       INTEGER NOT NULL       -- document order (stable emit)

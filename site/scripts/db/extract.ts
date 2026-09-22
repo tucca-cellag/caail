@@ -201,7 +201,7 @@ export interface ReportRaw {
   url: string | null;         // H3 link target; null for an unlinked heading
   seriesSlug: string | null;  // slug of the enclosing H2 series section; null for a top-level one-off
   editionLabel: string;       // human edition label, e.g. '2026' (from the italic edition line)
-  editionSort: string;        // sortable latest-key (YYYY or ISO date); max wins within a series
+  editionSort: string;        // sortable latest-key (YYYY, YYYY-MM or YYYY-MM-DD, one form per series); max wins
   headingMd: string;          // full H3 heading source after '### '
   bodyMd: string;             // raw body markdown after the H3 (INCLUDES the italic edition line)
 }

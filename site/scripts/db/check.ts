@@ -548,17 +548,6 @@ export function checkSubseries(db: Db, subseriesPath: string = SUBSERIES_PATH): 
 }
 
 /**
- * Field-report series/recency guard (CAAIL-364), the reports analog of checkSubseries.
- *
- * The parser DERIVES `current`/`supersededBy` from max(edition_sort) per `series_slug`, so
- * the derivation is only well-defined if (a) every report has a non-empty, string-comparable
- * `edition_sort` — a YYYY or an ISO date, both of which sort chronologically as strings — and
- * (b) the latest edition of each series is unique, so exactly one edition derives `current`.
- * A tie at the maximum edition_sort would silently make two editions current and leave the
- * "grab the latest" guarantee ambiguous, so it fails the build here rather than at parse.
- * A one-off (`series_slug IS NULL`) is its own latest and imposes no series constraint.
- */
-/**
  * Fine-tag seed-drift guard (CAAIL-371), the fine-tag analog of the THEMES seed-drift check.
  *
  * `preserveCuratedTopics` folds a curator-minted fine tag the seed lacks but deliberately does
@@ -586,6 +575,26 @@ export function checkFineTagSeedDrift(db: Db): CheckResult[] {
     problems.length === 0, problems.slice(0, 3).join('; '))];
 }
 
+/**
+ * Field-report series/recency guard (CAAIL-364), the reports analog of checkSubseries.
+ *
+ * The parser DERIVES `current`/`supersededBy` from max(edition_sort) per `series_slug`, so
+ * the derivation is only well-defined if (a) every report has a non-empty `edition_sort` that
+ * is a YYYY, YYYY-MM or YYYY-MM-DD; (b) every edition of one series uses the SAME one of those
+ * three precisions; and (c) the latest edition of each series is unique, so exactly one
+ * edition derives `current`.
+ *
+ * (b) is what makes string comparison chronological (CAAIL-373). Within one precision the
+ * strings sort by date; across precisions they do not, because '2026' < '2026-03-01' purely
+ * as a prefix. Normalising would not rescue it: a bare year has no position relative to a date
+ * inside that year, so any padding ('-01-01' or '-12-31') invents an order the source never
+ * stated and is wrong for some publisher. A mixed series therefore has no well-defined latest,
+ * and the fix is a curator giving the whole series one precision, not a rule guessing.
+ *
+ * A tie at the maximum edition_sort would silently make two editions current and leave the
+ * "grab the latest" guarantee ambiguous. All three fail the build here rather than at parse.
+ * A one-off (`series_slug IS NULL`) is its own latest and imposes no series constraint.
+ */
 export function checkSeries(db: Db): CheckResult[] {
   const rows = db.prepare('SELECT item_id, series_slug, edition_label, edition_sort FROM reports').all() as
     { item_id: string; series_slug: string | null; edition_label: string; edition_sort: string }[];
@@ -601,6 +610,13 @@ export function checkSeries(db: Db): CheckResult[] {
     }
   }
   for (const [series, m] of sortsBySeries) {
+    // Once SORT_RE holds, length alone names the precision: 4 = YYYY, 7 = YYYY-MM, 10 = YYYY-MM-DD.
+    const precisions = new Set([...m.keys()].map((s) => s.length));
+    if (precisions.size > 1) {
+      problems.push(`series '${series}': edition_sort mixes precisions (${[...m.keys()].sort().join(', ')}); ` +
+        'give every edition of a series the same YYYY, YYYY-MM or YYYY-MM-DD form, or "latest" is decided by string prefix, not date');
+      continue; // the max below is meaningless for a mixed series, so don't report a tie on it too
+    }
     const maxSort = [...m.keys()].sort().at(-1)!;
     const atMax = m.get(maxSort)!;
     if (atMax.length > 1) {
