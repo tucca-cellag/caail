@@ -239,7 +239,7 @@ export type DatasetsData = z.infer<typeof DatasetsDataSchema>;
  * its own latest (`current: true`, `supersededBy: null`, `seriesEditions: [self]`).
  */
 export const ReportSchema = z.object({
-  /** frozen report: id, e.g. "report:gfi-state-of-the-industry-2026" */
+  /** frozen report: id, e.g. "report:gfi-state-of-the-industry-cultivated-meat-2026" */
   id: z.string(),
   /** display name — the H3 link text, or the heading text when unlinked */
   title: z.string(),

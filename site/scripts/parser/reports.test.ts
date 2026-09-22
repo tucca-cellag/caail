@@ -26,15 +26,17 @@ describe('buildReportsModel (committed corpus)', () => {
   });
 
   it('carries the committed GFI editions with derived recency', () => {
-    const cur = model.reports.find((r) => r.id === 'report:gfi-state-of-the-industry-2026');
-    const old = model.reports.find((r) => r.id === 'report:gfi-state-of-the-industry-2024');
+    // CAAIL-366 replaced the T2 combined-series demo (report:gfi-state-of-the-industry-*)
+    // with the real per-track corpus; the cultivated-meat series is that record's successor.
+    const cur = model.reports.find((r) => r.id === 'report:gfi-state-of-the-industry-cultivated-meat-2026');
+    const old = model.reports.find((r) => r.id === 'report:gfi-state-of-the-industry-cultivated-meat-2024');
     expect(cur).toBeDefined();
     expect(old).toBeDefined();
     expect(cur!.current).toBe(true);
     expect(cur!.supersededBy).toBeNull();
     expect(old!.current).toBe(false);
-    expect(old!.supersededBy).toBe('report:gfi-state-of-the-industry-2026');
-    expect(cur!.seriesSlug).toBe('gfi-state-of-the-industry');
+    expect(old!.supersededBy).toBe('report:gfi-state-of-the-industry-cultivated-meat-2026');
+    expect(cur!.seriesSlug).toBe('gfi-state-of-the-industry-cultivated-meat');
   });
 });
 
