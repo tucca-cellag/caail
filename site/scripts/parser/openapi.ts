@@ -13,7 +13,7 @@
  * schemas, and `assertValid` then proves the payloads satisfy it. So the document is a
  * property of the output rather than a claim about it.
  *
- * SCOPE: seven static files served by GET. No request bodies, no parameters, no auth,
+ * SCOPE: static files served by GET. No request bodies, no parameters, no auth,
  * and deliberately no `servers` block — the paths are the deployed absolute paths, which
  * resolve correctly against the Pages origin without one.
  */
@@ -379,7 +379,7 @@ export function buildOpenApiDocument(corpusDate: string): unknown {
       version: corpusDate,
       summary: 'Static JSON endpoints describing the Cellular Agriculture AI Library.',
       description:
-        'Seven static JSON files, served by GET, with nothing to install or authenticate. ' +
+        'Static JSON files, served by GET, with nothing to install or authenticate. ' +
         'Generated from the same schemas that validate the payloads, in the same build step ' +
         'that writes them. ' +
         // Spelled out because the mirror is the DEFAULT path for the primary consumer, not
