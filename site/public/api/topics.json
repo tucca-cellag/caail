@@ -27,11 +27,11 @@
         "theme": null,
         "areaKey": "bioprocess",
         "counts": {
-          "paper": 67,
+          "paper": 68,
           "software": 16,
           "database": 7,
           "dataset": 26,
-          "total": 116
+          "total": 117
         },
         "tags": [
           "bioreactor-scale-up",
@@ -63,11 +63,11 @@
         "theme": null,
         "areaKey": "foodsafety",
         "counts": {
-          "paper": 4,
+          "paper": 5,
           "software": 10,
           "database": 7,
           "dataset": 1,
-          "total": 22
+          "total": 23
         },
         "tags": [
           "allergenicity"
@@ -169,11 +169,11 @@
         "theme": "food-safety",
         "areaKey": null,
         "counts": {
-          "paper": 4,
+          "paper": 5,
           "software": 10,
           "database": 7,
           "dataset": 1,
-          "total": 22
+          "total": 23
         },
         "tags": []
       },
@@ -379,11 +379,11 @@
         "theme": "bioprocess-scale-up",
         "areaKey": null,
         "counts": {
-          "paper": 15,
+          "paper": 16,
           "software": 8,
           "database": 7,
           "dataset": 2,
-          "total": 32
+          "total": 33
         },
         "tags": []
       }
@@ -1720,7 +1720,8 @@
         289,
         290,
         291,
-        292
+        292,
+        351
       ],
       "software": [
         "allercatpro-20",
@@ -1763,7 +1764,8 @@
         304,
         305,
         306,
-        307
+        307,
+        352
       ],
       "software": [
         "biosteam",

@@ -1007,3 +1007,7 @@ This section lists review articles, position papers, and commentaries that surve
 <a id="318">318</a> Jung, H. Y., Kim, M., & Jo, C. (2026). Next-generation strategies for designing cultured fat with enhanced flavor and functionality. *Trends in Food Science & Technology, 168*, 105525. https://doi.org/10.1016/j.tifs.2025.105525
 
 <a id="319">319</a> Bahia, M. S., Nissim, I., & Niv, M. Y. (2018). Bitterness prediction in-silico: A step towards better drugs. *International Journal of Pharmaceutics, 536*(2), 526–529. https://doi.org/10.1016/j.ijpharm.2017.03.076
+
+<a id="351">351</a> EFSA Panel on Genetically Modified Organisms (GMO), Mullins, E., Bresson, J.-L., Dalmay, T., Dewhurst, I. C., Epstein, M. M., George Firbank, L., Guerche, P., Hejatko, J., Naegeli, H., Nogué, F., Rostoks, N., Sánchez Serrano, J. J., Savoini, G., Veromann, E., Veronesi, F., Fernandez Dumont, A., & Moreno, F. J. (2022). Scientific Opinion on development needs for the allergenicity and protein safety assessment of food and feed products derived from biotechnology. *EFSA Journal, 20*(1), e07044. https://doi.org/10.2903/j.efsa.2022.7044
+
+<a id="352">352</a> Swartz, E., Ravi, A., Reeber, A., Levink, J., Huang, T., & Smith, B. (2023). *Anticipated growth factor and recombinant protein costs and volumes necessary for cost-competitive cultivated meat* [Report, The Good Food Institute]. https://gfi.org/resource/cultivated-meat-growth-factor-volume-and-cost-analysis/

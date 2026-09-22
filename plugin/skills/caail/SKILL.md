@@ -124,7 +124,7 @@ The matrix answers "what has been placed where". It does not answer "what is ind
 ## Counting
 
 `papers.json` spans six sections and only `References` (230) is matrix-eligible; the rest are Reviews
-& Perspectives (74) and four Reference Work sections (42). "346 papers" and "papers in the matrix" are
+& Perspectives (76) and four Reference Work sections (42). "348 papers" and "papers in the matrix" are
 different numbers. Say which population you counted.
 
 ## Licenses
