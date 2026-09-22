@@ -230,18 +230,31 @@ export type DatasetsData = z.infer<typeof DatasetsDataSchema>;
 
 /**
  * A field report — a recurring institutional state-of-field survey (GFI State of the
- * Industry, the Rethink Priorities landscape report), folded from the committed
- * `reports` NDJSON (CAAIL-363). The T1 SKELETON shape: content + topic refs only. The
- * series/recency fields (`seriesSlug`, `editionLabel`, derived `current`/`supersededBy`)
- * are CAAIL-364 and land here additively.
+ * Industry, the Rethink Priorities landscape report), folded from the committed `reports`
+ * NDJSON. Content + series/recency (CAAIL-363 skeleton + CAAIL-364 series model).
+ *
+ * `seriesSlug`/`editionLabel` are stored content; `current`/`supersededBy`/`seriesEditions`
+ * are DERIVED at parse from max(edition_sort) per series, so adding next year's edition
+ * self-demotes this year's with no stored-flag edit. A one-off (`seriesSlug === null`) is
+ * its own latest (`current: true`, `supersededBy: null`, `seriesEditions: [self]`).
  */
 export const ReportSchema = z.object({
-  /** frozen report: id, e.g. "report:gfi-state-of-the-industry" */
+  /** frozen report: id, e.g. "report:gfi-state-of-the-industry-2026" */
   id: z.string(),
   /** display name — the H3 link text, or the heading text when unlinked */
   title: z.string(),
   /** canonical report home (the H3 link target); null for an unlinked heading */
   url: z.string().nullable(),
+  /** slug grouping the editions of one recurring line; null for a one-off */
+  seriesSlug: z.string().nullable().default(null),
+  /** human edition label, e.g. "2026" */
+  editionLabel: z.string(),
+  /** derived: this is the latest edition of its series (or a one-off, which is its own latest) */
+  current: z.boolean(),
+  /** derived: the id of the current edition when this one is superseded; null when current */
+  supersededBy: z.string().nullable().default(null),
+  /** derived: every edition id of the series, sorted oldest-to-newest (one-off = [self]) */
+  seriesEditions: z.array(z.string()).default([]),
   /** two-tier subject tags, folded in from the committed topic NDJSON */
   topics: z.array(TopicRefSchema).default([]),
 });

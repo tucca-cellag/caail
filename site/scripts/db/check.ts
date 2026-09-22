@@ -548,6 +548,42 @@ export function checkSubseries(db: Db, subseriesPath: string = SUBSERIES_PATH): 
 }
 
 /**
+ * Field-report series/recency guard (CAAIL-364), the reports analog of checkSubseries.
+ *
+ * The parser DERIVES `current`/`supersededBy` from max(edition_sort) per `series_slug`, so
+ * the derivation is only well-defined if (a) every report has a non-empty, string-comparable
+ * `edition_sort` — a YYYY or an ISO date, both of which sort chronologically as strings — and
+ * (b) the latest edition of each series is unique, so exactly one edition derives `current`.
+ * A tie at the maximum edition_sort would silently make two editions current and leave the
+ * "grab the latest" guarantee ambiguous, so it fails the build here rather than at parse.
+ * A one-off (`series_slug IS NULL`) is its own latest and imposes no series constraint.
+ */
+export function checkSeries(db: Db): CheckResult[] {
+  const rows = db.prepare('SELECT item_id, series_slug, edition_label, edition_sort FROM reports').all() as
+    { item_id: string; series_slug: string | null; edition_label: string; edition_sort: string }[];
+  const SORT_RE = /^\d{4}(-\d{2}(-\d{2})?)?$/; // YYYY, YYYY-MM, or YYYY-MM-DD
+  const problems: string[] = [];
+  const sortsBySeries = new Map<string, Map<string, string[]>>(); // series -> edition_sort -> ids
+  for (const r of rows) {
+    if (!r.edition_label.trim()) problems.push(`${r.item_id}: empty edition_label`);
+    if (!SORT_RE.test(r.edition_sort)) problems.push(`${r.item_id}: edition_sort '${r.edition_sort}' is not a YYYY or ISO date`);
+    if (r.series_slug !== null) {
+      const m = sortsBySeries.get(r.series_slug) ?? sortsBySeries.set(r.series_slug, new Map()).get(r.series_slug)!;
+      (m.get(r.edition_sort) ?? m.set(r.edition_sort, []).get(r.edition_sort)!).push(r.item_id);
+    }
+  }
+  for (const [series, m] of sortsBySeries) {
+    const maxSort = [...m.keys()].sort().at(-1)!;
+    const atMax = m.get(maxSort)!;
+    if (atMax.length > 1) {
+      problems.push(`series '${series}': ${atMax.length} editions tie at the latest edition_sort ${maxSort} (${atMax.join(', ')}); exactly one may be current`);
+    }
+  }
+  return [ok('reports series: edition label/sort present + comparable, exactly one current per series',
+    problems.length === 0, problems.slice(0, 3).join('; '))];
+}
+
+/**
  * The five foundation-model rows share two clauses, and neither can live in one
  * place above them: `buildTaxonomyModel` keeps only prose under an `###`, so a
  * paragraph introducing the family is dropped and never reaches `taxonomy.json`,
@@ -782,7 +818,7 @@ export function runChecks(db: Db, repoRoot: string = REPO_ROOT): CheckResult[] {
     ...checkTopicTiers(db), ...checkAxisBijection(db, repoRoot),
     ...checkCatalogHeadings(db), ...checkLicenses(db), ...checkManualLicenseKeys(db),
     ...checkDois(db), ...checkManualDoiKeys(db), ...checkRelatedDois(db), ...checkSubseries(db),
-    ...checkRowTagParity(db)];
+    ...checkSeries(db), ...checkRowTagParity(db)];
 }
 
 function main(): void {

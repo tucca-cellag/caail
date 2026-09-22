@@ -732,7 +732,8 @@
 {"id":"paper:97","type":"paper","slug":"97"}
 {"id":"paper:98","type":"paper","slug":"98"}
 {"id":"paper:99","type":"paper","slug":"99"}
-{"id":"report:gfi-state-of-the-industry","type":"report","slug":"gfi-state-of-the-industry"}
+{"id":"report:gfi-state-of-the-industry-2024","type":"report","slug":"gfi-state-of-the-industry-2024"}
+{"id":"report:gfi-state-of-the-industry-2026","type":"report","slug":"gfi-state-of-the-industry-2026"}
 {"id":"sw:ablang","type":"software","slug":"ablang"}
 {"id":"sw:adipoq","type":"software","slug":"adipoq"}
 {"id":"sw:ai-research-skills-library","type":"software","slug":"ai-research-skills-library"}

@@ -96,13 +96,13 @@ export function seedCatalog(db: Db, entries: CatalogRaw[], type: 'software' | 'd
 export function seedReports(db: Db, entries: ReportRaw[]): number {
   const insItem = db.prepare('INSERT OR IGNORE INTO items(id,type,slug) VALUES(?,?,?)');
   const insReport = db.prepare(
-    'INSERT INTO reports(item_id,title,url,heading_md,body_md,ordinal) VALUES(?,?,?,?,?,?)',
+    'INSERT INTO reports(item_id,title,url,series_slug,edition_label,edition_sort,heading_md,body_md,ordinal) VALUES(?,?,?,?,?,?,?,?,?)',
   );
   const seen = new Set<string>();
   entries.forEach((e, i) => {
     const id = assignId(seen, frozenSlug(e.name, 'report'));
     insItem.run(id, 'report', id.slice('report:'.length));
-    insReport.run(id, e.name, e.url, e.headingMd, e.bodyMd, i);
+    insReport.run(id, e.name, e.url, e.seriesSlug, e.editionLabel, e.editionSort, e.headingMd, e.bodyMd, i);
   });
   return entries.length;
 }
