@@ -959,8 +959,8 @@ export const ApiManifestSchema = z.strictObject({
     datasetsInventoryRows: z.number().int().nonnegative(),
     /** the two above, which are disjoint and exhaustive — == the library total */
     datasetsTotal: z.number().int().nonnegative(),
-    /** field-report editions across all series (one record per edition) */
-    fieldReports: z.number().int().nonnegative(),
+    /** field-report editions across all series (one record per edition, current + superseded) */
+    fieldReportEditions: z.number().int().nonnegative(),
   }),
   endpoints: z.array(z.strictObject({ path: z.string(), use: z.string() })),
 });

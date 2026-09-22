@@ -297,7 +297,7 @@ describe('reports.json (field reports)', () => {
   it('carries every record from the model, one per edition', () => {
     // Ground truth is the built model, never a literal, so this cannot drift as editions land.
     expect(body.reports).toHaveLength(reports.reports.length);
-    expect(manifest.counts.fieldReports).toBe(reports.reports.length);
+    expect(manifest.counts.fieldReportEditions).toBe(reports.reports.length);
   });
 
   it('ships the derived recency fields on every record, which is the whole point of the endpoint', () => {

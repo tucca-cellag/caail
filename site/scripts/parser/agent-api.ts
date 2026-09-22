@@ -452,10 +452,11 @@ export function buildManifest(
       software: catalog.software,
       databases: catalog.databases,
       catalogTotal: catalog.software + catalog.databases,
-      // Field reports: one record per edition, so this counts editions across all series,
-      // not distinct report lines. The latest per series is the one to recommend (see the
-      // reports.json endpoint note).
-      fieldReports: reports.count,
+      // Field reports: one record per edition, so this counts editions across all series
+      // (current + superseded), not distinct report lines. The key names that population, as
+      // every count here does; the latest per series is the one to recommend, and reports.json
+      // carries `current: true` to pick it (see the reports.json endpoint note).
+      fieldReportEditions: reports.count,
     },
     endpoints: [
       { path: 'index.json', use: 'This manifest: corpus date, counts by population, endpoint list.' },
