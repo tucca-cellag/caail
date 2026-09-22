@@ -82,17 +82,20 @@ function seriesLabel(current: ReportRecord): string {
 export function reportGroups(): ReportGroup[] {
   const byId = new Map(ALL.map((r) => [r.id, r]));
   const order: string[] = [];
-  const seen = new Set<string>();
+  const buckets = new Map<string, ReportRecord[]>();
   for (const r of ALL) {
     const key = r.seriesSlug ?? r.id;
-    if (!seen.has(key)) {
-      seen.add(key);
+    let bucket = buckets.get(key);
+    if (!bucket) {
+      bucket = [];
+      buckets.set(key, bucket);
       order.push(key);
     }
+    bucket.push(r);
   }
 
   return order.map((key) => {
-    const members = ALL.filter((r) => (r.seriesSlug ?? r.id) === key);
+    const members = buckets.get(key)!;
     const current = members.find((r) => r.current) ?? members[0];
     const editions = [...current.seriesEditions]
       .reverse()
