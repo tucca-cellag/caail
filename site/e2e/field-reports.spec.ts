@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import { awaitHydrated } from './hydration';
 
 /**
  * Ground truths read from the parser's generated reports.json rather than
@@ -21,13 +22,17 @@ const CURRENT_COUNT = RECORDS.filter((r) => r.current).length;
 const SUPERSEDED_COUNT = RECORDS.length - CURRENT_COUNT;
 
 test('the field reports page renders one card per edition, grouped by series', async ({ page }) => {
-  await page.goto('./field-reports/');  await expect(page.locator('.cb-grp').first()).toBeVisible();
+  await page.goto('./field-reports/');
+  await awaitHydrated(page, 'FieldReports');
+  await expect(page.locator('.cb-grp').first()).toBeVisible();
   await expect(page.locator('.cb-grp')).toHaveCount(SERIES_COUNT);
   await expect(page.locator('.cb-card')).toHaveCount(RECORDS.length);
 });
 
 test('the current edition of each series is badged, superseded editions link forward', async ({ page }) => {
-  await page.goto('./field-reports/');  await expect(page.locator('.fr-current')).toHaveCount(CURRENT_COUNT);
+  await page.goto('./field-reports/');
+  await awaitHydrated(page, 'FieldReports');
+  await expect(page.locator('.fr-current')).toHaveCount(CURRENT_COUNT);
   await expect(page.locator('.fr-superseded')).toHaveCount(SUPERSEDED_COUNT);
 
   // Every "superseded → see <edition>" link resolves to exactly one edition
@@ -44,7 +49,9 @@ test('the current edition of each series is badged, superseded editions link for
 });
 
 test('the field reports page has no axe violations', async ({ page }) => {
-  await page.goto('./field-reports/');  await expect(page.locator('.cb-grp').first()).toBeVisible();
+  await page.goto('./field-reports/');
+  await awaitHydrated(page, 'FieldReports');
+  await expect(page.locator('.cb-grp').first()).toBeVisible();
   const results = await new AxeBuilder({ page }).analyze();
   expect(results.violations).toEqual([]);
 });

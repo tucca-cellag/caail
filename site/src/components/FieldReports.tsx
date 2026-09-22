@@ -31,47 +31,56 @@ export default function FieldReports() {
       </p>
 
       {groups.map((g) => (
-        <section class="cb-grp">
+        <section class="cb-grp" key={g.slug}>
           <h2 class="cb-grp-h caail-display" id={g.slug}>{g.label}</h2>
           <div class="cb-grid">
-            {g.editions.map((r) => (
-              <article class="cb-card" id={editionAnchor(r.id)}>
-                <h3 class="cb-name">
-                  {r.url ? (
-                    <a
-                      class="cb-name-link"
-                      href={r.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      {r.title}
-                      <span class="cb-ext" aria-hidden="true">↗</span>
-                    </a>
-                  ) : (
-                    <span class="cb-name-link">{r.title}</span>
-                  )}
-                </h3>
-                <p class="fr-meta">
-                  <span class="fr-edition">{r.editionLabel} edition</span>
-                  {r.current ? (
-                    <span class="fr-badge fr-current">Current</span>
-                  ) : (
-                    <span class="fr-badge fr-superseded">
-                      Superseded
-                      {r.supersededBy && (
-                        <>
-                          {' · '}
-                          <a class="fr-super-link" href={`#${editionAnchor(r.supersededBy)}`}>
-                            see {g.current.editionLabel}
-                          </a>
-                        </>
-                      )}
-                    </span>
-                  )}
-                </p>
-                <TopicChips topics={r.topics} />
-              </article>
-            ))}
+            {g.editions.map((r) => {
+              // Resolve the successor edition once, so the badge's link text and
+              // its href come from the SAME record and can never disagree (even
+              // if supersededBy ever points at the immediate successor rather
+              // than the current edition).
+              const successor = r.supersededBy
+                ? g.editions.find((e) => e.id === r.supersededBy)
+                : undefined;
+              return (
+                <article class="cb-card" id={editionAnchor(r.id)} key={r.id}>
+                  <h3 class="cb-name">
+                    {r.url ? (
+                      <a
+                        class="cb-name-link"
+                        href={r.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {r.title}
+                        <span class="cb-ext" aria-hidden="true">↗</span>
+                      </a>
+                    ) : (
+                      <span class="cb-name-link">{r.title}</span>
+                    )}
+                  </h3>
+                  <p class="fr-meta">
+                    <span class="fr-edition">{r.editionLabel} edition</span>
+                    {r.current ? (
+                      <span class="fr-badge fr-current">Current</span>
+                    ) : (
+                      <span class="fr-badge fr-superseded">
+                        Superseded
+                        {successor && (
+                          <>
+                            {' · '}
+                            <a class="fr-super-link" href={`#${editionAnchor(successor.id)}`}>
+                              see {successor.editionLabel}
+                            </a>
+                          </>
+                        )}
+                      </span>
+                    )}
+                  </p>
+                  <TopicChips topics={r.topics} />
+                </article>
+              );
+            })}
           </div>
         </section>
       ))}

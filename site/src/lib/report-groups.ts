@@ -33,7 +33,9 @@ export interface ReportRecord {
 export interface ReportGroup {
   /** display name — the current edition's title with a trailing edition label stripped */
   label: string;
-  /** anchor id for the series `<h2>` (same rule as catalog-groups / awesome-groups) */
+  /** stable anchor id for the series `<h2>`: the immutable seriesSlug (or the
+   *  one-off's frozen id), NOT the mutable display label, so a reworded title in
+   *  a future edition can't break a bookmarked `#slug` (CLAUDE.md anchor stability) */
   slug: string;
   /** the series' editions, newest-first (a one-off is a single-edition group) */
   editions: ReportRecord[];
@@ -72,6 +74,17 @@ function seriesLabel(current: ReportRecord): string {
 }
 
 /**
+ * The stable series anchor id: the immutable seriesSlug for a recurring line, or
+ * the one-off's frozen id. Derived from an id the DB owns, never from the mutable
+ * display label, so a reworded title in a later edition leaves the anchor (and its
+ * TOC link + any bookmark) unchanged. seriesSlugs are unique per series, so this
+ * also cannot collide the way a slugified label could.
+ */
+function seriesAnchor(current: ReportRecord): string {
+  return current.seriesSlug ? groupSlug(current.seriesSlug) : editionAnchor(current.id);
+}
+
+/**
  * The field reports grouped by series (one-offs are their own single group), in
  * first-seen document order, each with its editions newest-first.
  *
@@ -103,7 +116,7 @@ export function reportGroups(): ReportGroup[] {
       .filter((r): r is ReportRecord => Boolean(r));
     const ordered = editions.length > 0 ? editions : members;
     const label = seriesLabel(current);
-    return { label, slug: groupSlug(label), editions: ordered, current };
+    return { label, slug: seriesAnchor(current), editions: ordered, current };
   });
 }
 
