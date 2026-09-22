@@ -30,6 +30,7 @@ import { buildDatasetsModel } from './datasets-entries.js';
 import { buildDatasetInventory } from './dataset-inventory.js';
 import { buildTopicsModel } from './topics.js';
 import { buildTaxonomyModel } from './taxonomy.js';
+import { buildReportsModel } from './reports.js';
 
 const papers = buildPapersModel();
 const catalog = buildCatalogModel();
@@ -37,11 +38,12 @@ const datasets = buildDatasetsModel();
 const inventory = buildDatasetInventory();
 const topics = buildTopicsModel();
 const taxonomy = buildTaxonomyModel();
+const reports = buildReportsModel();
 const REPO_ROOT = fileURLToPath(new URL('../../../', import.meta.url));
 const API_DIR = join(REPO_ROOT, 'site', 'public', 'api');
 const DATE = '2026-01-01';
 
-const inputs = { papers, catalog, datasets, inventory, topics, taxonomy, corpusDate: DATE };
+const inputs = { papers, catalog, datasets, inventory, topics, taxonomy, reports, corpusDate: DATE };
 
 describe('openapi.json', () => {
   const files = buildAgentApi(inputs);

@@ -35,6 +35,7 @@ https://tucca-cellag.github.io/caail/api/ if you want to read one in a browser.
 | "Find me papers on X" | https://raw.githubusercontent.com/tucca-cellag/caail/main/site/public/api/papers-index.json — one compact row per reference across every section. Then fetch `papers.json` for the full records you picked |
 | "What software / databases exist for X?" | https://raw.githubusercontent.com/tucca-cellag/caail/main/site/public/api/catalog-index.json — one compact row per tool and database. Then fetch `catalog.json` for the summaries you want |
 | "What data exists for <species>?" | https://raw.githubusercontent.com/tucca-cellag/caail/main/site/public/api/datasets.json — two arrays: `entries` are curated portals and atlases, `inventory` are the per-study deposits. Filter either by `page` |
+| "What's the latest field / state-of-the-industry report?" | https://raw.githubusercontent.com/tucca-cellag/caail/main/site/public/api/reports.json — recurring institutional surveys (GFI State of the Industry, etc.), one record per edition |
 | "What does CAAIL mean by <method or area>?" | https://raw.githubusercontent.com/tucca-cellag/caail/main/site/public/api/taxonomy.json — read before trusting or disputing a placement |
 
 The papers endpoint carries DOI, code URL, data URL, topics, license and citation count per entry, so
@@ -65,6 +66,10 @@ small enough that nothing has to be dropped from it.
 For "what could I combine my own run with", read `inventory`, not `entries`. The curated entries are
 portals, atlases and model files; the inventory rows are the individual deposits, each carrying its
 accession, assay type, tissue and size under the source page's own column labels.
+
+For a field report, recommend the record with `current: true` for its series and treat any record
+carrying a `supersededBy` id as historical only — the latest edition is derived, so it stays right as
+new editions land.
 
 ## Method names are abbreviated
 

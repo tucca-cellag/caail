@@ -34,6 +34,7 @@ import {
   ApiPaperIndexRowSchema,
   ApiPapersIndexSchema,
   ApiPapersSchema,
+  ApiReportsSchema,
   ApiTaxonomySchema,
   ApiTopicIndexEntrySchema,
   ApiTopicsSchema,
@@ -43,6 +44,7 @@ import {
   DatasetEntrySchema,
   DatasetInventoryRowSchema,
   ReferenceSchema,
+  ReportSchema,
   TopicNodeSchema,
   TopicRefSchema,
 } from './types.js';
@@ -167,6 +169,19 @@ export const API_ENDPOINTS: readonly ApiEndpointSpec[] = [
       'data, so the parent row alone will not tell you the assay or design of anything you ' +
       'could actually use. Each member carries the `id` of its own inventory row where one ' +
       'exists, and null where it is recorded here only.',
+  },
+  {
+    file: 'reports.json',
+    id: 'Reports',
+    schema: ApiReportsSchema,
+    summary: 'Field reports — recurring institutional state-of-field surveys',
+    description:
+      'Recurring institutional surveys of the field (GFI State of the Industry and the like), ' +
+      'one record per edition. Each carries `seriesSlug`, `editionLabel`, and derived recency: ' +
+      'recommend the record with `current: true` for its series, and treat any record with a ' +
+      'non-null `supersededBy` (the id of the current edition) as historical only. ' +
+      '`seriesEditions` lists every edition id of the series, oldest to newest, so you can walk ' +
+      'the history. A one-off with `seriesSlug: null` is its own latest.',
   },
   {
     file: 'topics.json',
@@ -300,6 +315,7 @@ const SHARED_SCHEMAS: ReadonlyArray<readonly [string, z.ZodType]> = [
   ['CatalogIndexRow', ApiCatalogIndexRowSchema],
   ['DatasetEntry', DatasetEntrySchema],
   ['DatasetInventoryRow', DatasetInventoryRowSchema],
+  ['Report', ReportSchema],
 ];
 
 /**

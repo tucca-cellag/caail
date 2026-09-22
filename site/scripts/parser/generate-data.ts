@@ -499,6 +499,7 @@ export function generateData(
     inventory,
     topics,
     taxonomy,
+    reports,
   });
   writeAgentApi(apiFiles, apiDir);
   publishSkillDoc(SKILL_DOC_PATH, join(apiDir, '..'));
