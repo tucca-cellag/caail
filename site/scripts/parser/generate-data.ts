@@ -207,8 +207,9 @@ export function generateData(
   const datasets = buildDatasetsModel();
 
   // Field-report records (GFI State of the Industry, the RP landscape report) folded from
-  // the committed reports NDJSON (CAAIL-363). Content + topics only in this skeleton; the
-  // series/recency projection and the agent endpoint land in CAAIL-364 / T5.
+  // the committed reports NDJSON, with series/recency already derived in reports.ts
+  // (current / supersededBy / seriesEditions). Re-exported to the agent API as reports.json
+  // by buildAgentApi below.
   const reports = buildReportsModel();
 
   // The `## Complete data inventory` rows — the per-study deposits. Built for the agent
@@ -499,6 +500,7 @@ export function generateData(
     inventory,
     topics,
     taxonomy,
+    reports,
   });
   writeAgentApi(apiFiles, apiDir);
   publishSkillDoc(SKILL_DOC_PATH, join(apiDir, '..'));

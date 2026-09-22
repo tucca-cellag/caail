@@ -98,6 +98,8 @@ export interface AgentApiInputs {
   inventory?: DatasetInventory;
   topics: unknown;
   taxonomy: unknown;
+  /** The field-report records (buildReportsModel): `{ reports: Report[] }` with derived recency. */
+  reports: unknown;
   /** ISO date stamped onto every response. Defaults to `readCorpusDate()`. */
   corpusDate?: string;
 }
@@ -403,6 +405,7 @@ export function buildManifest(
   corpusDate: string,
   datasets: { curated: number; inventory: number } = { curated: 0, inventory: 0 },
   catalog: { software: number; databases: number } = { software: 0, databases: 0 },
+  reports: { count: number } = { count: 0 },
 ): unknown {
   const bySection: Record<string, number> = {};
   for (const r of papers.references) bySection[r.section] = (bySection[r.section] ?? 0) + 1;
@@ -449,6 +452,11 @@ export function buildManifest(
       software: catalog.software,
       databases: catalog.databases,
       catalogTotal: catalog.software + catalog.databases,
+      // Field reports: one record per edition, so this counts editions across all series
+      // (current + superseded), not distinct report lines. The key names that population, as
+      // every count here does; the latest per series is the one to recommend, and reports.json
+      // carries `current: true` to pick it (see the reports.json endpoint note).
+      fieldReportEditions: reports.count,
     },
     endpoints: [
       { path: 'index.json', use: 'This manifest: corpus date, counts by population, endpoint list.' },
@@ -468,6 +476,7 @@ export function buildManifest(
           '`page` (e.g. "Cow", "Benchmarks"). Use the inventory rows for "what could I combine ' +
           'my own run with", and page "Benchmarks" for "what could I evaluate a model against".',
       },
+      { path: 'reports.json', use: 'Field reports: recurring institutional state-of-field surveys (GFI State of the Industry and the like), one record per edition. When recommending one, use the record with `current: true` for its series and treat any record with a `supersededBy` id as historical only; `seriesEditions` walks the history. The latest edition is derived, so it stays correct as new editions land.' },
       { path: 'topics.json', use: 'Subject tree plus an inverted index: topic → items across all content types. Start here for "what should I use for X".' },
       { path: 'taxonomy.json', use: 'What each method, area and subject theme means in CAAIL, with exclusion criteria. Read before trusting a placement. Definitions are split by vocabulary under `axes` (`area`, `method`, `theme`) because a label may appear in more than one — "Bioprocess & Scale-Up" is both a matrix column and a theme, with different text. `definitions` is the flat matrix lookup (areas + methods only); look a theme up under `axes.theme`.' },
       { path: OPENAPI_FILE, use: 'OpenAPI 3.1 description of every endpoint above, generated from the schemas that validate them. Read this instead of guessing a key.' },
@@ -492,9 +501,12 @@ export function buildAgentApi(inputs: AgentApiInputs): ApiFile[] {
     software: (Array.isArray(cat?.software) ? cat.software : []).length,
     databases: (Array.isArray(cat?.databases) ? cat.databases : []).length,
   };
+  const reportsCount = {
+    count: ((inputs.reports as { reports?: unknown[] } | null)?.reports ?? []).length,
+  };
 
   const files: ApiFile[] = [
-    { name: 'index.json', body: buildManifest(inputs.papers, matrix, corpusDate, datasetCounts, catalogCounts) },
+    { name: 'index.json', body: buildManifest(inputs.papers, matrix, corpusDate, datasetCounts, catalogCounts, reportsCount) },
     { name: 'matrix.json', body: matrix },
     { name: 'papers-index.json', body: buildPapersIndex(inputs.papers, corpusDate) },
     { name: 'papers.json', body: { ...inputs.papers, scopeNote: SCOPE_NOTE, corpusDate } },
@@ -507,6 +519,12 @@ export function buildAgentApi(inputs: AgentApiInputs): ApiFile[] {
         inventory: inputs.inventory?.inventory ?? [],
         corpusDate,
       },
+    },
+    {
+      name: 'reports.json',
+      // Straight re-export of the reports model (recency already derived at parse) plus the
+      // stamp. Spread like catalog/taxonomy so a shape change fails assertValid, not silently.
+      body: { ...(inputs.reports as object), corpusDate },
     },
     {
       name: 'topics.json',

@@ -34,6 +34,7 @@ import { buildDatasetsModel } from './datasets-entries.js';
 import { buildDatasetInventory } from './dataset-inventory.js';
 import { buildTopicsModel } from './topics.js';
 import { buildTaxonomyModel } from './taxonomy.js';
+import { buildReportsModel } from './reports.js';
 import { extractInventory } from '../db/extract.js';
 import { curatedEntryCount } from './datasets.js';
 
@@ -43,6 +44,7 @@ const datasets = buildDatasetsModel();
 const inventory = buildDatasetInventory();
 const topics = buildTopicsModel();
 const taxonomy = buildTaxonomyModel();
+const reports = buildReportsModel();
 const REPO_ROOT = fileURLToPath(new URL('../../../', import.meta.url));
 const DATE = '2026-01-01';
 
@@ -175,7 +177,7 @@ describe('topics.json inverted index', () => {
 });
 
 describe('buildAgentApi', () => {
-  const files = buildAgentApi({ papers, catalog, datasets, inventory, topics, taxonomy, corpusDate: DATE });
+  const files = buildAgentApi({ papers, catalog, datasets, inventory, topics, taxonomy, reports, corpusDate: DATE });
 
   it('emits every endpoint the manifest advertises', () => {
     const names = files.map((f) => f.name);
@@ -200,7 +202,7 @@ describe('buildAgentApi', () => {
     // default. A shorthand `{ corpusDate }` once captured the same-named function
     // instead of the string, and JSON.stringify silently dropped it: the output was
     // deterministic and every assertion still passed while the field was undefined.
-    const dflt = buildAgentApi({ papers, catalog, datasets, inventory, topics, taxonomy });
+    const dflt = buildAgentApi({ papers, catalog, datasets, inventory, topics, taxonomy, reports });
     for (const f of dflt) {
       const d =
         f.name === 'openapi.json'
@@ -214,8 +216,8 @@ describe('buildAgentApi', () => {
   it('derives the date from the corpus, not the clock, so the CI sync guard is stable', () => {
     // The emitted files are committed and CI re-runs the parse to diff them. A
     // build-time `new Date()` would differ on any later day and fail the guard.
-    const a = buildAgentApi({ papers, catalog, datasets, inventory, topics, taxonomy });
-    const b = buildAgentApi({ papers, catalog, datasets, inventory, topics, taxonomy });
+    const a = buildAgentApi({ papers, catalog, datasets, inventory, topics, taxonomy, reports });
+    const b = buildAgentApi({ papers, catalog, datasets, inventory, topics, taxonomy, reports });
     expect(JSON.stringify(a)).toBe(JSON.stringify(b));
 
     // Asserting the date differs from today would be flaky: a commit to the NDJSON
@@ -278,6 +280,73 @@ describe('buildAgentApi', () => {
 });
 
 // ---------------------------------------------------------------------------
+// reports.json — the field-report endpoint must carry enough to stop a stale
+// recommendation: the derived recency fields, and a manifest promise that says so.
+// ---------------------------------------------------------------------------
+
+describe('reports.json (field reports)', () => {
+  const files = buildAgentApi({ papers, catalog, datasets, inventory, topics, taxonomy, reports, corpusDate: DATE });
+  const body = files.find((f) => f.name === 'reports.json')!.body as any;
+  const manifest = files.find((f) => f.name === 'index.json')!.body as any;
+
+  it('is emitted and advertised, so an agent can discover it from the manifest', () => {
+    expect(body, 'reports.json was not emitted').toBeDefined();
+    expect(manifest.endpoints.map((e: any) => e.path)).toContain('reports.json');
+  });
+
+  it('carries every record from the model, one per edition', () => {
+    // Ground truth is the built model, never a literal, so this cannot drift as editions land.
+    expect(body.reports).toHaveLength(reports.reports.length);
+    expect(manifest.counts.fieldReportEditions).toBe(reports.reports.length);
+  });
+
+  it('ships the derived recency fields on every record, which is the whole point of the endpoint', () => {
+    expect(body.reports.length).toBeGreaterThan(0); // sanity: the fixture is not empty
+    for (const r of body.reports) {
+      expect(typeof r.current, `${r.id} has no current flag`).toBe('boolean');
+      // present-and-typed rather than truthy: supersededBy is legitimately null on a current
+      // record, and seriesSlug is null on a one-off.
+      expect(r).toHaveProperty('supersededBy');
+      expect(r).toHaveProperty('seriesSlug');
+      expect(typeof r.editionLabel).toBe('string');
+      expect(Array.isArray(r.seriesEditions)).toBe(true);
+    }
+  });
+
+  it('marks exactly one edition current per series, so "grab the latest" is unambiguous', () => {
+    // The stale-recommendation guard: within a series, one and only one record is current, and
+    // every superseded record points at THAT record's id. A one-off (seriesSlug null) is its
+    // own latest and points nowhere.
+    const bySeries = new Map<string, any[]>();
+    for (const r of body.reports) {
+      if (r.seriesSlug === null) {
+        expect(r.current, `${r.id} is a one-off but not current`).toBe(true);
+        expect(r.supersededBy).toBeNull();
+        continue;
+      }
+      (bySeries.get(r.seriesSlug) ?? bySeries.set(r.seriesSlug, []).get(r.seriesSlug)!).push(r);
+    }
+    for (const [series, list] of bySeries) {
+      const current = list.filter((r) => r.current);
+      expect(current, `series ${series} must have exactly one current edition`).toHaveLength(1);
+      const currentId = current[0].id;
+      for (const r of list.filter((r) => !r.current)) {
+        expect(r.supersededBy, `${r.id} must point at its current edition`).toBe(currentId);
+      }
+    }
+  });
+
+  it('states the latest-edition rule in the manifest, where an agent will read it', () => {
+    // If this wording is softened, an agent stops being told to prefer the current edition and
+    // can recommend a superseded report as the state of the field — the exact failure CAAIL-172
+    // exists to prevent.
+    const use = manifest.endpoints.find((e: any) => e.path === 'reports.json').use as string;
+    expect(use).toMatch(/current/i);
+    expect(use).toMatch(/supersed/i);
+  });
+});
+
+// ---------------------------------------------------------------------------
 // datasets.json — the endpoint must carry what its own manifest advertises
 // ---------------------------------------------------------------------------
 
@@ -295,7 +364,7 @@ describe('buildAgentApi', () => {
  */
 describe('datasets.json inventory', () => {
   const cowTable = extractInventory(join(REPO_ROOT, 'Datasets', 'Cow.md'))!;
-  const files = buildAgentApi({ papers, catalog, datasets, inventory, topics, taxonomy, corpusDate: DATE });
+  const files = buildAgentApi({ papers, catalog, datasets, inventory, topics, taxonomy, reports, corpusDate: DATE });
   const body = files.find((f) => f.name === 'datasets.json')!.body as any;
   const manifest = files.find((f) => f.name === 'index.json')!.body as any;
 
@@ -406,7 +475,7 @@ describe('site/public/api/datasets.json (the shipped file)', () => {
  * test would pass happily on an index that had quietly grown back to the parent's size.
  */
 describe('the compact indexes', () => {
-  const built = buildAgentApi({ papers, catalog, datasets, inventory, topics, taxonomy, corpusDate: DATE });
+  const built = buildAgentApi({ papers, catalog, datasets, inventory, topics, taxonomy, reports, corpusDate: DATE });
   const body = (name: string) => built.find((f) => f.name === name)!.body as any;
   const bytes = (name: string) => serializeApiFile(name, built.find((f) => f.name === name)!.body).length;
 

@@ -13,7 +13,7 @@
  * schemas, and `assertValid` then proves the payloads satisfy it. So the document is a
  * property of the output rather than a claim about it.
  *
- * SCOPE: seven static files served by GET. No request bodies, no parameters, no auth,
+ * SCOPE: static files served by GET. No request bodies, no parameters, no auth,
  * and deliberately no `servers` block — the paths are the deployed absolute paths, which
  * resolve correctly against the Pages origin without one.
  */
@@ -34,6 +34,7 @@ import {
   ApiPaperIndexRowSchema,
   ApiPapersIndexSchema,
   ApiPapersSchema,
+  ApiReportsSchema,
   ApiTaxonomySchema,
   ApiTopicIndexEntrySchema,
   ApiTopicsSchema,
@@ -43,6 +44,7 @@ import {
   DatasetEntrySchema,
   DatasetInventoryRowSchema,
   ReferenceSchema,
+  ReportSchema,
   TopicNodeSchema,
   TopicRefSchema,
 } from './types.js';
@@ -167,6 +169,19 @@ export const API_ENDPOINTS: readonly ApiEndpointSpec[] = [
       'data, so the parent row alone will not tell you the assay or design of anything you ' +
       'could actually use. Each member carries the `id` of its own inventory row where one ' +
       'exists, and null where it is recorded here only.',
+  },
+  {
+    file: 'reports.json',
+    id: 'Reports',
+    schema: ApiReportsSchema,
+    summary: 'Field reports — recurring institutional state-of-field surveys',
+    description:
+      'Recurring institutional surveys of the field (GFI State of the Industry and the like), ' +
+      'one record per edition. Each carries `seriesSlug`, `editionLabel`, and derived recency: ' +
+      'recommend the record with `current: true` for its series, and treat any record with a ' +
+      'non-null `supersededBy` (the id of the current edition) as historical only. ' +
+      '`seriesEditions` lists every edition id of the series, oldest to newest, so you can walk ' +
+      'the history. A one-off with `seriesSlug: null` is its own latest.',
   },
   {
     file: 'topics.json',
@@ -300,6 +315,7 @@ const SHARED_SCHEMAS: ReadonlyArray<readonly [string, z.ZodType]> = [
   ['CatalogIndexRow', ApiCatalogIndexRowSchema],
   ['DatasetEntry', DatasetEntrySchema],
   ['DatasetInventoryRow', DatasetInventoryRowSchema],
+  ['Report', ReportSchema],
 ];
 
 /**
@@ -363,7 +379,7 @@ export function buildOpenApiDocument(corpusDate: string): unknown {
       version: corpusDate,
       summary: 'Static JSON endpoints describing the Cellular Agriculture AI Library.',
       description:
-        'Seven static JSON files, served by GET, with nothing to install or authenticate. ' +
+        'Static JSON files, served by GET, with nothing to install or authenticate. ' +
         'Generated from the same schemas that validate the payloads, in the same build step ' +
         'that writes them. ' +
         // Spelled out because the mirror is the DEFAULT path for the primary consumer, not

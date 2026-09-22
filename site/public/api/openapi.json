@@ -5,7 +5,7 @@
     "title": "CAAIL agent API",
     "version": "2026-09-22",
     "summary": "Static JSON endpoints describing the Cellular Agriculture AI Library.",
-    "description": "Seven static JSON files, served by GET, with nothing to install or authenticate. Generated from the same schemas that validate the payloads, in the same build step that writes them. The paths below are absolute on the GitHub Pages origin, https://tucca-cellag.github.io. The same files are mirrored per-filename at https://raw.githubusercontent.com/tucca-cellag/caail/main/site/public/api/, which some clients can reach when Pages is not allow-listed. Resolve that mirror by filename; do not join the paths below onto it.",
+    "description": "Static JSON files, served by GET, with nothing to install or authenticate. Generated from the same schemas that validate the payloads, in the same build step that writes them. The paths below are absolute on the GitHub Pages origin, https://tucca-cellag.github.io. The same files are mirrored per-filename at https://raw.githubusercontent.com/tucca-cellag/caail/main/site/public/api/, which some clients can reach when Pages is not allow-listed. Resolve that mirror by filename; do not join the paths below onto it.",
     "license": {
       "name": "MIT (CAAIL curation). Linked third-party resources keep their own licenses.",
       "identifier": "MIT"
@@ -139,6 +139,25 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Datasets"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/caail/api/reports.json": {
+      "get": {
+        "operationId": "getReports",
+        "summary": "Field reports — recurring institutional state-of-field surveys",
+        "description": "Recurring institutional surveys of the field (GFI State of the Industry and the like), one record per edition. Each carries `seriesSlug`, `editionLabel`, and derived recency: recommend the record with `current: true` for its series, and treat any record with a non-null `supersededBy` (the id of the current edition) as historical only. `seriesEditions` lists every edition id of the series, oldest to newest, so you can walk the history. A one-off with `seriesSlug: null` is its own latest.",
+        "responses": {
+          "200": {
+            "description": "Field reports — recurring institutional state-of-field surveys",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Reports"
                 }
               }
             }
@@ -290,6 +309,11 @@
                 "type": "integer",
                 "minimum": 0,
                 "maximum": 9007199254740991
+              },
+              "fieldReportEditions": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
               }
             },
             "required": [
@@ -304,7 +328,8 @@
               "catalogTotal",
               "datasetsCurated",
               "datasetsInventoryRows",
-              "datasetsTotal"
+              "datasetsTotal",
+              "fieldReportEditions"
             ],
             "additionalProperties": false
           },
@@ -576,6 +601,26 @@
         "required": [
           "entries",
           "inventory",
+          "corpusDate"
+        ],
+        "additionalProperties": false
+      },
+      "Reports": {
+        "type": "object",
+        "properties": {
+          "reports": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Report"
+            }
+          },
+          "corpusDate": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          }
+        },
+        "required": [
+          "reports",
           "corpusDate"
         ],
         "additionalProperties": false
@@ -1643,6 +1688,81 @@
           "links",
           "topics",
           "subseries"
+        ],
+        "additionalProperties": false
+      },
+      "Report": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "seriesSlug": {
+            "default": null,
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "editionLabel": {
+            "type": "string"
+          },
+          "current": {
+            "type": "boolean"
+          },
+          "supersededBy": {
+            "default": null,
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "seriesEditions": {
+            "default": [],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "topics": {
+            "default": [],
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TopicRef"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "url",
+          "seriesSlug",
+          "editionLabel",
+          "current",
+          "supersededBy",
+          "seriesEditions",
+          "topics"
         ],
         "additionalProperties": false
       }

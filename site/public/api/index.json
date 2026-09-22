@@ -28,7 +28,8 @@
     "datasetsTotal": 238,
     "software": 142,
     "databases": 150,
-    "catalogTotal": 292
+    "catalogTotal": 292,
+    "fieldReportEditions": 2
   },
   "endpoints": [
     {
@@ -58,6 +59,10 @@
     {
       "path": "datasets.json",
       "use": "Two arrays, together the whole dataset corpus. `entries` = curated dataset entries (portals, atlases, GEMs, reference corpora, and the AI/ML benchmark and evaluation datasets on page \"Benchmarks\"; kind atlas/gem/other). `inventory` = the per-species inventory rows (kind \"inventory\") — the per-study deposits with accession, tissue, assay type and size, keyed by the source page's own column labels. Filter either by `page` (e.g. \"Cow\", \"Benchmarks\"). Use the inventory rows for \"what could I combine my own run with\", and page \"Benchmarks\" for \"what could I evaluate a model against\"."
+    },
+    {
+      "path": "reports.json",
+      "use": "Field reports: recurring institutional state-of-field surveys (GFI State of the Industry and the like), one record per edition. When recommending one, use the record with `current: true` for its series and treat any record with a `supersededBy` id as historical only; `seriesEditions` walks the history. The latest edition is derived, so it stays correct as new editions land."
     },
     {
       "path": "topics.json",

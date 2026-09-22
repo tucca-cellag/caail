@@ -1,0 +1,33 @@
+{
+  "reports": [
+    {
+      "id": "report:gfi-state-of-the-industry-2026",
+      "title": "GFI State of the Industry 2026",
+      "url": "https://gfi.org/resource/state-of-the-industry-downloads/",
+      "seriesSlug": "gfi-state-of-the-industry",
+      "editionLabel": "2026",
+      "current": true,
+      "supersededBy": null,
+      "seriesEditions": [
+        "report:gfi-state-of-the-industry-2024",
+        "report:gfi-state-of-the-industry-2026"
+      ],
+      "topics": []
+    },
+    {
+      "id": "report:gfi-state-of-the-industry-2024",
+      "title": "GFI State of the Industry 2024",
+      "url": "https://gfi.org/resource/state-of-the-industry-downloads/",
+      "seriesSlug": "gfi-state-of-the-industry",
+      "editionLabel": "2024",
+      "current": false,
+      "supersededBy": "report:gfi-state-of-the-industry-2026",
+      "seriesEditions": [
+        "report:gfi-state-of-the-industry-2024",
+        "report:gfi-state-of-the-industry-2026"
+      ],
+      "topics": []
+    }
+  ],
+  "corpusDate": "2026-09-22"
+}
