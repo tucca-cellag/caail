@@ -8,6 +8,7 @@
  * never drift.
  */
 import talks from '../content/data/talks.json';
+import { siteSlug } from './heading-slug';
 
 export interface TalkSection {
   heading: string;
@@ -15,13 +16,9 @@ export interface TalkSection {
   slug: string;
 }
 
-/** Slugify a heading to a stable anchor id. */
-export function slug(s: string): string {
-  return s
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '');
-}
+/** Slugify a heading to a stable anchor id (the rule lives in heading-slug.ts,
+ *  where the link rewriters can reach it without importing talks.json). */
+export const slug = siteSlug;
 
 /** Talks.md section headings, in document order, with anchor slugs. */
 export function talkSections(): TalkSection[] {

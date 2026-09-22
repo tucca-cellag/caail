@@ -78,6 +78,10 @@ describe('rewriteCaailLinks', () => {
     expect(urls('[Talks](../Talks.md)', 'ResearchAreas/Bioprocess.md'))
       .toEqual(['/caail/talks/']);
   });
+  it('translates an anchored Talks link to the section id /talks/ renders', () => {
+    expect(urls('[talks](./Talks.md#ai-agents--foundation-models-for-biology)', 'Software.md'))
+      .toEqual(['/caail/talks/#ai-agents-foundation-models-for-biology']);
+  });
   it('keeps the GitHub blob for an ANCHORED link to a dedicated route', () => {
     // The card page mints its own anchors, so the on-site route would drop the
     // reader at the top of the page; the blob still deep-links.
@@ -98,7 +102,8 @@ describe('DEDICATED_ROUTES', () => {
   it('points every entry at a route that has a page', () => {
     for (const route of Object.values(DEDICATED_ROUTES)) {
       const page = route === '/' ? 'index' : route.replace(/^\/|\/$/g, '');
-      expect(existsSync(join(DOCS, `${page}.mdx`)), route).toBe(true);
+      const found = ['.mdx', '.md'].some((ext) => existsSync(join(DOCS, `${page}${ext}`)));
+      expect(found, `${route}: no src/content/docs/${page}.md(x)`).toBe(true);
     }
   });
   it('is disjoint from CAAIL_PAGES, which would render a second page at the route', () => {

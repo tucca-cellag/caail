@@ -27,7 +27,7 @@ import { parseFile, sectionsAfter } from './markdown.js';
 import { itemFromListItem, sectionIntro } from './media.js';
 import { PrimersSchema, type PrimerItem, type Primers } from './types.js';
 import { CAAIL_PAGES } from '../../src/content/caail-pages.ts';
-import { DEDICATED_ROUTES } from '../../src/content/dedicated-routes.ts';
+import { dedicatedLink } from '../dedicated-links.ts';
 
 /** Repo root: parser → scripts → site → repo (three levels up). */
 const REPO_ROOT: string = fileURLToPath(new URL('../../../', import.meta.url));
@@ -50,9 +50,11 @@ const PRIMER_SOURCES: ReadonlyArray<{ slug: string; file: string }> = [
  * - A repo-relative `.md` link is resolved against the primer's directory and
  *   mapped to a same-site route: a dedicated route (Papers explorer, Software,
  *   Databases, Talks, sibling primer) or a canonical-prose page id. Unlike the
- *   shared `rewriteCaailLinks`, primers KEEP the section `#anchor` so a link can
- *   deep-link into e.g. Other Resources → Courses.
- * - Anything else (uncatalogued `.md`) falls back to a GitHub blob URL.
+ *   shared `rewriteCaailLinks`, primers KEEP a canonical-prose page's section
+ *   `#anchor` so a link can deep-link into e.g. Other Resources → Courses. A
+ *   dedicated route keeps an anchor only when `dedicatedLink` can show it exists.
+ * - Anything else (uncatalogued `.md`, or an anchor a dedicated route can't
+ *   resolve) falls back to a GitHub blob URL.
  *
  * @returns `{ url, internal }` — `internal` is true for same-site routes, which
  *   the component renders as same-tab nav cards rather than new-tab links.
@@ -68,9 +70,11 @@ export function rewritePrimerUrl(url: string, srcDir: string): { url: string; in
   const repoRel = posix.normalize(posix.join(srcDir, path)).replace(/^\.\//, '');
   const anchorSuffix = anchor ? `#${anchor}` : '';
 
-  const special = DEDICATED_ROUTES[repoRel];
+  // A card/island route keeps an anchor only when it is known to exist there;
+  // otherwise this falls through to the GitHub blob below (dedicated-links.ts).
+  const special = dedicatedLink(repoRel, anchor);
   if (special) {
-    return { url: `${BASE}${special}${anchorSuffix}`, internal: true };
+    return { url: `${BASE}${special}`, internal: true };
   }
 
   const id = CAAIL_PAGES.idForSourcePath(repoRel);
