@@ -33,9 +33,6 @@ import { SITE_BASE } from '../../src/content/site-config.ts';
 /** Repo root: parser → scripts → site → repo (three levels up). */
 const REPO_ROOT: string = fileURLToPath(new URL('../../../', import.meta.url));
 
-/** Site base path — must match astro.config.mjs `base`. */
-const BASE = SITE_BASE;
-
 /** The primers to build, in sidebar/display order: { slug, repo-relative file }. */
 const PRIMER_SOURCES: ReadonlyArray<{ slug: string; file: string }> = [
   { slug: 'cell-ag', file: 'Primers/CellAg.md' },
@@ -74,12 +71,12 @@ export function rewritePrimerUrl(url: string, srcDir: string): { url: string; in
   // otherwise this falls through to the GitHub blob below (dedicated-links.ts).
   const special = dedicatedLink(repoRel, anchor);
   if (special) {
-    return { url: `${BASE}${special}`, internal: true };
+    return { url: `${SITE_BASE}${special}`, internal: true };
   }
 
   const id = CAAIL_PAGES.idForSourcePath(repoRel);
   if (CAAIL_PAGES.byId(id)) {
-    return { url: `${BASE}/${id}/${anchorSuffix}`, internal: true };
+    return { url: `${SITE_BASE}/${id}/${anchorSuffix}`, internal: true };
   }
 
   return { url: `${GITHUB_BLOB_BASE}/${repoRel}${anchorSuffix}`, internal: false };

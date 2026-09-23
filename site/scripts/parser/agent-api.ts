@@ -81,7 +81,7 @@ export const PLACEMENT_NOTE =
   'method and application area. The residual uncertainty is precision, not inclusion: ' +
   'where a placement is off it is typically a closely related cell rather than a paper ' +
   'that does not belong. Cite the paper itself. How this is done, and how far it reaches: ' +
-  'https://tucca-cellag.github.io/caail/curation/';
+  `${SITE_URL}curation/`;
 
 /**
  * Make every site-relative link inside the payload's rendered HTML absolute.

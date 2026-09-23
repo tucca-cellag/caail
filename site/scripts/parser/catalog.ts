@@ -20,6 +20,7 @@ import type { Root, RootContent, Heading, Link, Paragraph } from 'mdast';
 
 import { parseFile } from './markdown.js';
 import { rewriteCaailLinks } from '../remark/rewrite-caail-links.js';
+import { SITE_BASE } from '../../src/content/site-config.ts';
 import { catalogTopicLookup, catalogItemIdLookup } from './topics.js';
 import { catalogLicenseLookup } from './licenses.js';
 import { catalogCitationLookup, loadCitedByCounts } from './citation-counts.js';
@@ -39,11 +40,11 @@ const DATABASES_PATH: string = fileURLToPath(
 const SUMMARY_PREFIX_RE = /^Summary:\s*/i;
 
 /**
- * Site base path, mirroring `BASE` in astro.config.mjs. Used by
+ * Site base path (site-config.ts, which astro.config.mjs also reads). Used by
  * rewriteCaailLinks so a repo-relative `.md` link inside an entry body resolves
  * to the same site route the prose pages use (e.g. `/caail/datasets/cow/`).
  */
-const CATALOG_BASE = '/caail';
+const CATALOG_BASE = SITE_BASE;
 
 // ---------------------------------------------------------------------------
 // Slug helpers (self-contained — mirrors papers.ts, kept local so this module

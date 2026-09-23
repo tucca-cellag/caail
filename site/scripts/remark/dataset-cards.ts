@@ -25,6 +25,7 @@ import { compactCount, citationTitle, openAlexWorksUrl } from '../../src/lib/cit
 import { isItemId, reportHref } from '../../src/lib/report.ts';
 import { entryHeadingDepth, isEntryHeading } from '../parser/datasets.ts';
 import { catalogNameKey } from '../parser/topics.ts';
+import { SITE_BASE } from '../../src/content/site-config.ts';
 
 export interface DatasetCardEntry {
   /** Frozen `ds:` id — what the card's report link carries. */
@@ -43,7 +44,7 @@ export interface DatasetCardEntry {
 }
 
 const DATA_PATH = fileURLToPath(new URL('../../src/content/data/datasets.json', import.meta.url));
-const BASE = '/caail';
+const BASE = SITE_BASE;
 
 /** HTML-escape a string for safe interpolation into a raw-HTML node. */
 function esc(s: string): string {

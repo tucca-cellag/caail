@@ -17,13 +17,15 @@
 import catalog from '../content/data/catalog.json';
 import papers from '../content/data/papers.json';
 import talks from '../content/data/talks.json';
+import { SITE_BASE, SITE_ORIGIN } from '../content/site-config';
 
 // ---------------------------------------------------------------------------
-// Identity constants — must match astro.config.mjs (site + base + WebSite @id).
+// Identity constants — from site-config.ts, which astro.config.mjs also reads
+// (site + base); WEBSITE_ID matches the WebSite @id it emits.
 // ---------------------------------------------------------------------------
 
-const ORIGIN = 'https://tucca-cellag.github.io';
-const BASE = '/caail';
+const ORIGIN = SITE_ORIGIN;
+const BASE = SITE_BASE;
 const WEBSITE_ID = `${ORIGIN}${BASE}/#website`;
 
 /** A schema.org node without its own `@context` (it rides the top-level @graph). */

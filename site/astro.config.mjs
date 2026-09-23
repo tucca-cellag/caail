@@ -8,15 +8,14 @@ import { stripLeadingH1 } from './scripts/remark/strip-leading-h1.ts';
 import { rewriteCaailLinks } from './scripts/remark/rewrite-caail-links.ts';
 import { datasetCards, loadDatasetEntriesByPage } from './scripts/remark/dataset-cards.ts';
 import { CAAIL_PAGES } from './src/content/caail-pages.ts';
-import { SITE_ORIGIN, SITE_BASE } from './src/content/site-config.ts';
+import { SITE_ORIGIN, SITE_BASE, SITE_URL } from './src/content/site-config.ts';
 
 // astro.config.mjs lives in site/ — one level up is the repo root (trailing slash)
 const REPO_ROOT = fileURLToPath(new URL('../', import.meta.url));
 const BASE = SITE_BASE;
 // The deployed origin, from site-config.ts. `site:` below, the analytics origin
-// guard and the agent API's absolute links all read it, so none can drift from
-// where the site actually deploys — if this ever moves to a TUCCA-owned domain,
-// the beacon and the API follow it in the same edit.
+// guard, the social card and JSON-LD URLs, and the parser's links all read that
+// module — if this ever moves to a TUCCA-owned domain, they follow it in one edit.
 const SITE = SITE_ORIGIN;
 const ANALYTICS_HOST = new URL(SITE).hostname;
 
@@ -134,10 +133,10 @@ export default defineConfig({
         },
         // Site-wide social card (Starlight emits twitter:card=summary_large_image
         // but no image by default). One branded 1200×630 card for every page.
-        { tag: 'meta', attrs: { property: 'og:image', content: 'https://tucca-cellag.github.io/caail/og.png' } },
+        { tag: 'meta', attrs: { property: 'og:image', content: `${SITE_URL}og.png` } },
         { tag: 'meta', attrs: { property: 'og:image:width', content: '1200' } },
         { tag: 'meta', attrs: { property: 'og:image:height', content: '630' } },
-        { tag: 'meta', attrs: { name: 'twitter:image', content: 'https://tucca-cellag.github.io/caail/og.png' } },
+        { tag: 'meta', attrs: { name: 'twitter:image', content: `${SITE_URL}og.png` } },
         // Structured data: Organization (TUCCA) + WebSite, for search engines
         // and AI answer-engines.
         {
@@ -148,20 +147,20 @@ export default defineConfig({
             '@graph': [
               {
                 '@type': 'Organization',
-                '@id': 'https://tucca-cellag.github.io/caail/#org',
+                '@id': `${SITE_URL}#org`,
                 name: 'Tufts University Center for Cellular Agriculture (TUCCA)',
                 url: 'https://cellularagriculture.tufts.edu/',
                 sameAs: ['https://github.com/tucca-cellag'],
               },
               {
                 '@type': 'WebSite',
-                '@id': 'https://tucca-cellag.github.io/caail/#website',
+                '@id': `${SITE_URL}#website`,
                 name: 'CAAIL: Cellular Agriculture AI Library',
-                url: 'https://tucca-cellag.github.io/caail/',
+                url: SITE_URL,
                 description:
                   'A curated, openly-licensed library at the intersection of cellular agriculture and artificial intelligence — papers and preprints, open-source software, databases, and per-species datasets.',
                 inLanguage: 'en',
-                publisher: { '@id': 'https://tucca-cellag.github.io/caail/#org' },
+                publisher: { '@id': `${SITE_URL}#org` },
               },
             ],
           }),
