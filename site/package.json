@@ -36,6 +36,7 @@
     "astro": "^6.4.8",
     "astro-icon": "^1.2.0",
     "cytoscape": "^3.33.4",
+    "github-slugger": "2.0.0",
     "hast-util-sanitize": "^5.0.2",
     "hast-util-to-html": "^9.0.5",
     "lite-youtube-embed": "^0.3.4",

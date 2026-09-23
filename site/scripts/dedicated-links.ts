@@ -25,9 +25,10 @@ import { fileURLToPath } from 'node:url';
 import { toString as mdastToString } from 'mdast-util-to-string';
 import type { Heading, Html } from 'mdast';
 import { visit } from 'unist-util-visit';
+import GithubSlugger from 'github-slugger';
 
 import { DEDICATED_ROUTES } from '../src/content/dedicated-routes.ts';
-import { githubSlug, siteSlug } from '../src/lib/heading-slug.ts';
+import { siteSlug } from '../src/lib/heading-slug.ts';
 import { parseFile } from './parser/markdown.js';
 
 export const GITHUB_BLOB_BASE = 'https://github.com/tucca-cellag/caail/blob/main';
@@ -42,6 +43,8 @@ type AnchorMap = ReadonlyMap<string, string | null>;
 
 export interface HeadingRef {
   depth: number;
+  /** A `##` directly under the document root: the only kind the site renders an id for. */
+  topLevel?: boolean;
   /** The text GitHub slugs: inline HTML removed. */
   text: string;
   /** The text the site's section id is built from (the parsers keep inline HTML); defaults to `text`. */
@@ -49,28 +52,20 @@ export interface HeadingRef {
 }
 
 /**
- * Build a route's anchor map. Keys follow GitHub: every heading is anchored, and
- * a repeated slug gets `-1`, `-2`… in document order. Values are the site id,
- * which only `##` sections render; two sections rendering one id is an error,
- * since the page would carry a duplicate id and one of them could not be linked.
+ * Build a route's anchor map. Keys are GitHub's anchors, from github-slugger with
+ * its per-file duplicate suffixes (`-1`, `-2`…). Values are the site id, which
+ * only top-level `##` sections render (sectionsAfter walks the root's children
+ * only); two sections rendering one id is an error, since the page would carry a
+ * duplicate id and one of them could not be linked.
  */
 export function sectionAnchors(repoRel: string, headings: readonly HeadingRef[]): AnchorMap {
   const map = new Map<string, string | null>();
-  const suffixes = new Map<string, number>();
+  const slugger = new GithubSlugger();
   const seenSite = new Map<string, string>();
-  for (const { depth, text, siteText = text } of headings) {
-    // github-slugger: a taken slug gets the next free `-N`, skipping any `-N` an
-    // earlier heading already claimed by its own text ("Demos 1" → demos-1).
-    const base = githubSlug(text);
-    let key = base;
-    if (map.has(key)) {
-      let n = suffixes.get(base) ?? 0;
-      do key = `${base}-${++n}`;
-      while (map.has(key));
-      suffixes.set(base, n);
-    }
+  for (const { depth, text, siteText = text, topLevel = true } of headings) {
+    const key = slugger.slug(text);
     let id: string | null = null;
-    if (depth === 2) {
+    if (depth === 2 && topLevel) {
       id = siteSlug(siteText);
       const prior = seenSite.get(id);
       if (prior !== undefined) {
@@ -103,9 +98,10 @@ function normalizeAnchor(anchor: string): string {
  */
 function headingsOf(tree: ReturnType<typeof parseFile>): HeadingRef[] {
   const out: HeadingRef[] = [];
-  visit(tree, 'heading', (h: Heading) => {
+  visit(tree, 'heading', (h: Heading, _index, parent) => {
     out.push({
       depth: h.depth,
+      topLevel: parent === tree,
       text: mdastToString(h, { includeHtml: false }).trim(),
       siteText: mdastToString(h).trim(),
     });
@@ -113,11 +109,17 @@ function headingsOf(tree: ReturnType<typeof parseFile>): HeadingRef[] {
   return out;
 }
 
-/** Explicit HTML targets (`<a id="x">`, `name="x"`), which GitHub also resolves. */
+/**
+ * Explicit link targets GitHub also resolves: an `id` or `name` attribute on an
+ * `<a>` element. Only the attribute itself counts (not `data-id`), and only on
+ * `<a>` (not `<input name>` or `<meta name>`).
+ */
 function htmlTargets(tree: ReturnType<typeof parseFile>): string[] {
   const out: string[] = [];
   visit(tree, 'html', (n: Html) => {
-    for (const m of n.value.matchAll(/\b(?:id|name)\s*=\s*["']([^"']+)["']/gi)) out.push(m[1].toLowerCase());
+    for (const tag of n.value.matchAll(/<a\b[^>]*>/gi)) {
+      for (const m of tag[0].matchAll(/\s(?:id|name)\s*=\s*["']([^"']+)["']/gi)) out.push(m[1].toLowerCase());
+    }
   });
   return out;
 }

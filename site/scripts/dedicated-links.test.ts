@@ -17,6 +17,11 @@ describe('githubSlug', () => {
     expect(githubSlug('AI Agents & Foundation Models for Biology')).toBe('ai-agents--foundation-models-for-biology');
     expect(githubSlug('Applied AI/ML for Cellular Agriculture')).toBe('applied-aiml-for-cellular-agriculture');
   });
+  it('matches GitHub on Unicode number classes a hand-written rule got wrong', () => {
+    // github-slugger drops subscripts, superscripts and vulgar fractions.
+    expect(githubSlug('Café — CO₂')).toBe('café--co');
+    expect(githubSlug('E² scaling')).toBe('e-scaling');
+  });
 });
 
 describe('dedicatedLink', () => {
@@ -103,9 +108,15 @@ describe('dedicatedLink', () => {
     // id on /talks/, so they keep the blob rather than failing the build.
     const root = mkdtempSync(join(tmpdir(), 'caail-dl-'));
     try {
-      writeFileSync(join(root, 'Talks.md'), '# T\n\n## Real\n\n- item\n\n  ### Nested\n\n<a id="featured"></a>\n');
+      writeFileSync(
+        join(root, 'Talks.md'),
+        '# T\n\n## Real\n\n- item\n\n  ## Nested\n\n<a id="featured"></a>\n\n<span data-id="decoy"></span>\n',
+      );
+      // a nested ## is a GitHub anchor but not a rendered section: blob, not a dead site id
       expect(dedicatedLink('Talks.md', 'nested', root)).toBeUndefined();
       expect(dedicatedLink('Talks.md', 'featured', root)).toBeUndefined();
+      // data-id is not an anchor GitHub resolves, so it is a broken link like any other
+      expect(() => dedicatedLink('Talks.md', 'decoy', root)).toThrow(/not a GitHub anchor/);
       expect(() => dedicatedLink('Talks.md', 'absent', root)).toThrow(/not a GitHub anchor/);
     } finally {
       rmSync(root, { recursive: true, force: true });
