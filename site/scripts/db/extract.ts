@@ -8,7 +8,7 @@
 import { readFileSync } from 'node:fs';
 import { parseMarkdown, sectionsAfter } from '../parser/markdown.js';
 import { entryHeadingDepth, isEntryHeading, pageFromPath } from '../parser/datasets.js';
-import { isEditionSort } from '../parser/reports.js';
+import { isEditionSort, EDITION_SORT_FORMS } from '../parser/reports.js';
 import { slugify } from './lib.js';
 import type { Table, TableRow, TableCell } from 'mdast';
 
@@ -259,7 +259,7 @@ export function extractReports(path: string): ReportRaw[] {
     if (!isEditionSort(editionSort)) {
       throw new Error(
         `extractReports: the report "${name}" in ${path} is published '${editionSort}', ` +
-          'which is not a valid YYYY, YYYY-MM or YYYY-MM-DD date.',
+          `which is not a valid ${EDITION_SORT_FORMS} date.`,
       );
     }
     out.push({

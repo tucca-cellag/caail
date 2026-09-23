@@ -122,6 +122,18 @@ describe('seriesRecency (the shared definition of latest)', () => {
     expect(forward.bySeries.get('s')!.editions).toEqual(['r:a', 'r:b', 'r:c']);
   });
 
+  // Adjacent-pair detection is complete only because string order puts a prefix directly before
+  // its first extension. These pin it where the nest is surrounded by editions that do not nest.
+  it.each([
+    ['interleaved with non-nesting editions', ['2025-12', '2026', '2026-03-01', '2026-05', '2027']],
+    ['three levels deep', ['2026', '2026-03', '2026-03-01']],
+    ['a duplicate followed by a nest', ['2026', '2026', '2026-03']],
+    ['the nest listed first in the document', ['2026-03-01', '2027', '2026']],
+  ])('detects a nest %s', (_label, sorts) => {
+    const { problems } = seriesRecency(sorts.map((s, i) => ({ ...row(`r:${i}`, 's', s), ordinal: i })));
+    expect(problems.some((p) => / contains /.test(p))).toBe(true);
+  });
+
   it('isEditionSort accepts the three forms and checks the calendar', () => {
     // 2000 is a leap year (divisible by 400), 1900 is not; 0004 checks years Date.UTC would misread.
     for (const ok of ['2026', '2026-01', '2026-12', '2026-01-31', '2024-02-29', '2000-02-29', '0004-02-29'])
