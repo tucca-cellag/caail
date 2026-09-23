@@ -102,7 +102,7 @@ The matrix and the `## References` list must be kept in sync:
    | [Reinforcement Learning](https://en.wikipedia.org/wiki/Reinforcement_learning) | | | [42](#42) | | |
    ```
 
-   Then add an entry for it in `site/scripts/parser/search-terms.json` (its search vocabulary, served in `api/taxonomy.json`); the build fails while any row or column lacks one.
+   Then define the row in `Taxonomy.md` and add an entry for it in `site/scripts/parser/search-terms.json` (its search vocabulary, served in `api/taxonomy.json`); the build fails while any area or method defined in `Taxonomy.md` lacks one, keyed by its heading text.
 
 6. **If the paper covers a research area that isn't yet a column**, see "Adding a new research area" below.
 
@@ -216,7 +216,7 @@ A research area is a column in the `Papers.md` matrix, backed by a deep-dive pag
    | | ... | [Protein Design](./Taxonomy.md#protein-design) | ... |
    ```
 
-   Then add an entry for it in `site/scripts/parser/search-terms.json` (its search vocabulary, served in `api/taxonomy.json`); the build fails while any row or column lacks one. An empty list is allowed and means the column is found by method terms alone.
+   Then add an entry for it in `site/scripts/parser/search-terms.json` (its search vocabulary, served in `api/taxonomy.json`); the build fails while any area or method defined in `Taxonomy.md` lacks one, keyed by its heading text. An empty list is allowed: the column is then never assigned by term matching, and a curator assigns it to work found through method terms.
 
 3. **Register the page for the site** in `site/src/content/caail-pages.ts` (group `research-areas`,
    with its own meta description). This is not optional: `caail-pages.test.ts` asserts every file in

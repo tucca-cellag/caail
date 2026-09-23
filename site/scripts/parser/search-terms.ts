@@ -36,6 +36,8 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
+import { ZodError } from 'zod';
+
 import { SearchTermsSchema, type SearchTerms, type TaxonomyData } from './types.js';
 
 /** Absolute path to the committed search vocabulary, stable regardless of cwd. */
@@ -48,16 +50,6 @@ const COVERED_AXES = [
   ['areas', 'area'],
   ['methods', 'method'],
 ] as const;
-
-/**
- * The stored form the contract promises: lowercase ASCII words joined by single spaces or
- * hyphens. An allow-list rather than a list of things to reject, because the contract tells a
- * consumer to normalize the text it searches (NFKC, default-ignorables removed, dashes
- * folded), and a stored term carrying anything that step removes or rewrites (an en dash, a
- * ligature, a soft hyphen, a zero-width space) is compared against normalized text and
- * silently matches nothing.
- */
-const STORED_FORM = /^[a-z0-9]+(?:[ -][a-z0-9]+)*$/;
 
 /**
  * The contract's regular plural rules, one row each. `name` is the wording the contract uses;
@@ -97,14 +89,25 @@ function sameToConsumer(a: string, b: string): boolean {
  *                  keys are the labels the file must cover.
  * @param path      Path to the terms file (defaults to the committed one).
  * @throws          If the file fails its schema, if its area or method keys differ from
- *                  the live axes in either direction, or if a term is not in the stored
- *                  form or appears twice in one list.
+ *                  the live axes in either direction, or if a term appears twice in one list
+ *                  as a consumer reads it. Every failure names the file.
  */
 export function buildSearchTerms(
   taxonomy: TaxonomyData,
   path: string = SEARCH_TERMS_PATH,
 ): SearchTerms {
-  const terms = SearchTermsSchema.parse(JSON.parse(readFileSync(path, 'utf-8')));
+  let terms: SearchTerms;
+  try {
+    terms = SearchTermsSchema.parse(JSON.parse(readFileSync(path, 'utf-8')));
+  } catch (err) {
+    // Name the file on every failure, not only the checks below. A ZodError's own message is
+    // its issues JSON-encoded, which escapes the quotes each term is shown in, so list them.
+    const detail =
+      err instanceof ZodError
+        ? err.issues.map((i) => `${i.path.join('.') || '(root)'}: ${i.message} (${i.code})`).join('\n  - ')
+        : String(err);
+    throw new Error(`search-terms: ${path} failed to load:\n  - ${detail}`);
+  }
   const coverage: string[] = [];
   const form: string[] = [];
 
@@ -129,13 +132,6 @@ export function buildSearchTerms(
     ...Object.entries(terms.methods).map(([l, v]) => [`methods["${l}"]`, v] as [string, string[]]),
   ];
   for (const [where, list] of lists) {
-    const bad = list.filter((t) => !STORED_FORM.test(t));
-    if (bad.length > 0) {
-      form.push(
-        `${where}: not lowercase ASCII words joined by single spaces or hyphens: ` +
-          bad.map((t) => `"${t}"`).join(', '),
-      );
-    }
     // Repeats are judged as the consumer sees them, so "water-holding" and "water holding",
     // or "cell line" and "cell lines", count as one term listed twice.
     const dupes = list.filter((t, i) => list.slice(0, i).some((earlier) => sameToConsumer(earlier, t)));
@@ -149,15 +145,14 @@ export function buildSearchTerms(
         `Every research area and AI/ML method in Taxonomy.md needs exactly one entry, keyed by ` +
         `its heading text. When a row or column is added or renamed, add or move its entry ` +
         `here in the same change. An area may hold an empty list, which says deliberately that ` +
-        `it is found by method terms alone.`,
+        `term matching never assigns it.`,
     );
   }
   if (form.length > 0) {
     sections.push(
       `has terms the matching contract cannot use:\n  - ${form.join('\n  - ')}\n` +
-        `Store each term as lowercase ASCII words joined by single spaces or hyphens, in ` +
-        `singular form, once per list; a consumer treats hyphen and space, and a word and its ` +
-        `regular plural, as the same term.`,
+        `List each term once; a consumer treats hyphen and space, and a word and its regular ` +
+        `plural, as the same term.`,
     );
   }
   if (sections.length > 0) throw new Error(`search-terms: ${path} ${sections.join('\nIt also ')}`);

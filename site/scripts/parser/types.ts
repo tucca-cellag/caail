@@ -816,13 +816,26 @@ export const TaxonomyDataSchema = z.object({
  *
  * - `contract` states how a consumer must match the terms (case, dashes, plurals).
  * - `areas` / `methods` are keyed by the same labels as `axes.area` / `axes.method`.
- *   A term may appear under several methods: the foundation-model and agent rows share
+ *   A term may appear under several areas or methods: the foundation-model and agent rows share
  *   vocabulary that abstract text cannot tell apart.
  * - `methodGeneric` marks work as applying SOME AI method ("machine learning"), which is how
  *   most classical-ML abstracts are written. A generic term that is also in a method's list
  *   labels that method too; the rest label no row.
  */
-const TermListSchema = z.array(z.string());
+/**
+ * The stored form of a term: lowercase ASCII words joined by single spaces or hyphens. In the
+ * schema rather than only in the loader, so openapi.json publishes it as the item `pattern`.
+ * An allow-list, because the contract tells a consumer to normalize the text it searches
+ * (NFKC, default-ignorables removed, dashes folded), and a stored term carrying anything that
+ * step removes or rewrites is compared against normalized text and silently matches nothing.
+ */
+export const SEARCH_TERM_FORM = /^[a-z0-9]+(?:[ -][a-z0-9]+)*$/;
+const TermListSchema = z.array(
+  z.string().regex(SEARCH_TERM_FORM, {
+    error: (iss) =>
+      `not lowercase ASCII words joined by single spaces or hyphens: ${JSON.stringify(iss.input)}`,
+  }),
+);
 export const SearchTermsSchema = z
   .object({
     contract: z.string().min(1),

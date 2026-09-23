@@ -43,8 +43,10 @@ describe('buildSearchTerms (committed file)', () => {
     expect(Object.keys(terms.methods).sort()).toEqual(Object.keys(taxonomy.axes.method).sort());
   });
 
-  it('states every plural rule the loader applies, so consumers are told the same rules', () => {
-    for (const rule of PLURAL_RULES) expect(terms.contract, rule.name).toContain(rule.name);
+  it('states exactly the plural rules the loader applies, no more and no fewer', () => {
+    const clause = /regular plural: ([^.]+)\./.exec(terms.contract);
+    expect(clause, 'contract names its plural rules after "regular plural:"').not.toBeNull();
+    expect(clause![1].split(', ').sort()).toEqual(PLURAL_RULES.map((r) => r.name).sort());
   });
 });
 
@@ -72,7 +74,9 @@ describe('buildSearchTerms (failure modes)', () => {
 
   it('rejects invisible characters a consumer would fold away', () => {
     const path = variant((t) => { t.methodGeneric.push('machine\u00adlearning', 'deep\u200blearning'); });
-    expect(() => buildSearchTerms(taxonomy, path)).toThrow(/joined by single spaces or hyphens: "machine.learning", "deep.learning"/);
+    const run = () => buildSearchTerms(taxonomy, path);
+    expect(run).toThrow(/joined by single spaces or hyphens: "machine\u00adlearning"/);
+    expect(run).toThrow(/joined by single spaces or hyphens: "deep\u200blearning"/);
   });
 
   it('treats a word and its regular plural as the same term, as the contract does', () => {
@@ -103,6 +107,14 @@ describe('buildSearchTerms (failure modes)', () => {
   it('names the file it actually loaded, not the committed default', () => {
     const path = variant((t) => { delete t.areas[firstArea]; });
     expect(() => buildSearchTerms(taxonomy, path)).toThrow(path);
+  });
+
+  it('names the file on a load failure too, not only on the checks after parsing', () => {
+    const badJson = join(scratch, 'not-json.json');
+    writeFileSync(badJson, '{ "contract": ');
+    expect(() => buildSearchTerms(taxonomy, badJson)).toThrow(`${badJson} failed to load`);
+    const badSchema = variant((t) => { t.surprise = []; });
+    expect(() => buildSearchTerms(taxonomy, badSchema)).toThrow(`${badSchema} failed to load`);
   });
 
   it('rejects an empty method list, while an empty area list is allowed', () => {

@@ -1,5 +1,5 @@
 {
-  "contract": "Terms are lowercase ASCII words joined by single spaces or hyphens, stored in singular form; an irregular plural (media) is listed as its own term. To match: NFKC-normalize the text, remove default-ignorable characters such as soft hyphens and zero-width spaces, fold case, fold every Unicode dash to a hyphen, treat a hyphen and any run of whitespace as the same, and match whole words, allowing each word its regular plural: +s, +es, y to ies, is to es, ix to ices. Every matching term counts; there is no longest-match rule. A term may appear under several areas or methods, and a match labels every one. An area with an empty list is found by method terms alone. methodGeneric marks text as applying some AI method; a generic term that is also in a method's list labels that method too.",
+  "contract": "Terms are lowercase ASCII words joined by single spaces or hyphens, stored in singular form. Irregular plurals are not derived, so any that matter (media, mycelia) are listed as their own terms, as are closed and hyphenated spellings of one word (pretrained, pre-trained). To match: NFKC-normalize the text, remove default-ignorable characters such as soft hyphens and zero-width spaces, fold case, fold every Unicode dash to a hyphen, treat a hyphen and any run of whitespace as the same, and match whole words, allowing each word its regular plural: +s, +es, y to ies, is to es, ix to ices. Terms produce labels, not counts: a passage labels an area or method once, however many of its terms match, and there is no longest-match rule. A term may appear under several areas or methods, and a match labels every one. An area with an empty list is never assigned by term matching: its work is found through method terms alone, and a curator assigns the area. methodGeneric marks text as applying some AI method; a generic term that is also in a method's list labels that method too.",
   "areas": {
     "Media Optimization": [
       "culture medium",
@@ -29,7 +29,10 @@
       "oxygen carrier",
       "macromolecular crowding",
       "transferrin",
-      "recombinant albumin"
+      "recombinant albumin",
+      "media composition",
+      "medium design",
+      "medium development"
     ],
     "Cellular Engineering": [
       "single-cell",
@@ -163,7 +166,8 @@
       "freeze alignment",
       "soy protein",
       "pea protein",
-      "wheat gluten"
+      "wheat gluten",
+      "mycelia"
     ],
     "Sensory Prediction": [
       "flavor",
@@ -383,7 +387,8 @@
       "llm",
       "generative pretraining",
       "generative ai",
-      "generative pre-trained transformer"
+      "generative pre-trained transformer",
+      "generative pre-training"
     ],
     "Foundation Models: Masked Language Modeling": [
       "bert",
@@ -442,7 +447,8 @@
       "automated discovery",
       "deep research",
       "language agent",
-      "scientific knowledge"
+      "scientific knowledge",
+      "coscientist"
     ],
     "General-Purpose Biomedical Agents": [
       "ai agent",
@@ -454,7 +460,8 @@
       "biomedical agent",
       "conversational bioinformatics",
       "biomedical question answering",
-      "life science analysis"
+      "life science analysis",
+      "multiagent"
     ],
     "Chemistry / Synthesis Agents": [
       "chemistry agent",
@@ -475,7 +482,8 @@
       "multi-agent",
       "language model agent",
       "llm-based agent",
-      "self-planning agent"
+      "self-planning agent",
+      "multiagent"
     ],
     "Robot Scientists & Lab Automation": [
       "robot scientist",

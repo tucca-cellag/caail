@@ -213,8 +213,8 @@ export const API_ENDPOINTS: readonly ApiEndpointSpec[] = [
       '`searchTerms` holds the curated search vocabulary: `areas` and `methods` keyed by the ' +
       'same labels as `axes`, `methodGeneric` for text that applies some AI method (a generic term ' +
       'also listed under a method labels that method too), ' +
-      'and a `contract` saying how to match the terms. An empty area list is deliberate: that ' +
-      'area is found by method terms alone.',
+      'and a `contract` saying how to match the terms. An empty area list is deliberate: term ' +
+      'matching never assigns that area, and a curator assigns it to work found through method terms.',
   },
 ];
 
