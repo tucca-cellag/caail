@@ -41,14 +41,14 @@ describe('generateData()', () => {
     expect(result).toHaveProperty('counts');
   });
 
-  it('papersRefs === 346', () => {
-    // 346 = current Papers.md reference count; bump when refs are added.
-    expect(result.papersRefs).toBe(346);
+  it('papersRefs === 348', () => {
+    // 348 = current Papers.md reference count; bump when refs are added.
+    expect(result.papersRefs).toBe(348);
   });
 
-  it('counts.papers === 346', () => {
-    // 346 = current Papers.md reference count; bump when refs are added.
-    expect(result.counts.papers).toBe(346);
+  it('counts.papers === 348', () => {
+    // 348 = current Papers.md reference count; bump when refs are added.
+    expect(result.counts.papers).toBe(348);
   });
 
   it('counts.datasets === 238 (every catalogued dataset)', () => {
@@ -79,18 +79,18 @@ describe('generateData()', () => {
     expect(result.success).toBe(true);
   });
 
-  it('parsed papers.json has references.length === 346', () => {
+  it('parsed papers.json has references.length === 348', () => {
     const raw = readFileSync(join(tmpDir, 'papers.json'), 'utf-8');
     const parsed = JSON.parse(raw);
-    // 346 = current Papers.md reference count; bump when refs are added.
-    expect(parsed.references.length).toBe(346);
+    // 348 = current Papers.md reference count; bump when refs are added.
+    expect(parsed.references.length).toBe(348);
   });
 
-  it('parsed counts.json has papers === 346', () => {
+  it('parsed counts.json has papers === 348', () => {
     const raw = readFileSync(join(tmpDir, 'counts.json'), 'utf-8');
     const parsed = JSON.parse(raw);
-    // 346 = current Papers.md reference count; bump when refs are added.
-    expect(parsed.papers).toBe(346);
+    // 348 = current Papers.md reference count; bump when refs are added.
+    expect(parsed.papers).toBe(348);
   });
 
   it('papers.json is pretty-printed (contains newlines)', () => {

@@ -65,7 +65,7 @@ _Avoid_: classification (when naming the result rather than the act), tagging, m
 A reference in `Papers.md`'s `## References` section, the only section whose entries take
 matrix cells. Reviews & Perspectives and the four reference-work sections are not
 matrix-eligible.
-_Avoid_: paper (ambiguous: 346 references exist and 230 are matrix-eligible, so an
+_Avoid_: paper (ambiguous: 348 references exist and 230 are matrix-eligible, so an
 unqualified count is always the wrong number)
 
 ### The subject axis

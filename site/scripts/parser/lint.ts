@@ -246,13 +246,16 @@ function formatGapSegment(start: number, end: number): string {
 // ---------------------------------------------------------------------------
 
 /**
- * Known permalink hosts that stand in for a DOI on theses and workshop/poster
- * papers (eScholarship, OpenReview). Deliberately a host allowlist, not "any
+ * Known permalink URL prefixes that stand in for a DOI on theses, workshop/poster
+ * papers and DOI-less institutional reports: a whole host for eScholarship and
+ * OpenReview, but only `gfi.org/resource/` for GFI, whose other paths (blog,
+ * news) are not report permalinks. Deliberately an allowlist, not "any
  * non-doi.org URL": a mistyped landing-page URL for a resource that *does* have
  * a DOI (e.g. a `zenodo.org` page instead of its `https://doi.org/…` form)
- * should still warn. Extend this list as new legitimate permalink hosts appear.
+ * should still warn. When extending it, add the narrowest prefix that
+ * identifies the permalink, not a bare host.
  */
-const PERMALINK_HOST_RE = /https?:\/\/(?:www\.)?(?:escholarship\.org|openreview\.net)\//i;
+const PERMALINK_PREFIX_RE = /https?:\/\/(?:www\.)?(?:escholarship\.org|openreview\.net|gfi\.org\/resource)\//i;
 
 /**
  * Preprint-server DOI prefixes for venues that have no journal: bioRxiv/medRxiv
@@ -267,9 +270,10 @@ const PREPRINT_DOI_RE = /^10\.(?:1101|64898|48550)\//;
  * Is a null field legitimately absent for this reference kind, rather than a
  * parse failure a human could fix by editing the citation text? (Issue #72.)
  *
- *   - doi:     theses and workshop/poster papers carry a known permalink
- *              (eScholarship, OpenReview) instead of a DOI. A null doi is
- *              expected only when one of those hosts is present.
+ *   - doi:     theses, workshop/poster papers and GFI reports carry a known
+ *              permalink (eScholarship, OpenReview, gfi.org/resource/) instead
+ *              of a DOI. A null doi is expected only when one of those
+ *              prefixes is present.
  *   - journal: preprints (identified by a preprint-server DOI prefix) have no
  *              journal — a null there is correct, not a parse miss.
  *
@@ -277,7 +281,7 @@ const PREPRINT_DOI_RE = /^10\.(?:1101|64898|48550)\//;
  * one of these signals) is still flagged.
  */
 function isExpectedNull(ref: Reference, field: string): boolean {
-  if (field === 'doi') return PERMALINK_HOST_RE.test(ref.raw);
+  if (field === 'doi') return PERMALINK_PREFIX_RE.test(ref.raw);
   if (field === 'journal') return ref.doi !== null && PREPRINT_DOI_RE.test(ref.doi);
   return false;
 }

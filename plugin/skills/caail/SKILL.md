@@ -1,6 +1,6 @@
 ---
 name: caail
-description: Query CAAIL, a curated library of the AI and machine-learning work in cellular agriculture — 346 papers mapped by AI method against research area, plus the software, databases and per-species datasets the field uses. Use when the user is choosing tools, datasets or databases for a cell-ag experiment, pipeline or analysis; asking what AI methods have been applied to media optimization, cell-line engineering, bioprocess scale-up, scaffolding or sensory prediction; looking for cultivated-meat or alternative-protein data for a species; asking whether something has been studied; or asking what CAAIL contains. Also triggers on cultivated meat, cell-ag, cellular agriculture, alternative protein, and on questions about which dataset or tool to use for a cell-ag problem.
+description: Query CAAIL, a curated library of the AI and machine-learning work in cellular agriculture — 348 papers mapped by AI method against research area, plus the software, databases and per-species datasets the field uses. Use when the user is choosing tools, datasets or databases for a cell-ag experiment, pipeline or analysis; asking what AI methods have been applied to media optimization, cell-line engineering, bioprocess scale-up, scaffolding or sensory prediction; looking for cultivated-meat or alternative-protein data for a species; asking whether something has been studied; or asking what CAAIL contains. Also triggers on cultivated meat, cell-ag, cellular agriculture, alternative protein, and on questions about which dataset or tool to use for a cell-ag problem.
 ---
 
 # CAAIL
@@ -124,7 +124,7 @@ The matrix answers "what has been placed where". It does not answer "what is ind
 ## Counting
 
 `papers.json` spans six sections and only `References` (230) is matrix-eligible; the rest are Reviews
-& Perspectives (74) and four Reference Work sections (42). "346 papers" and "papers in the matrix" are
+& Perspectives (76) and four Reference Work sections (42). "348 papers" and "papers in the matrix" are
 different numbers. Say which population you counted.
 
 ## Licenses

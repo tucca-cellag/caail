@@ -1,6 +1,6 @@
 {
-  "corpusDate": "2026-09-22",
-  "count": 346,
+  "corpusDate": "2026-09-23",
+  "count": 348,
   "scopeNote": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall.",
   "truncationNote": "Compare the number of rows you parsed against `count`. If you have fewer, your fetch truncated this file and you are looking at part of the corpus: say so, and do not report an absence from it. Fetching with a tool that returns bytes rather than a summary avoids this entirely.",
   "matrixNote": "A reference with empty `methods` and `areas` is indexed but occupies no matrix cell: only the References section is matrix-eligible, so reviews and reference works never appear in matrix.json however directly they answer a question. Searching the matrix alone will not find them. Before concluding that CAAIL indexes no work on something, search this index over every section, or the topic index in topics.json.",
@@ -350,6 +350,8 @@
     {"id":316,"title":"Hyperspectral Imaging (HSI) for meat quality evaluation across the supply chain: Current and future trends","year":2022,"firstAuthor":"Jia, W.","section":"Reviews & Perspectives","isPrimary":false,"methods":[],"areas":[],"doi":"10.1016/j.crfs.2022.05.016","hasCode":false,"hasData":false},
     {"id":317,"title":"Machine learning for food colloids: Novel tools to advance fundamental understanding, stability, texture, and processability","year":2025,"firstAuthor":"Wong, K.","section":"Reviews & Perspectives","isPrimary":false,"methods":[],"areas":[],"doi":"10.1016/j.cocis.2025.101937","hasCode":false,"hasData":false},
     {"id":318,"title":"Next-generation strategies for designing cultured fat with enhanced flavor and functionality","year":2026,"firstAuthor":"Jung, H. Y.","section":"Reviews & Perspectives","isPrimary":false,"methods":[],"areas":[],"doi":"10.1016/j.tifs.2025.105525","hasCode":false,"hasData":false},
-    {"id":319,"title":"Bitterness prediction in-silico: A step towards better drugs","year":2018,"firstAuthor":"Bahia, M. S.","section":"Reviews & Perspectives","isPrimary":false,"methods":[],"areas":[],"doi":"10.1016/j.ijpharm.2017.03.076","hasCode":false,"hasData":false}
+    {"id":319,"title":"Bitterness prediction in-silico: A step towards better drugs","year":2018,"firstAuthor":"Bahia, M. S.","section":"Reviews & Perspectives","isPrimary":false,"methods":[],"areas":[],"doi":"10.1016/j.ijpharm.2017.03.076","hasCode":false,"hasData":false},
+    {"id":351,"title":"Scientific Opinion on development needs for the allergenicity and protein safety assessment of food and feed products derived from biotechnology","year":2022,"firstAuthor":"EFSA Panel on Genetically Modified Organisms (GMO)","section":"Reviews & Perspectives","isPrimary":false,"methods":[],"areas":[],"doi":"10.2903/j.efsa.2022.7044","hasCode":false,"hasData":false},
+    {"id":352,"title":"Anticipated growth factor and recombinant protein costs and volumes necessary for cost-competitive cultivated meat","year":2023,"firstAuthor":"Swartz, E.","section":"Reviews & Perspectives","isPrimary":false,"methods":[],"areas":[],"doi":null,"hasCode":false,"hasData":false}
   ]
 }

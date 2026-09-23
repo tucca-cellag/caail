@@ -399,6 +399,38 @@ describe('lint — unparsed APA fields', () => {
     expect(result.warnings.filter((w) => w.includes('#1'))).toHaveLength(0);
   });
 
+  it('does NOT flag a null doi for a GFI report on its gfi.org/resource/ landing page', () => {
+    const model: PapersData = {
+      areas: [{ key: 'media', label: 'Media Optimization' }],
+      methods: ['Bayesian Optimization'],
+      cells: [makeCell('Bayesian Optimization', 'media', [1])],
+      references: [
+        makeRef({
+          id: 1,
+          doi: null,
+          raw: 'Swartz, E. (2023). *Anticipated growth factor costs* [Report]. The Good Food Institute. https://gfi.org/resource/cultivated-meat-growth-factor-volume-and-cost-analysis/',
+        }),
+      ],
+    };
+    const result = lint(model);
+    expect(result.warnings.filter((w) => w.includes('#1'))).toHaveLength(0);
+  });
+
+  // The GFI entry is path-scoped: other gfi.org pages (blog posts, news) are not
+  // report permalinks, so a null doi there still warns.
+  it('DOES flag a null doi for a gfi.org URL outside /resource/', () => {
+    const model: PapersData = {
+      areas: [{ key: 'media', label: 'Media Optimization' }],
+      methods: ['Bayesian Optimization'],
+      cells: [makeCell('Bayesian Optimization', 'media', [1])],
+      references: [
+        makeRef({ id: 1, doi: null, raw: 'Author, A. (2024). A post. https://gfi.org/blog/some-post/' }),
+      ],
+    };
+    const result = lint(model);
+    expect(result.warnings.find((w) => w.includes('#1') && w.includes('doi'))).toBeDefined();
+  });
+
   it('DOES flag a null doi when there is no permalink at all', () => {
     const model: PapersData = {
       areas: [{ key: 'media', label: 'Media Optimization' }],
