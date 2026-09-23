@@ -15,6 +15,7 @@
  */
 import reports from '../content/data/reports.json';
 import type { TopicRef } from './topic-chips';
+import { siteSlug } from './heading-slug';
 
 /** One field-report record, mirroring `ReportSchema` in scripts/parser/types.ts. */
 export interface ReportRecord {
@@ -45,13 +46,8 @@ export interface ReportGroup {
 
 const ALL = reports.reports as unknown as ReportRecord[];
 
-/** Slugify a group label to a stable anchor id (identical rule to catalog-groups). */
-export function groupSlug(label: string): string {
-  return label
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '');
-}
+/** Slugify a group label to a stable anchor id (the site rule, heading-slug.ts). */
+export const groupSlug = siteSlug;
 
 /**
  * A stable DOM anchor for one edition, derived from its frozen `report:` id.

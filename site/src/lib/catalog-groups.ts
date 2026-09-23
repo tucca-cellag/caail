@@ -8,6 +8,7 @@
  * TOC anchors and the section ids can never drift.
  */
 import catalog from '../content/data/catalog.json';
+import { siteSlug } from './heading-slug';
 
 export type CatalogKind = 'software' | 'databases';
 export interface CatalogGroup {
@@ -16,13 +17,8 @@ export interface CatalogGroup {
   slug: string;
 }
 
-/** Slugify a group label to a stable anchor id. */
-export function groupSlug(label: string): string {
-  return label
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '');
-}
+/** Slugify a group label to a stable anchor id (the site rule, heading-slug.ts). */
+export const groupSlug = siteSlug;
 
 /** Distinct application-area groups for a catalog kind, in document order. */
 export function catalogGroups(kind: CatalogKind): CatalogGroup[] {
