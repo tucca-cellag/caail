@@ -33,6 +33,16 @@ const EDITION_SORT_SHAPE = /^(\d{4})(?:-(\d{2})(?:-(\d{2}))?)?$/;
 export const EDITION_SORT_FORMS = 'YYYY, YYYY-MM or YYYY-MM-DD';
 
 /**
+ * How to satisfy `seriesRecency`, stated once for whoever hits a failure. The second sentence is
+ * true today because of CAAIL-379 and should go when that ticket adds its agreement check.
+ */
+export const EDITION_SORT_RULE =
+  `Every report's edition_sort must be a valid ${EDITION_SORT_FORMS} date, and within a series ` +
+  'no two editions may share one or have one be a prefix of the other. edition_sort and the ' +
+  '"*Edition <label>, published <sort>.*" line in body_md are two copies of one value, so change ' +
+  'both together (CAAIL-379).';
+
+/**
  * True when `s` is a real YYYY, YYYY-MM or YYYY-MM-DD. The shape alone admits '2026-13' or
  * '2026-02-30', which would still sort as the latest edition of a series, so the month and day
  * are checked against the calendar too.
@@ -74,24 +84,24 @@ export interface SeriesRecency {
  * two editions sharing a sort (which leaves their order, and at the max the current edition,
  * undefined). A one-off (`series_slug === null`) is its own latest, but its sort must be valid.
  *
- * The rows are put in document (`ordinal`) order first, so both callers get the same editions,
- * the same problems and the same problem order whatever order their rows arrive in (the NDJSON
- * is PK-sorted; SQLite promises none).
+ * The rows are put in document (`ordinal`) order first, so the editions, the problems and the
+ * problem order do not depend on the order rows arrive in. reports.ndjson is already exported in
+ * that order, but checkSeries reads SQLite, which promises none, and tests pass rows as they like.
  *
- * Every problem names the fix in terms of the `*Edition <label>, published <sort>.*` line in
- * FieldReports.md, because that line is what the stored column is extracted from: editing only
- * the column is undone by the next db:bootstrap (CAAIL-379).
+ * Each problem states what is wrong and nothing about how to fix it. The fix is one rule, stated
+ * once in `EDITION_SORT_RULE`, because per-problem remedies each made their own claims about the
+ * authoring flow and several were wrong.
  */
 export function seriesRecency(
   rows: Pick<ReportRow, 'item_id' | 'series_slug' | 'edition_sort' | 'ordinal'>[],
 ): { bySeries: Map<string, SeriesRecency>; problems: string[] } {
   const problems: string[] = [];
   const grouped = new Map<string, { id: string; sort: string }[]>();
-  const inDocumentOrder = [...rows].sort((a, b) => a.ordinal - b.ordinal || (a.item_id < b.item_id ? -1 : 1));
+  const byId = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0);
+  const inDocumentOrder = [...rows].sort((a, b) => a.ordinal - b.ordinal || byId(a.item_id, b.item_id));
   for (const r of inDocumentOrder) {
     if (!isEditionSort(r.edition_sort)) {
-      problems.push(`${r.item_id}: edition_sort '${r.edition_sort}' is not a valid ${EDITION_SORT_FORMS} date; ` +
-        'correct its "published" line');
+      problems.push(`${r.item_id}: edition_sort '${r.edition_sort}' is not a valid ${EDITION_SORT_FORMS} date`);
       continue;
     }
     if (r.series_slug === null) continue;
@@ -105,14 +115,12 @@ export function seriesRecency(
     for (let i = 1; i < list.length; i++) {
       const [prev, next] = [list[i - 1], list[i]];
       if (next.sort === prev.sort) {
-        problems.push(`series '${series}': ${prev.id} and ${next.id} share edition_sort ${next.sort}; ` +
-          'every edition of a series needs its own "published" date');
+        problems.push(`series '${series}': ${prev.id} and ${next.id} share edition_sort ${next.sort}`);
       } else if (next.sort.startsWith(`${prev.sort}-`)) {
         // In string order a prefix sorts directly before its first extension, so any series that
         // nests has at least one adjacent nested pair, and that is enough to fail it.
         problems.push(`series '${series}': edition_sort ${prev.sort} (${prev.id}) contains ${next.sort} (${next.id}), ` +
-          `so which is later is undefined; give ${prev.id}'s "published" line the month or day its source ` +
-          'states, or if no source states one, list one of the two as a one-off outside the series');
+          'so neither can be ordered after the other');
       }
     }
     bySeries.set(series, { editions: list.map((e) => e.id), latest: list.at(-1)!.id });
@@ -134,8 +142,9 @@ export function seriesRecency(
 export function deriveReports(rows: ReportRow[], topicsById: Map<string, Report['topics']>): Report[] {
   const { bySeries, problems } = seriesRecency(rows);
   if (problems.length > 0) {
-    throw new Error(`reports: cannot derive current editions: ${problems.join('; ')}. ` +
-      '(Rules: seriesRecency in site/scripts/parser/reports.ts. `pnpm --dir site db:check` lists the same problems.)');
+    throw new Error(`reports: cannot derive current editions (${problems.length}):\n` +
+      `${problems.map((p) => `  - ${p}`).join('\n')}\n${EDITION_SORT_RULE}\n` +
+      'Rules: seriesRecency in site/scripts/parser/reports.ts. `pnpm --dir site db:check` fails on them as well, showing the first 3.');
   }
 
   return rows.map((r) => {

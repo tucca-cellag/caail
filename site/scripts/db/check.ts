@@ -588,7 +588,7 @@ export function checkFineTagSeedDrift(db: Db): CheckResult[] {
  * a non-empty edition_label.
  */
 export function checkSeries(db: Db): CheckResult[] {
-  const rows = db.prepare('SELECT item_id, series_slug, edition_label, edition_sort, ordinal FROM reports').all() as
+  const rows = db.prepare('SELECT item_id, series_slug, edition_label, edition_sort, ordinal FROM reports ORDER BY ordinal, item_id').all() as
     { item_id: string; series_slug: string | null; edition_label: string; edition_sort: string; ordinal: number }[];
   const problems = rows.filter((r) => !r.edition_label.trim()).map((r) => `${r.item_id}: empty edition_label`);
   problems.push(...seriesRecency(rows).problems);

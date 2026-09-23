@@ -4,7 +4,9 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { buildReportsModel, deriveReports, isEditionSort, seriesRecency, type ReportRow } from './reports.js';
+import {
+  buildReportsModel, deriveReports, isEditionSort, seriesRecency, EDITION_SORT_RULE, type ReportRow,
+} from './reports.js';
 import { ReportsDataSchema, type Report } from './types.js';
 
 const NO_TOPICS = new Map<string, Report['topics']>();
@@ -96,6 +98,20 @@ describe('deriveReports recency model', () => {
   it('throws on two editions sharing a sort', () => {
     expect(() => deriveReports([row('r:a', 's', '2026'), row('r:b', 's', '2026')], NO_TOPICS))
       .toThrow(/r:a and r:b share edition_sort 2026/);
+  });
+
+  it('lists every problem on its own line, then the rule once, so a build abort is countable and actionable', () => {
+    let message = '';
+    try {
+      deriveReports([row('r:a', 's', '2026-13'), row('r:b', 't', '2026'), row('r:c', 't', '2026')], NO_TOPICS);
+    } catch (e) { message = (e as Error).message; }
+    const lines = message.split('\n');
+    expect(lines[0]).toBe('reports: cannot derive current editions (2):');
+    expect(lines.filter((l) => l.startsWith('  - '))).toHaveLength(2);
+    // No problem carries its own semicolon-joined remedy any more.
+    expect(lines.filter((l) => l.startsWith('  - ')).every((l) => !l.includes(';'))).toBe(true);
+    expect(message).toContain(EDITION_SORT_RULE);
+    expect(message).toMatch(/seriesRecency in site\/scripts\/parser\/reports\.ts/);
   });
 
   it('throws on an impossible date, in a series or a one-off', () => {
