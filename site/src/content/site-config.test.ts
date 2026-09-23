@@ -33,7 +33,13 @@ const ALLOWED: Record<string, string> = {
   'src/content/docs/privacy.mdx': 'reader-facing disclosure prose naming where the site is published',
 };
 
-/** Static copies, repo-relative, each with the derived value it must contain. */
+/**
+ * Static copies, repo-relative, each with the derived value it must contain: every
+ * non-Markdown file in the repo that names the deployed site and cannot import
+ * site-config.ts. Markdown prose (skills, READMEs, CLAUDE.md) is documentation and
+ * is not pinned. The e2e specs are not swept either: they assert rendered hrefs,
+ * so a base change already fails them by name.
+ */
 const PINNED: Array<[file: string, mustContain: string]> = [
   ['site/public/robots.txt', SITE_URL],
   ['site/public/llms.txt', SITE_URL],
@@ -41,6 +47,14 @@ const PINNED: Array<[file: string, mustContain: string]> = [
   ['site/lighthouserc.json', `${SITE_BASE}/`],
   ['site/scripts/favicons.mjs', `start_url: '${SITE_BASE}/'`],
   ['workers/events/wrangler.toml', `ALLOWED_ORIGIN = "${SITE_ORIGIN}"`],
+  ['workers/events/src/index.test.ts', `'${SITE_ORIGIN}'`],
+  ['workers/events/scripts/burst.sh', SITE_ORIGIN],
+  ['.claude-plugin/marketplace.json', SITE_URL],
+  ['plugin/.claude-plugin/plugin.json', SITE_URL],
+  ['plugin-contribute/.claude-plugin/plugin.json', SITE_URL],
+  ['.github/ISSUE_TEMPLATE/config.yml', SITE_URL],
+  ['.github/ISSUE_TEMPLATE/entry-correction.yml', SITE_URL],
+  ['.claude/skills/caail-pr-wrapup/ship-pr.sh', `PAGES_BASE="${SITE_ORIGIN}${SITE_BASE}"`],
 ];
 
 describe('site-config', () => {

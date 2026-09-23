@@ -127,6 +127,11 @@ export function assertUniqueAnchors(groups: ReadonlyArray<Pick<ReportGroup, 'slu
  * parser emits oldest→newest. Nothing else ties the two: if that order ever
  * flipped (CAAIL-373 weighed it), the page would silently go oldest-first. The
  * current edition is by definition the newest, so it must be the last entry.
+ *
+ * That is the whole check, and it is narrower than "the order is correct": it
+ * catches the order being reversed, not superseded editions shuffled among
+ * themselves. A full check needs each edition's sort key, which reports.json does
+ * not carry (noted on CAAIL-373).
  */
 export function assertOldestFirst(current: Pick<ReportRecord, 'id' | 'seriesEditions'>): void {
   const eds = current.seriesEditions;

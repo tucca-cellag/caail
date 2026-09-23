@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { SITE_URL } from '../src/content/site-config';
 
 // ---------------------------------------------------------------------------
 // Privacy page — reachable from every page, states the live collection
@@ -159,7 +160,7 @@ test('a search query holding an email address is never recorded', async ({ page 
 // ---------------------------------------------------------------------------
 
 const BEACON_HOST = 'https://static.cloudflareinsights.com';
-const DEPLOYED = 'https://tucca-cellag.github.io/caail/';
+const DEPLOYED = SITE_URL;
 
 /** Record every request the page makes to the beacon host. */
 function watchBeacon(page: import('@playwright/test').Page) {
