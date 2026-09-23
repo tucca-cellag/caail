@@ -2,9 +2,7 @@ import type { Root } from 'mdast';
 import { visit } from 'unist-util-visit';
 import { posix } from 'node:path';
 import { CAAIL_PAGES } from '../../src/content/caail-pages.ts';
-import { dedicatedLink } from '../dedicated-links.ts';
-
-const GITHUB_BLOB_BASE = 'https://github.com/tucca-cellag/caail/blob/main';
+import { dedicatedLink, GITHUB_BLOB_BASE } from '../dedicated-links.ts';
 
 /**
  * Rewrite internal `.md` links in the canonical Markdown so they resolve

@@ -27,14 +27,14 @@ import { parseFile, sectionsAfter } from './markdown.js';
 import { itemFromListItem, sectionIntro } from './media.js';
 import { PrimersSchema, type PrimerItem, type Primers } from './types.js';
 import { CAAIL_PAGES } from '../../src/content/caail-pages.ts';
-import { dedicatedLink } from '../dedicated-links.ts';
+import { dedicatedLink, GITHUB_BLOB_BASE } from '../dedicated-links.ts';
+import { SITE_BASE } from '../../src/content/site-config.ts';
 
 /** Repo root: parser → scripts → site → repo (three levels up). */
 const REPO_ROOT: string = fileURLToPath(new URL('../../../', import.meta.url));
 
 /** Site base path — must match astro.config.mjs `base`. */
-const BASE = '/caail';
-const GITHUB_BLOB_BASE = 'https://github.com/tucca-cellag/caail/blob/main';
+const BASE = SITE_BASE;
 
 /** The primers to build, in sidebar/display order: { slug, repo-relative file }. */
 const PRIMER_SOURCES: ReadonlyArray<{ slug: string; file: string }> = [
