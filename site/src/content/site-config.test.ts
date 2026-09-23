@@ -64,7 +64,9 @@ describe('site-config', () => {
       { cwd: SITE_DIR, encoding: 'utf-8' },
     )
       .split('\n')
-      .filter((f) => /\.(ts|tsx|mjs|astro|mdx)$/.test(f) && !/\.test\.tsx?$/.test(f) && !(f in ALLOWED));
+      // .mdx is prose, where `*` starts a list item rather than a comment; it has
+      // its own check below.
+      .filter((f) => /\.(ts|tsx|mjs|astro)$/.test(f) && !/\.test\.tsx?$/.test(f) && !(f in ALLOWED));
     // An empty file list would pass vacuously; the tree has well over a hundred.
     expect(files.length).toBeGreaterThan(100);
     const originRe = new RegExp(SITE_ORIGIN.replace(/[.]/g, '\\.'));
@@ -84,6 +86,35 @@ describe('site-config', () => {
         });
     }
     expect(offenders, offenders.join('\n')).toEqual([]);
+  });
+
+  it('is the base every MDX page links under', () => {
+    // Markdown links in MDX are not base-rewritten, so each spells the base out.
+    // They cannot import it; instead every root-relative link must start with the
+    // current base, so changing site-config.ts fails here and names each page.
+    const pages = execFileSync(
+      'git',
+      ['ls-files', '--cached', '--others', '--exclude-standard', 'src/content/docs'],
+      { cwd: SITE_DIR, encoding: 'utf-8' },
+    )
+      .split('\n')
+      .filter((f) => f.endsWith('.mdx'));
+    expect(pages.length).toBeGreaterThan(5);
+    const originRe = new RegExp(SITE_ORIGIN.replace(/[.]/g, '\\.'));
+    const bad: string[] = [];
+    let seen = 0;
+    for (const f of pages) {
+      const text = readFileSync(join(SITE_DIR, f), 'utf-8');
+      for (const m of text.matchAll(/\]\((\/[^)\s]*)|href="(\/[^"]*)"/g)) {
+        const target = m[1] ?? m[2];
+        if (target.startsWith('//')) continue; // protocol-relative, not site-relative
+        seen++;
+        if (!target.startsWith(`${SITE_BASE}/`)) bad.push(`${f}: ${target}`);
+      }
+      if (!(f in ALLOWED) && originRe.test(text)) bad.push(`${f}: spells out ${SITE_ORIGIN}`);
+    }
+    expect(seen).toBeGreaterThan(0);
+    expect(bad).toEqual([]);
   });
 
   it('matches every static copy that cannot import it', () => {

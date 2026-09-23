@@ -84,28 +84,17 @@ export const PLACEMENT_NOTE =
   `${SITE_URL}curation/`;
 
 /**
- * Make every site-relative link inside the payload's rendered HTML absolute.
+ * Make every site-relative link in rendered HTML absolute.
  *
  * The parser renders catalog summaries once, for the site, where `/caail/...` is the
  * right href. The same HTML is served here to agents that fetch the JSON off-site (or
  * from the raw.githubusercontent mirror, where `/caail/` resolves to nothing), so a
  * root-relative href is a link they cannot follow. Only the `href="<base>/` attribute
- * form is rewritten, so plain prose and JSON paths that merely mention the base stay
- * untouched. The origin and base come from site-config.ts, which astro.config.mjs also
- * reads, so this cannot drift from where the site deploys.
+ * form is rewritten, so text that merely mentions the base stays untouched. The origin
+ * and base come from site-config.ts, which astro.config.mjs also reads.
  */
-export function absolutizeSiteHrefs<T>(body: T): T {
-  const from = `href="${SITE_BASE}/`;
-  const to = `href="${SITE_URL}`;
-  const walk = (v: unknown): unknown => {
-    if (typeof v === 'string') return v.replaceAll(from, to);
-    if (Array.isArray(v)) return v.map(walk);
-    if (v && typeof v === 'object') {
-      return Object.fromEntries(Object.entries(v).map(([k, x]) => [k, walk(x)]));
-    }
-    return v;
-  };
-  return walk(body) as T;
+export function absolutizeSiteHrefs(html: string): string {
+  return html.replaceAll(`href="${SITE_BASE}/`, `href="${SITE_URL}`);
 }
 
 /**

@@ -445,17 +445,12 @@ describe('datasets.json inventory', () => {
  * assertion would pass while the file an agent actually fetches is still wrong.
  */
 describe('site-relative hrefs in the API', () => {
-  it('absolutizes href="/caail/…" and leaves every other string alone', () => {
-    const out = absolutizeSiteHrefs({
-      html: '<a href="/caail/papers/explorer/">Papers.md</a> <a href="https://x.org/">x</a>',
-      nested: [{ s: 'see /caail/talks/ in prose' }],
-      n: 3,
-    });
-    expect(out.html).toBe(
-      `<a href="${SITE_URL}papers/explorer/">Papers.md</a> <a href="https://x.org/">x</a>`,
-    );
-    expect(out.nested[0].s).toBe('see /caail/talks/ in prose');
-    expect(out.n).toBe(3);
+  it('absolutizes href="/caail/…" and leaves the rest of the HTML alone', () => {
+    expect(
+      absolutizeSiteHrefs(
+        '<a href="/caail/papers/explorer/">Papers.md</a> <a href="https://x.org/">x</a> see /caail/talks/',
+      ),
+    ).toBe(`<a href="${SITE_URL}papers/explorer/">Papers.md</a> <a href="https://x.org/">x</a> see /caail/talks/`);
   });
 
   it('builds the absolute URL from site-config, the module astro.config.mjs reads', () => {
