@@ -80,11 +80,11 @@
         "theme": null,
         "areaKey": "media",
         "counts": {
-          "paper": 29,
+          "paper": 30,
           "software": 17,
           "database": 4,
           "dataset": 36,
-          "total": 86
+          "total": 87
         },
         "tags": [
           "cryopreservation",
@@ -304,11 +304,11 @@
         "theme": "media-growth-factors",
         "areaKey": null,
         "counts": {
-          "paper": 9,
+          "paper": 10,
           "software": 17,
           "database": 0,
           "dataset": 11,
-          "total": 37
+          "total": 38
         },
         "tags": []
       },
@@ -467,7 +467,8 @@
         175,
         228,
         232,
-        280
+        280,
+        352
       ],
       "software": [
         "alphafold",

@@ -16905,7 +16905,7 @@
     {
       "id": 352,
       "section": "Reviews & Perspectives",
-      "raw": "<a id=\"352\">352</a> Swartz, E., Ravi, A., Reeber, A., Levink, J., Huang, T., & Smith, B. (2023). *Anticipated growth factor and recombinant protein costs and volumes necessary for cost-competitive cultivated meat* [Report, The Good Food Institute]. https://gfi.org/resource/cultivated-meat-growth-factor-volume-and-cost-analysis/",
+      "raw": "<a id=\"352\">352</a> Swartz, E., Ravi, A., Reeber, A., Levink, J., Huang, T., & Smith, B. (2023). *Anticipated growth factor and recombinant protein costs and volumes necessary for cost-competitive cultivated meat* [Report]. The Good Food Institute. https://gfi.org/resource/cultivated-meat-growth-factor-volume-and-cost-analysis/",
       "authors": [
         "Swartz, E.",
         "Ravi, A.",
@@ -16918,7 +16918,7 @@
       "authorsText": "Swartz, E., Ravi, A., Reeber, A., Levink, J., Huang, T., & Smith, B.",
       "year": 2023,
       "title": "Anticipated growth factor and recombinant protein costs and volumes necessary for cost-competitive cultivated meat",
-      "journal": "[Report, The Good Food Institute]. https://gfi.org/resource/cultivated-meat-growth-factor-volume-and-cost-analysis/",
+      "journal": "[Report]. The Good Food Institute. https://gfi.org/resource/cultivated-meat-growth-factor-volume-and-cost-analysis/",
       "doi": null,
       "codeUrl": null,
       "dataUrl": null,
@@ -16929,6 +16929,11 @@
       "hasData": false,
       "slug": "swartz-2023",
       "topics": [
+        {
+          "slug": "media-optimization",
+          "label": "Media optimization",
+          "theme": "media-growth-factors"
+        },
         {
           "slug": "techno-economic-lca",
           "label": "Techno-Economic & LCA",
