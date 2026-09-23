@@ -102,6 +102,8 @@ The matrix and the `## References` list must be kept in sync:
    | [Reinforcement Learning](https://en.wikipedia.org/wiki/Reinforcement_learning) | | | [42](#42) | | |
    ```
 
+   Then define the row in `Taxonomy.md` and add an entry for it in `site/scripts/parser/search-terms.json` (its search vocabulary, served in `api/taxonomy.json`); the build fails while any area or method defined in `Taxonomy.md` lacks one, keyed by its heading text.
+
 6. **If the paper covers a research area that isn't yet a column**, see "Adding a new research area" below.
 
 7. **The `AI Tooling / Methodology` column** is for papers about general-purpose AI methods or agent frameworks that don't yet have a specific cell-ag application (e.g. a paper introducing a biomedical AI agent that *could* be applied to media optimization). When a follow-up paper applies one of these tools to a specific area, it goes in that area's column instead.
@@ -213,6 +215,8 @@ A research area is a column in the `Papers.md` matrix, backed by a deep-dive pag
    ```markdown
    | | ... | [Protein Design](./Taxonomy.md#protein-design) | ... |
    ```
+
+   Then add an entry for it in `site/scripts/parser/search-terms.json` (its search vocabulary, served in `api/taxonomy.json`); the build fails while any area or method defined in `Taxonomy.md` lacks one, keyed by its heading text. An empty list is allowed: the column is then never assigned by term matching, and a curator assigns it to work found through method terms.
 
 3. **Register the page for the site** in `site/src/content/caail-pages.ts` (group `research-areas`,
    with its own meta description). This is not optional: `caail-pages.test.ts` asserts every file in

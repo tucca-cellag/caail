@@ -808,6 +808,55 @@ export const TaxonomyDataSchema = z.object({
   }),
 });
 
+/**
+ * The stored form of a term: lowercase ASCII words joined by single spaces or hyphens. An
+ * allow-list, because the contract tells a consumer to normalize the text it searches (NFKC,
+ * default-ignorables removed, dashes folded), and a stored term carrying anything that step
+ * removes or rewrites is compared against normalized text and silently matches nothing.
+ */
+export const SEARCH_TERM_FORM = /^[a-z0-9]+(?:[ -][a-z0-9]+)*$/;
+
+/**
+ * search-terms.json as it is READ: any strings in the lists. Loose on purpose, so the loader
+ * (search-terms.ts) can report every malformed term together with every coverage and
+ * duplicate problem in one pass, rather than one class of error per build.
+ */
+export const SearchTermsFileSchema = z
+  .object({
+    contract: z.string().min(1),
+    areas: z.record(z.string(), z.array(z.string())),
+    methods: z.record(z.string(), z.array(z.string()).min(1)),
+    methodGeneric: z.array(z.string()).min(1),
+  })
+  .strict();
+
+/** A served term list: every term in SEARCH_TERM_FORM, published as the OpenAPI `pattern`. */
+const ServedTermListSchema = z.array(z.string().regex(SEARCH_TERM_FORM));
+
+/**
+ * Schema for search-terms.json as SERVED: the curated search vocabulary per matrix area and
+ * method (see search-terms.ts). Shipped in the agent API as `taxonomy.json` → `searchTerms`.
+ * Key coverage against the live axes is asserted by buildSearchTerms, not here, because a
+ * schema cannot see Taxonomy.md.
+ *
+ * - `contract` states how a consumer must match the terms (case, dashes, plurals).
+ * - `areas` / `methods` are keyed by the same labels as `axes.area` / `axes.method`.
+ *   A term may appear under several areas or methods: the foundation-model and agent rows share
+ *   vocabulary that abstract text cannot tell apart.
+ * - `methodGeneric` marks work as applying SOME AI method ("machine learning"), which is how
+ *   most classical-ML abstracts are written. A generic term that is also in a method's list
+ *   labels that method too; the rest label no row.
+ */
+export const SearchTermsSchema = z
+  .object({
+    contract: z.string().min(1),
+    areas: z.record(z.string(), ServedTermListSchema),
+    methods: z.record(z.string(), ServedTermListSchema.min(1)),
+    methodGeneric: ServedTermListSchema.min(1),
+  })
+  .strict();
+export type SearchTerms = z.infer<typeof SearchTermsSchema>;
+
 /** One node in the topic tree (a theme or a fine tag) with cross-content counts. */
 export const TopicNodeSchema = z.object({
   slug: z.string(),
@@ -1076,6 +1125,7 @@ export const ApiTopicsSchema = z.strictObject({
 });
 
 export const ApiTaxonomySchema = TaxonomyDataSchema.extend({
+  searchTerms: SearchTermsSchema,
   corpusDate: CorpusDateSchema,
 }).strict();
 

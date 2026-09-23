@@ -18,6 +18,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import { buildPapersModel } from './papers.js';
 import { buildTaxonomyModel } from './taxonomy.js';
+import { buildApiTaxonomy } from './search-terms.js';
 import { buildCorrectionForm } from './correction-form.js';
 import { verifyContributeForms } from './contribute-form.js';
 import { computeCounts } from './counts.js';
@@ -191,6 +192,12 @@ export function generateData(
 
   // Taxonomy.md row/column definitions for the explorer's hover/click popups.
   const taxonomy = buildTaxonomyModel();
+
+  // The agent API's taxonomy: the definitions plus the curated search vocabulary
+  // (taxonomy.json → searchTerms). Throws when the vocabulary's keys and the live axes
+  // above differ in either direction, so a renamed row cannot strand its terms under a key
+  // nothing reads.
+  const apiTaxonomy = buildApiTaxonomy(taxonomy);
 
   // The correction issue form's reason vocabulary, for the /report/ composer. Throws when
   // the template's options and the composer's follow-up declarations stop being in
@@ -499,7 +506,7 @@ export function generateData(
     datasets,
     inventory,
     topics,
-    taxonomy,
+    taxonomy: apiTaxonomy,
     reports,
   });
   writeAgentApi(apiFiles, apiDir);
