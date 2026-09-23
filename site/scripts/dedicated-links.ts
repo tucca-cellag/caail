@@ -23,7 +23,8 @@ import { statSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { toString as mdastToString } from 'mdast-util-to-string';
-import type { Heading, Html } from 'mdast';
+import type { FootnoteReference, Heading, Html, Nodes } from 'mdast';
+import { nameToEmoji } from 'gemoji';
 import { visit } from 'unist-util-visit';
 import GithubSlugger from 'github-slugger';
 
@@ -58,7 +59,7 @@ export interface HeadingRef {
  * only); two sections rendering one id is an error, since the page would carry a
  * duplicate id and one of them could not be linked.
  */
-export function sectionAnchors(repoRel: string, headings: readonly HeadingRef[]): AnchorMap {
+export function sectionAnchors(repoRel: string, headings: readonly HeadingRef[]): Map<string, string | null> {
   const map = new Map<string, string | null>();
   const slugger = new GithubSlugger();
   const seenSite = new Map<string, string>();
@@ -97,19 +98,53 @@ function normalizeAnchor(anchor: string): string {
 }
 
 /**
+ * The text GitHub renders for a heading, which is what its anchor is slugged from:
+ * inline HTML and image alt text dropped, a footnote reference rendered as its
+ * number, a known `:shortcode:` rendered as its emoji (which the slugger then
+ * drops), and nothing trimmed, so "Demos <img>" keeps its space and becomes demos-.
+ */
+function githubText(node: Nodes, footnotes: ReadonlyMap<string, number>): string {
+  switch (node.type) {
+    case 'text':
+      return node.value.replace(/:([a-z0-9_+-]+):/g, (m, name: string) => nameToEmoji[name] ?? m);
+    case 'inlineCode':
+      return node.value;
+    case 'html':
+    case 'image':
+    case 'imageReference':
+      return '';
+    case 'footnoteReference':
+      return String(footnotes.get((node as FootnoteReference).identifier) ?? '');
+    default:
+      return 'children' in node ? node.children.map((c) => githubText(c as Nodes, footnotes)).join('') : '';
+  }
+}
+
+/**
+ * GitHub numbers footnotes by first reference in the document, so a reference
+ * inside a heading renders as that ordinal.
+ */
+function footnoteOrdinals(tree: ReturnType<typeof parseFile>): Map<string, number> {
+  const ordinals = new Map<string, number>();
+  visit(tree, 'footnoteReference', (n: FootnoteReference) => {
+    if (!ordinals.has(n.identifier)) ordinals.set(n.identifier, ordinals.size + 1);
+  });
+  return ordinals;
+}
+
+/**
  * Every heading in a canonical file, in document order, including headings nested
- * in lists or blockquotes. GitHub slugs a heading's text with inline HTML removed;
- * the site parsers (sectionsAfter) keep it, so the two texts are carried apart.
+ * in lists or blockquotes. GitHub slugs its rendered text (githubText); the site
+ * parsers (sectionsAfter) use mdastToString, so the two texts are carried apart.
  */
 function headingsOf(tree: ReturnType<typeof parseFile>): HeadingRef[] {
+  const footnotes = footnoteOrdinals(tree);
   const out: HeadingRef[] = [];
   visit(tree, 'heading', (h: Heading, _index, parent) => {
     out.push({
       depth: h.depth,
       topLevel: parent === tree,
-      // GitHub slugs the rendered text: no inline HTML, no image alt text, and
-      // NOT trimmed, so "Demos <img>" keeps its space and becomes demos-.
-      text: mdastToString(h, { includeHtml: false, includeImageAlt: false }),
+      text: githubText(h, footnotes),
       siteText: mdastToString(h).trim(),
     });
   });
@@ -118,14 +153,16 @@ function headingsOf(tree: ReturnType<typeof parseFile>): HeadingRef[] {
 
 /**
  * Explicit link targets GitHub also resolves: an `id` or `name` attribute on an
- * `<a>` element. Only the attribute itself counts (not `data-id`), and only on
- * `<a>` (not `<input name>` or `<meta name>`).
+ * `<a>` element, quoted or not. Only the attribute itself counts (not `data-id`),
+ * and only on `<a>` (not `<input name>` or `<meta name>`).
  */
 function htmlTargets(tree: ReturnType<typeof parseFile>): string[] {
   const out: string[] = [];
   visit(tree, 'html', (n: Html) => {
     for (const tag of n.value.matchAll(/<a\b[^>]*>/gi)) {
-      for (const m of tag[0].matchAll(/\s(?:id|name)\s*=\s*["']([^"']+)["']/gi)) out.push(m[1].toLowerCase());
+      for (const m of tag[0].matchAll(/\s(?:id|name)\s*=\s*(?:"([^"]+)"|'([^']+)'|([^\s>"']+))/gi)) {
+        out.push((m[1] ?? m[2] ?? m[3]).toLowerCase());
+      }
     }
   });
   return out;
@@ -167,7 +204,7 @@ function anchorsFor(repoRel: string, repoRoot: string): AnchorMap | undefined {
   const hit = cache.get(key);
   if (hit && hit.mtimeMs === mtimeMs) return hit.map;
   const tree = parseFile(path);
-  const map = new Map(sectionAnchors(repoRel, headingsOf(tree)));
+  const map = sectionAnchors(repoRel, headingsOf(tree));
   for (const t of htmlTargets(tree)) if (!map.has(t)) map.set(t, null);
   cache.set(key, { mtimeMs, map });
   return map;

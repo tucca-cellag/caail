@@ -114,6 +114,34 @@ describe('dedicatedLink', () => {
     }
   });
 
+  it('slugs footnote references and emoji shortcodes the way GitHub renders them', () => {
+    // "Results[^1]" renders "Results1"; ":tada: Demos" renders "🎉 Demos", and the
+    // slugger drops the emoji, leaving "-demos". An unknown :shortcode: stays literal.
+    const root = mkdtempSync(join(tmpdir(), 'caail-dl-'));
+    try {
+      writeFileSync(
+        join(root, 'Talks.md'),
+        '# T\n\n## Results[^1]\n\n## :tada: Demos\n\n## :notanemoji: X\n\n[^1]: A note.\n',
+      );
+      expect(dedicatedLink('Talks.md', 'results1', root)).toMatch(/^\/talks\/#/);
+      expect(dedicatedLink('Talks.md', '-demos', root)).toMatch(/^\/talks\/#/);
+      expect(dedicatedLink('Talks.md', 'notanemoji-x', root)).toMatch(/^\/talks\/#/);
+      expect(() => dedicatedLink('Talks.md', 'results', root)).toThrow(/not a GitHub anchor/);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it('accepts an unquoted <a name> target', () => {
+    const root = mkdtempSync(join(tmpdir(), 'caail-dl-'));
+    try {
+      writeFileSync(join(root, 'Talks.md'), '# T\n\n## Real\n\n<a name=featured></a>\n');
+      expect(dedicatedLink('Talks.md', 'featured', root)).toBeUndefined();
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
   it('accepts anchors GitHub resolves beyond top-level headings', () => {
     // A heading nested in a list, and an explicit <a id>: valid on GitHub, no site
     // id on /talks/, so they keep the blob rather than failing the build.
