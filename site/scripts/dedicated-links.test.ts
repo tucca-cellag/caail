@@ -72,6 +72,14 @@ describe('dedicatedLink', () => {
       { depth: 3, text: 'Demos 1' },
     ]);
     expect([...map.keys()]).toEqual(['demos', 'demos-1', 'demos-1-1']);
+    // And a generated suffix skips one a heading's own text claimed earlier:
+    // "Demos 1" → demos-1, Demos → demos, Demos → demos-1 is taken → demos-2.
+    const skip = sectionAnchors('X.md', [
+      { depth: 3, text: 'Demos 1' },
+      { depth: 3, text: 'Demos' },
+      { depth: 3, text: 'Demos' },
+    ]);
+    expect([...skip.keys()]).toEqual(['demos-1', 'demos', 'demos-2']);
   });
 
   it('slugs a heading without its inline HTML, as GitHub does', () => {
