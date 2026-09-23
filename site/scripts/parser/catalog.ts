@@ -39,12 +39,6 @@ const DATABASES_PATH: string = fileURLToPath(
 
 const SUMMARY_PREFIX_RE = /^Summary:\s*/i;
 
-/**
- * Site base path (site-config.ts, which astro.config.mjs also reads). Used by
- * rewriteCaailLinks so a repo-relative `.md` link inside an entry body resolves
- * to the same site route the prose pages use (e.g. `/caail/datasets/cow/`).
- */
-const CATALOG_BASE = SITE_BASE;
 
 // ---------------------------------------------------------------------------
 // Slug helpers (self-contained — mirrors papers.ts, kept local so this module
@@ -144,7 +138,7 @@ function renderBody(
   // HTML. Raw HTML in markdown is escaped (toHtml default) — the safe choice;
   // catalog bodies contain none.
   const bodyRoot: Root = { type: 'root', children: bodyNodes };
-  rewriteCaailLinks({ base: CATALOG_BASE, sourcePath })(bodyRoot);
+  rewriteCaailLinks({ base: SITE_BASE, sourcePath })(bodyRoot);
   const summaryHtml = toHtml(toHast(bodyRoot));
 
   return { summary, summaryHtml };

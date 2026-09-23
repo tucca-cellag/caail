@@ -95,10 +95,9 @@ describe('openapi.json', () => {
     // never imports the Astro config (that would drag the plugin graph in for one string).
     // So what can drift is the config stopping to read it: assert it still does, or the
     // spec would describe paths that 404 on the deployed site.
+    // (site-config.test.ts separately fails on any hardcoded base literal.)
     const cfg = readFileSync(join(REPO_ROOT, 'site', 'astro.config.mjs'), 'utf-8');
-    expect(cfg).toMatch(/import \{[^}]*\bSITE_BASE\b[^}]*\} from '\.\/src\/content\/site-config\.ts'/);
-    expect(cfg).toMatch(/^const BASE = SITE_BASE;$/m);
-    expect(cfg).toMatch(/^\s*base: BASE,$/m);
+    expect(cfg).toMatch(/\bbase:\s*SITE_BASE\b/);
     expect(PATH_PREFIX).toBe(`${SITE_BASE}/api/`);
     for (const p of Object.keys(doc.paths)) expect(p.startsWith(PATH_PREFIX)).toBe(true);
   });

@@ -24,9 +24,7 @@ import { SITE_BASE, SITE_ORIGIN } from '../content/site-config';
 // (site + base); WEBSITE_ID matches the WebSite @id it emits.
 // ---------------------------------------------------------------------------
 
-const ORIGIN = SITE_ORIGIN;
-const BASE = SITE_BASE;
-const WEBSITE_ID = `${ORIGIN}${BASE}/#website`;
+const WEBSITE_ID = `${SITE_ORIGIN}${SITE_BASE}/#website`;
 
 /** A schema.org node without its own `@context` (it rides the top-level @graph). */
 type Node = Record<string, unknown>;
@@ -37,15 +35,15 @@ type Node = Record<string, unknown>;
 
 /** Absolute URL for a site pathname (which may or may not include the base). */
 function absolute(pathname: string): string {
-  const p = pathname.startsWith(ORIGIN) ? pathname.slice(ORIGIN.length) : pathname;
-  const withBase = p.startsWith(BASE) ? p : `${BASE}${p.startsWith('/') ? '' : '/'}${p}`;
-  return `${ORIGIN}${withBase}`;
+  const p = pathname.startsWith(SITE_ORIGIN) ? pathname.slice(SITE_ORIGIN.length) : pathname;
+  const withBase = p.startsWith(SITE_BASE) ? p : `${SITE_BASE}${p.startsWith('/') ? '' : '/'}${p}`;
+  return `${SITE_ORIGIN}${withBase}`;
 }
 
 /** Route segments below the base, e.g. '/caail/datasets/cow/' → ['datasets','cow']. */
 export function routeSegments(pathname: string): string[] {
-  const p = pathname.startsWith(ORIGIN) ? pathname.slice(ORIGIN.length) : pathname;
-  const belowBase = p.startsWith(BASE) ? p.slice(BASE.length) : p;
+  const p = pathname.startsWith(SITE_ORIGIN) ? pathname.slice(SITE_ORIGIN.length) : pathname;
+  const belowBase = p.startsWith(SITE_BASE) ? p.slice(SITE_BASE.length) : p;
   return belowBase.split('/').filter(Boolean);
 }
 
@@ -85,7 +83,7 @@ export function breadcrumbList(pathname: string, title: string): Node | null {
   if (segs.length === 0) return null; // home
 
   const items: Node[] = [
-    { '@type': 'ListItem', position: 1, name: 'Home', item: `${ORIGIN}${BASE}/` },
+    { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE_ORIGIN}${SITE_BASE}/` },
   ];
 
   const sectionLabel = SECTION_LABELS[segs[0]];
@@ -96,7 +94,7 @@ export function breadcrumbList(pathname: string, title: string): Node | null {
       '@type': 'ListItem',
       position: 2,
       name: sectionLabel,
-      ...(landing ? { item: `${ORIGIN}${BASE}${landing}` } : {}),
+      ...(landing ? { item: `${SITE_ORIGIN}${SITE_BASE}${landing}` } : {}),
     });
     items.push({ '@type': 'ListItem', position: 3, name: title, item: absolute(pathname) });
   } else {

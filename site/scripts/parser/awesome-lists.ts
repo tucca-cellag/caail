@@ -49,8 +49,6 @@ export const AWESOME_CACHE_PATH: string = fileURLToPath(
   new URL('./awesome-cache.json', import.meta.url),
 );
 
-/** Site base path, from site-config.ts (for link rewriting). */
-const AWESOME_BASE = SITE_BASE;
 
 // ---------------------------------------------------------------------------
 // Metrics cache schema (input — committed awesome-cache.json)
@@ -167,7 +165,7 @@ function itemFromListItem(
   const summary = mdastToString(descPara).trim();
 
   const descRoot: Root = { type: 'root', children: [descPara] };
-  rewriteCaailLinks({ base: AWESOME_BASE, sourcePath: 'AwesomeLists.md' })(descRoot);
+  rewriteCaailLinks({ base: SITE_BASE, sourcePath: 'AwesomeLists.md' })(descRoot);
   // mdast → hast → html; raw HTML escaped (none here). Unwrap the <p> wrapper so
   // the description is inline text + links, not a block paragraph.
   const summaryHtml = toHtml(toHast(descRoot))

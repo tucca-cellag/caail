@@ -23,7 +23,7 @@ import addFormats from 'ajv-formats';
 import type { ValidateFunction } from 'ajv';
 import { z } from 'zod';
 
-import { SITE_BASE } from '../../src/content/site-config.ts';
+import { SITE_BASE, SITE_ORIGIN } from '../../src/content/site-config.ts';
 
 import {
   ApiCatalogIndexRowSchema,
@@ -391,8 +391,8 @@ export function buildOpenApiDocument(corpusDate: string): unknown {
         // OpenAPI base is the document's own origin, so these paths resolve on Pages and
         // NOT against the mirror, whose prefix is different. Saying "the same files are
         // also at <mirror>" without this invites joining the two into a 404.
-        'The paths below are absolute on the GitHub Pages origin, ' +
-        'https://tucca-cellag.github.io. The same files are mirrored per-filename at ' +
+        `The paths below are absolute on the GitHub Pages origin, ${SITE_ORIGIN}. ` +
+        'The same files are mirrored per-filename at ' +
         'https://raw.githubusercontent.com/tucca-cellag/caail/main/site/public/api/, which ' +
         'some clients can reach when Pages is not allow-listed. Resolve that mirror by ' +
         'filename; do not join the paths below onto it.',

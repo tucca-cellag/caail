@@ -598,11 +598,14 @@ export function buildAgentApi(inputs: AgentApiInputs): ApiFile[] {
     { name: 'taxonomy.json', body: { ...(inputs.taxonomy as object), corpusDate } },
   ];
 
+  // Make the site-relative hrefs absolute first, so the body validated below is the
+  // exact payload that gets written.
+  for (const f of files) f.body = absolutizeSiteHrefs(f.body);
+
   // Every body is checked against its published schema BEFORE anything is written, so a
   // model that changed shape fails the build rather than shipping a payload the document
   // says is impossible. This is what makes the OpenAPI file a property of the output and
   // not a claim about it.
-  for (const f of files) f.body = absolutizeSiteHrefs(f.body);
   for (const f of files) assertValid(f.name, f.body);
 
   // Emitted last, and in the same pass, so it cannot describe a set of files that was
