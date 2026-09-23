@@ -12,9 +12,10 @@
  * file. Talks and the two primers have one (one id per `##` section, and those
  * sections are ALL the ids a link can target, so a miss there is a broken link
  * and throws). Map keys are GitHub's anchors only: the canonical Markdown is
- * read on GitHub first, so a link must work there, and the site translates it. Software, Databases, Awesome Lists, Field Reports and the Papers
- * explorer have none yet, although most of their ids are derivable too; adding
- * one here is how CAAIL-268 gets fixed, for both rewriters at once.
+ * read on GitHub first, so a link must work there, and the site translates it.
+ * Software, Databases, Awesome Lists, Field Reports and the Papers explorer
+ * have none yet, although most of their ids are derivable too; adding one here
+ * is how CAAIL-268 gets fixed, for both rewriters at once.
  */
 import { statSync } from 'node:fs';
 import { join } from 'node:path';
