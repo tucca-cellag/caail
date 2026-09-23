@@ -67,6 +67,11 @@ export function sectionAnchors(repoRel: string, headings: readonly HeadingRef[])
     let id: string | null = null;
     if (depth === 2 && topLevel) {
       id = siteSlug(siteText);
+      if (id === '') {
+        // siteSlug keeps only ASCII letters and digits, so "日本語" or "🎥" would
+        // render id="" and no link could reach the section.
+        throw new Error(`dedicated-links: the ## heading "${siteText}" in ${repoRel} has no site id.`);
+      }
       const prior = seenSite.get(id);
       if (prior !== undefined) {
         throw new Error(
@@ -134,10 +139,13 @@ function htmlTargets(tree: ReturnType<typeof parseFile>): string[] {
 export const SECTION_ROUTES: ReadonlySet<string> = new Set(['Talks.md', 'Primers/CellAg.md', 'Primers/AI.md']);
 
 /**
- * Keyed on repo root + file and checked against the file's mtime, so a
- * long-lived `astro dev` process picks up a renamed heading. The primer parser
- * passes its own repo root through; the prose rewriter (and the catalog and
- * awesome-lists parsers that use it) resolves against this repository.
+ * Keyed on repo root + file and checked against the file's mtime, so the map
+ * always reflects the Markdown on disk. That alone does not make `astro dev`
+ * consistent: the ids /talks/ and the primer hubs render come from talks.json and
+ * primers.json, which only `pnpm parse` regenerates, so after renaming a heading
+ * run parse (the documented dev-server staleness gotcha). The primer parser passes
+ * its own repo root through; the prose rewriter (and the catalog and awesome-lists
+ * parsers that use it) resolves against this repository.
  */
 const cache = new Map<string, { mtimeMs: number; map: AnchorMap }>();
 

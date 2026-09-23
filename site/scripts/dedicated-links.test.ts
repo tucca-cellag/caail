@@ -4,7 +4,9 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { dedicatedLink, sectionAnchors, SECTION_ROUTES } from './dedicated-links.ts';
 import { siteSlug } from '../src/lib/heading-slug.ts';
-import { githubSlug } from './github-slug.ts';
+// GitHub's per-heading rule, straight from the library GitHub's anchors come from.
+import { slug as githubSlug } from 'github-slugger';
+import { DEDICATED_ROUTES } from '../src/content/dedicated-routes.ts';
 import { buildTalksModel } from './parser/talks.js';
 import { buildPrimersModel, PRIMER_SOURCES, rewritePrimerUrl } from './parser/primers.js';
 import { rewriteCaailLinks } from './remark/rewrite-caail-links.ts';
@@ -145,6 +147,14 @@ describe('dedicatedLink', () => {
     // SECTION_ROUTES is kept by hand; a primer missing from it would silently lose
     // anchor checking.
     for (const { file } of PRIMER_SOURCES) expect(SECTION_ROUTES.has(file), file).toBe(true);
+    // and dedicatedLink returns before consulting a map for a file with no route,
+    // so a mapped file missing from DEDICATED_ROUTES would never be checked
+    for (const file of SECTION_ROUTES) expect(file in DEDICATED_ROUTES, file).toBe(true);
+  });
+
+  it('refuses a section whose site id would be empty', () => {
+    // siteSlug keeps only ASCII letters and digits; id="" is unlinkable.
+    expect(() => sectionAnchors('X.md', [{ depth: 2, text: '日本語' }])).toThrow(/has no site id/);
   });
 
   it('refuses two sections that would render one site id', () => {
