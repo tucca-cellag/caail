@@ -43,16 +43,18 @@ export function isEditionSort(s: string): boolean {
   const month = Number(mo);
   if (month < 1 || month > 12) return false;
   if (d === undefined) return true;
+  const year = Number(y);
+  const leap = (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
+  const daysInMonth = month === 2 ? (leap ? 29 : 28) : [4, 6, 9, 11].includes(month) ? 30 : 31;
   const day = Number(d);
-  const daysInMonth = new Date(Date.UTC(Number(y), month, 0)).getUTCDate();
   return day >= 1 && day <= daysInMonth;
 }
 
 export interface SeriesRecency {
-  /** every edition id of the series, oldest to newest (document order breaks a tie) */
+  /** every edition id of the series, oldest to newest */
   editions: string[];
-  /** the id(s) at the series' greatest edition_sort; exactly one unless there is a problem */
-  latest: string[];
+  /** the id at the series' greatest edition_sort; meaningful only when `problems` is empty */
+  latest: string;
 }
 
 /**
@@ -60,44 +62,49 @@ export interface SeriesRecency {
  * `deriveReports` (which throws on any problem) and db:check's `checkSeries` (which lists them),
  * so the check and the derivation cannot disagree about which edition is current.
  *
- * Latest is max(edition_sort) per `series_slug`, compared as a string. That is chronological
- * only when every edition of a series is a valid date in the SAME precision: '2026' sorts before
- * '2026-03-01' by prefix alone. Normalising cannot rescue a mixed series, because a bare year has
- * no position relative to a date inside it, and any padding invents an order the source never
- * stated. So a mixed series is a problem for a curator to resolve rather than a case to guess at,
- * as are an invalid date and a tie at the max. A one-off (`series_slug === null`) is its own
- * latest, but its edition_sort must still be a valid date.
+ * Latest is max(edition_sort) per `series_slug`, compared as a string. Every valid sort shares
+ * the YYYY-MM-DD layout, so two of them compare chronologically at their first differing digit,
+ * whatever their precisions: '2026' < '2027-03' both ways. The one case with no order is NESTING,
+ * one sort a prefix of another: '2026' contains '2026-03-01', and string order puts it first by
+ * prefix alone. Normalising cannot rescue that, because a bare year has no position relative to a
+ * date inside it, and any padding invents an order the source never stated. So a nested pair is
+ * a problem for a curator to resolve rather than a case to guess at, as are an invalid date and
+ * two editions sharing a sort (which leaves their order, and at the max the current edition,
+ * undefined). A one-off (`series_slug === null`) is its own latest, but its sort must be valid.
+ *
+ * Editions are ordered by sort, then `ordinal`, so both callers get the same order whatever order
+ * their rows arrive in (the NDJSON is PK-sorted; SQLite promises none).
  */
 export function seriesRecency(
-  rows: Pick<ReportRow, 'item_id' | 'series_slug' | 'edition_sort'>[],
+  rows: Pick<ReportRow, 'item_id' | 'series_slug' | 'edition_sort' | 'ordinal'>[],
 ): { bySeries: Map<string, SeriesRecency>; problems: string[] } {
   const problems: string[] = [];
-  const grouped = new Map<string, { id: string; sort: string }[]>();
+  const grouped = new Map<string, { id: string; sort: string; ordinal: number }[]>();
   for (const r of rows) {
     if (!isEditionSort(r.edition_sort)) {
       problems.push(`${r.item_id}: edition_sort '${r.edition_sort}' is not a valid YYYY, YYYY-MM or YYYY-MM-DD date`);
-      continue; // it would also read as a precision of its own; report it once, here
+      continue;
     }
     if (r.series_slug === null) continue;
     (grouped.get(r.series_slug) ?? grouped.set(r.series_slug, []).get(r.series_slug)!)
-      .push({ id: r.item_id, sort: r.edition_sort });
+      .push({ id: r.item_id, sort: r.edition_sort, ordinal: r.ordinal });
   }
   const bySeries = new Map<string, SeriesRecency>();
   for (const [series, list] of grouped) {
-    list.sort((a, b) => (a.sort < b.sort ? -1 : a.sort > b.sort ? 1 : 0)); // stable: a tie keeps document order
-    const sorts = [...new Set(list.map((e) => e.sort))];
-    // Once isEditionSort holds, length alone names the precision: 4 = YYYY, 7 = YYYY-MM, 10 = YYYY-MM-DD.
-    if (new Set(sorts.map((s) => s.length)).size > 1) {
-      problems.push(`series '${series}': edition_sort mixes precisions (${sorts.join(', ')}); give every edition ` +
-        'of a series the same YYYY, YYYY-MM or YYYY-MM-DD form, or "latest" is decided by string prefix, not date');
+    list.sort((a, b) => (a.sort < b.sort ? -1 : a.sort > b.sort ? 1 : a.ordinal - b.ordinal));
+    for (let i = 1; i < list.length; i++) {
+      const [prev, next] = [list[i - 1], list[i]];
+      if (next.sort === prev.sort) {
+        problems.push(`series '${series}': ${prev.id} and ${next.id} share edition_sort ${next.sort}; ` +
+          'every edition of a series needs its own');
+      } else if (next.sort.startsWith(`${prev.sort}-`)) {
+        // In string order a prefix sorts directly before its first extension, so any series that
+        // nests has at least one adjacent nested pair, and that is enough to fail it.
+        problems.push(`series '${series}': edition_sort ${prev.sort} (${prev.id}) contains ${next.sort} (${next.id}), ` +
+          'so which is later is undefined; record the shorter one\'s actual month or day from its source');
+      }
     }
-    const maxSort = sorts.at(-1)!;
-    const latest = list.filter((e) => e.sort === maxSort).map((e) => e.id);
-    if (latest.length > 1) {
-      problems.push(`series '${series}': ${latest.length} editions tie at the latest edition_sort ${maxSort} ` +
-        `(${latest.join(', ')}); exactly one may be current`);
-    }
-    bySeries.set(series, { editions: list.map((e) => e.id), latest });
+    bySeries.set(series, { editions: list.map((e) => e.id), latest: list.at(-1)!.id });
   }
   return { bySeries, problems };
 }
@@ -121,7 +128,7 @@ export function deriveReports(rows: ReportRow[], topicsById: Map<string, Report[
 
   return rows.map((r) => {
     const series = r.series_slug === null ? undefined : bySeries.get(r.series_slug)!;
-    const currentId = series?.latest[0];
+    const currentId = series?.latest;
     const isCurrent = series === undefined || currentId === r.item_id;
     return {
       id: r.item_id,

@@ -581,15 +581,15 @@ export function checkFineTagSeedDrift(db: Db): CheckResult[] {
  *
  * The parser DERIVES `current`/`supersededBy` from max(edition_sort) per `series_slug`, and
  * that derivation is only well-defined under the rules `seriesRecency` (parser/reports.ts)
- * states and checks: a valid date, one precision per series, no tie at the max. This lists the
+ * states and checks, which live there alone so this docstring cannot drift from them. This lists the
  * same problems `deriveReports` would throw on, by calling the same function, so a curator sees
  * them at db:check with the rest of the integrity report rather than as a parse abort, and the
  * check and the derivation cannot disagree. It adds the one rule the derivation does not need:
  * a non-empty edition_label.
  */
 export function checkSeries(db: Db): CheckResult[] {
-  const rows = db.prepare('SELECT item_id, series_slug, edition_label, edition_sort FROM reports').all() as
-    { item_id: string; series_slug: string | null; edition_label: string; edition_sort: string }[];
+  const rows = db.prepare('SELECT item_id, series_slug, edition_label, edition_sort, ordinal FROM reports').all() as
+    { item_id: string; series_slug: string | null; edition_label: string; edition_sort: string; ordinal: number }[];
   const problems = rows.filter((r) => !r.edition_label.trim()).map((r) => `${r.item_id}: empty edition_label`);
   problems.push(...seriesRecency(rows).problems);
   return [ok('reports series: edition label/sort present + comparable, exactly one current per series',

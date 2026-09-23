@@ -8,6 +8,7 @@
 import { readFileSync } from 'node:fs';
 import { parseMarkdown, sectionsAfter } from '../parser/markdown.js';
 import { entryHeadingDepth, isEntryHeading, pageFromPath } from '../parser/datasets.js';
+import { isEditionSort } from '../parser/reports.js';
 import { slugify } from './lib.js';
 import type { Table, TableRow, TableCell } from 'mdast';
 
@@ -201,7 +202,7 @@ export interface ReportRaw {
   url: string | null;         // H3 link target; null for an unlinked heading
   seriesSlug: string | null;  // slug of the enclosing H2 series section; null for a top-level one-off
   editionLabel: string;       // human edition label, e.g. '2026' (from the italic edition line)
-  editionSort: string;        // sortable latest-key (YYYY, YYYY-MM or YYYY-MM-DD, one form per series); max wins
+  editionSort: string;        // sortable latest-key; max wins in a series (rules: parser/reports.ts seriesRecency)
   headingMd: string;          // full H3 heading source after '### '
   bodyMd: string;             // raw body markdown after the H3 (INCLUDES the italic edition line)
 }
@@ -210,10 +211,11 @@ export interface ReportRaw {
  * The italic edition line every report body leads with (CAAIL-364): `*Edition <label>,
  * published <sort>.*`. It is INTRINSIC CONTENT — stored and re-emitted verbatim as part of
  * `body_md`, so a verbatim reader of llms-full.txt sees the edition too (a DB-only side
- * axis would reach reports.json but be invisible there). `<sort>` is the sortable latest-key
- * (a YYYY, YYYY-MM or YYYY-MM-DD, one form per series; see `seriesRecency`); `<label>` is the
- * human label. Parsed strictly so a malformed line
- * fails loudly at seed time rather than silently minting a report with no edition.
+ * axis would reach reports.json but be invisible there). `<sort>` is the sortable latest-key and
+ * `<label>` the human label. This regex only finds the line; `extractReports` then requires the
+ * sort to pass `isEditionSort`, so a missing line or an unusable sort fails loudly at seed time
+ * rather than minting a report with no usable edition. The cross-edition rules (nesting,
+ * duplicates) need the whole series, so they live in `seriesRecency` and run at db:check and parse.
  */
 export const EDITION_LINE_RE = /\*Edition\s+(?<label>.+?),\s+published\s+(?<sort>.+?)\.\*/;
 
@@ -245,19 +247,27 @@ export function extractReports(path: string): ReportRaw[] {
       e = kids[j].position.end.offset;
     }
     const bodyMd = s === null ? '' : src.slice(s, e);
+    const name = (link ? (link.children ?? []).map(inlineMd).join('') : inlineMd(n)).trim();
     const m = EDITION_LINE_RE.exec(bodyMd);
     if (!m?.groups) {
       throw new Error(
-        `extractReports: the report "${(link ? (link.children ?? []).map(inlineMd).join('') : inlineMd(n)).trim()}" ` +
-          `in ${path} has no "*Edition <label>, published <sort>.*" line. Every report entry must lead its body with one.`,
+        `extractReports: the report "${name}" in ${path} has no "*Edition <label>, published <sort>.*" line. ` +
+          'Every report entry must lead its body with one.',
+      );
+    }
+    const editionSort = m.groups.sort.trim();
+    if (!isEditionSort(editionSort)) {
+      throw new Error(
+        `extractReports: the report "${name}" in ${path} is published '${editionSort}', ` +
+          'which is not a valid YYYY, YYYY-MM or YYYY-MM-DD date.',
       );
     }
     out.push({
-      name: (link ? (link.children ?? []).map(inlineMd).join('') : inlineMd(n)).trim(),
+      name,
       url: link ? link.url : null,
       seriesSlug,
       editionLabel: m.groups.label.trim(),
-      editionSort: m.groups.sort.trim(),
+      editionSort,
       headingMd: (n.children as any[]).map(inlineMd).join('').trim(),
       bodyMd,
     });

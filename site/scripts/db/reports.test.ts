@@ -5,6 +5,8 @@
  *   B. seedReports: frozen `report:` ids, series/edition columns.
  *   C. emitReportsFile: block-splice round-trip (H2s + prose preserved) and the count guard.
  *   D. Integration: the committed FieldReports.md round-trips and passes checkIntegrity + checkSeries.
+ *   E. edition_sort rules (CAAIL-373): checkSeries on nesting / duplicates / invalid dates, and
+ *      extractReports refusing an invalid published date at seed time.
  */
 
 import { describe, it, expect, beforeAll } from 'vitest';
@@ -105,7 +107,7 @@ describe('seedReports', () => {
   });
 });
 
-describe('checkSeries edition_sort precision (CAAIL-373)', () => {
+describe('checkSeries edition_sort rules (CAAIL-373)', () => {
   /** A one-off at `oneoffSort`, then a series whose editions carry `sorts` (label = sort). */
   function seriesDb(sorts: string[], oneoffSort = '2025-06'): Db {
     const editions = sorts.map((s, i) =>
@@ -113,45 +115,66 @@ describe('checkSeries edition_sort precision (CAAIL-373)', () => {
     const md = `# Field Reports\n\n### A One-Off\n\n*Edition x, published ${oneoffSort}.*\n\nOne-off.\n\n` +
       `## Example Series\n\n${editions}`;
     const db = openDb();
-    seedReports(db, extractReports(fixture(`precision-${sorts.join('_')}.md`, md)));
+    seedReports(db, extractReports(fixture(`series-${sorts.join('_')}-${oneoffSort}.md`, md)));
+    return db;
+  }
+  /** extractReports now refuses an invalid sort, so one reaches db:check only via hand-edited NDJSON. */
+  function withSort(db: Db, id: string, sort: string): Db {
+    db.prepare('UPDATE reports SET edition_sort = ? WHERE item_id = ?').run(sort, id);
     return db;
   }
 
-  it('fails a series that mixes YYYY and YYYY-MM-DD, naming the series and its sorts', () => {
+  it('fails a nested pair: a year cannot be ordered against a date inside it', () => {
     // String order puts '2026' first by prefix, so the year-only edition would lose "latest"
     // to the March one whichever was really published later.
     const [res] = checkSeries(seriesDb(['2026', '2026-03-01']));
     expect(res.ok).toBe(false);
-    expect(res.detail).toMatch(/series 'example-series': edition_sort mixes precisions \(2026, 2026-03-01\)/);
+    expect(res.detail).toMatch(/series 'example-series': edition_sort 2026 \(report:example-0\) contains 2026-03-01 \(report:example-1\)/);
+    // '2026-06' < '2026-06-01' < '2026-07' by prefix: the same ambiguity one precision down.
+    expect(checkSeries(seriesDb(['2026-06', '2026-06-01']))[0].detail).toMatch(/2026-06 .* contains 2026-06-01/);
   });
 
-  it('fails a YYYY / YYYY-MM mix, and a YYYY-MM / YYYY-MM-DD mix', () => {
-    expect(checkSeries(seriesDb(['2025', '2026-06']))[0].detail).toMatch(/mixes precisions \(2025, 2026-06\)/);
-    // '2026-06' < '2026-06-01' < '2026-07' by prefix: the same misorder one precision down.
-    expect(checkSeries(seriesDb(['2026-06', '2026-06-01']))[0].detail).toMatch(/mixes precisions \(2026-06, 2026-06-01\)/);
+  it('passes mixed precisions that do not nest, so historical YYYY editions need no rewrite', () => {
+    // Every committed GFI series is year-only; its next edition may be dated without touching them.
+    expect(checkSeries(seriesDb(['2024', '2025', '2026', '2027-03'])).every((c) => c.ok)).toBe(true);
+    expect(checkSeries(seriesDb(['2025-11-30', '2026'])).every((c) => c.ok)).toBe(true);
   });
 
-  it('reports a malformed edition_sort once, not also as a precision mix', () => {
-    const [res] = checkSeries(seriesDb(['2026', '2026-6']));
+  it('fails two editions sharing a sort, at the max or below it', () => {
+    expect(checkSeries(seriesDb(['2024', '2026', '2026']))[0].detail).toMatch(/share edition_sort 2026/);
+    expect(checkSeries(seriesDb(['2024', '2024', '2026']))[0].detail).toMatch(/share edition_sort 2024/);
+  });
+
+  it('reports an invalid edition_sort once, and not also as a nest', () => {
+    // '2026-6' starts with '2026-', so if it were not excluded it would also read as nesting in '2026'.
+    const [res] = checkSeries(withSort(seriesDb(['2026', '2027']), 'report:example-1', '2026-6'));
     expect(res.ok).toBe(false);
     expect(res.detail).toMatch(/edition_sort '2026-6' is not a valid YYYY, YYYY-MM or YYYY-MM-DD date/);
-    expect(res.detail).not.toMatch(/mixes precisions/);
+    expect(res.detail).not.toMatch(/contains/);
   });
 
   it('rejects shape-valid but impossible dates, which would otherwise sort as latest', () => {
     for (const bad of ['2026-13', '2026-00', '2026-02-30', '2025-02-29', '2026-04-31']) {
-      expect(checkSeries(seriesDb([bad]))[0].detail).toMatch(new RegExp(`'${bad}' is not a valid`));
+      expect(checkSeries(withSort(seriesDb(['2026-01']), 'report:example-0', bad))[0].detail)
+        .toMatch(new RegExp(`'${bad}' is not a valid`));
     }
   });
 
-  it('passes a series that keeps one precision throughout, leap day included', () => {
+  it('passes a well-formed series, leap day included', () => {
     expect(checkSeries(seriesDb(['2026-03-01', '2026-11-01'])).every((c) => c.ok)).toBe(true);
-    expect(checkSeries(seriesDb(['2024-05', '2025-05'])).every((c) => c.ok)).toBe(true);
     expect(checkSeries(seriesDb(['2023-02-28', '2024-02-29'])).every((c) => c.ok)).toBe(true);
   });
 
-  it('does not compare a one-off against a series: differing precision across them is fine', () => {
+  it('never compares a one-off against a series, even when the two would nest', () => {
     expect(checkSeries(seriesDb(['2024', '2026'], '2026-06-15')).every((c) => c.ok)).toBe(true);
+  });
+});
+
+describe('extractReports edition_sort validation', () => {
+  it('refuses a report whose published date is not a valid edition_sort, naming it', () => {
+    const bad = `# Field Reports\n\n### [Bad Date](https://example.com/x)\n\n*Edition 2026, published June 2026.*\n\nBody.\n`;
+    expect(() => extractReports(fixture('bad-sort.md', bad)))
+      .toThrow(/"Bad Date" .* is published 'June 2026', which is not a valid YYYY, YYYY-MM or YYYY-MM-DD date/);
   });
 });
 

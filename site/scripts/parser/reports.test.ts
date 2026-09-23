@@ -82,14 +82,20 @@ describe('deriveReports recency model', () => {
 
   // CAAIL-373: the parser is the guard every build passes through (pnpm parse runs no db:check),
   // so each case that would otherwise publish a guessed `current` must abort it instead.
-  it('throws on a series mixing precisions rather than picking by string prefix', () => {
+  it('throws on a nested pair rather than picking by string prefix', () => {
     expect(() => deriveReports([row('r:year', 's', '2026'), row('r:mar', 's', '2026-03-01')], NO_TOPICS))
-      .toThrow(/series 's': edition_sort mixes precisions \(2026, 2026-03-01\)/);
+      .toThrow(/series 's': edition_sort 2026 \(r:year\) contains 2026-03-01 \(r:mar\)/);
   });
 
-  it('throws on a tie at the latest edition_sort', () => {
+  it('orders mixed precisions that do not nest chronologically', () => {
+    const out = deriveReports([row('r:2026', 's', '2026'), row('r:2027-03', 's', '2027-03')], NO_TOPICS);
+    expect(out.find((r) => r.id === 'r:2027-03')!.current).toBe(true);
+    expect(out.find((r) => r.id === 'r:2026')!.supersededBy).toBe('r:2027-03');
+  });
+
+  it('throws on two editions sharing a sort', () => {
     expect(() => deriveReports([row('r:a', 's', '2026'), row('r:b', 's', '2026')], NO_TOPICS))
-      .toThrow(/2 editions tie at the latest edition_sort 2026/);
+      .toThrow(/r:a and r:b share edition_sort 2026/);
   });
 
   it('throws on an impossible date, in a series or a one-off', () => {
@@ -103,11 +109,24 @@ describe('seriesRecency (the shared definition of latest)', () => {
   it('orders editions oldest to newest and names the single latest', () => {
     const { bySeries, problems } = seriesRecency([row('r:b', 's', '2025'), row('r:a', 's', '2024'), row('r:c', 's', '2026')]);
     expect(problems).toEqual([]);
-    expect(bySeries.get('s')).toEqual({ editions: ['r:a', 'r:b', 'r:c'], latest: ['r:c'] });
+    expect(bySeries.get('s')).toEqual({ editions: ['r:a', 'r:b', 'r:c'], latest: 'r:c' });
+  });
+
+  it('gives the same answer whatever order the rows arrive in (db:check and parse read differently)', () => {
+    const rows = [row('r:a', 's', '2024'), row('r:b', 's', '2024'), row('r:c', 's', '2026')]
+      .map((r, i) => ({ ...r, ordinal: i }));
+    const forward = seriesRecency(rows);
+    const reversed = seriesRecency([...rows].reverse());
+    expect(reversed.bySeries).toEqual(forward.bySeries);
+    expect(reversed.problems).toEqual(forward.problems);
+    expect(forward.bySeries.get('s')!.editions).toEqual(['r:a', 'r:b', 'r:c']);
   });
 
   it('isEditionSort accepts the three forms and checks the calendar', () => {
-    for (const ok of ['2026', '2026-01', '2026-12', '2026-01-31', '2024-02-29']) expect(isEditionSort(ok)).toBe(true);
+    // 2000 is a leap year (divisible by 400), 1900 is not; 0004 checks years Date.UTC would misread.
+    for (const ok of ['2026', '2026-01', '2026-12', '2026-01-31', '2024-02-29', '2000-02-29', '0004-02-29'])
+      expect(isEditionSort(ok)).toBe(true);
+    expect(isEditionSort('1900-02-29')).toBe(false);
     for (const bad of ['26', '2026-1', '2026-00', '2026-13', '2025-02-29', '2026-04-31', '2026-01-00', 'TBD', ' 2026'])
       expect(isEditionSort(bad)).toBe(false);
   });

@@ -158,10 +158,10 @@ CREATE TABLE dataset_entries (
 -- Series / edition (T2): a report line that recurs annually is one SERIES with many
 -- EDITIONS. `series_slug` groups the editions; it is NULL for a one-off. `edition_label`
 -- is the human label ("2026") and `edition_sort` the sortable key that defines "latest"
--- (a YYYY, YYYY-MM or YYYY-MM-DD, one form per series). Unlike license/doi these are INTRINSIC CONTENT, stored AND
--- emitted into the Markdown (the H2 series section + an italic edition line), so a verbatim
--- reader of llms-full.txt sees the grouping too — a DB-only side axis would reach
--- reports.json but be invisible there. The derived `current` / `supersededBy` /
+-- (validity rules: seriesRecency in site/scripts/parser/reports.ts). Unlike license/doi
+-- these are INTRINSIC CONTENT, stored AND emitted into the Markdown (the H2 series section
+-- + an italic edition line), so a verbatim reader of llms-full.txt sees the grouping too — a
+-- DB-only side axis would reach reports.json but be invisible there. The derived `current` / `supersededBy` /
 -- `seriesEditions` are NOT stored: the parser computes them from max(edition_sort) per
 -- series, so next year's edition self-demotes this year's with zero stored-flag edits.
 CREATE TABLE reports (
@@ -170,7 +170,7 @@ CREATE TABLE reports (
   url           TEXT,                  -- canonical report home; NULL for an unlinked heading
   series_slug   TEXT,                  -- groups editions of one recurring line; NULL = one-off
   edition_label TEXT NOT NULL,         -- human edition label, e.g. '2026'
-  edition_sort  TEXT NOT NULL,         -- sortable latest-key (YYYY, YYYY-MM or YYYY-MM-DD, one form per series); max wins
+  edition_sort  TEXT NOT NULL,         -- sortable latest-key; max wins (rules: parser/reports.ts seriesRecency)
   heading_md    TEXT NOT NULL,         -- full H3 heading source after '### '
   body_md       TEXT NOT NULL,         -- raw entry body (incl. the emitted italic edition line)
   ordinal       INTEGER NOT NULL       -- document order (stable emit)
