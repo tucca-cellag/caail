@@ -38,7 +38,13 @@ import { fileURLToPath } from 'node:url';
 
 import { ZodError } from 'zod';
 
-import { SearchTermsSchema, type SearchTerms, type TaxonomyData } from './types.js';
+import {
+  SEARCH_TERM_FORM,
+  SearchTermsFileSchema,
+  SearchTermsSchema,
+  type SearchTerms,
+  type TaxonomyData,
+} from './types.js';
 
 /** Absolute path to the committed search vocabulary, stable regardless of cwd. */
 export const SEARCH_TERMS_PATH: string = fileURLToPath(
@@ -53,8 +59,8 @@ const COVERED_AXES = [
 
 /**
  * The contract's regular plural rules, one row each. `name` is the wording the contract uses;
- * a test asserts the committed contract names every row, so the rules the duplicate check
- * applies and the rules consumers are told to apply cannot drift apart unnoticed.
+ * a test holds the contract's rule list equal to this table in both directions, so the rules
+ * the duplicate check applies and the rules consumers are told to apply cannot drift apart.
  */
 export const PLURAL_RULES: ReadonlyArray<{ name: string; plural: (w: string) => string | null }> = [
   { name: '+s', plural: (w) => `${w}s` },
@@ -63,6 +69,21 @@ export const PLURAL_RULES: ReadonlyArray<{ name: string; plural: (w: string) => 
   { name: 'is to es', plural: (w) => (w.endsWith('is') ? `${w.slice(0, -2)}es` : null) },
   { name: 'ix to ices', plural: (w) => (w.endsWith('ix') ? `${w.slice(0, -2)}ices` : null) },
 ];
+
+/** A term as shown in an error: quoted, with anything outside printable ASCII as \uXXXX. */
+function show(term: string): string {
+  return JSON.stringify(term).replace(
+    /[^\x20-\x7e]/g,
+    (c) => `\\u${c.charCodeAt(0).toString(16).padStart(4, '0')}`,
+  );
+}
+
+/** A zod issue path in the loader's own format: areas["label"][3], methodGeneric[0]. */
+function showPath(path: ReadonlyArray<PropertyKey>): string {
+  if (path.length === 0) return '(root)';
+  const [head, ...rest] = path;
+  return String(head) + rest.map((p) => (typeof p === 'number' ? `[${p}]` : `[${JSON.stringify(String(p))}]`)).join('');
+}
 
 /** A word's regular plurals under PLURAL_RULES. */
 function pluralsOf(word: string): string[] {
@@ -96,17 +117,17 @@ export function buildSearchTerms(
   taxonomy: TaxonomyData,
   path: string = SEARCH_TERMS_PATH,
 ): SearchTerms {
-  let terms: SearchTerms;
+  let terms: ReturnType<typeof SearchTermsFileSchema.parse>;
   try {
-    terms = SearchTermsSchema.parse(JSON.parse(readFileSync(path, 'utf-8')));
+    terms = SearchTermsFileSchema.parse(JSON.parse(readFileSync(path, 'utf-8')));
   } catch (err) {
     // Name the file on every failure, not only the checks below. A ZodError's own message is
     // its issues JSON-encoded, which escapes the quotes each term is shown in, so list them.
     const detail =
       err instanceof ZodError
-        ? err.issues.map((i) => `${i.path.join('.') || '(root)'}: ${i.message} (${i.code})`).join('\n  - ')
+        ? err.issues.map((i) => `${showPath(i.path)}: ${i.message} (${i.code})`).join('\n  - ')
         : String(err);
-    throw new Error(`search-terms: ${path} failed to load:\n  - ${detail}`);
+    throw new Error(`search-terms: ${path} failed to load:\n  - ${detail}`, { cause: err });
   }
   const coverage: string[] = [];
   const form: string[] = [];
@@ -132,10 +153,14 @@ export function buildSearchTerms(
     ...Object.entries(terms.methods).map(([l, v]) => [`methods["${l}"]`, v] as [string, string[]]),
   ];
   for (const [where, list] of lists) {
+    const bad = list.filter((t) => !SEARCH_TERM_FORM.test(t));
+    if (bad.length > 0) {
+      form.push(`${where}: not lowercase ASCII words joined by single spaces or hyphens: ${bad.map(show).join(', ')}`);
+    }
     // Repeats are judged as the consumer sees them, so "water-holding" and "water holding",
     // or "cell line" and "cell lines", count as one term listed twice.
     const dupes = list.filter((t, i) => list.slice(0, i).some((earlier) => sameToConsumer(earlier, t)));
-    if (dupes.length > 0) form.push(`${where}: repeated ${dupes.map((t) => `"${t}"`).join(', ')}`);
+    if (dupes.length > 0) form.push(`${where}: repeated ${dupes.map(show).join(', ')}`);
   }
 
   const sections: string[] = [];
@@ -151,12 +176,15 @@ export function buildSearchTerms(
   if (form.length > 0) {
     sections.push(
       `has terms the matching contract cannot use:\n  - ${form.join('\n  - ')}\n` +
-        `List each term once; a consumer treats hyphen and space, and a word and its regular ` +
-        `plural, as the same term.`,
+        `Store each term as lowercase ASCII words joined by single spaces or hyphens, in ` +
+        `singular form, and list it once; a consumer treats hyphen and space, and a word and ` +
+        `its regular plural, as the same term.`,
     );
   }
   if (sections.length > 0) throw new Error(`search-terms: ${path} ${sections.join('\nIt also ')}`);
-  return terms;
+  // Every term now passed SEARCH_TERM_FORM above, so this cannot fail; it types the result
+  // as the served shape, whose pattern openapi.json publishes.
+  return SearchTermsSchema.parse(terms);
 }
 
 /**

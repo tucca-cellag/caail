@@ -4,8 +4,8 @@
  * Two suites:
  *   (A) the committed search-terms.json against the real Taxonomy.md: every live area and
  *       method has exactly one entry (the same guard the build enforces, pinned here so a
- *       drift is caught by `pnpm test` too), and the contract names every plural rule the
- *       loader applies;
+ *       drift is caught by `pnpm test` too), and the contract's plural rules equal the
+ *       loader's, in both directions;
  *   (B) the failure modes, each built by mutating a copy of the committed file, so the
  *       check is shown firing on the defect it guards rather than trusted to.
  */
@@ -75,8 +75,8 @@ describe('buildSearchTerms (failure modes)', () => {
   it('rejects invisible characters a consumer would fold away', () => {
     const path = variant((t) => { t.methodGeneric.push('machine\u00adlearning', 'deep\u200blearning'); });
     const run = () => buildSearchTerms(taxonomy, path);
-    expect(run).toThrow(/joined by single spaces or hyphens: "machine\u00adlearning"/);
-    expect(run).toThrow(/joined by single spaces or hyphens: "deep\u200blearning"/);
+    // Shown escaped, so the curator can see what is wrong with a term that looks valid.
+    expect(run).toThrow('joined by single spaces or hyphens: "machine\\u00adlearning", "deep\\u200blearning"');
   });
 
   it('treats a word and its regular plural as the same term, as the contract does', () => {
@@ -109,12 +109,27 @@ describe('buildSearchTerms (failure modes)', () => {
     expect(() => buildSearchTerms(taxonomy, path)).toThrow(path);
   });
 
-  it('names the file on a load failure too, not only on the checks after parsing', () => {
+  it('names the file on a load failure too, and keeps the original error as its cause', () => {
     const badJson = join(scratch, 'not-json.json');
     writeFileSync(badJson, '{ "contract": ');
     expect(() => buildSearchTerms(taxonomy, badJson)).toThrow(`${badJson} failed to load`);
-    const badSchema = variant((t) => { t.surprise = []; });
-    expect(() => buildSearchTerms(taxonomy, badSchema)).toThrow(`${badSchema} failed to load`);
+    const missing = join(scratch, 'absent.json');
+    let caught: unknown;
+    try { buildSearchTerms(taxonomy, missing); } catch (e) { caught = e; }
+    expect(String(caught)).toContain(`${missing} failed to load`);
+    expect((caught as Error).cause).toMatchObject({ code: 'ENOENT' });
+  });
+
+  it('reports every problem in one pass: form, coverage and repeats together', () => {
+    const path = variant((t) => {
+      t.methodGeneric.push('Bad Term');
+      delete t.areas[firstArea];
+      t.methods[firstMethod].push(t.methods[firstMethod][0]);
+    });
+    const run = () => buildSearchTerms(taxonomy, path);
+    expect(run).toThrow('"Bad Term"');
+    expect(run).toThrow(`no entry for "${firstArea}"`);
+    expect(run).toThrow(`methods["${firstMethod}"]: repeated`);
   });
 
   it('rejects an empty method list, while an empty area list is allowed', () => {

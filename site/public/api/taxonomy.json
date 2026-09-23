@@ -358,7 +358,8 @@
         "recurrent neural network",
         "lstm",
         "autoencoder",
-        "transformer"
+        "transformer",
+        "multi-layer perceptron"
       ],
       "GNN": [
         "graph neural network",
@@ -406,7 +407,8 @@
         "nsga",
         "evolutionary optimization",
         "multi-objective evolutionary",
-        "scoring card method"
+        "scoring card method",
+        "multiobjective evolutionary"
       ],
       "SVM": [
         "support vector machine",
@@ -499,7 +501,8 @@
         "knowledge-enhanced",
         "protein foundation model",
         "foundation model",
-        "protein embedding"
+        "protein embedding",
+        "multi-modal foundation model"
       ],
       "Foundation Models: Cell-State & Perturbation Prediction": [
         "single-cell foundation model",
@@ -523,7 +526,9 @@
         "bert",
         "large language model",
         "multimodal large language model",
-        "pre-trained model"
+        "pre-trained model",
+        "multi-modal model",
+        "multi-modal large language model"
       ],
       "Scientific Literature & Discovery Agents": [
         "ai scientist",
