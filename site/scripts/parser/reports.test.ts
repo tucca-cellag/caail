@@ -129,7 +129,16 @@ describe('deriveReports recency model', () => {
 
   it('throws on an empty edition_label, which api/reports.json would otherwise publish', () => {
     expect(() => deriveReports([{ ...row('r:a', null, '2026'), edition_label: '  ' }], NO_TOPICS))
-      .toThrow(/r:a: empty edition_label/);
+      .toThrow(/r:a: missing or empty edition_label/);
+  });
+
+  it('reports a hand-edited row missing its label or sort as a problem, not a TypeError', () => {
+    const noLabel = { ...row('r:a', null, '2026') } as Partial<ReportRow>;
+    delete noLabel.edition_label;
+    expect(() => deriveReports([noLabel as ReportRow], NO_TOPICS)).toThrow(/r:a: missing or empty edition_label/);
+    const noSort = { ...row('r:b', null, '2026') } as Partial<ReportRow>;
+    delete noSort.edition_sort;
+    expect(() => deriveReports([noSort as ReportRow], NO_TOPICS)).toThrow(/r:b: edition_sort undefined is not a valid/);
   });
 });
 
@@ -160,6 +169,15 @@ describe('seriesRecency (the shared definition of latest)', () => {
   ])('detects a nest %s', (_label, sorts) => {
     const { problems } = seriesRecency(sorts.map((s, i) => ({ ...row(`r:${i}`, 's', s), ordinal: i })));
     expect(problems.some((p) => / contains /.test(p))).toBe(true);
+  });
+
+  it('reports every nested pair, not only the first, so one rerun shows the whole problem', () => {
+    const { problems } = seriesRecency(
+      ['2026', '2026-03-01', '2026-05', '2027'].map((s, i) => ({ ...row(`r:${i}`, 's', s), ordinal: i })));
+    expect(problems.filter((p) => / contains /.test(p))).toEqual([
+      "series 's': edition_sort 2026 (r:0) contains 2026-03-01 (r:1), so neither can be ordered after the other",
+      "series 's': edition_sort 2026 (r:0) contains 2026-05 (r:2), so neither can be ordered after the other",
+    ]);
   });
 
   it('isEditionSort accepts the three forms and checks the calendar', () => {

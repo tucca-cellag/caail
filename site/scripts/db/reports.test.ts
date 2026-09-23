@@ -172,7 +172,8 @@ describe('checkSeries edition_sort rules (CAAIL-373)', () => {
     db.prepare("UPDATE reports SET edition_label = '' WHERE item_id IN ('report:a-one-off', 'report:example-1')").run();
     const [res] = checkSeries(db);
     // Document order: the one-off's label, then example-1's label, then the series nest.
-    expect(res.detail).toMatch(/report:a-one-off: empty edition_label; report:example-1: empty edition_label; .* contains /);
+    expect(res.detail).toMatch(
+      /report:a-one-off: missing or empty edition_label; report:example-1: missing or empty edition_label; .* contains /);
   });
 
   it('passes a well-formed series, leap day included', () => {
@@ -189,7 +190,8 @@ describe('extractReports edition_sort validation', () => {
   it('refuses a report whose published date is not a valid edition_sort, naming it', () => {
     const bad = `# Field Reports\n\n### [Bad Date](https://example.com/x)\n\n*Edition 2026, published June 2026.*\n\nBody.\n`;
     expect(() => extractReports(fixture('bad-sort.md', bad)))
-      .toThrow(/"Bad Date" .* is published 'June 2026', which is not a valid YYYY, YYYY-MM or YYYY-MM-DD date/);
+      .toThrow(/"Bad Date" .*: edition_sort "June 2026" is not a valid YYYY, YYYY-MM or YYYY-MM-DD date/);
+    expect(() => extractReports(fixture('bad-sort.md', bad))).toThrow(EDITION_SORT_RULE);
   });
 });
 

@@ -160,7 +160,7 @@ CREATE TABLE dataset_entries (
 -- is the human label ("2026") and `edition_sort` the sortable key that defines "latest"
 -- (validity rules: seriesRecency in site/scripts/parser/reports.ts). Unlike license/doi
 -- these are INTRINSIC CONTENT, stored AND emitted into the Markdown (the H2 series section
--- + an italic edition line), so a verbatim reader of llms-full.txt sees the grouping too — a
+-- + an italic edition line), so a verbatim reader of llms-full.txt sees the grouping too. A
 -- DB-only side axis would reach reports.json but be invisible there. The derived `current` / `supersededBy` /
 -- `seriesEditions` are NOT stored: the parser computes them from max(edition_sort) per
 -- series, so next year's edition self-demotes this year's with zero stored-flag edits.

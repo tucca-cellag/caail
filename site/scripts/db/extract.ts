@@ -8,7 +8,7 @@
 import { readFileSync } from 'node:fs';
 import { parseMarkdown, sectionsAfter } from '../parser/markdown.js';
 import { entryHeadingDepth, isEntryHeading, pageFromPath } from '../parser/datasets.js';
-import { isEditionSort, EDITION_SORT_FORMS } from '../parser/reports.js';
+import { isEditionSort, invalidEditionSort, EDITION_SORT_RULE } from '../parser/reports.js';
 import { slugify } from './lib.js';
 import type { Table, TableRow, TableCell } from 'mdast';
 
@@ -257,9 +257,10 @@ export function extractReports(path: string): ReportRaw[] {
     }
     const editionSort = m.groups.sort.trim();
     if (!isEditionSort(editionSort)) {
+      // `path` is the canonical file at seed time but the emitted one under db:verify, where the
+      // value came from a reports.ndjson row, so the rule (which names both) matters more than it.
       throw new Error(
-        `extractReports: the report "${name}" in ${path} is published '${editionSort}', ` +
-          `which is not a valid ${EDITION_SORT_FORMS} date.`,
+        `extractReports: the report "${name}" in ${path}: ${invalidEditionSort(editionSort)}. ${EDITION_SORT_RULE}`,
       );
     }
     out.push({

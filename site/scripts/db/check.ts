@@ -584,8 +584,9 @@ export function checkFineTagSeedDrift(db: Db): CheckResult[] {
  * states and checks, which live there alone so this docstring cannot drift from them. This lists the
  * same problems `deriveReports` would throw on, by calling the same function, so a curator sees
  * them at db:check with the rest of the integrity report rather than as a parse abort, and the
- * check and the derivation cannot disagree. CI runs db:check before parse, so this is usually
- * where a curator first meets a failure, and the detail carries the fix rule for that reason.
+ * check and the derivation cannot disagree. In CI this runs in parallel with the builds that parse,
+ * so it can be where a curator first meets a failure, and the detail carries the fix rule for that
+ * reason.
  */
 export function checkSeries(db: Db): CheckResult[] {
   const rows = db.prepare('SELECT item_id, series_slug, edition_label, edition_sort, ordinal FROM reports').all() as

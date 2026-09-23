@@ -33,17 +33,30 @@ const EDITION_SORT_SHAPE = /^(\d{4})(?:-(\d{2})(?:-(\d{2}))?)?$/;
 export const EDITION_SORT_FORMS = 'YYYY, YYYY-MM or YYYY-MM-DD';
 
 /**
- * How to satisfy `seriesRecency`, stated once and printed by both of its callers (the parse abort
- * and db:check), since CI runs db:check first and a failure there stops parse from ever running.
+ * How to satisfy `seriesRecency`, stated once and printed everywhere a curator can meet one of its
+ * failures: the parse abort (every build, so test.yml and docs.yml), db:check (lint-papers.yml) and
+ * extractReports at seed and verify time. These run in parallel in CI, so any of them can be seen
+ * first, and none may lack it.
+ *
  * The two-copies sentence describes the storage CAAIL-364 chose. An agreement check (CAAIL-379)
  * would enforce it rather than retire it; only deriving one copy from the other would retire it.
+ * The two edit flows are the ones the block-generated-edits hook and this repo's DB tooling support.
  */
 export const EDITION_SORT_RULE =
   `Every report needs a non-empty edition_label and an edition_sort that is a valid ${EDITION_SORT_FORMS} ` +
   'date, and within a series no two editions may share an edition_sort or have one be a prefix of the ' +
-  'other. Fix it in the report\'s reports.ndjson row: edition_sort and the "*Edition <label>, published ' +
-  '<sort>.*" line in its body_md are two copies of one value (CAAIL-379), so change both, then run ' +
-  'db:emit. An edit made in FieldReports.md alone is overwritten by db:emit.';
+  'other. edition_label and edition_sort are each stored twice, in their own column and in the ' +
+  '"*Edition <label>, published <sort>.*" line of body_md (CAAIL-379), so change both copies. Either ' +
+  'edit caail.db after db:build and then run db:export and db:emit, or edit reports.ndjson directly and ' +
+  'then run db:emit alone (db:export would restore the old values from an older caail.db). An edit made ' +
+  'in FieldReports.md alone is overwritten by db:emit.';
+
+/** The problem line for an unusable edition_sort, shared so every place that reports one agrees. */
+export function invalidEditionSort(sort: unknown): string {
+  // JSON.stringify so a stray newline cannot split one-problem-per-line output and trailing
+  // whitespace stays visible. String() covers a missing value, which JSON.stringify leaves undefined.
+  return `edition_sort ${String(JSON.stringify(sort))} is not a valid ${EDITION_SORT_FORMS} date`;
+}
 
 /**
  * True when `s` is a real YYYY, YYYY-MM or YYYY-MM-DD. The shape alone admits '2026-13' or
@@ -108,11 +121,12 @@ export function seriesRecency(
   const byId = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0);
   const inDocumentOrder = [...rows].sort((a, b) => a.ordinal - b.ordinal || byId(a.item_id, b.item_id));
   for (const r of inDocumentOrder) {
-    if (!r.edition_label.trim()) problems.push(`${r.item_id}: empty edition_label`);
-    if (!isEditionSort(r.edition_sort)) {
-      // JSON.stringify, because this is the one raw value printed: a stray newline would split the
-      // one-problem-per-line output and trailing whitespace would look valid.
-      problems.push(`${r.item_id}: edition_sort ${JSON.stringify(r.edition_sort)} is not a valid ${EDITION_SORT_FORMS} date`);
+    // Rows are cast from NDJSON unvalidated, so a hand-edited row may lack either field entirely.
+    if (typeof r.edition_label !== 'string' || !r.edition_label.trim()) {
+      problems.push(`${r.item_id}: missing or empty edition_label`);
+    }
+    if (typeof r.edition_sort !== 'string' || !isEditionSort(r.edition_sort)) {
+      problems.push(`${r.item_id}: ${invalidEditionSort(r.edition_sort)}`);
       continue;
     }
     if (r.series_slug === null) continue;
@@ -123,15 +137,20 @@ export function seriesRecency(
   for (const [series, list] of grouped) {
     // Stable, and the input is in document order, so editions sharing a sort keep document order.
     list.sort((a, b) => (a.sort < b.sort ? -1 : a.sort > b.sort ? 1 : 0));
-    for (let i = 1; i < list.length; i++) {
-      const [prev, next] = [list[i - 1], list[i]];
-      if (next.sort === prev.sort) {
-        problems.push(`series '${series}': ${prev.id} and ${next.id} share edition_sort ${next.sort}`);
-      } else if (next.sort.startsWith(`${prev.sort}-`)) {
-        // In string order a prefix sorts directly before its first extension, so any series that
-        // nests has at least one adjacent nested pair, and that is enough to fail it.
-        problems.push(`series '${series}': edition_sort ${prev.sort} (${prev.id}) contains ${next.sort} (${next.id}), ` +
-          'so neither can be ordered after the other');
+    for (let i = 0; i < list.length; i++) {
+      const a = list[i];
+      if (list[i + 1]?.sort === a.sort) {
+        problems.push(`series '${series}': ${a.id} and ${list[i + 1].id} share edition_sort ${a.sort}`);
+      }
+      // Every sort that a.sort contains follows it contiguously in string order (anything between a
+      // prefix and one of its extensions starts with that prefix too), so scanning forward until a
+      // sort stops matching finds every nested pair, not just the first, and each is reported.
+      for (let j = i + 1; j < list.length && list[j].sort.startsWith(a.sort); j++) {
+        const b = list[j];
+        if (b.sort !== a.sort) {
+          problems.push(`series '${series}': edition_sort ${a.sort} (${a.id}) contains ${b.sort} (${b.id}), ` +
+            'so neither can be ordered after the other');
+        }
       }
     }
     bySeries.set(series, { editions: list.map((e) => e.id), latest: list.at(-1)!.id });
