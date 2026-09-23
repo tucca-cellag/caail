@@ -29,7 +29,9 @@ import {
   PLACEMENT_NOTE,
   SITE_URL,
   absolutizeSiteHrefs,
+  absolutizeFragments,
 } from './agent-api.js';
+import { SITE_BASE, SITE_ORIGIN } from '../../src/content/site-config.ts';
 import { buildPapersModel } from './papers.js';
 import { buildCatalogModel } from './catalog.js';
 import { buildDatasetsModel } from './datasets-entries.js';
@@ -456,13 +458,29 @@ describe('site-relative hrefs in the API', () => {
     expect(out.n).toBe(3);
   });
 
-  it('ships no root-relative href in any emitted endpoint', () => {
+  it('builds the absolute URL from site-config, the module astro.config.mjs reads', () => {
+    expect(SITE_URL).toBe(`${SITE_ORIGIN}${SITE_BASE}/`);
+    expect(readFileSync(join(REPO_ROOT, 'site', 'astro.config.mjs'), 'utf-8'))
+      .toMatch(/from '\.\/src\/content\/site-config\.ts'/);
+  });
+
+  it('resolves a summary fragment against its own source file', () => {
+    // No anchor map for Software.md yet, so the fragment goes where it was written to resolve.
+    expect(absolutizeFragments('<a href="#causalbench">x</a>', 'Software.md'))
+      .toBe('<a href="https://github.com/tucca-cellag/caail/blob/main/Software.md#causalbench">x</a>');
+  });
+
+  it('ships no root-relative or fragment-only href in any emitted endpoint', () => {
     // An agent reading the JSON off-site (or from the raw mirror) cannot resolve
-    // "/caail/…"; the parser's catalog summaries carry exactly that form for the site.
+    // "/caail/…" or "#…"; the parser's catalog summaries carry both forms for the site.
     const files = buildAgentApi({ papers, catalog, datasets, inventory, topics, taxonomy, reports, corpusDate: DATE });
-    expect(JSON.stringify(catalog)).toContain('href=\\"/caail/'); // the input really has them
+    const input = JSON.stringify(catalog);
+    expect(input).toContain(`href=\\"${SITE_BASE}/`); // the input really has them
+    expect(input).toContain('href=\\"#');
     for (const f of files) {
-      expect(JSON.stringify(f.body), f.name).not.toContain('href=\\"/caail/');
+      const out = JSON.stringify(f.body);
+      expect(out, f.name).not.toContain(`href=\\"${SITE_BASE}/`);
+      expect(out, f.name).not.toContain('href=\\"#');
     }
   });
 });

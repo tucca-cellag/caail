@@ -33,6 +33,10 @@ import { fileURLToPath } from 'node:url';
 import { assertValid, buildOpenApiDocument, OPENAPI_FILE } from './openapi.js';
 import { MATRIX_SECTION } from './types.js';
 import type { DatasetInventory, PapersData } from './types.js';
+import { SITE_BASE, SITE_ORIGIN, SITE_URL } from '../../src/content/site-config.ts';
+import { dedicatedLink, GITHUB_BLOB_BASE } from '../dedicated-links.ts';
+
+export { SITE_URL };
 
 /** Where an agent-visible caveat is stated once and reused everywhere. */
 export const SCOPE_NOTE =
@@ -79,22 +83,22 @@ export const PLACEMENT_NOTE =
   'that does not belong. Cite the paper itself. How this is done, and how far it reaches: ' +
   'https://tucca-cellag.github.io/caail/curation/';
 
-/** The deployed site: the origin plus astro.config.mjs's `base`, with a trailing slash. */
-export const SITE_URL = 'https://tucca-cellag.github.io/caail/';
-
 /**
  * Make every site-relative link inside the payload's rendered HTML absolute.
  *
  * The parser renders catalog summaries once, for the site, where `/caail/...` is the
  * right href. The same HTML is served here to agents that fetch the JSON off-site (or
  * from the raw.githubusercontent mirror, where `/caail/` resolves to nothing), so a
- * root-relative href is a link they cannot follow. Only `href="/caail/` is rewritten:
- * the attribute form keeps plain prose and JSON paths that merely mention the base
- * untouched.
+ * root-relative href is a link they cannot follow. Only the `href="<base>/` attribute
+ * form is rewritten, so plain prose and JSON paths that merely mention the base stay
+ * untouched. The origin and base come from site-config.ts, which astro.config.mjs also
+ * reads, so this cannot drift from where the site deploys.
  */
 export function absolutizeSiteHrefs<T>(body: T): T {
+  const from = `href="${SITE_BASE}/`;
+  const to = `href="${SITE_URL}`;
   const walk = (v: unknown): unknown => {
-    if (typeof v === 'string') return v.replaceAll('href="/caail/', `href="${SITE_URL}`);
+    if (typeof v === 'string') return v.replaceAll(from, to);
     if (Array.isArray(v)) return v.map(walk);
     if (v && typeof v === 'object') {
       return Object.fromEntries(Object.entries(v).map(([k, x]) => [k, walk(x)]));
@@ -102,6 +106,39 @@ export function absolutizeSiteHrefs<T>(body: T): T {
     return v;
   };
   return walk(body) as T;
+}
+
+/**
+ * Resolve the fragment-only hrefs (`href="#x"`) in one catalog summary.
+ *
+ * On the site `#x` is an in-page jump; in the JSON it resolves against the file URL
+ * and goes nowhere. It meant `#x` in the entry's canonical file, so it becomes the
+ * on-site route when `dedicatedLink` can show the anchor exists there, and otherwise
+ * that file's GitHub blob, which is where the fragment was written to resolve.
+ */
+export function absolutizeFragments(html: string, sourceFile: string): string {
+  return html.replace(/href="#([^"]+)"/g, (_, anchor: string) => {
+    const onSite = dedicatedLink(sourceFile, anchor);
+    const url = onSite
+      ? `${SITE_ORIGIN}${SITE_BASE}${onSite}`
+      : `${GITHUB_BLOB_BASE}/${sourceFile}#${anchor}`;
+    return `href="${url}"`;
+  });
+}
+
+/** The catalog, with each summary's fragment hrefs resolved against its own source file. */
+function catalogForApi(catalog: unknown): unknown {
+  const cat = catalog as Record<string, unknown> | null;
+  if (!cat) return catalog;
+  const fix = (entries: unknown, file: string) =>
+    Array.isArray(entries)
+      ? entries.map((e) =>
+          e && typeof (e as { summaryHtml?: unknown }).summaryHtml === 'string'
+            ? { ...e, summaryHtml: absolutizeFragments((e as { summaryHtml: string }).summaryHtml, file) }
+            : e,
+        )
+      : entries;
+  return { ...cat, software: fix(cat.software, 'Software.md'), databases: fix(cat.databases, 'Databases.md') };
 }
 
 /** Repo root, two levels above this module's directory (parser/ -> scripts/ -> site/ -> root). */
@@ -536,7 +573,7 @@ export function buildAgentApi(inputs: AgentApiInputs): ApiFile[] {
     { name: 'papers-index.json', body: buildPapersIndex(inputs.papers, corpusDate) },
     { name: 'papers.json', body: { ...inputs.papers, scopeNote: SCOPE_NOTE, corpusDate } },
     { name: 'catalog-index.json', body: buildCatalogIndex(inputs.catalog, corpusDate) },
-    { name: 'catalog.json', body: { ...(inputs.catalog as object), corpusDate } },
+    { name: 'catalog.json', body: { ...(catalogForApi(inputs.catalog) as object), corpusDate } },
     {
       name: 'datasets.json',
       body: {
