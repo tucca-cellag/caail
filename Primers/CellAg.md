@@ -11,7 +11,8 @@ Short primers and the field's annual *State of the Industry* talks: the science,
 * [2026 State of the Industry: Cultivated meat, seafood, and ingredients](https://www.youtube.com/watch?v=F1s702taM5o) (GFI, 2026).
 * [2026 State of the Industry: Fermentation for meat, seafood, eggs, dairy, and ingredients](https://www.youtube.com/watch?v=eCBclCUZOg0) (GFI, 2026).
 * [2026 State of the Industry: Plant-based meat, seafood, eggs, dairy, and ingredients](https://www.youtube.com/watch?v=OEuehZB7YVM) (GFI, 2026).
-* [Field Reports: GFI State of the Industry and other sector surveys](../FieldReports.md) — the Good Food Institute's annual reports across the cultivated, fermentation, and plant-based tracks, each edition linked to its full report, alongside other recurring surveys of the sector.
+* [Field Reports](../FieldReports.md) — the GFI State of the Industry and State of Global Policy series and other surveys of the sector, grouped by series with the current edition marked.
+* [GFI State of the Industry — full report downloads](https://gfi.org/resource/state-of-the-industry-downloads/) — the Good Food Institute's de-facto annual reports across the cultivated, fermentation, and plant-based tracks, with supplementary data (PDF).
 
 ## Read and take a course
 
