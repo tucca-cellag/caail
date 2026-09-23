@@ -246,13 +246,15 @@ function formatGapSegment(start: number, end: number): string {
 // ---------------------------------------------------------------------------
 
 /**
- * Known permalink hosts that stand in for a DOI on theses and workshop/poster
- * papers (eScholarship, OpenReview). Deliberately a host allowlist, not "any
- * non-doi.org URL": a mistyped landing-page URL for a resource that *does* have
- * a DOI (e.g. a `zenodo.org` page instead of its `https://doi.org/…` form)
- * should still warn. Extend this list as new legitimate permalink hosts appear.
+ * Known permalink hosts that stand in for a DOI on theses, workshop/poster
+ * papers and DOI-less institutional reports (eScholarship, OpenReview, GFI
+ * report landing pages under `gfi.org/resource/`). Deliberately an allowlist,
+ * not "any non-doi.org URL": a mistyped landing-page URL for a resource that
+ * *does* have a DOI (e.g. a `zenodo.org` page instead of its `https://doi.org/…`
+ * form) should still warn. The GFI entry is path-scoped for the same reason.
+ * Extend this list as new legitimate permalink hosts appear.
  */
-const PERMALINK_HOST_RE = /https?:\/\/(?:www\.)?(?:escholarship\.org|openreview\.net)\//i;
+const PERMALINK_HOST_RE = /https?:\/\/(?:www\.)?(?:escholarship\.org|openreview\.net|gfi\.org\/resource)\//i;
 
 /**
  * Preprint-server DOI prefixes for venues that have no journal: bioRxiv/medRxiv
@@ -267,8 +269,9 @@ const PREPRINT_DOI_RE = /^10\.(?:1101|64898|48550)\//;
  * Is a null field legitimately absent for this reference kind, rather than a
  * parse failure a human could fix by editing the citation text? (Issue #72.)
  *
- *   - doi:     theses and workshop/poster papers carry a known permalink
- *              (eScholarship, OpenReview) instead of a DOI. A null doi is
+ *   - doi:     theses, workshop/poster papers and GFI reports carry a known
+ *              permalink (eScholarship, OpenReview, gfi.org/resource/) instead
+ *              of a DOI. A null doi is
  *              expected only when one of those hosts is present.
  *   - journal: preprints (identified by a preprint-server DOI prefix) have no
  *              journal — a null there is correct, not a parse miss.
