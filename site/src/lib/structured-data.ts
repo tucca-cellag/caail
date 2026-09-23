@@ -17,14 +17,14 @@
 import catalog from '../content/data/catalog.json';
 import papers from '../content/data/papers.json';
 import talks from '../content/data/talks.json';
-import { SITE_BASE, SITE_ORIGIN } from '../content/site-config';
+import { SITE_BASE, SITE_ORIGIN, SITE_URL } from '../content/site-config';
 
 // ---------------------------------------------------------------------------
 // Identity constants — from site-config.ts, which astro.config.mjs also reads
 // (site + base); WEBSITE_ID matches the WebSite @id it emits.
 // ---------------------------------------------------------------------------
 
-const WEBSITE_ID = `${SITE_ORIGIN}${SITE_BASE}/#website`;
+const WEBSITE_ID = `${SITE_URL}#website`;
 
 /** A schema.org node without its own `@context` (it rides the top-level @graph). */
 type Node = Record<string, unknown>;
@@ -83,7 +83,7 @@ export function breadcrumbList(pathname: string, title: string): Node | null {
   if (segs.length === 0) return null; // home
 
   const items: Node[] = [
-    { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE_ORIGIN}${SITE_BASE}/` },
+    { '@type': 'ListItem', position: 1, name: 'Home', item: SITE_URL },
   ];
 
   const sectionLabel = SECTION_LABELS[segs[0]];

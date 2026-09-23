@@ -33,7 +33,7 @@ import { fileURLToPath } from 'node:url';
 import { assertValid, buildOpenApiDocument, OPENAPI_FILE } from './openapi.js';
 import { MATRIX_SECTION } from './types.js';
 import type { DatasetInventory, PapersData } from './types.js';
-import { SITE_BASE, SITE_ORIGIN, SITE_URL } from '../../src/content/site-config.ts';
+import { SITE_BASE, SITE_URL } from '../../src/content/site-config.ts';
 import { dedicatedLink, GITHUB_BLOB_BASE } from '../dedicated-links.ts';
 
 export { SITE_URL };
@@ -119,14 +119,17 @@ export function absolutizeSiteHrefs<T>(body: T): T {
 export function absolutizeFragments(html: string, sourceFile: string): string {
   return html.replace(/href="#([^"]+)"/g, (_, anchor: string) => {
     const onSite = dedicatedLink(sourceFile, anchor);
-    const url = onSite
-      ? `${SITE_ORIGIN}${SITE_BASE}${onSite}`
-      : `${GITHUB_BLOB_BASE}/${sourceFile}#${anchor}`;
+    const url = onSite ? `${SITE_URL}${onSite.slice(1)}` : `${GITHUB_BLOB_BASE}/${sourceFile}#${anchor}`;
     return `href="${url}"`;
   });
 }
 
-/** The catalog, with each summary's fragment hrefs resolved against its own source file. */
+/**
+ * The catalog, with each summary's links made absolute: site-relative hrefs against
+ * the site URL, fragment-only ones against the entry's own source file. The catalog
+ * summaries are the only HTML any endpoint carries; the endpoint test fails if that
+ * stops being true, rather than this walking every payload to be safe.
+ */
 function catalogForApi(catalog: unknown): unknown {
   const cat = catalog as Record<string, unknown> | null;
   if (!cat) return catalog;
@@ -134,7 +137,13 @@ function catalogForApi(catalog: unknown): unknown {
     Array.isArray(entries)
       ? entries.map((e) =>
           e && typeof (e as { summaryHtml?: unknown }).summaryHtml === 'string'
-            ? { ...e, summaryHtml: absolutizeFragments((e as { summaryHtml: string }).summaryHtml, file) }
+            ? {
+                ...e,
+                summaryHtml: absolutizeFragments(
+                  absolutizeSiteHrefs((e as { summaryHtml: string }).summaryHtml),
+                  file,
+                ),
+              }
             : e,
         )
       : entries;
@@ -597,10 +606,6 @@ export function buildAgentApi(inputs: AgentApiInputs): ApiFile[] {
     },
     { name: 'taxonomy.json', body: { ...(inputs.taxonomy as object), corpusDate } },
   ];
-
-  // Make the site-relative hrefs absolute first, so the body validated below is the
-  // exact payload that gets written.
-  for (const f of files) f.body = absolutizeSiteHrefs(f.body);
 
   // Every body is checked against its published schema BEFORE anything is written, so a
   // model that changed shape fails the build rather than shipping a payload the document

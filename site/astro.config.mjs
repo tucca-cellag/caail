@@ -14,8 +14,9 @@ import { SITE_ORIGIN, SITE_BASE, SITE_URL } from './src/content/site-config.ts';
 const REPO_ROOT = fileURLToPath(new URL('../', import.meta.url));
 // The deployed origin and base come from site-config.ts. `site:`/`base:` below,
 // the analytics origin guard, the social card, JSON-LD and favicon URLs, and the
-// parser's links all read that module — if this ever moves to a TUCCA-owned
-// domain, they follow it in one edit.
+// parser's links all read that module. Static files that cannot import it (robots,
+// llms.txt, the manifest, the Worker's allowed origin…) are listed in
+// site-config.test.ts, which fails until each is edited to match.
 const ANALYTICS_HOST = new URL(SITE_ORIGIN).hostname;
 
 // Curated dataset entries (datasets.json), grouped by page, loaded once for the

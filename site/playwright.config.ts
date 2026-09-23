@@ -2,6 +2,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { defineConfig } from '@playwright/test';
 import { preflight } from './scripts/e2e-preflight';
+import { SITE_BASE } from './src/content/site-config';
 
 /**
  * Preview port, overridable via CAAIL_E2E_PORT.
@@ -21,7 +22,7 @@ const PORT = RAW_PORT === undefined || RAW_PORT === '' ? 4321 : Number(RAW_PORT)
 if (!Number.isInteger(PORT) || PORT <= 0 || PORT > 65535) {
   throw new Error(`CAAIL_E2E_PORT must be a valid port number, got ${JSON.stringify(RAW_PORT)}`);
 }
-const BASE = `http://localhost:${PORT}/caail/`;
+const BASE = `http://localhost:${PORT}${SITE_BASE}/`;
 
 const REUSE_EXISTING_SERVER = !process.env.CI;
 
