@@ -8,14 +8,16 @@ import { stripLeadingH1 } from './scripts/remark/strip-leading-h1.ts';
 import { rewriteCaailLinks } from './scripts/remark/rewrite-caail-links.ts';
 import { datasetCards, loadDatasetEntriesByPage } from './scripts/remark/dataset-cards.ts';
 import { CAAIL_PAGES } from './src/content/caail-pages.ts';
+import { SITE_ORIGIN, SITE_BASE } from './src/content/site-config.ts';
 
 // astro.config.mjs lives in site/ — one level up is the repo root (trailing slash)
 const REPO_ROOT = fileURLToPath(new URL('../', import.meta.url));
-const BASE = '/caail';
-// The deployed origin. `site:` below and the analytics origin guard both read
-// it, so the guard cannot drift from where the site actually deploys — if this
-// ever moves to a TUCCA-owned domain, the beacon follows it in the same edit.
-const SITE = 'https://tucca-cellag.github.io';
+const BASE = SITE_BASE;
+// The deployed origin, from site-config.ts. `site:` below, the analytics origin
+// guard and the agent API's absolute links all read it, so none can drift from
+// where the site actually deploys — if this ever moves to a TUCCA-owned domain,
+// the beacon and the API follow it in the same edit.
+const SITE = SITE_ORIGIN;
 const ANALYTICS_HOST = new URL(SITE).hostname;
 
 // Curated dataset entries (datasets.json), grouped by page, loaded once for the
@@ -65,7 +67,7 @@ function groupItems(group) {
 
 export default defineConfig({
   site: SITE,
-  base: '/caail',
+  base: BASE,
   // Canonical pages that moved. `AIEvaluation` described the matrix's
   // `Benchmarks & Evaluation Frameworks` *row*, not a research area, so it moved
   // to Methods/, the directory for the row axis. Published URLs outlive their
