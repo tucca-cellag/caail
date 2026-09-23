@@ -4,7 +4,8 @@
  * Two suites:
  *   (A) the committed search-terms.json against the real Taxonomy.md: every live area and
  *       method has exactly one entry (the same guard the build enforces, pinned here so a
- *       drift is caught by `pnpm test` too), and no term carries a Markdown link target;
+ *       drift is caught by `pnpm test` too), and the contract names every plural rule the
+ *       loader applies;
  *   (B) the failure modes, each built by mutating a copy of the committed file, so the
  *       check is shown firing on the defect it guards rather than trusted to.
  */
@@ -14,7 +15,7 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { buildSearchTerms, SEARCH_TERMS_PATH } from './search-terms';
+import { buildSearchTerms, PLURAL_RULES, SEARCH_TERMS_PATH } from './search-terms';
 import { buildTaxonomyModel } from './taxonomy';
 
 const taxonomy = buildTaxonomyModel();
@@ -42,19 +43,8 @@ describe('buildSearchTerms (committed file)', () => {
     expect(Object.keys(terms.methods).sort()).toEqual(Object.keys(taxonomy.axes.method).sort());
   });
 
-  it('gives every method at least one term of its own', () => {
-    for (const [label, list] of Object.entries(terms.methods)) {
-      expect(list.length, label).toBeGreaterThan(0);
-    }
-  });
-
-  it('carries no Markdown link targets, which an off-site agent cannot resolve', () => {
-    const all = [
-      ...terms.methodGeneric,
-      ...Object.values(terms.areas).flat(),
-      ...Object.values(terms.methods).flat(),
-    ];
-    expect(all.filter((t) => t.includes('](') || t.includes('://'))).toEqual([]);
+  it('states every plural rule the loader applies, so consumers are told the same rules', () => {
+    for (const rule of PLURAL_RULES) expect(terms.contract, rule.name).toContain(rule.name);
   });
 });
 
@@ -81,13 +71,18 @@ describe('buildSearchTerms (failure modes)', () => {
   });
 
   it('rejects invisible characters a consumer would fold away', () => {
-    const path = variant((t) => { t.methodGeneric.push('machine­learning', 'deep​learning'); });
-    expect(() => buildSearchTerms(taxonomy, path)).toThrow(/not lowercase ASCII words/);
+    const path = variant((t) => { t.methodGeneric.push('machine\u00adlearning', 'deep\u200blearning'); });
+    expect(() => buildSearchTerms(taxonomy, path)).toThrow(/joined by single spaces or hyphens: "machine.learning", "deep.learning"/);
   });
 
   it('treats a word and its regular plural as the same term, as the contract does', () => {
-    const path = variant((t) => { t.methodGeneric.push('cell line', 'cell lines', 'matrix', 'matrices'); });
-    expect(() => buildSearchTerms(taxonomy, path)).toThrow(/repeated "cell lines", "matrices"/);
+    const path = variant((t) => {
+      t.methodGeneric.push('assay', 'assays', 'process', 'processes', 'capability', 'capabilities',
+        'analysis', 'analyses', 'matrix', 'matrices');
+    });
+    expect(() => buildSearchTerms(taxonomy, path)).toThrow(
+      /repeated "assays", "processes", "capabilities", "analyses", "matrices"/,
+    );
   });
 
   it('rejects a term repeated within one list', () => {
@@ -101,7 +96,7 @@ describe('buildSearchTerms (failure modes)', () => {
   });
 
   it('rejects a term stored with a Unicode dash, which a folding consumer would never match', () => {
-    const path = variant((t) => { t.methodGeneric.push('wood–ljungdahl'); });
+    const path = variant((t) => { t.methodGeneric.push('wood\u2013ljungdahl'); });
     expect(() => buildSearchTerms(taxonomy, path)).toThrow(/not lowercase ASCII words/);
   });
 

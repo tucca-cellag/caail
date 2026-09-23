@@ -88,7 +88,7 @@
     }
   },
   "searchTerms": {
-    "contract": "Terms are lowercase ASCII words joined by single spaces or hyphens, written without regular plurals; an irregular form (medium, media) is listed as its own term. To match: NFKC-normalize the text, fold case, fold every Unicode dash to a hyphen, treat a hyphen and any run of whitespace as the same, and match whole words, allowing each word its regular plural (+s, +es, y to ies, is to es, ix to ices). Every matching term counts; there is no longest-match rule, so one passage can label several areas and several methods. An area with an empty list is found by method terms alone. methodGeneric marks text as applying some AI method; it labels a method row only when the same term is also in that row's list.",
+    "contract": "Terms are lowercase ASCII words joined by single spaces or hyphens, stored in singular form; an irregular plural (media) is listed as its own term. To match: NFKC-normalize the text, remove default-ignorable characters such as soft hyphens and zero-width spaces, fold case, fold every Unicode dash to a hyphen, treat a hyphen and any run of whitespace as the same, and match whole words, allowing each word its regular plural: +s, +es, y to ies, is to es, ix to ices. Every matching term counts; there is no longest-match rule. A term may appear under several areas or methods, and a match labels every one. An area with an empty list is found by method terms alone. methodGeneric marks text as applying some AI method; a generic term that is also in a method's list labels that method too.",
     "areas": {
       "Media Optimization": [
         "culture medium",
@@ -353,7 +353,8 @@
         "multilayer perceptron",
         "recurrent neural network",
         "lstm",
-        "autoencoder"
+        "autoencoder",
+        "transformer"
       ],
       "GNN": [
         "graph neural network",
@@ -439,7 +440,7 @@
       ],
       "Chemometrics": [
         "chemometric",
-        "partial least squares",
+        "partial least square",
         "pls regression",
         "pls-da",
         "principal component analysis",
@@ -470,7 +471,8 @@
         "large language model",
         "llm",
         "generative pretraining",
-        "generative ai"
+        "generative ai",
+        "generative pre-trained transformer"
       ],
       "Foundation Models: Masked Language Modeling": [
         "bert",
@@ -480,9 +482,10 @@
         "scbert",
         "pretrained language model",
         "dna language model",
-        "bidirectional encoder representations",
+        "bidirectional encoder representation",
         "foundation model",
-        "transfer learning"
+        "transfer learning",
+        "pre-trained language model"
       ],
       "Foundation Models: LM + Biological Priors": [
         "protein language model",
@@ -514,7 +517,8 @@
         "protein language model",
         "bert",
         "large language model",
-        "multimodal large language model"
+        "multimodal large language model",
+        "pre-trained model"
       ],
       "Scientific Literature & Discovery Agents": [
         "ai scientist",
@@ -618,7 +622,8 @@
       "generative ai",
       "foundation model",
       "ai agent",
-      "agentic"
+      "agentic",
+      "neural net"
     ]
   },
   "corpusDate": "2026-09-23"

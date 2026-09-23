@@ -51,20 +51,30 @@ const COVERED_AXES = [
 
 /**
  * The stored form the contract promises: lowercase ASCII words joined by single spaces or
- * hyphens. An allow-list rather than a list of things to reject, because a consumer folds the
- * text it searches, and a stored term carrying anything it folds away (an en dash, a
- * ligature, a soft hyphen, a zero-width space) is compared against folded text and silently
- * matches nothing.
+ * hyphens. An allow-list rather than a list of things to reject, because the contract tells a
+ * consumer to normalize the text it searches (NFKC, default-ignorables removed, dashes
+ * folded), and a stored term carrying anything that step removes or rewrites (an en dash, a
+ * ligature, a soft hyphen, a zero-width space) is compared against normalized text and
+ * silently matches nothing.
  */
 const STORED_FORM = /^[a-z0-9]+(?:[ -][a-z0-9]+)*$/;
 
-/** A word's regular plurals, exactly as the contract lists them. */
+/**
+ * The contract's regular plural rules, one row each. `name` is the wording the contract uses;
+ * a test asserts the committed contract names every row, so the rules the duplicate check
+ * applies and the rules consumers are told to apply cannot drift apart unnoticed.
+ */
+export const PLURAL_RULES: ReadonlyArray<{ name: string; plural: (w: string) => string | null }> = [
+  { name: '+s', plural: (w) => `${w}s` },
+  { name: '+es', plural: (w) => `${w}es` },
+  { name: 'y to ies', plural: (w) => (w.endsWith('y') ? `${w.slice(0, -1)}ies` : null) },
+  { name: 'is to es', plural: (w) => (w.endsWith('is') ? `${w.slice(0, -2)}es` : null) },
+  { name: 'ix to ices', plural: (w) => (w.endsWith('ix') ? `${w.slice(0, -2)}ices` : null) },
+];
+
+/** A word's regular plurals under PLURAL_RULES. */
 function pluralsOf(word: string): string[] {
-  const forms = [`${word}s`, `${word}es`];
-  if (word.endsWith('y')) forms.push(`${word.slice(0, -1)}ies`);
-  if (word.endsWith('is')) forms.push(`${word.slice(0, -2)}es`);
-  if (word.endsWith('ix')) forms.push(`${word.slice(0, -2)}ices`);
-  return forms;
+  return PLURAL_RULES.map((r) => r.plural(word)).filter((f): f is string => f !== null);
 }
 
 /**
@@ -95,7 +105,8 @@ export function buildSearchTerms(
   path: string = SEARCH_TERMS_PATH,
 ): SearchTerms {
   const terms = SearchTermsSchema.parse(JSON.parse(readFileSync(path, 'utf-8')));
-  const problems: string[] = [];
+  const coverage: string[] = [];
+  const form: string[] = [];
 
   for (const [field, axis] of COVERED_AXES) {
     const live = new Set(Object.keys(taxonomy.axes[axis]));
@@ -103,10 +114,10 @@ export function buildSearchTerms(
     const missing = [...live].filter((l) => !have.has(l));
     const unknown = [...have].filter((l) => !live.has(l));
     if (missing.length > 0) {
-      problems.push(`${field}: no entry for ${missing.map((l) => `"${l}"`).join(', ')}`);
+      coverage.push(`${field}: no entry for ${missing.map((l) => `"${l}"`).join(', ')}`);
     }
     if (unknown.length > 0) {
-      problems.push(
+      coverage.push(
         `${field}: ${unknown.map((l) => `"${l}"`).join(', ')} names no ${axis} in Taxonomy.md`,
       );
     }
@@ -120,7 +131,7 @@ export function buildSearchTerms(
   for (const [where, list] of lists) {
     const bad = list.filter((t) => !STORED_FORM.test(t));
     if (bad.length > 0) {
-      problems.push(
+      form.push(
         `${where}: not lowercase ASCII words joined by single spaces or hyphens: ` +
           bad.map((t) => `"${t}"`).join(', '),
       );
@@ -128,19 +139,28 @@ export function buildSearchTerms(
     // Repeats are judged as the consumer sees them, so "water-holding" and "water holding",
     // or "cell line" and "cell lines", count as one term listed twice.
     const dupes = list.filter((t, i) => list.slice(0, i).some((earlier) => sameToConsumer(earlier, t)));
-    if (dupes.length > 0) problems.push(`${where}: repeated ${dupes.map((t) => `"${t}"`).join(', ')}`);
+    if (dupes.length > 0) form.push(`${where}: repeated ${dupes.map((t) => `"${t}"`).join(', ')}`);
   }
 
-  if (problems.length > 0) {
-    throw new Error(
-      `search-terms: ${path} does not match the live taxonomy:\n  - ` +
-        problems.join('\n  - ') +
-        `\nEvery research area and AI/ML method in Taxonomy.md needs exactly one entry, keyed ` +
-        `by its heading text. When a row or column is added or renamed, add or move its ` +
-        `entry here in the same change. An area may hold an empty list, which says ` +
-        `deliberately that it is found by method terms alone.`,
+  const sections: string[] = [];
+  if (coverage.length > 0) {
+    sections.push(
+      `does not match the live taxonomy:\n  - ${coverage.join('\n  - ')}\n` +
+        `Every research area and AI/ML method in Taxonomy.md needs exactly one entry, keyed by ` +
+        `its heading text. When a row or column is added or renamed, add or move its entry ` +
+        `here in the same change. An area may hold an empty list, which says deliberately that ` +
+        `it is found by method terms alone.`,
     );
   }
+  if (form.length > 0) {
+    sections.push(
+      `has terms the matching contract cannot use:\n  - ${form.join('\n  - ')}\n` +
+        `Store each term as lowercase ASCII words joined by single spaces or hyphens, in ` +
+        `singular form, once per list; a consumer treats hyphen and space, and a word and its ` +
+        `regular plural, as the same term.`,
+    );
+  }
+  if (sections.length > 0) throw new Error(`search-terms: ${path} ${sections.join('\nIt also ')}`);
   return terms;
 }
 

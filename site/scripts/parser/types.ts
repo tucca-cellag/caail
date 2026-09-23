@@ -818,8 +818,9 @@ export const TaxonomyDataSchema = z.object({
  * - `areas` / `methods` are keyed by the same labels as `axes.area` / `axes.method`.
  *   A term may appear under several methods: the foundation-model and agent rows share
  *   vocabulary that abstract text cannot tell apart.
- * - `methodGeneric` marks work as applying SOME AI method without naming a row
- *   ("machine learning"), which is how most classical-ML abstracts are written.
+ * - `methodGeneric` marks work as applying SOME AI method ("machine learning"), which is how
+ *   most classical-ML abstracts are written. A generic term that is also in a method's list
+ *   labels that method too; the rest label no row.
  */
 const TermListSchema = z.array(z.string());
 export const SearchTermsSchema = z

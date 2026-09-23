@@ -70,7 +70,7 @@
     },
     {
       "path": "taxonomy.json",
-      "use": "What each method, area and subject theme means in CAAIL, with exclusion criteria. Read before trusting a placement. Definitions are split by vocabulary under `axes` (`area`, `method`, `theme`) because a label may appear in more than one — \"Bioprocess & Scale-Up\" is both a matrix column and a theme, with different text. `definitions` is the flat matrix lookup (areas + methods only); look a theme up under `axes.theme`. `searchTerms` is the curated search vocabulary per area and method, plus `methodGeneric` for text that names AI without naming a method; follow its `contract` when matching."
+      "use": "What each method, area and subject theme means in CAAIL, with exclusion criteria. Read before trusting a placement. Definitions are split by vocabulary under `axes` (`area`, `method`, `theme`) because a label may appear in more than one — \"Bioprocess & Scale-Up\" is both a matrix column and a theme, with different text. `definitions` is the flat matrix lookup (areas + methods only); look a theme up under `axes.theme`. `searchTerms` is the curated search vocabulary per area and method, plus `methodGeneric` for text that applies some AI method (a generic term also listed under a method labels that method too); follow its `contract` when matching."
     },
     {
       "path": "openapi.json",
