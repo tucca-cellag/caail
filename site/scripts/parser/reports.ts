@@ -33,14 +33,17 @@ const EDITION_SORT_SHAPE = /^(\d{4})(?:-(\d{2})(?:-(\d{2}))?)?$/;
 export const EDITION_SORT_FORMS = 'YYYY, YYYY-MM or YYYY-MM-DD';
 
 /**
- * How to satisfy `seriesRecency`, stated once for whoever hits a failure. The second sentence is
- * true today because of CAAIL-379 and should go when that ticket adds its agreement check.
+ * How to satisfy `seriesRecency`, stated once and printed by both of its callers (the parse abort
+ * and db:check), since CI runs db:check first and a failure there stops parse from ever running.
+ * The two-copies sentence describes the storage CAAIL-364 chose. An agreement check (CAAIL-379)
+ * would enforce it rather than retire it; only deriving one copy from the other would retire it.
  */
 export const EDITION_SORT_RULE =
-  `Every report's edition_sort must be a valid ${EDITION_SORT_FORMS} date, and within a series ` +
-  'no two editions may share one or have one be a prefix of the other. edition_sort and the ' +
-  '"*Edition <label>, published <sort>.*" line in body_md are two copies of one value, so change ' +
-  'both together (CAAIL-379).';
+  `Every report needs a non-empty edition_label and an edition_sort that is a valid ${EDITION_SORT_FORMS} ` +
+  'date, and within a series no two editions may share an edition_sort or have one be a prefix of the ' +
+  'other. Fix it in the report\'s reports.ndjson row: edition_sort and the "*Edition <label>, published ' +
+  '<sort>.*" line in its body_md are two copies of one value (CAAIL-379), so change both, then run ' +
+  'db:emit. An edit made in FieldReports.md alone is overwritten by db:emit.';
 
 /**
  * True when `s` is a real YYYY, YYYY-MM or YYYY-MM-DD. The shape alone admits '2026-13' or
@@ -84,24 +87,32 @@ export interface SeriesRecency {
  * two editions sharing a sort (which leaves their order, and at the max the current edition,
  * undefined). A one-off (`series_slug === null`) is its own latest, but its sort must be valid.
  *
+ * It also requires a non-empty `edition_label`. The derivation does not use the label, but the
+ * model it feeds is published as api/reports.json, and this is the one check both parse and
+ * db:check run.
+ *
  * The rows are put in document (`ordinal`) order first, so the editions, the problems and the
  * problem order do not depend on the order rows arrive in. reports.ndjson is already exported in
- * that order, but checkSeries reads SQLite, which promises none, and tests pass rows as they like.
+ * that order, but SQLite promises none and tests pass rows as they like, so the order is set here
+ * rather than trusted from any caller.
  *
  * Each problem states what is wrong and nothing about how to fix it. The fix is one rule, stated
  * once in `EDITION_SORT_RULE`, because per-problem remedies each made their own claims about the
  * authoring flow and several were wrong.
  */
 export function seriesRecency(
-  rows: Pick<ReportRow, 'item_id' | 'series_slug' | 'edition_sort' | 'ordinal'>[],
+  rows: Pick<ReportRow, 'item_id' | 'series_slug' | 'edition_label' | 'edition_sort' | 'ordinal'>[],
 ): { bySeries: Map<string, SeriesRecency>; problems: string[] } {
   const problems: string[] = [];
   const grouped = new Map<string, { id: string; sort: string }[]>();
   const byId = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0);
   const inDocumentOrder = [...rows].sort((a, b) => a.ordinal - b.ordinal || byId(a.item_id, b.item_id));
   for (const r of inDocumentOrder) {
+    if (!r.edition_label.trim()) problems.push(`${r.item_id}: empty edition_label`);
     if (!isEditionSort(r.edition_sort)) {
-      problems.push(`${r.item_id}: edition_sort '${r.edition_sort}' is not a valid ${EDITION_SORT_FORMS} date`);
+      // JSON.stringify, because this is the one raw value printed: a stray newline would split the
+      // one-problem-per-line output and trailing whitespace would look valid.
+      problems.push(`${r.item_id}: edition_sort ${JSON.stringify(r.edition_sort)} is not a valid ${EDITION_SORT_FORMS} date`);
       continue;
     }
     if (r.series_slug === null) continue;
@@ -142,7 +153,7 @@ export function seriesRecency(
 export function deriveReports(rows: ReportRow[], topicsById: Map<string, Report['topics']>): Report[] {
   const { bySeries, problems } = seriesRecency(rows);
   if (problems.length > 0) {
-    throw new Error(`reports: cannot derive current editions (${problems.length}):\n` +
+    throw new Error(`reports: invalid edition data (${problems.length}):\n` +
       `${problems.map((p) => `  - ${p}`).join('\n')}\n${EDITION_SORT_RULE}\n` +
       'Rules: seriesRecency in site/scripts/parser/reports.ts. `pnpm --dir site db:check` fails on them as well, showing the first 3.');
   }

@@ -106,7 +106,7 @@ describe('deriveReports recency model', () => {
       deriveReports([row('r:a', 's', '2026-13'), row('r:b', 't', '2026'), row('r:c', 't', '2026')], NO_TOPICS);
     } catch (e) { message = (e as Error).message; }
     const lines = message.split('\n');
-    expect(lines[0]).toBe('reports: cannot derive current editions (2):');
+    expect(lines[0]).toBe('reports: invalid edition data (2):');
     expect(lines.filter((l) => l.startsWith('  - '))).toHaveLength(2);
     // No problem carries its own semicolon-joined remedy any more.
     expect(lines.filter((l) => l.startsWith('  - ')).every((l) => !l.includes(';'))).toBe(true);
@@ -116,8 +116,20 @@ describe('deriveReports recency model', () => {
 
   it('throws on an impossible date, in a series or a one-off', () => {
     expect(() => deriveReports([row('r:a', 's', '2026-12'), row('r:b', 's', '2026-13')], NO_TOPICS))
-      .toThrow(/'2026-13' is not a valid/);
-    expect(() => deriveReports([row('r:oneoff', null, '2026-02-30')], NO_TOPICS)).toThrow(/'2026-02-30' is not a valid/);
+      .toThrow(/"2026-13" is not a valid/);
+    expect(() => deriveReports([row('r:oneoff', null, '2026-02-30')], NO_TOPICS)).toThrow(/"2026-02-30" is not a valid/);
+  });
+
+  it('prints a raw sort escaped, so a stray newline cannot split the one-problem-per-line output', () => {
+    let message = '';
+    try { deriveReports([row('r:nl', null, '2026\n')], NO_TOPICS); } catch (e) { message = (e as Error).message; }
+    expect(message).toContain('edition_sort "2026\\n" is not a valid');
+    expect(message.split('\n').filter((l) => l.startsWith('  - '))).toHaveLength(1);
+  });
+
+  it('throws on an empty edition_label, which api/reports.json would otherwise publish', () => {
+    expect(() => deriveReports([{ ...row('r:a', null, '2026'), edition_label: '  ' }], NO_TOPICS))
+      .toThrow(/r:a: empty edition_label/);
   });
 });
 

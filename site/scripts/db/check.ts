@@ -30,7 +30,7 @@ import { THEME_SLUGS, THEMES, FINE_TAGS } from './seed.js';
 import { buildTaxonomyModel } from '../parser/taxonomy.js';
 import { AREAS } from '../parser/areas.js';
 import { MATRIX_SECTION } from '../parser/types.js';
-import { seriesRecency } from '../parser/reports.js';
+import { seriesRecency, EDITION_SORT_RULE } from '../parser/reports.js';
 import type { TaxonomyData } from '../parser/types.js';
 
 const MANUAL_LICENSES_PATH = join(SITE_ROOT, 'scripts', 'db', 'licenses-manual.json');
@@ -584,16 +584,16 @@ export function checkFineTagSeedDrift(db: Db): CheckResult[] {
  * states and checks, which live there alone so this docstring cannot drift from them. This lists the
  * same problems `deriveReports` would throw on, by calling the same function, so a curator sees
  * them at db:check with the rest of the integrity report rather than as a parse abort, and the
- * check and the derivation cannot disagree. It adds the one rule the derivation does not need:
- * a non-empty edition_label.
+ * check and the derivation cannot disagree. CI runs db:check before parse, so this is usually
+ * where a curator first meets a failure, and the detail carries the fix rule for that reason.
  */
 export function checkSeries(db: Db): CheckResult[] {
-  const rows = db.prepare('SELECT item_id, series_slug, edition_label, edition_sort, ordinal FROM reports ORDER BY ordinal, item_id').all() as
+  const rows = db.prepare('SELECT item_id, series_slug, edition_label, edition_sort, ordinal FROM reports').all() as
     { item_id: string; series_slug: string | null; edition_label: string; edition_sort: string; ordinal: number }[];
-  const problems = rows.filter((r) => !r.edition_label.trim()).map((r) => `${r.item_id}: empty edition_label`);
-  problems.push(...seriesRecency(rows).problems);
-  return [ok('reports series: edition label/sort present + comparable, exactly one current per series',
-    problems.length === 0, problems.slice(0, 3).join('; '))];
+  const { problems } = seriesRecency(rows);
+  const detail = problems.length === 0 ? '' : `${problems.slice(0, 3).join('; ')}. ${EDITION_SORT_RULE}`;
+  return [ok('reports series: valid edition label + date, no duplicate or nested dates within a series',
+    problems.length === 0, detail)];
 }
 
 /**

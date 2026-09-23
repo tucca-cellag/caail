@@ -19,6 +19,7 @@ import { extractReports } from './extract.js';
 import { seedReports } from './seed.js';
 import { emitReportsFile } from './emit.js';
 import { checkIntegrity, checkSeries } from './check.js';
+import { EDITION_SORT_RULE } from '../parser/reports.js';
 
 const TMP = mkdtempSync(join(tmpdir(), 'caail-reports-test-'));
 
@@ -149,15 +150,29 @@ describe('checkSeries edition_sort rules (CAAIL-373)', () => {
     // '2026-6' starts with '2026-', so if it were not excluded it would also read as nesting in '2026'.
     const [res] = checkSeries(withSort(seriesDb(['2026', '2027']), 'report:example-1', '2026-6'));
     expect(res.ok).toBe(false);
-    expect(res.detail).toMatch(/edition_sort '2026-6' is not a valid YYYY, YYYY-MM or YYYY-MM-DD date/);
+    expect(res.detail).toMatch(/edition_sort "2026-6" is not a valid YYYY, YYYY-MM or YYYY-MM-DD date/);
     expect(res.detail).not.toMatch(/contains/);
   });
 
   it('rejects shape-valid but impossible dates, which would otherwise sort as latest', () => {
     for (const bad of ['2026-13', '2026-00', '2026-02-30', '2025-02-29', '2026-04-31']) {
       expect(checkSeries(withSort(seriesDb(['2026-01']), 'report:example-0', bad))[0].detail)
-        .toMatch(new RegExp(`'${bad}' is not a valid`));
+        .toMatch(new RegExp(`"${bad}" is not a valid`));
     }
+  });
+
+  it('carries the fix rule in its detail, since CI fails on db:check before parse ever runs', () => {
+    const [res] = checkSeries(seriesDb(['2026', '2026-03-01']));
+    expect(res.detail).toContain(EDITION_SORT_RULE);
+    expect(checkSeries(seriesDb(['2025', '2026']))[0].detail).toBe('');
+  });
+
+  it('lists recency problems alongside empty labels rather than behind them', () => {
+    const db = seriesDb(['2026', '2026-03-01']);
+    db.prepare("UPDATE reports SET edition_label = '' WHERE item_id IN ('report:a-one-off', 'report:example-1')").run();
+    const [res] = checkSeries(db);
+    // Document order: the one-off's label, then example-1's label, then the series nest.
+    expect(res.detail).toMatch(/report:a-one-off: empty edition_label; report:example-1: empty edition_label; .* contains /);
   });
 
   it('passes a well-formed series, leap day included', () => {
