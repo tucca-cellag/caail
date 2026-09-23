@@ -11,7 +11,13 @@
       "seriesEditions": [
         "report:rethink-priorities-ai-and-cultivated-meat-2026"
       ],
-      "topics": []
+      "topics": [
+        {
+          "slug": "ai-methods-tooling",
+          "label": "AI Methods & Tooling",
+          "theme": "ai-methods-tooling"
+        }
+      ]
     },
     {
       "id": "report:gfi-state-of-the-industry-cultivated-meat-2026",
