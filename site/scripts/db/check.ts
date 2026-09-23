@@ -30,6 +30,7 @@ import { THEME_SLUGS, THEMES, FINE_TAGS } from './seed.js';
 import { buildTaxonomyModel } from '../parser/taxonomy.js';
 import { AREAS } from '../parser/areas.js';
 import { MATRIX_SECTION } from '../parser/types.js';
+import { seriesRecency, EDITION_SORT_RULE } from '../parser/reports.js';
 import type { TaxonomyData } from '../parser/types.js';
 
 const MANUAL_LICENSES_PATH = join(SITE_ROOT, 'scripts', 'db', 'licenses-manual.json');
@@ -548,17 +549,6 @@ export function checkSubseries(db: Db, subseriesPath: string = SUBSERIES_PATH): 
 }
 
 /**
- * Field-report series/recency guard (CAAIL-364), the reports analog of checkSubseries.
- *
- * The parser DERIVES `current`/`supersededBy` from max(edition_sort) per `series_slug`, so
- * the derivation is only well-defined if (a) every report has a non-empty, string-comparable
- * `edition_sort` — a YYYY or an ISO date, both of which sort chronologically as strings — and
- * (b) the latest edition of each series is unique, so exactly one edition derives `current`.
- * A tie at the maximum edition_sort would silently make two editions current and leave the
- * "grab the latest" guarantee ambiguous, so it fails the build here rather than at parse.
- * A one-off (`series_slug IS NULL`) is its own latest and imposes no series constraint.
- */
-/**
  * Fine-tag seed-drift guard (CAAIL-371), the fine-tag analog of the THEMES seed-drift check.
  *
  * `preserveCuratedTopics` folds a curator-minted fine tag the seed lacks but deliberately does
@@ -586,29 +576,24 @@ export function checkFineTagSeedDrift(db: Db): CheckResult[] {
     problems.length === 0, problems.slice(0, 3).join('; '))];
 }
 
+/**
+ * Field-report series/recency guard (CAAIL-364), the reports analog of checkSubseries.
+ *
+ * The parser DERIVES `current`/`supersededBy` from max(edition_sort) per `series_slug`, and
+ * that derivation is only well-defined under the rules `seriesRecency` (parser/reports.ts)
+ * states and checks, which live there alone so this docstring cannot drift from them. It calls the
+ * same function `deriveReports` does, so on rows the DB import accepts, with the schema's column
+ * types, the two report the same problems (see `seriesRecency` for where they can differ). In CI
+ * this runs in parallel with the builds that parse, so it can be where a curator first meets a
+ * failure, and the detail carries the fix rule for that reason.
+ */
 export function checkSeries(db: Db): CheckResult[] {
-  const rows = db.prepare('SELECT item_id, series_slug, edition_label, edition_sort FROM reports').all() as
-    { item_id: string; series_slug: string | null; edition_label: string; edition_sort: string }[];
-  const SORT_RE = /^\d{4}(-\d{2}(-\d{2})?)?$/; // YYYY, YYYY-MM, or YYYY-MM-DD
-  const problems: string[] = [];
-  const sortsBySeries = new Map<string, Map<string, string[]>>(); // series -> edition_sort -> ids
-  for (const r of rows) {
-    if (!r.edition_label.trim()) problems.push(`${r.item_id}: empty edition_label`);
-    if (!SORT_RE.test(r.edition_sort)) problems.push(`${r.item_id}: edition_sort '${r.edition_sort}' is not a YYYY or ISO date`);
-    if (r.series_slug !== null) {
-      const m = sortsBySeries.get(r.series_slug) ?? sortsBySeries.set(r.series_slug, new Map()).get(r.series_slug)!;
-      (m.get(r.edition_sort) ?? m.set(r.edition_sort, []).get(r.edition_sort)!).push(r.item_id);
-    }
-  }
-  for (const [series, m] of sortsBySeries) {
-    const maxSort = [...m.keys()].sort().at(-1)!;
-    const atMax = m.get(maxSort)!;
-    if (atMax.length > 1) {
-      problems.push(`series '${series}': ${atMax.length} editions tie at the latest edition_sort ${maxSort} (${atMax.join(', ')}); exactly one may be current`);
-    }
-  }
-  return [ok('reports series: edition label/sort present + comparable, exactly one current per series',
-    problems.length === 0, problems.slice(0, 3).join('; '))];
+  const rows = db.prepare('SELECT item_id, series_slug, edition_label, edition_sort, ordinal FROM reports').all() as
+    { item_id: string; series_slug: string | null; edition_label: string; edition_sort: string; ordinal: number }[];
+  const { problems } = seriesRecency(rows);
+  const detail = problems.length === 0 ? '' : `${problems.slice(0, 3).join('; ')}. ${EDITION_SORT_RULE}`;
+  return [ok('reports series: valid edition label + date, no duplicate or nested dates within a series',
+    problems.length === 0, detail)];
 }
 
 /**
