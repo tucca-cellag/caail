@@ -29,6 +29,7 @@ import {
   PLACEMENT_NOTE,
   absolutizeSiteHrefs,
   absolutizeFragments,
+  assertAbsoluteLinks,
 } from './agent-api.js';
 import { SITE_BASE, SITE_ORIGIN, SITE_URL } from '../../src/content/site-config.ts';
 import { buildPapersModel } from './papers.js';
@@ -459,6 +460,16 @@ describe('site-relative hrefs in the API', () => {
   it('fails on a root-relative link outside the base instead of publishing a 404', () => {
     // Every site link the rewriters emit carries the base; one that does not is a bug.
     expect(() => absolutizeSiteHrefs('<a href="/talks/">T</a>')).toThrow(/outside the site base/);
+  });
+
+  it('fails on any link the API cannot make absolute, so the spec promise holds', () => {
+    // A relative non-.md link passes both rewrites untouched and is broken everywhere.
+    expect(() => assertAbsoluteLinks('<a href="./site/db/schema.sql">s</a>')).toThrow(/not an absolute URL/);
+    expect(() => assertAbsoluteLinks('<a href="https://x.org/">x</a> <a href="mailto:a@b.c">m</a>')).not.toThrow();
+  });
+
+  it('leaves a data-href fragment alone, like the site-href pass does', () => {
+    expect(absolutizeFragments('<span data-href="#x">d</span>', 'Software.md')).toBe('<span data-href="#x">d</span>');
   });
 
   it('builds the absolute URL from site-config, the module astro.config.mjs reads', () => {

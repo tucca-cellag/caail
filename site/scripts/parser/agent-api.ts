@@ -32,12 +32,10 @@ import { fileURLToPath } from 'node:url';
 
 import { assertValid, buildOpenApiDocument, OPENAPI_FILE } from './openapi.js';
 import { MATRIX_SECTION } from './types.js';
-import type { DatasetInventory, PapersData } from './types.js';
+import type { Catalog, CatalogEntry, DatasetInventory, PapersData } from './types.js';
 import { SITE_BASE, SITE_URL } from '../../src/content/site-config.ts';
 import { CATALOG_SOURCES } from './catalog.js';
-import type { Catalog, CatalogEntry } from './types.js';
 import { dedicatedLink, GITHUB_BLOB_BASE } from '../dedicated-links.ts';
-
 
 /** Where an agent-visible caveat is stated once and reused everywhere. */
 export const SCOPE_NOTE =
@@ -114,7 +112,7 @@ export function absolutizeSiteHrefs(html: string): string {
  * that file's GitHub blob, which is where the fragment was written to resolve.
  */
 export function absolutizeFragments(html: string, sourceFile: string): string {
-  return html.replace(/href="#([^"]+)"/g, (_, anchor: string) => {
+  return html.replace(/(?<=\s)href="#([^"]+)"/g, (_, anchor: string) => {
     const onSite = dedicatedLink(sourceFile, anchor);
     const url = onSite ? `${SITE_URL}${onSite.slice(1)}` : `${GITHUB_BLOB_BASE}/${sourceFile}#${anchor}`;
     return `href="${url}"`;
@@ -127,9 +125,25 @@ export function absolutizeFragments(html: string, sourceFile: string): string {
  * summaries are the only HTML any endpoint carries; the endpoint test fails if that
  * stops being true, rather than this walking every payload to be safe.
  */
+/**
+ * After both passes every href/src must be absolute. Anything else (a relative
+ * `./x.sql`, which the rewriter leaves alone because it is not a `.md` link) is
+ * broken on the site too, and would contradict the endpoint description, so it
+ * fails the build here.
+ */
+export function assertAbsoluteLinks(html: string): void {
+  for (const m of html.matchAll(/(?<=\s)(href|src)="([^"]*)"/g)) {
+    if (!/^(?:https?:|mailto:)/i.test(m[2])) {
+      throw new Error(`agent-api: ${m[1]}="${m[2]}" is not an absolute URL.`);
+    }
+  }
+}
+
 function absolutizeEntry(e: CatalogEntry, file: string): CatalogEntry {
   try {
-    return { ...e, summaryHtml: absolutizeFragments(absolutizeSiteHrefs(e.summaryHtml), file) };
+    const summaryHtml = absolutizeFragments(absolutizeSiteHrefs(e.summaryHtml), file);
+    assertAbsoluteLinks(summaryHtml);
+    return { ...e, summaryHtml };
   } catch (err) {
     throw new Error(`${file}, entry "${e.name}": ${(err as Error).message}`);
   }

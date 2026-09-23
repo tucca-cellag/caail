@@ -168,8 +168,11 @@ export function reportGroups(): ReportGroup[] {
 
   const groups = order.map((key) => {
     const members = buckets.get(key)!;
-    const current = members.find((r) => r.current) ?? members[0];
-    assertOldestFirst(current);
+    const flagged = members.find((r) => r.current);
+    const current = flagged ?? members[0];
+    // Only a flagged current edition is known to be the newest; without one there
+    // is nothing to check the order against.
+    if (flagged) assertOldestFirst(flagged);
     const editions = [...current.seriesEditions]
       .reverse()
       .map((id) => byId.get(id))
