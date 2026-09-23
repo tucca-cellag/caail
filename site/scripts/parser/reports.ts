@@ -33,25 +33,32 @@ const EDITION_SORT_SHAPE = /^(\d{4})(?:-(\d{2})(?:-(\d{2}))?)?$/;
 export const EDITION_SORT_FORMS = 'YYYY, YYYY-MM or YYYY-MM-DD';
 
 /**
- * How to satisfy `seriesRecency`, stated once and printed everywhere a curator can meet one of its
- * failures: the parse abort (every build, so test.yml and docs.yml), db:check (lint-papers.yml) and
- * extractReports at seed and verify time. These run in parallel in CI, so any of them can be seen
- * first, and none may lack it.
+ * What a valid report is, stated once for every place that reports a `seriesRecency` failure: the
+ * parse abort (every build, so test.yml and docs.yml), db:check (lint-papers.yml) and
+ * extractReports at seed and verify time. These run in parallel in CI, so any can be seen first.
  *
- * The two-copies sentence describes the storage CAAIL-364 chose. An agreement check (CAAIL-379)
- * would enforce it rather than retire it; only deriving one copy from the other would retire it.
+ * extractReports prints only this validity rule. The parse abort and db:check print
+ * `EDITION_SORT_RULE`, which adds where the values live; that addition would mislead at
+ * db:bootstrap, where FieldReports.md is the source being read and editing it IS the fix.
  *
- * It deliberately says nothing about HOW to edit a report. Earlier versions named the DB edit
- * flows, and every review round found another way that account was incomplete or contradicted the
- * block-generated-edits hook, whose own fix-it steps are wrong (CAAIL-404). The flow belongs to the
- * DB tooling's documentation; this states only what a valid report is and what gets overwritten.
+ * Neither says HOW to edit a report. Earlier versions named the DB edit flows, and every review
+ * round found another way that account was incomplete or contradicted the block-generated-edits
+ * hook, whose own fix-it steps are wrong (CAAIL-404). The flow belongs to the DB tooling's
+ * documentation, which does not yet cover reports (recorded on CAAIL-404).
+ */
+export const EDITION_VALIDITY_RULE =
+  `Every report needs a non-empty edition_label and an edition_sort that is a valid ${EDITION_SORT_FORMS} ` +
+  'date, and within a series no two editions may share an edition_sort or have one be a prefix of the other.';
+
+/**
+ * The validity rule plus where the two values are stored. The two-copies sentence describes the
+ * storage CAAIL-364 chose; an agreement check (CAAIL-379) would enforce it rather than retire it,
+ * and only deriving one copy from the other would retire it.
  */
 export const EDITION_SORT_RULE =
-  `Every report needs a non-empty edition_label and an edition_sort that is a valid ${EDITION_SORT_FORMS} ` +
-  'date, and within a series no two editions may share an edition_sort or have one be a prefix of the ' +
-  'other. edition_label and edition_sort are each stored twice, in their own column and in the ' +
-  '"*Edition <label>, published <sort>.*" line of body_md (CAAIL-379), so change both copies; an edit ' +
-  'made in FieldReports.md alone is overwritten by db:emit.';
+  `${EDITION_VALIDITY_RULE} edition_label and edition_sort are each stored twice, in their own ` +
+  'column and in the "*Edition <label>, published <sort>.*" line of body_md (CAAIL-379), so change both ' +
+  'copies; an edit made in FieldReports.md alone is overwritten by db:emit.';
 
 /** The problem line for an unusable edition_sort, shared so every place that reports one agrees. */
 export function invalidEditionSort(sort: unknown): string {
@@ -122,8 +129,8 @@ export function seriesRecency(
 ): { bySeries: Map<string, SeriesRecency>; problems: string[] } {
   const problems: string[] = [];
   const grouped = new Map<string, { id: string; sort: string }[]>();
-  const byId = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0);
-  const inDocumentOrder = [...rows].sort((a, b) => a.ordinal - b.ordinal || byId(a.item_id, b.item_id));
+  const cmp = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0);
+  const inDocumentOrder = [...rows].sort((a, b) => a.ordinal - b.ordinal || cmp(a.item_id, b.item_id));
   for (const r of inDocumentOrder) {
     // Rows are cast from NDJSON unvalidated, so a hand-edited row may lack either field entirely.
     if (typeof r.edition_label !== 'string' || !r.edition_label.trim()) {
@@ -133,15 +140,14 @@ export function seriesRecency(
       problems.push(`${r.item_id}: ${invalidEditionSort(r.edition_sort)}`);
       continue;
     }
-    // `== null`: a hand-edited row may omit the key, which SQLite imports as NULL, so parse must too.
-    if (r.series_slug == null) continue;
+    if (r.series_slug === null) continue; // an omitted key arrives as null (parseReportsNdjson)
     (grouped.get(r.series_slug) ?? grouped.set(r.series_slug, []).get(r.series_slug)!)
       .push({ id: r.item_id, sort: r.edition_sort });
   }
   const bySeries = new Map<string, SeriesRecency>();
   for (const [series, list] of grouped) {
     // Stable, and the input is in document order, so editions sharing a sort keep document order.
-    list.sort((a, b) => (a.sort < b.sort ? -1 : a.sort > b.sort ? 1 : 0));
+    list.sort((a, b) => cmp(a.sort, b.sort));
     for (let i = 0; i < list.length; i++) {
       const a = list[i];
       if (list[i + 1]?.sort === a.sort) {
@@ -172,7 +178,9 @@ export function seriesRecency(
  *
  * Throws on any `seriesRecency` problem rather than publishing a guessed `current`: the model
  * is re-exported to the public api/reports.json and `pnpm parse` does not run db:check, so this
- * is the guard every build passes through. `checkSeries` reports the same problems earlier.
+ * is the guard every build passes through. `checkSeries` applies the same rules at db:check, which
+ * runs in parallel with the builds in CI, not before them. Neither stands in for the other: db:check
+ * cannot list a row the DB import rejects, and shows at most 3 problems.
  */
 export function deriveReports(rows: ReportRow[], topicsById: Map<string, Report['topics']>): Report[] {
   const { bySeries, problems } = seriesRecency(rows);
@@ -183,15 +191,14 @@ export function deriveReports(rows: ReportRow[], topicsById: Map<string, Report[
   }
 
   return rows.map((r) => {
-    const seriesSlug = r.series_slug ?? null; // an omitted key is a one-off, as seriesRecency reads it
-    const series = seriesSlug === null ? undefined : bySeries.get(seriesSlug)!;
+    const series = r.series_slug === null ? undefined : bySeries.get(r.series_slug)!;
     const currentId = series?.latest;
     const isCurrent = series === undefined || currentId === r.item_id;
     return {
       id: r.item_id,
       title: r.title,
       url: r.url,
-      seriesSlug,
+      seriesSlug: r.series_slug,
       editionLabel: r.edition_label,
       current: isCurrent,
       supersededBy: isCurrent ? null : currentId!,
@@ -201,10 +208,19 @@ export function deriveReports(rows: ReportRow[], topicsById: Map<string, Report[
   });
 }
 
+/**
+ * Parse reports.ndjson text into rows, reading an omitted nullable column (`url`, `series_slug`) as
+ * null, which is what db:check sees after SQLite's import. Done once here rather than as a `?? null`
+ * per field downstream, so parse and db:check read a hand-edited row the same way.
+ */
+export function parseReportsNdjson(text: string): ReportRow[] {
+  const body = text.trim();
+  return body ? body.split('\n').map((l) => ({ url: null, series_slug: null, ...JSON.parse(l) }) as ReportRow) : [];
+}
+
 /** Build the reports.json model from the committed reports NDJSON, in document order. */
 export function buildReportsModel(): ReportsData {
   const path = join(NDJSON_DIR, 'reports.ndjson');
-  const text = existsSync(path) ? readFileSync(path, 'utf-8').trim() : '';
-  const rows = text ? text.split('\n').map((l) => JSON.parse(l) as ReportRow) : [];
+  const rows = parseReportsNdjson(existsSync(path) ? readFileSync(path, 'utf-8') : '');
   return ReportsDataSchema.parse({ reports: deriveReports(rows, topicsByItemId()) });
 }

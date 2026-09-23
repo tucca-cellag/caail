@@ -5,7 +5,8 @@
 
 import { describe, it, expect } from 'vitest';
 import {
-  buildReportsModel, deriveReports, isEditionSort, seriesRecency, EDITION_SORT_RULE, type ReportRow,
+  buildReportsModel, deriveReports, isEditionSort, parseReportsNdjson, seriesRecency, EDITION_SORT_RULE,
+  type ReportRow,
 } from './reports.js';
 import { ReportsDataSchema, type Report } from './types.js';
 
@@ -132,12 +133,19 @@ describe('deriveReports recency model', () => {
       .toThrow(/r:a: missing or empty edition_label/);
   });
 
-  it('treats a row with no series_slug key as a one-off, as SQLite import does', () => {
-    const a = { ...row('r:a', null, '2026') } as Partial<ReportRow>;
-    const b = { ...row('r:b', null, '2026') } as Partial<ReportRow>;
-    delete a.series_slug; delete b.series_slug;
-    const out = deriveReports([a as ReportRow, b as ReportRow], NO_TOPICS);
+  it('parseReportsNdjson reads an omitted url or series_slug as null, as SQLite import does', () => {
+    // Two hand-edited one-offs that omit both nullable keys: without the default they would be
+    // grouped as a series named `undefined`, and `url: undefined` would fail ReportsDataSchema.
+    const line = (id: string) => JSON.stringify({
+      item_id: id, title: id, edition_label: '2026', edition_sort: '2026', heading_md: id, body_md: '', ordinal: 0,
+    });
+    const rows = parseReportsNdjson(`${line('r:a')}\n${line('r:b')}\n`);
+    expect(rows.map((r) => [r.url, r.series_slug])).toEqual([[null, null], [null, null]]);
+    const out = deriveReports(rows, NO_TOPICS);
     expect(out.map((r) => [r.seriesSlug, r.current])).toEqual([[null, true], [null, true]]);
+    expect(() => ReportsDataSchema.parse({ reports: out })).not.toThrow();
+    // An explicit value is kept, not overwritten by the default.
+    expect(parseReportsNdjson(JSON.stringify({ ...JSON.parse(line('r:c')), url: 'https://x' }))[0].url).toBe('https://x');
   });
 
   it('reports a hand-edited row missing its label or sort as a problem, not a TypeError', () => {

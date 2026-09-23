@@ -581,12 +581,11 @@ export function checkFineTagSeedDrift(db: Db): CheckResult[] {
  *
  * The parser DERIVES `current`/`supersededBy` from max(edition_sort) per `series_slug`, and
  * that derivation is only well-defined under the rules `seriesRecency` (parser/reports.ts)
- * states and checks, which live there alone so this docstring cannot drift from them. This lists the
- * same problems `deriveReports` would throw on, by calling the same function, so a curator sees
- * them at db:check with the rest of the integrity report rather than as a parse abort, and the
- * check and the derivation cannot disagree. In CI this runs in parallel with the builds that parse,
- * so it can be where a curator first meets a failure, and the detail carries the fix rule for that
- * reason.
+ * states and checks, which live there alone so this docstring cannot drift from them. It calls the
+ * same function `deriveReports` does, so on rows the DB import accepts, with the schema's column
+ * types, the two report the same problems (see `seriesRecency` for where they can differ). In CI
+ * this runs in parallel with the builds that parse, so it can be where a curator first meets a
+ * failure, and the detail carries the fix rule for that reason.
  */
 export function checkSeries(db: Db): CheckResult[] {
   const rows = db.prepare('SELECT item_id, series_slug, edition_label, edition_sort, ordinal FROM reports').all() as

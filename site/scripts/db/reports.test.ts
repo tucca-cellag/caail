@@ -19,7 +19,7 @@ import { extractReports } from './extract.js';
 import { seedReports } from './seed.js';
 import { emitReportsFile } from './emit.js';
 import { checkIntegrity, checkSeries } from './check.js';
-import { EDITION_SORT_RULE } from '../parser/reports.js';
+import { EDITION_SORT_RULE, EDITION_VALIDITY_RULE } from '../parser/reports.js';
 
 const TMP = mkdtempSync(join(tmpdir(), 'caail-reports-test-'));
 
@@ -151,7 +151,8 @@ describe('checkSeries edition_sort rules (CAAIL-373)', () => {
     const [res] = checkSeries(withSort(seriesDb(['2026', '2027']), 'report:example-1', '2026-6'));
     expect(res.ok).toBe(false);
     expect(res.detail).toMatch(/edition_sort "2026-6" is not a valid YYYY, YYYY-MM or YYYY-MM-DD date/);
-    expect(res.detail).not.toMatch(/contains/);
+    // Only the problem list, not the rule prose appended after it, which may itself use the word.
+    expect(res.detail.split(EDITION_SORT_RULE)[0]).not.toMatch(/contains/);
   });
 
   it('rejects shape-valid but impossible dates, which would otherwise sort as latest', () => {
@@ -161,7 +162,7 @@ describe('checkSeries edition_sort rules (CAAIL-373)', () => {
     }
   });
 
-  it('carries the fix rule in its detail, since CI fails on db:check before parse ever runs', () => {
+  it('carries the fix rule in its detail, since in CI it can be the first failure a curator sees', () => {
     const [res] = checkSeries(seriesDb(['2026', '2026-03-01']));
     expect(res.detail).toContain(EDITION_SORT_RULE);
     expect(checkSeries(seriesDb(['2025', '2026']))[0].detail).toBe('');
@@ -191,7 +192,20 @@ describe('extractReports edition_sort validation', () => {
     const bad = `# Field Reports\n\n### [Bad Date](https://example.com/x)\n\n*Edition 2026, published June 2026.*\n\nBody.\n`;
     expect(() => extractReports(fixture('bad-sort.md', bad)))
       .toThrow(/"Bad Date" .*: edition_sort "June 2026" is not a valid YYYY, YYYY-MM or YYYY-MM-DD date/);
-    expect(() => extractReports(fixture('bad-sort.md', bad))).toThrow(EDITION_SORT_RULE);
+    expect(() => extractReports(fixture('bad-sort.md', bad))).toThrow(EDITION_VALIDITY_RULE);
+  });
+
+  it('prints only the validity rule, since at db:bootstrap FieldReports.md is the source to fix', () => {
+    const bad = `# Field Reports\n\n### [Bad Date](https://example.com/x)\n\n*Edition 2026, published 2026-13.*\n\nBody.\n`;
+    let message = '';
+    try { extractReports(fixture('bad-sort-2.md', bad)); } catch (e) { message = (e as Error).message; }
+    expect(message).toContain(EDITION_VALIDITY_RULE);
+    expect(message).not.toMatch(/overwritten by db:emit/);
+  });
+
+  it('refuses a whitespace-only edition label at seed time, as it does a bad date', () => {
+    const blank = `# Field Reports\n\n### [Blank Label](https://example.com/x)\n\n*Edition  , published 2026.*\n\nBody.\n`;
+    expect(() => extractReports(fixture('blank-label.md', blank))).toThrow(/"Blank Label" .*: missing or empty edition_label/);
   });
 });
 

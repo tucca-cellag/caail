@@ -8,7 +8,7 @@
 import { readFileSync } from 'node:fs';
 import { parseMarkdown, sectionsAfter } from '../parser/markdown.js';
 import { entryHeadingDepth, isEntryHeading, pageFromPath } from '../parser/datasets.js';
-import { isEditionSort, invalidEditionSort, EDITION_SORT_RULE } from '../parser/reports.js';
+import { isEditionSort, invalidEditionSort, EDITION_VALIDITY_RULE } from '../parser/reports.js';
 import { slugify } from './lib.js';
 import type { Table, TableRow, TableCell } from 'mdast';
 
@@ -255,19 +255,21 @@ export function extractReports(path: string): ReportRaw[] {
           'Every report entry must lead its body with one.',
       );
     }
+    // The single-row halves of the validity rule, checked here so a bad line fails at seed time and
+    // names its report. Only the validity rule is printed: at db:bootstrap `path` is the source, so
+    // EDITION_SORT_RULE's "a FieldReports.md edit is overwritten" would point away from the fix.
+    const editionLabel = m.groups.label.trim();
     const editionSort = m.groups.sort.trim();
-    if (!isEditionSort(editionSort)) {
-      // `path` may be the canonical FieldReports.md or db:verify's emitted copy, and either way the
-      // bad value may have come from a reports.ndjson row, so the rule matters more than the path.
-      throw new Error(
-        `extractReports: the report "${name}" in ${path}: ${invalidEditionSort(editionSort)}. ${EDITION_SORT_RULE}`,
-      );
+    const problem = !editionLabel ? 'missing or empty edition_label'
+      : !isEditionSort(editionSort) ? invalidEditionSort(editionSort) : null;
+    if (problem) {
+      throw new Error(`extractReports: the report "${name}" in ${path}: ${problem}. ${EDITION_VALIDITY_RULE}`);
     }
     out.push({
       name,
       url: link ? link.url : null,
       seriesSlug,
-      editionLabel: m.groups.label.trim(),
+      editionLabel,
       editionSort,
       headingMd: (n.children as any[]).map(inlineMd).join('').trim(),
       bodyMd,
