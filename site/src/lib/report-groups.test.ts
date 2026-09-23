@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { assertUniqueAnchors, reportGroups, reportSections, seriesAnchor } from './report-groups';
+import { assertOldestFirst, assertUniqueAnchors, reportGroups, reportSections, seriesAnchor } from './report-groups';
 
 describe('seriesAnchor', () => {
   it('namespaces a recurring series by its slug', () => {
@@ -24,6 +24,18 @@ describe('seriesAnchor', () => {
 
   it('rejects an empty series slug, which would merge unrelated reports', () => {
     expect(() => seriesAnchor({ id: 'report:a', seriesSlug: '' })).toThrow(/empty seriesSlug/);
+  });
+});
+
+describe('assertOldestFirst', () => {
+  it('accepts oldest-first editions ending in the current one', () => {
+    expect(() => assertOldestFirst({ id: 'report:b', seriesEditions: ['report:a', 'report:b'] })).not.toThrow();
+    expect(() => assertOldestFirst({ id: 'report:a', seriesEditions: ['report:a'] })).not.toThrow();
+  });
+  it('throws if the parser ever emits newest-first, which would silently flip the page', () => {
+    expect(() => assertOldestFirst({ id: 'report:b', seriesEditions: ['report:b', 'report:a'] })).toThrow(
+      /not oldest-first/,
+    );
   });
 });
 

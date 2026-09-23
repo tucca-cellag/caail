@@ -123,6 +123,22 @@ export function assertUniqueAnchors(groups: ReadonlyArray<Pick<ReportGroup, 'slu
 }
 
 /**
+ * The page lists editions newest-first by reversing `seriesEditions`, which the
+ * parser emits oldest→newest. Nothing else ties the two: if that order ever
+ * flipped (CAAIL-373 weighed it), the page would silently go oldest-first. The
+ * current edition is by definition the newest, so it must be the last entry.
+ */
+export function assertOldestFirst(current: Pick<ReportRecord, 'id' | 'seriesEditions'>): void {
+  const eds = current.seriesEditions;
+  if (eds.length > 1 && eds[eds.length - 1] !== current.id) {
+    throw new Error(
+      `report-groups: seriesEditions for ${current.id} is not oldest-first ` +
+        `(${eds.join(', ')}); the current edition must be last.`,
+    );
+  }
+}
+
+/**
  * The field reports grouped by series (one-offs are their own single group), in
  * first-seen document order, each with its editions newest-first.
  *
@@ -148,6 +164,7 @@ export function reportGroups(): ReportGroup[] {
   const groups = order.map((key) => {
     const members = buckets.get(key)!;
     const current = members.find((r) => r.current) ?? members[0];
+    assertOldestFirst(current);
     const editions = [...current.seriesEditions]
       .reverse()
       .map((id) => byId.get(id))

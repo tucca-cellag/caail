@@ -119,6 +119,14 @@ export function absolutizeFragments(html: string, sourceFile: string): string {
  * summaries are the only HTML any endpoint carries; the endpoint test fails if that
  * stops being true, rather than this walking every payload to be safe.
  */
+function absolutizeEntry(e: { name?: string; summaryHtml: string }, file: string): string {
+  try {
+    return absolutizeFragments(absolutizeSiteHrefs(e.summaryHtml), file);
+  } catch (err) {
+    throw new Error(`${file}, entry "${e.name ?? '?'}": ${(err as Error).message}`);
+  }
+}
+
 function catalogForApi(catalog: unknown): unknown {
   const cat = catalog as Record<string, unknown> | null;
   if (!cat) return catalog;
@@ -126,13 +134,7 @@ function catalogForApi(catalog: unknown): unknown {
     Array.isArray(entries)
       ? entries.map((e) =>
           e && typeof (e as { summaryHtml?: unknown }).summaryHtml === 'string'
-            ? {
-                ...e,
-                summaryHtml: absolutizeFragments(
-                  absolutizeSiteHrefs((e as { summaryHtml: string }).summaryHtml),
-                  file,
-                ),
-              }
+            ? { ...e, summaryHtml: absolutizeEntry(e as { name?: string; summaryHtml: string }, file) }
             : e,
         )
       : entries;
