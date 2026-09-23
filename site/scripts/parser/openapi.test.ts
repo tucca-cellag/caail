@@ -31,6 +31,7 @@ import { buildDatasetsModel } from './datasets-entries.js';
 import { buildDatasetInventory } from './dataset-inventory.js';
 import { buildTopicsModel } from './topics.js';
 import { buildTaxonomyModel } from './taxonomy.js';
+import { buildSearchTerms } from './search-terms.js';
 import { buildReportsModel } from './reports.js';
 
 const papers = buildPapersModel();
@@ -38,7 +39,8 @@ const catalog = buildCatalogModel();
 const datasets = buildDatasetsModel();
 const inventory = buildDatasetInventory();
 const topics = buildTopicsModel();
-const taxonomy = buildTaxonomyModel();
+const baseTaxonomy = buildTaxonomyModel();
+const taxonomy = { ...baseTaxonomy, searchTerms: buildSearchTerms(baseTaxonomy) };
 const reports = buildReportsModel();
 const REPO_ROOT = fileURLToPath(new URL('../../../', import.meta.url));
 const API_DIR = join(REPO_ROOT, 'site', 'public', 'api');

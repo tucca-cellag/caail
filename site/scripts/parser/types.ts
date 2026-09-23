@@ -808,6 +808,30 @@ export const TaxonomyDataSchema = z.object({
   }),
 });
 
+/**
+ * Schema for search-terms.json — the curated search vocabulary per matrix area and
+ * method (see search-terms.ts). Shipped in the agent API as `taxonomy.json` →
+ * `searchTerms`. Key coverage against the live axes is asserted by buildSearchTerms,
+ * not here, because a schema cannot see Taxonomy.md.
+ *
+ * - `contract` states how a consumer must match the terms (case, dashes, plurals).
+ * - `areas` / `methods` are keyed by the same labels as `axes.area` / `axes.method`.
+ *   A term may appear under several methods: the foundation-model and agent rows share
+ *   vocabulary that abstract text cannot tell apart.
+ * - `methodGeneric` marks work as applying SOME AI method without naming a row
+ *   ("machine learning"), which is how most classical-ML abstracts are written.
+ */
+const TermListSchema = z.array(z.string());
+export const SearchTermsSchema = z
+  .object({
+    contract: z.string().min(1),
+    areas: z.record(z.string(), TermListSchema),
+    methods: z.record(z.string(), TermListSchema.min(1)),
+    methodGeneric: TermListSchema.min(1),
+  })
+  .strict();
+export type SearchTerms = z.infer<typeof SearchTermsSchema>;
+
 /** One node in the topic tree (a theme or a fine tag) with cross-content counts. */
 export const TopicNodeSchema = z.object({
   slug: z.string(),
@@ -1076,6 +1100,7 @@ export const ApiTopicsSchema = z.strictObject({
 });
 
 export const ApiTaxonomySchema = TaxonomyDataSchema.extend({
+  searchTerms: SearchTermsSchema,
   corpusDate: CorpusDateSchema,
 }).strict();
 
