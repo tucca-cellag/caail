@@ -132,6 +132,14 @@ describe('deriveReports recency model', () => {
       .toThrow(/r:a: missing or empty edition_label/);
   });
 
+  it('treats a row with no series_slug key as a one-off, as SQLite import does', () => {
+    const a = { ...row('r:a', null, '2026') } as Partial<ReportRow>;
+    const b = { ...row('r:b', null, '2026') } as Partial<ReportRow>;
+    delete a.series_slug; delete b.series_slug;
+    const out = deriveReports([a as ReportRow, b as ReportRow], NO_TOPICS);
+    expect(out.map((r) => [r.seriesSlug, r.current])).toEqual([[null, true], [null, true]]);
+  });
+
   it('reports a hand-edited row missing its label or sort as a problem, not a TypeError', () => {
     const noLabel = { ...row('r:a', null, '2026') } as Partial<ReportRow>;
     delete noLabel.edition_label;
@@ -159,16 +167,21 @@ describe('seriesRecency (the shared definition of latest)', () => {
     expect(forward.bySeries.get('s')!.editions).toEqual(['r:a', 'r:b', 'r:c']);
   });
 
-  // Adjacent-pair detection is complete only because string order puts a prefix directly before
-  // its first extension. These pin it where the nest is surrounded by editions that do not nest.
+  // The forward scan relies on every extension of a sort following it contiguously in string order.
+  // Each case pins the EXACT set of nested pairs (outer>inner, by id), which an adjacent-only scan
+  // would fail on every case with more than one pair.
   it.each([
-    ['interleaved with non-nesting editions', ['2025-12', '2026', '2026-03-01', '2026-05', '2027']],
-    ['three levels deep', ['2026', '2026-03', '2026-03-01']],
-    ['a duplicate followed by a nest', ['2026', '2026', '2026-03']],
-    ['the nest listed first in the document', ['2026-03-01', '2027', '2026']],
-  ])('detects a nest %s', (_label, sorts) => {
+    ['interleaved with non-nesting editions', ['2025-12', '2026', '2026-03-01', '2026-05', '2027'], ['r:1>r:2', 'r:1>r:3']],
+    ['three levels deep', ['2026', '2026-03', '2026-03-01'], ['r:0>r:1', 'r:0>r:2', 'r:1>r:2']],
+    ['a duplicate followed by a nest', ['2026', '2026', '2026-03'], ['r:0>r:2', 'r:1>r:2']],
+    ['the nest listed first in the document', ['2026-03-01', '2027', '2026'], ['r:2>r:0']],
+  ])('reports every nested pair %s', (_label, sorts, expected) => {
     const { problems } = seriesRecency(sorts.map((s, i) => ({ ...row(`r:${i}`, 's', s), ordinal: i })));
-    expect(problems.some((p) => / contains /.test(p))).toBe(true);
+    const pairs = problems.flatMap((p) => {
+      const m = / \((r:\d+)\) contains \S+ \((r:\d+)\)/.exec(p);
+      return m ? [`${m[1]}>${m[2]}`] : [];
+    });
+    expect(pairs.sort()).toEqual([...expected].sort());
   });
 
   it('reports every nested pair, not only the first, so one rerun shows the whole problem', () => {

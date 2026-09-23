@@ -257,8 +257,8 @@ export function extractReports(path: string): ReportRaw[] {
     }
     const editionSort = m.groups.sort.trim();
     if (!isEditionSort(editionSort)) {
-      // `path` is the canonical file at seed time but the emitted one under db:verify, where the
-      // value came from a reports.ndjson row, so the rule (which names both) matters more than it.
+      // `path` may be the canonical FieldReports.md or db:verify's emitted copy, and either way the
+      // bad value may have come from a reports.ndjson row, so the rule matters more than the path.
       throw new Error(
         `extractReports: the report "${name}" in ${path}: ${invalidEditionSort(editionSort)}. ${EDITION_SORT_RULE}`,
       );

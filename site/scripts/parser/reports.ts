@@ -40,16 +40,18 @@ export const EDITION_SORT_FORMS = 'YYYY, YYYY-MM or YYYY-MM-DD';
  *
  * The two-copies sentence describes the storage CAAIL-364 chose. An agreement check (CAAIL-379)
  * would enforce it rather than retire it; only deriving one copy from the other would retire it.
- * The two edit flows are the ones the block-generated-edits hook and this repo's DB tooling support.
+ *
+ * It deliberately says nothing about HOW to edit a report. Earlier versions named the DB edit
+ * flows, and every review round found another way that account was incomplete or contradicted the
+ * block-generated-edits hook, whose own fix-it steps are wrong (CAAIL-404). The flow belongs to the
+ * DB tooling's documentation; this states only what a valid report is and what gets overwritten.
  */
 export const EDITION_SORT_RULE =
   `Every report needs a non-empty edition_label and an edition_sort that is a valid ${EDITION_SORT_FORMS} ` +
   'date, and within a series no two editions may share an edition_sort or have one be a prefix of the ' +
   'other. edition_label and edition_sort are each stored twice, in their own column and in the ' +
-  '"*Edition <label>, published <sort>.*" line of body_md (CAAIL-379), so change both copies. Either ' +
-  'edit caail.db after db:build and then run db:export and db:emit, or edit reports.ndjson directly and ' +
-  'then run db:emit alone (db:export would restore the old values from an older caail.db). An edit made ' +
-  'in FieldReports.md alone is overwritten by db:emit.';
+  '"*Edition <label>, published <sort>.*" line of body_md (CAAIL-379), so change both copies; an edit ' +
+  'made in FieldReports.md alone is overwritten by db:emit.';
 
 /** The problem line for an unusable edition_sort, shared so every place that reports one agrees. */
 export function invalidEditionSort(sort: unknown): string {
@@ -88,7 +90,9 @@ export interface SeriesRecency {
 /**
  * The one definition of "latest" for field reports (CAAIL-364, CAAIL-373), shared by
  * `deriveReports` (which throws on any problem) and db:check's `checkSeries` (which lists them),
- * so the check and the derivation cannot disagree about which edition is current.
+ * so on rows matching the schema's column types the check and the derivation cannot disagree
+ * about which edition is current. (A mistyped hand-edited NDJSON value can still read differently:
+ * db:check sees it after SQLite's TEXT coercion, parse sees the raw JSON value.)
  *
  * Latest is max(edition_sort) per `series_slug`, compared as a string. Every valid sort shares
  * the YYYY-MM-DD layout, so two of them compare chronologically at their first differing digit,
@@ -129,7 +133,8 @@ export function seriesRecency(
       problems.push(`${r.item_id}: ${invalidEditionSort(r.edition_sort)}`);
       continue;
     }
-    if (r.series_slug === null) continue;
+    // `== null`: a hand-edited row may omit the key, which SQLite imports as NULL, so parse must too.
+    if (r.series_slug == null) continue;
     (grouped.get(r.series_slug) ?? grouped.set(r.series_slug, []).get(r.series_slug)!)
       .push({ id: r.item_id, sort: r.edition_sort });
   }
@@ -174,18 +179,19 @@ export function deriveReports(rows: ReportRow[], topicsById: Map<string, Report[
   if (problems.length > 0) {
     throw new Error(`reports: invalid edition data (${problems.length}):\n` +
       `${problems.map((p) => `  - ${p}`).join('\n')}\n${EDITION_SORT_RULE}\n` +
-      'Rules: seriesRecency in site/scripts/parser/reports.ts. `pnpm --dir site db:check` fails on them as well, showing the first 3.');
+      'Rules: seriesRecency in site/scripts/parser/reports.ts.');
   }
 
   return rows.map((r) => {
-    const series = r.series_slug === null ? undefined : bySeries.get(r.series_slug)!;
+    const seriesSlug = r.series_slug ?? null; // an omitted key is a one-off, as seriesRecency reads it
+    const series = seriesSlug === null ? undefined : bySeries.get(seriesSlug)!;
     const currentId = series?.latest;
     const isCurrent = series === undefined || currentId === r.item_id;
     return {
       id: r.item_id,
       title: r.title,
       url: r.url,
-      seriesSlug: r.series_slug,
+      seriesSlug,
       editionLabel: r.edition_label,
       current: isCurrent,
       supersededBy: isCurrent ? null : currentId!,
