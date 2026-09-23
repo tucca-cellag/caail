@@ -5,6 +5,8 @@
  *   B. seedReports: frozen `report:` ids, series/edition columns.
  *   C. emitReportsFile: block-splice round-trip (H2s + prose preserved) and the count guard.
  *   D. Integration: the committed FieldReports.md round-trips and passes checkIntegrity + checkSeries.
+ *   E. edition_sort rules (CAAIL-373): checkSeries on nesting / duplicates / invalid dates, and
+ *      extractReports refusing an invalid published date at seed time.
  */
 
 import { describe, it, expect, beforeAll } from 'vitest';
@@ -17,6 +19,7 @@ import { extractReports } from './extract.js';
 import { seedReports } from './seed.js';
 import { emitReportsFile } from './emit.js';
 import { checkIntegrity, checkSeries } from './check.js';
+import { EDITION_SORT_RULE, parseReportsNdjson } from '../parser/reports.js';
 
 const TMP = mkdtempSync(join(tmpdir(), 'caail-reports-test-'));
 
@@ -102,6 +105,125 @@ describe('seedReports', () => {
     expect(oneoff.series_slug).toBeNull();
     // checkSeries is satisfied (each series has exactly one latest edition).
     expect(checkSeries(db).every((c) => c.ok)).toBe(true);
+  });
+});
+
+describe('checkSeries edition_sort rules (CAAIL-373)', () => {
+  /** A one-off at `oneoffSort`, then a series whose editions carry `sorts` (label = sort). */
+  function seriesDb(sorts: string[], oneoffSort = '2025-06'): Db {
+    const editions = sorts.map((s, i) =>
+      `### [Example ${i}](https://example.com/${i})\n\n*Edition ${s}, published ${s}.*\n\nBody ${i}.\n`).join('\n');
+    const md = `# Field Reports\n\n### A One-Off\n\n*Edition x, published ${oneoffSort}.*\n\nOne-off.\n\n` +
+      `## Example Series\n\n${editions}`;
+    const db = openDb();
+    seedReports(db, extractReports(fixture(`series-${sorts.join('_')}-${oneoffSort}.md`, md)));
+    return db;
+  }
+  /** extractReports now refuses an invalid sort, so one reaches db:check only via hand-edited NDJSON. */
+  function withSort(db: Db, id: string, sort: string): Db {
+    db.prepare('UPDATE reports SET edition_sort = ? WHERE item_id = ?').run(sort, id);
+    return db;
+  }
+
+  it('fails a nested pair: a year cannot be ordered against a date inside it', () => {
+    // String order puts '2026' first by prefix, so the year-only edition would lose "latest"
+    // to the March one whichever was really published later.
+    const [res] = checkSeries(seriesDb(['2026', '2026-03-01']));
+    expect(res.ok).toBe(false);
+    expect(res.detail).toMatch(/series 'example-series': edition_sort 2026 \(report:example-0\) contains 2026-03-01 \(report:example-1\)/);
+    // '2026-06' < '2026-06-01' < '2026-07' by prefix: the same ambiguity one precision down.
+    expect(checkSeries(seriesDb(['2026-06', '2026-06-01']))[0].detail).toMatch(/2026-06 .* contains 2026-06-01/);
+  });
+
+  it('passes mixed precisions that do not nest, so historical YYYY editions need no rewrite', () => {
+    // Every committed GFI series is year-only; its next edition may be dated without touching them.
+    expect(checkSeries(seriesDb(['2024', '2025', '2026', '2027-03'])).every((c) => c.ok)).toBe(true);
+    expect(checkSeries(seriesDb(['2025-11-30', '2026'])).every((c) => c.ok)).toBe(true);
+  });
+
+  it('fails two editions sharing a sort, at the max or below it', () => {
+    expect(checkSeries(seriesDb(['2024', '2026', '2026']))[0].detail).toMatch(/share edition_sort 2026/);
+    expect(checkSeries(seriesDb(['2024', '2024', '2026']))[0].detail).toMatch(/share edition_sort 2024/);
+  });
+
+  it('reports an invalid edition_sort once, and not also as a nest', () => {
+    // '2026-6' starts with '2026-', so if it were not excluded it would also read as nesting in '2026'.
+    const [res] = checkSeries(withSort(seriesDb(['2026', '2027']), 'report:example-1', '2026-6'));
+    expect(res.ok).toBe(false);
+    expect(res.detail).toMatch(/edition_sort "2026-6" is not a valid YYYY, YYYY-MM or YYYY-MM-DD date/);
+    // Only the problem list, not the rule prose appended after it, which may itself use the word.
+    expect(res.detail.split(EDITION_SORT_RULE)[0]).not.toMatch(/contains/);
+  });
+
+  it('rejects shape-valid but impossible dates, which would otherwise sort as latest', () => {
+    for (const bad of ['2026-13', '2026-00', '2026-02-30', '2025-02-29', '2026-04-31']) {
+      expect(checkSeries(withSort(seriesDb(['2026-01']), 'report:example-0', bad))[0].detail)
+        .toMatch(new RegExp(`"${bad}" is not a valid`));
+    }
+  });
+
+  it('carries the fix rule in its detail, since in CI it can be the first failure a curator sees', () => {
+    const [res] = checkSeries(seriesDb(['2026', '2026-03-01']));
+    expect(res.detail).toContain(EDITION_SORT_RULE);
+    expect(checkSeries(seriesDb(['2025', '2026']))[0].detail).toBe('');
+  });
+
+  it('lists recency problems alongside empty labels rather than behind them', () => {
+    const db = seriesDb(['2026', '2026-03-01']);
+    db.prepare("UPDATE reports SET edition_label = '' WHERE item_id IN ('report:a-one-off', 'report:example-1')").run();
+    const [res] = checkSeries(db);
+    // Document order: the one-off's label, then example-1's label, then the series nest.
+    expect(res.detail).toMatch(
+      /report:a-one-off: missing or empty edition_label; report:example-1: missing or empty edition_label; .* contains /);
+  });
+
+  it('passes a well-formed series, leap day included', () => {
+    expect(checkSeries(seriesDb(['2026-03-01', '2026-11-01'])).every((c) => c.ok)).toBe(true);
+    expect(checkSeries(seriesDb(['2023-02-28', '2024-02-29'])).every((c) => c.ok)).toBe(true);
+  });
+
+  it('never compares a one-off against a series, even when the two would nest', () => {
+    expect(checkSeries(seriesDb(['2024', '2026'], '2026-06-15')).every((c) => c.ok)).toBe(true);
+  });
+});
+
+describe('extractReports edition_sort validation', () => {
+  it('refuses a report whose published date is not a valid edition_sort, naming it', () => {
+    const bad = `# Field Reports\n\n### [Bad Date](https://example.com/x)\n\n*Edition 2026, published June 2026.*\n\nBody.\n`;
+    expect(() => extractReports(fixture('bad-sort.md', bad)))
+      .toThrow(/"Bad Date" .*: edition_sort "June 2026" is not a valid YYYY, YYYY-MM or YYYY-MM-DD date/);
+  });
+
+  it('prints no fix instruction, since its callers (db:bootstrap, db:verify) need opposite fixes', () => {
+    const bad = `# Field Reports\n\n### [Bad Date](https://example.com/x)\n\n*Edition 2026, published 2026-13.*\n\nBody.\n`;
+    let message = '';
+    try { extractReports(fixture('bad-sort-2.md', bad)); } catch (e) { message = (e as Error).message; }
+    expect(message).toMatch(/Rules: seriesRecency in site\/scripts\/parser\/reports\.ts\.$/);
+    // Derived from the constant, so a reworded rule cannot make this pass vacuously.
+    for (const sentence of EDITION_SORT_RULE.split('. ')) expect(message).not.toContain(sentence);
+  });
+
+  it('parseReportsNdjson defaults exactly the reports columns schema.sql leaves nullable', () => {
+    // Its default list is typed by hand beside schema.sql; this fails when the two disagree, e.g.
+    // when the planned license/doi columns land on reports without a matching default.
+    const cols = openDb().prepare('PRAGMA table_info(reports)').all() as { name: string; notnull: number; pk: number }[];
+    const required = cols.filter((c) => c.notnull || c.pk);
+    const nullable = cols.filter((c) => !c.notnull && !c.pk).map((c) => c.name).sort();
+    const line = JSON.stringify(Object.fromEntries(required.map((c) => [c.name, c.name === 'ordinal' ? 0 : 'x'])));
+    const [parsed] = parseReportsNdjson(line);
+    const defaulted = Object.keys(parsed).filter((k) => !required.some((c) => c.name === k)).sort();
+    expect(defaulted).toEqual(nullable);
+  });
+
+  it('reports every problem on the line, not only the first', () => {
+    const both = `# Field Reports\n\n### [Both Bad](https://example.com/x)\n\n*Edition  , published 2026-13.*\n\nBody.\n`;
+    expect(() => extractReports(fixture('both-bad.md', both)))
+      .toThrow(/missing or empty edition_label, and edition_sort "2026-13" is not a valid/);
+  });
+
+  it('refuses a whitespace-only edition label at seed time, as it does a bad date', () => {
+    const blank = `# Field Reports\n\n### [Blank Label](https://example.com/x)\n\n*Edition  , published 2026.*\n\nBody.\n`;
+    expect(() => extractReports(fixture('blank-label.md', blank))).toThrow(/"Blank Label" .*: missing or empty edition_label/);
   });
 });
 
