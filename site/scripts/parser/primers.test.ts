@@ -35,7 +35,7 @@ describe('rewritePrimerUrl', () => {
       url: 'https://github.com/tucca-cellag/caail/blob/main/Papers.md#50',
       internal: false,
     });
-    expect(rewritePrimerUrl('../Talks.md#applied-ai-ml-for-cellular-agriculture', 'Primers').url).toBe(
+    expect(rewritePrimerUrl('../Talks.md#applied-aiml-for-cellular-agriculture', 'Primers').url).toBe(
       '/caail/talks/#applied-ai-ml-for-cellular-agriculture',
     );
   });

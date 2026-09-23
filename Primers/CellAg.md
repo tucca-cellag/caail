@@ -35,7 +35,7 @@ Once you have the field context, these are the entry points into the AI × cell-
 
 * [AI and cultivated meat: Near-term impacts of AI on the commercial viability of cultivated meat](https://rethinkpriorities.org/research-area/ai-and-cultivated-meat/) (Rethink Priorities report by H. Moulange & W. McAuliffe, 2026) — a landscape of where near-term AI can and cannot move cultivated-meat viability across the field's technical, economic, regulatory, political, and consumer-facing bottlenecks; a strategic orientation to where AI fits before you dive into the papers, whose own conclusion is that open-access data, not model capability, is the binding constraint.
 * [Papers Explorer](../Papers.md) — the matrix of AI method × research area over the curated reference set, with code and data links.
-* [Applied AI/ML for Cellular Agriculture talks](../Talks.md#applied-ai-ml-for-cellular-agriculture) — conference and webinar talks on AI applied to concrete cell-ag problems.
+* [Applied AI/ML for Cellular Agriculture talks](../Talks.md#applied-aiml-for-cellular-agriculture) — conference and webinar talks on AI applied to concrete cell-ag problems.
 * [Research Areas](../ResearchAreas/MediaOptimization.md) — deep-dive pages on media optimization, cellular engineering, bioprocess control, scaffolding, and sensory prediction.
 
 ## Next: learn the AI side

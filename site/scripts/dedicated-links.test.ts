@@ -27,17 +27,27 @@ describe('dedicatedLink', () => {
     expect(dedicatedLink('Software.md', 'causalbench')).toBeUndefined();
   });
 
-  it('throws on an anchor that names no section of a fully mapped route', () => {
+  it('throws on an anchor GitHub cannot resolve, on a fully mapped route', () => {
     // Talks and the primers render one id per ## section and nothing else, so a
-    // miss is a link broken on GitHub and on the site alike: fail the build.
-    expect(() => dedicatedLink('Talks.md', 'no-such-section')).toThrow(/names no section of Talks\.md/);
-    expect(() => dedicatedLink('Primers/AI.md', 'no-such-section')).toThrow(/names no section/);
+    // miss is a link broken at the source: fail the build.
+    expect(() => dedicatedLink('Talks.md', 'no-such-section')).toThrow(/not a GitHub anchor of Talks\.md/);
+    expect(() => dedicatedLink('Primers/AI.md', 'no-such-section')).toThrow(/not a GitHub anchor/);
+    // The site's single-dash id works on /talks/ but is dead on GitHub, which is
+    // where the canonical Markdown is read first, so it is rejected too.
+    expect(() => dedicatedLink('Talks.md', 'ai-agents-foundation-models-for-biology')).toThrow(/not a GitHub anchor/);
   });
 
-  it('translates a GitHub Talks anchor to the id /talks/ renders, and accepts the site id', () => {
+  it('translates a GitHub Talks anchor to the id /talks/ renders', () => {
     expect(dedicatedLink('Talks.md', 'ai-agents--foundation-models-for-biology'))
       .toBe('/talks/#ai-agents-foundation-models-for-biology');
-    expect(dedicatedLink('Talks.md', 'applied-ai-ml-for-cellular-agriculture'))
+    expect(dedicatedLink('Talks.md', 'applied-aiml-for-cellular-agriculture'))
+      .toBe('/talks/#applied-ai-ml-for-cellular-agriculture');
+  });
+
+  it('matches anchors the way GitHub does: case-insensitive and percent-decoded', () => {
+    expect(dedicatedLink('Talks.md', 'Applied-AIML-for-Cellular-Agriculture'))
+      .toBe('/talks/#applied-ai-ml-for-cellular-agriculture');
+    expect(dedicatedLink('Talks.md', 'applied-aiml-for-cellular%2Dagriculture'))
       .toBe('/talks/#applied-ai-ml-for-cellular-agriculture');
   });
 
@@ -55,7 +65,7 @@ describe('dedicatedLink', () => {
     }
     // a sibling-primer deep link stays internal rather than becoming a blob
     const first = buildPrimersModel().primers.find((p) => p.slug === 'ai')!.sections[0].heading;
-    expect(rewritePrimerUrl(`./AI.md#${siteSlug(first)}`, 'Primers')).toEqual({
+    expect(rewritePrimerUrl(`./AI.md#${githubSlug(first)}`, 'Primers')).toEqual({
       url: `/caail/primers/ai/#${siteSlug(first)}`,
       internal: true,
     });
