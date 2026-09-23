@@ -445,12 +445,16 @@ describe('datasets.json inventory', () => {
  * assertion would pass while the file an agent actually fetches is still wrong.
  */
 describe('site-relative hrefs in the API', () => {
-  it('absolutizes href="/caail/…" and leaves the rest of the HTML alone', () => {
+  it('absolutizes every root-relative href or src and leaves the rest of the HTML alone', () => {
     expect(
       absolutizeSiteHrefs(
-        '<a href="/caail/papers/explorer/">Papers.md</a> <a href="https://x.org/">x</a> see /caail/talks/',
+        '<a href="/caail/papers/explorer/">P</a> <a href="/talks/">T</a> <img src="/caail/og.png"> ' +
+          '<a href="https://x.org/">x</a> <a href="//cdn.x.org/a">c</a> see /caail/talks/',
       ),
-    ).toBe(`<a href="${SITE_URL}papers/explorer/">Papers.md</a> <a href="https://x.org/">x</a> see /caail/talks/`);
+    ).toBe(
+      `<a href="${SITE_URL}papers/explorer/">P</a> <a href="${SITE_ORIGIN}/talks/">T</a> <img src="${SITE_URL}og.png"> ` +
+        '<a href="https://x.org/">x</a> <a href="//cdn.x.org/a">c</a> see /caail/talks/',
+    );
   });
 
   it('builds the absolute URL from site-config, the module astro.config.mjs reads', () => {
@@ -474,7 +478,8 @@ describe('site-relative hrefs in the API', () => {
     expect(input).toContain('href=\\"#');
     for (const f of files) {
       const out = JSON.stringify(f.body);
-      expect(out, f.name).not.toContain(`href=\\"${SITE_BASE}/`);
+      // any root-relative href or src, base or not (protocol-relative // excepted)
+      expect(out, f.name).not.toMatch(/\b(?:href|src)=\\"\/(?!\/)/);
       expect(out, f.name).not.toContain('href=\\"#');
     }
   });

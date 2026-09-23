@@ -33,7 +33,8 @@ import { fileURLToPath } from 'node:url';
 import { assertValid, buildOpenApiDocument, OPENAPI_FILE } from './openapi.js';
 import { MATRIX_SECTION } from './types.js';
 import type { DatasetInventory, PapersData } from './types.js';
-import { SITE_BASE, SITE_URL } from '../../src/content/site-config.ts';
+import { SITE_ORIGIN, SITE_URL } from '../../src/content/site-config.ts';
+import { CATALOG_SOURCES } from './catalog.js';
 import { dedicatedLink, GITHUB_BLOB_BASE } from '../dedicated-links.ts';
 
 export { SITE_URL };
@@ -84,17 +85,18 @@ export const PLACEMENT_NOTE =
   `${SITE_URL}curation/`;
 
 /**
- * Make every site-relative link in rendered HTML absolute.
+ * Make every root-relative `href` or `src` in rendered HTML absolute.
  *
  * The parser renders catalog summaries once, for the site, where `/caail/...` is the
  * right href. The same HTML is served here to agents that fetch the JSON off-site (or
- * from the raw.githubusercontent mirror, where `/caail/` resolves to nothing), so a
- * root-relative href is a link they cannot follow. Only the `href="<base>/` attribute
- * form is rewritten, so text that merely mentions the base stays untouched. The origin
- * and base come from site-config.ts, which astro.config.mjs also reads.
+ * from the raw.githubusercontent mirror, where it resolves to nothing), so a
+ * root-relative URL is one they cannot follow. It is resolved against the origin
+ * exactly as a browser on the site would, base or no base; protocol-relative `//…`
+ * and text that merely mentions a path stay untouched. The origin comes from
+ * site-config.ts, which astro.config.mjs also reads.
  */
 export function absolutizeSiteHrefs(html: string): string {
-  return html.replaceAll(`href="${SITE_BASE}/`, `href="${SITE_URL}`);
+  return html.replace(/\b(href|src)="(\/(?!\/)[^"]*)"/g, (_, attr: string, path: string) => `${attr}="${SITE_ORIGIN}${path}"`);
 }
 
 /**
@@ -138,7 +140,11 @@ function catalogForApi(catalog: unknown): unknown {
             : e,
         )
       : entries;
-  return { ...cat, software: fix(cat.software, 'Software.md'), databases: fix(cat.databases, 'Databases.md') };
+  return {
+    ...cat,
+    software: fix(cat.software, CATALOG_SOURCES.software),
+    databases: fix(cat.databases, CATALOG_SOURCES.databases),
+  };
 }
 
 /** Repo root, two levels above this module's directory (parser/ -> scripts/ -> site/ -> root). */

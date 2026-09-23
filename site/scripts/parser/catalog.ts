@@ -30,11 +30,17 @@ import { CatalogSchema, type Catalog, type CatalogEntry } from './types.js';
 // Canonical paths (three levels up: parser → scripts → site → repo root)
 // ---------------------------------------------------------------------------
 
+/**
+ * Each catalog kind's canonical file, repo-relative. Links inside an entry's
+ * summary resolve against it here and in the agent API, so it is named once.
+ */
+export const CATALOG_SOURCES = { software: 'Software.md', databases: 'Databases.md' } as const;
+
 const SOFTWARE_PATH: string = fileURLToPath(
-  new URL('../../../Software.md', import.meta.url),
+  new URL(`../../../${CATALOG_SOURCES.software}`, import.meta.url),
 );
 const DATABASES_PATH: string = fileURLToPath(
-  new URL('../../../Databases.md', import.meta.url),
+  new URL(`../../../${CATALOG_SOURCES.databases}`, import.meta.url),
 );
 
 const SUMMARY_PREFIX_RE = /^Summary:\s*/i;
@@ -231,8 +237,8 @@ export function buildCatalogModel(
       ...citeLookup(type, e.url),
     }));
   const model: Catalog = {
-    software: attach(parseCatalogFile(softwarePath, 'Software.md'), 'software'),
-    databases: attach(parseCatalogFile(databasesPath, 'Databases.md'), 'database'),
+    software: attach(parseCatalogFile(softwarePath, CATALOG_SOURCES.software), 'software'),
+    databases: attach(parseCatalogFile(databasesPath, CATALOG_SOURCES.databases), 'database'),
   };
   return CatalogSchema.parse(model);
 }
