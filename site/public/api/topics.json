@@ -274,11 +274,11 @@
         "theme": "media-growth-factors",
         "areaKey": null,
         "counts": {
-          "paper": 0,
+          "paper": 1,
           "software": 0,
           "database": 4,
           "dataset": 8,
-          "total": 12
+          "total": 13
         },
         "tags": []
       },
@@ -304,11 +304,11 @@
         "theme": "media-growth-factors",
         "areaKey": null,
         "counts": {
-          "paper": 10,
+          "paper": 9,
           "software": 17,
           "database": 0,
           "dataset": 11,
-          "total": 38
+          "total": 37
         },
         "tags": []
       },
@@ -467,8 +467,7 @@
         175,
         228,
         232,
-        280,
-        352
+        280
       ],
       "software": [
         "alphafold",
@@ -1792,6 +1791,25 @@
         "ds:risner-et-al-cradle-to-gate-cultivated-meat-lca"
       ]
     },
+    "growth-factors": {
+      "papers": [
+        352
+      ],
+      "software": [],
+      "databases": [
+        "mediaassist",
+        "fcs-free-database",
+        "mediadive",
+        "mediadb"
+      ],
+      "datasets": [
+        "ds:growth-factor-thermostability-dataset",
+        "ds:yeast9-saccharomyces-cerevisiae-precision-fermentation-host-reference",
+        "ds:imt1026-imt1026-v30-komagataella-phaffii-pichia-pastoris",
+        "ds:flip-fitness-landscape-inference-for-proteins",
+        "ds:proteingym"
+      ]
+    },
     "metabolism-modeling": {
       "papers": [],
       "software": [
@@ -1849,23 +1867,6 @@
         "ds:dynamic-metabolic-flux-analysis-dmfa-cho-dataset-venkatarama-reddy-et-al-2026",
         "ds:yeast9-saccharomyces-cerevisiae-precision-fermentation-host-reference",
         "ds:imt1026-imt1026-v30-komagataella-phaffii-pichia-pastoris"
-      ]
-    },
-    "growth-factors": {
-      "papers": [],
-      "software": [],
-      "databases": [
-        "mediaassist",
-        "fcs-free-database",
-        "mediadive",
-        "mediadb"
-      ],
-      "datasets": [
-        "ds:growth-factor-thermostability-dataset",
-        "ds:yeast9-saccharomyces-cerevisiae-precision-fermentation-host-reference",
-        "ds:imt1026-imt1026-v30-komagataella-phaffii-pichia-pastoris",
-        "ds:flip-fitness-landscape-inference-for-proteins",
-        "ds:proteingym"
       ]
     },
     "food-safety": {
