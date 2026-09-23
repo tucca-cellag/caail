@@ -49,9 +49,25 @@ const COVERED_AXES = [
   ['methods', 'method'],
 ] as const;
 
-/** A term as the contract expects it stored: lowercase, trimmed, single-spaced. */
+/** Unicode dashes the contract tells consumers to fold to an ASCII hyphen. */
+const FOLDED_DASHES = /[‐-―−]/;
+
+/**
+ * A term as the contract expects it stored: NFKC, lowercase, trimmed, single-spaced, and
+ * already dash-folded. A consumer folds the text it searches; if a stored term kept an en
+ * dash it would be compared against folded text and silently match nothing.
+ */
 function isNormalized(term: string): boolean {
-  return term.length > 0 && term === term.trim().toLowerCase().replace(/\s+/g, ' ');
+  return (
+    term.length > 0 &&
+    !FOLDED_DASHES.test(term) &&
+    term === term.normalize('NFKC').trim().toLowerCase().replace(/\s+/g, ' ')
+  );
+}
+
+/** The identity a consumer matches on: hyphen and space are the same character to it. */
+function matchKey(term: string): string {
+  return term.replace(/-/g, ' ');
 }
 
 /**
@@ -94,15 +110,20 @@ export function buildSearchTerms(
   for (const [where, list] of lists) {
     const bad = list.filter((t) => !isNormalized(t));
     if (bad.length > 0) {
-      problems.push(`${where}: not lowercase/trimmed/single-spaced: ${bad.map((t) => `"${t}"`).join(', ')}`);
+      problems.push(
+        `${where}: not lowercase/trimmed/single-spaced/dash-folded: ${bad.map((t) => `"${t}"`).join(', ')}`,
+      );
     }
-    const dupes = list.filter((t, i) => list.indexOf(t) !== i);
+    // Repeats are judged as the consumer sees them, so "water-holding" and "water holding"
+    // count as one term listed twice.
+    const keys = list.map(matchKey);
+    const dupes = list.filter((_, i) => keys.indexOf(keys[i]) !== i);
     if (dupes.length > 0) problems.push(`${where}: repeated ${dupes.map((t) => `"${t}"`).join(', ')}`);
   }
 
   if (problems.length > 0) {
     throw new Error(
-      `search-terms: ${SEARCH_TERMS_PATH} does not match the live taxonomy:\n  - ` +
+      `search-terms: ${path} does not match the live taxonomy:\n  - ` +
         problems.join('\n  - ') +
         `\nEvery research area and AI/ML method in Taxonomy.md needs exactly one entry, keyed ` +
         `by its heading text. When a row or column is added or renamed, add or move its ` +
@@ -111,4 +132,16 @@ export function buildSearchTerms(
     );
   }
   return terms;
+}
+
+/**
+ * The taxonomy model as the agent API serves it: the definitions plus `searchTerms`.
+ * One constructor for every caller, so none can hand the API a taxonomy without the
+ * vocabulary; ApiTaxonomySchema would reject it at run time, after it compiled.
+ */
+export function buildApiTaxonomy(
+  taxonomy: TaxonomyData,
+  path: string = SEARCH_TERMS_PATH,
+): TaxonomyData & { searchTerms: SearchTerms } {
+  return { ...taxonomy, searchTerms: buildSearchTerms(taxonomy, path) };
 }
