@@ -1,5 +1,5 @@
 /**
- * search-terms.ts — load the curated search vocabulary for every matrix area and
+ * search-terms.ts: load the curated search vocabulary for every matrix area and
  * method, and prove it covers exactly the axes Taxonomy.md defines.
  *
  * `search-terms.json` (committed beside this module) holds, per research area and per
@@ -49,25 +49,35 @@ const COVERED_AXES = [
   ['methods', 'method'],
 ] as const;
 
-/** Unicode dashes the contract tells consumers to fold to an ASCII hyphen. */
-const FOLDED_DASHES = /[‐-―−]/;
-
 /**
- * A term as the contract expects it stored: NFKC, lowercase, trimmed, single-spaced, and
- * already dash-folded. A consumer folds the text it searches; if a stored term kept an en
- * dash it would be compared against folded text and silently match nothing.
+ * The stored form the contract promises: lowercase ASCII words joined by single spaces or
+ * hyphens. An allow-list rather than a list of things to reject, because a consumer folds the
+ * text it searches, and a stored term carrying anything it folds away (an en dash, a
+ * ligature, a soft hyphen, a zero-width space) is compared against folded text and silently
+ * matches nothing.
  */
-function isNormalized(term: string): boolean {
-  return (
-    term.length > 0 &&
-    !FOLDED_DASHES.test(term) &&
-    term === term.normalize('NFKC').trim().toLowerCase().replace(/\s+/g, ' ')
-  );
+const STORED_FORM = /^[a-z0-9]+(?:[ -][a-z0-9]+)*$/;
+
+/** A word's regular plurals, exactly as the contract lists them. */
+function pluralsOf(word: string): string[] {
+  const forms = [`${word}s`, `${word}es`];
+  if (word.endsWith('y')) forms.push(`${word.slice(0, -1)}ies`);
+  if (word.endsWith('is')) forms.push(`${word.slice(0, -2)}es`);
+  if (word.endsWith('ix')) forms.push(`${word.slice(0, -2)}ices`);
+  return forms;
 }
 
-/** The identity a consumer matches on: hyphen and space are the same character to it. */
-function matchKey(term: string): string {
-  return term.replace(/-/g, ' ');
+/**
+ * Whether a consumer following the contract would treat two stored terms as one: hyphen and
+ * space are the same, and each word may stand for its regular plural.
+ */
+function sameToConsumer(a: string, b: string): boolean {
+  const wa = a.split(/[ -]/);
+  const wb = b.split(/[ -]/);
+  return (
+    wa.length === wb.length &&
+    wa.every((w, i) => w === wb[i] || pluralsOf(w).includes(wb[i]) || pluralsOf(wb[i]).includes(w))
+  );
 }
 
 /**
@@ -108,16 +118,16 @@ export function buildSearchTerms(
     ...Object.entries(terms.methods).map(([l, v]) => [`methods["${l}"]`, v] as [string, string[]]),
   ];
   for (const [where, list] of lists) {
-    const bad = list.filter((t) => !isNormalized(t));
+    const bad = list.filter((t) => !STORED_FORM.test(t));
     if (bad.length > 0) {
       problems.push(
-        `${where}: not lowercase/trimmed/single-spaced/dash-folded: ${bad.map((t) => `"${t}"`).join(', ')}`,
+        `${where}: not lowercase ASCII words joined by single spaces or hyphens: ` +
+          bad.map((t) => `"${t}"`).join(', '),
       );
     }
-    // Repeats are judged as the consumer sees them, so "water-holding" and "water holding"
-    // count as one term listed twice.
-    const keys = list.map(matchKey);
-    const dupes = list.filter((_, i) => keys.indexOf(keys[i]) !== i);
+    // Repeats are judged as the consumer sees them, so "water-holding" and "water holding",
+    // or "cell line" and "cell lines", count as one term listed twice.
+    const dupes = list.filter((t, i) => list.slice(0, i).some((earlier) => sameToConsumer(earlier, t)));
     if (dupes.length > 0) problems.push(`${where}: repeated ${dupes.map((t) => `"${t}"`).join(', ')}`);
   }
 

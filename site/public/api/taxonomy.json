@@ -88,7 +88,7 @@
     }
   },
   "searchTerms": {
-    "contract": "Terms are stored singular and lowercase. To match, fold case, fold every Unicode dash to a hyphen, treat a hyphen and a space as the same, and match whole words, allowing a plural on each word (s, es, y to ies). When matched terms overlap in the text, the longest wins: a term found only inside a longer matched term does not count, so 'neural network' inside 'convolutional neural network' labels CNN alone. An area with an empty list is found by method terms alone. A term may appear under several areas or methods; a match labels every one. methodGeneric marks text as applying some AI method without naming which.",
+    "contract": "Terms are lowercase ASCII words joined by single spaces or hyphens, written without regular plurals; an irregular form (medium, media) is listed as its own term. To match: NFKC-normalize the text, fold case, fold every Unicode dash to a hyphen, treat a hyphen and any run of whitespace as the same, and match whole words, allowing each word its regular plural (+s, +es, y to ies, is to es, ix to ices). Every matching term counts; there is no longest-match rule, so one passage can label several areas and several methods. An area with an empty list is found by method terms alone. methodGeneric marks text as applying some AI method; it labels a method row only when the same term is also in that row's list.",
     "areas": {
       "Media Optimization": [
         "culture medium",
@@ -349,14 +349,11 @@
       "Deep Learning": [
         "deep learning",
         "deep neural network",
-        "neural network",
         "artificial neural network",
         "multilayer perceptron",
         "recurrent neural network",
         "lstm",
-        "autoencoder",
-        "transformer",
-        "neural net"
+        "autoencoder"
       ],
       "GNN": [
         "graph neural network",
@@ -473,8 +470,7 @@
         "large language model",
         "llm",
         "generative pretraining",
-        "generative ai",
-        "language model"
+        "generative ai"
       ],
       "Foundation Models: Masked Language Modeling": [
         "bert",
@@ -485,8 +481,6 @@
         "pretrained language model",
         "dna language model",
         "bidirectional encoder representations",
-        "pretrained",
-        "pre-trained",
         "foundation model",
         "transfer learning"
       ],

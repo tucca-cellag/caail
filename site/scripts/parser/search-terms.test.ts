@@ -1,5 +1,5 @@
 /**
- * search-terms.test.ts — tests for the curated search vocabulary loader.
+ * search-terms.test.ts: tests for the curated search vocabulary loader.
  *
  * Two suites:
  *   (A) the committed search-terms.json against the real Taxonomy.md: every live area and
@@ -77,7 +77,17 @@ describe('buildSearchTerms (failure modes)', () => {
 
   it('rejects a term that is not lowercase and trimmed', () => {
     const path = variant((t) => { t.methodGeneric.push(' Machine Learning'); });
-    expect(() => buildSearchTerms(taxonomy, path)).toThrow(/not lowercase\/trimmed/);
+    expect(() => buildSearchTerms(taxonomy, path)).toThrow(/not lowercase ASCII words/);
+  });
+
+  it('rejects invisible characters a consumer would fold away', () => {
+    const path = variant((t) => { t.methodGeneric.push('machine­learning', 'deep​learning'); });
+    expect(() => buildSearchTerms(taxonomy, path)).toThrow(/not lowercase ASCII words/);
+  });
+
+  it('treats a word and its regular plural as the same term, as the contract does', () => {
+    const path = variant((t) => { t.methodGeneric.push('cell line', 'cell lines', 'matrix', 'matrices'); });
+    expect(() => buildSearchTerms(taxonomy, path)).toThrow(/repeated "cell lines", "matrices"/);
   });
 
   it('rejects a term repeated within one list', () => {
@@ -92,7 +102,7 @@ describe('buildSearchTerms (failure modes)', () => {
 
   it('rejects a term stored with a Unicode dash, which a folding consumer would never match', () => {
     const path = variant((t) => { t.methodGeneric.push('wood–ljungdahl'); });
-    expect(() => buildSearchTerms(taxonomy, path)).toThrow(/dash-folded/);
+    expect(() => buildSearchTerms(taxonomy, path)).toThrow(/not lowercase ASCII words/);
   });
 
   it('names the file it actually loaded, not the committed default', () => {
@@ -102,13 +112,13 @@ describe('buildSearchTerms (failure modes)', () => {
 
   it('rejects an empty method list, while an empty area list is allowed', () => {
     const emptyMethod = variant((t) => { t.methods[firstMethod] = []; });
-    expect(() => buildSearchTerms(taxonomy, emptyMethod)).toThrow();
+    expect(() => buildSearchTerms(taxonomy, emptyMethod)).toThrow(/too_small|at least 1/i);
     const emptyArea = variant((t) => { t.areas[firstArea] = []; });
     expect(() => buildSearchTerms(taxonomy, emptyArea)).not.toThrow();
   });
 
   it('rejects an unknown top-level key rather than shipping it', () => {
     const path = variant((t) => { t.surprise = []; });
-    expect(() => buildSearchTerms(taxonomy, path)).toThrow();
+    expect(() => buildSearchTerms(taxonomy, path)).toThrow(/unrecognized_keys|surprise/i);
   });
 });

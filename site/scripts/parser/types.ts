@@ -809,7 +809,7 @@ export const TaxonomyDataSchema = z.object({
 });
 
 /**
- * Schema for search-terms.json — the curated search vocabulary per matrix area and
+ * Schema for search-terms.json: the curated search vocabulary per matrix area and
  * method (see search-terms.ts). Shipped in the agent API as `taxonomy.json` →
  * `searchTerms`. Key coverage against the live axes is asserted by buildSearchTerms,
  * not here, because a schema cannot see Taxonomy.md.
