@@ -94,7 +94,7 @@ export function breadcrumbList(pathname: string, title: string): Node | null {
       '@type': 'ListItem',
       position: 2,
       name: sectionLabel,
-      ...(landing ? { item: `${SITE_ORIGIN}${SITE_BASE}${landing}` } : {}),
+      ...(landing ? { item: absolute(landing) } : {}),
     });
     items.push({ '@type': 'ListItem', position: 3, name: title, item: absolute(pathname) });
   } else {

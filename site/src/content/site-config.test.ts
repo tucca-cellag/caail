@@ -66,12 +66,18 @@ describe('site-config', () => {
       .split('\n')
       // .mdx is prose, where `*` starts a list item rather than a comment; it has
       // its own check below.
-      .filter((f) => /\.(ts|tsx|mjs|astro)$/.test(f) && !/\.test\.tsx?$/.test(f) && !(f in ALLOWED));
+      .filter((f) => /\.(ts|tsx|mjs|js|astro|css)$/.test(f) && !/\.test\.tsx?$/.test(f) && !(f in ALLOWED));
     // An empty file list would pass vacuously; the tree has well over a hundred.
     expect(files.length).toBeGreaterThan(100);
     const originRe = new RegExp(SITE_ORIGIN.replace(/[.]/g, '\\.'));
-    // A quoted base literal: '/caail', "/caail/", `/caail…`.
-    const baseRe = new RegExp(`['"\`]${SITE_BASE}[/'"\`]`);
+    // The base as the FIRST path segment of a URL, wherever the URL starts: after a
+    // quote, after an interpolation (`localhost:${PORT}/caail/`), or after a host
+    // ('https://host/caail'). A later segment that happens to be spelled the same
+    // (the repo name tucca-cellag/caail, the Slack workspace /t/caail) is not a copy
+    // of the base; repo coordinates are CAAIL-405.
+    const baseRe = new RegExp(
+      `(?:['"\`}]|(?:localhost|[\\w-]+\\.[a-z]{2,})(?::\\d+)?)${SITE_BASE}(?=[/'"\`)\\s]|$)`,
+    );
     const offenders: string[] = [];
     for (const f of files) {
       readFileSync(join(SITE_DIR, f), 'utf-8')
