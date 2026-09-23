@@ -408,7 +408,7 @@ describe('lint — unparsed APA fields', () => {
         makeRef({
           id: 1,
           doi: null,
-          raw: 'Swartz, E. (2023). *Anticipated growth factor costs* [Report, The Good Food Institute]. https://gfi.org/resource/cultivated-meat-growth-factor-volume-and-cost-analysis/',
+          raw: 'Swartz, E. (2023). *Anticipated growth factor costs* [Report]. The Good Food Institute. https://gfi.org/resource/cultivated-meat-growth-factor-volume-and-cost-analysis/',
         }),
       ],
     };
