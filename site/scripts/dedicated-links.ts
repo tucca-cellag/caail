@@ -33,7 +33,7 @@ const REPO_ROOT = fileURLToPath(new URL('../../', import.meta.url));
 /** GitHub's anchor for a heading → the id the route renders for it. */
 type AnchorMap = ReadonlyMap<string, string>;
 
-function sectionAnchors(repoRel: string, headings: readonly string[]): AnchorMap {
+export function sectionAnchors(repoRel: string, headings: readonly string[]): AnchorMap {
   const map = new Map<string, string>();
   for (const h of headings) {
     const key = githubSlug(h);

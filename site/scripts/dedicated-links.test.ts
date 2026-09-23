@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { dedicatedLink } from './dedicated-links.ts';
+import { dedicatedLink, sectionAnchors } from './dedicated-links.ts';
 import { githubSlug, siteSlug } from '../src/lib/heading-slug.ts';
 import { buildTalksModel } from './parser/talks.js';
 import { buildPrimersModel, rewritePrimerUrl } from './parser/primers.js';
@@ -42,6 +42,12 @@ describe('dedicatedLink', () => {
       .toBe('/talks/#ai-agents-foundation-models-for-biology');
     expect(dedicatedLink('Talks.md', 'applied-aiml-for-cellular-agriculture'))
       .toBe('/talks/#applied-ai-ml-for-cellular-agriculture');
+  });
+
+  it('refuses two headings that share a GitHub anchor, rather than letting one win', () => {
+    // "AI/ML Talks" and "AIML Talks" both slug to aiml-talks on GitHub.
+    expect(() => sectionAnchors('X.md', ['AI/ML Talks', 'AIML Talks'])).toThrow(/share the anchor "#aiml-talks"/);
+    expect(sectionAnchors('X.md', ['AI/ML Talks']).get('aiml-talks')).toBe('ai-ml-talks');
   });
 
   it('matches anchors the way GitHub does: case-insensitive and percent-decoded', () => {
