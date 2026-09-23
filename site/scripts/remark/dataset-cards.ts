@@ -25,6 +25,7 @@ import { compactCount, citationTitle, openAlexWorksUrl } from '../../src/lib/cit
 import { isItemId, reportHref } from '../../src/lib/report.ts';
 import { entryHeadingDepth, isEntryHeading } from '../parser/datasets.ts';
 import { catalogNameKey } from '../parser/topics.ts';
+import { SITE_BASE } from '../../src/content/site-config.ts';
 
 export interface DatasetCardEntry {
   /** Frozen `ds:` id — what the card's report link carries. */
@@ -43,7 +44,6 @@ export interface DatasetCardEntry {
 }
 
 const DATA_PATH = fileURLToPath(new URL('../../src/content/data/datasets.json', import.meta.url));
-const BASE = '/caail';
 
 /** HTML-escape a string for safe interpolation into a raw-HTML node. */
 function esc(s: string): string {
@@ -56,7 +56,7 @@ function chipsHtml(entry: DatasetCardEntry): string {
   const lis = entry.topics
     .map(
       (t) =>
-        `<li><a class="topic-chip" data-theme="${esc(t.theme)}" style="${esc(chipStyle(t.theme))}" href="${BASE}/topics/?t=${esc(t.slug)}">${esc(t.label)}</a></li>`,
+        `<li><a class="topic-chip" data-theme="${esc(t.theme)}" style="${esc(chipStyle(t.theme))}" href="${SITE_BASE}/topics/?t=${esc(t.slug)}">${esc(t.label)}</a></li>`,
     )
     .join('');
   return `<ul class="topic-chips not-content" aria-label="Topics">${lis}</ul>`;
@@ -71,7 +71,7 @@ function licenseBadgeHtml(entry: DatasetCardEntry): string {
     : `${TIER_META[entry.tier].label} license (auto-detected from GitHub). ${TIER_META[entry.tier].blurb}`;
   return (
     `<a class="lic-badge lic-badge--${entry.tier}${manual ? ' lic-badge--manual' : ''}" data-tier="${entry.tier}" ` +
-    `href="${BASE}/licenses/?tier=${entry.tier}" title="${esc(title)}">${esc(entry.license)}</a>`
+    `href="${SITE_BASE}/licenses/?tier=${entry.tier}" title="${esc(title)}">${esc(entry.license)}</a>`
   );
 }
 
@@ -80,7 +80,7 @@ function licenseBadgeHtml(entry: DatasetCardEntry): string {
 function citationBadgeHtml(entry: DatasetCardEntry): string {
   if (entry.citationCount == null) return '';
   const dois = entry.citationDois?.length ? entry.citationDois : entry.doi ? [entry.doi] : [];
-  const href = openAlexWorksUrl(dois) || `${BASE}/citations/`;
+  const href = openAlexWorksUrl(dois) || `${SITE_BASE}/citations/`;
   const external = dois.length > 0;
   const aggregated = entry.citationSources > 1;
   const title = citationTitle(entry.citationCount, entry.citationSources);
@@ -102,7 +102,7 @@ function reportLinkHtml(entry: DatasetCardEntry): string {
   // beside it renders the markdown properly, so this is the only surface that leaks it.
   // catalogNameKey is the flattening the topic join already uses.
   return (
-    `<a class="report-link" href="${esc(reportHref(BASE, entry.id))}" ` +
+    `<a class="report-link" href="${esc(reportHref(SITE_BASE, entry.id))}" ` +
     `aria-label="Report an issue with ${esc(catalogNameKey(entry.name))}" ` +
     `title="Report an issue with this entry (${esc(entry.id)})" ` +
     // Chrome, not content — keeps the repeated phrase out of the Pagefind index.

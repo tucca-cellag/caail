@@ -23,6 +23,8 @@ import addFormats from 'ajv-formats';
 import type { ValidateFunction } from 'ajv';
 import { z } from 'zod';
 
+import { SITE_BASE, SITE_ORIGIN } from '../../src/content/site-config.ts';
+
 import {
   ApiCatalogIndexRowSchema,
   ApiCatalogIndexSchema,
@@ -59,12 +61,12 @@ export const OPENAPI_FILE = 'openapi.json';
  * raw.githubusercontent mirror, whose prefix differs. `info.description` says so rather
  * than leaving a consumer to discover it by 404.
  *
- * The `/caail/` segment is Astro's `base` (astro.config.mjs). It is duplicated rather
- * than imported because importing the Astro config into the parser drags the whole plugin
- * graph in for one string; `openapi.test.ts` asserts the two agree instead, so changing
- * `base` fails the suite rather than silently staling the spec.
+ * The `/caail/` segment is Astro's `base`, read from site-config.ts, which
+ * astro.config.mjs also imports; the parser never loads the Astro config itself (that
+ * would drag the whole plugin graph in for one string). `openapi.test.ts` asserts the
+ * config really does read it, so the two cannot quietly part.
  */
-export const PATH_PREFIX = '/caail/api/';
+export const PATH_PREFIX = `${SITE_BASE}/api/`;
 
 /** The dialect OpenAPI 3.1 uses, and the one `z.toJSONSchema` emits. */
 export const JSON_SCHEMA_DIALECT = 'https://json-schema.org/draft/2020-12/schema';
@@ -152,7 +154,9 @@ export const API_ENDPOINTS: readonly ApiEndpointSpec[] = [
     description:
       'Open-source tools and query/lookup resources, with topic, license tier and DOI. Large, ' +
       'for the same reason and with the same caveat as papers.json: enumerate with ' +
-      'catalog-index.json and fetch this for the summaries you actually need.',
+      'catalog-index.json and fetch this for the summaries you actually need. Every link ' +
+      'in summaryHtml is an absolute URL, to a CAAIL site page or to the canonical Markdown ' +
+      'on GitHub, so it resolves wherever this file was fetched from.',
   },
   {
     file: 'datasets.json',
@@ -387,8 +391,8 @@ export function buildOpenApiDocument(corpusDate: string): unknown {
         // OpenAPI base is the document's own origin, so these paths resolve on Pages and
         // NOT against the mirror, whose prefix is different. Saying "the same files are
         // also at <mirror>" without this invites joining the two into a 404.
-        'The paths below are absolute on the GitHub Pages origin, ' +
-        'https://tucca-cellag.github.io. The same files are mirrored per-filename at ' +
+        `The paths below are absolute on the GitHub Pages origin, ${SITE_ORIGIN}. ` +
+        'The same files are mirrored per-filename at ' +
         'https://raw.githubusercontent.com/tucca-cellag/caail/main/site/public/api/, which ' +
         'some clients can reach when Pages is not allow-listed. Resolve that mirror by ' +
         'filename; do not join the paths below onto it.',

@@ -32,7 +32,10 @@ import { fileURLToPath } from 'node:url';
 
 import { assertValid, buildOpenApiDocument, OPENAPI_FILE } from './openapi.js';
 import { MATRIX_SECTION } from './types.js';
-import type { DatasetInventory, PapersData } from './types.js';
+import type { Catalog, CatalogEntry, DatasetInventory, PapersData } from './types.js';
+import { SITE_BASE, SITE_URL } from '../../src/content/site-config.ts';
+import { CATALOG_SOURCES } from './catalog.js';
+import { dedicatedLink, GITHUB_BLOB_BASE } from '../dedicated-links.ts';
 
 /** Where an agent-visible caveat is stated once and reused everywhere. */
 export const SCOPE_NOTE =
@@ -77,7 +80,86 @@ export const PLACEMENT_NOTE =
   'method and application area. The residual uncertainty is precision, not inclusion: ' +
   'where a placement is off it is typically a closely related cell rather than a paper ' +
   'that does not belong. Cite the paper itself. How this is done, and how far it reaches: ' +
-  'https://tucca-cellag.github.io/caail/curation/';
+  `${SITE_URL}curation/`;
+
+/**
+ * Make every root-relative `href` or `src` in rendered HTML absolute.
+ *
+ * The parser renders catalog summaries once, for the site, where `/caail/...` is the
+ * right href. The same HTML is served here to agents that fetch the JSON off-site (or
+ * from the raw.githubusercontent mirror, where it resolves to nothing), so a
+ * root-relative URL is one they cannot follow. Every site link the rewriters emit
+ * starts with the base; one that does not is a rewriter bug, and resolving it against
+ * the origin would publish a real-looking 404, so it fails the build instead. Only
+ * whole `href`/`src` attributes count (not `data-href`), and protocol-relative `//…`
+ * is left alone. The base comes from site-config.ts, which astro.config.mjs also reads.
+ */
+export function absolutizeSiteHrefs(html: string): string {
+  return html.replace(/(?<=\s)(href|src)="(\/(?!\/)[^"]*)"/g, (_, attr: string, path: string) => {
+    if (path !== SITE_BASE && !path.startsWith(`${SITE_BASE}/`)) {
+      throw new Error(`agent-api: ${attr}="${path}" is root-relative but outside the site base ${SITE_BASE}.`);
+    }
+    return `${attr}="${SITE_URL}${path.slice(SITE_BASE.length + 1)}"`;
+  });
+}
+
+/**
+ * Resolve the fragment-only hrefs (`href="#x"`) in one catalog summary.
+ *
+ * On the site `#x` is an in-page jump; in the JSON it resolves against the file URL
+ * and goes nowhere. It meant `#x` in the entry's canonical file, so it becomes the
+ * on-site route when `dedicatedLink` can show the anchor exists there, and otherwise
+ * that file's GitHub blob, which is where the fragment was written to resolve.
+ */
+export function absolutizeFragments(html: string, sourceFile: string): string {
+  return html.replace(/(?<=\s)href="#([^"]+)"/g, (_, anchor: string) => {
+    const onSite = dedicatedLink(sourceFile, anchor);
+    const url = onSite ? `${SITE_URL}${onSite.slice(1)}` : `${GITHUB_BLOB_BASE}/${sourceFile}#${anchor}`;
+    return `href="${url}"`;
+  });
+}
+
+/**
+ * The catalog, with each summary's links made absolute: site-relative hrefs against
+ * the site URL, fragment-only ones against the entry's own source file. The catalog
+ * summaries are the only HTML any endpoint carries; the endpoint test fails if that
+ * stops being true, rather than this walking every payload to be safe.
+ */
+/**
+ * After both passes every href/src must be absolute. Anything else (a relative
+ * `./x.sql`, which the rewriter leaves alone because it is not a `.md` link) is
+ * broken on the site too, and would contradict the endpoint description, so it
+ * fails the build here.
+ */
+export function assertAbsoluteLinks(html: string): void {
+  for (const m of html.matchAll(/(?<=\s)(href|src)="([^"]*)"/g)) {
+    if (!/^(?:https?:|mailto:)/i.test(m[2])) {
+      throw new Error(`agent-api: ${m[1]}="${m[2]}" is not an absolute URL.`);
+    }
+  }
+}
+
+function absolutizeEntry(e: CatalogEntry, file: string): CatalogEntry {
+  try {
+    const summaryHtml = absolutizeFragments(absolutizeSiteHrefs(e.summaryHtml), file);
+    assertAbsoluteLinks(summaryHtml);
+    return { ...e, summaryHtml };
+  } catch (err) {
+    throw new Error(`${file}, entry "${e.name}": ${(err as Error).message}`);
+  }
+}
+
+function catalogForApi(catalog: unknown): unknown {
+  // A malformed catalog passes through untouched so assertValid rejects it by
+  // name; otherwise it is the parser's Catalog.
+  const cat = catalog as Catalog | null;
+  if (!cat || !Array.isArray(cat.software) || !Array.isArray(cat.databases)) return catalog;
+  return {
+    ...cat,
+    software: cat.software.map((e) => absolutizeEntry(e, CATALOG_SOURCES.software)),
+    databases: cat.databases.map((e) => absolutizeEntry(e, CATALOG_SOURCES.databases)),
+  };
+}
 
 /** Repo root, two levels above this module's directory (parser/ -> scripts/ -> site/ -> root). */
 const REPO_ROOT = fileURLToPath(new URL('../../../', import.meta.url));
@@ -419,7 +501,7 @@ export function buildManifest(
     status: STATUS,
     placementsUnderReview: true,
     canonical: 'https://github.com/tucca-cellag/caail',
-    site: 'https://tucca-cellag.github.io/caail/',
+    site: SITE_URL,
     license: 'MIT (CAAIL curation). Linked third-party resources keep their own licenses.',
     scopeNote: SCOPE_NOTE,
     // The machine-readable shape of every endpoint below. Named up here rather than only
@@ -511,7 +593,7 @@ export function buildAgentApi(inputs: AgentApiInputs): ApiFile[] {
     { name: 'papers-index.json', body: buildPapersIndex(inputs.papers, corpusDate) },
     { name: 'papers.json', body: { ...inputs.papers, scopeNote: SCOPE_NOTE, corpusDate } },
     { name: 'catalog-index.json', body: buildCatalogIndex(inputs.catalog, corpusDate) },
-    { name: 'catalog.json', body: { ...(inputs.catalog as object), corpusDate } },
+    { name: 'catalog.json', body: { ...(catalogForApi(inputs.catalog) as object), corpusDate } },
     {
       name: 'datasets.json',
       body: {

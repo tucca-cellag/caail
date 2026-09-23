@@ -8,6 +8,7 @@
  * the section ids can never drift. Mirrors catalog-groups.ts.
  */
 import awesome from '../content/data/awesome-lists.json';
+import { siteSlug } from './heading-slug';
 
 export interface AwesomeGroup {
   label: string;
@@ -15,13 +16,8 @@ export interface AwesomeGroup {
   slug: string;
 }
 
-/** Slugify a group label to a stable anchor id (identical rule to catalog-groups). */
-export function groupSlug(label: string): string {
-  return label
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '');
-}
+/** Slugify a group label to a stable anchor id (the site rule, heading-slug.ts). */
+export const groupSlug = siteSlug;
 
 /** The Awesome Lists groups, in document order, with their anchor slugs. */
 export function awesomeGroups(): AwesomeGroup[] {

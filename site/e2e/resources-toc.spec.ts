@@ -48,10 +48,16 @@ test('other-resources renders sections, a native TOC, and rewritten links', asyn
   await expect(page.getByRole('heading', { name: 'Courses' })).toHaveCount(0);
   // its own native heading TOC (real markdown headings)
   await expect(page.locator('starlight-toc a').filter({ hasText: 'Editorials & Opinion' })).toHaveCount(1);
-  // internal links rewritten: rendered prose page → site route; deferred file → GitHub blob; no raw .md
+  // internal links rewritten: rendered prose page → site route; no raw .md
   await expect(page.locator('main a[href="/caail/reference-works/"]').first()).toBeVisible();
+  // a bare link to a card page → its dedicated route, never a GitHub blob (CAAIL-374)
+  await expect(page.locator('main a[href="/caail/field-reports/"]').first()).toBeVisible();
+  await expect(page.locator('main a[href="/caail/awesome-lists/"]').first()).toBeVisible();
+  await expect(page.locator('main a[href*="/blob/main/FieldReports.md"]')).toHaveCount(0);
+  await expect(page.locator('main a[href*="/blob/main/AwesomeLists.md"]')).toHaveCount(0);
+  // an ANCHORED link to a dedicated route keeps the GitHub blob, which deep-links
   await expect(
-    page.locator('main a[href^="https://github.com/tucca-cellag/caail/blob/main/Papers.md"]').first(),
+    page.locator('main a[href^="https://github.com/tucca-cellag/caail/blob/main/Papers.md#"]').first(),
   ).toBeVisible();
   await expect(page.locator('main a[href$=".md"]:not([href*="github.com"])')).toHaveCount(0);
 });
@@ -73,9 +79,9 @@ test('ai-agents-foundation-models renders its sections and rewritten links', asy
   await expect(page.getByRole('heading', { name: 'Virtual Cell Initiative & Single-Cell Foundation Models' })).toBeVisible();
   // a rendered-page cross-link resolves to a site route (Datasets/Benchmarks.md → route)
   await expect(page.locator('main a[href="/caail/datasets/benchmarks/"]').first()).toBeVisible();
-  // a deferred-file cross-link falls back to a GitHub blob URL (Software.md)
+  // an anchored cross-link to a dedicated route keeps its GitHub blob (Software.md#…)
   await expect(
-    page.locator('main a[href^="https://github.com/tucca-cellag/caail/blob/main/Software.md"]').first(),
+    page.locator('main a[href^="https://github.com/tucca-cellag/caail/blob/main/Software.md#"]').first(),
   ).toBeVisible();
   // no raw repo-relative .md link leaks through
   await expect(page.locator('main a[href$=".md"]:not([href*="github.com"])')).toHaveCount(0);
@@ -103,11 +109,9 @@ test('taxonomy renders a single h1 and rewrites its internal links', async ({ pa
   // stripLeadingH1 ran: only Starlight's page-title h1 remains (not also the
   // body's "# Matrix taxonomy …" — that duplicate was the guard-gap symptom).
   await expect(page.locator('h1')).toHaveCount(1);
-  // rewriteCaailLinks ran: the lone internal ./Papers.md link became a GitHub
-  // blob URL (Papers isn't a rendered page) instead of a dead ./Papers.md.
-  await expect(
-    page.locator('main a[href^="https://github.com/tucca-cellag/caail/blob/main/Papers.md"]').first(),
-  ).toBeVisible();
+  // rewriteCaailLinks ran: the lone internal ./Papers.md link became its
+  // dedicated route (the Papers Explorer) instead of a dead ./Papers.md.
+  await expect(page.locator('main a[href="/caail/papers/explorer/"]').first()).toBeVisible();
   // no raw repo-relative .md link leaks through
   await expect(page.locator('main a[href$=".md"]:not([href*="github.com"])')).toHaveCount(0);
 });

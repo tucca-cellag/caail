@@ -29,7 +29,13 @@ describe('rewritePrimerUrl', () => {
     });
     expect(rewritePrimerUrl('../Software.md', 'Primers').url).toBe('/caail/software/');
     expect(rewritePrimerUrl('../AwesomeLists.md', 'Primers').url).toBe('/caail/awesome-lists/');
-    expect(rewritePrimerUrl('../Talks.md#applied-ai-ml-for-cellular-agriculture', 'Primers').url).toBe(
+    expect(rewritePrimerUrl('../FieldReports.md', 'Primers').url).toBe('/caail/field-reports/');
+    // an anchor a card page can't be shown to render → GitHub blob, not a dead on-site anchor
+    expect(rewritePrimerUrl('../Papers.md#50', 'Primers')).toEqual({
+      url: 'https://github.com/tucca-cellag/caail/blob/main/Papers.md#50',
+      internal: false,
+    });
+    expect(rewritePrimerUrl('../Talks.md#applied-aiml-for-cellular-agriculture', 'Primers').url).toBe(
       '/caail/talks/#applied-ai-ml-for-cellular-agriculture',
     );
   });

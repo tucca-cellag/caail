@@ -8,15 +8,16 @@ import { stripLeadingH1 } from './scripts/remark/strip-leading-h1.ts';
 import { rewriteCaailLinks } from './scripts/remark/rewrite-caail-links.ts';
 import { datasetCards, loadDatasetEntriesByPage } from './scripts/remark/dataset-cards.ts';
 import { CAAIL_PAGES } from './src/content/caail-pages.ts';
+import { SITE_ORIGIN, SITE_BASE, SITE_URL } from './src/content/site-config.ts';
 
 // astro.config.mjs lives in site/ — one level up is the repo root (trailing slash)
 const REPO_ROOT = fileURLToPath(new URL('../', import.meta.url));
-const BASE = '/caail';
-// The deployed origin. `site:` below and the analytics origin guard both read
-// it, so the guard cannot drift from where the site actually deploys — if this
-// ever moves to a TUCCA-owned domain, the beacon follows it in the same edit.
-const SITE = 'https://tucca-cellag.github.io';
-const ANALYTICS_HOST = new URL(SITE).hostname;
+// The deployed origin and base come from site-config.ts. `site:`/`base:` below,
+// the analytics origin guard, the social card, JSON-LD and favicon URLs, and the
+// parser's links all read that module. Static files that cannot import it (robots,
+// llms.txt, the manifest, the Worker's allowed origin…) are listed in
+// site-config.test.ts, which fails until each is edited to match.
+const ANALYTICS_HOST = new URL(SITE_ORIGIN).hostname;
 
 // Curated dataset entries (datasets.json), grouped by page, loaded once for the
 // dataset-card transform. Empty when parse hasn't run yet (transform is then a no-op).
@@ -40,7 +41,7 @@ function caailProseRemark() {
     // keeps the two in lockstep, so a newly added prose page can't silently miss
     // link-rewrite / H1-strip (the bug that left /taxonomy/ untransformed).
     if (!CAAIL_PAGES.byId(CAAIL_PAGES.idForSourcePath(sourcePath))) return;
-    rewriteCaailLinks({ base: BASE, sourcePath })(tree);
+    rewriteCaailLinks({ base: SITE_BASE, sourcePath })(tree);
     stripLeadingH1()(tree);
     // Datasets/ pages: wrap the curated `### …` entries into tagged cards.
     datasetCards({ sourcePath, entriesByPage: DATASET_ENTRIES_BY_PAGE })(tree);
@@ -64,8 +65,8 @@ function groupItems(group) {
 }
 
 export default defineConfig({
-  site: SITE,
-  base: '/caail',
+  site: SITE_ORIGIN,
+  base: SITE_BASE,
   // Canonical pages that moved. `AIEvaluation` described the matrix's
   // `Benchmarks & Evaluation Frameworks` *row*, not a research area, so it moved
   // to Methods/, the directory for the row axis. Published URLs outlive their
@@ -73,12 +74,12 @@ export default defineConfig({
   //
   // The key is base-relative (Astro prepends `base` when it places the generated
   // page) but the DESTINATION is emitted verbatim into the meta-refresh, the
-  // canonical link and the fallback anchor. Writing it without `${BASE}` builds
+  // canonical link and the fallback anchor. Writing it without `${SITE_BASE}` builds
   // cleanly and points every one of those at tucca-cellag.github.io/methods/…,
   // which is a 404: this is a project page served under /caail/. Verify a new
   // redirect by reading dist/<old-path>/index.html, not by reading the config.
   redirects: {
-    '/research-areas/aievaluation': `${BASE}/methods/benchmarksevaluation/`,
+    '/research-areas/aievaluation': `${SITE_BASE}/methods/benchmarksevaluation/`,
   },
   markdown: {
     remarkPlugins: [caailProseRemark],
@@ -132,10 +133,10 @@ export default defineConfig({
         },
         // Site-wide social card (Starlight emits twitter:card=summary_large_image
         // but no image by default). One branded 1200×630 card for every page.
-        { tag: 'meta', attrs: { property: 'og:image', content: 'https://tucca-cellag.github.io/caail/og.png' } },
+        { tag: 'meta', attrs: { property: 'og:image', content: `${SITE_URL}og.png` } },
         { tag: 'meta', attrs: { property: 'og:image:width', content: '1200' } },
         { tag: 'meta', attrs: { property: 'og:image:height', content: '630' } },
-        { tag: 'meta', attrs: { name: 'twitter:image', content: 'https://tucca-cellag.github.io/caail/og.png' } },
+        { tag: 'meta', attrs: { name: 'twitter:image', content: `${SITE_URL}og.png` } },
         // Structured data: Organization (TUCCA) + WebSite, for search engines
         // and AI answer-engines.
         {
@@ -146,20 +147,20 @@ export default defineConfig({
             '@graph': [
               {
                 '@type': 'Organization',
-                '@id': 'https://tucca-cellag.github.io/caail/#org',
+                '@id': `${SITE_URL}#org`,
                 name: 'Tufts University Center for Cellular Agriculture (TUCCA)',
                 url: 'https://cellularagriculture.tufts.edu/',
                 sameAs: ['https://github.com/tucca-cellag'],
               },
               {
                 '@type': 'WebSite',
-                '@id': 'https://tucca-cellag.github.io/caail/#website',
+                '@id': `${SITE_URL}#website`,
                 name: 'CAAIL: Cellular Agriculture AI Library',
-                url: 'https://tucca-cellag.github.io/caail/',
+                url: SITE_URL,
                 description:
                   'A curated, openly-licensed library at the intersection of cellular agriculture and artificial intelligence — papers and preprints, open-source software, databases, and per-species datasets.',
                 inLanguage: 'en',
-                publisher: { '@id': 'https://tucca-cellag.github.io/caail/#org' },
+                publisher: { '@id': `${SITE_URL}#org` },
               },
             ],
           }),
@@ -167,9 +168,9 @@ export default defineConfig({
         // Raster favicon fallbacks + PWA manifest (Starlight already emits the
         // adaptive SVG icon link). Generated from the bioreactor mark by
         // scripts/favicons.mjs. Hrefs are base-prefixed (head entries are raw).
-        { tag: 'link', attrs: { rel: 'icon', href: '/caail/favicon.ico', sizes: '32x32' } },
-        { tag: 'link', attrs: { rel: 'apple-touch-icon', href: '/caail/apple-touch-icon.png' } },
-        { tag: 'link', attrs: { rel: 'manifest', href: '/caail/site.webmanifest' } },
+        { tag: 'link', attrs: { rel: 'icon', href: `${SITE_BASE}/favicon.ico`, sizes: '32x32' } },
+        { tag: 'link', attrs: { rel: 'apple-touch-icon', href: `${SITE_BASE}/apple-touch-icon.png` } },
+        { tag: 'link', attrs: { rel: 'manifest', href: `${SITE_BASE}/site.webmanifest` } },
         { tag: 'meta', attrs: { name: 'theme-color', content: '#002E6D' } },
         // Google Search Console ownership verification (URL-prefix property for
         // the /caail/ site). Public token — ships in the page <head>.
@@ -234,8 +235,8 @@ export default defineConfig({
         // which a signup endpoint isn't), and the page carries the norms and
         // the code of conduct that a bare join link would skip past. Starlight
         // does NOT base-prefix social hrefs — it emits `href` verbatim — so the
-        // `${BASE}` here is required, not redundant.
-        { icon: 'slack', label: 'Community on Slack', href: `${BASE}/community/` },
+        // `${SITE_BASE}` here is required, not redundant.
+        { icon: 'slack', label: 'Community on Slack', href: `${SITE_BASE}/community/` },
       ],
       sidebar: [
         { label: 'Home', link: '/' },

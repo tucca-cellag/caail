@@ -27,7 +27,11 @@ import {
   buildCatalogIndex,
   SCOPE_NOTE,
   PLACEMENT_NOTE,
+  absolutizeSiteHrefs,
+  absolutizeFragments,
+  assertAbsoluteLinks,
 } from './agent-api.js';
+import { SITE_BASE, SITE_ORIGIN, SITE_URL } from '../../src/content/site-config.ts';
 import { buildPapersModel } from './papers.js';
 import { buildCatalogModel } from './catalog.js';
 import { buildDatasetsModel } from './datasets-entries.js';
@@ -440,6 +444,62 @@ describe('datasets.json inventory', () => {
  * then `git diff --exit-code -- site/public/api`) exists to catch — and a model-only
  * assertion would pass while the file an agent actually fetches is still wrong.
  */
+describe('site-relative hrefs in the API', () => {
+  it('absolutizes every root-relative href or src and leaves the rest of the HTML alone', () => {
+    expect(
+      absolutizeSiteHrefs(
+        '<a href="/caail/papers/explorer/">P</a> <img src="/caail/og.png"> <span data-href="/caail/x/">d</span> ' +
+          '<a href="https://x.org/">x</a> <a href="//cdn.x.org/a">c</a> see /caail/talks/',
+      ),
+    ).toBe(
+      `<a href="${SITE_URL}papers/explorer/">P</a> <img src="${SITE_URL}og.png"> <span data-href="/caail/x/">d</span> ` +
+        '<a href="https://x.org/">x</a> <a href="//cdn.x.org/a">c</a> see /caail/talks/',
+    );
+  });
+
+  it('fails on a root-relative link outside the base instead of publishing a 404', () => {
+    // Every site link the rewriters emit carries the base; one that does not is a bug.
+    expect(() => absolutizeSiteHrefs('<a href="/talks/">T</a>')).toThrow(/outside the site base/);
+  });
+
+  it('fails on any link the API cannot make absolute, so the spec promise holds', () => {
+    // A relative non-.md link passes both rewrites untouched and is broken everywhere.
+    expect(() => assertAbsoluteLinks('<a href="./site/db/schema.sql">s</a>')).toThrow(/not an absolute URL/);
+    expect(() => assertAbsoluteLinks('<a href="https://x.org/">x</a> <a href="mailto:a@b.c">m</a>')).not.toThrow();
+  });
+
+  it('leaves a data-href fragment alone, like the site-href pass does', () => {
+    expect(absolutizeFragments('<span data-href="#x">d</span>', 'Software.md')).toBe('<span data-href="#x">d</span>');
+  });
+
+  it('builds the absolute URL from site-config, the module astro.config.mjs reads', () => {
+    expect(SITE_URL).toBe(`${SITE_ORIGIN}${SITE_BASE}/`);
+    expect(readFileSync(join(REPO_ROOT, 'site', 'astro.config.mjs'), 'utf-8'))
+      .toMatch(/from '\.\/src\/content\/site-config\.ts'/);
+  });
+
+  it('resolves a summary fragment against its own source file', () => {
+    // No anchor map for Software.md yet, so the fragment goes where it was written to resolve.
+    expect(absolutizeFragments('<a href="#causalbench">x</a>', 'Software.md'))
+      .toBe('<a href="https://github.com/tucca-cellag/caail/blob/main/Software.md#causalbench">x</a>');
+  });
+
+  it('ships no root-relative or fragment-only href in any emitted endpoint', () => {
+    // An agent reading the JSON off-site (or from the raw mirror) cannot resolve
+    // "/caail/…" or "#…"; the parser's catalog summaries carry both forms for the site.
+    const files = buildAgentApi({ papers, catalog, datasets, inventory, topics, taxonomy, reports, corpusDate: DATE });
+    const input = JSON.stringify(catalog);
+    expect(input).toContain(`href=\\"${SITE_BASE}/`); // the input really has them
+    expect(input).toContain('href=\\"#');
+    for (const f of files) {
+      const out = JSON.stringify(f.body);
+      // any root-relative href or src, base or not (protocol-relative // excepted)
+      expect(out, f.name).not.toMatch(/\b(?:href|src)=\\"\/(?!\/)/);
+      expect(out, f.name).not.toContain('href=\\"#');
+    }
+  });
+});
+
 describe('site/public/api/datasets.json (the shipped file)', () => {
   const shipped = JSON.parse(
     readFileSync(join(REPO_ROOT, 'site', 'public', 'api', 'datasets.json'), 'utf-8'),

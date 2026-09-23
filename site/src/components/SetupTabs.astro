@@ -23,6 +23,7 @@
  * nobody to change a setting.
  */
 import { Icon } from 'astro-icon/components';
+import { SITE_URL } from '../content/site-config';
 
 interface Props {
   compact?: boolean;
@@ -41,7 +42,7 @@ const PROMPT = `Read ${RAW}/plugin/skills/caail/SKILL.md and use CAAIL to answer
    without the reader having to diagnose which restriction they are behind.
    `setup.md` is generated from `skills/caail-install/SKILL.md`, so the two are the same
    document and cannot drift. */
-const INSTALL_DOC = 'https://tucca-cellag.github.io/caail/setup.md';
+const INSTALL_DOC = `${SITE_URL}setup.md`;
 const INSTALL_RAW = `${RAW}/skills/caail-install/SKILL.md`;
 
 const paths = [

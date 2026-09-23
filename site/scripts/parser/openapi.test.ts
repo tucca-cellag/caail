@@ -24,6 +24,7 @@ import addFormats from 'ajv-formats';
 
 import { buildAgentApi } from './agent-api.js';
 import { PATH_PREFIX } from './openapi.js';
+import { SITE_BASE } from '../../src/content/site-config.ts';
 import { buildPapersModel } from './papers.js';
 import { buildCatalogModel } from './catalog.js';
 import { buildDatasetsModel } from './datasets-entries.js';
@@ -90,14 +91,14 @@ describe('openapi.json', () => {
   });
 
   it('keeps its path prefix in step with Astro base, which owns that segment', () => {
-    // PATH_PREFIX duplicates `/caail` rather than importing astro.config (which would drag
-    // the plugin graph into the parser for one string). This is the guard that makes the
-    // duplication safe: change `base` and the suite fails instead of the spec silently
-    // describing paths that 404 on the deployed site.
+    // PATH_PREFIX and astro.config.mjs both read SITE_BASE from site-config.ts; the parser
+    // never imports the Astro config (that would drag the plugin graph in for one string).
+    // So what can drift is the config stopping to read it: assert it still does, or the
+    // spec would describe paths that 404 on the deployed site.
+    // (site-config.test.ts separately fails on any hardcoded base literal.)
     const cfg = readFileSync(join(REPO_ROOT, 'site', 'astro.config.mjs'), 'utf-8');
-    const base = /^\s*base:\s*['"]([^'"]+)['"]/m.exec(cfg)?.[1];
-    expect(base, 'could not read `base` from astro.config.mjs').toBeTruthy();
-    expect(PATH_PREFIX).toBe(`${base}/api/`);
+    expect(cfg).toMatch(/\bbase:\s*SITE_BASE\b/);
+    expect(PATH_PREFIX).toBe(`${SITE_BASE}/api/`);
     for (const p of Object.keys(doc.paths)) expect(p.startsWith(PATH_PREFIX)).toBe(true);
   });
 

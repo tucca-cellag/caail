@@ -20,6 +20,7 @@ import type { Root, RootContent, Heading, Link, Paragraph } from 'mdast';
 
 import { parseFile } from './markdown.js';
 import { rewriteCaailLinks } from '../remark/rewrite-caail-links.js';
+import { SITE_BASE } from '../../src/content/site-config.ts';
 import { catalogTopicLookup, catalogItemIdLookup } from './topics.js';
 import { catalogLicenseLookup } from './licenses.js';
 import { catalogCitationLookup, loadCitedByCounts } from './citation-counts.js';
@@ -29,21 +30,21 @@ import { CatalogSchema, type Catalog, type CatalogEntry } from './types.js';
 // Canonical paths (three levels up: parser → scripts → site → repo root)
 // ---------------------------------------------------------------------------
 
+/**
+ * Each catalog kind's canonical file, repo-relative. Links inside an entry's
+ * summary resolve against it here and in the agent API, so it is named once.
+ */
+export const CATALOG_SOURCES = { software: 'Software.md', databases: 'Databases.md' } as const;
+
 const SOFTWARE_PATH: string = fileURLToPath(
-  new URL('../../../Software.md', import.meta.url),
+  new URL(`../../../${CATALOG_SOURCES.software}`, import.meta.url),
 );
 const DATABASES_PATH: string = fileURLToPath(
-  new URL('../../../Databases.md', import.meta.url),
+  new URL(`../../../${CATALOG_SOURCES.databases}`, import.meta.url),
 );
 
 const SUMMARY_PREFIX_RE = /^Summary:\s*/i;
 
-/**
- * Site base path, mirroring `BASE` in astro.config.mjs. Used by
- * rewriteCaailLinks so a repo-relative `.md` link inside an entry body resolves
- * to the same site route the prose pages use (e.g. `/caail/datasets/cow/`).
- */
-const CATALOG_BASE = '/caail';
 
 // ---------------------------------------------------------------------------
 // Slug helpers (self-contained — mirrors papers.ts, kept local so this module
@@ -143,7 +144,7 @@ function renderBody(
   // HTML. Raw HTML in markdown is escaped (toHtml default) — the safe choice;
   // catalog bodies contain none.
   const bodyRoot: Root = { type: 'root', children: bodyNodes };
-  rewriteCaailLinks({ base: CATALOG_BASE, sourcePath })(bodyRoot);
+  rewriteCaailLinks({ base: SITE_BASE, sourcePath })(bodyRoot);
   const summaryHtml = toHtml(toHast(bodyRoot));
 
   return { summary, summaryHtml };
@@ -236,8 +237,8 @@ export function buildCatalogModel(
       ...citeLookup(type, e.url),
     }));
   const model: Catalog = {
-    software: attach(parseCatalogFile(softwarePath, 'Software.md'), 'software'),
-    databases: attach(parseCatalogFile(databasesPath, 'Databases.md'), 'database'),
+    software: attach(parseCatalogFile(softwarePath, CATALOG_SOURCES.software), 'software'),
+    databases: attach(parseCatalogFile(databasesPath, CATALOG_SOURCES.databases), 'database'),
   };
   return CatalogSchema.parse(model);
 }

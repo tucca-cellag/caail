@@ -2,8 +2,7 @@ import type { Root } from 'mdast';
 import { visit } from 'unist-util-visit';
 import { posix } from 'node:path';
 import { CAAIL_PAGES } from '../../src/content/caail-pages.ts';
-
-const GITHUB_BLOB_BASE = 'https://github.com/tucca-cellag/caail/blob/main';
+import { dedicatedLink, GITHUB_BLOB_BASE } from '../dedicated-links.ts';
 
 /**
  * Rewrite internal `.md` links in the canonical Markdown so they resolve
@@ -11,6 +10,12 @@ const GITHUB_BLOB_BASE = 'https://github.com/tucca-cellag/caail/blob/main';
  *
  * - A link whose target is a rendered M2 page (present in `CAAIL_PAGES`) becomes
  *   the site route `${base}/<id>/` (any cross-file `#anchor` is dropped).
+ * - A link to a file served at a dedicated route (a card or island page in
+ *   `DEDICATED_ROUTES`, e.g. `./FieldReports.md`) becomes that route when
+ *   `dedicatedLink` can resolve it: always for a bare link, and for an anchored
+ *   one only when the anchor is known to exist there (see dedicated-links.ts).
+ *   An unresolvable anchor keeps its GitHub blob, which deep-links, rather
+ *   than landing the reader at the top of a page that mints its own ids.
  * - Any other internal `.md` target (deferred pages, missing files) becomes a
  *   GitHub blob URL `${GITHUB_BLOB_BASE}/<repo-relative-path><#anchor>`.
  * - External (`http(s):`, `mailto:`, protocol-relative `//`) and intra-page
@@ -37,6 +42,17 @@ export function rewriteCaailLinks(options: { base: string; sourcePath: string })
       const id = CAAIL_PAGES.idForSourcePath(idBase);
       if (CAAIL_PAGES.byId(id)) {
         node.url = `${base}/${id}/`;
+        return;
+      }
+      let dedicated: string | undefined;
+      try {
+        dedicated = dedicatedLink(repoRel, anchor);
+      } catch (e) {
+        // Name the file holding the bad link, not only the file it points at.
+        throw new Error(`${options.sourcePath}: ${(e as Error).message}`);
+      }
+      if (dedicated) {
+        node.url = `${base}${dedicated}`;
       } else {
         node.url = `${GITHUB_BLOB_BASE}/${repoRel}${anchor ? '#' + anchor : ''}`;
       }

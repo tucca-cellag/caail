@@ -11,6 +11,7 @@ Short primers and the field's annual *State of the Industry* talks: the science,
 * [2026 State of the Industry: Cultivated meat, seafood, and ingredients](https://www.youtube.com/watch?v=F1s702taM5o) (GFI, 2026).
 * [2026 State of the Industry: Fermentation for meat, seafood, eggs, dairy, and ingredients](https://www.youtube.com/watch?v=eCBclCUZOg0) (GFI, 2026).
 * [2026 State of the Industry: Plant-based meat, seafood, eggs, dairy, and ingredients](https://www.youtube.com/watch?v=OEuehZB7YVM) (GFI, 2026).
+* [Field Reports](../FieldReports.md) — the GFI State of the Industry and State of Global Policy series and other surveys of the sector, grouped by series with the current edition marked.
 * [GFI State of the Industry — full report downloads](https://gfi.org/resource/state-of-the-industry-downloads/) — the Good Food Institute's de-facto annual reports across the cultivated, fermentation, and plant-based tracks, with supplementary data (PDF).
 
 ## Read and take a course
@@ -34,7 +35,7 @@ Once you have the field context, these are the entry points into the AI × cell-
 
 * [AI and cultivated meat: Near-term impacts of AI on the commercial viability of cultivated meat](https://rethinkpriorities.org/research-area/ai-and-cultivated-meat/) (Rethink Priorities report by H. Moulange & W. McAuliffe, 2026) — a landscape of where near-term AI can and cannot move cultivated-meat viability across the field's technical, economic, regulatory, political, and consumer-facing bottlenecks; a strategic orientation to where AI fits before you dive into the papers, whose own conclusion is that open-access data, not model capability, is the binding constraint.
 * [Papers Explorer](../Papers.md) — the matrix of AI method × research area over the curated reference set, with code and data links.
-* [Applied AI/ML for Cellular Agriculture talks](../Talks.md#applied-ai-ml-for-cellular-agriculture) — conference and webinar talks on AI applied to concrete cell-ag problems.
+* [Applied AI/ML for Cellular Agriculture talks](../Talks.md#applied-aiml-for-cellular-agriculture) — conference and webinar talks on AI applied to concrete cell-ag problems.
 * [Research Areas](../ResearchAreas/MediaOptimization.md) — deep-dive pages on media optimization, cellular engineering, bioprocess control, scaffolding, and sensory prediction.
 
 ## Next: learn the AI side

@@ -15,6 +15,7 @@
  */
 import reports from '../content/data/reports.json';
 import type { TopicRef } from './topic-chips';
+import { siteSlug } from './heading-slug';
 
 /** One field-report record, mirroring `ReportSchema` in scripts/parser/types.ts. */
 export interface ReportRecord {
@@ -45,13 +46,8 @@ export interface ReportGroup {
 
 const ALL = reports.reports as unknown as ReportRecord[];
 
-/** Slugify a group label to a stable anchor id (identical rule to catalog-groups). */
-export function groupSlug(label: string): string {
-  return label
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '');
-}
+/** Slugify a group label to a stable anchor id (the site rule, heading-slug.ts). */
+export const groupSlug = siteSlug;
 
 /**
  * A stable DOM anchor for one edition, derived from its frozen `report:` id.
@@ -77,17 +73,74 @@ function seriesLabel(current: ReportRecord): string {
  * The stable series anchor id: the immutable seriesSlug for a recurring line, or
  * the one-off's frozen id. Derived from an id the DB owns, never from the mutable
  * display label, so a reworded title in a later edition leaves the anchor (and its
- * TOC link + any bookmark) unchanged. seriesSlugs are unique per series, so this
- * also cannot collide the way a slugified label could.
+ * TOC link + any bookmark) unchanged.
+ *
+ * Every id is `series-<base>`. A one-off's base is `editionAnchor(id)`, which
+ * always begins `report-` (its id is `report:<slug>`); a series' base is
+ * `groupSlug(seriesSlug)`. The two are disjoint ONLY while no series slug itself
+ * slugifies to something beginning `report-`: a series `report-x` and a one-off
+ * `report:x` would both claim `series-report-x`. That case throws rather than
+ * being fixed with a new prefix, because a new prefix would move the live
+ * one-off anchor and break its bookmarks.
  */
-function seriesAnchor(current: ReportRecord): string {
-  const base = current.seriesSlug ? groupSlug(current.seriesSlug) : editionAnchor(current.id);
-  // Namespace the series heading anchor with `series-` so it can never collide
-  // with an edition CARD anchor (editionAnchor → "report-…"). For a one-off
-  // (seriesSlug null) the series and its sole card both derive from the same
-  // frozen id, so without this prefix the <h2> and the <article> would share a
-  // DOM id and fail the axe duplicate-id check.
+export function seriesAnchor(current: Pick<ReportRecord, 'id' | 'seriesSlug'>): string {
+  // Grouping keys on `seriesSlug ?? id`, so an empty string is a real series key
+  // that would merge every such report into one group. Only null means one-off.
+  if (current.seriesSlug === '') {
+    throw new Error(`report-groups: ${current.id} has an empty seriesSlug; use null for a one-off.`);
+  }
+  if (current.seriesSlug === null) {
+    // A one-off: its series <h2> and its sole card derive from the same frozen
+    // id, so without the `series-` prefix they would share a DOM id and fail
+    // the axe duplicate-id check.
+    return `series-${editionAnchor(current.id)}`;
+  }
+  const base = groupSlug(current.seriesSlug);
+  if (base === '') {
+    throw new Error(`report-groups: seriesSlug "${current.seriesSlug}" (on ${current.id}) slugifies to nothing.`);
+  }
+  if (base.startsWith('report-')) {
+    throw new Error(
+      `report-groups: seriesSlug "${current.seriesSlug}" (on ${current.id}) slugifies to "${base}", ` +
+        'which begins "report-", the namespace reserved for one-off report anchors. Rename the series slug.',
+    );
+  }
+  // `series-` also keeps the heading clear of every edition CARD anchor
+  // (editionAnchor → "report-…").
   return `series-${base}`;
+}
+
+/**
+ * Distinct seriesSlugs can still fold to one `groupSlug` (`a_b` and `a-b`), so
+ * uniqueness of the input does not make the anchors unique. Check the output.
+ */
+export function assertUniqueAnchors(groups: ReadonlyArray<Pick<ReportGroup, 'slug'>>): void {
+  const seen = new Set<string>();
+  for (const { slug } of groups) {
+    if (seen.has(slug)) throw new Error(`report-groups: duplicate series anchor "${slug}"`);
+    seen.add(slug);
+  }
+}
+
+/**
+ * The page lists editions newest-first by reversing `seriesEditions`, which the
+ * parser emits oldest→newest. Nothing else ties the two: if that order ever
+ * flipped (CAAIL-373 weighed it), the page would silently go oldest-first. The
+ * current edition is by definition the newest, so it must be the last entry.
+ *
+ * That is the whole check, and it is narrower than "the order is correct": it
+ * catches the order being reversed, not superseded editions shuffled among
+ * themselves. A full check needs each edition's sort key, which reports.json does
+ * not carry (noted on CAAIL-373).
+ */
+export function assertOldestFirst(current: Pick<ReportRecord, 'id' | 'seriesEditions'>): void {
+  const eds = current.seriesEditions;
+  if (eds.length > 1 && eds[eds.length - 1] !== current.id) {
+    throw new Error(
+      `report-groups: seriesEditions for ${current.id} is not oldest-first ` +
+        `(${eds.join(', ')}); the current edition must be last.`,
+    );
+  }
 }
 
 /**
@@ -113,9 +166,13 @@ export function reportGroups(): ReportGroup[] {
     bucket.push(r);
   }
 
-  return order.map((key) => {
+  const groups = order.map((key) => {
     const members = buckets.get(key)!;
-    const current = members.find((r) => r.current) ?? members[0];
+    const flagged = members.find((r) => r.current);
+    const current = flagged ?? members[0];
+    // Only a flagged current edition is known to be the newest; without one there
+    // is nothing to check the order against.
+    if (flagged) assertOldestFirst(flagged);
     const editions = [...current.seriesEditions]
       .reverse()
       .map((id) => byId.get(id))
@@ -124,6 +181,8 @@ export function reportGroups(): ReportGroup[] {
     const label = seriesLabel(current);
     return { label, slug: seriesAnchor(current), editions: ordered, current };
   });
+  assertUniqueAnchors(groups);
+  return groups;
 }
 
 /** The Field Reports series, in document order, for the "On This Page" TOC. */
