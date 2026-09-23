@@ -40,10 +40,12 @@ export function rewriteCaailLinks(options: { base: string; sourcePath: string })
       const repoRel = posix.normalize(posix.join(srcDir, path)).replace(/^\.\//, '');
       const idBase = repoRel.replace(/\.md$/i, '');
       const id = CAAIL_PAGES.idForSourcePath(idBase);
-      const dedicated = dedicatedLink(repoRel, anchor);
       if (CAAIL_PAGES.byId(id)) {
         node.url = `${base}/${id}/`;
-      } else if (dedicated) {
+        return;
+      }
+      const dedicated = dedicatedLink(repoRel, anchor);
+      if (dedicated) {
         node.url = `${base}${dedicated}`;
       } else {
         node.url = `${GITHUB_BLOB_BASE}/${repoRel}${anchor ? '#' + anchor : ''}`;

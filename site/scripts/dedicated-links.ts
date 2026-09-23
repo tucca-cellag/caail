@@ -9,13 +9,15 @@
  * undefined and the caller keeps its GitHub blob fallback, which deep-links.
  *
  * A route gets an anchor map when its ids can be derived from the canonical
- * file. Talks and the two primers have one (one id per `##` section, and those
- * sections are ALL the ids a link can target, so a miss there is a broken link
- * and throws). Map keys are GitHub's anchors only: the canonical Markdown is
- * read on GitHub first, so a link must work there, and the site translates it.
- * Software, Databases, Awesome Lists, Field Reports and the Papers explorer
- * have none yet, although most of their ids are derivable too; adding one here
- * is how CAAIL-268 gets fixed, for both rewriters at once.
+ * file. Talks and the two primers have one: every heading GitHub anchors is a
+ * key, so an anchor missing from the map is broken on GitHub too and throws.
+ * Only `##` headings render an id on the site (one per section); a valid anchor
+ * to any other heading keeps its GitHub blob. Keys are GitHub's anchors only:
+ * the canonical Markdown is read on GitHub first, so a link must work there,
+ * and the site translates it. Software, Databases, Awesome Lists, Field Reports
+ * and the Papers explorer have no map yet, although most of their ids are
+ * derivable too; adding one here is how CAAIL-268 gets fixed, for both
+ * rewriters at once.
  */
 import { statSync } from 'node:fs';
 import { join } from 'node:path';
@@ -31,19 +33,42 @@ export const GITHUB_BLOB_BASE = 'https://github.com/tucca-cellag/caail/blob/main
 
 const REPO_ROOT = fileURLToPath(new URL('../../', import.meta.url));
 
-/** GitHub's anchor for a heading → the id the route renders for it. */
-type AnchorMap = ReadonlyMap<string, string>;
+/**
+ * GitHub's anchor for a heading → the id the route renders for it, or null when
+ * GitHub anchors the heading but the route renders no id for it.
+ */
+type AnchorMap = ReadonlyMap<string, string | null>;
 
-export function sectionAnchors(repoRel: string, headings: readonly string[]): AnchorMap {
-  const map = new Map<string, string>();
-  for (const h of headings) {
-    const key = githubSlug(h);
-    const id = siteSlug(h);
-    const prior = map.get(key);
-    // GitHub would suffix a repeated slug (-1, -2) and the site would render two
-    // equal ids; either way one link could not name both sections.
-    if (prior !== undefined) {
-      throw new Error(`dedicated-links: two ## headings in ${repoRel} share the anchor "#${key}".`);
+export interface HeadingRef {
+  depth: number;
+  text: string;
+}
+
+/**
+ * Build a route's anchor map. Keys follow GitHub: every heading is anchored, and
+ * a repeated slug gets `-1`, `-2`… in document order. Values are the site id,
+ * which only `##` sections render; two sections rendering one id is an error,
+ * since the page would carry a duplicate id and one of them could not be linked.
+ */
+export function sectionAnchors(repoRel: string, headings: readonly HeadingRef[]): AnchorMap {
+  const map = new Map<string, string | null>();
+  const seenGithub = new Map<string, number>();
+  const seenSite = new Map<string, string>();
+  for (const { depth, text } of headings) {
+    const base = githubSlug(text);
+    const n = seenGithub.get(base) ?? 0;
+    seenGithub.set(base, n + 1);
+    const key = n === 0 ? base : `${base}-${n}`;
+    let id: string | null = null;
+    if (depth === 2) {
+      id = siteSlug(text);
+      const prior = seenSite.get(id);
+      if (prior !== undefined) {
+        throw new Error(
+          `dedicated-links: "${prior}" and "${text}" in ${repoRel} both render the site id "#${id}".`,
+        );
+      }
+      seenSite.set(id, text);
     }
     map.set(key, id);
   }
@@ -61,60 +86,63 @@ function normalizeAnchor(anchor: string): string {
   return a.toLowerCase();
 }
 
-/** The text of every `##` heading in a canonical file. */
-function h2Headings(repoRel: string): string[] {
-  return parseFile(join(REPO_ROOT, repoRel))
-    .children.filter((n): n is Heading => n.type === 'heading' && (n as Heading).depth === 2)
-    .map((h) => mdastToString(h).trim());
+/** Every heading in a canonical file, in document order. */
+function headingsOf(repoRoot: string, repoRel: string): HeadingRef[] {
+  return parseFile(join(repoRoot, repoRel))
+    .children.filter((n): n is Heading => n.type === 'heading')
+    .map((h) => ({ depth: h.depth, text: mdastToString(h).trim() }));
 }
 
 /**
- * Routes whose every linkable id is derived here. Each renders exactly one
+ * Routes whose ids are all derived here. Each renders exactly one
  * `id={siteSlug(heading)}` per `##` section (TalksList, PrimerHub; tests pin
- * the headings to each parser's sections), so a miss against one of these maps
- * is an anchor GitHub cannot resolve either.
+ * the headings to each parser's sections).
  */
-const SECTION_ROUTES = ['Talks.md', 'Primers/CellAg.md', 'Primers/AI.md'] as const;
-const ANCHOR_MAPS: Record<string, () => AnchorMap> = Object.fromEntries(
-  SECTION_ROUTES.map((f) => [f, () => sectionAnchors(f, h2Headings(f))]),
-);
+const SECTION_ROUTES: ReadonlySet<string> = new Set(['Talks.md', 'Primers/CellAg.md', 'Primers/AI.md']);
 
 /**
- * Keyed on the source file's mtime, so a long-lived `astro dev` process picks up
- * a renamed heading instead of resolving against the one it first saw.
+ * Keyed on repo root + file and checked against the file's mtime, so a
+ * long-lived `astro dev` process picks up a renamed heading, and a build against
+ * a fixture root never validates against the real repository's headings.
  */
 const cache = new Map<string, { mtimeMs: number; map: AnchorMap }>();
 
-function anchorsFor(repoRel: string): AnchorMap | undefined {
-  const build = ANCHOR_MAPS[repoRel];
-  if (!build) return undefined;
-  const { mtimeMs } = statSync(join(REPO_ROOT, repoRel));
-  const hit = cache.get(repoRel);
+function anchorsFor(repoRel: string, repoRoot: string): AnchorMap | undefined {
+  if (!SECTION_ROUTES.has(repoRel)) return undefined;
+  const { mtimeMs } = statSync(join(repoRoot, repoRel));
+  const key = `${repoRoot}\0${repoRel}`;
+  const hit = cache.get(key);
   if (hit && hit.mtimeMs === mtimeMs) return hit.map;
-  const map = build();
-  cache.set(repoRel, { mtimeMs, map });
+  const map = sectionAnchors(repoRel, headingsOf(repoRoot, repoRel));
+  cache.set(key, { mtimeMs, map });
   return map;
 }
 
 /**
- * The base-relative on-site URL for a link to `repoRel` (+ optional anchor),
- * or undefined when `repoRel` has no dedicated route or no anchor map to check
- * the anchor against. Throws when the route HAS a complete map and the anchor
- * is not in it: GitHub cannot resolve that link, so it is broken at the source.
+ * The base-relative on-site URL for a link to `repoRel` (+ optional anchor), or
+ * undefined when `repoRel` has no dedicated route, no anchor map, or no site id
+ * for a heading GitHub does anchor. Throws when the route has a map and the
+ * anchor is not in it: GitHub cannot resolve that link, so it is broken at the
+ * source.
  */
-export function dedicatedLink(repoRel: string, anchor?: string): string | undefined {
+export function dedicatedLink(
+  repoRel: string,
+  anchor?: string,
+  repoRoot: string = REPO_ROOT,
+): string | undefined {
   const route = DEDICATED_ROUTES[repoRel];
   if (!route) return undefined;
   if (!anchor) return route;
-  const map = anchorsFor(repoRel);
+  const map = anchorsFor(repoRel, repoRoot);
   if (!map) return undefined;
-  const id = map.get(normalizeAnchor(anchor));
-  if (!id) {
+  const key = normalizeAnchor(anchor);
+  if (!map.has(key)) {
     const known = [...map.keys()].map((k) => `#${k}`).join(', ');
     throw new Error(
       `dedicated-links: "${repoRel}#${anchor}" is not a GitHub anchor of ${repoRel} ` +
-        `(its sections: ${known}). Fix the link, or the heading it points at.`,
+        `(its headings: ${known}). Fix the link, or the heading it points at.`,
     );
   }
-  return `${route}#${id}`;
+  const id = map.get(key);
+  return id ? `${route}#${id}` : undefined;
 }

@@ -42,8 +42,10 @@ const PRIMER_SOURCES: ReadonlyArray<{ slug: string; file: string }> = [
 /**
  * Rewrite a primer item's URL for the rendered site.
  *
- * - External (`scheme:`, `//`) and intra-page (`#…`) links are left untouched
- *   (external → opens in a new tab; YouTube links stay so they embed).
+ * - External (`scheme:`, `//`) links are left untouched (external → opens in a
+ *   new tab; YouTube links stay so they embed). An intra-page `#…` link is
+ *   written in GitHub's form like every other anchor, so given the primer's own
+ *   `sourceFile` it is translated to the id PrimerHub renders.
  * - A repo-relative `.md` link is resolved against the primer's directory and
  *   mapped to a same-site route: a dedicated route (Papers explorer, Software,
  *   Databases, Talks, sibling primer) or a canonical-prose page id. Unlike the
@@ -56,9 +58,17 @@ const PRIMER_SOURCES: ReadonlyArray<{ slug: string; file: string }> = [
  * @returns `{ url, internal }` — `internal` is true for same-site routes, which
  *   the component renders as same-tab nav cards rather than new-tab links.
  */
-export function rewritePrimerUrl(url: string, srcDir: string): { url: string; internal: boolean } {
+export function rewritePrimerUrl(
+  url: string,
+  srcDir: string,
+  opts: { sourceFile?: string; repoRoot?: string } = {},
+): { url: string; internal: boolean } {
+  const { sourceFile, repoRoot = REPO_ROOT } = opts;
   if (/^[a-z]+:/i.test(url) || url.startsWith('//')) return { url, internal: false };
-  if (url.startsWith('#')) return { url, internal: true };
+  if (url.startsWith('#')) {
+    const onPage = sourceFile ? dedicatedLink(sourceFile, url.slice(1), repoRoot) : undefined;
+    return { url: onPage ? onPage.slice(onPage.indexOf('#')) : url, internal: true };
+  }
 
   const [rawPath, anchor] = url.split('#');
   const path = rawPath.endsWith('/') ? `${rawPath}README.md` : rawPath;
@@ -69,7 +79,7 @@ export function rewritePrimerUrl(url: string, srcDir: string): { url: string; in
 
   // A card/island route keeps an anchor only when it is known to exist there;
   // otherwise this falls through to the GitHub blob below (dedicated-links.ts).
-  const special = dedicatedLink(repoRel, anchor);
+  const special = dedicatedLink(repoRel, anchor, repoRoot);
   if (special) {
     return { url: `${SITE_BASE}${special}`, internal: true };
   }
@@ -122,7 +132,7 @@ export function buildPrimersModel(repoRoot: string = REPO_ROOT): Primers {
         visit(node, 'listItem', (li: ListItem) => {
           const base = itemFromListItem(li);
           if (!base) return;
-          const { url, internal } = rewritePrimerUrl(base.url, srcDir);
+          const { url, internal } = rewritePrimerUrl(base.url, srcDir, { sourceFile: file, repoRoot });
           items.push({ ...base, url, internal });
         });
       }

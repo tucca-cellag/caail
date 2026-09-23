@@ -1,4 +1,7 @@
 import { describe, it, expect } from 'vitest';
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { dedicatedLink, sectionAnchors } from './dedicated-links.ts';
 import { githubSlug, siteSlug } from '../src/lib/heading-slug.ts';
 import { buildTalksModel } from './parser/talks.js';
@@ -44,10 +47,42 @@ describe('dedicatedLink', () => {
       .toBe('/talks/#applied-ai-ml-for-cellular-agriculture');
   });
 
-  it('refuses two headings that share a GitHub anchor, rather than letting one win', () => {
-    // "AI/ML Talks" and "AIML Talks" both slug to aiml-talks on GitHub.
-    expect(() => sectionAnchors('X.md', ['AI/ML Talks', 'AIML Talks'])).toThrow(/share the anchor "#aiml-talks"/);
-    expect(sectionAnchors('X.md', ['AI/ML Talks']).get('aiml-talks')).toBe('ai-ml-talks');
+  it('keeps a valid anchor to a heading the route renders no id for on GitHub', () => {
+    // Talks.md's H1 "Talks & Videos" is a real GitHub anchor, but /talks/ gives
+    // only its ## sections ids: fall back to the blob, do not fail the build.
+    expect(dedicatedLink('Talks.md', 'talks--videos')).toBeUndefined();
+  });
+
+  it('suffixes a repeated GitHub slug the way GitHub does', () => {
+    // "AI/ML Talks" and "AIML Talks" both slug to aiml-talks on GitHub, which
+    // anchors the second as aiml-talks-1; their site ids differ, so both link.
+    const map = sectionAnchors('X.md', [
+      { depth: 2, text: 'AI/ML Talks' },
+      { depth: 2, text: 'AIML Talks' },
+    ]);
+    expect(map.get('aiml-talks')).toBe('ai-ml-talks');
+    expect(map.get('aiml-talks-1')).toBe('aiml-talks');
+  });
+
+  it('refuses two sections that would render one site id', () => {
+    // Different GitHub anchors, same single-dash site id: a duplicate id on the page.
+    expect(() =>
+      sectionAnchors('X.md', [
+        { depth: 2, text: 'AI/ML Talks' },
+        { depth: 2, text: 'AI ML Talks' },
+      ]),
+    ).toThrow(/both render the site id "#ai-ml-talks"/);
+  });
+
+  it('reads headings from the repo root it is given', () => {
+    const root = mkdtempSync(join(tmpdir(), 'caail-dl-'));
+    try {
+      writeFileSync(join(root, 'Talks.md'), '# T\n\n## Fixture Only Section\n');
+      expect(dedicatedLink('Talks.md', 'fixture-only-section', root)).toBe('/talks/#fixture-only-section');
+      expect(() => dedicatedLink('Talks.md', 'ai-agents--foundation-models-for-biology', root)).toThrow();
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
   });
 
   it('matches anchors the way GitHub does: case-insensitive and percent-decoded', () => {
@@ -73,6 +108,11 @@ describe('dedicatedLink', () => {
     const first = buildPrimersModel().primers.find((p) => p.slug === 'ai')!.sections[0].heading;
     expect(rewritePrimerUrl(`./AI.md#${githubSlug(first)}`, 'Primers')).toEqual({
       url: `/caail/primers/ai/#${siteSlug(first)}`,
+      internal: true,
+    });
+    // a same-page fragment in GitHub form is translated to the id PrimerHub renders
+    expect(rewritePrimerUrl(`#${githubSlug(first)}`, 'Primers', { sourceFile: 'Primers/AI.md' })).toEqual({
+      url: `#${siteSlug(first)}`,
       internal: true,
     });
   });
