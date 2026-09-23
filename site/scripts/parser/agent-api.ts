@@ -33,11 +33,11 @@ import { fileURLToPath } from 'node:url';
 import { assertValid, buildOpenApiDocument, OPENAPI_FILE } from './openapi.js';
 import { MATRIX_SECTION } from './types.js';
 import type { DatasetInventory, PapersData } from './types.js';
-import { SITE_ORIGIN, SITE_URL } from '../../src/content/site-config.ts';
+import { SITE_BASE, SITE_URL } from '../../src/content/site-config.ts';
 import { CATALOG_SOURCES } from './catalog.js';
+import type { Catalog, CatalogEntry } from './types.js';
 import { dedicatedLink, GITHUB_BLOB_BASE } from '../dedicated-links.ts';
 
-export { SITE_URL };
 
 /** Where an agent-visible caveat is stated once and reused everywhere. */
 export const SCOPE_NOTE =
@@ -90,13 +90,19 @@ export const PLACEMENT_NOTE =
  * The parser renders catalog summaries once, for the site, where `/caail/...` is the
  * right href. The same HTML is served here to agents that fetch the JSON off-site (or
  * from the raw.githubusercontent mirror, where it resolves to nothing), so a
- * root-relative URL is one they cannot follow. It is resolved against the origin
- * exactly as a browser on the site would, base or no base; protocol-relative `//…`
- * and text that merely mentions a path stay untouched. The origin comes from
- * site-config.ts, which astro.config.mjs also reads.
+ * root-relative URL is one they cannot follow. Every site link the rewriters emit
+ * starts with the base; one that does not is a rewriter bug, and resolving it against
+ * the origin would publish a real-looking 404, so it fails the build instead. Only
+ * whole `href`/`src` attributes count (not `data-href`), and protocol-relative `//…`
+ * is left alone. The base comes from site-config.ts, which astro.config.mjs also reads.
  */
 export function absolutizeSiteHrefs(html: string): string {
-  return html.replace(/\b(href|src)="(\/(?!\/)[^"]*)"/g, (_, attr: string, path: string) => `${attr}="${SITE_ORIGIN}${path}"`);
+  return html.replace(/(?<=\s)(href|src)="(\/(?!\/)[^"]*)"/g, (_, attr: string, path: string) => {
+    if (path !== SITE_BASE && !path.startsWith(`${SITE_BASE}/`)) {
+      throw new Error(`agent-api: ${attr}="${path}" is root-relative but outside the site base ${SITE_BASE}.`);
+    }
+    return `${attr}="${SITE_URL}${path.slice(SITE_BASE.length + 1)}"`;
+  });
 }
 
 /**
@@ -121,29 +127,23 @@ export function absolutizeFragments(html: string, sourceFile: string): string {
  * summaries are the only HTML any endpoint carries; the endpoint test fails if that
  * stops being true, rather than this walking every payload to be safe.
  */
-function absolutizeEntry(e: { name?: string; summaryHtml: string }, file: string): string {
+function absolutizeEntry(e: CatalogEntry, file: string): CatalogEntry {
   try {
-    return absolutizeFragments(absolutizeSiteHrefs(e.summaryHtml), file);
+    return { ...e, summaryHtml: absolutizeFragments(absolutizeSiteHrefs(e.summaryHtml), file) };
   } catch (err) {
-    throw new Error(`${file}, entry "${e.name ?? '?'}": ${(err as Error).message}`);
+    throw new Error(`${file}, entry "${e.name}": ${(err as Error).message}`);
   }
 }
 
 function catalogForApi(catalog: unknown): unknown {
-  const cat = catalog as Record<string, unknown> | null;
-  if (!cat) return catalog;
-  const fix = (entries: unknown, file: string) =>
-    Array.isArray(entries)
-      ? entries.map((e) =>
-          e && typeof (e as { summaryHtml?: unknown }).summaryHtml === 'string'
-            ? { ...e, summaryHtml: absolutizeEntry(e as { name?: string; summaryHtml: string }, file) }
-            : e,
-        )
-      : entries;
+  // A malformed catalog passes through untouched so assertValid rejects it by
+  // name; otherwise it is the parser's Catalog.
+  const cat = catalog as Catalog | null;
+  if (!cat || !Array.isArray(cat.software) || !Array.isArray(cat.databases)) return catalog;
   return {
     ...cat,
-    software: fix(cat.software, CATALOG_SOURCES.software),
-    databases: fix(cat.databases, CATALOG_SOURCES.databases),
+    software: cat.software.map((e) => absolutizeEntry(e, CATALOG_SOURCES.software)),
+    databases: cat.databases.map((e) => absolutizeEntry(e, CATALOG_SOURCES.databases)),
   };
 }
 
