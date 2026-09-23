@@ -33,30 +33,23 @@ const EDITION_SORT_SHAPE = /^(\d{4})(?:-(\d{2})(?:-(\d{2}))?)?$/;
 export const EDITION_SORT_FORMS = 'YYYY, YYYY-MM or YYYY-MM-DD';
 
 /**
- * What a valid report is, stated once for every place that reports a `seriesRecency` failure: the
- * parse abort (every build, so test.yml and docs.yml), db:check (lint-papers.yml) and
- * extractReports at seed and verify time. These run in parallel in CI, so any can be seen first.
+ * What a valid report is, and where its edition values live, printed by the two callers of
+ * `seriesRecency`: the parse abort (every build, so test.yml and docs.yml) and db:check
+ * (lint-papers.yml). Those read the stored columns, so "change both copies" is always right there.
+ * extractReports prints no rule, because its two callers need opposite fixes (see its comment).
  *
- * extractReports prints only this validity rule. The parse abort and db:check print
- * `EDITION_SORT_RULE`, which adds where the values live; that addition would mislead at
- * db:bootstrap, where FieldReports.md is the source being read and editing it IS the fix.
+ * The two-copies sentence describes the storage CAAIL-364 chose; an agreement check (CAAIL-379)
+ * would enforce it rather than retire it, and only deriving one copy from the other would retire it.
  *
- * Neither says HOW to edit a report. Earlier versions named the DB edit flows, and every review
+ * It does not say HOW to edit a report. Earlier versions named the DB edit flows, and every review
  * round found another way that account was incomplete or contradicted the block-generated-edits
  * hook, whose own fix-it steps are wrong (CAAIL-404). The flow belongs to the DB tooling's
  * documentation, which does not yet cover reports (recorded on CAAIL-404).
  */
-export const EDITION_VALIDITY_RULE =
-  `Every report needs a non-empty edition_label and an edition_sort that is a valid ${EDITION_SORT_FORMS} ` +
-  'date, and within a series no two editions may share an edition_sort or have one be a prefix of the other.';
-
-/**
- * The validity rule plus where the two values are stored. The two-copies sentence describes the
- * storage CAAIL-364 chose; an agreement check (CAAIL-379) would enforce it rather than retire it,
- * and only deriving one copy from the other would retire it.
- */
 export const EDITION_SORT_RULE =
-  `${EDITION_VALIDITY_RULE} edition_label and edition_sort are each stored twice, in their own ` +
+  `Every report needs a non-empty edition_label and an edition_sort that is a valid ${EDITION_SORT_FORMS} ` +
+  'date, and within a series no two editions may share an edition_sort or have one be a prefix of the other. ' +
+  'edition_label and edition_sort are each stored twice, in their own ' +
   'column and in the "*Edition <label>, published <sort>.*" line of body_md (CAAIL-379), so change both ' +
   'copies; an edit made in FieldReports.md alone is overwritten by db:emit.';
 
@@ -140,7 +133,9 @@ export function seriesRecency(
       problems.push(`${r.item_id}: ${invalidEditionSort(r.edition_sort)}`);
       continue;
     }
-    if (r.series_slug === null) continue; // an omitted key arrives as null (parseReportsNdjson)
+    // `== null`, not `=== null`: parseReportsNdjson normalises an omitted key to null, but this is
+    // also called with rows built elsewhere (db:check, tests), and it must not rely on that.
+    if (r.series_slug == null) continue;
     (grouped.get(r.series_slug) ?? grouped.set(r.series_slug, []).get(r.series_slug)!)
       .push({ id: r.item_id, sort: r.edition_sort });
   }
@@ -191,14 +186,15 @@ export function deriveReports(rows: ReportRow[], topicsById: Map<string, Report[
   }
 
   return rows.map((r) => {
-    const series = r.series_slug === null ? undefined : bySeries.get(r.series_slug)!;
+    const seriesSlug = r.series_slug ?? null; // read an omitted key exactly as seriesRecency does
+    const series = seriesSlug === null ? undefined : bySeries.get(seriesSlug)!;
     const currentId = series?.latest;
     const isCurrent = series === undefined || currentId === r.item_id;
     return {
       id: r.item_id,
       title: r.title,
-      url: r.url,
-      seriesSlug: r.series_slug,
+      url: r.url ?? null,
+      seriesSlug,
       editionLabel: r.edition_label,
       current: isCurrent,
       supersededBy: isCurrent ? null : currentId!,

@@ -19,7 +19,7 @@ import { extractReports } from './extract.js';
 import { seedReports } from './seed.js';
 import { emitReportsFile } from './emit.js';
 import { checkIntegrity, checkSeries } from './check.js';
-import { EDITION_SORT_RULE, EDITION_VALIDITY_RULE } from '../parser/reports.js';
+import { EDITION_SORT_RULE, parseReportsNdjson } from '../parser/reports.js';
 
 const TMP = mkdtempSync(join(tmpdir(), 'caail-reports-test-'));
 
@@ -192,15 +192,33 @@ describe('extractReports edition_sort validation', () => {
     const bad = `# Field Reports\n\n### [Bad Date](https://example.com/x)\n\n*Edition 2026, published June 2026.*\n\nBody.\n`;
     expect(() => extractReports(fixture('bad-sort.md', bad)))
       .toThrow(/"Bad Date" .*: edition_sort "June 2026" is not a valid YYYY, YYYY-MM or YYYY-MM-DD date/);
-    expect(() => extractReports(fixture('bad-sort.md', bad))).toThrow(EDITION_VALIDITY_RULE);
   });
 
-  it('prints only the validity rule, since at db:bootstrap FieldReports.md is the source to fix', () => {
+  it('prints no fix instruction, since its callers (db:bootstrap, db:verify) need opposite fixes', () => {
     const bad = `# Field Reports\n\n### [Bad Date](https://example.com/x)\n\n*Edition 2026, published 2026-13.*\n\nBody.\n`;
     let message = '';
     try { extractReports(fixture('bad-sort-2.md', bad)); } catch (e) { message = (e as Error).message; }
-    expect(message).toContain(EDITION_VALIDITY_RULE);
-    expect(message).not.toMatch(/overwritten by db:emit/);
+    expect(message).toMatch(/Rules: seriesRecency in site\/scripts\/parser\/reports\.ts\.$/);
+    // Derived from the constant, so a reworded rule cannot make this pass vacuously.
+    for (const sentence of EDITION_SORT_RULE.split('. ')) expect(message).not.toContain(sentence);
+  });
+
+  it('parseReportsNdjson defaults exactly the reports columns schema.sql leaves nullable', () => {
+    // Its default list is typed by hand beside schema.sql; this fails when the two disagree, e.g.
+    // when the planned license/doi columns land on reports without a matching default.
+    const cols = openDb().prepare('PRAGMA table_info(reports)').all() as { name: string; notnull: number; pk: number }[];
+    const required = cols.filter((c) => c.notnull || c.pk);
+    const nullable = cols.filter((c) => !c.notnull && !c.pk).map((c) => c.name).sort();
+    const line = JSON.stringify(Object.fromEntries(required.map((c) => [c.name, c.name === 'ordinal' ? 0 : 'x'])));
+    const [parsed] = parseReportsNdjson(line);
+    const defaulted = Object.keys(parsed).filter((k) => !required.some((c) => c.name === k)).sort();
+    expect(defaulted).toEqual(nullable);
+  });
+
+  it('reports every problem on the line, not only the first', () => {
+    const both = `# Field Reports\n\n### [Both Bad](https://example.com/x)\n\n*Edition  , published 2026-13.*\n\nBody.\n`;
+    expect(() => extractReports(fixture('both-bad.md', both)))
+      .toThrow(/missing or empty edition_label, and edition_sort "2026-13" is not a valid/);
   });
 
   it('refuses a whitespace-only edition label at seed time, as it does a bad date', () => {

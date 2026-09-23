@@ -8,7 +8,7 @@
 import { readFileSync } from 'node:fs';
 import { parseMarkdown, sectionsAfter } from '../parser/markdown.js';
 import { entryHeadingDepth, isEntryHeading, pageFromPath } from '../parser/datasets.js';
-import { isEditionSort, invalidEditionSort, EDITION_VALIDITY_RULE } from '../parser/reports.js';
+import { isEditionSort, invalidEditionSort } from '../parser/reports.js';
 import { slugify } from './lib.js';
 import type { Table, TableRow, TableCell } from 'mdast';
 
@@ -256,14 +256,18 @@ export function extractReports(path: string): ReportRaw[] {
       );
     }
     // The single-row halves of the validity rule, checked here so a bad line fails at seed time and
-    // names its report. Only the validity rule is printed: at db:bootstrap `path` is the source, so
-    // EDITION_SORT_RULE's "a FieldReports.md edit is overwritten" would point away from the fix.
+    // names its report. No fix instruction is printed, because this has two callers whose correct
+    // fix is opposite: at db:bootstrap `path` is the source to edit, while under db:verify it may be
+    // an emitted copy whose value came from a reports.ndjson row. Stating neither beats misleading one.
     const editionLabel = m.groups.label.trim();
     const editionSort = m.groups.sort.trim();
-    const problem = !editionLabel ? 'missing or empty edition_label'
-      : !isEditionSort(editionSort) ? invalidEditionSort(editionSort) : null;
-    if (problem) {
-      throw new Error(`extractReports: the report "${name}" in ${path}: ${problem}. ${EDITION_VALIDITY_RULE}`);
+    const problems = [
+      ...(editionLabel ? [] : ['missing or empty edition_label']),
+      ...(isEditionSort(editionSort) ? [] : [invalidEditionSort(editionSort)]),
+    ];
+    if (problems.length > 0) {
+      throw new Error(`extractReports: the report "${name}" in ${path}: ${problems.join(', and ')}. ` +
+        'Rules: seriesRecency in site/scripts/parser/reports.ts.');
     }
     out.push({
       name,
