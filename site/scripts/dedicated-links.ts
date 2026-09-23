@@ -19,8 +19,8 @@
  * derivable too; adding one here is how CAAIL-268 gets fixed, for both
  * rewriters at once.
  */
-import { existsSync, statSync } from 'node:fs';
-import { join } from 'node:path';
+import { statSync } from 'node:fs';
+import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { toString as mdastToString } from 'mdast-util-to-string';
 import type { Heading, Html } from 'mdast';
@@ -102,7 +102,9 @@ function headingsOf(tree: ReturnType<typeof parseFile>): HeadingRef[] {
     out.push({
       depth: h.depth,
       topLevel: parent === tree,
-      text: mdastToString(h, { includeHtml: false }).trim(),
+      // GitHub slugs the rendered text: no inline HTML, no image alt text, and
+      // NOT trimmed, so "Demos <img>" keeps its space and becomes demos-.
+      text: mdastToString(h, { includeHtml: false, includeImageAlt: false }),
       siteText: mdastToString(h).trim(),
     });
   });
@@ -142,9 +144,17 @@ const cache = new Map<string, { mtimeMs: number; map: AnchorMap }>();
 function anchorsFor(repoRel: string, repoRoot: string): AnchorMap | undefined {
   if (!SECTION_ROUTES.has(repoRel)) return undefined;
   const path = join(repoRoot, repoRel);
-  // A root without the file (a fixture) has nothing to check against: blob fallback.
-  if (!existsSync(path)) return undefined;
-  const { mtimeMs } = statSync(path);
+  const stat = statSync(path, { throwIfNoEntry: false });
+  if (!stat) {
+    // Under this repository a mapped file must exist: failing open here would
+    // silently switch the broken-anchor check off if Talks.md or a primer moved.
+    if (resolve(repoRoot) === resolve(REPO_ROOT)) {
+      throw new Error(`dedicated-links: ${repoRel} is an anchor-mapped route but does not exist.`);
+    }
+    // A fixture root without the file has nothing to check against: blob fallback.
+    return undefined;
+  }
+  const { mtimeMs } = stat;
   const key = `${repoRoot}\0${repoRel}`;
   const hit = cache.get(key);
   if (hit && hit.mtimeMs === mtimeMs) return hit.map;

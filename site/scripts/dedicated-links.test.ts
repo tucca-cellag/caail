@@ -3,7 +3,8 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { dedicatedLink, sectionAnchors, SECTION_ROUTES } from './dedicated-links.ts';
-import { githubSlug, siteSlug } from '../src/lib/heading-slug.ts';
+import { siteSlug } from '../src/lib/heading-slug.ts';
+import { githubSlug } from './github-slug.ts';
 import { buildTalksModel } from './parser/talks.js';
 import { buildPrimersModel, PRIMER_SOURCES, rewritePrimerUrl } from './parser/primers.js';
 import { rewriteCaailLinks } from './remark/rewrite-caail-links.ts';
@@ -91,13 +92,21 @@ describe('dedicatedLink', () => {
     expect([...skip.keys()]).toEqual(['demos-1', 'demos', 'demos-2']);
   });
 
-  it('keys a heading by GitHub\'s HTML-free slug but targets the id the site renders', () => {
-    // GitHub drops inline HTML before slugging; sectionsAfter keeps it, so
+  it('keys a heading by GitHub\'s rendered text but targets the id the site renders', () => {
+    // GitHub slugs the rendered text: inline HTML and image alt text removed, the
+    // space before them kept ("Demos " → demos-). sectionsAfter keeps the HTML, so
     // TalksList renders siteSlug('Demos <img src="x.svg">').
     const root = mkdtempSync(join(tmpdir(), 'caail-dl-'));
     try {
-      writeFileSync(join(root, 'Talks.md'), '# T\n\n## Demos <img src="x.svg">\n');
-      expect(dedicatedLink('Talks.md', 'demos', root)).toBe(`/talks/#${siteSlug('Demos <img src="x.svg">')}`);
+      writeFileSync(
+        join(root, 'Talks.md'),
+        '# T\n\n## Demos <img src="x.svg">\n\n## Foundation models ![new](badge.svg)\n',
+      );
+      expect(dedicatedLink('Talks.md', 'demos-', root)).toBe(`/talks/#${siteSlug('Demos <img src="x.svg">')}`);
+      expect(() => dedicatedLink('Talks.md', 'demos', root)).toThrow(/not a GitHub anchor/);
+      // the site id keeps the alt text, as sectionsAfter's heading text does
+      expect(dedicatedLink('Talks.md', 'foundation-models-', root)).toBe('/talks/#foundation-models-new');
+      expect(() => dedicatedLink('Talks.md', 'foundation-models-new', root)).toThrow(/not a GitHub anchor/);
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
