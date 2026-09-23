@@ -44,7 +44,13 @@ export function rewriteCaailLinks(options: { base: string; sourcePath: string })
         node.url = `${base}/${id}/`;
         return;
       }
-      const dedicated = dedicatedLink(repoRel, anchor);
+      let dedicated: string | undefined;
+      try {
+        dedicated = dedicatedLink(repoRel, anchor);
+      } catch (e) {
+        // Name the file holding the bad link, not only the file it points at.
+        throw new Error(`${options.sourcePath}: ${(e as Error).message}`);
+      }
       if (dedicated) {
         node.url = `${base}${dedicated}`;
       } else {

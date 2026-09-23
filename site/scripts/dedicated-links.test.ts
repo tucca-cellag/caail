@@ -2,10 +2,14 @@ import { describe, it, expect } from 'vitest';
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { dedicatedLink, sectionAnchors } from './dedicated-links.ts';
+import { dedicatedLink, sectionAnchors, SECTION_ROUTES } from './dedicated-links.ts';
 import { githubSlug, siteSlug } from '../src/lib/heading-slug.ts';
 import { buildTalksModel } from './parser/talks.js';
-import { buildPrimersModel, rewritePrimerUrl } from './parser/primers.js';
+import { buildPrimersModel, PRIMER_SOURCES, rewritePrimerUrl } from './parser/primers.js';
+import { rewriteCaailLinks } from './remark/rewrite-caail-links.ts';
+import { unified } from 'unified';
+import remarkParse from 'remark-parse';
+import type { Root } from 'mdast';
 
 describe('githubSlug', () => {
   // Expected values are the anchors GitHub renders for these Talks.md headings.
@@ -82,14 +86,45 @@ describe('dedicatedLink', () => {
     expect([...skip.keys()]).toEqual(['demos-1', 'demos', 'demos-2']);
   });
 
-  it('slugs a heading without its inline HTML, as GitHub does', () => {
+  it('keys a heading by GitHub\'s HTML-free slug but targets the id the site renders', () => {
+    // GitHub drops inline HTML before slugging; sectionsAfter keeps it, so
+    // TalksList renders siteSlug('Demos <img src="x.svg">').
     const root = mkdtempSync(join(tmpdir(), 'caail-dl-'));
     try {
       writeFileSync(join(root, 'Talks.md'), '# T\n\n## Demos <img src="x.svg">\n');
-      expect(dedicatedLink('Talks.md', 'demos', root)).toBe('/talks/#demos');
+      expect(dedicatedLink('Talks.md', 'demos', root)).toBe(`/talks/#${siteSlug('Demos <img src="x.svg">')}`);
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
+  });
+
+  it('accepts anchors GitHub resolves beyond top-level headings', () => {
+    // A heading nested in a list, and an explicit <a id>: valid on GitHub, no site
+    // id on /talks/, so they keep the blob rather than failing the build.
+    const root = mkdtempSync(join(tmpdir(), 'caail-dl-'));
+    try {
+      writeFileSync(join(root, 'Talks.md'), '# T\n\n## Real\n\n- item\n\n  ### Nested\n\n<a id="featured"></a>\n');
+      expect(dedicatedLink('Talks.md', 'nested', root)).toBeUndefined();
+      expect(dedicatedLink('Talks.md', 'featured', root)).toBeUndefined();
+      expect(() => dedicatedLink('Talks.md', 'absent', root)).toThrow(/not a GitHub anchor/);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it('falls back to the blob when the repo root has no such file', () => {
+    const root = mkdtempSync(join(tmpdir(), 'caail-dl-'));
+    try {
+      expect(dedicatedLink('Talks.md', 'anything', root)).toBeUndefined();
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it('checks every primer the parser builds', () => {
+    // SECTION_ROUTES is kept by hand; a primer missing from it would silently lose
+    // anchor checking.
+    for (const { file } of PRIMER_SOURCES) expect(SECTION_ROUTES.has(file), file).toBe(true);
   });
 
   it('refuses two sections that would render one site id', () => {
@@ -143,11 +178,20 @@ describe('dedicatedLink', () => {
       url: 'https://github.com/tucca-cellag/caail/blob/main/Primers/AI.md#ai-for-cell-ag-researchers',
       internal: false,
     });
+    // a bare "#" stays a no-op, not a jump to the site root
+    expect(rewritePrimerUrl('#', 'Primers', { sourceFile: 'Primers/AI.md' })).toEqual({ url: '#', internal: true });
     // a same-page fragment in GitHub form is translated to the id PrimerHub renders
     expect(rewritePrimerUrl(`#${githubSlug(first)}`, 'Primers', { sourceFile: 'Primers/AI.md' })).toEqual({
       url: `#${siteSlug(first)}`,
       internal: true,
     });
+  });
+
+  it('names the file holding a bad link, not just the file it points at', () => {
+    const tree = unified().use(remarkParse).parse('[x](./Talks.md#no-such-section)') as Root;
+    expect(() => rewriteCaailLinks({ base: '/caail', sourcePath: 'Software.md' })(tree)).toThrow(
+      /^Software\.md: .*Talks\.md#no-such-section/,
+    );
   });
 
   it('resolves every Talks section from its GitHub anchor', () => {

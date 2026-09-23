@@ -19,11 +19,12 @@
  * derivable too; adding one here is how CAAIL-268 gets fixed, for both
  * rewriters at once.
  */
-import { statSync } from 'node:fs';
+import { existsSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { toString as mdastToString } from 'mdast-util-to-string';
-import type { Heading } from 'mdast';
+import type { Heading, Html } from 'mdast';
+import { visit } from 'unist-util-visit';
 
 import { DEDICATED_ROUTES } from '../src/content/dedicated-routes.ts';
 import { githubSlug, siteSlug } from '../src/lib/heading-slug.ts';
@@ -41,7 +42,10 @@ type AnchorMap = ReadonlyMap<string, string | null>;
 
 export interface HeadingRef {
   depth: number;
+  /** The text GitHub slugs: inline HTML removed. */
   text: string;
+  /** The text the site's section id is built from (the parsers keep inline HTML); defaults to `text`. */
+  siteText?: string;
 }
 
 /**
@@ -54,7 +58,7 @@ export function sectionAnchors(repoRel: string, headings: readonly HeadingRef[])
   const map = new Map<string, string | null>();
   const suffixes = new Map<string, number>();
   const seenSite = new Map<string, string>();
-  for (const { depth, text } of headings) {
+  for (const { depth, text, siteText = text } of headings) {
     // github-slugger: a taken slug gets the next free `-N`, skipping any `-N` an
     // earlier heading already claimed by its own text ("Demos 1" → demos-1).
     const base = githubSlug(text);
@@ -67,7 +71,7 @@ export function sectionAnchors(repoRel: string, headings: readonly HeadingRef[])
     }
     let id: string | null = null;
     if (depth === 2) {
-      id = siteSlug(text);
+      id = siteSlug(siteText);
       const prior = seenSite.get(id);
       if (prior !== undefined) {
         throw new Error(
@@ -92,35 +96,59 @@ function normalizeAnchor(anchor: string): string {
   return a.toLowerCase();
 }
 
-/** Every heading in a canonical file, in document order. */
-function headingsOf(repoRoot: string, repoRel: string): HeadingRef[] {
-  return parseFile(join(repoRoot, repoRel))
-    .children.filter((n): n is Heading => n.type === 'heading')
-    // GitHub slugs the heading's text with inline HTML removed.
-    .map((h) => ({ depth: h.depth, text: mdastToString(h, { includeHtml: false }).trim() }));
+/**
+ * Every heading in a canonical file, in document order, including headings nested
+ * in lists or blockquotes. GitHub slugs a heading's text with inline HTML removed;
+ * the site parsers (sectionsAfter) keep it, so the two texts are carried apart.
+ */
+function headingsOf(tree: ReturnType<typeof parseFile>): HeadingRef[] {
+  const out: HeadingRef[] = [];
+  visit(tree, 'heading', (h: Heading) => {
+    out.push({
+      depth: h.depth,
+      text: mdastToString(h, { includeHtml: false }).trim(),
+      siteText: mdastToString(h).trim(),
+    });
+  });
+  return out;
+}
+
+/** Explicit HTML targets (`<a id="x">`, `name="x"`), which GitHub also resolves. */
+function htmlTargets(tree: ReturnType<typeof parseFile>): string[] {
+  const out: string[] = [];
+  visit(tree, 'html', (n: Html) => {
+    for (const m of n.value.matchAll(/\b(?:id|name)\s*=\s*["']([^"']+)["']/gi)) out.push(m[1].toLowerCase());
+  });
+  return out;
 }
 
 /**
  * Routes whose ids are all derived here. Each renders exactly one
  * `id={siteSlug(heading)}` per `##` section (TalksList, PrimerHub; tests pin
- * the headings to each parser's sections).
+ * the headings to each parser's sections, and every primer to this set).
  */
-const SECTION_ROUTES: ReadonlySet<string> = new Set(['Talks.md', 'Primers/CellAg.md', 'Primers/AI.md']);
+export const SECTION_ROUTES: ReadonlySet<string> = new Set(['Talks.md', 'Primers/CellAg.md', 'Primers/AI.md']);
 
 /**
  * Keyed on repo root + file and checked against the file's mtime, so a
- * long-lived `astro dev` process picks up a renamed heading, and a build against
- * a fixture root never validates against the real repository's headings.
+ * long-lived `astro dev` process picks up a renamed heading. The primer parser
+ * passes its own repo root through; the prose rewriter (and the catalog and
+ * awesome-lists parsers that use it) resolves against this repository.
  */
 const cache = new Map<string, { mtimeMs: number; map: AnchorMap }>();
 
 function anchorsFor(repoRel: string, repoRoot: string): AnchorMap | undefined {
   if (!SECTION_ROUTES.has(repoRel)) return undefined;
-  const { mtimeMs } = statSync(join(repoRoot, repoRel));
+  const path = join(repoRoot, repoRel);
+  // A root without the file (a fixture) has nothing to check against: blob fallback.
+  if (!existsSync(path)) return undefined;
+  const { mtimeMs } = statSync(path);
   const key = `${repoRoot}\0${repoRel}`;
   const hit = cache.get(key);
   if (hit && hit.mtimeMs === mtimeMs) return hit.map;
-  const map = sectionAnchors(repoRel, headingsOf(repoRoot, repoRel));
+  const tree = parseFile(path);
+  const map = new Map(sectionAnchors(repoRel, headingsOf(tree)));
+  for (const t of htmlTargets(tree)) if (!map.has(t)) map.set(t, null);
   cache.set(key, { mtimeMs, map });
   return map;
 }

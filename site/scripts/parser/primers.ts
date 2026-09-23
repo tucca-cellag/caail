@@ -34,7 +34,7 @@ import { SITE_BASE } from '../../src/content/site-config.ts';
 const REPO_ROOT: string = fileURLToPath(new URL('../../../', import.meta.url));
 
 /** The primers to build, in sidebar/display order: { slug, repo-relative file }. */
-const PRIMER_SOURCES: ReadonlyArray<{ slug: string; file: string }> = [
+export const PRIMER_SOURCES: ReadonlyArray<{ slug: string; file: string }> = [
   { slug: 'cell-ag', file: 'Primers/CellAg.md' },
   { slug: 'ai', file: 'Primers/AI.md' },
 ];
@@ -66,7 +66,7 @@ export function rewritePrimerUrl(
   const { sourceFile, repoRoot = REPO_ROOT } = opts;
   if (/^[a-z]+:/i.test(url) || url.startsWith('//')) return { url, internal: false };
   if (url.startsWith('#')) {
-    if (!sourceFile) return { url, internal: true };
+    if (!sourceFile || url === '#') return { url, internal: true };
     const onPage = dedicatedLink(sourceFile, url.slice(1), repoRoot);
     // A real GitHub heading the hub renders no id for: its GitHub view deep-links.
     if (!onPage) return { url: `${GITHUB_BLOB_BASE}/${sourceFile}${url}`, internal: false };
@@ -135,7 +135,13 @@ export function buildPrimersModel(repoRoot: string = REPO_ROOT): Primers {
         visit(node, 'listItem', (li: ListItem) => {
           const base = itemFromListItem(li);
           if (!base) return;
-          const { url, internal } = rewritePrimerUrl(base.url, srcDir, { sourceFile: file, repoRoot });
+          let rewritten: { url: string; internal: boolean };
+          try {
+            rewritten = rewritePrimerUrl(base.url, srcDir, { sourceFile: file, repoRoot });
+          } catch (e) {
+            throw new Error(`${file}: ${(e as Error).message}`);
+          }
+          const { url, internal } = rewritten;
           items.push({ ...base, url, internal });
         });
       }
