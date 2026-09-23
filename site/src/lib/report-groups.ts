@@ -96,6 +96,9 @@ export function seriesAnchor(current: Pick<ReportRecord, 'id' | 'seriesSlug'>): 
     return `series-${editionAnchor(current.id)}`;
   }
   const base = groupSlug(current.seriesSlug);
+  if (base === '') {
+    throw new Error(`report-groups: seriesSlug "${current.seriesSlug}" (on ${current.id}) slugifies to nothing.`);
+  }
   if (base.startsWith('report-')) {
     throw new Error(
       `report-groups: seriesSlug "${current.seriesSlug}" (on ${current.id}) slugifies to "${base}", ` +

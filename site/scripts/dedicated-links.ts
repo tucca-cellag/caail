@@ -52,13 +52,19 @@ export interface HeadingRef {
  */
 export function sectionAnchors(repoRel: string, headings: readonly HeadingRef[]): AnchorMap {
   const map = new Map<string, string | null>();
-  const seenGithub = new Map<string, number>();
+  const suffixes = new Map<string, number>();
   const seenSite = new Map<string, string>();
   for (const { depth, text } of headings) {
+    // github-slugger: a taken slug gets the next free `-N`, skipping any `-N` an
+    // earlier heading already claimed by its own text ("Demos 1" → demos-1).
     const base = githubSlug(text);
-    const n = seenGithub.get(base) ?? 0;
-    seenGithub.set(base, n + 1);
-    const key = n === 0 ? base : `${base}-${n}`;
+    let key = base;
+    if (map.has(key)) {
+      let n = suffixes.get(base) ?? 0;
+      do key = `${base}-${++n}`;
+      while (map.has(key));
+      suffixes.set(base, n);
+    }
     let id: string | null = null;
     if (depth === 2) {
       id = siteSlug(text);
@@ -90,7 +96,8 @@ function normalizeAnchor(anchor: string): string {
 function headingsOf(repoRoot: string, repoRel: string): HeadingRef[] {
   return parseFile(join(repoRoot, repoRel))
     .children.filter((n): n is Heading => n.type === 'heading')
-    .map((h) => ({ depth: h.depth, text: mdastToString(h).trim() }));
+    // GitHub slugs the heading's text with inline HTML removed.
+    .map((h) => ({ depth: h.depth, text: mdastToString(h, { includeHtml: false }).trim() }));
 }
 
 /**

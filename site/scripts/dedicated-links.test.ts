@@ -64,6 +64,26 @@ describe('dedicatedLink', () => {
     expect(map.get('aiml-talks-1')).toBe('aiml-talks');
   });
 
+  it('skips a suffix an earlier heading already claimed, as github-slugger does', () => {
+    // GitHub: Demos → demos, Demos → demos-1, "Demos 1" → demos-1 is taken → demos-1-1.
+    const map = sectionAnchors('X.md', [
+      { depth: 3, text: 'Demos' },
+      { depth: 3, text: 'Demos' },
+      { depth: 3, text: 'Demos 1' },
+    ]);
+    expect([...map.keys()]).toEqual(['demos', 'demos-1', 'demos-1-1']);
+  });
+
+  it('slugs a heading without its inline HTML, as GitHub does', () => {
+    const root = mkdtempSync(join(tmpdir(), 'caail-dl-'));
+    try {
+      writeFileSync(join(root, 'Talks.md'), '# T\n\n## Demos <img src="x.svg">\n');
+      expect(dedicatedLink('Talks.md', 'demos', root)).toBe('/talks/#demos');
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
   it('refuses two sections that would render one site id', () => {
     // Different GitHub anchors, same single-dash site id: a duplicate id on the page.
     expect(() =>
@@ -109,6 +129,11 @@ describe('dedicatedLink', () => {
     expect(rewritePrimerUrl(`./AI.md#${githubSlug(first)}`, 'Primers')).toEqual({
       url: `/caail/primers/ai/#${siteSlug(first)}`,
       internal: true,
+    });
+    // a same-page link to a real heading the hub gives no id (the H1) → its GitHub view
+    expect(rewritePrimerUrl('#ai-for-cell-ag-researchers', 'Primers', { sourceFile: 'Primers/AI.md' })).toEqual({
+      url: 'https://github.com/tucca-cellag/caail/blob/main/Primers/AI.md#ai-for-cell-ag-researchers',
+      internal: false,
     });
     // a same-page fragment in GitHub form is translated to the id PrimerHub renders
     expect(rewritePrimerUrl(`#${githubSlug(first)}`, 'Primers', { sourceFile: 'Primers/AI.md' })).toEqual({

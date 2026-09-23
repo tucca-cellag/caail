@@ -18,6 +18,10 @@ describe('seriesAnchor', () => {
     expect(() => seriesAnchor({ id: 'report:a', seriesSlug: 'Report_X' })).toThrow(/report-/);
   });
 
+  it('rejects a series slug that slugifies to nothing, which would give "series-"', () => {
+    expect(() => seriesAnchor({ id: 'report:a', seriesSlug: '--' })).toThrow(/slugifies to nothing/);
+  });
+
   it('rejects an empty series slug, which would merge unrelated reports', () => {
     expect(() => seriesAnchor({ id: 'report:a', seriesSlug: '' })).toThrow(/empty seriesSlug/);
   });
