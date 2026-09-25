@@ -19,7 +19,7 @@ A maintainer will incorporate accepted suggestions. This is the right path if yo
 
 ### Correcting an entry that is already here
 
-Every catalogued item carries a permanent id (`paper:214`, `sw:cellpose`, `db:string`, `ds:chickengtex-portal`), and on the documentation site the entry cards on the Papers, Software, Databases and Datasets pages each have a **Report an issue** link that carries their own id to the [report page](https://tucca-cellag.github.io/caail/report/). Starting from there is worth the click: a correction naming the id points at exactly one entry, where one describing a page is a search before it is a fix. That page also offers email and Slack routes for anyone without a GitHub account.
+Every catalogued item carries a permanent id (`paper:214`, `sw:cellpose`, `db:string`, `ds:chickengtex-portal`), and on the documentation site the entry cards on the Papers, Software, Databases and Datasets pages each have a **Report an issue** link that carries their own id to the [report page](https://caail.tufts.edu/report/). Starting from there is worth the click: a correction naming the id points at exactly one entry, where one describing a page is a search before it is a fix. That page also offers email and Slack routes for anyone without a GitHub account.
 
 Rows in a dataset page's `## Complete data inventory` table are listed rather than carded, so they have no such link. Quote the accession and the page instead, and a curator can find the row from that.
 
@@ -110,7 +110,7 @@ The matrix and the `## References` list must be kept in sync:
 
 Before opening the PR, double-check that every matrix `[N](#N)` you added resolves to a reference entry, and that your new reference is reachable from at least one matrix cell.
 
-**Cite the methods section, not the abstract.** A placement is a claim about what a paper *did*, and papers routinely name one method in the abstract while the methods section names three. Tell us which section you read from and, where the paper's own naming is unhelpful, quote the heading. [Curation Methodology](https://tucca-cellag.github.io/caail/curation/) describes how a maintainer verifies a placement and what makes some papers harder than others.
+**Cite the methods section, not the abstract.** A placement is a claim about what a paper *did*, and papers routinely name one method in the abstract while the methods section names three. Tell us which section you read from and, where the paper's own naming is unhelpful, quote the heading. [Curation Methodology](https://caail.tufts.edu/curation/) describes how a maintainer verifies a placement and what makes some papers harder than others.
 
 ### Adding a review or perspective paper
 

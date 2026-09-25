@@ -49,10 +49,10 @@ test('other-resources renders sections, a native TOC, and rewritten links', asyn
   // its own native heading TOC (real markdown headings)
   await expect(page.locator('starlight-toc a').filter({ hasText: 'Editorials & Opinion' })).toHaveCount(1);
   // internal links rewritten: rendered prose page → site route; no raw .md
-  await expect(page.locator('main a[href="/caail/reference-works/"]').first()).toBeVisible();
+  await expect(page.locator('main a[href="/reference-works/"]').first()).toBeVisible();
   // a bare link to a card page → its dedicated route, never a GitHub blob (CAAIL-374)
-  await expect(page.locator('main a[href="/caail/field-reports/"]').first()).toBeVisible();
-  await expect(page.locator('main a[href="/caail/awesome-lists/"]').first()).toBeVisible();
+  await expect(page.locator('main a[href="/field-reports/"]').first()).toBeVisible();
+  await expect(page.locator('main a[href="/awesome-lists/"]').first()).toBeVisible();
   await expect(page.locator('main a[href*="/blob/main/FieldReports.md"]')).toHaveCount(0);
   await expect(page.locator('main a[href*="/blob/main/AwesomeLists.md"]')).toHaveCount(0);
   // an ANCHORED link to a dedicated route keeps the GitHub blob, which deep-links
@@ -78,7 +78,7 @@ test('ai-agents-foundation-models renders its sections and rewritten links', asy
   // the Virtual Cell section now lives here, not on /other-resources/
   await expect(page.getByRole('heading', { name: 'Virtual Cell Initiative & Single-Cell Foundation Models' })).toBeVisible();
   // a rendered-page cross-link resolves to a site route (Datasets/Benchmarks.md → route)
-  await expect(page.locator('main a[href="/caail/datasets/benchmarks/"]').first()).toBeVisible();
+  await expect(page.locator('main a[href="/datasets/benchmarks/"]').first()).toBeVisible();
   // an anchored cross-link to a dedicated route keeps its GitHub blob (Software.md#…)
   await expect(
     page.locator('main a[href^="https://github.com/tucca-cellag/caail/blob/main/Software.md#"]').first(),
@@ -111,7 +111,7 @@ test('taxonomy renders a single h1 and rewrites its internal links', async ({ pa
   await expect(page.locator('h1')).toHaveCount(1);
   // rewriteCaailLinks ran: the lone internal ./Papers.md link became its
   // dedicated route (the Papers Explorer) instead of a dead ./Papers.md.
-  await expect(page.locator('main a[href="/caail/papers/explorer/"]').first()).toBeVisible();
+  await expect(page.locator('main a[href="/papers/explorer/"]').first()).toBeVisible();
   // no raw repo-relative .md link leaks through
   await expect(page.locator('main a[href$=".md"]:not([href*="github.com"])')).toHaveCount(0);
 });
@@ -166,7 +166,7 @@ test('funding renders its bodies + opportunities and rewritten links', async ({ 
   await expect(page.getByRole('heading', { name: 'Funding Organizations' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Funding Opportunities & Programs' })).toBeVisible();
   // a rendered-prose cross-link resolves to a site route (./OtherResources.md → route)
-  await expect(page.locator('main a[href="/caail/other-resources/"]').first()).toBeVisible();
+  await expect(page.locator('main a[href="/other-resources/"]').first()).toBeVisible();
   // no raw repo-relative .md link leaks through
   await expect(page.locator('main a[href$=".md"]:not([href*="github.com"])')).toHaveCount(0);
 });
@@ -220,7 +220,7 @@ test('curation renders its evidence tables and dates its coverage figures', asyn
   // the failure, and "Measured recently" would pass a presence check.
   await expect(page.locator('main')).toContainText(/Measured \d{4}-\d{2}-\d{2}\./);
   // Cross-links resolve: Taxonomy is a rendered route, Papers.md is not.
-  await expect(page.locator('main a[href="/caail/taxonomy/"]').first()).toBeVisible();
+  await expect(page.locator('main a[href="/taxonomy/"]').first()).toBeVisible();
   await expect(page.locator('main a[href$=".md"]:not([href*="github.com"])')).toHaveCount(0);
 });
 

@@ -57,11 +57,11 @@ export const OPENAPI_FILE = 'openapi.json';
 /**
  * Where the files sit on the deployed site. With no `servers` block the OpenAPI default
  * base is `/`, so these resolve against whatever origin the document was fetched from —
- * which is exactly right for https://tucca-cellag.github.io/caail/api/ and wrong for the
+ * which is exactly right for the deployed site's /api/ and wrong for the
  * raw.githubusercontent mirror, whose prefix differs. `info.description` says so rather
  * than leaving a consumer to discover it by 404.
  *
- * The `/caail/` segment is Astro's `base`, read from site-config.ts, which
+ * Any segment before `/api/` is Astro's `base`, read from site-config.ts, which
  * astro.config.mjs also imports; the parser never loads the Astro config itself (that
  * would drag the whole plugin graph in for one string). `openapi.test.ts` asserts the
  * config really does read it, so the two cannot quietly part.

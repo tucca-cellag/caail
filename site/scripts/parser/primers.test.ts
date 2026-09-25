@@ -6,6 +6,7 @@
  *      against the real canonical Primers/*.md files.
  */
 import { describe, it, expect } from 'vitest';
+import { SITE_BASE } from '../../src/content/site-config.ts';
 
 import { buildPrimersModel, rewritePrimerUrl } from './primers.js';
 
@@ -24,35 +25,35 @@ describe('rewritePrimerUrl', () => {
 
   it('maps dedicated repo-root files to site routes (internal)', () => {
     expect(rewritePrimerUrl('../Papers.md', 'Primers')).toEqual({
-      url: '/caail/papers/explorer/',
+      url: `${SITE_BASE}/papers/explorer/`,
       internal: true,
     });
-    expect(rewritePrimerUrl('../Software.md', 'Primers').url).toBe('/caail/software/');
-    expect(rewritePrimerUrl('../AwesomeLists.md', 'Primers').url).toBe('/caail/awesome-lists/');
-    expect(rewritePrimerUrl('../FieldReports.md', 'Primers').url).toBe('/caail/field-reports/');
+    expect(rewritePrimerUrl('../Software.md', 'Primers').url).toBe(`${SITE_BASE}/software/`);
+    expect(rewritePrimerUrl('../AwesomeLists.md', 'Primers').url).toBe(`${SITE_BASE}/awesome-lists/`);
+    expect(rewritePrimerUrl('../FieldReports.md', 'Primers').url).toBe(`${SITE_BASE}/field-reports/`);
     // an anchor a card page can't be shown to render → GitHub blob, not a dead on-site anchor
     expect(rewritePrimerUrl('../Papers.md#50', 'Primers')).toEqual({
       url: 'https://github.com/tucca-cellag/caail/blob/main/Papers.md#50',
       internal: false,
     });
     expect(rewritePrimerUrl('../Talks.md#applied-aiml-for-cellular-agriculture', 'Primers').url).toBe(
-      '/caail/talks/#applied-ai-ml-for-cellular-agriculture',
+      `${SITE_BASE}/talks/#applied-ai-ml-for-cellular-agriculture`,
     );
   });
 
   it('maps canonical-prose pages and keeps the section anchor', () => {
     expect(rewritePrimerUrl('../OtherResources.md#cell-ag-ecosystem-initiatives', 'Primers')).toEqual({
-      url: '/caail/other-resources/#cell-ag-ecosystem-initiatives',
+      url: `${SITE_BASE}/other-resources/#cell-ag-ecosystem-initiatives`,
       internal: true,
     });
-    expect(rewritePrimerUrl('../ReferenceWorks.md', 'Primers').url).toBe('/caail/reference-works/');
+    expect(rewritePrimerUrl('../ReferenceWorks.md', 'Primers').url).toBe(`${SITE_BASE}/reference-works/`);
     expect(rewritePrimerUrl('../ResearchAreas/MediaOptimization.md', 'Primers').url).toBe(
-      '/caail/research-areas/mediaoptimization/',
+      `${SITE_BASE}/research-areas/mediaoptimization/`,
     );
   });
 
   it('maps a sibling primer', () => {
-    expect(rewritePrimerUrl('./AI.md', 'Primers').url).toBe('/caail/primers/ai/');
+    expect(rewritePrimerUrl('./AI.md', 'Primers').url).toBe(`${SITE_BASE}/primers/ai/`);
   });
 
   it('falls back to a GitHub blob for uncatalogued .md (not internal)', () => {
@@ -97,7 +98,7 @@ describe('buildPrimersModel', () => {
     const items = model.primers.flatMap((p) => p.sections.flatMap((s) => s.items));
     const internal = items.filter((i) => i.internal);
     expect(internal.length).toBeGreaterThan(0);
-    expect(internal.every((i) => i.url.startsWith('/caail/'))).toBe(true);
+    expect(internal.every((i) => i.url.startsWith(`${SITE_BASE}/`))).toBe(true);
     // Internal links are never videos/playlists (those are always external media).
     expect(internal.every((i) => i.kind === 'link')).toBe(true);
   });

@@ -5,10 +5,13 @@
  */
 
 /** The deployed origin (no trailing slash). */
-export const SITE_ORIGIN = 'https://tucca-cellag.github.io';
+export const SITE_ORIGIN = 'https://caail.tufts.edu';
 
-/** The path the site is served under (no trailing slash). */
-export const SITE_BASE = '/caail';
+/**
+ * The path the site is served under (no trailing slash). Empty at a domain root:
+ * `'/'` would break the contract, since code builds `${SITE_BASE}/favicon.ico`.
+ */
+export const SITE_BASE = '';
 
 /** Origin + base, with a trailing slash: the site root as an absolute URL. */
 export const SITE_URL = `${SITE_ORIGIN}${SITE_BASE}/`;

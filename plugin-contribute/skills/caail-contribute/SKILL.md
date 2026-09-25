@@ -180,7 +180,7 @@ authors.
 
 ### Route 2, no GitHub account
 
-Point at <https://tucca-cellag.github.io/caail/community/>, where proposing an addition is handled
+Point at <https://caail.tufts.edu/community/>, where proposing an addition is handled
 and where suggestions go in Slack without a GitHub account. Hand over the summary you would have
 put in the issue, so the user has something to paste rather than starting again. Offer this without
 being asked if the user says they have no GitHub account, and never assume they have one.

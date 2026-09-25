@@ -27,8 +27,8 @@ import { renderMarkdown } from '../lib/markdown';
 const CHAT_API = import.meta.env.PUBLIC_CAAIL_CHAT_API as string | undefined;
 const WORD_LIMIT = 200;
 /**
- * BASE_URL is "/caail" inside an island rather than "/caail/", so it is
- * normalised once here the same way `axis-links.ts` and `NetworkGraph.tsx` do.
+ * BASE_URL may or may not end in a slash (under a subpath base an island gets
+ * "/docs", not "/docs/"), so it is normalised once here the same way `axis-links.ts` and `NetworkGraph.tsx` do.
  */
 const BASE = (import.meta.env.BASE_URL ?? '/').replace(/\/$/, '');
 /** Dismissal lasts the browsing session, not forever — sessionStorage, not local. */

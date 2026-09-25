@@ -5,7 +5,7 @@
     "title": "CAAIL agent API",
     "version": "2026-09-23",
     "summary": "Static JSON endpoints describing the Cellular Agriculture AI Library.",
-    "description": "Static JSON files, served by GET, with nothing to install or authenticate. Generated from the same schemas that validate the payloads, in the same build step that writes them. The paths below are absolute on the GitHub Pages origin, https://tucca-cellag.github.io. The same files are mirrored per-filename at https://raw.githubusercontent.com/tucca-cellag/caail/main/site/public/api/, which some clients can reach when Pages is not allow-listed. Resolve that mirror by filename; do not join the paths below onto it.",
+    "description": "Static JSON files, served by GET, with nothing to install or authenticate. Generated from the same schemas that validate the payloads, in the same build step that writes them. The paths below are absolute on the GitHub Pages origin, https://caail.tufts.edu. The same files are mirrored per-filename at https://raw.githubusercontent.com/tucca-cellag/caail/main/site/public/api/, which some clients can reach when Pages is not allow-listed. Resolve that mirror by filename; do not join the paths below onto it.",
     "license": {
       "name": "MIT (CAAIL curation). Linked third-party resources keep their own licenses.",
       "identifier": "MIT"
@@ -13,7 +13,7 @@
   },
   "x-corpus-date": "2026-09-23",
   "paths": {
-    "/caail/api/index.json": {
+    "/api/index.json": {
       "get": {
         "operationId": "getManifest",
         "summary": "Corpus manifest",
@@ -32,7 +32,7 @@
         }
       }
     },
-    "/caail/api/matrix.json": {
+    "/api/matrix.json": {
       "get": {
         "operationId": "getMatrix",
         "summary": "The complete AI-method × research-area grid",
@@ -51,7 +51,7 @@
         }
       }
     },
-    "/caail/api/papers-index.json": {
+    "/api/papers-index.json": {
       "get": {
         "operationId": "getPapersIndex",
         "summary": "Every reference, one compact row each",
@@ -70,7 +70,7 @@
         }
       }
     },
-    "/caail/api/papers.json": {
+    "/api/papers.json": {
       "get": {
         "operationId": "getPapers",
         "summary": "Every reference, in full",
@@ -89,7 +89,7 @@
         }
       }
     },
-    "/caail/api/catalog-index.json": {
+    "/api/catalog-index.json": {
       "get": {
         "operationId": "getCatalogIndex",
         "summary": "Every tool and database, one compact row each",
@@ -108,7 +108,7 @@
         }
       }
     },
-    "/caail/api/catalog.json": {
+    "/api/catalog.json": {
       "get": {
         "operationId": "getCatalog",
         "summary": "Software and databases, in full",
@@ -127,7 +127,7 @@
         }
       }
     },
-    "/caail/api/datasets.json": {
+    "/api/datasets.json": {
       "get": {
         "operationId": "getDatasets",
         "summary": "Curated dataset entries and per-species inventory",
@@ -146,7 +146,7 @@
         }
       }
     },
-    "/caail/api/reports.json": {
+    "/api/reports.json": {
       "get": {
         "operationId": "getReports",
         "summary": "Field reports — recurring institutional state-of-field surveys",
@@ -165,7 +165,7 @@
         }
       }
     },
-    "/caail/api/topics.json": {
+    "/api/topics.json": {
       "get": {
         "operationId": "getTopics",
         "summary": "Subject tree and inverted index",
@@ -184,7 +184,7 @@
         }
       }
     },
-    "/caail/api/taxonomy.json": {
+    "/api/taxonomy.json": {
       "get": {
         "operationId": "getTaxonomy",
         "summary": "What each method, area and subject theme means in CAAIL",

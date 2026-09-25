@@ -37,6 +37,7 @@ import { fileURLToPath } from 'node:url';
 import { describe, it, expect } from 'vitest';
 
 import { curatorCoverage } from '../../src/lib/topic-curators.js';
+import { SITE_URL } from '../../src/content/site-config.ts';
 import { MATRIX_SECTION, PLACEMENT_NOTE, SCOPE_NOTE } from './agent-api.js';
 import { buildLlmsFullText, splitFrontmatter } from './llms-full.js';
 
@@ -149,7 +150,7 @@ describe('curation page: numbers that another source already knows', () => {
       /graded by evaluators/i,
     );
     // And the API points a reader at the full description rather than restating it.
-    expect(PLACEMENT_NOTE).toContain('/caail/curation/');
+    expect(PLACEMENT_NOTE).toContain(`${SITE_URL}curation/`);
   });
 
   it('quotes SCOPE_NOTE verbatim, capitalisation included', () => {

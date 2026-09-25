@@ -1,7 +1,8 @@
 import { describe, it, expect, vi } from 'vitest';
 import { resolveSink, outboundEvent, normalizeQuery, parseResultCount } from './analytics';
+import { SITE_BASE, SITE_URL } from '../content/site-config';
 
-const ORIGIN = 'https://tucca-cellag.github.io/caail/';
+const ORIGIN = SITE_URL;
 
 describe('resolveSink', () => {
   it('returns null when no analytics tag is installed', () => {
@@ -133,8 +134,8 @@ describe('outboundEvent', () => {
   });
 
   it('returns null for same-origin links, including relative ones', () => {
-    expect(outboundEvent('/caail/papers/explorer/', ORIGIN)).toBeNull();
-    expect(outboundEvent('https://tucca-cellag.github.io/caail/software/', ORIGIN)).toBeNull();
+    expect(outboundEvent(`${SITE_BASE}/papers/explorer/`, ORIGIN)).toBeNull();
+    expect(outboundEvent(`${SITE_URL}software/`, ORIGIN)).toBeNull();
   });
 
   it('returns null for non-web schemes', () => {

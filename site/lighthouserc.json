@@ -4,8 +4,8 @@
       "startServerCommand": "pnpm preview --port 4321",
       "startServerReadyPattern": "localhost:4321",
       "url": [
-        "http://localhost:4321/caail/",
-        "http://localhost:4321/caail/papers/explorer/"
+        "http://localhost:4321/",
+        "http://localhost:4321/papers/explorer/"
       ],
       "numberOfRuns": 3
     },

@@ -81,8 +81,8 @@ export function isItemId(value: unknown): value is string {
 /**
  * Link to the report page for one entry.
  *
- * `base` is `BASE_URL`, which is `"/caail/"` in `.astro` files but `"/caail"` inside a
- * Preact island — normalised here so callers need not remember which they are in.
+ * `base` is `BASE_URL`, which under a subpath base is `"/docs/"` in `.astro` files but
+ * `"/docs"` inside a Preact island, and `"/"` at a domain root — normalised here so callers need not remember which they are in.
  */
 export function reportHref(base: string, itemId: string): string {
   const root = (base || '/').replace(/\/$/, '');

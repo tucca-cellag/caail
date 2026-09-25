@@ -26,7 +26,7 @@ body:
     attributes:
       label: Where you saw it (optional)
       description: The address of the page you were reading, if you have it to hand.
-      placeholder: https://tucca-cellag.github.io/caail/papers/explorer/
+      placeholder: https://caail.tufts.edu/papers/explorer/
 
   # An input rather than a dropdown, because a dropdown cannot be prefilled: GitHub matches
   # a query parameter to a field's id, and for a dropdown that parameter does not select an

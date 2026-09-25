@@ -23,13 +23,40 @@ const SITE_DIR = fileURLToPath(new URL('../../', import.meta.url));
 const REPO_DIR = fileURLToPath(new URL('../../../', import.meta.url));
 
 /**
+ * Where the site used to deploy. After a move, a leftover copy of a retired value
+ * is the thing this file exists to catch, and a sweep for the current value alone
+ * cannot see it: at a domain root the current base is empty, so no code can
+ * "spell it out" and a stale `/caail/` link would pass. Append on every move;
+ * never remove an entry.
+ */
+const RETIRED_ORIGINS = ['https://tucca-cellag.github.io'];
+const RETIRED_BASES = ['/caail'];
+
+/** Every base code must not hand-type: the current one (when non-empty) and every retired one. */
+const SWEPT_BASES = [SITE_BASE, ...RETIRED_BASES].filter((b) => b !== '');
+const SWEPT_ORIGINS = [SITE_ORIGIN, ...RETIRED_ORIGINS];
+
+const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&');
+const anyOf = (values: string[]) => new RegExp(values.map(escapeRe).join('|'));
+// A base as the FIRST path segment of a URL, wherever the URL starts: after a
+// quote, after an interpolation (`localhost:${PORT}/caail/`), or after a host
+// ('https://host/caail'). A later segment that happens to be spelled the same
+// (the repo name tucca-cellag/caail, the Slack workspace /t/caail) is not a copy
+// of the base; repo coordinates are CAAIL-405.
+const firstSegmentRe = (bases: string[]) =>
+  new RegExp(
+    `(?:['"\`}]|(?:localhost|[\\w-]+\\.[a-z]{2,})(?::\\d+)?)(?:${bases.map(escapeRe).join('|')})(?=[/'"\`)\\s]|$)`,
+  );
+const originRe = anyOf(SWEPT_ORIGINS);
+const baseRe = firstSegmentRe(SWEPT_BASES);
+
+/**
  * Files allowed to spell the origin or base out in code, each for a reason a
  * derived value cannot serve.
  */
 const ALLOWED: Record<string, string> = {
   'src/content/site-config.ts': 'the one definition',
   'scripts/favicons.mjs': 'a one-off generator run with plain `node`, which cannot import TypeScript (pinned below)',
-  'src/components/SiteTitle.astro': 'links to the TUCCA org hub at the origin root, a different site that would not move with CAAIL',
   'src/content/docs/privacy.mdx': 'reader-facing disclosure prose naming where the site is published',
 };
 
@@ -44,7 +71,7 @@ const PINNED: Array<[file: string, mustContain: string]> = [
   ['site/public/robots.txt', SITE_URL],
   ['site/public/llms.txt', SITE_URL],
   ['site/public/site.webmanifest', `"start_url": "${SITE_BASE}/"`],
-  ['site/lighthouserc.json', `${SITE_BASE}/`],
+  ['site/lighthouserc.json', `"http://localhost:4321${SITE_BASE}/"`],
   ['site/scripts/favicons.mjs', `start_url: '${SITE_BASE}/'`],
   ['workers/events/wrangler.toml', `ALLOWED_ORIGIN = "${SITE_ORIGIN}"`],
   ['workers/events/src/index.test.ts', `'${SITE_ORIGIN}'`],
@@ -58,6 +85,21 @@ const PINNED: Array<[file: string, mustContain: string]> = [
 ];
 
 describe('site-config', () => {
+  it('sweeps with patterns that can both match and miss', () => {
+    // An empty base alternative would make baseRe match every quote character,
+    // and the sweeps below would then fail on everything or, inverted, pass on
+    // nothing. Pin both directions so neither can happen silently.
+    expect(SWEPT_BASES.length).toBeGreaterThan(0);
+    for (const b of SWEPT_BASES) {
+      expect(baseRe.test(`href="${b}/papers/"`)).toBe(true);
+      expect(baseRe.test(`fetch('https://example.org${b}/api')`)).toBe(true);
+    }
+    for (const o of SWEPT_ORIGINS) expect(originRe.test(`'${o}/x'`)).toBe(true);
+    expect(baseRe.test(`href="/papers/"`)).toBe(false);
+    expect(baseRe.test(`'https://github.com/tucca-cellag/caail'`)).toBe(false);
+    expect(originRe.test(`'https://example.org/'`)).toBe(false);
+  });
+
   it('composes SITE_URL from the origin and base', () => {
     expect(SITE_URL).toBe(`${SITE_ORIGIN}${SITE_BASE}/`);
   });
@@ -83,15 +125,6 @@ describe('site-config', () => {
       .filter((f) => /\.(ts|tsx|mjs|js|astro|css)$/.test(f) && !/\.test\.tsx?$/.test(f) && !(f in ALLOWED));
     // An empty file list would pass vacuously; the tree has well over a hundred.
     expect(files.length).toBeGreaterThan(100);
-    const originRe = new RegExp(SITE_ORIGIN.replace(/[.]/g, '\\.'));
-    // The base as the FIRST path segment of a URL, wherever the URL starts: after a
-    // quote, after an interpolation (`localhost:${PORT}/caail/`), or after a host
-    // ('https://host/caail'). A later segment that happens to be spelled the same
-    // (the repo name tucca-cellag/caail, the Slack workspace /t/caail) is not a copy
-    // of the base; repo coordinates are CAAIL-405.
-    const baseRe = new RegExp(
-      `(?:['"\`}]|(?:localhost|[\\w-]+\\.[a-z]{2,})(?::\\d+)?)${SITE_BASE}(?=[/'"\`)\\s]|$)`,
-    );
     const offenders: string[] = [];
     for (const f of files) {
       readFileSync(join(SITE_DIR, f), 'utf-8')
@@ -111,7 +144,9 @@ describe('site-config', () => {
   it('is the base every MDX page links under', () => {
     // Markdown links in MDX are not base-rewritten, so each spells the base out.
     // They cannot import it; instead every root-relative link must start with the
-    // current base, so changing site-config.ts fails here and names each page.
+    // current base and with no retired one, so changing site-config.ts fails here
+    // and names each page. At a domain root the first half holds for every
+    // root-relative link, so the retired-base half is what still catches a copy.
     const pages = execFileSync(
       'git',
       ['ls-files', '--cached', '--others', '--exclude-standard', 'src/content/docs'],
@@ -120,7 +155,6 @@ describe('site-config', () => {
       .split('\n')
       .filter((f) => f.endsWith('.mdx'));
     expect(pages.length).toBeGreaterThan(5);
-    const originRe = new RegExp(SITE_ORIGIN.replace(/[.]/g, '\\.'));
     const bad: string[] = [];
     let seen = 0;
     for (const f of pages) {
@@ -129,9 +163,11 @@ describe('site-config', () => {
         const target = m[1] ?? m[2];
         if (target.startsWith('//')) continue; // protocol-relative, not site-relative
         seen++;
-        if (!target.startsWith(`${SITE_BASE}/`)) bad.push(`${f}: ${target}`);
+        const retired = RETIRED_BASES.some((b) => target === b || target.startsWith(`${b}/`));
+        if (!target.startsWith(`${SITE_BASE}/`) || retired) bad.push(`${f}: ${target}`);
       }
-      if (!(f in ALLOWED) && originRe.test(text)) bad.push(`${f}: spells out ${SITE_ORIGIN}`);
+      const origin = f in ALLOWED ? null : text.match(originRe);
+      if (origin) bad.push(`${f}: spells out ${origin[0]}`);
     }
     expect(seen).toBeGreaterThan(0);
     expect(bad).toEqual([]);
@@ -140,5 +176,21 @@ describe('site-config', () => {
   it('matches every static copy that cannot import it', () => {
     const stale = PINNED.filter(([file, want]) => !readFileSync(join(REPO_DIR, file), 'utf-8').includes(want));
     expect(stale.map(([f, want]) => `${f} should contain ${want}`)).toEqual([]);
+  });
+
+  it('leaves no retired value in a static copy', () => {
+    // Containing the new value is not enough: a file with two URLs can gain the
+    // new one and keep the old, and at a domain root the base-derived pins are
+    // short enough ("/") to be contained by almost anything.
+    const retiredOriginRe = anyOf(RETIRED_ORIGINS);
+    const retiredBaseRe = firstSegmentRe(RETIRED_BASES);
+    const left = PINNED.flatMap(([file]) =>
+      readFileSync(join(REPO_DIR, file), 'utf-8')
+        .split('\n')
+        .flatMap((line, i) =>
+          retiredOriginRe.test(line) || retiredBaseRe.test(line) ? [`${file}:${i + 1}: ${line.trim()}`] : [],
+        ),
+    );
+    expect(left, left.join('\n')).toEqual([]);
   });
 });

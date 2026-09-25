@@ -14,7 +14,7 @@ import { describe, expect, it } from 'vitest';
 import { normalizeQuery as siteNormalizeQuery } from '../../../site/src/lib/analytics.ts';
 import worker, { type Env, normalizeQuery } from './index.ts';
 
-const ORIGIN = 'https://tucca-cellag.github.io';
+const ORIGIN = 'https://caail.tufts.edu';
 
 interface Recorder {
   env: Env;
