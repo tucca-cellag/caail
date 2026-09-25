@@ -7,8 +7,8 @@
  * Centralised here so the dashboard, the Papers Explorer, and the hubs can't drift
  * apart on a route or a query-param name.
  *
- * BASE_URL is "/caail" (no trailing slash) inside islands, so it is normalised once
- * here — a bare template join would otherwise yield "/caailtaxonomy/".
+ * Under a subpath base BASE_URL has no trailing slash inside islands ("/docs"), so it
+ * is normalised once here — a bare template join would otherwise yield "/docstaxonomy/".
  */
 
 const BASE = (import.meta.env.BASE_URL ?? '/').replace(/\/$/, '');

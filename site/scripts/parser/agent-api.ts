@@ -85,8 +85,8 @@ export const PLACEMENT_NOTE =
 /**
  * Make every root-relative `href` or `src` in rendered HTML absolute.
  *
- * The parser renders catalog summaries once, for the site, where `/caail/...` is the
- * right href. The same HTML is served here to agents that fetch the JSON off-site (or
+ * The parser renders catalog summaries once, for the site, where a root-relative
+ * `${SITE_BASE}/...` path is the right href. The same HTML is served here to agents that fetch the JSON off-site (or
  * from the raw.githubusercontent mirror, where it resolves to nothing), so a
  * root-relative URL is one they cannot follow. Every site link the rewriters emit
  * starts with the base; one that does not is a rewriter bug, and resolving it against

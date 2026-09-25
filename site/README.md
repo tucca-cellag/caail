@@ -8,7 +8,7 @@ The CAAIL documentation website (Astro Starlight). It is a generated navigation 
 
 ```sh
 pnpm install          # first time
-pnpm dev              # local preview at /caail/
+pnpm dev              # local preview at /
 pnpm build            # static build to dist/
 pnpm test:e2e         # Playwright e2e + axe a11y
 ```

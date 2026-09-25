@@ -7,6 +7,7 @@
  *      against the real canonical AwesomeLists.md.
  */
 import { describe, it, expect } from 'vitest';
+import { SITE_BASE } from '../../src/content/site-config.ts';
 
 import {
   buildAwesomeListsModel,
@@ -60,7 +61,7 @@ describe('buildAwesomeListsModel', () => {
   it('rewrites repo-relative .md links in descriptions (no raw .md, no GitHub-blob leak to a route)', () => {
     const html = model.groups.flatMap((g) => g.items).map((i) => i.summaryHtml).join('\n');
     // the OmicsML item references bare Papers.md, which has a dedicated route
-    expect(html).toContain('href="/caail/papers/explorer/"');
+    expect(html).toContain(`href="${SITE_BASE}/papers/explorer/"`);
     // an ANCHORED dedicated-route link keeps its GitHub deep link (CAAIL-374)
     expect(html).toContain('github.com/tucca-cellag/caail/blob/main/Software.md#media-optimization--cell-line-engineering');
     // no un-rewritten repo-relative link survives

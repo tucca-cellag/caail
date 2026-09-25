@@ -20,7 +20,7 @@ import {
 } from '../lib/hub-filters';
 
 interface Props {
-  /** BASE_URL, e.g. "/caail/" */
+  /** BASE_URL, e.g. "/" */
   base: string;
   /** Hub route segment: "licenses" | "citations" | "topics" */
   path: string;

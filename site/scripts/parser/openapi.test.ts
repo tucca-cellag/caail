@@ -24,7 +24,7 @@ import addFormats from 'ajv-formats';
 
 import { buildAgentApi } from './agent-api.js';
 import { PATH_PREFIX } from './openapi.js';
-import { SITE_BASE } from '../../src/content/site-config.ts';
+import { SITE_BASE, SITE_ORIGIN } from '../../src/content/site-config.ts';
 import { buildPapersModel } from './papers.js';
 import { buildCatalogModel } from './catalog.js';
 import { buildDatasetsModel } from './datasets-entries.js';
@@ -79,7 +79,7 @@ describe('openapi.json', () => {
 
   it('names the topic keys that were guessed wrong, and rules out the guess', () => {
     // The literal incident: `themes` and `tags` at the top level of topics.json.
-    const schemaRef = (doc.paths['/caail/api/topics.json'].get.responses['200'].content[
+    const schemaRef = (doc.paths[`${PATH_PREFIX}topics.json`].get.responses['200'].content[
       'application/json'
     ].schema.$ref as string).split('/').pop()!;
     const topicsSchema = doc.components.schemas[schemaRef];
@@ -110,7 +110,7 @@ describe('openapi.json', () => {
     const d = doc.info.description as string;
     expect(d).toMatch(/raw\.githubusercontent\.com/);
     expect(d).toMatch(/by filename/i);
-    expect(d).toMatch(/tucca-cellag\.github\.io/);
+    expect(d).toContain(SITE_ORIGIN);
   });
 
   it('is discoverable from the manifest without opening a file to guess', () => {

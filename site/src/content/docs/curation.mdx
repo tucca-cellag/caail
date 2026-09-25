@@ -9,7 +9,7 @@ Every cell in the matrix at the top of [Papers.md](https://github.com/tucca-cell
 A language model reads each paper's methods section and proposes where it belongs. A second agent then checks that proposal against the paper, and has to quote the passage it relies on. Sections 1 to 5 describe how this works and how far it currently reaches. Section 6 covers what we are adding.
 :::
 
-A placement records what a paper did. It is not a judgement about whether the approach works. The scope of each row and column is defined in [Taxonomy.md](/caail/taxonomy/).
+A placement records what a paper did. It is not a judgement about whether the approach works. The scope of each row and column is defined in [Taxonomy.md](/taxonomy/).
 
 ## How an entry is produced
 
@@ -63,7 +63,7 @@ The reviewers work under six constraints:
 2. **The proposer never reviews its own entry.** Drafting and checking are separate passes by separate agents.
 3. **A verdict must quote a verbatim span** from the paper that grounds the pair. A placement the reviewer cannot anchor to specific text fails. This is the main control against a fabricated justification, since the quoted text can be checked against the document.
 4. **An abstract is explicitly insufficient.** Where only an abstract is available, the reviewer records reduced confidence as a finding and does not pass the placement.
-5. **The scope source is named, and so are the untrusted ones.** Scope is judged against [Taxonomy.md](/caail/taxonomy/), resolved to the correct axis. The AI-assisted Research Areas and Methods pages are not admissible as evidence.
+5. **The scope source is named, and so are the untrusted ones.** Scope is judged against [Taxonomy.md](/taxonomy/), resolved to the correct axis. The AI-assisted Research Areas and Methods pages are not admissible as evidence.
 6. **Removal carries a higher burden than retention**, so over-strict review cannot quietly destroy correct entries. A general-purpose method moves to *AI Tooling / Methodology* instead of being removed. Where a paper's real method or area has no matching row or column, the placement is kept and a new one is *proposed* for a human. Rows and columns are never added automatically.
 
 The reviewer's verdict is a recommendation. A maintainer enters the entry through the authoring database. A verified span shows that a method was used; whether the placement is the best one available is still a judgement call, which is what sections 3 and 7 are for.
@@ -79,7 +79,7 @@ It is not yet deep in every theme. Two people covering 8 themes cannot bring the
 
 A lead adds domain judgement on top of the checks in section 2, and gets public credit for an area of the literature they already follow.
 
-1 of the 8 themes has a lead named on the [Topics hub](/caail/topics/) so far. We are building the review tool before recruiting into it. A lead should be able to open a queue of proposed entries, see the evidence already attached to each one, and record a verdict in a few minutes. Handing someone a spreadsheet and a reading list instead is a lot to ask of a volunteer. That tool is the review queue in the [roadmap](#6-roadmap).
+1 of the 8 themes has a lead named on the [Topics hub](/topics/) so far. We are building the review tool before recruiting into it. A lead should be able to open a queue of proposed entries, see the evidence already attached to each one, and record a verdict in a few minutes. Handing someone a spreadsheet and a reading list instead is a lot to ask of a volunteer. That tool is the review queue in the [roadmap](#6-roadmap).
 
 :::tip[Most themes are still open]
 7 of the 8 have no lead. If you work in one of them, [get in touch](#7-get-in-touch). The two responsibilities above are the role; what we have not fixed is the cadence, and we would rather agree that with whoever takes a theme on than set it in advance.
@@ -143,6 +143,6 @@ These build on the checks in section 2, and are listed in the order we need to d
 
 We would like to hear from you about any of these.
 
-- **Becoming a topic lead.** 7 of the 8 subject themes have no lead. Say hello in the [Slack workspace](/caail/community/) or email the maintainers listed there, and tell us which one you work in.
+- **Becoming a topic lead.** 7 of the 8 subject themes have no lead. Say hello in the [Slack workspace](/community/) or email the maintainers listed there, and tell us which one you work in.
 - **Feedback on this methodology.** If something here is unconvincing, or you would weigh the evidence differently, we would rather hear that than a correction to a single entry. Slack or a [GitHub issue](https://github.com/tucca-cellag/caail/issues/new/choose) both work.
-- **A specific entry that looks wrong.** Use the [correction form](/caail/report/) or a GitHub issue. Tell us which section of the paper you read; that is usually enough to settle it. [Contributing](/caail/contributing/) covers proposing a change directly.
+- **A specific entry that looks wrong.** Use the [correction form](/report/) or a GitHub issue. Tell us which section of the paper you read; that is usually enough to settle it. [Contributing](/contributing/) covers proposing a change directly.

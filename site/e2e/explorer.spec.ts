@@ -76,7 +76,7 @@ test('homepage has no serious/critical a11y violations', async ({ page }) => {
   expect(serious, JSON.stringify(serious, null, 2)).toEqual([]);
 });
 
-test('the retired research-area route redirects to the method page, base included', async ({ page }) => {
+test('the retired research-area route redirects to the method page, base included', async ({ page, baseURL }) => {
   // astro.config.mjs base-prefixes a redirect's KEY but emits its DESTINATION
   // verbatim, so omitting ${BASE} there builds cleanly, passes every unit test
   // and every other e2e spec, and ships a meta-refresh to a domain-root 404.
@@ -86,7 +86,7 @@ test('the retired research-area route redirects to the method page, base include
   // Assert the URL rather than waiting for it: a missing base still navigates,
   // just to the wrong place, so toHaveURL reports the actual destination instead
   // of timing out with nothing to read.
-  await expect(page).toHaveURL(/\/caail\/methods\/benchmarksevaluation\/$/);
+  await expect(page).toHaveURL(new URL('methods/benchmarksevaluation/', baseURL).href);
   await expect(
     page.getByRole('heading', { level: 1, name: 'Benchmarks & Evaluation Frameworks' }),
   ).toBeVisible();
@@ -100,8 +100,8 @@ test('research area prose page renders with its mapped title', async ({ page }) 
 test('internal prose link to a rendered page resolves to a site route; deferred falls back to GitHub', async ({ page }) => {
   await page.goto('./datasets/cow/');
   const main = page.locator('main');
-  // a link to a rendered ResearchAreas/Datasets page is a /caail/... route (ends with /)
-  await expect(main.locator('a[href*="/caail/"][href$="/"]').first()).toBeVisible();
+  // a link to a rendered ResearchAreas/Datasets page is a root-relative site route (ends with /)
+  await expect(main.locator('a[href^="/"]:not([href^="//"])[href$="/"]').first()).toBeVisible();
   // a deferred target (Software/Databases/Papers) falls back to a GitHub blob URL
   await expect(main.locator('a[href^="https://github.com/tucca-cellag/caail/blob/main/"]').first()).toBeVisible();
   // no raw relative .md links remain in the prose body

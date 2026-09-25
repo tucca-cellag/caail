@@ -449,16 +449,19 @@ describe('site-relative hrefs in the API', () => {
   it('absolutizes every root-relative href or src and leaves the rest of the HTML alone', () => {
     expect(
       absolutizeSiteHrefs(
-        '<a href="/caail/papers/explorer/">P</a> <img src="/caail/og.png"> <span data-href="/caail/x/">d</span> ' +
-          '<a href="https://x.org/">x</a> <a href="//cdn.x.org/a">c</a> see /caail/talks/',
+        `<a href="${SITE_BASE}/papers/explorer/">P</a> <img src="${SITE_BASE}/og.png"> <span data-href="${SITE_BASE}/x/">d</span> ` +
+          `<a href="https://x.org/">x</a> <a href="//cdn.x.org/a">c</a> see ${SITE_BASE}/talks/`,
       ),
     ).toBe(
-      `<a href="${SITE_URL}papers/explorer/">P</a> <img src="${SITE_URL}og.png"> <span data-href="/caail/x/">d</span> ` +
-        '<a href="https://x.org/">x</a> <a href="//cdn.x.org/a">c</a> see /caail/talks/',
+      `<a href="${SITE_URL}papers/explorer/">P</a> <img src="${SITE_URL}og.png"> <span data-href="${SITE_BASE}/x/">d</span> ` +
+        `<a href="https://x.org/">x</a> <a href="//cdn.x.org/a">c</a> see ${SITE_BASE}/talks/`,
     );
   });
 
-  it('fails on a root-relative link outside the base instead of publishing a 404', () => {
+  // At a domain root every root-relative path is inside the base, so there is no
+  // "outside" to fail on and the guard cannot fire. Skipped rather than rewritten
+  // to pass: it becomes meaningful again the moment the site has a subpath base.
+  it.skipIf(SITE_BASE === '')('fails on a root-relative link outside the base instead of publishing a 404', () => {
     // Every site link the rewriters emit carries the base; one that does not is a bug.
     expect(() => absolutizeSiteHrefs('<a href="/talks/">T</a>')).toThrow(/outside the site base/);
   });
@@ -487,7 +490,7 @@ describe('site-relative hrefs in the API', () => {
 
   it('ships no root-relative or fragment-only href in any emitted endpoint', () => {
     // An agent reading the JSON off-site (or from the raw mirror) cannot resolve
-    // "/caail/…" or "#…"; the parser's catalog summaries carry both forms for the site.
+    // "/…" or "#…"; the parser's catalog summaries carry both forms for the site.
     const files = buildAgentApi({ papers, catalog, datasets, inventory, topics, taxonomy, reports, corpusDate: DATE });
     const input = JSON.stringify(catalog);
     expect(input).toContain(`href=\\"${SITE_BASE}/`); // the input really has them

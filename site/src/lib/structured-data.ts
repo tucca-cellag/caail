@@ -40,7 +40,7 @@ function absolute(pathname: string): string {
   return `${SITE_ORIGIN}${withBase}`;
 }
 
-/** Route segments below the base, e.g. '/caail/datasets/cow/' → ['datasets','cow']. */
+/** Route segments below the base, e.g. '/datasets/cow/' → ['datasets','cow']. */
 export function routeSegments(pathname: string): string[] {
   const p = pathname.startsWith(SITE_ORIGIN) ? pathname.slice(SITE_ORIGIN.length) : pathname;
   const belowBase = p.startsWith(SITE_BASE) ? p.slice(SITE_BASE.length) : p;
@@ -206,7 +206,7 @@ export function videoItems(): Node[] {
  * Build the per-route JSON-LD @graph for a page, or `null` when there's nothing
  * to add beyond the site-wide Organization+WebSite (the home page).
  *
- * @param pathname  Astro.url.pathname (includes the base, e.g. '/caail/software/').
+ * @param pathname  Astro.url.pathname (includes the base, if any, e.g. '/software/').
  * @param title     The page's <title> / Starlight entry title (for breadcrumbs).
  */
 export function pageJsonLd(pathname: string, title: string): Node | null {

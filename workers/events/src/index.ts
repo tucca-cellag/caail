@@ -22,7 +22,7 @@
 export interface Env {
   /** Workers Analytics Engine dataset binding. */
   EVENTS: { writeDataPoint: (point: AnalyticsEnginePoint) => void };
-  /** Exact origin allowed to post, e.g. https://tucca-cellag.github.io */
+  /** Exact origin allowed to post, e.g. https://caail.tufts.edu */
   ALLOWED_ORIGIN: string;
   /**
    * Cloudflare rate limiting binding, configured in wrangler.toml. Typed

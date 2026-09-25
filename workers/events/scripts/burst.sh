@@ -24,7 +24,7 @@ set -euo pipefail
 URL="${URL:-https://caail-events.bromberg-benji.workers.dev}"
 COUNT="${1:-600}"
 CONCURRENCY="${2:-6}"
-ORIGIN="${ORIGIN:-https://tucca-cellag.github.io}"
+ORIGIN="${ORIGIN:-https://caail.tufts.edu}"
 
 codes=$(mktemp)
 trap 'rm -f "$codes"' EXIT

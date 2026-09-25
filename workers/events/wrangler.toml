@@ -75,6 +75,6 @@ namespace_id = "7001" # Account-scoped. Bindings sharing an id share counters.
 enabled = true
 
 [vars]
-# The only origin allowed to post. Change this if the site moves to a
-# tufts.edu domain.
-ALLOWED_ORIGIN = "https://tucca-cellag.github.io"
+# The only origin allowed to post: the site's SITE_ORIGIN, which
+# site/src/content/site-config.test.ts pins this line to.
+ALLOWED_ORIGIN = "https://caail.tufts.edu"

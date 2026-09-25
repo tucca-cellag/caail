@@ -17,7 +17,7 @@
 #   ship-pr.sh watch-checks <pr>         # blocks on PR checks; 0 if none/clean, non-zero if a check fails
 #   ship-pr.sh merge <pr>               # merge + delete remote branch, with the gotcha fallback; prints SHA
 #   ship-pr.sh watch-deploy <merge-sha> # finds + watches the docs.yml run for that SHA; 0 if no deploy fires
-#   ship-pr.sh verify-live <route>...   # curls https://<pages>/caail/<route>/; non-zero if any != 200
+#   ship-pr.sh verify-live <route>...   # curls https://caail.tufts.edu/<route>/; non-zero if any != 200
 #
 # Everything is read-only except `push`, `open-pr`, and `merge`.
 
@@ -26,7 +26,7 @@ set -euo pipefail
 # --- repo facts (derived, not hardcoded, so a fork still works) ---------------
 REPO="$(gh repo view --json nameWithOwner -q .nameWithOwner)"          # e.g. tucca-cellag/caail
 DEFAULT_BRANCH="$(gh repo view --json defaultBranchRef -q .defaultBranchRef.name)"  # e.g. main
-PAGES_BASE="https://tucca-cellag.github.io/caail"                       # CAAIL GitHub Pages root
+PAGES_BASE="https://caail.tufts.edu"                                     # CAAIL site root
 DEPLOY_WORKFLOW="docs.yml"                                              # the Pages deploy workflow
 
 die() { printf 'ship-pr: %s\n' "$*" >&2; exit 1; }

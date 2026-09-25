@@ -11,6 +11,7 @@
  */
 
 import { describe, it, expect, beforeAll } from 'vitest';
+import { SITE_BASE } from '../../src/content/site-config.ts';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -75,7 +76,7 @@ describe('parseCatalogFile — Software.md shape (fixture)', () => {
       'href="https://github.com/tucca-cellag/caail/blob/main/Papers.md#5"',
     );
     // Datasets/Cow.md IS a rendered page → site route (cross-file anchor dropped).
-    expect(entries[0].summaryHtml).toContain('href="/caail/datasets/cow/"');
+    expect(entries[0].summaryHtml).toContain(`href="${SITE_BASE}/datasets/cow/"`);
   });
 
   it('disambiguates a repeated name with -b while keeping the first bare', () => {
@@ -105,7 +106,7 @@ describe('parseCatalogFile — Databases.md shape (fixture)', () => {
   it('preserves and rewrites the second paragraph links in summaryHtml', () => {
     expect(entries[0].summaryHtml).toContain('href="https://github.com/genebank/pipeline"');
     // Datasets/Pig.md is a rendered page → site route.
-    expect(entries[0].summaryHtml).toContain('href="/caail/datasets/pig/"');
+    expect(entries[0].summaryHtml).toContain(`href="${SITE_BASE}/datasets/pig/"`);
   });
 
   it('parses every entry name/url/group', () => {

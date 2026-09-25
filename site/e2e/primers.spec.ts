@@ -10,10 +10,10 @@ import { externalCardCount } from './data';
 test('homepage "Start here" cards link to the primers and the tools', async ({ page }) => {
   await page.goto('./');
   for (const href of [
-    '/caail/primers/cell-ag/',
-    '/caail/primers/ai/',
-    '/caail/papers/explorer/',
-    '/caail/datasets/readme/',
+    '/primers/cell-ag/',
+    '/primers/ai/',
+    '/papers/explorer/',
+    '/datasets/readme/',
   ]) {
     await expect(page.locator(`section.start a.card[href="${href}"]`)).toHaveCount(1);
   }
@@ -28,9 +28,9 @@ test('cell-ag primer embeds the field-foundation videos and resolves its nav lin
   await expect(page.getByRole('heading', { name: 'Watch first — field foundations' })).toBeVisible();
   expect(await page.locator('lite-youtube').count()).toBe(5); // the five field-foundation videos
   // Internal CAAIL nav cards: same-tab links to real site routes (with anchors kept).
-  await expect(page.locator('a.primer-nav[href="/caail/papers/explorer/"]')).toHaveCount(1);
-  await expect(page.locator('a.primer-nav[href="/caail/reference-works/"]')).toHaveCount(1);
-  await expect(page.locator('a.primer-nav[href="/caail/primers/ai/"]')).toHaveCount(1);
+  await expect(page.locator('a.primer-nav[href="/papers/explorer/"]')).toHaveCount(1);
+  await expect(page.locator('a.primer-nav[href="/reference-works/"]')).toHaveCount(1);
+  await expect(page.locator('a.primer-nav[href="/primers/ai/"]')).toHaveCount(1);
   // No repo-relative .md link leaks through (all rewritten to routes/GitHub).
   await expect(page.locator('main a[href$=".md"]:not([href*="github.com"])')).toHaveCount(0);
   // No nested anchors (invalid HTML / a11y hazard).
@@ -44,7 +44,7 @@ test('ai primer surfaces learning playlists and go-deeper nav links', async ({ p
   expect(await page.locator('a.talk-card[target="_blank"]').count()).toBe(externalCardCount('ai'));
   // Deep-link into the Talks page section that stayed in Talks.md.
   await expect(
-    page.locator('a.primer-nav[href="/caail/talks/#ai-agents-foundation-models-for-biology"]'),
+    page.locator('a.primer-nav[href="/talks/#ai-agents-foundation-models-for-biology"]'),
   ).toHaveCount(1);
   await expect(page.locator('main a[href$=".md"]:not([href*="github.com"])')).toHaveCount(0);
 });

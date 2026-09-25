@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { SITE_BASE } from '../../src/content/site-config.ts';
 import { unified } from 'unified';
 import remarkParse from 'remark-parse';
 import type { Root } from 'mdast';
@@ -122,7 +123,7 @@ describe('datasetCards', () => {
     expect(chips).toBeDefined();
     expect(chips).toContain('class="topic-chips not-content"');
     expect(chips).toContain('data-theme="cell-lines-engineering"');
-    expect(chips).toContain('href="/caail/topics/?t=single-cell-atlases"');
+    expect(chips).toContain(`href="${SITE_BASE}/topics/?t=single-cell-atlases"`);
   });
 
   it('keeps the H3 heading node between the card open and close', () => {
@@ -194,7 +195,7 @@ Parse body.
     expect(badge).toBeDefined();
     expect(badge).toContain('lic-badge--permissive');
     expect(badge).toContain('lic-badge--manual'); // dashed = curated
-    expect(badge).toContain('href="/caail/licenses/?tier=permissive"');
+    expect(badge).toContain(`href="${SITE_BASE}/licenses/?tier=permissive"`);
     expect(badge).toContain('>CC-BY-4.0<');
   });
 
@@ -225,8 +226,8 @@ Parse body.
 describe('report link (the raw-HTML twin of ReportLink.tsx)', () => {
   it('carries the entry’s frozen ds: id to the report page', () => {
     const out = html(run(MD, 'Datasets/Chicken.md', [ATLAS, GEM])).join('');
-    expect(out).toContain('href="/caail/report/?item=ds%3Achickengtex-portal"');
-    expect(out).toContain('href="/caail/report/?item=ds%3Aies1300"');
+    expect(out).toContain(`href="${SITE_BASE}/report/?item=ds%3Achickengtex-portal"`);
+    expect(out).toContain(`href="${SITE_BASE}/report/?item=ds%3Aies1300"`);
   });
 
   it('flattens the markdown in a name before it becomes an accessible name', () => {
@@ -246,6 +247,6 @@ describe('report link (the raw-HTML twin of ReportLink.tsx)', () => {
     const out = html(run(MD, 'Datasets/Chicken.md', [bad, GEM])).join('');
     expect(out).not.toContain('report/?item=not-an-id');
     // The other entry is unaffected — one malformed id does not cost the page its links.
-    expect(out).toContain('href="/caail/report/?item=ds%3Aies1300"');
+    expect(out).toContain(`href="${SITE_BASE}/report/?item=ds%3Aies1300"`);
   });
 });
