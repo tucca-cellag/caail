@@ -17,6 +17,7 @@ ingest is **stdlib-only and zero-token**.
 | `extract_matrix_corpus.py` | Parses matrix-participating refs out of `Papers.md`, matches each to the Zotero group libraries by DOI, and pulls methods-section text. Prefers a `docling-corpus/` section when one exists and falls back to the flat full-text cache. Emits `matrix-corpus.json` + per-ref files (both gitignored). |
 | `docling_ingest.py` | **Opt-in batch job.** Converts every corpus PDF to a `DoclingDocument` and locates each paper's methods section against its real heading structure. Writes the gitignored `docling-corpus/`. Needs `docling`; resumable. |
 | `docling_sections.py` | Pure function: ordered heading list → the methods span. No Docling, no PDF, no network, so it is unit-testable. |
+| `docling_ingest.test.py` | Guards what `docling_ingest.py` decides before Docling runs: which suffixes reach the converter, the refused `--file`/`--ref` combinations, and the source each section records. Stdlib only, so CI runs it. |
 | `docling_sections.test.py` | Runs `docling_sections` against real heading lists from the corpus, and shows the old regex failing the same inputs. `python3 …/docling_sections.test.py` |
 | `measure_extraction_quality.py` | Prints how good the extraction currently is, by calling the code being measured rather than restating its rules. Run this instead of trusting any number written down. |
 | `compare_extraction.py` | Ranks matrix refs by how much the evidence a curator reads has changed between the old window and the located section. Input to the CAAIL-203 re-audit: it says where to look, not what is wrong. |
@@ -54,13 +55,19 @@ interrupted run is restarted with the same command.
 **Which attachment it converts.** A paper's main text is its one PDF attachment not tagged
 `supplement` in Zotero (`scope.select_main_pdf`). A ref with two or more untagged PDFs is
 skipped as `ambiguous-main-pdf` and logged with that reason rather than guessed; tag each
-supplement, or remove a duplicate copy of the paper, and the next run picks it up.
+supplement, or remove a duplicate copy of the paper, and the next run picks it up. Being
+resumable, a run never reconverts a ref that already has a section, so to replace one
+converted from the wrong file, delete its `docs/` and `sections/` files first. The log marks
+a ref Zotero could not resolve but that still has a section on disk (`sections_on_disk`).
 
 **One file, PDF or JATS.** `--file` converts a single file you already have, bypassing
 Zotero, and writes the same `docs/` and `sections/` output under the id given by `--ref`.
 It accepts a PDF or JATS full text (`.nxml`, as PMC names it, or `.xml`); the converter is
 restricted to those two formats, so an XML file that is not JATS is refused rather than read
-as something else. A JATS document has no pages, so its page fields are `null`.
+as something else. A JATS document has no pages, so its page fields are `null`. Every
+section records the file and format it was converted from (`source`), which is how a reader
+tells the two apart. `--ref` without `--file` is refused; to convert chosen refs from
+Zotero, use `--only`.
 
 ```bash
 uv run --python 3.12 --with docling \

@@ -211,8 +211,22 @@ def write_section(out, rid, doc):
         "methods_text": text,
         "availability": availability,
         "tables": collect_tables(doc),
+        "source": document_source(doc),
     }, ensure_ascii=False, indent=2))
     return span, len(text)
+
+
+def document_source(doc):
+    """The file a document was converted from, as Docling recorded it.
+
+    Read off the document rather than passed in, so --respan keeps it. It is how
+    a reader tells a JATS section (no page numbers) from a PDF one.
+    """
+    origin = getattr(doc, "origin", None)
+    if origin is None:
+        return None
+    return {"filename": getattr(origin, "filename", None),
+            "mimetype": getattr(origin, "mimetype", None)}
 
 
 def respan(out):
@@ -316,6 +330,13 @@ def main():
                          "reconverting any PDF. Run after changing the section "
                          "rule in docling_sections.py.")
     args = ap.parse_args()
+    # Refused before anything runs: a bare --ref would otherwise fall through to
+    # the full Zotero batch, hours of conversion nobody asked for.
+    if args.file and args.ref is None:
+        sys.exit("--file needs --ref, the id to write the output under")
+    if args.ref is not None and not args.file:
+        sys.exit("--ref only names the output of --file; to convert chosen refs "
+                 "from Zotero, use --only")
 
     groups = args.group or ["6549203", "5178481"]
     out = Path(args.out)
@@ -327,13 +348,12 @@ def main():
         return
 
     if args.file:
-        if args.ref is None:
-            sys.exit("--file needs --ref, the id to write the output under")
         t0 = time.time()
-        doc, span, n_chars = convert_file(build_converter(), args.file, args.ref, out)
+        _, span, n_chars = convert_file(build_converter(), args.file, args.ref, out)
+        written = json.loads((out / "sections" / f"ref-{args.ref}.json").read_text())
         print(json.dumps({"id": args.ref, "file": args.file, "strategy": span["strategy"],
                           "heading": span["heading"], "chars": n_chars,
-                          "n_headings": len(collect_headings(doc)),
+                          "n_headings": len(written["headings"]),
                           "seconds": round(time.time() - t0, 1)}))
         return
 
@@ -358,6 +378,10 @@ def main():
                "ok": False, "skipped": False, "error": t["why"], "seconds": 0.0}
 
         if not t["pdf"]:
+            # Zotero gave no main text, but a section may still be on disk: one
+            # converted with --file, or one from before the ref became ambiguous.
+            # Say so, or the log reads as "no text" for a ref that has some.
+            rec["sections_on_disk"] = sec_path.exists()
             log.append(rec)
             continue
         if sec_path.exists():
