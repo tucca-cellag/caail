@@ -4,11 +4,11 @@
   "status": "beta",
   "placementsUnderReview": true,
   "canonical": "https://github.com/tucca-cellag/caail",
-  "site": "https://tucca-cellag.github.io/caail/",
+  "site": "https://caail.tufts.edu/",
   "license": "MIT (CAAIL curation). Linked third-party resources keep their own licenses.",
   "scopeNote": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall.",
   "openapi": "openapi.json",
-  "placementNote": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://tucca-cellag.github.io/caail/curation/",
+  "placementNote": "Placements are proposed by a language-model agent reading the paper methods section, checked by a separate reviewer agent that must quote the passage it relies on, and entered by a human maintainer; placements made before that pipeline are being re-verified against full texts. Treat a cell as a substantive claim about the paper method and application area. The residual uncertainty is precision, not inclusion: where a placement is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. How this is done, and how far it reaches: https://caail.tufts.edu/curation/",
   "counts": {
     "papersAllSections": 348,
     "papersBySection": {

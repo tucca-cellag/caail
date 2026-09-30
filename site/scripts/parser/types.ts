@@ -164,7 +164,7 @@ export const CatalogEntrySchema = z.object({
   /** The same full entry body rendered to HTML, with all hyperlinks preserved
    *  and repo-relative `.md` links rewritten to site routes (via
    *  rewriteCaailLinks — `./Papers.md#N` → GitHub blob, `./Datasets/Cow.md` →
-   *  `/caail/datasets/cow/`). Rendered into the card so every reference in the
+   *  `/datasets/cow/`). Rendered into the card so every reference in the
    *  canonical Markdown is surfaced and clickable. Empty when summary is empty. */
   summaryHtml: z.string(),
   /** Two-tier subject tags (#78 topic axis), folded in from the committed topic NDJSON */
@@ -377,13 +377,13 @@ export const TalksSchema = z.object({
 
 /**
  * One primer item — a TalkItem plus an `internal` flag. Internal items are
- * cross-links into the rest of the site (e.g. /caail/papers/explorer/) whose
+ * cross-links into the rest of the site (e.g. /papers/explorer/) whose
  * repo-relative `.md` URL has been rewritten to a site route by primers.ts;
  * they render as same-tab nav cards rather than new-tab external links.
  */
 export const PrimerItemSchema = TalkItemSchema.extend({
   /** Destination URL — an absolute external URL, OR a site-relative route
-   *  (e.g. "/caail/papers/explorer/") for rewritten internal cross-links, so
+   *  (e.g. "/papers/explorer/") for rewritten internal cross-links, so
    *  this relaxes TalkItem's absolute-URL constraint. */
   url: z.string(),
   /** true when `url` is a rewritten same-site route (CAAIL navigation target) */
@@ -399,7 +399,7 @@ export const PrimerSectionSchema = z.object({
 });
 
 export const PrimerSchema = z.object({
-  /** Route slug, e.g. "cell-ag" → /caail/primers/cell-ag/ */
+  /** Route slug, e.g. "cell-ag" → /primers/cell-ag/ */
   slug: z.string(),
   /** H1 title of the primer file */
   title: z.string(),

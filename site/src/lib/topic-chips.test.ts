@@ -6,6 +6,11 @@ describe('topicHref', () => {
     expect(topicHref('/caail', 'serum-free-media')).toBe('/caail/topics/?t=serum-free-media');
     expect(topicHref('/caail/', 'serum-free-media')).toBe('/caail/topics/?t=serum-free-media');
   });
+
+  it('builds a single-slash path at a domain root', () => {
+    expect(topicHref('/', 'serum-free-media')).toBe('/topics/?t=serum-free-media');
+    expect(topicHref('', 'serum-free-media')).toBe('/topics/?t=serum-free-media');
+  });
 });
 
 describe('chipProps', () => {

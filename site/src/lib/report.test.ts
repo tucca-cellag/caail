@@ -75,6 +75,11 @@ describe('reportHref', () => {
     expect(reportHref('/caail', 'paper:214')).toBe('/caail/report/?item=paper%3A214');
   });
 
+  it('builds a single-slash path at a domain root', () => {
+    expect(reportHref('/', 'paper:214')).toBe('/report/?item=paper%3A214');
+    expect(reportHref('', 'paper:214')).toBe('/report/?item=paper%3A214');
+  });
+
   it('works at the site root, where BASE_URL is "/"', () => {
     expect(reportHref('/', 'sw:cellpose')).toBe('/report/?item=sw%3Acellpose');
   });

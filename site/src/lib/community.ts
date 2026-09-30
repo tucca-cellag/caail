@@ -25,6 +25,6 @@ export const SLACK_INVITE_URL =
  *
  * Callers prepend `import.meta.env.BASE_URL` themselves (the `.astro`
  * convention in this repo is `const base = import.meta.env.BASE_URL.replace(/\/$/, '')`),
- * so this stays a bare path and never bakes in the `/caail` prefix.
+ * so this stays a bare path and never bakes in the site base.
  */
 export const COMMUNITY_PATH = '/community/';

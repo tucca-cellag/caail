@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://tucca-cellag.github.io/caail/sitemap-index.xml
+Sitemap: https://caail.tufts.edu/sitemap-index.xml

@@ -1,7 +1,7 @@
 /**
  * Canonical Markdown files that the site serves at a dedicated route rather
  * than through the prose loader, keyed by repo-relative path. Routes are
- * base-relative (no `/caail` prefix).
+ * base-relative (no base prefix).
  *
  * These are deliberately NOT in `CAAIL_PAGES`: each route is an island or
  * card page built from a parser model (Papers explorer, Software, Databases,

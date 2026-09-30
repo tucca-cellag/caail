@@ -33,7 +33,7 @@ import { fileURLToPath } from 'node:url';
 import { assertValid, buildOpenApiDocument, OPENAPI_FILE } from './openapi.js';
 import { MATRIX_SECTION } from './types.js';
 import type { Catalog, CatalogEntry, DatasetInventory, PapersData } from './types.js';
-import { SITE_BASE, SITE_URL } from '../../src/content/site-config.ts';
+import { isUnderBase, RETIRED_BASES, SITE_BASE, SITE_URL } from '../../src/content/site-config.ts';
 import { CATALOG_SOURCES } from './catalog.js';
 import { dedicatedLink, GITHUB_BLOB_BASE } from '../dedicated-links.ts';
 
@@ -85,21 +85,29 @@ export const PLACEMENT_NOTE =
 /**
  * Make every root-relative `href` or `src` in rendered HTML absolute.
  *
- * The parser renders catalog summaries once, for the site, where `/caail/...` is the
- * right href. The same HTML is served here to agents that fetch the JSON off-site (or
+ * The parser renders catalog summaries once, for the site, where a root-relative
+ * `${SITE_BASE}/...` path is the right href. The same HTML is served here to agents that fetch the JSON off-site (or
  * from the raw.githubusercontent mirror, where it resolves to nothing), so a
  * root-relative URL is one they cannot follow. Every site link the rewriters emit
  * starts with the base; one that does not is a rewriter bug, and resolving it against
  * the origin would publish a real-looking 404, so it fails the build instead. Only
  * whole `href`/`src` attributes count (not `data-href`), and protocol-relative `//…`
  * is left alone. The base comes from site-config.ts, which astro.config.mjs also reads.
+ *
+ * At a domain root every root-relative path is inside the empty base, so the check
+ * that can still fire there is the retired-base one: a path under a base the site has
+ * left (`/caail/...`) is a stale link that would publish as a real-looking 404.
  */
-export function absolutizeSiteHrefs(html: string): string {
+export function absolutizeSiteHrefs(html: string, base: string = SITE_BASE, url: string = SITE_URL): string {
   return html.replace(/(?<=\s)(href|src)="(\/(?!\/)[^"]*)"/g, (_, attr: string, path: string) => {
-    if (path !== SITE_BASE && !path.startsWith(`${SITE_BASE}/`)) {
-      throw new Error(`agent-api: ${attr}="${path}" is root-relative but outside the site base ${SITE_BASE}.`);
+    const retired = RETIRED_BASES.find((b) => b !== base && isUnderBase(path, b));
+    if (retired !== undefined) {
+      throw new Error(`agent-api: ${attr}="${path}" is under the retired base ${retired}; the site now lives at ${url}.`);
     }
-    return `${attr}="${SITE_URL}${path.slice(SITE_BASE.length + 1)}"`;
+    if (path !== base && !path.startsWith(`${base}/`)) {
+      throw new Error(`agent-api: ${attr}="${path}" is root-relative but outside the site base ${base}.`);
+    }
+    return `${attr}="${url}${path.slice(base.length + 1)}"`;
   });
 }
 

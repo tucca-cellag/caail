@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import { SITE_URL } from '../src/content/site-config';
+import { SITE_ORIGIN, SITE_URL } from '../src/content/site-config';
 
 // ---------------------------------------------------------------------------
 // Privacy page — reachable from every page, states the live collection
@@ -42,12 +42,12 @@ test('privacy page states what is measured and who to contact', async ({ page })
   }
 });
 
-test('every page reaches the privacy policy from the footer', async ({ page }) => {
+test('every page reaches the privacy policy from the footer', async ({ page, baseURL }) => {
   await page.goto('./');
-  const link = page.locator('.caail-footer a[href="/caail/privacy/"]');
+  const link = page.locator('.caail-footer a[href="/privacy/"]');
   await expect(link).toBeVisible();
   await link.click();
-  await expect(page).toHaveURL(/\/caail\/privacy\/$/);
+  await expect(page).toHaveURL(new URL('privacy/', baseURL).href);
 });
 
 test('privacy page has no serious/critical a11y violations', async ({ page }) => {
@@ -226,7 +226,7 @@ test('the beacon does load on the deployed origin', async ({ page, context }) =>
   await context.route('**/*', (route) =>
     route.request().url().startsWith('http://localhost') ? route.continue() : route.abort(),
   );
-  await context.route('https://tucca-cellag.github.io/**', (route) =>
+  await context.route(`${SITE_ORIGIN}/**`, (route) =>
     route.request().url() === DEPLOYED
       ? route.fulfill({ status: 200, contentType: 'text/html', body: html })
       : // Subresources resolve against the faked host too; empty is fine, the

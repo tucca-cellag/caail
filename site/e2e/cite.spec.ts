@@ -48,7 +48,7 @@ test('about page surfaces TUCCA and a how-to-cite pointer', async ({ page }) => 
   await expect(
     page.locator('main a[href="https://cellularagriculture.tufts.edu/"]').first(),
   ).toBeVisible();
-  await expect(page.locator('main a[href="/caail/cite/"]').first()).toBeVisible();
+  await expect(page.locator('main a[href="/cite/"]').first()).toBeVisible();
 });
 
 test('about page has no serious/critical a11y violations', async ({ page }) => {
@@ -66,7 +66,7 @@ test('homepage shows a citation band linking to the cite page', async ({ page })
   await page.goto('./');
   const band = page.locator('.caail-citeband');
   await expect(band).toBeVisible();
-  await expect(band.locator('a.cta')).toHaveAttribute('href', '/caail/cite/');
+  await expect(band.locator('a.cta')).toHaveAttribute('href', '/cite/');
   await expect(band.locator('a.doi')).toHaveAttribute('href', 'https://doi.org/10.5281/zenodo.20295590');
 });
 

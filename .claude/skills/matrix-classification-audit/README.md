@@ -239,5 +239,5 @@ converted PDF, because the library holds none.
 this file keeps warning about, committed in this file. Refs 14, 80 and 224 were listed as
 supplement-only and all three now resolve, at 43,612, 18,735 and 114,066 characters (224's is
 the corpus maximum). The same run feeds the public
-[Curation Methodology](https://tucca-cellag.github.io/caail/curation/) page, so a figure
+[Curation Methodology](https://caail.tufts.edu/curation/) page, so a figure
 edited in one place and not the other is a contradiction CAAIL ships in both directions.

@@ -22,10 +22,10 @@ population they counted.
 Each URL below is complete and fetchable as written.
 
 These are served from GitHub deliberately. Some clients restrict network access to package
-managers by default, a list that includes GitHub but not GitHub Pages, and on Team or Enterprise
+managers by default, a list that includes GitHub but not GitHub Pages or caail.tufts.edu, and on Team or Enterprise
 plans only an organisation owner can widen it. Fetching from GitHub therefore works everywhere
 without anyone changing a setting. The same files are also browsable at
-https://tucca-cellag.github.io/caail/api/ if you want to read one in a browser.
+https://caail.tufts.edu/api/ if you want to read one in a browser.
 
 | Question | Fetch |
 |---|---|
