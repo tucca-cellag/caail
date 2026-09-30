@@ -66,8 +66,9 @@ It accepts a PDF or JATS full text (`.nxml`, as PMC names it, or `.xml`); the co
 restricted to those two formats, so an XML file that is not JATS is refused rather than read
 as something else. A JATS document has no pages, so its page fields are `null`. Every
 section records the file and format it was converted from (`source`), which is how a reader
-tells the two apart. `--ref` without `--file` is refused; to convert chosen refs from
-Zotero, use `--only`.
+tells the two apart. `--ref` must be a `Papers.md` reference, and a ref that already has
+output is not replaced unless you pass `--overwrite`. `--ref` without `--file` is refused;
+to convert chosen refs from Zotero, use `--only`.
 
 ```bash
 uv run --python 3.12 --with docling \

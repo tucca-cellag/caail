@@ -53,7 +53,8 @@ with tempfile.TemporaryDirectory() as tmp:
             reached = True
         check(f"{name} is handed to the converter", reached)
     # EPUB is the case CAAIL-436 measured failing inside Docling; it and the
-    # others must be refused here, before a converter is ever built or called.
+    # others are refused before the converter is called (and, from the command
+    # line, before it is built: see the next block).
     for name in ("paper.epub", "paper.html", "paper.docx", "paper"):
         try:
             di.convert_file(StubConverter(), out / name, 1, out)
@@ -67,20 +68,42 @@ with tempfile.TemporaryDirectory() as tmp:
 
 print("\n=== argument combinations refused before any work ===")
 script = os.path.join(HERE, "docling_ingest.py")
-for label, argv, needle in (
+papers = Path(HERE).parents[2] / "Papers.md"
+REF = str(min(di.ex.parse_references(papers.read_text(encoding="utf-8"))))
+for label, argv, needle, existing in (
     ("--ref without --file does not start the Zotero batch",
-     ["--ref", "5"], "--only"),
+     ["--ref", REF], "--only", False),
     ("--file without --ref names the missing id",
-     ["--file", "x.nxml"], "--file needs --ref"),
+     ["--file", "x.nxml"], "--file needs --ref", False),
+    # Refused before Docling is imported: CI has no Docling, so reaching the
+    # converter here would fail with an ImportError instead of this message.
+    ("an unsupported file is refused before the converter is built",
+     ["--file", "x.epub", "--ref", REF], "unsupported input", False),
+    ("batch flags beside --file are refused, not ignored",
+     ["--file", "x.nxml", "--ref", REF, "--respan"], "--respan would be ignored", False),
+    ("an id that is not a Papers.md reference is refused",
+     ["--file", "x.nxml", "--ref", "-1"], "is not a reference", False),
+    ("a ref's existing output is not replaced without --overwrite",
+     ["--file", "x.nxml", "--ref", REF], "--overwrite", True),
+    ("--overwrite without --file is refused",
+     ["--overwrite"], "only applies to --file", False),
 ):
     with tempfile.TemporaryDirectory() as tmp:
         out = os.path.join(tmp, "corpus")
+        if existing:
+            os.makedirs(os.path.join(out, "sections"))
+            Path(out, "sections", f"ref-{REF}.json").write_text("{}")
         run = subprocess.run([sys.executable, script, *argv, "--out", out,
                               "--api", "http://127.0.0.1:9/api"],
                              capture_output=True, text=True, timeout=60)
-        # Refused, with a message saying why, and before the output tree exists.
-        check(label, run.returncode != 0 and needle in run.stderr
-              and not os.path.exists(out))
+        # Refused, with a message saying why, and before the output tree is
+        # created (or, where it already existed, before anything in it changed).
+        untouched = (Path(out, "sections", f"ref-{REF}.json").read_text() == "{}"
+                     and not Path(out, "docs").exists()) if existing \
+            else not os.path.exists(out)
+        check(label, run.returncode != 0 and needle in run.stderr and untouched)
+        if run.returncode == 0 or needle not in run.stderr:
+            print(f"         exit {run.returncode}: {run.stderr.strip()[-200:]}")
 
 
 print("\n=== each section records what it was converted from ===")

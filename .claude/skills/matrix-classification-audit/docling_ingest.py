@@ -82,6 +82,14 @@ def build_converter():
 INPUT_SUFFIXES = {".pdf": "pdf", ".nxml": "jats", ".xml": "jats"}
 
 
+def check_input(path):
+    """Raise ValueError unless the file's suffix is one convert_file accepts."""
+    path = Path(path)
+    if path.suffix.lower() not in INPUT_SUFFIXES:
+        raise ValueError(f"unsupported input {path.name}: expected one of "
+                         f"{sorted(INPUT_SUFFIXES)}")
+
+
 def convert_file(converter, path, rid, out):
     """Convert one PDF or JATS file to docs/ref-<rid>.json and sections/.
 
@@ -90,10 +98,7 @@ def convert_file(converter, path, rid, out):
     Europe PMC), so both produce the same DoclingDocument JSON. A JATS document
     has no pages, so its page fields are None.
     """
-    path = Path(path)
-    if path.suffix.lower() not in INPUT_SUFFIXES:
-        raise ValueError(f"unsupported input {path.name}: expected one of "
-                         f"{sorted(INPUT_SUFFIXES)}")
+    check_input(path)
     doc = converter.convert(str(path)).document
     (out / "docs" / f"ref-{rid}.json").write_text(
         json.dumps(doc.export_to_dict(), ensure_ascii=False))
@@ -324,7 +329,11 @@ def main():
                     help="convert this one PDF or JATS (.nxml/.xml) file instead "
                          "of resolving refs through Zotero; needs --ref")
     ap.add_argument("--ref", type=int,
-                    help="the ref id the --file output is written under")
+                    help="the ref id the --file output is written under; must "
+                         "be a Papers.md reference")
+    ap.add_argument("--overwrite", action="store_true",
+                    help="let --file replace a ref's existing docs/ and "
+                         "sections/ output, which it otherwise refuses")
     ap.add_argument("--respan", action="store_true",
                     help="recompute sections/ from the stored docs/ without "
                          "reconverting any PDF. Run after changing the section "
@@ -337,6 +346,32 @@ def main():
     if args.ref is not None and not args.file:
         sys.exit("--ref only names the output of --file; to convert chosen refs "
                  "from Zotero, use --only")
+    if args.overwrite and not args.file:
+        sys.exit("--overwrite only applies to --file; the batch never overwrites")
+    if args.file:
+        ignored = [flag for flag, on in (("--respan", args.respan),
+                                         ("--only", args.only),
+                                         ("--matrix-only", args.matrix_only),
+                                         ("--limit", args.limit)) if on]
+        if ignored:
+            sys.exit(f"--file converts one file; {', '.join(ignored)} would be "
+                     "ignored, so drop them")
+        try:
+            check_input(args.file)
+        except ValueError as exc:
+            sys.exit(str(exc))
+        # The output is keyed by ref id and read back only for Papers.md refs,
+        # so an id outside Papers.md writes a section nothing reads, and a
+        # negative one breaks --respan's file-name parsing.
+        refs = ex.parse_references(Path(args.papers).read_text(encoding="utf-8"))
+        if args.ref not in refs:
+            sys.exit(f"--ref {args.ref} is not a reference in {args.papers}")
+        existing = [p for p in (Path(args.out) / "docs" / f"ref-{args.ref}.json",
+                                Path(args.out) / "sections" / f"ref-{args.ref}.json")
+                    if p.exists()]
+        if existing and not args.overwrite:
+            sys.exit(f"ref {args.ref} already has output ({existing[0]}); pass "
+                     "--overwrite to replace it")
 
     groups = args.group or ["6549203", "5178481"]
     out = Path(args.out)
