@@ -18,7 +18,7 @@
  * answers a question nobody asked yet.
  *
  * Endpoints are GitHub URLs, not this site's. Code execution defaults to network egress
- * for package managers only, which covers GitHub but not GitHub Pages, and on Team and
+ * for package managers only, which covers GitHub but not this site's domain, and on Team and
  * Enterprise plans only an organisation owner can widen it. Fetching from GitHub needs
  * nobody to change a setting.
  */
@@ -37,8 +37,8 @@ const PROMPT = `Read ${RAW}/plugin/skills/caail/SKILL.md and use CAAIL to answer
 
 /* The install guide, named by its short site URL with the raw GitHub path as a fallback.
    Two URLs rather than one because they fail in opposite situations: some agents cannot
-   reach GitHub Pages, and some restrict network access to package managers, a list that
-   includes github.com but not github.io. Naming both means the prompt works either way
+   reach this site's domain, and some restrict network access to package managers, a list
+   that includes github.com but not caail.tufts.edu. Naming both means the prompt works either way
    without the reader having to diagnose which restriction they are behind.
    `setup.md` is generated from `skills/caail-install/SKILL.md`, so the two are the same
    document and cannot drift. */

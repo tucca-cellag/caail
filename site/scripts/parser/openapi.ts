@@ -15,7 +15,7 @@
  *
  * SCOPE: static files served by GET. No request bodies, no parameters, no auth,
  * and deliberately no `servers` block — the paths are the deployed absolute paths, which
- * resolve correctly against the Pages origin without one.
+ * resolve correctly against the site's origin without one.
  */
 
 import Ajv2020 from 'ajv/dist/2020.js';

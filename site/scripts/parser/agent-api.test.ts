@@ -474,6 +474,8 @@ describe('site-relative hrefs in the API', () => {
     for (const b of retired) {
       expect(() => absolutizeSiteHrefs(`<a href="${b}/datasets/cow/">C</a>`)).toThrow(/retired base/);
       expect(() => absolutizeSiteHrefs(`<a href="${b}">C</a>`)).toThrow(/retired base/);
+      expect(() => absolutizeSiteHrefs(`<a href="${b}?t=x">C</a>`)).toThrow(/retired base/);
+      expect(() => absolutizeSiteHrefs(`<a href="${b}#matrix">C</a>`)).toThrow(/retired base/);
     }
     // A current-base path that merely starts with the same letters is not retired.
     expect(absolutizeSiteHrefs(`<a href="${SITE_BASE}/caailx/">C</a>`)).toBe(`<a href="${SITE_URL}caailx/">C</a>`);

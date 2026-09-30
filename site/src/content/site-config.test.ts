@@ -17,7 +17,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { RETIRED_BASES, RETIRED_ORIGINS, SITE_BASE, SITE_ORIGIN, SITE_URL } from './site-config';
+import { isUnderBase, RETIRED_BASES, RETIRED_ORIGINS, SITE_BASE, SITE_ORIGIN, SITE_URL } from './site-config';
 
 const SITE_DIR = fileURLToPath(new URL('../../', import.meta.url));
 const REPO_DIR = fileURLToPath(new URL('../../../', import.meta.url));
@@ -90,6 +90,11 @@ describe('site-config', () => {
     expect(originRe.test(`'https://example.org/'`)).toBe(false);
   });
 
+  it('decides what lies under a base at a segment boundary', () => {
+    for (const p of ['/caail', '/caail/', '/caail/x/', '/caail?t=a', '/caail#m']) expect(isUnderBase(p, '/caail')).toBe(true);
+    for (const p of ['/caailx', '/caailx/', '/x/caail/', '/']) expect(isUnderBase(p, '/caail')).toBe(false);
+  });
+
   it('composes SITE_URL from the origin and base', () => {
     expect(SITE_URL).toBe(`${SITE_ORIGIN}${SITE_BASE}/`);
   });
@@ -153,7 +158,7 @@ describe('site-config', () => {
         const target = m[1] ?? m[2];
         if (target.startsWith('//')) continue; // protocol-relative, not site-relative
         seen++;
-        const retired = RETIRED_BASES.some((b) => target === b || target.startsWith(`${b}/`));
+        const retired = RETIRED_BASES.some((b) => isUnderBase(target, b));
         if (!target.startsWith(`${SITE_BASE}/`) || retired) bad.push(`${f}: ${target}`);
       }
       const origin = f in ALLOWED ? null : text.match(originRe);

@@ -14,6 +14,7 @@ import catalog from '../content/data/catalog.json';
 import papers from '../content/data/papers.json';
 import talks from '../content/data/talks.json';
 import {
+  absolute,
   pageJsonLd,
   breadcrumbList,
   softwareItems,
@@ -34,6 +35,15 @@ const videoCount = talks.sections.reduce(
   (n, s) => n + s.items.filter((i) => i.kind === 'video' && i.videoId).length,
   0,
 );
+
+describe('absolute', () => {
+  it('makes a relative, root-relative or already-absolute path the same URL, at any base', () => {
+    const want = `${SITE_URL}datasets/readme/`;
+    expect(absolute('datasets/readme/')).toBe(want);
+    expect(absolute(`${SITE_BASE}/datasets/readme/`)).toBe(want);
+    expect(absolute(want)).toBe(want);
+  });
+});
 
 describe('pageJsonLd — routing', () => {
   it('returns null on the home page (global graph already covers it)', () => {

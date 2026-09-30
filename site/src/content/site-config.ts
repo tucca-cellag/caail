@@ -25,3 +25,12 @@ export const SITE_URL = `${SITE_ORIGIN}${SITE_BASE}/`;
  */
 export const RETIRED_ORIGINS: readonly string[] = ['https://tucca-cellag.github.io'];
 export const RETIRED_BASES: readonly string[] = ['/caail'];
+
+/**
+ * Whether a root-relative path lies under `base`: the base itself, or the base
+ * followed by `/`, `?` or `#`. A bare prefix test would also accept `/caailx`, and
+ * testing for `${base}/` alone misses `/caail?t=x` and `/caail#matrix`.
+ */
+export function isUnderBase(path: string, base: string): boolean {
+  return path.startsWith(base) && (path.length === base.length || '/?#'.includes(path[base.length]));
+}

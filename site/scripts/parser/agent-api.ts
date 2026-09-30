@@ -33,7 +33,7 @@ import { fileURLToPath } from 'node:url';
 import { assertValid, buildOpenApiDocument, OPENAPI_FILE } from './openapi.js';
 import { MATRIX_SECTION } from './types.js';
 import type { Catalog, CatalogEntry, DatasetInventory, PapersData } from './types.js';
-import { RETIRED_BASES, SITE_BASE, SITE_URL } from '../../src/content/site-config.ts';
+import { isUnderBase, RETIRED_BASES, SITE_BASE, SITE_URL } from '../../src/content/site-config.ts';
 import { CATALOG_SOURCES } from './catalog.js';
 import { dedicatedLink, GITHUB_BLOB_BASE } from '../dedicated-links.ts';
 
@@ -100,7 +100,7 @@ export const PLACEMENT_NOTE =
  */
 export function absolutizeSiteHrefs(html: string): string {
   return html.replace(/(?<=\s)(href|src)="(\/(?!\/)[^"]*)"/g, (_, attr: string, path: string) => {
-    const retired = RETIRED_BASES.find((b) => b !== SITE_BASE && (path === b || path.startsWith(`${b}/`)));
+    const retired = RETIRED_BASES.find((b) => b !== SITE_BASE && isUnderBase(path, b));
     if (retired !== undefined) {
       throw new Error(`agent-api: ${attr}="${path}" is under the retired base ${retired}; the site now lives at ${SITE_URL}.`);
     }
