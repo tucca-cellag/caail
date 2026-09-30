@@ -212,10 +212,7 @@ def find_pdf_ftcache(api_base: str, group: int, item_key: str, storage: Path) ->
     # The paper's own text, never a tagged supplement: the same rule the Docling
     # ingest uses, so the two pipelines cannot read different files for one ref.
     key, reason = scope.select_main_pdf(kids)
-    if reason == "ambiguous-main-pdf":
-        print(f"WARNING: Zotero item {item_key} (group {group}) has more than one "
-              f"untagged PDF; tag each supplement '{scope.SUPPLEMENT_TAG}'. Skipped.",
-              file=sys.stderr)
+    scope.warn_if_ambiguous(item_key, group, reason)
     if not key:
         return None
     ftc = storage / key / ".zotero-ft-cache"

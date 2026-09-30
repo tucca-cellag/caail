@@ -198,6 +198,25 @@ def resolve_main_pdf(api, group, item_key):
     return select_main_pdf(fetch_item_children(api, group, item_key))
 
 
+# What a curator does about each refusal, worded once so every script that
+# reports one says the same thing.
+PDF_REASON_TEXT = {
+    "no-pdf-attachment": "no PDF attached",
+    "only-supplement-pdfs": "only PDFs tagged as supplements are attached",
+    "ambiguous-main-pdf": (f"more than one untagged PDF; tag each supplement "
+                           f"'{SUPPLEMENT_TAG}', or remove a duplicate copy of "
+                           "the paper"),
+}
+
+
+def warn_if_ambiguous(item_key, group, reason):
+    """Report an ambiguous item on stderr: the refusal a curator can fix."""
+    if reason == "ambiguous-main-pdf":
+        print(f"WARNING: Zotero item {item_key} (group {group}) has "
+              f"{PDF_REASON_TEXT[reason]}. Skipped rather than guessed.",
+              file=sys.stderr)
+
+
 def find_pdf_attachment_key(api, group, item_key):
     """Return the main-text PDF attachment's Zotero key, or None.
 
@@ -206,10 +225,7 @@ def find_pdf_attachment_key(api, group, item_key):
     Callers that record a per-item reason should use resolve_main_pdf.
     """
     key, reason = resolve_main_pdf(api, group, item_key)
-    if reason == "ambiguous-main-pdf":
-        print(f"WARNING: Zotero item {item_key} (group {group}) has more than "
-              f"one untagged PDF; tag each supplement '{SUPPLEMENT_TAG}'. "
-              "Skipped rather than guessed.", file=sys.stderr)
+    warn_if_ambiguous(item_key, group, reason)
     return key
 
 
@@ -478,7 +494,9 @@ def render_markdown(report, collection_labels):
             out.append(f"- **PDF attached** "
                        f"(key `{item['pdf_key']}`) — no ft-cache yet\n")
         else:
-            out.append(f"- **No PDF attached.**\n")
+            reason = item.get("pdf_reason") or "no-pdf-attachment"
+            out.append(f"- **No main-text PDF:** "
+                       f"{PDF_REASON_TEXT.get(reason, reason)}.\n")
 
     # Gap summary
     out.append("\n## Summary: GAPS grouped by collection\n")
@@ -595,9 +613,13 @@ def main():
         else:
             item["status"] = ("GAP", None)
         summary["gaps"] += 1
-        # Pull PDF + data-availability evidence for actionable items
-        pdf_key = find_pdf_attachment_key(args.api, args.group, item["key"])
+        # Pull PDF + data-availability evidence for actionable items. The
+        # reason travels with the item, so the report and --json both say why
+        # there is no main text instead of calling a refused item PDF-less.
+        pdf_key, pdf_reason = resolve_main_pdf(args.api, args.group, item["key"])
+        warn_if_ambiguous(item["key"], args.group, pdf_reason)
         item["pdf_key"] = pdf_key
+        item["pdf_reason"] = pdf_reason
         if pdf_key:
             ftc = os.path.join(args.zotero_storage, pdf_key, ".zotero-ft-cache")
             item["data_avail"] = grep_data_availability(ftc)

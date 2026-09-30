@@ -40,7 +40,7 @@ from pathlib import Path
 # Reuse scope.py's Zotero helpers (same .claude/skills/ parent).
 _SCOPE_DIR = Path(__file__).resolve().parents[1] / "zotero-collection-scope"
 sys.path.insert(0, str(_SCOPE_DIR))
-import scope  # noqa: E402  (_get, _paginate, find_pdf_attachment_key, normalize_item)
+import scope  # noqa: E402  (_get, _paginate, resolve_main_pdf, normalize_item)
 
 
 # ---------------------------------------------------------------------------
@@ -379,6 +379,10 @@ def main():
             # this False there would hide a complete methods section from every
             # consumer that filters on it, which is all of them.
             "has_fulltext": False,
+            # Why Zotero gave no main-text PDF, from scope.select_main_pdf
+            # ("ambiguous-main-pdf" needs a supplement tagged), or "" when it
+            # gave one. Without it a refused ref reads the same as a PDF-less one.
+            "pdf_reason": "",
             "zotero_group": None,
             # Provenance for methods_text. Consumers that weigh evidence should
             # read these: a "ftcache" section may be truncated and may run past
@@ -413,7 +417,8 @@ def main():
         group, item = hit
         rec["zotero_group"] = group
         rec["abstract"] = (item.get("data", {}).get("abstractNote") or "").strip()
-        pdf_key = scope.find_pdf_attachment_key(args.api, group, item.get("key"))
+        pdf_key, rec["pdf_reason"] = scope.resolve_main_pdf(args.api, group, item.get("key"))
+        scope.warn_if_ambiguous(item.get("key"), group, rec["pdf_reason"])
         fulltext = read_ftcache(args.zotero_storage, pdf_key)
         rec["fulltext_chars"] = len(fulltext)
         if fulltext:

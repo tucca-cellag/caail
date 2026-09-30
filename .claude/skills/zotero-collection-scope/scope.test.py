@@ -71,6 +71,15 @@ for name, children, want in CASES:
     if not ok:
         print(f"         got {got!r}, want {want!r}")
 
+# Every refusal is reported to a curator through PDF_REASON_TEXT, so a new
+# reason without wording would print as a bare code.
+reasons = {want[1] for _, _, want in CASES if want[1]}
+unworded = sorted(reasons - set(scope.PDF_REASON_TEXT))
+if unworded:
+    fails += 1
+print(f'  [{"PASS" if not unworded else "FAIL"}] every refusal reason has '
+      f'curator text{"" if not unworded else f" (missing {unworded})"}')
+
 
 def old_first_listed(children):
     """The rule this replaced: the first PDF attachment, whatever it is."""
@@ -92,7 +101,9 @@ print(f'  [{"PASS" if ok else "FAIL"}] the old rule converts the supplement '
 # own is how the ingest and the audit could read different files for one ref.
 print("\n=== no second copy of the rule ===")
 skills = os.path.dirname(HERE)
-pattern = re.compile(r"contentType.{0,80}application/pdf", re.S)
+# Any mention of the PDF content type, not only `contentType == "application/pdf"`:
+# a reversed comparison, a module constant or a membership test is the same copy.
+pattern = re.compile(r"application/pdf")
 exempt = {os.path.abspath(scope.__file__), os.path.abspath(__file__)}
 copies = 0
 for root, _, files in os.walk(skills):
@@ -104,11 +115,11 @@ for root, _, files in os.walk(skills):
             hit = pattern.search(fh.read())
         if hit:
             copies += 1
-            print(f"  [FAIL] {os.path.relpath(path, skills)} selects attachments by "
-                  "content type itself; call scope.select_main_pdf instead")
+            print(f"  [FAIL] {os.path.relpath(path, skills)} names the PDF content "
+                  "type itself; call scope.select_main_pdf instead")
 fails += copies
 if not copies:
-    print("  [PASS] only scope.py selects attachments by content type")
+    print("  [PASS] no skill script but scope.py names the PDF content type")
 
 print(f'\n{"FAILED" if fails else "OK"}: {fails} failure(s)')
 sys.exit(1 if fails else 0)
