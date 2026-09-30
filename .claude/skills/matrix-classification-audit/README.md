@@ -51,6 +51,23 @@ python3 .claude/skills/matrix-classification-audit/extract_matrix_corpus.py
 The ingest is resumable: a ref whose `sections/` file exists is skipped, so an
 interrupted run is restarted with the same command.
 
+**Which attachment it converts.** A paper's main text is its one PDF attachment not tagged
+`supplement` in Zotero (`scope.select_main_pdf`). A ref with two or more untagged PDFs is
+skipped as `ambiguous-main-pdf` and logged with that reason rather than guessed; tag each
+supplement, or remove a duplicate copy of the paper, and the next run picks it up.
+
+**One file, PDF or JATS.** `--file` converts a single file you already have, bypassing
+Zotero, and writes the same `docs/` and `sections/` output under the id given by `--ref`.
+It accepts a PDF or JATS full text (`.nxml`, as PMC names it, or `.xml`); the converter is
+restricted to those two formats, so an XML file that is not JATS is refused rather than read
+as something else. A JATS document has no pages, so its page fields are `null`.
+
+```bash
+uv run --python 3.12 --with docling \
+    python .claude/skills/matrix-classification-audit/docling_ingest.py \
+    --file PMC1234567.nxml --ref 42
+```
+
 **After changing the section rule, re-span rather than re-ingest.** `docs/` is the durable
 artifact and `sections/` is derived from it, so improving `docling_sections.py` costs
 seconds instead of another full conversion:

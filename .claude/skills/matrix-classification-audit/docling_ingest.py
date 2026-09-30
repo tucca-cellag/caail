@@ -67,8 +67,38 @@ def build_converter():
     opts = PdfPipelineOptions()
     opts.do_ocr = False
     opts.do_table_structure = True
+    # JATS is the structured full text Europe PMC serves for open-access papers
+    # (CAAIL-436). Restricting the formats matters: `.xml` is also claimed by
+    # Docling's XBRL and USPTO backends, so an unrestricted converter could read
+    # a JATS file as something else. Anything outside these two is refused.
     return DocumentConverter(
+        allowed_formats=[InputFormat.PDF, InputFormat.XML_JATS],
         format_options={InputFormat.PDF: PdfFormatOption(pipeline_options=opts)})
+
+
+# The input formats convert_file accepts, by suffix. `.nxml` is PMC's own
+# extension for JATS; `.xml` is accepted too, and the converter's allowed
+# formats keep a non-JATS XML file from being read as one.
+INPUT_SUFFIXES = {".pdf": "pdf", ".nxml": "jats", ".xml": "jats"}
+
+
+def convert_file(converter, path, rid, out):
+    """Convert one PDF or JATS file to docs/ref-<rid>.json and sections/.
+
+    The single-file entry point: the Zotero batch below calls it per ref, and
+    the shared intake pipeline calls it on a file it fetched itself (JATS from
+    Europe PMC), so both produce the same DoclingDocument JSON. A JATS document
+    has no pages, so its page fields are None.
+    """
+    path = Path(path)
+    if path.suffix.lower() not in INPUT_SUFFIXES:
+        raise ValueError(f"unsupported input {path.name}: expected one of "
+                         f"{sorted(INPUT_SUFFIXES)}")
+    doc = converter.convert(str(path)).document
+    (out / "docs" / f"ref-{rid}.json").write_text(
+        json.dumps(doc.export_to_dict(), ensure_ascii=False))
+    span, n_chars = write_section(out, rid, doc)
+    return doc, span, n_chars
 
 
 def collect_headings(doc):
@@ -276,6 +306,11 @@ def main():
                     help="convert only these ref ids (repeatable)")
     ap.add_argument("--matrix-only", action="store_true",
                     help="skip refs that participate in no matrix cell")
+    ap.add_argument("--file",
+                    help="convert this one PDF or JATS (.nxml/.xml) file instead "
+                         "of resolving refs through Zotero; needs --ref")
+    ap.add_argument("--ref", type=int,
+                    help="the ref id the --file output is written under")
     ap.add_argument("--respan", action="store_true",
                     help="recompute sections/ from the stored docs/ without "
                          "reconverting any PDF. Run after changing the section "
@@ -289,6 +324,17 @@ def main():
 
     if args.respan:
         respan(out)
+        return
+
+    if args.file:
+        if args.ref is None:
+            sys.exit("--file needs --ref, the id to write the output under")
+        t0 = time.time()
+        doc, span, n_chars = convert_file(build_converter(), args.file, args.ref, out)
+        print(json.dumps({"id": args.ref, "file": args.file, "strategy": span["strategy"],
+                          "heading": span["heading"], "chars": n_chars,
+                          "n_headings": len(collect_headings(doc)),
+                          "seconds": round(time.time() - t0, 1)}))
         return
 
     targets = resolve_pdfs(args.api, groups, args.zotero_storage, args.papers)
@@ -325,10 +371,7 @@ def main():
 
         t0 = time.time()
         try:
-            doc = converter.convert(t["pdf"]).document
-            (out / "docs" / f"ref-{rid}.json").write_text(
-                json.dumps(doc.export_to_dict(), ensure_ascii=False))
-            span, n_chars = write_section(out, rid, doc)
+            doc, span, n_chars = convert_file(converter, t["pdf"], rid, out)
             rec.update(ok=True, error="", strategy=span["strategy"],
                        chars=n_chars, n_pages=doc.num_pages())
             converted += 1
