@@ -105,8 +105,8 @@ describe('openapi.json', () => {
 
   it('does not invite a consumer to join these paths onto the raw mirror', () => {
     // The mirror is the DEFAULT route for the primary consumer (SKILL.md sends agents at
-    // the raw URLs), and with no `servers` block these paths only resolve on the Pages
-    // origin. Advertising the mirror without saying so produced a 404 by construction.
+    // the raw URLs), and with no `servers` block these paths only resolve on the site's
+    // own origin. Advertising the mirror without saying so produced a 404 by construction.
     const d = doc.info.description as string;
     expect(d).toMatch(/raw\.githubusercontent\.com/);
     expect(d).toMatch(/by filename/i);

@@ -31,7 +31,7 @@ import {
   absolutizeFragments,
   assertAbsoluteLinks,
 } from './agent-api.js';
-import { SITE_BASE, SITE_ORIGIN, SITE_URL } from '../../src/content/site-config.ts';
+import { RETIRED_BASES, SITE_BASE, SITE_ORIGIN, SITE_URL } from '../../src/content/site-config.ts';
 import { buildPapersModel } from './papers.js';
 import { buildCatalogModel } from './catalog.js';
 import { buildDatasetsModel } from './datasets-entries.js';
@@ -464,6 +464,19 @@ describe('site-relative hrefs in the API', () => {
   it.skipIf(SITE_BASE === '')('fails on a root-relative link outside the base instead of publishing a 404', () => {
     // Every site link the rewriters emit carries the base; one that does not is a bug.
     expect(() => absolutizeSiteHrefs('<a href="/talks/">T</a>')).toThrow(/outside the site base/);
+  });
+
+  it('fails on a link under a retired base instead of publishing a 404', () => {
+    // Runs at any base, unlike the test above: a stale `/caail/...` href is the defect a
+    // domain-root base cannot see, since every root-relative path is inside ''.
+    const retired = RETIRED_BASES.filter((b) => b !== SITE_BASE);
+    expect(retired.length).toBeGreaterThan(0);
+    for (const b of retired) {
+      expect(() => absolutizeSiteHrefs(`<a href="${b}/datasets/cow/">C</a>`)).toThrow(/retired base/);
+      expect(() => absolutizeSiteHrefs(`<a href="${b}">C</a>`)).toThrow(/retired base/);
+    }
+    // A current-base path that merely starts with the same letters is not retired.
+    expect(absolutizeSiteHrefs(`<a href="${SITE_BASE}/caailx/">C</a>`)).toBe(`<a href="${SITE_URL}caailx/">C</a>`);
   });
 
   it('fails on any link the API cannot make absolute, so the spec promise holds', () => {

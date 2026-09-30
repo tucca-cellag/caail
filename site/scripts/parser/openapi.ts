@@ -393,13 +393,13 @@ export function buildOpenApiDocument(corpusDate: string): unknown {
         'that writes them. ' +
         // Spelled out because the mirror is the DEFAULT path for the primary consumer, not
         // a fallback: SKILL.md routes agents at the raw URLs. With no `servers` block the
-        // OpenAPI base is the document's own origin, so these paths resolve on Pages and
+        // OpenAPI base is the document's own origin, so these paths resolve on the site and
         // NOT against the mirror, whose prefix is different. Saying "the same files are
         // also at <mirror>" without this invites joining the two into a 404.
-        `The paths below are absolute on the GitHub Pages origin, ${SITE_ORIGIN}. ` +
+        `The paths below are absolute on the site's origin, ${SITE_ORIGIN}. ` +
         'The same files are mirrored per-filename at ' +
         'https://raw.githubusercontent.com/tucca-cellag/caail/main/site/public/api/, which ' +
-        'some clients can reach when Pages is not allow-listed. Resolve that mirror by ' +
+        'some clients can reach when that origin is not allow-listed. Resolve that mirror by ' +
         'filename; do not join the paths below onto it.',
       license: {
         name: 'MIT (CAAIL curation). Linked third-party resources keep their own licenses.',

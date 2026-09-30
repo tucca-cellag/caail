@@ -33,7 +33,7 @@ import { fileURLToPath } from 'node:url';
 import { assertValid, buildOpenApiDocument, OPENAPI_FILE } from './openapi.js';
 import { MATRIX_SECTION } from './types.js';
 import type { Catalog, CatalogEntry, DatasetInventory, PapersData } from './types.js';
-import { SITE_BASE, SITE_URL } from '../../src/content/site-config.ts';
+import { RETIRED_BASES, SITE_BASE, SITE_URL } from '../../src/content/site-config.ts';
 import { CATALOG_SOURCES } from './catalog.js';
 import { dedicatedLink, GITHUB_BLOB_BASE } from '../dedicated-links.ts';
 
@@ -93,9 +93,17 @@ export const PLACEMENT_NOTE =
  * the origin would publish a real-looking 404, so it fails the build instead. Only
  * whole `href`/`src` attributes count (not `data-href`), and protocol-relative `//…`
  * is left alone. The base comes from site-config.ts, which astro.config.mjs also reads.
+ *
+ * At a domain root every root-relative path is inside the empty base, so the check
+ * that can still fire there is the retired-base one: a path under a base the site has
+ * left (`/caail/...`) is a stale link that would publish as a real-looking 404.
  */
 export function absolutizeSiteHrefs(html: string): string {
   return html.replace(/(?<=\s)(href|src)="(\/(?!\/)[^"]*)"/g, (_, attr: string, path: string) => {
+    const retired = RETIRED_BASES.find((b) => b !== SITE_BASE && (path === b || path.startsWith(`${b}/`)));
+    if (retired !== undefined) {
+      throw new Error(`agent-api: ${attr}="${path}" is under the retired base ${retired}; the site now lives at ${SITE_URL}.`);
+    }
     if (path !== SITE_BASE && !path.startsWith(`${SITE_BASE}/`)) {
       throw new Error(`agent-api: ${attr}="${path}" is root-relative but outside the site base ${SITE_BASE}.`);
     }

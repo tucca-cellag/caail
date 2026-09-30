@@ -17,20 +17,10 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { SITE_BASE, SITE_ORIGIN, SITE_URL } from './site-config';
+import { RETIRED_BASES, RETIRED_ORIGINS, SITE_BASE, SITE_ORIGIN, SITE_URL } from './site-config';
 
 const SITE_DIR = fileURLToPath(new URL('../../', import.meta.url));
 const REPO_DIR = fileURLToPath(new URL('../../../', import.meta.url));
-
-/**
- * Where the site used to deploy. After a move, a leftover copy of a retired value
- * is the thing this file exists to catch, and a sweep for the current value alone
- * cannot see it: at a domain root the current base is empty, so no code can
- * "spell it out" and a stale `/caail/` link would pass. Append on every move;
- * never remove an entry.
- */
-const RETIRED_ORIGINS = ['https://tucca-cellag.github.io'];
-const RETIRED_BASES = ['/caail'];
 
 /** Every base code must not hand-type: the current one (when non-empty) and every retired one. */
 const SWEPT_BASES = [SITE_BASE, ...RETIRED_BASES].filter((b) => b !== '');

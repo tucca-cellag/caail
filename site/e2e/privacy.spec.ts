@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import { SITE_URL } from '../src/content/site-config';
+import { SITE_ORIGIN, SITE_URL } from '../src/content/site-config';
 
 // ---------------------------------------------------------------------------
 // Privacy page — reachable from every page, states the live collection
@@ -226,7 +226,7 @@ test('the beacon does load on the deployed origin', async ({ page, context }) =>
   await context.route('**/*', (route) =>
     route.request().url().startsWith('http://localhost') ? route.continue() : route.abort(),
   );
-  await context.route('https://caail.tufts.edu/**', (route) =>
+  await context.route(`${SITE_ORIGIN}/**`, (route) =>
     route.request().url() === DEPLOYED
       ? route.fulfill({ status: 200, contentType: 'text/html', body: html })
       : // Subresources resolve against the faked host too; empty is fine, the
