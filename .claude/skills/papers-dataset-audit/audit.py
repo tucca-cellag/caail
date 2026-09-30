@@ -24,6 +24,9 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Iterable
 
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "zotero-collection-scope"))
+import scope  # noqa: E402  (select_main_pdf: the one main-PDF rule, CAAIL-436)
+
 # ---------- accession patterns ----------
 
 ACCESSION_PATTERNS = [
@@ -206,13 +209,17 @@ def find_pdf_ftcache(api_base: str, group: int, item_key: str, storage: Path) ->
         kids = fetch_json(f"{api_base}/groups/{group}/items/{item_key}/children?format=json")
     except Exception:
         return None
-    for c in kids:
-        cd = c.get("data", {})
-        if cd.get("itemType") == "attachment" and cd.get("contentType") == "application/pdf":
-            ftc = storage / cd["key"] / ".zotero-ft-cache"
-            if ftc.is_file():
-                return ftc
-    return None
+    # The paper's own text, never a tagged supplement: the same rule the Docling
+    # ingest uses, so the two pipelines cannot read different files for one ref.
+    key, reason = scope.select_main_pdf(kids)
+    if reason == "ambiguous-main-pdf":
+        print(f"WARNING: Zotero item {item_key} (group {group}) has more than one "
+              f"untagged PDF; tag each supplement '{scope.SUPPLEMENT_TAG}'. Skipped.",
+              file=sys.stderr)
+    if not key:
+        return None
+    ftc = storage / key / ".zotero-ft-cache"
+    return ftc if ftc.is_file() else None
 
 
 # ---------- accession extraction ----------

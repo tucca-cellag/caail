@@ -248,13 +248,16 @@ def resolve_pdfs(api, groups, storage, papers_md):
                         "in_matrix": rid in matrix_ids})
             continue
         group, item = hit
-        pdf_key = scope.find_pdf_attachment_key(api, group, item.get("key"))
+        # A supplement tagged in Zotero is never taken for the paper, and an
+        # item with two untagged PDFs is skipped with its reason rather than
+        # converted from whichever one Zotero happens to list first (CAAIL-436).
+        pdf_key, why = scope.resolve_main_pdf(api, group, item.get("key"))
         d = Path(storage) / pdf_key if pdf_key else None
         pdfs = sorted(d.glob("*.pdf")) if d and d.is_dir() else []
         out.append({
             "id": rid,
             "pdf": str(pdfs[0]) if pdfs else "",
-            "why": "" if pdfs else "no-pdf-attachment",
+            "why": "" if pdfs else (why or "pdf-not-in-storage"),
             "in_matrix": rid in matrix_ids,
         })
     return out

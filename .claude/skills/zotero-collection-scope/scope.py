@@ -159,12 +159,58 @@ def resolve_collection_name(api, group, name_query):
 # Per-item evidence pull
 # ---------------------------------------------------------------------------
 
+# A child attachment carrying this Zotero tag is a supplement, never the paper's
+# main text (CAAIL-436). The tag is the only marker the code reads: a
+# "Supplementary: <name>" title helps a person scanning Zotero, but a mistyped
+# title must not be able to change which file gets converted.
+SUPPLEMENT_TAG = "supplement"
+
+
+def is_supplement(child):
+    """True when a Zotero child item carries the supplement tag."""
+    tags = child.get("data", {}).get("tags") or []
+    return any((t.get("tag") or "").strip().lower() == SUPPLEMENT_TAG
+               for t in tags)
+
+
+def select_main_pdf(children):
+    """Pick the paper's main-text PDF from an item's Zotero children.
+
+    Returns (key, reason). Exactly one untagged PDF is the main text and
+    returns (key, ""). Otherwise the key is None and the reason says why:
+    "no-pdf-attachment", "only-supplement-pdfs", or "ambiguous-main-pdf" when
+    two or more PDFs are untagged. The last is refused rather than guessed,
+    because the old first-listed rule converted a supplement as if it were
+    the paper and nothing downstream could tell.
+    """
+    pdfs = [c for c in children
+            if c.get("data", {}).get("contentType") == "application/pdf"]
+    mains = [c for c in pdfs if not is_supplement(c)]
+    if len(mains) == 1:
+        return mains[0].get("data", {}).get("key"), ""
+    if mains:
+        return None, "ambiguous-main-pdf"
+    return None, "only-supplement-pdfs" if pdfs else "no-pdf-attachment"
+
+
+def resolve_main_pdf(api, group, item_key):
+    """(key, reason) for an item's main-text PDF; see select_main_pdf."""
+    return select_main_pdf(fetch_item_children(api, group, item_key))
+
+
 def find_pdf_attachment_key(api, group, item_key):
-    """Return the first PDF attachment's Zotero key, or None."""
-    for c in fetch_item_children(api, group, item_key):
-        if c.get("data", {}).get("contentType") == "application/pdf":
-            return c.get("data", {}).get("key")
-    return None
+    """Return the main-text PDF attachment's Zotero key, or None.
+
+    None covers every case select_main_pdf refuses. An ambiguous item is also
+    reported on stderr, since it is the one a curator can fix by tagging.
+    Callers that record a per-item reason should use resolve_main_pdf.
+    """
+    key, reason = resolve_main_pdf(api, group, item_key)
+    if reason == "ambiguous-main-pdf":
+        print(f"WARNING: Zotero item {item_key} (group {group}) has more than "
+              f"one untagged PDF; tag each supplement '{SUPPLEMENT_TAG}'. "
+              "Skipped rather than guessed.", file=sys.stderr)
+    return key
 
 
 DATA_AVAIL_RE = re.compile(
