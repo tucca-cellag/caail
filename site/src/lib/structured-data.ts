@@ -46,9 +46,9 @@ export function absolute(pathname: string): string {
 }
 
 /** Route segments below the base, e.g. '/datasets/cow/' → ['datasets','cow']. */
-export function routeSegments(pathname: string): string[] {
+export function routeSegments(pathname: string, base: string = SITE_BASE): string[] {
   const p = pathname.startsWith(SITE_ORIGIN) ? pathname.slice(SITE_ORIGIN.length) : pathname;
-  const belowBase = p.startsWith(SITE_BASE) ? p.slice(SITE_BASE.length) : p;
+  const belowBase = base !== '' && isUnderBase(p, base) ? p.slice(base.length) : p;
   return belowBase.split('/').filter(Boolean);
 }
 

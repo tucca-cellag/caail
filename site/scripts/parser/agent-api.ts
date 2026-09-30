@@ -98,16 +98,16 @@ export const PLACEMENT_NOTE =
  * that can still fire there is the retired-base one: a path under a base the site has
  * left (`/caail/...`) is a stale link that would publish as a real-looking 404.
  */
-export function absolutizeSiteHrefs(html: string): string {
+export function absolutizeSiteHrefs(html: string, base: string = SITE_BASE, url: string = SITE_URL): string {
   return html.replace(/(?<=\s)(href|src)="(\/(?!\/)[^"]*)"/g, (_, attr: string, path: string) => {
-    const retired = RETIRED_BASES.find((b) => b !== SITE_BASE && isUnderBase(path, b));
+    const retired = RETIRED_BASES.find((b) => b !== base && isUnderBase(path, b));
     if (retired !== undefined) {
-      throw new Error(`agent-api: ${attr}="${path}" is under the retired base ${retired}; the site now lives at ${SITE_URL}.`);
+      throw new Error(`agent-api: ${attr}="${path}" is under the retired base ${retired}; the site now lives at ${url}.`);
     }
-    if (path !== SITE_BASE && !path.startsWith(`${SITE_BASE}/`)) {
-      throw new Error(`agent-api: ${attr}="${path}" is root-relative but outside the site base ${SITE_BASE}.`);
+    if (path !== base && !path.startsWith(`${base}/`)) {
+      throw new Error(`agent-api: ${attr}="${path}" is root-relative but outside the site base ${base}.`);
     }
-    return `${attr}="${SITE_URL}${path.slice(SITE_BASE.length + 1)}"`;
+    return `${attr}="${url}${path.slice(base.length + 1)}"`;
   });
 }
 

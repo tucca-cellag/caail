@@ -458,12 +458,14 @@ describe('site-relative hrefs in the API', () => {
     );
   });
 
-  // At a domain root every root-relative path is inside the base, so there is no
-  // "outside" to fail on and the guard cannot fire. Skipped rather than rewritten
-  // to pass: it becomes meaningful again the moment the site has a subpath base.
-  it.skipIf(SITE_BASE === '')('fails on a root-relative link outside the base instead of publishing a 404', () => {
+  it('fails on a root-relative link outside the base instead of publishing a 404', () => {
     // Every site link the rewriters emit carries the base; one that does not is a bug.
-    expect(() => absolutizeSiteHrefs('<a href="/talks/">T</a>')).toThrow(/outside the site base/);
+    // Run under a subpath base whatever the deployed one is: at a domain root every
+    // root-relative path is inside '', so the deployed base cannot reach this branch.
+    const [base, url] = ['/sub', 'https://example.org/sub/'];
+    expect(() => absolutizeSiteHrefs('<a href="/talks/">T</a>', base, url)).toThrow(/outside the site base/);
+    expect(() => absolutizeSiteHrefs('<a href="/subx/">T</a>', base, url)).toThrow(/outside the site base/);
+    expect(absolutizeSiteHrefs('<a href="/sub/talks/">T</a>', base, url)).toBe('<a href="https://example.org/sub/talks/">T</a>');
   });
 
   it('fails on a link under a retired base instead of publishing a 404', () => {

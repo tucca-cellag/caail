@@ -15,6 +15,7 @@ import papers from '../content/data/papers.json';
 import talks from '../content/data/talks.json';
 import {
   absolute,
+  routeSegments,
   pageJsonLd,
   breadcrumbList,
   softwareItems,
@@ -42,6 +43,14 @@ describe('absolute', () => {
     expect(absolute('datasets/readme/')).toBe(want);
     expect(absolute(`${SITE_BASE}/datasets/readme/`)).toBe(want);
     expect(absolute(want)).toBe(want);
+  });
+});
+
+describe('routeSegments', () => {
+  it('strips a base only at a segment boundary', () => {
+    expect(routeSegments('/sub/datasets/cow/', '/sub')).toEqual(['datasets', 'cow']);
+    expect(routeSegments('/subx/foo/', '/sub')).toEqual(['subx', 'foo']);
+    expect(routeSegments(`${SITE_BASE}/datasets/cow/`)).toEqual(['datasets', 'cow']);
   });
 });
 

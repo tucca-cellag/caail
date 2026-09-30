@@ -173,6 +173,44 @@ describe('site-config', () => {
     expect(stale.map(([f, want]) => `${f} should contain ${want}`)).toEqual([]);
   });
 
+  it('leaves no retired origin anywhere in the repository', () => {
+    // PINNED covers the files that must carry the new value; this covers every
+    // other copy, the committed API JSON and the catalog NDJSON it is built from
+    // included. A retired host also counts without its scheme, as prose writes it,
+    // except straight after a slash: there it is a repository name inside a GitHub
+    // path, and the org site's repository is named after its old host.
+    const KEEP: Record<string, string> = {
+      'site/src/content/site-config.ts': 'the list of retired origins itself',
+      'site/HANDOFF-M2.md': 'a record of the M2 launch, true of the site it describes',
+    };
+    const retiredRe = new RegExp(
+      RETIRED_ORIGINS.map((o) => `${escapeRe(o)}|(?<![\\w/.-])${escapeRe(new URL(o).host)}(?![\\w.-])`).join('|'),
+    );
+    const files = execFileSync('git', ['ls-files', '--cached', '--others', '--exclude-standard'], {
+      cwd: REPO_DIR,
+      encoding: 'utf-8',
+    })
+      .split('\n')
+      .filter((f) => f !== '' && !(f in KEEP));
+    // An empty list would pass vacuously. 509 files on 2026-09-30 (git ls-files); the
+    // floor only has to catch a listing that silently returned nothing.
+    expect(files.length).toBeGreaterThan(400);
+    const left: string[] = [];
+    for (const f of files) {
+      let text: string;
+      try {
+        text = readFileSync(join(REPO_DIR, f), 'utf-8');
+      } catch (e) {
+        if ((e as NodeJS.ErrnoException).code === 'ENOENT') continue; // deleted in a dirty tree
+        throw e;
+      }
+      if (text.includes('\0')) continue; // binary
+      const m = text.match(retiredRe);
+      if (m) left.push(`${f}: ${m[0]}`);
+    }
+    expect(left, left.join('\n')).toEqual([]);
+  });
+
   it('leaves no retired value in a static copy', () => {
     // Containing the new value is not enough: a file with two URLs can gain the
     // new one and keep the old, and at a domain root the base-derived pins are
