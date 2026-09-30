@@ -165,6 +165,11 @@ def resolve_collection_name(api, group, name_query):
 # title must not be able to change which file gets converted.
 SUPPLEMENT_TAG = "supplement"
 
+# The one place a skill script names the PDF content type (scope.test.py fails
+# on any other). Code that needs it for something other than choosing the main
+# text, such as reading a section's recorded source, imports this.
+PDF_CONTENT_TYPE = "application/pdf"
+
 
 def is_supplement(child):
     """True when a Zotero child item carries the supplement tag."""
@@ -181,10 +186,12 @@ def select_main_pdf(children):
     "no-pdf-attachment", "only-supplement-pdfs", or "ambiguous-main-pdf" when
     two or more PDFs are untagged. The last is refused rather than guessed,
     because the old first-listed rule converted a supplement as if it were
-    the paper and nothing downstream could tell.
+    the paper and nothing downstream could tell. A link to a URL is not a
+    candidate: it has no local copy for any script to read.
     """
     pdfs = [c for c in children
-            if c.get("data", {}).get("contentType") == "application/pdf"]
+            if c.get("data", {}).get("contentType") == PDF_CONTENT_TYPE
+            and c.get("data", {}).get("linkMode") != "linked_url"]
     mains = [c for c in pdfs if not is_supplement(c)]
     if len(mains) == 1:
         return mains[0].get("data", {}).get("key"), ""
@@ -194,8 +201,14 @@ def select_main_pdf(children):
 
 
 def resolve_main_pdf(api, group, item_key):
-    """(key, reason) for an item's main-text PDF; see select_main_pdf."""
-    return select_main_pdf(fetch_item_children(api, group, item_key))
+    """(key, reason) for an item's main-text PDF; see select_main_pdf.
+
+    An ambiguous item is also reported on stderr, here rather than at each call
+    site, so no caller can forget the one refusal a curator can fix by tagging.
+    """
+    key, reason = select_main_pdf(fetch_item_children(api, group, item_key))
+    warn_if_ambiguous(item_key, group, reason)
+    return key, reason
 
 
 # What a curator does about each refusal, worded once so every script that
@@ -220,13 +233,10 @@ def warn_if_ambiguous(item_key, group, reason):
 def find_pdf_attachment_key(api, group, item_key):
     """Return the main-text PDF attachment's Zotero key, or None.
 
-    None covers every case select_main_pdf refuses. An ambiguous item is also
-    reported on stderr, since it is the one a curator can fix by tagging.
-    Callers that record a per-item reason should use resolve_main_pdf.
+    None covers every case select_main_pdf refuses. Callers that record a
+    per-item reason should use resolve_main_pdf.
     """
-    key, reason = resolve_main_pdf(api, group, item_key)
-    warn_if_ambiguous(item_key, group, reason)
-    return key
+    return resolve_main_pdf(api, group, item_key)[0]
 
 
 DATA_AVAIL_RE = re.compile(
@@ -493,8 +503,12 @@ def render_markdown(report, collection_labels):
         elif item.get("pdf_key"):
             out.append(f"- **PDF attached** "
                        f"(key `{item['pdf_key']}`) — no ft-cache yet\n")
+        elif "pdf_reason" not in item:
+            # Evidence is pulled for gaps only; say so rather than report a
+            # PDF as missing that nobody looked for.
+            out.append("- **PDF:** not checked (evidence is pulled for gaps only).\n")
         else:
-            reason = item.get("pdf_reason") or "no-pdf-attachment"
+            reason = item["pdf_reason"]
             out.append(f"- **No main-text PDF:** "
                        f"{PDF_REASON_TEXT.get(reason, reason)}.\n")
 
@@ -617,7 +631,6 @@ def main():
         # reason travels with the item, so the report and --json both say why
         # there is no main text instead of calling a refused item PDF-less.
         pdf_key, pdf_reason = resolve_main_pdf(args.api, args.group, item["key"])
-        warn_if_ambiguous(item["key"], args.group, pdf_reason)
         item["pdf_key"] = pdf_key
         item["pdf_reason"] = pdf_reason
         if pdf_key:

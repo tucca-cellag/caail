@@ -393,6 +393,10 @@ def main():
             "methods_end_heading": "",
             "methods_pages": None,      # [first, last] for docling sections
             "methods_truncated": False,
+            # The file a docling section was converted from, as the ingest
+            # recorded it ({"filename", "mimetype"}), or None. A JATS section
+            # has no pages, and this is what says why methods_pages is None.
+            "methods_input": None,
         }
         # A Docling section stands on its own: it comes from the PDF, not the
         # ft-cache, so it is available even for a ref whose ft-cache is missing.
@@ -404,6 +408,7 @@ def main():
             rec["methods_strategy"] = section.get("strategy", "")
             rec["methods_heading"] = section.get("heading", "")
             rec["methods_end_heading"] = section.get("end_heading", "")
+            rec["methods_input"] = section.get("source")
             if section.get("page_start") is not None:
                 rec["methods_pages"] = [section.get("page_start"),
                                         section.get("page_end")]
@@ -418,7 +423,6 @@ def main():
         rec["zotero_group"] = group
         rec["abstract"] = (item.get("data", {}).get("abstractNote") or "").strip()
         pdf_key, rec["pdf_reason"] = scope.resolve_main_pdf(args.api, group, item.get("key"))
-        scope.warn_if_ambiguous(item.get("key"), group, rec["pdf_reason"])
         fulltext = read_ftcache(args.zotero_storage, pdf_key)
         rec["fulltext_chars"] = len(fulltext)
         if fulltext:

@@ -15,8 +15,8 @@ the old first-listed rule on the same inputs: a guard nobody has watched fail
 on the defect it guards is not evidence of anything.
 """
 import os
-import re
 import sys
+import tokenize
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
@@ -26,11 +26,13 @@ import scope  # noqa: E402
 fails = 0
 
 
-def child(key, content_type="application/pdf", tags=(), title=""):
+def child(key, content_type="application/pdf", tags=(), title="",
+          link_mode="imported_file"):
     """A Zotero child item in the local API's JSON shape."""
     return {"key": key, "data": {
         "key": key, "itemType": "attachment", "contentType": content_type,
-        "title": title, "tags": [{"tag": t} for t in tags]}}
+        "linkMode": link_mode, "title": title,
+        "tags": [{"tag": t} for t in tags]}}
 
 
 NOTE = {"key": "N1", "data": {"key": "N1", "itemType": "note", "tags": []}}
@@ -59,6 +61,9 @@ CASES = [
      [child("S", title="Supplementary: Table S2"), MAIN], (None, "ambiguous-main-pdf")),
     ("an EPUB beside the PDF is not a PDF",
      [child("E", content_type="application/epub+zip"), MAIN], ("MAIN", "")),
+    # No script can read a link to a URL, so it cannot be the main text.
+    ("a PDF linked by URL is not a candidate",
+     [child("L", link_mode="linked_url"), MAIN], ("MAIN", "")),
 ]
 
 print("=== select_main_pdf ===")
@@ -101,25 +106,36 @@ print(f'  [{"PASS" if ok else "FAIL"}] the old rule converts the supplement '
 # own is how the ingest and the audit could read different files for one ref.
 print("\n=== no second copy of the rule ===")
 skills = os.path.dirname(HERE)
-# Any mention of the PDF content type, not only `contentType == "application/pdf"`:
-# a reversed comparison, a module constant or a membership test is the same copy.
-pattern = re.compile(r"application/pdf")
 exempt = {os.path.abspath(scope.__file__), os.path.abspath(__file__)}
+
+
+def names_pdf_type(path):
+    """True when a string literal in the file spells the PDF content type.
+
+    Any string, not only `contentType == "application/pdf"`: a reversed
+    comparison, a module constant or a membership test is the same copy.
+    Comments are not code, so they are not read.
+    """
+    with open(path, encoding="utf-8") as fh:
+        tokens = tokenize.generate_tokens(fh.readline)
+        return any(t.type == tokenize.STRING and scope.PDF_CONTENT_TYPE in t.string
+                   for t in tokens)
+
+
 copies = 0
 for root, _, files in os.walk(skills):
     for f in files:
         path = os.path.abspath(os.path.join(root, f))
         if not f.endswith(".py") or path in exempt:
             continue
-        with open(path, encoding="utf-8") as fh:
-            hit = pattern.search(fh.read())
-        if hit:
+        if names_pdf_type(path):
             copies += 1
-            print(f"  [FAIL] {os.path.relpath(path, skills)} names the PDF content "
-                  "type itself; call scope.select_main_pdf instead")
+            print(f"  [FAIL] {os.path.relpath(path, skills)} spells the PDF content "
+                  "type itself; to pick an attachment call scope.select_main_pdf, "
+                  "and for anything else use scope.PDF_CONTENT_TYPE")
 fails += copies
 if not copies:
-    print("  [PASS] no skill script but scope.py names the PDF content type")
+    print("  [PASS] no skill script but scope.py spells the PDF content type")
 
 print(f'\n{"FAILED" if fails else "OK"}: {fails} failure(s)')
 sys.exit(1 if fails else 0)
