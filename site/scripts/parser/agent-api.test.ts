@@ -31,7 +31,7 @@ import {
   absolutizeFragments,
   assertAbsoluteLinks,
 } from './agent-api.js';
-import { SITE_BASE, SITE_ORIGIN, SITE_URL } from '../../src/content/site-config.ts';
+import { RETIRED_BASES, SITE_BASE, SITE_ORIGIN, SITE_URL } from '../../src/content/site-config.ts';
 import { buildPapersModel } from './papers.js';
 import { buildCatalogModel } from './catalog.js';
 import { buildDatasetsModel } from './datasets-entries.js';
@@ -449,18 +449,38 @@ describe('site-relative hrefs in the API', () => {
   it('absolutizes every root-relative href or src and leaves the rest of the HTML alone', () => {
     expect(
       absolutizeSiteHrefs(
-        '<a href="/caail/papers/explorer/">P</a> <img src="/caail/og.png"> <span data-href="/caail/x/">d</span> ' +
-          '<a href="https://x.org/">x</a> <a href="//cdn.x.org/a">c</a> see /caail/talks/',
+        `<a href="${SITE_BASE}/papers/explorer/">P</a> <img src="${SITE_BASE}/og.png"> <span data-href="${SITE_BASE}/x/">d</span> ` +
+          `<a href="https://x.org/">x</a> <a href="//cdn.x.org/a">c</a> see ${SITE_BASE}/talks/`,
       ),
     ).toBe(
-      `<a href="${SITE_URL}papers/explorer/">P</a> <img src="${SITE_URL}og.png"> <span data-href="/caail/x/">d</span> ` +
-        '<a href="https://x.org/">x</a> <a href="//cdn.x.org/a">c</a> see /caail/talks/',
+      `<a href="${SITE_URL}papers/explorer/">P</a> <img src="${SITE_URL}og.png"> <span data-href="${SITE_BASE}/x/">d</span> ` +
+        `<a href="https://x.org/">x</a> <a href="//cdn.x.org/a">c</a> see ${SITE_BASE}/talks/`,
     );
   });
 
   it('fails on a root-relative link outside the base instead of publishing a 404', () => {
     // Every site link the rewriters emit carries the base; one that does not is a bug.
-    expect(() => absolutizeSiteHrefs('<a href="/talks/">T</a>')).toThrow(/outside the site base/);
+    // Run under a subpath base whatever the deployed one is: at a domain root every
+    // root-relative path is inside '', so the deployed base cannot reach this branch.
+    const [base, url] = ['/sub', 'https://example.org/sub/'];
+    expect(() => absolutizeSiteHrefs('<a href="/talks/">T</a>', base, url)).toThrow(/outside the site base/);
+    expect(() => absolutizeSiteHrefs('<a href="/subx/">T</a>', base, url)).toThrow(/outside the site base/);
+    expect(absolutizeSiteHrefs('<a href="/sub/talks/">T</a>', base, url)).toBe('<a href="https://example.org/sub/talks/">T</a>');
+  });
+
+  it('fails on a link under a retired base instead of publishing a 404', () => {
+    // Runs at any base, unlike the test above: a stale `/caail/...` href is the defect a
+    // domain-root base cannot see, since every root-relative path is inside ''.
+    const retired = RETIRED_BASES.filter((b) => b !== SITE_BASE);
+    expect(retired.length).toBeGreaterThan(0);
+    for (const b of retired) {
+      expect(() => absolutizeSiteHrefs(`<a href="${b}/datasets/cow/">C</a>`)).toThrow(/retired base/);
+      expect(() => absolutizeSiteHrefs(`<a href="${b}">C</a>`)).toThrow(/retired base/);
+      expect(() => absolutizeSiteHrefs(`<a href="${b}?t=x">C</a>`)).toThrow(/retired base/);
+      expect(() => absolutizeSiteHrefs(`<a href="${b}#matrix">C</a>`)).toThrow(/retired base/);
+    }
+    // A current-base path that merely starts with the same letters is not retired.
+    expect(absolutizeSiteHrefs(`<a href="${SITE_BASE}/caailx/">C</a>`)).toBe(`<a href="${SITE_URL}caailx/">C</a>`);
   });
 
   it('fails on any link the API cannot make absolute, so the spec promise holds', () => {
@@ -487,7 +507,7 @@ describe('site-relative hrefs in the API', () => {
 
   it('ships no root-relative or fragment-only href in any emitted endpoint', () => {
     // An agent reading the JSON off-site (or from the raw mirror) cannot resolve
-    // "/caail/…" or "#…"; the parser's catalog summaries carry both forms for the site.
+    // "/…" or "#…"; the parser's catalog summaries carry both forms for the site.
     const files = buildAgentApi({ papers, catalog, datasets, inventory, topics, taxonomy, reports, corpusDate: DATE });
     const input = JSON.stringify(catalog);
     expect(input).toContain(`href=\\"${SITE_BASE}/`); // the input really has them

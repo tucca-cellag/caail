@@ -75,8 +75,9 @@ export default defineConfig({
   // The key is base-relative (Astro prepends `base` when it places the generated
   // page) but the DESTINATION is emitted verbatim into the meta-refresh, the
   // canonical link and the fallback anchor. Writing it without `${SITE_BASE}` builds
-  // cleanly and points every one of those at tucca-cellag.github.io/methods/…,
-  // which is a 404: this is a project page served under /caail/. Verify a new
+  // cleanly and, under any subpath base, points every one of those at the origin
+  // root, which is a 404. The prefix is empty at a domain root; keep it anyway so a
+  // later base change cannot break the redirect. Verify a new
   // redirect by reading dist/<old-path>/index.html, not by reading the config.
   redirects: {
     '/research-areas/aievaluation': `${SITE_BASE}/methods/benchmarksevaluation/`,
@@ -173,7 +174,7 @@ export default defineConfig({
         { tag: 'link', attrs: { rel: 'manifest', href: `${SITE_BASE}/site.webmanifest` } },
         { tag: 'meta', attrs: { name: 'theme-color', content: '#002E6D' } },
         // Google Search Console ownership verification (URL-prefix property for
-        // the /caail/ site). Public token — ships in the page <head>.
+        // the site). Public token — ships in the page <head>.
         {
           tag: 'meta',
           attrs: {
@@ -213,7 +214,7 @@ export default defineConfig({
         // the beacon is small and the alternative reintroduces the defect.
         //
         // Note the Lighthouse gate can no longer see this either way:
-        // lighthouserc.json collects from http://localhost:4321/caail/, which is
+        // lighthouserc.json collects from http://localhost:4321/, which is
         // precisely the origin excluded above, so CI now measures a page that
         // never loads the beacon. Its performance number is that much
         // optimistic against what a reader gets, and a beacon-induced

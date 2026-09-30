@@ -131,8 +131,8 @@ test('the notice links to the privacy statement', async ({ page }) => {
   await page.goto('./');
   await openPanel(page);
   const link = page.locator('.chat-panel-notice a');
-  // Ends-with rather than equals: the site is served under a base path, and
-  // hardcoding "/caail/privacy/" would break a fork served from the root.
+  // Ends-with rather than equals: the base path is configuration, and hardcoding
+  // the full path would break whenever it changes.
   await expect(link).toHaveAttribute('href', /\/privacy\/$/);
   // The disclosure is worthless if the page it points at 404s, so follow it.
   await link.click();

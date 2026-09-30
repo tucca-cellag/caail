@@ -17,7 +17,7 @@
 import catalog from '../content/data/catalog.json';
 import papers from '../content/data/papers.json';
 import talks from '../content/data/talks.json';
-import { SITE_BASE, SITE_ORIGIN, SITE_URL } from '../content/site-config';
+import { isUnderBase, SITE_BASE, SITE_ORIGIN, SITE_URL } from '../content/site-config';
 
 // ---------------------------------------------------------------------------
 // Identity constants — from site-config.ts, which astro.config.mjs also reads
@@ -33,17 +33,22 @@ type Node = Record<string, unknown>;
 // URL + route helpers
 // ---------------------------------------------------------------------------
 
-/** Absolute URL for a site pathname (which may or may not include the base). */
-function absolute(pathname: string): string {
-  const p = pathname.startsWith(SITE_ORIGIN) ? pathname.slice(SITE_ORIGIN.length) : pathname;
-  const withBase = p.startsWith(SITE_BASE) ? p : `${SITE_BASE}${p.startsWith('/') ? '' : '/'}${p}`;
+/**
+ * Absolute URL for a site pathname (which may or may not include the base). The
+ * leading slash is normalised on its own: tying it to the base check made a relative
+ * path at a domain root (base '') come out as `https://hostdatasets/...`.
+ */
+export function absolute(pathname: string): string {
+  const raw = pathname.startsWith(SITE_ORIGIN) ? pathname.slice(SITE_ORIGIN.length) : pathname;
+  const p = raw.startsWith('/') ? raw : `/${raw}`;
+  const withBase = SITE_BASE !== '' && isUnderBase(p, SITE_BASE) ? p : `${SITE_BASE}${p}`;
   return `${SITE_ORIGIN}${withBase}`;
 }
 
-/** Route segments below the base, e.g. '/caail/datasets/cow/' → ['datasets','cow']. */
-export function routeSegments(pathname: string): string[] {
+/** Route segments below the base, e.g. '/datasets/cow/' → ['datasets','cow']. */
+export function routeSegments(pathname: string, base: string = SITE_BASE): string[] {
   const p = pathname.startsWith(SITE_ORIGIN) ? pathname.slice(SITE_ORIGIN.length) : pathname;
-  const belowBase = p.startsWith(SITE_BASE) ? p.slice(SITE_BASE.length) : p;
+  const belowBase = base !== '' && isUnderBase(p, base) ? p.slice(base.length) : p;
   return belowBase.split('/').filter(Boolean);
 }
 
@@ -206,7 +211,7 @@ export function videoItems(): Node[] {
  * Build the per-route JSON-LD @graph for a page, or `null` when there's nothing
  * to add beyond the site-wide Organization+WebSite (the home page).
  *
- * @param pathname  Astro.url.pathname (includes the base, e.g. '/caail/software/').
+ * @param pathname  Astro.url.pathname (includes the base, if any, e.g. '/software/').
  * @param title     The page's <title> / Starlight entry title (for breadcrumbs).
  */
 export function pageJsonLd(pathname: string, title: string): Node | null {

@@ -102,6 +102,10 @@ describe('hubUrl', () => {
     );
   });
 
+  it('builds a single-slash path at a domain root', () => {
+    expect(hubUrl('/', 'topics', { t: 'food-safety' }, '')).toBe('/topics/?t=food-safety');
+  });
+
   it("clearing the secondary axes leaves the hub's primary axis alone", () => {
     // Regression guard. HubFilterBar's "Clear all" used to pass {t,tier,band} all null,
     // which also dropped the axis the hub is routed by: from

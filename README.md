@@ -1,8 +1,8 @@
 # CAAIL: Cellular Agriculture AI Library
 
-[![Website](https://img.shields.io/badge/Website-tucca--cellag.github.io%2Fcaail-002E6D?logo=github&logoColor=white)](https://tucca-cellag.github.io/caail/) [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20295590.svg)](https://doi.org/10.5281/zenodo.20295590) [![Zotero group library](https://img.shields.io/badge/Zotero-caail_group_library-CC2936?logo=zotero&logoColor=white)](https://www.zotero.org/groups/6549203/caail/library) [![Slack](https://img.shields.io/badge/Slack-join_the_community-4A154B?logo=slack&logoColor=white)](./Community.md)
+[![Website](https://img.shields.io/badge/Website-caail.tufts.edu-002E6D?logo=github&logoColor=white)](https://caail.tufts.edu/) [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20295590.svg)](https://doi.org/10.5281/zenodo.20295590) [![Zotero group library](https://img.shields.io/badge/Zotero-caail_group_library-CC2936?logo=zotero&logoColor=white)](https://www.zotero.org/groups/6549203/caail/library) [![Slack](https://img.shields.io/badge/Slack-join_the_community-4A154B?logo=slack&logoColor=white)](./Community.md)
 
-🌐 **Explore the library on the web: [tucca-cellag.github.io/caail](https://tucca-cellag.github.io/caail/)**: an interactive, searchable layer over the Markdown in this repository (papers explorer, citation network, datasets by species, and more).
+🌐 **Explore the library on the web: [caail.tufts.edu](https://caail.tufts.edu/)**: an interactive, searchable layer over the Markdown in this repository (papers explorer, citation network, datasets by species, and more).
 
 This repository, CAAIL (Cellular Agriculture AI Library), is a curated, open-source collection of resources dedicated to the intersection of Cellular Agriculture and AI. CAAIL is maintained by [The Tufts University Center for Cellular Agriculture (TUCCA)](https://cellularagriculture.tufts.edu/): see TUCCA's [GitHub organization](https://github.com/tucca-cellag) for related projects.
 
@@ -26,7 +26,7 @@ We organize and host links to public resources across key areas of research:
 # Companion Zotero Library
 CAAIL has a companion [Zotero group library](https://www.zotero.org/groups/6549203/caail/library) maintained by core TUCCA members, holding the full-text PDFs of papers under consideration. Its purpose is to give AI coding agents running on TUCCA members' machines direct access to paper full text: so that resources are classified from the actual methods rather than abstracts alone. It is a members-only working library, not a contribution channel: to suggest a resource, use the GitHub workflow in [CONTRIBUTING.md](./CONTRIBUTING.md).
 
-[Curation Methodology](https://tucca-cellag.github.io/caail/curation/) describes what that means in practice: how each paper's methods section is located against the PDF's own heading structure, how much of the matrix it currently covers, and what a placement does and does not establish.
+[Curation Methodology](https://caail.tufts.edu/curation/) describes what that means in practice: how each paper's methods section is located against the PDF's own heading structure, how much of the matrix it currently covers, and what a placement does and does not establish.
 
 # Contributing
 Suggestions of papers, software, datasets, and other resources are welcome. See [CONTRIBUTING.md](./CONTRIBUTING.md) for how to propose additions via pull request or GitHub issue.

@@ -7,6 +7,7 @@ import { siteSlug } from '../src/lib/heading-slug.ts';
 // GitHub's per-heading rule, straight from the library GitHub's anchors come from.
 import { slug as githubSlug } from 'github-slugger';
 import { DEDICATED_ROUTES } from '../src/content/dedicated-routes.ts';
+import { SITE_BASE } from '../src/content/site-config.ts';
 import { buildTalksModel } from './parser/talks.js';
 import { buildPrimersModel, PRIMER_SOURCES, rewritePrimerUrl } from './parser/primers.js';
 import { rewriteCaailLinks } from './remark/rewrite-caail-links.ts';
@@ -228,7 +229,7 @@ describe('dedicatedLink', () => {
     // a sibling-primer deep link stays internal rather than becoming a blob
     const first = buildPrimersModel().primers.find((p) => p.slug === 'ai')!.sections[0].heading;
     expect(rewritePrimerUrl(`./AI.md#${githubSlug(first)}`, 'Primers')).toEqual({
-      url: `/caail/primers/ai/#${siteSlug(first)}`,
+      url: `${SITE_BASE}/primers/ai/#${siteSlug(first)}`,
       internal: true,
     });
     // a same-page link to a real heading the hub gives no id (the H1) → its GitHub view

@@ -980,6 +980,8 @@ This section lists review articles, position papers, and commentaries that surve
 
 <a id="303">303</a> Stieberová, B., Žilka, M., Bubeníček, P., & Kubeš, T. (2026). Life cycle assessment of industrial-scale cultivated meat production: Case study of real market entry via pet food application. *The International Journal of Life Cycle Assessment, 31*(4), Article 62. https://doi.org/10.1007/s11367-026-02629-w
 
+> **Correction**: https://doi.org/10.1007/s11367-026-02697-y
+
 <a id="304">304</a> Goodwin, C. M., Aimutis, W. R., & Shirwaiker, R. A. (2024). A scoping review of cultivated meat techno-economic analyses to inform future research directions for scaled-up manufacturing. *Nature Food, 5*(11), 901–910. https://doi.org/10.1038/s43016-024-01061-3
 
 <a id="305">305</a> Orsini, F., Pierini, L., Ardoino, I., & Franchi, C. (2026). Environmental impact of cultured meat: A systematic review. *ACS Food Science & Technology, 6*(2), 227–239. https://doi.org/10.1021/acsfoodscitech.5c00908

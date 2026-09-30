@@ -15,7 +15,7 @@
  *
  * SCOPE: static files served by GET. No request bodies, no parameters, no auth,
  * and deliberately no `servers` block — the paths are the deployed absolute paths, which
- * resolve correctly against the Pages origin without one.
+ * resolve correctly against the site's origin without one.
  */
 
 import Ajv2020 from 'ajv/dist/2020.js';
@@ -57,11 +57,11 @@ export const OPENAPI_FILE = 'openapi.json';
 /**
  * Where the files sit on the deployed site. With no `servers` block the OpenAPI default
  * base is `/`, so these resolve against whatever origin the document was fetched from —
- * which is exactly right for https://tucca-cellag.github.io/caail/api/ and wrong for the
+ * which is exactly right for the deployed site's /api/ and wrong for the
  * raw.githubusercontent mirror, whose prefix differs. `info.description` says so rather
  * than leaving a consumer to discover it by 404.
  *
- * The `/caail/` segment is Astro's `base`, read from site-config.ts, which
+ * Any segment before `/api/` is Astro's `base`, read from site-config.ts, which
  * astro.config.mjs also imports; the parser never loads the Astro config itself (that
  * would drag the whole plugin graph in for one string). `openapi.test.ts` asserts the
  * config really does read it, so the two cannot quietly part.
@@ -393,13 +393,13 @@ export function buildOpenApiDocument(corpusDate: string): unknown {
         'that writes them. ' +
         // Spelled out because the mirror is the DEFAULT path for the primary consumer, not
         // a fallback: SKILL.md routes agents at the raw URLs. With no `servers` block the
-        // OpenAPI base is the document's own origin, so these paths resolve on Pages and
+        // OpenAPI base is the document's own origin, so these paths resolve on the site and
         // NOT against the mirror, whose prefix is different. Saying "the same files are
         // also at <mirror>" without this invites joining the two into a 404.
-        `The paths below are absolute on the GitHub Pages origin, ${SITE_ORIGIN}. ` +
+        `The paths below are absolute on the site's origin, ${SITE_ORIGIN}. ` +
         'The same files are mirrored per-filename at ' +
         'https://raw.githubusercontent.com/tucca-cellag/caail/main/site/public/api/, which ' +
-        'some clients can reach when Pages is not allow-listed. Resolve that mirror by ' +
+        'some clients can reach when that origin is not allow-listed. Resolve that mirror by ' +
         'filename; do not join the paths below onto it.',
       license: {
         name: 'MIT (CAAIL curation). Linked third-party resources keep their own licenses.',
