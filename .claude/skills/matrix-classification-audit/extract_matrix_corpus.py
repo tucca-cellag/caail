@@ -220,6 +220,28 @@ def section_provenance(source, pdf_path, pdf_hash=None):
     return "match"
 
 
+def refuse_section(rec):
+    """Stop serving a record's Docling section, and return what it came from.
+
+    A section built from another file is the CAAIL-436 defect, so it is not
+    served as the paper's methods: every field describing it is cleared, and
+    the rejected source moves to its own key so the refusal stays inspectable
+    rather than just absent. Returns that source (never None) for the caller's
+    message.
+
+    Its own function because it is the one path this whole branch exists to
+    handle and it had no test: an earlier version read `methods_input` back
+    AFTER clearing it, so the first refused ref raised AttributeError and
+    killed the extraction run, which writes its output only at the end.
+    """
+    rejected = rec.get("methods_input") or {}
+    rec.update(methods_text="", methods_source="", has_fulltext=False,
+               methods_strategy="", methods_heading="", methods_end_heading="",
+               methods_pages=None, rejected_methods_input=rec.get("methods_input"),
+               methods_input=None)
+    return rejected
+
+
 def read_docling_section(docling_corpus, rid):
     """Return the Docling-derived methods section for a ref, or None.
 
@@ -523,14 +545,10 @@ def main():
                 # the rejected PDF beside ft-cache text would describe the new
                 # text with the old file's name. The rejected file is kept under
                 # its own key so the finding is not lost.
-                rec.update(methods_text="", methods_source="", has_fulltext=False,
-                           methods_strategy="", methods_heading="",
-                           methods_end_heading="", methods_pages=None,
-                           rejected_methods_input=rec["methods_input"],
-                           methods_input=None)
+                rejected = refuse_section(rec)
                 section = None
                 print(f"  WARNING: ref {rid}: the stored section was built from "
-                      f'{rec["methods_input"].get("filename")!r}, not the paper\'s '
+                      f'{rejected.get("filename")!r}, not the paper\'s '
                       "current main PDF; not served as its methods. Re-run "
                       "docling_ingest.py to rebuild it.", file=sys.stderr)
         rec["fulltext_chars"] = len(fulltext)

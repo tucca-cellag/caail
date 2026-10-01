@@ -157,15 +157,39 @@ check("a section predating the source field is unrecorded",
 check("a ref with no resolved PDF cannot be verified either way",
       prov({"filename": "paper.pdf", "storage_dir": "K"}, None) == "unrecorded")
 
-# The hash has to be the one Docling records, or the comparison is theatre.
+# The hash must be the one DOCLING records, so this compares against a captured
+# real origin rather than recomputing the formula under test. Recomputing it
+# would pass even if the formula were wrong, and a wrong formula makes every
+# stored section read "mismatch", discarding the whole corpus silently.
+fixture = json.loads((Path(HERE) / "testdata" / "origin-fixture.json").read_text())
+fixture_file = Path(HERE) / "testdata" / fixture["file"]
+check(f'the file hash matches what Docling {fixture["docling_version"]} recorded',
+      di.ex.file_binary_hash(fixture_file) == fixture["origin"]["binary_hash"])
+check("a different file does not collide with it",
+      di.ex.file_binary_hash(Path(__file__)) != fixture["origin"]["binary_hash"])
 with tempfile.TemporaryDirectory() as tmp:
-    f = Path(tmp) / "x.bin"
-    f.write_bytes(b"hello")
-    expected = int(hashlib.sha256(b"hello").hexdigest(), 16) % (2 ** 64)
-    check("the file hash is Docling's binary_hash formula",
-          di.ex.file_binary_hash(f) == expected)
     check("an unreadable file has no hash",
           di.ex.file_binary_hash(Path(tmp) / "nope.bin") is None)
+
+print("\n=== a refused section stops being served, and says what it was ===")
+# The path the whole branch exists to handle, and it had no test: reading the
+# cleared field back raised AttributeError on the first refused ref and killed
+# the run, which writes its output only after the loop.
+rec = {"methods_input": {"filename": "supp.pdf"}, "methods_text": "x",
+       "methods_source": "docling", "has_fulltext": True, "methods_strategy": "explicit",
+       "methods_heading": "Methods", "methods_end_heading": "Results",
+       "methods_pages": [1, 2]}
+rejected = di.ex.refuse_section(rec)
+check("the rejected file is returned for the message",
+      rejected.get("filename") == "supp.pdf")
+check("it is also kept on the record",
+      rec["rejected_methods_input"] == {"filename": "supp.pdf"})
+check("nothing still describes the refused section",
+      not rec["methods_text"] and not rec["methods_source"]
+      and rec["has_fulltext"] is False and rec["methods_input"] is None
+      and rec["methods_pages"] is None and not rec["methods_heading"])
+check("a record with no recorded input refuses without raising",
+      di.ex.refuse_section({"methods_input": None}) == {})
 
 with tempfile.TemporaryDirectory() as tmp:
     sec = Path(tmp) / "ref-1.json"
