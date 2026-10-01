@@ -162,6 +162,39 @@ METHODS_HEAD_RE = re.compile(
 METHODS_WINDOW = 12000  # chars of methods-region text to carry inline
 
 
+def section_provenance(source, pdf_path):
+    """Can a stored section's recorded `source` be shown to come from `pdf_path`?
+
+    One verdict of four, and it lives here rather than in docling_ingest so the
+    script that SERVES this evidence and the batch that writes it cannot drift:
+
+      "match"           built from the file selected for this ref today
+      "mismatch"        built from some other file -- the CAAIL-436 defect
+      "external-source" built from a non-PDF the curator supplied with --file
+                        (Europe PMC JATS), so the Zotero PDF is not what it
+                        should be compared against and reconverting it would
+                        destroy work somebody did on purpose
+      "unrecorded"      no usable source, so nothing can be proven either way
+
+    Compared on the containing directory as well as the file name where both
+    were recorded, because for a Zotero attachment that directory is its
+    storage key, and two attachments of one item can share a file name.
+    """
+    if not source or not source.get("filename"):
+        return "unrecorded"
+    if Path(source["filename"]).suffix.lower() != ".pdf":
+        return "external-source"
+    if not pdf_path:
+        return "unrecorded"
+    pdf_path = Path(pdf_path)
+    if source["filename"] != pdf_path.name:
+        return "mismatch"
+    recorded_dir = source.get("storage_dir")
+    if recorded_dir and recorded_dir != pdf_path.parent.name:
+        return "mismatch"
+    return "match"
+
+
 def read_docling_section(docling_corpus, rid):
     """Return the Docling-derived methods section for a ref, or None.
 
@@ -199,6 +232,19 @@ def read_docling_section(docling_corpus, rid):
     if len(text) < MIN_SECTION_CHARS:
         return None
     return sec
+
+
+def main_pdf_path(zotero_storage, pdf_key):
+    """The PDF file inside an attachment's storage directory, or None.
+
+    The same resolution the ingest does, so the two agree about which file a
+    key stands for when provenance is compared.
+    """
+    if not pdf_key:
+        return None
+    d = Path(zotero_storage) / pdf_key
+    pdfs = sorted(d.glob("*.pdf")) if d.is_dir() else []
+    return str(pdfs[0]) if pdfs else None
 
 
 def read_ftcache(zotero_storage, pdf_key):
@@ -397,6 +443,11 @@ def main():
             # recorded it ({"filename", "mimetype"}), or None. A JATS section
             # has no pages, and this is what says why methods_pages is None.
             "methods_input": None,
+            # Whether that file can be shown to be the paper's own text: one of
+            # section_provenance's four verdicts. Weigh evidence by this, not by
+            # methods_source alone -- a "mismatch" is a section built from some
+            # other file while still reading as the highest-trust source.
+            "methods_provenance": "",
         }
         # A Docling section stands on its own: it comes from the PDF, not the
         # ft-cache, so it is available even for a ref whose ft-cache is missing.
@@ -416,6 +467,11 @@ def main():
         hit = (doi_index.get(doi.lower()) if doi else None) \
             or (url_index.get(_norm_url(url)) if url else None)
         if not hit:
+            if section:
+                # Nothing to compare the section against, so say that rather
+                # than leaving the field empty, which reads as "not checked".
+                rec["methods_provenance"] = section_provenance(
+                    section.get("source"), None)
             n_nozot += 1
             corpus.append(rec)
             continue
@@ -424,6 +480,23 @@ def main():
         rec["abstract"] = (item.get("data", {}).get("abstractNote") or "").strip()
         pdf_key, rec["pdf_reason"] = scope.resolve_main_pdf(args.api, group, item.get("key"))
         fulltext = read_ftcache(args.zotero_storage, pdf_key)
+        if section:
+            # The check has to happen HERE, not only in the ingest: this is the
+            # script every curation pass reads its evidence from, and a curator
+            # may never re-run the batch. A section built from another file is
+            # the CAAIL-436 defect itself, so it is not served as the paper's
+            # methods -- the ft-cache path below is tried instead.
+            rec["methods_provenance"] = section_provenance(
+                section.get("source"), main_pdf_path(args.zotero_storage, pdf_key))
+            if rec["methods_provenance"] == "mismatch":
+                rec.update(methods_text="", methods_source="", has_fulltext=False,
+                           methods_strategy="", methods_heading="",
+                           methods_end_heading="", methods_pages=None)
+                section = None
+                print(f"  WARNING: ref {rid}: the stored section was built from "
+                      f'{rec["methods_input"].get("filename")!r}, not the paper\'s '
+                      "current main PDF; not served as its methods. Re-run "
+                      "docling_ingest.py to rebuild it.", file=sys.stderr)
         rec["fulltext_chars"] = len(fulltext)
         if fulltext:
             rec["has_fulltext"] = True

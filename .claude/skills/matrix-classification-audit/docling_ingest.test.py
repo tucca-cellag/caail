@@ -116,23 +116,42 @@ for label, argv, needle, existing in (
 
 
 print("\n=== a stored section is checked against the file now selected ===")
+# The rule lives in extract_matrix_corpus so the batch that writes sections and
+# the script that serves them cannot drift; this exercises it through both.
+prov = di.ex.section_provenance
+check("a section from the selected PDF is a match",
+      prov({"filename": "paper.pdf"}, "/store/KEY/paper.pdf") == "match")
+# The CAAIL-436 defect in the existing corpus: the section was built from the
+# supplement because Zotero listed it first.
+check("a section from another file is a mismatch",
+      prov({"filename": "supp.pdf"}, "/store/KEY/paper.pdf") == "mismatch")
+# Two attachments of one item can carry the SAME name (Zotero's "Rename File
+# from Parent Metadata" applied to both), so the storage key decides.
+check("the same name in another storage directory is a mismatch",
+      prov({"filename": "paper.pdf", "storage_dir": "SUPPKEY9"},
+           "/store/MAINKEY1/paper.pdf") == "mismatch")
+check("the same name in the same storage directory is a match",
+      prov({"filename": "paper.pdf", "storage_dir": "MAINKEY1"},
+           "/store/MAINKEY1/paper.pdf") == "match")
+# A section the curator converted from JATS with --file. Comparing it against
+# the Zotero PDF would call it stale and destroy it on the next batch run.
+check("a section supplied with --file is not judged against the Zotero PDF",
+      prov({"filename": "PMC1234567.nxml"}, "/store/KEY/paper.pdf") == "external-source")
+check("a section predating the source field is unrecorded",
+      prov(None, "/store/KEY/paper.pdf") == "unrecorded")
+check("a ref with no resolved PDF cannot be verified either way",
+      prov({"filename": "paper.pdf"}, None) == "unrecorded")
+
 with tempfile.TemporaryDirectory() as tmp:
     sec = Path(tmp) / "ref-1.json"
     sec.write_text(json.dumps({"source": {"filename": "paper.pdf"}}))
-    check("a section from the selected PDF is a match",
-          di.section_provenance(sec, "/store/KEY/paper.pdf") == "match")
-    # The CAAIL-436 defect in the existing corpus: the section was built from
-    # the supplement because Zotero listed it first.
-    check("a section from another file is a mismatch",
-          di.section_provenance(sec, "/store/KEY/supplement.pdf") == "mismatch")
-    sec.write_text(json.dumps({"id": 1}))
-    check("a section predating the source field is unrecorded",
-          di.section_provenance(sec, "/store/KEY/paper.pdf") == "unrecorded")
+    check("the stored source is read back off disk",
+          di.read_section_source(sec) == {"filename": "paper.pdf"})
     sec.write_text("{not json")
-    check("an unreadable section proves nothing, so it is unrecorded",
-          di.section_provenance(sec, "/store/KEY/paper.pdf") == "unrecorded")
-    check("an absent section is unrecorded",
-          di.section_provenance(Path(tmp) / "nope.json", "/x/paper.pdf") == "unrecorded")
+    check("an unreadable section proves nothing, so it records no source",
+          di.read_section_source(sec) is None)
+    check("an absent section records no source",
+          di.read_section_source(Path(tmp) / "nope.json") is None)
 
 
 print("\n=== each section records what it was converted from ===")
@@ -145,6 +164,14 @@ check("the origin's file name and type are kept",
                                    "mimetype": "application/xml"})
 check("a document with no origin records none",
       di.document_source(SimpleNamespace(origin=None)) is None)
+check("the containing directory is recorded, which for Zotero is the storage key",
+      di.document_source(jats, "/store/ABCD1234/PMC4674093.nxml").get("storage_dir")
+      == "ABCD1234")
+# --respan has no path, and dropping the key would quietly turn a verified
+# section into an unverifiable one.
+check("a respan carries the recorded storage key forward",
+      di.document_source(jats, None, {"storage_dir": "ABCD1234"}).get("storage_dir")
+      == "ABCD1234")
 
 
 print(f"\n{'OK' if not fails else 'FAILED'}: {fails} failure(s)")

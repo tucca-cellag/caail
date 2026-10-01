@@ -102,7 +102,7 @@ def convert_file(converter, path, rid, out):
     doc = converter.convert(str(path)).document
     (out / "docs" / f"ref-{rid}.json").write_text(
         json.dumps(doc.export_to_dict(), ensure_ascii=False))
-    span, n_chars = write_section(out, rid, doc)
+    span, n_chars = write_section(out, rid, doc, path=path)
     return doc, span, n_chars
 
 
@@ -183,8 +183,14 @@ def collect_tables(doc):
     return out
 
 
-def write_section(out, rid, doc):
-    """Locate the methods and availability spans, and write sections/ref-<id>.json."""
+def write_section(out, rid, doc, path=None, prior_source=None):
+    """Locate the methods and availability spans, and write sections/ref-<id>.json.
+
+    `path` is the file converted, when it is known (it is not during --respan,
+    which reads stored documents); `prior_source` is what the section being
+    replaced recorded, so a respan carries provenance forward instead of
+    discarding the one part of it Docling does not store.
+    """
     headings = collect_headings(doc)
     span = find_methods_span(headings)
     text, p0, p1, n_tables = section_text(doc, span) if span["found"] else ("", None, None, 0)
@@ -216,39 +222,47 @@ def write_section(out, rid, doc):
         "methods_text": text,
         "availability": availability,
         "tables": collect_tables(doc),
-        "source": document_source(doc),
+        "source": document_source(doc, path, prior_source),
     }, ensure_ascii=False, indent=2))
     return span, len(text)
 
 
-def section_provenance(sec_path, pdf_path):
-    """Can this stored section be shown to come from `pdf_path`?
+def read_section_source(sec_path):
+    """The `source` a stored section recorded, or None if it has none.
 
-    "match", "mismatch", or "unrecorded" when the section predates the source
-    field (every section in the September corpus does, so a respan is what
-    makes the corpus auditable). Unreadable counts as unrecorded: the question
-    is whether provenance can be PROVEN, and a corrupt file proves nothing.
+    Unreadable counts as none: the question provenance answers is whether the
+    section can be PROVEN to come from a given file, and a corrupt file proves
+    nothing either way.
     """
     try:
-        src = json.loads(sec_path.read_text()).get("source")
+        return json.loads(sec_path.read_text()).get("source")
     except (OSError, ValueError):
-        return "unrecorded"
-    if not src or not src.get("filename"):
-        return "unrecorded"
-    return "match" if src["filename"] == Path(pdf_path).name else "mismatch"
+        return None
 
 
-def document_source(doc):
-    """The file a document was converted from, as Docling recorded it.
+def document_source(doc, path=None, prior_source=None):
+    """The file a document was converted from.
 
-    Read off the document rather than passed in, so --respan keeps it. It is how
-    a reader tells a JATS section (no page numbers) from a PDF one.
+    Mostly read off the document, so --respan keeps it. `storage_dir` is the
+    one part Docling does not know: the containing directory, which for a
+    Zotero attachment is its storage key and is what actually identifies the
+    attachment. Two attachments of one item can carry identical file names
+    ("Rename File from Parent Metadata" applied to both the paper and its
+    supplement), so a name alone cannot tell them apart. Where the path is not
+    available, a previously recorded storage_dir is carried forward rather than
+    dropped, so re-spanning does not quietly make a verified section
+    unverifiable.
     """
     origin = getattr(doc, "origin", None)
     if origin is None:
         return None
-    return {"filename": getattr(origin, "filename", None),
-            "mimetype": getattr(origin, "mimetype", None)}
+    src = {"filename": getattr(origin, "filename", None),
+           "mimetype": getattr(origin, "mimetype", None)}
+    if path is not None:
+        src["storage_dir"] = Path(path).parent.name
+    elif prior_source and prior_source.get("storage_dir"):
+        src["storage_dir"] = prior_source["storage_dir"]
+    return src
 
 
 def respan(out):
@@ -280,7 +294,10 @@ def respan(out):
             except ValueError:
                 before = ""
         doc = DoclingDocument.model_validate(json.loads(p.read_text()))
-        span, n = write_section(out, rid, doc)
+        # The stored document knows its file name but not which directory it
+        # came from, so carry that forward from the section being replaced.
+        span, n = write_section(out, rid, doc,
+                                prior_source=read_section_source(sec_path))
         strategies[span["strategy"]] = strategies.get(span["strategy"], 0) + 1
         if before and before != span["strategy"]:
             changed += 1
@@ -429,7 +446,9 @@ def main():
           f"without: {len(targets) - len(have_pdf)}", flush=True)
 
     log, converted, failed, skipped = [], 0, 0, 0
-    stale, unverified = 0, 0
+    # Four distinct states, four counters. Reporting them through one figure
+    # would print "reconverted" for a ref nothing was converted for.
+    reconverted = unverified = external = unresolved_with_section = 0
     converter = None
     t_start = time.time()
 
@@ -446,7 +465,7 @@ def main():
             rec["sections_on_disk"] = sec_path.exists()
             if sec_path.exists():
                 rec["provenance"] = "unresolved-main-pdf"
-                stale += 1
+                unresolved_with_section += 1
             log.append(rec)
             continue
         if sec_path.exists():
@@ -458,19 +477,23 @@ def main():
             # mismatch -- a section written before provenance was recorded
             # cannot be checked either way, so it is reported, never silently
             # trusted and never silently redone.
-            rec["provenance"] = section_provenance(sec_path, t["pdf"])
-            if rec["provenance"] == "match":
+            rec["provenance"] = ex.section_provenance(
+                read_section_source(sec_path), t["pdf"])
+            if rec["provenance"] in ("match", "external-source", "unrecorded"):
+                # "external-source" is a section the curator converted from a
+                # file they supplied (Europe PMC JATS via --file). The Zotero
+                # PDF is not what it should be compared against, and
+                # reconverting would destroy work done on purpose, so the batch
+                # leaves it alone; `--file --overwrite` is how to replace it.
                 rec.update(ok=True, skipped=True, error="")
                 skipped += 1
+                if rec["provenance"] == "unrecorded":
+                    unverified += 1
+                elif rec["provenance"] == "external-source":
+                    external += 1
                 log.append(rec)
                 continue
-            if rec["provenance"] == "unrecorded":
-                rec.update(ok=True, skipped=True, error="")
-                skipped += 1
-                unverified += 1
-                log.append(rec)
-                continue
-            stale += 1          # "mismatch": reconvert from the right file
+            reconverted += 1    # "mismatch": rebuild from the right file
 
         if converter is None:          # defer model load until real work exists
             converter = build_converter()
@@ -507,9 +530,10 @@ def main():
           f"elapsed={(time.time() - t_start) / 60:.1f}min")
     # Provenance is reported, not left in the log, because an unverifiable
     # section is the CAAIL-436 defect's hiding place: it reads as covered.
-    if stale or unverified:
-        print(f"provenance: reconverted-from-a-different-file={stale} "
-              f"unverifiable={unverified}")
+    if reconverted or unverified or external or unresolved_with_section:
+        print(f"provenance: rebuilt-from-a-different-file={reconverted} "
+              f"unverifiable={unverified} supplied-with---file={external} "
+              f"kept-but-main-pdf-unresolved={unresolved_with_section}")
     if unverified:
         print(f"  {unverified} section(s) predate the recorded source and cannot be "
               "checked against the paper's current PDF.\n"
