@@ -62,9 +62,16 @@ CASES = [
      [child("S", title="Supplementary: Table S2"), MAIN], (None, "ambiguous-main-pdf")),
     ("an EPUB beside the PDF is not a PDF",
      [child("E", content_type="application/epub+zip"), MAIN], ("MAIN", "")),
-    # No script can read a link to a URL, so it cannot be the main text.
+    # Neither link mode has a copy in Zotero storage for a script to read, so
+    # neither can be the main text. Counting one would refuse an item that
+    # holds the paper plus a linked copy of it, and tell the curator to tag a
+    # supplement that does not exist.
     ("a PDF linked by URL is not a candidate",
      [child("L", link_mode="linked_url"), MAIN], ("MAIN", "")),
+    ("a PDF linked by file path is not a candidate either",
+     [child("L", link_mode="linked_file"), MAIN], ("MAIN", "")),
+    ("an item holding only a linked PDF has no main text",
+     [child("L", link_mode="linked_file")], (None, "no-pdf-attachment")),
 ]
 
 print("=== select_main_pdf ===")

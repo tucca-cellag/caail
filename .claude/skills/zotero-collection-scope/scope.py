@@ -202,12 +202,19 @@ def select_main_pdf(children):
     "no-pdf-attachment", "only-supplement-pdfs", or "ambiguous-main-pdf" when
     two or more PDFs are untagged. The last is refused rather than guessed,
     because the old first-listed rule converted a supplement as if it were
-    the paper and nothing downstream could tell. A link to a URL is not a
-    candidate: it has no local copy for any script to read.
+    the paper and nothing downstream could tell.
+
+    Only an IMPORTED attachment is a candidate. Neither link mode has a copy
+    under `~/Zotero/storage/<key>/` for any of these scripts to read: that is
+    obvious for `linked_url` and equally true of `linked_file`, which points
+    at a path outside the library. Counting one would be worse than ignoring
+    it, because an item holding an imported PDF plus a linked copy of the same
+    paper would be refused as ambiguous and the curator told to tag a
+    supplement that does not exist.
     """
     pdfs = [c for c in children
             if c.get("data", {}).get("contentType") == PDF_CONTENT_TYPE
-            and c.get("data", {}).get("linkMode") != "linked_url"]
+            and str(c.get("data", {}).get("linkMode", "")).startswith("imported")]
     mains = [c for c in pdfs if not is_supplement(c)]
     if len(mains) == 1:
         return mains[0].get("data", {}).get("key"), ""

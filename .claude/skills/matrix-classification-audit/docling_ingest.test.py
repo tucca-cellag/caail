@@ -167,6 +167,13 @@ check("the same name in another storage directory is a mismatch",
 check("a JATS section supplied with --file is left alone",
       prov({"filename": "PMC1234567.nxml", "via": "file"},
            "/store/KEY/paper.pdf", 7) == "external-source")
+# convert_file's `via` defaults to "batch", and the shared intake calls it
+# directly, so a JATS section can arrive without the flag. The suffix has to
+# settle it BEFORE the hash compare, or that record is rebuilt from the Zotero
+# PDF and the curator's JATS section is destroyed.
+check("a JATS section is left alone even if nothing recorded how it was made",
+      prov({"filename": "PMC1234567.nxml", "binary_hash": 55, "via": "batch"},
+           "/store/KEY/paper.pdf", 99) == "external-source")
 check("a PDF supplied with --file is left alone too",
       prov({"filename": "downloaded.pdf", "via": "file", "binary_hash": 42},
            "/store/KEY/paper.pdf", 99) == "external-source")
@@ -245,10 +252,17 @@ with tempfile.TemporaryDirectory() as tmp:
     check("the stored source is read back off disk",
           di.read_section_source(sec) == {"filename": "paper.pdf"})
     sec.write_text("{not json")
-    check("an unreadable section proves nothing, so it records no source",
-          di.read_section_source(sec) is None)
-    check("an absent section records no source",
-          di.read_section_source(Path(tmp) / "nope.json") is None)
+    check_call("an unreadable section proves nothing, so it records no source",
+               lambda: di.read_section_source(sec) is None)
+    check_call("an absent section records no source",
+               lambda: di.read_section_source(Path(tmp) / "nope.json") is None)
+    # Valid JSON that is not an object. This is read OUTSIDE the per-ref try
+    # that keeps one bad PDF from ending the batch, so raising here aborts the
+    # whole run and the log is only fully written afterwards.
+    for bad in ("[]", "null", '"a string"', "3"):
+        sec.write_text(bad)
+        check_call(f"a section file holding {bad} records no source",
+                   lambda: di.read_section_source(sec) is None)
 
 
 print("\n=== each section records what it was converted from ===")

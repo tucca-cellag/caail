@@ -218,17 +218,25 @@ def section_provenance(source, pdf_path, pdf_hash=None):
     """
     if not source:
         return "unrecorded"
-    # How the section was made, which the suffix only approximated: a curator
-    # who converts a publisher PDF with --file did that on purpose too.
+    # Both tests for "the curator supplied this" come FIRST, before the hash
+    # comparison. `via` is the reliable one; the suffix is the fallback for a
+    # record that did not set it, and it has to be checked here rather than
+    # after the hash, or it is unreachable: every new-style record carries a
+    # binary_hash, so the comparison would already have returned "mismatch"
+    # and a JATS section written through convert_file without an explicit
+    # via="file" (the default is "batch") would be rebuilt from the Zotero PDF
+    # and destroyed. The shared intake calls convert_file directly, so that
+    # default is reachable from outside this repo.
     if source.get("via") == "file":
+        return "external-source"
+    if source.get("filename") \
+            and Path(source["filename"]).suffix.lower() != ".pdf":
         return "external-source"
     recorded_hash = source.get("binary_hash")
     if recorded_hash is not None and pdf_hash is not None:
         return "match" if recorded_hash == pdf_hash else "mismatch"
     if not source.get("filename"):
         return "unrecorded"
-    if Path(source["filename"]).suffix.lower() != ".pdf":
-        return "external-source"
     recorded_dir = source.get("storage_dir")
     if not pdf_path or not recorded_dir:
         return "unrecorded"
@@ -566,6 +574,15 @@ def main():
             rec["methods_provenance"] = section_provenance(
                 src, main_pdf,
                 file_binary_hash(main_pdf) if needs_file_hash(src) else None)
+            # "unrecorded" would lump this ref in with the ~324 sections that
+            # simply predate provenance, and it is not the same risk: Zotero
+            # REFUSED to name a main PDF here, so this is precisely the
+            # population the CAAIL-436 defect lives in -- a section built from
+            # the supplement under the old first-listed rule. Say which it is,
+            # the way the ingest's log already does, rather than letting the
+            # batch and the serving script describe one state two ways.
+            if rec["methods_provenance"] == "unrecorded" and rec["pdf_reason"]:
+                rec["methods_provenance"] = "unresolved-main-pdf"
             if rec["methods_provenance"] == "mismatch":
                 # methods_input is cleared with the rest: its own contract is
                 # "the file this methods_text came from", and leaving it naming

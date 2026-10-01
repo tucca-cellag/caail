@@ -100,8 +100,28 @@ def main():
         if not hit:
             continue
         group, item = hit
-        ft = ex.read_ftcache(args.zotero_storage,
-                             scope.find_pdf_attachment_key(args.api, group, item.get("key")))
+        pdf_key, pdf_reason = scope.resolve_main_pdf(args.api, group, item.get("key"))
+        # The third reader of a stored section, and it ranks refs for re-audit
+        # by how much of the methods the old window missed. A section built
+        # from another file scores as a large miss, which is the strongest
+        # signal this tool emits, so it must not be compared as if it were the
+        # paper. Skipped loudly: silently dropping it is how a ref leaves the
+        # population with nothing saying why.
+        main_pdf = ex.main_pdf_path(args.zotero_storage, pdf_key)
+        src = sec.get("source")
+        prov = ex.section_provenance(
+            src, main_pdf,
+            ex.file_binary_hash(main_pdf) if ex.needs_file_hash(src) else None)
+        if prov == "mismatch":
+            print(f"  skipping ref {rid}: its stored section was built from "
+                  f'{(src or {}).get("filename")!r}, not the paper\'s main PDF',
+                  file=sys.stderr)
+            continue
+        if pdf_reason:
+            print(f"  skipping ref {rid}: {scope.PDF_REASON_TEXT.get(pdf_reason, pdf_reason)}",
+                  file=sys.stderr)
+            continue
+        ft = ex.read_ftcache(args.zotero_storage, pdf_key)
         if not ft:
             continue
 

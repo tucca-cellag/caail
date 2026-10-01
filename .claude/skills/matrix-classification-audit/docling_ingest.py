@@ -235,9 +235,14 @@ def read_section_source(sec_path):
     nothing either way.
     """
     try:
-        return json.loads(sec_path.read_text()).get("source")
+        stored = json.loads(sec_path.read_text())
     except (OSError, ValueError):
         return None
+    # A file that parses to a list, a string or null is not a section. Checked
+    # rather than caught: this runs OUTSIDE the per-ref try that keeps one bad
+    # PDF from ending the batch, so an AttributeError here would abort the run
+    # and ingest-log.json is only fully written afterwards.
+    return stored.get("source") if isinstance(stored, dict) else None
 
 
 def document_source(doc, path=None, prior_source=None, via=None):
@@ -487,9 +492,13 @@ def main():
             # mismatch -- a section written before provenance was recorded
             # cannot be checked either way, so it is reported, never silently
             # trusted and never silently redone.
+            stored = read_section_source(sec_path)
             rec["provenance"] = ex.section_provenance(
-                read_section_source(sec_path), t["pdf"],
-                ex.file_binary_hash(t["pdf"]))
+                stored, t["pdf"],
+                # Gated like the other two consumers: without this, resuming a
+                # ~324-ref ingest reads the whole PDF corpus into memory only
+                # to discard every hash, where it used to just stat a file.
+                ex.file_binary_hash(t["pdf"]) if ex.needs_file_hash(stored) else None)
             if rec["provenance"] in ("match", "external-source", "unrecorded"):
                 # "external-source" is a section the curator converted from a
                 # file they supplied with --file. The Zotero attachment is not
