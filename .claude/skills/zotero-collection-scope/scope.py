@@ -122,11 +122,25 @@ def fetch_all_items_in_tree(api, group, root_key, *, _seen=None):
 
 
 def fetch_item_children(api, group, item_key):
-    """Return child attachments / notes of an item (used to find PDFs)."""
+    """Return child attachments / notes of an item (used to find PDFs).
+
+    One bad response degrades one ref rather than ending the run: these
+    scripts make a children call per reference, hundreds of them, so an
+    aborted pass loses a whole report. `_get` turns an unreachable API into
+    SystemExit, while a truncated or non-JSON response surfaces as OSError or
+    ValueError from reading and parsing it, and none of those is worth the
+    other few hundred refs.
+
+    It does mean a transport failure is indistinguishable here from an item
+    with no children, which the caller then reports as "no PDF attached".
+    That misreport is real and is tracked on CAAIL-440; widening this catch
+    does not make it worse, and narrowing it would trade a wrong label for a
+    lost run.
+    """
     try:
         return _get(f"{api}/groups/{group}/items/{item_key}"
                     f"/children?format=json")
-    except SystemExit:
+    except (SystemExit, OSError, ValueError):
         return []
 
 

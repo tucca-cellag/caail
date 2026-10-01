@@ -109,17 +109,28 @@ print("\n=== no second copy of the rule ===")
 skills = os.path.dirname(HERE)
 exempt = {os.path.abspath(scope.__file__), os.path.abspath(__file__)}
 
-# `contentType` is the signature, not the literal. Selecting an attachment by
-# type means reading that key, whatever the comparison looks like, so this
-# catches the forms a literal search cannot: an f-string (which on Python 3.12+
-# is not a STRING token at all, so the earlier literal-only check passed it),
-# a membership test, and a comparison against scope.PDF_CONTENT_TYPE, the
-# constant scope.py's own comment tells other code to import. The literal is
-# still checked, in both token shapes, because a module-level constant spelling
-# it is a copy of the rule's input even before anything compares against it.
+# `contentType` is the signature, not the PDF type. Zotero's attachment key is
+# what you must read to choose an attachment by type, whatever the comparison
+# then looks like, so this catches the forms a literal search cannot: an
+# f-string (which on Python 3.12+ is not a STRING token at all, so an earlier
+# literal-only version of this check passed it), a membership test, and a
+# comparison against scope.PDF_CONTENT_TYPE, the constant scope.py tells other
+# code to import.
+#
+# The bare "application/pdf" literal is deliberately NOT flagged. The rule is
+# the selection, not the string, and the string has honest uses that have
+# nothing to do with picking a Zotero attachment -- an HTTP `Accept` header or
+# a check of a response's own Content-Type, which the shared Europe PMC intake
+# this branch prepares for will plausibly need. Flagging those would fail CI
+# with a message telling the author to call select_main_pdf, which is the wrong
+# fix for an HTTP header. Nothing is lost: a constant holding the type cannot
+# select an attachment without reading `contentType` to compare against.
 ATTACHMENT_KEY = "contentType"
 STRING_TOKENS = {tokenize.STRING,
                  getattr(tokenize, "FSTRING_MIDDLE", tokenize.STRING)}
+# A file that genuinely must read the key says so on the line, so the escape
+# hatch is visible in review rather than buried in this test's exempt list.
+ALLOW_MARKER = "scope-rule-exempt"
 
 
 def rule_copy_reason(path):
@@ -128,15 +139,22 @@ def rule_copy_reason(path):
     Reads tokens rather than raw text, so a comment explaining the rule is not
     mistaken for implementing it.
     """
-    with open(path, encoding="utf-8") as fh:
-        tokens = list(tokenize.generate_tokens(fh.readline))
+    try:
+        with open(path, encoding="utf-8") as fh:
+            tokens = list(tokenize.generate_tokens(fh.readline))
+    except (OSError, SyntaxError, tokenize.TokenError, UnicodeDecodeError) as exc:
+        # Reported, not raised: a file this cannot read is a finding about the
+        # file, and crashing the suite would say nothing about the rule.
+        return f"could not be parsed to check it ({type(exc).__name__})"
+    allowed = {t.start[0] for t in tokens
+               if t.type == tokenize.COMMENT and ALLOW_MARKER in t.string}
     for t in tokens:
+        if t.start[0] in allowed:
+            continue
         if t.type == tokenize.NAME and t.string == ATTACHMENT_KEY:
             return f"reads the {ATTACHMENT_KEY} attribute"
         if t.type in STRING_TOKENS and ATTACHMENT_KEY in t.string:
             return f"names {ATTACHMENT_KEY!r}"
-        if t.type in STRING_TOKENS and scope.PDF_CONTENT_TYPE in t.string:
-            return f"spells {scope.PDF_CONTENT_TYPE!r}"
     return ""
 
 
@@ -163,11 +181,12 @@ print("\n=== the copy guard catches every form of the rule ===")
 probe = os.path.join(tempfile.mkdtemp(), "probe.py")
 FORMS = [
     ('a plain-string comparison', 'if c["data"]["contentType"] == "application/pdf": pass\n'),
-    ('an f-string literal', 'T = f"application/pdf"\n'),
-    ('a reversed comparison', 'if "application/pdf" == ct: pass\n'),
-    ('a membership test', 'PDF_TYPES = {"application/pdf"}\n'),
-    ('the shared constant, used to select', 'if c["data"]["contentType"] == scope.PDF_CONTENT_TYPE: pass\n'),
+    ('an f-string key', 'if c["data"][f"contentType"] == T: pass\n'),
+    ('a membership test on the key', 'if c["data"]["contentType"] in PDF_TYPES: pass\n'),
+    ('the shared constant, used to select',
+     'if c["data"]["contentType"] == scope.PDF_CONTENT_TYPE: pass\n'),
     ('a bare attribute read', 'ct = c.get("data", {}).get("contentType")\n'),
+    ('a file that cannot be parsed', 'def broken(:\n'),
 ]
 for label, src in FORMS:
     with open(probe, "w", encoding="utf-8") as fh:
@@ -177,12 +196,26 @@ for label, src in FORMS:
         fails += 1
     print(f'  [{"PASS" if caught else "FAIL"}] {label}')
 
-with open(probe, "w", encoding="utf-8") as fh:
-    fh.write('# a comment about contentType and application/pdf\n"""and a docstring"""\n')
-clean = not rule_copy_reason(probe)
-if not clean:
-    fails += 1
-print(f'  [{"PASS" if clean else "FAIL"}] a comment about the rule is not a copy of it')
+# And the forms that must NOT trip it, because a guard that fails CI for an
+# honest HTTP header gets deleted rather than obeyed.
+NOT_COPIES = [
+    ('a comment about the rule',
+     '# a comment about contentType and application/pdf\n"""and a docstring"""\n'),
+    ('an HTTP Accept header',
+     'r = request(url, headers={"Accept": "application/pdf"})\n'),
+    ("a check of a response's own type",
+     'if resp.headers.get("Content-Type") == "application/pdf": pass\n'),
+    ('a marked line that must read the key',
+     'ct = kid["data"]["contentType"]  # scope-rule-exempt: reporting, not selecting\n'),
+]
+for label, src in NOT_COPIES:
+    with open(probe, "w", encoding="utf-8") as fh:
+        fh.write(src)
+    reason = rule_copy_reason(probe)
+    if reason:
+        fails += 1
+    print(f'  [{"PASS" if not reason else "FAIL"}] {label} is not a copy of it'
+          f'{"" if not reason else f" (flagged: {reason})"}')
 
 print(f'\n{"FAILED" if fails else "OK"}: {fails} failure(s)')
 sys.exit(1 if fails else 0)
