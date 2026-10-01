@@ -521,6 +521,11 @@ def main():
             converted += 1
             if rebuilding:
                 reconverted += 1
+                # The log's per-ref field describes the section that is now on
+                # disk, so it cannot keep saying "mismatch" once the right file
+                # has replaced it: a consumer tallying the log by provenance
+                # would then disagree with the summary this same run prints.
+                rec["provenance"] = "rebuilt"
         except Exception as exc:  # noqa: BLE001 - one bad PDF must not end the batch
             rec["error"] = f"{type(exc).__name__}: {exc}"
             failed += 1

@@ -80,8 +80,10 @@ def measure(api, groups, storage, papers_md, docling_corpus):
             # would overstate coverage in this script, which is the one
             # CLAUDE.md points at for live figures.
             main_pdf = ex.main_pdf_path(storage, pdf_key)
+            src = sec.get("source")
             row["provenance"] = ex.section_provenance(
-                sec.get("source"), main_pdf, ex.file_binary_hash(main_pdf))
+                src, main_pdf,
+                ex.file_binary_hash(main_pdf) if ex.needs_file_hash(src) else None)
         if sec and row.get("provenance") != "mismatch":
             row["docling"] = {
                 "strategy": sec.get("strategy"),
@@ -147,8 +149,23 @@ def main():
     print(f"chars beyond reach of the window: {sum(r['dropped'] for r in trunc):,}")
     print()
     print("--- the Docling ingest (docling_ingest.py) ---")
+    # Printed BEFORE the no-sections branch, not inside the else. A corpus
+    # entirely built from supplements -- the CAAIL-436 defect at full scale --
+    # leaves `doc` empty, and reporting "no sections found; run the ingest"
+    # while silently withholding the refusal count would describe the one
+    # situation this measurement exists to surface as an absence of data.
+    prov = {}
+    for r in rows:
+        if r.get("provenance"):
+            prov[r["provenance"]] = prov.get(r["provenance"], 0) + 1
+    for k, v in sorted(prov.items()):
+        label = ("refused, built from another file" if k == "mismatch"
+                 else f"provenance {k}")
+        print(f"  {label:<29}: {v:>4}")
     if not doc:
-        print("no docling-corpus sections found; run docling_ingest.py")
+        print("no sections are being served."
+              + (" They were refused, not missing: see above."
+                 if prov.get("mismatch") else " Run docling_ingest.py."))
     else:
         strat = {}
         for r in doc:
@@ -157,14 +174,6 @@ def main():
         print(f"refs with a located section    : {len(doc):>4} ({len(doc) / len(rows):.0%} of matrix)")
         for k, v in sorted(strat.items()):
             print(f"  strategy {k:<20} : {v:>4}")
-        prov = {}
-        for r in rows:
-            if r.get("provenance"):
-                prov[r["provenance"]] = prov.get(r["provenance"], 0) + 1
-        for k, v in sorted(prov.items()):
-            label = ("refused, built from another file" if k == "mismatch"
-                     else f"provenance {k}")
-            print(f"  {label:<29}: {v:>4}")
         # The refs that mattered most: those the ft-cache path could not resolve.
         rescued = [r for r in doc if r["has_fulltext"] and not r["heading_found"]]
         print(f"refs rescued from the positional fallback: {len(rescued)}"

@@ -61,7 +61,8 @@ marks a ref Zotero could not resolve but that still has a section on disk
 
 **A section on disk is not evidence it came from the paper.** Under the old first-listed
 rule a section could be built from a supplement, so a resumed run does not simply trust an
-existing file. It records a `provenance` of one of four values:
+existing file. It records a `provenance` per ref in `ingest-log.json`. Four of its values
+are `section_provenance`'s verdicts on the section the run found:
 
 | verdict | meaning | what the run does |
 | --- | --- | --- |
@@ -69,6 +70,11 @@ existing file. It records a `provenance` of one of four values:
 | `mismatch` | provably built from some other file | rebuilds it from the right file |
 | `external-source` | built from a file a curator supplied with `--file` | leaves it alone |
 | `unrecorded` | nothing recorded that can prove it either way | skips it, and counts it |
+
+The log adds two the comparison itself never returns, because they describe what the *run*
+did rather than what it found: `rebuilt` replaces `mismatch` once the right file has been
+converted, so the field keeps describing the section now on disk, and `unresolved-main-pdf`
+marks a ref that has a section but no main PDF to compare it against.
 
 **Identity is content, not a file name.** The check compares Docling's `binary_hash`, which
 is derived from the file's bytes, so it survives a rename and tells two attachments apart

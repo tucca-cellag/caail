@@ -11,7 +11,6 @@ Run:  python3 .claude/skills/matrix-classification-audit/docling_ingest.test.py
 
 Stdlib only, no Docling, no Zotero and no network.
 """
-import hashlib
 import json
 import os
 import subprocess
@@ -170,6 +169,26 @@ check("a different file does not collide with it",
 with tempfile.TemporaryDirectory() as tmp:
     check("an unreadable file has no hash",
           di.ex.file_binary_hash(Path(tmp) / "nope.bin") is None)
+# No file at all is the ORDINARY case, not an exceptional one: every refusal
+# from select_main_pdf leaves the caller without a path. Raising here aborted
+# the whole extraction run on the first ambiguous ref, and six of the live
+# refs are ambiguous today.
+check("no path at all yields no hash rather than raising",
+      di.ex.file_binary_hash(None) is None)
+check("main_pdf_path yields nothing when no attachment was selected",
+      di.ex.main_pdf_path("/anywhere", None) is None)
+
+# Reading a PDF costs the whole file in memory, so it is only done when the
+# comparison would actually use it.
+check("a source with a hash needs the file read",
+      di.ex.needs_file_hash({"filename": "a.pdf", "binary_hash": 1}) is True)
+check("a source with no hash does not",
+      di.ex.needs_file_hash({"filename": "a.pdf"}) is False)
+check("a curator-supplied section does not",
+      di.ex.needs_file_hash({"filename": "a.pdf", "binary_hash": 1,
+                             "via": "file"}) is False)
+check("no source does not",
+      di.ex.needs_file_hash(None) is False)
 
 print("\n=== a refused section stops being served, and says what it was ===")
 # The path the whole branch exists to handle, and it had no test: reading the
@@ -190,6 +209,11 @@ check("nothing still describes the refused section",
       and rec["methods_pages"] is None and not rec["methods_heading"])
 check("a record with no recorded input refuses without raising",
       di.ex.refuse_section({"methods_input": None}) == {})
+# The verdict goes too: a consumer told to weigh evidence by it, and filtering
+# out "mismatch", would otherwise discard the sound ft-cache text this record
+# goes on to serve. rejected_methods_input is what records the refusal.
+check("the refused verdict does not stay on a record that serves other text",
+      rec["methods_provenance"] == "" and rec["rejected_methods_input"] is not None)
 
 with tempfile.TemporaryDirectory() as tmp:
     sec = Path(tmp) / "ref-1.json"

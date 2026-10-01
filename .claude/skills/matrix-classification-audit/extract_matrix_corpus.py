@@ -167,14 +167,32 @@ def file_binary_hash(path):
     """Docling's `DocumentOrigin.binary_hash` for a file, or None.
 
     Reproduced rather than guessed: checked against the hash Docling 2.121.0
-    recorded for a converted PDF, so the two agree. It identifies a file by its
-    CONTENT, which is the only thing that survives a rename.
+    recorded for a converted file, so the two agree. It identifies a file by
+    its CONTENT, which is the only thing that survives a rename.
+
+    No file means no hash. That case is ordinary rather than exceptional: every
+    refusal from select_main_pdf leaves a caller with no path, so raising here
+    would abort a whole run over a ref that is merely awaiting a curator.
     """
+    if not path:
+        return None
     try:
         data = Path(path).read_bytes()
     except OSError:
         return None
     return int(hashlib.sha256(data).hexdigest(), 16) % (2 ** 64)
+
+
+def needs_file_hash(source):
+    """Would section_provenance use a hash for this source?
+
+    Asked before reading a PDF, because the hash costs the whole file in
+    memory and for the entire current corpus it would be discarded on the next
+    line: no stored section records a hash yet, so every one of those ~324
+    reads is wasted on a script whose point is that later passes are instant.
+    """
+    return bool(source) and source.get("via") != "file" \
+        and source.get("binary_hash") is not None
 
 
 def section_provenance(source, pdf_path, pdf_hash=None):
@@ -238,7 +256,14 @@ def refuse_section(rec):
     rec.update(methods_text="", methods_source="", has_fulltext=False,
                methods_strategy="", methods_heading="", methods_end_heading="",
                methods_pages=None, rejected_methods_input=rec.get("methods_input"),
-               methods_input=None)
+               methods_input=None,
+               # Cleared with the rest, and for the same reason. It describes
+               # whether methods_input is the paper's own text, and consumers
+               # are told to weigh evidence by it; leaving "mismatch" on a
+               # record that goes on to serve sound ft-cache text would have
+               # them discard good evidence. rejected_methods_input being set
+               # is what records that a stored section was refused.
+               methods_provenance="")
     return rejected
 
 
@@ -537,8 +562,10 @@ def main():
             # the CAAIL-436 defect itself, so it is not served as the paper's
             # methods -- the ft-cache path below is tried instead.
             main_pdf = main_pdf_path(args.zotero_storage, pdf_key)
+            src = section.get("source")
             rec["methods_provenance"] = section_provenance(
-                section.get("source"), main_pdf, file_binary_hash(main_pdf))
+                src, main_pdf,
+                file_binary_hash(main_pdf) if needs_file_hash(src) else None)
             if rec["methods_provenance"] == "mismatch":
                 # methods_input is cleared with the rest: its own contract is
                 # "the file this methods_text came from", and leaving it naming
