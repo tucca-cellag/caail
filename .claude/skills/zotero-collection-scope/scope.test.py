@@ -146,8 +146,14 @@ def rule_copy_reason(path):
         # Reported, not raised: a file this cannot read is a finding about the
         # file, and crashing the suite would say nothing about the rule.
         return f"could not be parsed to check it ({type(exc).__name__})"
-    allowed = {t.start[0] for t in tokens
-               if t.type == tokenize.COMMENT and ALLOW_MARKER in t.string}
+    # The marker exempts every line a token carrying it spans, and is honoured
+    # in a docstring as well as a comment: a docstring explaining the rule is
+    # prose about it, not a copy of it, and the earlier comment-only form had
+    # no way to say so.
+    allowed = set()
+    for t in tokens:
+        if t.type in STRING_TOKENS | {tokenize.COMMENT} and ALLOW_MARKER in t.string:
+            allowed.update(range(t.start[0], t.end[0] + 1))
     for t in tokens:
         if t.start[0] in allowed:
             continue
@@ -207,6 +213,13 @@ NOT_COPIES = [
      'if resp.headers.get("Content-Type") == "application/pdf": pass\n'),
     ('a marked line that must read the key',
      'ct = kid["data"]["contentType"]  # scope-rule-exempt: reporting, not selecting\n'),
+    # A docstring describing the rule is prose about it. The marker has to work
+    # there too, and in a comment-only form it could not.
+    ('a marked docstring that describes the rule',
+     'def helper():\n'
+     '    """Reads contentType for a report.\n\n'
+     '    scope-rule-exempt: describes the rule, does not implement it.\n'
+     '    """\n'),
 ]
 for label, src in NOT_COPIES:
     with open(probe, "w", encoding="utf-8") as fh:
