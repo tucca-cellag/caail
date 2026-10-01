@@ -11,6 +11,7 @@ Run:  python3 .claude/skills/matrix-classification-audit/docling_ingest.test.py
 
 Stdlib only, no Docling, no Zotero and no network.
 """
+import json
 import os
 import subprocess
 import sys
@@ -87,12 +88,20 @@ for label, argv, needle, existing in (
      ["--file", "x.nxml", "--ref", REF], "--overwrite", True),
     ("--overwrite without --file is refused",
      ["--overwrite"], "only applies to --file", False),
+    # The commonest typo. It must fail in a sentence, not after a model load.
+    ("a --file path that does not exist is refused",
+     ["--file", "MISSING.nxml", "--ref", REF], "no such file", False),
 ):
     with tempfile.TemporaryDirectory() as tmp:
         out = os.path.join(tmp, "corpus")
         if existing:
             os.makedirs(os.path.join(out, "sections"))
             Path(out, "sections", f"ref-{REF}.json").write_text("{}")
+        # A real file, so a case testing a LATER gate is not short-circuited by
+        # the existence check. The named-missing case passes its own path.
+        real = Path(tmp) / "x.nxml"
+        real.write_text("<article/>")
+        argv = [str(real) if a == "x.nxml" else a for a in argv]
         run = subprocess.run([sys.executable, script, *argv, "--out", out,
                               "--api", "http://127.0.0.1:9/api"],
                              capture_output=True, text=True, timeout=60)
@@ -104,6 +113,26 @@ for label, argv, needle, existing in (
         check(label, run.returncode != 0 and needle in run.stderr and untouched)
         if run.returncode == 0 or needle not in run.stderr:
             print(f"         exit {run.returncode}: {run.stderr.strip()[-200:]}")
+
+
+print("\n=== a stored section is checked against the file now selected ===")
+with tempfile.TemporaryDirectory() as tmp:
+    sec = Path(tmp) / "ref-1.json"
+    sec.write_text(json.dumps({"source": {"filename": "paper.pdf"}}))
+    check("a section from the selected PDF is a match",
+          di.section_provenance(sec, "/store/KEY/paper.pdf") == "match")
+    # The CAAIL-436 defect in the existing corpus: the section was built from
+    # the supplement because Zotero listed it first.
+    check("a section from another file is a mismatch",
+          di.section_provenance(sec, "/store/KEY/supplement.pdf") == "mismatch")
+    sec.write_text(json.dumps({"id": 1}))
+    check("a section predating the source field is unrecorded",
+          di.section_provenance(sec, "/store/KEY/paper.pdf") == "unrecorded")
+    sec.write_text("{not json")
+    check("an unreadable section proves nothing, so it is unrecorded",
+          di.section_provenance(sec, "/store/KEY/paper.pdf") == "unrecorded")
+    check("an absent section is unrecorded",
+          di.section_provenance(Path(tmp) / "nope.json", "/x/paper.pdf") == "unrecorded")
 
 
 print("\n=== each section records what it was converted from ===")

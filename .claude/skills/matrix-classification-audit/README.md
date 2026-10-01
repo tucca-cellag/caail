@@ -55,10 +55,21 @@ interrupted run is restarted with the same command.
 **Which attachment it converts.** A paper's main text is its one PDF attachment not tagged
 `supplement` in Zotero (`scope.select_main_pdf`). A ref with two or more untagged PDFs is
 skipped as `ambiguous-main-pdf` and logged with that reason rather than guessed; tag each
-supplement, or remove a duplicate copy of the paper, and the next run picks it up. Being
-resumable, a run never reconverts a ref that already has a section, so to replace one
-converted from the wrong file, delete its `docs/` and `sections/` files first. The log marks
-a ref Zotero could not resolve but that still has a section on disk (`sections_on_disk`).
+supplement, or remove a duplicate copy of the paper, and the next run picks it up. The log
+marks a ref Zotero could not resolve but that still has a section on disk
+(`sections_on_disk`).
+
+**A section on disk is not evidence it came from the paper.** Under the old first-listed
+rule a section could be built from a supplement, so a resumed run does not simply trust an
+existing file: it compares the `source.filename` the section recorded against the file now
+selected and records a `provenance` of `match`, `mismatch` or `unrecorded`. A `mismatch` is
+reconverted from the right file. An `unrecorded` section predates the source field and
+cannot be checked either way, so it is reported rather than silently trusted or silently
+redone, and the run prints how many there are. **Every section in the September corpus is
+`unrecorded`**, because provenance was not recorded when it was built; one `--respan`
+backfills it from the stored documents without reconverting any PDF, after which a re-run
+verifies them. That is the difference between a corpus that has been checked and one nobody
+has a way to check.
 
 **One file, PDF or JATS.** `--file` converts a single file you already have, bypassing
 Zotero, and writes the same `docs/` and `sections/` output under the id given by `--ref`.

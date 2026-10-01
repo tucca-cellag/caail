@@ -79,7 +79,7 @@ def build_converter():
 # The input formats convert_file accepts, by suffix. `.nxml` is PMC's own
 # extension for JATS; `.xml` is accepted too, and the converter's allowed
 # formats keep a non-JATS XML file from being read as one.
-INPUT_SUFFIXES = {".pdf": "pdf", ".nxml": "jats", ".xml": "jats"}
+INPUT_SUFFIXES = frozenset({".pdf", ".nxml", ".xml"})
 
 
 def check_input(path):
@@ -221,6 +221,23 @@ def write_section(out, rid, doc):
     return span, len(text)
 
 
+def section_provenance(sec_path, pdf_path):
+    """Can this stored section be shown to come from `pdf_path`?
+
+    "match", "mismatch", or "unrecorded" when the section predates the source
+    field (every section in the September corpus does, so a respan is what
+    makes the corpus auditable). Unreadable counts as unrecorded: the question
+    is whether provenance can be PROVEN, and a corrupt file proves nothing.
+    """
+    try:
+        src = json.loads(sec_path.read_text()).get("source")
+    except (OSError, ValueError):
+        return "unrecorded"
+    if not src or not src.get("filename"):
+        return "unrecorded"
+    return "match" if src["filename"] == Path(pdf_path).name else "mismatch"
+
+
 def document_source(doc):
     """The file a document was converted from, as Docling recorded it.
 
@@ -349,17 +366,26 @@ def main():
     if args.overwrite and not args.file:
         sys.exit("--overwrite only applies to --file; the batch never overwrites")
     if args.file:
-        ignored = [flag for flag, on in (("--respan", args.respan),
-                                         ("--only", args.only),
-                                         ("--matrix-only", args.matrix_only),
-                                         ("--limit", args.limit)) if on]
-        if ignored:
-            sys.exit(f"--file converts one file; {', '.join(ignored)} would be "
-                     "ignored, so drop them")
+        # A flag that would change WHAT gets converted is refused rather than
+        # ignored: --respan in particular would run a full respan and never
+        # convert the file. The Zotero connection flags (--api, --group,
+        # --zotero-storage) are simply unused here, which surprises nobody, so
+        # they are left alone -- a harness that passes them everywhere should
+        # not have to special-case this mode.
+        given = sorted(f"--{d}".replace("_", "-")
+                       for d in ("respan", "only", "matrix_only", "limit")
+                       if getattr(args, d))
+        if given:
+            sys.exit(f"--file converts one local file; {', '.join(given)} "
+                     "would be ignored, so drop them")
         try:
             check_input(args.file)
         except ValueError as exc:
             sys.exit(str(exc))
+        # Checked here so the commonest typo fails in a sentence rather than
+        # after a slow model load, which is what "refused before any work" means.
+        if not Path(args.file).is_file():
+            sys.exit(f"--file {args.file}: no such file")
         # The output is keyed by ref id and read back only for Papers.md refs,
         # so an id outside Papers.md writes a section nothing reads, and a
         # negative one breaks --respan's file-name parsing.
@@ -403,6 +429,7 @@ def main():
           f"without: {len(targets) - len(have_pdf)}", flush=True)
 
     log, converted, failed, skipped = [], 0, 0, 0
+    stale, unverified = 0, 0
     converter = None
     t_start = time.time()
 
@@ -417,13 +444,33 @@ def main():
             # converted with --file, or one from before the ref became ambiguous.
             # Say so, or the log reads as "no text" for a ref that has some.
             rec["sections_on_disk"] = sec_path.exists()
+            if sec_path.exists():
+                rec["provenance"] = "unresolved-main-pdf"
+                stale += 1
             log.append(rec)
             continue
         if sec_path.exists():
-            rec.update(ok=True, skipped=True, error="")
-            skipped += 1
-            log.append(rec)
-            continue
+            # Resumable, so the expensive conversion happens once. But "a file
+            # exists" is not "it came from this paper": before CAAIL-436 the
+            # rule took the first PDF Zotero listed, so a section on disk may
+            # have been built from a supplement. Compare what it recorded
+            # against the file now selected, and reconvert only on a provable
+            # mismatch -- a section written before provenance was recorded
+            # cannot be checked either way, so it is reported, never silently
+            # trusted and never silently redone.
+            rec["provenance"] = section_provenance(sec_path, t["pdf"])
+            if rec["provenance"] == "match":
+                rec.update(ok=True, skipped=True, error="")
+                skipped += 1
+                log.append(rec)
+                continue
+            if rec["provenance"] == "unrecorded":
+                rec.update(ok=True, skipped=True, error="")
+                skipped += 1
+                unverified += 1
+                log.append(rec)
+                continue
+            stale += 1          # "mismatch": reconvert from the right file
 
         if converter is None:          # defer model load until real work exists
             converter = build_converter()
@@ -458,6 +505,16 @@ def main():
     (out / "ingest-log.json").write_text(json.dumps(log, indent=2))
     print(f"\nconverted={converted} skipped={skipped} failed={failed} "
           f"elapsed={(time.time() - t_start) / 60:.1f}min")
+    # Provenance is reported, not left in the log, because an unverifiable
+    # section is the CAAIL-436 defect's hiding place: it reads as covered.
+    if stale or unverified:
+        print(f"provenance: reconverted-from-a-different-file={stale} "
+              f"unverifiable={unverified}")
+    if unverified:
+        print(f"  {unverified} section(s) predate the recorded source and cannot be "
+              "checked against the paper's current PDF.\n"
+              "  `--respan` backfills the source from the stored documents without "
+              "reconverting anything; re-run this afterwards to verify them.")
     strategies = {}
     for r in log:
         if r.get("ok") and not r.get("skipped"):
