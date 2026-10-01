@@ -54,7 +54,8 @@ def measure(api, groups, storage, papers_md, docling_corpus):
                # Why there is no main text, when there is none. This script
                # publishes the coverage figure, so a ref refused pending a
                # curator action must not be counted as a ref with no PDF.
-               "pdf_reason": ""}
+               "pdf_reason": "", "provenance": ""}
+        pdf_key = None
         if hit:
             group, item = hit
             pdf_key, row["pdf_reason"] = scope.resolve_main_pdf(api, group, item.get("key"))
@@ -74,6 +75,14 @@ def measure(api, groups, storage, papers_md, docling_corpus):
                            emitted=len(ex.extract_methods(ft)))
         sec = ex.read_docling_section(docling_corpus, rid)
         if sec:
+            # The same verdict extract_matrix_corpus serves on, so the two
+            # cannot disagree about one corpus. Counting a section it refuses
+            # would overstate coverage in this script, which is the one
+            # CLAUDE.md points at for live figures.
+            main_pdf = ex.main_pdf_path(storage, pdf_key)
+            row["provenance"] = ex.section_provenance(
+                sec.get("source"), main_pdf, ex.file_binary_hash(main_pdf))
+        if sec and row.get("provenance") != "mismatch":
             row["docling"] = {
                 "strategy": sec.get("strategy"),
                 "chars": len(sec.get("methods_text", "")),
@@ -148,6 +157,14 @@ def main():
         print(f"refs with a located section    : {len(doc):>4} ({len(doc) / len(rows):.0%} of matrix)")
         for k, v in sorted(strat.items()):
             print(f"  strategy {k:<20} : {v:>4}")
+        prov = {}
+        for r in rows:
+            if r.get("provenance"):
+                prov[r["provenance"]] = prov.get(r["provenance"], 0) + 1
+        for k, v in sorted(prov.items()):
+            label = ("refused, built from another file" if k == "mismatch"
+                     else f"provenance {k}")
+            print(f"  {label:<29}: {v:>4}")
         # The refs that mattered most: those the ft-cache path could not resolve.
         rescued = [r for r in doc if r["has_fulltext"] and not r["heading_found"]]
         print(f"refs rescued from the positional fallback: {len(rescued)}"
