@@ -11,6 +11,7 @@ Run:  python3 .claude/skills/matrix-classification-audit/docling_ingest.test.py
 
 Stdlib only, no Docling, no Zotero and no network.
 """
+import hashlib
 import json
 import os
 import subprocess
@@ -119,28 +120,52 @@ print("\n=== a stored section is checked against the file now selected ===")
 # The rule lives in extract_matrix_corpus so the batch that writes sections and
 # the script that serves them cannot drift; this exercises it through both.
 prov = di.ex.section_provenance
-check("a section from the selected PDF is a match",
-      prov({"filename": "paper.pdf"}, "/store/KEY/paper.pdf") == "match")
+# Content decides it wherever both sides have a hash: a name survives nothing.
+check("the same content is a match whatever the file is called",
+      prov({"filename": "ref-1.pdf", "binary_hash": 42},
+           "/store/KEY/Smith - 2024 - Title.pdf", 42) == "match")
 # The CAAIL-436 defect in the existing corpus: the section was built from the
 # supplement because Zotero listed it first.
-check("a section from another file is a mismatch",
-      prov({"filename": "supp.pdf"}, "/store/KEY/paper.pdf") == "mismatch")
-# Two attachments of one item can carry the SAME name (Zotero's "Rename File
-# from Parent Metadata" applied to both), so the storage key decides.
+check("different content is a mismatch even under the same name",
+      prov({"filename": "paper.pdf", "binary_hash": 42},
+           "/store/KEY/paper.pdf", 99) == "mismatch")
+# The September corpus records every filename as "ref-<id>.pdf", so a
+# name-based check would call all 324 sections wrong. Unprovable is not wrong.
+check("a recorded name the old pipeline minted is not called a mismatch",
+      prov({"filename": "ref-1.pdf"}, "/store/KEY/Smith - 2024 - Title.pdf")
+      == "unrecorded")
+check("a hash on one side only cannot decide it",
+      prov({"filename": "ref-1.pdf", "binary_hash": 42},
+           "/store/KEY/paper.pdf", None) == "unrecorded")
+# A name is believed only on a record this code wrote, which storage_dir marks.
+check("a name and storage key this code wrote are trusted",
+      prov({"filename": "paper.pdf", "storage_dir": "MAINKEY1"},
+           "/store/MAINKEY1/paper.pdf") == "match")
 check("the same name in another storage directory is a mismatch",
       prov({"filename": "paper.pdf", "storage_dir": "SUPPKEY9"},
            "/store/MAINKEY1/paper.pdf") == "mismatch")
-check("the same name in the same storage directory is a match",
-      prov({"filename": "paper.pdf", "storage_dir": "MAINKEY1"},
-           "/store/MAINKEY1/paper.pdf") == "match")
-# A section the curator converted from JATS with --file. Comparing it against
-# the Zotero PDF would call it stale and destroy it on the next batch run.
-check("a section supplied with --file is not judged against the Zotero PDF",
-      prov({"filename": "PMC1234567.nxml"}, "/store/KEY/paper.pdf") == "external-source")
+# Anything the curator supplied with --file was deliberate, PDF or not.
+# Judging it by suffix protected JATS and would have destroyed a publisher PDF.
+check("a JATS section supplied with --file is left alone",
+      prov({"filename": "PMC1234567.nxml", "via": "file"},
+           "/store/KEY/paper.pdf", 7) == "external-source")
+check("a PDF supplied with --file is left alone too",
+      prov({"filename": "downloaded.pdf", "via": "file", "binary_hash": 42},
+           "/store/KEY/paper.pdf", 99) == "external-source")
 check("a section predating the source field is unrecorded",
       prov(None, "/store/KEY/paper.pdf") == "unrecorded")
 check("a ref with no resolved PDF cannot be verified either way",
-      prov({"filename": "paper.pdf"}, None) == "unrecorded")
+      prov({"filename": "paper.pdf", "storage_dir": "K"}, None) == "unrecorded")
+
+# The hash has to be the one Docling records, or the comparison is theatre.
+with tempfile.TemporaryDirectory() as tmp:
+    f = Path(tmp) / "x.bin"
+    f.write_bytes(b"hello")
+    expected = int(hashlib.sha256(b"hello").hexdigest(), 16) % (2 ** 64)
+    check("the file hash is Docling's binary_hash formula",
+          di.ex.file_binary_hash(f) == expected)
+    check("an unreadable file has no hash",
+          di.ex.file_binary_hash(Path(tmp) / "nope.bin") is None)
 
 with tempfile.TemporaryDirectory() as tmp:
     sec = Path(tmp) / "ref-1.json"
@@ -158,20 +183,25 @@ print("\n=== each section records what it was converted from ===")
 # The origin Docling 2.121.0 recorded for PMC4674093.nxml through the real --file
 # path. A PDF's names the PDF type, so the two are told apart.
 jats = SimpleNamespace(origin=SimpleNamespace(
-    filename="PMC4674093.nxml", mimetype="application/xml"))
-check("the origin's file name and type are kept",
+    filename="PMC4674093.nxml", mimetype="application/xml", binary_hash=1234))
+check("the origin's name, type and content hash are kept",
       di.document_source(jats) == {"filename": "PMC4674093.nxml",
-                                   "mimetype": "application/xml"})
+                                   "mimetype": "application/xml",
+                                   "binary_hash": 1234})
 check("a document with no origin records none",
       di.document_source(SimpleNamespace(origin=None)) is None)
 check("the containing directory is recorded, which for Zotero is the storage key",
       di.document_source(jats, "/store/ABCD1234/PMC4674093.nxml").get("storage_dir")
       == "ABCD1234")
-# --respan has no path, and dropping the key would quietly turn a verified
-# section into an unverifiable one.
+check("how the section was made is recorded, not inferred from the suffix",
+      di.document_source(jats, "/x/y.nxml", None, "file").get("via") == "file")
+# --respan has no path, and dropping either field would quietly turn a verified
+# section into an unverifiable one, or a protected one into a rebuildable one.
 check("a respan carries the recorded storage key forward",
       di.document_source(jats, None, {"storage_dir": "ABCD1234"}).get("storage_dir")
       == "ABCD1234")
+check("a respan carries the recorded origin forward",
+      di.document_source(jats, None, {"via": "file"}).get("via") == "file")
 
 
 print(f"\n{'OK' if not fails else 'FAILED'}: {fails} failure(s)")

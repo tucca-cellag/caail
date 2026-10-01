@@ -31,6 +31,7 @@ Defaults:
 Stdlib-only Python 3 — no pip install, no virtual env.
 """
 import argparse
+import hashlib
 import json
 import os
 import re
@@ -162,7 +163,21 @@ METHODS_HEAD_RE = re.compile(
 METHODS_WINDOW = 12000  # chars of methods-region text to carry inline
 
 
-def section_provenance(source, pdf_path):
+def file_binary_hash(path):
+    """Docling's `DocumentOrigin.binary_hash` for a file, or None.
+
+    Reproduced rather than guessed: checked against the hash Docling 2.121.0
+    recorded for a converted PDF, so the two agree. It identifies a file by its
+    CONTENT, which is the only thing that survives a rename.
+    """
+    try:
+        data = Path(path).read_bytes()
+    except OSError:
+        return None
+    return int(hashlib.sha256(data).hexdigest(), 16) % (2 ** 64)
+
+
+def section_provenance(source, pdf_path, pdf_hash=None):
     """Can a stored section's recorded `source` be shown to come from `pdf_path`?
 
     One verdict of four, and it lives here rather than in docling_ingest so the
@@ -170,27 +185,37 @@ def section_provenance(source, pdf_path):
 
       "match"           built from the file selected for this ref today
       "mismatch"        built from some other file -- the CAAIL-436 defect
-      "external-source" built from a non-PDF the curator supplied with --file
-                        (Europe PMC JATS), so the Zotero PDF is not what it
-                        should be compared against and reconverting it would
-                        destroy work somebody did on purpose
-      "unrecorded"      no usable source, so nothing can be proven either way
+      "external-source" built from a file the curator supplied with --file, so
+                        the Zotero attachment is not what it should be compared
+                        against and rebuilding it would destroy deliberate work
+      "unrecorded"      nothing recorded that can prove it either way
 
-    Compared on the containing directory as well as the file name where both
-    were recorded, because for a Zotero attachment that directory is its
-    storage key, and two attachments of one item can share a file name.
+    **Identity is content, not a name.** Where both sides carry Docling's
+    binary_hash that decides it, because a file name proves nothing here: every
+    document in the September corpus records `origin.filename` as "ref-<id>.pdf",
+    a name the pipeline of the day minted, so comparing names would call the
+    whole corpus wrong. A name is trusted only on a record this code wrote,
+    which is what `storage_dir` marks; without that or a hash the answer is
+    "unrecorded", because unprovable and disproved are different things.
     """
-    if not source or not source.get("filename"):
+    if not source:
+        return "unrecorded"
+    # How the section was made, which the suffix only approximated: a curator
+    # who converts a publisher PDF with --file did that on purpose too.
+    if source.get("via") == "file":
+        return "external-source"
+    recorded_hash = source.get("binary_hash")
+    if recorded_hash is not None and pdf_hash is not None:
+        return "match" if recorded_hash == pdf_hash else "mismatch"
+    if not source.get("filename"):
         return "unrecorded"
     if Path(source["filename"]).suffix.lower() != ".pdf":
         return "external-source"
-    if not pdf_path:
+    recorded_dir = source.get("storage_dir")
+    if not pdf_path or not recorded_dir:
         return "unrecorded"
     pdf_path = Path(pdf_path)
-    if source["filename"] != pdf_path.name:
-        return "mismatch"
-    recorded_dir = source.get("storage_dir")
-    if recorded_dir and recorded_dir != pdf_path.parent.name:
+    if source["filename"] != pdf_path.name or recorded_dir != pdf_path.parent.name:
         return "mismatch"
     return "match"
 
@@ -448,6 +473,9 @@ def main():
             # methods_source alone -- a "mismatch" is a section built from some
             # other file while still reading as the highest-trust source.
             "methods_provenance": "",
+            # Set only when a stored section was refused: the file it was built
+            # from, kept so the refusal is inspectable rather than just absent.
+            "rejected_methods_input": None,
         }
         # A Docling section stands on its own: it comes from the PDF, not the
         # ft-cache, so it is available even for a ref whose ft-cache is missing.
@@ -486,12 +514,20 @@ def main():
             # may never re-run the batch. A section built from another file is
             # the CAAIL-436 defect itself, so it is not served as the paper's
             # methods -- the ft-cache path below is tried instead.
+            main_pdf = main_pdf_path(args.zotero_storage, pdf_key)
             rec["methods_provenance"] = section_provenance(
-                section.get("source"), main_pdf_path(args.zotero_storage, pdf_key))
+                section.get("source"), main_pdf, file_binary_hash(main_pdf))
             if rec["methods_provenance"] == "mismatch":
+                # methods_input is cleared with the rest: its own contract is
+                # "the file this methods_text came from", and leaving it naming
+                # the rejected PDF beside ft-cache text would describe the new
+                # text with the old file's name. The rejected file is kept under
+                # its own key so the finding is not lost.
                 rec.update(methods_text="", methods_source="", has_fulltext=False,
                            methods_strategy="", methods_heading="",
-                           methods_end_heading="", methods_pages=None)
+                           methods_end_heading="", methods_pages=None,
+                           rejected_methods_input=rec["methods_input"],
+                           methods_input=None)
                 section = None
                 print(f"  WARNING: ref {rid}: the stored section was built from "
                       f'{rec["methods_input"].get("filename")!r}, not the paper\'s '

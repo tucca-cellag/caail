@@ -90,7 +90,7 @@ def check_input(path):
                          f"{sorted(INPUT_SUFFIXES)}")
 
 
-def convert_file(converter, path, rid, out):
+def convert_file(converter, path, rid, out, via="batch"):
     """Convert one PDF or JATS file to docs/ref-<rid>.json and sections/.
 
     The single-file entry point: the Zotero batch below calls it per ref, and
@@ -102,7 +102,7 @@ def convert_file(converter, path, rid, out):
     doc = converter.convert(str(path)).document
     (out / "docs" / f"ref-{rid}.json").write_text(
         json.dumps(doc.export_to_dict(), ensure_ascii=False))
-    span, n_chars = write_section(out, rid, doc, path=path)
+    span, n_chars = write_section(out, rid, doc, path=path, via=via)
     return doc, span, n_chars
 
 
@@ -183,7 +183,7 @@ def collect_tables(doc):
     return out
 
 
-def write_section(out, rid, doc, path=None, prior_source=None):
+def write_section(out, rid, doc, path=None, prior_source=None, via=None):
     """Locate the methods and availability spans, and write sections/ref-<id>.json.
 
     `path` is the file converted, when it is known (it is not during --respan,
@@ -222,7 +222,7 @@ def write_section(out, rid, doc, path=None, prior_source=None):
         "methods_text": text,
         "availability": availability,
         "tables": collect_tables(doc),
-        "source": document_source(doc, path, prior_source),
+        "source": document_source(doc, path, prior_source, via),
     }, ensure_ascii=False, indent=2))
     return span, len(text)
 
@@ -240,28 +240,36 @@ def read_section_source(sec_path):
         return None
 
 
-def document_source(doc, path=None, prior_source=None):
-    """The file a document was converted from.
+def document_source(doc, path=None, prior_source=None, via=None):
+    """What a section was built from, in terms that survive a rename.
 
-    Mostly read off the document, so --respan keeps it. `storage_dir` is the
-    one part Docling does not know: the containing directory, which for a
-    Zotero attachment is its storage key and is what actually identifies the
-    attachment. Two attachments of one item can carry identical file names
-    ("Rename File from Parent Metadata" applied to both the paper and its
-    supplement), so a name alone cannot tell them apart. Where the path is not
-    available, a previously recorded storage_dir is carried forward rather than
-    dropped, so re-spanning does not quietly make a verified section
-    unverifiable.
+    `binary_hash` is the load-bearing field: Docling computes it from the file's
+    bytes, so it identifies the file itself. The names here do not -- every
+    document in the September corpus records `origin.filename` as
+    "ref-<id>.pdf" -- which is why provenance is decided by hash wherever both
+    sides have one.
+
+    `storage_dir` (a Zotero attachment's storage key) and `via` ("batch" or
+    "file") are the parts Docling does not know. `via` records HOW the section
+    was made, so a file the curator supplied is left alone whatever its format;
+    inferring that from the suffix protected JATS and not a publisher PDF.
+    Everything available is carried forward when re-spanning, which has no path
+    of its own, so a respan cannot quietly make a verified section unverifiable.
     """
     origin = getattr(doc, "origin", None)
     if origin is None:
         return None
     src = {"filename": getattr(origin, "filename", None),
-           "mimetype": getattr(origin, "mimetype", None)}
+           "mimetype": getattr(origin, "mimetype", None),
+           "binary_hash": getattr(origin, "binary_hash", None)}
+    prior = prior_source or {}
     if path is not None:
         src["storage_dir"] = Path(path).parent.name
-    elif prior_source and prior_source.get("storage_dir"):
-        src["storage_dir"] = prior_source["storage_dir"]
+    elif prior.get("storage_dir"):
+        src["storage_dir"] = prior["storage_dir"]
+    resolved_via = via or prior.get("via")
+    if resolved_via:
+        src["via"] = resolved_via
     return src
 
 
@@ -427,7 +435,8 @@ def main():
 
     if args.file:
         t0 = time.time()
-        _, span, n_chars = convert_file(build_converter(), args.file, args.ref, out)
+        _, span, n_chars = convert_file(build_converter(), args.file, args.ref,
+                                        out, via="file")
         written = json.loads((out / "sections" / f"ref-{args.ref}.json").read_text())
         print(json.dumps({"id": args.ref, "file": args.file, "strategy": span["strategy"],
                           "heading": span["heading"], "chars": n_chars,
@@ -457,6 +466,7 @@ def main():
         sec_path = out / "sections" / f"ref-{rid}.json"
         rec = {"id": rid, "in_matrix": t["in_matrix"], "pdf": t["pdf"],
                "ok": False, "skipped": False, "error": t["why"], "seconds": 0.0}
+        rebuilding = False
 
         if not t["pdf"]:
             # Zotero gave no main text, but a section may still be on disk: one
@@ -478,13 +488,14 @@ def main():
             # cannot be checked either way, so it is reported, never silently
             # trusted and never silently redone.
             rec["provenance"] = ex.section_provenance(
-                read_section_source(sec_path), t["pdf"])
+                read_section_source(sec_path), t["pdf"],
+                ex.file_binary_hash(t["pdf"]))
             if rec["provenance"] in ("match", "external-source", "unrecorded"):
                 # "external-source" is a section the curator converted from a
-                # file they supplied (Europe PMC JATS via --file). The Zotero
-                # PDF is not what it should be compared against, and
-                # reconverting would destroy work done on purpose, so the batch
-                # leaves it alone; `--file --overwrite` is how to replace it.
+                # file they supplied with --file. The Zotero attachment is not
+                # what it should be compared against, and rebuilding would
+                # destroy work done on purpose, so the batch leaves it alone;
+                # `--file --overwrite` is how to replace it.
                 rec.update(ok=True, skipped=True, error="")
                 skipped += 1
                 if rec["provenance"] == "unrecorded":
@@ -493,7 +504,11 @@ def main():
                     external += 1
                 log.append(rec)
                 continue
-            reconverted += 1    # "mismatch": rebuild from the right file
+            # "mismatch": fall through and rebuild from the right file. Counted
+            # after the conversion succeeds, not here: a failed conversion
+            # writes nothing, so counting it now would report a rebuild that
+            # did not happen while the old section is still on disk.
+            rebuilding = True
 
         if converter is None:          # defer model load until real work exists
             converter = build_converter()
@@ -504,6 +519,8 @@ def main():
             rec.update(ok=True, error="", strategy=span["strategy"],
                        chars=n_chars, n_pages=doc.num_pages())
             converted += 1
+            if rebuilding:
+                reconverted += 1
         except Exception as exc:  # noqa: BLE001 - one bad PDF must not end the batch
             rec["error"] = f"{type(exc).__name__}: {exc}"
             failed += 1
@@ -535,10 +552,12 @@ def main():
               f"unverifiable={unverified} supplied-with---file={external} "
               f"kept-but-main-pdf-unresolved={unresolved_with_section}")
     if unverified:
-        print(f"  {unverified} section(s) predate the recorded source and cannot be "
-              "checked against the paper's current PDF.\n"
-              "  `--respan` backfills the source from the stored documents without "
-              "reconverting anything; re-run this afterwards to verify them.")
+        print(f"  {unverified} section(s) carry nothing that can prove which file "
+              "they were built from.\n"
+              "  `--respan` rewrites each from its stored document, which already "
+              "carries the content hash,\n"
+              "  reconverting no PDF; re-run this afterwards for a real verdict "
+              "per ref.")
     strategies = {}
     for r in log:
         if r.get("ok") and not r.get("skipped"):

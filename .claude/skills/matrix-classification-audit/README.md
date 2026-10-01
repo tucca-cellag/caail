@@ -61,15 +61,28 @@ marks a ref Zotero could not resolve but that still has a section on disk
 
 **A section on disk is not evidence it came from the paper.** Under the old first-listed
 rule a section could be built from a supplement, so a resumed run does not simply trust an
-existing file: it compares the `source.filename` the section recorded against the file now
-selected and records a `provenance` of `match`, `mismatch` or `unrecorded`. A `mismatch` is
-reconverted from the right file. An `unrecorded` section predates the source field and
-cannot be checked either way, so it is reported rather than silently trusted or silently
-redone, and the run prints how many there are. **Every section in the September corpus is
-`unrecorded`**, because provenance was not recorded when it was built; one `--respan`
-backfills it from the stored documents without reconverting any PDF, after which a re-run
-verifies them. That is the difference between a corpus that has been checked and one nobody
-has a way to check.
+existing file. It records a `provenance` of one of four values:
+
+| verdict | meaning | what the run does |
+| --- | --- | --- |
+| `match` | built from the file selected for this ref today | skips it |
+| `mismatch` | provably built from some other file | rebuilds it from the right file |
+| `external-source` | built from a file a curator supplied with `--file` | leaves it alone |
+| `unrecorded` | nothing recorded that can prove it either way | skips it, and counts it |
+
+**Identity is content, not a file name.** The check compares Docling's `binary_hash`, which
+is derived from the file's bytes, so it survives a rename and tells two attachments apart
+even when Zotero has given them the same name. Names are not trusted on their own here for
+a concrete reason: every document in the September corpus records its `origin.filename` as
+`ref-<id>.pdf`, a name the pipeline of the day minted, so a name-based check would call the
+entire corpus wrong. A recorded name is believed only on a record this code wrote, which
+`source.storage_dir` marks.
+
+**Sections built before provenance was recorded read as `unrecorded`, and `--respan` fixes
+that**: it rewrites each section from its stored document, which already carries the
+`binary_hash`, so one cheap pass (no PDF is reconverted) makes the corpus checkable, and the
+next run returns a real verdict per ref. `--respan` is safe to run for this: it preserves
+`storage_dir` and `via` from the section it replaces.
 
 **One file, PDF or JATS.** `--file` converts a single file you already have, bypassing
 Zotero, and writes the same `docs/` and `sections/` output under the id given by `--ref`.
