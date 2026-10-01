@@ -17,7 +17,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { isUnderBase, RETIRED_BASES, RETIRED_ORIGINS, SITE_BASE, SITE_ORIGIN, SITE_URL } from './site-config';
+import { isUnderBase, RETIRED_BASES, RETIRED_ORIGINS, SEARCH_CONSOLE_TOKENS, SITE_BASE, SITE_ORIGIN, SITE_URL } from './site-config';
 
 const SITE_DIR = fileURLToPath(new URL('../../', import.meta.url));
 const REPO_DIR = fileURLToPath(new URL('../../../', import.meta.url));
@@ -93,6 +93,14 @@ describe('site-config', () => {
   it('decides what lies under a base at a segment boundary', () => {
     for (const p of ['/caail', '/caail/', '/caail/x/', '/caail?t=a', '/caail#m']) expect(isUnderBase(p, '/caail')).toBe(true);
     for (const p of ['/caailx', '/caailx/', '/x/caail/', '/']) expect(isUnderBase(p, '/caail')).toBe(false);
+  });
+
+  it('lists each Search Console token once, as a bare token', () => {
+    const tokens = SEARCH_CONSOLE_TOKENS;
+    expect(tokens.length).toBeGreaterThan(0);
+    expect(new Set(tokens).size).toBe(tokens.length);
+    // Catches pasting the whole <meta ... content="..."> Search Console shows.
+    for (const t of tokens) expect(t).toMatch(/^[A-Za-z0-9_-]+$/);
   });
 
   it('composes SITE_URL from the origin and base', () => {
