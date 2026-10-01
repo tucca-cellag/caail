@@ -33,6 +33,10 @@ on:
       # the corpus extraction scripts. docling_sections.test.py runs here because it
       # needs neither Zotero nor the network -- it reads committed heading fixtures.
       - .claude/skills/matrix-classification-audit/**
+      # the main-PDF rule every corpus script reads a paper's text through, and
+      # the one other script that reads it (scope.test.py guards both).
+      - .claude/skills/zotero-collection-scope/**
+      - .claude/skills/papers-dataset-audit/**
       # the caail-contribute skill and the issue forms it composes URLs for. `pnpm parse`
       # now ABORTS when the two disagree (contribute-form.ts), and the sync guard step
       # below runs parse -- so without these two paths a skill-only or template-only
@@ -75,6 +79,10 @@ on:
       # the corpus extraction scripts. docling_sections.test.py runs here because it
       # needs neither Zotero nor the network -- it reads committed heading fixtures.
       - .claude/skills/matrix-classification-audit/**
+      # the main-PDF rule every corpus script reads a paper's text through, and
+      # the one other script that reads it (scope.test.py guards both).
+      - .claude/skills/zotero-collection-scope/**
+      - .claude/skills/papers-dataset-audit/**
       # the caail-contribute skill and the issue forms it composes URLs for. `pnpm parse`
       # now ABORTS when the two disagree (contribute-form.ts), and the sync guard step
       # below runs parse -- so without these two paths a skill-only or template-only
@@ -136,6 +144,19 @@ jobs:
       # README lists every script in it, which had already drifted.
       - name: Accession-extraction tests
         run: python3 .claude/skills/matrix-classification-audit/extract_accessions.test.py
+
+      # Which Zotero attachment is a paper's own text. Every script above reads
+      # through scope.select_main_pdf, and a tagged supplement must never be
+      # converted as the paper (CAAIL-436). Stdlib only, no Zotero, no network.
+      - name: Main-PDF selection tests
+        run: python3 .claude/skills/zotero-collection-scope/scope.test.py
+
+      # The ingest's one-file entry point (--file PATH --ref N), which the shared
+      # intake calls with Europe PMC JATS. Docling is not installed here, so this
+      # covers what is decided before conversion: the suffix gate, the refused
+      # argument combinations, and each section's recorded source.
+      - name: Ingest entry-point tests
+        run: python3 .claude/skills/matrix-classification-audit/docling_ingest.test.py
 
       - name: DB integrity + round-trip verify
         run: |

@@ -50,10 +50,15 @@ def measure(api, groups, storage, papers_md, docling_corpus):
         hit = (doi_index.get(ref.get("doi", "").lower()) if ref.get("doi") else None) \
             or (url_index.get(ex._norm_url(ref.get("url", ""))) if ref.get("url") else None)
         row = {"id": rid, "has_fulltext": False, "heading_found": None,
-               "truncated": None, "dropped": 0, "docling": None}
+               "truncated": None, "dropped": 0, "docling": None,
+               # Why there is no main text, when there is none. This script
+               # publishes the coverage figure, so a ref refused pending a
+               # curator action must not be counted as a ref with no PDF.
+               "pdf_reason": "", "provenance": ""}
+        pdf_key = None
         if hit:
             group, item = hit
-            pdf_key = scope.find_pdf_attachment_key(api, group, item.get("key"))
+            pdf_key, row["pdf_reason"] = scope.resolve_main_pdf(api, group, item.get("key"))
             ft = ex.read_ftcache(storage, pdf_key)
             if ft:
                 row["has_fulltext"] = True
@@ -70,6 +75,16 @@ def measure(api, groups, storage, papers_md, docling_corpus):
                            emitted=len(ex.extract_methods(ft)))
         sec = ex.read_docling_section(docling_corpus, rid)
         if sec:
+            # The same verdict extract_matrix_corpus serves on, so the two
+            # cannot disagree about one corpus. Counting a section it refuses
+            # would overstate coverage in this script, which is the one
+            # CLAUDE.md points at for live figures.
+            main_pdf = ex.main_pdf_path(storage, pdf_key)
+            src = sec.get("source")
+            row["provenance"] = ex.section_provenance(
+                src, main_pdf,
+                ex.file_binary_hash(main_pdf) if ex.needs_file_hash(src) else None)
+        if sec and row.get("provenance") != "mismatch":
             row["docling"] = {
                 "strategy": sec.get("strategy"),
                 "chars": len(sec.get("methods_text", "")),
@@ -107,6 +122,16 @@ def main():
 
     print(f"matrix refs                    : {len(rows)}")
     print(f"  with ft-cache full text      : {n}")
+    # A refused ref is not a ref without a PDF, and the difference is a curator
+    # action rather than a missing paper. Counting them together would report a
+    # fixable gap as a permanent one.
+    refused = {}
+    for r in rows:
+        if not r["has_fulltext"] and r["pdf_reason"]:
+            refused[r["pdf_reason"]] = refused.get(r["pdf_reason"], 0) + 1
+    for reason, count in sorted(refused.items()):
+        print(f"  refused, {reason:<20}: {count:>4}  "
+              f"({scope.PDF_REASON_TEXT.get(reason, reason)})")
     if not n:
         print("\n  No ref resolved to ft-cache text. Check that Zotero is running with")
         print("  'Allow other applications' enabled, and that --group is right.")
@@ -124,8 +149,23 @@ def main():
     print(f"chars beyond reach of the window: {sum(r['dropped'] for r in trunc):,}")
     print()
     print("--- the Docling ingest (docling_ingest.py) ---")
+    # Printed BEFORE the no-sections branch, not inside the else. A corpus
+    # entirely built from supplements -- the CAAIL-436 defect at full scale --
+    # leaves `doc` empty, and reporting "no sections found; run the ingest"
+    # while silently withholding the refusal count would describe the one
+    # situation this measurement exists to surface as an absence of data.
+    prov = {}
+    for r in rows:
+        if r.get("provenance"):
+            prov[r["provenance"]] = prov.get(r["provenance"], 0) + 1
+    for k, v in sorted(prov.items()):
+        label = ("refused, built from another file" if k == "mismatch"
+                 else f"provenance {k}")
+        print(f"  {label:<29}: {v:>4}")
     if not doc:
-        print("no docling-corpus sections found; run docling_ingest.py")
+        print("no sections are being served."
+              + (" They were refused, not missing: see above."
+                 if prov.get("mismatch") else " Run docling_ingest.py."))
     else:
         strat = {}
         for r in doc:

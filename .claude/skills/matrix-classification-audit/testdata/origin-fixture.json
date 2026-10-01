@@ -1,0 +1,26 @@
+{
+  "_comment": [
+    "The DocumentOrigin that Docling 2.121.0 actually emitted for the file named",
+    "below, captured by converting it through docling_ingest.py --file. It is here",
+    "so the provenance check's binary_hash comparison is tested against Docling's",
+    "own output rather than against a second copy of the same arithmetic: a test",
+    "that recomputes the formula it is checking would pass even if the formula were",
+    "wrong, and a wrong formula makes every stored section read as 'mismatch',",
+    "which silently discards the whole Docling corpus in favour of truncated",
+    "ft-cache text.",
+    "Regenerate with: uv run --python 3.12 --with docling==<version> python",
+    ".claude/skills/matrix-classification-audit/docling_ingest.py --file",
+    ".claude/skills/matrix-classification-audit/testdata/origin-fixture.jats.xml",
+    "--ref 1 --out <scratch>, then copy the origin block out of",
+    "<scratch>/docs/ref-1.json. If a later Docling changes the formula, this test",
+    "fails and the provenance check has to be revisited -- that failure is the",
+    "point of the fixture."
+  ],
+  "docling_version": "2.121.0",
+  "file": "origin-fixture.jats.xml",
+  "origin": {
+    "mimetype": "application/xml",
+    "binary_hash": 17488682488622942576,
+    "filename": "origin-fixture.jats.xml"
+  }
+}

@@ -37,6 +37,7 @@ Examples:
 The script is stdlib-only Python 3 — no pip install, no virtual env.
 """
 import argparse
+import http.client
 import json
 import os
 import re
@@ -122,11 +123,26 @@ def fetch_all_items_in_tree(api, group, root_key, *, _seen=None):
 
 
 def fetch_item_children(api, group, item_key):
-    """Return child attachments / notes of an item (used to find PDFs)."""
+    """Return child attachments / notes of an item (used to find PDFs).
+
+    One bad response degrades one ref rather than ending the run: these
+    scripts make a children call per reference, hundreds of them, so an
+    aborted pass loses a whole report. `_get` turns an unreachable API into
+    SystemExit; a non-JSON body raises ValueError, a dropped socket OSError,
+    and a response cut short mid-body `http.client.IncompleteRead`, which is
+    an HTTPException and NOT an OSError, so naming only the first three left
+    out the truncated case this docstring claims to cover.
+
+    It does mean a transport failure is indistinguishable here from an item
+    with no children, which the caller then reports as "no PDF attached".
+    That misreport is real and is tracked on CAAIL-440; widening this catch
+    does not make it worse, and narrowing it would trade a wrong label for a
+    lost run.
+    """
     try:
         return _get(f"{api}/groups/{group}/items/{item_key}"
                     f"/children?format=json")
-    except SystemExit:
+    except (SystemExit, OSError, ValueError, http.client.HTTPException):
         return []
 
 
@@ -159,12 +175,100 @@ def resolve_collection_name(api, group, name_query):
 # Per-item evidence pull
 # ---------------------------------------------------------------------------
 
+# A child attachment carrying this Zotero tag is a supplement, never the paper's
+# main text (CAAIL-436). The tag is the only marker the code reads: a
+# "Supplementary: <name>" title helps a person scanning Zotero, but a mistyped
+# title must not be able to change which file gets converted.
+SUPPLEMENT_TAG = "supplement"
+
+# The one place a skill script names the PDF content type (scope.test.py fails
+# on any other). Code that needs it for something other than choosing the main
+# text, such as reading a section's recorded source, imports this.
+PDF_CONTENT_TYPE = "application/pdf"
+
+
+def is_supplement(child):
+    """True when a Zotero child item carries the supplement tag."""
+    tags = child.get("data", {}).get("tags") or []
+    return any((t.get("tag") or "").strip().lower() == SUPPLEMENT_TAG
+               for t in tags)
+
+
+def select_main_pdf(children):
+    """Pick the paper's main-text PDF from an item's Zotero children.
+
+    Returns (key, reason). Exactly one untagged PDF is the main text and
+    returns (key, ""). Otherwise the key is None and the reason says why:
+    "no-pdf-attachment", "only-supplement-pdfs", or "ambiguous-main-pdf" when
+    two or more PDFs are untagged. The last is refused rather than guessed,
+    because the old first-listed rule converted a supplement as if it were
+    the paper and nothing downstream could tell.
+
+    Only an IMPORTED attachment is a candidate. Neither link mode has a copy
+    under `~/Zotero/storage/<key>/` for any of these scripts to read: that is
+    obvious for `linked_url` and equally true of `linked_file`, which points
+    at a path outside the library. Counting one would be worse than ignoring
+    it, because an item holding an imported PDF plus a linked copy of the same
+    paper would be refused as ambiguous and the curator told to tag a
+    supplement that does not exist.
+    """
+    pdfs = [c for c in children
+            if c.get("data", {}).get("contentType") == PDF_CONTENT_TYPE
+            and str(c.get("data", {}).get("linkMode", "")).startswith("imported")]
+    mains = [c for c in pdfs if not is_supplement(c)]
+    if len(mains) == 1:
+        return mains[0].get("data", {}).get("key"), ""
+    if mains:
+        return None, "ambiguous-main-pdf"
+    return None, "only-supplement-pdfs" if pdfs else "no-pdf-attachment"
+
+
+def resolve_main_pdf(api, group, item_key):
+    """(key, reason) for an item's main-text PDF; see select_main_pdf.
+
+    An ambiguous item is also reported on stderr, here rather than at each call
+    site, so no caller can forget the one refusal a curator can fix by tagging.
+    """
+    key, reason = select_main_pdf(fetch_item_children(api, group, item_key))
+    warn_if_ambiguous(item_key, group, reason)
+    return key, reason
+
+
+# What a curator does about each refusal, worded once so every script that
+# reports one says the same thing. The last two are not select_main_pdf's
+# verdicts: they are what a caller finds after it has a key, and they live here
+# so one table covers every reason a ref has no readable main text.
+PDF_REASON_TEXT = {
+    "no-pdf-attachment": "no PDF attached",
+    "only-supplement-pdfs": "only PDFs tagged as supplements are attached",
+    "ambiguous-main-pdf": (f"more than one untagged PDF; tag each supplement "
+                           f"'{SUPPLEMENT_TAG}', or remove a duplicate copy of "
+                           "the paper"),
+    "not-indexed": ("the main-text PDF is not full-text indexed yet; open it "
+                    "once in Zotero, or re-run after a sync"),
+    "pdf-not-in-storage": "the main-text PDF has no file in Zotero storage",
+}
+
+
+def warn_if_ambiguous(item_key, group, reason):
+    """Report an ambiguous item on stderr: the refusal a curator can fix."""
+    if reason == "ambiguous-main-pdf":
+        print(f"WARNING: Zotero item {item_key} (group {group}) has "
+              f"{PDF_REASON_TEXT[reason]}. Skipped rather than guessed.",
+              file=sys.stderr)
+
+
 def find_pdf_attachment_key(api, group, item_key):
-    """Return the first PDF attachment's Zotero key, or None."""
-    for c in fetch_item_children(api, group, item_key):
-        if c.get("data", {}).get("contentType") == "application/pdf":
-            return c.get("data", {}).get("key")
-    return None
+    """Return the main-text PDF attachment's Zotero key, or None.
+
+    The sanctioned entry point for a caller that does NOT report per-ref
+    coverage, so it has nowhere to put a reason: None covers every case
+    select_main_pdf refuses, and resolve_main_pdf has already warned about the
+    one a curator can fix. Anything that publishes a coverage figure or a
+    per-ref record uses resolve_main_pdf and records the reason, because there
+    a refused ref that reads like a PDF-less one is a wrong measurement.
+    """
+    return resolve_main_pdf(api, group, item_key)[0]
 
 
 DATA_AVAIL_RE = re.compile(
@@ -431,8 +535,14 @@ def render_markdown(report, collection_labels):
         elif item.get("pdf_key"):
             out.append(f"- **PDF attached** "
                        f"(key `{item['pdf_key']}`) — no ft-cache yet\n")
+        elif "pdf_reason" not in item:
+            # Evidence is pulled for gaps only; say so rather than report a
+            # PDF as missing that nobody looked for.
+            out.append("- **PDF:** not checked (evidence is pulled for gaps only).\n")
         else:
-            out.append(f"- **No PDF attached.**\n")
+            reason = item["pdf_reason"]
+            out.append(f"- **No main-text PDF:** "
+                       f"{PDF_REASON_TEXT.get(reason, reason)}.\n")
 
     # Gap summary
     out.append("\n## Summary: GAPS grouped by collection\n")
@@ -549,9 +659,12 @@ def main():
         else:
             item["status"] = ("GAP", None)
         summary["gaps"] += 1
-        # Pull PDF + data-availability evidence for actionable items
-        pdf_key = find_pdf_attachment_key(args.api, args.group, item["key"])
+        # Pull PDF + data-availability evidence for actionable items. The
+        # reason travels with the item, so the report and --json both say why
+        # there is no main text instead of calling a refused item PDF-less.
+        pdf_key, pdf_reason = resolve_main_pdf(args.api, args.group, item["key"])
         item["pdf_key"] = pdf_key
+        item["pdf_reason"] = pdf_reason
         if pdf_key:
             ftc = os.path.join(args.zotero_storage, pdf_key, ".zotero-ft-cache")
             item["data_avail"] = grep_data_availability(ftc)

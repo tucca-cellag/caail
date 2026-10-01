@@ -31,6 +31,7 @@ Defaults:
 Stdlib-only Python 3 — no pip install, no virtual env.
 """
 import argparse
+import hashlib
 import json
 import os
 import re
@@ -40,7 +41,7 @@ from pathlib import Path
 # Reuse scope.py's Zotero helpers (same .claude/skills/ parent).
 _SCOPE_DIR = Path(__file__).resolve().parents[1] / "zotero-collection-scope"
 sys.path.insert(0, str(_SCOPE_DIR))
-import scope  # noqa: E402  (_get, _paginate, find_pdf_attachment_key, normalize_item)
+import scope  # noqa: E402  (_get, _paginate, resolve_main_pdf, normalize_item)
 
 
 # ---------------------------------------------------------------------------
@@ -162,6 +163,118 @@ METHODS_HEAD_RE = re.compile(
 METHODS_WINDOW = 12000  # chars of methods-region text to carry inline
 
 
+def file_binary_hash(path):
+    """Docling's `DocumentOrigin.binary_hash` for a file, or None.
+
+    Reproduced rather than guessed: checked against the hash Docling 2.121.0
+    recorded for a converted file, so the two agree. It identifies a file by
+    its CONTENT, which is the only thing that survives a rename.
+
+    No file means no hash. That case is ordinary rather than exceptional: every
+    refusal from select_main_pdf leaves a caller with no path, so raising here
+    would abort a whole run over a ref that is merely awaiting a curator.
+    """
+    if not path:
+        return None
+    try:
+        data = Path(path).read_bytes()
+    except OSError:
+        return None
+    return int(hashlib.sha256(data).hexdigest(), 16) % (2 ** 64)
+
+
+def needs_file_hash(source):
+    """Would section_provenance use a hash for this source?
+
+    Asked before reading a PDF, because the hash costs the whole file in
+    memory and for the entire current corpus it would be discarded on the next
+    line: no stored section records a hash yet, so every one of those ~324
+    reads is wasted on a script whose point is that later passes are instant.
+    """
+    return bool(source) and source.get("via") != "file" \
+        and source.get("binary_hash") is not None
+
+
+def section_provenance(source, pdf_path, pdf_hash=None):
+    """Can a stored section's recorded `source` be shown to come from `pdf_path`?
+
+    One verdict of four, and it lives here rather than in docling_ingest so the
+    script that SERVES this evidence and the batch that writes it cannot drift:
+
+      "match"           built from the file selected for this ref today
+      "mismatch"        built from some other file -- the CAAIL-436 defect
+      "external-source" built from a file the curator supplied with --file, so
+                        the Zotero attachment is not what it should be compared
+                        against and rebuilding it would destroy deliberate work
+      "unrecorded"      nothing recorded that can prove it either way
+
+    **Identity is content, not a name.** Where both sides carry Docling's
+    binary_hash that decides it, because a file name proves nothing here: every
+    document in the September corpus records `origin.filename` as "ref-<id>.pdf",
+    a name the pipeline of the day minted, so comparing names would call the
+    whole corpus wrong. A name is trusted only on a record this code wrote,
+    which is what `storage_dir` marks; without that or a hash the answer is
+    "unrecorded", because unprovable and disproved are different things.
+    """
+    if not source:
+        return "unrecorded"
+    # Both tests for "the curator supplied this" come FIRST, before the hash
+    # comparison. `via` is the reliable one; the suffix is the fallback for a
+    # record that did not set it, and it has to be checked here rather than
+    # after the hash, or it is unreachable: every new-style record carries a
+    # binary_hash, so the comparison would already have returned "mismatch"
+    # and a JATS section written through convert_file without an explicit
+    # via="file" (the default is "batch") would be rebuilt from the Zotero PDF
+    # and destroyed. The shared intake calls convert_file directly, so that
+    # default is reachable from outside this repo.
+    if source.get("via") == "file":
+        return "external-source"
+    if source.get("filename") \
+            and Path(source["filename"]).suffix.lower() != ".pdf":
+        return "external-source"
+    recorded_hash = source.get("binary_hash")
+    if recorded_hash is not None and pdf_hash is not None:
+        return "match" if recorded_hash == pdf_hash else "mismatch"
+    if not source.get("filename"):
+        return "unrecorded"
+    recorded_dir = source.get("storage_dir")
+    if not pdf_path or not recorded_dir:
+        return "unrecorded"
+    pdf_path = Path(pdf_path)
+    if source["filename"] != pdf_path.name or recorded_dir != pdf_path.parent.name:
+        return "mismatch"
+    return "match"
+
+
+def refuse_section(rec):
+    """Stop serving a record's Docling section, and return what it came from.
+
+    A section built from another file is the CAAIL-436 defect, so it is not
+    served as the paper's methods: every field describing it is cleared, and
+    the rejected source moves to its own key so the refusal stays inspectable
+    rather than just absent. Returns that source (never None) for the caller's
+    message.
+
+    Its own function because it is the one path this whole branch exists to
+    handle and it had no test: an earlier version read `methods_input` back
+    AFTER clearing it, so the first refused ref raised AttributeError and
+    killed the extraction run, which writes its output only at the end.
+    """
+    rejected = rec.get("methods_input") or {}
+    rec.update(methods_text="", methods_source="", has_fulltext=False,
+               methods_strategy="", methods_heading="", methods_end_heading="",
+               methods_pages=None, rejected_methods_input=rec.get("methods_input"),
+               methods_input=None,
+               # Cleared with the rest, and for the same reason. It describes
+               # whether methods_input is the paper's own text, and consumers
+               # are told to weigh evidence by it; leaving "mismatch" on a
+               # record that goes on to serve sound ft-cache text would have
+               # them discard good evidence. rejected_methods_input being set
+               # is what records that a stored section was refused.
+               methods_provenance="")
+    return rejected
+
+
 def read_docling_section(docling_corpus, rid):
     """Return the Docling-derived methods section for a ref, or None.
 
@@ -199,6 +312,19 @@ def read_docling_section(docling_corpus, rid):
     if len(text) < MIN_SECTION_CHARS:
         return None
     return sec
+
+
+def main_pdf_path(zotero_storage, pdf_key):
+    """The PDF file inside an attachment's storage directory, or None.
+
+    The same resolution the ingest does, so the two agree about which file a
+    key stands for when provenance is compared.
+    """
+    if not pdf_key:
+        return None
+    d = Path(zotero_storage) / pdf_key
+    pdfs = sorted(d.glob("*.pdf")) if d.is_dir() else []
+    return str(pdfs[0]) if pdfs else None
 
 
 def read_ftcache(zotero_storage, pdf_key):
@@ -379,6 +505,10 @@ def main():
             # this False there would hide a complete methods section from every
             # consumer that filters on it, which is all of them.
             "has_fulltext": False,
+            # Why Zotero gave no main-text PDF, from scope.select_main_pdf
+            # ("ambiguous-main-pdf" needs a supplement tagged), or "" when it
+            # gave one. Without it a refused ref reads the same as a PDF-less one.
+            "pdf_reason": "",
             "zotero_group": None,
             # Provenance for methods_text. Consumers that weigh evidence should
             # read these: a "ftcache" section may be truncated and may run past
@@ -389,6 +519,18 @@ def main():
             "methods_end_heading": "",
             "methods_pages": None,      # [first, last] for docling sections
             "methods_truncated": False,
+            # The file a docling section was converted from, as the ingest
+            # recorded it ({"filename", "mimetype"}), or None. A JATS section
+            # has no pages, and this is what says why methods_pages is None.
+            "methods_input": None,
+            # Whether that file can be shown to be the paper's own text: one of
+            # section_provenance's four verdicts. Weigh evidence by this, not by
+            # methods_source alone -- a "mismatch" is a section built from some
+            # other file while still reading as the highest-trust source.
+            "methods_provenance": "",
+            # Set only when a stored section was refused: the file it was built
+            # from, kept so the refusal is inspectable rather than just absent.
+            "rejected_methods_input": None,
         }
         # A Docling section stands on its own: it comes from the PDF, not the
         # ft-cache, so it is available even for a ref whose ft-cache is missing.
@@ -400,6 +542,7 @@ def main():
             rec["methods_strategy"] = section.get("strategy", "")
             rec["methods_heading"] = section.get("heading", "")
             rec["methods_end_heading"] = section.get("end_heading", "")
+            rec["methods_input"] = section.get("source")
             if section.get("page_start") is not None:
                 rec["methods_pages"] = [section.get("page_start"),
                                         section.get("page_end")]
@@ -407,14 +550,51 @@ def main():
         hit = (doi_index.get(doi.lower()) if doi else None) \
             or (url_index.get(_norm_url(url)) if url else None)
         if not hit:
+            if section:
+                # Nothing to compare the section against, so say that rather
+                # than leaving the field empty, which reads as "not checked".
+                rec["methods_provenance"] = section_provenance(
+                    section.get("source"), None)
             n_nozot += 1
             corpus.append(rec)
             continue
         group, item = hit
         rec["zotero_group"] = group
         rec["abstract"] = (item.get("data", {}).get("abstractNote") or "").strip()
-        pdf_key = scope.find_pdf_attachment_key(args.api, group, item.get("key"))
+        pdf_key, rec["pdf_reason"] = scope.resolve_main_pdf(args.api, group, item.get("key"))
         fulltext = read_ftcache(args.zotero_storage, pdf_key)
+        if section:
+            # The check has to happen HERE, not only in the ingest: this is the
+            # script every curation pass reads its evidence from, and a curator
+            # may never re-run the batch. A section built from another file is
+            # the CAAIL-436 defect itself, so it is not served as the paper's
+            # methods -- the ft-cache path below is tried instead.
+            main_pdf = main_pdf_path(args.zotero_storage, pdf_key)
+            src = section.get("source")
+            rec["methods_provenance"] = section_provenance(
+                src, main_pdf,
+                file_binary_hash(main_pdf) if needs_file_hash(src) else None)
+            # "unrecorded" would lump this ref in with the ~324 sections that
+            # simply predate provenance, and it is not the same risk: Zotero
+            # REFUSED to name a main PDF here, so this is precisely the
+            # population the CAAIL-436 defect lives in -- a section built from
+            # the supplement under the old first-listed rule. Say which it is,
+            # the way the ingest's log already does, rather than letting the
+            # batch and the serving script describe one state two ways.
+            if rec["methods_provenance"] == "unrecorded" and rec["pdf_reason"]:
+                rec["methods_provenance"] = "unresolved-main-pdf"
+            if rec["methods_provenance"] == "mismatch":
+                # methods_input is cleared with the rest: its own contract is
+                # "the file this methods_text came from", and leaving it naming
+                # the rejected PDF beside ft-cache text would describe the new
+                # text with the old file's name. The rejected file is kept under
+                # its own key so the finding is not lost.
+                rejected = refuse_section(rec)
+                section = None
+                print(f"  WARNING: ref {rid}: the stored section was built from "
+                      f'{rejected.get("filename")!r}, not the paper\'s '
+                      "current main PDF; not served as its methods. Re-run "
+                      "docling_ingest.py to rebuild it.", file=sys.stderr)
         rec["fulltext_chars"] = len(fulltext)
         if fulltext:
             rec["has_fulltext"] = True

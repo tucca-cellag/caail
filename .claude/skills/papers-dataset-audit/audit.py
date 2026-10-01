@@ -24,6 +24,9 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Iterable
 
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "zotero-collection-scope"))
+import scope  # noqa: E402  (select_main_pdf: the one main-PDF rule, CAAIL-436)
+
 # ---------- accession patterns ----------
 
 ACCESSION_PATTERNS = [
@@ -201,18 +204,20 @@ def find_zotero(ref: dict, zindex: dict) -> tuple[int, str, str] | None:
     return None
 
 
-def find_pdf_ftcache(api_base: str, group: int, item_key: str, storage: Path) -> Path | None:
-    try:
-        kids = fetch_json(f"{api_base}/groups/{group}/items/{item_key}/children?format=json")
-    except Exception:
-        return None
-    for c in kids:
-        cd = c.get("data", {})
-        if cd.get("itemType") == "attachment" and cd.get("contentType") == "application/pdf":
-            ftc = storage / cd["key"] / ".zotero-ft-cache"
-            if ftc.is_file():
-                return ftc
-    return None
+def find_pdf_ftcache(api_base: str, group: int, item_key: str,
+                     storage: Path) -> tuple[Path | None, str]:
+    """(ft-cache path, "") for the main text, or (None, why there is none).
+
+    The lookup goes through scope.resolve_main_pdf rather than a second fetch
+    here, so this script and the Docling ingest cannot read different files for
+    one ref, and cannot disagree about what a failed children call means.
+    """
+    # The paper's own text, never a tagged supplement: the one main-PDF rule.
+    key, reason = scope.resolve_main_pdf(api_base, group, item_key)
+    if not key:
+        return None, reason
+    ftc = storage / key / ".zotero-ft-cache"
+    return (ftc, "") if ftc.is_file() else (None, "not-indexed")
 
 
 # ---------- accession extraction ----------
@@ -344,7 +349,7 @@ def main() -> int:
             continue
         group, key, itype = z
         rec["zotero"] = {"group": group, "key": key, "itemType": itype}
-        ftc = find_pdf_ftcache(args.api, group, key, storage)
+        ftc, rec["pdf_reason"] = find_pdf_ftcache(args.api, group, key, storage)
         if ftc is None:
             rec["status"] = "NO_PDF"
             findings.append(rec)
@@ -394,7 +399,7 @@ def main() -> int:
     out.append(f"| ORPHAN | {len(by_status['ORPHAN'])} | Paper has a deposit/code link the repo does NOT cite — likely missing |")
     out.append(f"| MATCHED | {len(by_status['MATCHED'])} | Paper has deposit/code link(s) and at least one already appears in the repo |")
     out.append(f"| NO_DATA | {len(by_status['NO_DATA'])} | No accession/repo URL found in PDF — likely review/methodology |")
-    out.append(f"| NO_PDF | {len(by_status['NO_PDF'])} | Zotero record found but no PDF/ft-cache yet |")
+    out.append(f"| NO_PDF | {len(by_status['NO_PDF'])} | Zotero record found but no readable main text; the list below says why |")
     out.append(f"| NO_ZOTERO | {len(by_status['NO_ZOTERO'])} | Paper not located in either Zotero library |")
     out.append("")
 
@@ -417,10 +422,13 @@ def main() -> int:
         out.append("")
 
     if by_status["NO_PDF"]:
-        out.append("## NO_PDF (paper in Zotero but PDF not attached / not indexed)\n")
+        out.append("## NO_PDF (paper in Zotero but no readable main text)\n")
         for r in by_status["NO_PDF"]:
+            reason = r.get("pdf_reason", "")
+            why = scope.PDF_REASON_TEXT.get(reason, reason or "reason not recorded")
             out.append(
-                f"- #{r['ref']}  DOI `{r['doi']}`  group {r['zotero']['group']} key {r['zotero']['key']}"
+                f"- #{r['ref']}  DOI `{r['doi']}`  group {r['zotero']['group']} "
+                f"key {r['zotero']['key']}: {why}"
             )
         out.append("")
 
