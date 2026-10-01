@@ -50,10 +50,14 @@ def measure(api, groups, storage, papers_md, docling_corpus):
         hit = (doi_index.get(ref.get("doi", "").lower()) if ref.get("doi") else None) \
             or (url_index.get(ex._norm_url(ref.get("url", ""))) if ref.get("url") else None)
         row = {"id": rid, "has_fulltext": False, "heading_found": None,
-               "truncated": None, "dropped": 0, "docling": None}
+               "truncated": None, "dropped": 0, "docling": None,
+               # Why there is no main text, when there is none. This script
+               # publishes the coverage figure, so a ref refused pending a
+               # curator action must not be counted as a ref with no PDF.
+               "pdf_reason": ""}
         if hit:
             group, item = hit
-            pdf_key = scope.find_pdf_attachment_key(api, group, item.get("key"))
+            pdf_key, row["pdf_reason"] = scope.resolve_main_pdf(api, group, item.get("key"))
             ft = ex.read_ftcache(storage, pdf_key)
             if ft:
                 row["has_fulltext"] = True
@@ -107,6 +111,16 @@ def main():
 
     print(f"matrix refs                    : {len(rows)}")
     print(f"  with ft-cache full text      : {n}")
+    # A refused ref is not a ref without a PDF, and the difference is a curator
+    # action rather than a missing paper. Counting them together would report a
+    # fixable gap as a permanent one.
+    refused = {}
+    for r in rows:
+        if not r["has_fulltext"] and r["pdf_reason"]:
+            refused[r["pdf_reason"]] = refused.get(r["pdf_reason"], 0) + 1
+    for reason, count in sorted(refused.items()):
+        print(f"  refused, {reason:<20}: {count:>4}  "
+              f"({scope.PDF_REASON_TEXT.get(reason, reason)})")
     if not n:
         print("\n  No ref resolved to ft-cache text. Check that Zotero is running with")
         print("  'Allow other applications' enabled, and that --group is right.")

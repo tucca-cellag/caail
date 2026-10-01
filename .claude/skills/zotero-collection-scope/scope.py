@@ -212,13 +212,18 @@ def resolve_main_pdf(api, group, item_key):
 
 
 # What a curator does about each refusal, worded once so every script that
-# reports one says the same thing.
+# reports one says the same thing. The last two are not select_main_pdf's
+# verdicts: they are what a caller finds after it has a key, and they live here
+# so one table covers every reason a ref has no readable main text.
 PDF_REASON_TEXT = {
     "no-pdf-attachment": "no PDF attached",
     "only-supplement-pdfs": "only PDFs tagged as supplements are attached",
     "ambiguous-main-pdf": (f"more than one untagged PDF; tag each supplement "
                            f"'{SUPPLEMENT_TAG}', or remove a duplicate copy of "
                            "the paper"),
+    "not-indexed": ("the main-text PDF is not full-text indexed yet; open it "
+                    "once in Zotero, or re-run after a sync"),
+    "pdf-not-in-storage": "the main-text PDF has no file in Zotero storage",
 }
 
 
@@ -233,8 +238,12 @@ def warn_if_ambiguous(item_key, group, reason):
 def find_pdf_attachment_key(api, group, item_key):
     """Return the main-text PDF attachment's Zotero key, or None.
 
-    None covers every case select_main_pdf refuses. Callers that record a
-    per-item reason should use resolve_main_pdf.
+    The sanctioned entry point for a caller that does NOT report per-ref
+    coverage, so it has nowhere to put a reason: None covers every case
+    select_main_pdf refuses, and resolve_main_pdf has already warned about the
+    one a curator can fix. Anything that publishes a coverage figure or a
+    per-ref record uses resolve_main_pdf and records the reason, because there
+    a refused ref that reads like a PDF-less one is a wrong measurement.
     """
     return resolve_main_pdf(api, group, item_key)[0]
 

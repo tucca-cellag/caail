@@ -16,6 +16,7 @@ on the defect it guards is not evidence of anything.
 """
 import os
 import sys
+import tempfile
 import tokenize
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -108,18 +109,35 @@ print("\n=== no second copy of the rule ===")
 skills = os.path.dirname(HERE)
 exempt = {os.path.abspath(scope.__file__), os.path.abspath(__file__)}
 
+# `contentType` is the signature, not the literal. Selecting an attachment by
+# type means reading that key, whatever the comparison looks like, so this
+# catches the forms a literal search cannot: an f-string (which on Python 3.12+
+# is not a STRING token at all, so the earlier literal-only check passed it),
+# a membership test, and a comparison against scope.PDF_CONTENT_TYPE, the
+# constant scope.py's own comment tells other code to import. The literal is
+# still checked, in both token shapes, because a module-level constant spelling
+# it is a copy of the rule's input even before anything compares against it.
+ATTACHMENT_KEY = "contentType"
+STRING_TOKENS = {tokenize.STRING,
+                 getattr(tokenize, "FSTRING_MIDDLE", tokenize.STRING)}
 
-def names_pdf_type(path):
-    """True when a string literal in the file spells the PDF content type.
 
-    Any string, not only `contentType == "application/pdf"`: a reversed
-    comparison, a module constant or a membership test is the same copy.
-    Comments are not code, so they are not read.
+def rule_copy_reason(path):
+    """Why this file looks like a second copy of the main-PDF rule, or ''.
+
+    Reads tokens rather than raw text, so a comment explaining the rule is not
+    mistaken for implementing it.
     """
     with open(path, encoding="utf-8") as fh:
-        tokens = tokenize.generate_tokens(fh.readline)
-        return any(t.type == tokenize.STRING and scope.PDF_CONTENT_TYPE in t.string
-                   for t in tokens)
+        tokens = list(tokenize.generate_tokens(fh.readline))
+    for t in tokens:
+        if t.type == tokenize.NAME and t.string == ATTACHMENT_KEY:
+            return f"reads the {ATTACHMENT_KEY} attribute"
+        if t.type in STRING_TOKENS and ATTACHMENT_KEY in t.string:
+            return f"names {ATTACHMENT_KEY!r}"
+        if t.type in STRING_TOKENS and scope.PDF_CONTENT_TYPE in t.string:
+            return f"spells {scope.PDF_CONTENT_TYPE!r}"
+    return ""
 
 
 copies = 0
@@ -128,14 +146,43 @@ for root, _, files in os.walk(skills):
         path = os.path.abspath(os.path.join(root, f))
         if not f.endswith(".py") or path in exempt:
             continue
-        if names_pdf_type(path):
+        reason = rule_copy_reason(path)
+        if reason:
             copies += 1
-            print(f"  [FAIL] {os.path.relpath(path, skills)} spells the PDF content "
-                  "type itself; to pick an attachment call scope.select_main_pdf, "
-                  "and for anything else use scope.PDF_CONTENT_TYPE")
+            print(f"  [FAIL] {os.path.relpath(path, skills)} {reason}; to pick a "
+                  "paper's PDF call scope.select_main_pdf or "
+                  "scope.resolve_main_pdf, which is the only place that rule lives")
 fails += copies
 if not copies:
-    print("  [PASS] no skill script but scope.py spells the PDF content type")
+    print("  [PASS] no skill script but scope.py selects an attachment by type")
+
+# The guard above is only as good as the token shapes it knows, and the shape
+# of an f-string changed under it once already. So prove it on each form rather
+# than trusting the token table.
+print("\n=== the copy guard catches every form of the rule ===")
+probe = os.path.join(tempfile.mkdtemp(), "probe.py")
+FORMS = [
+    ('a plain-string comparison', 'if c["data"]["contentType"] == "application/pdf": pass\n'),
+    ('an f-string literal', 'T = f"application/pdf"\n'),
+    ('a reversed comparison', 'if "application/pdf" == ct: pass\n'),
+    ('a membership test', 'PDF_TYPES = {"application/pdf"}\n'),
+    ('the shared constant, used to select', 'if c["data"]["contentType"] == scope.PDF_CONTENT_TYPE: pass\n'),
+    ('a bare attribute read', 'ct = c.get("data", {}).get("contentType")\n'),
+]
+for label, src in FORMS:
+    with open(probe, "w", encoding="utf-8") as fh:
+        fh.write(src)
+    caught = bool(rule_copy_reason(probe))
+    if not caught:
+        fails += 1
+    print(f'  [{"PASS" if caught else "FAIL"}] {label}')
+
+with open(probe, "w", encoding="utf-8") as fh:
+    fh.write('# a comment about contentType and application/pdf\n"""and a docstring"""\n')
+clean = not rule_copy_reason(probe)
+if not clean:
+    fails += 1
+print(f'  [{"PASS" if clean else "FAIL"}] a comment about the rule is not a copy of it')
 
 print(f'\n{"FAILED" if fails else "OK"}: {fails} failure(s)')
 sys.exit(1 if fails else 0)

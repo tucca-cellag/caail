@@ -206,15 +206,14 @@ def find_zotero(ref: dict, zindex: dict) -> tuple[int, str, str] | None:
 
 def find_pdf_ftcache(api_base: str, group: int, item_key: str,
                      storage: Path) -> tuple[Path | None, str]:
-    """(ft-cache path, "") for the main text, or (None, why there is none)."""
-    try:
-        kids = fetch_json(f"{api_base}/groups/{group}/items/{item_key}/children?format=json")
-    except Exception:
-        return None, ""
-    # The paper's own text, never a tagged supplement: the same rule the Docling
-    # ingest uses, so the two pipelines cannot read different files for one ref.
-    key, reason = scope.select_main_pdf(kids)
-    scope.warn_if_ambiguous(item_key, group, reason)
+    """(ft-cache path, "") for the main text, or (None, why there is none).
+
+    The lookup goes through scope.resolve_main_pdf rather than a second fetch
+    here, so this script and the Docling ingest cannot read different files for
+    one ref, and cannot disagree about what a failed children call means.
+    """
+    # The paper's own text, never a tagged supplement: the one main-PDF rule.
+    key, reason = scope.resolve_main_pdf(api_base, group, item_key)
     if not key:
         return None, reason
     ftc = storage / key / ".zotero-ft-cache"
@@ -426,8 +425,7 @@ def main() -> int:
         out.append("## NO_PDF (paper in Zotero but no readable main text)\n")
         for r in by_status["NO_PDF"]:
             reason = r.get("pdf_reason", "")
-            why = ("main-text PDF not full-text indexed yet" if reason == "not-indexed"
-                   else scope.PDF_REASON_TEXT.get(reason, reason or "children lookup failed"))
+            why = scope.PDF_REASON_TEXT.get(reason, reason or "reason not recorded")
             out.append(
                 f"- #{r['ref']}  DOI `{r['doi']}`  group {r['zotero']['group']} "
                 f"key {r['zotero']['key']}: {why}"
