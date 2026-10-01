@@ -34,6 +34,25 @@ def check(label, ok):
     print(f'  [{"PASS" if ok else "FAIL"}] {label}')
 
 
+def check_call(label, fn):
+    """check(), but for an assertion whose evaluation may itself raise.
+
+    An unexpected exception is a FAILURE of this check, not the end of the
+    suite. Watched mattering: reintroducing the missing-path defect made
+    `file_binary_hash(None)` raise, which aborted the run and silently took
+    every later check with it, so two other defects went undemonstrated.
+    A suite that crashes reports less than one that fails.
+    """
+    global fails
+    try:
+        ok = bool(fn())
+    except Exception as exc:                      # noqa: BLE001 - that is the point
+        fails += 1
+        print(f'  [FAIL] {label} (raised {type(exc).__name__}: {exc})')
+        return
+    check(label, ok)
+
+
 class Reached(Exception):
     """Raised by the stub converter: proof the file got past the suffix gate."""
 
@@ -173,10 +192,10 @@ with tempfile.TemporaryDirectory() as tmp:
 # from select_main_pdf leaves the caller without a path. Raising here aborted
 # the whole extraction run on the first ambiguous ref, and six of the live
 # refs are ambiguous today.
-check("no path at all yields no hash rather than raising",
-      di.ex.file_binary_hash(None) is None)
-check("main_pdf_path yields nothing when no attachment was selected",
-      di.ex.main_pdf_path("/anywhere", None) is None)
+check_call("no path at all yields no hash rather than raising",
+           lambda: di.ex.file_binary_hash(None) is None)
+check_call("main_pdf_path yields nothing when no attachment was selected",
+           lambda: di.ex.main_pdf_path("/anywhere", None) is None)
 
 # Reading a PDF costs the whole file in memory, so it is only done when the
 # comparison would actually use it.
@@ -194,10 +213,14 @@ print("\n=== a refused section stops being served, and says what it was ===")
 # The path the whole branch exists to handle, and it had no test: reading the
 # cleared field back raised AttributeError on the first refused ref and killed
 # the run, which writes its output only after the loop.
+# The fields a real record carries at the moment it is refused, including the
+# verdict that put it there: a fixture missing one turns a failing check into a
+# KeyError, which is how the clearing guard first read as a crash rather than
+# as a failure.
 rec = {"methods_input": {"filename": "supp.pdf"}, "methods_text": "x",
        "methods_source": "docling", "has_fulltext": True, "methods_strategy": "explicit",
        "methods_heading": "Methods", "methods_end_heading": "Results",
-       "methods_pages": [1, 2]}
+       "methods_pages": [1, 2], "methods_provenance": "mismatch"}
 rejected = di.ex.refuse_section(rec)
 check("the rejected file is returned for the message",
       rejected.get("filename") == "supp.pdf")
@@ -207,13 +230,14 @@ check("nothing still describes the refused section",
       not rec["methods_text"] and not rec["methods_source"]
       and rec["has_fulltext"] is False and rec["methods_input"] is None
       and rec["methods_pages"] is None and not rec["methods_heading"])
-check("a record with no recorded input refuses without raising",
-      di.ex.refuse_section({"methods_input": None}) == {})
+check_call("a record with no recorded input refuses without raising",
+           lambda: di.ex.refuse_section({"methods_input": None}) == {})
 # The verdict goes too: a consumer told to weigh evidence by it, and filtering
 # out "mismatch", would otherwise discard the sound ft-cache text this record
 # goes on to serve. rejected_methods_input is what records the refusal.
-check("the refused verdict does not stay on a record that serves other text",
-      rec["methods_provenance"] == "" and rec["rejected_methods_input"] is not None)
+check_call("the refused verdict does not stay on a record that serves other text",
+           lambda: rec.get("methods_provenance") == ""
+           and rec["rejected_methods_input"] is not None)
 
 with tempfile.TemporaryDirectory() as tmp:
     sec = Path(tmp) / "ref-1.json"
