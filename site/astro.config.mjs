@@ -8,7 +8,7 @@ import { stripLeadingH1 } from './scripts/remark/strip-leading-h1.ts';
 import { rewriteCaailLinks } from './scripts/remark/rewrite-caail-links.ts';
 import { datasetCards, loadDatasetEntriesByPage } from './scripts/remark/dataset-cards.ts';
 import { CAAIL_PAGES } from './src/content/caail-pages.ts';
-import { SITE_ORIGIN, SITE_BASE, SITE_URL } from './src/content/site-config.ts';
+import { SITE_ORIGIN, SITE_BASE, SITE_URL, SEARCH_CONSOLE_TOKENS } from './src/content/site-config.ts';
 
 // astro.config.mjs lives in site/ — one level up is the repo root (trailing slash)
 const REPO_ROOT = fileURLToPath(new URL('../', import.meta.url));
@@ -173,15 +173,14 @@ export default defineConfig({
         { tag: 'link', attrs: { rel: 'apple-touch-icon', href: `${SITE_BASE}/apple-touch-icon.png` } },
         { tag: 'link', attrs: { rel: 'manifest', href: `${SITE_BASE}/site.webmanifest` } },
         { tag: 'meta', attrs: { name: 'theme-color', content: '#002E6D' } },
-        // Google Search Console ownership verification (URL-prefix property for
-        // the site). Public token — ships in the page <head>.
-        {
+        // Google Search Console ownership verification: one public meta tag per
+        // verifying Google account. Which account each token belongs to, and what to
+        // check before removing one, is in site-config.ts; e2e/search-console.spec.ts
+        // checks they all reach the home page's <head>, the page Search Console reads.
+        ...SEARCH_CONSOLE_TOKENS.map((content) => ({
           tag: 'meta',
-          attrs: {
-            name: 'google-site-verification',
-            content: 'p-AzN61G83Y9JI-9Y_7EmzsfcXDpNbnQto3Wmc3w0NQ',
-          },
-        },
+          attrs: { name: 'google-site-verification', content },
+        })),
         // Cloudflare Web Analytics — cookieless, privacy-light usage stats.
         //
         // Loaded only when the page is being served from the deployed origin, so
