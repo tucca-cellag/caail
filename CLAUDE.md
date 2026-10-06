@@ -283,7 +283,7 @@ This is a distinct virtue from the coverage humility already in `api/index.json`
 
 ## Workflow
 
-- **Jira first, always.** Every piece of work gets an issue in the private **CAAIL** Jira project *before* the work starts, not after. A public GitHub issue is an additional venue when the content is genuinely world-safe, never a substitute. The failure this prevents: a session's reasoning is the expensive part and it evaporates on compaction, so anything that lives only in a todo list or a chat transcript is already lost. See "Jira conventions" below for the schema. (The site and cloud id are deliberately not recorded in this world-readable file — resolve them at runtime: `acli jira auth status` names the site, and the cloud id is the Keychain entry `JIRA_CLOUD_ID`.)
+- **Ticket first, always.** Every piece of work gets an issue in the private planning repo `tucca-cellag/caail-planning` *before* the work starts, not after, and the reasoning goes into that issue as it is produced. An issue on this public repo is what an outside person files, never a substitute. The failure this prevents: a session's reasoning is the expensive part and it evaporates on compaction, so anything that lives only in a todo list or a chat transcript is already lost. A PR closes its ticket with `Fixes tucca-cellag/caail-planning#<n>`. See "Agent skills" below for the routing.
 - **The structured catalog is authored in a SQLite DB, not by hand** — see "The SQLite authoring backend" below. The matrix + references in `Papers.md`, the entries in `Software.md` / `Databases.md`, and the inventory tables in `Datasets/*.md` are **generated** from `site/db/ndjson/`; don't hand-edit those regions (a hook blocks it; CI fails on drift). Prose in those files, and every other canonical file, is still just hand-authored Markdown — preview in any Markdown viewer or let GitHub render it. (The generated website under `site/` has its own build — see "Documentation site (`site/`)" below.)
 - **Branching.** Work on `<type>/<slug>` branches off `main`; open PRs against `main`. Never commit directly to `main`.
 - **Superpowers specs stay local.** `.gitignore` excludes `internal-docs/`, so write the design doc in `internal-docs/superpowers/` but don't commit it — the skill's default to commit doesn't apply here, and the existing specs are all untracked.
@@ -292,58 +292,8 @@ This is a distinct virtue from the coverage humility already in `api/index.json`
   - `docs(readme): clarify scope of the library`
   - `fix(papers): correct DOI on reference 17`
 - **PRs.** Describe what you added and why it fits — for papers, mention the AI method(s) and research area(s) it spans (i.e. which matrix cells get updated).
-- **Publishing is irreversible.** `tucca-cellag/caail` is **public**: issue bodies, PR bodies, commit messages, branch names **and `.gitignore` comments** are all world-readable, GitHub issues can be deleted but **pull requests cannot**, and GHArchive permanently captures every public event. Before filing or commenting, confirm every quoted path, code block and architectural detail originates in *this* repo — anything read from a private repo or a third party's source is not publishable, and paraphrase discloses as much as a quote. Findings about a weakness in someone else's live service go to its owner privately, never a tracker. Rule: `.claude/rules/publishing.md`; enforced at the Bash layer by `.claude/hooks/check-public-publish.sh` (wired in the committed `.claude/settings.json`, tests in `check-public-publish.test.py`).
+- **Publishing is irreversible.** `tucca-cellag/caail` is **public**: issue bodies, PR bodies, commit messages, branch names **and `.gitignore` comments** are all world-readable, GitHub issues can be deleted but **pull requests cannot**, and GHArchive permanently captures every public event. Before filing or commenting, confirm every quoted path, code block and architectural detail originates in *this* repo — anything read from a private repo or a third party's source is not publishable, and paraphrase discloses as much as a quote. Findings about a weakness in someone else's live service go to its owner privately, never a tracker. Anything labelled `disclosure-private` in planning never reaches this repo in any form: no issue, PR body, commit message or branch name. Rule: `.claude/rules/publishing.md`; enforced at the Bash layer by `.claude/hooks/check-public-publish.sh` (wired in the committed `.claude/settings.json`, tests in `check-public-publish.test.py`).
 - **Shipping a branch.** When a feature branch is done and locally green, the **`caail-pr-wrapup`** skill (in `.claude/skills/`) is the Ship stage: it runs the code review, pushes, opens the PR, watches CI, merges (after confirming — the merge triggers the public Pages deploy), watches the `docs.yml` deploy to green (build + Lighthouse + deploy), verifies the live site, and cleans up the worktree/branch. **Review belongs to that skill, not upstream of it**, and it is deliberately more than one round. The level, the floor on rounds, the stop rule and the two human-in-the-loop gates live in `.claude/skills/caail-pr-wrapup/reference/review-phase.md`, which the skill's step 1 points at, and are deliberately not repeated here: this file loads every session while the skill loads at ship time, so a copy here would go on issuing the old instruction after the skill changed, and would win. Read that file rather than assuming, and read its rationale before shortening it. It also owns the CAAIL-specific gotchas (the `gh pr merge` "main already checked out" benign failure, the Lighthouse gate, which CI runs on which paths) so they don't have to be re-derived each time.
-
-## Jira conventions
-
-Jira is the durable record. Claude's todo list is session-scoped and dies with the session; a chat transcript gets compacted. **Whatever is only in those two places is already lost.** So the reasoning goes to Jira as it is produced, not once the work is finished.
-
-**Hierarchy.** `Workstream` (hierarchy 1) → `Task` (0) → `Sub-task` (-1). A Workstream is a body of related work with a shared thesis; Tasks hang off it via `parent`. Retroactive Workstreams recording completed work are an established and useful pattern, not clutter.
-
-**Status.** `To Do` (transition id `21`) → `In Progress` (`31`) → `Done` (`41`). All are global and always available. **Transition to In Progress when work actually starts**, not at the end. A board where everything jumps To Do → Done records no reasoning and answers no question about where time went.
-
-**Descriptions carry reasoning, not just instructions.** State the thesis, what superseded what and why, the central vulnerability of the argument, and which options were rejected. When the full record lives in a gitignored working file, name that path. A description that only says what to do is a description that will be re-derived from scratch in three weeks.
-
-**Fields available on Task** (the project exposes no others worth using; `Category` has no configured options):
-
-| Field | Key | Use |
-| --- | --- | --- |
-| Priority | `priority` | Highest / High / Medium / Low / Lowest |
-| Start date | `customfield_10015` | When work is expected to begin |
-| Due date | `duedate` | Loose plan, not a commitment |
-| Original estimate | `timetracking` | Rough hours |
-| Labels | `labels` | The taxonomy below |
-
-**Priority is argued, never inherited.** Do not take a CVSS score, a linter severity, or a source rubric's framing as the priority. Score against this project's actual exposure and say why in the description. A build-time-only advisory rated critical upstream is not critical here.
-
-**Label taxonomy.** Flat lowercase-hyphen strings, combined freely:
-
-- Kind: `finding` · `workflow`
-- Domain: `security` · `supply-chain` · `ci-cd` · `testing` · `observability` · `a11y` · `perf` · `tooling` · `content` · `docs` · `verification` · `licensing`
-- Disclosure: `disclosure-private` · `disclosure-public-ok`
-- Workstream-scoped prefixes (`phase-*`, `lane-*`, `rubric-*`) are minted per workstream and documented in its description.
-
-**`disclosure-private` is a hard gate, not a hint.** It marks content that must not reach the public repo in any form: unmitigated weaknesses in a live service, unpublished analysis, named individuals, and anything derived from paid or third-party material. Paraphrase discloses as much as a quote. Once a weakness is fixed the label can be dropped and the finding discussed freely.
-
-**Search the whole open board before filing anything. This is not optional.** The board runs to ~90 open issues and no one holds it in their head, so "I don't remember one like this" is not evidence. Filing a duplicate is worse than filing nothing: it splits the reasoning across two tickets, and whichever one you are not reading looks like the complete picture.
-
-**Do not rely on a JQL text search to find it.** Jira's text index tokenizes, so `summary ~ "full text"` and `description ~ "CAAIL-166"` both miss matches you need — hyphenated keys in particular. The only sound method is to pull every open issue and scan locally:
-
-```bash
-# One command. Fetches the whole project over REST and compacts it to one line
-# per issue: key, type, status, updated, priority, labels, parent, links, summary.
-~/.claude/scripts/jira-cache.sh list CAAIL
-
-# Full text, including descriptions AND comments:
-~/.claude/scripts/jira-cache.sh grep CAAIL '<concept>'
-```
-
-Search for the **concept**, not your phrasing of it. A ticket about "refs whose classification rests on something short of full text" is the same work as one about "abstract-only placements", and no keyword search finds the second from the first. Read the summaries of anything adjacent before concluding it is new.
-
-**When you find an overlap, prefer editing the existing ticket to filing a new one.** If both genuinely need to exist, say in each what the boundary is (this one owns X, that one owns Y) and link them. An unlinked pair of overlapping tickets is how the same work gets done twice or not at all.
-
-**Jira vs public GitHub.** Jira is the default and is never skipped. A public GitHub issue is an *additional* venue, appropriate when the content is world-safe and outside contributors benefit from seeing it: reproducible bugs in shipped behaviour, feature proposals, content suggestions. Where both exist, cross-reference each from the other. Anything `disclosure-private` gets no GitHub issue at all.
 
 ## What this repo publishes
 
@@ -375,7 +325,7 @@ not library documentation, so it goes where decisions go.
 
 **A sharper form of the same rule governs what may sit in a directory at all.** `docs/` holds
 documentation for the live library and nothing else. Scoping, planning and decision records go
-to Jira and GitHub. Applied file by file the test above is too permissive here, because a
+to the planning tracker. Applied file by file the test above is too permissive here, because a
 decision record that happens to describe the matrix schema still reads as "how the library is
 made"; it is a decision about the library, which is a different thing.
 
@@ -399,15 +349,15 @@ under `docs/`.
 
 ### Issue tracker
 
-Split. Jira project `CAAIL` is the durable record and is never skipped (`/to-spec`, `/to-tickets`, `/wayfinder`); public GitHub `tucca-cellag/caail` takes discrete world-safe requests and anything a PR closes, and is what `/triage` reads. Enumerate **both** before creating anything. The conventions this project actually applies are in "Jira conventions" below; the generic per-repo routing file other repos carry is deliberately not in this tree, so an agent looking for one and finding none should read that section rather than conclude the trackers are unsplit.
+Split across two GitHub repos. **Planning** (specs, tickets, bugs, decisions) is issues in the private `tucca-cellag/caail-planning`, labelled `area:catalog`. `/to-spec`, `/to-tickets` and `/wayfinder` write there, and every `gh issue` command needs `-R tucca-cellag/caail-planning`, because `gh` otherwise acts on this public repo. **This repo's own issues** are the public inbound channel (what outside people file) and are what `/triage` reads. Nothing from planning is filed here. The operating conventions are maintainer-local and deliberately not in this tree, so an agent that finds no `docs/agents/` here should read this section, not conclude the tracker is unconfigured.
 
 ### Triage labels
 
-Two independent axes. **State** answers what is blocking a ticket now, and has two spellings because it has two writers: `state:<class>` on Jira (from `tracker-backfill`) and the five canonical triage roles on GitHub (from `/triage`, for issues someone else filed) — `wontfix` already exists on the repo and should be applied rather than duplicated. **Type** answers what kind of work resolves it: `wayfinder:<type>`, on both trackers, applied to every ticket regardless of how it was created. The full label tables are maintainer-local.
+The five default roles, each label equal to its name: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`. Only `wontfix` exists on this repo so far: create the others on first use. The planning repo's wider vocabulary is maintainer-local.
 
 ### Domain docs
 
-`CONTEXT.md` at the repo root is the glossary, and names concepts only: the scope of any individual row or column lives in `Taxonomy.md`, the trusted definition source, and is never restated. `ResearchAreas/*.md` and `Methods/*.md` are prose deep dives and are explicitly not a definition source.
+Single-context. `CONTEXT.md` at the repo root is the glossary, and names concepts only: the scope of any individual row or column lives in `Taxonomy.md`, the trusted definition source, and is never restated. `ResearchAreas/*.md` and `Methods/*.md` are prose deep dives and are explicitly not a definition source.
 
 **Architecture decisions are recorded on the tracker, not in this repository.** They are decisions rather than library documentation, so they go where decisions go.
 
