@@ -45,16 +45,16 @@ describe('CAAIL_PAGES', () => {
   });
   it('all() returns {id,...meta} objects', () => {
     const all = CAAIL_PAGES.all();
-    // 33 → 57: CAAIL-266 filled in the Methods/ row axis, adding the 24 pages the
+    // 33 → 57: tucca-cellag/caail-planning#234 filled in the Methods/ row axis, adding the 24 pages the
     // matrix's other rows were missing (the axis had held only Benchmarks &
     // Evaluation, migrated there when the eval column was retired).
     // 57 → 58: the 8th research area added ResearchAreas/FoodSafetyPrediction.md.
     // Only +1, not +2 — MetabolicModeling.md already existed as a deep dive for a
     // subject that was not yet a column.
-    // 58 → 60: CAAIL-203 minted two matrix rows, Hybrid Mechanistic-ML Models and
+    // 58 → 60: tucca-cellag/caail-planning#172 minted two matrix rows, Hybrid Mechanistic-ML Models and
     // Comparative Studies, each of which takes a Methods/ page under the one-page-per-row
-    // convention CAAIL-266 established. +2, not +3: a third row drafted alongside them,
-    // Gaussian Processes, belongs to CAAIL-235 and was split onto its own branch.
+    // convention tucca-cellag/caail-planning#234 established. +2, not +3: a third row drafted alongside them,
+    // Gaussian Processes, belongs to tucca-cellag/caail-planning#203 and was split onto its own branch.
     // This is a ground-truth contract, not a derived value — it is meant to fail when
     // the page set changes, so update it deliberately with the reason rather than
     // relaxing it to `toBeGreaterThan`.

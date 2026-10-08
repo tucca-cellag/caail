@@ -86,7 +86,7 @@ export function seedCatalog(db: Db, entries: CatalogRaw[], type: 'software' | 'd
 // --- field reports ---------------------------------------------------------
 
 /**
- * Seed the `FieldReports.md` H3 entries as first-class `report:` records (CAAIL-363).
+ * Seed the `FieldReports.md` H3 entries as first-class `report:` records (tucca-cellag/caail-planning#331).
  * Modeled on `seedCatalog`: assign a collision-free frozen `report:` slug once, register
  * the item, store the verbatim `heading_md` + `body_md` in document order. The `report:`
  * namespace is exclusive to reports, so a local `seen` set is enough (no cross-table
@@ -427,7 +427,7 @@ interface ManualSubseries { datasets: Record<string, string[]> }
 /**
  * Seed `subseries` onto dataset_rows from the committed `scripts/db/subseries.json` —
  * the MEMBER ACCESSIONS of a repository SuperSeries whose inventory row names only the
- * parent (CAAIL-258).
+ * parent (tucca-cellag/caail-planning#226).
  *
  * The defect this closes: a GEO SuperSeries accession resolves to no analysable data, so
  * indexing only the parent hides every member from anyone querying the endpoint. Four

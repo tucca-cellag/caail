@@ -343,7 +343,7 @@ describe('reports.json (field reports)', () => {
 
   it('states the latest-edition rule in the manifest, where an agent will read it', () => {
     // If this wording is softened, an agent stops being told to prefer the current edition and
-    // can recommend a superseded report as the state of the field — the exact failure CAAIL-172
+    // can recommend a superseded report as the state of the field — the exact failure tucca-cellag/caail-planning#140
     // exists to prevent.
     const use = manifest.endpoints.find((e: any) => e.path === 'reports.json').use as string;
     expect(use).toMatch(/current/i);

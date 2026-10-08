@@ -104,7 +104,7 @@ const cowTotal = cowInventory.length + cowCurated.length;
 const col = (r: InventoryRow, k: string) => r.columns?.[k] ?? '';
 const acc = (r: InventoryRow) => col(r, 'Data').replace(/\[`|`\]\(.*/g, '');
 
-/* This card said the opposite until CAAIL-258 landed, and the reversal is the point.
+/* This card said the opposite until tucca-cellag/caail-planning#226 landed, and the reversal is the point.
    `GSE173199` is a GEO SuperSeries, and CAAIL indexed only the parent, so the bulk
    0/24/48/72/96 h timecourse inside it was unreachable from the endpoint. The card
    concluded from that silence that the only real timecourse was single-nucleus and told

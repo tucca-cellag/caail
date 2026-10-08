@@ -202,7 +202,7 @@ def section_provenance(source, pdf_path, pdf_hash=None):
     script that SERVES this evidence and the batch that writes it cannot drift:
 
       "match"           built from the file selected for this ref today
-      "mismatch"        built from some other file -- the CAAIL-436 defect
+      "mismatch"        built from some other file -- the tucca-cellag/caail-planning#404 defect
       "external-source" built from a file the curator supplied with --file, so
                         the Zotero attachment is not what it should be compared
                         against and rebuilding it would destroy deliberate work
@@ -249,7 +249,7 @@ def section_provenance(source, pdf_path, pdf_hash=None):
 def refuse_section(rec):
     """Stop serving a record's Docling section, and return what it came from.
 
-    A section built from another file is the CAAIL-436 defect, so it is not
+    A section built from another file is the tucca-cellag/caail-planning#404 defect, so it is not
     served as the paper's methods: every field describing it is cleared, and
     the rejected source moves to its own key so the refusal stays inspectable
     rather than just absent. Returns that source (never None) for the caller's
@@ -567,7 +567,7 @@ def main():
             # The check has to happen HERE, not only in the ingest: this is the
             # script every curation pass reads its evidence from, and a curator
             # may never re-run the batch. A section built from another file is
-            # the CAAIL-436 defect itself, so it is not served as the paper's
+            # the tucca-cellag/caail-planning#404 defect itself, so it is not served as the paper's
             # methods -- the ft-cache path below is tried instead.
             main_pdf = main_pdf_path(args.zotero_storage, pdf_key)
             src = section.get("source")
@@ -577,7 +577,7 @@ def main():
             # "unrecorded" would lump this ref in with the ~324 sections that
             # simply predate provenance, and it is not the same risk: Zotero
             # REFUSED to name a main PDF here, so this is precisely the
-            # population the CAAIL-436 defect lives in -- a section built from
+            # population the tucca-cellag/caail-planning#404 defect lives in -- a section built from
             # the supplement under the old first-listed rule. Say which it is,
             # the way the ingest's log already does, rather than letting the
             # batch and the serving script describe one state two ways.

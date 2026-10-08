@@ -34,7 +34,7 @@ export function emitAll(db: Db, root: string = REPO_ROOT): string[] {
     { rel: 'Software.md', text: emitCatalogFile(db, join(root, 'Software.md'), 'software') },
     { rel: 'Databases.md', text: emitCatalogFile(db, join(root, 'Databases.md'), 'database') },
   ];
-  // FieldReports.md is a single DB-owned file at the repo root (CAAIL-363). Guarded by
+  // FieldReports.md is a single DB-owned file at the repo root (tucca-cellag/caail-planning#331). Guarded by
   // existsSync — like the dataset pages, not unconditional like the three above — so an
   // early repo state (or a checkout predating the file) degrades gracefully instead of
   // throwing on a missing source; once committed it is always present and always emitted.

@@ -46,7 +46,7 @@ export const REPORT_PATH = '/report/';
  * way it fails — GitHub ignores a query parameter matching no field rather than erroring.
  */
 export const CORRECTION_FIELDS = {
-  /** The frozen entry id. CAAIL-255's contract. */
+  /** The frozen entry id. tucca-cellag/caail-planning#223's contract. */
   item: 'item',
   /** The error class, in the template's own words. See {@link correctionIssueUrl}. */
   reason: 'reason',
@@ -97,7 +97,7 @@ export function reportHref(base: string, itemId: string): string {
  * bare template — still useful, just unanchored.
  *
  * `body` is the composed report (see ./report-compose.ts) and lands in the template's
- * `details` textarea. Omitted when empty, so the CAAIL-255 behaviour — a bare anchored
+ * `details` textarea. Omitted when empty, so the tucca-cellag/caail-planning#223 behaviour — a bare anchored
  * form — is exactly what a caller that passes no body still gets.
  *
  * `reason` is the error class in the template's own words, and lands in the `reason` field.
@@ -141,7 +141,7 @@ export function correctionIssueUrl(
  * `body` carries the composed report into the mail client, so the account-free route is
  * not left thinner than the GitHub one: a reader without a GitHub account gets the same
  * finished report, already written. Omitted when empty, which keeps the no-body URL
- * byte-identical to what CAAIL-255 shipped.
+ * byte-identical to what tucca-cellag/caail-planning#223 shipped.
  *
  * WHY THIS ONE IS NOT BUILT WITH URLSearchParams, UNLIKE {@link correctionIssueUrl}.
  * `mailto:` is RFC 6068, not `application/x-www-form-urlencoded`: it percent-encodes, and

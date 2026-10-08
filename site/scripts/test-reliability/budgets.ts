@@ -8,7 +8,7 @@
  *
  * ## Why these are raised at all
  *
- * CAAIL-239 is explicit that raising a budget alone is the wrong fix, because it hides
+ * tucca-cellag/caail-planning#207 is explicit that raising a budget alone is the wrong fix, because it hides
  * how long the fixtures take, and that a raise has to come with the number. Here is
  * the number, and why raising is nevertheless most of the available answer.
  *

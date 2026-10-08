@@ -48,8 +48,8 @@ import { fileURLToPath } from 'node:url';
  *      does not fire on it. What it does catch is the realistic retitle, which
  *      starts at `CITATION.cff` and therefore does trigger `test.yml`. Closing the
  *      remaining case means adding the path, which buys a full build and browser
- *      install for one JSON read; that trade is CAAIL-298 and the decision is
- *      CAAIL-301.
+ *      install for one JSON read; that trade is tucca-cellag/caail-planning#266 and the decision is
+ *      tucca-cellag/caail-planning#269.
  *
  * Everything else is deliberately unpinned. The expansion appears in prose in
  * several other files and chasing each one would make this file the inventory it

@@ -151,7 +151,7 @@ function ThemeIndex() {
           </li>
         ))}
       </ul>
-      {/* Same ask as the homepage band, same constraint on it: CAAIL-15 has not settled
+      {/* Same ask as the homepage band, same constraint on it: tucca-cellag/caail-planning#15 has not settled
           what a lead commits to, so the copy says so instead of inventing it, and names
           the one limit that must not be left ambiguous while placements are under
           re-verification.

@@ -1,6 +1,6 @@
 /**
  * reports.test.ts (parser) — buildReportsModel folds the committed reports NDJSON into the
- * reports.json model, and deriveReports computes the recency fields (CAAIL-363 + CAAIL-364).
+ * reports.json model, and deriveReports computes the recency fields (tucca-cellag/caail-planning#331 + tucca-cellag/caail-planning#332).
  */
 
 import { describe, it, expect } from 'vitest';
@@ -29,7 +29,7 @@ describe('buildReportsModel (committed corpus)', () => {
   });
 
   it('carries the committed GFI editions with derived recency', () => {
-    // CAAIL-366 replaced the T2 combined-series demo (report:gfi-state-of-the-industry-*)
+    // tucca-cellag/caail-planning#334 replaced the T2 combined-series demo (report:gfi-state-of-the-industry-*)
     // with the real per-track corpus; the cultivated-meat series is that record's successor.
     const cur = model.reports.find((r) => r.id === 'report:gfi-state-of-the-industry-cultivated-meat-2026');
     const old = model.reports.find((r) => r.id === 'report:gfi-state-of-the-industry-cultivated-meat-2024');
@@ -83,7 +83,7 @@ describe('deriveReports recency model', () => {
     expect(out.find((r) => r.id === 'r:mar')!.current).toBe(false);
   });
 
-  // CAAIL-373: the parser is the guard every build passes through (pnpm parse runs no db:check),
+  // tucca-cellag/caail-planning#341: the parser is the guard every build passes through (pnpm parse runs no db:check),
   // so each case that would otherwise publish a guessed `current` must abort it instead.
   it('throws on a nested pair rather than picking by string prefix', () => {
     expect(() => deriveReports([row('r:year', 's', '2026'), row('r:mar', 's', '2026-03-01')], NO_TOPICS))

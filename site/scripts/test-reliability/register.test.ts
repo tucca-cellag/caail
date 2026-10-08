@@ -118,7 +118,7 @@ describe('register integrity', () => {
     // An artifact-shape entry left open would be a promise this repo does not keep: the
     // failure is deterministic within one build, so no amount of re-running surfaces it.
     // Deliberately not extended to `residue`: that shape has a live unguarded instance
-    // (CAAIL-215), and asserting otherwise would force either a fake status or a guard
+    // (tucca-cellag/caail-planning#183), and asserting otherwise would force either a fake status or a guard
     // nobody has written.
     for (const entry of REGISTER.filter((e) => e.shape === 'artifact')) {
       expect(entry.status, `${entry.id} is artifact-shaped but not guarded`).toBe('guarded');
@@ -238,7 +238,7 @@ describe('formatReport', () => {
     evidence: 'measured',
     reproduce: 'run the control',
     status: 'open',
-    tickets: ['CAAIL-239'],
+    tickets: ['tucca-cellag/caail-planning#207'],
     ...over,
   });
 

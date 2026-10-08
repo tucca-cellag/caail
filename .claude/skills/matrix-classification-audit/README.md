@@ -20,7 +20,7 @@ ingest is **stdlib-only and zero-token**.
 | `docling_ingest.test.py` | Guards what `docling_ingest.py` decides before Docling runs: which suffixes reach the converter, the refused `--file`/`--ref` combinations, and the source each section records. Stdlib only, so CI runs it. |
 | `docling_sections.test.py` | Runs `docling_sections` against real heading lists from the corpus, and shows the old regex failing the same inputs. `python3 …/docling_sections.test.py` |
 | `measure_extraction_quality.py` | Prints how good the extraction currently is, by calling the code being measured rather than restating its rules. Run this instead of trusting any number written down. |
-| `compare_extraction.py` | Ranks matrix refs by how much the evidence a curator reads has changed between the old window and the located section. Input to the CAAIL-203 re-audit: it says where to look, not what is wrong. |
+| `compare_extraction.py` | Ranks matrix refs by how much the evidence a curator reads has changed between the old window and the located section. Input to the tucca-cellag/caail-planning#172 re-audit: it says where to look, not what is wrong. |
 | `audit_sections.py` | Quality report over the located sections, split by population. Recomputes spans with the current rule, so a vocabulary change is visible before committing to a `--respan`. |
 | `show_headings.py` | Curator view of one ref: every heading Docling found, with the located section's start and end marked. `show_headings.py 51` |
 | `extract_accessions.py` | Pulls deposit accessions and code repos out of each paper's *bounded* availability statement, and labels each one deposit / reuse / unclear. Being inside an availability statement is not enough to call something a deposit. |
@@ -31,7 +31,7 @@ ingest is **stdlib-only and zero-token**.
 | `skim_to_audit_ids.py` | Glue that validates skim batches and emits a deduped id list. Only useful with the retired workflow. |
 | `verify_routing.mjs` | Routing checks. |
 
-## The Docling ingest (CAAIL-206)
+## The Docling ingest (tucca-cellag/caail-planning#175)
 
 `extract_matrix_corpus.py` originally read Zotero's flat `.zotero-ft-cache` text and took
 a fixed 12,000-character window from the first methods-like heading. That approach has no
@@ -130,11 +130,11 @@ Records gain `methods_source` (`docling` / `ftcache`), `methods_strategy`,
 past the end of the real methods section; a `docling` one does neither.
 
 **Licensing.** `docling-corpus/` holds full text of works CAAIL may read but may not
-redistribute. It is gitignored and stays local — the *local curation tier* of CAAIL-169.
+redistribute. It is gitignored and stays local — the *local curation tier* of tucca-cellag/caail-planning#137.
 Anything that publishes text (the agent API, the chat widget, a public index) must filter
 on `licenseTier ∈ {permissive, copyleft}` (131 works), never on `is_oa` (~74%).
 
-## Accession provenance (CAAIL-259)
+## Accession provenance (tucca-cellag/caail-planning#227)
 
 An accession in a paper is not evidence of a deposit. Availability statements
 routinely announce *reused* data — "single-cell datasets were obtained from
@@ -287,7 +287,7 @@ median 13,206 and maximum 114,066, of which 124 exceed the old 12,000-character 
 
 **Unresolved, matrix-participating: 2** — refs 48 and 133, neither a naming problem, both
 Nature Correspondence pieces whose PDFs contain no methods section at all. They are recorded
-on CAAIL-246 and fall through to the ft-cache path meanwhile. Ref 195 is a separate case: no
+on tucca-cellag/caail-planning#214 and fall through to the ft-cache path meanwhile. Ref 195 is a separate case: no
 converted PDF, because the library holds none.
 
 **That number was 5 here for twelve days after it stopped being true**, which is the defect

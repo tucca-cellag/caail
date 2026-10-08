@@ -50,7 +50,7 @@ test('other-resources renders sections, a native TOC, and rewritten links', asyn
   await expect(page.locator('starlight-toc a').filter({ hasText: 'Editorials & Opinion' })).toHaveCount(1);
   // internal links rewritten: rendered prose page → site route; no raw .md
   await expect(page.locator('main a[href="/reference-works/"]').first()).toBeVisible();
-  // a bare link to a card page → its dedicated route, never a GitHub blob (CAAIL-374)
+  // a bare link to a card page → its dedicated route, never a GitHub blob (tucca-cellag/caail-planning#342)
   await expect(page.locator('main a[href="/field-reports/"]').first()).toBeVisible();
   await expect(page.locator('main a[href="/awesome-lists/"]').first()).toBeVisible();
   await expect(page.locator('main a[href*="/blob/main/FieldReports.md"]')).toHaveCount(0);

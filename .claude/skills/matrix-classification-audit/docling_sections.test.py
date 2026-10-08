@@ -8,7 +8,7 @@ drift from what Docling produced.
 
 Run:  python3 .claude/skills/matrix-classification-audit/docling_sections.test.py
 
-The second block is the part that matters for CAAIL-221: it shows the OLD
+The second block is the part that matters for tucca-cellag/caail-planning#189: it shows the OLD
 `METHODS_HEAD_RE` failing on the same headings the new code handles. A guard
 nobody has watched fail on the defect it guards is not evidence of anything.
 """

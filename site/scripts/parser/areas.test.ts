@@ -41,7 +41,7 @@ describe('areaKeyForLabel', () => {
     expect(areaKeyForLabel('AI Tooling / Methodology')).toBe('tooling');
   });
 
-  // CAAIL-164: the column was retired because its definition duplicated the
+  // tucca-cellag/caail-planning#132: the column was retired because its definition duplicated the
   // `Benchmarks & Evaluation Frameworks` method row, which survives. A stale
   // Papers.md header carrying the old label must resolve to null (and so WARN)
   // rather than silently reviving the column.

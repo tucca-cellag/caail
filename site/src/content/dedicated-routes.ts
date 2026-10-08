@@ -12,7 +12,7 @@
  * (`scripts/remark/rewrite-caail-links.ts`) and the primer parser
  * (`scripts/parser/primers.ts`). They kept separate copies until a new card
  * page landed in one and not the other, and every repo-relative link to it on
- * the prose pages quietly shipped as a GitHub blob (CAAIL-374). A new card
+ * the prose pages quietly shipped as a GitHub blob (tucca-cellag/caail-planning#342). A new card
  * page is added here and nowhere else.
  */
 export const DEDICATED_ROUTES: Readonly<Record<string, string>> = {

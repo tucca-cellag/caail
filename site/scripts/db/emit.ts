@@ -165,7 +165,7 @@ export function emitCatalogFile(db: Db, srcPath: string, type: 'software' | 'dat
 /**
  * Regenerate the DB-owned H3 entries of `FieldReports.md` from the `reports` table,
  * splicing every narrative block (H1, intro, `## …` sections, `> Note` prose) through
- * verbatim (CAAIL-363). Link-headed like the catalog, so entries use stored `heading_md`
+ * verbatim (tucca-cellag/caail-planning#331). Link-headed like the catalog, so entries use stored `heading_md`
  * (raw H3, GNPS fidelity lesson) + `body_md`; the splice is POSITIONAL like
  * `emitDatasetPage` — the Nth source H3 ↔ the Nth DB report, both document-ordered.
  *

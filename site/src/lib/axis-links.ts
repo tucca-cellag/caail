@@ -43,7 +43,7 @@ export const taxonomyHref = (label: string): string => `${BASE}/taxonomy/#${ghSl
  * undefined under tsx. Keep the object literal shape (`key: 'value',` one per line) or
  * that guard stops matching.
  *
- * `eval` is gone entirely: CAAIL-164 retired the column, and its deep dive turned out
+ * `eval` is gone entirely: tucca-cellag/caail-planning#132 retired the column, and its deep dive turned out
  * to describe the Benchmarks & Evaluation Frameworks *row*, so it moved to `Methods/`
  * and is no longer a research area's page to point at.
  */

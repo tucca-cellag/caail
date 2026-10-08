@@ -114,7 +114,7 @@ describe('correctionIssueUrl', () => {
   });
 
   it('omits `details` entirely when there is no body', () => {
-    // Keeps the CAAIL-255 behaviour byte-for-byte for every caller that composes nothing,
+    // Keeps the tucca-cellag/caail-planning#223 behaviour byte-for-byte for every caller that composes nothing,
     // which is every per-card link on the site.
     for (const body of [undefined, null, '']) {
       expect(new URL(correctionIssueUrl('paper:214', body)).searchParams.has('details')).toBe(false);

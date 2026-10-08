@@ -32,7 +32,7 @@ const anyOf = (values: string[]) => new RegExp(values.map(escapeRe).join('|'));
 // quote, after an interpolation (`localhost:${PORT}/caail/`), or after a host
 // ('https://host/caail'). A later segment that happens to be spelled the same
 // (the repo name tucca-cellag/caail, the Slack workspace /t/caail) is not a copy
-// of the base; repo coordinates are CAAIL-405.
+// of the base; repo coordinates are tucca-cellag/caail-planning#373.
 const firstSegmentRe = (bases: string[]) =>
   new RegExp(
     `(?:['"\`}]|(?:localhost|[\\w-]+\\.[a-z]{2,})(?::\\d+)?)(?:${bases.map(escapeRe).join('|')})(?=[/'"\`)\\s]|$)`,

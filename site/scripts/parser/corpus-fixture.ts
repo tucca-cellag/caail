@@ -21,7 +21,7 @@
  * shares nothing across them. A file that builds the model once, such as
  * `metrics.test.ts`, gains **nothing** from it. That matters because
  * `metrics.test.ts`'s timing-out hook is what put "share the expensive fixture" on
- * CAAIL-239 in the first place, and sharing does not fix it: of that hook's ~2.0s,
+ * tucca-cellag/caail-planning#207 in the first place, and sharing does not fix it: of that hook's ~2.0s,
  * ~1.2s is `buildMetricsModel` itself, the function the file exists to test. You
  * cannot cache away the unit under test. Only a repeated build is removable, and
  * metrics.test.ts has none.

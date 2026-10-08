@@ -25,7 +25,7 @@ one section, not the whole paper), so the expensive conversion happens once and
 every later curation pass is instant.
 
 Licensing note: this artifact contains full text of works CAAIL may read but may
-not redistribute, so it is gitignored and stays local. Per CAAIL-169 the shipped
+not redistribute, so it is gitignored and stays local. Per tucca-cellag/caail-planning#137 the shipped
 tier -- anything reaching the agent API, the chat widget or a public index --
 must filter on `licenseTier` in {permissive, copyleft}, never on `is_oa`. This
 script produces the LOCAL CURATION TIER only and publishes nothing.
@@ -56,7 +56,7 @@ def build_converter():
     """Docling converter tuned for born-digital publisher PDFs.
 
     OCR is off: these PDFs carry a real text layer, and OCR nearly tripled the
-    per-document time in the CAAIL-206 smoke test (119s -> 43s with it off) for
+    per-document time in the tucca-cellag/caail-planning#175 smoke test (119s -> 43s with it off) for
     no gain. Table structure stays on -- it is what makes data-availability and
     accession extraction possible, which is half the point of the ingest.
     """
@@ -68,7 +68,7 @@ def build_converter():
     opts.do_ocr = False
     opts.do_table_structure = True
     # JATS is the structured full text Europe PMC serves for open-access papers
-    # (CAAIL-436). Restricting the formats matters: `.xml` is also claimed by
+    # (tucca-cellag/caail-planning#404). Restricting the formats matters: `.xml` is also claimed by
     # Docling's XBRL and USPTO backends, so an unrestricted converter could read
     # a JATS file as something else. Anything outside these two is refused.
     return DocumentConverter(
@@ -161,7 +161,7 @@ def collect_tables(doc):
     """Every table in the document as markdown, with its page number.
 
     The flat full-text cache destroys tables, and a Cell Press KEY RESOURCES
-    TABLE is exactly where a paper lists its deposits (CAAIL-259). Keeping them
+    TABLE is exactly where a paper lists its deposits (tucca-cellag/caail-planning#227). Keeping them
     as markdown means the accession extractor never has to re-open the PDF.
     """
     from docling_core.types.doc import DocItemLabel
@@ -346,7 +346,7 @@ def resolve_pdfs(api, groups, storage, papers_md):
         group, item = hit
         # A supplement tagged in Zotero is never taken for the paper, and an
         # item with two untagged PDFs is skipped with its reason rather than
-        # converted from whichever one Zotero happens to list first (CAAIL-436).
+        # converted from whichever one Zotero happens to list first (tucca-cellag/caail-planning#404).
         pdf_key, why = scope.resolve_main_pdf(api, group, item.get("key"))
         d = Path(storage) / pdf_key if pdf_key else None
         pdfs = sorted(d.glob("*.pdf")) if d and d.is_dir() else []
@@ -485,7 +485,7 @@ def main():
             continue
         if sec_path.exists():
             # Resumable, so the expensive conversion happens once. But "a file
-            # exists" is not "it came from this paper": before CAAIL-436 the
+            # exists" is not "it came from this paper": before tucca-cellag/caail-planning#404 the
             # rule took the first PDF Zotero listed, so a section on disk may
             # have been built from a supplement. Compare what it recorded
             # against the file now selected, and reconvert only on a provable
@@ -560,7 +560,7 @@ def main():
     print(f"\nconverted={converted} skipped={skipped} failed={failed} "
           f"elapsed={(time.time() - t_start) / 60:.1f}min")
     # Provenance is reported, not left in the log, because an unverifiable
-    # section is the CAAIL-436 defect's hiding place: it reads as covered.
+    # section is the tucca-cellag/caail-planning#404 defect's hiding place: it reads as covered.
     if reconverted or unverified or external or unresolved_with_section:
         print(f"provenance: rebuilt-from-a-different-file={reconverted} "
               f"unverifiable={unverified} supplied-with---file={external} "

@@ -67,7 +67,7 @@ describe('rewriteCaailLinks', () => {
       .toEqual(['/caail/datasets/pig/']);
   });
 
-  // ── Dedicated (card / island) routes, CAAIL-374 ───────────────────────────
+  // ── Dedicated (card / island) routes, tucca-cellag/caail-planning#342 ───────────────────────────
   it('rewrites a bare link to a card page to its dedicated route', () => {
     expect(urls('[Field reports](./FieldReports.md)', 'OtherResources.md'))
       .toEqual(['/caail/field-reports/']);

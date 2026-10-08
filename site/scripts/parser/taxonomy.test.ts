@@ -54,7 +54,7 @@ describe('buildTaxonomyModel (fixture)', () => {
     expect(Object.keys(axes.area)).not.toContain('Notes (an H2 carrying no definitions)');
   });
 
-  // The regression guard for GH #133 / CAAIL-240. `Alpha` is both a research
+  // The regression guard for GH #133 / tucca-cellag/caail-planning#208. `Alpha` is both a research
   // area and a subject theme in the fixture, mirroring `Bioprocess & Scale-Up`
   // in the real file. Under the previous whole-file flatten the theme (parsed
   // later) overwrote the column, and the only surviving check — "the label has

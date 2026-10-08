@@ -320,7 +320,7 @@ governs disclosure harm, and it is not a scope rule. Used as one it passes nearl
 which is how ~165 lines of single-user tracker mechanics came to be public and how a section
 on authenticating a tracker write was then added beside them, caught by a review round rather
 than by any rule. The rationale, the rejected alternatives and the sweep of what has not yet
-been re-examined live on the planning tracker (CAAIL-317), not in this repository: a decision record is
+been re-examined live on the planning tracker (tucca-cellag/caail-planning#285), not in this repository: a decision record is
 not library documentation, so it goes where decisions go.
 
 **A sharper form of the same rule governs what may sit in a directory at all.** `docs/` holds
@@ -457,7 +457,7 @@ non-catalog canonical files (`OtherResources.md`, `ReferenceWorks.md`, `AwesomeL
   and CAAIL takes no position on it. The tier bounds publishing; it licenses nothing. (Checked
   against the statutes twice, and deliberately not summarised here or in the agent skill — a library
   that indexes work should not be handing out legal conclusions about it. The reasoning is on
-  CAAIL-2. Note also that the claim survived its own retraction in two files, so when a claim is
+  tucca-cellag/caail-planning#2. Note also that the claim survived its own retraction in two files, so when a claim is
   withdrawn anywhere, grep for every copy of it.)
 - **DOIs & citation counts** are a second DB-owned axis mirroring licenses. `catalog` +
   `dataset_entries` carry nullable `doi` + `doi_source` (`manual` = curator-verified; `auto` reserved).
@@ -514,7 +514,7 @@ The canonical root content remains build-free, GitHub-rendered Markdown — that
 
 `.claude-plugin/marketplace.json` publishes this repo as a Claude Code plugin marketplace. It carries **two plugins, one skill each**: `plugin/` → `plugin/skills/caail/SKILL.md` (query the library) and `plugin-contribute/` → `plugin-contribute/skills/caail-contribute/SKILL.md` (offer to suggest a resource CAAIL does not index).
 
-**One skill per plugin, and the rule is per plugin rather than per repo.** Claude Code auto-discovers every subdirectory of a plugin's `skills/`, so a second skill *inside one plugin* installs along with the first with no separate consent. That is how the *installer* skill briefly shipped inside the thing it installs: every user who followed the hero's install prompt ended up carrying, as always-on context forever, a skill whose only job was to install what they already had. A genuinely distinct job gets a **separate marketplace entry** instead, which is what makes installing it the consent and lets a user remove it without losing the other. That is the same reasoning CAAIL-226 records for the planned `caail-hooks` plugin, and skills are kept task-specific rather than merged into a conglomerate.
+**One skill per plugin, and the rule is per plugin rather than per repo.** Claude Code auto-discovers every subdirectory of a plugin's `skills/`, so a second skill *inside one plugin* installs along with the first with no separate consent. That is how the *installer* skill briefly shipped inside the thing it installs: every user who followed the hero's install prompt ended up carrying, as always-on context forever, a skill whose only job was to install what they already had. A genuinely distinct job gets a **separate marketplace entry** instead, which is what makes installing it the consent and lets a user remove it without losing the other. That is the same reasoning tucca-cellag/caail-planning#194 records for the planned `caail-hooks` plugin, and skills are kept task-specific rather than merged into a conglomerate.
 
 The installer therefore lives **outside** the plugin, at `skills/caail-install/SKILL.md`, and it is what `site/public/setup.md` is a **generated** copy of (written by `publishSkillDoc` during `pnpm parse`). So edit `skills/caail-install/SKILL.md` and re-run the parse; never edit `setup.md`, CI diffs it.
 

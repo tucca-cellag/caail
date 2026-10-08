@@ -134,7 +134,7 @@ jobs:
       # The methods-section extractor the matrix re-audit reads its evidence from.
       # Runs here rather than nowhere: it is stdlib-only and reads committed heading
       # fixtures, so it needs neither Zotero nor the network. A guard no workflow
-      # invokes is the defect CAAIL-229 was opened to fix; this one is invoked.
+      # invokes is the defect tucca-cellag/caail-planning#197 was opened to fix; this one is invoked.
       - name: Methods-section extraction tests
         run: python3 .claude/skills/matrix-classification-audit/docling_sections.test.py
 
@@ -147,7 +147,7 @@ jobs:
 
       # Which Zotero attachment is a paper's own text. Every script above reads
       # through scope.select_main_pdf, and a tagged supplement must never be
-      # converted as the paper (CAAIL-436). Stdlib only, no Zotero, no network.
+      # converted as the paper (tucca-cellag/caail-planning#404). Stdlib only, no Zotero, no network.
       - name: Main-PDF selection tests
         run: python3 .claude/skills/zotero-collection-scope/scope.test.py
 

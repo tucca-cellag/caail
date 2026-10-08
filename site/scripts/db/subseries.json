@@ -1,5 +1,5 @@
 {
-  "_comment": "Member accessions of repository SuperSeries whose inventory row names only the parent (CAAIL-258). Keyed by ds: id -> array of bare uppercase member accessions. Curator-maintained and DB-only, like dois-related.json; folded by db:reseed-axes and validated by db:check. Every entry here was read from the parent's own GEO Series relation record, never inferred from a title or a sample count. A member that also has its own inventory row is resolved to it at parse; one that does not is still served, so nothing in the corpus is unreachable.",
+  "_comment": "Member accessions of repository SuperSeries whose inventory row names only the parent (tucca-cellag/caail-planning#226). Keyed by ds: id -> array of bare uppercase member accessions. Curator-maintained and DB-only, like dois-related.json; folded by db:reseed-axes and validated by db:check. Every entry here was read from the parent's own GEO Series relation record, never inferred from a title or a sample count. A member that also has its own inventory row is resolved to it at parse; one that does not is still served, so nothing in the corpus is unreachable.",
   "datasets": {
     "ds:gse173199": ["GSE173196", "GSE173198"],
     "ds:gse262758": ["GSE262675", "GSE262757", "GSE290556"],

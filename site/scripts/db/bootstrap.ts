@@ -94,10 +94,10 @@ export function preserveCuratedItemTopics(db: Db, dir: string = NDJSON_DIR): num
 }
 
 /**
- * Preserve curator-minted TOPIC VOCABULARY across a re-bootstrap (CAAIL-371). `seedTopics`
+ * Preserve curator-minted TOPIC VOCABULARY across a re-bootstrap (tucca-cellag/caail-planning#339). `seedTopics`
  * creates only the classifier backbone (THEMES + the FINE_TAGS list in seed.ts), but a curator
  * mints FINE TAGS directly into the committed `topics.ndjson` via db:add (e.g.
- * `comparative-study` from CAAIL-325, `cryopreservation` from CAAIL-324). Those are the source
+ * `comparative-study` from tucca-cellag/caail-planning#293, `cryopreservation` from tucca-cellag/caail-planning#292). Those are the source
  * of truth once the DB exists, yet a fresh bootstrap re-derives the vocabulary from seed.ts
  * alone, so `preserveCuratedItemTopics` then THREW: its committed item→topic tags referenced
  * topics the re-seeded vocabulary did not contain, and bootstrap aborted before writing
@@ -184,7 +184,7 @@ export function main(): void {
   seedCatalog(db, sw, 'software');
   seedCatalog(db, dbs, 'database');
 
-  // Field reports (CAAIL-363) — a single DB-owned file at the repo root. Guarded by
+  // Field reports (tucca-cellag/caail-planning#331) — a single DB-owned file at the repo root. Guarded by
   // existsSync so a checkout predating the file still bootstraps.
   const reportsPath = join(REPO_ROOT, 'FieldReports.md');
   const reportCount = existsSync(reportsPath) ? seedReports(db, extractReports(reportsPath)) : 0;
@@ -219,7 +219,7 @@ export function main(): void {
   console.log(`  licenses      ${licenseSummary.manual} manual, ${licenseSummary.auto} auto (GitHub SPDX)`);
   console.log(`  dois          ${doiSummary.manual} manual (associated-publication DOIs)`);
   console.log(`  related dois  ${relatedDoiSummary.rows} sibling-version sets (#102)`);
-  console.log(`  subseries     ${subseriesSummary.rows} SuperSeries member sets (CAAIL-258)`);
+  console.log(`  subseries     ${subseriesSummary.rows} SuperSeries member sets (tucca-cellag/caail-planning#226)`);
   console.log(`  -> NDJSON written to ${NDJSON_DIR}`);
 }
 

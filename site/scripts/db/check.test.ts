@@ -715,7 +715,7 @@ describe('checkCatalogHeadings', () => {
 // B. Integration — the real committed DB passes every guard
 // ---------------------------------------------------------------------------
 
-describe('checkFineTagSeedDrift (CAAIL-371)', () => {
+describe('checkFineTagSeedDrift (tucca-cellag/caail-planning#339)', () => {
   it('passes on the committed corpus (seed.ts FINE_TAGS == committed topics)', () => {
     expect(checkFineTagSeedDrift(importNdjson()).every((r) => r.ok)).toBe(true);
   });

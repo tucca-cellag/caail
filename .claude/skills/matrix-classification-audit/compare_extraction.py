@@ -4,7 +4,7 @@
 The Docling ingest replaced a blind 12,000-character window with a bounded
 methods section. For most refs that is an improvement nobody needs to look at.
 For some it means the text a placement was justified against was mostly not the
-methods section at all -- and those are where a re-audit (CAAIL-203) should
+methods section at all -- and those are where a re-audit (tucca-cellag/caail-planning#172) should
 start, because that is where the classification rested on something else.
 
 Three numbers per ref:

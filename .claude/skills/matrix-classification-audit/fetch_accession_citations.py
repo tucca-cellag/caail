@@ -212,7 +212,7 @@ class Net:
             try:
                 req = urllib.request.Request(
                     url, headers={"User-Agent":
-                                  "CAAIL accession-provenance (CAAIL-259)"})
+                                  "CAAIL accession-provenance (tucca-cellag/caail-planning#227)"})
                 with urllib.request.urlopen(req, timeout=30) as r:
                     return r.read().decode("utf-8", "replace")
             except urllib.error.HTTPError as exc:
