@@ -82,10 +82,6 @@ Run the helper from the repo (worktree) root: `bash .claude/skills/caail-pr-wrap
   opens the PR from **inside** `ship-pr.sh`. It therefore sees nothing here: no deny, and not even the
   visibility announce. On this path you are the only check, which is why `preflight` prints the
   destination's visibility by hand.
-- **No commit message closes a ticket.** GitHub reads closing keywords (`Fixes`, `Closes`, `Resolves` and
-  their variants) in commit messages as well as in the PR body, and closes the target when the commit
-  reaches `main`, which is before the deploy. Read `git log origin/main..HEAD` now and reword any message
-  that puts one in front of a tracker reference: once step 2 has pushed it, that takes a force-push.
 
 ## Procedure
 
@@ -117,6 +113,12 @@ undocumented:
   gate; nothing in the phase withholds an option or forces a round on the strength of a grade.
 
 ### 2. Push
+**Read every commit message on the branch first**, the review rounds' commits included:
+`git log origin/main..HEAD`. GitHub closes an issue when a commit that reaches `main`, or the PR body, puts
+a closing keyword in front of its reference. The keywords are `close`, `fix` and `resolve` in any form, and
+a colon may follow one, so this repo's own `fix:` commit type is a closing keyword whenever a reference
+comes straight after it. That close fires at merge, before the deploy is known to be green, which is what
+step 9 exists to prevent. Reword any such message now: once it is pushed, that takes a force-push.
 ```bash
 bash .claude/skills/caail-pr-wrapup/ship-pr.sh push
 ```
@@ -155,9 +157,8 @@ bash .claude/skills/caail-pr-wrapup/ship-pr.sh open-pr "<title>" /tmp/pr-body.md
   attribution** — CAAIL commits and PRs never carry "Co-Authored-By: Claude" or "Generated with" lines.
 - **Name the trackers, and close neither.** Name the planning ticket as
   `tucca-cellag/caail-planning#<ticket>`, and an issue filed on this repo that the PR resolves as
-  `#<issue>`. Write each as a plain reference, with no closing keyword in front, for the reason the
-  commit-message precondition gives: a keyword closes its target when the PR merges, which is before the
-  deploy is known to be green, and step 9 is where both are closed. Write the planning repo out in full
+  `#<issue>`. Write each as a plain reference with no closing keyword in front (step 2 has the rule and
+  the reason), since step 9 is where both are closed. Write the planning repo out in full
   every time, because a bare `#<ticket>` is this repo's own issue or PR of that number. **The reference
   only, never the ticket's contents.** The planning repo is private, so the body is written from this
   repo's own diff, and the "Publishing is irreversible" bullet in `CLAUDE.md` says what a
@@ -273,50 +274,59 @@ re-running them reports confusing errors rather than doing anything (see `refere
   worktree each belongs to before killing anything, since a peer session may have one mid-run.
 
 ### 9. Close the trackers
-Do this **last, after step 7 verified the live site**, not at merge. CAAIL only counts as shipped once the
-deploy is green, so a ticket closed at merge reads as done whenever Lighthouse fails afterwards. Nothing
-in this procedure closes either tracker before this step, since the commit messages and the PR body
-carry no closing keyword. So a run that stops before it leaves finished work open on the board.
+Do this **last**, not at merge. CAAIL only counts as shipped once the deploy is green, so a ticket closed
+at merge reads as done whenever Lighthouse fails afterwards. Nothing in this procedure closes either
+tracker before this step (step 2 keeps closing keywords out), so a run that stops before it leaves
+finished work open on the board.
 
-Run the two closes as **separate commands**. `check-public-publish.sh` reads one destination from a whole
-command, so chaining them has the public close judged as going to the private repo, and its comment is
-published unscanned.
+**First settle which case this ship is.** It decides whether to write anything yet, and what the comment
+says:
 
-- **The planning ticket**, when this PR finished its work. The command names the repo, because `gh`
-  otherwise acts on this public one:
+- **A deploy ran and step 7 verified the live site.** The comment is "Shipped in <merge-sha>, live at
+  <url>".
+- **The diff deployed nothing.** That takes both signals: the last `preflight` before the push predicted no
+  deploy, **and** step 6 found no `docs.yml` run for the merge commit. There is no live site to verify, so
+  the comment is "Merged in <merge-sha>; the diff touched no deploy paths".
+- **The two signals disagree. Write nothing yet.** A run `preflight` did not predict is a deploy, so see it
+  through steps 6 and 7. A predicted deploy with no run found is a lookup that gave up, because the helper
+  stops looking after a short wait and exits 0 either way: find the run by hand, since step 7's `200` is
+  then the old site answering.
+
+Then write to each tracker as a **separate command**. `check-public-publish.sh` reads one destination from
+a whole command, so chaining them has the public one judged as going to the private repo, and its comment
+is published unscanned.
+
+- **The planning ticket.** Both forms name the repo, because `gh` otherwise acts on this public one. When
+  this PR finished the ticket's work, close it:
   ```bash
-  gh issue close <ticket> -R tucca-cellag/caail-planning --comment "Shipped in <merge-sha>, live at <url>"
+  gh issue close <ticket> -R tucca-cellag/caail-planning --comment "<comment>"
   ```
-  When work remains on the ticket, leave it open and record this part with `gh issue comment` and the
-  same text. If the ticket has a parent and was its last open sub-issue, say so in your report and leave
-  the parent open: whether a body of work is finished is the maintainer's call.
+  When work remains on it, leave it open and record this part:
+  ```bash
+  gh issue comment <ticket> -R tucca-cellag/caail-planning --body "<comment>"
+  ```
+  If the ticket has a parent and was its last open sub-issue, say so in your report and leave the parent
+  open: whether a body of work is finished is the maintainer's call.
 - **An issue filed on this repo**, when the PR resolved one:
   ```bash
-  gh issue close <issue> --comment "Shipped in <merge-sha>, live at <url>"
+  gh issue close <issue> --comment "<comment>"
   ```
   That comment is public and permanent, so it says where the work landed and nothing else.
 
-Then read both back, since a close that landed on the wrong repo can report success too:
+Then read both back, since a write that landed on the wrong repo can report success too:
 ```bash
 gh issue view <ticket> -R tucca-cellag/caail-planning --json number,title,state
 gh issue view <issue> --json number,title,state
 ```
-Each one you closed should be `CLOSED` under the title of the work you shipped. A planning ticket still `OPEN` after its
-close succeeded means the close landed on this public repo's issue of the same number. Report that at
-once, with the number, and leave the repair to the maintainer.
+Each one you closed should be `CLOSED` under the title of the work you shipped. If the planning ticket is
+still `OPEN` after its close reported success, the close may have landed on this public repo's issue of
+the same number. Look at that issue before saying so (`gh issue view <ticket>`, with no `-R`), then report
+what you found and leave the repair to the maintainer.
 
-**When the diff deployed nothing**, there is no live site to verify, so what this step waits on is step 6
-and not step 7. That takes both signals: `preflight` predicted no deploy at step 0, **and** step 6 found
-no `docs.yml` run for the merge commit. Write "Merged in <merge-sha>; the diff touched no deploy paths" in
-place of the live URL. **If the two disagree, this is not that case.** A run `preflight` did not predict is
-a deploy, so see it through steps 6 and 7. A predicted deploy with no run found is a lookup that gave up,
-because the helper stops looking after a short wait and exits 0 either way: find the run by hand before
-closing anything, since step 7's `200` is then the old site answering.
-
-Both closes happen **after** the irreversible part of the ship, so a failure here is bookkeeping, not a
-broken deploy: report exactly which tracker is out of date and let the user fix it, rather than retrying
-in a loop or unwinding anything. If the branch had no planning ticket, say so plainly here. That is
-`CLAUDE.md`'s "Ticket first, always" rule having been missed at the *start* of the work, and it is worth
+A failure in this step is bookkeeping, not a broken deploy, because it comes **after** the irreversible
+part of the ship: report exactly which tracker is out of date and let the user fix it, rather than
+retrying in a loop or unwinding anything. If the branch had no planning ticket, say so plainly here. That
+is `CLAUDE.md`'s "Ticket first, always" rule having been missed at the *start* of the work, and it is worth
 naming so the next piece of work doesn't repeat it.
 
 ## Reference files
