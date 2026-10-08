@@ -127,9 +127,10 @@ right.
   run illustrates.
 
   Every ticket is filed in the private planning repo and never on this public one. The "Issue tracker"
-  and "Triage labels" sections of `CLAUDE.md` say how: the `-R` flag every command needs, the labels a
-  ticket carries, and that both trackers are listed in full first. A finding that names an unpatched
-  weakness in a live service also gets `disclosure-private`. **Budget for what
+  and "Triage labels" sections of `CLAUDE.md` give the routing: the `-R` flag every command needs, the
+  labels every planning ticket carries, and the rule that both trackers are listed in full first. What
+  they leave out is maintainer-local, as they say. A finding that names an unpatched weakness in a live
+  service also gets `disclosure-private`, which the "Publishing is irreversible" bullet there defines. **Budget for what
   filing costs, and check rather than assume.** On this maintainer's machine the duplicate guard denies
   each create once and re-enumerates the tracker first, injecting that listing before it lets
   the create through, so four findings is four of those rather than one check covering the batch. Do not

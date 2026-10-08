@@ -82,6 +82,10 @@ Run the helper from the repo (worktree) root: `bash .claude/skills/caail-pr-wrap
   opens the PR from **inside** `ship-pr.sh`. It therefore sees nothing here: no deny, and not even the
   visibility announce. On this path you are the only check, which is why `preflight` prints the
   destination's visibility by hand.
+- **No commit message closes a ticket.** GitHub reads closing keywords (`Fixes`, `Closes`, `Resolves` and
+  their variants) in commit messages as well as in the PR body, and closes the target when the commit
+  reaches `main`, which is before the deploy. Read `git log origin/main..HEAD` now and reword any message
+  that puts one in front of a tracker reference: once step 2 has pushed it, that takes a force-push.
 
 ## Procedure
 
@@ -151,8 +155,8 @@ bash .claude/skills/caail-pr-wrapup/ship-pr.sh open-pr "<title>" /tmp/pr-body.md
   attribution** — CAAIL commits and PRs never carry "Co-Authored-By: Claude" or "Generated with" lines.
 - **Name the trackers, and close neither.** Name the planning ticket as
   `tucca-cellag/caail-planning#<ticket>`, and an issue filed on this repo that the PR resolves as
-  `#<issue>`. Write each as a plain reference, with no closing keyword in front (`Fixes`, `Closes`,
-  `Resolves` and their variants): a keyword closes its target when the PR merges, which is before the
+  `#<issue>`. Write each as a plain reference, with no closing keyword in front, for the reason the
+  commit-message precondition gives: a keyword closes its target when the PR merges, which is before the
   deploy is known to be green, and step 9 is where both are closed. Write the planning repo out in full
   every time, because a bare `#<ticket>` is this repo's own issue or PR of that number. **The reference
   only, never the ticket's contents.** The planning repo is private, so the body is written from this
@@ -271,8 +275,8 @@ re-running them reports confusing errors rather than doing anything (see `refere
 ### 9. Close the trackers
 Do this **last, after step 7 verified the live site**, not at merge. CAAIL only counts as shipped once the
 deploy is green, so a ticket closed at merge reads as done whenever Lighthouse fails afterwards. Nothing
-has closed either tracker on the way here, because step 3's references carry no closing keyword. This
-step is the only thing that does, so a run that stops before it leaves finished work open on the board.
+in this procedure closes either tracker before this step, since the commit messages and the PR body
+carry no closing keyword. So a run that stops before it leaves finished work open on the board.
 
 Run the two closes as **separate commands**. `check-public-publish.sh` reads one destination from a whole
 command, so chaining them has the public close judged as going to the private repo, and its comment is
@@ -290,10 +294,22 @@ published unscanned.
   ```
   That comment is public and permanent, so it says where the work landed and nothing else.
 
-**When the diff deployed nothing**, there is no live site to wait for. That takes both signals:
-`preflight` predicted no deploy at step 0, and step 6 found no `docs.yml` run for the merge commit. Close
-once step 5 reports `MERGED`, and write "Merged in <merge-sha>; the diff touched no deploy paths" in place
-of the live URL.
+Then read both back, since a close that landed on the wrong repo can report success too:
+```bash
+gh issue view <ticket> -R tucca-cellag/caail-planning --json number,title,state
+gh issue view <issue> --json number,title,state
+```
+Each should be `CLOSED` under the title of the work you shipped. A planning ticket still `OPEN` after its
+close succeeded means the close landed on this public repo's issue of the same number. Report that at
+once, with the number, and leave the repair to the maintainer.
+
+**When the diff deployed nothing**, there is no live site to verify, so what this step waits on is step 6
+and not step 7. That takes both signals: `preflight` predicted no deploy at step 0, **and** step 6 found
+no `docs.yml` run for the merge commit. Write "Merged in <merge-sha>; the diff touched no deploy paths" in
+place of the live URL. **If the two disagree, this is not that case.** A run `preflight` did not predict is
+a deploy, so see it through steps 6 and 7. A predicted deploy with no run found is a lookup that gave up,
+because the helper stops looking after a short wait and exits 0 either way: find the run by hand before
+closing anything, since step 7's `200` is then the old site answering.
 
 Both closes happen **after** the irreversible part of the ship, so a failure here is bookkeeping, not a
 broken deploy: report exactly which tracker is out of date and let the user fix it, rather than retrying
