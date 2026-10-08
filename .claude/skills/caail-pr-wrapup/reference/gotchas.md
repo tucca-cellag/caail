@@ -15,7 +15,7 @@
 | `lhci` reports a bogus ~0.5 perf score | A stale `astro dev`/preview is holding `:4321`; lhci silently measured it. Free the port (`lsof -ti:4321 \| xargs kill`). Only relevant if running Lighthouse locally; CI runners are fresh. |
 | Any site command (build/test/lighthouse) | Needs **Node ≥ 22.12**: `source ~/.nvm/nvm.sh && nvm use 22` first; the system default may be older. |
 | PR body / commit | **No AI attribution** anywhere in CAAIL git history. |
-| A planning ticket or public issue is still open after a ship | Often correct: step 9 leaves one open when the deploy failed, when its two no-deploy signals disagree, or when the PR finished only part of the ticket. Otherwise step 9 was skipped, since nothing else in the procedure closes either. Run step 9 from its first paragraph, never the close command alone. |
+| A planning ticket or public issue is still open after a ship | Often correct: step 9 writes nothing until the ship is finished, and leaves a ticket open when the PR finished only part of it. Otherwise step 9 was skipped, since nothing else in the procedure closes either. Run step 9 from its first paragraph, never the close command alone. |
 | Step 9 fails (`gh` auth or API error) | **Bookkeeping only**: the merge and deploy already succeeded. Report which tracker is stale; never retry in a loop or try to unwind the ship. |
 | Worktree cleanup | Managed (`EnterWorktree`) → `ExitWorktree` remove. Plain branch → `git branch -d/-D`. Hand-made stale worktree → confirm, then `git worktree remove` + `git branch -D`. |
 

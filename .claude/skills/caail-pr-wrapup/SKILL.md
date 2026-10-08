@@ -118,7 +118,9 @@ undocumented:
 a closing keyword in front of its reference. The keywords are `close`, `fix` and `resolve` in any form, and
 a colon may follow one, so this repo's own `fix:` commit type is a closing keyword whenever a reference
 comes straight after it. That close fires at merge, before the deploy is known to be green, which is what
-step 9 exists to prevent. Reword any such message now: once it is pushed, that takes a force-push.
+step 9 exists to prevent. Reword any such message now: once it is pushed, that takes a force-push. The
+rule also binds the PR title, which the merge commit carries onto `main`, and every commit pushed after
+this one.
 ```bash
 bash .claude/skills/caail-pr-wrapup/ship-pr.sh push
 ```
@@ -130,7 +132,8 @@ bash .claude/skills/caail-pr-wrapup/ship-pr.sh open-pr "<title>" /tmp/pr-body.md
 ```
 - **Title:** Conventional Commits, Angular flavor — `<type>(<scope>): <subject>`. CAAIL scopes:
   `papers`, `software`, `data`/`datasets`, `databases`, `resources`, `research-areas`, `site`, `docs`,
-  `chore`, `fix`. Reuse the lead commit's subject when it already fits.
+  `chore`, `fix`. Reuse the lead commit's subject when it already fits. Step 2's keyword rule binds the
+  title too.
 - **Body:** what changed and *why*; the research area(s)/AI method(s) or routes it touches; and the
   verification you already ran (tests/build/e2e, reviewer agents). Say **how the review went**: the
   level and how many rounds, and then **which of the stop rule's two endings this run reached**. For
@@ -231,8 +234,13 @@ steps 6 and 9 need.
 bash .claude/skills/caail-pr-wrapup/ship-pr.sh watch-deploy <merge-sha>
 ```
 This finds the `docs.yml` run for that SHA and blocks until it finishes. Green = build + Lighthouse gate +
-Deploy to Pages all passed, and *that* is a successful ship. If preflight predicted no deploy (the diff
-touched no deploy paths), the helper says so and returns cleanly.
+Deploy to Pages all passed, and *that* is a successful ship.
+
+**When the helper reports no run, check that against `preflight` before going on.** It stops looking after
+a short wait and exits 0 either way, so "no run" has two meanings. If the last `preflight` before the
+push predicted no deploy, the diff deployed nothing: there is no live site to verify in step 7, and step 9
+says so in its comment. If `preflight` predicted a deploy, the lookup gave up. Find the run by hand
+(`gh run list --workflow docs.yml`) and watch it, because step 7's `200` would be the old site answering.
 
 **Which Lighthouse categories block is deliberately not written here.** `CLAUDE.md` carries that sentence,
 `site/scripts/lighthouse-gate.ts` generates it from `site/lighthouserc.json`, and a test asserts it
@@ -279,18 +287,15 @@ at merge reads as done whenever Lighthouse fails afterwards. Nothing in this pro
 tracker before this step (step 2 keeps closing keywords out), so a run that stops before it leaves
 finished work open on the board.
 
-**First settle which case this ship is.** It decides whether to write anything yet, and what the comment
+**First settle which case this ship is.** It decides whether to write anything, and what the comment
 says:
 
-- **A deploy ran and step 7 verified the live site.** The comment is "Shipped in <merge-sha>, live at
-  <url>".
-- **The diff deployed nothing.** That takes both signals: the last `preflight` before the push predicted no
-  deploy, **and** step 6 found no `docs.yml` run for the merge commit. There is no live site to verify, so
-  the comment is "Merged in <merge-sha>; the diff touched no deploy paths".
-- **The two signals disagree. Write nothing yet.** A run `preflight` did not predict is a deploy, so see it
-  through steps 6 and 7. A predicted deploy with no run found is a lookup that gave up, because the helper
-  stops looking after a short wait and exits 0 either way: find the run by hand, since step 7's `200` is
-  then the old site answering.
+- **The deploy went green and step 7 verified the live site.** The comment is "Shipped in <merge-sha>,
+  live at <url>".
+- **The diff deployed nothing**, which step 6 established. The comment is "Merged in <merge-sha>; the diff
+  touched no deploy paths".
+- **Anything else: write nothing.** A deploy that failed, a step 7 that did not verify, or a run still
+  unaccounted for is not a finished ship, and the ticket stays open until there is one.
 
 Then write to each tracker as a **separate command**. `check-public-publish.sh` reads one destination from
 a whole command, so chaining them has the public one judged as going to the private repo, and its comment
@@ -305,23 +310,21 @@ is published unscanned.
   ```bash
   gh issue comment <ticket> -R tucca-cellag/caail-planning --body "<comment>"
   ```
-  If the ticket has a parent and was its last open sub-issue, say so in your report and leave the parent
-  open: whether a body of work is finished is the maintainer's call.
 - **An issue filed on this repo**, when the PR resolved one:
   ```bash
   gh issue close <issue> --comment "<comment>"
   ```
   That comment is public and permanent, so it says where the work landed and nothing else.
 
-Then read both back, since a write that landed on the wrong repo can report success too:
+Then read back what you wrote, since a write that landed on the wrong repo can report success too:
 ```bash
-gh issue view <ticket> -R tucca-cellag/caail-planning --json number,title,state
-gh issue view <issue> --json number,title,state
+gh issue view <ticket> -R tucca-cellag/caail-planning --json number,title,state,comments --jq '{number, title, state, last: .comments[-1].body}'
+gh issue view <issue> --json number,title,state,comments --jq '{number, title, state, last: .comments[-1].body}'
 ```
-Each one you closed should be `CLOSED` under the title of the work you shipped. If the planning ticket is
-still `OPEN` after its close reported success, the close may have landed on this public repo's issue of
-the same number. Look at that issue before saying so (`gh issue view <ticket>`, with no `-R`), then report
-what you found and leave the repair to the maintainer.
+Each should show your comment as its last one, under the title of the work you shipped, and `CLOSED` if
+you closed it. If the planning ticket does not, the write may have landed on this public repo's issue or
+pull request of the same number. Look at that one before saying so (`gh issue view <ticket>`, with no
+`-R`), then report what you found and leave the repair to the maintainer.
 
 A failure in this step is bookkeeping, not a broken deploy, because it comes **after** the irreversible
 part of the ship: report exactly which tracker is out of date and let the user fix it, rather than
