@@ -269,7 +269,7 @@ what you changed — e.g. `curl -s <url> | grep` for a new heading, the correcte
 absence of a stale `./X.md` link — so you confirm the *content* shipped, not just that the page exists.
 
 ### 8. Clean up
-**Check where you are first — `git branch --show-current`.** If step 5 took gh's succeeding path it
+**Check where you are first: `git branch --show-current`.** If step 5 took gh's succeeding path it
 already moved you to `main` and deleted the branch, so the first two items below are done and
 re-running them reports confusing errors rather than doing anything (see `reference/gotchas.md`).
 
@@ -348,9 +348,9 @@ naming so the next piece of work doesn't repeat it.
 
 One level deep, read when the step that names them says to:
 
-- [`reference/review-phase.md`](reference/review-phase.md) — step 1 in full: the definitions, the floor,
+- [`reference/review-phase.md`](reference/review-phase.md): step 1 in full: the definitions, the floor,
   the stop rule, both gates, the re-gate matrix, and the evidence for multiple rounds.
-- [`reference/ci-paths.md`](reference/ci-paths.md) — which workflow fires on which paths, for steps 4 and 6.
-- [`reference/gotchas.md`](reference/gotchas.md) — symptom to meaning, read when something looks wrong.
-- [`reference/ship-pr-reference.md`](reference/ship-pr-reference.md) — the subcommand table and what is
+- [`reference/ci-paths.md`](reference/ci-paths.md): which workflow fires on which paths, for steps 4 and 6.
+- [`reference/gotchas.md`](reference/gotchas.md): symptom to meaning, read when something looks wrong.
+- [`reference/ship-pr-reference.md`](reference/ship-pr-reference.md): the subcommand table and what is
   actually enforced in code.
