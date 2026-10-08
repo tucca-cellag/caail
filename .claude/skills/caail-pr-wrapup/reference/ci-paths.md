@@ -1,7 +1,7 @@
 # CI: what runs when
 
 **The workflows are the source of truth; the table below is a snapshot** (taken 2026-08-26) kept only
-so step 5/7 expectations are legible without opening four YAML files. `preflight` computes its answer from the
+so step 4/6 expectations are legible without opening four YAML files. `preflight` computes its answer from the
 `LINT_PAPERS_PATHS` / `TEST_PATHS` / `DOCS_PATHS` / `GUARDS_PATHS` lists in `ship-pr.sh`, which mirror the
 YAML rather than being read from it. **Each is named for its workflow file** (`<stem uppercased, - to _>_PATHS`), and so is
 its `matches_<stem>` wrapper — that coupling is what lets the check derive what to look for instead of
@@ -32,7 +32,7 @@ in `lint-papers.yml` and `.claude/skills/caail-pr-wrapup/**` is in `guards.yml`,
 `contribute-form.test.ts` reads its `SKILL.md` as input, and `pnpm parse` aborts when that skill and the
 issue templates disagree.
 
-**The check-free list, which lives here and nowhere else** (`SKILL.md` step 5 points at it rather
+**The check-free list, which lives here and nowhere else** (`SKILL.md` step 4 points at it rather
 than restating it, because the enumeration has already been wrong in both directions once each):
 `.claude/` rules and agents, the four unfiltered `.claude/skills/*` directories named above,
 `LICENSE`, `.zenodo.json`, and two of the three plugin manifests

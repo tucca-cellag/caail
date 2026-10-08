@@ -7,7 +7,7 @@
 | `open-pr <title> <body-file>` | `gh pr create --base "$DEFAULT_BRANCH"` (resolved from `gh repo view`, not hardcoded, so a fork works); prints PR url | yes |
 | `watch-checks <pr>` | blocks on checks; 0 if none/clean, non-zero on failure | no |
 | `merge <pr>` | **when run from the PR's own branch**, refuses if local `HEAD` differs from the PR head, naming which way it diverged since the remedies are opposite. From any other branch that check cannot mean anything and is skipped, so an unpushed commit is **not** caught there. Then merges + deletes the remote branch (gotcha-handled); prints merge SHA | yes |
-| `watch-deploy <merge-sha>` | finds + watches the `docs.yml` run; 0 if no deploy fires | no |
+| `watch-deploy <merge-sha>` | finds + watches the `docs.yml` run; **0 when it finds no run, whether or not a deploy was due** (`SKILL.md` step 6 says how to tell) | no |
 | `verify-live <route>...` | curls each live route; non-zero if any ≠ 200 | no |
 
 **Step 1 has no subcommand, and nothing in CI enforces it.** The rounds are judgment, which is why they
