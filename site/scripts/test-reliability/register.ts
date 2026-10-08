@@ -284,7 +284,7 @@ export const REGISTER: readonly UnreliableEntry[] = [
       '-g "Most cited" --repeat-each=16 --workers=16',
     status: 'mitigated',
     mitigation: 'awaitHydrated(page, \'CatalogBrowser\') before the facet click.',
-    tickets: ['tucca-cellag/caail-planning#207', 'GH#159'],
+    tickets: ['tucca-cellag/caail-planning#207', 'tucca-cellag/caail#159'],
   },
   {
     id: 'pw-network-edge-click',

@@ -54,12 +54,12 @@ describe('buildTaxonomyModel (fixture)', () => {
     expect(Object.keys(axes.area)).not.toContain('Notes (an H2 carrying no definitions)');
   });
 
-  // The regression guard for GH #133 / tucca-cellag/caail-planning#208. `Alpha` is both a research
+  // The regression guard for tucca-cellag/caail#133 / tucca-cellag/caail-planning#208. `Alpha` is both a research
   // area and a subject theme in the fixture, mirroring `Bioprocess & Scale-Up`
   // in the real file. Under the previous whole-file flatten the theme (parsed
   // later) overwrote the column, and the only surviving check — "the label has
   // a non-empty definition" — still passed.
-  describe('a label shared across axes (GH #133)', () => {
+  describe('a label shared across axes (tucca-cellag/caail#133)', () => {
     it('keeps both definitions rather than letting the later one win', () => {
       expect(axes.area['Alpha']).not.toBe(axes.theme['Alpha']);
       expect(axes.theme['Alpha']).toContain('deliberately shares its label');
