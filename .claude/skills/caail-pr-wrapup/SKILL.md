@@ -282,12 +282,14 @@ Run the two closes as **separate commands**. `check-public-publish.sh` reads one
 command, so chaining them has the public close judged as going to the private repo, and its comment is
 published unscanned.
 
-- **The planning ticket.** The command names the repo, because `gh` otherwise acts on this public one:
+- **The planning ticket**, when this PR finished its work. The command names the repo, because `gh`
+  otherwise acts on this public one:
   ```bash
   gh issue close <ticket> -R tucca-cellag/caail-planning --comment "Shipped in <merge-sha>, live at <url>"
   ```
-  If the ticket has a parent and was its last open sub-issue, say so in your report and leave the parent
-  open: whether a body of work is finished is the maintainer's call.
+  When work remains on the ticket, leave it open and record this part with `gh issue comment` and the
+  same text. If the ticket has a parent and was its last open sub-issue, say so in your report and leave
+  the parent open: whether a body of work is finished is the maintainer's call.
 - **An issue filed on this repo**, when the PR resolved one:
   ```bash
   gh issue close <issue> --comment "Shipped in <merge-sha>, live at <url>"
@@ -299,7 +301,7 @@ Then read both back, since a close that landed on the wrong repo can report succ
 gh issue view <ticket> -R tucca-cellag/caail-planning --json number,title,state
 gh issue view <issue> --json number,title,state
 ```
-Each should be `CLOSED` under the title of the work you shipped. A planning ticket still `OPEN` after its
+Each one you closed should be `CLOSED` under the title of the work you shipped. A planning ticket still `OPEN` after its
 close succeeded means the close landed on this public repo's issue of the same number. Report that at
 once, with the number, and leave the repair to the maintainer.
 
