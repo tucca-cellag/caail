@@ -210,9 +210,12 @@ class Net:
         for attempt in range(retries):
             self._throttle(url).wait()
             try:
+                # Names the public repo, which a receiving operator can open.
+                # The work is tracked on tucca-cellag/caail-planning#227.
                 req = urllib.request.Request(
                     url, headers={"User-Agent":
-                                  "CAAIL accession-provenance (tucca-cellag/caail-planning#227)"})
+                                  "CAAIL accession-provenance "
+                                  "(+https://github.com/tucca-cellag/caail)"})
                 with urllib.request.urlopen(req, timeout=30) as r:
                     return r.read().decode("utf-8", "replace")
             except urllib.error.HTTPError as exc:
