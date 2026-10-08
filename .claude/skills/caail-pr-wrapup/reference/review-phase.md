@@ -14,7 +14,7 @@
 - The **stop gate** (post-floor, whether to keep reviewing)
 - Closing the phase: re-running the local gate for whatever a round touched
 - How to review, each rule bought with a real defect
-- Why this is more than one pass, and why that is provisional
+- Why this is more than one pass, what the rounds do not cover, and what would change the floor
 
 
 **The level is always `high`.** Every round, every diff shape:
@@ -122,27 +122,22 @@ right.
   **Skip the prompt when it has nothing new to ask.** No out-of-scope finding this round, no prompt. A
   finding an earlier round already disposed of is not re-proposed either, whichever way it went: carry its
   disposition forward in the triage list the way a refuted candidate is carried. Ticketed findings carry
-  their key, declined ones carry the reason. Without that, every later round re-finds the same
+  their reference (`tucca-cellag/caail-planning#<ticket>`), declined ones carry the reason. Without that, every later round re-finds the same
   pre-existing problem and re-asks the identical question, which is the fatigue `tucca-cellag/caail-planning#237`'s eight-round
   run illustrates.
 
-  Every ticket goes to Jira: search the open board first, per `CLAUDE.md`, and a finding that names an
-  unpatched weakness in a live service gets `disclosure-private` and no GitHub issue. **Budget for what
+  Every ticket is filed in the private planning repo and never on this public one. The "Issue tracker"
+  and "Triage labels" sections of `CLAUDE.md` say how: the `-R` flag every command needs, the labels a
+  ticket carries, and that both trackers are listed in full first. A finding that names an unpatched
+  weakness in a live service also gets `disclosure-private`. **Budget for what
   filing costs, and check rather than assume.** On this maintainer's machine the duplicate guard denies
-  each create once and re-enumerates the whole project first, injecting the entire backlog before it lets
+  each create once and re-enumerates the tracker first, injecting that listing before it lets
   the create through, so four findings is four of those rather than one check covering the batch. Do not
   read that as a property of this repo. Unlike `check-public-publish.sh`, which *does* ship here through
   the committed `.claude/settings.json`, **that guard is
   user-global and not in this repo**, so a fresh clone has none of it, and it has been observed changing
   under a running session without any signal. The instruction is to know which of those you are on before
   a round produces several tickets, not to trust this sentence.
-
-  For the same reason, **let the filing command's output come back rather than redirecting it to a file**.
-  On this maintainer's machine a `PostToolUse` recorder reads that response to close Jira's
-  read-after-write window, which is real (measured at 1 to 2 seconds) and matters most here, since a round
-  files several *related* tickets back to back and relatedness is what makes a duplicate likely.
-  Redirecting the output silently disables it. Like the guard above, that recorder is user-global and not
-  in this repo, so check rather than assume.
 
   This codifies what already happens rather than inventing a rule. `tucca-cellag/caail-planning#68` and `tucca-cellag/caail-planning#71` were filed
   from a review of `feat/homepage-agent-sections` instead of being fixed in it, and `tucca-cellag/caail-planning#239` and
@@ -169,7 +164,7 @@ written in two places, with the fix applied to one of them. If you change a defi
 nowhere else.
 
 - **Blocking.** A defect this diff *caused* that has been neither fixed nor refuted, **including one
-  deferred to Jira and one declined**. Only fixing or refuting clears it. Blocking items are what
+  deferred to a ticket and one declined**. Only fixing or refuting clears it. Blocking items are what
   condition 2 tests; conditions 1 and 3 are separate and equally binding, so "nothing is blocking" is never
   on its own a reason to stop.
 - **Disposed of.** A *pre-existing* finding, ticketed or declined. Shown at the gates for context, never
@@ -181,7 +176,7 @@ nowhere else.
   findings were shipped outstanding; ending 1 is not thereby excused from naming what it ticketed or
   declined along the way.
 - **The four dispositions.** **Fixed**, changed in the diff. **Refuted**, shown not to be a defect, with
-  the reason stated. **Deferred**, agreed real and filed to Jira. **Declined**, agreed real and left alone.
+  the reason stated. **Deferred**, agreed real and filed as a planning ticket. **Declined**, agreed real and left alone.
   Only the first two clear a blocking finding. The last two leave it blocking, which is exactly why
   shipping with either is ending 2 and never ending 1.
 - **The two endings.** **Ending 1**: conditions 1, 2 and 3 hold at once, so the floor is met, nothing is
@@ -190,7 +185,7 @@ nowhere else.
   condition 2 alone, and a 3-round diff whose round 1 came back quiet satisfies the shorthand while failing
   the ending.
 - **The publishing carve-out.** An outstanding finding describing an unpatched weakness in a live service
-  **goes to Jira with `disclosure-private`** and the body says only that a finding was triaged there,
+  **is filed in the planning repo with `disclosure-private`** and the body says only that a finding was triaged there,
   naming neither the weakness nor the endpoint. It reaches that finding however it was disposed of, and it
   **forces the filing**: such a finding is never merely declined, because declining leaves the weakness
   recorded nowhere while the body claims a triage that did not happen. A PR cannot be
@@ -225,7 +220,7 @@ without a rule that can contradict itself.
    already stopped and is therefore too late to tell you.
 2. **Nothing is blocking** (see Definitions), which is the carried set and not one round's fresh output.
    Deferring a blocking finding to
-   Jira does not satisfy this: "not acted on" and "not a defect" are different outcomes, and a round that
+   a ticket does not satisfy this: "not acted on" and "not a defect" are different outcomes, and a round that
    surfaces three genuine defects and tickets all three has not gone quiet, it has gone unaddressed. A
    **pre-existing** defect, properly ticketed under the scope gate above, does **not** block a quiet
    round. That distinction is load-bearing rather than a nicety. Without it the scope gate makes this
@@ -271,9 +266,9 @@ and must be offered as one rather than dressed up as a plan.
 
 Then offer **two options: accept this triage and run another round, or ship now, leaving everything
 outstanding unfixed and named in the body.** A finding with no ticket ends up **declined**,
-agreed real and left alone; one already **deferred** keeps its key and stays deferred, so the body names
-the key rather than reporting a filed finding as unfiled. **The publishing carve-out overrides that
-default**: a finding describing an unpatched weakness in a live service is filed to Jira with
+agreed real and left alone; one already **deferred** keeps its reference and stays deferred, so the body names
+that reference rather than reporting a filed finding as unfiled. **The publishing carve-out overrides that
+default**: a finding describing an unpatched weakness in a live service is filed in the planning repo with
 `disclosure-private` before the run ends, never declined, because declining would leave the weakness
 recorded nowhere while the body reports a triage that did not happen. Do not report them as
 **refuted**: that word is reserved for a finding shown not to be a defect, and using it here would undo the
@@ -365,12 +360,12 @@ checkpoint that used to sit between editing and shipping:
   | --- | --- |
   | `site/**` | `pnpm --dir site test`. If any e2e spec is in scope, `build` **then** `test:e2e`, in that order and never one without the other: `test:e2e` is bare `playwright test`, so `webServer` serves whatever already sits in `site/dist` and a stale build passes green against code your fix never reached. For `site/scripts/parser/**` or `site/scripts/db/**`, add `parse` and commit the `site/public/api/` result, as in the NDJSON row: those paths feed the same CI sync guard |
   | `workers/**` | `pnpm --dir site test` (the Worker's suite runs inside it). Then **deploy the Worker by hand before step 2**, `pnpm --dir workers/events run deploy`: no workflow deploys it, so shipping the code does not ship the change, and pushing publishes a commit message describing behaviour that is not live yet |
-  | the committed NDJSON | `db:check` **and** `db:verify`, then `db:emit` and confirm it **introduces nothing new** (the fix itself is still uncommitted, so `git diff` is non-empty by construction; what you are checking is that re-emitting adds no further Markdown change). Then `pnpm --dir site parse` and commit whatever changes under `site/public/api/` and `site/public/setup.md`: those are NDJSON-derived, `pnpm test` does not regenerate them, and `lint-papers.yml`'s API sync guard re-derives them in CI, so skipping this goes red at step 5 after the push |
+  | the committed NDJSON | `db:check` **and** `db:verify`, then `db:emit` and confirm it **introduces nothing new** (the fix itself is still uncommitted, so `git diff` is non-empty by construction; what you are checking is that re-emitting adds no further Markdown change). Then `pnpm --dir site parse` and commit whatever changes under `site/public/api/` and `site/public/setup.md`: those are NDJSON-derived, `pnpm test` does not regenerate them, and `lint-papers.yml`'s API sync guard re-derives them in CI, so skipping this goes red at step 4 after the push |
   | the curated DOI / license / related-DOI inputs (`dois-manual.json`, `licenses-manual.json`, `dois-related.json`) | **`db:reseed-axes` first**, then the NDJSON row above. Those files are inputs that get folded into the NDJSON; until the reseed runs, the intended change is not in the DB at all, so `db:check` passes and `db:emit` produces nothing while nothing you meant to change has happened |
   | `check-public-publish.sh` | `python3 .claude/hooks/check-public-publish.test.py` |
   | `block-generated-edits.py` | `pnpm --dir site test`. Its only coverage is `site/scripts/db/hook.test.ts`, so the publish-hook suite above does **not** exercise it. The two hooks are tested in different places; `ci-paths.md` says so too |
   | `ship-pr.sh`, `check-ci-paths.py`, `.github/workflows/**` | `python3 .claude/skills/caail-pr-wrapup/check-ci-paths.py` |
-  | canonical Markdown (`Datasets/**`, `Primers/**`, root `*.md`, `Taxonomy.md`), `skills/**`, `plugin/skills/**`, `.claude/settings.json` | `pnpm --dir site test`, **and** `pnpm --dir site parse` followed by `git diff --exit-code -- site/public/api site/public/setup.md`. The second is not optional and `test` does not cover it: `test` never regenerates those artifacts, so the committed API JSON and `setup.md` can disagree with the model and only `lint-papers.yml`'s sync guard notices, at step 5, after the push |
+  | canonical Markdown (`Datasets/**`, `Primers/**`, root `*.md`, `Taxonomy.md`), `skills/**`, `plugin/skills/**`, `.claude/settings.json` | `pnpm --dir site test`, **and** `pnpm --dir site parse` followed by `git diff --exit-code -- site/public/api site/public/setup.md`. The second is not optional and `test` does not cover it: `test` never regenerates those artifacts, so the committed API JSON and `setup.md` can disagree with the model and only `lint-papers.yml`'s sync guard notices, at step 4, after the push |
   | anything not listed above | run `pnpm --dir site test` and think about which guard in `lint-papers.yml` and `test.yml` covers the path. A shape nobody listed is not a shape nothing checks |
 
   Note `pnpm --dir site build` rewrites tracked files under `site/public/api/`, so running it can dirty the
@@ -413,19 +408,10 @@ checkpoint that used to sit between editing and shipping:
   gone. Committing first is what
   makes all of this safe. Then say in the PR body that the guard was seen failing.
 
-#### Why this is more than one pass, and why that is provisional
+#### Why this is more than one pass
 
-Read this before shortening the procedure. The rounds are not general caution; they compensate for a
-specific, measured asymmetry, and they are marked *for now* on purpose.
-
-**The cross-model reviewer is much weaker than the Claude reviewer it sits beside** (maintainer call,
-2026-08-12, from having run both across this repo's merges). Its design rationale is decorrelation:
-Claude reviewing Claude cannot find the class of error invisible to Claude. That rationale assumes the
-non-Claude model is strong enough to exercise the decorrelation, and the models the step 4 reviewer can
-currently reach are not. The failure is silent in the worst direction: **a weak reviewer returns few
-findings, and few findings read as "clean" rather than as "under-reviewed".** The step runs, the report
-looks reassuring, the pipeline goes green, and the ship stage carries a review budget that looks larger
-than it is. So the depth has to come from the Claude side instead.
+Read this before shortening the procedure. The rounds are not general caution: they rest on a measured
+count of what one pass missed.
 
 **The evidence that one pass is not enough** (one session, 2026-08-12, PR #185: six files at the first
 pass, ten by merge). Three `/code-review high` passes found **14 defects** on that small a diff:
@@ -443,9 +429,11 @@ cannot catch by construction: it reviews a diff that does not yet contain the de
 argument for round 2 existing at all, and it is why round 2 re-reads the whole diff rather than the
 fixed files.
 
-**Revisit condition.** This is a workaround for a model-availability constraint, not a permanent view of
-how much review a diff needs. When a stronger non-Claude model becomes reachable by the step 4 reviewer,
-the extra rounds can come back down, because the decorrelated pass will then be doing the work they were
-added to replace. Until then, do not "simplify" this to one pass: the shape that produced the 14 findings
-above is the shape being kept.
+**What the rounds do not cover.** Every round is Claude reviewing Claude's work, and this phase has no
+second model. More rounds find more of what a single pass misses. They find none of what Claude does not
+see at all, so neither ending is evidence about that class of error.
+
+**What would change the floor.** The floor is a maintainer decision, and the count above is what it rests
+on: one session, on one PR. A better measurement of the same kind is what moves it. A diff that feels
+small is not, and neither is a round that came back empty.
 
