@@ -118,11 +118,10 @@ undocumented:
 a closing keyword in front of its reference. The keywords are `close`, `fix` and `resolve` in any form, and
 a colon may follow one, so this repo's own `fix:` commit type is a closing keyword whenever a reference
 comes straight after it. That close fires at merge, before the deploy is known to be green, which is what
-step 9 exists to prevent. Reword any such message now: once it is pushed, that takes a force-push. The
-rule also binds the PR title, which the merge commit carries onto `main`, and every commit pushed after
-this one. If the branch is already on the remote, the reword is a force-push and not yours to take alone:
-tell the maintainer which message carries the keyword, and let them choose between rewriting it and
-accepting the early close.
+step 9 exists to prevent. The rule also binds the PR title, which the merge commit carries onto `main`,
+and every commit pushed after this one. **If a message breaks it, stop and tell the maintainer which
+one.** The repair rewrites a commit, and for anything but the unpushed tip that is a history rewrite,
+which is theirs to choose.
 ```bash
 bash .claude/skills/caail-pr-wrapup/ship-pr.sh push
 ```
@@ -199,6 +198,13 @@ than expected quiet**: that is the exact failure `reference/ci-paths.md` documen
 If a check **fails**, stop — surface it and fix the branch; do not merge red.
 
 ### 5. Confirm, then merge
+**First ask GitHub what the merge will close**, since the title and the commits can have changed since
+step 2: `gh pr view <pr> --json closingIssuesReferences,title,commits`. `closingIssuesReferences` is
+GitHub's own list of the issues this PR closes at merge, and it must be empty. Read the title and the
+commit messages against step 2's rule as well, and do not rely on that list to show a keyword in either.
+If the list is not empty or a keyword turns up, do not merge: say what you found and wait for the
+maintainer, as in step 2.
+
 **Pause here.** Merging triggers the public deploy, so confirm with the user before proceeding (unless
 they've already said to merge autonomously this run). Weigh **two** inputs, in this order of weight:
 step 1's review rounds must have genuinely reached an ending rather than merely stopped, and "it ended" is
@@ -222,14 +228,7 @@ carve-out withholds the details, never the fact that something was triaged. Do n
 cannot be deleted. CI must be green (step 4). **A "ship now" answer is not itself an autonomous-merge waiver**: it authorised ending
 the review, not merging unasked, so it alone never substitutes for the confirmation above, though a waiver
 the user granted separately still stands. A green CI is **not** a substitute for the first of those:
-it does not read the diff the way step 1 does.
-
-**Last, ask GitHub what the merge will close**, since the title and the commits can have changed since
-step 2: `gh pr view <pr> --json closingIssuesReferences,title,commits`. `closingIssuesReferences` is
-GitHub's own list of the issues this PR closes at merge, and it must be empty. Read the title and the
-commit messages against step 2's rule as well, and do not rely on that list to show a keyword in either.
-
-Then:
+it does not read the diff the way step 1 does. Then:
 ```bash
 bash .claude/skills/caail-pr-wrapup/ship-pr.sh merge <pr>
 ```
@@ -248,10 +247,12 @@ Deploy to Pages all passed, and *that* is a successful ship.
 **When the helper reports no run, look for one yourself before going on**:
 `gh run list --workflow docs.yml --commit <merge-sha>`. The helper stops looking after a short wait and
 exits 0 either way, so its "no run" has two meanings. A run in that list is the deploy: watch it with
-`gh run watch <id> --exit-status`. An empty list means the diff deployed nothing only when the last
-`preflight` before the push also predicted no deploy. Then there is no live site to verify in step 7, and
-step 9 says so in its comment. An empty list against a predicted deploy is a run that has not registered
-yet: wait and look again, because step 7's `200` would be the old site answering.
+`gh run watch <id> --exit-status`. An empty list means the diff deployed nothing only when `preflight`,
+run on the branch as it merged, also predicted no deploy. Then there is no live site to verify in step 7,
+and step 9 says so in its comment. An empty list against a predicted deploy may be a run that has not
+registered yet: wait a minute or two and look once more. If it is still empty, stop and tell the
+maintainer, because the prediction and the list disagree and step 7's `200` would be the old site
+answering.
 
 **Which Lighthouse categories block is deliberately not written here.** `CLAUDE.md` carries that sentence,
 `site/scripts/lighthouse-gate.ts` generates it from `site/lighthouserc.json`, and a test asserts it
@@ -305,8 +306,9 @@ says:
   live at <url>".
 - **The diff deployed nothing**, which step 6 established. The comment is "Merged in <merge-sha>; the diff
   touched no deploy paths".
-- **Anything else: write nothing.** A deploy that failed, a step 7 that did not verify, or a run still
-  unaccounted for is not a finished ship, and the ticket stays open until there is one.
+- **Anything else: write nothing.** A deploy that failed or was cancelled, a step 7 that did not verify,
+  or a run still unaccounted for is not a finished ship. The ticket stays open until a green deploy that
+  includes this merge has been verified in step 7, and this step is run then.
 
 Then write to each tracker as a **separate command**. `check-public-publish.sh` reads one destination from
 a whole command, so chaining them has the public one judged as going to the private repo, and its comment
