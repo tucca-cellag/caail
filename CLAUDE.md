@@ -357,7 +357,7 @@ The five default roles, each label equal to its name: `needs-triage`, `needs-inf
 
 ### Domain docs
 
-Single-context. `CONTEXT.md` at the repo root is the glossary, and names concepts only: the scope of any individual row or column lives in `Taxonomy.md`, the trusted definition source, and is never restated. `ResearchAreas/*.md` and `Methods/*.md` are prose deep dives and are explicitly not a definition source.
+Single-context. `GLOSSARY.md` at the repo root is the glossary, and names concepts only: the scope of any individual row or column lives in `Taxonomy.md`, the trusted definition source, and is never restated. `ResearchAreas/*.md` and `Methods/*.md` are prose deep dives and are explicitly not a definition source.
 
 **Architecture decisions are recorded on the planning tracker, not in this repository.** They are decisions rather than library documentation, so they go where decisions go.
 
