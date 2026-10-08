@@ -120,7 +120,9 @@ a colon may follow one, so this repo's own `fix:` commit type is a closing keywo
 comes straight after it. That close fires at merge, before the deploy is known to be green, which is what
 step 9 exists to prevent. Reword any such message now: once it is pushed, that takes a force-push. The
 rule also binds the PR title, which the merge commit carries onto `main`, and every commit pushed after
-this one.
+this one. If the branch is already on the remote, the reword is a force-push and not yours to take alone:
+tell the maintainer which message carries the keyword, and let them choose between rewriting it and
+accepting the early close.
 ```bash
 bash .claude/skills/caail-pr-wrapup/ship-pr.sh push
 ```
@@ -220,7 +222,14 @@ carve-out withholds the details, never the fact that something was triaged. Do n
 cannot be deleted. CI must be green (step 4). **A "ship now" answer is not itself an autonomous-merge waiver**: it authorised ending
 the review, not merging unasked, so it alone never substitutes for the confirmation above, though a waiver
 the user granted separately still stands. A green CI is **not** a substitute for the first of those:
-it does not read the diff the way step 1 does. Then:
+it does not read the diff the way step 1 does.
+
+**Last, ask GitHub what the merge will close**, since the title and the commits can have changed since
+step 2: `gh pr view <pr> --json closingIssuesReferences,title,commits`. `closingIssuesReferences` is
+GitHub's own list of the issues this PR closes at merge, and it must be empty. Read the title and the
+commit messages against step 2's rule as well, and do not rely on that list to show a keyword in either.
+
+Then:
 ```bash
 bash .claude/skills/caail-pr-wrapup/ship-pr.sh merge <pr>
 ```
@@ -236,11 +245,13 @@ bash .claude/skills/caail-pr-wrapup/ship-pr.sh watch-deploy <merge-sha>
 This finds the `docs.yml` run for that SHA and blocks until it finishes. Green = build + Lighthouse gate +
 Deploy to Pages all passed, and *that* is a successful ship.
 
-**When the helper reports no run, check that against `preflight` before going on.** It stops looking after
-a short wait and exits 0 either way, so "no run" has two meanings. If the last `preflight` before the
-push predicted no deploy, the diff deployed nothing: there is no live site to verify in step 7, and step 9
-says so in its comment. If `preflight` predicted a deploy, the lookup gave up. Find the run by hand
-(`gh run list --workflow docs.yml`) and watch it, because step 7's `200` would be the old site answering.
+**When the helper reports no run, look for one yourself before going on**:
+`gh run list --workflow docs.yml --commit <merge-sha>`. The helper stops looking after a short wait and
+exits 0 either way, so its "no run" has two meanings. A run in that list is the deploy: watch it with
+`gh run watch <id> --exit-status`. An empty list means the diff deployed nothing only when the last
+`preflight` before the push also predicted no deploy. Then there is no live site to verify in step 7, and
+step 9 says so in its comment. An empty list against a predicted deploy is a run that has not registered
+yet: wait and look again, because step 7's `200` would be the old site answering.
 
 **Which Lighthouse categories block is deliberately not written here.** `CLAUDE.md` carries that sentence,
 `site/scripts/lighthouse-gate.ts` generates it from `site/lighthouserc.json`, and a test asserts it
@@ -301,12 +312,13 @@ Then write to each tracker as a **separate command**. `check-public-publish.sh` 
 a whole command, so chaining them has the public one judged as going to the private repo, and its comment
 is published unscanned.
 
-- **The planning ticket.** Both forms name the repo, because `gh` otherwise acts on this public one. When
-  this PR finished the ticket's work, close it:
+- **The planning ticket.** Read it first: `gh issue view <ticket> -R tucca-cellag/caail-planning`. Its title
+  confirms the number, and what it asks for decides which form to use. Both forms name the repo, because
+  `gh` otherwise acts on this public one. When this PR met everything the ticket asks for, close it:
   ```bash
   gh issue close <ticket> -R tucca-cellag/caail-planning --comment "<comment>"
   ```
-  When work remains on it, leave it open and record this part:
+  When work remains on it, or you cannot tell, leave it open and record this part:
   ```bash
   gh issue comment <ticket> -R tucca-cellag/caail-planning --body "<comment>"
   ```
@@ -316,15 +328,15 @@ is published unscanned.
   ```
   That comment is public and permanent, so it says where the work landed and nothing else.
 
-Then read back what you wrote, since a write that landed on the wrong repo can report success too:
+Then read back each write, since one that landed on the wrong repo can report success too:
 ```bash
 gh issue view <ticket> -R tucca-cellag/caail-planning --json number,title,state,comments --jq '{number, title, state, last: .comments[-1].body}'
-gh issue view <issue> --json number,title,state,comments --jq '{number, title, state, last: .comments[-1].body}'
 ```
-Each should show your comment as its last one, under the title of the work you shipped, and `CLOSED` if
-you closed it. If the planning ticket does not, the write may have landed on this public repo's issue or
-pull request of the same number. Look at that one before saying so (`gh issue view <ticket>`, with no
-`-R`), then report what you found and leave the repair to the maintainer.
+Run the same without `-R` for `<issue>`, when you closed one. Each should show your comment as its last
+one, under the title of the work you shipped, and `CLOSED` if you closed it. If one does not, say which
+and stop. For the planning ticket the write may have landed on this public repo's issue or pull request of
+the same number, so look at that one too (`gh issue view <ticket>`, with no `-R`) and report what you
+found. The repair is the maintainer's.
 
 A failure in this step is bookkeeping, not a broken deploy, because it comes **after** the irreversible
 part of the ship: report exactly which tracker is out of date and let the user fix it, rather than
