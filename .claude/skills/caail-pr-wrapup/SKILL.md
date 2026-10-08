@@ -1,6 +1,6 @@
 ---
 name: caail-pr-wrapup
-description: Use when a finished, locally-green CAAIL feature branch is ready to ship — run the multi-round code review, push it, open a PR to main, watch CI, merge (after confirming), watch the GitHub Pages deploy to green, verify the live site, clean up the worktree/branch, and close the planning ticket and any public issue the work resolves. Invoke whenever the user says to ship / wrap up / finish / "open a PR and merge" / "merge and deploy" a branch, asks to watch the deploy, asks to clean up a worktree after merge, or asks to close the ticket for shipped work — even if they don't name the skill. The CAAIL realization of the "Finish & Ship" stage.
+description: Use when a finished, locally-green CAAIL feature branch is ready to ship. It runs the multi-round code review, pushes, opens a PR to main, watches CI, merges (after confirming), watches the GitHub Pages deploy to green, verifies the live site, cleans up the worktree/branch, and closes the planning ticket and any public issue the work resolves. Invoke whenever the user says to ship / wrap up / finish / "open a PR and merge" / "merge and deploy" a branch, asks to watch the deploy, asks to clean up a worktree after merge, or asks to close the ticket for shipped work, even if they don't name the skill. The CAAIL realization of the "Finish & Ship" stage.
 ---
 
 # CAAIL PR wrap-up
