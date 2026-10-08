@@ -125,7 +125,7 @@ const PRIVATE_TREES = [
   // The three docs/ subpaths this repo deleted. They need the rule MORE than
   // the two above, not less: a stale skill or an older session names docs/adr/
   // and docs/agents/ specifically, because that is what CLAUDE.md and
-  // the glossary said until they were removed.
+  // the glossary said until those subpaths were deleted.
   { root: 'docs/adr/', pattern: 'docs/adr/' },
   { root: 'docs/agents/', pattern: 'docs/agents/' },
   { root: 'docs/spikes/', pattern: 'docs/spikes/' },

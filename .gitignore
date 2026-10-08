@@ -16,7 +16,7 @@
 #
 # docs/adr/ and docs/agents/ matter most: a stale skill or an older session
 # names those two specifically, because that is what CLAUDE.md and the glossary
-# said until the deletion, and /domain-modeling still creates docs/adr/.
+# said until docs/ was removed, and /domain-modeling still creates docs/adr/.
 # docs/spikes/ is here for consistency rather than for that reason; nothing
 # routed writers to it, so it is the first candidate if this list is ever
 # trimmed. NOT a bare `docs/`, so genuine live-library documentation can still
