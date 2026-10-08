@@ -314,8 +314,9 @@ Then write to each tracker as a **separate command**. `check-public-publish.sh` 
 a whole command, so chaining them has the public one judged as going to the private repo, and its comment
 is published unscanned.
 
-**Every command in this step names its repo.** The "Issue tracker" section of `CLAUDE.md` requires that of
-every `gh issue` command and gives the reason.
+**Every command in this step names its repo**, the ones for this repo's own issues included. `gh` otherwise
+acts on the checkout's repo, which is this public one, so a planning write with no `-R` lands in public, and
+a number alone does not say which repo's issue it means.
 
 - **The planning ticket.** Read it first: `gh issue view <ticket> -R tucca-cellag/caail-planning`. Its title
   confirms the number, and what it asks for decides which form to use. When this PR met everything the
@@ -333,17 +334,19 @@ every `gh issue` command and gives the reason.
   ```
   That comment is public and permanent, so it says where the work landed and nothing else.
 
-Then read back each write, since one that landed on the wrong repo can report success too:
+Then read back each write, since one that landed on the wrong repo can report success too. For the
+planning ticket:
 ```bash
 gh issue view <ticket> -R tucca-cellag/caail-planning --json number,title,state,comments --jq '{number, title, state, last: .comments[-1].body}'
+```
+For an issue you closed on this repo:
+```bash
 gh issue view <issue> -R tucca-cellag/caail --json number,title,state,comments --jq '{number, title, state, last: .comments[-1].body}'
 ```
-The second is for an issue you closed here. Each should show your comment as its last one, under the title
-of the work you shipped, and `CLOSED` if you closed it. If one does not, say which and stop. The write may
-have landed on the other repo's item of the same number, so look at that one too and report what you found.
-For the planning ticket that is this public repo's issue or pull request
-(`gh issue view <ticket> -R tucca-cellag/caail`), and for an issue filed here it is the planning ticket
-(`gh issue view <issue> -R tucca-cellag/caail-planning`). The repair is the maintainer's.
+Each should show your comment as its last one, under the title of the work you shipped, and `CLOSED` if you
+closed it. If one does not, say which and stop. For the planning ticket the write may have landed on this
+public repo's issue or pull request of the same number, so look at that one too
+(`gh issue view <ticket> -R tucca-cellag/caail`) and report what you found. The repair is the maintainer's.
 
 A failure in this step is bookkeeping, not a broken deploy, because it comes **after** the irreversible
 part of the ship: report exactly which tracker is out of date and let the user fix it, rather than
