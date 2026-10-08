@@ -12,7 +12,7 @@
  * stretch to a shared height, whereas two separately bordered boxes are only ever the
  * same height by coincidence.
  *
- * REGISTER (CAAIL-30). The columns name the two INFORMATION SOURCES, not the presence or
+ * REGISTER (tucca-cellag/caail-planning#22). The columns name the two INFORMATION SOURCES, not the presence or
  * absence of a product. That is not a softening: it is what actually differs. The same
  * assistant answers both times, and the only variable is whether the answer was
  * reconstructed from training data or read out of a table. "Without CAAIL" / "With CAAIL"
@@ -114,7 +114,7 @@ if (citedWithoutDoi.length > 0) {
 /* The reference sections, counted separately.
    `papers.references` is SIX sections, not one: primary research, reviews and
    perspectives, and four reference works. Quoting its length as "papers" is the
-   population-mislabelling failure CAAIL-12 was filed about, and it overstates the
+   population-mislabelling failure tucca-cellag/caail-planning#12 was filed about, and it overstates the
    primary corpus by half. The lede names each population instead of summing them. */
 const primary = papers.references.filter((r) => r.section === MATRIX_SECTION);
 const reviews = papers.references.filter((r) => r.section === 'Reviews & Perspectives');

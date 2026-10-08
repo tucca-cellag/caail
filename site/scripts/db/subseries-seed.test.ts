@@ -1,5 +1,5 @@
 /**
- * subseries-seed.test.ts — the SuperSeries membership fold (CAAIL-258): curator-supplied
+ * subseries-seed.test.ts — the SuperSeries membership fold (tucca-cellag/caail-planning#226): curator-supplied
  * member accessions seeded onto dataset_rows from the committed subseries.json, keyed by
  * `ds:` id and stored bare + uppercase. The subseries analog of dois-seed.test.ts.
  */

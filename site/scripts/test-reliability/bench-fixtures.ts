@@ -3,7 +3,7 @@
  *
  * `pnpm --dir site bench:fixtures`
  *
- * CAAIL-239's objection to raising a timeout is that it hides how long the fixtures
+ * tucca-cellag/caail-planning#207's objection to raising a timeout is that it hides how long the fixtures
  * take, which is a signal worth keeping. This is that signal, on demand: it measures
  * the fixtures the registered slow files build and reports each against the budget in
  * `budgets.ts`, so a fixture that grows shows up as headroom shrinking rather than as

@@ -208,7 +208,7 @@ export interface ReportRaw {
 }
 
 /**
- * The italic edition line every report body leads with (CAAIL-364): `*Edition <label>,
+ * The italic edition line every report body leads with (tucca-cellag/caail-planning#332): `*Edition <label>,
  * published <sort>.*`. It is INTRINSIC CONTENT — stored and re-emitted verbatim as part of
  * `body_md`, so a verbatim reader of llms-full.txt sees the edition too (a DB-only side
  * axis would reach reports.json but be invisible there). `<sort>` is the sortable latest-key and
@@ -221,7 +221,7 @@ export const EDITION_LINE_RE = /\*Edition\s+(?<label>.+?),\s+published\s+(?<sort
 
 /**
  * Every H3 field-report entry in `FieldReports.md`, in document order, with its series and
- * edition (CAAIL-364). A recurring report line is one SERIES (an `## H2` section) with many
+ * edition (tucca-cellag/caail-planning#332). A recurring report line is one SERIES (an `## H2` section) with many
  * EDITIONS (the `### H3`s under it); a top-level H3 with no enclosing H2 is a one-off
  * (`seriesSlug: null`). The heading link is OPTIONAL (`url: null`), matching
  * `extractDatasetEntries`. Every H3 is an entry — `emitReportsFile` passes H2 headings

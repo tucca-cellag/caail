@@ -123,7 +123,7 @@ right.
   finding an earlier round already disposed of is not re-proposed either, whichever way it went: carry its
   disposition forward in the triage list the way a refuted candidate is carried. Ticketed findings carry
   their key, declined ones carry the reason. Without that, every later round re-finds the same
-  pre-existing problem and re-asks the identical question, which is the fatigue `CAAIL-269`'s eight-round
+  pre-existing problem and re-asks the identical question, which is the fatigue `tucca-cellag/caail-planning#237`'s eight-round
   run illustrates.
 
   Every ticket goes to Jira: search the open board first, per `CLAUDE.md`, and a finding that names an
@@ -144,9 +144,9 @@ right.
   Redirecting the output silently disables it. Like the guard above, that recorder is user-global and not
   in this repo, so check rather than assume.
 
-  This codifies what already happens rather than inventing a rule. `CAAIL-79` and `CAAIL-82` were filed
-  from a review of `feat/homepage-agent-sections` instead of being fixed in it, and `CAAIL-271` and
-  `CAAIL-272` were recorded as residuals from a `/code-review high` over PR #204 and deliberately left
+  This codifies what already happens rather than inventing a rule. `tucca-cellag/caail-planning#68` and `tucca-cellag/caail-planning#71` were filed
+  from a review of `feat/homepage-agent-sections` instead of being fixed in it, and `tucca-cellag/caail-planning#239` and
+  `tucca-cellag/caail-planning#240` were recorded as residuals from a `/code-review high` over PR #204 and deliberately left
   out of it.
 - **Commit the fixes before the next round starts.** Not at the end of the phase: `origin/main...HEAD` is
   a merge-base-to-commit range and **does not include the working tree**. Don't rely on the reviewer
@@ -333,7 +333,7 @@ absolutely and binds the maintainer only with disclosure.
 
 There is deliberately no rule ending the run on the agent's own judgement, and no cap on rounds. Asking is
 cheap beside a whole-diff `/code-review high`, and a maintainer who wants ten rounds may have ten.
-`CAAIL-269` records eight on PR #205.
+`tucca-cellag/caail-planning#237` records eight on PR #205.
 
 **An earlier draft split this by which condition was unmet and gave "another round" a once-per-unchanged-set
 budget.** It deadlocked on the commonest run: fixes made, outstanding set unchanged because everything was
@@ -398,7 +398,7 @@ checkpoint that used to sit between editing and shipping:
   changed route that no spec visits has not been checked, and "no violations" from a suite that never
   loaded it is not a result.
 - **A guard added while fixing a finding is not trusted until it has been seen failing on that defect**
-  (`CAAIL-221`). A test written only against fixed code proves the code passes the test, which is not the
+  (`tucca-cellag/caail-planning#189`). A test written only against fixed code proves the code passes the test, which is not the
   claim you need. **Commit the fix and the guard first**, then reproduce the defect on top of the commit,
   run the guard, confirm it fails **with a message naming the real problem**, then get back to the committed
   state with `git restore --source=HEAD --staged --worktree :/`. Use that exact form: bare `git restore` is

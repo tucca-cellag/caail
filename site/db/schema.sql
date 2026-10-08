@@ -103,7 +103,7 @@ CREATE TABLE catalog (
 
 -- Dataset inventory rows promoted to first-class records ----------------------
 -- `subseries` records the MEMBER ACCESSIONS of a repository SuperSeries whose row
--- names only the parent (CAAIL-258). A GEO SuperSeries publishes one accession that
+-- names only the parent (tucca-cellag/caail-planning#226). A GEO SuperSeries publishes one accession that
 -- resolves to nothing analysable: GSE173199's row said "RNA-seq / serum-starvation
 -- series", while the five-timepoint n=4 timecourse everyone actually wants is the
 -- separate accession GSE173198. An agent could not reach it, so CAAIL answered worse
@@ -115,7 +115,7 @@ CREATE TABLE dataset_rows (
   item_id    TEXT PRIMARY KEY REFERENCES items(id),
   page       TEXT NOT NULL,            -- species page ('Cow')
   cells_json TEXT NOT NULL,            -- inventory-table row cells (ordered), JSON array of markdown strings
-  subseries  TEXT,                     -- JSON array of member accessions (bare, uppercase); NULL = not a SuperSeries (CAAIL-258)
+  subseries  TEXT,                     -- JSON array of member accessions (bare, uppercase); NULL = not a SuperSeries (tucca-cellag/caail-planning#226)
   ordinal    INTEGER NOT NULL
 );
 
@@ -146,13 +146,13 @@ CREATE TABLE dataset_entries (
 
 -- Field reports — recurring institutional state-of-field surveys (GFI State of the
 -- Industry, the Rethink Priorities landscape report) promoted to first-class, queryable
--- records (CAAIL-363). Catalog-shaped and link-headed like `dataset_entries`: `heading_md`
+-- records (tucca-cellag/caail-planning#331). Catalog-shaped and link-headed like `dataset_entries`: `heading_md`
 -- is the full raw H3 source after '### ' (emitted verbatim, GNPS fidelity lesson) and
 -- `body_md` the entry body; `title`/`url` are the parsed link (or heading text) for the id
 -- and tally, and `url` is nullable (matching dataset_entries) for a future unlinked heading.
 --
--- CAAIL-363 (T1) shipped the skeleton: the DB -> FieldReports.md -> reports.json pipeline
--- with content columns only. CAAIL-364 (T2) adds the series/recency model below. The
+-- tucca-cellag/caail-planning#331 (T1) shipped the skeleton: the DB -> FieldReports.md -> reports.json pipeline
+-- with content columns only. tucca-cellag/caail-planning#332 (T2) adds the series/recency model below. The
 -- `license` / `doi` side axes remain a later slice.
 --
 -- Series / edition (T2): a report line that recurs annually is one SERIES with many

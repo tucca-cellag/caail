@@ -1,11 +1,11 @@
 /**
- * reports.test.ts — the field-reports pipeline (CAAIL-363 skeleton + CAAIL-364 series).
+ * reports.test.ts — the field-reports pipeline (tucca-cellag/caail-planning#331 skeleton + tucca-cellag/caail-planning#332 series).
  *
  *   A. extractReports: series (H2) + editions (H3), the italic edition line, unlinked + one-off.
  *   B. seedReports: frozen `report:` ids, series/edition columns.
  *   C. emitReportsFile: block-splice round-trip (H2s + prose preserved) and the count guard.
  *   D. Integration: the committed FieldReports.md round-trips and passes checkIntegrity + checkSeries.
- *   E. edition_sort rules (CAAIL-373): checkSeries on nesting / duplicates / invalid dates, and
+ *   E. edition_sort rules (tucca-cellag/caail-planning#341): checkSeries on nesting / duplicates / invalid dates, and
  *      extractReports refusing an invalid published date at seed time.
  */
 
@@ -108,7 +108,7 @@ describe('seedReports', () => {
   });
 });
 
-describe('checkSeries edition_sort rules (CAAIL-373)', () => {
+describe('checkSeries edition_sort rules (tucca-cellag/caail-planning#341)', () => {
   /** A one-off at `oneoffSort`, then a series whose editions carry `sorts` (label = sort). */
   function seriesDb(sorts: string[], oneoffSort = '2025-06'): Db {
     const editions = sorts.map((s, i) =>

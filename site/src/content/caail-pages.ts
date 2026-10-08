@@ -645,7 +645,7 @@ export const CAAIL_PAGES = {
    * That divergence is older than this method and is deliberately not fixed
    * here: the two lists answer different questions (what the site routes
    * versus what the corpus serves) and collapsing them is a decision about
-   * the corpus, not a refactor. Tracked on CAAIL-204, which owns hand-typed
+   * the corpus, not a refactor. Tracked on tucca-cellag/caail-planning#173, which owns hand-typed
    * facts that duplicate machine-derived ones.
    *
    * Order follows `order`, so the list reads the way the sidebar does.

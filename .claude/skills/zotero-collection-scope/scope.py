@@ -135,7 +135,7 @@ def fetch_item_children(api, group, item_key):
 
     It does mean a transport failure is indistinguishable here from an item
     with no children, which the caller then reports as "no PDF attached".
-    That misreport is real and is tracked on CAAIL-440; widening this catch
+    That misreport is real and is tracked on tucca-cellag/caail-planning#408; widening this catch
     does not make it worse, and narrowing it would trade a wrong label for a
     lost run.
     """
@@ -176,7 +176,7 @@ def resolve_collection_name(api, group, name_query):
 # ---------------------------------------------------------------------------
 
 # A child attachment carrying this Zotero tag is a supplement, never the paper's
-# main text (CAAIL-436). The tag is the only marker the code reads: a
+# main text (tucca-cellag/caail-planning#404). The tag is the only marker the code reads: a
 # "Supplementary: <name>" title helps a person scanning Zotero, but a mistyped
 # title must not be able to change which file gets converted.
 SUPPLEMENT_TAG = "supplement"

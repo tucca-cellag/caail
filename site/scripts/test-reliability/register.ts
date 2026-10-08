@@ -31,7 +31,7 @@
  *
  * ## The shape that was claimed and does not exist, and the one that does
  *
- * CAAIL-239 recorded `licenses.spec.ts`'s license facet as *order-dependent between
+ * tucca-cellag/caail-planning#207 recorded `licenses.spec.ts`'s license facet as *order-dependent between
  * tests*, on the evidence that it failed 0/5 alone and passed 30/30 in its file.
  * **That reading was wrong.** The isolating run used `--repeat-each=5` with no
  * `--workers`, and Playwright starts one worker per repeat group, so "run just this one
@@ -43,7 +43,7 @@
  * That correction is easy to over-apply, so state the limit: **a run-order shape does
  * exist in this repo**, it is `residue`, and it is not the one that was claimed. It
  * turns on which *runs* have happened in this workspace rather than on the order of
- * tests within a run, which is why no amount of `--workers=1` reaches it. CAAIL-215 is
+ * tests within a run, which is why no amount of `--workers=1` reaches it. tucca-cellag/caail-planning#183 is
  * the live instance.
  *
  * The rule both halves come from: **a run that "isolates" a test has to be checked for
@@ -163,7 +163,7 @@ export const REGISTER: readonly UnreliableEntry[] = [
       'budgets.ts, headroom via `pnpm bench:fixtures`). Sharing the corpus models does NOT ' +
       'help this file: it builds each once, and ~60% of the hook is buildMetricsModel, the ' +
       'unit under test. Still open because a budget is not a fix.',
-    tickets: ['CAAIL-239'],
+    tickets: ['tucca-cellag/caail-planning#207'],
   },
   {
     id: 'vitest-seed-topics-hook',
@@ -181,7 +181,7 @@ export const REGISTER: readonly UnreliableEntry[] = [
     mitigation:
       'Partly: the hook budget is now 30s (scripts/test-reliability/budgets.ts). The corpus ' +
       'models it builds are not the bulk of it, so the shared fixture does not apply.',
-    tickets: ['CAAIL-239'],
+    tickets: ['tucca-cellag/caail-planning#207'],
   },
   {
     id: 'vitest-db-dataset-entries',
@@ -195,7 +195,7 @@ export const REGISTER: readonly UnreliableEntry[] = [
     reproduce: 'pnpm --dir site test -- --no-file-parallelism',
     status: 'open',
     mitigation: 'Partly: the hook budget is now 30s (scripts/test-reliability/budgets.ts).',
-    tickets: ['CAAIL-239'],
+    tickets: ['tucca-cellag/caail-planning#207'],
   },
   {
     id: 'vitest-db-mutate',
@@ -214,7 +214,7 @@ export const REGISTER: readonly UnreliableEntry[] = [
     mitigation:
       'Partly: the per-test budget is now 20s (scripts/test-reliability/budgets.ts). The work ' +
       'itself cannot be shared, because each test needs a fresh DB and a fresh re-parse.',
-    tickets: ['CAAIL-239'],
+    tickets: ['tucca-cellag/caail-planning#207'],
   },
   {
     id: 'vitest-db-emit',
@@ -233,7 +233,7 @@ export const REGISTER: readonly UnreliableEntry[] = [
     mitigation:
       'Partly: the per-test budget is now 20s (scripts/test-reliability/budgets.ts). The work ' +
       'itself cannot be shared, because each test needs a fresh DB and a fresh re-parse.',
-    tickets: ['CAAIL-239'],
+    tickets: ['tucca-cellag/caail-planning#207'],
   },
 
   // -------------------------------------------------------------------------
@@ -265,7 +265,7 @@ export const REGISTER: readonly UnreliableEntry[] = [
     status: 'mitigated',
     mitigation:
       "awaitHydrated(page, 'CatalogBrowser') before the facet click, landed in f548fc8.",
-    tickets: ['CAAIL-239'],
+    tickets: ['tucca-cellag/caail-planning#207'],
   },
   {
     id: 'pw-most-cited-facet',
@@ -284,7 +284,7 @@ export const REGISTER: readonly UnreliableEntry[] = [
       '-g "Most cited" --repeat-each=16 --workers=16',
     status: 'mitigated',
     mitigation: 'awaitHydrated(page, \'CatalogBrowser\') before the facet click.',
-    tickets: ['CAAIL-239', 'GH#159'],
+    tickets: ['tucca-cellag/caail-planning#207', 'tucca-cellag/caail#159'],
   },
   {
     id: 'pw-network-edge-click',
@@ -294,7 +294,7 @@ export const REGISTER: readonly UnreliableEntry[] = [
     anchor: "await page.waitForSelector('.ng-canvas canvas'",
     shape: 'load',
     condition:
-      'Recorded in CAAIL-2 as a hydration-timing race on the graph. The specs now wait for the ' +
+      'Recorded in tucca-cellag/caail-planning#2 as a hydration-timing race on the graph. The specs now wait for the ' +
       'cytoscape canvas, and the hub specs wait for the filter bar, so the window is closed.',
     evidence:
       '2026-08-13: 45/45 under --repeat-each=3; did not reproduce. Note that Playwright ran ' +
@@ -307,7 +307,7 @@ export const REGISTER: readonly UnreliableEntry[] = [
     status: 'mitigated',
     mitigation:
       "waitForSelector('.ng-canvas canvas') for the graph; retrying assertions on .hf-bar for the hub filters.",
-    tickets: ['CAAIL-239', 'CAAIL-2'],
+    tickets: ['tucca-cellag/caail-planning#207', 'tucca-cellag/caail-planning#2'],
   },
 
   // -------------------------------------------------------------------------
@@ -343,7 +343,7 @@ export const REGISTER: readonly UnreliableEntry[] = [
       '2026-08-13, reproduced end to end on the real path rather than by planting a file: ' +
       'injected a failure into homepage-agent.spec.ts, restored the spec, and community.test.ts ' +
       'then failed on test-results/homepage-agent-the-hero-co-b5cfc--before-the-typewriter-runs/' +
-      'error-context.md, the same file CAAIL-215 reported. rm -rf site/test-results and it ' +
+      'error-context.md, the same file tucca-cellag/caail-planning#183 reported. rm -rf site/test-results and it ' +
       'passed again with nothing else changed.',
     // Both directories, because clearing only one leaves the failure standing and the
     // report's own instruction ("if it survives the control, it is real") would then
@@ -351,7 +351,7 @@ export const REGISTER: readonly UnreliableEntry[] = [
     reproduce:
       'rm -rf site/test-results site/playwright-report && pnpm --dir site test src/lib/community.test.ts',
     status: 'open',
-    tickets: ['CAAIL-215', 'CAAIL-239'],
+    tickets: ['tucca-cellag/caail-planning#183', 'tucca-cellag/caail-planning#207'],
   },
 
   // -------------------------------------------------------------------------
@@ -378,7 +378,7 @@ export const REGISTER: readonly UnreliableEntry[] = [
     reproduce: "LC_ALL=C tr -d '\\000' < site/dist/pagefind/pagefind.js | wc -c   # 0 means corrupt",
     status: 'guarded',
     mitigation: 'The preflight aborts before the suite. Fix: rm -rf dist && pnpm build.',
-    tickets: ['CAAIL-239', 'CAAIL-231'],
+    tickets: ['tucca-cellag/caail-planning#207', 'tucca-cellag/caail-planning#199'],
   },
   {
     id: 'artifact-held-port',
@@ -393,11 +393,11 @@ export const REGISTER: readonly UnreliableEntry[] = [
     misleadingTriage:
       'The run reports on an artifact that is not your working tree, so it can make a rebuild ' +
       'appear to pass and invert a conclusion about a real defect.',
-    evidence: '2026-08-12: made a rebuild appear to pass and briefly inverted a conclusion during CAAIL-231.',
+    evidence: '2026-08-12: made a rebuild appear to pass and briefly inverted a conclusion during tucca-cellag/caail-planning#199.',
     reproduce: 'lsof -ti:<port>',
     status: 'guarded',
     mitigation: 'The preflight aborts naming the holding process. Escape hatches: CAAIL_E2E_PORT, CAAIL_E2E_ALLOW_EXISTING_SERVER.',
-    tickets: ['CAAIL-239', 'CAAIL-231'],
+    tickets: ['tucca-cellag/caail-planning#207', 'tucca-cellag/caail-planning#199'],
   },
 ];
 
@@ -500,7 +500,7 @@ export function formatReport(entries: readonly UnreliableEntry[]): string | null
   const n = unique.length;
   return [
     '',
-    `${n} known-unreliable ${n === 1 ? 'entry accounts' : 'entries account'} for failures above (CAAIL-239).`,
+    `${n} known-unreliable ${n === 1 ? 'entry accounts' : 'entries account'} for failures above (tucca-cellag/caail-planning#207).`,
     'A single entry can account for many failing tests at once, so this is a count of',
     'entries rather than of failures.',
     '',

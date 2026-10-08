@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Locate a paper's methods section in an ordered list of document headings.
 
-This is the structural half of the CAAIL-206 ingestion layer. It deliberately
+This is the structural half of the tucca-cellag/caail-planning#175 ingestion layer. It deliberately
 knows nothing about Docling, PDFs or Zotero: it takes an ordered list of
 headings (text, page number) and returns the index span of the methods section.
 That keeps it unit-testable without a PDF, which matters because the failure

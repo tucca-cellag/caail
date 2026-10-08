@@ -16,7 +16,7 @@
  * the canonical Markdown is read on GitHub first, so a link must work there,
  * and the site translates it. Software, Databases, Awesome Lists, Field Reports
  * and the Papers explorer have no map yet, although most of their ids are
- * derivable too; adding one here is how CAAIL-268 gets fixed, for both
+ * derivable too; adding one here is how tucca-cellag/caail-planning#236 gets fixed, for both
  * rewriters at once.
  */
 import { statSync } from 'node:fs';

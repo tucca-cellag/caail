@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { topics, type TopicCounts } from './data';
 
 // ---------------------------------------------------------------------------
-// TopicsBand — the homepage subject band (CAAIL-231).
+// TopicsBand — the homepage subject band (tucca-cellag/caail-planning#199).
 //
 // Every figure here is read from the parser's output rather than pinned, per the
 // note in data.ts: an assertion that survives a content merge is a real

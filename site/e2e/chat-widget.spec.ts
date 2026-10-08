@@ -101,7 +101,7 @@ test('the blurb says answers come from AI', async ({ page }) => {
 });
 
 /**
- * The disclosure (CAAIL-167).
+ * The disclosure (tucca-cellag/caail-planning#135).
  *
  * Split into two assertions on purpose. The first — that the question goes
  * somewhere — is the fact a reader cannot otherwise discover, since the POST is

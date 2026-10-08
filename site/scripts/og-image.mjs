@@ -20,7 +20,7 @@ const OUT = fileURLToPath(new URL('../public/og.png', import.meta.url));
 // editing this array AND re-running this script by hand, or the social card ships a dot
 // row that disagrees with the matrix while every check stays green — which is what
 // happened when the eval column was retired. An oracle for the length is tracked on
-// CAAIL-204; until it lands, this comment is the only thing standing in the way.
+// tucca-cellag/caail-planning#173; until it lands, this comment is the only thing standing in the way.
 //
 // Two caveats on the Metabolic Modeling and Food Safety Prediction entries, which are
 // AREA[5] and AREA[6] — the array is in matrix column order, so AI Tooling / Methodology

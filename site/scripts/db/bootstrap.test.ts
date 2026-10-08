@@ -85,7 +85,7 @@ function writeTopicsFile(dir: string, extra: object[] = []): void {
   writeFileSync(join(dir, 'topics.ndjson'), rows.map((r) => JSON.stringify(r)).join('\n') + '\n');
 }
 
-describe('preserveCuratedTopics (CAAIL-371)', () => {
+describe('preserveCuratedTopics (tucca-cellag/caail-planning#339)', () => {
   it('folds a curator-minted fine tag the seed vocabulary lacks (verbatim: tier + parent theme)', () => {
     const db = dbWith(); // seeds only the `media` + `ai` backbone themes
     const dir = tmp();

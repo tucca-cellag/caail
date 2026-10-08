@@ -144,7 +144,7 @@ test('the composer is absent from the served HTML, so no-JS gets the page as it 
   //
   // Scoped to the Pagefind body rather than the whole document, because ranking is what
   // this is about and only that region is indexed. The whole-document form worked until
-  // every matrix row got a Methods/ deep dive (CAAIL-266): the row labels are now nav
+  // every matrix row got a Methods/ deep dive (tucca-cellag/caail-planning#234): the row labels are now nav
   // entries, so "Bayesian Optimization" appears in the header dropdown and the Starlight
   // sidebar of EVERY page. Both sit above `data-pagefind-body` and are not indexed, so the
   // property this guards was never actually broken — the assertion was just reading site

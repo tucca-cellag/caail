@@ -173,7 +173,7 @@ describe('computeDatasetBreakdown — real corpus', () => {
     // entries change. 238 = 176 inventory rows + 21 curated species-page entries
     // + 24 reference entries + 17 benchmarks. It was 205 until #156, which folded
     // in the two populations the total had silently omitted, then 226 until
-    // CAAIL-258 promoted 7 GEO subseries that a SuperSeries parent row had hidden
+    // tucca-cellag/caail-planning#226 promoted 7 GEO subseries that a SuperSeries parent row had hidden
     // and added the 5 bovine deposits that audit surfaced as genuinely absent.
     expect(b.total).toBe(238);
   });

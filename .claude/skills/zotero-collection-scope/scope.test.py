@@ -3,7 +3,7 @@
 
 Every curation script that reads a paper's text (the Docling ingest, the flat
 full-text extractor, the dataset audit) resolves it through
-scope.select_main_pdf. Before CAAIL-436 each took the first PDF attachment
+scope.select_main_pdf. Before tucca-cellag/caail-planning#404 each took the first PDF attachment
 Zotero listed, so attaching a supplement could silently swap it in for the
 paper. Supplements are now marked with the Zotero tag 'supplement', and an item
 with two untagged PDFs is refused rather than guessed.
@@ -44,7 +44,7 @@ CASES = [
     ("one untagged PDF is the main text", [MAIN], ("MAIN", "")),
     ("no children", [], (None, "no-pdf-attachment")),
     ("a note is not a PDF", [NOTE], (None, "no-pdf-attachment")),
-    # The CAAIL-436 defect: Zotero lists the supplement first.
+    # The tucca-cellag/caail-planning#404 defect: Zotero lists the supplement first.
     ("a tagged supplement listed first is skipped", [SUPP, MAIN], ("MAIN", "")),
     ("a tagged supplement listed second is skipped", [MAIN, SUPP], ("MAIN", "")),
     ("two untagged PDFs are refused, not guessed",

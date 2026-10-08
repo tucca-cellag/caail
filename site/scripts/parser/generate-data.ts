@@ -481,7 +481,7 @@ export function generateData(
     'utf-8',
   );
 
-  // Write reports.json (field-report records + topic refs) — CAAIL-363.
+  // Write reports.json (field-report records + topic refs) — tucca-cellag/caail-planning#331.
   writeFileSync(
     join(outDir, 'reports.json'),
     JSON.stringify(reports, null, 2) + '\n',

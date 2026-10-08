@@ -1,6 +1,6 @@
 /**
  * dataset-inventory.test.ts — the inventory rows served to agents, and the SuperSeries
- * membership folded onto them (CAAIL-258).
+ * membership folded onto them (tucca-cellag/caail-planning#226).
  *
  *   A. Unit: the two pure helpers behind the fold.
  *   B. Integration: the real corpus, including the query that used to return nothing.

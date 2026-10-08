@@ -25,7 +25,7 @@ from pathlib import Path
 from typing import Iterable
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "zotero-collection-scope"))
-import scope  # noqa: E402  (select_main_pdf: the one main-PDF rule, CAAIL-436)
+import scope  # noqa: E402  (select_main_pdf: the one main-PDF rule, tucca-cellag/caail-planning#404)
 
 # ---------- accession patterns ----------
 

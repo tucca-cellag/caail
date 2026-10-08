@@ -62,7 +62,7 @@ describe('buildAwesomeListsModel', () => {
     const html = model.groups.flatMap((g) => g.items).map((i) => i.summaryHtml).join('\n');
     // the OmicsML item references bare Papers.md, which has a dedicated route
     expect(html).toContain(`href="${SITE_BASE}/papers/explorer/"`);
-    // an ANCHORED dedicated-route link keeps its GitHub deep link (CAAIL-374)
+    // an ANCHORED dedicated-route link keeps its GitHub deep link (tucca-cellag/caail-planning#342)
     expect(html).toContain('github.com/tucca-cellag/caail/blob/main/Software.md#media-optimization--cell-line-engineering');
     // no un-rewritten repo-relative link survives
     expect(/href="\.\.?\//.test(html)).toBe(false);

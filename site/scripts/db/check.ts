@@ -489,7 +489,7 @@ export function checkRelatedDois(db: Db, relatedPath: string = RELATED_DOIS_PATH
 }
 
 /**
- * SuperSeries membership (CAAIL-258): every `subseries.json` key must resolve to a
+ * SuperSeries membership (tucca-cellag/caail-planning#226): every `subseries.json` key must resolve to a
  * dataset_rows item, and each stored array must hold bare uppercase accessions with no
  * duplicate, none of which is the parent row's own accession.
  *
@@ -549,7 +549,7 @@ export function checkSubseries(db: Db, subseriesPath: string = SUBSERIES_PATH): 
 }
 
 /**
- * Fine-tag seed-drift guard (CAAIL-371), the fine-tag analog of the THEMES seed-drift check.
+ * Fine-tag seed-drift guard (tucca-cellag/caail-planning#339), the fine-tag analog of the THEMES seed-drift check.
  *
  * `preserveCuratedTopics` folds a curator-minted fine tag the seed lacks but deliberately does
  * NOT overwrite a SEEDED tag from committed, so on re-bootstrap a seeded tag's attributes come
@@ -577,7 +577,7 @@ export function checkFineTagSeedDrift(db: Db): CheckResult[] {
 }
 
 /**
- * Field-report series/recency guard (CAAIL-364), the reports analog of checkSubseries.
+ * Field-report series/recency guard (tucca-cellag/caail-planning#332), the reports analog of checkSubseries.
  *
  * The parser DERIVES `current`/`supersededBy` from max(edition_sort) per `series_slug`, and
  * that derivation is only well-defined under the rules `seriesRecency` (parser/reports.ts)

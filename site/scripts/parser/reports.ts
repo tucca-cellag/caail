@@ -1,9 +1,9 @@
 /**
  * reports.ts — build reports.json (the field-report records: GFI State of the Industry,
  * the Rethink Priorities landscape report) from the committed `reports` NDJSON, read
- * offline like the topic and dataset-entry models (CAAIL-363). Each record carries its
+ * offline like the topic and dataset-entry models (tucca-cellag/caail-planning#331). Each record carries its
  * content, its topic refs (via topicsByItemId), and the series/recency projection that
- * `deriveReports` computes from the stored series + edition columns (CAAIL-364).
+ * `deriveReports` computes from the stored series + edition columns (tucca-cellag/caail-planning#332).
  *
  * The model is consumed twice: the /field-reports/ page, and the public agent endpoint
  * `api/reports.json`, which re-exports it field for field (agent-api.ts). So every field on
@@ -38,19 +38,19 @@ export const EDITION_SORT_FORMS = 'YYYY, YYYY-MM or YYYY-MM-DD';
  * (lint-papers.yml). Those read the stored columns, so "change both copies" is always right there.
  * extractReports prints no rule, because its two callers need opposite fixes (see its comment).
  *
- * The two-copies sentence describes the storage CAAIL-364 chose; an agreement check (CAAIL-379)
+ * The two-copies sentence describes the storage tucca-cellag/caail-planning#332 chose; an agreement check (tucca-cellag/caail-planning#347)
  * would enforce it rather than retire it, and only deriving one copy from the other would retire it.
  *
  * It does not say HOW to edit a report. Earlier versions named the DB edit flows, and every review
  * round found another way that account was incomplete or contradicted the block-generated-edits
- * hook, whose own fix-it steps are wrong (CAAIL-404). The flow belongs to the DB tooling's
- * documentation, which does not yet cover reports (recorded on CAAIL-404).
+ * hook, whose own fix-it steps are wrong (tucca-cellag/caail-planning#372). The flow belongs to the DB tooling's
+ * documentation, which does not yet cover reports (recorded on tucca-cellag/caail-planning#372).
  */
 export const EDITION_SORT_RULE =
   `Every report needs a non-empty edition_label and an edition_sort that is a valid ${EDITION_SORT_FORMS} ` +
   'date, and within a series no two editions may share an edition_sort or have one be a prefix of the other. ' +
   'edition_label and edition_sort are each stored twice, in their own ' +
-  'column and in the "*Edition <label>, published <sort>.*" line of body_md (CAAIL-379), so change both ' +
+  'column and in the "*Edition <label>, published <sort>.*" line of body_md (tucca-cellag/caail-planning#347), so change both ' +
   'copies; an edit made in FieldReports.md alone is overwritten by db:emit.';
 
 /** The problem line for an unusable edition_sort, shared so every place that reports one agrees. */
@@ -88,7 +88,7 @@ export interface SeriesRecency {
 }
 
 /**
- * The one definition of "latest" for field reports (CAAIL-364, CAAIL-373), shared by
+ * The one definition of "latest" for field reports (tucca-cellag/caail-planning#332, tucca-cellag/caail-planning#341), shared by
  * `deriveReports` (which throws on any problem) and db:check's `checkSeries` (which lists them),
  * so on rows matching the schema's column types the check and the derivation cannot disagree
  * about which edition is current. (A mistyped hand-edited NDJSON value can still read differently:
@@ -165,7 +165,7 @@ export function seriesRecency(
 }
 
 /**
- * Derive the reports.json model from raw report rows (CAAIL-364). Pure and exported so the
+ * Derive the reports.json model from raw report rows (tucca-cellag/caail-planning#332). Pure and exported so the
  * recency logic is unit-testable with arbitrary editions. Within a series (`series_slug`),
  * the latest edition per `seriesRecency` is `current`; the rest carry `supersededBy` = its id.
  * A one-off (`series_slug === null`) is its own latest. Deriving from max() rather than storing

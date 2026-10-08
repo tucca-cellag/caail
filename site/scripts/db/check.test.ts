@@ -173,7 +173,7 @@ describe('checkTaxonomyAxes', () => {
     expect(res.every((r) => r.ok)).toBe(true);
   });
 
-  it('passes when a column and a theme share a label (the GH #133 case is legal)', () => {
+  it('passes when a column and a theme share a label (the tucca-cellag/caail#133 case is legal)', () => {
     // 'Media Optimization' as both an area and a theme must not fail: sharing
     // across axes is the behaviour the axis keying exists to permit.
     const body = taxonomyMd().replace(
@@ -715,7 +715,7 @@ describe('checkCatalogHeadings', () => {
 // B. Integration — the real committed DB passes every guard
 // ---------------------------------------------------------------------------
 
-describe('checkFineTagSeedDrift (CAAIL-371)', () => {
+describe('checkFineTagSeedDrift (tucca-cellag/caail-planning#339)', () => {
   it('passes on the committed corpus (seed.ts FINE_TAGS == committed topics)', () => {
     expect(checkFineTagSeedDrift(importNdjson()).every((r) => r.ok)).toBe(true);
   });

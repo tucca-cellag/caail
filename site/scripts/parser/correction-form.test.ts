@@ -102,7 +102,7 @@ describe('buildCorrectionForm against the committed template', () => {
   });
 
   it('finds the field ids the page prefills', () => {
-    // `item` is CAAIL-255's contract; `details` is where the composed body lands. GitHub
+    // `item` is tucca-cellag/caail-planning#223's contract; `details` is where the composed body lands. GitHub
     // ignores a query parameter matching no field, so losing either is silent at runtime.
     for (const id of REQUIRED_FIELD_IDS) expect(form.fieldIds).toContain(id);
   });

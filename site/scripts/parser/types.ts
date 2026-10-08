@@ -231,7 +231,7 @@ export type DatasetsData = z.infer<typeof DatasetsDataSchema>;
 /**
  * A field report — a recurring institutional state-of-field survey (GFI State of the
  * Industry, the Rethink Priorities landscape report), folded from the committed `reports`
- * NDJSON. Content + series/recency (CAAIL-363 skeleton + CAAIL-364 series model).
+ * NDJSON. Content + series/recency (tucca-cellag/caail-planning#331 skeleton + tucca-cellag/caail-planning#332 series model).
  *
  * `seriesSlug`/`editionLabel` are stored content; `current`/`supersededBy`/`seriesEditions`
  * are DERIVED at parse from max(edition_sort) per series, so adding next year's edition
@@ -298,7 +298,7 @@ export const DatasetInventoryRowSchema = z.object({
   /** two-tier subject tags, folded in from the committed topic NDJSON */
   topics: z.array(TopicRefSchema).default([]),
   /**
-   * Member accessions when this row's deposit is a SuperSeries (CAAIL-258); `[]` otherwise.
+   * Member accessions when this row's deposit is a SuperSeries (tucca-cellag/caail-planning#226); `[]` otherwise.
    *
    * A SuperSeries accession resolves to no analysable data — it is a container — so a row
    * that names only the parent hides every member from anyone querying this endpoint.

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Extract deposit accessions from each paper's availability statement (CAAIL-259).
+"""Extract deposit accessions from each paper's availability statement (tucca-cellag/caail-planning#227).
 
 `papers-dataset-audit` finds accessions by grepping the flat full-text cache for
 accession-shaped patterns. That cannot tell a deposit from a citation: `GSE173199`

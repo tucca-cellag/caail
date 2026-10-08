@@ -2,7 +2,7 @@
 
 This directory holds CAAIL's generated **documentation website** (Astro Starlight). It is a navigable layer over the canonical Markdown at the repo root, never a replacement: the canonical content itself stays build-free, GitHub-rendered Markdown, and **site work must never modify the canonical files** (`Papers.md`, `Software.md`, `Databases.md`, `OtherResources.md`, `ReferenceWorks.md`, `AwesomeLists.md`, `Funding.md`, `ResearchAreas/`, `Methods/`, `Datasets/`).
 
-Paths and commands below are written to run from the **repo root**, not from `site/`. Everything outside this directory — the canonical file schemas, the SQLite authoring backend that generates them, and the Jira / branching / commit conventions — lives in the repo-root [`CLAUDE.md`](../CLAUDE.md).
+Paths and commands below are written to run from the **repo root**, not from `site/`. Everything outside this directory — the canonical file schemas, the SQLite authoring backend that generates them, and the tracker routing, branching and commit conventions — lives in the repo-root [`CLAUDE.md`](../CLAUDE.md).
 
 - **Stack:** Astro + Starlight, Preact islands, `astro-icon` (Phosphor icon set), self-hosted fonts via `@fontsource` (Bricolage Grotesque for display, Inter for body, JetBrains Mono for code/identifiers), OKLch design tokens, `lite-youtube-embed` for talk facades, `cytoscape` for the citation-network graph (lazy-loaded via `client:idle`). The design system is documented in the repo-root `DESIGN.md`.
 - **Node:** requires Node ≥ 22.12 (pinned in `site/.nvmrc`). Run `nvm use 22` (e.g. `source ~/.nvm/nvm.sh && nvm use 22`) before any site command, since the system default may be older.

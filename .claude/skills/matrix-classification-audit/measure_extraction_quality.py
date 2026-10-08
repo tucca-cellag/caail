@@ -6,7 +6,7 @@ code being measured rather than from a comment. CLAUDE.md's most expensive
 recurring bug is a hand-typed fact sitting next to a machine-derived one, and
 this ticket has already produced two of them:
 
-* An early CAAIL-206 revision reported the heading-fallback rate as 29%. The
+* An early tucca-cellag/caail-planning#175 revision reported the heading-fallback rate as 29%. The
   measurement regex had omitted the optional `s` in `methods?`, so singular
   "Method" headings were miscounted.
 * The same ticket reported truncation as 159 refs (72%). That counts refs whose
@@ -150,7 +150,7 @@ def main():
     print()
     print("--- the Docling ingest (docling_ingest.py) ---")
     # Printed BEFORE the no-sections branch, not inside the else. A corpus
-    # entirely built from supplements -- the CAAIL-436 defect at full scale --
+    # entirely built from supplements -- the tucca-cellag/caail-planning#404 defect at full scale --
     # leaves `doc` empty, and reporting "no sections found; run the ingest"
     # while silently withholding the refusal count would describe the one
     # situation this measurement exists to surface as an absence of data.

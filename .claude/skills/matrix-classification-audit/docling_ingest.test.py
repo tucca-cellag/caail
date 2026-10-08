@@ -72,7 +72,7 @@ with tempfile.TemporaryDirectory() as tmp:
         except Reached:
             reached = True
         check(f"{name} is handed to the converter", reached)
-    # EPUB is the case CAAIL-436 measured failing inside Docling; it and the
+    # EPUB is the case tucca-cellag/caail-planning#404 measured failing inside Docling; it and the
     # others are refused before the converter is called (and, from the command
     # line, before it is built: see the next block).
     for name in ("paper.epub", "paper.html", "paper.docx", "paper"):
@@ -142,7 +142,7 @@ prov = di.ex.section_provenance
 check("the same content is a match whatever the file is called",
       prov({"filename": "ref-1.pdf", "binary_hash": 42},
            "/store/KEY/Smith - 2024 - Title.pdf", 42) == "match")
-# The CAAIL-436 defect in the existing corpus: the section was built from the
+# The tucca-cellag/caail-planning#404 defect in the existing corpus: the section was built from the
 # supplement because Zotero listed it first.
 check("different content is a mismatch even under the same name",
       prov({"filename": "paper.pdf", "binary_hash": 42},

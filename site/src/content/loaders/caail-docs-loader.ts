@@ -84,7 +84,7 @@ const REPO_ROOT = new URL('../../../../', import.meta.url);
  * re-tests the same pattern with `picomatch.isMatch(entry, pattern)`, which
  * treats an array as any-match and ignores the negation outright, so a
  * companion created while `astro dev` runs is still ingested. Verified against
- * picomatch 4.0.4 under astro 6.4.8; tracked as CAAIL-323. Nothing shipped is
+ * picomatch 4.0.4 under astro 6.4.8; tracked as tucca-cellag/caail-planning#291. Nothing shipped is
  * affected — `astro build` takes the tinyglobby path — and the companion is
  * gitignored either way, so the residue is a local dev server serving it to
  * the person who wrote it.
