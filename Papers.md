@@ -542,6 +542,8 @@ technique that text mentions. `Taxonomy.md`'s methods preamble states that rule 
 
 <a id="218">218</a> Yang, L., Wu, Z., Zhu, H., Ding, S., & Zhou, G. (2025). A method for evaluating the degree of adipogenic differentiation of porcine cells cultured in suspension based on deep learning. *Food Research International, 212*, 116324. https://doi.org/10.1016/j.foodres.2025.116324
 
+> **Corrigendum**: https://doi.org/10.1016/j.foodres.2025.116857
+
 <a id="219">219</a> Matsumoto, N., Choi, H., Moran, J., Hernandez, M. E., Venkatesan, M., Li, X., Chang, J.-H., Wang, P., & Moore, J. H. (2025). ESCARGOT: an AI agent leveraging large language models, dynamic graph of thoughts, and biomedical knowledge graphs for enhanced reasoning. *Bioinformatics, 41*(2), btaf031. https://doi.org/10.1093/bioinformatics/btaf031
 
 > **Code**: https://github.com/EpistasisLab/ESCARGOT
@@ -961,6 +963,8 @@ This section lists review articles, position papers, and commentaries that surve
 <a id="293">293</a> Humbird, D. (2021). Scale-up economics for cultured meat. *Biotechnology and Bioengineering, 118*(8), 3239–3250. https://doi.org/10.1002/bit.27848
 
 <a id="294">294</a> Risner, D., Li, F., Fell, J. S., Pace, S. A., Siegel, J. B., Tagkopoulos, I., & Spang, E. S. (2021). Preliminary techno-economic assessment of animal cell-based meat. *Foods, 10*(1), 3. https://doi.org/10.3390/foods10010003
+
+> **Code**: https://github.com/IBPA/IBPA-Collection-of-Reproducible-Code-and-Results/tree/master/2020_Artificial_Meat
 
 <a id="295">295</a> Negulescu, P. G., Risner, D., Spang, E. S., Sumner, D., Block, D., Nandi, S., & McDonald, K. A. (2023). Techno-economic modeling and assessment of cultivated meat: Impact of production bioreactor scale. *Biotechnology and Bioengineering, 120*(4), 1055–1067. https://doi.org/10.1002/bit.28324
 

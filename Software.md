@@ -8,7 +8,7 @@ This library collects open-source tools that apply computational methods and AI 
 
 ### [AlphaFold](https://github.com/google-deepmind/alphafold)
 
-Summary: Predicts the 3D structure of proteins from their amino acid sequence using deep learning. Can be used for design and engineering of cost-effective recombinant growth factors and signaling molecules. Predicting protein structure helps optimize stability, activity, and binding affinity, reducing the high cost associated with media components.
+Summary: Predicts the 3D structure of proteins from their amino acid sequence using deep learning. Can be used for design and engineering of cost-effective recombinant growth factors and signaling molecules. Predicting protein structure helps optimize stability, activity, and binding affinity, reducing the high cost associated with media components. The code is Apache-2.0; the model parameters are released separately under CC BY 4.0.
 
 ### [Protein Language Models](https://github.com/ISYSLAB-HUST/Protein-Language-Models)
 
@@ -20,11 +20,11 @@ Summary: Search large protein databases using monomers and multimers. Can be use
 
 ### [amii-cell-ag-tools](https://github.com/Amii-Applied-AI/amii-cell-ag-tools)
 
-Summary: Open-source applied AI research code from the Alberta Machine Intelligence Institute (Amii) targeting cellular agriculture, hosted under the `Amii-Applied-AI` GitHub organization. The repository collects two Python subprojects: `protein-thermostability-data-tools` (code used in the development of a public protein thermostability dataset) and `active-learning-for-cell-media` (active-learning analysis applied to cell media optimization). MIT-licensed. Companion to [Papers.md ref #350](./Papers.md#350).
+Summary: Open-source applied AI research code from the Alberta Machine Intelligence Institute (Amii) targeting cellular agriculture, hosted under the `Amii-Applied-AI` GitHub organization. The repository collects two Python subprojects: `protein-thermostability-data-tools` (code used in the development of a public protein thermostability dataset) and `active-learning-for-cell-media` (active-learning analysis applied to cell media optimization). MIT-licensed. Companion to [Papers.md ref #350](./Papers.md#350). Interactive active-learning benchmarks for cell media optimization (Hide-the-Label and Open Race) are published at <https://amii-applied-ai.github.io/amii-cell-ag-tools/>.
 
 ### [ESMFold](https://github.com/facebookresearch/esm)
 
-Summary: An end-to-end single-sequence protein structure predictor built on the ESM-2 protein language model: it predicts structure directly from one sequence with no multiple-sequence alignment, avoiding the alignment search that MSA-dependent predictors require. For cellular agriculture, useful for quickly validating the fold of engineered growth-factor analogs and other recombinant media proteins. (The `facebookresearch/esm` repository also hosts the ESM-2 / ESM-1b protein language models.)
+Summary: An end-to-end single-sequence protein structure predictor built on the ESM-2 protein language model: it predicts structure directly from one sequence with no multiple-sequence alignment, avoiding the alignment search that MSA-dependent predictors require. For cellular agriculture, useful for quickly validating the fold of engineered growth-factor analogs and other recombinant media proteins. (The `facebookresearch/esm` repository, which also hosts the ESM-2 / ESM-1b protein language models, is archived and read-only.)
 
 ### [ColabFold](https://github.com/sokrypton/ColabFold)
 
@@ -518,7 +518,7 @@ Summary: A gymnasium of language-agent environments for challenging scientific t
 
 ### [Finch](https://github.com/Future-House/finch)
 
-Summary: An Aviary-based data-science agent that operates inside Jupyter notebooks, also from [FutureHouse](https://www.futurehouse.org/). It plans and executes notebook-based analyses, pairing the [Aviary](#aviary) environment with the kind of exploratory bioinformatics work (single-cell exploration, media-response analysis) that cell-ag teams increasingly delegate to notebook agents. Apache-2.0; no companion paper at time of curation.
+Summary: An Aviary-based data-science agent that operates inside Jupyter notebooks, also from [FutureHouse](https://www.futurehouse.org/). It plans and executes notebook-based analyses, pairing the [Aviary](#aviary) environment with the kind of exploratory bioinformatics work (single-cell exploration, media-response analysis) that cell-ag teams increasingly delegate to notebook agents. Finch produced the agent trajectories for the BixBench benchmark ([Papers.md ref #108](./Papers.md#108)); its README cites no paper of its own, only BixBench's. Edison Scientific's platform offers a Data Analysis job under the alias `JobNames.FINCH` (also `JobNames.ANALYSIS`), per the [Edison client documentation](https://github.com/EdisonScientific/edison-client-docs). Apache-2.0.
 
 ### [K-Dense-AI](https://github.com/K-Dense-AI)
 

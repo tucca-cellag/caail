@@ -6,8 +6,8 @@
       "name": "AlphaFold",
       "url": "https://github.com/google-deepmind/alphafold",
       "group": "Media Optimization & Cell Line Engineering",
-      "summary": "Predicts the 3D structure of proteins from their amino acid sequence using deep learning. Can be used for design and engineering of cost-effective recombinant growth factors and signaling molecules. Predicting protein structure helps optimize stability, activity, and binding affinity, reducing the high cost associated with media components.",
-      "summaryHtml": "<p>Predicts the 3D structure of proteins from their amino acid sequence using deep learning. Can be used for design and engineering of cost-effective recombinant growth factors and signaling molecules. Predicting protein structure helps optimize stability, activity, and binding affinity, reducing the high cost associated with media components.</p>",
+      "summary": "Predicts the 3D structure of proteins from their amino acid sequence using deep learning. Can be used for design and engineering of cost-effective recombinant growth factors and signaling molecules. Predicting protein structure helps optimize stability, activity, and binding affinity, reducing the high cost associated with media components. The code is Apache-2.0; the model parameters are released separately under CC BY 4.0.",
+      "summaryHtml": "<p>Predicts the 3D structure of proteins from their amino acid sequence using deep learning. Can be used for design and engineering of cost-effective recombinant growth factors and signaling molecules. Predicting protein structure helps optimize stability, activity, and binding affinity, reducing the high cost associated with media components. The code is Apache-2.0; the model parameters are released separately under CC BY 4.0.</p>",
       "topics": [
         {
           "slug": "cell-line-engineering",
@@ -112,8 +112,8 @@
       "name": "amii-cell-ag-tools",
       "url": "https://github.com/Amii-Applied-AI/amii-cell-ag-tools",
       "group": "Media Optimization & Cell Line Engineering",
-      "summary": "Open-source applied AI research code from the Alberta Machine Intelligence Institute (Amii) targeting cellular agriculture, hosted under the Amii-Applied-AI GitHub organization. The repository collects two Python subprojects: protein-thermostability-data-tools (code used in the development of a public protein thermostability dataset) and active-learning-for-cell-media (active-learning analysis applied to cell media optimization). MIT-licensed. Companion to Papers.md ref #350.",
-      "summaryHtml": "<p>Open-source applied AI research code from the Alberta Machine Intelligence Institute (Amii) targeting cellular agriculture, hosted under the <code>Amii-Applied-AI</code> GitHub organization. The repository collects two Python subprojects: <code>protein-thermostability-data-tools</code> (code used in the development of a public protein thermostability dataset) and <code>active-learning-for-cell-media</code> (active-learning analysis applied to cell media optimization). MIT-licensed. Companion to <a href=\"https://github.com/tucca-cellag/caail/blob/main/Papers.md#350\">Papers.md ref #350</a>.</p>",
+      "summary": "Open-source applied AI research code from the Alberta Machine Intelligence Institute (Amii) targeting cellular agriculture, hosted under the Amii-Applied-AI GitHub organization. The repository collects two Python subprojects: protein-thermostability-data-tools (code used in the development of a public protein thermostability dataset) and active-learning-for-cell-media (active-learning analysis applied to cell media optimization). MIT-licensed. Companion to Papers.md ref #350. Interactive active-learning benchmarks for cell media optimization (Hide-the-Label and Open Race) are published at https://amii-applied-ai.github.io/amii-cell-ag-tools/.",
+      "summaryHtml": "<p>Open-source applied AI research code from the Alberta Machine Intelligence Institute (Amii) targeting cellular agriculture, hosted under the <code>Amii-Applied-AI</code> GitHub organization. The repository collects two Python subprojects: <code>protein-thermostability-data-tools</code> (code used in the development of a public protein thermostability dataset) and <code>active-learning-for-cell-media</code> (active-learning analysis applied to cell media optimization). MIT-licensed. Companion to <a href=\"https://github.com/tucca-cellag/caail/blob/main/Papers.md#350\">Papers.md ref #350</a>. Interactive active-learning benchmarks for cell media optimization (Hide-the-Label and Open Race) are published at <a href=\"https://amii-applied-ai.github.io/amii-cell-ag-tools/\">https://amii-applied-ai.github.io/amii-cell-ag-tools/</a>.</p>",
       "topics": [
         {
           "slug": "cell-line-engineering",
@@ -146,8 +146,8 @@
       "name": "ESMFold",
       "url": "https://github.com/facebookresearch/esm",
       "group": "Media Optimization & Cell Line Engineering",
-      "summary": "An end-to-end single-sequence protein structure predictor built on the ESM-2 protein language model: it predicts structure directly from one sequence with no multiple-sequence alignment, avoiding the alignment search that MSA-dependent predictors require. For cellular agriculture, useful for quickly validating the fold of engineered growth-factor analogs and other recombinant media proteins. (The facebookresearch/esm repository also hosts the ESM-2 / ESM-1b protein language models.)",
-      "summaryHtml": "<p>An end-to-end single-sequence protein structure predictor built on the ESM-2 protein language model: it predicts structure directly from one sequence with no multiple-sequence alignment, avoiding the alignment search that MSA-dependent predictors require. For cellular agriculture, useful for quickly validating the fold of engineered growth-factor analogs and other recombinant media proteins. (The <code>facebookresearch/esm</code> repository also hosts the ESM-2 / ESM-1b protein language models.)</p>",
+      "summary": "An end-to-end single-sequence protein structure predictor built on the ESM-2 protein language model: it predicts structure directly from one sequence with no multiple-sequence alignment, avoiding the alignment search that MSA-dependent predictors require. For cellular agriculture, useful for quickly validating the fold of engineered growth-factor analogs and other recombinant media proteins. (The facebookresearch/esm repository, which also hosts the ESM-2 / ESM-1b protein language models, is archived and read-only.)",
+      "summaryHtml": "<p>An end-to-end single-sequence protein structure predictor built on the ESM-2 protein language model: it predicts structure directly from one sequence with no multiple-sequence alignment, avoiding the alignment search that MSA-dependent predictors require. For cellular agriculture, useful for quickly validating the fold of engineered growth-factor analogs and other recombinant media proteins. (The <code>facebookresearch/esm</code> repository, which also hosts the ESM-2 / ESM-1b protein language models, is archived and read-only.)</p>",
       "topics": [
         {
           "slug": "cell-line-engineering",
@@ -627,9 +627,9 @@
           "theme": "bioprocess-scale-up"
         }
       ],
-      "license": null,
-      "licenseSource": null,
-      "tier": "unknown",
+      "license": "MIT",
+      "licenseSource": "manual",
+      "tier": "permissive",
       "doi": "10.1016/b978-0-12-388403-9.00013-8",
       "doiSource": "manual",
       "citationCount": 566,
@@ -689,7 +689,7 @@
           "theme": "bioprocess-scale-up"
         }
       ],
-      "license": "CC-BY-4.0",
+      "license": "BSD-3-Clause",
       "licenseSource": "manual",
       "tier": "permissive",
       "doi": "10.1093/bioinformatics/btt772",
@@ -2881,8 +2881,8 @@
       "name": "Finch",
       "url": "https://github.com/Future-House/finch",
       "group": "AI Agents & Foundation Models",
-      "summary": "An Aviary-based data-science agent that operates inside Jupyter notebooks, also from FutureHouse. It plans and executes notebook-based analyses, pairing the Aviary environment with the kind of exploratory bioinformatics work (single-cell exploration, media-response analysis) that cell-ag teams increasingly delegate to notebook agents. Apache-2.0; no companion paper at time of curation.",
-      "summaryHtml": "<p>An Aviary-based data-science agent that operates inside Jupyter notebooks, also from <a href=\"https://www.futurehouse.org/\">FutureHouse</a>. It plans and executes notebook-based analyses, pairing the <a href=\"https://github.com/tucca-cellag/caail/blob/main/Software.md#aviary\">Aviary</a> environment with the kind of exploratory bioinformatics work (single-cell exploration, media-response analysis) that cell-ag teams increasingly delegate to notebook agents. Apache-2.0; no companion paper at time of curation.</p>",
+      "summary": "An Aviary-based data-science agent that operates inside Jupyter notebooks, also from FutureHouse. It plans and executes notebook-based analyses, pairing the Aviary environment with the kind of exploratory bioinformatics work (single-cell exploration, media-response analysis) that cell-ag teams increasingly delegate to notebook agents. Finch produced the agent trajectories for the BixBench benchmark (Papers.md ref #108); its README cites no paper of its own, only BixBench's. Edison Scientific's platform offers a Data Analysis job under the alias JobNames.FINCH (also JobNames.ANALYSIS), per the Edison client documentation. Apache-2.0.",
+      "summaryHtml": "<p>An Aviary-based data-science agent that operates inside Jupyter notebooks, also from <a href=\"https://www.futurehouse.org/\">FutureHouse</a>. It plans and executes notebook-based analyses, pairing the <a href=\"https://github.com/tucca-cellag/caail/blob/main/Software.md#aviary\">Aviary</a> environment with the kind of exploratory bioinformatics work (single-cell exploration, media-response analysis) that cell-ag teams increasingly delegate to notebook agents. Finch produced the agent trajectories for the BixBench benchmark (<a href=\"https://github.com/tucca-cellag/caail/blob/main/Papers.md#108\">Papers.md ref #108</a>); its README cites no paper of its own, only BixBench's. Edison Scientific's platform offers a Data Analysis job under the alias <code>JobNames.FINCH</code> (also <code>JobNames.ANALYSIS</code>), per the <a href=\"https://github.com/EdisonScientific/edison-client-docs\">Edison client documentation</a>. Apache-2.0.</p>",
       "topics": [
         {
           "slug": "ai-agents",
@@ -3158,9 +3158,9 @@
           "theme": "ai-methods-tooling"
         }
       ],
-      "license": null,
-      "licenseSource": null,
-      "tier": "unknown",
+      "license": "Apache-2.0",
+      "licenseSource": "manual",
+      "tier": "permissive",
       "doi": "10.1038/s41586-023-06139-9",
       "doiSource": "manual",
       "citationCount": 1106,
@@ -5580,8 +5580,8 @@
       "name": "CZ CELLxGENE",
       "url": "https://cellxgene.cziscience.com/",
       "group": "Cell Line & Single-Cell Reference Atlases",
-      "summary": "CZ CELLxGENE is the Chan Zuckerberg Initiative's platform for exploring and analyzing public single-cell data, providing harmonized scRNA-seq and multi-omics datasets aggregated from hundreds of studies (including Human Cell Atlas data) under consistent metadata standards. The CELLxGENE Census provides programmatic access to tens of millions of harmonized cells across human and mouse, exposed through a TileDB-backed Python / R API that supports fast queries by gene, tissue, disease, or assay. For cellular agriculture, cellxgene is the most practical source for assembling cross-study training sets (e.g. all skeletal muscle stem cells in the Census) for ML models of cell-type classification, perturbation prediction, and trajectory inference. Programmatic access via the cellxgene-census Python and R packages.",
-      "summaryHtml": "<p>CZ CELLxGENE is the Chan Zuckerberg Initiative's platform for exploring and analyzing public single-cell data, providing harmonized scRNA-seq and multi-omics datasets aggregated from hundreds of studies (including Human Cell Atlas data) under consistent metadata standards. The CELLxGENE Census provides programmatic access to tens of millions of harmonized cells across human and mouse, exposed through a TileDB-backed Python / R API that supports fast queries by gene, tissue, disease, or assay. For cellular agriculture, cellxgene is the most practical source for assembling cross-study training sets (e.g. all skeletal muscle stem cells in the Census) for ML models of cell-type classification, perturbation prediction, and trajectory inference. Programmatic access via the <code>cellxgene-census</code> Python and R packages.</p>",
+      "summary": "CZ CELLxGENE is the Chan Zuckerberg Initiative's platform for exploring and analyzing public single-cell data, providing harmonized scRNA-seq and multi-omics datasets aggregated from hundreds of studies (including Human Cell Atlas data) under consistent metadata standards. The CELLxGENE Census provides programmatic access to more than 125 million unique harmonized cells from five species (human, mouse, rhesus macaque, marmoset and chimpanzee) in its 2025-11-08 long-term-support release, exposed through a TileDB-backed Python / R API that supports fast queries by gene, tissue, disease, or assay. For cellular agriculture, cellxgene is the most practical source for assembling cross-study training sets (e.g. all skeletal muscle stem cells in the Census) for ML models of cell-type classification, perturbation prediction, and trajectory inference. Programmatic access via the cellxgene-census Python and R packages.",
+      "summaryHtml": "<p>CZ CELLxGENE is the Chan Zuckerberg Initiative's platform for exploring and analyzing public single-cell data, providing harmonized scRNA-seq and multi-omics datasets aggregated from hundreds of studies (including Human Cell Atlas data) under consistent metadata standards. The CELLxGENE Census provides programmatic access to more than 125 million unique harmonized cells from five species (human, mouse, rhesus macaque, marmoset and chimpanzee) in its 2025-11-08 long-term-support release, exposed through a TileDB-backed Python / R API that supports fast queries by gene, tissue, disease, or assay. For cellular agriculture, cellxgene is the most practical source for assembling cross-study training sets (e.g. all skeletal muscle stem cells in the Census) for ML models of cell-type classification, perturbation prediction, and trajectory inference. Programmatic access via the <code>cellxgene-census</code> Python and R packages.</p>",
       "topics": [
         {
           "slug": "cell-line-engineering",
