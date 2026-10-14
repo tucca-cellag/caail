@@ -1022,7 +1022,7 @@
       ],
       "labels": [
         "Dong et al. 2024",
-        "Huang et al. 2026",
+        "Huang et al. 2026a",
         "Pickard et al. 2025",
         "Riffle et al. 2025",
         "Jin et al. 2025",
@@ -1166,7 +1166,7 @@
         "Notin et al. 2023",
         "Duan et al. 2025",
         "Nair et al. 2026",
-        "Huang et al. 2026",
+        "Huang et al. 2026b",
         "Adduri et al. 2025",
         "Miller et al. 2025"
       ]
@@ -3375,10 +3375,10 @@
           "theme": "ai-methods-tooling"
         }
       ],
-      "citedByOpenAlex": null,
+      "citedByOpenAlex": 25,
       "license": null,
       "licenseSource": null,
-      "isOa": null
+      "isOa": false
     },
     {
       "id": 50,
@@ -12308,10 +12308,10 @@
           "theme": "media-growth-factors"
         }
       ],
-      "citedByOpenAlex": null,
-      "license": null,
-      "licenseSource": null,
-      "isOa": null
+      "citedByOpenAlex": 0,
+      "license": "cc-by",
+      "licenseSource": "auto",
+      "isOa": true
     },
     {
       "id": 73,
@@ -12839,6 +12839,11 @@
           "slug": "media-optimization",
           "label": "Media optimization",
           "theme": "media-growth-factors"
+        },
+        {
+          "slug": "metabolic-modeling",
+          "label": "Metabolic modeling",
+          "theme": "metabolism-modeling"
         }
       ],
       "citedByOpenAlex": 67,

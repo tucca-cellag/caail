@@ -136,9 +136,11 @@
       "tier": "permissive",
       "doi": "10.1093/bioinformatics/btag607",
       "doiSource": "manual",
-      "citationCount": null,
-      "citationSources": 0,
-      "citationDois": []
+      "citationCount": 0,
+      "citationSources": 1,
+      "citationDois": [
+        "10.1093/bioinformatics/btag607"
+      ]
     },
     {
       "slug": "esmfold",
@@ -2685,9 +2687,10 @@
       "tier": "permissive",
       "doi": "10.1126/science.adz4351",
       "doiSource": "manual",
-      "citationCount": 108,
-      "citationSources": 1,
+      "citationCount": 133,
+      "citationSources": 2,
       "citationDois": [
+        "10.1126/science.adz4351",
         "10.1101/2025.05.30.656746"
       ]
     },
@@ -3693,33 +3696,9 @@
       ]
     },
     {
-      "slug": "project-pisces",
+      "slug": "project-pisces-standard-flowsheet-format",
       "itemId": "sw:project-pisces-standard-flowsheet-format",
-      "name": "Project PISCES",
-      "url": "https://projectpisces.org/",
-      "group": "Data Standards & Interchange Formats",
-      "summary": "Project PISCES (Process Integration & Synthesis using Chemical Engineering Standards) is a hosted platform that harmonizes process flowsheet data for analysis, modeling and design. It offers a curated public database of flowsheets spanning fuels, chemicals, pharmaceuticals, food products and more, private team workspaces, and an AI assistant, Florence, that flags data gaps and proposes fixes for a person to confirm. Its flowsheets use the open Standard Flowsheet Format, listed separately. For cellular agriculture, it is a place to collect and compare bioprocess flowsheets. The hosted application's site states all rights reserved, and its source is archived on Zenodo as a restricted deposit (citation metadata only, with no public files or licence) at https://doi.org/10.5281/zenodo.23124934.",
-      "summaryHtml": "<p>Project PISCES (Process Integration &#x26; Synthesis using Chemical Engineering Standards) is a hosted platform that harmonizes process flowsheet data for analysis, modeling and design. It offers a curated public database of flowsheets spanning fuels, chemicals, pharmaceuticals, food products and more, private team workspaces, and an AI assistant, Florence, that flags data gaps and proposes fixes for a person to confirm. Its flowsheets use the open <a href=\"https://github.com/tucca-cellag/caail/blob/main/Software.md#standard-flowsheet-format-sff\">Standard Flowsheet Format</a>, listed separately. For cellular agriculture, it is a place to collect and compare bioprocess flowsheets. The hosted application's site states all rights reserved, and its source is archived on Zenodo as a restricted deposit (citation metadata only, with no public files or licence) at <a href=\"https://doi.org/10.5281/zenodo.23124934\">https://doi.org/10.5281/zenodo.23124934</a>.</p>",
-      "topics": [
-        {
-          "slug": "ai-methods-tooling",
-          "label": "AI Methods & Tooling",
-          "theme": "ai-methods-tooling"
-        }
-      ],
-      "license": null,
-      "licenseSource": null,
-      "tier": "unknown",
-      "doi": "10.5281/zenodo.23124563",
-      "doiSource": "manual",
-      "citationCount": null,
-      "citationSources": 0,
-      "citationDois": []
-    },
-    {
-      "slug": "standard-flowsheet-format-sff",
-      "itemId": "sw:standard-flowsheet-format-sff",
-      "name": "Standard Flowsheet Format (SFF)",
+      "name": "Project PISCES (Standard Flowsheet Format)",
       "url": "https://github.com/sustainability-software-lab/pisces-standard-flowsheet-format",
       "group": "Data Standards & Interchange Formats",
       "summary": "The Standard Flowsheet Format (SFF) is a JSON-based standard for representing chemical and bioprocess flowsheets as directed graphs (unit operations as nodes, streams as edges), so that designs are portable across process simulators. The repository ships the schema, a validator, a BioSTEAM exporter and a reference corpus of flowsheets, which Project PISCES consumes. For cellular agriculture, it gives bioprocess designs a machine-readable form; Project PISCES uses it to build its flowsheet database and to train an LLM-based pipeline that extracts flowsheets from the literature. MIT-licensed. Documentation: https://pisces-standard-flowsheet-format.readthedocs.io/. Process-flowsheet background (what SFF standardizes): for readers approaching this from the AI / biology side, the LibreTexts Foundations of Chemical and Biological Engineering chapter on chemical processes and process diagrams and the ScienceDirect \"Flowsheet\" topic overview introduce the flowsheet concept and its notation. Cell-ag application context: The Unjournal's cultivated-meat cost-modeling work, namely the unjournal/cm_pq_modeling repository and its techno-economic comparison of cultured-chicken cost models, is exactly the kind of bioprocess techno-economic analysis that a standardized flowsheet format like SFF is designed to make reproducible and machine-comparable.",
@@ -3729,6 +3708,11 @@
           "slug": "ai-methods-tooling",
           "label": "AI Methods & Tooling",
           "theme": "ai-methods-tooling"
+        },
+        {
+          "slug": "bioprocess-scale-up",
+          "label": "Bioprocess & Manufacturing",
+          "theme": "bioprocess-scale-up"
         }
       ],
       "license": "MIT",
@@ -3739,6 +3723,37 @@
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
+    },
+    {
+      "slug": "project-pisces",
+      "itemId": "sw:project-pisces",
+      "name": "Project PISCES",
+      "url": "https://projectpisces.org/",
+      "group": "Data Standards & Interchange Formats",
+      "summary": "Project PISCES (Process Integration & Synthesis using Chemical Engineering Standards) is a hosted platform that harmonizes process flowsheet data for analysis, modeling and design. It offers a curated public database of flowsheets spanning fuels, chemicals, pharmaceuticals, food products and more, private team workspaces, and an AI assistant, Florence, that flags data gaps and proposes fixes for a person to confirm. Its flowsheets use the open Standard Flowsheet Format, listed separately. For cellular agriculture, it is a place to collect and compare bioprocess flowsheets. The hosted application's site states all rights reserved, and its source is archived on Zenodo as a restricted deposit (citation metadata only, with no public files or licence) at https://doi.org/10.5281/zenodo.23124934.",
+      "summaryHtml": "<p>Project PISCES (Process Integration &#x26; Synthesis using Chemical Engineering Standards) is a hosted platform that harmonizes process flowsheet data for analysis, modeling and design. It offers a curated public database of flowsheets spanning fuels, chemicals, pharmaceuticals, food products and more, private team workspaces, and an AI assistant, Florence, that flags data gaps and proposes fixes for a person to confirm. Its flowsheets use the open <a href=\"https://github.com/tucca-cellag/caail/blob/main/Software.md#project-pisces-standard-flowsheet-format\">Standard Flowsheet Format</a>, listed separately. For cellular agriculture, it is a place to collect and compare bioprocess flowsheets. The hosted application's site states all rights reserved, and its source is archived on Zenodo as a restricted deposit (citation metadata only, with no public files or licence) at <a href=\"https://doi.org/10.5281/zenodo.23124934\">https://doi.org/10.5281/zenodo.23124934</a>.</p>",
+      "topics": [
+        {
+          "slug": "ai-methods-tooling",
+          "label": "AI Methods & Tooling",
+          "theme": "ai-methods-tooling"
+        },
+        {
+          "slug": "bioprocess-scale-up",
+          "label": "Bioprocess & Manufacturing",
+          "theme": "bioprocess-scale-up"
+        }
+      ],
+      "license": null,
+      "licenseSource": null,
+      "tier": "unknown",
+      "doi": "10.5281/zenodo.23124562",
+      "doiSource": "manual",
+      "citationCount": 0,
+      "citationSources": 1,
+      "citationDois": [
+        "10.5281/zenodo.23124562"
+      ]
     },
     {
       "slug": "biopragmatics-stack",

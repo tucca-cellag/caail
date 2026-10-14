@@ -32,6 +32,7 @@
     "https://foodon.org/": "10.1038/s41538-018-0032-6",
     "https://genomics.senescence.info/": "10.1093/nar/gkx1042",
     "https://genomics.senescence.info/cells/": "10.1186/s13059-020-01990-9",
+    "https://github.com/Amii-Applied-AI/amii-cell-ag-tools": "10.1093/bioinformatics/btag607",
     "https://github.com/ArcInstitute/arc-virtual-cell-atlas/blob/main/scBaseCount/README.md": "10.1101/2025.02.27.640494",
     "https://github.com/ArcInstitute/state": "10.1101/2025.06.26.661135",
     "https://github.com/ArtemSokolov/PanCanStem": "10.1016/j.cell.2018.03.034",
@@ -152,6 +153,7 @@
     "https://pathbank.org/": "10.1093/nar/gkz861",
     "https://pigbiobank.farmgtex.org/": "10.1093/nar/gkad1080",
     "https://piggtex.farmgtex.org/": "10.1038/s41588-023-01585-7",
+    "https://projectpisces.org/": "10.5281/zenodo.23124562",
     "https://proteowizard.sourceforge.io/": "10.1038/nbt.2377",
     "https://pubchem.ncbi.nlm.nih.gov/": "10.1093/nar/gkac956",
     "https://reactome.org/": "10.1093/nar/gkad1025",
@@ -221,9 +223,7 @@
     "https://www.t3db.ca/": "10.1093/nar/gku1004",
     "https://www.uniprot.org/": "10.1093/nar/gkae1010",
     "https://www.vmh.life/": "10.1093/nar/gky992",
-    "https://www.wikipathways.org/": "10.1093/nar/gkad960",
-    "https://github.com/Amii-Applied-AI/amii-cell-ag-tools": "10.1093/bioinformatics/btag607",
-    "https://projectpisces.org/": "10.5281/zenodo.23124563"
+    "https://www.wikipathways.org/": "10.1093/nar/gkad960"
   },
   "datasets": {
     "ds:algpred-20-allergen-dataset": "10.1093/bib/bbaa294",

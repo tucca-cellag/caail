@@ -645,17 +645,17 @@ Summary: The de-facto XML-based standard for representing computational models o
 
 Summary: A schema language for authoring, validating, and transforming structured data models, with first-class support for ontology terms, code generation across languages, and export to JSON-Schema / SHACL / OWL. Increasingly used to define machine-readable metadata schemas for biological datasets and knowledge graphs, the structured backbone that agentic AI systems need in order to reason reliably over cell-ag data resources.
 
-### [Project PISCES](https://projectpisces.org/)
-
-Summary: Project PISCES (Process Integration & Synthesis using Chemical Engineering Standards) is a hosted platform that harmonizes process flowsheet data for analysis, modeling and design. It offers a curated public database of flowsheets spanning fuels, chemicals, pharmaceuticals, food products and more, private team workspaces, and an AI assistant, Florence, that flags data gaps and proposes fixes for a person to confirm. Its flowsheets use the open [Standard Flowsheet Format](#standard-flowsheet-format-sff), listed separately. For cellular agriculture, it is a place to collect and compare bioprocess flowsheets. The hosted application's site states all rights reserved, and its source is archived on Zenodo as a restricted deposit (citation metadata only, with no public files or licence) at <https://doi.org/10.5281/zenodo.23124934>.
-
-### [Standard Flowsheet Format (SFF)](https://github.com/sustainability-software-lab/pisces-standard-flowsheet-format)
+### [Project PISCES (Standard Flowsheet Format)](https://github.com/sustainability-software-lab/pisces-standard-flowsheet-format)
 
 Summary: The Standard Flowsheet Format (SFF) is a JSON-based standard for representing chemical and bioprocess flowsheets as directed graphs (unit operations as nodes, streams as edges), so that designs are portable across process simulators. The repository ships the schema, a validator, a BioSTEAM exporter and a reference corpus of flowsheets, which [Project PISCES](#project-pisces) consumes. For cellular agriculture, it gives bioprocess designs a machine-readable form; Project PISCES uses it to build its flowsheet database and to train an LLM-based pipeline that extracts flowsheets from the literature. MIT-licensed. Documentation: <https://pisces-standard-flowsheet-format.readthedocs.io/>.
 
 Process-flowsheet background (what SFF standardizes): for readers approaching this from the AI / biology side, the [LibreTexts *Foundations of Chemical and Biological Engineering* chapter on chemical processes and process diagrams](https://eng.libretexts.org/Bookshelves/Chemical_Engineering/Foundations_of_Chemical_and_Biological_Engineering_I_(Verret_Qiao_Barghout)/01%3A_Introduction_to_Chemical_Processes_and_Process_Diagrams) and the [ScienceDirect "Flowsheet" topic overview](https://www.sciencedirect.com/topics/chemical-engineering/flowsheet) introduce the flowsheet concept and its notation.
 
 Cell-ag application context: [The Unjournal](https://www.unjournal.org/)'s cultivated-meat cost-modeling work, namely the [`unjournal/cm_pq_modeling` repository](https://github.com/unjournal/cm_pq_modeling) and its [techno-economic comparison of cultured-chicken cost models](https://unjournal.github.io/cm_pq_modeling/compare.html), is exactly the kind of bioprocess techno-economic analysis that a standardized flowsheet format like SFF is designed to make reproducible and machine-comparable.
+
+### [Project PISCES](https://projectpisces.org/)
+
+Summary: Project PISCES (Process Integration & Synthesis using Chemical Engineering Standards) is a hosted platform that harmonizes process flowsheet data for analysis, modeling and design. It offers a curated public database of flowsheets spanning fuels, chemicals, pharmaceuticals, food products and more, private team workspaces, and an AI assistant, Florence, that flags data gaps and proposes fixes for a person to confirm. Its flowsheets use the open [Standard Flowsheet Format](#project-pisces-standard-flowsheet-format), listed separately. For cellular agriculture, it is a place to collect and compare bioprocess flowsheets. The hosted application's site states all rights reserved, and its source is archived on Zenodo as a restricted deposit (citation metadata only, with no public files or licence) at <https://doi.org/10.5281/zenodo.23124934>.
 
 ## Biomedical Ontology & Identifier Infrastructure
 

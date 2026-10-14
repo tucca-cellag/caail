@@ -28,10 +28,10 @@
         "areaKey": "bioprocess",
         "counts": {
           "paper": 68,
-          "software": 16,
+          "software": 18,
           "database": 7,
           "dataset": 26,
-          "total": 117
+          "total": 119
         },
         "tags": [
           "bioreactor-scale-up",
@@ -100,11 +100,11 @@
         "theme": null,
         "areaKey": "metabolic",
         "counts": {
-          "paper": 27,
+          "paper": 28,
           "software": 22,
           "database": 18,
           "dataset": 37,
-          "total": 104
+          "total": 105
         },
         "tags": [
           "metabolic-modeling"
@@ -319,11 +319,11 @@
         "theme": "metabolism-modeling",
         "areaKey": null,
         "counts": {
-          "paper": 27,
+          "paper": 28,
           "software": 22,
           "database": 18,
           "dataset": 33,
-          "total": 100
+          "total": 101
         },
         "tags": []
       },
@@ -629,8 +629,8 @@
         "coscientist",
         "sbml-systems-biology-markup-language",
         "linkml-linked-data-modeling-language",
+        "project-pisces-standard-flowsheet-format",
         "project-pisces",
-        "standard-flowsheet-format-sff",
         "biopragmatics-stack"
       ],
       "databases": [
@@ -966,7 +966,9 @@
         "morpheus",
         "pyfoomb",
         "mxlpy",
-        "pc-gym"
+        "pc-gym",
+        "project-pisces-standard-flowsheet-format",
+        "project-pisces"
       ],
       "databases": [],
       "datasets": [
@@ -1465,6 +1467,7 @@
         198,
         189,
         190,
+        77,
         81,
         82,
         83,
