@@ -103,7 +103,7 @@
     "https://github.com/scverse/cellrank": "10.1038/s41592-021-01346-6",
     "https://github.com/shuzhao-li-lab/asari": "10.1038/s41467-023-39889-1",
     "https://github.com/snap-stanford/BioDiscoveryAgent": "10.48550/arxiv.2405.17631",
-    "https://github.com/snap-stanford/Biomni": "10.1101/2025.05.30.656746",
+    "https://github.com/snap-stanford/Biomni": "10.1126/science.adz4351",
     "https://github.com/snap-stanford/GEARS": "10.1038/s41587-023-01905-6",
     "https://github.com/snap-stanford/UCE": "10.1101/2023.11.28.568918",
     "https://github.com/sneumann/xcms": "10.1021/ac051437y",
@@ -221,7 +221,9 @@
     "https://www.t3db.ca/": "10.1093/nar/gku1004",
     "https://www.uniprot.org/": "10.1093/nar/gkae1010",
     "https://www.vmh.life/": "10.1093/nar/gky992",
-    "https://www.wikipathways.org/": "10.1093/nar/gkad960"
+    "https://www.wikipathways.org/": "10.1093/nar/gkad960",
+    "https://github.com/Amii-Applied-AI/amii-cell-ag-tools": "10.1093/bioinformatics/btag607",
+    "https://projectpisces.org/": "10.5281/zenodo.23124563"
   },
   "datasets": {
     "ds:algpred-20-allergen-dataset": "10.1093/bib/bbaa294",

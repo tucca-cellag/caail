@@ -112,8 +112,8 @@
       "name": "amii-cell-ag-tools",
       "url": "https://github.com/Amii-Applied-AI/amii-cell-ag-tools",
       "group": "Media Optimization & Cell Line Engineering",
-      "summary": "Open-source applied AI research code from the Alberta Machine Intelligence Institute (Amii) targeting cellular agriculture, hosted under the Amii-Applied-AI GitHub organization. The repository collects two Python subprojects: protein-thermostability-data-tools (code used in the development of a public protein thermostability dataset) and active-learning-for-cell-media (active-learning analysis applied to cell media optimization). MIT-licensed. Companion to Papers.md ref #350. Interactive active-learning benchmarks for cell media optimization (Hide-the-Label and Open Race) are published at https://amii-applied-ai.github.io/amii-cell-ag-tools/.",
-      "summaryHtml": "<p>Open-source applied AI research code from the Alberta Machine Intelligence Institute (Amii) targeting cellular agriculture, hosted under the <code>Amii-Applied-AI</code> GitHub organization. The repository collects two Python subprojects: <code>protein-thermostability-data-tools</code> (code used in the development of a public protein thermostability dataset) and <code>active-learning-for-cell-media</code> (active-learning analysis applied to cell media optimization). MIT-licensed. Companion to <a href=\"https://github.com/tucca-cellag/caail/blob/main/Papers.md#350\">Papers.md ref #350</a>. Interactive active-learning benchmarks for cell media optimization (Hide-the-Label and Open Race) are published at <a href=\"https://amii-applied-ai.github.io/amii-cell-ag-tools/\">https://amii-applied-ai.github.io/amii-cell-ag-tools/</a>.</p>",
+      "summary": "Open-source applied AI research code from the Alberta Machine Intelligence Institute (Amii) targeting cellular agriculture, hosted under the Amii-Applied-AI GitHub organization. The repository collects two Python subprojects: protein-thermostability-data-tools (code used in the development of a public protein thermostability dataset) and active-learning-for-cell-media (active-learning analysis applied to cell media optimization). MIT-licensed. Companion to Papers.md ref #350. Interactive active-learning benchmarks for cell media optimization (Hide-the-Label and Open Race) are published at https://amii-applied-ai.github.io/amii-cell-ag-tools/. The cell-media optimization code is archived on Zenodo at https://doi.org/10.5281/zenodo.19528838.",
+      "summaryHtml": "<p>Open-source applied AI research code from the Alberta Machine Intelligence Institute (Amii) targeting cellular agriculture, hosted under the <code>Amii-Applied-AI</code> GitHub organization. The repository collects two Python subprojects: <code>protein-thermostability-data-tools</code> (code used in the development of a public protein thermostability dataset) and <code>active-learning-for-cell-media</code> (active-learning analysis applied to cell media optimization). MIT-licensed. Companion to <a href=\"https://github.com/tucca-cellag/caail/blob/main/Papers.md#350\">Papers.md ref #350</a>. Interactive active-learning benchmarks for cell media optimization (Hide-the-Label and Open Race) are published at <a href=\"https://amii-applied-ai.github.io/amii-cell-ag-tools/\">https://amii-applied-ai.github.io/amii-cell-ag-tools/</a>. The cell-media optimization code is archived on Zenodo at <a href=\"https://doi.org/10.5281/zenodo.19528838\">https://doi.org/10.5281/zenodo.19528838</a>.</p>",
       "topics": [
         {
           "slug": "cell-line-engineering",
@@ -134,8 +134,8 @@
       "license": "MIT",
       "licenseSource": "auto",
       "tier": "permissive",
-      "doi": null,
-      "doiSource": null,
+      "doi": "10.1093/bioinformatics/btag607",
+      "doiSource": "manual",
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
@@ -2666,8 +2666,8 @@
       "name": "Biomni",
       "url": "https://github.com/snap-stanford/Biomni",
       "group": "AI Agents & Foundation Models",
-      "summary": "A general-purpose biomedical AI agent from Stanford's SNAP lab (Leskovec group) that performs autonomous multi-step research workflows across drug discovery, genomics, clinical analysis, and adjacent biomedical domains. Companion to the Huang et al. 2025 paper (Papers.md ref #49). Project page: https://biomni.stanford.edu. AWS tutorial (Biomni + Bedrock AgentCore): https://aws.amazon.com/blogs/machine-learning/build-a-biomedical-research-agent-with-biomni-tools-and-amazon-bedrock-agentcore-gateway/.",
-      "summaryHtml": "<p>A general-purpose biomedical AI agent from Stanford's SNAP lab (Leskovec group) that performs autonomous multi-step research workflows across drug discovery, genomics, clinical analysis, and adjacent biomedical domains. Companion to the Huang et al. 2025 paper (<a href=\"https://github.com/tucca-cellag/caail/blob/main/Papers.md#49\">Papers.md ref #49</a>).</p>\n<p>Project page: <a href=\"https://biomni.stanford.edu\">https://biomni.stanford.edu</a>. AWS tutorial (Biomni + Bedrock AgentCore): <a href=\"https://aws.amazon.com/blogs/machine-learning/build-a-biomedical-research-agent-with-biomni-tools-and-amazon-bedrock-agentcore-gateway/\">https://aws.amazon.com/blogs/machine-learning/build-a-biomedical-research-agent-with-biomni-tools-and-amazon-bedrock-agentcore-gateway/</a>.</p>",
+      "summary": "A general-purpose biomedical AI agent from Stanford's SNAP lab (Leskovec group) that performs autonomous multi-step research workflows across drug discovery, genomics, clinical analysis, and adjacent biomedical domains. Companion to the Huang et al. 2026 paper in Science (Papers.md ref #49). Project page: https://biomni.stanford.edu. AWS tutorial (Biomni + Bedrock AgentCore): https://aws.amazon.com/blogs/machine-learning/build-a-biomedical-research-agent-with-biomni-tools-and-amazon-bedrock-agentcore-gateway/.",
+      "summaryHtml": "<p>A general-purpose biomedical AI agent from Stanford's SNAP lab (Leskovec group) that performs autonomous multi-step research workflows across drug discovery, genomics, clinical analysis, and adjacent biomedical domains. Companion to the Huang et al. 2026 paper in <em>Science</em> (<a href=\"https://github.com/tucca-cellag/caail/blob/main/Papers.md#49\">Papers.md ref #49</a>).</p>\n<p>Project page: <a href=\"https://biomni.stanford.edu\">https://biomni.stanford.edu</a>. AWS tutorial (Biomni + Bedrock AgentCore): <a href=\"https://aws.amazon.com/blogs/machine-learning/build-a-biomedical-research-agent-with-biomni-tools-and-amazon-bedrock-agentcore-gateway/\">https://aws.amazon.com/blogs/machine-learning/build-a-biomedical-research-agent-with-biomni-tools-and-amazon-bedrock-agentcore-gateway/</a>.</p>",
       "topics": [
         {
           "slug": "ai-agents",
@@ -2683,7 +2683,7 @@
       "license": "Apache-2.0",
       "licenseSource": "auto",
       "tier": "permissive",
-      "doi": "10.1101/2025.05.30.656746",
+      "doi": "10.1126/science.adz4351",
       "doiSource": "manual",
       "citationCount": 108,
       "citationSources": 1,
@@ -3113,8 +3113,8 @@
       "name": "TranscriptFormer",
       "url": "https://virtualcellmodels.cziscience.com/model/transcriptformer",
       "group": "AI Agents & Foundation Models",
-      "summary": "A family of generative foundation models for single-cell transcriptomics from the Chan Zuckerberg Initiative, trained on up to 112 million cells spanning 1.53 billion years of evolution across 12 species (Pearce et al. 2026, Science; see Papers.md ref #92). Provides state-of-the-art performance on cell-type classification and supports cross-species reasoning over transcriptomic data: directly relevant to cell-ag for translating biological knowledge between bovine, porcine, chicken, salmonid, and other livestock cells where annotated reference data is sparse (see the per-species pages in Datasets/ for the cell-ag-relevant data substrate). Distributed via CZI's Virtual Cells Platform with versioned releases. Quickstart docs: https://virtualcellmodels.cziscience.com/quickstart/transcriptformer-quickstart. Announcement: https://chanzuckerberg.com/blog/transcriptformer-model-overview/.",
-      "summaryHtml": "<p>A family of generative foundation models for single-cell transcriptomics from the Chan Zuckerberg Initiative, trained on up to 112 million cells spanning 1.53 billion years of evolution across 12 species (Pearce et al. 2026, <em>Science</em>; see <a href=\"https://github.com/tucca-cellag/caail/blob/main/Papers.md#92\">Papers.md ref #92</a>). Provides state-of-the-art performance on cell-type classification and supports cross-species reasoning over transcriptomic data: directly relevant to cell-ag for translating biological knowledge between bovine, porcine, chicken, salmonid, and other livestock cells where annotated reference data is sparse (see the per-species pages in <a href=\"https://caail.tufts.edu/datasets/readme/\"><code>Datasets/</code></a> for the cell-ag-relevant data substrate). Distributed via CZI's Virtual Cells Platform with versioned releases.</p>\n<p>Quickstart docs: <a href=\"https://virtualcellmodels.cziscience.com/quickstart/transcriptformer-quickstart\">https://virtualcellmodels.cziscience.com/quickstart/transcriptformer-quickstart</a>. Announcement: <a href=\"https://chanzuckerberg.com/blog/transcriptformer-model-overview/\">https://chanzuckerberg.com/blog/transcriptformer-model-overview/</a>.</p>",
+      "summary": "A family of generative foundation models for single-cell transcriptomics from the Chan Zuckerberg Initiative, trained on up to 112 million cells spanning 1.53 billion years of evolution across 12 species (Pearce et al. 2026, Science; see Papers.md ref #92). Provides state-of-the-art performance on cell-type classification and supports cross-species reasoning over transcriptomic data: the TF-Metazoa model's training species include chicken and zebrafish, pig is among the out-of-distribution species with pre-generated protein embeddings, and species outside that list, such as cattle or salmon, need their protein embeddings generated first, per the model's README (see the per-species pages in Datasets/ for the cell-ag-relevant data substrate). Distributed via CZI's Virtual Cells Platform with versioned releases. Quickstart docs: https://virtualcellmodels.cziscience.com/quickstart/transcriptformer-quickstart. Announcement: https://chanzuckerberg.com/blog/transcriptformer-model-overview/.",
+      "summaryHtml": "<p>A family of generative foundation models for single-cell transcriptomics from the Chan Zuckerberg Initiative, trained on up to 112 million cells spanning 1.53 billion years of evolution across 12 species (Pearce et al. 2026, <em>Science</em>; see <a href=\"https://github.com/tucca-cellag/caail/blob/main/Papers.md#92\">Papers.md ref #92</a>). Provides state-of-the-art performance on cell-type classification and supports cross-species reasoning over transcriptomic data: the TF-Metazoa model's training species include chicken and zebrafish, pig is among the out-of-distribution species with pre-generated protein embeddings, and species outside that list, such as cattle or salmon, need their protein embeddings generated first, per the model's <a href=\"https://github.com/czi-ai/transcriptformer\">README</a> (see the per-species pages in <a href=\"https://caail.tufts.edu/datasets/readme/\"><code>Datasets/</code></a> for the cell-ag-relevant data substrate). Distributed via CZI's Virtual Cells Platform with versioned releases.</p>\n<p>Quickstart docs: <a href=\"https://virtualcellmodels.cziscience.com/quickstart/transcriptformer-quickstart\">https://virtualcellmodels.cziscience.com/quickstart/transcriptformer-quickstart</a>. Announcement: <a href=\"https://chanzuckerberg.com/blog/transcriptformer-model-overview/\">https://chanzuckerberg.com/blog/transcriptformer-model-overview/</a>.</p>",
       "topics": [
         {
           "slug": "ai-agents",
@@ -3693,13 +3693,13 @@
       ]
     },
     {
-      "slug": "project-pisces-standard-flowsheet-format",
+      "slug": "project-pisces",
       "itemId": "sw:project-pisces-standard-flowsheet-format",
-      "name": "Project PISCES (Standard Flowsheet Format)",
+      "name": "Project PISCES",
       "url": "https://projectpisces.org/",
       "group": "Data Standards & Interchange Formats",
-      "summary": "Project PISCES (Process Integration & Synthesis using Chemical Engineering Standards) standardizes process flowsheet data into a machine-readable Standard Flowsheet Format (SFF) for AI-powered knowledge extraction and analysis. For cellular agriculture, a standardized flowsheet format is the missing substrate for AI-assisted bioprocess design, scale-up modeling, and techno-economic analysis, letting agents reason over cultivated-meat process designs the way they reason over SBML metabolic models. SFF documentation: https://projectpisces.org/?page=sff-docs. Process-flowsheet background (what SFF standardizes): for readers approaching this from the AI / biology side, the LibreTexts Foundations of Chemical and Biological Engineering chapter on chemical processes and process diagrams and the ScienceDirect \"Flowsheet\" topic overview introduce the flowsheet concept and its notation. Cell-ag application context: The Unjournal's cultivated-meat cost-modeling work, namely the unjournal/cm_pq_modeling repository and its techno-economic comparison of cultured-chicken cost models, is exactly the kind of bioprocess techno-economic analysis that a standardized flowsheet format like SFF is designed to make reproducible and machine-comparable.",
-      "summaryHtml": "<p>Project PISCES (Process Integration &#x26; Synthesis using Chemical Engineering Standards) standardizes process flowsheet data into a machine-readable Standard Flowsheet Format (SFF) for AI-powered knowledge extraction and analysis. For cellular agriculture, a standardized flowsheet format is the missing substrate for AI-assisted bioprocess design, scale-up modeling, and techno-economic analysis, letting agents reason over cultivated-meat process designs the way they reason over SBML metabolic models. SFF documentation: <a href=\"https://projectpisces.org/?page=sff-docs\">https://projectpisces.org/?page=sff-docs</a>.</p>\n<p>Process-flowsheet background (what SFF standardizes): for readers approaching this from the AI / biology side, the <a href=\"https://eng.libretexts.org/Bookshelves/Chemical_Engineering/Foundations_of_Chemical_and_Biological_Engineering_I_(Verret_Qiao_Barghout)/01%3A_Introduction_to_Chemical_Processes_and_Process_Diagrams\">LibreTexts <em>Foundations of Chemical and Biological Engineering</em> chapter on chemical processes and process diagrams</a> and the <a href=\"https://www.sciencedirect.com/topics/chemical-engineering/flowsheet\">ScienceDirect \"Flowsheet\" topic overview</a> introduce the flowsheet concept and its notation.</p>\n<p>Cell-ag application context: <a href=\"https://www.unjournal.org/\">The Unjournal</a>'s cultivated-meat cost-modeling work, namely the <a href=\"https://github.com/unjournal/cm_pq_modeling\"><code>unjournal/cm_pq_modeling</code> repository</a> and its <a href=\"https://unjournal.github.io/cm_pq_modeling/compare.html\">techno-economic comparison of cultured-chicken cost models</a>, is exactly the kind of bioprocess techno-economic analysis that a standardized flowsheet format like SFF is designed to make reproducible and machine-comparable.</p>",
+      "summary": "Project PISCES (Process Integration & Synthesis using Chemical Engineering Standards) is a hosted platform that harmonizes process flowsheet data for analysis, modeling and design. It offers a curated public database of flowsheets spanning fuels, chemicals, pharmaceuticals, food products and more, private team workspaces, and an AI assistant, Florence, that flags data gaps and proposes fixes for a person to confirm. Its flowsheets use the open Standard Flowsheet Format, listed separately. For cellular agriculture, it is a place to collect and compare bioprocess flowsheets. The hosted application's site states all rights reserved, and its source is archived on Zenodo as a restricted deposit (citation metadata only, with no public files or licence) at https://doi.org/10.5281/zenodo.23124934.",
+      "summaryHtml": "<p>Project PISCES (Process Integration &#x26; Synthesis using Chemical Engineering Standards) is a hosted platform that harmonizes process flowsheet data for analysis, modeling and design. It offers a curated public database of flowsheets spanning fuels, chemicals, pharmaceuticals, food products and more, private team workspaces, and an AI assistant, Florence, that flags data gaps and proposes fixes for a person to confirm. Its flowsheets use the open <a href=\"https://github.com/tucca-cellag/caail/blob/main/Software.md#standard-flowsheet-format-sff\">Standard Flowsheet Format</a>, listed separately. For cellular agriculture, it is a place to collect and compare bioprocess flowsheets. The hosted application's site states all rights reserved, and its source is archived on Zenodo as a restricted deposit (citation metadata only, with no public files or licence) at <a href=\"https://doi.org/10.5281/zenodo.23124934\">https://doi.org/10.5281/zenodo.23124934</a>.</p>",
       "topics": [
         {
           "slug": "ai-methods-tooling",
@@ -3710,6 +3710,30 @@
       "license": null,
       "licenseSource": null,
       "tier": "unknown",
+      "doi": "10.5281/zenodo.23124563",
+      "doiSource": "manual",
+      "citationCount": null,
+      "citationSources": 0,
+      "citationDois": []
+    },
+    {
+      "slug": "standard-flowsheet-format-sff",
+      "itemId": "sw:standard-flowsheet-format-sff",
+      "name": "Standard Flowsheet Format (SFF)",
+      "url": "https://github.com/sustainability-software-lab/pisces-standard-flowsheet-format",
+      "group": "Data Standards & Interchange Formats",
+      "summary": "The Standard Flowsheet Format (SFF) is a JSON-based standard for representing chemical and bioprocess flowsheets as directed graphs (unit operations as nodes, streams as edges), so that designs are portable across process simulators. The repository ships the schema, a validator, a BioSTEAM exporter and a reference corpus of flowsheets, which Project PISCES consumes. For cellular agriculture, it gives bioprocess designs a machine-readable form; Project PISCES uses it to build its flowsheet database and to train an LLM-based pipeline that extracts flowsheets from the literature. MIT-licensed. Documentation: https://pisces-standard-flowsheet-format.readthedocs.io/. Process-flowsheet background (what SFF standardizes): for readers approaching this from the AI / biology side, the LibreTexts Foundations of Chemical and Biological Engineering chapter on chemical processes and process diagrams and the ScienceDirect \"Flowsheet\" topic overview introduce the flowsheet concept and its notation. Cell-ag application context: The Unjournal's cultivated-meat cost-modeling work, namely the unjournal/cm_pq_modeling repository and its techno-economic comparison of cultured-chicken cost models, is exactly the kind of bioprocess techno-economic analysis that a standardized flowsheet format like SFF is designed to make reproducible and machine-comparable.",
+      "summaryHtml": "<p>The Standard Flowsheet Format (SFF) is a JSON-based standard for representing chemical and bioprocess flowsheets as directed graphs (unit operations as nodes, streams as edges), so that designs are portable across process simulators. The repository ships the schema, a validator, a BioSTEAM exporter and a reference corpus of flowsheets, which <a href=\"https://github.com/tucca-cellag/caail/blob/main/Software.md#project-pisces\">Project PISCES</a> consumes. For cellular agriculture, it gives bioprocess designs a machine-readable form; Project PISCES uses it to build its flowsheet database and to train an LLM-based pipeline that extracts flowsheets from the literature. MIT-licensed. Documentation: <a href=\"https://pisces-standard-flowsheet-format.readthedocs.io/\">https://pisces-standard-flowsheet-format.readthedocs.io/</a>.</p>\n<p>Process-flowsheet background (what SFF standardizes): for readers approaching this from the AI / biology side, the <a href=\"https://eng.libretexts.org/Bookshelves/Chemical_Engineering/Foundations_of_Chemical_and_Biological_Engineering_I_(Verret_Qiao_Barghout)/01%3A_Introduction_to_Chemical_Processes_and_Process_Diagrams\">LibreTexts <em>Foundations of Chemical and Biological Engineering</em> chapter on chemical processes and process diagrams</a> and the <a href=\"https://www.sciencedirect.com/topics/chemical-engineering/flowsheet\">ScienceDirect \"Flowsheet\" topic overview</a> introduce the flowsheet concept and its notation.</p>\n<p>Cell-ag application context: <a href=\"https://www.unjournal.org/\">The Unjournal</a>'s cultivated-meat cost-modeling work, namely the <a href=\"https://github.com/unjournal/cm_pq_modeling\"><code>unjournal/cm_pq_modeling</code> repository</a> and its <a href=\"https://unjournal.github.io/cm_pq_modeling/compare.html\">techno-economic comparison of cultured-chicken cost models</a>, is exactly the kind of bioprocess techno-economic analysis that a standardized flowsheet format like SFF is designed to make reproducible and machine-comparable.</p>",
+      "topics": [
+        {
+          "slug": "ai-methods-tooling",
+          "label": "AI Methods & Tooling",
+          "theme": "ai-methods-tooling"
+        }
+      ],
+      "license": "MIT",
+      "licenseSource": "manual",
+      "tier": "permissive",
       "doi": null,
       "doiSource": null,
       "citationCount": null,
@@ -7745,9 +7769,14 @@
       "summaryHtml": "<p>PISCES organizes seafood data by phylogenetic relationships, grouping species taxonomically, <em>Salmo salar</em> (Atlantic salmon) and <em>Salmo trutta</em> (sea trout) sit together under genus <em>Salmo</em>. Each species entry compiles cell-line availability, nutritional data, and volatile compounds relevant to cultivated- and plant-based-seafood development. Distributed as an AirTable base linked from the GFI landing page. The canonical taxonomic reference for cultivated-seafood candidate species. Companion to <a href=\"https://github.com/tucca-cellag/caail/blob/main/Databases.md#atlas--archetype-library-for-alternative-seafood\">ATLAS</a> below, which groups the same species by culinary archetype rather than phylogeny.</p>",
       "topics": [
         {
-          "slug": "ai-methods-tooling",
-          "label": "AI Methods & Tooling",
-          "theme": "ai-methods-tooling"
+          "slug": "cell-lines-engineering",
+          "label": "Cell Lines & Engineering",
+          "theme": "cell-lines-engineering"
+        },
+        {
+          "slug": "sensory-flavor",
+          "label": "Sensory & Flavor",
+          "theme": "sensory-flavor"
         }
       ],
       "license": null,
@@ -7772,11 +7801,6 @@
           "slug": "ai-methods-tooling",
           "label": "AI Methods & Tooling",
           "theme": "ai-methods-tooling"
-        },
-        {
-          "slug": "single-cell-atlases",
-          "label": "Single-cell atlases",
-          "theme": "cell-lines-engineering"
         }
       ],
       "license": null,
@@ -8726,5 +8750,5 @@
       "citationDois": []
     }
   ],
-  "corpusDate": "2026-09-30"
+  "corpusDate": "2026-10-14"
 }

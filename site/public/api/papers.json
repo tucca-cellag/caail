@@ -1022,7 +1022,7 @@
       ],
       "labels": [
         "Dong et al. 2024",
-        "Huang et al. 2025",
+        "Huang et al. 2026",
         "Pickard et al. 2025",
         "Riffle et al. 2025",
         "Jin et al. 2025",
@@ -3314,38 +3314,43 @@
     {
       "id": 49,
       "section": "References",
-      "raw": "<a id=\"49\">49</a> Huang, K., Zhang, S., Wang, H., Qu, Y., Lu, Y., Roohani, Y., Li, R., Qiu, L., Li, G., Zhang, J., Yin, D., Marwaha, S., Carter, J. N., Zhou, X., Wheeler, M., Bernstein, J. A., Wang, M., He, P., Zhou, J., Snyder, M., Cong, L., Regev, A., & Leskovec, J. (2025). *Biomni: A General-Purpose Biomedical AI Agent.* bioRxiv. https://doi.org/10.1101/2025.05.30.656746",
+      "raw": "<a id=\"49\">49</a> Huang, K., Zhang, S., Wang, H., Qu, Y., Lu, Y., Li, R., Roohani, Y., Qiu, L., Cao, S., Li, G., Zhang, J., Yin, D., Wierenga, R., Kavi, D., Liu, S., She, T., Marwaha, S., Carter, J. N., Zhou, X., Wheeler, M. T., Bernstein, J. A., Wang, M., He, P., Zhou, J., Snyder, M. P., Cong, L., Regev, A., & Leskovec, J. (2026). Autonomous biomedical research with an artificial intelligence agent. *Science, 393*(6813), eadz4351. https://doi.org/10.1126/science.adz4351",
       "authors": [
         "Huang, K.",
         "Zhang, S.",
         "Wang, H.",
         "Qu, Y.",
         "Lu, Y.",
-        "Roohani, Y.",
         "Li, R.",
+        "Roohani, Y.",
         "Qiu, L.",
+        "Cao, S.",
         "Li, G.",
         "Zhang, J.",
         "Yin, D.",
+        "Wierenga, R.",
+        "Kavi, D.",
+        "Liu, S.",
+        "She, T.",
         "Marwaha, S.",
         "Carter, J. N.",
         "Zhou, X.",
-        "Wheeler, M.",
+        "Wheeler, M. T.",
         "Bernstein, J. A.",
         "Wang, M.",
         "He, P.",
         "Zhou, J.",
-        "Snyder, M.",
+        "Snyder, M. P.",
         "Cong, L.",
         "Regev, A.",
         "Leskovec, J."
       ],
       "authorsDropped": 0,
-      "authorsText": "Huang, K., Zhang, S., Wang, H., Qu, Y., Lu, Y., Roohani, Y., Li, R., Qiu, L., Li, G., Zhang, J., Yin, D., Marwaha, S., Carter, J. N., Zhou, X., Wheeler, M., Bernstein, J. A., Wang, M., He, P., Zhou, J., Snyder, M., Cong, L., Regev, A., & Leskovec, J.",
-      "year": 2025,
-      "title": "Biomni: A General-Purpose Biomedical AI Agent",
-      "journal": "bioRxiv",
-      "doi": "10.1101/2025.05.30.656746",
+      "authorsText": "Huang, K., Zhang, S., Wang, H., Qu, Y., Lu, Y., Li, R., Roohani, Y., Qiu, L., Cao, S., Li, G., Zhang, J., Yin, D., Wierenga, R., Kavi, D., Liu, S., She, T., Marwaha, S., Carter, J. N., Zhou, X., Wheeler, M. T., Bernstein, J. A., Wang, M., He, P., Zhou, J., Snyder, M. P., Cong, L., Regev, A., & Leskovec, J.",
+      "year": 2026,
+      "title": "Autonomous biomedical research with an artificial intelligence agent",
+      "journal": "Science",
+      "doi": "10.1126/science.adz4351",
       "codeUrl": "https://github.com/snap-stanford/Biomni",
       "dataUrl": null,
       "isPrimary": true,
@@ -3357,7 +3362,7 @@
       ],
       "hasCode": true,
       "hasData": false,
-      "slug": "huang-2025",
+      "slug": "huang-2026",
       "topics": [
         {
           "slug": "ai-agents",
@@ -3370,10 +3375,10 @@
           "theme": "ai-methods-tooling"
         }
       ],
-      "citedByOpenAlex": 108,
-      "license": "cc-by",
-      "licenseSource": "auto",
-      "isOa": true
+      "citedByOpenAlex": null,
+      "license": null,
+      "licenseSource": null,
+      "isOa": null
     },
     {
       "id": 50,
@@ -7177,7 +7182,7 @@
       ],
       "hasCode": true,
       "hasData": true,
-      "slug": "huang-2026",
+      "slug": "huang-2026b",
       "topics": [
         {
           "slug": "ai-agents",
@@ -9214,7 +9219,7 @@
       "journal": "iScience",
       "doi": "10.1016/j.isci.2025.112944",
       "codeUrl": null,
-      "dataUrl": null,
+      "dataUrl": "https://pmc.ncbi.nlm.nih.gov/articles/PMC12308009/#mmc2",
       "isPrimary": true,
       "methods": [
         "Bayesian Optimization"
@@ -9223,7 +9228,7 @@
         "media"
       ],
       "hasCode": false,
-      "hasData": false,
+      "hasData": true,
       "slug": "ndahiro-2025",
       "topics": [
         {
@@ -12424,45 +12429,6 @@
       "isOa": true
     },
     {
-      "id": 77,
-      "section": "Sensory & Flavor Reference Work",
-      "raw": "<a id=\"77\">77</a> O'Neill, E. N., Ansel, J. C., Kwong, G. A., Plastino, M. E., Nelson, J., Baar, K., & Block, D. E. (2022). Spent media analysis suggests cultivated meat media will require species and cell type optimization. *npj Science of Food, 6*(1), 46. https://doi.org/10.1038/s41538-022-00157-z",
-      "authors": [
-        "O'Neill, E. N.",
-        "Ansel, J. C.",
-        "Kwong, G. A.",
-        "Plastino, M. E.",
-        "Nelson, J.",
-        "Baar, K.",
-        "Block, D. E."
-      ],
-      "authorsDropped": 0,
-      "authorsText": "O'Neill, E. N., Ansel, J. C., Kwong, G. A., Plastino, M. E., Nelson, J., Baar, K., & Block, D. E.",
-      "year": 2022,
-      "title": "Spent media analysis suggests cultivated meat media will require species and cell type optimization",
-      "journal": "npj Science of Food",
-      "doi": "10.1038/s41538-022-00157-z",
-      "codeUrl": null,
-      "dataUrl": null,
-      "isPrimary": false,
-      "methods": [],
-      "areas": [],
-      "hasCode": false,
-      "hasData": false,
-      "slug": "oneill-2022",
-      "topics": [
-        {
-          "slug": "flavor-sensory",
-          "label": "Flavor & sensory prediction",
-          "theme": "sensory-flavor"
-        }
-      ],
-      "citedByOpenAlex": 67,
-      "license": "cc-by",
-      "licenseSource": "auto",
-      "isOa": true
-    },
-    {
       "id": 99,
       "section": "Sensory & Flavor Reference Work",
       "raw": "<a id=\"99\">99</a> Wiener, A., Shudler, M., Levit, A., & Niv, M. Y. (2012). BitterDB: a database of bitter compounds. *Nucleic Acids Research, 40*(D1), D413–D419. https://doi.org/10.1093/nar/gkr755",
@@ -12838,6 +12804,45 @@
       ],
       "citedByOpenAlex": 17,
       "license": "cc-by-nc",
+      "licenseSource": "auto",
+      "isOa": true
+    },
+    {
+      "id": 77,
+      "section": "Metabolic Reference Work",
+      "raw": "<a id=\"77\">77</a> O'Neill, E. N., Ansel, J. C., Kwong, G. A., Plastino, M. E., Nelson, J., Baar, K., & Block, D. E. (2022). Spent media analysis suggests cultivated meat media will require species and cell type optimization. *npj Science of Food, 6*(1), 46. https://doi.org/10.1038/s41538-022-00157-z",
+      "authors": [
+        "O'Neill, E. N.",
+        "Ansel, J. C.",
+        "Kwong, G. A.",
+        "Plastino, M. E.",
+        "Nelson, J.",
+        "Baar, K.",
+        "Block, D. E."
+      ],
+      "authorsDropped": 0,
+      "authorsText": "O'Neill, E. N., Ansel, J. C., Kwong, G. A., Plastino, M. E., Nelson, J., Baar, K., & Block, D. E.",
+      "year": 2022,
+      "title": "Spent media analysis suggests cultivated meat media will require species and cell type optimization",
+      "journal": "npj Science of Food",
+      "doi": "10.1038/s41538-022-00157-z",
+      "codeUrl": null,
+      "dataUrl": null,
+      "isPrimary": false,
+      "methods": [],
+      "areas": [],
+      "hasCode": false,
+      "hasData": false,
+      "slug": "oneill-2022",
+      "topics": [
+        {
+          "slug": "media-optimization",
+          "label": "Media optimization",
+          "theme": "media-growth-factors"
+        }
+      ],
+      "citedByOpenAlex": 67,
+      "license": "cc-by",
       "licenseSource": "auto",
       "isOa": true
     },
@@ -16947,5 +16952,5 @@
     }
   ],
   "scopeNote": "CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall.",
-  "corpusDate": "2026-09-30"
+  "corpusDate": "2026-10-14"
 }

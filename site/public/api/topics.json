@@ -9,8 +9,8 @@
         "areaKey": "tooling",
         "counts": {
           "paper": 97,
-          "software": 54,
-          "database": 59,
+          "software": 55,
+          "database": 58,
           "dataset": 64,
           "total": 274
         },
@@ -80,11 +80,11 @@
         "theme": null,
         "areaKey": "media",
         "counts": {
-          "paper": 30,
+          "paper": 31,
           "software": 17,
           "database": 4,
           "dataset": 36,
-          "total": 87
+          "total": 88
         },
         "tags": [
           "cryopreservation",
@@ -134,9 +134,9 @@
         "theme": null,
         "areaKey": "sensory",
         "counts": {
-          "paper": 75,
+          "paper": 74,
           "software": 27,
-          "database": 24,
+          "database": 25,
           "dataset": 35,
           "total": 161
         },
@@ -259,11 +259,11 @@
         "theme": "sensory-flavor",
         "areaKey": null,
         "counts": {
-          "paper": 52,
+          "paper": 51,
           "software": 5,
           "database": 13,
           "dataset": 11,
-          "total": 81
+          "total": 80
         },
         "tags": []
       },
@@ -304,11 +304,11 @@
         "theme": "media-growth-factors",
         "areaKey": null,
         "counts": {
-          "paper": 9,
+          "paper": 10,
           "software": 17,
           "database": 0,
           "dataset": 11,
-          "total": 37
+          "total": 38
         },
         "tags": []
       },
@@ -366,9 +366,9 @@
         "counts": {
           "paper": 26,
           "software": 0,
-          "database": 22,
+          "database": 21,
           "dataset": 72,
-          "total": 120
+          "total": 119
         },
         "tags": []
       },
@@ -464,6 +464,7 @@
         211,
         287,
         350,
+        77,
         175,
         228,
         232,
@@ -628,7 +629,8 @@
         "coscientist",
         "sbml-systems-biology-markup-language",
         "linkml-linked-data-modeling-language",
-        "project-pisces-standard-flowsheet-format",
+        "project-pisces",
+        "standard-flowsheet-format-sff",
         "biopragmatics-stack"
       ],
       "databases": [
@@ -672,7 +674,6 @@
         "lipid-maps",
         "swisslipids",
         "lipidbank",
-        "pisces-phylogenetic-index-of-seafood-characteristics",
         "atlas-archetype-library-for-alternative-seafood",
         "agris-fao",
         "usda-national-agricultural-library-search",
@@ -802,6 +803,7 @@
         "the-telomerase-database",
         "stemchecker",
         "stemmapper",
+        "pisces-phylogenetic-index-of-seafood-characteristics",
         "gfi-alternative-protein-researcher-directory",
         "gfi-alternative-protein-company-database",
         "gfi-apac-alternative-protein-ecosystem-database",
@@ -899,8 +901,7 @@
         "tabula-sapiens",
         "cz-cellxgene",
         "scbasecount",
-        "sasp-atlas",
-        "atlas-archetype-library-for-alternative-seafood"
+        "sasp-atlas"
       ],
       "datasets": [
         "ds:chickengtex-portal",
@@ -1086,7 +1087,6 @@
         73,
         74,
         75,
-        77,
         99,
         100,
         101,
@@ -1306,7 +1306,8 @@
         "umamimeta",
         "biopep-uwm",
         "plantmoleculartastedb",
-        "aromadb"
+        "aromadb",
+        "pisces-phylogenetic-index-of-seafood-characteristics"
       ],
       "datasets": [
         "ds:nmr-metabolomics-of-plant-and-yeast-based-hydrolysates",
@@ -1878,5 +1879,5 @@
       "datasets": []
     }
   },
-  "corpusDate": "2026-09-30"
+  "corpusDate": "2026-10-14"
 }

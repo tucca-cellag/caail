@@ -870,6 +870,7 @@
 {"id":"sw:sirius-csifingerid","type":"software","slug":"sirius-csifingerid"}
 {"id":"sw:skill-seekers","type":"software","slug":"skill-seekers"}
 {"id":"sw:skyline","type":"software","slug":"skyline"}
+{"id":"sw:standard-flowsheet-format-sff","type":"software","slug":"standard-flowsheet-format-sff"}
 {"id":"sw:stardist","type":"software","slug":"stardist"}
 {"id":"sw:state-cell-eval","type":"software","slug":"state-cell-eval"}
 {"id":"sw:straindesign","type":"software","slug":"straindesign"}

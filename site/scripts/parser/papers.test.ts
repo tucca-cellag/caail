@@ -161,9 +161,9 @@ describe('buildPapersModel — real Papers.md', () => {
     expect(withHasCode).toBe(94);
   });
 
-  it('has 10 refs with an absolute data URL', () => {
+  it('has 12 refs with an absolute data URL', () => {
     const withDataUrl = model.references.filter((r) => r.dataUrl !== null).length;
-    expect(withDataUrl).toBe(11);
+    expect(withDataUrl).toBe(12);
   });
 
   it('has 6 distinct sections including References and Reviews & Perspectives', () => {
