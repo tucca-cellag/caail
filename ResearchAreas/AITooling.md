@@ -34,7 +34,7 @@ Agents focused on the scientific research process itself: retrieving and synthes
 Broad biomedical-reasoning agents designed to handle multiple sub-domains within drug discovery, biomarker discovery, or generalist biomedical research. Distinct from the domain-specific cluster below in that they pitch themselves as horizontal platforms rather than vertical tools.
 
 - [#40 TxAgent](../Papers.md#40) (Gao et al. 2025, Zitnik lab), AI agent for therapeutic reasoning across a universe of 211 biomedical tools.
-- [#49 Biomni](../Papers.md#49) (Huang et al. 2026, Stanford SNAP / Leskovec): general-purpose biomedical AI agent across drug discovery, genomics, and clinical analysis.
+- [#49 Biomni](../Papers.md#49) (Huang et al. 2026a, Stanford SNAP / Leskovec): general-purpose biomedical AI agent across drug discovery, genomics, and clinical analysis.
 - [#94 BRAD](../Papers.md#94) (Pickard et al. 2025, *Bioinformatics*), automatic biomarker discovery and enrichment.
 - [#95 OLAF](../Papers.md#95) (Riffle et al. 2025), Open Life Science Analysis Framework for conversational bioinformatics; agent-pipe-router architecture.
 - [#96 STELLA](../Papers.md#96) (Jin et al. 2025), self-evolving LLM agent for biomedical research.

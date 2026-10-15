@@ -116,7 +116,7 @@ Docs: <https://maximilianb2.github.io/pc-gym/>.
 
 ### [Project PISCES](https://projectpisces.org/)
 
-Summary: Project PISCES (Process Integration & Synthesis using Chemical Engineering Standards) is a hosted platform that harmonizes process flowsheet data for analysis, modeling and design. It offers a curated public database of flowsheets spanning fuels, chemicals, pharmaceuticals, food products and more, private team workspaces, and an AI assistant, Florence, that flags data gaps and proposes fixes for a person to confirm. Its flowsheets use the open [Standard Flowsheet Format](#project-pisces-standard-flowsheet-format), listed separately. For cellular agriculture, it is a place to collect and compare bioprocess flowsheets. The hosted application's site states all rights reserved. Zenodo holds two records for it: a public tool description, which its citation badge links, and a restricted source deposit (citation metadata only, with no public files or licence) at <https://doi.org/10.5281/zenodo.23124934>.
+Summary: Project PISCES (Process Integration & Synthesis using Chemical Engineering Standards) is a hosted platform that harmonizes process flowsheet data for analysis, modeling and design. It offers a curated public database of flowsheets spanning fuels, chemicals, pharmaceuticals, food products and more, private team workspaces, and an AI assistant, Florence, that flags data gaps and proposes fixes for a person to confirm. Its flowsheets use the open [Standard Flowsheet Format](#project-pisces-standard-flowsheet-format), listed separately. For cellular agriculture, it is a place to collect and compare bioprocess flowsheets. The hosted application's site states all rights reserved. Zenodo holds two records for it: a public tool description at <https://doi.org/10.5281/zenodo.23124562> and a restricted source deposit (citation metadata only, with no public files or licence) at <https://doi.org/10.5281/zenodo.23124934>.
 
 ## Metabolic Modeling & Strain Design
 
@@ -486,7 +486,7 @@ Project page: <https://aiscientist.tools/>. Docs: <https://zitniklab.hms.harvard
 
 ### [Biomni](https://github.com/snap-stanford/Biomni)
 
-Summary: A general-purpose biomedical AI agent from Stanford's SNAP lab (Leskovec group) that performs autonomous multi-step research workflows across drug discovery, genomics, clinical analysis, and adjacent biomedical domains. Companion to the Huang et al. 2026 paper in *Science* ([Papers.md ref #49](./Papers.md#49)).
+Summary: A general-purpose biomedical AI agent from Stanford's SNAP lab (Leskovec group) that performs autonomous multi-step research workflows across drug discovery, genomics, clinical analysis, and adjacent biomedical domains. Companion to the Huang et al. 2026a paper in *Science* ([Papers.md ref #49](./Papers.md#49)).
 
 Project page: <https://biomni.stanford.edu>. AWS tutorial (Biomni + Bedrock AgentCore): <https://aws.amazon.com/blogs/machine-learning/build-a-biomedical-research-agent-with-biomni-tools-and-amazon-bedrock-agentcore-gateway/>.
 
@@ -565,7 +565,7 @@ A PyTorch `IterableDataset` for efficient deep-learning training on single-cell 
 
 ### [TranscriptFormer](https://virtualcellmodels.cziscience.com/model/transcriptformer)
 
-A family of generative foundation models for single-cell transcriptomics from the Chan Zuckerberg Initiative, trained on up to 112 million cells spanning 1.53 billion years of evolution across 12 species (Pearce et al. 2026, *Science*; see [Papers.md ref #92](./Papers.md#92)). Provides state-of-the-art performance on cell-type classification and supports cross-species reasoning over transcriptomic data: the TF-Metazoa model's training species include chicken and zebrafish, pig is among the out-of-distribution species with pre-generated protein embeddings, and species outside that list, such as cattle or salmon, need their protein embeddings generated first, per the model's [README](https://github.com/czi-ai/transcriptformer) (see the per-species pages in [`Datasets/`](./Datasets/) for the cell-ag-relevant data substrate). Distributed via CZI's Virtual Cells Platform with versioned releases.
+A family of generative foundation models for single-cell transcriptomics from the Chan Zuckerberg Initiative, trained on up to 112 million cells spanning 1.53 billion years of evolution across 12 species (Pearce et al. 2026, *Science*; see [Papers.md ref #92](./Papers.md#92)). Provides state-of-the-art performance on cell-type classification and supports cross-species reasoning over transcriptomic data. Its coverage of cell-ag species varies, per the model's [README](https://github.com/czi-ai/transcriptformer). Chicken, with zebrafish, is among the TF-Metazoa model's training species. Pig is supported only as an out-of-distribution species with pre-generated protein embeddings. Species without embeddings, such as cattle or salmon, need them generated first (see the per-species pages in [`Datasets/`](./Datasets/) for the cell-ag-relevant data substrate). Distributed via CZI's Virtual Cells Platform with versioned releases.
 
 Quickstart docs: <https://virtualcellmodels.cziscience.com/quickstart/transcriptformer-quickstart>. Announcement: <https://chanzuckerberg.com/blog/transcriptformer-model-overview/>.
 
