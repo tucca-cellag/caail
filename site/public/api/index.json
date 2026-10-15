@@ -1,6 +1,6 @@
 {
   "name": "CAAIL: Cellular Agriculture AI Library",
-  "corpusDate": "2026-09-30",
+  "corpusDate": "2026-10-15",
   "status": "beta",
   "placementsUnderReview": true,
   "canonical": "https://github.com/tucca-cellag/caail",
@@ -13,8 +13,8 @@
     "papersAllSections": 348,
     "papersBySection": {
       "References": 230,
-      "Sensory & Flavor Reference Work": 13,
-      "Metabolic Reference Work": 8,
+      "Sensory & Flavor Reference Work": 12,
+      "Metabolic Reference Work": 9,
       "Foundational Methods Reference Work": 9,
       "Livestock Functional Genomics Reference Work": 12,
       "Reviews & Perspectives": 76
@@ -26,9 +26,9 @@
     "datasetsCurated": 62,
     "datasetsInventoryRows": 176,
     "datasetsTotal": 238,
-    "software": 142,
+    "software": 143,
     "databases": 150,
-    "catalogTotal": 292,
+    "catalogTotal": 293,
     "fieldReportEditions": 9
   },
   "endpoints": [

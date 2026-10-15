@@ -24,11 +24,11 @@ This document presents the core research papers at the intersection of Cellular 
 | [Foundation Models: Cell-State & Perturbation Prediction](./Taxonomy.md#foundation-models-cell-state--perturbation-prediction) |  | [Adduri et al. 2025](#57)<br>[Dong et al. 2026](#124)<br>[Rizvi et al. 2026](#120) |  |  |  |  |  | [Cui et al. 2024](#117) |
 | [Foundation Models (other modalities)](./Taxonomy.md#foundation-models-other-modalities) |  |  |  |  | [He et al. 2025](#267)<br>[Charoenkwan et al. 2021](#270) |  |  | [Sypetkowski et al. 2026](#42)<br>[Ding et al. 2026](#91)<br>[Queen et al. 2025](#224) |
 | [Scientific Literature & Discovery Agents](./Taxonomy.md#scientific-literature--discovery-agents) |  |  |  |  |  |  |  | [Lála et al. 2023](#44)<br>[Lu et al. 2024](#45)<br>[Skarlinski et al. 2024](#46)<br>[Yamada et al. 2025](#47)<br>[Gottweis et al. 2026](#153)<br>[Ghareeb et al. 2026](#154)<br>[Aygün et al. 2026](#166)<br>[Feng et al. 2025](#221)<br>[Gandhi et al. 2025](#222)<br>[Ghafarollahi & Buehler 2025](#273) |
-| [General-Purpose Biomedical Agents](./Taxonomy.md#general-purpose-biomedical-agents) |  |  |  |  |  |  |  | [Dong et al. 2024](#98)<br>[Huang et al. 2025](#49)<br>[Pickard et al. 2025](#94)<br>[Riffle et al. 2025](#95)<br>[Jin et al. 2025](#96)<br>[Zhang et al. 2025](#223)<br>[Xiao et al. 2026](#237)<br>[Swanson et al. 2025](#272) |
+| [General-Purpose Biomedical Agents](./Taxonomy.md#general-purpose-biomedical-agents) |  |  |  |  |  |  |  | [Dong et al. 2024](#98)<br>[Huang et al. 2026a](#49)<br>[Pickard et al. 2025](#94)<br>[Riffle et al. 2025](#95)<br>[Jin et al. 2025](#96)<br>[Zhang et al. 2025](#223)<br>[Xiao et al. 2026](#237)<br>[Swanson et al. 2025](#272) |
 | [Chemistry / Synthesis Agents](./Taxonomy.md#chemistry--synthesis-agents) |  |  |  |  |  |  |  | [Boiko et al. 2023](#70)<br>[Bran et al. 2024](#71) |
 | [Domain-Specific Biomedical Agents](./Taxonomy.md#domain-specific-biomedical-agents) |  | [Hao et al. 2025](#97)<br>[Roohani et al. 2025a](#125)<br>[Tang et al. 2026](#93)<br>[Qu et al. 2025](#276) |  |  |  |  |  | [Maeda & Kurata 2023](#69)<br>[Li et al. 2024](#68)<br>[Lee et al. 2025](#43)<br>[Wehling et al. 2025](#50)<br>[Singh et al. 2025](#167)<br>[Ying et al. 2025](#54)<br>[Wang et al. 2025a](#56)<br>[Sui et al. 2026](#51)<br>[Gao et al. 2025a](#40)<br>[Yu et al. 2026](#90)<br>[Youngblut et al. 2025](#126)<br>[Ghafarollahi & Buehler 2024](#275)<br>[Qu et al. 2025](#276)<br>[Zhou et al. 2024](#277) |
 | [Robot Scientists & Lab Automation](./Taxonomy.md#robot-scientists--lab-automation) |  | [Singh et al. 2023](#66)<br>[Kanda et al. 2022](#16) | [Wang et al. 2025b](#61) |  |  |  |  | [King et al. 2004](#182)<br>[Tiukova et al. 2024](#64)<br>[Brunnsåker et al. 2025](#65)<br>[Qiu et al. 2025](#62)<br>[Ghareeb et al. 2026](#154)<br>[Darvish et al. 2025](#274) |
-| [Benchmarks & Evaluation Frameworks](./Taxonomy.md#benchmarks--evaluation-frameworks) | [Parsaee et al. 2026](#350) | [Brouwer et al. 2026](#89)<br>[Chevalley et al. 2025](#127)<br>[Notin et al. 2023](#148)<br>[Duan et al. 2025](#149)<br>[Nair et al. 2026](#150)<br>[Huang et al. 2026](#164)<br>[Adduri et al. 2025](#57)<br>[Miller et al. 2025](#225) |  | [Yang 2026](#349) |  |  |  | [Sadhuka et al. 2025](#55)<br>[Mitchener et al. 2025](#108)<br>[Bushuiev et al. 2024](#109)<br>[Sze & Hassoun 2024](#110)<br>[Laurent et al. 2024](#146)<br>[Gu et al. 2025](#147)<br>[Jimenez et al. 2024](#155)<br>[Rein et al. 2023](#156)<br>[Wang et al. 2024](#157)<br>[Phan et al. 2026](#158)<br>[Wang et al. 2026a](#159)<br>[Liu et al. 2026](#53)<br>[Ahmed et al. 2026](#239)<br>[Li & Ho 2026](#241)<br>[Miller et al. 2025](#225) |
+| [Benchmarks & Evaluation Frameworks](./Taxonomy.md#benchmarks--evaluation-frameworks) | [Parsaee et al. 2026](#350) | [Brouwer et al. 2026](#89)<br>[Chevalley et al. 2025](#127)<br>[Notin et al. 2023](#148)<br>[Duan et al. 2025](#149)<br>[Nair et al. 2026](#150)<br>[Huang et al. 2026b](#164)<br>[Adduri et al. 2025](#57)<br>[Miller et al. 2025](#225) |  | [Yang 2026](#349) |  |  |  | [Sadhuka et al. 2025](#55)<br>[Mitchener et al. 2025](#108)<br>[Bushuiev et al. 2024](#109)<br>[Sze & Hassoun 2024](#110)<br>[Laurent et al. 2024](#146)<br>[Gu et al. 2025](#147)<br>[Jimenez et al. 2024](#155)<br>[Rein et al. 2023](#156)<br>[Wang et al. 2024](#157)<br>[Phan et al. 2026](#158)<br>[Wang et al. 2026a](#159)<br>[Liu et al. 2026](#53)<br>[Ahmed et al. 2026](#239)<br>[Li & Ho 2026](#241)<br>[Miller et al. 2025](#225) |
 | [Comparative Studies](./Taxonomy.md#comparative-studies) |  |  | [Roell et al. 2022](#32)<br>[Xu et al. 2025](#208)<br>[Park et al. 2023](#253) | [Rafieyan et al. 2024](#20) |  |  |  |  |
 | [Agent Infrastructure (Frameworks, KGs, Protocols)](./Taxonomy.md#agent-infrastructure-frameworks-kgs-protocols) |  |  |  |  |  |  |  | [Gao et al. 2025b](#41)<br>[Lobentanzer et al. 2025](#48)<br>[Ruscone et al. 2025](#67)<br>[Kuehl et al. 2025](#133)<br>[Narayanan et al. 2024](#160)<br>[Qiao et al. 2026](#162)<br>[Wang et al. 2025b](#61)<br>[Tang et al. 2026](#93)<br>[Matsumoto et al. 2025](#219)<br>[Glen et al. 2025](#220) |
 
@@ -222,7 +222,7 @@ technique that text mentions. `Taxonomy.md`'s methods preamble states that rule 
 
 > **Data**: https://doi.org/10.5281/zenodo.10777945
 
-<a id="49">49</a> Huang, K., Zhang, S., Wang, H., Qu, Y., Lu, Y., Roohani, Y., Li, R., Qiu, L., Li, G., Zhang, J., Yin, D., Marwaha, S., Carter, J. N., Zhou, X., Wheeler, M., Bernstein, J. A., Wang, M., He, P., Zhou, J., Snyder, M., Cong, L., Regev, A., & Leskovec, J. (2025). *Biomni: A General-Purpose Biomedical AI Agent.* bioRxiv. https://doi.org/10.1101/2025.05.30.656746
+<a id="49">49</a> Huang, K., Zhang, S., Wang, H., Qu, Y., Lu, Y., Li, R., Roohani, Y., Qiu, L., Cao, S., Li, G., Zhang, J., Yin, D., Wierenga, R., Kavi, D., Liu, S., She, T., Marwaha, S., Carter, J. N., Zhou, X., Wheeler, M. T., Bernstein, J. A., Wang, M., He, P., Zhou, J., Snyder, M. P., Cong, L., Regev, A., & Leskovec, J. (2026). Autonomous biomedical research with an artificial intelligence agent. *Science, 393*(6813), eadz4351. https://doi.org/10.1126/science.adz4351
 
 > **Code**: https://github.com/snap-stanford/Biomni
 
@@ -542,6 +542,8 @@ technique that text mentions. `Taxonomy.md`'s methods preamble states that rule 
 
 <a id="218">218</a> Yang, L., Wu, Z., Zhu, H., Ding, S., & Zhou, G. (2025). A method for evaluating the degree of adipogenic differentiation of porcine cells cultured in suspension based on deep learning. *Food Research International, 212*, 116324. https://doi.org/10.1016/j.foodres.2025.116324
 
+> **Corrigendum**: https://doi.org/10.1016/j.foodres.2025.116857
+
 <a id="219">219</a> Matsumoto, N., Choi, H., Moran, J., Hernandez, M. E., Venkatesan, M., Li, X., Chang, J.-H., Wang, P., & Moore, J. H. (2025). ESCARGOT: an AI agent leveraging large language models, dynamic graph of thoughts, and biomedical knowledge graphs for enhanced reasoning. *Bioinformatics, 41*(2), btaf031. https://doi.org/10.1093/bioinformatics/btaf031
 
 > **Code**: https://github.com/EpistasisLab/ESCARGOT
@@ -589,6 +591,8 @@ technique that text mentions. `Taxonomy.md`'s methods preamble states that rule 
 > **Code**: https://github.com/mixOmicsTeam/mixOmics
 
 <a id="249">249</a> Ndahiro, N., Ma, E., Bertalan, T., Donohue, M., Kevrekidis, Y., & Betenbaugh, M. (2025). Integration of Bayesian optimization and solution thermodynamics to optimize media design for mammalian biomanufacturing. *iScience, 28*(8), 112944. https://doi.org/10.1016/j.isci.2025.112944
+
+> **Data**: https://pmc.ncbi.nlm.nih.gov/articles/PMC12308009/#mmc2
 
 <a id="250">250</a> Hashizume, T., Baba, K., Matsuo, N., & Ying, B.-W. (2026). Sequential active learning for medium optimization in mAb production. *Journal of Bioscience and Bioengineering, 141*(3), 210–220. https://doi.org/10.1016/j.jbiosc.2025.12.002
 
@@ -764,8 +768,6 @@ This section catalogs foundational primary research and methodology papers in se
 
 <a id="75">75</a> Lew, E., Yuen, J., Zhang, K., Fuller, K., Frost, S., & Kaplan, D. L. (2024). Chemical and sensory analyses of cultivated pork fat tissue as a flavor enhancer for meat alternatives. *Scientific Reports, 14*(1), 17643. https://doi.org/10.1038/s41598-024-68247-4
 
-<a id="77">77</a> O'Neill, E. N., Ansel, J. C., Kwong, G. A., Plastino, M. E., Nelson, J., Baar, K., & Block, D. E. (2022). Spent media analysis suggests cultivated meat media will require species and cell type optimization. *npj Science of Food, 6*(1), 46. https://doi.org/10.1038/s41538-022-00157-z
-
 <a id="99">99</a> Wiener, A., Shudler, M., Levit, A., & Niv, M. Y. (2012). BitterDB: a database of bitter compounds. *Nucleic Acids Research, 40*(D1), D413–D419. https://doi.org/10.1093/nar/gkr755
 
 <a id="100">100</a> Dagan-Wiener, A., Di Pizio, A., Nissim, I., Bahia, M. S., Dubovski, N., Margulis, E., & Niv, M. Y. (2019). BitterDB: taste ligands and receptors database in 2019. *Nucleic Acids Research, 47*(D1), D1179–D1185. https://doi.org/10.1093/nar/gky974
@@ -786,7 +788,9 @@ This section catalogs foundational primary research and methodology papers in se
 
 ## Metabolic Reference Work
 
-This section catalogs foundational primary research papers describing genome-scale metabolic models (GEMs) and related metabolic infrastructure for cellular agriculture. As with the Sensory & Flavor Reference Work above, entries here are primary research where the contribution is the model / data resource itself rather than an applied AI/ML method; the AI/ML work building on these resources lives in the matrix above. Each entry below is the canonical citation for the corresponding genome-scale metabolic model, catalogued on its species page in the [Datasets/](./Datasets/) directory (BtaSBML2986 on [Cow.md](./Datasets/Cow.md), iES1300 on [Chicken.md](./Datasets/Chicken.md), pcPigMNet2025 and iSsus3744 on [Pig.md](./Datasets/Pig.md), SALARECON on [Fish.md](./Datasets/Fish.md), and the iCHO and Recon3D/Human1 reference models on [CHOReference.md](./Datasets/CHOReference.md) and [HumanReference.md](./Datasets/HumanReference.md)). Same numeric ID counter as the primary references; no matrix participation.
+This section catalogs foundational primary research papers describing genome-scale metabolic models (GEMs) and related metabolic infrastructure for cellular agriculture. As with the Sensory & Flavor Reference Work above, entries here are primary research that does not itself apply an AI/ML method; the AI/ML work building on these resources lives in the matrix above. Most entries below are the canonical citation for the corresponding genome-scale metabolic model, catalogued on its species page in the [Datasets/](./Datasets/) directory (BtaSBML2986 on [Cow.md](./Datasets/Cow.md), iES1300 on [Chicken.md](./Datasets/Chicken.md), pcPigMNet2025 and iSsus3744 on [Pig.md](./Datasets/Pig.md), SALARECON on [Fish.md](./Datasets/Fish.md), and the iCHO and Recon3D/Human1 reference models on [CHOReference.md](./Datasets/CHOReference.md) and [HumanReference.md](./Datasets/HumanReference.md)). The section also holds experimental work on the nutrient utilization such models describe. Same numeric ID counter as the primary references; no matrix participation.
+
+<a id="77">77</a> O'Neill, E. N., Ansel, J. C., Kwong, G. A., Plastino, M. E., Nelson, J., Baar, K., & Block, D. E. (2022). Spent media analysis suggests cultivated meat media will require species and cell type optimization. *npj Science of Food, 6*(1), 46. https://doi.org/10.1038/s41538-022-00157-z
 
 <a id="81">81</a> Lee, J., Kim, J., Bae, H., Kim, M., Jung, B., Kim, J., Lee, S., & Kim, H. (2024). *Multi-omics analysis and genome-scale metabolic reconstruction of cattle Bos taurus for optimal production of cultured meat.* bioRxiv. https://doi.org/10.1101/2024.12.09.627468
 
@@ -961,6 +965,8 @@ This section lists review articles, position papers, and commentaries that surve
 <a id="293">293</a> Humbird, D. (2021). Scale-up economics for cultured meat. *Biotechnology and Bioengineering, 118*(8), 3239–3250. https://doi.org/10.1002/bit.27848
 
 <a id="294">294</a> Risner, D., Li, F., Fell, J. S., Pace, S. A., Siegel, J. B., Tagkopoulos, I., & Spang, E. S. (2021). Preliminary techno-economic assessment of animal cell-based meat. *Foods, 10*(1), 3. https://doi.org/10.3390/foods10010003
+
+> **Code**: https://github.com/IBPA/IBPA-Collection-of-Reproducible-Code-and-Results/tree/master/2020_Artificial_Meat
 
 <a id="295">295</a> Negulescu, P. G., Risner, D., Spang, E. S., Sumner, D., Block, D., Nandi, S., & McDonald, K. A. (2023). Techno-economic modeling and assessment of cultivated meat: Impact of production bioreactor scale. *Biotechnology and Bioengineering, 120*(4), 1055–1067. https://doi.org/10.1002/bit.28324
 

@@ -15,7 +15,6 @@
 {"item_id":"db:aromadb","topic_id":"topic:sensory-flavor"}
 {"item_id":"db:arrayexpress-biostudies","topic_id":"topic:ai-methods-tooling"}
 {"item_id":"db:atlas-archetype-library-for-alternative-seafood","topic_id":"topic:ai-methods-tooling"}
-{"item_id":"db:atlas-archetype-library-for-alternative-seafood","topic_id":"topic:single-cell-atlases"}
 {"item_id":"db:bgee","topic_id":"topic:cell-lines-engineering"}
 {"item_id":"db:bgee","topic_id":"topic:single-cell-atlases"}
 {"item_id":"db:bigg-models","topic_id":"topic:metabolic-modeling"}
@@ -168,7 +167,8 @@
 {"item_id":"db:pigbiobank","topic_id":"topic:single-cell-atlases"}
 {"item_id":"db:piggtex-portal","topic_id":"topic:cell-lines-engineering"}
 {"item_id":"db:piggtex-portal","topic_id":"topic:single-cell-atlases"}
-{"item_id":"db:pisces-phylogenetic-index-of-seafood-characteristics","topic_id":"topic:ai-methods-tooling"}
+{"item_id":"db:pisces-phylogenetic-index-of-seafood-characteristics","topic_id":"topic:cell-lines-engineering"}
+{"item_id":"db:pisces-phylogenetic-index-of-seafood-characteristics","topic_id":"topic:sensory-flavor"}
 {"item_id":"db:plantmoleculartastedb","topic_id":"topic:flavor-sensory"}
 {"item_id":"db:plantmoleculartastedb","topic_id":"topic:sensory-flavor"}
 {"item_id":"db:pride","topic_id":"topic:ai-methods-tooling"}
@@ -1364,7 +1364,8 @@
 {"item_id":"paper:74","topic_id":"topic:flavor-sensory"}
 {"item_id":"paper:75","topic_id":"topic:flavor-sensory"}
 {"item_id":"paper:76","topic_id":"topic:flavor-sensory"}
-{"item_id":"paper:77","topic_id":"topic:flavor-sensory"}
+{"item_id":"paper:77","topic_id":"topic:media-optimization"}
+{"item_id":"paper:77","topic_id":"topic:metabolic-modeling"}
 {"item_id":"paper:78","topic_id":"topic:flavor-sensory"}
 {"item_id":"paper:8","topic_id":"topic:cell-lines-engineering"}
 {"item_id":"paper:8","topic_id":"topic:single-cell-atlases"}
@@ -1587,7 +1588,10 @@
 {"item_id":"sw:pc-gym","topic_id":"topic:bioreactor-scale-up"}
 {"item_id":"sw:physicell","topic_id":"topic:bioprocess-scale-up"}
 {"item_id":"sw:physicell","topic_id":"topic:bioreactor-scale-up"}
+{"item_id":"sw:project-pisces","topic_id":"topic:ai-methods-tooling"}
+{"item_id":"sw:project-pisces","topic_id":"topic:bioprocess-scale-up"}
 {"item_id":"sw:project-pisces-standard-flowsheet-format","topic_id":"topic:ai-methods-tooling"}
+{"item_id":"sw:project-pisces-standard-flowsheet-format","topic_id":"topic:bioprocess-scale-up"}
 {"item_id":"sw:protein-language-models","topic_id":"topic:cell-line-engineering"}
 {"item_id":"sw:protein-language-models","topic_id":"topic:media-growth-factors"}
 {"item_id":"sw:protein-language-models","topic_id":"topic:media-optimization"}

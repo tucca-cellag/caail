@@ -846,6 +846,7 @@
 {"id":"sw:paperqa","type":"software","slug":"paperqa"}
 {"id":"sw:pc-gym","type":"software","slug":"pc-gym"}
 {"id":"sw:physicell","type":"software","slug":"physicell"}
+{"id":"sw:project-pisces","type":"software","slug":"project-pisces"}
 {"id":"sw:project-pisces-standard-flowsheet-format","type":"software","slug":"project-pisces-standard-flowsheet-format"}
 {"id":"sw:protein-language-models","type":"software","slug":"protein-language-models"}
 {"id":"sw:proteinmpnn","type":"software","slug":"proteinmpnn"}

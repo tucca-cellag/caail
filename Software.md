@@ -8,7 +8,7 @@ This library collects open-source tools that apply computational methods and AI 
 
 ### [AlphaFold](https://github.com/google-deepmind/alphafold)
 
-Summary: Predicts the 3D structure of proteins from their amino acid sequence using deep learning. Can be used for design and engineering of cost-effective recombinant growth factors and signaling molecules. Predicting protein structure helps optimize stability, activity, and binding affinity, reducing the high cost associated with media components.
+Summary: Predicts the 3D structure of proteins from their amino acid sequence using deep learning. Can be used for design and engineering of cost-effective recombinant growth factors and signaling molecules. Predicting protein structure helps optimize stability, activity, and binding affinity, reducing the high cost associated with media components. The code is Apache-2.0; the model parameters are released separately under CC BY 4.0.
 
 ### [Protein Language Models](https://github.com/ISYSLAB-HUST/Protein-Language-Models)
 
@@ -20,11 +20,11 @@ Summary: Search large protein databases using monomers and multimers. Can be use
 
 ### [amii-cell-ag-tools](https://github.com/Amii-Applied-AI/amii-cell-ag-tools)
 
-Summary: Open-source applied AI research code from the Alberta Machine Intelligence Institute (Amii) targeting cellular agriculture, hosted under the `Amii-Applied-AI` GitHub organization. The repository collects two Python subprojects: `protein-thermostability-data-tools` (code used in the development of a public protein thermostability dataset) and `active-learning-for-cell-media` (active-learning analysis applied to cell media optimization). MIT-licensed. Companion to [Papers.md ref #350](./Papers.md#350).
+Summary: Open-source applied AI research code from the Alberta Machine Intelligence Institute (Amii) targeting cellular agriculture, hosted under the `Amii-Applied-AI` GitHub organization. The repository collects two Python subprojects: `protein-thermostability-data-tools` (code used in the development of a public protein thermostability dataset) and `active-learning-for-cell-media` (active-learning analysis applied to cell media optimization). MIT-licensed. Companion to [Papers.md ref #350](./Papers.md#350). Interactive active-learning benchmarks for cell media optimization (Hide-the-Label and Open Race) are published at <https://amii-applied-ai.github.io/amii-cell-ag-tools/>. The cell-media optimization code is archived on Zenodo at <https://doi.org/10.5281/zenodo.19528838>.
 
 ### [ESMFold](https://github.com/facebookresearch/esm)
 
-Summary: An end-to-end single-sequence protein structure predictor built on the ESM-2 protein language model: it predicts structure directly from one sequence with no multiple-sequence alignment, avoiding the alignment search that MSA-dependent predictors require. For cellular agriculture, useful for quickly validating the fold of engineered growth-factor analogs and other recombinant media proteins. (The `facebookresearch/esm` repository also hosts the ESM-2 / ESM-1b protein language models.)
+Summary: An end-to-end single-sequence protein structure predictor built on the ESM-2 protein language model: it predicts structure directly from one sequence with no multiple-sequence alignment, avoiding the alignment search that MSA-dependent predictors require. For cellular agriculture, useful for quickly validating the fold of engineered growth-factor analogs and other recombinant media proteins. (The `facebookresearch/esm` repository, which also hosts the ESM-2 / ESM-1b protein language models, is archived and read-only.)
 
 ### [ColabFold](https://github.com/sokrypton/ColabFold)
 
@@ -113,6 +113,10 @@ Docs: <https://computational-biology-aachen.github.io/MxlPy/>.
 Summary: A library of Gymnasium-style reinforcement-learning environments for process control, providing simulated reactor and separation systems (CSTR, multistage extraction column, and others) with configurable setpoints, disturbances, and constraints for benchmarking RL controllers. Gives cell-ag process-control work a standardized testbed for training and comparing RL policies for bioreactor regulation ([Bloor et al. 2024](https://doi.org/10.48550/arXiv.2410.22093), *arXiv*).
 
 Docs: <https://maximilianb2.github.io/pc-gym/>.
+
+### [Project PISCES](https://projectpisces.org/)
+
+Summary: Project PISCES (Process Integration & Synthesis using Chemical Engineering Standards) is a hosted platform that harmonizes process flowsheet data for analysis, modeling and design. It offers a curated public database of flowsheets spanning fuels, chemicals, pharmaceuticals, food products and more, private team workspaces, and an AI assistant, Florence, that flags data gaps and proposes fixes for a person to confirm. Its flowsheets use the open [Standard Flowsheet Format](#project-pisces-standard-flowsheet-format), listed separately. For cellular agriculture, it is a place to collect and compare bioprocess flowsheets. The hosted application's site states all rights reserved.
 
 ## Metabolic Modeling & Strain Design
 
@@ -482,7 +486,7 @@ Project page: <https://aiscientist.tools/>. Docs: <https://zitniklab.hms.harvard
 
 ### [Biomni](https://github.com/snap-stanford/Biomni)
 
-Summary: A general-purpose biomedical AI agent from Stanford's SNAP lab (Leskovec group) that performs autonomous multi-step research workflows across drug discovery, genomics, clinical analysis, and adjacent biomedical domains. Companion to the Huang et al. 2025 paper ([Papers.md ref #49](./Papers.md#49)).
+Summary: A general-purpose biomedical AI agent from Stanford's SNAP lab (Leskovec group) that performs autonomous multi-step research workflows across drug discovery, genomics, clinical analysis, and adjacent biomedical domains. Companion to the Huang et al. 2026a paper in *Science* ([Papers.md ref #49](./Papers.md#49)).
 
 Project page: <https://biomni.stanford.edu>. AWS tutorial (Biomni + Bedrock AgentCore): <https://aws.amazon.com/blogs/machine-learning/build-a-biomedical-research-agent-with-biomni-tools-and-amazon-bedrock-agentcore-gateway/>.
 
@@ -518,7 +522,7 @@ Summary: A gymnasium of language-agent environments for challenging scientific t
 
 ### [Finch](https://github.com/Future-House/finch)
 
-Summary: An Aviary-based data-science agent that operates inside Jupyter notebooks, also from [FutureHouse](https://www.futurehouse.org/). It plans and executes notebook-based analyses, pairing the [Aviary](#aviary) environment with the kind of exploratory bioinformatics work (single-cell exploration, media-response analysis) that cell-ag teams increasingly delegate to notebook agents. Apache-2.0; no companion paper at time of curation.
+Summary: An Aviary-based data-science agent that operates inside Jupyter notebooks, also from [FutureHouse](https://www.futurehouse.org/). It plans and executes notebook-based analyses, pairing the [Aviary](#aviary) environment with the kind of exploratory bioinformatics work (single-cell exploration, media-response analysis) that cell-ag teams increasingly delegate to notebook agents. Finch produced the agent trajectories for the BixBench benchmark ([Papers.md ref #108](./Papers.md#108)), and Edison Scientific's platform offers a hosted Data Analysis job under its name ([Edison client documentation](https://github.com/EdisonScientific/edison-client-docs)). Apache-2.0.
 
 ### [K-Dense-AI](https://github.com/K-Dense-AI)
 
@@ -561,7 +565,7 @@ A PyTorch `IterableDataset` for efficient deep-learning training on single-cell 
 
 ### [TranscriptFormer](https://virtualcellmodels.cziscience.com/model/transcriptformer)
 
-A family of generative foundation models for single-cell transcriptomics from the Chan Zuckerberg Initiative, trained on up to 112 million cells spanning 1.53 billion years of evolution across 12 species (Pearce et al. 2026, *Science*; see [Papers.md ref #92](./Papers.md#92)). Provides state-of-the-art performance on cell-type classification and supports cross-species reasoning over transcriptomic data: directly relevant to cell-ag for translating biological knowledge between bovine, porcine, chicken, salmonid, and other livestock cells where annotated reference data is sparse (see the per-species pages in [`Datasets/`](./Datasets/) for the cell-ag-relevant data substrate). Distributed via CZI's Virtual Cells Platform with versioned releases.
+A family of generative foundation models for single-cell transcriptomics from the Chan Zuckerberg Initiative, trained on up to 112 million cells spanning 1.53 billion years of evolution across 12 species (Pearce et al. 2026, *Science*; see [Papers.md ref #92](./Papers.md#92)). Provides state-of-the-art performance on cell-type classification and supports cross-species reasoning over transcriptomic data. Its coverage of cell-ag species varies, per the model's [README](https://github.com/czi-ai/transcriptformer). Chicken, with zebrafish, is among the TF-Metazoa model's training species. Pig is supported only as an out-of-distribution species with pre-generated protein embeddings. Species without embeddings, such as cattle or salmon, need them generated first (see the per-species pages in [`Datasets/`](./Datasets/) for the cell-ag-relevant data substrate). Distributed via CZI's Virtual Cells Platform with versioned releases.
 
 Quickstart docs: <https://virtualcellmodels.cziscience.com/quickstart/transcriptformer-quickstart>. Announcement: <https://chanzuckerberg.com/blog/transcriptformer-model-overview/>.
 
@@ -645,9 +649,9 @@ Summary: The de-facto XML-based standard for representing computational models o
 
 Summary: A schema language for authoring, validating, and transforming structured data models, with first-class support for ontology terms, code generation across languages, and export to JSON-Schema / SHACL / OWL. Increasingly used to define machine-readable metadata schemas for biological datasets and knowledge graphs, the structured backbone that agentic AI systems need in order to reason reliably over cell-ag data resources.
 
-### [Project PISCES (Standard Flowsheet Format)](https://projectpisces.org/)
+### [Project PISCES (Standard Flowsheet Format)](https://github.com/sustainability-software-lab/pisces-standard-flowsheet-format)
 
-Summary: Project PISCES (Process Integration & Synthesis using Chemical Engineering Standards) standardizes process flowsheet data into a machine-readable Standard Flowsheet Format (SFF) for AI-powered knowledge extraction and analysis. For cellular agriculture, a standardized flowsheet format is the missing substrate for AI-assisted bioprocess design, scale-up modeling, and techno-economic analysis, letting agents reason over cultivated-meat process designs the way they reason over SBML metabolic models. SFF documentation: <https://projectpisces.org/?page=sff-docs>.
+Summary: The Standard Flowsheet Format (SFF) is a JSON-based standard for representing chemical and bioprocess flowsheets as directed graphs (unit operations as nodes, streams as edges), so that designs are portable across process simulators. The repository ships the schema, a validator, a BioSTEAM exporter and a reference corpus of flowsheets, which [Project PISCES](#project-pisces) consumes. For cellular agriculture, it gives bioprocess designs a machine-readable form; Project PISCES uses it to build its flowsheet database and to train an LLM-based pipeline that extracts flowsheets from the literature. MIT-licensed. Documentation: <https://pisces-standard-flowsheet-format.readthedocs.io/>.
 
 Process-flowsheet background (what SFF standardizes): for readers approaching this from the AI / biology side, the [LibreTexts *Foundations of Chemical and Biological Engineering* chapter on chemical processes and process diagrams](https://eng.libretexts.org/Bookshelves/Chemical_Engineering/Foundations_of_Chemical_and_Biological_Engineering_I_(Verret_Qiao_Barghout)/01%3A_Introduction_to_Chemical_Processes_and_Process_Diagrams) and the [ScienceDirect "Flowsheet" topic overview](https://www.sciencedirect.com/topics/chemical-engineering/flowsheet) introduce the flowsheet concept and its notation.
 

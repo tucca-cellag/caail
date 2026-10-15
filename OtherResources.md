@@ -31,11 +31,11 @@ CAAIL's "adjacent universe": complementary research centers, consortia, and conv
 
 * [Integrative Center for Alternative Meat and Protein (iCAMP)](https://icamp.ucdavis.edu/): a UC Davis–led multi-institutional center for cultivated-meat and alternative-protein research and scale-up.
 * [National Institute for Cellular Agriculture (NICA)](https://sites.tufts.edu/usdacellag/about/): a USDA-funded national research consortium housed at Tufts University (TUCCA), coordinating cultivated-protein research and workforce training across partner institutions.
-* [Bezos Centre for Sustainable Protein (Imperial College London)](https://www.imperial.ac.uk/news/articles/2026/science-leaders-celebrate-lab-opening-for-bezos-centre-for-sustainable-protein/): a Bezos Earth Fund–backed sustainable-protein research hub at Imperial College London, spanning AI/ML, fermentation, and cell-based approaches.
+* [Bezos Centre for Sustainable Protein (Imperial College London)](https://bezoscentre.co.uk/): a sustainable-protein research hub at Imperial College London, supported by the Bezos Earth Fund and UKRI, spanning fermentation, cultivated meat, and plant and algae protein among other research platforms.
 
 ### New Harvest initiatives
 
-* [Cultured Meat Safety Initiative (CMSI)](https://www.new-harvest.org/cultured-meat-safety-initiative-cmsi): a joint New Harvest / Vireo Advisors initiative convening stakeholders on the safety and regulatory science of cultivated products; outputs (datasets, guidance documents) are cataloguable as they are released.
+* [Cultured Meat Safety Initiative (CMSI)](https://www.culturedmeatsafety.com/): a joint New Harvest / Vireo Advisors initiative convening stakeholders on the safety and regulatory science of cultivated products; it publishes its research outputs on its [Publications](https://www.culturedmeatsafety.com/publications) page.
 * [AI4CM Hub (Cell Meat AI: Lab Grown Protein)](https://www.bezosearthfund.org/grants/cell-meat-ai-lab-grown-protein-accelerator): an open-source platform New Harvest will launch, seeded by a Phase I grant under the Bezos Earth Fund's [AI for Climate and Nature Grand Challenge](./Funding.md#funding-opportunities--programs) in May 2025, to aggregate datasets, host benchmarks, and adapt proven AI tools for media and process optimization in cultured meat. Announced rather than launched, and separate from New Harvest's longer-running AICAI program; its datasets and benchmarks become cataloguable as they are released.
 
 ### GFI initiatives

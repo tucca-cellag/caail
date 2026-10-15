@@ -158,7 +158,7 @@
 {"method":"Scientific Literature & Discovery Agents","area_key":"tooling","ref_id":222,"label":"Gandhi et al. 2025","ordinal":157}
 {"method":"Scientific Literature & Discovery Agents","area_key":"tooling","ref_id":273,"label":"Ghafarollahi & Buehler 2025","ordinal":158}
 {"method":"General-Purpose Biomedical Agents","area_key":"tooling","ref_id":98,"label":"Dong et al. 2024","ordinal":159}
-{"method":"General-Purpose Biomedical Agents","area_key":"tooling","ref_id":49,"label":"Huang et al. 2025","ordinal":160}
+{"method":"General-Purpose Biomedical Agents","area_key":"tooling","ref_id":49,"label":"Huang et al. 2026a","ordinal":160}
 {"method":"General-Purpose Biomedical Agents","area_key":"tooling","ref_id":94,"label":"Pickard et al. 2025","ordinal":161}
 {"method":"General-Purpose Biomedical Agents","area_key":"tooling","ref_id":95,"label":"Riffle et al. 2025","ordinal":162}
 {"method":"General-Purpose Biomedical Agents","area_key":"tooling","ref_id":96,"label":"Jin et al. 2025","ordinal":163}
@@ -209,7 +209,7 @@
 {"method":"Benchmarks & Evaluation Frameworks","area_key":"tooling","ref_id":157,"label":"Wang et al. 2024","ordinal":208}
 {"method":"Benchmarks & Evaluation Frameworks","area_key":"tooling","ref_id":158,"label":"Phan et al. 2026","ordinal":209}
 {"method":"Benchmarks & Evaluation Frameworks","area_key":"tooling","ref_id":159,"label":"Wang et al. 2026a","ordinal":210}
-{"method":"Benchmarks & Evaluation Frameworks","area_key":"cell","ref_id":164,"label":"Huang et al. 2026","ordinal":211}
+{"method":"Benchmarks & Evaluation Frameworks","area_key":"cell","ref_id":164,"label":"Huang et al. 2026b","ordinal":211}
 {"method":"Benchmarks & Evaluation Frameworks","area_key":"tooling","ref_id":53,"label":"Liu et al. 2026","ordinal":212}
 {"method":"Benchmarks & Evaluation Frameworks","area_key":"cell","ref_id":57,"label":"Adduri et al. 2025","ordinal":213}
 {"method":"Benchmarks & Evaluation Frameworks","area_key":"cell","ref_id":225,"label":"Miller et al. 2025","ordinal":214}
