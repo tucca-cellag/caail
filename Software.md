@@ -116,7 +116,7 @@ Docs: <https://maximilianb2.github.io/pc-gym/>.
 
 ### [Project PISCES](https://projectpisces.org/)
 
-Summary: Project PISCES (Process Integration & Synthesis using Chemical Engineering Standards) is a hosted platform that harmonizes process flowsheet data for analysis, modeling and design. It offers a curated public database of flowsheets spanning fuels, chemicals, pharmaceuticals, food products and more, private team workspaces, and an AI assistant, Florence, that flags data gaps and proposes fixes for a person to confirm. Its flowsheets use the open [Standard Flowsheet Format](#project-pisces-standard-flowsheet-format), listed separately. For cellular agriculture, it is a place to collect and compare bioprocess flowsheets. The hosted application's site states all rights reserved. Zenodo holds two records for it: a public tool description at <https://doi.org/10.5281/zenodo.23124562> and a restricted source deposit (citation metadata only, with no public files or licence) at <https://doi.org/10.5281/zenodo.23124934>.
+Summary: Project PISCES (Process Integration & Synthesis using Chemical Engineering Standards) is a hosted platform that harmonizes process flowsheet data for analysis, modeling and design. It offers a curated public database of flowsheets spanning fuels, chemicals, pharmaceuticals, food products and more, private team workspaces, and an AI assistant, Florence, that flags data gaps and proposes fixes for a person to confirm. Its flowsheets use the open [Standard Flowsheet Format](#project-pisces-standard-flowsheet-format), listed separately. For cellular agriculture, it is a place to collect and compare bioprocess flowsheets. The hosted application's site states all rights reserved.
 
 ## Metabolic Modeling & Strain Design
 
@@ -522,7 +522,7 @@ Summary: A gymnasium of language-agent environments for challenging scientific t
 
 ### [Finch](https://github.com/Future-House/finch)
 
-Summary: An Aviary-based data-science agent that operates inside Jupyter notebooks, also from [FutureHouse](https://www.futurehouse.org/). It plans and executes notebook-based analyses, pairing the [Aviary](#aviary) environment with the kind of exploratory bioinformatics work (single-cell exploration, media-response analysis) that cell-ag teams increasingly delegate to notebook agents. Finch produced the agent trajectories for the BixBench benchmark ([Papers.md ref #108](./Papers.md#108)); its README cites no paper of its own, only BixBench's. Edison Scientific's platform offers a Data Analysis job under the alias `JobNames.FINCH` (also `JobNames.ANALYSIS`), per the [Edison client documentation](https://github.com/EdisonScientific/edison-client-docs). Apache-2.0.
+Summary: An Aviary-based data-science agent that operates inside Jupyter notebooks, also from [FutureHouse](https://www.futurehouse.org/). It plans and executes notebook-based analyses, pairing the [Aviary](#aviary) environment with the kind of exploratory bioinformatics work (single-cell exploration, media-response analysis) that cell-ag teams increasingly delegate to notebook agents. Finch produced the agent trajectories for the BixBench benchmark ([Papers.md ref #108](./Papers.md#108)), and Edison Scientific's platform offers a hosted Data Analysis job under its name ([Edison client documentation](https://github.com/EdisonScientific/edison-client-docs)). Apache-2.0.
 
 ### [K-Dense-AI](https://github.com/K-Dense-AI)
 
