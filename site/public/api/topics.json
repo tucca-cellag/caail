@@ -577,6 +577,7 @@
         290
       ],
       "software": [
+        "project-pisces",
         "omiga",
         "omicverse",
         "cellrank",
@@ -630,7 +631,6 @@
         "sbml-systems-biology-markup-language",
         "linkml-linked-data-modeling-language",
         "project-pisces-standard-flowsheet-format",
-        "project-pisces",
         "biopragmatics-stack"
       ],
       "databases": [
@@ -967,8 +967,8 @@
         "pyfoomb",
         "mxlpy",
         "pc-gym",
-        "project-pisces-standard-flowsheet-format",
-        "project-pisces"
+        "project-pisces",
+        "project-pisces-standard-flowsheet-format"
       ],
       "databases": [],
       "datasets": [
@@ -1882,5 +1882,5 @@
       "datasets": []
     }
   },
-  "corpusDate": "2026-10-14"
+  "corpusDate": "2026-10-15"
 }

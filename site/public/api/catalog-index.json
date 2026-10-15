@@ -1,5 +1,5 @@
 {
-  "corpusDate": "2026-10-14",
+  "corpusDate": "2026-10-15",
   "count": 293,
   "truncationNote": "Compare the number of rows you parsed against `count`. If you have fewer, your fetch truncated this file and you are looking at part of the corpus: say so, and do not report an absence from it. Fetching with a tool that returns bytes rather than a summary avoids this entirely.",
   "entries": [
@@ -27,6 +27,7 @@
     {"slug":"pyfoomb","name":"pyFOOMB","kind":"software","group":"Bioprocess Modeling & Scaling","url":"https://github.com/MicroPhen/pyFOOMB","doi":"10.1002/elsc.202000088","tier":"permissive"},
     {"slug":"mxlpy","name":"MxlPy","kind":"software","group":"Bioprocess Modeling & Scaling","url":"https://github.com/Computational-Biology-Aachen/mxlpy","doi":"10.1101/2025.05.06.652335","tier":"permissive"},
     {"slug":"pc-gym","name":"PC-Gym","kind":"software","group":"Bioprocess Modeling & Scaling","url":"https://github.com/MaximilianB2/pc-gym","doi":"10.48550/arxiv.2410.22093","tier":"permissive"},
+    {"slug":"project-pisces","name":"Project PISCES","kind":"software","group":"Bioprocess Modeling & Scaling","url":"https://projectpisces.org/","doi":"10.5281/zenodo.23124562","tier":"restricted"},
     {"slug":"cobrapy","name":"COBRApy","kind":"software","group":"Metabolic Modeling & Strain Design","url":"https://github.com/opencobra/cobrapy","doi":"10.1186/1752-0509-7-74","tier":"copyleft"},
     {"slug":"cobra-toolbox","name":"COBRA Toolbox","kind":"software","group":"Metabolic Modeling & Strain Design","url":"https://github.com/opencobra/cobratoolbox","doi":"10.1038/s41596-018-0098-2","tier":"copyleft"},
     {"slug":"memote","name":"Memote","kind":"software","group":"Metabolic Modeling & Strain Design","url":"https://github.com/opencobra/memote","doi":"10.1038/s41587-020-0446-y","tier":"permissive"},
@@ -125,7 +126,6 @@
     {"slug":"sbml-systems-biology-markup-language","name":"SBML (Systems Biology Markup Language)","kind":"software","group":"Data Standards & Interchange Formats","url":"https://sbml.org/","doi":"10.1093/bioinformatics/btg015","tier":"unknown"},
     {"slug":"linkml-linked-data-modeling-language","name":"LinkML (Linked data Modeling Language)","kind":"software","group":"Data Standards & Interchange Formats","url":"https://linkml.io/","doi":"10.1093/gigascience/giaf152","tier":"unknown"},
     {"slug":"project-pisces-standard-flowsheet-format","name":"Project PISCES (Standard Flowsheet Format)","kind":"software","group":"Data Standards & Interchange Formats","url":"https://github.com/sustainability-software-lab/pisces-standard-flowsheet-format","doi":null,"tier":"permissive"},
-    {"slug":"project-pisces","name":"Project PISCES","kind":"software","group":"Data Standards & Interchange Formats","url":"https://projectpisces.org/","doi":"10.5281/zenodo.23124562","tier":"unknown"},
     {"slug":"biopragmatics-stack","name":"Biopragmatics Stack","kind":"software","group":"Biomedical Ontology & Identifier Infrastructure","url":"https://biopragmatics.github.io/","doi":null,"tier":"unknown"},
     {"slug":"bridgedb","name":"BridgeDb","kind":"software","group":"Biomedical Ontology & Identifier Infrastructure","url":"https://github.com/bridgedb/BridgeDb","doi":"10.1186/1471-2105-11-5","tier":"permissive"},
     {"slug":"allercatpro-20","name":"AllerCatPro 2.0","kind":"software","group":"Food Safety & Allergenicity","url":"https://allercatpro.bii.a-star.edu.sg/","doi":"10.1093/nar/gkac446","tier":"unknown"},

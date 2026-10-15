@@ -794,6 +794,37 @@
       ]
     },
     {
+      "slug": "project-pisces",
+      "itemId": "sw:project-pisces",
+      "name": "Project PISCES",
+      "url": "https://projectpisces.org/",
+      "group": "Bioprocess Modeling & Scaling",
+      "summary": "Project PISCES (Process Integration & Synthesis using Chemical Engineering Standards) is a hosted platform that harmonizes process flowsheet data for analysis, modeling and design. It offers a curated public database of flowsheets spanning fuels, chemicals, pharmaceuticals, food products and more, private team workspaces, and an AI assistant, Florence, that flags data gaps and proposes fixes for a person to confirm. Its flowsheets use the open Standard Flowsheet Format, listed separately. For cellular agriculture, it is a place to collect and compare bioprocess flowsheets. The hosted application's site states all rights reserved. Zenodo holds two records for it: a public tool description, which its citation badge links, and a restricted source deposit (citation metadata only, with no public files or licence) at https://doi.org/10.5281/zenodo.23124934.",
+      "summaryHtml": "<p>Project PISCES (Process Integration &#x26; Synthesis using Chemical Engineering Standards) is a hosted platform that harmonizes process flowsheet data for analysis, modeling and design. It offers a curated public database of flowsheets spanning fuels, chemicals, pharmaceuticals, food products and more, private team workspaces, and an AI assistant, Florence, that flags data gaps and proposes fixes for a person to confirm. Its flowsheets use the open <a href=\"https://github.com/tucca-cellag/caail/blob/main/Software.md#project-pisces-standard-flowsheet-format\">Standard Flowsheet Format</a>, listed separately. For cellular agriculture, it is a place to collect and compare bioprocess flowsheets. The hosted application's site states all rights reserved. Zenodo holds two records for it: a public tool description, which its citation badge links, and a restricted source deposit (citation metadata only, with no public files or licence) at <a href=\"https://doi.org/10.5281/zenodo.23124934\">https://doi.org/10.5281/zenodo.23124934</a>.</p>",
+      "topics": [
+        {
+          "slug": "ai-methods-tooling",
+          "label": "AI Methods & Tooling",
+          "theme": "ai-methods-tooling"
+        },
+        {
+          "slug": "bioprocess-scale-up",
+          "label": "Bioprocess & Manufacturing",
+          "theme": "bioprocess-scale-up"
+        }
+      ],
+      "license": "Proprietary",
+      "licenseSource": "manual",
+      "tier": "restricted",
+      "doi": "10.5281/zenodo.23124562",
+      "doiSource": "manual",
+      "citationCount": 0,
+      "citationSources": 1,
+      "citationDois": [
+        "10.5281/zenodo.23124562"
+      ]
+    },
+    {
       "slug": "cobrapy",
       "itemId": "sw:cobrapy",
       "name": "COBRApy",
@@ -3723,37 +3754,6 @@
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
-    },
-    {
-      "slug": "project-pisces",
-      "itemId": "sw:project-pisces",
-      "name": "Project PISCES",
-      "url": "https://projectpisces.org/",
-      "group": "Data Standards & Interchange Formats",
-      "summary": "Project PISCES (Process Integration & Synthesis using Chemical Engineering Standards) is a hosted platform that harmonizes process flowsheet data for analysis, modeling and design. It offers a curated public database of flowsheets spanning fuels, chemicals, pharmaceuticals, food products and more, private team workspaces, and an AI assistant, Florence, that flags data gaps and proposes fixes for a person to confirm. Its flowsheets use the open Standard Flowsheet Format, listed separately. For cellular agriculture, it is a place to collect and compare bioprocess flowsheets. The hosted application's site states all rights reserved, and its source is archived on Zenodo as a restricted deposit (citation metadata only, with no public files or licence) at https://doi.org/10.5281/zenodo.23124934.",
-      "summaryHtml": "<p>Project PISCES (Process Integration &#x26; Synthesis using Chemical Engineering Standards) is a hosted platform that harmonizes process flowsheet data for analysis, modeling and design. It offers a curated public database of flowsheets spanning fuels, chemicals, pharmaceuticals, food products and more, private team workspaces, and an AI assistant, Florence, that flags data gaps and proposes fixes for a person to confirm. Its flowsheets use the open <a href=\"https://github.com/tucca-cellag/caail/blob/main/Software.md#project-pisces-standard-flowsheet-format\">Standard Flowsheet Format</a>, listed separately. For cellular agriculture, it is a place to collect and compare bioprocess flowsheets. The hosted application's site states all rights reserved, and its source is archived on Zenodo as a restricted deposit (citation metadata only, with no public files or licence) at <a href=\"https://doi.org/10.5281/zenodo.23124934\">https://doi.org/10.5281/zenodo.23124934</a>.</p>",
-      "topics": [
-        {
-          "slug": "ai-methods-tooling",
-          "label": "AI Methods & Tooling",
-          "theme": "ai-methods-tooling"
-        },
-        {
-          "slug": "bioprocess-scale-up",
-          "label": "Bioprocess & Manufacturing",
-          "theme": "bioprocess-scale-up"
-        }
-      ],
-      "license": null,
-      "licenseSource": null,
-      "tier": "unknown",
-      "doi": "10.5281/zenodo.23124562",
-      "doiSource": "manual",
-      "citationCount": 0,
-      "citationSources": 1,
-      "citationDois": [
-        "10.5281/zenodo.23124562"
-      ]
     },
     {
       "slug": "biopragmatics-stack",
@@ -8765,5 +8765,5 @@
       "citationDois": []
     }
   ],
-  "corpusDate": "2026-10-14"
+  "corpusDate": "2026-10-15"
 }

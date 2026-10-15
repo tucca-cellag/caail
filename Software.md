@@ -114,6 +114,10 @@ Summary: A library of Gymnasium-style reinforcement-learning environments for pr
 
 Docs: <https://maximilianb2.github.io/pc-gym/>.
 
+### [Project PISCES](https://projectpisces.org/)
+
+Summary: Project PISCES (Process Integration & Synthesis using Chemical Engineering Standards) is a hosted platform that harmonizes process flowsheet data for analysis, modeling and design. It offers a curated public database of flowsheets spanning fuels, chemicals, pharmaceuticals, food products and more, private team workspaces, and an AI assistant, Florence, that flags data gaps and proposes fixes for a person to confirm. Its flowsheets use the open [Standard Flowsheet Format](#project-pisces-standard-flowsheet-format), listed separately. For cellular agriculture, it is a place to collect and compare bioprocess flowsheets. The hosted application's site states all rights reserved. Zenodo holds two records for it: a public tool description, which its citation badge links, and a restricted source deposit (citation metadata only, with no public files or licence) at <https://doi.org/10.5281/zenodo.23124934>.
+
 ## Metabolic Modeling & Strain Design
 
 This section catalogs the open-source tooling for constraint-based and kinetic metabolic modeling: the computational stack used to build genome-scale metabolic models (GEMs), simulate flux distributions, design strain knockouts, and reason about cell physiology. These tools are the foundation for media-formulation optimization, bioprocess scale-up, and cell-line metabolic engineering in cellular agriculture. For cell-ag-specific GEMs (BtaSBML2986, iES1300, etc.), see the per-species pages in the [`Datasets/`](./Datasets/) directory. For canonical model repositories (BiGG Models, BioModels) and pathway / metabolome databases, see [Databases.md / Pathways, Metabolism & Metabolic Models](./Databases.md#pathways-metabolism--metabolic-models).
@@ -652,10 +656,6 @@ Summary: The Standard Flowsheet Format (SFF) is a JSON-based standard for repres
 Process-flowsheet background (what SFF standardizes): for readers approaching this from the AI / biology side, the [LibreTexts *Foundations of Chemical and Biological Engineering* chapter on chemical processes and process diagrams](https://eng.libretexts.org/Bookshelves/Chemical_Engineering/Foundations_of_Chemical_and_Biological_Engineering_I_(Verret_Qiao_Barghout)/01%3A_Introduction_to_Chemical_Processes_and_Process_Diagrams) and the [ScienceDirect "Flowsheet" topic overview](https://www.sciencedirect.com/topics/chemical-engineering/flowsheet) introduce the flowsheet concept and its notation.
 
 Cell-ag application context: [The Unjournal](https://www.unjournal.org/)'s cultivated-meat cost-modeling work, namely the [`unjournal/cm_pq_modeling` repository](https://github.com/unjournal/cm_pq_modeling) and its [techno-economic comparison of cultured-chicken cost models](https://unjournal.github.io/cm_pq_modeling/compare.html), is exactly the kind of bioprocess techno-economic analysis that a standardized flowsheet format like SFF is designed to make reproducible and machine-comparable.
-
-### [Project PISCES](https://projectpisces.org/)
-
-Summary: Project PISCES (Process Integration & Synthesis using Chemical Engineering Standards) is a hosted platform that harmonizes process flowsheet data for analysis, modeling and design. It offers a curated public database of flowsheets spanning fuels, chemicals, pharmaceuticals, food products and more, private team workspaces, and an AI assistant, Florence, that flags data gaps and proposes fixes for a person to confirm. Its flowsheets use the open [Standard Flowsheet Format](#project-pisces-standard-flowsheet-format), listed separately. For cellular agriculture, it is a place to collect and compare bioprocess flowsheets. The hosted application's site states all rights reserved, and its source is archived on Zenodo as a restricted deposit (citation metadata only, with no public files or licence) at <https://doi.org/10.5281/zenodo.23124934>.
 
 ## Biomedical Ontology & Identifier Infrastructure
 
