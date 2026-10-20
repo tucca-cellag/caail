@@ -522,7 +522,7 @@ Summary: A gymnasium of language-agent environments for challenging scientific t
 
 ### [Finch](https://github.com/Future-House/finch)
 
-Summary: An Aviary-based data-science agent that operates inside Jupyter notebooks, also from [FutureHouse](https://www.futurehouse.org/). It plans and executes notebook-based analyses, pairing the [Aviary](#aviary) environment with the kind of exploratory bioinformatics work (single-cell exploration, media-response analysis) that cell-ag teams increasingly delegate to notebook agents. Finch produced the agent trajectories for the BixBench benchmark ([Papers.md ref #108](./Papers.md#108)), and Edison Scientific's platform offers a hosted Data Analysis job under its name ([Edison client documentation](https://github.com/EdisonScientific/edison-client-docs)). Apache-2.0.
+Summary: An Aviary-based data-science agent that operates inside Jupyter notebooks, also from [FutureHouse](https://www.futurehouse.org/). It plans and executes notebook-based analyses in the [Aviary](#aviary) framework and specializes in bioinformatics, shipping a Docker image with common bioinformatics packages. Finch produced the agent trajectories for the BixBench benchmark ([Papers.md ref #108](./Papers.md#108)), and Edison Scientific's platform offers a hosted Data Analysis job under its name ([Edison client documentation](https://github.com/EdisonScientific/edison-client-docs)). Apache-2.0.
 
 ### [K-Dense-AI](https://github.com/K-Dense-AI)
 
