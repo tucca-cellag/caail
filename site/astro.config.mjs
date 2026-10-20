@@ -306,6 +306,9 @@ export default defineConfig({
         // without injecting Starlight's own hero UI above our custom Hero.
         Hero: './src/components/StarlightHeroOverride.astro',
         Footer: './src/components/Footer.astro',
+        // Site-wide beta notice at the top of every page's <main>, in place of
+        // Starlight's frontmatter-only Banner (which it still renders below).
+        Banner: './src/components/Banner.astro',
         // Suppress the Previous/Next pagination links site-wide.
         Pagination: './src/components/EmptyPagination.astro',
         // Inject island/component-rendered section headings into the "On This

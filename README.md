@@ -2,6 +2,8 @@
 
 [![Website](https://img.shields.io/badge/Website-caail.tufts.edu-002E6D?logo=github&logoColor=white)](https://caail.tufts.edu/) [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20295590.svg)](https://doi.org/10.5281/zenodo.20295590) [![Zotero group library](https://img.shields.io/badge/Zotero-caail_group_library-CC2936?logo=zotero&logoColor=white)](https://www.zotero.org/groups/6549203/caail/library) [![Slack](https://img.shields.io/badge/Slack-join_the_community-4A154B?logo=slack&logoColor=white)](./Community.md)
 
+> **CAAIL is in beta.** We're re-checking earlier classifications and reorganizing the research areas for v2. [See the roadmap](https://caail.tufts.edu/curation/#6-roadmap) · [Tell us what you think](https://caail.tufts.edu/community/)
+
 🌐 **Explore the library on the web: [caail.tufts.edu](https://caail.tufts.edu/)**: an interactive, searchable layer over the Markdown in this repository (papers explorer, citation network, datasets by species, and more).
 
 This repository, CAAIL (Cellular Agriculture AI Library), is a curated, open-source collection of resources dedicated to the intersection of Cellular Agriculture and AI. CAAIL is maintained by [The Tufts University Center for Cellular Agriculture (TUCCA)](https://cellularagriculture.tufts.edu/): see TUCCA's [GitHub organization](https://github.com/tucca-cellag) for related projects.

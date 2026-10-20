@@ -101,8 +101,12 @@ test('research area prose page renders with its mapped title', async ({ page }) 
 test('internal prose link to a rendered page resolves to a site route; deferred falls back to GitHub', async ({ page }) => {
   await page.goto('./datasets/cow/');
   const main = page.locator('main');
-  // a link to a rendered ResearchAreas/Datasets page is a root-relative site route (ends with /)
-  await expect(main.locator('a[href^="/"]:not([href^="//"])[href$="/"]').first()).toBeVisible();
+  // a link to a rendered ResearchAreas/Datasets page is a root-relative site route (ends with /).
+  // Scoped to the page's Markdown content: the site-wide beta notice in <main> carries a
+  // root-relative link of its own, which would otherwise satisfy this with no rewrite at all.
+  await expect(
+    main.locator('.sl-markdown-content a[href^="/"]:not([href^="//"])[href$="/"]').first(),
+  ).toBeVisible();
   // ...and none of them still carries a base the site has left, which the locator
   // above cannot tell apart from a current root-relative route.
   for (const b of RETIRED_BASES.filter((r) => r !== SITE_BASE)) {

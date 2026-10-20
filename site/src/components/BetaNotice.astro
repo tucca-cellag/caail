@@ -1,0 +1,78 @@
+---
+// The beta notice, in its two placements:
+//   - variant "strip": a full-width line at the top of every page's <main>,
+//     rendered by Banner.astro (the Starlight Banner override);
+//   - variant "inline": inside the homepage hero, below the lede. The
+//     homepage cannot take the strip, and the notice cannot sit above the
+//     title either: the hero's diagonal stripe is pinned to the title, so
+//     anything above it opens a white gap under the header, the defect
+//     e2e/homepage-agent.spec.ts guards ("the hero stripe meets the header").
+//
+// The wording and links live in src/lib/beta-notice.ts, which README.md's copy
+// is checked against.
+//
+// Not dismissible, on purpose: dismissing would need a browser-storage key,
+// and every such key needs a row in the privacy page's storage table.
+//
+// A plain block, not an <aside>: both placements sit inside <main>, and axe
+// reports a complementary landmark that is not top-level.
+import { BETA_LEAD, BETA_BODY, BETA_LINKS } from '../lib/beta-notice';
+
+interface Props {
+  variant: 'strip' | 'inline';
+}
+const { variant } = Astro.props;
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const [roadmap, feedback] = BETA_LINKS;
+---
+
+<div class={`caail-beta caail-beta--${variant}`} data-caail-beta data-pagefind-ignore>
+  <p>
+    <strong>{BETA_LEAD}</strong> {BETA_BODY}
+    <a href={`${base}${roadmap.path}`}>{roadmap.label}</a>
+    <span aria-hidden="true">·</span>
+    <a href={`${base}${feedback.path}`}>{feedback.label}</a>
+  </p>
+</div>
+
+<style>
+  .caail-beta {
+    font-size: var(--sl-text-sm);
+    line-height: var(--sl-line-height);
+    color: var(--caail-ink);
+  }
+  .caail-beta p {
+    margin: 0;
+  }
+  /* Each link stays on one line; the line may break between them, so a 320px
+     viewport reflows instead of overflowing. */
+  .caail-beta a {
+    white-space: nowrap;
+    color: var(--caail-link);
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
+  }
+  .caail-beta a:hover,
+  .caail-beta a:focus-visible {
+    color: var(--caail-ink);
+  }
+
+  /* CAAIL's palette (tokens.css), which carries its own dark-mode values. */
+  .caail-beta--strip {
+    padding: 0.6rem var(--sl-nav-pad-x);
+    background-color: var(--caail-surface);
+    border-bottom: 1px solid var(--caail-border);
+    text-align: center;
+    text-wrap: balance;
+  }
+
+  .caail-beta--inline {
+    display: inline-block;
+    max-width: 38rem;
+    margin: 0.25rem 0 1rem;
+    padding: 0.45rem 0.75rem;
+    background-color: var(--caail-surface);
+    border: 1px solid var(--caail-border);
+    border-radius: 0.5rem;
+  }
+</style>
