@@ -152,7 +152,8 @@ export const API_ENDPOINTS: readonly ApiEndpointSpec[] = [
     schema: ApiCatalogSchema,
     summary: 'Software and databases, in full',
     description:
-      'Open-source tools and query/lookup resources, with topic, license tier and DOI. Large, ' +
+      'Software tools (open-source and proprietary) and query/lookup resources, with topic, ' +
+      'license tier and DOI. Large, ' +
       'for the same reason and with the same caveat as papers.json: enumerate with ' +
       'catalog-index.json and fetch this for the summaries you actually need. Every link ' +
       'in summaryHtml is an absolute URL, to a CAAIL site page or to the canonical Markdown ' +

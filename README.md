@@ -17,7 +17,7 @@ This project exists to collect all relevant published materials in one place, se
 We organize and host links to public resources across key areas of research:
 
 * [Papers & Preprints](./Papers.md): Core research literature focusing on computational biology, modeling, and machine learning applied to cell culture, bioprocessing, and tissue engineering.
-* [Software & Code](./Software.md): Links to open-source tools, code repositories, and specialized algorithms used for media optimization, bioreactor modeling, and image analysis.
+* [Software & Code](./Software.md): Links to software tools (open-source and proprietary), code repositories, and specialized algorithms used for media optimization, bioreactor modeling, and image analysis.
 * [Datasets](./Datasets/): Fixed data artifacts: corpora, atlases, sequencing deposits, and model files you would train or benchmark a model *on*, organized into per-species pages (cow, pig, chicken, fish, and more) plus cross-species reference and AI/ML benchmark pages.
 * [Databases](./Databases.md): Living, queryable resources (repositories, ontologies, spectral libraries, and structure / compound / pathway databases) that you query for reference, annotation, or lookup. Also catalogues GFI's alternative-protein ecosystem directories.
 * [Reference Works](./ReferenceWorks.md): Reference textbooks and multi-volume works: the foundational cell-ag textbook and the *Encyclopedia of Meat Sciences*, with a DOI-resolvable chapter index.
