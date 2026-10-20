@@ -27,7 +27,7 @@ Once you have the basics, these are the higher-level talks and references.
 ## Where AI shows up in CAAIL
 
 * [Papers Explorer](../Papers.md) — filter the matrix by the LLMs / AI Agents row or the AI Tooling / Methodology column.
-* [Software](../Software.md) — open-source AI / ML tools grouped by application area, framed for cell-ag use.
+* [Software](../Software.md) — AI / ML software tools, open-source and proprietary, grouped by application area and framed for cell-ag use.
 
 ## Next: learn the cell-ag side
 
