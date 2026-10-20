@@ -1,0 +1,34 @@
+---
+// Overrides Starlight's Banner (registered in astro.config.mjs), which the
+// layout renders at the top of every page's <main>. It adds the site-wide beta
+// notice; a page that sets its own `banner` frontmatter still gets that banner,
+// below it.
+//
+// Pages with a hero (the splash homepage) skip the strip here: Hero.astro
+// carries the notice inline instead. BetaNotice.astro says why.
+import BetaNotice from './BetaNotice.astro';
+const { banner, hero } = Astro.locals.starlightRoute.entry.data;
+---
+
+{!hero && <BetaNotice variant="strip" />}
+{banner && <div class="sl-banner" data-pagefind-ignore set:html={banner.content} />}
+
+<style>
+  /* Starlight's own Banner styles, carried over so a frontmatter banner keeps
+     its look under this override. */
+  @layer starlight.core {
+    .sl-banner {
+      --__sl-banner-text: var(--sl-color-banner-text, var(--sl-color-text-invert));
+      padding: var(--sl-nav-pad-y) var(--sl-nav-pad-x);
+      background-color: var(--sl-color-banner-bg, var(--sl-color-bg-accent));
+      color: var(--__sl-banner-text);
+      line-height: var(--sl-line-height-headings);
+      text-align: center;
+      text-wrap: balance;
+      box-shadow: var(--sl-shadow-sm);
+    }
+    .sl-banner :global(a) {
+      color: var(--__sl-banner-text);
+    }
+  }
+</style>

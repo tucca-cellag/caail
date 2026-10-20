@@ -1,0 +1,77 @@
+---
+// The beta notice's text and links, in one place for its two placements:
+//   - variant "strip": a full-width line at the top of every page's <main>,
+//     rendered by Banner.astro (the Starlight Banner override);
+//   - variant "inline": inside the homepage hero, below the lede. The
+//     homepage cannot take the strip, and the notice cannot sit above the
+//     title either: the hero's diagonal stripe is pinned to the title, so
+//     anything above it opens a white gap under the header, the defect
+//     e2e/homepage-agent.spec.ts guards ("the hero stripe meets the header").
+//
+// The wording is fixed by tucca-cellag/caail-planning#565: change it there
+// first, and say no more about v2 here than the text below already does.
+//
+// Not dismissible, on purpose: dismissing would need a browser-storage key,
+// and every such key needs a row in the privacy page's storage table.
+//
+// A plain block, not an <aside>: both placements sit inside <main>, and axe
+// reports a complementary landmark that is not top-level.
+interface Props {
+  variant: 'strip' | 'inline';
+}
+const { variant } = Astro.props;
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<div class={`caail-beta caail-beta--${variant}`} data-caail-beta data-pagefind-ignore>
+  <p>
+    <strong>CAAIL is in beta.</strong> We're re-checking earlier classifications and
+    reorganizing the research areas for v2.
+    <span class="caail-beta__links">
+      <a href={`${base}/curation/#6-roadmap`}>See the roadmap</a>
+      <span aria-hidden="true">·</span>
+      <a href={`${base}/community/`}>Tell us what you think</a>
+    </span>
+  </p>
+</div>
+
+<style>
+  .caail-beta {
+    font-size: var(--sl-text-sm);
+    line-height: var(--sl-line-height);
+    color: var(--sl-color-white);
+  }
+  .caail-beta p {
+    margin: 0;
+  }
+  .caail-beta__links {
+    white-space: nowrap;
+  }
+  .caail-beta a {
+    color: var(--sl-color-text-accent);
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
+  }
+  .caail-beta a:hover,
+  .caail-beta a:focus-visible {
+    color: var(--sl-color-white);
+  }
+
+  .caail-beta--strip {
+    padding: 0.6rem var(--sl-nav-pad-x);
+    background-color: var(--sl-color-gray-6);
+    border-bottom: 1px solid var(--sl-color-hairline-light);
+    text-align: center;
+    text-wrap: balance;
+  }
+
+  .caail-beta--inline {
+    display: inline-block;
+    max-width: 38rem;
+    margin: 0.25rem 0 1rem;
+    padding: 0.45rem 0.75rem;
+    background-color: var(--sl-color-gray-6);
+    border: 1px solid var(--sl-color-hairline-light);
+    border-radius: 0.5rem;
+  }
+</style>

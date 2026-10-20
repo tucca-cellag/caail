@@ -3,6 +3,7 @@ import { Icon } from 'astro-icon/components';
 import HeroGraphic from './HeroGraphic.astro';
 import TuccaLockup from './TuccaLockup.astro';
 import SetupTabs from './SetupTabs.astro';
+import BetaNotice from './BetaNotice.astro';
 import c from '../content/data/counts.json';
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
@@ -52,6 +53,11 @@ const statSentence = `Indexing ${stats.map((s) => `${s.n} ${s.label}`).join(', '
       database an AI assistant can query, so research and industry questions can be answered
       from a fixed, citable index rather than from model memory.
     </p>
+
+    {/* Below the lede, not above the title: the diagonal stripe is pinned to the
+        title's rect, so anything above the title moves the band down and opens a white
+        wedge under the header at the top right. */}
+    <BetaNotice variant="inline" />
 
     <div class="cta-row">
       <a class="btn btn-primary" href={`${base}/papers/explorer/`}>
