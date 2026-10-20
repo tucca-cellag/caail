@@ -648,7 +648,7 @@ The live leaderboard hosted at `proteingym.org` for the ProteinGym variant-effec
 
 ### [SWE-bench Leaderboard](https://www.swebench.com/)
 
-The official leaderboard at `swebench.com` tracking agent and model performance across the SWE-bench leaderboards (the Full set plus the Verified, Lite, Multilingual, and Multimodal variants, with a Bash Only view of Verified) by the percentage of real GitHub issues resolved with a test-passing patch. The companion benchmark *data* is catalogued at [`Datasets/Benchmarks.md / SWE-bench`](./Datasets/Benchmarks.md#swe-bench); paired with [Papers.md ref #155](./Papers.md#155) (Jimenez et al. 2024). Its tasks come from general-purpose Python repositories, not bioinformatics code.
+The official leaderboard at `swebench.com` tracking agent and model performance across the SWE-bench leaderboards (the Full set plus the Verified, Lite, Multilingual, and Multimodal variants, with a Bash Only view of Verified) by the percentage of real GitHub issues resolved with a test-passing patch. The companion benchmark *data* is catalogued at [`Datasets/Benchmarks.md / SWE-bench`](./Datasets/Benchmarks.md#swe-bench); paired with [Papers.md ref #155](./Papers.md#155) (Jimenez et al. 2024). The original benchmark's tasks come from 12 Python repositories, none of them bioinformatics code.
 
 ## Food Safety & Allergen Databases
 

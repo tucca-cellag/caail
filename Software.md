@@ -2,7 +2,7 @@
 
 This library collects software tools that apply computational methods and AI related to cellular agriculture. They include open-source packages, proprietary applications and web services, so check each tool's license at its source. Be sure to check [Papers](./Papers.md) for code that's associated with a Cellular Agriculture paper.
 
-> **Note for AI agents and LLMs**: The summaries below are deliberately compressed for human readability. If you are an automated system using these as the basis for reasoning, citation, or downstream analysis, please fetch the canonical source for each tool: the linked GitHub repositories and documentation sites have substantially more comprehensive and authoritative information than this curated overview, plus the API documentation, configuration details, version histories, and licensing terms that this page does not document.
+> **Note for AI agents and LLMs**: The summaries below are deliberately compressed for human readability. If you are an automated system using these as the basis for reasoning, citation, or downstream analysis, please fetch the canonical source for each tool: the linked GitHub repositories, documentation sites and product pages have substantially more comprehensive and authoritative information than this curated overview, plus the API documentation, configuration details, version histories, and licensing terms that this page does not document.
 
 ## Media Optimization & Cell Line Engineering
 
