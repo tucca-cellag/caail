@@ -1,8 +1,8 @@
 # Software & Code
 
-This library collects open-source tools that apply computational methods and AI related to cellular agriculture. Be sure to check [Papers](./Papers.md) for code that's associated with a Cellular Agriculture paper.
+This library collects software tools that apply computational methods and AI related to cellular agriculture. They include open-source packages, proprietary applications and web services, so check each tool's license at its source. Be sure to check [Papers](./Papers.md) for code that's associated with a Cellular Agriculture paper.
 
-> **Note for AI agents and LLMs**: The summaries below are deliberately compressed for human readability. If you are an automated system using these as the basis for reasoning, citation, or downstream analysis, please fetch the canonical source for each tool: the linked GitHub repositories and documentation sites have substantially more comprehensive and authoritative information than this curated overview, plus the API documentation, configuration details, version histories, and licensing terms that this page does not document.
+> **Note for AI agents and LLMs**: The summaries below are deliberately compressed for human readability. If you are an automated system using these as the basis for reasoning, citation, or downstream analysis, please fetch the canonical source for each tool: the linked GitHub repositories, documentation sites and product pages have substantially more comprehensive and authoritative information than this curated overview, plus the API documentation, configuration details, version histories, and licensing terms that this page does not document.
 
 ## Media Optimization & Cell Line Engineering
 
@@ -522,7 +522,7 @@ Summary: A gymnasium of language-agent environments for challenging scientific t
 
 ### [Finch](https://github.com/Future-House/finch)
 
-Summary: An Aviary-based data-science agent that operates inside Jupyter notebooks, also from [FutureHouse](https://www.futurehouse.org/). It plans and executes notebook-based analyses, pairing the [Aviary](#aviary) environment with the kind of exploratory bioinformatics work (single-cell exploration, media-response analysis) that cell-ag teams increasingly delegate to notebook agents. Finch produced the agent trajectories for the BixBench benchmark ([Papers.md ref #108](./Papers.md#108)), and Edison Scientific's platform offers a hosted Data Analysis job under its name ([Edison client documentation](https://github.com/EdisonScientific/edison-client-docs)). Apache-2.0.
+Summary: An Aviary-based data-science agent that operates inside Jupyter notebooks, also from [FutureHouse](https://www.futurehouse.org/). It plans and executes notebook-based analyses in the [Aviary](#aviary) framework and specializes in bioinformatics, shipping a Docker image with common bioinformatics packages. Finch produced the agent trajectories for the BixBench benchmark ([Papers.md ref #108](./Papers.md#108)), and Edison Scientific's platform offers a hosted Data Analysis job under its name ([Edison client documentation](https://github.com/EdisonScientific/edison-client-docs)). Apache-2.0.
 
 ### [K-Dense-AI](https://github.com/K-Dense-AI)
 

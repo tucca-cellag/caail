@@ -1,6 +1,6 @@
 # CAAIL: Cellular Agriculture AI Library
 
-> A curated, openly-licensed library at the intersection of cellular agriculture and artificial intelligence: papers and preprints (an AI-method × research-area matrix), open-source software, databases, per-species datasets, talks, and field resources. A project of the Tufts University Center for Cellular Agriculture (TUCCA); content is MIT-licensed.
+> A curated, openly-licensed library at the intersection of cellular agriculture and artificial intelligence: papers and preprints (an AI-method × research-area matrix), software tools, databases, per-species datasets, talks, and field resources. A project of the Tufts University Center for Cellular Agriculture (TUCCA); content is MIT-licensed.
 
 Status: beta. The inventory, topic tags and per-item metadata are solid, and each AI-method × research-area placement is a substantive claim about what the paper did. A placement is proposed by a language-model agent reading the paper's methods section, checked by a separate reviewer agent, and entered by a human maintainer; older placements are being re-verified against full texts. Where one is off it is typically a closely related cell rather than a paper that does not belong. Cite the paper itself. Full method: https://caail.tufts.edu/curation/
 
@@ -10,7 +10,7 @@ This website is a navigation layer over canonical, human-readable Markdown in th
 
 - [Papers Explorer](https://caail.tufts.edu/papers/explorer/): interactive matrix of AI/ML methods × research areas, with per-reference DOI, code, and data links.
 - [Citation Network](https://caail.tufts.edu/papers/network/): a shared-author co-authorship graph of the papers.
-- [Software](https://caail.tufts.edu/software/): open-source tools grouped by application area.
+- [Software](https://caail.tufts.edu/software/): software tools, open-source and proprietary, grouped by application area.
 - [Databases](https://caail.tufts.edu/databases/): query/lookup resources, repositories, atlases, ontologies, spectral libraries.
 - [Datasets](https://caail.tufts.edu/datasets/readme/): train-on data artifacts organized by species, plus cross-species reference data and AI/ML benchmarks.
 - [Talks & Videos](https://caail.tufts.edu/talks/): curated lectures, talks, and educational playlists.

@@ -159,7 +159,7 @@ export default defineConfig({
                 name: 'CAAIL: Cellular Agriculture AI Library',
                 url: SITE_URL,
                 description:
-                  'A curated, openly-licensed library at the intersection of cellular agriculture and artificial intelligence — papers and preprints, open-source software, databases, and per-species datasets.',
+                  'A curated, openly-licensed library at the intersection of cellular agriculture and artificial intelligence — papers and preprints, software tools, databases, and per-species datasets.',
                 inLanguage: 'en',
                 publisher: { '@id': `${SITE_URL}#org` },
               },

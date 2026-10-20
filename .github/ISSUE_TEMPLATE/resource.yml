@@ -1,5 +1,5 @@
 name: Suggest software, dataset, or other resource
-description: Suggest open-source software (Software.md), a dataset (Datasets/), a database (Databases.md), or a video/course/podcast (OtherResources.md).
+description: Suggest software (Software.md), a dataset (Datasets/), a database (Databases.md), or a video/course/podcast (OtherResources.md).
 title: "[Resource] <Name>"
 labels: ["suggestion", "resources"]
 body:

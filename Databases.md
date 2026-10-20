@@ -194,7 +194,7 @@ Tabula Sapiens is a molecular reference atlas of the human body from the Tabula 
 
 ### [CZ CELLxGENE](https://cellxgene.cziscience.com/)
 
-CZ CELLxGENE is the Chan Zuckerberg Initiative's platform for exploring and analyzing public single-cell data, providing harmonized scRNA-seq and multi-omics datasets aggregated from hundreds of studies (including Human Cell Atlas data) under consistent metadata standards. The CELLxGENE Census provides programmatic access to more than 125 million unique harmonized cells from five species (human, mouse, rhesus macaque, marmoset and chimpanzee) in its 2025-11-08 long-term-support release, exposed through a TileDB-backed Python / R API that supports fast queries by gene, tissue, disease, or assay. For cellular agriculture, cellxgene is the most practical source for assembling cross-study training sets (e.g. all skeletal muscle stem cells in the Census) for ML models of cell-type classification, perturbation prediction, and trajectory inference. Programmatic access via the `cellxgene-census` Python and R packages.
+CZ CELLxGENE is the Chan Zuckerberg Initiative's platform for exploring and analyzing public single-cell data, providing harmonized scRNA-seq and multi-omics datasets aggregated from hundreds of studies (including Human Cell Atlas data) under consistent metadata standards. The CELLxGENE Census provides programmatic access to more than 125 million unique harmonized cells from five species (human, mouse, rhesus macaque, marmoset and chimpanzee) in its 2025-11-08 long-term-support release, exposed through a TileDB-backed Python / R API that supports fast queries by gene, tissue, disease, or assay. For cellular agriculture, the Census can be used to assemble cross-study training sets (for example, muscle cells drawn from many studies) for ML models of cell-type classification, perturbation prediction, and trajectory inference. Programmatic access via the `cellxgene-census` Python package and the `cellxgene.census` R package.
 
 ### [scBaseCount](https://github.com/ArcInstitute/arc-virtual-cell-atlas/blob/main/scBaseCount/README.md)
 
@@ -648,7 +648,7 @@ The live leaderboard hosted at `proteingym.org` for the ProteinGym variant-effec
 
 ### [SWE-bench Leaderboard](https://www.swebench.com/)
 
-The official leaderboard at `swebench.com` tracking agent and model performance across the SWE-bench leaderboards (the Full set plus the Verified, Lite, Multilingual, and Multimodal variants) by the percentage of real GitHub issues resolved with a test-passing patch. The companion benchmark *data* is catalogued at [`Datasets/Benchmarks.md / SWE-bench`](./Datasets/Benchmarks.md#swe-bench); paired with [Papers.md ref #155](./Papers.md#155) (Jimenez et al. 2024). The standard tracker for whether a coding agent can be trusted with the bioinformatics-pipeline and analysis-code maintenance cell-ag teams increasingly delegate.
+The official leaderboard at `swebench.com` tracking agent and model performance across the SWE-bench leaderboards (the Full set plus the Verified, Lite, Multilingual, and Multimodal variants, with a Bash Only view of Verified) by the percentage of real GitHub issues resolved with a test-passing patch. The companion benchmark *data* is catalogued at [`Datasets/Benchmarks.md / SWE-bench`](./Datasets/Benchmarks.md#swe-bench); paired with [Papers.md ref #155](./Papers.md#155) (Jimenez et al. 2024). The original benchmark's tasks come from 12 Python repositories, none of them bioinformatics code.
 
 ## Food Safety & Allergen Databases
 

@@ -110,7 +110,7 @@ landing, every entry through the reviewer subagents.
 ```text
 README.md              Landing page + license/contributing pointers
 Papers.md              Peer-reviewed papers (matrix + numbered references)
-Software.md            Open-source tools grouped by application area
+Software.md            Software tools (open-source and proprietary) by application area
 Datasets/              Train-on data artifacts, organized into per-species pages
   README.md            Directory landing page + species index
   CLAUDE.md            Per-page schema + curation conventions
