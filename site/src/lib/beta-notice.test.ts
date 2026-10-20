@@ -3,6 +3,10 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import GithubSlugger from 'github-slugger';
+import { unified } from 'unified';
+import remarkParse from 'remark-parse';
+import { visit } from 'unist-util-visit';
+import { toString as mdastToString } from 'mdast-util-to-string';
 import {
   BETA_LEAD,
   BETA_BODY,
@@ -38,11 +42,14 @@ describe('beta notice: roadmap anchor', () => {
   it('matches a heading on the curation page, slugged as Starlight slugs it', () => {
     // A section added above "Roadmap" renumbers it, and the anchor would then
     // land at the top of the page with every other gate green.
+    // Parsed to mdast and slugged from each heading's text, as the renderer does, so
+    // a `##` inside a code fence is not counted and inline Markdown is not slugged raw.
+    const tree = unified().use(remarkParse).parse(read(ROADMAP_PAGE));
     const slugger = new GithubSlugger();
-    const slugs = read(ROADMAP_PAGE)
-      .split('\n')
-      .filter((line) => /^#{2,6}\s/.test(line))
-      .map((line) => slugger.slug(line.replace(/^#{2,6}\s+/, '').trim()));
+    const slugs: string[] = [];
+    visit(tree, 'heading', (heading) => {
+      slugs.push(slugger.slug(mdastToString(heading)));
+    });
     expect(slugs).toContain(ROADMAP_ANCHOR);
   });
 });

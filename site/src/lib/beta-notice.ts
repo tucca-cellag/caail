@@ -11,6 +11,7 @@
  * first, and say no more about v2 here than this text already does.
  */
 import { SITE_ORIGIN, SITE_BASE } from '../content/site-config';
+import { COMMUNITY_PATH } from './community';
 
 export const BETA_LEAD = 'CAAIL is in beta.';
 export const BETA_BODY =
@@ -25,7 +26,7 @@ export const ROADMAP_PAGE = `site/src/content/docs${ROADMAP_ROUTE.replace(/\/$/,
 /** Site paths, without the base; prefix the base (or the origin) at the call site. */
 export const BETA_LINKS = [
   { label: 'See the roadmap', path: `${ROADMAP_ROUTE}#${ROADMAP_ANCHOR}` },
-  { label: 'Tell us what you think', path: '/community/' },
+  { label: 'Tell us what you think', path: COMMUNITY_PATH },
 ] as const;
 
 /** Absolute URL of a notice link, as written in README.md. */

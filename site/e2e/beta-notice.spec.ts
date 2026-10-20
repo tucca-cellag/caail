@@ -79,12 +79,14 @@ test('the notice reflows at 320px instead of overflowing its box', async ({ page
   await page.setViewportSize({ width: 320, height: 800 });
   for (const route of ['./', './contributing/']) {
     await page.goto(route);
+    // Against the tighter of the notice's own box and the viewport: the strip's box is
+    // full width, so on its own it could overflow along with the links and still pass.
     const overflow = await page.locator('main [data-caail-beta]').evaluate((el) => {
-      const box = el.getBoundingClientRect();
+      const limit = Math.min(el.getBoundingClientRect().right, innerWidth);
       const worst = Math.max(...[...el.querySelectorAll('a')].map((a) => a.getBoundingClientRect().right));
-      return { boxRight: box.right, linkRight: worst, docOverflow: document.documentElement.scrollWidth > innerWidth };
+      return { limit, linkRight: worst, docOverflow: document.documentElement.scrollWidth > innerWidth };
     });
-    expect(overflow.linkRight, `a link runs past the notice box on ${route}`).toBeLessThanOrEqual(overflow.boxRight + 0.5);
+    expect(overflow.linkRight, `a link runs past the notice or the viewport on ${route}`).toBeLessThanOrEqual(overflow.limit + 0.5);
     expect(overflow.docOverflow, `the page scrolls sideways on ${route}`).toBe(false);
   }
 });
