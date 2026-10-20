@@ -39,7 +39,7 @@ const [roadmap, feedback] = BETA_LINKS;
   .caail-beta {
     font-size: var(--sl-text-sm);
     line-height: var(--sl-line-height);
-    color: var(--sl-color-white);
+    color: var(--caail-ink);
   }
   .caail-beta p {
     margin: 0;
@@ -48,21 +48,20 @@ const [roadmap, feedback] = BETA_LINKS;
      viewport reflows instead of overflowing. */
   .caail-beta a {
     white-space: nowrap;
-    color: var(--sl-color-text-accent);
+    color: var(--caail-link);
     text-decoration: underline;
     text-underline-offset: 0.15em;
   }
   .caail-beta a:hover,
   .caail-beta a:focus-visible {
-    color: var(--sl-color-white);
+    color: var(--caail-ink);
   }
 
-  /* gray-5, not hairline-light: in Starlight's light theme hairline-light IS
-     gray-6, the background, so the border would vanish. */
+  /* CAAIL's palette (tokens.css), which carries its own dark-mode values. */
   .caail-beta--strip {
     padding: 0.6rem var(--sl-nav-pad-x);
-    background-color: var(--sl-color-gray-6);
-    border-bottom: 1px solid var(--sl-color-gray-5);
+    background-color: var(--caail-surface);
+    border-bottom: 1px solid var(--caail-border);
     text-align: center;
     text-wrap: balance;
   }
@@ -72,8 +71,8 @@ const [roadmap, feedback] = BETA_LINKS;
     max-width: 38rem;
     margin: 0.25rem 0 1rem;
     padding: 0.45rem 0.75rem;
-    background-color: var(--sl-color-gray-6);
-    border: 1px solid var(--sl-color-gray-5);
+    background-color: var(--caail-surface);
+    border: 1px solid var(--caail-border);
     border-radius: 0.5rem;
   }
 </style>

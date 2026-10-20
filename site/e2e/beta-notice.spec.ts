@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { BETA_LEAD, BETA_BODY, BETA_LINKS } from '../src/lib/beta-notice';
+import { SITE_BASE } from '../src/content/site-config';
 
 // ---------------------------------------------------------------------------
 // Site-wide beta notice (src/components/BetaNotice.astro). Every page but the
@@ -10,6 +11,8 @@ import { BETA_LEAD, BETA_BODY, BETA_LINKS } from '../src/lib/beta-notice';
 // ---------------------------------------------------------------------------
 
 const [ROADMAP, FEEDBACK] = BETA_LINKS;
+/** The href the component renders: the site base, then the module's path. */
+const href = (path: string) => `${SITE_BASE}${path}`;
 
 // One route per page shape: the splash homepage (inline variant), a prose page
 // from the canonical-Markdown loader, an island card page, the page the roadmap
@@ -26,10 +29,30 @@ for (const route of ROUTES) {
     await expect(notice).toBeVisible();
     await expect(notice).toContainText(BETA_LEAD);
     await expect(notice).toContainText(BETA_BODY);
-    await expect(notice.getByRole('link', { name: ROADMAP.label })).toHaveAttribute('href', ROADMAP.path);
-    await expect(notice.getByRole('link', { name: FEEDBACK.label })).toHaveAttribute('href', FEEDBACK.path);
+    await expect(notice.getByRole('link', { name: ROADMAP.label })).toHaveAttribute('href', href(ROADMAP.path));
+    await expect(notice.getByRole('link', { name: FEEDBACK.label })).toHaveAttribute('href', href(FEEDBACK.path));
   });
 }
+
+// "Leads" is a placement claim, so check placement. On a strip page the notice
+// is the first element in <main>, above everything else, the title included (the
+// 404 page has no title to compare against, so the check is not title-based). The
+// homepage shows it inside the hero, by design below the title (BetaNotice.astro
+// says why).
+for (const route of ROUTES.filter((r) => r !== './')) {
+  test(`the beta notice is the first thing in main on ${route}`, async ({ page }) => {
+    await page.goto(route);
+    const first = await page.evaluate(
+      () => document.querySelector('main')?.firstElementChild?.hasAttribute('data-caail-beta') ?? false,
+    );
+    expect(first, `the first element in main is not the beta notice on ${route}`).toBe(true);
+  });
+}
+
+test('on the homepage the beta notice sits inside the hero', async ({ page }) => {
+  await page.goto('./');
+  await expect(page.locator('.hero [data-caail-beta]')).toHaveCount(1);
+});
 
 test('the roadmap link lands on the roadmap section, which carries the v2 item', async ({ page }) => {
   await page.goto('./');
