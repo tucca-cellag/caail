@@ -1,5 +1,5 @@
 ---
-// The beta notice's text and links, in one place for its two placements:
+// The beta notice, in its two placements:
 //   - variant "strip": a full-width line at the top of every page's <main>,
 //     rendered by Banner.astro (the Starlight Banner override);
 //   - variant "inline": inside the homepage hero, below the lede. The
@@ -8,30 +8,30 @@
 //     anything above it opens a white gap under the header, the defect
 //     e2e/homepage-agent.spec.ts guards ("the hero stripe meets the header").
 //
-// The wording is fixed by tucca-cellag/caail-planning#565: change it there
-// first, and say no more about v2 here than the text below already does.
+// The wording and links live in src/lib/beta-notice.ts, which README.md's copy
+// is checked against.
 //
 // Not dismissible, on purpose: dismissing would need a browser-storage key,
 // and every such key needs a row in the privacy page's storage table.
 //
 // A plain block, not an <aside>: both placements sit inside <main>, and axe
 // reports a complementary landmark that is not top-level.
+import { BETA_LEAD, BETA_BODY, BETA_LINKS } from '../lib/beta-notice';
+
 interface Props {
   variant: 'strip' | 'inline';
 }
 const { variant } = Astro.props;
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const [roadmap, feedback] = BETA_LINKS;
 ---
 
 <div class={`caail-beta caail-beta--${variant}`} data-caail-beta data-pagefind-ignore>
   <p>
-    <strong>CAAIL is in beta.</strong> We're re-checking earlier classifications and
-    reorganizing the research areas for v2.
-    <span class="caail-beta__links">
-      <a href={`${base}/curation/#6-roadmap`}>See the roadmap</a>
-      <span aria-hidden="true">·</span>
-      <a href={`${base}/community/`}>Tell us what you think</a>
-    </span>
+    <strong>{BETA_LEAD}</strong> {BETA_BODY}
+    <a href={`${base}${roadmap.path}`}>{roadmap.label}</a>
+    <span aria-hidden="true">·</span>
+    <a href={`${base}${feedback.path}`}>{feedback.label}</a>
   </p>
 </div>
 
@@ -44,10 +44,10 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   .caail-beta p {
     margin: 0;
   }
-  .caail-beta__links {
-    white-space: nowrap;
-  }
+  /* Each link stays on one line; the line may break between them, so a 320px
+     viewport reflows instead of overflowing. */
   .caail-beta a {
+    white-space: nowrap;
     color: var(--sl-color-text-accent);
     text-decoration: underline;
     text-underline-offset: 0.15em;
@@ -57,10 +57,12 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     color: var(--sl-color-white);
   }
 
+  /* gray-5, not hairline-light: in Starlight's light theme hairline-light IS
+     gray-6, the background, so the border would vanish. */
   .caail-beta--strip {
     padding: 0.6rem var(--sl-nav-pad-x);
     background-color: var(--sl-color-gray-6);
-    border-bottom: 1px solid var(--sl-color-hairline-light);
+    border-bottom: 1px solid var(--sl-color-gray-5);
     text-align: center;
     text-wrap: balance;
   }
@@ -71,7 +73,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     margin: 0.25rem 0 1rem;
     padding: 0.45rem 0.75rem;
     background-color: var(--sl-color-gray-6);
-    border: 1px solid var(--sl-color-hairline-light);
+    border: 1px solid var(--sl-color-gray-5);
     border-radius: 0.5rem;
   }
 </style>
