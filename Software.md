@@ -488,7 +488,7 @@ Project page: <https://aiscientist.tools/>. Docs: <https://zitniklab.hms.harvard
 
 Summary: A general-purpose biomedical AI agent from Stanford's SNAP lab (Leskovec group) that performs autonomous multi-step research workflows across drug discovery, genomics, clinical analysis, and adjacent biomedical domains. Companion to the Huang et al. 2026a paper in *Science* ([Papers.md ref #49](./Papers.md#49)).
 
-Project page: <https://biomni.stanford.edu>. AWS tutorial (Biomni + Bedrock AgentCore): <https://aws.amazon.com/blogs/machine-learning/build-a-biomedical-research-agent-with-biomni-tools-and-amazon-bedrock-agentcore-gateway/>.
+Project page: <https://biomni.stanford.edu>, which also served the free, university-hosted instance; the lab's notice (<https://biomni.stanford.edu/notice>) set Friday, 6 March [2026] as that instance's last day. The code remains open source for self-hosting, and the notice points labs that need a managed version to Biomni Lab, a commercial spin-off by some members of the team. AWS tutorial (Biomni + Bedrock AgentCore): <https://aws.amazon.com/blogs/machine-learning/build-a-biomedical-research-agent-with-biomni-tools-and-amazon-bedrock-agentcore-gateway/>.
 
 ### [AIAgents4Pharma](https://github.com/VirtualPatientEngine/AIAgents4Pharma)
 
