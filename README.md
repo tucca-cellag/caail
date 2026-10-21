@@ -4,31 +4,31 @@
 
 > **CAAIL is in beta.** We're re-checking earlier classifications and reorganizing the research areas for v2. [See the roadmap](https://caail.tufts.edu/curation/#6-roadmap) · [Tell us what you think](https://caail.tufts.edu/community/)
 
-🌐 **Explore the library on the web: [caail.tufts.edu](https://caail.tufts.edu/)**: an interactive, searchable layer over the Markdown in this repository (papers explorer, citation network, datasets by species, and more).
+🌐 **Explore the library on the web at [caail.tufts.edu](https://caail.tufts.edu/)**, a searchable site built from the Markdown in this repository, with a papers explorer, a citation network, datasets by species and more.
 
-This repository, CAAIL (Cellular Agriculture AI Library), is a curated, open-source collection of resources dedicated to the intersection of Cellular Agriculture and AI. CAAIL is maintained by [The Tufts University Center for Cellular Agriculture (TUCCA)](https://cellularagriculture.tufts.edu/): see TUCCA's [GitHub organization](https://github.com/tucca-cellag) for related projects.
+CAAIL, the Cellular Agriculture AI Library, is a curated, open-source collection of resources at the intersection of cellular agriculture and AI. CAAIL is maintained by [The Tufts University Center for Cellular Agriculture (TUCCA)](https://cellularagriculture.tufts.edu/): see TUCCA's [GitHub organization](https://github.com/tucca-cellag) for related projects.
 
 # The Goal
-Cellular Agriculture faces major technical barriers to wide-spread adoption, particularly around cost, media formulation, and scaling. We believe that AI can provide crucial insights to address these challenges.
+Cellular agriculture faces technical and economic barriers to wide adoption, particularly cost, media formulation and scale-up. CAAIL collects published work, tools and data at the intersection of AI and cellular agriculture, for researchers, engineers and students who want to apply one to the other.
 
-This project exists to collect all relevant published materials in one place, serving as a centralized library for researchers, engineers, and students looking to apply AI to cell-ag challenges.
+CAAIL records what has been researched and takes no position on whether a given approach works.
 
 # What's Inside
 We organize and host links to public resources across key areas of research:
 
 * [Papers & Preprints](./Papers.md): Core research literature focusing on computational biology, modeling, and machine learning applied to cell culture, bioprocessing, and tissue engineering.
 * [Software & Code](./Software.md): Links to software tools (open-source and proprietary), code repositories, and specialized algorithms used for media optimization, bioreactor modeling, and image analysis.
-* [Datasets](./Datasets/): Fixed data artifacts: corpora, atlases, sequencing deposits, and model files you would train or benchmark a model *on*, organized into per-species pages (cow, pig, chicken, fish, and more) plus cross-species reference and AI/ML benchmark pages.
+* [Datasets](./Datasets/): corpora, atlases, sequencing deposits and model files you would train or benchmark a model *on*, on per-species pages (cow, pig, chicken, fish and more) plus cross-species reference and AI/ML benchmark pages.
 * [Databases](./Databases.md): Living, queryable resources (repositories, ontologies, spectral libraries, and structure / compound / pathway databases) that you query for reference, annotation, or lookup. Also catalogues GFI's alternative-protein ecosystem directories.
-* [Reference Works](./ReferenceWorks.md): Reference textbooks and multi-volume works: the foundational cell-ag textbook and the *Encyclopedia of Meat Sciences*, with a DOI-resolvable chapter index.
+* [Reference Works](./ReferenceWorks.md): a cell-ag textbook and the *Encyclopedia of Meat Sciences*, with a DOI-resolvable chapter index.
 * [Awesome Lists](./AwesomeLists.md): Community-maintained "awesome lists" and curated bibliographies for the AI, single-cell, and bioinformatics literature cell-ag work draws on (rendered with GitHub metrics on the site).
-* [Funding & Grants](./Funding.md): Funding organizations and funding opportunities, the organizations that fund the field and the grant programs and research-portfolio mechanisms to follow.
+* [Funding & Grants](./Funding.md): organizations that fund the field, and their grant programs.
 * [Other Resources](./OtherResources.md): Journal editorials and opinion on AI in science, and cellular-agriculture ecosystem initiatives (research centers, consortia, and convening efforts).
 
 # Companion Zotero Library
-CAAIL has a companion [Zotero group library](https://www.zotero.org/groups/6549203/caail/library) maintained by core TUCCA members, holding the full-text PDFs of papers under consideration. Its purpose is to give AI coding agents running on TUCCA members' machines direct access to paper full text: so that resources are classified from the actual methods rather than abstracts alone. It is a members-only working library, not a contribution channel: to suggest a resource, use the GitHub workflow in [CONTRIBUTING.md](./CONTRIBUTING.md).
+CAAIL has a companion [Zotero group library](https://www.zotero.org/groups/6549203/caail/library) maintained by core TUCCA members, holding the full-text PDFs of papers under consideration. It lets AI coding agents on TUCCA members' machines read the full text of the papers it holds, so that a resource is classified from its methods and not from its abstract alone. It is a members-only working library, so to suggest a resource, use the GitHub workflow in [CONTRIBUTING.md](./CONTRIBUTING.md).
 
-[Curation Methodology](https://caail.tufts.edu/curation/) describes what that means in practice: how each paper's methods section is located against the PDF's own heading structure, how much of the matrix it currently covers, and what a placement does and does not establish.
+The [Curation Methodology](https://caail.tufts.edu/curation/) page explains how each paper's methods section is located from the PDF's own headings, how much of the matrix that currently covers, and what a placement does and does not establish.
 
 # Contributing
 Suggestions of papers, software, datasets, and other resources are welcome. See [CONTRIBUTING.md](./CONTRIBUTING.md) for how to propose additions via pull request or GitHub issue.
