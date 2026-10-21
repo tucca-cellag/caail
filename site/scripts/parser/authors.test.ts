@@ -7,11 +7,11 @@ import { describe, it, expect } from 'vitest';
 
 import {
   authorKey,
+  authorshipsFor,
   compareAuthorships,
   differentPeopleCheck,
   foldName,
   givenCore,
-  resolveAuthorship,
   uncachedDois,
   type AuthorCache,
   type Authorship,
@@ -97,39 +97,42 @@ describe('compareAuthorships', () => {
   });
 });
 
-describe('resolveAuthorship', () => {
+describe('authorshipsFor', () => {
   const authors = [
     person('Mengdi', 'Wang'),
     person('Shuli', 'Liu'),
     person('Kevin', 'D’Mellow'),
     person('Ángel B.', 'Ávila'),
     person('Łukasz', 'Smoliński'),
+    person('Ehecatl Antonio', 'del Rio Chanona'),
     person(null, null),
   ];
+  const givenFor = (citation: string) => authorshipsFor(authors, authorKey(citation)!).map((a) => a.given);
 
-  it('finds the one authorship with the key’s surname and first initial', () => {
-    expect(resolveAuthorship(authors, 'liu|s')).toEqual(person('Shuli', 'Liu'));
-    expect(resolveAuthorship(authors, 'd’mellow|k')?.given).toBe('Kevin');
+  it('finds the authorship with the citation’s surname and first initial', () => {
+    expect(givenFor('Liu, S.')).toEqual(['Shuli']);
+    expect(givenFor('D’Mellow, K.')).toEqual(['Kevin']);
   });
 
-  it('resolves keys built by authorKey from accented citations, not hand-built ones', () => {
-    expect(authorKey('Ávila, Á. B.')).toBe('ávila|a');
-    expect(resolveAuthorship(authors, authorKey('Ávila, Á. B.')!)?.given).toBe('Ángel B.');
-    expect(authorKey('Smoliński, Ł.')).toBe('smoliński|l');
-    expect(resolveAuthorship(authors, authorKey('Smoliński, Ł.')!)?.given).toBe('Łukasz');
+  it('resolves accented citations through authorKey itself, initials and surnames alike', () => {
+    expect(givenFor('Ávila, Á. B.')).toEqual(['Ángel B.']);
+    expect(givenFor('Avila, A.')).toEqual(['Ángel B.']);
+    expect(givenFor('Smoliński, Ł.')).toEqual(['Łukasz']);
+    expect(givenFor('del Rio‐Chanona, E. A.')).toEqual(['Ehecatl Antonio']);
   });
 
-  it('matches on the surname alone when the key carries no initial', () => {
-    expect(resolveAuthorship(authors, 'wang')?.given).toBe('Mengdi');
+  it('matches on the surname alone when the citation gives no initial', () => {
+    expect(givenFor('Wang')).toEqual(['Mengdi']);
   });
 
-  it('is null when the initial differs or nobody matches', () => {
-    expect(resolveAuthorship(authors, 'liu|x')).toBeNull();
-    expect(resolveAuthorship(authors, 'zhang|j')).toBeNull();
+  it('is empty when the initial differs or nobody matches', () => {
+    expect(givenFor('Liu, X.')).toEqual([]);
+    expect(givenFor('Zhang, J.')).toEqual([]);
   });
 
-  it('is null when two authorships on one paper carry the key', () => {
-    expect(resolveAuthorship([person('Mengdi', 'Wang'), person('Mingxun', 'Wang')], 'wang|m')).toBeNull();
+  it('returns every authorship that carries the key', () => {
+    const twoWangs = [person('Mengdi', 'Wang'), person('Mingxun', 'Wang')];
+    expect(authorshipsFor(twoWangs, 'wang|m').map((a) => a.given)).toEqual(['Mengdi', 'Mingxun']);
   });
 });
 
@@ -140,6 +143,8 @@ describe('differentPeopleCheck', () => {
       '10.1/a': { source: 'crossref', authors: [person('Sherry', 'Liu')] },
       '10.1/b': { source: 'crossref', authors: [person('Shuli', 'Liu')] },
       '10.1/c': { source: 'datacite', authors: [person('Shuli', 'Liu')] },
+      '10.1/two': { source: 'crossref', authors: [person('Shuli', 'Liu'), person('Shan', 'Liu')] },
+      '10.1/other-two': { source: 'crossref', authors: [person('Sherry', 'Liu'), person('Siyu', 'Liu')] },
     },
   };
   const refs = [
@@ -148,12 +153,20 @@ describe('differentPeopleCheck', () => {
     { id: 3, doi: '10.1/c' },
     { id: 4, doi: '10.1/not-cached' },
     { id: 5, doi: null },
+    { id: 6, doi: '10.1/two' },
+    { id: 7, doi: '10.1/other-two' },
   ];
   const differ = differentPeopleCheck(cache, refs);
 
   it('is true only when both papers name different people under the key', () => {
     expect(differ(1, 2, 'liu|s')).toBe(true);
     expect(differ(2, 3, 'liu|s')).toBe(false);
+  });
+
+  it('with several authorships under the key, splits only when every one differs from every one', () => {
+    expect(differ(1, 6, 'liu|s')).toBe(true); // Sherry against Shuli and Shan
+    expect(differ(2, 6, 'liu|s')).toBe(false); // Shuli is on both
+    expect(differ(6, 7, 'liu|s')).toBe(true); // {Shuli, Shan} against {Sherry, Siyu}
   });
 
   it('is false when either paper has no record, so the join stands', () => {
@@ -163,6 +176,6 @@ describe('differentPeopleCheck', () => {
 
   it('uncachedDois lists the papers that fall back to names only', () => {
     expect(uncachedDois(cache, refs)).toEqual(['10.1/not-cached']);
-    expect(uncachedDois(null, refs)).toEqual(['10.1/a', '10.1/b', '10.1/c', '10.1/not-cached']);
+    expect(uncachedDois(null, refs)).toEqual(['10.1/a', '10.1/b', '10.1/c', '10.1/not-cached', '10.1/other-two', '10.1/two']);
   });
 });

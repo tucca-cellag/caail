@@ -18,9 +18,11 @@
  *     names of five or more letters one letter apart ("Mohamed" and "Mohammed"), which
  *     is as likely a spelling variant as a different person;
  *   - different people: both given names known in full and none of the above.
- * Only "different people" removes a join. An authorship the cache cannot resolve (no
- * record, no DOI, or a key matching two authorships on one paper) keeps its join too,
- * so the rule never adds an edge and never removes one without evidence.
+ * Only "different people" removes a join. Where a key matches several authorships on
+ * one paper, the join is removed only when every one of them is a different person from
+ * every one on the other paper. An authorship the cache cannot find (no record, no DOI,
+ * or a family name spelled differently from the citation) keeps its join, so the rule
+ * never removes an edge without evidence.
  *
  * Known gap: a nickname that is not a prefix of the full name ("Mike" and "Michael")
  * reads as different people unless both authorships carry the same ORCID.
@@ -104,23 +106,27 @@ export function foldName(s: string): string {
   return [...s.normalize('NFKD').replace(/\p{M}/gu, '').toLowerCase()].map((c) => UNDECOMPOSED[c] ?? c).join('');
 }
 
-/** Letters only, after folding: the form surnames are compared in ("D’Mellow" → "dmellow"). */
-function letters(s: string): string {
-  return foldName(s).replace(/[^a-z]/g, '');
+/**
+ * A surname as the key carries it: folded, with spaces, hyphens and apostrophes removed,
+ * so "del Rio‐Chanona", "del Rio-Chanona" and "del Rio Chanona" are one surname, as are
+ * "Ávila" and "Avila". Letters in other scripts are kept rather than dropped.
+ */
+function surnameForm(s: string): string {
+  return foldName(s).replace(/[^\p{L}]/gu, '');
 }
 
 /**
- * Normalize an APA author string ("Surname, F. M.") to the match key `surname|f`
- * (lowercased). The initial is the first letter after the comma, folded to its plain
- * form, so "Á." keys as `a` and "Ł." as `l` rather than being dropped or replaced by the
- * next initial. Falls back to the whole token when there is no comma or no initial.
- * Returns null for empty input.
+ * Normalize an APA author string ("Surname, F. M.") to the match key `surname|f`. The
+ * surname is folded (`surnameForm`), and the initial is the first letter after the
+ * comma, folded to its plain form, so "Á." keys as `a` and "Ł." as `l` rather than being
+ * dropped or replaced by the next initial. Falls back to the surname alone when there is
+ * no comma or no initial. Returns null for empty input.
  */
 export function authorKey(author: string): string | null {
   const trimmed = author.trim();
   if (!trimmed) return null;
   const [surnameRaw, initialsRaw = ''] = trimmed.split(',');
-  const surname = surnameRaw.trim().toLowerCase();
+  const surname = surnameForm(surnameRaw);
   if (!surname) return null;
   const firstInitial = foldName(initialsRaw.match(/\p{L}/u)?.[0] ?? '');
   return firstInitial ? `${surname}|${firstInitial}` : surname;
@@ -191,22 +197,21 @@ export function compareAuthorships(a: Authorship, b: Authorship): Identity {
 }
 
 /**
- * The one authorship on a paper that a shared-author key names, or null when none or
- * more than one does. Each authorship is keyed with `authorKey` itself, from its family
- * name and full given name, so the cache and the citation strings can only disagree
- * where their spellings do, never where two copies of the keying rule would.
+ * Every authorship on a paper that a shared-author key names: usually one, none when the
+ * record spells the name differently from the citation, and several when two authors on
+ * the paper share the key. Each authorship is keyed with `authorKey` itself, from its
+ * family name and full given name, so the cache and the citation strings can only
+ * disagree where their spellings do, never where two copies of the keying rule would.
  */
-export function resolveAuthorship(authors: readonly Authorship[], key: string): Authorship | null {
-  const [surname, initial = ''] = key.split('|');
-  const want = letters(surname);
-  if (!want) return null;
-  const hits = authors.filter((a) => {
-    if (a.family === null || letters(a.family) !== want) return false;
-    if (!initial) return true;
-    const own = authorKey(`${a.family}, ${a.given ?? ''}`) ?? '';
-    return own.split('|')[1] === initial;
+export function authorshipsFor(authors: readonly Authorship[], key: string): Authorship[] {
+  if (!key) return [];
+  // A key with no initial (the citation gave none) matches on the surname alone.
+  const bare = !key.includes('|');
+  return authors.filter((a) => {
+    if (a.family === null) return false;
+    const own = authorKey(`${a.family}, ${a.given ?? ''}`);
+    return own !== null && (bare ? own.split('|')[0] === key : own === key);
   });
-  return hits.length === 1 ? hits[0] : null;
 }
 
 /**
@@ -224,19 +229,20 @@ export function differentPeopleCheck(
     const record = k ? cache.works[k] : undefined;
     if (record) recordById.set(r.id, record);
   }
-  const memo = new Map<string, Authorship | null>();
-  const resolve = (id: number, key: string): Authorship | null => {
+  const memo = new Map<string, Authorship[]>();
+  const resolve = (id: number, key: string): Authorship[] => {
     const m = `${id}|${key}`;
     if (!memo.has(m)) {
       const record = recordById.get(id);
-      memo.set(m, record ? resolveAuthorship(record.authors, key) : null);
+      memo.set(m, record ? authorshipsFor(record.authors, key) : []);
     }
-    return memo.get(m) ?? null;
+    return memo.get(m) ?? [];
   };
   return (a, b, key) => {
-    const x = resolve(a, key);
-    const y = resolve(b, key);
-    return x !== null && y !== null && compareAuthorships(x, y) === 'different';
+    const xs = resolve(a, key);
+    const ys = resolve(b, key);
+    if (xs.length === 0 || ys.length === 0) return false;
+    return xs.every((x) => ys.every((y) => compareAuthorships(x, y) === 'different'));
   };
 }
 

@@ -7,7 +7,8 @@ import { readFileSync } from 'node:fs';
 
 import { describe, it, expect } from 'vitest';
 
-import { AUTHOR_CACHE_PATH, AuthorCacheSchema } from './authors.js';
+import { AUTHOR_CACHE_PATH, AuthorCacheSchema, uncachedDois } from './authors.js';
+import { corpusPapers } from './corpus-fixture.js';
 import { bareOrcid, fetchAuthorCache, serializeAuthorCache, type FetchLike } from './fetch-authors.js';
 
 const ok = (body: unknown) => ({ ok: true, status: 200, statusText: 'OK', json: async () => body });
@@ -101,6 +102,21 @@ describe('fetchAuthorCache', () => {
     expect(logs).toContain('no record in either registry: 10.1/never');
   });
 
+  it('keeps the previous record when a registry returns the DOI with no named authors', async () => {
+    const empty = { message: { items: [{ DOI: '10.1/emptied', author: [{ name: 'A Consortium' }] }] } };
+    const { fetchImpl } = stubRegistries(empty, { data: [] });
+    const kept = { source: 'crossref' as const, authors: [{ given: 'Shuli', family: 'Liu', orcid: null }] };
+    const logs: string[] = [];
+    const cache = await fetchAuthorCache(['10.1/emptied'], {
+      fetchImpl,
+      delayMs: 0,
+      log: (m) => logs.push(m),
+      previous: { generatedAt: '2026-01-01T00:00:00.000Z', works: { '10.1/emptied': kept } },
+    });
+    expect(cache.works['10.1/emptied']).toEqual(kept);
+    expect(logs).toContain('returned with no named authors, so the previous record is kept: 10.1/emptied');
+  });
+
   it('throws on a non-OK response, naming the batch, so nothing partial is written', async () => {
     const fetchImpl: FetchLike = async () => ({ ok: false, status: 503, statusText: 'Busy', json: async () => ({}) });
     await expect(fetchAuthorCache(['10.1/a'], { fetchImpl, delayMs: 0 })).rejects.toThrow(
@@ -132,6 +148,13 @@ describe('serializeAuthorCache', () => {
 
 describe('the committed author-cache.json', () => {
   const cache = AuthorCacheSchema.parse(JSON.parse(readFileSync(AUTHOR_CACHE_PATH, 'utf-8')));
+
+  it('covers every paper with a DOI, so none falls back to name-only joins unnoticed', () => {
+    expect(
+      uncachedDois(cache, corpusPapers().references),
+      'papers with a DOI but no author record: run `pnpm --dir site fetch:authors` and commit author-cache.json',
+    ).toEqual([]);
+  });
 
   it('is written in the committed one-paper-per-line form', () => {
     expect(readFileSync(AUTHOR_CACHE_PATH, 'utf-8')).toBe(serializeAuthorCache(cache));

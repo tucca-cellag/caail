@@ -12,7 +12,8 @@
 
 import { describe, it, expect, beforeAll } from 'vitest';
 
-import { authorKey, buildGraphModel } from './graph.js';
+import { authorKey } from './authors.js';
+import { buildGraphModel } from './graph.js';
 import { corpusPapers } from './corpus-fixture.js';
 import { loadAuthorCache, loadCitationCache } from './generate-data.js';
 import type { AuthorCache } from './authors.js';
@@ -60,9 +61,15 @@ describe('authorKey', () => {
     expect(authorKey('Madonna')).toBe('madonna');
   });
   it('keys an accented first initial by its plain letter, not by the next initial or the surname alone', () => {
-    expect(authorKey('Ávila, Á. B.')).toBe('ávila|a');
-    expect(authorKey('Smoliński, Ł.')).toBe('smoliński|l');
+    expect(authorKey('Ávila, Á. B.')).toBe('avila|a');
+    expect(authorKey('Smoliński, Ł.')).toBe('smolinski|l');
     expect(authorKey('Smoliński, Ł.')).toBe(authorKey('Smoliński, L.'));
+  });
+  it('folds the surname, so one person cited with different separators or accents keys once', () => {
+    const key = authorKey('del Rio Chanona, E.');
+    expect(authorKey('del Rio-Chanona, E.')).toBe(key);
+    expect(authorKey('del Rio‐Chanona, E.')).toBe(key); // U+2010 hyphen, as ref 29 cites him
+    expect(authorKey('Ávila, A.')).toBe(authorKey('Avila, A.'));
   });
 });
 

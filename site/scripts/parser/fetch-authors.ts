@@ -15,8 +15,9 @@
  * requests. No contact address is sent.
  *
  * Fails closed: a non-OK response throws, and the CLI writes nothing. A DOI the
- * registries leave out of an otherwise good run (a short batch, an indexing lag) keeps
- * its previous record rather than losing it, and the run says which DOIs that happened to.
+ * registries leave out of an otherwise good run (a short batch, an indexing lag), or
+ * return with no named authors where they had some before, keeps its previous record
+ * rather than losing it, and the run says which DOIs that happened to.
  *
  * The testable core (fetchAuthorCache, serializeAuthorCache) is importable and
  * side-effect-free; the DOI gathering and file write happen only under the isMain guard.
@@ -71,9 +72,10 @@ const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout
 
 /**
  * Look the DOIs up in Crossref, then DataCite for any Crossref does not hold, and
- * assemble an AuthorCache. A DOI neither registry returns keeps its record from
- * `previous` when it has one, and is otherwise absent. Throws on a non-OK response, and
- * on a DOI that a batch query cannot carry.
+ * assemble an AuthorCache. A DOI neither registry returns, or one returned with no named
+ * authors, keeps its record from `previous` when that record has authors, and is
+ * otherwise taken as returned (or absent). Throws on a non-OK response, and on a DOI that
+ * a batch query cannot carry.
  */
 export async function fetchAuthorCache(
   dois: ReadonlyArray<string | null | undefined>,
@@ -154,6 +156,14 @@ export async function fetchAuthorCache(
     }
     log(`${label}: ${json.data?.length ?? 0} records`);
   }
+
+  // A record back with no named authors (organization-only, or no author list at all)
+  // never replaces one that had them: that would silently switch the split off.
+  const emptied = wanted.filter(
+    (d) => works[d]?.authors.length === 0 && (previous?.works[d]?.authors.length ?? 0) > 0,
+  );
+  for (const d of emptied) works[d] = previous!.works[d];
+  if (emptied.length) log(`returned with no named authors, so the previous record is kept: ${emptied.join(' ')}`);
 
   const missing = wanted.filter((d) => !works[d]);
   const kept = missing.filter((d) => previous?.works[d]);

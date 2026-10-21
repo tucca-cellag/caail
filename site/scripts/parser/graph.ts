@@ -17,10 +17,6 @@
  */
 
 import { authorKey, differentPeopleCheck, type AuthorCache } from './authors.js';
-
-// The key lives with the rule that resolves it against the author cache; re-exported
-// here because the graph is what it keys.
-export { authorKey };
 import { buildCitationData, type CitationCache } from './citations.js';
 import { largestComponentSize } from './connectivity.js';
 import {
