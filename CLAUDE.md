@@ -272,7 +272,7 @@ So, when writing any curated entry or summary:
 
 **The failure this prevents, which happened:** the `OtherResources.md` entry for Weinstock's "AI cannot taste things" once ended "…which cuts against the central premise of the Sensory Prediction research area." That attributed to CAAIL, in public and in CAAIL's own voice, a claim that instrumental prediction of human sensory response works. `Taxonomy.md` makes no such claim, so the entry manufactured a position and then reported it as contested.
 
-This is a distinct virtue from the coverage note already in `api/index.json`'s `scopeNote`, which says an empty cell is a limit of the index and not evidence that no such work exists. That one is about what CAAIL has *seen*; this one is about what CAAIL *believes*, which is nothing. Both need stating; only the first currently is on the site, and surfacing this one there is open work.
+This is a distinct virtue from the coverage note already in `api/index.json`'s `scopeNote`, which says an empty cell is a limit of the index and not evidence that no such work exists. That one is about what CAAIL has *seen*; this one is about what CAAIL *believes*, which is nothing. Both need stating.
 
 ## Citation style
 
