@@ -111,11 +111,6 @@
           "slug": "cell-lines-engineering",
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
-        },
-        {
-          "slug": "single-cell-atlases",
-          "label": "Single-cell atlases",
-          "theme": "cell-lines-engineering"
         }
       ],
       "license": null,
@@ -273,11 +268,6 @@
           "slug": "cell-lines-engineering",
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
-        },
-        {
-          "slug": "single-cell-atlases",
-          "label": "Single-cell atlases",
-          "theme": "cell-lines-engineering"
         }
       ],
       "license": null,
@@ -358,11 +348,6 @@
           "slug": "cell-lines-engineering",
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
-        },
-        {
-          "slug": "single-cell-atlases",
-          "label": "Single-cell atlases",
-          "theme": "cell-lines-engineering"
         }
       ],
       "license": null,
@@ -438,11 +423,6 @@
           "slug": "cell-lines-engineering",
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
-        },
-        {
-          "slug": "single-cell-atlases",
-          "label": "Single-cell atlases",
-          "theme": "cell-lines-engineering"
         }
       ],
       "license": null,
@@ -474,11 +454,6 @@
           "slug": "cell-lines-engineering",
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
-        },
-        {
-          "slug": "single-cell-atlases",
-          "label": "Single-cell atlases",
-          "theme": "cell-lines-engineering"
         }
       ],
       "license": null,
@@ -507,11 +482,6 @@
         {
           "slug": "cell-lines-engineering",
           "label": "Cell Lines & Engineering",
-          "theme": "cell-lines-engineering"
-        },
-        {
-          "slug": "single-cell-atlases",
-          "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
       ],
@@ -660,11 +630,6 @@
         {
           "slug": "cell-lines-engineering",
           "label": "Cell Lines & Engineering",
-          "theme": "cell-lines-engineering"
-        },
-        {
-          "slug": "single-cell-atlases",
-          "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
       ],
@@ -837,11 +802,6 @@
         {
           "slug": "cell-lines-engineering",
           "label": "Cell Lines & Engineering",
-          "theme": "cell-lines-engineering"
-        },
-        {
-          "slug": "single-cell-atlases",
-          "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
       ],
@@ -2029,11 +1989,6 @@
           "slug": "cell-lines-engineering",
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
-        },
-        {
-          "slug": "single-cell-atlases",
-          "label": "Single-cell atlases",
-          "theme": "cell-lines-engineering"
         }
       ],
       "license": null,
@@ -2180,11 +2135,6 @@
           "slug": "media-growth-factors",
           "label": "Media & Growth Factors",
           "theme": "media-growth-factors"
-        },
-        {
-          "slug": "single-cell-atlases",
-          "label": "Single-cell atlases",
-          "theme": "cell-lines-engineering"
         }
       ],
       "license": null,
@@ -3168,11 +3118,6 @@
         {
           "slug": "cell-lines-engineering",
           "label": "Cell Lines & Engineering",
-          "theme": "cell-lines-engineering"
-        },
-        {
-          "slug": "single-cell-atlases",
-          "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
       ],
@@ -4380,11 +4325,6 @@
           "slug": "cell-lines-engineering",
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
-        },
-        {
-          "slug": "single-cell-atlases",
-          "label": "Single-cell atlases",
-          "theme": "cell-lines-engineering"
         }
       ],
       "subseries": []
@@ -4659,11 +4599,6 @@
         {
           "slug": "cell-lines-engineering",
           "label": "Cell Lines & Engineering",
-          "theme": "cell-lines-engineering"
-        },
-        {
-          "slug": "single-cell-atlases",
-          "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
       ],
@@ -5512,11 +5447,6 @@
           "slug": "cell-lines-engineering",
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
-        },
-        {
-          "slug": "single-cell-atlases",
-          "label": "Single-cell atlases",
-          "theme": "cell-lines-engineering"
         }
       ],
       "subseries": []
@@ -5732,11 +5662,6 @@
         {
           "slug": "cell-lines-engineering",
           "label": "Cell Lines & Engineering",
-          "theme": "cell-lines-engineering"
-        },
-        {
-          "slug": "single-cell-atlases",
-          "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
       ],
@@ -6127,11 +6052,6 @@
           "slug": "sensory-flavor",
           "label": "Sensory & Flavor",
           "theme": "sensory-flavor"
-        },
-        {
-          "slug": "single-cell-atlases",
-          "label": "Single-cell atlases",
-          "theme": "cell-lines-engineering"
         }
       ],
       "subseries": []
@@ -7878,11 +7798,6 @@
           "slug": "cell-lines-engineering",
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
-        },
-        {
-          "slug": "single-cell-atlases",
-          "label": "Single-cell atlases",
-          "theme": "cell-lines-engineering"
         }
       ],
       "subseries": []
@@ -8516,11 +8431,6 @@
           "slug": "cell-lines-engineering",
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
-        },
-        {
-          "slug": "single-cell-atlases",
-          "label": "Single-cell atlases",
-          "theme": "cell-lines-engineering"
         }
       ],
       "subseries": []
@@ -8744,11 +8654,6 @@
         {
           "slug": "cell-lines-engineering",
           "label": "Cell Lines & Engineering",
-          "theme": "cell-lines-engineering"
-        },
-        {
-          "slug": "single-cell-atlases",
-          "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
       ],

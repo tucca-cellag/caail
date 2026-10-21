@@ -78,4 +78,18 @@ describe('seedTopics', () => {
     const maxTags = count('SELECT MAX(c) n FROM (SELECT COUNT(*) c FROM item_topics GROUP BY item_id)');
     expect(maxTags).toBeGreaterThan(1);
   });
+
+  it('does not seed the single-cell-atlases tag from the word "atlas" alone', () => {
+    // A bare `atlas` keyword tagged every database under the "Livestock Multi-Tissue
+    // Atlases" group, and any bulk deposit described as an atlas, as single-cell.
+    // This covers the SEED rule only: the served tags are the committed, curated rows in
+    // item_topics.ndjson, which override the seed on re-import.
+    const hasTag = (id: string) =>
+      count("SELECT COUNT(*) n FROM item_topics WHERE item_id=? AND topic_id='topic:single-cell-atlases'", id) > 0;
+    expect(hasTag('db:farmgtex'), 'bulk resource tagged via its group name').toBe(false);
+    expect(hasTag('ds:cra019589'), 'bulk epigenome row tagged because its text says atlas').toBe(false);
+    expect(hasTag('paper:238'), 'bulk RNA-seq paper tagged because its title says atlas').toBe(false);
+    expect(hasTag('db:human-cell-atlas-hca'), 'a cell atlas must still be tagged').toBe(true);
+    expect(hasTag('ds:gse184128'), 'an scRNA-seq inventory row must still be tagged').toBe(true);
+  });
 });
