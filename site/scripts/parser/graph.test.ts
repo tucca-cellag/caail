@@ -59,6 +59,11 @@ describe('authorKey', () => {
   it('falls back to the surname when there is no initial', () => {
     expect(authorKey('Madonna')).toBe('madonna');
   });
+  it('keys an accented first initial by its plain letter, not by the next initial or the surname alone', () => {
+    expect(authorKey('Ávila, Á. B.')).toBe('ávila|a');
+    expect(authorKey('Smoliński, Ł.')).toBe('smoliński|l');
+    expect(authorKey('Smoliński, Ł.')).toBe(authorKey('Smoliński, L.'));
+  });
 });
 
 // ---------------------------------------------------------------------------

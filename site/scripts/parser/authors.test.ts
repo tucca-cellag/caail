@@ -6,6 +6,7 @@
 import { describe, it, expect } from 'vitest';
 
 import {
+  authorKey,
   compareAuthorships,
   differentPeopleCheck,
   foldName,
@@ -23,8 +24,9 @@ const person = (given: string | null, family: string | null, orcid: string | nul
 });
 
 describe('foldName and givenCore', () => {
-  it('folds accents and case', () => {
+  it('folds accents and case, and maps Latin letters Unicode does not decompose', () => {
     expect(foldName('Ávila')).toBe('avila');
+    expect(foldName('Łukasz Ørsted')).toBe('lukasz orsted');
   });
 
   it('drops initials and separators, keeping what tells people apart', () => {
@@ -67,6 +69,28 @@ describe('compareAuthorships', () => {
     expect(compareAuthorships(person('Chris', 'Lee'), person('Christopher', 'Lee'))).toBe('same');
   });
 
+  it('a name whose parts all appear in the other agrees, so going by a second name does not split', () => {
+    expect(compareAuthorships(person('Maria', 'Lopez'), person('Ana Maria', 'Lopez'))).toBe('same');
+    expect(compareAuthorships(person('Maria', 'Lopez'), person('Ana-Maria', 'Lopez'))).toBe('same');
+  });
+
+  it('long names one letter apart are unknown, since a spelling variant is as likely as a new person', () => {
+    expect(compareAuthorships(person('Mohamed', 'Ali'), person('Mohammed', 'Ali'))).toBe('unknown');
+    expect(compareAuthorships(person('Sergey', 'Ivanov'), person('Sergei', 'Ivanov'))).toBe('unknown');
+    expect(compareAuthorships(person('Jielong', 'Yang'), person('Jilong', 'Yang'))).toBe('unknown');
+  });
+
+  it('short names one letter apart stay different people: they are usually different names', () => {
+    expect(compareAuthorships(person('Ying', 'Xu'), person('Yong', 'Xu'))).toBe('different');
+    expect(compareAuthorships(person('Jie', 'Wang'), person('Jin', 'Wang'))).toBe('different');
+  });
+
+  it('a nickname that is not a prefix reads as different people without a shared ORCID (known gap)', () => {
+    expect(compareAuthorships(person('Mike', 'Smith'), person('Michael', 'Smith'))).toBe('different');
+    const orcid = '0000-0002-1825-0097';
+    expect(compareAuthorships(person('Mike', 'Smith', orcid), person('Michael', 'Smith', orcid))).toBe('same');
+  });
+
   it('initials only, or no given name, is unknown', () => {
     expect(compareAuthorships(person('S.', 'Liu'), person('Shuli', 'Liu'))).toBe('unknown');
     expect(compareAuthorships(person(null, 'Liu'), person('Shuli', 'Liu'))).toBe('unknown');
@@ -78,14 +102,21 @@ describe('resolveAuthorship', () => {
     person('Mengdi', 'Wang'),
     person('Shuli', 'Liu'),
     person('Kevin', 'D’Mellow'),
-    person('Ángel', 'Ávila'),
+    person('Ángel B.', 'Ávila'),
+    person('Łukasz', 'Smoliński'),
     person(null, null),
   ];
 
   it('finds the one authorship with the key’s surname and first initial', () => {
     expect(resolveAuthorship(authors, 'liu|s')).toEqual(person('Shuli', 'Liu'));
     expect(resolveAuthorship(authors, 'd’mellow|k')?.given).toBe('Kevin');
-    expect(resolveAuthorship(authors, 'ávila|a')?.given).toBe('Ángel');
+  });
+
+  it('resolves keys built by authorKey from accented citations, not hand-built ones', () => {
+    expect(authorKey('Ávila, Á. B.')).toBe('ávila|a');
+    expect(resolveAuthorship(authors, authorKey('Ávila, Á. B.')!)?.given).toBe('Ángel B.');
+    expect(authorKey('Smoliński, Ł.')).toBe('smoliński|l');
+    expect(resolveAuthorship(authors, authorKey('Smoliński, Ł.')!)?.given).toBe('Łukasz');
   });
 
   it('matches on the surname alone when the key carries no initial', () => {

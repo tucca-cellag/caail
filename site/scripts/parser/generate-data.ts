@@ -158,7 +158,7 @@ export function generateData(
   primers: number;
   graphNodes: number;
   graphEdges: number;
-  /** DOIs of papers with no author record, whose shared-author joins use names only. */
+  /** DOIs of papers that have a DOI but no author record, whose shared-author joins use names only. */
   papersWithoutAuthorRecord: string[];
   recentEntries: number;
   taxonomyDefs: number;
@@ -196,8 +196,8 @@ export function generateData(
 
   // Build and validate the paper network (shared-author + citation edges). The
   // citation cache is an optional committed input; absent ⇒ no citation edges. The
-  // author cache splits a shared-author key between different people; a paper with no
-  // record in it joins by name only, so those papers are reported, not fatal.
+  // author cache splits a shared-author key between different people; a paper with a DOI
+  // but no record joins by name only, so those papers are reported, not fatal.
   const authorCache = loadAuthorCache();
   const graph = buildGraphModel(model, loadCitationCache(), authorCache);
   const papersWithoutAuthorRecord = uncachedDois(authorCache, model.references);
@@ -611,7 +611,7 @@ if (isMain) {
     if (papersWithoutAuthorRecord.length) {
       // eslint-disable-next-line no-console
       console.log(
-        `parse: ${papersWithoutAuthorRecord.length} paper(s) have no record in author-cache.json, so ` +
+        `parse: ${papersWithoutAuthorRecord.length} paper(s) with a DOI have no record in author-cache.json, so ` +
           'their shared-author joins use names only. Run `pnpm --dir site fetch:authors` to add them: ' +
           papersWithoutAuthorRecord.join(' '),
       );

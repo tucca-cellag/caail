@@ -6,23 +6,26 @@
  * MANUAL / opt-in (`pnpm fetch:authors`), like fetch:citations: `pnpm parse` and
  * `pnpm build` read the committed cache and never touch the network. Re-run it when
  * papers are added. Until then a new paper has no record, and its shared-author joins
- * use names only, exactly as before; `pnpm parse` prints which papers that applies to.
+ * use names only, exactly as before; `pnpm parse` prints which papers with a DOI that
+ * applies to (a paper with no DOI can have no record, and always joins by name).
  *
  * Sources, in order: Crossref for every DOI it holds (the publisher's deposit, with
  * any ORCID), then DataCite for the rest, which in this corpus are the arXiv DOIs.
  * Each is queried in batches of 50 DOIs, 5 s apart, so the corpus takes about eight
  * requests. No contact address is sent.
  *
- * Fails closed: a non-OK response throws, and the CLI writes nothing.
+ * Fails closed: a non-OK response throws, and the CLI writes nothing. A DOI the
+ * registries leave out of an otherwise good run (a short batch, an indexing lag) keeps
+ * its previous record rather than losing it, and the run says which DOIs that happened to.
  *
  * The testable core (fetchAuthorCache, serializeAuthorCache) is importable and
  * side-effect-free; the DOI gathering and file write happen only under the isMain guard.
  */
 
-import { writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 
-import { AUTHOR_CACHE_PATH, type AuthorCache, type Authorship } from './authors.js';
+import { AUTHOR_CACHE_PATH, AuthorCacheSchema, type AuthorCache, type Authorship } from './authors.js';
 import { doiKey } from './citations.js';
 import { buildPapersModel } from './papers.js';
 
@@ -68,8 +71,9 @@ const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout
 
 /**
  * Look the DOIs up in Crossref, then DataCite for any Crossref does not hold, and
- * assemble an AuthorCache. DOIs neither registry returns are absent from the cache.
- * Throws on a non-OK response, and on a DOI that a batch query cannot carry.
+ * assemble an AuthorCache. A DOI neither registry returns keeps its record from
+ * `previous` when it has one, and is otherwise absent. Throws on a non-OK response, and
+ * on a DOI that a batch query cannot carry.
  */
 export async function fetchAuthorCache(
   dois: ReadonlyArray<string | null | undefined>,
@@ -78,7 +82,14 @@ export async function fetchAuthorCache(
     delayMs = DELAY_MS,
     log = () => {},
     now = new Date().toISOString(),
-  }: { fetchImpl?: FetchLike; delayMs?: number; log?: (msg: string) => void; now?: string } = {},
+    previous = null,
+  }: {
+    fetchImpl?: FetchLike;
+    delayMs?: number;
+    log?: (msg: string) => void;
+    now?: string;
+    previous?: AuthorCache | null;
+  } = {},
 ): Promise<AuthorCache> {
   const wanted = [...new Set(dois.map(doiKey).filter((d): d is string => d !== null))].sort();
   const wantedSet = new Set(wanted);
@@ -145,7 +156,11 @@ export async function fetchAuthorCache(
   }
 
   const missing = wanted.filter((d) => !works[d]);
-  if (missing.length) log(`no record in either registry: ${missing.join(' ')}`);
+  const kept = missing.filter((d) => previous?.works[d]);
+  for (const d of kept) works[d] = previous!.works[d];
+  if (kept.length) log(`not returned this run, so the previous record is kept: ${kept.join(' ')}`);
+  const absent = missing.filter((d) => !works[d]);
+  if (absent.length) log(`no record in either registry: ${absent.join(' ')}`);
 
   const sorted: AuthorCache['works'] = {};
   for (const k of Object.keys(works).sort()) sorted[k] = works[k];
@@ -174,10 +189,13 @@ if (isMain) {
   (async () => {
     try {
       const dois = buildPapersModel().references.map((r) => r.doi);
+      const previous = existsSync(AUTHOR_CACHE_PATH)
+        ? AuthorCacheSchema.parse(JSON.parse(readFileSync(AUTHOR_CACHE_PATH, 'utf-8')))
+        : null;
       // eslint-disable-next-line no-console
       console.log(`fetch:authors: looking up ${dois.filter(Boolean).length} paper DOIs in Crossref, then DataCite`);
       // eslint-disable-next-line no-console
-      const cache = await fetchAuthorCache(dois, { log: (m) => console.log('  ' + m) });
+      const cache = await fetchAuthorCache(dois, { log: (m) => console.log('  ' + m), previous });
       writeFileSync(AUTHOR_CACHE_PATH, serializeAuthorCache(cache), 'utf-8');
       // eslint-disable-next-line no-console
       console.log(

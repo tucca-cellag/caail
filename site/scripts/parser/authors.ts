@@ -1,24 +1,29 @@
 /**
- * authors.ts: tells apart different people who share a shared-author key, using the
- * full author names publishers deposit with each paper's DOI.
+ * authors.ts: the shared-author match key, and telling apart different people who share
+ * one, using the full author names publishers deposit with each paper's DOI.
  *
- * The shared-author graph keys every author `surname|first-initial` (graph.ts
- * `authorKey`), because Papers.md citations are APA and carry initials only. The key
- * also joins different people: ref 49's "Liu, S." is Sherry Liu, and the FarmGTEx
- * papers' "Liu, S." is Shuli Liu (tucca-cellag/caail-planning#552). The committed
- * author-cache.json, written by fetch-authors.ts, records every authorship on each
- * paper with its full given name and any ORCID: from Crossref, and from DataCite for
- * the DOIs Crossref does not hold (in this corpus, the arXiv ones).
+ * The shared-author graph keys every author `surname|first-initial` (`authorKey`),
+ * because Papers.md citations are APA and carry initials only. The key also joins
+ * different people: ref 49's "Liu, S." is Sherry Liu, and the FarmGTEx papers'
+ * "Liu, S." is Shuli Liu (tucca-cellag/caail-planning#552). The committed
+ * author-cache.json, written by fetch-authors.ts, records every authorship on each paper
+ * with its full given name and any ORCID: from Crossref, and from DataCite for the DOIs
+ * Crossref does not hold (in this corpus, the arXiv ones).
  *
  * Two papers' authorships under one key compare as:
- *   - same person: the ORCIDs match, or the given names agree (equal once initials and
- *     separators are dropped, or one a prefix of the other, so "Ana" and "Ana Maria"
- *     agree, as do "Chris" and "Christopher");
- *   - different people: both given names are known in full and do not agree;
- *   - unknown otherwise: no record, a given name that is initials only or starts with
- *     one ("J. Craig"), or a key matching two authorships on one paper.
- * Only "different people" removes a join. The rule never adds an edge and never removes
- * one for lack of evidence, so a paper missing from the cache joins exactly as before.
+ *   - same person: the ORCIDs match, or the given names agree: equal once initials and
+ *     separators are dropped, one a prefix of the other ("Chris" and "Christopher"), or
+ *     every part of one among the other's parts ("Maria" and "Ana Maria");
+ *   - unknown: a given name that is initials only or starts with one ("J. Craig"), or two
+ *     names of five or more letters one letter apart ("Mohamed" and "Mohammed"), which
+ *     is as likely a spelling variant as a different person;
+ *   - different people: both given names known in full and none of the above.
+ * Only "different people" removes a join. An authorship the cache cannot resolve (no
+ * record, no DOI, or a key matching two authorships on one paper) keeps its join too,
+ * so the rule never adds an edge and never removes one without evidence.
+ *
+ * Known gap: a nickname that is not a prefix of the full name ("Mike" and "Michael")
+ * reads as different people unless both authorships carry the same ORCID.
  *
  * Different ORCIDs alone are not evidence, because one person can hold two ORCID
  * records: Kexin Huang carries one ORCID on ref 49 and another on ref 123.
@@ -76,9 +81,27 @@ export const AUTHOR_CACHE_PATH: string = fileURLToPath(new URL('./author-cache.j
 // Name normalization
 // ---------------------------------------------------------------------------
 
-/** Lowercase with accents removed, so "Ávila" and "Avila" compare equal. */
+/**
+ * Latin letters that Unicode does not decompose into a base letter plus a mark, so
+ * stripping marks leaves them as they are. Mapped to the plain letter they are written
+ * with in ASCII ("Łukasz" is also published as "Lukasz").
+ */
+const UNDECOMPOSED: Readonly<Record<string, string>> = {
+  ł: 'l',
+  ø: 'o',
+  đ: 'd',
+  ð: 'd',
+  ħ: 'h',
+  ı: 'i',
+  æ: 'a',
+  œ: 'o',
+  ß: 's',
+  þ: 't',
+};
+
+/** Lowercase, with accents removed and undecomposed Latin letters mapped ("Ávila" → "avila", "Ł" → "l"). */
 export function foldName(s: string): string {
-  return s.normalize('NFKD').replace(/\p{M}/gu, '').toLowerCase();
+  return [...s.normalize('NFKD').replace(/\p{M}/gu, '').toLowerCase()].map((c) => UNDECOMPOSED[c] ?? c).join('');
 }
 
 /** Letters only, after folding: the form surnames are compared in ("D’Mellow" → "dmellow"). */
@@ -87,21 +110,63 @@ function letters(s: string): string {
 }
 
 /**
- * A given name reduced to the part that can tell two people apart: folded, initials
- * dropped, separators removed. "Yusuf H." → "yusuf", "Ji-Hoe" → "jihoe",
- * "Xiao Ming" → "xiaoming". Empty when there is nothing to compare: no name, a name of
- * initials only, or a name that starts with an initial ("J. Craig"), since someone who
- * goes by a middle name may appear elsewhere under the first.
+ * Normalize an APA author string ("Surname, F. M.") to the match key `surname|f`
+ * (lowercased). The initial is the first letter after the comma, folded to its plain
+ * form, so "Á." keys as `a` and "Ł." as `l` rather than being dropped or replaced by the
+ * next initial. Falls back to the whole token when there is no comma or no initial.
+ * Returns null for empty input.
  */
-export function givenCore(given: string | null): string {
-  if (!given) return '';
-  const tokens = foldName(given)
+export function authorKey(author: string): string | null {
+  const trimmed = author.trim();
+  if (!trimmed) return null;
+  const [surnameRaw, initialsRaw = ''] = trimmed.split(',');
+  const surname = surnameRaw.trim().toLowerCase();
+  if (!surname) return null;
+  const firstInitial = foldName(initialsRaw.match(/\p{L}/u)?.[0] ?? '');
+  return firstInitial ? `${surname}|${firstInitial}` : surname;
+}
+
+/**
+ * A given name split into the parts that can tell two people apart: folded, initials
+ * dropped, split at spaces and hyphens. "Yusuf H." → ["yusuf"], "Ji-Hoe" → ["ji", "hoe"].
+ * Empty when there is nothing to compare: no name, a name of initials only, or a name
+ * that starts with an initial ("J. Craig"), since someone who goes by a middle name may
+ * appear elsewhere under the first.
+ */
+export function givenParts(given: string | null): string[] {
+  if (!given) return [];
+  const parts = foldName(given)
     .replace(/\./g, ' ')
-    .split(/\s+/)
+    .split(/[\s\-‐‑–]+/)
     .map((t) => t.replace(/[^a-z]/g, ''))
     .filter(Boolean);
-  if (tokens.length === 0 || tokens[0].length < 2) return '';
-  return tokens.filter((t) => t.length > 1).join('');
+  if (parts.length === 0 || parts[0].length < 2) return [];
+  return parts.filter((t) => t.length > 1);
+}
+
+/** The given name as one comparable string: "Xiao Ming" and "Xiao-Ming" both → "xiaoming". */
+export function givenCore(given: string | null): string {
+  return givenParts(given).join('');
+}
+
+/** Whether two strings are at most one insertion, deletion or substitution apart. */
+function withinOneEdit(a: string, b: string): boolean {
+  if (Math.abs(a.length - b.length) > 1) return false;
+  const [s, l] = a.length <= b.length ? [a, b] : [b, a];
+  let i = 0;
+  let j = 0;
+  let edits = 0;
+  while (i < s.length && j < l.length) {
+    if (s[i] === l[j]) {
+      i++;
+      j++;
+      continue;
+    }
+    if (++edits > 1) return false;
+    if (s.length === l.length) i++;
+    j++;
+  }
+  return edits + (l.length - j) + (s.length - i) <= 1;
 }
 
 // ---------------------------------------------------------------------------
@@ -113,27 +178,34 @@ export type Identity = 'same' | 'different' | 'unknown';
 /** Whether two authorships under one key are the same person (see the module docstring). */
 export function compareAuthorships(a: Authorship, b: Authorship): Identity {
   if (a.orcid && b.orcid && a.orcid === b.orcid) return 'same';
-  const ga = givenCore(a.given);
-  const gb = givenCore(b.given);
-  if (!ga || !gb) return 'unknown';
-  return ga.startsWith(gb) || gb.startsWith(ga) ? 'same' : 'different';
+  const pa = givenParts(a.given);
+  const pb = givenParts(b.given);
+  if (pa.length === 0 || pb.length === 0) return 'unknown';
+  const ja = pa.join('');
+  const jb = pb.join('');
+  if (ja.startsWith(jb) || jb.startsWith(ja)) return 'same';
+  const [fewer, more] = pa.length <= pb.length ? [pa, pb] : [pb, pa];
+  if (fewer.every((t) => more.includes(t))) return 'same';
+  if (Math.min(ja.length, jb.length) >= 5 && withinOneEdit(ja, jb)) return 'unknown';
+  return 'different';
 }
 
 /**
  * The one authorship on a paper that a shared-author key names, or null when none or
- * more than one does. The key is graph.ts's `surname|first-initial`, or the bare surname
- * when the citation gave no initial.
+ * more than one does. Each authorship is keyed with `authorKey` itself, from its family
+ * name and full given name, so the cache and the citation strings can only disagree
+ * where their spellings do, never where two copies of the keying rule would.
  */
 export function resolveAuthorship(authors: readonly Authorship[], key: string): Authorship | null {
   const [surname, initial = ''] = key.split('|');
   const want = letters(surname);
   if (!want) return null;
-  const hits = authors.filter(
-    (a) =>
-      a.family !== null &&
-      letters(a.family) === want &&
-      (!initial || (foldName(a.given ?? '').match(/[a-z]/)?.[0] ?? '') === initial),
-  );
+  const hits = authors.filter((a) => {
+    if (a.family === null || letters(a.family) !== want) return false;
+    if (!initial) return true;
+    const own = authorKey(`${a.family}, ${a.given ?? ''}`) ?? '';
+    return own.split('|')[1] === initial;
+  });
   return hits.length === 1 ? hits[0] : null;
 }
 
@@ -168,7 +240,11 @@ export function differentPeopleCheck(
   };
 }
 
-/** DOIs of papers with no record in the cache, whose shared-author joins fall back to names only. */
+/**
+ * DOIs of papers that have a DOI but no record in the cache, whose shared-author joins
+ * fall back to names only. A paper with no DOI cannot have a record at all, so it always
+ * joins by name and is not listed here.
+ */
 export function uncachedDois(cache: AuthorCache | null, refs: readonly Pick<Reference, 'doi'>[]): string[] {
   const dois = refs.map((r) => doiKey(r.doi)).filter((d): d is string => d !== null);
   return [...new Set(dois.filter((d) => !cache?.works[d]))].sort();

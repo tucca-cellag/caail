@@ -86,6 +86,21 @@ describe('fetchAuthorCache', () => {
     expect(decodeURIComponent(urls[1])).toContain('"10.48550/arxiv.1706.03762"');
   });
 
+  it('keeps the previous record for a DOI the registries leave out of a run, and says so', async () => {
+    const { fetchImpl } = stubRegistries({ message: { items: [] } }, { data: [] });
+    const kept = { source: 'crossref' as const, authors: [{ given: 'Shuli', family: 'Liu', orcid: null }] };
+    const logs: string[] = [];
+    const cache = await fetchAuthorCache(['10.1/kept', '10.1/never'], {
+      fetchImpl,
+      delayMs: 0,
+      log: (m) => logs.push(m),
+      previous: { generatedAt: '2026-01-01T00:00:00.000Z', works: { '10.1/kept': kept, '10.1/dropped-from-corpus': kept } },
+    });
+    expect(cache.works).toEqual({ '10.1/kept': kept });
+    expect(logs).toContain('not returned this run, so the previous record is kept: 10.1/kept');
+    expect(logs).toContain('no record in either registry: 10.1/never');
+  });
+
   it('throws on a non-OK response, naming the batch, so nothing partial is written', async () => {
     const fetchImpl: FetchLike = async () => ({ ok: false, status: 503, statusText: 'Busy', json: async () => ({}) });
     await expect(fetchAuthorCache(['10.1/a'], { fetchImpl, delayMs: 0 })).rejects.toThrow(

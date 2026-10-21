@@ -16,7 +16,11 @@
  * Pure transform over an already-built PapersData model (+ optional caches): no I/O.
  */
 
-import { differentPeopleCheck, type AuthorCache } from './authors.js';
+import { authorKey, differentPeopleCheck, type AuthorCache } from './authors.js';
+
+// The key lives with the rule that resolves it against the author cache; re-exported
+// here because the graph is what it keys.
+export { authorKey };
 import { buildCitationData, type CitationCache } from './citations.js';
 import { largestComponentSize } from './connectivity.js';
 import {
@@ -27,21 +31,6 @@ import {
   type PapersData,
   type Reference,
 } from './types.js';
-
-/**
- * Normalize an APA author string ("Surname, F. M.") to a match key
- * `surname|f` (lowercased). Falls back to the whole token when there is no
- * comma. Returns null for empty input.
- */
-export function authorKey(author: string): string | null {
-  const trimmed = author.trim();
-  if (!trimmed) return null;
-  const [surnameRaw, initialsRaw = ''] = trimmed.split(',');
-  const surname = surnameRaw.trim().toLowerCase();
-  if (!surname) return null;
-  const firstInitial = initialsRaw.trim().replace(/[^A-Za-z]/g, '').charAt(0).toLowerCase();
-  return firstInitial ? `${surname}|${firstInitial}` : surname;
-}
 
 /** Ordered pair key so (a,b) and (b,a) collapse to one edge. */
 function pairKey(a: number, b: number): string {
