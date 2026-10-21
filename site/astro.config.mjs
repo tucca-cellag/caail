@@ -117,7 +117,7 @@ export default defineConfig({
     starlight({
       title: 'CAAIL',
       description:
-        'The curated library at the intersection of cellular agriculture and AI.',
+        'A curated library at the intersection of cellular agriculture and AI.',
       // Git build-date "Last updated" stamp on doc pages (freshness signal,
       // matching the org-root hub + the Tufts RT guides footer).
       lastUpdated: true,

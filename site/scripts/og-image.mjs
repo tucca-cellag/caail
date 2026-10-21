@@ -90,7 +90,7 @@ const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" v
   <!-- wordmark -->
   <text x="96" y="320" font-family="${FONT}" font-size="200" font-weight="800" letter-spacing="-4" fill="#ffffff">CAAIL</text>
   <!-- tagline (kept clear of the bioreactor on the right) -->
-  <text x="100" y="408" font-family="${FONT}" font-size="38" font-weight="500" fill="#C9D7EC">The curated library at the</text>
+  <text x="100" y="408" font-family="${FONT}" font-size="38" font-weight="500" fill="#C9D7EC">A curated library at the</text>
   <text x="100" y="456" font-family="${FONT}" font-size="38" font-weight="500" fill="#C9D7EC">intersection of cellular</text>
   <text x="100" y="504" font-family="${FONT}" font-size="38" font-weight="500" fill="#C9D7EC">agriculture and AI.</text>
   <!-- research-area color dots -->
