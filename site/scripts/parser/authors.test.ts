@@ -7,12 +7,15 @@ import { describe, it, expect } from 'vitest';
 
 import {
   authorKey,
+  authorKeys,
   authorshipsFor,
   compareAuthorships,
   differentPeopleCheck,
   foldName,
   givenCore,
+  initialsOf,
   uncachedDois,
+  unnamedDois,
   type AuthorCache,
   type Authorship,
 } from './authors.js';
@@ -27,6 +30,29 @@ describe('foldName and givenCore', () => {
   it('folds accents and case, and maps Latin letters Unicode does not decompose', () => {
     expect(foldName('Ávila')).toBe('avila');
     expect(foldName('Łukasz Ørsted')).toBe('lukasz orsted');
+  });
+
+  it('spells ß, æ, œ and þ the way ASCII does', () => {
+    expect(authorKey('Strauß, J.')).toBe(authorKey('Strauss, J.'));
+    expect(authorKey('Sæther, B.')).toBe(authorKey('Saether, B.'));
+    expect(authorKey('Hafþórsson, K.')).toBe(authorKey('Hafthorsson, K.'));
+  });
+
+  it('keys a surname with an umlaut under both of its ASCII spellings, and nothing else twice', () => {
+    expect(authorKeys('Müller, X.')).toEqual(['muller|x', 'mueller|x']);
+    expect(authorKeys('Muller, X.')).toEqual(['muller|x']);
+    expect(authorKeys('Mueller, X.')).toEqual(['mueller|x']);
+    // The variant comes from the umlaut only: "Xue" is not rewritten towards "Xu".
+    expect(authorKeys('Xue, Y.')).toEqual(['xue|y']);
+    expect(authorKeys('Xu, Y.')).toEqual(['xu|y']);
+  });
+
+  it('initialsOf abbreviates given names and reads citation initials alike', () => {
+    expect(initialsOf('Jong Woo')).toEqual(['j', 'w']);
+    expect(initialsOf('Ji-Hoe')).toEqual(['j', 'h']);
+    expect(initialsOf(' J. W.')).toEqual(['j', 'w']);
+    expect(initialsOf('Jaehyun')).toEqual(['j']);
+    expect(initialsOf(null)).toEqual([]);
   });
 
   it('drops initials and separators, keeping what tells people apart', () => {
@@ -134,6 +160,18 @@ describe('authorshipsFor', () => {
     const twoWangs = [person('Mengdi', 'Wang'), person('Mingxun', 'Wang')];
     expect(authorshipsFor(twoWangs, 'wang|m').map((a) => a.given)).toEqual(['Mengdi', 'Mingxun']);
   });
+
+  it('with second initials, keeps only the authorships that carry one of them', () => {
+    const kims = [person('Jaehyun', 'Kim'), person('Juyeon', 'Kim'), person('Jong Woo', 'Kim')];
+    expect(authorshipsFor(kims, 'kim|j', new Set(['w'])).map((a) => a.given)).toEqual(['Jong Woo']);
+    expect(authorshipsFor(kims.slice(0, 2), 'kim|j', new Set(['w']))).toEqual([]);
+  });
+
+  it('matches an umlaut surname from either ASCII spelling in the citation', () => {
+    const muller = [person('Xaver', 'Müller')];
+    expect(authorshipsFor(muller, authorKey('Mueller, X.')!).map((a) => a.given)).toEqual(['Xaver']);
+    expect(authorshipsFor(muller, authorKey('Muller, X.')!).map((a) => a.given)).toEqual(['Xaver']);
+  });
 });
 
 describe('differentPeopleCheck', () => {
@@ -169,9 +207,42 @@ describe('differentPeopleCheck', () => {
     expect(differ(6, 7, 'liu|s')).toBe(true); // {Shuli, Shan} against {Sherry, Siyu}
   });
 
+  it('a citation with a second initial cannot be stood in for by a same-key co-author', () => {
+    const kimCache: AuthorCache = {
+      generatedAt: '2026-10-20T00:00:00.000Z',
+      works: {
+        '10.1/k1': { source: 'crossref', authors: [person('Jaehyun', 'Kim'), person('Juyeon', 'Kim')] },
+        '10.1/k2': { source: 'crossref', authors: [person('Jong Woo', 'Kim')] },
+      },
+    };
+    // Paper 1 cites "Kim, J. W." but its record spells that person in a way the key misses;
+    // its co-authors Jaehyun and Juyeon must not decide the split.
+    const withSecond = differentPeopleCheck(kimCache, [
+      { id: 1, doi: '10.1/k1', authors: ['Kim, J. W.'] },
+      { id: 2, doi: '10.1/k2', authors: ['Kim, J. W.'] },
+    ]);
+    expect(withSecond(1, 2, 'kim|j')).toBe(false);
+    // Cited with one initial, both co-authors are fair candidates, and both differ from Jong Woo.
+    const oneInitial = differentPeopleCheck(kimCache, [
+      { id: 1, doi: '10.1/k1', authors: ['Kim, J.'] },
+      { id: 2, doi: '10.1/k2', authors: ['Kim, J. W.'] },
+    ]);
+    expect(oneInitial(1, 2, 'kim|j')).toBe(true);
+  });
+
   it('is false when either paper has no record, so the join stands', () => {
     expect(differ(1, 4, 'liu|s')).toBe(false);
     expect(differ(1, 5, 'liu|s')).toBe(false);
+  });
+
+  it('unnamedDois lists records that name no one, which a fetch cannot fix', () => {
+    const withNone: AuthorCache = {
+      ...cache,
+      works: { ...cache.works, '10.1/none': { source: 'none', authors: [] }, '10.1/org': { source: 'crossref', authors: [] } },
+    };
+    const extra = [...refs, { id: 8, doi: '10.1/none' }, { id: 9, doi: '10.1/org' }];
+    expect(unnamedDois(withNone, extra)).toEqual(['10.1/none', '10.1/org']);
+    expect(uncachedDois(withNone, extra)).not.toContain('10.1/none');
   });
 
   it('uncachedDois lists the papers that fall back to names only', () => {

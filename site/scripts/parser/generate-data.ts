@@ -28,7 +28,7 @@ import { buildPrimersModel } from './primers.js';
 import { buildAwesomeListsModel } from './awesome-lists.js';
 import { buildGraphModel } from './graph.js';
 import { CitationCacheSchema, type CitationCache } from './citations.js';
-import { AUTHOR_CACHE_PATH, AuthorCacheSchema, uncachedDois, type AuthorCache } from './authors.js';
+import { AUTHOR_CACHE_PATH, AuthorCacheSchema, uncachedDois, unnamedDois, type AuthorCache } from './authors.js';
 import { buildMetricsModel } from './metrics.js';
 import { buildRecentModel } from './recent.js';
 import { buildTopicsModel, unresolvedTopicItems, catalogJoinKey } from './topics.js';
@@ -160,6 +160,8 @@ export function generateData(
   graphEdges: number;
   /** DOIs of papers that have a DOI but no author record, whose shared-author joins use names only. */
   papersWithoutAuthorRecord: string[];
+  /** DOIs whose record names no one (no registry holds it, or only organizations are listed). */
+  papersWithoutNamedAuthors: string[];
   recentEntries: number;
   taxonomyDefs: number;
   correctionReasons: number;
@@ -201,6 +203,7 @@ export function generateData(
   const authorCache = loadAuthorCache();
   const graph = buildGraphModel(model, loadCitationCache(), authorCache);
   const papersWithoutAuthorRecord = uncachedDois(authorCache, model.references);
+  const papersWithoutNamedAuthors = unnamedDois(authorCache, model.references);
 
   // Home page "Recently added" list, derived from git history. Empty (not an
   // error) when history is unavailable — see buildRecentModel.
@@ -537,6 +540,7 @@ export function generateData(
     graphNodes: graph.nodes.length,
     graphEdges: graph.edges.length,
     papersWithoutAuthorRecord,
+    papersWithoutNamedAuthors,
     recentEntries: recent.length,
     apiFiles: apiFiles.length,
     contributeTemplates: contributeClaims.length,
@@ -581,6 +585,7 @@ if (isMain) {
       graphNodes,
       graphEdges,
       papersWithoutAuthorRecord,
+      papersWithoutNamedAuthors,
       recentEntries,
       taxonomyDefs,
       awesomeLists,
@@ -614,6 +619,14 @@ if (isMain) {
         `parse: ${papersWithoutAuthorRecord.length} paper(s) with a DOI have no record in author-cache.json, so ` +
           'their shared-author joins use names only. Run `pnpm --dir site fetch:authors` to add them: ' +
           papersWithoutAuthorRecord.join(' '),
+      );
+    }
+    if (papersWithoutNamedAuthors.length) {
+      // eslint-disable-next-line no-console
+      console.log(
+        `parse: ${papersWithoutNamedAuthors.length} paper(s) have an author record that names no one (no registry ` +
+          'holds the DOI, or it lists only organizations), so their joins use names only. Check each DOI: ' +
+          papersWithoutNamedAuthors.join(' '),
       );
     }
   } catch (err) {

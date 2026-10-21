@@ -193,6 +193,17 @@ describe('buildGraphModel: different people under one key', () => {
     expect(withNames.has('2-8')).toBe(true);
   });
 
+  it('joins one surname across its umlaut and ASCII spellings', () => {
+    const m: PapersData = {
+      areas: [],
+      methods: [],
+      cells: [],
+      references: [mkRef(11, ['Müller, X.']), mkRef(12, ['Mueller, X.']), mkRef(13, ['Muller, X.'])],
+    };
+    const pairs = buildGraphModel(m).edges.map((e) => `${e.source}-${e.target}`).sort();
+    expect(pairs).toEqual(['11-12', '11-13']);
+  });
+
   it('joins by name alone when there is no author cache', () => {
     const nameOnly = edgesOf(buildGraphModel(model));
     expect(nameOnly.has('1-2')).toBe(true);

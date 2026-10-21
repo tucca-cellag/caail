@@ -20,9 +20,11 @@
  *   - different people: both given names known in full and none of the above.
  * Only "different people" removes a join. Where a key matches several authorships on
  * one paper, the join is removed only when every one of them is a different person from
- * every one on the other paper. An authorship the cache cannot find (no record, no DOI,
- * or a family name spelled differently from the citation) keeps its join, so the rule
- * never removes an edge without evidence.
+ * every one on the other paper; when the citation gives a second initial ("Kim, J. W."),
+ * only authorships with that second initial are candidates, so a co-author who merely
+ * shares the key cannot stand in for the cited person. An authorship the cache cannot
+ * find (no record, no DOI, or a family name spelled differently from the citation) keeps
+ * its join, so the rule never removes an edge without evidence.
  *
  * Known gap: a nickname that is not a prefix of the full name ("Mike" and "Michael")
  * reads as different people unless both authorships carry the same ORCID.
@@ -60,8 +62,8 @@ export const AuthorshipSchema = z.object({
 });
 
 export const AuthorRecordSchema = z.object({
-  /** Which registry the authorships came from. */
-  source: z.enum(['crossref', 'datacite']),
+  /** Which registry the authorships came from, or `none` when the fetch found the DOI in neither. */
+  source: z.enum(['crossref', 'datacite', 'none']),
   authors: z.array(AuthorshipSchema),
 });
 
@@ -85,8 +87,8 @@ export const AUTHOR_CACHE_PATH: string = fileURLToPath(new URL('./author-cache.j
 
 /**
  * Latin letters that Unicode does not decompose into a base letter plus a mark, so
- * stripping marks leaves them as they are. Mapped to the plain letter they are written
- * with in ASCII ("Łukasz" is also published as "Lukasz").
+ * stripping marks leaves them as they are. Mapped to how ASCII writes them: "Łukasz" is
+ * published as "Lukasz", "Strauß" as "Strauss", "Sæther" as "Saether".
  */
 const UNDECOMPOSED: Readonly<Record<string, string>> = {
   ł: 'l',
@@ -95,13 +97,13 @@ const UNDECOMPOSED: Readonly<Record<string, string>> = {
   ð: 'd',
   ħ: 'h',
   ı: 'i',
-  æ: 'a',
-  œ: 'o',
-  ß: 's',
-  þ: 't',
+  æ: 'ae',
+  œ: 'oe',
+  ß: 'ss',
+  þ: 'th',
 };
 
-/** Lowercase, with accents removed and undecomposed Latin letters mapped ("Ávila" → "avila", "Ł" → "l"). */
+/** Lowercase, with accents removed and undecomposed Latin letters mapped ("Ávila" → "avila", "Strauß" → "strauss"). */
 export function foldName(s: string): string {
   return [...s.normalize('NFKD').replace(/\p{M}/gu, '').toLowerCase()].map((c) => UNDECOMPOSED[c] ?? c).join('');
 }
@@ -128,8 +130,42 @@ export function authorKey(author: string): string | null {
   const [surnameRaw, initialsRaw = ''] = trimmed.split(',');
   const surname = surnameForm(surnameRaw);
   if (!surname) return null;
-  const firstInitial = foldName(initialsRaw.match(/\p{L}/u)?.[0] ?? '');
+  const firstInitial = foldName(initialsRaw.match(/\p{L}/u)?.[0] ?? '').charAt(0);
   return firstInitial ? `${surname}|${firstInitial}` : surname;
+}
+
+/** German umlauts, which ASCII writes two ways: without the dots ("Muller") or as a digraph ("Mueller"). */
+const UMLAUT_DIGRAPH: Readonly<Record<string, string>> = { ä: 'ae', ö: 'oe', ü: 'ue' };
+
+/**
+ * Every key an APA author string matches under. One, except for a surname with a German
+ * umlaut, which ASCII writes two ways, so "Müller, X." keys as both `muller|x` (matching
+ * "Muller, X.") and `mueller|x` (matching "Mueller, X."). The variant comes only from the
+ * umlaut itself: rewriting every "ue" would merge distinct surnames such as Xue and Xu.
+ */
+export function authorKeys(author: string): string[] {
+  const key = authorKey(author);
+  if (!key) return [];
+  const nfc = author.normalize('NFC');
+  const comma = nfc.indexOf(',');
+  const surname = comma === -1 ? nfc : nfc.slice(0, comma);
+  if (!/[äöü]/i.test(surname)) return [key];
+  const digraph = surname.replace(/[äöü]/gi, (c) => UMLAUT_DIGRAPH[c.toLowerCase()]);
+  const variant = authorKey(digraph + (comma === -1 ? '' : nfc.slice(comma)));
+  return variant && variant !== key ? [key, variant] : [key];
+}
+
+/**
+ * The initials a name abbreviates to, folded: "Jong Woo" → ["j", "w"], "Ji-Hoe" →
+ * ["j", "h"], and the initials part of a citation, "J. W.", → ["j", "w"].
+ */
+export function initialsOf(name: string | null): string[] {
+  if (!name) return [];
+  return foldName(name)
+    .replace(/\./g, ' ')
+    .split(/[\s\-‐‑–]+/)
+    .map((t) => t.match(/\p{L}/u)?.[0] ?? '')
+    .filter(Boolean);
 }
 
 /**
@@ -199,18 +235,25 @@ export function compareAuthorships(a: Authorship, b: Authorship): Identity {
 /**
  * Every authorship on a paper that a shared-author key names: usually one, none when the
  * record spells the name differently from the citation, and several when two authors on
- * the paper share the key. Each authorship is keyed with `authorKey` itself, from its
+ * the paper share the key. Each authorship is keyed with `authorKeys` itself, from its
  * family name and full given name, so the cache and the citation strings can only
  * disagree where their spellings do, never where two copies of the keying rule would.
+ * With `secondInitials`, only authorships whose second initial is among them count.
  */
-export function authorshipsFor(authors: readonly Authorship[], key: string): Authorship[] {
+export function authorshipsFor(
+  authors: readonly Authorship[],
+  key: string,
+  secondInitials?: ReadonlySet<string>,
+): Authorship[] {
   if (!key) return [];
   // A key with no initial (the citation gave none) matches on the surname alone.
   const bare = !key.includes('|');
   return authors.filter((a) => {
     if (a.family === null) return false;
-    const own = authorKey(`${a.family}, ${a.given ?? ''}`);
-    return own !== null && (bare ? own.split('|')[0] === key : own === key);
+    const own = authorKeys(`${a.family}, ${a.given ?? ''}`);
+    const named = bare ? own.some((k) => k.split('|')[0] === key) : own.includes(key);
+    if (!named) return false;
+    return !secondInitials?.size || secondInitials.has(initialsOf(a.given)[1] ?? '');
   });
 }
 
@@ -221,20 +264,29 @@ export function authorshipsFor(authors: readonly Authorship[], key: string): Aut
  */
 export function differentPeopleCheck(
   cache: AuthorCache,
-  refs: readonly Pick<Reference, 'id' | 'doi'>[],
+  refs: readonly (Pick<Reference, 'id' | 'doi'> & { authors?: string[] | null })[],
 ): (a: number, b: number, key: string) => boolean {
   const recordById = new Map<number, AuthorRecord>();
+  const citedById = new Map<number, string[]>();
   for (const r of refs) {
     const k = doiKey(r.doi);
     const record = k ? cache.works[k] : undefined;
     if (record) recordById.set(r.id, record);
+    citedById.set(r.id, r.authors ?? []);
   }
+  // The second initials the paper's citations give under the key, when every one of them
+  // gives one; otherwise no filter, since a single initial rules nobody out.
+  const secondInitials = (id: number, key: string): Set<string> | undefined => {
+    const cited = (citedById.get(id) ?? []).filter((s) => authorKeys(s).includes(key));
+    const seconds = cited.map((s) => initialsOf(s.slice(s.indexOf(',') + 1))[1]);
+    return cited.length > 0 && seconds.every(Boolean) ? new Set(seconds as string[]) : undefined;
+  };
   const memo = new Map<string, Authorship[]>();
   const resolve = (id: number, key: string): Authorship[] => {
     const m = `${id}|${key}`;
     if (!memo.has(m)) {
       const record = recordById.get(id);
-      memo.set(m, record ? authorshipsFor(record.authors, key) : []);
+      memo.set(m, record ? authorshipsFor(record.authors, key, secondInitials(id, key)) : []);
     }
     return memo.get(m) ?? [];
   };
@@ -246,12 +298,24 @@ export function differentPeopleCheck(
   };
 }
 
+const paperDois = (refs: readonly Pick<Reference, 'doi'>[]): string[] =>
+  [...new Set(refs.map((r) => doiKey(r.doi)).filter((d): d is string => d !== null))].sort();
+
 /**
- * DOIs of papers that have a DOI but no record in the cache, whose shared-author joins
- * fall back to names only. A paper with no DOI cannot have a record at all, so it always
- * joins by name and is not listed here.
+ * DOIs of papers that have a DOI but no record in the cache: the fetch has not run for
+ * them since they were added. A paper with no DOI cannot have a record at all, so it
+ * always joins by name and is not listed here.
  */
 export function uncachedDois(cache: AuthorCache | null, refs: readonly Pick<Reference, 'doi'>[]): string[] {
-  const dois = refs.map((r) => doiKey(r.doi)).filter((d): d is string => d !== null);
-  return [...new Set(dois.filter((d) => !cache?.works[d]))].sort();
+  return paperDois(refs).filter((d) => !cache?.works[d]);
+}
+
+/**
+ * DOIs whose record names no one: no registry holds the DOI (source `none`, which is
+ * where a mistyped DOI shows up), or its record lists only organizations. Their joins
+ * use names only, and nothing a fetch can do changes that, so they are reported rather
+ * than failed on.
+ */
+export function unnamedDois(cache: AuthorCache | null, refs: readonly Pick<Reference, 'doi'>[]): string[] {
+  return paperDois(refs).filter((d) => cache?.works[d] && cache.works[d].authors.length === 0);
 }

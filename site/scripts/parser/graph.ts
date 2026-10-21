@@ -16,7 +16,7 @@
  * Pure transform over an already-built PapersData model (+ optional caches): no I/O.
  */
 
-import { authorKey, differentPeopleCheck, type AuthorCache } from './authors.js';
+import { authorKeys, differentPeopleCheck, type AuthorCache } from './authors.js';
 import { buildCitationData, type CitationCache } from './citations.js';
 import { largestComponentSize } from './connectivity.js';
 import {
@@ -53,13 +53,14 @@ export function buildGraphModel(
   for (const ref of refs) {
     if (!ref.authors) continue;
     for (const a of ref.authors) {
-      const key = authorKey(a);
-      if (!key) continue;
-      if (!keyToRefs.has(key)) {
-        keyToRefs.set(key, new Set());
-        keyToDisplay.set(key, a.trim());
+      // Usually one key; a surname with a German umlaut also keys under its ASCII digraph.
+      for (const key of authorKeys(a)) {
+        if (!keyToRefs.has(key)) {
+          keyToRefs.set(key, new Set());
+          keyToDisplay.set(key, a.trim());
+        }
+        keyToRefs.get(key)!.add(ref.id);
       }
-      keyToRefs.get(key)!.add(ref.id);
     }
   }
 

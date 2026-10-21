@@ -5,34 +5,40 @@
  *
  * MANUAL / opt-in (`pnpm fetch:authors`), like fetch:citations: `pnpm parse` and
  * `pnpm build` read the committed cache and never touch the network. Re-run it when
- * papers are added. Until then a new paper has no record, and its shared-author joins
- * use names only, exactly as before; `pnpm parse` prints which papers with a DOI that
- * applies to (a paper with no DOI can have no record, and always joins by name).
+ * papers are added: `pnpm --dir site test` fails until every paper with a DOI has a
+ * record, and until then the new paper's shared-author joins use names only. A paper
+ * with no DOI can have no record, and always joins by name.
  *
- * Sources, in order: Crossref for every DOI it holds (the publisher's deposit, with
- * any ORCID), then DataCite for the rest, which in this corpus are the arXiv DOIs.
- * Each is queried in batches of 50 DOIs, 5 s apart, so the corpus takes about eight
- * requests. No contact address is sent.
+ * Sources, in order: Crossref for every DOI it holds (the publisher's deposit, with any
+ * ORCID); DataCite for every DOI Crossref did not return with named authors (in this
+ * corpus, the arXiv DOIs); then each DOI still missing, one at a time from both, so a
+ * batch query that mis-reads an unusual DOI cannot lose it. Batches are 50 DOIs and every
+ * request is 5 s apart, so the corpus takes about eight requests. No contact address is
+ * sent.
  *
- * Fails closed: a non-OK response throws, and the CLI writes nothing. A DOI the
- * registries leave out of an otherwise good run (a short batch, an indexing lag), or
- * return with no named authors where they had some before, keeps its previous record
- * rather than losing it, and the run says which DOIs that happened to.
+ * Fails closed: a non-OK response (other than a single lookup's 404) throws, as does a
+ * batch reporting more matches than one page holds, and the CLI writes nothing. A record
+ * with named authors is never replaced by one without them, from this run or the last:
+ * a DOI the registries skip in an otherwise good run, or return with no named authors
+ * where it had some before, keeps its previous record, and the run says which. A DOI no
+ * registry holds is recorded with source `none`, so the cache says the fetch ran for it;
+ * `pnpm parse` lists those, which is where a mistyped DOI shows up.
  *
  * The testable core (fetchAuthorCache, serializeAuthorCache) is importable and
  * side-effect-free; the DOI gathering and file write happen only under the isMain guard.
  */
 
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { writeFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 
-import { AUTHOR_CACHE_PATH, AuthorCacheSchema, type AuthorCache, type Authorship } from './authors.js';
+import { AUTHOR_CACHE_PATH, type AuthorCache, type Authorship, type AuthorRecord } from './authors.js';
 import { doiKey } from './citations.js';
+import { loadAuthorCache } from './generate-data.js';
 import { buildPapersModel } from './papers.js';
 
 const CROSSREF_WORKS = 'https://api.crossref.org/works';
 const DATACITE_DOIS = 'https://api.datacite.org/dois';
-/** DOIs per request, for both registries. */
+/** DOIs per batch request, for both registries, and the page size asked for. */
 const BATCH_SIZE = 50;
 /** Delay between requests (ms). */
 const DELAY_MS = 5000;
@@ -65,17 +71,31 @@ const clean = (s: string | undefined): string | null => s?.trim() || null;
 /** Keep only authorships that name a person (drops consortium and organization entries). */
 const named = (a: Authorship): boolean => a.family !== null || a.given !== null;
 
+const crossrefAuthors = (item: CrossrefItem): Authorship[] =>
+  (item.author ?? [])
+    .map((a) => ({ given: clean(a.given), family: clean(a.family), orcid: bareOrcid(a.ORCID) }))
+    .filter(named);
+
+const dataciteAuthors = (record: DataciteRecord): Authorship[] =>
+  (record.attributes.creators ?? [])
+    .filter((c) => c.nameType !== 'Organizational')
+    .map((c) => ({
+      given: clean(c.givenName),
+      family: clean(c.familyName),
+      orcid: bareOrcid(c.nameIdentifiers?.find((n) => /orcid/i.test(n.nameIdentifierScheme ?? ''))?.nameIdentifier),
+    }))
+    .filter(named);
+
 const chunk = <T>(xs: readonly T[], n: number): T[][] =>
   Array.from({ length: Math.ceil(xs.length / n) }, (_, i) => xs.slice(i * n, i * n + n));
 
 const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
 
 /**
- * Look the DOIs up in Crossref, then DataCite for any Crossref does not hold, and
- * assemble an AuthorCache. A DOI neither registry returns, or one returned with no named
- * authors, keeps its record from `previous` when that record has authors, and is
- * otherwise taken as returned (or absent). Throws on a non-OK response, and on a DOI that
- * a batch query cannot carry.
+ * Look the DOIs up (Crossref, then DataCite, then one at a time for what is still
+ * missing) and assemble an AuthorCache, falling back to `previous` as the module
+ * docstring describes. Throws on a non-OK response other than a single lookup's 404, and
+ * on a batch reporting more matches than one page holds.
  */
 export async function fetchAuthorCache(
   dois: ReadonlyArray<string | null | undefined>,
@@ -95,22 +115,33 @@ export async function fetchAuthorCache(
 ): Promise<AuthorCache> {
   const wanted = [...new Set(dois.map(doiKey).filter((d): d is string => d !== null))].sort();
   const wantedSet = new Set(wanted);
-  // Crossref's filter separates values with commas and DataCite's query quotes them, so
-  // a DOI holding either character cannot ride in a batch. None in the corpus does.
-  const unbatchable = wanted.filter((d) => /[,"]/.test(d));
-  if (unbatchable.length) throw new Error(`cannot batch DOIs containing , or ": ${unbatchable.join(' ')}`);
+  // Crossref's filter separates values with commas and DataCite's query quotes them, so a
+  // DOI holding either character skips the batches and is looked up on its own.
+  const batchable = wanted.filter((d) => !/[,"]/.test(d));
 
   let requests = 0;
-  const getJson = async (url: string, label: string): Promise<unknown> => {
+  const getJson = async (url: string, label: string, notFoundOk = false): Promise<unknown | null> => {
     if (requests++ > 0) await sleep(delayMs);
     const res = await fetchImpl(url, { headers: { 'User-Agent': USER_AGENT } });
+    if (notFoundOk && res.status === 404) return null;
     if (!res.ok) throw new Error(`${label}: HTTP ${res.status} ${res.statusText}`);
     return res.json();
   };
+  const assertOnePage = (label: string, total: number | undefined, asked: number) => {
+    if ((total ?? 0) > BATCH_SIZE) {
+      throw new Error(`${label}: ${total} matches for ${asked} DOIs, more than one page of ${BATCH_SIZE} holds`);
+    }
+  };
 
   const works: AuthorCache['works'] = {};
+  const hasNames = (d: string) => (works[d]?.authors.length ?? 0) > 0;
+  // A record with named authors replaces one without them, never the reverse.
+  const take = (d: string, record: AuthorRecord) => {
+    if (!wantedSet.has(d)) return;
+    if (!works[d] || (record.authors.length > 0 && !hasNames(d))) works[d] = record;
+  };
 
-  const crossrefBatches = chunk(wanted, BATCH_SIZE);
+  const crossrefBatches = chunk(batchable, BATCH_SIZE);
   for (const [i, batch] of crossrefBatches.entries()) {
     const params = new URLSearchParams({
       filter: batch.map((d) => `doi:${d}`).join(','),
@@ -118,50 +149,55 @@ export async function fetchAuthorCache(
       select: 'DOI,author',
     });
     const label = `Crossref batch ${i + 1}/${crossrefBatches.length}`;
-    const json = (await getJson(`${CROSSREF_WORKS}?${params}`, label)) as { message?: { items?: CrossrefItem[] } };
+    const json = (await getJson(`${CROSSREF_WORKS}?${params}`, label)) as {
+      message?: { items?: CrossrefItem[]; 'total-results'?: number };
+    };
+    assertOnePage(label, json.message?.['total-results'], batch.length);
     for (const item of json.message?.items ?? []) {
       const key = doiKey(item.DOI);
-      if (!key || !wantedSet.has(key)) continue;
-      const authors = (item.author ?? [])
-        .map((a) => ({ given: clean(a.given), family: clean(a.family), orcid: bareOrcid(a.ORCID) }))
-        .filter(named);
-      works[key] = { source: 'crossref', authors };
+      if (key) take(key, { source: 'crossref', authors: crossrefAuthors(item) });
     }
     log(`${label}: ${json.message?.items?.length ?? 0} records`);
   }
 
-  const rest = wanted.filter((d) => !works[d]);
-  const dataciteBatches = chunk(rest, BATCH_SIZE);
+  const dataciteBatches = chunk(
+    batchable.filter((d) => !hasNames(d)),
+    BATCH_SIZE,
+  );
   for (const [i, batch] of dataciteBatches.entries()) {
     const params = new URLSearchParams({
       query: `doi:(${batch.map((d) => `"${d}"`).join(' OR ')})`,
       'page[size]': String(BATCH_SIZE),
     });
     const label = `DataCite batch ${i + 1}/${dataciteBatches.length}`;
-    const json = (await getJson(`${DATACITE_DOIS}?${params}`, label)) as { data?: DataciteRecord[] };
+    const json = (await getJson(`${DATACITE_DOIS}?${params}`, label)) as {
+      data?: DataciteRecord[];
+      meta?: { total?: number };
+    };
+    assertOnePage(label, json.meta?.total, batch.length);
     for (const record of json.data ?? []) {
       const key = doiKey(record.id);
-      if (!key || !wantedSet.has(key)) continue;
-      const authors = (record.attributes.creators ?? [])
-        .filter((c) => c.nameType !== 'Organizational')
-        .map((c) => ({
-          given: clean(c.givenName),
-          family: clean(c.familyName),
-          orcid: bareOrcid(
-            c.nameIdentifiers?.find((n) => /orcid/i.test(n.nameIdentifierScheme ?? ''))?.nameIdentifier,
-          ),
-        }))
-        .filter(named);
-      works[key] = { source: 'datacite', authors };
+      if (key) take(key, { source: 'datacite', authors: dataciteAuthors(record) });
     }
     log(`${label}: ${json.data?.length ?? 0} records`);
   }
 
-  // A record back with no named authors (organization-only, or no author list at all)
-  // never replaces one that had them: that would silently switch the split off.
-  const emptied = wanted.filter(
-    (d) => works[d]?.authors.length === 0 && (previous?.works[d]?.authors.length ?? 0) > 0,
-  );
+  const single = wanted.filter((d) => !works[d]);
+  for (const d of single) {
+    const cr = (await getJson(`${CROSSREF_WORKS}/${encodeURIComponent(d)}`, `Crossref ${d}`, true)) as {
+      message?: CrossrefItem;
+    } | null;
+    if (cr?.message) take(d, { source: 'crossref', authors: crossrefAuthors(cr.message) });
+    if (hasNames(d)) continue;
+    const dc = (await getJson(`${DATACITE_DOIS}/${encodeURIComponent(d)}`, `DataCite ${d}`, true)) as {
+      data?: DataciteRecord;
+    } | null;
+    if (dc?.data) take(d, { source: 'datacite', authors: dataciteAuthors(dc.data) });
+  }
+  if (single.length) log(`looked up one at a time: ${single.join(' ')}`);
+
+  const prevHasNames = (d: string) => (previous?.works[d]?.authors.length ?? 0) > 0;
+  const emptied = wanted.filter((d) => works[d] && !hasNames(d) && prevHasNames(d));
   for (const d of emptied) works[d] = previous!.works[d];
   if (emptied.length) log(`returned with no named authors, so the previous record is kept: ${emptied.join(' ')}`);
 
@@ -170,7 +206,8 @@ export async function fetchAuthorCache(
   for (const d of kept) works[d] = previous!.works[d];
   if (kept.length) log(`not returned this run, so the previous record is kept: ${kept.join(' ')}`);
   const absent = missing.filter((d) => !works[d]);
-  if (absent.length) log(`no record in either registry: ${absent.join(' ')}`);
+  for (const d of absent) works[d] = { source: 'none', authors: [] };
+  if (absent.length) log(`no registry holds these, recorded as none (check each DOI): ${absent.join(' ')}`);
 
   const sorted: AuthorCache['works'] = {};
   for (const k of Object.keys(works).sort()) sorted[k] = works[k];
@@ -199,9 +236,7 @@ if (isMain) {
   (async () => {
     try {
       const dois = buildPapersModel().references.map((r) => r.doi);
-      const previous = existsSync(AUTHOR_CACHE_PATH)
-        ? AuthorCacheSchema.parse(JSON.parse(readFileSync(AUTHOR_CACHE_PATH, 'utf-8')))
-        : null;
+      const previous = loadAuthorCache();
       // eslint-disable-next-line no-console
       console.log(`fetch:authors: looking up ${dois.filter(Boolean).length} paper DOIs in Crossref, then DataCite`);
       // eslint-disable-next-line no-console
