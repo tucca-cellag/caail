@@ -5,6 +5,7 @@
   "scripts": {
     "parse": "tsx scripts/parser/generate-data.ts",
     "fetch:citations": "tsx scripts/parser/fetch-citations.ts",
+    "fetch:authors": "tsx scripts/parser/fetch-authors.ts",
     "fetch:awesome-lists": "tsx scripts/parser/fetch-awesome-metrics.ts",
     "lint:papers": "tsx scripts/parser/lint-papers.ts",
     "db:bootstrap": "NODE_OPTIONS='--experimental-sqlite --no-warnings' tsx scripts/db/bootstrap.ts",
