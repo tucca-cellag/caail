@@ -39,19 +39,20 @@ import { dedicatedLink, GITHUB_BLOB_BASE } from '../dedicated-links.ts';
 
 /** Where an agent-visible caveat is stated once and reused everywhere. */
 export const SCOPE_NOTE =
-  'CAAIL indexes a curated subset of the literature, not a census. An empty cell means ' +
-  'no INDEXED paper occupies it as of corpus_date. That is not evidence that no such ' +
-  'work exists. CAAIL has not measured its own recall.';
+  'CAAIL is a curated selection of the literature, not a complete record of the field. ' +
+  'An empty cell means no INDEXED paper occupies it as of the corpus date (the corpusDate field). That is ' +
+  'a limit of the index, not evidence that no such work exists.';
 
 /**
  * Maturity, stated to the consumer rather than assumed.
  *
  * SCOPE_NOTE bounds what an EMPTY cell proves. This bounds what a POPULATED one proves,
- * and the two limits are NOT the same size. Absence is genuinely weak evidence: CAAIL has
- * not measured its own recall, so an empty cell says almost nothing about the literature.
+ * and the two limits are NOT the same size. Absence is not evidence: CAAIL is a curated
+ * selection, so an empty cell says almost nothing about the literature.
  * A placement is strong: it is a substantive claim about the paper's method and application
- * area, made from the methods section and checked before it lands, and the re-verification
- * underway tightens precision rather than establishing trust that was missing.
+ * area, made from the methods section and checked before it lands. The re-verification
+ * underway can move a paper to a neighbouring cell, or out of the matrix; it does not
+ * establish trust that was missing.
  *
  * DO NOT WRITE "CURATOR-ASSIGNED" HERE, WHICH IS WHAT THIS SAID. A language-model agent
  * proposes the placement; a maintainer files it. The constant below was corrected to say so
@@ -61,7 +62,7 @@ export const SCOPE_NOTE =
  * curation-page.test.ts bans the literal string in the CONSTANT and cannot see a paraphrase
  * in a comment, so this paragraph is the only thing standing here.
  *
- * Calibrate the caveat to the actual risk. Where a placement is off it is nearly always a
+ * Calibrate the caveat to the actual risk. Where a placement is off it is typically a
  * closely related cell — an adjacent method row, a neighbouring area — not a paper that
  * does not belong in CAAIL at all. Telling an agent to discount the classification would
  * be both wrong and self-defeating, since the classification is the thing CAAIL adds.
@@ -73,13 +74,14 @@ export const SCOPE_NOTE =
  */
 export const STATUS = 'beta' as const;
 export const PLACEMENT_NOTE =
-  'Placements are proposed by a language-model agent reading the paper methods section, ' +
+  "Placements are proposed by a language-model agent reading the paper's methods section, " +
   'checked by a separate reviewer agent that must quote the passage it relies on, and ' +
   'entered by a human maintainer; placements made before that pipeline are being ' +
-  're-verified against full texts. Treat a cell as a substantive claim about the paper ' +
-  'method and application area. The residual uncertainty is precision, not inclusion: ' +
-  'where a placement is off it is typically a closely related cell rather than a paper ' +
-  'that does not belong. Cite the paper itself. How this is done, and how far it reaches: ' +
+  "re-verified against full texts. Treat a cell as a substantive claim about the paper's " +
+  'method and application area. Where a placement is off, it is typically a closely ' +
+  'related cell rather than a paper that does not belong, though re-verification has taken ' +
+  'some papers out of the matrix. Cite the paper itself. How this ' +
+  'is done, and how far it reaches: ' +
   `${SITE_URL}curation/`;
 
 /**

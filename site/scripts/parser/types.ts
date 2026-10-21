@@ -951,7 +951,7 @@ export const ApiMatrixCellSchema = z.object({
   refIds: z.array(z.number().int().positive()),
   /** true when no INDEXED paper occupies this cell (not: no such work exists) */
   emptyInCorpus: z.boolean(),
-  /** present only on empty cells, so the recall caveat travels with the result */
+  /** present only on empty cells, so the scope caveat travels with the result */
   scope: z.string().optional(),
   /** present only on populated cells: what this placement does and does not assert */
   placement: z.string().optional(),
