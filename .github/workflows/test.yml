@@ -115,6 +115,12 @@ on:
       # cases. Without this path such a PR merges green and the next unrelated `site/**` PR
       # inherits a red suite blaming a diff that did not cause it.
       - plugin-contribute/**
+      # plugin-counts.test.ts checks plugin/.claude-plugin/plugin.json's hand-typed counts, so
+      # a PR that edits only that file must still run vitest.
+      - plugin/**
+      # site-config.test.ts reads .claude-plugin/marketplace.json, so a PR that edits only it
+      # must still run vitest.
+      - .claude-plugin/**
   push:
     branches: [main]
     paths:
@@ -223,6 +229,12 @@ on:
       # cases. Without this path such a PR merges green and the next unrelated `site/**` PR
       # inherits a red suite blaming a diff that did not cause it.
       - plugin-contribute/**
+      # plugin-counts.test.ts checks plugin/.claude-plugin/plugin.json's hand-typed counts, so
+      # a PR that edits only that file must still run vitest.
+      - plugin/**
+      # site-config.test.ts reads .claude-plugin/marketplace.json, so a PR that edits only it
+      # must still run vitest.
+      - .claude-plugin/**
   workflow_dispatch:
 
 permissions:
