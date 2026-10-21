@@ -47,8 +47,8 @@ export function buildGraphModel(
   const refs = model.references;
   const differentPeople = authors ? differentPeopleCheck(authors, refs) : null;
 
-  // author key → ref id → how that ref cites the author (its first citation under the key).
-  const keyToRefs = new Map<string, Map<number, string>>();
+  // author key → ref id → how that ref cites the author (every citation under the key).
+  const keyToRefs = new Map<string, Map<number, string[]>>();
   for (const ref of refs) {
     if (!ref.authors) continue;
     for (const a of ref.authors) {
@@ -56,10 +56,19 @@ export function buildGraphModel(
       for (const key of authorKeys(a)) {
         if (!keyToRefs.has(key)) keyToRefs.set(key, new Map());
         const cited = keyToRefs.get(key)!;
-        if (!cited.has(ref.id)) cited.set(ref.id, a.trim());
+        if (!cited.has(ref.id)) cited.set(ref.id, []);
+        const names = cited.get(ref.id)!;
+        if (!names.includes(a.trim())) names.push(a.trim());
       }
     }
   }
+  // The name an edge shows for a key: as one of its own papers cites it, preferring a paper
+  // that cites the key once, since a paper citing two people under it cannot say which one
+  // the other paper shares.
+  const label = (cited: Map<number, string[]>, a: number, b: number): string => {
+    const [x, y] = [cited.get(a)!, cited.get(b)!];
+    return x.length === 1 || y.length !== 1 ? x[0] : y[0];
+  };
 
   // Accumulate edges: every pair of refs sharing an author key.
   const edgeShared = new Map<string, { source: number; target: number; authors: Set<string> }>();
@@ -67,11 +76,11 @@ export function buildGraphModel(
     if (cited.size < 2) continue;
     const ids = [...cited.keys()].sort((x, y) => x - y);
     for (let i = 0; i < ids.length; i++) {
-      // Labelled as the edge's own source paper cites the author, so one person reached
-      // through two keys (an umlaut surname) is one name on the edge, not two spellings.
-      const display = cited.get(ids[i])!;
       for (let j = i + 1; j < ids.length; j++) {
         if (differentPeople?.(ids[i], ids[j], key)) continue;
+        // Labelled as one of the edge's own papers cites the author, so one person reached
+        // through two keys (an umlaut surname) is one name on the edge, not two spellings.
+        const display = label(cited, ids[i], ids[j]);
         const pk = pairKey(ids[i], ids[j]);
         const existing = edgeShared.get(pk);
         if (existing) {

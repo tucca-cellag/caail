@@ -113,6 +113,17 @@ describe('fetchAuthorCache', () => {
     expect(cache.works['10.1/x']).toEqual({ source: 'datacite', authors: [{ given: 'Shuli', family: 'Liu', orcid: null }] });
   });
 
+  it('looks up on its own in DataCite a DOI Crossref returned with no named people', async () => {
+    const orgOnly = { message: { 'total-results': 1, items: [{ DOI: '10.1/y', author: [{ name: 'A Consortium' }] }] } };
+    const { urls, fetchImpl } = stubRegistries(orgOnly, { meta: { total: 0 }, data: [] }, {
+      'https://api.datacite.org/dois/10.1%2Fy': { data: { id: '10.1/y', attributes: { creators: [{ givenName: 'Shuli', familyName: 'Liu' }] } } },
+    });
+    const cache = await fetchAuthorCache(['10.1/y'], { fetchImpl, delayMs: 0 });
+    expect(cache.works['10.1/y']).toEqual({ source: 'datacite', authors: [{ given: 'Shuli', family: 'Liu', orcid: null }] });
+    // Crossref already answered, so only DataCite is asked one at a time.
+    expect(urls.filter((u) => !u.includes('?'))).toEqual(['https://api.datacite.org/dois/10.1%2Fy']);
+  });
+
   it('keeps the previous record for a DOI the registries leave out of a run, and says so', async () => {
     const { fetchImpl } = stubRegistries({ message: { items: [] } }, { data: [] });
     const logs: string[] = [];

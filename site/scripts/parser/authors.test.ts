@@ -175,10 +175,13 @@ describe('authorshipsFor', () => {
     expect(authorshipsFor(keyAuthorships(twoWangs), ['wang|m']).map((a) => a.given)).toEqual(['Mengdi', 'Mingxun']);
   });
 
-  it('with second initials, keeps only the authorships that carry one of them', () => {
-    const kims = [person('Jaehyun', 'Kim'), person('Juyeon', 'Kim'), person('Jong Woo', 'Kim')];
-    expect(authorshipsFor(keyAuthorships(kims), ['kim|j'], new Set(['w'])).map((a) => a.given)).toEqual(['Jong Woo']);
-    expect(authorshipsFor(keyAuthorships(kims.slice(0, 2)), ['kim|j'], new Set(['w']))).toEqual([]);
+  it('with second initials, rules out a contradicting one and keeps one it cannot check', () => {
+    const kims = [person('Jaehyun', 'Kim'), person('Ji Hoon', 'Kim'), person('Jong Woo', 'Kim')];
+    // Ji Hoon's second initial is h, so he is not "Kim, J. W."; Jaehyun has none to check.
+    expect(authorshipsFor(keyAuthorships(kims), ['kim|j'], new Set(['w'])).map((a) => a.given)).toEqual([
+      'Jaehyun',
+      'Jong Woo',
+    ]);
   });
 
   it('matches an umlaut surname from either ASCII spelling in the citation', () => {
@@ -204,13 +207,13 @@ describe('differentPeopleCheck', () => {
     },
   };
   const refs = [
-    { id: 1, doi: 'https://doi.org/10.1/A' }, // URL form and upper case still key to 10.1/a
-    { id: 2, doi: '10.1/b' },
-    { id: 3, doi: '10.1/c' },
-    { id: 4, doi: '10.1/not-cached' },
-    { id: 5, doi: null },
-    { id: 6, doi: '10.1/two' },
-    { id: 7, doi: '10.1/other-two' },
+    { id: 1, doi: 'https://doi.org/10.1/A', authors: ['Liu, S.'] }, // URL form and upper case still key to 10.1/a
+    { id: 2, doi: '10.1/b', authors: ['Liu, S.'] },
+    { id: 3, doi: '10.1/c', authors: ['Liu, S.'] },
+    { id: 4, doi: '10.1/not-cached', authors: ['Liu, S.'] },
+    { id: 5, doi: null, authors: ['Liu, S.'] },
+    { id: 6, doi: '10.1/two', authors: ['Liu, S.', 'Liu, S.'] },
+    { id: 7, doi: '10.1/other-two', authors: ['Liu, S.', 'Liu, S.'] },
   ];
   const differ = differentPeopleCheck(cache, refs);
 
@@ -225,27 +228,31 @@ describe('differentPeopleCheck', () => {
     expect(differ(6, 7, 'liu|s')).toBe(true); // {Shuli, Shan} against {Sherry, Siyu}
   });
 
-  it('a citation with a second initial cannot be stood in for by a same-key co-author', () => {
+  it('by name, a second initial keeps the cited person a record writes as one word', () => {
+    // Paper 1 lists more people than it cites, so names decide. It cites "Kim, J. W.": the
+    // record writes him "Jongwoo" (no second initial to check) beside a co-author Jae Won.
     const kimCache: AuthorCache = {
       generatedAt: '2026-10-20T00:00:00.000Z',
       works: {
-        '10.1/k1': { source: 'crossref', authors: [person('Jaehyun', 'Kim'), person('Juyeon', 'Kim')] },
-        '10.1/k2': { source: 'crossref', authors: [person('Jong Woo', 'Kim')] },
+        '10.1/k1': {
+          source: 'crossref',
+          authors: [person('Jongwoo', 'Kim'), person('Jae Won', 'Kim'), person('Ann', 'Lee')],
+        },
+        '10.1/k2': { source: 'crossref', authors: [person('Jongwoo', 'Kim')] },
+        '10.1/k3': { source: 'crossref', authors: [person('Ji Hoon', 'Kim'), person('Jae Won', 'Kim'), person('Bo', 'Lee')] },
+        '10.1/k4': { source: 'crossref', authors: [person('Ji Hoon', 'Kim')] },
       },
     };
-    // Paper 1 cites "Kim, J. W." but its record spells that person in a way the key misses;
-    // its co-authors Jaehyun and Juyeon must not decide the split.
-    const withSecond = differentPeopleCheck(kimCache, [
+    const check = differentPeopleCheck(kimCache, [
       { id: 1, doi: '10.1/k1', authors: ['Kim, J. W.'] },
-      { id: 2, doi: '10.1/k2', authors: ['Kim, J. W.'] },
+      { id: 2, doi: '10.1/k2', authors: ['Kim, J.'] },
+      { id: 3, doi: '10.1/k3', authors: ['Kim, J. W.'] },
+      { id: 4, doi: '10.1/k4', authors: ['Kim, J.'] },
     ]);
-    expect(withSecond(1, 2, 'kim|j')).toBe(false);
-    // Cited with one initial, both co-authors are fair candidates, and both differ from Jong Woo.
-    const oneInitial = differentPeopleCheck(kimCache, [
-      { id: 1, doi: '10.1/k1', authors: ['Kim, J.'] },
-      { id: 2, doi: '10.1/k2', authors: ['Kim, J. W.'] },
-    ]);
-    expect(oneInitial(1, 2, 'kim|j')).toBe(true);
+    // Jongwoo stays a candidate on paper 1 and is paper 2's author, so the join stands.
+    expect(check(1, 2, 'kim|j')).toBe(false);
+    // On paper 3, Ji Hoon's second initial rules him out, leaving Jae Won, who is not paper 4's Ji Hoon.
+    expect(check(3, 4, 'kim|j')).toBe(true);
   });
 
   it('does not use a record listing fewer people than the citation, since it may lack the cited person', () => {

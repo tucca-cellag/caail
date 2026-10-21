@@ -220,6 +220,16 @@ describe('buildGraphModel: different people under one key', () => {
     expect(e.sharedAuthors).toEqual(['Müller, X.']);
   });
 
+  it('labels an edge from the paper citing the shared key once, not a paper citing two people under it', () => {
+    const m: PapersData = {
+      areas: [],
+      methods: [],
+      cells: [],
+      references: [mkRef(41, ['Lee, J. S.', 'Lee, J.']), mkRef(42, ['Lee, J.'])],
+    };
+    expect(buildGraphModel(m).edges[0].sharedAuthors).toEqual(['Lee, J.']);
+  });
+
   it('joins one surname across its umlaut and ASCII spellings', () => {
     const m: PapersData = {
       areas: [],

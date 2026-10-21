@@ -32,7 +32,14 @@
 import { writeFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 
-import { AUTHOR_CACHE_PATH, loadAuthorCache, type AuthorCache, type Authorship, type AuthorRecord } from './authors.js';
+import {
+  AUTHOR_CACHE_PATH,
+  loadAuthorCache,
+  normalizeDois,
+  type AuthorCache,
+  type Authorship,
+  type AuthorRecord,
+} from './authors.js';
 import { doiKey } from './citations.js';
 import { buildPapersModel } from './papers.js';
 
@@ -124,7 +131,7 @@ export async function fetchAuthorCache(
     previous?: AuthorCache | null;
   } = {},
 ): Promise<AuthorCache> {
-  const wanted = [...new Set(dois.map(doiKey).filter((d): d is string => d !== null))].sort();
+  const wanted = normalizeDois(dois);
   const wantedSet = new Set(wanted);
   // Crossref's filter separates values with commas and DataCite's query quotes them, so a
   // DOI holding either character skips the batches and is looked up on its own.
@@ -202,13 +209,17 @@ export async function fetchAuthorCache(
     log(`${label}: ${json.data?.length ?? 0} records`);
   }
 
-  const single = wanted.filter((d) => !works[d]);
+  // Every DOI still without named authors: Crossref first when it returned nothing at all,
+  // then DataCite, since a batch query may have mis-read the DOI either time.
+  const single = wanted.filter((d) => !hasNames(d));
   for (const d of single) {
-    const cr = (await getJson(`${CROSSREF_WORKS}/${encodeURIComponent(d)}`, `Crossref ${d}`, [400, 404])) as {
-      message?: CrossrefItem;
-    } | null;
-    if (cr?.message) take(d, { source: 'crossref', authors: crossrefAuthors(cr.message) });
-    if (hasNames(d)) continue;
+    if (!works[d]) {
+      const cr = (await getJson(`${CROSSREF_WORKS}/${encodeURIComponent(d)}`, `Crossref ${d}`, [400, 404])) as {
+        message?: CrossrefItem;
+      } | null;
+      if (cr?.message) take(d, { source: 'crossref', authors: crossrefAuthors(cr.message) });
+      if (hasNames(d)) continue;
+    }
     const dc = (await getJson(`${DATACITE_DOIS}/${encodeURIComponent(d)}`, `DataCite ${d}`, [400, 404])) as {
       data?: DataciteRecord;
     } | null;

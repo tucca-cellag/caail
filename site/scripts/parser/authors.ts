@@ -24,9 +24,11 @@
  * of people, the cited author at position i is the record's author at position i, as long
  * as that authorship carries the same key. Otherwise it matches by name, through every key
  * the citation's author has (so "Müller" finds a record spelled "Mueller"); when the
- * citation gives a second initial ("Kim, J. W."), only authorships with that initial count,
- * so a co-author who merely shares the key cannot stand in. A record listing fewer people
- * than the citation is not used at all, since the cited person may be the one it lacks.
+ * citation gives a second initial ("Kim, J. W."), an authorship with a different second
+ * initial is ruled out, while one with none is kept, since a record may write "Jong Woo"
+ * as "Jongwoo" and dropping the cited person would leave co-authors to decide. A record
+ * listing fewer people than the citation is not used at all, since the cited person may
+ * be the one it lacks.
  * Where a key resolves to several authorships, the join is removed only when every one of
  * them is a different person from every one on the other paper. An authorship that cannot
  * be found keeps its join, so the rule never removes an edge without evidence.
@@ -277,8 +279,9 @@ export const keyAuthorships = (authors: readonly Authorship[]): KeyedAuthorship[
  * citation, and several when two authors on the paper share a key. Each authorship is
  * keyed with `authorKeys` itself, from its family name and full given name, so the cache
  * and the citation strings can only disagree where their spellings do, never where two
- * copies of the keying rule would. With `secondInitials`, only authorships whose second
- * initial is among them count. This is the name match differentPeopleCheck falls back to.
+ * copies of the keying rule would. With `secondInitials`, an authorship whose second
+ * initial is not among them is ruled out; one with no second initial cannot be checked and
+ * is kept. This is the name match differentPeopleCheck falls back to.
  */
 export function authorshipsFor(
   keyed: readonly KeyedAuthorship[],
@@ -291,7 +294,8 @@ export function authorshipsFor(
   return keyed
     .filter(({ authorship, keys: own }) => {
       if (!own.some((k) => exact.has(k) || bare.has(k.split('|')[0]))) return false;
-      return !secondInitials?.size || secondInitials.has(initialsOf(authorship.given)[1] ?? '');
+      const second = initialsOf(authorship.given)[1];
+      return !secondInitials?.size || second === undefined || secondInitials.has(second);
     })
     .map((k) => k.authorship);
 }
@@ -334,11 +338,7 @@ export function differentPeopleCheck(
       const paper = papers.get(id);
       const found = new Set<Authorship>();
       if (paper?.keyed) {
-        const cited = paper.cited.filter((x) => x.keys.includes(key));
-        // No citation carries the key (a caller asking about a key the paper does not cite):
-        // match the key by name alone.
-        if (cited.length === 0) for (const a of authorshipsFor(paper.keyed, [key])) found.add(a);
-        for (const c of cited) {
+        for (const c of paper.cited.filter((x) => x.keys.includes(key))) {
           const at = paper.aligned && c.position >= 0 ? paper.keyed[c.position] : undefined;
           if (at && at.keys.some((k) => c.keys.includes(k))) {
             found.add(at.authorship);
@@ -359,8 +359,16 @@ export function differentPeopleCheck(
   };
 }
 
-const paperDois = (refs: readonly Pick<Reference, 'doi'>[]): string[] =>
-  [...new Set(refs.map((r) => doiKey(r.doi)).filter((d): d is string => d !== null))].sort();
+/**
+ * DOIs as the cache keys them: bare, lowercase, deduplicated and sorted, with absent ones
+ * dropped. The fetch asks for exactly these and the coverage check expects exactly these,
+ * so both go through this one function.
+ */
+export function normalizeDois(dois: ReadonlyArray<string | null | undefined>): string[] {
+  return [...new Set(dois.map(doiKey).filter((d): d is string => d !== null))].sort();
+}
+
+const paperDois = (refs: readonly Pick<Reference, 'doi'>[]): string[] => normalizeDois(refs.map((r) => r.doi));
 
 /**
  * DOIs of papers that have a DOI but no record in the cache: the fetch has not run for
