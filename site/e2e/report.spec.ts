@@ -1022,6 +1022,6 @@ test("the homepage topics band's correction CTA points at the report page", asyn
   await page.goto('./');
   // Previously a Slack invite, which is not a report path: a reader who noticed a theme
   // looked wrong had nowhere entry-anchored to say so.
-  const cta = page.locator('#topics a', { hasText: 'telling us' });
+  const cta = page.locator('#topics a', { hasText: 'tell us' });
   await expect(cta).toHaveAttribute('href', /\/report\/$/);
 });

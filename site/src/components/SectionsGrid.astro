@@ -1,9 +1,14 @@
 ---
 import { Icon } from 'astro-icon/components';
 import c from '../content/data/counts.json';
+import agentIndex from '../../public/api/index.json';
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+/* Both figures come from the agent manifest. `papersAllSections` is every reference (primary
+   research, reviews and reference works); only primary research (`papersMatrixEligible`) is
+   placed on the matrix, so the card names that population separately. */
+const primary = agentIndex.counts.papersMatrixEligible;
 const sections = [
-  { icon: 'lucide:file-text', count: c.papers, title: 'Papers', desc: `The full AI-method × research-area matrix over ${c.papers} references, with code & data links.`, cta: 'Open the explorer →', href: `${base}/papers/explorer/` },
+  { icon: 'lucide:file-text', count: agentIndex.counts.papersAllSections, title: 'References', desc: `${primary} primary papers placed on the AI-method × research-area matrix, with code and data links. Reviews and reference works are listed separately.`, cta: 'Open the explorer →', href: `${base}/papers/explorer/` },
   { icon: 'lucide:code', count: c.software, title: 'Software', desc: 'Open-source and proprietary tools by application area, framed for cell-ag use.', cta: 'Browse tools →', href: `${base}/software/` },
   { icon: 'lucide:database', count: c.databases, title: 'Databases', desc: 'Repositories, ontologies, and lookup resources for query and reference.', cta: 'Browse databases →', href: `${base}/databases/` },
   { icon: 'lucide:dna', count: c.datasets, title: 'Datasets by species', desc: `Cow, pig, chicken, fish and more: atlases, GEMs, deposits, plus benchmarks, across ${c.species} pages.`, cta: 'Pick a species →', href: `${base}/datasets/readme/` },
@@ -13,7 +18,7 @@ const sections = [
 ---
 <section class="sections" id="explore">
   <h2 class="caail-display sr">Explore the library</h2>
-  <p class="sub sr sr-d1">Six collections, all cross-linked back to the canonical Markdown.</p>
+  <p class="sub sr sr-d1">Each collection is published as Markdown on GitHub.</p>
   <div class="grid sr sr-d2">
     {sections.map((s) => (
       <a class="card" href={s.href}>

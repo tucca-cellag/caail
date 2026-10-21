@@ -23,7 +23,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
  * three-second loop forever.
  */
 const stats = [
-  { n: c.papers, label: 'papers', href: '/papers/explorer/' },
+  { n: c.papers, label: 'references', href: '/papers/explorer/' },
   { n: c.software, label: 'software tools', href: '/software/' },
   { n: c.databases, label: 'databases', href: '/databases/' },
   { n: c.datasets, label: 'datasets', href: '/datasets/' },
@@ -49,9 +49,9 @@ const statSentence = `Indexing ${stats.map((s) => `${s.n} ${s.label}`).join(', '
     </h1>
 
     <p class="lede">
-      The curated library at the intersection of cellular agriculture and AI, and a grounding
+      A curated library at the intersection of cellular agriculture and AI, and a grounding
       database an AI assistant can query, so research and industry questions can be answered
-      from a fixed, citable index rather than from model memory.
+      from a fixed, citable index.
     </p>
 
     {/* Below the lede, not above the title: the diagonal stripe is pinned to the
@@ -119,19 +119,19 @@ const statSentence = `Indexing ${stats.map((s) => `${s.n} ${s.label}`).join(', '
         <li>
           <a href={`${base}/papers/explorer/`}>
             <Icon name="lucide:app-window" />
-            <span><b>Browse it here</b> — filter by method and area</span>
+            <span><b>Browse it here</b>: filter by method and area</span>
           </a>
         </li>
         <li>
           <a href="https://github.com/tucca-cellag/caail">
             <Icon name="lucide:github" />
-            <span><b>Read it on GitHub</b> — canonical Markdown</span>
+            <span><b>Read it on GitHub</b>: canonical Markdown</span>
           </a>
         </li>
         <li>
           <a href={`${base}/#connect`}>
             <Icon name="lucide:terminal" />
-            <span><b>Query it from an agent</b> — one skill, JSON endpoints</span>
+            <span><b>Query it from an agent</b>: one skill, JSON endpoints</span>
           </a>
         </li>
       </ul>
