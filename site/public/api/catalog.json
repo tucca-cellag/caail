@@ -4603,11 +4603,6 @@
           "slug": "cell-lines-engineering",
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
-        },
-        {
-          "slug": "single-cell-atlases",
-          "label": "Single-cell atlases",
-          "theme": "cell-lines-engineering"
         }
       ],
       "license": null,
@@ -4633,11 +4628,6 @@
         {
           "slug": "cell-lines-engineering",
           "label": "Cell Lines & Engineering",
-          "theme": "cell-lines-engineering"
-        },
-        {
-          "slug": "single-cell-atlases",
-          "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
       ],
@@ -4727,11 +4717,6 @@
           "slug": "cell-lines-engineering",
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
-        },
-        {
-          "slug": "single-cell-atlases",
-          "label": "Single-cell atlases",
-          "theme": "cell-lines-engineering"
         }
       ],
       "license": null,
@@ -4758,11 +4743,6 @@
           "slug": "cell-lines-engineering",
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
-        },
-        {
-          "slug": "single-cell-atlases",
-          "label": "Single-cell atlases",
-          "theme": "cell-lines-engineering"
         }
       ],
       "license": null,
@@ -4786,11 +4766,6 @@
         {
           "slug": "cell-lines-engineering",
           "label": "Cell Lines & Engineering",
-          "theme": "cell-lines-engineering"
-        },
-        {
-          "slug": "single-cell-atlases",
-          "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
       ],
@@ -4818,11 +4793,6 @@
           "slug": "cell-lines-engineering",
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
-        },
-        {
-          "slug": "single-cell-atlases",
-          "label": "Single-cell atlases",
-          "theme": "cell-lines-engineering"
         }
       ],
       "license": null,
@@ -4849,11 +4819,6 @@
           "slug": "cell-lines-engineering",
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
-        },
-        {
-          "slug": "single-cell-atlases",
-          "label": "Single-cell atlases",
-          "theme": "cell-lines-engineering"
         }
       ],
       "license": null,
@@ -4877,11 +4842,6 @@
         {
           "slug": "cell-lines-engineering",
           "label": "Cell Lines & Engineering",
-          "theme": "cell-lines-engineering"
-        },
-        {
-          "slug": "single-cell-atlases",
-          "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
       ],
@@ -4907,11 +4867,6 @@
           "slug": "cell-lines-engineering",
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
-        },
-        {
-          "slug": "single-cell-atlases",
-          "label": "Single-cell atlases",
-          "theme": "cell-lines-engineering"
         }
       ],
       "license": null,
@@ -4935,11 +4890,6 @@
         {
           "slug": "cell-lines-engineering",
           "label": "Cell Lines & Engineering",
-          "theme": "cell-lines-engineering"
-        },
-        {
-          "slug": "single-cell-atlases",
-          "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
       ],
@@ -5522,11 +5472,6 @@
           "slug": "cell-lines-engineering",
           "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
-        },
-        {
-          "slug": "single-cell-atlases",
-          "label": "Single-cell atlases",
-          "theme": "cell-lines-engineering"
         }
       ],
       "license": null,
@@ -5843,37 +5788,6 @@
       "citationSources": 1,
       "citationDois": [
         "10.1038/cddis.2015.414"
-      ]
-    },
-    {
-      "slug": "sasp-atlas",
-      "itemId": "db:sasp-atlas",
-      "name": "SASP Atlas",
-      "url": "https://www.saspatlas.com/",
-      "group": "Cellular Aging & Senescence",
-      "summary": "The SASP Atlas is a proteomic atlas of senescence-associated secretory phenotype factors, cataloguing the proteins that senescent cells release under different senescence inducers (Basisty et al. 2020, PLOS Biology; raw data at MassIVE MSV000083468). For cellular agriculture it is a spent-media and secretome reference: the SASP protein catalogue helps interpret conditioned-medium proteomics from aging cultures and distinguish healthy paracrine signaling from senescence-driven secretion that can degrade tissue quality.",
-      "summaryHtml": "<p>The SASP Atlas is a proteomic atlas of senescence-associated secretory phenotype factors, cataloguing the proteins that senescent cells release under different senescence inducers (<a href=\"https://doi.org/10.1371/journal.pbio.3000599\">Basisty et al. 2020</a>, <em>PLOS Biology</em>; raw data at MassIVE MSV000083468). For cellular agriculture it is a spent-media and secretome reference: the SASP protein catalogue helps interpret conditioned-medium proteomics from aging cultures and distinguish healthy paracrine signaling from senescence-driven secretion that can degrade tissue quality.</p>",
-      "topics": [
-        {
-          "slug": "cell-lines-engineering",
-          "label": "Cell Lines & Engineering",
-          "theme": "cell-lines-engineering"
-        },
-        {
-          "slug": "single-cell-atlases",
-          "label": "Single-cell atlases",
-          "theme": "cell-lines-engineering"
-        }
-      ],
-      "license": null,
-      "licenseSource": null,
-      "tier": "unknown",
-      "doi": "10.1371/journal.pbio.3000599",
-      "doiSource": "manual",
-      "citationCount": 1328,
-      "citationSources": 1,
-      "citationDois": [
-        "10.1371/journal.pbio.3000599"
       ]
     },
     {
@@ -8764,5 +8678,5 @@
       "citationDois": []
     }
   ],
-  "corpusDate": "2026-10-20"
+  "corpusDate": "2026-10-21"
 }

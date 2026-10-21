@@ -198,7 +198,8 @@ export const FINE_TAGS: FineTag[] = [
   { slug: 'media-optimization', label: 'Media optimization', theme: 'media-growth-factors', kw: /media optim|formulation|design of experiment|\bdoe\b/i },
   { slug: 'growth-factors', label: 'Growth factors', theme: 'media-growth-factors', kw: /growth[- ]?factor|cytokine|recombinant protein/i },
   { slug: 'cell-line-engineering', label: 'Cell-line engineering', theme: 'cell-lines-engineering', kw: /cell[- ]?line|crispr|perturbation|gene[- ]?edit/i },
-  { slug: 'single-cell-atlases', label: 'Single-cell atlases', theme: 'cell-lines-engineering', kw: /single[- ]?cell|atlas|scrna|snrna/i },
+  // `cell atlas`, not a bare `atlas`: the bare word tagged bulk resources named or grouped as atlases.
+  { slug: 'single-cell-atlases', label: 'Single-cell atlases', theme: 'cell-lines-engineering', kw: /single[- ]?cell|single[- ]?nucle(?:us|i)\b|\bsc-?(?:rna|atac)|\bsn-?(?:rna|atac)-?seq|\bscmultiome|smart-?seq|perturb-seq|\bcell[- ]?atlas|cite-seq|drop-seq|sci-rna/i },
   { slug: 'bioreactor-scale-up', label: 'Bioreactor & scale-up', theme: 'bioprocess-scale-up', kw: /bioreactor|scal(e|ing)|\bcfd\b|perfusion|fermentation/i },
   { slug: 'scaffolds-biomaterials', label: 'Scaffolds & biomaterials', theme: 'scaffolding-biomaterials', kw: /scaffold|biomaterial|bioprint|hydrogel/i },
   { slug: 'flavor-sensory', label: 'Flavor & sensory prediction', theme: 'sensory-flavor', kw: /flavou?r|taste|aroma|sensory/i, sections: /Sensory & Flavor Reference Work/ },

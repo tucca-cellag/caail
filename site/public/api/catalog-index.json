@@ -1,6 +1,6 @@
 {
-  "corpusDate": "2026-10-20",
-  "count": 293,
+  "corpusDate": "2026-10-21",
+  "count": 292,
   "truncationNote": "Compare the number of rows you parsed against `count`. If you have fewer, your fetch truncated this file and you are looking at part of the corpus: say so, and do not report an absence from it. Fetching with a tool that returns bytes rather than a summary avoids this entirely.",
   "entries": [
     {"slug":"alphafold","name":"AlphaFold","kind":"software","group":"Media Optimization & Cell Line Engineering","url":"https://github.com/google-deepmind/alphafold","doi":"10.1038/s41586-021-03819-2","tier":"permissive"},
@@ -195,7 +195,6 @@
     {"slug":"cellage","name":"CellAge","kind":"database","group":"Cellular Aging & Senescence","url":"https://genomics.senescence.info/cells/","doi":"10.1186/s13059-020-01990-9","tier":"permissive"},
     {"slug":"senmayo","name":"SenMayo","kind":"database","group":"Cellular Aging & Senescence","url":"https://doi.org/10.1038/s41467-022-32552-1","doi":"10.1038/s41467-022-32552-1","tier":"permissive"},
     {"slug":"csgene","name":"CSGene","kind":"database","group":"Cellular Aging & Senescence","url":"https://bioinfo-minzhao.org/csgene/","doi":"10.1038/cddis.2015.414","tier":"unknown"},
-    {"slug":"sasp-atlas","name":"SASP Atlas","kind":"database","group":"Cellular Aging & Senescence","url":"https://www.saspatlas.com/","doi":"10.1371/journal.pbio.3000599","tier":"unknown"},
     {"slug":"the-telomerase-database","name":"The Telomerase Database","kind":"database","group":"Cellular Aging & Senescence","url":"https://telomerase.us/","doi":"10.1093/nar/gkm700","tier":"unknown"},
     {"slug":"stemchecker","name":"StemChecker","kind":"database","group":"Stemness Signatures","url":"http://stemchecker.sysbiolab.eu/","doi":"10.1093/nar/gkv529","tier":"unknown"},
     {"slug":"stemmapper","name":"StemMapper","kind":"database","group":"Stemness Signatures","url":"http://stemmapper.sysbiolab.eu/","doi":"10.1093/nar/gkx921","tier":"unknown"},

@@ -1,6 +1,6 @@
 {
   "name": "CAAIL: Cellular Agriculture AI Library",
-  "corpusDate": "2026-10-20",
+  "corpusDate": "2026-10-21",
   "status": "beta",
   "placementsUnderReview": true,
   "canonical": "https://github.com/tucca-cellag/caail",
@@ -23,12 +23,12 @@
     "matrixTotalCells": 216,
     "matrixPopulatedCells": 78,
     "matrixEmptyCells": 138,
-    "datasetsCurated": 62,
+    "datasetsCurated": 63,
     "datasetsInventoryRows": 176,
-    "datasetsTotal": 238,
+    "datasetsTotal": 239,
     "software": 143,
-    "databases": 150,
-    "catalogTotal": 293,
+    "databases": 149,
+    "catalogTotal": 292,
     "fieldReportEditions": 9
   },
   "endpoints": [

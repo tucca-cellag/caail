@@ -8,9 +8,7 @@
 {"item_id":"db:allfam-database-of-allergen-families","topic_id":"topic:allergenicity"}
 {"item_id":"db:alphafold-database","topic_id":"topic:ai-methods-tooling"}
 {"item_id":"db:animal-qtldb","topic_id":"topic:cell-lines-engineering"}
-{"item_id":"db:animal-qtldb","topic_id":"topic:single-cell-atlases"}
 {"item_id":"db:aqua-faang","topic_id":"topic:cell-lines-engineering"}
-{"item_id":"db:aqua-faang","topic_id":"topic:single-cell-atlases"}
 {"item_id":"db:aromadb","topic_id":"topic:flavor-sensory"}
 {"item_id":"db:aromadb","topic_id":"topic:sensory-flavor"}
 {"item_id":"db:arrayexpress-biostudies","topic_id":"topic:ai-methods-tooling"}
@@ -32,7 +30,6 @@
 {"item_id":"db:bovine-metabolome-database-bmdb","topic_id":"topic:metabolic-modeling"}
 {"item_id":"db:bovine-metabolome-database-bmdb","topic_id":"topic:metabolism-modeling"}
 {"item_id":"db:bovreg","topic_id":"topic:cell-lines-engineering"}
-{"item_id":"db:bovreg","topic_id":"topic:single-cell-atlases"}
 {"item_id":"db:brenda","topic_id":"topic:metabolic-modeling"}
 {"item_id":"db:brenda","topic_id":"topic:metabolism-modeling"}
 {"item_id":"db:casp-prediction-center","topic_id":"topic:ai-methods-tooling"}
@@ -43,7 +40,6 @@
 {"item_id":"db:cellage","topic_id":"topic:cell-lines-engineering"}
 {"item_id":"db:cellosaurus","topic_id":"topic:cell-line-engineering"}
 {"item_id":"db:cellosaurus","topic_id":"topic:cell-lines-engineering"}
-{"item_id":"db:cellosaurus","topic_id":"topic:single-cell-atlases"}
 {"item_id":"db:chebi","topic_id":"topic:ai-methods-tooling"}
 {"item_id":"db:chembl","topic_id":"topic:ai-methods-tooling"}
 {"item_id":"db:chemspider","topic_id":"topic:ai-methods-tooling"}
@@ -71,11 +67,8 @@
 {"item_id":"db:eu-novel-food","topic_id":"topic:ai-methods-tooling"}
 {"item_id":"db:european-nucleotide-archive-ena","topic_id":"topic:ai-methods-tooling"}
 {"item_id":"db:faang-functional-annotation-of-animal-genomes","topic_id":"topic:cell-lines-engineering"}
-{"item_id":"db:faang-functional-annotation-of-animal-genomes","topic_id":"topic:single-cell-atlases"}
 {"item_id":"db:farmgtex","topic_id":"topic:cell-lines-engineering"}
-{"item_id":"db:farmgtex","topic_id":"topic:single-cell-atlases"}
 {"item_id":"db:farmgtex-twas-server","topic_id":"topic:cell-lines-engineering"}
-{"item_id":"db:farmgtex-twas-server","topic_id":"topic:single-cell-atlases"}
 {"item_id":"db:fcs-free-database","topic_id":"topic:growth-factors"}
 {"item_id":"db:fcs-free-database","topic_id":"topic:media-growth-factors"}
 {"item_id":"db:fda-gras-notice-inventory","topic_id":"topic:ai-methods-tooling"}
@@ -90,7 +83,6 @@
 {"item_id":"db:foodb","topic_id":"topic:sensory-flavor"}
 {"item_id":"db:foodon","topic_id":"topic:ai-methods-tooling"}
 {"item_id":"db:gene-switch","topic_id":"topic:cell-lines-engineering"}
-{"item_id":"db:gene-switch","topic_id":"topic:single-cell-atlases"}
 {"item_id":"db:gfi-alternative-protein-company-database","topic_id":"topic:cell-lines-engineering"}
 {"item_id":"db:gfi-alternative-protein-literature-library","topic_id":"topic:ai-methods-tooling"}
 {"item_id":"db:gfi-alternative-protein-researcher-directory","topic_id":"topic:cell-lines-engineering"}
@@ -164,9 +156,7 @@
 {"item_id":"db:pherobase","topic_id":"topic:flavor-sensory"}
 {"item_id":"db:pherobase","topic_id":"topic:sensory-flavor"}
 {"item_id":"db:pigbiobank","topic_id":"topic:cell-lines-engineering"}
-{"item_id":"db:pigbiobank","topic_id":"topic:single-cell-atlases"}
 {"item_id":"db:piggtex-portal","topic_id":"topic:cell-lines-engineering"}
-{"item_id":"db:piggtex-portal","topic_id":"topic:single-cell-atlases"}
 {"item_id":"db:pisces-phylogenetic-index-of-seafood-characteristics","topic_id":"topic:cell-lines-engineering"}
 {"item_id":"db:pisces-phylogenetic-index-of-seafood-characteristics","topic_id":"topic:sensory-flavor"}
 {"item_id":"db:plantmoleculartastedb","topic_id":"topic:flavor-sensory"}
@@ -186,8 +176,6 @@
 {"item_id":"db:rnacentral","topic_id":"topic:ai-methods-tooling"}
 {"item_id":"db:sabio-rk","topic_id":"topic:metabolic-modeling"}
 {"item_id":"db:sabio-rk","topic_id":"topic:metabolism-modeling"}
-{"item_id":"db:sasp-atlas","topic_id":"topic:cell-lines-engineering"}
-{"item_id":"db:sasp-atlas","topic_id":"topic:single-cell-atlases"}
 {"item_id":"db:scbasecount","topic_id":"topic:cell-line-engineering"}
 {"item_id":"db:scbasecount","topic_id":"topic:cell-lines-engineering"}
 {"item_id":"db:scbasecount","topic_id":"topic:single-cell-atlases"}
@@ -196,7 +184,6 @@
 {"item_id":"db:sdbs-spectral-database-for-organic-compounds","topic_id":"topic:sensory-flavor"}
 {"item_id":"db:senmayo","topic_id":"topic:cell-lines-engineering"}
 {"item_id":"db:sheepgtex-portal","topic_id":"topic:cell-lines-engineering"}
-{"item_id":"db:sheepgtex-portal","topic_id":"topic:single-cell-atlases"}
 {"item_id":"db:smpdb-small-molecule-pathway-database","topic_id":"topic:metabolic-modeling"}
 {"item_id":"db:smpdb-small-molecule-pathway-database","topic_id":"topic:metabolism-modeling"}
 {"item_id":"db:spectrabase","topic_id":"topic:mass-spectrometry"}
@@ -244,7 +231,6 @@
 {"item_id":"ds:aqua-faang","topic_id":"topic:ai-methods-tooling"}
 {"item_id":"ds:aqua-faang","topic_id":"topic:cell-line-engineering"}
 {"item_id":"ds:aqua-faang","topic_id":"topic:cell-lines-engineering"}
-{"item_id":"ds:aqua-faang","topic_id":"topic:single-cell-atlases"}
 {"item_id":"ds:arc-virtual-cell-atlas","topic_id":"topic:ai-agents"}
 {"item_id":"ds:arc-virtual-cell-atlas","topic_id":"topic:ai-methods-tooling"}
 {"item_id":"ds:arc-virtual-cell-atlas","topic_id":"topic:bioprocess-scale-up"}
@@ -263,7 +249,6 @@
 {"item_id":"ds:bioml-bench","topic_id":"topic:ai-methods-tooling"}
 {"item_id":"ds:bioml-bench","topic_id":"topic:benchmarks-evaluation"}
 {"item_id":"ds:bioml-bench","topic_id":"topic:cell-lines-engineering"}
-{"item_id":"ds:bioml-bench","topic_id":"topic:single-cell-atlases"}
 {"item_id":"ds:biomysterybench","topic_id":"topic:ai-agents"}
 {"item_id":"ds:biomysterybench","topic_id":"topic:ai-methods-tooling"}
 {"item_id":"ds:biomysterybench","topic_id":"topic:benchmarks-evaluation"}
@@ -276,7 +261,6 @@
 {"item_id":"ds:bovreg","topic_id":"topic:ai-methods-tooling"}
 {"item_id":"ds:bovreg","topic_id":"topic:cell-line-engineering"}
 {"item_id":"ds:bovreg","topic_id":"topic:cell-lines-engineering"}
-{"item_id":"ds:bovreg","topic_id":"topic:single-cell-atlases"}
 {"item_id":"ds:btasbml2986-bos-taurus-bovine","topic_id":"topic:bioprocess-scale-up"}
 {"item_id":"ds:btasbml2986-bos-taurus-bovine","topic_id":"topic:bioreactor-scale-up"}
 {"item_id":"ds:btasbml2986-bos-taurus-bovine","topic_id":"topic:media-growth-factors"}
@@ -336,7 +320,6 @@
 {"item_id":"ds:compbiobench-v1","topic_id":"topic:benchmarks-evaluation"}
 {"item_id":"ds:compbiobench-v1","topic_id":"topic:cell-lines-engineering"}
 {"item_id":"ds:compbiobench-v1","topic_id":"topic:media-growth-factors"}
-{"item_id":"ds:compbiobench-v1","topic_id":"topic:single-cell-atlases"}
 {"item_id":"ds:continuous-fish-muscle","topic_id":"topic:cell-line-engineering"}
 {"item_id":"ds:cost-effective-production-of","topic_id":"topic:ai-methods-tooling"}
 {"item_id":"ds:cost-effective-production-of","topic_id":"topic:bioprocess-scale-up"}
@@ -357,7 +340,6 @@
 {"item_id":"ds:cra011788","topic_id":"topic:single-cell-atlases"}
 {"item_id":"ds:cra019589","topic_id":"topic:cell-line-engineering"}
 {"item_id":"ds:cra019589","topic_id":"topic:cell-lines-engineering"}
-{"item_id":"ds:cra019589","topic_id":"topic:single-cell-atlases"}
 {"item_id":"ds:cra022393","topic_id":"topic:cell-lines-engineering"}
 {"item_id":"ds:cra022393","topic_id":"topic:single-cell-atlases"}
 {"item_id":"ds:cra030323","topic_id":"topic:cell-lines-engineering"}
@@ -399,16 +381,13 @@
 {"item_id":"ds:flip-fitness-landscape-inference-for-proteins","topic_id":"topic:scaffolding-biomaterials"}
 {"item_id":"ds:flip-fitness-landscape-inference-for-proteins","topic_id":"topic:scaffolds-biomaterials"}
 {"item_id":"ds:fr-agencode-multi-species-farm-animal-regulatory-atlas","topic_id":"topic:cell-lines-engineering"}
-{"item_id":"ds:fr-agencode-multi-species-farm-animal-regulatory-atlas","topic_id":"topic:single-cell-atlases"}
 {"item_id":"ds:frontierscience","topic_id":"topic:ai-methods-tooling"}
 {"item_id":"ds:frontierscience","topic_id":"topic:benchmarks-evaluation"}
 {"item_id":"ds:gene-expression-of","topic_id":"topic:cell-lines-engineering"}
 {"item_id":"ds:gene-switch","topic_id":"topic:ai-methods-tooling"}
 {"item_id":"ds:gene-switch","topic_id":"topic:cell-lines-engineering"}
-{"item_id":"ds:gene-switch","topic_id":"topic:single-cell-atlases"}
 {"item_id":"ds:gene-switch-2","topic_id":"topic:ai-methods-tooling"}
 {"item_id":"ds:gene-switch-2","topic_id":"topic:cell-lines-engineering"}
-{"item_id":"ds:gene-switch-2","topic_id":"topic:single-cell-atlases"}
 {"item_id":"ds:genebench-pro","topic_id":"topic:ai-agents"}
 {"item_id":"ds:genebench-pro","topic_id":"topic:ai-methods-tooling"}
 {"item_id":"ds:genebench-pro","topic_id":"topic:benchmarks-evaluation"}
@@ -466,7 +445,6 @@
 {"item_id":"ds:gse184128","topic_id":"topic:single-cell-atlases"}
 {"item_id":"ds:gse186730","topic_id":"topic:cell-lines-engineering"}
 {"item_id":"ds:gse189296","topic_id":"topic:cell-lines-engineering"}
-{"item_id":"ds:gse189296","topic_id":"topic:single-cell-atlases"}
 {"item_id":"ds:gse205347","topic_id":"topic:cell-lines-engineering"}
 {"item_id":"ds:gse205347","topic_id":"topic:single-cell-atlases"}
 {"item_id":"ds:gse206911","topic_id":"topic:cell-lines-engineering"}
@@ -508,7 +486,6 @@
 {"item_id":"ds:gse271977","topic_id":"topic:ai-methods-tooling"}
 {"item_id":"ds:gse271977","topic_id":"topic:benchmarks-evaluation"}
 {"item_id":"ds:gse271977","topic_id":"topic:cell-lines-engineering"}
-{"item_id":"ds:gse271977","topic_id":"topic:single-cell-atlases"}
 {"item_id":"ds:gse289644","topic_id":"topic:cell-lines-engineering"}
 {"item_id":"ds:gse290556","topic_id":"topic:cell-lines-engineering"}
 {"item_id":"ds:gse290556","topic_id":"topic:single-cell-atlases"}
@@ -667,10 +644,8 @@
 {"item_id":"ds:perturb-sapiens","topic_id":"topic:single-cell-atlases"}
 {"item_id":"ds:pigbiobank","topic_id":"topic:ai-methods-tooling"}
 {"item_id":"ds:pigbiobank","topic_id":"topic:cell-lines-engineering"}
-{"item_id":"ds:pigbiobank","topic_id":"topic:single-cell-atlases"}
 {"item_id":"ds:piggtex-portal","topic_id":"topic:ai-methods-tooling"}
 {"item_id":"ds:piggtex-portal","topic_id":"topic:cell-lines-engineering"}
-{"item_id":"ds:piggtex-portal","topic_id":"topic:single-cell-atlases"}
 {"item_id":"ds:plant-based-meat-textural-properties","topic_id":"topic:ai-methods-tooling"}
 {"item_id":"ds:plant-based-meat-textural-properties-training-table-kircali-ata-et-al-2023","topic_id":"topic:ai-methods-tooling"}
 {"item_id":"ds:plant-based-meat-textural-properties-training-table-kircali-ata-et-al-2023","topic_id":"topic:flavor-sensory"}
@@ -688,12 +663,9 @@
 {"item_id":"ds:prjca049754","topic_id":"topic:single-cell-atlases"}
 {"item_id":"ds:prjca054990","topic_id":"topic:cell-lines-engineering"}
 {"item_id":"ds:prjeb27455","topic_id":"topic:cell-lines-engineering"}
-{"item_id":"ds:prjeb27455","topic_id":"topic:single-cell-atlases"}
 {"item_id":"ds:prjeb41485","topic_id":"topic:cell-lines-engineering"}
 {"item_id":"ds:prjeb41939","topic_id":"topic:cell-lines-engineering"}
-{"item_id":"ds:prjeb41939","topic_id":"topic:single-cell-atlases"}
 {"item_id":"ds:prjeb55656","topic_id":"topic:cell-lines-engineering"}
-{"item_id":"ds:prjeb55656","topic_id":"topic:single-cell-atlases"}
 {"item_id":"ds:prjeb74031","topic_id":"topic:cell-lines-engineering"}
 {"item_id":"ds:prjeb74031","topic_id":"topic:single-cell-atlases"}
 {"item_id":"ds:prjeb7712","topic_id":"topic:cell-lines-engineering"}
@@ -716,7 +688,6 @@
 {"item_id":"ds:prjna1244049","topic_id":"topic:metabolism-modeling"}
 {"item_id":"ds:prjna1244049","topic_id":"topic:single-cell-atlases"}
 {"item_id":"ds:prjna1254901","topic_id":"topic:cell-lines-engineering"}
-{"item_id":"ds:prjna1254901","topic_id":"topic:single-cell-atlases"}
 {"item_id":"ds:prjna1280141","topic_id":"topic:cell-lines-engineering"}
 {"item_id":"ds:prjna1302321","topic_id":"topic:cell-lines-engineering"}
 {"item_id":"ds:prjna1302321","topic_id":"topic:single-cell-atlases"}
@@ -765,7 +736,6 @@
 {"item_id":"ds:prjna940501","topic_id":"topic:cell-lines-engineering"}
 {"item_id":"ds:prjna940501","topic_id":"topic:single-cell-atlases"}
 {"item_id":"ds:prjna970983","topic_id":"topic:cell-lines-engineering"}
-{"item_id":"ds:prjna970983","topic_id":"topic:single-cell-atlases"}
 {"item_id":"ds:prjna983861","topic_id":"topic:cell-lines-engineering"}
 {"item_id":"ds:prjna983861","topic_id":"topic:single-cell-atlases"}
 {"item_id":"ds:prjna987844","topic_id":"topic:cell-lines-engineering"}
@@ -803,7 +773,6 @@
 {"item_id":"ds:pxd026377","topic_id":"topic:cell-lines-engineering"}
 {"item_id":"ds:pxd026377","topic_id":"topic:mass-spectrometry"}
 {"item_id":"ds:pxd026377","topic_id":"topic:sensory-flavor"}
-{"item_id":"ds:pxd026377","topic_id":"topic:single-cell-atlases"}
 {"item_id":"ds:raman-soft-sensor-cell-culture-dataset-tanemura-et-al-2023","topic_id":"topic:bioprocess-scale-up"}
 {"item_id":"ds:raman-soft-sensor-cell-culture-dataset-tanemura-et-al-2023","topic_id":"topic:bioreactor-scale-up"}
 {"item_id":"ds:raman-soft-sensor-cell-culture-dataset-tanemura-et-al-2023","topic_id":"topic:mass-spectrometry"}
@@ -822,6 +791,7 @@
 {"item_id":"ds:salarecon-salmo-salar-atlantic-salmon","topic_id":"topic:bioreactor-scale-up"}
 {"item_id":"ds:salarecon-salmo-salar-atlantic-salmon","topic_id":"topic:metabolic-modeling"}
 {"item_id":"ds:salarecon-salmo-salar-atlantic-salmon","topic_id":"topic:metabolism-modeling"}
+{"item_id":"ds:sasp-atlas","topic_id":"topic:cell-lines-engineering"}
 {"item_id":"ds:scihorizon-gene","topic_id":"topic:ai-agents"}
 {"item_id":"ds:scihorizon-gene","topic_id":"topic:ai-methods-tooling"}
 {"item_id":"ds:scihorizon-gene","topic_id":"topic:benchmarks-evaluation"}
@@ -842,7 +812,6 @@
 {"item_id":"ds:sheepgtex-portal","topic_id":"topic:ai-methods-tooling"}
 {"item_id":"ds:sheepgtex-portal","topic_id":"topic:cell-line-engineering"}
 {"item_id":"ds:sheepgtex-portal","topic_id":"topic:cell-lines-engineering"}
-{"item_id":"ds:sheepgtex-portal","topic_id":"topic:single-cell-atlases"}
 {"item_id":"ds:shotgun-proteomics-for","topic_id":"topic:ai-methods-tooling"}
 {"item_id":"ds:shotgun-proteomics-for","topic_id":"topic:cell-lines-engineering"}
 {"item_id":"ds:shotgun-proteomics-for","topic_id":"topic:flavor-sensory"}

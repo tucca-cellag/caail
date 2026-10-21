@@ -459,7 +459,7 @@ const PAGES: Record<string, PageMeta> = {
     group: 'datasets',
     order: 12,
     description:
-      'Human reference data for cellular-agriculture AI: single-cell pretraining corpora and human genome-scale metabolic models.',
+      'Human reference data for cellular-agriculture AI: single-cell pretraining corpora, a secretome proteomics atlas and human genome-scale metabolic models.',
   },
   'datasets/choreference': {
     title: 'CHO Reference (Chinese Hamster Ovary)',

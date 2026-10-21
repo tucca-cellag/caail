@@ -47,8 +47,8 @@
         "counts": {
           "paper": 51,
           "software": 14,
-          "database": 38,
-          "dataset": 200,
+          "database": 37,
+          "dataset": 201,
           "total": 303
         },
         "tags": [
@@ -366,9 +366,9 @@
         "counts": {
           "paper": 26,
           "software": 0,
-          "database": 21,
-          "dataset": 72,
-          "total": 119
+          "database": 9,
+          "dataset": 53,
+          "total": 88
         },
         "tags": []
       },
@@ -799,7 +799,6 @@
         "cellage",
         "senmayo",
         "csgene",
-        "sasp-atlas",
         "the-telomerase-database",
         "stemchecker",
         "stemmapper",
@@ -836,6 +835,7 @@
         "ds:parse-biosciences-10m-pbmc-atlas",
         "ds:human-skeletal-muscle-single-cell-atlas-de-micheli-et-al-2020",
         "ds:human-and-mouse-white-adipose-tissue-single-cell-atlas-emont-et-al-2022",
+        "ds:sasp-atlas",
         "ds:recon3d-human1-hmr-homo-sapiens-template-upstream-reference",
         "ds:icho1766-icho2048-chompact-chinese-hamster-ovary-biopharma-adjacent-reference",
         "ds:cho-multi-omic-culture-ph-profiling-dataset-lee-et-al-2021",
@@ -882,38 +882,18 @@
       "software": [],
       "databases": [
         "embl-ebi-expression-atlas",
-        "farmgtex",
-        "piggtex-portal",
         "chickengtex-portal",
         "cattlegtex",
-        "sheepgtex-portal",
-        "farmgtex-twas-server",
-        "pigbiobank",
-        "faang-functional-annotation-of-animal-genomes",
-        "aqua-faang",
-        "bovreg",
-        "gene-switch",
-        "animal-qtldb",
         "bgee",
         "human-protein-atlas",
-        "cellosaurus",
         "human-cell-atlas-hca",
         "tabula-sapiens",
         "cz-cellxgene",
-        "scbasecount",
-        "sasp-atlas"
+        "scbasecount"
       ],
       "datasets": [
         "ds:chickengtex-portal",
-        "ds:gene-switch",
         "ds:cattlegtex",
-        "ds:bovreg",
-        "ds:aqua-faang",
-        "ds:piggtex-portal",
-        "ds:gene-switch-2",
-        "ds:pigbiobank",
-        "ds:sheepgtex-portal",
-        "ds:fr-agencode-multi-species-farm-animal-regulatory-atlas",
         "ds:genecorpus-30m",
         "ds:genecorpus-104m",
         "ds:mouse-genecorpus-20m",
@@ -922,9 +902,7 @@
         "ds:arc-virtual-cell-atlas",
         "ds:parse-biosciences-10m-pbmc-atlas",
         "ds:human-skeletal-muscle-single-cell-atlas-de-micheli-et-al-2020",
-        "ds:human-and-mouse-white-adipose-tissue-single-cell-atlas-emont-et-al-2022",
-        "ds:bioml-bench",
-        "ds:compbiobench-v1"
+        "ds:human-and-mouse-white-adipose-tissue-single-cell-atlas-emont-et-al-2022"
       ]
     },
     "bioprocess-scale-up": {
@@ -1882,5 +1860,5 @@
       "datasets": []
     }
   },
-  "corpusDate": "2026-10-20"
+  "corpusDate": "2026-10-21"
 }
