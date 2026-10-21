@@ -14,19 +14,22 @@
  *   - same person: the ORCIDs match, or the given names agree: equal once initials and
  *     separators are dropped, one a prefix of the other ("Chris" and "Christopher"), or
  *     every part of one among the other's parts ("Maria" and "Ana Maria");
- *   - unknown: a given name that is initials only or starts with one ("J. Craig", "JP"), or two
- *     names of five or more letters one letter apart ("Mohamed" and "Mohammed"), which
- *     is as likely a spelling variant as a different person;
+ *   - unknown: a given name that is initials only or starts with one ("J. Craig", "JP"), or
+ *     first names of five or more letters one letter apart ("Mohamed" and "Mohammed", also
+ *     with a second name on one side only), which is as likely a spelling variant as a
+ *     different person;
  *   - different people: both given names known in full and none of the above.
- * Only "different people" removes a join. Where a key matches several authorships on
- * one paper, the join is removed only when every one of them is a different person from
- * every one on the other paper; when the citation gives a second initial ("Kim, J. W."),
- * only authorships with that second initial are candidates, so a co-author who merely
- * shares the key cannot stand in for the cited person. Authorships are found through
- * every key the citation's author has, so a citation spelled "Müller" finds a record
- * spelled "Mueller". An authorship the cache cannot find (no record, no DOI, or a family
- * name spelled differently from the citation) keeps its join, so the rule never removes
- * an edge without evidence.
+ * Only "different people" removes a join. To find the authorship a citation names, the
+ * check uses position first: when a paper's citation and its record list the same number
+ * of people, the cited author at position i is the record's author at position i, as long
+ * as that authorship carries the same key. Otherwise it matches by name, through every key
+ * the citation's author has (so "Müller" finds a record spelled "Mueller"); when the
+ * citation gives a second initial ("Kim, J. W."), only authorships with that initial count,
+ * so a co-author who merely shares the key cannot stand in. A record listing fewer people
+ * than the citation is not used at all, since the cited person may be the one it lacks.
+ * Where a key resolves to several authorships, the join is removed only when every one of
+ * them is a different person from every one on the other paper. An authorship that cannot
+ * be found keeps its join, so the rule never removes an edge without evidence.
  *
  * Known gaps, both deferred to tucca-cellag/caail-planning#573: a nickname that is not a
  * prefix of the full name ("Mike" and "Michael"), and a romanization two or more letters
@@ -217,11 +220,6 @@ export function givenParts(given: string | null): string[] {
     .filter((t) => t.length > 1);
 }
 
-/** The given name as one comparable string: "Xiao Ming" and "Xiao-Ming" both → "xiaoming". */
-export function givenCore(given: string | null): string {
-  return givenParts(given).join('');
-}
-
 /** Whether two strings are at most one insertion, deletion or substitution apart. */
 function withinOneEdit(a: string, b: string): boolean {
   if (Math.abs(a.length - b.length) > 1) return false;
@@ -259,19 +257,30 @@ export function compareAuthorships(a: Authorship, b: Authorship): Identity {
   if (ja.startsWith(jb) || jb.startsWith(ja)) return 'same';
   const [fewer, more] = pa.length <= pb.length ? [pa, pb] : [pb, pa];
   if (fewer.every((t) => more.includes(t))) return 'same';
-  if (Math.min(ja.length, jb.length) >= 5 && withinOneEdit(ja, jb)) return 'unknown';
+  const nearMiss = (x: string, y: string) => Math.min(x.length, y.length) >= 5 && withinOneEdit(x, y);
+  if (nearMiss(ja, jb) || nearMiss(pa[0], pb[0])) return 'unknown';
   return 'different';
 }
 
 /** A registry authorship with the keys it matches under, computed once per record. */
-type KeyedAuthorship = { authorship: Authorship; keys: string[] };
+export type KeyedAuthorship = { authorship: Authorship; keys: string[] };
 
-const keyAuthorships = (authors: readonly Authorship[]): KeyedAuthorship[] =>
+/** A record's authorships with their keys, in record order, skipping any with no family name. */
+export const keyAuthorships = (authors: readonly Authorship[]): KeyedAuthorship[] =>
   authors
     .filter((a) => a.family !== null)
     .map((a) => ({ authorship: a, keys: authorKeys(`${a.family}, ${a.given ?? ''}`) }));
 
-function matching(
+/**
+ * Every authorship in a keyed record that a citation's keys name (`authorKeys` of the
+ * citation): usually one, none when the record spells the name differently from the
+ * citation, and several when two authors on the paper share a key. Each authorship is
+ * keyed with `authorKeys` itself, from its family name and full given name, so the cache
+ * and the citation strings can only disagree where their spellings do, never where two
+ * copies of the keying rule would. With `secondInitials`, only authorships whose second
+ * initial is among them count. This is the name match differentPeopleCheck falls back to.
+ */
+export function authorshipsFor(
   keyed: readonly KeyedAuthorship[],
   keys: readonly string[],
   secondInitials?: ReadonlySet<string>,
@@ -288,23 +297,6 @@ function matching(
 }
 
 /**
- * Every authorship on a paper that a citation's keys name (`authorKeys` of the citation):
- * usually one, none when the record spells the name differently from the citation, and
- * several when two authors on the paper share a key. Each authorship is keyed with
- * `authorKeys` itself, from its family name and full given name, so the cache and the
- * citation strings can only disagree where their spellings do, never where two copies of
- * the keying rule would. With `secondInitials`, only authorships whose second initial is
- * among them count.
- */
-export function authorshipsFor(
-  authors: readonly Authorship[],
-  keys: readonly string[],
-  secondInitials?: ReadonlySet<string>,
-): Authorship[] {
-  return matching(keyAuthorships(authors), keys, secondInitials);
-}
-
-/**
  * Build the check graph.ts runs on each pair of papers sharing a key: true only when the
  * cache shows the key naming a different person on each paper. Resolutions are memoized,
  * since a common key is checked once per pair of the papers carrying it.
@@ -313,30 +305,49 @@ export function differentPeopleCheck(
   cache: AuthorCache,
   refs: readonly (Pick<Reference, 'id' | 'doi'> & { authors?: string[] | null })[],
 ): (a: number, b: number, key: string) => boolean {
-  const keyedById = new Map<number, KeyedAuthorship[]>();
-  const citedById = new Map<number, { keys: string[]; second: string | undefined }[]>();
+  type Cited = { keys: string[]; second: string | undefined; position: number };
+  type Paper = { keyed: KeyedAuthorship[] | null; aligned: boolean; cited: Cited[] };
+  const papers = new Map<number, Paper>();
   for (const r of refs) {
     const k = doiKey(r.doi);
     const record = k ? cache.works[k] : undefined;
-    if (record) keyedById.set(r.id, keyAuthorships(record.authors));
-    citedById.set(
-      r.id,
-      (r.authors ?? []).map((s) => ({ keys: authorKeys(s), second: initialsOf(s.slice(s.indexOf(',') + 1))[1] })),
-    );
+    // A person in a citation is "Surname, Initials"; a string with no comma (an
+    // organization) has no counterpart in the record, which drops organizations.
+    let person = 0;
+    const cited = (r.authors ?? []).map((s) => ({
+      keys: authorKeys(s),
+      second: initialsOf(s.slice(s.indexOf(',') + 1))[1],
+      position: s.includes(',') ? person++ : -1,
+    }));
+    const keyed = record ? keyAuthorships(record.authors) : null;
+    // A record listing fewer people than the citation may lack the cited person, so a
+    // same-key co-author could stand in for them: such a record is not used at all.
+    const usable = keyed !== null && keyed.length >= person;
+    papers.set(r.id, { keyed: usable ? keyed : null, aligned: usable && keyed!.length === person, cited });
   }
-  // The authorships behind a key on a paper, found through every key the paper's citation
-  // of that author has; and, when every such citation gives a second initial, only those
-  // carrying one of them, since a single initial rules nobody out.
+  // The authorships behind a key on a paper: by position when the paper's lists align and
+  // the authorship there carries the key, else by name (see authorshipsFor), per citation.
   const memo = new Map<string, Authorship[]>();
   const resolve = (id: number, key: string): Authorship[] => {
     const m = `${id}|${key}`;
     if (!memo.has(m)) {
-      const keyed = keyedById.get(id);
-      const cited = (citedById.get(id) ?? []).filter((c) => c.keys.includes(key));
-      const keys = cited.length ? [...new Set(cited.flatMap((c) => c.keys))] : [key];
-      const seconds =
-        cited.length > 0 && cited.every((c) => c.second) ? new Set(cited.map((c) => c.second as string)) : undefined;
-      memo.set(m, keyed ? matching(keyed, keys, seconds) : []);
+      const paper = papers.get(id);
+      const found = new Set<Authorship>();
+      if (paper?.keyed) {
+        const cited = paper.cited.filter((x) => x.keys.includes(key));
+        // No citation carries the key (a caller asking about a key the paper does not cite):
+        // match the key by name alone.
+        if (cited.length === 0) for (const a of authorshipsFor(paper.keyed, [key])) found.add(a);
+        for (const c of cited) {
+          const at = paper.aligned && c.position >= 0 ? paper.keyed[c.position] : undefined;
+          if (at && at.keys.some((k) => c.keys.includes(k))) {
+            found.add(at.authorship);
+            continue;
+          }
+          for (const a of authorshipsFor(paper.keyed, c.keys, c.second ? new Set([c.second]) : undefined)) found.add(a);
+        }
+      }
+      memo.set(m, [...found]);
     }
     return memo.get(m) ?? [];
   };

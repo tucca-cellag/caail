@@ -12,9 +12,9 @@ import {
   compareAuthorships,
   differentPeopleCheck,
   foldName,
-  givenCore,
   givenParts,
   initialsOf,
+  keyAuthorships,
   uncachedDois,
   unnamedDois,
   type AuthorCache,
@@ -27,7 +27,7 @@ const person = (given: string | null, family: string | null, orcid: string | nul
   orcid,
 });
 
-describe('foldName and givenCore', () => {
+describe('foldName and givenParts', () => {
   it('folds accents and case, and maps Latin letters Unicode does not decompose', () => {
     expect(foldName('Ávila')).toBe('avila');
     expect(foldName('Łukasz Ørsted')).toBe('lukasz orsted');
@@ -65,18 +65,19 @@ describe('foldName and givenCore', () => {
   });
 
   it('drops initials and separators, keeping what tells people apart', () => {
-    expect(givenCore('Yusuf H.')).toBe('yusuf');
-    expect(givenCore('Ji-Hoe')).toBe('jihoe');
-    expect(givenCore('Dong‐Yup')).toBe('dongyup'); // U+2010 hyphen, as one deposit spells it
-    expect(givenCore('Xiao Ming')).toBe(givenCore('Xiaoming'));
+    const joined = (g: string | null) => givenParts(g).join('');
+    expect(joined('Yusuf H.')).toBe('yusuf');
+    expect(joined('Ji-Hoe')).toBe('jihoe');
+    expect(joined('Dong‐Yup')).toBe('dongyup'); // U+2010 hyphen, as one deposit spells it
+    expect(joined('Xiao Ming')).toBe(joined('Xiaoming'));
   });
 
   it('is empty when there is nothing to compare', () => {
-    expect(givenCore(null)).toBe('');
-    expect(givenCore('S.')).toBe('');
-    expect(givenCore('J. W.')).toBe('');
+    expect(givenParts(null)).toEqual([]);
+    expect(givenParts('S.')).toEqual([]);
+    expect(givenParts('J. W.')).toEqual([]);
     // Someone who goes by a middle name may appear elsewhere under the first.
-    expect(givenCore('J. Craig')).toBe('');
+    expect(givenParts('J. Craig')).toEqual([]);
   });
 });
 
@@ -115,6 +116,10 @@ describe('compareAuthorships', () => {
     expect(compareAuthorships(person('Jielong', 'Yang'), person('Jilong', 'Yang'))).toBe('unknown');
   });
 
+  it('first names one letter apart are unknown even when one side adds a second name', () => {
+    expect(compareAuthorships(person('Mohamed Ali', 'Hassan'), person('Mohammed', 'Hassan'))).toBe('unknown');
+  });
+
   it('short names one letter apart stay different people: they are usually different names', () => {
     expect(compareAuthorships(person('Ying', 'Xu'), person('Yong', 'Xu'))).toBe('different');
     expect(compareAuthorships(person('Jie', 'Wang'), person('Jin', 'Wang'))).toBe('different');
@@ -142,7 +147,7 @@ describe('authorshipsFor', () => {
     person('Ehecatl Antonio', 'del Rio Chanona'),
     person(null, null),
   ];
-  const givenFor = (citation: string) => authorshipsFor(authors, authorKeys(citation)).map((a) => a.given);
+  const givenFor = (citation: string) => authorshipsFor(keyAuthorships(authors), authorKeys(citation)).map((a) => a.given);
 
   it('finds the authorship with the citation’s surname and first initial', () => {
     expect(givenFor('Liu, S.')).toEqual(['Shuli']);
@@ -167,23 +172,23 @@ describe('authorshipsFor', () => {
 
   it('returns every authorship that carries the key', () => {
     const twoWangs = [person('Mengdi', 'Wang'), person('Mingxun', 'Wang')];
-    expect(authorshipsFor(twoWangs, ['wang|m']).map((a) => a.given)).toEqual(['Mengdi', 'Mingxun']);
+    expect(authorshipsFor(keyAuthorships(twoWangs), ['wang|m']).map((a) => a.given)).toEqual(['Mengdi', 'Mingxun']);
   });
 
   it('with second initials, keeps only the authorships that carry one of them', () => {
     const kims = [person('Jaehyun', 'Kim'), person('Juyeon', 'Kim'), person('Jong Woo', 'Kim')];
-    expect(authorshipsFor(kims, ['kim|j'], new Set(['w'])).map((a) => a.given)).toEqual(['Jong Woo']);
-    expect(authorshipsFor(kims.slice(0, 2), ['kim|j'], new Set(['w']))).toEqual([]);
+    expect(authorshipsFor(keyAuthorships(kims), ['kim|j'], new Set(['w'])).map((a) => a.given)).toEqual(['Jong Woo']);
+    expect(authorshipsFor(keyAuthorships(kims.slice(0, 2)), ['kim|j'], new Set(['w']))).toEqual([]);
   });
 
   it('matches an umlaut surname from either ASCII spelling in the citation', () => {
     const muller = [person('Xaver', 'Müller')];
-    expect(authorshipsFor(muller, authorKeys('Mueller, X.')).map((a) => a.given)).toEqual(['Xaver']);
-    expect(authorshipsFor(muller, authorKeys('Muller, X.')).map((a) => a.given)).toEqual(['Xaver']);
+    expect(authorshipsFor(keyAuthorships(muller), authorKeys('Mueller, X.')).map((a) => a.given)).toEqual(['Xaver']);
+    expect(authorshipsFor(keyAuthorships(muller), authorKeys('Muller, X.')).map((a) => a.given)).toEqual(['Xaver']);
   });
 
   it('finds a record spelled "Mueller" from a citation with the umlaut', () => {
-    expect(authorshipsFor([person('Xaver', 'Mueller')], authorKeys('Müller, X.')).map((a) => a.given)).toEqual(['Xaver']);
+    expect(authorshipsFor(keyAuthorships([person('Xaver', 'Mueller')]), authorKeys('Müller, X.')).map((a) => a.given)).toEqual(['Xaver']);
   });
 });
 
@@ -241,6 +246,39 @@ describe('differentPeopleCheck', () => {
       { id: 2, doi: '10.1/k2', authors: ['Kim, J. W.'] },
     ]);
     expect(oneInitial(1, 2, 'kim|j')).toBe(true);
+  });
+
+  it('does not use a record listing fewer people than the citation, since it may lack the cited person', () => {
+    const shortCache: AuthorCache = {
+      generatedAt: '2026-10-20T00:00:00.000Z',
+      works: {
+        '10.1/s1': { source: 'crossref', authors: [person('Shan', 'Liu'), person('Tao', 'Wu')] },
+        '10.1/s2': { source: 'crossref', authors: [person('Sherry', 'Liu')] },
+      },
+    };
+    const check = differentPeopleCheck(shortCache, [
+      { id: 1, doi: '10.1/s1', authors: ['Liu, S.', 'Liu, S.', 'Wu, T.'] }, // three cited, two in the record
+      { id: 2, doi: '10.1/s2', authors: ['Liu, S.'] },
+    ]);
+    expect(check(1, 2, 'liu|s')).toBe(false);
+  });
+
+  it('resolves by position when citation and record list the same people, before matching names', () => {
+    const kimCache: AuthorCache = {
+      generatedAt: '2026-10-20T00:00:00.000Z',
+      works: {
+        // Cited as "Kim, J. W." twice: Jongwoo at position 0 (no second initial in the record), Ji Won at 1.
+        '10.1/p1': { source: 'crossref', authors: [person('Jongwoo', 'Kim'), person('Ji Won', 'Kim')] },
+        '10.1/p2': { source: 'crossref', authors: [person('Jongwoo', 'Kim')] },
+      },
+    };
+    const check = differentPeopleCheck(kimCache, [
+      { id: 1, doi: '10.1/p1', authors: ['Kim, J. W.', 'Kim, J. W.'] },
+      { id: 2, doi: '10.1/p2', authors: ['Kim, J. W.'] },
+    ]);
+    // By name, the second-initial filter keeps only Ji Won on paper 1 and would split; by
+    // position, paper 1 holds Jongwoo, who is paper 2's author, so the join stands.
+    expect(check(1, 2, 'kim|j')).toBe(false);
   });
 
   it('is false when either paper has no record, so the join stands', () => {

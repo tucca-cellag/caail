@@ -166,6 +166,21 @@ describe('fetchAuthorCache', () => {
     expect(cache.works['10.48550/arxiv.2501.00001']?.authors).toEqual([{ given: 'Sherry', family: 'Liu', orcid: null }]);
   });
 
+  it('looks up one at a time the DOIs of a batch a registry rejects as a bad request', async () => {
+    const urls: string[] = [];
+    const fetchImpl: FetchLike = async (url) => {
+      urls.push(url);
+      if (url.includes('?')) return { ok: false, status: 400, statusText: 'Bad Request', json: async () => ({}) };
+      if (url === 'https://api.crossref.org/works/10.1%2Fodd') {
+        return ok({ message: { DOI: '10.1/odd', author: [{ given: 'Ann', family: 'Lee' }] } });
+      }
+      return notFound;
+    };
+    const cache = await fetchAuthorCache(['10.1/odd'], { fetchImpl, delayMs: 0 });
+    expect(cache.works['10.1/odd']).toEqual({ source: 'crossref', authors: [{ given: 'Ann', family: 'Lee', orcid: null }] });
+    expect(urls.filter((u) => u.includes('?'))).toHaveLength(2); // both batches rejected, neither fatal
+  });
+
   it('throws when a batch reports more matches than one page holds, so none is silently cut', async () => {
     const { fetchImpl } = stubRegistries({ message: { 'total-results': 51, items: [] } }, { data: [] });
     await expect(fetchAuthorCache(['10.1/a'], { fetchImpl, delayMs: 0 })).rejects.toThrow(

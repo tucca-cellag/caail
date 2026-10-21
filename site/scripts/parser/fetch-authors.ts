@@ -15,8 +15,10 @@
  * so a batch query that mis-reads an unusual DOI cannot lose it. Batches are 50 DOIs and
  * every request is 5 s apart. No contact address is sent.
  *
- * Fails closed: a non-OK response (other than a single lookup's 404) throws, as does a
- * batch reporting more matches than one page holds, and the CLI writes nothing. A record
+ * Fails closed: a non-OK response throws, as does a batch reporting more matches than one
+ * page holds, and the CLI writes nothing. The exceptions are a registry rejecting a whole
+ * batch as a bad request (HTTP 400, which one malformed DOI can cause), whose DOIs then go
+ * to the single lookups, and a single lookup's 400 or 404, which means "not here". A record
  * with named authors is never replaced by one without them, from this run or the last:
  * a DOI the registries skip in an otherwise good run, or return with no named authors
  * where it had some before, keeps its previous record, and the run says which. A DOI no
@@ -129,10 +131,11 @@ export async function fetchAuthorCache(
   const batchable = wanted.filter((d) => !/[,"]/.test(d));
 
   let requests = 0;
-  const getJson = async (url: string, label: string, notFoundOk = false): Promise<unknown | null> => {
+  // `soft` lists the statuses that mean "nothing usable here" rather than a failed run.
+  const getJson = async (url: string, label: string, soft: readonly number[] = []): Promise<unknown | null> => {
     if (requests++ > 0) await sleep(delayMs);
     const res = await fetchImpl(url, { headers: { 'User-Agent': USER_AGENT } });
-    if (notFoundOk && res.status === 404) return null;
+    if (soft.includes(res.status)) return null;
     if (!res.ok) throw new Error(`${label}: HTTP ${res.status} ${res.statusText}`);
     return res.json();
   };
@@ -158,9 +161,13 @@ export async function fetchAuthorCache(
       select: 'DOI,author',
     });
     const label = `Crossref batch ${i + 1}/${crossrefBatches.length}`;
-    const json = (await getJson(`${CROSSREF_WORKS}?${params}`, label)) as {
+    const json = (await getJson(`${CROSSREF_WORKS}?${params}`, label, [400])) as {
       message?: { items?: CrossrefItem[]; 'total-results'?: number };
-    };
+    } | null;
+    if (json === null) {
+      log(`${label}: rejected as a bad request, so its DOIs are looked up one at a time`);
+      continue;
+    }
     assertOnePage(label, json.message?.['total-results'], batch.length);
     for (const item of json.message?.items ?? []) {
       const key = doiKey(item.DOI);
@@ -179,10 +186,14 @@ export async function fetchAuthorCache(
       'page[size]': String(BATCH_SIZE),
     });
     const label = `DataCite batch ${i + 1}/${dataciteBatches.length}`;
-    const json = (await getJson(`${DATACITE_DOIS}?${params}`, label)) as {
+    const json = (await getJson(`${DATACITE_DOIS}?${params}`, label, [400])) as {
       data?: DataciteRecord[];
       meta?: { total?: number };
-    };
+    } | null;
+    if (json === null) {
+      log(`${label}: rejected as a bad request, so its DOIs are looked up one at a time`);
+      continue;
+    }
     assertOnePage(label, json.meta?.total, batch.length);
     for (const record of json.data ?? []) {
       const key = doiKey(record.id);
@@ -193,12 +204,12 @@ export async function fetchAuthorCache(
 
   const single = wanted.filter((d) => !works[d]);
   for (const d of single) {
-    const cr = (await getJson(`${CROSSREF_WORKS}/${encodeURIComponent(d)}`, `Crossref ${d}`, true)) as {
+    const cr = (await getJson(`${CROSSREF_WORKS}/${encodeURIComponent(d)}`, `Crossref ${d}`, [400, 404])) as {
       message?: CrossrefItem;
     } | null;
     if (cr?.message) take(d, { source: 'crossref', authors: crossrefAuthors(cr.message) });
     if (hasNames(d)) continue;
-    const dc = (await getJson(`${DATACITE_DOIS}/${encodeURIComponent(d)}`, `DataCite ${d}`, true)) as {
+    const dc = (await getJson(`${DATACITE_DOIS}/${encodeURIComponent(d)}`, `DataCite ${d}`, [400, 404])) as {
       data?: DataciteRecord;
     } | null;
     if (dc?.data) take(d, { source: 'datacite', authors: dataciteAuthors(dc.data) });
