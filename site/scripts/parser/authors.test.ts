@@ -274,10 +274,10 @@ describe('differentPeopleCheck', () => {
     };
     const check = differentPeopleCheck(kimCache, [
       { id: 1, doi: '10.1/p1', authors: ['Kim, J. W.', 'Kim, J. W.'] },
-      { id: 2, doi: '10.1/p2', authors: ['Kim, J. W.'] },
+      { id: 2, doi: '10.1/p2', authors: ['Kim, J.'] },
     ]);
-    // By name, the second-initial filter keeps only Ji Won on paper 1 and would split; by
-    // position, paper 1 holds Jongwoo, who is paper 2's author, so the join stands.
+    // By name, paper 1's second-initial filter keeps only Ji Won, who differs from paper 2's
+    // Jongwoo, so the join would split. By position, paper 1 holds Jongwoo too, so it stands.
     expect(check(1, 2, 'kim|j')).toBe(false);
   });
 
