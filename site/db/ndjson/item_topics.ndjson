@@ -186,8 +186,6 @@
 {"item_id":"db:rnacentral","topic_id":"topic:ai-methods-tooling"}
 {"item_id":"db:sabio-rk","topic_id":"topic:metabolic-modeling"}
 {"item_id":"db:sabio-rk","topic_id":"topic:metabolism-modeling"}
-{"item_id":"db:sasp-atlas","topic_id":"topic:cell-lines-engineering"}
-{"item_id":"db:sasp-atlas","topic_id":"topic:single-cell-atlases"}
 {"item_id":"db:scbasecount","topic_id":"topic:cell-line-engineering"}
 {"item_id":"db:scbasecount","topic_id":"topic:cell-lines-engineering"}
 {"item_id":"db:scbasecount","topic_id":"topic:single-cell-atlases"}
@@ -822,6 +820,7 @@
 {"item_id":"ds:salarecon-salmo-salar-atlantic-salmon","topic_id":"topic:bioreactor-scale-up"}
 {"item_id":"ds:salarecon-salmo-salar-atlantic-salmon","topic_id":"topic:metabolic-modeling"}
 {"item_id":"ds:salarecon-salmo-salar-atlantic-salmon","topic_id":"topic:metabolism-modeling"}
+{"item_id":"ds:sasp-atlas","topic_id":"topic:cell-lines-engineering"}
 {"item_id":"ds:scihorizon-gene","topic_id":"topic:ai-agents"}
 {"item_id":"ds:scihorizon-gene","topic_id":"topic:ai-methods-tooling"}
 {"item_id":"ds:scihorizon-gene","topic_id":"topic:benchmarks-evaluation"}

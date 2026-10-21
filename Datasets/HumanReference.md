@@ -1,6 +1,6 @@
 # Human Reference (*Homo sapiens*)
 
-Cellular agriculture engineers livestock cells, but the largest and best-annotated single-cell corpora — and the most mature genome-scale metabolic reconstructions — are human. This page collects those human artifacts, because they are the practical substrate cell-ag modeling builds on: human single-cell foundation-model corpora are the pretraining base that cross-species transfer methods adapt to livestock, and the human GEMs are the homology templates and biomass-function donors from which species-specific livestock reconstructions inherit their reaction networks. Human is not a cultivated-meat target species — it is the reference substrate.
+Cellular agriculture engineers livestock cells, but the largest and best-annotated single-cell corpora — and the most mature genome-scale metabolic reconstructions — are human. This page collects those human artifacts, because they are the practical substrate cell-ag modeling builds on: human single-cell foundation-model corpora are the pretraining base that cross-species transfer methods adapt to livestock, and the human GEMs are the homology templates and biomass-function donors from which species-specific livestock reconstructions inherit their reaction networks. Human is not a cultivated-meat target species — it is the reference substrate. The page also holds a human secretome proteomics reference, the SASP Atlas.
 
 ## Single-cell & perturbation corpora
 
@@ -48,6 +48,14 @@ A reference single-cell transcriptomic atlas of human skeletal muscle tissue (De
 
 A single-cell and single-nucleus atlas of human and mouse white adipose tissue (Emont et al. 2022, *Nature*, [`10.1038/s41586-022-04518-2`](https://doi.org/10.1038/s41586-022-04518-2)), spanning multiple depots and resolving adipocyte subtypes together with the stromal-vascular compartment, including adipose progenitor / preadipocyte populations. Interactive data are hosted on the Broad [Single Cell Portal, study SCP1376](https://singlecell.broadinstitute.org/single_cell/study/SCP1376). For cellular agriculture it is the reference human and mouse adipose atlas for the fat side of cultivated meat: a template for characterizing adipogenic progenitors and mature adipocyte states, and a cross-species reference against which livestock (cow, pig) intramuscular- and subcutaneous-fat single-cell data can be aligned and annotated.
 
+## Secretome proteomics
+
+Human reference data on the proteins that senescent cells secrete.
+
+### [SASP Atlas](https://massive.ucsd.edu/ProteoSAFe/dataset.jsp?accession=MSV000083750)
+
+The SASP Atlas is a proteomic atlas of the senescence-associated secretory phenotype (Basisty et al. 2020, *PLOS Biology*, [`10.1371/journal.pbio.3000599`](https://doi.org/10.1371/journal.pbio.3000599)). It profiles the proteins that human lung fibroblasts release after senescence is induced by X-irradiation, RAS overexpression or atazanavir, adds their exosome fraction for irradiation and RAS, and compares them with irradiated renal epithelial cells. The paper's raw files are at MassIVE [`MSV000083750`](https://massive.ucsd.edu/ProteoSAFe/dataset.jsp?accession=MSV000083750) (ProteomeXchange [`PXD013721`](https://proteomecentral.proteomexchange.org/cgi/GetDataset?ID=PXD013721)), and its panels of SASP factors for the three inducers are on [PanoramaWeb](https://panoramaweb.org/project/Schilling/SASP_Atlas_Buck/begin.view) as Skyline documents. The atlas's own website, at the address the paper gives, no longer hosts it. For cellular agriculture it is a human reference for reading secretome or conditioned-medium proteomics from cultures where senescence is suspected.
+
 ## Genome-scale metabolic models
 
 GEMs are SBML-formatted reconstructions of an organism's metabolic network — every reaction, every metabolite, every gene-protein-reaction mapping — and are the input data structure for the constraint-based modeling tools listed in [Software.md / Metabolic Modeling & Strain Design](../Software.md#metabolic-modeling--strain-design). The human reconstructions below are the upstream reference from which the cell-ag livestock GEMs (catalogued on the per-species pages) inherit network structure and curation conventions.
@@ -58,7 +66,7 @@ The human genome-scale metabolic reconstructions, Recon3D (Brunk et al. 2018, *N
 
 References: [Papers.md #86](../Papers.md#86) (Brunk et al. 2018, *Nature Biotechnology*) for Recon3D; [Papers.md #87](../Papers.md#87) (Robinson et al. 2020, *Science Signaling*) for Human-GEM.
 
-> **Curation source:** These entries are long-standing CAAIL curation, migrated from the prior flat `Datasets.md`. They are cross-species reference substrate rather than cultivated-meat-species data, so (unlike the per-species pages) they are not drawn from the Todhunter et al. 2024 supplemental.
+> **Curation source:** The corpora and GEM entries are long-standing CAAIL curation, migrated from the prior flat `Datasets.md`. They are cross-species reference substrate rather than cultivated-meat-species data, so (unlike the per-species pages) they are not drawn from the Todhunter et al. 2024 supplemental.
 
 ## Further reading
 

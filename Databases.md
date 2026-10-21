@@ -214,7 +214,7 @@ MyoMiner is the sys-myo group's muscle gene co-expression explorer, a sibling re
 
 ## Cellular Aging & Senescence
 
-Replicative limits, senescence entry, and the senescence-associated secretory phenotype (SASP) are central concerns for cultivated-meat cell lines that must proliferate for many population doublings without transformation. These resources catalogue the genes, transcriptomic panels, secreted factors, and telomerase machinery that define aging and immortalization.
+Replicative limits, senescence entry, and the senescence-associated secretory phenotype (SASP) are central concerns for cultivated-meat cell lines that must proliferate for many population doublings without transformation. These resources catalogue the genes, transcriptomic panels and telomerase machinery that define aging and immortalization. The SASP Atlas, a proteomic atlas of what senescent cells secrete, is with the [human reference datasets](./Datasets/HumanReference.md#sasp-atlas).
 
 ### [Human Ageing Genomic Resources (HAGR)](https://genomics.senescence.info/)
 
@@ -231,10 +231,6 @@ SenMayo is a 125-gene transcriptomic panel of senescence and SASP markers, curat
 ### [CSGene](https://bioinfo-minzhao.org/csgene/)
 
 CSGene is a literature-curated database of roughly 500 cell-senescence genes with their associated pathways and disease links ([Zhao et al. 2016](https://doi.org/10.1038/cddis.2015.414), *Cell Death & Disease*). It is a broader complement to CellAge for cultivated-meat cell-line work, widening the candidate set of senescence regulators to screen when troubleshooting proliferative arrest in long-term cultures.
-
-### [SASP Atlas](https://www.saspatlas.com/)
-
-The SASP Atlas is a proteomic atlas of senescence-associated secretory phenotype factors, cataloguing the proteins that senescent cells release under different senescence inducers ([Basisty et al. 2020](https://doi.org/10.1371/journal.pbio.3000599), *PLOS Biology*; raw data at MassIVE MSV000083468). For cellular agriculture it is a spent-media and secretome reference: the SASP protein catalogue helps interpret conditioned-medium proteomics from aging cultures and distinguish healthy paracrine signaling from senescence-driven secretion that can degrade tissue quality.
 
 ### [The Telomerase Database](https://telomerase.us/)
 

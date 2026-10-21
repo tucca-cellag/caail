@@ -1363,6 +1363,32 @@
       ]
     },
     {
+      "id": "ds:sasp-atlas",
+      "name": "SASP Atlas",
+      "url": "https://massive.ucsd.edu/ProteoSAFe/dataset.jsp?accession=MSV000083750",
+      "page": "HumanReference",
+      "section": "Secretome proteomics",
+      "kind": "other",
+      "anchor": "ds-sasp-atlas",
+      "topics": [
+        {
+          "slug": "cell-lines-engineering",
+          "label": "Cell Lines & Engineering",
+          "theme": "cell-lines-engineering"
+        }
+      ],
+      "license": null,
+      "licenseSource": null,
+      "tier": "unknown",
+      "doi": "10.1371/journal.pbio.3000599",
+      "doiSource": "manual",
+      "citationCount": 1328,
+      "citationSources": 1,
+      "citationDois": [
+        "10.1371/journal.pbio.3000599"
+      ]
+    },
+    {
       "id": "ds:recon3d-human1-hmr-homo-sapiens-template-upstream-reference",
       "name": "Recon3D / Human1 / HMR — *Homo sapiens* (template / upstream reference)",
       "url": null,
@@ -8828,5 +8854,5 @@
       "subseries": []
     }
   ],
-  "corpusDate": "2026-10-20"
+  "corpusDate": "2026-10-21"
 }

@@ -51,10 +51,10 @@ describe('generateData()', () => {
     expect(result.counts.papers).toBe(348);
   });
 
-  it('counts.datasets === 238 (every catalogued dataset)', () => {
-    // 238 = current catalogued-dataset total across Datasets/; bump when
+  it('counts.datasets === 239 (every catalogued dataset)', () => {
+    // 239 = current catalogued-dataset total across Datasets/; bump when
     // inventory tables / curated / reference / benchmark entries change.
-    expect(result.counts.datasets).toBe(238);
+    expect(result.counts.datasets).toBe(239);
   });
 
   it('writes papers.json to the output directory', () => {
