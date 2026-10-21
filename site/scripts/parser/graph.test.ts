@@ -5,14 +5,17 @@
  *   A. authorKey normalization.
  *   B. Unit: buildGraphModel over a hand-built PapersData model (fully
  *      controlled edges, degrees, isolation, components).
- *   C. Integration: real corpus invariants (node count, resolvable edges).
+ *   B2. Unit: the author cache splitting one key between different people.
+ *   C. Integration: real corpus invariants (node count, resolvable edges), and the
+ *      people the author cache tells apart.
  */
 
 import { describe, it, expect, beforeAll } from 'vitest';
 
-import { authorKey, buildGraphModel } from './graph.js';
+import { buildGraphModel } from './graph.js';
 import { corpusPapers } from './corpus-fixture.js';
 import { loadCitationCache } from './generate-data.js';
+import { authorKey, loadAuthorCache, type AuthorCache } from './authors.js';
 import { GraphSchema, type PapersData, type Reference } from './types.js';
 
 /** Build a full Reference with sensible defaults, overriding id + authors. */
@@ -55,6 +58,17 @@ describe('authorKey', () => {
   });
   it('falls back to the surname when there is no initial', () => {
     expect(authorKey('Madonna')).toBe('madonna');
+  });
+  it('keys an accented first initial by its plain letter, not by the next initial or the surname alone', () => {
+    expect(authorKey('Ávila, Á. B.')).toBe('avila|a');
+    expect(authorKey('Smoliński, Ł.')).toBe('smolinski|l');
+    expect(authorKey('Smoliński, Ł.')).toBe(authorKey('Smoliński, L.'));
+  });
+  it('folds the surname, so one person cited with different separators or accents keys once', () => {
+    const key = authorKey('del Rio Chanona, E.');
+    expect(authorKey('del Rio-Chanona, E.')).toBe(key);
+    expect(authorKey('del Rio‐Chanona, E.')).toBe(key); // U+2010 hyphen, as ref 29 cites him
+    expect(authorKey('Ávila, A.')).toBe(authorKey('Avila, A.'));
   });
 });
 
@@ -122,14 +136,146 @@ describe('buildGraphModel — controlled model', () => {
 });
 
 // ---------------------------------------------------------------------------
+// B2. Unit: the author cache tells same-key people apart
+// ---------------------------------------------------------------------------
+
+describe('buildGraphModel: different people under one key', () => {
+  const p = (given: string, family: string, orcid: string | null = null) => ({ given, family, orcid });
+  // mkRef gives ref N the DOI 10.1/N, so the cache is keyed by those.
+  const authors: AuthorCache = {
+    generatedAt: '2026-10-20T00:00:00.000Z',
+    works: {
+      '10.1/1': { source: 'crossref', authors: [p('Sherry', 'Liu')] },
+      '10.1/2': { source: 'crossref', authors: [p('Shuli', 'Liu')] },
+      '10.1/3': { source: 'crossref', authors: [p('Shuli', 'Liu')] },
+      '10.1/4': { source: 'crossref', authors: [p('Xiaoming', 'Li')] },
+      '10.1/5': { source: 'crossref', authors: [p('Xiao Ming', 'Li')] },
+      '10.1/6': { source: 'crossref', authors: [p('Sherry', 'Liu'), p('David E.', 'Block')] },
+      '10.1/7': { source: 'crossref', authors: [p('Shuli', 'Liu'), p('David', 'Block')] },
+    },
+  };
+  const model: PapersData = {
+    areas: [],
+    methods: [],
+    cells: [],
+    references: [
+      mkRef(1, ['Liu, S.']),
+      mkRef(2, ['Liu, S.']),
+      mkRef(3, ['Liu, S.']),
+      mkRef(4, ['Li, X.']),
+      mkRef(5, ['Li, X. M.']),
+      mkRef(6, ['Liu, S.', 'Block, D. E.']),
+      mkRef(7, ['Liu, S.', 'Block, D.']),
+      mkRef(8, ['Liu, S.']), // no record in the cache
+    ],
+  };
+  const edgesOf = (g: ReturnType<typeof buildGraphModel>) =>
+    new Map(g.edges.map((e) => [`${e.source}-${e.target}`, e.sharedAuthors]));
+  const withNames = edgesOf(buildGraphModel(model, null, authors));
+
+  it('does not join two papers whose "Liu, S." are different people (Sherry and Shuli)', () => {
+    expect(withNames.has('1-2')).toBe(false);
+    expect(withNames.has('1-3')).toBe(false);
+  });
+
+  it('still joins the same person, including across initial-only variants', () => {
+    expect(withNames.get('2-3')).toEqual(['Liu, S.']);
+    expect(withNames.has('4-5')).toBe(true); // "Li, X." and "Li, X. M." are both Xiaoming Li
+  });
+
+  it('keeps an edge on its other shared author and drops only the split name from it', () => {
+    expect(withNames.get('6-7')).toEqual(['Block, D. E.']);
+  });
+
+  it('joins a paper with no record by name, as before', () => {
+    expect(withNames.has('1-8')).toBe(true);
+    expect(withNames.has('2-8')).toBe(true);
+  });
+
+  it('splits an umlaut surname whose two records spell it differently (one "Mueller", one with the umlaut)', () => {
+    const umlautCache: AuthorCache = {
+      generatedAt: '2026-10-20T00:00:00.000Z',
+      works: {
+        '10.1/22': { source: 'crossref', authors: [p('Xaver', 'Mueller')] },
+        '10.1/23': { source: 'crossref', authors: [p('Xenia', 'Müller')] },
+      },
+    };
+    const m: PapersData = {
+      areas: [],
+      methods: [],
+      cells: [],
+      references: [mkRef(22, ['Müller, X.']), mkRef(23, ['Müller, X.'])],
+    };
+    expect(buildGraphModel(m, null, umlautCache).edges).toEqual([]);
+  });
+
+  it('names one person once on an edge, as the edge’s source paper cites them', () => {
+    const m: PapersData = {
+      areas: [],
+      methods: [],
+      cells: [],
+      references: [mkRef(31, ['Muller, X.']), mkRef(32, ['Müller, X.']), mkRef(33, ['Müller, X.'])],
+    };
+    const e = buildGraphModel(m).edges.find((x) => x.source === 32 && x.target === 33)!;
+    expect(e.sharedAuthors).toEqual(['Müller, X.']);
+  });
+
+  it('labels an edge from the paper citing the shared key once, not a paper citing two people under it', () => {
+    const m: PapersData = {
+      areas: [],
+      methods: [],
+      cells: [],
+      references: [mkRef(41, ['Lee, J. S.', 'Lee, J.']), mkRef(42, ['Lee, J.'])],
+    };
+    expect(buildGraphModel(m).edges[0].sharedAuthors).toEqual(['Lee, J.']);
+  });
+
+  it('joins one surname across its umlaut and ASCII spellings', () => {
+    const m: PapersData = {
+      areas: [],
+      methods: [],
+      cells: [],
+      references: [mkRef(11, ['Müller, X.']), mkRef(12, ['Mueller, X.']), mkRef(13, ['Muller, X.'])],
+    };
+    const pairs = buildGraphModel(m).edges.map((e) => `${e.source}-${e.target}`).sort();
+    expect(pairs).toEqual(['11-12', '11-13']);
+  });
+
+  it('joins by name alone when there is no author cache', () => {
+    const nameOnly = edgesOf(buildGraphModel(model));
+    expect(nameOnly.has('1-2')).toBe(true);
+    expect(nameOnly.get('6-7')).toEqual(['Block, D. E.', 'Liu, S.']);
+  });
+});
+
+// ---------------------------------------------------------------------------
 // C. Integration — real corpus
 // ---------------------------------------------------------------------------
 
 describe('buildGraphModel — real corpus', () => {
   let graph: ReturnType<typeof buildGraphModel>;
   beforeAll(() => {
-    // Build WITH the committed OpenAlex cache so both edge modes are exercised.
-    graph = buildGraphModel(corpusPapers(), loadCitationCache());
+    // Build WITH both committed caches, as the parse does, so both edge modes and the
+    // author split are exercised.
+    graph = buildGraphModel(corpusPapers(), loadCitationCache(), loadAuthorCache());
+  });
+
+  const joined = (a: number, b: number) =>
+    graph.edges.some((e) => e.source === Math.min(a, b) && e.target === Math.max(a, b));
+
+  it.each([134, 135, 140, 192])(
+    'does not join ref 49 (Sherry Liu) to FarmGTEx ref %i (Shuli Liu) on "Liu, S."',
+    (farmGtex) => {
+      expect(joined(49, farmGtex)).toBe(false);
+    },
+  );
+
+  it.each([
+    [134, 135, 'Shuli Liu and others on two FarmGTEx papers'],
+    [71, 154, 'Andrew D. White on both'],
+    [49, 121, 'Jure Leskovec and Yusuf Roohani, matched by ORCID'],
+  ])('still joins %i and %i (%s)', (a, b) => {
+    expect(joined(a, b)).toBe(true);
   });
 
   it('emits one node per reference (matches the model)', () => {

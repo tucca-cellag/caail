@@ -10,7 +10,10 @@ Each node is a paper from the [Papers Explorer](/papers/explorer/). Use the togg
 how edges are drawn:
 
 - **Shared author**: an undirected edge joins two papers that share an author, surfacing research
-  lineages and collaborator clusters the matrix doesn't show.
+  lineages and collaborator clusters the matrix doesn't show. Authors are matched by surname and
+  first initial, as citations give them; where the full names publishers record for each paper's
+  DOI, read from [Crossref](https://www.crossref.org/) and [DataCite](https://datacite.org/), show
+  that a matching name belongs to two different people, those papers are not joined through it.
 - **Citation**: a directed edge runs from a paper to one it cites (the arrow points at the cited
   paper), surfacing the field's intellectual structure. Citation links are derived from
   [OpenAlex](https://openalex.org/) and shown only between papers both held in CAAIL.

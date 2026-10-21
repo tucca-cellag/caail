@@ -28,6 +28,7 @@ import { buildPrimersModel } from './primers.js';
 import { buildAwesomeListsModel } from './awesome-lists.js';
 import { buildGraphModel } from './graph.js';
 import { CitationCacheSchema, type CitationCache } from './citations.js';
+import { loadAuthorCache, uncachedDois, unnamedDois } from './authors.js';
 import { buildMetricsModel } from './metrics.js';
 import { buildRecentModel } from './recent.js';
 import { buildTopicsModel, unresolvedTopicItems, catalogJoinKey } from './topics.js';
@@ -148,6 +149,10 @@ export function generateData(
   primers: number;
   graphNodes: number;
   graphEdges: number;
+  /** DOIs of papers that have a DOI but no author record, whose shared-author joins use names only. */
+  papersWithoutAuthorRecord: string[];
+  /** DOIs whose record names no one (no registry holds it, or only organizations are listed). */
+  papersWithoutNamedAuthors: string[];
   recentEntries: number;
   taxonomyDefs: number;
   correctionReasons: number;
@@ -183,8 +188,13 @@ export function generateData(
   const awesome = buildAwesomeListsModel();
 
   // Build and validate the paper network (shared-author + citation edges). The
-  // citation cache is an optional committed input; absent ⇒ no citation edges.
-  const graph = buildGraphModel(model, loadCitationCache());
+  // citation cache is an optional committed input; absent ⇒ no citation edges. The
+  // author cache splits a shared-author key between different people; a paper with a DOI
+  // but no record joins by name only, so those papers are reported, not fatal.
+  const authorCache = loadAuthorCache();
+  const graph = buildGraphModel(model, loadCitationCache(), authorCache);
+  const papersWithoutAuthorRecord = uncachedDois(authorCache, model.references);
+  const papersWithoutNamedAuthors = unnamedDois(authorCache, model.references);
 
   // Home page "Recently added" list, derived from git history. Empty (not an
   // error) when history is unavailable — see buildRecentModel.
@@ -520,6 +530,8 @@ export function generateData(
     primers: primers.primers.length,
     graphNodes: graph.nodes.length,
     graphEdges: graph.edges.length,
+    papersWithoutAuthorRecord,
+    papersWithoutNamedAuthors,
     recentEntries: recent.length,
     apiFiles: apiFiles.length,
     contributeTemplates: contributeClaims.length,
@@ -563,6 +575,8 @@ if (isMain) {
       primers,
       graphNodes,
       graphEdges,
+      papersWithoutAuthorRecord,
+      papersWithoutNamedAuthors,
       recentEntries,
       taxonomyDefs,
       awesomeLists,
@@ -590,6 +604,22 @@ if (isMain) {
     );
     // eslint-disable-next-line no-console
     console.log('counts:', counts);
+    if (papersWithoutAuthorRecord.length) {
+      // eslint-disable-next-line no-console
+      console.log(
+        `parse: ${papersWithoutAuthorRecord.length} paper(s) with a DOI have no record in author-cache.json, so ` +
+          'their shared-author joins use names only. Run `pnpm --dir site fetch:authors` to add them: ' +
+          papersWithoutAuthorRecord.join(' '),
+      );
+    }
+    if (papersWithoutNamedAuthors.length) {
+      // eslint-disable-next-line no-console
+      console.log(
+        `parse: ${papersWithoutNamedAuthors.length} paper(s) have an author record that names no one (no registry ` +
+          'holds the DOI, or it lists only organizations), so their joins use names only. Check each DOI: ' +
+          papersWithoutNamedAuthors.join(' '),
+      );
+    }
   } catch (err) {
     // eslint-disable-next-line no-console
     console.error(
