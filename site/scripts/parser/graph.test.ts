@@ -5,14 +5,17 @@
  *   A. authorKey normalization.
  *   B. Unit: buildGraphModel over a hand-built PapersData model (fully
  *      controlled edges, degrees, isolation, components).
- *   C. Integration: real corpus invariants (node count, resolvable edges).
+ *   B2. Unit: the author cache splitting one key between different people.
+ *   C. Integration: real corpus invariants (node count, resolvable edges), and the
+ *      people the author cache tells apart.
  */
 
 import { describe, it, expect, beforeAll } from 'vitest';
 
 import { authorKey, buildGraphModel } from './graph.js';
 import { corpusPapers } from './corpus-fixture.js';
-import { loadCitationCache } from './generate-data.js';
+import { loadAuthorCache, loadCitationCache } from './generate-data.js';
+import type { AuthorCache } from './authors.js';
 import { GraphSchema, type PapersData, type Reference } from './types.js';
 
 /** Build a full Reference with sensible defaults, overriding id + authors. */
@@ -122,14 +125,97 @@ describe('buildGraphModel — controlled model', () => {
 });
 
 // ---------------------------------------------------------------------------
+// B2. Unit: the author cache tells same-key people apart
+// ---------------------------------------------------------------------------
+
+describe('buildGraphModel: different people under one key', () => {
+  const p = (given: string, family: string, orcid: string | null = null) => ({ given, family, orcid });
+  // mkRef gives ref N the DOI 10.1/N, so the cache is keyed by those.
+  const authors: AuthorCache = {
+    generatedAt: '2026-10-20T00:00:00.000Z',
+    works: {
+      '10.1/1': { source: 'crossref', authors: [p('Sherry', 'Liu')] },
+      '10.1/2': { source: 'crossref', authors: [p('Shuli', 'Liu')] },
+      '10.1/3': { source: 'crossref', authors: [p('Shuli', 'Liu')] },
+      '10.1/4': { source: 'crossref', authors: [p('Xiaoming', 'Li')] },
+      '10.1/5': { source: 'crossref', authors: [p('Xiao Ming', 'Li')] },
+      '10.1/6': { source: 'crossref', authors: [p('Sherry', 'Liu'), p('David E.', 'Block')] },
+      '10.1/7': { source: 'crossref', authors: [p('Shuli', 'Liu'), p('David', 'Block')] },
+    },
+  };
+  const model: PapersData = {
+    areas: [],
+    methods: [],
+    cells: [],
+    references: [
+      mkRef(1, ['Liu, S.']),
+      mkRef(2, ['Liu, S.']),
+      mkRef(3, ['Liu, S.']),
+      mkRef(4, ['Li, X.']),
+      mkRef(5, ['Li, X. M.']),
+      mkRef(6, ['Liu, S.', 'Block, D. E.']),
+      mkRef(7, ['Liu, S.', 'Block, D.']),
+      mkRef(8, ['Liu, S.']), // no record in the cache
+    ],
+  };
+  const edgesOf = (g: ReturnType<typeof buildGraphModel>) =>
+    new Map(g.edges.map((e) => [`${e.source}-${e.target}`, e.sharedAuthors]));
+  const withNames = edgesOf(buildGraphModel(model, null, authors));
+
+  it('does not join two papers whose "Liu, S." are different people (Sherry and Shuli)', () => {
+    expect(withNames.has('1-2')).toBe(false);
+    expect(withNames.has('1-3')).toBe(false);
+  });
+
+  it('still joins the same person, including across initial-only variants', () => {
+    expect(withNames.get('2-3')).toEqual(['Liu, S.']);
+    expect(withNames.has('4-5')).toBe(true); // "Li, X." and "Li, X. M." are both Xiaoming Li
+  });
+
+  it('keeps an edge on its other shared author and drops only the split name from it', () => {
+    expect(withNames.get('6-7')).toEqual(['Block, D. E.']);
+  });
+
+  it('joins a paper with no record by name, as before', () => {
+    expect(withNames.has('1-8')).toBe(true);
+    expect(withNames.has('2-8')).toBe(true);
+  });
+
+  it('joins by name alone when there is no author cache', () => {
+    const nameOnly = edgesOf(buildGraphModel(model));
+    expect(nameOnly.has('1-2')).toBe(true);
+    expect(nameOnly.get('6-7')).toEqual(['Block, D. E.', 'Liu, S.']);
+  });
+});
+
+// ---------------------------------------------------------------------------
 // C. Integration — real corpus
 // ---------------------------------------------------------------------------
 
 describe('buildGraphModel — real corpus', () => {
   let graph: ReturnType<typeof buildGraphModel>;
   beforeAll(() => {
-    // Build WITH the committed OpenAlex cache so both edge modes are exercised.
-    graph = buildGraphModel(corpusPapers(), loadCitationCache());
+    // Build WITH both committed caches, as the parse does, so both edge modes and the
+    // author split are exercised.
+    graph = buildGraphModel(corpusPapers(), loadCitationCache(), loadAuthorCache());
+  });
+
+  const joined = (a: number, b: number) =>
+    graph.edges.some((e) => e.source === Math.min(a, b) && e.target === Math.max(a, b));
+
+  it.each([134, 135, 140, 192])(
+    'does not join ref 49 (Sherry Liu) to FarmGTEx ref %i (Shuli Liu) on "Liu, S."',
+    (farmGtex) => {
+      expect(joined(49, farmGtex)).toBe(false);
+    },
+  );
+
+  it.each([
+    [134, 135, 'Shuli Liu and others on two FarmGTEx papers'],
+    [71, 154, 'Andrew D. White on both'],
+    [49, 121, 'Jure Leskovec and Yusuf Roohani, matched by ORCID'],
+  ])('still joins %i and %i (%s)', (a, b) => {
+    expect(joined(a, b)).toBe(true);
   });
 
   it('emits one node per reference (matches the model)', () => {

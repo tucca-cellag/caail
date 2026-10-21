@@ -6,13 +6,17 @@
  *     Authors are normalized to `surname|first-initial` (lowercased) so
  *     initial-only variants ("Li, X." vs "Li, X. M.") still match without merging
  *     distinct people by surname alone. References with `authors === null` form
- *     no edges (isolated).
+ *     no edges (isolated). The key still joins different people who share a
+ *     surname and initial, so where the author cache (authors.ts) gives both
+ *     papers' full given names under a key and they name different people, that
+ *     key does not join that pair.
  *   - citation (directed): N→M when N cites M, derived from the OpenAlex cache by
  *     citations.ts. Empty when no cache is present.
  *
- * Pure transform over an already-built PapersData model (+ optional cache) — no I/O.
+ * Pure transform over an already-built PapersData model (+ optional caches): no I/O.
  */
 
+import { differentPeopleCheck, type AuthorCache } from './authors.js';
 import { buildCitationData, type CitationCache } from './citations.js';
 import { largestComponentSize } from './connectivity.js';
 import {
@@ -45,12 +49,18 @@ function pairKey(a: number, b: number): string {
 }
 
 /**
- * Build the paper-network graph model from a PapersData model, plus an optional
- * OpenAlex citation cache. Shared-author edges come from the in-repo author
- * strings; directed citation edges come from the cache (empty without one).
+ * Build the paper-network graph model from a PapersData model, plus the optional
+ * committed caches. Shared-author edges come from the in-repo author strings, less
+ * any key the author cache shows naming different people on the two papers;
+ * directed citation edges come from the citation cache (empty without one).
  */
-export function buildGraphModel(model: PapersData, cache?: CitationCache | null): Graph {
+export function buildGraphModel(
+  model: PapersData,
+  cache?: CitationCache | null,
+  authors?: AuthorCache | null,
+): Graph {
   const refs = model.references;
+  const differentPeople = authors ? differentPeopleCheck(authors, refs) : null;
 
   // author key → set of ref ids, and a display name per key (first seen).
   const keyToRefs = new Map<string, Set<number>>();
@@ -76,6 +86,7 @@ export function buildGraphModel(model: PapersData, cache?: CitationCache | null)
     const display = keyToDisplay.get(key)!;
     for (let i = 0; i < ids.length; i++) {
       for (let j = i + 1; j < ids.length; j++) {
+        if (differentPeople?.(ids[i], ids[j], key)) continue;
         const pk = pairKey(ids[i], ids[j]);
         const existing = edgeShared.get(pk);
         if (existing) {
