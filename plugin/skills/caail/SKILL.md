@@ -86,7 +86,7 @@ below because the caveat never fires.
 grid size and the populated/empty split are in `index.json`'s `counts`, which moves when a row or
 column is added, so read them rather than assuming a figure. An
 empty cell means **CAAIL contains no paper classified there**. It does **not** mean no such work
-exists. CAAIL is a curated subset, not a census, and it has not measured its own recall.
+exists. CAAIL is a curated selection, not a complete record of the field.
 
 Every empty cell carries a `scope` field saying exactly this. Pass that caveat on to the user rather
 than reporting a gap in CAAIL as a gap in the field.

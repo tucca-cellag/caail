@@ -82,8 +82,8 @@ a false "CAAIL already has this" costs nothing but a missed suggestion. So:
 Say: *"CAAIL does not index this."*
 
 Never say, or imply: *"nobody has done this"*, *"this is novel"*, *"this is a gap in the field"*.
-CAAIL is a curated subset and has not measured its own recall, so an absence in CAAIL is a fact
-about CAAIL and nothing else. This matters most in exactly the moment this skill fires, because
+CAAIL is a curated selection, not a complete record of the field, so an absence in CAAIL is a
+fact about CAAIL and nothing else. This matters most in exactly the moment this skill fires, because
 the user is often looking for a gap to fill.
 
 Also: CAAIL indexes reviews, perspectives and reference works that carry no method and no research

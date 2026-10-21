@@ -154,11 +154,13 @@ ids means the skill did not load.
 
 - **CAAIL is beta; placements are being re-verified.** The inventory, topic tags and
   per-item metadata are solid, and a method × area placement is a substantive claim about
-  the paper — report it as one. Re-verification against full texts tightens precision, so
-  allow that an occasional item sits in a closely related cell rather than the ideal one;
-  that is very different from it not belonging. Cite the paper itself. `matrix.json`
-  carries this as `status` and `placementNote`. Empty cells instead carry `scope`, and
-  that caveat is much stronger: absence in CAAIL is weak evidence about the literature.
+  the paper; report it as one. Re-verification against full texts can still change a
+  placement. Where one is off it is typically a closely related cell rather than a paper
+  that does not belong, though re-verification has taken some papers out of the matrix.
+  Cite the paper itself. `matrix.json` carries the beta status as `status` and the placement
+  caveat as `placementNote`.
+  Empty cells instead carry `scope`, and that caveat is much stronger: absence in CAAIL is
+  not evidence that no such work exists.
 - **Never claim an install succeeded without verifying it.** Run the check in Step 2, or
   say explicitly that you could not verify.
 - **Do not modify a config file you did not read first, and do not write to a tracked one
