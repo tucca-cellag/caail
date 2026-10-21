@@ -36,7 +36,7 @@ import { fileURLToPath } from 'node:url';
 
 import { describe, it, expect } from 'vitest';
 
-import { curatorCoverage } from '../../src/lib/topic-curators.js';
+import { curatorCoverage, LEAD_ASK, LEAD_GUARANTEE } from '../../src/lib/topic-curators.js';
 import { SITE_URL } from '../../src/content/site-config.ts';
 import { MATRIX_SECTION, PLACEMENT_NOTE, SCOPE_NOTE } from './agent-api.js';
 import { buildLlmsFullText, splitFrontmatter } from './llms-full.js';
@@ -134,7 +134,7 @@ describe('curation page: numbers that another source already knows', () => {
     // (via llms-full.txt) and `api/matrix.json` are served to agents, and until this branch
     // PLACEMENT_NOTE said placements are "curator-assigned" while the page says a language
     // model proposes them. Two CAAIL surfaces, same reader, opposite answers about the single
-    // fact the page exists to disclose. SCOPE_NOTE is pinned verbatim for the same reason;
+    // fact the page exists to disclose. SCOPE_NOTE is checked against the page for the same reason;
     // this is the note whose subject matter the page actually is.
     //
     // Matched on substance rather than verbatim, because the two are written for different
@@ -153,10 +153,48 @@ describe('curation page: numbers that another source already knows', () => {
     expect(PLACEMENT_NOTE).toContain(`${SITE_URL}curation/`);
   });
 
-  it('quotes SCOPE_NOTE verbatim, capitalisation included', () => {
-    // The page attributes this to the agent API in quotation marks. `INDEXED` is caps in the
-    // constant, where the capitalisation IS the emphasis; a draft quoted it lowercased.
-    expect(page).toContain(SCOPE_NOTE);
+  it('agrees with SCOPE_NOTE on what an empty cell means', () => {
+    // The page used to quote SCOPE_NOTE verbatim, which this test pinned. It now states the
+    // point in its own words, so the check is on substance: both surfaces say an empty cell
+    // is not evidence that no such work exists. If the page ever quotes the agent API again,
+    // the quotation must still be verbatim.
+    expect(SCOPE_NOTE).toMatch(/not evidence that no such work exists/i);
+    expect(page).toMatch(/not evidence that no such work exists/i);
+    // Any quotation of the note, under any lead-in and from any of its sentences, must match
+    // that sentence exactly (case included: INDEXED is the note's own emphasis).
+    for (const sentence of SCOPE_NOTE.split(/(?<=\.)\s+/)) {
+      const head = sentence.slice(0, 30).toLowerCase();
+      if (page.toLowerCase().includes(head)) {
+        expect(page, `the page quotes part of SCOPE_NOTE inexactly: "${sentence}"`).toContain(sentence);
+      }
+    }
+    // A quotation attributed to the API, however it opens, must appear in one of its notes:
+    // every quotation within 120 characters after the word "API" is checked. Attribute values
+    // (a quote right after `=`) and spans containing markup are not quotations.
+    for (const m of page.matchAll(/(?<!=)["\u201c]([^"\u201d\n<>]{20,})["\u201d]/g)) {
+      if (!/API/.test(page.slice(Math.max(0, m.index - 120), m.index))) continue;
+      expect(
+        [SCOPE_NOTE, PLACEMENT_NOTE].some((note) => note.includes(m[1])),
+        `the page attributes to the API a quotation it does not carry: "${m[1]}"`,
+      ).toBe(true);
+    }
+    // CAAIL is not a model, so the page never uses the old note's evaluation phrases, quoted or
+    // not. Domain terms such as "precision fermentation" stay allowed.
+    // This also catches a reintroduced quotation of the old note, which the check above
+    // cannot see because it starts differently (tucca-cellag/caail-planning#402).
+    expect(page).not.toMatch(/curated subset|not a census|own recall|tightens precision|precision, not inclusion/i);
+  });
+});
+
+describe('curation page: the topic-lead wording the homepage and Topics hub share', () => {
+  it('carries LEAD_GUARANTEE verbatim and agrees with LEAD_ASK', () => {
+    // topic-curators.ts holds the one wording both other surfaces render. This page cannot
+    // interpolate it (see the header: llms-full.txt ships raw source), so it restates it and
+    // the restatement is checked here.
+    expect(page).toContain(LEAD_GUARANTEE);
+    const ask = 'still being worked out with the people who might take it on';
+    expect(LEAD_ASK).toContain(ask);
+    expect(page).toContain(ask);
   });
 });
 

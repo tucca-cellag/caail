@@ -90,9 +90,11 @@ describe('matrix.json', () => {
   it('states the limit of the claim in words an agent will pass on', () => {
     // If this wording is ever softened, absence-in-corpus starts reading as
     // absence-in-literature, which is the specific error this endpoint guards.
-    expect(SCOPE_NOTE).toMatch(/not a census/i);
+    expect(SCOPE_NOTE).toMatch(/curated selection/i);
     expect(SCOPE_NOTE).toMatch(/not evidence that no such work exists/i);
-    expect(SCOPE_NOTE).toMatch(/recall/i);
+    // CAAIL is a library, not a model, so it is never described in evaluation terms
+    // (tucca-cellag/caail-planning#402).
+    expect(SCOPE_NOTE).not.toMatch(/\b(recall|precision|census)\b/i);
   });
 
   /**
@@ -114,7 +116,7 @@ describe('matrix.json', () => {
   /**
    * The two caveats are deliberately different STRENGTHS, and that asymmetry is the thing
    * worth protecting. Absence is weak evidence, so SCOPE_NOTE undercuts it hard. A
-   * placement is a real claim, so PLACEMENT_NOTE must qualify precision without telling an
+   * placement is a real claim, so PLACEMENT_NOTE says how far off one can be without telling an
    * agent to discount the classification — which is the one thing CAAIL adds. If this ever
    * drifts toward "unverified" or "do not rely on", the endpoint starts arguing against
    * its own contribution.
@@ -123,7 +125,8 @@ describe('matrix.json', () => {
     expect(matrix.status).toBe('beta');
     expect(matrix.placementsUnderReview).toBe(true);
     expect(PLACEMENT_NOTE).toMatch(/substantive claim/i);
-    expect(PLACEMENT_NOTE).toMatch(/precision, not inclusion/i);
+    expect(PLACEMENT_NOTE).toMatch(/closely related cell rather than a paper that does not belong/i);
+    expect(PLACEMENT_NOTE).not.toMatch(/\b(recall|precision|census)\b/i);
     expect(PLACEMENT_NOTE).toMatch(/cite the paper/i);
     // Absence stays the stronger caveat of the two.
     expect(SCOPE_NOTE).toMatch(/not evidence that no such work exists/i);

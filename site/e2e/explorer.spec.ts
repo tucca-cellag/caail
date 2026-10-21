@@ -8,7 +8,7 @@ test('homepage shows the sections grid with counts', async ({ page }) => {
   await page.goto('./');
   await expect(page.getByRole('heading', { name: 'Explore the library' })).toBeVisible();
   await expect(
-    page.getByRole('link', { name: new RegExp(`${counts.papers} Papers`) }).first(),
+    page.getByRole('link', { name: new RegExp(`${counts.papers} References`) }).first(),
   ).toBeVisible();
 });
 

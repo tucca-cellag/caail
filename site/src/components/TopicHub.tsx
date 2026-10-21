@@ -63,11 +63,10 @@ const KIND_LABEL: Record<Item['kind'], string> = { paper: 'Papers', software: 'S
  * Per-type counts, INCLUDING the zeros.
  *
  * These used to be gated on `> 0`, which quietly contradicted the homepage band one click
- * away: the band renders Scaffolding & Biomaterials as "software 0, databases 0" and says
- * in its own copy that an empty column is a result CAAIL returns rather than a gap it
- * hides. A reader who clicked that card because of the empty columns landed here and found
- * they had vanished. Two surfaces, one linking to the other, disagreeing about the claim
- * the first one leads with.
+ * away: the band renders Scaffolding & Biomaterials as "software 0, databases 0". A reader
+ * who clicked that card because of the empty columns landed here and found they had
+ * vanished. Two surfaces, one linking to the other, disagreeing about what the first one
+ * shows.
  *
  * A zero is muted rather than dropped, which is the same treatment the band gives it: an
  * answer, not a score.

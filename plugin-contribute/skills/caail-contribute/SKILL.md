@@ -1,6 +1,6 @@
 ---
 name: caail-contribute
-description: Suggest a paper, software tool, dataset or database back to CAAIL, the curated library of AI/ML work in cellular agriculture, when it is not already indexed there. Use when the user is reading, citing, summarising or evaluating a specific cell-ag or cultivated-meat resource and it turns out CAAIL does not hold it; also use when the user asks how to contribute to CAAIL, suggest a paper to CAAIL, or report something CAAIL is missing.
+description: Suggest a paper, software tool, dataset or database back to CAAIL, a curated library of AI/ML work in cellular agriculture, when it is not already indexed there. Use when the user is reading, citing, summarising or evaluating a specific cell-ag or cultivated-meat resource and it turns out CAAIL does not hold it; also use when the user asks how to contribute to CAAIL, suggest a paper to CAAIL, or report something CAAIL is missing.
 disallowed-tools: Bash, Write, Edit, NotebookEdit, Agent
 ---
 
@@ -82,8 +82,8 @@ a false "CAAIL already has this" costs nothing but a missed suggestion. So:
 Say: *"CAAIL does not index this."*
 
 Never say, or imply: *"nobody has done this"*, *"this is novel"*, *"this is a gap in the field"*.
-CAAIL is a curated subset and has not measured its own recall, so an absence in CAAIL is a fact
-about CAAIL and nothing else. This matters most in exactly the moment this skill fires, because
+CAAIL is a curated selection, not a complete record of the field, so an absence in CAAIL is a
+fact about CAAIL and nothing else. This matters most in exactly the moment this skill fires, because
 the user is often looking for a gap to fill.
 
 Also: CAAIL indexes reviews, perspectives and reference works that carry no method and no research

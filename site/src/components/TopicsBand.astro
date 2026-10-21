@@ -90,18 +90,6 @@ for (const t of themes) {
   }
 }
 
-/* The lede claims an empty column is a result CAAIL returns rather than a gap it hides.
-   If every theme were populated in every type, that sentence would describe nothing on the
-   page it appears on — the same failure mode as WhyCaail's `copyleft === 0` guard, where a
-   caveat outlives the thing it was warning about. Better to fail the build than to ship a
-   claim whose evidence has quietly disappeared. */
-if (!themes.some((t) => TYPES.some((ty) => countOf(t, ty.key) === 0))) {
-  throw new Error(
-    'TopicsBand: every theme is now populated in every content type, so the lede\'s claim ' +
-      'that an empty column is a returned result has nothing on this page to point at. ' +
-      'Rewrite the lede rather than shipping a caveat with no referent.',
-  );
-}
 ---
 
 {/* NOT INDEXED, and this is load-bearing rather than tidiness.
@@ -138,10 +126,10 @@ if (!themes.some((t) => TYPES.some((ty) => countOf(t, ty.key) === 0))) {
     <h2 class="caail-display">Is your own area in here, and how thinly?</h2>
     <p class="lede">
       {themes.length} subject themes cut across papers, software, databases and dataset
-      entries. The counts are uneven, and none of them is offered as completeness: a column
-      with nothing in it is a result CAAIL returns rather than a gap it hides. Tagging is
-      curator-assigned and has not been audited end to end, so if your own area looks wrong
-      here, that is worth <a href={`${base}${REPORT_PATH}`}>telling us</a>.
+      entries. The counts are uneven, and they count what CAAIL holds, not how much work each
+      area has produced. Tags were set by rule or by hand, and they have not been audited end
+      to end. Some known errors are not yet fixed, so if your own area looks wrong
+      here, please <a href={`${base}${REPORT_PATH}`}>tell us</a>.
     </p>
   </div>
 
@@ -189,8 +177,8 @@ if (!themes.some((t) => TYPES.some((ty) => countOf(t, ty.key) === 0))) {
   </aside>
 
   <p class="foot sr sr-d2">
-    {tags.length} finer tags sit beneath these {themes.length} themes, each minted only
-    where enough work clustered to earn one.
+    {tags.length} finer tags sit beneath these {themes.length} themes. A tag is added only
+    where several items share it.
     <a href={`${base}/topics/`}>Open the topic hub →</a>
   </p>
 </section>

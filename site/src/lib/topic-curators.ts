@@ -92,9 +92,8 @@ export const LEAD_GUARANTEE =
   'A lead is a point of contact for one area, not a guarantee that every entry in it is right.';
 
 export const LEAD_ASK =
-  'What the role commits to is still being worked out, and we would rather settle that with ' +
-  'the people who might take it than hand them a finished job description. If you work in ' +
-  'one of these areas,';
+  'What a lead commits to is still being worked out with the people who might take it on. ' +
+  'If you work in one of these areas,';
 
 /** The headline figure, phrased once so both surfaces cannot disagree about it. */
 export function leadCoverageLine(): string {

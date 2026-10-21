@@ -7,7 +7,7 @@
 
 import { describe, it, expect, beforeAll } from 'vitest';
 
-import { buildRecentModel, lastAdditionDate, classifyArea } from './recent.js';
+import { buildRecentModel, lastAdditionDate, classifyArea, parseSubject } from './recent.js';
 import { RecentSchema, type Recent } from './types.js';
 
 describe('buildRecentModel — real repo', () => {
@@ -59,6 +59,18 @@ describe('buildRecentModel — real repo', () => {
 
   it('passes RecentSchema', () => {
     expect(RecentSchema.safeParse(recent).success).toBe(true);
+  });
+});
+
+describe('parseSubject: reader-facing title overrides', () => {
+  it('shows the reader-facing title for a commit whose subject narrates the curation process', () => {
+    // The subject as pushed on 2026-09-02. A pushed subject cannot be edited, so the override
+    // supplies the title; this fails if the override or the lead-verb stripping it keys on changes.
+    const entry = parseSubject(
+      '2026-09-02',
+      'feat(papers): add the two matrix cells a reviewer confirmed and nothing landed',
+    );
+    expect(entry?.title).toBe('iUmami-SCM and CRISPR-GPT each placed in one more matrix cell');
   });
 });
 

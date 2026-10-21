@@ -109,9 +109,9 @@ const acc = (r: InventoryRow) => col(r, 'Data').replace(/\[`|`\]\(.*/g, '');
    0/24/48/72/96 h timecourse inside it was unreachable from the endpoint. The card
    concluded from that silence that the only real timecourse was single-nucleus and told
    the reader to copy its grid. A ten-minute GEO search returned the right answer the whole
-   time. Now that the members are indexed, the honest advice inverts: the grid is already
-   public at n=4 under serum starvation, so the 12 libraries are worth more under the
-   trigger that has no replicated series.
+   time. Now that the members are indexed, the card reports that the grid is public at n=4
+   under serum starvation, and that in media described as serum-free the bovine inventory holds
+   bulk RNA-seq only at 0 h and 72 h.
 
    Each deposit is matched on its DESIGN rather than its accession, so a re-deposit under a
    new accession does not silently drop a row, and each guard below names what it protects.
@@ -151,8 +151,9 @@ const cowSerumFreeArm = only(
   ),
   'bulk serum-free arm',
 );
-/* The one deposit that does cover the full grid under serum-free induction, and cannot be
-   pooled with: a single multiplexed single-nucleus library, so n=1 at every timepoint. */
+/* The one deposit that does cover the full grid under serum-free induction: a single
+   multiplexed single-nucleus library (two animals per timepoint, assigned back by genotype),
+   so it is not a bulk replicated series. */
 const cowSingleNucleus = only(
   cowInventory.filter(
     (r) => notSuperSeries(r)
@@ -161,13 +162,33 @@ const cowSingleNucleus = only(
   ),
   'single-nucleus deposit on the same grid',
 );
+/* The SuperSeries both arms belong to, taken from the inventory's structured `subseries` field:
+   exactly one Cow row must list both arms, so the tail names a parent the inventory records. */
+type SeriesRow = InventoryRow & { subseries?: { accession: string }[] };
+const cowParents = (datasetsApi.inventory as SeriesRow[]).filter((r) => {
+  const subs = new Set((r.subseries ?? []).map((s) => s.accession));
+  return r.page === 'Cow' && subs.has(acc(cowBulkTimecourse)) && subs.has(acc(cowSerumFreeArm));
+});
+if (cowParents.length !== 1) {
+  throw new Error(
+    `AskExamples card 1: ${cowParents.length} Cow rows list both ${acc(cowBulkTimecourse)} and ` +
+      `${acc(cowSerumFreeArm)} as subseries; the tail needs exactly one SuperSeries to name.`,
+  );
+}
+const cowParentAcc = acc(cowParents[0]!);
 /* The card's checkable catch: the obvious regulatory reference cannot actually be used yet.
    If the deposit opens up this throws rather than shipping a stale warning. */
-const cowEmbargoed = cowInventory.find((r) => /embargoed/i.test(col(r, 'Description')));
-if (!cowEmbargoed) {
+const cowFaangRows = cowInventory.filter(
+  (r) => notSuperSeries(r) && /FAANG epigenome atlas/i.test(col(r, 'Description')),
+);
+const cowFaang = cowFaangRows.length === 1 ? cowFaangRows[0] : undefined;
+if (!cowFaang || !/embargoed/i.test(col(cowFaang, 'Description'))) {
   throw new Error(
-    'AskExamples card 1: the embargoed annotation reference is gone from the Cow inventory, so ' +
-      'the "check before you rely on it" row no longer has a subject.',
+    'AskExamples card 1: the "Regulatory-element annotation" row says the bovine FAANG ' +
+      'epigenome atlas\'s new deposits are embargoed, but ' +
+      (cowFaangRows.length === 0 ? 'its row is gone from the Cow inventory.'
+        : cowFaangRows.length > 1 ? `${cowFaangRows.length} rows now match it, so the card cannot tell which.`
+        : 'its row no longer says so.'),
   );
 }
 /* The three deposits must be three DIFFERENT rows. Two of the filters resolving to one row would
@@ -179,14 +200,56 @@ if (new Set([cowBulkTimecourse, cowSerumFreeArm, cowSingleNucleus].map(acc)).siz
       `${acc(cowSerumFreeArm)}, ${acc(cowSingleNucleus)}).`,
   );
 }
-/* The card's whole argument is that the serum-free side has no replicated series. If one is
-   ever deposited, the advice flips back and the card has to be rewritten rather than quietly
-   continuing to send readers at the thin arm. */
-if (/triplicate|quadruplicate/i.test(col(cowSerumFreeArm, 'Description'))
-    && /0\/24\/48\/72\/96/.test(col(cowSerumFreeArm, 'Description'))) {
+/* The head and row 1 say the full-grid timecourse was induced by serum starvation. */
+if (!/serum starvation/i.test(col(cowBulkTimecourse, 'Description'))) {
   throw new Error(
-    'AskExamples card 1: the serum-free arm now covers the full grid with replication, so ' +
-      '"spend your libraries there" is no longer the advice. Rewrite the card.',
+    `AskExamples card 1: ${acc(cowBulkTimecourse)}'s row no longer says serum starvation, so the ` +
+      'head and the "Public at the full grid" row are unsupported.',
+  );
+}
+/* Row 2 states each deposit's design in words taken from that deposit's own row, so each phrase
+   is checked there: replication and the comparison for the serum-free arm, the medium for the
+   single-nucleus deposit. */
+if (!/triplicate/i.test(col(cowSerumFreeArm, 'Description'))
+    || !/serum-free/i.test(col(cowSerumFreeArm, 'Description'))
+    || !/2% FBS/.test(col(cowSerumFreeArm, 'Description'))) {
+  throw new Error(
+    `AskExamples card 1: ${acc(cowSerumFreeArm)}'s row no longer records triplicates, serum-free ` +
+      'media and a 2% FBS comparison, so the "Serum-free differentiation" row is unsupported.',
+  );
+}
+if (!/serum-free differentiation medium/i.test(col(cowSingleNucleus, 'Description'))) {
+  throw new Error(
+    `AskExamples card 1: ${acc(cowSingleNucleus)}'s row no longer says serum-free differentiation ` +
+      'medium, so the "Serum-free differentiation" row is unsupported.',
+  );
+}
+/* The card's head says that in media described as serum-free, the bovine inventory holds bulk
+   RNA-seq only at 0 h and 72 h. It says "described as" because that is what a check can read.
+   The head names the inventory because curated entries carry no design text a check could read.
+   This is a vocabulary check, not a reading of each deposit: the serum-free arm must be the only
+   non-SuperSeries bulk RNA-seq row whose description uses one of the serum-free terms below,
+   and it must still sample only 0 h and 72 h. A row that names serum-free media in other words
+   would pass, so add the term here when a new medium appears. Type: "RNA-seq", "bulk RNA-seq",
+   "mRNA-seq" and "RNA sequencing" count (not after a letter, so not "snRNA sequencing"); the single-cell and single-nucleus forms do not unless
+   the row is also bulk. Medium: serum-free, SFM and the SF* abbreviations, FBS-free, chemically
+   defined, without serum, B8, Beefy, Essential 8. */
+const bulkSerumFree = cowInventory.filter((r) => {
+  const type = col(r, 'Type');
+  const bulk = /(?<![a-z])rna[- ]?seq|\bmrna-seq/i.test(type)
+    && (/\bbulk\b/i.test(type) || !/single[- ](?:cell|nucle)/i.test(type));
+  return notSuperSeries(r) && bulk
+    && /serum[- ]?free|\bSFM\b|\bSF(?:DM|GM|B)\b|FBS[- ]?free|chemically[- ]defined|without serum|\bB8\b|Beefy|Essential[- ]8/i
+      .test(col(r, 'Description'));
+});
+if (bulkSerumFree.length !== 1 || bulkSerumFree[0] !== cowSerumFreeArm
+    || !/0 h and 72 h/.test(col(cowSerumFreeArm, 'Description'))
+    || /\b(?:24|48|96) h\b|0\/24/.test(col(cowSerumFreeArm, 'Description'))) {
+  throw new Error(
+    'AskExamples card 1: the head says that in media described as serum-free the bovine inventory holds bulk RNA-seq only at 0 h and 72 h, ' +
+      `but the bulk serum-free rows are now ${bulkSerumFree.map(acc).join(', ') || 'none'} ` +
+      `(expected only ${acc(cowSerumFreeArm)}), or that row no longer samples only 0 h and 72 h. ` +
+      'Rewrite the card.',
   );
 }
 
@@ -232,6 +295,15 @@ if (!gemMediaDesign || gemInMatrix.length >= gemPapers.length) {
       `inMatrix=${gemInMatrix.length} of ${gemPapers.length}`,
   );
 }
+/* The media-design row states facts about one paper, iSsus3744 (pig tissue biomass, a Duroc
+   satellite-cell line, preprint status). The title regex above can match more than one paper,
+   so the lookup is checked to have found that one, and "preprint" is checked against its venue. */
+if (!/iSsus3744/.test(gemMediaDesign.title) || !/bioRxiv|medRxiv/i.test(gemMediaDesign.journal ?? '')) {
+  throw new Error(
+    `AskExamples card 2: the media-design row describes iSsus3744 as a preprint, but the lookup found ` +
+      `"${gemMediaDesign.title}" (${gemMediaDesign.journal}). Recheck the row before shipping.`,
+  );
+}
 
 /* ---- Card 3: allergenicity screening for a novel-food submission -------------------------
    This slot held a coverage card reading the matrix as a map of the field. It was cut, and the
@@ -243,15 +315,14 @@ if (!gemMediaDesign || gemInMatrix.length >= gemPapers.length) {
    is a list drawn from `catalog.json` groups, so the card cannot claim a tool exists that the
    catalog does not carry, and adding one to Databases.md puts it on the homepage automatically.
 
-   The reasoning the card contributes, which a search does not: these tools look interchangeable
-   and are not. One implements the FAO/WHO Codex criterion itself; the rest are classifiers
-   answering "allergen-like" against different training sets, so agreement between them is not
-   confirmation. Deliberately no claim about what any regulator accepts. */
-type CatalogEntry = { name: string; url: string; group: string };
+   One tool, Allermatch, automates the FAO/WHO and Codex sequence comparison. The card lists the
+   rest by name and leaves their methods to their catalogue entries. Deliberately no claim
+   about what any regulator accepts. */
+type CatalogEntry = { name: string; url: string; group: string; summary?: string };
 const inGroup = (list: CatalogEntry[], group: string) => list.filter((e) => e.group === group);
 const allergenTools = inGroup(catalog.software as CatalogEntry[], 'Food Safety & Allergenicity');
 const allergenDbs = inGroup(catalog.databases as CatalogEntry[], 'Food Safety & Allergen Databases');
-/* The screen that is the criterion rather than a model of it. */
+/* The tool that automates the FAO/WHO and Codex sequence comparison. */
 const codexScreen = allergenTools.find((e) => /Allermatch/i.test(e.name));
 /* The precedent archive, and the row nobody expects: every cultured-animal-cell food that has
    completed an FDA pre-market consultation, with the sponsor's own safety submission attached. */
@@ -267,13 +338,23 @@ if (!codexScreen || !culturedCellPrecedent || classifiers.length < 3 || allergen
       `classifiers=${classifiers.length} databases=${allergenDbs.length}`,
   );
 }
+/* The sequence-comparison row gives the window, the identity threshold and the short exact
+   match. The catalogue entry gives them too, so the two are checked against each other rather
+   than trusted to agree. */
+if (!/\b80-(?:mer|amino)/i.test(codexScreen.summary ?? '') || !/35%/.test(codexScreen.summary ?? '')
+    || !/\b6-mer\b/i.test(codexScreen.summary ?? '')) {
+  throw new Error(
+    `AskExamples card 3: the ${codexScreen.name} catalogue entry no longer states an 80-residue ` +
+      'window at 35% identity and a 6-mer exact match, so the card row that states them is unsupported.',
+  );
+}
 
 /* ---- Card 4: sensory, and what a small-n asker can actually build on ----------------------
    The head used to be "40 samples is not the shortfall it looks like". The corpus does not
    support that and ref #72 measured the opposite: a subsampling analysis from 50 to 170 training
    samples with 39 held out, on 209 total, with accuracy still rising across the range. So the
-   card keeps the useful half (the sensory literature is classical and small-n friendly) and stops
-   telling the reader their sample count is fine.
+   card reports the method counts, that study's numbers and the code-release rate, and draws no
+   conclusion about the reader's sample count.
 
    The regex here names FOUR rows and must keep matching four. The previous one included `Linear`,
    which silently pulled in a fifth row (Linear & Regularized Models) and turned the prose's 32
@@ -282,10 +363,18 @@ const sensoryCells = matrix.cells
   .filter((c) => c.area === 'sensory' && !c.emptyInCorpus)
   .sort((a, b) => b.refIds.length - a.refIds.length);
 const sensoryTop = sensoryCells[0];
-const sensoryDeep = sensoryCells.filter((c) => /Deep Learning|CNN|GNN/i.test(c.method));
+/* The deep-learning rows the card's row reports: deep learning, CNN, GNN, GAN / VAE and the
+   foundation-model rows. */
+const sensoryDeep = sensoryCells.filter((c) =>
+  /Deep Learning|CNN|GNN|\bGAN\b|\bVAE\b|Foundation Model/i.test(c.method),
+);
 const sensoryClassical = sensoryCells.filter((c) =>
   /Ensemble|SVM|Chemometrics|Nearest Neighbors/i.test(c.method),
 );
+/* The head's guard is stricter than the head: every row outside the four classical ones counts
+   against them, so the head cannot go false while the build stays green, whichever row new
+   deep-learning work is filed under. It can fail early, which is the safe side. */
+const sensoryOther = sensoryCells.filter((c) => !sensoryClassical.includes(c));
 const nRefs = (cs: Cell[]) => new Set(cs.flatMap((c) => c.refIds)).size;
 const sensoryIds = new Set(sensoryCells.flatMap((c) => c.refIds));
 const sensoryRefs = papers.references.filter((r) => sensoryIds.has(r.id));
@@ -301,17 +390,26 @@ const pct = (a: number, b: number) => Math.round((100 * a) / b);
    the card cites it rather than asserting a floor of its own. Derived by title, not by ref id:
    an id typed into prose is the same hand-typed-fact defect as a typed count. */
 const sensoryLearningCurve = sensoryRefs.find((r) => /metabolomic selection/i.test(r.title));
+/* That paper's own design figures, read from its full text. They cannot be derived from the
+   corpus, so they are stated once here, beside the lookup that names the paper. */
+const subsample = { minTrain: 50, maxTrain: 170, heldOut: 39, total: 209 } as const;
 if (!sensoryLearningCurve) {
   throw new Error(
     'AskExamples card 4: the sample-count row cites the one sensory paper that ran a training-set ' +
       'subsampling analysis, and it is no longer in the column. Recheck the row before shipping.',
   );
 }
-if (!sensoryTop || sensoryClassical.length !== 4 || nRefs(sensoryClassical) <= nRefs(sensoryDeep)) {
+if (!/Colantonio/.test(sensoryLearningCurve.authorsText) || !/fruit flavor/i.test(sensoryLearningCurve.title)) {
+  throw new Error(
+    'AskExamples card 4: the sample-count row gives Colantonio et al.\'s tomato subsampling figures, ' +
+      `but the lookup found "${sensoryLearningCurve.title}". Recheck the row before shipping.`,
+  );
+}
+if (!sensoryTop || sensoryClassical.length !== 4 || nRefs(sensoryClassical) <= nRefs(sensoryOther)) {
   throw new Error(
     'AskExamples card 4: the card names four classical method rows and rests on them ' +
-      `outnumbering the deep rows; got rows=${sensoryClassical.length} ` +
-      `classical=${nRefs(sensoryClassical)} deep=${nRefs(sensoryDeep)}`,
+      `outnumbering every other row in the column; got rows=${sensoryClassical.length} ` +
+      `classical=${nRefs(sensoryClassical)} other=${nRefs(sensoryOther)}`,
   );
 }
 if (!sensoryRefs.every((r) => r.isPrimary)) {
@@ -352,21 +450,19 @@ const examples = [
     q:
       'I am planning an RNA-seq timecourse on primary bovine satellite cells through differentiation, ' +
       'budget for about 12 libraries. I would like this to be integrable with existing data rather ' +
-      'than standing alone. Which public datasets could mine realistically be combined with, and what ' +
-      'do I need to match in the design (timepoints, depth, annotation build) for that to be possible?',
+      'than standing alone. Which public datasets could mine realistically be combined with, and how ' +
+      'were they designed?',
     src: ['datasets.json'],
-    head: 'The grid you were going to spend 12 libraries on is already public. What is thin is the trigger you would be spending them under',
+    head: 'A bulk 0 to 96 h timecourse is public under serum starvation. In media described as serum-free, CAAIL\'s bovine inventory holds bulk RNA-seq only at 0 h and 72 h',
     rows: [
-      { k: 'Already public, at full grid', v: `${acc(cowBulkTimecourse)} is bulk RNA-seq at 0/24/48/72/96 h in biological quadruplicates, with differentiation induced by serum starvation. Repeating that grid under that trigger buys you replication, not reach` },
-      { k: 'Where the public grid is thin', v: `Under serum-free induction there is no comparable series. ${acc(cowSerumFreeArm)} is bulk but samples only 0 h and 72 h, and ${acc(cowSingleNucleus)} covers all five timepoints in a single multiplexed single-nucleus library` },
-      { k: 'What you actually have to match', v: 'The induction trigger, not the timing. Match serum starvation and you can pool with the existing series directly. Choose serum-free and your 12 libraries become the first replicated timecourse under that trigger, which is the more valuable of the two things you could buy' },
-      { k: 'Check before you rely on it', v: `The bovine FAANG epigenome atlas is the obvious annotation reference and its new deposits are embargoed until journal acceptance` },
+      { k: 'Public at the full grid', v: `${acc(cowBulkTimecourse)} is bulk RNA-seq at 0/24/48/72/96 h in biological quadruplicates, with differentiation induced by serum starvation` },
+      { k: 'Serum-free differentiation', v: `${acc(cowSerumFreeArm)} is bulk, sampled only at 0 h and 72 h in biological triplicates, and compares serum-free differentiation media with 2% FBS. ${acc(cowSingleNucleus)} is single-nucleus RNA-seq covering all five timepoints in serum-free differentiation medium` },
+      { k: 'Regulatory-element annotation', v: `The bovine FAANG epigenome atlas's newly generated deposits are embargoed until journal acceptance` },
     ],
     tail:
-      'Both arms are deposited inside one parent accession that names neither, so a list of deposits ' +
-      'will not tell you this and the design lines will. Read the thin side as thin in what is ' +
-      `indexed here: CAAIL holds ${cowTotal} bovine datasets as a curated subset and has not ` +
-      'measured its own recall, so this is not evidence that nobody has run it.',
+      `${acc(cowBulkTimecourse)} and ${acc(cowSerumFreeArm)} are subseries of one GEO SuperSeries, ${cowParentAcc}. ` +
+      `CAAIL holds ${cowTotal} bovine datasets as a curated selection, so a series missing here ` +
+      'may still exist elsewhere.',
   },
   {
     id: 'media',
@@ -382,14 +478,14 @@ const examples = [
     src: ['matrix.json', 'papers.json'],
     head: `${gemPapers.length} papers here are genome-scale or metabolic-network work. The matrix reaches ${gemInMatrix.length} of them`,
     rows: [
-      { k: 'The cell you would search', v: `Bayesian Optimization × Media Optimization holds ${mediaBo.refIds.length} papers. ${mediaBoCode.length} link released code, and ${mediaBoBoth.length} of the ${mediaBo.refIds.length} links both code and a data deposit, which is what re-running a loop yourself requires` },
-      { k: 'Where the rest of it sits', v: `The other ${gemPapers.length - gemInMatrix.length} carry no matrix method at all, because they are filed as reference works and reviews rather than as method-to-area research. Searching the matrix will not surface them` },
-      { k: 'The closest answer to your question', v: `${cite(gemMediaDesign.id)}, "${gemMediaDesign.title}", constrains its model with experimentally determined biomass composition and uptake and excretion fluxes from a muscle satellite-cell line, then validates it by amino-acid supplementation. That is the measurement burden you asked about. It is a preprint and has not been peer reviewed` },
+      { k: 'Bayesian Optimization × Media Optimization', v: `${mediaBo.refIds.length} papers. ${mediaBoCode.length} link released code, and ${mediaBoBoth.length} of the ${mediaBo.refIds.length} links both code and a data deposit` },
+      { k: 'The other genome-scale work', v: `The other ${gemPapers.length - gemInMatrix.length} carry no matrix method, because they are filed as reference works and reviews, not as method-to-area research, so a search of the matrix does not return them` },
+      { k: 'A model-guided media design', v: `${cite(gemMediaDesign.id)}, "${gemMediaDesign.title}", constrains its model with biomass composition measured in pig muscle and fat tissue and with uptake and excretion fluxes measured in a Duroc muscle satellite-cell line, then validates it by amino-acid supplementation. It is a preprint and has not been peer reviewed` },
     ],
     tail:
-      'What each group had to measure is in their methods sections rather than in any metadata ' +
-      'field, which is why this ends in papers to read rather than in a filter. Read the scope ' +
-      'precisely: this is where the coupling is indexed, not a claim about who has done it.',
+      'What each group measured is in its methods section, not in any metadata field, so this ' +
+      'answer ends in papers to read. It shows where the coupling is indexed in CAAIL, not ' +
+      'everyone who has done it.',
   },
   {
     id: 'safety',
@@ -402,24 +498,27 @@ const examples = [
       'screen the sequences against computationally, and has anyone in cultivated meat already been ' +
       'through this whose submission I can read?',
     src: ['catalog.json'],
-    head: `Only one of these implements the Codex criterion itself. The other ${classifiers.length} score allergen similarity by other means`,
+    head: `${codexScreen.name} automates the FAO/WHO and Codex sequence comparison. The catalogue lists ${classifiers.length} other allergenicity tools beside it`,
     rows: [
-      { k: 'The screen that is the criterion', v: `${codexScreen.name} implements the FAO/WHO Codex Alimentarius test directly: a sliding 80-mer window at or above 35% identity, plus an exact 6-mer match, run against curated allergen sets` },
-      { k: 'The classifiers, which answer "allergen-like"', v: `${classifiers.map((e) => e.name).join(', ')}. Alignment-free, homology-plus-structure and deep-learning methods, each trained on a different set, so agreement between them is not confirmation` },
-      { k: 'What they are all standing on', v: `${allergenDbs.map((e) => e.name).join(', ')}. Which reference set you screen against moves the answer more than which classifier you run` },
-      { k: 'Who has already been through it', v: `${culturedCellPrecedent.name} publishes, per product, the file number, the sponsor's own safety submission and the agency's response` },
+      { k: 'The sequence comparison', v: `${codexScreen.name} automates the comparison recommended by the 2001 FAO/WHO expert consultation and the Codex guideline. It slides an 80-amino-acid window with a default threshold of 35% identity, and runs an exact-match search with a default length of 6 amino acids` },
+      { k: 'Other allergenicity tools', v: `${classifiers.map((e) => e.name).join(', ')}. Their catalogue entries say what each screens and how` },
+      { k: 'Allergen reference databases', v: `${allergenDbs.map((e) => e.name).join(', ')}` },
+      { k: 'Published precedents', v: `${culturedCellPrecedent.name} publishes, per product, the file number, the sponsor's own safety submission and the agency's response` },
     ],
     tail:
-      'The screens are cheap, and the choice that matters is the reference set rather than the ' +
-      'classifier. What none of them settles is whether your specific protein needs serum-IgE work, ' +
-      'which is the spend you were scoping. CAAIL links what each resource says about itself, so ' +
-      'check scope and update dates at the source before relying on one.',
+      'None of these screens is the full assessment. The allergenicity annexes of the Codex ' +
+      'guidelines for foods from recombinant-DNA plants and animals (CAC/GL 45-2003, CAC/GL 68-2008) ' +
+      'weigh the protein\'s source, its sequence similarity to known allergens and its structural ' +
+      'properties, such as resistance to digestion and to heat, since "no single criterion is ' +
+      'sufficiently predictive". They call for testing against sera, where available, when the source ' +
+      'is known to be allergenic or the sequence shares homology with a known allergen. Check each ' +
+      'resource\'s scope and update date at its source before relying on it.',
   },
   {
     id: 'sensory',
     tab: 'Flavor & sensory',
     icon: 'lucide:donut',
-    label: 'Sensory prediction × small-n reality',
+    label: 'Sensory prediction × small samples',
     q:
       'We run a small cultured-pork line and have GC-MS volatile panels plus trained-panel scores ' +
       'for about 40 samples, nowhere near enough to train on. Before I commit to another year of ' +
@@ -427,17 +526,14 @@ const examples = [
       'measurements in meat, and what did those groups need in sample counts and reference ' +
       'standards to make it work?',
     src: ['matrix.json', 'papers.json'],
-    head: 'The methods are settled and small-n friendly. What is thin is anything you could build on',
+    head: `Classical methods outnumber deep learning in the sensory column, and ${sensoryCode} of its ${sensoryRefs.length} papers release code`,
     rows: [
-      { k: 'What the field actually uses', v: `${nRefs(sensoryClassical)} papers across the ensemble, SVM, chemometrics and nearest-neighbour rows, against ${nRefs(sensoryDeep)} on deep learning, CNN and GNN combined. The largest single cell in the matrix is ${sensoryTop.method} × Sensory Prediction at ${sensoryTop.refIds.length} papers, so your problem is not the architecture` },
-      { k: 'What those methods needed in samples', v: `${cite(sensoryLearningCurve.id)} ran your question as a subsampling analysis: training sets from 50 to 170 with 39 held out, on 209 samples, accuracy still climbing across that range though some traits were already usable at 50. The smallest configuration it reports is about 90 samples` },
-      { k: 'Why you are starting the baseline, not joining one', v: `Sensory papers release code at ${sensoryCode} of ${sensoryRefs.length} (${pct(sensoryCode, sensoryRefs.length)}%), against ${nonSensoryCode} of ${nonSensoryPrimary.length} (${pct(nonSensoryCode, nonSensoryPrimary.length)}%) across the rest of the primary literature. Every sensory reference is primary research, so that is like for like` },
+      { k: 'Methods in the column', v: `${nRefs(sensoryClassical)} papers across the ensemble, SVM, chemometrics and nearest-neighbour rows, against ${nRefs(sensoryDeep)} on the deep learning, CNN, GNN, GAN / VAE and foundation-model rows combined. The largest cell in the column is ${sensoryTop.method} × Sensory Prediction, at ${sensoryTop.refIds.length} papers` },
+      { k: 'Sample counts', v: `${cite(sensoryLearningCurve.id)} ran a subsampling analysis in tomato: training sets from ${subsample.minTrain} to ${subsample.maxTrain} with ${subsample.heldOut} held out, on ${subsample.total} samples. Accuracy mostly rose across that range, though it was already relatively high for some traits at ${subsample.minTrain}` },
+      { k: 'Code release', v: `Sensory papers release code at ${sensoryCode} of ${sensoryRefs.length} (${pct(sensoryCode, sensoryRefs.length)}%), against ${nonSensoryCode} of ${nonSensoryPrimary.length} (${pct(nonSensoryCode, nonSensoryPrimary.length)}%) across the rest of the primary literature. Every sensory reference is primary research, so the two groups are comparable` },
     ],
     tail:
-      'What each group had to measure is in their methods sections, which is the reading this ends ' +
-      'in. The useful read is not that 40 samples is fine, because the one paper that measured it ' +
-      'says otherwise. It is that the methods you would use are the cheap ones, and the panel ' +
-      'sessions are buying the thing the literature will not hand you.',
+      'What each group measured is in its methods section.',
   },
 ];
 
@@ -463,13 +559,13 @@ if (examples.length !== 4) {
     <p class="eyebrow"><span class="bar" aria-hidden="true"></span>What you can ask</p>
     <h2 class="caail-display">Ask something specific</h2>
     <p class="lede">
-      Four questions a working researcher would actually type, run against the endpoints an
-      agent would query.
+      Four questions a working researcher might ask, run against the endpoints an agent would
+      query.
     </p>
     <p class="sub">
-      These are what the endpoints return, not finished answers; your agent reasons on top of
-      them. Nothing here is a mock-up: every figure in the answers is computed from the corpus
-      when this page is built.
+      These answers are built from what the endpoints return, before an agent reasons further
+      over them. The counts are computed from the corpus when this page is built; other figures
+      come from the paper, guideline or resource each card names.
     </p>
   </div>
 
@@ -579,8 +675,8 @@ if (examples.length !== 4) {
         reader needs both: the date bounds WHEN this was true, the status bounds HOW
         settled it is. Deliberately quiet, because the risk it flags is small — the counts
         and metadata are firm and a placement is a real claim about the paper; the
-        re-verification against full texts tightens precision rather than establishing
-        trust. Agents get the same calibration via `status` / `placementNote` in
+        re-verification against full texts can move a paper to a closely related cell, or
+        out of the matrix, but does not establish trust that was missing. Agents get the beta status and the placement caveat via `status` / `placementNote` in
         matrix.json. How a placement is actually made — proposed by a language-model agent,
         checked by a reviewer agent, entered by a maintainer — is at /curation/, and
         `placementNote` says the same; keep this comment clear of claiming a human

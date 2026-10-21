@@ -1,6 +1,6 @@
 ---
 name: caail
-description: Query CAAIL, a curated library of the AI and machine-learning work in cellular agriculture — 348 papers mapped by AI method against research area, plus the software, databases and per-species datasets the field uses. Use when the user is choosing tools, datasets or databases for a cell-ag experiment, pipeline or analysis; asking what AI methods have been applied to media optimization, cell-line engineering, bioprocess scale-up, scaffolding or sensory prediction; looking for cultivated-meat or alternative-protein data for a species; asking whether something has been studied; or asking what CAAIL contains. Also triggers on cultivated meat, cell-ag, cellular agriculture, alternative protein, and on questions about which dataset or tool to use for a cell-ag problem.
+description: Query CAAIL, a curated library of the AI and machine-learning work in cellular agriculture, with its primary research papers mapped by AI method against research area, plus the software, databases and per-species datasets the field uses. Use when the user is choosing tools, datasets or databases for a cell-ag experiment, pipeline or analysis; asking what AI methods have been applied to media optimization, cell-line engineering, bioprocess scale-up, scaffolding or sensory prediction; looking for cultivated-meat or alternative-protein data for a species; asking whether something has been studied; or asking what CAAIL contains. Also triggers on cultivated meat, cell-ag, cellular agriculture, alternative protein, and on questions about which dataset or tool to use for a cell-ag problem.
 ---
 
 # CAAIL
@@ -86,7 +86,7 @@ below because the caveat never fires.
 grid size and the populated/empty split are in `index.json`'s `counts`, which moves when a row or
 column is added, so read them rather than assuming a figure. An
 empty cell means **CAAIL contains no paper classified there**. It does **not** mean no such work
-exists. CAAIL is a curated subset, not a census, and it has not measured its own recall.
+exists. CAAIL is a curated selection, not a complete record of the field.
 
 Every empty cell carries a `scope` field saying exactly this. Pass that caveat on to the user rather
 than reporting a gap in CAAIL as a gap in the field.

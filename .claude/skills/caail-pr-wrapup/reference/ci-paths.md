@@ -17,7 +17,7 @@ wins and the table is the bug.
 | Workflow | Trigger | Paths (snapshot) |
 | --- | --- | --- |
 | `lint-papers.yml` (matrix ↔ ref lint + `db:check`/`db:verify` + sync guards) | **pull_request** + push to main | `Papers.md`, `Software.md`, `Databases.md`, `OtherResources.md`, `Taxonomy.md`, `Datasets/**`, `CONTRIBUTING.md`, `CLAUDE.md`, `site/scripts/parser/**`, `site/scripts/db/**`, `site/db/**`, `site/public/api/**`, `site/public/setup.md`, `plugin/skills/**`, `skills/**`, `.claude/skills/matrix-classification-audit/**`, `plugin-contribute/**`, `.github/ISSUE_TEMPLATE/**` |
-| `test.yml` (Worker config + vitest + Playwright/axe) | **pull_request** + push to main | `site/**`, `workers/**`, root `*.md`, `ResearchAreas/**`, `Methods/**`, `Datasets/**`, `Primers/**`, `.claude/hooks/**`, `.claude/settings.json`, the four `.claude/skills/matrix-classification-audit/` files in `TEST_PATHS` (`README.md`, `docling_sections.py`, `docling_sections.test.py`, `extract_matrix_corpus.py`), `.github/ISSUE_TEMPLATE/**`, `.github/workflows/test.yml`, `CITATION.cff`, `plugin-contribute/**`, `.gitignore`, `.worktreeinclude`, `.env.example` |
+| `test.yml` (Worker config + vitest + Playwright/axe) | **pull_request** + push to main | `site/**`, `workers/**`, root `*.md`, `ResearchAreas/**`, `Methods/**`, `Datasets/**`, `Primers/**`, `.claude/hooks/**`, `.claude/settings.json`, the four `.claude/skills/matrix-classification-audit/` files in `TEST_PATHS` (`README.md`, `docling_sections.py`, `docling_sections.test.py`, `extract_matrix_corpus.py`), `.github/ISSUE_TEMPLATE/**`, `.github/workflows/test.yml`, `CITATION.cff`, `plugin-contribute/**`, `plugin/**`, `.claude-plugin/**`, `.gitignore`, `.worktreeinclude`, `.env.example` |
 | `guards.yml` (publish-provenance hook + CI-paths consistency) | **pull_request** + push to main | `.claude/hooks/**`, `.claude/settings.json`, `.claude/skills/caail-pr-wrapup/**`, `.github/workflows/**` |
 | `docs.yml` (build + Lighthouse + deploy) | **push to `main` only** | `site/**`, root `*.md`, `ResearchAreas/**`, `Methods/**`, `Datasets/**`, `Primers/**`, `.github/ISSUE_TEMPLATE/**` |
 
@@ -28,17 +28,18 @@ either direction: `skills/**`, `plugin/skills/**` and `.claude/skills/matrix-cla
 in `lint-papers.yml` and `.claude/skills/caail-pr-wrapup/**` is in `guards.yml`, while the other four
 `.claude/skills/*` directories (`caail-db-authoring`, `papers-dataset-audit`, `zotero-collection-scope`,
 `zotero-to-caail-sync`) are in no filter and genuinely run nothing. `plugin-contribute/**` is in **both**
-`lint-papers.yml` and `test.yml`, which is the one skill directory with a test of its own:
-`contribute-form.test.ts` reads its `SKILL.md` as input, and `pnpm parse` aborts when that skill and the
-issue templates disagree.
+`lint-papers.yml` and `test.yml`, because `contribute-form.test.ts` reads its `SKILL.md` as input and
+`pnpm parse` aborts when that skill and the issue templates disagree. `plugin/**` and `.claude-plugin/**`
+are in `test.yml` too, because `plugin-counts.test.ts` and `site-config.test.ts` read the plugin
+manifests and `plugin/skills/caail/SKILL.md`.
 
 **The check-free list, which lives here and nowhere else** (`SKILL.md` step 4 points at it rather
 than restating it, because the enumeration has already been wrong in both directions once each):
 `.claude/` rules and agents, the four unfiltered `.claude/skills/*` directories named above,
-`LICENSE`, `.zenodo.json`, and two of the three plugin manifests
-(`.claude-plugin/marketplace.json` and `plugin/.claude-plugin/plugin.json`; only `plugin/skills/**` is
-filtered, not `plugin/**`). The third, `plugin-contribute/.claude-plugin/plugin.json`, is **not**
-check-free: `plugin-contribute/**` is filtered whole, so everything under it runs checks.
+`LICENSE` and `.zenodo.json`. None of the three plugin manifests is check-free: `plugin/**`,
+`plugin-contribute/**` and `.claude-plugin/**` are filtered whole in `test.yml`, so everything under
+them runs checks (`site-config.test.ts` reads all three manifests, and `plugin-counts.test.ts` reads
+`plugin/.claude-plugin/plugin.json`).
 **`.gitignore` is NOT check-free**, and was listed here as though it were. It and
 `.worktreeinclude` (which this list never claimed) are both in `test.yml`'s two path filters and
 in `ship-pr.sh`'s `TEST_PATHS`, so a `.gitignore`-only PR runs the full vitest and Playwright
