@@ -7,10 +7,9 @@ import { readFileSync } from 'node:fs';
 
 import { describe, it, expect } from 'vitest';
 
-import { AUTHOR_CACHE_PATH, uncachedDois, type AuthorCache } from './authors.js';
+import { AUTHOR_CACHE_PATH, loadAuthorCache, uncachedDois, type AuthorCache } from './authors.js';
 import { corpusPapers } from './corpus-fixture.js';
 import { bareOrcid, fetchAuthorCache, serializeAuthorCache, type FetchLike } from './fetch-authors.js';
-import { loadAuthorCache } from './generate-data.js';
 
 const ok = (body: unknown) => ({ ok: true, status: 200, statusText: 'OK', json: async () => body });
 const notFound = { ok: false, status: 404, statusText: 'Not Found', json: async () => ({}) };
@@ -150,6 +149,21 @@ describe('fetchAuthorCache', () => {
     const cache = await fetchAuthorCache(['10.1/a,b'], { fetchImpl, delayMs: 0 });
     expect(cache.works['10.1/a,b']).toEqual({ source: 'crossref', authors: [{ given: 'Ann', family: 'Lee', orcid: null }] });
     expect(urls).toEqual(['https://api.crossref.org/works/10.1%2Fa%2Cb']);
+  });
+
+  it('splits a DataCite person who carries only a name at its comma', async () => {
+    const nameOnly = {
+      meta: { total: 1 },
+      data: [
+        {
+          id: '10.48550/arxiv.2501.00001',
+          attributes: { creators: [{ name: 'Liu, Sherry', nameType: 'Personal' }, { name: 'Plato', nameType: 'Personal' }] },
+        },
+      ],
+    };
+    const { fetchImpl } = stubRegistries({ message: { items: [] } }, nameOnly);
+    const cache = await fetchAuthorCache(['10.48550/arxiv.2501.00001'], { fetchImpl, delayMs: 0 });
+    expect(cache.works['10.48550/arxiv.2501.00001']?.authors).toEqual([{ given: 'Sherry', family: 'Liu', orcid: null }]);
   });
 
   it('throws when a batch reports more matches than one page holds, so none is silently cut', async () => {

@@ -12,11 +12,10 @@
 
 import { describe, it, expect, beforeAll } from 'vitest';
 
-import { authorKey } from './authors.js';
 import { buildGraphModel } from './graph.js';
 import { corpusPapers } from './corpus-fixture.js';
-import { loadAuthorCache, loadCitationCache } from './generate-data.js';
-import type { AuthorCache } from './authors.js';
+import { loadCitationCache } from './generate-data.js';
+import { authorKey, loadAuthorCache, type AuthorCache } from './authors.js';
 import { GraphSchema, type PapersData, type Reference } from './types.js';
 
 /** Build a full Reference with sensible defaults, overriding id + authors. */
@@ -191,6 +190,34 @@ describe('buildGraphModel: different people under one key', () => {
   it('joins a paper with no record by name, as before', () => {
     expect(withNames.has('1-8')).toBe(true);
     expect(withNames.has('2-8')).toBe(true);
+  });
+
+  it('splits an umlaut surname whose two records spell it differently (one "Mueller", one with the umlaut)', () => {
+    const umlautCache: AuthorCache = {
+      generatedAt: '2026-10-20T00:00:00.000Z',
+      works: {
+        '10.1/22': { source: 'crossref', authors: [p('Xaver', 'Mueller')] },
+        '10.1/23': { source: 'crossref', authors: [p('Xenia', 'Müller')] },
+      },
+    };
+    const m: PapersData = {
+      areas: [],
+      methods: [],
+      cells: [],
+      references: [mkRef(22, ['Müller, X.']), mkRef(23, ['Müller, X.'])],
+    };
+    expect(buildGraphModel(m, null, umlautCache).edges).toEqual([]);
+  });
+
+  it('names one person once on an edge, as the edge’s source paper cites them', () => {
+    const m: PapersData = {
+      areas: [],
+      methods: [],
+      cells: [],
+      references: [mkRef(31, ['Muller, X.']), mkRef(32, ['Müller, X.']), mkRef(33, ['Müller, X.'])],
+    };
+    const e = buildGraphModel(m).edges.find((x) => x.source === 32 && x.target === 33)!;
+    expect(e.sharedAuthors).toEqual(['Müller, X.']);
   });
 
   it('joins one surname across its umlaut and ASCII spellings', () => {

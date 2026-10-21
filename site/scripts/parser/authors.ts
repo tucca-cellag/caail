@@ -8,13 +8,13 @@
  * "Liu, S." is Shuli Liu (tucca-cellag/caail-planning#552). The committed
  * author-cache.json, written by fetch-authors.ts, records every authorship on each paper
  * with its full given name and any ORCID: from Crossref, and from DataCite for the DOIs
- * Crossref does not hold (in this corpus, the arXiv ones).
+ * Crossref does not hold (DataCite registers arXiv's, for example).
  *
  * Two papers' authorships under one key compare as:
  *   - same person: the ORCIDs match, or the given names agree: equal once initials and
  *     separators are dropped, one a prefix of the other ("Chris" and "Christopher"), or
  *     every part of one among the other's parts ("Maria" and "Ana Maria");
- *   - unknown: a given name that is initials only or starts with one ("J. Craig"), or two
+ *   - unknown: a given name that is initials only or starts with one ("J. Craig", "JP"), or two
  *     names of five or more letters one letter apart ("Mohamed" and "Mohammed"), which
  *     is as likely a spelling variant as a different person;
  *   - different people: both given names known in full and none of the above.
@@ -22,12 +22,16 @@
  * one paper, the join is removed only when every one of them is a different person from
  * every one on the other paper; when the citation gives a second initial ("Kim, J. W."),
  * only authorships with that second initial are candidates, so a co-author who merely
- * shares the key cannot stand in for the cited person. An authorship the cache cannot
- * find (no record, no DOI, or a family name spelled differently from the citation) keeps
- * its join, so the rule never removes an edge without evidence.
+ * shares the key cannot stand in for the cited person. Authorships are found through
+ * every key the citation's author has, so a citation spelled "Müller" finds a record
+ * spelled "Mueller". An authorship the cache cannot find (no record, no DOI, or a family
+ * name spelled differently from the citation) keeps its join, so the rule never removes
+ * an edge without evidence.
  *
- * Known gap: a nickname that is not a prefix of the full name ("Mike" and "Michael")
- * reads as different people unless both authorships carry the same ORCID.
+ * Known gaps, both deferred to tucca-cellag/caail-planning#573: a nickname that is not a
+ * prefix of the full name ("Mike" and "Michael"), and a romanization two or more letters
+ * from another ("Muhammed" and "Mohammad", "Donghyun" and "Donghyeon"), read as different
+ * people unless both authorships carry the same ORCID.
  *
  * Different ORCIDs alone are not evidence, because one person can hold two ORCID
  * records: Kexin Huang carries one ORCID on ref 49 and another on ref 123.
@@ -36,9 +40,10 @@
  * no Liu at all, and it splits one person across ids; the evidence is on
  * tucca-cellag/caail-planning#552.
  *
- * Pure: no I/O.
+ * Pure apart from loadAuthorCache, which reads the committed file.
  */
 
+import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 import { z } from 'zod';
@@ -80,6 +85,15 @@ export type AuthorCache = z.infer<typeof AuthorCacheSchema>;
 
 /** Absolute path to the committed author cache (parser input, refreshed by `pnpm fetch:authors`). */
 export const AUTHOR_CACHE_PATH: string = fileURLToPath(new URL('./author-cache.json', import.meta.url));
+
+/**
+ * Read and validate the committed author cache, or null when there is none, in which case
+ * every shared-author join uses names only.
+ */
+export function loadAuthorCache(path: string = AUTHOR_CACHE_PATH): AuthorCache | null {
+  if (!existsSync(path)) return null;
+  return AuthorCacheSchema.parse(JSON.parse(readFileSync(path, 'utf-8')));
+}
 
 // ---------------------------------------------------------------------------
 // Name normalization
@@ -161,29 +175,46 @@ export function authorKeys(author: string): string[] {
  */
 export function initialsOf(name: string | null): string[] {
   if (!name) return [];
-  return foldName(name)
+  return nameTokens(name)
+    .flatMap((t) => {
+      const letters = t.replace(/[^\p{L}]/gu, '');
+      return isInitialsToken(t) ? [...letters] : [letters[0]];
+    })
+    .map((c) => foldName(c).charAt(0))
+    .filter(Boolean);
+}
+
+/** A name's tokens, split at spaces, hyphens and periods, keeping only those with a letter. */
+function nameTokens(name: string): string[] {
+  return name
+    .normalize('NFC')
     .replace(/\./g, ' ')
     .split(/[\s\-‐‑–]+/)
-    .map((t) => t.match(/\p{L}/u)?.[0] ?? '')
-    .filter(Boolean);
+    .filter((t) => /\p{L}/u.test(t));
+}
+
+/** A token that stands for initials: one letter, or two or three capitals and no lowercase ("JP", "DE"). */
+function isInitialsToken(token: string): boolean {
+  const letters = token.replace(/[^\p{L}]/gu, '');
+  if (letters.length <= 1) return true;
+  return letters.length <= 3 && letters === letters.toUpperCase() && letters !== letters.toLowerCase();
 }
 
 /**
  * A given name split into the parts that can tell two people apart: folded, initials
  * dropped, split at spaces and hyphens. "Yusuf H." → ["yusuf"], "Ji-Hoe" → ["ji", "hoe"].
- * Empty when there is nothing to compare: no name, a name of initials only, or a name
- * that starts with an initial ("J. Craig"), since someone who goes by a middle name may
- * appear elsewhere under the first.
+ * Empty when there is nothing to compare: no name, a name of initials only ("JP"), or a
+ * name that starts with an initial ("J. Craig"), since someone who goes by a middle name
+ * may appear elsewhere under the first.
  */
 export function givenParts(given: string | null): string[] {
   if (!given) return [];
-  const parts = foldName(given)
-    .replace(/\./g, ' ')
-    .split(/[\s\-‐‑–]+/)
-    .map((t) => t.replace(/[^a-z]/g, ''))
-    .filter(Boolean);
-  if (parts.length === 0 || parts[0].length < 2) return [];
-  return parts.filter((t) => t.length > 1);
+  const tokens = nameTokens(given);
+  if (tokens.length === 0 || isInitialsToken(tokens[0])) return [];
+  return tokens
+    .filter((t) => !isInitialsToken(t))
+    .map((t) => foldName(t).replace(/[^a-z]/g, ''))
+    .filter((t) => t.length > 1);
 }
 
 /** The given name as one comparable string: "Xiao Ming" and "Xiao-Ming" both → "xiaoming". */
@@ -232,29 +263,45 @@ export function compareAuthorships(a: Authorship, b: Authorship): Identity {
   return 'different';
 }
 
+/** A registry authorship with the keys it matches under, computed once per record. */
+type KeyedAuthorship = { authorship: Authorship; keys: string[] };
+
+const keyAuthorships = (authors: readonly Authorship[]): KeyedAuthorship[] =>
+  authors
+    .filter((a) => a.family !== null)
+    .map((a) => ({ authorship: a, keys: authorKeys(`${a.family}, ${a.given ?? ''}`) }));
+
+function matching(
+  keyed: readonly KeyedAuthorship[],
+  keys: readonly string[],
+  secondInitials?: ReadonlySet<string>,
+): Authorship[] {
+  const exact = new Set(keys.filter((k) => k.includes('|')));
+  // A key with no initial (the citation gave none) matches on the surname alone.
+  const bare = new Set(keys.filter((k) => !k.includes('|')));
+  return keyed
+    .filter(({ authorship, keys: own }) => {
+      if (!own.some((k) => exact.has(k) || bare.has(k.split('|')[0]))) return false;
+      return !secondInitials?.size || secondInitials.has(initialsOf(authorship.given)[1] ?? '');
+    })
+    .map((k) => k.authorship);
+}
+
 /**
- * Every authorship on a paper that a shared-author key names: usually one, none when the
- * record spells the name differently from the citation, and several when two authors on
- * the paper share the key. Each authorship is keyed with `authorKeys` itself, from its
- * family name and full given name, so the cache and the citation strings can only
- * disagree where their spellings do, never where two copies of the keying rule would.
- * With `secondInitials`, only authorships whose second initial is among them count.
+ * Every authorship on a paper that a citation's keys name (`authorKeys` of the citation):
+ * usually one, none when the record spells the name differently from the citation, and
+ * several when two authors on the paper share a key. Each authorship is keyed with
+ * `authorKeys` itself, from its family name and full given name, so the cache and the
+ * citation strings can only disagree where their spellings do, never where two copies of
+ * the keying rule would. With `secondInitials`, only authorships whose second initial is
+ * among them count.
  */
 export function authorshipsFor(
   authors: readonly Authorship[],
-  key: string,
+  keys: readonly string[],
   secondInitials?: ReadonlySet<string>,
 ): Authorship[] {
-  if (!key) return [];
-  // A key with no initial (the citation gave none) matches on the surname alone.
-  const bare = !key.includes('|');
-  return authors.filter((a) => {
-    if (a.family === null) return false;
-    const own = authorKeys(`${a.family}, ${a.given ?? ''}`);
-    const named = bare ? own.some((k) => k.split('|')[0] === key) : own.includes(key);
-    if (!named) return false;
-    return !secondInitials?.size || secondInitials.has(initialsOf(a.given)[1] ?? '');
-  });
+  return matching(keyAuthorships(authors), keys, secondInitials);
 }
 
 /**
@@ -266,27 +313,30 @@ export function differentPeopleCheck(
   cache: AuthorCache,
   refs: readonly (Pick<Reference, 'id' | 'doi'> & { authors?: string[] | null })[],
 ): (a: number, b: number, key: string) => boolean {
-  const recordById = new Map<number, AuthorRecord>();
-  const citedById = new Map<number, string[]>();
+  const keyedById = new Map<number, KeyedAuthorship[]>();
+  const citedById = new Map<number, { keys: string[]; second: string | undefined }[]>();
   for (const r of refs) {
     const k = doiKey(r.doi);
     const record = k ? cache.works[k] : undefined;
-    if (record) recordById.set(r.id, record);
-    citedById.set(r.id, r.authors ?? []);
+    if (record) keyedById.set(r.id, keyAuthorships(record.authors));
+    citedById.set(
+      r.id,
+      (r.authors ?? []).map((s) => ({ keys: authorKeys(s), second: initialsOf(s.slice(s.indexOf(',') + 1))[1] })),
+    );
   }
-  // The second initials the paper's citations give under the key, when every one of them
-  // gives one; otherwise no filter, since a single initial rules nobody out.
-  const secondInitials = (id: number, key: string): Set<string> | undefined => {
-    const cited = (citedById.get(id) ?? []).filter((s) => authorKeys(s).includes(key));
-    const seconds = cited.map((s) => initialsOf(s.slice(s.indexOf(',') + 1))[1]);
-    return cited.length > 0 && seconds.every(Boolean) ? new Set(seconds as string[]) : undefined;
-  };
+  // The authorships behind a key on a paper, found through every key the paper's citation
+  // of that author has; and, when every such citation gives a second initial, only those
+  // carrying one of them, since a single initial rules nobody out.
   const memo = new Map<string, Authorship[]>();
   const resolve = (id: number, key: string): Authorship[] => {
     const m = `${id}|${key}`;
     if (!memo.has(m)) {
-      const record = recordById.get(id);
-      memo.set(m, record ? authorshipsFor(record.authors, key, secondInitials(id, key)) : []);
+      const keyed = keyedById.get(id);
+      const cited = (citedById.get(id) ?? []).filter((c) => c.keys.includes(key));
+      const keys = cited.length ? [...new Set(cited.flatMap((c) => c.keys))] : [key];
+      const seconds =
+        cited.length > 0 && cited.every((c) => c.second) ? new Set(cited.map((c) => c.second as string)) : undefined;
+      memo.set(m, keyed ? matching(keyed, keys, seconds) : []);
     }
     return memo.get(m) ?? [];
   };

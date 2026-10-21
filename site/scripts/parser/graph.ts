@@ -47,30 +47,29 @@ export function buildGraphModel(
   const refs = model.references;
   const differentPeople = authors ? differentPeopleCheck(authors, refs) : null;
 
-  // author key → set of ref ids, and a display name per key (first seen).
-  const keyToRefs = new Map<string, Set<number>>();
-  const keyToDisplay = new Map<string, string>();
+  // author key → ref id → how that ref cites the author (its first citation under the key).
+  const keyToRefs = new Map<string, Map<number, string>>();
   for (const ref of refs) {
     if (!ref.authors) continue;
     for (const a of ref.authors) {
       // Usually one key; a surname with a German umlaut also keys under its ASCII digraph.
       for (const key of authorKeys(a)) {
-        if (!keyToRefs.has(key)) {
-          keyToRefs.set(key, new Set());
-          keyToDisplay.set(key, a.trim());
-        }
-        keyToRefs.get(key)!.add(ref.id);
+        if (!keyToRefs.has(key)) keyToRefs.set(key, new Map());
+        const cited = keyToRefs.get(key)!;
+        if (!cited.has(ref.id)) cited.set(ref.id, a.trim());
       }
     }
   }
 
   // Accumulate edges: every pair of refs sharing an author key.
   const edgeShared = new Map<string, { source: number; target: number; authors: Set<string> }>();
-  for (const [key, refSet] of keyToRefs) {
-    if (refSet.size < 2) continue;
-    const ids = [...refSet].sort((x, y) => x - y);
-    const display = keyToDisplay.get(key)!;
+  for (const [key, cited] of keyToRefs) {
+    if (cited.size < 2) continue;
+    const ids = [...cited.keys()].sort((x, y) => x - y);
     for (let i = 0; i < ids.length; i++) {
+      // Labelled as the edge's own source paper cites the author, so one person reached
+      // through two keys (an umlaut surname) is one name on the edge, not two spellings.
+      const display = cited.get(ids[i])!;
       for (let j = i + 1; j < ids.length; j++) {
         if (differentPeople?.(ids[i], ids[j], key)) continue;
         const pk = pairKey(ids[i], ids[j]);

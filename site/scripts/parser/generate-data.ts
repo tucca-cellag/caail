@@ -28,7 +28,7 @@ import { buildPrimersModel } from './primers.js';
 import { buildAwesomeListsModel } from './awesome-lists.js';
 import { buildGraphModel } from './graph.js';
 import { CitationCacheSchema, type CitationCache } from './citations.js';
-import { AUTHOR_CACHE_PATH, AuthorCacheSchema, uncachedDois, unnamedDois, type AuthorCache } from './authors.js';
+import { loadAuthorCache, uncachedDois, unnamedDois } from './authors.js';
 import { buildMetricsModel } from './metrics.js';
 import { buildRecentModel } from './recent.js';
 import { buildTopicsModel, unresolvedTopicItems, catalogJoinKey } from './topics.js';
@@ -118,15 +118,6 @@ export function loadCitationCache(
 ): CitationCache | null {
   if (!existsSync(path)) return null;
   return CitationCacheSchema.parse(JSON.parse(readFileSync(path, 'utf-8')));
-}
-
-/**
- * Read + validate the author cache (full author names per DOI, from `pnpm fetch:authors`)
- * if it exists, else null, in which case every shared-author join uses names only.
- */
-export function loadAuthorCache(path: string = AUTHOR_CACHE_PATH): AuthorCache | null {
-  if (!existsSync(path)) return null;
-  return AuthorCacheSchema.parse(JSON.parse(readFileSync(path, 'utf-8')));
 }
 
 // ---------------------------------------------------------------------------

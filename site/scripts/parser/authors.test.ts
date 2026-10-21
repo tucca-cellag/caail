@@ -13,6 +13,7 @@ import {
   differentPeopleCheck,
   foldName,
   givenCore,
+  givenParts,
   initialsOf,
   uncachedDois,
   unnamedDois,
@@ -45,6 +46,14 @@ describe('foldName and givenCore', () => {
     // The variant comes from the umlaut only: "Xue" is not rewritten towards "Xu".
     expect(authorKeys('Xue, Y.')).toEqual(['xue|y']);
     expect(authorKeys('Xu, Y.')).toEqual(['xu|y']);
+  });
+
+  it('reads two or three capitals as initials, not a name ("JP" is J. P.)', () => {
+    expect(givenParts('JP')).toEqual([]);
+    expect(givenParts('DE')).toEqual([]);
+    expect(initialsOf('JP')).toEqual(['j', 'p']);
+    expect(compareAuthorships(person('JP', 'Heimonen'), person('Juha-Pekka', 'Heimonen'))).toBe('unknown');
+    expect(givenParts('Li')).toEqual(['li']); // a two-letter name in ordinary case is still a name
   });
 
   it('initialsOf abbreviates given names and reads citation initials alike', () => {
@@ -133,7 +142,7 @@ describe('authorshipsFor', () => {
     person('Ehecatl Antonio', 'del Rio Chanona'),
     person(null, null),
   ];
-  const givenFor = (citation: string) => authorshipsFor(authors, authorKey(citation)!).map((a) => a.given);
+  const givenFor = (citation: string) => authorshipsFor(authors, authorKeys(citation)).map((a) => a.given);
 
   it('finds the authorship with the citation’s surname and first initial', () => {
     expect(givenFor('Liu, S.')).toEqual(['Shuli']);
@@ -158,19 +167,23 @@ describe('authorshipsFor', () => {
 
   it('returns every authorship that carries the key', () => {
     const twoWangs = [person('Mengdi', 'Wang'), person('Mingxun', 'Wang')];
-    expect(authorshipsFor(twoWangs, 'wang|m').map((a) => a.given)).toEqual(['Mengdi', 'Mingxun']);
+    expect(authorshipsFor(twoWangs, ['wang|m']).map((a) => a.given)).toEqual(['Mengdi', 'Mingxun']);
   });
 
   it('with second initials, keeps only the authorships that carry one of them', () => {
     const kims = [person('Jaehyun', 'Kim'), person('Juyeon', 'Kim'), person('Jong Woo', 'Kim')];
-    expect(authorshipsFor(kims, 'kim|j', new Set(['w'])).map((a) => a.given)).toEqual(['Jong Woo']);
-    expect(authorshipsFor(kims.slice(0, 2), 'kim|j', new Set(['w']))).toEqual([]);
+    expect(authorshipsFor(kims, ['kim|j'], new Set(['w'])).map((a) => a.given)).toEqual(['Jong Woo']);
+    expect(authorshipsFor(kims.slice(0, 2), ['kim|j'], new Set(['w']))).toEqual([]);
   });
 
   it('matches an umlaut surname from either ASCII spelling in the citation', () => {
     const muller = [person('Xaver', 'Müller')];
-    expect(authorshipsFor(muller, authorKey('Mueller, X.')!).map((a) => a.given)).toEqual(['Xaver']);
-    expect(authorshipsFor(muller, authorKey('Muller, X.')!).map((a) => a.given)).toEqual(['Xaver']);
+    expect(authorshipsFor(muller, authorKeys('Mueller, X.')).map((a) => a.given)).toEqual(['Xaver']);
+    expect(authorshipsFor(muller, authorKeys('Muller, X.')).map((a) => a.given)).toEqual(['Xaver']);
+  });
+
+  it('finds a record spelled "Mueller" from a citation with the umlaut', () => {
+    expect(authorshipsFor([person('Xaver', 'Mueller')], authorKeys('Müller, X.')).map((a) => a.given)).toEqual(['Xaver']);
   });
 });
 

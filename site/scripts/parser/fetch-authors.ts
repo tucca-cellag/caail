@@ -10,11 +10,10 @@
  * with no DOI can have no record, and always joins by name.
  *
  * Sources, in order: Crossref for every DOI it holds (the publisher's deposit, with any
- * ORCID); DataCite for every DOI Crossref did not return with named authors (in this
- * corpus, the arXiv DOIs); then each DOI still missing, one at a time from both, so a
- * batch query that mis-reads an unusual DOI cannot lose it. Batches are 50 DOIs and every
- * request is 5 s apart, so the corpus takes about eight requests. No contact address is
- * sent.
+ * ORCID); DataCite for every DOI Crossref did not return with named authors (DataCite
+ * registers arXiv's, for example); then each DOI still missing, one at a time from both,
+ * so a batch query that mis-reads an unusual DOI cannot lose it. Batches are 50 DOIs and
+ * every request is 5 s apart. No contact address is sent.
  *
  * Fails closed: a non-OK response (other than a single lookup's 404) throws, as does a
  * batch reporting more matches than one page holds, and the CLI writes nothing. A record
@@ -31,9 +30,8 @@
 import { writeFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 
-import { AUTHOR_CACHE_PATH, type AuthorCache, type Authorship, type AuthorRecord } from './authors.js';
+import { AUTHOR_CACHE_PATH, loadAuthorCache, type AuthorCache, type Authorship, type AuthorRecord } from './authors.js';
 import { doiKey } from './citations.js';
-import { loadAuthorCache } from './generate-data.js';
 import { buildPapersModel } from './papers.js';
 
 const CROSSREF_WORKS = 'https://api.crossref.org/works';
@@ -53,6 +51,7 @@ export type FetchLike = (
 type CrossrefAuthor = { given?: string; family?: string; ORCID?: string };
 type CrossrefItem = { DOI: string; author?: CrossrefAuthor[] };
 type DataciteCreator = {
+  name?: string;
   givenName?: string;
   familyName?: string;
   nameType?: string;
@@ -76,12 +75,22 @@ const crossrefAuthors = (item: CrossrefItem): Authorship[] =>
     .map((a) => ({ given: clean(a.given), family: clean(a.family), orcid: bareOrcid(a.ORCID) }))
     .filter(named);
 
+/**
+ * A DataCite person's given and family names. Some records carry only `name`
+ * ("Liu, Sherry"), which is split at its comma; a name with no comma stays unsplit and
+ * unusable, since there is no telling which part is the family name.
+ */
+const dataciteNames = (c: DataciteCreator): { given: string | null; family: string | null } => {
+  if (c.givenName || c.familyName) return { given: clean(c.givenName), family: clean(c.familyName) };
+  const [family, given] = (c.name ?? '').split(/,(.*)/s);
+  return given === undefined ? { given: null, family: null } : { given: clean(given), family: clean(family) };
+};
+
 const dataciteAuthors = (record: DataciteRecord): Authorship[] =>
   (record.attributes.creators ?? [])
     .filter((c) => c.nameType !== 'Organizational')
     .map((c) => ({
-      given: clean(c.givenName),
-      family: clean(c.familyName),
+      ...dataciteNames(c),
       orcid: bareOrcid(c.nameIdentifiers?.find((n) => /orcid/i.test(n.nameIdentifierScheme ?? ''))?.nameIdentifier),
     }))
     .filter(named);
