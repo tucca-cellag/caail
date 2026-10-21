@@ -43,6 +43,16 @@ const SCOPE_TO_KIND: Readonly<Record<string, RecentEntry['kind']>> = {
   resources: 'Resource',
 };
 
+/**
+ * Reader-facing titles for commits whose subject describes the curation process instead of
+ * what was added. A pushed commit subject cannot be edited, so the list shows these instead.
+ * Keyed by the title as derived below (lead verb stripped, first letter capitalised).
+ */
+const TITLE_OVERRIDES: Readonly<Record<string, string>> = {
+  'The two matrix cells a reviewer confirmed and nothing landed':
+    'iUmami-SCM and CRISPR-GPT each placed in one more matrix cell',
+};
+
 /** Subject lead verbs that mark a commit as an *addition* (vs. a reorg/relabel). */
 const ADDITION_VERBS: readonly string[] = [
   'add',
@@ -154,7 +164,7 @@ export function classifyArea(title: string): RecentEntry['area'] {
  * `feat(papers): add Tac et al. 2026 burger paper (#236)`
  *   → { kind: 'Paper', title: 'Tac et al. 2026 burger paper', area: 'sensory' }
  */
-function parseSubject(date: string, subject: string): RecentEntry | null {
+export function parseSubject(date: string, subject: string): RecentEntry | null {
   // type(scope): rest  — scope required (it carries the kind).
   const m = /^[a-z]+\(([^)]+)\):\s*(.+)$/i.exec(subject);
   if (!m) return null;
@@ -174,6 +184,7 @@ function parseSubject(date: string, subject: string): RecentEntry | null {
     .trim();
   if (!title) return null;
   title = title.charAt(0).toUpperCase() + title.slice(1);
+  title = TITLE_OVERRIDES[title] ?? title;
 
   return { date, kind, title, area: classifyArea(title) };
 }
