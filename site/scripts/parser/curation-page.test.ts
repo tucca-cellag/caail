@@ -153,10 +153,17 @@ describe('curation page: numbers that another source already knows', () => {
     expect(PLACEMENT_NOTE).toContain(`${SITE_URL}curation/`);
   });
 
-  it('quotes SCOPE_NOTE verbatim, capitalisation included', () => {
-    // The page attributes this to the agent API in quotation marks. `INDEXED` is caps in the
-    // constant, where the capitalisation IS the emphasis; a draft quoted it lowercased.
-    expect(page).toContain(SCOPE_NOTE);
+  it('agrees with SCOPE_NOTE on what an empty cell means', () => {
+    // The page used to quote SCOPE_NOTE verbatim, which this test pinned. It now states the
+    // point in its own words, so the check is on substance: both surfaces say an empty cell
+    // is not evidence that no such work exists. If the page ever quotes the agent API again,
+    // the quotation must still be verbatim.
+    expect(SCOPE_NOTE).toMatch(/not evidence that no such work exists/i);
+    expect(page).toMatch(/not evidence that no such work exists/i);
+    if (/the agent API says/i.test(page)) expect(page).toContain(SCOPE_NOTE);
+    // CAAIL is not a model: the page does not describe it in recall terms
+    // (tucca-cellag/caail-planning#402 owns the same wording in the API).
+    expect(page).not.toMatch(/measured its own recall/i);
   });
 });
 

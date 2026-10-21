@@ -59,7 +59,7 @@ A language-model agent proposes the `(method, area)` placement. A model can misr
 
 The reviewers work under six constraints:
 
-1. **The reviewer produces a verdict, not an edit.** It is instructed not to write, and nothing it returns reaches the catalogue on its own: an entry is filed by a maintainer, through the authoring database. That is a separation of duties rather than a sandbox, and we would rather say so than imply a guarantee we have not built.
+1. **The reviewer produces a verdict, not an edit.** It is instructed not to write, and nothing it returns reaches the catalogue on its own: an entry is filed by a maintainer, through the authoring database. That is a separation of duties, not a technical sandbox.
 2. **The proposer never reviews its own entry.** Drafting and checking are separate passes by separate agents.
 3. **A verdict must quote a verbatim span** from the paper that grounds the pair. A placement the reviewer cannot anchor to specific text fails. This is the main control against a fabricated justification, since the quoted text can be checked against the document.
 4. **An abstract is explicitly insufficient.** Where only an abstract is available, the reviewer records reduced confidence as a finding and does not pass the placement.
@@ -82,7 +82,7 @@ A lead adds domain judgement on top of the checks in section 2, and gets public 
 1 of the 8 themes has a lead named on the [Topics hub](/topics/) so far. We are building the review tool before recruiting into it. A lead should be able to open a queue of proposed entries, see the evidence already attached to each one, and record a verdict in a few minutes. Handing someone a spreadsheet and a reading list instead is a lot to ask of a volunteer. That tool is the review queue in the [roadmap](#6-roadmap).
 
 :::tip[Most themes are still open]
-7 of the 8 have no lead. If you work in one of them, [get in touch](#7-get-in-touch). The two responsibilities above are the role; what we have not fixed is the cadence, and we would rather agree that with whoever takes a theme on than set it in advance.
+7 of the 8 have no lead. If you work in one of them, [get in touch](#7-get-in-touch). The two responsibilities above are the role. Its cadence is not fixed yet, and will be agreed with whoever takes a theme on.
 :::
 
 ## 4. Automated checks
@@ -125,17 +125,17 @@ The converted corpus is not committed to the repository, so no build step can re
 
 The items below build on the checks in section 2, and are listed in the order we need to do them.
 
-**A review queue.** Somewhere candidates and their evidence are presented to a reviewer, who records a verdict in a few minutes. CAAIL has a strong path for gathering evidence about a paper and a strong path for entering an accepted one; the queue joins them. It comes first because the next item depends on it. Nothing goes into the queue that has not already been read.
+**A review queue.** A place where candidates and their evidence are presented to a reviewer, who records a verdict in a few minutes. CAAIL can already gather evidence about a paper and enter an accepted one; the queue connects the two. It comes first because the next item depends on it. Nothing goes into the queue that has not already been read.
 
-**More topic leads.** Domain judgement across all 8 subject themes, instead of two maintainers covering all of them. Gated on the queue above, for the reason in section 3. See [get in touch](#7-get-in-touch).
+**More topic leads.** Domain judgement across all 8 subject themes, instead of two maintainers covering all of them. This waits on the queue above, for the reason in section 3. See [get in touch](#7-get-in-touch).
 
-**Automated discovery.** A recurring literature sweep proposing candidates ([tucca-cellag/caail#82](https://github.com/tucca-cellag/caail/issues/82)), sequenced after the queue, since more candidates are no help without the capacity to review them.
+**Automated discovery.** A recurring literature sweep that proposes candidates ([tucca-cellag/caail#82](https://github.com/tucca-cellag/caail/issues/82)), scheduled after the queue, since more candidates are no help without the capacity to review them.
 
 **Re-checking earlier placements.** Placements made before the full-text rule are being re-verified against it. Sampling found classifications drawn from abstracts and titles unreliable, which is why sections 1 and 2 are built the way they are.
 
-**A measured accuracy figure.** CAAIL does not publish one. The sampling above is not one either; it was small and would not generalise. The plan is a blind study in which domain experts classify a sample independently of the catalogue, reported with inter-rater agreement so any figure carries its own uncertainty.
+**A measured accuracy figure.** CAAIL does not publish one. The sampling above is not one either: it was small and would not generalise. The plan is a blind study in which domain experts classify a sample independently of the catalogue, reported with inter-rater agreement so any figure carries its own uncertainty.
 
-**Coverage estimates per area.** CAAIL measures how accurately it classifies what it holds. It does not measure how much of the field it holds. The agent API says so directly: *"CAAIL indexes a curated subset of the literature, not a census. An empty cell means no INDEXED paper occupies it as of corpus_date. That is not evidence that no such work exists. CAAIL has not measured its own recall."* A dated per-area estimate is something a topic lead is well placed to produce, and would replace that caveat with a figure.
+**Coverage estimates per area.** CAAIL is a curated selection, so an empty cell or a missing paper is a limit of what it holds, not evidence that no such work exists. It does not yet estimate how much of each area's published work it holds. A dated estimate per area, which a topic lead is well placed to produce, would put a figure on that.
 
 **Per-entry provenance.** Showing the section 1 fields on each entry, so the evidence behind one placement can be weighed on its own.
 
@@ -146,5 +146,5 @@ The items below build on the checks in section 2, and are listed in the order we
 We would like to hear from you about any of these.
 
 - **Becoming a topic lead.** 7 of the 8 subject themes have no lead. Say hello in the [Slack workspace](/community/) or email the maintainers listed there, and tell us which one you work in.
-- **Feedback on this methodology.** If something here is unconvincing, or you would weigh the evidence differently, we would rather hear that than a correction to a single entry. Slack or a [GitHub issue](https://github.com/tucca-cellag/caail/issues/new/choose) both work.
+- **Feedback on this methodology.** If something here is unconvincing, or you would weigh the evidence differently, we want to hear it. Slack or a [GitHub issue](https://github.com/tucca-cellag/caail/issues/new/choose) both work.
 - **A specific entry that looks wrong.** Use the [correction form](/report/) or a GitHub issue. Tell us which section of the paper you read; that is usually enough to settle it. [Contributing](/contributing/) covers proposing a change directly.
