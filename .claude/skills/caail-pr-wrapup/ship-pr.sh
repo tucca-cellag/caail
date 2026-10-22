@@ -75,7 +75,7 @@ changed_paths() {
 LINT_PAPERS_PATHS='Papers.md Software.md Databases.md FieldReports.md OtherResources.md Taxonomy.md Datasets/** CONTRIBUTING.md CLAUDE.md site/scripts/parser/** site/scripts/db/** site/db/** site/public/api/** site/public/setup.md plugin/skills/** skills/** .claude/skills/matrix-classification-audit/** .claude/skills/zotero-collection-scope/** .claude/skills/papers-dataset-audit/** plugin-contribute/** .github/ISSUE_TEMPLATE/**'
 TEST_PATHS='site/** workers/** *.md ResearchAreas/** Datasets/** Primers/** Methods/** .claude/hooks/** .claude/settings.json .claude/skills/matrix-classification-audit/README.md .claude/skills/matrix-classification-audit/docling_sections.py .claude/skills/matrix-classification-audit/docling_sections.test.py .claude/skills/matrix-classification-audit/extract_matrix_corpus.py .github/workflows/test.yml CITATION.cff .github/ISSUE_TEMPLATE/** plugin-contribute/** plugin/** .claude-plugin/** .gitignore .worktreeinclude .env.example'
 DOCS_PATHS='site/** *.md ResearchAreas/** Datasets/** Primers/** Methods/** .github/ISSUE_TEMPLATE/**'
-GUARDS_PATHS='.claude/hooks/** .claude/settings.json .claude/skills/caail-pr-wrapup/** .github/workflows/**'
+GUARDS_PATHS='.claude/hooks/** .claude/scripts/lib/** .claude/settings.json .claude/skills/caail-pr-wrapup/** .github/workflows/**'
 
 # Does $1 (a repo-relative path) match $2 (one GitHub Actions paths pattern)?
 path_matches() {

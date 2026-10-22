@@ -13,6 +13,8 @@ on:
   pull_request:
     paths:
       - .claude/hooks/**
+      # The shell classifier the publish hook reads body files through.
+      - .claude/scripts/lib/**
       - .claude/settings.json
       # The ship skill's path predictors, and the check that pins them to the
       # workflows. BOTH sides of that check must be able to trigger it, or the
@@ -24,6 +26,7 @@ on:
     branches: [main]
     paths:
       - .claude/hooks/**
+      - .claude/scripts/lib/**
       - .claude/settings.json
       - .claude/skills/caail-pr-wrapup/**
       - .github/workflows/**
