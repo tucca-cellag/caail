@@ -21,9 +21,9 @@ import { parseMarkdown } from './markdown.js';
 const REPO_ROOT = fileURLToPath(new URL('../../../', import.meta.url));
 
 /**
- * The `* [` bullet lines under one `## heading` of a primer, read line by line
- * rather than through the mdast parser the model comes from, so the expected
- * counts follow the content instead of being typed into the test.
+ * The link bullets under one `## heading` of a primer (any marker, any indent),
+ * read line by line rather than through the mdast parser the model comes from,
+ * so the expected counts follow the content instead of being typed into the test.
  */
 function bulletsUnder(file: string, heading: string): string[] {
   const lines = readFileSync(join(REPO_ROOT, file), 'utf8').split('\n');
@@ -32,8 +32,11 @@ function bulletsUnder(file: string, heading: string): string[] {
   if (hits !== 1) throw new Error(`${file}: expected one "${marker}", found ${hits}`);
   const rest = lines.slice(lines.indexOf(marker) + 1);
   const end = rest.findIndex((l) => /^#{1,2} /.test(l));
-  return (end === -1 ? rest : rest.slice(0, end)).filter((l) => l.startsWith('* ['));
+  return (end === -1 ? rest : rest.slice(0, end)).filter((l) => /^\s*[*+-] \[/.test(l));
 }
+
+/** A bullet's first link URL, which is the one the parser classifies the item by. */
+const firstUrl = (line: string): string => /\]\(([^)\s]+)/.exec(line)?.[1] ?? '';
 
 // ---------------------------------------------------------------------------
 // A. rewritePrimerUrl
@@ -123,7 +126,7 @@ describe('buildPrimersModel', () => {
     const fundamentals = sectionOf('ai', 'Learn the fundamentals');
     const playlists = fundamentals.items.filter((i) => i.kind === 'playlist');
     const inSource = bulletsUnder('Primers/AI.md', 'Learn the fundamentals').filter((l) =>
-      l.includes('youtube.com/playlist?'),
+      /youtube\.com\/playlist\?/.test(firstUrl(l)),
     );
     expect(inSource.length).toBeGreaterThan(0);
     expect(playlists.length).toBe(inSource.length);
