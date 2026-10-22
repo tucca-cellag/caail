@@ -77,7 +77,9 @@
       "body-parser@1": "~1.20.6",
       "compression@1": "^1.8.2",
       "ip-address@10": "^10.7.1",
-      "brace-expansion@1": "^1.1.21"
+      "brace-expansion@1": "^1.1.21",
+      "@paulirish/trace_engine@0.0.53>legacy-javascript": "0.0.3",
+      "@paulirish/trace_engine@0.0.53>third-party-web": "0.30.0"
     }
   }
 }
