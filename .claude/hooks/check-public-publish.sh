@@ -170,15 +170,23 @@ _collect_file() {
 # file over-reads at worst, which is the SAFE direction for a deny-on-presence
 # check; missing a quoted real path (the raw-grep failure mode) is not.
 #
-# Only flags that follow `gh` in their segment count. Over-reading is safe for
-# the verdict but not free: `grep -F <pattern-file>` or `awk -F` earlier in the
+# A line that is some OTHER command is skipped. Over-reading is safe for the
+# verdict but not free: `grep -F <pattern-file>` or `awk -F` earlier in the
 # command named files gh never sees, and a session link in one of those denied
-# an ordinary publish, which trains people to reach for the override.
+# an ordinary publish, which trains people to reach for the override. Only lines
+# that START with another command word are skipped, never lines without `gh`:
+# the segment view splits at a `$(…)`, so in `--title "$(date)" --body-file f`
+# the body flag sits on a line of its own, and dropping every gh-less line left
+# that file unread.
 while IFS= read -r _bf; do _collect_file "$_bf"; done < <(
   shsurface_segments "$cmd" | awk '
-    { seen = 0
-      for (i=1;i<=NF;i++) {
-        if (!seen) { if ($i=="gh") seen = 1; continue }
+    { start = 1
+      if ($1 == "gh" || ($1 == "sudo" && $2 == "gh")) {
+        for (s = 1; s <= NF; s++) if ($s == "gh") { start = s + 1; break }
+      } else if ($1 ~ /^[A-Za-z_][A-Za-z0-9_.+-]*$/) {
+        next
+      }
+      for (i=start;i<=NF;i++) {
         if ($i=="--body-file"||$i=="--notes-file"||$i=="-F") { if (i+1<=NF) print $(i+1) }
         else if ($i ~ /^(--body-file|--notes-file)=/) { sub(/^[^=]+=/,"",$i); print $i }
         else if ($i ~ /=@/) { sub(/^.*=@/,"",$i); print $i }
@@ -368,13 +376,20 @@ dest=$(grep -oE '(--repo|-R) +[^ ]+' <<<"$cmd" | head -n1 | awk '{print $2}' | t
 # beside it, it resolves exactly as a non-api command does (`gh repo view`
 # honours GH_REPO too). With one, a payload may be the source of that token, so
 # it stays unresolved like any other disagreement.
+#
+# The placeholder counts only in the ENDPOINT position, straight after `gh api`
+# and an optional `-X METHOD`. Matched anywhere, a `{owner}/{repo}` typed into a
+# graphql body switched resolution to the directory, and a private one there
+# short-circuits the scan. Any other placement stays unresolved, which loses only
+# the foreign-owner signal and still announces and scans.
 api_call=0
 if grep -qE '^(sudo[[:space:]]+)?gh[[:space:]]+api([[:space:]]|$)' <<<"$publish_seg"; then
   api_call=1
   api_dest=$(grep -oE 'repos/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/(issues|comments|releases|pulls)' <<<"$publish_seg" \
     | sed -E 's|^repos/([^/]+/[^/]+)/.*|\1|' | sort -u)
   api_placeholder=0
-  grep -qE 'repos/\{owner\}/\{repo\}/' <<<"$publish_seg" && api_placeholder=1
+  grep -qE '^(sudo[[:space:]]+)?gh[[:space:]]+api[[:space:]]+(-X[[:space:]]*[A-Za-z]+[[:space:]]+)?/?repos/\{owner\}/\{repo\}/' <<<"$publish_seg" \
+    && api_placeholder=1
   if [[ $api_placeholder -eq 1 && -z $api_dest ]]; then
     api_call=0
     dest=""

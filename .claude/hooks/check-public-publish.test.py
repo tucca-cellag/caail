@@ -715,6 +715,11 @@ for label, cmd in (
 dcheck("a file named by grep -F before the publish is not read as a body",
        f"grep -F {leaky} {clean}; gh issue create --title t --body 'a plain note'",
        pub_co, "allow", quiet=False)
+dcheck("a body file after a $( ) in the same command is still read",
+       f"gh pr create --title \"$(date)\" --body-file {leaky}", priv_co, "deny", needle="session link")
+dcheck("a {owner}/{repo} typed into a graphql body does not move resolution to the checkout",
+       "gh api -X POST graphql -f query='mutation { addComment(input: {body: \"see repos/{owner}/{repo}/issues, an api_key is in the logs\"}) { c } }'",
+       priv_co, "deny")
 
 # Without the classifier a file body cannot be verified, so it fails closed,
 # while an inline body (all of it in the command) is unaffected.
