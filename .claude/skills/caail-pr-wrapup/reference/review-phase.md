@@ -7,7 +7,7 @@
 - The level, and why depth comes from rounds rather than from it
 - The floor on rounds, by blast radius
 - What each round has to do
-- **Definitions** (blocking, disposed of, outstanding, the four dispositions, a re-raise, the two endings, the publishing carve-out): the single source for every load-bearing term
+- **Definitions** (blocking, disposed of, outstanding, the four dispositions, a re-raise, review-added code, the two endings, the publishing carve-out): the single source for every load-bearing term
 - The **scope gate** (per-round, out-of-scope findings), inside "What each round has to do" above
 - Severity: classified by you, shown at the gates, never acted on by the agent
 - When to stop: the three conditions
@@ -193,6 +193,12 @@ nowhere else.
   reason the earlier disposition was wrong, in which case it is a new finding. **A re-raise of a finding
   marked Fixed always counts as new evidence**, because a round that reads the current diff and still sees
   the defect means the fix did not land or did not work.
+- **Review-added code.** Code a review round wrote as a fix, as opposed to the branch's original commits,
+  meaning everything committed before round 1 started. The common case is a guard or test added while
+  fixing a finding. It is reviewed like the rest of the diff, and a fix can still widen the diff's shape as
+  condition 1 says. It deliberately has **no row of its own in the floor table**: a row only sets a
+  minimum, so it cannot end a run the maintainer keeps choosing to continue. Its one role is a label at the
+  stop gate.
 - **The two endings.** **Ending 1**: conditions 1, 2 and 3 hold at once, so the floor is met, nothing is
   blocking, and the last round changed nothing. **Ending 2**: the maintainer answered "ship now" at the
   stop gate. There is no third. **Never write "a quiet round" as shorthand for ending 1**: it carries
@@ -294,7 +300,7 @@ diff, which is the ending's whole point. It fires whenever the floor is met and 
 otherwise continue, which is any state where condition 2 or condition 3 is unmet. It never fires below the
 floor.
 
-The question carries five things, and they are what make the answer mean anything:
+The question carries six things, and they are what make the answer mean anything:
 
 - **Rounds run so far, against the floor for the diff's shape re-checked now.** Re-check rather than
   reuse: a fix can widen the shape and raise its own floor, and the state right after a fix landed is
@@ -308,6 +314,12 @@ The question carries five things, and they are what make the answer mean anythin
   be able to see that it is the same question.
 - **Each finding's severity**, stated as a consequence rather than a grade. This is the only place
   severity does anything, so a gate built without it has silently dropped the whole of its role.
+- **Where each finding lives, with a count.** Mark every finding **in the change** or **in review-added
+  code** (see Definitions), and give the round one line such as `Round 9: 0 in the change, 4 in
+  review-added code`, counting its new findings and not its re-raises. Like severity it is shown and never
+  acted on: nothing in this phase ends a run, forces a round or withholds an option because findings have
+  moved into review-added code. It is here because that move is the maintainer's clearest sign that further
+  rounds are reviewing the review's own fixes, and nothing else in the payload shows it.
 - **Whether the last round changed the diff.** If it did, say that shipping now merges code no round has
   read, and that this file's own rationale block records **two of fourteen defects as introduced by fixes
   to earlier findings**, one an accessibility regression created by the fix for a different accessibility
