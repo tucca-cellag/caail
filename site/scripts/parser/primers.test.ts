@@ -7,6 +7,7 @@
  *   C. itemFromListItem — the note separator is stripped from the rendered note.
  */
 import { describe, it, expect } from 'vitest';
+import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 import type { Heading, List } from 'mdast';
@@ -19,6 +20,21 @@ import { itemFromListItem } from './media.js';
 
 /** Repo root: parser → scripts → site → repo (three levels up). */
 const REPO_ROOT = fileURLToPath(new URL('../../../', import.meta.url));
+
+/**
+ * The `* [` bullet lines under one `## heading` of a primer, read line by line
+ * rather than through the mdast parser the model comes from, so the expected
+ * counts follow the content instead of being typed into the test.
+ */
+function bulletsUnder(file: string, heading: string): string[] {
+  const lines = readFileSync(join(REPO_ROOT, file), 'utf8').split('\n');
+  const marker = `## ${heading}`;
+  const hits = lines.filter((l) => l === marker).length;
+  if (hits !== 1) throw new Error(`${file}: expected one "${marker}", found ${hits}`);
+  const rest = lines.slice(lines.indexOf(marker) + 1);
+  const end = rest.findIndex((l) => /^#{1,2} /.test(l));
+  return (end === -1 ? rest : rest.slice(0, end)).filter((l) => l.startsWith('* ['));
+}
 
 // ---------------------------------------------------------------------------
 // A. rewritePrimerUrl
@@ -100,20 +116,28 @@ describe('buildPrimersModel', () => {
   it('carries the AI primer fundamentals as external playlists', () => {
     const fundamentals = model.primers[1].sections[0];
     const playlists = fundamentals.items.filter((i) => i.kind === 'playlist');
-    expect(playlists.length).toBe(10);
+    const inSource = bulletsUnder('Primers/AI.md', 'Learn the fundamentals').filter((l) =>
+      l.includes('youtube.com/playlist?'),
+    );
+    expect(inSource.length).toBeGreaterThan(0);
+    expect(playlists.length).toBe(inSource.length);
     expect(playlists.every((p) => !p.internal)).toBe(true);
   });
 
-  it('gives the cell-ag field reviews a section of their own, with its intro and all five reviews', () => {
+  it('gives the cell-ag field reviews a section of their own, with its intro and every review', () => {
     const reviews = model.primers[0].sections.find((s) => s.heading === 'Field reviews and perspectives');
+    const inSource = bulletsUnder('Primers/CellAg.md', 'Field reviews and perspectives');
     expect(reviews?.intro).toMatch(/^Review and perspective articles/);
-    expect(reviews?.items.length).toBe(5);
+    expect(inSource.length).toBeGreaterThan(0);
+    expect(reviews?.items.length).toBe(inSource.length);
   });
 
-  it('gives the AI primer books a section of their own, with its intro and all five books', () => {
+  it('gives the AI primer books a section of their own, with its intro and every book', () => {
     const books = model.primers[1].sections.find((s) => s.heading === 'Books');
+    const inSource = bulletsUnder('Primers/AI.md', 'Books');
     expect(books?.intro).toMatch(/^Illustrated guides and textbooks/);
-    expect(books?.items.length).toBe(5);
+    expect(inSource.length).toBeGreaterThan(0);
+    expect(books?.items.length).toBe(inSource.length);
     // The books no longer ride along in the fundamentals section.
     const fundamentals = model.primers[1].sections[0];
     expect(fundamentals.items.some((i) => books?.items.some((b) => b.title === i.title))).toBe(false);
