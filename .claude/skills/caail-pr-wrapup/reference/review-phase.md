@@ -74,14 +74,7 @@ right.
   `/code-review origin/main...HEAD` silently reuses whatever level was last typed in any session, and the
   PR body then claims a level that never ran. The range matters too: nothing is pushed yet, so a default
   that resolves against an upstream has none, and the fallbacks land on either `main...HEAD` or a single
-  commit, which reviews one commit of a multi-commit branch. Before it starts, begin the carried triage
-  list as a fresh file at the root of the checkout you are reviewing in, `caail-review-<branch>.local.md`
-  with each `/` in the branch name written as `--`, replacing any file of that name from an earlier run.
-  The `.local.md` suffix is gitignored, so the list is never committed, and it survives a compacted
-  session. (Not under `internal-docs/`: `.worktreeinclude` says to treat that tree's worktree copy as
-  read-only.) Record every finding of every round with the round that raised it, its disposition, its
-  **review-added code** label and, for a **re-raise**, how many rounds have raised it (both in
-  Definitions). Step 3 writes the PR body from this file, and step 8 deletes it.
+  commit, which reviews one commit of a multi-commit branch.
 - **Apply or triage every finding, and default an out-of-scope one to a ticket.** Fixed, or declined with
   a stated reason. "Not acted on" and "not a defect" are different outcomes; only one is free.
 
@@ -127,8 +120,9 @@ right.
   prompt.
 
   **Skip the prompt when it has nothing new to ask.** No out-of-scope finding this round, no prompt. A
-  finding an earlier round already gave a disposition to is not re-proposed either, unless it is triaged
-  again: it is a **re-raise** (see Definitions). Ticketed findings carry
+  finding an earlier round already gave a disposition to is a **re-raise** and is not re-proposed either,
+  unless the exception in its definition has it triaged again as a new finding (see Definitions).
+  Ticketed findings carry
   their reference (`tucca-cellag/caail-planning#<ticket>`), declined ones carry the reason. Without that, every later round re-finds the same
   pre-existing problem and re-asks the identical question, which is the fatigue `tucca-cellag/caail-planning#237`'s eight-round
   run illustrates.
@@ -160,11 +154,13 @@ right.
   exists to find.
 - **Round 2 over the whole diff again.** Not narrowed to the files round 1 touched: the point of round 2
   is the defects the *fixes* introduced, and a bad fix does not confine its damage to its own file.
-- **From round 2 on, carry the triage list yourself**, in the file round 1 began. Each round is handed a
-  range and a level and nothing else, so it re-derives its findings from scratch and re-raises what an
-  earlier round already settled. Before triaging a round, match its findings against the list: a match
-  is a **re-raise**, and each new diff-caused finding gets its **review-added code** label as you triage
-  it (both in Definitions). Without this, the maintainer is
+- **From round 2 on, carry the triage list yourself.** Each round is handed a range and a level and
+  nothing else, so it re-derives its findings from scratch and re-raises what an earlier round already
+  settled. Keep every finding with the round that raised it, its disposition and its label. Before
+  triaging a round, match its findings against the list: a match is a **re-raise**, and each new
+  diff-caused finding gets its **review-added code** label as you triage it (both in Definitions).
+  Where the list should live so that it survives a compacted session is an open question
+  (`tucca-cellag/caail-planning#615`). Without this, the maintainer is
   shown the same settled finding at every stop gate as though it were new;
   `tucca-cellag/caail-planning#605` records how that went over PR #261's 17 rounds against a floor of 3.
 - **Round 3 and beyond, each over the whole diff as round 2 is**, until the stop rule ends it either way.
@@ -201,14 +197,14 @@ nowhere else.
   case does not count, since a round that holds no earlier findings always restates it. **A re-raise of a
   Fixed finding is always triaged again**, because a round that still sees the defect in the current diff
   means the fix did not land or did not work.
-- **Review-added code.** Code that a review round's fix wrote, as opposed to the branch's original work,
-  which includes new work committed after round 1 started. A diff-caused finding is labelled **in
-  review-added code** or **in the change** when it is triaged, by your judgement with a one-line reason;
-  one that spans both, or sits in original code a fix edited, is in the change. A pre-existing finding
-  takes no label. A label is given once and never recomputed, and a re-raise triaged again is a new
-  finding, labelled like any other by where the defect now sits. **A round's count** is the diff-caused
-  findings it triaged that the triage does not refute; it is counted against the proposed triage and again
-  if the maintainer's answer changes that triage. Review-added code is reviewed like the rest of the diff,
+- **Review-added code.** Code that a review round's fix wrote. The branch's original work, including new
+  work committed after round 1 started, is **in the change**. A diff-caused finding is labelled **in
+  review-added code** or **in the change** when it is triaged, by your judgement of where the defect is
+  (in what a fix wrote, or in what was there before), with a one-line reason; one that spans both is in
+  the change. A pre-existing finding takes no label. A label is given once and never recomputed, and a
+  re-raise triaged again is a new finding, classified and labelled like any other. **A round's count** is
+  the diff-caused findings it triaged that the triage does not refute; it is counted against the proposed
+  triage and again if the maintainer's answer changes that triage. Review-added code is reviewed like the rest of the diff,
   and a fix can still widen the diff's shape as condition 1 says. It deliberately has **no row of its own
   in the floor table**: a row only sets a minimum, so it cannot end a run the maintainer keeps choosing to
   continue. The label and the count are shown at the stop gate and do nothing else.
@@ -330,11 +326,12 @@ The question carries six things, and they are what make the answer mean anything
 - **Where each finding lives, the count for every round so far, and the re-raises.** Mark each
   diff-caused finding **in the change** or **in review-added code**, and give one line per round run, from
   `Round 1: 8 in the change, 0 in review-added code` to the latest, each counted as Definitions says. Then
-  list every re-raise once, with its disposition and the number of rounds that have raised it, so a refuted
-  finding that keeps coming back stays in front of the maintainer. Like severity, all of this is shown and
-  never acted on: nothing in this phase ends a run, forces a round or withholds an option because findings
-  have moved into review-added code. It is here because that move is the maintainer's clearest sign that
-  further rounds are reviewing the review's own fixes, and nothing else in the payload shows it.
+  list each re-raise from the rounds since you last asked, once, with its disposition and the number of
+  rounds that have raised it, so a refuted finding that keeps coming back stays in front of the maintainer
+  without the list growing every round. Like severity, all of this is shown and never acted on: nothing in
+  this phase ends a run, forces a round or withholds an option because of it. The labels and counts are
+  here because findings moving into review-added code is the maintainer's clearest sign that further
+  rounds are reviewing the review's own fixes, and nothing else in the payload shows it.
 - **Whether the last round changed the diff.** If it did, say that shipping now merges code no round has
   read, and that this file's own rationale block records **two of fourteen defects as introduced by fixes
   to earlier findings**, one an accessibility regression created by the fix for a different accessibility

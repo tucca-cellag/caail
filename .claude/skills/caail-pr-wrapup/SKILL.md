@@ -150,9 +150,7 @@ bash .claude/skills/caail-pr-wrapup/ship-pr.sh open-pr "<title>" /tmp/pr-body.md
   actually written, and it is defined once in the Definitions in `reference/review-phase.md`; for it alone,
   treat "declined" and "routed to a ticket" as one category. **Any** finding declined rather than fixed,
   in any round, gets named with its reason, since a reader cannot tell a triaged finding from an
-  unnoticed one and the rounds it came from are invisible to them. Take them from the carried triage
-  file step 1 keeps, not from what is still in context: the file is the record that survives a
-  compacted session. **The exception is the publishing
+  unnoticed one and the rounds it came from are invisible to them. **The exception is the publishing
   carve-out in the Definitions in `reference/review-phase.md`**, which governs its own scope; this body is world-readable and
   permanent, and publishing what that carve-out withholds would breach `.claude/rules/publishing.md`.
   **Nothing will stop you**, so decide before you write it: `check-public-publish.sh` is a PreToolUse
@@ -276,9 +274,6 @@ absence of a stale `./X.md` link — so you confirm the *content* shipped, not j
 already moved you to `main` and deleted the branch, so the first two items below are done and
 re-running them reports confusing errors rather than doing anything (see `reference/gotchas.md`).
 
-- **Delete the carried triage file** step 1 began, `caail-review-<branch>.local.md` at the root of the
-  checkout you reviewed in. It is gitignored, so only removing a worktree that holds it would clear it,
-  and `.worktreeinclude` copies every `*.local.md` in the main checkout into each new worktree.
 - **Fast-forward local `main`** so the primary checkout matches the deploy:
   `git fetch origin main && git merge --ff-only origin/main` (run it in the primary checkout; you can't
   fast-forward `main` while a worktree holds another branch). When `main` isn't checked out anywhere,
