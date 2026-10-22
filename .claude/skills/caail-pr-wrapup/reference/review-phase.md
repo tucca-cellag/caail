@@ -120,11 +120,10 @@ right.
   prompt.
 
   **Skip the prompt when it has nothing new to ask.** No out-of-scope finding this round, no prompt. A
-  finding an earlier round already gave a disposition to is a **re-raise** and is not re-proposed either,
-  unless the exception in its definition has it triaged again as a new finding (see Definitions).
-  Ticketed findings carry
-  their reference (`tucca-cellag/caail-planning#<ticket>`), declined ones carry the reason. Without that, every later round re-finds the same
-  pre-existing problem and re-asks the identical question, which is the fatigue `tucca-cellag/caail-planning#237`'s eight-round
+  **re-raise** is not re-proposed either, unless its definition's exceptions have it triaged again as a
+  new finding (see Definitions). In the carried triage list, ticketed findings carry their reference
+  (`tucca-cellag/caail-planning#<ticket>`) and declined ones carry the reason. Without that, every later
+  round re-finds the same pre-existing problem and re-asks the identical question, which is the fatigue `tucca-cellag/caail-planning#237`'s eight-round
   run illustrates.
 
   Every ticket is filed in the private planning repo and never on this public one. The "Issue tracker"
@@ -154,15 +153,15 @@ right.
   exists to find.
 - **Round 2 over the whole diff again.** Not narrowed to the files round 1 touched: the point of round 2
   is the defects the *fixes* introduced, and a bad fix does not confine its damage to its own file.
-- **From round 2 on, carry the triage list yourself.** Each round is handed a range and a level and
-  nothing else, so it re-derives its findings from scratch and re-raises what an earlier round already
-  settled. Keep every finding with the round that raised it, its disposition and its label. Before
-  triaging a round, match its findings against the list: a match is a **re-raise**, and each new
-  diff-caused finding gets its **review-added code** label as you triage it (both in Definitions).
-  Where the list should live so that it survives a compacted session is an open question
-  (`tucca-cellag/caail-planning#615`). Without this, the maintainer is
-  shown the same settled finding at every stop gate as though it were new;
-  `tucca-cellag/caail-planning#605` records how that went over PR #261's 17 rounds against a floor of 3.
+- **Carry the triage list yourself, starting with round 1's findings.** Each round is handed a range and
+  a level and nothing else, so it re-derives its findings from scratch and re-raises what an earlier round
+  already settled. Keep every finding with the round that raised it, its disposition and its label. From
+  round 2 on, match each round's findings against the list before triaging them: see **a re-raise** and
+  **review-added code** in Definitions. Where the list should live so that it survives a compacted session
+  is an open question (`tucca-cellag/caail-planning#615`); until it is settled, if the list was lost and
+  rebuilt from memory, say so at the stop gate. Without this, the maintainer is shown the same settled
+  finding at every stop gate as though it were new; `tucca-cellag/caail-planning#605` records how that
+  went over PR #261's 17 rounds against a floor of 3.
 - **Round 3 and beyond, each over the whole diff as round 2 is**, until the stop rule ends it either way.
 
 #### Definitions
@@ -189,23 +188,26 @@ nowhere else.
   the reason stated. **Deferred**, agreed real and filed as a planning ticket. **Declined**, agreed real and left alone.
   Only the first two clear a blocking finding. The last two leave it blocking, which is exactly why
   shipping with either is ending 2 and never ending 1.
-- **A re-raise.** A finding an earlier round already gave a disposition to, wherever the reviewer now
-  locates it. It keeps that disposition and its blocking status, the number of rounds that have raised it
-  goes up by one, and it is not triaged again. **The exception is your judgement that it brings something
-  the earlier disposition did not consider**, such as an edit that bears on it or a consequence it did not
-  weigh: then triage it again as a new finding, and say what was new. The reviewer restating its original
-  case does not count, since a round that holds no earlier findings always restates it. **A re-raise of a
-  Fixed finding is always triaged again**, because a round that still sees the defect in the current diff
-  means the fix did not land or did not work.
+- **A re-raise.** A finding that reports the same defect an earlier round already gave a disposition to,
+  wherever the reviewer now locates it; when you cannot tell whether it is the same defect, treat it as
+  new. It keeps that disposition and its blocking status, the number of rounds that have raised it goes
+  up by one, and it is not triaged again. **There are two exceptions**, and either one makes it a new
+  finding that replaces the earlier entry in the list. The first is your judgement that it brings
+  something the earlier disposition did not consider, such as an edit that bears on it or a consequence it
+  did not weigh; say what was new. The reviewer restating its original case does not count, since a round
+  that holds no earlier findings always restates it. The second is that **a re-raise of a Fixed finding
+  is always triaged again**, because a round that still sees the defect in the current diff means the fix
+  did not land or did not work.
 - **Review-added code.** Code that a review round's fix wrote. The branch's original work, including new
   work committed after round 1 started, is **in the change**. A diff-caused finding is labelled **in
   review-added code** or **in the change** when it is triaged, by your judgement of where the defect is
-  (in what a fix wrote, or in what was there before), with a one-line reason; one that spans both is in
-  the change. A pre-existing finding takes no label. A label is given once and never recomputed, and a
-  re-raise triaged again is a new finding, classified and labelled like any other. **A round's count** is
-  the diff-caused findings it triaged that the triage does not refute; it is counted against the proposed
-  triage and again if the maintainer's answer changes that triage. Review-added code is reviewed like the rest of the diff,
-  and a fix can still widen the diff's shape as condition 1 says. It deliberately has **no row of its own
+  (in what a fix wrote, or in what was there before), with a one-line reason. A defect a fix introduced is
+  in review-added code even where it meets original code. A pre-existing finding takes no label. A label
+  is given once and never recomputed, and a re-raise triaged again is a new finding, classified and
+  labelled like any other. **A round's count** is the diff-caused findings it triaged that the triage
+  does not refute; it is counted against the proposed triage and again if the maintainer's answer changes
+  that triage. Review-added code is reviewed like the rest of the diff, and a fix can still widen the
+  diff's shape as condition 1 says. It deliberately has **no row of its own
   in the floor table**: a row only sets a minimum, so it cannot end a run the maintainer keeps choosing to
   continue. The label and the count are shown at the stop gate and do nothing else.
 - **The two endings.** **Ending 1**: conditions 1, 2 and 3 hold at once, so the floor is met, nothing is
@@ -328,8 +330,9 @@ The question carries six things, and they are what make the answer mean anything
   `Round 1: 8 in the change, 0 in review-added code` to the latest, each counted as Definitions says. Then
   list each re-raise from the rounds since you last asked, once, with its disposition and the number of
   rounds that have raised it, so a refuted finding that keeps coming back stays in front of the maintainer
-  without the list growing every round. Like severity, all of this is shown and never acted on: nothing in
-  this phase ends a run, forces a round or withholds an option because of it. The labels and counts are
+  without the list growing every round. Like severity, the labels, the counts and this list are shown and
+  never acted on: nothing in this phase ends a run, forces a round or withholds an option because of them
+  (the re-raise rule itself, in Definitions, still decides what is triaged). The labels and counts are
   here because findings moving into review-added code is the maintainer's clearest sign that further
   rounds are reviewing the review's own fixes, and nothing else in the payload shows it.
 - **Whether the last round changed the diff.** If it did, say that shipping now merges code no round has
