@@ -75,9 +75,14 @@ right.
   PR body then claims a level that never ran. The range matters too: nothing is pushed yet, so a default
   that resolves against an upstream has none, and the fallbacks land on either `main...HEAD` or a single
   commit, which reviews one commit of a multi-commit branch. Before it starts, open the carried triage list
-  as a file, `internal-docs/review/<branch>.md`: that path is gitignored, so the list survives a compacted
-  session and is never committed. Write HEAD's commit id at its top, and later each fix commit's id beside
-  the finding it fixed; those ids are what the **review-added code** label rests on (see Definitions).
+  as a file at the root of the checkout you are reviewing in, `caail-review-<branch>.local.md` with each
+  `/` in the branch name written as `-`. The `.local.md` suffix is gitignored, so the list is never
+  committed, and it survives a compacted session. Do not put it under `internal-docs/`, whose copy in a
+  worktree `.worktreeinclude` says to treat as read-only, or in the git directory, which a
+  worktree-isolated session's file tools refuse to write. Write HEAD's commit id at the top, then
+  every finding of every round with its disposition and its **review-added code** label (see
+  Definitions), and beside each fixed finding the id and subject of the commit that fixed it. The subject
+  is how you find that commit again after a rebase rewrites its id.
 - **Apply or triage every finding, and default an out-of-scope one to a ticket.** Fixed, or declined with
   a stated reason. "Not acted on" and "not a defect" are different outcomes; only one is free.
 
@@ -158,11 +163,11 @@ right.
   is the defects the *fixes* introduced, and a bad fix does not confine its damage to its own file.
 - **From round 2 on, carry the triage list yourself**, in the file round 1 opened. Each round is handed a
   range and a level and nothing else, so it re-derives its findings from scratch and re-raises what an
-  earlier round already settled. Before triaging a round, match each of its findings against the carried list and treat any that match as a **re-raise**,
-  and give each new diff-caused finding its **review-added code** label as you triage it (both in
-  Definitions). Without this, the maintainer is shown the same settled finding at every stop gate as
-  though it were new; `tucca-cellag/caail-planning#605` records how that went over PR #261's 17 rounds
-  against a floor of 3.
+  earlier round already settled. Before triaging a round, match each of its findings against the
+  carried list and treat any that match as a **re-raise**, and give each new diff-caused finding its
+  **review-added code** label as you triage it (both in Definitions). Without this, the maintainer is
+  shown the same settled finding at every stop gate as though it were new;
+  `tucca-cellag/caail-planning#605` records how that went over PR #261's 17 rounds against a floor of 3.
 - **Round 3 and beyond, each over the whole diff as round 2 is**, until the stop rule ends it either way.
 
 #### Definitions
@@ -193,8 +198,9 @@ nowhere else.
   it. It keeps that disposition and its blocking status, and is noted in the round's report without
   becoming a second entry in the carried list. **It is a new finding instead when it brings new
   evidence**: the construct it names (the function, rule or sentence) was edited after the disposition was
-  made, it states a consequence the disposition did not weigh, or it is a separate copy of the mistake that
-  needs a fix of its own. The reviewer restating its original case is not new evidence, since a round that
+  made in a way that bears on the finding, it states a consequence the disposition did not weigh, or it is
+  a separate copy of the mistake that needs a fix of its own. Rewrapping or an unrelated edit to the same
+  sentence is not new evidence, and nor is the reviewer restating its original case, since a round that
   holds no earlier findings always restates it. **A re-raise of a Fixed finding is always new evidence**,
   because a round that still sees the defect in the current diff means the fix did not land or did not
   work.
@@ -202,14 +208,15 @@ nowhere else.
   fixed a review finding, which the carried list records by its id. Everything else is **in the change**:
   an original construct a fix edited or removed, a finding that spans both, and new work committed after
   round 1 started. Each diff-caused finding gets its label when it is first triaged and keeps it, so a
-  later fix cannot move it from one count to the other, and a re-raise of a Fixed finding keeps the label
-  the original finding had. A pre-existing finding takes no label, but a failed fix of one is review-added
-  code like any other. **A round's count** is its diff-caused findings that the triage does not refute:
-  a re-raise with new evidence counts, one without does not, and neither does a candidate the round
-  dismissed. It is counted against the proposed triage and counted again if the maintainer's answer
-  changes that triage. It is reviewed like the rest of the diff, and a fix can still widen the diff's shape as condition 1 says. It
-  deliberately has **no row of its own in the floor table**: a row only sets a minimum, so it cannot end a
-  run the maintainer keeps choosing to continue. Its one role is a label at the stop gate.
+  later fix cannot move it from one count to the other. A re-raise of a Fixed finding keeps the label the
+  original finding had; a pre-existing finding takes no label, so when a fix of one fails, the re-raise is
+  labelled review-added code. **A round's count** is its diff-caused findings that the triage does not
+  refute: a re-raise with new evidence counts, one without does not, and neither does a candidate the
+  round dismissed. It is counted against the proposed triage and counted again if the maintainer's answer
+  changes that triage. Review-added code is reviewed like the rest of the diff, and a fix can still widen
+  the diff's shape as condition 1 says. It deliberately has **no row of its own in the floor table**: a
+  row only sets a minimum, so it cannot end a run the maintainer keeps choosing to continue. Its label and
+  the count are shown at the stop gate and do nothing else.
 - **The two endings.** **Ending 1**: conditions 1, 2 and 3 hold at once, so the floor is met, nothing is
   blocking, and the last round changed nothing. **Ending 2**: the maintainer answered "ship now" at the
   stop gate. There is no third. **Never write "a quiet round" as shorthand for ending 1**: it carries
@@ -289,8 +296,8 @@ still gets three.
 **Stop gate.** Once the floor is met, ask before every further round. **One question, always the same
 shape.** Propose one of the four dispositions (see Definitions) for every **blocking** finding first, the
 same way the scope gate does. Disposed-of findings are shown for context and **not re-proposed**, matching
-the scope gate's skip rule, because re-proposing them puts the same question to the maintainer every
-round.
+the scope gate's skip rule (including its exception for a re-raise with new evidence), because
+re-proposing them puts the same question to the maintainer every round.
 
 **Declining or deferring a blocking finding does not clear it**, so a triage full of those is an ending 2
 and must be offered as one rather than dressed up as a plan.
@@ -325,13 +332,13 @@ The question carries six things, and they are what make the answer mean anything
   be able to see that it is the same question.
 - **Each finding's severity**, stated as a consequence rather than a grade. This is the only place
   severity does anything, so a gate built without it has silently dropped the whole of its role.
-- **Where each finding lives, with the count for every round so far.** Mark each finding **in the
-  change** or **in review-added code**, and give one line per round run, from `Round 1: 8 in the change,
-  0 in review-added code` to the latest, each counted as Definitions says. Like severity it is shown and
-  never
-  acted on: nothing in this phase ends a run, forces a round or withholds an option because findings have
-  moved into review-added code. It is here because that move is the maintainer's clearest sign that further
-  rounds are reviewing the review's own fixes, and nothing else in the payload shows it.
+- **Where each finding lives, with the count for every round so far.** Mark each diff-caused finding
+  **in the change** or **in review-added code**, and give one line per round run, from `Round 1: 8 in the
+  change, 0 in review-added code` to the latest, each counted as Definitions says. Like severity it is
+  shown and never acted on: nothing in this phase ends a run, forces a round or withholds an option
+  because findings have moved into review-added code. It is here because that move is the maintainer's
+  clearest sign that further rounds are reviewing the review's own fixes, and nothing else in the payload
+  shows it.
 - **Whether the last round changed the diff.** If it did, say that shipping now merges code no round has
   read, and that this file's own rationale block records **two of fourteen defects as introduced by fixes
   to earlier findings**, one an accessibility regression created by the fix for a different accessibility
