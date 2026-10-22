@@ -191,8 +191,8 @@ Each is a bulleted list under category headings:
   render at `/primers/cell-ag/` and `/primers/ai/`, where single videos play inline and playlists
   show as cards, so prefer canonical YouTube watch / playlist URLs; internal cross-links to the rest
   of the library use repo-relative paths (e.g. `../Papers.md`, `../ReferenceWorks.md`). Write each
-  item as `* [Title](url): note` under a `##` section. The site renders no `###` subheading, so one
-  would vanish there, and `site/scripts/parser/primers.test.ts` fails on it.
+  item as `* [Title](url): note` under a `##` section. The site renders no `###` subheading, so the
+  site build refuses one rather than drop it.
 - **Reference textbooks and multi-volume reference works → `ReferenceWorks.md`**: the foundational
   cell-ag textbook and the *Encyclopedia of Meat Sciences*, with DOI-resolvable chapter indexes.
 - **Curated bibliographies and "awesome lists" (community GitHub indexes) → `AwesomeLists.md`**:
