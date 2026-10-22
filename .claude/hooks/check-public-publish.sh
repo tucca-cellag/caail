@@ -159,7 +159,10 @@ _collect_file() {
   f="${f//\"/}"; f="${f//\'/}"
   [[ -z $f || $f == "-" ]] && return 0
   f="${f/#\~/$HOME}"
-  [[ -r $f ]] || return 0
+  # A regular file only. The hook runs before the command, so a named pipe has
+  # no writer yet, and `head` on one blocked until the hook was killed, which
+  # lets the publish through unscanned.
+  [[ -f $f && -r $f ]] || return 0
   payload+=$'\n'$(head -c 100000 "$f" 2>/dev/null)
 }
 # File-passing flags, read from the shared classifier's SEGMENT view (CLAUDE-40),
@@ -189,7 +192,7 @@ while IFS= read -r _bf; do _collect_file "$_bf"; done < <(
 )
 
 # Scanned on the RAW payload so a link survives any quoting style, including a
-# heredoc body — the same reason the commit-message hook scans attribution raw.
+# heredoc body, for the same reason the commit-message hook scans attribution raw.
 leak_signals=()
 grep -qiE 'claude\.ai/code/session' <<<"$payload" \
   && leak_signals+=("a Claude session link (claude.ai/code/session…), which exposes the contents of a Claude session to anyone who can read the published text")
@@ -384,7 +387,11 @@ dest=$(grep -oE '(--repo|-R) +[^ ]+' <<<"$cmd" | head -n1 | awk '{print $2}' | t
 # graphql body switched resolution to the directory, and a private one there
 # short-circuits the scan. Any other placement stays unresolved, which loses only
 # the foreign-owner signal and still announces and scans.
+# `$api_from_dir` marks an api call whose destination comes from the directory
+# after all (the placeholder case), so `$api_call` keeps meaning only "this is a
+# gh api command".
 api_call=0
+api_from_dir=0
 if grep -qE '^(sudo[[:space:]]+)?gh[[:space:]]+api([[:space:]]|$)' <<<"$publish_seg"; then
   api_call=1
   api_dest=$(grep -oE 'repos/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/(issues|comments|releases|pulls)' <<<"$publish_seg" \
@@ -393,7 +400,7 @@ if grep -qE '^(sudo[[:space:]]+)?gh[[:space:]]+api([[:space:]]|$)' <<<"$publish_
   grep -qE '^(sudo[[:space:]]+)?gh[[:space:]]+api[[:space:]]+(-X[[:space:]]*[A-Za-z]+[[:space:]]+)?/?repos/\{owner\}/\{repo\}/' <<<"$publish_seg" \
     && api_placeholder=1
   if [[ $api_placeholder -eq 1 && -z $api_dest ]]; then
-    api_call=0
+    api_from_dir=1
     dest=""
   elif [[ $api_placeholder -eq 0 && -n $api_dest && $(printf '%s\n' "$api_dest" | wc -l) -eq 1 ]]; then
     dest="$api_dest"
@@ -403,7 +410,7 @@ if grep -qE '^(sudo[[:space:]]+)?gh[[:space:]]+api([[:space:]]|$)' <<<"$publish_
 fi
 
 cd_dir=""
-if [[ -z $dest && $api_call -eq 0 ]]; then
+if [[ -z $dest && ( $api_call -eq 0 || $api_from_dir -eq 1 ) ]]; then
   # First `cd` at the start of the command or of a segment, and — this is the part
   # that was missing — only one that runs BEFORE the publishing verb. Only such a
   # `cd` can change where the publish lands.
@@ -459,7 +466,7 @@ else
   if [[ -n $dest ]]; then
     meta=$(gh_bounded 10 repo view "$dest" --json nameWithOwner,visibility 2>/dev/null)
     [[ -z $meta ]] && unresolved="\`gh\` could not read '${dest}'"
-  elif [[ $api_call -eq 1 ]]; then
+  elif [[ $api_call -eq 1 && $api_from_dir -eq 0 ]]; then
     # The endpoint is the only destination an api call has, and this one could
     # not be read: either no `repos/<owner>/<repo>/…` token at all, or several
     # that disagree. Asking a directory instead answers a different question, so

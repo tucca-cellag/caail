@@ -675,23 +675,36 @@ dcheck("a concrete repos/ token beside the placeholder does not steer the destin
        "gh api -X POST repos/{owner}/{repo}/issues -f body='related to repos/other/thing/issues'",
        pub_co, "allow", needle="could NOT resolve", absent="other/thing")
 
-# Each deny consumes only its own override.
+# Each deny consumes only its own override. These touch real override files in
+# /tmp, keyed to fixed commands, so they are always removed afterwards: a case
+# that failed midway would otherwise leave one live for the next run.
+def drop_overrides(cmd):
+    for kind in ("leak-", ""):
+        if os.path.exists(override_path(cmd, kind)): os.remove(override_path(cmd, kind))
+
 both = f"gh issue create --title t --body 'Co-Authored-By: Claude, and {FENCE}x{FENCE}'"
-dcheck("attribution plus a fenced block is first denied for the attribution",
-       both, pub_co, "deny", needle="attribution")
-open(override_path(both, "leak-"), "w").close()
-dcheck("the leak override lets it past the leak scan only: the fence still denies, asking for both files",
-       both, pub_co, "deny", needle=("fenced code block", override_path(both, "leak-")))
-open(override_path(both, "leak-"), "w").close()
-open(override_path(both, ""), "w").close()
-dcheck("with both overrides fresh, a payload that tripped both denies goes through",
-       both, pub_co, "allow", quiet=True)
+drop_overrides(both)
+try:
+    dcheck("attribution plus a fenced block is first denied for the attribution",
+           both, pub_co, "deny", needle="attribution")
+    open(override_path(both, "leak-"), "w").close()
+    dcheck("the leak override lets it past the leak scan only: the fence still denies, asking for both files",
+           both, pub_co, "deny", needle=("fenced code block", override_path(both, "leak-")))
+    open(override_path(both, "leak-"), "w").close()
+    open(override_path(both, ""), "w").close()
+    dcheck("with both overrides fresh, a payload that tripped both denies goes through",
+           both, pub_co, "allow", quiet=True)
+finally:
+    drop_overrides(both)
+
 leak_and_fence = f"gh issue create --title t --body 'see {SESSION} and {FENCE}y{FENCE}'"
-prov = override_path(leak_and_fence, "")
-open(prov, "w").close()
-dcheck("the provenance override does not skip the session-link scan",
-       leak_and_fence, pub_co, "deny", needle="session link")
-if os.path.exists(prov): os.remove(prov)
+drop_overrides(leak_and_fence)
+try:
+    open(override_path(leak_and_fence, ""), "w").close()
+    dcheck("the provenance override does not skip the session-link scan",
+           leak_and_fence, pub_co, "deny", needle="session link")
+finally:
+    drop_overrides(leak_and_fence)
 
 # The footer is matched by its text; a bare robot emoji is ordinary prose.
 dcheck("a bare robot emoji in an ordinary body is not attribution",
@@ -716,6 +729,26 @@ for label, cmd in (
 ):
     dcheck(f"a session link in a file passed by {label} is read and refused", cmd, priv_co, "deny",
            needle="session link")
+# A named pipe has no writer before the command runs, so reading one would block
+# until the hook is killed. Run with a hard timeout: a hang is the failure.
+fifo = os.path.join(dbl, "body.fifo")
+if not os.path.exists(fifo): os.mkfifo(fifo)
+try:
+    r = subprocess.run([BASH, HOOK_PROJ],
+                       input=json.dumps({"tool_input": {"command": f"gh issue create --title t -F {fifo}"}}),
+                       capture_output=True, text=True, env={**os.environ, **DBL}, cwd=pub_co, timeout=20)
+    returned = r.returncode == 0 and "hookSpecificOutput" in r.stdout
+except subprocess.TimeoutExpired:
+    returned = False
+finally:
+    # Release a reader left blocked on the pipe, if there is one.
+    try:
+        fd = os.open(fifo, os.O_WRONLY | os.O_NONBLOCK); os.close(fd)
+    except OSError:
+        pass
+ok = "PASS" if returned else "FAIL"
+if not returned: fails += 1
+print(f"  [{ok}] a named pipe passed as a body file does not hang the hook")
 dcheck("a body file after a quoted $( ) in the same command is still read",
        f"gh pr create --title \"$(date)\" --body-file {leaky}", priv_co, "deny", needle="session link")
 dcheck("a body file after an unquoted $( ) with a suffix is still read",
