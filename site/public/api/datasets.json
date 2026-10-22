@@ -3243,7 +3243,7 @@
         "Data": "[`GSE173199`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE173199)",
         "Type": "RNA-seq",
         "Tissue": "Muscle",
-        "Description": "GEO SuperSeries pairing a serum-starvation differentiation timecourse (20%→2% FBS, harvested 0/24/48/72/96 h in biological quadruplicates, [`GSE173198`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE173198)) with a serum-free differentiation comparison in triplicate ([`GSE173196`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE173196)): cells grown in 20% FBS were differentiated for 72 h in 2% FBS medium, and cells grown in serum-free growth medium in one of three serum-free media, with samples at 0 h and 72 h; the timecourse and the comparison are each deposited as their own subseries, linked from this record",
+        "Description": "GEO SuperSeries pairing a serum-starvation differentiation timecourse (20%→2% FBS, harvested 0/24/48/72/96 h in biological quadruplicates, [`GSE173198`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE173198)) with a serum-free differentiation comparison in triplicate ([`GSE173196`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE173196)): for 72 h of differentiation, cells grown in 20% FBS were switched to 2% FBS medium and cells grown in serum-free growth medium were switched to one of three serum-free media, with samples at 0 h and 72 h; the timecourse and the comparison are each deposited as their own subseries, linked from this record",
         "Size": "93.25 Gb",
         "Area of research": "Cultured meat"
       },
@@ -4426,7 +4426,7 @@
         "Data": "[`GSE173196`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE173196)",
         "Type": "RNA-seq",
         "Tissue": "Muscle",
-        "Description": "Bulk RNA-seq of the serum-free arm: cells grown in 20% FBS medium were differentiated for 72 h in 2% FBS medium, and cells grown in serum-free growth medium (SFGM) in serum-free base medium (SFB), DMEM/F-12-based serum-free differentiation medium (SFDM) or DMEM-based serum-free differentiation medium (DMEM); sampled at 0 h and 72 h in biological triplicates; 18 libraries. Subseries of [`GSE173199`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE173199)",
+        "Description": "Bulk RNA-seq of the serum-free arm: for 72 h of differentiation, cells grown in 20% FBS medium were switched to 2% FBS medium, and cells grown in serum-free growth medium (SFGM) were switched to serum-free base medium (SFB), DMEM/F-12-based serum-free differentiation medium (SFDM) or DMEM-based serum-free differentiation medium (DMEM); sampled at 0 h and 72 h in biological triplicates; 18 libraries. Subseries of [`GSE173199`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE173199)",
         "Size": "—",
         "Area of research": "Cultured meat"
       },
