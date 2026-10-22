@@ -4,7 +4,7 @@ Introductory resources on AI and machine learning, gathered for wet-lab research
 
 ## Learn the fundamentals
 
-Video playlists, courses and books that introduce statistics, machine learning and deep learning, listed here for readers coming from biology. Books come last.
+Video playlists and courses that introduce statistics, machine learning, deep learning and AI agents, listed here for readers coming from biology.
 
 * [AI Fundamentals](https://www.youtube.com/playlist?list=PLOspHqNVtKADfxkuDuHduUkDExBpEt3DF): an IBM Technology playlist. Free.
 * [Statistics Fundamentals](https://www.youtube.com/playlist?list=PLblh5JKOoLUK0FLuzwntyYI10UQFUhsY9): a StatQuest with Josh Starmer playlist giving a general overview of statistics, which also serves as a reference for statistical concepts. Free.
@@ -18,7 +18,9 @@ Video playlists, courses and books that introduce statistics, machine learning a
 * [Neural Networks: Zero to Hero](https://www.youtube.com/playlist?list=PLAqhIrjkxbuWI23v9cThsA9GvCAUhRvKZ): Andrej Karpathy's course on building neural networks and a small GPT from scratch in code, from backpropagation up to a working language model. Free.
 * [MIT 6.S191: Introduction to Deep Learning](https://introtodeeplearning.com/): MIT's introductory deep-learning course, with lectures and code labs, updated each year. Free.
 
-### Books
+## Books
+
+Illustrated guides and textbooks on statistics, machine learning and neural networks. Some are free to read or download online; all are sold in print, and some as PDFs.
 
 * [The StatQuest Illustrated Guide to Statistics](https://statquest.org/statquest-store/): an illustrated book by Josh Starmer that covers statistics up to advanced topics such as ANOVA and ANCOVA, with PyTorch and R tutorials. For sale as a paperback or a PDF.
 * [The StatQuest Illustrated Guide to Machine Learning](https://statquest.org/statquest-store/): an illustrated book by Josh Starmer that goes from the basic concepts of machine learning through neural networks. For sale as a paperback or a PDF.

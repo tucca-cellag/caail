@@ -7,12 +7,18 @@
  *   C. itemFromListItem — the note separator is stripped from the rendered note.
  */
 import { describe, it, expect } from 'vitest';
-import type { List } from 'mdast';
+import { fileURLToPath } from 'node:url';
+import { join } from 'node:path';
+import type { Heading, List } from 'mdast';
+import { visit } from 'unist-util-visit';
 import { SITE_BASE } from '../../src/content/site-config.ts';
 
-import { buildPrimersModel, rewritePrimerUrl } from './primers.js';
-import { parseMarkdown } from './markdown.js';
+import { buildPrimersModel, rewritePrimerUrl, PRIMER_SOURCES } from './primers.js';
+import { parseFile, parseMarkdown } from './markdown.js';
 import { itemFromListItem } from './media.js';
+
+/** Repo root: parser → scripts → site → repo (three levels up). */
+const REPO_ROOT = fileURLToPath(new URL('../../../', import.meta.url));
 
 // ---------------------------------------------------------------------------
 // A. rewritePrimerUrl
@@ -96,6 +102,33 @@ describe('buildPrimersModel', () => {
     const playlists = fundamentals.items.filter((i) => i.kind === 'playlist');
     expect(playlists.length).toBe(10);
     expect(playlists.every((p) => !p.internal)).toBe(true);
+  });
+
+  it('gives the cell-ag field reviews a section of their own, with its intro and all five reviews', () => {
+    const reviews = model.primers[0].sections.find((s) => s.heading === 'Field reviews and perspectives');
+    expect(reviews?.intro).toMatch(/^Review and perspective articles/);
+    expect(reviews?.items.length).toBe(5);
+  });
+
+  it('gives the AI primer books a section of their own, with its intro and all five books', () => {
+    const books = model.primers[1].sections.find((s) => s.heading === 'Books');
+    expect(books?.intro).toMatch(/^Illustrated guides and textbooks/);
+    expect(books?.items.length).toBe(5);
+    // The books no longer ride along in the fundamentals section.
+    const fundamentals = model.primers[1].sections[0];
+    expect(fundamentals.items.some((i) => books?.items.some((b) => b.title === i.title))).toBe(false);
+  });
+
+  it('uses no heading below ## in any primer, since the site renders only ## sections', () => {
+    // sectionsAfter(root, 2) folds a ### block into its parent section, so its
+    // heading and intro never reach the page. Fail on the shape, not on a name.
+    const deep: string[] = [];
+    for (const { file } of PRIMER_SOURCES) {
+      visit(parseFile(join(REPO_ROOT, file)), 'heading', (h: Heading) => {
+        if (h.depth > 2) deep.push(`${file}: ${'#'.repeat(h.depth)}`);
+      });
+    }
+    expect(deep).toEqual([]);
   });
 
   it('rewrites internal cross-links to same-site routes', () => {

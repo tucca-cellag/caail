@@ -18,7 +18,7 @@ Talks and pages on what cellular agriculture is, the science behind it, the stat
 
 ## Read and take a course
 
-Books, courses and articles on the science of cellular agriculture and on the bioprocess engineering behind scale-up. Field reviews and perspectives come last.
+Books, courses and articles on the science of cellular agriculture and on the bioprocess engineering behind scale-up.
 
 * [MEAT](https://meatbook.org/): a book by GFI founder Bruce Friedrich, making the case for cellular agriculture and alternative proteins. Purchase required.
 * [Foundations of Chemical and Biological Engineering I](https://eng.libretexts.org/Bookshelves/Chemical_Engineering/Foundations_of_Chemical_and_Biological_Engineering_I_(Verret_Qiao_Barghout)): an open LibreTexts textbook by Verret, Qiao and Barghout of the University of British Columbia. Its chapters cover chemical processes and process diagrams, reaction chemistry, phase equilibrium, energy balances, unsteady-state operations and process control, process economics, green engineering and process safety. Free under CC BY-NC-SA.
@@ -34,7 +34,7 @@ Books, courses and articles on the science of cellular agriculture and on the bi
 * [Cellular Agriculture (Advanced Course)](https://biotechdelft.com/courses/cellular-agriculture/): a Biotech Delft course on precision fermentation and cultured meat, covering bioprocessing and food product development. It is also an elective in the postgraduate programs of TU Delft. Course fee.
 * [Cellular Bioprocess Technology Summer Course](https://cbt.cems.umn.edu/): an interactive four-day short course on cellular bioprocess technology at the University of Minnesota. In 2026 it offered an optional half-day add-on workshop on machine learning in cellular bioprocess technology. Course fee.
 
-### Field reviews and perspectives
+## Field reviews and perspectives
 
 Review and perspective articles that survey the field, listed by year of publication. Those catalogued in CAAIL link to their entry in [Papers.md](../Papers.md), and the others link to their DOI. Access varies.
 
