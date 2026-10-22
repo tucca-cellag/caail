@@ -65,13 +65,21 @@
     "remark-stringify": "^11.0.0",
     "tsx": "^4.22.3",
     "unist-util-visit": "^5.1.0",
-    "vitest": "^4.1.7",
+    "vitest": "^4.1.12",
     "yaml": "^2.9.0",
     "zod": "^4.4.3"
   },
   "pnpm": {
     "overrides": {
-      "sharp": "$sharp"
+      "sharp": "$sharp",
+      "fast-uri@3": "^3.1.7",
+      "proxy-addr@2": "~2.0.8",
+      "body-parser@1": "~1.20.6",
+      "compression@1": "^1.8.2",
+      "ip-address@10": "^10.7.1",
+      "brace-expansion@1": "^1.1.21",
+      "@paulirish/trace_engine@0.0.53>legacy-javascript": "0.0.3",
+      "@paulirish/trace_engine@0.0.53>third-party-web": "0.30.0"
     }
   }
 }
