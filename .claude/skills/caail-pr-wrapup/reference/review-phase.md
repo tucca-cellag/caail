@@ -74,7 +74,9 @@ right.
   `/code-review origin/main...HEAD` silently reuses whatever level was last typed in any session, and the
   PR body then claims a level that never ran. The range matters too: nothing is pushed yet, so a default
   that resolves against an upstream has none, and the fallbacks land on either `main...HEAD` or a single
-  commit, which reviews one commit of a multi-commit branch.
+  commit, which reviews one commit of a multi-commit branch. Before it starts, write HEAD's commit id at
+  the top of the triage list: it is the boundary that **review-added code** is measured against (see
+  Definitions).
 - **Apply or triage every finding, and default an out-of-scope one to a ticket.** Fixed, or declined with
   a stated reason. "Not acted on" and "not a defect" are different outcomes; only one is free.
 
@@ -120,8 +122,8 @@ right.
   prompt.
 
   **Skip the prompt when it has nothing new to ask.** No out-of-scope finding this round, no prompt. A
-  finding an earlier round already disposed of is not re-proposed either, whichever way it went: it is a
-  **re-raise** (see Definitions). Ticketed findings carry
+  finding an earlier round already gave a disposition is not re-proposed either, whichever disposition it
+  was: it is a **re-raise** (see Definitions). Ticketed findings carry
   their reference (`tucca-cellag/caail-planning#<ticket>`), declined ones carry the reason. Without that, every later round re-finds the same
   pre-existing problem and re-asks the identical question, which is the fatigue `tucca-cellag/caail-planning#237`'s eight-round
   run illustrates.
@@ -153,14 +155,14 @@ right.
   exists to find.
 - **Round 2 over the whole diff again.** Not narrowed to the files round 1 touched: the point of round 2
   is the defects the *fixes* introduced, and a bad fix does not confine its damage to its own file.
-- **From round 2 on, carry the triage list yourself, because the reviewer cannot.** `/code-review` takes a
-  target, a level and flags, and nothing that holds earlier findings (its documented arguments, **observed
-  2026-10-22**; check rather than trust this line), so every round re-derives from scratch and re-raises
-  what an earlier round already settled. Before triaging a round, match each of its findings against the
-  carried list, and treat any that match as a **re-raise** (see Definitions). Without this, the maintainer
-  is shown the same settled finding at every stop gate as though it were new;
-  `tucca-cellag/caail-planning#605` records how that went over PR #261's 17 rounds against a floor of 3.
-- **Round 3 and beyond, until the stop rule ends it either way.**
+- **From round 2 on, carry the triage list yourself.** Each round is handed a range and a level and
+  nothing else, so it re-derives its findings from scratch and re-raises what an earlier round already
+  settled. Do not count on the reviewer to remember, whatever it may come to accept. Before triaging a
+  round, match each of its findings against the carried list, and treat any that match as a **re-raise**
+  (see Definitions). Without this, the maintainer is shown the same settled finding at every stop gate as
+  though it were new; `tucca-cellag/caail-planning#605` records how that went over PR #261's 17 rounds
+  against a floor of 3.
+- **Round 3 and beyond, each over the whole diff as round 2 is**, until the stop rule ends it either way.
 
 #### Definitions
 
@@ -188,22 +190,25 @@ nowhere else.
   shipping with either is ending 2 and never ending 1.
 - **A re-raise.** A finding a round reports that an earlier round already gave a disposition: the same
   defect in the same file and the same construct (the function, rule or sentence it names), whatever line
-  number it now sits at, since every fix commit moves lines. It goes in that round's triage as one line
-  carrying its earlier disposition, is not triaged again, and gets no question of its own at either gate.
-  **It changes nothing in the carried set**: a finding that was blocking stays blocking, and the stop gate
-  goes on proposing a disposition for it exactly as it would have without the re-raise. The exception is
-  **new evidence**, meaning a fact the earlier disposition did not consider: a file or construct the earlier
-  finding did not name, or a consequence it did not state. The reviewer restating its original case is not
-  new evidence, since a round that holds no earlier findings always restates it. A re-raise with new
-  evidence is a new finding. **A re-raise of a finding marked Fixed always counts as new evidence**,
-  because a round that reads the current diff and still sees the defect means the fix did not land or did
-  not work.
-- **Review-added code.** Code a review round wrote as a fix, as opposed to the branch's original commits,
-  meaning everything committed before round 1 started. The common case is a guard or test added while
-  fixing a finding. A finding is in review-added code when every line it names was written or last
-  changed by a review round's commit (`git blame` on the branch says which); a finding that also touches an
-  original line, including one where a fix meets the code it amended, is **in the change**. It is reviewed
-  like the rest of the diff, and a fix can still widen the diff's shape as condition 1 says. It
+  number it now sits at, since every fix commit moves lines. The same defect reached from another file,
+  such as through a caller, is still the same re-raise. It keeps its earlier disposition, is not triaged
+  again, and adds one line to that round's triage. **It changes nothing in the carried set.** A
+  re-raise of a blocking finding (one deferred or declined) is still blocking, so the stop gate still
+  proposes a disposition for it as it does for every blocking finding; what a re-raise never gets is a
+  second entry or a question of its own. The exception is **new evidence**, meaning a fact that bears on
+  the earlier disposition and that it did not consider, such as a consequence it did not weigh or a
+  separate copy of the same mistake elsewhere. The reviewer restating its original case is not new
+  evidence, since a round that holds no earlier findings always restates it. A re-raise with new evidence
+  is a new finding. **A re-raise of a finding marked Fixed always counts as new evidence**, because a round
+  that reads the current diff and still sees the defect means the fix did not land or did not work.
+- **Review-added code.** A construct (a function, test, guard, rule or sentence) that a review round's fix
+  created, as opposed to one that already existed at the commit recorded when round 1 started;
+  `git show <that commit>:<file>` settles which. The common case is a guard or test added while fixing a
+  finding. An original construct that a fix edited or removed is still **in the change**, and so is a
+  finding that spans both. **The label is set once, when a finding is first triaged, and carried with
+  it.** It is never recomputed, so a later fix, a reflow or a rebase cannot move a carried finding from one
+  count to the other, and a re-raise of a Fixed finding keeps the label the original finding had. It is
+  reviewed like the rest of the diff, and a fix can still widen the diff's shape as condition 1 says. It
   deliberately has **no row of its own in the floor table**: a row only sets a minimum, so it cannot end a
   run the maintainer keeps choosing to continue. Its one role is a label at the stop gate.
 - **The two endings.** **Ending 1**: conditions 1, 2 and 3 hold at once, so the floor is met, nothing is
