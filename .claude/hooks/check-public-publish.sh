@@ -9,7 +9,12 @@
 # to confirm outward-facing actions); a deterministic check at the point of
 # action does.
 #
-# Two behaviours, per .claude/rules/publishing.md:
+# Three behaviours, per .claude/rules/publishing.md:
+#
+#   0. LEAK DENY (any destination) — a Claude session link or attribution
+#      footer anywhere in the payload is refused before the destination is even
+#      resolved, because it discloses a session to anyone who can read a private
+#      repo as much as a public one.
 #
 #   1. ANNOUNCE (always, non-blocking) — every publish into a public repo gets
 #      the destination's visibility injected into context. Costs nothing and
@@ -32,10 +37,14 @@
 # detects a project copy and passes through, so `gh` is never queried twice.
 #
 # Override mechanism (mirrors check-command-antipatterns.sh):
-#   Claude writes /tmp/claude-publish-override-<sha16-of-cmd>, then immediately
-#   re-runs the SAME command. Single-use, 60s TTL, pinned to one exact command.
+#   Claude writes the file a deny names, then immediately re-runs the SAME
+#   command. Single-use, 60s TTL, pinned to one exact command. Each deny has its
+#   own file and consumes only that one: /tmp/claude-publish-leak-override-<sha16>
+#   for the leak deny, /tmp/claude-publish-override-<sha16> for the provenance
+#   deny. One shared file let an override approved for an attribution false
+#   positive also skip the provenance scan, which the user was never shown.
 #
-# Architecture: defer → tripwire → override → visibility → payload scan → JSON.
+# Architecture: defer → tripwire → leak scan → visibility → payload scan → JSON.
 # The unrecoverable paths — no stdin, malformed JSON, no publish verb — fail
 # OPEN, because a broken hook must never brick publishing. A destination this
 # hook merely could not READ is a different thing and is not one of them: it is
@@ -89,18 +98,24 @@ if ! grep -qE "$PUBLISH_VERB_RE" <<<"$cmd"; then
   exit 0
 fi
 
-# --- Override check (single-use, 60s TTL) ---------------------------------
+# --- Overrides (single-use, 60s TTL, one per deny) ------------------------
+# Consumed only at the deny each one answers, never up front: an override that
+# passed the whole hook through skipped every check after the one it was granted
+# for. See the header for why there are two.
 cmd_hash=$(printf '%s' "$cmd" | shasum -a 256 | cut -c1-16)
 override_file="/tmp/claude-publish-override-${cmd_hash}"
+leak_override_file="/tmp/claude-publish-leak-override-${cmd_hash}"
 
-if [[ -f $override_file ]]; then
-  if find "$override_file" -mmin -1 -print 2>/dev/null | grep -q .; then
-    rm -f "$override_file"
-    printf '%s\n' "$PASS_THROUGH"
-    exit 0
+consume_override() {  # consume_override <file>: true once, if fresh
+  local f="$1"
+  [[ -f $f ]] || return 1
+  if find "$f" -mmin -1 -print 2>/dev/null | grep -q .; then
+    rm -f "$f"
+    return 0
   fi
-  rm -f "$override_file"  # stale
-fi
+  rm -f "$f"  # stale
+  return 1
+}
 
 # --- Highest-severity, visibility-INDEPENDENT scan ------------------------
 # A Claude session link (claude.ai/code/session…) and the Claude attribution
@@ -154,9 +169,16 @@ _collect_file() {
 # --body-file), and a `key=@<path>` field (gh api). Scanning an extra referenced
 # file over-reads at worst, which is the SAFE direction for a deny-on-presence
 # check; missing a quoted real path (the raw-grep failure mode) is not.
+#
+# Only flags that follow `gh` in their segment count. Over-reading is safe for
+# the verdict but not free: `grep -F <pattern-file>` or `awk -F` earlier in the
+# command named files gh never sees, and a session link in one of those denied
+# an ordinary publish, which trains people to reach for the override.
 while IFS= read -r _bf; do _collect_file "$_bf"; done < <(
   shsurface_segments "$cmd" | awk '
-    { for (i=1;i<=NF;i++) {
+    { seen = 0
+      for (i=1;i<=NF;i++) {
+        if (!seen) { if ($i=="gh") seen = 1; continue }
         if ($i=="--body-file"||$i=="--notes-file"||$i=="-F") { if (i+1<=NF) print $(i+1) }
         else if ($i ~ /^(--body-file|--notes-file)=/) { sub(/^[^=]+=/,"",$i); print $i }
         else if ($i ~ /=@/) { sub(/^.*=@/,"",$i); print $i }
@@ -168,8 +190,11 @@ while IFS= read -r _bf; do _collect_file "$_bf"; done < <(
 leak_signals=()
 grep -qiE 'claude\.ai/code/session' <<<"$payload" \
   && leak_signals+=("a Claude session link (claude.ai/code/session…), which exposes the contents of a Claude session to anyone who can read the published text")
-grep -qiE 'Generated with \[?Claude|claude\.com/claude-code|Co-Authored-By:[[:space:]]*(Claude|Anthropic)|Claude-Session:|🤖' <<<"$payload" \
-  && leak_signals+=("Claude attribution (a 'Generated with Claude Code' / claude.com/claude-code footer, a 'Co-Authored-By: Claude' or 'Claude-Session:' trailer, or the 🤖 marker)")
+# The footer is matched by its text, not by the robot emoji that usually leads
+# it: a bare emoji is ordinary prose ("the bot keeps failing"), and denying it in
+# a private repo too cried wolf on exactly the publishes this scan reaches.
+grep -qiE 'Generated with \[?Claude|claude\.com/claude-code|Co-Authored-By:[[:space:]]*(Claude|Anthropic)|Claude-Session:' <<<"$payload" \
+  && leak_signals+=("Claude attribution (a 'Generated with Claude Code' / claude.com/claude-code footer, or a 'Co-Authored-By: Claude' or 'Claude-Session:' trailer)")
 # Fail closed when the body lives in a file and the classifier is missing: the
 # scan above may not have read that file at all. Scoped to file-passing flags so
 # an inline-only publish (fully visible in the raw command) is not taxed.
@@ -178,14 +203,14 @@ if (( SHSURFACE_OK == 0 )) \
   leak_signals+=("a body FILE this hook could not reliably read: the shared shell classifier (scripts/lib/shsurface.sh) did not load, so a session link or attribution inside that file could not be ruled out — restore the library, or pass the body inline")
 fi
 
-if [[ ${#leak_signals[@]} -gt 0 ]]; then
+if [[ ${#leak_signals[@]} -gt 0 ]] && ! consume_override "$leak_override_file"; then
   joined=$(printf '%s; ' "${leak_signals[@]}"); joined="${joined%; }"
   reason="This gh publish carries: ${joined}. Forbidden in every published payload, public or private."
   ctx="BLOCKED by the public-publish guard (${RULE}). The payload — the command plus any --body-file/--notes-file it names — carries: ${joined}.
 
 This is INDEPENDENT of the destination's visibility: a session link or an attribution footer is forbidden in a public repo and a private one alike, so it is checked before the destination is resolved. The session link is the serious one — it can expose session contents — and should be DELETED, not overridden.
 
-Remove the flagged text from the command and from any file it references, then re-run. If you are certain this is a false positive, INVOKE AskUserQuestion and offer: (a) Strip the flagged text (recommended); (b) Publish as-is — run \`touch ${override_file}\` then immediately re-run the SAME command (single-use, expires in 60s); (c) Cancel. Do not bypass this by other means."
+Remove the flagged text from the command and from any file it references, then re-run. If you are certain this is a false positive, INVOKE AskUserQuestion and offer: (a) Strip the flagged text (recommended); (b) Publish as-is — run \`touch ${leak_override_file}\` then immediately re-run the SAME command (single-use, expires in 60s; it skips only this check, and the provenance scan still runs); (c) Cancel. Do not bypass this by other means."
   jq -nc --arg reason "$reason" --arg ctx "$ctx" \
     '{hookSpecificOutput:{hookEventName:"PreToolUse",permissionDecision:"deny",permissionDecisionReason:$reason,additionalContext:$ctx}}'
   exit 0
@@ -332,12 +357,28 @@ dest=$(grep -oE '(--repo|-R) +[^ ]+' <<<"$cmd" | head -n1 | awk '{print $2}' | t
 # are the documented way to reach that, and a body is free to supply the second
 # one. The comment above already described the safe behaviour; the code did the
 # opposite of it.
+#
+# One exception, and it is gh's own rule, not a guess: `gh api` fills the
+# placeholders `{owner}` and `{repo}` in an endpoint "with values from the
+# repository of the current directory or the repository specified in the GH_REPO
+# environment variable" (`gh api --help`). So `repos/{owner}/{repo}/issues` IS a
+# directory-resolved publish, and treating it as unreadable lost the destination
+# owner and with it the foreign-owner signal: measured, a paraphrase-plus-link
+# body that main denied went through. With no concrete `repos/<o>/<r>/` token
+# beside it, it resolves exactly as a non-api command does (`gh repo view`
+# honours GH_REPO too). With one, a payload may be the source of that token, so
+# it stays unresolved like any other disagreement.
 api_call=0
 if grep -qE '^(sudo[[:space:]]+)?gh[[:space:]]+api([[:space:]]|$)' <<<"$publish_seg"; then
   api_call=1
   api_dest=$(grep -oE 'repos/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/(issues|comments|releases|pulls)' <<<"$publish_seg" \
     | sed -E 's|^repos/([^/]+/[^/]+)/.*|\1|' | sort -u)
-  if [[ -n $api_dest && $(printf '%s\n' "$api_dest" | wc -l) -eq 1 ]]; then
+  api_placeholder=0
+  grep -qE 'repos/\{owner\}/\{repo\}/' <<<"$publish_seg" && api_placeholder=1
+  if [[ $api_placeholder -eq 1 && -z $api_dest ]]; then
+    api_call=0
+    dest=""
+  elif [[ $api_placeholder -eq 0 && -n $api_dest && $(printf '%s\n' "$api_dest" | wc -l) -eq 1 ]]; then
     dest="$api_dest"
   else
     dest=""
@@ -595,6 +636,13 @@ if [[ ${#signals[@]} -eq 0 ]]; then
 fi
 
 # --- Signals: deny pending explicit provenance confirmation ---------------
+# The provenance override answers this deny and nothing else, which is why it
+# is consumed here rather than up front: the leak scan above has already run.
+if consume_override "$override_file"; then
+  printf '%s\n' "$PASS_THROUGH"
+  exit 0
+fi
+
 joined=$(printf '%s; ' "${signals[@]}"); joined="${joined%; }"
 reason="Publishing to ${repo} (${vis_tag}) with: ${joined}."
 

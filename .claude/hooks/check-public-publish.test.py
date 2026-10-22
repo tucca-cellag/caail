@@ -605,6 +605,130 @@ ok = "PASS" if parsed else "FAIL"
 if not parsed: fails += 1
 print(f"  [{ok}] the vendored classifier parses a quoted command with no ~/.claude")
 
+# --- what the sync brought in, against a gh double -------------------------
+# The real-gh cases above cannot stand a repo up as private or public on
+# demand, so the behaviour that depends on visibility went untested here. These
+# use a stand-in `gh` that answers `repo view` from a table, inferring the repo
+# from a marker file in its cwd the way the real one infers it from the
+# checkout. Each case names the behaviour it would catch going missing.
+print("\n=== behaviour the sync brought in, against a gh double ===")
+import hashlib
+dbl = os.path.join(tmp, "gh-double")
+os.makedirs(os.path.join(dbl, "bin"), exist_ok=True)
+table = os.path.join(dbl, "repos.tsv")
+with open(table, "w") as f:
+    f.write("me/public-cwd PUBLIC\nme/private-cwd PRIVATE\nme/public-dest PUBLIC\nother/thing PUBLIC\n")
+gh_double = os.path.join(dbl, "bin", "gh")
+with open(gh_double, "w") as f:
+    f.write('#!/usr/bin/env bash\n'
+            '[ "${1:-}" = auth ] && exit 0\n'
+            'if [ "${1:-}" = repo ] && [ "${2:-}" = view ]; then\n'
+            '  t="${3:-}"; case "$t" in -*|"") t=$(cat ./.fake-repo 2>/dev/null || true) ;; esac\n'
+            '  [ -n "$t" ] || exit 1\n'
+            '  v=$(awk -v t="$t" \'$1 == t { print $2 }\' "$FAKE_GH_DB"); [ -n "$v" ] || exit 1\n'
+            '  printf \'{"nameWithOwner":"%s","visibility":"%s"}\\n\' "$t" "$v"; exit 0\n'
+            'fi\n'
+            'exit 1\n')
+os.chmod(gh_double, 0o755)
+pub_co = os.path.join(dbl, "public-checkout"); priv_co = os.path.join(dbl, "private-checkout")
+for d, r in ((pub_co, "me/public-cwd"), (priv_co, "me/private-cwd")):
+    os.makedirs(d, exist_ok=True)
+    with open(os.path.join(d, ".fake-repo"), "w") as f:
+        f.write(r + "\n")
+DBL = {"PATH": os.path.join(dbl, "bin") + os.pathsep + os.environ["PATH"],
+       "FAKE_GH_DB": table, "CLAUDE_PROJECT_DIR": ""}
+SESSION = "https://claude.ai/code/" + "session_0789"
+FENCE = "`" * 3
+
+def dcheck(label, cmd, cwd, want, needle=None, absent=None, quiet=None, hook=None, env=None):
+    """want is deny or allow; quiet=True asks for the bare pass-through (a
+    private short-circuit), quiet=False for an announced allow."""
+    global fails
+    got, why, ctx = run(hook or HOOK_PROJ, cmd, {**DBL, **(env or {})}, cwd=cwd)
+    text = why + ctx
+    good = (got == want
+            and (needle is None or needle in text)
+            and (absent is None or absent not in text)
+            and (quiet is None or (ctx == "") == quiet))
+    if not good: fails += 1
+    print(f"  [{'PASS' if good else 'FAIL'}] {label}   want={want} got={got}")
+
+def override_path(cmd, kind):
+    h = hashlib.sha256(cmd.encode()).hexdigest()[:16]
+    return f"/tmp/claude-publish-{kind}override-{h}"
+
+# An api call's endpoint never falls back to the directory: two disagreeing
+# endpoints in a PRIVATE checkout must not resolve to it and pass unscanned.
+dcheck("disagreeing endpoints from a private checkout are scanned, not waved through",
+       "gh api -X POST repos/me/public-dest/issues -f body='see repos/other/thing/issues for the api_key'",
+       priv_co, "deny")
+
+# gh fills {owner}/{repo} from the directory, so the placeholder endpoint
+# resolves there, foreign-owner signal included, in both directions.
+dcheck("a {owner}/{repo} endpoint resolves from the checkout and catches a foreign owner",
+       "gh api -X POST repos/{owner}/{repo}/issues -f body='paraphrase of https://github.com/someoneelse/thing internals'",
+       pub_co, "deny", needle="me/public-cwd")
+dcheck("the same endpoint in a private checkout short-circuits as a private publish",
+       "gh api -X POST repos/{owner}/{repo}/issues -f body='an api_key is in the logs'",
+       priv_co, "allow", quiet=True)
+dcheck("a concrete repos/ token beside the placeholder does not steer the destination",
+       "gh api -X POST repos/{owner}/{repo}/issues -f body='related to repos/other/thing/issues'",
+       pub_co, "allow", needle="could NOT resolve", absent="other/thing")
+
+# Each deny consumes only its own override.
+both = f"gh issue create --title t --body 'Co-Authored-By: Claude, and {FENCE}x{FENCE}'"
+dcheck("attribution plus a fenced block is first denied for the attribution",
+       both, pub_co, "deny", needle="attribution")
+open(override_path(both, "leak-"), "w").close()
+dcheck("the leak override lets it past the leak scan only: the fence still denies",
+       both, pub_co, "deny", needle="fenced code block")
+leak_and_fence = f"gh issue create --title t --body 'see {SESSION} and {FENCE}y{FENCE}'"
+prov = override_path(leak_and_fence, "")
+open(prov, "w").close()
+dcheck("the provenance override does not skip the session-link scan",
+       leak_and_fence, pub_co, "deny", needle="session link")
+if os.path.exists(prov): os.remove(prov)
+
+# The footer is matched by its text; a bare robot emoji is ordinary prose.
+dcheck("a bare robot emoji in an ordinary body is not attribution",
+       "gh issue create --title t --body '\U0001F916 the bot keeps failing'",
+       pub_co, "allow", quiet=False)
+dcheck("the footer text is still refused, in a private repo too",
+       "gh pr create --title t --body 'Generated with [Claude Code](https://claude.com/claude-code)'",
+       priv_co, "deny", needle="attribution")
+
+# Every file flag gh takes is read, and only flags that follow gh count.
+leaky = os.path.join(dbl, "leaky.md")
+with open(leaky, "w") as f:
+    f.write(f"Context: {SESSION}\n")
+clean = os.path.join(dbl, "clean.md")
+with open(clean, "w") as f:
+    f.write("A plain note.\n")
+for label, cmd in (
+    ("--notes-file", f"gh release create v1 --notes-file {leaky}"),
+    ("-F", f"gh issue create --title t -F {leaky}"),
+    ("--body-file=", f"gh pr create --title t --body-file={leaky}"),
+    ("key=@path", f"gh api -X POST repos/me/public-dest/issues -F body=@{leaky}"),
+):
+    dcheck(f"a session link in a file passed by {label} is read and refused", cmd, priv_co, "deny",
+           needle="session link")
+dcheck("a file named by grep -F before the publish is not read as a body",
+       f"grep -F {leaky} {clean}; gh issue create --title t --body 'a plain note'",
+       pub_co, "allow", quiet=False)
+
+# Without the classifier a file body cannot be verified, so it fails closed,
+# while an inline body (all of it in the command) is unaffected.
+nolib = os.path.join(dbl, "nolib", "hooks"); nohome = os.path.join(dbl, "nohome")
+os.makedirs(nolib, exist_ok=True); os.makedirs(nohome, exist_ok=True)
+shutil.copy(HOOK_PROJ, os.path.join(nolib, "check-public-publish.sh"))
+nolib_hook = os.path.join(nolib, "check-public-publish.sh")
+dcheck("with no classifier anywhere, a clean body file is refused as unverifiable",
+       f"gh pr create --title t --body-file {clean}", priv_co, "deny", needle="shsurface.sh",
+       hook=nolib_hook, env={"HOME": nohome})
+dcheck("with no classifier anywhere, an inline-only body is unaffected",
+       "gh pr create --title t --body 'a plain fix'", priv_co, "allow", quiet=True,
+       hook=nolib_hook, env={"HOME": nohome})
+
 # Cleanup sits HERE, after the last consumer of the fixture. It used to run ~190
 # lines earlier, so the "uncompared owners" case ran with GH_CONFIG_DIR pointing
 # into a deleted directory and passed only because gh treats a missing config dir
