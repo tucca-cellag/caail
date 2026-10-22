@@ -1,10 +1,10 @@
 # Primers
 
-Two curated onboarding paths into CAAIL, one per audience:
+Two onboarding pages for CAAIL, one for each audience:
 
-* [Cellular Agriculture for AI Researchers](./CellAg.md) — for the computer-science side learning the biology and the field.
-* [AI for Cell-Ag Researchers](./AI.md) — for biologists and bench scientists learning the ML methods.
+* [Cellular Agriculture for AI Researchers](./CellAg.md): for readers from computer science learning the biology and the field.
+* [AI for Cell-Ag Researchers](./AI.md): for biologists and bench scientists learning the ML methods.
 
-Each primer is a short, curated hub: a few "watch / read first" picks plus cross-links into the rest of the library. On the rendered site they live at [`/primers/cell-ag/`](https://caail.tufts.edu/primers/cell-ag/) and [`/primers/ai/`](https://caail.tufts.edu/primers/ai/), where the foundational videos and playlists play inline.
+Each primer lists talks, courses, books and reviews for its audience, and links into the rest of the library. On the rendered site they live at [`/primers/cell-ag/`](https://caail.tufts.edu/primers/cell-ag/) and [`/primers/ai/`](https://caail.tufts.edu/primers/ai/), where single videos play inline and playlists show as cards.
 
-These are entry points, not catalogues — the authoritative resources they point to are catalogued in [Papers.md](../Papers.md), [Software.md](../Software.md), [Databases.md](../Databases.md), the [Datasets/](../Datasets/) directory, [Talks.md](../Talks.md), and [OtherResources.md](../OtherResources.md).
+The primers are entry points. The resources they point to are catalogued in [Papers.md](../Papers.md), [Software.md](../Software.md), [Databases.md](../Databases.md), the [Datasets/](../Datasets/) directory, [Talks.md](../Talks.md) and [OtherResources.md](../OtherResources.md).

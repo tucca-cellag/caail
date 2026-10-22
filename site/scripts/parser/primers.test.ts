@@ -4,11 +4,39 @@
  *   A. rewritePrimerUrl — internal/external classification + route mapping.
  *   B. buildPrimersModel — titles, ledes, embedded media, and rewritten links
  *      against the real canonical Primers/*.md files.
+ *
+ * The note-separator cases for the items both primers and Talks.md use live in
+ * media.test.ts, beside itemFromListItem.
  */
 import { describe, it, expect } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { join } from 'node:path';
 import { SITE_BASE } from '../../src/content/site-config.ts';
 
-import { buildPrimersModel, rewritePrimerUrl } from './primers.js';
+import { assertNoSubheadings, buildPrimersModel, rewritePrimerUrl } from './primers.js';
+import { parseMarkdown } from './markdown.js';
+
+/** Repo root: parser → scripts → site → repo (three levels up). */
+const REPO_ROOT = fileURLToPath(new URL('../../../', import.meta.url));
+
+/**
+ * The link bullets under one `## heading` of a primer (any marker, any indent),
+ * read line by line rather than through the mdast parser the model comes from,
+ * so the expected counts follow the content instead of being typed into the test.
+ */
+function bulletsUnder(file: string, heading: string): string[] {
+  const lines = readFileSync(join(REPO_ROOT, file), 'utf8').split('\n');
+  const marker = `## ${heading}`;
+  const hits = lines.filter((l) => l === marker).length;
+  if (hits !== 1) throw new Error(`${file}: expected one "${marker}", found ${hits}`);
+  const rest = lines.slice(lines.indexOf(marker) + 1);
+  const end = rest.findIndex((l) => /^#{1,2} /.test(l));
+  return (end === -1 ? rest : rest.slice(0, end)).filter((l) => /^\s*[*+-] \[/.test(l));
+}
+
+/** A bullet's first link URL, which is the one the parser classifies the item by. */
+const firstUrl = (line: string): string => /\]\(([^)\s]+)/.exec(line)?.[1] ?? '';
 
 // ---------------------------------------------------------------------------
 // A. rewritePrimerUrl
@@ -70,6 +98,13 @@ describe('rewritePrimerUrl', () => {
 describe('buildPrimersModel', () => {
   const model = buildPrimersModel();
 
+  /** A primer's section by heading, found the same way bulletsUnder finds its source. */
+  const sectionOf = (slug: string, heading: string) => {
+    const section = model.primers.find((p) => p.slug === slug)?.sections.find((s) => s.heading === heading);
+    if (!section) throw new Error(`the ${slug} primer has no "${heading}" section`);
+    return section;
+  };
+
   it('builds both primers, in order', () => {
     expect(model.primers.map((p) => p.slug)).toEqual(['cell-ag', 'ai']);
   });
@@ -88,10 +123,41 @@ describe('buildPrimersModel', () => {
   });
 
   it('carries the AI primer fundamentals as external playlists', () => {
-    const fundamentals = model.primers[1].sections[0];
+    const fundamentals = sectionOf('ai', 'Learn the fundamentals');
     const playlists = fundamentals.items.filter((i) => i.kind === 'playlist');
-    expect(playlists.length).toBe(7);
+    const inSource = bulletsUnder('Primers/AI.md', 'Learn the fundamentals').filter((l) =>
+      /youtube\.com\/playlist\?/.test(firstUrl(l)),
+    );
+    expect(inSource.length).toBeGreaterThan(0);
+    expect(playlists.length).toBe(inSource.length);
     expect(playlists.every((p) => !p.internal)).toBe(true);
+  });
+
+  it('gives the cell-ag field reviews a section of their own, with its intro and every review', () => {
+    const reviews = sectionOf('cell-ag', 'Field reviews and perspectives');
+    const inSource = bulletsUnder('Primers/CellAg.md', 'Field reviews and perspectives');
+    expect(reviews.intro).toMatch(/^Review and perspective articles/);
+    expect(inSource.length).toBeGreaterThan(0);
+    expect(reviews.items.length).toBe(inSource.length);
+  });
+
+  it('gives the AI primer books a section of their own, with its intro and every book', () => {
+    const books = sectionOf('ai', 'Books');
+    const inSource = bulletsUnder('Primers/AI.md', 'Books');
+    expect(books.intro).toMatch(/^Illustrated guides and textbooks/);
+    expect(inSource.length).toBeGreaterThan(0);
+    expect(books.items.length).toBe(inSource.length);
+    // The books no longer ride along in the fundamentals section.
+    const fundamentals = sectionOf('ai', 'Learn the fundamentals');
+    expect(fundamentals.items.some((i) => books.items.some((b) => b.title === i.title))).toBe(false);
+  });
+
+  it('refuses a heading below ## and names it, since the site renders only ## sections', () => {
+    const primer = (body: string) => parseMarkdown(`# Primer\n\nLede.\n\n## Section\n\n${body}`);
+    expect(() =>
+      assertNoSubheadings(primer('### Subsection\n\n* [A](https://example.org/a)\n'), 'Primers/X.md'),
+    ).toThrow(/Primers\/X\.md: "Subsection" is a level-3 heading/);
+    expect(() => assertNoSubheadings(primer('* [A](https://example.org/a)\n'), 'Primers/X.md')).not.toThrow();
   });
 
   it('rewrites internal cross-links to same-site routes', () => {

@@ -4,9 +4,11 @@
  *
  * Each primer is a curated, two-audience entry point: "Cellular Agriculture for
  * AI researchers" (Primers/CellAg.md) and "AI for cell-ag researchers"
- * (Primers/AI.md). They follow the same authoring shape as Talks.md — an H1
- * title, a lede paragraph, then `##` sections whose bullet lists hold one link
- * per item — so the media helpers in media.ts do the heavy lifting.
+ * (Primers/AI.md). They follow nearly the same authoring shape as Talks.md: an
+ * H1 title, a lede paragraph, then `##` sections whose bullet lists hold one
+ * link per item, so the media helpers in media.ts do the heavy lifting. The one
+ * difference is the note separator, `: ` here and ` — ` in Talks.md, and
+ * itemFromListItem accepts both.
  *
  * What primers add on top of talks:
  *   - the H1 title and lede paragraph are lifted (talks has neither),
@@ -119,12 +121,30 @@ function titleAndLead(root: Root): { title: string; lead: string } {
 }
 
 /**
+ * Refuse any heading below `##` in a primer. PrimerHub renders `##` sections
+ * only, and sectionsAfter folds a deeper heading into the section above it, so
+ * the subheading and its intro would vanish from the page while its items
+ * stayed. Throwing here makes `parse` and `build` fail instead.
+ */
+export function assertNoSubheadings(root: Root, file: string): void {
+  visit(root, 'heading', (h: Heading) => {
+    if (h.depth > 2) {
+      throw new Error(
+        `${file}: "${mdastToString(h).trim()}" is a level-${h.depth} heading. A primer renders only ` +
+          '## sections, so it would vanish from the site; make it a ## section.',
+      );
+    }
+  });
+}
+
+/**
  * Build the primers.json model from the Primers/*.md files: one entry per
  * primer, each with its H1 title, lede, and `##` sections of typed items.
  */
 export function buildPrimersModel(repoRoot: string = REPO_ROOT): Primers {
   const primers = PRIMER_SOURCES.map(({ slug, file }) => {
     const root: Root = parseFile(join(repoRoot, file));
+    assertNoSubheadings(root, file);
     const { title, lead } = titleAndLead(root);
     const srcDir = posix.dirname(file);
 

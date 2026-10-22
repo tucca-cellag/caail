@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import { externalCardCount } from './data';
+import { externalCardCount, videoCount } from './data';
 
 // ---------------------------------------------------------------------------
 // Homepage "Start here" — the four audience cards must be real, resolving links
@@ -25,8 +25,10 @@ test('homepage "Start here" cards link to the primers and the tools', async ({ p
 
 test('cell-ag primer embeds the field-foundation videos and resolves its nav links', async ({ page }) => {
   await page.goto('./primers/cell-ag/');
-  await expect(page.getByRole('heading', { name: 'Watch first — field foundations' })).toBeVisible();
-  expect(await page.locator('lite-youtube').count()).toBe(5); // the five field-foundation videos
+  await expect(page.getByRole('heading', { name: 'Field foundations' })).toBeVisible();
+  const videos = videoCount('cell-ag');
+  expect(videos).toBeGreaterThan(0);
+  expect(await page.locator('lite-youtube').count()).toBe(videos);
   // Internal CAAIL nav cards: same-tab links to real site routes (with anchors kept).
   await expect(page.locator('a.primer-nav[href="/papers/explorer/"]')).toHaveCount(1);
   await expect(page.locator('a.primer-nav[href="/reference-works/"]')).toHaveCount(1);

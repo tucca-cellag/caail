@@ -3,7 +3,8 @@
  *
  * Both Talks.md (talks.ts) and the Primers/*.md files (primers.ts) follow the
  * same authoring shape: `##` sections whose bullet lists hold one link per item,
- * optionally trailed by a `— note`. This module owns the bits common to both:
+ * optionally trailed by a note after a `: ` (primers) or ` — ` (talks) separator.
+ * This module owns the bits common to both:
  * YouTube id extraction, item-kind classification, section-intro lifting, and
  * turning a list item into a typed `{ title, url, note, kind, videoId }`.
  *
@@ -54,8 +55,12 @@ export function itemFromListItem(item: ListItem): TalkItem | null {
 
   const title = mdastToString(link).trim();
   const full = mdastToString(item).trim();
-  // `note` = the item text after the link title (venue/year/blurb).
-  const note = full.startsWith(title) ? full.slice(title.length).replace(/^[\s—–-]+/, '').trim() : '';
+  // `note` = the item text after the link title (venue/year/blurb), minus the
+  // leading separator: `: ` in the primers, ` — ` in Talks.md. Exactly one
+  // separator is removed, and a plain hyphen (or a typed "--") counts only with
+  // a space on each side, so a note that opens with a minus sign (" -80 °C …")
+  // or text joined to the link ("-based …") keeps its first character.
+  const note = full.startsWith(title) ? full.slice(title.length).replace(/^\s*(?::|[—–]|\s--?\s)\s*/, '').trim() : '';
 
   return { title, url: link.url, note, ...classify(link.url) };
 }
