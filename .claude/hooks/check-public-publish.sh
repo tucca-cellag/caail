@@ -201,17 +201,17 @@ grep -qiE 'Generated with \[?Claude|claude\.com/claude-code|Co-Authored-By:[[:sp
 # an inline-only publish (fully visible in the raw command) is not taxed.
 if (( SHSURFACE_OK == 0 )) \
    && grep -qE '(--body-file|--notes-file)([=[:space:]])|(^|[[:space:]])-F[[:space:]]|=@' <<<"$cmd"; then
-  leak_signals+=("a body FILE this hook could not reliably read: the shared shell classifier (scripts/lib/shsurface.sh) did not load, so a session link or attribution inside that file could not be ruled out — restore the library, or pass the body inline")
+  leak_signals+=("a body FILE this hook could not reliably read: the shared shell classifier (scripts/lib/shsurface.sh) did not load, so a session link or attribution inside that file could not be ruled out. Restore the library, or pass the body inline")
 fi
 
 if [[ ${#leak_signals[@]} -gt 0 ]] && ! consume_override "$leak_override_file"; then
   joined=$(printf '%s; ' "${leak_signals[@]}"); joined="${joined%; }"
   reason="This gh publish carries: ${joined}. Forbidden in every published payload, public or private."
-  ctx="BLOCKED by the public-publish guard (${RULE}). The payload — the command plus any --body-file/--notes-file it names — carries: ${joined}.
+  ctx="BLOCKED by the public-publish guard (${RULE}). The payload (the command plus any file it names with --body-file, --notes-file, -F or key=@) carries: ${joined}.
 
-This is INDEPENDENT of the destination's visibility: a session link or an attribution footer is forbidden in a public repo and a private one alike, so it is checked before the destination is resolved. The session link is the serious one — it can expose session contents — and should be DELETED, not overridden.
+This is INDEPENDENT of the destination's visibility: a session link or an attribution footer is forbidden in a public repo and a private one alike, so it is checked before the destination is resolved. The session link is the serious one, since it can expose session contents, and should be DELETED, not overridden.
 
-Remove the flagged text from the command and from any file it references, then re-run. If you are certain this is a false positive, INVOKE AskUserQuestion and offer: (a) Strip the flagged text (recommended); (b) Publish as-is — run \`touch ${leak_override_file}\` then immediately re-run the SAME command (single-use, expires in 60s; it skips only this check, and the provenance scan still runs); (c) Cancel. Do not bypass this by other means."
+Remove the flagged text from the command and from any file it references, then re-run. If you are certain this is a false positive, INVOKE AskUserQuestion and offer: (a) Strip the flagged text (recommended); (b) Publish as-is: run \`touch ${leak_override_file}\` then immediately re-run the SAME command (single-use, expires in 60s). It skips only this check. The rest of the guard still runs, which for a public or unresolved destination includes the provenance scan, while a private destination is passed through; (c) Cancel. Do not bypass this by other means."
   jq -nc --arg reason "$reason" --arg ctx "$ctx" \
     '{hookSpecificOutput:{hookEventName:"PreToolUse",permissionDecision:"deny",permissionDecisionReason:$reason,additionalContext:$ctx}}'
   exit 0
