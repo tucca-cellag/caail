@@ -4,11 +4,15 @@
  *   A. rewritePrimerUrl — internal/external classification + route mapping.
  *   B. buildPrimersModel — titles, ledes, embedded media, and rewritten links
  *      against the real canonical Primers/*.md files.
+ *   C. itemFromListItem — the note separator is stripped from the rendered note.
  */
 import { describe, it, expect } from 'vitest';
+import type { List } from 'mdast';
 import { SITE_BASE } from '../../src/content/site-config.ts';
 
 import { buildPrimersModel, rewritePrimerUrl } from './primers.js';
+import { parseMarkdown } from './markdown.js';
+import { itemFromListItem } from './media.js';
 
 // ---------------------------------------------------------------------------
 // A. rewritePrimerUrl
@@ -101,5 +105,47 @@ describe('buildPrimersModel', () => {
     expect(internal.every((i) => i.url.startsWith(`${SITE_BASE}/`))).toBe(true);
     // Internal links are never videos/playlists (those are always external media).
     expect(internal.every((i) => i.kind === 'link')).toBe(true);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// C. itemFromListItem: note separators
+// ---------------------------------------------------------------------------
+
+describe('itemFromListItem note separator', () => {
+  /** The first item of the first list in a Markdown snippet. */
+  const firstItem = (md: string) => {
+    const list = parseMarkdown(md).children.find((n): n is List => n.type === 'list');
+    if (!list) throw new Error('fixture has no list');
+    return itemFromListItem(list.children[0]);
+  };
+
+  it('drops the ": " separator the primers use, leaving no leading colon', () => {
+    expect(firstItem('* [A Title](https://example.org/a): the note text\n')).toMatchObject({
+      title: 'A Title',
+      url: 'https://example.org/a',
+      note: 'the note text',
+    });
+  });
+
+  it('still drops the " — " separator Talks.md uses', () => {
+    expect(firstItem('* [A Title](https://example.org/a) — the note text\n')?.note).toBe('the note text');
+  });
+
+  it('keeps a colon that follows a parenthetical rather than the title', () => {
+    expect(firstItem('* [A Title](https://example.org/a) (Venue, 2026): the note text\n')?.note).toBe(
+      '(Venue, 2026): the note text',
+    );
+  });
+
+  it('keeps a colon inside the link title', () => {
+    expect(firstItem('* [Course: Part One](https://example.org/a): the note text\n')).toMatchObject({
+      title: 'Course: Part One',
+      note: 'the note text',
+    });
+  });
+
+  it('gives an empty note to an item with no text after the link', () => {
+    expect(firstItem('* [A Title](https://example.org/a)\n')?.note).toBe('');
   });
 });
