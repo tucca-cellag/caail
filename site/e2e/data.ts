@@ -98,3 +98,10 @@ export function externalCardCount(slug: string): number {
     .flatMap((s) => s.items)
     .filter((i) => i.kind !== 'video' && !i.internal).length;
 }
+
+/** Single videos a primer embeds inline as `<lite-youtube>`, one per `video` item. */
+export function videoCount(slug: string): number {
+  const primer = primers.primers.find((p) => p.slug === slug);
+  if (!primer) throw new Error(`no primer with slug ${slug}`);
+  return primer.sections.flatMap((s) => s.items).filter((i) => i.kind === 'video').length;
+}
