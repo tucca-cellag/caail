@@ -4,9 +4,11 @@
  *
  * Each primer is a curated, two-audience entry point: "Cellular Agriculture for
  * AI researchers" (Primers/CellAg.md) and "AI for cell-ag researchers"
- * (Primers/AI.md). They follow the same authoring shape as Talks.md — an H1
- * title, a lede paragraph, then `##` sections whose bullet lists hold one link
- * per item — so the media helpers in media.ts do the heavy lifting.
+ * (Primers/AI.md). They follow nearly the same authoring shape as Talks.md: an
+ * H1 title, a lede paragraph, then `##` sections whose bullet lists hold one
+ * link per item, so the media helpers in media.ts do the heavy lifting. The one
+ * difference is the note separator, `: ` here and ` — ` in Talks.md, and
+ * itemFromListItem accepts both.
  *
  * What primers add on top of talks:
  *   - the H1 title and lede paragraph are lifted (talks has neither),

@@ -391,7 +391,7 @@ export const PrimerItemSchema = TalkItemSchema.extend({
 });
 
 export const PrimerSectionSchema = z.object({
-  /** H2 section heading, e.g. "Watch first — cellular agriculture foundations" */
+  /** H2 section heading, e.g. "Field foundations" */
   heading: z.string(),
   /** Section intro paragraph; '' if none */
   intro: z.string(),
