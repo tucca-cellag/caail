@@ -170,23 +170,16 @@ _collect_file() {
 # file over-reads at worst, which is the SAFE direction for a deny-on-presence
 # check; missing a quoted real path (the raw-grep failure mode) is not.
 #
-# A line that is some OTHER command is skipped. Over-reading is safe for the
-# verdict but not free: `grep -F <pattern-file>` or `awk -F` earlier in the
-# command named files gh never sees, and a session link in one of those denied
-# an ordinary publish, which trains people to reach for the override. Only lines
-# that START with another command word are skipped, never lines without `gh`:
-# the segment view splits at a `$(…)`, so in `--title "$(date)" --body-file f`
-# the body flag sits on a line of its own, and dropping every gh-less line left
-# that file unread.
+# Every line is read, deliberately, so `grep -F <file>` elsewhere in the
+# command gets its file scanned too. Narrowing this to gh's own flags was tried
+# twice and under-read both times, which is the unsafe direction: the segment
+# view splits at `$(…)`, so a body flag can sit on a line without `gh`
+# (`--title "$(date)" --body-file f`) or on one that starts with a word
+# (`--title $(date)suffix --body-file f`). A false deny on an over-read file is
+# visible and has an override; an unread body is silent.
 while IFS= read -r _bf; do _collect_file "$_bf"; done < <(
   shsurface_segments "$cmd" | awk '
-    { start = 1
-      if ($1 == "gh" || ($1 == "sudo" && $2 == "gh")) {
-        for (s = 1; s <= NF; s++) if ($s == "gh") { start = s + 1; break }
-      } else if ($1 ~ /^[A-Za-z_][A-Za-z0-9_.+-]*$/) {
-        next
-      }
-      for (i=start;i<=NF;i++) {
+    { for (i=1;i<=NF;i++) {
         if ($i=="--body-file"||$i=="--notes-file"||$i=="-F") { if (i+1<=NF) print $(i+1) }
         else if ($i ~ /^(--body-file|--notes-file)=/) { sub(/^[^=]+=/,"",$i); print $i }
         else if ($i ~ /=@/) { sub(/^.*=@/,"",$i); print $i }

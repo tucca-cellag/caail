@@ -130,6 +130,9 @@ A guardrail that lives only in one person's home directory is not a guardrail,
 it is a note to self. That is the same defect as citing a path a collaborator
 does not have.
 
-The override is `touch /tmp/claude-publish-override-<sha16>` then an immediate
-re-run: single-use, 60-second TTL, pinned to one exact command. Don't bypass the
-hook by other means, and don't assume a false positive without checking.
+Each deny names its own override file: `/tmp/claude-publish-leak-override-<sha16>`
+for the session-link and attribution deny, `/tmp/claude-publish-override-<sha16>`
+for the provenance deny. Touch the one the deny names, then re-run immediately:
+single-use, 60-second TTL, pinned to one exact command, and it skips only that
+deny. Don't bypass the hook by other means, and don't assume a false positive
+without checking.

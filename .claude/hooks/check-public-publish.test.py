@@ -712,11 +712,10 @@ for label, cmd in (
 ):
     dcheck(f"a session link in a file passed by {label} is read and refused", cmd, priv_co, "deny",
            needle="session link")
-dcheck("a file named by grep -F before the publish is not read as a body",
-       f"grep -F {leaky} {clean}; gh issue create --title t --body 'a plain note'",
-       pub_co, "allow", quiet=False)
-dcheck("a body file after a $( ) in the same command is still read",
+dcheck("a body file after a quoted $( ) in the same command is still read",
        f"gh pr create --title \"$(date)\" --body-file {leaky}", priv_co, "deny", needle="session link")
+dcheck("a body file after an unquoted $( ) with a suffix is still read",
+       f"gh pr create --title $(date)x --body-file {leaky}", priv_co, "deny", needle="session link")
 dcheck("a {owner}/{repo} typed into a graphql body does not move resolution to the checkout",
        "gh api -X POST graphql -f query='mutation { addComment(input: {body: \"see repos/{owner}/{repo}/issues, an api_key is in the logs\"}) { c } }'",
        priv_co, "deny")
