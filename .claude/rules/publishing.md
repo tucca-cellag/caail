@@ -114,8 +114,9 @@ so it protects anyone who clones — not only the machine it was written on.** A
 byte-identical copy at `~/.claude/hooks/` covers every other repo; the global
 copy detects the project copy and passes through, so `gh` is never queried
 twice. The hook reads a body passed in a file through the shared shell
-classifier, vendored at `.claude/scripts/lib/shsurface.sh` from
-`~/.claude/scripts/lib/`. It looks beside itself first, so a clone with no
+classifier, vendored in `.claude/scripts/lib/` from `~/.claude/scripts/lib/`
+(`shsurface.sh` and the `shsurface.py` parser it runs, which python3 must be
+present to use). It looks beside itself first, so a clone with no
 `~/.claude` still reads its body files, where without either copy it would
 refuse every publish whose body sits in a file. `check-public-publish.test.py`
 checks both copies against their global twins wherever those exist. Keep them

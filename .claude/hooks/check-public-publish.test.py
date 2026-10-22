@@ -84,14 +84,15 @@ if os.path.exists(HOOK_GLOB):
     print(f"\n=== the two copies have not drifted ===\n  [{ok}] project and global hook are byte-identical")
 
     # The hook reads body files through the shell classifier it finds beside
-    # itself first, so the vendored copy is part of what must not drift.
-    LIB_PROJ = os.path.abspath(".claude/scripts/lib/shsurface.sh")
-    LIB_GLOB = os.path.expanduser("~/.claude/scripts/lib/shsurface.sh")
-    if os.path.exists(LIB_GLOB):
-        same_lib = os.path.exists(LIB_PROJ) and filecmp.cmp(LIB_PROJ, LIB_GLOB, shallow=False)
-        ok = "PASS" if same_lib else "FAIL"
-        if not same_lib: fails += 1
-        print(f"  [{ok}] project and global shell classifier are byte-identical")
+    # itself first, so the vendored copy (front end and parser) must not drift.
+    for lib in ("shsurface.sh", "shsurface.py"):
+        lib_proj = os.path.abspath(f".claude/scripts/lib/{lib}")
+        lib_glob = os.path.expanduser(f"~/.claude/scripts/lib/{lib}")
+        if os.path.exists(lib_glob):
+            same_lib = os.path.exists(lib_proj) and filecmp.cmp(lib_proj, lib_glob, shallow=False)
+            ok = "PASS" if same_lib else "FAIL"
+            if not same_lib: fails += 1
+            print(f"  [{ok}] project and global {lib} are byte-identical")
 else:
     print("\n=== global hook not installed — skipping cross-copy checks ===")
     print("  [SKIP] this repo's own hook is what protects this repo; the global")
@@ -588,6 +589,21 @@ caught = got == "deny" and "session link" in why
 ok = "PASS" if caught else "FAIL"
 if not caught: fails += 1
 print(f"  [{ok}] a session link inside that file is still denied         want=deny  got={got}")
+
+# The cases above take the classifier's no-fork fast path (nothing quoted), so
+# they pass even if only the shell front end is vendored. A quoted command needs
+# shsurface.py; without it the library silently hands the input back unparsed,
+# and the hook cannot tell. Ask the vendored library directly, with no ~/.claude.
+fresh_env = {k: v for k, v in os.environ.items() if k != "SHSURFACE_PY"}
+fresh_env["HOME"] = fresh_home
+r = subprocess.run([BASH, "-c", '. "$1"; shsurface_argv "$2"', "_",
+                    os.path.abspath(".claude/scripts/lib/shsurface.sh"),
+                    'gh pr create --title "two words"'],
+                   capture_output=True, text=True, env=fresh_env)
+parsed = "\x1f" in r.stdout and "two words" in r.stdout
+ok = "PASS" if parsed else "FAIL"
+if not parsed: fails += 1
+print(f"  [{ok}] the vendored classifier parses a quoted command with no ~/.claude")
 
 # Cleanup sits HERE, after the last consumer of the fixture. It used to run ~190
 # lines earlier, so the "uncompared owners" case ran with GH_CONFIG_DIR pointing
