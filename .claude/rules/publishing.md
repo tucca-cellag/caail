@@ -93,7 +93,8 @@ repo owner, or security-finding vocabulary — requiring the three questions abo
 to be answered explicitly before an override.
 
 A destination it *cannot resolve* (no `gh`, no working login, no repository it
-can read) is not waved through in silence. It announces the failure and names
+can read, or a `gh api` call whose endpoint names no single repository) is not
+waved through in silence. It announces the failure and names
 the cause, treats the destination as public because it cannot be ruled out as
 one, and scans the payload anyway. Fail-open is kept for the inputs it has
 nothing to work with, such as malformed JSON on stdin. The realistic outage is
@@ -112,7 +113,13 @@ answer there and read the three questions before reaching for it.
 so it protects anyone who clones — not only the machine it was written on.** A
 byte-identical copy at `~/.claude/hooks/` covers every other repo; the global
 copy detects the project copy and passes through, so `gh` is never queried
-twice. Keep the two in sync (`diff` them); this file is likewise mirrored at
+twice. The hook reads a body passed in a file through the shared shell
+classifier, vendored at `.claude/scripts/lib/shsurface.sh` from
+`~/.claude/scripts/lib/`. It looks beside itself first, so a clone with no
+`~/.claude` still reads its body files, where without either copy it would
+refuse every publish whose body sits in a file. `check-public-publish.test.py`
+checks both copies against their global twins wherever those exist. Keep them
+in sync (`diff` them); this file is likewise mirrored at
 `~/.claude/docs/rules/publishing.md`, which is the path the hook itself cites.
 **Not** `~/.claude/rules/publishing.md`: that is a condensed always-on summary
 that points here, so anyone who followed the old path in this sentence and
