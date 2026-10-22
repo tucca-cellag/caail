@@ -210,4 +210,10 @@ describe('itemFromListItem note separator', () => {
     expect(firstItem('* [A Title](https://example.org/a): -80 °C storage\n')?.note).toBe('-80 °C storage');
     expect(firstItem('* [A Title](https://example.org/a) — -80 °C storage\n')?.note).toBe('-80 °C storage');
   });
+
+  it('takes a hyphen as a separator only with a space on each side', () => {
+    expect(firstItem('* [A Title](https://example.org/a) - the note text\n')?.note).toBe('the note text');
+    expect(firstItem('* [A Title](https://example.org/a) -80 °C storage\n')?.note).toBe('-80 °C storage');
+    expect(firstItem('* [PyTorch](https://pytorch.org)-based tutorials\n')?.note).toBe('-based tutorials');
+  });
 });
