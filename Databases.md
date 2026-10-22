@@ -654,7 +654,7 @@ The official registry of the WHO/IUIS Allergen Nomenclature Sub-Committee, the r
 
 ### [AllergenOnline (FARRP)](http://www.allergenonline.org/)
 
-Peer-reviewed, sequence-searchable allergen database maintained by the Food Allergy Research and Resource Program at the University of Nebraska and updated annually. It is the standard reference set for the Codex sequence-homology search and backs the Allermatch and AllerCatPro screening pipelines, making it a primary resource for assessing the allergenic risk of cell-ag novel proteins.
+Peer-reviewed, sequence-searchable allergen database maintained by the Food Allergy Research and Resource Program at the University of Nebraska and updated annually. It is the standard reference set for the Codex sequence-homology search and is one of the allergen sources in AllerCatPro's reference dataset, making it a primary resource for assessing the allergenic risk of cell-ag novel proteins.
 
 ### [COMPARE Database](http://www.comparedatabase.org)
 
