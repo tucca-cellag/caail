@@ -115,10 +115,12 @@ byte-identical copy at `~/.claude/hooks/` covers every other repo; the global
 copy detects the project copy and passes through, so `gh` is never queried
 twice. The hook reads a body passed in a file through the shared shell
 classifier, vendored in `.claude/scripts/lib/` from `~/.claude/scripts/lib/`
-(`shsurface.sh` and the `shsurface.py` parser it runs, which python3 must be
-present to use). It looks beside itself first, so a clone with no
-`~/.claude` still reads its body files, where without either copy it would
-refuse every publish whose body sits in a file. `check-public-publish.test.py`
+(`shsurface.sh` and the `shsurface.py` parser it runs). It looks beside
+itself first, so a clone with no `~/.claude` still reads its body files. If
+`shsurface.sh` loads from neither place, the hook refuses every publish whose
+body sits in a file. If it loads but python3 or `shsurface.py` is missing, the
+classifier hands the command back unparsed without saying so, and body-file
+paths are read from the raw text. `check-public-publish.test.py`
 checks both copies against their global twins wherever those exist. Keep them
 in sync (`diff` them); this file is likewise mirrored at
 `~/.claude/docs/rules/publishing.md`, which is the path the hook itself cites.

@@ -11,19 +11,19 @@
 #
 # Three behaviours, per .claude/rules/publishing.md:
 #
-#   0. LEAK DENY (any destination) — a Claude session link or attribution
+#   0. LEAK DENY (any destination): a Claude session link or attribution
 #      footer anywhere in the payload is refused before the destination is even
 #      resolved, because it discloses a session to anyone who can read a private
 #      repo as much as a public one.
 #
-#   1. ANNOUNCE (always, non-blocking) — every publish into a public repo gets
+#   1. ANNOUNCE (always, non-blocking): every publish into a public repo gets
 #      the destination's visibility injected into context. Costs nothing and
 #      makes "is this public?" impossible to not notice. A destination that
 #      could NOT be resolved is announced too, naming why: this guard's most
 #      likely failure is going quiet, and a silent pass reads exactly like
 #      "checked it, nothing to worry about".
 #
-#   2. DENY (only on risk signals) — a public destination whose payload carries
+#   2. DENY (only on risk signals): a public destination whose payload carries
 #      a fenced code block, a foreign github.com owner, or security-finding
 #      vocabulary is blocked pending an explicit provenance confirmation.
 #      An UNRESOLVED destination is handled as a public one here, because it
@@ -137,8 +137,8 @@ SHSURFACE_LIB="${BASH_SOURCE[0]%/*}/../scripts/lib/shsurface.sh"
 [ -r "$SHSURFACE_LIB" ] && . "$SHSURFACE_LIB"
 # Without the classifier the file-flag extraction below degrades to whitespace
 # splitting of the raw command, which can miss a real --body-file (a path with
-# spaces, unusual quoting). Inline text and heredocs are unaffected — they sit in
-# the raw command, which is scanned whole — but a file this hook fails to read is
+# spaces, unusual quoting). Inline text and heredocs are unaffected, since they sit
+# in the raw command, which is scanned whole, but a file this hook fails to read is
 # a body it never checked. Record the degradation so a file-carrying publish
 # fails CLOSED below instead of passing on a partial read.
 SHSURFACE_OK=1
@@ -162,9 +162,11 @@ _collect_file() {
   [[ -r $f ]] || return 0
   payload+=$'\n'$(head -c 100000 "$f" 2>/dev/null)
 }
-# File-passing flags, read from the shared classifier's SEGMENT view (CLAUDE-40)
-# so a quoted path is kept verbatim and a `--body-file` sitting inside quoted
-# prose is not mistaken for a real flag. Covers --body-file / --notes-file
+# File-passing flags, read from the shared classifier's SEGMENT view (CLAUDE-40),
+# which splits the command at its code-level separators. awk then splits each
+# segment on whitespace, quoted text included, so a flag-like word inside quoted
+# prose is read too (an over-read, the safe direction), and a quoted path that
+# contains a space is cut at the space and not read. Covers --body-file / --notes-file
 # (pr/issue/release create, `=` or space form), a bare `-F <path>` (gh's short
 # --body-file), and a `key=@<path>` field (gh api). Scanning an extra referenced
 # file over-reads at worst, which is the SAFE direction for a deny-on-presence
@@ -204,7 +206,14 @@ if (( SHSURFACE_OK == 0 )) \
   leak_signals+=("a body FILE this hook could not reliably read: the shared shell classifier (scripts/lib/shsurface.sh) did not load, so a session link or attribution inside that file could not be ruled out. Restore the library, or pass the body inline")
 fi
 
-if [[ ${#leak_signals[@]} -gt 0 ]] && ! consume_override "$leak_override_file"; then
+# Remembered for the provenance deny below: when one payload trips both, the
+# leak override is spent on the run that reaches the provenance deny, so that
+# deny has to ask for both files again or the user can never get through.
+leak_override_used=0
+if [[ ${#leak_signals[@]} -gt 0 ]] && consume_override "$leak_override_file"; then
+  leak_override_used=1
+fi
+if [[ ${#leak_signals[@]} -gt 0 ]] && (( leak_override_used == 0 )); then
   joined=$(printf '%s; ' "${leak_signals[@]}"); joined="${joined%; }"
   reason="This gh publish carries: ${joined}. Forbidden in every published payload, public or private."
   ctx="BLOCKED by the public-publish guard (${RULE}). The payload (the command plus any file it names with --body-file, --notes-file, -F or key=@) carries: ${joined}.
@@ -569,7 +578,7 @@ fi
 # raw command (heredoc bodies and --body "..." text included) plus the contents
 # of every --body-file/--notes-file/-F/`key=@path` file the command names. It is
 # reused here verbatim, so the provenance signals below see the file contents
-# too — which the old body-file-at-the-end gathering did only for a PUBLIC repo,
+# too, which the old body-file-at-the-end gathering did only for a PUBLIC repo,
 # and only for the first bare `--body-file`.
 
 # --- Risk signals ---------------------------------------------------------
@@ -652,6 +661,9 @@ if consume_override "$override_file"; then
 fi
 
 joined=$(printf '%s; ' "${signals[@]}"); joined="${joined%; }"
+prov_touch="\`touch ${override_file}\`"
+(( leak_override_used == 1 )) \
+  && prov_touch="\`touch ${leak_override_file} ${override_file}\` (both: the session-link override approved earlier was spent on this run)"
 reason="Publishing to ${repo} (${vis_tag}) with: ${joined}."
 
 ctx="BLOCKED by the public-publish provenance guard (${RULE}). Destination: ${repo}, ${vis_phrase}. Payload contains: ${joined}.${owner_note}
@@ -661,7 +673,7 @@ Before retrying, verify EACH of these and state the answers explicitly:
   2. SECURITY — does this describe a weakness in a live service (missing auth, absent rate limiting, an exposed key, an injection path)? If the service is not yours, it goes to its owner privately. If it is yours and unpatched, do not pair the weakness with a live hostname or endpoint.
   3. DESTINATION — is a public tracker the right venue at all, versus a private channel to the code's owner?
 
-If all three are clear, INVOKE AskUserQuestion and offer: (a) Publish as-is — run \`touch ${override_file}\` then immediately re-run the SAME command (single-use, expires in 60s); (b) Revise the payload to remove the flagged content; (c) Cancel and route it privately instead. Do not bypass this by other means, and do not assume a false positive without checking."
+If all three are clear, INVOKE AskUserQuestion and offer: (a) Publish as-is: run ${prov_touch} then immediately re-run the SAME command (single-use, expires in 60s); (b) Revise the payload to remove the flagged content; (c) Cancel and route it privately instead. Do not bypass this by other means, and do not assume a false positive without checking."
 
 jq -nc --arg reason "$reason" --arg ctx "$ctx" \
   '{hookSpecificOutput:{hookEventName:"PreToolUse",permissionDecision:"deny",permissionDecisionReason:$reason,additionalContext:$ctx}}'

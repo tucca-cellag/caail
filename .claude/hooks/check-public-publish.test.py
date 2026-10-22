@@ -647,7 +647,7 @@ def dcheck(label, cmd, cwd, want, needle=None, absent=None, quiet=None, hook=Non
     got, why, ctx = run(hook or HOOK_PROJ, cmd, {**DBL, **(env or {})}, cwd=cwd)
     text = why + ctx
     good = (got == want
-            and (needle is None or needle in text)
+            and (needle is None or all(n in text for n in (needle if isinstance(needle, tuple) else (needle,))))
             and (absent is None or absent not in text)
             and (quiet is None or (ctx == "") == quiet))
     if not good: fails += 1
@@ -680,8 +680,12 @@ both = f"gh issue create --title t --body 'Co-Authored-By: Claude, and {FENCE}x{
 dcheck("attribution plus a fenced block is first denied for the attribution",
        both, pub_co, "deny", needle="attribution")
 open(override_path(both, "leak-"), "w").close()
-dcheck("the leak override lets it past the leak scan only: the fence still denies",
-       both, pub_co, "deny", needle="fenced code block")
+dcheck("the leak override lets it past the leak scan only: the fence still denies, asking for both files",
+       both, pub_co, "deny", needle=("fenced code block", override_path(both, "leak-")))
+open(override_path(both, "leak-"), "w").close()
+open(override_path(both, ""), "w").close()
+dcheck("with both overrides fresh, a payload that tripped both denies goes through",
+       both, pub_co, "allow", quiet=True)
 leak_and_fence = f"gh issue create --title t --body 'see {SESSION} and {FENCE}y{FENCE}'"
 prov = override_path(leak_and_fence, "")
 open(prov, "w").close()
@@ -697,7 +701,7 @@ dcheck("the footer text is still refused, in a private repo too",
        "gh pr create --title t --body 'Generated with [Claude Code](https://claude.com/claude-code)'",
        priv_co, "deny", needle="attribution")
 
-# Every file flag gh takes is read, and only flags that follow gh count.
+# Every file flag gh takes is read.
 leaky = os.path.join(dbl, "leaky.md")
 with open(leaky, "w") as f:
     f.write(f"Context: {SESSION}\n")
