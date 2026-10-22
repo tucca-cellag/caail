@@ -56,8 +56,10 @@ export function itemFromListItem(item: ListItem): TalkItem | null {
   const title = mdastToString(link).trim();
   const full = mdastToString(item).trim();
   // `note` = the item text after the link title (venue/year/blurb), minus the
-  // leading separator: `: ` in the primers, ` — ` in Talks.md.
-  const note = full.startsWith(title) ? full.slice(title.length).replace(/^[\s:—–-]+/, '').trim() : '';
+  // leading separator: `: ` in the primers, ` — ` in Talks.md. Exactly one
+  // separator is removed, so a note that itself opens with a dash or a minus
+  // sign ("-80 °C …") keeps it.
+  const note = full.startsWith(title) ? full.slice(title.length).replace(/^\s*(?::|[—–-])\s*/, '').trim() : '';
 
   return { title, url: link.url, note, ...classify(link.url) };
 }

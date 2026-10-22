@@ -181,4 +181,9 @@ describe('itemFromListItem note separator', () => {
   it('gives an empty note to an item with no text after the link', () => {
     expect(firstItem('* [A Title](https://example.org/a)\n')?.note).toBe('');
   });
+
+  it('strips one separator only, so a note starting with a minus sign keeps it', () => {
+    expect(firstItem('* [A Title](https://example.org/a): -80 °C storage\n')?.note).toBe('-80 °C storage');
+    expect(firstItem('* [A Title](https://example.org/a) — -80 °C storage\n')?.note).toBe('-80 °C storage');
+  });
 });
