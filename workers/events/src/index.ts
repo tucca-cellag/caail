@@ -26,9 +26,10 @@ export interface Env {
   ALLOWED_ORIGIN: string;
   /**
    * Cloudflare rate limiting binding, configured in wrangler.toml. Typed
-   * structurally rather than as workers-types' `RateLimit` for the same reason
-   * as {@link AnalyticsEnginePoint}: this module compiles and tests with no
-   * ambient platform types, and the surface it uses is one method.
+   * structurally rather than with the `RateLimit` type from
+   * @cloudflare/workers-types, for the same reason as {@link AnalyticsEnginePoint}:
+   * this module needs no ambient platform types, and the surface it uses is one
+   * method.
    */
   RATE_LIMITER: { limit: (options: { key: string }) => Promise<{ success: boolean }> };
 }
