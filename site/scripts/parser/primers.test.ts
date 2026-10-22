@@ -94,7 +94,7 @@ describe('buildPrimersModel', () => {
   it('carries the AI primer fundamentals as external playlists', () => {
     const fundamentals = model.primers[1].sections[0];
     const playlists = fundamentals.items.filter((i) => i.kind === 'playlist');
-    expect(playlists.length).toBe(7);
+    expect(playlists.length).toBe(10);
     expect(playlists.every((p) => !p.internal)).toBe(true);
   });
 
