@@ -57,10 +57,10 @@ export function itemFromListItem(item: ListItem): TalkItem | null {
   const full = mdastToString(item).trim();
   // `note` = the item text after the link title (venue/year/blurb), minus the
   // leading separator: `: ` in the primers, ` — ` in Talks.md. Exactly one
-  // separator is removed, and a plain hyphen counts only with a space on each
-  // side, so a note that opens with a minus sign (" -80 °C …") or text joined
-  // to the link ("-based …") keeps its first character.
-  const note = full.startsWith(title) ? full.slice(title.length).replace(/^\s*(?::|[—–]|\s-\s)\s*/, '').trim() : '';
+  // separator is removed, and a plain hyphen (or a typed "--") counts only with
+  // a space on each side, so a note that opens with a minus sign (" -80 °C …")
+  // or text joined to the link ("-based …") keeps its first character.
+  const note = full.startsWith(title) ? full.slice(title.length).replace(/^\s*(?::|[—–]|\s--?\s)\s*/, '').trim() : '';
 
   return { title, url: link.url, note, ...classify(link.url) };
 }
