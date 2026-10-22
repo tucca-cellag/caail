@@ -4426,7 +4426,7 @@
         "Data": "[`GSE173196`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE173196)",
         "Type": "RNA-seq",
         "Tissue": "Muscle",
-        "Description": "Bulk RNA-seq of the serum-free arm: growth in 20% FBS medium or serum-free growth medium (SFGM), then 72 h differentiation in 2% FBS medium, serum-free base (SFB), serum-free DMEM/F-12 (SFDM) or DMEM; sampled at 0 h and 72 h in biological triplicates; 18 libraries. Subseries of [`GSE173199`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE173199)",
+        "Description": "Bulk RNA-seq of the serum-free arm: growth in 20% FBS medium or serum-free growth medium (SFGM), then 72 h differentiation in 2% FBS medium, serum-free base (SFB), serum-free DMEM/F-12 (SFDM) or DMEM-based serum-free differentiation medium (DMEM); sampled at 0 h and 72 h in biological triplicates; 18 libraries. Subseries of [`GSE173199`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE173199)",
         "Size": "—",
         "Area of research": "Cultured meat"
       },
