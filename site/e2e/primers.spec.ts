@@ -25,7 +25,7 @@ test('homepage "Start here" cards link to the primers and the tools', async ({ p
 
 test('cell-ag primer embeds the field-foundation videos and resolves its nav links', async ({ page }) => {
   await page.goto('./primers/cell-ag/');
-  await expect(page.getByRole('heading', { name: 'Watch first — field foundations' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Field foundations' })).toBeVisible();
   expect(await page.locator('lite-youtube').count()).toBe(5); // the five field-foundation videos
   // Internal CAAIL nav cards: same-tab links to real site routes (with anchors kept).
   await expect(page.locator('a.primer-nav[href="/papers/explorer/"]')).toHaveCount(1);
