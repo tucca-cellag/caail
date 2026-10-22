@@ -102,6 +102,95 @@ if [[ -f $override_file ]]; then
   rm -f "$override_file"  # stale
 fi
 
+# --- Highest-severity, visibility-INDEPENDENT scan ------------------------
+# A Claude session link (claude.ai/code/session…) and the Claude attribution
+# footer are a DIFFERENT risk class from the provenance signals further down.
+# Those only bite on a PUBLIC destination, because the data-leak they guard
+# against does not apply to a repo nobody outside can read. A session link does:
+# it discloses the CONTENTS of a Claude session to anyone who can read the
+# published text, so it is forbidden in a PUBLIC and a PRIVATE destination alike,
+# as is the attribution footer (rules/publishing.md, rules/conventional-commits.md).
+#
+# This is the exact door the originating incident walked in. A
+# `gh pr create --body-file <f>` into a PRIVATE repo, whose file carried both a
+# session link and the footer, hit the `vis != PUBLIC` short-circuit below and
+# was waved through before the payload was ever read. So this scan runs HERE,
+# ahead of destination resolution, and denies unconditionally.
+SHSURFACE_LIB="${BASH_SOURCE[0]%/*}/../scripts/lib/shsurface.sh"
+[ -r "$SHSURFACE_LIB" ] || SHSURFACE_LIB="$HOME/.claude/scripts/lib/shsurface.sh"
+# shellcheck source=../scripts/lib/shsurface.sh
+[ -r "$SHSURFACE_LIB" ] && . "$SHSURFACE_LIB"
+# Without the classifier the file-flag extraction below degrades to whitespace
+# splitting of the raw command, which can miss a real --body-file (a path with
+# spaces, unusual quoting). Inline text and heredocs are unaffected — they sit in
+# the raw command, which is scanned whole — but a file this hook fails to read is
+# a body it never checked. Record the degradation so a file-carrying publish
+# fails CLOSED below instead of passing on a partial read.
+SHSURFACE_OK=1
+if ! command -v shsurface_segments >/dev/null 2>&1; then
+  SHSURFACE_OK=0
+  shsurface_segments() { printf '%s' "$1"; }
+fi
+
+# Build the published payload ONCE and reuse it for the provenance scan below.
+# The raw command already carries inline --body/-b text and heredoc bodies; add
+# the contents of every file the command hands to gh.
+payload="$cmd"
+_collect_file() {
+  local f="$1"
+  # The segment view keeps quoted text verbatim, quote characters included, so a
+  # `--body-file "/path"` arrives as `"/path"`. Strip the quotes the way the old
+  # raw-grep gathering did, then expand a leading `~`.
+  f="${f//\"/}"; f="${f//\'/}"
+  [[ -z $f || $f == "-" ]] && return 0
+  f="${f/#\~/$HOME}"
+  [[ -r $f ]] || return 0
+  payload+=$'\n'$(head -c 100000 "$f" 2>/dev/null)
+}
+# File-passing flags, read from the shared classifier's SEGMENT view (CLAUDE-40)
+# so a quoted path is kept verbatim and a `--body-file` sitting inside quoted
+# prose is not mistaken for a real flag. Covers --body-file / --notes-file
+# (pr/issue/release create, `=` or space form), a bare `-F <path>` (gh's short
+# --body-file), and a `key=@<path>` field (gh api). Scanning an extra referenced
+# file over-reads at worst, which is the SAFE direction for a deny-on-presence
+# check; missing a quoted real path (the raw-grep failure mode) is not.
+while IFS= read -r _bf; do _collect_file "$_bf"; done < <(
+  shsurface_segments "$cmd" | awk '
+    { for (i=1;i<=NF;i++) {
+        if ($i=="--body-file"||$i=="--notes-file"||$i=="-F") { if (i+1<=NF) print $(i+1) }
+        else if ($i ~ /^(--body-file|--notes-file)=/) { sub(/^[^=]+=/,"",$i); print $i }
+        else if ($i ~ /=@/) { sub(/^.*=@/,"",$i); print $i }
+      } }'
+)
+
+# Scanned on the RAW payload so a link survives any quoting style, including a
+# heredoc body — the same reason the commit-message hook scans attribution raw.
+leak_signals=()
+grep -qiE 'claude\.ai/code/session' <<<"$payload" \
+  && leak_signals+=("a Claude session link (claude.ai/code/session…), which exposes the contents of a Claude session to anyone who can read the published text")
+grep -qiE 'Generated with \[?Claude|claude\.com/claude-code|Co-Authored-By:[[:space:]]*(Claude|Anthropic)|Claude-Session:|🤖' <<<"$payload" \
+  && leak_signals+=("Claude attribution (a 'Generated with Claude Code' / claude.com/claude-code footer, a 'Co-Authored-By: Claude' or 'Claude-Session:' trailer, or the 🤖 marker)")
+# Fail closed when the body lives in a file and the classifier is missing: the
+# scan above may not have read that file at all. Scoped to file-passing flags so
+# an inline-only publish (fully visible in the raw command) is not taxed.
+if (( SHSURFACE_OK == 0 )) \
+   && grep -qE '(--body-file|--notes-file)([=[:space:]])|(^|[[:space:]])-F[[:space:]]|=@' <<<"$cmd"; then
+  leak_signals+=("a body FILE this hook could not reliably read: the shared shell classifier (scripts/lib/shsurface.sh) did not load, so a session link or attribution inside that file could not be ruled out — restore the library, or pass the body inline")
+fi
+
+if [[ ${#leak_signals[@]} -gt 0 ]]; then
+  joined=$(printf '%s; ' "${leak_signals[@]}"); joined="${joined%; }"
+  reason="This gh publish carries: ${joined}. Forbidden in every published payload, public or private."
+  ctx="BLOCKED by the public-publish guard (${RULE}). The payload — the command plus any --body-file/--notes-file it names — carries: ${joined}.
+
+This is INDEPENDENT of the destination's visibility: a session link or an attribution footer is forbidden in a public repo and a private one alike, so it is checked before the destination is resolved. The session link is the serious one — it can expose session contents — and should be DELETED, not overridden.
+
+Remove the flagged text from the command and from any file it references, then re-run. If you are certain this is a false positive, INVOKE AskUserQuestion and offer: (a) Strip the flagged text (recommended); (b) Publish as-is — run \`touch ${override_file}\` then immediately re-run the SAME command (single-use, expires in 60s); (c) Cancel. Do not bypass this by other means."
+  jq -nc --arg reason "$reason" --arg ctx "$ctx" \
+    '{hookSpecificOutput:{hookEventName:"PreToolUse",permissionDecision:"deny",permissionDecisionReason:$reason,additionalContext:$ctx}}'
+  exit 0
+fi
+
 # --- Resolve the destination repo and its visibility ----------------------
 # An explicit --repo/-R wins; otherwise gh infers from the directory the command
 # will actually run in — which is NOT necessarily this hook's cwd.
@@ -231,7 +320,21 @@ dest=$(grep -oE '(--repo|-R) +[^ ]+' <<<"$cmd" | head -n1 | awk '{print $2}' | t
 #
 # An `api` call whose endpoint cannot be read resolves to nothing rather than
 # falling back to that scrape, for the same reason.
+#
+# `$api_call` is what makes that sentence true of the DIRECTORY fallbacks below
+# as well, and it is not a refinement: without it, clearing `$dest` here dropped
+# straight into `if [[ -z $dest ]]` and the destination came from `cd`, or from
+# the session's own cwd, which is the one thing an api call's destination can
+# never be. Measured on this hook, from a private checkout:
+# `gh api -X POST repos/me/mine/issues -f body='… repos/other/thing/issues …'`
+# resolved to the private cwd, took the `vis != PUBLIC` short-circuit below, and
+# passed the payload through unscanned and unannounced. Two disagreeing tokens
+# are the documented way to reach that, and a body is free to supply the second
+# one. The comment above already described the safe behaviour; the code did the
+# opposite of it.
+api_call=0
 if grep -qE '^(sudo[[:space:]]+)?gh[[:space:]]+api([[:space:]]|$)' <<<"$publish_seg"; then
+  api_call=1
   api_dest=$(grep -oE 'repos/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/(issues|comments|releases|pulls)' <<<"$publish_seg" \
     | sed -E 's|^repos/([^/]+/[^/]+)/.*|\1|' | sort -u)
   if [[ -n $api_dest && $(printf '%s\n' "$api_dest" | wc -l) -eq 1 ]]; then
@@ -242,7 +345,7 @@ if grep -qE '^(sudo[[:space:]]+)?gh[[:space:]]+api([[:space:]]|$)' <<<"$publish_
 fi
 
 cd_dir=""
-if [[ -z $dest ]]; then
+if [[ -z $dest && $api_call -eq 0 ]]; then
   # First `cd` at the start of the command or of a segment, and — this is the part
   # that was missing — only one that runs BEFORE the publishing verb. Only such a
   # `cd` can change where the publish lands.
@@ -292,9 +395,20 @@ gh_bounded() {  # gh_bounded <seconds> <gh args…>
 if ! command -v gh >/dev/null 2>&1; then
   unresolved="\`gh\` is not installed"
 else
+  # Whether an auth lapse is a candidate explanation at all. It is one only
+  # where `gh` was actually asked something and did not answer.
+  probe_auth=1
   if [[ -n $dest ]]; then
     meta=$(gh_bounded 10 repo view "$dest" --json nameWithOwner,visibility 2>/dev/null)
     [[ -z $meta ]] && unresolved="\`gh\` could not read '${dest}'"
+  elif [[ $api_call -eq 1 ]]; then
+    # The endpoint is the only destination an api call has, and this one could
+    # not be read: either no `repos/<owner>/<repo>/…` token at all, or several
+    # that disagree. Asking a directory instead answers a different question, so
+    # this stays unresolved, which announces and scans rather than guessing. No
+    # `gh` call is made, because there is nothing to ask about.
+    unresolved="this is a \`gh api\` call and its endpoint could not be read unambiguously, so no destination repository was named"
+    probe_auth=0
   elif [[ -n $cd_dir ]]; then
     meta=$( (cd "$cd_dir" 2>/dev/null && gh_bounded 10 repo view --json nameWithOwner,visibility 2>/dev/null) )
     # A cd we could not follow is not the same as "no repo here", and must not be
@@ -312,7 +426,10 @@ else
   # at 5s rather than 10: this is diagnostic wording, and the one time it runs is
   # the one time the network may be hanging, where it would otherwise double the
   # stall in front of every publish.
-  if [[ -n $unresolved ]] && ! gh_bounded 5 auth status >/dev/null 2>&1; then
+  # Not probed where nothing was asked of `gh`: a working login would not have
+  # changed the answer, and naming one as a cause sends the reader after a fault
+  # that is not there.
+  if [[ -n $unresolved && $probe_auth -eq 1 ]] && ! gh_bounded 5 auth status >/dev/null 2>&1; then
     unresolved+="; \`gh auth status\` reports no working login (an expired token, no token, or an unreachable github.com all land here)"
   fi
 fi
@@ -399,13 +516,12 @@ else
 fi
 
 # --- Gather the payload ---------------------------------------------------
-# The command string already contains heredoc bodies and --body "..." text.
-# --body-file points elsewhere, so pull that in too.
-payload="$cmd"
-body_file=$(grep -oE '\--body-file +[^ ]+' <<<"$cmd" | head -n1 | awk '{print $2}' | tr -d "\"'")
-if [[ -n $body_file && $body_file != "-" && -r $body_file ]]; then
-  payload+=$'\n'$(head -c 100000 "$body_file" 2>/dev/null)
-fi
+# Already built above, before the visibility short-circuit, as `$payload`: the
+# raw command (heredoc bodies and --body "..." text included) plus the contents
+# of every --body-file/--notes-file/-F/`key=@path` file the command names. It is
+# reused here verbatim, so the provenance signals below see the file contents
+# too — which the old body-file-at-the-end gathering did only for a PUBLIC repo,
+# and only for the first bare `--body-file`.
 
 # --- Risk signals ---------------------------------------------------------
 signals=()

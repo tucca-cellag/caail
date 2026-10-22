@@ -82,6 +82,16 @@ if os.path.exists(HOOK_GLOB):
     ok = "PASS" if same else "FAIL"
     if not same: fails += 1
     print(f"\n=== the two copies have not drifted ===\n  [{ok}] project and global hook are byte-identical")
+
+    # The hook reads body files through the shell classifier it finds beside
+    # itself first, so the vendored copy is part of what must not drift.
+    LIB_PROJ = os.path.abspath(".claude/scripts/lib/shsurface.sh")
+    LIB_GLOB = os.path.expanduser("~/.claude/scripts/lib/shsurface.sh")
+    if os.path.exists(LIB_GLOB):
+        same_lib = os.path.exists(LIB_PROJ) and filecmp.cmp(LIB_PROJ, LIB_GLOB, shallow=False)
+        ok = "PASS" if same_lib else "FAIL"
+        if not same_lib: fails += 1
+        print(f"  [{ok}] project and global shell classifier are byte-identical")
 else:
     print("\n=== global hook not installed — skipping cross-copy checks ===")
     print("  [SKIP] this repo's own hook is what protects this repo; the global")
@@ -545,6 +555,39 @@ surfaced = got == "allow" and "someoneelse" in ctx
 ok = "PASS" if surfaced else "FAIL"
 if not surfaced: fails += 1
 print(f"  [{ok}] uncompared owners are still named in the announcement")
+
+# --- a fresh clone has no ~/.claude: the vendored classifier is what it gets ---
+# The hook reads a body file through scripts/lib/shsurface.sh, looking beside
+# itself first (.claude/scripts/lib/ in this repo) and then under ~/.claude.
+# Where neither loads, it denies every publish whose body sits in a file, since
+# it cannot rule out what the file holds. A clone has no ~/.claude, so the copy
+# this repo vendors is what keeps a fresh clone able to publish from a file.
+# Both directions: an ordinary body passes, and a body carrying a session link
+# is still denied, which shows the file was read rather than skipped.
+print("\n=== a fresh clone, with no ~/.claude, still reads a body file ===")
+fresh_home = os.path.join(tmp, "fresh-home")
+os.makedirs(fresh_home, exist_ok=True)
+FRESH = {**NO_AUTH, "HOME": fresh_home, "CLAUDE_PROJECT_DIR": proj}
+
+plain_body = os.path.join(tmp, "plain-body.md")
+with open(plain_body, "w") as f:
+    f.write("Adds one paper to the matrix.\n")
+got, why, ctx = run(HOOK_PROJ, f'{P} --title "feat: add paper" --body-file {plain_body}',
+                    FRESH, cwd=proj, unset=NO_TOKENS)
+readable = got == "allow" and "could not reliably read" not in why + ctx
+ok = "PASS" if readable else "FAIL"
+if not readable: fails += 1
+print(f"  [{ok}] an ordinary body file passes on the vendored classifier  want=allow got={got}")
+
+leaky_body = os.path.join(tmp, "leaky-body.md")
+with open(leaky_body, "w") as f:
+    f.write("See https://claude.ai/code/" + "session_0123 for context.\n")
+got, why, _ = run(HOOK_PROJ, f'{P} --title "feat: add paper" --body-file {leaky_body}',
+                  FRESH, cwd=proj, unset=NO_TOKENS)
+caught = got == "deny" and "session link" in why
+ok = "PASS" if caught else "FAIL"
+if not caught: fails += 1
+print(f"  [{ok}] a session link inside that file is still denied         want=deny  got={got}")
 
 # Cleanup sits HERE, after the last consumer of the fixture. It used to run ~190
 # lines earlier, so the "uncompared owners" case ran with GH_CONFIG_DIR pointing
