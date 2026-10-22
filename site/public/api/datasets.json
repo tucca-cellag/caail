@@ -3243,7 +3243,7 @@
         "Data": "[`GSE173199`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE173199)",
         "Type": "RNA-seq",
         "Tissue": "Muscle",
-        "Description": "GEO SuperSeries pairing a serum-starvation differentiation timecourse (20%→2% FBS, harvested 0/24/48/72/96 h in biological quadruplicates, [`GSE173198`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE173198)) with a serum-free differentiation comparison against 20% FBS at 0 h and 72 h in triplicate ([`GSE173196`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE173196)); the two arms are deposited separately and neither is reachable from this accession alone",
+        "Description": "GEO SuperSeries pairing a serum-starvation differentiation timecourse (20%→2% FBS, harvested 0/24/48/72/96 h in biological quadruplicates, [`GSE173198`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE173198)) with a serum-free differentiation comparison in triplicate, sampled at 0 h in 20% FBS or serum-free growth medium and after 72 h of differentiation in 2% FBS medium or one of three serum-free media ([`GSE173196`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE173196)); the two arms are deposited separately and neither is reachable from this accession alone",
         "Size": "93.25 Gb",
         "Area of research": "Cultured meat"
       },
