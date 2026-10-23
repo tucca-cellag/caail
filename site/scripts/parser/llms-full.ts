@@ -51,6 +51,8 @@ export function llmsFullSources(repoRoot: string = REPO_ROOT): string[] {
   return [
     'README.md',
     'Papers.md',
+    // The matrix's row and column definitions, right after the matrix they define.
+    'Taxonomy.md',
     'Software.md',
     'Databases.md',
     'FieldReports.md',
@@ -58,6 +60,7 @@ export function llmsFullSources(repoRoot: string = REPO_ROOT): string[] {
     ...dirMarkdown(repoRoot, 'ResearchAreas'),
     ...dirMarkdown(repoRoot, 'Methods'),
     ...dirMarkdown(repoRoot, 'Primers'),
+    'AIAgentsFoundationModels.md',
     'OtherResources.md',
     'Funding.md',
     'ReferenceWorks.md',

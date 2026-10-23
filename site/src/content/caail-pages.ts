@@ -636,17 +636,15 @@ export const CAAIL_PAGES = {
    *
    * IT IS NOT THE ONLY LIST IN THE REPO, and an earlier draft of this sentence
    * said it was, which was false when written. `scripts/parser/llms-full.ts`
-   * hand-writes five of these seven names for the SERVED CORPUS, and is
-   * already short `Taxonomy.md` and `AIAgentsFoundationModels.md` -- a gap
-   * `scripts/private-paths.test.ts` documents and warns against reading as a
-   * closed exception. So an eighth top-level page added here gets a route and
-   * is silently absent from `llms-full.txt`, with nothing red.
-   *
-   * That divergence is older than this method and is deliberately not fixed
-   * here: the two lists answer different questions (what the site routes
-   * versus what the corpus serves) and collapsing them is a decision about
-   * the corpus, not a refactor. Tracked on tucca-cellag/caail-planning#173, which owns hand-typed
-   * facts that duplicate machine-derived ones.
+   * hand-writes these names again for the SERVED CORPUS, alongside files no
+   * loader renders. The two lists answer different questions (what the site
+   * routes versus what the corpus serves), so they stay separate, and
+   * `llms-full.test.ts` holds them together instead: every file this method
+   * returns must be in the served corpus, with no exception list. An eighth
+   * top-level page added here without a matching `llms-full.ts` line fails
+   * that test. Before it existed, `Taxonomy.md` and
+   * `AIAgentsFoundationModels.md` were routed and missing from the corpus
+   * with nothing red.
    *
    * Order follows `order`, so the list reads the way the sidebar does.
    */

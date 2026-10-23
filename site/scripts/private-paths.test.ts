@@ -216,17 +216,14 @@ async function mustStayPublishable(): Promise<string[]> {
   //   llmsFullSources()          what is inlined into the served llms-full.txt
   //   CANONICAL_SOURCES          what the docs loader turns into site routes
   //
-  // TWO files are loader-only, not one: Taxonomy.md and
-  // AIAgentsFoundationModels.md. Both are published routes and neither is in
-  // llms-full's list. A draft of this comment claimed a rule swallowing
-  // Taxonomy.md would be caught; it would not have been, and losing that file
-  // silently takes /taxonomy/ and every row and column definition with it.
-  //
-  // Worth knowing separately, and NOT fixed here: because they are loader-only,
-  // the served llms-full.txt omits both, while its own header calls itself the
-  // library's full text. That is pre-existing; this is just the first thing to
-  // compute the difference between the two enumerations. Do not read the gap as
-  // a single known exception.
+  // Today every CANONICAL_SOURCES file is also in llms-full's list, which
+  // llms-full.test.ts asserts. Keep the union anyway: that assertion lives in
+  // another file, and this guard must not lose a published route the day it
+  // goes red. Until it existed, Taxonomy.md and AIAgentsFoundationModels.md
+  // were loader-only, and a draft of this comment claimed a rule swallowing
+  // Taxonomy.md would be caught by llms-full alone. It would not have been, and
+  // losing that file silently takes /taxonomy/ and every row and column
+  // definition with it.
   ...new Set([
     ...(await llmsFull()),
     ...CANONICAL_SOURCES.files,
