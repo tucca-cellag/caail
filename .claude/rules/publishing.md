@@ -93,7 +93,8 @@ repo owner, or security-finding vocabulary — requiring the three questions abo
 to be answered explicitly before an override.
 
 A destination it *cannot resolve* (no `gh`, no working login, no repository it
-can read) is not waved through in silence. It announces the failure and names
+can read, or a `gh api` call whose endpoint names no single repository) is not
+waved through in silence. It announces the failure and names
 the cause, treats the destination as public because it cannot be ruled out as
 one, and scans the payload anyway. Fail-open is kept for the inputs it has
 nothing to work with, such as malformed JSON on stdin. The realistic outage is
@@ -112,7 +113,16 @@ answer there and read the three questions before reaching for it.
 so it protects anyone who clones — not only the machine it was written on.** A
 byte-identical copy at `~/.claude/hooks/` covers every other repo; the global
 copy detects the project copy and passes through, so `gh` is never queried
-twice. Keep the two in sync (`diff` them); this file is likewise mirrored at
+twice. The hook reads a body passed in a file through the shared shell
+classifier, vendored in `.claude/scripts/lib/` from `~/.claude/scripts/lib/`
+(`shsurface.sh` and the `shsurface.py` parser it runs). It looks beside
+itself first, so a clone with no `~/.claude` still reads its body files. If
+`shsurface.sh` loads from neither place, the hook refuses every publish whose
+body sits in a file. If it loads but python3 or `shsurface.py` is missing, the
+classifier hands the command back unparsed without saying so, and body-file
+paths are read from the raw text. `check-public-publish.test.py`
+checks both copies against their global twins wherever those exist. Keep them
+in sync (`diff` them); this file is likewise mirrored at
 `~/.claude/docs/rules/publishing.md`, which is the path the hook itself cites.
 **Not** `~/.claude/rules/publishing.md`: that is a condensed always-on summary
 that points here, so anyone who followed the old path in this sentence and
@@ -122,6 +132,9 @@ A guardrail that lives only in one person's home directory is not a guardrail,
 it is a note to self. That is the same defect as citing a path a collaborator
 does not have.
 
-The override is `touch /tmp/claude-publish-override-<sha16>` then an immediate
-re-run: single-use, 60-second TTL, pinned to one exact command. Don't bypass the
-hook by other means, and don't assume a false positive without checking.
+Each deny names its own override file: `/tmp/claude-publish-leak-override-<sha16>`
+for the session-link and attribution deny, `/tmp/claude-publish-override-<sha16>`
+for the provenance deny. Touch the one the deny names, then re-run immediately:
+single-use, 60-second TTL, pinned to one exact command, and it skips only that
+deny. Don't bypass the hook by other means, and don't assume a false positive
+without checking.
