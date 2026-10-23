@@ -211,8 +211,16 @@ for tool in ("cat", "jq", "shasum", "cut", "find", "grep", "sed", "awk", "gh",
              "tail", "wc"):
     src = shutil.which(tool)
     if src: os.symlink(src, os.path.join(gtimeout_bin, tool))
+# A wrapper that runs the real binary under its own name, not a symlink to it.
+# Ubuntu 26.04's coreutils is one multi-call binary that picks its tool from the
+# name it was called by, so a symlink named `gtimeout` named no tool there:
+# `gh repo view` never ran and this case failed on CI while passing on 24.04.
 _t = shutil.which("timeout") or shutil.which("gtimeout")
-if _t: os.symlink(_t, os.path.join(gtimeout_bin, "gtimeout"))
+if _t:
+    _gt = os.path.join(gtimeout_bin, "gtimeout")
+    with open(_gt, "w") as f:
+        f.write(f'#!/bin/sh\nexec "{_t}" "$@"\n')
+    os.chmod(_gt, 0o755)
 ONLY_GTIMEOUT = {"PATH": gtimeout_bin}
 
 # And a PATH with NEITHER, which is stock macOS: BSD ships no `timeout` and
