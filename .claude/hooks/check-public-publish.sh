@@ -151,6 +151,7 @@ fi
 # The raw command already carries inline --body/-b text and heredoc bodies; add
 # the contents of every file the command hands to gh.
 payload="$cmd"
+unread_bodies=()
 _collect_file() {
   local f="$1"
   # The segment view keeps quoted text verbatim, quote characters included, so a
@@ -159,10 +160,20 @@ _collect_file() {
   f="${f//\"/}"; f="${f//\'/}"
   [[ -z $f || $f == "-" ]] && return 0
   f="${f/#\~/$HOME}"
-  # A regular file only. The hook runs before the command, so a named pipe has
-  # no writer yet, and `head` on one blocked until the hook was killed, which
-  # lets the publish through unscanned.
-  [[ -f $f && -r $f ]] || return 0
+  # A regular file only, and nothing else is opened. The hook runs before the
+  # command, so a named pipe has no writer yet, and `head` on one blocked until
+  # the hook was killed, which let the publish through unscanned. Skipping it was
+  # no better: gh reads a pipe, `/dev/stdin` or a device when the command runs,
+  # after this check, so the body went out unread. So anything that exists and is
+  # neither a regular file nor a directory is recorded and refused below. A
+  # directory is not, since gh cannot read one as a body and an over-read
+  # `ls -F <dir>` names one; nor is a word naming nothing on disk, since the
+  # reader over-reads every `-F`, and gh api's `-F key=value` names no file.
+  if [[ ! -f $f ]]; then
+    [[ -e $f && ! -d $f ]] && unread_bodies+=("$f")
+    return 0
+  fi
+  [[ -r $f ]] || return 0
   payload+=$'\n'$(head -c 100000 "$f" 2>/dev/null)
 }
 # File-passing flags, read from the shared classifier's SEGMENT view (CLAUDE-40),
@@ -170,8 +181,10 @@ _collect_file() {
 # segment on whitespace, quoted text included, so a flag-like word inside quoted
 # prose is read too (an over-read, the safe direction), and a quoted path that
 # contains a space is cut at the space and not read. Covers --body-file / --notes-file
-# (pr/issue/release create, `=` or space form), a bare `-F <path>` (gh's short
-# --body-file), and a `key=@<path>` field (gh api). Scanning an extra referenced
+# (pr/issue/release create, `=` or space form), `-F` (gh's short --body-file) as
+# `-F <path>`, `-F=<path>` or `-F<path>`, all three of which gh's flag parser
+# accepts, and a `key=@<path>` field (gh api), checked on every word including an
+# attached `-Fkey=@<path>`. Scanning an extra referenced
 # file over-reads at worst, which is the SAFE direction for a deny-on-presence
 # check; missing a quoted real path (the raw-grep failure mode) is not.
 #
@@ -185,9 +198,11 @@ _collect_file() {
 while IFS= read -r _bf; do _collect_file "$_bf"; done < <(
   shsurface_segments "$cmd" | awk '
     { for (i=1;i<=NF;i++) {
-        if ($i=="--body-file"||$i=="--notes-file"||$i=="-F") { if (i+1<=NF) print $(i+1) }
-        else if ($i ~ /^(--body-file|--notes-file)=/) { sub(/^[^=]+=/,"",$i); print $i }
-        else if ($i ~ /=@/) { sub(/^.*=@/,"",$i); print $i }
+        w = $i
+        if (w=="--body-file"||w=="--notes-file"||w=="-F") { if (i+1<=NF) print $(i+1) }
+        else if (w ~ /^(--body-file|--notes-file)=/) { sub(/^[^=]+=/,"",w); print w }
+        else if (w ~ /^-F./) { sub(/^-F=?/,"",w); print w }
+        if (w ~ /=@/) { sub(/^.*=@/,"",w); print w }
       } }'
 )
 
@@ -205,8 +220,13 @@ grep -qiE 'Generated with \[?Claude|claude\.com/claude-code|Co-Authored-By:[[:sp
 # scan above may not have read that file at all. Scoped to file-passing flags so
 # an inline-only publish (fully visible in the raw command) is not taxed.
 if (( SHSURFACE_OK == 0 )) \
-   && grep -qE '(--body-file|--notes-file)([=[:space:]])|(^|[[:space:]])-F[[:space:]]|=@' <<<"$cmd"; then
+   && grep -qE '(--body-file|--notes-file)([=[:space:]])|(^|[[:space:]])-F|=@' <<<"$cmd"; then
   leak_signals+=("a body FILE this hook could not reliably read: the shared shell classifier (scripts/lib/shsurface.sh) did not load, so a session link or attribution inside that file could not be ruled out. Restore the library, or pass the body inline")
+fi
+# A body file that exists and is not a regular file, recorded by _collect_file.
+if (( ${#unread_bodies[@]} > 0 )); then
+  _ub=$(printf '%s, ' "${unread_bodies[@]}"); _ub="${_ub%, }"
+  leak_signals+=("a body FILE this hook could not read because it is not a regular file (${_ub}): gh reads a named pipe, /dev/stdin or a device only when the command runs, after this check, so a session link or attribution inside it could not be ruled out. Write the body to a regular file, or pass it inline")
 fi
 
 # Remembered for the provenance deny below: when one payload trips both, the

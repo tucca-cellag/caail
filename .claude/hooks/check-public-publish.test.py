@@ -724,31 +724,49 @@ with open(clean, "w") as f:
 for label, cmd in (
     ("--notes-file", f"gh release create v1 --notes-file {leaky}"),
     ("-F", f"gh issue create --title t -F {leaky}"),
+    ("-F=", f"gh issue create --title t -F={leaky}"),
+    ("an attached -F", f"gh issue create --title t -F{leaky}"),
     ("--body-file=", f"gh pr create --title t --body-file={leaky}"),
     ("key=@path", f"gh api -X POST repos/me/public-dest/issues -F body=@{leaky}"),
+    ("an attached -F key=@path", f"gh api -X POST repos/me/public-dest/issues -Fbody=@{leaky}"),
 ):
     dcheck(f"a session link in a file passed by {label} is read and refused", cmd, priv_co, "deny",
            needle="session link")
 # A named pipe has no writer before the command runs, so reading one would block
-# until the hook is killed. Run with a hard timeout: a hang is the failure.
+# until the hook is killed, and skipping it leaves a body gh reads at run time
+# unchecked. It is refused, in a private checkout too, since this is the leak
+# class. Run with a hard timeout: a hang is a failure as well.
 fifo = os.path.join(dbl, "body.fifo")
 if not os.path.exists(fifo): os.mkfifo(fifo)
 try:
     r = subprocess.run([BASH, HOOK_PROJ],
                        input=json.dumps({"tool_input": {"command": f"gh issue create --title t -F {fifo}"}}),
-                       capture_output=True, text=True, env={**os.environ, **DBL}, cwd=pub_co, timeout=20)
-    returned = r.returncode == 0 and "hookSpecificOutput" in r.stdout
-except subprocess.TimeoutExpired:
-    returned = False
+                       capture_output=True, text=True, env={**os.environ, **DBL}, cwd=priv_co, timeout=20)
+    out = json.loads(r.stdout)["hookSpecificOutput"]
+    refused = (out.get("permissionDecision") == "deny"
+               and "not a regular file" in out.get("permissionDecisionReason", ""))
+except (subprocess.TimeoutExpired, ValueError, KeyError):
+    refused = False
 finally:
     # Release a reader left blocked on the pipe, if there is one.
     try:
         fd = os.open(fifo, os.O_WRONLY | os.O_NONBLOCK); os.close(fd)
     except OSError:
         pass
-ok = "PASS" if returned else "FAIL"
-if not returned: fails += 1
-print(f"  [{ok}] a named pipe passed as a body file does not hang the hook")
+ok = "PASS" if refused else "FAIL"
+if not refused: fails += 1
+print(f"  [{ok}] a named pipe passed as a body file is refused, without hanging the hook")
+dcheck("/dev/stdin passed as a body file is refused the same way",
+       "gh issue create --title t --body-file /dev/stdin", priv_co, "deny", needle="not a regular file")
+# The other direction. The reader over-reads every -F in the command, so a path
+# that is not a body must not be refused: a directory gh could never read as one,
+# and a word that names nothing on disk.
+dcheck("a clean regular body file in a private checkout still passes quietly",
+       f"gh issue create --title t --body-file {clean}", priv_co, "allow", quiet=True)
+dcheck("a directory named after an -F elsewhere in the command is not refused",
+       f"gh issue create --title t --body 'a plain fix' && ls -F {dbl}", priv_co, "allow", quiet=True)
+dcheck("an api -F key=value field naming no file is not refused",
+       "gh api -X POST repos/{owner}/{repo}/issues -F title=x", priv_co, "allow", quiet=True)
 dcheck("a body file after a quoted $( ) in the same command is still read",
        f"gh pr create --title \"$(date)\" --body-file {leaky}", priv_co, "deny", needle="session link")
 dcheck("a body file after an unquoted $( ) with a suffix is still read",
@@ -765,6 +783,9 @@ shutil.copy(HOOK_PROJ, os.path.join(nolib, "check-public-publish.sh"))
 nolib_hook = os.path.join(nolib, "check-public-publish.sh")
 dcheck("with no classifier anywhere, a clean body file is refused as unverifiable",
        f"gh pr create --title t --body-file {clean}", priv_co, "deny", needle="shsurface.sh",
+       hook=nolib_hook, env={"HOME": nohome})
+dcheck("with no classifier anywhere, an attached -F= body file is refused the same way",
+       f"gh pr create --title t -F={clean}", priv_co, "deny", needle="shsurface.sh",
        hook=nolib_hook, env={"HOME": nohome})
 dcheck("with no classifier anywhere, an inline-only body is unaffected",
        "gh pr create --title t --body 'a plain fix'", priv_co, "allow", quiet=True,
