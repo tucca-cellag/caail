@@ -84,8 +84,7 @@ The Zotero-sync lifecycle above reconciles the repo against *our Zotero library*
 **field-gap** axis reconciles it against *the published field* — sweeping recent literature, datasets,
 software, and databases for resources CAAIL is missing. This ran as a multi-agent workflow
 (`caail-gap-analysis`); it has been retired. Its candidate batches were filed on this repo as the
-"CAAIL field-gap analysis" issues, all closed as completed, and the ledgers under `manuscript/` record
-the triage.
+"CAAIL field-gap analysis" issues, and the ledgers under `manuscript/` record the triage.
 
 **Why it was retired.** Two reasons, both decisive. It fanned ~16 finder agents plus verifiers with no
 model override, so every agent ran Opus (~$155/run). And it reasoned about `Papers.md` as the source of
