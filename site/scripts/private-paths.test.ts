@@ -553,11 +553,11 @@ describe('the build\'s published content is not swallowed', () => {
 
     // EVERY file from each source survives into the union. The previous version
     // probed one literal per source (Taxonomy.md for the loader, Papers.md for
-    // llms-full) and reasoned that this proved both contributed. It did not: the
-    // two enumerations already overlap on five files, so the moment Taxonomy.md
-    // is added to llmsFullSources() (the natural fix for the gap noted above)
-    // the entire CANONICAL_SOURCES half could be deleted with both probes still
-    // green. Containment has no such hole.
+    // llms-full) and reasoned that this proved both contributed. It did not:
+    // the two enumerations overlap, and once Taxonomy.md joined
+    // llmsFullSources() every loader file was in both, so the entire
+    // CANONICAL_SOURCES half could be deleted with both probes still green.
+    // Containment has no such hole.
     for (const f of fromLlmsFull) {
       expect(publishable, `${f} reached the union from llms-full and was lost`).toContain(f);
     }
@@ -646,8 +646,8 @@ describe('the build\'s published content is not swallowed', () => {
     // built by spreading a Set, so `new Set(x).size === x.length` holds for
     // every possible input including one where both enumerations collapsed to
     // a single element. It read as load-bearing and could never fail. The two
-    // enumerations genuinely do overlap (five files are in both), so the Set is
-    // doing real work; asserting the result of it is asserting nothing.
+    // enumerations genuinely do overlap, so the Set is doing real work;
+    // asserting the result of it is asserting nothing.
   });
 
   it('does not over-match and swallow anything the build publishes', async () => {

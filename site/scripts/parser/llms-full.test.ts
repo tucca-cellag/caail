@@ -11,11 +11,12 @@
  * `Taxonomy.md` and `AIAgentsFoundationModels.md` were left out of the served
  * text for months with every test green.
  */
-import { readdirSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 import { describe, it, expect } from 'vitest';
 
+import { CAAIL_PAGES } from '../../src/content/caail-pages.js';
 import { CANONICAL_SOURCES } from '../../src/content/canonical-sources.js';
 import { isPrivateCompanion, isPublishedMarkdown } from '../../src/lib/canonical-files.js';
 import { buildLlmsFullText, llmsFullSources } from './llms-full.js';
@@ -27,18 +28,33 @@ const SITE_DOCS = 'site/src/content/docs';
 const SHELL = 'a site shell around a canonical file the full text already carries';
 /** The site page is a view computed from data the full text already carries. */
 const DERIVED = 'a generated view over data the full text already carries';
+/** Loaded by an agent as instructions; the library is what it reads. */
+const SKILL = 'a Claude Code skill, loaded as instructions rather than read as library content';
 
 /**
  * Published files deliberately kept out of llms-full.txt, each with its reason.
+ * A key ending in `/` covers everything under that directory.
  *
- * Anything the walks below find that is neither here nor in `llmsFullSources()`
- * fails, so a new page needs a decision rather than defaulting to absent.
+ * Every Markdown file git would publish must be in `llmsFullSources()` or
+ * covered here, so a new page, or a new directory of them, fails until someone
+ * decides. `site/` is deliberately not a key: a prefix that broad would let a
+ * new prose page under the site's docs default to absent, which is the failure
+ * this list exists to stop.
  */
 const LEFT_OUT: Record<string, string> = {
   'CODE_OF_CONDUCT.md': 'conduct rules for contributors, not library content',
   'DESIGN.md': "the website's design system",
   'GLOSSARY.md':
     "the maintainers' vocabulary for working on the repository; the definitions a reader of the library needs are in Taxonomy.md",
+  '.claude/': 'rules, skills and reviewer agents for maintaining the repository',
+  'plugin/': SKILL,
+  'plugin-contribute/': SKILL,
+  'skills/': SKILL,
+  'site/README.md': "the website's developer guide",
+  'site/HANDOFF-M2.md': 'a handoff note from building the website',
+  'site/public/setup.md': 'a generated copy of skills/caail-install/SKILL.md, served at its own URL',
+  'site/scripts/': 'parser test fixtures',
+  'site/src/assets/': "credits for the website's image assets",
   [`${SITE_DOCS}/about.mdx`]:
     "a guide to the website's navigation; README.md, which the full text carries, describes the library itself",
   [`${SITE_DOCS}/privacy.mdx`]: "the website's data practices, not library content",
@@ -61,51 +77,57 @@ const LEFT_OUT: Record<string, string> = {
   [`${SITE_DOCS}/topics.mdx`]: DERIVED,
 };
 
-/** Published Markdown at the repo root, by the same rule every enumerator uses. */
-function rootMarkdown(): string[] {
-  return readdirSync(REPO_ROOT).filter(isPublishedMarkdown).sort();
+/** True when the LEFT_OUT key `key` covers the repo-relative `file`. */
+function covers(key: string, file: string): boolean {
+  return key.endsWith('/') ? file.startsWith(key) : file === key;
 }
 
-/** Every Starlight page under the site's docs directory, repo-relative. */
-function sitePages(): string[] {
-  return readdirSync(`${REPO_ROOT}${SITE_DOCS}`, { recursive: true, encoding: 'utf-8' })
-    .filter((f) => /\.mdx?$/.test(f) && !isPrivateCompanion(f))
-    .map((f) => `${SITE_DOCS}/${f}`)
+let publishedCache: string[] | undefined;
+
+/**
+ * Every Markdown and MDX file git would publish: tracked, or untracked and not
+ * ignored. Asking git rather than walking the disk keeps a gitignored scratch
+ * file at the root (an audit report, say) from failing this locally while CI,
+ * which never sees it, stays green. Lazy, so a missing `git` fails the tests
+ * that need it rather than the collection of this file.
+ */
+function publishedMarkdown(): string[] {
+  publishedCache ??= execFileSync(
+    'git',
+    ['ls-files', '--cached', '--others', '--exclude-standard', '-z', '--', '*.md', '*.mdx'],
+    { cwd: REPO_ROOT, encoding: 'utf-8' },
+  )
+    .split('\0')
+    .filter((f) => f && (f.endsWith('.mdx') ? !isPrivateCompanion(f) : isPublishedMarkdown(f)))
     .sort();
-}
-
-/** Files the docs loader turns into site routes, repo-relative. */
-function renderedCanonicalFiles(): string[] {
-  return [
-    ...CANONICAL_SOURCES.files,
-    ...CANONICAL_SOURCES.dirs.flatMap((dir) =>
-      readdirSync(`${REPO_ROOT}${dir}`)
-        .filter(isPublishedMarkdown)
-        .map((f) => `${dir}/${f}`),
-    ),
-  ];
+  return publishedCache;
 }
 
 describe('llmsFullSources coverage, checked against the repo', () => {
   const sources = new Set(llmsFullSources());
-  const undecided = (files: string[]) => files.filter((f) => !sources.has(f) && !(f in LEFT_OUT));
 
-  it('carries every published Markdown file at the repo root, or says why not', () => {
-    expect(undecided(rootMarkdown())).toEqual([]);
+  it('carries every Markdown file git would publish, or says why not', () => {
+    const undecided = publishedMarkdown().filter(
+      (f) => !sources.has(f) && !Object.keys(LEFT_OUT).some((k) => covers(k, f)),
+    );
+    expect(undecided).toEqual([]);
   });
 
-  it('carries every site page, or says why not', () => {
-    expect(undecided(sitePages())).toEqual([]);
-  });
-
-  it('carries every canonical file the site renders as a page, with no exception', () => {
+  it('carries every page the site renders from a canonical file, with no exception', () => {
     // README.md is the converse case: in the full text, but rendered by no loader.
-    expect(renderedCanonicalFiles().filter((f) => !sources.has(f))).toEqual([]);
+    expect(CAAIL_PAGES.missingTopLevelSources([...sources])).toEqual([]);
+    const inLoaderDirs = publishedMarkdown().filter((f) =>
+      CANONICAL_SOURCES.dirs.some((d) => f.startsWith(`${d}/`) && !f.slice(d.length + 1).includes('/')),
+    );
+    expect(inLoaderDirs.filter((f) => !sources.has(f))).toEqual([]);
   });
 
-  it('keeps every exclusion current: the file exists and is not also carried', () => {
-    const onDisk = new Set([...rootMarkdown(), ...sitePages()]);
-    const stale = Object.keys(LEFT_OUT).filter((f) => !onDisk.has(f) || sources.has(f));
+  it('keeps every exclusion current: it matches a published file, and none it matches is carried', () => {
+    const files = publishedMarkdown();
+    const stale = Object.keys(LEFT_OUT).filter((k) => {
+      const matched = files.filter((f) => covers(k, f));
+      return matched.length === 0 || matched.some((f) => sources.has(f));
+    });
     expect(stale).toEqual([]);
   });
 });
