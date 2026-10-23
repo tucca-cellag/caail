@@ -12,13 +12,15 @@
  * text for months with every test green.
  */
 import { execFileSync } from 'node:child_process';
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { describe, it, expect } from 'vitest';
 
 import { CAAIL_PAGES } from '../../src/content/caail-pages.js';
 import { CANONICAL_SOURCES } from '../../src/content/canonical-sources.js';
-import { isPrivateCompanion, isPublishedMarkdown } from '../../src/lib/canonical-files.js';
+import { isPrivateCompanion } from '../../src/lib/canonical-files.js';
 import { buildLlmsFullText, llmsFullSources } from './llms-full.js';
 
 const REPO_ROOT = fileURLToPath(new URL('../../../', import.meta.url));
@@ -82,24 +84,50 @@ function covers(key: string, file: string): boolean {
   return key.endsWith('/') ? file.startsWith(key) : file === key;
 }
 
+/**
+ * Markdown by extension, in any case. Deliberately wider than
+ * `isPublishedMarkdown`, which is case-sensitive to match the loader: GitHub
+ * still renders a `FAQ.MD` or a `.markdown` file, so the walk has to see one
+ * and fail on it rather than let it default to absent.
+ */
+const MARKDOWN_PATHSPECS = [':(icase)*.md', ':(icase)*.mdx', ':(icase)*.markdown'];
+
+/** Not an agent-instruction file and not a private companion, in any case. */
+function isPublishable(file: string): boolean {
+  const name = file.split('/').pop() ?? file;
+  return name.toLowerCase() !== 'claude.md' && !isPrivateCompanion(name);
+}
+
 let publishedCache: string[] | undefined;
 
 /**
- * Every Markdown and MDX file git would publish: tracked, or untracked and not
- * ignored. Asking git rather than walking the disk keeps a gitignored scratch
- * file at the root (an audit report, say) from failing this locally while CI,
- * which never sees it, stays green. Lazy, so a missing `git` fails the tests
- * that need it rather than the collection of this file.
+ * Every Markdown file git would publish: tracked, or untracked and not
+ * ignored, and still on disk. Asking git rather than walking the disk keeps a
+ * gitignored scratch file at the root (an audit report, say) from failing this
+ * locally while CI, which never sees it, stays green. The disk check drops a
+ * file deleted with `rm` but not yet `git rm`, which git still lists and
+ * `llmsFullSources()` no longer reads. Lazy, so a missing work tree fails the
+ * tests that need it rather than the collection of this file.
  */
 function publishedMarkdown(): string[] {
-  publishedCache ??= execFileSync(
-    'git',
-    ['ls-files', '--cached', '--others', '--exclude-standard', '-z', '--', '*.md', '*.mdx'],
-    { cwd: REPO_ROOT, encoding: 'utf-8' },
-  )
-    .split('\0')
-    .filter((f) => f && (f.endsWith('.mdx') ? !isPrivateCompanion(f) : isPublishedMarkdown(f)))
-    .sort();
+  if (!publishedCache) {
+    let listing: string;
+    try {
+      listing = execFileSync(
+        'git',
+        ['ls-files', '--cached', '--others', '--exclude-standard', '-z', '--', ...MARKDOWN_PATHSPECS],
+        { cwd: REPO_ROOT, encoding: 'utf-8' },
+      );
+    } catch (err) {
+      throw new Error(
+        `llms-full coverage asks git which files are published and needs a git work tree at ${REPO_ROOT}: ${String(err)}`,
+      );
+    }
+    publishedCache = listing
+      .split('\0')
+      .filter((f) => f && isPublishable(f) && existsSync(join(REPO_ROOT, f)))
+      .sort();
+  }
   return publishedCache;
 }
 

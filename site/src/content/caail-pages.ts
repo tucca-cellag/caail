@@ -640,7 +640,7 @@ export const CAAIL_PAGES = {
    * loader renders. The two lists answer different questions (what the site
    * routes versus what the corpus serves), so they stay separate, and
    * `llms-full.test.ts` holds them together instead: every file this method
-   * returns must be in the served corpus, with no exception list. An eighth
+   * returns must be in the served corpus, with no exception list. A new
    * top-level page added here without a matching `llms-full.ts` line fails
    * that test. Before it existed, `Taxonomy.md` and
    * `AIAgentsFoundationModels.md` were routed and missing from the corpus
