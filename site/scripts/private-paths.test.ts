@@ -227,9 +227,10 @@ async function mustStayPublishable(): Promise<string[]> {
   ...new Set([
     ...(await llmsFull()),
     ...CANONICAL_SOURCES.files,
-    // Both of these are INSIDE the Set, not appended after it, so adding
-    // either to llmsFullSources() later (a natural change for the privacy
-    // page) does not trip the no-duplicates assertion on a correct edit.
+    // Both of these are INSIDE the Set, not appended after it, so a later
+    // decision to add either to llmsFullSources() does not trip the
+    // no-duplicates assertion. For privacy.mdx that decision has been made the
+    // other way: llms-full.test.ts excludes it from the corpus, with its reason.
     //
     // privacy.mdx: a route rather than corpus, in neither list. Losing it
     // silently is a compliance problem rather than a content one.

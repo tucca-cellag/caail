@@ -110,7 +110,7 @@ function buildHeader(sources: string[]): string {
  *
  * Nothing about the bytes distinguishes the two cases reliably, so this does not try. Only
  * Starlight content pages carry frontmatter, Starlight REQUIRES it, and no canonical repo-root
- * Markdown has any — so the path answers the question exactly and the ~45 canonical files are
+ * Markdown has any — so the path answers the question exactly and the canonical files are
  * never examined at all. A `---` rule in Papers.md is now unreachable by this code rather than
  * defended against by a heuristic.
  */

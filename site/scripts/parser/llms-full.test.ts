@@ -41,7 +41,12 @@ const SKILL = 'a Claude Code skill, loaded as instructions rather than read as l
  * covered here, so a new page, or a new directory of them, fails until someone
  * decides. `site/` is deliberately not a key: a prefix that broad would let a
  * new prose page under the site's docs default to absent, which is the failure
- * this list exists to stop.
+ * this list exists to stop. The same goes for every directory key, so keep
+ * each one as narrow as the files it describes.
+ *
+ * "Fails" means any run of this suite. CI runs it only on the paths in
+ * `test.yml`'s filter, so a PR adding Markdown outside them (a new top-level
+ * directory, say) merges without it and the next PR that does run it goes red.
  */
 const LEFT_OUT: Record<string, string> = {
   'CODE_OF_CONDUCT.md': 'conduct rules for contributors, not library content',
@@ -55,8 +60,11 @@ const LEFT_OUT: Record<string, string> = {
   'site/README.md': "the website's developer guide",
   'site/HANDOFF-M2.md': 'a handoff note from building the website',
   'site/public/setup.md': 'a generated copy of skills/caail-install/SKILL.md, served at its own URL',
-  'site/scripts/': 'parser test fixtures',
-  'site/src/assets/': "credits for the website's image assets",
+  'site/scripts/parser/fixtures/': 'parser test fixtures',
+  'site/scripts/parser/taxonomy.fixture.md': 'a parser test fixture',
+  'site/scripts/parser/taxonomy.collision.fixture.md': 'a parser test fixture',
+  'site/scripts/parser/taxonomy.unknown-axis.fixture.md': 'a parser test fixture',
+  'site/src/assets/tucca/README.md': "notes on the website's TUCCA logo files",
   [`${SITE_DOCS}/about.mdx`]:
     "a guide to the website's navigation; README.md, which the full text carries, describes the library itself",
   [`${SITE_DOCS}/privacy.mdx`]: "the website's data practices, not library content",
@@ -92,10 +100,18 @@ function covers(key: string, file: string): boolean {
  */
 const MARKDOWN_PATHSPECS = [':(icase)*.md', ':(icase)*.mdx', ':(icase)*.markdown'];
 
-/** Not an agent-instruction file and not a private companion, in any case. */
+/**
+ * Not an agent-instruction file and not a private companion.
+ *
+ * The instruction-file test is the exact `CLAUDE.md` that `isPublishedMarkdown`
+ * drops, so the walk and `llmsFullSources()` agree on what counts as a page. A
+ * differently cased `Claude.md` is a page to both, and would be inlined into the
+ * served text; the "excludes CLAUDE.md" test below is what refuses it, by
+ * matching in any case.
+ */
 function isPublishable(file: string): boolean {
   const name = file.split('/').pop() ?? file;
-  return name.toLowerCase() !== 'claude.md' && !isPrivateCompanion(name);
+  return name !== 'CLAUDE.md' && !isPrivateCompanion(name);
 }
 
 let publishedCache: string[] | undefined;
@@ -174,8 +190,10 @@ describe('llmsFullSources', () => {
     expect(sources).toContain('ResearchAreas/Bioprocess.md');
   });
 
-  it('excludes CLAUDE.md agent-instruction files', () => {
-    expect(sources.some((s) => s.endsWith('CLAUDE.md'))).toBe(false);
+  it('excludes CLAUDE.md agent-instruction files, in any case', () => {
+    // Case-insensitive on purpose: `isPublishedMarkdown` drops only the exact
+    // name, so a `Claude.md` beside the pages would otherwise be served.
+    expect(sources.filter((s) => /(^|\/)claude\.md$/i.test(s))).toEqual([]);
   });
 
   it('orders each directory with README first', () => {
