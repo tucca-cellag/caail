@@ -82,7 +82,7 @@ The matrix and the `## References` list must be kept in sync:
    > **Correction**: https://doi.org/<correction-doi>
    ```
 
-   The blank line matters: GitHub renders two adjacent `>` lines as one run-on line, and GitHub is where these are read. Note that the notice reaches GitHub but not the entry's card on the site, because the parser keeps only the `Code` and `Data` labels (tucca-cellag/caail#202).
+   The blank line matters: GitHub renders two adjacent `>` lines as one run-on line, and GitHub is where these are read. Note that the notice reaches GitHub but not the entry's card on the site, because the parser keeps only the `Code` and `Data` labels.
 
    As the callout at the top of this section says, the reference, its matrix cells and these trailing blockquotes are all regenerated from the database, so editing the Markdown here **proposes** an entry rather than landing one: a maintainer re-enters it through the DB. **The easiest way to propose one is to write the entry out in the issue or the PR description.** That is all a maintainer needs, and it keeps CI meaningful. If you do edit the Markdown, CI's DB-to-Markdown sync guard will fail, because the generated file now disagrees with the database. That is expected rather than a mistake on your part, but it leaves the branch red, and a real problem pushed to it afterwards is then hard to tell apart from the expected failure.
 
