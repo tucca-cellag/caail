@@ -18,7 +18,7 @@ The tools themselves are catalogued under [AI Agents & Foundation Models in Soft
 
 ## In the Papers matrix
 
-In the [Papers matrix](./Papers.md), this area is reachable two ways: the **LLMs / AI Agents** method row (agentic systems with tool use, retrieval, and reasoning) and the **AI Tooling / Methodology** column (general-purpose methods and agents not yet tied to a specific cell-ag application). The [AI Tooling / Methodology research-area page](./ResearchAreas/AITooling.md) gives the deeper narrative for that column.
+In the [Papers matrix](./Papers.md), this area is reachable two ways: the foundation-model and agent method rows, whose current set and definitions are in [Taxonomy.md](./Taxonomy.md), and the **AI Tooling / Methodology** column (general-purpose methods and agents not yet tied to a specific cell-ag application). The [AI Tooling / Methodology research-area page](./ResearchAreas/AITooling.md) gives the deeper narrative for that column.
 
 ## Evaluation & benchmarks
 
