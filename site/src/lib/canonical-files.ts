@@ -32,6 +32,17 @@
 const INSTRUCTION_FILES: ReadonlySet<string> = new Set(['CLAUDE.md']);
 
 /**
+ * True when `name` (a bare file name) is an agent-instruction file.
+ *
+ * Exact and case-sensitive, like the rest of `isPublishedMarkdown`. Exported so
+ * a check that walks the corpus asks the same question the enumerators do
+ * rather than copying the name list.
+ */
+export function isInstructionFile(name: string): boolean {
+  return INSTRUCTION_FILES.has(name);
+}
+
+/**
  * The suffixes reserved for private companions, gitignored.
  *
  * Both, not just `.md`: every file under `site/src/content/docs/` is `.mdx`,
@@ -97,7 +108,7 @@ export function isPublishedMarkdown(nameOrPath: string): boolean {
   // suffix match); the instruction-file check would not.
   const name = nameOrPath.split('/').pop() ?? nameOrPath;
   if (!name.endsWith('.md')) return false;
-  if (INSTRUCTION_FILES.has(name)) return false;
+  if (isInstructionFile(name)) return false;
   if (isPrivateCompanion(name)) return false;
   return true;
 }

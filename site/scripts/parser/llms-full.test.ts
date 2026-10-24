@@ -20,7 +20,7 @@ import { describe, it, expect } from 'vitest';
 
 import { CAAIL_PAGES } from '../../src/content/caail-pages.js';
 import { CANONICAL_SOURCES } from '../../src/content/canonical-sources.js';
-import { isPrivateCompanion } from '../../src/lib/canonical-files.js';
+import { isInstructionFile, isPrivateCompanion } from '../../src/lib/canonical-files.js';
 import { buildLlmsFullText, llmsFullSources } from './llms-full.js';
 
 const REPO_ROOT = fileURLToPath(new URL('../../../', import.meta.url));
@@ -51,8 +51,6 @@ const SKILL = 'a Claude Code skill, loaded as instructions rather than read as l
 const LEFT_OUT: Record<string, string> = {
   'CODE_OF_CONDUCT.md': 'conduct rules for contributors, not library content',
   'DESIGN.md': "the website's design system",
-  'GLOSSARY.md':
-    "the maintainers' vocabulary for working on the repository; the definitions a reader of the library needs are in Taxonomy.md",
   '.claude/': 'rules, skills and reviewer agents for maintaining the repository',
   'plugin/': SKILL,
   'plugin-contribute/': SKILL,
@@ -103,15 +101,15 @@ const MARKDOWN_PATHSPECS = [':(icase)*.md', ':(icase)*.mdx', ':(icase)*.markdown
 /**
  * Not an agent-instruction file and not a private companion.
  *
- * The instruction-file test is the exact `CLAUDE.md` that `isPublishedMarkdown`
- * drops, so the walk and `llmsFullSources()` agree on what counts as a page. A
- * differently cased `Claude.md` is a page to both, and would be inlined into the
- * served text; the "excludes CLAUDE.md" test below is what refuses it, by
- * matching in any case.
+ * The instruction-file test is `isInstructionFile`, the one `isPublishedMarkdown`
+ * asks, so the walk and `llmsFullSources()` agree on what counts as a page. It is
+ * exact, so a differently cased `Claude.md` is a page to both and would be
+ * inlined into the served text; the "excludes CLAUDE.md" test below is what
+ * refuses it, by matching in any case.
  */
 function isPublishable(file: string): boolean {
   const name = file.split('/').pop() ?? file;
-  return name !== 'CLAUDE.md' && !isPrivateCompanion(name);
+  return !isInstructionFile(name) && !isPrivateCompanion(name);
 }
 
 let publishedCache: string[] | undefined;
@@ -147,81 +145,96 @@ function publishedMarkdown(): string[] {
   return publishedCache;
 }
 
+let sourcesCache: string[] | undefined;
+let textCache: string | undefined;
+
+/**
+ * `llmsFullSources()` and `buildLlmsFullText()`, computed on first use inside a
+ * test rather than while the file is collected. Both read the canonical
+ * directories, and a throw during collection aborts every test in this file
+ * instead of failing the one that names the cause.
+ */
+function sources(): string[] {
+  return (sourcesCache ??= llmsFullSources());
+}
+function fullText(): string {
+  return (textCache ??= buildLlmsFullText());
+}
+
 describe('llmsFullSources coverage, checked against the repo', () => {
-  const sources = new Set(llmsFullSources());
+  const carried = (): Set<string> => new Set(sources());
 
   it('carries every Markdown file git would publish, or says why not', () => {
+    const inText = carried();
     const undecided = publishedMarkdown().filter(
-      (f) => !sources.has(f) && !Object.keys(LEFT_OUT).some((k) => covers(k, f)),
+      (f) => !inText.has(f) && !Object.keys(LEFT_OUT).some((k) => covers(k, f)),
     );
     expect(undecided).toEqual([]);
   });
 
   it('carries every page the site renders from a canonical file, with no exception', () => {
+    const inText = carried();
     // README.md is the converse case: in the full text, but rendered by no loader.
-    expect(CAAIL_PAGES.missingTopLevelSources([...sources])).toEqual([]);
+    expect(CAAIL_PAGES.missingTopLevelSources([...inText])).toEqual([]);
     const inLoaderDirs = publishedMarkdown().filter((f) =>
       CANONICAL_SOURCES.dirs.some((d) => f.startsWith(`${d}/`) && !f.slice(d.length + 1).includes('/')),
     );
-    expect(inLoaderDirs.filter((f) => !sources.has(f))).toEqual([]);
+    expect(inLoaderDirs.filter((f) => !inText.has(f))).toEqual([]);
   });
 
   it('keeps every exclusion current: it matches a published file, and none it matches is carried', () => {
+    const inText = carried();
     const files = publishedMarkdown();
     const stale = Object.keys(LEFT_OUT).filter((k) => {
       const matched = files.filter((f) => covers(k, f));
-      return matched.length === 0 || matched.some((f) => sources.has(f));
+      return matched.length === 0 || matched.some((f) => inText.has(f));
     });
     expect(stale).toEqual([]);
   });
 });
 
 describe('llmsFullSources', () => {
-  const sources = llmsFullSources();
-
   it('includes the core canonical files', () => {
     for (const f of ['README.md', 'Papers.md', 'Software.md', 'Databases.md', 'CONTRIBUTING.md']) {
-      expect(sources).toContain(f);
+      expect(sources()).toContain(f);
     }
   });
 
   it('includes per-species dataset and research-area pages', () => {
-    expect(sources).toContain('Datasets/Cow.md');
-    expect(sources).toContain('ResearchAreas/Bioprocess.md');
+    expect(sources()).toContain('Datasets/Cow.md');
+    expect(sources()).toContain('ResearchAreas/Bioprocess.md');
   });
 
   it('excludes CLAUDE.md agent-instruction files, in any case', () => {
     // Case-insensitive on purpose: `isPublishedMarkdown` drops only the exact
     // name, so a `Claude.md` beside the pages would otherwise be served.
-    expect(sources.filter((s) => /(^|\/)claude\.md$/i.test(s))).toEqual([]);
+    expect(sources().filter((s) => /(^|\/)claude\.md$/i.test(s))).toEqual([]);
   });
 
   it('orders each directory with README first', () => {
-    const datasets = sources.filter((s) => s.startsWith('Datasets/'));
+    const datasets = sources().filter((s) => s.startsWith('Datasets/'));
     expect(datasets[0]).toBe('Datasets/README.md');
   });
 });
 
 describe('buildLlmsFullText', () => {
-  const text = buildLlmsFullText();
-
   it('is substantial (full library, not a stub)', () => {
-    expect(text.length).toBeGreaterThan(50_000);
+    expect(fullText().length).toBeGreaterThan(50_000);
   });
 
   it('starts with the agent-facing header', () => {
-    expect(text.startsWith('# CAAIL — Cellular Agriculture AI Library (full canonical text)')).toBe(
+    expect(fullText().startsWith('# CAAIL — Cellular Agriculture AI Library (full canonical text)')).toBe(
       true,
     );
   });
 
   it('carries a per-file delimiter for each source', () => {
-    for (const rel of llmsFullSources()) {
-      expect(text).toContain(`# ===== ${rel} =====`);
+    for (const rel of sources()) {
+      expect(fullText()).toContain(`# ===== ${rel} =====`);
     }
   });
 
   it('contains real canonical content (Papers references section)', () => {
-    expect(text).toContain('## References');
+    expect(fullText()).toContain('## References');
   });
 });
