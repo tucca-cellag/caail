@@ -2,6 +2,7 @@
   "name": "caail-events",
   "private": true,
   "version": "0.1.0",
+  "packageManager": "pnpm@9.15.9",
   "description": "Cookieless collector for CAAIL's two usage events.",
   "scripts": {
     "check": "wrangler deploy --dry-run",

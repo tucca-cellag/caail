@@ -2,6 +2,7 @@
   "name": "site",
   "type": "module",
   "version": "0.0.1",
+  "packageManager": "pnpm@9.15.9",
   "scripts": {
     "parse": "tsx scripts/parser/generate-data.ts",
     "fetch:citations": "tsx scripts/parser/fetch-citations.ts",

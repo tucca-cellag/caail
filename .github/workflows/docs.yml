@@ -59,7 +59,9 @@ jobs:
           fetch-depth: 0
       - uses: pnpm/action-setup@v6
         with:
-          version: 9
+          # The exact pnpm is the packageManager field of the package.json named
+          # below. Do not add a version here.
+          package_json_file: site/package.json
       - uses: actions/setup-node@v6
         with:
           node-version: 22
