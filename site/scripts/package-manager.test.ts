@@ -13,11 +13,16 @@
  * disagrees with the pin it reads, or that finds no pin, and because the pins
  * agree, which package a step reads cannot change the pnpm it installs. The
  * action cannot see a range in the field, a `devEngines.packageManager` it
- * would read first, two packages on different pnpms, a job that runs pnpm with
- * no setup step, or one that fetches another pnpm (`npm i -g pnpm`,
- * `npx pnpm@…`, corepack, `pnpm self-update`); `pinProblems` checks those. It runs wherever `test.yml`
- * runs, which is not on a workflow-only edit, deliberately: `guards.yml`
- * records why workflow paths do not buy a full build.
+ * would read first, or two packages on different pnpms; `pinProblems` checks
+ * those, and the setup steps themselves. It runs wherever `test.yml` runs,
+ * which is not on a workflow-only edit, deliberately: `guards.yml` records why
+ * workflow paths do not buy a full build.
+ *
+ * WHAT IT DOES NOT READ. Manifests and `pnpm/action-setup` steps only, never
+ * shell. A `run:` step that fetches a pnpm of its own, or a local composite
+ * action, is left to review: two rounds of patterns over shell text each missed
+ * real forms and flagged harmless steps, so the check states this boundary
+ * rather than guess past it.
  *
  * THE PIN GOVERNS CI, NOT LOCAL RUNS. Corepack looks for `packageManager` from
  * the working directory upward and ignores `--dir`, so the documented
@@ -64,9 +69,6 @@ interface Repo {
 /** The pnpm a pin installs. The action and corepack both drop a `+sha…` suffix. */
 const versionOf = (pin: unknown) => (typeof pin === 'string' ? pin.split('+')[0] : undefined);
 const isSetup = (s: Step) => typeof s.uses === 'string' && s.uses.startsWith('pnpm/action-setup@');
-const runsPnpm = (s: Step) => /(^|[^\w/.-])pnpm(\s|@|$)/m.test(s.run ?? '');
-/** The common ways a step fetches a pnpm other than the one the setup step installed. */
-const OTHER_PNPM = /\bnpm\s+(i|install|add)\b[^\n]*\bpnpm\b|\bnpx\s+pnpm@|\bcorepack\b|\bpnpm\s+self-update\b|@pnpm\/exe\b/;
 
 /** Every way the pinning is broken, one readable line each; empty when it holds. */
 function pinProblems(repo: Repo): string[] {
@@ -91,22 +93,17 @@ function pinProblems(repo: Repo): string[] {
   const versions = [...new Set(repo.lockPackages.map((pkg) => versionOf(pinOf(pkg))))];
   if (versions.length > 1) problems.push(`the packages pin different pnpms: ${versions.join(', ')}`);
   // One version can still carry two integrity hashes, and at most one is right.
+  // Every manifest read, since a setup step can name one beside no lockfile.
   const hashes = new Set(
-    repo.lockPackages.map((pkg) => pinOf(pkg)).flatMap((pin) => (typeof pin === 'string' ? pin.split('+').slice(1) : [])),
+    Object.values(repo.manifests).flatMap((m) =>
+      typeof m?.packageManager === 'string' ? m.packageManager.split('+').slice(1) : [],
+    ),
   );
-  if (hashes.size > 1) problems.push(`the packages pin ${versions[0]} with ${hashes.size} different integrity hashes`);
+  if (hashes.size > 1) problems.push(`the pins carry ${hashes.size} different integrity hashes`);
   const shared = versions.length === 1 ? versions[0] : undefined;
 
   for (const job of repo.jobs) {
-    for (const step of job.steps) {
-      const other = (step.run ?? '').match(OTHER_PNPM);
-      if (other) problems.push(`${job.where}: fetches another pnpm (${other[0]}), which bypasses the pin`);
-    }
-    const setups = job.steps.filter(isSetup);
-    if (setups.length === 0 && job.steps.some(runsPnpm)) {
-      problems.push(`${job.where}: runs pnpm without a pnpm/action-setup step, so its pnpm is not the pin`);
-    }
-    for (const step of setups) {
+    for (const step of job.steps.filter(isSetup)) {
       if (step.with?.version !== undefined) {
         problems.push(`${job.where}: setup step carries version ${String(step.with.version)}`);
       }
@@ -258,26 +255,6 @@ describe('pinProblems rejects each way the pin can be lost', () => {
     expect(onlyProblem(repo)).toContain('a/package.jsn does not carry the shared pin');
   });
 
-  it('a job that runs pnpm without a setup step', () => {
-    const repo = fixture();
-    repo.jobs.push({ where: 'ci.yml › release', steps: [{ run: 'pnpm --dir a publish' }] });
-    expect(onlyProblem(repo)).toContain('ci.yml › release: runs pnpm without a pnpm/action-setup step');
-  });
-
-  it('pnpm reached through npx, which the whitespace form would miss', () => {
-    const repo = fixture();
-    repo.jobs.push({ where: 'ci.yml › release', steps: [{ run: 'npx pnpm@8.15.0 install --frozen-lockfile' }] });
-    const problems = pinProblems(repo);
-    expect(problems.some((p) => p.includes('runs pnpm without a pnpm/action-setup step'))).toBe(true);
-    expect(problems.some((p) => p.includes('fetches another pnpm (npx pnpm@)'))).toBe(true);
-  });
-
-  it('another pnpm fetched inside a job that does have a setup step', () => {
-    const repo = fixture();
-    repo.jobs[0].steps.push({ run: 'npm i -g pnpm@10' });
-    expect(onlyProblem(repo)).toContain('ci.yml › build: fetches another pnpm');
-  });
-
   it('a devEngines.packageManager on a manifest a step names, not only a lockfile package', () => {
     const repo = fixture();
     repo.manifests['package.json'] = {
@@ -292,6 +269,15 @@ describe('pinProblems rejects each way the pin can be lost', () => {
     const repo = fixture();
     repo.manifests['a/package.json'] = { packageManager: `${PIN}+sha512.aaaa` };
     repo.manifests['b/package.json'] = { packageManager: `${PIN}+sha512.bbbb` };
+    expect(onlyProblem(repo)).toContain('2 different integrity hashes');
+  });
+
+  it('a hash on a manifest a step names that differs from the packages', () => {
+    const repo = fixture();
+    repo.manifests['a/package.json'] = { packageManager: `${PIN}+sha512.aaaa` };
+    repo.manifests['b/package.json'] = { packageManager: `${PIN}+sha512.aaaa` };
+    repo.manifests['package.json'] = { packageManager: `${PIN}+sha512.cccc` };
+    repo.jobs[0].steps[0].with = { package_json_file: 'package.json' };
     expect(onlyProblem(repo)).toContain('2 different integrity hashes');
   });
 });
