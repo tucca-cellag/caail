@@ -51,6 +51,8 @@ export function llmsFullSources(repoRoot: string = REPO_ROOT): string[] {
   return [
     'README.md',
     'Papers.md',
+    // The matrix's row and column definitions, right after the matrix they define.
+    'Taxonomy.md',
     'Software.md',
     'Databases.md',
     'FieldReports.md',
@@ -58,6 +60,7 @@ export function llmsFullSources(repoRoot: string = REPO_ROOT): string[] {
     ...dirMarkdown(repoRoot, 'ResearchAreas'),
     ...dirMarkdown(repoRoot, 'Methods'),
     ...dirMarkdown(repoRoot, 'Primers'),
+    'AIAgentsFoundationModels.md',
     'OtherResources.md',
     'Funding.md',
     'ReferenceWorks.md',
@@ -107,7 +110,7 @@ function buildHeader(sources: string[]): string {
  *
  * Nothing about the bytes distinguishes the two cases reliably, so this does not try. Only
  * Starlight content pages carry frontmatter, Starlight REQUIRES it, and no canonical repo-root
- * Markdown has any — so the path answers the question exactly and the ~45 canonical files are
+ * Markdown has any — so the path answers the question exactly and the canonical files are
  * never examined at all. A `---` rule in Papers.md is now unreachable by this code rather than
  * defended against by a heuristic.
  */

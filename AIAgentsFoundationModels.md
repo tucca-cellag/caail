@@ -4,7 +4,7 @@ The fastest-moving corner of the library: general-purpose AI agents, biological 
 
 ## Virtual Cell Initiative & Single-Cell Foundation Models
 
-Companion landing pages, blog posts, and challenge announcements for the virtual-cell initiative: Arc Institute's foundation-model program (State, Stack), the broader CZ Virtual Cells Platform, and the open Virtual Cell Challenge. The conceptual framing for this cluster is in [Papers.md ref #128](./Papers.md#128) (Bunne et al. 2024, *Cell*) and [ref #129](./Papers.md#129) (Roohani et al. 2025, *Cell*); the foundation models themselves live in the [Foundation Models rows of Papers.md](./Papers.md): split by training paradigm (next-token prediction, masked language modeling, LM + biological priors, cell-state & perturbation prediction), and in the corresponding entries in [Software.md](./Software.md).
+Companion landing pages, blog posts, and challenge announcements for the virtual-cell initiative: Arc Institute's foundation-model program (State, Stack), the broader CZ Virtual Cells Platform, and the open Virtual Cell Challenge. The conceptual framing for this cluster is in [Papers.md ref #128](./Papers.md#128) (Bunne et al. 2024, *Cell*) and [ref #129](./Papers.md#129) (Roohani et al. 2025, *Cell*); the foundation models themselves live in the [Foundation Models rows of Papers.md](./Papers.md), split by training paradigm and modality as [Taxonomy.md](./Taxonomy.md) defines them, and in the corresponding entries in [Software.md](./Software.md).
 
 * [Arc Virtual Cell Model: State (landing page)](https://arcinstitute.org/tools/state), Project home for Arc Institute's State virtual-cell model and the underlying Virtual Cell Atlas.
 * [Arc Institute news: State: predicting cellular responses to perturbation across diverse contexts](https://arcinstitute.org/news/virtual-cell-model-state) (Arc Institute, 2025), Announcement and overview of the State model and its training methodology; companion to [Papers.md ref #57](./Papers.md#57).
@@ -14,11 +14,11 @@ Companion landing pages, blog posts, and challenge announcements for the virtual
 
 ## Agent frameworks & foundation models in Software.md
 
-The tools themselves are catalogued under [AI Agents & Foundation Models in Software.md](./Software.md#ai-agents--foundation-models). That section spans two families: general-purpose **agent frameworks and tool ecosystems**: ToolUniverse, Biomni, AIAgents4Pharma, BRAD, CellForge, PaperQA, BioContextAI, and the broader MCP-server layer (and **single-cell foundation models**) Geneformer, scGPT, scBERT, scFoundation, UCE, TranscriptFormer, Cell2Sentence, and Arc's State. New tools are added there, in their type-correct home; this hub does not duplicate the catalog.
+The tools themselves are catalogued under [AI Agents & Foundation Models in Software.md](./Software.md#ai-agents--foundation-models). That section spans two families: general-purpose **agent frameworks and tool ecosystems**: ToolUniverse, Biomni, AIAgents4Pharma, BRAD, CellForge, PaperQA, BioContextAI, and the broader MCP-server layer; and **single-cell foundation models**: Geneformer, scGPT, scBERT, scFoundation, UCE, TranscriptFormer, Cell2Sentence, and Arc's State. New tools are added there, in their type-correct home; this hub does not duplicate the catalog.
 
 ## In the Papers matrix
 
-In the [Papers matrix](./Papers.md), this area is reachable two ways: the **LLMs / AI Agents** method row (agentic systems with tool use, retrieval, and reasoning) and the **AI Tooling / Methodology** column (general-purpose methods and agents not yet tied to a specific cell-ag application). The [AI Tooling / Methodology research-area page](./ResearchAreas/AITooling.md) gives the deeper narrative for that column.
+In the [Papers matrix](./Papers.md), this area is reachable two ways: the foundation-model and agent method rows, whose current set and definitions are in [Taxonomy.md](./Taxonomy.md), and the **AI Tooling / Methodology** column (general-purpose methods and agents not yet tied to a specific cell-ag application). The [AI Tooling / Methodology research-area page](./ResearchAreas/AITooling.md) gives the deeper narrative for that column.
 
 ## Evaluation & benchmarks
 

@@ -216,23 +216,21 @@ async function mustStayPublishable(): Promise<string[]> {
   //   llmsFullSources()          what is inlined into the served llms-full.txt
   //   CANONICAL_SOURCES          what the docs loader turns into site routes
   //
-  // TWO files are loader-only, not one: Taxonomy.md and
-  // AIAgentsFoundationModels.md. Both are published routes and neither is in
-  // llms-full's list. A draft of this comment claimed a rule swallowing
-  // Taxonomy.md would be caught; it would not have been, and losing that file
-  // silently takes /taxonomy/ and every row and column definition with it.
-  //
-  // Worth knowing separately, and NOT fixed here: because they are loader-only,
-  // the served llms-full.txt omits both, while its own header calls itself the
-  // library's full text. That is pre-existing; this is just the first thing to
-  // compute the difference between the two enumerations. Do not read the gap as
-  // a single known exception.
+  // Today every CANONICAL_SOURCES file is also in llms-full's list, which
+  // llms-full.test.ts asserts. Keep the union anyway: that assertion lives in
+  // another file, and this guard must not lose a published route the day it
+  // goes red. Until it existed, Taxonomy.md and AIAgentsFoundationModels.md
+  // were loader-only, and a draft of this comment claimed a rule swallowing
+  // Taxonomy.md would be caught by llms-full alone. It would not have been, and
+  // losing that file silently takes /taxonomy/ and every row and column
+  // definition with it.
   ...new Set([
     ...(await llmsFull()),
     ...CANONICAL_SOURCES.files,
-    // Both of these are INSIDE the Set, not appended after it, so adding
-    // either to llmsFullSources() later (a natural change for the privacy
-    // page) does not trip the no-duplicates assertion on a correct edit.
+    // Both of these are INSIDE the Set, not appended after it, so a later
+    // decision to add either to llmsFullSources() does not trip the
+    // no-duplicates assertion. For privacy.mdx that decision has been made the
+    // other way: llms-full.test.ts excludes it from the corpus, with its reason.
     //
     // privacy.mdx: a route rather than corpus, in neither list. Losing it
     // silently is a compliance problem rather than a content one.
@@ -556,11 +554,11 @@ describe('the build\'s published content is not swallowed', () => {
 
     // EVERY file from each source survives into the union. The previous version
     // probed one literal per source (Taxonomy.md for the loader, Papers.md for
-    // llms-full) and reasoned that this proved both contributed. It did not: the
-    // two enumerations already overlap on five files, so the moment Taxonomy.md
-    // is added to llmsFullSources() (the natural fix for the gap noted above)
-    // the entire CANONICAL_SOURCES half could be deleted with both probes still
-    // green. Containment has no such hole.
+    // llms-full) and reasoned that this proved both contributed. It did not:
+    // the two enumerations overlap, and once Taxonomy.md joined
+    // llmsFullSources() every loader file was in both, so the entire
+    // CANONICAL_SOURCES half could be deleted with both probes still green.
+    // Containment has no such hole.
     for (const f of fromLlmsFull) {
       expect(publishable, `${f} reached the union from llms-full and was lost`).toContain(f);
     }
@@ -649,8 +647,8 @@ describe('the build\'s published content is not swallowed', () => {
     // built by spreading a Set, so `new Set(x).size === x.length` holds for
     // every possible input including one where both enumerations collapsed to
     // a single element. It read as load-bearing and could never fail. The two
-    // enumerations genuinely do overlap (five files are in both), so the Set is
-    // doing real work; asserting the result of it is asserting nothing.
+    // enumerations genuinely do overlap, so the Set is doing real work;
+    // asserting the result of it is asserting nothing.
   });
 
   it('does not over-match and swallow anything the build publishes', async () => {

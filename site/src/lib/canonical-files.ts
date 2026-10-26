@@ -97,7 +97,18 @@ export function isPublishedMarkdown(nameOrPath: string): boolean {
   // suffix match); the instruction-file check would not.
   const name = nameOrPath.split('/').pop() ?? nameOrPath;
   if (!name.endsWith('.md')) return false;
-  if (INSTRUCTION_FILES.has(name)) return false;
-  if (isPrivateCompanion(name)) return false;
-  return true;
+  return !isExcludedFromCorpus(name);
+}
+
+/**
+ * True when a bare file name is kept out of the corpus by name: an
+ * agent-instruction file (exactly `CLAUDE.md`, case-sensitive) or a private
+ * companion (`*.local.md` or `*.local.mdx`, in any case).
+ *
+ * `isPublishedMarkdown` is this plus its `.md` test. Exported so a check that
+ * walks the corpus with a wider extension set asks the same question about
+ * names, rather than rebuilding it and missing the next rule added here.
+ */
+export function isExcludedFromCorpus(name: string): boolean {
+  return INSTRUCTION_FILES.has(name) || isPrivateCompanion(name);
 }

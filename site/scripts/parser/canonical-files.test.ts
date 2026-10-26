@@ -21,6 +21,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import {
+  isExcludedFromCorpus,
   isPublishedMarkdown,
   isPrivateCompanion,
   PRIVATE_COMPANION_SUFFIXES,
@@ -89,6 +90,23 @@ describe('isPublishedMarkdown', () => {
     // `mylocal.md` ends with "local.md" but is not `*.local.md`.
     expect(isPublishedMarkdown('mylocal.md')).toBe(true);
     expect(isPrivateCompanion('mylocal.md')).toBe(false);
+  });
+});
+
+describe('isExcludedFromCorpus', () => {
+  // The name rule on its own, for walkers that admit more extensions than
+  // isPublishedMarkdown's `.md`: the llms-full coverage walk reads .mdx and
+  // .markdown too, in any case.
+  it('excludes the instruction file and private companions', () => {
+    for (const n of ['CLAUDE.md', 'Cow.local.md', 'notes.local.mdx', 'Cow.LOCAL.md']) {
+      expect(isExcludedFromCorpus(n), n).toBe(true);
+    }
+  });
+
+  it('excludes nothing else by name, whatever the extension', () => {
+    for (const n of ['Cow.md', 'about.mdx', 'Notes.markdown', 'FAQ.MD', 'mylocal.md']) {
+      expect(isExcludedFromCorpus(n), n).toBe(false);
+    }
   });
 });
 
