@@ -13,17 +13,18 @@
  * disagrees with the pin it reads, or that finds no pin, and because the pins
  * agree, which package a step reads cannot change the pnpm it installs. The
  * action cannot see a range in the field, a `devEngines.packageManager` it
- * would read first, two packages on different pnpms, or a job that gets pnpm
- * some other way; `pinProblems` checks those. It runs wherever `test.yml`
+ * would read first, two packages on different pnpms, a job that runs pnpm with
+ * no setup step, or one that fetches another pnpm (`npm i -g pnpm`,
+ * `npx pnpm@…`, corepack, `pnpm self-update`); `pinProblems` checks those. It runs wherever `test.yml`
  * runs, which is not on a workflow-only edit, deliberately: `guards.yml`
  * records why workflow paths do not buy a full build.
  *
  * THE PIN GOVERNS CI, NOT LOCAL RUNS. Corepack looks for `packageManager` from
  * the working directory upward and ignores `--dir`, so the documented
- * `pnpm --dir site …` from the repo root does not see it. A pnpm run without
- * corepack ignores it even inside `site/`: pnpm 9.15.9 run directly in a
- * package pinned to 9.15.8 used itself, with no warning. Both are
- * tucca-cellag/caail-planning#689.
+ * `pnpm --dir site …` from the repo root does not see it. And pnpm 9 run
+ * without corepack ignores it even inside `site/`: pnpm 9.15.9 run directly in
+ * a package pinned to 9.15.8 used itself, with no warning. Later majors were
+ * not measured. Both gaps are tucca-cellag/caail-planning#689.
  */
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
@@ -63,7 +64,9 @@ interface Repo {
 /** The pnpm a pin installs. The action and corepack both drop a `+sha…` suffix. */
 const versionOf = (pin: unknown) => (typeof pin === 'string' ? pin.split('+')[0] : undefined);
 const isSetup = (s: Step) => typeof s.uses === 'string' && s.uses.startsWith('pnpm/action-setup@');
-const runsPnpm = (s: Step) => /(^|[\s;&|(])pnpm\s/m.test(s.run ?? '');
+const runsPnpm = (s: Step) => /(^|[^\w/.-])pnpm(\s|@|$)/m.test(s.run ?? '');
+/** The common ways a step fetches a pnpm other than the one the setup step installed. */
+const OTHER_PNPM = /\bnpm\s+(i|install|add)\b[^\n]*\bpnpm\b|\bnpx\s+pnpm@|\bcorepack\b|\bpnpm\s+self-update\b|@pnpm\/exe\b/;
 
 /** Every way the pinning is broken, one readable line each; empty when it holds. */
 function pinProblems(repo: Repo): string[] {
@@ -75,7 +78,11 @@ function pinProblems(repo: Repo): string[] {
     if (typeof pin !== 'string' || !EXACT_PNPM.test(pin)) {
       problems.push(`${pkg}: packageManager is ${JSON.stringify(pin)}, not an exact pnpm`);
     }
-    const devEngines = repo.manifests[pkg]?.devEngines as { packageManager?: unknown } | undefined;
+  }
+  // Every manifest the check reads, not only the lockfile packages: a setup step
+  // can name any package.json, and the action reads devEngines there first too.
+  for (const [pkg, manifest] of Object.entries(repo.manifests)) {
+    const devEngines = manifest?.devEngines as { packageManager?: unknown } | undefined;
     if (devEngines?.packageManager !== undefined) {
       problems.push(`${pkg}: devEngines.packageManager is set, and pnpm/action-setup reads it before packageManager`);
     }
@@ -83,9 +90,18 @@ function pinProblems(repo: Repo): string[] {
 
   const versions = [...new Set(repo.lockPackages.map((pkg) => versionOf(pinOf(pkg))))];
   if (versions.length > 1) problems.push(`the packages pin different pnpms: ${versions.join(', ')}`);
+  // One version can still carry two integrity hashes, and at most one is right.
+  const hashes = new Set(
+    repo.lockPackages.map((pkg) => pinOf(pkg)).flatMap((pin) => (typeof pin === 'string' ? pin.split('+').slice(1) : [])),
+  );
+  if (hashes.size > 1) problems.push(`the packages pin ${versions[0]} with ${hashes.size} different integrity hashes`);
   const shared = versions.length === 1 ? versions[0] : undefined;
 
   for (const job of repo.jobs) {
+    for (const step of job.steps) {
+      const other = (step.run ?? '').match(OTHER_PNPM);
+      if (other) problems.push(`${job.where}: fetches another pnpm (${other[0]}), which bypasses the pin`);
+    }
     const setups = job.steps.filter(isSetup);
     if (setups.length === 0 && job.steps.some(runsPnpm)) {
       problems.push(`${job.where}: runs pnpm without a pnpm/action-setup step, so its pnpm is not the pin`);
@@ -120,9 +136,16 @@ function published(...pathspecs: string[]): string[] {
   return [...new Set(out.split('\0'))].filter((f) => f && existsSync(join(REPO_ROOT, f)));
 }
 
+/** A manifest by repo-relative path; package_json_file may also name a package.yaml. */
 function manifestAt(path: string): Manifest | undefined {
   const full = join(REPO_ROOT, path);
-  return existsSync(full) ? (JSON.parse(readFileSync(full, 'utf-8')) as Manifest) : undefined;
+  if (!existsSync(full)) return undefined;
+  const text = readFileSync(full, 'utf-8');
+  try {
+    return (/\.ya?ml$/.test(path) ? parse(text) : JSON.parse(text)) as Manifest;
+  } catch (err) {
+    throw new Error(`could not parse ${path}, which the pnpm pin check reads: ${String(err)}`);
+  }
 }
 
 let repoCache: Repo | undefined;
@@ -237,8 +260,39 @@ describe('pinProblems rejects each way the pin can be lost', () => {
 
   it('a job that runs pnpm without a setup step', () => {
     const repo = fixture();
-    repo.jobs.push({ where: 'ci.yml › release', steps: [{ run: 'npm i -g pnpm@9 && pnpm --dir a publish' }] });
+    repo.jobs.push({ where: 'ci.yml › release', steps: [{ run: 'pnpm --dir a publish' }] });
     expect(onlyProblem(repo)).toContain('ci.yml › release: runs pnpm without a pnpm/action-setup step');
+  });
+
+  it('pnpm reached through npx, which the whitespace form would miss', () => {
+    const repo = fixture();
+    repo.jobs.push({ where: 'ci.yml › release', steps: [{ run: 'npx pnpm@8.15.0 install --frozen-lockfile' }] });
+    const problems = pinProblems(repo);
+    expect(problems.some((p) => p.includes('runs pnpm without a pnpm/action-setup step'))).toBe(true);
+    expect(problems.some((p) => p.includes('fetches another pnpm (npx pnpm@)'))).toBe(true);
+  });
+
+  it('another pnpm fetched inside a job that does have a setup step', () => {
+    const repo = fixture();
+    repo.jobs[0].steps.push({ run: 'npm i -g pnpm@10' });
+    expect(onlyProblem(repo)).toContain('ci.yml › build: fetches another pnpm');
+  });
+
+  it('a devEngines.packageManager on a manifest a step names, not only a lockfile package', () => {
+    const repo = fixture();
+    repo.manifests['package.json'] = {
+      packageManager: PIN,
+      devEngines: { packageManager: { name: 'pnpm', version: '^10' } },
+    };
+    repo.jobs[0].steps[0].with = { package_json_file: 'package.json' };
+    expect(onlyProblem(repo)).toContain('package.json: devEngines.packageManager is set');
+  });
+
+  it('one version pinned with two different integrity hashes', () => {
+    const repo = fixture();
+    repo.manifests['a/package.json'] = { packageManager: `${PIN}+sha512.aaaa` };
+    repo.manifests['b/package.json'] = { packageManager: `${PIN}+sha512.bbbb` };
+    expect(onlyProblem(repo)).toContain('2 different integrity hashes');
   });
 });
 
