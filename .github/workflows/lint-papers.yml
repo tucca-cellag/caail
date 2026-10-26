@@ -117,7 +117,8 @@ jobs:
 
       - uses: pnpm/action-setup@v6
         with:
-          version: 9
+          # The exact pnpm is packageManager in this file, not a version here.
+          package_json_file: site/package.json
 
       - uses: actions/setup-node@v6
         with:
