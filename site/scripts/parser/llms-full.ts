@@ -51,10 +51,8 @@ export function llmsFullSources(repoRoot: string = REPO_ROOT): string[] {
   return [
     'README.md',
     'Papers.md',
-    // The matrix's row and column definitions, right after the matrix they define,
-    // then the glossary of the concepts around them (themes, topics, the join).
+    // The matrix's row and column definitions, right after the matrix they define.
     'Taxonomy.md',
-    'GLOSSARY.md',
     'Software.md',
     'Databases.md',
     'FieldReports.md',

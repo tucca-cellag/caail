@@ -20,7 +20,7 @@ import { describe, it, expect } from 'vitest';
 
 import { CAAIL_PAGES } from '../../src/content/caail-pages.js';
 import { CANONICAL_SOURCES } from '../../src/content/canonical-sources.js';
-import { isInstructionFile, isPrivateCompanion } from '../../src/lib/canonical-files.js';
+import { isExcludedFromCorpus, isPublishedMarkdown } from '../../src/lib/canonical-files.js';
 import { buildLlmsFullText, llmsFullSources } from './llms-full.js';
 
 const REPO_ROOT = fileURLToPath(new URL('../../../', import.meta.url));
@@ -28,8 +28,13 @@ const SITE_DOCS = 'site/src/content/docs';
 
 /** The site page renders a canonical file that is already in the full text. */
 const SHELL = 'a site shell around a canonical file the full text already carries';
-/** The site page is a view computed from data the full text already carries. */
-const DERIVED = 'a generated view over data the full text already carries';
+/**
+ * The site page is an interactive view over figures computed at build time,
+ * several from data the canonical Markdown does not hold at all. The full text
+ * carries the items, not these per-item figures.
+ */
+const DERIVED =
+  'an interactive view over build-time figures, several (citation counts, license tiers, topic tags) from data no carried file holds';
 /** Loaded by an agent as instructions; the library is what it reads. */
 const SKILL = 'a Claude Code skill, loaded as instructions rather than read as library content';
 
@@ -51,10 +56,13 @@ const SKILL = 'a Claude Code skill, loaded as instructions rather than read as l
 const LEFT_OUT: Record<string, string> = {
   'CODE_OF_CONDUCT.md': 'conduct rules for contributors, not library content',
   'DESIGN.md': "the website's design system",
+  'GLOSSARY.md':
+    "mostly notes for maintainers, which would crowd an agent's context; the reader-facing part (the two subject axes and how they pair) is in Taxonomy.md, which the full text carries",
+  // The one whole-directory key: everything under .claude/ is maintainer tooling.
   '.claude/': 'rules, skills and reviewer agents for maintaining the repository',
-  'plugin/': SKILL,
-  'plugin-contribute/': SKILL,
-  'skills/': SKILL,
+  'plugin/skills/': SKILL,
+  'plugin-contribute/skills/': SKILL,
+  'skills/caail-install/': SKILL,
   'site/README.md': "the website's developer guide",
   'site/HANDOFF-M2.md': 'a handoff note from building the website',
   'site/public/setup.md': 'a generated copy of skills/caail-install/SKILL.md, served at its own URL',
@@ -78,7 +86,8 @@ const LEFT_OUT: Record<string, string> = {
   [`${SITE_DOCS}/papers/reviews.mdx`]: SHELL,
   [`${SITE_DOCS}/primers/ai.mdx`]: SHELL,
   [`${SITE_DOCS}/primers/cell-ag.mdx`]: SHELL,
-  [`${SITE_DOCS}/papers/network.mdx`]: DERIVED,
+  [`${SITE_DOCS}/papers/network.mdx`]:
+    'an interactive graph over author and citation data no carried file holds; its note on how edges are built is not carried, since inlining the page would inline its component markup too',
   [`${SITE_DOCS}/by-the-numbers.mdx`]: DERIVED,
   [`${SITE_DOCS}/citations.mdx`]: DERIVED,
   [`${SITE_DOCS}/licenses.mdx`]: DERIVED,
@@ -99,17 +108,15 @@ function covers(key: string, file: string): boolean {
 const MARKDOWN_PATHSPECS = [':(icase)*.md', ':(icase)*.mdx', ':(icase)*.markdown'];
 
 /**
- * Not an agent-instruction file and not a private companion.
- *
- * The instruction-file test is `isInstructionFile`, the one `isPublishedMarkdown`
- * asks, so the walk and `llmsFullSources()` agree on what counts as a page. It is
- * exact, so a differently cased `Claude.md` is a page to both and would be
- * inlined into the served text; the "excludes CLAUDE.md" test below is what
- * refuses it, by matching in any case.
+ * Not excluded by name: the same `isExcludedFromCorpus` that
+ * `isPublishedMarkdown` asks, so the walk and `llmsFullSources()` agree on which
+ * NAMES are kept out. They deliberately disagree on extensions (see
+ * MARKDOWN_PATHSPECS), which is how a `Foo.MD` reaches the walk as undecided.
+ * The name rule is exact, so a differently cased `Claude.md` passes both and
+ * would be inlined; the "excludes CLAUDE.md" test below refuses it.
  */
 function isPublishable(file: string): boolean {
-  const name = file.split('/').pop() ?? file;
-  return !isInstructionFile(name) && !isPrivateCompanion(name);
+  return !isExcludedFromCorpus(file.split('/').pop() ?? file);
 }
 
 let publishedCache: string[] | undefined;
@@ -176,8 +183,12 @@ describe('llmsFullSources coverage, checked against the repo', () => {
     const inText = carried();
     // README.md is the converse case: in the full text, but rendered by no loader.
     expect(CAAIL_PAGES.missingTopLevelSources([...inText])).toEqual([]);
-    const inLoaderDirs = publishedMarkdown().filter((f) =>
-      CANONICAL_SOURCES.dirs.some((d) => f.startsWith(`${d}/`) && !f.slice(d.length + 1).includes('/')),
+    // The loader's own rule, so a `Foo.MD` (which it never renders) is left to
+    // the walk above to report as undecided rather than named here as a page.
+    const inLoaderDirs = publishedMarkdown().filter(
+      (f) =>
+        isPublishedMarkdown(f) &&
+        CANONICAL_SOURCES.dirs.some((d) => f.startsWith(`${d}/`) && !f.slice(d.length + 1).includes('/')),
     );
     expect(inLoaderDirs.filter((f) => !inText.has(f))).toEqual([]);
   });
