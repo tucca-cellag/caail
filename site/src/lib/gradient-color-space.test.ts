@@ -31,7 +31,9 @@ import { fileURLToPath } from 'node:url';
 // src/lib -> src -> site
 const SITE_ROOT = fileURLToPath(new URL('../../', import.meta.url));
 /** Where a gradient can be written. Test files are skipped: their fixtures hold gradients on purpose. */
-const SCAN_DIRS = ['src'];
+const SCAN_DIRS = ['src', 'public'];
+/** Single files outside SCAN_DIRS that can carry a style: the config writes the page head. */
+const SCAN_FILES = ['astro.config.mjs'];
 
 /**
  * A colour not known to be legacy sRGB: a wide-gamut colour function;
@@ -168,23 +170,23 @@ function oklabGradients(text: string, tokens: Set<string>): string[] {
 let sourcesCache: Array<[string, string]> | undefined;
 
 /**
- * Every .astro, .css, .ts, .tsx, .md and .mdx file under SCAN_DIRS, test files
- * aside, with its scannable text, read once. The generated JSON under
- * src/content/data holds no styles and is not read.
+ * Every .astro, .css, script (.js, .jsx, .mjs, .ts, .tsx), .md and .mdx file
+ * under SCAN_DIRS, test files aside, and every file in SCAN_FILES, with its
+ * scannable text, read once. Generated JSON holds no styles and is not read.
  */
 function sources(): Array<[string, string]> {
   if (sourcesCache) return sourcesCache;
   const out: Array<[string, string]> = [];
+  const read = (full: string) => out.push([full, scannable(full, readFileSync(full, 'utf-8'))]);
   const walk = (dir: string) => {
     for (const e of readdirSync(dir, { withFileTypes: true })) {
       const full = join(dir, e.name);
       if (e.isDirectory()) walk(full);
-      else if (/\.(astro|css|tsx?|mdx?)$/.test(e.name) && !/\.test\.tsx?$/.test(e.name)) {
-        out.push([full, scannable(full, readFileSync(full, 'utf-8'))]);
-      }
+      else if (/\.(astro|css|m?[jt]sx?|mdx?)$/.test(e.name) && !/\.test\.m?[jt]sx?$/.test(e.name)) read(full);
     }
   };
   for (const d of SCAN_DIRS) walk(join(SITE_ROOT, d));
+  for (const f of SCAN_FILES) read(join(SITE_ROOT, f));
   sourcesCache = out;
   return out;
 }
@@ -202,6 +204,17 @@ const SRGB_COPIES: Array<[string, string, number]> = [
   ['--caail-hero-stripe-from', '--caail-link', 0.24],
   ['--caail-hero-stripe-to', '--caail-primary', 0.16],
 ];
+
+/**
+ * A token's OKLch value as the coordinates oklchToSrgb255 takes, or undefined
+ * when it is not in the `oklch(L% C H)` form every token here uses. Every
+ * caller reports undefined as a failure, so another valid form (a unitless L,
+ * a `deg` hue, an alpha) fails loudly instead of going unchecked.
+ */
+function parseOklch(value: string): [number, number, number] | undefined {
+  const m = /^oklch\(\s*([\d.]+)%\s+([\d.]+)\s+([\d.]+)\s*\)$/.exec(value.trim());
+  return m ? [Number(m[1]) / 100, Number(m[2]), Number(m[3])] : undefined;
+}
 
 /**
  * Slack on each linear-light channel before a colour counts as outside sRGB, so
@@ -433,13 +446,13 @@ describe('gradient colour space (Firefox paint cost)', () => {
     const wrong: string[] = [];
     for (const [theme, tokensIn] of Object.entries(themes())) {
       for (const [copy, source, alpha] of SRGB_COPIES) {
-        const src = /^oklch\(\s*([\d.]+)%\s+([\d.]+)\s+([\d.]+)\s*\)$/.exec(tokensIn.get(source) ?? '');
+        const src = parseOklch(tokensIn.get(source) ?? '');
         const got = /^rgba?\(\s*(\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\s*\)$/.exec(tokensIn.get(copy) ?? '');
         if (!src || !got) {
           wrong.push(`${theme} ${copy}: ${tokensIn.get(copy)} does not parse against ${source}: ${tokensIn.get(source)}`);
           continue;
         }
-        const rendered = oklchToSrgb255(Number(src[1]) / 100, Number(src[2]), Number(src[3]));
+        const rendered = oklchToSrgb255(...src);
         if (!rendered) {
           wrong.push(`${theme} ${copy}: ${source} is ${tokensIn.get(source)}, outside sRGB, so no sRGB copy can equal it`);
           continue;
@@ -474,20 +487,23 @@ describe('the hex written beside each OKLch token', () => {
   // a later one (the Tufts brand hex beside a chrome colour) is a different
   // fact and is not checked. A token outside sRGB has no exact rendering, so its
   // hex has to be marked approximate with a ~ and is not compared.
-  const OKLCH = /^oklch\(\s*([\d.]+)%\s+([\d.]+)\s+([\d.]+)\s*\)$/;
   const hex = (rgb: number[]) => `#${rgb.map((v) => Math.round(v).toString(16).padStart(2, '0')).join('').toUpperCase()}`;
 
   it('matches the rendering in each tokens.css comment', () => {
     const raw = readFileSync(join(SITE_ROOT, 'src/styles/tokens.css'), 'utf-8');
     const wrong: string[] = [];
     let seen = 0;
-    for (const m of raw.matchAll(/(--[\w-]+)\s*:\s*(oklch\([^)]*\))\s*;[ \t]*\/\*([^*]*)\*\//g)) {
+    for (const m of raw.matchAll(/(--[\w-]+)\s*:\s*(oklch\([^)]*\))\s*;[ \t]*\/\*(.*?)\*\//g)) {
       const written = /(~?)(#[0-9a-f]{6})\b/i.exec(m[3]);
-      const src = OKLCH.exec(m[2]);
-      if (!written || !src) continue;
+      if (!written) continue;
       seen++;
       const line = raw.slice(0, m.index).split('\n').length;
-      const rendered = oklchToSrgb255(Number(src[1]) / 100, Number(src[2]), Number(src[3]));
+      const src = parseOklch(m[2]);
+      if (!src) {
+        wrong.push(`line ${line} ${m[1]}: ${m[2]} is not in the oklch(L% C H) form this check reads`);
+        continue;
+      }
+      const rendered = oklchToSrgb255(...src);
       if (!rendered) {
         if (!written[1]) wrong.push(`line ${line} ${m[1]}: outside sRGB, so write its hex as ~${written[2]}`);
       } else if (written[1] || written[2].toUpperCase() !== hex(rendered)) {
@@ -501,14 +517,16 @@ describe('the hex written beside each OKLch token', () => {
   it("matches the light value in DESIGN.md's token tables and density ramp", () => {
     const design = readFileSync(join(SITE_ROOT, '../DESIGN.md'), 'utf-8');
     const { light } = themes();
-    // A hex is compared with the token's sRGB rendering (or its own hex, for
-    // the palette written in hex); an oklch() is compared as written.
+    // A hex is compared with the token's own hex (the palette written in hex)
+    // or its sRGB rendering; an oklch() is compared as written. A token that
+    // gives neither answers with a description, which no hex equals.
     const actual = (name: string, written: string): string => {
       const value = light.get(name) ?? `nothing (no ${name})`;
       if (!written.startsWith('#')) return value;
-      const src = OKLCH.exec(value);
-      const rendered = src && oklchToSrgb255(Number(src[1]) / 100, Number(src[2]), Number(src[3]));
-      return rendered ? hex(rendered) : value.toUpperCase();
+      if (/^#[0-9a-f]{6}$/i.test(value)) return value.toUpperCase();
+      const src = parseOklch(value);
+      const rendered = src && oklchToSrgb255(...src);
+      return rendered ? hex(rendered) : `${value}, which has no exact sRGB hex`;
     };
     const pairs: Array<[string, string]> = [];
     for (const m of design.matchAll(/^\|[^\n]*?`(--caail-[\w-]+)`[^\n]*?`(#[0-9a-f]{6}|oklch\([^)]*\))`/gim)) {
