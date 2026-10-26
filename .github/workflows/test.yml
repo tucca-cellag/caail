@@ -51,11 +51,6 @@ on:
       - .claude/skills/matrix-classification-audit/docling_sections.test.py
       - .claude/skills/matrix-classification-audit/extract_matrix_corpus.py
       - .github/workflows/test.yml
-      # package-manager.test.ts reads every workflow that sets up pnpm, and
-      # docs.yml has no pull_request trigger, so this is the one pre-merge run
-      # that sees an edit to its pnpm step.
-      - .github/workflows/docs.yml
-      - .github/workflows/lint-papers.yml
       # The two ignore files, because canonical-files.test.ts now asserts they
       # agree with the code about what a private companion is (the publishing rule in CLAUDE.md).
       # Without these entries the guard never runs on the edit most likely to
@@ -170,11 +165,6 @@ on:
       - .claude/skills/matrix-classification-audit/docling_sections.test.py
       - .claude/skills/matrix-classification-audit/extract_matrix_corpus.py
       - .github/workflows/test.yml
-      # package-manager.test.ts reads every workflow that sets up pnpm, and
-      # docs.yml has no pull_request trigger, so this is the one pre-merge run
-      # that sees an edit to its pnpm step.
-      - .github/workflows/docs.yml
-      - .github/workflows/lint-papers.yml
       # The two ignore files, because canonical-files.test.ts now asserts they
       # agree with the code about what a private companion is (the publishing rule in CLAUDE.md).
       # Without these entries the guard never runs on the edit most likely to
