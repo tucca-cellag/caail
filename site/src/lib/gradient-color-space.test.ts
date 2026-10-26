@@ -21,8 +21,8 @@ import { fileURLToPath } from 'node:url';
  *
  * A frame-timing test would not catch this — headless and headed Playwright
  * Firefox both scrolled at a clean 60fps while a real Firefox janked badly. So
- * this is a static check instead: find every gradient that interpolates in
- * oklab and require the set to match a reviewed inventory.
+ * this is a static check instead: find every gradient that does not interpolate
+ * in sRGB, and require there to be none.
  */
 
 // src/lib -> src -> site
@@ -31,42 +31,57 @@ const SITE_ROOT = fileURLToPath(new URL('../../', import.meta.url));
 const SCAN_DIRS = ['src/components', 'src/styles', 'src/lib'];
 
 /**
- * Known oklab-interpolating gradients, by file, with how many that file has.
- *
- * Empty, and meant to stay empty: every gradient takes sRGB stops, from the
- * copies of the OKLch tokens listed in SRGB_COPIES below. If you add a gradient
- * built from a wide-gamut colour, from a token that resolves to one, or from
- * color-mix(), this test fails. Give it sRGB stops rather than an entry here.
- */
-const KNOWN_OKLAB_GRADIENTS: Record<string, number> = {};
-
-/**
- * A colour function that is not legacy sRGB. CSS Images 4 interpolates a
- * gradient in sRGB only when every stop is a legacy colour (hex, a name, rgb(),
- * hsl(), hwb()); one stop written any of these ways makes it OKLab.
+ * A colour function that is not legacy sRGB. A gradient that names no
+ * interpolation space interpolates in sRGB only when every stop is a legacy
+ * colour (hex, a name, rgb(), hsl(), hwb()); one stop written any of these ways
+ * makes it OKLab.
  */
 const WIDE_GAMUT = /\b(oklch|oklab|lch|lab|color|color-mix)\(/i;
 
-/** True when `text` reads the custom property `name`, spaces or a fallback included. */
-function usesToken(text: string, name: string): boolean {
-  return new RegExp(`var\\(\\s*${name}\\s*[,)]`).test(text);
+/**
+ * A gradient naming its own interpolation space, other than sRGB:
+ * `in oklch`, `in display-p3`, `in srgb-linear`. That overrides the stops, so
+ * hex stops do not keep it in sRGB, and sRGB is the one space known to take
+ * Firefox's fast path.
+ */
+const NON_SRGB_SPACE = /\bin\s+(?!srgb(?![\w-]))[a-z]/i;
+
+/** The custom properties a piece of CSS reads through var(), fallbacks included. */
+function tokensRead(text: string): string[] {
+  return [...text.matchAll(/var\(\s*(--[a-z0-9-]+)/gi)].map((m) => m[1]);
 }
 
 /** CSS with its comments removed, so neither a commented-out rule nor a brace in prose is read. */
-function stripComments(css: string): string {
-  return css.replace(/\/\*[\s\S]*?\*\//g, '');
+function stripCssComments(css: string): string {
+  // A quoted string is matched first and kept, so a `/*` inside one opens nothing.
+  return css.replace(/("(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*')|\/\*[\s\S]*?\*\//g, (_, quoted?: string) => quoted ?? '');
 }
 
 /**
- * Every custom-property declaration in a piece of CSS, in order. The name has
- * to follow a boundary, so a selector such as `.badge--on:before {` is not
- * read as one, and the value stops at a semicolon and holds no brace.
+ * A source's text as the scan reads it. Comments are removed only where they
+ * are CSS comments: a .css file, and an .astro file's <style> blocks. Script is
+ * read whole, because a `/*` in a string there (a glob, say) would open a
+ * comment that is not one and hide the code after it. A commented-out gradient
+ * in script is flagged rather than hidden, which is the safe way to be wrong.
  */
-function declarationList(css: string): Array<[string, string]> {
-  return [...stripComments(css).matchAll(/(?:^|[\s;{])(--[a-z0-9-]+)\s*:\s*([^;{}]+);/gi)].map((m) => [
-    m[1],
-    m[2].trim(),
-  ]);
+function scannable(file: string, text: string): string {
+  if (file.endsWith('.css')) return stripCssComments(text);
+  if (file.endsWith('.astro')) {
+    return text.replace(
+      /(<style\b[^>]*>)([\s\S]*?)(<\/style>)/gi,
+      (_, open: string, css: string, close: string) => open + stripCssComments(css) + close,
+    );
+  }
+  return text;
+}
+
+/**
+ * Every custom-property declaration in a source's scannable text, in order. The
+ * name has to follow a boundary, so a selector such as `.badge--on:before {` is
+ * not read as one, and the value stops at a semicolon and holds no brace.
+ */
+function declarationList(text: string): Array<[string, string]> {
+  return [...text.matchAll(/(?:^|[\s;{])(--[a-z0-9-]+)\s*:\s*([^;{}]+);/gi)].map((m) => [m[1], m[2].trim()]);
 }
 
 /** The custom properties a piece of CSS declares, the last declaration winning. */
@@ -81,15 +96,18 @@ function declarations(css: string): Map<string, string> {
  * `--caail-link` itself, so a gradient built from the alias is caught.
  */
 function wideGamutTokens(texts: string[]): Set<string> {
-  const declared = new Map<string, string>();
+  const names = new Set<string>();
+  const reads = new Map<string, string[]>();
   for (const text of texts) {
-    for (const [name, value] of declarationList(text)) declared.set(name, `${declared.get(name) ?? ''} ${value}`);
+    for (const [name, value] of declarationList(text)) {
+      if (WIDE_GAMUT.test(value)) names.add(name);
+      reads.set(name, [...(reads.get(name) ?? []), ...tokensRead(value)]);
+    }
   }
-  const names = new Set([...declared].filter(([, value]) => WIDE_GAMUT.test(value)).map(([name]) => name));
   for (let grew = true; grew; ) {
     grew = false;
-    for (const [name, value] of declared) {
-      if (!names.has(name) && [...names].some((t) => usesToken(value, t))) {
+    for (const [name, read] of reads) {
+      if (!names.has(name) && read.some((t) => names.has(t))) {
         names.add(name);
         grew = true;
       }
@@ -121,16 +139,19 @@ function gradientArgs(css: string): string[] {
   return found;
 }
 
-/** The gradients in a piece of CSS or code that interpolate in OKLab. */
+/** True when one gradient's argument text interpolates outside sRGB. */
+function isOklab(args: string, tokens: Set<string>): boolean {
+  return WIDE_GAMUT.test(args) || NON_SRGB_SPACE.test(args) || tokensRead(args).some((t) => tokens.has(t));
+}
+
+/** The gradients in a source's scannable text that interpolate outside sRGB. */
 function oklabGradients(text: string, tokens: Set<string>): string[] {
-  return gradientArgs(stripComments(text)).filter(
-    (args) => WIDE_GAMUT.test(args) || [...tokens].some((t) => usesToken(args, t)),
-  );
+  return gradientArgs(text).filter((args) => isOklab(args, tokens));
 }
 
 let sourcesCache: Array<[string, string]> | undefined;
 
-/** Every .astro, .css, .ts and .tsx file under SCAN_DIRS, test files aside, with its text, read once. */
+/** Every .astro, .css, .ts and .tsx file under SCAN_DIRS, test files aside, with its scannable text, read once. */
 function sources(): Array<[string, string]> {
   if (sourcesCache) return sourcesCache;
   const out: Array<[string, string]> = [];
@@ -139,7 +160,7 @@ function sources(): Array<[string, string]> {
       const full = join(dir, e.name);
       if (e.isDirectory()) walk(full);
       else if (/\.(astro|css|tsx?)$/.test(e.name) && !/\.test\.tsx?$/.test(e.name)) {
-        out.push([full, readFileSync(full, 'utf-8')]);
+        out.push([full, scannable(full, readFileSync(full, 'utf-8'))]);
       }
     }
   };
@@ -162,8 +183,18 @@ const SRGB_COPIES: Array<[string, string, number]> = [
   ['--caail-hero-stripe-to', '--caail-primary', 0.16],
 ];
 
-/** OKLch to gamma-encoded sRGB channels on 0-255, by Ottosson's OKLab matrices. */
-function oklchToSrgb255(l: number, c: number, hueDeg: number): number[] {
+/**
+ * Slack on each linear-light channel before a colour counts as outside sRGB, so
+ * the rounding in a token's typed digits does not push an edge colour out.
+ */
+const GAMUT_SLACK = 1e-4;
+
+/**
+ * OKLch to gamma-encoded sRGB channels on 0-255, by Ottosson's OKLab matrices,
+ * or undefined for a colour outside sRGB. No sRGB copy can equal such a colour,
+ * and clipping it would hand the copy test a value it then calls exact.
+ */
+function oklchToSrgb255(l: number, c: number, hueDeg: number): number[] | undefined {
   const a = c * Math.cos((hueDeg * Math.PI) / 180);
   const b = c * Math.sin((hueDeg * Math.PI) / 180);
   const lms = [
@@ -176,6 +207,7 @@ function oklchToSrgb255(l: number, c: number, hueDeg: number): number[] {
     -1.2684380046 * lms[0] + 2.6097574011 * lms[1] - 0.3413193965 * lms[2],
     -0.0041960863 * lms[0] - 0.7034186147 * lms[1] + 1.707614701 * lms[2],
   ];
+  if (linear.some((v) => v < -GAMUT_SLACK || v > 1 + GAMUT_SLACK)) return undefined;
   return linear.map((v) => {
     const x = Math.min(1, Math.max(0, v));
     return 255 * (x <= 0.0031308 ? 12.92 * x : 1.055 * x ** (1 / 2.4) - 0.055);
@@ -184,7 +216,7 @@ function oklchToSrgb255(l: number, c: number, hueDeg: number): number[] {
 
 /** tokens.css's light values, and its dark values with the light ones they do not override. */
 function themes(): Record<'light' | 'dark', Map<string, string>> {
-  const css = stripComments(readFileSync(join(SITE_ROOT, 'src/styles/tokens.css'), 'utf-8'));
+  const css = stripCssComments(readFileSync(join(SITE_ROOT, 'src/styles/tokens.css'), 'utf-8'));
   const darkAt = css.indexOf(":root[data-theme='dark']");
   if (darkAt < 0) throw new Error("tokens.css has no :root[data-theme='dark'] block, so the dark theme is unchecked");
   const light = declarations(css.slice(0, darkAt));
@@ -193,7 +225,7 @@ function themes(): Record<'light' | 'dark', Map<string, string>> {
   return { light, dark: new Map([...light, ...dark]) };
 }
 
-/** Repo-relative, POSIX-separated, so the inventory keys match on any platform. */
+/** Repo-relative, POSIX-separated, so a failure names a file the same way on any platform. */
 function posixRelative(file: string): string {
   return relative(SITE_ROOT, file).split(sep).join('/');
 }
@@ -203,7 +235,7 @@ describe('the detector, on fixtures', () => {
     ':root { --link: oklch(52% 0.11 256); --plain: #3172ae; }',
     ':root { --alias: var(--link); --alias2: var( --alias, red ); }',
     '.badge--on:before { color: red; } /* --commented: oklch(1 0 0); */',
-  ]);
+  ].map((css) => scannable('fixture.css', css)));
 
   it('resolves wide-gamut tokens through aliases, and reads no selector or comment as one', () => {
     expect([...tokens].sort()).toEqual(['--alias', '--alias2', '--link']);
@@ -219,21 +251,42 @@ describe('the detector, on fixtures', () => {
     ['an lch() stop', 'linear-gradient(lch(50% 20 30), #fff)'],
     ['a color() stop', 'linear-gradient(color(display-p3 1 0 0), #fff)'],
     ['a color-mix() stop', 'repeating-linear-gradient(45deg, color-mix(in oklab, red 35%, transparent), transparent 6px)'],
+    ['hex stops in an OKLch space', 'linear-gradient(in oklch 90deg, #002e6d, #3172ae)'],
+    ['hex stops in linear sRGB', 'linear-gradient(in srgb-linear, #002e6d, #3172ae)'],
   ])('flags a gradient built from %s', (_, css) => {
-    expect(oklabGradients(css, tokens)).toHaveLength(1);
+    expect(oklabGradients(scannable('fixture.css', css), tokens)).toHaveLength(1);
+  });
+
+  it.each([
+    ['a `/*` in a CSS string', 'fixture.css', 'a::after { content: "/*"; background: linear-gradient(var(--link), #fff); } /* end */'],
+    ['a glob string in script', 'fixture.ts', "const glob = '**/*.md';\nconst bg = 'linear-gradient(var(--link), #fff)';\n/** a doc comment */"],
+  ])('still flags a gradient that follows %s', (_, file, text) => {
+    expect(oklabGradients(scannable(file, text), tokens)).toHaveLength(1);
   });
 
   it.each([
     ['sRGB token copies', 'linear-gradient(90deg, var(--link-srgb), var(--plain))'],
     ['hex and rgb() stops', 'linear-gradient(#002e6d, rgb(59, 106, 167))'],
+    ['hex stops in an sRGB space', 'linear-gradient(in srgb 90deg, #002e6d, #3172ae)'],
     ['a gradient inside a comment', '/* linear-gradient(var(--link), #fff) */'],
   ])('passes a gradient built from %s', (_, css) => {
-    expect(oklabGradients(css, tokens)).toEqual([]);
+    expect(oklabGradients(scannable('fixture.css', css), tokens)).toEqual([]);
+  });
+});
+
+describe('the OKLch to sRGB conversion', () => {
+  it('renders sRGB red from its OKLch coordinates', () => {
+    expect(oklchToSrgb255(0.62796, 0.25768, 29.2339)?.map(Math.round)).toEqual([255, 0, 0]);
+  });
+
+  it('refuses a colour outside sRGB rather than clipping it into a copy', () => {
+    expect(oklchToSrgb255(0.7, 0.4, 150)).toBeUndefined();
   });
 });
 
 describe('gradient colour space (Firefox paint cost)', () => {
-  const tokens = () => wideGamutTokens(sources().map(([, text]) => text));
+  let wideCache: Set<string> | undefined;
+  const tokens = () => (wideCache ??= wideGamutTokens(sources().map(([, text]) => text)));
 
   it('finds the OKLch tokens it needs to reason about, aliases included', () => {
     // Sanity: if tokens.css stops being OKLch-authored this guard is inert,
@@ -246,18 +299,26 @@ describe('gradient colour space (Firefox paint cost)', () => {
   });
 
   it('introduces no new oklab-interpolating gradients', () => {
+    // Every gradient takes sRGB stops, from the copies in SRGB_COPIES. One built
+    // from a wide-gamut colour, from color-mix(), from a token CSS declares as
+    // one (directly or through var() aliases), or naming a space other than
+    // sRGB, fails here: give it sRGB stops. A colour a script sets at runtime is
+    // not seen: --chip, set inline from theme-colors.ts, is caught only because
+    // the stylesheets declare its default as an OKLch token.
     const wide = tokens();
     const found: Record<string, number> = {};
     for (const [file, text] of sources()) {
       const hits = oklabGradients(text, wide);
       if (hits.length > 0) found[posixRelative(file)] = hits.length;
     }
-    expect(found).toEqual(KNOWN_OKLAB_GRADIENTS);
+    expect(found).toEqual({});
   });
 
   it('lists every sRGB token in tokens.css as a checked copy', () => {
-    // An rgb()/rgba() token, or one named as a copy whatever its format, so a
-    // copy written in hex cannot skip the conversion check.
+    // A copy is found by its form or its name: an rgb()/rgba() value, or a name
+    // ending -srgb in any format. A hex value under another name is not
+    // recognised as one (the area palette is hex on purpose, and copies
+    // nothing), so a new copy has to be written one of those two ways.
     const listed = new Set(SRGB_COPIES.map(([copy]) => copy));
     const unlisted = new Set<string>();
     for (const tokensIn of Object.values(themes())) {
@@ -278,7 +339,12 @@ describe('gradient colour space (Firefox paint cost)', () => {
           wrong.push(`${theme} ${copy}: ${tokensIn.get(copy)} does not parse against ${source}: ${tokensIn.get(source)}`);
           continue;
         }
-        const want = oklchToSrgb255(Number(src[1]) / 100, Number(src[2]), Number(src[3])).map(Math.round);
+        const rendered = oklchToSrgb255(Number(src[1]) / 100, Number(src[2]), Number(src[3]));
+        if (!rendered) {
+          wrong.push(`${theme} ${copy}: ${source} is ${tokensIn.get(source)}, outside sRGB, so no sRGB copy can equal it`);
+          continue;
+        }
+        const want = rendered.map(Math.round);
         const have = [Number(got[1]), Number(got[2]), Number(got[3])];
         const haveAlpha = got[4] === undefined ? 1 : Number(got[4]);
         if (have.join() !== want.join() || haveAlpha !== alpha) {
@@ -290,7 +356,7 @@ describe('gradient colour space (Firefox paint cost)', () => {
   });
 
   it('builds the hero stripe gradient from those tokens, not inline colours', () => {
-    const hero = readFileSync(join(SITE_ROOT, 'src/components/Hero.astro'), 'utf-8');
+    const hero = scannable('Hero.astro', readFileSync(join(SITE_ROOT, 'src/components/Hero.astro'), 'utf-8'));
     const at = hero.indexOf('.hero-stripe::before');
     // Asserted separately so a renamed selector fails with "the rule moved"
     // rather than a confusing empty-gradient mismatch further down.
@@ -298,6 +364,6 @@ describe('gradient colour space (Firefox paint cost)', () => {
     const gradient = gradientArgs(hero.slice(at))[0] ?? '';
     expect(gradient).toContain('--caail-hero-stripe-from');
     expect(gradient).toContain('--caail-hero-stripe-to');
-    expect(gradient).not.toMatch(/\b(color-mix|oklch|oklab)\(/i);
+    expect(isOklab(gradient, tokens()), `the hero stripe interpolates outside sRGB: ${gradient}`).toBe(false);
   });
 });

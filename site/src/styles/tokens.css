@@ -46,9 +46,9 @@
      both --caail-bg and --caail-surface in the matching theme. */
   --caail-danger: oklch(50% 0.17 27);          /* ~#B02B27, 6.55:1 on white */
 
-  /* Hero diagonal stripe gradient stops. DELIBERATELY sRGB, not oklch like every
-     other token here. They and the copies below are this file's one exception
-     to the OKLch rule: the tokens a gradient takes.
+  /* Hero diagonal stripe gradient stops. DELIBERATELY sRGB, not oklch like the
+     chrome tokens they copy. They and the copies below are the tokens a
+     gradient takes.
 
      A gradient whose stops are oklch/oklab interpolates in oklab (CSS Color 4).
      Firefox does that interpolation per-pixel on the CPU, so repainting the
@@ -66,7 +66,10 @@
 
   /* sRGB copies of the chrome colours, for every other gradient, on the same
      grounds as the stripe stops above, and checked the same way. Only the
-     interpolation changes: each copy is its source's exact sRGB rendering. */
+     interpolation changes: each copy is its source's exact sRGB rendering.
+     Write a new copy as rgb() or rgba() and add it to SRGB_COPIES in
+     gradient-color-space.test.ts: an unlisted rgb() token fails there, while a
+     hex one is recognised as a copy only if its name ends in -srgb. */
   --caail-primary-srgb: rgb(15, 42, 108);
   --caail-link-srgb: rgb(59, 106, 167);
   /* --caail-accent at 35%: the hatched stub bar on /by-the-numbers/. */
