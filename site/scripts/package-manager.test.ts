@@ -9,14 +9,17 @@
  * and not the other, and every `pnpm/action-setup` step reads a pin rather
  * than carrying a `version:` of its own.
  *
- * WHAT ENFORCES WHAT. At run time the action fails a job whose `version:`
- * disagrees with the pin it reads, or that finds no pin, and because the pins
- * agree, which package a step reads cannot change the pnpm it installs. The
- * action cannot see a range in the field, a `devEngines.packageManager` it
- * would read first, or two packages on different pnpms; `pinProblems` checks
- * those, and the setup steps themselves. It runs wherever `test.yml` runs,
- * which is not on a workflow-only edit, deliberately: `guards.yml` records why
- * workflow paths do not buy a full build.
+ * WHAT ENFORCES WHAT. At run time the action fails a step whose `version:`
+ * disagrees with the pin it reads, or that has neither, and because the pins
+ * agree, which package a step reads cannot change the pnpm it installs. It does
+ * NOT fail a step reverted to a bare `version: 9`: with no `package_json_file`
+ * it looks for a root `package.json`, finds none, and installs a floating 9.x
+ * without a word. `pinProblems` catches that, and what the action cannot see at
+ * all: a range in the field, a `devEngines.packageManager` it would read first,
+ * two packages on different pnpms. It runs wherever `test.yml` runs, which is
+ * not on a workflow-only edit, deliberately (`guards.yml` records why workflow
+ * paths do not buy a full build), so a workflow-only PR is first checked by the
+ * next PR that runs the suite. That gap is tucca-cellag/caail-planning#666.
  *
  * WHAT IT DOES NOT READ. Manifests and `pnpm/action-setup` steps only, never
  * shell. A `run:` step that fetches a pnpm of its own, or a local composite
@@ -41,8 +44,11 @@ import { parse } from 'yaml';
 
 const REPO_ROOT = fileURLToPath(new URL('../../', import.meta.url));
 
-/** `pnpm@<major>.<minor>.<patch>`, with corepack's optional `+sha…` integrity suffix. */
-const EXACT_PNPM = /^pnpm@\d+\.\d+\.\d+(\+sha\d+\.[0-9a-f]+)?$/;
+/**
+ * `pnpm@<major>.<minor>.<patch>`, an optional prerelease tag (`-rc.3`), and
+ * corepack's optional `+sha…` integrity suffix.
+ */
+const EXACT_PNPM = /^pnpm@\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?(\+sha\d+\.[0-9a-f]+)?$/;
 
 interface Step {
   uses?: string;
@@ -90,16 +96,23 @@ function pinProblems(repo: Repo): string[] {
     }
   }
 
-  const versions = [...new Set(repo.lockPackages.map((pkg) => versionOf(pinOf(pkg))))];
-  if (versions.length > 1) problems.push(`the packages pin different pnpms: ${versions.join(', ')}`);
-  // One version can still carry two integrity hashes, and at most one is right.
-  // Every manifest read, since a setup step can name one beside no lockfile.
-  const hashes = new Set(
-    Object.values(repo.manifests).flatMap((m) =>
-      typeof m?.packageManager === 'string' ? m.packageManager.split('+').slice(1) : [],
-    ),
-  );
-  if (hashes.size > 1) problems.push(`the pins carry ${hashes.size} different integrity hashes`);
+  // One pass over every pin read, lockfile packages and named manifests alike.
+  // A missing pin is reported once above and does not count as a version here.
+  const pins = Object.values(repo.manifests)
+    .map((m) => m?.packageManager)
+    .filter((pin): pin is string => typeof pin === 'string');
+  const versions = [...new Set(pins.map((pin) => versionOf(pin)))];
+  if (versions.length > 1) problems.push(`the pins name different pnpms: ${versions.join(', ')}`);
+  // One version can still carry two hashes under one algorithm, and at most one
+  // is right. sha512 and sha256 of the same tarball are not a conflict.
+  const hashesByAlgorithm = new Map<string, Set<string>>();
+  for (const suffix of pins.flatMap((pin) => pin.split('+').slice(1))) {
+    const [algorithm, digest] = suffix.split('.', 2);
+    hashesByAlgorithm.set(algorithm, (hashesByAlgorithm.get(algorithm) ?? new Set()).add(digest));
+  }
+  for (const [algorithm, digests] of hashesByAlgorithm) {
+    if (digests.size > 1) problems.push(`the pins carry ${digests.size} different ${algorithm} integrity hashes`);
+  }
   const shared = versions.length === 1 ? versions[0] : undefined;
 
   for (const job of repo.jobs) {
@@ -154,9 +167,12 @@ function theRepo(): Repo {
     .filter((f) => f.split('/').pop() === 'pnpm-lock.yaml')
     .map((lock) => join(dirname(lock), 'package.json'));
   const jobs = published('.github/workflows/*.yml', '.github/workflows/*.yaml').flatMap((file) => {
-    const workflow = parse(readFileSync(join(REPO_ROOT, file), 'utf-8')) as {
-      jobs?: Record<string, { steps?: Step[] }>;
-    };
+    let workflow: { jobs?: Record<string, { steps?: Step[] }> };
+    try {
+      workflow = parse(readFileSync(join(REPO_ROOT, file), 'utf-8'));
+    } catch (err) {
+      throw new Error(`could not parse ${file}, which the pnpm pin check reads: ${String(err)}`);
+    }
     return Object.entries(workflow.jobs ?? {}).map(([name, job]) => ({
       where: `${file} › ${name}`,
       steps: job.steps ?? [],
@@ -207,6 +223,20 @@ describe('pinProblems accepts what holds', () => {
     expect(pinProblems(repo)).toEqual([]);
   });
 
+  it('an exact prerelease pin', () => {
+    const repo = fixture();
+    repo.manifests['a/package.json'] = { packageManager: 'pnpm@10.0.0-rc.3' };
+    repo.manifests['b/package.json'] = { packageManager: 'pnpm@10.0.0-rc.3' };
+    expect(pinProblems(repo)).toEqual([]);
+  });
+
+  it('hashes of the same tarball under two algorithms', () => {
+    const repo = fixture();
+    repo.manifests['a/package.json'] = { packageManager: `${PIN}+sha512.aaaa` };
+    repo.manifests['b/package.json'] = { packageManager: `${PIN}+sha256.bbbb` };
+    expect(pinProblems(repo)).toEqual([]);
+  });
+
   it("a step reading the other package's pin, which is the same pnpm", () => {
     const repo = fixture();
     repo.jobs[0].steps[0].with = { package_json_file: 'b/package.json' };
@@ -222,16 +252,24 @@ describe('pinProblems rejects each way the pin can be lost', () => {
     expect(pinProblems(repo).some((p) => p.includes('not an exact pnpm'))).toBe(true);
   });
 
-  it('a package with no pin', () => {
+  it('a package with no pin, reported once rather than fanned out', () => {
     const repo = fixture();
     repo.manifests['b/package.json'] = {};
-    expect(pinProblems(repo).some((p) => p.includes('b/package.json: packageManager is undefined'))).toBe(true);
+    expect(onlyProblem(repo)).toContain('b/package.json: packageManager is undefined');
+  });
+
+  it('a setup step reverted to a bare version, which the action would not catch', () => {
+    const repo = fixture();
+    repo.jobs[0].steps[0].with = { version: 9 };
+    const problems = pinProblems(repo);
+    expect(problems.some((p) => p.includes('carries version 9'))).toBe(true);
+    expect(problems.some((p) => p.includes('package_json_file undefined does not carry the shared pin'))).toBe(true);
   });
 
   it('two packages on different pnpms', () => {
     const repo = fixture();
     repo.manifests['b/package.json'] = { packageManager: 'pnpm@9.15.8' };
-    expect(pinProblems(repo).some((p) => p.includes('pin different pnpms'))).toBe(true);
+    expect(pinProblems(repo).some((p) => p.includes('name different pnpms'))).toBe(true);
   });
 
   it('a devEngines.packageManager the action would read first', () => {
@@ -269,7 +307,7 @@ describe('pinProblems rejects each way the pin can be lost', () => {
     const repo = fixture();
     repo.manifests['a/package.json'] = { packageManager: `${PIN}+sha512.aaaa` };
     repo.manifests['b/package.json'] = { packageManager: `${PIN}+sha512.bbbb` };
-    expect(onlyProblem(repo)).toContain('2 different integrity hashes');
+    expect(onlyProblem(repo)).toContain('2 different sha512 integrity hashes');
   });
 
   it('a hash on a manifest a step names that differs from the packages', () => {
@@ -278,7 +316,7 @@ describe('pinProblems rejects each way the pin can be lost', () => {
     repo.manifests['b/package.json'] = { packageManager: `${PIN}+sha512.aaaa` };
     repo.manifests['package.json'] = { packageManager: `${PIN}+sha512.cccc` };
     repo.jobs[0].steps[0].with = { package_json_file: 'package.json' };
-    expect(onlyProblem(repo)).toContain('2 different integrity hashes');
+    expect(onlyProblem(repo)).toContain('2 different sha512 integrity hashes');
   });
 });
 
