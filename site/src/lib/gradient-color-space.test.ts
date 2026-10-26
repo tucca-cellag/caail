@@ -28,27 +28,31 @@ import { fileURLToPath } from 'node:url';
 // src/lib -> src -> site
 const SITE_ROOT = fileURLToPath(new URL('../../', import.meta.url));
 /** Where a gradient can be written. Test files are skipped: their fixtures hold gradients on purpose. */
-const SCAN_DIRS = ['src/components', 'src/styles', 'src/lib'];
+const SCAN_DIRS = ['src'];
 
 /**
- * A colour function that is not legacy sRGB. A gradient that names no
- * interpolation space interpolates in sRGB only when every stop is a legacy
- * colour (hex, a name, rgb(), hsl(), hwb()); one stop written any of these ways
- * makes it OKLab.
+ * A colour not known to be legacy sRGB: a wide-gamut colour function, or
+ * currentColor, which takes the element's `color` (here usually an OKLch token)
+ * and so cannot be read statically. A gradient that names no interpolation
+ * space interpolates in sRGB only when every stop is a legacy colour (hex, a
+ * name, rgb(), hsl(), hwb()); one stop written any of these ways makes it OKLab.
  */
-const WIDE_GAMUT = /\b(oklch|oklab|lch|lab|color|color-mix)\(/i;
+const WIDE_GAMUT = /\b(oklch|oklab|lch|lab|color|color-mix)\(|\bcurrentcolor\b/i;
 
 /**
  * A gradient naming its own interpolation space, other than sRGB:
- * `in oklch`, `in display-p3`, `in srgb-linear`. That overrides the stops, so
- * hex stops do not keep it in sRGB, and sRGB is the one space known to take
- * Firefox's fast path.
+ * `in oklch`, `in display-p3`, `in srgb-linear`. An explicit space replaces the
+ * default the stops would set, so hex stops do not keep such a gradient in sRGB,
+ * and sRGB is the one space known to take Firefox's fast path. `in srgb` does
+ * not excuse wide-gamut stops either: whether Firefox takes its fast path for
+ * those is unverified, and a browser without interpolation-method support drops
+ * the whole declaration, which would leave a text-clipped title invisible.
  */
 const NON_SRGB_SPACE = /\bin\s+(?!srgb(?![\w-]))[a-z]/i;
 
 /** The custom properties a piece of CSS reads through var(), fallbacks included. */
 function tokensRead(text: string): string[] {
-  return [...text.matchAll(/var\(\s*(--[a-z0-9-]+)/gi)].map((m) => m[1]);
+  return [...text.matchAll(/var\(\s*(--[\w-]+)/gi)].map((m) => m[1]);
 }
 
 /** CSS with its comments removed, so neither a commented-out rule nor a brace in prose is read. */
@@ -77,11 +81,17 @@ function scannable(file: string, text: string): string {
 
 /**
  * Every custom-property declaration in a source's scannable text, in order. The
- * name has to follow a boundary, so a selector such as `.badge--on:before {` is
- * not read as one, and the value stops at a semicolon and holds no brace.
+ * name has to follow a boundary (the start, whitespace, `;`, `{` or the quote
+ * opening an inline style), so a selector such as `.badge--on:before {` is not
+ * read as one. The boundary is looked behind rather than matched, so
+ * `--a:#fff;--b:…` yields both. A value holds no brace and ends at a semicolon,
+ * at the block's closing brace, or at the end of the text.
  */
 function declarationList(text: string): Array<[string, string]> {
-  return [...text.matchAll(/(?:^|[\s;{])(--[a-z0-9-]+)\s*:\s*([^;{}]+);/gi)].map((m) => [m[1], m[2].trim()]);
+  return [...text.matchAll(/(?<=^|[\s;{"'`])(--[\w-]+)\s*:\s*([^;{}]+)(?=[;}]|$)/gi)].map((m) => [
+    m[1],
+    m[2].trim(),
+  ]);
 }
 
 /** The custom properties a piece of CSS declares, the last declaration winning. */
@@ -151,7 +161,11 @@ function oklabGradients(text: string, tokens: Set<string>): string[] {
 
 let sourcesCache: Array<[string, string]> | undefined;
 
-/** Every .astro, .css, .ts and .tsx file under SCAN_DIRS, test files aside, with its scannable text, read once. */
+/**
+ * Every .astro, .css, .ts, .tsx, .md and .mdx file under SCAN_DIRS, test files
+ * aside, with its scannable text, read once. The generated JSON under
+ * src/content/data holds no styles and is not read.
+ */
 function sources(): Array<[string, string]> {
   if (sourcesCache) return sourcesCache;
   const out: Array<[string, string]> = [];
@@ -159,7 +173,7 @@ function sources(): Array<[string, string]> {
     for (const e of readdirSync(dir, { withFileTypes: true })) {
       const full = join(dir, e.name);
       if (e.isDirectory()) walk(full);
-      else if (/\.(astro|css|tsx?)$/.test(e.name) && !/\.test\.tsx?$/.test(e.name)) {
+      else if (/\.(astro|css|tsx?|mdx?)$/.test(e.name) && !/\.test\.tsx?$/.test(e.name)) {
         out.push([full, scannable(full, readFileSync(full, 'utf-8'))]);
       }
     }
@@ -235,10 +249,22 @@ describe('the detector, on fixtures', () => {
     ':root { --link: oklch(52% 0.11 256); --plain: #3172ae; }',
     ':root { --alias: var(--link); --alias2: var( --alias, red ); }',
     '.badge--on:before { color: red; } /* --commented: oklch(1 0 0); */',
+    ':root{--compact:#fff;--packed:oklch(50% 0.1 200);}',
+    '.x { --unterminated: oklch(52% 0.11 256) }',
+    ':root { --under_score: oklch(52% 0.11 256); }',
+    '<div style="--inline:oklch(50% 0.1 200)"></div>',
   ].map((css) => scannable('fixture.css', css)));
 
   it('resolves wide-gamut tokens through aliases, and reads no selector or comment as one', () => {
-    expect([...tokens].sort()).toEqual(['--alias', '--alias2', '--link']);
+    expect([...tokens].sort()).toEqual([
+      '--alias',
+      '--alias2',
+      '--inline',
+      '--link',
+      '--packed',
+      '--under_score',
+      '--unterminated',
+    ]);
   });
 
   it.each([
@@ -246,6 +272,8 @@ describe('the detector, on fixtures', () => {
     ['a token read with spaces', 'linear-gradient(var( --link ), #fff)'],
     ['a token read with a fallback', 'linear-gradient(var(--link, #3172ae), #fff)'],
     ['an alias of a wide-gamut token', 'linear-gradient(var(--alias2), #fff)'],
+    ['a token with an underscore in its name', 'linear-gradient(var(--under_score), #fff)'],
+    ['a currentColor stop', 'linear-gradient(currentColor, transparent)'],
     ['an oklch() stop', 'linear-gradient(oklch(52% 0.11 256), #fff)'],
     ['a lab() stop', 'linear-gradient(lab(50% 20 30), #fff)'],
     ['an lch() stop', 'linear-gradient(lch(50% 20 30), #fff)'],
@@ -314,11 +342,25 @@ describe('gradient colour space (Firefox paint cost)', () => {
     expect(found).toEqual({});
   });
 
+  it('declares every copy, and the token it copies, in tokens.css alone', () => {
+    // The equality check below reads tokens.css, so a copy or a source
+    // redeclared in any other stylesheet would drift from it unseen.
+    const watched = new Set(SRGB_COPIES.flatMap(([copy, source]) => [copy, source]));
+    const elsewhere: string[] = [];
+    for (const [file, text] of sources()) {
+      const where = posixRelative(file);
+      if (where === 'src/styles/tokens.css') continue;
+      for (const [name] of declarationList(text)) if (watched.has(name)) elsewhere.push(`${where}: ${name}`);
+    }
+    expect(elsewhere).toEqual([]);
+  });
+
   it('lists every sRGB token in tokens.css as a checked copy', () => {
     // A copy is found by its form or its name: an rgb()/rgba() value, or a name
-    // ending -srgb in any format. A hex value under another name is not
-    // recognised as one (the area palette is hex on purpose, and copies
-    // nothing), so a new copy has to be written one of those two ways.
+    // ending -srgb in any format. The equality check below parses rgb()/rgba()
+    // only, so that is the form a copy takes. A hex value under another name is
+    // not recognised as a copy at all (the area palette is hex on purpose, and
+    // copies nothing).
     const listed = new Set(SRGB_COPIES.map(([copy]) => copy));
     const unlisted = new Set<string>();
     for (const tokensIn of Object.values(themes())) {

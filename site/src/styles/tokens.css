@@ -1,4 +1,6 @@
-/* CAAIL design tokens — OKLch authored, hex fallbacks in comments. See DESIGN.md §2. */
+/* CAAIL design tokens: OKLch authored, hex fallbacks in comments, apart from the hex
+   area palette and the sRGB copies a gradient takes (see the hero-stripe note). See
+   DESIGN.md §2. */
 :root {
   /* Spacing scale. Eight steps, superseding the six-step list in DESIGN.md §4 that the
      homepage had drifted 26 values away from. `section-gap` is the vertical rhythm
@@ -67,9 +69,8 @@
   /* sRGB copies of the chrome colours, for every other gradient, on the same
      grounds as the stripe stops above, and checked the same way. Only the
      interpolation changes: each copy is its source's exact sRGB rendering.
-     Write a new copy as rgb() or rgba() and add it to SRGB_COPIES in
-     gradient-color-space.test.ts: an unlisted rgb() token fails there, while a
-     hex one is recognised as a copy only if its name ends in -srgb. */
+     Write a new copy as rgb() or rgba(), the only form the equality check in
+     gradient-color-space.test.ts parses, and add it to SRGB_COPIES there. */
   --caail-primary-srgb: rgb(15, 42, 108);
   --caail-link-srgb: rgb(59, 106, 167);
   /* --caail-accent at 35%: the hatched stub bar on /by-the-numbers/. */

@@ -1,6 +1,6 @@
 # CAAIL Design System
 
-This document defines the visual language for the CAAIL documentation site (the Astro Starlight app under `site/`). The root Markdown files remain the canonical, GitHub-readable source of truth; the site is a generated navigation layer. Tokens are authored in OKLch in `site/src/styles/tokens.css`; Starlight chrome is mapped in `site/src/styles/starlight-overrides.css`.
+This document defines the visual language for the CAAIL documentation site (the Astro Starlight app under `site/`). The root Markdown files remain the canonical, GitHub-readable source of truth; the site is a generated navigation layer. Tokens are authored in OKLch in `site/src/styles/tokens.css`, with the exceptions §2 names; Starlight chrome is mapped in `site/src/styles/starlight-overrides.css`.
 
 ## 1. Brand foundation
 
@@ -33,7 +33,7 @@ Two layers with different rules: **chrome** (brand identity) and **data encoding
 
 **Use `--caail-danger`, never a literal red.** The palette inverts by lightness in dark mode, so a single fixed red cannot pass AA against both grounds: the `#b3261e` this token replaced measured 6.5:1 on white and 2.9:1 on the dark background, failing exactly where an error message has to be legible. The token is `oklch(50% 0.17 27)` light / `oklch(75% 0.17 27)` dark, each ≥6:1 against `--caail-bg` and `--caail-surface` in its own theme. Note that axe will not catch a regression here by default: it scans the light scheme, where almost any red passes.
 
-Values are authored in OKLch; hexes above are the targets. The Contribute action is a navy **outline** button (Tufts Brown is reserved for small accents, since a solid brown button reads muddy).
+Values are authored in OKLch; hexes above are the targets. Gradients are the exception: a gradient takes sRGB copies of these tokens, declared beside them in `tokens.css`, because Firefox rasterises a gradient that interpolates in OKLab per pixel on the CPU. `site/src/lib/gradient-color-space.test.ts` recomputes each copy from its source and fails when they drift. The Contribute action is a navy **outline** button (Tufts Brown is reserved for small accents, since a solid brown button reads muddy).
 
 ### Data encoding
 
