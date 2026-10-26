@@ -33,30 +33,51 @@ const SCAN_DIRS = ['src/components', 'src/styles'];
  * Known oklab-interpolating gradients, by file, with how many that file has.
  *
  * Empty, and meant to stay empty: every gradient takes sRGB stops, from the
- * `-srgb` copies of the OKLch tokens in tokens.css. If you add a gradient built
- * from OKLch tokens or color-mix(), this test fails. Give it sRGB stops rather
- * than an entry here.
+ * copies of the OKLch tokens listed in SRGB_COPIES below. If you add a gradient
+ * built from OKLch tokens, from a token that aliases one, or from color-mix(),
+ * this test fails. Give it sRGB stops rather than an entry here.
  */
 const KNOWN_OKLAB_GRADIENTS: Record<string, number> = {};
 
-/** Custom properties in tokens.css authored in a wide-gamut space. */
+/**
+ * Custom properties that resolve to a wide-gamut colour, wherever declared.
+ *
+ * Authored in OKLch or OKLab, mixed with color-mix(), or aliasing such a
+ * property, transitively: `--sl-color-accent: var(--caail-link)` in
+ * starlight-overrides.css is as OKLab as `--caail-link` itself, so a gradient
+ * built from the alias must not escape the check below.
+ */
 function wideGamutTokens(): Set<string> {
-  const css = readFileSync(join(SITE_ROOT, 'src/styles/tokens.css'), 'utf-8');
+  const declared = new Map<string, string>();
+  for (const file of sources()) {
+    for (const m of readFileSync(file, 'utf-8').matchAll(/(--[a-z0-9-]+)\s*:\s*([^;]+);/gi)) {
+      declared.set(m[1], `${declared.get(m[1]) ?? ''} ${m[2]}`);
+    }
+  }
   const names = new Set<string>();
-  for (const m of css.matchAll(/(--[a-z0-9-]+)\s*:\s*([^;]+);/gi)) {
-    if (/\b(oklch|oklab)\(/i.test(m[2])) names.add(m[1]);
+  for (const [name, value] of declared) {
+    if (/\b(oklch|oklab|color-mix)\(/i.test(value)) names.add(name);
+  }
+  for (let grew = true; grew; ) {
+    grew = false;
+    for (const [name, value] of declared) {
+      if (!names.has(name) && [...names].some((t) => value.includes(`var(${t})`))) {
+        names.add(name);
+        grew = true;
+      }
+    }
   }
   return names;
 }
 
-/** Every .astro/.css file under the scanned directories, recursively. */
+/** Every .astro, .css, .ts and .tsx file under the scanned directories, recursively. */
 function sources(): string[] {
   const out: string[] = [];
   const walk = (dir: string) => {
     for (const e of readdirSync(dir, { withFileTypes: true })) {
       const full = join(dir, e.name);
       if (e.isDirectory()) walk(full);
-      else if (/\.(astro|css)$/.test(e.name)) out.push(full);
+      else if (/\.(astro|css|tsx?)$/.test(e.name)) out.push(full);
     }
   };
   for (const d of SCAN_DIRS) walk(join(SITE_ROOT, d));
@@ -129,8 +150,10 @@ function declarations(block: string): Map<string, string> {
 function themes(): Record<'light' | 'dark', Map<string, string>> {
   const css = readFileSync(join(SITE_ROOT, 'src/styles/tokens.css'), 'utf-8');
   const darkAt = css.indexOf(":root[data-theme='dark']");
+  if (darkAt < 0) throw new Error("tokens.css has no :root[data-theme='dark'] block, so the dark theme is unchecked");
   const light = declarations(css.slice(0, darkAt));
   const dark = declarations(css.slice(darkAt, css.indexOf('}', darkAt)));
+  if (light.size === 0 || dark.size === 0) throw new Error('tokens.css: a theme block declared no tokens');
   return { light, dark: new Map([...light, ...dark]) };
 }
 
@@ -164,6 +187,17 @@ describe('gradient colour space (Firefox paint cost)', () => {
     expect(found).toEqual(KNOWN_OKLAB_GRADIENTS);
   });
 
+  it('lists every sRGB token in tokens.css as a checked copy', () => {
+    const listed = new Set(SRGB_COPIES.map(([copy]) => copy));
+    const unlisted = new Set<string>();
+    for (const tokensIn of Object.values(themes())) {
+      for (const [name, value] of tokensIn) {
+        if (/^rgba?\(/.test(value) && !listed.has(name)) unlisted.add(name);
+      }
+    }
+    expect([...unlisted]).toEqual([]);
+  });
+
   it('keeps every sRGB copy equal to the OKLch token it copies, in both themes', () => {
     const wrong: string[] = [];
     for (const [theme, tokensIn] of Object.entries(themes())) {
@@ -183,18 +217,6 @@ describe('gradient colour space (Firefox paint cost)', () => {
       }
     }
     expect(wrong).toEqual([]);
-  });
-
-  it('keeps the hero stripe stops in sRGB', () => {
-    const tokensCss = readFileSync(join(SITE_ROOT, 'src/styles/tokens.css'), 'utf-8');
-    const stops = [...tokensCss.matchAll(/--caail-hero-stripe-(?:from|to)\s*:\s*([^;]+);/g)].map(
-      (m) => m[1].trim(),
-    );
-    // One pair per theme (light + dark).
-    expect(stops).toHaveLength(4);
-    for (const stop of stops) {
-      expect(stop, `hero stripe stop must be sRGB, got: ${stop}`).toMatch(/^rgba?\(/);
-    }
   });
 
   it('builds the hero stripe gradient from those tokens, not inline colours', () => {
