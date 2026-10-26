@@ -33,20 +33,20 @@
 
   /* Chrome — Tufts (light) */
   --caail-bg: oklch(100% 0 0);                 /* #FFFFFF */
-  --caail-surface: oklch(97.2% 0.006 250);     /* #F4F6FA */
-  --caail-border: oklch(92.5% 0.012 250);      /* #E2E8F1 */
-  --caail-ink: oklch(24% 0.05 264);            /* #14213D */
-  --caail-muted: oklch(50% 0.02 255);          /* #67717F */
-  --caail-primary: oklch(31% 0.12 264);        /* #002E6D Tufts Dark Blue */
-  --caail-primary-hover: oklch(36% 0.13 264);  /* #013A86 */
-  --caail-link: oklch(52% 0.11 256);           /* #3172AE Tufts Digital Blue (AA) */
-  --caail-accent: oklch(40% 0.035 60);         /* #5E4B3C Tufts Brown */
+  --caail-surface: oklch(97.2% 0.006 250);     /* #F3F6FA */
+  --caail-border: oklch(92.5% 0.012 250);      /* #E0E7EE */
+  --caail-ink: oklch(24% 0.05 264);            /* #131E37 */
+  --caail-muted: oklch(50% 0.02 255);          /* #5C646F */
+  --caail-primary: oklch(31% 0.12 264);        /* #0F2A6C; Tufts Dark Blue is #002E6D */
+  --caail-primary-hover: oklch(36% 0.13 264);  /* #183680 */
+  --caail-link: oklch(52% 0.11 256);           /* #3B6AA7; Tufts Digital Blue (AA) is #3172AE */
+  --caail-accent: oklch(40% 0.035 60);         /* #564335; Tufts Brown is #5E4B3C */
   /* Validation-error text. A token rather than a literal because the palette inverts by
      lightness in dark mode and a single fixed red cannot pass AA against both grounds:
      the #b3261e this replaces measured 6.54:1 on white and 2.93:1 on the dark bg, so the
      one place it had to be readable was the one place it was not. Chosen for >=6:1 on
      both --caail-bg and --caail-surface in the matching theme. */
-  --caail-danger: oklch(50% 0.17 27);          /* ~#B02B27, 6.55:1 on white */
+  --caail-danger: oklch(50% 0.17 27);          /* #B02B27, 6.55:1 on white */
 
   /* Hero diagonal stripe gradient stops. DELIBERATELY sRGB, not oklch like the
      chrome tokens they copy. They and the copies below are the tokens a
@@ -77,11 +77,11 @@
   --caail-stub-hatch: rgba(86, 67, 53, 0.35);
 
   /* Data — sequential density ramp (single-hue navy, CVD-safe) */
-  --caail-density-0: oklch(97.2% 0.006 250);   /* #F4F6FA */
-  --caail-density-1: oklch(86% 0.04 256);      /* #C9D7EC  1-2 */
-  --caail-density-2: oklch(66% 0.08 258);      /* #7E9BC9  3-4 */
-  --caail-density-3: oklch(43% 0.12 262);      /* #27579F  5-7 */
-  --caail-density-4: oklch(31% 0.12 264);      /* #002E6D  8+ */
+  --caail-density-0: oklch(97.2% 0.006 250);   /* #F3F6FA */
+  --caail-density-1: oklch(86% 0.04 256);      /* #C0D3EC  1-2 */
+  --caail-density-2: oklch(66% 0.08 258);      /* #7494C3  3-4 */
+  --caail-density-3: oklch(43% 0.12 262);      /* #294C91  5-7 */
+  --caail-density-4: oklch(31% 0.12 264);      /* #0F2A6C  8+ */
 
   /* Canonical categorical palette: consumed via var(--caail-area-*) in components (the island carries only area keys, never colors). */
   /* Data — categorical (Okabe–Ito, CVD-safe) for the first six; 8 research areas.
@@ -174,14 +174,14 @@
 
 /* Dark mode — OKLch lightness inversion (Starlight toggles [data-theme='dark']) */
 :root[data-theme='dark'] {
-  --caail-bg: oklch(17% 0.03 264);             /* ~#0B1220 */
+  --caail-bg: oklch(17% 0.03 264);             /* #090F1C */
   --caail-surface: oklch(22% 0.03 264);
   --caail-border: oklch(30% 0.03 264);
-  --caail-ink: oklch(93% 0.02 255);            /* ~#E8EDF6 */
+  --caail-ink: oklch(93% 0.02 255);            /* #DFE9F5 */
   --caail-muted: oklch(72% 0.02 255);
   --caail-primary: oklch(72% 0.10 256);        /* lighter navy for dark bg */
   --caail-primary-hover: oklch(80% 0.10 256);
-  --caail-link: oklch(72% 0.10 256);           /* ~#5B8AD1 */
+  --caail-link: oklch(72% 0.10 256);           /* #7BA7E3 */
   --caail-accent: oklch(70% 0.05 60);
   --caail-danger: oklch(75% 0.17 27);          /* ~#FF7D71, 7.70:1 on the dark bg */
   /* Same two stops against the dark ramp, likewise in sRGB (see the light-mode

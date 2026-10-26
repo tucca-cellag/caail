@@ -21,23 +21,23 @@ Two layers with different rules: **chrome** (brand identity) and **data encoding
 | Token | Hex | Use |
 |---|---|---|
 | `--caail-bg` | `#FFFFFF` | page background |
-| `--caail-surface` | `#F4F6FA` | cards, ribbons |
-| `--caail-border` | `#E2E8F1` | hairlines |
-| `--caail-ink` | `#14213D` | body text |
-| `--caail-muted` | `#67717F` | secondary text |
-| `--caail-primary` | `#002E6D` | Tufts Dark Blue (PMS 294) — headings, solid buttons, wordmark |
-| `--caail-primary-hover` | `#013A86` | hover/active |
-| `--caail-link` | `#3172AE` | Tufts Digital Blue (AA-rated) — links, focus, active underline |
-| `--caail-accent` | `#5E4B3C` | Tufts Brown (PMS 7519) — small text accents only (eyebrows), never large buttons |
+| `--caail-surface` | `#F3F6FA` | cards, ribbons |
+| `--caail-border` | `#E0E7EE` | hairlines |
+| `--caail-ink` | `#131E37` | body text |
+| `--caail-muted` | `#5C646F` | secondary text |
+| `--caail-primary` | `#0F2A6C` | Tufts Dark Blue (PMS 294, brand hex `#002E6D`) — headings, solid buttons, wordmark |
+| `--caail-primary-hover` | `#183680` | hover/active |
+| `--caail-link` | `#3B6AA7` | Tufts Digital Blue (AA-rated, brand hex `#3172AE`) — links, focus, active underline |
+| `--caail-accent` | `#564335` | Tufts Brown (PMS 7519, brand hex `#5E4B3C`) — small text accents only (eyebrows), never large buttons |
 | `--caail-danger` | `#B02B27` | validation-error text — the only "attend to this" colour; never a background |
 
 **Use `--caail-danger`, never a literal red.** The palette inverts by lightness in dark mode, so a single fixed red cannot pass AA against both grounds: the `#b3261e` this token replaced measured 6.5:1 on white and 2.9:1 on the dark background, failing exactly where an error message has to be legible. The token is `oklch(50% 0.17 27)` light / `oklch(75% 0.17 27)` dark, each ≥6:1 against `--caail-bg` and `--caail-surface` in its own theme. Note that axe will not catch a regression here by default: it scans the light scheme, where almost any red passes.
 
-Values are authored in OKLch; hexes above are the targets. Gradients are the exception: a gradient takes sRGB copies of these tokens, declared beside them in `tokens.css`, because Firefox rasterises a gradient that interpolates in OKLab per pixel on the CPU. `site/src/lib/gradient-color-space.test.ts` recomputes each copy from its source and fails when they drift. The Contribute action is a navy **outline** button (Tufts Brown is reserved for small accents, since a solid brown button reads muddy).
+Values are authored in OKLch, and the hexes above are what each renders in sRGB, which `site/src/lib/gradient-color-space.test.ts` recomputes. The Tufts colours render close to their brand hex rather than on it; the favicon, the web manifest and the social card use the brand hex itself. Gradients are the exception to OKLch authoring: a gradient takes sRGB copies of these tokens, declared beside them in `tokens.css`, because Firefox rasterises a gradient that interpolates in OKLab per pixel on the CPU, and the same test fails when a copy drifts from its source. The Contribute action is a navy **outline** button (Tufts Brown is reserved for small accents, since a solid brown button reads muddy).
 
 ### Data encoding
 
-- **Sequential (density):** single-hue navy ramp `--caail-density-0..4` (`#F4F6FA → #C9D7EC → #7E9BC9 → #27579F → #002E6D`). Single-hue lightness is inherently CVD-safe and on-brand. Used for matrix cell shading and any intensity/heatmap.
+- **Sequential (density):** single-hue navy ramp `--caail-density-0..4` (`#F3F6FA → #C0D3EC → #7494C3 → #294C91 → #0F2A6C`). Single-hue lightness is inherently CVD-safe and on-brand. Used for matrix cell shading and any intensity/heatmap.
 - **Categorical (8 research areas):** Okabe–Ito (Color Universal Design), CVD-safe, for the first six; the last two are lightness-separated oklch (the CVD-safe set has only six usable hues, and 8 categories is past where hue alone separates reliably):
 
 | Area | Token | Value |
@@ -51,7 +51,7 @@ Values are authored in OKLch; hexes above are the targets. Gradients are the exc
 | Food Safety Prediction | `--caail-area-foodsafety` | `oklch(52% 0.12 200)` |
 | AI Tooling / Methodology | `--caail-area-tooling` | `#CC79A7` |
 
-This table is a hand-copied duplicate of `tokens.css` with no oracle checking it. The row above read "Bioprocess Control" for months after that column was renamed. If you change an area colour or label, change both.
+This table is a hand-copied duplicate of `tokens.css`. `site/src/lib/gradient-color-space.test.ts` checks its values against that file and nothing checks its labels: the row above read "Bioprocess Control" for months after that column was renamed. If you change an area colour or label, change both.
 
 `scripts/og-image.mjs`'s `AREA` array is a third copy but **not** a duplicate of these values, and must not be synced to them: the social card is a fixed navy field where the two `oklch()` areas measure under 3:1 and disappear, so the card carries lightened substitutes derived against that background *and* against the separation of the other dots. Change the count there when a column lands; do not copy the hexes.
 
@@ -109,7 +109,7 @@ Hero H1 is `clamp(3.2rem, 8.5vw, 6rem)` (weight 700, tight line-height). An earl
 
 ## 6. Dark mode
 
-Dark mode uses **OKLch lightness inversion**, toggled by Starlight via `:root[data-theme='dark']`. Surfaces go navy-black (`--caail-bg` ≈ `#0B1220`), `--caail-ink` becomes near-white (`#E8EDF6`), and `--caail-primary` / `--caail-link` shift lighter (≈ `#5B8AD1`) for contrast on dark. The density ramp inverts (light cells become dark, deep cells become bright navy). Because tokens like `--caail-ink` flip with the theme, the Starlight `--sl-color-white` mapping yields correct high-contrast text in both themes. Categorical area colors keep their hue across themes — the Okabe–Ito mid-tones stay legible on the dark surface — and where a tinted element needs more contrast on dark (e.g. the Explorer's Code/Data badges) its foreground is lightened via a `[data-theme='dark']` override. The split of `--sl-color-accent-low` into per-theme values matches Starlight's own per-theme accent handling.
+Dark mode uses **OKLch lightness inversion**, toggled by Starlight via `:root[data-theme='dark']`. Surfaces go navy-black (`--caail-bg`), `--caail-ink` becomes near-white, and `--caail-primary` / `--caail-link` shift lighter for contrast on dark. The density ramp inverts (light cells become dark, deep cells become bright navy). Because tokens like `--caail-ink` flip with the theme, the Starlight `--sl-color-white` mapping yields correct high-contrast text in both themes. Categorical area colors keep their hue across themes — the Okabe–Ito mid-tones stay legible on the dark surface — and where a tinted element needs more contrast on dark (e.g. the Explorer's Code/Data badges) its foreground is lightened via a `[data-theme='dark']` override. The split of `--sl-color-accent-low` into per-theme values matches Starlight's own per-theme accent handling.
 
 ## 7. Motion
 

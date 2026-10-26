@@ -23,6 +23,9 @@ import { fileURLToPath } from 'node:url';
  * Firefox both scrolled at a clean 60fps while a real Firefox janked badly. So
  * this is a static check instead: find every gradient that does not interpolate
  * in sRGB, and require there to be none.
+ *
+ * The file also checks every hex written beside an OKLch token, in tokens.css
+ * and DESIGN.md, because it holds the OKLch-to-sRGB conversion that needs.
  */
 
 // src/lib -> src -> site
@@ -31,22 +34,23 @@ const SITE_ROOT = fileURLToPath(new URL('../../', import.meta.url));
 const SCAN_DIRS = ['src'];
 
 /**
- * A colour not known to be legacy sRGB: a wide-gamut colour function, or
- * currentColor, which takes the element's `color` (here usually an OKLch token)
- * and so cannot be read statically. A gradient that names no interpolation
- * space interpolates in sRGB only when every stop is a legacy colour (hex, a
- * name, rgb(), hsl(), hwb()); one stop written any of these ways makes it OKLab.
+ * A colour not known to be legacy sRGB: a wide-gamut colour function;
+ * currentColor, which takes the element's `color` (here usually an OKLch
+ * token); or a token whose name is computed, such as `var(--caail-area-${key})`.
+ * Neither of the last two can be read statically. A gradient that names no
+ * interpolation space interpolates in sRGB only when every stop is a legacy
+ * colour (hex, a name, rgb(), hsl(), hwb()); one stop written any of these ways
+ * makes it OKLab.
  */
-const WIDE_GAMUT = /\b(oklch|oklab|lch|lab|color|color-mix)\(|\bcurrentcolor\b/i;
+const WIDE_GAMUT = /\b(oklch|oklab|lch|lab|color|color-mix)\(|\bcurrentcolor\b|var\(\s*--[\w-]*\$\{/i;
 
 /**
  * A gradient naming its own interpolation space, other than sRGB:
  * `in oklch`, `in display-p3`, `in srgb-linear`. An explicit space replaces the
  * default the stops would set, so hex stops do not keep such a gradient in sRGB,
- * and sRGB is the one space known to take Firefox's fast path. `in srgb` does
- * not excuse wide-gamut stops either: whether Firefox takes its fast path for
- * those is unverified, and a browser without interpolation-method support drops
- * the whole declaration, which would leave a text-clipped title invisible.
+ * and sRGB is the one space known to take Firefox's fast path. `in srgb` is
+ * passed, but it does not excuse wide-gamut stops: whether Firefox takes its
+ * fast path for those is unverified.
  */
 const NON_SRGB_SPACE = /\bin\s+(?!srgb(?![\w-]))[a-z]/i;
 
@@ -80,18 +84,20 @@ function scannable(file: string, text: string): string {
 }
 
 /**
- * Every custom-property declaration in a source's scannable text, in order. The
- * name has to follow a boundary (the start, whitespace, `;`, `{` or the quote
- * opening an inline style), so a selector such as `.badge--on:before {` is not
- * read as one. The boundary is looked behind rather than matched, so
- * `--a:#fff;--b:…` yields both. A value holds no brace and ends at a semicolon,
- * at the block's closing brace, or at the end of the text.
+ * Every custom-property declaration in a source's scannable text, in order,
+ * then each `@property` rule's initial value. The name has to follow a boundary
+ * (the start, whitespace, `;`, `{` or the quote opening an inline style), so a
+ * selector such as `.badge--on:before {` is not read as one. The boundary is
+ * looked behind rather than matched, so `--a:#fff;--b:…` yields both. A value
+ * holds no brace and ends at the first semicolon, closing brace or quote, or at
+ * the end of the text, so an inline style ends at its own closing quote. A
+ * value that itself holds a quote (a font list) is cut short there, which no
+ * colour does.
  */
 function declarationList(text: string): Array<[string, string]> {
-  return [...text.matchAll(/(?<=^|[\s;{"'`])(--[\w-]+)\s*:\s*([^;{}]+)(?=[;}]|$)/gi)].map((m) => [
-    m[1],
-    m[2].trim(),
-  ]);
+  const plain = [...text.matchAll(/(?<=^|[\s;{"'`])(--[\w-]+)\s*:\s*([^;{}]+?)\s*(?=[;}"'`]|$)/gi)];
+  const registered = [...text.matchAll(/@property\s+(--[\w-]+)\s*\{[^}]*?initial-value\s*:\s*([^;}]+)/gi)];
+  return [...plain, ...registered].map((m) => [m[1], m[2].trim()]);
 }
 
 /** The custom properties a piece of CSS declares, the last declaration winning. */
@@ -228,14 +234,43 @@ function oklchToSrgb255(l: number, c: number, hueDeg: number): number[] | undefi
   });
 }
 
-/** tokens.css's light values, and its dark values with the light ones they do not override. */
-function themes(): Record<'light' | 'dark', Map<string, string>> {
-  const css = stripCssComments(readFileSync(join(SITE_ROOT, 'src/styles/tokens.css'), 'utf-8'));
-  const darkAt = css.indexOf(":root[data-theme='dark']");
-  if (darkAt < 0) throw new Error("tokens.css has no :root[data-theme='dark'] block, so the dark theme is unchecked");
-  const light = declarations(css.slice(0, darkAt));
-  const dark = declarations(css.slice(darkAt, css.indexOf('}', darkAt)));
-  if (light.size === 0 || dark.size === 0) throw new Error('tokens.css: a theme block declared no tokens');
+/** Each top-level block of a stylesheet, as its selector or at-rule prelude and its body, nested blocks kept. */
+function topLevelBlocks(css: string): Array<[string, string]> {
+  const out: Array<[string, string]> = [];
+  let depth = 0;
+  let from = 0;
+  let open = 0;
+  for (let i = 0; i < css.length; i++) {
+    if (css[i] === '{') {
+      if (depth === 0) open = i;
+      depth++;
+    } else if (css[i] === '}' && depth > 0 && --depth === 0) {
+      out.push([css.slice(from, open).trim(), css.slice(open + 1, i)]);
+      from = i + 1;
+    }
+  }
+  return out;
+}
+
+const THEME_SELECTORS = { light: ':root', dark: ":root[data-theme='dark']" };
+
+/**
+ * A token sheet's light values, from its one `:root` block, and its dark values,
+ * from its one dark block, with the light ones they do not override. Any other
+ * block is left to the test that keeps copies and sources out of it.
+ */
+function themes(
+  css = stripCssComments(readFileSync(join(SITE_ROOT, 'src/styles/tokens.css'), 'utf-8')),
+): Record<'light' | 'dark', Map<string, string>> {
+  const blocks = topLevelBlocks(css);
+  const block = (selector: string) => {
+    const found = blocks.filter(([s]) => s === selector);
+    if (found.length !== 1) throw new Error(`the token sheet has ${found.length} ${selector} blocks; the copy check reads exactly one`);
+    return declarations(found[0][1]);
+  };
+  const light = block(THEME_SELECTORS.light);
+  const dark = block(THEME_SELECTORS.dark);
+  if (light.size === 0 || dark.size === 0) throw new Error('the token sheet: a theme block declared no tokens');
   return { light, dark: new Map([...light, ...dark]) };
 }
 
@@ -253,6 +288,8 @@ describe('the detector, on fixtures', () => {
     '.x { --unterminated: oklch(52% 0.11 256) }',
     ':root { --under_score: oklch(52% 0.11 256); }',
     '<div style="--inline:oklch(50% 0.1 200)"></div>',
+    '<div style="--inline2: oklch(1 0 0)" class="a">{foo}</div>',
+    '@property --registered { syntax: "<color>"; inherits: false; initial-value: oklch(50% 0.1 200); }',
   ].map((css) => scannable('fixture.css', css)));
 
   it('resolves wide-gamut tokens through aliases, and reads no selector or comment as one', () => {
@@ -260,8 +297,10 @@ describe('the detector, on fixtures', () => {
       '--alias',
       '--alias2',
       '--inline',
+      '--inline2',
       '--link',
       '--packed',
+      '--registered',
       '--under_score',
       '--unterminated',
     ]);
@@ -274,6 +313,7 @@ describe('the detector, on fixtures', () => {
     ['an alias of a wide-gamut token', 'linear-gradient(var(--alias2), #fff)'],
     ['a token with an underscore in its name', 'linear-gradient(var(--under_score), #fff)'],
     ['a currentColor stop', 'linear-gradient(currentColor, transparent)'],
+    ['a token whose name is computed', 'linear-gradient(90deg, var(--caail-area-${key}), transparent)'],
     ['an oklch() stop', 'linear-gradient(oklch(52% 0.11 256), #fff)'],
     ['a lab() stop', 'linear-gradient(lab(50% 20 30), #fff)'],
     ['an lch() stop', 'linear-gradient(lch(50% 20 30), #fff)'],
@@ -302,6 +342,19 @@ describe('the detector, on fixtures', () => {
   });
 });
 
+describe('reading the two theme blocks of a token sheet', () => {
+  const dark = ":root[data-theme='dark'] { --b: rgb(4, 5, 6); }";
+
+  it('takes light values from the :root block alone, not from an @media block before the dark one', () => {
+    const { light } = themes(`:root { --a: rgb(1, 2, 3); } @media (prefers-contrast: more) { :root { --a: rgb(9, 9, 9); } } ${dark}`);
+    expect(light.get('--a')).toBe('rgb(1, 2, 3)');
+  });
+
+  it('refuses a second dark block rather than reading only the first', () => {
+    expect(() => themes(`:root { --a: rgb(1, 2, 3); } ${dark} ${dark}`)).toThrow(/2 :root\[data-theme='dark'\] blocks/);
+  });
+});
+
 describe('the OKLch to sRGB conversion', () => {
   it('renders sRGB red from its OKLch coordinates', () => {
     expect(oklchToSrgb255(0.62796, 0.25768, 29.2339)?.map(Math.round)).toEqual([255, 0, 0]);
@@ -326,7 +379,7 @@ describe('gradient colour space (Firefox paint cost)', () => {
     expect(found.has('--sl-color-accent')).toBe(true);
   });
 
-  it('introduces no new oklab-interpolating gradients', () => {
+  it('interpolates every gradient in sRGB', () => {
     // Every gradient takes sRGB stops, from the copies in SRGB_COPIES. One built
     // from a wide-gamut colour, from color-mix(), from a token CSS declares as
     // one (directly or through var() aliases), or naming a space other than
@@ -342,15 +395,20 @@ describe('gradient colour space (Firefox paint cost)', () => {
     expect(found).toEqual({});
   });
 
-  it('declares every copy, and the token it copies, in tokens.css alone', () => {
-    // The equality check below reads tokens.css, so a copy or a source
-    // redeclared in any other stylesheet would drift from it unseen.
+  it("declares every copy, and the token it copies, in tokens.css's theme blocks alone", () => {
+    // The equality check below reads those two blocks, so a copy or a source
+    // redeclared anywhere else, another block of tokens.css included, would
+    // drift from it unseen.
     const watched = new Set(SRGB_COPIES.flatMap(([copy, source]) => [copy, source]));
+    const theming = new Set(Object.values(THEME_SELECTORS));
     const elsewhere: string[] = [];
     for (const [file, text] of sources()) {
       const where = posixRelative(file);
-      if (where === 'src/styles/tokens.css') continue;
-      for (const [name] of declarationList(text)) if (watched.has(name)) elsewhere.push(`${where}: ${name}`);
+      const outside =
+        where === 'src/styles/tokens.css'
+          ? topLevelBlocks(text).filter(([selector]) => !theming.has(selector)).map(([selector, body]) => `${selector} {${body}}`).join('\n')
+          : text;
+      for (const [name] of declarationList(outside)) if (watched.has(name)) elsewhere.push(`${where}: ${name}`);
     }
     expect(elsewhere).toEqual([]);
   });
@@ -407,5 +465,62 @@ describe('gradient colour space (Firefox paint cost)', () => {
     expect(gradient).toContain('--caail-hero-stripe-from');
     expect(gradient).toContain('--caail-hero-stripe-to');
     expect(isOklab(gradient, tokens()), `the hero stripe interpolates outside sRGB: ${gradient}`).toBe(false);
+  });
+});
+
+describe('the hex written beside each OKLch token', () => {
+  // A hex typed beside an OKLch value is a second copy of it, so each is
+  // recomputed here. The first hex in a token's comment is its sRGB rendering;
+  // a later one (the Tufts brand hex beside a chrome colour) is a different
+  // fact and is not checked. A token outside sRGB has no exact rendering, so its
+  // hex has to be marked approximate with a ~ and is not compared.
+  const OKLCH = /^oklch\(\s*([\d.]+)%\s+([\d.]+)\s+([\d.]+)\s*\)$/;
+  const hex = (rgb: number[]) => `#${rgb.map((v) => Math.round(v).toString(16).padStart(2, '0')).join('').toUpperCase()}`;
+
+  it('matches the rendering in each tokens.css comment', () => {
+    const raw = readFileSync(join(SITE_ROOT, 'src/styles/tokens.css'), 'utf-8');
+    const wrong: string[] = [];
+    let seen = 0;
+    for (const m of raw.matchAll(/(--[\w-]+)\s*:\s*(oklch\([^)]*\))\s*;[ \t]*\/\*([^*]*)\*\//g)) {
+      const written = /(~?)(#[0-9a-f]{6})\b/i.exec(m[3]);
+      const src = OKLCH.exec(m[2]);
+      if (!written || !src) continue;
+      seen++;
+      const line = raw.slice(0, m.index).split('\n').length;
+      const rendered = oklchToSrgb255(Number(src[1]) / 100, Number(src[2]), Number(src[3]));
+      if (!rendered) {
+        if (!written[1]) wrong.push(`line ${line} ${m[1]}: outside sRGB, so write its hex as ~${written[2]}`);
+      } else if (written[1] || written[2].toUpperCase() !== hex(rendered)) {
+        wrong.push(`line ${line} ${m[1]}: the comment says ${written[0]}, the token renders ${hex(rendered)}`);
+      }
+    }
+    expect(seen, 'no hex comments found, so nothing was checked').toBeGreaterThan(10);
+    expect(wrong).toEqual([]);
+  });
+
+  it("matches the light value in DESIGN.md's token tables and density ramp", () => {
+    const design = readFileSync(join(SITE_ROOT, '../DESIGN.md'), 'utf-8');
+    const { light } = themes();
+    // A hex is compared with the token's sRGB rendering (or its own hex, for
+    // the palette written in hex); an oklch() is compared as written.
+    const actual = (name: string, written: string): string => {
+      const value = light.get(name) ?? `nothing (no ${name})`;
+      if (!written.startsWith('#')) return value;
+      const src = OKLCH.exec(value);
+      const rendered = src && oklchToSrgb255(Number(src[1]) / 100, Number(src[2]), Number(src[3]));
+      return rendered ? hex(rendered) : value.toUpperCase();
+    };
+    const pairs: Array<[string, string]> = [];
+    for (const m of design.matchAll(/^\|[^\n]*?`(--caail-[\w-]+)`[^\n]*?`(#[0-9a-f]{6}|oklch\([^)]*\))`/gim)) {
+      pairs.push([m[1], m[2]]);
+    }
+    const ramp = /`--caail-density-0\.\.\d` \(`([^`]+)`\)/.exec(design);
+    expect(ramp, 'DESIGN.md no longer gives the density ramp in the form this test reads').not.toBeNull();
+    for (const [i, written] of (ramp?.[1].match(/#[0-9a-f]{6}/gi) ?? []).entries()) pairs.push([`--caail-density-${i}`, written]);
+    expect(pairs.length, 'too few token values found in DESIGN.md, so the reader has drifted').toBeGreaterThan(15);
+    const wrong = pairs
+      .filter(([name, written]) => actual(name, written) !== (written.startsWith('#') ? written.toUpperCase() : written))
+      .map(([name, written]) => `${name}: DESIGN.md says ${written}, tokens.css gives ${actual(name, written)}`);
+    expect(wrong).toEqual([]);
   });
 });
