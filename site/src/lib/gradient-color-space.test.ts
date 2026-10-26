@@ -31,7 +31,7 @@ import { fileURLToPath } from 'node:url';
 // src/lib -> src -> site
 const SITE_ROOT = fileURLToPath(new URL('../../', import.meta.url));
 /** Where a gradient can be written. Test files are skipped: their fixtures hold gradients on purpose. */
-const SCAN_DIRS = ['src', 'public'];
+const SCAN_DIRS = ['src', 'public', 'scripts'];
 /** Single files outside SCAN_DIRS that can carry a style: the config writes the page head. */
 const SCAN_FILES = ['astro.config.mjs'];
 
@@ -225,7 +225,7 @@ const GAMUT_SLACK = 1e-4;
 /**
  * OKLch to gamma-encoded sRGB channels on 0-255, by Ottosson's OKLab matrices,
  * or undefined for a colour outside sRGB. No sRGB copy can equal such a colour,
- * and clipping it would hand the copy test a value it then calls exact.
+ * and clipping it would hand the copy test a value it then calls equal.
  */
 function oklchToSrgb255(l: number, c: number, hueDeg: number): number[] | undefined {
   const a = c * Math.cos((hueDeg * Math.PI) / 180);
@@ -267,14 +267,18 @@ function topLevelBlocks(css: string): Array<[string, string]> {
 
 const THEME_SELECTORS = { light: ':root', dark: ":root[data-theme='dark']" };
 
+let tokenThemesCache: Record<'light' | 'dark', Map<string, string>> | undefined;
+
 /**
  * A token sheet's light values, from its one `:root` block, and its dark values,
  * from its one dark block, with the light ones they do not override. Any other
- * block is left to the test that keeps copies and sources out of it.
+ * block is left to the test that keeps copies and sources out of it. With no
+ * sheet given it reads tokens.css, once.
  */
-function themes(
-  css = stripCssComments(readFileSync(join(SITE_ROOT, 'src/styles/tokens.css'), 'utf-8')),
-): Record<'light' | 'dark', Map<string, string>> {
+function themes(css?: string): Record<'light' | 'dark', Map<string, string>> {
+  if (css === undefined) {
+    return (tokenThemesCache ??= themes(stripCssComments(readFileSync(join(SITE_ROOT, 'src/styles/tokens.css'), 'utf-8'))));
+  }
   const blocks = topLevelBlocks(css);
   const block = (selector: string) => {
     const found = blocks.filter(([s]) => s === selector);
@@ -426,17 +430,23 @@ describe('gradient colour space (Firefox paint cost)', () => {
     expect(elsewhere).toEqual([]);
   });
 
-  it('lists every sRGB token in tokens.css as a checked copy', () => {
-    // A copy is found by its form or its name: an rgb()/rgba() value, or a name
-    // ending -srgb in any format. The equality check below parses rgb()/rgba()
-    // only, so that is the form a copy takes. A hex value under another name is
-    // not recognised as a copy at all (the area palette is hex on purpose, and
-    // copies nothing).
+  it('lists every sRGB copy, in tokens.css or anywhere else, as a checked one', () => {
+    // A copy is found by its form or its name: in tokens.css, an rgb()/rgba()
+    // value; anywhere scanned, a name ending -srgb in any format. The equality
+    // check below parses rgb()/rgba() only, so that is the form a copy takes. A
+    // hex value under another name is not recognised as a copy at all (the area
+    // palette is hex on purpose, and copies nothing), and an rgba() outside
+    // tokens.css is an ordinary colour, such as a shadow.
     const listed = new Set(SRGB_COPIES.map(([copy]) => copy));
     const unlisted = new Set<string>();
     for (const tokensIn of Object.values(themes())) {
       for (const [name, value] of tokensIn) {
         if ((/^rgba?\(/.test(value) || name.endsWith('-srgb')) && !listed.has(name)) unlisted.add(name);
+      }
+    }
+    for (const [file, text] of sources()) {
+      for (const [name] of declarationList(text)) {
+        if (name.endsWith('-srgb') && !listed.has(name)) unlisted.add(`${posixRelative(file)}: ${name}`);
       }
     }
     expect([...unlisted]).toEqual([]);
@@ -484,20 +494,21 @@ describe('gradient colour space (Firefox paint cost)', () => {
 describe('the hex written beside each OKLch token', () => {
   // A hex typed beside an OKLch value is a second copy of it, so each is
   // recomputed here. The first hex in a token's comment is its sRGB rendering;
-  // a later one (the Tufts brand hex beside a chrome colour) is a different
-  // fact and is not checked. A token outside sRGB has no exact rendering, so its
-  // hex has to be marked approximate with a ~ and is not compared.
+  // a later one is a different fact and is not checked. A token outside sRGB
+  // has no single rendering (an sRGB screen maps it, a P3 one paints it), so it
+  // carries no hex: bring it into sRGB or leave the hex out. A ~ is refused too,
+  // since every hex this check accepts is the token's rendering, not near it.
   const hex = (rgb: number[]) => `#${rgb.map((v) => Math.round(v).toString(16).padStart(2, '0')).join('').toUpperCase()}`;
 
   it('matches the rendering in each tokens.css comment', () => {
     const raw = readFileSync(join(SITE_ROOT, 'src/styles/tokens.css'), 'utf-8');
     const wrong: string[] = [];
-    let seen = 0;
+    const read = new Set<number>();
     for (const m of raw.matchAll(/(--[\w-]+)\s*:\s*(oklch\([^)]*\))\s*;[ \t]*\/\*(.*?)\*\//g)) {
       const written = /(~?)(#[0-9a-f]{6})\b/i.exec(m[3]);
       if (!written) continue;
-      seen++;
       const line = raw.slice(0, m.index).split('\n').length;
+      read.add(line);
       const src = parseOklch(m[2]);
       if (!src) {
         wrong.push(`line ${line} ${m[1]}: ${m[2]} is not in the oklch(L% C H) form this check reads`);
@@ -505,12 +516,19 @@ describe('the hex written beside each OKLch token', () => {
       }
       const rendered = oklchToSrgb255(...src);
       if (!rendered) {
-        if (!written[1]) wrong.push(`line ${line} ${m[1]}: outside sRGB, so write its hex as ~${written[2]}`);
+        wrong.push(`line ${line} ${m[1]}: ${m[2]} is outside sRGB, so no hex can be written beside it`);
       } else if (written[1] || written[2].toUpperCase() !== hex(rendered)) {
         wrong.push(`line ${line} ${m[1]}: the comment says ${written[0]}, the token renders ${hex(rendered)}`);
       }
     }
-    expect(seen, 'no hex comments found, so nothing was checked').toBeGreaterThan(10);
+    // A hex beside an OKLch token in any other shape (the comment before the
+    // semicolon, no semicolon) is reported rather than passed over unread.
+    for (const [i, text] of raw.split('\n').entries()) {
+      if (/--[\w-]+\s*:\s*oklch\(/i.test(text) && /#[0-9a-f]{6}\b/i.test(text) && !read.has(i + 1)) {
+        wrong.push(`line ${i + 1}: an OKLch token with a hex this check cannot read; write it as --name: oklch(…); /* #hex */`);
+      }
+    }
+    expect(read.size, 'no hex comments found, so nothing was checked').toBeGreaterThan(10);
     expect(wrong).toEqual([]);
   });
 
@@ -526,7 +544,7 @@ describe('the hex written beside each OKLch token', () => {
       if (/^#[0-9a-f]{6}$/i.test(value)) return value.toUpperCase();
       const src = parseOklch(value);
       const rendered = src && oklchToSrgb255(...src);
-      return rendered ? hex(rendered) : `${value}, which has no exact sRGB hex`;
+      return rendered ? hex(rendered) : `${value}, which has no single sRGB hex`;
     };
     const pairs: Array<[string, string]> = [];
     for (const m of design.matchAll(/^\|[^\n]*?`(--caail-[\w-]+)`[^\n]*?`(#[0-9a-f]{6}|oklch\([^)]*\))`/gim)) {

@@ -25,19 +25,19 @@ Two layers with different rules: **chrome** (brand identity) and **data encoding
 | `--caail-border` | `#E0E7EE` | hairlines |
 | `--caail-ink` | `#131E37` | body text |
 | `--caail-muted` | `#5C646F` | secondary text |
-| `--caail-primary` | `#0F2A6C` | Tufts Dark Blue (PMS 294, brand hex `#002E6D`): headings, solid buttons, wordmark |
+| `--caail-primary` | `#002E6D` | Tufts Dark Blue (PMS 294): headings, solid buttons, wordmark |
 | `--caail-primary-hover` | `#183680` | hover/active |
-| `--caail-link` | `#3B6AA7` | Tufts Digital Blue (AA-rated, brand hex `#3172AE`): links, focus, active underline |
-| `--caail-accent` | `#564335` | Tufts Brown (PMS 7519, brand hex `#5E4B3C`): small text accents only (eyebrows), never large buttons |
+| `--caail-link` | `#3172AE` | Tufts Digital Blue (AA-rated): links, focus, active underline |
+| `--caail-accent` | `#5E4B3C` | Tufts Brown (PMS 7519): small text accents only (eyebrows), never large buttons |
 | `--caail-danger` | `#B02B27` | validation-error text — the only "attend to this" colour; never a background |
 
-**Use `--caail-danger`, never a literal red.** The palette inverts by lightness in dark mode, so a single fixed red cannot pass AA against both grounds: the `#b3261e` this token replaced measured 6.5:1 on white and 2.9:1 on the dark background, failing exactly where an error message has to be legible. The token is `oklch(50% 0.17 27)` light / `oklch(75% 0.17 27)` dark, each ≥6:1 against `--caail-bg` and `--caail-surface` in its own theme. Note that axe will not catch a regression here by default: it scans the light scheme, where almost any red passes.
+**Use `--caail-danger`, never a literal red.** The palette inverts by lightness in dark mode, so a single fixed red cannot pass AA against both grounds: the `#b3261e` this token replaced measured 6.5:1 on white and 2.9:1 on the dark background, failing exactly where an error message has to be legible. The token is `oklch(50% 0.17 27)` light / `oklch(75% 0.15 27)` dark, each ≥6:1 against `--caail-bg` and `--caail-surface` in its own theme. Note that axe will not catch a regression here by default: it scans the light scheme, where almost any red passes.
 
-Values are authored in OKLch, and the hexes above are what each renders in sRGB, which `site/src/lib/gradient-color-space.test.ts` recomputes. The Tufts colours render close to their brand hex rather than on it; the favicon, the web manifest and the `theme-color` meta use the brand navy, `#002E6D`, itself. Gradients are the exception to OKLch authoring: a gradient takes sRGB copies of these tokens, declared beside them in `tokens.css`, because Firefox rasterises a gradient that interpolates in OKLab per pixel on the CPU, and the same test fails when a copy drifts from its source. The Contribute action is a navy **outline** button (Tufts Brown is reserved for small accents, since a solid brown button reads muddy).
+Values are authored in OKLch, and the hexes above are what each renders in sRGB by Ottosson's OKLab conversion, which `site/src/lib/gradient-color-space.test.ts` recomputes. The three Tufts colours are set to render their brand hex, which the favicon, the web manifest and the `theme-color` meta also use. Gradients are the exception to OKLch authoring: a gradient takes sRGB copies of these tokens, declared beside them in `tokens.css`, because Firefox rasterises a gradient that interpolates in OKLab per pixel on the CPU, and the same test fails when a copy drifts from its source. The Contribute action is a navy **outline** button (Tufts Brown is reserved for small accents, since a solid brown button reads muddy).
 
 ### Data encoding
 
-- **Sequential (density):** single-hue navy ramp `--caail-density-0..4` (`#F3F6FA → #C0D3EC → #7494C3 → #294C91 → #0F2A6C`). Single-hue lightness is inherently CVD-safe and on-brand. Used for matrix cell shading and any intensity/heatmap.
+- **Sequential (density):** single-hue navy ramp `--caail-density-0..4` (`#F3F6FA → #C0D3EC → #7494C3 → #294C91 → #002E6D`). Single-hue lightness is inherently CVD-safe and on-brand. Used for matrix cell shading and any intensity/heatmap.
 - **Categorical (8 research areas):** Okabe–Ito (Color Universal Design), CVD-safe, for the first six; the last two are lightness-separated oklch (the CVD-safe set has only six usable hues, and 8 categories is past where hue alone separates reliably):
 
 | Area | Token | Value |
