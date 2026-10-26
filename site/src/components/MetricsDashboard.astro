@@ -356,7 +356,7 @@ const datasetsDays = daysAgo(momentum?.datasetsLastModified ?? null);
   .md-bars.share .md-row { grid-template-columns: 13rem 1fr 3.2rem 3rem; }
   @media (max-width: 38rem) { .md-bars.share .md-row { grid-template-columns: 8rem 1fr 2.6rem 2.6rem; } }
   .md-pct { font-size: .72rem; color: var(--caail-muted); font-family: var(--caail-font-mono); }
-  .md-row.stub .md-fill.species { background: repeating-linear-gradient(45deg, color-mix(in oklab, var(--caail-accent) 35%, transparent), color-mix(in oklab, var(--caail-accent) 35%, transparent) 6px, transparent 6px, transparent 12px); }
+  .md-row.stub .md-fill.species { background: repeating-linear-gradient(45deg, var(--caail-stub-hatch), var(--caail-stub-hatch) 6px, transparent 6px, transparent 12px); }
   .md-val { font-size: .72rem; font-weight: 700; color: var(--caail-muted); font-family: var(--caail-font-mono); }
   .md-row.stub .md-val { color: var(--caail-accent); font-family: var(--caail-font-ui); font-weight: 700; font-size: .64rem; text-transform: uppercase; letter-spacing: .04em; }
 

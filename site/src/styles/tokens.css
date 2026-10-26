@@ -58,9 +58,18 @@
 
      Values are the exact sRGB renderings of --caail-link at 24% alpha and
      --caail-primary at 16% (converted via Ottosson oklab->sRGB), so the stripe
-     looks the same. If the chrome tokens change, recompute these to match. */
+     looks the same. gradient-color-space.test.ts recomputes them from the
+     chrome tokens and fails, naming the copy, when the two drift. */
   --caail-hero-stripe-from: rgba(59, 106, 167, 0.24);
   --caail-hero-stripe-to: rgba(15, 42, 108, 0.16);
+
+  /* sRGB copies of the chrome colours, for every other gradient, on the same
+     grounds as the stripe stops above, and checked the same way. Only the
+     interpolation changes: each copy is its source's exact sRGB rendering. */
+  --caail-primary-srgb: rgb(15, 42, 108);
+  --caail-link-srgb: rgb(59, 106, 167);
+  /* --caail-accent at 35%: the hatched stub bar on /by-the-numbers/. */
+  --caail-stub-hatch: rgba(86, 67, 53, 0.35);
 
   /* Data — sequential density ramp (single-hue navy, CVD-safe) */
   --caail-density-0: oklch(97.2% 0.006 250);   /* #F4F6FA */
@@ -175,6 +184,10 @@
      so these differ only in alpha. */
   --caail-hero-stripe-from: rgba(123, 167, 227, 0.24);
   --caail-hero-stripe-to: rgba(123, 167, 227, 0.16);
+  /* The sRGB copies against the dark ramp (see the light-mode note). */
+  --caail-primary-srgb: rgb(123, 167, 227);
+  --caail-link-srgb: rgb(123, 167, 227);
+  --caail-stub-hatch: rgba(182, 152, 128, 0.35);
   --caail-density-0: oklch(24% 0.02 264);
   --caail-density-1: oklch(34% 0.05 260);
   --caail-density-2: oklch(48% 0.09 260);

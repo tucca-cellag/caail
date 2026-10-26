@@ -75,7 +75,7 @@ a.site-title {
  * via the global transition-killing block. */
 @supports (-webkit-background-clip: text) or (background-clip: text) {
   a.site-title {
-    background: linear-gradient(90deg, var(--caail-primary) 0%, var(--caail-primary) 35%, var(--caail-link) 50%, var(--caail-primary) 65%, var(--caail-primary) 100%);
+    background: linear-gradient(90deg, var(--caail-primary-srgb) 0%, var(--caail-primary-srgb) 35%, var(--caail-link-srgb) 50%, var(--caail-primary-srgb) 65%, var(--caail-primary-srgb) 100%);
     background-size: 220% 100%;
     background-position: 100% 0;
     -webkit-background-clip: text;
