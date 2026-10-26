@@ -14,7 +14,7 @@ Companion landing pages, blog posts, and challenge announcements for the virtual
 
 ## Agent frameworks & foundation models in Software.md
 
-The tools themselves are catalogued under [AI Agents & Foundation Models in Software.md](./Software.md#ai-agents--foundation-models). That section spans two families: general-purpose **agent frameworks and tool ecosystems**: ToolUniverse, Biomni, AIAgents4Pharma, BRAD, CellForge, PaperQA, BioContextAI, and the broader MCP-server layer (and **single-cell foundation models**) Geneformer, scGPT, scBERT, scFoundation, UCE, TranscriptFormer, Cell2Sentence, and Arc's State. New tools are added there, in their type-correct home; this hub does not duplicate the catalog.
+The tools themselves are catalogued under [AI Agents & Foundation Models in Software.md](./Software.md#ai-agents--foundation-models). That section spans two families: general-purpose **agent frameworks and tool ecosystems**: ToolUniverse, Biomni, AIAgents4Pharma, BRAD, CellForge, PaperQA, BioContextAI, and the broader MCP-server layer; and **single-cell foundation models**: Geneformer, scGPT, scBERT, scFoundation, UCE, TranscriptFormer, Cell2Sentence, and Arc's State. New tools are added there, in their type-correct home; this hub does not duplicate the catalog.
 
 ## In the Papers matrix
 

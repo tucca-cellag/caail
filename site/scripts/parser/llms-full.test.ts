@@ -26,8 +26,13 @@ import { buildLlmsFullText, llmsFullSources } from './llms-full.js';
 const REPO_ROOT = fileURLToPath(new URL('../../../', import.meta.url));
 const SITE_DOCS = 'site/src/content/docs';
 
-/** The site page renders a canonical file that is already in the full text. */
-const SHELL = 'a site shell around a canonical file the full text already carries';
+/**
+ * The site page renders a canonical file the full text carries. The per-item
+ * figures it adds on top (license tiers, citation counts, topic tags, GitHub
+ * stars, depending on the page) are in no carried file, and are not claimed to be.
+ */
+const SHELL =
+  'renders a canonical file the full text carries; the per-item figures it adds (license tiers, citation counts, topic tags, stars) are in no carried file';
 /**
  * The site page is an interactive view over figures computed at build time,
  * several from data the canonical Markdown does not hold at all. The full text
@@ -58,7 +63,8 @@ const LEFT_OUT: Record<string, string> = {
   'DESIGN.md': "the website's design system",
   'GLOSSARY.md':
     "mostly notes for maintainers, which would crowd an agent's context; the reader-facing part (the two subject axes and how they pair) is in Taxonomy.md, which the full text carries",
-  // The one whole-directory key: everything under .claude/ is maintainer tooling.
+  // The only key spanning a whole top-level directory: everything under .claude/
+  // is maintainer tooling.
   '.claude/': 'rules, skills and reviewer agents for maintaining the repository',
   'plugin/skills/': SKILL,
   'plugin-contribute/skills/': SKILL,
@@ -144,8 +150,9 @@ function publishedMarkdown(): string[] {
         `llms-full coverage asks git which files are published and needs a git work tree at ${REPO_ROOT}: ${String(err)}`,
       );
     }
-    publishedCache = listing
-      .split('\0')
+    // A Set, because during a merge conflict git lists an unmerged path once
+    // per stage, and a file reported three times reads as three problems.
+    publishedCache = [...new Set(listing.split('\0'))]
       .filter((f) => f && isPublishable(f) && existsSync(join(REPO_ROOT, f)))
       .sort();
   }
