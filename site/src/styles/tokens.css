@@ -38,8 +38,8 @@
   --caail-ink: oklch(24% 0.05 264);            /* #131E37 */
   --caail-muted: oklch(50% 0.02 255);          /* #5C646F */
   --caail-primary: oklch(31.7% 0.119 258.4);   /* #002E6D Tufts Dark Blue */
-  --caail-primary-hover: oklch(36% 0.13 264);  /* #183680 */
-  --caail-link: oklch(53.9% 0.115 249);        /* #3172AE Tufts Digital Blue (AA) */
+  --caail-primary-hover: oklch(36.8% 0.1385 258.6); /* #013A86 */
+  --caail-link: oklch(50% 0.115 249);          /* #2467A1 Tufts Digital Blue's hue, darker for AA (DESIGN.md §2) */
   --caail-accent: oklch(42.8% 0.035 60);       /* #5E4B3C Tufts Brown */
   /* Validation-error text. A token rather than a literal because the palette inverts by
      lightness in dark mode and a single fixed red cannot pass AA against both grounds:
@@ -63,7 +63,7 @@
      --caail-primary at 16%, by Ottosson's OKLab conversion, so the stripe
      looks the same. gradient-color-space.test.ts recomputes them from the
      chrome tokens and fails, naming the copy, when the two drift. */
-  --caail-hero-stripe-from: rgba(49, 114, 174, 0.24);
+  --caail-hero-stripe-from: rgba(36, 103, 161, 0.24);
   --caail-hero-stripe-to: rgba(0, 46, 109, 0.16);
 
   /* sRGB copies of the chrome colours, for every other gradient, on the same
@@ -73,7 +73,7 @@
      Write a new copy as rgb() or rgba(), the only form the equality check in
      gradient-color-space.test.ts parses, and add it to SRGB_COPIES there. */
   --caail-primary-srgb: rgb(0, 46, 109);
-  --caail-link-srgb: rgb(49, 114, 174);
+  --caail-link-srgb: rgb(36, 103, 161);
   /* --caail-accent at 35%: the hatched stub bar on /by-the-numbers/. */
   --caail-stub-hatch: rgba(94, 75, 60, 0.35);
 

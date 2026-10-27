@@ -27,7 +27,7 @@
  */
 :root {
   --sl-color-accent-low:  oklch(22% 0.08 256);   /* dark-mode: deep navy tint */
-  --sl-color-accent:      var(--caail-link);       /* Tufts Digital Blue */
+  --sl-color-accent:      var(--caail-link);       /* Tufts Digital Blue's hue */
   --sl-color-accent-high: var(--caail-primary);    /* Tufts Dark Blue */
 
   --sl-color-text-accent: var(--caail-link);

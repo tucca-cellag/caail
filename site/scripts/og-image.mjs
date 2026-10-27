@@ -73,6 +73,8 @@ const BIOREACTOR = `
 
 const FONT = 'Helvetica Neue, Helvetica, Arial, sans-serif';
 
+// The field runs from --caail-primary to --caail-primary-hover, written as hex because
+// resvg does not read oklch(). The pale text colours are this card's own and copy no token.
 const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">

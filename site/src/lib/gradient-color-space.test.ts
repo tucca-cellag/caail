@@ -505,10 +505,14 @@ describe('the hex written beside each OKLch token', () => {
     const wrong: string[] = [];
     const read = new Set<number>();
     for (const m of raw.matchAll(/(--[\w-]+)\s*:\s*(oklch\([^)]*\))\s*;[ \t]*\/\*(.*?)\*\//g)) {
-      const written = /(~?)(#[0-9a-f]{6})\b/i.exec(m[3]);
+      const written = /(~?)(#[0-9a-f]{3,8})\b/i.exec(m[3]);
       if (!written) continue;
       const line = raw.slice(0, m.index).split('\n').length;
       read.add(line);
+      if (written[2].length !== 7) {
+        wrong.push(`line ${line} ${m[1]}: write ${written[2]} as a six-digit hex, the form this check compares`);
+        continue;
+      }
       const src = parseOklch(m[2]);
       if (!src) {
         wrong.push(`line ${line} ${m[1]}: ${m[2]} is not in the oklch(L% C H) form this check reads`);
@@ -524,7 +528,7 @@ describe('the hex written beside each OKLch token', () => {
     // A hex beside an OKLch token in any other shape (the comment before the
     // semicolon, no semicolon) is reported rather than passed over unread.
     for (const [i, text] of raw.split('\n').entries()) {
-      if (/--[\w-]+\s*:\s*oklch\(/i.test(text) && /#[0-9a-f]{6}\b/i.test(text) && !read.has(i + 1)) {
+      if (/--[\w-]+\s*:\s*oklch\(/i.test(text) && /#[0-9a-f]{3,8}\b/i.test(text) && !read.has(i + 1)) {
         wrong.push(`line ${i + 1}: an OKLch token with a hex this check cannot read; write it as --name: oklch(…); /* #hex */`);
       }
     }
