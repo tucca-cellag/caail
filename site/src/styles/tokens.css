@@ -1,4 +1,6 @@
-/* CAAIL design tokens — OKLch authored, hex fallbacks in comments. See DESIGN.md §2. */
+/* CAAIL design tokens: OKLch authored, hex fallbacks in comments, apart from the hex
+   area palette and the sRGB copies a gradient takes (see the hero-stripe note). See
+   DESIGN.md §2. */
 :root {
   /* Spacing scale. Eight steps, superseding the six-step list in DESIGN.md §4 that the
      homepage had drifted 26 values away from. `section-gap` is the vertical rhythm
@@ -31,23 +33,24 @@
 
   /* Chrome — Tufts (light) */
   --caail-bg: oklch(100% 0 0);                 /* #FFFFFF */
-  --caail-surface: oklch(97.2% 0.006 250);     /* #F4F6FA */
-  --caail-border: oklch(92.5% 0.012 250);      /* #E2E8F1 */
-  --caail-ink: oklch(24% 0.05 264);            /* #14213D */
-  --caail-muted: oklch(50% 0.02 255);          /* #67717F */
-  --caail-primary: oklch(31% 0.12 264);        /* #002E6D Tufts Dark Blue */
-  --caail-primary-hover: oklch(36% 0.13 264);  /* #013A86 */
-  --caail-link: oklch(52% 0.11 256);           /* #3172AE Tufts Digital Blue (AA) */
-  --caail-accent: oklch(40% 0.035 60);         /* #5E4B3C Tufts Brown */
+  --caail-surface: oklch(97.2% 0.006 250);     /* #F3F6FA */
+  --caail-border: oklch(92.5% 0.012 250);      /* #E0E7EE */
+  --caail-ink: oklch(24% 0.05 264);            /* #131E37 */
+  --caail-muted: oklch(50% 0.02 255);          /* #5C646F */
+  --caail-primary: oklch(31.7% 0.119 258.4);   /* #002E6D Tufts Dark Blue */
+  --caail-primary-hover: oklch(36.8% 0.1385 258.6); /* #013A86 */
+  --caail-link: oklch(50% 0.115 249);          /* #2467A1 Tufts Digital Blue's hue, darker for AA (DESIGN.md §2) */
+  --caail-accent: oklch(42.8% 0.035 60);       /* #5E4B3C Tufts Brown */
   /* Validation-error text. A token rather than a literal because the palette inverts by
      lightness in dark mode and a single fixed red cannot pass AA against both grounds:
      the #b3261e this replaces measured 6.54:1 on white and 2.93:1 on the dark bg, so the
      one place it had to be readable was the one place it was not. Chosen for >=6:1 on
      both --caail-bg and --caail-surface in the matching theme. */
-  --caail-danger: oklch(50% 0.17 27);          /* ~#B02B27, 6.55:1 on white */
+  --caail-danger: oklch(50% 0.17 27);          /* #B02B27, 6.55:1 on white */
 
-  /* Hero diagonal stripe gradient stops. DELIBERATELY sRGB, not oklch like every
-     other token here — the one place in this file that breaks the OKLch rule.
+  /* Hero diagonal stripe gradient stops. DELIBERATELY sRGB, not oklch like the
+     chrome tokens they copy. They and the copies below are the tokens a
+     gradient takes.
 
      A gradient whose stops are oklch/oklab interpolates in oklab (CSS Color 4).
      Firefox does that interpolation per-pixel on the CPU, so repainting the
@@ -56,18 +59,30 @@
      the GPU path. These were previously composed with color-mix(in oklab, …),
      which produced oklab stops and the same cost.
 
-     Values are the exact sRGB renderings of --caail-link at 24% alpha and
-     --caail-primary at 16% (converted via Ottosson oklab->sRGB), so the stripe
-     looks the same. If the chrome tokens change, recompute these to match. */
-  --caail-hero-stripe-from: rgba(59, 106, 167, 0.24);
-  --caail-hero-stripe-to: rgba(15, 42, 108, 0.16);
+     Values are the sRGB renderings of --caail-link at 24% alpha and
+     --caail-primary at 16%, by Ottosson's OKLab conversion, so the stripe
+     looks the same. gradient-color-space.test.ts recomputes them from the
+     chrome tokens and fails, naming the copy, when the two drift. */
+  --caail-hero-stripe-from: rgba(36, 103, 161, 0.24);
+  --caail-hero-stripe-to: rgba(0, 46, 109, 0.16);
+
+  /* sRGB copies of the chrome colours, for every other gradient, on the same
+     grounds as the stripe stops above, and checked the same way. Only the
+     interpolation changes: each copy is its source's sRGB rendering, by
+     Ottosson's OKLab conversion.
+     Write a new copy as rgb() or rgba(), the only form the equality check in
+     gradient-color-space.test.ts parses, and add it to SRGB_COPIES there. */
+  --caail-primary-srgb: rgb(0, 46, 109);
+  --caail-link-srgb: rgb(36, 103, 161);
+  /* --caail-accent at 35%: the hatched stub bar on /by-the-numbers/. */
+  --caail-stub-hatch: rgba(94, 75, 60, 0.35);
 
   /* Data — sequential density ramp (single-hue navy, CVD-safe) */
-  --caail-density-0: oklch(97.2% 0.006 250);   /* #F4F6FA */
-  --caail-density-1: oklch(86% 0.04 256);      /* #C9D7EC  1-2 */
-  --caail-density-2: oklch(66% 0.08 258);      /* #7E9BC9  3-4 */
-  --caail-density-3: oklch(43% 0.12 262);      /* #27579F  5-7 */
-  --caail-density-4: oklch(31% 0.12 264);      /* #002E6D  8+ */
+  --caail-density-0: oklch(97.2% 0.006 250);   /* #F3F6FA */
+  --caail-density-1: oklch(86% 0.04 256);      /* #C0D3EC  1-2 */
+  --caail-density-2: oklch(66% 0.08 258);      /* #7494C3  3-4 */
+  --caail-density-3: oklch(43% 0.12 262);      /* #294C91  5-7 */
+  --caail-density-4: oklch(31.7% 0.119 258.4); /* #002E6D  8+ */
 
   /* Canonical categorical palette: consumed via var(--caail-area-*) in components (the island carries only area keys, never colors). */
   /* Data — categorical (Okabe–Ito, CVD-safe) for the first six; 8 research areas.
@@ -160,21 +175,25 @@
 
 /* Dark mode — OKLch lightness inversion (Starlight toggles [data-theme='dark']) */
 :root[data-theme='dark'] {
-  --caail-bg: oklch(17% 0.03 264);             /* ~#0B1220 */
+  --caail-bg: oklch(17% 0.03 264);             /* #090F1C */
   --caail-surface: oklch(22% 0.03 264);
   --caail-border: oklch(30% 0.03 264);
-  --caail-ink: oklch(93% 0.02 255);            /* ~#E8EDF6 */
+  --caail-ink: oklch(93% 0.02 255);            /* #DFE9F5 */
   --caail-muted: oklch(72% 0.02 255);
   --caail-primary: oklch(72% 0.10 256);        /* lighter navy for dark bg */
   --caail-primary-hover: oklch(80% 0.10 256);
-  --caail-link: oklch(72% 0.10 256);           /* ~#5B8AD1 */
+  --caail-link: oklch(72% 0.10 256);           /* #7BA7E3 */
   --caail-accent: oklch(70% 0.05 60);
-  --caail-danger: oklch(75% 0.17 27);          /* ~#FF7D71, 7.70:1 on the dark bg */
+  --caail-danger: oklch(75% 0.15 27);          /* #FF8579, 8.10:1 on the dark bg */
   /* Same two stops against the dark ramp, likewise in sRGB (see the light-mode
      note above). --caail-link and --caail-primary are the same colour on dark,
      so these differ only in alpha. */
   --caail-hero-stripe-from: rgba(123, 167, 227, 0.24);
   --caail-hero-stripe-to: rgba(123, 167, 227, 0.16);
+  /* The sRGB copies against the dark ramp (see the light-mode note). */
+  --caail-primary-srgb: rgb(123, 167, 227);
+  --caail-link-srgb: rgb(123, 167, 227);
+  --caail-stub-hatch: rgba(182, 152, 128, 0.35);
   --caail-density-0: oklch(24% 0.02 264);
   --caail-density-1: oklch(34% 0.05 260);
   --caail-density-2: oklch(48% 0.09 260);
