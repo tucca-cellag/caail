@@ -11,6 +11,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { buildPapersModel, PAPERS_MD_PATH } from './papers.js';
+import { EDITOR_ROLES_RE, stripItalics } from './apa.js';
 import { PapersDataSchema, type PapersData } from './types.js';
 
 const FIXTURE_PATH = join(
@@ -239,5 +240,68 @@ describe('buildPapersModel — real Papers.md', () => {
 
   it('validates against the schema', () => {
     expect(PapersDataSchema.safeParse(model).success).toBe(true);
+  });
+
+  // tucca-cellag/caail-planning#445: a title stopped short at an italic span inside it,
+  // or run on into a chapter's "In ..." clause. Checked across the whole corpus, so a
+  // reference added later in either shape fails here rather than shipping. What it
+  // checks: no title ends in "In", carries editors' roles in brackets (the parser's own
+  // list, EDITOR_ROLES_RE), or ends in an abbreviation that cannot end a title, and each
+  // is followed in its citation by a full stop or a bracketed descriptor. A title cut
+  // at an earlier full stop, or one that runs on past a full stop into the venue, still
+  // passes that last check, so the parser's own tests (apa.test.ts) pin those shapes;
+  // this is the corpus tripwire, not a proof that every title is right.
+
+  /** Why a parsed title looks cut short or run on, or null when it looks whole. */
+  const titleProblem = (title: string, raw: string): string | null => {
+    if (/\sIn:?$/.test(title)) return 'ends in "In"';
+    if (EDITOR_ROLES_RE.test(title)) return 'carries editors\' roles';
+    // Only abbreviations no title can end with: "spp." or "et al." can, and do.
+    if (/\b(?:vs|cf|e\.g|i\.e|St)$/.test(title)) return 'ends in an abbreviation';
+    // A title ending in ? or ! keeps its mark, so there is no full stop to find.
+    if (/[?!]$/.test(title)) return null;
+    // APA ends a title with a full stop, or with a bracketed descriptor such as
+    // "[Report]" or "[Poster, ...]" when the work has one.
+    const text = stripItalics(raw);
+    if (text.includes(`${title}.`) || text.includes(`${title} [`)) return null;
+    return 'not followed by a full stop or a bracketed descriptor';
+  };
+
+  it('flags each wrong-title shape and passes whole titles', () => {
+    const cited = (tail: string) => `Smith, J. (2024). ${tail}`;
+    expect(titleProblem('Growth of', cited('Growth of *E. coli* cells. *J, 1*.'))).not.toBeNull();
+    expect(titleProblem('Title. In', cited('Title. In *Book*.'))).not.toBeNull();
+    expect(titleProblem('Title. In A. Editor (Ed. & Trans.),', cited('Title. In A. Editor (Ed. & Trans.), *Book*.'))).not.toBeNull();
+    expect(titleProblem('Cells vs', cited('Cells vs. *E. coli* growth. *J, 1*.'))).not.toBeNull();
+    expect(titleProblem('Cells vs. E. coli growth', cited('Cells vs. *E. coli* growth. *J, 1*.'))).toBeNull();
+    expect(titleProblem('A thesis', cited('*A thesis* [Doctoral dissertation].'))).toBeNull();
+    expect(titleProblem('Is it?', cited('Is it? *J, 1*.'))).toBeNull();
+    expect(titleProblem('Chapter. In A. Smith (Hrsg.),', cited('Chapter. In A. Smith (Hrsg.), *Buch*.'))).not.toBeNull();
+    expect(titleProblem('Growth of Lactobacillus spp', cited('Growth of *Lactobacillus* spp. *J, 1*.'))).toBeNull();
+  });
+
+  // ref 83's journal was its species name. A run read into the wrong field leaves its
+  // markers or another run in the journal, so no journal may hold an italic marker.
+  it('gives no journal an italic marker', () => {
+    const marked = model.references.filter((r) => r.journal?.includes('*')).map((r) => `${r.id}: ${r.journal}`);
+    expect(marked).toEqual([]);
+  });
+
+  // The check below reads only titles that exist, so a title lost altogether needs its
+  // own. Every citation in the corpus has an italic run, and each must give a title.
+  it('gives a title to every citation that has an italic run', () => {
+    const untitled = model.references
+      .filter((r) => r.title === null && /\*[^*]+\*/.test(r.raw))
+      .map((r) => r.id);
+    expect(untitled).toEqual([]);
+  });
+
+  it('ends every title where its citation ends the sentence, with no "In" clause', () => {
+    const wrong = model.references
+      .filter((r) => r.title !== null)
+      .map((r) => ({ id: r.id, title: r.title!, why: titleProblem(r.title!, r.raw) }))
+      .filter((x) => x.why !== null)
+      .map((x) => `${x.id}: ${x.why}: ${x.title}`);
+    expect(wrong).toEqual([]);
   });
 });
