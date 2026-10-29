@@ -292,12 +292,13 @@ re-running them reports confusing errors rather than doing anything (see `refere
   with the user first**, then `git worktree remove <path>` and `git branch -D <branch>`.
 - **From a worktree-isolated session**, the order changes. While the session sits in its worktree it
   may not run the fast-forward, which targets the primary checkout, and the same line typed with `!`
-  into that session is refused too. So call `ExitWorktree` first, then run the fast-forward and a
-  renamed branch's `git branch -d` from the primary checkout; if the session still refuses them there,
-  print both, in that order, for the user's own terminal. A worktree inherited from an earlier session
-  is different: `ExitWorktree` acts only on one `EnterWorktree` made in this session, so the inherited
-  one stays, held by the session until it exits. Print its `git worktree remove <path>` and
-  `git branch -d <branch>` for the user to run after the session ends.
+  into that session is refused too. So stop this work's preview servers (the next item) while the
+  worktree still exists, call `ExitWorktree`, then run the fast-forward and a renamed branch's
+  `git branch -d` from the primary checkout; if the session still refuses them there, print both, in
+  that order, for the user's own terminal. A worktree inherited from an earlier session is different:
+  `ExitWorktree` acts only on one `EnterWorktree` made in this session, so the inherited one stays,
+  held by the session until it exits. Print the fast-forward, then its `git worktree remove <path>`
+  and `git branch -d <branch>`, for the user to run in that order after the session ends.
 - **Stop every background preview server this work started, on whatever port it took.** Naming one port
   is not enough: `pnpm preview` is given a free port per run, so real leaks sit on 4370, 4399, 4402-4406
   and anywhere else, and one worktree was found holding five at once, days old, one per e2e attempt.
