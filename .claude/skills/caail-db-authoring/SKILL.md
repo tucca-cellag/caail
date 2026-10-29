@@ -186,4 +186,4 @@ pnpm --dir site db:fetch-licenses  # OPT-IN, networked: refresh the GitHub-SPDX 
 
 All are Node-22-only and set `--experimental-sqlite` internally. Run `source ~/.nvm/nvm.sh &&
 nvm use 22` first if the shell defaults to an older Node, or, in a worktree-isolated session that
-refuses `source`, call Node 22 by absolute path as `CLAUDE.md`'s Node bullet says.
+refuses `source`, put Node 22 first on `PATH` as `CLAUDE.md`'s Node bullet says.

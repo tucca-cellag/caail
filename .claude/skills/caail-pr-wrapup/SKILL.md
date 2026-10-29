@@ -60,8 +60,8 @@ Run the helper from the repo (worktree) root: `bash .claude/skills/caail-pr-wrap
   review fix: it clears the check while leaving the fix out of the diff (`reference/review-phase.md`, and
   the matching row in `reference/gotchas.md`).
 - **The local gate is green.** Re-verify it now — don't ship on faith. With Node 22 (`source
-  ~/.nvm/nvm.sh && nvm use 22`, or by absolute path in an isolated session, as `CLAUDE.md`'s Node
-  bullet says): `pnpm --dir site test`, and when the change touches `site/**` also
+  ~/.nvm/nvm.sh && nvm use 22`, or in an isolated session with Node 22 first on `PATH`, as `CLAUDE.md`'s
+  Node bullet says): `pnpm --dir site test`, and when the change touches `site/**` also
   `pnpm --dir site build` and `pnpm --dir site test:e2e` for the affected specs. A red gate means the
   branch isn't ready; fix it before shipping.
 - **`gh` is authenticated** (`gh auth status`).
@@ -282,7 +282,8 @@ re-running them reports confusing errors rather than doing anything (see `refere
 - **This session's managed worktree** (made by `EnterWorktree`): call `ExitWorktree` with
   `action: "remove"` and `discard_changes: true` — safe because the commits are now on `origin/main`.
   It removes the worktree and its auto-named `worktree-<name>` branch, and returns the session to the
-  primary checkout. A branch renamed to `<type>/<slug>` is not removed with it: delete it by hand with
+  primary checkout. A branch renamed to `<type>/<slug>` is not removed with it: once `main` is
+  fast-forwarded (the first item, since `-d` checks the branch against it), delete it with
   `git branch -d <branch>`, or it stays behind as a local branch whose remote is gone.
 - **A plain branch** (no worktree): `git branch -d <branch>` (use `-D` if it was squashed/cherry-picked
   so the SHA differs from what landed).
@@ -290,7 +291,8 @@ re-running them reports confusing errors rather than doing anything (see `refere
   with the user first**, then `git worktree remove <path>` and `git branch -D <branch>`.
 - **From a worktree-isolated session**, two of these cannot run from the session at all. The
   fast-forward targets the primary checkout, which the session may not touch, and the same line typed
-  with `!` into that session is refused too: print it for the user's own terminal as an exact command.
+  with `!` into that session is refused too: print it for the user's own terminal as an exact command,
+  followed by the `git branch -d <branch>` for a renamed branch.
   And `ExitWorktree` acts only on a worktree `EnterWorktree` made in this session, so a worktree
   inherited from an earlier one stays, held by the session until it exits: print its
   `git worktree remove <path>` and `git branch -d <branch>` for the user to run after the session ends.
