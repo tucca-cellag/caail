@@ -526,36 +526,47 @@ test('the ways-in list never collides with the counter, at any text size', async
   }
 });
 
-test('the hero never changes height while the counter types (stripe ResizeObserver)', async ({ page }) => {
-  await page.goto('./');
-  // Hero.astro pins the diagonal stripe to the title's rect via a ResizeObserver on
-  // `.hero`. A counter line that collapsed when the text emptied mid-erase would re-run
-  // that measurement several times per cycle, forever. This is a regression test, not a
-  // precaution: reserving only the number's own height left a real 3px oscillation,
-  // because `align-items: baseline` makes the line taller than its tallest child.
-  const heights = await page.evaluate(async () => {
-    const tick = document.querySelector<HTMLElement>('.hero .tick')!;
-    const hero = document.querySelector<HTMLElement>('.hero')!;
-    const nEl = tick.querySelector<HTMLElement>('.tick-n')!;
-    const lEl = tick.querySelector<HTMLElement>('.tick-l')!;
-    const entries: [string, string][] = JSON.parse(tick.dataset.stats ?? '[]');
-    const seen = new Set<number>();
-    const frame = () => new Promise((r) => requestAnimationFrame(() => r(null)));
+// At 1280 the three routes sit beside the counter and are taller than it, so they set the
+// row's height and a collapsing counter moves neither box: that width alone could not fail.
+// At 412 the routes wrap below the counter, whose height then reaches both boxes.
+for (const viewport of [{ width: 412, height: 823 }, { width: 1280, height: 720 }]) {
+  test(`at ${viewport.width}px the hero and its text column never change height while the counter types (stripe ResizeObserver)`, async ({ page }) => {
+    await page.setViewportSize(viewport);
+    await page.goto('./');
+    // Hero.astro pins the diagonal stripe to the title's rect via a ResizeObserver on
+    // `.hero` and on its text column. A counter line that collapsed when the text emptied
+    // mid-erase would re-run that measurement several times per cycle, forever. This is a
+    // regression test, not a precaution: reserving only the number's own height left a
+    // real 3px oscillation, because `align-items: baseline` makes the line taller than its
+    // tallest child. Both boxes are sampled because in the two-column layout the column
+    // can change height while the hero, sized by the graphic beside it, does not.
+    const heights = await page.evaluate(async () => {
+      const tick = document.querySelector<HTMLElement>('.hero .tick')!;
+      const hero = document.querySelector<HTMLElement>('.hero')!;
+      const text = document.querySelector<HTMLElement>('.hero .hero-text')!;
+      const nEl = tick.querySelector<HTMLElement>('.tick-n')!;
+      const lEl = tick.querySelector<HTMLElement>('.tick-l')!;
+      const entries: [string, string][] = JSON.parse(tick.dataset.stats ?? '[]');
+      const seen = { hero: new Set<number>(), text: new Set<number>() };
+      const frame = () => new Promise((r) => requestAnimationFrame(() => r(null)));
 
-    // Walk every entry through every intermediate typing state, including fully empty.
-    for (const [n, label] of entries) {
-      for (let chars = 0; chars <= n.length + 1 + label.length; chars++) {
-        nEl.textContent = n.slice(0, Math.min(chars, n.length));
-        const intoLabel = chars - n.length - 1;
-        lEl.textContent = intoLabel > 0 ? label.slice(0, intoLabel) : '';
-        await frame();
-        seen.add(Math.round(hero.getBoundingClientRect().height));
+      // Walk every entry through every intermediate typing state, including fully empty.
+      for (const [n, label] of entries) {
+        for (let chars = 0; chars <= n.length + 1 + label.length; chars++) {
+          nEl.textContent = n.slice(0, Math.min(chars, n.length));
+          const intoLabel = chars - n.length - 1;
+          lEl.textContent = intoLabel > 0 ? label.slice(0, intoLabel) : '';
+          await frame();
+          seen.hero.add(Math.round(hero.getBoundingClientRect().height));
+          seen.text.add(Math.round(text.getBoundingClientRect().height));
+        }
       }
-    }
-    return [...seen];
+      return { hero: [...seen.hero], text: [...seen.text] };
+    });
+    expect.soft(heights.text.length, `the hero's text column varied in height while typing: ${heights.text.join(', ')}px`).toBe(1);
+    expect(heights.hero.length, `hero height varied while typing: ${heights.hero.join(', ')}px`).toBe(1);
   });
-  expect(heights.length, `hero height varied while typing: ${heights.join(', ')}px`).toBe(1);
-});
+}
 
 /**
  * The #why mock claims a specific matrix cell and then answers it with real numbers. Both

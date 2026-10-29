@@ -19,7 +19,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
  * Every entry is rendered into the DOM and stacked in one grid cell, so the box is
  * sized by the widest entry and never reflows mid-rotation. That is not only a
  * jitter fix — Hero pins the diagonal stripe to the title's rect via a ResizeObserver
- * on `.hero`, so a counter that changed width would re-run that measurement on a
+ * on `.hero` and its text column, so a counter that changed width would re-run that measurement on a
  * three-second loop forever.
  */
 const stats = [
@@ -199,6 +199,42 @@ const statSentence = `Indexing ${stats.map((s) => `${s.n} ${s.label}`).join(', '
   </nav>
 </section>
 
+{/* Pins the diagonal band's vertical centre to the title's, so it crosses behind
+    "Cell Ag × AI" at every width (the .hero-stripe wrapper keeps it full-bleed
+    horizontally). Positioning only, not animation, so reduced motion does not apply.
+
+    Inline and straight after the hero, not in the bundled script below: a bundled
+    script is a module, which runs only once the whole page is parsed, and a slow phone
+    paints before then. This runs as soon as the hero is parsed, so the band is normally
+    placed by first paint. It is hidden until placed (see the band's rule in the style
+    block below), which covers the paint that beats it. Plain JS, since inline scripts are not compiled. */}
+<script is:inline>
+  (() => {
+    const stripe = document.querySelector('.hero-stripe');
+    const title = document.querySelector('.h-title');
+    const hero = document.querySelector('.hero');
+    const text = document.querySelector('.hero-text');
+    if (!stripe || !title || !hero || !text) return;
+    const place = () => {
+      const s = stripe.getBoundingClientRect();
+      const t = title.getBoundingClientRect();
+      stripe.style.setProperty('--stripe-cy', `${t.top - s.top + t.height / 2}px`);
+    };
+    place();
+    stripe.dataset.placed = '';
+    // The title moves only when the hero or its text column changes size. The column
+    // is watched as well because in the two-column layout it is centred in its row,
+    // so it can grow and move the title while the hero keeps its height. Nothing in
+    // the hero sizes from the viewport height, so no window resize listener is needed.
+    if ('ResizeObserver' in window) {
+      const watch = new ResizeObserver(place);
+      watch.observe(hero);
+      watch.observe(text);
+    }
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(place);
+  })();
+</script>
+
 <style>
   .hero { position: relative; display: grid; grid-template-columns: 1fr; gap: 1.1rem; padding: 1.5rem 0 .75rem; text-align: left; }
   @media (min-width: 60rem) {
@@ -237,8 +273,18 @@ const statSentence = `Indexing ${stats.map((s) => `${s.n} ${s.label}`).join(', '
     position: absolute;
     /* --stripe-cy is set by the inline script to the title's vertical centre
      * (relative to this wrapper) so the band always crosses behind the title,
-     * consistently, at every width. Falls back to the hero's centre. */
-    top: var(--stripe-cy, 50%); left: -5%;
+     * consistently, at every width. */
+    top: var(--stripe-cy); left: -5%;
+    /* Hidden until that script has placed it. Shown from the start, the band was
+     * painted at a 50% fallback, near the bottom of a phone screen, whenever a slow
+     * phone painted before the script ran, and then jumped to the title: one
+     * layout shift that was all of the homepage's CLS in Lighthouse
+     * (tucca-cellag/caail-planning#651). A band that appears is not a shift. The
+     * script sits straight after the hero so it normally runs before first paint;
+     * this rule makes a paint that beats it harmless. With no JS the band never
+     * appears, which is better than appearing in the wrong place.
+     * e2e/hero-stripe.spec.ts holds both halves. */
+    visibility: hidden;
     width: 110%;
     height: clamp(72px, 9vw, 150px);
     transform: translateY(-50%) rotate(-11deg);
@@ -252,6 +298,7 @@ const statSentence = `Indexing ${stats.map((s) => `${s.n} ${s.label}`).join(', '
       var(--caail-hero-stripe-to));
     border-radius: 4px;
   }
+  .hero-stripe[data-placed]::before { visibility: visible; }
 
   .eyebrow { font-size: var(--caail-fs-xs); letter-spacing: .14em; text-transform: uppercase; color: var(--caail-accent); font-weight: 700; margin: 0; }
   .h-title {
@@ -416,24 +463,6 @@ const statSentence = `Indexing ${stats.map((s) => `${s.n} ${s.label}`).join(', '
 </style>
 
 <script>
-  // Pin the diagonal stripe's vertical centre to the title's centre so it
-  // always crosses behind "Cell Ag × AI" at every width (the band stays
-  // full-bleed horizontally via the .hero-stripe wrapper). Positioning only —
-  // not animation — so reduced-motion is irrelevant.
-  function positionHeroStripe() {
-    const stripe = document.querySelector<HTMLElement>('.hero-stripe');
-    const title = document.querySelector<HTMLElement>('.h-title');
-    if (!stripe || !title) return;
-    const s = stripe.getBoundingClientRect();
-    const t = title.getBoundingClientRect();
-    stripe.style.setProperty('--stripe-cy', `${t.top - s.top + t.height / 2}px`);
-  }
-  positionHeroStripe();
-  const hero = document.querySelector('.hero');
-  if (hero && 'ResizeObserver' in window) new ResizeObserver(positionHeroStripe).observe(hero);
-  window.addEventListener('resize', positionHeroStripe);
-  if (document.fonts?.ready) document.fonts.ready.then(positionHeroStripe);
-
   // Type the hero counter, erasing and retyping between collections.
   //
   // The markup already contains the first statistic in full, so with no JS, a script
