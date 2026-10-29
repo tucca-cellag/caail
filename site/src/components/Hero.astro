@@ -274,10 +274,10 @@ const statSentence = `Indexing ${stats.map((s) => `${s.n} ${s.label}`).join(', '
     /* --stripe-cy is set by the inline script to the title's vertical centre
      * (relative to this wrapper) so the band always crosses behind the title,
      * consistently, at every width. */
-    top: var(--stripe-cy, 50%); left: -5%;
+    top: var(--stripe-cy); left: -5%;
     /* Hidden until that script has placed it. Shown from the start, the band was
-     * painted at the 50% fallback, near the bottom of a phone screen, whenever a
-     * slow phone painted before the script ran, and then jumped to the title: one
+     * painted at a 50% fallback, near the bottom of a phone screen, whenever a slow
+     * phone painted before the script ran, and then jumped to the title: one
      * layout shift that was all of the homepage's CLS in Lighthouse
      * (tucca-cellag/caail-planning#651). A band that appears is not a shift. The
      * script sits straight after the hero so it normally runs before first paint;

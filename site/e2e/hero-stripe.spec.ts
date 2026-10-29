@@ -6,7 +6,7 @@ import { test, expect, type Page } from '@playwright/test';
 //
 // A script pins the band to the title. When that script was a module, which the
 // browser runs only after the whole document is parsed, a slow phone painted
-// first: the band was drawn at its CSS fallback, the middle of the hero and so
+// first: the band was drawn at its old CSS fallback, the middle of the hero and so
 // near the bottom of a phone screen, then jumped to the title. That one layout
 // shift was the whole of the homepage's CLS: 0.229 in two of three local
 // Lighthouse mobile runs on 2026-10-29, with the runs recorded on
