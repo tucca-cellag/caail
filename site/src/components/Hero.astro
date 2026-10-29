@@ -206,8 +206,8 @@ const statSentence = `Indexing ${stats.map((s) => `${s.n} ${s.label}`).join(', '
     Inline and straight after the hero, not in the bundled script below: a bundled
     script is a module, which runs only once the whole page is parsed, and a slow phone
     paints before then. This runs as soon as the hero is parsed, so the band is normally
-    placed by first paint. It is hidden until placed (see `.hero-stripe::before`), which
-    covers the paint that beats it. Plain JS, since inline scripts are not compiled. */}
+    placed by first paint. It is hidden until placed (see the band's rule in the style
+    block below), which covers the paint that beats it. Plain JS, since inline scripts are not compiled. */}
 <script is:inline>
   (() => {
     const stripe = document.querySelector('.hero-stripe');
