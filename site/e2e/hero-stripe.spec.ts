@@ -8,9 +8,11 @@ import { test, expect, type Page } from '@playwright/test';
 // browser runs only after the whole document is parsed, a slow phone painted
 // first: the band was drawn at its CSS fallback, the middle of the hero and so
 // near the bottom of a phone screen, then jumped to the title. That one layout
-// shift, 0.229, was the whole of the homepage's CLS in Lighthouse
-// (tucca-cellag/caail-planning#651). The script now runs inline as the hero is
-// parsed, and the band stays hidden until it has been placed.
+// shift was the whole of the homepage's CLS: 0.229 in two of three local
+// Lighthouse mobile runs on 2026-10-29, with the runs recorded on
+// tucca-cellag/caail-planning#651 (a snapshot; `lhci collect` on `/` measures it
+// afresh). The script now runs inline as the hero is parsed, and the band stays
+// hidden until it has been placed.
 //
 // The first test is the state at first paint before any script, which is the
 // state with scripts off, so it is deterministic and is what pins the hiding.
@@ -22,7 +24,7 @@ import { test, expect, type Page } from '@playwright/test';
 /** Lighthouse's mobile viewport. */
 const PHONE = { width: 412, height: 823 };
 
-/** CLS a page should stay under: the "good" threshold, and well under the 0.229 this caught. */
+/** CLS a page should stay under: Lighthouse's "good" threshold, which the band's jump more than doubled. */
 const GOOD_CLS = 0.1;
 
 /** Whether the band is painted, and where its centre sits against the title's. */
@@ -70,7 +72,8 @@ for (const viewport of [PHONE, { width: 1280, height: 800 }]) {
   });
 }
 
-test('on a slowed phone the hero band records no layout shift', async ({ page, context }) => {
+test('on a slowed phone the hero band records no layout shift and the page stays under good CLS', async ({ page, context, browserName }) => {
+  test.skip(browserName !== 'chromium', 'CPU throttling goes through the Chrome DevTools Protocol');
   await page.setViewportSize(PHONE);
   const cdp = await context.newCDPSession(page);
   await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 });
@@ -88,7 +91,10 @@ test('on a slowed phone the hero band records no layout shift', async ({ page, c
   });
   await page.goto('./');
   await expect.poll(() => offTitle(page), { message: 'the band never settled on the title' }).toBeLessThan(2);
-  // Two frames, so a shift caused by the placement has been recorded.
+  // Read only after the page and its fonts have loaded, so any shift a late font
+  // swap causes is counted, then two frames so the last shift has been recorded.
+  await page.waitForLoadState('load');
+  await page.evaluate(() => document.fonts.ready.then(() => undefined));
   await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
   const { shifts, cls } = await page.evaluate(() => {
     const w = window as unknown as { __stripeShifts: number[]; __cls: number };
@@ -97,6 +103,10 @@ test('on a slowed phone the hero band records no layout shift', async ({ page, c
   expect(shifts, 'layout shifts whose source is the hero band').toEqual([]);
   // Also bounded without attribution: Chrome names at most five sources per shift,
   // and how it names a pseudo-element is its choice, so the check above could go
-  // quiet on a browser update while this one still sees the jump.
-  expect(cls, 'the page\'s total layout shift').toBeLessThan(GOOD_CLS);
+  // quiet on a browser update while this one still sees the jump. This is the whole
+  // page, not only the band, and it is deliberately stricter than Lighthouse's CLS:
+  // a plain sum bounds every session window, and it keeps shifts flagged as following
+  // input, since none is sent here and a sum is what caught the band's jump when the
+  // defect was recreated.
+  expect(cls, 'the page\'s total layout shift, every entry summed').toBeLessThan(GOOD_CLS);
 });
