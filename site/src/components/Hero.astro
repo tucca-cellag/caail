@@ -237,8 +237,17 @@ const statSentence = `Indexing ${stats.map((s) => `${s.n} ${s.label}`).join(', '
     position: absolute;
     /* --stripe-cy is set by the inline script to the title's vertical centre
      * (relative to this wrapper) so the band always crosses behind the title,
-     * consistently, at every width. Falls back to the hero's centre. */
+     * consistently, at every width. */
     top: var(--stripe-cy, 50%); left: -5%;
+    /* Hidden until that script has placed it. The script is a module, so it runs
+     * after the whole page is parsed, and a slow phone paints before then. Shown
+     * from the start, the band was painted at the 50% fallback, near the bottom of
+     * a phone screen, and then jumped to the title: a layout shift of 0.229, all of
+     * the homepage's CLS (caail-planning#651). A band that appears is not a shift.
+     * With no JS it never appears, which is better than appearing in the wrong
+     * place. e2e/hero-stripe.spec.ts holds both halves. */
+    visibility: hidden;
+    opacity: 0;
     width: 110%;
     height: clamp(72px, 9vw, 150px);
     transform: translateY(-50%) rotate(-11deg);
@@ -252,6 +261,8 @@ const statSentence = `Indexing ${stats.map((s) => `${s.n} ${s.label}`).join(', '
       var(--caail-hero-stripe-to));
     border-radius: 4px;
   }
+  .hero-stripe[data-placed]::before { visibility: visible; opacity: 1; transition: opacity .3s ease-out; }
+  @media (prefers-reduced-motion: reduce) { .hero-stripe[data-placed]::before { transition: none; } }
 
   .eyebrow { font-size: var(--caail-fs-xs); letter-spacing: .14em; text-transform: uppercase; color: var(--caail-accent); font-weight: 700; margin: 0; }
   .h-title {
@@ -427,6 +438,8 @@ const statSentence = `Indexing ${stats.map((s) => `${s.n} ${s.label}`).join(', '
     const s = stripe.getBoundingClientRect();
     const t = title.getBoundingClientRect();
     stripe.style.setProperty('--stripe-cy', `${t.top - s.top + t.height / 2}px`);
+    // Shown only once placed, so it is never painted at the CSS fallback first.
+    stripe.dataset.placed = '';
   }
   positionHeroStripe();
   const hero = document.querySelector('.hero');
