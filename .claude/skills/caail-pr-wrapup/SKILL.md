@@ -60,7 +60,8 @@ Run the helper from the repo (worktree) root: `bash .claude/skills/caail-pr-wrap
   review fix: it clears the check while leaving the fix out of the diff (`reference/review-phase.md`, and
   the matching row in `reference/gotchas.md`).
 - **The local gate is green.** Re-verify it now — don't ship on faith. With Node 22 (`source
-  ~/.nvm/nvm.sh && nvm use 22`): `pnpm --dir site test`, and when the change touches `site/**` also
+  ~/.nvm/nvm.sh && nvm use 22`, or in an isolated session with Node 22 first on `PATH`, as `CLAUDE.md`'s
+  Node bullet says): `pnpm --dir site test`, and when the change touches `site/**` also
   `pnpm --dir site build` and `pnpm --dir site test:e2e` for the affected specs. A red gate means the
   branch isn't ready; fix it before shipping.
 - **`gh` is authenticated** (`gh auth status`).
@@ -280,11 +281,24 @@ re-running them reports confusing errors rather than doing anything (see `refere
   `git fetch origin main:main` updates the ref without switching to it.
 - **This session's managed worktree** (made by `EnterWorktree`): call `ExitWorktree` with
   `action: "remove"` and `discard_changes: true` — safe because the commits are now on `origin/main`.
-  It removes the worktree + branch and returns the session to the primary checkout.
+  It removes the worktree and its auto-named `worktree-<name>` branch, and returns the session to the
+  primary checkout. A branch renamed to `<type>/<slug>` is not removed with it: once the worktree is
+  gone (git will not delete a branch a worktree still holds), delete it with `git branch -d <branch>`,
+  or it stays behind as a local branch whose remote is gone. `-d` checks the branch against its
+  upstream, or against `HEAD` once that remote ref is pruned, so run it where `main` is fast-forwarded.
 - **A plain branch** (no worktree): `git branch -d <branch>` (use `-D` if it was squashed/cherry-picked
   so the SHA differs from what landed).
 - **A stale/superseded worktree someone made by hand** (e.g. a predecessor of this work): **confirm
   with the user first**, then `git worktree remove <path>` and `git branch -D <branch>`.
+- **From a worktree-isolated session**, the order changes. While the session sits in its worktree it
+  may not run the fast-forward, which targets the primary checkout, and the same line typed with `!`
+  into that session is refused too. So stop this work's preview servers (the next item) while the
+  worktree still exists, call `ExitWorktree`, then run the fast-forward and a renamed branch's
+  `git branch -d` from the primary checkout; if the session still refuses them there, print both, in
+  that order, for the user's own terminal. A worktree inherited from an earlier session is different:
+  `ExitWorktree` acts only on one `EnterWorktree` made in this session, so the inherited one stays,
+  held by the session until it exits. Print the fast-forward, then its `git worktree remove <path>`
+  and `git branch -d <branch>`, for the user to run in that order after the session ends.
 - **Stop every background preview server this work started, on whatever port it took.** Naming one port
   is not enough: `pnpm preview` is given a free port per run, so real leaks sit on 4370, 4399, 4402-4406
   and anywhere else, and one worktree was found holding five at once, days old, one per e2e attempt.
