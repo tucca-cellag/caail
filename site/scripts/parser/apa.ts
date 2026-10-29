@@ -67,8 +67,96 @@ const INITIAL_TOKEN_RE = /^\p{Lu}\.(?:-\p{Lu}\.)*$/u;
 const PARTICLE_RE =
   /^(?:de|del|della|der|den|da|das|dos|van|von|di|du|la|le|el|bin|ibn|ten|ter|af|av|zu)$/i;
 
-/** Match the first `*…*` italic run; capture group 1 is the content. */
-const ITALIC_RE = /\*([^*]+)\*/;
+/** A `*…*` italic run; capture group 1 is the content. One source for both regexes below. */
+const ITALIC_SRC = String.raw`\*([^*]+)\*`;
+
+/** Match the first italic run. */
+const ITALIC_RE = new RegExp(ITALIC_SRC);
+
+/** Every italic run, for choosing which one holds the venue. */
+const ITALIC_ALL_RE = new RegExp(ITALIC_SRC, 'g');
+
+/** A sentence end at the close of the text before an italic run. */
+const SENTENCE_END_RE = /[.?!]$/;
+
+/**
+ * What must follow a mid-sentence italic run for it to be part of the title: a space
+ * and a letter, so the sentence carries on ("of *Sus scrofa* muscle stem cells"). A
+ * run followed straight by punctuation could as well be a journal after a missing full
+ * stop ("A title *Journal*."), so it is not read as part of the title.
+ */
+const SENTENCE_GOES_ON_RE = /^\s+\p{L}/u;
+
+/**
+ * Where an APA "In" clause can start: just after the title's own sentence end. Global,
+ * because a title may itself hold a sentence that starts with "In" ("What is meat? In
+ * search of an answer."), and an editor may be surnamed In ("In J. In (Ed.),"). The
+ * clause is the last start whose rest is a valid editors clause (see findVenueRun).
+ */
+const IN_START_RE = /[.?!]\*?\s+In\b/g;
+
+/**
+ * An editors' role, from a fixed list: Ed., Eds., Trans., and the French, German,
+ * Spanish and Portuguese forms CAAIL's sources use, each with or without its full stop
+ * and optionally after "Series". A fixed list, not "any bracketed words": that version
+ * also took a title's own "(review)" for a role, and its nested quantifier backtracked
+ * exponentially, so a title such as "In vitro culture (ab ab ... ab) of cells" could
+ * stall the build.
+ */
+const ROLE = String.raw`(?:Series\s+)?(?:Eds?|Éds?|Hrsg|Coords?|Comps?|Dirs?|Orgs?|Trans)\.?`;
+
+/** Editors' roles in brackets, "(Ed.)" to "(Ed. & Trans.)", in any case ("(eds.)"). */
+const ROLES = String.raw`\(${ROLE}(?:\s*(?:&|and)\s*${ROLE})*\)`;
+
+/**
+ * Editors' roles in brackets anywhere in a string. Exported so a check on parsed
+ * titles uses the parser's own list rather than a copy of it.
+ */
+export const EDITOR_ROLES_RE = new RegExp(ROLES, 'iu');
+
+/**
+ * What may follow the word "In" for it to be the clause rather than the start of a
+ * title sentence: nothing, a colon, or editors with their roles in brackets ("(Ed.)",
+ * "(Eds.)", "(Ed. & Trans.)", "(Hrsg.)"), then an optional comma, full stop or colon.
+ * "In vitro growth of" has none of these, so it stays in the title. Named editors must
+ * also start with a capital (see EDITORS_NAMED_RE), so "In cells (Ed.)." does not
+ * qualify.
+ */
+const IN_REST_RE = new RegExp(String.raw`^:?(?:\s+[^*]*${ROLES}[.,:]?)?\s*$`, 'iu');
+
+/**
+ * The editors named after "In" or "In:": none, or names that start with a capital,
+ * whether a person's ("A. Editor") or an organisation's ("World Health Organization").
+ * A surname In's own "In" is followed by its role, "(Ed.)", so it never qualifies.
+ */
+const EDITORS_NAMED_RE = /^:?\s*$|^:?\s+\p{Lu}/u;
+
+/** A string with its italic markers removed and their words kept. */
+export function stripItalics(text: string): string {
+  return text.replace(ITALIC_ALL_RE, '$1');
+}
+
+/** Title text as plain words: italic spans keep their words, not their markers. */
+function titleFrom(text: string): string | null {
+  return stripItalics(text)
+    .trim()
+    .replace(/\.\s*$/, '')  // strip trailing ". "
+    .trim() || null;
+}
+
+/** Plain text after a title as its venue: no DOI, no surrounding full stops or spaces. */
+function plainVenue(text: string): string | null {
+  return text
+    .replace(DOI_RE, '')   // remove DOI URL
+    .trim()
+    .replace(/^[.\s]+/, '') // strip leading dots/spaces
+    .replace(/[.\s]+$/, '') || null; // strip trailing dots/spaces
+}
+
+/** An italic run's content as a venue: trimmed, without trailing full stops. */
+function runContent(run: RegExpMatchArray): string {
+  return run[1].trim().replace(/[.]+$/, '');
+}
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -204,6 +292,48 @@ function parseAuthors(authorsText: string): { authors: string[] | null; dropped:
   return { authors: authors.length > 0 ? authors : null, dropped };
 }
 
+/**
+ * Find the italic run that holds the venue, and where the title ends.
+ *
+ * The venue is the first italic run that follows an APA "In" clause or a sentence end.
+ * A run that starts mid-sentence belongs to the title, such as the species name in
+ * ref 83's "modeling of *Sus scrofa* muscle stem cells". Taking the first run of any
+ * kind is what cut that title short and left the "In ..." clause on refs 33, 186 and
+ * 203 (tucca-cellag/caail-planning#445). The first qualifying run, so an italic run
+ * after the venue (an italicised publisher, a note) never takes its place.
+ *
+ * The rule aims never to read a citation worse than taking the first run did. Where
+ * the text cannot tell two shapes apart it keeps the first-run reading: an
+ * abbreviation's full stop ("Cells vs. *E. coli* growth.") reads as a sentence end, as
+ * "Role of vitamin D. *Nutrients*" needs it to; a mid-sentence run followed straight by
+ * punctuation stops the search (SENTENCE_GOES_ON_RE); and a title sentence that starts
+ * "In *Bos taurus* ..." reads as a chapter's "In *Book*". Storing titles and venues in
+ * the DB would end the guessing (tucca-cellag/caail-planning#705).
+ *
+ * Returns null when no run qualifies; the caller then takes the first run.
+ */
+function findVenueRun(tail: string): { run: RegExpMatchArray; titleEnd: number } | null {
+  // Every place an "In" clause could start, found once rather than per run.
+  const inStarts = [...tail.matchAll(IN_START_RE)];
+  for (const run of tail.matchAll(ITALIC_ALL_RE)) {
+    const before = tail.slice(0, run.index).replace(/\s+$/, '');
+    // The "In" clause first: an editors clause can itself end in a full stop. The
+    // clause is the last start before this run whose rest is a valid editors clause,
+    // never an earlier "In" title sentence nor an editor surnamed In.
+    const restOf = (s: RegExpMatchArray) => before.slice(s.index! + s[0].length);
+    const start = inStarts
+      .filter((s) => s.index! + s[0].length <= before.length)
+      .findLast((s) => EDITORS_NAMED_RE.test(restOf(s)) && IN_REST_RE.test(restOf(s)));
+    if (start) {
+      return { run, titleEnd: start.index! + /^[.?!]\*?/.exec(start[0])![0].length };
+    }
+    if (SENTENCE_END_RE.test(before)) return { run, titleEnd: before.length };
+    // A mid-sentence run is part of the title only if the sentence goes on after it.
+    if (!SENTENCE_GOES_ON_RE.test(tail.slice(run.index! + run[0].length))) return null;
+  }
+  return null;
+}
+
 // ---------------------------------------------------------------------------
 // Main export
 // ---------------------------------------------------------------------------
@@ -271,8 +401,10 @@ export function parseApa(raw: string): ApaFields {
   // ------------------------------------------------------------------
   // Step 5: Parse title and journal from tail.
   //
-  // Find the first italic run `*…*` in the tail using the module-level
-  // ITALIC_RE (compiled once, not recreated per call).
+  // The first italic run decides the branch: a tail that opens with an italic run
+  // that ends the title is an italic-title citation (a preprint, a thesis, a
+  // report). Otherwise the venue is chosen by findVenueRun, which is often not the
+  // first run, and the first run is only its fallback.
   // ------------------------------------------------------------------
   const italicMatch = ITALIC_RE.exec(tail);
 
@@ -290,14 +422,24 @@ export function parseApa(raw: string): ApaFields {
   }
 
   const italicStart = italicMatch.index;
-  const italicContent = italicMatch[1].trim().replace(/[.]+$/, ''); // strip trailing dots
+  const italicContent = runContent(italicMatch);
   const afterItalic = tail.slice(italicMatch.index + italicMatch[0].length);
 
   // Determine which branch we're in.
   // "Italic-title" (preprint) pattern: the tail begins with the italic run
-  // (nothing or only whitespace/dot before the first `*`).
+  // (nothing or only whitespace/dot before the first `*`), and that run ends the
+  // title: a full stop inside it, or straight after it one of . ? ! , ( [ or the end,
+  // as in "*Title* [Report]", "*Title* (2nd ed.)" or "*Title*, arXiv". A run that
+  // opens the title and is followed by more of it, as in "*Sus scrofa* muscle stem
+  // cells. *Journal*", is part of a normal title, read through findVenueRun.
   const beforeItalic = tail.slice(0, italicStart);
-  const isItalicTitle = beforeItalic.trim() === '' || beforeItalic.trim() === '.';
+  const opensTail = beforeItalic.trim() === '' || beforeItalic.trim() === '.';
+  const endsTitle = /[.?!]$/.test(italicMatch[1].trim()) || /^\s*(?:[.?!,([]|$)/.test(afterItalic);
+  const venue = opensTail && endsTitle ? null : findVenueRun(tail);
+  // With no venue run, a tail that opens with an italic run keeps the italic-title
+  // reading, as it always had: nothing in the text gives a better one, and the title
+  // is then at least never null.
+  const isItalicTitle = opensTail && (endsTitle || !venue);
 
   let title: string | null;
   let journal: string | null;
@@ -307,26 +449,18 @@ export function parseApa(raw: string): ApaFields {
     //   italic = title
     //   plain text after italic = venue
     title = italicContent;
-
-    // Extract venue from text after the closing `*`
-    // Strip up to the DOI (if present), then strip trailing/leading punctuation
-    const venueRaw = afterItalic
-      .replace(DOI_RE, '')   // remove DOI URL
-      .trim()
-      .replace(/^[.\s]+/, '') // strip leading dots/spaces
-      .replace(/[.\s]+$/, ''); // strip trailing dots/spaces
-
-    journal = venueRaw || null;
-  } else {
+    journal = plainVenue(afterItalic);
+  } else if (venue) {
     // Normal APA branch (ref 6, 1, 37, 92, 39-plain pattern):
-    //   plain text before italic = title
-    //   italic run = journal+volume
-    title = beforeItalic
-      .trim()
-      .replace(/\.\s*$/, '')  // strip trailing ". "
-      .trim() || null;
-
-    // Journal = italic content with volume stripped
+    //   text before the venue run = title
+    //   venue run = journal+volume, or a chapter's book or proceedings title
+    // The venue is not always the first run: see findVenueRun.
+    title = titleFrom(tail.slice(0, venue.titleEnd));
+    journal = stripVolume(runContent(venue.run)) || null;
+  } else {
+    // No run qualifies: the first run is the venue, as before, which is right for a
+    // citation missing the full stop before its journal.
+    title = titleFrom(beforeItalic);
     journal = stripVolume(italicContent) || null;
   }
 

@@ -117,6 +117,216 @@ describe('parseApa — real corpus references', () => {
 });
 
 // ---------------------------------------------------------------------------
+// 1a. Which italic run is the venue (tucca-cellag/caail-planning#445)
+//
+// The venue is the first italic run that starts a new sentence, or that follows an
+// APA "In" clause: "In *Book*" or "In A. Editor (Eds.), *Book*". An italic run that
+// starts mid-sentence belongs to the title. Taking the first run of any kind cut
+// ref 83's title at its species name, and left the "In" clause on refs 33, 186, 203.
+// ---------------------------------------------------------------------------
+
+describe('parseApa: the venue italic run, not the first one (tucca-cellag/caail-planning#445)', () => {
+  it('ref 83: an italic species name inside the title stays in the title', () => {
+    const result = parseApa(
+      '<a id="83">83</a> Qiu, S., Kratochvilova, E., Huang, W., Cui, Z., Agnew, T., Yang, A., & Ye, H. (2026). Proteome constrained metabolic modeling of *Sus scrofa* muscle stem cells for cultured meat production. *Metabolic Engineering, 94,* 252–263. https://doi.org/10.1016/j.ymben.2026.01.001',
+    );
+    expect(result.title).toBe('Proteome constrained metabolic modeling of Sus scrofa muscle stem cells for cultured meat production');
+    expect(result.journal).toBe('Metabolic Engineering');
+  });
+
+  it('ref 33: a chapter with named editors loses its "In ... (Eds.)," clause', () => {
+    const result = parseApa(
+      '<a id="33">33</a> Rojek, K., Wyrzykowski, R., & Gepner, P. (2021). AI-Accelerated CFD Simulation Based on OpenFOAM and CPU/GPU Computing. In M. Paszynski, D. Kranzlmüller, V. V. Krzhizhanovskaya, J. J. Dongarra, & P. M. A. Sloot (Eds.), *Computational Science – ICCS 2021* (pp. 373–385). Springer International Publishing. https://doi.org/10.1007/978-3-030-77964-1_29',
+    );
+    expect(result.title).toBe('AI-Accelerated CFD Simulation Based on OpenFOAM and CPU/GPU Computing');
+    expect(result.journal).toBe('Computational Science – ICCS 2021');
+  });
+
+  it('ref 186: a chapter with no editors loses its trailing "In"', () => {
+    const result = parseApa(
+      '<a id="186">186</a> Vijayakumar, S., Magazzù, G., Moon, P., Occhipinti, A., Angione, C., Cortassa, S., & Aon, M. A. (2022). A Practical Guide to Integrating Multimodal Machine Learning and Metabolic Modeling. In *Computational Systems Biology in Medicine and Biotechnology: Methods and Protocols* (pp. 87–122). Springer. https://doi.org/10.1007/978-1-0716-1831-8_5',
+    );
+    expect(result.title).toBe('A Practical Guide to Integrating Multimodal Machine Learning and Metabolic Modeling');
+    expect(result.journal).toBe('Computational Systems Biology in Medicine and Biotechnology: Methods and Protocols');
+  });
+
+  it('ref 203: a proceedings paper with no editors loses its trailing "In"', () => {
+    const result = parseApa(
+      '<a id="203">203</a> Wu, J., & Cui, J. (2025). Multi-objective optimal control of lysine fed-batch based on reinforcement learning. In *Fourth International Conference on High Performance Computing and Communication Engineering (HPCCE 2024)* (Vol. 13630). SPIE. https://doi.org/10.1117/12.3059597',
+    );
+    expect(result.title).toBe('Multi-objective optimal control of lysine fed-batch based on reinforcement learning');
+    expect(result.journal).toBe(
+      'Fourth International Conference on High Performance Computing and Communication Engineering (HPCCE 2024)',
+    );
+  });
+
+  // The other direction: what the "In" rule must leave alone.
+  it('keeps a title sentence that starts with "In" when no editors or book run follow it', () => {
+    const result = parseApa(
+      '<a id="900">900</a> Smith, J. (2024). Cultured meat. In vitro growth of *Gallus gallus* cells. *Food Journal, 3*, 1–2. https://doi.org/10.1234/invitro',
+    );
+    expect(result.title).toBe('Cultured meat. In vitro growth of Gallus gallus cells');
+    expect(result.journal).toBe('Food Journal');
+  });
+
+  it('leaves the italic-title preprint pattern as it was', () => {
+    const result = parseApa(
+      '<a id="901">901</a> Smith, J. (2024). *An italic title.* arXiv. https://doi.org/10.48550/arXiv.0000.00000',
+    );
+    expect(result.title).toBe('An italic title');
+    expect(result.journal).toBe('arXiv');
+  });
+
+  it('falls back to the first italic run when the full stop before the journal is missing', () => {
+    // No run starts a sentence, so the first run is taken as the venue, which is right here.
+    const result = parseApa(
+      '<a id="902">902</a> Smith, J. (2024). A title with no full stop *Food Journal, 3*, 1–2. https://doi.org/10.1234/nostop',
+    );
+    expect(result.title).toBe('A title with no full stop');
+    expect(result.journal).toBe('Food Journal');
+  });
+
+  // Shapes no current reference has, each a way the same bug would return.
+  const cite = (tail: string) => parseApa(`<a id="903">903</a> Smith, J. (2024). ${tail} https://doi.org/10.1234/shape`);
+
+  it('takes the last "In" in a title, not the first, before named editors', () => {
+    expect(cite('What is meat? In search of an answer. In A. Editor (Eds.), *Book* (pp. 1–2). Pub.').title).toBe(
+      'What is meat? In search of an answer',
+    );
+    expect(cite('Growth. In vitro cells. In A. Editor (Ed.), *Book* (pp. 1–2). Pub.').title).toBe('Growth. In vitro cells');
+  });
+
+  it('drops an "In" clause that ends in a full stop or a colon, not only a comma', () => {
+    const stop = cite('Title here. In A. Editor (Eds.). *Book* (pp. 1–2). Pub.');
+    expect(stop.title).toBe('Title here');
+    expect(stop.journal).toBe('Book');
+    const colon = cite('Title here. In: *Book* (pp. 1–2). Pub.');
+    expect(colon.title).toBe('Title here');
+    expect(colon.journal).toBe('Book');
+  });
+
+  it('drops an "In" clause whatever the editors\' role', () => {
+    for (const role of ['(Ed. & Trans.),', '(Trans.),', '(Series Ed.),', '(Eds.)']) {
+      const result = cite(`Title here. In A. Editor ${role} *Book* (pp. 1–2). Pub.`);
+      expect(result.title, role).toBe('Title here');
+      expect(result.journal, role).toBe('Book');
+    }
+  });
+
+  it('reads a title that opens with an italic species name to its end', () => {
+    const result = cite('*Sus scrofa* muscle stem cells. *Metabolic Engineering, 94*, 1–2.');
+    expect(result.title).toBe('Sus scrofa muscle stem cells');
+    expect(result.journal).toBe('Metabolic Engineering');
+  });
+
+  // Never worse than taking the first run: shapes the earlier rules broke.
+  it('reads a title ending in an initial up to its venue, whatever italic follows the venue', () => {
+    const result = cite('Role of vitamin D. *Nutrients, 3*(2), 1–2. *Erratum.*');
+    expect(result.title).toBe('Role of vitamin D');
+    expect(result.journal).toBe('Nutrients');
+  });
+
+  it('keeps a journal with no volume as the venue when the full stop before it is missing', () => {
+    const result = cite('A title *Journal*.');
+    expect(result.title).toBe('A title');
+    expect(result.journal).toBe('Journal');
+  });
+
+  it('keeps that journal as the venue when another italic run follows it', () => {
+    // A mid-sentence run belongs to the title only when the sentence carries on after it.
+    const note = cite('A title *Journal*. *Advance online publication.*');
+    expect(note.title).toBe('A title');
+    expect(note.journal).toBe('Journal');
+    const erratum = cite('A title *Journal, 3*(2), 1–2. *Erratum.*');
+    expect(erratum.title).toBe('A title');
+    expect(erratum.journal).toBe('Journal');
+  });
+
+  it('parses a long bracketed run in an "In" title sentence quickly', () => {
+    // The open-ended role pattern backtracked exponentially here: 84 s at 16 words.
+    const started = performance.now();
+    const result = cite(`Cells. In vitro culture (${'ab '.repeat(40)}) of cells. *Journal, 3*, 1–2.`);
+    expect(performance.now() - started).toBeLessThan(1000);
+    expect(result.journal).toBe('Journal');
+  });
+
+  it('still reads an italic title followed by a bracketed descriptor', () => {
+    expect(cite('*A thesis title* [Doctoral dissertation]. University.').title).toBe('A thesis title');
+  });
+
+  it('still reads an italic title followed by a report number, an edition, a version or a comma', () => {
+    expect(cite('*Title of report* (Report No. 123). Publisher.').title).toBe('Title of report');
+    expect(cite('*Book title* (2nd ed.). Publisher.').title).toBe('Book title');
+    expect(cite('*Software* (Version 2) [Computer software]. Zenodo.').title).toBe('Software');
+    expect(cite('*An italic title*, arXiv.').title).toBe('An italic title');
+  });
+
+  it('takes the first venue run after a sentence end, not an italic run that follows the venue', () => {
+    const publisher = cite('Title. In A. Editor (Ed.), *Book* (pp. 1–2). *Springer.*');
+    expect(publisher.title).toBe('Title');
+    expect(publisher.journal).toBe('Book');
+    const note = cite('Title. In *Book*. *Second italic.* Pub.');
+    expect(note.title).toBe('Title');
+    expect(note.journal).toBe('Book');
+  });
+
+  it('drops an "In" clause whatever role, in whatever language, its editors carry', () => {
+    for (const role of ['(Hrsg.),', '(Coord.),', '(Comp.),', '(Dir.),', '(Org.),', '(Éd.),', '(Éds.),', '(Eds),', '(Ed)', '(eds.),', '(ed.),']) {
+      const result = cite(`Title here. In A. Editor ${role} *Book* (pp. 1–2). Pub.`);
+      expect(result.title, role).toBe('Title here');
+      expect(result.journal, role).toBe('Book');
+    }
+  });
+
+  it('keeps an "In" title sentence that ends in brackets, which is no editors\' role', () => {
+    const result = cite('Cultured meat. In vitro growth of chicken cells (2D culture). *Journal, 3*, 1–2.');
+    expect(result.title).toBe('Cultured meat. In vitro growth of chicken cells (2D culture)');
+    expect(result.journal).toBe('Journal');
+  });
+
+  it('does not take an editor surnamed "In" for the start of the "In" clause', () => {
+    const alone = cite('Chapter title. In J. In (Ed.), *Book title* (pp. 1–10). Pub.');
+    expect(alone.title).toBe('Chapter title');
+    expect(alone.journal).toBe('Book title');
+    expect(cite('Chapter title. In A. Smith & B. In (Eds.), *Book* (pp. 1–2). Pub.').title).toBe('Chapter title');
+  });
+
+  it('needs editors named with a capital before a role, so a title\'s own "(Ed.)" stays in the title', () => {
+    const result = cite('Results. In cells (Ed.). *Journal*, 5.');
+    expect(result.title).toBe('Results. In cells (Ed.)');
+    expect(result.journal).toBe('Journal');
+  });
+
+  it('drops an "In:" clause that names its editors', () => {
+    const result = cite('Title. In: A. Smith (Ed.), *Book* (pp. 1–5). Pub.');
+    expect(result.title).toBe('Title');
+    expect(result.journal).toBe('Book');
+  });
+
+  it('drops the "In" clause after a title that ends in a single capital', () => {
+    expect(cite('The role of vitamin D. In A. Smith (Ed.), *Handbook*.').title).toBe('The role of vitamin D');
+    const hepatitis = cite('Hepatitis B. In *Handbook of virology*.');
+    expect(hepatitis.title).toBe('Hepatitis B');
+    expect(hepatitis.journal).toBe('Handbook of virology');
+    expect(cite('Part I. In A. Smith (Ed.), *Book*.').title).toBe('Part I');
+  });
+
+  it('drops an "In" clause whose editor is an organisation, with no initials', () => {
+    for (const editors of ['World Health Organization (Ed.),', 'The Editors (Eds.),']) {
+      const result = cite(`Title here. In ${editors} *Book* (pp. 1–2). Pub.`);
+      expect(result.title, editors).toBe('Title here');
+      expect(result.journal, editors).toBe('Book');
+    }
+  });
+
+  it('reads a title ending in an abbreviation\'s full stop up to its venue', () => {
+    const result = cite('Growth of *Lactobacillus* spp. *Journal, 3*, 1–2.');
+    expect(result.title).toBe('Growth of Lactobacillus spp');
+    expect(result.journal).toBe('Journal');
+  });
+});
+
+// ---------------------------------------------------------------------------
 // 1b. Particles, consortium authors, non-ASCII initials, and ellipses (#72)
 // ---------------------------------------------------------------------------
 
