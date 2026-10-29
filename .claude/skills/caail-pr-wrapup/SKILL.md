@@ -282,20 +282,22 @@ re-running them reports confusing errors rather than doing anything (see `refere
 - **This session's managed worktree** (made by `EnterWorktree`): call `ExitWorktree` with
   `action: "remove"` and `discard_changes: true` — safe because the commits are now on `origin/main`.
   It removes the worktree and its auto-named `worktree-<name>` branch, and returns the session to the
-  primary checkout. A branch renamed to `<type>/<slug>` is not removed with it: once `main` is
-  fast-forwarded (the first item, since `-d` checks the branch against it), delete it with
-  `git branch -d <branch>`, or it stays behind as a local branch whose remote is gone.
+  primary checkout. A branch renamed to `<type>/<slug>` is not removed with it: once the worktree is
+  gone (git will not delete a branch a worktree still holds), delete it with `git branch -d <branch>`,
+  or it stays behind as a local branch whose remote is gone. `-d` checks the branch against its
+  upstream, or against `HEAD` once that remote ref is pruned, so run it where `main` is fast-forwarded.
 - **A plain branch** (no worktree): `git branch -d <branch>` (use `-D` if it was squashed/cherry-picked
   so the SHA differs from what landed).
 - **A stale/superseded worktree someone made by hand** (e.g. a predecessor of this work): **confirm
   with the user first**, then `git worktree remove <path>` and `git branch -D <branch>`.
-- **From a worktree-isolated session**, two of these cannot run from the session at all. The
-  fast-forward targets the primary checkout, which the session may not touch, and the same line typed
-  with `!` into that session is refused too: print it for the user's own terminal as an exact command,
-  followed by the `git branch -d <branch>` for a renamed branch.
-  And `ExitWorktree` acts only on a worktree `EnterWorktree` made in this session, so a worktree
-  inherited from an earlier one stays, held by the session until it exits: print its
-  `git worktree remove <path>` and `git branch -d <branch>` for the user to run after the session ends.
+- **From a worktree-isolated session**, the order changes. While the session sits in its worktree it
+  may not run the fast-forward, which targets the primary checkout, and the same line typed with `!`
+  into that session is refused too. So call `ExitWorktree` first, then run the fast-forward and a
+  renamed branch's `git branch -d` from the primary checkout; if the session still refuses them there,
+  print both, in that order, for the user's own terminal. A worktree inherited from an earlier session
+  is different: `ExitWorktree` acts only on one `EnterWorktree` made in this session, so the inherited
+  one stays, held by the session until it exits. Print its `git worktree remove <path>` and
+  `git branch -d <branch>` for the user to run after the session ends.
 - **Stop every background preview server this work started, on whatever port it took.** Naming one port
   is not enough: `pnpm preview` is given a free port per run, so real leaks sit on 4370, 4399, 4402-4406
   and anywhere else, and one worktree was found holding five at once, days old, one per e2e attempt.
