@@ -209,8 +209,8 @@ export function buildDatasetInventory(
    * Two properties this depends on. The accession comes from each row's DATA column, not
    * from its id (see rowDepositAccession). And it is built by walking `inventory`, which is
    * already in canonical page-then-ordinal order, keeping the FIRST claimant — so where one
-   * accession legitimately has several rows (GSE158430 is fanned across three species pages,
-   * PRJNA527944 across two) the winner is stable. Building it from the raw NDJSON would have
+   * accession legitimately has several rows (GSE158430 is fanned across three species pages)
+   * the winner is stable. Building it from the raw NDJSON would have
    * been last-write-wins over an unordered list, and since `db:add` assigns a GLOBAL
    * `MAX(ordinal)+1`, adding an unrelated row on any page could silently flip which species
    * row a member pointed at between two builds.

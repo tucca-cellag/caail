@@ -12,7 +12,7 @@ Two further datasets sit outside the muscle focus: an RNA-seq profile of the que
 
 ## Single-cell atlases
 
-Single-cell atlases of bivalves have begun to appear. An early-development scRNA-seq study of the Pacific oyster *Crassostrea (Magallana) gigas* (Gavery et al. 2025, *BMC Genomics*) maps primordial-germ-cell specification and early developmental cell states across cleavage, blastula, and gastrula stages, an early but useful cell-type and developmental reference for cultivated-mollusk work that needs to identify and track the cell populations a bivalve culture would propagate. Two gill atlases of the Hong Kong oyster (*Crassostrea hongkongensis*) have also been published (Ma & Wang 2025, *Environmental Science & Technology*; Chen & Wang 2026, *Fish & Shellfish Immunology*), but neither names a public deposit for its data, so neither is in the inventory below.
+Single-cell data for bivalves has begun to appear. An early-development scRNA-seq study of the Pacific oyster *Crassostrea (Magallana) gigas* (Gavery et al. 2025, *BMC Genomics*) maps primordial-germ-cell specification and early developmental cell states across cleavage, blastula, and gastrula stages, an early but useful cell-type and developmental reference for cultivated-mollusk work that needs to identify and track the cell populations a bivalve culture would propagate.
 
 ## Complete data inventory
 
