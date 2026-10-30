@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { SITE_ORIGIN, SITE_URL } from '../src/content/site-config';
+import { PAGE_FACTS } from '../src/content/ask-caail-disclosure';
 
 // ---------------------------------------------------------------------------
 // Privacy page — reachable from every page, states the live collection
@@ -27,12 +28,10 @@ test('privacy page states what is measured and who to contact', async ({ page })
   // answer, so a page naming only that one tells readers their question goes nowhere else.
   // That paragraph is the page's one statement of the tier's facts, and the provider's table
   // row links to it rather than restating them. A change of tier or provider rewrites the
-  // paragraph, and these assertions with it. That failure is the reminder working, not a
-  // regression. The build typesets the apostrophe as ’, so match either form.
-  const askCaail = page.locator('main p', { hasText: /The answering model['’]s tier\./ });
-  await expect(askCaail).toContainText('improve, and develop');
-  await expect(askCaail).toContainText('human reviewers');
-  await expect(page.locator('#model-tier')).toHaveCount(1);
+  // paragraph and PAGE_FACTS together. That failure is the reminder working, not a regression.
+  const tier = page.locator('#model-tier');
+  await expect(tier).toHaveCount(1);
+  for (const fact of PAGE_FACTS) await expect(tier).toContainText(fact);
   const providerRow = page.getByRole('row', { name: /Google LLC/ });
   await expect(providerRow.locator('a[href="#model-tier"]')).toBeVisible();
 

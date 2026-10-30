@@ -127,9 +127,13 @@ test('the notice says the question leaves the browser and warns off confidential
   for (const { pattern, missing } of NOTICE_FACTS) {
     await expect(notice, missing).toContainText(pattern);
   }
-  await expect(notice, 'the confidential-information warning has been trimmed').toContainText(
-    /don't include\s+personal or\s+confidential information/i,
-  );
+  // Matched as two facts rather than one phrase, so "personal, confidential, or identifying"
+  // and similar strengthenings stay copy edits.
+  for (const kind of ['personal', 'confidential']) {
+    await expect(notice, `the ${kind}-information warning has been trimmed`).toContainText(
+      new RegExp(`don't include[^.]*\\b${kind}\\b`, 'i'),
+    );
+  }
 });
 
 test('the notice links to the privacy statement', async ({ page }) => {
