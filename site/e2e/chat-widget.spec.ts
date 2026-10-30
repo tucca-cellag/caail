@@ -122,6 +122,9 @@ test('the notice says the question leaves the browser and warns off confidential
     /sent to an external service/i,
   );
   await expect(notice, 'the reader is not told the question is retained').toContainText(/stored/i);
+  await expect(notice, 'the reader is not told the model provider can use the question').toContainText(
+    /provider/i,
+  );
   await expect(notice, 'the confidential-information warning has been trimmed').toContainText(
     /don't include\s+confidential information/i,
   );

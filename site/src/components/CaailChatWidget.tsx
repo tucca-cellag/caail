@@ -164,9 +164,14 @@ export default function CaailChatWidget() {
             And the spec deliberately asserts /stored/ rather than the full
             phrase, so that if the purpose turns out not to hold, removing it is
             a copy edit rather than a test failure.
+
+            The provider sentence describes the model service's unpaid tier, as
+            the privacy statement's "The answering model's tier" paragraph does.
+            A change of tier or provider revises both together.
           */}
           <p class="chat-panel-notice">
-            Questions are sent to an external service and stored to improve answers, so please
+            Questions are sent to an external service and stored to improve answers. The AI model's
+            provider may also use them for its own products and have people review them, so please
             don't include confidential information. <a href={`${BASE}/privacy/`}>Privacy</a>
           </p>
           <form class="chat-panel-form" onSubmit={handleSubmit}>

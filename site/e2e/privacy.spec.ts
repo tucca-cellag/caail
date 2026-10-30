@@ -25,9 +25,16 @@ test('privacy page states what is measured and who to contact', async ({ page })
   // The answering model's tier lets its provider use what readers submit for its own
   // products and lets human reviewers read it. Both are purposes beyond composing an
   // answer, so a page naming only that one tells readers their question goes nowhere else.
-  const askCaail = page.locator('main p', { hasText: 'unpaid tier' });
+  // The paragraph and the provider's table row both describe that tier: a change of tier
+  // or provider rewrites both, and these assertions with them. That failure is the
+  // reminder working, not a regression.
+  // The build typesets the apostrophe as ’, so match either form.
+  const askCaail = page.locator('main p', { hasText: /The answering model['’]s tier\./ });
   await expect(askCaail).toContainText('improve, and develop');
   await expect(askCaail).toContainText('human reviewers');
+  const providerRow = page.getByRole('row', { name: /Google LLC/ });
+  await expect(providerRow).toContainText('unpaid tier');
+  await expect(providerRow).toContainText('reviewers');
 
   // The Tufts institutional statement and privacy mailbox are the escalation
   // path; a broken link here is the one that actually matters.
