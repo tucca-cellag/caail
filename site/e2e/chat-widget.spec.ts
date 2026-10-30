@@ -1,5 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { NOTICE_FACTS } from '../src/content/ask-caail-disclosure';
 
 /**
  * Ask CAAIL widget.
@@ -122,10 +123,10 @@ test('the notice says the question leaves the browser and warns off confidential
     /sent to an external service/i,
   );
   await expect(notice, 'the reader is not told the question is retained').toContainText(/stored/i);
-  await expect(notice, 'the reader is not told the model provider uses the question').toContainText(
-    /own products/i,
-  );
-  await expect(notice, 'the reader is not told people may review the question').toContainText(/review/i);
+  // The provider sentence's two facts, from the one copy the unit check also reads.
+  for (const { pattern, missing } of NOTICE_FACTS) {
+    await expect(notice, missing).toContainText(pattern);
+  }
   await expect(notice, 'the confidential-information warning has been trimmed').toContainText(
     /don't include\s+personal or\s+confidential information/i,
   );

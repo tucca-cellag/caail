@@ -168,9 +168,10 @@ export default function CaailChatWidget() {
             The provider sentence describes the model service's unpaid tier, as
             the privacy statement's "The answering model's tier" paragraph does.
             A change of tier or provider revises both together, and
-            src/content/ask-caail-disclosure.test.ts fails until it does. The
-            spec pins that sentence by its two facts, /own products/ and
-            /review/, not its wording, for the same reason it asserts /stored/.
+            src/content/ask-caail-disclosure.test.ts fails until it does. Both
+            checks pin that sentence by its two facts (NOTICE_FACTS in
+            src/content/ask-caail-disclosure.ts), not its wording, for the same
+            reason the spec asserts /stored/.
           */}
           <p class="chat-panel-notice">
             Questions are sent to an external service and stored to improve answers. The AI model's
