@@ -74,7 +74,7 @@ describe('rowDepositAccession', () => {
    */
   it('does not claim an accession the row only mentions', () => {
     expect(rowDepositAccession('ds:prjeb41939', 'unavailable')).toBe('PRJEB41939');
-    expect(rowDepositAccession('ds:prjna726590', 'none named')).toBe('PRJNA726590');
+    expect(rowDepositAccession('ds:prjna1', 'none named')).toBe('PRJNA1');
   });
 });
 
@@ -114,8 +114,8 @@ describe('buildDatasetInventory — real corpus', () => {
   });
 
   /*
-   * Resolution must be a pure function of repo state. GSE158430 has three rows and
-   * PRJNA527944 two, so a map built from the raw NDJSON would be last-write-wins over an
+   * Resolution must be a pure function of repo state. GSE158430 has three rows, so a map
+   * built from the raw NDJSON would be last-write-wins over an
    * unordered list — and since db:add assigns a GLOBAL MAX(ordinal)+1, adding an unrelated
    * row on any page could flip which species row a member pointed at between builds.
    *

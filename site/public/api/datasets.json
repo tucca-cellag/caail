@@ -4330,48 +4330,6 @@
       "subseries": []
     },
     {
-      "id": "ds:synergetic-hallmark-knockouts",
-      "kind": "inventory",
-      "page": "Cow",
-      "name": "Synergetic hallmark knockouts immortalize bovine muscle stem cells for cellular agriculture",
-      "columns": {
-        "Study": "Synergetic hallmark knockouts immortalize bovine muscle stem cells for cellular agriculture",
-        "Paper": "[preprint](https://doi.org/10.1101/2025.09.02.673775)",
-        "Data": "on request",
-        "Type": "bulk RNA-seq",
-        "Tissue": "Muscle (satellite cells; CriBSC lines)",
-        "Description": "CRISPR/Cas9 knockout of PTEN, TP53, and SMAD4 immortalizes bovine satellite cells into the CriBSC2 line, which keeps myogenic identity and forms myotubes past 150 divisions and on gelatin scaffolds; RNA-seq contrasts immortalized and primary cells (Tufts/Kaplan lab; Zhang, Bromberg, Gordon, Nagarajan, Stout, Hasturk, Sim, Brennan, La, Fernandez, David, White & Kaplan 2025, *bioRxiv*); GEO accession available on request per the data-availability statement",
-        "Size": "—",
-        "Area of research": "Cell-line engineering (immortalization)"
-      },
-      "links": [
-        "https://doi.org/10.1101/2025.09.02.673775"
-      ],
-      "topics": [
-        {
-          "slug": "cell-line-engineering",
-          "label": "Cell-line engineering",
-          "theme": "cell-lines-engineering"
-        },
-        {
-          "slug": "cell-lines-engineering",
-          "label": "Cell Lines & Engineering",
-          "theme": "cell-lines-engineering"
-        },
-        {
-          "slug": "scaffolding-biomaterials",
-          "label": "Scaffolding & Biomaterials",
-          "theme": "scaffolding-biomaterials"
-        },
-        {
-          "slug": "scaffolds-biomaterials",
-          "label": "Scaffolds & biomaterials",
-          "theme": "scaffolding-biomaterials"
-        }
-      ],
-      "subseries": []
-    },
-    {
       "id": "ds:gse173198",
       "kind": "inventory",
       "page": "Cow",
@@ -5394,25 +5352,22 @@
       "id": "ds:prjna726590",
       "kind": "inventory",
       "page": "Duck",
-      "name": "Multi-omics Characterization of Duck Embryonic Stem Cells for Cultivated Meat",
+      "name": "Profiling Analysis of N6-Methyladenosine mRNA Methylation Reveals Differential m6A Patterns during the Embryonic Skeletal Muscle Development of Ducks",
       "columns": {
-        "Study": "Multi-omics Characterization of Duck Embryonic Stem Cells for Cultivated Meat",
-        "Paper": "[preprint](https://doi.org/10.64898/2026.04.27.720974)",
-        "Data": "none named",
-        "Type": "RNA-seq + WGS + nutritional analysis",
-        "Tissue": "ESCs (whole biomass)",
-        "Description": "First multi-omics characterization of duck ESCs for cultivated meat (Kusters et al. 2026, bioRxiv); 63 Illumina libraries (6.9 B paired-end reads); RNA-seq aligned to [`GCF_015476345.1`](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_015476345.1/) (ZJU1.0) and WGS aligned to T2T [`GCF_047663525.1`](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_047663525.1/) (IASCAAS Pekin Duck T2T); nutritional profile by AOAC (950.46/981.10/960.39/920.153) + ISO 13903:2005; reuses four public muscle/liver BioProjects ([`PRJNA726590`](https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA726590), [`PRJNA878639`](https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA878639), [`PRJNA349262`](https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA349262), [`PRJNA437527`](https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA437527)) as conventional-duck reference; no new public deposit named in the preprint",
-        "Size": "—",
-        "Area of research": "Cultivated-meat ESC characterization"
+        "Study": "Profiling Analysis of N6-Methyladenosine mRNA Methylation Reveals Differential m6A Patterns during the Embryonic Skeletal Muscle Development of Ducks",
+        "Paper": "[DOI](https://doi.org/10.3390/ani12192593)",
+        "Data": "[`PRJNA726590`](https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA726590)",
+        "Type": "RNA-seq + MeRIP-seq",
+        "Tissue": "Breast muscle (embryonic)",
+        "Description": "Shan Ma duck breast muscle at embryonic days 13 and 19 (female embryos), profiling mRNA expression and m6A methylation across embryonic muscle differentiation (Chen et al. 2022, *Animals*); RNA-seq under `PRJNA726590`, MeRIP-seq under [`PRJNA725663`](https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA725663); the RNA-seq was later reused as a differentiated-muscle reference by a 2026 duck embryonic stem cell preprint ([Kusters et al.](https://doi.org/10.64898/2026.04.27.720974))",
+        "Size": "6 RNA-seq runs; 99.8 Gb",
+        "Area of research": "Myogenesis & m6A RNA methylation"
       },
       "links": [
-        "https://doi.org/10.64898/2026.04.27.720974",
-        "https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_015476345.1/",
-        "https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_047663525.1/",
+        "https://doi.org/10.3390/ani12192593",
         "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA726590",
-        "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA878639",
-        "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA349262",
-        "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA437527"
+        "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA725663",
+        "https://doi.org/10.64898/2026.04.27.720974"
       ],
       "topics": [
         {
@@ -6583,7 +6538,7 @@
         "Data": "[`PRJCA049754`](https://ngdc.cncb.ac.cn/bioproject/browse/PRJCA049754)",
         "Type": "scRNA-seq",
         "Tissue": "Longissimus dorsi",
-        "Description": "First scRNA-seq atlas of the goat longissimus dorsi across 14 developmental stages (E30 to Y11), 120,944 cells; resolves muscle satellite-cell (MuSC) and fibro-adipogenic progenitor (FAP) subpopulations and DLK1-NOTCH3 FAP-to-MuSC crosstalk that maintains MuSC quiescence (Chen et al. 2026, *Cells*; Chengdu gray goat)",
+        "Description": "First scRNA-seq atlas of the goat longissimus dorsi across 14 developmental stages (E30 to Y11), 120,944 cells; resolves muscle satellite-cell (MuSC) and fibro-adipogenic progenitor (FAP) subpopulations and DLK1-NOTCH3 FAP-to-MuSC crosstalk that maintains MuSC quiescence (Chen et al. 2026, *Cells*; Chengdu gray goat); the paper says the data would be released on publication, but NGDC still lists `PRJCA049754` as unreleased (checked 2026-10-30)",
         "Size": "120,944 cells; 14 stages",
         "Area of research": "Goat muscle development / seed-cell biology"
       },
@@ -6614,10 +6569,10 @@
         "Study": "Full-length (Oxford Nanopore) transcriptome of goat muscle development",
         "Paper": "[DOI](https://doi.org/10.1038/s41597-025-04950-9)",
         "Data": "[`SRP531789`](https://www.ncbi.nlm.nih.gov/sra/?term=SRP531789)",
-        "Type": "Long-read RNA-seq (ONT, full-length)",
+        "Type": "RNA-seq (short reads public; ONT long reads not deposited)",
         "Tissue": "Longissimus dorsi & biceps femoris",
-        "Description": "ONT full-length transcriptome from late-gestation dams and fetuses; 169.8M valid reads, 58,092 full-length transcripts, 89,468 alternative-splicing events, 5,538 predicted lncRNAs; data descriptor enriching the goat transcriptome annotation (Pei et al. 2025, *Scientific Data*)",
-        "Size": "169.8M reads; 24 SRA runs",
+        "Description": "ONT full-length transcriptome from late-gestation dams and fetuses; 169.8M valid reads, 58,092 full-length transcripts, 89,468 alternative-splicing events, 5,538 predicted lncRNAs; data descriptor enriching the goat transcriptome annotation (Pei et al. 2025, *Scientific Data*); the public `SRP531789` holds only the 24 BGISEQ short-read correction runs (SRR30617348 to SRR30617371), labelled *Pseudois nayaur* rather than goat, and no Nanopore run is public",
+        "Size": "24 short-read runs; 153.6 Gb",
         "Area of research": "Goat transcriptome annotation"
       },
       "links": [
@@ -6657,45 +6612,6 @@
         {
           "slug": "cell-lines-engineering",
           "label": "Cell Lines & Engineering",
-          "theme": "cell-lines-engineering"
-        }
-      ],
-      "subseries": []
-    },
-    {
-      "id": "ds:prjna1467315",
-      "kind": "inventory",
-      "page": "Mollusk",
-      "name": "Novel copper-responsive cell subtypes in oyster gills: scRNA-seq uncovers detoxification strategy and intraspecific accumulation variation",
-      "columns": {
-        "Study": "Novel copper-responsive cell subtypes in oyster gills: scRNA-seq uncovers detoxification strategy and intraspecific accumulation variation",
-        "Paper": "[DOI](https://doi.org/10.1021/acs.est.5c05244)",
-        "Data": "[`PRJNA1467315`](https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA1467315)",
-        "Type": "scRNA-seq",
-        "Species": "*Crassostrea hongkongensis* (syn. *Magallana hongkongensis*)",
-        "Tissue": "Gill",
-        "Description": "First cell atlas of oyster gills at single-cell resolution (Ma & Wang 2025, *Environmental Science & Technology*); 18 cell types, including newly identified copper-accumulating copperphilic cells, with cell-differentiation trajectories and cell-type-specific stress / ion-transport pathways",
-        "Size": "—",
-        "Area of research": "Single-cell atlas"
-      },
-      "links": [
-        "https://doi.org/10.1021/acs.est.5c05244",
-        "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA1467315"
-      ],
-      "topics": [
-        {
-          "slug": "cell-lines-engineering",
-          "label": "Cell Lines & Engineering",
-          "theme": "cell-lines-engineering"
-        },
-        {
-          "slug": "metabolism-modeling",
-          "label": "Metabolism & Modeling",
-          "theme": "metabolism-modeling"
-        },
-        {
-          "slug": "single-cell-atlases",
-          "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
       ],
@@ -6915,40 +6831,6 @@
         {
           "slug": "cell-lines-engineering",
           "label": "Cell Lines & Engineering",
-          "theme": "cell-lines-engineering"
-        }
-      ],
-      "subseries": []
-    },
-    {
-      "id": "ds:prjna1381342",
-      "kind": "inventory",
-      "page": "Mollusk",
-      "name": "Oyster cellular architecture and innate immune programs resolved by single-cell RNA sequencing",
-      "columns": {
-        "Study": "Oyster cellular architecture and innate immune programs resolved by single-cell RNA sequencing",
-        "Paper": "[DOI](https://doi.org/10.1016/j.fsi.2026.111128)",
-        "Data": "[`PRJNA1381342`](https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA1381342)",
-        "Type": "scRNA-seq",
-        "Species": "*Crassostrea hongkongensis* (syn. *Magallana hongkongensis*)",
-        "Tissue": "Gill",
-        "Description": "Tissue-resolved single-cell gill atlas of the Hong Kong oyster (Chen & Wang 2026, *Fish & Shellfish Immunology*); 20 cell types, including a diversified five-member phagocyte lineage with distinct extracellular-containment, intracellular-clearance, and matrix-restoration strategies, plus three humoral immune populations and a neural-related compartment",
-        "Size": "—",
-        "Area of research": "Single-cell atlas & immunity"
-      },
-      "links": [
-        "https://doi.org/10.1016/j.fsi.2026.111128",
-        "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA1381342"
-      ],
-      "topics": [
-        {
-          "slug": "cell-lines-engineering",
-          "label": "Cell Lines & Engineering",
-          "theme": "cell-lines-engineering"
-        },
-        {
-          "slug": "single-cell-atlases",
-          "label": "Single-cell atlases",
           "theme": "cell-lines-engineering"
         }
       ],
@@ -7403,16 +7285,16 @@
       "columns": {
         "Study": "Dynamic transcriptome profiles of postnatal porcine skeletal muscle growth and development",
         "Paper": "[DOI](https://doi.org/10.1186/s12863-021-00984-1)",
-        "Data": "[`PRJNA527944`](https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA527944)",
+        "Data": "[`PRJNA668562`](https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA668562)",
         "Type": "RNA-seq",
         "Tissue": "Muscle",
-        "Description": "12 longissimus dorsi samples from Tibetan piglets at 0/14/30/60 d; shares BioProject `PRJNA527944` with the Duroc IMF study below (same research group)",
-        "Size": "269 Gb",
+        "Description": "12 longissimus dorsi samples from Tibetan piglets at 0/14/30/60 d; the paper's availability statement names `PRJNA527944`, which holds the Duroc IMF study below, while this study's runs are under `PRJNA668562`",
+        "Size": "119.5 Gb",
         "Area of research": "Postnatal transcriptome dynamics"
       },
       "links": [
         "https://doi.org/10.1186/s12863-021-00984-1",
-        "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA527944"
+        "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA668562"
       ],
       "topics": [
         {
@@ -7434,7 +7316,7 @@
         "Data": "[`PRJNA527944`](https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA527944)",
         "Type": "RNA-seq",
         "Tissue": "Muscle",
-        "Description": "Longissimus dorsi transcriptomes of 28 purebred Duroc pigs; shares BioProject `PRJNA527944` with the postnatal-development study above (same research group)",
+        "Description": "Longissimus dorsi transcriptomes of 28 purebred Duroc pigs; the postnatal-development study above also cites this BioProject, though its own runs are under `PRJNA668562`",
         "Size": "269 Gb",
         "Area of research": "Intramuscular fat content"
       },
@@ -7687,53 +7569,6 @@
       "subseries": []
     },
     {
-      "id": "ds:integrated-lipidomics-and",
-      "kind": "inventory",
-      "page": "Pig",
-      "name": "Integrated lipidomics and transcriptomics of cultured fat from porcine SAT vs fibro-adipogenic progenitors",
-      "columns": {
-        "Study": "Integrated lipidomics and transcriptomics of cultured fat from porcine SAT vs fibro-adipogenic progenitors",
-        "Paper": "[DOI](https://doi.org/10.1016/j.foodchem.2026.149682)",
-        "Data": "supplementary",
-        "Type": "RNA-seq + lipidomics (LC-MS)",
-        "Tissue": "Fat (cultured)",
-        "Description": "Cultured fat produced from porcine subcutaneous pre-adipocytes (SAT) vs fibro-adipogenic progenitors (FAPs) in a KA-hydrogel 3D system; 14-day adipogenic differentiation; lipidomics n=6 / transcriptomics n=4 per group; no public repository accession — processed data in the paper's supplementary materials",
-        "Size": "—",
-        "Area of research": "Cultured fat & seed-cell selection"
-      },
-      "links": [
-        "https://doi.org/10.1016/j.foodchem.2026.149682"
-      ],
-      "topics": [
-        {
-          "slug": "ai-methods-tooling",
-          "label": "AI Methods & Tooling",
-          "theme": "ai-methods-tooling"
-        },
-        {
-          "slug": "bioprocess-scale-up",
-          "label": "Bioprocess & Manufacturing",
-          "theme": "bioprocess-scale-up"
-        },
-        {
-          "slug": "cell-lines-engineering",
-          "label": "Cell Lines & Engineering",
-          "theme": "cell-lines-engineering"
-        },
-        {
-          "slug": "scaffolding-biomaterials",
-          "label": "Scaffolding & Biomaterials",
-          "theme": "scaffolding-biomaterials"
-        },
-        {
-          "slug": "scaffolds-biomaterials",
-          "label": "Scaffolds & biomaterials",
-          "theme": "scaffolding-biomaterials"
-        }
-      ],
-      "subseries": []
-    },
-    {
       "id": "ds:prjna597497",
       "kind": "inventory",
       "page": "Pig",
@@ -7744,7 +7579,7 @@
         "Data": "[`GVM001420`](https://ngdc.cncb.ac.cn/gvm/search?searchTerm=GVM001420)",
         "Type": "GWAS + RNA-seq + ATAC-seq + ChIP-seq",
         "Tissue": "Muscle, Fat",
-        "Description": "Duroc, Landrace, and Yorkshire pigs (with a Meishan reference); growth traits ADG, AGE, BF, LEA; identifies ARL8A as a conserved candidate gene. New genome-variation data at CNCB Genome Variation Map `GVM001420`; reuses public SRA [`PRJNA597497`](https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA597497) and [`PRJNA287471`](https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA287471)",
+        "Description": "Duroc, Landrace, and Yorkshire pigs (with a Meishan reference); growth traits ADG, AGE, BF, LEA; identifies ARL8A as a conserved candidate gene. Genotypes of the same three breeds from the paper's institution (Huazhong Agricultural University) are public at CNCB Genome Variation Map `GVM001420`, which the paper does not cite (its data statement says data are available on request); the multi-omics layer reuses public SRA [`PRJNA597497`](https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA597497) and [`PRJNA287471`](https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA287471)",
         "Size": "—",
         "Area of research": "Growth traits & multi-breed regulation"
       },
@@ -8759,5 +8594,5 @@
       "subseries": []
     }
   ],
-  "corpusDate": "2026-10-29"
+  "corpusDate": "2026-10-30"
 }

@@ -99,7 +99,7 @@ describe('computeCounts — real corpus (ground-truth contract)', () => {
       software: 143,
       databases: 149,
       species: 17,
-      datasets: 239,
+      datasets: 235,
       // 8: derived from the `ResearchAreas/` file count and labelled "Research
       // Areas" on the homepage. It went 8 -> 7 when `AIEvaluation.md` moved to
       // `Methods/` (it described the *Benchmarks & Evaluation Frameworks* method

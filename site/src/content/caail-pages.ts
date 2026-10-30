@@ -434,7 +434,7 @@ const PAGES: Record<string, PageMeta> = {
     group: 'datasets',
     order: 9,
     description:
-      'Cultivated-duck datasets: multi-omics characterization of duck embryonic stem cells for cultivated meat.',
+      'Cultivated-duck datasets: embryonic breast-muscle transcriptomics and m6A profiling, single-cell myogenesis, and follicle multi-omics.',
   },
   'datasets/turkey': {
     title: 'Turkey / Meleagris gallopavo',

@@ -260,7 +260,6 @@
 {"id":"ds:identification-of-myogenic","type":"dataset","slug":"identification-of-myogenic"}
 {"id":"ds:ies1300-gallus-gallus-chicken","type":"dataset","slug":"ies1300-gallus-gallus-chicken"}
 {"id":"ds:imt1026-imt1026-v30-komagataella-phaffii-pichia-pastoris","type":"dataset","slug":"imt1026-imt1026-v30-komagataella-phaffii-pichia-pastoris"}
-{"id":"ds:integrated-lipidomics-and","type":"dataset","slug":"integrated-lipidomics-and"}
 {"id":"ds:integrated-multi-omics-reveals","type":"dataset","slug":"integrated-multi-omics-reveals"}
 {"id":"ds:issus3744-sus-scrofa-porcine","type":"dataset","slug":"issus3744-sus-scrofa-porcine"}
 {"id":"ds:iumami-scm","type":"dataset","slug":"iumami-scm"}
@@ -311,8 +310,6 @@
 {"id":"ds:prjna1302321","type":"dataset","slug":"prjna1302321"}
 {"id":"ds:prjna1307069","type":"dataset","slug":"prjna1307069"}
 {"id":"ds:prjna1331774","type":"dataset","slug":"prjna1331774"}
-{"id":"ds:prjna1381342","type":"dataset","slug":"prjna1381342"}
-{"id":"ds:prjna1467315","type":"dataset","slug":"prjna1467315"}
 {"id":"ds:prjna389966","type":"dataset","slug":"prjna389966"}
 {"id":"ds:prjna508885","type":"dataset","slug":"prjna508885"}
 {"id":"ds:prjna527944","type":"dataset","slug":"prjna527944"}
@@ -381,7 +378,6 @@
 {"id":"ds:srp531789","type":"dataset","slug":"srp531789"}
 {"id":"ds:substantial-downregulation-of","type":"dataset","slug":"substantial-downregulation-of"}
 {"id":"ds:swe-bench","type":"dataset","slug":"swe-bench"}
-{"id":"ds:synergetic-hallmark-knockouts","type":"dataset","slug":"synergetic-hallmark-knockouts"}
 {"id":"ds:tecator-nir-meat","type":"dataset","slug":"tecator-nir-meat"}
 {"id":"ds:tmt-based-quantitative-proteomic","type":"dataset","slug":"tmt-based-quantitative-proteomic"}
 {"id":"ds:whole-transcriptome-analysis","type":"dataset","slug":"whole-transcriptome-analysis"}

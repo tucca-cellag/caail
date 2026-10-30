@@ -73,8 +73,8 @@ export { idAccession };
  * The id alone is not trustworthy for this, which is the subtle part. `db:add` mints a `ds:`
  * id from the first accession found anywhere in the joined cells, so a row whose Data column
  * carries no accession — `unavailable`, `on request`, `none named`, or a non-NCBI badge — is
- * named after an accession merely MENTIONED in its Description. Five rows in the corpus are
- * like that today; `ds:prjeb41939` is the clearest, a bovine FAANG atlas row whose Data reads
+ * named after an accession merely MENTIONED in its Description. Several rows in the corpus
+ * are like that; `ds:prjeb41939` is the clearest, a bovine FAANG atlas row whose Data reads
  * `unavailable` and whose id comes from public data the study REUSED.
  *
  * Resolving members by id would therefore have pointed an agent at a row that is not the
@@ -209,8 +209,8 @@ export function buildDatasetInventory(
    * Two properties this depends on. The accession comes from each row's DATA column, not
    * from its id (see rowDepositAccession). And it is built by walking `inventory`, which is
    * already in canonical page-then-ordinal order, keeping the FIRST claimant — so where one
-   * accession legitimately has several rows (GSE158430 is fanned across three species pages,
-   * PRJNA527944 across two) the winner is stable. Building it from the raw NDJSON would have
+   * accession legitimately has several rows (GSE158430 is fanned across three species pages)
+   * the winner is stable. Building it from the raw NDJSON would have
    * been last-write-wins over an unordered list, and since `db:add` assigns a GLOBAL
    * `MAX(ordinal)+1`, adding an unrelated row on any page could silently flip which species
    * row a member pointed at between two builds.
