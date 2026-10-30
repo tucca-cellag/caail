@@ -5360,7 +5360,7 @@
         "Type": "RNA-seq + MeRIP-seq",
         "Tissue": "Breast muscle (embryonic)",
         "Description": "Shan Ma duck breast muscle at embryonic days 13 and 19 (female embryos), profiling mRNA expression and m6A methylation across embryonic muscle differentiation (Chen et al. 2022, *Animals*); RNA-seq under `PRJNA726590`, MeRIP-seq under [`PRJNA725663`](https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA725663); the RNA-seq was later reused as a differentiated-muscle reference by a 2026 duck embryonic stem cell preprint ([Kusters et al.](https://doi.org/10.64898/2026.04.27.720974))",
-        "Size": "6 runs; 99.8 Gb",
+        "Size": "6 RNA-seq runs; 99.8 Gb",
         "Area of research": "Myogenesis & m6A RNA methylation"
       },
       "links": [
