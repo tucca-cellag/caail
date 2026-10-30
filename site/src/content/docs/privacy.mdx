@@ -88,13 +88,22 @@ behalf:
 | GitHub, Inc. | Hosting | IP address, user agent |
 | Cloudflare, Inc. | Analytics, and hosting of the events endpoint operated by TUCCA | Page view data, the two usage events described above, and your IP address as the sender of an event |
 | Sevalla | Hosting of the "Ask CAAIL" service (United States region) | The text of your question |
-| Google LLC | Generative Language API (Gemini models), used to compose answers | The text of your question, with relevant passages from CAAIL |
+| Google LLC | Generative Language API (Gemini models), used to compose answers and, on the tier in use, by the provider for its own products | The text of your question, with relevant passages from CAAIL |
 
 **The "Ask CAAIL" feature.** This feature is optional and transmits nothing until you use it. No
 request is made when a page loads or when the panel is opened. Where you submit a question, the
 text you submit is transmitted to the recipients identified above, both of which are outside Tufts
 University. The service records the full text of each question it receives in its server logs. We
 are not presently able to state the retention period applicable to those logs.
+
+{/* This paragraph and the provider's row in the table above describe the model service's
+    unpaid tier. A change of tier or provider must revise both in the same change. */}
+
+**The answering model's tier.** The feature currently uses the unpaid tier of the model service
+identified above. On that tier the provider uses the questions it receives, and the answers it
+returns, to provide, improve, and develop its own products and machine-learning technologies, and
+its human reviewers may read, annotate, and process them. The provider's terms for that tier ask
+that no sensitive, confidential, or personal information be submitted to it.
 
 **You should not submit personal, confidential, or identifying information through this feature.**
 It is provided to answer questions concerning cellular agriculture and artificial intelligence

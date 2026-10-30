@@ -22,6 +22,13 @@ test('privacy page states what is measured and who to contact', async ({ page })
     await expect(page.getByRole('cell', { name: recipient, exact: true })).toBeVisible();
   }
 
+  // The answering model's tier lets its provider use what readers submit for its own
+  // products and lets human reviewers read it. Both are purposes beyond composing an
+  // answer, so a page naming only that one tells readers their question goes nowhere else.
+  const askCaail = page.locator('main p', { hasText: 'unpaid tier' });
+  await expect(askCaail).toContainText('improve, and develop');
+  await expect(askCaail).toContainText('human reviewers');
+
   // The Tufts institutional statement and privacy mailbox are the escalation
   // path; a broken link here is the one that actually matters.
   await expect(
