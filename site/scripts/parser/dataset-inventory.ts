@@ -73,8 +73,8 @@ export { idAccession };
  * The id alone is not trustworthy for this, which is the subtle part. `db:add` mints a `ds:`
  * id from the first accession found anywhere in the joined cells, so a row whose Data column
  * carries no accession — `unavailable`, `on request`, `none named`, or a non-NCBI badge — is
- * named after an accession merely MENTIONED in its Description. Five rows in the corpus are
- * like that today; `ds:prjeb41939` is the clearest, a bovine FAANG atlas row whose Data reads
+ * named after an accession merely MENTIONED in its Description. Several rows in the corpus
+ * are like that; `ds:prjeb41939` is the clearest, a bovine FAANG atlas row whose Data reads
  * `unavailable` and whose id comes from public data the study REUSED.
  *
  * Resolving members by id would therefore have pointed an agent at a row that is not the

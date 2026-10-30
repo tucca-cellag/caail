@@ -74,7 +74,7 @@ describe('rowDepositAccession', () => {
    */
   it('does not claim an accession the row only mentions', () => {
     expect(rowDepositAccession('ds:prjeb41939', 'unavailable')).toBe('PRJEB41939');
-    expect(rowDepositAccession('ds:prjna726590', 'none named')).toBe('PRJNA726590');
+    expect(rowDepositAccession('ds:prjna1', 'none named')).toBe('PRJNA1');
   });
 });
 
