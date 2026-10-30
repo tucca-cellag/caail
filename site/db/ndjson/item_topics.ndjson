@@ -531,11 +531,6 @@
 {"item_id":"ds:imt1026-imt1026-v30-komagataella-phaffii-pichia-pastoris","topic_id":"topic:media-growth-factors"}
 {"item_id":"ds:imt1026-imt1026-v30-komagataella-phaffii-pichia-pastoris","topic_id":"topic:metabolic-modeling"}
 {"item_id":"ds:imt1026-imt1026-v30-komagataella-phaffii-pichia-pastoris","topic_id":"topic:metabolism-modeling"}
-{"item_id":"ds:integrated-lipidomics-and","topic_id":"topic:ai-methods-tooling"}
-{"item_id":"ds:integrated-lipidomics-and","topic_id":"topic:bioprocess-scale-up"}
-{"item_id":"ds:integrated-lipidomics-and","topic_id":"topic:cell-lines-engineering"}
-{"item_id":"ds:integrated-lipidomics-and","topic_id":"topic:scaffolding-biomaterials"}
-{"item_id":"ds:integrated-lipidomics-and","topic_id":"topic:scaffolds-biomaterials"}
 {"item_id":"ds:integrated-multi-omics-reveals","topic_id":"topic:cell-lines-engineering"}
 {"item_id":"ds:integrated-multi-omics-reveals","topic_id":"topic:mass-spectrometry"}
 {"item_id":"ds:integrated-multi-omics-reveals","topic_id":"topic:metabolic-modeling"}
@@ -697,11 +692,6 @@
 {"item_id":"ds:prjna1331774","topic_id":"topic:bioprocess-scale-up"}
 {"item_id":"ds:prjna1331774","topic_id":"topic:cell-line-engineering"}
 {"item_id":"ds:prjna1331774","topic_id":"topic:cell-lines-engineering"}
-{"item_id":"ds:prjna1381342","topic_id":"topic:cell-lines-engineering"}
-{"item_id":"ds:prjna1381342","topic_id":"topic:single-cell-atlases"}
-{"item_id":"ds:prjna1467315","topic_id":"topic:cell-lines-engineering"}
-{"item_id":"ds:prjna1467315","topic_id":"topic:metabolism-modeling"}
-{"item_id":"ds:prjna1467315","topic_id":"topic:single-cell-atlases"}
 {"item_id":"ds:prjna389966","topic_id":"topic:cell-lines-engineering"}
 {"item_id":"ds:prjna527944","topic_id":"topic:cell-lines-engineering"}
 {"item_id":"ds:prjna527944-2","topic_id":"topic:cell-lines-engineering"}
@@ -847,10 +837,6 @@
 {"item_id":"ds:swe-bench","topic_id":"topic:ai-agents"}
 {"item_id":"ds:swe-bench","topic_id":"topic:ai-methods-tooling"}
 {"item_id":"ds:swe-bench","topic_id":"topic:benchmarks-evaluation"}
-{"item_id":"ds:synergetic-hallmark-knockouts","topic_id":"topic:cell-line-engineering"}
-{"item_id":"ds:synergetic-hallmark-knockouts","topic_id":"topic:cell-lines-engineering"}
-{"item_id":"ds:synergetic-hallmark-knockouts","topic_id":"topic:scaffolding-biomaterials"}
-{"item_id":"ds:synergetic-hallmark-knockouts","topic_id":"topic:scaffolds-biomaterials"}
 {"item_id":"ds:tecator-nir-meat","topic_id":"topic:ai-methods-tooling"}
 {"item_id":"ds:tecator-nir-meat","topic_id":"topic:benchmarks-evaluation"}
 {"item_id":"ds:tecator-nir-meat","topic_id":"topic:flavor-sensory"}

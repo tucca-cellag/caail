@@ -11,8 +11,8 @@
           "paper": 97,
           "software": 55,
           "database": 58,
-          "dataset": 64,
-          "total": 274
+          "dataset": 63,
+          "total": 273
         },
         "tags": [
           "ai-agents",
@@ -30,8 +30,8 @@
           "paper": 68,
           "software": 18,
           "database": 7,
-          "dataset": 26,
-          "total": 119
+          "dataset": 25,
+          "total": 118
         },
         "tags": [
           "bioreactor-scale-up",
@@ -48,8 +48,8 @@
           "paper": 51,
           "software": 14,
           "database": 37,
-          "dataset": 201,
-          "total": 303
+          "dataset": 197,
+          "total": 299
         },
         "tags": [
           "cell-line-engineering",
@@ -103,8 +103,8 @@
           "paper": 28,
           "software": 22,
           "database": 18,
-          "dataset": 37,
-          "total": 105
+          "dataset": 36,
+          "total": 104
         },
         "tags": [
           "metabolic-modeling"
@@ -120,8 +120,8 @@
           "paper": 16,
           "software": 0,
           "database": 0,
-          "dataset": 10,
-          "total": 26
+          "dataset": 8,
+          "total": 24
         },
         "tags": [
           "scaffolds-biomaterials"
@@ -217,8 +217,8 @@
           "paper": 7,
           "software": 14,
           "database": 5,
-          "dataset": 33,
-          "total": 59
+          "dataset": 32,
+          "total": 58
         },
         "tags": []
       },
@@ -337,8 +337,8 @@
           "paper": 13,
           "software": 0,
           "database": 0,
-          "dataset": 8,
-          "total": 21
+          "dataset": 6,
+          "total": 19
         },
         "tags": []
       },
@@ -367,8 +367,8 @@
           "paper": 26,
           "software": 0,
           "database": 9,
-          "dataset": 53,
-          "total": 88
+          "dataset": 51,
+          "total": 86
         },
         "tags": []
       },
@@ -1860,5 +1860,5 @@
       "datasets": []
     }
   },
-  "corpusDate": "2026-10-29"
+  "corpusDate": "2026-10-30"
 }
