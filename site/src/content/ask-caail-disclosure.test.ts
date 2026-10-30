@@ -18,13 +18,18 @@ import { fileURLToPath } from 'node:url';
 const read = (rel: string) =>
   readFileSync(fileURLToPath(new URL(rel, import.meta.url)), 'utf-8').replace(/\s+/g, ' ');
 
-/** Each place privacy.mdx states the provider's own use, as written there. */
+/**
+ * Each place privacy.mdx states the provider's own use, as written there. This is the
+ * one list of them: the comment beside the tier paragraph points here rather than
+ * repeating it. A new statement of that use belongs in this list too.
+ */
 const PAGE_CLAIMS = [
-  'to provide, improve, and develop its own products', // "The answering model's tier" paragraph
-  'Google also uses questions and answers for its own products', // the provider's table row
-  'also uses what it receives for purposes of its own', // the Recipients lead
-  'also uses the questions it receives for purposes of its own', // after the purposes list
-  'the model provider also keeps that text', // the rights section
+  'to provide, improve, and develop its own products', // tier paragraph: own use
+  'its human reviewers may read, annotate, and process them', // tier paragraph: review
+  'Google also uses questions and answers for its own products, and its reviewers may read them', // table row
+  'for purposes of its own, described below the table', // the Recipients lead
+  'feature also uses what it receives for purposes of its own; see', // after the purposes list
+  'the model provider also keeps your questions and its answers', // the rights section
 ];
 
 describe('Ask CAAIL provider-use disclosure', () => {
@@ -44,12 +49,14 @@ describe('Ask CAAIL provider-use disclosure', () => {
   it('the chat notice agrees with the privacy statement', () => {
     expect(notice, 'the chat notice was not found in CaailChatWidget.tsx').toBeDefined();
     const pageStates = PAGE_CLAIMS.some((c) => page.includes(c));
-    const noticeStates = /provider also uses them\b[^.]*\bown products/.test(notice!);
+    // The notice's two facts, matched as facts rather than wording, as the spec does, so
+    // rewording the sentence stays a copy edit.
+    const noticeStates = /own products/i.test(notice!) && /review/i.test(notice!);
     expect(
       noticeStates,
       pageStates
-        ? 'the privacy statement describes the provider using questions, but the chat notice does not'
-        : 'the chat notice describes the provider using questions, but the privacy statement does not',
+        ? 'the privacy statement says the provider uses and reviews questions, but the chat notice does not say both'
+        : 'the chat notice says the provider uses and reviews questions, but the privacy statement does not',
     ).toBe(pageStates);
   });
 });

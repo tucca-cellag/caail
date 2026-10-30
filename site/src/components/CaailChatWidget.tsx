@@ -174,8 +174,8 @@ export default function CaailChatWidget() {
           */}
           <p class="chat-panel-notice">
             Questions are sent to an external service and stored to improve answers. The AI model's
-            provider also uses them, and its answers, for its own products and may have people review
-            them, so please don't include confidential information.{' '}
+            provider also uses your questions and its answers for its own products, and people may
+            review both, so please don't include confidential information.{' '}
             <a href={`${BASE}/privacy/`}>Privacy</a>
           </p>
           <form class="chat-panel-form" onSubmit={handleSubmit}>
