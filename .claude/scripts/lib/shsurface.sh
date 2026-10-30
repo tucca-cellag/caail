@@ -7,12 +7,13 @@
 #
 # THE CONTRACT IS FAIL-OPEN, AND IT IS ABSOLUTE.
 #   Every helper here returns 0 and prints SOMETHING usable. If python3 is
-#   absent, the library file has been moved, the classifier throws, or the
-#   command is unparseable, the caller gets its input back UNCHANGED, which is
-#   exactly the string the guards judged before they adopted this. A guard then
-#   degrades to its old accuracy; it does not crash, and it does not stop
-#   guarding. A classifier that could brick `bash` would be a worse bug than
-#   every false denial it prevents.
+#   absent, the library file has been moved, the classifier throws, the
+#   classifier exits 0 having printed nothing (emptied, or cut before its
+#   `__main__` block: ClaudeDotFiles #352), or the command is unparseable, the caller gets its
+#   input back UNCHANGED, which is exactly the string the guards judged before
+#   they adopted this. A guard then degrades to its old accuracy; it does not
+#   crash, and it does not stop guarding. A classifier that could brick `bash`
+#   would be a worse bug than every false denial it prevents.
 #
 # THE LATENCY BUDGET IS REAL. These run on every Bash tool call. One python3
 # fork is ~25 ms, so a caller must put its cheap string tripwire FIRST and ask
@@ -42,6 +43,33 @@ if [ -z "${SHSURFACE_PY:-}" ]; then
   [ -r "$SHSURFACE_PY" ] || SHSURFACE_PY="$HOME/.claude/scripts/lib/shsurface.py"
 fi
 
+# _shsurface_ran <command> <view>: status 0 when <view> is the classifier's
+# real answer for <command>, and not the silence of one that never ran (ClaudeDotFiles #352).
+#
+# Exit 0 is not that proof. An emptied shsurface.py, or one cut before its
+# `if __name__ == "__main__":` block, is valid python that never calls main(),
+# so it exits 0 having printed nothing. That empty view must never reach the
+# guards, which would judge an empty command and let it through.
+#
+# A view with text in it came from a classifier that ran. An empty one is
+# ambiguous, because --segments and --argv are legitimately empty for a
+# comment-only command, so it is settled by asking for --mask. That view maps
+# every character to one character and keeps newlines as newlines, so it is
+# empty only for a command made of nothing but newlines, which has nothing to
+# judge either way. Empty, not an exact length match: bash counts ${#x} in the
+# locale's characters, so under LC_ALL=C a multibyte character in a quoted
+# span (one blank in the mask) makes the lengths differ, and a working
+# classifier would read as a broken one.
+#
+# The second fork happens only for an empty view of a command with text in it:
+# a comment-only command when the classifier works, every such call when it
+# does not, which is the degraded state anyway.
+_shsurface_ran() {
+  [ -n "$2" ] && return 0
+  [ -n "${1//$SHSURFACE_NL/}" ] || return 0
+  [ -n "$(printf '%s' "$1" | python3 "$SHSURFACE_PY" --mask 2>/dev/null)" ]
+}
+
 # shsurface_view <--exec|--mask|--segments> <command-string>
 shsurface_view() {
   local mode="$1" src="$2" out
@@ -67,7 +95,8 @@ shsurface_view() {
   esac
   [ -r "$SHSURFACE_PY" ] || { printf '%s' "$src"; return 0; }
   command -v python3 >/dev/null 2>&1 || { printf '%s' "$src"; return 0; }
-  if out=$(printf '%s' "$src" | python3 "$SHSURFACE_PY" "$mode" 2>/dev/null); then
+  if out=$(printf '%s' "$src" | python3 "$SHSURFACE_PY" "$mode" 2>/dev/null) \
+     && _shsurface_ran "$src" "$out"; then
     printf '%s' "$out"
   else
     printf '%s' "$src"
@@ -96,16 +125,68 @@ shsurface_segments() { shsurface_view --segments "$1"; }
 # such a value lives in.
 #
 # No fast path: callers ask for this only after a cheap tripwire has fired.
-# Fail-open keeps the contract above: with no classifier the whole command
-# comes back as ONE segment of ONE word, which names no subcommand, so a guard
-# reading argv finds nothing to judge and degrades instead of misfiring.
+# Fail-open keeps the contract above: with no classifier, or one that printed
+# nothing, the whole command comes back as ONE segment of ONE word, which names
+# no subcommand, so a guard reading argv finds nothing to judge and degrades
+# instead of misfiring.
 shsurface_argv() {
   local src="$1" out
   if [ -r "$SHSURFACE_PY" ] && command -v python3 >/dev/null 2>&1 \
-     && out=$(printf '%s' "$src" | python3 "$SHSURFACE_PY" --argv 2>/dev/null); then
+     && out=$(printf '%s' "$src" | python3 "$SHSURFACE_PY" --argv 2>/dev/null) \
+     && _shsurface_ran "$src" "$out"; then
     printf '%s' "$out"
   else
     printf '%s\036' "$src"
+  fi
+  return 0
+}
+
+# The nested view, opt-in (ClaudeDotFiles #376): shsurface_argv's vectors, each
+# led by the index of its command word (past the prefixes and assignments
+# before it) as its first field, and followed by the vectors of every command
+# string it hands to a shell: after `bash -c`, ssh, eval, or a variable in
+# command position, as deep as they nest. A heredoc fed or piped to ssh or
+# fish, or to a shell or ssh after a wrapper's options, is read as code here.
+# No other view changes, so a guard that does not ask for this one keeps its
+# verdicts.
+#
+# Fail-open keeps the contract above: with no classifier, or one that printed
+# nothing, the whole command comes back as one segment of one word, led by -1,
+# which is no command index.
+shsurface_argv_nested() {
+  local src="$1" out
+  if [ -r "$SHSURFACE_PY" ] && command -v python3 >/dev/null 2>&1 \
+     && out=$(printf '%s' "$src" | python3 "$SHSURFACE_PY" --argv-nested 2>/dev/null) \
+     && _shsurface_ran "$src" "$out"; then
+    printf '%s' "$out"
+  else
+    printf -- '-1\037%s\036' "$src"
+  fi
+  return 0
+}
+
+# The command's normalised text (quote delimiters, quoting backslashes and
+# backslash-newlines removed, heredoc bodies and comments kept), a GS (\035),
+# then argument vectors as shsurface_argv gives them, each segment led by a
+# REASON field: empty when its words are the ones bash will pass, otherwise why
+# they may not be. Additive and opt-in, for a guard that must read a value and
+# not guess it. argv_literal in shsurface.py lists the reasons, and the places
+# it reads a segment as bash does where shsurface_argv does not.
+#
+# Fail-open keeps the contract above, in a shape a caller can tell apart: with
+# no classifier, or one that printed nothing, the text is empty and the whole
+# command comes back as ONE segment whose reason is `unavailable`, its US and
+# RS bytes replaced with `?`. A guard that needs literal words can then
+# refuse, and name the cause.
+shsurface_argv_literal() {
+  local src="$1" out rs=$'\036' us=$'\037'
+  if [ -r "$SHSURFACE_PY" ] && command -v python3 >/dev/null 2>&1 \
+     && out=$(printf '%s' "$src" | python3 "$SHSURFACE_PY" --argv-literal 2>/dev/null) \
+     && _shsurface_ran "$src" "$out"; then
+    printf '%s' "$out"
+  else
+    src=${src//$rs/?}; src=${src//$us/?}
+    printf '\035unavailable\037%s\036' "$src"
   fi
   return 0
 }

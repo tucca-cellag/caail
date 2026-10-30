@@ -89,8 +89,10 @@ the second.
 destination repo's visibility on every `gh issue/pr/release/gist
 create|comment|edit`. On a public destination it always injects the visibility
 into context, and denies when the payload carries a fenced code block, a foreign
-repo owner, or security-finding vocabulary — requiring the three questions above
-to be answered explicitly before an override.
+repo owner, or security-finding vocabulary. The denial requires the three
+questions above to be answered explicitly before anything is retried. A
+session link or Claude attribution is denied in any destination, private ones
+included, before visibility is resolved.
 
 A destination it *cannot resolve* (no `gh`, no working login, no repository it
 can read, or a `gh api` call whose endpoint names no single repository) is not
@@ -106,35 +108,73 @@ being counted on.
 resolve. That is intended rather than an oversight: a gist is publication, as
 this file says, and a fenced code block in one is exactly the pasted-from-a-
 private-repo leak the fence signal exists to catch. It is also the noisiest
-case, since gists are code by nature, so expect the override to be the normal
-answer there and read the three questions before reaching for it.
+case, since gists are code by nature, so expect a denial to be common there and
+read the three questions before taking any of the routes below.
 
 **It ships in this repo, wired through the committed `.claude/settings.json`,
-so it protects anyone who clones — not only the machine it was written on.** A
+so it protects anyone who clones, not only the machine it was written on.** A
 byte-identical copy at `~/.claude/hooks/` covers every other repo; the global
 copy detects the project copy and passes through, so `gh` is never queried
-twice. The hook reads a body passed in a file through the shared shell
-classifier, vendored in `.claude/scripts/lib/` from `~/.claude/scripts/lib/`
-(`shsurface.sh` and the `shsurface.py` parser it runs). It looks beside
-itself first, so a clone with no `~/.claude` still reads its body files. If
-`shsurface.sh` loads from neither place, the hook refuses every publish whose
-body sits in a file. If it loads but python3 or `shsurface.py` is missing, the
-classifier hands the command back unparsed without saying so, and body-file
-paths are read from the raw text. `check-public-publish.test.py`
-checks both copies against their global twins wherever those exist. Keep them
-in sync (`diff` them); this file is likewise mirrored at
-`~/.claude/docs/rules/publishing.md`, which is the path the hook itself cites.
-**Not** `~/.claude/rules/publishing.md`: that is a condensed always-on summary
-that points here, so anyone who followed the old path in this sentence and
-"resolved" the mismatch would load 120 lines into every session forever.
+twice. Its libraries are vendored in `.claude/scripts/lib/` from
+`~/.claude/scripts/lib/`: `unattended.sh`, which tells an attended session from
+a subagent and holds the override handling, and the shared shell classifier it
+loads beside itself (`shsurface.sh` and the `shsurface.py` parser it runs). Each
+is looked for in the repo first, then under `~/.claude`, so a clone with no
+`~/.claude` still has them. If `unattended.sh` loads from neither place, the
+hook cannot tell who is calling and blocks as it would for a subagent: every
+denial is final, with no override file and no prompt, until the file is back
+(ClaudeDotFiles #334). If the classifier loads from neither place, the hook
+refuses every publish whose body sits in a file. If it loads but python3 or
+`shsurface.py` is missing or cut short, the classifier hands the command back
+unparsed, and body-file paths are read from the raw text.
+`check-public-publish.test.py` checks the hook and the three libraries against
+their global twins wherever those exist. Keep them in sync (`diff` them); this
+file is likewise mirrored at `~/.claude/docs/rules/publishing.md`, which is the
+path the hook itself cites. **Not** `~/.claude/rules/publishing.md`: that is a
+condensed always-on summary that points here, so anyone who followed the old
+path in this sentence and "resolved" the mismatch would load 120 lines into
+every session forever.
 
 A guardrail that lives only in one person's home directory is not a guardrail,
 it is a note to self. That is the same defect as citing a path a collaborator
 does not have.
 
-Each deny names its own override file: `/tmp/claude-publish-leak-override-<sha16>`
-for the session-link and attribution deny, `/tmp/claude-publish-override-<sha16>`
-for the provenance deny. Touch the one the deny names, then re-run immediately:
-single-use, 60-second TTL, pinned to one exact command, and it skips only that
-deny. Don't bypass the hook by other means, and don't assume a false positive
-without checking.
+**An attended session's denial asks no question (ClaudeDotFiles #212).**
+Both denies name the fix: strip the session link or attribution, or revise the
+payload to drop the flagged content, and route it privately where one of the
+three questions fails. Then they say to reformulate and run it again. In auto
+mode that is not always enough: the classifier can refuse the override file as
+a bypass, and can refuse a cleaned retry this guard has passed, reading a retry
+after a denial as routing around it, since the guard's pass does not reach the
+classifier. So each denial also names
+the route left open when the mode refuses: the session hands the user a command
+and the command that reads its result back (a view of what the publish made or
+changed, such as `gh issue view <number> --comments` or
+`gh release view <tag>`), the user runs the first with `!`, and the session runs
+the read-back. The denial text itself names Benji, the maintainer, since it is
+the global copy byte for byte.
+
+A command run with `!` never passes through this hook, so the two denies differ
+in what may go to the user. The provenance deny is the last check: its route takes
+the reformulated command or the one its override would let through, and it
+names one case that may run as written, a payload for which all three questions
+are clear. The leak deny runs ahead of the visibility check and the provenance
+scan, so its route takes only a reformulated command the guard has passed,
+never the blocked one. A false positive there, such as a body quoting an
+attribution trailer to discuss the rule, is what its override is for, since the
+rest of the guard still runs after it. A body the guard could not read is never
+a false positive: use the form its signal names.
+
+Each denial ends with its override line, for when the user has already said the
+exact command must run as written. Each deny names its own file:
+`/tmp/claude-publish-leak-override-<sha16>` for the session-link and attribution
+deny, `/tmp/claude-publish-override-<sha16>` for the provenance deny. Touch the
+file or files the deny names, then re-run within 60 seconds: single-use, pinned
+to one exact command, and each skips only its own deny. Don't get around the
+hook by other means, and don't assume a false positive without checking.
+
+**A subagent gets neither override (ClaudeDotFiles #302).** Its denials name no override file,
+and when it runs the command, both files are removed and ignored. Its way
+through is a revised payload without the flagged content, with the three
+questions applied to the revision; anything it cannot revise away goes in its
+report to its caller, not into the publish.

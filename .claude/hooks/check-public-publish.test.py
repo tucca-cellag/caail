@@ -34,16 +34,17 @@ CASES = [
 
 BASH = shutil.which("bash") or "/bin/bash"
 
-def run(hook, cmd, env=None, cwd=None, unset=()):
+def run(hook, cmd, env=None, cwd=None, unset=(), extra=None):
     """Returns (decision, reason, context).
 
     `context` is asserted on as much as `decision` below: this guard's worst
     failure is being absent while looking present, so what it SAYS on the allow
-    path is part of its behaviour, not decoration.
+    path is part of its behaviour, not decoration. `extra` adds top-level fields
+    to the hook's input, such as the `agent_id` a subagent's call carries.
     """
     e = dict(os.environ); e.update(env or {})
     for k in unset: e.pop(k, None)
-    r = subprocess.run([BASH, hook], input=json.dumps({"tool_input": {"command": cmd}}),
+    r = subprocess.run([BASH, hook], input=json.dumps({"tool_input": {"command": cmd}, **(extra or {})}),
                        capture_output=True, text=True, env=e, cwd=cwd)
     try:
         out = json.loads(r.stdout)["hookSpecificOutput"]
@@ -83,9 +84,9 @@ if os.path.exists(HOOK_GLOB):
     if not same: fails += 1
     print(f"\n=== the two copies have not drifted ===\n  [{ok}] project and global hook are byte-identical")
 
-    # The hook reads body files through the shell classifier it finds beside
-    # itself first, so the vendored copy (front end and parser) must not drift.
-    for lib in ("shsurface.sh", "shsurface.py"):
+    # The hook loads unattended.sh beside itself first, which loads the shell
+    # classifier beside it, so every vendored library must not drift.
+    for lib in ("unattended.sh", "shsurface.sh", "shsurface.py"):
         lib_proj = os.path.abspath(f".claude/scripts/lib/{lib}")
         lib_glob = os.path.expanduser(f"~/.claude/scripts/lib/{lib}")
         if os.path.exists(lib_glob):
@@ -798,6 +799,173 @@ dcheck("with no classifier anywhere, an attached -F= body file is refused the sa
 dcheck("with no classifier anywhere, an inline-only body is unaffected",
        "gh pr create --title t --body 'a plain fix'", priv_co, "allow", quiet=True,
        hook=nolib_hook, env={"HOME": nohome})
+
+# --- what the 93e2a99 sync brought in, against the same gh double ------------
+# Ported in part from the global copy's own suite at the synced commit. Each
+# change gets cases in both directions, what it must refuse and what it must
+# still let through; the full suite runs where the global copy is developed,
+# and the byte-identity checks above hold the two copies to the same code.
+print("\n=== behaviour the 93e2a99 sync brought in, against the gh double ===")
+with open(table, "a") as f:
+    f.write("me/private-dest PRIVATE\n")
+norepo = os.path.join(dbl, "no-repo")
+os.makedirs(norepo, exist_ok=True)
+TAG = f"t{os.getpid()}"
+AGENT = {"agent_id": "agent-302test", "agent_type": "general-purpose"}
+
+def check(label, good, detail=""):
+    global fails
+    if not good: fails += 1
+    print(f"  [{'PASS' if good else 'FAIL'}] {label}" + ("" if good else f"   {detail[:300]}"))
+
+def call(cmd, cwd, hook=None, env=None, agent=False):
+    return run(hook or HOOK_PROJ, cmd, {**DBL, **(env or {})}, cwd=cwd, extra=AGENT if agent else None)
+
+# A body gh reads from stdin (`-`) is supplied by a pipe, a redirect or a
+# heredoc only when the command runs, after this check, so it is refused as
+# unread, into a private repo too. ClaudeDotFiles #323.
+for label, cmd in (
+    ("piped into --body-file -", f"cat {leaky} | gh issue comment 1 -R me/private-dest --body-file -"),
+    ("redirected into --body-file -", f"gh issue comment 1 -R me/private-dest --body-file - < {leaky}"),
+    ("glued to its redirection", f"gh issue comment 1 -R me/private-dest --body-file -< {leaky}"),
+    ("piped into -F -", f"cat {leaky} | gh issue create -R me/private-dest --title t -F -"),
+    ("piped into an api key=@- field", f"cat {leaky} | gh api -X POST repos/me/private-dest/issues -F body=@-"),
+    ("in a clean heredoc", "gh issue comment 1 -R me/private-dest --body-file - <<'EOF'\na plain note\nEOF"),
+):
+    dcheck(f"a stdin body {label} is refused as unread", cmd, norepo, "deny", needle="read from stdin")
+dcheck("a regular body file still passes", f"gh issue comment 1 -R me/private-dest --body-file {clean}",
+       norepo, "allow", quiet=True)
+dcheck("a quoted heredoc inside --body still passes",
+       "gh issue comment 1 -R me/private-dest --body \"$(cat <<'EOF'\na plain note\nEOF\n)\"", norepo, "allow", quiet=True)
+
+# A body-file word bash rewrites before gh sees it (a backslash, $'...', a
+# variable) could be `-` or any file, so it is refused whatever its quoting.
+for label, cmd in (
+    ("a backslash-escaped -", f"cat {leaky} | gh issue comment 1 -R me/private-dest --body-file \\-"),
+    ("a variable holding a path", f"F={leaky}; gh issue comment 1 -R me/private-dest --body-file \"$F\""),
+    ("a variable in an api key=@ field", f"F={leaky}; gh api -X POST repos/me/private-dest/issues -F body=@\"$F\""),
+):
+    dcheck(f"{label} as a body file is refused", cmd, norepo, "deny", needle="expansion")
+dcheck("an api -F key=value typed field with a $ in its value still passes",
+       "t=hello; gh api -X POST repos/me/private-dest/issues -F title=\"$t\"", norepo, "allow", quiet=True)
+
+# gh fills {owner}/{repo} from GH_REPO ahead of the directory, so a command that
+# sets GH_REPO keeps the destination unresolved: announced and scanned.
+dcheck("an exported GH_REPO keeps a {owner}/{repo} endpoint unresolved, so a fence denies",
+       f"export GH_REPO=me/public-dest; gh api -X POST repos/{{owner}}/{{repo}}/issues/1/comments -f body='here: {FENCE}x{FENCE}'",
+       priv_co, "deny", needle="unresolved", absent="me/private-cwd")
+dcheck("from a public checkout too, GH_REPO leaves the destination announced as unresolved",
+       "export GH_REPO=me/private-dest && gh api -X POST repos/{owner}/{repo}/issues -f body='a plain note'",
+       pub_co, "allow", needle="GH_REPO", quiet=False)
+dcheck("with no GH_REPO, a {owner}/{repo} endpoint in a private checkout still passes",
+       f"gh api -X POST repos/{{owner}}/{{repo}}/issues/1/comments -f body='here: {FENCE}x{FENCE}'",
+       priv_co, "allow", quiet=True)
+
+# An attended denial asks no question (ClaudeDotFiles #212): it names the fix,
+# a route through the user's `!` with a read-back, and ends with its own
+# override line, which still passes that deny.
+FORBID = ("AskUserQuestion", "Publish as-is")
+AS_WRITTEN = "may run as written: hand Benji that exact command to run with `!`"
+a_leak = f"gh pr create --title 'run {TAG} a1' --body 'Co-Authored-By: Claude'"
+drop_overrides(a_leak)
+try:
+    got, why, ctx = call(a_leak, priv_co)
+    check("an attended attribution is denied", got == "deny", got)
+    check("and the leak denial asks no question", not any(f in why + ctx for f in FORBID), ctx)
+    check("and its route hands the user only a reformulated command, never the blocked one",
+          "Never hand him the blocked command itself" in ctx and AS_WRITTEN not in ctx, ctx)
+    check("and it ends with the override line naming the leak override file",
+          ctx.rstrip().endswith(f"touch {override_path(a_leak, 'leak-')} and re-run it within 60 seconds."), ctx[-300:])
+    check("and it does not name the provenance override file", override_path(a_leak, "") not in ctx, ctx)
+    open(override_path(a_leak, "leak-"), "w").close()
+    got, _, _ = call(a_leak, priv_co)
+    check("the leak override file that denial names still passes it, and is consumed",
+          got == "allow" and not os.path.exists(override_path(a_leak, "leak-")), got)
+finally:
+    drop_overrides(a_leak)
+
+a_fence = f"gh issue create -R me/public-dest --title 'run {TAG} a2' --body 'here: {FENCE}a{FENCE}'"
+drop_overrides(a_fence)
+try:
+    got, why, ctx = call(a_fence, priv_co)
+    check("an attended fenced block into a public repo is denied", got == "deny", got)
+    check("and the provenance denial asks no question", not any(f in why + ctx for f in FORBID), ctx)
+    check("and it still asks for the three questions before any retry",
+          "PROVENANCE" in ctx and "Before retrying, verify EACH of these" in ctx, ctx)
+    check("and it names revising the payload, and the case that may run as written, once",
+          "Revise the payload to remove the flagged content" in ctx and ctx.count(AS_WRITTEN) == 1, ctx)
+    check("and it names a read-back for what the publish made", "gh issue view <number> --comments" in ctx, ctx)
+    check("and it ends with the override line naming the provenance override file",
+          ctx.rstrip().endswith(f"touch {override_path(a_fence, '')} and re-run it within 60 seconds."), ctx[-300:])
+    open(override_path(a_fence, ""), "w").close()
+    got, _, _ = call(a_fence, priv_co)
+    check("the provenance override file that denial names still passes it, and is consumed",
+          got == "allow" and not os.path.exists(override_path(a_fence, "")), got)
+finally:
+    drop_overrides(a_fence)
+
+# A subagent's call carries agent_id, and a subagent cannot be asked, so both
+# denies are final for it: neither override file lets it through, both are
+# removed on its run, and its denial offers no question and names no file.
+# ClaudeDotFiles #302. Announcing is not a stop, so a clean publish passes.
+def final_for_subagent(why, ctx):
+    return ("This block is final for a subagent" in why
+            and "report the command and this hook's reason to your caller" in why
+            and "AskUserQuestion" not in why + ctx
+            and "claude-publish-override-" not in why + ctx
+            and "claude-publish-leak-override-" not in why + ctx)
+
+u_leak = f"gh pr create --title 'run {TAG} u1' --body 'Co-Authored-By: Claude'"
+u_fence = f"gh issue create -R me/public-dest --title 'run {TAG} u2' --body 'here: {FENCE}u{FENCE}'"
+u_both = f"gh issue create --title 'run {TAG} u3' --body 'Co-Authored-By: Claude, and {FENCE}v{FENCE}'"
+for c in (u_leak, u_fence, u_both): drop_overrides(c)
+try:
+    got, why, ctx = call(u_leak, priv_co, agent=True)
+    check("a subagent's attribution is denied, finally, with no question and no override file",
+          got == "deny" and final_for_subagent(why, ctx), why)
+    open(override_path(u_leak, "leak-"), "w").close()
+    got, _, _ = call(u_leak, priv_co, agent=True)
+    check("a subagent's fresh leak override is ignored and removed",
+          got == "deny" and not os.path.exists(override_path(u_leak, "leak-")), got)
+    got, why, ctx = call(u_fence, priv_co, agent=True)
+    check("a subagent's fenced block into a public repo is denied, finally",
+          got == "deny" and final_for_subagent(why, ctx) and "PROVENANCE" in why + ctx, why)
+    check("and its provenance denial names revising the payload as the alternative",
+          "revise the payload to drop the flagged content" in why + ctx, ctx)
+    open(override_path(u_fence, ""), "w").close()
+    got, _, _ = call(u_fence, priv_co, agent=True)
+    check("a subagent's fresh provenance override is ignored and removed",
+          got == "deny" and not os.path.exists(override_path(u_fence, "")), got)
+    open(override_path(u_both, "leak-"), "w").close()
+    open(override_path(u_both, ""), "w").close()
+    got, _, _ = call(u_both, pub_co, agent=True)
+    check("a subagent with both override files fresh is still denied, and both are removed",
+          got == "deny" and not os.path.exists(override_path(u_both, "leak-"))
+          and not os.path.exists(override_path(u_both, "")), got)
+finally:
+    for c in (u_leak, u_fence, u_both): drop_overrides(c)
+got, _, ctx = call("gh issue create --title t --body 'a plain, generic note'", pub_co, agent=True)
+check("a subagent's clean publish into a public repo still only announces", got == "allow" and ctx != "", got)
+got, _, ctx = call("gh issue create --title t --body 'a plain, generic note'", priv_co, agent=True)
+check("a subagent's clean publish into a private repo still passes quietly", got == "allow" and ctx == "", got)
+
+# Without unattended.sh the guard cannot tell who is calling, so it treats every
+# caller as unattended (ClaudeDotFiles #334): an attended session's denial is
+# final too, a fresh override is removed rather than used, and the reason says
+# which library is missing. The nolib copy has no ../scripts/lib and HOME is empty.
+n_leak = f"gh pr create --title 'run {TAG} a4' --body 'Co-Authored-By: Claude'"
+drop_overrides(n_leak)
+try:
+    open(override_path(n_leak, "leak-"), "w").close()
+    got, why, ctx = call(n_leak, priv_co, hook=nolib_hook, env={"HOME": nohome})
+    check("without unattended.sh, an attended attribution is denied past a fresh leak override",
+          got == "deny" and not os.path.exists(override_path(n_leak, "leak-")), got)
+    check("and the reason names the missing library and blocks as for a subagent",
+          "This hook could not load scripts/lib/unattended.sh, so it cannot tell whether its caller is a subagent and blocks as for one" in why, why)
+    check("and it offers no override line and no route through the user",
+          "If Benji has already said" not in why + ctx and "hand Benji" not in why + ctx, why + ctx)
+finally:
+    drop_overrides(n_leak)
 
 # Cleanup sits HERE, after the last consumer of the fixture. It used to run ~190
 # lines earlier, so the "uncompared owners" case ran with GH_CONFIG_DIR pointing
