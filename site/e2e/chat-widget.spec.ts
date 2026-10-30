@@ -1,5 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { NOTICE_FACTS } from '../src/content/ask-caail-disclosure';
 
 /**
  * Ask CAAIL widget.
@@ -122,9 +123,17 @@ test('the notice says the question leaves the browser and warns off confidential
     /sent to an external service/i,
   );
   await expect(notice, 'the reader is not told the question is retained').toContainText(/stored/i);
-  await expect(notice, 'the confidential-information warning has been trimmed').toContainText(
-    /don't include\s+confidential information/i,
-  );
+  // The provider sentence's two facts, from the one copy the unit check also reads.
+  for (const { pattern, missing } of NOTICE_FACTS) {
+    await expect(notice, missing).toContainText(pattern);
+  }
+  // Matched as two facts rather than one phrase, so "personal, confidential, or identifying"
+  // and similar strengthenings stay copy edits.
+  for (const kind of ['personal', 'confidential']) {
+    await expect(notice, `the ${kind}-information warning has been trimmed`).toContainText(
+      new RegExp(`don't include[^.]*\\b${kind}\\b`, 'i'),
+    );
+  }
 });
 
 test('the notice links to the privacy statement', async ({ page }) => {
