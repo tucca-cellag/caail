@@ -19,7 +19,7 @@ import { parseCatalogFile } from '../parser/catalog.js';
 import { INVENTORY_PAGES, REFERENCE_PAGES, BENCHMARKS_PAGE } from '../parser/datasets.js';
 import { existsSync } from 'node:fs';
 import { importNdjson, REPO_ROOT, type Db } from './lib.js';
-import { extractInventory, extractDatasetEntries } from './extract.js';
+import { extractInventory, extractDatasetEntries, extractPaperBlockquotes } from './extract.js';
 import { emitPapersFile, emitCatalogFile, emitDatasetPage, emitMatrixTable } from './emit.js';
 import { emitAll } from './emit-files.js';
 import { removeItem } from './mutate.js';
@@ -248,6 +248,13 @@ describe('add-a-paper regression', () => {
     const fresh = importNdjson();
     const newId = (fresh.prepare('SELECT MAX(ref_id) m FROM papers').get() as any).m + 1;
     const ord = (fresh.prepare('SELECT MAX(ordinal) m FROM papers').get() as any).m + 1;
+    // C2-1 fixture: a trailing run on the paper the new one is appended after. Synthetic, so
+    // correcting whichever live record carries such a run cannot turn this red.
+    const last = (fresh.prepare(
+      "SELECT ref_id FROM papers WHERE section='References' ORDER BY ordinal DESC LIMIT 1",
+    ).get() as any).ref_id as number;
+    const run = '> **Code**: https://example.org/last-code\n\n> **Models**: https://example.org/last-model';
+    fresh.prepare('UPDATE papers SET blockquotes_md=? WHERE ref_id=?').run(run, last);
     const raw = `<a id="${newId}">${newId}</a> Tester, T. (2099). A synthetic round-trip paper. *Journal of Tests, 1*(1), 1-2. https://doi.org/10.9999/test`;
     fresh.prepare('INSERT INTO items(id,type,slug) VALUES(?,?,?)').run(`paper:${newId}`, 'paper', String(newId));
     fresh.prepare('INSERT INTO papers(item_id,ref_id,section,raw,blockquotes_md,ordinal) VALUES(?,?,?,?,?,?)')
@@ -265,19 +272,27 @@ describe('add-a-paper regression', () => {
     expect(model.cells.some((c) => c.refIds.includes(newId))).toBe(true); // reachable
     expect(lint(model).errors).toEqual([]);
 
-    // C2-1: the `> **Models**:` blockquote on #277 stays attached to #277, not floated
-    // onto the newly-added last-ordinal paper (the emit reads it from blockquotes_md).
-    const emitted = readFileSync(path, 'utf-8');
-    const modelsIdx = emitted.indexOf('Stack-CellxGene45M'); // a Models-blockquote URL
-    const newPaperIdx = emitted.indexOf('A synthetic round-trip paper');
-    expect(modelsIdx).toBeGreaterThan(0);
-    expect(modelsIdx).toBeLessThan(newPaperIdx);
+    // C2-1: the run stays under the paper that owns it, not floated onto the paper appended
+    // after it (the emit reads it from blockquotes_md). Read back with the bootstrap's own
+    // reader, so "attached" means what the next db:bootstrap would capture.
+    const runs = extractPaperBlockquotes(path);
+    expect(runs.get(last)).toBe(run);
+    expect(runs.has(newId)).toBe(false);
   });
+});
 
+describe('extractPaperBlockquotes', () => {
   it('captures a reference’s full trailing blockquote run (Code + Models) on the right paper', () => {
-    const db = importNdjson();
-    const bq = (db.prepare('SELECT blockquotes_md FROM papers WHERE ref_id=277').get() as any).blockquotes_md as string;
-    expect(bq).toContain('> **Code**:');
-    expect(bq).toContain('> **Models**:'); // the label the old typed columns dropped
+    const path = join(TMP, 'Papers.blockquotes.md');
+    writeFileSync(path, [
+      '## References',
+      '<a id="1">1</a> One, A. (2020). First paper. *Journal of Tests, 1*(1), 1.',
+      '> **Code**: https://example.org/one-code',
+      '> **Models**: https://example.org/one-model', // the label the old typed columns dropped
+      '<a id="2">2</a> Two, B. (2021). Second paper. *Journal of Tests, 2*(1), 2.',
+    ].join('\n\n') + '\n');
+    const runs = extractPaperBlockquotes(path);
+    expect(runs.get(1)).toBe('> **Code**: https://example.org/one-code\n\n> **Models**: https://example.org/one-model');
+    expect(runs.has(2)).toBe(false);
   });
 });

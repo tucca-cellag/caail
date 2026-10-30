@@ -114,7 +114,7 @@ technique that text mentions. `Taxonomy.md`'s methods preamble states that rule 
 
 <a id="9">9</a> Lin, E., Mukherjee, S., & Kannan, S. (2020). A deep adversarial variational autoencoder model for dimensionality reduction in single-cell RNA sequencing analysis. *BMC Bioinformatics, 21*(1), 64. https://doi.org/10.1186/s12859-020-3401-5
 
-> **Code**: https://github.com/epierson9/ZIFA
+> **Code**: https://github.com/eugenelin1/DRA
 
 <a id="10">10</a> Zrimec, J., Fu, X., Muhammad, A. S., Skrekas, C., Jauniskis, V., Speicher, N. K., Börlin, C. S., Verendel, V., Chehreghani, M. H., Dubhashi, D., Siewers, V., David, F., Nielsen, J., & Zelezniak, A. (2022). Controlling gene expression with deep generative design of regulatory DNA. *Nature Communications, 13*(1), 5099. https://doi.org/10.1038/s41467-022-32818-8
 
@@ -308,7 +308,7 @@ technique that text mentions. `Taxonomy.md`'s methods preamble states that rule 
 
 <a id="91">91</a> Ding, Y., Qiang, B., Li, S., Zhou, Y., Yu, J., Li, Q., Shi, C., Zhang, L., Wang, Y., Zheng, N., & Liu, Z. (2026). Pretraining a foundation model for small-molecule natural products. *Nature Machine Intelligence*. https://doi.org/10.1038/s42256-026-01226-8
 
-> **Code**: https://github.com/mwang87/NP-Classifier
+> **Code**: https://github.com/TomAIDD/NaFM-Official
 
 <a id="92">92</a> Pearce, J., Simmonds, S., Mahmoudabadi, G., Krishnan, L., Palla, G., Istrate, A., Tarashansky, A., Nelson, B., Valenzuela, O., Li, D., Quake, S., & Karaletsos, T. (2026). TranscriptFormer: A generative cell atlas across 1.5 billion years of evolution. *Science*. https://doi.org/10.1126/science.aec8514
 
@@ -391,6 +391,10 @@ technique that text mentions. `Taxonomy.md`'s methods preamble states that rule 
 <a id="123">123</a> Littman, R., Levine, J., Maleki, S., Lee, Y., Ermakov, V., Qiu, L., Wu, A., Huang, K., Lopez, R., Scalia, G., Biancalani, T., Richmond, D., Regev, A., & Hütter, J. C. (2025). *Gene-embedding-based prediction and functional evaluation of perturbation expression responses with PRESAGE.* bioRxiv. https://doi.org/10.1101/2025.06.03.657653
 
 <a id="124">124</a> Dong, M., Adduri, A., Gautam, D., Carpenter, C., Shah, R., Ricci-Tam, C., Kluger, Y., Burke, D. P., & Roohani, Y. H. (2026). *Stack: In-Context Learning of Single-Cell Biology.* bioRxiv. https://doi.org/10.64898/2026.01.09.698608
+
+> **Code**: https://github.com/ArcInstitute/stack
+
+> **Models**: https://huggingface.co/arcinstitute/Stack-Large, https://huggingface.co/arcinstitute/Stack-Large-Aligned
 
 <a id="125">125</a> Roohani, Y., Lee, A., Huang, Q., Vora, J., Steinhart, Z., Huang, K., Marson, A., Liang, P., & Leskovec, J. (2025). *BioDiscoveryAgent: An AI Agent for Designing Genetic Perturbation Experiments.* arXiv. https://doi.org/10.48550/arXiv.2405.17631
 
@@ -556,6 +560,8 @@ technique that text mentions. `Taxonomy.md`'s methods preamble states that rule 
 
 <a id="222">222</a> Gandhi, K., Bolliet, B., & Zubeldia, I. (2025). *Enhancing agentic autonomous scientific discovery with vision-language model capabilities.* arXiv. https://doi.org/10.48550/arXiv.2511.14631
 
+> **Code**: https://github.com/CMBAgents/cmbagent
+
 <a id="223">223</a> Zhang, F., Zhao, Y., Zhang, W., & Lai, L. (2025). *BioScientist Agent: Designing LLM-biomedical agents with KG-augmented RL reasoning modules for drug repurposing and mechanistic of action elucidation.* bioRxiv. https://doi.org/10.1101/2025.08.08.669291
 
 <a id="224">224</a> Queen, O., Huang, Y., Calef, R., Giunchiglia, V., Chen, T., Dasoulas, G., Tai, L., Abbadessa, G., Howell, O., Ektefaie, Y., Noori, A., Farkas, I., Brown, J., Cobley, T., Hrovatin, K., Hartvigsen, T., Theis, F., Pentelute, B. L., Zou, J., … Zitnik, M. (2025). *ProCyon: A multimodal foundation model for protein phenotypes.* bioRxiv. https://doi.org/10.1101/2024.12.10.627665
@@ -667,8 +673,6 @@ technique that text mentions. `Taxonomy.md`'s methods preamble states that rule 
 <a id="277">277</a> Zhou, J., Zhang, B., Li, G., Chen, X., Li, H., Xu, X., Chen, S., He, W., Xu, C., Liu, L., & Gao, X. (2024). An AI agent for fully automated multi-omic analyses. *Advanced Science, 11*(44), 2407094. https://doi.org/10.1002/advs.202407094
 
 > **Code**: https://github.com/JoshuaChou2018/AutoBA
-
-> **Models**: https://huggingface.co/arcinstitute/Stack-CellxGene45M, https://huggingface.co/arcinstitute/Stack-Large, https://huggingface.co/arcinstitute/Stack-Large-Aligned
 
 <a id="285">285</a> Steuer, A., Ferri, F., Eckrich, L., Heidenkampf, J., Mittermeier-Kleßinger, V. K., Schaefer, S., Behrens, M., Ferruz, N., Dawid, C., & Di Pizio, A. (2026). De novo design and experimental characterization of bitter peptides. *npj Science of Food, 10*(1), 200. https://doi.org/10.1038/s41538-026-00942-0
 

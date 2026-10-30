@@ -1641,7 +1641,7 @@
       "title": "A deep adversarial variational autoencoder model for dimensionality reduction in single-cell RNA sequencing analysis",
       "journal": "BMC Bioinformatics",
       "doi": "10.1186/s12859-020-3401-5",
-      "codeUrl": "https://github.com/epierson9/ZIFA",
+      "codeUrl": "https://github.com/eugenelin1/DRA",
       "dataUrl": null,
       "isPrimary": true,
       "methods": [
@@ -4784,7 +4784,7 @@
       "title": "Pretraining a foundation model for small-molecule natural products",
       "journal": "Nature Machine Intelligence",
       "doi": "10.1038/s42256-026-01226-8",
-      "codeUrl": "https://github.com/mwang87/NP-Classifier",
+      "codeUrl": "https://github.com/TomAIDD/NaFM-Official",
       "dataUrl": null,
       "isPrimary": true,
       "methods": [
@@ -6110,7 +6110,7 @@
       "title": "Stack: In-Context Learning of Single-Cell Biology",
       "journal": "bioRxiv",
       "doi": "10.64898/2026.01.09.698608",
-      "codeUrl": null,
+      "codeUrl": "https://github.com/ArcInstitute/stack",
       "dataUrl": null,
       "isPrimary": true,
       "methods": [
@@ -6119,7 +6119,7 @@
       "areas": [
         "cell"
       ],
-      "hasCode": false,
+      "hasCode": true,
       "hasData": false,
       "slug": "dong-2026",
       "topics": [
@@ -8643,7 +8643,7 @@
       "title": "Enhancing agentic autonomous scientific discovery with vision-language model capabilities",
       "journal": "arXiv",
       "doi": "10.48550/arXiv.2511.14631",
-      "codeUrl": null,
+      "codeUrl": "https://github.com/CMBAgents/cmbagent",
       "dataUrl": null,
       "isPrimary": true,
       "methods": [
@@ -8652,7 +8652,7 @@
       "areas": [
         "tooling"
       ],
-      "hasCode": false,
+      "hasCode": true,
       "hasData": false,
       "slug": "gandhi-2025",
       "topics": [
@@ -16957,5 +16957,5 @@
     }
   ],
   "scopeNote": "CAAIL is a curated selection of the literature, not a complete record of the field. An empty cell means no INDEXED paper occupies it as of the corpus date (the corpusDate field). That is a limit of the index, not evidence that no such work exists.",
-  "corpusDate": "2026-10-22"
+  "corpusDate": "2026-10-29"
 }
