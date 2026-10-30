@@ -800,12 +800,12 @@ dcheck("with no classifier anywhere, an inline-only body is unaffected",
        "gh pr create --title t --body 'a plain fix'", priv_co, "allow", quiet=True,
        hook=nolib_hook, env={"HOME": nohome})
 
-# --- what the 93e2a99 sync brought in, against the same gh double ------------
+# --- what the unattended-caller sync brought in, against the same gh double --
 # Ported in part from the global copy's own suite at the synced commit. Each
 # change gets cases in both directions, what it must refuse and what it must
 # still let through; the full suite runs where the global copy is developed,
 # and the byte-identity checks above hold the two copies to the same code.
-print("\n=== behaviour the 93e2a99 sync brought in, against the gh double ===")
+print("\n=== behaviour the unattended-caller sync brought in, against the gh double ===")
 with open(table, "a") as f:
     f.write("me/private-dest PRIVATE\n")
 norepo = os.path.join(dbl, "no-repo")
