@@ -127,7 +127,7 @@ test('the notice says the question leaves the browser and warns off confidential
   );
   await expect(notice, 'the reader is not told people may review the question').toContainText(/review/i);
   await expect(notice, 'the confidential-information warning has been trimmed').toContainText(
-    /don't include\s+confidential information/i,
+    /don't include\s+personal or\s+confidential information/i,
   );
 });
 

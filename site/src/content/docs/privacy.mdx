@@ -76,25 +76,23 @@ We process the data described above for the following purposes only:
   received in order to improve the answers that feature gives;
 - to maintain the security and availability of the Service.
 
-These are our purposes. On the tier in use, the provider of the model behind the "Ask CAAIL"
-feature also uses what it receives for purposes of its own; see
-[Sharing of Personal Data](#sharing-of-personal-data).
+These are our purposes. What the provider of the model behind the "Ask CAAIL" feature does with
+what it receives is set out under [the answering model's tier](#model-tier).
 
 We do not sell Personal Data, use it for advertising, or use it to build a profile of you.
 
 ## Sharing of Personal Data
 
 **Recipients.** We share Personal Data with the following vendors, each of which provides part of
-the Service on our behalf. On the tier in use, the provider of the model behind the "Ask CAAIL"
-feature also uses what it receives for purposes of its own, described below the table, and for that
-use it acts on its own account rather than ours.
+the Service on our behalf. Depending on the tier the "Ask CAAIL" feature uses, its model provider
+may also use what it receives on its own account; see [the answering model's tier](#model-tier).
 
 | Recipient | Purpose | Data received |
 | --- | --- | --- |
 | GitHub, Inc. | Hosting | IP address, user agent |
 | Cloudflare, Inc. | Analytics, and hosting of the events endpoint operated by TUCCA | Page view data, the two usage events described above, and your IP address as the sender of an event |
 | Sevalla | Hosting of the "Ask CAAIL" service (United States region) | The text of your question, and the answer returned to you |
-| Google LLC | Generative Language API (Gemini models), used to compose answers. On the unpaid tier in use, Google also uses questions and answers for its own products, and its reviewers may read them | The text of your question, with relevant passages from CAAIL, and the answer it generates |
+| Google LLC | Generative Language API (Gemini models), used to compose answers. What the provider itself does with them is set out under [the answering model's tier](#model-tier) | The text of your question, with relevant passages from CAAIL, and the answer it generates |
 
 **The "Ask CAAIL" feature.** This feature is optional and transmits nothing until you use it. No
 request is made when a page loads or when the panel is opened. Where you submit a question, the
@@ -102,20 +100,25 @@ text you submit is transmitted to Sevalla and Google LLC, both of which are outs
 University. The service records the full text of each question it receives in its server logs. We
 are not presently able to state the retention period applicable to those logs.
 
-{/* Every statement on this page of the model provider's own use describes the model
-    service's unpaid tier. src/content/ask-caail-disclosure.test.ts lists each one in
-    PAGE_CLAIMS and fails while the page makes some but not all of them, or disagrees with the
-    chat panel's notice, so a change of tier or provider revises them and the notice together.
-    The tier is not traceable from this repo, since the backend is not here: it is recorded on
-    the curator's statement about their own service, as the notice's "to improve answers"
-    purpose is. */}
+{/* This paragraph is the page's one statement of what the model provider does with what it
+    receives, and it describes the model service's unpaid tier. The purposes line, the
+    Recipients lead, the provider's table row and the rights section only link here, so a change
+    of tier or provider rewrites this paragraph and the chat panel's notice together;
+    src/content/ask-caail-disclosure.test.ts fails while those two disagree. The tier is not
+    traceable from this repo, since the backend is not here: it is recorded on the curator's
+    statement about their own service, as the notice's "to improve answers" purpose is. */}
+
+<span id="model-tier"></span>
 
 **The answering model's tier.** The feature currently uses the unpaid tier of the model service
-identified above. On that tier the provider uses the questions it receives, and the answers it
-returns, to provide, improve, and develop its own products and machine-learning technologies, and
-its human reviewers may read, annotate, and process them. The provider's
-[terms for that tier](https://ai.google.dev/gemini-api/terms) ask that no sensitive, confidential,
-or personal information be submitted to it.
+identified above. On that tier the provider uses your questions, and the answers it returns, to
+provide, improve, and develop its own products and machine-learning technologies, and its human
+reviewers may read, annotate, and process them. For that use the provider acts on its own account
+rather than ours, and keeps your questions and its answers under its own
+[terms for that tier](https://ai.google.dev/gemini-api/terms) and
+[privacy policy](https://policies.google.com/privacy), which govern that copy rather than this
+Statement. Those terms ask that no sensitive, confidential, or personal information be submitted
+to the tier.
 
 **You should not submit personal, confidential, or identifying information through this feature.**
 It is provided to answer questions concerning cellular agriculture and artificial intelligence
@@ -165,10 +168,9 @@ that consent at any time.
 
 Because the Service assigns no identifier to you, we ordinarily hold no Personal Data capable of
 being linked to you. The exception is text you have submitted through the "Ask CAAIL" feature,
-which will appear in that service's logs. On the tier in use, the model provider also keeps your
-questions and its answers under its own [terms](https://ai.google.dev/gemini-api/terms) and
-[privacy policy](https://policies.google.com/privacy), which govern that copy rather than this
-Statement.
+which will appear in that service's logs. What the model provider keeps, and the terms that
+govern its copy rather than this Statement, are set out under
+[the answering model's tier](#model-tier).
 
 To exercise these rights, contact us using the details below. You also have the right to lodge a
 complaint with your national supervisory authority.
