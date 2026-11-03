@@ -36,6 +36,31 @@
 # They must stay byte-identical; `diff` the two to check. The global copy
 # detects a project copy and passes through, so `gh` is never queried twice.
 #
+# An attended caller's denial asks no question (ClaudeDotFiles #212). It takes
+# the Bash guard's shape since ClaudeDotFiles #191: what tripped and the fix (strip the flagged
+# text, or revise the payload), `Reformulate and run it again.`, the route
+# through Benji's `!` for when the permission mode refuses (attended_route_note
+# in scripts/lib/unattended.sh), and last the override line, for when Benji has
+# already said the exact command must run as written.
+#
+# The two denies differ in what may go to Benji's `!`, because a command run
+# with `!` never passes through this hook. The provenance deny is the last
+# check, so `!` skips nothing else: it names once the case its old question
+# named for running as written, all three checks clear, and sends that to `!`,
+# as gh-watch and hpctools-first do, and its route is attended_route_note's
+# default kind. The leak deny runs ahead of the visibility check and the
+# provenance scan, so `!` would skip both: its false positive keeps the
+# override, after which the rest of the guard runs, and its route is the
+# reformulated-only kind, which hands Benji only a reformulated command (one
+# this hook has passed, when it is the permission mode that refuses it) and
+# never the blocked one. A subagent's denial says nothing of either: it has no
+# `!` to hand anything to.
+#
+# The route is there because auto mode can refuse both of the other remedies:
+# the override file, as a bypass, and a cleaned retry this hook has passed, as
+# routing around the denial. Nothing tells the classifier that this hook passed
+# a payload.
+#
 # Override mechanism (mirrors check-command-antipatterns.sh):
 #   Claude writes the file a deny names, then immediately re-runs the SAME
 #   command. Single-use, 60s TTL, pinned to one exact command. Each deny has its
@@ -43,6 +68,14 @@
 #   for the leak deny, /tmp/claude-publish-override-<sha16> for the provenance
 #   deny. One shared file let an override approved for an attribution false
 #   positive also skip the provenance scan, which the user was never shown.
+#
+# An unattended caller (a subagent: scripts/lib/unattended.sh) gets neither
+# override (ClaudeDotFiles #302). When it runs the command, both files are removed on that run
+# past the tripwire, whichever deny the run reaches. Its denials carry the shared
+# sentence (the block is final, report the command and this hook's reason to
+# the caller) in place of the attended closing lines, and the provenance deny
+# names revising the payload as the alternative, with its three questions
+# applying to the revised payload. Announcing is not a stop and is unchanged.
 #
 # Architecture: defer → tripwire → leak scan → visibility → payload scan → JSON.
 # The unrecoverable paths — no stdin, malformed JSON, no publish verb — fail
@@ -106,16 +139,46 @@ cmd_hash=$(printf '%s' "$cmd" | shasum -a 256 | cut -c1-16)
 override_file="/tmp/claude-publish-override-${cmd_hash}"
 leak_override_file="/tmp/claude-publish-leak-override-${cmd_hash}"
 
-consume_override() {  # consume_override <file>: true once, if fresh
-  local f="$1"
-  [[ -f $f ]] || return 1
-  if find "$f" -mmin -1 -print 2>/dev/null | grep -q .; then
-    rm -f "$f"
-    return 0
-  fi
-  rm -f "$f"  # stale
-  return 1
-}
+# Loaded here, past the tripwire, so only a publishing command pays for it.
+# --- the guard libraries (ClaudeDotFiles #334) ----------------------------
+# One line loads both: scripts/lib/unattended.sh, which loads
+# scripts/lib/shsurface.sh beside it. The block under that line stands in when
+# it cannot load, the same in every guard (scripts/test-unattended.sh holds
+# them to it). A guard that cannot tell who is calling treats every caller as
+# an unattended caller (ClaudeDotFiles #334): it blocks for good, removes
+# and ignores override files, and asks nothing. It still loads the classifier
+# where that is there, and judges the raw command where it is not.
+# shellcheck source=../scripts/lib/unattended.sh
+. "${BASH_SOURCE[0]%/*}/../scripts/lib/unattended.sh" 2>/dev/null || . "$HOME/.claude/scripts/lib/unattended.sh" 2>/dev/null
+if ! command -v consume_override >/dev/null 2>&1; then
+  unattended_caller() { return 0; }
+  unattended_note() { printf 'This hook could not load scripts/lib/unattended.sh, so it cannot tell whether its caller is a subagent and blocks as for one: no override file and no prompt lets this %s through. Do not get around this hook by other means. Report the %s, this hook'"'"'s reason and the missing library.' "${1:-command}" "${1:-command}"; }
+  attended_route_note() { unattended_note; }
+  attended_close() { unattended_note; }
+  discard_overrides() { shift; rm -f "$@"; }
+  consume_override() { rm -f "$2"; return 1; }
+  # shellcheck source=../scripts/lib/shsurface.sh
+  . "${BASH_SOURCE[0]%/*}/../scripts/lib/shsurface.sh" 2>/dev/null || . "$HOME/.claude/scripts/lib/shsurface.sh" 2>/dev/null
+  # The library's own rule for the classifier: all four views, or not loaded.
+  # shellcheck disable=SC2034 # read by the guards that use the classifier
+  if command -v shsurface_exec && command -v shsurface_mask \
+     && command -v shsurface_segments && command -v shsurface_argv; then
+    SHSURFACE_OK=1
+  else
+    SHSURFACE_OK=0 SHSURFACE_TRIED="${BASH_SOURCE[0]%/*}/../scripts/lib/shsurface.sh and $HOME/.claude/scripts/lib/shsurface.sh"
+  fi >/dev/null 2>&1
+  command -v shsurface_exec >/dev/null 2>&1 || shsurface_exec() { printf '%s' "$1"; }
+  command -v shsurface_mask >/dev/null 2>&1 || shsurface_mask() { printf '%s' "$1"; }
+  command -v shsurface_segments >/dev/null 2>&1 || shsurface_segments() { printf '%s' "$1"; }
+  command -v shsurface_argv >/dev/null 2>&1 || shsurface_argv() { printf '%s\036' "$1"; }
+fi
+
+# An unattended caller's override files go now, both of them. Each is otherwise
+# consumed only at its own deny, so a run stopped at the leak deny would leave
+# the provenance file for whoever runs this command next. This is the shared
+# rule (discard_overrides, scripts/lib/unattended.sh), the same one
+# consume_override applies at each deny below, so it is written once (ClaudeDotFiles #334).
+discard_overrides "$input" "$override_file" "$leak_override_file"
 
 # --- Highest-severity, visibility-INDEPENDENT scan ------------------------
 # A Claude session link (claude.ai/code/session…) and the Claude attribution
@@ -131,34 +194,47 @@ consume_override() {  # consume_override <file>: true once, if fresh
 # session link and the footer, hit the `vis != PUBLIC` short-circuit below and
 # was waved through before the payload was ever read. So this scan runs HERE,
 # ahead of destination resolution, and denies unconditionally.
-SHSURFACE_LIB="${BASH_SOURCE[0]%/*}/../scripts/lib/shsurface.sh"
-[ -r "$SHSURFACE_LIB" ] || SHSURFACE_LIB="$HOME/.claude/scripts/lib/shsurface.sh"
-# shellcheck source=../scripts/lib/shsurface.sh
-[ -r "$SHSURFACE_LIB" ] && . "$SHSURFACE_LIB"
-# Without the classifier the file-flag extraction below degrades to whitespace
-# splitting of the raw command, which can miss a real --body-file (a path with
-# spaces, unusual quoting). Inline text and heredocs are unaffected, since they sit
-# in the raw command, which is scanned whole, but a file this hook fails to read is
-# a body it never checked. Record the degradation so a file-carrying publish
-# fails CLOSED below instead of passing on a partial read.
-SHSURFACE_OK=1
-if ! command -v shsurface_segments >/dev/null 2>&1; then
-  SHSURFACE_OK=0
-  shsurface_segments() { printf '%s' "$1"; }
-fi
+#
+# The shared classifier (scripts/lib/shsurface.sh) comes in with the guard
+# libraries above. Without it the file-flag extraction below degrades to
+# whitespace splitting of the raw command, which can miss a real --body-file (a
+# path with spaces, unusual quoting). Inline text and heredocs are unaffected,
+# since they sit in the raw command, which is scanned whole, but a file this
+# hook fails to read is a body it never checked. SHSURFACE_OK=0 records the
+# degradation, so a file-carrying publish fails CLOSED below instead of passing
+# on a partial read.
 
 # Build the published payload ONCE and reuse it for the provenance scan below.
 # The raw command already carries inline --body/-b text and heredoc bodies; add
 # the contents of every file the command hands to gh.
 payload="$cmd"
 unread_bodies=()
-_collect_file() {
-  local f="$1"
+expanded_bodies=()
+stdin_body=0
+_collect_file() {  # _collect_file <B|R> <word>
+  # B: a body-file value (--body-file, --notes-file, a key=@ file field, or any
+  # -F not on a gh api line). R: a -F word on a gh api line, where it is a typed
+  # `key=value` field, read only if it happens to name a regular file.
+  local kind="$1" f="$2"
   # The segment view keeps quoted text verbatim, quote characters included, so a
   # `--body-file "/path"` arrives as `"/path"`. Strip the quotes the way the old
   # raw-grep gathering did, then expand a leading `~`.
   f="${f//\"/}"; f="${f//\'/}"
-  [[ -z $f || $f == "-" ]] && return 0
+  [[ -z $f ]] && return 0
+  # `-` is gh's name for stdin, which only the command supplies, so it is
+  # refused below, whatever the tag: gh api takes no body as `-F -`. A
+  # redirection glued to it (`-< f`, `-<<'EOF'`) is still `-` to gh, since bash
+  # splits the word there.
+  if [[ $f == "-" || $f == -[\<\>]* ]]; then stdin_body=1; return 0; fi
+  # Bash removes a backslash, unwraps $'…' and expands a variable or a command
+  # substitution before gh sees the word, so `\-`, `$'-'` and "$D" all reach gh
+  # as `-`, and a variable can name any file. This hook does not evaluate them,
+  # so a body-file word carrying `$`, a backtick or a backslash is refused
+  # below, whatever its quoting: telling a single-quoted word from an expanding
+  # one is quote parsing, which is the shared classifier's job and not this
+  # hook's. A file that happens to be named `$F` says nothing about what `$F`
+  # expands to.
+  if [[ $kind == B && $f == *[\$\`\\]* ]]; then expanded_bodies+=("$f"); return 0; fi
   f="${f/#\~/$HOME}"
   # A regular file only, and nothing else is opened. The hook runs before the
   # command, so a named pipe has no writer yet, and `head` on one blocked until
@@ -195,14 +271,25 @@ _collect_file() {
 # (`--title "$(date)" --body-file f`) or on one that starts with a word
 # (`--title $(date)suffix --body-file f`). A false deny on an over-read file is
 # visible and has an override; an unread body is silent.
-while IFS= read -r _bf; do _collect_file "$_bf"; done < <(
-  shsurface_segments "$cmd" | awk '
-    { for (i=1;i<=NF;i++) {
+#
+# Each value is tagged B or R for _collect_file. `-F` is gh's --body-file on
+# issue, pr and release, and a typed field on gh api. For the same `$(…)`
+# reason, a line need not start with the command its `-F` belongs to, so every
+# `-F` counts as a body file unless its own line is positively a `gh api` one.
+# With the classifier degraded the command arrives unsplit, so no line can be
+# identified and every `-F` counts.
+while IFS= read -r _bf; do _collect_file "${_bf%% *}" "${_bf#* }"; done < <(
+  shsurface_segments "$cmd" | awk -v degraded="$(( SHSURFACE_OK == 0 ))" '
+    { c1 = $1; c2 = $2
+      if (c1 == "sudo") { c1 = $2; c2 = $3 }
+      fk = (degraded == 0 && c1 == "gh" && c2 == "api") ? "R" : "B"
+      for (i=1;i<=NF;i++) {
         w = $i
-        if (w=="--body-file"||w=="--notes-file"||w=="-F") { if (i+1<=NF) print $(i+1) }
-        else if (w ~ /^(--body-file|--notes-file)=/) { sub(/^[^=]+=/,"",w); print w }
-        else if (w ~ /^-F./) { sub(/^-F=?/,"",w); print w }
-        if (w ~ /=@/) { sub(/^.*=@/,"",w); print w }
+        if (w=="--body-file"||w=="--notes-file") { if (i+1<=NF) print "B " $(i+1) }
+        else if (w=="-F") { if (i+1<=NF) print fk " " $(i+1) }
+        else if (w ~ /^(--body-file|--notes-file)=/) { sub(/^[^=]+=/,"",w); print "B " w }
+        else if (w ~ /^-F./) { sub(/^-F=?/,"",w); print fk " " w }
+        if (w ~ /=@/) { sub(/^.*=@/,"",w); print "B " w }
       } }'
 )
 
@@ -228,14 +315,44 @@ if (( ${#unread_bodies[@]} > 0 )); then
   _ub=$(printf '%s, ' "${unread_bodies[@]}"); _ub="${_ub%, }"
   leak_signals+=("a body FILE this hook could not read because it is not a regular file (${_ub}): gh reads a named pipe, /dev/stdin or a device only when the command runs, after this check, so a session link or attribution inside it could not be ruled out. Write the body to a regular file, or pass it inline")
 fi
+# A body-file value spelled with expansion syntax, recorded by _collect_file.
+if (( ${#expanded_bodies[@]} > 0 )); then
+  _eb=$(printf '%s, ' "${expanded_bodies[@]}"); _eb="${_eb%, }"
+  leak_signals+=("a body FILE named by an expansion this hook does not evaluate (${_eb}): bash resolves a backslash, \$'…', a variable or a command substitution only when the command runs, so it could be \`-\` or any file, and a session link or attribution inside it could not be ruled out. Write the path out literally, with no \`\$\`, backtick or backslash in it, or pass the text as \`--body \"\$(cat <<'EOF' ... EOF)\"\` with the delimiter quoted")
+fi
+# A body gh reads from stdin: `--body-file -`, `--notes-file -`, `-F -` or
+# `key=@-`. A pipe, a redirect or a heredoc supplies it when the command runs,
+# after this check, so it is /dev/stdin under another name and is refused the
+# same way. Measured: `cat f | gh issue comment 1 --body-file -` and `... < f`
+# both passed with a session link in f.
+#
+# There is no heredoc exception, deliberately. One was tried and could not be
+# tied to the right input: a heredoc on fd 3 or `{fd}` left gh reading the pipe,
+# a `<<` on one gh command exempted the `-` on another, and an unquoted
+# delimiter or a `"$var"` here-string expands at run time into text this hook
+# never saw. The shared classifier does not report which fd a heredoc feeds or
+# whether its delimiter is quoted, so nothing here could tell those apart.
+# `--body "$(cat <<'EOF' … EOF)"` with a quoted delimiter puts the text in the
+# command, where it is scanned, so that is the form the deny offers.
+if (( stdin_body == 1 )); then
+  leak_signals+=("a body read from stdin (\`-\`), which a pipe, a redirect or a heredoc supplies only when the command runs, after this check, so a session link or attribution inside it could not be ruled out. Pass the text as \`--body \"\$(cat <<'EOF' ... EOF)\"\` with the delimiter quoted, which puts it in the command where it is scanned, or write it to a regular file")
+fi
 
 # Remembered for the provenance deny below: when one payload trips both, the
 # leak override is spent on the run that reaches the provenance deny, so that
 # deny has to ask for both files again or the user can never get through.
 leak_override_used=0
-if [[ ${#leak_signals[@]} -gt 0 ]] && consume_override "$leak_override_file"; then
+if [[ ${#leak_signals[@]} -gt 0 ]] && consume_override "$input" "$leak_override_file"; then
   leak_override_used=1
 fi
+
+# What the read-back is for a publish, for both attended denials. The route
+# through Benji (attended_route_note) hands him the command and the command that
+# reads its result back, and a publish's result is what it made or changed,
+# which this guard's tripwire spans: a PR, an issue or comment, a release, a
+# gist, or a `gh api` post.
+READBACK_NOTE=" Should the route through Benji below be needed, the read-back for a publish reads what it made or changed from where it landed: \`gh pr view <number>\`, \`gh issue view <number> --comments\`, \`gh release view <tag>\`, \`gh gist view <id>\`, or a \`gh api\` GET of the endpoint it posted to."
+
 if [[ ${#leak_signals[@]} -gt 0 ]] && (( leak_override_used == 0 )); then
   joined=$(printf '%s; ' "${leak_signals[@]}"); joined="${joined%; }"
   reason="This gh publish carries: ${joined}. Forbidden in every published payload, public or private."
@@ -243,7 +360,16 @@ if [[ ${#leak_signals[@]} -gt 0 ]] && (( leak_override_used == 0 )); then
 
 This is INDEPENDENT of the destination's visibility: a session link or an attribution footer is forbidden in a public repo and a private one alike, so it is checked before the destination is resolved. The session link is the serious one, since it can expose session contents, and should be DELETED, not overridden.
 
-Remove the flagged text from the command and from any file it references, then re-run. If you are certain this is a false positive, INVOKE AskUserQuestion and offer: (a) Strip the flagged text (recommended); (b) Publish as-is: run \`touch ${leak_override_file}\` then immediately re-run the SAME command (single-use, expires in 60s). It skips only this check. The rest of the guard still runs, which for a public or unresolved destination includes the provenance scan, while a private destination is passed through; (c) Cancel. Do not bypass this by other means."
+"
+  if unattended_caller "$input"; then
+    reason="${reason} $(unattended_note)"
+    ctx="${ctx}Remove the flagged text from the command and from any file it references, then re-run."
+  else
+    ctx="${ctx}Remove the flagged text from the command and from any file it references. When the match is a false positive, such as a body that quotes an attribution trailer to discuss the rule, the override below is for it: it skips only this check, and the rest of the guard still runs, which for a public or unresolved destination includes the provenance scan, while a private destination is passed through. A body this hook could not read has no match to be a false positive: use the form its signal names.${READBACK_NOTE}
+
+$(attended_close command reformulated-only "$leak_override_file" \
+  'Run with `!`, the blocked command would never pass through this hook, so it would publish what this check stopped and skip every check after it.')"
+  fi
   jq -nc --arg reason "$reason" --arg ctx "$ctx" \
     '{hookSpecificOutput:{hookEventName:"PreToolUse",permissionDecision:"deny",permissionDecisionReason:$reason,additionalContext:$ctx}}'
   exit 0
@@ -419,7 +545,19 @@ if grep -qE '^(sudo[[:space:]]+)?gh[[:space:]]+api([[:space:]]|$)' <<<"$publish_
   api_placeholder=0
   grep -qE '^(sudo[[:space:]]+)?gh[[:space:]]+api[[:space:]]+(-X[[:space:]]*[A-Za-z]+[[:space:]]+)?/?repos/\{owner\}/\{repo\}/' <<<"$publish_seg" \
     && api_placeholder=1
-  if [[ $api_placeholder -eq 1 && -z $api_dest ]]; then
+  # gh fills the placeholders from GH_REPO ahead of the directory, and this hook
+  # does not evaluate a GH_REPO the command sets (an assignment, `export` or
+  # `env`), so such a command publishes where the directory does not say.
+  # Measured from a private checkout: `export GH_REPO=<public repo>; gh api -X
+  # POST repos/{owner}/{repo}/issues/1/comments -f body=…` with a fenced block
+  # resolved to the checkout and passed unscanned. Any GH_REPO before the verb
+  # or in its segment keeps the destination unresolved, which announces and
+  # scans. A GH_REPO already in the environment needs nothing here: the
+  # `gh repo view` below reads it the same way gh api does.
+  api_gh_repo=0
+  grep -qE '(^|[^A-Za-z0-9_])GH_REPO([^A-Za-z0-9_]|$)' <<<"${before_verb}"$'\n'"${publish_seg}" \
+    && api_gh_repo=1
+  if [[ $api_placeholder -eq 1 && -z $api_dest && $api_gh_repo -eq 0 ]]; then
     api_from_dir=1
     dest=""
   elif [[ $api_placeholder -eq 0 && -n $api_dest && $(printf '%s\n' "$api_dest" | wc -l) -eq 1 ]]; then
@@ -493,6 +631,8 @@ else
     # this stays unresolved, which announces and scans rather than guessing. No
     # `gh` call is made, because there is nothing to ask about.
     unresolved="this is a \`gh api\` call and its endpoint could not be read unambiguously, so no destination repository was named"
+    [[ $api_placeholder -eq 1 && $api_gh_repo -eq 1 ]] \
+      && unresolved="this is a \`gh api\` call whose {owner}/{repo} placeholder gh fills from a GH_REPO the command sets, which this hook does not evaluate, so no destination repository was named"
     probe_auth=0
   elif [[ -n $cd_dir ]]; then
     meta=$( (cd "$cd_dir" 2>/dev/null && gh_bounded 10 repo view --json nameWithOwner,visibility 2>/dev/null) )
@@ -682,25 +822,44 @@ fi
 # --- Signals: deny pending explicit provenance confirmation ---------------
 # The provenance override answers this deny and nothing else, which is why it
 # is consumed here rather than up front: the leak scan above has already run.
-if consume_override "$override_file"; then
+if consume_override "$input" "$override_file"; then
   printf '%s\n' "$PASS_THROUGH"
   exit 0
 fi
 
 joined=$(printf '%s; ' "${signals[@]}"); joined="${joined%; }"
-prov_touch="\`touch ${override_file}\`"
-(( leak_override_used == 1 )) \
-  && prov_touch="\`touch ${leak_override_file} ${override_file}\` (both: the session-link override approved earlier was spent on this run)"
+prov_files="${override_file}"
+prov_spent=""
+if (( leak_override_used == 1 )); then
+  prov_files="${leak_override_file} ${override_file}"
+  prov_spent=" The leak override approved earlier was spent on this run, so the override line below names both files."
+fi
 reason="Publishing to ${repo} (${vis_tag}) with: ${joined}."
 
-ctx="BLOCKED by the public-publish provenance guard (${RULE}). Destination: ${repo}, ${vis_phrase}. Payload contains: ${joined}.${owner_note}
+prov_head="BLOCKED by the public-publish provenance guard (${RULE}). Destination: ${repo}, ${vis_phrase}. Payload contains: ${joined}.${owner_note}"
+prov_questions="  1. PROVENANCE — does every quoted file path, code block, config value and architectural detail originate in THIS repo? Anything learned from a private repo, a third party's source, or an authenticated API for a repo you do not own MUST NOT be published. Paraphrase discloses as much as a quote.
+  2. SECURITY — does this describe a weakness in a live service (missing auth, absent rate limiting, an exposed key, an injection path)? If the service is not yours, it goes to its owner privately. If it is yours and unpatched, do not pair the weakness with a live hostname or endpoint.
+  3. DESTINATION — is a public tracker the right venue at all, versus a private channel to the code's owner?"
+
+if unattended_caller "$input"; then
+  # A subagent cannot be asked, so it is not told to retry after answering: the
+  # alternative it can carry out is a payload without the flagged content, and
+  # the three checks apply to that revised payload.
+  reason="${reason} $(unattended_note)"
+  ctx="${prov_head}
+
+The alternative this denial names: revise the payload to drop the flagged content, then run the revised command. These three checks apply to the revised payload. If one fails, or cannot be answered from this repo alone, do not publish it; put the answer in your report:
+${prov_questions}"
+else
+  ctx="${prov_head}
 
 Before retrying, verify EACH of these and state the answers explicitly:
-  1. PROVENANCE — does every quoted file path, code block, config value and architectural detail originate in THIS repo? Anything learned from a private repo, a third party's source, or an authenticated API for a repo you do not own MUST NOT be published. Paraphrase discloses as much as a quote.
-  2. SECURITY — does this describe a weakness in a live service (missing auth, absent rate limiting, an exposed key, an injection path)? If the service is not yours, it goes to its owner privately. If it is yours and unpatched, do not pair the weakness with a live hostname or endpoint.
-  3. DESTINATION — is a public tracker the right venue at all, versus a private channel to the code's owner?
+${prov_questions}
 
-If all three are clear, INVOKE AskUserQuestion and offer: (a) Publish as-is: run ${prov_touch} then immediately re-run the SAME command (single-use, expires in 60s); (b) Revise the payload to remove the flagged content; (c) Cancel and route it privately instead. Do not bypass this by other means, and do not assume a false positive without checking."
+Revise the payload to remove the flagged content where a check fails, and apply the three checks to the revised payload too; content that cannot pass them does not belong here, so route it privately instead. When all three are clear for the payload as it stands, as for this repo's own code in a fenced block, the publish may run as written: hand Benji that exact command to run with \`!\` instead of revising it. Do not assume a false positive without checking.${prov_spent}${READBACK_NOTE}
+
+$(attended_close command command "$prov_files")"
+fi
 
 jq -nc --arg reason "$reason" --arg ctx "$ctx" \
   '{hookSpecificOutput:{hookEventName:"PreToolUse",permissionDecision:"deny",permissionDecisionReason:$reason,additionalContext:$ctx}}'

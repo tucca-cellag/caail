@@ -47,6 +47,17 @@ VIEWS
               newlines. 'H' spans are dropped; 'D' spans are kept VERBATIM,
               because a caller asking "which branch does this push?" needs to
               read `main` out of `git push origin "main"`.
+  --argv-nested  opt-in (NestedSurface): the argument vectors, each led by the
+              index of its command word, followed by those of every command
+              string it hands to a shell; ssh and fish count as shells for a
+              heredoc. No other view changes with it.
+  --argv      each segment as its dequoted words (see argv_segments).
+  --argv-literal
+              the same words, each segment led by a REASON field: empty when
+              the words are what bash will pass, otherwise why they may not
+              be (an expansion, a substitution, quoting shlex cannot read, a
+              control byte). Opt-in and additive: no other view changes. See
+              argv_literal for what it reads differently and why.
 
 Stdlib only, and it must stay that way: these run inside PreToolUse hooks on
 every Bash call, so a pip dependency would be a machine-wide outage waiting for
@@ -58,17 +69,55 @@ SHELLS = {"bash", "sh", "zsh", "ksh", "dash", "ash", "eval", "source", "."}
 PREFIXES = {"sudo", "command", "env", "nohup", "exec", "time", "builtin", "nice"}
 META = set(" \t\n|&;<>()")
 
+# Commands that run their stdin, or a command string, as shell code that the
+# existing views do not count: ssh on the remote host, fish in its own
+# language. Only the opt-in nested view (NestedSurface) counts them, so the
+# guards that read the other views keep their verdicts.
+REMOTE_SHELLS = {"ssh", "fish"}
+
 CODE = "C"
 DATA = "D"
 HIDDEN = "H"
 
+# What follows a `$` when bash expands it: a name, a positional, a special
+# parameter, or `{`. Written out because the stdlib-only rule below admits no
+# import beyond sys and shlex.
+NAME_CHARS = set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_")
+PARAM_START = NAME_CHARS | set("@*#?$!-{")
+
 
 class Surface:
-    def __init__(self, src):
+    # The commands a heredoc's body runs as shell code when it is fed or piped
+    # to them. NestedSurface widens it; every view here reads it as SHELLS.
+    FEEDS = SHELLS
+
+    def __init__(self, src, notes=False):
         self.src = src
         self.n = len(src)
         self.cls = [CODE] * self.n
+        # NOTES, for argv_literal and normalized_text only, and recorded only
+        # when asked: every other view, on every Bash call for every guard,
+        # pays nothing for them (ClaudeDotFiles #380 review). Those two build a noted Surface
+        # of their own when called on one without.
+        #   why:  position -> the reason bash may not pass the words there
+        #   esc:  positions of characters a code-level backslash escapes
+        #   drop: positions bash removes from the text (quote delimiters,
+        #         quoting backslashes, backslash-newlines)
+        self.notes = notes
+        self.why = {}
+        self.esc = set()
+        self.drop = set()
         self._scan(0, self.n)
+        if notes:
+            self._mark_braces()
+
+    def _note(self, pos, reason):
+        if self.notes:
+            self.why.setdefault(pos, reason)
+
+    def _drop(self, *positions):
+        if self.notes:
+            self.drop.update(p for p in positions if 0 <= p < self.n)
 
     # ---------------------------------------------------------------- helpers
     def _mark(self, a, b, k):
@@ -97,8 +146,10 @@ class Surface:
                 # stays UNQUOTED. Any other backslash quotes the next character
                 # (`<<\EOF`), which makes the heredoc a no-expansion one.
                 if i + 1 < n and s[i + 1] == "\n":
+                    self._drop(i, i + 1)
                     i += 2
                     continue
+                self._drop(i)
                 quoted = True
                 if i + 1 < n:
                     out.append(s[i + 1])
@@ -108,10 +159,12 @@ class Surface:
                 continue
             if c in "'\"":
                 quoted = True
+                self._drop(i)
                 q, i = c, i + 1
                 while i < n and s[i] != q:
                     out.append(s[i])
                     i += 1
+                self._drop(i)
                 i += 1
                 continue
             if c in META:
@@ -136,12 +189,10 @@ class Surface:
         """
         for part in _split_top(line):
             toks = part.split()
-            k = 0
-            while k < len(toks) and (toks[k] in PREFIXES or _is_assign(toks[k])):
-                k += 1
+            k = _command_index(toks)
             if k < len(toks):
                 first = toks[k].split("/")[-1]
-                if first in SHELLS:
+                if first in self.FEEDS:
                     return True
         return False
 
@@ -155,6 +206,9 @@ class Surface:
 
             # --- backslash escape (outside quotes) ---
             if c == "\\":
+                if self.notes and i + 1 < end:
+                    self.esc.add(i + 1)
+                    self._drop(i, i + 1 if s[i + 1] == "\n" else -1)
                 i += 2
                 continue
 
@@ -170,12 +224,14 @@ class Surface:
             if c == "'":
                 j = s.find("'", i + 1)
                 j = end if j == -1 else j
+                self._drop(i, j)
                 self._mark(i, j + 1, DATA)
                 i = j + 1
                 continue
 
             # --- ANSI-C quoting $'...' : literal, backslash escapes apply ---
             if c == "$" and i + 1 < end and s[i + 1] == "'":
+                self._note(i, "ANSI-C quoting $'...'")
                 j = i + 2
                 while j < end:
                     if s[j] == "\\":
@@ -184,6 +240,7 @@ class Surface:
                     if s[j] == "'":
                         break
                     j += 1
+                self._drop(i, i + 1, j)
                 self._mark(i, min(j + 1, end), DATA)
                 i = j + 1
                 continue
@@ -192,31 +249,44 @@ class Surface:
             if c == '"':
                 j = i + 1
                 self.cls[i] = DATA
+                self._drop(i)
                 while j < end and s[j] != '"':
                     if s[j] == "\\":
+                        # Inside double quotes bash drops the backslash only
+                        # before $ ` " \ and a newline (and that newline too).
+                        if j + 1 < end and s[j + 1] in '$`"\\\n':
+                            self._drop(j, j + 1 if s[j + 1] == "\n" else -1)
                         self._mark(j, j + 2, DATA)
                         j += 2
                         continue
                     if s[j] == "$" and j + 1 < end and s[j + 1] == "(":
+                        self._note(j, "command substitution")
                         k = _match_paren(s, j + 1, end)
                         self._scan(j + 2, k)      # substitution really runs
                         j = k + 1
                         continue
                     if s[j] == "`":
+                        self._note(j, "command substitution")
                         k = s.find("`", j + 1)
                         k = end if k == -1 else k
                         self._scan(j + 1, k)
                         j = k + 1
                         continue
+                    # "$X" is one word of unknown text and "${A[@]}" is any
+                    # number of words: either can be the flag a reader needs.
+                    if s[j] == "$" and j + 1 < end and s[j + 1] in PARAM_START:
+                        self._note(j, "parameter expansion")
                     self.cls[j] = DATA
                     j += 1
                 if j < end:
                     self.cls[j] = DATA
+                    self._drop(j)
                 i = j + 1
                 continue
 
             # --- arithmetic $(( )) : no heredocs inside, '<<' is a shift ---
             if c == "$" and s.startswith("$((", i):
+                self._note(i, "arithmetic expansion")
                 k = _match_paren(s, i + 1, end)
                 k = _match_paren(s, k + 1, end) if k + 1 < end and s[k + 1] == ")" else k
                 i = k + 1
@@ -235,6 +305,9 @@ class Surface:
                     pending.append((delim, quoted, dash))
                 i = j
                 continue
+
+            if self.notes:
+                self._note_expansion(i, start, end)
 
             # --- newline: settle any heredocs opened on this line ---
             if c == "\n":
@@ -256,6 +329,79 @@ class Surface:
             executed = self._line_feeds_shell(line)
             for delim, quoted, dash in pending:
                 self._consume_body(end, end, delim, quoted, dash, executed)
+
+    # ------------------------------------------------------ expansion notes
+    def _note_expansion(self, i, start, end):
+        """At an unquoted position of the scan, record where bash will expand,
+        for argv_literal. Classifies nothing and moves nothing."""
+        s, c = self.src, self.src[i]
+        if c == "$" and i + 1 < end:
+            nxt = s[i + 1]
+            if nxt == "(":
+                self.why.setdefault(i, "command substitution")
+            elif nxt == '"':
+                self.why.setdefault(i, 'locale quoting $"..."')
+                self._drop(i)
+            elif nxt in PARAM_START:
+                self.why.setdefault(i, "parameter expansion")
+        elif c == "`":
+            self.why.setdefault(i, "command substitution")
+        elif c in "<>" and i + 1 < end and s[i + 1] == "(":
+            self.why.setdefault(i, "process substitution")
+        elif c in "*?[":
+            self.why.setdefault(i, "pathname expansion")
+        elif c == "(" and i > start and s[i - 1] not in " \t\n;|&()":
+            # glued to a word: $( <( @( and the like, never a subshell
+            self.why.setdefault(i - 1, "parenthesised expansion")
+
+    def _bare(self, j):
+        """Is position j unquoted, unescaped code? For argv_literal."""
+        return 0 <= j < self.n and self.cls[j] == CODE and j not in self.esc
+
+    def _note_heredoc(self, a, b, quoted, executed):
+        """An UNQUOTED heredoc fed to a shell is rewritten by the OUTER shell
+        before the inner one reads it, single quotes in the body included: it
+        expands `$` and backticks, and drops the backslash of \\\\, \\$, \\`
+        and a backslash-newline. So any `$`, backtick or backslash in it makes
+        its commands not literal. For argv_literal; classifies nothing."""
+        body = self.src[a:b]
+        if self.notes and executed and not quoted and ("$" in body or "`" in body or "\\" in body):
+            for p in range(a, b):
+                self.why.setdefault(p, "an unquoted heredoc fed to a shell, holding $, a backtick or a backslash")
+
+    # ---------------------------------------------------------- brace expansion
+    def _mark_braces(self):
+        """Record each unquoted `{...}` that bash brace-expands, for argv_literal.
+
+        Run after the scan, because a quote later in the same word decides
+        what is code: `{"a b",x}` expands, `"{a,b}"` does not. A brace counts
+        when an unquoted `,` or `..` sits at its own depth before its unquoted
+        `}`, all within one word. One walk with a stack per word, so its cost
+        is linear in the command (ClaudeDotFiles #380 review: the first version was
+        quadratic). `${` is a parameter expansion, recorded by the scan; its
+        braces are tracked so they close in the right place.
+        """
+        s, cls = self.src, self.cls
+        stack = []                       # [position or None, separator seen]
+        for j in range(self.n):
+            if cls[j] == HIDDEN:
+                stack = []
+                continue
+            ch = s[j]
+            code = cls[j] == CODE and j not in self.esc
+            if not code:
+                continue
+            if ch in " \t\n;|&()<>":
+                stack = []
+            elif ch == "{":
+                param = j > 0 and s[j - 1] == "$" and cls[j - 1] == CODE
+                stack.append([None if param else j, False])
+            elif ch == "}" and stack:
+                pos, sep = stack.pop()
+                if pos is not None and sep:
+                    self.why.setdefault(pos, "brace expansion")
+            elif stack and (ch == "," or s.startswith("..", j)):
+                stack[-1][1] = True
 
     # ------------------------------------------------------------ heredoc body
     def _consume_body(self, i, end, delim, quoted, dash, executed):
@@ -282,6 +428,7 @@ class Surface:
         return end
 
     def _finish_body(self, a, b, quoted, executed):
+        self._note_heredoc(a, b, quoted, executed)   # for argv_literal only
         self._mark(a, b, CODE if executed else HIDDEN)
         if executed:
             self._scan(a, b)
@@ -449,6 +596,227 @@ class Surface:
                 result.append(toks)
         return result
 
+    def argv_literal(self):
+        """argv_segments, each segment paired with a REASON its words may not
+        be the ones bash passes, or "" when they are. Opt-in and additive.
+
+        For a guard that must know a VALUE, not guess it: the repo a create
+        files on, read from words that an expansion could add to or a cut
+        could take from. A segment has a reason when it holds, outside single
+        quotes, a parameter expansion ($X, "${A[@]}", ${X:+...}), a command,
+        process or arithmetic substitution, a backtick, brace or pathname
+        expansion, $'...' or $"..." quoting, quoting shlex cannot read (its
+        whitespace fallback), or a US or RS byte, which is replaced with `?` so
+        it cannot forge a word or a segment. Tilde expansion is not a reason:
+        it makes one word, never a flag.
+
+        Its own loop, not a flag on argv_segments, so the view every other
+        guard reads stays byte for byte as it was. It reads three things as
+        bash does where argv_segments does not, so a literal segment is not cut
+        short: an escaped separator (`a\\;b`) is part of its word; the & of
+        `2>&1`, `>&2`, `&>` and the | of `>|` belong to a redirection; and a
+        backtick ends a segment the way `(` does, so a command inside one is a
+        segment of its own, and the segment it cut from is given a reason.
+        """
+        if not self.notes:
+            return Surface(self.src, notes=True).argv_literal()
+        import shlex
+        out, cur, why, i = [], [], [], 0
+        s = self.src
+        in_tick = False
+
+        def end_segment():
+            out.append(("".join(cur), why[:]))
+            del cur[:]
+            del why[:]
+
+        while i < self.n:
+            k = self.cls[i]
+            # A backtick's reason is placed below, on the segment outside it,
+            # never on the command inside it.
+            if k != HIDDEN and i in self.why and s[i] != "`" and self.why[i] not in why:
+                why.append(self.why[i])
+            if k == HIDDEN:
+                if s[i] == "\n":
+                    end_segment()
+                i += 1
+                continue
+            if k == DATA:
+                cur.append(s[i])
+                i += 1
+                continue
+            c = s[i]
+            if c == "\\" and i + 1 < self.n and s[i + 1] == "\n":
+                # Removed, as bash removes it: `o/r\<nl>x` is one word, o/rx.
+                # (argv_segments puts a space here, which no reader of a value
+                # can rely on.)
+                i += 2
+                continue
+            if i in self.esc:
+                cur.append(c)
+                i += 1
+                continue
+            if c == "`":
+                # The segment a backtick cuts, on either side, is not what bash
+                # runs: the opening one loses its tail, and the text after the
+                # closing one continues an outer command.
+                if not in_tick:
+                    if "command substitution" not in why:
+                        why.append("command substitution")
+                    end_segment()
+                else:
+                    end_segment()
+                    why.append("command substitution")
+                in_tick = not in_tick
+                i += 1
+                continue
+            # A redirection's & or | (2>&1, >&2, &>, >|) only beside a < or >
+            # that is itself unquoted, unescaped code. After `x\>` or '>' it is
+            # a real separator, and what follows is another command.
+            if (c == "&" and ((s[i - 1:i] in ("<", ">") and self._bare(i - 1))
+                              or (s.startswith("&>", i) and self._bare(i + 1)))) \
+                    or (c == "|" and s[i - 1:i] == ">" and self._bare(i - 1)):
+                cur.append(c)
+                i += 1
+                continue
+            if c in ";|&()\n":
+                end_segment()
+                i += 1
+                continue
+            cur.append(c)
+            i += 1
+        end_segment()
+        result = []
+        for seg, reasons in out:
+            seg = seg.strip()
+            if not seg:
+                continue
+            try:
+                toks = shlex.split(seg, comments=False, posix=True)
+            except ValueError:
+                toks = seg.split()
+                reasons.append("quoting shlex cannot read")
+            if any("\x1e" in t or "\x1f" in t for t in toks):
+                toks = [t.replace("\x1e", "?").replace("\x1f", "?") for t in toks]
+                reasons.append("a US or RS control byte")
+            if toks:
+                result.append((", ".join(reasons), toks))
+        return result
+
+
+class NestedSurface(Surface):
+    """The opt-in view for a guard that judges what reaches a shell, here or
+    on another machine (ClaudeDotFiles #376). It differs from Surface in two
+    ways, and no existing view sees either:
+
+      * ssh and fish count as shells for a heredoc, so a body fed or piped to
+        them is code, not inert data, and so does a shell or ssh after a
+        wrapper's options (`sudo -u root bash <<EOF`, `timeout 60 ssh h <<EOF`);
+      * argv_nested() reads the command strings a segment hands to a shell as
+        commands of their own.
+    """
+    FEEDS = SHELLS | REMOTE_SHELLS
+
+    # Words whose later arguments may be a command string: the shells except
+    # `.` and `source`, which take a file, plus ssh and fish.
+    RUNNERS = (SHELLS - {".", "source"}) | REMOTE_SHELLS
+
+    def argv_nested(self, depth=32):
+        """Each argument vector as (command index, words), followed by the
+        vectors of each command string it hands to a shell, as deep as those
+        strings nest. Each is shorter than the command holding it, so the
+        input's length bounds the recursion; `depth` only keeps a pathological
+        input inside python's recursion limit.
+
+        A segment hands one over when its command word is a runner (by the
+        last part of its path) or a bare variable, which may hold one; or when
+        a later word is a runner by its bare name (`sudo -u root bash -c`,
+        `docker exec c sh -c`), or by the last part of its path after a
+        prefix, itself named by path or not (`sudo -u root /bin/bash`,
+        `/usr/bin/env /bin/bash`), or when a short-option cluster holding `c`
+        comes anywhere after it (`xargs /bin/sh -e -o pipefail -c`). Every
+        word after that runner
+        holding whitespace is read again: the string after `-c`, an ssh
+        remote command, eval's arguments. A variable, or a path anywhere
+        else, is an argument: `git commit -m "$MSG" -m "..."` and
+        `cat ~/.config/fish "..."` hand nothing to a shell.
+        """
+        out = []
+        for toks in self.argv_segments():
+            k = _command_index(toks)
+            out.append((k, toks))
+            r = self._runner_index(toks, k, self.RUNNERS) if depth > 0 else -1
+            if r < 0:
+                continue
+            for w in toks[r + 1:]:
+                if any(ch.isspace() for ch in w):
+                    out.extend(NestedSurface(w).argv_nested(depth - 1))
+        return out
+
+    def _runner_index(self, toks, k, names):
+        prefixed = False
+        for i, w in enumerate(toks):
+            name = w.rsplit("/", 1)[-1]
+            if i == k and (name in names or _is_var(w)):
+                return i
+            if i != k and name in names and \
+                    (w == name or prefixed or _c_flag_follows(toks, i)):
+                return i
+            prefixed = prefixed or name in PREFIXES
+        return -1
+
+    def _line_feeds_shell(self, line):
+        """Surface's answer, and also a shell or ssh after a wrapper's options
+        (`sudo -u root bash <<EOF`, `timeout 60 ssh host <<EOF`), found the way
+        argv_nested finds a runner. Surface's own answer is unchanged."""
+        if Surface._line_feeds_shell(self, line):
+            return True
+        for part in _split_top(line):
+            toks = part.split()
+            if self._runner_index(toks, _command_index(toks), self.RUNNERS) >= 0:
+                return True
+        return False
+
+
+def _command_index(toks):
+    """The index of a segment's command word, past the prefixes and
+    assignments before it, or len(toks) when there is none."""
+    k = 0
+    while k < len(toks) and (toks[k] in PREFIXES or _is_assign(toks[k])):
+        k += 1
+    return k
+
+
+def _c_flag_follows(toks, i):
+    """A short-option cluster holding `c` comes anywhere after toks[i], as in
+    `sh -c`, `bash -lc` or `sh -e -o pipefail -c`: a command string follows.
+    Any later word counts, so an option that takes a value cannot hide it."""
+    return any(w.startswith("-") and not w.startswith("--") and "c" in w[1:]
+               for w in toks[i + 1:])
+
+
+def _is_var(tok):
+    """A word that is nothing but a parameter expansion: `$x` or `${...}`."""
+    if tok.startswith("${") and tok.endswith("}"):
+        return len(tok) > 3
+    name = tok[1:]
+    return tok.startswith("$") and bool(name) and \
+        (name[0].isalpha() or name[0] == "_") and \
+        all(ch.isalnum() or ch == "_" for ch in name)
+
+
+def _normalized(surface):
+    """The command's characters as bash reads them, for a tripwire that must
+    see text no argument vector keeps (a heredoc body another program reads,
+    the string eval or bash -c runs). Quote delimiters, quoting backslashes
+    and backslash-newlines are removed; comments and heredoc bodies are kept
+    as written, since what reads a body is not known. US, RS and GS become
+    `?`. Opt-in: argv_literal's mode prints it ahead of the segments."""
+    if not surface.notes:
+        surface = Surface(surface.src, notes=True)
+    text = "".join(surface.src[i] for i in range(surface.n) if i not in surface.drop)
+    return text.replace("\x1d", "?").replace("\x1e", "?").replace("\x1f", "?")
+
 
 def _is_assign(tok):
     if "=" not in tok:
@@ -500,7 +868,8 @@ def main(argv):
     # UnicodeDecodeError here would take the calling guard down with it;
     # surrogateescape round-trips every byte sequence unchanged.
     raw = sys.stdin.buffer.read().decode("utf-8", "surrogateescape")
-    surface = Surface(raw)
+    surface = NestedSurface(raw) if mode == "--argv-nested" else \
+        Surface(raw, notes=(mode == "--argv-literal"))
     if mode == "--mask":
         out = surface.masked_surface()
     elif mode == "--segments":
@@ -511,8 +880,17 @@ def main(argv):
         # US between arguments, RS after each segment: neither can occur in a
         # command a person typed, and both survive bash `read -d`.
         out = "".join("\x1f".join(t) + "\x1e" for t in surface.argv_segments())
+    elif mode == "--argv-nested":
+        # As --argv, each segment led by the index of its command word.
+        out = "".join(str(k) + "\x1f" + "\x1f".join(t) + "\x1e"
+                      for k, t in surface.argv_nested())
+    elif mode == "--argv-literal":
+        # The normalised text, a GS, then each segment with its reason as the
+        # first field, empty when literal.
+        out = _normalized(surface) + "\x1d" + \
+            "".join("\x1f".join([r] + t) + "\x1e" for r, t in surface.argv_literal())
     else:
-        sys.stderr.write("usage: shsurface.py [--exec|--mask|--segments|--argv]\n")
+        sys.stderr.write("usage: shsurface.py [--exec|--mask|--segments|--argv|--argv-nested|--argv-literal]\n")
         return 2
     sys.stdout.buffer.write(out.encode("utf-8", "surrogateescape"))
     return 0
