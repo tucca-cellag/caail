@@ -176,10 +176,34 @@ test('moves made while the graphic was off-screen are applied once it returns', 
     window.scrollTo(0, hg.getBoundingClientRect().bottom + window.scrollY + 10);
   });
   await expect.poll(() => isMarkedOffscreen(page)).toBe(true);
-  const away = await burst(page, 5);
-  expect(away.writes).toBe(0);
+  // A real point near the top of the viewport, over what is left of the hero.
+  const point = { y: 20 };
+  const away = await page.evaluate(async (y) => {
+    const w = window as unknown as { __hg: Probe };
+    w.__hg.writes = 0;
+    const hero = document.querySelector('.hero') as HTMLElement;
+    const r = hero.getBoundingClientRect();
+    for (let i = 0; i < 5; i++) {
+      hero.dispatchEvent(new PointerEvent('pointermove', { bubbles: true, clientX: r.left + r.width * 0.86, clientY: y }));
+    }
+    await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
+    return w.__hg.writes;
+  }, point.y);
+  expect(away).toBe(0);
 
   // Back on screen with no further move, one frame writes each property once.
   await page.evaluate(() => window.scrollTo(0, 0));
   await expect.poll(() => page.evaluate(() => (window as unknown as { __hg: Probe }).__hg.writes)).toBe(2);
+  // The recorded point now lies above the hero's top edge (the precondition), so the
+  // frame must clamp rather than push the graphic past the parallax range.
+  const heroTop = await page.locator('.hero').evaluate((el) => el.getBoundingClientRect().top);
+  expect(heroTop).toBeGreaterThan(point.y);
+  const [hgx, hgy] = await page.locator('.hero .hg').evaluate((el) => [
+    Number(el.style.getPropertyValue('--hgx')),
+    Number(el.style.getPropertyValue('--hgy')),
+  ]);
+  for (const v of [hgx, hgy]) {
+    expect(v).toBeGreaterThanOrEqual(-0.5);
+    expect(v).toBeLessThanOrEqual(0.5);
+  }
 });
