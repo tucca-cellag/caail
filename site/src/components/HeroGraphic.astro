@@ -114,8 +114,9 @@ const show = (v: string) => both || variant === v;
   .hg-o4 { animation: hg-float 7.8s ease-in-out infinite 1.6s; }
 
   /* Off-screen every loop pauses rather than runs unseen; the script sets data-offscreen.
-   * At specificity 0,3,0 this outranks `.hg-impeller .hg-blade` (0,2,0), whose shorthand
-   * resets play-state, and `*` covers any animated element added later. */
+   * This must outrank every animation rule above, since an `animation` shorthand resets
+   * play-state; the strongest is `.hg-impeller .hg-blade`, and the e2e pause test in
+   * hero-graphic.spec.ts fails if any loop keeps running. `*` covers loops added later. */
   .hg[data-offscreen] .hg-svg * { animation-play-state: paused; }
 
   @media (prefers-reduced-motion: reduce) {
@@ -133,36 +134,47 @@ const show = (v: string) => both || variant === v;
   if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     document.querySelectorAll<HTMLElement>('.hg').forEach((hg) => {
       const zone = hg.closest<HTMLElement>('.hero') ?? hg;
-      let pointer: { x: number; y: number } | null = null;
+      let x = 0;
+      let y = 0;
+      let tracking = false;
       let frame = 0;
 
       const apply = () => {
         frame = 0;
-        if (!pointer) return;
+        if (!tracking) return;
         const r = zone.getBoundingClientRect();
         if (!r.width || !r.height) return;
-        hg.style.setProperty('--hgx', String((pointer.x - r.left) / r.width - 0.5));
-        hg.style.setProperty('--hgy', String((pointer.y - r.top) / r.height - 0.5));
+        hg.style.setProperty('--hgx', String((x - r.left) / r.width - 0.5));
+        hg.style.setProperty('--hgy', String((y - r.top) / r.height - 0.5));
+      };
+      // Off-screen or display:none (below 60rem) there is nothing to move.
+      const schedule = () => {
+        if (!frame && tracking && !hg.hasAttribute('data-offscreen')) frame = requestAnimationFrame(apply);
       };
 
       zone.addEventListener('pointermove', (e) => {
-        pointer = { x: e.clientX, y: e.clientY };
-        // Off-screen or display:none (below 60rem) there is nothing to move.
-        if (!frame && !hg.hasAttribute('data-offscreen')) frame = requestAnimationFrame(apply);
+        x = e.clientX;
+        y = e.clientY;
+        tracking = true;
+        schedule();
       }, { passive: true });
       zone.addEventListener('pointerleave', () => {
         if (frame) cancelAnimationFrame(frame);
         frame = 0;
-        pointer = null;
+        tracking = false;
         hg.style.setProperty('--hgx', '0');
         hg.style.setProperty('--hgy', '0');
       });
 
       // Mark the graphic while it is off-screen or not rendered: its loops pause (see
-      // the stylesheet) and the parallax above stops scheduling frames.
-      new IntersectionObserver((entries) => {
-        hg.toggleAttribute('data-offscreen', !entries[entries.length - 1].isIntersecting);
-      }).observe(hg);
+      // the stylesheet) and the parallax waits, catching up with the pointer when the
+      // graphic returns. Without the observer nothing pauses and the parallax still works.
+      if ('IntersectionObserver' in window) {
+        new IntersectionObserver((entries) => {
+          hg.toggleAttribute('data-offscreen', !entries[entries.length - 1].isIntersecting);
+          schedule();
+        }).observe(hg);
+      }
     });
   }
 </script>

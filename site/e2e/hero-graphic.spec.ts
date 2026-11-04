@@ -74,13 +74,14 @@ async function burst(page: Page, n: number) {
   }, n);
 }
 
-// The play states of the CSS animations running inside the hero graphic.
+// The play states of the CSS animations running inside the hero graphic. Transitions
+// are left out: the parallax's transform transition is not one of the ambient loops.
 function heroAnimations(page: Page) {
   return page.evaluate(() => {
     const hg = document.querySelector('.hero .hg') as Element;
     const anims = document.getAnimations().filter((a) => {
       const target = (a.effect as KeyframeEffect | null)?.target;
-      return target instanceof Element && hg.contains(target);
+      return a instanceof CSSAnimation && target instanceof Element && hg.contains(target);
     });
     return { count: anims.length, states: [...new Set(anims.map((a) => a.playState))].sort() };
   });
@@ -111,6 +112,8 @@ test('the hero animations pause while it is off-screen and resume when it return
   await expect.poll(() => heroAnimations(page)).toEqual({ count: 10, states: ['running'] });
 
   await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+  // The precondition, so a page too short to scroll the graphic away fails as that.
+  await expect.poll(() => page.locator('.hero .hg').evaluate((el) => el.getBoundingClientRect().bottom)).toBeLessThan(0);
   await expect.poll(() => heroAnimations(page)).toEqual({ count: 10, states: ['paused'] });
 
   await page.evaluate(() => window.scrollTo(0, 0));
