@@ -7292,7 +7292,7 @@
         "Study": "Association analysis of single-cell RNA sequencing and proteomics reveals a vital role of Ca²⁺ signalling in skeletal muscle development potential",
         "Paper": "[DOI](https://doi.org/10.3390/cells9041045)",
         "Data": "supplementary",
-        "Type": "scRNA-seq",
+        "Type": "scRNA-seq + TMT proteomics",
         "Tissue": "Muscle",
         "Description": "Porcine skeletal muscle scRNA-seq with TMT proteomics; no deposit named: the supplementary tables give per-sample TMT values for the 181 differentially expressed proteins across three Laiwu and three Yorkshire samples (Table S4) and the top-100 marker genes of five scRNA-seq groups (Table S3)",
         "Size": "—",

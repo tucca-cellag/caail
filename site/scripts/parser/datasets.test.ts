@@ -177,7 +177,8 @@ describe('computeDatasetBreakdown — real corpus', () => {
     // and added the 5 bovine deposits that audit surfaced as genuinely absent. SASP Atlas moving
     // from Databases.md to HumanReference.md took it to 239, and retiring four inventory rows
     // with no public data of their own (tucca-cellag/caail-planning#703) to 235, and retiring six
-    // more whose supplements publish no results table (tucca-cellag/caail-planning#717) to 229.
+    // more with neither a deposit nor a per-sample, per-gene or per-feature results table in a
+    // supplement (tucca-cellag/caail-planning#717) to 229.
     expect(b.total).toBe(229);
   });
 
