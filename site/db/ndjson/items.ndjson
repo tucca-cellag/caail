@@ -148,7 +148,6 @@
 {"id":"db:wikipedia-list-of-chemical-databases","type":"database","slug":"wikipedia-list-of-chemical-databases"}
 {"id":"db:world-food-lca-database-wfldb","type":"database","slug":"world-food-lca-database-wfldb"}
 {"id":"ds:a-hydrophilic-interaction","type":"dataset","slug":"a-hydrophilic-interaction"}
-{"id":"ds:actin-genes-and","type":"dataset","slug":"actin-genes-and"}
 {"id":"ds:algpred-20-allergen-dataset","type":"dataset","slug":"algpred-20-allergen-dataset"}
 {"id":"ds:application-of-proteomics","type":"dataset","slug":"application-of-proteomics"}
 {"id":"ds:aqua-faang","type":"dataset","slug":"aqua-faang"}
@@ -164,7 +163,6 @@
 {"id":"ds:cattlegtex","type":"dataset","slug":"cattlegtex"}
 {"id":"ds:cell-type-diversity","type":"dataset","slug":"cell-type-diversity"}
 {"id":"ds:changes-in-glycolytic","type":"dataset","slug":"changes-in-glycolytic"}
-{"id":"ds:characterization-of-myogenesis","type":"dataset","slug":"characterization-of-myogenesis"}
 {"id":"ds:chickengtex-portal","type":"dataset","slug":"chickengtex-portal"}
 {"id":"ds:cho-antibody-producer-multi-omic-dataset-gopalakrishnan-et-al-2024","type":"dataset","slug":"cho-antibody-producer-multi-omic-dataset-gopalakrishnan-et-al-2024"}
 {"id":"ds:cho-clone-selection-metabolomic-dynamics-dataset-barberi-et-al-2025","type":"dataset","slug":"cho-clone-selection-metabolomic-dynamics-dataset-barberi-et-al-2025"}
@@ -190,13 +188,10 @@
 {"id":"ds:dark-cutting-beef-mitochondrial","type":"dataset","slug":"dark-cutting-beef-mitochondrial"}
 {"id":"ds:dataset-of-the","type":"dataset","slug":"dataset-of-the"}
 {"id":"ds:deep-rna-sequencing","type":"dataset","slug":"deep-rna-sequencing"}
-{"id":"ds:development-of-serum-reduced","type":"dataset","slug":"development-of-serum-reduced"}
 {"id":"ds:distinct-muscle-stem","type":"dataset","slug":"distinct-muscle-stem"}
 {"id":"ds:dynamic-metabolic-flux-analysis-dmfa-cho-dataset-venkatarama-reddy-et-al-2026","type":"dataset","slug":"dynamic-metabolic-flux-analysis-dmfa-cho-dataset-venkatarama-reddy-et-al-2026"}
 {"id":"ds:electronic-nose-dataset","type":"dataset","slug":"electronic-nose-dataset"}
 {"id":"ds:electronic-nose-homogeneous","type":"dataset","slug":"electronic-nose-homogeneous"}
-{"id":"ds:establishment-and-characterization","type":"dataset","slug":"establishment-and-characterization"}
-{"id":"ds:establishment-of-spontaneously","type":"dataset","slug":"establishment-of-spontaneously"}
 {"id":"ds:flip-fitness-landscape-inference-for-proteins","type":"dataset","slug":"flip-fitness-landscape-inference-for-proteins"}
 {"id":"ds:fr-agencode-multi-species-farm-animal-regulatory-atlas","type":"dataset","slug":"fr-agencode-multi-species-farm-animal-regulatory-atlas"}
 {"id":"ds:frontierscience","type":"dataset","slug":"frontierscience"}
@@ -272,7 +267,6 @@
 {"id":"ds:metabolic-profile-of","type":"dataset","slug":"metabolic-profile-of"}
 {"id":"ds:metabolomics-of-meat","type":"dataset","slug":"metabolomics-of-meat"}
 {"id":"ds:metabolomics-profiling-to","type":"dataset","slug":"metabolomics-profiling-to"}
-{"id":"ds:mir-10167-3p-targets-tcf7l1","type":"dataset","slug":"mir-10167-3p-targets-tcf7l1"}
 {"id":"ds:mmlu-pro","type":"dataset","slug":"mmlu-pro"}
 {"id":"ds:mouse-genecorpus-20m","type":"dataset","slug":"mouse-genecorpus-20m"}
 {"id":"ds:mycelium-mechanics","type":"dataset","slug":"mycelium-mechanics"}

@@ -880,7 +880,7 @@
     {
       "id": "ds:lions-mane-mushroom-steak-characterization",
       "name": "Lion's mane mushroom-steak characterization",
-      "url": "https://doi.org/10.64898/2026.01.19.700477",
+      "url": "https://doi.org/10.1016/j.crfs.2026.101403",
       "page": "CrossSpecies",
       "section": "Fungal (mycelium) meat texture reference",
       "kind": "other",
@@ -910,7 +910,7 @@
       "license": null,
       "licenseSource": null,
       "tier": "unknown",
-      "doi": "10.64898/2026.01.19.700477",
+      "doi": "10.1016/j.crfs.2026.101403",
       "doiSource": "manual",
       "citationCount": null,
       "citationSources": 0,
@@ -3294,10 +3294,10 @@
       "columns": {
         "Study": "Simple and effective serum-free medium for sustained expansion of bovine satellite cells for cell cultured meat",
         "Paper": "[DOI](https://doi.org/10.1038/s42003-022-03423-8)",
-        "Data": "on request",
+        "Data": "supplementary",
         "Type": "SFM development + functional assays",
         "Tissue": "Muscle (satellite cells)",
-        "Description": "B8 pluripotent-stem-cell serum-free medium adapted for sustained bovine satellite cell expansion across multiple passages (Tufts/Kaplan lab; Stout, Mirliani, Rittenberg, Shub, White, Yuen & Kaplan 2022, *Communications Biology*); no public repository accession — data in paper's Supplementary files + corresponding author on request",
+        "Description": "B8 pluripotent-stem-cell serum-free medium adapted for sustained bovine satellite cell expansion across multiple passages (Tufts/Kaplan lab; Stout, Mirliani, Rittenberg, Shub, White, Yuen & Kaplan 2022, *Communications Biology*); no repository deposit: Supplementary Data 1 holds the per-well proliferation readings for every supplement and concentration screened, plus the per-replicate source data behind each figure",
         "Size": "—",
         "Area of research": "Cell-ag-direct SFM development"
       },
@@ -3585,10 +3585,10 @@
       "columns": {
         "Study": "Gene expression of Hanwoo satellite cell differentiation in longissimus dorsi and semimembranosus",
         "Paper": "[DOI](https://doi.org/10.1186/s12864-019-5530-7)",
-        "Data": "on request",
+        "Data": "supplementary",
         "Type": "RNA-seq",
         "Tissue": "Muscle",
-        "Description": "LD and SM muscle of three Korean Hanwoo newborn calves; RNA-seq data available on request",
+        "Description": "LD and SM muscle of three Korean Hanwoo newborn calves; raw RNA-seq data on request only, while the supplementary tables publish differential-expression statistics (logFC, logCPM, FDR) for 11 contrasts (Table S2) and per-sample read QC (Table S1)",
         "Size": "~35.7 M reads/sample",
         "Area of research": "Embryonic myogenesis"
       },
@@ -3693,33 +3693,6 @@
       "subseries": []
     },
     {
-      "id": "ds:mir-10167-3p-targets-tcf7l1",
-      "kind": "inventory",
-      "page": "Cow",
-      "name": "miR-10167-3p targets TCF7L1 to inhibit bovine adipocyte differentiation and promote bovine adipocyte proliferation",
-      "columns": {
-        "Study": "miR-10167-3p targets TCF7L1 to inhibit bovine adipocyte differentiation and promote bovine adipocyte proliferation",
-        "Paper": "[DOI](https://doi.org/10.1016/j.ygeno.2024.110903)",
-        "Data": "on request",
-        "Type": "RNA-seq + miRNA functional assays",
-        "Tissue": "Fat (preadipocytes)",
-        "Description": "Bovine preadipocytes; miR-10167-3p / TCF7L1 regulatory axis controlling preadipocyte proliferation vs differentiation; no public deposit (data available on request per the paper)",
-        "Size": "—",
-        "Area of research": "Adipogenesis regulation"
-      },
-      "links": [
-        "https://doi.org/10.1016/j.ygeno.2024.110903"
-      ],
-      "topics": [
-        {
-          "slug": "cell-lines-engineering",
-          "label": "Cell Lines & Engineering",
-          "theme": "cell-lines-engineering"
-        }
-      ],
-      "subseries": []
-    },
-    {
       "id": "ds:prjna1056565",
       "kind": "inventory",
       "page": "Cow",
@@ -3755,10 +3728,10 @@
       "columns": {
         "Study": "Integrated multi-omics reveals potential regulatory mechanisms of meat quality",
         "Paper": "[DOI](https://doi.org/10.1016/j.fochms.2025.100293)",
-        "Data": "on request",
+        "Data": "supplementary",
         "Type": "RNA-seq + untargeted metabolomics + GC–MS fatty acids + targeted amino acids",
         "Tissue": "Muscle (longissimus dorsi)",
-        "Description": "Liangshan cattle vs Simmental crossbred cattle; identifies l-carnitine upregulation and FASN/ALDOC/PFKL/PGAM1/SDS as breed-distinguishing energy-metabolism markers; no public deposit (data available on request per the paper)",
+        "Description": "Liangshan cattle vs Simmental crossbred cattle; identifies l-carnitine upregulation and FASN/ALDOC/PFKL/PGAM1/SDS as breed-distinguishing energy-metabolism markers; no repository deposit: the supplementary tables give per-sample values for all 1,769 untargeted metabolites (Table S1), the fatty acids and amino acids (Tables S4, S6, S7) and the 465 differentially expressed genes (Table S10)",
         "Size": "—",
         "Area of research": "Breed comparison & meat quality"
       },
@@ -4716,11 +4689,11 @@
       "columns": {
         "Study": "Single-cell transcriptomic atlas of shrimp hepatopancreas reveals an endoplasmic reticulum stress-dependent immune response to Vibrio parahaemolyticus infection",
         "Paper": "[DOI](https://doi.org/10.1016/j.fsi.2026.111364)",
-        "Data": "on request",
+        "Data": "supplementary",
         "Type": "snRNA-seq",
         "Species": "*Litopenaeus vannamei*",
         "Tissue": "Hepatopancreas",
-        "Description": "Single-nucleus atlas of Pacific white shrimp hepatopancreas (Lu et al. 2026, *Fish & Shellfish Immunology*); 20,000+ cells classified into five cell types (B, F, E, M, and R cells); endoplasmic-reticulum-stress and cell-death pathways under *Vibrio parahaemolyticus*; the authors state the data are available on request (no public deposit)",
+        "Description": "Single-nucleus atlas of Pacific white shrimp hepatopancreas (Lu et al. 2026, *Fish & Shellfish Immunology*); 20,000+ cells classified into five cell types (B, F, E, M, and R cells); endoplasmic-reticulum-stress and cell-death pathways under *Vibrio parahaemolyticus*; raw data on request only, while the supplementary tables list the 694 common differentially expressed genes (Table S1, gene list without values) and 460 pseudotime-associated genes with P value and FDR (Table S2)",
         "Size": "—",
         "Area of research": "Single-cell atlas"
       },
@@ -4969,41 +4942,6 @@
         "https://www.ncbi.nlm.nih.gov/sra/?term=SRX1098375"
       ],
       "topics": [
-        {
-          "slug": "cell-lines-engineering",
-          "label": "Cell Lines & Engineering",
-          "theme": "cell-lines-engineering"
-        }
-      ],
-      "subseries": []
-    },
-    {
-      "id": "ds:actin-genes-and",
-      "kind": "inventory",
-      "page": "Crustacean",
-      "name": "Actin genes and their expression in Pacific white shrimp",
-      "columns": {
-        "Study": "Actin genes and their expression in Pacific white shrimp",
-        "Paper": "[DOI](https://doi.org/10.1007/s00438-017-1397-y)",
-        "Data": "unavailable",
-        "Type": "RNA-seq",
-        "Species": "*Litopenaeus vannamei*",
-        "Tissue": "Muscle, Exoskeleton",
-        "Description": "Source survey links only journal articles ([doi:10.1371/journal.pone.0106201](https://doi.org/10.1371/journal.pone.0106201), [doi:10.1371/journal.pone.0144350](https://doi.org/10.1371/journal.pone.0144350)), no repository accession",
-        "Size": "—",
-        "Area of research": "Muscle-system biology"
-      },
-      "links": [
-        "https://doi.org/10.1007/s00438-017-1397-y",
-        "https://doi.org/10.1371/journal.pone.0106201",
-        "https://doi.org/10.1371/journal.pone.0144350"
-      ],
-      "topics": [
-        {
-          "slug": "ai-methods-tooling",
-          "label": "AI Methods & Tooling",
-          "theme": "ai-methods-tooling"
-        },
         {
           "slug": "cell-lines-engineering",
           "label": "Cell Lines & Engineering",
@@ -6172,120 +6110,6 @@
       "subseries": []
     },
     {
-      "id": "ds:establishment-of-spontaneously",
-      "kind": "inventory",
-      "page": "Fish",
-      "name": "Establishment of spontaneously immortalized Japanese eel muscle-derived preadipocyte cell lines for cultured seafood production",
-      "columns": {
-        "Study": "Establishment of spontaneously immortalized Japanese eel muscle-derived preadipocyte cell lines for cultured seafood production",
-        "Paper": "[DOI](https://doi.org/10.1038/s41538-025-00557-x)",
-        "Data": "supplementary",
-        "Type": "Immortalized cell lines",
-        "Species": "*Anguilla japonica*",
-        "Tissue": "Muscle (preadipocyte)",
-        "Description": "Three spontaneously immortalized muscle-derived preadipocyte lines (JE-KRT224, JE-EK9, JE-F1140), >120 population doublings, lipid accumulation with fatty-acid profiles matching native eel meat; lines deposited at NITE (BP-04244/BP-04246/BP-04247); characterization data in supplementary",
-        "Size": "3 cell lines",
-        "Area of research": "Adipocyte cell lines for cultivated seafood"
-      },
-      "links": [
-        "https://doi.org/10.1038/s41538-025-00557-x"
-      ],
-      "topics": [
-        {
-          "slug": "cell-line-engineering",
-          "label": "Cell-line engineering",
-          "theme": "cell-lines-engineering"
-        },
-        {
-          "slug": "cell-lines-engineering",
-          "label": "Cell Lines & Engineering",
-          "theme": "cell-lines-engineering"
-        }
-      ],
-      "subseries": []
-    },
-    {
-      "id": "ds:establishment-and-characterization",
-      "kind": "inventory",
-      "page": "Fish",
-      "name": "Establishment and characterization of continuous satellite muscle cells from olive flounder (Paralichthys olivaceus)",
-      "columns": {
-        "Study": "Establishment and characterization of continuous satellite muscle cells from olive flounder (Paralichthys olivaceus)",
-        "Paper": "[DOI](https://doi.org/10.3390/cells12182325)",
-        "Data": "on request",
-        "Type": "Immortalized cell line",
-        "Species": "*Paralichthys olivaceus*",
-        "Tissue": "Muscle (satellite cells)",
-        "Description": "Continuous satellite-cell line (OF20IMC) spontaneously immortalized by passage 20; myotube differentiation with MyoD, myogenin and desmin expression; data from the corresponding author on request",
-        "Size": "—",
-        "Area of research": "Muscle cell line & myogenesis"
-      },
-      "links": [
-        "https://doi.org/10.3390/cells12182325"
-      ],
-      "topics": [
-        {
-          "slug": "cell-line-engineering",
-          "label": "Cell-line engineering",
-          "theme": "cell-lines-engineering"
-        },
-        {
-          "slug": "cell-lines-engineering",
-          "label": "Cell Lines & Engineering",
-          "theme": "cell-lines-engineering"
-        }
-      ],
-      "subseries": []
-    },
-    {
-      "id": "ds:development-of-serum-reduced",
-      "kind": "inventory",
-      "page": "Fish",
-      "name": "Development of serum-reduced medium for mackerel muscle cell line cultivation",
-      "columns": {
-        "Study": "Development of serum-reduced medium for mackerel muscle cell line cultivation",
-        "Paper": "[DOI](https://doi.org/10.1021/acssuschemeng.4c03345)",
-        "Data": "supplementary",
-        "Type": "Cell growth assays",
-        "Species": "*Scomber scombrus*",
-        "Tissue": "Muscle (myoblast)",
-        "Description": "Serum-reduced medium development for the Atlantic mackerel Mack1 muscle cell line; screened non-animal protein isolates (rapeseed, chlorella, spirulina) and defined additives; F-12 plus rapeseed isolate supported >30 doublings over 55 days; growth-assay data in supporting information",
-        "Size": "—",
-        "Area of research": "Media optimization (serum reduction)"
-      },
-      "links": [
-        "https://doi.org/10.1021/acssuschemeng.4c03345"
-      ],
-      "topics": [
-        {
-          "slug": "cell-line-engineering",
-          "label": "Cell-line engineering",
-          "theme": "cell-lines-engineering"
-        },
-        {
-          "slug": "cell-lines-engineering",
-          "label": "Cell Lines & Engineering",
-          "theme": "cell-lines-engineering"
-        },
-        {
-          "slug": "media-growth-factors",
-          "label": "Media & Growth Factors",
-          "theme": "media-growth-factors"
-        },
-        {
-          "slug": "media-optimization",
-          "label": "Media optimization",
-          "theme": "media-growth-factors"
-        },
-        {
-          "slug": "serum-free-media",
-          "label": "Serum-free media",
-          "theme": "media-growth-factors"
-        }
-      ],
-      "subseries": []
-    },
-    {
       "id": "ds:genome-scale-metabolic-network",
       "kind": "inventory",
       "page": "Fish",
@@ -6445,11 +6269,11 @@
       "columns": {
         "Study": "Distinct muscle stem cell fates correlated with hyperplasia and hypertrophy during skeletal muscle growth in rainbow trout",
         "Paper": "[preprint](https://doi.org/10.64898/2026.01.28.702282)",
-        "Data": "none named",
+        "Data": "supplementary",
         "Type": "scRNA-seq",
         "Species": "*Oncorhynchus mykiss*",
         "Tissue": "Muscle",
-        "Description": "Single-cell atlas of muscle-derived cells across five growth stages; 15 resident populations including eight myogenic subtypes; RNA-velocity reveals distinct hyperplasia vs hypertrophy trajectories and a pax7+/pdgfrα+ subpopulation; bioRxiv preprint",
+        "Description": "Single-cell atlas of muscle-derived cells across five growth stages; 15 resident populations including eight myogenic subtypes; RNA-velocity reveals distinct hyperplasia vs hypertrophy trajectories and a pax7+/pdgfrα+ subpopulation; bioRxiv preprint naming no data deposit, whose additional files include the top-100 marker genes of the myogenic and mesenchymal clusters (Tables S3–S4) and SAMap mapping scores against human muscle atlases (Tables S5–S9)",
         "Size": "—",
         "Area of research": "Muscle stem-cell biology"
       },
@@ -6465,34 +6289,6 @@
         {
           "slug": "single-cell-atlases",
           "label": "Single-cell atlases",
-          "theme": "cell-lines-engineering"
-        }
-      ],
-      "subseries": []
-    },
-    {
-      "id": "ds:characterization-of-myogenesis",
-      "kind": "inventory",
-      "page": "Fish",
-      "name": "Characterization of myogenesis in European sea bass (Dicentrarchus labrax) using primary white muscle cell cultures",
-      "columns": {
-        "Study": "Characterization of myogenesis in European sea bass (Dicentrarchus labrax) using primary white muscle cell cultures",
-        "Paper": "[DOI](https://doi.org/10.1038/s41598-025-28654-7)",
-        "Data": "supplementary",
-        "Type": "Primary cell culture (qPCR/IF)",
-        "Species": "*Dicentrarchus labrax*",
-        "Tissue": "Muscle (white)",
-        "Description": "In-vitro myogenesis in primary white muscle cells over a 12-day culture; myogenic-marker expression by qPCR and immunofluorescence; no sequencing deposited, data in article and supplementary",
-        "Size": "—",
-        "Area of research": "Myogenesis"
-      },
-      "links": [
-        "https://doi.org/10.1038/s41598-025-28654-7"
-      ],
-      "topics": [
-        {
-          "slug": "cell-lines-engineering",
-          "label": "Cell Lines & Engineering",
           "theme": "cell-lines-engineering"
         }
       ],
@@ -6625,11 +6421,11 @@
       "columns": {
         "Study": "Cell type diversity in scallop adductor muscles revealed by single-cell RNA-Seq",
         "Paper": "[DOI](https://doi.org/10.1016/j.ygeno.2021.08.015)",
-        "Data": "none named",
+        "Data": "supplementary",
         "Type": "scRNA-seq",
         "Species": "*Patinopecten yessoensis*",
         "Tissue": "Muscle (adductor)",
-        "Description": "scRNA-seq atlas of scallop adductor muscle (Sun et al. 2021, *Genomics*); 20 cell clusters across four broad classes — mesenchymal stem cells, muscle cells, neurons, and haemolymph cells — with pseudotemporal differentiation trajectories; neurons resolved in striated but not smooth adductor muscle; the paper names no data deposit",
+        "Description": "scRNA-seq atlas of scallop adductor muscle (Sun et al. 2021, *Genomics*); 20 cell clusters across four broad classes — mesenchymal stem cells, muscle cells, neurons, and haemolymph cells — with pseudotemporal differentiation trajectories; neurons resolved in striated but not smooth adductor muscle; the paper names no data deposit, and its supplementary files give mean expression in all 20 clusters for each cluster's top-20 marker genes (File S1) and for 172 transcription factors (File S3)",
         "Size": "—",
         "Area of research": "Single-cell atlas & muscle differentiation"
       },
@@ -7495,10 +7291,10 @@
       "columns": {
         "Study": "Association analysis of single-cell RNA sequencing and proteomics reveals a vital role of Ca²⁺ signalling in skeletal muscle development potential",
         "Paper": "[DOI](https://doi.org/10.3390/cells9041045)",
-        "Data": "unavailable",
+        "Data": "supplementary",
         "Type": "scRNA-seq",
         "Tissue": "Muscle",
-        "Description": "Source survey records no data accession",
+        "Description": "Porcine skeletal muscle scRNA-seq with TMT proteomics; no deposit named: the supplementary tables give per-sample TMT values for the 181 differentially expressed proteins across three Laiwu and three Yorkshire samples (Table S4) and the top-100 marker genes of five scRNA-seq groups (Table S3)",
         "Size": "—",
         "Area of research": "Myogenesis–adipogenesis homeostasis"
       },
@@ -7645,12 +7441,12 @@
       "columns": {
         "Study": "Cost-effective production of meaty aroma from porcine cells for hybrid cultivated meat",
         "Paper": "[DOI](https://doi.org/10.1016/j.foodchem.2025.142946)",
-        "Data": "on request",
-        "Type": "RNA-seq",
+        "Data": "supplementary",
+        "Type": "LC-HRMS + GC-QToF-MS (non-volatile and volatile compounds)",
         "Tissue": "Cell line (porcine myoblasts and fibroblasts)",
-        "Description": "RNA-seq across four adaptation stages of spontaneously immortalized porcine myoblast and fibroblast cell lines — primary, immortalized adherent, immortalized full-serum suspension, and immortalized low-serum suspension (n=3 per stage); PCA + hierarchical clustering against 19 public SRA BioProjects confirms cell identity throughout the suspension-adaptation pipeline. Companion to [Papers.md #193](../Papers.md#193) (Zhou et al. 2025, *Food Chemistry*); no public repository accession — data available on request per the paper's data availability statement",
+        "Description": "Aroma precursors and volatiles of spontaneously immortalized porcine myoblast and fibroblast cell lines against pork meat: the supplementary files give per-sample abundances of 28 LC-HRMS non-volatile compounds (Supplementary File S1) and 60 GC-QToF-MS volatile compounds (Supplementary File S2) across four cell groups and pork meat, three replicates each. The paper's RNA-seq of four adaptation stages is available on request only. Companion to [Papers.md #193](../Papers.md#193) (Zhou et al. 2025, *Food Chemistry*)",
         "Size": "—",
-        "Area of research": "Suspension cell-line adaptation & cultivated-pork bioprocess"
+        "Area of research": "Cultivated-pork aroma & cell-line adaptation"
       },
       "links": [
         "https://doi.org/10.1016/j.foodchem.2025.142946"
@@ -8522,13 +8318,14 @@
       "columns": {
         "Resource": "Mycelium mechanics & taste of fungi steak (Vervenne et al.)",
         "Year": "2025",
-        "Format": "Mechanical + rheological + sensory/taste measurements",
-        "Scope": "Fungal cell-ag texture reference: mechanical, rheological, and taste characterization of mycelium \"fungi steak\" as a whole-cut analog (its moist, fibrous signature), informing scaffold and texture targets reused across cultivated and fungal meats. Species-agnostic (fungal, not livestock); no sequencing deposit",
-        "DOI / URL": "[10.1016/j.actbio.2025.07.002](https://doi.org/10.1016/j.actbio.2025.07.002)",
-        "License": "Elsevier subscription/hybrid (license unverified)"
+        "Format": "Per-specimen mechanical and rheological data (XLS, TXT)",
+        "Scope": "Fungal cell-ag texture reference: mechanical, rheological, and taste characterization of mycelium \"fungi steak\" as a whole-cut analog (its moist, fibrous signature), informing scaffold and texture targets reused across cultivated and fungal meats. Species-agnostic (fungal, not livestock). Vervenne et al. 2025, *Acta Biomaterialia* ([10.1016/j.actbio.2025.07.002](https://doi.org/10.1016/j.actbio.2025.07.002))",
+        "DOI / URL": "[GitHub](https://github.com/LivingMatterLab/CANN/tree/main/ARTMEAT/FungiSteak)",
+        "License": "None stated (GitHub repository with no licence file)"
       },
       "links": [
-        "https://doi.org/10.1016/j.actbio.2025.07.002"
+        "https://doi.org/10.1016/j.actbio.2025.07.002",
+        "https://github.com/LivingMatterLab/CANN/tree/main/ARTMEAT/FungiSteak"
       ],
       "topics": [
         {
@@ -8561,14 +8358,15 @@
       "name": "Lion's mane mushroom-steak characterization (St. Pierre et al.)",
       "columns": {
         "Resource": "Lion's mane mushroom-steak characterization (St. Pierre et al.)",
-        "Year": "2026 (preprint)",
-        "Format": "Mechanical + rheological + sensory measurements",
-        "Scope": "Fungal cell-ag texture reference: mechanical, rheological, and sensory characterization of a lion's mane mushroom steak as a whole-cut analog, with texture/scaffold relevance across cultivated and fungal meats. bioRxiv preprint (not yet peer-reviewed); species-agnostic (fungal)",
-        "DOI / URL": "[preprint](https://doi.org/10.64898/2026.01.19.700477)",
-        "License": "bioRxiv preprint (author license unverified)"
+        "Year": "2026",
+        "Format": "Per-specimen mechanical, rheological and texture-profile tables (XLSX)",
+        "Scope": "Fungal cell-ag texture reference: mechanical, rheological, and sensory characterization of a lion's mane mushroom steak as a whole-cut analog, with texture/scaffold relevance across cultivated and fungal meats. St. Pierre et al. 2026, *Current Research in Food Science* ([10.1016/j.crfs.2026.101403](https://doi.org/10.1016/j.crfs.2026.101403)); species-agnostic (fungal)",
+        "DOI / URL": "[GitHub](https://github.com/LivingMatterLab/CANN/tree/main/ARTMEAT/LionsManeMushroomSteak)",
+        "License": "None stated (GitHub repository with no licence file)"
       },
       "links": [
-        "https://doi.org/10.64898/2026.01.19.700477"
+        "https://doi.org/10.1016/j.crfs.2026.101403",
+        "https://github.com/LivingMatterLab/CANN/tree/main/ARTMEAT/LionsManeMushroomSteak"
       ],
       "topics": [
         {
