@@ -25,6 +25,56 @@ test('explorer cell click opens the reference side panel', async ({ page }) => {
   await expect(page.getByRole('link', { name: '⟨⟩ Code' }).first()).toBeVisible();
 });
 
+test('explorer matrix cells carry no prose margin, so each method row is as tall as its contents', async ({ page }) => {
+  // Inside .sl-markdown-content, Starlight's prose rule gives an element that
+  // follows a sibling a top margin, unless either one is an a, strong, em, del,
+  // span, input, code or br. Inside the matrix grid it landed on every cell,
+  // adding the margin to each row's height so the matrix pane showed only part
+  // of the method rows. Asserted as the defect itself rather than as "every row
+  // fits", which would fail for the wrong reason the day a method row is added.
+  await page.goto('./papers/explorer/');
+  await awaitHydrated(page, 'PapersExplorer');
+  const m = await page.locator('.px-mx').evaluate((mx) => {
+    const grid = getComputedStyle(mx);
+    const items = [...mx.children] as HTMLElement[];
+    // The grid's own resolved columns and rows, not a count of its classes.
+    const perRow = grid.gridTemplateColumns.split(' ').length;
+    const tracks = grid.gridTemplateRows.split(' ').map(parseFloat);
+    const rows: HTMLElement[][] = [];
+    for (let i = 0; i < items.length; i += perRow) rows.push(items.slice(i, i + perRow));
+    // Grid items stretch to fill their row, so their own boxes cannot show extra
+    // space. Measure what sits inside them: a label's text button, and the cells,
+    // which have a fixed height. Row 0 is the header, sized by its own min-height,
+    // so it is covered by the margin check alone.
+    const content = (el: HTMLElement) => (el.querySelector('button') ?? el).getBoundingClientRect().height;
+    const excess = rows.slice(1).map((row, r) => tracks[r + 1] - Math.max(...row.map(content)));
+    const margins = (el: HTMLElement) => {
+      const s = getComputedStyle(el);
+      return [s.marginTop, s.marginRight, s.marginBottom, s.marginLeft];
+    };
+    return {
+      items: items.length,
+      perRow,
+      rows: rows.length,
+      tracks: tracks.length,
+      // The grid itself as well as its items. The pane's not-content covers both,
+      // and checking the grid catches it gaining a margin, such as from something
+      // placed above it while the exemption does not cover it. It does not catch
+      // not-content moving down onto the grid by itself: the grid is the pane's
+      // first child, so nothing gives it a margin until something precedes it.
+      withMargin: [mx as HTMLElement, ...items].filter((el) => margins(el).some((v) => v !== '0px')).length,
+      worstExcess: Math.max(...excess),
+    };
+  });
+  // The grid holds exactly the rows the slicing assumes; a stray child fails here
+  // rather than misaligning the comparison below.
+  expect(m.items % m.perRow).toBe(0);
+  expect(m.tracks).toBe(m.rows);
+  expect(m.rows).toBeGreaterThan(2);
+  expect(m.withMargin).toBe(0);
+  expect(m.worstExcess).toBeLessThanOrEqual(1);
+});
+
 test('explorer axis label opens a definition popup with a link to the full Taxonomy entry', async ({ page }) => {
   await page.goto('./papers/explorer/');
   await awaitHydrated(page, 'PapersExplorer');

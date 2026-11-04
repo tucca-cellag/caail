@@ -225,7 +225,11 @@ export default function PapersExplorer() {
       </div>
 
       <div class="px-work">
-        <div class="px-mxpane">
+        {/* not-content: Starlight's prose rule otherwise gives a top margin to every
+            matrix grid item after the first, stacking onto each row, and to the grid
+            itself if anything is ever placed above it. The exemption covers
+            descendants only, so it sits on the pane rather than on the grid. */}
+        <div class="px-mxpane not-content">
           <div class="px-mx" style={{ gridTemplateColumns: `190px repeat(${shownAreas.length}, minmax(56px,1fr))` }}>
             <div class="px-corner">method ↓ / area →</div>
             {shownAreas.map((a) => <div class="px-hd" style={{ borderTopColor: `var(--caail-area-${a.key})` }}><button {...axisProps(a.label)}>{a.label}</button></div>)}
