@@ -7444,7 +7444,7 @@
         "Data": "supplementary",
         "Type": "LC-HRMS + GC-QToF-MS (non-volatile and volatile compounds)",
         "Tissue": "Cell line (porcine myoblasts and fibroblasts)",
-        "Description": "Aroma precursors and volatiles of spontaneously immortalized porcine myoblast and fibroblast cell lines against pork meat: the supplementary files give per-sample abundances of 28 LC-HRMS non-volatile compounds (Supplementary File S1) and 60 GC-QToF-MS volatile compounds (Supplementary File S2) across four cell groups and pork meat, three replicates each. The paper's RNA-seq of four adaptation stages is available on request only. Companion to [Papers.md #193](../Papers.md#193) (Zhou et al. 2025, *Food Chemistry*)",
+        "Description": "Aroma precursors and volatiles of spontaneously immortalized porcine myoblast and fibroblast cell lines against pork meat: the supplementary files give per-sample abundances of 28 LC-HRMS non-volatile compounds (Supplementary File S1) and 60 GC-QToF-MS volatile compounds (Supplementary File S2) across four suspension cell groups (myoblasts and fibroblasts, each in full-serum and in 1% FBS low-serum medium) and pork meat, three replicates each. The paper's RNA-seq of four adaptation stages is available on request only. Companion to [Papers.md #193](../Papers.md#193) (Zhou et al. 2025, *Food Chemistry*)",
         "Size": "—",
         "Area of research": "Cultivated-pork aroma & cell-line adaptation"
       },
