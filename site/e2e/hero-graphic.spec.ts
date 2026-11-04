@@ -10,7 +10,7 @@ import { test, expect, type Page } from '@playwright/test';
  * - the animations pause while the hero is off-screen and resume when it returns;
  * - under reduced motion there is no animation and no parallax, as before;
  * - on a layout that hides the graphic, moves write nothing;
- * - moves made while the graphic was off-screen are applied once it returns.
+ * - while the graphic is off-screen the parallax rests, and only a new move shifts it.
  */
 
 // Hero.astro hides the graphic on narrow layouts, so these need a desktop viewport.
@@ -90,12 +90,23 @@ function heroAnimations(page: Page) {
   });
 }
 
-// How many elements in the hero graphic carry a CSS animation, read from the page
-// rather than typed here, so adding a loop to the markup does not break the count.
+// How many CSS animations the rendered elements of the hero graphic carry, read from
+// the page rather than typed here, so adding a loop to the markup does not break the
+// count. Unrendered elements (a hidden variant) run none, and one element can run several.
 function animatedLoops(page: Page) {
   return page.evaluate(() =>
-    [...document.querySelectorAll('.hero .hg *')].filter((el) => getComputedStyle(el).animationName !== 'none').length,
+    [...document.querySelectorAll('.hero .hg *')]
+      .filter((el) => el.getClientRects().length > 0)
+      .reduce((n, el) => n + getComputedStyle(el).animationName.split(',').filter((a) => a.trim() !== 'none').length, 0),
   );
+}
+
+// The two parallax properties as written on the graphic, 0 where unset.
+function parallax(page: Page) {
+  return page.locator('.hero .hg').evaluate((el) => [
+    Number((el as HTMLElement).style.getPropertyValue('--hgx') || 0),
+    Number((el as HTMLElement).style.getPropertyValue('--hgy') || 0),
+  ]);
 }
 
 function isMarkedOffscreen(page: Page) {
@@ -108,7 +119,9 @@ test('a burst of pointer moves over the hero reads its box at most once and writ
   await expect(page.locator('.hero .hg')).toBeVisible();
 
   const m = await burst(page, 20);
-  // Every pointermove listener on the hero is passive, and there is at least one.
+  // Every pointermove listener on the hero is passive, and there is at least one. #650's
+  // criteria ask for it; passive changes nothing for pointermove (only touch and wheel
+  // listeners can block scrolling), so this records that the handler never cancels.
   expect(m.options.length).toBeGreaterThan(0);
   for (const o of m.options) expect(o).toMatchObject({ passive: true });
   // One frame passed, so one write of each property, and the box was read at most
@@ -165,45 +178,40 @@ test.describe('on a layout that hides the graphic', () => {
   });
 });
 
-test('moves made while the graphic was off-screen are applied once it returns', async ({ page }) => {
+test('while the graphic is off-screen the parallax rests, and only a new move shifts it again', async ({ page }) => {
   await page.addInitScript(instrument);
   await page.goto('./');
   await expect(page.locator('.hero .hg')).toBeVisible();
 
-  // Scroll the graphic just past the top edge, then move the pointer: no frame runs.
+  // Shift the parallax off its rest position first.
+  const before = await burst(page, 20);
+  expect(Number(before.hgx)).toBeCloseTo(0.36, 2);
+
+  // Scroll the graphic just past the top edge: it returns to rest, and moves write nothing.
   await page.evaluate(() => {
     const hg = document.querySelector('.hero .hg') as HTMLElement;
     window.scrollTo(0, hg.getBoundingClientRect().bottom + window.scrollY + 10);
   });
   await expect.poll(() => isMarkedOffscreen(page)).toBe(true);
-  // A real point near the top of the viewport, over what is left of the hero.
-  const point = { y: 20 };
-  const away = await page.evaluate(async (y) => {
-    const w = window as unknown as { __hg: Probe };
-    w.__hg.writes = 0;
-    const hero = document.querySelector('.hero') as HTMLElement;
-    const r = hero.getBoundingClientRect();
-    for (let i = 0; i < 5; i++) {
-      hero.dispatchEvent(new PointerEvent('pointermove', { bubbles: true, clientX: r.left + r.width * 0.86, clientY: y }));
-    }
-    await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
-    return w.__hg.writes;
-  }, point.y);
-  expect(away).toBe(0);
+  expect(await parallax(page)).toEqual([0, 0]);
+  const away = await burst(page, 5);
+  expect(away.writes).toBe(0);
 
-  // Back on screen with no further move, one frame writes each property once.
-  await page.evaluate(() => window.scrollTo(0, 0));
-  await expect.poll(() => page.evaluate(() => (window as unknown as { __hg: Probe }).__hg.writes)).toBe(2);
-  // The recorded point now lies above the hero's top edge (the precondition), so the
-  // frame must clamp rather than push the graphic past the parallax range.
-  const heroTop = await page.locator('.hero').evaluate((el) => el.getBoundingClientRect().top);
-  expect(heroTop).toBeGreaterThan(point.y);
-  const [hgx, hgy] = await page.locator('.hero .hg').evaluate((el) => [
-    Number(el.style.getPropertyValue('--hgx')),
-    Number(el.style.getPropertyValue('--hgy')),
-  ]);
-  for (const v of [hgx, hgy]) {
-    expect(v).toBeGreaterThanOrEqual(-0.5);
-    expect(v).toBeLessThanOrEqual(0.5);
-  }
+  // Back on screen with no further move, nothing is written and it stays at rest.
+  await page.evaluate(() => {
+    (window as unknown as { __hg: Probe }).__hg.writes = 0;
+    window.scrollTo(0, 0);
+  });
+  await expect.poll(() => isMarkedOffscreen(page)).toBe(false);
+  const returned = await page.evaluate(async () => {
+    await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
+    return (window as unknown as { __hg: Probe }).__hg.writes;
+  });
+  expect(returned).toBe(0);
+  expect(await parallax(page)).toEqual([0, 0]);
+
+  // The next move applies normally.
+  const after = await burst(page, 20);
+  expect(after.writes).toBe(2);
+  expect(Number(after.hgx)).toBeCloseTo(0.36, 2);
 });

@@ -5,9 +5,10 @@
  *                         a spinning impeller, and suspended cells.
  *   variant="cells":      a soft drifting field of culture cells.
  * Ambient animation loops in CSS; a tiny inline script adds subtle pointer
- * parallax via the --hgx/--hgy custom props, each updated at most once per frame, and
- * pauses the loops while the graphic is off-screen. All of it is disabled under
- * prefers-reduced-motion. SSR-rendered inline SVG — no canvas, no deps.
+ * parallax via the --hgx/--hgy custom props, each updated at most once per frame,
+ * and pauses the loops and rests the parallax while the graphic is off-screen.
+ * All of it is disabled under prefers-reduced-motion. SSR-rendered inline SVG —
+ * no canvas, no deps.
  *
  * Pass `both` to render both variants in one element (used by the live hero
  * demo); the visible one is chosen by the ancestor `[data-graphic]` attribute.
@@ -131,62 +132,46 @@ const show = (v: string) => both || variant === v;
 <script>
   // Subtle pointer parallax: map cursor position within the hero to --hgx/--hgy.
   // However many moves arrive, each frame reads the hero's box once, before
-  // writing either property, and nothing runs while the graphic is hidden.
+  // writing either property. While the graphic is hidden the parallax rests at 0.
   if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     document.querySelectorAll<HTMLElement>('.hg').forEach((hg) => {
       const zone = hg.closest<HTMLElement>('.hero') ?? hg;
       let x = 0;
       let y = 0;
-      let tracking = false;
-      // False while the graphic is off-screen or not rendered. It starts false where the
-      // observer will report, so nothing runs on a hidden layout before its first callback;
-      // a move made meanwhile on a visible one is applied when that callback arrives.
-      let shown = !('IntersectionObserver' in window);
+      let shown = true; // false while the graphic is off-screen or not rendered
       let frame = 0;
 
-      // Clamped, since a catch-up frame applies a point recorded before the page scrolled.
-      const clamp = (v: number) => Math.min(0.5, Math.max(-0.5, v));
       const apply = () => {
         frame = 0;
-        if (!tracking) return;
         const r = zone.getBoundingClientRect();
         if (!r.width || !r.height) return;
-        hg.style.setProperty('--hgx', String(clamp((x - r.left) / r.width - 0.5)));
-        hg.style.setProperty('--hgy', String(clamp((y - r.top) / r.height - 0.5)));
+        hg.style.setProperty('--hgx', String((x - r.left) / r.width - 0.5));
+        hg.style.setProperty('--hgy', String((y - r.top) / r.height - 0.5));
       };
-      // While the graphic is off-screen or display:none there is nothing to move.
-      const schedule = () => {
-        if (!frame && tracking && shown) frame = requestAnimationFrame(apply);
+      // Drop any pending frame and return the graphic to rest.
+      const rest = () => {
+        if (frame) cancelAnimationFrame(frame);
+        frame = 0;
+        hg.style.setProperty('--hgx', '0');
+        hg.style.setProperty('--hgy', '0');
       };
 
       zone.addEventListener('pointermove', (e) => {
         x = e.clientX;
         y = e.clientY;
-        tracking = true;
-        schedule();
+        // While the graphic is off-screen or display:none there is nothing to move.
+        if (!frame && shown) frame = requestAnimationFrame(apply);
       }, { passive: true });
-      zone.addEventListener('pointerleave', () => {
-        if (frame) cancelAnimationFrame(frame);
-        frame = 0;
-        tracking = false;
-        hg.style.setProperty('--hgx', '0');
-        hg.style.setProperty('--hgy', '0');
-      });
+      zone.addEventListener('pointerleave', rest);
 
       // Mark the graphic while it is off-screen or not rendered: its loops pause (see
-      // the stylesheet) and the parallax waits, catching up with the pointer when the
-      // graphic returns. Without the observer nothing pauses and the parallax still works.
+      // the stylesheet) and the parallax rests until the pointer moves after it returns.
+      // Without the observer nothing pauses and the parallax still works.
       if ('IntersectionObserver' in window) {
         new IntersectionObserver((entries) => {
-          const now = entries[entries.length - 1].isIntersecting;
-          const returned = now && !shown;
-          shown = now;
-          hg.toggleAttribute('data-offscreen', !now);
-          if (!now && frame) {
-            cancelAnimationFrame(frame);
-            frame = 0;
-          }
-          if (returned) schedule();
+          shown = entries[entries.length - 1].isIntersecting;
+          hg.toggleAttribute('data-offscreen', !shown);
+          if (!shown) rest();
         }).observe(hg);
       }
     });
