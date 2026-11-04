@@ -113,14 +113,10 @@ const show = (v: string) => both || variant === v;
   .hg-o3 { animation: hg-float 9s ease-in-out infinite 0.3s; }
   .hg-o4 { animation: hg-float 7.8s ease-in-out infinite 1.6s; }
 
-  /* Off-screen the loops pause rather than run unseen; the script sets data-offscreen.
-   * Each selector outranks `.hg-impeller .hg-blade`, whose shorthand resets play-state. */
-  .hg[data-offscreen] .hg-bub,
-  .hg[data-offscreen] .hg-blade,
-  .hg[data-offscreen] .hg-drift1,
-  .hg[data-offscreen] .hg-drift2,
-  .hg[data-offscreen] .hg-drift3,
-  .hg[data-offscreen] .hg-orb { animation-play-state: paused; }
+  /* Off-screen every loop pauses rather than runs unseen; the script sets data-offscreen.
+   * At specificity 0,3,0 this outranks `.hg-impeller .hg-blade` (0,2,0), whose shorthand
+   * resets play-state, and `*` covers any animated element added later. */
+  .hg[data-offscreen] .hg-svg * { animation-play-state: paused; }
 
   @media (prefers-reduced-motion: reduce) {
     .hg-svg { transform: none; transition: none; }
@@ -132,32 +128,27 @@ const show = (v: string) => both || variant === v;
 
 <script>
   // Subtle pointer parallax: map cursor position within the hero to --hgx/--hgy.
-  // A burst of moves becomes one write per frame, and the hero's box is measured
-  // once per entry or resize rather than on every move.
+  // However many moves arrive, each frame reads the hero's box once, before
+  // writing either property, and nothing runs while the graphic is hidden.
   if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     document.querySelectorAll<HTMLElement>('.hg').forEach((hg) => {
       const zone = hg.closest<HTMLElement>('.hero') ?? hg;
-      // The zone's box in page coordinates, so scrolling does not make it stale.
-      let box: { left: number; top: number; width: number; height: number } | null = null;
       let pointer: { x: number; y: number } | null = null;
       let frame = 0;
 
       const apply = () => {
         frame = 0;
         if (!pointer) return;
-        if (!box) {
-          const r = zone.getBoundingClientRect();
-          box = { left: r.left + window.scrollX, top: r.top + window.scrollY, width: r.width, height: r.height };
-        }
-        if (!box.width || !box.height) return;
-        hg.style.setProperty('--hgx', String((pointer.x + window.scrollX - box.left) / box.width - 0.5));
-        hg.style.setProperty('--hgy', String((pointer.y + window.scrollY - box.top) / box.height - 0.5));
+        const r = zone.getBoundingClientRect();
+        if (!r.width || !r.height) return;
+        hg.style.setProperty('--hgx', String((pointer.x - r.left) / r.width - 0.5));
+        hg.style.setProperty('--hgy', String((pointer.y - r.top) / r.height - 0.5));
       };
 
-      zone.addEventListener('pointerenter', () => { box = null; });
       zone.addEventListener('pointermove', (e) => {
         pointer = { x: e.clientX, y: e.clientY };
-        if (!frame) frame = requestAnimationFrame(apply);
+        // Off-screen or display:none (below 60rem) there is nothing to move.
+        if (!frame && !hg.hasAttribute('data-offscreen')) frame = requestAnimationFrame(apply);
       }, { passive: true });
       zone.addEventListener('pointerleave', () => {
         if (frame) cancelAnimationFrame(frame);
@@ -166,9 +157,9 @@ const show = (v: string) => both || variant === v;
         hg.style.setProperty('--hgx', '0');
         hg.style.setProperty('--hgy', '0');
       });
-      new ResizeObserver(() => { box = null; }).observe(zone);
 
-      // Pause the ambient loops while the graphic is off-screen (see the stylesheet).
+      // Mark the graphic while it is off-screen or not rendered: its loops pause (see
+      // the stylesheet) and the parallax above stops scheduling frames.
       new IntersectionObserver((entries) => {
         hg.toggleAttribute('data-offscreen', !entries[entries.length - 1].isIntersecting);
       }).observe(hg);

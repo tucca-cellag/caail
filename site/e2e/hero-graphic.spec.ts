@@ -11,6 +11,10 @@ import { test, expect, type Page } from '@playwright/test';
  * - under reduced motion there is no animation and no parallax, as before.
  */
 
+// The graphic is display:none below 60rem, so these need a desktop viewport. Pinned
+// here so a narrower project default fails as a missing graphic, not as broken logic.
+test.use({ viewport: { width: 1280, height: 720 } });
+
 type Probe = { rects: number; writes: number; options: unknown[] };
 
 // Installed before any page script runs, so it sees the component's own listener.
