@@ -6,7 +6,7 @@
  *   variant="cells":      a soft drifting field of culture cells.
  * Ambient animation loops in CSS; a tiny inline script adds subtle pointer
  * parallax via the --hgx/--hgy custom props, at most one write per frame, and
- * pauses the loops while the graphic is off-screen. Both fully disabled under
+ * pauses the loops while the graphic is off-screen. All of it is disabled under
  * prefers-reduced-motion. SSR-rendered inline SVG — no canvas, no deps.
  *
  * Pass `both` to render both variants in one element (used by the live hero
@@ -116,7 +116,8 @@ const show = (v: string) => both || variant === v;
   /* Off-screen every loop pauses rather than runs unseen; the script sets data-offscreen.
    * This must outrank every animation rule above, since an `animation` shorthand resets
    * play-state; the strongest is `.hg-impeller .hg-blade`, and the e2e pause test in
-   * hero-graphic.spec.ts fails if any loop keeps running. `*` covers loops added later. */
+   * hero-graphic.spec.ts fails if any loop keeps running. `*` reaches further loops on
+   * this component's own SVG children, not the <svg> root, child components or set:html. */
   .hg[data-offscreen] .hg-svg * { animation-play-state: paused; }
 
   @media (prefers-reduced-motion: reduce) {
@@ -137,6 +138,7 @@ const show = (v: string) => both || variant === v;
       let x = 0;
       let y = 0;
       let tracking = false;
+      let shown = true; // false while the graphic is off-screen or not rendered
       let frame = 0;
 
       const apply = () => {
@@ -147,9 +149,9 @@ const show = (v: string) => both || variant === v;
         hg.style.setProperty('--hgx', String((x - r.left) / r.width - 0.5));
         hg.style.setProperty('--hgy', String((y - r.top) / r.height - 0.5));
       };
-      // Off-screen or display:none (below 60rem) there is nothing to move.
+      // While the graphic is off-screen or display:none there is nothing to move.
       const schedule = () => {
-        if (!frame && tracking && !hg.hasAttribute('data-offscreen')) frame = requestAnimationFrame(apply);
+        if (!frame && tracking && shown) frame = requestAnimationFrame(apply);
       };
 
       zone.addEventListener('pointermove', (e) => {
@@ -171,8 +173,11 @@ const show = (v: string) => both || variant === v;
       // graphic returns. Without the observer nothing pauses and the parallax still works.
       if ('IntersectionObserver' in window) {
         new IntersectionObserver((entries) => {
-          hg.toggleAttribute('data-offscreen', !entries[entries.length - 1].isIntersecting);
-          schedule();
+          const now = entries[entries.length - 1].isIntersecting;
+          const returned = now && !shown;
+          shown = now;
+          hg.toggleAttribute('data-offscreen', !now);
+          if (returned) schedule();
         }).observe(hg);
       }
     });

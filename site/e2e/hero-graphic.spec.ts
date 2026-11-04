@@ -1,18 +1,21 @@
 import { test, expect, type Page } from '@playwright/test';
 
 /**
- * The homepage hero's graphic (HeroGraphic.astro) runs a pointer parallax and ten
+ * The homepage hero's graphic (HeroGraphic.astro) runs a pointer parallax and a set of
  * infinite CSS animations. These tests assert the mechanism, never frame timing,
  * which is too noisy to gate on (tucca-cellag/caail-planning#650):
  *
  * - a burst of pointer moves reads the hero's box at most once and writes the two
  *   parallax properties once each per frame, through a passive listener;
  * - the animations pause while the hero is off-screen and resume when it returns;
- * - under reduced motion there is no animation and no parallax, as before.
+ * - under reduced motion there is no animation and no parallax, as before;
+ * - on a layout that hides the graphic, moves write nothing;
+ * - moves made while the graphic was off-screen are applied once it returns.
  */
 
-// The graphic is display:none below 60rem, so these need a desktop viewport. Pinned
-// here so a narrower project default fails as a missing graphic, not as broken logic.
+// Hero.astro hides the graphic on narrow layouts, so these need a desktop viewport.
+// Pinned here so a narrower project default fails as a missing graphic, not as broken
+// logic. The one test about the hidden layout sets its own.
 test.use({ viewport: { width: 1280, height: 720 } });
 
 type Probe = { rects: number; writes: number; options: unknown[] };
@@ -87,6 +90,18 @@ function heroAnimations(page: Page) {
   });
 }
 
+// How many elements in the hero graphic carry a CSS animation, read from the page
+// rather than typed here, so adding a loop to the markup does not break the count.
+function animatedLoops(page: Page) {
+  return page.evaluate(() =>
+    [...document.querySelectorAll('.hero .hg *')].filter((el) => getComputedStyle(el).animationName !== 'none').length,
+  );
+}
+
+function isMarkedOffscreen(page: Page) {
+  return page.locator('.hero .hg').evaluate((el) => el.hasAttribute('data-offscreen'));
+}
+
 test('a burst of pointer moves over the hero reads its box at most once and writes the parallax once per frame', async ({ page }) => {
   await page.addInitScript(instrument);
   await page.goto('./');
@@ -109,15 +124,17 @@ test('a burst of pointer moves over the hero reads its box at most once and writ
 test('the hero animations pause while it is off-screen and resume when it returns', async ({ page }) => {
   await page.goto('./');
   await expect(page.locator('.hero .hg')).toBeVisible();
-  await expect.poll(() => heroAnimations(page)).toEqual({ count: 10, states: ['running'] });
+  const loops = await animatedLoops(page);
+  expect(loops).toBeGreaterThan(0);
+  await expect.poll(() => heroAnimations(page)).toEqual({ count: loops, states: ['running'] });
 
   await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
   // The precondition, so a page too short to scroll the graphic away fails as that.
   await expect.poll(() => page.locator('.hero .hg').evaluate((el) => el.getBoundingClientRect().bottom)).toBeLessThan(0);
-  await expect.poll(() => heroAnimations(page)).toEqual({ count: 10, states: ['paused'] });
+  await expect.poll(() => heroAnimations(page)).toEqual({ count: loops, states: ['paused'] });
 
   await page.evaluate(() => window.scrollTo(0, 0));
-  await expect.poll(() => heroAnimations(page)).toEqual({ count: 10, states: ['running'] });
+  await expect.poll(() => heroAnimations(page)).toEqual({ count: loops, states: ['running'] });
 });
 
 test('under reduced motion the hero graphic neither animates nor follows the pointer', async ({ page }) => {
@@ -130,4 +147,39 @@ test('under reduced motion the hero graphic neither animates nor follows the poi
   const m = await burst(page, 5);
   expect(m.writes).toBe(0);
   expect(m.options).toEqual([]);
+});
+
+test.describe('on a layout that hides the graphic', () => {
+  test.use({ viewport: { width: 800, height: 720 } });
+
+  test('pointer moves over the hero read nothing and write no parallax', async ({ page }) => {
+    await page.addInitScript(instrument);
+    await page.goto('./');
+    // The precondition: Hero.astro hides the graphic at this width, and the script marks it.
+    await expect(page.locator('.hero .hg')).toBeHidden();
+    await expect.poll(() => isMarkedOffscreen(page)).toBe(true);
+
+    const m = await burst(page, 10);
+    expect(m.rects).toBe(0);
+    expect(m.writes).toBe(0);
+  });
+});
+
+test('moves made while the graphic was off-screen are applied once it returns', async ({ page }) => {
+  await page.addInitScript(instrument);
+  await page.goto('./');
+  await expect(page.locator('.hero .hg')).toBeVisible();
+
+  // Scroll the graphic just past the top edge, then move the pointer: no frame runs.
+  await page.evaluate(() => {
+    const hg = document.querySelector('.hero .hg') as HTMLElement;
+    window.scrollTo(0, hg.getBoundingClientRect().bottom + window.scrollY + 10);
+  });
+  await expect.poll(() => isMarkedOffscreen(page)).toBe(true);
+  const away = await burst(page, 5);
+  expect(away.writes).toBe(0);
+
+  // Back on screen with no further move, one frame writes each property once.
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await expect.poll(() => page.evaluate(() => (window as unknown as { __hg: Probe }).__hg.writes)).toBe(2);
 });
