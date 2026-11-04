@@ -5,7 +5,8 @@
  *                         a spinning impeller, and suspended cells.
  *   variant="cells":      a soft drifting field of culture cells.
  * Ambient animation loops in CSS; a tiny inline script adds subtle pointer
- * parallax via the --hgx/--hgy custom props. Both fully disabled under
+ * parallax via the --hgx/--hgy custom props, at most one write per frame, and
+ * pauses the loops while the graphic is off-screen. Both fully disabled under
  * prefers-reduced-motion. SSR-rendered inline SVG — no canvas, no deps.
  *
  * Pass `both` to render both variants in one element (used by the live hero
@@ -112,6 +113,15 @@ const show = (v: string) => both || variant === v;
   .hg-o3 { animation: hg-float 9s ease-in-out infinite 0.3s; }
   .hg-o4 { animation: hg-float 7.8s ease-in-out infinite 1.6s; }
 
+  /* Off-screen the loops pause rather than run unseen; the script sets data-offscreen.
+   * Each selector outranks `.hg-impeller .hg-blade`, whose shorthand resets play-state. */
+  .hg[data-offscreen] .hg-bub,
+  .hg[data-offscreen] .hg-blade,
+  .hg[data-offscreen] .hg-drift1,
+  .hg[data-offscreen] .hg-drift2,
+  .hg[data-offscreen] .hg-drift3,
+  .hg[data-offscreen] .hg-orb { animation-play-state: paused; }
+
   @media (prefers-reduced-motion: reduce) {
     .hg-svg { transform: none; transition: none; }
     .hg-bub, .hg-blade, .hg-drift1, .hg-drift2, .hg-drift3, .hg-orb { animation: none; }
@@ -122,18 +132,46 @@ const show = (v: string) => both || variant === v;
 
 <script>
   // Subtle pointer parallax: map cursor position within the hero to --hgx/--hgy.
+  // A burst of moves becomes one write per frame, and the hero's box is measured
+  // once per entry or resize rather than on every move.
   if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     document.querySelectorAll<HTMLElement>('.hg').forEach((hg) => {
-      const zone = hg.closest('.hero') ?? hg;
+      const zone = hg.closest<HTMLElement>('.hero') ?? hg;
+      // The zone's box in page coordinates, so scrolling does not make it stale.
+      let box: { left: number; top: number; width: number; height: number } | null = null;
+      let pointer: { x: number; y: number } | null = null;
+      let frame = 0;
+
+      const apply = () => {
+        frame = 0;
+        if (!pointer) return;
+        if (!box) {
+          const r = zone.getBoundingClientRect();
+          box = { left: r.left + window.scrollX, top: r.top + window.scrollY, width: r.width, height: r.height };
+        }
+        if (!box.width || !box.height) return;
+        hg.style.setProperty('--hgx', String((pointer.x + window.scrollX - box.left) / box.width - 0.5));
+        hg.style.setProperty('--hgy', String((pointer.y + window.scrollY - box.top) / box.height - 0.5));
+      };
+
+      zone.addEventListener('pointerenter', () => { box = null; });
       zone.addEventListener('pointermove', (e) => {
-        const r = zone.getBoundingClientRect();
-        hg.style.setProperty('--hgx', String(((e as PointerEvent).clientX - r.left) / r.width - 0.5));
-        hg.style.setProperty('--hgy', String(((e as PointerEvent).clientY - r.top) / r.height - 0.5));
-      });
+        pointer = { x: e.clientX, y: e.clientY };
+        if (!frame) frame = requestAnimationFrame(apply);
+      }, { passive: true });
       zone.addEventListener('pointerleave', () => {
+        if (frame) cancelAnimationFrame(frame);
+        frame = 0;
+        pointer = null;
         hg.style.setProperty('--hgx', '0');
         hg.style.setProperty('--hgy', '0');
       });
+      new ResizeObserver(() => { box = null; }).observe(zone);
+
+      // Pause the ambient loops while the graphic is off-screen (see the stylesheet).
+      new IntersectionObserver((entries) => {
+        hg.toggleAttribute('data-offscreen', !entries[entries.length - 1].isIntersecting);
+      }).observe(hg);
     });
   }
 </script>
