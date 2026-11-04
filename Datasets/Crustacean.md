@@ -14,7 +14,7 @@ Crustacean muscle is remodelled across the molt cycle and through metamorphosis 
 
 Two datasets profile the muscle transcriptomic response to environmental stress — low-temperature stress in Pacific white shrimp ([`SRP095377`](https://www.ncbi.nlm.nih.gov/sra/?term=SRP095377)) and chronic hypoxia across hepatopancreas, muscle, and gill in the oriental river prawn ([`SRP056408`](https://www.ncbi.nlm.nih.gov/sra/?term=SRP056408)) — relevant to bioprocess-condition tolerance.
 
-## Regeneration & muscle-system biology
+## Regeneration
 
 The Chinese mitten crab limb-regeneration multi-omics dataset ([`PRJNA737102`](https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA737102) and companion BioProjects, plus NGDC [`CRA003690`](https://ngdc.cncb.ac.cn/gsa/search?searchTerm=CRA003690)) is a rare regeneration resource with a genome assembly and a limb-regeneration RNA-seq time-course.
 

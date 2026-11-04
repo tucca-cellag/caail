@@ -7478,6 +7478,11 @@
           "theme": "sensory-flavor"
         },
         {
+          "slug": "mass-spectrometry",
+          "label": "Mass spectrometry & metabolomics",
+          "theme": "sensory-flavor"
+        },
+        {
           "slug": "media-growth-factors",
           "label": "Media & Growth Factors",
           "theme": "media-growth-factors"
@@ -7571,7 +7576,7 @@
         "Data": "supplementary",
         "Type": "snRNA-seq + spatial transcriptomics",
         "Tissue": "Muscle (skeletal)",
-        "Description": "Single-nucleus RNA-seq plus spatial transcriptome of porcine skeletal muscle mapping cell-cell crosstalk that mediates metabolic regulation; the data-availability statement places raw sequence data in ScienceDB with no accession named, and states evaluation data are in the paper and Supporting Information",
+        "Description": "Single-nucleus RNA-seq plus spatial transcriptome of porcine skeletal muscle mapping cell-cell crosstalk that mediates metabolic regulation; the data-availability statement says raw sequence data will be deposited in ScienceDB but names no accession, and the Supporting Information publishes differential-expression statistics for five comparisons (Tables S3–S7) and marker-gene lists (Table S2)",
         "Size": "—",
         "Area of research": "Muscle metabolism & cell-cell signalling"
       },
