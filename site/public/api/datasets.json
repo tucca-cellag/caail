@@ -8403,12 +8403,13 @@
         "Resource": "NMR metabolomics of plant and yeast-based hydrolysates (Combe et al.)",
         "Year": "2024",
         "Format": "NMR metabolite profiles",
-        "Scope": "Comprehensive assessment of plant- and yeast-based hydrolysates intended as serum-free media components for cultivated meat; see paper's data availability statement for accession",
-        "DOI / URL": "[10.1016/j.crfs.2024.100855](https://doi.org/10.1016/j.crfs.2024.100855)",
-        "License": "CC-BY-NC-4.0"
+        "Scope": "Comprehensive assessment of plant- and yeast-based hydrolysates intended as serum-free media components for cultivated meat; NMR spectra, metabolite concentration tables and the R analysis code, deposited with the paper (Combe et al. 2024, *Current Research in Food Science*, [10.1016/j.crfs.2024.100855](https://doi.org/10.1016/j.crfs.2024.100855))",
+        "DOI / URL": "[10.5281/zenodo.11357327](https://doi.org/10.5281/zenodo.11357327)",
+        "License": "CC-BY-4.0"
       },
       "links": [
-        "https://doi.org/10.1016/j.crfs.2024.100855"
+        "https://doi.org/10.1016/j.crfs.2024.100855",
+        "https://doi.org/10.5281/zenodo.11357327"
       ],
       "topics": [
         {
@@ -8594,5 +8595,5 @@
       "subseries": []
     }
   ],
-  "corpusDate": "2026-10-30"
+  "corpusDate": "2026-11-04"
 }
