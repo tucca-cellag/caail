@@ -119,8 +119,8 @@ test('a burst of pointer moves over the hero reads its box at most once and writ
   await expect(page.locator('.hero .hg')).toBeVisible();
 
   const m = await burst(page, 20);
-  // Every pointermove listener on the hero is passive, and there is at least one. #650's
-  // criteria ask for it; passive changes nothing for pointermove (only touch and wheel
+  // Every pointermove listener on the hero is passive, and there is at least one.
+  // tucca-cellag/caail-planning#650's criteria ask for it; passive changes nothing for pointermove (only touch and wheel
   // listeners can block scrolling), so this records that the handler never cancels.
   expect(m.options.length).toBeGreaterThan(0);
   for (const o of m.options) expect(o).toMatchObject({ passive: true });
@@ -183,7 +183,9 @@ test('while the graphic is off-screen the parallax rests, and only a new move sh
   await page.goto('./');
   await expect(page.locator('.hero .hg')).toBeVisible();
 
-  // Shift the parallax off its rest position first.
+  // Park the real cursor outside the hero, so a move Chromium synthesizes after a
+  // scroll cannot reach it, then shift the parallax off its rest position.
+  await page.mouse.move(0, 0);
   const before = await burst(page, 20);
   expect(Number(before.hgx)).toBeCloseTo(0.36, 2);
 

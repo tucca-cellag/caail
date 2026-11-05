@@ -7,8 +7,8 @@
  * Ambient animation loops in CSS; a tiny inline script adds subtle pointer
  * parallax via the --hgx/--hgy custom props, each updated at most once per frame,
  * and pauses the loops and rests the parallax while the graphic is off-screen.
- * All of it is disabled under prefers-reduced-motion. SSR-rendered inline SVG —
- * no canvas, no deps.
+ * All of it is disabled under prefers-reduced-motion. SSR-rendered inline SVG,
+ * with no canvas and no deps.
  *
  * Pass `both` to render both variants in one element (used by the live hero
  * demo); the visible one is chosen by the ancestor `[data-graphic]` attribute.
@@ -139,6 +139,7 @@ const show = (v: string) => both || variant === v;
       let x = 0;
       let y = 0;
       let shown = true; // false while the graphic is off-screen or not rendered
+      let moved = false; // true once a frame has shifted the parallax off rest
       let frame = 0;
 
       const apply = () => {
@@ -147,11 +148,14 @@ const show = (v: string) => both || variant === v;
         if (!r.width || !r.height) return;
         hg.style.setProperty('--hgx', String((x - r.left) / r.width - 0.5));
         hg.style.setProperty('--hgy', String((y - r.top) / r.height - 0.5));
+        moved = true;
       };
-      // Drop any pending frame and return the graphic to rest.
+      // Drop any pending frame and return the graphic to rest, writing only if it moved.
       const rest = () => {
         if (frame) cancelAnimationFrame(frame);
         frame = 0;
+        if (!moved) return;
+        moved = false;
         hg.style.setProperty('--hgx', '0');
         hg.style.setProperty('--hgy', '0');
       };
