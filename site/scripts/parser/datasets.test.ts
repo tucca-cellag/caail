@@ -187,6 +187,8 @@ describe('computeDatasetBreakdown — real corpus', () => {
     // The reason the total moved. Before #156 these were different populations in both
     // directions, so a consumer comparing them got a number about nothing.
     expect(b.speciesRows).toBe(166);
+    expect(b.curatedEntries).toBe(20);
+    expect(b.referenceEntries).toBe(21);
     expect(b.curatedEntries + b.referenceEntries + b.benchmarkEntries).toBe(58);
   });
 });
