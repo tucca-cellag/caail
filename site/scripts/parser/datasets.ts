@@ -213,7 +213,7 @@ export function computeDatasetBreakdown(
     perPage.push({ page, kind: 'inventory', count: inventoryRowCount(repoRoot, page) });
     // The featured atlases and GEMs above each inventory table are catalogued datasets in
     // their own right — distinct resources, not summaries of the rows below them (Cow's
-    // rows are per-study deposits; its entries are CattleGTEx, BovReg, BtaSBML2986). They
+    // rows are per-study deposits; its entries are CattleGTEx and BovReg). They
     // were counted by neither the library total nor the endpoint's own tally until #156.
     perPage.push({ page, kind: 'curated', count: curatedEntryCount(repoRoot, page) });
   }

@@ -370,7 +370,7 @@ const PAGES: Record<string, PageMeta> = {
     group: 'datasets',
     order: 1,
     description:
-      'Cultivated-beef datasets: bovine satellite cells, cell-line and tissue atlases, and a Bos taurus genome-scale metabolic model.',
+      'Cultivated-beef datasets: bovine satellite cells, cell-line and tissue atlases, and transcriptomic and epigenomic deposits.',
   },
   'datasets/pig': {
     title: 'Pig / Sus scrofa',
@@ -499,7 +499,7 @@ const PAGES: Record<string, PageMeta> = {
     group: 'datasets',
     order: 17,
     description:
-      'Sustainability datasets for cellular agriculture: downloadable cultivated-meat life-cycle inventories behind the field’s techno-economic and environmental models.',
+      'Sustainability datasets for cellular agriculture: downloadable cultivated-meat life-cycle inventory data behind the field’s techno-economic and environmental models.',
   },
 
   // ── Top-level prose pages ──────────────────────────────────────────────────

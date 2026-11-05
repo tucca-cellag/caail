@@ -97,7 +97,7 @@ function citationBadgeHtml(entry: DatasetCardEntry): string {
 function reportLinkHtml(entry: DatasetCardEntry): string {
   if (!isItemId(entry.id)) return '';
   // Dataset names are markdown-preserving, and an accessible name is read aloud rather
-  // than rendered: 8 of the 62 curated entries would otherwise have a screen reader
+  // than rendered: several curated entries would otherwise have a screen reader
   // announce their emphasis markers ("iES1300 — *Gallus gallus* (chicken)"). The heading
   // beside it renders the markdown properly, so this is the only surface that leaks it.
   // catalogNameKey is the flattening the topic join already uses.

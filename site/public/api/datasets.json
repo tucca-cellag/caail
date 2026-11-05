@@ -123,32 +123,6 @@
       "citationDois": []
     },
     {
-      "id": "ds:risner-et-al-cradle-to-gate-cultivated-meat-lca",
-      "name": "Risner et al. cradle-to-gate cultivated-meat LCA",
-      "url": "https://doi.org/10.1021/acsfoodscitech.4c00281",
-      "page": "Sustainability",
-      "section": "Cultivated-meat life-cycle inventories",
-      "kind": "other",
-      "anchor": "ds-risner-et-al-cradle-to-gate-cultivated-meat-lca",
-      "topics": [
-        {
-          "slug": "techno-economic-lca",
-          "label": "Techno-Economic & LCA",
-          "theme": "bioprocess-scale-up"
-        }
-      ],
-      "license": null,
-      "licenseSource": null,
-      "tier": "unknown",
-      "doi": "10.1021/acsfoodscitech.4c00281",
-      "doiSource": "manual",
-      "citationCount": 44,
-      "citationSources": 1,
-      "citationDois": [
-        "10.1021/acsfoodscitech.4c00281"
-      ]
-    },
-    {
       "id": "ds:ies1300-gallus-gallus-chicken",
       "name": "iES1300 — *Gallus gallus* (chicken)",
       "url": null,
@@ -278,52 +252,6 @@
       "citationCount": null,
       "citationSources": 0,
       "citationDois": []
-    },
-    {
-      "id": "ds:btasbml2986-bos-taurus-bovine",
-      "name": "BtaSBML2986 — *Bos taurus* (bovine)",
-      "url": null,
-      "page": "Cow",
-      "section": "Genome-scale metabolic models",
-      "kind": "gem",
-      "anchor": "ds-btasbml2986-bos-taurus-bovine",
-      "topics": [
-        {
-          "slug": "bioprocess-scale-up",
-          "label": "Bioprocess & Manufacturing",
-          "theme": "bioprocess-scale-up"
-        },
-        {
-          "slug": "bioreactor-scale-up",
-          "label": "Bioreactor & scale-up",
-          "theme": "bioprocess-scale-up"
-        },
-        {
-          "slug": "media-growth-factors",
-          "label": "Media & Growth Factors",
-          "theme": "media-growth-factors"
-        },
-        {
-          "slug": "metabolic-modeling",
-          "label": "Metabolic modeling",
-          "theme": "metabolism-modeling"
-        },
-        {
-          "slug": "metabolism-modeling",
-          "label": "Metabolism & Modeling",
-          "theme": "metabolism-modeling"
-        }
-      ],
-      "license": null,
-      "licenseSource": null,
-      "tier": "unknown",
-      "doi": "10.1101/2024.12.09.627468",
-      "doiSource": "manual",
-      "citationCount": 5,
-      "citationSources": 1,
-      "citationDois": [
-        "10.1101/2024.12.09.627468"
-      ]
     },
     {
       "id": "ds:aqua-faang",
@@ -1585,79 +1513,13 @@
       ]
     },
     {
-      "id": "ds:cho-spent-media-metabolomics-dataset-alden-et-al-2020",
-      "name": "CHO spent-media metabolomics dataset (Alden et al. 2020)",
+      "id": "ds:cho-clone-selection-productivity-biomarkers-barberi-et-al-2025",
+      "name": "CHO clone-selection productivity biomarkers (Barberi et al. 2025)",
       "url": null,
       "page": "CHOReference",
       "section": "Multi-omics & metabolomics datasets",
       "kind": "other",
-      "anchor": "ds-cho-spent-media-metabolomics-dataset-alden-et-al-2020",
-      "topics": [
-        {
-          "slug": "bioprocess-scale-up",
-          "label": "Bioprocess & Manufacturing",
-          "theme": "bioprocess-scale-up"
-        },
-        {
-          "slug": "cell-line-engineering",
-          "label": "Cell-line engineering",
-          "theme": "cell-lines-engineering"
-        },
-        {
-          "slug": "cell-lines-engineering",
-          "label": "Cell Lines & Engineering",
-          "theme": "cell-lines-engineering"
-        },
-        {
-          "slug": "mass-spectrometry",
-          "label": "Mass spectrometry & metabolomics",
-          "theme": "sensory-flavor"
-        },
-        {
-          "slug": "media-growth-factors",
-          "label": "Media & Growth Factors",
-          "theme": "media-growth-factors"
-        },
-        {
-          "slug": "media-optimization",
-          "label": "Media optimization",
-          "theme": "media-growth-factors"
-        },
-        {
-          "slug": "metabolic-modeling",
-          "label": "Metabolic modeling",
-          "theme": "metabolism-modeling"
-        },
-        {
-          "slug": "metabolism-modeling",
-          "label": "Metabolism & Modeling",
-          "theme": "metabolism-modeling"
-        },
-        {
-          "slug": "sensory-flavor",
-          "label": "Sensory & Flavor",
-          "theme": "sensory-flavor"
-        }
-      ],
-      "license": null,
-      "licenseSource": null,
-      "tier": "unknown",
-      "doi": "10.3390/metabo10050199",
-      "doiSource": "manual",
-      "citationCount": 32,
-      "citationSources": 1,
-      "citationDois": [
-        "10.3390/metabo10050199"
-      ]
-    },
-    {
-      "id": "ds:cho-clone-selection-metabolomic-dynamics-dataset-barberi-et-al-2025",
-      "name": "CHO clone-selection metabolomic-dynamics dataset (Barberi et al. 2025)",
-      "url": null,
-      "page": "CHOReference",
-      "section": "Multi-omics & metabolomics datasets",
-      "kind": "other",
-      "anchor": "ds-cho-clone-selection-metabolomic-dynamics-dataset-barberi-et-al-2025",
+      "anchor": "ds-cho-clone-selection-productivity-biomarkers-barberi-et-al-2025",
       "topics": [
         {
           "slug": "bioprocess-scale-up",
@@ -1707,59 +1569,13 @@
       ]
     },
     {
-      "id": "ds:pseudo-perfusion-cho-characterization-dataset-malinov-et-al-2026",
-      "name": "Pseudo-perfusion CHO characterization dataset (Malinov et al. 2026)",
+      "id": "ds:cho-process-mode-uptake-and-secretion-rates-venkatarama-reddy-et-al-2026",
+      "name": "CHO process-mode uptake and secretion rates (Venkatarama Reddy et al. 2026)",
       "url": null,
       "page": "CHOReference",
       "section": "Bioprocess characterization datasets",
       "kind": "other",
-      "anchor": "ds-pseudo-perfusion-cho-characterization-dataset-malinov-et-al-2026",
-      "topics": [
-        {
-          "slug": "bioprocess-scale-up",
-          "label": "Bioprocess & Manufacturing",
-          "theme": "bioprocess-scale-up"
-        },
-        {
-          "slug": "bioreactor-scale-up",
-          "label": "Bioreactor & scale-up",
-          "theme": "bioprocess-scale-up"
-        },
-        {
-          "slug": "cell-lines-engineering",
-          "label": "Cell Lines & Engineering",
-          "theme": "cell-lines-engineering"
-        },
-        {
-          "slug": "metabolic-modeling",
-          "label": "Metabolic modeling",
-          "theme": "metabolism-modeling"
-        },
-        {
-          "slug": "metabolism-modeling",
-          "label": "Metabolism & Modeling",
-          "theme": "metabolism-modeling"
-        }
-      ],
-      "license": null,
-      "licenseSource": null,
-      "tier": "unknown",
-      "doi": "10.1002/bit.70190",
-      "doiSource": "manual",
-      "citationCount": 2,
-      "citationSources": 1,
-      "citationDois": [
-        "10.1002/bit.70190"
-      ]
-    },
-    {
-      "id": "ds:dynamic-metabolic-flux-analysis-dmfa-cho-dataset-venkatarama-reddy-et-al-2026",
-      "name": "Dynamic Metabolic Flux Analysis (DMFA) CHO dataset (Venkatarama Reddy et al. 2026)",
-      "url": null,
-      "page": "CHOReference",
-      "section": "Bioprocess characterization datasets",
-      "kind": "other",
-      "anchor": "ds-dynamic-metabolic-flux-analysis-dmfa-cho-dataset-venkatarama-reddy-et-al-2026",
+      "anchor": "ds-cho-process-mode-uptake-and-secretion-rates-venkatarama-reddy-et-al-2026",
       "topics": [
         {
           "slug": "bioprocess-scale-up",
@@ -1790,53 +1606,12 @@
       "license": null,
       "licenseSource": null,
       "tier": "unknown",
-      "doi": "10.64898/2026.01.11.698917",
+      "doi": "10.1016/j.ymben.2026.102552",
       "doiSource": "manual",
       "citationCount": 1,
       "citationSources": 1,
       "citationDois": [
-        "10.64898/2026.01.11.698917"
-      ]
-    },
-    {
-      "id": "ds:raman-soft-sensor-cell-culture-dataset-tanemura-et-al-2023",
-      "name": "Raman soft-sensor cell-culture dataset (Tanemura et al. 2023)",
-      "url": null,
-      "page": "CHOReference",
-      "section": "Bioprocess characterization datasets",
-      "kind": "other",
-      "anchor": "ds-raman-soft-sensor-cell-culture-dataset-tanemura-et-al-2023",
-      "topics": [
-        {
-          "slug": "bioprocess-scale-up",
-          "label": "Bioprocess & Manufacturing",
-          "theme": "bioprocess-scale-up"
-        },
-        {
-          "slug": "bioreactor-scale-up",
-          "label": "Bioreactor & scale-up",
-          "theme": "bioprocess-scale-up"
-        },
-        {
-          "slug": "mass-spectrometry",
-          "label": "Mass spectrometry & metabolomics",
-          "theme": "sensory-flavor"
-        },
-        {
-          "slug": "sensory-flavor",
-          "label": "Sensory & Flavor",
-          "theme": "sensory-flavor"
-        }
-      ],
-      "license": null,
-      "licenseSource": null,
-      "tier": "unknown",
-      "doi": "10.1038/s41598-023-49257-0",
-      "doiSource": "manual",
-      "citationCount": 24,
-      "citationSources": 1,
-      "citationDois": [
-        "10.1038/s41598-023-49257-0"
+        "10.1016/j.ymben.2026.102552"
       ]
     },
     {
@@ -8254,13 +8029,14 @@
       "columns": {
         "Resource": "Plant-based meat textural-properties training table (Kircali Ata et al.)",
         "Year": "2023",
-        "Format": "Tabular (Supplementary)",
-        "Scope": "Proximate composition (% protein/fat/carbohydrate/fibre/ash/moisture) + targeted moisture content → textural properties for plant-based meat analogs; training data for the Ridge / XGBoost / etc. regressors of [Papers.md #171](../Papers.md#171); no public repository accession",
-        "DOI / URL": "[10.3390/foods12020344](https://doi.org/10.3390/foods12020344)",
-        "License": "CC-BY (per *Foods* MDPI open-access default)"
+        "Format": "Tabular (Supplementary Table S3; CSV on GitHub)",
+        "Scope": "Proximate composition (% protein/fat/carbohydrate/fibre/ash/moisture) + targeted moisture content → textural properties for plant-based meat analogs; training data for the Ridge / XGBoost / etc. regressors of [Papers.md #171](../Papers.md#171); 54 samples compiled from three earlier studies, in Supplementary Table S3 of Kircali Ata et al. 2023, *Foods* ([10.3390/foods12020344](https://doi.org/10.3390/foods12020344)), and as CSV (`data/additional_30_12_12.csv`) in the paper's GitHub repository",
+        "DOI / URL": "[GitHub](https://github.com/sezinata/FoodML)",
+        "License": "CC-BY-4.0 (*Foods* open access, Table S3); MIT (GitHub repository)"
       },
       "links": [
-        "https://doi.org/10.3390/foods12020344"
+        "https://doi.org/10.3390/foods12020344",
+        "https://github.com/sezinata/FoodML"
       ],
       "topics": [
         {
@@ -8398,5 +8174,5 @@
       "subseries": []
     }
   ],
-  "corpusDate": "2026-11-04"
+  "corpusDate": "2026-11-05"
 }

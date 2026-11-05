@@ -10,7 +10,7 @@ Each populated species page is a curated, species-scoped collection with these s
 
 1. **Editorial intro** — one paragraph on the species' role in cellular agriculture and what the page covers.
 2. **Featured atlases** — inline H3 entries for large-scale atlases (FarmGTEx family, FAANG sub-projects), each duplicating the canonical `Databases.md` summary and cross-linking back to it.
-3. **Genome-scale metabolic models** — the species' GEM(s), where one exists.
+3. **Genome-scale metabolic models** — the species' GEM(s), where a model file is public (see "Which studies get a row" below).
 4. **Single-cell & perturbation corpora** — pretraining corpora (only on `HumanReference.md`).
 5. **Thematic clusters** — H2 groupings of individual data deposits, each cluster framed with an editorial paragraph and entries written CAAIL-style around cell-ag relevance.
 6. **Complete data inventory** — a markdown table of every catalogued deposit. Single-species pages omit the redundant Species column; multi-species pages (`Fish.md`, `Crustacean.md`, `Mollusk.md`) include it. Each row carries two dedicated link columns immediately after **Study** (the study title, as plain text): **Paper** and **Data**.
@@ -36,3 +36,5 @@ The summaries and inventory tables here are deliberately compressed and opiniona
 The inventory tracks public data that is readily available: a repository deposit, or a results table published with the paper as supplementary material. An embargoed deposit stays, with a note saying what lifts the embargo. A study whose data are shared only on request, promised for a later deposit, withdrawn, or named nowhere gets no row, and an existing row that turns out to be one of these is retired rather than kept with a note. The paper itself stays wherever else CAAIL cites it.
 
 Read the paper's supplementary files before retiring a row for having no public data. A supplement that publishes a per-sample, per-gene or per-feature results table makes the row a `supplementary` row instead, and summary-level tables count (differential-expression statistics, cluster means, descriptive statistics), because they still serve comparisons when the raw data are not public. One holding no such table (primer or reagent lists, sequencing QC, images, plots) does not.
+
+The curated entries (each `###` entry, and each `##` entry on `Benchmarks.md`) follow the same rule. A GEM entry needs its model file to be public (a supplementary file, a model repository such as BiGG or BioModels, or a code repository), and every other entry a deposit or a supplementary results table, named in its heading link or its description.
