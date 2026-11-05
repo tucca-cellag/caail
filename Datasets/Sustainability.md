@@ -4,11 +4,11 @@ Techno-economic analysis (TEA) and life-cycle assessment (LCA) are how the culti
 
 ## Cultivated-meat life-cycle inventories
 
-The inventory below is the one behind the most-cited cultivated-meat LCA. It pairs medium and process inventory with the peer-reviewed study it accompanies, so a model built on it can be traced back to its assumptions.
+The inventory below is published with an ex-ante cultivated-meat LCA built on data from producers and their supply chain, so a model built on it can be traced back to the study's assumptions.
 
 ### [Sinke et al. 2023 cultivated-meat ex-ante LCI](https://doi.org/10.1007/s11367-022-02128-8)
 
-Inventory data collected from more than 15 companies and research institutes spanning cultivated-meat production and its supply chain (5 of them cultivated-meat producers), published in aggregated form, with confidential company data that could not be aggregated left out, as the authors note. It is the most-cited cultivated-meat life-cycle inventory and a reusable backbone for environmental modeling of cultured meat. It is built on ecoinvent 3.7.1 and Agri-Footprint 5.0 and distributed as open (CC-BY) electronic supplementary material, a PDF whose Appendix D tables give the process parameters, energy and material flows, and culture-medium composition per kilogram of product under three scenarios (correction at https://doi.org/10.1007/s11367-023-02183-9). Companion to [Papers.md ref #299](../Papers.md#299) (Sinke et al. 2023); the background inventory databases it draws on are in [Databases.md / Life-Cycle Inventory & Sustainability Databases](../Databases.md#life-cycle-inventory--sustainability-databases).
+Inventory data collected from more than 15 companies and research institutes spanning cultivated-meat production and its supply chain (5 of them cultivated-meat producers), published in aggregated form, with confidential company data that could not be aggregated left out, as the authors note. It is a reusable backbone for environmental modeling of cultured meat. It is built on ecoinvent 3.7.1 and Agri-Footprint 5.0 and distributed as open (CC-BY) electronic supplementary material, a PDF whose Appendix D tables give the process parameters, energy and material flows, and culture-medium composition per kilogram of product under three scenarios (correction at https://doi.org/10.1007/s11367-023-02183-9). Companion to [Papers.md ref #299](../Papers.md#299) (Sinke et al. 2023); the background inventory databases it draws on are in [Databases.md / Life-Cycle Inventory & Sustainability Databases](../Databases.md#life-cycle-inventory--sustainability-databases).
 
 ## Further reading
 

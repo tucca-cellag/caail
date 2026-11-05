@@ -8030,13 +8030,13 @@
         "Resource": "Plant-based meat textural-properties training table (Kircali Ata et al.)",
         "Year": "2023",
         "Format": "Tabular (Supplementary Table S3; CSV on GitHub)",
-        "Scope": "Proximate composition (% protein/fat/carbohydrate/fibre/ash/moisture) + targeted moisture content → textural properties for plant-based meat analogs; training data for the Ridge / XGBoost / etc. regressors of [Papers.md #171](../Papers.md#171); 54 samples compiled from three earlier studies, in Supplementary Table S3 and as CSV in the paper's GitHub repository ([`sezinata/FoodML`](https://github.com/sezinata/FoodML))",
-        "DOI / URL": "[10.3390/foods12020344](https://doi.org/10.3390/foods12020344)",
-        "License": "CC-BY (per *Foods* MDPI open-access default)"
+        "Scope": "Proximate composition (% protein/fat/carbohydrate/fibre/ash/moisture) + targeted moisture content → textural properties for plant-based meat analogs; training data for the Ridge / XGBoost / etc. regressors of [Papers.md #171](../Papers.md#171); 54 samples compiled from three earlier studies, in Supplementary Table S3 of Kircali Ata et al. 2023, *Foods* ([10.3390/foods12020344](https://doi.org/10.3390/foods12020344)), and as CSV (`data/additional_30_12_12.csv`) in the paper's GitHub repository",
+        "DOI / URL": "[GitHub](https://github.com/sezinata/FoodML)",
+        "License": "MIT (GitHub repository licence)"
       },
       "links": [
-        "https://github.com/sezinata/FoodML",
-        "https://doi.org/10.3390/foods12020344"
+        "https://doi.org/10.3390/foods12020344",
+        "https://github.com/sezinata/FoodML"
       ],
       "topics": [
         {
