@@ -446,7 +446,7 @@
         "ds:arc-virtual-cell-atlas",
         "ds:cho-gs-media-component-critical-quality-attributes-gangwar-et-al-2024",
         "ds:cho-antibody-producer-multi-omic-dataset-gopalakrishnan-et-al-2024",
-        "ds:dynamic-metabolic-flux-analysis-dmfa-cho-dataset-venkatarama-reddy-et-al-2026",
+        "ds:cho-process-mode-uptake-and-secretion-rates-venkatarama-reddy-et-al-2026",
         "ds:yeast9-saccharomyces-cerevisiae-precision-fermentation-host-reference",
         "ds:imt1026-imt1026-v30-komagataella-phaffii-pichia-pastoris",
         "ds:compbiobench-v1",
@@ -837,7 +837,7 @@
         "ds:icho1766-icho2048-chompact-chinese-hamster-ovary-biopharma-adjacent-reference",
         "ds:cho-multi-omic-culture-ph-profiling-dataset-lee-et-al-2021",
         "ds:cho-antibody-producer-multi-omic-dataset-gopalakrishnan-et-al-2024",
-        "ds:cho-clone-selection-metabolomic-dynamics-dataset-barberi-et-al-2025",
+        "ds:cho-clone-selection-productivity-biomarkers-barberi-et-al-2025",
         "ds:yeast9-saccharomyces-cerevisiae-precision-fermentation-host-reference",
         "ds:bioml-bench",
         "ds:compbiobench-v1",
@@ -956,8 +956,8 @@
         "ds:recon3d-human1-hmr-homo-sapiens-template-upstream-reference",
         "ds:icho1766-icho2048-chompact-chinese-hamster-ovary-biopharma-adjacent-reference",
         "ds:cho-multi-omic-culture-ph-profiling-dataset-lee-et-al-2021",
-        "ds:cho-clone-selection-metabolomic-dynamics-dataset-barberi-et-al-2025",
-        "ds:dynamic-metabolic-flux-analysis-dmfa-cho-dataset-venkatarama-reddy-et-al-2026",
+        "ds:cho-clone-selection-productivity-biomarkers-barberi-et-al-2025",
+        "ds:cho-process-mode-uptake-and-secretion-rates-venkatarama-reddy-et-al-2026",
         "ds:yeast9-saccharomyces-cerevisiae-precision-fermentation-host-reference",
         "ds:imt1026-imt1026-v30-komagataella-phaffii-pichia-pastoris"
       ]
@@ -1165,7 +1165,7 @@
         "ds:nmr-metabolomics-of-plant-and-yeast-based-hydrolysates",
         "ds:cho-multi-omic-culture-ph-profiling-dataset-lee-et-al-2021",
         "ds:cho-antibody-producer-multi-omic-dataset-gopalakrishnan-et-al-2024",
-        "ds:cho-clone-selection-metabolomic-dynamics-dataset-barberi-et-al-2025",
+        "ds:cho-clone-selection-productivity-biomarkers-barberi-et-al-2025",
         "ds:massspecgym"
       ]
     },
@@ -1285,7 +1285,7 @@
         "ds:lions-mane-mushroom-steak-characterization",
         "ds:cho-multi-omic-culture-ph-profiling-dataset-lee-et-al-2021",
         "ds:cho-antibody-producer-multi-omic-dataset-gopalakrishnan-et-al-2024",
-        "ds:cho-clone-selection-metabolomic-dynamics-dataset-barberi-et-al-2025",
+        "ds:cho-clone-selection-productivity-biomarkers-barberi-et-al-2025",
         "ds:yeast9-saccharomyces-cerevisiae-precision-fermentation-host-reference",
         "ds:iumami-scm",
         "ds:massspecgym"
@@ -1410,7 +1410,7 @@
         "ds:parse-biosciences-10m-pbmc-atlas",
         "ds:recon3d-human1-hmr-homo-sapiens-template-upstream-reference",
         "ds:icho1766-icho2048-chompact-chinese-hamster-ovary-biopharma-adjacent-reference",
-        "ds:dynamic-metabolic-flux-analysis-dmfa-cho-dataset-venkatarama-reddy-et-al-2026",
+        "ds:cho-process-mode-uptake-and-secretion-rates-venkatarama-reddy-et-al-2026",
         "ds:yeast9-saccharomyces-cerevisiae-precision-fermentation-host-reference",
         "ds:imt1026-imt1026-v30-komagataella-phaffii-pichia-pastoris"
       ]
@@ -1500,8 +1500,8 @@
         "ds:icho1766-icho2048-chompact-chinese-hamster-ovary-biopharma-adjacent-reference",
         "ds:cho-multi-omic-culture-ph-profiling-dataset-lee-et-al-2021",
         "ds:cho-antibody-producer-multi-omic-dataset-gopalakrishnan-et-al-2024",
-        "ds:cho-clone-selection-metabolomic-dynamics-dataset-barberi-et-al-2025",
-        "ds:dynamic-metabolic-flux-analysis-dmfa-cho-dataset-venkatarama-reddy-et-al-2026",
+        "ds:cho-clone-selection-productivity-biomarkers-barberi-et-al-2025",
+        "ds:cho-process-mode-uptake-and-secretion-rates-venkatarama-reddy-et-al-2026",
         "ds:yeast9-saccharomyces-cerevisiae-precision-fermentation-host-reference",
         "ds:imt1026-imt1026-v30-komagataella-phaffii-pichia-pastoris"
       ]
@@ -1664,7 +1664,7 @@
         "ds:human-and-mouse-white-adipose-tissue-single-cell-atlas-emont-et-al-2022",
         "ds:icho1766-icho2048-chompact-chinese-hamster-ovary-biopharma-adjacent-reference",
         "ds:cho-antibody-producer-multi-omic-dataset-gopalakrishnan-et-al-2024",
-        "ds:cho-clone-selection-metabolomic-dynamics-dataset-barberi-et-al-2025"
+        "ds:cho-clone-selection-productivity-biomarkers-barberi-et-al-2025"
       ]
     },
     "cryopreservation": {
@@ -1821,8 +1821,8 @@
         "ds:icho1766-icho2048-chompact-chinese-hamster-ovary-biopharma-adjacent-reference",
         "ds:cho-multi-omic-culture-ph-profiling-dataset-lee-et-al-2021",
         "ds:cho-antibody-producer-multi-omic-dataset-gopalakrishnan-et-al-2024",
-        "ds:cho-clone-selection-metabolomic-dynamics-dataset-barberi-et-al-2025",
-        "ds:dynamic-metabolic-flux-analysis-dmfa-cho-dataset-venkatarama-reddy-et-al-2026",
+        "ds:cho-clone-selection-productivity-biomarkers-barberi-et-al-2025",
+        "ds:cho-process-mode-uptake-and-secretion-rates-venkatarama-reddy-et-al-2026",
         "ds:yeast9-saccharomyces-cerevisiae-precision-fermentation-host-reference",
         "ds:imt1026-imt1026-v30-komagataella-phaffii-pichia-pastoris"
       ]
