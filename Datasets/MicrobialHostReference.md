@@ -20,5 +20,5 @@ iMT1026 is the genome-scale metabolic reconstruction of *Komagataella phaffii* (
 - Canonical GEM repositories (BiGG Models, BioModels) and pathway / metabolome databases: [Databases.md / Pathways, Metabolism & Metabolic Models](../Databases.md#pathways-metabolism--metabolic-models).
 - Microbial and host-organism growth-media references: [MediaDB](../Databases.md#mediadb) and [MediaDive](../Databases.md#mediadive) in `Databases.md`.
 - Mammalian-cell reference reconstructions: [CHO](./CHOReference.md) (biopharma-adjacent) and [Human](./HumanReference.md) (cross-species template).
-- Cell-ag livestock GEMs on the per-species pages: [Cow](./Cow.md), [Pig](./Pig.md), [Chicken](./Chicken.md), [Fish](./Fish.md).
+- Cell-ag livestock GEMs on the per-species pages: [Pig](./Pig.md), [Chicken](./Chicken.md), [Fish](./Fish.md).
 - Media-optimization context: [ResearchAreas/MediaOptimization.md](../ResearchAreas/MediaOptimization.md).

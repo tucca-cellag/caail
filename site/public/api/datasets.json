@@ -1608,9 +1608,11 @@
       "tier": "unknown",
       "doi": "10.1016/j.ymben.2026.102552",
       "doiSource": "manual",
-      "citationCount": null,
-      "citationSources": 0,
-      "citationDois": []
+      "citationCount": 1,
+      "citationSources": 1,
+      "citationDois": [
+        "10.1016/j.ymben.2026.102552"
+      ]
     },
     {
       "id": "ds:yeast9-saccharomyces-cerevisiae-precision-fermentation-host-reference",

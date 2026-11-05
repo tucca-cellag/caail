@@ -36,11 +36,11 @@ A metabolomic-dynamics dataset supporting machine-learning selection of producti
 
 ## Bioprocess characterization datasets
 
-This section holds CHO bioprocess data at the resolution constraint-based and kinetic models need: the process-mode and flux measurements that parameterize genome-scale models, reduce them for digital-twin work, and tune perfusion and fed-batch process models, with the same use for the cell-ag GEMs on the per-species pages.
+This section holds CHO bioprocess measurements at the resolution constraint-based and kinetic models need: process-mode uptake and secretion rates that parameterize genome-scale models, with the same use for the cell-ag GEMs on the per-species pages.
 
 ### Dynamic Metabolic Flux Analysis (DMFA) CHO dataset (Venkatarama Reddy et al. 2026)
 
-A CHO-VRC01 flux dataset spanning fed-batch and perfusion process modes across bioreactor pH, media supplementation, and feeding strategies (Venkatarama Reddy et al. 2026, *Metabolic Engineering*), paired with a dynamic metabolic-flux-analysis model that regresses kinetic parameters across amino-acid metabolism and cell growth. Raw data and model code are available from the authors on request; the supplementary file (`mmc1.docx`) gives, in Table S1, uptake and secretion rates per metabolite at pH 6.75, 7 and 7.25 across three culture phases, GEM-parameterization substrate for cell-ag digital twins. Published: [`10.1016/j.ymben.2026.102552`](https://doi.org/10.1016/j.ymben.2026.102552) (preprint [`10.64898/2026.01.11.698917`](https://doi.org/10.64898/2026.01.11.698917)).
+A CHO-VRC01 flux dataset spanning fed-batch and perfusion process modes across bioreactor pH, media supplementation, and feeding strategies (Venkatarama Reddy et al. 2026, *Metabolic Engineering*), paired with a kinetically constrained dynamic flux balance analysis model that regresses kinetic parameters across amino-acid metabolism and cell growth. Raw data and model code are available from the authors on request; the supplementary file (`mmc1.docx`) gives, in Table S1, uptake and secretion rates per metabolite at pH 6.75, 7 and 7.25 across three culture phases, the kind of rates that parameterize GEMs for cell-ag digital twins. Published: [`10.1016/j.ymben.2026.102552`](https://doi.org/10.1016/j.ymben.2026.102552) (preprint [`10.64898/2026.01.11.698917`](https://doi.org/10.64898/2026.01.11.698917)).
 
 ## Further reading
 

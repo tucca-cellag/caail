@@ -36,6 +36,6 @@ The directory is organized **by species**: each cell-ag-relevant species has its
 | ---- | ----- |
 | [Benchmarks](./Benchmarks.md) | AI/ML benchmark & evaluation datasets (released to benchmark models rather than train them; not species-specific) |
 | [FoodSafety](./FoodSafety.md) | Food-safety datasets — labeled allergen sequence and IgE-epitope corpora for training and benchmarking allergenicity predictors |
-| [Sustainability](./Sustainability.md) | Sustainability datasets — downloadable cultivated-meat life-cycle inventories behind the field's techno-economic and environmental models |
+| [Sustainability](./Sustainability.md) | Sustainability datasets: downloadable cultivated-meat life-cycle inventory data behind the field's techno-economic and environmental models |
 
 Many per-species datasets surveyed here were initially curated from the supplemental Table 1 of Todhunter et al. 2024 ([Papers.md ref #132](../Papers.md#132)); pages drawn from a named source close with a curation-source note.
