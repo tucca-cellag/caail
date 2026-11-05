@@ -120,7 +120,7 @@ Summary: Project PISCES (Process Integration & Synthesis using Chemical Engineer
 
 ## Metabolic Modeling & Strain Design
 
-This section catalogs the open-source tooling for constraint-based and kinetic metabolic modeling: the computational stack used to build genome-scale metabolic models (GEMs), simulate flux distributions, design strain knockouts, and reason about cell physiology. These tools are the foundation for media-formulation optimization, bioprocess scale-up, and cell-line metabolic engineering in cellular agriculture. For cell-ag-specific GEMs (BtaSBML2986, iES1300, etc.), see the per-species pages in the [`Datasets/`](./Datasets/) directory. For canonical model repositories (BiGG Models, BioModels) and pathway / metabolome databases, see [Databases.md / Pathways, Metabolism & Metabolic Models](./Databases.md#pathways-metabolism--metabolic-models).
+This section catalogs the open-source tooling for constraint-based and kinetic metabolic modeling: the computational stack used to build genome-scale metabolic models (GEMs), simulate flux distributions, design strain knockouts, and reason about cell physiology. These tools are the foundation for media-formulation optimization, bioprocess scale-up, and cell-line metabolic engineering in cellular agriculture. For cell-ag-specific GEMs (iES1300, pcPigMNet2025, etc.), see the per-species pages in the [`Datasets/`](./Datasets/) directory. For canonical model repositories (BiGG Models, BioModels) and pathway / metabolome databases, see [Databases.md / Pathways, Metabolism & Metabolic Models](./Databases.md#pathways-metabolism--metabolic-models).
 
 ### [COBRApy](https://github.com/opencobra/cobrapy)
 

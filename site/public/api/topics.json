@@ -30,8 +30,8 @@
           "paper": 68,
           "software": 18,
           "database": 7,
-          "dataset": 25,
-          "total": 118
+          "dataset": 20,
+          "total": 113
         },
         "tags": [
           "bioreactor-scale-up",
@@ -48,8 +48,8 @@
           "paper": 51,
           "software": 14,
           "database": 37,
-          "dataset": 191,
-          "total": 293
+          "dataset": 189,
+          "total": 291
         },
         "tags": [
           "cell-line-engineering",
@@ -83,8 +83,8 @@
           "paper": 31,
           "software": 17,
           "database": 4,
-          "dataset": 35,
-          "total": 87
+          "dataset": 33,
+          "total": 85
         },
         "tags": [
           "cryopreservation",
@@ -103,8 +103,8 @@
           "paper": 28,
           "software": 22,
           "database": 18,
-          "dataset": 36,
-          "total": 104
+          "dataset": 33,
+          "total": 101
         },
         "tags": [
           "metabolic-modeling"
@@ -137,8 +137,8 @@
           "paper": 74,
           "software": 27,
           "database": 25,
-          "dataset": 35,
-          "total": 161
+          "dataset": 33,
+          "total": 159
         },
         "tags": [
           "flavor-sensory",
@@ -202,8 +202,8 @@
           "paper": 37,
           "software": 8,
           "database": 0,
-          "dataset": 16,
-          "total": 61
+          "dataset": 13,
+          "total": 58
         },
         "tags": []
       },
@@ -217,8 +217,8 @@
           "paper": 7,
           "software": 14,
           "database": 5,
-          "dataset": 29,
-          "total": 55
+          "dataset": 28,
+          "total": 54
         },
         "tags": []
       },
@@ -292,8 +292,8 @@
           "paper": 19,
           "software": 22,
           "database": 11,
-          "dataset": 25,
-          "total": 77
+          "dataset": 23,
+          "total": 75
         },
         "tags": []
       },
@@ -307,8 +307,8 @@
           "paper": 10,
           "software": 17,
           "database": 0,
-          "dataset": 10,
-          "total": 37
+          "dataset": 9,
+          "total": 36
         },
         "tags": []
       },
@@ -322,8 +322,8 @@
           "paper": 28,
           "software": 22,
           "database": 18,
-          "dataset": 33,
-          "total": 101
+          "dataset": 30,
+          "total": 98
         },
         "tags": []
       },
@@ -382,8 +382,8 @@
           "paper": 16,
           "software": 8,
           "database": 7,
-          "dataset": 2,
-          "total": 33
+          "dataset": 1,
+          "total": 32
         },
         "tags": []
       }
@@ -439,7 +439,6 @@
       ],
       "datasets": [
         "ds:ies1300-gallus-gallus-chicken",
-        "ds:btasbml2986-bos-taurus-bovine",
         "ds:issus3744-sus-scrofa-porcine",
         "ds:growth-factor-thermostability-dataset",
         "ds:nmr-metabolomics-of-plant-and-yeast-based-hydrolysates",
@@ -447,7 +446,6 @@
         "ds:arc-virtual-cell-atlas",
         "ds:cho-gs-media-component-critical-quality-attributes-gangwar-et-al-2024",
         "ds:cho-antibody-producer-multi-omic-dataset-gopalakrishnan-et-al-2024",
-        "ds:cho-spent-media-metabolomics-dataset-alden-et-al-2020",
         "ds:dynamic-metabolic-flux-analysis-dmfa-cho-dataset-venkatarama-reddy-et-al-2026",
         "ds:yeast9-saccharomyces-cerevisiae-precision-fermentation-host-reference",
         "ds:imt1026-imt1026-v30-komagataella-phaffii-pichia-pastoris",
@@ -493,8 +491,7 @@
       "datasets": [
         "ds:issus3744-sus-scrofa-porcine",
         "ds:plant-based-meat-textural-properties-training-table-kircali-ata-et-al-2023",
-        "ds:cho-gs-media-component-critical-quality-attributes-gangwar-et-al-2024",
-        "ds:cho-spent-media-metabolomics-dataset-alden-et-al-2020"
+        "ds:cho-gs-media-component-critical-quality-attributes-gangwar-et-al-2024"
       ]
     },
     "serum-free-media": {
@@ -840,9 +837,7 @@
         "ds:icho1766-icho2048-chompact-chinese-hamster-ovary-biopharma-adjacent-reference",
         "ds:cho-multi-omic-culture-ph-profiling-dataset-lee-et-al-2021",
         "ds:cho-antibody-producer-multi-omic-dataset-gopalakrishnan-et-al-2024",
-        "ds:cho-spent-media-metabolomics-dataset-alden-et-al-2020",
         "ds:cho-clone-selection-metabolomic-dynamics-dataset-barberi-et-al-2025",
-        "ds:pseudo-perfusion-cho-characterization-dataset-malinov-et-al-2026",
         "ds:yeast9-saccharomyces-cerevisiae-precision-fermentation-host-reference",
         "ds:bioml-bench",
         "ds:compbiobench-v1",
@@ -951,7 +946,6 @@
       "databases": [],
       "datasets": [
         "ds:ies1300-gallus-gallus-chicken",
-        "ds:btasbml2986-bos-taurus-bovine",
         "ds:salarecon-salmo-salar-atlantic-salmon",
         "ds:pcpigmnet2025-sus-scrofa-porcine",
         "ds:issus3744-sus-scrofa-porcine",
@@ -962,11 +956,8 @@
         "ds:recon3d-human1-hmr-homo-sapiens-template-upstream-reference",
         "ds:icho1766-icho2048-chompact-chinese-hamster-ovary-biopharma-adjacent-reference",
         "ds:cho-multi-omic-culture-ph-profiling-dataset-lee-et-al-2021",
-        "ds:cho-spent-media-metabolomics-dataset-alden-et-al-2020",
         "ds:cho-clone-selection-metabolomic-dynamics-dataset-barberi-et-al-2025",
-        "ds:pseudo-perfusion-cho-characterization-dataset-malinov-et-al-2026",
         "ds:dynamic-metabolic-flux-analysis-dmfa-cho-dataset-venkatarama-reddy-et-al-2026",
-        "ds:raman-soft-sensor-cell-culture-dataset-tanemura-et-al-2023",
         "ds:yeast9-saccharomyces-cerevisiae-precision-fermentation-host-reference",
         "ds:imt1026-imt1026-v30-komagataella-phaffii-pichia-pastoris"
       ]
@@ -1174,9 +1165,7 @@
         "ds:nmr-metabolomics-of-plant-and-yeast-based-hydrolysates",
         "ds:cho-multi-omic-culture-ph-profiling-dataset-lee-et-al-2021",
         "ds:cho-antibody-producer-multi-omic-dataset-gopalakrishnan-et-al-2024",
-        "ds:cho-spent-media-metabolomics-dataset-alden-et-al-2020",
         "ds:cho-clone-selection-metabolomic-dynamics-dataset-barberi-et-al-2025",
-        "ds:raman-soft-sensor-cell-culture-dataset-tanemura-et-al-2023",
         "ds:massspecgym"
       ]
     },
@@ -1296,9 +1285,7 @@
         "ds:lions-mane-mushroom-steak-characterization",
         "ds:cho-multi-omic-culture-ph-profiling-dataset-lee-et-al-2021",
         "ds:cho-antibody-producer-multi-omic-dataset-gopalakrishnan-et-al-2024",
-        "ds:cho-spent-media-metabolomics-dataset-alden-et-al-2020",
         "ds:cho-clone-selection-metabolomic-dynamics-dataset-barberi-et-al-2025",
-        "ds:raman-soft-sensor-cell-culture-dataset-tanemura-et-al-2023",
         "ds:yeast9-saccharomyces-cerevisiae-precision-fermentation-host-reference",
         "ds:iumami-scm",
         "ds:massspecgym"
@@ -1415,7 +1402,6 @@
       "databases": [],
       "datasets": [
         "ds:ies1300-gallus-gallus-chicken",
-        "ds:btasbml2986-bos-taurus-bovine",
         "ds:salarecon-salmo-salar-atlantic-salmon",
         "ds:pcpigmnet2025-sus-scrofa-porcine",
         "ds:issus3744-sus-scrofa-porcine",
@@ -1424,9 +1410,7 @@
         "ds:parse-biosciences-10m-pbmc-atlas",
         "ds:recon3d-human1-hmr-homo-sapiens-template-upstream-reference",
         "ds:icho1766-icho2048-chompact-chinese-hamster-ovary-biopharma-adjacent-reference",
-        "ds:pseudo-perfusion-cho-characterization-dataset-malinov-et-al-2026",
         "ds:dynamic-metabolic-flux-analysis-dmfa-cho-dataset-venkatarama-reddy-et-al-2026",
-        "ds:raman-soft-sensor-cell-culture-dataset-tanemura-et-al-2023",
         "ds:yeast9-saccharomyces-cerevisiae-precision-fermentation-host-reference",
         "ds:imt1026-imt1026-v30-komagataella-phaffii-pichia-pastoris"
       ]
@@ -1508,7 +1492,6 @@
       ],
       "datasets": [
         "ds:ies1300-gallus-gallus-chicken",
-        "ds:btasbml2986-bos-taurus-bovine",
         "ds:salarecon-salmo-salar-atlantic-salmon",
         "ds:pcpigmnet2025-sus-scrofa-porcine",
         "ds:issus3744-sus-scrofa-porcine",
@@ -1517,9 +1500,7 @@
         "ds:icho1766-icho2048-chompact-chinese-hamster-ovary-biopharma-adjacent-reference",
         "ds:cho-multi-omic-culture-ph-profiling-dataset-lee-et-al-2021",
         "ds:cho-antibody-producer-multi-omic-dataset-gopalakrishnan-et-al-2024",
-        "ds:cho-spent-media-metabolomics-dataset-alden-et-al-2020",
         "ds:cho-clone-selection-metabolomic-dynamics-dataset-barberi-et-al-2025",
-        "ds:pseudo-perfusion-cho-characterization-dataset-malinov-et-al-2026",
         "ds:dynamic-metabolic-flux-analysis-dmfa-cho-dataset-venkatarama-reddy-et-al-2026",
         "ds:yeast9-saccharomyces-cerevisiae-precision-fermentation-host-reference",
         "ds:imt1026-imt1026-v30-komagataella-phaffii-pichia-pastoris"
@@ -1683,7 +1664,6 @@
         "ds:human-and-mouse-white-adipose-tissue-single-cell-atlas-emont-et-al-2022",
         "ds:icho1766-icho2048-chompact-chinese-hamster-ovary-biopharma-adjacent-reference",
         "ds:cho-antibody-producer-multi-omic-dataset-gopalakrishnan-et-al-2024",
-        "ds:cho-spent-media-metabolomics-dataset-alden-et-al-2020",
         "ds:cho-clone-selection-metabolomic-dynamics-dataset-barberi-et-al-2025"
       ]
     },
@@ -1769,8 +1749,7 @@
         "agri-footprint"
       ],
       "datasets": [
-        "ds:sinke-et-al-2023-cultivated-meat-ex-ante-lci",
-        "ds:risner-et-al-cradle-to-gate-cultivated-meat-lca"
+        "ds:sinke-et-al-2023-cultivated-meat-ex-ante-lci"
       ]
     },
     "growth-factors": {
@@ -1834,7 +1813,6 @@
       ],
       "datasets": [
         "ds:ies1300-gallus-gallus-chicken",
-        "ds:btasbml2986-bos-taurus-bovine",
         "ds:salarecon-salmo-salar-atlantic-salmon",
         "ds:pcpigmnet2025-sus-scrofa-porcine",
         "ds:issus3744-sus-scrofa-porcine",
@@ -1843,9 +1821,7 @@
         "ds:icho1766-icho2048-chompact-chinese-hamster-ovary-biopharma-adjacent-reference",
         "ds:cho-multi-omic-culture-ph-profiling-dataset-lee-et-al-2021",
         "ds:cho-antibody-producer-multi-omic-dataset-gopalakrishnan-et-al-2024",
-        "ds:cho-spent-media-metabolomics-dataset-alden-et-al-2020",
         "ds:cho-clone-selection-metabolomic-dynamics-dataset-barberi-et-al-2025",
-        "ds:pseudo-perfusion-cho-characterization-dataset-malinov-et-al-2026",
         "ds:dynamic-metabolic-flux-analysis-dmfa-cho-dataset-venkatarama-reddy-et-al-2026",
         "ds:yeast9-saccharomyces-cerevisiae-precision-fermentation-host-reference",
         "ds:imt1026-imt1026-v30-komagataella-phaffii-pichia-pastoris"

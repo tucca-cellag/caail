@@ -1,6 +1,6 @@
 # Cow / *Bos taurus*
 
-Cattle are a leading cultivated-meat target, and bovine satellite cells are among the most-studied myogenic systems in the field. This page collects the fixed data artifacts relevant to engineering and modeling bovine cells for cultivated beef: the genome-scale metabolic model, the multi-tissue atlases, and individual transcriptomic / epigenomic deposits spanning satellite-cell heterogeneity, serum-free differentiation, adipogenesis, and breed comparison.
+Cattle are a leading cultivated-meat target, and bovine satellite cells are among the most-studied myogenic systems in the field. This page collects the fixed data artifacts relevant to engineering and modeling bovine cells for cultivated beef: the multi-tissue atlases and individual transcriptomic / epigenomic deposits spanning satellite-cell heterogeneity, serum-free differentiation, adipogenesis, and breed comparison.
 
 ## Featured atlases
 
@@ -11,16 +11,6 @@ Cattle sub-portal of the FarmGTEx consortium, providing bulk and single-cell mul
 ### [BovReg](https://bovreg.eu/)
 
 The FAANG consortium's cattle functional-annotation project, mapping functionally active genomic features in cattle (*Bos taurus*); the [data hub](https://data.faang.org/projects/BovReg) hosts its open releases. A regulatory-element substrate complementary to CattleGTEx for cultivated-beef cell-line characterisation. Full entry in [Databases.md / Livestock Multi-Tissue Atlases](../Databases.md#livestock-multi-tissue-atlases--functional-genomics).
-
-## Genome-scale metabolic models
-
-GEMs are SBML-formatted reconstructions of an organism's metabolic network — every reaction, every metabolite, every gene-protein-reaction mapping — and are the input data structure for the constraint-based modeling tools listed in [Software.md / Metabolic Modeling & Strain Design](../Software.md#metabolic-modeling--strain-design). The cell-ag GEM ecosystem is fragmented across preprints, supplementary materials, and individual GitHub repos; the bovine reconstruction below inherits network structure from the human reference GEMs catalogued in [HumanReference.md](./HumanReference.md).
-
-### BtaSBML2986 — *Bos taurus* (bovine)
-
-The first *Bos taurus*-specific genome-scale metabolic model (GEM), built for cultured-meat research and published 2024 by Lee et al. as a bioRxiv preprint. The model integrates multi-omics data, was reconstructed on the human1 GEM as a template, and contains ~13,278 reactions across 2,986 genes, with biomass functions parameterized for cultivated-meat-relevant bovine cell types. Designed to support FBA-driven identification of media supplement combinations and metabolic bottlenecks for cultivated beef production. SBML files are distributed via the preprint's supplementary materials.
-
-Reference: [Papers.md #81](../Papers.md#81) (Lee et al. 2024, bioRxiv).
 
 ## Bovine satellite cells & cultured-meat differentiation
 

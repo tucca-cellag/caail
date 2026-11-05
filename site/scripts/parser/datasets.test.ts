@@ -170,22 +170,23 @@ describe('computeDatasetBreakdown — real corpus', () => {
   it('returns the verified ground-truth dataset total', () => {
     // GROUND TRUTH — pinned after the first green run of `pnpm parse`.
     // Bump in lockstep when Datasets/ inventory tables / reference / benchmark
-    // entries change. 229 = 166 inventory rows + 21 curated species-page entries
-    // + 25 reference entries + 17 benchmarks. It was 205 until #156, which folded
+    // entries change. 224 = 166 inventory rows + 20 curated species-page entries
+    // + 21 reference entries + 17 benchmarks. It was 205 until #156, which folded
     // in the two populations the total had silently omitted, then 226 until
     // tucca-cellag/caail-planning#226 promoted 7 GEO subseries that a SuperSeries parent row had hidden
     // and added the 5 bovine deposits that audit surfaced as genuinely absent. SASP Atlas moving
     // from Databases.md to HumanReference.md took it to 239, and retiring four inventory rows
     // with no public data of their own (tucca-cellag/caail-planning#703) to 235, and retiring six
     // more with neither a deposit nor a per-sample, per-gene or per-feature results table in a
-    // supplement (tucca-cellag/caail-planning#717) to 229.
-    expect(b.total).toBe(229);
+    // supplement (tucca-cellag/caail-planning#717) to 229. Retiring five curated entries on the same
+    // rule (tucca-cellag/caail-planning#739) took it to 224.
+    expect(b.total).toBe(224);
   });
 
   it('counts the same population the datasets endpoint serves', () => {
     // The reason the total moved. Before #156 these were different populations in both
     // directions, so a consumer comparing them got a number about nothing.
     expect(b.speciesRows).toBe(166);
-    expect(b.curatedEntries + b.referenceEntries + b.benchmarkEntries).toBe(63);
+    expect(b.curatedEntries + b.referenceEntries + b.benchmarkEntries).toBe(58);
   });
 });

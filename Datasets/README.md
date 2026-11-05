@@ -10,7 +10,7 @@ The directory is organized **by species**: each cell-ag-relevant species has its
 
 | Page | Scope |
 | ---- | ----- |
-| [Cow / *Bos taurus*](./Cow.md) | Cultivated-beef cell lines, bovine satellite cells, atlases, GEM |
+| [Cow / *Bos taurus*](./Cow.md) | Cultivated-beef cell lines, bovine satellite cells, atlases |
 | [Pig / *Sus scrofa*](./Pig.md) | Cultivated-pork myogenesis & adipogenesis, atlases, GEM |
 | [Chicken / *Gallus gallus*](./Chicken.md) | Cultivated-chicken fibroblast & myoblast work, atlases, GEM |
 | [Fish](./Fish.md) | Salmonids and other aquaculture teleosts; AQUA-FAANG, salmon GEM |
