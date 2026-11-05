@@ -10,7 +10,7 @@ Each populated species page is a curated, species-scoped collection with these s
 
 1. **Editorial intro** — one paragraph on the species' role in cellular agriculture and what the page covers.
 2. **Featured atlases** — inline H3 entries for large-scale atlases (FarmGTEx family, FAANG sub-projects), each duplicating the canonical `Databases.md` summary and cross-linking back to it.
-3. **Genome-scale metabolic models** — the species' GEM(s), where one exists.
+3. **Genome-scale metabolic models** — the species' GEM(s), where a model file is public (see "Which studies get a row" below).
 4. **Single-cell & perturbation corpora** — pretraining corpora (only on `HumanReference.md`).
 5. **Thematic clusters** — H2 groupings of individual data deposits, each cluster framed with an editorial paragraph and entries written CAAIL-style around cell-ag relevance.
 6. **Complete data inventory** — a markdown table of every catalogued deposit. Single-species pages omit the redundant Species column; multi-species pages (`Fish.md`, `Crustacean.md`, `Mollusk.md`) include it. Each row carries two dedicated link columns immediately after **Study** (the study title, as plain text): **Paper** and **Data**.
