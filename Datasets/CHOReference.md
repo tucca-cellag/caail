@@ -30,15 +30,15 @@ A multi-omics profiling of a CHO cell-culture system that resolves how culture p
 
 A multi-omic characterization of antibody-producing CHO cell lines that maps metabolic reprogramming and pinpoints nutrient-uptake bottlenecks across production (Gopalakrishnan, Johnson, Valderrama-Gomez, et al. 2024, *Metabolic Engineering*, from the Lewis lab). The nutrient-limitation and flux-reprogramming signals are directly usable for constraining GEM flux states and for designing feeds, methodology that carries over to media and feed design for cultivated-meat cell lines. Its supplementary workbook (`mmc1.xlsx`) gives phase-specific uptake and secretion rates per metabolite for each cell line and replicate (ST2), mean fluxes for about 6,700 reactions (ST4) and per-sample expression for about 1,770 genes (ST5). Published: [`10.1016/j.ymben.2024.07.009`](https://doi.org/10.1016/j.ymben.2024.07.009).
 
-### CHO clone-selection metabolomic-dynamics dataset (Barberi et al. 2025)
+### CHO clone-selection productivity biomarkers (Barberi et al. 2025)
 
 Productivity-biomarker statistics from a metabolomic-dynamics study supporting machine-learning selection of productive CHO cell lines during biopharma process development (Barberi, Benedetti, Diaz-Fernandez, et al. 2025, *AIChE Journal*). The time-resolved metabolomic trajectories behind them, used to classify high- from low-producing clones, are a methodology template for metabolomics-guided line selection in cultivated-meat cell-line development, where picking a stable high-performing line early is a core bottleneck. The metabolomic data themselves are confidential, as the paper's data statement says; its supplementary material lists about 90 productivity-biomarker ions with m/z, time point, VIP, covariance, correlation and p value (`SM1_extracellular_productivity_biomarkers`), along with the numerical data behind Figures 2 to 4. Published: [`10.1002/aic.18602`](https://doi.org/10.1002/aic.18602).
 
 ## Bioprocess characterization datasets
 
-This section holds CHO bioprocess measurements at the resolution constraint-based and kinetic models need: process-mode uptake and secretion rates that parameterize genome-scale models, with the same use for the cell-ag GEMs on the per-species pages.
+This section holds CHO bioprocess measurements at the resolution constraint-based and kinetic models need: process-mode uptake and secretion rates that parameterize genome-scale models. The cell-ag GEMs on the per-species pages take measurements of the same kind.
 
-### Dynamic Metabolic Flux Analysis (DMFA) CHO dataset (Venkatarama Reddy et al. 2026)
+### CHO process-mode uptake and secretion rates (Venkatarama Reddy et al. 2026)
 
 Uptake and secretion rates from a CHO-VRC01 flux study spanning fed-batch and perfusion process modes across bioreactor pH, media supplementation, and feeding strategies (Venkatarama Reddy et al. 2026, *Metabolic Engineering*), paired with a kinetically constrained dynamic flux balance analysis model that regresses kinetic parameters across amino-acid metabolism and cell growth. Raw data and model code are available from the authors on request; the supplementary file (`mmc1.docx`) gives, in Table S1, uptake and secretion rates per metabolite at pH 6.75, 7 and 7.25 across three culture phases, the kind of rates that parameterize GEMs for cell-ag digital twins. Published: [`10.1016/j.ymben.2026.102552`](https://doi.org/10.1016/j.ymben.2026.102552) (preprint [`10.64898/2026.01.11.698917`](https://doi.org/10.64898/2026.01.11.698917)).
 
