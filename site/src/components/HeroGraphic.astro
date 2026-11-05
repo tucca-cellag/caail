@@ -5,8 +5,10 @@
  *                         a spinning impeller, and suspended cells.
  *   variant="cells":      a soft drifting field of culture cells.
  * Ambient animation loops in CSS; a tiny inline script adds subtle pointer
- * parallax via the --hgx/--hgy custom props. Both fully disabled under
- * prefers-reduced-motion. SSR-rendered inline SVG — no canvas, no deps.
+ * parallax via the --hgx/--hgy custom props, each updated at most once per frame,
+ * and pauses the loops and rests the parallax while the graphic is off-screen.
+ * All of it is disabled under prefers-reduced-motion. SSR-rendered inline SVG,
+ * with no canvas and no deps.
  *
  * Pass `both` to render both variants in one element (used by the live hero
  * demo); the visible one is chosen by the ancestor `[data-graphic]` attribute.
@@ -112,6 +114,13 @@ const show = (v: string) => both || variant === v;
   .hg-o3 { animation: hg-float 9s ease-in-out infinite 0.3s; }
   .hg-o4 { animation: hg-float 7.8s ease-in-out infinite 1.6s; }
 
+  /* Off-screen every loop pauses rather than runs unseen; the script sets data-offscreen.
+   * This must outrank every animation rule above, since an `animation` shorthand resets
+   * play-state; the strongest is `.hg-impeller .hg-blade`, and the e2e pause test in
+   * hero-graphic.spec.ts fails if any loop keeps running. `*` reaches further loops on
+   * this component's own SVG children, not the <svg> root, child components or set:html. */
+  .hg[data-offscreen] .hg-svg * { animation-play-state: paused; }
+
   @media (prefers-reduced-motion: reduce) {
     .hg-svg { transform: none; transition: none; }
     .hg-bub, .hg-blade, .hg-drift1, .hg-drift2, .hg-drift3, .hg-orb { animation: none; }
@@ -122,18 +131,53 @@ const show = (v: string) => both || variant === v;
 
 <script>
   // Subtle pointer parallax: map cursor position within the hero to --hgx/--hgy.
+  // However many moves arrive, each frame reads the hero's box once, before
+  // writing either property. While the graphic is hidden the parallax rests at 0.
   if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     document.querySelectorAll<HTMLElement>('.hg').forEach((hg) => {
-      const zone = hg.closest('.hero') ?? hg;
-      zone.addEventListener('pointermove', (e) => {
+      const zone = hg.closest<HTMLElement>('.hero') ?? hg;
+      let x = 0;
+      let y = 0;
+      let shown = true; // false while the graphic is off-screen or not rendered
+      let moved = false; // true once a frame has shifted the parallax off rest
+      let frame = 0;
+
+      const apply = () => {
+        frame = 0;
         const r = zone.getBoundingClientRect();
-        hg.style.setProperty('--hgx', String(((e as PointerEvent).clientX - r.left) / r.width - 0.5));
-        hg.style.setProperty('--hgy', String(((e as PointerEvent).clientY - r.top) / r.height - 0.5));
-      });
-      zone.addEventListener('pointerleave', () => {
+        if (!r.width || !r.height) return;
+        hg.style.setProperty('--hgx', String((x - r.left) / r.width - 0.5));
+        hg.style.setProperty('--hgy', String((y - r.top) / r.height - 0.5));
+        moved = true;
+      };
+      // Drop any pending frame and return the graphic to rest, writing only if it moved.
+      const rest = () => {
+        if (frame) cancelAnimationFrame(frame);
+        frame = 0;
+        if (!moved) return;
+        moved = false;
         hg.style.setProperty('--hgx', '0');
         hg.style.setProperty('--hgy', '0');
-      });
+      };
+
+      zone.addEventListener('pointermove', (e) => {
+        x = e.clientX;
+        y = e.clientY;
+        // While the graphic is off-screen or display:none there is nothing to move.
+        if (!frame && shown) frame = requestAnimationFrame(apply);
+      }, { passive: true });
+      zone.addEventListener('pointerleave', rest);
+
+      // Mark the graphic while it is off-screen or not rendered: its loops pause (see
+      // the stylesheet) and the parallax rests until the pointer moves after it returns.
+      // Without the observer nothing pauses and the parallax still works.
+      if ('IntersectionObserver' in window) {
+        new IntersectionObserver((entries) => {
+          shown = entries[entries.length - 1].isIntersecting;
+          hg.toggleAttribute('data-offscreen', !shown);
+          if (!shown) rest();
+        }).observe(hg);
+      }
     });
   }
 </script>
