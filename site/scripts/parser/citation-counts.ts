@@ -71,7 +71,7 @@ export function loadPaperIsOa(): Map<string, boolean> {
 export interface CitationInfo {
   doi: string | null;
   doiSource: 'auto' | 'manual' | null;
-  /** whether `doi` is the item's own or its describing paper's (doi-relation.ts, #367) */
+  /** whether `doi` is the item's own or its describing paper's (doi-relation.ts, tucca-cellag/caail-planning#367) */
   doiRelation: DoiRelation | null;
   citationCount: number | null;
   citationSources: number;
@@ -96,8 +96,9 @@ export function parseRelatedDois(raw: string | null | undefined): string[] {
 /**
  * Compute CitationInfo for a row's primary DOI + provenance + sibling version DOIs.
  * The count is the SUM of OpenAlex `cited_by_count` over the distinct DOIs (primary ∪
- * related) that have a count; null when none do. The primary `doi` is returned as-is
- * for the badge's click-through.
+ * related) that have a count; null when none do. The primary `doi` is served bare
+ * (`bareDoi`) when it parses as a DOI, and as stored otherwise, so the badge link and every
+ * join key share one shape.
  */
 export function citationInfo(
   doi: string | null,

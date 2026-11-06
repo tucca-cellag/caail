@@ -140,13 +140,30 @@ const NAMED_LINK = new RegExp('^\\[[^\\]`]+\\]\\(' + DEST + '\\)$');
  * in its query (Dataverse's `persistentId=doi:…`, possibly percent-encoded). Never derived
  * from a record URL such as `zenodo.org/records/N`: that would be a guess about the host.
  */
+const DOI_HOSTS: ReadonlySet<string> = new Set(['doi.org', 'dx.doi.org', 'www.doi.org']);
+
 function statedDoi(url: string): string | null {
-  // The DOI path ends at a query string or fragment (`?tab=files`, `#versions`), which are
-  // not part of it. bareDoi decodes once, so neither branch decodes here.
-  const path = url.match(/^(?:https?:\/\/)?(?:www\.|dx\.)?doi\.org\/([^?#\s]+)/i);
-  if (path) return bareDoi(path[1]!);
-  const param = url.match(/[?&][A-Za-z]*=doi(?::|%3A)([^&#\s]+)/i);
-  return param ? bareDoi(param[1]!) : null;
+  let parsed: URL;
+  try { parsed = new URL(url); } catch { return null; }
+  // A doi.org link: the DOI is the path, which URL parsing has already cut off before any
+  // query string or fragment. The path stays percent-encoded, so decode it once here.
+  if (DOI_HOSTS.has(parsed.hostname.toLowerCase())) {
+    let path = parsed.pathname.slice(1);
+    try { path = decodeURIComponent(path); } catch { /* keep the raw path */ }
+    return bareDoi(path);
+  }
+  // A `doi:` query value (Dataverse's persistentId). searchParams has already decoded it once.
+  for (const value of parsed.searchParams.values()) {
+    const m = value.match(/^doi:(.+)$/i);
+    if (m) return bareDoi(m[1]!);
+  }
+  return null;
+}
+
+/** A deposit's own DOI: a stated DOI whose registrant is a data host, never a paper's. */
+function ownDoi(url: string): string | null {
+  const doi = statedDoi(url);
+  return doi && doiRelation(doi) === 'own' ? doi : null;
 }
 
 /**
@@ -161,9 +178,12 @@ function statedDoi(url: string): string | null {
  *   the deposit left unstated; a link with no DOI is where the data sit.
  *
  * The accession comes from the Data cell ONLY, never from the row's id: an id can be
- * minted from data a row merely mentions (#715), which is the claim this field exists to
- * keep apart. A cell outside these shapes yields nulls rather than throwing; rejecting it
- * is db:check's job, and a throw here would take the build down for a curation typo.
+ * minted from data a row merely mentions (tucca-cellag/caail-planning#715), which is the claim this field
+ * exists to keep apart. A `dataDoi` is served only when it is a data host's DOI, never a
+ * paper's. A cell outside these shapes yields nulls rather than throwing, since a throw here
+ * would take the build down for a curation typo. Nothing rejects such a cell yet: the
+ * Data-cell guard is planned for db:check (tucca-cellag/caail-planning#740), and until it lands the corpus
+ * tests in dataset-identity.test.ts are what catch a silent null.
  */
 export function rowIdentity(columns: Readonly<Record<string, string>>): RowIdentity {
   const paperLink = (columns['Paper']?.trim() ?? '').match(PAPER_LINK);
@@ -174,10 +194,10 @@ export function rowIdentity(columns: Readonly<Record<string, string>>): RowIdent
     if (data === 'supplementary' || data === 'unavailable') return { ...NO_IDENTITY, paperDoi, dataStatus: data };
     const badge = data.match(BADGE_LINK);
     if (badge) {
-      return { paperDoi, dataStatus: 'deposit', accession: badge[1]!.trim(), dataUrl: badge[2]!, dataDoi: statedDoi(badge[2]!) };
+      return { paperDoi, dataStatus: 'deposit', accession: badge[1]!.trim(), dataUrl: badge[2]!, dataDoi: ownDoi(badge[2]!) };
     }
     const named = data.match(NAMED_LINK);
-    if (named) return { paperDoi, dataStatus: 'deposit', accession: null, dataUrl: named[1]!, dataDoi: statedDoi(named[1]!) };
+    if (named) return { paperDoi, dataStatus: 'deposit', accession: null, dataUrl: named[1]!, dataDoi: ownDoi(named[1]!) };
     return { ...NO_IDENTITY, paperDoi };
   }
 

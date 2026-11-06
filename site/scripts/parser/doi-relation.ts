@@ -38,16 +38,15 @@ export const DATA_REPOSITORY_REGISTRANTS: ReadonlyMap<string, string> = new Map(
 export type DoiRelation = 'own' | 'publication';
 
 /**
- * A validated bare DOI: decode once, normalise with `doiKey` (the rule every citation and
- * author join already uses, so the two cannot disagree), then require the `10.NNNN/…`
- * shape. Null when the value is not a DOI.
+ * A validated bare DOI: `doiKey` (the rule every citation and author join already uses, so
+ * the two cannot disagree) plus a check for the DOI shape, `10.` then a registrant (dotted
+ * subdivisions allowed, as in `10.1000.1`) then `/`. It does not percent-decode: a value read
+ * out of a URL is decoded where it is read (`statedDoi`), so a stored DOI and its citation
+ * key stay byte-identical. Null when the value is not a DOI.
  */
 export function bareDoi(value: string | null | undefined): string | null {
-  if (!value) return null;
-  let v = value.trim();
-  try { v = decodeURIComponent(v); } catch { /* a stray % is not an encoding; keep the text */ }
-  const key = doiKey(v);
-  return key && /^10\.\d{4,9}\/\S+$/.test(key) ? key : null;
+  const key = doiKey(value);
+  return key && /^10\.\d{4,9}(?:\.\d+)*\/\S+$/.test(key) ? key : null;
 }
 
 /**

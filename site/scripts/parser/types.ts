@@ -173,11 +173,12 @@ export const CatalogEntrySchema = z.object({
   license: z.string().nullable().default(null),
   licenseSource: z.enum(['auto', 'manual']).nullable().default(null),
   tier: LicenseTierSchema.default('unknown'),
-  /** DB-owned associated-publication DOI + provenance, folded from the catalog NDJSON */
+  /** DB-owned DOI + provenance, folded from the catalog NDJSON: usually the associated
+   *  publication's, sometimes the item's own (see `doiRelation`) */
   doi: z.string().nullable().default(null),
   doiSource: z.enum(['auto', 'manual']).nullable().default(null),
   /** `own` when `doi` is a data repository's (the item itself), `publication` when it is the
-   *  describing paper's, null with no DOI. Derived by registrant in doi-relation.ts (#367). */
+   *  describing paper's, null with no DOI. Derived by registrant in doi-relation.ts (tucca-cellag/caail-planning#367). */
   doiRelation: z.enum(['own', 'publication']).nullable().default(null),
   /** OpenAlex cited_by_count summed over `doi` + its sibling version DOIs; null when unknown */
   citationCount: z.number().int().nonnegative().nullable().default(null),
@@ -213,11 +214,12 @@ export const DatasetEntrySchema = z.object({
   license: z.string().nullable().default(null),
   licenseSource: z.enum(['auto', 'manual']).nullable().default(null),
   tier: LicenseTierSchema.default('unknown'),
-  /** DB-owned associated-publication DOI + provenance, folded from dataset_entries NDJSON */
+  /** DB-owned DOI + provenance, folded from dataset_entries NDJSON: usually the associated
+   *  publication's, sometimes the item's own (see `doiRelation`) */
   doi: z.string().nullable().default(null),
   doiSource: z.enum(['auto', 'manual']).nullable().default(null),
   /** `own` when `doi` is a data repository's (the item itself), `publication` when it is the
-   *  describing paper's, null with no DOI. Derived by registrant in doi-relation.ts (#367). */
+   *  describing paper's, null with no DOI. Derived by registrant in doi-relation.ts (tucca-cellag/caail-planning#367). */
   doiRelation: z.enum(['own', 'publication']).nullable().default(null),
   /** OpenAlex cited_by_count summed over `doi` + its sibling version DOIs; null when unknown */
   citationCount: z.number().int().nonnegative().nullable().default(null),
@@ -305,7 +307,7 @@ export const DatasetInventoryRowSchema = z.object({
    *  cell holding a journal DOI); null when none is named */
   paperDoi: z.string().nullable().default(null),
   /** what the row says about its data: from the Data cell, or `deposit` for a CrossSpecies DOI / URL
-   *  link to the data itself; null when it states none (#367) */
+   *  link to the data itself; null when it states none (tucca-cellag/caail-planning#367) */
   dataStatus: z.enum(['deposit', 'supplementary', 'unavailable']).nullable().default(null),
   /** the identifier the Data cell's badge names, served as written and never read from the id:
    *  usually an archive accession (GSE…, PRJNA…, SRA…, versioned where the badge is), sometimes
@@ -1104,7 +1106,7 @@ export const ApiCatalogIndexRowSchema = z.strictObject({
   group: z.string(),
   url: z.string().nullable(),
   doi: z.string().nullable(),
-  /** whether `doi` is the item's own (a data repository's) or its describing paper's (#367) */
+  /** whether `doi` is the item's own (a data repository's) or its describing paper's (tucca-cellag/caail-planning#367) */
   doiRelation: z.enum(['own', 'publication']).nullable(),
   tier: z.string().nullable(),
 });

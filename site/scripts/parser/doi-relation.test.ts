@@ -61,8 +61,16 @@ describe('bareDoi', () => {
       'doi.org/10.7910/DVN/XNFVTS',
       'doi:10.7910/DVN/XNFVTS',
       'DOI: 10.7910/DVN/XNFVTS',
-      'doi%3A10.7910%2FDVN%2FXNFVTS',
     ]) expect(bareDoi(v), v).toBe('10.7910/dvn/xnfvts');
+  });
+
+  it('does not percent-decode, so a stored DOI and its citation key stay identical', () => {
+    expect(bareDoi('doi%3A10.7910%2FDVN%2FXNFVTS')).toBeNull();
+  });
+
+  it('accepts a registrant with dotted subdivisions', () => {
+    expect(bareDoi('10.1000.1/ABC')).toBe('10.1000.1/abc');
+    expect(doiRelation('10.1000.1/abc')).toBe('publication');
   });
 
   it('keeps parentheses inside a DOI', () => {

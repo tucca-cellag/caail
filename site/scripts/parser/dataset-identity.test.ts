@@ -73,6 +73,17 @@ describe('rowIdentity: the Data cell', () => {
     }).dataDoi).toBe('10.7910/dvn/xnfvts');
   });
 
+  it('serves a dataDoi only for a data host, never for a paper the Data cell links to', () => {
+    expect(rowIdentity({ Data: '[Article](https://doi.org/10.1038/s41467-020-00001-1)' })).toMatchObject({
+      dataStatus: 'deposit', dataUrl: 'https://doi.org/10.1038/s41467-020-00001-1', dataDoi: null,
+    });
+  });
+
+  it('decodes a percent-encoded doi.org path once', () => {
+    expect(rowIdentity({ Data: '[FigShare](https://doi.org/10.6084%2Fm9.figshare.1)' }).dataDoi)
+      .toBe('10.6084/m9.figshare.1');
+  });
+
   it('ends a stated DOI at its query string or fragment', () => {
     expect(rowIdentity({ Data: '[Zenodo](https://doi.org/10.5281/zenodo.123?tab=files)' }).dataDoi)
       .toBe('10.5281/zenodo.123');
@@ -89,7 +100,7 @@ describe('rowIdentity: the Data cell', () => {
   });
 
   it('degrades to nulls for a Data cell outside the schema rather than throwing', () => {
-    // Enforcing the cell's shape is db:check's job (#740); a throw here would take the
+    // Enforcing the cell's shape is db:check's job (tucca-cellag/caail-planning#740); a throw here would take the
     // whole build down for a curation typo.
     expect(rowIdentity({ Data: 'see paper' })).toMatchObject({ dataStatus: null, accession: null, dataUrl: null });
     expect(rowIdentity({ Data: '' })).toMatchObject({ dataStatus: null });
@@ -157,7 +168,7 @@ describe('inventory identity — real corpus', () => {
   });
 
   it('reads the Data column, not the id, for a row named after data it only mentions', () => {
-    // ds:prjeb41939's Data cell reads "unavailable"; its id comes from reused data (#715).
+    // ds:prjeb41939's Data cell reads "unavailable"; its id comes from reused data (tucca-cellag/caail-planning#715).
     const row = rows.find((r) => r.id === 'ds:prjeb41939');
     expect(row?.dataStatus).toBe('unavailable');
     expect(row?.accession).toBeNull();
