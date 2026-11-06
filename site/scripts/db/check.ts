@@ -36,7 +36,7 @@ import { seriesRecency, EDITION_SORT_RULE } from '../parser/reports.js';
 import type { TaxonomyData } from '../parser/types.js';
 import { DOI_SHAPE } from '../parser/doi-relation.js';
 import {
-  DATA_CELL_FORMS, labelCells, readDataCell, readInventoryHeader, readLinkCell, type InventoryHeader,
+  DATA_CELL_FORMS, labelCells, parseRowCells, readDataCell, readInventoryHeader, readLinkCell, type InventoryHeader,
 } from '../parser/dataset-inventory.js';
 
 const MANUAL_LICENSES_PATH = join(SITE_ROOT, 'scripts', 'db', 'licenses-manual.json');
@@ -570,8 +570,9 @@ export const INVENTORY_CELLS_SHOWN = 10;
  * The cell is read by the parser's own `readDataCell`, the reader `rowIdentity` uses to fill the
  * API's identity fields, rather than by a second copy of the vocabulary, so a cell the API serves with
  * no `dataStatus` is a cell this rejects. That includes a status word in the wrong case, a link whose
- * target is not an http(s) address with a host, a link whose text names no deposit (blank, a status
- * word, a supplement, or words such as `none`, `request` or `n/a`), and a link to a DOI whose registrant is not a data host,
+ * target is not an http(s) address with a host, a badge whose text is not one identifier, a link
+ * whose text names no deposit (blank, a status word, `none named`, `see paper`, or a label starting
+ * with "supplement"), and a link to a DOI whose registrant is not a data host,
  * for which the reason says whether to move it to the Paper cell or add the registrant. It checks a
  * cell's shape, not where its link leads. The header comes from the same `readInventoryHeader` the
  * API build uses, which trims labels and refuses a repeated one, and a cell that is not a string is
@@ -595,24 +596,21 @@ export function checkInventoryCells(
   const pageProblem = (page: string, problem: string, firstRow: string): void => {
     if (!pageProblems.has(page)) pageProblems.set(page, `page ${page}: ${problem} (first row ${firstRow})`);
   };
+  /** page -> rows whose cell count differs from its header, reported as one line per page. */
+  const countMismatches = new Map<string, { rows: number; first: string; cells: number; columns: number }>();
   const problems: string[] = [];
   const shown = (cell: string): string => JSON.stringify(cell.length > 80 ? `${cell.slice(0, 77)}...` : cell);
   for (const r of rows) {
     if (!headers.has(r.page)) headers.set(r.page, headerFor(r.page));
     const read = headers.get(r.page)!;
     if ('problem' in read) { pageProblem(r.page, read.problem, r.item_id); continue; }
-    let cells: unknown;
-    try { cells = JSON.parse(r.cells_json); } catch { problems.push(`${r.item_id}: cells_json is not JSON`); continue; }
-    if (!Array.isArray(cells)) { problems.push(`${r.item_id}: cells_json is not an array`); continue; }
-    // A non-string cell would pass a String() coercion here and then crash the API build,
-    // which calls string methods on every cell, so it is refused rather than coerced.
-    if (!cells.every((c) => typeof c === 'string')) {
-      problems.push(`${r.item_id}: cells_json holds a cell that is not a string`);
-      continue;
-    }
-    const columns = labelCells(read.header, cells as string[]);
+    const parsed = parseRowCells(r.cells_json);
+    if ('problem' in parsed) { problems.push(`${r.item_id}: ${parsed.problem}`); continue; }
+    const columns = labelCells(read.header, parsed.cells);
     if (!columns) {
-      problems.push(`${r.item_id}: ${cells.length} cells against ${read.header.length} columns on ${r.page}`);
+      const seen = countMismatches.get(r.page);
+      if (seen) seen.rows += 1;
+      else countMismatches.set(r.page, { rows: 1, first: r.item_id, cells: parsed.cells.length, columns: read.header.length });
       continue;
     }
     if ('Data' in columns) {
@@ -625,7 +623,10 @@ export function checkInventoryCells(
       pageProblem(r.page, 'has neither a Data nor a DOI / URL column', r.item_id);
     }
   }
-  const all = [...pageProblems.values(), ...problems];
+  // One line per page however many rows disagree, so a header edit cannot crowd out the rest.
+  const counts = [...countMismatches].map(([page, m]) =>
+    `page ${page}: ${m.rows} row(s) have a cell count other than its ${m.columns} columns (first ${m.first} has ${m.cells})`);
+  const all = [...pageProblems.values(), ...counts, ...problems];
   const listed = all.slice(0, INVENTORY_CELLS_SHOWN).join('; ');
   return [ok(INVENTORY_CELLS_LABEL, all.length === 0,
     `${all.length} problem(s)${all.length > INVENTORY_CELLS_SHOWN ? `, first ${INVENTORY_CELLS_SHOWN}` : ''}: ${listed}`)];

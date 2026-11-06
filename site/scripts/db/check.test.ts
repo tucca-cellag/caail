@@ -13,7 +13,7 @@ import { join } from 'node:path';
 
 import { openDb, importNdjson, REPO_ROOT, type Db } from './lib.js';
 import { checkIntegrity, checkReachability, checkColumnDrift, checkTaxonomyAxes, checkTopicTiers, checkAxisBijection, checkCatalogHeadings, checkLicenses, checkManualLicenseKeys, checkDois, checkManualDoiKeys, checkRelatedDois, checkSubseries, checkRowTagParity, checkFineTagSeedDrift, checkInventoryCells, INVENTORY_CELLS_LABEL, INVENTORY_CELLS_SHOWN, runChecks } from './check.js';
-import { readInventoryHeader, STATUS_WORDS } from '../parser/dataset-inventory.js';
+import { parseRowCells, readInventoryHeader, STATUS_WORDS } from '../parser/dataset-inventory.js';
 import { THEME_SLUGS, FINE_TAGS } from './seed.js';
 
 const failing = (results: { label: string; ok: boolean }[], match: RegExp) =>
@@ -789,11 +789,8 @@ describe('checkInventoryCells (tucca-cellag/caail-planning#740)', () => {
     expect(withRow('Cow', { Data: '[supplementary](https://example.org/s1.xlsx)' }).detail).toContain('status word');
   });
 
-  it('rejects a web link whose text names no deposit', () => {
-    for (const data of [
-      '[on request](https://lab.example.org/contact)', '[see paper](https://www.nature.com/articles/x)',
-      '[None named](https://example.org)',
-    ]) {
+  it('rejects a web link whose whole label names no deposit', () => {
+    for (const data of ['[see paper](https://www.nature.com/articles/x)', '[None named](https://example.org)']) {
       const r = withRow('Cow', { Data: data });
       expect(r.ok, data).toBe(false);
       expect(r.detail, data).toContain('names no deposit');
@@ -823,13 +820,41 @@ describe('checkInventoryCells (tucca-cellag/caail-planning#740)', () => {
     expect(result(db).detail).toMatch(/^2 problem\(s\):/);
   });
 
-  it('catches non-deposit labels as words, and points a supplement at the bare word', () => {
-    for (const data of ['[upon request](https://lab.example.org)', '[contact authors](https://lab.example.org)', '[N/A](https://example.org)']) {
-      expect(withRow('Cow', { Data: data }).ok, data).toBe(false);
-    }
+  it('points a supplement-labelled link at the bare word "supplementary"', () => {
     const r = withRow('Cow', { Data: '[Supplementary Table S1](https://www.nature.com/articles/x#MOESM1)' });
     expect(r.ok).toBe(false);
     expect(r.detail).toContain('bare word "supplementary"');
+    expect(withRow('CrossSpecies', { 'DOI / URL': '[Supplementary data](https://example.org/s1.xlsx)' }).ok).toBe(false);
+  });
+
+  it('judges any other label by shape alone, words inside it included', () => {
+    // A word rule refused real deposits ("request via DAC") while passing "Embargoed"; the
+    // guard checks shape, not truth, so these pass and curation catches the mislabelled ones.
+    for (const data of [
+      '[EGA (controlled access, request via DAC)](https://ega-archive.org/studies/EGAS00001000001)',
+      '[upon request](https://lab.example.org)', '[on request](https://lab.example.org/contact)', '[Embargoed](https://example.org)',
+    ]) {
+      expect(withRow('Cow', { Data: data }).ok, data).toBe(true);
+    }
+    expect(withRow('CrossSpecies', { 'DOI / URL': '[https://www.ebi.ac.uk/none](https://www.ebi.ac.uk/none)' }).ok).toBe(true);
+  });
+
+  it('rejects a badge whose text is more than one identifier', () => {
+    const r = withRow('Cow', { Data: '[`see Table 2`](https://www.nature.com/articles/x)' });
+    expect(r.ok).toBe(false);
+    expect(r.detail).toContain('not one identifier');
+    expect(withRow('Cow', { Data: '[`OpenML-505`](https://www.openml.org/d/505)' }).ok).toBe(true);
+  });
+
+  it('says when a link\'s address cannot be read, rather than calling it no link', () => {
+    expect(withRow('Cow', { Data: '[Zenodo](https://zenodo.org/records/a b)' }).detail).toContain('cannot be read');
+    expect(withRow('CrossSpecies', { 'DOI / URL': '[GitHub](https://github.com/a b)' }).detail).toContain('cannot be read');
+  });
+
+  it('reports cell-count mismatches once per page, with the number of rows', () => {
+    const db = miniDb();
+    for (const id of ['ds:c1', 'ds:c2', 'ds:c3']) insRow(db, id, 'Cow', [BADGE]);
+    expect(result(db).detail).toMatch(/^1 problem\(s\): page Cow: 3 row\(s\) have a cell count other than its 8 columns \(first ds:c1 has 1\)/);
   });
 
   it('rejects a link with blank text, or to an address with no host', () => {
@@ -850,12 +875,15 @@ describe('checkInventoryCells (tucca-cellag/caail-planning#740)', () => {
     }
   });
 
-  it('quotes the status words as literals in its label', () => {
+  it('builds its label from the status words, quoted as literals, so a new word cannot leave it stale', () => {
     for (const word of STATUS_WORDS) expect(INVENTORY_CELLS_LABEL).toContain(`"${word}"`);
   });
 
-  it('builds its label from the status words, so a new word cannot leave it stale', () => {
-    for (const word of STATUS_WORDS) expect(INVENTORY_CELLS_LABEL).toContain(word);
+  it('reads stored cells through parseRowCells, which the API build shares', () => {
+    expect(parseRowCells('{}')).toEqual({ problem: 'cells_json is not an array' });
+    expect(parseRowCells('[1, "a"]')).toEqual({ problem: 'cells_json holds a cell that is not a string' });
+    expect(parseRowCells('not json')).toEqual({ problem: 'cells_json is not JSON' });
+    expect(parseRowCells('["a", "b"]')).toEqual({ cells: ['a', 'b'] });
   });
 
   it('agrees with Datasets/CLAUDE.md, whose Data bullet names every status word', () => {
