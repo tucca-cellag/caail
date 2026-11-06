@@ -20,6 +20,8 @@
  *    research area is named by exactly one theme, and every research area has a
  *    ResearchAreas page. Asserted through `area_key`, never by label equality.
  *    Research-area axis only; the method-row axis is deliberately not gated.
+ *  - inventory Data cells: a deposit link, `supplementary` or `unavailable`, read by the
+ *    parser's own `readDataCell` (checkInventoryCells).
  */
 
 import { readFileSync, existsSync } from 'node:fs';
@@ -33,6 +35,9 @@ import { MATRIX_SECTION } from '../parser/types.js';
 import { seriesRecency, EDITION_SORT_RULE } from '../parser/reports.js';
 import type { TaxonomyData } from '../parser/types.js';
 import { DOI_SHAPE } from '../parser/doi-relation.js';
+import {
+  DATA_CELL_FORMS, labelCells, parseRowCells, readDataCell, readInventoryHeader, readLinkCell, type InventoryHeader,
+} from '../parser/dataset-inventory.js';
 
 const MANUAL_LICENSES_PATH = join(SITE_ROOT, 'scripts', 'db', 'licenses-manual.json');
 const MANUAL_DOIS_PATH = join(SITE_ROOT, 'scripts', 'db', 'dois-manual.json');
@@ -549,6 +554,84 @@ export function checkSubseries(db: Db, subseriesPath: string = SUBSERIES_PATH): 
   return out;
 }
 
+export const INVENTORY_CELLS_LABEL =
+  `dataset_rows: every Data cell is ${DATA_CELL_FORMS} (CrossSpecies: its DOI / URL cell is a link)`;
+
+/** How many problems one failing run names; the count always covers them all. */
+export const INVENTORY_CELLS_SHOWN = 10;
+
+/**
+ * Inventory Data-cell vocabulary (tucca-cellag/caail-planning#740). `Datasets/CLAUDE.md` allows a row's
+ * Data cell to hold a link to the primary deposit (an accession badge or a named-repository link) or
+ * one of two status words, `supplementary` and `unavailable`. A study with nothing else to show gets
+ * no row, so any other cell (`on request`, `none named`, a bare accession) fails here, naming the row,
+ * the cell and the reason.
+ *
+ * The cell is read by the parser's own `readDataCell`, the reader `rowIdentity` uses to fill the
+ * API's identity fields, rather than by a second copy of the vocabulary, so a cell the API serves with
+ * no `dataStatus` is a cell this rejects. That includes a status word in the wrong case, a link whose
+ * target is not an http(s) address with a host, a badge whose text is not one identifier, a link
+ * whose text names no deposit (`nonDepositLabel` in dataset-inventory.ts), and a link to a DOI whose
+ * registrant is not a data host, for which the reason says whether to move it to the Paper cell or
+ * add the registrant. It judges a link by its form and, for a DOI, by the DOI's registrant; it does
+ * not check that the link reaches the deposit it names. The header comes from the same `readInventoryHeader` the
+ * API build uses, which trims labels and refuses a repeated one, and a cell that is not a string is
+ * refused before either reader sees it.
+ *
+ * `CrossSpecies.md` has no Data column. Its `DOI / URL` cell is read by `readLinkCell` and must be a
+ * link to an http(s) address (the paper, a deposit's DOI, or where the data sit); it takes no status
+ * word, since a resource with nothing to link has no row. A page with neither column, or no table,
+ * fails rather than being skipped, so a new table shape cannot drop out of the check.
+ */
+export function checkInventoryCells(
+  db: Db,
+  repoRoot: string = REPO_ROOT,
+  headerFor: (page: string) => InventoryHeader = (page) => readInventoryHeader(page, repoRoot),
+): CheckResult[] {
+  const rows = db.prepare('SELECT item_id, page, cells_json FROM dataset_rows ORDER BY page, ordinal, item_id')
+    .all() as { item_id: string; page: string; cells_json: string }[];
+  const headers = new Map<string, InventoryHeader>();
+  /** page -> its one problem, reported once however many rows the page has. */
+  const pageProblems = new Map<string, string>();
+  const pageProblem = (page: string, problem: string, firstRow: string): void => {
+    if (!pageProblems.has(page)) pageProblems.set(page, `page ${page}: ${problem} (first row ${firstRow})`);
+  };
+  /** page -> rows whose cell count differs from its header, reported as one line per page. */
+  const countMismatches = new Map<string, { rows: number; first: string; cells: number; columns: number }>();
+  const problems: string[] = [];
+  const shown = (cell: string): string => JSON.stringify(cell.length > 80 ? `${cell.slice(0, 77)}...` : cell);
+  for (const r of rows) {
+    if (!headers.has(r.page)) headers.set(r.page, headerFor(r.page));
+    const read = headers.get(r.page)!;
+    if ('problem' in read) { pageProblem(r.page, read.problem, r.item_id); continue; }
+    const parsed = parseRowCells(r.cells_json);
+    if ('problem' in parsed) { problems.push(`${r.item_id}: ${parsed.problem}`); continue; }
+    const columns = labelCells(read.header, parsed.cells);
+    if (!columns) {
+      const seen = countMismatches.get(r.page);
+      if (seen) seen.rows += 1;
+      else countMismatches.set(r.page, { rows: 1, first: r.item_id, cells: parsed.cells.length, columns: read.header.length });
+      continue;
+    }
+    if ('Data' in columns) {
+      const data = readDataCell(columns['Data']!);
+      if (data.kind === 'off-schema') problems.push(`${r.item_id}: Data cell ${shown(columns['Data']!)} ${data.reason}`);
+    } else if ('DOI / URL' in columns) {
+      const link = readLinkCell(columns['DOI / URL']!);
+      if (link.kind === 'off-schema') problems.push(`${r.item_id}: DOI / URL cell ${shown(columns['DOI / URL']!)} ${link.reason}`);
+    } else {
+      pageProblem(r.page, 'has neither a Data nor a DOI / URL column', r.item_id);
+    }
+  }
+  // One line per page however many rows disagree, so a header edit cannot crowd out the rest.
+  const counts = [...countMismatches].map(([page, m]) =>
+    `page ${page}: ${m.rows} row(s) have a cell count other than its ${m.columns} columns (first ${m.first} has ${m.cells})`);
+  const all = [...pageProblems.values(), ...counts, ...problems];
+  const listed = all.slice(0, INVENTORY_CELLS_SHOWN).join('; ');
+  return [ok(INVENTORY_CELLS_LABEL, all.length === 0,
+    `${all.length} problem(s)${all.length > INVENTORY_CELLS_SHOWN ? `, first ${INVENTORY_CELLS_SHOWN}` : ''}: ${listed}`)];
+}
+
 /**
  * Fine-tag seed-drift guard (tucca-cellag/caail-planning#339), the fine-tag analog of the THEMES seed-drift check.
  *
@@ -832,6 +915,7 @@ export function runChecks(db: Db, repoRoot: string = REPO_ROOT): CheckResult[] {
     ...checkTopicTiers(db), ...checkAxisBijection(db, repoRoot),
     ...checkCatalogHeadings(db), ...checkLicenses(db), ...checkManualLicenseKeys(db),
     ...checkDois(db), ...checkManualDoiKeys(db), ...checkRelatedDois(db), ...checkSubseries(db),
+    ...checkInventoryCells(db, repoRoot),
     ...checkSeries(db), ...checkFineTagSeedDrift(db), ...checkRowTagParity(db)];
 }
 

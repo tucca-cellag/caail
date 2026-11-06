@@ -123,8 +123,8 @@ describe('rowIdentity: the Data cell', () => {
   });
 
   it('degrades to nulls for a Data cell outside the schema rather than throwing', () => {
-    // Enforcing the cell's shape is db:check's job (tucca-cellag/caail-planning#740); a throw here would take the
-    // whole build down for a curation typo.
+    // Enforcing the cell's shape is db:check's job (checkInventoryCells, tucca-cellag/caail-planning#740);
+    // a throw here would take the whole build down for a curation typo.
     expect(rowIdentity({ Data: 'see paper' })).toMatchObject({ dataStatus: null, accession: null, dataUrl: null });
     expect(rowIdentity({ Data: '' })).toMatchObject({ dataStatus: null });
   });
