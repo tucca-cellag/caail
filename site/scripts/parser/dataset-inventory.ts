@@ -28,6 +28,7 @@ import { toString as mdastToString } from 'mdast-util-to-string';
 
 import { ACCESSION, idAccession } from '../db/lib.js';
 import { bareDoi, doiRelation } from './doi-relation.js';
+import type { DoiRelation } from './types.js';
 import { extractInventory } from '../db/extract.js';
 import { parseMarkdown } from './markdown.js';
 import { topicsByItemId } from './topics.js';
@@ -136,40 +137,28 @@ const BADGE_LINK = new RegExp('^\\[`([^`]+)`\\]\\(' + DEST + '\\)$');
 const NAMED_LINK = new RegExp('^\\[[^\\]`]+\\]\\(' + DEST + '\\)$');
 
 /**
- * The DOI a link states outright: a doi.org target on any host form, or a `doi:` parameter
- * in its query (Dataverse's `persistentId=doi:…`, possibly percent-encoded). Never derived
- * from a record URL such as `zenodo.org/records/N`: that would be a guess about the host.
+ * The DOI a link states outright: a doi.org link on any host form (its path, cut at any
+ * query string or fragment, decoded once; `bareDoi`'s shape check rejects every other host,
+ * so no host list is kept here), or a literal `doi:` token anywhere in the URL (Dataverse's
+ * `persistentId=doi:…`, Dryad's `/dataset/doi:…`). Never derived from a DOI-shaped path that
+ * carries no such token, such as bioRxiv's `/content/10.1101/…`: that would be a guess about
+ * the host.
  */
-const DOI_HOSTS: ReadonlySet<string> = new Set(['doi.org', 'dx.doi.org', 'www.doi.org']);
-
 function statedDoi(url: string): string | null {
-  let parsed: URL;
-  try { parsed = new URL(url); } catch { return null; }
-  // A doi.org link: the DOI is the path, which URL parsing has already cut off before any
-  // query string or fragment. The path stays percent-encoded, so decode it once here.
-  if (DOI_HOSTS.has(parsed.hostname.toLowerCase())) {
-    let path = parsed.pathname.slice(1).replace(/\/+$/, '');
-    try { path = decodeURIComponent(path); } catch { /* keep the raw path */ }
-    return bareDoi(path);
-  }
-  // A `doi:` query value (Dataverse's persistentId). searchParams has already decoded it once.
-  for (const value of parsed.searchParams.values()) {
-    const m = value.match(/^doi:(.+)$/i);
-    if (m) return bareDoi(m[1]!);
-  }
-  return null;
+  let base = url.split(/[?#]/)[0]!.replace(/\/+$/, '');
+  try { base = decodeURIComponent(base); } catch { /* keep the raw text */ }
+  const direct = bareDoi(base);
+  if (direct) return direct;
+  let whole = url;
+  try { whole = decodeURIComponent(whole); } catch { /* keep the raw text */ }
+  const token = whole.match(/\bdoi:\s*(10\.[^&#?\s]+)/i);
+  return token ? bareDoi(token[1]!.replace(/\/+$/, '')) : null;
 }
 
-/** A paper's DOI: a stated DOI whose registrant is not a data host, never a deposit's. */
-function publicationDoi(url: string): string | null {
+/** A stated DOI, only when its relation is the one asked for (`publication` for a paper, `own` for a deposit). */
+function statedDoiAs(url: string, relation: DoiRelation): string | null {
   const doi = statedDoi(url);
-  return doi && doiRelation(doi) === 'publication' ? doi : null;
-}
-
-/** A deposit's own DOI: a stated DOI whose registrant is a data host, never a paper's. */
-function ownDoi(url: string): string | null {
-  const doi = statedDoi(url);
-  return doi && doiRelation(doi) === 'own' ? doi : null;
+  return doi && doiRelation(doi) === relation ? doi : null;
 }
 
 /**
@@ -185,26 +174,29 @@ function ownDoi(url: string): string | null {
  *
  * The accession comes from the Data cell ONLY, never from the row's id: an id can be
  * minted from data a row merely mentions (tucca-cellag/caail-planning#715), which is the claim this field
- * exists to keep apart. A `dataDoi` is served only when it is a data host's DOI, never a
- * paper's. A cell outside these shapes yields nulls rather than throwing, since a throw here
+ * exists to keep apart. A `dataDoi` is served only when it is a data host's DOI, and a Data
+ * cell that links a paper's DOI is treated as off-schema. A cell outside these shapes yields nulls rather than throwing, since a throw here
  * would take the build down for a curation typo. Nothing rejects such a cell yet: the
  * Data-cell guard is planned for db:check (tucca-cellag/caail-planning#740), and until it lands the corpus
  * tests in dataset-identity.test.ts are what catch a silent null.
  */
 export function rowIdentity(columns: Readonly<Record<string, string>>): RowIdentity {
   const paperLink = (columns['Paper']?.trim() ?? '').match(PAPER_LINK);
-  const paperDoi = paperLink ? publicationDoi(paperLink[1]!) : null;
+  const paperDoi = paperLink ? statedDoiAs(paperLink[1]!, 'publication') : null;
 
   if ('Data' in columns) {
     const data = columns['Data']!.trim();
     if (data === 'supplementary' || data === 'unavailable') return { ...NO_IDENTITY, paperDoi, dataStatus: data };
     const badge = data.match(BADGE_LINK);
-    if (badge) {
-      return { paperDoi, dataStatus: 'deposit', accession: badge[1]!.trim(), dataUrl: badge[2]!, dataDoi: ownDoi(badge[2]!) };
-    }
-    const named = data.match(NAMED_LINK);
-    if (named) return { paperDoi, dataStatus: 'deposit', accession: null, dataUrl: named[1]!, dataDoi: ownDoi(named[1]!) };
-    return { ...NO_IDENTITY, paperDoi };
+    const named = badge ? null : data.match(NAMED_LINK);
+    const url = badge?.[2] ?? named?.[1];
+    if (!url) return { ...NO_IDENTITY, paperDoi };
+    // A Data cell linking a paper's DOI points at an article, not a deposit: off-schema (the
+    // schema's word for that is `supplementary`), so it yields no deposit fields at all and
+    // the corpus test that every Data column has a status flags it.
+    const doi = statedDoi(url);
+    if (doi && doiRelation(doi) === 'publication') return { ...NO_IDENTITY, paperDoi };
+    return { paperDoi, dataStatus: 'deposit', accession: badge ? badge[1]!.trim() : null, dataUrl: url, dataDoi: doi };
   }
 
   if ('DOI / URL' in columns) {

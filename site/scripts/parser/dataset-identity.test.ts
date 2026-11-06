@@ -81,10 +81,21 @@ describe('rowIdentity: the Data cell', () => {
     }).dataDoi).toBe('10.7910/dvn/xnfvts');
   });
 
-  it('serves a dataDoi only for a data host, never for a paper the Data cell links to', () => {
-    expect(rowIdentity({ Data: '[Article](https://doi.org/10.1038/s41467-020-00001-1)' })).toMatchObject({
-      dataStatus: 'deposit', dataUrl: 'https://doi.org/10.1038/s41467-020-00001-1', dataDoi: null,
+  it('treats a Data cell that links a paper as off-schema, with no deposit fields', () => {
+    expect(rowIdentity({ Data: '[Article](https://doi.org/10.1038/s41467-020-00001-1)' })).toEqual({
+      paperDoi: null, dataStatus: null, accession: null, dataUrl: null, dataDoi: null,
     });
+  });
+
+  it('reads a doi: token in a data host\'s path, as Dryad writes its landing pages', () => {
+    expect(rowIdentity({ Data: '[Dryad](https://datadryad.org/stash/dataset/doi:10.5061/dryad.abc12)' })).toMatchObject({
+      dataStatus: 'deposit', dataDoi: '10.5061/dryad.abc12',
+    });
+  });
+
+  it('does not infer a DOI from a path that carries no doi: token', () => {
+    expect(rowIdentity({ Paper: '[preprint](https://www.biorxiv.org/content/10.1101/2021.07.19.452953v1)' }).paperDoi)
+      .toBeNull();
   });
 
   it('decodes a percent-encoded doi.org path once', () => {
