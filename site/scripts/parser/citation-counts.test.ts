@@ -20,6 +20,9 @@ describe('citationInfo', () => {
       citationDois: ['10.1/x'],
     });
   });
+  it('serves a DOI stored in URL form as a bare DOI, so every join key has one shape', () => {
+    expect(citationInfo('https://doi.org/10.5281/Zenodo.1', 'manual', new Map()).doi).toBe('10.5281/zenodo.1');
+  });
   it('carries the DOI relation through to the card info', () => {
     expect(citationInfo('10.5281/zenodo.1', 'manual', new Map()).doiRelation).toBe('own');
     expect(citationInfo('10.1038/s41586-021-03819-2', 'manual', new Map()).doiRelation).toBe('publication');

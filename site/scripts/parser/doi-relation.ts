@@ -17,6 +17,8 @@
  * because registrants are numeric strings and `10.52810` is not `10.5281`.
  */
 
+import { doiKey } from './citations.js';
+
 /** Data-host DOI registrants → the host, for the reader of this file. */
 export const DATA_REPOSITORY_REGISTRANTS: ReadonlyMap<string, string> = new Map([
   ['10.5281', 'Zenodo'],
@@ -36,18 +38,16 @@ export const DATA_REPOSITORY_REGISTRANTS: ReadonlyMap<string, string> = new Map(
 export type DoiRelation = 'own' | 'publication';
 
 /**
- * Reduce a DOI however it was written (a doi.org URL on any host form, a `doi:` or `DOI:`
- * prefix, percent-encoded) to its bare lowercase form, or null when the value is not a DOI.
- * One normaliser for every field the API joins on, so two spellings of one DOI compare equal.
+ * A validated bare DOI: decode once, normalise with `doiKey` (the rule every citation and
+ * author join already uses, so the two cannot disagree), then require the `10.NNNN/…`
+ * shape. Null when the value is not a DOI.
  */
 export function bareDoi(value: string | null | undefined): string | null {
   if (!value) return null;
   let v = value.trim();
   try { v = decodeURIComponent(v); } catch { /* a stray % is not an encoding; keep the text */ }
-  v = v.toLowerCase()
-    .replace(/^(?:https?:\/\/)?(?:www\.|dx\.)?doi\.org\//, '')
-    .replace(/^doi:\s*/, '');
-  return /^10\.\d{4,9}\/\S+$/.test(v) ? v : null;
+  const key = doiKey(v);
+  return key && /^10\.\d{4,9}\/\S+$/.test(key) ? key : null;
 }
 
 /**

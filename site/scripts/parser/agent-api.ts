@@ -570,10 +570,13 @@ export function buildManifest(
           '`page` (e.g. "Cow", "Benchmarks"). Use the inventory rows for "what could I combine ' +
           'my own run with", and page "Benchmarks" for "what could I evaluate a model against". ' +
           'To tell whether a find is already held, match its identifier against the inventory ' +
-          'rows\' `accession`, `dataDoi` and `paperDoi` and the entries\' `doi`, comparing DOIs ' +
-          'case-insensitively; use `id` only to re-find an item you already recorded, since an ' +
-          'id can be minted from data a row merely mentions. `accession` is the primary deposit ' +
-          'named in the Data cell; secondary deposits are named only in the row\'s Description. ' +
+          'rows\' `accession`, `dataDoi`, `paperDoi` and `dataUrl` (keep a URL\'s query string: ' +
+          'many name their record there) and the entries\' `doi`, comparing DOIs as bare ' +
+          'lowercase strings. Some deposits have only a `dataUrl`. Use `id` only to re-find an ' +
+          'item you already recorded, since an id can be minted from data a row merely mentions. ' +
+          '`accession` is the primary deposit as the Data cell\'s badge names it, served as ' +
+          'written; secondary deposits are named only in the row\'s prose (Description, or Scope ' +
+          'on page "CrossSpecies"). ' +
           'An entry\'s `doiRelation` says whether its `doi` is the item\'s own ("own", a data ' +
           'host\'s) or its describing paper\'s ("publication"). One accession can sit on ' +
           'several rows when a deposit is listed on more than one page.',

@@ -307,7 +307,9 @@ export const DatasetInventoryRowSchema = z.object({
   /** what the row says about its data: from the Data cell, or `deposit` for a CrossSpecies DOI / URL
    *  link to the data itself; null when it states none (#367) */
   dataStatus: z.enum(['deposit', 'supplementary', 'unavailable']).nullable().default(null),
-  /** the deposit's accession as its Data-cell badge names it, never read from the id; null otherwise */
+  /** the identifier the Data cell's badge names, served as written and never read from the id:
+   *  usually an archive accession (GSE…, PRJNA…, SRA…, versioned where the badge is), sometimes
+   *  a repository's own id (OpenML-505) or name; null with no badge */
   accession: z.string().nullable().default(null),
   /** the deposit's link; null when there is no deposit */
   dataUrl: z.string().nullable().default(null),

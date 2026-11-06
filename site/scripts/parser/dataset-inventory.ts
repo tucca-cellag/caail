@@ -141,10 +141,12 @@ const NAMED_LINK = new RegExp('^\\[[^\\]`]+\\]\\(' + DEST + '\\)$');
  * from a record URL such as `zenodo.org/records/N`: that would be a guess about the host.
  */
 function statedDoi(url: string): string | null {
-  let u = url;
-  try { u = decodeURIComponent(u); } catch { /* keep the raw text */ }
-  const m = u.match(/^(?:https?:\/\/)?(?:www\.|dx\.)?doi\.org\/(\S+)$/i) ?? u.match(/[?&][A-Za-z]*=doi:([^&#\s]+)/i);
-  return m ? bareDoi(m[1]!) : null;
+  // The DOI path ends at a query string or fragment (`?tab=files`, `#versions`), which are
+  // not part of it. bareDoi decodes once, so neither branch decodes here.
+  const path = url.match(/^(?:https?:\/\/)?(?:www\.|dx\.)?doi\.org\/([^?#\s]+)/i);
+  if (path) return bareDoi(path[1]!);
+  const param = url.match(/[?&][A-Za-z]*=doi(?::|%3A)([^&#\s]+)/i);
+  return param ? bareDoi(param[1]!) : null;
 }
 
 /**

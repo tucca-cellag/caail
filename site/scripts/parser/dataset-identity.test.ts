@@ -73,6 +73,13 @@ describe('rowIdentity: the Data cell', () => {
     }).dataDoi).toBe('10.7910/dvn/xnfvts');
   });
 
+  it('ends a stated DOI at its query string or fragment', () => {
+    expect(rowIdentity({ Data: '[Zenodo](https://doi.org/10.5281/zenodo.123?tab=files)' }).dataDoi)
+      .toBe('10.5281/zenodo.123');
+    expect(rowIdentity({ Data: '[Zenodo](https://doi.org/10.5281/zenodo.123#versions)' }).dataDoi)
+      .toBe('10.5281/zenodo.123');
+  });
+
   it('reads the two status words, with no accession, link or DOI', () => {
     for (const word of ['supplementary', 'unavailable'] as const) {
       expect(rowIdentity({ Data: word })).toEqual({
@@ -126,10 +133,12 @@ describe('inventory identity — real corpus', () => {
     for (const r of rows.filter((x) => 'Data' in x.columns)) expect(r.dataStatus, r.id).not.toBeNull();
   });
 
-  it('gives every row whose Paper cell is a link a DOI, so a silent null cannot ship', () => {
-    for (const r of rows.filter((x) => /^\[(?:DOI|preprint)\]\(/.test(x.columns.Paper ?? ''))) {
-      expect(r.paperDoi, r.id).not.toBeNull();
-    }
+  it('gives every row that names a paper a DOI, so a silent null cannot ship', () => {
+    // Selects on what the cell says, not on the shapes the parser accepts: a Paper link in
+    // any other form must fail here rather than drop out of the check.
+    const named = rows.filter((x) => 'Paper' in x.columns && x.columns.Paper!.trim() !== 'none named');
+    expect(named.length).toBeGreaterThan(150);
+    for (const r of named) expect(r.paperDoi, `${r.id}: ${r.columns.Paper}`).not.toBeNull();
   });
 
   it('gives every CrossSpecies row a DOI or a data link from its DOI / URL cell', () => {

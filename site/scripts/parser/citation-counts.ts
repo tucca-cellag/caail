@@ -17,7 +17,7 @@ import {
   isOaByDoi,
   doiKey,
 } from './citations.js';
-import { doiRelation, type DoiRelation } from './doi-relation.js';
+import { bareDoi, doiRelation, type DoiRelation } from './doi-relation.js';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const CACHE_PATH = join(HERE, 'citation-cache.json');
@@ -113,7 +113,7 @@ export function citationInfo(
     if (c != null) { total += c; citationDois.push(k); }
   }
   return {
-    doi: doi ?? null,
+    doi: bareDoi(doi) ?? doi ?? null,
     doiSource: source ?? null,
     doiRelation: doiRelation(doi),
     citationCount: citationDois.length > 0 ? total : null,

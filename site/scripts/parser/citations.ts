@@ -73,8 +73,10 @@ export type CitationCache = z.infer<typeof CitationCacheSchema>;
 export function doiKey(doi: string | null | undefined): string | null {
   if (!doi) return null;
   let d = doi.trim().toLowerCase();
-  d = d.replace(/^https?:\/\/(dx\.)?doi\.org\//, '');
-  d = d.replace(/^doi:/, '');
+  // Any doi.org host form, with or without a scheme, and a `doi:` prefix with or without a
+  // space. A bare DOI never starts with either, so this only ever removes wrapping.
+  d = d.replace(/^(?:https?:\/\/)?(?:www\.|dx\.)?doi\.org\//, '');
+  d = d.replace(/^doi:\s*/, '');
   return d || null;
 }
 
