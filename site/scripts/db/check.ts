@@ -21,7 +21,7 @@
  *    ResearchAreas page. Asserted through `area_key`, never by label equality.
  *    Research-area axis only; the method-row axis is deliberately not gated.
  *  - inventory Data cells: a deposit link, `supplementary` or `unavailable`, read by the
- *    parser's own `rowIdentity` (checkInventoryCells).
+ *    parser's own `readDataCell` (checkInventoryCells).
  */
 
 import { readFileSync, existsSync } from 'node:fs';
@@ -35,8 +35,9 @@ import { MATRIX_SECTION } from '../parser/types.js';
 import { seriesRecency, EDITION_SORT_RULE } from '../parser/reports.js';
 import type { TaxonomyData } from '../parser/types.js';
 import { DOI_SHAPE } from '../parser/doi-relation.js';
-import { rowIdentity } from '../parser/dataset-inventory.js';
-import { extractInventory } from './extract.js';
+import {
+  labelCells, readDataCell, readInventoryHeader, readLinkCell, type InventoryHeader,
+} from '../parser/dataset-inventory.js';
 
 const MANUAL_LICENSES_PATH = join(SITE_ROOT, 'scripts', 'db', 'licenses-manual.json');
 const MANUAL_DOIS_PATH = join(SITE_ROOT, 'scripts', 'db', 'dois-manual.json');
@@ -556,65 +557,63 @@ export function checkSubseries(db: Db, subseriesPath: string = SUBSERIES_PATH): 
 export const INVENTORY_CELLS_LABEL =
   'dataset_rows: every Data cell is a deposit link, supplementary or unavailable (CrossSpecies: its DOI / URL cell is a link)';
 
-/** A page's inventory header labels, read from its committed table; null when the page or table is missing. */
-export function committedInventoryHeader(page: string, repoRoot: string = REPO_ROOT): string[] | null {
-  const path = join(repoRoot, 'Datasets', `${page}.md`);
-  return existsSync(path) ? extractInventory(path)?.header ?? null : null;
-}
+/** How many problems one failing run names; the count always covers them all. */
+export const INVENTORY_CELLS_SHOWN = 10;
 
 /**
  * Inventory Data-cell vocabulary (tucca-cellag/caail-planning#740). `Datasets/CLAUDE.md` allows a row's
  * Data cell to hold a link to the primary deposit (an accession badge or a named-repository link) or
  * one of two status words, `supplementary` and `unavailable`. A study with nothing else to show gets
- * no row, so any other cell (`on request`, `none named`, a bare accession) fails here, naming the row.
+ * no row, so any other cell (`on request`, `none named`, a bare accession) fails here, naming the row,
+ * the cell and the reason.
  *
- * The shape is read by the parser's `rowIdentity`, the function that fills the API's identity fields,
- * rather than by a second copy of the vocabulary: a cell the API serves with no `dataStatus` is a cell
- * this rejects, and that includes a Data cell linking a paper's DOI instead of a deposit. Columns are
- * found by header label, from the page's committed inventory table, because the DB stores cells
- * without labels and multi-species pages insert a Species column.
+ * The cell is read by the parser's own `readDataCell`, the reader `rowIdentity` uses to fill the
+ * API's identity fields, rather than by a second copy of the vocabulary, so a cell the API serves with
+ * no `dataStatus` is a cell this rejects. That includes a link whose target is not an http(s) address,
+ * a status word written as a link, and a link to a DOI whose registrant is not a data host, for which
+ * the reason says whether to move it to the Paper cell or add the registrant. The header comes from
+ * the same `readInventoryHeader` the API build uses, which trims labels and refuses a repeated one.
  *
- * `CrossSpecies.md` has no Data column. Its `DOI / URL` cell must be a link instead (the paper, a
- * deposit's DOI, or where the data sit), and takes no status word, since a resource with nothing to
- * link has no row. A page with neither column fails rather than being skipped, so a new table shape
- * cannot drop out of the check.
+ * `CrossSpecies.md` has no Data column. Its `DOI / URL` cell is read by `readLinkCell` and must be a
+ * link to an http(s) address (the paper, a deposit's DOI, or where the data sit); it takes no status
+ * word, since a resource with nothing to link has no row. A page with neither column, or no table,
+ * fails rather than being skipped, so a new table shape cannot drop out of the check.
  */
 export function checkInventoryCells(
   db: Db,
-  headerFor: (page: string) => string[] | null = committedInventoryHeader,
+  headerFor: (page: string) => InventoryHeader = (page) => readInventoryHeader(page),
 ): CheckResult[] {
-  const rows = db.prepare('SELECT item_id, page, cells_json FROM dataset_rows ORDER BY page, ordinal')
+  const rows = db.prepare('SELECT item_id, page, cells_json FROM dataset_rows ORDER BY page, ordinal, item_id')
     .all() as { item_id: string; page: string; cells_json: string }[];
-  const headers = new Map<string, string[] | null>();
+  const headers = new Map<string, InventoryHeader>();
   const pageProblems = new Set<string>();
   const problems: string[] = [];
   const shown = (cell: string): string => JSON.stringify(cell.length > 80 ? `${cell.slice(0, 77)}...` : cell);
   for (const r of rows) {
     if (!headers.has(r.page)) headers.set(r.page, headerFor(r.page));
-    const header = headers.get(r.page)!;
-    if (!header) { pageProblems.add(`page ${r.page} has no inventory table (first row ${r.item_id})`); continue; }
+    const read = headers.get(r.page)!;
+    if ('problem' in read) { pageProblems.add(`page ${r.page}: ${read.problem} (first row ${r.item_id})`); continue; }
     let cells: unknown;
     try { cells = JSON.parse(r.cells_json); } catch { problems.push(`${r.item_id}: cells_json is not JSON`); continue; }
-    if (!Array.isArray(cells) || cells.length !== header.length) {
-      problems.push(`${r.item_id}: ${Array.isArray(cells) ? cells.length : 'no'} cells against ${header.length} columns on ${r.page}`);
+    const columns = Array.isArray(cells) ? labelCells(read.header, cells.map(String)) : null;
+    if (!columns) {
+      problems.push(`${r.item_id}: ${Array.isArray(cells) ? cells.length : 'no'} cells against ${read.header.length} columns on ${r.page}`);
       continue;
     }
-    const columns: Record<string, string> = Object.fromEntries(header.map((h, i) => [h, String(cells[i])]));
-    const identity = rowIdentity(columns);
     if ('Data' in columns) {
-      if (identity.dataStatus === null) {
-        problems.push(`${r.item_id}: Data cell ${shown(columns['Data']!)} is not a deposit link, supplementary or unavailable`);
-      }
+      const data = readDataCell(columns['Data']!);
+      if (data.kind === 'off-schema') problems.push(`${r.item_id}: Data cell ${shown(columns['Data']!)} ${data.reason}`);
     } else if ('DOI / URL' in columns) {
-      if ((identity.paperDoi ?? identity.dataUrl) === null) {
-        problems.push(`${r.item_id}: DOI / URL cell ${shown(columns['DOI / URL']!)} is not a link`);
-      }
+      const link = readLinkCell(columns['DOI / URL']!);
+      if (link.kind === 'off-schema') problems.push(`${r.item_id}: DOI / URL cell ${shown(columns['DOI / URL']!)} ${link.reason}`);
     } else {
       pageProblems.add(`page ${r.page} has neither a Data nor a DOI / URL column (first row ${r.item_id})`);
     }
   }
   const all = [...pageProblems, ...problems];
-  return [ok(INVENTORY_CELLS_LABEL, all.length === 0, `${all.length} problem(s): ${all.slice(0, 3).join('; ')}`)];
+  const listed = all.slice(0, INVENTORY_CELLS_SHOWN).join('; ');
+  return [ok(INVENTORY_CELLS_LABEL, all.length === 0,
+    `${all.length} problem(s)${all.length > INVENTORY_CELLS_SHOWN ? `, first ${INVENTORY_CELLS_SHOWN}` : ''}: ${listed}`)];
 }
 
 /**
@@ -900,7 +899,7 @@ export function runChecks(db: Db, repoRoot: string = REPO_ROOT): CheckResult[] {
     ...checkTopicTiers(db), ...checkAxisBijection(db, repoRoot),
     ...checkCatalogHeadings(db), ...checkLicenses(db), ...checkManualLicenseKeys(db),
     ...checkDois(db), ...checkManualDoiKeys(db), ...checkRelatedDois(db), ...checkSubseries(db),
-    ...checkInventoryCells(db, (page) => committedInventoryHeader(page, repoRoot)),
+    ...checkInventoryCells(db, (page) => readInventoryHeader(page, repoRoot)),
     ...checkSeries(db), ...checkFineTagSeedDrift(db), ...checkRowTagParity(db)];
 }
 

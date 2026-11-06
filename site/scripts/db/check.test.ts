@@ -7,12 +7,13 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { writeFileSync, mkdtempSync } from 'node:fs';
+import { writeFileSync, mkdtempSync, mkdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { openDb, importNdjson, type Db } from './lib.js';
-import { checkIntegrity, checkReachability, checkColumnDrift, checkTaxonomyAxes, checkTopicTiers, checkAxisBijection, checkCatalogHeadings, checkLicenses, checkManualLicenseKeys, checkDois, checkManualDoiKeys, checkRelatedDois, checkSubseries, checkRowTagParity, checkFineTagSeedDrift, checkInventoryCells, INVENTORY_CELLS_LABEL, runChecks } from './check.js';
+import { checkIntegrity, checkReachability, checkColumnDrift, checkTaxonomyAxes, checkTopicTiers, checkAxisBijection, checkCatalogHeadings, checkLicenses, checkManualLicenseKeys, checkDois, checkManualDoiKeys, checkRelatedDois, checkSubseries, checkRowTagParity, checkFineTagSeedDrift, checkInventoryCells, INVENTORY_CELLS_LABEL, INVENTORY_CELLS_SHOWN, runChecks } from './check.js';
+import { readInventoryHeader } from '../parser/dataset-inventory.js';
 import { THEME_SLUGS, FINE_TAGS } from './seed.js';
 
 const failing = (results: { label: string; ok: boolean }[], match: RegExp) =>
@@ -740,8 +741,12 @@ describe('checkInventoryCells (tucca-cellag/caail-planning#740)', () => {
   // Data at a position no real page uses, so reading the cell by index rather than by label fails.
   const SHIFTED = ['Study', 'Species', 'Paper', 'Data', 'Description'];
   const CROSS = ['Resource', 'Year', 'Format', 'Scope', 'DOI / URL', 'License'];
-  const headers: Record<string, string[]> = { Cow: SPECIES, Shifted: SHIFTED, CrossSpecies: CROSS, Odd: ['Study', 'Notes'] };
-  const headerFor = (page: string): string[] | null => headers[page] ?? null;
+  // A table carrying both a Paper and a DOI / URL column: the guard must judge the DOI / URL cell itself.
+  const BOTH = ['Resource', 'Paper', 'DOI / URL'];
+  const headers: Record<string, string[]> = {
+    Cow: SPECIES, Shifted: SHIFTED, CrossSpecies: CROSS, Both: BOTH, Odd: ['Study', 'Notes'],
+  };
+  const headerFor = (page: string) => (headers[page] ? { header: headers[page]! } : { problem: `Datasets/${page}.md does not exist` });
   const BADGE = '[`GSE1`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE1)';
   const cellsFor = (header: string[], cells: Record<string, string>): string[] => header.map((h) => cells[h] ?? 'x');
   const insRow = (db: Db, id: string, page: string, cells: string[]): void => {
@@ -765,8 +770,23 @@ describe('checkInventoryCells (tucca-cellag/caail-planning#740)', () => {
     for (const data of ['none named', 'see paper', 'GSE1', '']) expect(withRow('Cow', { Data: data }).ok, data).toBe(false);
   });
 
-  it('rejects a Data cell that links a paper rather than a deposit', () => {
-    expect(withRow('Cow', { Data: '[DOI](https://doi.org/10.1038/s41586-020-0001-1)' }).ok).toBe(false);
+  it('rejects a Data cell that links a paper rather than a deposit, and says where each fix goes', () => {
+    const r = withRow('Cow', { Data: '[DOI](https://doi.org/10.1038/s41586-020-0001-1)' });
+    expect(r.ok).toBe(false);
+    expect(r.detail).toContain('Paper cell');
+    // A real deposit on a host the registrant list lacks fails too; the reason names the list to extend.
+    expect(withRow('Cow', { Data: '[MassIVE](https://doi.org/10.25345/C5XYZ)' }).detail).toContain('DATA_REPOSITORY_REGISTRANTS');
+  });
+
+  it('rejects a link that is not to an http(s) address, or that wraps a status word', () => {
+    for (const data of [
+      '[on request](mailto:author@example.org)', '[Zenodo](#)', '[`GSE1`](geo/GSE1)',
+      '[unavailable](https://example.org/embargo)', '[supplementary](https://example.org/s1.xlsx)',
+    ]) {
+      expect(withRow('Cow', { Data: data }).ok, data).toBe(false);
+    }
+    expect(withRow('Cow', { Data: '[on request](mailto:author@example.org)' }).detail).toContain('http(s)');
+    expect(withRow('Cow', { Data: '[supplementary](https://example.org/s1.xlsx)' }).detail).toContain('status word');
   });
 
   it('accepts an accession badge, a named repository link and both status words', () => {
@@ -780,12 +800,39 @@ describe('checkInventoryCells (tucca-cellag/caail-planning#740)', () => {
     expect(withRow('Shifted', { Paper: 'none named', Data: BADGE }).ok).toBe(true);
   });
 
-  it('requires a CrossSpecies DOI / URL cell to be a link, and takes no status word there', () => {
+  it('requires a CrossSpecies DOI / URL cell to be a link to an http(s) address, and takes no status word there', () => {
     expect(withRow('CrossSpecies', { 'DOI / URL': 'supplementary' }).ok).toBe(false);
     expect(withRow('CrossSpecies', { 'DOI / URL': 'on request' }).ok).toBe(false);
+    expect(withRow('CrossSpecies', { 'DOI / URL': '[contact](mailto:author@example.org)' }).ok).toBe(false);
     for (const link of ['[10.5281/zenodo.1](https://doi.org/10.5281/zenodo.1)', '[10.1186/x](https://doi.org/10.1186/x)', '[GitHub](https://github.com/a/b)']) {
       expect(withRow('CrossSpecies', { 'DOI / URL': link }).ok, link).toBe(true);
     }
+  });
+
+  it('judges the DOI / URL cell itself, even when a Paper cell supplies a DOI', () => {
+    expect(withRow('Both', { Paper: '[DOI](https://doi.org/10.1038/x)', 'DOI / URL': 'on request' }).ok).toBe(false);
+  });
+
+  it(`names up to ${INVENTORY_CELLS_SHOWN} problems and counts them all`, () => {
+    const db = miniDb();
+    for (let i = 0; i < 12; i++) insRow(db, `ds:study-${String(i).padStart(2, '0')}`, 'Cow', cellsFor(SPECIES, { Data: 'on request' }));
+    const r = result(db);
+    expect(r.detail).toMatch(/^12 problem\(s\), first 10:/);
+    expect(r.detail).toContain('ds:study-09');
+    expect(r.detail).not.toContain('ds:study-10');
+  });
+
+  it('reads the header through readInventoryHeader, which refuses a repeated label', () => {
+    const root = mkdtempSync(join(tmpdir(), 'caail-inv-'));
+    mkdirSync(join(root, 'Datasets'));
+    writeFileSync(join(root, 'Datasets', 'Dup.md'),
+      '# Dup\n\n## Complete data inventory\n\n| Study | Data | Data |\n| --- | --- | --- |\n| A | on request | supplementary |\n');
+    expect(readInventoryHeader('Dup', root)).toEqual({ problem: expect.stringContaining('repeats a column label') });
+    expect(readInventoryHeader('Missing', root)).toEqual({ problem: expect.stringContaining('does not exist') });
+    const db = miniDb(); insRow(db, 'ds:study-d', 'Dup', ['A', 'on request', 'supplementary']);
+    const r = checkInventoryCells(db, (page) => readInventoryHeader(page, root)).find((x) => x.label === INVENTORY_CELLS_LABEL)!;
+    expect(r.ok).toBe(false);
+    expect(r.detail).toContain('repeats a column label');
   });
 
   it('fails a page whose inventory has neither a Data nor a DOI / URL column, rather than skipping it', () => {
