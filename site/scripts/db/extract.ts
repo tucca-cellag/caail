@@ -7,7 +7,7 @@
 
 import { readFileSync } from 'node:fs';
 import { parseMarkdown, sectionsAfter } from '../parser/markdown.js';
-import { entryHeadingDepth, isEntryHeading, pageFromPath } from '../parser/datasets.js';
+import { entryHeadingDepth, isEntryHeading, isOnRequestHeading, ON_REQUEST_HEADING, pageFromPath } from '../parser/datasets.js';
 import { isEditionSort, invalidEditionSort } from '../parser/reports.js';
 import { slugify } from './lib.js';
 import type { Table, TableRow, TableCell } from 'mdast';
@@ -283,7 +283,7 @@ export function extractReports(path: string): ReportRaw[] {
 }
 
 /** The heading of a page's list of studies whose data are shared only on request (tucca-cellag/caail-planning#750). */
-export const ON_REQUEST_HEADING = 'Data on request';
+export { ON_REQUEST_HEADING };
 /** That list's columns, in the order db:emit writes them. */
 export const ON_REQUEST_COLUMNS: readonly string[] = ['Study', 'Paper', 'Data availability statement'];
 
@@ -302,16 +302,22 @@ export const onRequestPaperCell = (doi: string): string => `[DOI](https://doi.or
  * three ON_REQUEST_COLUMNS, a Paper cell `[DOI](https://doi.org/<doi>)`, and the statement in
  * straight double quotes. Anything else throws naming the page, since a hand edit that
  * changed the shape would otherwise be dropped without a word on the next emit.
+ *
+ * Cells are read as their raw source text, not re-rendered through `inlineMd`: a statement
+ * is the paper's own words, and rendering would turn an email address or URL in it into link
+ * syntax and `_x_` into `*x*`, so a bootstrap would quietly rewrite what the paper said.
  */
 export function extractOnRequest(path: string): OnRequestRow[] | null {
   const src = readFileSync(path, 'utf-8');
-  const sec = sectionsAfter(parseMarkdown(src), 2).find((s) => s.heading.trim() === ON_REQUEST_HEADING);
+  const sec = sectionsAfter(parseMarkdown(src), 2).find((s) => isOnRequestHeading(s.heading));
   if (!sec) return null;
   const page = pageFromPath(path);
   const table = sec.nodes.find((n: any) => n.type === 'table') as Table | undefined;
   if (!table) throw new Error(`extractOnRequest(${page}): "## ${ON_REQUEST_HEADING}" has no table`);
-  const cellMd = (c: TableCell) => (c.children as any[]).map(inlineMd).join('').trim();
-  const [header, ...rows] = (table.children as TableRow[]).map((r) => (r.children as TableCell[]).map(cellMd));
+  // A cell's source span includes its bounding pipes; the guard keeps `|` out of the text itself.
+  const rawCell = (c: TableCell) =>
+    src.slice(c.position!.start.offset, c.position!.end.offset).replace(/^\|/, '').replace(/\|$/, '').trim();
+  const [header, ...rows] = (table.children as TableRow[]).map((r) => (r.children as TableCell[]).map(rawCell));
   if (header!.join(' | ') !== ON_REQUEST_COLUMNS.join(' | ')) {
     throw new Error(`extractOnRequest(${page}): columns are "${header!.join(' | ')}", expected "${ON_REQUEST_COLUMNS.join(' | ')}"`);
   }

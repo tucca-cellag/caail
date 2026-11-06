@@ -19,8 +19,8 @@ import { emitDatasetPage } from './emit.js';
 import { extractOnRequest, ON_REQUEST_HEADING } from './extract.js';
 import { seedOnRequest } from './seed.js';
 import { checkOnRequest, ON_REQUEST_LABEL } from './check.js';
-import { ON_REQUEST_PAGES } from '../parser/datasets.js';
-import { buildOnRequestStudies } from '../parser/datasets-on-request.js';
+import { isEntryHeading, ON_REQUEST_PAGES } from '../parser/datasets.js';
+import { buildOnRequestStudies, onRequestDrift } from '../parser/datasets-on-request.js';
 
 const TMP = mkdtempSync(join(tmpdir(), 'caail-onreq-'));
 const ROW = { doi: '10.1000/abc', study: 'A study (Author et al. 2024)', statement: 'Data will be made available on request.' };
@@ -32,6 +32,9 @@ function dbWith(page: string, rows: { doi: string; study: string; statement: str
   rows.forEach((r, i) => ins.run(r.doi, page, r.study, r.statement, i));
   return db;
 }
+
+/** The Data on request guard's result for a DB. */
+const result = (db: Db, root = REPO_ROOT) => checkOnRequest(db, root).find((r) => r.label === ON_REQUEST_LABEL)!;
 
 /** Emit a fixture page and read the result back. */
 function emitFixture(name: string, text: string, rows: typeof ROW[]): string {
@@ -83,6 +86,64 @@ describe('emitDatasetPage: the Data on request section', () => {
   });
 });
 
+describe('round 1 fixes', () => {
+  it('never counts the list\'s heading, or a ### under it, as a dataset entry, on Benchmarks or any page', () => {
+    expect(isEntryHeading('Benchmarks', 'Data on request', '')).toBe(false);
+    expect(isEntryHeading('Benchmarks', 'data on Request', '')).toBe(false);
+    expect(isEntryHeading('Cow', 'A note', 'Data on request')).toBe(false);
+    expect(isEntryHeading('Cow', 'An atlas', 'Featured atlases')).toBe(true);
+  });
+
+  it('keeps a statement verbatim through emit and read-back, email addresses, URLs and underscores included', () => {
+    const rows = [{ ...ROW, statement: 'Ask a.b@uni.edu or see https://zenodo.org/r/1 and data_v1_final.' }];
+    const src = join(TMP, 'Verbatim.md');
+    writeFileSync(src, emitFixture('Verbatim', '# Verbatim\n\n## Further reading\n\n- a link\n', rows));
+    expect(extractOnRequest(src)).toEqual(rows);
+  });
+
+  it('orders rows that share an ordinal by DOI, so every run emits one order', () => {
+    const db = openDb();
+    const ins = db.prepare('INSERT INTO datasets_on_request(doi,page,study,statement,ordinal) VALUES(?,?,?,?,?)');
+    ins.run('10.1000/zzz', 'Tie', 'Z study', 'Ask.', 0);
+    ins.run('10.1000/aaa', 'Tie', 'A study', 'Ask.', 0);
+    const src = join(TMP, 'Tie.md');
+    writeFileSync(src, '# Tie\n\n## Further reading\n\n- a link\n');
+    const out = emitDatasetPage(db, src, 'Tie');
+    expect(out.indexOf('10.1000/aaa')).toBeLessThan(out.indexOf('10.1000/zzz'));
+  });
+
+  it('regenerates an existing section where it stands rather than adding a second, and finds a footer in any case', () => {
+    const after =
+      '# After\n\n## Further reading\n\n- a link\n\n## Data on request\n\n| Study | Paper | Data availability statement |\n' +
+      '|---|---|---|\n| Old | [DOI](https://doi.org/10.1000/old) | "Old." |\n';
+    expect(emitFixture('After', after, [ROW]).match(/## Data on request/g)).toHaveLength(1);
+    const capital = emitFixture('Capital', '# Capital\n\n## Further Reading\n\n- a link\n', [ROW]);
+    expect(capital.indexOf('## Data on request')).toBeLessThan(capital.indexOf('## Further Reading'));
+  });
+
+  it('reports the first difference between stored rows and the pages, beyond a count', () => {
+    const stored = [{ page: 'Cow', doi: '10.1/a', study: 'S', statement: 'Ask.' }];
+    expect(onRequestDrift(stored, stored)).toBeNull();
+    expect(onRequestDrift(stored, [{ ...stored[0]!, statement: 'Edited.' }])).toContain('statement differs');
+    expect(onRequestDrift(stored, [{ ...stored[0]!, study: 'Edited' }])).toContain('study differs');
+    expect(onRequestDrift(stored, [])).toContain('stored but its page does not list it');
+    expect(onRequestDrift([], stored)).toContain('on the page but not stored');
+  });
+
+  it('refuses an on-request DOI that an inventory row names as its paper or a curated entry carries', () => {
+    const inRow = dbWith('Cow', [ROW]);
+    inRow.exec('PRAGMA foreign_keys = OFF');
+    // Cow's real header has eight columns: Study | Paper | Data | Type | Tissue | Description | Size | Area of research.
+    inRow.prepare("INSERT INTO dataset_rows(item_id,page,cells_json,subseries,ordinal) VALUES('ds:held-row','Cow',?,NULL,0)")
+      .run(JSON.stringify(['Held', '[DOI](https://doi.org/10.1000/abc)', 'supplementary', 'x', 'x', 'x', 'x', 'x']));
+    expect(result(inRow).detail).toContain('also the paper of ds:held-row');
+    const inEntry = dbWith('Cow', [ROW]);
+    inEntry.exec('PRAGMA foreign_keys = OFF');
+    inEntry.prepare("INSERT INTO dataset_entries(item_id,name,url,page,section,kind,heading_md,body_md,doi,doi_source,ordinal) VALUES('ds:held-entry','E',NULL,'Cow','S','other','E','b','10.1000/abc','manual',0)").run();
+    expect(result(inEntry).detail).toContain('also the paper of ds:held-entry');
+  });
+});
+
 describe('extractOnRequest', () => {
   const page = (table: string): string => {
     const src = join(TMP, `x-${Math.random().toString(36).slice(2)}.md`);
@@ -120,8 +181,6 @@ describe('seedOnRequest and checkOnRequest', () => {
       { doi: '10.1000/two', page: 'Cow', study: 'Two', statement: 'Ask too.', ordinal: 1 },
     ]);
   });
-
-  const result = (db: Db, root = REPO_ROOT) => checkOnRequest(db, root).find((r) => r.label === ON_REQUEST_LABEL)!;
 
   it('passes a well-formed row', () => {
     expect(result(dbWith('Cow', [ROW])).ok).toBe(true);
@@ -170,5 +229,7 @@ describe('the Data on request list on the real corpus', () => {
       expect(s.dataStatus).toBe('on-request');
       expect(Object.keys(s)).not.toContain('id');
     }
+    // The page's cell italicises the species; the API serves the title as plain text.
+    expect(studies.find((s) => s.paperDoi === '10.3390/cells12182325')!.study).toContain('(Paralichthys olivaceus)');
   });
 });

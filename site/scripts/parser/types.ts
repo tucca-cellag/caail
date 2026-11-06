@@ -1132,7 +1132,7 @@ export const ApiCatalogIndexSchema = z.strictObject({
 export const OnRequestStudySchema = z.strictObject({
   /** the dataset page that lists it ('Cow', 'CHOReference') */
   page: z.string(),
-  /** the study as the page names it: title, authors and year */
+  /** the study as the page names it, as plain text: title, then authors and year */
   study: z.string(),
   /** bare lowercase DOI of the paper */
   paperDoi: z.string(),

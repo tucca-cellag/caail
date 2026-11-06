@@ -35,9 +35,10 @@ import { AREAS } from '../parser/areas.js';
 import { MATRIX_SECTION } from '../parser/types.js';
 import { seriesRecency, EDITION_SORT_RULE } from '../parser/reports.js';
 import type { TaxonomyData } from '../parser/types.js';
-import { DOI_SHAPE } from '../parser/doi-relation.js';
+import { bareDoi, DOI_SHAPE } from '../parser/doi-relation.js';
 import {
-  DATA_CELL_FORMS, labelCells, parseRowCells, readDataCell, readInventoryHeader, readLinkCell, type InventoryHeader,
+  DATA_CELL_FORMS, labelCells, parseRowCells, readDataCell, readInventoryHeader, readLinkCell, rowIdentity,
+  type InventoryHeader,
 } from '../parser/dataset-inventory.js';
 
 const MANUAL_LICENSES_PATH = join(SITE_ROOT, 'scripts', 'db', 'licenses-manual.json');
@@ -559,21 +560,42 @@ export const INVENTORY_CELLS_LABEL =
   `dataset_rows: every Data cell is ${DATA_CELL_FORMS} (CrossSpecies: its DOI / URL cell is a link)`;
 
 export const ON_REQUEST_LABEL =
-  'datasets_on_request: every row has a bare DOI, a non-Benchmarks dataset page, a study and a statement that fit a table cell';
+  'datasets_on_request: every row has a bare DOI no dataset already holds, a non-Benchmarks dataset page, ' +
+  'and a study and statement that fit a table cell';
 
 /**
  * Shape of the Data on request list (tucca-cellag/caail-planning#750): a bare lowercase DOI (the
  * key, and the Paper cell's target), a page from ON_REQUEST_PAGES whose Markdown exists
  * (never Benchmarks, whose H2s are entries, so a `## Data on request` there would count as a
  * dataset), and a non-empty study and statement with no `|` or line break, either of which
- * would break the emitted table. It checks shape, not the statement's truth.
+ * would break the emitted table. It also refuses a DOI that an inventory row names as its paper
+ * or a curated entry carries, since that study holds public data. It does not check the
+ * statement against the paper.
  */
 export function checkOnRequest(db: Db, repoRoot: string = REPO_ROOT): CheckResult[] {
   const rows = db.prepare('SELECT doi, page, study, statement FROM datasets_on_request ORDER BY ordinal, doi')
     .all() as { doi: string; page: string; study: string; statement: string }[];
   const problems: string[] = [];
   const unsafe = (s: string): boolean => /[|\r\n]/.test(s);
+  // A study with public data has an inventory row or a curated entry. Listing it as on request
+  // as well would serve one paper as both holding data and holding none, so the list refuses
+  // any DOI an inventory row names as its paper or a curated entry carries.
+  const held = new Map<string, string>();
+  const headers = new Map<string, InventoryHeader>();
+  for (const d of db.prepare('SELECT item_id, page, cells_json FROM dataset_rows').all() as { item_id: string; page: string; cells_json: string }[]) {
+    if (!headers.has(d.page)) headers.set(d.page, readInventoryHeader(d.page, repoRoot));
+    const h = headers.get(d.page)!;
+    const parsed = parseRowCells(d.cells_json);
+    const cols = 'header' in h && 'cells' in parsed ? labelCells(h.header, parsed.cells) : null;
+    const doi = cols ? rowIdentity(cols).paperDoi : null;
+    if (doi) held.set(doi, d.item_id);
+  }
+  for (const e of db.prepare('SELECT item_id, doi FROM dataset_entries WHERE doi IS NOT NULL').all() as { item_id: string; doi: string }[]) {
+    const doi = bareDoi(e.doi);
+    if (doi) held.set(doi, e.item_id);
+  }
   for (const r of rows) {
+    if (held.has(r.doi)) problems.push(`${r.doi}: also the paper of ${held.get(r.doi)}, which holds public data, so it does not belong on this list`);
     if (!DOI_SHAPE.test(r.doi) || r.doi !== r.doi.toLowerCase()) problems.push(`${r.doi}: not a bare lowercase DOI`);
     if (!ON_REQUEST_PAGES.includes(r.page)) problems.push(`${r.doi}: page "${r.page}" cannot carry a Data on request list`);
     else if (!existsSync(join(repoRoot, 'Datasets', `${r.page}.md`))) problems.push(`${r.doi}: Datasets/${r.page}.md does not exist`);

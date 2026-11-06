@@ -15,7 +15,7 @@
 
 import { readFileSync } from 'node:fs';
 import { parseMarkdown } from '../parser/markdown.js';
-import { entryHeadingDepth, isEntryHeading } from '../parser/datasets.js';
+import { entryHeadingDepth, isEntryHeading, isOnRequestHeading } from '../parser/datasets.js';
 import {
   inlineMd, flat, extractInventory, ON_REQUEST_COLUMNS, ON_REQUEST_HEADING, onRequestPaperCell,
 } from './extract.js';
@@ -231,8 +231,13 @@ export function emitDatasetPage(db: Db, srcPath: string, page: string): string {
     { cells_json: string }[];
   const entries = db.prepare('SELECT heading_md,body_md FROM dataset_entries WHERE page=? ORDER BY ordinal').all(page) as
     { heading_md: string; body_md: string }[];
-  const onRequest = db.prepare('SELECT doi,study,statement FROM datasets_on_request WHERE page=? ORDER BY ordinal').all(page) as
+  // `doi` breaks an ordinal tie, as the NDJSON export's sort does, so two rows given one
+  // ordinal by hand still emit in one order on every run.
+  const onRequest = db.prepare('SELECT doi,study,statement FROM datasets_on_request WHERE page=? ORDER BY ordinal, doi').all(page) as
     { doi: string; study: string; statement: string }[];
+  // An existing section is regenerated where it stands; a new one is created only when none
+  // exists anywhere on the page, so a section placed after the footer is never duplicated.
+  const hasOnRequestSection = blocks.some((b) => b.type === 'heading' && b.depth === 2 && isOnRequestHeading(flat(b)));
 
   // The entry splice is POSITIONAL: the Nth non-inventory H3 in the source ↔ the Nth DB
   // entry for this page (both document-ordered). If those counts disagree — a stale source
@@ -269,7 +274,7 @@ export function emitDatasetPage(db: Db, srcPath: string, page: string): string {
     // regenerated, prose between the heading and the table is kept, and the whole section
     // goes when the page has no rows left. It holds no entry-depth heading by design, so
     // the entry count above never sees it.
-    if (b.type === 'heading' && b.depth === 2 && flat(b).trim() === ON_REQUEST_HEADING) {
+    if (b.type === 'heading' && b.depth === 2 && isOnRequestHeading(flat(b))) {
       i++;
       const body: string[] = [];
       let tabled = false;
@@ -286,8 +291,10 @@ export function emitDatasetPage(db: Db, srcPath: string, page: string): string {
       section = ON_REQUEST_HEADING;
       continue;
     }
-    // A page with rows but no section yet gets one just before its `## Further reading`.
-    if (b.type === 'heading' && b.depth === 2 && flat(b).trim() === 'Further reading' && onRequest.length > 0 && !onRequestEmitted) {
+    // A page with rows but no section yet gets one just before its `## Further reading`,
+    // matched without regard to case, as isEntryHeading matches the footer.
+    if (b.type === 'heading' && b.depth === 2 && flat(b).trim().toLowerCase() === 'further reading'
+      && onRequest.length > 0 && !onRequestEmitted && !hasOnRequestSection) {
       out.push(...newOnRequestSection(onRequest));
       onRequestEmitted = true;
     }
