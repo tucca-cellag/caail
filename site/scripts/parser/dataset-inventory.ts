@@ -148,7 +148,7 @@ function statedDoi(url: string): string | null {
   // A doi.org link: the DOI is the path, which URL parsing has already cut off before any
   // query string or fragment. The path stays percent-encoded, so decode it once here.
   if (DOI_HOSTS.has(parsed.hostname.toLowerCase())) {
-    let path = parsed.pathname.slice(1);
+    let path = parsed.pathname.slice(1).replace(/\/+$/, '');
     try { path = decodeURIComponent(path); } catch { /* keep the raw path */ }
     return bareDoi(path);
   }
@@ -158,6 +158,12 @@ function statedDoi(url: string): string | null {
     if (m) return bareDoi(m[1]!);
   }
   return null;
+}
+
+/** A paper's DOI: a stated DOI whose registrant is not a data host, never a deposit's. */
+function publicationDoi(url: string): string | null {
+  const doi = statedDoi(url);
+  return doi && doiRelation(doi) === 'publication' ? doi : null;
 }
 
 /** A deposit's own DOI: a stated DOI whose registrant is a data host, never a paper's. */
@@ -187,7 +193,7 @@ function ownDoi(url: string): string | null {
  */
 export function rowIdentity(columns: Readonly<Record<string, string>>): RowIdentity {
   const paperLink = (columns['Paper']?.trim() ?? '').match(PAPER_LINK);
-  const paperDoi = paperLink ? statedDoi(paperLink[1]!) : null;
+  const paperDoi = paperLink ? publicationDoi(paperLink[1]!) : null;
 
   if ('Data' in columns) {
     const data = columns['Data']!.trim();

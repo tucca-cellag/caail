@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { bareDoi, doiRelation, DATA_REPOSITORY_REGISTRANTS } from './doi-relation.js';
+import { bareDoi, doiRelation, DATA_REPOSITORY_REGISTRANTS, DOI_SHAPE } from './doi-relation.js';
 
 describe('doiRelation', () => {
   it('marks a data-repository DOI as the item\'s own', () => {
@@ -66,6 +66,18 @@ describe('bareDoi', () => {
 
   it('does not percent-decode, so a stored DOI and its citation key stay identical', () => {
     expect(bareDoi('doi%3A10.7910%2FDVN%2FXNFVTS')).toBeNull();
+  });
+
+  it('reduces a nested doi: and resolver prefix in either order', () => {
+    expect(bareDoi('doi:https://doi.org/10.5281/zenodo.1')).toBe('10.5281/zenodo.1');
+    expect(doiRelation('doi:https://doi.org/10.5281/zenodo.1')).toBe('own');
+  });
+
+  it('exports the one DOI shape db:check also validates with', () => {
+    expect(DOI_SHAPE.test('10.1000.1/abc')).toBe(true);
+    expect(DOI_SHAPE.test('10.5281/zenodo.1')).toBe(true);
+    expect(DOI_SHAPE.test('10.1/x')).toBe(false);
+    expect(DOI_SHAPE.test('https://doi.org/10.5281/zenodo.1')).toBe(false);
   });
 
   it('accepts a registrant with dotted subdivisions', () => {

@@ -18,6 +18,13 @@
  */
 
 import { doiKey } from './citations.js';
+import type { DoiRelation } from './types.js';
+
+/**
+ * The shape of a bare DOI: `10.`, a registrant (dotted subdivisions allowed, as in
+ * `10.1000.1`), `/`, a suffix. The one definition; db:check validates stored DOIs with it.
+ */
+export const DOI_SHAPE = /^10\.\d{4,9}(?:\.\d+)*\/\S+$/;
 
 /** Data-host DOI registrants → the host, for the reader of this file. */
 export const DATA_REPOSITORY_REGISTRANTS: ReadonlyMap<string, string> = new Map([
@@ -35,7 +42,7 @@ export const DATA_REPOSITORY_REGISTRANTS: ReadonlyMap<string, string> = new Map(
   ['10.24433', 'Code Ocean'],
 ]);
 
-export type DoiRelation = 'own' | 'publication';
+export type { DoiRelation };
 
 /**
  * A validated bare DOI: `doiKey` (the rule every citation and author join already uses, so
@@ -46,7 +53,7 @@ export type DoiRelation = 'own' | 'publication';
  */
 export function bareDoi(value: string | null | undefined): string | null {
   const key = doiKey(value);
-  return key && /^10\.\d{4,9}(?:\.\d+)*\/\S+$/.test(key) ? key : null;
+  return key && DOI_SHAPE.test(key) ? key : null;
 }
 
 /**

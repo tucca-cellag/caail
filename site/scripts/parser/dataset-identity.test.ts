@@ -24,6 +24,13 @@ describe('rowIdentity: the Paper cell', () => {
       .toBe('10.64898/2026.05.20.726299');
   });
 
+  it('never serves a data host\'s DOI as the paper', () => {
+    expect(rowIdentity({
+      Paper: '[preprint](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/X)',
+    }).paperDoi).toBeNull();
+    expect(rowIdentity({ Paper: '[DOI](https://doi.org/10.5281/zenodo.1)' }).paperDoi).toBeNull();
+  });
+
   it('keeps a DOI that contains parentheses', () => {
     expect(rowIdentity({ Paper: '[DOI](https://doi.org/10.1016/S0092-8674(20)30001-1)' }).paperDoi)
       .toBe('10.1016/s0092-8674(20)30001-1');
@@ -32,6 +39,7 @@ describe('rowIdentity: the Paper cell', () => {
   it('gives no DOI for "none named", a non-DOI link, or a table with no Paper column', () => {
     expect(rowIdentity({ Paper: 'none named' }).paperDoi).toBeNull();
     expect(rowIdentity({ Paper: '[preprint](https://example.org/paper)' }).paperDoi).toBeNull();
+    expect(rowIdentity({ Resource: 'x', Data: 'supplementary' }).paperDoi).toBeNull();
   });
 });
 
@@ -82,6 +90,10 @@ describe('rowIdentity: the Data cell', () => {
   it('decodes a percent-encoded doi.org path once', () => {
     expect(rowIdentity({ Data: '[FigShare](https://doi.org/10.6084%2Fm9.figshare.1)' }).dataDoi)
       .toBe('10.6084/m9.figshare.1');
+  });
+
+  it('drops a trailing slash from a stated DOI', () => {
+    expect(rowIdentity({ Data: '[Zenodo](https://doi.org/10.5281/zenodo.123/)' }).dataDoi).toBe('10.5281/zenodo.123');
   });
 
   it('ends a stated DOI at its query string or fragment', () => {

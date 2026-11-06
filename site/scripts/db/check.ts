@@ -32,6 +32,7 @@ import { AREAS } from '../parser/areas.js';
 import { MATRIX_SECTION } from '../parser/types.js';
 import { seriesRecency, EDITION_SORT_RULE } from '../parser/reports.js';
 import type { TaxonomyData } from '../parser/types.js';
+import { DOI_SHAPE } from '../parser/doi-relation.js';
 
 const MANUAL_LICENSES_PATH = join(SITE_ROOT, 'scripts', 'db', 'licenses-manual.json');
 const MANUAL_DOIS_PATH = join(SITE_ROOT, 'scripts', 'db', 'dois-manual.json');
@@ -455,7 +456,7 @@ export function checkRelatedDois(db: Db, relatedPath: string = RELATED_DOIS_PATH
     out.push(ok('dois-related.json: every datasets override id matches a dataset entry',
       badDs.length === 0, `unmatched: ${badDs.slice(0, 3).join(', ')}`));
   }
-  const bareRe = /^10\.\d{4,9}\/\S+$/;
+  const bareRe = DOI_SHAPE;
   const problems: string[] = [];
   // Track each related DOI -> the distinct RESOURCE keys carrying it, to catch a sibling
   // DOI listed under two different resources (a cross-resource double-count). The key is

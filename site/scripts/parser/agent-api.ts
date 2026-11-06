@@ -32,7 +32,7 @@ import { fileURLToPath } from 'node:url';
 
 import { assertValid, buildOpenApiDocument, OPENAPI_FILE } from './openapi.js';
 import { MATRIX_SECTION } from './types.js';
-import type { Catalog, CatalogEntry, DatasetInventory, PapersData } from './types.js';
+import type { Catalog, CatalogEntry, DatasetInventory, DoiRelation, PapersData } from './types.js';
 import { isUnderBase, RETIRED_BASES, SITE_BASE, SITE_URL } from '../../src/content/site-config.ts';
 import { CATALOG_SOURCES } from './catalog.js';
 import { dedicatedLink, GITHUB_BLOB_BASE } from '../dedicated-links.ts';
@@ -456,7 +456,7 @@ export function buildCatalogIndex(catalog: unknown, corpusDate: string): unknown
     group?: string;
     url?: string | null;
     doi?: string | null;
-    doiRelation?: 'own' | 'publication' | null;
+    doiRelation?: DoiRelation | null;
     tier?: string | null;
   };
   const cat = catalog as { software?: Entry[]; databases?: Entry[] } | null;
@@ -570,8 +570,9 @@ export function buildManifest(
           '`page` (e.g. "Cow", "Benchmarks"). Use the inventory rows for "what could I combine ' +
           'my own run with", and page "Benchmarks" for "what could I evaluate a model against". ' +
           'To tell whether a find is already held, match its identifier against the inventory ' +
-          'rows\' `accession`, `dataDoi`, `paperDoi` and `dataUrl` (keep a URL\'s query string: ' +
-          'many name their record there) and the entries\' `doi`, comparing DOIs as bare ' +
+          'rows\' `accession`, `dataDoi`, `paperDoi`, `dataUrl` and `links` (every URL in the row, ' +
+          'secondary deposits included; keep a URL\'s query string, many name their record there) ' +
+          'and the entries\' `doi` and `url`, comparing DOIs as bare ' +
           'lowercase strings and accessions case-insensitively, ignoring a version suffix ' +
           '(SRA051669.1 is SRA051669). Some deposits have only a `dataUrl`. Use `id` only to re-find an ' +
           'item you already recorded, since an id can be minted from data a row merely mentions. ' +

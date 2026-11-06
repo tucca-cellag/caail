@@ -56,6 +56,10 @@ export type TopicRef = z.infer<typeof TopicRefSchema>;
 
 /** Coarse license/access tier — the unified 4-tier axis (see src/lib/licenses.ts). */
 export const LicenseTierSchema = z.enum(['permissive', 'copyleft', 'restricted', 'unknown']);
+
+/** Whether a DOI names the item itself (`own`) or the paper describing it (`publication`). */
+export const DoiRelationSchema = z.enum(['own', 'publication']);
+export type DoiRelation = z.infer<typeof DoiRelationSchema>;
 /** The license fields folded onto every card: raw token, provenance, derived tier. */
 export const LicenseFieldsSchema = z.object({
   /** SPDX-ish token or manual string; null = unknown/not detected */
@@ -179,7 +183,7 @@ export const CatalogEntrySchema = z.object({
   doiSource: z.enum(['auto', 'manual']).nullable().default(null),
   /** `own` when `doi` is a data repository's (the item itself), `publication` when it is the
    *  describing paper's, null with no DOI. Derived by registrant in doi-relation.ts (tucca-cellag/caail-planning#367). */
-  doiRelation: z.enum(['own', 'publication']).nullable().default(null),
+  doiRelation: DoiRelationSchema.nullable().default(null),
   /** OpenAlex cited_by_count summed over `doi` + its sibling version DOIs; null when unknown */
   citationCount: z.number().int().nonnegative().nullable().default(null),
   /** number of papers the count aggregates (1 = single paper; >1 = versioned resource, #102) */
@@ -220,7 +224,7 @@ export const DatasetEntrySchema = z.object({
   doiSource: z.enum(['auto', 'manual']).nullable().default(null),
   /** `own` when `doi` is a data repository's (the item itself), `publication` when it is the
    *  describing paper's, null with no DOI. Derived by registrant in doi-relation.ts (tucca-cellag/caail-planning#367). */
-  doiRelation: z.enum(['own', 'publication']).nullable().default(null),
+  doiRelation: DoiRelationSchema.nullable().default(null),
   /** OpenAlex cited_by_count summed over `doi` + its sibling version DOIs; null when unknown */
   citationCount: z.number().int().nonnegative().nullable().default(null),
   /** number of papers the count aggregates (1 = single paper; >1 = versioned resource, #102) */
@@ -1107,7 +1111,7 @@ export const ApiCatalogIndexRowSchema = z.strictObject({
   url: z.string().nullable(),
   doi: z.string().nullable(),
   /** whether `doi` is the item's own (a data repository's) or its describing paper's (tucca-cellag/caail-planning#367) */
-  doiRelation: z.enum(['own', 'publication']).nullable(),
+  doiRelation: DoiRelationSchema.nullable(),
   tier: z.string().nullable(),
 });
 
