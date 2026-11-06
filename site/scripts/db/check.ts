@@ -570,8 +570,8 @@ export const INVENTORY_CELLS_SHOWN = 10;
  * The cell is read by the parser's own `readDataCell`, the reader `rowIdentity` uses to fill the
  * API's identity fields, rather than by a second copy of the vocabulary, so a cell the API serves with
  * no `dataStatus` is a cell this rejects. That includes a status word in the wrong case, a link whose
- * target is not an http(s) address, a link labelled with a word that names no deposit (a status word,
- * `none named`, `see paper`, `on request`), and a link to a DOI whose registrant is not a data host,
+ * target is not an http(s) address with a host, a link whose text names no deposit (blank, a status
+ * word, a supplement, or words such as `none`, `request` or `n/a`), and a link to a DOI whose registrant is not a data host,
  * for which the reason says whether to move it to the Paper cell or add the registrant. It checks a
  * cell's shape, not where its link leads. The header comes from the same `readInventoryHeader` the
  * API build uses, which trims labels and refuses a repeated one, and a cell that is not a string is
@@ -590,24 +590,29 @@ export function checkInventoryCells(
   const rows = db.prepare('SELECT item_id, page, cells_json FROM dataset_rows ORDER BY page, ordinal, item_id')
     .all() as { item_id: string; page: string; cells_json: string }[];
   const headers = new Map<string, InventoryHeader>();
-  const pageProblems = new Set<string>();
+  /** page -> its one problem, reported once however many rows the page has. */
+  const pageProblems = new Map<string, string>();
+  const pageProblem = (page: string, problem: string, firstRow: string): void => {
+    if (!pageProblems.has(page)) pageProblems.set(page, `page ${page}: ${problem} (first row ${firstRow})`);
+  };
   const problems: string[] = [];
   const shown = (cell: string): string => JSON.stringify(cell.length > 80 ? `${cell.slice(0, 77)}...` : cell);
   for (const r of rows) {
     if (!headers.has(r.page)) headers.set(r.page, headerFor(r.page));
     const read = headers.get(r.page)!;
-    if ('problem' in read) { pageProblems.add(`page ${r.page}: ${read.problem} (first row ${r.item_id})`); continue; }
+    if ('problem' in read) { pageProblem(r.page, read.problem, r.item_id); continue; }
     let cells: unknown;
     try { cells = JSON.parse(r.cells_json); } catch { problems.push(`${r.item_id}: cells_json is not JSON`); continue; }
+    if (!Array.isArray(cells)) { problems.push(`${r.item_id}: cells_json is not an array`); continue; }
     // A non-string cell would pass a String() coercion here and then crash the API build,
     // which calls string methods on every cell, so it is refused rather than coerced.
-    if (Array.isArray(cells) && !cells.every((c) => typeof c === 'string')) {
+    if (!cells.every((c) => typeof c === 'string')) {
       problems.push(`${r.item_id}: cells_json holds a cell that is not a string`);
       continue;
     }
-    const columns = Array.isArray(cells) ? labelCells(read.header, cells as string[]) : null;
+    const columns = labelCells(read.header, cells as string[]);
     if (!columns) {
-      problems.push(`${r.item_id}: ${Array.isArray(cells) ? cells.length : 'no'} cells against ${read.header.length} columns on ${r.page}`);
+      problems.push(`${r.item_id}: ${cells.length} cells against ${read.header.length} columns on ${r.page}`);
       continue;
     }
     if ('Data' in columns) {
@@ -617,10 +622,10 @@ export function checkInventoryCells(
       const link = readLinkCell(columns['DOI / URL']!);
       if (link.kind === 'off-schema') problems.push(`${r.item_id}: DOI / URL cell ${shown(columns['DOI / URL']!)} ${link.reason}`);
     } else {
-      pageProblems.add(`page ${r.page} has neither a Data nor a DOI / URL column (first row ${r.item_id})`);
+      pageProblem(r.page, 'has neither a Data nor a DOI / URL column', r.item_id);
     }
   }
-  const all = [...pageProblems, ...problems];
+  const all = [...pageProblems.values(), ...problems];
   const listed = all.slice(0, INVENTORY_CELLS_SHOWN).join('; ');
   return [ok(INVENTORY_CELLS_LABEL, all.length === 0,
     `${all.length} problem(s)${all.length > INVENTORY_CELLS_SHOWN ? `, first ${INVENTORY_CELLS_SHOWN}` : ''}: ${listed}`)];

@@ -816,6 +816,44 @@ describe('checkInventoryCells (tucca-cellag/caail-planning#740)', () => {
     expect(r.detail).toContain('not a string');
   });
 
+  it('reports a page-level problem once, however many rows the page has', () => {
+    const db = miniDb();
+    for (const id of ['ds:n1', 'ds:n2', 'ds:n3']) insRow(db, id, 'Nowhere', ['a', 'b']);
+    for (const id of ['ds:o1', 'ds:o2']) insRow(db, id, 'Odd', ['a', 'b']);
+    expect(result(db).detail).toMatch(/^2 problem\(s\):/);
+  });
+
+  it('catches non-deposit labels as words, and points a supplement at the bare word', () => {
+    for (const data of ['[upon request](https://lab.example.org)', '[contact authors](https://lab.example.org)', '[N/A](https://example.org)']) {
+      expect(withRow('Cow', { Data: data }).ok, data).toBe(false);
+    }
+    const r = withRow('Cow', { Data: '[Supplementary Table S1](https://www.nature.com/articles/x#MOESM1)' });
+    expect(r.ok).toBe(false);
+    expect(r.detail).toContain('bare word "supplementary"');
+  });
+
+  it('rejects a link with blank text, or to an address with no host', () => {
+    expect(withRow('Cow', { Data: '[ ](https://example.org)' }).detail).toContain('no text');
+    expect(withRow('Cow', { Data: '[Zenodo](https://)' }).detail).toContain('with a host');
+  });
+
+  it('names a code-styled badge in a CrossSpecies DOI / URL cell for what it is', () => {
+    expect(withRow('CrossSpecies', { 'DOI / URL': '[`10.5281/zenodo.1`](https://doi.org/10.5281/zenodo.1)' }).detail).toContain('badge');
+  });
+
+  it('says when cells_json is not an array, rather than reporting a count mismatch', () => {
+    for (const json of ['{}', 'null', '"x"']) {
+      const db = miniDb();
+      db.prepare("INSERT INTO items(id,type,slug) VALUES('ds:study-j','dataset','study-j')").run();
+      db.prepare("INSERT INTO dataset_rows(item_id,page,cells_json,subseries,ordinal) VALUES('ds:study-j','Cow',?,NULL,0)").run(json);
+      expect(result(db).detail, json).toContain('not an array');
+    }
+  });
+
+  it('quotes the status words as literals in its label', () => {
+    for (const word of STATUS_WORDS) expect(INVENTORY_CELLS_LABEL).toContain(`"${word}"`);
+  });
+
   it('builds its label from the status words, so a new word cannot leave it stale', () => {
     for (const word of STATUS_WORDS) expect(INVENTORY_CELLS_LABEL).toContain(word);
   });

@@ -167,17 +167,37 @@ export const STATUS_WORDS = ['supplementary', 'unavailable'] as const;
 type StatusWord = (typeof STATUS_WORDS)[number];
 const isStatusWord = (s: string): s is StatusWord => (STATUS_WORDS as readonly string[]).includes(s);
 
-/** The forms a Data cell may take, worded for a check's label and a curator's reason. */
-export const DATA_CELL_FORMS = ['a deposit link', ...STATUS_WORDS].join(', ').replace(/, (?=[^,]*$)/, ' or ');
+/** The forms a Data cell may take, worded for a check's label and a curator's reason; the words are quoted as literals. */
+export const DATA_CELL_FORMS = ['a deposit link', ...STATUS_WORDS.map((w) => `"${w}"`)].join(', ').replace(/, (?=[^,]*$)/, ' or ');
+
+/** An http(s) address with a host. */
+const WEB_ADDRESS = /^https?:\/\/[^\s/?#]+/i;
 
 /**
- * Link text that names no deposit, so a link carrying it is off-schema wherever it points:
- * the status words (which stand alone), `none named` (the Paper cell's word for no DOI),
- * `see paper` (a Data status word retired in tucca-cellag/caail#56), and `on request` (a
- * study Datasets/CLAUDE.md gives no row).
+ * Words in a link's text that mark it as no deposit: `none` (as in `none named`, the Paper
+ * cell's word for no DOI), `request` and `contact` (data shared on request, which
+ * Datasets/CLAUDE.md gives no row), `n/a`, and `see paper` (a Data status word retired in
+ * tucca-cellag/caail#56). Matched as words, so "upon request" is caught as well as "on request".
  */
-const NON_DEPOSIT_TEXT: readonly string[] = [...STATUS_WORDS, 'none named', 'see paper', 'on request'];
-const WEB_ADDRESS = /^https?:\/\//i;
+const NON_DEPOSIT_WORDS = /\b(?:none|request|requested|contact|n\/a|see paper)\b/i;
+
+/**
+ * Why a link's text names no deposit, or null when it may name one: blank text; a status word,
+ * which stands alone; a supplement (in a Data cell, written as the bare word "supplementary"
+ * with the file named in Description); and the words above. It checks shape, not truth: a
+ * repository name linking somewhere else still passes.
+ */
+function nonDepositLabel(raw: string, cell: 'data' | 'link'): string | null {
+  const text = raw.trim();
+  if (text === '') return 'is a link with no text';
+  const lower = text.toLowerCase();
+  if (isStatusWord(lower)) return `writes the status word "${lower}" as a link; a status word stands alone`;
+  if (/supplement/i.test(text) && cell === 'data') {
+    return `is a link labelled "${text}": a supplementary results table is written as the bare word "supplementary", with the file named in Description`;
+  }
+  if (/supplement/i.test(text) || NON_DEPOSIT_WORDS.test(text)) return `is a link labelled "${text}", which names no deposit`;
+  return null;
+}
 
 /** What a Data cell holds, or why it is outside the schema. */
 export type DataCellReading =
@@ -190,8 +210,9 @@ export type DataCellReading =
  * (`` [`GSE…`](url) ``), a named-repository link (`[Zenodo](url)`), or a bare status word.
  * Off-schema, each with the reason a curator needs: anything that is not a link; a status
  * word in the wrong case; a link whose target is not an http(s) address (`mailto:`, `#`, a
- * relative path); a link whose text names no deposit (a status word, `none named`, `see
- * paper`, `on request`); and a link to a DOI whose registrant is not a data host, which is
+ * relative path, an address with no host); a link whose text names no deposit (blank, a
+ * status word, a supplement, or words such as `none`, `request` or `n/a`; see
+ * `nonDepositLabel`); and a link to a DOI whose registrant is not a data host, which is
  * either a paper (it belongs in the Paper cell) or a deposit on a host the registrant list
  * lacks. The rule checks shape, not truth: a repository name linking somewhere else passes.
  */
@@ -205,14 +226,9 @@ export function readDataCell(cell: string): DataCellReading {
   const named = badge ? null : data.match(NAMED_LINK);
   const url = badge?.[2] ?? named?.[2];
   if (!url) return { kind: 'off-schema', reason: `is not ${DATA_CELL_FORMS}` };
-  const text = (badge?.[1] ?? named?.[1] ?? '').trim().toLowerCase();
-  if (isStatusWord(text)) {
-    return { kind: 'off-schema', reason: `writes the status word "${text}" as a link; a status word stands alone` };
-  }
-  if (NON_DEPOSIT_TEXT.includes(text)) {
-    return { kind: 'off-schema', reason: `is a link labelled "${text}", which names no deposit` };
-  }
-  if (!WEB_ADDRESS.test(url)) return { kind: 'off-schema', reason: `links "${url}", which is not an http(s) address` };
+  const label = nonDepositLabel(badge?.[1] ?? named?.[1] ?? '', 'data');
+  if (label) return { kind: 'off-schema', reason: label };
+  if (!WEB_ADDRESS.test(url)) return { kind: 'off-schema', reason: `links "${url}", which is not an http(s) address with a host` };
   const doi = statedDoi(url);
   if (doi && doiRelation(doi) === 'publication') {
     return {
@@ -238,12 +254,16 @@ export type LinkCellReading =
  * since a resource with nothing to link has no row.
  */
 export function readLinkCell(cell: string): LinkCellReading {
-  const link = cell.trim().match(NAMED_LINK);
+  const trimmed = cell.trim();
+  if (BADGE_LINK.test(trimmed)) {
+    return { kind: 'off-schema', reason: 'is a code-styled badge; on this page write the link text plain, as [10.…](https://doi.org/10.…)' };
+  }
+  const link = trimmed.match(NAMED_LINK);
   if (!link) return { kind: 'off-schema', reason: 'is not a link' };
-  const text = link[1]!.trim().toLowerCase();
-  if (NON_DEPOSIT_TEXT.includes(text)) return { kind: 'off-schema', reason: `is a link labelled "${text}", which names nothing` };
+  const label = nonDepositLabel(link[1]!, 'link');
+  if (label) return { kind: 'off-schema', reason: label };
   const url = link[2]!;
-  if (!WEB_ADDRESS.test(url)) return { kind: 'off-schema', reason: `links "${url}", which is not an http(s) address` };
+  if (!WEB_ADDRESS.test(url)) return { kind: 'off-schema', reason: `links "${url}", which is not an http(s) address with a host` };
   const doi = statedDoi(url);
   if (doi && doiRelation(doi) === 'publication') return { kind: 'paper', doi };
   return { kind: 'deposit', url, doi };
