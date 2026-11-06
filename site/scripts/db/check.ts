@@ -571,10 +571,10 @@ export const INVENTORY_CELLS_SHOWN = 10;
  * API's identity fields, rather than by a second copy of the vocabulary, so a cell the API serves with
  * no `dataStatus` is a cell this rejects. That includes a status word in the wrong case, a link whose
  * target is not an http(s) address with a host, a badge whose text is not one identifier, a link
- * whose text names no deposit (blank, a status word, `none named`, `see paper`, or a label starting
- * with "supplement"), and a link to a DOI whose registrant is not a data host,
- * for which the reason says whether to move it to the Paper cell or add the registrant. It checks a
- * cell's shape, not where its link leads. The header comes from the same `readInventoryHeader` the
+ * whose text names no deposit (`nonDepositLabel` in dataset-inventory.ts), and a link to a DOI whose
+ * registrant is not a data host, for which the reason says whether to move it to the Paper cell or
+ * add the registrant. It judges a link by its form and, for a DOI, by the DOI's registrant; it does
+ * not check that the link reaches the deposit it names. The header comes from the same `readInventoryHeader` the
  * API build uses, which trims labels and refuses a repeated one, and a cell that is not a string is
  * refused before either reader sees it.
  *

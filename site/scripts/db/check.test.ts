@@ -13,7 +13,7 @@ import { join } from 'node:path';
 
 import { openDb, importNdjson, REPO_ROOT, type Db } from './lib.js';
 import { checkIntegrity, checkReachability, checkColumnDrift, checkTaxonomyAxes, checkTopicTiers, checkAxisBijection, checkCatalogHeadings, checkLicenses, checkManualLicenseKeys, checkDois, checkManualDoiKeys, checkRelatedDois, checkSubseries, checkRowTagParity, checkFineTagSeedDrift, checkInventoryCells, INVENTORY_CELLS_LABEL, INVENTORY_CELLS_SHOWN, runChecks } from './check.js';
-import { parseRowCells, readInventoryHeader, STATUS_WORDS } from '../parser/dataset-inventory.js';
+import { NON_DEPOSIT_LABELS, parseRowCells, readInventoryHeader, STATUS_WORDS, SUPPLEMENT_PREFIX } from '../parser/dataset-inventory.js';
 import { THEME_SLUGS, FINE_TAGS } from './seed.js';
 
 const failing = (results: { label: string; ok: boolean }[], match: RegExp) =>
@@ -824,7 +824,13 @@ describe('checkInventoryCells (tucca-cellag/caail-planning#740)', () => {
     const r = withRow('Cow', { Data: '[Supplementary Table S1](https://www.nature.com/articles/x#MOESM1)' });
     expect(r.ok).toBe(false);
     expect(r.detail).toContain('bare word "supplementary"');
-    expect(withRow('CrossSpecies', { 'DOI / URL': '[Supplementary data](https://example.org/s1.xlsx)' }).ok).toBe(false);
+  });
+
+  it('lets a CrossSpecies link to a supplement stand, since that page has no status word, but refuses none named', () => {
+    for (const link of ['[Supplementary data](https://example.org/s1.xlsx)', '[supplementary](https://example.org/s1.xlsx)']) {
+      expect(withRow('CrossSpecies', { 'DOI / URL': link }).ok, link).toBe(true);
+    }
+    expect(withRow('CrossSpecies', { 'DOI / URL': '[none named](https://example.org)' }).ok).toBe(false);
   });
 
   it('judges any other label by shape alone, words inside it included', () => {
@@ -846,9 +852,20 @@ describe('checkInventoryCells (tucca-cellag/caail-planning#740)', () => {
     expect(withRow('Cow', { Data: '[`OpenML-505`](https://www.openml.org/d/505)' }).ok).toBe(true);
   });
 
-  it('says when a link\'s address cannot be read, rather than calling it no link', () => {
-    expect(withRow('Cow', { Data: '[Zenodo](https://zenodo.org/records/a b)' }).detail).toContain('cannot be read');
-    expect(withRow('CrossSpecies', { 'DOI / URL': '[GitHub](https://github.com/a b)' }).detail).toContain('cannot be read');
+  it('names the one-link form for a link-shaped cell it cannot read, whatever the cause', () => {
+    for (const data of [
+      '[Zenodo](https://zenodo.org/records/a b)', '[`GSE1`](https://a.org), [`GSE2`](https://b.org)',
+      '[Zenodo `v2`](https://zenodo.org/records/1)', '[Zenodo](https://zenodo.org/records/1) (v2)',
+      '[`GSE1`](https://www.ncbi.nlm.nih.gov/geo "GEO")',
+    ]) {
+      expect(withRow('Cow', { Data: data }).detail, data).toContain('is not one link in a form the parser reads');
+    }
+    expect(withRow('CrossSpecies', { 'DOI / URL': '[GitHub](https://github.com/a b)' }).detail).toContain('one [text](address) link');
+  });
+
+  it('calls an empty label an empty label, in either kind of link cell', () => {
+    expect(withRow('Cow', { Data: '[](https://zenodo.org/records/1)' }).detail).toContain('is a link with no text');
+    expect(withRow('CrossSpecies', { 'DOI / URL': '[](https://example.org)' }).detail).toContain('is a link with no text');
   });
 
   it('reports cell-count mismatches once per page, with the number of rows', () => {
@@ -891,6 +908,13 @@ describe('checkInventoryCells (tucca-cellag/caail-planning#740)', () => {
     const bullet = doc.split('\n').find((l) => l.trimStart().startsWith('- **Data**'));
     expect(bullet, 'the Data bullet in Datasets/CLAUDE.md').toBeDefined();
     for (const word of STATUS_WORDS) expect(bullet, word).toContain(`\`${word}\``);
+  });
+
+  it('agrees with Datasets/CLAUDE.md on every label it refuses', () => {
+    const doc = readFileSync(join(REPO_ROOT, 'Datasets', 'CLAUDE.md'), 'utf8');
+    const bullet = doc.split('\n').find((l) => l.includes('**The Data vocabulary is checked.**'));
+    expect(bullet, 'the "vocabulary is checked" bullet in Datasets/CLAUDE.md').toBeDefined();
+    for (const label of [...NON_DEPOSIT_LABELS, SUPPLEMENT_PREFIX]) expect(bullet, label).toContain(`\`${label}\``);
   });
 
   it('accepts an accession badge, a named repository link and both status words', () => {

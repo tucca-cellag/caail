@@ -180,31 +180,42 @@ const WEB_ADDRESS = /^https?:\/\/[^\s/?#]+/i;
  * controlled-access label ("request via DAC") while still passing "Embargoed", because no list
  * of words tells a deposit from a non-deposit by its label.
  */
-const NON_DEPOSIT_LABELS: readonly string[] = ['none named', 'see paper'];
+export const NON_DEPOSIT_LABELS: readonly string[] = ['none named', 'see paper'];
+
+/** A Data-cell label starting with this names a supplement, which is written as the bare word "supplementary". */
+export const SUPPLEMENT_PREFIX = 'supplement';
 
 /**
- * Why a link's text names no deposit, or null when it may name one: blank text; a whole label
- * that is a status word (which stands alone) or one of the labels above; and a label starting
- * with "supplement" (in a Data cell, written as the bare word "supplementary" with the file
- * named in Description). It checks shape, not truth: any other label passes, including one
- * like "Embargoed" or "upon request" that a curator should have written another way.
+ * Why a link's text names no deposit, or null when it may name one. In any link cell: blank
+ * text, or a whole label in NON_DEPOSIT_LABELS. In a Data cell only, where the status words
+ * exist: a whole label that is a status word (which stands alone), and a label starting with
+ * SUPPLEMENT_PREFIX (written as the bare word "supplementary", with the file named in
+ * Description). A CrossSpecies DOI / URL cell has no status word, so a link to a supplement
+ * there may be exactly where the data sit. Any other label passes, including one like
+ * "Embargoed" or "upon request" that a curator should have written another way: the guard does
+ * not check that a link reaches the deposit it names.
  */
 function nonDepositLabel(raw: string, cell: 'data' | 'link'): string | null {
   const text = raw.trim();
   if (text === '') return 'is a link with no text';
   const lower = text.toLowerCase();
-  if (isStatusWord(lower)) return `writes the status word "${lower}" as a link; a status word stands alone`;
-  if (lower.startsWith('supplement') && cell === 'data') {
+  if (cell === 'data' && isStatusWord(lower)) return `writes the status word "${lower}" as a link; a status word stands alone`;
+  if (cell === 'data' && lower.startsWith(SUPPLEMENT_PREFIX)) {
     return `is a link labelled "${text}": a supplementary results table is written as the bare word "supplementary", with the file named in Description`;
   }
-  if (lower.startsWith('supplement') || NON_DEPOSIT_LABELS.includes(lower)) return `is a link labelled "${text}", which names no deposit`;
+  if (NON_DEPOSIT_LABELS.includes(lower)) return `is a link labelled "${text}", which names no deposit`;
   return null;
 }
 
-/** A cell written as a link whose address the strict link patterns cannot read. */
+/** A cell that starts like a link and ends like one, but which the strict patterns cannot read. */
 const LINK_LIKE = /^\[[^\]]*\]\(.*\)$/;
-const UNREADABLE_ADDRESS =
-  'is a link whose address cannot be read (a space, or parentheses nested more than one deep); percent-encode the address';
+const EMPTY_LABEL = /^\[\s*\]\(/;
+
+/** Why a link-shaped cell the strict patterns cannot read is off-schema, naming the form they accept. */
+function unreadableLink(cell: string, forms: string): string {
+  if (EMPTY_LABEL.test(cell)) return 'is a link with no text';
+  return `is not one link in a form the parser reads: ${forms} and nothing else, with any space in the address percent-encoded`;
+}
 
 /** What a Data cell holds, or why it is outside the schema. */
 export type DataCellReading =
@@ -218,11 +229,11 @@ export type DataCellReading =
  * Off-schema, each with the reason a curator needs: anything that is not a link; a status
  * word in the wrong case; a link whose target is not an http(s) address (`mailto:`, `#`, a
  * relative path, an address with no host) or cannot be read; a badge whose text is not one
- * identifier; a link whose text names no deposit (blank, a status word, `none named`, `see
- * paper`, or a label starting with "supplement"; see `nonDepositLabel`); and a link to a DOI
+ * identifier; a link whose text names no deposit (see `nonDepositLabel`); and a link to a DOI
  * whose registrant is not a data host, which is
  * either a paper (it belongs in the Paper cell) or a deposit on a host the registrant list
- * lacks. The rule checks shape, not truth: a repository name linking somewhere else passes.
+ * lacks. It judges a link by its form and, for a DOI, by the DOI's registrant; it does not
+ * check that the link reaches the deposit it names, so a repository name linking elsewhere passes.
  */
 export function readDataCell(cell: string): DataCellReading {
   const data = cell.trim();
@@ -233,7 +244,12 @@ export function readDataCell(cell: string): DataCellReading {
   const badge = data.match(BADGE_LINK);
   const named = badge ? null : data.match(NAMED_LINK);
   const url = badge?.[2] ?? named?.[2];
-  if (!url) return { kind: 'off-schema', reason: LINK_LIKE.test(data) ? UNREADABLE_ADDRESS : `is not ${DATA_CELL_FORMS}` };
+  if (!url) {
+    const reason = LINK_LIKE.test(data)
+      ? unreadableLink(data, 'one [`ACCESSION`](address) badge or one [Repository](address) link')
+      : `is not ${DATA_CELL_FORMS}`;
+    return { kind: 'off-schema', reason };
+  }
   const label = nonDepositLabel(badge?.[1] ?? named?.[1] ?? '', 'data');
   if (label) return { kind: 'off-schema', reason: label };
   if (badge && /\s/.test(badge[1]!.trim())) {
@@ -270,7 +286,9 @@ export function readLinkCell(cell: string): LinkCellReading {
     return { kind: 'off-schema', reason: 'is a code-styled badge; on this page write the link text plain, as [10.…](https://doi.org/10.…)' };
   }
   const link = trimmed.match(NAMED_LINK);
-  if (!link) return { kind: 'off-schema', reason: LINK_LIKE.test(trimmed) ? UNREADABLE_ADDRESS : 'is not a link' };
+  if (!link) {
+    return { kind: 'off-schema', reason: LINK_LIKE.test(trimmed) ? unreadableLink(trimmed, 'one [text](address) link') : 'is not a link' };
+  }
   const label = nonDepositLabel(link[1]!, 'link');
   if (label) return { kind: 'off-schema', reason: label };
   const url = link[2]!;
