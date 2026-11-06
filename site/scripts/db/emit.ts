@@ -15,7 +15,7 @@
 
 import { readFileSync } from 'node:fs';
 import { parseMarkdown } from '../parser/markdown.js';
-import { entryHeadingDepth, isEntryHeading, isOnRequestHeading } from '../parser/datasets.js';
+import { entryHeadingDepth, isEntryHeading, isFurtherReadingHeading, isOnRequestHeading } from '../parser/datasets.js';
 import {
   inlineMd, flat, extractInventory, ON_REQUEST_COLUMNS, ON_REQUEST_HEADING, onRequestPaperCell,
 } from './extract.js';
@@ -237,7 +237,13 @@ export function emitDatasetPage(db: Db, srcPath: string, page: string): string {
     { doi: string; study: string; statement: string }[];
   // An existing section is regenerated where it stands; a new one is created only when none
   // exists anywhere on the page, so a section placed after the footer is never duplicated.
-  const hasOnRequestSection = blocks.some((b) => b.type === 'heading' && b.depth === 2 && isOnRequestHeading(flat(b)));
+  // A page with two would have both filled with one table, and extractOnRequest reads only
+  // one, so it is refused here as it is there.
+  const onRequestSections = blocks.filter((b) => b.type === 'heading' && b.depth === 2 && isOnRequestHeading(flat(b))).length;
+  if (onRequestSections > 1) {
+    throw new Error(`emitDatasetPage(${page}): ${onRequestSections} "## Data on request" sections; a page holds one. Merge them.`);
+  }
+  const hasOnRequestSection = onRequestSections === 1;
 
   // The entry splice is POSITIONAL: the Nth non-inventory H3 in the source ↔ the Nth DB
   // entry for this page (both document-ordered). If those counts disagree — a stale source
@@ -293,7 +299,7 @@ export function emitDatasetPage(db: Db, srcPath: string, page: string): string {
     }
     // A page with rows but no section yet gets one just before its `## Further reading`,
     // matched without regard to case, as isEntryHeading matches the footer.
-    if (b.type === 'heading' && b.depth === 2 && flat(b).trim().toLowerCase() === 'further reading'
+    if (b.type === 'heading' && b.depth === 2 && isFurtherReadingHeading(flat(b))
       && onRequest.length > 0 && !onRequestEmitted && !hasOnRequestSection) {
       out.push(...newOnRequestSection(onRequest));
       onRequestEmitted = true;

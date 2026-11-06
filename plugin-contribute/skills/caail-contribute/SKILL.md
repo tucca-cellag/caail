@@ -64,9 +64,11 @@ hazard above is unavoidable rather than avoidable. If your fetch returns bytes y
 normally. If it summarises, you cannot establish a dataset absence from it at all: say which
 accession you could not check, and do not offer a suggestion on that basis.
 
-`datasets.json` carries **two arrays and you must read both**: `entries` (curated portals, atlases
-and GEMs) and `inventory` (the per-study deposits). Accessions live on the `inventory` rows, so
-checking `entries` alone covers a minority of the corpus and reports a gap for every deposit.
+`datasets.json` carries **two dataset arrays and you must read both**: `entries` (curated portals,
+atlases and GEMs) and `inventory` (the per-study deposits). Accessions live on the `inventory` rows,
+so checking `entries` alone covers a minority of the corpus and reports a gap for every deposit. A
+third array, `onRequest`, lists studies whose data CAAIL does not hold because they are shared only
+on request; a deposit whose paper is on it is not held.
 
 **Be generous about deciding CAAIL already holds it, and strict about deciding it does not.** A
 false "CAAIL is missing this" costs the user a wasted click and sends the maintainers a duplicate;

@@ -34,7 +34,7 @@ https://caail.tufts.edu/api/ if you want to read one in a browser.
 | "Has anyone applied <method> to <area>?" | https://raw.githubusercontent.com/tucca-cellag/caail/main/site/public/api/matrix.json — then read the caveat below |
 | "Find me papers on X" | https://raw.githubusercontent.com/tucca-cellag/caail/main/site/public/api/papers-index.json — one compact row per reference across every section. Then fetch `papers.json` for the full records you picked |
 | "What software / databases exist for X?" | https://raw.githubusercontent.com/tucca-cellag/caail/main/site/public/api/catalog-index.json — one compact row per tool and database. Then fetch `catalog.json` for the summaries you want |
-| "What data exists for <species>?" | https://raw.githubusercontent.com/tucca-cellag/caail/main/site/public/api/datasets.json — two arrays: `entries` are curated portals and atlases, `inventory` are the per-study deposits. Filter either by `page` |
+| "What data exists for <species>?" | https://raw.githubusercontent.com/tucca-cellag/caail/main/site/public/api/datasets.json — `entries` are curated portals and atlases, `inventory` the per-study deposits, `onRequest` studies whose data are shared only on request (not datasets). Filter any by `page` |
 | "What's the latest field / state-of-the-industry report?" | https://raw.githubusercontent.com/tucca-cellag/caail/main/site/public/api/reports.json — recurring institutional surveys (GFI State of the Industry, etc.), one record per edition |
 | "What does CAAIL mean by <method or area>?" | https://raw.githubusercontent.com/tucca-cellag/caail/main/site/public/api/taxonomy.json — read before trusting or disputing a placement |
 

@@ -179,14 +179,23 @@ export function seedDatasets(db: Db): { rows: Record<string, number>; entries: n
  * Seed the studies whose data are shared only on request (tucca-cellag/caail-planning#750) from
  * each page's `## Data on request` table. They are not items, so they take no ds: id and
  * share nothing with the `seen` set. Returns the row count.
+ *
+ * The table is keyed by DOI, so a study goes on one page. One listed on two throws naming
+ * both, rather than dying on the table's UNIQUE constraint.
  */
 export function seedOnRequest(db: Db, repoRoot: string = REPO_ROOT): number {
   const ins = db.prepare('INSERT INTO datasets_on_request(doi,page,study,statement,ordinal) VALUES(?,?,?,?,?)');
+  const pageOf = new Map<string, string>();
   let ordinal = 0;
   for (const page of ON_REQUEST_PAGES) {
     const path = join(repoRoot, 'Datasets', `${page}.md`);
     if (!existsSync(path)) continue;
-    for (const r of extractOnRequest(path) ?? []) ins.run(r.doi, page, r.study, r.statement, ordinal++);
+    for (const r of extractOnRequest(path) ?? []) {
+      const first = pageOf.get(r.doi);
+      if (first) throw new Error(`seedOnRequest: ${r.doi} is listed on ${first} and ${page}; a study goes on one page`);
+      pageOf.set(r.doi, page);
+      ins.run(r.doi, page, r.study, r.statement, ordinal++);
+    }
   }
   return ordinal;
 }

@@ -426,7 +426,8 @@ non-catalog canonical files (`OtherResources.md`, `ReferenceWorks.md`, `AwesomeL
     the datasets endpoint — in neither. If you add a page with a new heading shape, teach that one
     function and add the page to `db:verify`'s list; a page absent from that list has no round-trip oracle.
 - **The dataset total and the datasets endpoint count one population.** `counts.datasets` (the headline)
-  == `dataset_entries` + `dataset_rows` == what `api/datasets.json` serves. `computeDatasetBreakdown`
+  == `dataset_entries` + `dataset_rows` == the datasets `api/datasets.json` serves (its `onRequest`
+  studies are not datasets and are counted apart, as `datasetsOnRequest`). `computeDatasetBreakdown`
   splits it four ways — inventory rows, curated entries *on* the inventory pages, reference-page entries,
   benchmarks — and `generate-data.ts` asserts both the parts-sum and served-==-counted. Before #156 the
   headline omitted the species pages' featured atlases/GEMs while the endpoint omitted the benchmarks, so

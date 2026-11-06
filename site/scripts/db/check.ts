@@ -560,17 +560,20 @@ export const INVENTORY_CELLS_LABEL =
   `dataset_rows: every Data cell is ${DATA_CELL_FORMS} (CrossSpecies: its DOI / URL cell is a link)`;
 
 export const ON_REQUEST_LABEL =
-  'datasets_on_request: every row has a bare DOI no dataset already holds, a non-Benchmarks dataset page, ' +
-  'and a study and statement that fit a table cell';
+  'datasets_on_request: every row has a bare DOI that no inventory row\'s Paper cell or curated entry\'s doi names, ' +
+  'a non-Benchmarks dataset page, and a study and statement that fit a table cell';
 
 /**
  * Shape of the Data on request list (tucca-cellag/caail-planning#750): a bare lowercase DOI (the
  * key, and the Paper cell's target), a page from ON_REQUEST_PAGES whose Markdown exists
- * (never Benchmarks, whose H2s are entries, so a `## Data on request` there would count as a
- * dataset), and a non-empty study and statement with no `|` or line break, either of which
- * would break the emitted table. It also refuses a DOI that an inventory row names as its paper
- * or a curated entry carries, since that study holds public data. It does not check the
- * statement against the paper.
+ * (never Benchmarks), and a non-empty study and statement with no `|` or line break, either of
+ * which would break the emitted table.
+ *
+ * It also refuses a DOI that an inventory row links in its Paper cell, or that a curated entry
+ * carries in its `doi` column, since that study holds public data. Only those two places are
+ * read, and only for that exact DOI: a row whose Paper cell links the preprint while the list
+ * names the journal version, or an entry that mentions the DOI only in its prose, gets past
+ * it. It does not check the statement against the paper.
  */
 export function checkOnRequest(db: Db, repoRoot: string = REPO_ROOT): CheckResult[] {
   const rows = db.prepare('SELECT doi, page, study, statement FROM datasets_on_request ORDER BY ordinal, doi')

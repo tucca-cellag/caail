@@ -16,11 +16,13 @@ import { join } from 'node:path';
 
 import { openDb, importNdjson, REPO_ROOT, type Db } from './lib.js';
 import { emitDatasetPage } from './emit.js';
+import { isDbOwnedDatasetPage } from './emit-files.js';
 import { extractOnRequest, ON_REQUEST_HEADING } from './extract.js';
 import { seedOnRequest } from './seed.js';
 import { checkOnRequest, ON_REQUEST_LABEL } from './check.js';
 import { isEntryHeading, ON_REQUEST_PAGES } from '../parser/datasets.js';
-import { buildOnRequestStudies, onRequestDrift } from '../parser/datasets-on-request.js';
+import { cellText } from '../parser/dataset-inventory.js';
+import { buildOnRequestStudies, onRequestDrift, readOnRequestRows } from '../parser/datasets-on-request.js';
 
 const TMP = mkdtempSync(join(tmpdir(), 'caail-onreq-'));
 const ROW = { doi: '10.1000/abc', study: 'A study (Author et al. 2024)', statement: 'Data will be made available on request.' };
@@ -86,7 +88,7 @@ describe('emitDatasetPage: the Data on request section', () => {
   });
 });
 
-describe('round 1 fixes', () => {
+describe('edges: entry counting, verbatim text, row order, placement, drift and held DOIs', () => {
   it('never counts the list\'s heading, or a ### under it, as a dataset entry, on Benchmarks or any page', () => {
     expect(isEntryHeading('Benchmarks', 'Data on request', '')).toBe(false);
     expect(isEntryHeading('Benchmarks', 'data on Request', '')).toBe(false);
@@ -141,6 +143,51 @@ describe('round 1 fixes', () => {
     inEntry.exec('PRAGMA foreign_keys = OFF');
     inEntry.prepare("INSERT INTO dataset_entries(item_id,name,url,page,section,kind,heading_md,body_md,doi,doi_source,ordinal) VALUES('ds:held-entry','E',NULL,'Cow','S','other','E','b','10.1000/abc','manual',0)").run();
     expect(result(inEntry).detail).toContain('also the paper of ds:held-entry');
+  });
+});
+
+describe('one section per page, one page per study', () => {
+  const TABLE = '| Study | Paper | Data availability statement |\n|---|---|---|\n';
+  const line = (doi: string) => `| S | [DOI](https://doi.org/${doi}) | "Ask." |\n`;
+
+  it('refuses a second section, in extract and in emit, and a DOI listed twice in one table', () => {
+    const two = `# Two\n\n## Data on request\n\n${TABLE}${line('10.1000/a')}\n## Data on request\n\n${TABLE}${line('10.1000/b')}`;
+    const src = join(TMP, 'Two.md');
+    writeFileSync(src, two);
+    expect(() => extractOnRequest(src)).toThrow(/2 "## Data on request" sections/);
+    expect(() => emitFixture('Two', two, [ROW])).toThrow(/2 "## Data on request" sections/);
+    const twice = join(TMP, 'Twice.md');
+    writeFileSync(twice, `# Twice\n\n## Data on request\n\n${TABLE}${line('10.1000/a')}${line('10.1000/a')}`);
+    expect(() => extractOnRequest(twice)).toThrow(/10\.1000\/a is listed twice/);
+  });
+
+  it('refuses one study on two pages, naming both, in bootstrap and in the parse check', () => {
+    const root = mkdtempSync(join(tmpdir(), 'caail-onreq-two-pages-'));
+    mkdirSync(join(root, 'Datasets'));
+    for (const p of ['Cow', 'Pig']) writeFileSync(join(root, 'Datasets', `${p}.md`), `# ${p}\n\n## Data on request\n\n${TABLE}${line('10.1000/a')}`);
+    expect(() => seedOnRequest(openDb(), root)).toThrow(/10\.1000\/a is listed on Cow and Pig/);
+    const row = { doi: '10.1000/a', study: 'S', statement: 'Ask.' };
+    expect(onRequestDrift([{ ...row, page: 'Cow' }], [{ ...row, page: 'Cow' }, { ...row, page: 'Pig' }]))
+      .toContain('listed on Cow and on Pig');
+  });
+
+  it('has db:emit own a page that holds nothing but the list, and one whose last row went', () => {
+    const bare = join(TMP, 'Bare.md');
+    writeFileSync(bare, '# Bare\n\nA stub.\n\n## Further reading\n\n- a link\n');
+    expect(isDbOwnedDatasetPage(openDb(), bare, 'Bare')).toBe(false);
+    expect(isDbOwnedDatasetPage(dbWith('Bare', [ROW]), bare, 'Bare')).toBe(true);
+    const stale = join(TMP, 'Stale.md');
+    writeFileSync(stale, `# Stale\n\n## Data on request\n\n${TABLE}${line('10.1000/a')}\n## Further reading\n\n- a link\n`);
+    expect(isDbOwnedDatasetPage(openDb(), stale, 'Stale')).toBe(true);
+  });
+
+  it('orders stored rows that share an ordinal as SQLite does, by code unit, not by locale', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'caail-onreq-ndjson-'));
+    // '1' (U+0031) sorts before '_' (U+005F) by code unit; a locale collation puts punctuation first.
+    const rows = [{ doi: '10.1000/_x', ordinal: 0 }, { doi: '10.1000/1x', ordinal: 0 }]
+      .map((r) => JSON.stringify({ ...r, page: 'Cow', study: 'S', statement: 'Ask.' }));
+    writeFileSync(join(dir, 'datasets_on_request.ndjson'), rows.join('\n') + '\n');
+    expect(readOnRequestRows(dir).map((r) => r.doi)).toEqual(['10.1000/1x', '10.1000/_x']);
   });
 });
 
@@ -220,16 +267,19 @@ describe('the Data on request list on the real corpus', () => {
     }
   });
 
-  it('serves the committed rows through the parser, each marked on-request and never as a dataset id', () => {
+  it('serves every committed row through the parser, in order, marked on-request and never as a dataset id', () => {
+    const stored = readOnRequestRows();
     const studies = buildOnRequestStudies();
-    expect(studies.map((s) => s.paperDoi)).toEqual([
-      '10.1016/j.ygeno.2024.110903', '10.3390/cells12182325', '10.1002/bit.70190', '10.1038/s41598-023-49257-0',
-    ]);
-    for (const s of studies) {
-      expect(s.dataStatus).toBe('on-request');
-      expect(Object.keys(s)).not.toContain('id');
-    }
-    // The page's cell italicises the species; the API serves the title as plain text.
-    expect(studies.find((s) => s.paperDoi === '10.3390/cells12182325')!.study).toContain('(Paralichthys olivaceus)');
+    expect(stored.length).toBeGreaterThan(0);
+    expect(studies).toEqual(stored.map((r) => ({
+      page: r.page, study: cellText(r.study), paperDoi: r.doi, statement: r.statement, dataStatus: 'on-request',
+    })));
+  });
+
+  it('serves the study as plain text where the page\'s cell carries Markdown', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'caail-onreq-plain-'));
+    writeFileSync(join(dir, 'datasets_on_request.ndjson'),
+      JSON.stringify({ doi: '10.1000/abc', page: 'Fish', study: 'Cells from flounder (*Paralichthys olivaceus*)', statement: 'Ask.', ordinal: 0 }) + '\n');
+    expect(buildOnRequestStudies(dir)[0]!.study).toBe('Cells from flounder (Paralichthys olivaceus)');
   });
 });

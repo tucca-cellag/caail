@@ -148,7 +148,8 @@ CREATE TABLE dataset_entries (
 -- no inventory row or curated entry, so without this list a study cited nowhere else in
 -- CAAIL would vanish from the library. Deliberately NOT items: no `items` row, no `ds:` id,
 -- no topics and no part of `counts.datasets`, so nothing a consumer joins on can read an
--- on-request study as a held dataset. Keyed by the paper's DOI. `db:emit` writes each
+-- on-request study as a held dataset. Keyed by the paper's DOI, so a study goes on one
+-- page; `db:bootstrap` and `pnpm parse` refuse one listed on two. `db:emit` writes each
 -- page's rows as the table under a `## Data on request` heading, just before
 -- `## Further reading`.
 CREATE TABLE datasets_on_request (
