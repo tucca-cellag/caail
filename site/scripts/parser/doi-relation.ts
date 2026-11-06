@@ -22,7 +22,8 @@ import type { DoiRelation } from './types.js';
 
 /**
  * The shape of a bare DOI: `10.`, a registrant (dotted subdivisions allowed, as in
- * `10.1000.1`), `/`, a suffix. The one definition; db:check validates stored DOIs with it.
+ * `10.1000.1`), `/`, a suffix. The parser and db:check share it. `src/lib/report-compose.ts`
+ * still keeps an older regex of its own, tracked in tucca-cellag/caail-planning#173.
  */
 export const DOI_SHAPE = /^10\.\d{4,9}(?:\.\d+)*\/\S+$/;
 

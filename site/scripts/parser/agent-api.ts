@@ -569,20 +569,25 @@ export function buildManifest(
           'assay type and size, keyed by the source page\'s own column labels. Filter either by ' +
           '`page` (e.g. "Cow", "Benchmarks"). Use the inventory rows for "what could I combine ' +
           'my own run with", and page "Benchmarks" for "what could I evaluate a model against". ' +
-          'To tell whether a find is already held, match its identifier against the inventory ' +
-          'rows\' `accession`, `dataDoi`, `paperDoi`, `dataUrl` and `links` (every URL in the row, ' +
-          'secondary deposits included; keep a URL\'s query string, many name their record there) ' +
-          'and the entries\' `doi` and `url`, comparing DOIs as bare ' +
-          'lowercase strings and accessions case-insensitively, ignoring a version suffix ' +
-          '(SRA051669.1 is SRA051669). Some deposits have only a `dataUrl`. Use `id` only to re-find an ' +
-          'item you already recorded, since an id can be minted from data a row merely mentions. ' +
+          'To tell whether a dataset find is already held, match the find\'s own identifier ' +
+          'against the inventory rows\' `accession`, `dataDoi`, `dataUrl` and `links` (every URL ' +
+          'in the row, secondary deposits included; keep a URL\'s query string, many name their ' +
+          'record there), and against the entries\' `url`, and their `doi` where `doiRelation` is ' +
+          '"own" (a data host\'s DOI, naming the item itself). Compare DOIs as bare lowercase ' +
+          'strings and accessions case-insensitively, ignoring a version suffix (SRA051669.1 is ' +
+          'SRA051669). Some deposits have only a `dataUrl`. ' +
+          'A row\'s `paperDoi`, and an entry\'s `doi` where `doiRelation` is "publication", name ' +
+          'the paper that describes the item, not the item. A match there means CAAIL holds data ' +
+          'from that paper, not that it holds your find: one paper can describe several ' +
+          'deposits, and whether CAAIL holds the paper itself is for papers-index.json to say. ' +
+          '`links` carries the row\'s paper link too, so a URL that resolves to its `paperDoi` is ' +
+          'that same paper match. Use `id` only to re-find an item you already recorded, since an ' +
+          'id can be minted from data a row merely mentions. ' +
           '`accession` is the primary deposit as the Data cell\'s badge names it, served as ' +
           'written. Secondary deposits are named only in the row\'s prose (Description), and on ' +
           'page "CrossSpecies", which has no Data column, a row\'s own deposits can be named ' +
-          'only in its Scope. ' +
-          'An entry\'s `doiRelation` says whether its `doi` is the item\'s own ("own", a data ' +
-          'host\'s) or its describing paper\'s ("publication"). One accession can sit on ' +
-          'several rows, on one page or several, when more than one study uses a deposit.',
+          'only in its Scope. One accession can sit on several rows, on one page or several, ' +
+          'when more than one study uses a deposit.',
       },
       { path: 'reports.json', use: 'Field reports: recurring institutional state-of-field surveys (GFI State of the Industry and the like), one record per edition. When recommending one, use the record with `current: true` for its series and treat any record with a `supersededBy` id as historical only; `seriesEditions` walks the history. The latest edition is derived, so it stays correct as new editions land.' },
       { path: 'topics.json', use: 'Subject tree plus an inverted index: topic → items across all content types. Start here for "what should I use for X".' },
