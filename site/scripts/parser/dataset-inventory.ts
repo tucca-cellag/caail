@@ -175,10 +175,11 @@ function statedDoiAs(url: string, relation: DoiRelation): string | null {
  * The accession comes from the Data cell ONLY, never from the row's id: an id can be
  * minted from data a row merely mentions (tucca-cellag/caail-planning#715), which is the claim this field
  * exists to keep apart. A `dataDoi` is served only when it is a data host's DOI, and a Data
- * cell that links a paper's DOI is treated as off-schema. A cell outside these shapes yields nulls rather than throwing, since a throw here
- * would take the build down for a curation typo. Nothing rejects such a cell yet: the
- * Data-cell guard is planned for db:check (tucca-cellag/caail-planning#740), and until it lands the corpus
- * tests in dataset-identity.test.ts are what catch a silent null.
+ * cell that links a paper's DOI is treated as off-schema. A cell outside these shapes yields
+ * nulls rather than throwing, since a throw here would take the build down for a curation
+ * typo. Rejecting it is db:check's job: `checkInventoryCells` (site/scripts/db/check.ts,
+ * tucca-cellag/caail-planning#740) calls this function and fails any row it gives no status, so
+ * `db:add` refuses such a cell before it reaches the Markdown.
  */
 export function rowIdentity(columns: Readonly<Record<string, string>>): RowIdentity {
   const paperLink = (columns['Paper']?.trim() ?? '').match(PAPER_LINK);

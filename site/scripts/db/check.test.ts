@@ -12,7 +12,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { openDb, importNdjson, type Db } from './lib.js';
-import { checkIntegrity, checkReachability, checkColumnDrift, checkTaxonomyAxes, checkTopicTiers, checkAxisBijection, checkCatalogHeadings, checkLicenses, checkManualLicenseKeys, checkDois, checkManualDoiKeys, checkRelatedDois, checkSubseries, checkRowTagParity, checkFineTagSeedDrift, runChecks } from './check.js';
+import { checkIntegrity, checkReachability, checkColumnDrift, checkTaxonomyAxes, checkTopicTiers, checkAxisBijection, checkCatalogHeadings, checkLicenses, checkManualLicenseKeys, checkDois, checkManualDoiKeys, checkRelatedDois, checkSubseries, checkRowTagParity, checkFineTagSeedDrift, checkInventoryCells, INVENTORY_CELLS_LABEL, runChecks } from './check.js';
 import { THEME_SLUGS, FINE_TAGS } from './seed.js';
 
 const failing = (results: { label: string; ok: boolean }[], match: RegExp) =>
@@ -732,6 +732,73 @@ describe('checkFineTagSeedDrift (tucca-cellag/caail-planning#339)', () => {
     db.exec('PRAGMA foreign_keys = OFF');
     db.prepare('DELETE FROM topics WHERE slug=?').run(f.slug);
     expect(failing(checkFineTagSeedDrift(db), /fine tags:/)).toBe(true);
+  });
+});
+
+describe('checkInventoryCells (tucca-cellag/caail-planning#740)', () => {
+  const SPECIES = ['Study', 'Paper', 'Data', 'Type', 'Tissue', 'Description', 'Size', 'Area of research'];
+  // Data at a position no real page uses, so reading the cell by index rather than by label fails.
+  const SHIFTED = ['Study', 'Species', 'Paper', 'Data', 'Description'];
+  const CROSS = ['Resource', 'Year', 'Format', 'Scope', 'DOI / URL', 'License'];
+  const headers: Record<string, string[]> = { Cow: SPECIES, Shifted: SHIFTED, CrossSpecies: CROSS, Odd: ['Study', 'Notes'] };
+  const headerFor = (page: string): string[] | null => headers[page] ?? null;
+  const BADGE = '[`GSE1`](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE1)';
+  const cellsFor = (header: string[], cells: Record<string, string>): string[] => header.map((h) => cells[h] ?? 'x');
+  const insRow = (db: Db, id: string, page: string, cells: string[]): void => {
+    db.prepare("INSERT INTO items(id,type,slug) VALUES(?,'dataset',?)").run(id, id.slice(3));
+    db.prepare('INSERT INTO dataset_rows(item_id,page,cells_json,subseries,ordinal) VALUES(?,?,?,NULL,0)')
+      .run(id, page, JSON.stringify(cells));
+  };
+  const result = (db: Db) => checkInventoryCells(db, headerFor).find((r) => r.label === INVENTORY_CELLS_LABEL)!;
+  const withRow = (page: string, cells: Record<string, string>) => {
+    const db = miniDb(); insRow(db, 'ds:study-a', page, cellsFor(headers[page]!, cells)); return result(db);
+  };
+
+  it('rejects a Data cell reading "on request", naming the row and the cell', () => {
+    const r = withRow('Cow', { Data: 'on request' });
+    expect(r.ok).toBe(false);
+    expect(r.detail).toContain('ds:study-a');
+    expect(r.detail).toContain('on request');
+  });
+
+  it('rejects the retired status words, a bare accession and an empty cell', () => {
+    for (const data of ['none named', 'see paper', 'GSE1', '']) expect(withRow('Cow', { Data: data }).ok, data).toBe(false);
+  });
+
+  it('rejects a Data cell that links a paper rather than a deposit', () => {
+    expect(withRow('Cow', { Data: '[DOI](https://doi.org/10.1038/s41586-020-0001-1)' }).ok).toBe(false);
+  });
+
+  it('accepts an accession badge, a named repository link and both status words', () => {
+    for (const data of [BADGE, '[Zenodo](https://zenodo.org/records/1)', 'supplementary', 'unavailable']) {
+      expect(withRow('Cow', { Data: data }).ok, data).toBe(true);
+    }
+  });
+
+  it('finds the Data cell by its header label, not its position', () => {
+    expect(withRow('Shifted', { Paper: BADGE, Data: 'on request' }).ok).toBe(false);
+    expect(withRow('Shifted', { Paper: 'none named', Data: BADGE }).ok).toBe(true);
+  });
+
+  it('requires a CrossSpecies DOI / URL cell to be a link, and takes no status word there', () => {
+    expect(withRow('CrossSpecies', { 'DOI / URL': 'supplementary' }).ok).toBe(false);
+    expect(withRow('CrossSpecies', { 'DOI / URL': 'on request' }).ok).toBe(false);
+    for (const link of ['[10.5281/zenodo.1](https://doi.org/10.5281/zenodo.1)', '[10.1186/x](https://doi.org/10.1186/x)', '[GitHub](https://github.com/a/b)']) {
+      expect(withRow('CrossSpecies', { 'DOI / URL': link }).ok, link).toBe(true);
+    }
+  });
+
+  it('fails a page whose inventory has neither a Data nor a DOI / URL column, rather than skipping it', () => {
+    const r = withRow('Odd', {});
+    expect(r.ok).toBe(false);
+    expect(r.detail).toContain('Odd');
+  });
+
+  it('fails a row on a page with no inventory table, and a row whose cell count differs from its header', () => {
+    const noTable = miniDb(); insRow(noTable, 'ds:study-b', 'Nowhere', ['a', 'b']);
+    expect(result(noTable).ok).toBe(false);
+    const short = miniDb(); insRow(short, 'ds:study-c', 'Cow', [BADGE]);
+    expect(result(short).ok).toBe(false);
   });
 });
 
